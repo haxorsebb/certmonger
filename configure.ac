@@ -1,0 +1,5 @@
+AC_INIT(ca-client,0.0)
+AM_INIT_AUTOMAKE
+PKG_CHECK_MODULES(TALLOC,talloc)
+PKG_CHECK_MODULES(TEVENT,tevent talloc)
+AC_OUTPUT(Makefile src/Makefile)
