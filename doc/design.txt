@@ -5,21 +5,19 @@ The life cycle of a certificate:
 	* Checking for response from CA.
 	* Waiting for certificate to near expiration.
 
-Now with some states for our state machines:
-	Submission:
-		* Generating a key pair.
-		States: NEED_KEY_PAIR, GENERATING_KEY_PAIR, HAVE_KEY_PAIR
-		* Generating a CSR containing public key.
-		States: NEED_CSR, GENERATING_CSR, HAVE_CSR
-		* Submitting CSR to a CA.
-		States: NEED_TO_SUBMIT, SUBMITTING, HAVE_SUBMITTED
-		* Checking for response from CA.
-		States: NEED_CA_STATUS, POLLING_CA_STATUS, RETRIEVING_CERT
-		* Nothing to do.
-		States: IDLE
-	Monitoring:
-		* Waiting for certificate to near expiration.
-		States: MONITORING
+Now with some states for our state machine:
+	* Generating a key pair.
+	States: NEED_KEY_PAIR, GENERATING_KEY_PAIR, HAVE_KEY_PAIR
+	* Generating a CSR containing public key.
+	States: NEED_CSR, GENERATING_CSR, HAVE_CSR
+	* Submitting CSR to a CA.
+	States: NEED_TO_SUBMIT, SUBMITTING, HAVE_SUBMITTED
+	* Checking for response from CA.
+	States: NEED_CA_STATUS, POLLING_CA_STATUS, RETRIEVING_CERT
+	* Waiting for certificate to near expiration.
+	States: MONITORING
+	* Waiting for user input
+	States: NEED_GUIDANCE
 
 State logic:
 	Submission:
@@ -127,9 +125,10 @@ State logic:
 			break
 		RETRIEVING_CERT:
 			if ca-is-reachable
-				retrieve-and-store-cert
+				retrieve-cert
+				save-cert-to-disk
 				maybe-add-cert-to-monitoring-list
-				s_next = IDLE
+				s_next = MONITORING
 				s_waitfor = now
 			else
 				s_next = NEED_CA_STATUS
@@ -154,14 +153,14 @@ State logic:
 					s_next = NEED_GUIDANCE
 					s_waitfor = ever
 			break
-		IDLE:
+		MONITORING:
 			if certificate-uses-auto-renew(cert)
 				if certificate-is-near-expiration
 					store-template-based-on-cert
 					s_next = NEED_CSR
 					s_waitfor = now
 				else
-					s_next = IDLE
+					s_next = MONITORING
 					s_waitfor = timeout
 			else
 				if administrator-last-notified-exp-date !=
@@ -172,6 +171,27 @@ State logic:
 					s_next = NEED_GUIDANCE
 					s_waitfor = now
 				else
-					s_next = IDLE
+					s_next = MONITORING
 					s_waitfor = timeout
 			break
+
+Types of user guidance:
+	Enroll-from-scratch:
+		s_next = NEED_KEY_PAIR
+		s_waitfor = now
+	Submit-key:
+		s_next = NEED_CSR
+		s_waitfor = now
+	Submit-csr/Resubmit-csr:
+		s_next = HAVE_CSR
+		s_waitfor = now
+	Start-Tracking-with-AutoRenew:
+		add-cert-to-monitoring-list
+		s_next = MONITORING
+		s_waitfor = now
+	Start-Tracking-without-AutoRenew:
+		add-cert-to-monitoring-list
+		s_next = MONITORING
+		s_waitfor = now
+	Cancel:
+		remove-cert-from-monitoring-list
