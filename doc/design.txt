@@ -1,0 +1,121 @@
+The life cycle of a certificate:
+	* Generating a key pair.
+	* Generating a CSR containing public key.
+	* Submitting CSR to a CA.
+	* Checking for response from CA.
+	* Waiting for certificate to near expiration.
+
+Now with some states for our state machines:
+	Submission:
+		* Generating a key pair.
+		States: NEED_KEY_PAIR, GENERATING_KEY_PAIR, HAVE_KEY_PAIR
+		* Generating a CSR containing public key.
+		States: NEED_CSR, GENERATING_CSR, HAVE_CSR
+		* Submitting CSR to a CA.
+		States: NEED_TO_SUBMIT, SUBMITTING, HAVE_SUBMITTED
+		* Checking for response from CA.
+		States: NEED_CA_STATUS, POLLING_CA_STATUS, RETRIEVING_CERT
+		* Nothing to do.
+		States: IDLE
+	Monitoring:
+		* Waiting for certificate to near expiration.
+		States: MONITORING
+
+State logic:
+	Submission:
+		NEED_KEY_PAIR:
+			start key generation
+			s_next = GENERATING_KEY_PAIR
+			break
+		GENERATING_KEY_PAIR:
+			if starting-up
+				s_next = NEED_KEY_PAIR
+			else
+				if key ready
+					store-keys
+					s_next = HAVE_KEY_PAIR
+				else
+					s_next = GENERATING_KEY_PAIR
+			break
+		HAVE_KEY_PAIR:
+			s_next = PREP_CSR
+			break
+		PREP_CSR:
+			if don't-have-a-template
+				store-template-based-on-defaults
+			s_next = NEED_CSR
+			break
+		NEED_CSR:
+			start csr generation using template
+			s_next = GENERATING_CSR
+			break
+		GENERATING_CSR:
+			if starting-up
+				s_next = NEED_CSR
+			else
+				if csr ready
+					store-csr
+					s_next = HAVE_CSR
+				else
+					s_next = GENERATING_CSR
+			break
+		HAVE_CSR:
+			s_next = NEED_TO_SUBMIT
+		NEED_TO_SUBMIT:
+			if ca-is-reachable
+				start csr submission
+				s_next = SUBMITTING
+			break
+		SUBMITTING:
+			if starting-up
+				s_next = NEED_TO_SUBMIT
+			else
+				if csr-submitted
+					store-ca-cookie
+					s_next = HAVE_SUBMITTED
+				else
+					s_next = NEED_TO_SUBMIT
+			break
+		HAVE_SUBMITTED:
+			s_next = NEED_CA_STATUS
+			break
+		NEED_CA_STATUS:
+			if ca-is-reachable
+				s_next = POLLING_CA_STATUS
+			else
+				s_next = NEED_CA_STATUS
+			break
+		POLLING_CA_STATUS:
+			if starting-up
+				s_next = NEED_CA_STATUS
+			else
+				if ca-has-answer
+					if ca-issued-cert
+						s_next = RETRIEVING_CERT
+					if ca-denied-cert
+						s_next = NEED_TO_SUBMIT
+				else
+					s_next = NEED_CA_STATUS
+			break
+		RETRIEVING_CERT:
+			if ca-is-reachable
+				retrieve-and-store-cert
+				add-cert-to-monitoring-list
+				s_next = IDLE
+			else
+				s_next = NEED_CA_STATUS
+			break
+		IDLE:
+			break
+	Monitoring:
+		MONITORING:
+			if certificate-uses-auto-renew(cert)
+				if certificate-is-near-expiration and
+				   s_current(cert) == IDLE
+					store-template-based-on-cert
+					s_next = NEED_CSR
+			else
+				if administrator-last-notified-for(cert,ttl) !=
+				   certificate-expiration
+					notify-administrator
+					store-last-notified-for(cert, ttl)
