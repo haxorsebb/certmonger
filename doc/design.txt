@@ -217,6 +217,7 @@ Data we need to track for each certificate/task/dbentry:
 	  * ku, eku
 	* State (state_current)
 	* Whether to autorenew-at-expiration [or use default settings]
+	* Whether to start monitoring at issue [or use default settings]
 	* Type and location of CA [or use default settings]
 	* Value of CA cookie for in-progress submissions.
 	* Date of submission for in-progress submissions.
