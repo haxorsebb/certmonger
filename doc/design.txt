@@ -23,121 +23,121 @@ State logic:
 	Submission:
 		NEED_KEY_PAIR:
 			start key generation
-			s_next = GENERATING_KEY_PAIR
-			s_waitfor = now
+			state_next = GENERATING_KEY_PAIR
+			state_waitfor = now
 			break
 		GENERATING_KEY_PAIR:
 			if starting-up
-				s_next = NEED_KEY_PAIR
-				s_waitfor = now
+				state_next = NEED_KEY_PAIR
+				state_waitfor = now
 			else
 				if key ready
 					store-keys
-					s_next = HAVE_KEY_PAIR
-					s_waitfor = now
+					state_next = HAVE_KEY_PAIR
+					state_waitfor = now
 				else
-					s_next = GENERATING_KEY_PAIR
-					s_waitfor = notification
+					state_next = GENERATING_KEY_PAIR
+					state_waitfor = notification
 			break
 		HAVE_KEY_PAIR:
-			s_next = PREP_CSR
-			s_waitfor = now
+			state_next = PREP_CSR
+			state_waitfor = now
 			break
 		PREP_CSR:
 			if don't-have-a-full-template
 				store-full-template-based-on-template-&-defaults
-			s_next = NEED_CSR
-			s_waitfor = now
+			state_next = NEED_CSR
+			state_waitfor = now
 			break
 		NEED_CSR:
 			start csr generation using template
-			s_next = GENERATING_CSR
-			s_waitfor = now
+			state_next = GENERATING_CSR
+			state_waitfor = now
 			break
 		GENERATING_CSR:
 			if starting-up
-				s_next = NEED_CSR
-				s_waitfor = now
+				state_next = NEED_CSR
+				state_waitfor = now
 			else
 				if csr ready
 					store-csr
-					s_next = HAVE_CSR
-					s_waitfor = now
+					state_next = HAVE_CSR
+					state_waitfor = now
 				else
-					s_next = GENERATING_CSR
-					s_waitfor = notification
+					state_next = GENERATING_CSR
+					state_waitfor = notification
 			break
 		HAVE_CSR:
-			s_next = NEED_TO_SUBMIT
-			s_waitfor = now
+			state_next = NEED_TO_SUBMIT
+			state_waitfor = now
 		NEED_TO_SUBMIT:
 			if ca-is-reachable
 				start csr submission
-				s_next = SUBMITTING
-				s_waitfor = now
+				state_next = SUBMITTING
+				state_waitfor = now
 			else
-				s_next = NEED_TO_SUBMIT
-				s_waitfor = timeout-or-net-change
+				state_next = NEED_TO_SUBMIT
+				state_waitfor = timeout-or-net-change
 			break
 		SUBMITTING:
 			if starting-up
-				s_next = NEED_TO_SUBMIT
-				s_waitfor = now
+				state_next = NEED_TO_SUBMIT
+				state_waitfor = now
 			else
 				if csr-submitted
 					store-ca-cookie
-					s_next = HAVE_SUBMITTED
-					s_waitfor = now
+					state_next = HAVE_SUBMITTED
+					state_waitfor = now
 				else
-					s_next = SUBMITTING 
-					s_waitfor = notification
+					state_next = SUBMITTING 
+					state_waitfor = notification
 			break
 		HAVE_SUBMITTED:
-			s_next = NEED_CA_STATUS
-			s_waitfor = now
+			state_next = NEED_CA_STATUS
+			state_waitfor = now
 			break
 		NEED_CA_STATUS:
 			if ca-is-reachable
-				s_next = POLLING_CA_STATUS
-				s_waitfor = now
+				state_next = POLLING_CA_STATUS
+				state_waitfor = now
 			else
-				s_next = NEED_CA_STATUS
-				s_waitfor = timeout-or-net-change
+				state_next = NEED_CA_STATUS
+				state_waitfor = timeout-or-net-change
 			break
 		POLLING_CA_STATUS:
 			if starting-up
-				s_next = NEED_CA_STATUS
-				s_waitfor = now
+				state_next = NEED_CA_STATUS
+				state_waitfor = now
 			else
 				if ca-has-answer
 					if ca-issued-cert
-						s_next = RETRIEVING_CERT
-						s_waitfor = now
+						state_next = RETRIEVING_CERT
+						state_waitfor = now
 					elseif ca-denied-cert
-						s_next = NEED_TO_SUBMIT
-						s_waitfor = now
+						state_next = NEED_TO_SUBMIT
+						state_waitfor = now
 					else
-						s_next = NEED_GUIDANCE
-						s_waitfor = now
+						state_next = NEED_GUIDANCE
+						state_waitfor = now
 				else
-					s_next = NEED_CA_STATUS
-					s_waitfor = now
+					state_next = NEED_CA_STATUS
+					state_waitfor = now
 			break
 		RETRIEVING_CERT:
 			if ca-is-reachable
 				retrieve-cert
 				save-cert-to-disk
 				maybe-add-cert-to-monitoring-list
-				s_next = MONITORING
-				s_waitfor = now
+				state_next = MONITORING
+				state_waitfor = now
 			else
-				s_next = NEED_CA_STATUS
-				s_waitfor = now
+				state_next = NEED_CA_STATUS
+				state_waitfor = now
 			break
 		NEED_GUIDANCE:
 			if have-guidance
-				s_next = guidance
-				s_waitfor = now
+				state_next = guidance
+				state_waitfor = now
 			else
 				if not-certificate-uses-auto-renew(cert)
 					if administrator-last-notified-exp-date !=
@@ -147,72 +147,76 @@ State logic:
 					      ttl <= T
 						notify-administrator
 						store-last-notified-t(cert,exp,ttl)
-					s_next = NEED_GUIDANCE
-					s_waitfor = timeout
+					state_next = NEED_GUIDANCE
+					state_waitfor = timeout
 				else
-					s_next = NEED_GUIDANCE
-					s_waitfor = ever
+					state_next = NEED_GUIDANCE
+					state_waitfor = ever
 			break
 		MONITORING:
 			if certificate-uses-auto-renew(cert)
 				if certificate-is-near-expiration
 					store-template-based-on-cert
-					s_next = NEED_CSR
-					s_waitfor = now
+					state_next = NEED_CSR
+					state_waitfor = now
 				else
-					s_next = MONITORING
-					s_waitfor = timeout
+					state_next = MONITORING
+					state_waitfor = timeout
 			else
 				if administrator-last-notified-exp-date !=
 				   exp-date or
 				for T in interesting-ttl-values
 				   if administrator-last-notified-ttl > T and
 				      ttl <= T
-					s_next = NEED_GUIDANCE
-					s_waitfor = now
+					state_next = NEED_GUIDANCE
+					state_waitfor = now
 				else
-					s_next = MONITORING
-					s_waitfor = timeout
+					state_next = MONITORING
+					state_waitfor = timeout
 			break
 
-Types of user guidance:
-	Enroll-from-scratch:
-		s_next = NEED_KEY_PAIR
-		s_waitfor = now
-	Submit-key:
-		s_next = NEED_CSR
-		s_waitfor = now
-	Submit-csr/Resubmit-csr:
-		s_next = HAVE_CSR
-		s_waitfor = now
-	Start-Tracking-with-AutoRenew:
+Types of actions and user guidance:
+	Reenroll-from-scratch ("request -g"):
+		state_next = NEED_KEY_PAIR
+		state_waitfor = now
+	Submit-key ("request", if no csr or arguments alter it):
+		state_next = NEED_CSR
+		state_waitfor = now
+	Submit-csr/Resubmit-csr ("request", no arguments):
+		state_next = HAVE_CSR
+		state_waitfor = now
+	Start-Tracking-with-AutoRenew ("start-tracking"):
 		add-cert-to-monitoring-list
-		s_next = MONITORING
-		s_waitfor = now
-	Start-Tracking-without-AutoRenew:
+		state_next = MONITORING
+		state_waitfor = now
+	Start-Tracking-without-AutoRenew ("start-tracking"):
 		add-cert-to-monitoring-list
-		s_next = MONITORING
-		s_waitfor = now
-	Cancel:
+		state_next = MONITORING
+		state_waitfor = now
+	Cancel ("stop-tracking"):
 		remove-cert-from-monitoring-list
+	Status ("list"):
+		dump-monitoring-list
 
-Data we need to track for each certificate:
+Data we need to track for each certificate/task/dbentry:
 	* Type of key pair to generate [or use default settings]
 	  RSA,2048
 	* Location of key pair [use-once default]
-	  NSS:/etc/pki/nssdb
+	  NSS,/etc/pki/nssdb
 	* Location of certificate [use-once default]
-	  NSS:/etc/pki/nssdb:Server-Cert-default
+	  NSS,/etc/pki/nssdb,Server-Cert-default
+	* Cached certificate issuer/serial/subject/spki/expiration
 	* Interesting TTL values [or use default settings]
 	  30*24*60*60,7*24*60*60,3*24*60*60,2*24*60*60,1*24*60*60
 	* How to notify administrator [or use default settings]
 	  syslog(LOG_AUTHPRIV?) or mail to root@?
 	* CSR template information [or import from existing certificate]
-	  * CN (host name)
+	  * subject (cn=host name)
 	  * email
 	  * principal name
 	  * ku, eku
-	* State
+	* State (state_current)
 	* Whether to autorenew-at-expiration [or use default settings]
 	* Type and location of CA [or use default settings]
 	* Value of CA cookie for in-progress submissions.
+	* Date of submission for in-progress submissions.

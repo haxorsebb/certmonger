@@ -1,0 +1,47 @@
+Example command-line invocations for the tools:
+
+getcert request [options]
+* If the client knows or wants to override where the CA is:
+  -c		location of CA
+* If we need to generate a key (i.e., if the one to use is not found):
+  -g		generate a new key
+  -G size	size of new key
+* Whether we generate a key or not:
+  -d DIR	NSS database for key and cert
+  -n NAME	nickname for NSS-based storage (only valid with -d)
+  -k FILE	PEM file for private key
+  -f FILE	PEM file for certificate (only valid with -k)
+* Whether or not to track expiration:
+  --no-track-expiration
+* Optional stuff:
+  -S NAME	requested subject name (default: cn=<fqdn>)
+  -u USAGE	requested usage / eku
+  -s name	requested service name part (used to derive principal name)
+
+getcert start-tracking
+* General options:
+  -d DIR	NSS database for key and cert
+  -n NAME	nickname for NSS-based storage (only valid with -d)
+  -k FILE	PEM file for private key
+  -f FILE	PEM file for certificate (only valid with -k)
+* If the client knows or wants to override where the CA is:
+  -c		location of CA
+
+getcert stop-tracking
+* General options:
+  -s NUM	serial number of certificate
+  -I NAME	issuer of certificate
+  -S KEYID	subject key identifier for certificate
+* In case the serial number corresponds to more than one certificate, and the
+  key identifier is not known:
+  -d DIR	NSS database for key and cert
+  -n NAME	nickname for NSS-based storage (only valid with -d)
+  -k FILE	PEM file for private key
+  -f FILE	PEM file for certificate (only valid with -k)
+* If the client knows or wants to override where the CA is:
+  -c		location of CA
+
+getcert list
+* General options:
+  --requests	list only information about outstanding requests
+  --tracking	list only information about in-tracking certificates
