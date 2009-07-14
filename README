@@ -1,0 +1,10 @@
+This library (and any included tools which use it) should be capable of
+submitting requests to:
+  * Dogtag/RHCS
+  * certmaster
+  * IPA
+  * ADCS
+And perhaps:
+  * SCEP
+It should be able to poll for results of in-progress requests, and watch
+certificates stored locally for expiration.
