@@ -195,3 +195,24 @@ Types of user guidance:
 		s_waitfor = now
 	Cancel:
 		remove-cert-from-monitoring-list
+
+Data we need to track for each certificate:
+	* Type of key pair to generate [or use default settings]
+	  RSA,2048
+	* Location of key pair [use-once default]
+	  NSS:/etc/pki/nssdb
+	* Location of certificate [use-once default]
+	  NSS:/etc/pki/nssdb:Server-Cert-default
+	* Interesting TTL values [or use default settings]
+	  30*24*60*60,7*24*60*60,3*24*60*60,2*24*60*60,1*24*60*60
+	* How to notify administrator [or use default settings]
+	  syslog(LOG_AUTHPRIV?) or mail to root@?
+	* CSR template information [or import from existing certificate]
+	  * CN (host name)
+	  * email
+	  * principal name
+	  * ku, eku
+	* State
+	* Whether to autorenew-at-expiration [or use default settings]
+	* Type and location of CA [or use default settings]
+	* Value of CA cookie for in-progress submissions.
