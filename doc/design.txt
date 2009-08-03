@@ -4,124 +4,134 @@ The life cycle of a certificate:
 	* Submitting CSR to a CA.
 	* Checking for response from CA.
 	* Waiting for certificate to near expiration.
+Administrative action can also add these states:
+	* On hold
+	* Revoked
 
-Now with some states for our state machine:
+Now with some arbitrarily-named states for our state machine:
 	* Generating a key pair.
-	States: NEED_KEY_PAIR, GENERATING_KEY_PAIR, HAVE_KEY_PAIR
+	States: NEED_KEY_PAIR, GENERATING_KEY_PAIR [*], HAVE_KEY_PAIR
 	* Generating a CSR containing public key.
-	States: NEED_CSR, GENERATING_CSR, HAVE_CSR
+	States: NEED_CSR, GENERATING_CSR [*], HAVE_CSR
 	* Submitting CSR to a CA.
-	States: NEED_TO_SUBMIT, SUBMITTING, HAVE_SUBMITTED
+	States: NEED_TO_SUBMIT, SUBMITTING [*], HAVE_SUBMITTED
 	* Checking for response from CA.
-	States: NEED_CA_STATUS, POLLING_CA_STATUS, RETRIEVING_CERT
+	States: NEED_CA_STATUS, POLLING_CA_STATUS [*], RETRIEVING_CERT [*]
 	* Waiting for certificate to near expiration.
 	States: MONITORING
 	* Waiting for user input
-	States: NEED_GUIDANCE
+	States: NEED_GUIDANCE [*]
+	* On hold
+	States: NEED_GUIDANCE [*]
+	* Revoked
+	States: NEED_GUIDANCE [*]
+[*] Denotes states in which we have to wait for interaction with the user
+    or external systems to be completed.
 
 State logic:
 	Submission:
 		NEED_KEY_PAIR:
-			start key generation
+			start-key-generation
 			state_next = GENERATING_KEY_PAIR
-			state_waitfor = now
+			state_transition = now
 			break
 		GENERATING_KEY_PAIR:
 			if starting-up
 				state_next = NEED_KEY_PAIR
-				state_waitfor = now
+				state_transition = now
 			else
-				if key ready
+				if key-is-ready
 					store-keys
 					state_next = HAVE_KEY_PAIR
-					state_waitfor = now
+					state_transition = now
 				else
 					state_next = GENERATING_KEY_PAIR
-					state_waitfor = notification
+					state_transition = when-notified
 			break
 		HAVE_KEY_PAIR:
 			state_next = PREP_CSR
-			state_waitfor = now
+			state_transition = now
 			break
 		PREP_CSR:
 			if don't-have-a-full-template
 				store-full-template-based-on-template-&-defaults
 			state_next = NEED_CSR
-			state_waitfor = now
+			state_transition = now
 			break
 		NEED_CSR:
-			start csr generation using template
+			start-csr-generation-using-template
 			state_next = GENERATING_CSR
-			state_waitfor = now
+			state_transition = now
 			break
 		GENERATING_CSR:
 			if starting-up
 				state_next = NEED_CSR
-				state_waitfor = now
+				state_transition = now
 			else
-				if csr ready
+				if csr-ready
 					store-csr
 					state_next = HAVE_CSR
-					state_waitfor = now
+					state_transition = now
 				else
 					state_next = GENERATING_CSR
-					state_waitfor = notification
+					state_transition = when-notified
 			break
 		HAVE_CSR:
 			state_next = NEED_TO_SUBMIT
-			state_waitfor = now
+			state_transition = now
+			break
 		NEED_TO_SUBMIT:
 			if ca-is-reachable
-				start csr submission
+				start-csr-submission
 				state_next = SUBMITTING
-				state_waitfor = now
+				state_transition = now
 			else
 				state_next = NEED_TO_SUBMIT
-				state_waitfor = timeout-or-net-change
+				state_transition = on-timeout-or-net-change
 			break
 		SUBMITTING:
 			if starting-up
 				state_next = NEED_TO_SUBMIT
-				state_waitfor = now
+				state_transition = now
 			else
 				if csr-submitted
 					store-ca-cookie
 					state_next = HAVE_SUBMITTED
-					state_waitfor = now
+					state_transition = now
 				else
 					state_next = SUBMITTING 
-					state_waitfor = notification
+					state_transition = when-notified
 			break
 		HAVE_SUBMITTED:
 			state_next = NEED_CA_STATUS
-			state_waitfor = now
+			state_transition = now
 			break
 		NEED_CA_STATUS:
 			if ca-is-reachable
 				state_next = POLLING_CA_STATUS
-				state_waitfor = now
+				state_transition = now
 			else
 				state_next = NEED_CA_STATUS
-				state_waitfor = timeout-or-net-change
+				state_transition = timeout-or-net-change
 			break
 		POLLING_CA_STATUS:
 			if starting-up
 				state_next = NEED_CA_STATUS
-				state_waitfor = now
+				state_transition = now
 			else
 				if ca-has-answer
 					if ca-issued-cert
 						state_next = RETRIEVING_CERT
-						state_waitfor = now
+						state_transition = now
 					elseif ca-denied-cert
 						state_next = NEED_TO_SUBMIT
-						state_waitfor = now
+						state_transition = now
 					else
 						state_next = NEED_GUIDANCE
-						state_waitfor = now
+						state_transition = now
 				else
 					state_next = NEED_CA_STATUS
-					state_waitfor = now
+					state_transition = now
 			break
 		RETRIEVING_CERT:
 			if ca-is-reachable
@@ -129,10 +139,10 @@ State logic:
 				save-cert-to-disk
 				maybe-add-cert-to-monitoring-list
 				state_next = MONITORING
-				state_waitfor = now
+				state_transition = now
 			else
 				state_next = NEED_CA_STATUS
-				state_waitfor = now
+				state_transition = now
 			break
 		NEED_GUIDANCE:
 			if have-guidance
@@ -148,20 +158,20 @@ State logic:
 						notify-administrator
 						store-last-notified-t(cert,exp,ttl)
 					state_next = NEED_GUIDANCE
-					state_waitfor = timeout
+					state_transition = timeout
 				else
 					state_next = NEED_GUIDANCE
-					state_waitfor = ever
+					state_transition = timeout
 			break
 		MONITORING:
 			if certificate-uses-auto-renew(cert)
 				if certificate-is-near-expiration
 					store-template-based-on-cert
 					state_next = NEED_CSR
-					state_waitfor = now
+					state_transition = now
 				else
 					state_next = MONITORING
-					state_waitfor = timeout
+					state_transition = timeout
 			else
 				if administrator-last-notified-exp-date !=
 				   exp-date or
@@ -169,30 +179,30 @@ State logic:
 				   if administrator-last-notified-ttl > T and
 				      ttl <= T
 					state_next = NEED_GUIDANCE
-					state_waitfor = now
+					state_transition = now
 				else
 					state_next = MONITORING
-					state_waitfor = timeout
+					state_transition = timeout
 			break
 
 Types of actions and user guidance:
 	Reenroll-from-scratch ("request -g"):
 		state_next = NEED_KEY_PAIR
-		state_waitfor = now
+		state_transition = now
 	Submit-key ("request", if no csr or arguments alter it):
 		state_next = NEED_CSR
-		state_waitfor = now
+		state_transition = now
 	Submit-csr/Resubmit-csr ("request", no arguments):
 		state_next = HAVE_CSR
-		state_waitfor = now
+		state_transition = now
 	Start-Tracking-with-AutoRenew ("start-tracking"):
 		add-cert-to-monitoring-list
 		state_next = MONITORING
-		state_waitfor = now
+		state_transition = now
 	Start-Tracking-without-AutoRenew ("start-tracking"):
 		add-cert-to-monitoring-list
 		state_next = MONITORING
-		state_waitfor = now
+		state_transition = now
 	Cancel ("stop-tracking"):
 		remove-cert-from-monitoring-list
 	Status ("list"):
@@ -212,8 +222,10 @@ Data we need to track for each certificate/task/dbentry:
 	  syslog(LOG_AUTHPRIV?) or mail to root@?
 	* CSR template information [or import from existing certificate]
 	  * subject (cn=host name)
-	  * email
-	  * principal name
+	  * SANs
+	    * DNS
+	    * email
+	    * principal name
 	  * ku, eku
 	* State (state_current)
 	* Whether to autorenew-at-expiration [or use default settings]
