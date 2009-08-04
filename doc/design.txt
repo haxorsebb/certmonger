@@ -8,7 +8,7 @@ Administrative action can also add these states:
 	* On hold
 	* Revoked
 
-Now with some arbitrarily-named states for our state machine:
+Now with some arbitrarily-named states for our per-certificate state machine:
 	* Generating a key pair.
 	States: NEED_KEY_PAIR, GENERATING_KEY_PAIR [*], HAVE_KEY_PAIR
 	* Generating a CSR containing public key.
@@ -25,165 +25,165 @@ Now with some arbitrarily-named states for our state machine:
 	States: NEED_GUIDANCE [*]
 	* Revoked
 	States: NEED_GUIDANCE [*]
-[*] Denotes states in which we have to wait for interaction with the user
-    or external systems to be completed.
+[*] Denotes states in which we have to wait for instructions from the user
+    or completion of interaction with external systems.
 
 State logic:
-	Submission:
-		NEED_KEY_PAIR:
-			start-key-generation
-			state_next = GENERATING_KEY_PAIR
+	NEED_KEY_PAIR:
+		start-key-generation
+		state_next = GENERATING_KEY_PAIR
+		state_transition = now
+		break
+	GENERATING_KEY_PAIR:
+		if starting-up
+			state_next = NEED_KEY_PAIR
 			state_transition = now
-			break
-		GENERATING_KEY_PAIR:
-			if starting-up
-				state_next = NEED_KEY_PAIR
+		else
+			if key-is-ready
+				store-keys
+				state_next = HAVE_KEY_PAIR
 				state_transition = now
 			else
-				if key-is-ready
-					store-keys
-					state_next = HAVE_KEY_PAIR
-					state_transition = now
-				else
-					state_next = GENERATING_KEY_PAIR
-					state_transition = when-notified
-			break
-		HAVE_KEY_PAIR:
-			state_next = PREP_CSR
-			state_transition = now
-			break
-		PREP_CSR:
-			if don't-have-a-full-template
-				store-full-template-based-on-template-&-defaults
+				state_next = GENERATING_KEY_PAIR
+				state_transition = when-notified
+		break
+	HAVE_KEY_PAIR:
+		state_next = PREP_CSR
+		state_transition = now
+		break
+
+	NEED_CSR:
+		if don't-have-a-full-template
+			store-full-template-based-on-template-&-defaults
+		start-csr-generation-using-template
+		state_next = GENERATING_CSR
+		state_transition = now
+		break
+	GENERATING_CSR:
+		if starting-up
 			state_next = NEED_CSR
 			state_transition = now
-			break
-		NEED_CSR:
-			start-csr-generation-using-template
-			state_next = GENERATING_CSR
-			state_transition = now
-			break
-		GENERATING_CSR:
-			if starting-up
-				state_next = NEED_CSR
+		else
+			if csr-ready
+				store-csr
+				state_next = HAVE_CSR
 				state_transition = now
 			else
-				if csr-ready
-					store-csr
-					state_next = HAVE_CSR
-					state_transition = now
-				else
-					state_next = GENERATING_CSR
-					state_transition = when-notified
-			break
-		HAVE_CSR:
+				state_next = GENERATING_CSR
+				state_transition = when-notified
+		break
+	HAVE_CSR:
+		state_next = NEED_TO_SUBMIT
+		state_transition = now
+		break
+
+	NEED_TO_SUBMIT:
+		if ca-is-reachable
+			start-csr-submission
+			state_next = SUBMITTING
+			state_transition = now
+		else
+			state_next = NEED_TO_SUBMIT
+			state_transition = on-timeout-or-net-change
+		break
+	SUBMITTING:
+		if starting-up
 			state_next = NEED_TO_SUBMIT
 			state_transition = now
-			break
-		NEED_TO_SUBMIT:
-			if ca-is-reachable
-				start-csr-submission
-				state_next = SUBMITTING
+		else
+			if csr-submitted
+				store-ca-cookie
+				state_next = HAVE_SUBMITTED
 				state_transition = now
 			else
-				state_next = NEED_TO_SUBMIT
-				state_transition = on-timeout-or-net-change
-			break
-		SUBMITTING:
-			if starting-up
-				state_next = NEED_TO_SUBMIT
-				state_transition = now
-			else
-				if csr-submitted
-					store-ca-cookie
-					state_next = HAVE_SUBMITTED
-					state_transition = now
-				else
-					state_next = SUBMITTING 
-					state_transition = when-notified
-			break
-		HAVE_SUBMITTED:
+				state_next = SUBMITTING 
+				state_transition = when-notified
+		break
+	HAVE_SUBMITTED:
+		state_next = NEED_CA_STATUS
+		state_transition = now
+		break
+
+	NEED_CA_STATUS:
+		if ca-is-reachable
+			state_next = POLLING_CA_STATUS
+			state_transition = now
+		else
+			state_next = NEED_CA_STATUS
+			state_transition = timeout-or-net-change
+		break
+	POLLING_CA_STATUS:
+		if starting-up
 			state_next = NEED_CA_STATUS
 			state_transition = now
-			break
-		NEED_CA_STATUS:
-			if ca-is-reachable
-				state_next = POLLING_CA_STATUS
-				state_transition = now
-			else
-				state_next = NEED_CA_STATUS
-				state_transition = timeout-or-net-change
-			break
-		POLLING_CA_STATUS:
-			if starting-up
-				state_next = NEED_CA_STATUS
-				state_transition = now
-			else
-				if ca-has-answer
-					if ca-issued-cert
-						state_next = RETRIEVING_CERT
-						state_transition = now
-					elseif ca-denied-cert
-						state_next = NEED_TO_SUBMIT
-						state_transition = now
-					else
-						state_next = NEED_GUIDANCE
-						state_transition = now
-				else
-					state_next = NEED_CA_STATUS
+		else
+			if ca-has-answer
+				if ca-issued-cert
+					state_next = RETRIEVING_CERT
 					state_transition = now
-			break
-		RETRIEVING_CERT:
-			if ca-is-reachable
-				retrieve-cert
-				save-cert-to-disk
-				maybe-add-cert-to-monitoring-list
-				state_next = MONITORING
-				state_transition = now
-			else
-				state_next = NEED_CA_STATUS
-				state_transition = now
-			break
-		NEED_GUIDANCE:
-			if have-guidance
-				state_next = guidance
-				state_waitfor = now
-			else
-				if not-certificate-uses-auto-renew(cert)
-					if administrator-last-notified-exp-date !=
-					   exp-date or
-					for T in interesting-ttl-values
-					   if administrator-last-notified-ttl > T and
-					      ttl <= T
-						notify-administrator
-						store-last-notified-t(cert,exp,ttl)
-					state_next = NEED_GUIDANCE
-					state_transition = timeout
-				else
-					state_next = NEED_GUIDANCE
-					state_transition = timeout
-			break
-		MONITORING:
-			if certificate-uses-auto-renew(cert)
-				if certificate-is-near-expiration
-					store-template-based-on-cert
-					state_next = NEED_CSR
+				elseif ca-denied-cert
+					state_next = NEED_TO_SUBMIT
 					state_transition = now
 				else
-					state_next = MONITORING
-					state_transition = timeout
+					state_next = NEED_GUIDANCE
+					state_transition = now
 			else
+				state_next = NEED_CA_STATUS
+				state_transition = now
+		break
+	RETRIEVING_CERT:
+		if ca-is-reachable
+			retrieve-cert
+			save-cert-to-disk
+			maybe-add-cert-to-monitoring-list
+			state_next = MONITORING
+			state_transition = now
+		else
+			state_next = NEED_CA_STATUS
+			state_transition = now
+		break
+
+	NEED_GUIDANCE:
+		if have-guidance
+			state_next = guidance
+			state_waitfor = now
+		else
+			if not-certificate-uses-auto-renew(cert)
 				if administrator-last-notified-exp-date !=
 				   exp-date or
 				for T in interesting-ttl-values
 				   if administrator-last-notified-ttl > T and
 				      ttl <= T
-					state_next = NEED_GUIDANCE
-					state_transition = now
-				else
-					state_next = MONITORING
-					state_transition = timeout
-			break
+					notify-administrator
+					store-last-notified-t(cert,exp,ttl)
+				state_next = NEED_GUIDANCE
+				state_transition = timeout
+			else
+				state_next = NEED_GUIDANCE
+				state_transition = timeout
+		break
+
+	MONITORING:
+		if certificate-uses-auto-renew(cert)
+			if certificate-is-near-expiration
+				store-template-based-on-cert
+				state_next = NEED_CSR
+				state_transition = now
+			else
+				state_next = MONITORING
+				state_transition = timeout
+		else
+			if administrator-last-notified-exp-date !=
+			   exp-date or
+			for T in interesting-ttl-values
+			   if administrator-last-notified-ttl > T and
+			      ttl <= T
+				state_next = NEED_GUIDANCE
+				state_transition = now
+			else
+				state_next = MONITORING
+				state_transition = timeout
+		break
 
 Types of actions and user guidance:
 	Reenroll-from-scratch ("request -g"):
@@ -210,24 +210,24 @@ Types of actions and user guidance:
 
 Data we need to track for each certificate/task/dbentry:
 	* Type of key pair to generate [or use default settings]
-	  RSA,2048
+	  default: RSA,2048
 	* Location of key pair [use-once default]
-	  NSS,/etc/pki/nssdb
+	  default: NSS,/etc/pki/nssdb
 	* Location of certificate [use-once default]
-	  NSS,/etc/pki/nssdb,Server-Cert-default
+	  default: NSS,/etc/pki/nssdb,Server-Cert-default
 	* Cached certificate issuer/serial/subject/spki/expiration
 	* Interesting TTL values [or use default settings]
-	  30*24*60*60,7*24*60*60,3*24*60*60,2*24*60*60,1*24*60*60
+	  default: 30*24*60*60,7*24*60*60,3*24*60*60,2*24*60*60,1*24*60*60
 	* How to notify administrator [or use default settings]
 	  syslog(LOG_AUTHPRIV?) or mail to root@?
-	* CSR template information [or import from existing certificate]
+	* CSR template information [or imported from existing certificate]
 	  * subject (cn=host name)
 	  * SANs
 	    * DNS
 	    * email
 	    * principal name
 	  * ku, eku
-	* State (state_current)
+	* Certificate State (state_current)
 	* Whether to autorenew-at-expiration [or use default settings]
 	* Whether to start monitoring at issue [or use default settings]
 	* Type and location of CA [or use default settings]
