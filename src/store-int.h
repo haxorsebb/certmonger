@@ -41,7 +41,7 @@ struct cm_store_entry {
 	int cm_notification_default:1;
 	char *cm_notification_method;
 	char *cm_notification_destination;
-	/* CSR template information [or import from existing certificate]
+	/* CSR template information [or imported from existing certificate]
 	   * subject (cn=host name)
 	   * subjectaltname
 	   *  email
@@ -53,6 +53,8 @@ struct cm_store_entry {
 	char *cm_template_principal;
 	char *cm_template_ku;
 	char *cm_template_eku;
+	/* The CSR, base64-encoded. */
+	char *cm_csr;
 	/* Our idea of the state of the cert. */
 	enum cm_state {
 		CM_INVALID,
