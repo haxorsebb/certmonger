@@ -1,0 +1,82 @@
+#ifndef cmstore_int_h
+#define cmstore_int_h
+
+#include <time.h>
+
+struct cm_store_entry {
+	/* Store-private data - usually an identifier for the nonvolatile
+	 * saved copy, might be other stuff. */
+	void *cm_store_private;
+	/* Type of key pair to generate [or use default settings] RSA,2048 */
+	int cm_key_type_default:1;
+	struct cm_key_type {
+		enum cm_key_algorithm {
+			cm_key_rsa = 0,
+		} cm_key_algorithm;
+		int cm_key_size;
+	} cm_key_type;
+	/* Location of key pair [use-once default] NSS,/etc/pki/nssdb */
+	int cm_key_storage_default:1;
+	char *cm_key_storage_type;
+	char *cm_key_storage_location;
+	/* Location of certificate [use-once default]
+	 * NSS,/etc/pki/nssdb,Server-Cert-default */
+	int cm_cert_storage_default:1;
+	char *cm_cert_storage_type;
+	char *cm_cert_storage_location;
+	char *cm_cert_nickname;
+	/* Cached certificate issuer/serial/subject/spki/expiration */
+	char *cm_issuer;
+	char *serial;
+	char *cm_subject;
+	char *cm_spki;
+	char *cm_expiration;
+	/* Interesting TTL values [or use default settings]
+	   30*24*60*60,7*24*60*60,3*24*60*60,2*24*60*60,1*24*60*60 */
+	int cm_ttls_default:1;
+	int cm_n_ttls;
+	time_t *cm_ttls;
+	/* How to notify administrator [or use default settings]
+	   syslog(LOG_AUTHPRIV?) or mail to root@? */
+	int cm_notification_default:1;
+	char *cm_notification_method;
+	char *cm_notification_destination;
+	/* CSR template information [or import from existing certificate]
+	   * subject (cn=host name)
+	   * subjectaltname
+	   *  email
+	   *  principal name
+	   * ku, eku */
+	int cm_template_default:1;
+	char *cm_template_subject;
+	char *cm_template_email;
+	char *cm_template_principal;
+	char *cm_template_ku;
+	char *cm_template_eku;
+	/* Our idea of the state of the cert. */
+	enum cm_state {
+		CM_INVALID,
+		CM_NEED_KEY_PAIR, CM_GENERATING_KEY_PAIR, CM_HAVE_KEY_PAIR,
+		CM_NEED_CSR, CM_GENERATING_CSR, CM_HAVE_CSR,
+		CM_NEED_TO_SUBMIT, CM_SUBMITTING, CM_HAVE_SUBMITTED,
+		CM_NEED_CA_STATUS, CM_POLLING_CA_STATUS, CM_RETRIEVING_CERT,
+		CM_MONITORING,
+		CM_NEED_GUIDANCE,
+	} cm_state;
+	/* Whether to autorenew-at-expiration [or use default settings] */
+	int cm_autorenew_default:1;
+	int cm_autorenew:1;
+	/* Whether to start monitoring at issue [or use default settings] */
+	int cm_monitor_default:1;
+	int cm_monitor:1;
+	/* Type and location of CA [or use default settings] */
+	int cm_ca_default:1;
+	char *cm_ca_type;
+	char *cm_ca_location;
+	/* Value of CA cookie for in-progress submissions. */
+	char *cm_ca_cookie;
+	/* Date of submission for in-progress submissions. */
+	time_t cm_submitted;
+};
+
+#endif

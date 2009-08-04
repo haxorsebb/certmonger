@@ -48,7 +48,7 @@ State logic:
 				state_transition = when-notified
 		break
 	HAVE_KEY_PAIR:
-		state_next = PREP_CSR
+		state_next = NEED_CSR
 		state_transition = now
 		break
 
