@@ -19,17 +19,21 @@ struct cm_store_entry {
 	} cm_key_type;
 	/* Location of key pair [use-once default] NSS,/etc/pki/nssdb */
 	int cm_key_storage_default:1;
-	char *cm_key_storage_type;
+	enum cm_key_storage_type {
+		cm_key_storage_file = 0,
+	} cm_key_storage_type;
 	char *cm_key_storage_location;
 	/* Location of certificate [use-once default]
 	 * NSS,/etc/pki/nssdb,Server-Cert-default */
 	int cm_cert_storage_default:1;
-	char *cm_cert_storage_type;
+	enum cm_cert_storage_type {
+		cm_cert_storage_file = 0,
+	} cm_cert_storage_type;
 	char *cm_cert_storage_location;
 	char *cm_cert_nickname;
 	/* Cached certificate issuer/serial/subject/spki/expiration */
 	char *cm_issuer;
-	char *serial;
+	char *cm_serial;
 	char *cm_subject;
 	char *cm_spki;
 	time_t cm_expiration;
@@ -45,7 +49,10 @@ struct cm_store_entry {
 	/* How to notify administrator [or use default settings]
 	   syslog(LOG_AUTHPRIV?) or mail to root@? */
 	int cm_notification_default:1;
-	char *cm_notification_method;
+	enum cm_notification_method {
+		cm_notification_syslog = 0,
+		cm_notification_email,
+	} cm_notification_method;
 	char *cm_notification_destination;
 	/* CSR template information [or imported from existing certificate]
 	   * subject (cn=host name)
@@ -79,7 +86,9 @@ struct cm_store_entry {
 	int cm_monitor:1;
 	/* Type and location of CA [or use default settings] */
 	int cm_ca_default:1;
-	char *cm_ca_type;
+	enum cm_ca_type {
+		cm_ca_files = 0,
+	} cm_ca_type;
 	char *cm_ca_location;
 	/* Value of CA cookie for in-progress submissions. */
 	char *cm_ca_cookie;

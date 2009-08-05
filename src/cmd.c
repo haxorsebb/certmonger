@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include <sys/types.h>
 #include <poll.h>
 #include <errno.h>
@@ -5,6 +7,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "cm.h"
+
+#define MAX_TIMEOUT 3600
 static int cm_quit;
 
 int
@@ -28,14 +33,21 @@ main(int argc, char **argv)
 		if (i != 0) {
 			cm_quit++;
 		} else {
-			pfds = malloc(sizeof(pfds[0]) * nfds);
-			if (pfds != NULL) {
-				memset(pfds, 0, sizeof(pfds[0]) * nfds);
-				for (i = 0; i < nfds; i++) {
-					pfds[i].fd = fds[i];
-					pfds[i].events = POLLIN;
+			if ((timeout < 0) || (timeout > MAX_TIMEOUT)) {
+				timeout = MAX_TIMEOUT;
+			}
+			if (nfds > 0) {
+				pfds = malloc(sizeof(pfds[0]) * nfds);
+				if (pfds != NULL) {
+					memset(pfds, 0, sizeof(pfds[0]) * nfds);
+					for (i = 0; i < nfds; i++) {
+						pfds[i].fd = fds[i];
+						pfds[i].events = POLLIN;
+					}
+					poll(pfds, nfds, timeout);
 				}
-				poll(pfds, nfds, timeout);
+			} else {
+				poll(NULL, 0, timeout);
 			}
 		}
 	}

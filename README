@@ -1,9 +1,10 @@
 This library (and any included tools which use it) should be capable of
 submitting requests to:
-  * Dogtag/RHCS
   * certmaster
+  * Dogtag/RHCS
   * IPA
   * ADCS
+  * KMIP-compatible systems
 And perhaps:
   * SCEP
 It should be able to poll for results of in-progress requests, and watch

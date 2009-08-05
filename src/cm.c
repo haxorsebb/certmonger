@@ -25,6 +25,7 @@ cm_init(struct cm_context **context)
 {
 	struct cm_context *ctx;
 	int i, j;
+	*context = NULL;
 	ctx = malloc(sizeof(**context));
 	if (ctx == NULL) {
 		return ENOMEM;
@@ -54,6 +55,7 @@ cm_init(struct cm_context **context)
 			return ENOMEM;
 		}
 	}
+	*context = ctx;
 	return 0;
 }
 
@@ -109,6 +111,7 @@ cm_done(struct cm_context *context)
 	int i;
 	for (i = 0; i < context->n_entries; i++) {
 		cm_iterate_done(context->entries[i], context->iterators[i]);
+		cm_store_entry_save(context->entries[i]);
 	}
 	free(context->iterators);
 	cm_store_entry_freev(context->entries);

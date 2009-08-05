@@ -21,11 +21,17 @@ struct cm_keygen_state {
 static void
 cm_keygen_main(int fd, struct cm_store_entry *entry)
 {
-	FILE *fp;
+	FILE *fp, *status;
 	RSA *rsa;
-	fp = fdopen(fd, "w");
-	if (fp == NULL) {
+	status = fdopen(fd, "w");
+	if (status == NULL) {
 		_exit(1);
+	}
+	fp = fopen(entry->cm_key_storage_location, "w");
+	if (fp == NULL) {
+		fprintf(status, "Error opening key file \"%s\" for writing.\n",
+			entry->cm_key_storage_location);
+		_exit(2);
 	}
 	switch (entry->cm_key_type.cm_key_algorithm) {
 	case cm_key_rsa:
@@ -33,13 +39,13 @@ cm_keygen_main(int fd, struct cm_store_entry *entry)
 		rsa = RSA_generate_key(entry->cm_key_type.cm_key_size, 65537,
 				       NULL, NULL);
 		if (rsa == NULL) {
-			fprintf(fp, "Error generating key.\n");
+			fprintf(status, "Error generating key.\n");
 			_exit(2);
 		}
 		RSA_print_fp(fp, rsa, 0);
 		break;
 	default:
-		fprintf(fp, "Unknown key type.\n");
+		fprintf(status, "Unknown key type.\n");
 		_exit(2);
 		break;
 	}
@@ -51,6 +57,9 @@ cm_keygen_start(struct cm_store_entry *entry)
 {
 	int fds[2];
 	struct cm_keygen_state *state;
+	if (entry->cm_key_storage_type != cm_key_storage_file) {
+		return NULL;
+	}
 	state = malloc(sizeof(*state));
 	if (state != NULL) {
 		state->fd = -1;

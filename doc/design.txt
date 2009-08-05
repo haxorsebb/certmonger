@@ -92,9 +92,13 @@ State logic:
 			state_transition = now
 		else
 			if csr-submitted
-				store-ca-cookie
-				state_next = HAVE_SUBMITTED
-				state_transition = now
+				if ca-issued-cert
+					state_next = RETRIEVING_CERT
+					state_transition = now
+				else
+					store-ca-cookie
+					state_next = HAVE_SUBMITTED
+					state_transition = now
 			else
 				state_next = SUBMITTING 
 				state_transition = when-notified

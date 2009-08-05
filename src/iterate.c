@@ -200,6 +200,17 @@ cm_iterate(struct cm_store_entry *entry,
 		break;
 	case CM_SUBMITTING:
 		if (cm_submit_sent(entry, state->cm_submit_state) == 0) {
+			if ((cm_submit_issued(entry,
+					      state->cm_submit_state) == 0) &&
+			    (cm_submit_save_cert(entry,
+			   			 state->cm_submit_state) == 0)) {
+				/* We're all done.  Sit back and wait
+				 * for it to near expiration. */
+				cm_submit_done(entry, state->cm_submit_state);
+				state->cm_submit_state = NULL;
+				entry->cm_state = CM_MONITORING;
+				*when = cm_time_soon;
+			} else
 			if (cm_submit_save_ca_cookie(entry,
 						     state->cm_submit_state) == 0) {
 				/* Saved CA's identifier for our request; move
@@ -253,6 +264,7 @@ cm_iterate(struct cm_store_entry *entry,
 	case CM_POLLING_CA_STATUS:
 		if (cm_submit_status_ready(entry,
 					   state->cm_submit_state) == 0) {
+			/* We've retrieved status from the CA. */
 			if (cm_submit_issued(entry,
 					     state->cm_submit_state) == 0) {
 				/* CA issued a cert. */
