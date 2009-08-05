@@ -6,4 +6,5 @@ AC_CONFIG_HEADER(src/config.h)
 if test x$GCC = xyes ; then
 	CFLAGS="$CFLAGS -Wall -Wextra"
 fi
+PKG_CHECK_MODULES(OPENSSL,openssl)
 AC_OUTPUT(Makefile src/Makefile)

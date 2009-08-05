@@ -1,7 +1,6 @@
 #ifndef cmkeygen_h
 #define cmkeygen_h
 
-
 struct cm_keygen_state;
 struct cm_store_entry;
 
