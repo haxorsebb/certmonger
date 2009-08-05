@@ -1,8 +1,11 @@
 #ifndef iterate_h
 #define iterate_h
 
+struct cm_store_entry;
+
 /* Start tracking a working state for this entry. */
 int cm_iterate_init(struct cm_store_entry *entry, void **cm_iterate_state);
+
 /* Figure out what to do next about this specific entry. */
 enum cm_time {
 	cm_time_now,	/* Poke again without delay. */
@@ -14,8 +17,9 @@ enum cm_time {
 int cm_iterate(struct cm_store_entry *entry,
 	       void *cm_iterate_state,
 	       enum cm_time *when,
-	       struct timeval *delay,
+	       int *delay,
 	       int *readfd);
+
 /* We're shutting down. */
 int cm_iterate_done(struct cm_store_entry *entry, void *cm_iterate_state);
 

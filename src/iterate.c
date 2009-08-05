@@ -72,14 +72,13 @@ cm_iterate_init(struct cm_store_entry *entry, void **cm_iterate_state)
 int
 cm_iterate(struct cm_store_entry *entry,
 	   void *cm_iterate_state,
-	   enum cm_time *when, struct timeval *delay, int *readfd)
+	   enum cm_time *when, int *delay, int *readfd)
 {
 	struct cm_iterate_state *state;
 	state = cm_iterate_state;
 	*readfd = -1;
 	*when = cm_time_no_time;
-	delay->tv_sec = 0;
-	delay->tv_usec = 0;
+	*delay = 0;
 	switch (entry->cm_state) {
 	case CM_NEED_KEY_PAIR:
 		/* Start a helper. */
@@ -335,8 +334,7 @@ cm_iterate(struct cm_store_entry *entry,
 		*when = cm_time_soonish;
 		break;
 	case CM_MONITORING:
-		delay->tv_sec = 24 * 60 * 60;
-		delay->tv_usec = 0;
+		*delay = 24 * 60 * 60;
 		*when = cm_time_delay;
 		break;
 	case CM_INVALID:

@@ -7,6 +7,8 @@ struct cm_store_entry {
 	/* Store-private data - usually an identifier for the nonvolatile
 	 * saved copy, might be other stuff. */
 	void *cm_store_private;
+	/* A unique identifier. */
+	void *cm_id;
 	/* Type of key pair to generate [or use default settings] RSA,2048 */
 	int cm_key_type_default:1;
 	struct cm_key_type {
@@ -30,7 +32,11 @@ struct cm_store_entry {
 	char *serial;
 	char *cm_subject;
 	char *cm_spki;
-	char *cm_expiration;
+	time_t cm_expiration;
+	char *cm_email;
+	char *cm_principal;
+	char *cm_ku;
+	char *cm_eku;
 	/* Interesting TTL values [or use default settings]
 	   30*24*60*60,7*24*60*60,3*24*60*60,2*24*60*60,1*24*60*60 */
 	int cm_ttls_default:1;

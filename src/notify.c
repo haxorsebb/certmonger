@@ -1,7 +1,7 @@
 #include "config.h"
 
 #include <sys/types.h>
-#include <time.h>
+#include <syslog.h>
 
-#include "store.h"
 #include "notify.h"
+#include "store.h"
