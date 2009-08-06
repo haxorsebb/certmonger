@@ -11,7 +11,7 @@
 #include "cm.h"
 #include "log.h"
 
-#define MAX_TIMEOUT 3600
+#define MAX_TIMEOUT 3600000
 static int cm_quit = 0;
 
 static void

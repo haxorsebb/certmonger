@@ -106,6 +106,7 @@ cm_keygen_ready(struct cm_store_entry *entry, struct cm_keygen_state *state)
 	}
 	*p = '\0';
 	close(state->fd);
+	state->fd = -1;
 	waitpid(state->pid, &state->status, 0);
 	state->pid = -1;
 	return 0;

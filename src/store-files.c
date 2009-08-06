@@ -2,6 +2,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <glob.h>
 #include <limits.h>
@@ -13,6 +14,7 @@
 
 #include "store.h"
 #include "store-int.h"
+#include "log.h"
 
 static time_t
 cm_store_time_from_timestamp(const char *timestamp)
@@ -61,13 +63,15 @@ static char **
 cm_store_file_read_lines(FILE *fp)
 {
 	char buf[LINE_MAX], *s, *t, **lines, **tlines;
-	int n_lines;
+	int n_lines, trim;
 	s = NULL;
 	lines = NULL;
 	n_lines = 0;
+	trim = 1;
 	while (fgets(buf, sizeof(buf), fp) == buf) {
 		switch (buf[0]) {
 		case '=':
+			trim = 1;
 			if (s != NULL) {
 				tlines = malloc((n_lines + 2) * sizeof(*lines));
 				if (tlines != NULL) {
@@ -76,15 +80,19 @@ cm_store_file_read_lines(FILE *fp)
 						       n_lines *
 						       sizeof(*lines));
 					}
+					if (trim) {
+						s[strcspn(s, "\r\n")] = '\0';
+					}
 					tlines[n_lines++] = s;
 					tlines[n_lines] = NULL;
 					free(lines);
 					lines = tlines;
 				}
 			}
-			s = strdup(buf) + 1;
+			s = strdup(buf + 1);
 			break;
 		case ' ':
+			trim = 0;
 			t = malloc(strlen(s) + strlen(buf) + 1);
 			if (t != NULL) {
 				sprintf(t, "%s%s", s, buf + 1);
@@ -103,6 +111,9 @@ cm_store_file_read_lines(FILE *fp)
 		if (tlines != NULL) {
 			if (n_lines > 0) {
 				memcpy(tlines, lines, n_lines * sizeof(*lines));
+			}
+			if (trim) {
+				s[strcspn(s, "\r\n")] = '\0';
 			}
 			tlines[n_lines++] = s;
 			tlines[n_lines] = NULL;
@@ -230,19 +241,18 @@ cm_store_file_read(const char *filename, FILE *fp)
 			free(s[i]);
 			i++;
 		}
+		ret->cm_n_ttls = 0;
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_n_ttls = atoi(s[i]);
-			free(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_ttls = malloc(sizeof(*ret->cm_ttls) * ret->cm_n_ttls);
+			ret->cm_ttls = malloc(sizeof(*ret->cm_ttls) * strlen(s[i]));
 			if (ret->cm_ttls != NULL) {
 				p = s[i];
-				for (j = 0; j < ret->cm_n_ttls; j++) {
+				j = 0;
+				while (strspn(p, "0123456789") > 0) {
 					ret->cm_ttls[j] = strtol(p, &p, 10);
 					p += strcspn(p, "0123456789");
+					j++;
 				}
+				ret->cm_n_ttls = j;
 			}
 			free(s[i]);
 			i++;
@@ -415,12 +425,12 @@ static int
 cm_store_file_write_str(FILE *fp, const char *s)
 {
 	const char *p, *q;
-	p = s;
-	q = p + strcspn(s, "\n");
+	p = s ?: "";
+	q = p + strcspn(p, "\n");
 	fprintf(fp, "=%.*s\n", (int) (q - p), p);
 	while (*q != '\0') {
 		p = q + 1;
-		q = p + strcspn(s, "\n");
+		q = p + strcspn(p, "\n");
 		fprintf(fp, " %.*s\n", (int) (q - p), p);
 	}
 	if (ferror(fp)) {
@@ -433,6 +443,14 @@ static int
 cm_store_file_write(FILE *fp, struct cm_store_entry *entry)
 {
 	char timestamp[15];
+	const char *p;
+
+	if (entry->cm_id == NULL) {
+		p = cm_store_timestamp_from_time(time(NULL), timestamp);
+	} else {
+		p = entry->cm_id;
+	}
+	cm_store_file_write_str(fp, p);
 
 	cm_store_file_write_int(fp, entry->cm_key_type_default);
 	switch (entry->cm_key_type.cm_key_algorithm) {
@@ -480,6 +498,8 @@ cm_store_file_write(FILE *fp, struct cm_store_entry *entry)
 		cm_store_file_write_longs(fp, entry->cm_n_ttls,
 					  (long *) entry->cm_ttls);
 	} else {
+		/* not reached */
+		cm_log(0, "time_t is not a known integer type\n");
 		abort();
 	}
 	
@@ -534,7 +554,7 @@ cm_store_entry_save(struct cm_store_entry *entry)
 {
 	FILE *fp;
 	char timestamp[15], path[PATH_MAX];
-	int i, fd;
+	int i, fd, give_up;
 	const char *directory;
 
 	if (entry->cm_store_private == NULL) {
@@ -548,15 +568,32 @@ cm_store_entry_save(struct cm_store_entry *entry)
 			  O_WRONLY | O_CREAT | O_EXCL,
 			  S_IRUSR | S_IWUSR);
 		if (fd == -1) {
-			for (i = 1; i < 1024; i++) {
-				snprintf(path, sizeof(path), "%s/%s-%d",
-					 directory, timestamp, i);
-				fd = open(path,
-					  O_WRONLY | O_CREAT | O_EXCL,
-					  S_IRUSR | S_IWUSR);
-				if (fd != -1) {
-					break;
+			switch (errno) {
+			case ENOENT:
+			case EPERM:
+			case EACCES:
+				break;
+			default:
+				for (give_up = 0, i = 1;
+				     !give_up && (i < 1024);
+				     i++) {
+					snprintf(path, sizeof(path), "%s/%s-%d",
+						 directory, timestamp, i);
+					fd = open(path,
+						  O_WRONLY | O_CREAT | O_EXCL,
+						  S_IRUSR | S_IWUSR);
+					if (fd != -1) {
+						break;
+					}
+					switch (errno) {
+					case ENOENT:
+					case EPERM:
+					case EACCES:
+						give_up++;
+						break;
+					}
 				}
+				break;
 			}
 		}
 		if (fd == -1) {

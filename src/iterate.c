@@ -51,6 +51,7 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 	case CM_MONITORING:
 		break;
 	case CM_INVALID:
+		/* not reached */
 		abort();
 		break;
 	}

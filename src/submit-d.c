@@ -8,6 +8,7 @@
 
 #include <openssl/ssl.h>
 
+#include "log.h"
 #include "store.h"
 #include "store-int.h"
 #include "submit.h"
@@ -22,13 +23,18 @@ cm_submit_start(struct cm_store_entry *entry)
 {
 	struct cm_submit_state *state;
 	if (entry->cm_key_storage_type != cm_key_storage_file) {
+		cm_log(1, "Wrong submission method: only keys stored "
+		       "in files can be used.\n");
 		return NULL;
 	}
 	if (entry->cm_cert_storage_type != cm_cert_storage_file) {
+		cm_log(1, "Wrong submission method: only certificates stored "
+		       "in files can be used.\n");
 		return NULL;
 	}
 	state = malloc(sizeof(*state));
 	if (state == NULL) {
+		cm_log(1, "Out of memory.\n");
 		return NULL;
 	}
 	state->cert = NULL;
@@ -57,6 +63,7 @@ cm_submit_save_ca_cookie(struct cm_store_entry *entry,
 	free(entry->cm_ca_cookie);
 	entry->cm_ca_cookie = strdup(entry->cm_key_storage_location);
 	if (entry->cm_ca_cookie == NULL) {
+		cm_log(1, "Out of memory.\n");
 		return ENOMEM;
 	}
 	return 0;
@@ -111,14 +118,30 @@ cm_submit_issued(struct cm_store_entry *entry, struct cm_submit_state *state)
 						X509_sign(cert, pkey,
 							  EVP_sha256());
 						status = 0;
+					} else {
+						cm_log(1, "Error reading "
+						       "signing request.\n");
 					}
 					BIO_free(bio);
+				} else {
+					cm_log(1, "Error parsing signing "
+					       "request.\n");
 				}
 				RSA_free(rsa);
+			} else {
+				cm_log(1, "Error reading private key from "
+				       "'%s': %s.\n",
+				       entry->cm_key_storage_location,
+				       strerror(errno));
 			}
 			EVP_PKEY_free(pkey);
+		} else {
+			cm_log(1, "Internal error.\n");
 		}
 		fclose(keyfp);
+	} else {
+		cm_log(1, "Error opening '%s': %s.\n",
+		       entry->cm_key_storage_location, strerror(errno));
 	}
 	return status;
 }
@@ -138,6 +161,8 @@ cm_submit_save_cert(struct cm_store_entry *entry, struct cm_submit_state *state)
 	FILE *fp;
 	fp = fopen(entry->cm_cert_storage_location, "w");
 	if (fp == NULL) {
+		cm_log(1, "Error opening '%s': %s.\n",
+		       entry->cm_cert_storage_location, strerror(errno));
 		return -1;
 	} else {
 		i2d_X509_fp(fp, state->cert);

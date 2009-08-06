@@ -11,15 +11,18 @@
 #include "store.h"
 #include "store-int.h"
 
+static void help(const char *cmd);
+
 static int
 request(int argc, char **argv)
 {
+	struct cm_store_entry *entry;
 	const char *ca = NULL;
 	const char *dbdir = NULL, *nickname = NULL;
 	const char *keyfile = NULL, *certfile = NULL;
-	const char *subject = NULL, *usage = NULL;
+	const char *subject = NULL, *service = NULL, *usage = NULL;
 	int keygen = 0, keysize = 0, track_exp = 0, auto_renew = 0, c;
-	while ((c = getopt(argc, argv, "c:gG:d:n:k:f:S:u:er")) != -1) {
+	while ((c = getopt(argc, argv, "c:gG:d:n:k:f:S:s:u:er")) != -1) {
 		switch (c) {
 		case 'c':
 			ca = optarg;
@@ -45,6 +48,9 @@ request(int argc, char **argv)
 		case 'S':
 			subject = optarg;
 			break;
+		case 's':
+			service = optarg;
+			break;
 		case 'u':
 			usage = optarg;
 			break;
@@ -54,9 +60,46 @@ request(int argc, char **argv)
 		case 'r':
 			auto_renew++;
 			break;
+		default:
+			help("request");
+			return 1;
 		}
 	}
-	return 0;
+	entry = cm_store_entry_new();
+	if (entry != NULL) {
+		entry->cm_key_type_default = 1;
+		if (keyfile != NULL) {
+			entry->cm_key_storage_default = 0;
+			entry->cm_key_storage_type = cm_key_storage_file;
+			entry->cm_key_storage_location = strdup(keyfile);
+		} else {
+			printf("Don't know how to do non-file keys yet.\n");
+			return 1;
+		}
+		entry->cm_state = keygen ? CM_NEED_KEY_PAIR : CM_NEED_CSR;
+		if (certfile != NULL) {
+			entry->cm_cert_storage_default = 0;
+			entry->cm_cert_storage_type = cm_cert_storage_file;
+			entry->cm_cert_storage_location = strdup(keyfile);
+		} else {
+			printf("Don't know how to do non-file keys yet.\n");
+			return 1;
+		}
+		entry->cm_notification_default = 1;
+		if (cm_store_entry_save(entry) == 0) {
+			printf("Request added.\n");
+			cm_store_entry_free(entry);
+			return 0;
+		} else {
+			printf("Error adding request.\n");
+			cm_store_entry_free(entry);
+			return 1;
+		}
+	} else {
+		printf("Error creating template request.\n");
+		cm_store_entry_free(entry);
+		return 1;
+	}
 }
 
 static int
@@ -74,6 +117,56 @@ stop_tracking(int argc, char **argv)
 static int
 list(int argc, char **argv)
 {
+	struct cm_store_entry **entries;
+	int requests_only = 0, tracking_only = 0, c, i;
+	while ((c = getopt(argc, argv, "rt")) != -1) {
+		switch (c) {
+		case 'r':
+			requests_only++;
+			break;
+		case 't':
+			tracking_only++;
+			break;
+		default:
+			help("request");
+			return 1;
+		}
+	}
+	entries = cm_store_get_all_entries();
+	for (i = 0; (entries != NULL) && (entries[i] != NULL); i++) {
+		switch (entries[i]->cm_state) {
+		case CM_INVALID:
+			printf("'%s' is in an invalid state!\n",
+			       entries[i]->cm_id);
+			continue;
+			break;
+		case CM_NEED_KEY_PAIR:
+		case CM_GENERATING_KEY_PAIR:
+		case CM_HAVE_KEY_PAIR:
+		case CM_NEED_CSR:
+		case CM_GENERATING_CSR:
+		case CM_HAVE_CSR:
+		case CM_NEED_TO_SUBMIT:
+		case CM_SUBMITTING:
+		case CM_HAVE_SUBMITTED:
+		case CM_NEED_CA_STATUS:
+		case CM_POLLING_CA_STATUS:
+		case CM_RETRIEVING_CERT:
+		case CM_NEED_GUIDANCE:
+			if (tracking_only) {
+				continue;
+			}
+			break;
+		case CM_MONITORING:
+			if (requests_only) {
+				continue;
+			}
+			break;
+		}
+		printf("'%s': %s\n",
+		       entries[i]->cm_id,
+		       cm_store_state_as_string(entries[i]->cm_state));
+	}
 	return 0;
 }
 
@@ -106,7 +199,8 @@ help(const char *cmd)
 	"  -k FILE	PEM file for private key\n"
 	"  -f FILE	PEM file for certificate (only valid with -k)\n"
 	"* Whether or not to track expiration:\n"
-	"  --no-track-expiration\n"
+	"  -e		track-expiration\n"
+	"  -r		attempt to renew as expiration nears\n"
 	"* Optional stuff:\n"
 	"  -S NAME	requested subject name (default: cn=<fqdn>)\n"
 	"  -u USAGE	requested usage / eku\n"
@@ -134,8 +228,8 @@ help(const char *cmd)
 	"  -c		location of CA\n",
 	"%s list\n"
 	"* General options:\n"
-	"  --requests	list only information about outstanding requests\n"
-	"  --tracking	list only information about in-tracking certificates\n"};
+	"  -r		list only information about outstanding requests\n"
+	"  -t		list only information about tracked certificates\n"};
 	for (i = 0; i < sizeof(msgs) / sizeof(msgs[0]); i++) {
 		if (i > 0) {
 			printf("\n");

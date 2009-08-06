@@ -11,8 +11,8 @@
 #include "iterate.h"
 #include "store.h"
 
-#define DELAY_SOON	1
-#define DELAY_SOONISH	5
+#define DELAY_SOON	1000
+#define DELAY_SOONISH	5000
 
 struct cm_context {
 	int n_entries;

@@ -10,7 +10,7 @@ struct cm_store_entry {
 	/* A unique identifier. */
 	char *cm_id;
 	/* Type of key pair to generate [or use default settings] RSA,2048 */
-	int cm_key_type_default:1;
+	unsigned int cm_key_type_default:1;
 	struct cm_key_type {
 		enum cm_key_algorithm {
 			cm_key_rsa = 0,
@@ -18,14 +18,14 @@ struct cm_store_entry {
 		int cm_key_size;
 	} cm_key_type;
 	/* Location of key pair [use-once default] NSS,/etc/pki/nssdb */
-	int cm_key_storage_default:1;
+	unsigned int cm_key_storage_default:1;
 	enum cm_key_storage_type {
 		cm_key_storage_file = 0,
 	} cm_key_storage_type;
 	char *cm_key_storage_location;
 	/* Location of certificate [use-once default]
 	 * NSS,/etc/pki/nssdb,Server-Cert-default */
-	int cm_cert_storage_default:1;
+	unsigned int cm_cert_storage_default:1;
 	enum cm_cert_storage_type {
 		cm_cert_storage_file = 0,
 	} cm_cert_storage_type;
@@ -43,12 +43,12 @@ struct cm_store_entry {
 	char *cm_cert_eku;
 	/* Interesting TTL values [or use default settings]
 	   30*24*60*60,7*24*60*60,3*24*60*60,2*24*60*60,1*24*60*60 */
-	int cm_ttls_default:1;
+	unsigned int cm_ttls_default:1;
 	int cm_n_ttls;
 	time_t *cm_ttls;
 	/* How to notify administrator [or use default settings]
 	   syslog(LOG_AUTHPRIV?) or mail to root@? */
-	int cm_notification_default:1;
+	unsigned int cm_notification_default:1;
 	enum cm_notification_method {
 		cm_notification_syslog = 0,
 		cm_notification_email,
@@ -60,7 +60,7 @@ struct cm_store_entry {
 	   *  email
 	   *  principal name
 	   * ku, eku */
-	int cm_template_default:1;
+	unsigned int cm_template_default:1;
 	char *cm_template_subject;
 	char *cm_template_email;
 	char *cm_template_principal;
@@ -79,13 +79,13 @@ struct cm_store_entry {
 		CM_NEED_GUIDANCE,
 	} cm_state;
 	/* Whether to autorenew-at-expiration [or use default settings] */
-	int cm_autorenew_default:1;
-	int cm_autorenew:1;
+	unsigned int cm_autorenew_default:1;
+	unsigned int cm_autorenew:1;
 	/* Whether to start monitoring at issue [or use default settings] */
-	int cm_monitor_default:1;
-	int cm_monitor:1;
+	unsigned int cm_monitor_default:1;
+	unsigned int cm_monitor:1;
 	/* Type and location of CA [or use default settings] */
-	int cm_ca_default:1;
+	unsigned int cm_ca_default:1;
 	enum cm_ca_type {
 		cm_ca_files = 0,
 	} cm_ca_type;
