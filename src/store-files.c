@@ -596,7 +596,7 @@ cm_store_get_all_entries(void)
 	unsigned int i;
 	int j;
 	const char *directory;
-	char path[PATH_MAX + 1];
+	char path[PATH_MAX + 1], *p;
 	FILE *fp;
 	glob_t globs;
 
@@ -611,6 +611,13 @@ cm_store_get_all_entries(void)
 		ret = malloc(sizeof(*ret) * (globs.gl_pathc + 1));
 		if (ret != NULL) {
 			for (i = 0, j = 0; i < globs.gl_pathc; i++) {
+				p = globs.gl_pathv[i];
+				if (strlen(p) > 4) {
+					p = p + strlen(p) - 4;
+					if (strcmp(p, ".tmp") == 0) {
+						continue;
+					}
+				}
 				fp = fopen(globs.gl_pathv[i], "r");
 				if (fp != NULL) {
 					ret[j] = cm_store_file_read(globs.gl_pathv[i], fp);
