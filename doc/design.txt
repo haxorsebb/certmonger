@@ -91,13 +91,16 @@ State logic:
 			state_next = NEED_TO_SUBMIT
 			state_transition = now
 		else
-			if csr-submitted
-				if ca-issued-cert
+			if csr-submission-completed
+				if ca-issued-cert-already
 					state_next = RETRIEVING_CERT
 					state_transition = now
-				else
+				else if ca-is-thinking-about-it
 					store-ca-cookie
 					state_next = HAVE_SUBMITTED
+					state_transition = now
+				else
+					state_next = NEED_GUIDANCE
 					state_transition = now
 			else
 				state_next = SUBMITTING 
@@ -121,12 +124,9 @@ State logic:
 			state_next = NEED_CA_STATUS
 			state_transition = now
 		else
-			if ca-has-answer
+			if ca-made-a-decision
 				if ca-issued-cert
 					state_next = RETRIEVING_CERT
-					state_transition = now
-				elseif ca-denied-cert
-					state_next = NEED_TO_SUBMIT
 					state_transition = now
 				else
 					state_next = NEED_GUIDANCE

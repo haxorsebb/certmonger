@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "cm.h"
+#include "log.h"
 
 #define MAX_TIMEOUT 3600
 static int cm_quit;
@@ -27,6 +28,9 @@ main(int argc, char **argv)
 	}
 	fds = NULL;
 	nfds = 0;
+	cm_log_set_level(3);
+	cm_log_set_method(cm_log_stderr);
+	cm_log(2, "Starting up.\n");
 	while (!cm_quit) {
 		timeout = -1;
 		i = cm_next(ctx, &fds, &nfds, &timeout);
@@ -44,9 +48,12 @@ main(int argc, char **argv)
 						pfds[i].fd = fds[i];
 						pfds[i].events = POLLIN;
 					}
+					cm_log(2, "Waiting for next event, up "
+					       "to %d seconds.\n", timeout);
 					poll(pfds, nfds, timeout);
 				}
 			} else {
+				cm_log(2, "Waiting for %d seconds.\n", timeout);
 				poll(NULL, 0, timeout);
 			}
 		}

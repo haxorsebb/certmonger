@@ -9,6 +9,8 @@ libcm_a_SOURCES = \
 	iterate.h \
 	keygen.h \
 	keygen-o.c \
+	log.h \
+	log.c \
 	notify.h \
 	store.h \
 	store-int.h \
@@ -16,6 +18,6 @@ libcm_a_SOURCES = \
 	store-gen.c \
 	submit.h \
 	submit-d.c
-sbin_PROGRAMS = cmd
-cmd_SOURCES = cmd.c
-cmd_LDADD = libcm.a @OPENSSL_LIBS@
+sbin_PROGRAMS = certmongerd
+certmongerd_SOURCES = cmd.c
+certmongerd_LDADD = libcm.a @OPENSSL_LIBS@

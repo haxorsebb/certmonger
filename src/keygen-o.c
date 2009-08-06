@@ -9,6 +9,7 @@
 #include <openssl/rsa.h>
 
 #include "keygen.h"
+#include "log.h"
 #include "store.h"
 #include "store-int.h"
 
@@ -31,6 +32,8 @@ cm_keygen_main(int fd, struct cm_store_entry *entry)
 	if (fp == NULL) {
 		fprintf(status, "Error opening key file \"%s\" for writing.\n",
 			entry->cm_key_storage_location);
+		cm_log(1, "Error opening key file \"%s\" for writing.\n",
+			entry->cm_key_storage_location);
 		_exit(2);
 	}
 	switch (entry->cm_key_type.cm_key_algorithm) {
@@ -40,12 +43,14 @@ cm_keygen_main(int fd, struct cm_store_entry *entry)
 				       NULL, NULL);
 		if (rsa == NULL) {
 			fprintf(status, "Error generating key.\n");
+			cm_log(1, "Error generating key.\n");
 			_exit(2);
 		}
 		RSA_print_fp(fp, rsa, 0);
 		break;
 	default:
 		fprintf(status, "Unknown key type.\n");
+		cm_log(1, "Unknown key type.\n");
 		_exit(2);
 		break;
 	}

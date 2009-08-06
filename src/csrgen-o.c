@@ -10,6 +10,7 @@
 #include <openssl/ssl.h>
 
 #include "keygen.h"
+#include "log.h"
 #include "store.h"
 #include "store-int.h"
 
@@ -35,6 +36,8 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 	if (keyfp == NULL) {
 		fprintf(status, "Error opening key file \"%s\" for reading.\n",
 			entry->cm_key_storage_location);
+		cm_log(1, "Error opening key file \"%s\" for reading.\n",
+			entry->cm_key_storage_location);
 		_exit(2);
 	}
 	OpenSSL_add_ssl_algorithms();
@@ -42,11 +45,12 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 	x = X509_new();
 	X509_set_version(x, 3);
 	X509_set_pubkey(x, pkey);
-	X509_NAME_add_entry_by_txt(x->name, MBSTRING_UTF8,
-				   "CN", "localhost", -1, 0, 0);
+	X509_NAME_add_entry_by_txt(x->cert_info->subject, "CN", MBSTRING_UTF8,
+				   "localhost", -1, 0, 0);
 	req = X509_to_X509_REQ(x, pkey, EVP_sha256());
 	if (req == NULL) {
 		fprintf(status, "Error generating CSR.\n");
+		cm_log(1, "Error generating CSR.\n");
 		_exit(2);
 	}
 	X509_REQ_print_fp(status, req);

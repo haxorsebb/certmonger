@@ -8,7 +8,7 @@ struct cm_store_entry {
 	 * saved copy, might be other stuff. */
 	void *cm_store_private;
 	/* A unique identifier. */
-	void *cm_id;
+	char *cm_id;
 	/* Type of key pair to generate [or use default settings] RSA,2048 */
 	int cm_key_type_default:1;
 	struct cm_key_type {
@@ -95,5 +95,8 @@ struct cm_store_entry {
 	/* Date of submission for in-progress submissions. */
 	time_t cm_submitted;
 };
+
+const char *cm_store_state_as_string(enum cm_state state);
+enum cm_state cm_store_state_from_string(const char *name);
 
 #endif

@@ -11,38 +11,6 @@
 #include "store.h"
 #include "store-int.h"
 
-static enum cm_state
-cm_store_state_from_string(const char *name)
-{
-	unsigned int i;
-	struct {
-		const char *name;
-		enum cm_state state;
-	} states[] = {
-		{"invalid", CM_INVALID},
-		{"need_key_pair", CM_NEED_KEY_PAIR},
-		{"generating_key_pair", CM_GENERATING_KEY_PAIR},
-		{"have_key_pair", CM_HAVE_KEY_PAIR},
-		{"need_csr", CM_NEED_CSR},
-		{"generating_csr", CM_GENERATING_CSR},
-		{"have_csr", CM_HAVE_CSR},
-		{"need_to_submit", CM_NEED_TO_SUBMIT},
-		{"submitting", CM_SUBMITTING},
-		{"have_submitted", CM_HAVE_SUBMITTED},
-		{"need_ca_status", CM_NEED_CA_STATUS},
-		{"polling_ca_status", CM_POLLING_CA_STATUS},
-		{"retrieving_cert", CM_RETRIEVING_CERT},
-		{"monitoring", CM_MONITORING},
-		{"need_guidance", CM_NEED_GUIDANCE},
-	};
-	for (i = 0; i < sizeof(states) / sizeof(states[0]); i++) {
-		if (strcasecmp(states[i].name, name) == 0) {
-			return states[i].state;
-		}
-	}
-	return CM_INVALID;
-}
-
 static time_t
 cm_store_time_from_timestamp(const char *timestamp)
 {

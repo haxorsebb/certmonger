@@ -8,6 +8,7 @@
 
 #include "csrgen.h"
 #include "keygen.h"
+#include "log.h"
 #include "submit.h"
 #include "store.h"
 #include "iterate.h"
@@ -79,6 +80,8 @@ cm_iterate(struct cm_store_entry *entry,
 	*readfd = -1;
 	*when = cm_time_no_time;
 	*delay = 0;
+	cm_log(3, "%s is in state %s\n", entry->cm_id,
+	       cm_store_state_as_string(entry->cm_state));
 	switch (entry->cm_state) {
 	case CM_NEED_KEY_PAIR:
 		/* Start a helper. */
