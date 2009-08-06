@@ -16,7 +16,8 @@ mylocalstatedir=`eval echo $mylocalstatedir | sed "s,NONE,$ac_default_prefix,g"`
 mylocalstatedir=`eval echo $mylocalstatedir | sed "s,NONE,,g"`
 AC_DEFINE_UNQUOTED(CM_FILE_STORE_DIRECTORY,"$mylocalstatedir",
 		   [Define to the default path for tracking files.])
-AC_DEFINE_UNQUOTED(CM_FILE_STORE_DIRECTORY_ENV,"${PACKAGE_NAME}_FILE_STORE_DIR",
+UPCASE_PACKAGE_NAME=`echo "${PACKAGE_NAME}" | tr '[a-z]' '[A-Z]'`
+AC_DEFINE_UNQUOTED(CM_FILE_STORE_DIRECTORY_ENV,"${UPCASE_PACKAGE_NAME}_FILE_STORE_DIR",
 		   [Define to the name of the environment variable which can specify the path for tracking files.])
 
 PKG_CHECK_MODULES(OPENSSL,openssl)

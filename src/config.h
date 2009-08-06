@@ -2,11 +2,11 @@
 /* src/config.h.in.  Generated from configure.ac by autoheader.  */
 
 /* Define to the default path for tracking files. */
-#define CM_FILE_STORE_DIRECTORY "/usr/local/var/lib/certmonger"
+#define CM_FILE_STORE_DIRECTORY "/usr/var/lib/certmonger"
 
 /* Define to the name of the environment variable which can specify the path
    for tracking files. */
-#define CM_FILE_STORE_DIRECTORY_ENV "certmonger_FILE_STORE_DIR"
+#define CM_FILE_STORE_DIRECTORY_ENV "CERTMONGER_FILE_STORE_DIR"
 
 /* Name of package */
 #define PACKAGE "certmonger"

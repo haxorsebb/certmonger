@@ -91,7 +91,7 @@ cm_submit_issued(struct cm_store_entry *entry, struct cm_submit_state *state)
 	X509_REQ *req;
 	X509 *cert;
 	BIO *bio;
-	int i, status;
+	int status;
 	OpenSSL_add_ssl_algorithms();
 	status = -1;
 	keyfp = fopen(entry->cm_key_storage_location, "r");

@@ -323,11 +323,15 @@ cm_store_file_read(FILE *fp)
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
+			ret->cm_submitted = cm_store_time_from_timestamp(s[i]);
+			i++;
+		}
+		if ((s != NULL) && (s[i] != NULL)) {
 			ret->cm_ca_cookie = s[i];
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_submitted = cm_store_time_from_timestamp(s[i]);
+			ret->cm_cert = s[i];
 			i++;
 		}
 		while ((s != NULL) && (s[i] != NULL)) {

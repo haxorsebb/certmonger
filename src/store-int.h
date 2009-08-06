@@ -90,10 +90,12 @@ struct cm_store_entry {
 		cm_ca_files = 0,
 	} cm_ca_type;
 	char *cm_ca_location;
-	/* Value of CA cookie for in-progress submissions. */
-	char *cm_ca_cookie;
 	/* Date of submission for in-progress submissions. */
 	time_t cm_submitted;
+	/* Value of CA cookie for in-progress submissions. */
+	char *cm_ca_cookie;
+	/* The certificate, if we have one. */
+	char *cm_cert;
 };
 
 const char *cm_store_state_as_string(enum cm_state state);
