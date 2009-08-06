@@ -67,6 +67,8 @@ cm_iterate_init(struct cm_store_entry *entry, void **cm_iterate_state)
 	memset(state, 0, sizeof(*state));
 	*cm_iterate_state = state;
 	cm_entry_reset_state(entry);
+	cm_log(3, "'%s' starts in state '%s'\n", entry->cm_id,
+	       cm_store_state_as_string(entry->cm_state));
 	return 0;
 }
 
@@ -76,12 +78,12 @@ cm_iterate(struct cm_store_entry *entry,
 	   enum cm_time *when, int *delay, int *readfd)
 {
 	struct cm_iterate_state *state;
+	enum cm_state old_entry_state;
 	state = cm_iterate_state;
 	*readfd = -1;
 	*when = cm_time_no_time;
 	*delay = 0;
-	cm_log(3, "%s is in state %s\n", entry->cm_id,
-	       cm_store_state_as_string(entry->cm_state));
+	old_entry_state = entry->cm_state;
 	switch (entry->cm_state) {
 	case CM_NEED_KEY_PAIR:
 		/* Start a helper. */
@@ -357,6 +359,10 @@ cm_iterate(struct cm_store_entry *entry,
 		abort();
 		break;
 	}
+	if (old_entry_state != entry->cm_state) {
+		cm_log(3, "'%s' moved to state '%s'\n", entry->cm_id,
+		       cm_store_state_as_string(entry->cm_state));
+	}
 	return 0;
 }
 
@@ -379,6 +385,8 @@ cm_iterate_done(struct cm_store_entry *entry, void *cm_iterate_state)
 		state->cm_keygen_state = NULL;
 	}
 	cm_entry_reset_state(entry);
+	cm_log(3, "'%s' ends in state '%s'\n", entry->cm_id,
+	       cm_store_state_as_string(entry->cm_state));
 	free(state);
 	return 0;
 }

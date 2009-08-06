@@ -3,6 +3,7 @@
 #include <sys/types.h>
 #include <poll.h>
 #include <errno.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,14 +12,27 @@
 #include "log.h"
 
 #define MAX_TIMEOUT 3600
-static int cm_quit;
+static int cm_quit = 0;
+
+static void
+sig_handler(int signum, siginfo_t *info, void *context)
+{
+	cm_quit++;
+}
 
 int
 main(int argc, char **argv)
 {
 	struct cm_context *ctx;
 	struct pollfd *pfds;
+	struct sigaction action;
 	int i, *fds, nfds, timeout;
+
+	memset(&action, 0, sizeof(action));
+	action.sa_sigaction = &sig_handler;
+	action.sa_flags = SA_SIGINFO;
+	sigaction(SIGINT, &action, NULL);
+	sigaction(SIGTERM, &action, NULL);
 
 	ctx = NULL;
 	i = cm_init(&ctx);
@@ -26,11 +40,13 @@ main(int argc, char **argv)
 		fprintf(stderr, "Error: %s\n", strerror(i));
 		return 1;
 	}
-	fds = NULL;
-	nfds = 0;
+
 	cm_log_set_level(3);
 	cm_log_set_method(cm_log_stderr);
-	cm_log(2, "Starting up.\n");
+	cm_log(3, "Starting up.\n");
+
+	fds = NULL;
+	nfds = 0;
 	while (!cm_quit) {
 		timeout = -1;
 		i = cm_next(ctx, &fds, &nfds, &timeout);
@@ -48,16 +64,30 @@ main(int argc, char **argv)
 						pfds[i].fd = fds[i];
 						pfds[i].events = POLLIN;
 					}
-					cm_log(2, "Waiting for next event, up "
-					       "to %d seconds.\n", timeout);
+					switch (timeout) {
+					case -1:
+						cm_log(3,
+						       "Waiting for next "
+						       "event.\n");
+						break;
+					case 0:
+						break;
+					default:
+						cm_log(3,
+						       "Waiting up to %d "
+						       "seconds for next "
+						       "event.\n", timeout);
+						break;
+					}
 					poll(pfds, nfds, timeout);
 				}
 			} else {
-				cm_log(2, "Waiting for %d seconds.\n", timeout);
+				cm_log(3, "Waiting for %d seconds.\n", timeout);
 				poll(NULL, 0, timeout);
 			}
 		}
 	}
+	cm_log(3, "Shutting down.\n");
 	cm_done(ctx);
 	return 0;
 }
