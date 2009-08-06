@@ -32,15 +32,15 @@ struct cm_store_entry {
 	char *cm_cert_storage_location;
 	char *cm_cert_nickname;
 	/* Cached certificate issuer/serial/subject/spki/expiration */
-	char *cm_issuer;
-	char *cm_serial;
-	char *cm_subject;
-	char *cm_spki;
-	time_t cm_expiration;
-	char *cm_email;
-	char *cm_principal;
-	char *cm_ku;
-	char *cm_eku;
+	char *cm_cert_issuer;
+	char *cm_cert_serial;
+	char *cm_cert_subject;
+	char *cm_cert_spki;
+	time_t cm_cert_expiration;
+	char *cm_cert_email;
+	char *cm_cert_principal;
+	char *cm_cert_ku;
+	char *cm_cert_eku;
 	/* Interesting TTL values [or use default settings]
 	   30*24*60*60,7*24*60*60,3*24*60*60,2*24*60*60,1*24*60*60 */
 	int cm_ttls_default:1;

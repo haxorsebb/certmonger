@@ -22,4 +22,12 @@ AC_DEFINE_UNQUOTED(CM_FILE_STORE_DIRECTORY_ENV,"${UPCASE_PACKAGE_NAME}_FILE_STOR
 
 PKG_CHECK_MODULES(OPENSSL,openssl)
 
+dnl if pkg-config mozilla-nss 2> /dev/null ; then
+dnl	PKG_CHECK_MODULES(NSS,mozilla-nss)
+dnl else
+dnl 	PKG_CHECK_MODULES(NSS,nss)
+dnl fi
+AC_SUBST(NSS_CFLAGS)
+AC_SUBST(NSS_LIBS)
+
 AC_OUTPUT(Makefile src/Makefile)

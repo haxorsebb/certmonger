@@ -72,19 +72,21 @@ cm_store_entry_new()
 void
 cm_store_entry_free(struct cm_store_entry *entry)
 {
+	free(entry->cm_store_private); /* XXX */
+
 	free(entry->cm_key_storage_location);
 
 	free(entry->cm_cert_storage_location);
 	free(entry->cm_cert_nickname);
 
-	free(entry->cm_issuer);
-	free(entry->cm_serial);
-	free(entry->cm_subject);
-	free(entry->cm_spki);
-	free(entry->cm_email);
-	free(entry->cm_principal);
-	free(entry->cm_ku);
-	free(entry->cm_eku);
+	free(entry->cm_cert_issuer);
+	free(entry->cm_cert_serial);
+	free(entry->cm_cert_subject);
+	free(entry->cm_cert_spki);
+	free(entry->cm_cert_email);
+	free(entry->cm_cert_principal);
+	free(entry->cm_cert_ku);
+	free(entry->cm_cert_eku);
 
 	free(entry->cm_ttls);
 
