@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <syslog.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "log.h"
@@ -39,13 +40,23 @@ cm_log(int level, const char *fmt, ...)
 	va_list args;
 	int slevel;
 	char *p;
+	struct tm lt;
+	time_t now;
 	if (level <= cm_log_level) {
 		switch (cm_log_method) {
 		case cm_log_stderr:
-			p = malloc(strlen(fmt) + 30);
+			now = time(NULL);
+			localtime_r(&now, &lt);
+			p = malloc(strlen(fmt) + 20 + 30);
 			if (p != NULL) {
-				sprintf(p, "[%lu] %s", (unsigned long) getpid(),
-					fmt);
+				now = time(NULL);
+				sprintf(p, "%04d-%02d-%02d %d:%02d:%02d "
+					"[%lu] %s",
+					lt.tm_year + 1900,
+					lt.tm_mon + 1,
+					lt.tm_mday,
+					lt.tm_hour, lt.tm_min, lt.tm_sec,
+					(unsigned long) getpid(), fmt);
 			}
 			va_start(args, fmt);
 			vfprintf(stderr, p ?: fmt, args);
