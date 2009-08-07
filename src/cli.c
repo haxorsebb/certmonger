@@ -70,7 +70,8 @@ request(int argc, char **argv)
 		entry->cm_key_type_default = 1;
 		if (keysize != 0) {
 			entry->cm_key_type_default = 0;
-			entry->cm_key_type.cm_key_algorithm = cm_key_rsa; /* XXX */
+			entry->cm_key_type.cm_key_algorithm =
+				CM_DEFAULT_PUBKEY_TYPE;
 			entry->cm_key_type.cm_key_size = keysize;
 		}
 		if (keyfile != NULL) {

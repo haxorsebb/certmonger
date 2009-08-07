@@ -1,5 +1,6 @@
 AC_INIT(certmonger,0.0)
 AM_INIT_AUTOMAKE([foreign])
+AM_MAINTAINER_MODE
 AC_PROG_CC
 AC_PROG_RANLIB
 AC_CONFIG_HEADER(src/config.h)
@@ -29,5 +30,8 @@ dnl 	PKG_CHECK_MODULES(NSS,nss)
 dnl fi
 AC_SUBST(NSS_CFLAGS)
 AC_SUBST(NSS_LIBS)
+
+AC_DEFINE_UNQUOTED(CM_DEFAULT_PUBKEY_TYPE,cm_key_rsa,[Define to the default public key type.])
+AC_DEFINE_UNQUOTED(CM_DEFAULT_PUBKEY_SIZE,2048,[Define to the default public key size.])
 
 AC_OUTPUT(Makefile src/Makefile)
