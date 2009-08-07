@@ -7,6 +7,7 @@
 
 #include <openssl/ssl.h>
 #include <openssl/rsa.h>
+#include <openssl/err.h>
 
 #include "keygen.h"
 #include "log.h"
@@ -24,29 +25,63 @@ cm_keygen_main(int fd, struct cm_store_entry *entry)
 {
 	FILE *fp, *status;
 	RSA *rsa;
+	EVP_PKEY *pkey;
+	char buf[LINE_MAX];
+	long error;
+	enum cm_key_algorithm cm_key_algorithm;
+	int cm_key_size;
+
 	status = fdopen(fd, "w");
 	if (status == NULL) {
 		_exit(1);
 	}
-	fp = fopen(entry->cm_key_storage_location, "w");
-	if (fp == NULL) {
-		fprintf(status, "Error opening key file \"%s\" for writing.\n",
-			entry->cm_key_storage_location);
-		cm_log(1, "Error opening key file \"%s\" for writing.\n",
-			entry->cm_key_storage_location);
-		_exit(2);
+	if (entry->cm_key_type_default) {
+		cm_key_algorithm = cm_key_rsa; /* XXX */
+		cm_key_size = 2048; /* XXX */
+	} else {
+		cm_key_algorithm = entry->cm_key_type.cm_key_algorithm;
+		cm_key_size = entry->cm_key_type.cm_key_size;
 	}
-	switch (entry->cm_key_type.cm_key_algorithm) {
+	switch (cm_key_algorithm) {
 	case cm_key_rsa:
 		OpenSSL_add_ssl_algorithms();
-		rsa = RSA_generate_key(entry->cm_key_type.cm_key_size, 65537,
-				       NULL, NULL);
+		ERR_load_crypto_strings();
+		pkey = EVP_PKEY_new();
+		if (pkey == NULL) {
+			fprintf(status, "Internal error generating key.\n");
+			_exit(2);
+		}
+		rsa = RSA_generate_key(cm_key_size, 65537, NULL, NULL);
 		if (rsa == NULL) {
 			fprintf(status, "Error generating key.\n");
 			cm_log(1, "Error generating key.\n");
+			while ((error = ERR_get_error()) != 0) {
+				ERR_error_string_n(error, buf, sizeof(buf));
+				cm_log(1, "%s\n", buf);
+			}
 			_exit(2);
 		}
-		RSA_print_fp(fp, rsa, 0);
+		EVP_PKEY_assign_RSA(pkey, rsa);
+		fp = fopen(entry->cm_key_storage_location, "w");
+		if (fp == NULL) {
+			fprintf(status,
+				"Error opening key file \"%s\" for writing.\n",
+				entry->cm_key_storage_location);
+			cm_log(1,
+			       "Error opening key file \"%s\" for writing.\n",
+			       entry->cm_key_storage_location);
+			_exit(2);
+		}
+		if (PEM_write_PrivateKey(fp, pkey, NULL,
+					 NULL, 0, NULL, NULL) == 0) {
+			cm_log(1, "Error storing key.\n");
+			while ((error = ERR_get_error()) != 0) {
+				ERR_error_string_n(error, buf, sizeof(buf));
+				cm_log(1, "%s\n", buf);
+			}
+			_exit(2);
+		}
+		fclose(fp);
 		break;
 	default:
 		fprintf(status, "Unknown key type.\n");
@@ -119,13 +154,16 @@ cm_keygen_get_fd(struct cm_store_entry *entry, struct cm_keygen_state *state)
 	return state->fd;
 }
 
-/* Save the keypair to the location specified in the entry. */
+/* Tell us if the keypair was saved to the location specified in the entry. */
 int
-cm_keygen_save_keypair(struct cm_store_entry *entry,
-		       struct cm_keygen_state *state)
+cm_keygen_saved_keypair(struct cm_store_entry *entry,
+		        struct cm_keygen_state *state)
 {
 
-	return 0;
+	if (WIFEXITED(state->status) && (WEXITSTATUS(state->status) == 0)) {
+		return 0;
+	}
+	return -1;
 }
 
 /* Clean up after key generation. */
