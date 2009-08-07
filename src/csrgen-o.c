@@ -103,6 +103,7 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 		cm_log(1, "%s\n", buf);
 	}
 	fflush(status);
+	fclose(status);
 	fclose(keyfp);
 }
 
