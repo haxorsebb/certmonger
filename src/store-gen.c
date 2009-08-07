@@ -73,6 +73,7 @@ void
 cm_store_entry_free(struct cm_store_entry *entry)
 {
 	free(entry->cm_store_private); /* XXX */
+	free(entry->cm_id);
 
 	free(entry->cm_key_storage_location);
 
@@ -102,6 +103,8 @@ cm_store_entry_free(struct cm_store_entry *entry)
 
 	free(entry->cm_ca_location);
 	free(entry->cm_ca_cookie);
+
+	free(entry->cm_cert);
 
 	free(entry);
 }

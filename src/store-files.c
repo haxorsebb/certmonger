@@ -352,6 +352,7 @@ cm_store_file_read(const char *filename, FILE *fp)
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
 			ret->cm_submitted = cm_store_time_from_timestamp(s[i]);
+			free(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
