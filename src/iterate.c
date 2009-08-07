@@ -107,8 +107,8 @@ cm_iterate(struct cm_store_entry *entry,
 		break;
 	case CM_GENERATING_KEY_PAIR:
 		if (cm_keygen_ready(entry, state->cm_keygen_state) == 0) {
-			if (cm_keygen_save_keypair(entry,
-						   state->cm_keygen_state) == 0) {
+			if (cm_keygen_saved_keypair(entry,
+						    state->cm_keygen_state) == 0) {
 				/* Saved key pair; move on. */
 				cm_keygen_done(entry, state->cm_keygen_state);
 				state->cm_keygen_state = NULL;
