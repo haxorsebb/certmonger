@@ -363,6 +363,7 @@ cm_iterate(struct cm_store_entry *entry,
 	if (old_entry_state != entry->cm_state) {
 		cm_log(3, "'%s' moved to state '%s'\n", entry->cm_id,
 		       cm_store_state_as_string(entry->cm_state));
+		cm_store_entry_save(entry);
 	}
 	return 0;
 }
