@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 #include <openssl/ssl.h>
+#include <openssl/err.h>
 
 #include "keygen.h"
 #include "log.h"
@@ -28,6 +29,9 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 	X509_REQ *req;
 	RSA *rsa;
 	EVP_PKEY *pkey;
+	char buf[LINE_MAX];
+	long error;
+
 	status = fdopen(fd, "w");
 	if (status == NULL) {
 		_exit(1);
@@ -37,23 +41,69 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 		fprintf(status, "Error opening key file \"%s\" for reading.\n",
 			entry->cm_key_storage_location);
 		cm_log(1, "Error opening key file \"%s\" for reading.\n",
-			entry->cm_key_storage_location);
+		       entry->cm_key_storage_location);
 		_exit(2);
 	}
 	OpenSSL_add_ssl_algorithms();
-	rsa = d2i_RSAPrivateKey_fp(keyfp, &rsa);
-	x = X509_new();
-	X509_set_version(x, 3);
-	X509_set_pubkey(x, pkey);
-	X509_NAME_add_entry_by_txt(x->cert_info->subject, "CN", MBSTRING_UTF8,
-				   "localhost", -1, 0, 0);
-	req = X509_to_X509_REQ(x, pkey, EVP_sha256());
-	if (req == NULL) {
-		fprintf(status, "Error generating CSR.\n");
-		cm_log(1, "Error generating CSR.\n");
+	ERR_load_crypto_strings();
+	pkey = EVP_PKEY_new();
+	if (pkey == NULL) {
+		fprintf(status, "Internal error generating CSR.\n");
+		cm_log(1, "Internal error generating CSR.\n");
 		_exit(2);
 	}
-	X509_REQ_print_fp(status, req);
+	rsa = PEM_read_RSAPrivateKey(keyfp, NULL, NULL, NULL);
+	if (rsa != NULL) {
+		EVP_PKEY_assign_RSA(pkey, rsa); /* pkey owns rsa now */
+		x = X509_new();
+		if (x != NULL) {
+			X509_set_version(x, 3);
+			X509_set_pubkey(x, pkey);
+			req = X509_to_X509_REQ(x, pkey, EVP_sha256());
+			if (req != NULL) {
+				PEM_write_X509_REQ_NEW(status, req);
+			} else {
+				fprintf(status,
+					"Error converting template certificate "
+					"into a CSR.\n");
+				cm_log(1,
+				       "Error converting template certificate "
+				       "into a CSR.\n");
+				while ((error = ERR_get_error()) != 0) {
+					ERR_error_string_n(error, buf,
+							   sizeof(buf));
+					cm_log(1, "%s\n", buf);
+				}
+				_exit(2);
+			}
+		} else {
+			fprintf(status,
+				"Error creating template certificate.\n");
+			cm_log(1, "Error creating template certificate.\n");
+			while ((error = ERR_get_error()) != 0) {
+				ERR_error_string_n(error, buf, sizeof(buf));
+				cm_log(1, "%s\n", buf);
+			}
+			_exit(2);
+		}
+	} else {
+		error = errno;
+		fprintf(status, "Error reading private key '%s': %s.\n",
+		        entry->cm_key_storage_location, strerror(error));
+		cm_log(1, "Error reading private key '%s': %s.\n",
+		       entry->cm_key_storage_location, strerror(error));
+		while ((error = ERR_get_error()) != 0) {
+			ERR_error_string_n(error, buf, sizeof(buf));
+			cm_log(1, "%s\n", buf);
+		}
+		_exit(2);
+	}
+	while ((error = ERR_get_error()) != 0) {
+		ERR_error_string_n(error, buf, sizeof(buf));
+		cm_log(1, "%s\n", buf);
+	}
+	fflush(status);
+	fclose(keyfp);
 }
 
 /* Start CSR generation using template information in the entry. */
@@ -121,9 +171,15 @@ int
 cm_csrgen_save_csr(struct cm_store_entry *entry, struct cm_csrgen_state *state)
 {
 	free(entry->cm_csr);
-	entry->cm_csr = strdup(state->msg);
-	if (entry->cm_csr == NULL) {
-		return ENOMEM;
+	if (state->pid == -1) {
+		if (!WIFEXITED(state->status) ||
+		    (WEXITSTATUS(state->status) != 0)) {
+			return 0;
+		}
+		entry->cm_csr = strdup(state->msg);
+		if (entry->cm_csr == NULL) {
+			return ENOMEM;
+		}
 	}
 	return 0;
 }
