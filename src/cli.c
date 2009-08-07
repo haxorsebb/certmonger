@@ -164,6 +164,7 @@ list(const char *argv0, int argc, char **argv)
 			}
 			break;
 		case CM_MONITORING:
+		case CM_NOTIFYING:
 			if (requests_only) {
 				continue;
 			}

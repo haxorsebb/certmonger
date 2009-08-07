@@ -9,6 +9,7 @@ libcm_a_SOURCES = \
 	log.h \
 	log.c \
 	notify.h \
+	notify.c \
 	store.h \
 	store-int.h \
 	store-files.c \

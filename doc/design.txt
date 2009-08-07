@@ -169,7 +169,8 @@ State logic:
 
 	MONITORING:
 		if certificate-uses-auto-renew(cert)
-			if certificate-is-near-expiration
+			if certificate-is-expired or
+			   certificate-is-near-expiration
 				store-template-based-on-cert
 				state_next = NEED_CSR
 				state_transition = now
@@ -177,7 +178,10 @@ State logic:
 				state_next = MONITORING
 				state_transition = timeout
 		else
-			if administrator-last-notified-exp-date !=
+			if certificate-is-expired
+				state_next = NEED_GUIDANCE
+				state_transition = now
+			elseif administrator-last-notified-exp-date !=
 			   exp-date or
 			for T in interesting-ttl-values
 			   if administrator-last-notified-ttl > T and
@@ -220,6 +224,7 @@ Data we need to track for each certificate/task/dbentry:
 	* Location of certificate [use-once default]
 	  default: NSS,/etc/pki/nssdb,Server-Cert-default
 	* Cached certificate issuer/serial/subject/spki/expiration
+	* The last time we checked if expiration was imminent.
 	* Interesting TTL values [or use default settings]
 	  default: 30*24*60*60,7*24*60*60,3*24*60*60,2*24*60*60,1*24*60*60
 	* How to notify administrator [or use default settings]

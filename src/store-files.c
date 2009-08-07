@@ -22,6 +22,9 @@ cm_store_time_from_timestamp(const char *timestamp)
 	struct tm stamp;
 	char buf[5];
 	time_t t;
+	if (strlen(timestamp) < 14) {
+		return 0;
+	}
 	memset(&stamp, 0, sizeof(stamp));
 	memcpy(buf, timestamp, 4);
 	buf[4] = '\0';
@@ -42,14 +45,14 @@ cm_store_time_from_timestamp(const char *timestamp)
 	buf[2] = '\0';
 	stamp.tm_sec = atoi(buf);
 	t = timegm(&stamp);
-	return 0;
+	return t;
 }
 
 static char *
 cm_store_timestamp_from_time(time_t when, char timestamp[15])
 {
 	struct tm tm;
-	if (gmtime_r(&when, &tm) == &tm) {
+	if ((when != 0) && (gmtime_r(&when, &tm) == &tm)) {
 		sprintf(timestamp, "%04d%02d%02d%02d%02d%02d",
 			tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
 			tm.tm_hour, tm.tm_min, tm.tm_sec);
@@ -254,6 +257,12 @@ cm_store_file_read(const char *filename, FILE *fp)
 				}
 				ret->cm_n_ttls = j;
 			}
+			free(s[i]);
+			i++;
+		}
+		if ((s != NULL) && (s[i] != NULL)) {
+			ret->cm_last_expiration_check =
+				cm_store_time_from_timestamp(s[i]);
 			free(s[i]);
 			i++;
 		}
@@ -503,6 +512,9 @@ cm_store_file_write(FILE *fp, struct cm_store_entry *entry)
 		cm_log(0, "time_t is not a known integer type\n");
 		abort();
 	}
+	cm_store_file_write_str(fp,
+				cm_store_timestamp_from_time(entry->cm_last_expiration_check,
+							     timestamp));
 	
 	cm_store_file_write_int(fp, entry->cm_notification_default);
 	switch (entry->cm_notification_method) {

@@ -46,6 +46,7 @@ struct cm_store_entry {
 	unsigned int cm_ttls_default:1;
 	int cm_n_ttls;
 	time_t *cm_ttls;
+	time_t cm_last_expiration_check;
 	/* How to notify administrator [or use default settings]
 	   syslog(LOG_AUTHPRIV?) or mail to root@? */
 	unsigned int cm_notification_default:1;
@@ -75,7 +76,7 @@ struct cm_store_entry {
 		CM_NEED_CSR, CM_GENERATING_CSR, CM_HAVE_CSR,
 		CM_NEED_TO_SUBMIT, CM_SUBMITTING, CM_HAVE_SUBMITTED,
 		CM_NEED_CA_STATUS, CM_POLLING_CA_STATUS, CM_RETRIEVING_CERT,
-		CM_MONITORING,
+		CM_MONITORING, CM_NOTIFYING,
 		CM_NEED_GUIDANCE,
 	} cm_state;
 	/* Whether to autorenew-at-expiration [or use default settings] */

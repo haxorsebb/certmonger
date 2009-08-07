@@ -51,7 +51,8 @@ cm_keygen_main(int fd, struct cm_store_entry *entry)
 			fprintf(status, "Internal error generating key.\n");
 			_exit(2);
 		}
-		rsa = RSA_generate_key(cm_key_size, 65537, NULL, NULL);
+		rsa = RSA_generate_key(cm_key_size, CM_DEFAULT_RSA_MODULUS,
+				       NULL, NULL);
 		if (rsa == NULL) {
 			fprintf(status, "Error generating key.\n");
 			cm_log(1, "Error generating key.\n");

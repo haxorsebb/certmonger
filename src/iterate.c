@@ -9,6 +9,7 @@
 #include "csrgen.h"
 #include "keygen.h"
 #include "log.h"
+#include "notify.h"
 #include "submit.h"
 #include "store.h"
 #include "iterate.h"
@@ -18,6 +19,7 @@ struct cm_iterate_state {
 	struct cm_keygen_state *cm_keygen_state;
 	struct cm_csrgen_state *cm_csrgen_state;
 	struct cm_submit_state *cm_submit_state;
+	struct cm_notify_state *cm_notify_state;
 };
 
 /* Helper routine to replace in-progress states with the previous "stable"
@@ -49,6 +51,7 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 	case CM_NEED_GUIDANCE:
 		break;
 	case CM_MONITORING:
+	case CM_NOTIFYING:
 		break;
 	case CM_INVALID:
 		/* not reached */
@@ -57,6 +60,7 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 	}
 }
 
+/* Set up run-time data associated with the entry. */
 int
 cm_iterate_init(struct cm_store_entry *entry, void **cm_iterate_state)
 {
@@ -71,6 +75,51 @@ cm_iterate_init(struct cm_store_entry *entry, void **cm_iterate_state)
 	cm_log(3, "'%s' starts in state '%s'\n", entry->cm_id,
 	       cm_store_state_as_string(entry->cm_state));
 	return 0;
+}
+
+/* Check if the entry's expiration has crossed an interesting threshold. */
+static int
+cm_check_expiration_is_noteworthy(struct cm_store_entry *entry)
+{
+	unsigned int i, n_ttls;
+	time_t *ttls, ttl, previous_ttl, default_ttls[] = {CM_DEFAULT_TTL_LIST};
+	time_t now;
+	now = time(NULL);
+	/* How much time is left? */
+	if (entry->cm_cert_expiration > now) {
+		ttl = 0;
+	} else {
+		ttl = entry->cm_cert_expiration - now;
+	}
+	/* How much time was left, last time we checked? */
+	if (entry->cm_cert_expiration > entry->cm_last_expiration_check) {
+		previous_ttl = 0;
+	} else {
+		previous_ttl = entry->cm_cert_expiration -
+			       entry->cm_last_expiration_check;
+	}
+	/* Note that we're checking now. */
+	entry->cm_last_expiration_check = now;
+	/* Which list of interesting values are we consulting? */
+	if (entry->cm_ttls_default) {
+		ttls = default_ttls;
+		n_ttls = sizeof(default_ttls) / sizeof(default_ttls[0]);
+	} else {
+		ttls = entry->cm_ttls;
+		n_ttls = entry->cm_n_ttls;
+	}
+	/* Check for crosses. */
+	for (i = 0; i < n_ttls; i++) {
+		/* We crossed a threshold. */
+		if ((ttl < ttls[i]) && (previous_ttl >= ttls[i])) {
+			return 0;
+		}
+		/* We crossed a threshold, and time is running backwards. */
+		if ((ttl >= ttls[i]) && (previous_ttl < ttls[i])) {
+			return 0;
+		}
+	}
+	return -1;
 }
 
 int
@@ -352,8 +401,39 @@ cm_iterate(struct cm_store_entry *entry,
 		*when = cm_time_soonish;
 		break;
 	case CM_MONITORING:
-		*delay = 24 * 60 * 60;
-		*when = cm_time_delay;
+		if (cm_check_expiration_is_noteworthy(entry) == 0) {
+			state->cm_notify_state = cm_notify_start(entry);
+			if (state->cm_notify_state != NULL) {
+				entry->cm_state = CM_NOTIFYING;
+				/* Wait for status update, or poll. */
+				*readfd = cm_notify_get_fd(entry,
+							   state->cm_notify_state);
+				if (*readfd == -1) {
+					*when = cm_time_soonish;
+				} else {
+					*when = cm_time_no_time;
+				}
+			} else {
+				/* Try to log it ourselves. */
+				cm_log(0, "'%s' will expire in %d days.\n",
+				       (entry->cm_cert_expiration - time(NULL))/
+				       (24 * 60 * 60));
+				*delay = 24 * 60 * 60;
+				*when = cm_time_delay;
+			}
+		} else {
+			/* Nothing to do here. */
+			*delay = 24 * 60 * 60;
+			*when = cm_time_delay;
+		}
+		break;
+	case CM_NOTIFYING:
+		if (cm_notify_ready(entry, state->cm_notify_state) == 0) {
+			cm_notify_done(entry, state->cm_notify_state);
+			state->cm_notify_state = NULL;
+		}
+		entry->cm_state = CM_MONITORING;
+		*when = cm_time_soon;
 		break;
 	case CM_INVALID:
 		/* not reached */
@@ -385,6 +465,10 @@ cm_iterate_done(struct cm_store_entry *entry, void *cm_iterate_state)
 	if (state->cm_keygen_state != NULL) {
 		cm_keygen_done(entry, state->cm_keygen_state);
 		state->cm_keygen_state = NULL;
+	}
+	if (state->cm_notify_state != NULL) {
+		cm_notify_done(entry, state->cm_notify_state);
+		state->cm_notify_state = NULL;
 	}
 	cm_entry_reset_state(entry);
 	cm_log(3, "'%s' ends in state '%s'\n", entry->cm_id,
