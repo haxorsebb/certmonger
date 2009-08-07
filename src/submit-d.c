@@ -7,6 +7,7 @@
 #include <unistd.h>
 
 #include <openssl/ssl.h>
+#include <openssl/err.h>
 
 #include "log.h"
 #include "store.h"
@@ -98,20 +99,26 @@ cm_submit_issued(struct cm_store_entry *entry, struct cm_submit_state *state)
 	X509_REQ *req;
 	X509 *cert;
 	BIO *bio;
+	BUF_MEM *mem;
 	int status;
+	long error;
+	char buf[LINE_MAX];
+
 	OpenSSL_add_ssl_algorithms();
+	ERR_load_crypto_strings();
 	status = -1;
 	keyfp = fopen(entry->cm_key_storage_location, "r");
 	if (keyfp != NULL) {
 		pkey = EVP_PKEY_new();
 		if (pkey != NULL) {
-			rsa = d2i_RSAPrivateKey_fp(keyfp, &rsa);
+			rsa = PEM_read_RSAPrivateKey(keyfp, NULL, NULL, NULL);
 			if (rsa != NULL) {
-				EVP_PKEY_assign_RSA(pkey, rsa);
+				EVP_PKEY_assign_RSA(pkey, rsa); /* pkey owns rsa now */
 				bio = BIO_new_mem_buf(entry->cm_csr,
 						      strlen(entry->cm_csr));
 				if (bio != NULL) {
-					req = d2i_X509_REQ_bio(bio, &req);
+					req = PEM_read_bio_X509_REQ(bio, NULL,
+								    NULL, NULL);
 					if (req != NULL) {
 						cert = X509_REQ_to_X509(req, 30,
 									pkey);
@@ -127,7 +134,6 @@ cm_submit_issued(struct cm_store_entry *entry, struct cm_submit_state *state)
 					cm_log(1, "Error parsing signing "
 					       "request.\n");
 				}
-				RSA_free(rsa);
 			} else {
 				cm_log(1, "Error reading private key from "
 				       "'%s': %s.\n",
@@ -142,6 +148,33 @@ cm_submit_issued(struct cm_store_entry *entry, struct cm_submit_state *state)
 	} else {
 		cm_log(1, "Error opening '%s': %s.\n",
 		       entry->cm_key_storage_location, strerror(errno));
+	}
+	if (status == 0) {
+		bio = BIO_new(BIO_s_mem());
+		if (bio != NULL) {
+			if (PEM_write_bio_X509(bio, cert) == 0) {
+				cm_log(1, "Error serializing certificate.\n");
+				status = -1;
+			} else {
+				BIO_get_mem_ptr(bio, &mem);
+				free(entry->cm_cert);
+				entry->cm_cert = malloc(mem->length + 1);
+				if (entry->cm_cert != NULL) {
+					memcpy(entry->cm_cert, mem->data,
+					       mem->length);
+					entry->cm_cert[mem->length] = '\0';
+				} else {
+					cm_log(1,
+					       "Error saving certificate.\n");
+					status = -1;
+				}
+			}
+			BIO_free(bio);
+		}
+	}
+	while ((error = ERR_get_error()) != 0) {
+		ERR_error_string_n(error, buf, sizeof(buf));
+		cm_log(1, "%s\n", buf);
 	}
 	return status;
 }
@@ -159,13 +192,17 @@ int
 cm_submit_save_cert(struct cm_store_entry *entry, struct cm_submit_state *state)
 {
 	FILE *fp;
+	if (entry->cm_cert == NULL) {
+		cm_log(1, "No certificate to save.\n");
+		return -1;
+	}
 	fp = fopen(entry->cm_cert_storage_location, "w");
 	if (fp == NULL) {
 		cm_log(1, "Error opening '%s': %s.\n",
 		       entry->cm_cert_storage_location, strerror(errno));
 		return -1;
 	} else {
-		i2d_X509_fp(fp, state->cert);
+		fprintf(fp, "%s", entry->cm_cert);
 		fclose(fp);
 	}
 	return 0;
