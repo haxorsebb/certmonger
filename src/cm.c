@@ -106,9 +106,13 @@ cm_next(struct cm_context *context, int **fds, int *nfds, int *timeout)
 }
 
 void
-cm_done(struct cm_context *context)
+cm_done(struct cm_context *context, int **fds)
 {
 	int i;
+	if (*fds != NULL) {
+		free(*fds);
+		*fds = NULL;
+	}
 	for (i = 0; i < context->n_entries; i++) {
 		cm_iterate_done(context->entries[i], context->iterators[i]);
 		cm_store_entry_save(context->entries[i]);
