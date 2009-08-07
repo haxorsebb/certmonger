@@ -11,10 +11,10 @@
 #include "store.h"
 #include "store-int.h"
 
-static void help(const char *cmd);
+static void help(const char *cmd, const char *category);
 
 static int
-request(int argc, char **argv)
+request(const char *argv0, int argc, char **argv)
 {
 	struct cm_store_entry *entry;
 	const char *ca = NULL;
@@ -61,7 +61,7 @@ request(int argc, char **argv)
 			auto_renew++;
 			break;
 		default:
-			help("request");
+			help(argv0, "request");
 			return 1;
 		}
 	}
@@ -109,19 +109,19 @@ request(int argc, char **argv)
 }
 
 static int
-start_tracking(int argc, char **argv)
+start_tracking(const char *argv0, int argc, char **argv)
 {
 	return 0;
 }
 
 static int
-stop_tracking(int argc, char **argv)
+stop_tracking(const char *argv0, int argc, char **argv)
 {
 	return 0;
 }
 
 static int
-list(int argc, char **argv)
+list(const char *argv0, int argc, char **argv)
 {
 	struct cm_store_entry **entries;
 	int requests_only = 0, tracking_only = 0, c, i;
@@ -134,7 +134,7 @@ list(int argc, char **argv)
 			tracking_only++;
 			break;
 		default:
-			help("request");
+			help(argv0, "list");
 			return 1;
 		}
 	}
@@ -178,7 +178,7 @@ list(int argc, char **argv)
 
 static struct {
 	const char *verb;
-	int (*fn)(int, char **);
+	int (*fn)(const char *, int, char **);
 } verbs[] = {
 	{"request", request},
 	{"start-tracking", start_tracking},
@@ -187,12 +187,17 @@ static struct {
 };
 
 static void
-help(const char *cmd)
+help(const char *cmd, const char *category)
 {
 	unsigned int i;
-	const char *msgs[] = {
+	struct {
+		const char *category;
+		const char *msg;
+	} msgs[] = {
+	{NULL,
 	"%s - client certificate enrollment tool\n"
-	"Example command-line invocations:\n",
+	"Example command-line invocations:\n",},
+	{"request",
 	"%s request [options]\n"
 	"* If the client knows or wants to override where the CA is:\n"
 	"  -c		location of CA\n"
@@ -210,7 +215,8 @@ help(const char *cmd)
 	"* Optional stuff:\n"
 	"  -S NAME	requested subject name (default: cn=<fqdn>)\n"
 	"  -u USAGE	requested usage / eku\n"
-	"  -s name	requested service name part (used to derive principal name)\n",
+	"  -s name	requested service name part (used to derive principal name)\n",},
+	{"start-tracking",
 	"%s start-tracking\n"
 	"* General options:\n"
 	"  -d DIR	NSS database for key and cert\n"
@@ -218,7 +224,8 @@ help(const char *cmd)
 	"  -k FILE	PEM file for private key\n"
 	"  -f FILE	PEM file for certificate (only valid with -k)\n"
 	"* If the client knows or wants to override where the CA is:\n"
-	"  -c		location of CA\n",
+	"  -c		location of CA\n",},
+	{"stop-tracking",
 	"%s stop-tracking\n"
 	"* General options:\n"
 	"  -s NUM	serial number of certificate\n"
@@ -231,16 +238,21 @@ help(const char *cmd)
 	"  -k FILE	PEM file for private key\n"
 	"  -f FILE	PEM file for certificate (only valid with -k)\n"
 	"* If the client knows or wants to override where the CA is:\n"
-	"  -c		location of CA\n",
+	"  -c		location of CA\n",},
+	{"list",
 	"%s list\n"
 	"* General options:\n"
 	"  -r		list only information about outstanding requests\n"
-	"  -t		list only information about tracked certificates\n"};
+	"  -t		list only information about tracked certificates\n"}};
 	for (i = 0; i < sizeof(msgs) / sizeof(msgs[0]); i++) {
+		if ((category != NULL) && (msgs[i].category != NULL) &&
+		    (strcmp(category, msgs[i].category) != 0)) {
+			continue;
+		}
 		if (i > 0) {
 			printf("\n");
 		}
-		printf(msgs[i], cmd);
+		printf(msgs[i].msg, cmd);
 	}
 }
 
@@ -249,21 +261,21 @@ main(int argc, char **argv)
 {
 	const char *verb, *p;
 	unsigned int i;
+	p = argv[0];
+	if (strchr(p, '/') != NULL) {
+		p = strrchr(p, '/') + 1;
+	}
 	if (argc > 1) {
 		verb = argv[1];
 		for (i = 0; i < sizeof(verbs) / sizeof(verbs[0]); i++) {
 			if (strcmp(verbs[i].verb, verb) == 0) {
-				return (*verbs[i].fn)(argc - 1, argv + 1);
+				return (*verbs[i].fn)(p, argc - 1, argv + 1);
 			}
 		}
 		fprintf(stderr, "%s: unrecognized command\n", verb);
 		return 1;
 	} else {
-		p = argv[0];
-		if (strchr(p, '/') != NULL) {
-			p = strrchr(p, '/') + 1;
-		}
-		help(p);
+		help(p, NULL);
 		return 1;
 	}
 }
