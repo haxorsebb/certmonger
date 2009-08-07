@@ -52,6 +52,7 @@ cm_submit_main(int fd, struct cm_store_entry *entry)
 					if (req != NULL) {
 						cert = X509_REQ_to_X509(req, 30,
 									pkey);
+						X509_set_version(cert, 3);
 						X509_sign(cert, pkey,
 							  EVP_sha256());
 						status = 0;

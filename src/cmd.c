@@ -34,6 +34,9 @@ main(int argc, char **argv)
 	sigaction(SIGINT, &action, NULL);
 	sigaction(SIGTERM, &action, NULL);
 
+	cm_log_set_level(3);
+	cm_log_set_method(cm_log_stderr);
+
 	ctx = NULL;
 	i = cm_init(&ctx);
 	if (i != 0) {
@@ -41,8 +44,6 @@ main(int argc, char **argv)
 		return 1;
 	}
 
-	cm_log_set_level(3);
-	cm_log_set_method(cm_log_stderr);
 	cm_log(3, "Starting up.\n");
 
 	fds = NULL;

@@ -92,6 +92,21 @@ request(const char *argv0, int argc, char **argv)
 			return 1;
 		}
 		entry->cm_notification_default = 1;
+		if (subject != NULL) {
+			entry->cm_template_subject = strdup(subject);
+		}
+		if (track_exp) {
+			entry->cm_monitor = 1;
+			entry->cm_monitor_default = 0;
+		} else {
+			entry->cm_monitor_default = 1;
+		}
+		if (auto_renew) {
+			entry->cm_autorenew = 1;
+			entry->cm_autorenew_default = 0;
+		} else {
+			entry->cm_autorenew_default = 1;
+		}
 		if (cm_store_entry_save(entry) == 0) {
 			printf("Request added.\n");
 			cm_store_entry_free(entry);

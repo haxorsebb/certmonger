@@ -29,7 +29,7 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 	X509_REQ *req;
 	RSA *rsa;
 	EVP_PKEY *pkey;
-	char buf[LINE_MAX];
+	char buf[LINE_MAX], *p, *q, *s;
 	long error;
 
 	status = fdopen(fd, "w");
@@ -57,7 +57,29 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 		EVP_PKEY_assign_RSA(pkey, rsa); /* pkey owns rsa now */
 		x = X509_new();
 		if (x != NULL) {
-			X509_set_version(x, 3);
+			if (entry->cm_template_subject != NULL) {
+				/* This isn't really correct, but it will
+				 * probably do for now. */
+				p = entry->cm_template_subject;
+				q = p + strcspn(p, ",");
+				while (*p != '\0') {
+					if ((s = memchr(p, '=', q - p)) != NULL) {
+						*s = '\0';
+						X509_NAME_add_entry_by_txt(x->cert_info->subject,
+									   p, MBSTRING_UTF8,
+									   s + 1, q - s - 1,
+									   -1, 0);
+						*s = '=';
+					} else {
+						X509_NAME_add_entry_by_txt(x->cert_info->subject,
+									   "CN", MBSTRING_UTF8,
+									   p, q - p,
+									   -1, 0);
+					}
+					p = q + strspn(q, ",");
+					q = p + strcspn(p, ",");
+				}
+			}
 			X509_set_pubkey(x, pkey);
 			req = X509_to_X509_REQ(x, pkey, EVP_sha256());
 			if (req != NULL) {

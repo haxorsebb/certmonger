@@ -401,7 +401,8 @@ cm_iterate(struct cm_store_entry *entry,
 		*when = cm_time_soonish;
 		break;
 	case CM_MONITORING:
-		if (cm_check_expiration_is_noteworthy(entry) == 0) {
+		if ((entry->cm_monitor || entry->cm_monitor_default) && /* XXX */
+		    (cm_check_expiration_is_noteworthy(entry) == 0)) {
 			state->cm_notify_state = cm_notify_start(entry);
 			if (state->cm_notify_state != NULL) {
 				entry->cm_state = CM_NOTIFYING;
@@ -432,8 +433,13 @@ cm_iterate(struct cm_store_entry *entry,
 			cm_notify_done(entry, state->cm_notify_state);
 			state->cm_notify_state = NULL;
 		}
-		entry->cm_state = CM_MONITORING;
-		*when = cm_time_soon;
+		if ((entry->cm_autorenew || entry->cm_autorenew_default)) { /* XXX */
+			entry->cm_state = CM_NEED_CSR;
+			*when = cm_time_soon;
+		} else {
+			entry->cm_state = CM_MONITORING;
+			*when = cm_time_soon;
+		}
 		break;
 	case CM_INVALID:
 		/* not reached */
