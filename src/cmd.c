@@ -36,6 +36,7 @@ main(int argc, char **argv)
 
 	cm_log_set_level(3);
 	cm_log_set_method(cm_log_stderr);
+	cm_log(3, "Starting up.\n");
 
 	ctx = NULL;
 	i = cm_init(&ctx);
@@ -43,8 +44,6 @@ main(int argc, char **argv)
 		fprintf(stderr, "Error: %s\n", strerror(i));
 		return 1;
 	}
-
-	cm_log(3, "Starting up.\n");
 
 	fds = NULL;
 	nfds = 0;

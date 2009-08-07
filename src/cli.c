@@ -79,6 +79,7 @@ request(const char *argv0, int argc, char **argv)
 			entry->cm_key_storage_type = cm_key_storage_file;
 			entry->cm_key_storage_location = strdup(keyfile);
 		} else {
+			entry->cm_key_storage_default = 1;
 			printf("Don't know how to do non-file keys yet.\n");
 			return 1;
 		}
@@ -88,6 +89,7 @@ request(const char *argv0, int argc, char **argv)
 			entry->cm_cert_storage_type = cm_cert_storage_file;
 			entry->cm_cert_storage_location = strdup(certfile);
 		} else {
+			entry->cm_cert_storage_default = 1;
 			printf("Don't know how to do non-file keys yet.\n");
 			return 1;
 		}

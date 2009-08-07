@@ -64,6 +64,7 @@ cm_log(int level, const char *fmt, ...)
 			if (p != fmt) {
 				free(p);
 			}
+			fflush(stderr);
 			break;
 		case cm_log_syslog:
 			va_start(args, fmt);

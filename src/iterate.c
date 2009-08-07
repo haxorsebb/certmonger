@@ -255,6 +255,7 @@ cm_iterate(struct cm_store_entry *entry,
 		break;
 	case CM_SUBMITTING:
 		if (cm_submit_sent(entry, state->cm_submit_state) == 0) {
+			entry->cm_submitted = time(NULL);
 			if ((cm_submit_issued(entry,
 					      state->cm_submit_state) == 0) &&
 			    (cm_submit_save_cert(entry,
