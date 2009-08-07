@@ -64,30 +64,15 @@ main(int argc, char **argv)
 						pfds[i].fd = fds[i];
 						pfds[i].events = POLLIN;
 					}
-					switch (timeout) {
-					case -1:
-						cm_log(3,
-						       "Waiting for next "
-						       "event.\n");
-						break;
-					case 0:
-						break;
-					default:
-						cm_log(3,
-						       "Waiting up to %d "
-						       "seconds for next "
-						       "event.\n", timeout);
-						break;
-					}
 					poll(pfds, nfds, timeout);
+					free(pfds);
 				}
 			} else {
-				cm_log(3, "Waiting for %d seconds.\n", timeout);
 				poll(NULL, 0, timeout);
 			}
 		}
 	}
 	cm_log(3, "Shutting down.\n");
-	cm_done(ctx);
+	cm_done(ctx, &fds);
 	return 0;
 }
