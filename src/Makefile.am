@@ -16,11 +16,15 @@ libcm_a_SOURCES = \
 	store-gen.c \
 	submit.h
 libcm_o_a_SOURCES = \
-	csrgen-o.c \
-	keygen-o.c \
 	submit-d.c
+if FALSE
+libcm_o_a_SOURCES += keygen-o.c csrgen-o.c
+endif
 libcm_o_a_CFLAGS = @OPENSSL_CFLAGS@
 libcm_n_a_SOURCES =
+if TRUE
+libcm_n_a_SOURCES += keygen-n.c csrgen-n.c
+endif
 libcm_n_a_CFLAGS = @NSS_CFLAGS@
 libcm_a_LIBADD = $(libcm_o_a_OBJECTS) $(libcm_n_a_OBJECTS)
 bin_PROGRAMS = cm
