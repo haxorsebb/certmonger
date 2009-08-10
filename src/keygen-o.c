@@ -49,6 +49,7 @@ cm_keygen_main(int fd, struct cm_store_entry *entry)
 		pkey = EVP_PKEY_new();
 		if (pkey == NULL) {
 			fprintf(status, "Internal error generating key.\n");
+			cm_log(1, "Internal error generating key.\n");
 			_exit(2);
 		}
 		rsa = RSA_generate_key(cm_key_size, CM_DEFAULT_RSA_MODULUS,
@@ -90,6 +91,7 @@ cm_keygen_main(int fd, struct cm_store_entry *entry)
 		_exit(2);
 		break;
 	}
+	fclose(status);
 }
 
 /* Start keypair generation using parameters stored in the entry. */
