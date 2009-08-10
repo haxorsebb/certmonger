@@ -1,6 +1,7 @@
 #include "config.h"
 
 #include <sys/types.h>
+#include <errno.h>
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -68,6 +69,7 @@ request(const char *argv0, int argc, char **argv)
 	entry = cm_store_entry_new();
 	if (entry != NULL) {
 		entry->cm_key_type_default = 1;
+		entry->cm_key_type.cm_key_size = CM_DEFAULT_PUBKEY_SIZE;
 		if (keysize != 0) {
 			entry->cm_key_type_default = 0;
 			entry->cm_key_type.cm_key_algorithm =
@@ -78,8 +80,18 @@ request(const char *argv0, int argc, char **argv)
 			entry->cm_key_storage_default = 0;
 			entry->cm_key_storage_type = cm_key_storage_file;
 			entry->cm_key_storage_location = strdup(keyfile);
+		} else
+		if (dbdir != NULL) {
+			entry->cm_key_storage_default = 0;
+			entry->cm_key_storage_type = cm_key_storage_nssdb;
+			entry->cm_key_storage_location = strdup(dbdir);
+			entry->cm_key_nickname = strdup(nickname);
 		} else {
-			printf("Don't know how to do non-file keys yet.\n");
+			if (keygen) {
+				printf("Don't know where to store the key.\n");
+			} else {
+				printf("Don't know where the key is stored.\n");
+			}
 			return 1;
 		}
 		entry->cm_state = keygen ? CM_NEED_KEY_PAIR : CM_NEED_CSR;
@@ -87,8 +99,14 @@ request(const char *argv0, int argc, char **argv)
 			entry->cm_cert_storage_default = 0;
 			entry->cm_cert_storage_type = cm_cert_storage_file;
 			entry->cm_cert_storage_location = strdup(certfile);
+		} else
+		if (dbdir != NULL) {
+			entry->cm_cert_storage_default = 0;
+			entry->cm_cert_storage_type = cm_cert_storage_nssdb;
+			entry->cm_cert_storage_location = strdup(dbdir);
+			entry->cm_cert_nickname = strdup(nickname);
 		} else {
-			printf("Don't know how to do non-file keys yet.\n");
+			printf("Don't know where to store the certificate.\n");
 			return 1;
 		}
 		entry->cm_notification_default = 1;
