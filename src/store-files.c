@@ -168,8 +168,11 @@ cm_store_file_read(const char *filename, FILE *fp)
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			if (strcasecmp(s[i], "FILE") == 0) {
+			if (strcasecmp(s[i], "file") == 0) {
 				ret->cm_key_storage_type = cm_key_storage_file;
+			} else
+			if (strcasecmp(s[i], "nssdb") == 0) {
+				ret->cm_key_storage_type = cm_key_storage_nssdb;
 			} else {
 				ret->cm_key_storage_type = cm_key_storage_file;
 			}
@@ -181,6 +184,10 @@ cm_store_file_read(const char *filename, FILE *fp)
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
+			ret->cm_key_nickname = s[i];
+			i++;
+		}
+		if ((s != NULL) && (s[i] != NULL)) {
 			ret->cm_cert_storage_default = atoi(s[i]);
 			free(s[i]);
 			i++;
@@ -188,6 +195,9 @@ cm_store_file_read(const char *filename, FILE *fp)
 		if ((s != NULL) && (s[i] != NULL)) {
 			if (strcasecmp(s[i], "file") == 0) {
 				ret->cm_cert_storage_type = cm_cert_storage_file;
+			} else
+			if (strcasecmp(s[i], "nssdb") == 0) {
+				ret->cm_cert_storage_type = cm_cert_storage_nssdb;
 			} else {
 				ret->cm_cert_storage_type = cm_cert_storage_file;
 			}
@@ -408,6 +418,7 @@ cm_store_file_write_ints(FILE *fp, int n, int *values)
 	if (ferror(fp)) {
 		return -1;
 	}
+	return 0;
 }
 
 static int
@@ -475,13 +486,20 @@ cm_store_file_write(FILE *fp, struct cm_store_entry *entry)
 	case cm_key_storage_file:
 		cm_store_file_write_str(fp, "FILE");
 		break;
+	case cm_key_storage_nssdb:
+		cm_store_file_write_str(fp, "NSSDB");
+		break;
 	}
 	cm_store_file_write_str(fp, entry->cm_key_storage_location);
+	cm_store_file_write_str(fp, entry->cm_key_nickname);
 
 	cm_store_file_write_int(fp, entry->cm_cert_storage_default);
 	switch (entry->cm_cert_storage_type) {
 	case cm_cert_storage_file:
 		cm_store_file_write_str(fp, "FILE");
+		break;
+	case cm_cert_storage_nssdb:
+		cm_store_file_write_str(fp, "NSSDB");
 		break;
 	}
 	cm_store_file_write_str(fp, entry->cm_cert_storage_location);
