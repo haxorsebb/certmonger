@@ -96,8 +96,12 @@ cm_keygen_main(int fd, struct cm_store_entry *entry)
 	}
 	/* Generate the key pair. */
 	pubkey = NULL;
-	privkey = PK11_GenerateKeyPair(slot, mech, params, &pubkey, PR_TRUE,
-				       PR_TRUE, NULL);
+	privkey = PK11_GenerateKeyPair(slot, mech, params, &pubkey,
+				       PR_TRUE, PR_TRUE, NULL);
+	if (privkey == NULL) {
+		privkey = PK11_GenerateKeyPair(slot, mech, params, &pubkey,
+					       PR_TRUE, PR_FALSE, NULL);
+	}
 	if (privkey == NULL) {
 		cm_log(1, "Error generating key pair.\n");
 		_exit(2);

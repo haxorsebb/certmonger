@@ -29,6 +29,12 @@ else
 	PKG_CHECK_MODULES(NSS,nss)
 fi
 
+AC_DEFINE_UNQUOTED(CM_DEFAULT_KEY_STORAGE_TYPE,cm_key_storage_nssdb,[Define to the default type of storage used for keys.])
+AC_DEFINE_UNQUOTED(CM_DEFAULT_KEY_STORAGE_LOCATION,"/etc/pki/nssdb",[Define to the default location of storage used for keys.])
+AC_DEFINE_UNQUOTED(CM_DEFAULT_KEY_NICKNAME,"Server-Cert",[Define to the default nickname given to keys.])
+AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_STORAGE_TYPE,cm_cert_storage_nssdb,[Define to the default type of storage used for certificates.])
+AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_STORAGE_LOCATION,"/etc/pki/nssdb",[Define to the default location of storage used for certificates.])
+AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_NICKNAME,"Server-Cert",[Define to the default nickname given to certificates.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_PUBKEY_TYPE,cm_key_rsa,[Define to the default public key type.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_RSA_MODULUS,65537,[Define to the default RSA key modulus.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_PUBKEY_SIZE,2048,[Define to the default public key size.])

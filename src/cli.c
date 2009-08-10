@@ -81,18 +81,18 @@ request(const char *argv0, int argc, char **argv)
 			entry->cm_key_storage_type = cm_key_storage_file;
 			entry->cm_key_storage_location = strdup(keyfile);
 		} else
-		if (dbdir != NULL) {
+		if ((dbdir != NULL) && (nickname != NULL)) {
 			entry->cm_key_storage_default = 0;
 			entry->cm_key_storage_type = cm_key_storage_nssdb;
 			entry->cm_key_storage_location = strdup(dbdir);
 			entry->cm_key_nickname = strdup(nickname);
 		} else {
-			if (keygen) {
-				printf("Don't know where to store the key.\n");
-			} else {
-				printf("Don't know where the key is stored.\n");
+			entry->cm_key_storage_default = 0;
+			entry->cm_key_storage_type = CM_DEFAULT_KEY_STORAGE_TYPE;
+			entry->cm_key_storage_location = strdup(CM_DEFAULT_KEY_STORAGE_LOCATION);
+			if (CM_DEFAULT_KEY_NICKNAME != NULL) {
+				entry->cm_key_nickname = strdup(CM_DEFAULT_KEY_NICKNAME);
 			}
-			return 1;
 		}
 		entry->cm_state = keygen ? CM_NEED_KEY_PAIR : CM_NEED_CSR;
 		if (certfile != NULL) {
@@ -100,13 +100,18 @@ request(const char *argv0, int argc, char **argv)
 			entry->cm_cert_storage_type = cm_cert_storage_file;
 			entry->cm_cert_storage_location = strdup(certfile);
 		} else
-		if (dbdir != NULL) {
+		if ((dbdir != NULL) && (nickname != NULL)) {
 			entry->cm_cert_storage_default = 0;
 			entry->cm_cert_storage_type = cm_cert_storage_nssdb;
 			entry->cm_cert_storage_location = strdup(dbdir);
 			entry->cm_cert_nickname = strdup(nickname);
 		} else {
-			printf("Don't know where to store the certificate.\n");
+			entry->cm_cert_storage_default = 0;
+			entry->cm_cert_storage_type = CM_DEFAULT_CERT_STORAGE_TYPE;
+			entry->cm_cert_storage_location = strdup(CM_DEFAULT_CERT_STORAGE_LOCATION);
+			if (CM_DEFAULT_CERT_NICKNAME != NULL) {
+				entry->cm_cert_nickname = strdup(CM_DEFAULT_CERT_NICKNAME);
+			}
 			return 1;
 		}
 		entry->cm_notification_default = 1;
@@ -157,6 +162,7 @@ static int
 list(const char *argv0, int argc, char **argv)
 {
 	struct cm_store_entry **entries;
+	const char *key_storage, *cert_storage;
 	int requests_only = 0, tracking_only = 0, c, i;
 	while ((c = getopt(argc, argv, "rt")) != -1) {
 		switch (c) {
@@ -203,9 +209,33 @@ list(const char *argv0, int argc, char **argv)
 			}
 			break;
 		}
-		printf("'%s': %s\n",
-		       entries[i]->cm_id,
+		switch (entries[i]->cm_key_storage_type) {
+		case cm_key_storage_file:
+			key_storage = "file";
+			break;
+		case cm_key_storage_nssdb:
+			key_storage = "nssdb";
+			break;
+		}
+		switch (entries[i]->cm_cert_storage_type) {
+		case cm_cert_storage_file:
+			cert_storage = "file";
+			break;
+		case cm_cert_storage_nssdb:
+			cert_storage = "nssdb";
+			break;
+		}
+		printf("Request '%s'\n", entries[i]->cm_id);
+		printf("        state: %s\n",
 		       cm_store_state_as_string(entries[i]->cm_state));
+		printf("     key pair: type=%s,location='%s'\n",
+		       key_storage, entries[i]->cm_key_storage_location);
+		printf("  certificate: type=%s,location='%s'\n",
+		       cert_storage, entries[i]->cm_cert_storage_location);
+		printf("      monitor: %s\n",
+		       entries[i]->cm_monitor ? "yes" : "no");
+		printf("   auto-renew: %s\n",
+		       entries[i]->cm_autorenew ? "yes" : "no");
 	}
 	return 0;
 }

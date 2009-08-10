@@ -10,6 +10,7 @@
 #include <nss.h>
 #include <pk11pub.h>
 #include <keyhi.h>
+#include <cert.h>
 
 #include "keygen.h"
 #include "log.h"
@@ -29,9 +30,13 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 	SECStatus error;
 	SECKEYPrivateKeyList *privkeys;
 	SECKEYPrivateKey *privkey;
+	SECKEYPublicKey *pubkey;
 	CK_MECHANISM_TYPE mech;
 	PK11SlotInfo *slot;
 	enum cm_key_algorithm cm_key_algorithm;
+	CERTSubjectPublicKeyInfo *spki;
+	CERTCertificateRequest *req;
+	CERTName *name;
 
 	status = fdopen(fd, "w");
 	if (status == NULL) {
@@ -78,6 +83,16 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 		_exit(2);
 	}
 	SECKEY_DestroyPrivateKeyList(privkeys);
+	/* Create the request. */
+	if (entry->cm_template_subject != NULL) {
+		name = CERT_AsciiToName(entry->cm_template_subject);
+	} else {
+		name = NULL;
+	}
+	privkey = NULL;
+	pubkey = SECKEY_ConvertToPublicKey(privkey);
+	spki = SECKEY_CreateSubjectPublicKeyInfo(pubkey);
+	req = CERT_CreateCertificateRequest(name, spki, NULL);
 	/* Clean up.  We're not really doing anything here yet. */
 	PK11_FreeSlot(slot);
 	error = NSS_Shutdown();
