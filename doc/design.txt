@@ -39,10 +39,13 @@ State logic:
 			state_next = NEED_KEY_PAIR
 			state_transition = now
 		else
-			if key-is-ready
-				store-keys
-				state_next = HAVE_KEY_PAIR
-				state_transition = now
+			if keygen-finished
+				if key-was-stored-successfully
+					state_next = HAVE_KEY_PAIR
+					state_transition = now
+				else
+					state_next = NEED_KEY_PAIR
+					state_transition = now
 			else
 				state_next = GENERATING_KEY_PAIR
 				state_transition = when-notified
@@ -54,8 +57,8 @@ State logic:
 
 	NEED_CSR:
 		if don't-have-a-full-template
-			store-full-template-based-on-template-&-defaults
-		start-csr-generation-using-template
+			fill-in-template-values-based-on-defaults
+		start-csr-generation-using-template-values
 		state_next = GENERATING_CSR
 		state_transition = now
 		break
@@ -64,10 +67,13 @@ State logic:
 			state_next = NEED_CSR
 			state_transition = now
 		else
-			if csr-ready
-				store-csr
-				state_next = HAVE_CSR
-				state_transition = now
+			if csrgen-finished
+				if csr-was-stored
+					state_next = HAVE_CSR
+					state_transition = now
+				else
+					state_next = NEED_CSR
+					state_transition = now
 			else
 				state_next = GENERATING_CSR
 				state_transition = when-notified
@@ -92,10 +98,14 @@ State logic:
 			state_transition = now
 		else
 			if csr-submission-completed
-				if ca-issued-cert-already
-					state_next = RETRIEVING_CERT
-					state_transition = now
-				else if ca-is-thinking-about-it
+				if ca-made-a-decision
+					if ca-issued-cert
+						state_next = RETRIEVING_CERT
+						state_transition = now
+					else
+						state_next = NEED_GUIDANCE
+						state_transition = now
+				elseif ca-is-thinking-about-it
 					store-ca-cookie
 					state_next = HAVE_SUBMITTED
 					state_transition = now
@@ -139,9 +149,13 @@ State logic:
 		if ca-is-reachable
 			retrieve-cert
 			save-cert-to-disk
-			maybe-add-cert-to-monitoring-list
-			state_next = MONITORING
-			state_transition = now
+			if cert-should-be-monitored
+				add-cert-to-monitoring-list
+				state_next = MONITORING
+				state_transition = now
+			else
+				state_next = NEED_GUIDANCE
+				state_transition = now
 		else
 			state_next = NEED_CA_STATUS
 			state_transition = now
@@ -149,29 +163,19 @@ State logic:
 
 	NEED_GUIDANCE:
 		if have-guidance
-			state_next = guidance
+			state_next = as-guided
 			state_waitfor = now
 		else
-			if not-certificate-uses-auto-renew(cert)
-				if administrator-last-notified-exp-date !=
-				   exp-date or
-				for T in interesting-ttl-values
-				   if administrator-last-notified-ttl > T and
-				      ttl <= T
-					notify-administrator
-					store-last-notified-t(cert,exp,ttl)
-				state_next = NEED_GUIDANCE
-				state_transition = timeout
-			else
-				state_next = NEED_GUIDANCE
-				state_transition = timeout
+			state_next = NEED_GUIDANCE
+			state_transition = timeout
 		break
 
 	MONITORING:
 		if certificate-uses-auto-renew(cert)
 			if certificate-is-expired or
-			   certificate-is-near-expiration
-				store-template-based-on-cert
+			   (expiration-time-is-below-renewal-threshold-value and
+			    expiration-time-was-above-renewal-threshold-value)
+				update-template-values-based-on-cert
 				state_next = NEED_CSR
 				state_transition = now
 			else
@@ -181,13 +185,13 @@ State logic:
 			if certificate-is-expired
 				state_next = NEED_GUIDANCE
 				state_transition = now
-			elseif administrator-last-notified-exp-date !=
-			   exp-date or
-			for T in interesting-ttl-values
-			   if administrator-last-notified-ttl > T and
-			      ttl <= T
-				state_next = NEED_GUIDANCE
-				state_transition = now
+			elseif (expiration-time-is-below-a-threshold-value and
+			        expiration-time-was-above-a-threshold-value)
+				notify-administrator
+				store-last-checked-t(cert,now)
+				store-last-notified-t(cert,exp,ttl)
+				state_next = MONITORING
+				state_transition = timeout
 			else
 				state_next = MONITORING
 				state_transition = timeout
@@ -200,7 +204,10 @@ Types of actions and user guidance:
 	Submit-key ("request", if no csr or arguments alter it):
 		state_next = NEED_CSR
 		state_transition = now
-	Submit-csr/Resubmit-csr ("request", no arguments):
+	Submit-csr (automatic for "request")
+		state_next = HAVE_CSR
+		state_transition = now
+	Resubmit-csr (need to add "resubmit")
 		state_next = HAVE_CSR
 		state_transition = now
 	Start-Tracking-with-AutoRenew ("start-tracking"):
@@ -231,14 +238,15 @@ Data we need to track for each certificate/task/dbentry:
 	  syslog(LOG_AUTHPRIV?) or mail to root@?
 	* CSR template information [or imported from existing certificate]
 	  * subject (cn=host name)
-	  * SANs(?)
+	  * SANs¹
 	    * DNS
 	    * email
 	    * principal name
-	  * ku(?), eku(?)
-	  * The PKCS#10 CSR structure only provides for a proposed subject
+	  * ku¹, eku¹
+	  ¹ The PKCS#10 CSR structure only provides for a proposed subject
 	    name.  I guess that's why the client usually has to specify an
-	    enrollment profile elsewhere.
+	    enrollment profile elsewhere.  Either that or it's sent along
+	    with a request as a separate item.
 	* Certificate State (state_current)
 	* Whether to autorenew-at-expiration [or use default settings]
 	* Whether to start monitoring at issue [or use default settings]
