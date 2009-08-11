@@ -231,11 +231,14 @@ Data we need to track for each certificate/task/dbentry:
 	  syslog(LOG_AUTHPRIV?) or mail to root@?
 	* CSR template information [or imported from existing certificate]
 	  * subject (cn=host name)
-	  * SANs
+	  * SANs(?)
 	    * DNS
 	    * email
 	    * principal name
-	  * ku, eku
+	  * ku(?), eku(?)
+	  * The PKCS#10 CSR structure only provides for a proposed subject
+	    name.  I guess that's why the client usually has to specify an
+	    enrollment profile elsewhere.
 	* Certificate State (state_current)
 	* Whether to autorenew-at-expiration [or use default settings]
 	* Whether to start monitoring at issue [or use default settings]

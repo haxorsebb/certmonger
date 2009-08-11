@@ -23,14 +23,18 @@ AC_DEFINE_UNQUOTED(CM_FILE_STORE_DIRECTORY_ENV,"${UPCASE_PACKAGE_NAME}_FILE_STOR
 
 PKG_CHECK_MODULES(OPENSSL,openssl)
 
-dnl if pkg-config mozilla-nss 2> /dev/null ; then
-dnl	PKG_CHECK_MODULES(NSS,mozilla-nss)
-dnl else
-dnl 	PKG_CHECK_MODULES(NSS,nss)
-dnl fi
-AC_SUBST(NSS_CFLAGS)
-AC_SUBST(NSS_LIBS)
+if pkg-config mozilla-nss 2> /dev/null ; then
+	PKG_CHECK_MODULES(NSS,mozilla-nss)
+else
+	PKG_CHECK_MODULES(NSS,nss)
+fi
 
+AC_DEFINE_UNQUOTED(CM_DEFAULT_KEY_STORAGE_TYPE,cm_key_storage_nssdb,[Define to the default type of storage used for keys.])
+AC_DEFINE_UNQUOTED(CM_DEFAULT_KEY_STORAGE_LOCATION,"/etc/pki/nssdb",[Define to the default location of storage used for keys.])
+AC_DEFINE_UNQUOTED(CM_DEFAULT_KEY_NICKNAME,"Server-Cert",[Define to the default nickname given to keys.])
+AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_STORAGE_TYPE,cm_cert_storage_nssdb,[Define to the default type of storage used for certificates.])
+AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_STORAGE_LOCATION,"/etc/pki/nssdb",[Define to the default location of storage used for certificates.])
+AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_NICKNAME,"Server-Cert",[Define to the default nickname given to certificates.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_PUBKEY_TYPE,cm_key_rsa,[Define to the default public key type.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_RSA_MODULUS,65537,[Define to the default RSA key modulus.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_PUBKEY_SIZE,2048,[Define to the default public key size.])
