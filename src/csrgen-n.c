@@ -32,11 +32,14 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 	SECKEYPrivateKey *privkey;
 	SECKEYPublicKey *pubkey;
 	CK_MECHANISM_TYPE mech;
+	PK11SlotList *slotlist;
+	PK11SlotListElement *sle;
 	PK11SlotInfo *slot;
 	enum cm_key_algorithm cm_key_algorithm;
 	CERTSubjectPublicKeyInfo *spki;
 	CERTCertificateRequest *req;
 	CERTName *name;
+	const char *token;
 
 	status = fdopen(fd, "w");
 	if (status == NULL) {
@@ -68,18 +71,65 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 		_exit(2);
 		break;
 	}
-	/* Find the token that's best equipped for key generation. */
-	slot = PK11_GetBestSlot(mech, NULL);
+	/* Find the token that contains our key pair. */
+	slotlist = PK11_GetAllTokens(mech, PR_TRUE, PR_FALSE, NULL);
+	if (slotlist == NULL) {
+		fprintf(status, "Error locating slot for CSR generation.\n");
+		cm_log(1, "Error locating slot for CSR generation.\n");
+		_exit(2);
+	}
+	/* Walk the list looking for the requested slot, or the first one if
+	 * none was requested. */
+	slot = NULL;
+	for (sle = slotlist->head;
+	     ((sle != NULL) && (sle->slot != NULL));
+	     sle = sle->next) {
+		token = PK11_GetTokenName(sle->slot);
+		if (token != NULL) {
+			cm_log(3, "Found token '%s'.\n", token);
+		}
+		if ((entry->cm_key_token == NULL) ||
+		    (strlen(entry->cm_key_token) == 0) ||
+		    (strcmp(entry->cm_key_token, token) == 0)) {
+			slot = sle->slot;
+			break;
+		}
+		if (sle == slotlist->tail) {
+			break;
+		}
+	}
 	if (slot == NULL) {
 		fprintf(status, "Error locating slot for key generation.\n");
 		cm_log(1, "Error locating slot for key generation.\n");
+		PK11_FreeSlotList(slotlist);
+		error = NSS_Shutdown();
+		if (error != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
+		}
 		_exit(2);
+	}
+	/* Log in to the database, if we can. */
+	if (PK11_NeedLogin(slot) || !PK11_IsFriendly(slot)) {
+		error = PK11_Authenticate(slot, PR_TRUE, NULL);
+		if (error != SECSuccess) {
+			cm_log(1, "Error authenticating to key store.\n");
+			PK11_FreeSlotList(slotlist);
+			error = NSS_Shutdown();
+			if (error != SECSuccess) {
+				cm_log(1, "Error shutting down NSS.\n");
+			}
+			_exit(2);
+		}
 	}
 	/* Locate the key pair. */
 	privkeys = PK11_ListPrivKeysInSlot(slot, entry->cm_key_nickname, NULL);
 	if (privkeys == NULL) {
 		cm_log(1, "Error finding key pair.\n");
-		PK11_FreeSlot(slot);
+		PK11_FreeSlotList(slotlist);
+		error = NSS_Shutdown();
+		if (error != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
+		}
 		_exit(2);
 	}
 	SECKEY_DestroyPrivateKeyList(privkeys);
@@ -89,12 +139,11 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 	} else {
 		name = NULL;
 	}
-	privkey = NULL;
 	pubkey = SECKEY_ConvertToPublicKey(privkey);
 	spki = SECKEY_CreateSubjectPublicKeyInfo(pubkey);
 	req = CERT_CreateCertificateRequest(name, spki, NULL);
 	/* Clean up.  We're not really doing anything here yet. */
-	PK11_FreeSlot(slot);
+	PK11_FreeSlotList(slotlist);
 	error = NSS_Shutdown();
 	if (error != SECSuccess) {
 		cm_log(1, "Error shutting down NSS.\n");
@@ -167,12 +216,12 @@ cm_csrgen_get_fd(struct cm_store_entry *entry, struct cm_csrgen_state *state)
 int
 cm_csrgen_save_csr(struct cm_store_entry *entry, struct cm_csrgen_state *state)
 {
-	free(entry->cm_csr);
 	if (state->pid == -1) {
 		if (!WIFEXITED(state->status) ||
 		    (WEXITSTATUS(state->status) != 0)) {
-			return 0;
+			return -1;
 		}
+		free(entry->cm_csr);
 		entry->cm_csr = strdup(state->msg);
 		if (entry->cm_csr == NULL) {
 			return ENOMEM;
