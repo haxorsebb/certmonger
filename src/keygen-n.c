@@ -173,6 +173,15 @@ cm_keygen_main(int fd, struct cm_store_entry *entry)
 	if (error != SECSuccess) {
 		cm_log(1, "Error setting nickname on key pair.\n");
 	}
+	/* Record the token name if we didn't already have one. */
+	if ((entry->cm_key_token == NULL) ||
+	    (strlen(entry->cm_key_token) == 0)) {
+		free(entry->cm_key_token);
+		entry->cm_key_token = strdup(token);
+		if (entry->cm_key_token == NULL) {
+			cm_log(1, "Error recording token name.\n");
+		}
+	}
 	SECKEY_DestroyPrivateKey(privkey);
 	SECKEY_DestroyPublicKey(pubkey);
 	PK11_FreeSlotList(slotlist);

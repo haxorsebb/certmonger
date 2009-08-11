@@ -10,6 +10,7 @@
 #include <nss.h>
 #include <pk11pub.h>
 #include <keyhi.h>
+#include <keythi.h>
 #include <cert.h>
 
 #include "keygen.h"
@@ -29,6 +30,7 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 	FILE *status;
 	SECStatus error;
 	SECKEYPrivateKeyList *privkeys;
+	SECKEYPrivateKeyListNode *node;
 	SECKEYPrivateKey *privkey;
 	SECKEYPublicKey *pubkey;
 	CK_MECHANISM_TYPE mech;
@@ -39,7 +41,7 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 	CERTSubjectPublicKeyInfo *spki;
 	CERTCertificateRequest *req;
 	CERTName *name;
-	const char *token;
+	const char *token, *keyname;
 
 	status = fdopen(fd, "w");
 	if (status == NULL) {
@@ -124,7 +126,7 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 	/* Locate the key pair. */
 	privkeys = PK11_ListPrivKeysInSlot(slot, entry->cm_key_nickname, NULL);
 	if (privkeys == NULL) {
-		cm_log(1, "Error finding key pair.\n");
+		cm_log(1, "Error finding matching key pairs.\n");
 		PK11_FreeSlotList(slotlist);
 		error = NSS_Shutdown();
 		if (error != SECSuccess) {
@@ -132,7 +134,33 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 		}
 		_exit(2);
 	}
-	SECKEY_DestroyPrivateKeyList(privkeys);
+	privkey = NULL;
+	if (!PR_CLIST_IS_EMPTY(&(privkeys->list))) {
+		for (node = PR_LIST_HEAD(&(privkeys->list));
+		     ((node != NULL) && (node->key != NULL));
+		     node = PR_NEXT_LINK(&(node->links))) {
+			keyname = PK11_GetPrivateKeyNickname(node->key);
+			if ((entry->cm_key_nickname == NULL) ||
+			    (strlen(entry->cm_key_nickname) == 0) ||
+			    (strcmp(entry->cm_key_nickname, keyname) == 0)) {
+				privkey = node->key;
+				break;
+			}
+			if (node == PR_LIST_TAIL(&(privkeys->list))) {
+				break;
+			}
+		}
+	}
+	if (privkey == NULL) {
+		cm_log(1, "Error finding designated key pair.\n");
+		SECKEY_DestroyPrivateKeyList(privkeys);
+		PK11_FreeSlotList(slotlist);
+		error = NSS_Shutdown();
+		if (error != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
+		}
+		_exit(2);
+	}
 	/* Create the request. */
 	if (entry->cm_template_subject != NULL) {
 		name = CERT_AsciiToName(entry->cm_template_subject);
@@ -143,6 +171,8 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 	spki = SECKEY_CreateSubjectPublicKeyInfo(pubkey);
 	req = CERT_CreateCertificateRequest(name, spki, NULL);
 	/* Clean up.  We're not really doing anything here yet. */
+	SECKEY_DestroyPublicKey(pubkey);
+	SECKEY_DestroyPrivateKeyList(privkeys);
 	PK11_FreeSlotList(slotlist);
 	error = NSS_Shutdown();
 	if (error != SECSuccess) {
