@@ -184,6 +184,10 @@ cm_store_file_read(const char *filename, FILE *fp)
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
+			ret->cm_key_token = s[i];
+			i++;
+		}
+		if ((s != NULL) && (s[i] != NULL)) {
 			ret->cm_key_nickname = s[i];
 			i++;
 		}
@@ -206,6 +210,10 @@ cm_store_file_read(const char *filename, FILE *fp)
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
 			ret->cm_cert_storage_location = s[i];
+			i++;
+		}
+		if ((s != NULL) && (s[i] != NULL)) {
+			ret->cm_cert_token = s[i];
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
@@ -491,6 +499,7 @@ cm_store_file_write(FILE *fp, struct cm_store_entry *entry)
 		break;
 	}
 	cm_store_file_write_str(fp, entry->cm_key_storage_location);
+	cm_store_file_write_str(fp, entry->cm_key_token);
 	cm_store_file_write_str(fp, entry->cm_key_nickname);
 
 	cm_store_file_write_int(fp, entry->cm_cert_storage_default);
@@ -503,8 +512,9 @@ cm_store_file_write(FILE *fp, struct cm_store_entry *entry)
 		break;
 	}
 	cm_store_file_write_str(fp, entry->cm_cert_storage_location);
-
+	cm_store_file_write_str(fp, entry->cm_cert_token);
 	cm_store_file_write_str(fp, entry->cm_cert_nickname);
+
 	cm_store_file_write_str(fp, entry->cm_cert_issuer);
 	cm_store_file_write_str(fp, entry->cm_cert_serial);
 	cm_store_file_write_str(fp, entry->cm_cert_subject);

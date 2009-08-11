@@ -24,6 +24,7 @@ struct cm_store_entry {
 		cm_key_storage_nssdb,
 	} cm_key_storage_type;
 	char *cm_key_storage_location;
+	char *cm_key_token;
 	char *cm_key_nickname;
 	/* Location of certificate [use-once default]
 	 * NSS,/etc/pki/nssdb,Server-Cert-default */
@@ -33,6 +34,7 @@ struct cm_store_entry {
 		cm_cert_storage_nssdb,
 	} cm_cert_storage_type;
 	char *cm_cert_storage_location;
+	char *cm_cert_token;
 	char *cm_cert_nickname;
 	/* Cached certificate issuer/serial/subject/spki/expiration */
 	char *cm_cert_issuer;
