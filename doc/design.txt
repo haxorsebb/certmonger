@@ -227,9 +227,9 @@ Data we need to track for each certificate/task/dbentry:
 	* Type of key pair to generate [or use default settings]
 	  default: RSA,2048
 	* Location of key pair [use-once default]
-	  default: NSS,/etc/pki/nssdb
+	  default: NSS,/etc/pki/nssdb,,Server-Key-default
 	* Location of certificate [use-once default]
-	  default: NSS,/etc/pki/nssdb,Server-Cert-default
+	  default: NSS,/etc/pki/nssdb,,Server-Cert-default
 	* Cached certificate issuer/serial/subject/spki/expiration
 	* The last time we checked if expiration was imminent.
 	* Interesting TTL values [or use default settings]
