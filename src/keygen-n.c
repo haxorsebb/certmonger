@@ -10,6 +10,7 @@
 #include <nss.h>
 #include <pk11pub.h>
 #include <keyhi.h>
+#include <prerror.h>
 
 #include "keygen.h"
 #include "log.h"
@@ -30,11 +31,15 @@ cm_keygen_main(int fd, struct cm_store_entry *entry)
 	int cm_key_size, cm_requested_key_size;
 	CK_MECHANISM_TYPE mech;
 	SECStatus error;
+	PK11SlotList *slotlist;
+	PK11SlotListElement *sle;
 	PK11SlotInfo *slot = NULL;
 	PK11RSAGenParams rsa_params;
 	void *params;
 	SECKEYPrivateKey *privkey;
 	SECKEYPublicKey *pubkey;
+	PRErrorCode ec;
+	const char *es, *token;
 
 	status = fdopen(fd, "w");
 	if (status == NULL) {
@@ -68,8 +73,33 @@ cm_keygen_main(int fd, struct cm_store_entry *entry)
 		_exit(2);
 		break;
 	}
-	/* Find the token that's best equipped for key generation. */
-	slot = PK11_GetBestSlot(mech, NULL);
+	/* Find the tokens that we might use for key generation. */
+	slotlist = PK11_GetAllTokens(mech, PR_TRUE, PR_FALSE, NULL);
+	if (slotlist == NULL) {
+		fprintf(status, "Error locating slot for key generation.\n");
+		cm_log(1, "Error locating slot for key generation.\n");
+		_exit(2);
+	}
+	/* Walk the list looking for the requested slot, or the first one if
+	 * none was requested. */
+	slot = NULL;
+	for (sle = slotlist->head;
+	     ((sle != NULL) && (sle->slot != NULL));
+	     sle = sle->next) {
+		token = PK11_GetTokenName(sle->slot);
+		if (token != NULL) {
+			cm_log(3, "Found token '%s'.\n", token);
+		}
+		if ((entry->cm_key_token == NULL) ||
+		    (strlen(entry->cm_key_token) == 0) ||
+		    (strcmp(entry->cm_key_token, token) == 0)) {
+			slot = sle->slot;
+			break;
+		}
+		if (sle == slotlist->tail) {
+			break;
+		}
+	}
 	if (slot == NULL) {
 		fprintf(status, "Error locating slot for key generation.\n");
 		cm_log(1, "Error locating slot for key generation.\n");
@@ -77,10 +107,19 @@ cm_keygen_main(int fd, struct cm_store_entry *entry)
 	}
 	/* Select the optimum key size. */
 	cm_key_size = PK11_GetBestKeyLength(slot, mech);
-	if ((entry->cm_key_type_default == 0) &&
-	    (cm_key_size != cm_requested_key_size)) {
-		cm_log(1, "Overriding requested key size of %d with %d.\n",
-		       cm_requested_key_size, cm_key_size);
+	if (cm_key_size > 0) {
+		if ((entry->cm_key_type_default == 0) &&
+		    (cm_key_size != cm_requested_key_size)) {
+			cm_log(1,
+			       "Overriding requested key size of %d with %d.\n",
+			       cm_requested_key_size, cm_key_size);
+		}
+	} else {
+		if (cm_requested_key_size > 0) {
+			cm_key_size = cm_requested_key_size;
+		} else {
+			cm_key_size = CM_DEFAULT_PUBKEY_SIZE;
+		}
 	}
 	/* Initialize the key generation parameters. */
 	switch (cm_key_algorithm) {
@@ -94,16 +133,35 @@ cm_keygen_main(int fd, struct cm_store_entry *entry)
 		params = NULL;
 		break;
 	}
+	/* Log in to the database, if we can. */
+	if (PK11_NeedLogin(slot) || !PK11_IsFriendly(slot)) {
+		error = PK11_Authenticate(slot, PR_TRUE, NULL);
+		if (error != SECSuccess) {
+			cm_log(1, "Error authenticating to key store.\n");
+			PK11_FreeSlotList(slotlist);
+			error = NSS_Shutdown();
+			if (error != SECSuccess) {
+				cm_log(1, "Error shutting down NSS.\n");
+			}
+			_exit(2);
+		}
+	}
 	/* Generate the key pair. */
 	pubkey = NULL;
 	privkey = PK11_GenerateKeyPair(slot, mech, params, &pubkey,
 				       PR_TRUE, PR_TRUE, NULL);
 	if (privkey == NULL) {
-		privkey = PK11_GenerateKeyPair(slot, mech, params, &pubkey,
-					       PR_TRUE, PR_FALSE, NULL);
-	}
-	if (privkey == NULL) {
-		cm_log(1, "Error generating key pair.\n");
+		ec = PR_GetError();
+		if (ec != 0) {
+			es = PR_ErrorToString(ec, PR_LANGUAGE_I_DEFAULT);
+		} else {
+			es = NULL;
+		}
+		if (es != NULL) {
+			cm_log(1, "Error generating key pair: %s.\n", es);
+		} else {
+			cm_log(1, "Error generating key pair.\n");
+		}
 		_exit(2);
 	}
 	/* Attach the specified nickname to the key. */
@@ -117,7 +175,7 @@ cm_keygen_main(int fd, struct cm_store_entry *entry)
 	}
 	SECKEY_DestroyPrivateKey(privkey);
 	SECKEY_DestroyPublicKey(pubkey);
-	PK11_FreeSlot(slot);
+	PK11_FreeSlotList(slotlist);
 	error = NSS_Shutdown();
 	if (error != SECSuccess) {
 		cm_log(1, "Error shutting down NSS.\n");
