@@ -74,7 +74,6 @@ cm_store_file_read_lines(FILE *fp)
 	while (fgets(buf, sizeof(buf), fp) == buf) {
 		switch (buf[0]) {
 		case '=':
-			trim = 1;
 			if (s != NULL) {
 				tlines = malloc((n_lines + 2) * sizeof(*lines));
 				if (tlines != NULL) {
@@ -92,6 +91,7 @@ cm_store_file_read_lines(FILE *fp)
 					lines = tlines;
 				}
 			}
+			trim = 1;
 			s = strdup(buf + 1);
 			break;
 		case ' ':
@@ -465,12 +465,13 @@ cm_store_file_write_str(FILE *fp, const char *s)
 {
 	const char *p, *q;
 	p = s ?: "";
-	q = p + strcspn(p, "\n");
+	q = p + strcspn(p, "\r\n");
 	fprintf(fp, "=%.*s\n", (int) (q - p), p);
-	while (*q != '\0') {
-		p = q + 1;
-		q = p + strcspn(p, "\n");
+	p = q + strspn(q, "\r\n");
+	while (*p != '\0') {
+		q = p + strcspn(p, "\r\n");
 		fprintf(fp, " %.*s\n", (int) (q - p), p);
+		p = q + strspn(q, "\r\n");
 	}
 	if (ferror(fp)) {
 		return -1;
