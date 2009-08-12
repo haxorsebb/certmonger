@@ -48,7 +48,7 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 	PLArenaPool *arena;
 	SECItem ereq, esreq, digest;
 	PRErrorCode ec;
-	char *b64;
+	char *b64, *p, *q;
 	SECOidData *sigoid;
 
 	/* Allocate an arena pool and a place to write status updates. */
@@ -310,10 +310,14 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 	/* Encode the request into base-64. */
 	b64 = NSSBase64_EncodeItem(arena, NULL, -1, &esreq);
 	if (b64 != NULL) {
-		fprintf(status, "%s\n%s\n%s\n",
-			"-----BEGIN CERTIFICATE REQUEST-----",
-			b64,
-			"-----END CERTIFICATE REQUEST-----");
+		fprintf(status, "-----BEGIN CERTIFICATE REQUEST-----\n");
+		p = b64;
+		while (*p != '\0') {
+			q = p + strcspn(p, "\r\n");
+			fprintf(status, "%.*s\n", q - p, p);
+			p = q + strspn(q, "\r\n");
+		}
+		fprintf(status, "-----END CERTIFICATE REQUEST-----\n");
 		SECKEY_DestroyPublicKey(pubkey);
 		SECKEY_DestroyPrivateKeyList(privkeys);
 		PK11_FreeSlotList(slotlist);
