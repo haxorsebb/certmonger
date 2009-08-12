@@ -243,10 +243,11 @@ Data we need to track for each certificate/task/dbentry:
 	    * email
 	    * principal name
 	  * ku¹, eku¹
-	  ¹ The PKCS#10 CSR structure only provides for a proposed subject
-	    name.  I guess that's why the client usually has to specify an
-	    enrollment profile elsewhere.  Either that or it's sent along
-	    with a request as a separate item.
+	  ¹ The PKCS#10 CSR structure (and its successor, the RFC4211 CRMF
+	    message) only provides for a proposed subject name.  I guess
+	    that's why the client usually has to specify an enrollment profile
+	    elsewhere.  Either that or it's sent along with a request as a
+	    separate item.
 	* Certificate State (state_current)
 	* Whether to autorenew-at-expiration [or use default settings]
 	* Whether to start monitoring at issue [or use default settings]
