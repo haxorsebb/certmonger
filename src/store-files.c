@@ -127,6 +127,16 @@ cm_store_file_read_lines(FILE *fp)
 	return lines;
 }
 
+static char *
+free_if_empty(char *s)
+{
+	if ((s != NULL) && (strlen(s) == 0)) {
+		free(s);
+		s = NULL;
+	}
+	return s;
+}
+
 static struct cm_store_entry *
 cm_store_file_read(const char *filename, FILE *fp)
 {
@@ -140,7 +150,7 @@ cm_store_file_read(const char *filename, FILE *fp)
 		i = 0;
 		ret->cm_store_private = strdup(filename);
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_id = s[i];
+			ret->cm_id = free_if_empty(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
@@ -180,15 +190,15 @@ cm_store_file_read(const char *filename, FILE *fp)
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_key_storage_location = s[i];
+			ret->cm_key_storage_location = free_if_empty(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_key_token = s[i];
+			ret->cm_key_token = free_if_empty(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_key_nickname = s[i];
+			ret->cm_key_nickname = free_if_empty(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
@@ -209,31 +219,31 @@ cm_store_file_read(const char *filename, FILE *fp)
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert_storage_location = s[i];
+			ret->cm_cert_storage_location = free_if_empty(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert_token = s[i];
+			ret->cm_cert_token = free_if_empty(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert_nickname = s[i];
+			ret->cm_cert_nickname = free_if_empty(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert_issuer = s[i];
+			ret->cm_cert_issuer = free_if_empty(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert_serial = s[i];
+			ret->cm_cert_serial = free_if_empty(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert_subject = s[i];
+			ret->cm_cert_subject = free_if_empty(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert_spki = s[i];
+			ret->cm_cert_spki = free_if_empty(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
@@ -242,19 +252,19 @@ cm_store_file_read(const char *filename, FILE *fp)
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert_email = s[i];
+			ret->cm_cert_email = free_if_empty(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert_principal = s[i];
+			ret->cm_cert_principal = free_if_empty(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert_ku = s[i];
+			ret->cm_cert_ku = free_if_empty(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert_eku = s[i];
+			ret->cm_cert_eku = free_if_empty(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
@@ -302,7 +312,7 @@ cm_store_file_read(const char *filename, FILE *fp)
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_notification_destination = s[i];
+			ret->cm_notification_destination = free_if_empty(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
@@ -311,27 +321,27 @@ cm_store_file_read(const char *filename, FILE *fp)
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_template_subject = s[i];
+			ret->cm_template_subject = free_if_empty(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_template_email = s[i];
+			ret->cm_template_email = free_if_empty(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_template_principal = s[i];
+			ret->cm_template_principal = free_if_empty(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_template_ku = s[i];
+			ret->cm_template_ku = free_if_empty(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_template_eku = s[i];
+			ret->cm_template_eku = free_if_empty(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_csr = s[i];
+			ret->cm_csr = free_if_empty(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
@@ -374,7 +384,7 @@ cm_store_file_read(const char *filename, FILE *fp)
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_ca_location = s[i];
+			ret->cm_ca_location = free_if_empty(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
@@ -383,11 +393,11 @@ cm_store_file_read(const char *filename, FILE *fp)
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_ca_cookie = s[i];
+			ret->cm_ca_cookie = free_if_empty(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert = s[i];
+			ret->cm_cert = free_if_empty(s[i]);
 			i++;
 		}
 		while ((s != NULL) && (s[i] != NULL)) {
