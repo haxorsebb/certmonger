@@ -15,15 +15,14 @@ libcm_a_SOURCES = \
 	store-files.c \
 	store-gen.c \
 	submit.h
-libcm_o_a_SOURCES = \
-	submit-d.c
+libcm_o_a_SOURCES =
 if FALSE
-libcm_o_a_SOURCES += keygen-o.c csrgen-o.c
+libcm_o_a_SOURCES += keygen-o.c csrgen-o.c submit-do.c
 endif
 libcm_o_a_CFLAGS = @OPENSSL_CFLAGS@
 libcm_n_a_SOURCES =
 if TRUE
-libcm_n_a_SOURCES += keygen-n.c csrgen-n.c
+libcm_n_a_SOURCES += keygen-n.c csrgen-n.c submit-dn.c
 endif
 libcm_n_a_CFLAGS = @NSS_CFLAGS@
 libcm_a_LIBADD = $(libcm_o_a_OBJECTS) $(libcm_n_a_OBJECTS)
