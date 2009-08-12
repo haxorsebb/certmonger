@@ -290,6 +290,7 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 		_exit(2);
 	}
 	/* Encode the signed request. */
+	sreq.signature.len *= 8;
 	if (SEC_ASN1EncodeItem(arena, &esreq, &sreq,
 			       CERT_SignedDataTemplate) !=
 	    &esreq) {
