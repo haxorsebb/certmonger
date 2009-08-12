@@ -7,7 +7,9 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <prerror.h>
 #include <nss.h>
+#include <nssb64.h>
 #include <pk11pub.h>
 #include <keyhi.h>
 #include <keythi.h>
@@ -40,18 +42,29 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 	enum cm_key_algorithm cm_key_algorithm;
 	CERTSubjectPublicKeyInfo *spki;
 	CERTCertificateRequest *req;
+	CERTSignedData sreq;
 	CERTName *name;
 	const char *token, *keyname;
+	PLArenaPool *arena;
+	SECItem ereq, esreq, digest;
+	PRErrorCode ec;
+	char *b64;
+	SECOidData *sigoid;
 
+	/* Allocate an arena pool and a place to write status updates. */
+	arena = PORT_NewArena(sizeof(double));
+	if (arena == NULL) {
+		cm_log(1, "Out of memory?.\n");
+		_exit(1);
+	}
 	status = fdopen(fd, "w");
 	if (status == NULL) {
+		cm_log(1, "Internal error: %s.\n", strerror(errno));
 		_exit(1);
 	}
 	/* Start up NSS and open the database. */
 	error = NSS_Init(entry->cm_key_storage_location);
 	if (error != SECSuccess) {
-		fprintf(status, "Error opening database '%s'.\n",
-			entry->cm_key_storage_location);
 		cm_log(1, "Error opening database '%s'.\n",
 		       entry->cm_key_storage_location);
 		_exit(1);
@@ -68,7 +81,6 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 		mech = CKM_RSA_PKCS_KEY_PAIR_GEN;
 		break;
 	default:
-		fprintf(status, "Unknown key type.\n");
 		cm_log(1, "Unknown key type.\n");
 		_exit(2);
 		break;
@@ -76,7 +88,6 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 	/* Find the token that contains our key pair. */
 	slotlist = PK11_GetAllTokens(mech, PR_TRUE, PR_FALSE, NULL);
 	if (slotlist == NULL) {
-		fprintf(status, "Error locating slot for CSR generation.\n");
 		cm_log(1, "Error locating slot for CSR generation.\n");
 		_exit(2);
 	}
@@ -101,7 +112,6 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 		}
 	}
 	if (slot == NULL) {
-		fprintf(status, "Error locating slot for key generation.\n");
 		cm_log(1, "Error locating slot for key generation.\n");
 		PK11_FreeSlotList(slotlist);
 		error = NSS_Shutdown();
@@ -162,14 +172,158 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 		_exit(2);
 	}
 	/* Create the request. */
-	if (entry->cm_template_subject != NULL) {
+	if (!entry->cm_template_default &&
+	    (entry->cm_template_subject != NULL) &&
+	    (strlen(entry->cm_template_subject) != 0)) {
 		name = CERT_AsciiToName(entry->cm_template_subject);
 	} else {
-		name = NULL;
+		name = CERT_AsciiToName("CN=localhost");
 	}
 	pubkey = SECKEY_ConvertToPublicKey(privkey);
+	if (pubkey == NULL) {
+		ec = PR_GetError();
+		if (ec == 0) {
+			cm_log(1, "Error retrieving public key.\n");
+		} else {
+			cm_log(1, "Error retrieving public key: %s.\n",
+			       PR_ErrorToString(ec, PR_LANGUAGE_I_DEFAULT));
+		}
+		SECKEY_DestroyPublicKey(pubkey);
+		SECKEY_DestroyPrivateKeyList(privkeys);
+		PK11_FreeSlotList(slotlist);
+		error = NSS_Shutdown();
+		if (error != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
+		}
+		fclose(status);
+		_exit(2);
+	}
 	spki = SECKEY_CreateSubjectPublicKeyInfo(pubkey);
+	if (spki == NULL) {
+		ec = PR_GetError();
+		if (ec == 0) {
+			cm_log(1, "Error building spki.\n");
+		} else {
+			cm_log(1, "Error building spki: %s.\n",
+			       PR_ErrorToString(ec, PR_LANGUAGE_I_DEFAULT));
+		}
+		SECKEY_DestroyPublicKey(pubkey);
+		SECKEY_DestroyPrivateKeyList(privkeys);
+		PK11_FreeSlotList(slotlist);
+		error = NSS_Shutdown();
+		if (error != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
+		}
+		fclose(status);
+		_exit(2);
+	}
 	req = CERT_CreateCertificateRequest(name, spki, NULL);
+	if (req == NULL) {
+		ec = PR_GetError();
+		if (ec == 0) {
+			cm_log(1, "Error building request.\n");
+		} else {
+			cm_log(1, "Error building request: %s.\n",
+			       PR_ErrorToString(ec, PR_LANGUAGE_I_DEFAULT));
+		}
+		SECKEY_DestroyPublicKey(pubkey);
+		SECKEY_DestroyPrivateKeyList(privkeys);
+		PK11_FreeSlotList(slotlist);
+		error = NSS_Shutdown();
+		if (error != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
+		}
+		fclose(status);
+		_exit(2);
+	}
+	req->arena = arena;
+	req->subjectPublicKeyInfo = *spki;
+	if (SEC_ASN1EncodeInteger(arena, &req->version,
+				  SEC_CERTIFICATE_REQUEST_VERSION) !=
+	    &req->version) {
+		cm_log(1, "Error encoding request version.\n");
+	}
+	/* Encode the request. */
+	if (SEC_ASN1EncodeItem(arena, &ereq, req,
+			       CERT_CertificateRequestTemplate) !=
+	    &ereq) {
+		cm_log(1, "Error encoding request.\n");
+		SECKEY_DestroyPublicKey(pubkey);
+		SECKEY_DestroyPrivateKeyList(privkeys);
+		PK11_FreeSlotList(slotlist);
+		error = NSS_Shutdown();
+		if (error != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
+		}
+		fclose(status);
+		_exit(2);
+	}
+	/* Sign the request using the private key. */
+	memset(&sreq, 0, sizeof(sreq));
+	sreq.data = ereq;
+	sigoid = SECOID_FindOIDByTag(SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION);
+	sreq.signatureAlgorithm.algorithm = sigoid->oid;
+	digest.len = 256/8;
+	digest.data = PORT_ArenaZAlloc(arena, digest.len);
+	if (PK11_HashBuf(SEC_OID_SHA256, digest.data,
+			 ereq.data, ereq.len) != SECSuccess) {
+		cm_log(1, "Error hashing request.\n");
+		SECKEY_DestroyPublicKey(pubkey);
+		SECKEY_DestroyPrivateKeyList(privkeys);
+		PK11_FreeSlotList(slotlist);
+		error = NSS_Shutdown();
+		if (error != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
+		}
+		fclose(status);
+		_exit(2);
+	}
+	sreq.signature.len = PK11_SignatureLen(privkey);
+	sreq.signature.data = PORT_ArenaZAlloc(arena, sreq.signature.len);
+	if (PK11_Sign(privkey, &sreq.signature, &digest) != SECSuccess) {
+		cm_log(1, "Error signing request.\n");
+		SECKEY_DestroyPublicKey(pubkey);
+		SECKEY_DestroyPrivateKeyList(privkeys);
+		PK11_FreeSlotList(slotlist);
+		error = NSS_Shutdown();
+		if (error != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
+		}
+		fclose(status);
+		_exit(2);
+	}
+	/* Encode the signed request. */
+	if (SEC_ASN1EncodeItem(arena, &esreq, &sreq,
+			       CERT_SignedDataTemplate) !=
+	    &esreq) {
+		cm_log(1, "Error encoding signed request.\n");
+		SECKEY_DestroyPublicKey(pubkey);
+		SECKEY_DestroyPrivateKeyList(privkeys);
+		PK11_FreeSlotList(slotlist);
+		error = NSS_Shutdown();
+		if (error != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
+		}
+		fclose(status);
+		_exit(2);
+	}
+	/* Encode the request into base-64. */
+	b64 = NSSBase64_EncodeItem(arena, NULL, -1, &esreq);
+	if (b64 != NULL) {
+		fprintf(status, "%s\n%s\n%s\n",
+			"-----BEGIN CERTIFICATE REQUEST-----",
+			b64,
+			"-----END CERTIFICATE REQUEST-----");
+		SECKEY_DestroyPublicKey(pubkey);
+		SECKEY_DestroyPrivateKeyList(privkeys);
+		PK11_FreeSlotList(slotlist);
+		error = NSS_Shutdown();
+		if (error != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
+		}
+		fclose(status);
+		_exit(0);
+	}
 	/* Clean up.  We're not really doing anything here yet. */
 	SECKEY_DestroyPublicKey(pubkey);
 	SECKEY_DestroyPrivateKeyList(privkeys);
