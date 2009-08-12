@@ -13,6 +13,7 @@
 #include <pk11pub.h>
 #include <keyhi.h>
 #include <keythi.h>
+#include <cryptohi.h>
 #include <cert.h>
 
 #include "keygen.h"
@@ -46,7 +47,7 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 	CERTName *name;
 	const char *token, *keyname;
 	PLArenaPool *arena;
-	SECItem ereq, esreq, digest;
+	SECItem ereq, esreq;
 	PRErrorCode ec;
 	char *b64, *p, *q;
 	SECOidData *sigoid;
@@ -259,15 +260,12 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 		_exit(2);
 	}
 	/* Sign the request using the private key. */
+	sigoid = SECOID_FindOIDByTag(SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION); /* XXX */
 	memset(&sreq, 0, sizeof(sreq));
 	sreq.data = ereq;
-	sigoid = SECOID_FindOIDByTag(SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION);
-	sreq.signatureAlgorithm.algorithm = sigoid->oid;
-	digest.len = 256/8;
-	digest.data = PORT_ArenaZAlloc(arena, digest.len);
-	if (PK11_HashBuf(SEC_OID_SHA256, digest.data,
-			 ereq.data, ereq.len) != SECSuccess) {
-		cm_log(1, "Error hashing request.\n");
+	if (SECOID_SetAlgorithmID(arena, &sreq.signatureAlgorithm,
+				  sigoid->offset, NULL) != SECSuccess) {
+		cm_log(1, "Error setting up algorithm ID.\n");
 		SECKEY_DestroyPublicKey(pubkey);
 		SECKEY_DestroyPrivateKeyList(privkeys);
 		PK11_FreeSlotList(slotlist);
@@ -278,9 +276,8 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 		fclose(status);
 		_exit(2);
 	}
-	sreq.signature.len = PK11_SignatureLen(privkey);
-	sreq.signature.data = PORT_ArenaZAlloc(arena, sreq.signature.len);
-	if (PK11_Sign(privkey, &sreq.signature, &digest) != SECSuccess) {
+	if (SEC_SignData(&sreq.signature, sreq.data.data, sreq.data.len,
+			 privkey, sigoid->offset) != SECSuccess) {
 		cm_log(1, "Error signing request.\n");
 		SECKEY_DestroyPublicKey(pubkey);
 		SECKEY_DestroyPrivateKeyList(privkeys);
@@ -310,14 +307,14 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 	/* Encode the request into base-64 and pass it to our caller. */
 	b64 = NSSBase64_EncodeItem(arena, NULL, -1, &esreq);
 	if (b64 != NULL) {
-		fprintf(status, "-----BEGIN CERTIFICATE REQUEST-----\n");
+		fprintf(status, "-----BEGIN NEW CERTIFICATE REQUEST-----\n");
 		p = b64;
 		while (*p != '\0') {
 			q = p + strcspn(p, "\r\n");
 			fprintf(status, "%.*s\n", q - p, p);
 			p = q + strspn(q, "\r\n");
 		}
-		fprintf(status, "-----END CERTIFICATE REQUEST-----\n");
+		fprintf(status, "-----END NEW CERTIFICATE REQUEST-----\n");
 		SECKEY_DestroyPublicKey(pubkey);
 		SECKEY_DestroyPrivateKeyList(privkeys);
 		PK11_FreeSlotList(slotlist);
