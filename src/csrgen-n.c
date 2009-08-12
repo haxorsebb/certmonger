@@ -307,7 +307,7 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 		fclose(status);
 		_exit(2);
 	}
-	/* Encode the request into base-64. */
+	/* Encode the request into base-64 and pass it to our caller. */
 	b64 = NSSBase64_EncodeItem(arena, NULL, -1, &esreq);
 	if (b64 != NULL) {
 		fprintf(status, "-----BEGIN CERTIFICATE REQUEST-----\n");
