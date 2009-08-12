@@ -167,11 +167,11 @@ cm_keygen_main(int fd, struct cm_store_entry *entry)
 	/* Attach the specified nickname to the key. */
 	error = PK11_SetPrivateKeyNickname(privkey, entry->cm_key_nickname);
 	if (error != SECSuccess) {
-		cm_log(1, "Error setting nickname on key pair.\n");
+		cm_log(1, "Error setting nickname on private key.\n");
 	}
 	error = PK11_SetPublicKeyNickname(pubkey, entry->cm_key_nickname);
 	if (error != SECSuccess) {
-		cm_log(1, "Error setting nickname on key pair.\n");
+		cm_log(1, "Error setting nickname on public key.\n");
 	}
 	/* Record the token name if we didn't already have one. */
 	if ((entry->cm_key_token == NULL) ||
