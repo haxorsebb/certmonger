@@ -197,6 +197,9 @@ list(const char *argv0, int argc, char **argv)
 		case CM_NEED_CA_STATUS:
 		case CM_POLLING_CA_STATUS:
 		case CM_RETRIEVING_CERT:
+		case CM_NEED_TO_SAVE_CERT:
+		case CM_SAVING_CERT:
+		case CM_SAVED_CERT:
 		case CM_NEED_GUIDANCE:
 			if (tracking_only) {
 				continue;
