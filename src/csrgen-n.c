@@ -312,7 +312,7 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 		p = b64;
 		while (*p != '\0') {
 			q = p + strcspn(p, "\r\n");
-			fprintf(status, "%.*s\n", q - p, p);
+			fprintf(status, "%.*s\n", (int) (q - p), p);
 			p = q + strspn(q, "\r\n");
 		}
 		fprintf(status, "-----END NEW CERTIFICATE REQUEST-----\n");
