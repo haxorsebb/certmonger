@@ -6,6 +6,8 @@
 #include <string.h>
 #include <time.h>
 
+#include "certread.h"
+#include "certsave.h"
 #include "csrgen.h"
 #include "keygen.h"
 #include "log.h"
@@ -19,6 +21,7 @@ struct cm_iterate_state {
 	struct cm_keygen_state *cm_keygen_state;
 	struct cm_csrgen_state *cm_csrgen_state;
 	struct cm_submit_state *cm_submit_state;
+	struct cm_certsave_state *cm_certsave_state;
 	struct cm_notify_state *cm_notify_state;
 };
 
@@ -47,6 +50,13 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 	case CM_POLLING_CA_STATUS:
 	case CM_RETRIEVING_CERT:
 		entry->cm_state = CM_HAVE_SUBMITTED;
+		break;
+	case CM_NEED_TO_SAVE_CERT:
+	case CM_SAVING_CERT:
+		entry->cm_state = CM_NEED_TO_SAVE_CERT;
+		break;
+	case CM_SAVED_CERT:
+		entry->cm_state = CM_MONITORING;
 		break;
 	case CM_NEED_GUIDANCE:
 		break;
@@ -256,16 +266,25 @@ cm_iterate(struct cm_store_entry *entry,
 	case CM_SUBMITTING:
 		if (cm_submit_sent(entry, state->cm_submit_state) == 0) {
 			entry->cm_submitted = time(NULL);
-			if ((cm_submit_issued(entry,
-					      state->cm_submit_state) == 0) &&
-			    (cm_submit_save_cert(entry,
-			   			 state->cm_submit_state) == 0)) {
-				/* We're all done.  Sit back and wait
-				 * for it to near expiration. */
-				cm_submit_done(entry, state->cm_submit_state);
-				state->cm_submit_state = NULL;
-				entry->cm_state = CM_MONITORING;
-				*when = cm_time_soon;
+			if (cm_submit_issued(entry,
+					     state->cm_submit_state) == 0) {
+				/* CA issued a cert. */
+				if (cm_submit_needs_retrieval(entry,
+							      state->cm_submit_state) == 0) {
+					/* We're done, but we need to retrieve
+					 * the certificate in another step. */
+					entry->cm_state = CM_RETRIEVING_CERT;
+					*when = cm_time_soon;
+				} else {
+					/* We're all done, and we even have the
+					 * issued certificate.  Save the
+					 * certificate to its real home. */
+					cm_submit_done(entry,
+						       state->cm_submit_state);
+					state->cm_submit_state = NULL;
+					entry->cm_state = CM_NEED_TO_SAVE_CERT;
+					*when = cm_time_soon;
+				}
 			} else
 			if (cm_submit_save_ca_cookie(entry,
 						     state->cm_submit_state) == 0) {
@@ -326,29 +345,19 @@ cm_iterate(struct cm_store_entry *entry,
 				/* CA issued a cert. */
 				if (cm_submit_needs_retrieval(entry,
 							      state->cm_submit_state) == 0) {
-					/* We need to retrieve the certificate
-					 * in another step. */
+					/* We're done, but we need to retrieve
+					 * the certificate in another step. */
 					entry->cm_state = CM_RETRIEVING_CERT;
 					*when = cm_time_soon;
 				} else {
-					if (cm_submit_save_cert(entry,
-							        state->cm_submit_state) == 0) {
-						/* We're all done.  Sit back
-						 * and wait for it to near
-						 * expiration. */
-						cm_submit_done(entry, state->cm_submit_state);
-						state->cm_submit_state = NULL;
-						entry->cm_state = CM_MONITORING;
-						*when = cm_time_soon;
-					} else {
-						/* Couldn't save it, but we
-						 * know that it was issued, so
-						 * try to retrieve it again. */
-						cm_submit_done(entry, state->cm_submit_state);
-						state->cm_submit_state = NULL;
-						entry->cm_state = CM_NEED_CA_STATUS;
-						*when = cm_time_soon;
-					}
+					/* We're all done, and we even have the
+					 * issued certificate.  Save the
+					 * certificate to its real home. */
+					cm_submit_done(entry,
+						       state->cm_submit_state);
+					state->cm_submit_state = NULL;
+					entry->cm_state = CM_NEED_TO_SAVE_CERT;
+					*when = cm_time_soon;
 				}
 			} else {
 				/* The CA denied our request. HELP! */
@@ -371,22 +380,12 @@ cm_iterate(struct cm_store_entry *entry,
 	case CM_RETRIEVING_CERT:
 		if (cm_submit_status_ready(entry,
 					   state->cm_submit_state) == 0) {
-			if (cm_submit_save_cert(entry,
-						state->cm_submit_state) == 0) {
-				/* We're all done.  Sit back and wait for it to
-				 * near expiration. */
-				cm_submit_done(entry, state->cm_submit_state);
-				state->cm_submit_state = NULL;
-				entry->cm_state = CM_MONITORING;
-				*when = cm_time_soon;
-			} else {
-				/* Couldn't save it, but we know that it was
-				 * issued, so try to retrieve it again. */
-				cm_submit_done(entry, state->cm_submit_state);
-				state->cm_submit_state = NULL;
-				entry->cm_state = CM_NEED_CA_STATUS;
-				*when = cm_time_soon;
-			}
+			/* We've retrieved the cert, but we haven't saved it
+			 * anywhere yet. */
+			cm_submit_done(entry, state->cm_submit_state);
+			state->cm_submit_state = NULL;
+			entry->cm_state = CM_NEED_TO_SAVE_CERT;
+			*when = cm_time_soon;
 		} else {
 			/* Wait for status update, or poll. */
 			*readfd = cm_submit_get_fd(entry,
@@ -397,6 +396,56 @@ cm_iterate(struct cm_store_entry *entry,
 				*when = cm_time_no_time;
 			}
 		}
+		break;
+	case CM_NEED_TO_SAVE_CERT:
+		state->cm_certsave_state = cm_certsave_start(entry);
+		if (state->cm_certsave_state != NULL) {
+			/* Note that we're saving the cert. */
+			entry->cm_state = CM_SAVING_CERT;
+			/* Wait for status update, or poll. */
+			*readfd = cm_certsave_get_fd(entry,
+						     state->cm_certsave_state);
+			if (*readfd == -1) {
+				*when = cm_time_soonish;
+			} else {
+				*when = cm_time_no_time;
+			}
+		} else {
+			/* Failed to start generating a CSR; try again. */
+			*when = cm_time_soon;
+		}
+		break;
+	case CM_SAVING_CERT:
+		if (cm_certsave_ready(entry, state->cm_certsave_state) == 0) {
+			if (cm_certsave_saved(entry,
+					      state->cm_certsave_state) == 0) {
+				/* Saved certificate; move on. */
+				cm_certsave_done(entry, state->cm_certsave_state);
+				state->cm_certsave_state = NULL;
+				entry->cm_state = CM_SAVED_CERT;
+				*when = cm_time_soon;
+			} else {
+				/* Failed to save cert; try again. */
+				cm_certsave_done(entry,
+						 state->cm_certsave_state);
+				state->cm_certsave_state = NULL;
+				entry->cm_state = CM_NEED_TO_SAVE_CERT;
+				*when = cm_time_soon;
+			}
+		} else {
+			/* Wait for status update, or poll. */
+			*readfd = cm_certsave_get_fd(entry,
+						     state->cm_certsave_state);
+			if (*readfd == -1) {
+				*when = cm_time_soonish;
+			} else {
+				*when = cm_time_no_time;
+			}
+		}
+		break;
+	case CM_SAVED_CERT:
+		entry->cm_state = CM_MONITORING;
+		*when = cm_time_soon;
 		break;
 	case CM_NEED_GUIDANCE:
 		*when = cm_time_soonish;

@@ -27,9 +27,6 @@ int cm_submit_issued(struct cm_store_entry *entry,
 /* Check if we need to make another request to actually retrieve the cert. */
 int cm_submit_needs_retrieval(struct cm_store_entry *entry,
 			      struct cm_submit_state *state);
-/* Save the certificate to the location specified in the entry. */
-int cm_submit_save_cert(struct cm_store_entry *entry,
-			struct cm_submit_state *state);
 /* Done talking to the CA. */
 void cm_submit_done(struct cm_store_entry *entry,
 		    struct cm_submit_state *state);
