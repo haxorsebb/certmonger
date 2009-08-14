@@ -110,11 +110,6 @@ cm_submit_start(struct cm_store_entry *entry)
 		       "in files can be used.\n");
 		return NULL;
 	}
-	if (entry->cm_cert_storage_type != cm_cert_storage_file) {
-		cm_log(1, "Wrong submission method: only certificates stored "
-		       "in files can be used.\n");
-		return NULL;
-	}
 	state = malloc(sizeof(*state));
 	if (state != NULL) {
 		memset(state, 0, sizeof(*state));
@@ -222,27 +217,6 @@ cm_submit_needs_retrieval(struct cm_store_entry *entry,
 			  struct cm_submit_state *state)
 {
 	return -1; /* already have data, no additional retrieval step needed */
-}
-
-/* Save the certificate to the location specified in the entry. */
-int
-cm_submit_save_cert(struct cm_store_entry *entry, struct cm_submit_state *state)
-{
-	FILE *fp;
-	if (entry->cm_cert == NULL) {
-		cm_log(1, "No certificate to save.\n");
-		return -1;
-	}
-	fp = fopen(entry->cm_cert_storage_location, "w");
-	if (fp == NULL) {
-		cm_log(1, "Error opening '%s': %s.\n",
-		       entry->cm_cert_storage_location, strerror(errno));
-		return -1;
-	} else {
-		fprintf(fp, "%s", entry->cm_cert);
-		fclose(fp);
-	}
-	return 0;
 }
 
 /* Done talking to the CA. */
