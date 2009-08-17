@@ -43,7 +43,7 @@ cm_keygen_saved_keypair(struct cm_store_entry *entry,
 			struct cm_keygen_state *state)
 {
 	struct cm_keygen_state_pvt *pvt = (struct cm_keygen_state_pvt *) state;
-	return pvt->get_fd(entry, state);
+	return pvt->saved_keypair(entry, state);
 }
 
 /* Clean up after key generation. */
