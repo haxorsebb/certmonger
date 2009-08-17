@@ -223,7 +223,7 @@ cm_submit_n_main(int fd, struct cm_store_entry *entry)
 		}
 	}
 	/* Populate the certificate's fields. */
-	item = SEC_ASN1EncodeUnsignedInteger(arena, &ucert->version, 3);
+	item = SEC_ASN1EncodeUnsignedInteger(arena, &ucert->version, 2);
 	if (item == NULL) {
 		cm_log(1, "Unable to set certificate structure version.\n");
 		_exit(1);
