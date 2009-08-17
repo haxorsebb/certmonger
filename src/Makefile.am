@@ -1,13 +1,19 @@
 noinst_LIBRARIES = libcm.a libcm-o.a libcm-n.a
 libcm_a_SOURCES = \
 	certread.h \
+	certsave.c \
 	certsave.h \
+	certsave-int.h \
 	cm.c \
 	cm.h \
+	csrgen.c \
 	csrgen.h \
+	csrgen-int.h \
 	iterate.c \
 	iterate.h \
+	keygen.c \
 	keygen.h \
+	keygen-int.h \
 	log.h \
 	log.c \
 	notify.h \
@@ -16,14 +22,16 @@ libcm_a_SOURCES = \
 	store-int.h \
 	store-files.c \
 	store-gen.c \
-	submit.h
+	submit.c \
+	submit.h \
+	submit-int.h
 libcm_o_a_SOURCES =
-if FALSE
+if HAVE_OPENSSL
 libcm_o_a_SOURCES += certsave-o.c keygen-o.c csrgen-o.c submit-do.c
 endif
 libcm_o_a_CFLAGS = @OPENSSL_CFLAGS@
 libcm_n_a_SOURCES =
-if TRUE
+if HAVE_NSS
 libcm_n_a_SOURCES += certsave-n.c keygen-n.c csrgen-n.c submit-dn.c
 endif
 libcm_n_a_CFLAGS = @NSS_CFLAGS@
