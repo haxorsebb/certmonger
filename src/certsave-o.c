@@ -80,12 +80,9 @@ cm_certsave_o_saved(struct cm_store_entry *entry,
 	if (state->pid == -1) {
 		if (!WIFEXITED(state->status) ||
 		    (WEXITSTATUS(state->status) != 0)) {
-			return 0;
+			return -1;
 		}
-		entry->cm_csr = strdup(state->msg);
-		if (entry->cm_csr == NULL) {
-			return ENOMEM;
-		}
+		return 0;
 	}
 	return -1;
 }
