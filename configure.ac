@@ -39,5 +39,6 @@ AC_DEFINE_UNQUOTED(CM_DEFAULT_PUBKEY_TYPE,cm_key_rsa,[Define to the default publ
 AC_DEFINE_UNQUOTED(CM_DEFAULT_RSA_MODULUS,0x10001,[Define to the default RSA key modulus.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_PUBKEY_SIZE,2048,[Define to the default public key size.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_TTL_LIST,[30*24*60*60,7*24*60*60,3*24*60*60,2*24*60*60,1*24*60*60],[Define to the list of default time-left thresholds at which we need to warn the user.])
+AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_LIFETIME,30,[Define to the default certificate lifetime, in days.])
 
 AC_OUTPUT(Makefile src/Makefile)
