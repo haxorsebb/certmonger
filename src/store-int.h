@@ -94,7 +94,7 @@ struct cm_store_entry {
 	/* Type and location of CA [or use default settings] */
 	unsigned int cm_ca_default:1;
 	enum cm_ca_type {
-		cm_ca_files = 0,
+		cm_ca_dummy = 0,
 	} cm_ca_type;
 	char *cm_ca_location;
 	/* Date of submission for in-progress submissions. */

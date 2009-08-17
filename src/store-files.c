@@ -375,10 +375,10 @@ cm_store_file_read(const char *filename, FILE *fp)
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			if (strcasecmp(s[i], "files") == 0) {
-				ret->cm_ca_type = cm_ca_files;
+			if (strcasecmp(s[i], "dummy") == 0) {
+				ret->cm_ca_type = cm_ca_dummy;
 			} else {
-				ret->cm_ca_type = cm_ca_files;
+				ret->cm_ca_type = cm_ca_dummy;
 			}
 			free(s[i]);
 			i++;
@@ -585,8 +585,8 @@ cm_store_file_write(FILE *fp, struct cm_store_entry *entry)
 
 	cm_store_file_write_int(fp, entry->cm_ca_default);
 	switch (entry->cm_ca_type) {
-	case cm_ca_files:
-		cm_store_file_write_str(fp, "FILES");
+	case cm_ca_dummy:
+		cm_store_file_write_str(fp, "DUMMY");
 		break;
 	}
 	cm_store_file_write_str(fp, entry->cm_ca_location);

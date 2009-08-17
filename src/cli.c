@@ -3,6 +3,7 @@
 #include <sys/types.h>
 #include <errno.h>
 #include <getopt.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -76,6 +77,12 @@ request(const char *argv0, int argc, char **argv)
 				CM_DEFAULT_PUBKEY_TYPE;
 			entry->cm_key_type.cm_key_size = keysize;
 		}
+		if (((keyfile != NULL) && (certfile == NULL)) ||
+		    ((keyfile == NULL) && (certfile != NULL))) {
+			printf("Filename for key or certificate specified "
+			       "without the other.\n");
+			return 1;
+		}
 		if (keyfile != NULL) {
 			entry->cm_key_storage_default = 0;
 			entry->cm_key_storage_type = cm_key_storage_file;
@@ -117,6 +124,11 @@ request(const char *argv0, int argc, char **argv)
 		entry->cm_notification_default = 1;
 		if (subject != NULL) {
 			entry->cm_template_subject = strdup(subject);
+		} else {
+			entry->cm_template_subject = "CN=localhost";
+		}
+		if (ca == NULL) {
+			entry->cm_ca_type = cm_ca_dummy;
 		}
 		if (track_exp) {
 			entry->cm_monitor = 1;
@@ -163,6 +175,7 @@ list(const char *argv0, int argc, char **argv)
 {
 	struct cm_store_entry **entries;
 	const char *key_storage, *cert_storage;
+	char nickname[LINE_MAX], ca[LINE_MAX];
 	int requests_only = 0, tracking_only = 0, c, i;
 	while ((c = getopt(argc, argv, "rt")) != -1) {
 		switch (c) {
@@ -229,12 +242,33 @@ list(const char *argv0, int argc, char **argv)
 			break;
 		}
 		printf("Request '%s'\n", entries[i]->cm_id);
+		strcpy(ca, "(unknown)");
+		switch (entries[i]->cm_ca_type) {
+		case cm_ca_dummy:
+			strcpy(ca, "dummy(local)");
+			break;
+		}
+		printf("           CA: %s\n", ca);
 		printf("        state: %s\n",
 		       cm_store_state_as_string(entries[i]->cm_state));
-		printf("     key pair: type=%s,location='%s'\n",
-		       key_storage, entries[i]->cm_key_storage_location);
-		printf("  certificate: type=%s,location='%s'\n",
-		       cert_storage, entries[i]->cm_cert_storage_location);
+		if (entries[i]->cm_key_nickname != NULL) {
+			sprintf(nickname, ",nickname='%s'",
+				entries[i]->cm_key_nickname);
+		} else {
+			strcpy(nickname, "");
+		}
+		printf("     key pair: type=%s,location='%s'%s\n",
+		       key_storage, entries[i]->cm_key_storage_location,
+		       nickname);
+		if (entries[i]->cm_cert_nickname != NULL) {
+			sprintf(nickname, ",nickname='%s'",
+				entries[i]->cm_cert_nickname);
+		} else {
+			strcpy(nickname, "");
+		}
+		printf("  certificate: type=%s,location='%s'%s\n",
+		       cert_storage, entries[i]->cm_cert_storage_location,
+		       nickname);
 		printf("      monitor: %s\n",
 		       entries[i]->cm_monitor ? "yes" : "no");
 		printf("   auto-renew: %s\n",
