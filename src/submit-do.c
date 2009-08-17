@@ -210,7 +210,6 @@ cm_submit_o_start(struct cm_store_entry *entry)
 	state = malloc(sizeof(*state));
 	if (state != NULL) {
 		memset(state, 0, sizeof(*state));
-		state->fd = -1;
 		state->pvt.get_fd = cm_submit_o_get_fd;
 		state->pvt.sent = cm_submit_o_sent;
 		state->pvt.save_ca_cookie = cm_submit_o_save_ca_cookie;
@@ -218,6 +217,7 @@ cm_submit_o_start(struct cm_store_entry *entry)
 		state->pvt.issued = cm_submit_o_issued;
 		state->pvt.needs_retrieval = cm_submit_o_needs_retrieval;
 		state->pvt.done = cm_submit_o_done;
+		state->fd = -1;
 		if (pipe(fds) != -1) {
 			state->pid = fork();
 			switch (state->pid) {
