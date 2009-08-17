@@ -2,6 +2,8 @@
 
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -19,7 +21,7 @@ struct cm_keygen_state {
 	struct cm_keygen_state_pvt pvt;
 	char msg[0x10000];
 	pid_t pid;
-	int fd, status;
+	int fd, count, status;
 };
 
 static void
@@ -101,19 +103,30 @@ static int
 cm_keygen_o_ready(struct cm_store_entry *entry, struct cm_keygen_state *state)
 {
 	ssize_t i, remainder;
-	char *p;
-	p = state->msg;
-	remainder = sizeof(state->msg) - 1;
-	while ((i = read(state->fd, p, remainder)) > 0) {
-		p += i;
-		remainder -= i;
+	int status;
+	do {
+		remainder = (sizeof(state->msg) - state->count) - 1;
+		i = read(state->fd, state->msg + state->count, remainder);
+		switch (i) {
+		case -1:
+		case 0:
+			break;
+		default:
+			state->count += i;
+			break;
+		}
+	} while (i > 0);
+	if ((i == -1) && ((errno == EAGAIN) || (errno == EINTR))) {
+		status = -1;
+	} else {
+		state->msg[state->count] = '\0';
+		close(state->fd);
+		state->fd = -1;
+		waitpid(state->pid, &state->status, 0);
+		state->pid = -1;
+		status = 0;
 	}
-	*p = '\0';
-	close(state->fd);
-	state->fd = -1;
-	waitpid(state->pid, &state->status, 0);
-	state->pid = -1;
-	return 0;
+	return status;
 }
 
 /* Get a selectable-for-read descriptor we can poll for status changes. */
@@ -153,17 +166,19 @@ struct cm_keygen_state *
 cm_keygen_o_start(struct cm_store_entry *entry)
 {
 	int fds[2];
+	long flags;
 	struct cm_keygen_state *state;
 	if (entry->cm_key_storage_type != cm_key_storage_file) {
 		return NULL;
 	}
 	state = malloc(sizeof(*state));
 	if (state != NULL) {
-		state->fd = -1;
+		memset(state, 0, sizeof(*state));
 		state->pvt.ready = cm_keygen_o_ready;
 		state->pvt.get_fd = cm_keygen_o_get_fd;
 		state->pvt.saved_keypair = cm_keygen_o_saved_keypair;
 		state->pvt.done = cm_keygen_o_done;
+		state->fd = -1;
 		if (pipe(fds) != -1) {
 			state->pid = fork();
 			switch (state->pid) {
@@ -180,6 +195,8 @@ cm_keygen_o_start(struct cm_store_entry *entry)
 				break;
 			default:
 				state->fd = fds[0];
+				flags = fcntl(state->fd, F_GETFL);
+				fcntl(state->fd, F_SETFL, flags | O_NONBLOCK);
 				close(fds[1]);
 				break;
 			}

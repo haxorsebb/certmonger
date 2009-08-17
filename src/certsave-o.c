@@ -3,6 +3,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -114,6 +115,7 @@ struct cm_certsave_state *
 cm_certsave_o_start(struct cm_store_entry *entry)
 {
 	int fds[2];
+	long flags;
 	struct cm_certsave_state *state;
 	if (entry->cm_cert_storage_type != cm_cert_storage_file) {
 		cm_log(1, "Wrong save method: can only save certificates "
@@ -144,6 +146,8 @@ cm_certsave_o_start(struct cm_store_entry *entry)
 				break;
 			default:
 				state->fd = fds[0];
+				flags = fcntl(state->fd, F_GETFL);
+				fcntl(state->fd, F_SETFL, flags | O_NONBLOCK);
 				close(fds[1]);
 				break;
 			}
