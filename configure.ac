@@ -21,12 +21,31 @@ UPCASE_PACKAGE_NAME=`echo "${PACKAGE_NAME}" | tr '[a-z]' '[A-Z]'`
 AC_DEFINE_UNQUOTED(CM_FILE_STORE_DIRECTORY_ENV,"${UPCASE_PACKAGE_NAME}_FILE_STORE_DIR",
 		   [Define to the name of the environment variable which can specify the path for tracking files.])
 
-PKG_CHECK_MODULES(OPENSSL,openssl)
+AC_ARG_WITH(openssl,
+	    AS_HELP_STRING(--without-openssl,
+	    		   [build without support for storing keys and certificates in files]),
+	    withopenssl=$withval,
+	    withopenssl=yes)
+AC_ARG_WITH(nss,
+	    AS_HELP_STRING(--without-nss,
+	    		   [build without support for storing keys and certificates in NSS databases]),
+	    withnss=$withval,
+	    withnss=yes)
 
-if pkg-config mozilla-nss 2> /dev/null ; then
-	PKG_CHECK_MODULES(NSS,mozilla-nss)
-else
-	PKG_CHECK_MODULES(NSS,nss)
+AM_CONDITIONAL(HAVE_OPENSSL,test x$withopenssl != xno)
+if test x$withopenssl != xno ; then
+	PKG_CHECK_MODULES(OPENSSL,openssl)
+	AC_DEFINE(HAVE_OPENSSL,1,[Define if you have OpenSSL.])
+fi
+
+AM_CONDITIONAL(HAVE_NSS,test x$withnss != xno)
+if test x$withnss != xno ; then
+	if pkg-config mozilla-nss 2> /dev/null ; then
+		PKG_CHECK_MODULES(NSS,mozilla-nss)
+	else
+		PKG_CHECK_MODULES(NSS,nss)
+	fi
+	AC_DEFINE(HAVE_NSS,1,[Define if you have NSS.])
 fi
 
 AC_DEFINE_UNQUOTED(CM_DEFAULT_KEY_STORAGE_TYPE,cm_key_storage_nssdb,[Define to the default type of storage used for keys.])
