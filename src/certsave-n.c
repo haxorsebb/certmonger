@@ -7,6 +7,7 @@
 #include <unistd.h>
 
 #include <nss.h>
+#include <nssb64.h>
 #include <cert.h>
 #include <certdb.h>
 #include <pk11pub.h>
@@ -27,21 +28,48 @@ static void
 cm_certsave_main(struct cm_store_entry *entry)
 {
 	int status = 1;
+	PLArenaPool *arena;
 	SECStatus error;
-	SECItem item, *items;
+	SECItem *item;
+	char *p, *q;
 	CERTCertDBHandle *certdb;
+	/* Open the database. */
 	error = NSS_InitReadWrite(entry->cm_cert_storage_location);
 	if (error != SECSuccess) {
 		cm_log(1, "Unable to open NSS database.\n");
 	} else {
+		/* Allocate a memory pool. */
+		arena = PORT_NewArena(sizeof(double));
+		if (arena == NULL) {
+			cm_log(1, "Error opening database '%s'.\n",
+			       entry->cm_key_storage_location);
+			NSS_Shutdown();
+			_exit(ENOMEM);
+		}
 		certdb = CERT_GetDefaultCertDB();
 		if (certdb != NULL) {
-			item.data = (unsigned char *) entry->cm_cert;
-			item.len = strlen(entry->cm_cert);
-			items = &item;
+			/* Handle the base64 decode. */
+			p = entry->cm_cert;
+			q = NULL;
+			while (strncmp(p, "-----BEGIN ", 11) == 0) {
+				p += strcspn(p, "\r\n");
+				p += strspn(p, "\r\n");
+			}
+			q = strstr(p, "-----END");
+			if ((p == NULL) || (q == NULL)) {
+				cm_log(1, "Unable to parse certificate.\n");
+				_exit(1);
+			}
+			/* Handle the base64 decode. */
+			item = NSSBase64_DecodeBuffer(arena, NULL, p, q - p);
+			if (item == NULL) {
+				cm_log(1, "Unable to decode certificate "
+				       "into buffer.\n");
+				_exit(1);
+			}
 			error = CERT_ImportCerts(certdb,
 						 certUsageUserCertImport,
-						 1, &items, NULL, PR_TRUE,
+						 1, &item, NULL, PR_TRUE,
 						 PR_FALSE,
 						 entry->cm_cert_nickname);
 			if (error == SECSuccess) {
