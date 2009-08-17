@@ -16,8 +16,8 @@ cm_csrgen_start(struct cm_store_entry *entry)
 	case cm_key_storage_nssdb:
 		return cm_csrgen_n_start(entry);
 		break;
-	}
 #endif
+	}
 	return NULL;
 }
 
