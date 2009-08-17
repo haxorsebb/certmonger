@@ -174,7 +174,7 @@ static int
 list(const char *argv0, int argc, char **argv)
 {
 	struct cm_store_entry **entries;
-	const char *key_storage, *cert_storage;
+	const char *key_storage = NULL, *cert_storage = NULL;
 	char nickname[LINE_MAX], ca[LINE_MAX];
 	int requests_only = 0, tracking_only = 0, c, i;
 	while ((c = getopt(argc, argv, "rt")) != -1) {
