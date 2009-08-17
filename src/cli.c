@@ -22,11 +22,11 @@ request(const char *argv0, int argc, char **argv)
 	struct cm_store_entry *entry;
 	char cn_template[LINE_MAX];
 	const char *ca = NULL;
-	const char *dbdir = NULL, *nickname = NULL;
+	const char *dbdir = NULL, *token = NULL, *nickname = NULL;
 	const char *keyfile = NULL, *certfile = NULL;
 	const char *subject = NULL, *service = NULL, *usage = NULL;
 	int keygen = 0, keysize = 0, track_exp = 0, auto_renew = 0, c;
-	while ((c = getopt(argc, argv, "c:gG:d:n:k:f:S:s:u:er")) != -1) {
+	while ((c = getopt(argc, argv, "c:gG:d:n:k:f:S:s:t:u:er")) != -1) {
 		switch (c) {
 		case 'c':
 			ca = optarg;
@@ -54,6 +54,9 @@ request(const char *argv0, int argc, char **argv)
 			break;
 		case 's':
 			service = optarg;
+			break;
+		case 't':
+			token = optarg;
 			break;
 		case 'u':
 			usage = optarg;
@@ -94,11 +97,15 @@ request(const char *argv0, int argc, char **argv)
 			entry->cm_key_storage_default = 0;
 			entry->cm_key_storage_type = cm_key_storage_nssdb;
 			entry->cm_key_storage_location = strdup(dbdir);
+			entry->cm_key_token = strdup(token);
 			entry->cm_key_nickname = strdup(nickname);
 		} else {
 			entry->cm_key_storage_default = 0;
 			entry->cm_key_storage_type = CM_DEFAULT_KEY_STORAGE_TYPE;
 			entry->cm_key_storage_location = strdup(CM_DEFAULT_KEY_STORAGE_LOCATION);
+			if (CM_DEFAULT_KEY_TOKEN != NULL) {
+				entry->cm_key_token = strdup(CM_DEFAULT_KEY_TOKEN);
+			}
 			if (CM_DEFAULT_KEY_NICKNAME != NULL) {
 				entry->cm_key_nickname = strdup(CM_DEFAULT_KEY_NICKNAME);
 			}
@@ -113,11 +120,15 @@ request(const char *argv0, int argc, char **argv)
 			entry->cm_cert_storage_default = 0;
 			entry->cm_cert_storage_type = cm_cert_storage_nssdb;
 			entry->cm_cert_storage_location = strdup(dbdir);
+			entry->cm_cert_token = strdup(token);
 			entry->cm_cert_nickname = strdup(nickname);
 		} else {
 			entry->cm_cert_storage_default = 0;
 			entry->cm_cert_storage_type = CM_DEFAULT_CERT_STORAGE_TYPE;
 			entry->cm_cert_storage_location = strdup(CM_DEFAULT_CERT_STORAGE_LOCATION);
+			if (CM_DEFAULT_CERT_TOKEN != NULL) {
+				entry->cm_cert_token = strdup(CM_DEFAULT_CERT_TOKEN);
+			}
 			if (CM_DEFAULT_CERT_NICKNAME != NULL) {
 				entry->cm_cert_nickname = strdup(CM_DEFAULT_CERT_NICKNAME);
 			}
@@ -183,7 +194,7 @@ list(const char *argv0, int argc, char **argv)
 {
 	struct cm_store_entry **entries;
 	const char *key_storage = NULL, *cert_storage = NULL;
-	char nickname[LINE_MAX], ca[LINE_MAX];
+	char token[LINE_MAX], nickname[LINE_MAX], ca[LINE_MAX];
 	int requests_only = 0, tracking_only = 0, c, i;
 	while ((c = getopt(argc, argv, "rt")) != -1) {
 		switch (c) {
@@ -259,24 +270,36 @@ list(const char *argv0, int argc, char **argv)
 		printf("           CA: %s\n", ca);
 		printf("        state: %s\n",
 		       cm_store_state_as_string(entries[i]->cm_state));
+		if (entries[i]->cm_key_token != NULL) {
+			sprintf(token, ",token='%s'",
+				entries[i]->cm_key_token);
+		} else {
+			strcpy(token, "");
+		}
 		if (entries[i]->cm_key_nickname != NULL) {
 			sprintf(nickname, ",nickname='%s'",
 				entries[i]->cm_key_nickname);
 		} else {
 			strcpy(nickname, "");
 		}
-		printf("     key pair: type=%s,location='%s'%s\n",
+		printf("     key pair: type=%s,location='%s'%s%s\n",
 		       key_storage, entries[i]->cm_key_storage_location,
-		       nickname);
+		       token, nickname);
+		if (entries[i]->cm_cert_token != NULL) {
+			sprintf(token, ",token='%s'",
+				entries[i]->cm_cert_token);
+		} else {
+			strcpy(token, "");
+		}
 		if (entries[i]->cm_cert_nickname != NULL) {
 			sprintf(nickname, ",nickname='%s'",
 				entries[i]->cm_cert_nickname);
 		} else {
 			strcpy(nickname, "");
 		}
-		printf("  certificate: type=%s,location='%s'%s\n",
+		printf("  certificate: type=%s,location='%s'%s%s\n",
 		       cert_storage, entries[i]->cm_cert_storage_location,
-		       nickname);
+		       token, nickname);
 		printf("      monitor: %s\n",
 		       entries[i]->cm_monitor ? "yes" : "no");
 		printf("   auto-renew: %s\n",
