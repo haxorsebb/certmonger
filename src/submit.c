@@ -41,8 +41,8 @@ cm_submit_resume(struct cm_store_entry *entry)
 	case cm_key_storage_nssdb:
 		return cm_submit_n_resume(entry);
 		break;
-	}
 #endif
+	}
 	return NULL;
 }
 
