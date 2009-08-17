@@ -7,18 +7,22 @@
 struct cm_submit_state *
 cm_submit_start(struct cm_store_entry *entry)
 {
-	switch (entry->cm_key_storage_type) {
+	switch (entry->cm_ca_type) {
+	case cm_ca_dummy:
+		switch (entry->cm_key_storage_type) {
 #ifdef HAVE_OPENSSL
-	case cm_key_storage_file:
-		return cm_submit_o_start(entry);
-		break;
+		case cm_key_storage_file:
+			return cm_submit_o_start(entry);
+			break;
 #endif
 #ifdef HAVE_NSS
-	case cm_key_storage_nssdb:
-		return cm_submit_n_start(entry);
+		case cm_key_storage_nssdb:
+			return cm_submit_n_start(entry);
+			break;
+#endif
+		}
 		break;
 	}
-#endif
 	return NULL;
 }
 
