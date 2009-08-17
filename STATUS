@@ -1,1 +1,2 @@
-Limited local-only support.  Local keys are signed, no name or extensions.
+Limited local-only support.  Local keys are signed, but the subject/issuer
+name and extensions aren't used.
