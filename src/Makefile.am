@@ -1,6 +1,8 @@
 noinst_LIBRARIES = libcm.a libcm-o.a libcm-n.a
 libcm_a_SOURCES = \
+	certread.c \
 	certread.h \
+	certread-int.h \
 	certsave.c \
 	certsave.h \
 	certsave-int.h \
