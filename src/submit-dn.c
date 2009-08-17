@@ -33,7 +33,7 @@ cm_submit_main(int fd, struct cm_store_entry *entry)
 	char *b64;
 	const char *keyname, *token, *p, *q;
 	SECStatus error;
-	SECItem *esdata = NULL, *ecert = NULL;
+	SECItem *esdata = NULL, *ecert = NULL, *item;
 	SECKEYPrivateKey *privkey;
 	SECKEYPrivateKeyList *privkeys;
 	SECKEYPrivateKeyListNode *node;
@@ -41,7 +41,7 @@ cm_submit_main(int fd, struct cm_store_entry *entry)
 	CERTCertificateRequest *req = NULL, sreq;
 	CERTSignedData *data = NULL, sdata, scert;
 	CERTValidity *validity;
-	PRTime now;
+	PRTime now, life;
 	PLArenaPool *arena = NULL;
 	SECOidData *oid;
 	enum cm_key_algorithm cm_key_algorithm;
@@ -173,8 +173,8 @@ cm_submit_main(int fd, struct cm_store_entry *entry)
 	while (strncmp(p, "-----BEGIN ", 11) == 0) {
 		p += strcspn(p, "\r\n");
 		p += strspn(p, "\r\n");
-		q = strstr(entry->cm_csr, "-----END");
 	}
+	q = strstr(p, "-----END");
 	if ((p == NULL) || (q == NULL)) {
 		cm_log(1, "Unable to parse CSR.\n");
 		_exit(1);
@@ -193,6 +193,7 @@ cm_submit_main(int fd, struct cm_store_entry *entry)
 	} else {
 		data = &sdata;
 	}
+	oid = SECOID_FindOIDByTag(SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION);
 	/* Decode the CSR from the signeddata structure into a usable request.
 	 */
 	memset(&sreq, 0, sizeof(sreq));
@@ -206,7 +207,8 @@ cm_submit_main(int fd, struct cm_store_entry *entry)
 	}
 	/* Build a certificate using the contents of the signing request. */
 	now = PR_Now();
-	validity = CERT_CreateValidity(now, now + 30 * 24 * 60 * 60);
+	life = CM_DEFAULT_CERT_LIFETIME * 24 * 60 * 60 * 1000000;
+	validity = CERT_CreateValidity(now, now + life);
 	if (validity == NULL) {
 		cm_log(1, "Unable to create validity structure.\n");
 		_exit(1);
@@ -218,6 +220,25 @@ cm_submit_main(int fd, struct cm_store_entry *entry)
 			_exit(1);
 		}
 	}
+	/* Populate the certificate's fields. */
+	item = SEC_ASN1EncodeUnsignedInteger(arena, &ucert->version, 3);
+	if (item == NULL) {
+		cm_log(1, "Unable to set certificate structure version.\n");
+		_exit(1);
+	}
+	item = SEC_ASN1EncodeUnsignedInteger(arena, &ucert->serialNumber, 0); /* XXX */
+	if (item == NULL) {
+		cm_log(1, "Unable to set certificate serial number.\n");
+		_exit(1);
+	}
+	if (SECOID_SetAlgorithmID(arena, &ucert->signature,
+				  oid->offset, NULL) != SECSuccess) {
+		cm_log(1, "Unable to set signature algorithm ID.\n");
+		_exit(1);
+	}
+	ucert->issuer = req->subject;
+	ucert->subject = req->subject;
+	ucert->subjectPublicKeyInfo = req->subjectPublicKeyInfo;
 	/* Encode the certificate. */
 	ecert = SEC_ASN1EncodeItem(arena, NULL, ucert,
 				   CERT_CertificateTemplate);
@@ -226,7 +247,6 @@ cm_submit_main(int fd, struct cm_store_entry *entry)
 		_exit(1);
 	}
 	/* Create a signed certificate. */
-	oid = SECOID_FindOIDByTag(SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION);
 	memset(&scert, 0, sizeof(scert));
 	scert.data = *ecert;
 	if (SECOID_SetAlgorithmID(arena, &scert.signatureAlgorithm,
