@@ -19,15 +19,17 @@
 #include "store.h"
 #include "store-int.h"
 #include "submit.h"
+#include "submit-int.h"
 
 struct cm_submit_state {
+	struct cm_submit_state_pvt pvt;
 	char msg[0x10000];
 	pid_t pid;
 	int fd, status;
 };
 
 static void
-cm_submit_main(int fd, struct cm_store_entry *entry)
+cm_submit_n_main(int fd, struct cm_store_entry *entry)
 {
 	FILE *status;
 	char *b64;
@@ -142,9 +144,9 @@ cm_submit_main(int fd, struct cm_store_entry *entry)
 	}
 	privkey = NULL;
 	if (!PR_CLIST_IS_EMPTY(&(privkeys->list))) {
-		for (node = PR_LIST_HEAD(&(privkeys->list));
+		for (node = PRIVKEY_LIST_HEAD(privkeys);
 		     ((node != NULL) && (node->key != NULL));
-		     node = PR_NEXT_LINK(&(node->links))) {
+		     node = PRIVKEY_LIST_NEXT(node)) {
 			keyname = PK11_GetPrivateKeyNickname(node->key);
 			if ((entry->cm_key_nickname == NULL) ||
 			    (strlen(entry->cm_key_nickname) == 0) ||
@@ -152,7 +154,7 @@ cm_submit_main(int fd, struct cm_store_entry *entry)
 				privkey = node->key;
 				break;
 			}
-			if (node == PR_LIST_TAIL(&(privkeys->list))) {
+			if (PRIVKEY_LIST_END(node, privkeys)) {
 				break;
 			}
 		}
@@ -207,7 +209,7 @@ cm_submit_main(int fd, struct cm_store_entry *entry)
 	}
 	/* Build a certificate using the contents of the signing request. */
 	now = PR_Now();
-	life = CM_DEFAULT_CERT_LIFETIME * 24 * 60 * 60 * 1000000;
+	life = CM_DEFAULT_CERT_LIFETIME * 24 * 60 * 60 * 1000000L;
 	validity = CERT_CreateValidity(now, now + life);
 	if (validity == NULL) {
 		cm_log(1, "Unable to create validity structure.\n");
@@ -294,63 +296,24 @@ cm_submit_main(int fd, struct cm_store_entry *entry)
 	_exit(0);
 }
 
-/* Start CSR submission using parameters stored in the entry. */
-struct cm_submit_state *
-cm_submit_start(struct cm_store_entry *entry)
-{
-	int fds[2];
-	struct cm_submit_state *state;
-	if (entry->cm_key_storage_type != cm_key_storage_nssdb) {
-		cm_log(1, "Wrong submission method: only keys stored "
-		       "in an NSS database can be used.\n");
-		return NULL;
-	}
-	state = malloc(sizeof(*state));
-	if (state != NULL) {
-		memset(state, 0, sizeof(*state));
-		state->fd = -1;
-		if (pipe(fds) != -1) {
-			state->pid = fork();
-			switch (state->pid) {
-			case -1:
-				close(fds[0]);
-				close(fds[1]);
-				free(state);
-				state = NULL;
-				break;
-			case 0:
-				close(fds[0]);
-				cm_submit_main(fds[1], entry);
-				_exit(0);
-				break;
-			default:
-				state->fd = fds[0];
-				close(fds[1]);
-				break;
-			}
-		}
-	}
-	return state;
-}
-
 /* Get a selectable-for-read descriptor we can poll for status changes. */
-int
-cm_submit_get_fd(struct cm_store_entry *entry, struct cm_submit_state *state)
+static int
+cm_submit_n_get_fd(struct cm_store_entry *entry, struct cm_submit_state *state)
 {
 	return state->fd;
 }
 
 /* Check if the CSR was received by the CA yet. */
-int
-cm_submit_sent(struct cm_store_entry *entry, struct cm_submit_state *state)
+static int
+cm_submit_n_sent(struct cm_store_entry *entry, struct cm_submit_state *state)
 {
 	return 0;
 }
 
 /* Save CA-specific identifier for our submitted request. */
-int
-cm_submit_save_ca_cookie(struct cm_store_entry *entry,
-			 struct cm_submit_state *state)
+static int
+cm_submit_n_save_ca_cookie(struct cm_store_entry *entry,
+			   struct cm_submit_state *state)
 {
 	free(entry->cm_ca_cookie);
 	entry->cm_ca_cookie = strdup(entry->cm_key_storage_location);
@@ -364,7 +327,7 @@ cm_submit_save_ca_cookie(struct cm_store_entry *entry,
 /* Pick up after a CSR has been "submitted", in case we haven't yet gotten a
  * decision about it. */
 struct cm_submit_state *
-cm_submit_resume(struct cm_store_entry *entry)
+cm_submit_n_resume(struct cm_store_entry *entry)
 {
 	struct cm_submit_state *state;
 	state = cm_submit_start(entry);
@@ -373,9 +336,9 @@ cm_submit_resume(struct cm_store_entry *entry)
 }
 
 /* Check if an attempt to get status has succeeded. */
-int
-cm_submit_status_ready(struct cm_store_entry *entry,
-		       struct cm_submit_state *state)
+static int
+cm_submit_n_status_ready(struct cm_store_entry *entry,
+		         struct cm_submit_state *state)
 {
 	ssize_t i, remainder;
 	char *p;
@@ -396,8 +359,8 @@ cm_submit_status_ready(struct cm_store_entry *entry,
 }
 
 /* Check if the certificate was issued. */
-int
-cm_submit_issued(struct cm_store_entry *entry, struct cm_submit_state *state)
+static int
+cm_submit_n_issued(struct cm_store_entry *entry, struct cm_submit_state *state)
 {
 	if (state->pid == -1) {
 		if (!WIFEXITED(state->status) ||
@@ -413,16 +376,16 @@ cm_submit_issued(struct cm_store_entry *entry, struct cm_submit_state *state)
 }
 
 /* Check if we need to make another request to actually retrieve the cert. */
-int
-cm_submit_needs_retrieval(struct cm_store_entry *entry,
-			  struct cm_submit_state *state)
+static int
+cm_submit_n_needs_retrieval(struct cm_store_entry *entry,
+			    struct cm_submit_state *state)
 {
 	return -1; /* already have data, no additional retrieval step needed */
 }
 
 /* Done talking to the CA. */
-void
-cm_submit_done(struct cm_store_entry *entry, struct cm_submit_state *state)
+static void
+cm_submit_n_done(struct cm_store_entry *entry, struct cm_submit_state *state)
 {
 	if (state->pid != -1) {
 		kill(state->pid, SIGKILL);
@@ -431,4 +394,50 @@ cm_submit_done(struct cm_store_entry *entry, struct cm_submit_state *state)
 		close(state->fd);
 	}
 	free(state);
+}
+
+/* Start CSR submission using parameters stored in the entry. */
+struct cm_submit_state *
+cm_submit_n_start(struct cm_store_entry *entry)
+{
+	int fds[2];
+	struct cm_submit_state *state;
+	if (entry->cm_key_storage_type != cm_key_storage_nssdb) {
+		cm_log(1, "Wrong submission method: only keys stored "
+		       "in an NSS database can be used.\n");
+		return NULL;
+	}
+	state = malloc(sizeof(*state));
+	if (state != NULL) {
+		memset(state, 0, sizeof(*state));
+		state->fd = -1;
+		state->pvt.get_fd = cm_submit_n_get_fd;
+		state->pvt.sent = cm_submit_n_sent;
+		state->pvt.save_ca_cookie = cm_submit_n_save_ca_cookie;
+		state->pvt.status_ready = cm_submit_n_status_ready;
+		state->pvt.issued = cm_submit_n_issued;
+		state->pvt.needs_retrieval = cm_submit_n_needs_retrieval;
+		state->pvt.done = cm_submit_n_done;
+		if (pipe(fds) != -1) {
+			state->pid = fork();
+			switch (state->pid) {
+			case -1:
+				close(fds[0]);
+				close(fds[1]);
+				free(state);
+				state = NULL;
+				break;
+			case 0:
+				close(fds[0]);
+				cm_submit_n_main(fds[1], entry);
+				_exit(0);
+				break;
+			default:
+				state->fd = fds[0];
+				close(fds[1]);
+				break;
+			}
+		}
+	}
+	return state;
 }
