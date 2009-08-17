@@ -16,19 +16,22 @@
 #include <cryptohi.h>
 #include <cert.h>
 
+#include "csrgen.h"
+#include "csrgen-int.h"
 #include "keygen.h"
 #include "log.h"
 #include "store.h"
 #include "store-int.h"
 
 struct cm_csrgen_state {
+	struct cm_csrgen_state_pvt pvt;
 	char msg[0x10000];
 	pid_t pid;
 	int fd, status;
 };
 
 static void
-cm_csrgen_main(int fd, struct cm_store_entry *entry)
+cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
 {
 	FILE *status;
 	SECStatus error;
@@ -147,9 +150,9 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 	}
 	privkey = NULL;
 	if (!PR_CLIST_IS_EMPTY(&(privkeys->list))) {
-		for (node = PR_LIST_HEAD(&(privkeys->list));
+		for (node = PRIVKEY_LIST_HEAD(privkeys);
 		     ((node != NULL) && (node->key != NULL));
-		     node = PR_NEXT_LINK(&(node->links))) {
+		     node = PRIVKEY_LIST_NEXT(node)) {
 			keyname = PK11_GetPrivateKeyNickname(node->key);
 			if ((entry->cm_key_nickname == NULL) ||
 			    (strlen(entry->cm_key_nickname) == 0) ||
@@ -157,7 +160,7 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 				privkey = node->key;
 				break;
 			}
-			if (node == PR_LIST_TAIL(&(privkeys->list))) {
+			if (PRIVKEY_LIST_END(node, privkeys)) {
 				break;
 			}
 		}
@@ -338,42 +341,9 @@ cm_csrgen_main(int fd, struct cm_store_entry *entry)
 	_exit(2);
 }
 
-/* Start CSR generation using template information in the entry. */
-struct cm_csrgen_state *
-cm_csrgen_start(struct cm_store_entry *entry)
-{
-	int fds[2];
-	struct cm_csrgen_state *state;
-	state = malloc(sizeof(*state));
-	if (state != NULL) {
-		state->fd = -1;
-		if (pipe(fds) != -1) {
-			state->pid = fork();
-			switch (state->pid) {
-			case -1:
-				close(fds[0]);
-				close(fds[1]);
-				free(state);
-				state = NULL;
-				break;
-			case 0:
-				close(fds[0]);
-				cm_csrgen_main(fds[1], entry);
-				_exit(0);
-				break;
-			default:
-				state->fd = fds[0];
-				close(fds[1]);
-				break;
-			}
-		}
-	}
-	return state;
-}
-
 /* Check if a CSR is ready. */
-int
-cm_csrgen_ready(struct cm_store_entry *entry, struct cm_csrgen_state *state)
+static int
+cm_csrgen_n_ready(struct cm_store_entry *entry, struct cm_csrgen_state *state)
 {
 	ssize_t i, remainder;
 	char *p;
@@ -392,15 +362,16 @@ cm_csrgen_ready(struct cm_store_entry *entry, struct cm_csrgen_state *state)
 }
 
 /* Get a selectable-for-read descriptor we can poll for status changes. */
-int
-cm_csrgen_get_fd(struct cm_store_entry *entry, struct cm_csrgen_state *state)
+static int
+cm_csrgen_n_get_fd(struct cm_store_entry *entry, struct cm_csrgen_state *state)
 {
 	return state->fd;
 }
 
 /* Save the CSR to the entry. */
-int
-cm_csrgen_save_csr(struct cm_store_entry *entry, struct cm_csrgen_state *state)
+static int
+cm_csrgen_n_save_csr(struct cm_store_entry *entry,
+		     struct cm_csrgen_state *state)
 {
 	if (state->pid == -1) {
 		if (!WIFEXITED(state->status) ||
@@ -417,8 +388,8 @@ cm_csrgen_save_csr(struct cm_store_entry *entry, struct cm_csrgen_state *state)
 }
 
 /* Clean up after CSR generation. */
-void
-cm_csrgen_done(struct cm_store_entry *entry, struct cm_csrgen_state *state)
+static void
+cm_csrgen_n_done(struct cm_store_entry *entry, struct cm_csrgen_state *state)
 {
 	if (state->pid != -1) {
 		kill(state->pid, SIGKILL);
@@ -427,4 +398,41 @@ cm_csrgen_done(struct cm_store_entry *entry, struct cm_csrgen_state *state)
 		close(state->fd);
 	}
 	free(state);
+}
+
+/* Start CSR generation using template information in the entry. */
+struct cm_csrgen_state *
+cm_csrgen_n_start(struct cm_store_entry *entry)
+{
+	int fds[2];
+	struct cm_csrgen_state *state;
+	state = malloc(sizeof(*state));
+	if (state != NULL) {
+		state->pvt.ready = &cm_csrgen_n_ready;
+		state->pvt.get_fd = &cm_csrgen_n_get_fd;
+		state->pvt.save_csr = &cm_csrgen_n_save_csr;
+		state->pvt.done = &cm_csrgen_n_done;
+		state->fd = -1;
+		if (pipe(fds) != -1) {
+			state->pid = fork();
+			switch (state->pid) {
+			case -1:
+				close(fds[0]);
+				close(fds[1]);
+				free(state);
+				state = NULL;
+				break;
+			case 0:
+				close(fds[0]);
+				cm_csrgen_n_main(fds[1], entry);
+				_exit(0);
+				break;
+			default:
+				state->fd = fds[0];
+				close(fds[1]);
+				break;
+			}
+		}
+	}
+	return state;
 }
