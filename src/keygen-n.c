@@ -13,18 +13,20 @@
 #include <prerror.h>
 
 #include "keygen.h"
+#include "keygen-int.h"
 #include "log.h"
 #include "store.h"
 #include "store-int.h"
 
 struct cm_keygen_state {
+	struct cm_keygen_state_pvt pvt;
 	char msg[0x10000];
 	pid_t pid;
 	int fd, status;
 };
 
 static void
-cm_keygen_main(int fd, struct cm_store_entry *entry)
+cm_keygen_n_main(int fd, struct cm_store_entry *entry)
 {
 	FILE *status;
 	enum cm_key_algorithm cm_key_algorithm;
@@ -192,45 +194,9 @@ cm_keygen_main(int fd, struct cm_store_entry *entry)
 	fclose(status);
 }
 
-/* Start keypair generation using parameters stored in the entry. */
-struct cm_keygen_state *
-cm_keygen_start(struct cm_store_entry *entry)
-{
-	int fds[2];
-	struct cm_keygen_state *state;
-	if (entry->cm_key_storage_type != cm_key_storage_nssdb) {
-		return NULL;
-	}
-	state = malloc(sizeof(*state));
-	if (state != NULL) {
-		state->fd = -1;
-		if (pipe(fds) != -1) {
-			state->pid = fork();
-			switch (state->pid) {
-			case -1:
-				close(fds[0]);
-				close(fds[1]);
-				free(state);
-				state = NULL;
-				break;
-			case 0:
-				close(fds[0]);
-				cm_keygen_main(fds[1], entry);
-				_exit(0);
-				break;
-			default:
-				state->fd = fds[0];
-				close(fds[1]);
-				break;
-			}
-		}
-	}
-	return state;
-}
-
 /* Check if the keypair is ready. */
-int
-cm_keygen_ready(struct cm_store_entry *entry, struct cm_keygen_state *state)
+static int
+cm_keygen_n_ready(struct cm_store_entry *entry, struct cm_keygen_state *state)
 {
 	ssize_t i, remainder;
 	char *p;
@@ -249,16 +215,16 @@ cm_keygen_ready(struct cm_store_entry *entry, struct cm_keygen_state *state)
 }
 
 /* Get a selectable-for-read descriptor we can poll for status changes. */
-int
-cm_keygen_get_fd(struct cm_store_entry *entry, struct cm_keygen_state *state)
+static int
+cm_keygen_n_get_fd(struct cm_store_entry *entry, struct cm_keygen_state *state)
 {
 	return state->fd;
 }
 
 /* Tell us if the keypair was saved to the location specified in the entry. */
-int
-cm_keygen_saved_keypair(struct cm_store_entry *entry,
-		        struct cm_keygen_state *state)
+static int
+cm_keygen_n_saved_keypair(struct cm_store_entry *entry,
+		          struct cm_keygen_state *state)
 {
 
 	if (WIFEXITED(state->status) && (WEXITSTATUS(state->status) == 0)) {
@@ -268,8 +234,8 @@ cm_keygen_saved_keypair(struct cm_store_entry *entry,
 }
 
 /* Clean up after key generation. */
-void
-cm_keygen_done(struct cm_store_entry *entry, struct cm_keygen_state *state)
+static void
+cm_keygen_n_done(struct cm_store_entry *entry, struct cm_keygen_state *state)
 {
 	if (state->pid != -1) {
 		kill(state->pid, SIGKILL);
@@ -278,4 +244,44 @@ cm_keygen_done(struct cm_store_entry *entry, struct cm_keygen_state *state)
 		close(state->fd);
 	}
 	free(state);
+}
+
+/* Start keypair generation using parameters stored in the entry. */
+struct cm_keygen_state *
+cm_keygen_n_start(struct cm_store_entry *entry)
+{
+	int fds[2];
+	struct cm_keygen_state *state;
+	if (entry->cm_key_storage_type != cm_key_storage_nssdb) {
+		return NULL;
+	}
+	state = malloc(sizeof(*state));
+	if (state != NULL) {
+		state->fd = -1;
+		state->pvt.ready = cm_keygen_n_ready;
+		state->pvt.get_fd = cm_keygen_n_get_fd;
+		state->pvt.saved_keypair = cm_keygen_n_saved_keypair;
+		state->pvt.done = cm_keygen_n_done;
+		if (pipe(fds) != -1) {
+			state->pid = fork();
+			switch (state->pid) {
+			case -1:
+				close(fds[0]);
+				close(fds[1]);
+				free(state);
+				state = NULL;
+				break;
+			case 0:
+				close(fds[0]);
+				cm_keygen_n_main(fds[1], entry);
+				_exit(0);
+				break;
+			default:
+				state->fd = fds[0];
+				close(fds[1]);
+				break;
+			}
+		}
+	}
+	return state;
 }
