@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "cm.h"
 #include "store.h"
@@ -19,6 +20,7 @@ static int
 request(const char *argv0, int argc, char **argv)
 {
 	struct cm_store_entry *entry;
+	char cn_template[LINE_MAX];
 	const char *ca = NULL;
 	const char *dbdir = NULL, *nickname = NULL;
 	const char *keyfile = NULL, *certfile = NULL;
@@ -125,7 +127,13 @@ request(const char *argv0, int argc, char **argv)
 		if (subject != NULL) {
 			entry->cm_template_subject = strdup(subject);
 		} else {
-			entry->cm_template_subject = "CN=localhost";
+			memset(cn_template, '\0', sizeof(cn_template));
+			strcpy(cn_template, "CN=");
+			if (gethostname(cn_template + 3,
+					sizeof(cn_template) - 3 - 1) != 0) {
+				strcpy(cn_template, "CN=localhost");
+			}
+			entry->cm_template_subject = strdup(cn_template);
 		}
 		if (ca == NULL) {
 			entry->cm_ca_type = cm_ca_dummy;
@@ -314,7 +322,7 @@ help(const char *cmd, const char *category)
 	"  -e		track-expiration\n"
 	"  -r		attempt to renew as expiration nears\n"
 	"* Optional stuff:\n"
-	"  -S NAME	requested subject name (default: cn=<fqdn>)\n"
+	"  -S NAME	requested subject name (default: CN=<hostname>)\n"
 	"  -u USAGE	requested usage / eku\n"
 	"  -s name	requested service name part (used to derive principal name)\n",},
 	{"start-tracking",
