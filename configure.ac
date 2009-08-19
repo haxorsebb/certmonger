@@ -21,6 +21,9 @@ UPCASE_PACKAGE_NAME=`echo "${PACKAGE_NAME}" | tr '[a-z]' '[A-Z]'`
 AC_DEFINE_UNQUOTED(CM_FILE_STORE_DIRECTORY_ENV,"${UPCASE_PACKAGE_NAME}_FILE_STORE_DIR",
 		   [Define to the name of the environment variable which can specify the path for tracking files.])
 
+PKG_CHECK_MODULES(TALLOC,talloc)
+PKG_CHECK_MODULES(TEVENT,tevent)
+
 AC_ARG_WITH(openssl,
 	    AS_HELP_STRING(--without-openssl,
 	    		   [build without support for storing keys and certificates in files]),

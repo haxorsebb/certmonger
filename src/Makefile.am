@@ -1,3 +1,4 @@
+AM_CFLAGS = @TALLOC_CFLAGS@ @TEVENT_CFLAGS@
 noinst_LIBRARIES = libcm.a libcm-o.a libcm-n.a
 libcm_a_SOURCES = \
 	certread.c \
@@ -41,6 +42,6 @@ libcm_a_LIBADD = $(libcm_o_a_OBJECTS) $(libcm_n_a_OBJECTS)
 bin_PROGRAMS = cm
 sbin_PROGRAMS = cmd
 cm_SOURCES = cli.c
-cm_LDADD = libcm.a @OPENSSL_LIBS@ @NSS_LIBS@
+cm_LDADD = libcm.a @OPENSSL_LIBS@ @NSS_LIBS@ @TALLOC_LIBS@
 cmd_SOURCES = cmd.c
-cmd_LDADD = libcm.a @OPENSSL_LIBS@ @NSS_LIBS@
+cmd_LDADD = libcm.a @OPENSSL_LIBS@ @NSS_LIBS@ @TALLOC_LIBS@
