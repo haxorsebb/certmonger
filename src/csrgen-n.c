@@ -17,6 +17,8 @@
 #include <cryptohi.h>
 #include <cert.h>
 
+#include <talloc.h>
+
 #include "csrgen.h"
 #include "csrgen-int.h"
 #include "keygen.h"
@@ -390,8 +392,8 @@ cm_csrgen_n_save_csr(struct cm_store_entry *entry,
 		    (WEXITSTATUS(state->status) != 0)) {
 			return -1;
 		}
-		free(entry->cm_csr);
-		entry->cm_csr = strdup(state->msg);
+		talloc_free(entry->cm_csr);
+		entry->cm_csr = talloc_strdup(entry, state->msg);
 		if (entry->cm_csr == NULL) {
 			return ENOMEM;
 		}
@@ -409,7 +411,7 @@ cm_csrgen_n_done(struct cm_store_entry *entry, struct cm_csrgen_state *state)
 	if (state->fd != -1) {
 		close(state->fd);
 	}
-	free(state);
+	talloc_free(state);
 }
 
 /* Start CSR generation using template information in the entry. */
@@ -419,7 +421,7 @@ cm_csrgen_n_start(struct cm_store_entry *entry)
 	int fds[2];
 	long flags;
 	struct cm_csrgen_state *state;
-	state = malloc(sizeof(*state));
+	state = talloc_ptrtype(entry, state);
 	if (state != NULL) {
 		memset(state, 0, sizeof(*state));
 		state->pvt.ready = &cm_csrgen_n_ready;
@@ -433,7 +435,7 @@ cm_csrgen_n_start(struct cm_store_entry *entry)
 			case -1:
 				close(fds[0]);
 				close(fds[1]);
-				free(state);
+				talloc_free(state);
 				state = NULL;
 				break;
 			case 0:

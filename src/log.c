@@ -11,6 +11,8 @@
 #include <time.h>
 #include <unistd.h>
 
+#include <talloc.h>
+
 #include "log.h"
 
 static int cm_log_level = 0;
@@ -47,22 +49,20 @@ cm_log(int level, const char *fmt, ...)
 		case cm_log_stderr:
 			now = time(NULL);
 			localtime_r(&now, &lt);
-			p = malloc(strlen(fmt) + 20 + 30);
+			now = time(NULL);
+			p = talloc_asprintf(NULL,
+					    "%04d-%02d-%02d %d:%02d:%02d "
+					    "[%lu] %s",
+					    lt.tm_year + 1900,
+					    lt.tm_mon + 1,
+					    lt.tm_mday,
+					    lt.tm_hour, lt.tm_min, lt.tm_sec,
+					    (unsigned long) getpid(), fmt);
 			if (p != NULL) {
-				now = time(NULL);
-				sprintf(p, "%04d-%02d-%02d %d:%02d:%02d "
-					"[%lu] %s",
-					lt.tm_year + 1900,
-					lt.tm_mon + 1,
-					lt.tm_mday,
-					lt.tm_hour, lt.tm_min, lt.tm_sec,
-					(unsigned long) getpid(), fmt);
-			}
-			va_start(args, fmt);
-			vfprintf(stderr, p ?: fmt, args);
-			va_end(args);
-			if (p != fmt) {
-				free(p);
+				va_start(args, fmt);
+				vfprintf(stderr, p ?: fmt, args);
+				va_end(args);
+				talloc_free(p);
 			}
 			fflush(stderr);
 			break;

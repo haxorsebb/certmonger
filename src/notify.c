@@ -6,6 +6,8 @@
 #include <syslog.h>
 #include <unistd.h>
 
+#include <talloc.h>
+
 #include "log.h"
 #include "notify.h"
 #include "store.h"
@@ -28,7 +30,7 @@ cm_notify_start(struct cm_store_entry *entry)
 {
 	int fds[2];
 	struct cm_notify_state *state;
-	state = malloc(sizeof(*state));
+	state = talloc_ptrtype(entry, state);
 	if (state != NULL) {
 		state->fd = -1;
 		if (pipe(fds) != -1) {
@@ -37,7 +39,7 @@ cm_notify_start(struct cm_store_entry *entry)
 			case -1:
 				close(fds[0]);
 				close(fds[1]);
-				free(state);
+				talloc_free(state);
 				state = NULL;
 				break;
 			case 0:
@@ -85,5 +87,5 @@ cm_notify_done(struct cm_store_entry *entry, struct cm_notify_state *state)
 	if (state->fd != -1) {
 		close(state->fd);
 	}
-	free(state);
+	talloc_free(state);
 }

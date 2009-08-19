@@ -12,6 +12,8 @@
 #include <unistd.h>
 #include <time.h>
 
+#include <talloc.h>
+
 #include "store.h"
 #include "store-int.h"
 #include "log.h"
@@ -63,7 +65,7 @@ cm_store_timestamp_from_time(time_t when, char timestamp[15])
 }
 
 static char **
-cm_store_file_read_lines(FILE *fp)
+cm_store_file_read_lines(void *parent, FILE *fp)
 {
 	char buf[LINE_MAX], *s, *t, **lines, **tlines;
 	int n_lines, trim;
@@ -74,32 +76,33 @@ cm_store_file_read_lines(FILE *fp)
 	while (fgets(buf, sizeof(buf), fp) == buf) {
 		switch (buf[0]) {
 		case '=':
+			/* If we've already been reading a line, append it to
+			 * the list. */
 			if (s != NULL) {
-				tlines = malloc((n_lines + 2) * sizeof(*lines));
+				tlines = talloc_realloc(parent, lines,
+						        char *, n_lines + 2);
 				if (tlines != NULL) {
-					if (n_lines > 0) {
-						memcpy(tlines, lines,
-						       n_lines *
-						       sizeof(*lines));
-					}
 					if (trim) {
 						s[strcspn(s, "\r\n")] = '\0';
 					}
+					talloc_steal(tlines, s);
 					tlines[n_lines++] = s;
 					tlines[n_lines] = NULL;
-					free(lines);
 					lines = tlines;
 				}
 			}
+			/* Store this line's data, and default to trimming off
+			 * end-of-line markers. */
 			trim = 1;
-			s = strdup(buf + 1);
+			s = talloc_strdup(parent, buf + 1);
 			break;
 		case ' ':
+			/* Since this is a multi-line item, refrain from
+			 * trimming off any end-of-line characters, and just
+			 * append it to the list of things we've read. */
 			trim = 0;
-			t = malloc(strlen(s) + strlen(buf) + 1);
+			t = talloc_strdup_append(s, buf + 1);
 			if (t != NULL) {
-				sprintf(t, "%s%s", s, buf + 1);
-				free(s);
 				s = t;
 			}
 			break;
@@ -109,18 +112,16 @@ cm_store_file_read_lines(FILE *fp)
 			break;
 		}
 	}
+	/* If we were reading a line, append it to the list. */
 	if (s != NULL) {
-		tlines = malloc((n_lines + 2) * sizeof(*lines));
+		tlines = talloc_realloc(parent, lines, char *, n_lines + 2);
 		if (tlines != NULL) {
-			if (n_lines > 0) {
-				memcpy(tlines, lines, n_lines * sizeof(*lines));
-			}
 			if (trim) {
 				s[strcspn(s, "\r\n")] = '\0';
 			}
+			talloc_steal(tlines, s);
 			tlines[n_lines++] = s;
 			tlines[n_lines] = NULL;
-			free(lines);
 			lines = tlines;
 		}
 	}
@@ -131,31 +132,31 @@ static char *
 free_if_empty(char *s)
 {
 	if ((s != NULL) && (strlen(s) == 0)) {
-		free(s);
+		talloc_free(s);
 		s = NULL;
 	}
 	return s;
 }
 
 static struct cm_store_entry *
-cm_store_file_read(const char *filename, FILE *fp)
+cm_store_file_read(void *parent, const char *filename, FILE *fp)
 {
 	struct cm_store_entry *ret;
 	char **s, *p;
 	int i, j;
-	ret = malloc(sizeof(*ret));
+	ret = talloc_ptrtype(parent, ret);
 	if (ret != NULL) {
 		memset(ret, 0, sizeof(*ret));
-		s = cm_store_file_read_lines(fp);
+		s = cm_store_file_read_lines(ret, fp);
 		i = 0;
-		ret->cm_store_private = strdup(filename);
+		ret->cm_store_private = talloc_strdup(ret, filename);
 		if ((s != NULL) && (s[i] != NULL)) {
 			ret->cm_id = free_if_empty(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
 			ret->cm_key_type_default = atoi(s[i]);
-			free(s[i]);
+			talloc_free(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
@@ -164,17 +165,17 @@ cm_store_file_read(const char *filename, FILE *fp)
 			} else {
 				ret->cm_key_type.cm_key_algorithm = cm_key_rsa;
 			}
-			free(s[i]);
+			talloc_free(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
 			ret->cm_key_type.cm_key_size = atoi(s[i]);
-			free(s[i]);
+			talloc_free(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
 			ret->cm_key_storage_default = atoi(s[i]);
-			free(s[i]);
+			talloc_free(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
@@ -186,7 +187,7 @@ cm_store_file_read(const char *filename, FILE *fp)
 			} else {
 				ret->cm_key_storage_type = cm_key_storage_file;
 			}
-			free(s[i]);
+			talloc_free(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
@@ -203,7 +204,7 @@ cm_store_file_read(const char *filename, FILE *fp)
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
 			ret->cm_cert_storage_default = atoi(s[i]);
-			free(s[i]);
+			talloc_free(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
@@ -215,7 +216,7 @@ cm_store_file_read(const char *filename, FILE *fp)
 			} else {
 				ret->cm_cert_storage_type = cm_cert_storage_file;
 			}
-			free(s[i]);
+			talloc_free(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
@@ -248,7 +249,7 @@ cm_store_file_read(const char *filename, FILE *fp)
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
 			ret->cm_cert_expiration = cm_store_time_from_timestamp(s[i]);
-			free(s[i]);
+			talloc_free(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
@@ -269,12 +270,13 @@ cm_store_file_read(const char *filename, FILE *fp)
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
 			ret->cm_ttls_default = atoi(s[i]);
-			free(s[i]);
+			talloc_free(s[i]);
 			i++;
 		}
 		ret->cm_n_ttls = 0;
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_ttls = malloc(sizeof(*ret->cm_ttls) * strlen(s[i]));
+			ret->cm_ttls = talloc_array_ptrtype(ret, ret->cm_ttls,
+							    strlen(s[i]));
 			if (ret->cm_ttls != NULL) {
 				p = s[i];
 				j = 0;
@@ -285,18 +287,18 @@ cm_store_file_read(const char *filename, FILE *fp)
 				}
 				ret->cm_n_ttls = j;
 			}
-			free(s[i]);
+			talloc_free(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
 			ret->cm_last_expiration_check =
 				cm_store_time_from_timestamp(s[i]);
-			free(s[i]);
+			talloc_free(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
 			ret->cm_notification_default = atoi(s[i]);
-			free(s[i]);
+			talloc_free(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
@@ -308,7 +310,7 @@ cm_store_file_read(const char *filename, FILE *fp)
 			} else {
 				ret->cm_notification_method = cm_notification_syslog;
 			}
-			free(s[i]);
+			talloc_free(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
@@ -317,7 +319,7 @@ cm_store_file_read(const char *filename, FILE *fp)
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
 			ret->cm_template_default = atoi(s[i]);
-			free(s[i]);
+			talloc_free(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
@@ -346,32 +348,32 @@ cm_store_file_read(const char *filename, FILE *fp)
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
 			ret->cm_state = cm_store_state_from_string(s[i]);
-			free(s[i]);
+			talloc_free(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
 			ret->cm_autorenew_default = atoi(s[i]);
-			free(s[i]);
+			talloc_free(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
 			ret->cm_autorenew = atoi(s[i]);
-			free(s[i]);
+			talloc_free(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
 			ret->cm_monitor_default = atoi(s[i]);
-			free(s[i]);
+			talloc_free(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
 			ret->cm_monitor = atoi(s[i]);
-			free(s[i]);
+			talloc_free(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
 			ret->cm_ca_default = atoi(s[i]);
-			free(s[i]);
+			talloc_free(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
@@ -380,7 +382,7 @@ cm_store_file_read(const char *filename, FILE *fp)
 			} else {
 				ret->cm_ca_type = cm_ca_dummy;
 			}
-			free(s[i]);
+			talloc_free(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
@@ -389,7 +391,7 @@ cm_store_file_read(const char *filename, FILE *fp)
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
 			ret->cm_submitted = cm_store_time_from_timestamp(s[i]);
-			free(s[i]);
+			talloc_free(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
@@ -401,9 +403,8 @@ cm_store_file_read(const char *filename, FILE *fp)
 			i++;
 		}
 		while ((s != NULL) && (s[i] != NULL)) {
-			free(s[i++]);
+			talloc_free(s[i++]);
 		}
-		free(s);
 	}
 	return ret;
 }
@@ -652,7 +653,7 @@ cm_store_entry_save(struct cm_store_entry *entry)
 			return -1;
 		}
 		close(fd);
-		entry->cm_store_private = strdup(path);
+		entry->cm_store_private = talloc_strdup(entry, path);
 	}
 
 	snprintf(path, sizeof(path), "%s.tmp",
@@ -679,7 +680,7 @@ cm_store_get_defaults(void)
 }
 
 struct cm_store_entry **
-cm_store_get_all_entries(void)
+cm_store_get_all_entries(void *parent)
 {
 	struct cm_store_entry **ret;
 	unsigned int i;
@@ -697,7 +698,7 @@ cm_store_get_all_entries(void)
 	memset(&globs, 0, sizeof(globs));
 	ret = NULL;
 	if (glob(path, 0, NULL, &globs) == 0) {
-		ret = malloc(sizeof(*ret) * (globs.gl_pathc + 1));
+		ret = talloc_array_ptrtype(parent, ret, globs.gl_pathc + 1);
 		if (ret != NULL) {
 			for (i = 0, j = 0; i < globs.gl_pathc; i++) {
 				p = globs.gl_pathv[i];
@@ -709,7 +710,9 @@ cm_store_get_all_entries(void)
 				}
 				fp = fopen(globs.gl_pathv[i], "r");
 				if (fp != NULL) {
-					ret[j] = cm_store_file_read(globs.gl_pathv[i], fp);
+					ret[j] = cm_store_file_read(ret,
+								    globs.gl_pathv[i],
+								    fp);
 					if (ret[j] != NULL) {
 						j++;
 					}

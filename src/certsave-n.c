@@ -14,6 +14,8 @@
 #include <pk11pub.h>
 #include <prerror.h>
 
+#include <talloc.h>
+
 #include "certsave.h"
 #include "certsave-int.h"
 #include "log.h"
@@ -151,7 +153,7 @@ cm_certsave_n_done(struct cm_store_entry *entry,
 	if (state->fd != -1) {
 		close(state->fd);
 	}
-	free(state);
+	talloc_free(state);
 }
 
 /* Start writing the certificate from the entry to the configured location. */
@@ -166,7 +168,7 @@ cm_certsave_n_start(struct cm_store_entry *entry)
 		       "files an NSS database.\n");
 		return NULL;
 	}
-	state = malloc(sizeof(*state));
+	state = talloc_ptrtype(entry, state);
 	if (state != NULL) {
 		memset(state, 0, sizeof(*state));
 		state->pvt.ready = cm_certsave_n_ready;
@@ -180,7 +182,7 @@ cm_certsave_n_start(struct cm_store_entry *entry)
 			case -1:
 				close(fds[0]);
 				close(fds[1]);
-				free(state);
+				talloc_free(state);
 				state = NULL;
 				break;
 			case 0:

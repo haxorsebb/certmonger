@@ -14,6 +14,8 @@
 #include <keyhi.h>
 #include <prerror.h>
 
+#include <talloc.h>
+
 #include "keygen.h"
 #include "keygen-int.h"
 #include "log.h"
@@ -180,8 +182,8 @@ cm_keygen_n_main(int fd, struct cm_store_entry *entry)
 	/* Record the token name if we didn't already have one. */
 	if ((entry->cm_key_token == NULL) ||
 	    (strlen(entry->cm_key_token) == 0)) {
-		free(entry->cm_key_token);
-		entry->cm_key_token = strdup(token);
+		talloc_free(entry->cm_key_token);
+		entry->cm_key_token = talloc_strdup(entry, token);
 		if (entry->cm_key_token == NULL) {
 			cm_log(1, "Error recording token name.\n");
 		}
@@ -256,7 +258,7 @@ cm_keygen_n_done(struct cm_store_entry *entry, struct cm_keygen_state *state)
 	if (state->fd != -1) {
 		close(state->fd);
 	}
-	free(state);
+	talloc_free(state);
 }
 
 /* Start keypair generation using parameters stored in the entry. */
@@ -269,7 +271,7 @@ cm_keygen_n_start(struct cm_store_entry *entry)
 	if (entry->cm_key_storage_type != cm_key_storage_nssdb) {
 		return NULL;
 	}
-	state = malloc(sizeof(*state));
+	state = talloc_ptrtype(entry, state);
 	if (state != NULL) {
 		memset(state, 0, sizeof(*state));
 		state->pvt.ready = cm_keygen_n_ready;
@@ -283,7 +285,7 @@ cm_keygen_n_start(struct cm_store_entry *entry)
 			case -1:
 				close(fds[0]);
 				close(fds[1]);
-				free(state);
+				talloc_free(state);
 				state = NULL;
 				break;
 			case 0:

@@ -11,6 +11,8 @@
 #include <openssl/rsa.h>
 #include <openssl/err.h>
 
+#include <talloc.h>
+
 #include "keygen.h"
 #include "keygen-int.h"
 #include "log.h"
@@ -158,7 +160,7 @@ cm_keygen_o_done(struct cm_store_entry *entry, struct cm_keygen_state *state)
 	if (state->fd != -1) {
 		close(state->fd);
 	}
-	free(state);
+	talloc_free(state);
 }
 
 /* Start keypair generation using parameters stored in the entry. */
@@ -171,7 +173,7 @@ cm_keygen_o_start(struct cm_store_entry *entry)
 	if (entry->cm_key_storage_type != cm_key_storage_file) {
 		return NULL;
 	}
-	state = malloc(sizeof(*state));
+	state = talloc_ptrtype(entry, state);
 	if (state != NULL) {
 		memset(state, 0, sizeof(*state));
 		state->pvt.ready = cm_keygen_o_ready;
@@ -185,7 +187,7 @@ cm_keygen_o_start(struct cm_store_entry *entry)
 			case -1:
 				close(fds[0]);
 				close(fds[1]);
-				free(state);
+				talloc_free(state);
 				state = NULL;
 				break;
 			case 0:

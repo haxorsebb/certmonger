@@ -5,6 +5,8 @@
 #include <string.h>
 #include <time.h>
 
+#include <talloc.h>
+
 #include "store.h"
 #include "store-int.h"
 
@@ -62,62 +64,12 @@ cm_store_state_from_string(const char *name)
 
 /* Generic routines. */
 struct cm_store_entry *
-cm_store_entry_new()
+cm_store_entry_new(void *parent)
 {
 	struct cm_store_entry *entry;
-	entry = malloc(sizeof(*entry));
+	entry = talloc_ptrtype(parent, entry);
 	if (entry != NULL) {
 		memset(entry, 0, sizeof(*entry));
 	}
 	return entry;
-}
-
-void
-cm_store_entry_free(struct cm_store_entry *entry)
-{
-	free(entry->cm_store_private); /* XXX */
-	free(entry->cm_id);
-
-	free(entry->cm_key_storage_location);
-
-	free(entry->cm_cert_storage_location);
-	free(entry->cm_cert_nickname);
-
-	free(entry->cm_cert_issuer);
-	free(entry->cm_cert_serial);
-	free(entry->cm_cert_subject);
-	free(entry->cm_cert_spki);
-	free(entry->cm_cert_email);
-	free(entry->cm_cert_principal);
-	free(entry->cm_cert_ku);
-	free(entry->cm_cert_eku);
-
-	free(entry->cm_ttls);
-
-	free(entry->cm_notification_destination);
-
-	free(entry->cm_template_subject);
-	free(entry->cm_template_email);
-	free(entry->cm_template_principal);
-	free(entry->cm_template_ku);
-	free(entry->cm_template_eku);
-
-	free(entry->cm_csr);
-
-	free(entry->cm_ca_location);
-	free(entry->cm_ca_cookie);
-
-	free(entry->cm_cert);
-
-	free(entry);
-}
-
-void
-cm_store_entry_freev(struct cm_store_entry **entry)
-{
-	int i;
-	for (i = 0; (entry != NULL) && (entry[i] != NULL); i++) {
-		cm_store_entry_free(entry[i]);
-	}
-	free(entry);
 }

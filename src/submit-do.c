@@ -9,6 +9,8 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
+#include <talloc.h>
+
 #include "log.h"
 #include "store.h"
 #include "store-int.h"
@@ -121,8 +123,9 @@ static int
 cm_submit_o_save_ca_cookie(struct cm_store_entry *entry,
 			 struct cm_submit_state *state)
 {
-	free(entry->cm_ca_cookie);
-	entry->cm_ca_cookie = strdup(entry->cm_key_storage_location);
+	talloc_free(entry->cm_ca_cookie);
+	entry->cm_ca_cookie = talloc_strdup(entry,
+					    entry->cm_key_storage_location);
 	if (entry->cm_ca_cookie == NULL) {
 		cm_log(1, "Out of memory.\n");
 		return ENOMEM;
@@ -159,8 +162,8 @@ cm_submit_o_status_ready(struct cm_store_entry *entry,
 	state->fd = -1;
 	waitpid(state->pid, &state->status, 0);
 	state->pid = -1;
-	free(entry->cm_cert);
-	entry->cm_cert = strdup(state->msg);
+	talloc_free(entry->cm_cert);
+	entry->cm_cert = talloc_strdup(entry, state->msg);
 	return 0;
 }
 
@@ -193,7 +196,7 @@ cm_submit_o_done(struct cm_store_entry *entry, struct cm_submit_state *state)
 	if (state->fd != -1) {
 		close(state->fd);
 	}
-	free(state);
+	talloc_free(state);
 }
 
 /* Start CSR submission using parameters stored in the entry. */
@@ -207,7 +210,7 @@ cm_submit_o_start(struct cm_store_entry *entry)
 		       "in files can be used.\n");
 		return NULL;
 	}
-	state = malloc(sizeof(*state));
+	state = talloc_ptrtype(entry, state);
 	if (state != NULL) {
 		memset(state, 0, sizeof(*state));
 		state->pvt.get_fd = cm_submit_o_get_fd;
@@ -224,7 +227,7 @@ cm_submit_o_start(struct cm_store_entry *entry)
 			case -1:
 				close(fds[0]);
 				close(fds[1]);
-				free(state);
+				talloc_free(state);
 				state = NULL;
 				break;
 			case 0:

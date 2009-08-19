@@ -6,6 +6,8 @@
 #include <string.h>
 #include <time.h>
 
+#include <talloc.h>
+
 #include "certread.h"
 #include "certsave.h"
 #include "csrgen.h"
@@ -75,7 +77,7 @@ int
 cm_iterate_init(struct cm_store_entry *entry, void **cm_iterate_state)
 {
 	struct cm_iterate_state *state;
-	state = malloc(sizeof(*state));
+	state = talloc_ptrtype(entry, state);
 	if (state == NULL) {
 		return ENOMEM;
 	}
@@ -529,6 +531,5 @@ cm_iterate_done(struct cm_store_entry *entry, void *cm_iterate_state)
 	cm_entry_reset_state(entry);
 	cm_log(3, "'%s' ends in state '%s'\n", entry->cm_id,
 	       cm_store_state_as_string(entry->cm_state));
-	free(state);
 	return 0;
 }

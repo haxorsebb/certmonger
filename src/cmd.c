@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <talloc.h>
+
 #include "cm.h"
 #include "log.h"
 
@@ -39,7 +41,7 @@ main(int argc, char **argv)
 	cm_log(3, "Starting up.\n");
 
 	ctx = NULL;
-	i = cm_init(&ctx);
+	i = cm_init(NULL, &ctx);
 	if (i != 0) {
 		fprintf(stderr, "Error: %s\n", strerror(i));
 		return 1;
@@ -57,15 +59,16 @@ main(int argc, char **argv)
 				timeout = MAX_TIMEOUT;
 			}
 			if (nfds > 0) {
-				pfds = malloc(sizeof(pfds[0]) * nfds);
+				pfds = talloc_array_ptrtype(ctx, pfds, nfds);
 				if (pfds != NULL) {
-					memset(pfds, 0, sizeof(pfds[0]) * nfds);
 					for (i = 0; i < nfds; i++) {
+						memset(&pfds[i], 0,
+						       sizeof(pfds[i]));
 						pfds[i].fd = fds[i];
 						pfds[i].events = POLLIN;
 					}
 					poll(pfds, nfds, timeout);
-					free(pfds);
+					talloc_free(pfds);
 				}
 			} else {
 				poll(NULL, 0, timeout);

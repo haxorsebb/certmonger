@@ -10,6 +10,8 @@
 #include <time.h>
 #include <unistd.h>
 
+#include <talloc.h>
+
 #include "cm.h"
 #include "store.h"
 #include "store-int.h"
@@ -72,7 +74,7 @@ request(const char *argv0, int argc, char **argv)
 			return 1;
 		}
 	}
-	entry = cm_store_entry_new();
+	entry = cm_store_entry_new(NULL);
 	if (entry != NULL) {
 		entry->cm_key_type_default = 1;
 		entry->cm_key_type.cm_key_size = CM_DEFAULT_PUBKEY_SIZE;
@@ -91,52 +93,56 @@ request(const char *argv0, int argc, char **argv)
 		if (keyfile != NULL) {
 			entry->cm_key_storage_default = 0;
 			entry->cm_key_storage_type = cm_key_storage_file;
-			entry->cm_key_storage_location = strdup(keyfile);
+			entry->cm_key_storage_location = talloc_strdup(entry,
+								       keyfile);
 		} else
 		if ((dbdir != NULL) && (nickname != NULL)) {
 			entry->cm_key_storage_default = 0;
 			entry->cm_key_storage_type = cm_key_storage_nssdb;
-			entry->cm_key_storage_location = strdup(dbdir);
-			entry->cm_key_token = strdup(token);
-			entry->cm_key_nickname = strdup(nickname);
+			entry->cm_key_storage_location = talloc_strdup(entry,
+								       dbdir);
+			entry->cm_key_token = talloc_strdup(entry, token);
+			entry->cm_key_nickname = talloc_strdup(entry, nickname);
 		} else {
 			entry->cm_key_storage_default = 0;
 			entry->cm_key_storage_type = CM_DEFAULT_KEY_STORAGE_TYPE;
-			entry->cm_key_storage_location = strdup(CM_DEFAULT_KEY_STORAGE_LOCATION);
+			entry->cm_key_storage_location = talloc_strdup(entry, CM_DEFAULT_KEY_STORAGE_LOCATION);
 			if (CM_DEFAULT_KEY_TOKEN != NULL) {
-				entry->cm_key_token = strdup(CM_DEFAULT_KEY_TOKEN);
+				entry->cm_key_token = talloc_strdup(entry, CM_DEFAULT_KEY_TOKEN);
 			}
 			if (CM_DEFAULT_KEY_NICKNAME != NULL) {
-				entry->cm_key_nickname = strdup(CM_DEFAULT_KEY_NICKNAME);
+				entry->cm_key_nickname = talloc_strdup(entry, CM_DEFAULT_KEY_NICKNAME);
 			}
 		}
 		entry->cm_state = keygen ? CM_NEED_KEY_PAIR : CM_NEED_CSR;
 		if (certfile != NULL) {
 			entry->cm_cert_storage_default = 0;
 			entry->cm_cert_storage_type = cm_cert_storage_file;
-			entry->cm_cert_storage_location = strdup(certfile);
+			entry->cm_cert_storage_location = talloc_strdup(entry,
+									certfile);
 		} else
 		if ((dbdir != NULL) && (nickname != NULL)) {
 			entry->cm_cert_storage_default = 0;
 			entry->cm_cert_storage_type = cm_cert_storage_nssdb;
-			entry->cm_cert_storage_location = strdup(dbdir);
-			entry->cm_cert_token = strdup(token);
-			entry->cm_cert_nickname = strdup(nickname);
+			entry->cm_cert_storage_location = talloc_strdup(entry, dbdir);
+			entry->cm_cert_token = talloc_strdup(entry, token);
+			entry->cm_cert_nickname = talloc_strdup(entry, nickname);
 		} else {
 			entry->cm_cert_storage_default = 0;
 			entry->cm_cert_storage_type = CM_DEFAULT_CERT_STORAGE_TYPE;
-			entry->cm_cert_storage_location = strdup(CM_DEFAULT_CERT_STORAGE_LOCATION);
+			entry->cm_cert_storage_location = talloc_strdup(entry, CM_DEFAULT_CERT_STORAGE_LOCATION);
 			if (CM_DEFAULT_CERT_TOKEN != NULL) {
-				entry->cm_cert_token = strdup(CM_DEFAULT_CERT_TOKEN);
+				entry->cm_cert_token = talloc_strdup(entry, CM_DEFAULT_CERT_TOKEN);
 			}
 			if (CM_DEFAULT_CERT_NICKNAME != NULL) {
-				entry->cm_cert_nickname = strdup(CM_DEFAULT_CERT_NICKNAME);
+				entry->cm_cert_nickname = talloc_strdup(entry, CM_DEFAULT_CERT_NICKNAME);
 			}
 			return 1;
 		}
 		entry->cm_notification_default = 1;
 		if (subject != NULL) {
-			entry->cm_template_subject = strdup(subject);
+			entry->cm_template_subject = talloc_strdup(entry,
+								   subject);
 		} else {
 			memset(cn_template, '\0', sizeof(cn_template));
 			strcpy(cn_template, "CN=");
@@ -144,7 +150,8 @@ request(const char *argv0, int argc, char **argv)
 					sizeof(cn_template) - 3 - 1) != 0) {
 				strcpy(cn_template, "CN=localhost");
 			}
-			entry->cm_template_subject = strdup(cn_template);
+			entry->cm_template_subject = talloc_strdup(entry,
+								   cn_template);
 		}
 		if (ca == NULL) {
 			entry->cm_ca_type = cm_ca_dummy;
@@ -163,16 +170,16 @@ request(const char *argv0, int argc, char **argv)
 		}
 		if (cm_store_entry_save(entry) == 0) {
 			printf("Request added.\n");
-			cm_store_entry_free(entry);
+			talloc_free(entry);
 			return 0;
 		} else {
 			printf("Error adding request.\n");
-			cm_store_entry_free(entry);
+			talloc_free(entry);
 			return 1;
 		}
 	} else {
 		printf("Error creating template request.\n");
-		cm_store_entry_free(entry);
+		talloc_free(entry);
 		return 1;
 	}
 }
@@ -209,7 +216,7 @@ list(const char *argv0, int argc, char **argv)
 			return 1;
 		}
 	}
-	entries = cm_store_get_all_entries();
+	entries = cm_store_get_all_entries(NULL);
 	for (i = 0; (entries != NULL) && (entries[i] != NULL); i++) {
 		switch (entries[i]->cm_state) {
 		case CM_INVALID:
@@ -305,6 +312,7 @@ list(const char *argv0, int argc, char **argv)
 		printf("   auto-renew: %s\n",
 		       entries[i]->cm_autorenew ? "yes" : "no");
 	}
+	talloc_free(entries);
 	return 0;
 }
 

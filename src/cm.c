@@ -7,6 +7,8 @@
 #include <string.h>
 #include <time.h>
 
+#include <talloc.h>
+
 #include "cm.h"
 #include "iterate.h"
 #include "store.h"
@@ -21,25 +23,24 @@ struct cm_context {
 };
 
 int
-cm_init(struct cm_context **context)
+cm_init(void *parent, struct cm_context **context)
 {
 	struct cm_context *ctx;
 	int i, j;
 	*context = NULL;
-	ctx = malloc(sizeof(**context));
+	ctx = talloc_ptrtype(parent, ctx);
 	if (ctx == NULL) {
 		return ENOMEM;
 	}
 	memset(ctx, 0, sizeof(*ctx));
-	ctx->entries = cm_store_get_all_entries();
+	ctx->entries = cm_store_get_all_entries(ctx);
 	for (i = 0; (ctx->entries != NULL) && (ctx->entries[i] != NULL); i++) {
 		continue;
 	}
 	ctx->n_entries = i;
-	ctx->iterators = malloc(sizeof(ctx->iterators[0]) * i);
+	ctx->iterators = talloc_array_ptrtype(ctx, ctx->iterators, i);
 	if (ctx->iterators == NULL) {
-		cm_store_entry_freev(ctx->entries);
-		free(ctx);
+		talloc_free(ctx);
 		return ENOMEM;
 	}
 	for (i = 0; i < ctx->n_entries; i++) {
@@ -49,9 +50,7 @@ cm_init(struct cm_context **context)
 				cm_iterate_done(ctx->entries[j],
 						ctx->iterators[j]);
 			}
-			free(ctx->iterators);
-			cm_store_entry_freev(ctx->entries);
-			free(ctx);
+			talloc_free(ctx);
 			return ENOMEM;
 		}
 	}
@@ -65,10 +64,10 @@ cm_next(struct cm_context *context, int **fds, int *nfds, int *timeout)
 	int i, delay, ret;
 	enum cm_time when;
 	if (*fds != NULL) {
-		free(*fds);
+		talloc_free(*fds);
 		*fds = NULL;
 	}
-	*fds = malloc(sizeof(**fds) * context->n_entries);
+	*fds = talloc_array_ptrtype(context, *fds, context->n_entries);
 	*nfds = 0;
 	*timeout = -1;
 	for (i = 0; i < context->n_entries; i++) {
@@ -110,14 +109,13 @@ cm_done(struct cm_context *context, int **fds)
 {
 	int i;
 	if (*fds != NULL) {
-		free(*fds);
+		talloc_free(*fds);
 		*fds = NULL;
 	}
 	for (i = 0; i < context->n_entries; i++) {
 		cm_iterate_done(context->entries[i], context->iterators[i]);
+		context->iterators[i] = NULL;
 		cm_store_entry_save(context->entries[i]);
 	}
-	free(context->iterators);
-	cm_store_entry_freev(context->entries);
-	free(context);
+	talloc_free(context);
 }
