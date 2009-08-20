@@ -21,7 +21,6 @@
 #include "log.h"
 #include "store.h"
 #include "store-int.h"
-#include "submit.h"
 
 struct cm_certsave_state {
 	struct cm_certsave_state_pvt pvt;
