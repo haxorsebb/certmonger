@@ -1,2 +1,2 @@
 Limited local-only support.  Local keys are signed, but the subject/issuer
-name and extensions aren't used.
+name and extensions aren't used, and the serial number is useless.
