@@ -103,7 +103,7 @@ cm_break_h(struct tevent_context *ec, struct tevent_signal *se,
 	   int signum, int count, void *siginfo, void *pvt)
 {
 	struct cm_context *ctx = pvt;
-	cm_log(3, "Break.\n");
+	cm_log(3, "Got signal %d.\n", signum);
 	ctx->should_quit++;
 }
 

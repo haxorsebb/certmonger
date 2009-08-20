@@ -13,8 +13,6 @@
 #include "cm.h"
 #include "log.h"
 
-#define MAX_TIMEOUT 86400
-
 int
 main(int argc, char **argv)
 {

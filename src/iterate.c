@@ -157,13 +157,13 @@ cm_iterate(struct cm_store_entry *entry,
 			*readfd = cm_keygen_get_fd(entry,
 						   state->cm_keygen_state);
 			if (*readfd == -1) {
-				*when = cm_time_soonish;
+				*when = cm_time_soon;
 			} else {
 				*when = cm_time_no_time;
 			}
 		} else {
 			/* Failed to start generating a key; try again. */
-			*when = cm_time_soon;
+			*when = cm_time_soonish;
 		}
 		break;
 	case CM_GENERATING_KEY_PAIR:
@@ -174,20 +174,21 @@ cm_iterate(struct cm_store_entry *entry,
 				cm_keygen_done(entry, state->cm_keygen_state);
 				state->cm_keygen_state = NULL;
 				entry->cm_state = CM_HAVE_KEY_PAIR;
-				*when = cm_time_soon;
+				*when = cm_time_now;
 			} else {
-				/* Failed to save key pair; try again. */
+				/* Failed to save key pair; take a breather and
+				 * try again. */
 				cm_keygen_done(entry, state->cm_keygen_state);
 				state->cm_keygen_state = NULL;
 				entry->cm_state = CM_NEED_KEY_PAIR;
-				*when = cm_time_soon;
+				*when = cm_time_soonish;
 			}
 		} else {
 			/* Wait for status update, or poll. */
 			*readfd = cm_keygen_get_fd(entry,
 						   state->cm_keygen_state);
 			if (*readfd == -1) {
-				*when = cm_time_soonish;
+				*when = cm_time_soon;
 			} else {
 				*when = cm_time_no_time;
 			}
@@ -195,7 +196,7 @@ cm_iterate(struct cm_store_entry *entry,
 		break;
 	case CM_HAVE_KEY_PAIR:
 		entry->cm_state = CM_NEED_CSR;
-		*when = cm_time_soon;
+		*when = cm_time_now;
 		break;
 	case CM_NEED_CSR:
 		state->cm_csrgen_state = cm_csrgen_start(entry);
@@ -206,13 +207,14 @@ cm_iterate(struct cm_store_entry *entry,
 			*readfd = cm_csrgen_get_fd(entry,
 						   state->cm_csrgen_state);
 			if (*readfd == -1) {
-				*when = cm_time_soonish;
+				*when = cm_time_soon;
 			} else {
 				*when = cm_time_no_time;
 			}
 		} else {
-			/* Failed to start generating a CSR; try again. */
-			*when = cm_time_soon;
+			/* Failed to start generating a CSR; take a breather
+			 * and try again. */
+			*when = cm_time_soonish;
 		}
 		break;
 	case CM_GENERATING_CSR:
@@ -223,7 +225,7 @@ cm_iterate(struct cm_store_entry *entry,
 				cm_csrgen_done(entry, state->cm_csrgen_state);
 				state->cm_csrgen_state = NULL;
 				entry->cm_state = CM_HAVE_CSR;
-				*when = cm_time_soon;
+				*when = cm_time_now;
 			} else {
 				/* Failed to save CSR; try again. */
 				cm_csrgen_done(entry, state->cm_csrgen_state);
@@ -236,7 +238,7 @@ cm_iterate(struct cm_store_entry *entry,
 			*readfd = cm_csrgen_get_fd(entry,
 						   state->cm_csrgen_state);
 			if (*readfd == -1) {
-				*when = cm_time_soonish;
+				*when = cm_time_soon;
 			} else {
 				*when = cm_time_no_time;
 			}
@@ -244,7 +246,7 @@ cm_iterate(struct cm_store_entry *entry,
 		break;
 	case CM_HAVE_CSR:
 		entry->cm_state = CM_NEED_TO_SUBMIT;
-		*when = cm_time_soon;
+		*when = cm_time_now;
 		break;
 	case CM_NEED_TO_SUBMIT:
 		state->cm_submit_state = cm_submit_start(entry);
@@ -256,13 +258,14 @@ cm_iterate(struct cm_store_entry *entry,
 			*readfd = cm_submit_get_fd(entry,
 						   state->cm_submit_state);
 			if (*readfd == -1) {
-				*when = cm_time_soonish;
+				*when = cm_time_soon;
 			} else {
 				*when = cm_time_no_time;
 			}
 		} else {
-			/* Failed to start submission; try again. */
-			*when = cm_time_soon;
+			/* Failed to start submission; take a breather and try
+			 * again. */
+			*when = cm_time_soonish;
 		}
 		break;
 	case CM_SUBMITTING:
@@ -274,7 +277,8 @@ cm_iterate(struct cm_store_entry *entry,
 				if (cm_submit_needs_retrieval(entry,
 							      state->cm_submit_state) == 0) {
 					/* We're done, but we need to retrieve
-					 * the certificate in another step. */
+					 * the certificate in another step.
+					 * Give the CA a second to be polite. */
 					entry->cm_state = CM_RETRIEVING_CERT;
 					*when = cm_time_soon;
 				} else {
@@ -285,7 +289,7 @@ cm_iterate(struct cm_store_entry *entry,
 						       state->cm_submit_state);
 					state->cm_submit_state = NULL;
 					entry->cm_state = CM_NEED_TO_SAVE_CERT;
-					*when = cm_time_soon;
+					*when = cm_time_now;
 				}
 			} else
 			if (cm_submit_save_ca_cookie(entry,
@@ -293,10 +297,11 @@ cm_iterate(struct cm_store_entry *entry,
 				/* Saved CA's identifier for our request; move
 				 * on. */
 				entry->cm_state = CM_HAVE_SUBMITTED;
-				*when = cm_time_soon;
+				*when = cm_time_now;
 			} else {
 				/* Couldn't retrieve acknowledgement from the
-				 * CA, so we have to try again. */
+				 * CA, so we have to try submitting another
+				 * request. */
 				cm_submit_done(entry, state->cm_submit_state);
 				state->cm_submit_state = NULL;
 				entry->cm_state = CM_NEED_TO_SUBMIT;
@@ -307,7 +312,7 @@ cm_iterate(struct cm_store_entry *entry,
 			*readfd = cm_submit_get_fd(entry,
 						   state->cm_submit_state);
 			if (*readfd == -1) {
-				*when = cm_time_soonish;
+				*when = cm_time_soon;
 			} else {
 				*when = cm_time_no_time;
 			}
@@ -315,7 +320,7 @@ cm_iterate(struct cm_store_entry *entry,
 		break;
 	case CM_HAVE_SUBMITTED:
 		entry->cm_state = CM_NEED_CA_STATUS;
-		*when = cm_time_soon;
+		*when = cm_time_now;
 		break;
 	case CM_NEED_CA_STATUS:
 		if (state->cm_submit_state == NULL) {
@@ -329,13 +334,14 @@ cm_iterate(struct cm_store_entry *entry,
 			*readfd = cm_submit_get_fd(entry,
 						   state->cm_submit_state);
 			if (*readfd == -1) {
-				*when = cm_time_soonish;
+				*when = cm_time_soon;
 			} else {
 				*when = cm_time_no_time;
 			}
 		} else {
-			/* Couldn't start polling for status; try again. */
-			*when = cm_time_soon;
+			/* Couldn't start polling for status; try again after a
+			 * bit. */
+			*when = cm_time_soonish;
 		}
 		break;
 	case CM_POLLING_CA_STATUS:
@@ -359,21 +365,21 @@ cm_iterate(struct cm_store_entry *entry,
 						       state->cm_submit_state);
 					state->cm_submit_state = NULL;
 					entry->cm_state = CM_NEED_TO_SAVE_CERT;
-					*when = cm_time_soon;
+					*when = cm_time_now;
 				}
 			} else {
 				/* The CA denied our request. HELP! */
 				cm_submit_done(entry, state->cm_submit_state);
 				state->cm_submit_state = NULL;
 				entry->cm_state = CM_NEED_GUIDANCE;
-				*when = cm_time_soon;
+				*when = cm_time_now;
 			}
 		} else {
 			/* Wait for status update, or poll. */
 			*readfd = cm_submit_get_fd(entry,
 						   state->cm_submit_state);
 			if (*readfd == -1) {
-				*when = cm_time_soonish;
+				*when = cm_time_soon;
 			} else {
 				*when = cm_time_no_time;
 			}
@@ -387,13 +393,13 @@ cm_iterate(struct cm_store_entry *entry,
 			cm_submit_done(entry, state->cm_submit_state);
 			state->cm_submit_state = NULL;
 			entry->cm_state = CM_NEED_TO_SAVE_CERT;
-			*when = cm_time_soon;
+			*when = cm_time_now;
 		} else {
 			/* Wait for status update, or poll. */
 			*readfd = cm_submit_get_fd(entry,
 						   state->cm_submit_state);
 			if (*readfd == -1) {
-				*when = cm_time_soonish;
+				*when = cm_time_soon;
 			} else {
 				*when = cm_time_no_time;
 			}
@@ -408,13 +414,13 @@ cm_iterate(struct cm_store_entry *entry,
 			*readfd = cm_certsave_get_fd(entry,
 						     state->cm_certsave_state);
 			if (*readfd == -1) {
-				*when = cm_time_soonish;
+				*when = cm_time_soon;
 			} else {
 				*when = cm_time_no_time;
 			}
 		} else {
-			/* Failed to start generating a CSR; try again. */
-			*when = cm_time_soon;
+			/* Failed to start saving the certificate; try again. */
+			*when = cm_time_soonish;
 		}
 		break;
 	case CM_SAVING_CERT:
@@ -425,21 +431,21 @@ cm_iterate(struct cm_store_entry *entry,
 				cm_certsave_done(entry, state->cm_certsave_state);
 				state->cm_certsave_state = NULL;
 				entry->cm_state = CM_SAVED_CERT;
-				*when = cm_time_soon;
+				*when = cm_time_now;
 			} else {
-				/* Failed to save cert; try again. */
+				/* Failed to save cert; try again in a bit. */
 				cm_certsave_done(entry,
 						 state->cm_certsave_state);
 				state->cm_certsave_state = NULL;
 				entry->cm_state = CM_NEED_TO_SAVE_CERT;
-				*when = cm_time_soon;
+				*when = cm_time_soonish;
 			}
 		} else {
 			/* Wait for status update, or poll. */
 			*readfd = cm_certsave_get_fd(entry,
 						     state->cm_certsave_state);
 			if (*readfd == -1) {
-				*when = cm_time_soonish;
+				*when = cm_time_soon;
 			} else {
 				*when = cm_time_no_time;
 			}
@@ -447,7 +453,7 @@ cm_iterate(struct cm_store_entry *entry,
 		break;
 	case CM_SAVED_CERT:
 		entry->cm_state = CM_MONITORING;
-		*when = cm_time_soon;
+		*when = cm_time_now;
 		break;
 	case CM_NEED_GUIDANCE:
 		*when = cm_time_soonish;
@@ -462,7 +468,7 @@ cm_iterate(struct cm_store_entry *entry,
 				*readfd = cm_notify_get_fd(entry,
 							   state->cm_notify_state);
 				if (*readfd == -1) {
-					*when = cm_time_soonish;
+					*when = cm_time_soon;
 				} else {
 					*when = cm_time_no_time;
 				}
@@ -471,12 +477,12 @@ cm_iterate(struct cm_store_entry *entry,
 				cm_log(0, "'%s' will expire in %d days.\n",
 				       (entry->cm_cert_expiration - time(NULL))/
 				       (24 * 60 * 60));
-				*delay = 24 * 60 * 60;
+				*delay = 24 * 60 * 60; /* XXX */
 				*when = cm_time_delay;
 			}
 		} else {
 			/* Nothing to do here. */
-			*delay = 24 * 60 * 60;
+			*delay = 24 * 60 * 60; /* XXX */
 			*when = cm_time_delay;
 		}
 		break;
