@@ -48,7 +48,7 @@ cm_certsave_n_main(struct cm_store_entry *entry)
 		arena = PORT_NewArena(sizeof(double));
 		if (arena == NULL) {
 			cm_log(1, "Error opening database '%s'.\n",
-			       entry->cm_key_storage_location);
+			       entry->cm_cert_storage_location);
 			NSS_Shutdown();
 			_exit(ENOMEM);
 		}
@@ -176,7 +176,7 @@ cm_certsave_n_start(struct cm_store_entry *entry)
 	struct cm_certsave_state *state;
 	if (entry->cm_cert_storage_type != cm_cert_storage_nssdb) {
 		cm_log(1, "Wrong save method: can only save certificates "
-		       "files an NSS database.\n");
+		       "to an NSS database.\n");
 		return NULL;
 	}
 	state = talloc_ptrtype(entry, state);
