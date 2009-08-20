@@ -76,6 +76,7 @@ request(const char *argv0, int argc, char **argv)
 	}
 	entry = cm_store_entry_new(NULL);
 	if (entry != NULL) {
+		/* Sort out the key type we want. */
 		entry->cm_key_type_default = 1;
 		entry->cm_key_type.cm_key_size = CM_DEFAULT_PUBKEY_SIZE;
 		if (keysize != 0) {
@@ -84,6 +85,7 @@ request(const char *argv0, int argc, char **argv)
 				CM_DEFAULT_PUBKEY_TYPE;
 			entry->cm_key_type.cm_key_size = keysize;
 		}
+		/* Sort out the key storage location. */
 		if (((keyfile != NULL) && (certfile == NULL)) ||
 		    ((keyfile == NULL) && (certfile != NULL))) {
 			printf("Filename for key or certificate specified "
@@ -101,7 +103,10 @@ request(const char *argv0, int argc, char **argv)
 			entry->cm_key_storage_type = cm_key_storage_nssdb;
 			entry->cm_key_storage_location = talloc_strdup(entry,
 								       dbdir);
-			entry->cm_key_token = talloc_strdup(entry, token);
+			if (token != NULL) {
+				entry->cm_key_token = talloc_strdup(entry,
+								    token);
+			}
 			entry->cm_key_nickname = talloc_strdup(entry, nickname);
 		} else {
 			entry->cm_key_storage_default = 0;
@@ -114,7 +119,10 @@ request(const char *argv0, int argc, char **argv)
 				entry->cm_key_nickname = talloc_strdup(entry, CM_DEFAULT_KEY_NICKNAME);
 			}
 		}
+		/* If we were asked to generate a key, then we need to do that.
+		 * Otherwise, assume we need to generate a CSR. */
 		entry->cm_state = keygen ? CM_NEED_KEY_PAIR : CM_NEED_CSR;
+		/* Sort out the certificate storage location. */
 		if (certfile != NULL) {
 			entry->cm_cert_storage_default = 0;
 			entry->cm_cert_storage_type = cm_cert_storage_file;
@@ -125,7 +133,10 @@ request(const char *argv0, int argc, char **argv)
 			entry->cm_cert_storage_default = 0;
 			entry->cm_cert_storage_type = cm_cert_storage_nssdb;
 			entry->cm_cert_storage_location = talloc_strdup(entry, dbdir);
-			entry->cm_cert_token = talloc_strdup(entry, token);
+			if (token != NULL) {
+				entry->cm_cert_token = talloc_strdup(entry,
+								     token);
+			}
 			entry->cm_cert_nickname = talloc_strdup(entry, nickname);
 		} else {
 			entry->cm_cert_storage_default = 0;
@@ -139,35 +150,50 @@ request(const char *argv0, int argc, char **argv)
 			}
 			return 1;
 		}
+		/* For now, just use the default time-until-expiration
+		 * threshold values for deciding when we need to warn the user.
+		 */
+		entry->cm_ttls_default = 1;
+		/* For now, just use the defaults for notifications. */
 		entry->cm_notification_default = 1;
+		/* Figure out a subject name to use in the CSR. */
 		if (subject != NULL) {
+			/* Use the specified value. */
 			entry->cm_template_subject = talloc_strdup(entry,
 								   subject);
 		} else {
+			/* Try to read the local hostname. */
 			memset(cn_template, '\0', sizeof(cn_template));
 			strcpy(cn_template, "CN=");
 			if (gethostname(cn_template + 3,
 					sizeof(cn_template) - 3 - 1) != 0) {
+				/* Failed to read the local hostname, default
+				 * to "localhost". */
 				strcpy(cn_template, "CN=localhost");
 			}
 			entry->cm_template_subject = talloc_strdup(entry,
 								   cn_template);
 		}
+		/* If we weren't told which CA to use, for now, use the dummy.
+		 */
 		if (ca == NULL) {
 			entry->cm_ca_type = cm_ca_dummy;
 		}
+		/* Sort out if we're tracking expiration. */
 		if (track_exp) {
 			entry->cm_monitor = 1;
 			entry->cm_monitor_default = 0;
 		} else {
 			entry->cm_monitor_default = 1;
 		}
+		/* Sort out if we're trying to auto-renew certificates. */
 		if (auto_renew) {
 			entry->cm_autorenew = 1;
 			entry->cm_autorenew_default = 0;
 		} else {
 			entry->cm_autorenew_default = 1;
 		}
+		/* Save this entry to our request store. */
 		if (cm_store_entry_save(entry) == 0) {
 			printf("Request added.\n");
 			talloc_free(entry);
