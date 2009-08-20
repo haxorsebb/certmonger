@@ -171,8 +171,6 @@ cm_submit_o_status_ready(struct cm_store_entry *entry,
 		state->fd = -1;
 		waitpid(state->pid, &state->status, 0);
 		state->pid = -1;
-		talloc_free(entry->cm_cert);
-		entry->cm_cert = talloc_strdup(entry, state->msg);
 		status = 0;
 	}
 	return status;
@@ -184,6 +182,8 @@ cm_submit_o_issued(struct cm_store_entry *entry, struct cm_submit_state *state)
 {
 	if ((strstr(state->msg, "-----BEGIN CERTIFICATE-----") != NULL) &&
 	    (strstr(state->msg, "-----END CERTIFICATE-----") != NULL)) {
+		talloc_free(entry->cm_cert);
+		entry->cm_cert = talloc_strdup(entry, state->msg);
 		return 0;
 	}
 	return -1;
