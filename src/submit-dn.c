@@ -27,7 +27,7 @@ struct cm_submit_state {
 	struct cm_submit_state_pvt pvt;
 	char msg[0x10000];
 	pid_t pid;
-	int fd, status;
+	int fd, count, status;
 };
 
 static void
@@ -344,21 +344,32 @@ cm_submit_n_status_ready(struct cm_store_entry *entry,
 		         struct cm_submit_state *state)
 {
 	ssize_t i, remainder;
-	char *p;
-	p = state->msg;
-	remainder = sizeof(state->msg) - 1;
-	while ((i = read(state->fd, p, remainder)) > 0) {
-		p += i;
-		remainder -= i;
+	int status;
+	do {
+		remainder = (sizeof(state->msg) - state->count) - 1;
+		i = read(state->fd, state->msg + state->count, remainder);
+		switch (i) {
+		case -1:
+		case 0:
+			break;
+		default:
+			state->count += i;
+			break;
+		}
+	} while (i > 0);
+	if ((i == -1) && ((errno == EAGAIN) || (errno == EINTR))) {
+		status = -1;
+	} else {
+		state->msg[state->count] = '\0';
+		close(state->fd);
+		state->fd = -1;
+		waitpid(state->pid, &state->status, 0);
+		state->pid = -1;
+		talloc_free(entry->cm_cert);
+		entry->cm_cert = talloc_strdup(entry, state->msg);
+		status = 0;
 	}
-	*p = '\0';
-	close(state->fd);
-	state->fd = -1;
-	waitpid(state->pid, &state->status, 0);
-	state->pid = -1;
-	talloc_free(entry->cm_cert);
-	entry->cm_cert = talloc_strdup(state, state->msg);
-	return 0;
+	return status;
 }
 
 /* Check if the certificate was issued. */
