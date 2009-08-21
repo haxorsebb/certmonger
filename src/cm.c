@@ -118,7 +118,7 @@ cm_service_one(struct cm_context *context, struct timeval *current_time, int i)
 	if (current_time != NULL) {
 		now = *current_time;
 	} else {
-		gettimeofday(&now, NULL);
+		now = tevent_timeval_current();
 	}
 	ret = cm_iterate(context->entries[i], context->events[i].iterate_state,
 			 &when, &delay, &fd);
