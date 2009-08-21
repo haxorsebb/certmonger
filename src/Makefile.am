@@ -28,7 +28,8 @@ libcm_a_SOURCES = \
 	submit.c \
 	submit.h \
 	submit-int.h \
-	tdbus.c
+	tdbus.c \
+	tdbus.h
 libcm_o_a_SOURCES =
 if HAVE_OPENSSL
 libcm_o_a_SOURCES += certsave-o.c keygen-o.c csrgen-o.c submit-do.c

@@ -9,6 +9,8 @@
 
 #include <dbus/dbus.h>
 
+#include "tdbus.h"
+
 struct tdbus_connection {
 	DBusConnection *d_conn;
 	struct tdbus_watch {
