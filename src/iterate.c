@@ -72,11 +72,25 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 	}
 }
 
+static void
+cm_waitfor_readable_fd(int fd, int delay)
+{
+	fd_set fds;
+	struct timeval tv;
+	memset(&tv, 0, sizeof(tv));
+	tv.tv_sec = delay;
+	FD_ZERO(&fds);
+	FD_SET(fd, &fds);
+	select(fd + 1, &fds, NULL, &fds, (delay >= 0) ? &tv : NULL);
+}
+
 /* Set up run-time data associated with the entry. */
 int
 cm_iterate_init(struct cm_store_entry *entry, void **cm_iterate_state)
 {
 	struct cm_iterate_state *state;
+	struct cm_certread_state *readstate;
+	int fd;
 	state = talloc_ptrtype(entry, state);
 	if (state == NULL) {
 		return ENOMEM;
@@ -84,6 +98,17 @@ cm_iterate_init(struct cm_store_entry *entry, void **cm_iterate_state)
 	memset(state, 0, sizeof(*state));
 	*cm_iterate_state = state;
 	cm_entry_reset_state(entry);
+	readstate = cm_certread_start(entry);
+	if (readstate != NULL) {
+		while (cm_certread_ready(entry, readstate) != 0) {
+			fd = cm_certread_get_fd(entry, readstate);
+			if (fd != -1) {
+				cm_waitfor_readable_fd(fd, -1);
+			}
+		}
+		cm_certread_done(entry, readstate);
+		cm_store_entry_save(entry);
+	}
 	cm_log(3, "'%s' starts in state '%s'\n", entry->cm_id,
 	       cm_store_state_as_string(entry->cm_state));
 	return 0;
