@@ -253,6 +253,10 @@ cm_store_file_read(void *parent, const char *filename, FILE *fp)
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
+			ret->cm_cert_hostname = free_if_empty(s[i]);
+			i++;
+		}
+		if ((s != NULL) && (s[i] != NULL)) {
 			ret->cm_cert_email = free_if_empty(s[i]);
 			i++;
 		}
@@ -324,6 +328,10 @@ cm_store_file_read(void *parent, const char *filename, FILE *fp)
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
 			ret->cm_template_subject = free_if_empty(s[i]);
+			i++;
+		}
+		if ((s != NULL) && (s[i] != NULL)) {
+			ret->cm_template_hostname = free_if_empty(s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
@@ -534,6 +542,7 @@ cm_store_file_write(FILE *fp, struct cm_store_entry *entry)
 	cm_store_file_write_str(fp,
 				cm_store_timestamp_from_time(entry->cm_cert_expiration,
 							     timestamp));
+	cm_store_file_write_str(fp, entry->cm_cert_hostname);
 	cm_store_file_write_str(fp, entry->cm_cert_email);
 	cm_store_file_write_str(fp, entry->cm_cert_principal);
 	cm_store_file_write_str(fp, entry->cm_cert_ku);
@@ -569,6 +578,7 @@ cm_store_file_write(FILE *fp, struct cm_store_entry *entry)
 
 	cm_store_file_write_int(fp, entry->cm_template_default);
 	cm_store_file_write_str(fp, entry->cm_template_subject);
+	cm_store_file_write_str(fp, entry->cm_template_hostname);
 	cm_store_file_write_str(fp, entry->cm_template_email);
 	cm_store_file_write_str(fp, entry->cm_template_principal);
 	cm_store_file_write_str(fp, entry->cm_template_ku);

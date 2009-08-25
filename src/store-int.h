@@ -42,6 +42,7 @@ struct cm_store_entry {
 	char *cm_cert_subject;
 	char *cm_cert_spki;
 	time_t cm_cert_expiration;
+	char *cm_cert_hostname;
 	char *cm_cert_email;
 	char *cm_cert_principal;
 	char *cm_cert_ku;
@@ -68,6 +69,7 @@ struct cm_store_entry {
 	   * ku, eku */
 	unsigned int cm_template_default:1;
 	char *cm_template_subject;
+	char *cm_template_hostname;
 	char *cm_template_email;
 	char *cm_template_principal;
 	char *cm_template_ku;

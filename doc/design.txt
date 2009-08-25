@@ -232,7 +232,7 @@ Data we need to track for each certificate/task/dbentry:
 	  default: NSS,/etc/pki/nssdb,,Server-Key-default
 	* Location of certificate [use-once default]
 	  default: NSS,/etc/pki/nssdb,,Server-Cert-default
-	* Cached certificate issuer/serial/subject/spki/expiration
+	* Cached certificate issuer/serial/subject/spki/expiration/host/email
 	* The last time we checked if expiration was imminent.
 	* Interesting TTL values [or use default settings]
 	  default: 30*24*60*60,7*24*60*60,3*24*60*60,2*24*60*60,1*24*60*60
