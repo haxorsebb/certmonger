@@ -32,12 +32,12 @@ libcm_a_SOURCES = \
 	tdbus.h
 libcm_o_a_SOURCES =
 if HAVE_OPENSSL
-libcm_o_a_SOURCES += certsave-o.c keygen-o.c csrgen-o.c submit-do.c
+libcm_o_a_SOURCES += certread-o.c certsave-o.c keygen-o.c csrgen-o.c submit-do.c
 endif
 libcm_o_a_CFLAGS = @OPENSSL_CFLAGS@
 libcm_n_a_SOURCES =
 if HAVE_NSS
-libcm_n_a_SOURCES += certsave-n.c keygen-n.c csrgen-n.c submit-dn.c
+libcm_n_a_SOURCES += certread-n.c certsave-n.c keygen-n.c csrgen-n.c submit-dn.c
 endif
 libcm_n_a_CFLAGS = @NSS_CFLAGS@
 libcm_a_LIBADD = $(libcm_o_a_OBJECTS) $(libcm_n_a_OBJECTS)

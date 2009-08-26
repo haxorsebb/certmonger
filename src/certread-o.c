@@ -1,0 +1,133 @@
+#include "config.h"
+
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#include <openssl/pem.h>
+
+#include <talloc.h>
+
+#include "certread.h"
+#include "certread-int.h"
+#include "log.h"
+#include "store.h"
+#include "store-int.h"
+
+struct cm_certread_state {
+	struct cm_certread_state_pvt pvt;
+	char msg[0x10000];
+	pid_t pid;
+	int fd, count, status;
+};
+
+static void
+cm_certread_o_main(int fd, struct cm_store_entry *entry)
+{
+}
+
+/* Check if something changed, for example we finished reading the data we need
+ * from the cert. */
+static int
+cm_certread_o_ready(struct cm_store_entry *entry,
+		    struct cm_certread_state *state)
+{
+	ssize_t i, remainder;
+	int status;
+	do {
+		remainder = (sizeof(state->msg) - state->count) - 1;
+		i = read(state->fd, state->msg + state->count, remainder);
+		switch (i) {
+		case -1:
+		case 0:
+			break;
+		default:
+			state->count += i;
+			break;
+		}
+	} while (i > 0);
+	if ((i == -1) && ((errno == EAGAIN) || (errno == EINTR))) {
+		status = -1;
+	} else {
+		state->msg[state->count] = '\0';
+		close(state->fd);
+		state->fd = -1;
+		waitpid(state->pid, &state->status, 0);
+		state->pid = -1;
+		status = 0;
+	}
+	return status;
+}
+
+/* Get a selectable-for-read descriptor we can poll for status changes. */
+static int
+cm_certread_o_get_fd(struct cm_store_entry *entry,
+		     struct cm_certread_state *state)
+{
+	return state->fd;
+}
+
+/* Clean up after reading the certificate. */
+static void
+cm_certread_o_done(struct cm_store_entry *entry,
+		   struct cm_certread_state *state)
+{
+	cm_log(3, "%s\n", state->msg);
+	if (state->pid != -1) {
+		kill(state->pid, SIGKILL);
+	}
+	if (state->fd != -1) {
+		close(state->fd);
+	}
+	talloc_free(state);
+}
+
+/* Start reading the certificate from the configured location. */
+struct cm_certread_state *
+cm_certread_o_start(struct cm_store_entry *entry)
+{
+	int fds[2];
+	long flags;
+	struct cm_certread_state *state;
+	return NULL;
+	if (entry->cm_cert_storage_type != cm_cert_storage_file) {
+		cm_log(1, "Wrong read method: can only read certificates "
+		       "from a file.\n");
+		return NULL;
+	}
+	state = talloc_ptrtype(entry, state);
+	if (state != NULL) {
+		memset(state, 0, sizeof(*state));
+		state->pvt.ready = cm_certread_o_ready;
+		state->pvt.get_fd= cm_certread_o_get_fd;
+		state->pvt.done= cm_certread_o_done;
+		state->fd = -1;
+		if (pipe(fds) != -1) {
+			state->pid = fork();
+			switch (state->pid) {
+			case -1:
+				close(fds[0]);
+				close(fds[1]);
+				talloc_free(state);
+				state = NULL;
+				break;
+			case 0:
+				close(fds[0]);
+				cm_certread_o_main(fds[1], entry);
+				_exit(0);
+				break;
+			default:
+				state->fd = fds[0];
+				flags = fcntl(state->fd, F_GETFL);
+				fcntl(state->fd, F_SETFL, flags | O_NONBLOCK);
+				close(fds[1]);
+				break;
+			}
+		}
+	}
+	return state;
+}
