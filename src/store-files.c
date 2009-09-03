@@ -622,9 +622,9 @@ cm_store_entry_save(struct cm_store_entry *entry)
 
 	if (entry->cm_store_private == NULL) {
 		cm_store_timestamp_from_time(time(NULL), timestamp);
-		directory = getenv(CM_FILE_STORE_DIRECTORY_ENV);
+		directory = getenv(CM_STORE_REQUESTS_DIRECTORY_ENV);
 		if ((directory == NULL) || (strlen(directory) == 0)) {
-			directory = CM_FILE_STORE_DIRECTORY;
+			directory = CM_STORE_REQUESTS_DIRECTORY;
 		}
 		snprintf(path, sizeof(path), "%s/%s", directory, timestamp);
 		fd = open(path,
@@ -700,9 +700,9 @@ cm_store_get_all_entries(void *parent)
 	FILE *fp;
 	glob_t globs;
 
-	directory = getenv(CM_FILE_STORE_DIRECTORY_ENV);
+	directory = getenv(CM_STORE_REQUESTS_DIRECTORY_ENV);
 	if ((directory == NULL) || (strlen(directory) == 0)) {
-		directory = CM_FILE_STORE_DIRECTORY;
+		directory = CM_STORE_REQUESTS_DIRECTORY;
 	}
 	snprintf(path, sizeof(path), "%s/*", directory);
 	memset(&globs, 0, sizeof(globs));

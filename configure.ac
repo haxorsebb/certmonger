@@ -15,11 +15,16 @@ mylocalstatedir="$localstatedir/lib/${PACKAGE_NAME}")
 mylocalstatedir=`eval echo $mylocalstatedir | sed "s,NONE,$prefix,g"`
 mylocalstatedir=`eval echo $mylocalstatedir | sed "s,NONE,$ac_default_prefix,g"`
 mylocalstatedir=`eval echo $mylocalstatedir | sed "s,NONE,,g"`
-AC_DEFINE_UNQUOTED(CM_FILE_STORE_DIRECTORY,"$mylocalstatedir",
+AC_DEFINE_UNQUOTED(CM_STORE_REQUESTS_DIRECTORY,"$mylocalstatedir/requests",
 		   [Define to the default path for tracking files.])
 UPCASE_PACKAGE_NAME=`echo "${PACKAGE_NAME}" | tr '[a-z]' '[A-Z]'`
-AC_DEFINE_UNQUOTED(CM_FILE_STORE_DIRECTORY_ENV,"${UPCASE_PACKAGE_NAME}_FILE_STORE_DIR",
-		   [Define to the name of the environment variable which can specify the path for tracking files.])
+AC_DEFINE_UNQUOTED(CM_STORE_REQUESTS_DIRECTORY_ENV,"${UPCASE_PACKAGE_NAME}_REQUESTS_DIR",
+		   [Define to the name of the environment variable which can specify the directory for tracking requests.])
+AC_DEFINE_UNQUOTED(CM_STORE_DEFAULTS,"$mylocalstatedir/defaults",
+		   [Define to the location of run-time defaults.])
+UPCASE_PACKAGE_NAME=`echo "${PACKAGE_NAME}" | tr '[a-z]' '[A-Z]'`
+AC_DEFINE_UNQUOTED(CM_STORE_DEFAULTS_ENV,"${UPCASE_PACKAGE_NAME}_DEFAULTS_FILE",
+		   [Define to the name of the environment variable which can specify the path for the defaults file.])
 
 PKG_CHECK_MODULES(TALLOC,talloc)
 PKG_CHECK_MODULES(TEVENT,tevent)
