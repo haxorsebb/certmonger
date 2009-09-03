@@ -1,2 +1,72 @@
-Limited local-only support.  Local keys are signed, but the subject/issuer
+Limited local-only support.  Local keys are signed, but the request's
 name and extensions aren't used, and the serial number is useless.
+
+Complete:
+  * Generating RSA keys of configurable size.
+  * Storing keys in either PEM or NSSDB format.
+  * Generating signing requests for keys in PEM or NSSDB format.
+  * Self-sign requests using keys in PEM or NSSDB format.
+  * Save issued certificate in PEM or NSSDB format.
+
+To-do:
+  * Refresh certificate parameters from the certificates at startup,
+    parsing and recovering fields and extensions that we care about to refresh
+    the request tracking file.
+    MUST
+  * Populate requested-extensions in signing requests with as much
+    information as we can.
+    MUST
+  * Learn to submit to at least one actual CA: IPA via XML-RPC over
+    HTTPS, authenticating using Negotiate.
+    * Learn to obtain Kerberos credentials.
+      MUST
+    * Learn to retrieve the root certificate from the IPA directory server.
+      MUST
+    * Learn to issue XML-RPC requests.
+      MUST
+  * Maintaining queued items.
+    MUST -> Mostly done, but needs upgrade-proofing for when we add new fields.
+  * Make certmonger a proper daemon.
+    * Detach from console, foreground for debugging.
+    MUST
+    * Sort out logging levels for log messages.
+    MUST
+    * Sort out an init script.
+    MUST
+    * Sort out SELinux policy.
+    MUST
+  * Sort out storage for system-local defaults which are consulted
+    before falling back to compiled-in defaults.
+    MUST
+  * Should offer an API over D-Bus which the client uses instead of
+    mutilating the queue directly:
+    * Add new entry at any of need-key, need-csr, need-submit,
+      have-issued states.
+      MUST
+    * List entries, which should be objects pre-sortable either by
+      state or number (/requests/by-id, /requests/by-state, etc.).
+      MUST
+    * Remove entry.
+      MUST
+    * Resubmit CA-denied requests.
+    * Re-enroll for expired but not-auto-renew certificates.
+    * Modify requested data and regenerate signing requests.
+    * Set/reset PIN for encrypted key storage.
+  * Figure out how to let the client do key generation.  It's either
+    that or force clients to give us the PIN for encrypted storage.
+    SHOULD
+  * Local signing should accept extension values and add them to the
+    signed certificates.
+    SHOULD
+  * Local signing should read-and-update the "next" serial number from
+    the system-local defaults.
+    SHOULD
+  * Local signing should support signing with a key other than the one
+    used to generate the CSR.
+    SHOULD
+  * Learn to submit to a second CA: certmaster via XML-RPC over HTTPS.
+    * Learn how certmaster's root gets distributed.
+    COULD
+  * Local signing should track a revocation list for each signing key
+    and publish a CRL for it.
+    COULD
