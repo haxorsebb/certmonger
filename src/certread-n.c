@@ -237,7 +237,6 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 	p = talloc_strndup(entry, (char *) cert->validity.notAfter.data,
 			   cert->validity.notAfter.len);
 	if (p != NULL) {
-		cm_log(3, "Expiration \"%s\"?\n", p);
 		entry->cm_cert_expiration = cm_store_time_from_timestamp(p);
 	} else {
 		entry->cm_cert_expiration = 0;

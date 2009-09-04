@@ -88,37 +88,27 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 			talloc_free(entry->cm_cert_issuer);
 			entry->cm_cert_issuer = talloc_strndup(entry, p,
 							       q - p);
-			cm_log(3, "Read issuer \"%s\".\n",
-			       entry->cm_cert_issuer);
 			break;
 		case 1:
 			talloc_free(entry->cm_cert_serial);
 			entry->cm_cert_serial = talloc_strndup(entry, p,
 							       q - p);
-			cm_log(3, "Read serial \"%s\".\n",
-			       entry->cm_cert_serial);
 			break;
 		case 2:
 			talloc_free(entry->cm_cert_subject);
 			entry->cm_cert_subject = talloc_strndup(entry,
 								p,
 								q - p);
-			cm_log(3, "Read subject \"%s\".\n",
-			       entry->cm_cert_subject);
 			break;
 		case 3:
 			talloc_free(entry->cm_cert_spki);
 			entry->cm_cert_spki = talloc_strndup(entry, p,
 							     q - p);
-			cm_log(3, "Read spki \"%s\".\n",
-			       entry->cm_cert_spki);
 			break;
 		case 4:
 			s = talloc_strndup(entry, p, q - p);
 			entry->cm_cert_expiration = atol(s);
 			talloc_free(s);
-			cm_log(3, "Read expiration \"%ld\".\n",
-			       entry->cm_cert_expiration);
 			break;
 		}
 		/* Find the beginning of the next line. */
