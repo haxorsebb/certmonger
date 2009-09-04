@@ -133,8 +133,7 @@ cm_certread_n_main(int fd, struct cm_store_entry *entry)
 	}
 	if (cert != NULL) {
 		cm_certread_n_parse(entry,
-				    cert->derCert.data, cert->derCert.len,
-				    0);
+				    cert->derCert.data, cert->derCert.len);
 		cm_certread_write_data_to_pipe(entry, fp);
 	}
 	fclose(fp);
@@ -153,16 +152,17 @@ cm_certread_n_main(int fd, struct cm_store_entry *entry)
  * fields. */
 void
 cm_certread_n_parse(struct cm_store_entry *entry,
-		    unsigned char *der_cert, unsigned int der_cert_len,
-		    int initialize)
+		    unsigned char *der_cert, unsigned int der_cert_len)
 {
 	PLArenaPool *arena;
 	SECStatus error;
 	SECItem item, *items;
 	CERTCertificate *cert, **certs;
+	PRBool initialize;
 	char *p;
 	unsigned int i;
 
+	initialize = !NSS_IsInitialized();
 	if (initialize) {
 		/* Initialize the library. */
 		error = NSS_NoDB_Init(CM_DEFAULT_KEY_STORAGE_LOCATION);
@@ -176,8 +176,10 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 	if (arena == NULL) {
 		cm_log(1, "Error opening database '%s'.\n",
 		       entry->cm_cert_storage_location);
-		if (NSS_Shutdown() != SECSuccess) {
-			cm_log(1, "Error shutting down NSS.\n");
+		if (initialize) {
+			if (NSS_Shutdown() != SECSuccess) {
+				cm_log(1, "Error shutting down NSS.\n");
+			}
 		}
 		_exit(ENOMEM);
 	}
@@ -190,15 +192,21 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 			     1, &items, &certs, PR_FALSE, PR_FALSE,
 			     "temp") != SECSuccess) {
 		cm_log(1, "Error decoding certificate.\n");
-		if (NSS_Shutdown() != SECSuccess) {
-			cm_log(1, "Error shutting down NSS.\n");
+		PORT_FreeArena(arena, PR_TRUE);
+		if (initialize) {
+			if (NSS_Shutdown() != SECSuccess) {
+				cm_log(1, "Error shutting down NSS.\n");
+			}
 		}
 		_exit(1);
 	}
 	if (certs == NULL) {
 		cm_log(1, "Error decoding certificate.\n");
-		if (NSS_Shutdown() != SECSuccess) {
-			cm_log(1, "Error shutting down NSS.\n");
+		PORT_FreeArena(arena, PR_TRUE);
+		if (initialize) {
+			if (NSS_Shutdown() != SECSuccess) {
+				cm_log(1, "Error shutting down NSS.\n");
+			}
 		}
 		_exit(1);
 	}
@@ -223,8 +231,12 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 	if (SEC_ASN1EncodeItem(arena, items, &cert->subjectPublicKeyInfo,
 			       CERT_SubjectPublicKeyInfoTemplate) != items) {
 		cm_log(1, "Error encoding subjectPublicKeyInfo.\n");
-		if (NSS_Shutdown() != SECSuccess) {
-			cm_log(1, "Error shutting down NSS.\n");
+		CERT_DestroyCertArray(certs, 1);
+		PORT_FreeArena(arena, PR_TRUE);
+		if (initialize) {
+			if (NSS_Shutdown() != SECSuccess) {
+				cm_log(1, "Error shutting down NSS.\n");
+			}
 		}
 		_exit(1);
 	}
@@ -241,7 +253,38 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 	} else {
 		entry->cm_cert_expiration = 0;
 	}
+	/* Hostname. */
+	talloc_free(entry->cm_cert_hostname);
+	entry->cm_cert_hostname = NULL;
+	/* Email address. */
+	talloc_free(entry->cm_cert_email);
+	entry->cm_cert_issuer = talloc_strdup(entry, cert->emailAddr);
+	/* Principal name. */
+	talloc_free(entry->cm_cert_principal);
+	entry->cm_cert_principal = NULL;
+	/* Key usage. */
+	talloc_free(entry->cm_cert_ku);
+	entry->cm_cert_ku = NULL;
+	/* Extended key usage. */
+	talloc_free(entry->cm_cert_eku);
+	entry->cm_cert_eku = NULL;
+	/* The certificate itself. */
+	p = NSSBase64_EncodeItem(arena, NULL, 0, &cert->derCert);
+	if (p != NULL) {
+		talloc_free(entry->cm_cert);
+		p = talloc_asprintf(entry, "%s%s%s",
+				    "-----BEGIN CERTIFICATE-----\n",
+				    p,
+				    "-----END CERTIFICATE-----\n");
+	}
+	/* Clean up. */
+	CERT_DestroyCertArray(certs, 1);
 	PORT_FreeArena(arena, PR_TRUE);
+	if (initialize) {
+		if (NSS_Shutdown() != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
+		}
+	}
 }
 
 /* Check if something changed, for example we finished reading the data we need

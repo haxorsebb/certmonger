@@ -62,7 +62,7 @@ cm_certread_o_main(int fd, struct cm_store_entry *entry)
 	if (status == 0) {
 		buf = NULL;
 		len = i2d_X509(cert, (unsigned char **) &buf);
-		cm_certread_n_parse(entry, (unsigned char *) buf, len, 1);
+		cm_certread_n_parse(entry, (unsigned char *) buf, len);
 		cm_certread_write_data_to_pipe(entry, fp);
 	}
 	while ((error = ERR_get_error()) != 0) {

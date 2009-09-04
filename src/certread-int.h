@@ -16,8 +16,7 @@ struct cm_certread_state_pvt {
 };
 
 void cm_certread_n_parse(struct cm_store_entry *entry,
-			 unsigned char *der_cert, unsigned int der_cert_len,
-			 int initialize);
+			 unsigned char *der_cert, unsigned int der_cert_len);
 void cm_certread_write_data_to_pipe(struct cm_store_entry *entry, FILE *fp);
 void cm_certread_read_data_from_buffer(struct cm_store_entry *entry,
 				       const char *p);
