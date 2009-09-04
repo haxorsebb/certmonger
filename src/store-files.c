@@ -18,52 +18,6 @@
 #include "store-int.h"
 #include "log.h"
 
-static time_t
-cm_store_time_from_timestamp(const char *timestamp)
-{
-	struct tm stamp;
-	char buf[5];
-	time_t t;
-	if (strlen(timestamp) < 14) {
-		return 0;
-	}
-	memset(&stamp, 0, sizeof(stamp));
-	memcpy(buf, timestamp, 4);
-	buf[4] = '\0';
-	stamp.tm_year = atoi(buf) - 1900;
-	memcpy(buf, timestamp + 4, 2);
-	buf[2] = '\0';
-	stamp.tm_mon = atoi(buf) - 1;
-	memcpy(buf, timestamp + 6, 2);
-	buf[2] = '\0';
-	stamp.tm_mday = atoi(buf);
-	memcpy(buf, timestamp + 8, 2);
-	buf[2] = '\0';
-	stamp.tm_hour = atoi(buf);
-	memcpy(buf, timestamp + 10, 2);
-	buf[2] = '\0';
-	stamp.tm_min = atoi(buf);
-	memcpy(buf, timestamp + 12, 2);
-	buf[2] = '\0';
-	stamp.tm_sec = atoi(buf);
-	t = timegm(&stamp);
-	return t;
-}
-
-static char *
-cm_store_timestamp_from_time(time_t when, char timestamp[15])
-{
-	struct tm tm;
-	if ((when != 0) && (gmtime_r(&when, &tm) == &tm)) {
-		sprintf(timestamp, "%04d%02d%02d%02d%02d%02d",
-			tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
-			tm.tm_hour, tm.tm_min, tm.tm_sec);
-	} else {
-		strcpy(timestamp, "19700101000000");
-	}
-	return timestamp;
-}
-
 static char **
 cm_store_file_read_lines(void *parent, FILE *fp)
 {

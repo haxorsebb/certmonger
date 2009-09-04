@@ -73,3 +73,70 @@ cm_store_entry_new(void *parent)
 	}
 	return entry;
 }
+
+time_t
+cm_store_time_from_timestamp(const char *timestamp)
+{
+	struct tm stamp;
+	char buf[5];
+	time_t t;
+	int i;
+	if (strlen(timestamp) < 12) {
+		return 0;
+	}
+	memset(&stamp, 0, sizeof(stamp));
+	if ((strlen(timestamp) == 14) || (strlen(timestamp) == 15)){
+		memcpy(buf, timestamp, 4);
+		i = 4;
+		buf[i] = '\0';
+		stamp.tm_year = atoi(buf) - 1900;
+	} else {
+		if ((strlen(timestamp) == 12) || (strlen(timestamp) == 13)) {
+			memcpy(buf, timestamp, 2);
+			i = 2;
+			buf[i] = '\0';
+			stamp.tm_year = atoi(buf);
+			if (stamp.tm_year < 50) {
+				stamp.tm_year += 100;
+			}
+		} else {
+			return 0;
+		}
+	}
+	memcpy(buf, timestamp + i, 2);
+	i += 2;
+	buf[2] = '\0';
+	stamp.tm_mon = atoi(buf) - 1;
+	memcpy(buf, timestamp + i, 2);
+	i += 2;
+	buf[2] = '\0';
+	stamp.tm_mday = atoi(buf);
+	memcpy(buf, timestamp + i, 2);
+	i += 2;
+	buf[2] = '\0';
+	stamp.tm_hour = atoi(buf);
+	memcpy(buf, timestamp + i, 2);
+	i += 2;
+	buf[2] = '\0';
+	stamp.tm_min = atoi(buf);
+	memcpy(buf, timestamp + i, 2);
+	i += 2;
+	buf[2] = '\0';
+	stamp.tm_sec = atoi(buf);
+	t = timegm(&stamp);
+	return t;
+}
+
+char *
+cm_store_timestamp_from_time(time_t when, char timestamp[15])
+{
+	struct tm tm;
+	if ((when != 0) && (gmtime_r(&when, &tm) == &tm)) {
+		sprintf(timestamp, "%04d%02d%02d%02d%02d%02d",
+			tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
+			tm.tm_hour, tm.tm_min, tm.tm_sec);
+	} else {
+		strcpy(timestamp, "19700101000000");
+	}
+	return timestamp;
+}
