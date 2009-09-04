@@ -1,6 +1,14 @@
 #include "config.h"
+
+#include <sys/types.h>
+#include <stdio.h>
+#include <string.h>
+
+#include <talloc.h>
+
 #include "certread.h"
 #include "certread-int.h"
+#include "log.h"
 #include "store-int.h"
 
 /* Start refreshing the certificate and associated data from the entry from the
@@ -50,3 +58,71 @@ cm_certread_done(struct cm_store_entry *entry, struct cm_certread_state *state)
 	pvt = (struct cm_certread_state_pvt *) state;
 	pvt->done(entry, state);
 }
+
+/* Send what we know about this certificate down a pipe using stdio. */
+void
+cm_certread_write_data_to_pipe(struct cm_store_entry *entry, FILE *fp)
+{
+	fprintf(fp, " %s\n", entry->cm_cert_issuer);
+	fprintf(fp, " %s\n", entry->cm_cert_serial);
+	fprintf(fp, " %s\n", entry->cm_cert_subject);
+	fprintf(fp, " %s\n", entry->cm_cert_spki);
+	fprintf(fp, " %lu\n", entry->cm_cert_expiration);
+}
+
+/* Parse what we know about this certificate from a buffer. */
+void
+cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
+{
+	const char *q;
+	char *s;
+	int i = 0;
+	while (*p != '\0') {
+		/* Skip over the first character. */
+		p++;
+		/* Find the end of the line. */
+		q = p + strcspn(p, "\r\n");
+		/* Decide what to do with the data. */
+		switch (i++) {
+		case 0:
+			talloc_free(entry->cm_cert_issuer);
+			entry->cm_cert_issuer = talloc_strndup(entry, p,
+							       q - p);
+			cm_log(3, "Read issuer \"%s\".\n",
+			       entry->cm_cert_issuer);
+			break;
+		case 1:
+			talloc_free(entry->cm_cert_serial);
+			entry->cm_cert_serial = talloc_strndup(entry, p,
+							       q - p);
+			cm_log(3, "Read serial \"%s\".\n",
+			       entry->cm_cert_serial);
+			break;
+		case 2:
+			talloc_free(entry->cm_cert_subject);
+			entry->cm_cert_subject = talloc_strndup(entry,
+								p,
+								q - p);
+			cm_log(3, "Read subject \"%s\".\n",
+			       entry->cm_cert_subject);
+			break;
+		case 3:
+			talloc_free(entry->cm_cert_spki);
+			entry->cm_cert_spki = talloc_strndup(entry, p,
+							     q - p);
+			cm_log(3, "Read spki \"%s\".\n",
+			       entry->cm_cert_spki);
+			break;
+		case 4:
+			s = talloc_strndup(entry, p, q - p);
+			entry->cm_cert_expiration = atol(s);
+			talloc_free(s);
+			cm_log(3, "Read expiration \"%ld\".\n",
+			       entry->cm_cert_expiration);
+			break;
+		}
+		/* Find the beginning of the next line. */
+		p = q + strspn(q, "\r\n");
+	}
+}
+

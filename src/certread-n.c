@@ -4,6 +4,7 @@
 #include <sys/wait.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
@@ -30,22 +31,12 @@ struct cm_certread_state {
 	int fd, count, status;
 };
 
-static int
-cm_certread_atoi_n(const char *p, int n)
-{
-	char s[n + 1];
-	memcpy(s, p, n);
-	s[n] = '\0';
-	return atoi(s);
-}
-
 static void
 cm_certread_n_main(int fd, struct cm_store_entry *entry)
 {
 	int status = 1;
 	unsigned int i;
-	const char *token, *p;
-	struct tm tm;
+	const char *token;
 	PLArenaPool *arena;
 	SECStatus error;
 	PK11SlotList *slotlist;
@@ -141,57 +132,117 @@ cm_certread_n_main(int fd, struct cm_store_entry *entry)
 		}
 	}
 	if (cert != NULL) {
-		fprintf(fp, " %s\n", cert->issuerName);
-		for (i = 0; i < cert->serialNumber.len; i++) {
-			fprintf(fp, "%s%02x", (i > 0) ? ":" : " ",
-				cert->serialNumber.data[i] & 0xff);
-		}
-		fprintf(fp, "\n %s\n", cert->subjectName);
-		for (i = 0; i < cert->subjectID.len; i++) {
-			fprintf(fp, "%s%02x", (i > 0) ? ":" : " ",
-				cert->subjectID.data[i] & 0xff);
-		}
-		memset(&tm, 0, sizeof(tm));
-		p = (const char *) cert->validity.notAfter.data;
-		switch (cert->validity.notAfter.len) {
-		case 13:
-			tm.tm_year = cm_certread_atoi_n(p, 2);
-			if (tm.tm_year < 50) {
-				tm.tm_year += 100;
-			}
-			p += 2;
-			break;
-		case 15:
-			tm.tm_year = cm_certread_atoi_n(p, 4) - 1900;
-			p += 4;
-			break;
-		default:
-			p = NULL;
-			break;
-		}
-		if (p != NULL) {
-			tm.tm_mon = cm_certread_atoi_n(p, 2) - 1;
-			p += 2;
-			tm.tm_mday = cm_certread_atoi_n(p, 2);
-			p += 2;
-			tm.tm_hour = cm_certread_atoi_n(p, 2);
-			p += 2;
-			tm.tm_min = cm_certread_atoi_n(p, 2);
-			p += 2;
-			tm.tm_sec = cm_certread_atoi_n(p, 2);
-			p += 2;
-		}
-		fprintf(fp, "\n %lu\n", (unsigned long) timegm(&tm));
+		cm_certread_n_parse(entry,
+				    cert->derCert.data, cert->derCert.len,
+				    0);
+		cm_certread_write_data_to_pipe(entry, fp);
 	}
+	fclose(fp);
+	PORT_FreeArena(arena, PR_TRUE);
 	CERT_DestroyCertList(certs);
 	PK11_FreeSlotList(slotlist);
 	if (NSS_Shutdown() != SECSuccess) {
 		cm_log(1, "Error shutting down NSS.\n");
 	}
-	fclose(fp);
 	if (status != 0) {
 		_exit(status);
 	}
+}
+
+/* Parse the certificate in the entry, and refresh the certificate-based
+ * fields. */
+void
+cm_certread_n_parse(struct cm_store_entry *entry,
+		    unsigned char *der_cert, unsigned int der_cert_len,
+		    int initialize)
+{
+	PLArenaPool *arena;
+	SECStatus error;
+	SECItem item, *items;
+	CERTCertificate *cert, **certs;
+	char *p;
+	unsigned int i;
+
+	if (initialize) {
+		/* Initialize the library. */
+		error = NSS_NoDB_Init(CM_DEFAULT_KEY_STORAGE_LOCATION);
+		if (error != SECSuccess) {
+			cm_log(1, "Unable to initialize NSS.\n");
+			_exit(1);
+		}
+	}
+	/* Allocate a memory pool. */
+	arena = PORT_NewArena(sizeof(double));
+	if (arena == NULL) {
+		cm_log(1, "Error opening database '%s'.\n",
+		       entry->cm_cert_storage_location);
+		if (NSS_Shutdown() != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
+		}
+		_exit(ENOMEM);
+	}
+	/* Decode the certificate. */
+	item.data = der_cert;
+	item.len = der_cert_len;
+	items = &item;
+	certs = NULL;
+	if (CERT_ImportCerts(CERT_GetDefaultCertDB(), 0,
+			     1, &items, &certs, PR_FALSE, PR_FALSE,
+			     "temp") != SECSuccess) {
+		cm_log(1, "Error decoding certificate.\n");
+		if (NSS_Shutdown() != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
+		}
+		_exit(1);
+	}
+	if (certs == NULL) {
+		cm_log(1, "Error decoding certificate.\n");
+		if (NSS_Shutdown() != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
+		}
+		_exit(1);
+	}
+	cert = certs[0];
+	/* Pick out the interesting bits. */
+	/* Issuer name */
+	talloc_free(entry->cm_cert_issuer);
+	entry->cm_cert_issuer = talloc_strdup(entry, cert->issuerName);
+	/* Serial number */
+	talloc_free(entry->cm_cert_serial);
+	item = cert->serialNumber;
+	entry->cm_cert_serial = talloc_zero_size(entry, item.len * 2 + 1);
+	for (i = 0; i < item.len; i++) {
+		sprintf(entry->cm_cert_serial + i * 2, "%02x",
+			item.data[i] & 0xff);
+	}
+	/* Subject name */
+	talloc_free(entry->cm_cert_subject);
+	entry->cm_cert_subject = talloc_strdup(entry, cert->subjectName);
+	/* Subject Public Key Info, encoded */
+	talloc_free(entry->cm_cert_spki);
+	if (SEC_ASN1EncodeItem(arena, items, &cert->subjectPublicKeyInfo,
+			       CERT_SubjectPublicKeyInfoTemplate) != items) {
+		cm_log(1, "Error encoding subjectPublicKeyInfo.\n");
+		if (NSS_Shutdown() != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
+		}
+		_exit(1);
+	}
+	entry->cm_cert_spki = talloc_zero_size(entry, items->len * 2 + 1);
+	for (i = 0; i < items->len; i++) {
+		sprintf(entry->cm_cert_spki + i * 2, "%02x",
+			items->data[i] & 0xff);
+	}
+	/* Expiration date. */
+	p = talloc_strndup(entry, (char *) cert->validity.notAfter.data,
+			   cert->validity.notAfter.len);
+	if (p != NULL) {
+		cm_log(3, "Expiration \"%s\"?\n", p);
+		entry->cm_cert_expiration = cm_store_time_from_timestamp(p);
+	} else {
+		entry->cm_cert_expiration = 0;
+	}
+	PORT_FreeArena(arena, PR_TRUE);
 }
 
 /* Check if something changed, for example we finished reading the data we need
@@ -240,49 +291,8 @@ static void
 cm_certread_n_done(struct cm_store_entry *entry,
 		   struct cm_certread_state *state)
 {
-	const char *p, *q;
-	char *s;
-	int i;
 	if (state->count > 0) {
-		p = state->msg;
-		i = 0;
-		while (*p != '\0') {
-			/* Skip over the first character. */
-			p++;
-			/* Find the end of the line. */
-			q = p + strcspn(p, "\r\n");
-			/* Decide what to do with the data. */
-			switch (i++) {
-			case 0:
-				talloc_free(entry->cm_cert_issuer);
-				entry->cm_cert_issuer = talloc_strndup(entry, p,
-								       q - p);
-				break;
-			case 1:
-				talloc_free(entry->cm_cert_serial);
-				entry->cm_cert_serial = talloc_strndup(entry, p,
-								       q - p);
-				break;
-			case 2:
-				talloc_free(entry->cm_cert_subject);
-				entry->cm_cert_subject = talloc_strndup(entry,
-									p,
-								        q - p);
-				break;
-			case 3:
-				talloc_free(entry->cm_cert_spki);
-				entry->cm_cert_spki = talloc_strndup(entry, p,
-								     q - p);
-				break;
-			case 4:
-				s = talloc_strndup(entry, p, q - p);
-				entry->cm_cert_expiration = atol(s);
-				talloc_free(s);
-				break;
-			}
-			/* Find the beginning of the next line. */
-			p = q + strspn(q, "\r\n");
-		}
+		cm_certread_read_data_from_buffer(entry, state->msg);
 	}
 	if (state->pid != -1) {
 		kill(state->pid, SIGKILL);
