@@ -253,21 +253,23 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 	} else {
 		entry->cm_cert_expiration = 0;
 	}
-	/* Hostname. */
+	/* Hostname from subjectAltName extension. */
 	talloc_free(entry->cm_cert_hostname);
 	entry->cm_cert_hostname = NULL;
-	/* Email address. */
+	/* Email address from subjectAltName extension. */
 	talloc_free(entry->cm_cert_email);
-	entry->cm_cert_issuer = talloc_strdup(entry, cert->emailAddr);
-	/* Principal name. */
+	entry->cm_cert_issuer = NULL;
+	/* Principal name from subjectAltName extension. */
 	talloc_free(entry->cm_cert_principal);
 	entry->cm_cert_principal = NULL;
-	/* Key usage. */
+	/* Key usage from keyUsage extension. */
 	talloc_free(entry->cm_cert_ku);
 	entry->cm_cert_ku = NULL;
-	/* Extended key usage. */
+	/* Extended key usage from extendedKeyUsage extension. */
 	talloc_free(entry->cm_cert_eku);
 	entry->cm_cert_eku = NULL;
+	/* Parse the extensions. */
+	/* XXX */
 	/* The certificate itself. */
 	p = NSSBase64_EncodeItem(arena, NULL, 0, &cert->derCert);
 	if (p != NULL) {
