@@ -36,11 +36,6 @@ AC_ARG_WITH(openssl,
 	    		   [build without support for storing keys and certificates in files]),
 	    withopenssl=$withval,
 	    withopenssl=yes)
-AC_ARG_WITH(nss,
-	    AS_HELP_STRING(--without-nss,
-	    		   [build without support for storing keys and certificates in NSS databases]),
-	    withnss=$withval,
-	    withnss=yes)
 
 AM_CONDITIONAL(HAVE_OPENSSL,test x$withopenssl != xno)
 if test x$withopenssl != xno ; then
