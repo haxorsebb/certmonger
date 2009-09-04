@@ -4,11 +4,14 @@
 #include <sys/wait.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
+#include <openssl/err.h>
 #include <openssl/pem.h>
+#include <openssl/ssl.h>
 
 #include <talloc.h>
 
@@ -28,6 +31,48 @@ struct cm_certread_state {
 static void
 cm_certread_o_main(int fd, struct cm_store_entry *entry)
 {
+	FILE *pem, *fp;
+	X509 *cert;
+	int status, len;
+	char *buf;
+	long error;
+
+	OpenSSL_add_ssl_algorithms();
+	ERR_load_crypto_strings();
+	status = 1;
+	fp = fdopen(fd, "w");
+	if (fp == NULL) {
+		cm_log(1, "Unable to initialize I/O.\n");
+		_exit(1);
+	}
+	pem = fopen(entry->cm_cert_storage_location, "r");
+	if (pem != NULL) {
+		cert = PEM_read_X509(pem, NULL, NULL, NULL);
+		if (cert != NULL) {
+			status = 0;
+		} else {
+			cm_log(1, "Internal error.\n");
+		}
+		fclose(pem);
+	} else {
+		cm_log(1, "Error opening '%s': %s.\n",
+		       entry->cm_key_storage_location, strerror(errno));
+		cert = NULL;
+	}
+	if (status == 0) {
+		buf = NULL;
+		len = i2d_X509(cert, (unsigned char **) &buf);
+		cm_certread_n_parse(entry, (unsigned char *) buf, len, 1);
+		cm_certread_write_data_to_pipe(entry, fp);
+	}
+	while ((error = ERR_get_error()) != 0) {
+		ERR_error_string_n(error, buf, sizeof(buf));
+		cm_log(1, "%s\n", buf);
+	}
+	fclose(fp);
+	if (status != 0) {
+		_exit(status);
+	}
 }
 
 /* Check if something changed, for example we finished reading the data we need
@@ -76,7 +121,9 @@ static void
 cm_certread_o_done(struct cm_store_entry *entry,
 		   struct cm_certread_state *state)
 {
-	cm_log(3, "%s\n", state->msg);
+	if (state->count > 0) {
+		cm_certread_read_data_from_buffer(entry, state->msg);
+	}
 	if (state->pid != -1) {
 		kill(state->pid, SIGKILL);
 	}
@@ -93,7 +140,6 @@ cm_certread_o_start(struct cm_store_entry *entry)
 	int fds[2];
 	long flags;
 	struct cm_certread_state *state;
-	return NULL;
 	if (entry->cm_cert_storage_type != cm_cert_storage_file) {
 		cm_log(1, "Wrong read method: can only read certificates "
 		       "from a file.\n");
