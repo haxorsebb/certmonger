@@ -227,8 +227,9 @@ list(const char *argv0, int argc, char **argv)
 {
 	struct cm_store_entry **entries;
 	const char *key_storage = NULL, *cert_storage = NULL;
-	char token[LINE_MAX], nickname[LINE_MAX], ca[LINE_MAX];
+	char token[LINE_MAX], nickname[LINE_MAX], ca[LINE_MAX], stamp[15];
 	int requests_only = 0, tracking_only = 0, c, i;
+	time_t tstamp;
 	while ((c = getopt(argc, argv, "rt")) != -1) {
 		switch (c) {
 		case 'r':
@@ -333,6 +334,9 @@ list(const char *argv0, int argc, char **argv)
 		printf("  certificate: type=%s,location='%s'%s%s\n",
 		       cert_storage, entries[i]->cm_cert_storage_location,
 		       token, nickname);
+		tstamp = entries[i]->cm_cert_expiration;
+		printf("      expires: %s\n",
+		       cm_store_timestamp_from_time(tstamp, stamp));
 		printf("      monitor: %s\n",
 		       entries[i]->cm_monitor ? "yes" : "no");
 		printf("   auto-renew: %s\n",
