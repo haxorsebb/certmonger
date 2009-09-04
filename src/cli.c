@@ -336,6 +336,8 @@ list(const char *argv0, int argc, char **argv)
 		       token, nickname);
 		tstamp = entries[i]->cm_cert_expiration;
 		printf("      expires: %s\n",
+		       (tstamp == 0) ?
+		       "(unknown)" :
 		       cm_store_timestamp_from_time(tstamp, stamp));
 		printf("      monitor: %s\n",
 		       entries[i]->cm_monitor ? "yes" : "no");
