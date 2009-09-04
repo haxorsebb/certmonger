@@ -63,11 +63,16 @@ cm_certread_done(struct cm_store_entry *entry, struct cm_certread_state *state)
 void
 cm_certread_write_data_to_pipe(struct cm_store_entry *entry, FILE *fp)
 {
-	fprintf(fp, " %s\n", entry->cm_cert_issuer);
-	fprintf(fp, " %s\n", entry->cm_cert_serial);
-	fprintf(fp, " %s\n", entry->cm_cert_subject);
-	fprintf(fp, " %s\n", entry->cm_cert_spki);
-	fprintf(fp, " %lu\n", entry->cm_cert_expiration);
+	fprintf(fp, " %s\n", entry->cm_cert_issuer ?: "");
+	fprintf(fp, " %s\n", entry->cm_cert_serial ?: "");
+	fprintf(fp, " %s\n", entry->cm_cert_subject ?: "");
+	fprintf(fp, " %s\n", entry->cm_cert_spki ?: "");
+	fprintf(fp, " %lu\n", entry->cm_cert_expiration ?: 0);
+	fprintf(fp, " %s\n", entry->cm_cert_hostname ?: "");
+	fprintf(fp, " %s\n", entry->cm_cert_email ?: "");
+	fprintf(fp, " %s\n", entry->cm_cert_principal ?: "");
+	fprintf(fp, " %s\n", entry->cm_cert_ku ?: "");
+	fprintf(fp, " %s\n", entry->cm_cert_eku ?: "");
 }
 
 /* Parse what we know about this certificate from a buffer. */
@@ -86,29 +91,56 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 		switch (i++) {
 		case 0:
 			talloc_free(entry->cm_cert_issuer);
-			entry->cm_cert_issuer = talloc_strndup(entry, p,
-							       q - p);
+			entry->cm_cert_issuer = (p == q) ? NULL :
+						talloc_strndup(entry, p, q - p);
 			break;
 		case 1:
 			talloc_free(entry->cm_cert_serial);
-			entry->cm_cert_serial = talloc_strndup(entry, p,
-							       q - p);
+			entry->cm_cert_serial = (p == q) ? NULL :
+						talloc_strndup(entry, p, q - p);
 			break;
 		case 2:
 			talloc_free(entry->cm_cert_subject);
-			entry->cm_cert_subject = talloc_strndup(entry,
-								p,
-								q - p);
+			entry->cm_cert_subject = (p == q) ? NULL :
+						 talloc_strndup(entry,
+								p, q - p);
 			break;
 		case 3:
 			talloc_free(entry->cm_cert_spki);
-			entry->cm_cert_spki = talloc_strndup(entry, p,
-							     q - p);
+			entry->cm_cert_spki = (p == q) ? NULL :
+					      talloc_strndup(entry, p, q - p);
 			break;
 		case 4:
 			s = talloc_strndup(entry, p, q - p);
 			entry->cm_cert_expiration = atol(s);
 			talloc_free(s);
+			break;
+		case 5:
+			talloc_free(entry->cm_cert_hostname);
+			entry->cm_cert_hostname = (p == q) ? NULL :
+						  talloc_strndup(entry, p,
+						 		 q - p);
+			break;
+		case 6:
+			talloc_free(entry->cm_cert_email);
+			entry->cm_cert_email = (p == q) ? NULL :
+					       talloc_strndup(entry, p, q - p);
+			break;
+		case 7:
+			talloc_free(entry->cm_cert_principal);
+			entry->cm_cert_principal = (p == q) ? NULL :
+						   talloc_strndup(entry, p,
+						  		  q - p);
+			break;
+		case 8:
+			talloc_free(entry->cm_cert_ku);
+			entry->cm_cert_ku = (p == q) ? NULL :
+					    talloc_strndup(entry, p, q - p);
+			break;
+		case 9:
+			talloc_free(entry->cm_cert_eku);
+			entry->cm_cert_eku = (p == q) ? NULL :
+					     talloc_strndup(entry, p, q - p);
 			break;
 		}
 		/* Find the beginning of the next line. */
