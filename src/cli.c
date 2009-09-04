@@ -339,6 +339,8 @@ list(const char *argv0, int argc, char **argv)
 		       (tstamp == 0) ?
 		       "(unknown)" :
 		       cm_store_timestamp_from_time(tstamp, stamp));
+		printf("    key usage: %s\n",
+		       entries[i]->cm_cert_ku ?: "(unspecified)");
 		printf("      monitor: %s\n",
 		       entries[i]->cm_monitor ? "yes" : "no");
 		printf("   auto-renew: %s\n",

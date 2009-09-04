@@ -18,6 +18,7 @@
 
 #include <talloc.h>
 
+#include "certext.h"
 #include "certread.h"
 #include "certread-int.h"
 #include "log.h"
@@ -269,7 +270,7 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 	talloc_free(entry->cm_cert_eku);
 	entry->cm_cert_eku = NULL;
 	/* Parse the extensions. */
-	/* XXX */
+	cm_certext_read_extensions(entry, arena, cert->extensions);
 	/* The certificate itself. */
 	p = NSSBase64_EncodeItem(arena, NULL, 0, &cert->derCert);
 	if (p != NULL) {
