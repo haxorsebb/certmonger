@@ -52,8 +52,8 @@ To-do:
     * Re-enroll for expired but not-auto-renew certificates.
     * Modify requested data and regenerate signing requests.
     * Set/reset PIN for encrypted key storage.
-  * Figure out how to let the client do key generation.  It's either
-    that or force clients to give us the PIN for encrypted storage.
+  * Figure out how to let the local deamon's client do key generation.  It's
+    either that or force them to give the daemon the PIN for encrypted storage.
     SHOULD
   * Local signing should accept extension values and add them to the
     signed certificates.
