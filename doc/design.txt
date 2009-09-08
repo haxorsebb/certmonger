@@ -8,6 +8,8 @@ Administrative action can also add these states:
 	* On hold
 	* Revoked
 
+We model that life cycle as a state machine.
+
 Now with some arbitrarily-named states for our per-certificate state machine:
 	* Generating a key pair.
 	States: NEED_KEY_PAIR, GENERATING_KEY_PAIR [*], HAVE_KEY_PAIR

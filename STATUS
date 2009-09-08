@@ -11,62 +11,73 @@ Complete:
 To-do:
   * Refresh certificate parameters from the certificates at startup,
     parsing and recovering fields and extensions that we care about to refresh
-    the request tracking file.
+    the request tracking file. (3 days, 30%)
     MUST
   * Populate requested-extensions in signing requests with as much
-    information as we can.
+    information as we can. (2 days)
     MUST
   * Learn to submit to at least one actual CA: IPA via XML-RPC over
     HTTPS, authenticating using Negotiate.
-    * Learn to obtain Kerberos credentials.
+    * Learn to obtain Kerberos credentials. (1 day)
       MUST
-    * Learn to retrieve the root certificate from the IPA directory server.
+    * Learn to retrieve the root certificate from the IPA directory server
+      using GSSAPI for mutual authentication. (1 day)
       MUST
-    * Learn to issue XML-RPC requests.
+    * Learn to issue XML-RPC requests. (2 days)
       MUST
   * Maintaining queued items.
     MUST -> Mostly done, but needs upgrade-proofing for when we add new fields.
+    (1 day)
+    COULD -> Move the whole thing to an ldb. (3 days)
   * Make certmonger a proper daemon.
-    * Detach from console, foreground for debugging.
+    * Detach from console, foreground for debugging. (1 day)
     MUST
-    * Sort out logging levels for log messages.
+    * Sort out logging levels for log messages. (1 day)
     MUST
-    * Sort out an init script.
+    * Sort out an init script. (1 day)
     MUST
-    * Sort out SELinux policy.
+    * Sort out SELinux policy. (unscoped)
     MUST
   * Sort out storage for system-local defaults which are consulted
-    before falling back to compiled-in defaults.
+    before falling back to compiled-in defaults. (1 day)
     MUST
   * Should offer an API over D-Bus which the client uses instead of
     mutilating the queue directly:
     * Add new entry at any of need-key, need-csr, need-submit,
-      have-issued states.
+      have-issued states. (5 days)
       MUST
     * List entries, which should be objects pre-sortable either by
-      state or number (/requests/by-id, /requests/by-state, etc.).
+      state or number (/requests/by-id, /requests/by-state, etc.). (2 days)
       MUST
-    * Remove entry.
+    * Remove entry. (1 day)
       MUST
-    * Resubmit CA-denied requests.
-    * Re-enroll for expired but not-auto-renew certificates.
-    * Modify requested data and regenerate signing requests.
-    * Set/reset PIN for encrypted key storage.
-  * Figure out how to let the local deamon's client do key generation.  It's
-    either that or force them to give the daemon the PIN for encrypted storage.
+    * Resubmit CA-denied requests. (1 day)
+      MUST
+    * Re-enroll for expired but not-auto-renew certificates. (1 day)
+      MUST
+    * Modify requested data and regenerate signing requests. (3 days)
+      MUST
+    * Set/reset PIN for encrypted key storage. (1 day)
+      MUST
+  * Figure out how to let the local deamon's client do key generation.
+    It's either that or force them to give the daemon the PIN for
+    encrypted storage. (3 days)
     SHOULD
   * Local signing should accept extension values and add them to the
-    signed certificates.
+    signed certificates. (1 day)
     SHOULD
   * Local signing should read-and-update the "next" serial number from
-    the system-local defaults.
+    the system-local defaults. (1 day)
     SHOULD
   * Local signing should support signing with a key other than the one
-    used to generate the CSR.
+    used to generate the CSR. (2 days)
+    * Make the the "next" serial number into a per-key default (1 day)
     SHOULD
   * Learn to submit to a second CA: certmaster via XML-RPC over HTTPS.
-    * Learn how certmaster's root gets distributed.
+    * Learn how certmaster's root gets distributed. (1 day)
+    * Learn to submit to certmaster's XMLRPC interface, preferably by
+      calling out to the python library it supplies. (2 days)
     COULD
   * Local signing should track a revocation list for each signing key
-    and publish a CRL for it.
+    and publish a CRL for it. (3 days)
     COULD

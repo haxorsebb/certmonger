@@ -45,3 +45,7 @@ getcert list
 * General options:
   --requests	list only information about outstanding requests
   --tracking	list only information about in-tracking certificates
+
+The "ipa-getcert" variant should default to configuration values picked up
+from the local system after it's been added to an IPA domain -- the "plain"
+version will need to be told what's going on.
