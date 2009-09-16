@@ -44,7 +44,9 @@ To-do:
   * Should offer an API over D-Bus which the client uses instead of
     mutilating the queue directly:
     * Add new entry at any of need-key, need-csr, need-submit,
-      have-issued states. (5 days)
+      have-issued states.  Optionally, figure out the state based on what the
+      requester supplies (i.e., if there's a certificate where the request says
+      it should go, assume it's been issued; ditto for private keys) (5 days)
       MUST
     * List entries, which should be objects pre-sortable either by
       state or number (/requests/by-id, /requests/by-state, etc.). (2 days)
