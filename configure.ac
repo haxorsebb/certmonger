@@ -31,6 +31,23 @@ PKG_CHECK_MODULES(TEVENT,tevent)
 PKG_CHECK_MODULES(DBUS,dbus-1)
 PKG_CHECK_MODULES(XMLRPC,xmlrpc_client)
 
+savedCFLAGS="$CFLAGS"
+CFLAGS=
+AC_ARG_VAR(KRB5_CONFIG,[the full path of the krb5-config command])
+AC_PATH_PROG(KRB5_CONFIG,[krb5-config],,[$PATH$PATH_SEPARATOR/usr/kerberos/bin$PATH_SEPARATOR/usr/krb5/bin])
+if test -z "$KRB5_CONFIG" ; then
+	AC_MSG_ERROR(krb5-config not found)
+fi
+AC_MSG_CHECKING(for krb5 CFLAGS)
+KRB5_CFLAGS=`${KRB5_CONFIG} --cflags`
+AC_MSG_RESULT([$KRB5_CFLAGS])
+AC_SUBST(KRB5_CFLAGS)
+AC_MSG_CHECKING(for krb5 LIBS)
+KRB5_LIBS=`${KRB5_CONFIG} --libs`
+AC_MSG_RESULT([$KRB5_LIBS])
+AC_SUBST(KRB5_LIBS)
+CFLAGS="$savedCFLAGS"
+
 AC_ARG_WITH(openssl,
 	    AS_HELP_STRING(--without-openssl,
 	    		   [build without support for storing keys and certificates in files]),
