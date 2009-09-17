@@ -267,6 +267,8 @@ cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
 	    &req->version) {
 		cm_log(1, "Error encoding request version.\n");
 	}
+	/* Tack on requested values for various extensions. */
+	/* XXX */
 	/* Encode the request. */
 	if (SEC_ASN1EncodeItem(arena, &ereq, req,
 			       CERT_CertificateRequestTemplate) !=

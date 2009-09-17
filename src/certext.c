@@ -198,6 +198,37 @@ cm_certext_read_ku(struct cm_store_entry *entry, PLArenaPool *arena,
 	}
 }
 
+SECItem *
+cm_certext_build_ku(struct cm_store_entry *entry, PLArenaPool *arena)
+{
+	SECItem *ret, encoded, *bits;
+	unsigned int i, val, len;
+	if (entry->cm_cert_ku == NULL) {
+		return NULL;
+	}
+	bits = SECITEM_AllocItem(arena, NULL, strlen(entry->cm_cert_ku));
+	if (bits == NULL) {
+		return NULL;
+	}
+	for (i = 0;
+	     (entry->cm_cert_ku != NULL) && (entry->cm_cert_ku[i] != '\0');
+	     i++) {
+		val = (entry->cm_cert_ku[i] == '1') << (i % 8);
+		bits->data[i / 8] |= val;
+	}
+	len = bits->len;
+	bits->len = i;
+	memset(&encoded, 0, sizeof(encoded));
+	if (SEC_ASN1EncodeItem(arena, &encoded, &bits,
+			       SEC_BitStringTemplate) != &encoded) {
+		ret = NULL;
+	} else {
+		ret = SECITEM_ArenaDupItem(arena, &encoded);
+	}
+	bits->len = len;
+	return ret;
+}
+
 static void
 cm_certext_read_eku(struct cm_store_entry *entry, PLArenaPool *arena,
 		    CERTCertExtension *eku_ext)
@@ -321,8 +352,8 @@ cm_certext_read_san(struct cm_store_entry *entry, PLArenaPool *arena,
 		    CERTCertExtension *san_ext)
 {
 	CERTGeneralName *name, *san;
-	unsigned int i, j;
-	char **hostname, **email, **principal, **tmp, *s;
+	unsigned int i;
+	char *s;
 	name = CERT_DecodeAltNameExtension(arena, &san_ext->value);
 	san = name;
 	i = 0;
