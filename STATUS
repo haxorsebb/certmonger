@@ -11,7 +11,7 @@ Complete:
 To-do:
   * Refresh certificate parameters from the certificates at startup,
     parsing and recovering fields and extensions that we care about to refresh
-    the request tracking file. (3 days, 30%)
+    the request tracking file. (3 days, 50%)
     MUST
   * Populate requested-extensions in signing requests with as much
     information as we can. (2 days)
