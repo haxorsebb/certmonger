@@ -275,7 +275,7 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 	talloc_free(entry->cm_cert_hostname);
 	entry->cm_cert_hostname = NULL;
 	/* Email address from subjectAltName extension. */
-	talloc_free(entry->cm_cert_email);
+	talloc_free(entry->cm_cert_issuer);
 	entry->cm_cert_issuer = NULL;
 	/* Principal name from subjectAltName extension. */
 	talloc_free(entry->cm_cert_principal);
