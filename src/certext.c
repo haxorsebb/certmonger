@@ -18,6 +18,7 @@
 #include "config.h"
 
 #include <sys/types.h>
+#include <sys/param.h>
 #include <sys/wait.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -199,21 +200,20 @@ cm_certext_read_ku(struct cm_store_entry *entry, PLArenaPool *arena,
 }
 
 SECItem *
-cm_certext_build_ku(struct cm_store_entry *entry, PLArenaPool *arena)
+cm_certext_build_ku(struct cm_store_entry *entry, PLArenaPool *arena,
+		    const char *ku_value)
 {
 	SECItem *ret, encoded, *bits;
 	unsigned int i, val, len;
-	if (entry->cm_cert_ku == NULL) {
+	if (ku_value == NULL) {
 		return NULL;
 	}
-	bits = SECITEM_AllocItem(arena, NULL, strlen(entry->cm_cert_ku));
+	bits = SECITEM_AllocItem(arena, NULL, strlen(ku_value));
 	if (bits == NULL) {
 		return NULL;
 	}
-	for (i = 0;
-	     (entry->cm_cert_ku != NULL) && (entry->cm_cert_ku[i] != '\0');
-	     i++) {
-		val = (entry->cm_cert_ku[i] == '1') << (i % 8);
+	for (i = 0; (ku_value != NULL) && (ku_value[i] != '\0'); i++) {
+		val = (ku_value == '1') << (i % 8);
 		bits->data[i / 8] |= val;
 	}
 	len = bits->len;
@@ -229,35 +229,193 @@ cm_certext_build_ku(struct cm_store_entry *entry, PLArenaPool *arena)
 	return ret;
 }
 
+static char *
+oid_to_string(void *parent, SECItem *oid)
+{
+	char *s, *t;
+	unsigned char *p;
+	unsigned long l;
+	unsigned int n;
+	s = NULL;
+	l = 0;
+	n = 0;
+	for (p = oid->data; p < oid->data + oid->len; p++) {
+		/* Add seven more bits. */
+		l <<= 7;
+		l |= (*p & 0x7f);
+		n++;
+		/* Check for overflow. */
+		if ((n * 7) > sizeof(l) * 8) {
+			return NULL;
+		}
+		/* If this is the last byte, save it. */
+		if ((*p & 0x80) == 0) {
+			if (s != NULL) {
+				/* Directly. */
+				t = talloc_asprintf(parent, "%s.%lu", s, l);
+				talloc_free(s);
+				s = t;
+			} else {
+				/* The first two items are in the first byte. */
+				s = talloc_asprintf(parent, "%lu.%lu",
+						    l / 40, l % 40);
+			}
+			l = 0;
+			n = 0;
+		}
+	}
+	return s;
+}
+
+SECItem *
+oid_from_string(const char *oid, int n, PLArenaPool *arena)
+{
+	unsigned long *l, val;
+	int i, more;
+	char *p, *endptr;
+	unsigned char *up, u;
+	SECItem *ret;
+	if (n == -1) {
+		n = strlen(oid);
+	}
+	p = PORT_ArenaZAlloc(arena, n + 1);
+	l = PORT_ArenaZAlloc(arena, (n + 1) * sizeof(*l));
+	if ((p == NULL) || (l == NULL)) {
+		return NULL;
+	}
+	/* Make sure we've got a NUL-terminator. */
+	memcpy(p, oid, n);
+	p[n] = '\0';
+	n = 0;
+	endptr = p;
+	/* Parse the values as longs into an array. */
+	while ((*endptr != '\0') && (*p != '.')) {
+		l[n] = strtoul(p, &endptr, 10);
+		if (endptr == NULL) {
+			return NULL;
+		}
+		switch (*endptr) {
+		case '.':
+			n++;
+			p = endptr + 1;
+			break;
+		case '\0':
+			n++;
+			break;
+		default:
+			return NULL;
+			break;
+		}
+	}
+	/* Merge the first two values, if we have at least two. */
+	if (n >= 2) {
+		l[0] = l[0] * 40 + l[1];
+		memmove(l + 1, l + 2, sizeof(unsigned long) * (n - 2));
+		n--;
+	}
+	ret = SECITEM_AllocItem(arena, NULL,
+				(n + 1) *
+				howmany(sizeof(unsigned long) * 8, 7));
+	if (ret == NULL) {
+		return NULL;
+	}
+	/* Spool the list of values out, last section last, in LSB
+	 * order. */
+	up = ret->data;
+	for (i = n - 1; i >= 0; i--) {
+		val = l[i];
+		more = 0;
+		do {
+			*up = val & 0x7f;
+			if (more) {
+				*up |= 0x80;
+			}
+			val >>= 7;
+			more = 1;
+			up++;
+		} while (val != 0);
+	}
+	/* Reverse the order of bytes in the buffer. */
+	ret->len = (up - ret->data);
+	for (i = 0; i < (int) (ret->len / 2); i++) {
+		u = ret->data[i];
+		ret->data[i] = ret->data[ret->len - 1 - i];
+		ret->data[ret->len - 1 - i] = u;
+	}
+	return ret;
+}
+
 static void
 cm_certext_read_eku(struct cm_store_entry *entry, PLArenaPool *arena,
 		    CERTCertExtension *eku_ext)
 {
 	SECItem **oids;
-	SECOidData *oid;
 	unsigned int i;
-	char *s;
+	char *s, *p;
 	if (SEC_ASN1DecodeItem(arena, &oids, SEC_SequenceOfObjectIDTemplate,
 			       &eku_ext->value) == SECSuccess) {
 		talloc_free(entry->cm_cert_eku);
 		entry->cm_cert_eku = NULL;
 		for (i = 0; oids[i] != NULL; i++) {
-			oid = SECOID_FindOID(oids[i]);
-			if (oid != NULL) {
-				if (entry->cm_cert_eku != NULL) {
-					s = talloc_asprintf(entry, "%s,%s",
-							    entry->cm_cert_eku,
-							    oid->desc);
-					talloc_free(entry->cm_cert_eku);
-					entry->cm_cert_eku = s;
-				} else {
-					s = talloc_strdup(entry, oid->desc);
-					talloc_free(entry->cm_cert_eku);
-					entry->cm_cert_eku = s;
+			if (entry->cm_cert_eku != NULL) {
+				p = oid_to_string(entry, oids[i]);
+#if 1
+				/* Yeah, gotta sanity-check myself here. */
+				if (strcmp(oid_to_string(entry,
+					  		 oid_from_string(p,
+									 -1,
+									 arena)),
+					   p) != 0) {
+					cm_log(1, "Internal error.\n");
 				}
+#endif
+				s = talloc_asprintf(entry, "%s,%s",
+						    entry->cm_cert_eku, p);
+				talloc_free(entry->cm_cert_eku);
+				entry->cm_cert_eku = s;
+			} else {
+				s = oid_to_string(entry, oids[i]);
+				talloc_free(entry->cm_cert_eku);
+				entry->cm_cert_eku = s;
 			}
 		}
 	}
+}
+
+SECItem *
+cm_certext_build_eku(struct cm_store_entry *entry, PLArenaPool *arena,
+		     const char *eku_value)
+{
+	int i;
+	const char *p, *q;
+	SECItem **oids = NULL, **tmp, encoded, *ret;
+	p = eku_value;
+	i = 0;
+	while ((p != NULL) && (*p != '\0')) {
+		q = p + strcspn(p, ",");
+		tmp = PORT_ArenaZAlloc(arena, i + 2);
+		if (tmp != NULL) {
+			if (i > 0) {
+				memcpy(tmp, oids, sizeof(SECItem *) * i);
+			}
+			tmp[i] = oid_from_string(p, q - p, arena);
+			i++;
+			oids = tmp;
+		}
+		if (*q == ',') {
+			p = q + 1;
+		} else {
+			p = q;
+		}
+	}
+	memset(&encoded, 0, sizeof(encoded));
+	if (SEC_ASN1EncodeItem(arena, &encoded, oids,
+			       SEC_SequenceOfObjectIDTemplate) != &encoded) {
+		ret = NULL;
+	} else {
+		ret = SECITEM_ArenaDupItem(arena, &encoded);
+	}
+	return ret;
 }
 
 static char *

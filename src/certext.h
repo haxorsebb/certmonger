@@ -22,8 +22,9 @@ struct cm_store_entry;
 void cm_certext_read_extensions(struct cm_store_entry *entry,
 				PLArenaPool *arena,
 				CERTCertExtension **extensions);
-SECItem *cm_certext_build_ku(struct cm_store_entry *entry, PLArenaPool *arena);
-SECItem *cm_certext_build_eku(struct cm_store_entry *entry, PLArenaPool *arena);
-SECItem *cm_certext_build_san(struct cm_store_entry *entry, PLArenaPool *arena);
+SECItem *cm_certext_build_ku(struct cm_store_entry *entry, PLArenaPool *arena,
+			     const char *ku_value);
+SECItem *cm_certext_build_eku(struct cm_store_entry *entry, PLArenaPool *arena,
+			      const char *eku_value);
 
 #endif
