@@ -213,7 +213,7 @@ cm_certext_build_ku(struct cm_store_entry *entry, PLArenaPool *arena,
 		return NULL;
 	}
 	for (i = 0; (ku_value != NULL) && (ku_value[i] != '\0'); i++) {
-		val = (ku_value == '1') << (i % 8);
+		val = (ku_value[i] == '1') << (i % 8);
 		bits->data[i / 8] |= val;
 	}
 	len = bits->len;
