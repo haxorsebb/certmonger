@@ -1,0 +1,127 @@
+Note: use the NetworkManager API to get a feel for how these tend to be done:
+http://people.redhat.com/dcbw/NetworkManager/NetworkManager%20DBUS%20API.txt
+
+The D-Bus API:
+o service name = org.badvocacy.certmonger
+o object layout
+  /org/badvocacy/certmonger
+  interface=org.badvocacy.certmonger
+  - get-requests
+    returns: array of string -> object paths for requests
+  - add-request
+    arguments: XXX
+    returns: boolean -> succeeded
+  - remove-request
+    arguments: object path for request
+    returns: boolean -> succeeded
+  - get-known-cas
+    returns: array of string -> object paths for requests
+  - add-known-ca
+    arguments: string -> ca name
+               string -> ca type
+               string -> ca location
+               array of string (optional) -> known issuer names used by ca
+    returns: boolean -> succeeded
+  - remove-known-ca
+    arguments: string -> object path for ca
+    returns: boolean -> succeeded
+  (objects whose names are returned by "get-requests" or "get-defaults")
+  interface=org.badvocacy.certmonger.request
+  - get status
+    returns: string -> state name
+             boolean -> i-am-stuck
+  - get key type and size
+    returns: string -> key algorithm
+             number -> key size
+  - regenerate key
+    returns: boolean -> succeeded?
+  - get key storage,location,token,nickname
+    returns: string -> "file", "nssdb"
+             string -> filename (for "file"), or directory (for "nssdb")
+             string(optional) -> nssdb nickname
+             string(optional) -> nssdb token name
+  - get cert storage,location,token,nickname
+    returns: string -> "file", "nssdb"
+             string -> filename (for "file"), or directory (for "nssdb")
+             string(optional) -> nssdb nickname
+             string(optional) -> nssdb token name
+  - get cert data
+    returns: string -> certificate in PEM format
+  - get cert issuer,serial,subject,expiration,email,dnsname,principals,ku,eku
+    returns: string -> issuer
+             string -> serial number
+             string -> subject
+             number -> expiration (unix time)
+             array of string -> email addresses
+             array of string -> dns names
+             array of string -> principal names
+             number -> key usage as bitfield based on RFC5280's values
+             array of string -> oid values
+  - get monitoring setting
+    returns: boolean -> enabled?
+  - get cert date-of-last-check-for-expiration
+    returns: number -> time of last check for expiration (unix time)
+  - get cert expiration notification method,destination
+    returns: string -> method ("syslog", "email")
+             string -> destination (log level or recipient)
+  - get autorenew setting
+    returns: boolean -> enabled?
+  - get requesting subject,email,dnsname,principals,ku,eku
+    returns: string -> subject
+             array of string -> email addresses
+             array of string -> dns names
+             array of string -> principal names
+             number -> key usage as bitfield based on RFC5280's values
+             array of string -> oid values
+  - get csr
+    returns: string -> signing request in PEM format
+  - get date-of-submission
+    returns: number(optional) -> time of submission
+  - get ca-cookie
+    returns: string(optional) -> CA-specific value
+  - modify
+    - requested subject name
+      argument: string -> requested subject
+    - requested subject alternative name(s): email
+      argument: array of string -> requested addresses
+    - requested subject alternative name(s): dnsname
+      argument: array of string -> requested hostnames
+    - requested subject alternative name(s): principalname
+      argument: array of string -> requested names
+    - requested key usage
+      argument: number -> key usage as bitfield based on RFC5280's values
+    - requested extended key usage
+      argument: array of string -> requested OIDs
+    - known-ca to use
+      argument: string -> object path of CA
+    - otherwise-not-known-ca
+      arguments: string -> type of CA
+                 string -> location of CA
+  - rekey-and-resubmit (for whatever reason) (?)
+    returns: boolean -> working-on-it?
+  - resubmit (for requests that have been denied, generates a new csr)
+    returns: boolean -> working-on-it?
+  - reenroll (for requests that we don't auto-submit, generates a new csr)
+    returns: boolean -> working-on-it?
+  (objects whose names are returned by "get-known-cas")
+  interface=org.badvocacy.certmonger.ca
+  - get is-default
+    returns: boolean -> is-the-default-ca
+  - get type
+    returns: string -> type of ca
+  - get location
+    returns: string -> location of ca
+  - get associated issuer names
+    returns: array of string (optional) -> set of issuer names
+  - modify
+    - is-default
+      arguments: boolean -> should-be-the-default-ca
+      returns: boolean -> is-the-default-ca
+    - type
+      arguments: string -> type of ca
+      returns: boolean -> changed?
+    - location
+      arguments: string -> location of ca
+      returns: boolean -> changed?
+    - associated issuer names (for when we have to guess which CA to use)
+      arguments: array of string (optional) -> set of issuer names
