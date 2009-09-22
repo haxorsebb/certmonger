@@ -15,6 +15,10 @@ Complete:
     information as we can.
 
 To-do:
+  * Maintaining queued items.
+    MUST -> Mostly done, but needs upgrade-proofing for when we add new fields.
+    (1 day)
+    COULD -> Move the whole thing to an ldb. (3 days)
   * Should offer an API over D-Bus which the client uses instead of
     mutilating the queue directly:
     * Add new entry at any of need-key, need-csr, need-submit,
@@ -44,10 +48,6 @@ To-do:
       MUST
     * Learn to issue XML-RPC requests. (2 days)
       MUST
-  * Maintaining queued items.
-    MUST -> Mostly done, but needs upgrade-proofing for when we add new fields.
-    (1 day)
-    COULD -> Move the whole thing to an ldb. (3 days)
   * Make certmonger a proper daemon.
     * Detach from console, foreground for debugging. (1 day)
     MUST
