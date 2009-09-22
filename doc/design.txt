@@ -20,7 +20,7 @@ Now with some arbitrarily-named states for our per-certificate state machine:
 	* Checking for response from CA.
 	States: NEED_CA_STATUS, POLLING_CA_STATUS [*], RETRIEVING_CERT [*]
 	* Saving certificate to the desired location.
-	States: NEED_TO_SAVE_CERT, SAVING_CERT[*], SAVED_CERT
+	States: NEED_TO_SAVE_CERT, SAVING_CERT[*], READING_CERT[*], SAVED_CERT
 	* Waiting for certificate to near expiration.
 	States: MONITORING
 	* Waiting for user input

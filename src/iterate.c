@@ -41,6 +41,7 @@ struct cm_iterate_state {
 	struct cm_csrgen_state *cm_csrgen_state;
 	struct cm_submit_state *cm_submit_state;
 	struct cm_certsave_state *cm_certsave_state;
+	struct cm_certread_state *cm_certread_state;
 	struct cm_notify_state *cm_notify_state;
 };
 
@@ -74,6 +75,8 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 	case CM_SAVING_CERT:
 		entry->cm_state = CM_NEED_TO_SAVE_CERT;
 		break;
+	case CM_NEED_TO_READ_CERT:
+	case CM_READING_CERT:
 	case CM_SAVED_CERT:
 		entry->cm_state = CM_MONITORING;
 		break;
@@ -469,10 +472,11 @@ cm_iterate(struct cm_store_entry *entry,
 		if (cm_certsave_ready(entry, state->cm_certsave_state) == 0) {
 			if (cm_certsave_saved(entry,
 					      state->cm_certsave_state) == 0) {
-				/* Saved certificate; move on. */
+				/* Saved certificate; note that we have to
+				 * reload the information that was in it. */
 				cm_certsave_done(entry, state->cm_certsave_state);
 				state->cm_certsave_state = NULL;
-				entry->cm_state = CM_SAVED_CERT;
+				entry->cm_state = CM_NEED_TO_READ_CERT;
 				*when = cm_time_now;
 			} else {
 				/* Failed to save cert; try again in a bit. */
@@ -486,6 +490,43 @@ cm_iterate(struct cm_store_entry *entry,
 			/* Wait for status update, or poll. */
 			*readfd = cm_certsave_get_fd(entry,
 						     state->cm_certsave_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
+		}
+		break;
+	case CM_NEED_TO_READ_CERT:
+		state->cm_certread_state = cm_certread_start(entry);
+		if (state->cm_certread_state != NULL) {
+			/* Note that we're reading the cert. */
+			entry->cm_state = CM_READING_CERT;
+			/* Wait for status update, or poll. */
+			*readfd = cm_certread_get_fd(entry,
+						     state->cm_certread_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
+		} else {
+			/* Failed to start re-reading the certificate; try
+			 * again. */
+			*when = cm_time_soonish;
+		}
+		break;
+	case CM_READING_CERT:
+		if (cm_certread_ready(entry, state->cm_certread_state) == 0) {
+			/* Finished reloading certificate. */
+			cm_certread_done(entry, state->cm_certread_state);
+			state->cm_certread_state = NULL;
+			entry->cm_state = CM_SAVED_CERT;
+			*when = cm_time_now;
+		} else {
+			/* Wait for status update, or poll. */
+			*readfd = cm_certread_get_fd(entry,
+						     state->cm_certread_state);
 			if (*readfd == -1) {
 				*when = cm_time_soon;
 			} else {
