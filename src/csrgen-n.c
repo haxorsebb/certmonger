@@ -213,7 +213,7 @@ cm_csrgen_n_attributes(struct cm_store_entry *entry, PLArenaPool *arena)
 		if (plain.data != NULL) {
 			plain.len = strlen(entry->cm_cert_nickname);
 			if (SEC_ASN1EncodeItem(arena, &friendly, &plain,
-					       SEC_BMPStringTemplate) == &friendly) {
+					       SEC_PrintableStringTemplate) == &friendly) {
 				friendlies[0] = &friendly;
 				friendlies[1] = NULL;
 				attr[j].attrType = oid->oid;
