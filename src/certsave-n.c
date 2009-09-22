@@ -116,6 +116,9 @@ cm_certsave_n_main(struct cm_store_entry *entry)
 								 PR_TRUE,
 								 PR_FALSE,
 								 entry->cm_cert_nickname);
+					if (error == SECSuccess) {
+						status = 0;
+					}
 				}
 				if (error != SECSuccess) {
 					cm_log(1, "Error importing certificate "
