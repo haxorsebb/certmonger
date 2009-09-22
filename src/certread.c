@@ -80,14 +80,36 @@ cm_certread_done(struct cm_store_entry *entry, struct cm_certread_state *state)
 void
 cm_certread_write_data_to_pipe(struct cm_store_entry *entry, FILE *fp)
 {
+	int i;
 	fprintf(fp, " %s\n", entry->cm_cert_issuer ?: "");
 	fprintf(fp, " %s\n", entry->cm_cert_serial ?: "");
 	fprintf(fp, " %s\n", entry->cm_cert_subject ?: "");
 	fprintf(fp, " %s\n", entry->cm_cert_spki ?: "");
 	fprintf(fp, " %lu\n", entry->cm_cert_expiration ?: 0);
-	fprintf(fp, " %s\n", entry->cm_cert_hostname ?: "");
-	fprintf(fp, " %s\n", entry->cm_cert_email ?: "");
-	fprintf(fp, " %s\n", entry->cm_cert_principal ?: "");
+	for (i = 0;
+	     (entry->cm_cert_hostname != NULL) &&
+	     (entry->cm_cert_hostname[i] != NULL);
+	     i++) {
+		fprintf(fp, "%s%s", (i > 0) ? "," : " ",
+			entry->cm_cert_hostname[i]);
+	}
+	fprintf(fp, "\n");
+	for (i = 0;
+	     (entry->cm_cert_email != NULL) &&
+	     (entry->cm_cert_email[i] != NULL);
+	     i++) {
+		fprintf(fp, "%s%s", (i > 0) ? "," : " ",
+			entry->cm_cert_email[i]);
+	}
+	fprintf(fp, "\n");
+	for (i = 0;
+	     (entry->cm_cert_principal != NULL) &&
+	     (entry->cm_cert_principal[i] != NULL);
+	     i++) {
+		fprintf(fp, "%s%s", (i > 0) ? "," : " ",
+			entry->cm_cert_principal[i]);
+	}
+	fprintf(fp, "\n");
 	fprintf(fp, " %s\n", entry->cm_cert_ku ?: "");
 	fprintf(fp, " %s\n", entry->cm_cert_eku ?: "");
 }
@@ -96,9 +118,10 @@ cm_certread_write_data_to_pipe(struct cm_store_entry *entry, FILE *fp)
 void
 cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 {
-	const char *q;
+	const char *q, *u, *v;
 	char *s;
-	int i = 0;
+	void *vals;
+	int i = 0, j;
 	while (*p != '\0') {
 		/* Skip over the first character. */
 		p++;
@@ -134,20 +157,54 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 			break;
 		case 5:
 			talloc_free(entry->cm_cert_hostname);
-			entry->cm_cert_hostname = (p == q) ? NULL :
-						  talloc_strndup(entry, p,
-						 		 q - p);
+			entry->cm_cert_hostname = talloc_zero_array(entry,
+								    char *,
+								    q - p + 2);
+			vals = entry->cm_cert_hostname;
+			u = p;
+			j = 0;
+			while ((*u != '\0') && (u < q)) {
+				v = u + strcspn(u, ",\r\n");
+				entry->cm_cert_hostname[j] = talloc_strndup(vals,
+									    u,
+									    v - u);
+				j++;
+				u = v + strspn(u, ",\r\n");
+			}
 			break;
 		case 6:
 			talloc_free(entry->cm_cert_email);
-			entry->cm_cert_email = (p == q) ? NULL :
-					       talloc_strndup(entry, p, q - p);
+			entry->cm_cert_email = talloc_zero_array(entry,
+								 char *,
+								 q - p + 2);
+			vals = entry->cm_cert_email;
+			u = p;
+			j = 0;
+			while ((*u != '\0') && (u < q)) {
+				v = u + strcspn(u, ",\r\n");
+				entry->cm_cert_email[j] = talloc_strndup(vals,
+									 u,
+									 v - u);
+				j++;
+				u = v + strspn(u, ",\r\n");
+			}
 			break;
 		case 7:
 			talloc_free(entry->cm_cert_principal);
-			entry->cm_cert_principal = (p == q) ? NULL :
-						   talloc_strndup(entry, p,
-						  		  q - p);
+			entry->cm_cert_principal = talloc_zero_array(entry,
+								     char *,
+								     q - p + 2);
+			vals = entry->cm_cert_principal;
+			u = p;
+			j = 0;
+			while ((*u != '\0') && (u < q)) {
+				v = u + strcspn(u, ",\r\n");
+				entry->cm_cert_principal[j] = talloc_strndup(vals,
+									     u,
+									     v - u);
+				j++;
+				u = v + strspn(u, ",\r\n");
+			}
 			break;
 		case 8:
 			talloc_free(entry->cm_cert_ku);

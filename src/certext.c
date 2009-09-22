@@ -467,6 +467,9 @@ cm_certext_read_other_name(struct cm_store_entry *entry, PLArenaPool *arena,
 {
 	SECItem *item, upn;
 	struct kerberos_principal_name p;
+	char **names;
+	int i;
+
 	item = &name->name.OthName.name;
 	if (SECITEM_ItemsAreEqual(&name->name.OthName.oid,
 				  &oid_pkinit_san.oid)) {
@@ -474,7 +477,19 @@ cm_certext_read_other_name(struct cm_store_entry *entry, PLArenaPool *arena,
 		if (SEC_ASN1DecodeItem(arena, &p,
 				       cm_kerberos_principal_name_template,
 				       item) == SECSuccess) {
-			entry->cm_cert_principal = cm_certext_parse_principal(entry, &p);
+			for (i = 0;
+			     (entry->cm_cert_principal != NULL) &&
+			     (entry->cm_cert_principal[i] != NULL);
+			     i++) {
+				continue;
+			}
+			names = talloc_zero_array(entry, char *, i + 2);
+			if (i > 0) {
+				memcpy(names, entry->cm_cert_principal,
+				       sizeof(char *) * i);
+			}
+			names[i] = cm_certext_parse_principal(entry, &p);
+			entry->cm_cert_principal = names;
 		}
 	}
 	if (SECITEM_ItemsAreEqual(&name->name.OthName.oid,
@@ -483,18 +498,38 @@ cm_certext_read_other_name(struct cm_store_entry *entry, PLArenaPool *arena,
 		if (SEC_ASN1DecodeItem(arena, &upn,
 				       cm_ms_upn_name_template,
 				       item) == SECSuccess) {
-			entry->cm_cert_principal = talloc_strndup(entry,
-								  (char *)
-								  upn.data,
-								  upn.len);
+			for (i = 0;
+			     (entry->cm_cert_principal != NULL) &&
+			     (entry->cm_cert_principal[i] != NULL);
+			     i++) {
+				continue;
+			}
+			names = talloc_zero_array(entry, char *, i + 2);
+			if (i > 0) {
+				memcpy(names, entry->cm_cert_principal,
+				       sizeof(char *) * i);
+			}
+			names[i] = talloc_strndup(entry,
+						  (char *) upn.data, upn.len);
+			entry->cm_cert_principal = names;
 		} else
 		if (SEC_ASN1DecodeItem(arena, &upn,
 				       SEC_UTF8StringTemplate,
 				       item) == SECSuccess) {
-			entry->cm_cert_principal = talloc_strndup(entry,
-								  (char *)
-								  upn.data,
-								  upn.len);
+			for (i = 0;
+			     (entry->cm_cert_principal != NULL) &&
+			     (entry->cm_cert_principal[i] != NULL);
+			     i++) {
+				continue;
+			}
+			names = talloc_zero_array(entry, char *, i + 2);
+			if (i > 0) {
+				memcpy(names, entry->cm_cert_principal,
+				       sizeof(char *) * i);
+			}
+			names[i] = talloc_strndup(entry,
+						  (char *) upn.data, upn.len);
+			entry->cm_cert_principal = names;
 		}
 	}
 }
@@ -504,8 +539,8 @@ cm_certext_read_san(struct cm_store_entry *entry, PLArenaPool *arena,
 		    CERTCertExtension *san_ext)
 {
 	CERTGeneralName *name, *san;
-	unsigned int i;
-	char *s;
+	unsigned int i, j;
+	char **s;
 	name = CERT_DecodeAltNameExtension(arena, &san_ext->value);
 	san = name;
 	i = 0;
@@ -518,16 +553,40 @@ cm_certext_read_san(struct cm_store_entry *entry, PLArenaPool *arena,
 	while (san != NULL) {
 		switch (san->type) {
 		case certDNSName:
-			s = talloc_strndup(entry, (char *) san->name.other.data,
-					   san->name.other.len);
+			for (j = 0;
+			     (entry->cm_cert_hostname != NULL) &&
+			     (entry->cm_cert_hostname[j] != NULL);
+			     j++) {
+				continue;
+			}
+			s = talloc_zero_array(entry, char *, j + 2);
+			if (j > 0) {
+				memcpy(s, entry->cm_cert_hostname,
+				       sizeof(char *) * j);
+			}
+			s[j] = talloc_strndup(entry,
+					      (char *) san->name.other.data,
+					      san->name.other.len);
 			entry->cm_cert_hostname = s;
 			break;
 		case certIPAddress:
 			/* binary data - see rfc5280 */
 			break;
 		case certRFC822Name:
-			s = talloc_strndup(entry, (char *) san->name.other.data,
-					   san->name.other.len);
+			for (j = 0;
+			     (entry->cm_cert_email != NULL) &&
+			     (entry->cm_cert_email[j] != NULL);
+			     j++) {
+				continue;
+			}
+			s = talloc_zero_array(entry, char *, j + 2);
+			if (j > 0) {
+				memcpy(s, entry->cm_cert_email,
+				       sizeof(char *) * j);
+			}
+			s[j] = talloc_strndup(entry,
+					      (char *) san->name.other.data,
+					      san->name.other.len);
 			entry->cm_cert_email = s;
 			break;
 		case certOtherName:
@@ -631,21 +690,21 @@ cm_certext_build_principal(struct cm_store_entry *entry, PLArenaPool *arena,
 
 SECItem *
 cm_certext_build_san(struct cm_store_entry *entry, PLArenaPool *arena,
-		     const char *hostname, const char *email,
-		     const char *principal)
+		     char **hostname, char **email, char **principal)
 {
 	CERTGeneralName *name, *next;
 	SECItem encoded, *item;
+	int i;
 	if ((hostname == NULL) && (email == NULL) && (principal == NULL)) {
 		return NULL;
 	}
 	name = NULL;
-	if (hostname != NULL) {
+	for (i = 0; (hostname != NULL) && (hostname[i] != NULL); i++) {
 		next = PORT_ArenaZAlloc(arena, sizeof(*next));
 		if (next != NULL) {
 			next->type = certDNSName;
-			next->name.other.len = strlen(hostname);
-			next->name.other.data = (unsigned char *) hostname;
+			next->name.other.len = strlen(hostname[i]);
+			next->name.other.data = (unsigned char *) hostname[i];
 			if (name == NULL) {
 				name = next;
 				PR_INIT_CLIST(&name->l);
@@ -654,12 +713,12 @@ cm_certext_build_san(struct cm_store_entry *entry, PLArenaPool *arena,
 			}
 		}
 	}
-	if (email != NULL) {
+	for (i = 0; (email != NULL) && (email[i] != NULL); i++) {
 		next = PORT_ArenaZAlloc(arena, sizeof(*next));
 		if (next != NULL) {
 			next->type = certRFC822Name;
-			next->name.other.len = strlen(email);
-			next->name.other.data = (unsigned char *) email;
+			next->name.other.len = strlen(email[i]);
+			next->name.other.data = (unsigned char *) email[i];
 			if (name == NULL) {
 				name = next;
 				PR_INIT_CLIST(&name->l);
@@ -668,8 +727,8 @@ cm_certext_build_san(struct cm_store_entry *entry, PLArenaPool *arena,
 			}
 		}
 	}
-	if (principal != NULL) {
-		item = cm_certext_build_upn(entry, arena, principal);
+	for (i = 0; (principal != NULL) && (principal[i] != NULL); i++) {
+		item = cm_certext_build_upn(entry, arena, principal[i]);
 		if (item != NULL) {
 			next = PORT_ArenaZAlloc(arena, sizeof(*next));
 			if (next != NULL) {
@@ -684,7 +743,7 @@ cm_certext_build_san(struct cm_store_entry *entry, PLArenaPool *arena,
 				}
 			}
 		}
-		item = cm_certext_build_principal(entry, arena, principal);
+		item = cm_certext_build_principal(entry, arena, principal[i]);
 		if (item != NULL) {
 			next = PORT_ArenaZAlloc(arena, sizeof(*next));
 			if (next != NULL) {

@@ -7,14 +7,13 @@ Complete:
   * Generating signing requests for keys in PEM or NSSDB format.
   * Self-sign requests using keys in PEM or NSSDB format.
   * Save issued certificate in PEM or NSSDB format.
-
-To-do:
   * Refresh certificate parameters from the certificates at startup,
     parsing and recovering fields and extensions that we care about to refresh
-    the request tracking file. (3 days, 50%)
-    MUST
+    the request tracking file.
+
+To-do:
   * Populate requested-extensions in signing requests with as much
-    information as we can. (2 days)
+    information as we can. (2 days, 50%)
     MUST
   * Learn to submit to at least one actual CA: IPA via XML-RPC over
     HTTPS, authenticating using Negotiate.

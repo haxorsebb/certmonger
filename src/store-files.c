@@ -109,6 +109,42 @@ free_if_empty(char *s)
 	return s;
 }
 
+static char **
+free_if_emptys(void *parent, char *p)
+{
+	char **s;
+	int i, j, k;
+	if ((p != NULL) && (strlen(p) == 0)) {
+		talloc_free(p);
+		p = NULL;
+		return NULL;
+	}
+	s = talloc_zero_array(parent, char *, strlen(p) + 2);
+	i = 0;
+	while (*p != '\0') {
+		s[i] = talloc_strdup(parent, p);
+		j = 0;
+		k = 0;
+		while ((s[i][j] != ',') && (s[i][j] != '\0')) {
+			switch (s[i][j]) {
+			case '\\':
+				j++;
+				/* fall through */
+			default:
+				memmove(s[i] + k, s[i] + j,
+					strlen(s[i] + k) + 1);
+				break;
+			}
+			j++;
+			k++;
+		}
+		s[i][k] = '\0';
+		p += (j + 1);
+		i++;
+	}
+	return s;
+}
+
 static struct cm_store_entry *
 cm_store_file_read(void *parent, const char *filename, FILE *fp)
 {
@@ -224,15 +260,15 @@ cm_store_file_read(void *parent, const char *filename, FILE *fp)
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert_hostname = free_if_empty(s[i]);
+			ret->cm_cert_hostname = free_if_emptys(ret, s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert_email = free_if_empty(s[i]);
+			ret->cm_cert_email = free_if_emptys(ret, s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert_principal = free_if_empty(s[i]);
+			ret->cm_cert_principal = free_if_emptys(ret, s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
@@ -302,15 +338,15 @@ cm_store_file_read(void *parent, const char *filename, FILE *fp)
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_template_hostname = free_if_empty(s[i]);
+			ret->cm_template_hostname = free_if_emptys(ret, s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_template_email = free_if_empty(s[i]);
+			ret->cm_template_email = free_if_emptys(ret, s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_template_principal = free_if_empty(s[i]);
+			ret->cm_template_principal = free_if_emptys(ret, s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
@@ -460,6 +496,34 @@ cm_store_file_write_str(FILE *fp, const char *s)
 }
 
 static int
+cm_store_file_write_strs(FILE *fp, char **s)
+{
+	int i, j;
+	fprintf(fp, "=");
+	for (i = 0; (s != NULL) && (s[i] != NULL); i++) {
+		if (i > 0) {
+			fputc(',', fp);
+		}
+		for (j = 0; s[i][j] != '\0'; j++) {
+			switch (s[i][j]) {
+			case '\\':
+			case ',':
+				fputc('\\', fp);
+				/* fall through */
+			default:
+				fputc(s[i][j], fp);
+				break;
+			}
+		}
+		if (ferror(fp)) {
+			return -1;
+		}
+	}
+	fprintf(fp, "\n");
+	return 0;
+}
+
+static int
 cm_store_file_write(FILE *fp, struct cm_store_entry *entry)
 {
 	char timestamp[15];
@@ -513,9 +577,9 @@ cm_store_file_write(FILE *fp, struct cm_store_entry *entry)
 	cm_store_file_write_str(fp,
 				cm_store_timestamp_from_time(entry->cm_cert_expiration,
 							     timestamp));
-	cm_store_file_write_str(fp, entry->cm_cert_hostname);
-	cm_store_file_write_str(fp, entry->cm_cert_email);
-	cm_store_file_write_str(fp, entry->cm_cert_principal);
+	cm_store_file_write_strs(fp, entry->cm_cert_hostname);
+	cm_store_file_write_strs(fp, entry->cm_cert_email);
+	cm_store_file_write_strs(fp, entry->cm_cert_principal);
 	cm_store_file_write_str(fp, entry->cm_cert_ku);
 	cm_store_file_write_str(fp, entry->cm_cert_eku);
 
@@ -549,9 +613,9 @@ cm_store_file_write(FILE *fp, struct cm_store_entry *entry)
 
 	cm_store_file_write_int(fp, entry->cm_template_default);
 	cm_store_file_write_str(fp, entry->cm_template_subject);
-	cm_store_file_write_str(fp, entry->cm_template_hostname);
-	cm_store_file_write_str(fp, entry->cm_template_email);
-	cm_store_file_write_str(fp, entry->cm_template_principal);
+	cm_store_file_write_strs(fp, entry->cm_template_hostname);
+	cm_store_file_write_strs(fp, entry->cm_template_email);
+	cm_store_file_write_strs(fp, entry->cm_template_principal);
 	cm_store_file_write_str(fp, entry->cm_template_ku);
 	cm_store_file_write_str(fp, entry->cm_template_eku);
 
