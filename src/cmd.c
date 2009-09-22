@@ -29,6 +29,7 @@
 
 #include "cm.h"
 #include "log.h"
+#include "tdbus.h"
 
 int
 main(int argc, char **argv)
@@ -51,6 +52,11 @@ main(int argc, char **argv)
 	i = cm_init(ec, &ctx);
 	if (i != 0) {
 		fprintf(stderr, "Error: %s\n", strerror(i));
+		talloc_free(ec);
+		return 1;
+	}
+	if (cm_tdbus_setup(ec, cm_tdbus_session) != 0) {
+		fprintf(stderr, "Error connecting to D-Bus.\n");
 		talloc_free(ec);
 		return 1;
 	}

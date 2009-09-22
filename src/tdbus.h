@@ -18,6 +18,7 @@
 #ifndef cmtdbus_h
 #define cmtdbus_h
 
-int cm_tdbus_setup(struct tevent_context *ec, DBusConnection *conn);
+enum cm_tdbus_type { cm_tdbus_system, cm_tdbus_session };
+int cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type);
 
 #endif

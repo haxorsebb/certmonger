@@ -318,14 +318,26 @@ cm_tdbus_timeout_cleanup(void *data)
 }
 
 int
-cm_tdbus_setup(struct tevent_context *ec, DBusConnection *conn)
+cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type)
 {
+	DBusConnection *conn;
 	struct tdbus_connection *tdb;
 	tdb = talloc_ptrtype(ec, tdb);
 	if (tdb == NULL) {
 		return ENOMEM;
 	}
 	memset(tdb, 0, sizeof(*tdb));
+	switch (bus_type) {
+	case cm_tdbus_system:
+		conn = dbus_bus_get(DBUS_BUS_SYSTEM, NULL);
+		break;
+	case cm_tdbus_session:
+		conn = dbus_bus_get(DBUS_BUS_SESSION, NULL);
+		break;
+	}
+	if (conn == NULL) {
+		return -1;
+	}
 	tdb->d_conn = conn;
 	if (dbus_connection_set_watch_functions(conn,
 						&cm_tdbus_watch_add,
