@@ -55,6 +55,8 @@ cm_certsave_n_main(struct cm_store_entry *entry)
 	SECItem *item;
 	char *p, *q;
 	CERTCertDBHandle *certdb;
+	CERTCertList *certlist;
+	CERTCertListNode *node;
 	/* Open the database. */
 	error = NSS_InitReadWrite(entry->cm_cert_storage_location);
 	if (error != SECSuccess) {
@@ -97,10 +99,30 @@ cm_certsave_n_main(struct cm_store_entry *entry)
 			if (error == SECSuccess) {
 				status = 0;
 			} else {
-				cm_log(1, "Error importing certificate "
-				       "into NSSDB: %s.\n",
-				       PR_ErrorToString(error,
-							PR_LANGUAGE_I_DEFAULT));
+				certlist = PK11_FindCertsFromNickname(entry->cm_cert_nickname, NULL);
+				if (certlist != NULL) {
+					/* Delete the existing cert. */
+					for (node = CERT_LIST_HEAD(certlist);
+					     !CERT_LIST_EMPTY(certlist) &&
+					     !CERT_LIST_END(node, certlist);
+					     node = CERT_LIST_NEXT(node)) {
+						SEC_DeletePermCertificate(node->cert);
+					}
+					CERT_DestroyCertList(certlist);
+					/* Try again. */
+					error = CERT_ImportCerts(certdb,
+								 certUsageUserCertImport,
+								 1, &item, NULL,
+								 PR_TRUE,
+								 PR_FALSE,
+								 entry->cm_cert_nickname);
+				}
+				if (error != SECSuccess) {
+					cm_log(1, "Error importing certificate "
+					       "into NSSDB: %s.\n",
+					       PR_ErrorToString(error,
+								PR_LANGUAGE_I_DEFAULT));
+				}
 			}
 		} else {
 			cm_log(1, "Error getting handle to default NSS DB.\n");
