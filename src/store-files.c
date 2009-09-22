@@ -110,7 +110,7 @@ free_if_empty(char *s)
 }
 
 static char **
-free_if_emptys(void *parent, char *p)
+free_if_empty_multi(void *parent, char *p)
 {
 	char **s;
 	int i, j, k;
@@ -260,15 +260,15 @@ cm_store_file_read(void *parent, const char *filename, FILE *fp)
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert_hostname = free_if_emptys(ret, s[i]);
+			ret->cm_cert_hostname = free_if_empty_multi(ret, s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert_email = free_if_emptys(ret, s[i]);
+			ret->cm_cert_email = free_if_empty_multi(ret, s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert_principal = free_if_emptys(ret, s[i]);
+			ret->cm_cert_principal = free_if_empty_multi(ret, s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
@@ -338,15 +338,15 @@ cm_store_file_read(void *parent, const char *filename, FILE *fp)
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_template_hostname = free_if_emptys(ret, s[i]);
+			ret->cm_template_hostname = free_if_empty_multi(ret, s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_template_email = free_if_emptys(ret, s[i]);
+			ret->cm_template_email = free_if_empty_multi(ret, s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_template_principal = free_if_emptys(ret, s[i]);
+			ret->cm_template_principal = free_if_empty_multi(ret, s[i]);
 			i++;
 		}
 		if ((s != NULL) && (s[i] != NULL)) {
