@@ -15,6 +15,26 @@ Complete:
     information as we can.
 
 To-do:
+  * Should offer an API over D-Bus which the client uses instead of
+    mutilating the queue directly:
+    * Add new entry at any of need-key, need-csr, need-submit,
+      have-issued states.  Optionally, figure out the state based on what the
+      requester supplies (i.e., if there's a certificate where the request says
+      it should go, assume it's been issued; ditto for private keys) (5 days)
+      MUST
+    * List entries, which should be objects pre-sortable either by
+      state or number (/requests/by-id, /requests/by-state, etc.). (2 days)
+      MUST
+    * Remove entry. (1 day)
+      MUST
+    * Resubmit CA-denied requests. (1 day)
+      MUST
+    * Re-enroll for expired but not-auto-renew certificates. (1 day)
+      MUST
+    * Modify requested data and regenerate signing requests. (3 days)
+      MUST
+    * Set/reset PIN for encrypted key storage. (1 day)
+      MUST
   * Learn to submit to at least one actual CA: IPA via XML-RPC over
     HTTPS, authenticating using Negotiate.
     * Learn to obtain Kerberos credentials. (1 day)
@@ -40,26 +60,6 @@ To-do:
   * Sort out storage for system-local defaults which are consulted
     before falling back to compiled-in defaults. (1 day)
     MUST
-  * Should offer an API over D-Bus which the client uses instead of
-    mutilating the queue directly:
-    * Add new entry at any of need-key, need-csr, need-submit,
-      have-issued states.  Optionally, figure out the state based on what the
-      requester supplies (i.e., if there's a certificate where the request says
-      it should go, assume it's been issued; ditto for private keys) (5 days)
-      MUST
-    * List entries, which should be objects pre-sortable either by
-      state or number (/requests/by-id, /requests/by-state, etc.). (2 days)
-      MUST
-    * Remove entry. (1 day)
-      MUST
-    * Resubmit CA-denied requests. (1 day)
-      MUST
-    * Re-enroll for expired but not-auto-renew certificates. (1 day)
-      MUST
-    * Modify requested data and regenerate signing requests. (3 days)
-      MUST
-    * Set/reset PIN for encrypted key storage. (1 day)
-      MUST
   * Figure out how to let the local deamon's client do key generation.
     It's either that or force them to give the daemon the PIN for
     encrypted storage. (3 days)
