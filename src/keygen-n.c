@@ -60,9 +60,11 @@ cm_keygen_n_main(int fd, struct cm_store_entry *entry)
 	PK11RSAGenParams rsa_params;
 	void *params;
 	SECKEYPrivateKey *privkey;
+	SECKEYPrivateKeyList *privkeys;
+	SECKEYPrivateKeyListNode *node;
 	SECKEYPublicKey *pubkey;
 	PRErrorCode ec;
-	const char *es, *token;
+	const char *es, *token, *keyname;
 
 	status = fdopen(fd, "w");
 	if (status == NULL) {
@@ -186,6 +188,22 @@ cm_keygen_n_main(int fd, struct cm_store_entry *entry)
 			cm_log(1, "Error generating key pair.\n");
 		}
 		_exit(2);
+	}
+	/* Try to remove any conflicting keys. */
+	privkeys = PK11_ListPrivKeysInSlot(slot, entry->cm_key_nickname, NULL);
+	if ((privkeys != NULL) && !PR_CLIST_IS_EMPTY(&(privkeys->list))) {
+		for (node = PRIVKEY_LIST_HEAD(privkeys);
+		     ((node != NULL) && (node->key != NULL));
+		     node = PRIVKEY_LIST_NEXT(node)) {
+			keyname = PK11_GetPrivateKeyNickname(node->key);
+			if (strcmp(keyname, entry->cm_key_nickname) == 0) {
+				PK11_DeleteTokenPrivateKey(node->key, PR_TRUE);
+			}
+			if (PRIVKEY_LIST_END(node, privkeys)) {
+				break;
+			}
+		}
+		SECKEY_DestroyPrivateKeyList(privkeys);
 	}
 	/* Attach the specified nickname to the key. */
 	error = PK11_SetPrivateKeyNickname(privkey, entry->cm_key_nickname);
