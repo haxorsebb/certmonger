@@ -39,6 +39,7 @@
 #include <krb5.h>
 
 #include "certext.h"
+#include "certext-n.h"
 #include "log.h"
 #include "store.h"
 #include "store-int.h"
@@ -99,16 +100,16 @@ cm_principal_name_template[] = {
 	},
 	{
 	.kind = SEC_ASN1_CONTEXT_SPECIFIC | 0 |
-	SEC_ASN1_CONSTRUCTED |
-	SEC_ASN1_EXPLICIT,
+		SEC_ASN1_CONSTRUCTED |
+		SEC_ASN1_EXPLICIT,
 	.offset = offsetof(struct principal_name, name_type),
 	.sub = &SEC_IntegerTemplate,
 	.size = sizeof(SECItem),
 	},
 	{
 	.kind = SEC_ASN1_CONTEXT_SPECIFIC | 1 |
-	SEC_ASN1_CONSTRUCTED |
-	SEC_ASN1_EXPLICIT,
+		SEC_ASN1_CONSTRUCTED |
+		SEC_ASN1_EXPLICIT,
 	.offset = offsetof(struct principal_name, name_string),
 	.sub = cm_sequence_of_kerberos_string_template,
 	.size = sizeof(struct SECItem**),
@@ -127,16 +128,16 @@ cm_kerberos_principal_name_template[] = {
 	},
 	{
 	.kind = SEC_ASN1_CONTEXT_SPECIFIC | 0 |
-	SEC_ASN1_CONSTRUCTED |
-	SEC_ASN1_EXPLICIT,
+		SEC_ASN1_CONSTRUCTED |
+		SEC_ASN1_EXPLICIT,
 	.offset = offsetof(struct kerberos_principal_name, realm),
 	.sub = &cm_realm_template,
 	.size = sizeof(struct realm),
 	},
 	{
 	.kind = SEC_ASN1_CONTEXT_SPECIFIC | 1 |
-	SEC_ASN1_CONSTRUCTED |
-	SEC_ASN1_EXPLICIT,
+		SEC_ASN1_CONSTRUCTED |
+		SEC_ASN1_EXPLICIT,
 	.offset = offsetof(struct kerberos_principal_name, principal_name),
 	.sub = &cm_principal_name_template,
 	.size = sizeof(struct principal_name),
@@ -153,6 +154,45 @@ cm_ms_upn_name_template[] = {
 	.offset = 0,
 	.sub = SEC_UTF8StringTemplate,
 	.size = sizeof(SECItem),
+	},
+};
+
+/* RFC 5280, 4.1 */
+const SEC_ASN1Template
+cm_certext_cert_extension_template[] = {
+	{
+	.kind = SEC_ASN1_SEQUENCE,
+	.offset = 0,
+	.sub = NULL,
+	.size = sizeof(CERTCertExtension),
+	},
+	{
+	.kind = SEC_ASN1_OBJECT_ID,
+	.offset = offsetof(CERTCertExtension, id),
+	.sub = NULL,
+	.size = sizeof(SECItem),
+	},
+	{
+	.kind = SEC_ASN1_BOOLEAN,
+	.offset = offsetof(CERTCertExtension, critical),
+	.sub = NULL,
+	.size = sizeof(SECItem),
+	},
+	{
+	.kind = SEC_ASN1_OCTET_STRING,
+	.offset = offsetof(CERTCertExtension, value),
+	.sub = NULL,
+	.size = sizeof(SECItem),
+	},
+	{0, 0, NULL, 0},
+};
+const SEC_ASN1Template
+cm_certext_sequence_of_cert_extension_template[] = {
+	{
+	.kind = SEC_ASN1_SEQUENCE_OF,
+	.offset = 0,
+	.sub = cm_certext_cert_extension_template,
+	.size = sizeof(CERTCertExtension **),
 	},
 };
 
@@ -199,7 +239,7 @@ cm_certext_read_ku(struct cm_store_entry *entry, PLArenaPool *arena,
 	}
 }
 
-SECItem *
+static SECItem *
 cm_certext_build_ku(struct cm_store_entry *entry, PLArenaPool *arena,
 		    const char *ku_value)
 {
@@ -376,7 +416,7 @@ cm_certext_read_eku(struct cm_store_entry *entry, PLArenaPool *arena,
 	}
 }
 
-SECItem *
+static SECItem *
 cm_certext_build_eku(struct cm_store_entry *entry, PLArenaPool *arena,
 		     const char *eku_value)
 {
@@ -688,7 +728,7 @@ cm_certext_build_principal(struct cm_store_entry *entry, PLArenaPool *arena,
 	return SECITEM_ArenaDupItem(arena, &encoded);
 }
 
-SECItem *
+static SECItem *
 cm_certext_build_san(struct cm_store_entry *entry, PLArenaPool *arena,
 		     char **hostname, char **email, char **principal)
 {
@@ -768,6 +808,81 @@ cm_certext_build_san(struct cm_store_entry *entry, PLArenaPool *arena,
 		item = NULL;
 	}
 	return item;
+}
+
+void
+cm_certext_build_csr_extensions(struct cm_store_entry *entry,
+				unsigned char **extensions, size_t *length)
+{
+	PLArenaPool *arena;
+	CERTCertExtension ext[3], *exts[4], **exts_ptr;
+	SECOidData *oid;
+	SECItem *item, encoded;
+	SECItem der_false = {
+		.len = 1,
+		.data = (unsigned char *) "\000",
+	};
+	int i;
+
+	*extensions = NULL;
+	*length = 0;
+	arena = PORT_NewArena(sizeof(double));
+	if (arena == NULL) {
+		return;
+	}
+	memset(&ext, 0, sizeof(ext));
+	memset(&exts, 0, sizeof(exts));
+
+	/* Build the extensions. */
+	i = 0;
+	item = cm_certext_build_ku(entry, arena, entry->cm_template_ku);
+	if (item != NULL) {
+		oid = SECOID_FindOIDByTag(SEC_OID_X509_KEY_USAGE);
+		if (oid != NULL) {
+			ext[i].id = oid->oid;
+			ext[i].critical = der_false;
+			ext[i].value = *item;
+			exts[i] = &ext[i];
+			i++;
+		}
+	}
+	item = cm_certext_build_san(entry, arena,
+				    entry->cm_template_hostname,
+				    entry->cm_template_email,
+				    entry->cm_template_principal);
+	if (item) {
+		oid = SECOID_FindOIDByTag(SEC_OID_X509_SUBJECT_ALT_NAME);
+		if (oid != NULL) {
+			ext[i].id = oid->oid;
+			ext[i].critical = der_false;
+			ext[i].value = *item;
+			exts[i] = &ext[i];
+			i++;
+		}
+	}
+	item = cm_certext_build_eku(entry, arena, entry->cm_template_eku);
+	if (item) {
+		oid = SECOID_FindOIDByTag(SEC_OID_X509_EXT_KEY_USAGE);
+		if (oid != NULL) {
+			ext[i].id = oid->oid;
+			ext[i].critical = der_false;
+			ext[i].value = *item;
+			exts[i] = &ext[i];
+			i++;
+		}
+	}
+	exts[i++] = NULL;
+	exts_ptr = exts;
+	/* Encode the sequence. */
+	memset(&encoded, 0, sizeof(encoded));
+	if (SEC_ASN1EncodeItem(arena, &encoded, &exts_ptr,
+			       cm_certext_sequence_of_cert_extension_template) == &encoded) {
+		*extensions = talloc_memdup(entry, encoded.data, encoded.len);
+		if (*extensions != NULL) {
+			*length = encoded.len;
+		}
+	}
+	PORT_FreeArena(arena, PR_TRUE);
 }
 
 void

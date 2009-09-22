@@ -30,6 +30,7 @@
 
 #include <talloc.h>
 
+#include "certext.h"
 #include "csrgen.h"
 #include "csrgen-int.h"
 #include "keygen.h"
@@ -52,7 +53,9 @@ cm_csrgen_o_main(int fd, struct cm_store_entry *entry)
 	X509_REQ *req;
 	RSA *rsa;
 	EVP_PKEY *pkey;
-	char buf[LINE_MAX], *p, *q, *s;
+	char buf[LINE_MAX], *p, *q, *s, *nickname;
+	unsigned char *extensions, *unickname;
+	size_t extensions_len;
 	long error;
 
 	status = fdopen(fd, "w");
@@ -104,8 +107,34 @@ cm_csrgen_o_main(int fd, struct cm_store_entry *entry)
 				}
 			}
 			X509_set_pubkey(x, pkey);
-			req = X509_to_X509_REQ(x, pkey, EVP_sha256());
+			req = X509_to_X509_REQ(x, pkey, EVP_sha256()); /* XXX */
 			if (req != NULL) {
+				/* Add attributes. */
+				extensions = NULL;
+				cm_certext_build_csr_extensions(entry,
+								&extensions,
+								&extensions_len);
+				if (extensions != NULL) {
+					X509_REQ_add1_attr_by_NID(req,
+								  NID_ext_req,
+								  V_ASN1_SEQUENCE,
+								  extensions,
+								  extensions_len);
+					talloc_free(extensions);
+				}
+				if (entry->cm_cert_nickname != NULL) {
+					nickname = entry->cm_cert_nickname;
+				} else {
+					nickname = entry->cm_id;
+				}
+				unickname = (unsigned char *) nickname;
+				if (nickname != NULL) {
+					X509_REQ_add1_attr_by_NID(req,
+								  NID_friendlyName,
+								  V_ASN1_PRINTABLESTRING,
+								  unickname,
+								  strlen(nickname));
+				}
 				PEM_write_X509_REQ_NEW(status, req);
 			} else {
 				fprintf(status,

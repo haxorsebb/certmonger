@@ -52,36 +52,6 @@ struct cm_csrgen_state {
 	int fd, count, status;
 };
 
-/* RFC 5280, 4.1 */
-static const SEC_ASN1Template
-cm_csrgen_n_cert_extension_template[] = {
-	{
-	.kind = SEC_ASN1_SEQUENCE,
-	.offset = 0,
-	.sub = NULL,
-	.size = sizeof(CERTCertExtension),
-	},
-	{
-	.kind = SEC_ASN1_OBJECT_ID,
-	.offset = offsetof(CERTCertExtension, id),
-	.sub = NULL,
-	.size = sizeof(SECItem),
-	},
-	{
-	.kind = SEC_ASN1_BOOLEAN,
-	.offset = offsetof(CERTCertExtension, critical),
-	.sub = NULL,
-	.size = sizeof(SECItem),
-	},
-	{
-	.kind = SEC_ASN1_OCTET_STRING,
-	.offset = offsetof(CERTCertExtension, value),
-	.sub = NULL,
-	.size = sizeof(SECItem),
-	},
-	{0, 0, NULL, 0},
-};
-
 /* Ad-hoc. */
 static const SEC_ASN1Template
 cm_csrgen_n_cert_tmpattr_template[] = {
@@ -119,93 +89,15 @@ cm_csrgen_n_sequence_of_cert_tmpattr_template[] = {
 static SECItem *
 cm_csrgen_n_attributes(struct cm_store_entry *entry, PLArenaPool *arena)
 {
-	CERTCertExtension ext;
-	SECItem encoded_ext[3], *exts[4];
+	SECItem encoded_exts, *exts[2];
+	unsigned char *extensions;
+	size_t extensions_length;
 	CERTAttribute attr[3], *attrs[4], **attrs_ptr;
 	SECOidData *oid;
 	SECItem *item, friendly, *friendlies[2], encoded, plain;
-	SECItem der_false = {
-		.len = 1,
-		.data = (unsigned char *) "\000",
-	};
-	int i, j;
+	int i;
 
-	/* Build the extension list. */
 	i = 0;
-	item = cm_certext_build_ku(entry, arena,
-				   entry->cm_template_ku ?
-				   entry->cm_template_ku : entry->cm_cert_ku);
-	if (item != NULL) {
-		oid = SECOID_FindOIDByTag(SEC_OID_X509_KEY_USAGE);
-		if (oid != NULL) {
-			ext.id = oid->oid;
-			ext.critical = der_false;
-			ext.value = *item;
-			if (SEC_ASN1EncodeItem(arena, &encoded_ext[i],
-					       &ext,
-					       cm_csrgen_n_cert_extension_template) ==
-			    &encoded_ext[i]) {
-				exts[i] = &encoded_ext[i];
-				i++;
-			}
-		}
-	}
-	item = cm_certext_build_eku(entry, arena,
-				    entry->cm_template_eku ?
-				    entry->cm_template_eku :
-				    entry->cm_cert_eku);
-	if (item) {
-		oid = SECOID_FindOIDByTag(SEC_OID_X509_EXT_KEY_USAGE);
-		if (oid != NULL) {
-			ext.id = oid->oid;
-			ext.critical = der_false;
-			ext.value = *item;
-			if (SEC_ASN1EncodeItem(arena, &encoded_ext[i],
-					       &ext,
-					       cm_csrgen_n_cert_extension_template) ==
-			    &encoded_ext[i]) {
-				exts[i] = &encoded_ext[i];
-				i++;
-			}
-		}
-	}
-	item = cm_certext_build_san(entry, arena,
-				    entry->cm_template_hostname ?
-				    entry->cm_template_hostname :
-				    entry->cm_cert_hostname,
-				    entry->cm_template_email ?
-				    entry->cm_template_email :
-				    entry->cm_cert_email,
-				    entry->cm_template_principal ?
-				    entry->cm_template_principal :
-				    entry->cm_cert_principal);
-	if (item) {
-		oid = SECOID_FindOIDByTag(SEC_OID_X509_SUBJECT_ALT_NAME);
-		if (oid != NULL) {
-			ext.id = oid->oid;
-			ext.critical = der_false;
-			ext.value = *item;
-			if (SEC_ASN1EncodeItem(arena, &encoded_ext[i],
-					       &ext,
-					       cm_csrgen_n_cert_extension_template) ==
-			    &encoded_ext[i]) {
-				exts[i] = &encoded_ext[i];
-				i++;
-			}
-		}
-	}
-	exts[i] = NULL;
-	/* Build an attribute to hold the extensions. */
-	j = 0;
-	if (i > 0) {
-		oid = SECOID_FindOIDByTag(SEC_OID_PKCS9_EXTENSION_REQUEST);
-		if (oid != NULL) {
-			attr[j].attrType = oid->oid;
-			attr[j].attrValue = exts;
-			attrs[j] = &attr[j];
-			j++;
-		}
-	}
 	/* Build an attribute to hold the friendly name. */
 	oid = SECOID_FindOIDByTag(SEC_OID_PKCS9_FRIENDLY_NAME);
 	if (oid != NULL) {
@@ -216,14 +108,31 @@ cm_csrgen_n_attributes(struct cm_store_entry *entry, PLArenaPool *arena)
 					       SEC_PrintableStringTemplate) == &friendly) {
 				friendlies[0] = &friendly;
 				friendlies[1] = NULL;
-				attr[j].attrType = oid->oid;
-				attr[j].attrValue = friendlies;
-				attrs[j] = &attr[j];
-				j++;
+				attr[i].attrType = oid->oid;
+				attr[i].attrValue = friendlies;
+				attrs[i] = &attr[i];
+				i++;
 			}
 		}
 	}
-	attrs[j] = NULL;
+	/* Build the extension list. */
+	extensions = NULL;
+	cm_certext_build_csr_extensions(entry, &extensions, &extensions_length);
+	/* Build an attribute to hold the extensions. */
+	if (extensions != NULL) {
+		encoded_exts.data = extensions;
+		encoded_exts.len = extensions_length;
+		exts[0] = &encoded_exts;
+		exts[1] = NULL;
+		oid = SECOID_FindOIDByTag(SEC_OID_PKCS9_EXTENSION_REQUEST);
+		if (oid != NULL) {
+			attr[i].attrType = oid->oid;
+			attr[i].attrValue = exts;
+			attrs[i] = &attr[i];
+			i++;
+		}
+	}
+	attrs[i] = NULL;
 	attrs_ptr = attrs;
 	if (SEC_ASN1EncodeItem(arena, &encoded, &attrs_ptr,
 			       cm_csrgen_n_sequence_of_cert_tmpattr_template) == &encoded) {

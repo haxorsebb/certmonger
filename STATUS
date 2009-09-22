@@ -9,12 +9,12 @@ Complete:
   * Save issued certificate in PEM or NSSDB format.
   * Refresh certificate parameters from the certificates at startup,
     parsing and recovering fields and extensions that we care about to refresh
-    the request tracking file.
+    the request tracking file (key usage, extended key usage, subject alt name
+    of type email, dns, or kerberos/nt principal name).
+  * Populate requested-extensions in signing requests with as much
+    information as we can.
 
 To-do:
-  * Populate requested-extensions in signing requests with as much
-    information as we can. (2 days, 50%)
-    MUST
   * Learn to submit to at least one actual CA: IPA via XML-RPC over
     HTTPS, authenticating using Negotiate.
     * Learn to obtain Kerberos credentials. (1 day)
