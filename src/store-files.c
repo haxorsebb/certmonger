@@ -23,6 +23,7 @@
 #include <fcntl.h>
 #include <glob.h>
 #include <limits.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,18 +36,195 @@
 #include "store-int.h"
 #include "log.h"
 
+enum cm_store_file_field {
+	cm_store_file_field_invalid = 0,
+	cm_store_file_field_id,
+
+	cm_store_file_field_key_type_default,
+	cm_store_file_field_key_type,
+	cm_store_file_field_key_size,
+
+	cm_store_file_field_key_storage_default,
+	cm_store_file_field_key_storage_type,
+	cm_store_file_field_key_storage_location,
+	cm_store_file_field_key_token,
+	cm_store_file_field_key_nickname,
+
+	cm_store_file_field_cert_storage_default,
+	cm_store_file_field_cert_storage_type,
+	cm_store_file_field_cert_storage_location,
+	cm_store_file_field_cert_token,
+	cm_store_file_field_cert_nickname,
+
+	cm_store_file_field_cert_issuer,
+	cm_store_file_field_cert_serial,
+	cm_store_file_field_cert_subject,
+	cm_store_file_field_cert_spki,
+	cm_store_file_field_cert_expiration,
+	cm_store_file_field_cert_hostname,
+	cm_store_file_field_cert_email,
+	cm_store_file_field_cert_principal,
+	cm_store_file_field_cert_ku,
+	cm_store_file_field_cert_eku,
+
+	cm_store_file_field_ttls_default,
+	cm_store_file_field_ttls,
+	cm_store_file_field_last_expiration_check,
+
+	cm_store_file_field_notification_default,
+	cm_store_file_field_notification_method,
+	cm_store_file_field_notification_destination,
+
+	cm_store_file_field_template_default,
+	cm_store_file_field_template_subject,
+	cm_store_file_field_template_hostname,
+	cm_store_file_field_template_email,
+	cm_store_file_field_template_principal,
+	cm_store_file_field_template_ku,
+	cm_store_file_field_template_eku,
+
+	cm_store_file_field_csr,
+	cm_store_file_field_state,
+
+	cm_store_file_field_autorenew_default,
+	cm_store_file_field_autorenew,
+	cm_store_file_field_monitor_default,
+	cm_store_file_field_monitor,
+
+	cm_store_file_field_ca_default,
+	cm_store_file_field_ca_type,
+	cm_store_file_field_ca_location,
+
+	cm_store_file_field_submitted,
+	cm_store_file_field_ca_cookie,
+
+	cm_store_file_field_cert,
+
+	cm_store_file_field_invalid_high,
+};
+static struct cm_store_file_field_list {
+	enum cm_store_file_field field;
+	const char *name;
+} cm_store_file_field_list[] = {
+	{cm_store_file_field_id, "id"},
+	{cm_store_file_field_key_type_default, "key_type_default"},
+	{cm_store_file_field_key_type, "key_type"},
+	{cm_store_file_field_key_size, "key_size"},
+
+	{cm_store_file_field_key_storage_default, "key_storage_default"},
+	{cm_store_file_field_key_storage_type, "key_storage_type"},
+	{cm_store_file_field_key_storage_location, "key_storage_location"},
+	{cm_store_file_field_key_token, "key_token"},
+	{cm_store_file_field_key_nickname, "key_nickname"},
+
+	{cm_store_file_field_cert_storage_default, "cert_storage_default"},
+	{cm_store_file_field_cert_storage_type, "cert_storage_type"},
+	{cm_store_file_field_cert_storage_location, "cert_storage_location"},
+	{cm_store_file_field_cert_token, "cert_token"},
+	{cm_store_file_field_cert_nickname, "cert_nickname"},
+
+	{cm_store_file_field_cert_issuer, "cert_issuer"},
+	{cm_store_file_field_cert_serial, "cert_serial"},
+	{cm_store_file_field_cert_subject, "cert_subject"},
+	{cm_store_file_field_cert_spki, "cert_spki"},
+	{cm_store_file_field_cert_expiration, "cert_expiration"},
+	{cm_store_file_field_cert_hostname, "cert_hostname"},
+	{cm_store_file_field_cert_email, "cert_email"},
+	{cm_store_file_field_cert_principal, "cert_principal"},
+	{cm_store_file_field_cert_ku, "cert_ku"},
+	{cm_store_file_field_cert_eku, "cert_eku"},
+
+	{cm_store_file_field_ttls_default, "ttls_default"},
+	{cm_store_file_field_ttls, "ttls"},
+	{cm_store_file_field_last_expiration_check, "last_expiration_check"},
+
+	{cm_store_file_field_notification_default, "notification_default"},
+	{cm_store_file_field_notification_method, "notification_method"},
+	{cm_store_file_field_notification_destination,
+	 "notification_destination"},
+
+	{cm_store_file_field_template_default, "template_default"},
+	{cm_store_file_field_template_subject, "template_subject"},
+	{cm_store_file_field_template_hostname, "template_hostname"},
+	{cm_store_file_field_template_email, "template_email"},
+	{cm_store_file_field_template_principal, "template_principal"},
+	{cm_store_file_field_template_ku, "template_ku"},
+	{cm_store_file_field_template_eku, "template_eku"},
+
+	{cm_store_file_field_csr, "csr"},
+	{cm_store_file_field_state, "state"},
+
+	{cm_store_file_field_autorenew_default, "autorenew_default"},
+	{cm_store_file_field_autorenew, "autorenew"},
+	{cm_store_file_field_monitor_default, "monitor_default"},
+	{cm_store_file_field_monitor, "monitor"},
+
+	{cm_store_file_field_ca_default, "ca_default"},
+	{cm_store_file_field_ca_type, "ca_type"},
+	{cm_store_file_field_ca_location, "ca_location"},
+
+	{cm_store_file_field_submitted, "submitted"},
+	{cm_store_file_field_ca_cookie, "ca_cookie"},
+
+	{cm_store_file_field_cert, "cert"},
+};
+
+static enum cm_store_file_field
+cm_store_file_field_of_line(char *p)
+{
+	unsigned int i, len;
+	struct cm_store_file_field_list *entry;
+	for (i = 0;
+	     i < sizeof(cm_store_file_field_list) /
+	         sizeof(cm_store_file_field_list[0]);
+	     i++) {
+		entry = &cm_store_file_field_list[i];
+		len = strlen(entry->name);
+		if (strcspn(p, "\r\n") < len) {
+			continue;
+		}
+		if ((strncasecmp(p, entry->name, len) == 0) &&
+		    (p[len] == '=')) {
+			memmove(p, p + len + 1, strlen(p + len));
+			return entry->field;
+		}
+	}
+	return cm_store_file_field_invalid_high;
+}
+
+static const char *
+cm_store_file_line_of_field(enum cm_store_file_field field)
+{
+	unsigned int i;
+	struct cm_store_file_field_list *entry;
+	for (i = 0;
+	     i < sizeof(cm_store_file_field_list) /
+	         sizeof(cm_store_file_field_list[0]);
+	     i++) {
+		entry = &cm_store_file_field_list[i];
+		if (entry->field == field) {
+			return entry->name;
+		}
+	}
+	return NULL;
+}
+
 static char **
 cm_store_file_read_lines(void *parent, FILE *fp)
 {
 	char buf[LINE_MAX], *s, *t, **lines, **tlines;
-	int n_lines, trim;
+	int n_lines, trim, offset;
 	s = NULL;
 	lines = NULL;
 	n_lines = 0;
 	trim = 1;
 	while (fgets(buf, sizeof(buf), fp) == buf) {
+		offset = 0;
 		switch (buf[0]) {
 		case '=':
+			offset = 1;
+			/* fall through */
+		default:
 			/* If we've already been reading a line, append it to
 			 * the list. */
 			if (s != NULL) {
@@ -65,7 +243,7 @@ cm_store_file_read_lines(void *parent, FILE *fp)
 			/* Store this line's data, and default to trimming off
 			 * end-of-line markers. */
 			trim = 1;
-			s = talloc_strdup(parent, buf + 1);
+			s = talloc_strdup(parent, buf + offset);
 			break;
 		case ' ':
 			/* Since this is a multi-line item, refrain from
@@ -79,7 +257,6 @@ cm_store_file_read_lines(void *parent, FILE *fp)
 			break;
 		case '#':
 		case ';':
-		default:
 			break;
 		}
 	}
@@ -151,283 +328,256 @@ cm_store_file_read(void *parent, const char *filename, FILE *fp)
 	struct cm_store_entry *ret;
 	char **s, *p;
 	int i, j;
+	enum cm_store_file_field field;
 	ret = talloc_ptrtype(parent, ret);
 	if (ret != NULL) {
 		memset(ret, 0, sizeof(*ret));
 		s = cm_store_file_read_lines(ret, fp);
-		i = 0;
 		ret->cm_store_private = talloc_strdup(ret, filename);
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_id = free_if_empty(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_key_type_default = atoi(s[i]);
-			talloc_free(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			if (strcasecmp(s[i], "rsa") == 0) {
-				ret->cm_key_type.cm_key_algorithm = cm_key_rsa;
-			} else {
-				ret->cm_key_type.cm_key_algorithm = cm_key_rsa;
-			}
-			talloc_free(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_key_type.cm_key_size = atoi(s[i]);
-			talloc_free(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_key_storage_default = atoi(s[i]);
-			talloc_free(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			if (strcasecmp(s[i], "file") == 0) {
-				ret->cm_key_storage_type = cm_key_storage_file;
-			} else
-			if (strcasecmp(s[i], "nssdb") == 0) {
-				ret->cm_key_storage_type = cm_key_storage_nssdb;
-			} else {
-				ret->cm_key_storage_type = cm_key_storage_file;
-			}
-			talloc_free(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_key_storage_location = free_if_empty(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_key_token = free_if_empty(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_key_nickname = free_if_empty(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert_storage_default = atoi(s[i]);
-			talloc_free(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			if (strcasecmp(s[i], "file") == 0) {
-				ret->cm_cert_storage_type = cm_cert_storage_file;
-			} else
-			if (strcasecmp(s[i], "nssdb") == 0) {
-				ret->cm_cert_storage_type = cm_cert_storage_nssdb;
-			} else {
-				ret->cm_cert_storage_type = cm_cert_storage_file;
-			}
-			talloc_free(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert_storage_location = free_if_empty(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert_token = free_if_empty(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert_nickname = free_if_empty(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert_issuer = free_if_empty(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert_serial = free_if_empty(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert_subject = free_if_empty(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert_spki = free_if_empty(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert_expiration = cm_store_time_from_timestamp(s[i]);
-			talloc_free(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert_hostname = free_if_empty_multi(ret, s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert_email = free_if_empty_multi(ret, s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert_principal = free_if_empty_multi(ret, s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert_ku = free_if_empty(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert_eku = free_if_empty(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_ttls_default = atoi(s[i]);
-			talloc_free(s[i]);
-			i++;
-		}
-		ret->cm_n_ttls = 0;
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_ttls = talloc_array_ptrtype(ret, ret->cm_ttls,
-							    strlen(s[i]));
-			if (ret->cm_ttls != NULL) {
-				p = s[i];
-				j = 0;
-				while (strspn(p, "0123456789") > 0) {
-					ret->cm_ttls[j] = strtol(p, &p, 10);
-					p += strcspn(p, "0123456789");
-					j++;
+		for (i = 0; (s != NULL) && (s[i] != NULL); i++) {
+			p = s[i];
+			field = cm_store_file_field_of_line(p);
+			switch (field) {
+			case cm_store_file_field_invalid:
+			case cm_store_file_field_invalid_high:
+				break;
+			case cm_store_file_field_id:
+				ret->cm_id = free_if_empty(p);
+				break;
+			case cm_store_file_field_key_type_default:
+				ret->cm_key_type_default = atoi(p);
+				talloc_free(p);
+				break;
+			case cm_store_file_field_key_type:
+				if (strcasecmp(s[i], "rsa") == 0) {
+					ret->cm_key_type.cm_key_algorithm =
+						cm_key_rsa;
+				} else {
+					ret->cm_key_type.cm_key_algorithm =
+						cm_key_rsa;
 				}
-				ret->cm_n_ttls = j;
+				talloc_free(p);
+				break;
+			case cm_store_file_field_key_size:
+				ret->cm_key_type.cm_key_size = atoi(p);
+				talloc_free(p);
+				break;
+			case cm_store_file_field_key_storage_default:
+				ret->cm_key_storage_default = atoi(p);
+				talloc_free(p);
+				break;
+			case cm_store_file_field_key_storage_type:
+				if (strcasecmp(p, "file") == 0) {
+					ret->cm_key_storage_type =
+						cm_key_storage_file;
+				} else
+				if (strcasecmp(p, "nssdb") == 0) {
+					ret->cm_key_storage_type =
+						cm_key_storage_nssdb;
+				} else {
+					ret->cm_key_storage_type =
+						cm_key_storage_file;
+				}
+				talloc_free(p);
+				break;
+			case cm_store_file_field_key_storage_location:
+				ret->cm_key_storage_location = free_if_empty(p);
+				break;
+			case cm_store_file_field_key_token:
+				ret->cm_key_token = free_if_empty(p);
+				break;
+			case cm_store_file_field_key_nickname:
+				ret->cm_key_nickname = free_if_empty(p);
+				break;
+			case cm_store_file_field_cert_storage_type:
+				if (strcasecmp(p, "file") == 0) {
+					ret->cm_cert_storage_type =
+						cm_cert_storage_file;
+				} else
+				if (strcasecmp(p, "nssdb") == 0) {
+					ret->cm_cert_storage_type =
+						cm_cert_storage_nssdb;
+				} else {
+					ret->cm_cert_storage_type =
+						cm_cert_storage_file;
+				}
+				talloc_free(p);
+				break;
+			case cm_store_file_field_cert_storage_default:
+				ret->cm_cert_storage_default = atoi(p);
+				talloc_free(p);
+				break;
+			case cm_store_file_field_cert_storage_location:
+				ret->cm_cert_storage_location = free_if_empty(p);
+				break;
+			case cm_store_file_field_cert_token:
+				ret->cm_cert_token = free_if_empty(p);
+				break;
+			case cm_store_file_field_cert_nickname:
+				ret->cm_cert_nickname = free_if_empty(p);
+				break;
+			case cm_store_file_field_cert_issuer:
+				ret->cm_cert_issuer = free_if_empty(p);
+				break;
+			case cm_store_file_field_cert_serial:
+				ret->cm_cert_serial = free_if_empty(p);
+				break;
+			case cm_store_file_field_cert_subject:
+				ret->cm_cert_subject = free_if_empty(p);
+				break;
+			case cm_store_file_field_cert_spki:
+				ret->cm_cert_spki = free_if_empty(p);
+				break;
+			case cm_store_file_field_cert_expiration:
+				ret->cm_cert_expiration =
+					cm_store_time_from_timestamp(p);
+				talloc_free(p);
+				break;
+			case cm_store_file_field_cert_hostname:
+				ret->cm_cert_hostname =
+					free_if_empty_multi(ret, p);
+				break;
+			case cm_store_file_field_cert_email:
+				ret->cm_cert_email =
+					free_if_empty_multi(ret, p);
+				break;
+			case cm_store_file_field_cert_principal:
+				ret->cm_cert_principal =
+					free_if_empty_multi(ret, p);
+				break;
+			case cm_store_file_field_cert_ku:
+				ret->cm_cert_ku = free_if_empty(p);
+				break;
+			case cm_store_file_field_cert_eku:
+				ret->cm_cert_eku = free_if_empty(p);
+				break;
+			case cm_store_file_field_ttls_default:
+				ret->cm_ttls_default = atoi(p);
+				talloc_free(p);
+				break;
+			case cm_store_file_field_ttls:
+				ret->cm_ttls = talloc_array_ptrtype(ret,
+								    ret->cm_ttls,
+								    strlen(p));
+				if (ret->cm_ttls != NULL) {
+					j = 0;
+					while (strspn(p, "0123456789") > 0) {
+						ret->cm_ttls[j] = strtol(p, &p, 10);
+						p += strcspn(p, "0123456789");
+						j++;
+					}
+					ret->cm_n_ttls = j;
+				}
+				talloc_free(s[i]);
+				break;
+			case cm_store_file_field_last_expiration_check:
+				ret->cm_last_expiration_check =
+					cm_store_time_from_timestamp(p);
+				talloc_free(p);
+				break;
+			case cm_store_file_field_notification_default:
+				ret->cm_notification_default = atoi(p);
+				talloc_free(p);
+				break;
+			case cm_store_file_field_notification_method:
+				if (strcasecmp(p, "syslog") == 0) {
+					ret->cm_notification_method = cm_notification_syslog;
+				} else
+				if (strcasecmp(p, "email") == 0) {
+					ret->cm_notification_method = cm_notification_email;
+				} else {
+					ret->cm_notification_method = cm_notification_syslog;
+				}
+				talloc_free(p);
+				break;
+			case cm_store_file_field_notification_destination:
+				ret->cm_notification_destination =
+					free_if_empty(p);
+				break;
+			case cm_store_file_field_template_default:
+				ret->cm_template_default = atoi(p);
+				talloc_free(p);
+				break;
+			case cm_store_file_field_template_subject:
+				ret->cm_template_subject = free_if_empty(p);
+				break;
+			case cm_store_file_field_template_hostname:
+				ret->cm_template_hostname =
+					free_if_empty_multi(ret, p);
+				break;
+			case cm_store_file_field_template_email:
+				ret->cm_template_email =
+					free_if_empty_multi(ret, p);
+				break;
+			case cm_store_file_field_template_principal:
+				ret->cm_template_principal =
+					free_if_empty_multi(ret, p);
+				break;
+			case cm_store_file_field_template_ku:
+				ret->cm_template_ku = free_if_empty(p);
+				break;
+			case cm_store_file_field_template_eku:
+				ret->cm_template_eku = free_if_empty(p);
+				break;
+			case cm_store_file_field_csr:
+				ret->cm_csr = free_if_empty(p);
+				break;
+			case cm_store_file_field_state:
+				ret->cm_state = cm_store_state_from_string(p);
+				talloc_free(p);
+				break;
+			case cm_store_file_field_autorenew_default:
+				ret->cm_autorenew_default = atoi(p);
+				talloc_free(p);
+				break;
+			case cm_store_file_field_autorenew:
+				ret->cm_autorenew = atoi(p);
+				talloc_free(p);
+				break;
+			case cm_store_file_field_monitor_default:
+				ret->cm_monitor_default = atoi(p);
+				talloc_free(p);
+				break;
+			case cm_store_file_field_monitor:
+				ret->cm_monitor = atoi(p);
+				talloc_free(p);
+				break;
+			case cm_store_file_field_ca_default:
+				ret->cm_ca_default = atoi(p);
+				talloc_free(p);
+				break;
+			case cm_store_file_field_ca_type:
+				if (strcasecmp(p, "dummy") == 0) {
+					ret->cm_ca_type = cm_ca_dummy;
+				} else {
+					ret->cm_ca_type = cm_ca_dummy;
+				}
+				talloc_free(p);
+				break;
+			case cm_store_file_field_ca_location:
+				ret->cm_ca_location = free_if_empty(p);
+				break;
+			case cm_store_file_field_submitted:
+				ret->cm_submitted =
+					cm_store_time_from_timestamp(p);
+				talloc_free(p);
+				break;
+			case cm_store_file_field_ca_cookie:
+				ret->cm_ca_cookie = free_if_empty(p);
+				break;
+			case cm_store_file_field_cert:
+				ret->cm_cert = free_if_empty(p);
+				break;
 			}
-			talloc_free(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_last_expiration_check =
-				cm_store_time_from_timestamp(s[i]);
-			talloc_free(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_notification_default = atoi(s[i]);
-			talloc_free(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			if (strcasecmp(s[i], "syslog") == 0) {
-				ret->cm_notification_method = cm_notification_syslog;
-			} else
-			if (strcasecmp(s[i], "email") == 0) {
-				ret->cm_notification_method = cm_notification_email;
-			} else {
-				ret->cm_notification_method = cm_notification_syslog;
-			}
-			talloc_free(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_notification_destination = free_if_empty(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_template_default = atoi(s[i]);
-			talloc_free(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_template_subject = free_if_empty(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_template_hostname = free_if_empty_multi(ret, s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_template_email = free_if_empty_multi(ret, s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_template_principal = free_if_empty_multi(ret, s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_template_ku = free_if_empty(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_template_eku = free_if_empty(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_csr = free_if_empty(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_state = cm_store_state_from_string(s[i]);
-			talloc_free(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_autorenew_default = atoi(s[i]);
-			talloc_free(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_autorenew = atoi(s[i]);
-			talloc_free(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_monitor_default = atoi(s[i]);
-			talloc_free(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_monitor = atoi(s[i]);
-			talloc_free(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_ca_default = atoi(s[i]);
-			talloc_free(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			if (strcasecmp(s[i], "dummy") == 0) {
-				ret->cm_ca_type = cm_ca_dummy;
-			} else {
-				ret->cm_ca_type = cm_ca_dummy;
-			}
-			talloc_free(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_ca_location = free_if_empty(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_submitted = cm_store_time_from_timestamp(s[i]);
-			talloc_free(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_ca_cookie = free_if_empty(s[i]);
-			i++;
-		}
-		if ((s != NULL) && (s[i] != NULL)) {
-			ret->cm_cert = free_if_empty(s[i]);
-			i++;
-		}
-		while ((s != NULL) && (s[i] != NULL)) {
-			talloc_free(s[i++]);
 		}
 	}
 	return ret;
 }
 
 static int
-cm_store_file_write_int(FILE *fp, long value)
+cm_store_file_write_int(FILE *fp, enum cm_store_file_field field, long value)
 {
-	fprintf(fp, "=%ld\n", value);
+	fprintf(fp, "%s=%ld\n", cm_store_file_line_of_field(field), value);
 	if (ferror(fp)) {
 		return -1;
 	}
@@ -435,10 +585,14 @@ cm_store_file_write_int(FILE *fp, long value)
 }
 
 static int
-cm_store_file_write_ints(FILE *fp, int n, int *values)
+cm_store_file_write_ints(FILE *fp, enum cm_store_file_field field,
+			 int n, int *values)
 {
 	int i;
-	fprintf(fp, "=");
+	if ((n == 0) && (values == NULL)) {
+		return 0;
+	}
+	fprintf(fp, "%s=", cm_store_file_line_of_field(field));
 	if (ferror(fp)) {
 		return -1;
 	}
@@ -456,10 +610,14 @@ cm_store_file_write_ints(FILE *fp, int n, int *values)
 }
 
 static int
-cm_store_file_write_longs(FILE *fp, int n, long *values)
+cm_store_file_write_longs(FILE *fp, enum cm_store_file_field field,
+			  int n, long *values)
 {
 	int i;
-	fprintf(fp, "=");
+	if ((n == 0) && (values == NULL)) {
+		return 0;
+	}
+	fprintf(fp, "%s=", cm_store_file_line_of_field(field));
 	if (ferror(fp)) {
 		return -1;
 	}
@@ -477,12 +635,16 @@ cm_store_file_write_longs(FILE *fp, int n, long *values)
 }
 
 static int
-cm_store_file_write_str(FILE *fp, const char *s)
+cm_store_file_write_str(FILE *fp, enum cm_store_file_field field, const char *s)
 {
 	const char *p, *q;
+	if ((s == NULL) || (s[0] == '\0')) {
+		return 0;
+	}
 	p = s ?: "";
 	q = p + strcspn(p, "\r\n");
-	fprintf(fp, "=%.*s\n", (int) (q - p), p);
+	fprintf(fp, "%s=%.*s\n", cm_store_file_line_of_field(field),
+		(int) (q - p), p);
 	p = q + strspn(q, "\r\n");
 	while (*p != '\0') {
 		q = p + strcspn(p, "\r\n");
@@ -496,10 +658,13 @@ cm_store_file_write_str(FILE *fp, const char *s)
 }
 
 static int
-cm_store_file_write_strs(FILE *fp, char **s)
+cm_store_file_write_strs(FILE *fp, enum cm_store_file_field field, char **s)
 {
 	int i, j;
-	fprintf(fp, "=");
+	if ((s == NULL) || (s[0] == NULL)) {
+		return 0;
+	}
+	fprintf(fp, "%s=", cm_store_file_line_of_field(field));
 	for (i = 0; (s != NULL) && (s[i] != NULL); i++) {
 		if (i > 0) {
 			fputc(',', fp);
@@ -534,113 +699,167 @@ cm_store_file_write(FILE *fp, struct cm_store_entry *entry)
 	} else {
 		p = entry->cm_id;
 	}
-	cm_store_file_write_str(fp, p);
+	cm_store_file_write_str(fp, cm_store_file_field_id, p);
 
-	cm_store_file_write_int(fp, entry->cm_key_type_default);
+	cm_store_file_write_int(fp, cm_store_file_field_key_type_default,
+				entry->cm_key_type_default);
 	switch (entry->cm_key_type.cm_key_algorithm) {
 	case cm_key_rsa:
-		cm_store_file_write_str(fp, "RSA");
+		cm_store_file_write_str(fp, cm_store_file_field_key_type,
+					"RSA");
 		break;
 	}
-	cm_store_file_write_int(fp, entry->cm_key_type.cm_key_size);
+	cm_store_file_write_int(fp, cm_store_file_field_key_size,
+				entry->cm_key_type.cm_key_size);
 
-	cm_store_file_write_int(fp, entry->cm_key_storage_default);
+	cm_store_file_write_int(fp, cm_store_file_field_key_storage_default,
+				entry->cm_key_storage_default);
 	switch (entry->cm_key_storage_type) {
 	case cm_key_storage_file:
-		cm_store_file_write_str(fp, "FILE");
+		cm_store_file_write_str(fp,
+					cm_store_file_field_key_storage_type,
+					"FILE");
 		break;
 	case cm_key_storage_nssdb:
-		cm_store_file_write_str(fp, "NSSDB");
+		cm_store_file_write_str(fp,
+					cm_store_file_field_key_storage_type,
+					"NSSDB");
 		break;
 	}
-	cm_store_file_write_str(fp, entry->cm_key_storage_location);
-	cm_store_file_write_str(fp, entry->cm_key_token);
-	cm_store_file_write_str(fp, entry->cm_key_nickname);
+	cm_store_file_write_str(fp, cm_store_file_field_key_storage_location,
+				entry->cm_key_storage_location);
+	cm_store_file_write_str(fp, cm_store_file_field_key_token,
+				entry->cm_key_token);
+	cm_store_file_write_str(fp, cm_store_file_field_key_nickname,
+				entry->cm_key_nickname);
 
-	cm_store_file_write_int(fp, entry->cm_cert_storage_default);
+	cm_store_file_write_int(fp, cm_store_file_field_cert_storage_default,
+				entry->cm_cert_storage_default);
 	switch (entry->cm_cert_storage_type) {
 	case cm_cert_storage_file:
-		cm_store_file_write_str(fp, "FILE");
+		cm_store_file_write_str(fp,
+					cm_store_file_field_cert_storage_type,
+					"FILE");
 		break;
 	case cm_cert_storage_nssdb:
-		cm_store_file_write_str(fp, "NSSDB");
+		cm_store_file_write_str(fp,
+					cm_store_file_field_cert_storage_type,
+					"NSSDB");
 		break;
 	}
-	cm_store_file_write_str(fp, entry->cm_cert_storage_location);
-	cm_store_file_write_str(fp, entry->cm_cert_token);
-	cm_store_file_write_str(fp, entry->cm_cert_nickname);
+	cm_store_file_write_str(fp, cm_store_file_field_cert_storage_location,
+				entry->cm_cert_storage_location);
+	cm_store_file_write_str(fp, cm_store_file_field_cert_token,
+				entry->cm_cert_token);
+	cm_store_file_write_str(fp, cm_store_file_field_cert_nickname,
+				entry->cm_cert_nickname);
 
-	cm_store_file_write_str(fp, entry->cm_cert_issuer);
-	cm_store_file_write_str(fp, entry->cm_cert_serial);
-	cm_store_file_write_str(fp, entry->cm_cert_subject);
-	cm_store_file_write_str(fp, entry->cm_cert_spki);
-	cm_store_file_write_str(fp,
+	cm_store_file_write_str(fp, cm_store_file_field_cert_issuer,
+				entry->cm_cert_issuer);
+	cm_store_file_write_str(fp, cm_store_file_field_cert_serial,
+				entry->cm_cert_serial);
+	cm_store_file_write_str(fp, cm_store_file_field_cert_subject,
+				entry->cm_cert_subject);
+	cm_store_file_write_str(fp, cm_store_file_field_cert_spki,
+				entry->cm_cert_spki);
+	cm_store_file_write_str(fp, cm_store_file_field_cert_expiration,
 				cm_store_timestamp_from_time(entry->cm_cert_expiration,
 							     timestamp));
-	cm_store_file_write_strs(fp, entry->cm_cert_hostname);
-	cm_store_file_write_strs(fp, entry->cm_cert_email);
-	cm_store_file_write_strs(fp, entry->cm_cert_principal);
-	cm_store_file_write_str(fp, entry->cm_cert_ku);
-	cm_store_file_write_str(fp, entry->cm_cert_eku);
+	cm_store_file_write_strs(fp, cm_store_file_field_cert_hostname,
+				 entry->cm_cert_hostname);
+	cm_store_file_write_strs(fp, cm_store_file_field_cert_email,
+				 entry->cm_cert_email);
+	cm_store_file_write_strs(fp, cm_store_file_field_cert_principal,
+				 entry->cm_cert_principal);
+	cm_store_file_write_str(fp, cm_store_file_field_cert_ku,
+				entry->cm_cert_ku);
+	cm_store_file_write_str(fp, cm_store_file_field_cert_eku,
+				entry->cm_cert_eku);
 
-	cm_store_file_write_int(fp, entry->cm_ttls_default);
+	cm_store_file_write_int(fp, cm_store_file_field_ttls_default,
+				entry->cm_ttls_default);
 	if (sizeof(entry->cm_ttls[0]) == sizeof(int)) {
-		cm_store_file_write_ints(fp, entry->cm_n_ttls,
+		cm_store_file_write_ints(fp, cm_store_file_field_ttls,
+					 entry->cm_n_ttls,
 					 (int *) entry->cm_ttls);
 	} else
 	if (sizeof(entry->cm_ttls[0]) == sizeof(long)) {
-		cm_store_file_write_longs(fp, entry->cm_n_ttls,
+		cm_store_file_write_longs(fp, cm_store_file_field_ttls,
+					  entry->cm_n_ttls,
 					  (long *) entry->cm_ttls);
 	} else {
 		/* not reached */
 		cm_log(0, "time_t is not a known integer type\n");
 		abort();
 	}
-	cm_store_file_write_str(fp,
+	cm_store_file_write_str(fp, cm_store_file_field_last_expiration_check,
 				cm_store_timestamp_from_time(entry->cm_last_expiration_check,
 							     timestamp));
 	
-	cm_store_file_write_int(fp, entry->cm_notification_default);
+	cm_store_file_write_int(fp, cm_store_file_field_notification_default,
+				entry->cm_notification_default);
 	switch (entry->cm_notification_method) {
 	case cm_notification_syslog:
-		cm_store_file_write_str(fp, "SYSLOG");
+		cm_store_file_write_str(fp,
+					cm_store_file_field_notification_method,
+					"SYSLOG");
 		break;
 	case cm_notification_email:
-		cm_store_file_write_str(fp, "EMAIL");
+		cm_store_file_write_str(fp,
+					cm_store_file_field_notification_method,
+					"EMAIL");
 		break;
 	}
-	cm_store_file_write_str(fp, entry->cm_notification_destination);
+	cm_store_file_write_str(fp,
+				cm_store_file_field_notification_destination,
+				entry->cm_notification_destination);
 
-	cm_store_file_write_int(fp, entry->cm_template_default);
-	cm_store_file_write_str(fp, entry->cm_template_subject);
-	cm_store_file_write_strs(fp, entry->cm_template_hostname);
-	cm_store_file_write_strs(fp, entry->cm_template_email);
-	cm_store_file_write_strs(fp, entry->cm_template_principal);
-	cm_store_file_write_str(fp, entry->cm_template_ku);
-	cm_store_file_write_str(fp, entry->cm_template_eku);
+	cm_store_file_write_int(fp, cm_store_file_field_template_default,
+				entry->cm_template_default);
+	cm_store_file_write_str(fp, cm_store_file_field_template_subject,
+				entry->cm_template_subject);
+	cm_store_file_write_strs(fp, cm_store_file_field_template_subject,
+				 entry->cm_template_hostname);
+	cm_store_file_write_strs(fp, cm_store_file_field_template_email,
+				 entry->cm_template_email);
+	cm_store_file_write_strs(fp, cm_store_file_field_template_principal,
+				 entry->cm_template_principal);
+	cm_store_file_write_str(fp, cm_store_file_field_template_ku,
+				entry->cm_template_ku);
+	cm_store_file_write_str(fp, cm_store_file_field_template_eku,
+				entry->cm_template_eku);
 
-	cm_store_file_write_str(fp, entry->cm_csr);
+	cm_store_file_write_str(fp, cm_store_file_field_csr, entry->cm_csr);
 
-	cm_store_file_write_str(fp, cm_store_state_as_string(entry->cm_state));
+	cm_store_file_write_str(fp, cm_store_file_field_state,
+				cm_store_state_as_string(entry->cm_state));
 
-	cm_store_file_write_int(fp, entry->cm_autorenew_default);
-	cm_store_file_write_int(fp, entry->cm_autorenew);
+	cm_store_file_write_int(fp, cm_store_file_field_autorenew_default,
+				entry->cm_autorenew_default);
+	cm_store_file_write_int(fp, cm_store_file_field_autorenew,
+				entry->cm_autorenew);
 
-	cm_store_file_write_int(fp, entry->cm_monitor_default);
-	cm_store_file_write_int(fp, entry->cm_monitor);
+	cm_store_file_write_int(fp, cm_store_file_field_monitor_default,
+				entry->cm_monitor_default);
+	cm_store_file_write_int(fp, cm_store_file_field_monitor,
+				entry->cm_monitor);
 
-	cm_store_file_write_int(fp, entry->cm_ca_default);
+	cm_store_file_write_int(fp, cm_store_file_field_ca_default,
+				entry->cm_ca_default);
 	switch (entry->cm_ca_type) {
 	case cm_ca_dummy:
-		cm_store_file_write_str(fp, "DUMMY");
+		cm_store_file_write_str(fp, cm_store_file_field_ca_type,
+					"DUMMY");
 		break;
 	}
-	cm_store_file_write_str(fp, entry->cm_ca_location);
-	cm_store_file_write_str(fp,
+	cm_store_file_write_str(fp, cm_store_file_field_ca_location,
+				entry->cm_ca_location);
+	cm_store_file_write_str(fp, cm_store_file_field_submitted,
 				cm_store_timestamp_from_time(entry->cm_submitted,
 							     timestamp));
-	cm_store_file_write_str(fp, entry->cm_ca_cookie);
-	cm_store_file_write_str(fp, entry->cm_cert);
+	cm_store_file_write_str(fp, cm_store_file_field_ca_cookie,
+				entry->cm_ca_cookie);
+	cm_store_file_write_str(fp, cm_store_file_field_cert, entry->cm_cert);
 	if (ferror(fp)) {
 		return -1;
 	}
