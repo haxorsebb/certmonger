@@ -33,9 +33,11 @@
 #include <keythi.h>
 #include <cryptohi.h>
 #include <cert.h>
+#include <certt.h>
 
 #include <talloc.h>
 
+#include "certext.h"
 #include "csrgen.h"
 #include "csrgen-int.h"
 #include "keygen.h"
@@ -49,6 +51,188 @@ struct cm_csrgen_state {
 	pid_t pid;
 	int fd, count, status;
 };
+
+/* RFC 5280, 4.1 */
+static const SEC_ASN1Template
+cm_csrgen_n_cert_extension_template[] = {
+	{
+	.kind = SEC_ASN1_SEQUENCE,
+	.offset = 0,
+	.sub = NULL,
+	.size = sizeof(CERTCertExtension),
+	},
+	{
+	.kind = SEC_ASN1_OBJECT_ID,
+	.offset = offsetof(CERTCertExtension, id),
+	.sub = NULL,
+	.size = sizeof(SECItem),
+	},
+	{
+	.kind = SEC_ASN1_BOOLEAN,
+	.offset = offsetof(CERTCertExtension, critical),
+	.sub = NULL,
+	.size = sizeof(SECItem),
+	},
+	{
+	.kind = SEC_ASN1_OCTET_STRING,
+	.offset = offsetof(CERTCertExtension, value),
+	.sub = NULL,
+	.size = sizeof(SECItem),
+	},
+	{0, 0, NULL, 0},
+};
+
+/* Ad-hoc. */
+static const SEC_ASN1Template
+cm_csrgen_n_cert_tmpattr_template[] = {
+	{
+	.kind = SEC_ASN1_SEQUENCE,
+	.offset = 0,
+	.sub = NULL,
+	.size = sizeof(CERTAttribute),
+	},
+	{
+	.kind = SEC_ASN1_OBJECT_ID,
+	.offset = offsetof(CERTAttribute, attrType),
+	.sub = NULL,
+	.size = sizeof(SECItem),
+	},
+	{
+	.kind = SEC_ASN1_SEQUENCE_OF,
+	.offset = offsetof(CERTAttribute, attrValue),
+	.sub = &SEC_OctetStringTemplate,
+	.size = 0,
+	},
+	{0, 0, NULL, 0},
+};
+
+static const SEC_ASN1Template
+cm_csrgen_n_sequence_of_cert_tmpattr_template[] = {
+	{
+	.kind = SEC_ASN1_SEQUENCE_OF,
+	.offset = 0,
+	.sub = cm_csrgen_n_cert_tmpattr_template,
+	.size = 0,
+	},
+};
+
+static SECItem *
+cm_csrgen_n_attributes(struct cm_store_entry *entry, PLArenaPool *arena)
+{
+	CERTCertExtension ext;
+	SECItem encoded_ext[3], *exts[4];
+	CERTAttribute attr[3], *attrs[4], **attrs_ptr;
+	SECOidData *oid;
+	SECItem *item, friendly, *friendlies[2], encoded, plain;
+	SECItem der_false = {
+		.len = 1,
+		.data = (unsigned char *) "\000",
+	};
+	int i, j;
+
+	/* Build the extension list. */
+	i = 0;
+	item = cm_certext_build_ku(entry, arena,
+				   entry->cm_template_ku ?
+				   entry->cm_template_ku : entry->cm_cert_ku);
+	if (item != NULL) {
+		oid = SECOID_FindOIDByTag(SEC_OID_X509_KEY_USAGE);
+		if (oid != NULL) {
+			ext.id = oid->oid;
+			ext.critical = der_false;
+			ext.value = *item;
+			if (SEC_ASN1EncodeItem(arena, &encoded_ext[i],
+					       &ext,
+					       cm_csrgen_n_cert_extension_template) ==
+			    &encoded_ext[i]) {
+				exts[i] = &encoded_ext[i];
+				i++;
+			}
+		}
+	}
+	item = cm_certext_build_eku(entry, arena,
+				    entry->cm_template_eku ?
+				    entry->cm_template_eku :
+				    entry->cm_cert_eku);
+	if (item) {
+		oid = SECOID_FindOIDByTag(SEC_OID_X509_EXT_KEY_USAGE);
+		if (oid != NULL) {
+			ext.id = oid->oid;
+			ext.critical = der_false;
+			ext.value = *item;
+			if (SEC_ASN1EncodeItem(arena, &encoded_ext[i],
+					       &ext,
+					       cm_csrgen_n_cert_extension_template) ==
+			    &encoded_ext[i]) {
+				exts[i] = &encoded_ext[i];
+				i++;
+			}
+		}
+	}
+	item = cm_certext_build_san(entry, arena,
+				    entry->cm_template_hostname ?
+				    entry->cm_template_hostname :
+				    entry->cm_cert_hostname,
+				    entry->cm_template_email ?
+				    entry->cm_template_email :
+				    entry->cm_cert_email,
+				    entry->cm_template_principal ?
+				    entry->cm_template_principal :
+				    entry->cm_cert_principal);
+	if (item) {
+		oid = SECOID_FindOIDByTag(SEC_OID_X509_SUBJECT_ALT_NAME);
+		if (oid != NULL) {
+			ext.id = oid->oid;
+			ext.critical = der_false;
+			ext.value = *item;
+			if (SEC_ASN1EncodeItem(arena, &encoded_ext[i],
+					       &ext,
+					       cm_csrgen_n_cert_extension_template) ==
+			    &encoded_ext[i]) {
+				exts[i] = &encoded_ext[i];
+				i++;
+			}
+		}
+	}
+	exts[i] = NULL;
+	/* Build an attribute to hold the extensions. */
+	j = 0;
+	if (i > 0) {
+		oid = SECOID_FindOIDByTag(SEC_OID_PKCS9_EXTENSION_REQUEST);
+		if (oid != NULL) {
+			attr[j].attrType = oid->oid;
+			attr[j].attrValue = exts;
+			attrs[j] = &attr[j];
+			j++;
+		}
+	}
+	/* Build an attribute to hold the friendly name. */
+	oid = SECOID_FindOIDByTag(SEC_OID_PKCS9_FRIENDLY_NAME);
+	if (oid != NULL) {
+		plain.data = (unsigned char *) entry->cm_cert_nickname;
+		if (plain.data != NULL) {
+			plain.len = strlen(entry->cm_cert_nickname);
+			if (SEC_ASN1EncodeItem(arena, &friendly, &plain,
+					       SEC_BMPStringTemplate) == &friendly) {
+				friendlies[0] = &friendly;
+				friendlies[1] = NULL;
+				attr[j].attrType = oid->oid;
+				attr[j].attrValue = friendlies;
+				attrs[j] = &attr[j];
+				j++;
+			}
+		}
+	}
+	attrs[j] = NULL;
+	attrs_ptr = attrs;
+	if (SEC_ASN1EncodeItem(arena, &encoded, &attrs_ptr,
+			       cm_csrgen_n_sequence_of_cert_tmpattr_template) == &encoded) {
+		item = SECITEM_ArenaDupItem(arena, &encoded);
+	} else {
+		item = NULL;
+	}
+	return item;
+}
 
 static void
 cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
@@ -70,7 +254,7 @@ cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
 	CERTName *name;
 	const char *token, *keyname;
 	PLArenaPool *arena;
-	SECItem ereq, esreq;
+	SECItem ereq, esreq, *attrs;
 	PRErrorCode ec;
 	char *b64, *p, *q;
 	SECOidData *sigoid;
@@ -268,7 +452,13 @@ cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
 		cm_log(1, "Error encoding request version.\n");
 	}
 	/* Tack on requested values for various extensions. */
-	/* XXX */
+	req->attributes = NULL;
+	attrs = cm_csrgen_n_attributes(entry, arena);
+	if (SEC_ASN1DecodeItem(arena, &req->attributes,
+			       cm_csrgen_n_sequence_of_cert_tmpattr_template,
+			       attrs) != SECSuccess) {
+		req->attributes = NULL;
+	}
 	/* Encode the request. */
 	if (SEC_ASN1EncodeItem(arena, &ereq, req,
 			       CERT_CertificateRequestTemplate) !=
