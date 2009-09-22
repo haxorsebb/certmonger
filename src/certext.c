@@ -205,27 +205,21 @@ cm_certext_build_ku(struct cm_store_entry *entry, PLArenaPool *arena,
 {
 	SECItem *ret, encoded, *bits;
 	unsigned int i, val, len;
-	if (ku_value == NULL) {
-		return NULL;
-	}
-	bits = SECITEM_AllocItem(arena, NULL, strlen(ku_value));
-	if (bits == NULL) {
-		return NULL;
-	}
+	len = strlen(ku_value ? ku_value : "") + 1;
+	bits = SECITEM_AllocItem(arena, NULL, len);
+	memset(bits->data, '\0', len);
 	for (i = 0; (ku_value != NULL) && (ku_value[i] != '\0'); i++) {
-		val = (ku_value[i] == '1') << (i % 8);
+		val = ((ku_value[i] == '1') ? 0x80 : 0x00) >> (i % 8);
 		bits->data[i / 8] |= val;
 	}
-	len = bits->len;
 	bits->len = i;
 	memset(&encoded, 0, sizeof(encoded));
-	if (SEC_ASN1EncodeItem(arena, &encoded, &bits,
+	if (SEC_ASN1EncodeItem(arena, &encoded, bits,
 			       SEC_BitStringTemplate) != &encoded) {
 		ret = NULL;
 	} else {
 		ret = SECITEM_ArenaDupItem(arena, &encoded);
 	}
-	bits->len = len;
 	return ret;
 }
 
@@ -393,7 +387,7 @@ cm_certext_build_eku(struct cm_store_entry *entry, PLArenaPool *arena,
 	i = 0;
 	while ((p != NULL) && (*p != '\0')) {
 		q = p + strcspn(p, ",");
-		tmp = PORT_ArenaZAlloc(arena, i + 2);
+		tmp = PORT_ArenaZAlloc(arena, sizeof(SECItem *) * (i + 2));
 		if (tmp != NULL) {
 			if (i > 0) {
 				memcpy(tmp, oids, sizeof(SECItem *) * i);
@@ -409,7 +403,7 @@ cm_certext_build_eku(struct cm_store_entry *entry, PLArenaPool *arena,
 		}
 	}
 	memset(&encoded, 0, sizeof(encoded));
-	if (SEC_ASN1EncodeItem(arena, &encoded, oids,
+	if (SEC_ASN1EncodeItem(arena, &encoded, &oids,
 			       SEC_SequenceOfObjectIDTemplate) != &encoded) {
 		ret = NULL;
 	} else {
@@ -554,6 +548,167 @@ cm_certext_read_san(struct cm_store_entry *entry, PLArenaPool *arena,
 		}
 		i++;
 	}
+}
+
+static SECItem *
+cm_certext_build_upn(struct cm_store_entry *entry, PLArenaPool *arena,
+		     const char *principal)
+{
+	SECItem upn, princ;
+	
+	if (principal == NULL) {
+		return NULL;
+	}
+	memset(&upn, 0, sizeof(upn));
+	princ.len = strlen(principal);
+	princ.data = (unsigned char *) principal;
+	if (SEC_ASN1EncodeItem(arena, &upn, &princ,
+			       cm_ms_upn_name_template) != &upn) {
+		return NULL;
+	}
+	return SECITEM_ArenaDupItem(arena, &upn);
+}
+
+static SECItem *
+cm_certext_build_principal(struct cm_store_entry *entry, PLArenaPool *arena,
+			   const char *principal)
+{
+	SECItem *comp, **comps, encoded;
+	struct kerberos_principal_name p;
+	krb5_context ctx;
+	krb5_principal princ;
+	int i;
+
+	if (principal == NULL) {
+		return NULL;
+	}
+	ctx = NULL;
+	if (krb5_init_context(&ctx) != 0) {
+		return NULL;
+	}
+	princ = NULL;
+	if (krb5_parse_name(ctx, principal, &princ) != 0) {
+		krb5_free_context(ctx);
+		return NULL;
+	}
+	memset(&p, 0, sizeof(p));
+	/* realm */
+	p.realm.name.data = (unsigned char *) krb5_princ_realm(ctx, princ)->data;
+	p.realm.name.len = krb5_princ_realm(ctx, princ)->length;
+	/* name type */
+	if (SEC_ASN1EncodeInteger(arena, &p.principal_name.name_type,
+				  krb5_princ_type(ctx, princ)) !=
+	    &p.principal_name.name_type) {
+		memset(&p.principal_name.name_type, 0,
+		       sizeof(p.principal_name.name_type));
+	}
+	/* the component names */
+	comp = PORT_ArenaZAlloc(arena,
+				sizeof(SECItem) * krb5_princ_size(ctx, princ));
+	comps = PORT_ArenaZAlloc(arena,
+				 sizeof(SECItem *) * (krb5_princ_size(ctx, princ) + 1));
+	if (comp != NULL) {
+		for (i = 0; i < krb5_princ_size(ctx, princ); i++) {
+			comp[i].len = krb5_princ_component(ctx, princ, i)->length;
+			comp[i].data = (unsigned char *) krb5_princ_component(ctx, princ, i)->data;
+			comps[i] = &comp[i];
+		}
+		p.principal_name.name_string = comps;
+	} else {
+		p.principal_name.name_string = NULL;
+	}
+	/* encode */
+	if (SEC_ASN1EncodeItem(arena, &encoded, &p,
+			       cm_kerberos_principal_name_template) != &encoded) {
+		krb5_free_principal(ctx, princ);
+		krb5_free_context(ctx);
+		return NULL;
+	}
+	krb5_free_principal(ctx, princ);
+	krb5_free_context(ctx);
+	return SECITEM_ArenaDupItem(arena, &encoded);
+}
+
+SECItem *
+cm_certext_build_san(struct cm_store_entry *entry, PLArenaPool *arena,
+		     const char *hostname, const char *email,
+		     const char *principal)
+{
+	CERTGeneralName *name, *next;
+	SECItem encoded, *item;
+	if ((hostname == NULL) && (email == NULL) && (principal == NULL)) {
+		return NULL;
+	}
+	name = NULL;
+	if (hostname != NULL) {
+		next = PORT_ArenaZAlloc(arena, sizeof(*next));
+		if (next != NULL) {
+			next->type = certDNSName;
+			next->name.other.len = strlen(hostname);
+			next->name.other.data = (unsigned char *) hostname;
+			if (name == NULL) {
+				name = next;
+				PR_INIT_CLIST(&name->l);
+			} else {
+				PR_APPEND_LINK(&next->l, &name->l);
+			}
+		}
+	}
+	if (email != NULL) {
+		next = PORT_ArenaZAlloc(arena, sizeof(*next));
+		if (next != NULL) {
+			next->type = certRFC822Name;
+			next->name.other.len = strlen(email);
+			next->name.other.data = (unsigned char *) email;
+			if (name == NULL) {
+				name = next;
+				PR_INIT_CLIST(&name->l);
+			} else {
+				PR_APPEND_LINK(&next->l, &name->l);
+			}
+		}
+	}
+	if (principal != NULL) {
+		item = cm_certext_build_upn(entry, arena, principal);
+		if (item != NULL) {
+			next = PORT_ArenaZAlloc(arena, sizeof(*next));
+			if (next != NULL) {
+				next->type = certOtherName;
+				next->name.OthName.name = *item;
+				next->name.OthName.oid = oid_ms_upn_name.oid;
+				if (name == NULL) {
+					name = next;
+					PR_INIT_CLIST(&name->l);
+				} else {
+					PR_APPEND_LINK(&next->l, &name->l);
+				}
+			}
+		}
+		item = cm_certext_build_principal(entry, arena, principal);
+		if (item != NULL) {
+			next = PORT_ArenaZAlloc(arena, sizeof(*next));
+			if (next != NULL) {
+				next->type = certOtherName;
+				next->name.OthName.name = *item;
+				next->name.OthName.oid = oid_pkinit_san.oid;
+				if (name == NULL) {
+					name = next;
+					PR_INIT_CLIST(&name->l);
+				} else {
+					PR_APPEND_LINK(&next->l, &name->l);
+				}
+			}
+		}
+	}
+	memset(&encoded, 0, sizeof(encoded));
+	if ((name != NULL) &&
+	    (CERT_EncodeAltNameExtension(arena, name,
+	   				 &encoded) == SECSuccess)) {
+		item = SECITEM_ArenaDupItem(arena, &encoded);
+	} else {
+		item = NULL;
+	}
+	return item;
 }
 
 void
