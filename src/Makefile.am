@@ -1,6 +1,7 @@
 AM_CFLAGS = @TALLOC_CFLAGS@ @TEVENT_CFLAGS@ @DBUS_CFLAGS@ @KRB5_CFLAGS@
 noinst_LIBRARIES = libcm.a libcm-o.a libcm-n.a
 libcm_a_SOURCES = \
+	certext.h \
 	certread.c \
 	certread.h \
 	certread-int.h \
@@ -37,7 +38,7 @@ endif
 libcm_o_a_CFLAGS = @OPENSSL_CFLAGS@
 libcm_n_a_SOURCES =
 libcm_n_a_SOURCES += certread-n.c certsave-n.c keygen-n.c csrgen-n.c submit-dn.c
-libcm_n_a_SOURCES += certext.c certext.h
+libcm_n_a_SOURCES += certext.c certext-n.h
 libcm_n_a_CFLAGS = @NSS_CFLAGS@
 libcm_a_LIBADD = $(libcm_o_a_OBJECTS) $(libcm_n_a_OBJECTS)
 bin_PROGRAMS = cm

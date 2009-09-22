@@ -15,11 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef cmcertext_h
-#define cmcertext_h
+#ifndef cmcertext_n_h
+#define cmcertext_n_h
 
 struct cm_store_entry;
-void cm_certext_build_csr_extensions(struct cm_store_entry *entry,
-				     unsigned char **encoded, size_t *length);
+extern const SEC_ASN1Template cm_certext_cert_extension_template[];
+extern const SEC_ASN1Template cm_certext_sequence_of_cert_extension_template[];
+void cm_certext_read_extensions(struct cm_store_entry *entry,
+				PLArenaPool *arena,
+				CERTCertExtension **extensions);
 
 #endif

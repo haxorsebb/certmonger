@@ -36,6 +36,7 @@
 #include <talloc.h>
 
 #include "certext.h"
+#include "certext-n.h"
 #include "certread.h"
 #include "certread-int.h"
 #include "log.h"
