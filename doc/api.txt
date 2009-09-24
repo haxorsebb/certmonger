@@ -2,31 +2,60 @@ Note: use the NetworkManager API to get a feel for how these tend to be done:
 http://people.redhat.com/dcbw/NetworkManager/NetworkManager%20DBUS%20API.txt
 
 The D-Bus API:
-o service name = org.badvocacy.certmonger
+o service name = TBD
 o object layout
-  /org/badvocacy/certmonger
-  interface=org.badvocacy.certmonger
+  /TBD
+  interface=TBD
   - get-requests
     returns: array of string -> object paths for requests
+  - get-defaults
+    returns: string -> object paths for defaults object
+  - get-supported-key-type
+    returns: array of string -> "RSA"
+  - get-supported-key-storage
+    returns: array of string -> "NSSDB", "FILE"
+  - get-supported-cert-storage
+    returns: array of string -> "NSSDB", "FILE"
   - add-request
-    arguments: XXX
+    arguments: dict{string,variant{string/array-of-string/number/boolean}}
+               {"GENERATE_KEY",boolean}
+               {"KEY_TYPE","RSA"}
+               {"KEY_SIZE",integer}
+               {"KEY_STORAGE","NSSDB"/"FILE"}*
+               {"KEY_LOCATION",string}*
+               {"KEY_NICKNAME",string}
+               {"KEY_TOKEN",string}
+               {"CERT_STORAGE","NSSDB"/"FILE"}*
+               {"CERT_LOCATION",string}*
+               {"CERT_NICKNAME",string}
+               {"CERT_TOKEN",string}
+	       {"TRACK",boolean}
+	       {"RENEW",boolean}
+	       {"SUBJECT",string}
+	       {"EKU",array-of-string (oids)}
+	       {"KU",integer (see RFC5280 for the bit values)}
+	       {"PRINCIPAL",array-of-string (principal names)}
+	       * = required values
     returns: boolean -> succeeded
+             string (optional) -> object path for new request
   - remove-request
     arguments: object path for request
     returns: boolean -> succeeded
   - get-known-cas
-    returns: array of string -> object paths for requests
+    returns: array of string -> object paths for known cas
+  - get-supported-ca-type
+    returns: array of string -> "SELF", "IPA"
   - add-known-ca
-    arguments: string -> ca name
+    arguments: string -> ca nickname
                string -> ca type
-               string -> ca location
+               string (optional, if type needs it) -> ca location
                array of string (optional) -> known issuer names used by ca
     returns: boolean -> succeeded
   - remove-known-ca
     arguments: string -> object path for ca
     returns: boolean -> succeeded
   (objects whose names are returned by "get-requests" or "get-defaults")
-  interface=org.badvocacy.certmonger.request
+  interface=TBD.request
   - get status
     returns: string -> state name
              boolean -> i-am-stuck
@@ -35,15 +64,15 @@ o object layout
              number -> key size
   - regenerate key
     returns: boolean -> succeeded?
-  - get key storage,location,token,nickname
+  - get key storage,location,nickname,token
     returns: string -> "file", "nssdb"
              string -> filename (for "file"), or directory (for "nssdb")
-             string(optional) -> nssdb nickname
+             string(required for "nssdb") -> nssdb nickname
              string(optional) -> nssdb token name
-  - get cert storage,location,token,nickname
+  - get cert storage,location,nickname,token
     returns: string -> "file", "nssdb"
              string -> filename (for "file"), or directory (for "nssdb")
-             string(optional) -> nssdb nickname
+             string(required for "nssdb") -> nssdb nickname
              string(optional) -> nssdb token name
   - get cert data
     returns: string -> certificate in PEM format
@@ -83,20 +112,20 @@ o object layout
     - requested subject name
       argument: string -> requested subject
     - requested subject alternative name(s): email
-      argument: array of string -> requested addresses
+      argument: array of string -> new requested addresses
     - requested subject alternative name(s): dnsname
-      argument: array of string -> requested hostnames
+      argument: array of string -> new requested hostnames
     - requested subject alternative name(s): principalname
-      argument: array of string -> requested names
-    - requested key usage
+      argument: array of string -> new requested principal names
+    - requested new key usage
       argument: number -> key usage as bitfield based on RFC5280's values
-    - requested extended key usage
+    - requested new extended key usage
       argument: array of string -> requested OIDs
     - known-ca to use
       argument: string -> object path of CA
     - otherwise-not-known-ca
       arguments: string -> type of CA
-                 string -> location of CA
+                 string (optional) -> location of CA
   - rekey-and-resubmit (for whatever reason) (?)
     returns: boolean -> working-on-it?
   - resubmit (for requests that have been denied, generates a new csr)
@@ -104,7 +133,9 @@ o object layout
   - reenroll (for requests that we don't auto-submit, generates a new csr)
     returns: boolean -> working-on-it?
   (objects whose names are returned by "get-known-cas")
-  interface=org.badvocacy.certmonger.ca
+  interface=TBD.ca
+  - get nickname
+    returns: string
   - get is-default
     returns: boolean -> is-the-default-ca
   - get type
@@ -114,6 +145,9 @@ o object layout
   - get associated issuer names
     returns: array of string (optional) -> set of issuer names
   - modify
+    - nickname
+      arguments: string -> name of ca
+      returns: boolean -> changed?
     - is-default
       arguments: boolean -> should-be-the-default-ca
       returns: boolean -> is-the-default-ca

@@ -17,7 +17,7 @@ Complete:
 
 To-do:
   * Should offer an API over D-Bus which the client uses instead of
-    mutilating the queue directly:
+    mutilating the queue directly (see doc/api.txt):
     * Add new entry at any of need-key, need-csr, need-submit,
       have-issued states.  Optionally, figure out the state based on what the
       requester supplies (i.e., if there's a certificate where the request says
