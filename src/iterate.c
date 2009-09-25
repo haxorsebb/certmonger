@@ -109,7 +109,6 @@ int
 cm_iterate_init(struct cm_store_entry *entry, void **cm_iterate_state)
 {
 	struct cm_iterate_state *state;
-	struct cm_certread_state *readstate;
 	int fd;
 	state = talloc_ptrtype(entry, state);
 	if (state == NULL) {
@@ -118,15 +117,18 @@ cm_iterate_init(struct cm_store_entry *entry, void **cm_iterate_state)
 	memset(state, 0, sizeof(*state));
 	*cm_iterate_state = state;
 	cm_entry_reset_state(entry);
-	readstate = cm_certread_start(entry);
-	if (readstate != NULL) {
-		while (cm_certread_ready(entry, readstate) != 0) {
-			fd = cm_certread_get_fd(entry, readstate);
+	state->cm_certread_state = cm_certread_start(entry);
+	if (state->cm_certread_state != NULL) {
+		while (cm_certread_ready(entry,
+					 state->cm_certread_state) != 0) {
+			fd = cm_certread_get_fd(entry,
+						state->cm_certread_state);
 			if (fd != -1) {
 				cm_waitfor_readable_fd(fd, -1);
 			}
 		}
-		cm_certread_done(entry, readstate);
+		cm_certread_done(entry, state->cm_certread_state);
+		state->cm_certread_state = NULL;
 		cm_store_entry_save(entry);
 	}
 	cm_log(3, "'%s' starts in state '%s'\n", entry->cm_id,

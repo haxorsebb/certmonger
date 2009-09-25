@@ -26,17 +26,21 @@
 
 #include <dbus/dbus.h>
 
+#include "log.h"
 #include "tdbus.h"
 
 struct tdbus_connection {
-	DBusConnection *d_conn;
+	DBusConnection *conn;
 	struct tdbus_watch {
+		struct tdbus_connection *conn;
 		struct tdbus_watch *next;
 		DBusWatch *watch;
 		struct tevent_fd *tfd;
+		int tfdflags;
 		dbus_bool_t active;
 	} *watches;
 	struct tdbus_timer {
+		struct tdbus_connection *conn;
 		struct tdbus_timer *next;
 		DBusTimeout *timeout;
 		struct tevent_timer *tt;
@@ -44,6 +48,16 @@ struct tdbus_connection {
 		dbus_bool_t active;
 	} *timers;
 };
+
+static void
+cm_tdbus_dispatch_status(DBusConnection *conn, DBusDispatchStatus new_status,
+			 void *data)
+{
+	struct tdbus_connection *tdb = data;
+	while (new_status == DBUS_DISPATCH_DATA_REMAINS) {
+		new_status = dbus_connection_dispatch(conn);
+	}
+}
 
 static int
 cm_tdbus_tfd_flags_for_watch_flags(unsigned int watch_flags)
@@ -67,23 +81,44 @@ cm_tdbus_tfd_flags_for_watch_flags(unsigned int watch_flags)
 	return tfd_flags;
 }
 
+static int
+cm_tdbus_watch_flags_for_tfd_flags(unsigned int tfd_flags)
+{
+	int watch_flags;
+	watch_flags = 0;
+	if (tfd_flags & TEVENT_FD_READ) {
+		watch_flags |= DBUS_WATCH_READABLE;
+	}
+	if (tfd_flags & TEVENT_FD_WRITE) {
+		watch_flags |= DBUS_WATCH_WRITABLE;
+	}
+	return watch_flags;
+}
+
 static void
 cm_tdbus_handle_fd(struct tevent_context *ec, struct tevent_fd *tfd,
-		   uint16_t flags, void *pvt)
+		   uint16_t tflags, void *pvt)
 {
 	struct tdbus_watch *watch;
-	int fd;
+	int fd, flags;
 	watch = pvt;
 	if (watch->active) {
+		cm_log(3, "Handling D-Bus traffic on %d.\n",
+		       dbus_watch_get_unix_fd(watch->watch));
 		talloc_free(watch->tfd);
+		flags = cm_tdbus_watch_flags_for_tfd_flags(tflags);
 		if (dbus_watch_handle(watch->watch, flags)) {
 			fd = dbus_watch_get_unix_fd(watch->watch);
-			watch->tfd = tevent_add_fd(ec, watch, fd, flags,
+			watch->tfd = tevent_add_fd(ec, watch, fd,
+						   watch->tfdflags,
 						   cm_tdbus_handle_fd, watch);
 		} else {
 			watch->tfd = NULL;
 		}
 	}
+	cm_tdbus_dispatch_status(watch->conn->conn,
+				 dbus_connection_get_dispatch_status(watch->conn->conn), 
+				 watch->conn);
 }
 
 static void
@@ -94,6 +129,7 @@ cm_tdbus_handle_timer(struct tevent_context *ec, struct tevent_timer *timer,
 	struct timeval next_time;
 	tdb_timer = pvt;
 	if (tdb_timer->active) {
+		cm_log(3, "Handling D-Bus timeout.\n");
 		talloc_free(tdb_timer->tt);
 		if (dbus_timeout_handle(tdb_timer->timeout)) {
 			next_time = tevent_timeval_current_ofs(tdb_timer->d_interval, 0);
@@ -113,21 +149,22 @@ cm_tdbus_watch_add(DBusWatch *watch, void *data)
 	struct tdbus_connection *conn;
 	struct tdbus_watch *tdb_watch;
 	unsigned int flags;
-	int fd, tfd_flags;
+	int fd;
 	conn = data;
 	tdb_watch = talloc_ptrtype(conn, tdb_watch);
 	if (tdb_watch != NULL) {
 		memset(tdb_watch, 0, sizeof(*tdb_watch));
 		tdb_watch->watch = watch;
 		flags = dbus_watch_get_flags(watch);
-		tfd_flags = cm_tdbus_tfd_flags_for_watch_flags(flags);
+		tdb_watch->conn = conn;
+		tdb_watch->tfdflags = cm_tdbus_tfd_flags_for_watch_flags(flags);
 		tdb_watch->active = dbus_watch_get_enabled(watch);
 		if (tdb_watch->active) {
-			fd = dbus_watch_get_unix_fd(watch),
+			fd = dbus_watch_get_unix_fd(watch);
 			tdb_watch->tfd = tevent_add_fd(talloc_parent(conn),
 						       tdb_watch,
 						       fd,
-						       tfd_flags,
+						       tdb_watch->tfdflags,
 						       cm_tdbus_handle_fd,
 						       tdb_watch);
 			if (tdb_watch->tfd != NULL) {
@@ -225,6 +262,7 @@ cm_tdbus_timeout_add(DBusTimeout *timeout, void *data)
 	tdb_timer = talloc_ptrtype(conn, tdb_timer);
 	if (tdb_timer != NULL) {
 		memset(tdb_timer, 0, sizeof(*tdb_timer));
+		tdb_timer->conn = conn;
 		tdb_timer->timeout = timeout;
 		tdb_timer->d_interval = dbus_timeout_get_interval(timeout);
 		tdb_timer->active = dbus_timeout_get_enabled(timeout);
@@ -317,43 +355,77 @@ cm_tdbus_timeout_cleanup(void *data)
 	}
 }
 
+static DBusHandlerResult
+cm_tdbus_filter(DBusConnection *conn, DBusMessage *dmessage, void *data)
+{
+	struct tdbus_connection *tdb = data;
+	cm_log(1, "message %p:%s:%s:%s.%s\n",
+	       tdb->conn,
+	       dbus_message_get_destination(dmessage) ?: "",
+	       dbus_message_get_path(dmessage) ?: "",
+	       dbus_message_get_interface(dmessage) ?: "",
+	       dbus_message_get_member(dmessage));
+	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
 int
 cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type)
 {
 	DBusConnection *conn;
+	const char *bus_desc;
 	struct tdbus_connection *tdb;
 	tdb = talloc_ptrtype(ec, tdb);
 	if (tdb == NULL) {
 		return ENOMEM;
 	}
 	memset(tdb, 0, sizeof(*tdb));
+	bus_desc = NULL;
 	switch (bus_type) {
 	case cm_tdbus_system:
 		conn = dbus_bus_get(DBUS_BUS_SYSTEM, NULL);
+		bus_desc = "system";
 		break;
 	case cm_tdbus_session:
 		conn = dbus_bus_get(DBUS_BUS_SESSION, NULL);
+		bus_desc = "session";
 		break;
 	}
 	if (conn == NULL) {
+		talloc_free(tdb);
 		return -1;
 	}
-	tdb->d_conn = conn;
-	if (dbus_connection_set_watch_functions(conn,
-						&cm_tdbus_watch_add,
-						&cm_tdbus_watch_remove,
-						&cm_tdbus_watch_toggle,
-						tdb,
-						&cm_tdbus_watch_cleanup) == FALSE) {
+	tdb->conn = conn;
+	dbus_connection_set_dispatch_status_function(conn,
+						     cm_tdbus_dispatch_status,
+						     tdb, NULL);
+	if (!dbus_connection_set_watch_functions(conn,
+						 &cm_tdbus_watch_add,
+						 &cm_tdbus_watch_remove,
+						 &cm_tdbus_watch_toggle,
+						 tdb,
+						 &cm_tdbus_watch_cleanup)) {
+		cm_log(1, "Unable to add timer callbacks.\n");
 		return -1;
 	}
-	if (dbus_connection_set_timeout_functions(conn,
-						  cm_tdbus_timeout_add,
-						  cm_tdbus_timeout_remove,
-						  cm_tdbus_timeout_toggle,
-						  tdb,
-						  cm_tdbus_timeout_cleanup) == FALSE) {
+	if (!dbus_connection_set_timeout_functions(conn,
+						   cm_tdbus_timeout_add,
+						   cm_tdbus_timeout_remove,
+						   cm_tdbus_timeout_toggle,
+						   tdb,
+						   cm_tdbus_timeout_cleanup)) {
+		cm_log(1, "Unable to add timer callbacks.\n");
 		return -1;
 	}
+	if (!dbus_connection_add_filter(conn, cm_tdbus_filter, tdb, NULL)) {
+		cm_log(1, "Unable to add filter.\n");
+		return -1;
+	}
+	if (!dbus_bus_request_name(conn, CM_DBUS_NAME, 0, NULL)) {
+		cm_log(1, "Unable to set well-known bus name \"%s\".\n",
+		       CM_DBUS_NAME);
+		return -1;
+	}
+	cm_log(3, "Connected to %s message bus with name \"%s\".\n",
+	       bus_desc, dbus_bus_get_unique_name(conn) ?: "(unknown)");
 	return 0;
 }
