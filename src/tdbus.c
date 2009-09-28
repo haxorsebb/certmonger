@@ -28,6 +28,7 @@
 
 #include "log.h"
 #include "tdbus.h"
+#include "tdbusm.h"
 
 struct tdbus_connection {
 	DBusConnection *conn;
