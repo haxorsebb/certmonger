@@ -116,9 +116,6 @@ cm_tdbus_handle_fd(struct tevent_context *ec, struct tevent_fd *tfd,
 			watch->tfd = NULL;
 		}
 	}
-	cm_tdbus_dispatch_status(watch->conn->conn,
-				 dbus_connection_get_dispatch_status(watch->conn->conn), 
-				 watch->conn);
 }
 
 static void
@@ -425,6 +422,9 @@ cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type)
 		       CM_DBUS_NAME);
 		return -1;
 	}
+	cm_tdbus_dispatch_status(conn,
+				 dbus_connection_get_dispatch_status(conn), 
+				 tdb);
 	cm_log(3, "Connected to %s message bus with name \"%s\".\n",
 	       bus_desc, dbus_bus_get_unique_name(conn) ?: "(unknown)");
 	return 0;
