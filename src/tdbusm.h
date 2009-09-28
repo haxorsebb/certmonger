@@ -18,16 +18,13 @@
 #ifndef cmtdbusm_h
 #define cmtdbusm_h
 
-int cm_tdbusm_get_s(DBusMessage *msg, void *parent,
-		    char **s);
-int cm_tdbusm_get_ss(DBusMessage *msg, void *parent,
-		     char **s1, char **s2);
+int cm_tdbusm_get_s(DBusMessage *msg, void *parent, char **s);
+int cm_tdbusm_get_p(DBusMessage *msg, void *parent, char **p);
+int cm_tdbusm_get_ss(DBusMessage *msg, void *parent, char **s1, char **s2);
 int cm_tdbusm_get_sssas(DBusMessage *msg, void *parent,
 			char **s1, char **s2, char *s3, char ***s4);
-int cm_tdbusm_get_as(DBusMessage *msg, void *parent,
-		     char ***s);
-int cm_tdbusm_get_b(DBusMessage *msg, void *parent,
-		    dbus_bool_t *b);
+int cm_tdbusm_get_as(DBusMessage *msg, void *parent, char ***s);
+int cm_tdbusm_get_b(DBusMessage *msg, void *parent, dbus_bool_t *b);
 struct cm_tdbusm_dict {
 	char *key;
 	enum {
@@ -43,16 +40,18 @@ struct cm_tdbusm_dict {
 		dbus_bool_t b;
 	} value;
 };
-int cm_tdbusm_get_d(DBusMessage *msg, void *parent,
-		    struct cm_tdbusm_dict ***d);
+int cm_tdbusm_get_d(DBusMessage *msg, void *parent, struct cm_tdbusm_dict ***d);
 
 int cm_tdbusm_set_s(DBusMessage *msg, const char *s);
+int cm_tdbusm_set_p(DBusMessage *msg, const char *p);
 int cm_tdbusm_set_b(DBusMessage *msg, dbus_bool_t b);
 int cm_tdbusm_set_bs(DBusMessage *msg, dbus_bool_t b, const char *s);
+int cm_tdbusm_set_bp(DBusMessage *msg, dbus_bool_t b, const char *p);
 int cm_tdbusm_set_sb(DBusMessage *msg, const char *s, dbus_bool_t b);
 int cm_tdbusm_set_sn(DBusMessage *msg, const char *s, long n);
 int cm_tdbusm_set_n(DBusMessage *msg, long n);
 int cm_tdbusm_set_as(DBusMessage *msg, const char **s);
+int cm_tdbusm_set_ap(DBusMessage *msg, const char **p);
 int cm_tdbusm_set_ssss(DBusMessage *msg,
 		       const char *s1, const char *s2,
 		       const char *s3, const char *s4);

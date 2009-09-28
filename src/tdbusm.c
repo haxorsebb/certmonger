@@ -33,6 +33,12 @@ cm_tdbusm_get_s(DBusMessage *msg, void *parent, char **s)
 }
 
 int
+cm_tdbusm_get_p(DBusMessage *msg, void *parent, char **p)
+{
+	return -1;
+}
+
+int
 cm_tdbusm_get_ss(DBusMessage *msg, void *parent, char **s1, char **s2)
 {
 	return -1;
@@ -70,6 +76,12 @@ cm_tdbusm_set_s(DBusMessage *msg, const char *s)
 }
 
 int
+cm_tdbusm_set_p(DBusMessage *msg, const char *p)
+{
+	return -1;
+}
+
+int
 cm_tdbusm_set_b(DBusMessage *msg, dbus_bool_t b)
 {
 	return -1;
@@ -77,6 +89,12 @@ cm_tdbusm_set_b(DBusMessage *msg, dbus_bool_t b)
 
 int
 cm_tdbusm_set_bs(DBusMessage *msg, dbus_bool_t b, const char *s)
+{
+	return -1;
+}
+
+int
+cm_tdbusm_set_bp(DBusMessage *msg, dbus_bool_t b, const char *p)
 {
 	return -1;
 }
@@ -101,6 +119,12 @@ cm_tdbusm_set_n(DBusMessage *msg, long n)
 
 int
 cm_tdbusm_set_as(DBusMessage *msg, const char **s)
+{
+	return -1;
+}
+
+int
+cm_tdbusm_set_ap(DBusMessage *msg, const char **p)
 {
 	return -1;
 }

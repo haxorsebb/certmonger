@@ -7,9 +7,9 @@ o object layout
   /TBD
   interface=TBD
   - get-requests
-    returns: array of string -> object paths for requests
+    returns: path -> object paths for requests
   - get-defaults
-    returns: string -> object paths for defaults object
+    returns: path -> object paths for defaults object
   - get-supported-key-type
     returns: array of string -> "RSA"
   - get-supported-key-storage
@@ -37,12 +37,12 @@ o object layout
 	       {"PRINCIPAL",array-of-string (principal names)}
 	       * = required values
     returns: boolean -> succeeded
-             string (optional) -> object path for new request
+             path (optional) -> object path for new request
   - remove-request
-    arguments: string -> object path for request
+    arguments: path -> object path for request
     returns: boolean -> succeeded
   - get-known-cas
-    returns: array of string -> object paths for known cas
+    returns: array of path -> object paths for known cas
   - get-supported-ca-type
     returns: array of string -> "SELF", "IPA"
   - add-known-ca
@@ -52,7 +52,7 @@ o object layout
                array of string (optional) -> known issuer names used by ca
     returns: boolean -> succeeded
   - remove-known-ca
-    arguments: string -> object path for ca
+    arguments: path -> object path for ca
     returns: boolean -> succeeded
   (objects whose names are returned by "get-requests" or "get-defaults")
   interface=TBD.request
@@ -122,7 +122,7 @@ o object layout
     - requested new extended key usage
       argument: array of string -> requested OIDs
     - known-ca to use
-      argument: string -> object path of CA
+      argument: path -> object path of CA
     - otherwise-not-known-ca
       arguments: string -> type of CA
                  string (optional) -> location of CA
@@ -163,6 +163,7 @@ o object layout
 Marshallers needed:
 Arguments:
 	string
+	path
 	string,string,string,array-of-string
 	string,string
 	boolean
@@ -170,12 +171,15 @@ Arguments:
 	dict{string,variant{string/array-of-string/number/boolean}}
 Return:
 	string
+	path
 	boolean
 	boolean,string
+	boolean,path
 	string,boolean
 	string,number
 	number
 	array-of-string
+	array-of-path
 	string,string,string,string
 	string,string,string,number,array-of-string,array-of-string,array-of-string,number,array-of-string
 	string,array-of-string,array-of-string,array-of-string,number,array-of-string
