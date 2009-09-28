@@ -53,7 +53,6 @@ static void
 cm_tdbus_dispatch_status(DBusConnection *conn, DBusDispatchStatus new_status,
 			 void *data)
 {
-	struct tdbus_connection *tdb = data;
 	while (new_status == DBUS_DISPATCH_DATA_REMAINS) {
 		new_status = dbus_connection_dispatch(conn);
 	}
@@ -356,12 +355,31 @@ static DBusHandlerResult
 cm_tdbus_filter(DBusConnection *conn, DBusMessage *dmessage, void *data)
 {
 	struct tdbus_connection *tdb = data;
-	cm_log(1, "message %p:%s:%s:%s.%s\n",
-	       tdb->conn,
-	       dbus_message_get_destination(dmessage) ?: "",
-	       dbus_message_get_path(dmessage) ?: "",
-	       dbus_message_get_interface(dmessage) ?: "",
-	       dbus_message_get_member(dmessage));
+	const char *destination, *path, *interface, *member;
+	/* Catch weird-looking messages. */
+	destination = dbus_message_get_destination(dmessage);
+	path = dbus_message_get_path(dmessage);
+	interface = dbus_message_get_interface(dmessage);
+	member = dbus_message_get_member(dmessage);
+	if ((destination == NULL) || (path == NULL) || (member == NULL)) {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+	/* Make sure it's a message we care about. */
+	cm_log(3, "message %p(%s)->%s:%s:%s.%s\n", tdb,
+	       dbus_message_type_to_string(dbus_message_get_type(dmessage)),
+	       destination, path, interface ? interface : "", member);
+	switch (dbus_message_get_type(dmessage)) {
+	case DBUS_MESSAGE_TYPE_METHOD_CALL:
+	case DBUS_MESSAGE_TYPE_METHOD_RETURN:
+		/* Check that the call or return is directed to us. */
+		if (strcmp(destination, CM_DBUS_NAME) != 0) {
+			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		}
+		break;
+	default:
+		break;
+	}
+	/* Okay, the message is one we need to worry about. */
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
@@ -371,11 +389,13 @@ cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type)
 	DBusConnection *conn;
 	const char *bus_desc;
 	struct tdbus_connection *tdb;
+	/* Build our own context. */
 	tdb = talloc_ptrtype(ec, tdb);
 	if (tdb == NULL) {
 		return ENOMEM;
 	}
 	memset(tdb, 0, sizeof(*tdb));
+	/* Connect to the right bus. */
 	bus_desc = NULL;
 	switch (bus_type) {
 	case cm_tdbus_system:
@@ -392,9 +412,12 @@ cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type)
 		return -1;
 	}
 	tdb->conn = conn;
+	/* Set the callback to be called when I/O processing has yielded a
+	 * request that we need to act on. */
 	dbus_connection_set_dispatch_status_function(conn,
 						     cm_tdbus_dispatch_status,
 						     tdb, NULL);
+	/* Hook up the I/O callbacks so that D-Bus can actually do its thing. */
 	if (!dbus_connection_set_watch_functions(conn,
 						 &cm_tdbus_watch_add,
 						 &cm_tdbus_watch_remove,
@@ -404,6 +427,7 @@ cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type)
 		cm_log(1, "Unable to add timer callbacks.\n");
 		return -1;
 	}
+	/* Hook up the (unused?) timer callbacks to be polite. */
 	if (!dbus_connection_set_timeout_functions(conn,
 						   cm_tdbus_timeout_add,
 						   cm_tdbus_timeout_remove,
@@ -413,19 +437,24 @@ cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type)
 		cm_log(1, "Unable to add timer callbacks.\n");
 		return -1;
 	}
+	/* Set the filter on messages. */
 	if (!dbus_connection_add_filter(conn, cm_tdbus_filter, tdb, NULL)) {
 		cm_log(1, "Unable to add filter.\n");
 		return -1;
 	}
+	/* Bind to the well-known name we intend to use. */
 	if (!dbus_bus_request_name(conn, CM_DBUS_NAME, 0, NULL)) {
 		cm_log(1, "Unable to set well-known bus name \"%s\".\n",
 		       CM_DBUS_NAME);
 		return -1;
 	}
+	/* Handle any messages that are already pending. */
 	cm_tdbus_dispatch_status(conn,
 				 dbus_connection_get_dispatch_status(conn), 
 				 tdb);
-	cm_log(3, "Connected to %s message bus with name \"%s\".\n",
-	       bus_desc, dbus_bus_get_unique_name(conn) ?: "(unknown)");
+	cm_log(3, "Connected to %s message bus with name \"%s\", "
+	       "unique name \"%s\".\n",
+	       bus_desc, dbus_bus_get_unique_name(conn) ?: "(unknown)",
+	       CM_DBUS_NAME);
 	return 0;
 }

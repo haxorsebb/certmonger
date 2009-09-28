@@ -39,7 +39,7 @@ o object layout
     returns: boolean -> succeeded
              string (optional) -> object path for new request
   - remove-request
-    arguments: object path for request
+    arguments: string -> object path for request
     returns: boolean -> succeeded
   - get-known-cas
     returns: array of string -> object paths for known cas
@@ -159,3 +159,23 @@ o object layout
       returns: boolean -> changed?
     - associated issuer names (for when we have to guess which CA to use)
       arguments: array of string (optional) -> set of issuer names
+
+Marshallers needed:
+Arguments:
+	string
+	string,string,string,array-of-string
+	string,string
+	boolean
+	array-of-string
+	dict{string,variant{string/array-of-string/number/boolean}}
+Return:
+	string
+	boolean
+	boolean,string
+	string,boolean
+	string,number
+	number
+	array-of-string
+	string,string,string,string
+	string,string,string,number,array-of-string,array-of-string,array-of-string,number,array-of-string
+	string,array-of-string,array-of-string,array-of-string,number,array-of-string
