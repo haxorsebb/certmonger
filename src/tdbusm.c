@@ -72,49 +72,103 @@ cm_tdbusm_get_d(DBusMessage *msg, void *parent, struct cm_tdbusm_dict ***d)
 int
 cm_tdbusm_set_s(DBusMessage *msg, const char *s)
 {
-	return -1;
+	if (dbus_message_append_args(msg,
+				     DBUS_TYPE_STRING, &s,
+				     DBUS_TYPE_INVALID)) {
+		return 0;
+	} else {
+		return -1;
+	}
 }
 
 int
 cm_tdbusm_set_p(DBusMessage *msg, const char *p)
 {
-	return -1;
+	if (dbus_message_append_args(msg,
+				     DBUS_TYPE_OBJECT_PATH, &p,
+				     DBUS_TYPE_INVALID)) {
+		return 0;
+	} else {
+		return -1;
+	}
 }
 
 int
 cm_tdbusm_set_b(DBusMessage *msg, dbus_bool_t b)
 {
-	return -1;
+	if (dbus_message_append_args(msg,
+				     DBUS_TYPE_BOOLEAN, &b,
+				     DBUS_TYPE_INVALID)) {
+		return 0;
+	} else {
+		return -1;
+	}
 }
 
 int
 cm_tdbusm_set_bs(DBusMessage *msg, dbus_bool_t b, const char *s)
 {
-	return -1;
+	if (dbus_message_append_args(msg,
+				     DBUS_TYPE_BOOLEAN, &b,
+				     DBUS_TYPE_STRING, &s,
+				     DBUS_TYPE_INVALID)) {
+		return 0;
+	} else {
+		return -1;
+	}
 }
 
 int
 cm_tdbusm_set_bp(DBusMessage *msg, dbus_bool_t b, const char *p)
 {
-	return -1;
+	if (dbus_message_append_args(msg,
+				     DBUS_TYPE_BOOLEAN, &b,
+				     DBUS_TYPE_OBJECT_PATH, &p,
+				     DBUS_TYPE_INVALID)) {
+		return 0;
+	} else {
+		return -1;
+	}
 }
 
 int
 cm_tdbusm_set_sb(DBusMessage *msg, const char *s, dbus_bool_t b)
 {
-	return -1;
+	if (dbus_message_append_args(msg,
+				     DBUS_TYPE_STRING, &s,
+				     DBUS_TYPE_BOOLEAN, &b,
+				     DBUS_TYPE_INVALID)) {
+		return 0;
+	} else {
+		return -1;
+	}
 }
 
 int
 cm_tdbusm_set_sn(DBusMessage *msg, const char *s, long n)
 {
-	return -1;
+	int64_t i = n;
+	if (dbus_message_append_args(msg,
+				     DBUS_TYPE_STRING, &s,
+				     DBUS_TYPE_INT64, &i,
+				     DBUS_TYPE_INVALID)) {
+		return 0;
+	} else {
+		return -1;
+	}
 }
 
 int
 cm_tdbusm_set_n(DBusMessage *msg, long n)
 {
-	return -1;
+	int64_t i = n;
+	if (dbus_message_append_args(msg,
+				     DBUS_TYPE_INT64, &i,
+				     DBUS_TYPE_INVALID)) {
+		return 0;
+	} else {
+		return -1;
+	}
 }
 
 int
@@ -133,7 +187,16 @@ int
 cm_tdbusm_set_ssss(DBusMessage *msg, const char *s1, const char *s2,
 		   const char *s3, const char *s4)
 {
-	return -1;
+	if (dbus_message_append_args(msg,
+				     DBUS_TYPE_STRING, &s1,
+				     DBUS_TYPE_STRING, &s2,
+				     DBUS_TYPE_STRING, &s3,
+				     DBUS_TYPE_STRING, &s4,
+				     DBUS_TYPE_INVALID)) {
+		return 0;
+	} else {
+		return -1;
+	}
 }
 
 int
