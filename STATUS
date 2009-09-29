@@ -1,5 +1,6 @@
 Limited local-only support.  Local keys are signed, but the request's
-name and extensions aren't used, and the serial number is useless.
+name and extensions aren't used, and the serial number is useless.  Not
+actually a daemon yet.
 
 Complete:
   * Generating RSA keys of configurable size.
