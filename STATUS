@@ -36,6 +36,9 @@ To-do:
       MUST
     * Set/reset PIN for encrypted key storage. (1 day)
       MUST
+  * Detect when network connections go up (hopefully using NetworkManager
+    signals, or learn to use netlink) and "kick" anything that's waiting
+    for a server to become reachable.
   * Learn to submit to at least one actual CA: IPA via XML-RPC over
     HTTPS, authenticating using Negotiate.
     * Learn to obtain Kerberos credentials. (1 day)
