@@ -49,3 +49,6 @@ cm_SOURCES = cli.c
 cm_LDADD = libcm.a @OPENSSL_LIBS@ @NSS_LIBS@ @TEVENT_LIBS@ @TALLOC_LIBS@ @KRB5_LIBS@ @DBUS_LIBS@
 cmd_SOURCES = cmd.c
 cmd_LDADD = libcm.a @OPENSSL_LIBS@ @NSS_LIBS@ @TEVENT_LIBS@ @TALLOC_LIBS@ @KRB5_LIBS@ @DBUS_LIBS@
+noinst_PROGRAMS = tdbusm-check
+tdbusm_check_SOURCES = tdbusm-check.c
+tdbusm_check_LDADD = libcm.a @TEVENT_LIBS@ @TALLOC_LIBS@ @DBUS_LIBS@
