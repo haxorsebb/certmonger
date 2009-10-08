@@ -25,8 +25,42 @@
 
 #include <dbus/dbus.h>
 
-#include "log.h"
 #include "tdbusm.h"
+
+static int
+cm_tdbusm_array_length(const char **array)
+{
+	int i;
+	for (i = 0; (array != NULL) && (array[i] != NULL); i++) {
+		continue;
+	}
+	return i;
+}
+
+static char **
+cm_tdbusm_take_dbus_string_array(void *parent, char **array)
+{
+	int i;
+	char **ret;
+	i = cm_tdbusm_array_length((const char **) array);
+	if (i > 0) {
+		ret = talloc_zero_array(parent, char *, i + 2);
+		if (ret != NULL) {
+			for (i = 0;
+			     (array != NULL) && (array[i] != NULL);
+			     i++) {
+				ret[i] = talloc_strdup(ret, array[i]);
+			}
+			ret[i] = NULL;
+		}
+	} else {
+		ret = NULL;
+	}
+	if (array != NULL) {
+		dbus_free_string_array(array);
+	}
+	return ret;
+}
 
 int
 cm_tdbusm_get_b(DBusMessage *msg, void *parent, dbus_bool_t *b)
@@ -209,41 +243,6 @@ cm_tdbusm_get_ss(DBusMessage *msg, void *parent, char **s1, char **s2)
 	} else {
 		return -1;
 	}
-}
-
-static int
-cm_tdbusm_array_length(const char **array)
-{
-	int i;
-	for (i = 0; (array != NULL) && (array[i] != NULL); i++) {
-		continue;
-	}
-	return i;
-}
-
-static char **
-cm_tdbusm_take_dbus_string_array(void *parent, char **array)
-{
-	int i;
-	char **ret;
-	i = cm_tdbusm_array_length((const char **) array);
-	if (i > 0) {
-		ret = talloc_zero_array(parent, char *, i + 2);
-		if (ret != NULL) {
-			for (i = 0;
-			     (array != NULL) && (array[i] != NULL);
-			     i++) {
-				ret[i] = talloc_strdup(ret, array[i]);
-			}
-			ret[i] = NULL;
-		}
-	} else {
-		ret = NULL;
-	}
-	if (array != NULL) {
-		dbus_free_string_array(array);
-	}
-	return ret;
 }
 
 int
