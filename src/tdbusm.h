@@ -84,7 +84,6 @@ int cm_tdbusm_set_sasasasnas(DBusMessage *msg,
 			     const char *s,
 			     const char **as1, const char **as2,
 			     const char **as3, long n, const char **as4);
-int cm_tdbusm_set_d(DBusMessage *msg, void *parent,
-		    const struct cm_tdbusm_dict **d);
+int cm_tdbusm_set_d(DBusMessage *msg, const struct cm_tdbusm_dict **d);
 
 #endif

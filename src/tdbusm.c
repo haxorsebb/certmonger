@@ -444,7 +444,7 @@ cm_tdbusm_set_sasasasnas(DBusMessage *msg, const char *s,
 }
 
 int
-cm_tdbusm_set_d(DBusMessage *msg, void *parent, const struct cm_tdbusm_dict **d)
+cm_tdbusm_set_d(DBusMessage *msg, const struct cm_tdbusm_dict **d)
 {
 	return -1;
 }
