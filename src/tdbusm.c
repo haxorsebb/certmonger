@@ -689,5 +689,84 @@ cm_tdbusm_set_sasasasnas(DBusMessage *msg, const char *s,
 int
 cm_tdbusm_set_d(DBusMessage *msg, const struct cm_tdbusm_dict **d)
 {
-	return -1;
+	DBusMessageIter args, array, entry, val, elt;
+	int i;
+	long l;
+	memset(&args, 0, sizeof(args));
+	dbus_message_iter_init_append(msg, &args);
+	memset(&array, 0, sizeof(array));
+	dbus_message_iter_open_container(&args,
+					 DBUS_TYPE_ARRAY,
+					 DBUS_DICT_ENTRY_BEGIN_CHAR_AS_STRING
+					 DBUS_TYPE_STRING_AS_STRING
+					 DBUS_TYPE_VARIANT_AS_STRING
+					 DBUS_DICT_ENTRY_END_CHAR_AS_STRING,
+					 &array);
+	for (i = 0; (d != NULL) && (d[i] != NULL); i++) {
+		memset(&entry, 0, sizeof(entry));
+		dbus_message_iter_open_container(&array, DBUS_TYPE_DICT_ENTRY,
+						 NULL,
+						 &entry);
+		dbus_message_iter_append_basic(&entry, DBUS_TYPE_STRING,
+					       &d[i]->key);
+		memset(&val, 0, sizeof(val));
+		switch (d[i]->value_type) {
+		case cm_tdbusm_dict_b:
+			dbus_message_iter_open_container(&entry,
+							 DBUS_TYPE_VARIANT,
+							 DBUS_TYPE_BOOLEAN_AS_STRING,
+							 &val);
+			dbus_message_iter_append_basic(&val,
+						       DBUS_TYPE_BOOLEAN,
+						       &d[i]->value.b);
+			dbus_message_iter_close_container(&entry, &val);
+			break;
+		case cm_tdbusm_dict_n:
+			dbus_message_iter_open_container(&entry,
+							 DBUS_TYPE_VARIANT,
+							 DBUS_TYPE_INT64_AS_STRING,
+							 &val);
+			l = d[i]->value.n;
+			dbus_message_iter_append_basic(&val,
+						       DBUS_TYPE_INT64,
+						       &l);
+			dbus_message_iter_close_container(&entry, &val);
+			break;
+		case cm_tdbusm_dict_s:
+			dbus_message_iter_open_container(&entry,
+							 DBUS_TYPE_VARIANT,
+							 DBUS_TYPE_STRING_AS_STRING,
+							 &val);
+			dbus_message_iter_append_basic(&val,
+						       DBUS_TYPE_STRING,
+						       &d[i]->value.s);
+			dbus_message_iter_close_container(&entry, &val);
+			break;
+		case cm_tdbusm_dict_as:
+			dbus_message_iter_open_container(&entry,
+							 DBUS_TYPE_VARIANT,
+							 DBUS_TYPE_ARRAY_AS_STRING
+							 DBUS_TYPE_STRING_AS_STRING,
+							 &val);
+			memset(&elt, 0, sizeof(elt));
+			dbus_message_iter_open_container(&val,
+							 DBUS_TYPE_ARRAY,
+							 DBUS_TYPE_STRING_AS_STRING,
+							 &elt);
+			for (l = 0;
+			     (d[i]->value.as != NULL) &&
+			     (d[i]->value.as[l] != NULL);
+			     l++) {
+				dbus_message_iter_append_basic(&elt,
+							       DBUS_TYPE_STRING,
+							       &d[i]->value.as[l]);
+			}
+			dbus_message_iter_close_container(&val, &elt);
+			dbus_message_iter_close_container(&entry, &val);
+			break;
+		}
+		dbus_message_iter_close_container(&array, &entry);
+	}
+	dbus_message_iter_close_container(&args, &array);
+	return (i > 0) ? 0 : -1;
 }
