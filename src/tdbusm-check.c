@@ -163,7 +163,9 @@ main(int argc, char **argv)
 							        30000, &err);
 		if (rep == NULL) {
 			printf("No reply to message %d.\n", i);
-		} else {
+			rep = msg;
+		}
+		{
 			dbus_bool_t b;
 			int j, k;
 			char *s, *p, *s1, *s2, *s3, *s4;
@@ -173,60 +175,60 @@ main(int argc, char **argv)
 			case 0:
 				ret = cm_tdbusm_get_b(rep, NULL, &b);
 				if (ret == 0) {
-					printf("Message %d - b:%s.\n", i,
+					printf("Message %d - b:%s\n", i,
 					       b ? "TRUE" : "FALSE");
 				}
 				break;
 			case 1:
 				ret = cm_tdbusm_get_n(rep, NULL, &n);
 				if (ret == 0) {
-					printf("Message %d - n:%ld.\n", i, n);
+					printf("Message %d - n:%ld\n", i, n);
 				}
 				break;
 			case 2:
 				ret = cm_tdbusm_get_p(rep, NULL, &p);
 				if (ret == 0) {
-					printf("Message %d - p:%s.\n", i, p);
+					printf("Message %d - p:%s\n", i, p);
 				}
 				break;
 			case 3:
 				ret = cm_tdbusm_get_s(rep, NULL, &s);
 				if (ret == 0) {
-					printf("Message %d - s:%s.\n", i, p);
+					printf("Message %d - s:%s\n", i, s);
 				}
 				break;
 			case 4:
 				ret = cm_tdbusm_get_bp(rep, NULL, &b, &p);
 				if (ret == 0) {
-					printf("Message %d - b:%s,p:%s.\n", i,
+					printf("Message %d - b:%s,p:%s\n", i,
 					       b ? "TRUE" : "FALSE", p);
 				}
 				break;
 			case 5:
 				ret = cm_tdbusm_get_bs(rep, NULL, &b, &s);
 				if (ret == 0) {
-					printf("Message %d - b:%s,s:%s.\n", i,
+					printf("Message %d - b:%s,s:%s\n", i,
 					       b ? "TRUE" : "FALSE", s);
 				}
 				break;
 			case 6:
 				ret = cm_tdbusm_get_sb(rep, NULL, &s, &b);
 				if (ret == 0) {
-					printf("Message %d - s:%s,b:%s.\n", i,
+					printf("Message %d - s:%s,b:%s\n", i,
 					       s, b ? "TRUE" : "FALSE");
 				}
 				break;
 			case 7:
 				ret = cm_tdbusm_get_sn(rep, NULL, &s, &n);
 				if (ret == 0) {
-					printf("Message %d - s:%s,n:%ld.\n", i,
+					printf("Message %d - s:%s,n:%ld\n", i,
 					       s, n);
 				}
 				break;
 			case 8:
 				ret = cm_tdbusm_get_ss(rep, NULL, &s1, &s2);
 				if (ret == 0) {
-					printf("Message %d - s:%s,s:%s.\n", i,
+					printf("Message %d - s:%s,s:%s\n", i,
 					       s1, s2);
 				}
 				break;
@@ -263,7 +265,7 @@ main(int argc, char **argv)
 							 &s1, &s2, &s3, &s4);
 				if (ret == 0) {
 					printf("Message %d - "
-					       "s:%s,s:%ss:%s,s:%s.\n", i,
+					       "s:%s,s:%ss:%s,s:%s\n", i,
 					       s1, s2, s3, s4);
 				}
 				break;
@@ -356,7 +358,7 @@ main(int argc, char **argv)
 						       j > 0 ? "," : "",
 						       as3[j]);
 					}
-					printf("],n:%ld[", n);
+					printf("],n:%ld,[", n);
 					for (j = 0;
 					     (as4 != NULL) && (as4[j] != NULL);
 					     j++) {
