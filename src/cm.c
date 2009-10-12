@@ -279,3 +279,9 @@ cm_get_entry_by_index(struct cm_context *context, int i)
 	}
 	return NULL;
 }
+
+int
+cm_get_n_entries(struct cm_context *context)
+{
+	return context->n_entries;
+}

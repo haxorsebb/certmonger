@@ -27,8 +27,9 @@ int cm_start_all(struct cm_context *context);
 int cm_keep_going(struct cm_context *context);
 void cm_done(struct cm_context *context);
 
-struct cm_store_entry *cm_get_entry_by_id(struct cm_context *c, const char *id);
+int cm_get_n_entries(struct cm_context *context);
 struct cm_store_entry *cm_get_entry_by_index(struct cm_context *c, int i);
+struct cm_store_entry *cm_get_entry_by_id(struct cm_context *c, const char *id);
 void cm_kick(struct cm_context *c, const char *id);
 
 #endif
