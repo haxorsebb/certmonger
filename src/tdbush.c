@@ -72,11 +72,33 @@ is_request(struct cm_context *ctx, const char *path,
 
 /* Functions implemented for the base object. */
 static DBusHandlerResult
+base_add_known_ca(DBusConnection *conn, DBusMessage *msg,
+		  struct cm_context *ctx)
+{
+	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
+static DBusHandlerResult
 base_add_request(DBusConnection *conn, DBusMessage *msg,
 		 struct cm_context *ctx)
 {
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
+
+static DBusHandlerResult
+base_get_defaults(DBusConnection *conn, DBusMessage *msg,
+		  struct cm_context *ctx)
+{
+	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
+static DBusHandlerResult
+base_get_known_cas(DBusConnection *conn, DBusMessage *msg,
+		   struct cm_context *ctx)
+{
+	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
 static DBusHandlerResult
 base_get_requests(DBusConnection *conn, DBusMessage *msg,
 		  struct cm_context *ctx)
@@ -107,6 +129,22 @@ base_get_requests(DBusConnection *conn, DBusMessage *msg,
 		dbus_message_unref(rep);
 	}
 	talloc_free(ret);
+	return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+static DBusHandlerResult
+base_get_supported_ca_types(DBusConnection *conn, DBusMessage *msg,
+			    struct cm_context *ctx)
+{
+	const char *ca_types[] = {"SELF", "IPA", NULL};
+	DBusMessage *rep;
+	rep = dbus_message_new_method_return(msg);
+	if (rep != NULL) {
+		if (cm_tdbusm_set_as(rep, ca_types) == 0) {
+			dbus_connection_send(conn, rep, NULL);
+		}
+		dbus_message_unref(rep);
+	}
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
@@ -142,7 +180,202 @@ base_get_supported_storage(DBusConnection *conn, DBusMessage *msg,
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
+static DBusHandlerResult
+base_remove_known_ca(DBusConnection *conn, DBusMessage *msg,
+		     struct cm_context *ctx)
+{
+	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
+static DBusHandlerResult
+base_remove_request(DBusConnection *conn, DBusMessage *msg,
+		    struct cm_context *ctx)
+{
+	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
 /* Functions implemented for request objects. */
+static DBusHandlerResult
+request_get_autorenew(DBusConnection *conn, DBusMessage *msg,
+		      struct cm_context *ctx)
+{
+	DBusMessage *rep;
+	struct cm_store_entry *entry;
+	entry = get_entry_for_request_message(msg, ctx);
+	if (entry != NULL) {
+		rep = dbus_message_new_method_return(msg);
+		if (rep != NULL) {
+			if (cm_tdbusm_set_b(rep, entry->cm_autorenew) == 0) {
+				dbus_connection_send(conn, rep, NULL);
+			}
+			dbus_message_unref(rep);
+		}
+	}
+	return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+static DBusHandlerResult
+request_get_cert_data(DBusConnection *conn, DBusMessage *msg,
+		      struct cm_context *ctx)
+{
+	DBusMessage *rep;
+	struct cm_store_entry *entry;
+	entry = get_entry_for_request_message(msg, ctx);
+	if (entry != NULL) {
+		rep = dbus_message_new_method_return(msg);
+		if (rep != NULL) {
+			if (cm_tdbusm_set_s(rep, entry->cm_cert) == 0) {
+				dbus_connection_send(conn, rep, NULL);
+			}
+		}
+	}
+	return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+static DBusHandlerResult
+request_get_cert_storage(DBusConnection *conn, DBusMessage *msg,
+			 struct cm_context *ctx)
+{
+	DBusMessage *rep;
+	struct cm_store_entry *entry;
+	const char *type, *location, *nick, *token;
+	entry = get_entry_for_request_message(msg, ctx);
+	if (entry != NULL) {
+		rep = dbus_message_new_method_return(msg);
+		if (rep != NULL) {
+			location = entry->cm_cert_storage_location;
+			switch (entry->cm_cert_storage_type) {
+			case cm_cert_storage_file:
+				type = "FILE";
+				if (cm_tdbusm_set_ss(rep, type,
+						     location) == 0) {
+					dbus_connection_send(conn, rep, NULL);
+				}
+				break;
+			case cm_cert_storage_nssdb:
+				type = "NSSDB";
+				token = entry->cm_cert_token;
+				nick = entry->cm_cert_nickname;
+				if ((token != NULL) &&
+				    (cm_tdbusm_set_ssss(rep, type,
+						        location,
+						        nick,
+						        token) == 0)) {
+					dbus_connection_send(conn, rep, NULL);
+				} else
+				if ((nick != NULL) &&
+				    (cm_tdbusm_set_sss(rep, type,
+						       location,
+						       nick) == 0)) {
+					dbus_connection_send(conn, rep, NULL);
+				} else
+				if ((cm_tdbusm_set_ss(rep, type,
+						      location) == 0)) {
+					dbus_connection_send(conn, rep, NULL);
+				}
+				break;
+			}
+			dbus_message_unref(rep);
+		}
+	}
+	return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+static DBusHandlerResult
+request_get_csr(DBusConnection *conn, DBusMessage *msg,
+		struct cm_context *ctx)
+{
+	DBusMessage *rep;
+	struct cm_store_entry *entry;
+	entry = get_entry_for_request_message(msg, ctx);
+	if (entry != NULL) {
+		rep = dbus_message_new_method_return(msg);
+		if (rep != NULL) {
+			if (cm_tdbusm_set_s(rep, entry->cm_csr) == 0) {
+				dbus_connection_send(conn, rep, NULL);
+			}
+		}
+	}
+	return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+static DBusHandlerResult
+request_get_key_storage(DBusConnection *conn, DBusMessage *msg,
+			struct cm_context *ctx)
+{
+	DBusMessage *rep;
+	struct cm_store_entry *entry;
+	const char *type, *location, *nick, *token;
+	entry = get_entry_for_request_message(msg, ctx);
+	if (entry != NULL) {
+		rep = dbus_message_new_method_return(msg);
+		if (rep != NULL) {
+			location = entry->cm_key_storage_location;
+			switch (entry->cm_key_storage_type) {
+			case cm_key_storage_file:
+				type = "FILE";
+				if (cm_tdbusm_set_ss(rep, type,
+						     location) == 0) {
+					dbus_connection_send(conn, rep, NULL);
+				}
+				break;
+			case cm_key_storage_nssdb:
+				type = "NSSDB";
+				token = entry->cm_key_token;
+				nick = entry->cm_key_nickname;
+				if ((token != NULL) &&
+				    (cm_tdbusm_set_ssss(rep, type,
+						        location,
+						        nick,
+						        token) == 0)) {
+					dbus_connection_send(conn, rep, NULL);
+				} else
+				if ((nick != NULL) &&
+				    (cm_tdbusm_set_sss(rep, type,
+						       location,
+						       nick) == 0)) {
+					dbus_connection_send(conn, rep, NULL);
+				} else
+				if ((cm_tdbusm_set_ss(rep, type,
+						      location) == 0)) {
+					dbus_connection_send(conn, rep, NULL);
+				}
+				break;
+			}
+			dbus_message_unref(rep);
+		}
+	}
+	return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+static DBusHandlerResult
+request_get_key_type_and_size(DBusConnection *conn, DBusMessage *msg,
+			      struct cm_context *ctx)
+{
+	DBusMessage *rep;
+	struct cm_store_entry *entry;
+	const char *type;
+	int size;
+	entry = get_entry_for_request_message(msg, ctx);
+	if (entry != NULL) {
+		rep = dbus_message_new_method_return(msg);
+		type = "UNKNOWN";
+		switch (entry->cm_key_type.cm_key_algorithm) {
+		case cm_key_rsa:
+			type = "RSA";
+			break;
+		}
+		if (rep != NULL) {
+			size = entry->cm_key_type.cm_key_size;
+			if (cm_tdbusm_set_sn(rep, type, size) == 0) {
+				dbus_connection_send(conn, rep, NULL);
+			}
+			dbus_message_unref(rep);
+		}
+	}
+	return DBUS_HANDLER_RESULT_HANDLED;
+}
+
 static DBusHandlerResult
 request_get_monitoring(DBusConnection *conn, DBusMessage *msg,
 		       struct cm_context *ctx)
@@ -162,6 +395,29 @@ request_get_monitoring(DBusConnection *conn, DBusMessage *msg,
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
+static DBusHandlerResult
+request_get_status(DBusConnection *conn, DBusMessage *msg,
+		   struct cm_context *ctx)
+{
+	DBusMessage *rep;
+	struct cm_store_entry *entry;
+	const char *state;
+	entry = get_entry_for_request_message(msg, ctx);
+	if (entry != NULL) {
+		rep = dbus_message_new_method_return(msg);
+		if (rep != NULL) {
+			state = cm_store_state_as_string(entry->cm_state);
+			if (cm_tdbusm_set_sb(rep,
+					     state,
+					     FALSE) == 0) {
+				dbus_connection_send(conn, rep, NULL);
+			}
+			dbus_message_unref(rep);
+		}
+	}
+	return DBUS_HANDLER_RESULT_HANDLED;
+}
+
 static struct {
 	dbus_bool_t (*implements)(struct cm_context *ctx, const char *path,
 				  const char *interface, const char *member);
@@ -170,18 +426,44 @@ static struct {
 	DBusHandlerResult (*handle)(DBusConnection *conn, DBusMessage *msg,
 			   struct cm_context *ctx);
 } cm_tdbush_methods[] = {
+	{&is_base, CM_DBUS_BASE_INTERFACE, "add_known_ca",
+	 base_add_known_ca},
 	{&is_base, CM_DBUS_BASE_INTERFACE, "add_request",
 	 base_add_request},
+	{&is_base, CM_DBUS_BASE_INTERFACE, "get_defaults",
+	 base_get_defaults},
+	{&is_base, CM_DBUS_BASE_INTERFACE, "get_known_cas",
+	 base_get_known_cas},
 	{&is_base, CM_DBUS_BASE_INTERFACE, "get_requests",
 	 base_get_requests},
 	{&is_base, CM_DBUS_BASE_INTERFACE, "get_supported_key_types",
 	 base_get_supported_key_types},
 	{&is_base, CM_DBUS_BASE_INTERFACE, "get_supported_key_storage",
 	 base_get_supported_storage},
+	{&is_base, CM_DBUS_BASE_INTERFACE, "get_supported_ca_types",
+	 base_get_supported_ca_types},
 	{&is_base, CM_DBUS_BASE_INTERFACE, "get_supported_cert_storage",
 	 base_get_supported_storage},
+	{&is_base, CM_DBUS_BASE_INTERFACE, "remove_known_ca",
+	 base_remove_known_ca},
+	{&is_base, CM_DBUS_BASE_INTERFACE, "remove_request",
+	 base_remove_request},
+	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_autorenew",
+	 request_get_autorenew},
+	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_cert_data",
+	 request_get_cert_data},
+	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_cert_storage",
+	 request_get_cert_storage},
+	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_csr",
+	 request_get_csr},
+	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_key_storage",
+	 request_get_key_storage},
+	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_key_type_and_size",
+	 request_get_key_type_and_size},
 	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_monitoring",
 	 request_get_monitoring},
+	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_status",
+	 request_get_status},
 };
 
 DBusHandlerResult
