@@ -42,8 +42,6 @@ struct cm_context {
 	int n_entries, should_quit;
 	struct cm_store_entry **entries;
 	struct cm_event {
-		struct cm_context *c;
-		int i;
 		void *iterate_state;
 		void *next_event;
 	} *events;
@@ -83,7 +81,6 @@ cm_init(struct tevent_context *parent, struct cm_context **context)
 	tevent_add_signal(parent, NULL, SIGTERM, 0, cm_break_h, ctx);
 	for (i = 0; i < ctx->n_entries; i++) {
 		memset(&ctx->events[i], 0, sizeof(ctx->events[i]));
-		ctx->events[i].c = ctx;
 		if (cm_iterate_init(ctx->entries[i],
 				    &ctx->events[i].iterate_state) != 0) {
 			for (j = 0; j < i; j++) {
@@ -105,20 +102,38 @@ static void
 cm_timer_h(struct tevent_context *ec, struct tevent_timer *te,
 	   struct timeval current_time, void *pvt)
 {
-	struct cm_event *event = pvt;
+	struct cm_context *context = pvt;
+	int i;
 	talloc_free(te);
-	event->next_event = cm_service_one(event->c, NULL,
-					   event - event->c->events);
+	for (i = 0; i < context->n_entries; i++) {
+		if (context->events[i].next_event == te) {
+			context->events[i].next_event = cm_service_one(context,
+								       NULL, i);
+		}
+		break;
+	}
+	if (i >= context->n_entries) {
+		cm_log(3, "Bug: unowned timer fired.\n");
+	}
 }
 
 static void
 cm_fd_h(struct tevent_context *ec,
 	struct tevent_fd *fde, uint16_t flags, void *pvt)
 {
-	struct cm_event *event = pvt;
+	struct cm_context *context = pvt;
+	int i;
 	talloc_free(fde);
-	event->next_event = cm_service_one(event->c, NULL,
-					   event - event->c->events);
+	for (i = 0; i < context->n_entries; i++) {
+		if (context->events[i].next_event == fde) {
+			context->events[i].next_event = cm_service_one(context,
+								       NULL, i);
+		}
+		break;
+	}
+	if (i >= context->n_entries) {
+		cm_log(3, "Bug: unowned FD watch fired.\n");
+	}
 }
 
 static void
@@ -150,39 +165,35 @@ cm_service_one(struct cm_context *context, struct timeval *current_time, int i)
 		switch (when) {
 		case cm_time_now:
 			t = tevent_add_timer(talloc_parent(context), NULL,
-					     now, cm_timer_h,
-					     &context->events[i]);
+					     now, cm_timer_h, context);
 			cm_log(3, "Will revisit '%s' now.\n",
 			       context->entries[i]->cm_id);
 			break;
 		case cm_time_soon:
 			then = tevent_timeval_add(&now, DELAY_SOON, 0);
 			t = tevent_add_timer(talloc_parent(context), NULL,
-					     then, cm_timer_h,
-					     &context->events[i]);
+					     then, cm_timer_h, context);
 			cm_log(3, "Will revisit '%s' soon.\n",
 			       context->entries[i]->cm_id);
 			break;
 		case cm_time_soonish:
 			then = tevent_timeval_add(&now, DELAY_SOONISH, 0);
 			t = tevent_add_timer(talloc_parent(context), NULL,
-					     then, cm_timer_h,
-					     &context->events[i]);
+					     then, cm_timer_h, context);
 			cm_log(3, "Will revisit '%s' soonish.\n",
 			       context->entries[i]->cm_id);
 			break;
 		case cm_time_delay:
 			then = tevent_timeval_add(&now, delay, 0);
 			t = tevent_add_timer(talloc_parent(context), NULL,
-					     then, cm_timer_h,
-					     &context->events[i]);
+					     then, cm_timer_h, context);
 			cm_log(3, "Will revisit '%s' in %d seconds.\n",
 			       context->entries[i]->cm_id, delay);
 			break;
 		case cm_time_no_time:
 			t = tevent_add_fd(talloc_parent(context), NULL,
 					  fd, TEVENT_FD_READ,
-					  cm_fd_h, &context->events[i]);
+					  cm_fd_h, context);
 			cm_log(3, "Will revisit '%s' on traffic from %d.\n",
 			       context->entries[i]->cm_id, fd);
 			break;
