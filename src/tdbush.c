@@ -32,6 +32,8 @@
 #include "tdbus.h"
 #include "tdbusm.h"
 
+#define CM_DBUS_CA_PATH CM_DBUS_BASE_PATH "/cas"
+#define CM_DBUS_CA_INTERFACE CM_DBUS_BASE_INTERFACE ".ca"
 #define CM_DBUS_REQUEST_PATH CM_DBUS_BASE_PATH "/requests"
 #define CM_DBUS_REQUEST_INTERFACE CM_DBUS_BASE_INTERFACE ".request"
 
@@ -62,6 +64,12 @@ static struct cm_store_entry *
 get_entry_for_request_message(DBusMessage *msg, struct cm_context *ctx)
 {
 	return msg ? get_entry_for_path(ctx, dbus_message_get_path(msg)) : NULL;
+}
+static dbus_bool_t
+is_ca(struct cm_context *ctx, const char *path,
+      const char *interface, const char *member)
+{
+	return FALSE;
 }
 static dbus_bool_t
 is_request(struct cm_context *ctx, const char *path,
@@ -165,8 +173,8 @@ base_get_supported_key_types(DBusConnection *conn, DBusMessage *msg,
 }
 
 static DBusHandlerResult
-base_get_supported_storage(DBusConnection *conn, DBusMessage *msg,
-			   struct cm_context *ctx)
+base_get_supported_key_and_cert_storage(DBusConnection *conn, DBusMessage *msg,
+					struct cm_context *ctx)
 {
 	const char *storage_types[] = {"NSSDB", "FILE", NULL};
 	DBusMessage *rep;
@@ -192,6 +200,45 @@ base_remove_request(DBusConnection *conn, DBusMessage *msg,
 		    struct cm_context *ctx)
 {
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
+/* Functions implemented for known CAs. */
+static DBusHandlerResult
+ca_get_nickname(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
+{
+	return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+static DBusHandlerResult
+ca_get_is_default(DBusConnection *conn, DBusMessage *msg,
+		  struct cm_context *ctx)
+{
+	return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+static DBusHandlerResult
+ca_get_issuer_names(DBusConnection *conn, DBusMessage *msg,
+		    struct cm_context *ctx)
+{
+	return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+static DBusHandlerResult
+ca_get_location(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
+{
+	return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+static DBusHandlerResult
+ca_get_type(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
+{
+	return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+static DBusHandlerResult
+ca_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
+{
+	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
 /* Functions implemented for request objects. */
@@ -233,8 +280,22 @@ request_get_cert_data(DBusConnection *conn, DBusMessage *msg,
 }
 
 static DBusHandlerResult
-request_get_cert_storage(DBusConnection *conn, DBusMessage *msg,
-			 struct cm_context *ctx)
+request_get_cert_info(DBusConnection *conn, DBusMessage *msg,
+		      struct cm_context *ctx)
+{
+	return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+static DBusHandlerResult
+request_get_cert_last_checked(DBusConnection *conn, DBusMessage *msg,
+			      struct cm_context *ctx)
+{
+	return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+static DBusHandlerResult
+request_get_cert_storage_info(DBusConnection *conn, DBusMessage *msg,
+			      struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	struct cm_store_entry *entry;
@@ -282,8 +343,8 @@ request_get_cert_storage(DBusConnection *conn, DBusMessage *msg,
 }
 
 static DBusHandlerResult
-request_get_csr(DBusConnection *conn, DBusMessage *msg,
-		struct cm_context *ctx)
+request_get_csr_data(DBusConnection *conn, DBusMessage *msg,
+		     struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	struct cm_store_entry *entry;
@@ -300,8 +361,15 @@ request_get_csr(DBusConnection *conn, DBusMessage *msg,
 }
 
 static DBusHandlerResult
-request_get_key_storage(DBusConnection *conn, DBusMessage *msg,
-			struct cm_context *ctx)
+request_get_csr_info(DBusConnection *conn, DBusMessage *msg,
+		     struct cm_context *ctx)
+{
+	return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+static DBusHandlerResult
+request_get_key_storage_info(DBusConnection *conn, DBusMessage *msg,
+			     struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	struct cm_store_entry *entry;
@@ -396,6 +464,13 @@ request_get_monitoring(DBusConnection *conn, DBusMessage *msg,
 }
 
 static DBusHandlerResult
+request_get_notification_info(DBusConnection *conn, DBusMessage *msg,
+			      struct cm_context *ctx)
+{
+	return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+static DBusHandlerResult
 request_get_status(DBusConnection *conn, DBusMessage *msg,
 		   struct cm_context *ctx)
 {
@@ -415,6 +490,47 @@ request_get_status(DBusConnection *conn, DBusMessage *msg,
 			dbus_message_unref(rep);
 		}
 	}
+	return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+static DBusHandlerResult
+request_get_submitted_cookie(DBusConnection *conn, DBusMessage *msg,
+			     struct cm_context *ctx)
+{
+	return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+static DBusHandlerResult
+request_get_submitted_date(DBusConnection *conn, DBusMessage *msg,
+			   struct cm_context *ctx)
+{
+	return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+static DBusHandlerResult
+request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
+{
+	return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+static DBusHandlerResult
+request_reenroll(DBusConnection *conn, DBusMessage *msg,
+		 struct cm_context *ctx)
+{
+	return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+static DBusHandlerResult
+request_rekey_and_submit(DBusConnection *conn, DBusMessage *msg,
+			 struct cm_context *ctx)
+{
+	return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+static DBusHandlerResult
+request_resubmit(DBusConnection *conn, DBusMessage *msg,
+		 struct cm_context *ctx)
+{
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
@@ -439,31 +555,57 @@ static struct {
 	{&is_base, CM_DBUS_BASE_INTERFACE, "get_supported_key_types",
 	 base_get_supported_key_types},
 	{&is_base, CM_DBUS_BASE_INTERFACE, "get_supported_key_storage",
-	 base_get_supported_storage},
+	 base_get_supported_key_and_cert_storage},
 	{&is_base, CM_DBUS_BASE_INTERFACE, "get_supported_ca_types",
 	 base_get_supported_ca_types},
 	{&is_base, CM_DBUS_BASE_INTERFACE, "get_supported_cert_storage",
-	 base_get_supported_storage},
+	 base_get_supported_key_and_cert_storage},
 	{&is_base, CM_DBUS_BASE_INTERFACE, "remove_known_ca",
 	 base_remove_known_ca},
 	{&is_base, CM_DBUS_BASE_INTERFACE, "remove_request",
 	 base_remove_request},
+	{&is_ca, CM_DBUS_CA_INTERFACE, "get_nickname", ca_get_nickname},
+	{&is_ca, CM_DBUS_CA_INTERFACE, "get_is_default", ca_get_is_default},
+	{&is_ca, CM_DBUS_CA_INTERFACE, "get_type", ca_get_type},
+	{&is_ca, CM_DBUS_CA_INTERFACE, "get_location", ca_get_location},
+	{&is_ca, CM_DBUS_CA_INTERFACE, "get_issuer_names", ca_get_issuer_names},
+	{&is_ca, CM_DBUS_CA_INTERFACE, "modify", ca_modify},
 	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_autorenew",
 	 request_get_autorenew},
 	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_cert_data",
 	 request_get_cert_data},
-	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_cert_storage",
-	 request_get_cert_storage},
-	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_csr",
-	 request_get_csr},
-	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_key_storage",
-	 request_get_key_storage},
+	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_cert_info",
+	 request_get_cert_info},
+	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_cert_last_checked",
+	 request_get_cert_last_checked},
+	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_cert_storage_info",
+	 request_get_cert_storage_info},
+	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_csr_data",
+	 request_get_csr_data},
+	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_csr_info",
+	 request_get_csr_info},
+	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_key_storage_info",
+	 request_get_key_storage_info},
 	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_key_type_and_size",
 	 request_get_key_type_and_size},
 	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_monitoring",
 	 request_get_monitoring},
+	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_notification_info",
+	 request_get_notification_info},
 	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_status",
 	 request_get_status},
+	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_submitted_cookie",
+	 request_get_submitted_cookie},
+	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_submitted_date",
+	 request_get_submitted_date},
+	{&is_request, CM_DBUS_REQUEST_INTERFACE, "modify",
+	 request_modify},
+	{&is_request, CM_DBUS_REQUEST_INTERFACE, "reenroll",
+	 request_reenroll},
+	{&is_request, CM_DBUS_REQUEST_INTERFACE, "rekey_and_submit",
+	 request_rekey_and_submit},
+	{&is_request, CM_DBUS_REQUEST_INTERFACE, "resubmit",
+	 request_resubmit},
 };
 
 DBusHandlerResult

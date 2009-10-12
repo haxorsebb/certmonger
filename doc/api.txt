@@ -10,7 +10,7 @@ o object layout
     returns: path -> object paths for requests
   - get-defaults
     returns: path -> object paths for defaults object
-  - get-supported-key-type
+  - get-supported-key-types
     returns: array of string -> "RSA"
   - get-supported-key-storage
     returns: array of string -> "NSSDB", "FILE"
@@ -43,7 +43,7 @@ o object layout
     returns: boolean -> succeeded
   - get-known-cas
     returns: array of path -> object paths for known cas
-  - get-supported-ca-type
+  - get-supported-ca-types
     returns: array of string -> "SELF", "IPA"
   - add-known-ca
     arguments: string -> ca nickname
@@ -56,27 +56,25 @@ o object layout
     returns: boolean -> succeeded
   (objects whose names are returned by "get-requests" or "get-defaults")
   interface=TBD.request
-  - get status
+  - get-status
     returns: string -> state name
              boolean -> i-am-stuck
-  - get key type and size
+  - get-key-type-and-size
     returns: string -> key algorithm
              number -> key size
-  - regenerate key
-    returns: boolean -> succeeded?
-  - get key storage,location,nickname,token
+  - get-key-storage-info
     returns: string -> "file", "nssdb"
              string -> filename (for "file"), or directory (for "nssdb")
              string(required for "nssdb") -> nssdb nickname
              string(optional) -> nssdb token name
-  - get cert storage,location,nickname,token
+  - get-cert-storage-info
     returns: string -> "file", "nssdb"
              string -> filename (for "file"), or directory (for "nssdb")
              string(required for "nssdb") -> nssdb nickname
              string(optional) -> nssdb token name
-  - get cert data
+  - get-cert-data
     returns: string -> certificate in PEM format
-  - get cert issuer,serial,subject,expiration,email,dnsname,principals,ku,eku
+  - get-cert-info
     returns: string -> issuer
              string -> serial number
              string -> subject
@@ -86,27 +84,27 @@ o object layout
              array of string -> principal names
              number -> key usage as bitfield based on RFC5280's values
              array of string -> oid values
-  - get monitoring setting
+  - get-monitoring
     returns: boolean -> enabled?
-  - get cert date-of-last-check-for-expiration
+  - get-cert-last-checked
     returns: number -> time of last check for expiration (unix time)
-  - get cert expiration notification method,destination
+  - get-notification-info
     returns: string -> method ("syslog", "email")
              string -> destination (log level or recipient)
-  - get autorenew setting
+  - get-autorenew
     returns: boolean -> enabled?
-  - get requesting subject,email,dnsname,principals,ku,eku
+  - get-csr-info
     returns: string -> subject
              array of string -> email addresses
              array of string -> dns names
              array of string -> principal names
              number -> key usage as bitfield based on RFC5280's values
              array of string -> oid values
-  - get csr
+  - get-csr-data
     returns: string -> signing request in PEM format
-  - get date-of-submission
-    returns: number(optional) -> time of submission
-  - get ca-cookie
+  - get-submitted-date
+    returns: number(optional) -> time of last submission to a CA
+  - get-submitted-cookie
     returns: string(optional) -> CA-specific value
   - modify
     - requested subject name
@@ -126,7 +124,7 @@ o object layout
     - otherwise-not-known-ca
       arguments: string -> type of CA
                  string (optional) -> location of CA
-  - rekey-and-resubmit (for whatever reason) (?)
+  - rekey-and-submit (for whatever reason) (?)
     returns: boolean -> working-on-it?
   - resubmit (for requests that have been denied, generates a new csr)
     returns: boolean -> working-on-it?
@@ -134,16 +132,16 @@ o object layout
     returns: boolean -> working-on-it?
   (objects whose names are returned by "get-known-cas")
   interface=TBD.ca
-  - get nickname
+  - get-nickname
     returns: string
-  - get is-default
+  - get-is-default
     returns: boolean -> is-the-default-ca
-  - get type
+  - get-type
     returns: string -> type of ca
-  - get location
+  - get-location
     returns: string -> location of ca
-  - get associated issuer names
-    returns: array of string (optional) -> set of issuer names
+  - get-issuer-names
+    returns: array of string (optional) -> set of known issuer names
   - modify
     - nickname
       arguments: string -> name of ca
