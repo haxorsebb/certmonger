@@ -48,6 +48,7 @@ struct tdbus_connection {
 		int d_interval;
 		dbus_bool_t active;
 	} *timers;
+	void *data;
 };
 
 static void
@@ -385,7 +386,8 @@ cm_tdbus_filter(DBusConnection *conn, DBusMessage *dmessage, void *data)
 }
 
 int
-cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type)
+cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type,
+	       void *data)
 {
 	DBusConnection *conn;
 	const char *bus_desc;
@@ -413,6 +415,7 @@ cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type)
 		return -1;
 	}
 	tdb->conn = conn;
+	tdb->data = data;
 	/* Set the callback to be called when I/O processing has yielded a
 	 * request that we need to act on. */
 	dbus_connection_set_dispatch_status_function(conn,
