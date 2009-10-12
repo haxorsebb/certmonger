@@ -234,6 +234,67 @@ cm_done(struct cm_context *context)
 	talloc_free(context);
 }
 
+int
+cm_add_entry(struct cm_context *context, struct cm_store_entry *new_entry)
+{
+	struct cm_store_entry **entries;
+	struct cm_event *events;
+	int i, j;
+	/* Check for duplicates and count the number of entries we're already
+	 * managing. */
+	for (i = 0; i < context->n_entries; i++) {
+		if (strcmp(context->entries[i]->cm_id, new_entry->cm_id) == 0) {
+			return -1;
+		}
+	}
+	/* Allocate storage for a new entry array. */
+	entries = talloc_array(context, struct cm_store_entry *, i + 2);
+	if (entries != NULL) {
+		/* Allocate storage for a new entry state array. */
+		events = talloc_array(context, struct cm_event, i + 1);
+		if (events != NULL) {
+			/* Copy the entries to the new arrays. */
+			for (j = 0; j < i; j++) {
+				talloc_reparent(entries, context->entries,
+						context->entries[j]);
+				entries[j] = context->entries[j];
+			}
+			memcpy(events, context->events,
+			       sizeof(struct cm_event) * i);
+			/* Add the new members. */
+			talloc_reparent(talloc_parent(new_entry), entries,
+					new_entry);
+			entries[i] = new_entry;
+			memset(&events[i], 0, sizeof(events[i]));
+			/* Reset the pointers. */
+			talloc_free(context->entries);
+			context->entries = entries;
+			talloc_free(context->events);
+			context->events = events;
+			/* Reset the recorded count of entries. */
+			context->n_entries++;
+			entries[context->n_entries] = NULL;
+		} else {
+			talloc_free(entries);
+			entries = NULL;
+		}
+	}
+	if ((entries != NULL) && (events != NULL)) {
+		/* Prepare to set this entry in motion. */
+		if (cm_iterate_init(context->entries[i],
+				    &context->events[i].iterate_state) != 0) {
+			cm_log(3, "Error starting '%s', please retry.\n",
+			       context->entries[i]->cm_id);
+		} else {
+			/* Set this entry in motion. */
+			context->events[i].next_event = cm_service_one(context,
+								       NULL, i);
+		}
+		return 0;
+	}
+	return -1;
+}
+
 void
 cm_kick(struct cm_context *context, const char *id)
 {
