@@ -154,11 +154,8 @@ set_d(DBusMessage *msg)
 static int
 get_b(DBusMessage *rep, int msgid)
 {
+	int ret;
 	dbus_bool_t b;
-	int ret, j, k;
-	char *s, *p, *s1, *s2, *s3, *s4;
-	char **ap, **as, **as1, **as2, **as3, **as4;
-	struct cm_tdbusm_dict **d;
 	ret = cm_tdbusm_get_b(rep, NULL, &b);
 	if (ret == 0) {
 		printf("Message %d - b:%s\n", msgid, b ? "TRUE" : "FALSE");
@@ -168,11 +165,8 @@ get_b(DBusMessage *rep, int msgid)
 static int
 get_n(DBusMessage *rep, int msgid)
 {
-	dbus_bool_t b;
-	int ret, j, k;
-	char *s, *p, *s1, *s2, *s3, *s4;
-	char **ap, **as, **as1, **as2, **as3, **as4;
-	struct cm_tdbusm_dict **d;
+	int ret;
+	long n;
 	ret = cm_tdbusm_get_n(rep, NULL, &n);
 	if (ret == 0) {
 		printf("Message %d - n:%ld\n", msgid, n);
@@ -182,11 +176,8 @@ get_n(DBusMessage *rep, int msgid)
 static int
 get_p(DBusMessage *rep, int msgid)
 {
-	dbus_bool_t b;
-	int ret, j, k;
-	char *s, *p, *s1, *s2, *s3, *s4;
-	char **ap, **as, **as1, **as2, **as3, **as4;
-	struct cm_tdbusm_dict **d;
+	int ret;
+	char *p;
 	ret = cm_tdbusm_get_p(rep, NULL, &p);
 	if (ret == 0) {
 		printf("Message %d - p:%s\n", msgid, p);
@@ -196,11 +187,8 @@ get_p(DBusMessage *rep, int msgid)
 static int
 get_s(DBusMessage *rep, int msgid)
 {
-	dbus_bool_t b;
-	int ret, j, k;
-	char *s, *p, *s1, *s2, *s3, *s4;
-	char **ap, **as, **as1, **as2, **as3, **as4;
-	struct cm_tdbusm_dict **d;
+	int ret;
+	char *s;
 	ret = cm_tdbusm_get_s(rep, NULL, &s);
 	if (ret == 0) {
 		printf("Message %d - s:%s\n", msgid, s);
@@ -211,10 +199,8 @@ static int
 get_bp(DBusMessage *rep, int msgid)
 {
 	dbus_bool_t b;
-	int ret, j, k;
-	char *s, *p, *s1, *s2, *s3, *s4;
-	char **ap, **as, **as1, **as2, **as3, **as4;
-	struct cm_tdbusm_dict **d;
+	int ret;
+	char *p;
 	ret = cm_tdbusm_get_bp(rep, NULL, &b, &p);
 	if (ret == 0) {
 		printf("Message %d - b:%s,p:%s\n", msgid,
@@ -226,10 +212,8 @@ static int
 get_bs(DBusMessage *rep, int msgid)
 {
 	dbus_bool_t b;
-	int ret, j, k;
-	char *s, *p, *s1, *s2, *s3, *s4;
-	char **ap, **as, **as1, **as2, **as3, **as4;
-	struct cm_tdbusm_dict **d;
+	int ret;
+	char *s;
 	ret = cm_tdbusm_get_bs(rep, NULL, &b, &s);
 	if (ret == 0) {
 		printf("Message %d - b:%s,s:%s\n", msgid,
@@ -241,10 +225,8 @@ static int
 get_sb(DBusMessage *rep, int msgid)
 {
 	dbus_bool_t b;
-	int ret, j, k;
-	char *s, *p, *s1, *s2, *s3, *s4;
-	char **ap, **as, **as1, **as2, **as3, **as4;
-	struct cm_tdbusm_dict **d;
+	int ret;
+	char *s;
 	ret = cm_tdbusm_get_sb(rep, NULL, &s, &b);
 	if (ret == 0) {
 		printf("Message %d - s:%s,b:%s\n", msgid, s,
@@ -255,11 +237,9 @@ get_sb(DBusMessage *rep, int msgid)
 static int
 get_sn(DBusMessage *rep, int msgid)
 {
-	dbus_bool_t b;
-	int ret, j, k;
-	char *s, *p, *s1, *s2, *s3, *s4;
-	char **ap, **as, **as1, **as2, **as3, **as4;
-	struct cm_tdbusm_dict **d;
+	int ret;
+	long n;
+	char *s;
 	ret = cm_tdbusm_get_sn(rep, NULL, &s, &n);
 	if (ret == 0) {
 		printf("Message %d - s:%s,n:%ld\n", msgid, s, n);
@@ -269,11 +249,8 @@ get_sn(DBusMessage *rep, int msgid)
 static int
 get_ss(DBusMessage *rep, int msgid)
 {
-	dbus_bool_t b;
-	int ret, j, k;
-	char *s, *p, *s1, *s2, *s3, *s4;
-	char **ap, **as, **as1, **as2, **as3, **as4;
-	struct cm_tdbusm_dict **d;
+	int ret;
+	char *s1, *s2;
 	ret = cm_tdbusm_get_ss(rep, NULL, &s1, &s2);
 	if (ret == 0) {
 		printf("Message %d - s:%s,s:%s\n", msgid, s1, s2);
@@ -283,16 +260,13 @@ get_ss(DBusMessage *rep, int msgid)
 static int
 get_ap(DBusMessage *rep, int msgid)
 {
-	dbus_bool_t b;
-	int ret, j, k;
-	char *s, *p, *s1, *s2, *s3, *s4;
-	char **ap, **as, **as1, **as2, **as3, **as4;
-	struct cm_tdbusm_dict **d;
+	int ret, i;
+	char **ap;
 	ret = cm_tdbusm_get_ap(rep, NULL, &ap);
 	if (ret == 0) {
 		printf("Message %d - [", msgid);
-		for (j = 0; (ap != NULL) && (ap[j] != NULL); j++) {
-			printf("%sp:%s", j > 0 ? "," : "", ap[j]);
+		for (i = 0; (ap != NULL) && (ap[i] != NULL); i++) {
+			printf("%sp:%s", i > 0 ? "," : "", ap[i]);
 		}
 		printf("]\n");
 	}
@@ -301,16 +275,13 @@ get_ap(DBusMessage *rep, int msgid)
 static int
 get_as(DBusMessage *rep, int msgid)
 {
-	dbus_bool_t b;
-	int ret, j, k;
-	char *s, *p, *s1, *s2, *s3, *s4;
-	char **ap, **as, **as1, **as2, **as3, **as4;
-	struct cm_tdbusm_dict **d;
+	int ret, i;
+	char **as;
 	ret = cm_tdbusm_get_as(rep, NULL, &as);
 	if (ret == 0) {
 		printf("Message %d - [", msgid);
-		for (j = 0; (as != NULL) && (as[j] != NULL); j++) {
-			printf("%ss:%s", j > 0 ? "," : "", as[j]);
+		for (i = 0; (as != NULL) && (as[i] != NULL); i++) {
+			printf("%ss:%s", i > 0 ? "," : "", as[i]);
 		}
 		printf("]\n");
 	}
@@ -319,11 +290,8 @@ get_as(DBusMessage *rep, int msgid)
 static int
 get_ssss(DBusMessage *rep, int msgid)
 {
-	dbus_bool_t b;
-	int ret, j, k;
-	char *s, *p, *s1, *s2, *s3, *s4;
-	char **ap, **as, **as1, **as2, **as3, **as4;
-	struct cm_tdbusm_dict **d;
+	int ret;
+	char *s1, *s2, *s3, *s4;
 	ret = cm_tdbusm_get_ssss(rep, NULL, &s1, &s2, &s3, &s4);
 	if (ret == 0) {
 		printf("Message %d - s:%s,s:%ss:%s,s:%s\n", msgid,
@@ -334,16 +302,13 @@ get_ssss(DBusMessage *rep, int msgid)
 static int
 get_sssas(DBusMessage *rep, int msgid)
 {
-	dbus_bool_t b;
-	int ret, j, k;
-	char *s, *p, *s1, *s2, *s3, *s4;
-	char **ap, **as, **as1, **as2, **as3, **as4;
-	struct cm_tdbusm_dict **d;
+	int ret, i;
+	char *s1, *s2, *s3, **as;
 	ret = cm_tdbusm_get_sssas(rep, NULL, &s1, &s2, &s3, &as);
 	if (ret == 0) {
 		printf("Message %d - s:%s,s:%s,s:%s,[", msgid, s1, s2, s3);
-		for (j = 0; (as != NULL) && (as[j] != NULL); j++) {
-			printf("%ss:%s", j > 0 ? "," : "", as[j]);
+		for (i = 0; (as != NULL) && (as[i] != NULL); i++) {
+			printf("%ss:%s", i > 0 ? "," : "", as[i]);
 		}
 		printf("]\n");
 	}
@@ -352,31 +317,29 @@ get_sssas(DBusMessage *rep, int msgid)
 static int
 get_sssnasasasas(DBusMessage *rep, int msgid)
 {
-	dbus_bool_t b;
-	int ret, j, k;
-	char *s, *p, *s1, *s2, *s3, *s4;
-	char **ap, **as, **as1, **as2, **as3, **as4;
-	struct cm_tdbusm_dict **d;
+	int ret, i;
+	long n;
+	char *s1, *s2, *s3, **as1, **as2, **as3, **as4;
 	ret = cm_tdbusm_get_sssnasasasas(rep, NULL,
 					 &s1, &s2, &s3, &n,
 					 &as1, &as2, &as3, &as4);
 	if (ret == 0) {
 		printf("Message %d - s:%s,s:%s,s:%s," "n:%ld,[",
 		       msgid, s1, s2, s3, n);
-		for (j = 0; (as1 != NULL) && (as1[j] != NULL); j++) {
-			printf("%ss:%s", j > 0 ? "," : "", as1[j]);
+		for (i = 0; (as1 != NULL) && (as1[i] != NULL); i++) {
+			printf("%ss:%s", i > 0 ? "," : "", as1[i]);
 		}
 		printf("],[");
-		for (j = 0; (as2 != NULL) && (as2[j] != NULL); j++) {
-			printf("%ss:%s", j > 0 ? "," : "", as2[j]);
+		for (i = 0; (as2 != NULL) && (as2[i] != NULL); i++) {
+			printf("%ss:%s", i > 0 ? "," : "", as2[i]);
 		}
 		printf("],[");
-		for (j = 0; (as3 != NULL) && (as3[j] != NULL); j++) {
-			printf("%ss:%s", j > 0 ? "," : "", as3[j]);
+		for (i = 0; (as3 != NULL) && (as3[i] != NULL); i++) {
+			printf("%ss:%s", i > 0 ? "," : "", as3[i]);
 		}
 		printf("],[");
-		for (j = 0; (as4 != NULL) && (as4[j] != NULL); j++) {
-			printf("%ss:%s", j > 0 ? "," : "", as4[j]);
+		for (i = 0; (as4 != NULL) && (as4[i] != NULL); i++) {
+			printf("%ss:%s", i > 0 ? "," : "", as4[i]);
 		}
 		printf("]\n");
 	}
@@ -385,30 +348,28 @@ get_sssnasasasas(DBusMessage *rep, int msgid)
 static int
 get_sasasasnas(DBusMessage *rep, int msgid)
 {
-	dbus_bool_t b;
-	int ret, j, k;
-	char *s, *p, *s1, *s2, *s3, *s4;
-	char **ap, **as, **as1, **as2, **as3, **as4;
-	struct cm_tdbusm_dict **d;
+	int ret, i;
+	long n;
+	char *s, **as1, **as2, **as3, **as4;
 	ret = cm_tdbusm_get_sasasasnas(rep, NULL, &s,
 				       &as1, &as2, &as3,
 				       &n, &as4);
 	if (ret == 0) {
 		printf("Message %d - s:%s,[", msgid, s);
-		for (j = 0; (as1 != NULL) && (as1[j] != NULL); j++) {
-			printf("%ss:%s", j > 0 ? "," : "", as1[j]);
+		for (i = 0; (as1 != NULL) && (as1[i] != NULL); i++) {
+			printf("%ss:%s", i > 0 ? "," : "", as1[i]);
 		}
 		printf("],[");
-		for (j = 0; (as2 != NULL) && (as2[j] != NULL); j++) {
-			printf("%ss:%s", j > 0 ? "," : "", as2[j]);
+		for (i = 0; (as2 != NULL) && (as2[i] != NULL); i++) {
+			printf("%ss:%s", i > 0 ? "," : "", as2[i]);
 		}
 		printf("],[");
-		for (j = 0; (as3 != NULL) && (as3[j] != NULL); j++) {
-			printf("%ss:%s", j > 0 ? "," : "", as3[j]);
+		for (i = 0; (as3 != NULL) && (as3[i] != NULL); i++) {
+			printf("%ss:%s", i > 0 ? "," : "", as3[i]);
 		}
 		printf("],n:%ld,[", n);
-		for (j = 0; (as4 != NULL) && (as4[j] != NULL); j++) {
-			printf("%ss:%s", j > 0 ? "," : "", as4[j]);
+		for (i = 0; (as4 != NULL) && (as4[i] != NULL); i++) {
+			printf("%ss:%s", i > 0 ? "," : "", as4[i]);
 		}
 		printf("]\n");
 	}
@@ -417,37 +378,34 @@ get_sasasasnas(DBusMessage *rep, int msgid)
 static int
 get_d(DBusMessage *rep, int msgid)
 {
-	dbus_bool_t b;
-	int ret, j, k;
-	char *s, *p, *s1, *s2, *s3, *s4;
-	char **ap, **as, **as1, **as2, **as3, **as4;
+	int ret, i, k;
 	struct cm_tdbusm_dict **d;
 	ret = cm_tdbusm_get_d(rep, NULL, &d);
 	if (ret == 0) {
 		printf("Message %d - [", msgid);
-		for (j = 0; (d != NULL) && (d[j] != NULL); j++) {
-			printf("%s{%s=", j > 0 ? "," : "", d[j]->key);
-			switch (d[j]->value_type) {
+		for (i = 0; (d != NULL) && (d[i] != NULL); i++) {
+			printf("%s{%s=", i > 0 ? "," : "", d[i]->key);
+			switch (d[i]->value_type) {
 			case cm_tdbusm_dict_s:
-				printf("s:%s}", d[j]->value.s);
+				printf("s:%s}", d[i]->value.s);
 				break;
 			case cm_tdbusm_dict_as:
 				printf("as:[");
 				for (k = 0;
-				     (d[j]->value.as != NULL) &&
-				     (d[j]->value.as[k] != NULL);
+				     (d[i]->value.as != NULL) &&
+				     (d[i]->value.as[k] != NULL);
 				     k++) {
-					printf("%s%s", j > 0 ? "," : "",
-					       d[j]->value.as[k]);
+					printf("%s%s", i > 0 ? "," : "",
+					       d[i]->value.as[k]);
 				}
 				printf("]");
 				break;
 			case cm_tdbusm_dict_n:
-				printf("n:%ld}", d[j]->value.n);
+				printf("n:%ld}", d[i]->value.n);
 				break;
 			case cm_tdbusm_dict_b:
 				printf("b:%s}",
-				       d[j]->value.b ? "TRUE" : "FALSE");
+				       d[i]->value.b ? "TRUE" : "FALSE");
 				break;
 			}
 		}
@@ -463,7 +421,8 @@ main(int argc, char **argv)
 	DBusMessage *msg, *rep;
 	DBusError err;
 	DBusBusType bus = DBUS_BUS_SESSION;
-	int i, c, ret;
+	int c, ret;
+	unsigned int i;
 	const struct {
 		int (*set)(DBusMessage *);
 		int (*get)(DBusMessage *, int);
