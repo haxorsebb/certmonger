@@ -484,10 +484,220 @@ cm_tdbusm_get_sasasasnas(DBusMessage *msg, void *parent, char **s,
 	return 0;
 }
 
+static struct cm_tdbusm_dict *
+cm_tdbusm_get_d_item(DBusMessageIter *item, void *parent)
+{
+	struct cm_tdbusm_dict *dict;
+	char *s, **as;
+	int64_t i64;
+	int32_t i32;
+	int16_t i16;
+	int n_values;
+	DBusMessageIter value, sval;
+	dict = talloc_ptrtype(parent, dict);
+	/* Pull out a string. */
+	switch (dbus_message_iter_get_arg_type(item)) {
+	case DBUS_TYPE_STRING:
+		dbus_message_iter_get_basic(item, &s);
+		dict->key = talloc_strdup(dict, s);
+		break;
+	default:
+		talloc_free(dict);
+		return NULL;
+		break;
+	}
+	if (!dbus_message_iter_has_next(item) ||
+	    !dbus_message_iter_next(item)) {
+		talloc_free(dict);
+		return NULL;
+	}
+	/* Pull out a variant. */
+	switch (dbus_message_iter_get_arg_type(item)) {
+	case DBUS_TYPE_VARIANT:
+		memset(&value, 0, sizeof(value));
+		dbus_message_iter_recurse(item, &value);
+		switch (dbus_message_iter_get_arg_type(&value)) {
+		/* The variant value can be a boolean. */
+		case DBUS_TYPE_BOOLEAN:
+			dict->value_type = cm_tdbusm_dict_b;
+			dbus_message_iter_get_basic(&value, &dict->value.b);
+			break;
+		/* It can be a string. */
+		case DBUS_TYPE_STRING:
+			dict->value_type = cm_tdbusm_dict_s;
+			dbus_message_iter_get_basic(&value, &s);
+			dict->value.s = talloc_strdup(dict, s);
+			break;
+		/* It can be an integer type. */
+		case DBUS_TYPE_INT16:
+			dict->value_type = cm_tdbusm_dict_n;
+			dbus_message_iter_get_basic(&value, &i16);
+			dict->value.n = i16;
+			break;
+		case DBUS_TYPE_INT32:
+			dict->value_type = cm_tdbusm_dict_n;
+			dbus_message_iter_get_basic(&value, &i32);
+			dict->value.n = i32;
+			break;
+		case DBUS_TYPE_INT64:
+			dict->value_type = cm_tdbusm_dict_n;
+			dbus_message_iter_get_basic(&value, &i64);
+			dict->value.n = i64;
+			break;
+		/* It can be an array of strings. */
+		case DBUS_TYPE_ARRAY:
+			dict->value_type = cm_tdbusm_dict_as;
+			memset(&sval, 0, sizeof(sval));
+			dbus_message_iter_recurse(&value, &sval);
+			as = NULL;
+			n_values = 0;
+			for (;;) {
+				/* This had better be a string. */
+				switch (dbus_message_iter_get_arg_type(&sval)) {
+				case DBUS_TYPE_STRING:
+					dbus_message_iter_get_basic(&sval, &s);
+					as = talloc_realloc(dict, as, char *,
+							    n_values + 2);
+					if (as != NULL) {
+						as[n_values] = talloc_strdup(as,
+									     s);
+						n_values++;
+						as[n_values] = NULL;
+					}
+					break;
+				default:
+					talloc_free(dict);
+					return NULL;
+					break;
+				}
+				/* Move on to the next element. */
+				if (dbus_message_iter_has_next(&sval)) {
+					if (!dbus_message_iter_next(&sval)) {
+						talloc_free(dict);
+						return NULL;
+					}
+				} else {
+					/* Out of elements. */
+					break;
+				}
+			}
+			dict->value.as = as;
+			break;
+		default:
+			/* It had better not be something else. */
+			talloc_free(dict);
+			return NULL;
+			break;
+		}
+		break;
+	default:
+		talloc_free(dict);
+		return NULL;
+		break;
+	}
+	return dict;
+}
+static struct cm_tdbusm_dict **
+cm_tdbusm_get_d_array(DBusMessageIter *array, void *parent)
+{
+	struct cm_tdbusm_dict *ditem, **dict, **tmp;
+	int n_items;
+	DBusMessageIter item;
+	dict = NULL;
+	n_items = 0;
+	for (;;) {
+		/* We'd better be walking a list of dictionary entries. */
+		switch (dbus_message_iter_get_arg_type(array)) {
+		case DBUS_TYPE_DICT_ENTRY:
+			/* Found a dictionary entry. */
+			memset(&item, 0, sizeof(item));
+			dbus_message_iter_recurse(array, &item);
+			ditem = cm_tdbusm_get_d_item(&item, parent);
+			if (ditem != NULL) {
+				tmp = talloc_realloc(parent, dict,
+						     struct cm_tdbusm_dict *,
+						     n_items + 2);
+				if (tmp != NULL) {
+					tmp[n_items] = ditem;
+					n_items++;
+					tmp[n_items] = NULL;
+					dict = tmp;
+				}
+			}
+			break;
+		default:
+			/* Found... something else. */
+			talloc_free(dict);
+			return NULL;
+			break;
+		}
+		if (dbus_message_iter_has_next(array)) {
+			if (!dbus_message_iter_next(array)) {
+				talloc_free(dict);
+				return NULL;
+			}
+		} else {
+			break;
+		}
+	}
+	return dict;
+}
+
 int
 cm_tdbusm_get_d(DBusMessage *msg, void *parent, struct cm_tdbusm_dict ***d)
 {
+	struct cm_tdbusm_dict **tdicts, **dicts, **tmp;
+	DBusMessageIter args, array;
+	int i, n_dicts;
 	*d = NULL;
+	dicts = NULL;
+	n_dicts = 0;
+	memset(&args, 0, sizeof(args));
+	if (dbus_message_iter_init(msg, &args)) {
+		for (;;) {
+			switch (dbus_message_iter_get_arg_type(&args)) {
+			case DBUS_TYPE_ARRAY:
+				memset(&array, 0, sizeof(array));
+				dbus_message_iter_recurse(&args, &array);
+				tdicts = cm_tdbusm_get_d_array(&array, parent);
+				if (tdicts != NULL) {
+					for (i = 0; tdicts[i] != NULL; i++) {
+						continue;
+					}
+					tmp = talloc_realloc(parent, dicts,
+							     struct cm_tdbusm_dict *,
+							     n_dicts + i + 1);
+					if (tmp != NULL) {
+						memcpy(tmp + n_dicts,
+						       tdicts,
+						       i * sizeof(tdicts[0]));
+						n_dicts += i;
+						tmp[n_dicts] = NULL;
+						dicts = tmp;
+					} else {
+						talloc_free(tdicts);
+						talloc_free(dicts);
+						return -1;
+					}
+				}
+				break;
+			default:
+				talloc_free(dicts);
+				return -1;
+				break;
+			}
+			if (dbus_message_iter_has_next(&args)) {
+				if (!dbus_message_iter_next(&args)) {
+					talloc_free(dicts);
+					return -1;
+				}
+			} else {
+				break;
+			}
+		}
+		*d = dicts;
+		return 0;
+	}
 	return -1;
 }
 

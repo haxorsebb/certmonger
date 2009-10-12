@@ -395,7 +395,7 @@ get_d(DBusMessage *rep, int msgid)
 				     (d[i]->value.as != NULL) &&
 				     (d[i]->value.as[k] != NULL);
 				     k++) {
-					printf("%s%s", i > 0 ? "," : "",
+					printf("%s%s", k > 0 ? "," : "",
 					       d[i]->value.as[k]);
 				}
 				printf("]");
