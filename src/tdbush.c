@@ -43,18 +43,40 @@ is_base(struct cm_context *ctx, const char *path,
 {
 	return (strcmp(path, CM_DBUS_BASE_PATH) == 0);
 }
+static struct cm_store_entry *
+get_entry_for_path(struct cm_context *ctx, const char *path)
+{
+	int initial;
+	if (path != NULL) {
+		initial = strlen(CM_DBUS_REQUEST_PATH);
+		if (strncmp(path, CM_DBUS_REQUEST_PATH, initial) == 0) {
+			if (path[initial] == '/') {
+				return cm_get_entry_by_id(ctx,
+							  path + initial + 1);
+			}
+		}
+	}
+	return NULL;
+}
+static struct cm_store_entry *
+get_entry_for_request_message(DBusMessage *msg, struct cm_context *ctx)
+{
+	return msg ? get_entry_for_path(ctx, dbus_message_get_path(msg)) : NULL;
+}
 static dbus_bool_t
 is_request(struct cm_context *ctx, const char *path,
 	   const char *interface, const char *member)
 {
-	int initial;
-	initial = strlen(CM_DBUS_REQUEST_PATH);
-	return (strncmp(path, CM_DBUS_REQUEST_PATH, initial) == 0) &&
-	       path[initial] == '/' &&
-	       (cm_get_entry_by_id(ctx, path + initial + 1) != NULL);
+	return get_entry_for_path(ctx, path) != NULL;
 }
 
-/* Functions implemented for a specific object type. */
+/* Functions implemented for the base object. */
+static DBusHandlerResult
+base_add_request(DBusConnection *conn, DBusMessage *msg,
+		 struct cm_context *ctx)
+{
+	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
 static DBusHandlerResult
 base_get_requests(DBusConnection *conn, DBusMessage *msg,
 		  struct cm_context *ctx)
@@ -120,21 +142,18 @@ base_get_supported_storage(DBusConnection *conn, DBusMessage *msg,
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
+/* Functions implemented for request objects. */
 static DBusHandlerResult
 request_get_monitoring(DBusConnection *conn, DBusMessage *msg,
 		       struct cm_context *ctx)
 {
-	struct cm_store_entry *entry;
-	dbus_bool_t b;
 	DBusMessage *rep;
-	entry = cm_get_entry_by_id(ctx,
-				   dbus_message_get_path(msg) +
-				   strlen(CM_DBUS_REQUEST_PATH) + 1);
+	struct cm_store_entry *entry;
+	entry = get_entry_for_request_message(msg, ctx);
 	if (entry != NULL) {
 		rep = dbus_message_new_method_return(msg);
-		b = entry->cm_monitor;
 		if (rep != NULL) {
-			if (cm_tdbusm_set_b(rep, b) == 0) {
+			if (cm_tdbusm_set_b(rep, entry->cm_monitor) == 0) {
 				dbus_connection_send(conn, rep, NULL);
 			}
 			dbus_message_unref(rep);
@@ -151,6 +170,8 @@ static struct {
 	DBusHandlerResult (*handle)(DBusConnection *conn, DBusMessage *msg,
 			   struct cm_context *ctx);
 } cm_tdbush_methods[] = {
+	{&is_base, CM_DBUS_BASE_INTERFACE, "add_request",
+	 base_add_request},
 	{&is_base, CM_DBUS_BASE_INTERFACE, "get_requests",
 	 base_get_requests},
 	{&is_base, CM_DBUS_BASE_INTERFACE, "get_supported_key_types",
