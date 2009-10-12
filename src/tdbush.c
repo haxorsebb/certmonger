@@ -28,7 +28,7 @@
 #include "tdbusm.h"
 
 DBusHandlerResult
-cm_tdbus_handle(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
+cm_tdbush_handle(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 {
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }

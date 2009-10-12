@@ -19,7 +19,7 @@
 #define cmtdbusr_h
 
 struct cm_context;
-DBusHandlerResult cm_tdbus_handle(DBusConnection *conn, DBusMessage *msg,
-				  struct cm_context *ctx);
+DBusHandlerResult cm_tdbush_handle(DBusConnection *conn, DBusMessage *msg,
+				   struct cm_context *ctx);
 
 #endif
