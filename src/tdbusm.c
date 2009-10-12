@@ -116,6 +116,7 @@ int
 cm_tdbusm_get_p(DBusMessage *msg, void *parent, char **p)
 {
 	DBusError err;
+	*p = NULL;
 	memset(&err, 0, sizeof(err));
 	if (dbus_message_get_args(msg, &err,
 				  DBUS_TYPE_OBJECT_PATH, p,
@@ -131,6 +132,7 @@ int
 cm_tdbusm_get_s(DBusMessage *msg, void *parent, char **s)
 {
 	DBusError err;
+	*s = NULL;
 	memset(&err, 0, sizeof(err));
 	if (dbus_message_get_args(msg, &err,
 				  DBUS_TYPE_STRING, s,
@@ -146,6 +148,7 @@ int
 cm_tdbusm_get_bp(DBusMessage *msg, void *parent, dbus_bool_t *b, char **p)
 {
 	DBusError err;
+	*p = NULL;
 	memset(&err, 0, sizeof(err));
 	if (dbus_message_get_args(msg, &err,
 				  DBUS_TYPE_BOOLEAN, b,
@@ -162,6 +165,7 @@ int
 cm_tdbusm_get_bs(DBusMessage *msg, void *parent, dbus_bool_t *b, char **s)
 {
 	DBusError err;
+	*s = NULL;
 	memset(&err, 0, sizeof(err));
 	if (dbus_message_get_args(msg, &err,
 				  DBUS_TYPE_BOOLEAN, b,
@@ -178,6 +182,7 @@ int
 cm_tdbusm_get_sb(DBusMessage *msg, void *parent, char **s, dbus_bool_t *b)
 {
 	DBusError err;
+	*s = NULL;
 	memset(&err, 0, sizeof(err));
 	if (dbus_message_get_args(msg, &err,
 				  DBUS_TYPE_STRING, s,
@@ -197,6 +202,7 @@ cm_tdbusm_get_sn(DBusMessage *msg, void *parent, char **s, long *n)
 	int64_t i64;
 	int64_t i32;
 	int64_t i16;
+	*s = NULL;
 	memset(&err, 0, sizeof(err));
 	if (dbus_message_get_args(msg, &err,
 				  DBUS_TYPE_STRING, s,
@@ -234,6 +240,8 @@ int
 cm_tdbusm_get_ss(DBusMessage *msg, void *parent, char **s1, char **s2)
 {
 	DBusError err;
+	*s1 = NULL;
+	*s2 = NULL;
 	memset(&err, 0, sizeof(err));
 	if (dbus_message_get_args(msg, &err,
 				  DBUS_TYPE_STRING, s1,
@@ -253,6 +261,7 @@ cm_tdbusm_get_ap(DBusMessage *msg, void *parent, char ***ap)
 	DBusError err;
 	char **tmp;
 	int i;
+	*ap = NULL;
 	memset(&err, 0, sizeof(err));
 	if (dbus_message_get_args(msg, &err,
 				  DBUS_TYPE_ARRAY, DBUS_TYPE_OBJECT_PATH,
@@ -271,6 +280,7 @@ cm_tdbusm_get_as(DBusMessage *msg, void *parent, char ***as)
 	DBusError err;
 	char **tmp;
 	int i;
+	*as = NULL;
 	memset(&err, 0, sizeof(err));
 	if (dbus_message_get_args(msg, &err,
 				  DBUS_TYPE_ARRAY, DBUS_TYPE_STRING, &tmp, &i,
@@ -287,6 +297,10 @@ cm_tdbusm_get_ssss(DBusMessage *msg, void *parent, char **s1, char **s2,
 		   char **s3, char **s4)
 {
 	DBusError err;
+	*s1 = NULL;
+	*s2 = NULL;
+	*s3 = NULL;
+	*s4 = NULL;
 	memset(&err, 0, sizeof(err));
 	if (dbus_message_get_args(msg, &err,
 				  DBUS_TYPE_STRING, s1,
@@ -311,6 +325,10 @@ cm_tdbusm_get_sssas(DBusMessage *msg, void *parent,
 	DBusError err;
 	char **tmp;
 	int i;
+	*s1 = NULL;
+	*s2 = NULL;
+	*s3 = NULL;
+	*as = NULL;
 	memset(&err, 0, sizeof(err));
 	if (dbus_message_get_args(msg, &err,
 				  DBUS_TYPE_STRING, s1,
@@ -339,6 +357,13 @@ cm_tdbusm_get_sssnasasasas(DBusMessage *msg, void *parent,
 	int32_t i32;
 	int16_t i16;
 	int i, j, k, l;
+	*s1 = NULL;
+	*s2 = NULL;
+	*s3 = NULL;
+	*as1 = NULL;
+	*as2 = NULL;
+	*as3 = NULL;
+	*as4 = NULL;
 	memset(&err, 0, sizeof(err));
 	if (!dbus_message_get_args(msg, &err,
 				   DBUS_TYPE_STRING, s1,
@@ -406,6 +431,11 @@ cm_tdbusm_get_sasasasnas(DBusMessage *msg, void *parent, char **s,
 	int32_t i32;
 	int16_t i16;
 	int i, j, k, l;
+	*s = NULL;
+	*as1 = NULL;
+	*as2 = NULL;
+	*as3 = NULL;
+	*as4 = NULL;
 	memset(&err, 0, sizeof(err));
 	if (!dbus_message_get_args(msg, &err,
 				   DBUS_TYPE_STRING, s,
@@ -457,6 +487,7 @@ cm_tdbusm_get_sasasasnas(DBusMessage *msg, void *parent, char **s,
 int
 cm_tdbusm_get_d(DBusMessage *msg, void *parent, struct cm_tdbusm_dict ***d)
 {
+	*d = NULL;
 	return -1;
 }
 
