@@ -70,6 +70,392 @@ static struct cm_tdbusm_dict d3 = {
 };
 static const struct cm_tdbusm_dict *d[] = {&d0, &d1, &d2, &d3, NULL};
 
+static int
+set_b(DBusMessage *msg)
+{
+	return cm_tdbusm_set_b(msg, b);
+}
+static int
+set_n(DBusMessage *msg)
+{
+	return cm_tdbusm_set_n(msg, n);
+}
+static int
+set_p(DBusMessage *msg)
+{
+	return cm_tdbusm_set_p(msg, p);
+}
+static int
+set_s(DBusMessage *msg)
+{
+	return cm_tdbusm_set_s(msg, s);
+}
+static int
+set_bp(DBusMessage *msg)
+{
+	return cm_tdbusm_set_bp(msg, b, p);
+}
+static int
+set_bs(DBusMessage *msg)
+{
+	return cm_tdbusm_set_bs(msg, b, s);
+}
+static int
+set_sb(DBusMessage *msg)
+{
+	return cm_tdbusm_set_sb(msg, s, b);
+}
+static int
+set_sn(DBusMessage *msg)
+{
+	return cm_tdbusm_set_sn(msg, s, n);
+}
+static int
+set_ss(DBusMessage *msg)
+{
+	return cm_tdbusm_set_ss(msg, s1, s2);
+}
+static int
+set_ap(DBusMessage *msg)
+{
+	return cm_tdbusm_set_ap(msg, ap);
+}
+static int
+set_as(DBusMessage *msg)
+{
+	return cm_tdbusm_set_as(msg, as);
+}
+static int
+set_ssss(DBusMessage *msg)
+{
+	return cm_tdbusm_set_ssss(msg, s1, s2, s3, s4);
+}
+static int
+set_sssas(DBusMessage *msg)
+{
+	return cm_tdbusm_set_sssas(msg, s1, s2, s3, as);
+}
+static int
+set_sssnasasasas(DBusMessage *msg)
+{
+	return cm_tdbusm_set_sssnasasasas(msg, s1, s2, s3, n,
+					  as1, as2, as3, as4);
+}
+static int
+set_sasasasnas(DBusMessage *msg)
+{
+	return cm_tdbusm_set_sasasasnas(msg, s, as1, as2, as3, n, as4);
+}
+static int
+set_d(DBusMessage *msg)
+{
+	return cm_tdbusm_set_d(msg, d);
+}
+static int
+get_b(DBusMessage *rep, int msgid)
+{
+	dbus_bool_t b;
+	int ret, j, k;
+	char *s, *p, *s1, *s2, *s3, *s4;
+	char **ap, **as, **as1, **as2, **as3, **as4;
+	struct cm_tdbusm_dict **d;
+	ret = cm_tdbusm_get_b(rep, NULL, &b);
+	if (ret == 0) {
+		printf("Message %d - b:%s\n", msgid, b ? "TRUE" : "FALSE");
+	}
+	return ret;
+}
+static int
+get_n(DBusMessage *rep, int msgid)
+{
+	dbus_bool_t b;
+	int ret, j, k;
+	char *s, *p, *s1, *s2, *s3, *s4;
+	char **ap, **as, **as1, **as2, **as3, **as4;
+	struct cm_tdbusm_dict **d;
+	ret = cm_tdbusm_get_n(rep, NULL, &n);
+	if (ret == 0) {
+		printf("Message %d - n:%ld\n", msgid, n);
+	}
+	return ret;
+}
+static int
+get_p(DBusMessage *rep, int msgid)
+{
+	dbus_bool_t b;
+	int ret, j, k;
+	char *s, *p, *s1, *s2, *s3, *s4;
+	char **ap, **as, **as1, **as2, **as3, **as4;
+	struct cm_tdbusm_dict **d;
+	ret = cm_tdbusm_get_p(rep, NULL, &p);
+	if (ret == 0) {
+		printf("Message %d - p:%s\n", msgid, p);
+	}
+	return ret;
+}
+static int
+get_s(DBusMessage *rep, int msgid)
+{
+	dbus_bool_t b;
+	int ret, j, k;
+	char *s, *p, *s1, *s2, *s3, *s4;
+	char **ap, **as, **as1, **as2, **as3, **as4;
+	struct cm_tdbusm_dict **d;
+	ret = cm_tdbusm_get_s(rep, NULL, &s);
+	if (ret == 0) {
+		printf("Message %d - s:%s\n", msgid, s);
+	}
+	return ret;
+}
+static int
+get_bp(DBusMessage *rep, int msgid)
+{
+	dbus_bool_t b;
+	int ret, j, k;
+	char *s, *p, *s1, *s2, *s3, *s4;
+	char **ap, **as, **as1, **as2, **as3, **as4;
+	struct cm_tdbusm_dict **d;
+	ret = cm_tdbusm_get_bp(rep, NULL, &b, &p);
+	if (ret == 0) {
+		printf("Message %d - b:%s,p:%s\n", msgid,
+		       b ? "TRUE" : "FALSE", p);
+	}
+	return ret;
+}
+static int
+get_bs(DBusMessage *rep, int msgid)
+{
+	dbus_bool_t b;
+	int ret, j, k;
+	char *s, *p, *s1, *s2, *s3, *s4;
+	char **ap, **as, **as1, **as2, **as3, **as4;
+	struct cm_tdbusm_dict **d;
+	ret = cm_tdbusm_get_bs(rep, NULL, &b, &s);
+	if (ret == 0) {
+		printf("Message %d - b:%s,s:%s\n", msgid,
+		       b ? "TRUE" : "FALSE", s);
+	}
+	return ret;
+}
+static int
+get_sb(DBusMessage *rep, int msgid)
+{
+	dbus_bool_t b;
+	int ret, j, k;
+	char *s, *p, *s1, *s2, *s3, *s4;
+	char **ap, **as, **as1, **as2, **as3, **as4;
+	struct cm_tdbusm_dict **d;
+	ret = cm_tdbusm_get_sb(rep, NULL, &s, &b);
+	if (ret == 0) {
+		printf("Message %d - s:%s,b:%s\n", msgid, s,
+		       b ? "TRUE" : "FALSE");
+	}
+	return ret;
+}
+static int
+get_sn(DBusMessage *rep, int msgid)
+{
+	dbus_bool_t b;
+	int ret, j, k;
+	char *s, *p, *s1, *s2, *s3, *s4;
+	char **ap, **as, **as1, **as2, **as3, **as4;
+	struct cm_tdbusm_dict **d;
+	ret = cm_tdbusm_get_sn(rep, NULL, &s, &n);
+	if (ret == 0) {
+		printf("Message %d - s:%s,n:%ld\n", msgid, s, n);
+	}
+	return ret;
+}
+static int
+get_ss(DBusMessage *rep, int msgid)
+{
+	dbus_bool_t b;
+	int ret, j, k;
+	char *s, *p, *s1, *s2, *s3, *s4;
+	char **ap, **as, **as1, **as2, **as3, **as4;
+	struct cm_tdbusm_dict **d;
+	ret = cm_tdbusm_get_ss(rep, NULL, &s1, &s2);
+	if (ret == 0) {
+		printf("Message %d - s:%s,s:%s\n", msgid, s1, s2);
+	}
+	return ret;
+}
+static int
+get_ap(DBusMessage *rep, int msgid)
+{
+	dbus_bool_t b;
+	int ret, j, k;
+	char *s, *p, *s1, *s2, *s3, *s4;
+	char **ap, **as, **as1, **as2, **as3, **as4;
+	struct cm_tdbusm_dict **d;
+	ret = cm_tdbusm_get_ap(rep, NULL, &ap);
+	if (ret == 0) {
+		printf("Message %d - [", msgid);
+		for (j = 0; (ap != NULL) && (ap[j] != NULL); j++) {
+			printf("%sp:%s", j > 0 ? "," : "", ap[j]);
+		}
+		printf("]\n");
+	}
+	return ret;
+}
+static int
+get_as(DBusMessage *rep, int msgid)
+{
+	dbus_bool_t b;
+	int ret, j, k;
+	char *s, *p, *s1, *s2, *s3, *s4;
+	char **ap, **as, **as1, **as2, **as3, **as4;
+	struct cm_tdbusm_dict **d;
+	ret = cm_tdbusm_get_as(rep, NULL, &as);
+	if (ret == 0) {
+		printf("Message %d - [", msgid);
+		for (j = 0; (as != NULL) && (as[j] != NULL); j++) {
+			printf("%ss:%s", j > 0 ? "," : "", as[j]);
+		}
+		printf("]\n");
+	}
+	return ret;
+}
+static int
+get_ssss(DBusMessage *rep, int msgid)
+{
+	dbus_bool_t b;
+	int ret, j, k;
+	char *s, *p, *s1, *s2, *s3, *s4;
+	char **ap, **as, **as1, **as2, **as3, **as4;
+	struct cm_tdbusm_dict **d;
+	ret = cm_tdbusm_get_ssss(rep, NULL, &s1, &s2, &s3, &s4);
+	if (ret == 0) {
+		printf("Message %d - s:%s,s:%ss:%s,s:%s\n", msgid,
+		       s1, s2, s3, s4);
+	}
+	return ret;
+}
+static int
+get_sssas(DBusMessage *rep, int msgid)
+{
+	dbus_bool_t b;
+	int ret, j, k;
+	char *s, *p, *s1, *s2, *s3, *s4;
+	char **ap, **as, **as1, **as2, **as3, **as4;
+	struct cm_tdbusm_dict **d;
+	ret = cm_tdbusm_get_sssas(rep, NULL, &s1, &s2, &s3, &as);
+	if (ret == 0) {
+		printf("Message %d - s:%s,s:%s,s:%s,[", msgid, s1, s2, s3);
+		for (j = 0; (as != NULL) && (as[j] != NULL); j++) {
+			printf("%ss:%s", j > 0 ? "," : "", as[j]);
+		}
+		printf("]\n");
+	}
+	return ret;
+}
+static int
+get_sssnasasasas(DBusMessage *rep, int msgid)
+{
+	dbus_bool_t b;
+	int ret, j, k;
+	char *s, *p, *s1, *s2, *s3, *s4;
+	char **ap, **as, **as1, **as2, **as3, **as4;
+	struct cm_tdbusm_dict **d;
+	ret = cm_tdbusm_get_sssnasasasas(rep, NULL,
+					 &s1, &s2, &s3, &n,
+					 &as1, &as2, &as3, &as4);
+	if (ret == 0) {
+		printf("Message %d - s:%s,s:%s,s:%s," "n:%ld,[",
+		       msgid, s1, s2, s3, n);
+		for (j = 0; (as1 != NULL) && (as1[j] != NULL); j++) {
+			printf("%ss:%s", j > 0 ? "," : "", as1[j]);
+		}
+		printf("],[");
+		for (j = 0; (as2 != NULL) && (as2[j] != NULL); j++) {
+			printf("%ss:%s", j > 0 ? "," : "", as2[j]);
+		}
+		printf("],[");
+		for (j = 0; (as3 != NULL) && (as3[j] != NULL); j++) {
+			printf("%ss:%s", j > 0 ? "," : "", as3[j]);
+		}
+		printf("],[");
+		for (j = 0; (as4 != NULL) && (as4[j] != NULL); j++) {
+			printf("%ss:%s", j > 0 ? "," : "", as4[j]);
+		}
+		printf("]\n");
+	}
+	return ret;
+}
+static int
+get_sasasasnas(DBusMessage *rep, int msgid)
+{
+	dbus_bool_t b;
+	int ret, j, k;
+	char *s, *p, *s1, *s2, *s3, *s4;
+	char **ap, **as, **as1, **as2, **as3, **as4;
+	struct cm_tdbusm_dict **d;
+	ret = cm_tdbusm_get_sasasasnas(rep, NULL, &s,
+				       &as1, &as2, &as3,
+				       &n, &as4);
+	if (ret == 0) {
+		printf("Message %d - s:%s,[", msgid, s);
+		for (j = 0; (as1 != NULL) && (as1[j] != NULL); j++) {
+			printf("%ss:%s", j > 0 ? "," : "", as1[j]);
+		}
+		printf("],[");
+		for (j = 0; (as2 != NULL) && (as2[j] != NULL); j++) {
+			printf("%ss:%s", j > 0 ? "," : "", as2[j]);
+		}
+		printf("],[");
+		for (j = 0; (as3 != NULL) && (as3[j] != NULL); j++) {
+			printf("%ss:%s", j > 0 ? "," : "", as3[j]);
+		}
+		printf("],n:%ld,[", n);
+		for (j = 0; (as4 != NULL) && (as4[j] != NULL); j++) {
+			printf("%ss:%s", j > 0 ? "," : "", as4[j]);
+		}
+		printf("]\n");
+	}
+	return ret;
+}
+static int
+get_d(DBusMessage *rep, int msgid)
+{
+	dbus_bool_t b;
+	int ret, j, k;
+	char *s, *p, *s1, *s2, *s3, *s4;
+	char **ap, **as, **as1, **as2, **as3, **as4;
+	struct cm_tdbusm_dict **d;
+	ret = cm_tdbusm_get_d(rep, NULL, &d);
+	if (ret == 0) {
+		printf("Message %d - [", msgid);
+		for (j = 0; (d != NULL) && (d[j] != NULL); j++) {
+			printf("%s{%s=", j > 0 ? "," : "", d[j]->key);
+			switch (d[j]->value_type) {
+			case cm_tdbusm_dict_s:
+				printf("s:%s}", d[j]->value.s);
+				break;
+			case cm_tdbusm_dict_as:
+				printf("as:[");
+				for (k = 0;
+				     (d[j]->value.as != NULL) &&
+				     (d[j]->value.as[k] != NULL);
+				     k++) {
+					printf("%s%s", j > 0 ? "," : "",
+					       d[j]->value.as[k]);
+				}
+				printf("]");
+				break;
+			case cm_tdbusm_dict_n:
+				printf("n:%ld}", d[j]->value.n);
+				break;
+			case cm_tdbusm_dict_b:
+				printf("b:%s}",
+				       d[j]->value.b ? "TRUE" : "FALSE");
+				break;
+			}
+		}
+		printf("]\n");
+	}
+	return ret;
+}
+
 int
 main(int argc, char **argv)
 {
@@ -78,6 +464,27 @@ main(int argc, char **argv)
 	DBusError err;
 	DBusBusType bus = DBUS_BUS_SESSION;
 	int i, c, ret;
+	const struct {
+		int (*set)(DBusMessage *);
+		int (*get)(DBusMessage *, int);
+	} tests[] = {
+		{&set_b, &get_b},
+		{&set_n, &get_n},
+		{&set_p, &get_p},
+		{&set_s, &get_s},
+		{&set_bp, &get_bp},
+		{&set_bs, &get_bs},
+		{&set_sb, &get_sb},
+		{&set_sn, &get_sn},
+		{&set_ss, &get_ss},
+		{&set_ap, &get_ap},
+		{&set_as, &get_as},
+		{&set_ssss, &get_ssss},
+		{&set_sssas, &get_sssas},
+		{&set_sssnasasasas, &get_sssnasasasas},
+		{&set_sasasasnas, &get_sasasasnas},
+		{&set_d, &get_d},
+	};
 	memset(&err, 0, sizeof(err));
 	while ((c = getopt(argc, argv, "sS")) != -1) {
 		switch (c) {
@@ -94,7 +501,7 @@ main(int argc, char **argv)
 		printf("Error connecting to bus!\n");
 		return 1;
 	}
-	for (i = 0; i < 16; i++) {
+	for (i = 0; i < sizeof(tests) / sizeof(tests[0]); i++) {
 		msg = dbus_message_new_method_call(CM_DBUS_NAME,
 						   CM_DBUS_BASE_PATH,
 						   CM_DBUS_BASE_INTERFACE,
@@ -102,58 +509,7 @@ main(int argc, char **argv)
 		if (msg == NULL) {
 			continue;
 		}
-		switch (i) {
-		case 0:
-			ret = cm_tdbusm_set_b(msg, b);
-			break;
-		case 1:
-			ret = cm_tdbusm_set_n(msg, n);
-			break;
-		case 2:
-			ret = cm_tdbusm_set_p(msg, p);
-			break;
-		case 3:
-			ret = cm_tdbusm_set_s(msg, s);
-			break;
-		case 4:
-			ret = cm_tdbusm_set_bp(msg, b, p);
-			break;
-		case 5:
-			ret = cm_tdbusm_set_bs(msg, b, s);
-			break;
-		case 6:
-			ret = cm_tdbusm_set_sb(msg, s, b);
-			break;
-		case 7:
-			ret = cm_tdbusm_set_sn(msg, s, n);
-			break;
-		case 8:
-			ret = cm_tdbusm_set_ss(msg, s1, s2);
-			break;
-		case 9:
-			ret = cm_tdbusm_set_ap(msg, ap);
-			break;
-		case 10:
-			ret = cm_tdbusm_set_as(msg, as);
-			break;
-		case 11:
-			ret = cm_tdbusm_set_ssss(msg, s1, s2, s3, s4);
-			break;
-		case 12:
-			ret = cm_tdbusm_set_sssas(msg, s1, s2, s3, as);
-			break;
-		case 13:
-			ret = cm_tdbusm_set_sssnasasasas(msg, s1, s2, s3, n,
-							 as1, as2, as3, as4);
-			break;
-		case 14:
-			ret = cm_tdbusm_set_sasasasnas(msg, s, as1, as2, as3,
-						       n, as4);
-			break;
-		case 15:
-			ret = cm_tdbusm_set_d(msg, d);
-			break;
-		}
+		ret = (*(tests[i].set))(msg);
 		if (ret != 0) {
 			printf("Error encoding parameters for message %d.\n",
 			       i);
@@ -166,255 +522,10 @@ main(int argc, char **argv)
 			printf("No reply to message %d.\n", i);
 			rep = msg;
 		}
-		{
-			dbus_bool_t b;
-			int j, k;
-			char *s, *p, *s1, *s2, *s3, *s4;
-			char **ap, **as, **as1, **as2, **as3, **as4;
-			struct cm_tdbusm_dict **d;
-			switch (i) {
-			case 0:
-				ret = cm_tdbusm_get_b(rep, NULL, &b);
-				if (ret == 0) {
-					printf("Message %d - b:%s\n", i,
-					       b ? "TRUE" : "FALSE");
-				}
-				break;
-			case 1:
-				ret = cm_tdbusm_get_n(rep, NULL, &n);
-				if (ret == 0) {
-					printf("Message %d - n:%ld\n", i, n);
-				}
-				break;
-			case 2:
-				ret = cm_tdbusm_get_p(rep, NULL, &p);
-				if (ret == 0) {
-					printf("Message %d - p:%s\n", i, p);
-				}
-				break;
-			case 3:
-				ret = cm_tdbusm_get_s(rep, NULL, &s);
-				if (ret == 0) {
-					printf("Message %d - s:%s\n", i, s);
-				}
-				break;
-			case 4:
-				ret = cm_tdbusm_get_bp(rep, NULL, &b, &p);
-				if (ret == 0) {
-					printf("Message %d - b:%s,p:%s\n", i,
-					       b ? "TRUE" : "FALSE", p);
-				}
-				break;
-			case 5:
-				ret = cm_tdbusm_get_bs(rep, NULL, &b, &s);
-				if (ret == 0) {
-					printf("Message %d - b:%s,s:%s\n", i,
-					       b ? "TRUE" : "FALSE", s);
-				}
-				break;
-			case 6:
-				ret = cm_tdbusm_get_sb(rep, NULL, &s, &b);
-				if (ret == 0) {
-					printf("Message %d - s:%s,b:%s\n", i,
-					       s, b ? "TRUE" : "FALSE");
-				}
-				break;
-			case 7:
-				ret = cm_tdbusm_get_sn(rep, NULL, &s, &n);
-				if (ret == 0) {
-					printf("Message %d - s:%s,n:%ld\n", i,
-					       s, n);
-				}
-				break;
-			case 8:
-				ret = cm_tdbusm_get_ss(rep, NULL, &s1, &s2);
-				if (ret == 0) {
-					printf("Message %d - s:%s,s:%s\n", i,
-					       s1, s2);
-				}
-				break;
-			case 9:
-				ret = cm_tdbusm_get_ap(rep, NULL, &ap);
-				if (ret == 0) {
-					printf("Message %d - [", i);
-					for (j = 0;
-					     (ap != NULL) && (ap[j] != NULL);
-					     j++) {
-						printf("%sp:%s",
-						       j > 0 ? "," : "",
-						       ap[j]);
-					}
-					printf("]\n");
-				}
-				break;
-			case 10:
-				ret = cm_tdbusm_get_as(rep, NULL, &as);
-				if (ret == 0) {
-					printf("Message %d - [", i);
-					for (j = 0;
-					     (as != NULL) && (as[j] != NULL);
-					     j++) {
-						printf("%ss:%s",
-						       j > 0 ? "," : "",
-						       as[j]);
-					}
-					printf("]\n");
-				}
-				break;
-			case 11:
-				ret = cm_tdbusm_get_ssss(rep, NULL,
-							 &s1, &s2, &s3, &s4);
-				if (ret == 0) {
-					printf("Message %d - "
-					       "s:%s,s:%ss:%s,s:%s\n", i,
-					       s1, s2, s3, s4);
-				}
-				break;
-			case 12:
-				ret = cm_tdbusm_get_sssas(rep, NULL,
-							  &s1, &s2, &s3, &as);
-				if (ret == 0) {
-					printf("Message %d - s:%s,s:%s,s:%s,[",
-					       i, s1, s2, s3);
-					for (j = 0;
-					     (as != NULL) && (as[j] != NULL);
-					     j++) {
-						printf("%ss:%s",
-						       j > 0 ? "," : "",
-						       as[j]);
-					}
-					printf("]\n");
-				}
-				break;
-			case 13:
-				ret = cm_tdbusm_get_sssnasasasas(rep, NULL,
-								 &s1, &s2, &s3,
-								 &n,
-								 &as1, &as2,
-								 &as3, &as4);
-				if (ret == 0) {
-					printf("Message %d - s:%s,s:%s,s:%s,"
-					       "n:%ld,[",
-					       i, s1, s2, s3, n);
-					for (j = 0;
-					     (as1 != NULL) && (as1[j] != NULL);
-					     j++) {
-						printf("%ss:%s",
-						       j > 0 ? "," : "",
-						       as1[j]);
-					}
-					printf("],[");
-					for (j = 0;
-					     (as2 != NULL) && (as2[j] != NULL);
-					     j++) {
-						printf("%ss:%s",
-						       j > 0 ? "," : "",
-						       as2[j]);
-					}
-					printf("],[");
-					for (j = 0;
-					     (as3 != NULL) && (as3[j] != NULL);
-					     j++) {
-						printf("%ss:%s",
-						       j > 0 ? "," : "",
-						       as3[j]);
-					}
-					printf("],[");
-					for (j = 0;
-					     (as4 != NULL) && (as4[j] != NULL);
-					     j++) {
-						printf("%ss:%s",
-						       j > 0 ? "," : "",
-						       as4[j]);
-					}
-					printf("]\n");
-				}
-				break;
-			case 14:
-				ret = cm_tdbusm_get_sasasasnas(rep, NULL, &s,
-							       &as1, &as2, &as3,
-							       &n, &as4);
-				if (ret == 0) {
-					printf("Message %d - s:%s,[", i, s);
-					for (j = 0;
-					     (as1 != NULL) && (as1[j] != NULL);
-					     j++) {
-						printf("%ss:%s",
-						       j > 0 ? "," : "",
-						       as1[j]);
-					}
-					printf("],[");
-					for (j = 0;
-					     (as2 != NULL) && (as2[j] != NULL);
-					     j++) {
-						printf("%ss:%s",
-						       j > 0 ? "," : "",
-						       as2[j]);
-					}
-					printf("],[");
-					for (j = 0;
-					     (as3 != NULL) && (as3[j] != NULL);
-					     j++) {
-						printf("%ss:%s",
-						       j > 0 ? "," : "",
-						       as3[j]);
-					}
-					printf("],n:%ld,[", n);
-					for (j = 0;
-					     (as4 != NULL) && (as4[j] != NULL);
-					     j++) {
-						printf("%ss:%s",
-						       j > 0 ? "," : "",
-						       as4[j]);
-					}
-					printf("]\n");
-				}
-				break;
-			case 15:
-				ret = cm_tdbusm_get_d(rep, NULL, &d);
-				if (ret == 0) {
-					printf("Message %d - [", i);
-					for (j = 0;
-					     (d != NULL) && (d[j] != NULL);
-					     j++) {
-						printf("%s{%s=",
-						       j > 0 ? "," : "",
-						       d[j]->key);
-						switch (d[j]->value_type) {
-						case cm_tdbusm_dict_s:
-							printf("s:%s}",
-							       d[j]->value.s);
-							break;
-						case cm_tdbusm_dict_as:
-							printf("as:[");
-							for (k = 0;
-							     (d[j]->value.as != NULL) &&
-							     (d[j]->value.as[k] != NULL);
-							     k++) {
-								printf("%s%s",
-								       j > 0 ? "," : "",
-								       d[j]->value.as[k]);
-							}
-							printf("]");
-							break;
-						case cm_tdbusm_dict_n:
-							printf("n:%ld}",
-							       d[j]->value.n);
-							break;
-						case cm_tdbusm_dict_b:
-							printf("b:%s}",
-							       d[j]->value.b ?
-							       "TRUE" :
-							       "FALSE");
-							break;
-						}
-					}
-					printf("]\n");
-				}
-				break;
-			}
+		ret = (*(tests[i].get))(rep, i);
+		if (ret != 0) {
+			printf("Error parsing response %d.\n", i);
 		}
 	}
-
 	return 0;
 }
