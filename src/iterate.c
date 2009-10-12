@@ -622,5 +622,6 @@ cm_iterate_done(struct cm_store_entry *entry, void *cm_iterate_state)
 	cm_entry_reset_state(entry);
 	cm_log(3, "'%s' ends in state '%s'\n", entry->cm_id,
 	       cm_store_state_as_string(entry->cm_state));
+	talloc_free(cm_iterate_state);
 	return 0;
 }
