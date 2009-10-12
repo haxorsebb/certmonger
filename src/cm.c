@@ -290,6 +290,8 @@ cm_add_entry(struct cm_context *context, struct cm_store_entry *new_entry)
 			context->events[i].next_event = cm_service_one(context,
 								       NULL, i);
 		}
+		/* Save this entry to the store, too. */
+		cm_store_entry_save(new_entry);
 		return 0;
 	}
 	return -1;
