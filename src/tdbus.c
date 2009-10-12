@@ -28,6 +28,7 @@
 
 #include "log.h"
 #include "tdbus.h"
+#include "tdbush.h"
 #include "tdbusm.h"
 
 struct tdbus_connection {
@@ -382,7 +383,7 @@ cm_tdbus_filter(DBusConnection *conn, DBusMessage *dmessage, void *data)
 		break;
 	}
 	/* Okay, the message is one we need to worry about. */
-	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	return cm_tdbus_handle(conn, dmessage, tdb->data);
 }
 
 int

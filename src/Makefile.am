@@ -31,6 +31,8 @@ libcm_a_SOURCES = \
 	submit-int.h \
 	tdbus.c \
 	tdbus.h \
+	tdbush.c \
+	tdbush.h \
 	tdbusm.c \
 	tdbusm.h
 libcm_o_a_SOURCES =
