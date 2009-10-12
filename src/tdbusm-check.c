@@ -30,6 +30,46 @@
 #include "tdbus.h"
 #include "tdbusm.h"
 
+static dbus_bool_t b = TRUE;
+static long n = 12345;
+static char s[] = "This is a string.";
+static char s1[] = "This is a first string.";
+static char s2[] = "This is a second string.";
+static char s3[] = "This is a third string.";
+static char s4[] = "This is a fourth string.";
+static char p[] = "/this/is/a/path/to/an/object";
+static const char *as[] = {"This", "is", "a", "string", "array.", NULL};
+static const char *ap[] = {"/this", "/is", "/a", "/path", "/array", NULL};
+static const char *as1[] = {"This", "is", "a", "first", "string", "array.",
+			    NULL};
+static const char *as2[] = {"This", "is", "a", "second", "string", "array.",
+			    NULL};
+static const char *as3[] = {"This", "is", "a", "third", "string", "array.",
+			    NULL};
+static const char *as4[] = {"This", "is", "a", "fourth", "string", "array.",
+			    NULL};
+static struct cm_tdbusm_dict d0 = {
+	.key = "key 0",
+	.value_type = cm_tdbusm_dict_b,
+	.value.b = TRUE,
+};
+static struct cm_tdbusm_dict d1 = {
+	.key = "key 1",
+	.value_type = cm_tdbusm_dict_n,
+	.value.n = 12345,
+};
+static struct cm_tdbusm_dict d2 = {
+	.key = "key 2",
+	.value_type = cm_tdbusm_dict_s,
+	.value.s = "this is a string value",
+};
+static struct cm_tdbusm_dict d3 = {
+	.key = "key 3",
+	.value_type = cm_tdbusm_dict_as,
+	.value.as = (char **) as,
+};
+static const struct cm_tdbusm_dict *d[] = {&d0, &d1, &d2, &d3, NULL};
+
 int
 main(int argc, char **argv)
 {
@@ -38,45 +78,6 @@ main(int argc, char **argv)
 	DBusError err;
 	DBusBusType bus = DBUS_BUS_SESSION;
 	int i, c, ret;
-	dbus_bool_t b = TRUE;
-	long n = 12345;
-	char s[] = "This is a string.";
-	char s1[] = "This is a first string.";
-	char s2[] = "This is a second string.";
-	char s3[] = "This is a third string.";
-	char s4[] = "This is a fourth string.";
-	char p[] = "/this/is/a/path/to/an/object";
-	const char *as[] = {"This", "is", "a", "string", "array.", NULL};
-	const char *ap[] = {"/this", "/is", "/a", "/path", "/array", NULL};
-	const char *as1[] = {"This", "is", "a", "first", "string", "array.",
-			     NULL};
-	const char *as2[] = {"This", "is", "a", "second", "string", "array.",
-			     NULL};
-	const char *as3[] = {"This", "is", "a", "third", "string", "array.",
-			     NULL};
-	const char *as4[] = {"This", "is", "a", "fourth", "string", "array.",
-			     NULL};
-	struct cm_tdbusm_dict d0 = {
-		.key = "key 0",
-		.value_type = cm_tdbusm_dict_b,
-		.value.b = TRUE,
-	};
-	struct cm_tdbusm_dict d1 = {
-		.key = "key 1",
-		.value_type = cm_tdbusm_dict_n,
-		.value.n = 12345,
-	};
-	struct cm_tdbusm_dict d2 = {
-		.key = "key 2",
-		.value_type = cm_tdbusm_dict_s,
-		.value.s = "this is a string value",
-	};
-	struct cm_tdbusm_dict d3 = {
-		.key = "key 3",
-		.value_type = cm_tdbusm_dict_as,
-		.value.as = (char **) as,
-	};
-	const struct cm_tdbusm_dict *d[] = {&d0, &d1, &d2, &d3, NULL};
 	memset(&err, 0, sizeof(err));
 	while ((c = getopt(argc, argv, "sS")) != -1) {
 		switch (c) {
