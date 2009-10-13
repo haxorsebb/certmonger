@@ -17,7 +17,7 @@ o object layout
   - get-supported-cert-storage
     returns: array of string -> "NSSDB", "FILE"
   - add-request
-    arguments: dict{string,variant{string/array-of-string/number/boolean}}
+    arguments: [dict{string,variant{string/array-of-string/number/boolean}}]
                {"GENERATE_KEY",boolean}
                {"KEY_TYPE","RSA"}
                {"KEY_SIZE",integer}
@@ -35,6 +35,8 @@ o object layout
 	       {"EKU",array-of-string (oids)}
 	       {"KU",integer (see RFC5280 for the bit values)}
 	       {"PRINCIPAL",array-of-string (principal names)}
+	       {"DNS",array-of-string (dns names)}
+	       {"EMAIL",array-of-string (email addresses)}
 	       * = required values
     returns: boolean -> succeeded
              path (optional) -> object path for new request

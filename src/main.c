@@ -55,7 +55,7 @@ main(int argc, char **argv)
 		talloc_free(ec);
 		return 1;
 	}
-	if (cm_tdbus_setup(ec, cm_tdbus_session, ctx) != 0) {
+	if (cm_tdbus_setup(ec, CM_DBUS_DEFAULT_BUS, ctx) != 0) {
 		fprintf(stderr, "Error connecting to D-Bus.\n");
 		talloc_free(ec);
 		return 1;
