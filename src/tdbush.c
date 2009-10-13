@@ -32,11 +32,6 @@
 #include "tdbus.h"
 #include "tdbusm.h"
 
-#define CM_DBUS_CA_PATH CM_DBUS_BASE_PATH "/cas"
-#define CM_DBUS_CA_INTERFACE CM_DBUS_BASE_INTERFACE ".ca"
-#define CM_DBUS_REQUEST_PATH CM_DBUS_BASE_PATH "/requests"
-#define CM_DBUS_REQUEST_INTERFACE CM_DBUS_BASE_INTERFACE ".request"
-
 /* Functions which tell us if, based on the path alone, there's an object of
  * the specified type with that path. */
 static dbus_bool_t

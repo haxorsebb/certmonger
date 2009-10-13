@@ -21,6 +21,11 @@
 #define CM_DBUS_NAME "org.hamdingers.certmonger"
 #define CM_DBUS_BASE_PATH "/org/hamdingers/certmonger"
 #define CM_DBUS_BASE_INTERFACE CM_DBUS_NAME
+#define CM_DBUS_DEFAULT_BUS cm_tdbus_session
+#define CM_DBUS_CA_PATH CM_DBUS_BASE_PATH "/cas"
+#define CM_DBUS_CA_INTERFACE CM_DBUS_BASE_INTERFACE ".ca"
+#define CM_DBUS_REQUEST_PATH CM_DBUS_BASE_PATH "/requests"
+#define CM_DBUS_REQUEST_INTERFACE CM_DBUS_BASE_INTERFACE ".request"
 
 enum cm_tdbus_type { cm_tdbus_system, cm_tdbus_session };
 int cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type,
