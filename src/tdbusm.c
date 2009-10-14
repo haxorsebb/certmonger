@@ -370,15 +370,16 @@ cm_tdbusm_get_sssas(DBusMessage *msg, void *parent,
 }
 
 int
-cm_tdbusm_get_sssnasasasas(DBusMessage *msg, void *parent,
-			   char **s1, char **s2, char **s3, long *n,
-			   char ***as1, char ***as2, char ***as3, char ***as4)
+cm_tdbusm_get_sssnasasasnas(DBusMessage *msg, void *parent,
+			    char **s1, char **s2, char **s3, long *n1,
+			    char ***as1, char ***as2, char ***as3,
+			    long *n2, char ***as4)
 {
 	DBusError err;
 	char **tmp1, **tmp2, **tmp3, **tmp4;
-	int64_t i64;
-	int32_t i32;
-	int16_t i16;
+	int64_t i641, i642;
+	int32_t i321, i322;
+	int16_t i161, i162;
 	int i, j, k, l;
 	*s1 = NULL;
 	*s2 = NULL;
@@ -392,23 +393,25 @@ cm_tdbusm_get_sssnasasasas(DBusMessage *msg, void *parent,
 				   DBUS_TYPE_STRING, s1,
 				   DBUS_TYPE_STRING, s2,
 				   DBUS_TYPE_STRING, s3,
-				   DBUS_TYPE_INT64, &i64,
+				   DBUS_TYPE_INT64, &i641,
 				   DBUS_TYPE_ARRAY, DBUS_TYPE_STRING, &tmp1, &i,
 				   DBUS_TYPE_ARRAY, DBUS_TYPE_STRING, &tmp2, &j,
 				   DBUS_TYPE_ARRAY, DBUS_TYPE_STRING, &tmp3, &k,
+				   DBUS_TYPE_INT64, &i642,
 				   DBUS_TYPE_ARRAY, DBUS_TYPE_STRING, &tmp4, &l,
 				   DBUS_TYPE_INVALID)) {
 		if (!dbus_message_get_args(msg, &err,
 					   DBUS_TYPE_STRING, s1,
 					   DBUS_TYPE_STRING, s2,
 					   DBUS_TYPE_STRING, s3,
-					   DBUS_TYPE_INT32, &i32,
+					   DBUS_TYPE_INT32, &i321,
 					   DBUS_TYPE_ARRAY, DBUS_TYPE_STRING,
 					   &tmp1, &i,
 					   DBUS_TYPE_ARRAY, DBUS_TYPE_STRING,
 					   &tmp2, &j,
 					   DBUS_TYPE_ARRAY, DBUS_TYPE_STRING,
 					   &tmp3, &k,
+					   DBUS_TYPE_INT32, &i322,
 					   DBUS_TYPE_ARRAY, DBUS_TYPE_STRING,
 					   &tmp4, &l,
 					   DBUS_TYPE_INVALID)) {
@@ -416,26 +419,30 @@ cm_tdbusm_get_sssnasasasas(DBusMessage *msg, void *parent,
 						   DBUS_TYPE_STRING, s1,
 						   DBUS_TYPE_STRING, s2,
 						   DBUS_TYPE_STRING, s3,
-						   DBUS_TYPE_INT16, &i16,
+						   DBUS_TYPE_INT16, &i161,
 						   DBUS_TYPE_ARRAY,
 						   DBUS_TYPE_STRING, &tmp1, &i,
 						   DBUS_TYPE_ARRAY,
 						   DBUS_TYPE_STRING, &tmp2, &j,
 						   DBUS_TYPE_ARRAY,
 						   DBUS_TYPE_STRING, &tmp3, &k,
+						   DBUS_TYPE_INT16, &i162,
 						   DBUS_TYPE_ARRAY,
 						   DBUS_TYPE_STRING, &tmp4, &l,
 						   DBUS_TYPE_INVALID)) {
 				return -1;
 			}
-			i32 = i16;
+			i321 = i161;
+			i322 = i162;
 		}
-		i64 = i32;
+		i641 = i321;
+		i642 = i322;
 	}
 	*s1 = *s1 ? talloc_strdup(parent, *s1) : NULL;
 	*s2 = *s2 ? talloc_strdup(parent, *s2) : NULL;
 	*s3 = *s3 ? talloc_strdup(parent, *s3) : NULL;
-	*n = i64;
+	*n1 = i641;
+	*n2 = i642;
 	*as1 = cm_tdbusm_take_dbus_string_array(parent, tmp1, i);
 	*as2 = cm_tdbusm_take_dbus_string_array(parent, tmp2, j);
 	*as3 = cm_tdbusm_take_dbus_string_array(parent, tmp3, k);
@@ -915,24 +922,24 @@ cm_tdbusm_set_sssas(DBusMessage *msg,
 }
 
 int
-cm_tdbusm_set_sssnasasasas(DBusMessage *msg,
-			   const char *s1, const char *s2, const char *s3,
-			   long n,
-			   const char **as1, const char **as2,
-			   const char **as3, const char **as4)
+cm_tdbusm_set_sssnasasasnas(DBusMessage *msg,
+			    const char *s1, const char *s2, const char *s3,
+			    long n1, const char **as1, const char **as2,
+			    const char **as3, long n2, const char **as4)
 {
-	int64_t i = n;
+	int64_t i1 = n1, i2 = n2;
 	if (dbus_message_append_args(msg,
 				     DBUS_TYPE_STRING, &s1,
 				     DBUS_TYPE_STRING, &s2,
 				     DBUS_TYPE_STRING, &s3,
-				     DBUS_TYPE_INT64, &i,
+				     DBUS_TYPE_INT64, &i1,
 				     DBUS_TYPE_ARRAY, DBUS_TYPE_STRING,
 				     &as1, cm_tdbusm_array_length(as1),
 				     DBUS_TYPE_ARRAY, DBUS_TYPE_STRING,
 				     &as2, cm_tdbusm_array_length(as2),
 				     DBUS_TYPE_ARRAY, DBUS_TYPE_STRING,
 				     &as3, cm_tdbusm_array_length(as3),
+				     DBUS_TYPE_INT64, &i2,
 				     DBUS_TYPE_ARRAY, DBUS_TYPE_STRING,
 				     &as4, cm_tdbusm_array_length(as4),
 				     DBUS_TYPE_INVALID)) {

@@ -35,10 +35,10 @@ int cm_tdbusm_get_ssss(DBusMessage *msg, void *parent,
 		       char **s1, char **s2, char **s3, char **s4);
 int cm_tdbusm_get_sssas(DBusMessage *msg, void *parent,
 			char **s1, char **s2, char **s3, char ***as);
-int cm_tdbusm_get_sssnasasasas(DBusMessage *msg, void *parent,
-			       char **s1, char **s2, char **s3, long *n,
-			       char ***as1, char ***as2,
-			       char ***as3, char ***as4);
+int cm_tdbusm_get_sssnasasasnas(DBusMessage *msg, void *parent,
+			        char **s1, char **s2, char **s3, long *n1,
+			        char ***as1, char ***as2,
+			        char ***as3, long *n2, char ***as4);
 int cm_tdbusm_get_sasasasnas(DBusMessage *msg, void *parent,
 			     char **s,
 			     char ***as1, char ***as2,
@@ -79,11 +79,11 @@ int cm_tdbusm_set_ssss(DBusMessage *msg,
 int cm_tdbusm_set_sssas(DBusMessage *msg,
 		        const char *s1, const char *s2,
 		        const char *s3, const char **as);
-int cm_tdbusm_set_sssnasasasas(DBusMessage *msg,
-			       const char *s1, const char *s2,
-			       const char *s3, long n,
-			       const char **as1, const char **as2,
-			       const char **as3, const char **as4);
+int cm_tdbusm_set_sssnasasasnas(DBusMessage *msg,
+			        const char *s1, const char *s2,
+			        const char *s3, long n1,
+			        const char **as1, const char **as2,
+			        const char **as3, long n2, const char **as4);
 int cm_tdbusm_set_sasasasnas(DBusMessage *msg,
 			     const char *s,
 			     const char **as1, const char **as2,

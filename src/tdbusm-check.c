@@ -30,8 +30,8 @@
 #include "tdbus.h"
 #include "tdbusm.h"
 
-static dbus_bool_t b = TRUE;
-static long n = 12345;
+static const dbus_bool_t b = TRUE;
+static const long n = 12345, n1 = 23456, n2 = 34567;
 static char s[] = "This is a string.";
 static char s1[] = "This is a first string.";
 static char s2[] = "This is a second string.";
@@ -136,10 +136,10 @@ set_sssas(DBusMessage *msg)
 	return cm_tdbusm_set_sssas(msg, s1, s2, s3, as);
 }
 static int
-set_sssnasasasas(DBusMessage *msg)
+set_sssnasasasnas(DBusMessage *msg)
 {
-	return cm_tdbusm_set_sssnasasasas(msg, s1, s2, s3, n,
-					  as1, as2, as3, as4);
+	return cm_tdbusm_set_sssnasasasnas(msg, s1, s2, s3, n1,
+					   as1, as2, as3, n2, as4);
 }
 static int
 set_sasasasnas(DBusMessage *msg)
@@ -315,17 +315,17 @@ get_sssas(DBusMessage *rep, int msgid)
 	return ret;
 }
 static int
-get_sssnasasasas(DBusMessage *rep, int msgid)
+get_sssnasasasnas(DBusMessage *rep, int msgid)
 {
 	int ret, i;
-	long n;
+	long n1, n2;
 	char *s1, *s2, *s3, **as1, **as2, **as3, **as4;
-	ret = cm_tdbusm_get_sssnasasasas(rep, NULL,
-					 &s1, &s2, &s3, &n,
-					 &as1, &as2, &as3, &as4);
+	ret = cm_tdbusm_get_sssnasasasnas(rep, NULL,
+					  &s1, &s2, &s3, &n1,
+					  &as1, &as2, &as3, &n2, &as4);
 	if (ret == 0) {
 		printf("Message %d - s:%s,s:%s,s:%s," "n:%ld,[",
-		       msgid, s1, s2, s3, n);
+		       msgid, s1, s2, s3, n1);
 		for (i = 0; (as1 != NULL) && (as1[i] != NULL); i++) {
 			printf("%ss:%s", i > 0 ? "," : "", as1[i]);
 		}
@@ -337,7 +337,7 @@ get_sssnasasasas(DBusMessage *rep, int msgid)
 		for (i = 0; (as3 != NULL) && (as3[i] != NULL); i++) {
 			printf("%ss:%s", i > 0 ? "," : "", as3[i]);
 		}
-		printf("],[");
+		printf("],n:%ld,[", n2);
 		for (i = 0; (as4 != NULL) && (as4[i] != NULL); i++) {
 			printf("%ss:%s", i > 0 ? "," : "", as4[i]);
 		}
@@ -440,7 +440,7 @@ main(int argc, char **argv)
 		{&set_as, &get_as},
 		{&set_ssss, &get_ssss},
 		{&set_sssas, &get_sssas},
-		{&set_sssnasasasas, &get_sssnasasasas},
+		{&set_sssnasasasnas, &get_sssnasasasnas},
 		{&set_sasasasnas, &get_sasasasnas},
 		{&set_d, &get_d},
 	};
