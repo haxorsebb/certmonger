@@ -27,6 +27,8 @@
 #include <talloc.h>
 #include <tevent.h>
 
+#include <dbus/dbus.h>
+
 #include "cm.h"
 #include "log.h"
 #include "tdbus.h"
