@@ -391,16 +391,107 @@ request(const char *argv0, int argc, char **argv)
 	return 0;
 }
 
+static const char *
+find_request_by_storage(enum cm_tdbus_type bus,
+			const char *dbdir, 
+			const char *nickname, 
+			const char *token,
+			const char *keyfile, const char *certfile)
+{
+	return NULL;
+}
+
+static int
+add_basic_request(enum cm_tdbus_type bus,
+		  const char *dbdir, const char *nickname, const char *token,
+		  const char *keyfile, const char *certfile,
+		  const char *ca, dbus_bool_t track, dbus_bool_t autorenew)
+{
+	return 1;
+}
+
+static int
+set_tracking(const char *argv0, int argc, char **argv, dbus_bool_t track)
+{
+	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
+	DBusMessage *req, *rep;
+	const char *request;
+	struct cm_tdbusm_dict param[3];
+	const struct cm_tdbusm_dict *params[3];
+	char *dbdir = NULL, *token = NULL, *nickname = NULL;
+	char *keyfile = NULL, *certfile = NULL, *ca = NULL;
+	dbus_bool_t b;
+	int c, auto_renew = 0, i;
+	while ((c = getopt(argc, argv, "d:n:t:k:f:g:rc:")) != -1) {
+		switch (c) {
+		case 'd':
+			dbdir = talloc_strdup(globals.tctx, optarg);
+			break;
+		case 't':
+			token = talloc_strdup(globals.tctx, optarg);
+			break;
+		case 'n':
+			nickname = talloc_strdup(globals.tctx, optarg);
+			break;
+		case 'k':
+			keyfile = talloc_strdup(globals.tctx, optarg);
+			break;
+		case 'f':
+			certfile = talloc_strdup(globals.tctx, optarg);
+			break;
+		case 'r':
+			auto_renew++;
+			break;
+		case 'c':
+			ca = talloc_strdup(globals.tctx, optarg);
+			break;
+		}
+	}
+	request = find_request_by_storage(bus, dbdir, nickname, token,
+					  keyfile, certfile);
+	if (request != NULL) {
+		i = 0;
+		param[i].key = "TRACK";
+		param[i].value_type = cm_tdbusm_dict_b;
+		param[i].value.b = TRUE;
+		params[i] = &param[i];
+		i++;
+		param[i].key = "RENEW";
+		param[i].value_type = cm_tdbusm_dict_b;
+		param[i].value.b = auto_renew > 0;
+		params[i] = &param[i];
+		i++;
+		params[i] = NULL;
+		req = prep_req(bus, request, CM_DBUS_REQUEST_INTERFACE,
+			       "modify");
+		if (cm_tdbusm_set_d(req, params) != 0) {
+			printf("Error setting request arguments.\n");
+			exit(1);
+		}
+		rep = send_req(req);
+		if (cm_tdbusm_get_b(rep, globals.tctx, &b) != 0) {
+			printf("Error parsing server response.\n");
+			exit(1);
+		}
+		dbus_message_unref(rep);
+		return b ? 0 : 1;
+	} else {
+		return add_basic_request(bus, dbdir, nickname, token,
+					 keyfile, certfile,
+					 ca, track, track && (auto_renew > 0));
+	}
+}
+
 static int
 start_tracking(const char *argv0, int argc, char **argv)
 {
-	return 0;
+	return set_tracking(argv0, argc, argv, TRUE);
 }
 
 static int
 stop_tracking(const char *argv0, int argc, char **argv)
 {
-	return 0;
+	return set_tracking(argv0, argc, argv, FALSE);
 }
 
 static int
