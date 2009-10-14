@@ -398,6 +398,7 @@ request(const char *argv0, int argc, char **argv)
 		printf("Error parsing server response.\n");
 		exit(1);
 	}
+	dbus_message_unref(rep);
 	if (b) {
 		printf("Request \"%s\" added.\n", p);
 	} else {
@@ -620,6 +621,7 @@ add_basic_request(enum cm_tdbus_type bus,
 		printf("Error parsing server response.\n");
 		exit(1);
 	}
+	dbus_message_unref(rep);
 	if (b) {
 		printf("New request \"%s\" added.\n", p);
 		return 0;
@@ -837,6 +839,7 @@ list(const char *argv0, int argc, char **argv)
 			printf("Error parsing server response.\n");
 			exit(1);
 		}
+		dbus_message_unref(rep);
 		printf("\tissuer: %s\n", s1);
 		printf("\tsubject: %s\n", s3);
 		printf("\texpires: %s\n", cm_store_timestamp_from_time(n1, t));
