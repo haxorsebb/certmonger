@@ -146,8 +146,7 @@ request(const char *argv0, int argc, char **argv)
 	char *dbdir = NULL, *token = NULL, *nickname = NULL;
 	char *keyfile = NULL, *certfile = NULL;
 	int keysize = 0, track_exp = 0, auto_renew = 0, c, i;
-	char *ca = NULL, *subject = NULL;
-	char **usage = NULL, **eku = NULL;
+	char *ca = NULL, *subject = NULL, **eku = NULL;
 	char **principal = NULL, **dns = NULL, **email = NULL;
 	struct cm_tdbusm_dict param[32];
 	const struct cm_tdbusm_dict *params[32];
@@ -163,7 +162,7 @@ request(const char *argv0, int argc, char **argv)
 	}
 	subject = subject_default;
 
-	while ((c = getopt(argc, argv, "d:n:t:k:f:g:erc:s:u:U:K:D:E:")) != -1) {
+	while ((c = getopt(argc, argv, "d:n:t:k:f:g:erc:s:U:K:D:E:")) != -1) {
 		switch (c) {
 		case 'd':
 			dbdir = talloc_strdup(globals.tctx, optarg);
@@ -195,9 +194,6 @@ request(const char *argv0, int argc, char **argv)
 		case 's':
 			subject = talloc_strdup(globals.tctx, optarg);
 			break;
-		case 'u':
-			add_string(globals.tctx, &usage, optarg);
-			break;
 		case 'U':
 			add_string(globals.tctx, &eku, optarg);
 			break;
@@ -214,6 +210,32 @@ request(const char *argv0, int argc, char **argv)
 			help(argv0, "request");
 			return 1;
 		}
+	}
+	if (((keyfile != NULL) && (certfile == NULL)) ||
+	    ((keyfile == NULL) && (certfile != NULL))) {
+		printf("Filename for key or certificate specified "
+		       "without the other.\n");
+		help(argv0, "request");
+		return 1;
+	}
+	if (((dbdir != NULL) && (nickname == NULL)) ||
+	    ((dbdir == NULL) && (nickname != NULL))) {
+		printf("Database location or nickname specified "
+		       "without the other.\n");
+		help(argv0, "request");
+		return 1;
+	}
+	if ((dbdir != NULL) && ((certfile != NULL) || (keyfile != NULL))) {
+		printf("Database directory and key or certificate file "
+		       "all specified.\n");
+		help(argv0, "request");
+		return 1;
+	}
+	if ((dbdir == NULL) && (certfile == NULL) && (keyfile == NULL)) {
+		printf("None of database directory or key or certificate file "
+		       "specified.\n");
+		help(argv0, "request");
+		return 1;
 	}
 	i = 0;
 	if ((dbdir != NULL) && (nickname != NULL)) {
@@ -305,6 +327,13 @@ request(const char *argv0, int argc, char **argv)
 		param[i].key = "KEY_SIZE";
 		param[i].value_type = cm_tdbusm_dict_n;
 		param[i].value.n = keysize;
+		params[i] = &param[i];
+		i++;
+	}
+	if (ca != NULL) {
+		param[i].key = "CA";
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = ca;
 		params[i] = &param[i];
 		i++;
 	}
