@@ -409,9 +409,8 @@ list(const char *argv0, int argc, char **argv)
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	enum cm_state state;
 	DBusMessage *rep;
-	char **requests, *s, **as;
+	char **requests, *s;
 	dbus_bool_t b;
-	long n;
 	int requests_only = 0, tracking_only = 0, c, i;
 	while ((c = getopt(argc, argv, "rt")) != -1) {
 		switch (c) {
@@ -434,12 +433,18 @@ list(const char *argv0, int argc, char **argv)
 	}
 	dbus_message_unref(rep);
 	for (i = 0; (requests != NULL) && (requests[i] != NULL); i++) {
+		char *s1, *s2, *s3, *s4;
+		long n1, n2;
+		char **as1, **as2, **as3, **as4, t[15];
+		/* Get the status of this request. */
 		rep = query_rep(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
 				"get_status");
 		if (cm_tdbusm_get_sb(rep, globals.tctx, &s, &b) != 0) {
 			printf("Error parsing server response.\n");
 			exit(1);
 		}
+		dbus_message_unref(rep);
+		/* Filter out based on the current state. */
 		state = cm_store_state_from_string(s);
 		switch (state) {
 		case CM_INVALID:
@@ -475,140 +480,99 @@ list(const char *argv0, int argc, char **argv)
 			}
 			break;
 		}
+		/* Basic info. */
 		printf("Request '%s':\n", requests[i]);
 		printf("\tstatus: %s\n", s);
-		printf("\tblocked: %s\n", b ? "yes" : "no");
-	}
-	return 0;
-}
-
-static int
-list_old(const char *argv0, int argc, char **argv)
-{
-	struct cm_store_entry **entries;
-	const char *key_storage = NULL, *cert_storage = NULL;
-	char token[LINE_MAX], nickname[LINE_MAX], ca[LINE_MAX], stamp[15];
-	int requests_only = 0, tracking_only = 0, c, i;
-	time_t tstamp;
-	while ((c = getopt(argc, argv, "rt")) != -1) {
-		switch (c) {
-		case 'r':
-			requests_only++;
-			break;
-		case 't':
-			tracking_only++;
-			break;
-		default:
-			help(argv0, "list");
-			return 1;
-		}
-	}
-	entries = cm_store_get_all_entries(NULL);
-	for (i = 0; (entries != NULL) && (entries[i] != NULL); i++) {
-		switch (entries[i]->cm_state) {
-		case CM_INVALID:
-			printf("'%s' is in an invalid state!\n",
-			       entries[i]->cm_id);
-			continue;
-			break;
-		case CM_NEED_KEY_PAIR:
-		case CM_GENERATING_KEY_PAIR:
-		case CM_HAVE_KEY_PAIR:
-		case CM_NEED_CSR:
-		case CM_GENERATING_CSR:
-		case CM_HAVE_CSR:
-		case CM_NEED_TO_SUBMIT:
-		case CM_SUBMITTING:
-		case CM_HAVE_SUBMITTED:
-		case CM_NEED_CA_STATUS:
-		case CM_POLLING_CA_STATUS:
-		case CM_RETRIEVING_CERT:
-		case CM_NEED_TO_SAVE_CERT:
-		case CM_SAVING_CERT:
-		case CM_SAVED_CERT:
-		case CM_NEED_TO_READ_CERT:
-		case CM_READING_CERT:
-		case CM_NEED_GUIDANCE:
-			if (tracking_only) {
-				continue;
+		printf("\tstuck: %s\n", b ? "yes" : "no");
+		/* Get key/cert storage info. */
+		rep = query_rep(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
+				"get_key_storage_info");
+		if (cm_tdbusm_get_ssss(rep, globals.tctx,
+				       &s1, &s2, &s3, &s4) != 0) {
+			if (cm_tdbusm_get_sss(rep, globals.tctx,
+					      &s1, &s2, &s3) != 0) {
+				if (cm_tdbusm_get_ss(rep, globals.tctx,
+						     &s1, &s2) != 0) {
+					printf("Error parsing server "
+					       "response.\n");
+					exit(1);
+				}
+				s3 = NULL;
 			}
-			break;
-		case CM_MONITORING:
-		case CM_NOTIFYING:
-			if (requests_only) {
-				continue;
+			s4 = NULL;
+		}
+		dbus_message_unref(rep);
+		printf("\tkey pair: type=%s,location='%s'%s%s%s%s\n",
+		       s1, s2,
+		       s3 ? ",nickname=" : "", s3 ? s3 : "",
+		       s4 ? ",token=" : "", s4 ? s4 : "");
+		rep = query_rep(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
+				"get_cert_storage_info");
+		if (cm_tdbusm_get_ssss(rep, globals.tctx,
+				       &s1, &s2, &s3, &s4) != 0) {
+			if (cm_tdbusm_get_sss(rep, globals.tctx,
+					      &s1, &s2, &s3) != 0) {
+				if (cm_tdbusm_get_ss(rep, globals.tctx,
+						     &s1, &s2) != 0) {
+					printf("Error parsing server "
+					       "response.\n");
+					exit(1);
+				}
+				s3 = NULL;
 			}
-			break;
+			s4 = NULL;
 		}
-		switch (entries[i]->cm_key_storage_type) {
-		case cm_key_storage_file:
-			key_storage = "file";
-			break;
-		case cm_key_storage_nssdb:
-			key_storage = "nssdb";
-			break;
+		dbus_message_unref(rep);
+		printf("\tcertificate: type=%s,location='%s'%s%s%s%s\n",
+		       s1, s2,
+		       s3 ? ",nickname=" : "", s3 ? s3 : "",
+		       s4 ? ",token=" : "", s4 ? s4 : "");
+		/* Information from the certificate. */
+		rep = query_rep(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
+				"get_cert_info");
+		if (cm_tdbusm_get_sssnasasasnas(rep, globals.tctx,
+						&s1, &s2, &s3, &n1,
+						&as1, &as2, &as3,
+						&n2, &as4) != 0) {
+			printf("Error parsing server response.\n");
+			exit(1);
 		}
-		switch (entries[i]->cm_cert_storage_type) {
-		case cm_cert_storage_file:
-			cert_storage = "file";
-			break;
-		case cm_cert_storage_nssdb:
-			cert_storage = "nssdb";
-			break;
+		printf("\tissuer: %s\n", s1);
+		printf("\tsubject: %s\n", s3);
+		printf("\texpires: %s\n", cm_store_timestamp_from_time(n1, t));
+		for (i = 0; (as1 != NULL) && (as1[i] != NULL); i++) {
+			printf("%s%s%s",
+			       i == 0 ? "\temail: " : ",",
+			       as1[i],
+			       as1[i + 1] ? "" : "\n");
 		}
-		printf("Request '%s'\n", entries[i]->cm_id);
-		strcpy(ca, "(unknown)");
-		switch (entries[i]->cm_ca_type) {
-		case cm_ca_dummy:
-			strcpy(ca, "dummy(local)");
-			break;
+		for (i = 0; (as2 != NULL) && (as2[i] != NULL); i++) {
+			printf("%s%s%s",
+			       i == 0 ? "\tdns: " : ",",
+			       as2[i],
+			       as2[i + 1] ? "" : "\n");
 		}
-		printf("           CA: %s\n", ca);
-		printf("        state: %s\n",
-		       cm_store_state_as_string(entries[i]->cm_state));
-		if (entries[i]->cm_key_token != NULL) {
-			sprintf(token, ",token='%s'",
-				entries[i]->cm_key_token);
-		} else {
-			strcpy(token, "");
+		for (i = 0; (as3 != NULL) && (as3[i] != NULL); i++) {
+			printf("%s%s%s",
+			       i == 0 ? "\tprincipal: " : ",",
+			       as3[i],
+			       as3[i + 1] ? "" : "\n");
 		}
-		if (entries[i]->cm_key_nickname != NULL) {
-			sprintf(nickname, ",nickname='%s'",
-				entries[i]->cm_key_nickname);
-		} else {
-			strcpy(nickname, "");
+		for (i = 0; (as4 != NULL) && (as4[i] != NULL); i++) {
+			printf("%s%s%s",
+			       i == 0 ? "\teku: " : ",",
+			       as4[i],
+			       as4[i + 1] ? "" : "\n");
 		}
-		printf("     key pair: type=%s,location='%s'%s%s\n",
-		       key_storage, entries[i]->cm_key_storage_location,
-		       token, nickname);
-		if (entries[i]->cm_cert_token != NULL) {
-			sprintf(token, ",token='%s'",
-				entries[i]->cm_cert_token);
-		} else {
-			strcpy(token, "");
-		}
-		if (entries[i]->cm_cert_nickname != NULL) {
-			sprintf(nickname, ",nickname='%s'",
-				entries[i]->cm_cert_nickname);
-		} else {
-			strcpy(nickname, "");
-		}
-		printf("  certificate: type=%s,location='%s'%s%s\n",
-		       cert_storage, entries[i]->cm_cert_storage_location,
-		       token, nickname);
-		tstamp = entries[i]->cm_cert_expiration;
-		printf("      expires: %s\n",
-		       (tstamp == 0) ?
-		       "(unknown)" :
-		       cm_store_timestamp_from_time(tstamp, stamp));
-		printf("    key usage: %s\n",
-		       entries[i]->cm_cert_ku ?: "(unspecified)");
-		printf("      monitor: %s\n",
-		       entries[i]->cm_monitor ? "yes" : "no");
-		printf("   auto-renew: %s\n",
-		       entries[i]->cm_autorenew ? "yes" : "no");
+		printf("\ttrack: %s\n",
+		       query_rep_b(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
+				   "get_monitoring", globals.tctx) ?
+		       "yes" : "no");
+		printf("\tauto-renew: %s\n",
+		       query_rep_b(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
+				   "get_autorenew", globals.tctx) ?
+		       "yes" : "no");
 	}
-	talloc_free(entries);
 	return 0;
 }
 
