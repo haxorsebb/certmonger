@@ -15,6 +15,9 @@ Complete:
   * Populate requested-extensions in signing requests with as much
     information as we can.
   * Maintaining queued items in an upgrade-proofable format.
+  * Should offer an API over D-Bus which the client uses instead of
+    mutilating the queue directly (see doc/api.txt):
+    * List entries.
 
 To-do:
   * Should offer an API over D-Bus which the client uses instead of
@@ -23,9 +26,6 @@ To-do:
       have-issued states.  Optionally, figure out the state based on what the
       requester supplies (i.e., if there's a certificate where the request says
       it should go, assume it's been issued; ditto for private keys) (5 days)
-      MUST
-    * List entries, which should be objects pre-sortable either by
-      state or number (/requests/by-id, /requests/by-state, etc.). (2 days)
       MUST
     * Remove entry. (1 day)
       MUST
