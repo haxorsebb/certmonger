@@ -29,6 +29,8 @@
 #include <talloc.h>
 #include <tevent.h>
 
+#include <dbus/dbus.h>
+
 #include "cm.h"
 #include "log.h"
 #include "iterate.h"
@@ -297,29 +299,60 @@ cm_add_entry(struct cm_context *context, struct cm_store_entry *new_entry)
 	return -1;
 }
 
-void
-cm_kick(struct cm_context *context, const char *id)
+static int
+cm_find_entry_by_id(struct cm_context *context, const char *id)
 {
 	int i;
 	for (i = 0; i < context->n_entries; i++) {
 		if (strcmp(context->entries[i]->cm_id, id) == 0) {
-			talloc_free(context->events[i].next_event);
-			context->events[i].next_event = NULL;
-			cm_iterate_done(context->entries[i],
-					context->events[i].iterate_state);
-			context->events[i].iterate_state = NULL;
-			if (cm_iterate_init(context->entries[i],
-					    &context->events[i].iterate_state) == 0) {
-				context->events[i].next_event =
-					cm_service_one(context, NULL, i);
-			} else {
-				cm_log(3, "Error restarting '%s', "
-				       "please retry.\n",
-				       context->entries[i]->cm_id);
-			}
-			break;
+			return i;
 		}
 	}
+	return -1;
+}
+
+dbus_bool_t
+cm_start_one(struct cm_context *context, const char *id)
+{
+	int i;
+	i = cm_find_entry_by_id(context, id);
+	if (i != -1) {
+		if (cm_iterate_init(context->entries[i],
+				    &context->events[i].iterate_state) == 0) {
+			context->events[i].next_event = cm_service_one(context,
+								       NULL, i);
+			return TRUE;
+		} else {
+			cm_log(3, "Error starting '%s', please retry.\n", id);
+			return FALSE;
+		}
+	} else {
+		return FALSE;
+	}
+}
+
+dbus_bool_t
+cm_stop_one(struct cm_context *context, const char *id)
+{
+	int i;
+	i = cm_find_entry_by_id(context, id);
+	if (i != -1) {
+		talloc_free(context->events[i].next_event);
+		context->events[i].next_event = NULL;
+		cm_iterate_done(context->entries[i],
+				context->events[i].iterate_state);
+		context->events[i].iterate_state = NULL;
+		return TRUE;
+	} else {
+		cm_log(3, "No entry matching '%s'.\n", id);
+		return FALSE;
+	}
+}
+
+dbus_bool_t
+cm_restart_one(struct cm_context *context, const char *id)
+{
+	return cm_stop_one(context, id) && cm_start_one(context, id);
 }
 
 struct cm_store_entry *
