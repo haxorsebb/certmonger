@@ -517,11 +517,116 @@ find_request_by_storage(void *parent, enum cm_tdbus_type bus,
 
 static int
 add_basic_request(enum cm_tdbus_type bus,
-		  const char *dbdir, const char *nickname, const char *token,
-		  const char *keyfile, const char *certfile,
-		  const char *ca, dbus_bool_t track, dbus_bool_t autorenew)
+		  char *dbdir, char *nickname, char *token,
+		  char *keyfile, char *certfile,
+		  char *ca, dbus_bool_t track, dbus_bool_t auto_renew)
 {
-	return 1;
+	DBusMessage *req, *rep;
+	int i;
+	struct cm_tdbusm_dict param[16];
+	const struct cm_tdbusm_dict *params[16];
+	dbus_bool_t b;
+	char *p;
+	i = 0;
+	if ((dbdir != NULL) && (nickname != NULL)) {
+		param[i].key = "KEY_STORAGE";
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = "NSSDB";
+		params[i] = &param[i];
+		i++;
+		param[i].key = "KEY_LOCATION";
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = dbdir;
+		params[i] = &param[i];
+		i++;
+		param[i].key = "KEY_NICKNAME";
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = nickname;
+		params[i] = &param[i];
+		i++;
+		if (token != NULL) {
+			param[i].key = "KEY_TOKEN";
+			param[i].value_type = cm_tdbusm_dict_s;
+			param[i].value.s = token;
+			params[i] = &param[i];
+			i++;
+		}
+		param[i].key = "CERT_STORAGE";
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = "NSSDB";
+		params[i] = &param[i];
+		i++;
+		param[i].key = "CERT_LOCATION";
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = dbdir;
+		params[i] = &param[i];
+		i++;
+		param[i].key = "CERT_NICKNAME";
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = nickname;
+		params[i] = &param[i];
+		i++;
+		if (token != NULL) {
+			param[i].key = "CERT_TOKEN";
+			param[i].value_type = cm_tdbusm_dict_s;
+			param[i].value.s = token;
+			params[i] = &param[i];
+			i++;
+		}
+	} else
+	if (certfile != NULL) {
+		if (keyfile != NULL) {
+			param[i].key = "KEY_STORAGE";
+			param[i].value_type = cm_tdbusm_dict_s;
+			param[i].value.s = "FILE";
+			params[i] = &param[i];
+			i++;
+			param[i].key = "KEY_LOCATION";
+			param[i].value_type = cm_tdbusm_dict_s;
+			param[i].value.s = keyfile;
+			params[i] = &param[i];
+			i++;
+		}
+		param[i].key = "CERT_STORAGE";
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = "FILE";
+		params[i] = &param[i];
+		i++;
+		param[i].key = "CERT_LOCATION";
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = keyfile;
+		params[i] = &param[i];
+		i++;
+	}
+	param[i].key = "TRACK";
+	param[i].value_type = cm_tdbusm_dict_b;
+	param[i].value.b = track;
+	params[i] = &param[i];
+	i++;
+	param[i].key = "RENEW";
+	param[i].value_type = cm_tdbusm_dict_b;
+	param[i].value.b = auto_renew > 0;
+	params[i] = &param[i];
+	i++;
+	params[i] = NULL;
+	req = prep_req(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
+		       "add_request");
+	if (cm_tdbusm_set_d(req, params) != 0) {
+		printf("Error setting request arguments.\n");
+		exit(1);
+	}
+	rep = send_req(req);
+	if (cm_tdbusm_get_bp(rep, globals.tctx, &b, &p) != 0) {
+		printf("Error parsing server response.\n");
+		exit(1);
+	}
+	if (b) {
+		printf("New request \"%s\" added.\n", p);
+		return 0;
+	} else {
+		printf("New request could not be added.\n");
+		return 1;
+	}
 }
 
 static int
@@ -589,7 +694,14 @@ set_tracking(const char *argv0, int argc, char **argv, dbus_bool_t track)
 			exit(1);
 		}
 		dbus_message_unref(rep);
-		return b ? 0 : 1;
+		if (b) {
+			printf("Request \"%s\" modified.\n", request);
+			return 0;
+		} else {
+			printf("Request \"%s\" could not be modified.\n",
+			       request);
+			return 1;
+		}
 	} else {
 		return add_basic_request(bus, dbdir, nickname, token,
 					 keyfile, certfile,
