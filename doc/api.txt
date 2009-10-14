@@ -105,7 +105,7 @@ o object layout
   - get-csr-data
     returns: string -> signing request in PEM format
   - get-submitted-date
-    returns: number(optional) -> time of last submission to a CA
+    returns: number(optional) -> time of last submission to a CA (as time_t)
   - get-submitted-cookie
     returns: string(optional) -> CA-specific value
   - modify
