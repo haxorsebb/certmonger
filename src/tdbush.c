@@ -492,6 +492,18 @@ static DBusHandlerResult
 request_get_submitted_cookie(DBusConnection *conn, DBusMessage *msg,
 			     struct cm_context *ctx)
 {
+	DBusMessage *rep;
+	struct cm_store_entry *entry;
+	entry = get_entry_for_request_message(msg, ctx);
+	if (entry != NULL) {
+		rep = dbus_message_new_method_return(msg);
+		if (rep != NULL) {
+			if (cm_tdbusm_set_n(rep, entry->cm_submitted) == 0) {
+				dbus_connection_send(conn, rep, NULL);
+			}
+			dbus_message_unref(rep);
+		}
+	}
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
@@ -499,6 +511,18 @@ static DBusHandlerResult
 request_get_submitted_date(DBusConnection *conn, DBusMessage *msg,
 			   struct cm_context *ctx)
 {
+	DBusMessage *rep;
+	struct cm_store_entry *entry;
+	entry = get_entry_for_request_message(msg, ctx);
+	if (entry != NULL) {
+		rep = dbus_message_new_method_return(msg);
+		if (rep != NULL) {
+			if (cm_tdbusm_set_n(rep, entry->cm_submitted) == 0) {
+				dbus_connection_send(conn, rep, NULL);
+			}
+			dbus_message_unref(rep);
+		}
+	}
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
