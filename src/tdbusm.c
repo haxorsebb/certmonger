@@ -348,10 +348,10 @@ cm_tdbusm_get_ssosos(DBusMessage *msg, void *parent, char **s1, char **s2,
 	int i;
 	i = cm_tdbusm_get_ssss(msg, parent, s1, s2, s3, s4);
 	if (i != 0) {
-		s4 = NULL;
+		*s4 = NULL;
 		i = cm_tdbusm_get_sss(msg, parent, s1, s2, s3);
 		if (i != 0) {
-			s3 = NULL;
+			*s3 = NULL;
 			i = cm_tdbusm_get_ss(msg, parent, s1, s2);
 		}
 	}
