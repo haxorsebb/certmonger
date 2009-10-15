@@ -359,6 +359,27 @@ cm_tdbusm_get_ssosos(DBusMessage *msg, void *parent, char **s1, char **s2,
 }
 
 int
+cm_tdbusm_get_sososos(DBusMessage *msg, void *parent, char **s1, char **s2,
+		      char **s3, char **s4)
+{
+	int i;
+	i = cm_tdbusm_get_ssss(msg, parent, s1, s2, s3, s4);
+	if (i != 0) {
+		*s4 = NULL;
+		i = cm_tdbusm_get_sss(msg, parent, s1, s2, s3);
+		if (i != 0) {
+			*s3 = NULL;
+			i = cm_tdbusm_get_ss(msg, parent, s1, s2);
+			if (i != 0) {
+				*s2 = NULL;
+				i = cm_tdbusm_get_s(msg, parent, s1);
+			}
+		}
+	}
+	return i;
+}
+
+int
 cm_tdbusm_get_sssas(DBusMessage *msg, void *parent,
 		    char **s1, char **s2, char **s3, char ***as)
 {
