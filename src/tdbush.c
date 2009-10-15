@@ -164,10 +164,10 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	} else {
 		/* Check that it's a known/supported type. */
-		if (strcasecmp(param->value.s, "FILE")) {
+		if (strcasecmp(param->value.s, "FILE") == 0) {
 			cert_storage = cm_cert_storage_file;
 		} else
-		if (strcasecmp(param->value.s, "NSSDB")) {
+		if (strcasecmp(param->value.s, "NSSDB") == 0) {
 			cert_storage = cm_cert_storage_nssdb;
 		} else {
 			cm_log(1, "Unknown cert storage type \"%s\".\n",
