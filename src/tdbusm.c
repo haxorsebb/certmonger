@@ -1073,3 +1073,20 @@ cm_tdbusm_set_d(DBusMessage *msg, const struct cm_tdbusm_dict **d)
 	dbus_message_iter_close_container(&args, &array);
 	return (i > 0) ? 0 : -1;
 }
+
+const struct cm_tdbusm_dict *
+cm_tdbusm_find_dict_entry(DBusMessage *msg, const struct cm_tdbusm_dict **d,
+			  const char *key,
+			  enum cm_tdbusm_dict_value_type value_type)
+{
+	int i;
+	const struct cm_tdbusm_dict *ret;
+	ret = NULL;
+	for (i = 0; (d != NULL) && (d[i] != NULL); i++) {
+		if ((value_type == d[i]->value_type) &&
+		    (strcasecmp(key, d[i]->key) == 0)) {
+			ret = d[i];
+		}
+	}
+	return ret;
+}

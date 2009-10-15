@@ -47,7 +47,7 @@ int cm_tdbusm_get_sasasasnas(DBusMessage *msg, void *parent,
 			     char ***as3, long *n, char ***as4);
 struct cm_tdbusm_dict {
 	char *key;
-	enum {
+	enum cm_tdbusm_dict_value_type {
 		cm_tdbusm_dict_s,
 		cm_tdbusm_dict_as,
 		cm_tdbusm_dict_n,
@@ -91,5 +91,9 @@ int cm_tdbusm_set_sasasasnas(DBusMessage *msg,
 			     const char **as1, const char **as2,
 			     const char **as3, long n, const char **as4);
 int cm_tdbusm_set_d(DBusMessage *msg, const struct cm_tdbusm_dict **d);
+const struct cm_tdbusm_dict *cm_tdbusm_find_dict_entry(DBusMessage *msg,
+						       const struct cm_tdbusm_dict **d,
+						       const char *key,
+						       enum cm_tdbusm_dict_value_type value_type);
 
 #endif
