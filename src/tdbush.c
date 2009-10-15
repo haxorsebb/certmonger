@@ -88,7 +88,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	void *parent;
 	struct cm_tdbusm_dict **d;
 	const struct cm_tdbusm_dict *param;
-	struct cm_store_entry *new_entry, *e;
+	struct cm_store_entry *e;
 	int i, n_entries;
 	enum cm_key_storage_type key_storage;
 	char *key_location, *key_nickname, *key_token;
@@ -202,6 +202,9 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		} else
 		if (strcasecmp(param->value.s, "NSSDB")) {
 			key_storage = cm_key_storage_nssdb;
+		} else
+		if (strcasecmp(param->value.s, "NONE")) {
+			key_storage = cm_key_storage_none;
 		} else {
 			cm_log(1, "Unknown key storage type \"%s\".\n",
 			       param->value.s);
@@ -211,6 +214,11 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		/* Check that other required information about the key's
 		 * location is provided. */
 		switch (key_storage) {
+		case cm_key_storage_none:
+			key_location = NULL;
+			key_nickname = NULL;
+			key_token = NULL;
+			break;
 		case cm_key_storage_file:
 			param = cm_tdbusm_find_dict_entry(d, "KEY_LOCATION",
 							  cm_tdbusm_dict_s);
@@ -259,14 +267,20 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 			if (key_storage != e->cm_key_storage_type) {
 				continue;
 			}
-			if (strcmp(key_location,
-				   e->cm_key_storage_location) == 0) {
-				continue;
-			}
 			switch (key_storage) {
+			case cm_key_storage_none:
+				break;
 			case cm_key_storage_file:
+				if (strcmp(key_location,
+					   e->cm_key_storage_location) == 0) {
+					continue;
+				}
 				break;
 			case cm_key_storage_nssdb:
+				if (strcmp(key_location,
+					   e->cm_key_storage_location) == 0) {
+					continue;
+				}
 				if (strcmp(key_nickname,
 					   e->cm_key_nickname) == 0) {
 					continue;
@@ -578,6 +592,9 @@ request_get_key_storage_info(DBusConnection *conn, DBusMessage *msg,
 		if (rep != NULL) {
 			location = entry->cm_key_storage_location;
 			switch (entry->cm_key_storage_type) {
+			case cm_key_storage_none:
+				type = "NONE";
+				break;
 			case cm_key_storage_file:
 				type = "FILE";
 				if (cm_tdbusm_set_ss(rep, type,

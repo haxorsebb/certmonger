@@ -374,9 +374,13 @@ cm_store_file_read(void *parent, const char *filename, FILE *fp)
 				if (strcasecmp(p, "nssdb") == 0) {
 					ret->cm_key_storage_type =
 						cm_key_storage_nssdb;
+				} else
+				if (strcasecmp(p, "none") == 0) {
+					ret->cm_key_storage_type =
+						cm_key_storage_none;
 				} else {
 					ret->cm_key_storage_type =
-						cm_key_storage_file;
+						cm_key_storage_none;
 				}
 				talloc_free(p);
 				break;
@@ -724,6 +728,10 @@ cm_store_file_write(FILE *fp, struct cm_store_entry *entry)
 		cm_store_file_write_str(fp,
 					cm_store_file_field_key_storage_type,
 					"NSSDB");
+	case cm_key_storage_none:
+		cm_store_file_write_str(fp,
+					cm_store_file_field_key_storage_type,
+					"NONE");
 		break;
 	}
 	cm_store_file_write_str(fp, cm_store_file_field_key_storage_location,

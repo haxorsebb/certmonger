@@ -141,13 +141,13 @@ query_rep_b(enum cm_tdbus_type which,
 /* Send the specified, argument-less method call to the named object, and
  * return from two to four strings from the response. */
 static void
-query_rep_ssosos(enum cm_tdbus_type which,
-		 const char *path, const char *interface, const char *method,
-		 void *parent, char **s1, char **s2, char **s3, char **s4)
+query_rep_sososos(enum cm_tdbus_type which,
+		  const char *path, const char *interface, const char *method,
+		  void *parent, char **s1, char **s2, char **s3, char **s4)
 {
 	DBusMessage *rep;
 	rep = query_rep(which, path, interface, method);
-	if (cm_tdbusm_get_ssosos(rep, parent, s1, s2, s3, s4) != 0) {
+	if (cm_tdbusm_get_sososos(rep, parent, s1, s2, s3, s4) != 0) {
 		printf("Error parsing server response.\n");
 		exit(1);
 	}
@@ -413,13 +413,12 @@ find_request_by_storage(void *parent, enum cm_tdbus_type bus,
 			const char *dbdir, 
 			const char *nickname, 
 			const char *token,
-			const char *keyfile, const char *certfile)
+			const char *certfile)
 {
 	DBusMessage *rep;
 	char **requests;
 	int i, which;
-	char *key_stype, *key_sloc, *key_nick, *key_tok,
-	     *cert_stype, *cert_sloc, *cert_nick, *cert_tok;
+	char *cert_stype, *cert_sloc, *cert_nick, *cert_tok;
 	rep = query_rep(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
 			"get_requests");
 	if (cm_tdbusm_get_as(rep, globals.tctx, &requests) != 0) {
@@ -429,12 +428,12 @@ find_request_by_storage(void *parent, enum cm_tdbus_type bus,
 	dbus_message_unref(rep);
 	which = -1;
 	for (i = 0; (requests != NULL) && (requests[i] != NULL); i++) {
-		query_rep_ssosos(bus, requests[i],
-				 CM_DBUS_REQUEST_INTERFACE,
-				 "get_cert_storage_info",
-				 parent,
-				 &cert_stype, &cert_sloc,
-				 &cert_nick, &cert_tok);
+		query_rep_sososos(bus, requests[i],
+				  CM_DBUS_REQUEST_INTERFACE,
+				  "get_cert_storage_info",
+				  parent,
+				  &cert_stype, &cert_sloc,
+				  &cert_nick, &cert_tok);
 		if (strcasecmp(cert_stype, "NSSDB") == 0) {
 			if (dbdir == NULL) {
 				continue;
@@ -461,52 +460,8 @@ find_request_by_storage(void *parent, enum cm_tdbus_type bus,
 			}
 		}
 		if (which != -1) {
-			/* Hmm, we matched multiple entries on just the
-			 * certificate storage. */
-			which = -1;
-			for (i = 0;
-			     (requests != NULL) && (requests[i] != NULL);
-			     i++) {
-				query_rep_ssosos(bus, requests[i],
-						 CM_DBUS_REQUEST_INTERFACE,
-						 "get_key_storage_info",
-						 parent,
-						 &key_stype, &key_sloc,
-						 &key_nick, &key_tok);
-				if (strcasecmp(key_stype, "NSSDB") == 0) {
-					if (dbdir == NULL) {
-						continue;
-					}
-					if (strcmp(dbdir, key_sloc) != 0) {
-						continue;
-					}
-					if (nickname == NULL) {
-						continue;
-					}
-					if (strcmp(nickname, key_nick) != 0) {
-						continue;
-					}
-					if (token &&
-					    (strcmp(token, key_tok) != 0)) {
-						continue;
-					}
-				} else
-				if (strcasecmp(key_stype, "FILE") == 0) {
-					if (keyfile == NULL) {
-						continue;
-					}
-					if (strcmp(keyfile, key_sloc) != 0) {
-						continue;
-					}
-				}
-				if (which != -1) {
-					/* Multiple matches, even factoring in
-					 * where the key is?  We have to give
-					 * up. */
-					return NULL;
-				}
-				which = i;
-			}
+			/* Multiple matches? We have to give up. */
+			return NULL;
 		}
 		which = i;
 	}
@@ -670,7 +625,7 @@ set_tracking(const char *argv0, int argc, char **argv, dbus_bool_t track)
 	}
 	request = find_request_by_storage(globals.tctx, bus,
 					  dbdir, nickname, token,
-					  keyfile, certfile);
+					  certfile);
 	if (request != NULL) {
 		i = 0;
 		param[i].key = "TRACK";
@@ -807,14 +762,15 @@ list(const char *argv0, int argc, char **argv)
 		/* Get key/cert storage info. */
 		rep = query_rep(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
 				"get_key_storage_info");
-		if (cm_tdbusm_get_ssosos(rep, globals.tctx,
-				         &s1, &s2, &s3, &s4) != 0) {
+		if (cm_tdbusm_get_sososos(rep, globals.tctx,
+				          &s1, &s2, &s3, &s4) != 0) {
 			printf("Error parsing server response.\n");
 			exit(1);
 		}
 		dbus_message_unref(rep);
-		printf("\tkey pair: type=%s,location='%s'%s%s%s%s\n",
-		       s1, s2,
+		printf("\tkey pair: type=%s,%s%s%s%s%s%s%s\n",
+		       s1,
+		       s2 ? ",location='" : "", s2 ? s2 : "", s2 ? "'" : s2,
 		       s3 ? ",nickname=" : "", s3 ? s3 : "",
 		       s4 ? ",token=" : "", s4 ? s4 : "");
 		rep = query_rep(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,

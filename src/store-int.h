@@ -37,7 +37,8 @@ struct cm_store_entry {
 	/* Location of key pair [use-once default] NSS,/etc/pki/nssdb */
 	unsigned int cm_key_storage_default:1;
 	enum cm_key_storage_type {
-		cm_key_storage_file = 0,
+		cm_key_storage_none = 0,
+		cm_key_storage_file,
 		cm_key_storage_nssdb,
 	} cm_key_storage_type;
 	char *cm_key_storage_location;

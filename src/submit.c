@@ -16,6 +16,7 @@
  */
 
 #include "config.h"
+#include "log.h"
 #include "submit.h"
 #include "submit-int.h"
 #include "store-int.h"
@@ -27,6 +28,10 @@ cm_submit_start(struct cm_store_entry *entry)
 	switch (entry->cm_ca_type) {
 	case cm_ca_dummy:
 		switch (entry->cm_key_storage_type) {
+		case cm_key_storage_none:
+			cm_log(1, "Can't self-sign \"%s\" without access to "
+			       "the private key.\n", entry->cm_id);
+			break;
 #ifdef HAVE_OPENSSL
 		case cm_key_storage_file:
 			return cm_submit_o_start(entry);
@@ -49,6 +54,10 @@ struct cm_submit_state *
 cm_submit_resume(struct cm_store_entry *entry)
 {
 	switch (entry->cm_key_storage_type) {
+	case cm_key_storage_none:
+		cm_log(1, "Can't self-sign \"%s\" without access to "
+		       "the private key.\n", entry->cm_id);
+		break;
 #ifdef HAVE_OPENSSL
 	case cm_key_storage_file:
 		return cm_submit_o_resume(entry);

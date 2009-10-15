@@ -18,12 +18,17 @@
 #include "config.h"
 #include "keygen.h"
 #include "keygen-int.h"
+#include "log.h"
 #include "store-int.h"
 
 struct cm_keygen_state *
 cm_keygen_start(struct cm_store_entry *entry)
 {
 	switch (entry->cm_key_storage_type) {
+	case cm_key_storage_none:
+		cm_log(1, "Can't generate key for \"%s\" without knowing "
+		       "where to store it.\n", entry->cm_id);
+		break;
 #ifdef HAVE_OPENSSL
 	case cm_key_storage_file:
 		return cm_keygen_o_start(entry);
