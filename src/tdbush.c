@@ -81,6 +81,57 @@ base_add_known_ca(DBusConnection *conn, DBusMessage *msg,
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
+static char *
+maybe_strdup(void *parent, const char *s)
+{
+	if (s != NULL) {
+		return talloc_strdup(parent, s);
+	}
+	return NULL;
+}
+
+static char **
+maybe_strdupv(void *parent, char **s)
+{
+	int i;
+	char **ret = NULL;
+	for (i = 0; (s != NULL) && (s[i] != NULL); i++) {
+		continue;
+	}
+	if (i > 0) {
+		ret = talloc_array_ptrtype(parent, ret, i + 1);
+		if (ret != NULL) {
+			for (i = 0; (s != NULL) && (s[i] != NULL); i++) {
+				ret[i] = talloc_strdup(ret, s[i]);
+			}
+			ret[i] = NULL;
+		}
+	}
+	return ret;
+}
+
+static char *
+maybe_joinv(void *parent, const char *sep, char **s)
+{
+	int i, l;
+	char *ret = NULL;
+	for (i = 0, l = 0; (s != NULL) && (s[i] != NULL); i++) {
+		l += i ? strlen(sep) + strlen(s[i]) : strlen(s[i]);
+	}
+	if (l > 0) {
+		ret = talloc_zero_size(parent, l + 1);
+		if (ret != NULL) {
+			for (i = 0; s[i] != NULL; i++) {
+				if (i > 0) {
+					strcat(ret, sep);
+				}
+				strcat(ret, s[i]);
+			}
+		}
+	}
+	return ret;
+}
+
 static DBusHandlerResult
 base_add_request(DBusConnection *conn, DBusMessage *msg,
 		 struct cm_context *ctx)
@@ -88,7 +139,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	void *parent;
 	struct cm_tdbusm_dict **d;
 	const struct cm_tdbusm_dict *param;
-	struct cm_store_entry *e;
+	struct cm_store_entry *e, *new_entry, *defaults;
 	int i, n_entries;
 	enum cm_key_storage_type key_storage;
 	char *key_location, *key_nickname, *key_token;
@@ -101,6 +152,8 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		talloc_free(parent);
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
+	defaults = cm_store_get_defaults();
+
 	/* Certificate storage. */
 	param = cm_tdbusm_find_dict_entry(d, "CERT_STORAGE", cm_tdbusm_dict_s);
 	if (param == NULL) {
@@ -196,6 +249,11 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	 * we don't require that we know anything about the key. */
 	param = cm_tdbusm_find_dict_entry(d, "KEY_STORAGE", cm_tdbusm_dict_s);
 	if (param != NULL) {
+		key_storage = defaults->cm_key_storage_type;
+		key_location = defaults->cm_key_storage_location;
+		key_nickname = defaults->cm_key_nickname;
+		key_token = defaults->cm_key_token;
+	} else {
 		/* Check that it's a known/supported type. */
 		if (strcasecmp(param->value.s, "FILE")) {
 			key_storage = cm_key_storage_file;
@@ -269,6 +327,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 			}
 			switch (key_storage) {
 			case cm_key_storage_none:
+				continue;
 				break;
 			case cm_key_storage_file:
 				if (strcmp(key_location,
@@ -296,6 +355,74 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 			talloc_free(parent);
 			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 		}
+	}
+	/* Okay, we can go ahead and add the entry. */
+	new_entry = talloc_ptrtype(parent, new_entry);
+	if (new_entry == NULL) {
+		talloc_free(parent);
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+	memset(new_entry, 0, sizeof(*new_entry));
+	/* Populate it with all of the information we have. */
+	param = cm_tdbusm_find_dict_entry(d, "KEY_SIZE", cm_tdbusm_dict_n);
+	if (param != NULL) {
+		new_entry->cm_key_type_default = FALSE;
+		new_entry->cm_key_type.cm_key_algorithm = cm_key_rsa;
+		new_entry->cm_key_type.cm_key_size = param->value.n;
+	} else {
+		new_entry->cm_key_type_default = TRUE;
+	}
+	/* Key and certificate storage. */
+	new_entry->cm_key_storage_type = key_storage;
+	new_entry->cm_key_storage_location = maybe_strdup(new_entry,
+							  key_location);
+	new_entry->cm_key_nickname = maybe_strdup(new_entry, key_nickname);
+	new_entry->cm_key_token = maybe_strdup(new_entry, key_token);
+	new_entry->cm_cert_storage_type = cert_storage;
+	new_entry->cm_cert_storage_location = maybe_strdup(new_entry,
+							   cert_location);
+	new_entry->cm_cert_nickname = maybe_strdup(new_entry, cert_nickname);
+	new_entry->cm_cert_token = maybe_strdup(new_entry, cert_token);
+	/* Behavior settings. */
+	param = cm_tdbusm_find_dict_entry(d, "TRACK", cm_tdbusm_dict_b);
+	if (param != NULL) {
+		new_entry->cm_monitor_default = FALSE;
+		new_entry->cm_monitor = param->value.b;
+	} else {
+		new_entry->cm_monitor_default = TRUE;
+	}
+	param = cm_tdbusm_find_dict_entry(d, "RENEW", cm_tdbusm_dict_b);
+	if (param != NULL) {
+		new_entry->cm_autorenew_default = FALSE;
+		new_entry->cm_autorenew = param->value.b;
+	} else {
+		new_entry->cm_monitor_default = TRUE;
+	}
+	/* Template information. */
+	param = cm_tdbusm_find_dict_entry(d, "SUBJECT", cm_tdbusm_dict_s);
+	if (param != NULL) {
+		new_entry->cm_template_subject = maybe_strdup(new_entry,
+							      param->value.s);
+	}
+	param = cm_tdbusm_find_dict_entry(d, "EKU", cm_tdbusm_dict_as);
+	if (param != NULL) {
+		new_entry->cm_template_eku = maybe_joinv(new_entry, ",",
+							 param->value.as);
+	}
+	param = cm_tdbusm_find_dict_entry(d, "PRINCIPAL", cm_tdbusm_dict_as);
+	if (param != NULL) {
+		new_entry->cm_template_principal = maybe_strdupv(new_entry,
+								 param->value.as);
+	}
+	param = cm_tdbusm_find_dict_entry(d, "DNS", cm_tdbusm_dict_as);
+	if (param != NULL) {
+		new_entry->cm_template_hostname = maybe_strdupv(new_entry,
+								param->value.as);
+	}
+	param = cm_tdbusm_find_dict_entry(d, "EMAIL", cm_tdbusm_dict_as);
+	if (param != NULL) {
+		new_entry->cm_template_email = maybe_strdupv(new_entry,
+							     param->value.as);
 	}
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
