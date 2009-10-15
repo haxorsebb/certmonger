@@ -18,10 +18,9 @@ o object layout
     returns: array of string -> "NSSDB", "FILE"
   - add-request
     arguments: [dict{string,variant{string/array-of-string/number/boolean}}]
-               {"GENERATE_KEY",boolean}
                {"KEY_TYPE","RSA"}
                {"KEY_SIZE",integer}
-               {"KEY_STORAGE","NSSDB"/"FILE"}*
+               {"KEY_STORAGE","NSSDB"/"FILE"/"NONE"}*
                {"KEY_LOCATION",string}*
                {"KEY_NICKNAME",string}
                {"KEY_TOKEN",string}
@@ -33,7 +32,6 @@ o object layout
 	       {"RENEW",boolean}
 	       {"SUBJECT",string}
 	       {"EKU",array-of-string (oids)}
-	       {"KU",integer (see RFC5280 for the bit values)}
 	       {"PRINCIPAL",array-of-string (principal names)}
 	       {"DNS",array-of-string (dns names)}
 	       {"EMAIL",array-of-string (email addresses)}
