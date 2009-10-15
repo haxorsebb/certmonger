@@ -82,10 +82,11 @@ cm_certread_o_main(int fd, struct cm_store_entry *entry)
 		len = i2d_X509(cert, (unsigned char **) &buf);
 		cm_certread_n_parse(entry, (unsigned char *) buf, len);
 		cm_certread_write_data_to_pipe(entry, fp);
-	}
-	while ((error = ERR_get_error()) != 0) {
-		ERR_error_string_n(error, buf, sizeof(buf));
-		cm_log(1, "%s\n", buf);
+	} else {
+		while ((error = ERR_get_error()) != 0) {
+			ERR_error_string_n(error, buf, sizeof(buf));
+			cm_log(1, "%s\n", buf);
+		}
 	}
 	fclose(fp);
 	if (status != 0) {

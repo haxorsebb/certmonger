@@ -643,10 +643,70 @@ request_get_cert_data(DBusConnection *conn, DBusMessage *msg,
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
+static long
+ku_from_string(const char *ku)
+{
+	long i = 0;
+	while ((ku != NULL) && (*ku != '\0')) {
+		i <<= 1;
+		i |= 1;
+	}
+	return i;
+}
+
+static char **
+eku_splitv(const char *eku)
+{
+	char **ret = NULL;
+	const char *p, *q;
+	int i;
+	if ((eku != NULL) && (strlen(eku) > 0)) {
+		ret = talloc_array_ptrtype(NULL, ret, strlen(eku) + 1);
+		p = eku;
+		i = 0;
+		while (*p != '\0') {
+			q = p + strcspn(p, ",");
+			if (p != q) {
+				ret[i++] = talloc_strndup(ret, p, q - p);
+			}
+			p = q + strspn(q, ",");
+		}
+		ret[i] = NULL;
+		if (i == 0) {
+			talloc_free(ret);
+			ret = NULL;
+		}
+	}
+	return ret;
+}
+
 static DBusHandlerResult
 request_get_cert_info(DBusConnection *conn, DBusMessage *msg,
 		      struct cm_context *ctx)
 {
+	DBusMessage *rep;
+	struct cm_store_entry *entry;
+	char **eku;
+	entry = get_entry_for_request_message(msg, ctx);
+	if (entry != NULL) {
+		rep = dbus_message_new_method_return(msg);
+		if (rep != NULL) {
+			eku = eku_splitv(entry->cm_cert_eku);
+			if (cm_tdbusm_set_sssnasasasnas(rep,
+							entry->cm_cert_issuer,
+							entry->cm_cert_serial,
+							entry->cm_cert_subject,
+							entry->cm_cert_expiration,
+							(const char **) entry->cm_cert_email,
+							(const char **) entry->cm_cert_hostname,
+							(const char **) entry->cm_cert_principal,
+							ku_from_string(entry->cm_cert_eku),
+							(const char **) eku) == 0) {
+				dbus_connection_send(conn, rep, NULL);
+			}
+			talloc_free(eku);
+		}
+	}
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
@@ -746,6 +806,9 @@ request_get_key_storage_info(DBusConnection *conn, DBusMessage *msg,
 			switch (entry->cm_key_storage_type) {
 			case cm_key_storage_none:
 				type = "NONE";
+				if (cm_tdbusm_set_s(rep, type) == 0) {
+					dbus_connection_send(conn, rep, NULL);
+				}
 				break;
 			case cm_key_storage_file:
 				type = "FILE";
