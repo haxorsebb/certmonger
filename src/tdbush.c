@@ -136,6 +136,7 @@ static DBusHandlerResult
 base_add_request(DBusConnection *conn, DBusMessage *msg,
 		 struct cm_context *ctx)
 {
+	DBusMessage *rep;
 	void *parent;
 	struct cm_tdbusm_dict **d;
 	const struct cm_tdbusm_dict *param;
@@ -424,7 +425,31 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		new_entry->cm_template_email = maybe_strdupv(new_entry,
 							     param->value.as);
 	}
-	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	/* Hand it off to the main loop. */
+	new_entry->cm_state = CM_NEED_GUIDANCE;
+	if (cm_add_entry(ctx, new_entry) != 0) {
+		cm_log(1, "Error adding entry to main loop.\n");
+		talloc_free(parent);
+		rep = dbus_message_new_method_return(msg);
+		if (rep != NULL) {
+			if (cm_tdbusm_set_bs(rep, FALSE, "") == 0) {
+				dbus_connection_send(conn, rep, NULL);
+			}
+			dbus_message_unref(rep);
+		}
+		return DBUS_HANDLER_RESULT_HANDLED;
+	} else {
+		rep = dbus_message_new_method_return(msg);
+		if (rep != NULL) {
+			if (cm_tdbusm_set_bs(rep, TRUE,
+					     new_entry->cm_id ?
+					     new_entry->cm_id : "") == 0) {
+				dbus_connection_send(conn, rep, NULL);
+			}
+			dbus_message_unref(rep);
+		}
+		return DBUS_HANDLER_RESULT_HANDLED;
+	}
 }
 
 static DBusHandlerResult
