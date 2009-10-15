@@ -126,6 +126,11 @@ set_as(DBusMessage *msg)
 	return cm_tdbusm_set_as(msg, as);
 }
 static int
+set_sss(DBusMessage *msg)
+{
+	return cm_tdbusm_set_sss(msg, s1, s2, s3);
+}
+static int
 set_ssss(DBusMessage *msg)
 {
 	return cm_tdbusm_set_ssss(msg, s1, s2, s3, s4);
@@ -288,6 +293,18 @@ get_as(DBusMessage *rep, int msgid)
 	return ret;
 }
 static int
+get_sss(DBusMessage *rep, int msgid)
+{
+	int ret;
+	char *s1, *s2, *s3;
+	ret = cm_tdbusm_get_sss(rep, NULL, &s1, &s2, &s3);
+	if (ret == 0) {
+		printf("Message %d - s:%s,s:%ss:%s\n", msgid,
+		       s1, s2, s3);
+	}
+	return ret;
+}
+static int
 get_ssss(DBusMessage *rep, int msgid)
 {
 	int ret;
@@ -438,6 +455,7 @@ main(int argc, char **argv)
 		{&set_ss, &get_ss},
 		{&set_ap, &get_ap},
 		{&set_as, &get_as},
+		{&set_sss, &get_sss},
 		{&set_ssss, &get_ssss},
 		{&set_sssas, &get_sssas},
 		{&set_sssnasasasnas, &get_sssnasasasnas},
