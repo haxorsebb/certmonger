@@ -319,7 +319,7 @@ request(const char *argv0, int argc, char **argv)
 		i++;
 		param[i].key = "CERT_LOCATION";
 		param[i].value_type = cm_tdbusm_dict_s;
-		param[i].value.s = keyfile;
+		param[i].value.s = certfile;
 		params[i] = &param[i];
 		i++;
 	}
