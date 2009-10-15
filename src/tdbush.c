@@ -90,7 +90,6 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	const struct cm_tdbusm_dict *param;
 	struct cm_store_entry *new_entry, *e;
 	int i, n_entries;
-	char *storage;
 	enum cm_key_storage_type key_storage;
 	char *key_location, *key_nickname, *key_token;
 	enum cm_cert_storage_type cert_storage;
@@ -192,6 +191,97 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		       "used for request \"%s\".\n", e->cm_id);
 		talloc_free(parent);
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+	/* Key storage.  We can afford to be a bit more lax about this because
+	 * we don't require that we know anything about the key. */
+	param = cm_tdbusm_find_dict_entry(d, "KEY_STORAGE", cm_tdbusm_dict_s);
+	if (param != NULL) {
+		/* Check that it's a known/supported type. */
+		if (strcasecmp(param->value.s, "FILE")) {
+			key_storage = cm_key_storage_file;
+		} else
+		if (strcasecmp(param->value.s, "NSSDB")) {
+			key_storage = cm_key_storage_nssdb;
+		} else {
+			cm_log(1, "Unknown key storage type \"%s\".\n",
+			       param->value.s);
+			talloc_free(parent);
+			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		}
+		/* Check that other required information about the key's
+		 * location is provided. */
+		switch (key_storage) {
+		case cm_key_storage_file:
+			param = cm_tdbusm_find_dict_entry(d, "KEY_LOCATION",
+							  cm_tdbusm_dict_s);
+			if (param == NULL) {
+				cm_log(1,
+				       "Key storage location not specified.\n");
+				talloc_free(parent);
+				return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+			}
+			key_location = param->value.s;
+			key_nickname = NULL;
+			key_token = NULL;
+			break;
+		case cm_key_storage_nssdb:
+			param = cm_tdbusm_find_dict_entry(d, "KEY_LOCATION",
+							  cm_tdbusm_dict_s);
+			if (param == NULL) {
+				cm_log(1,
+				       "Key storage location not specified.\n");
+				talloc_free(parent);
+				return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+			}
+			key_location = param->value.s;
+			param = cm_tdbusm_find_dict_entry(d, "KEY_NICKNAME",
+							  cm_tdbusm_dict_s);
+			if (param == NULL) {
+				cm_log(1, "Cert nickname not specified.\n");
+				talloc_free(parent);
+				return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+			}
+			key_nickname = param->value.s;
+			param = cm_tdbusm_find_dict_entry(d, "KEY_TOKEN",
+							  cm_tdbusm_dict_s);
+			if (param == NULL) {
+				key_token = NULL;
+			} else {
+				key_token = param->value.s;
+			}
+			break;
+		}
+		/* Check for a duplicate of another entry's key storage
+		 * information. */
+		n_entries = cm_get_n_entries(ctx);
+		for (i = 0; i < n_entries; i++) {
+			e = cm_get_entry_by_index(ctx, i);
+			if (key_storage != e->cm_key_storage_type) {
+				continue;
+			}
+			if (strcmp(key_location,
+				   e->cm_key_storage_location) == 0) {
+				continue;
+			}
+			switch (key_storage) {
+			case cm_key_storage_file:
+				break;
+			case cm_key_storage_nssdb:
+				if (strcmp(key_nickname,
+					   e->cm_key_nickname) == 0) {
+					continue;
+				}
+				break;
+			}
+			break;
+		}
+		if (i < n_entries) {
+			/* We found a match, and that's bad. */
+			cm_log(1, "Key at same location is already being "
+			       "used for request \"%s\".\n", e->cm_id);
+			talloc_free(parent);
+			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		}
 	}
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
