@@ -35,7 +35,6 @@ struct cm_store_entry {
 		int cm_key_size;
 	} cm_key_type;
 	/* Location of key pair [use-once default] NSS,/etc/pki/nssdb */
-	unsigned int cm_key_storage_default:1;
 	enum cm_key_storage_type {
 		cm_key_storage_none = 0,
 		cm_key_storage_file,
@@ -46,7 +45,6 @@ struct cm_store_entry {
 	char *cm_key_nickname;
 	/* Location of certificate [use-once default]
 	 * NSS,/etc/pki/nssdb,Server-Cert-default */
-	unsigned int cm_cert_storage_default:1;
 	enum cm_cert_storage_type {
 		cm_cert_storage_file = 0,
 		cm_cert_storage_nssdb,

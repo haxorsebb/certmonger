@@ -44,13 +44,11 @@ enum cm_store_file_field {
 	cm_store_file_field_key_type,
 	cm_store_file_field_key_size,
 
-	cm_store_file_field_key_storage_default,
 	cm_store_file_field_key_storage_type,
 	cm_store_file_field_key_storage_location,
 	cm_store_file_field_key_token,
 	cm_store_file_field_key_nickname,
 
-	cm_store_file_field_cert_storage_default,
 	cm_store_file_field_cert_storage_type,
 	cm_store_file_field_cert_storage_location,
 	cm_store_file_field_cert_token,
@@ -111,13 +109,11 @@ static struct cm_store_file_field_list {
 	{cm_store_file_field_key_type, "key_type"},
 	{cm_store_file_field_key_size, "key_size"},
 
-	{cm_store_file_field_key_storage_default, "key_storage_default"},
 	{cm_store_file_field_key_storage_type, "key_storage_type"},
 	{cm_store_file_field_key_storage_location, "key_storage_location"},
 	{cm_store_file_field_key_token, "key_token"},
 	{cm_store_file_field_key_nickname, "key_nickname"},
 
-	{cm_store_file_field_cert_storage_default, "cert_storage_default"},
 	{cm_store_file_field_cert_storage_type, "cert_storage_type"},
 	{cm_store_file_field_cert_storage_location, "cert_storage_location"},
 	{cm_store_file_field_cert_token, "cert_token"},
@@ -362,10 +358,6 @@ cm_store_file_read(void *parent, const char *filename, FILE *fp)
 				ret->cm_key_type.cm_key_size = atoi(p);
 				talloc_free(p);
 				break;
-			case cm_store_file_field_key_storage_default:
-				ret->cm_key_storage_default = atoi(p);
-				talloc_free(p);
-				break;
 			case cm_store_file_field_key_storage_type:
 				if (strcasecmp(p, "file") == 0) {
 					ret->cm_key_storage_type =
@@ -405,10 +397,6 @@ cm_store_file_read(void *parent, const char *filename, FILE *fp)
 					ret->cm_cert_storage_type =
 						cm_cert_storage_file;
 				}
-				talloc_free(p);
-				break;
-			case cm_store_file_field_cert_storage_default:
-				ret->cm_cert_storage_default = atoi(p);
 				talloc_free(p);
 				break;
 			case cm_store_file_field_cert_storage_location:
@@ -716,8 +704,6 @@ cm_store_file_write(FILE *fp, struct cm_store_entry *entry)
 	cm_store_file_write_int(fp, cm_store_file_field_key_size,
 				entry->cm_key_type.cm_key_size);
 
-	cm_store_file_write_int(fp, cm_store_file_field_key_storage_default,
-				entry->cm_key_storage_default);
 	switch (entry->cm_key_storage_type) {
 	case cm_key_storage_file:
 		cm_store_file_write_str(fp,
@@ -741,8 +727,6 @@ cm_store_file_write(FILE *fp, struct cm_store_entry *entry)
 	cm_store_file_write_str(fp, cm_store_file_field_key_nickname,
 				entry->cm_key_nickname);
 
-	cm_store_file_write_int(fp, cm_store_file_field_cert_storage_default,
-				entry->cm_cert_storage_default);
 	switch (entry->cm_cert_storage_type) {
 	case cm_cert_storage_file:
 		cm_store_file_write_str(fp,
