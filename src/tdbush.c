@@ -85,6 +85,114 @@ static DBusHandlerResult
 base_add_request(DBusConnection *conn, DBusMessage *msg,
 		 struct cm_context *ctx)
 {
+	void *parent;
+	struct cm_tdbusm_dict **d;
+	const struct cm_tdbusm_dict *param;
+	struct cm_store_entry *new_entry, *e;
+	int i, n_entries;
+	char *storage;
+	enum cm_key_storage_type key_storage;
+	char *key_location, *key_nickname, *key_token;
+	enum cm_cert_storage_type cert_storage;
+	char *cert_location, *cert_nickname, *cert_token;
+
+	parent = talloc_new(NULL);
+	if (cm_tdbusm_get_d(msg, parent, &d) != 0) {
+		cm_log(1, "Error parsing arguments.\n");
+		talloc_free(parent);
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+	/* Certificate storage. */
+	param = cm_tdbusm_find_dict_entry(d, "CERT_STORAGE", cm_tdbusm_dict_s);
+	if (param == NULL) {
+		/* This is a required parameter. */
+		cm_log(1, "Cert storage type not specified.\n");
+		talloc_free(parent);
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	} else {
+		/* Check that it's a known/supported type. */
+		if (strcasecmp(param->value.s, "FILE")) {
+			cert_storage = cm_cert_storage_file;
+		} else
+		if (strcasecmp(param->value.s, "NSSDB")) {
+			cert_storage = cm_cert_storage_nssdb;
+		} else {
+			cm_log(1, "Unknown cert storage type \"%s\".\n",
+			       param->value.s);
+			talloc_free(parent);
+			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		}
+	}
+	/* Check that other required information about the
+	 * certificate's location is provided. */
+	switch (cert_storage) {
+	case cm_cert_storage_file:
+		param = cm_tdbusm_find_dict_entry(d, "CERT_LOCATION",
+						  cm_tdbusm_dict_s);
+		if (param == NULL) {
+			cm_log(1, "Cert storage location not specified.\n");
+			talloc_free(parent);
+			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		}
+		cert_location = param->value.s;
+		cert_nickname = NULL;
+		cert_token = NULL;
+		break;
+	case cm_cert_storage_nssdb:
+		param = cm_tdbusm_find_dict_entry(d, "CERT_LOCATION",
+						  cm_tdbusm_dict_s);
+		if (param == NULL) {
+			cm_log(1, "Cert storage location not specified.\n");
+			talloc_free(parent);
+			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		}
+		cert_location = param->value.s;
+		param = cm_tdbusm_find_dict_entry(d, "CERT_NICKNAME",
+						  cm_tdbusm_dict_s);
+		if (param == NULL) {
+			cm_log(1, "Cert nickname not specified.\n");
+			talloc_free(parent);
+			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		}
+		cert_nickname = param->value.s;
+		param = cm_tdbusm_find_dict_entry(d, "CERT_TOKEN",
+						  cm_tdbusm_dict_s);
+		if (param == NULL) {
+			cert_token = NULL;
+		} else {
+			cert_token = param->value.s;
+		}
+		break;
+	}
+	/* Check for a duplicate of another entry's certificate storage
+	 * information. */
+	n_entries = cm_get_n_entries(ctx);
+	for (i = 0; i < n_entries; i++) {
+		e = cm_get_entry_by_index(ctx, i);
+		if (cert_storage != e->cm_cert_storage_type) {
+			continue;
+		}
+		if (strcmp(cert_location, e->cm_cert_storage_location) == 0) {
+			continue;
+		}
+		switch (cert_storage) {
+		case cm_cert_storage_file:
+			break;
+		case cm_cert_storage_nssdb:
+			if (strcmp(cert_nickname, e->cm_cert_nickname) == 0) {
+				continue;
+			}
+			break;
+		}
+		break;
+	}
+	if (i < n_entries) {
+		/* We found a match, and that's bad. */
+		cm_log(1, "Cert at same location is already being "
+		       "used for request \"%s\".\n", e->cm_id);
+		talloc_free(parent);
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
@@ -171,7 +279,12 @@ static DBusHandlerResult
 base_get_supported_key_and_cert_storage(DBusConnection *conn, DBusMessage *msg,
 					struct cm_context *ctx)
 {
-	const char *storage_types[] = {"NSSDB", "FILE", NULL};
+#ifdef HAVE_OPENSSL
+	const char *maybe_file = "FILE";
+#else
+	const char *maybe_file = NULL;
+#endif
+	const char *storage_types[] = {"NSSDB", maybe_file, NULL};
 	DBusMessage *rep;
 	rep = dbus_message_new_method_return(msg);
 	if (rep != NULL) {
