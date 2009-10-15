@@ -932,7 +932,27 @@ cm_store_entry_save(struct cm_store_entry *entry)
 struct cm_store_entry *
 cm_store_get_defaults(void)
 {
-	return NULL;
+	static struct cm_store_entry *defaults = NULL;
+	const char *filename;
+	FILE *fp;
+
+	if (defaults == NULL) {
+		filename = getenv(CM_STORE_DEFAULTS_ENV);
+		if ((filename == NULL) || (strlen(filename) == 0)) {
+			filename = CM_STORE_DEFAULTS;
+		}
+		fp = fopen(filename, "r");
+		if (fp != NULL) {
+			defaults = cm_store_file_read(talloc_new(NULL),
+						      filename, fp);
+		} else {
+			defaults = talloc_ptrtype(NULL, defaults);
+			if (defaults != NULL) {
+				memset(defaults, 0, sizeof(*defaults));
+			}
+		}
+	}
+	return defaults;
 }
 
 struct cm_store_entry **
