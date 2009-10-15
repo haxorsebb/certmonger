@@ -91,9 +91,8 @@ int cm_tdbusm_set_sasasasnas(DBusMessage *msg,
 			     const char **as1, const char **as2,
 			     const char **as3, long n, const char **as4);
 int cm_tdbusm_set_d(DBusMessage *msg, const struct cm_tdbusm_dict **d);
-const struct cm_tdbusm_dict *cm_tdbusm_find_dict_entry(DBusMessage *msg,
-						       const struct cm_tdbusm_dict **d,
-						       const char *key,
-						       enum cm_tdbusm_dict_value_type value_type);
+struct cm_tdbusm_dict *cm_tdbusm_find_dict_entry(struct cm_tdbusm_dict **d,
+						 const char *key,
+						 enum cm_tdbusm_dict_value_type value_type);
 
 #endif
