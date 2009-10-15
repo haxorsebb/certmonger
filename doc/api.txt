@@ -64,7 +64,7 @@ o object layout
              number -> key size
   - get-key-storage-info
     returns: string -> "file", "nssdb"
-             string -> filename (for "file"), or directory (for "nssdb")
+             string(required for "nssdb" or "file") -> filename (for "file"), or directory (for "nssdb")
              string(required for "nssdb") -> nssdb nickname
              string(optional) -> nssdb token name
   - get-cert-storage-info
