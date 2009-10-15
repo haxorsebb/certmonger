@@ -27,6 +27,9 @@
 
 #include "tdbusm.h"
 
+static char empty_string[] = "";
+static const char *empty_string_array[] = {NULL};
+
 static int
 cm_tdbusm_array_length(const char **array)
 {
@@ -809,6 +812,9 @@ cm_tdbusm_set_p(DBusMessage *msg, const char *p)
 int
 cm_tdbusm_set_s(DBusMessage *msg, const char *s)
 {
+	if (s == NULL) {
+		s = empty_string;
+	}
 	if (dbus_message_append_args(msg,
 				     DBUS_TYPE_STRING, &s,
 				     DBUS_TYPE_INVALID)) {
@@ -821,6 +827,9 @@ cm_tdbusm_set_s(DBusMessage *msg, const char *s)
 int
 cm_tdbusm_set_bs(DBusMessage *msg, dbus_bool_t b, const char *s)
 {
+	if (s == NULL) {
+		s = empty_string;
+	}
 	if (dbus_message_append_args(msg,
 				     DBUS_TYPE_BOOLEAN, &b,
 				     DBUS_TYPE_STRING, &s,
@@ -847,6 +856,9 @@ cm_tdbusm_set_bp(DBusMessage *msg, dbus_bool_t b, const char *p)
 int
 cm_tdbusm_set_sb(DBusMessage *msg, const char *s, dbus_bool_t b)
 {
+	if (s == NULL) {
+		s = empty_string;
+	}
 	if (dbus_message_append_args(msg,
 				     DBUS_TYPE_STRING, &s,
 				     DBUS_TYPE_BOOLEAN, &b,
@@ -861,6 +873,9 @@ int
 cm_tdbusm_set_sn(DBusMessage *msg, const char *s, long n)
 {
 	int64_t i = n;
+	if (s == NULL) {
+		s = empty_string;
+	}
 	if (dbus_message_append_args(msg,
 				     DBUS_TYPE_STRING, &s,
 				     DBUS_TYPE_INT64, &i,
@@ -874,6 +889,12 @@ cm_tdbusm_set_sn(DBusMessage *msg, const char *s, long n)
 int
 cm_tdbusm_set_ss(DBusMessage *msg, const char *s1, const char *s2)
 {
+	if (s1 == NULL) {
+		s1 = empty_string;
+	}
+	if (s2 == NULL) {
+		s2 = empty_string;
+	}
 	if (dbus_message_append_args(msg,
 				     DBUS_TYPE_STRING, &s1,
 				     DBUS_TYPE_STRING, &s2,
@@ -900,6 +921,9 @@ cm_tdbusm_set_ap(DBusMessage *msg, const char **ap)
 int
 cm_tdbusm_set_as(DBusMessage *msg, const char **as)
 {
+	if (as == NULL) {
+		as = empty_string_array;
+	}
 	if (dbus_message_append_args(msg,
 				     DBUS_TYPE_ARRAY, DBUS_TYPE_STRING,
 				     &as, cm_tdbusm_array_length(as),
@@ -914,6 +938,15 @@ int
 cm_tdbusm_set_sss(DBusMessage *msg, const char *s1, const char *s2,
 		  const char *s3)
 {
+	if (s1 == NULL) {
+		s1 = empty_string;
+	}
+	if (s2 == NULL) {
+		s2 = empty_string;
+	}
+	if (s3 == NULL) {
+		s3 = empty_string;
+	}
 	if (dbus_message_append_args(msg,
 				     DBUS_TYPE_STRING, &s1,
 				     DBUS_TYPE_STRING, &s2,
@@ -929,6 +962,18 @@ int
 cm_tdbusm_set_ssss(DBusMessage *msg, const char *s1, const char *s2,
 		   const char *s3, const char *s4)
 {
+	if (s1 == NULL) {
+		s1 = empty_string;
+	}
+	if (s2 == NULL) {
+		s2 = empty_string;
+	}
+	if (s3 == NULL) {
+		s3 = empty_string;
+	}
+	if (s4 == NULL) {
+		s4 = empty_string;
+	}
 	if (dbus_message_append_args(msg,
 				     DBUS_TYPE_STRING, &s1,
 				     DBUS_TYPE_STRING, &s2,
@@ -946,6 +991,18 @@ cm_tdbusm_set_sssas(DBusMessage *msg,
 		    const char *s1, const char *s2,
 		    const char *s3, const char **as)
 {
+	if (s1 == NULL) {
+		s1 = empty_string;
+	}
+	if (s2 == NULL) {
+		s2 = empty_string;
+	}
+	if (s3 == NULL) {
+		s3 = empty_string;
+	}
+	if (as == NULL) {
+		as = empty_string_array;
+	}
 	if (dbus_message_append_args(msg,
 				     DBUS_TYPE_STRING, &s1,
 				     DBUS_TYPE_STRING, &s2,
@@ -966,6 +1023,27 @@ cm_tdbusm_set_sssnasasasnas(DBusMessage *msg,
 			    const char **as3, long n2, const char **as4)
 {
 	int64_t i1 = n1, i2 = n2;
+	if (s1 == NULL) {
+		s1 = empty_string;
+	}
+	if (s2 == NULL) {
+		s2 = empty_string;
+	}
+	if (s3 == NULL) {
+		s3 = empty_string;
+	}
+	if (as1 == NULL) {
+		as1 = empty_string_array;
+	}
+	if (as2 == NULL) {
+		as2 = empty_string_array;
+	}
+	if (as3 == NULL) {
+		as3 = empty_string_array;
+	}
+	if (as4 == NULL) {
+		as4 = empty_string_array;
+	}
 	if (dbus_message_append_args(msg,
 				     DBUS_TYPE_STRING, &s1,
 				     DBUS_TYPE_STRING, &s2,
@@ -992,6 +1070,21 @@ cm_tdbusm_set_sasasasnas(DBusMessage *msg, const char *s,
 			 const char **as1, const char **as2,
 			 const char **as3, long n, const char **as4)
 {
+	if (s == NULL) {
+		s = empty_string;
+	}
+	if (as1 == NULL) {
+		as1 = empty_string_array;
+	}
+	if (as2 == NULL) {
+		as2 = empty_string_array;
+	}
+	if (as3 == NULL) {
+		as3 = empty_string_array;
+	}
+	if (as4 == NULL) {
+		as4 = empty_string_array;
+	}
 	if (dbus_message_append_args(msg,
 				     DBUS_TYPE_STRING, &s,
 				     DBUS_TYPE_ARRAY, DBUS_TYPE_STRING,
