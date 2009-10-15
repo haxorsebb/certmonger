@@ -68,12 +68,13 @@ cm_certread_o_main(int fd, struct cm_store_entry *entry)
 		if (cert != NULL) {
 			status = 0;
 		} else {
-			cm_log(1, "Internal error.\n");
+			cm_log(1, "Internal error reading cert from \"%s\".\n",
+			       entry->cm_cert_storage_location);
 		}
 		fclose(pem);
 	} else {
 		cm_log(1, "Error opening '%s': %s.\n",
-		       entry->cm_key_storage_location, strerror(errno));
+		       entry->cm_cert_storage_location, strerror(errno));
 		cert = NULL;
 	}
 	if (status == 0) {
