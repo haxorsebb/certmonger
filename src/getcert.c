@@ -227,13 +227,6 @@ request(const char *argv0, int argc, char **argv)
 			return 1;
 		}
 	}
-	if (((keyfile != NULL) && (certfile == NULL)) ||
-	    ((keyfile == NULL) && (certfile != NULL))) {
-		printf("Filename for key or certificate specified "
-		       "without the other.\n");
-		help(argv0, "request");
-		return 1;
-	}
 	if (((dbdir != NULL) && (nickname == NULL)) ||
 	    ((dbdir == NULL) && (nickname != NULL))) {
 		printf("Database location or nickname specified "
@@ -241,15 +234,15 @@ request(const char *argv0, int argc, char **argv)
 		help(argv0, "request");
 		return 1;
 	}
-	if ((dbdir != NULL) && ((certfile != NULL) || (keyfile != NULL))) {
-		printf("Database directory and key or certificate file "
-		       "all specified.\n");
+	if ((dbdir != NULL) && (certfile != NULL)) {
+		printf("Database directory and certificate file "
+		       "both specified.\n");
 		help(argv0, "request");
 		return 1;
 	}
-	if ((dbdir == NULL) && (certfile == NULL) && (keyfile == NULL)) {
-		printf("None of database directory or key or certificate file "
-		       "specified.\n");
+	if ((dbdir == NULL) && (nickname == NULL) && (certfile == NULL)) {
+		printf("None of database directory and nickname or certificate "
+		       "file specified.\n");
 		help(argv0, "request");
 		return 1;
 	}
@@ -310,6 +303,12 @@ request(const char *argv0, int argc, char **argv)
 			param[i].key = "KEY_LOCATION";
 			param[i].value_type = cm_tdbusm_dict_s;
 			param[i].value.s = keyfile;
+			params[i] = &param[i];
+			i++;
+		} else {
+			param[i].key = "KEY_STORAGE";
+			param[i].value_type = cm_tdbusm_dict_s;
+			param[i].value.s = "NONE";
 			params[i] = &param[i];
 			i++;
 		}
