@@ -256,13 +256,13 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		key_token = defaults->cm_key_token;
 	} else {
 		/* Check that it's a known/supported type. */
-		if (strcasecmp(param->value.s, "FILE")) {
+		if (strcasecmp(param->value.s, "FILE") == 0) {
 			key_storage = cm_key_storage_file;
 		} else
-		if (strcasecmp(param->value.s, "NSSDB")) {
+		if (strcasecmp(param->value.s, "NSSDB") == 0) {
 			key_storage = cm_key_storage_nssdb;
 		} else
-		if (strcasecmp(param->value.s, "NONE")) {
+		if (strcasecmp(param->value.s, "NONE") == 0) {
 			key_storage = cm_key_storage_none;
 		} else {
 			cm_log(1, "Unknown key storage type \"%s\".\n",

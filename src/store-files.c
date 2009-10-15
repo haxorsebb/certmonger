@@ -345,7 +345,7 @@ cm_store_file_read(void *parent, const char *filename, FILE *fp)
 				talloc_free(p);
 				break;
 			case cm_store_file_field_key_type:
-				if (strcasecmp(s[i], "rsa") == 0) {
+				if (strcasecmp(s[i], "RSA") == 0) {
 					ret->cm_key_type.cm_key_algorithm =
 						cm_key_rsa;
 				} else {
@@ -359,15 +359,15 @@ cm_store_file_read(void *parent, const char *filename, FILE *fp)
 				talloc_free(p);
 				break;
 			case cm_store_file_field_key_storage_type:
-				if (strcasecmp(p, "file") == 0) {
+				if (strcasecmp(p, "FILE") == 0) {
 					ret->cm_key_storage_type =
 						cm_key_storage_file;
 				} else
-				if (strcasecmp(p, "nssdb") == 0) {
+				if (strcasecmp(p, "NSSDB") == 0) {
 					ret->cm_key_storage_type =
 						cm_key_storage_nssdb;
 				} else
-				if (strcasecmp(p, "none") == 0) {
+				if (strcasecmp(p, "NONE") == 0) {
 					ret->cm_key_storage_type =
 						cm_key_storage_none;
 				} else {
@@ -386,11 +386,11 @@ cm_store_file_read(void *parent, const char *filename, FILE *fp)
 				ret->cm_key_nickname = free_if_empty(p);
 				break;
 			case cm_store_file_field_cert_storage_type:
-				if (strcasecmp(p, "file") == 0) {
+				if (strcasecmp(p, "FILE") == 0) {
 					ret->cm_cert_storage_type =
 						cm_cert_storage_file;
 				} else
-				if (strcasecmp(p, "nssdb") == 0) {
+				if (strcasecmp(p, "NSSDB") == 0) {
 					ret->cm_cert_storage_type =
 						cm_cert_storage_nssdb;
 				} else {
@@ -472,10 +472,10 @@ cm_store_file_read(void *parent, const char *filename, FILE *fp)
 				talloc_free(p);
 				break;
 			case cm_store_file_field_notification_method:
-				if (strcasecmp(p, "syslog") == 0) {
+				if (strcasecmp(p, "SYSLOG") == 0) {
 					ret->cm_notification_method = cm_notification_syslog;
 				} else
-				if (strcasecmp(p, "email") == 0) {
+				if (strcasecmp(p, "EMAIL") == 0) {
 					ret->cm_notification_method = cm_notification_email;
 				} else {
 					ret->cm_notification_method = cm_notification_syslog;
@@ -539,7 +539,7 @@ cm_store_file_read(void *parent, const char *filename, FILE *fp)
 				talloc_free(p);
 				break;
 			case cm_store_file_field_ca_type:
-				if (strcasecmp(p, "dummy") == 0) {
+				if (strcasecmp(p, "DUMMY") == 0) {
 					ret->cm_ca_type = cm_ca_dummy;
 				} else {
 					ret->cm_ca_type = cm_ca_dummy;
