@@ -49,13 +49,13 @@ main(int argc, char **argv)
 	const char *pidfile = NULL;
 	dbus_bool_t dofork = TRUE;
 
-	while ((c = getopt(argc, argv, "sSnd:")) != -1) {
+	while ((c = getopt(argc, argv, "sSp:d:n")) != -1) {
 		switch (c) {
 		case 's':
-			bus = DBUS_BUS_SESSION;
+			bus = cm_tdbus_session;
 			break;
 		case 'S':
-			bus = DBUS_BUS_SYSTEM;
+			bus = cm_tdbus_system;
 			break;
 		case 'p':
 			pidfile = optarg;
@@ -119,6 +119,15 @@ main(int argc, char **argv)
 		exit(1);
 	}
 
+	if (cm_tdbus_setup(ec, bus, ctx) != 0) {
+		fprintf(stderr, "Error connecting to D-Bus.\n");
+		talloc_free(ec);
+		if (pidfile != NULL) {
+			remove(pidfile);
+		}
+		exit(1);
+	}
+
 	if (dofork) {
 		pid = fork();
 		switch (pid) {
@@ -156,14 +165,6 @@ main(int argc, char **argv)
 		}
 	}
 
-	if (cm_tdbus_setup(ec, bus, ctx) != 0) {
-		fprintf(stderr, "Error connecting to D-Bus.\n");
-		talloc_free(ec);
-		if (pidfile != NULL) {
-			remove(pidfile);
-		}
-		exit(1);
-	}
 	cm_start_all(ctx);
 	do {
 		i = tevent_loop_once(ec);
