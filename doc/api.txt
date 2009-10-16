@@ -35,6 +35,7 @@ o object layout
 	       {"PRINCIPAL",array-of-string (principal names)}
 	       {"DNS",array-of-string (dns names)}
 	       {"EMAIL",array-of-string (email addresses)}
+	       {"CA",string (name of configured CA to use)}
 	       * = required values
     returns: boolean -> succeeded
              path (optional) -> object path for new request

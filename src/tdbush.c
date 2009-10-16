@@ -385,6 +385,14 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 							   cert_location);
 	new_entry->cm_cert_nickname = maybe_strdup(new_entry, cert_nickname);
 	new_entry->cm_cert_token = maybe_strdup(new_entry, cert_token);
+	/* Which CA to use. */
+	param = cm_tdbusm_find_dict_entry(d, "CA", cm_tdbusm_dict_s);
+	if (param != NULL) {
+		new_entry->cm_ca_default = FALSE;
+		new_entry->cm_ca_name = maybe_strdup(new_entry, param->value.s);
+	} else {
+		new_entry->cm_ca_default = TRUE;
+	}
 	/* Behavior settings. */
 	param = cm_tdbusm_find_dict_entry(d, "TRACK", cm_tdbusm_dict_b);
 	if (param != NULL) {
