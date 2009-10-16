@@ -767,9 +767,9 @@ list(const char *argv0, int argc, char **argv)
 			exit(1);
 		}
 		dbus_message_unref(rep);
-		printf("\tkey pair storage: %s,%s%s%s%s%s%s%s\n",
-		       s1,
-		       s2 ? ",location='" : "", s2 ? s2 : "", s2 ? "'" : s2,
+		printf("\tkey pair storage: %s%s%s%s%s%s%s%s%s\n",
+		       strcmp(s1, "NONE") ? "type=" : "", s1 ? s1 : "",
+		       s2 ? ",location='" : "", s2 ? s2 : "", s2 ? "'" : "",
 		       s3 ? ",nickname=" : "", s3 ? s3 : "",
 		       s4 ? ",token=" : "", s4 ? s4 : "");
 		rep = query_rep(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
