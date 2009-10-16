@@ -325,6 +325,7 @@ cm_start_all(struct cm_context *context)
 			       context->entries[i]->cm_id);
 		} else {
 			talloc_free(context->events[i].next_event);
+			context->events[i].next_event = NULL;
 			context->events[i].next_event = cm_service_one(context,
 								       NULL, i);
 		}
@@ -355,6 +356,7 @@ cm_start_one(struct cm_context *context, const char *id)
 		if (cm_iterate_init(context->entries[i],
 				    &context->events[i].iterate_state) == 0) {
 			talloc_free(context->events[i].next_event);
+			context->events[i].next_event = NULL;
 			context->events[i].next_event = cm_service_one(context,
 								       NULL, i);
 			return TRUE;
