@@ -685,7 +685,7 @@ list(const char *argv0, int argc, char **argv)
 	DBusMessage *rep;
 	char **requests, *s;
 	dbus_bool_t b;
-	int requests_only = 0, tracking_only = 0, c, i;
+	int requests_only = 0, tracking_only = 0, c, i, j;
 	while ((c = getopt(argc, argv, "rt")) != -1) {
 		switch (c) {
 		case 'r':
@@ -798,29 +798,29 @@ list(const char *argv0, int argc, char **argv)
 		printf("\tissuer: %s\n", s1);
 		printf("\tsubject: %s\n", s3);
 		printf("\texpires: %s\n", cm_store_timestamp_from_time(n1, t));
-		for (i = 0; (as1 != NULL) && (as1[i] != NULL); i++) {
+		for (j = 0; (as1 != NULL) && (as1[j] != NULL); j++) {
 			printf("%s%s%s",
-			       i == 0 ? "\temail: " : ",",
-			       as1[i],
-			       as1[i + 1] ? "" : "\n");
+			       j == 0 ? "\temail: " : ",",
+			       as1[j],
+			       as1[j + 1] ? "" : "\n");
 		}
-		for (i = 0; (as2 != NULL) && (as2[i] != NULL); i++) {
+		for (j = 0; (as2 != NULL) && (as2[j] != NULL); j++) {
 			printf("%s%s%s",
-			       i == 0 ? "\tdns: " : ",",
-			       as2[i],
-			       as2[i + 1] ? "" : "\n");
+			       j == 0 ? "\tdns: " : ",",
+			       as2[j],
+			       as2[j + 1] ? "" : "\n");
 		}
-		for (i = 0; (as3 != NULL) && (as3[i] != NULL); i++) {
+		for (j = 0; (as3 != NULL) && (as3[j] != NULL); j++) {
 			printf("%s%s%s",
-			       i == 0 ? "\tprincipal: " : ",",
-			       as3[i],
-			       as3[i + 1] ? "" : "\n");
+			       j == 0 ? "\tprincipal: " : ",",
+			       as3[j],
+			       as3[j + 1] ? "" : "\n");
 		}
-		for (i = 0; (as4 != NULL) && (as4[i] != NULL); i++) {
+		for (j = 0; (as4 != NULL) && (as4[j] != NULL); j++) {
 			printf("%s%s%s",
-			       i == 0 ? "\teku: " : ",",
-			       as4[i],
-			       as4[i + 1] ? "" : "\n");
+			       j == 0 ? "\teku: " : ",",
+			       as4[j],
+			       as4[j + 1] ? "" : "\n");
 		}
 		printf("\ttrack: %s\n",
 		       query_rep_b(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
