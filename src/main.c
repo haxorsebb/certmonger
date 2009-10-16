@@ -175,6 +175,7 @@ main(int argc, char **argv)
 	} while (cm_keep_going(ctx) == 0);
 	cm_log(3, "Shutting down.\n");
 	cm_stop_all(ctx);
+	talloc_free(ctx);
 	talloc_free(ec);
 	if (pidfile != NULL) {
 		remove(pidfile);
