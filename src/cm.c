@@ -86,8 +86,8 @@ cm_init(struct tevent_context *parent, struct cm_context **context)
 		if (cm_iterate_init(ctx->entries[i],
 				    &ctx->events[i].iterate_state) != 0) {
 			for (j = 0; j < i; j++) {
-				talloc_free(ctx->events[i].next_event);
-				ctx->events[i].next_event = NULL;
+				talloc_free(ctx->events[j].next_event);
+				ctx->events[j].next_event = NULL;
 				cm_iterate_done(ctx->entries[j],
 						ctx->events[j].iterate_state);
 				ctx->events[j].iterate_state = NULL;
