@@ -86,12 +86,12 @@ cm_keyiread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 	enum cm_key_algorithm alg;
 
 	/* Break out the algorithm. */
-	q = p + strcspn(p, ",\r\n");
+	q = p + strcspn(p, "/\r\n");
 	if (((q - p) == strlen("RSA")) &&
 	    (strncasecmp(p, "RSA", 3) == 0)) {
 		alg = cm_key_rsa;
-		p = q + strspn(q, ",\r\n");
-		q = p + strcspn(p, ",\r\n");
+		p = q + strspn(q, "/\r\n");
+		q = p + strcspn(p, "/\r\n");
 		if (p != q) {
 			size = atoi(p);
 			if (size > 0) {

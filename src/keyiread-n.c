@@ -154,6 +154,8 @@ cm_keyiread_n_main(int fd, struct cm_store_entry *entry)
 	alg = "";
 	size = 0;
 	if (key != NULL) {
+		cm_log(3, "Key is of type %d.\n",
+		       SECKEY_GetPrivateKeyType(key));
 		switch (SECKEY_GetPrivateKeyType(key)) {
 		case rsaKey:
 			alg = "RSA";
@@ -169,9 +171,13 @@ cm_keyiread_n_main(int fd, struct cm_store_entry *entry)
 			pubkey = SECKEY_ConvertToPublicKey(key);
 			if (pubkey != NULL) {
 				size = SECKEY_PublicKeyStrengthInBits(pubkey);
+				cm_log(3, "Key size is %d.\n", size);
 				fprintf(fp, "%s/%d\n", alg, size);
 				status = 0;
 				SECKEY_DestroyPublicKey(pubkey);
+			} else {
+				cm_log(1, "Error converting private key "
+				       "to public key.\n");
 			}
 		}
 	}

@@ -29,6 +29,7 @@
 #include "certsave.h"
 #include "csrgen.h"
 #include "keygen.h"
+#include "keyiread.h"
 #include "log.h"
 #include "notify.h"
 #include "submit.h"
@@ -38,6 +39,7 @@
 
 struct cm_iterate_state {
 	struct cm_keygen_state *cm_keygen_state;
+	struct cm_keyiread_state *cm_keyiread_state;
 	struct cm_csrgen_state *cm_csrgen_state;
 	struct cm_submit_state *cm_submit_state;
 	struct cm_certsave_state *cm_certsave_state;
@@ -117,6 +119,19 @@ cm_iterate_init(struct cm_store_entry *entry, void **cm_iterate_state)
 	memset(state, 0, sizeof(*state));
 	*cm_iterate_state = state;
 	cm_entry_reset_state(entry);
+	state->cm_keyiread_state = cm_keyiread_start(entry);
+	if (state->cm_keyiread_state != NULL) {
+		while (cm_keyiread_ready(entry,
+					 state->cm_keyiread_state) != 0) {
+			fd = cm_keyiread_get_fd(entry,
+						state->cm_keyiread_state);
+			if (fd != -1) {
+				cm_waitfor_readable_fd(fd, -1);
+			}
+		}
+		cm_keyiread_done(entry, state->cm_keyiread_state);
+		state->cm_keyiread_state = NULL;
+	}
 	state->cm_certread_state = cm_certread_start(entry);
 	if (state->cm_certread_state != NULL) {
 		while (cm_certread_ready(entry,
@@ -129,8 +144,8 @@ cm_iterate_init(struct cm_store_entry *entry, void **cm_iterate_state)
 		}
 		cm_certread_done(entry, state->cm_certread_state);
 		state->cm_certread_state = NULL;
-		cm_store_entry_save(entry);
 	}
+	cm_store_entry_save(entry);
 	cm_log(3, "'%s' starts in state '%s'\n", entry->cm_id,
 	       cm_store_state_as_string(entry->cm_state));
 	return 0;
@@ -610,6 +625,10 @@ cm_iterate_done(struct cm_store_entry *entry, void *cm_iterate_state)
 	if (state->cm_csrgen_state != NULL) {
 		cm_csrgen_done(entry, state->cm_csrgen_state);
 		state->cm_csrgen_state = NULL;
+	}
+	if (state->cm_keyiread_state != NULL) {
+		cm_keyiread_done(entry, state->cm_keyiread_state);
+		state->cm_keyiread_state = NULL;
 	}
 	if (state->cm_keygen_state != NULL) {
 		cm_keygen_done(entry, state->cm_keygen_state);

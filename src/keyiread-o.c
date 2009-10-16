@@ -83,6 +83,8 @@ cm_keyiread_o_main(int fd, struct cm_store_entry *entry)
 		alg = "";
 		size = 0;
 		if (pkey != NULL) {
+			cm_log(3, "Key is of type %d.\n",
+			       EVP_PKEY_type(pkey->type));
 			switch (EVP_PKEY_type(pkey->type)) {
 			case EVP_PKEY_RSA:
 				alg = "RSA";
@@ -95,6 +97,7 @@ cm_keyiread_o_main(int fd, struct cm_store_entry *entry)
 				break;
 			}
 			size = EVP_PKEY_bits(pkey);
+			cm_log(3, "Key size is %d.\n", size);
 		}
 		fprintf(fp, "%s/%d\n", alg, size);
 		status = 0;
