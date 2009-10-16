@@ -86,6 +86,9 @@ cm_keygen_n_main(int fd, struct cm_store_entry *entry)
 	} else {
 		cm_key_algorithm = entry->cm_key_type.cm_key_algorithm;
 		cm_requested_key_size = entry->cm_key_type.cm_key_size;
+		if (cm_requested_key_size <= 0) {
+			cm_requested_key_size = CM_DEFAULT_PUBKEY_SIZE;
+		}
 	}
 	/* Convert our key type to a mechanism. */
 	switch (cm_key_algorithm) {

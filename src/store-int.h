@@ -104,6 +104,11 @@ struct cm_store_entry {
 		CM_SAVED_CERT,
 		CM_MONITORING, CM_NOTIFYING,
 		CM_NEED_GUIDANCE,
+		CM_NEWLY_ADDED,
+		CM_NEWLY_ADDED_READING_KEYI,
+		CM_NEWLY_ADDED_START_READING_CERT,
+		CM_NEWLY_ADDED_READING_CERT,
+		CM_NEWLY_ADDED_DECIDING,
 	} cm_state;
 	/* Whether to autorenew-at-expiration [or use default settings] */
 	unsigned int cm_autorenew_default:1;

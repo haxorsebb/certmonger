@@ -87,6 +87,13 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 	case CM_MONITORING:
 	case CM_NOTIFYING:
 		break;
+	case CM_NEWLY_ADDED:
+	case CM_NEWLY_ADDED_READING_KEYI:
+	case CM_NEWLY_ADDED_START_READING_CERT:
+	case CM_NEWLY_ADDED_READING_CERT:
+	case CM_NEWLY_ADDED_DECIDING:
+		entry->cm_state = CM_NEWLY_ADDED;
+		break;
 	case CM_INVALID:
 		/* not reached */
 		abort();
@@ -591,12 +598,137 @@ cm_iterate(struct cm_store_entry *entry,
 			cm_notify_done(entry, state->cm_notify_state);
 			state->cm_notify_state = NULL;
 		}
-		if ((entry->cm_autorenew || entry->cm_autorenew_default)) { /* XXX */
+		if ((entry->cm_autorenew || entry->cm_autorenew_default)) {
 			entry->cm_state = CM_NEED_CSR;
 			*when = cm_time_soon;
 		} else {
 			entry->cm_state = CM_MONITORING;
 			*when = cm_time_soon;
+		}
+		break;
+	case CM_NEWLY_ADDED:
+		/* We need to do some recon, and then decide what we need to
+		 * do to make things the way the user has specified that they
+		 * should be. */
+		if (entry->cm_key_storage_type != cm_key_storage_none) {
+			/* Try to read the key. */
+			state->cm_keyiread_state = cm_keyiread_start(entry);
+			if (state->cm_keyiread_state != NULL) {
+				entry->cm_state = CM_NEWLY_ADDED_READING_KEYI;
+				/* Note that we're reading information about
+				 * the key. */
+				*readfd = cm_keyiread_get_fd(entry,
+							     state->cm_keyiread_state);
+				if (*readfd == -1) {
+					*when = cm_time_soon;
+				} else {
+					*when = cm_time_no_time;
+				}
+			} else {
+				/* Failed to start reading info about the key;
+				 * try again soon. */
+				*when = cm_time_soonish;
+			}
+		} else {
+			entry->cm_state = CM_NEWLY_ADDED_START_READING_CERT;
+			*when = cm_time_now;
+		}
+		break;
+	case CM_NEWLY_ADDED_READING_KEYI:
+		/* If we finished reading info about the key, move on to try
+		 * and read the certificate. */
+		if (cm_keyiread_ready(entry, state->cm_keyiread_state) == 0) {
+			cm_keyiread_done(entry, state->cm_keyiread_state);
+			state->cm_keyiread_state = NULL;
+			entry->cm_state = CM_NEWLY_ADDED_START_READING_CERT;
+			*when = cm_time_now;
+		} else {
+			/* Wait for status update, or poll. */
+			*readfd = cm_keyiread_get_fd(entry,
+						     state->cm_keyiread_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
+		}
+		break;
+	case CM_NEWLY_ADDED_START_READING_CERT:
+		/* Try to read the certificate. */
+		state->cm_certread_state = cm_certread_start(entry);
+		if (state->cm_certread_state != NULL) {
+			entry->cm_state = CM_NEWLY_ADDED_READING_CERT;
+			/* Note that we're reading information about
+			 * the certificate. */
+			*readfd = cm_certread_get_fd(entry,
+						     state->cm_certread_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
+		} else {
+			/* Failed to start reading info about the certificate;
+			 * try again soon. */
+			*when = cm_time_soonish;
+		}
+		break;
+	case CM_NEWLY_ADDED_READING_CERT:
+		/* If we finished reading info about the cert, move on to try
+		 * to figure out what we should do next. */
+		if (cm_certread_ready(entry, state->cm_certread_state) == 0) {
+			cm_certread_done(entry, state->cm_certread_state);
+			state->cm_certread_state = NULL;
+			entry->cm_state = CM_NEWLY_ADDED_DECIDING;
+			*when = cm_time_now;
+		} else {
+			/* Wait for status update, or poll. */
+			*readfd = cm_certread_get_fd(entry,
+						     state->cm_certread_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
+		}
+		break;
+	case CM_NEWLY_ADDED_DECIDING:
+		/* Decide what to do next: if we have a certificate, we go
+		 * straight to monitoring it. */
+		if (entry->cm_cert != NULL) {
+			cm_log(3, "'%s' has a certificate, monitoring it\n",
+			       entry->cm_id);
+			entry->cm_state = CM_MONITORING;
+			*when = cm_time_now;
+		} else
+		/* If we don't have a certificate, but we know where the key
+		 * should be, we have some options. */
+		if (entry->cm_key_storage_type != cm_key_storage_none) {
+			/* If we don't have a certificate, but we have a key,
+			 * the next step is to generate a CSR. */
+			if (entry->cm_key_type.cm_key_size > 0) {
+				cm_log(3, "'%s' has no certificate, will "
+				       "attempt enrollment using "
+				       "already-present key\n", entry->cm_id);
+				entry->cm_state = CM_NEED_CSR;
+				*when = cm_time_now;
+			} else {
+				/* No certificate, no key, start with
+				 * generating the key. */
+				cm_log(3, "'%s' has no key or certificate, "
+				       "will generate keys and attempt "
+				       "enrollment\n", entry->cm_id);
+				entry->cm_state = CM_NEED_KEY_PAIR;
+				*when = cm_time_now;
+			}
+		} else {
+			/* And if we don't have a place for the key, we're
+			 * screwed. */
+			cm_log(3, "'%s' has no key or certificate location, "
+			       "don't know what to do about that\n",
+			       entry->cm_id);
+			entry->cm_state = CM_NEED_GUIDANCE;
+			*when = cm_time_now;
 		}
 		break;
 	case CM_INVALID:

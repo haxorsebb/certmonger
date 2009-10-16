@@ -39,6 +39,7 @@ struct cm_notify_state {
 static void
 cm_notify_main(int fd, struct cm_store_entry *entry)
 {
+	/* XXX */
 }
 
 /* Start notifying the user that the certificate will expire soon. */

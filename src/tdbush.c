@@ -427,7 +427,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 							     param->value.as);
 	}
 	/* Hand it off to the main loop. */
-	new_entry->cm_state = CM_NEED_GUIDANCE;
+	new_entry->cm_state = CM_NEWLY_ADDED;
 	if (cm_add_entry(ctx, new_entry) != 0) {
 		cm_log(1, "Error adding entry to main loop.\n");
 		rep = dbus_message_new_method_return(msg);

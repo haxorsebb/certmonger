@@ -743,6 +743,11 @@ list(const char *argv0, int argc, char **argv)
 		case CM_NEED_TO_READ_CERT:
 		case CM_READING_CERT:
 		case CM_NEED_GUIDANCE:
+		case CM_NEWLY_ADDED:
+		case CM_NEWLY_ADDED_START_READING_CERT:
+		case CM_NEWLY_ADDED_READING_KEYI:
+		case CM_NEWLY_ADDED_READING_CERT:
+		case CM_NEWLY_ADDED_DECIDING:
 			if (tracking_only) {
 				continue;
 			}

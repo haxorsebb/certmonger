@@ -64,6 +64,9 @@ cm_keygen_o_main(int fd, struct cm_store_entry *entry)
 	} else {
 		cm_key_algorithm = entry->cm_key_type.cm_key_algorithm;
 		cm_key_size = entry->cm_key_type.cm_key_size;
+		if (cm_key_size <= 0) {
+			cm_key_size = CM_DEFAULT_PUBKEY_SIZE;
+		}
 	}
 	switch (cm_key_algorithm) {
 	case cm_key_rsa:
