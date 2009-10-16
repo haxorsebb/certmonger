@@ -87,6 +87,9 @@ cm_keyiread_o_main(int fd, struct cm_store_entry *entry)
 			case EVP_PKEY_RSA:
 				alg = "RSA";
 				break;
+			case EVP_PKEY_DSA:
+				alg = "DSA";
+				break;
 			default:
 				alg = "";
 				break;
