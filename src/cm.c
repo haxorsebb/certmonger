@@ -241,33 +241,60 @@ cm_add_entry(struct cm_context *context, struct cm_store_entry *new_entry)
 {
 	struct cm_store_entry **entries;
 	struct cm_event *events;
-	int i, j;
+	int i;
+	time_t now;
+	char timestamp[15];
 	/* Check for duplicates and count the number of entries we're already
 	 * managing. */
-	for (i = 0; i < context->n_entries; i++) {
-		if (strcmp(context->entries[i]->cm_id, new_entry->cm_id) == 0) {
-			return -1;
+	if (new_entry->cm_id != NULL) {
+		for (i = 0; i < context->n_entries; i++) {
+			if (strcmp(context->entries[i]->cm_id,
+				   new_entry->cm_id) == 0) {
+				return -1;
+			}
 		}
+	} else {
+		do {
+			/* Try to assign a new ID. */
+			now = time(NULL);
+			new_entry->cm_id = cm_store_timestamp_from_time(now,
+									timestamp);
+			/* Check for duplicates. */
+			for (i = 0; i < context->n_entries; i++) {
+				if (strcmp(context->entries[i]->cm_id,
+					   new_entry->cm_id) == 0) {
+					/* Busy wait 0.1s. Ugh. */
+					usleep(100000);
+					break;
+				}
+			}
+		} while (i < context->n_entries);
+		new_entry->cm_id = talloc_strdup(new_entry, new_entry->cm_id);
 	}
 	/* Allocate storage for a new entry array. */
-	entries = talloc_array(context, struct cm_store_entry *, i + 2);
+	entries = talloc_array(context, struct cm_store_entry *,
+			       context->n_entries + 1);
 	if (entries != NULL) {
 		/* Allocate storage for a new entry state array. */
-		events = talloc_array(context, struct cm_event, i + 1);
+		events = talloc_array(context, struct cm_event,
+				      context->n_entries + 1);
 		if (events != NULL) {
 			/* Copy the entries to the new arrays. */
-			for (j = 0; j < i; j++) {
-				talloc_reparent(entries, context->entries,
-						context->entries[j]);
-				entries[j] = context->entries[j];
+			for (i = 0; i < context->n_entries; i++) {
+				talloc_reparent(context->entries, entries,
+						context->entries[i]);
+				entries[i] = context->entries[i];
 			}
+			/* The pointers in this structure belong to the entry,
+			 * so we don't need to worry about reparenting them. */
 			memcpy(events, context->events,
-			       sizeof(struct cm_event) * i);
+			       sizeof(struct cm_event) * context->n_entries);
 			/* Add the new members. */
 			talloc_reparent(talloc_parent(new_entry), entries,
 					new_entry);
-			entries[i] = new_entry;
-			memset(&events[i], 0, sizeof(events[i]));
+			entries[context->n_entries] = new_entry;
+			memset(&events[context->n_entries], 0,
+			       sizeof(events[context->n_entries]));
 			/* Reset the pointers. */
 			talloc_free(context->entries);
 			context->entries = entries;
@@ -275,7 +302,6 @@ cm_add_entry(struct cm_context *context, struct cm_store_entry *new_entry)
 			context->events = events;
 			/* Reset the recorded count of entries. */
 			context->n_entries++;
-			entries[context->n_entries] = NULL;
 		} else {
 			talloc_free(entries);
 			entries = NULL;
@@ -283,6 +309,7 @@ cm_add_entry(struct cm_context *context, struct cm_store_entry *new_entry)
 	}
 	if ((entries != NULL) && (events != NULL)) {
 		/* Prepare to set this entry in motion. */
+		i = context->n_entries - 1;
 		if (cm_iterate_init(context->entries[i],
 				    &context->events[i].iterate_state) != 0) {
 			cm_log(3, "Error starting '%s', please retry.\n",
