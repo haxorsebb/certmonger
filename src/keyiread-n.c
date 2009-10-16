@@ -56,7 +56,6 @@ static void
 cm_keyiread_n_main(int fd, struct cm_store_entry *entry)
 {
 	int status = 1, size;
-	unsigned int i;
 	const char *token, *alg;
 	PLArenaPool *arena;
 	SECStatus error;
@@ -143,7 +142,7 @@ cm_keyiread_n_main(int fd, struct cm_store_entry *entry)
 		_exit(2);
 	}
 	key = NULL;
-	for (i = 1, node = PRIVKEY_LIST_HEAD(keys);
+	for (node = PRIVKEY_LIST_HEAD(keys);
 	     !PRIVKEY_LIST_EMPTY(keys) &&
 	     !PRIVKEY_LIST_END(node, keys);
 	     node = PRIVKEY_LIST_NEXT(node)) {
