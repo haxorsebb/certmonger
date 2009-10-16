@@ -146,6 +146,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	char *key_location, *key_nickname, *key_token;
 	enum cm_cert_storage_type cert_storage;
 	char *cert_location, *cert_nickname, *cert_token;
+	char *path;
 
 	parent = talloc_new(NULL);
 	if (cm_tdbusm_get_d(msg, parent, &d) != 0) {
@@ -429,25 +430,27 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	new_entry->cm_state = CM_NEED_GUIDANCE;
 	if (cm_add_entry(ctx, new_entry) != 0) {
 		cm_log(1, "Error adding entry to main loop.\n");
-		talloc_free(parent);
 		rep = dbus_message_new_method_return(msg);
 		if (rep != NULL) {
-			if (cm_tdbusm_set_bs(rep, FALSE, "") == 0) {
+			if (cm_tdbusm_set_bp(rep, FALSE, "") == 0) {
 				dbus_connection_send(conn, rep, NULL);
 			}
 			dbus_message_unref(rep);
 		}
+		talloc_free(parent);
 		return DBUS_HANDLER_RESULT_HANDLED;
 	} else {
 		rep = dbus_message_new_method_return(msg);
 		if (rep != NULL) {
-			if (cm_tdbusm_set_bs(rep, TRUE,
-					     new_entry->cm_id ?
-					     new_entry->cm_id : "") == 0) {
+			path = talloc_asprintf(parent, "%s/%s",
+					       CM_DBUS_REQUEST_PATH,
+					       new_entry->cm_id);
+			if (cm_tdbusm_set_bp(rep, TRUE, path) == 0) {
 				dbus_connection_send(conn, rep, NULL);
 			}
 			dbus_message_unref(rep);
 		}
+		talloc_free(parent);
 		return DBUS_HANDLER_RESULT_HANDLED;
 	}
 }

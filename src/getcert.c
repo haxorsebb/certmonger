@@ -797,7 +797,8 @@ list(const char *argv0, int argc, char **argv)
 		dbus_message_unref(rep);
 		printf("\tissuer: %s\n", s1);
 		printf("\tsubject: %s\n", s3);
-		printf("\texpires: %s\n", cm_store_timestamp_from_time(n1, t));
+		printf("\texpires: %s\n",
+		       n1 ? cm_store_timestamp_from_time(n1, t) : "unknown");
 		for (j = 0; (as1 != NULL) && (as1[j] != NULL); j++) {
 			printf("%s%s%s",
 			       j == 0 ? "\temail: " : ",",
