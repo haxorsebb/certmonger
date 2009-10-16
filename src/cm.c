@@ -80,8 +80,8 @@ cm_init(struct tevent_context *parent, struct cm_context **context)
 		return ENOMEM;
 	}
 	memset(ctx->events, 0, sizeof(ctx->events[0]) * ctx->n_entries);
-	tevent_add_signal(parent, NULL, SIGINT, 0, cm_break_h, ctx);
-	tevent_add_signal(parent, NULL, SIGTERM, 0, cm_break_h, ctx);
+	tevent_add_signal(parent, ctx, SIGINT, 0, cm_break_h, ctx);
+	tevent_add_signal(parent, ctx, SIGTERM, 0, cm_break_h, ctx);
 	for (i = 0; i < ctx->n_entries; i++) {
 		memset(&ctx->events[i], 0, sizeof(ctx->events[i]));
 		if (cm_iterate_init(ctx->entries[i],
@@ -107,9 +107,9 @@ cm_timer_h(struct tevent_context *ec, struct tevent_timer *te,
 {
 	struct cm_context *context = pvt;
 	int i;
-	talloc_free(te);
 	for (i = 0; i < context->n_entries; i++) {
 		if (context->events[i].next_event == te) {
+			context->events[i].next_event = NULL;
 			context->events[i].next_event = cm_service_one(context,
 								       NULL, i);
 		}
@@ -126,9 +126,9 @@ cm_fd_h(struct tevent_context *ec,
 {
 	struct cm_context *context = pvt;
 	int i;
-	talloc_free(fde);
 	for (i = 0; i < context->n_entries; i++) {
 		if (context->events[i].next_event == fde) {
+			context->events[i].next_event = NULL;
 			context->events[i].next_event = cm_service_one(context,
 								       NULL, i);
 		}
@@ -167,34 +167,34 @@ cm_service_one(struct cm_context *context, struct timeval *current_time, int i)
 	if (ret == 0) {
 		switch (when) {
 		case cm_time_now:
-			t = tevent_add_timer(talloc_parent(context), NULL,
+			t = tevent_add_timer(talloc_parent(context), context,
 					     now, cm_timer_h, context);
 			cm_log(3, "Will revisit '%s' now.\n",
 			       context->entries[i]->cm_id);
 			break;
 		case cm_time_soon:
 			then = tevent_timeval_add(&now, DELAY_SOON, 0);
-			t = tevent_add_timer(talloc_parent(context), NULL,
+			t = tevent_add_timer(talloc_parent(context), context,
 					     then, cm_timer_h, context);
 			cm_log(3, "Will revisit '%s' soon.\n",
 			       context->entries[i]->cm_id);
 			break;
 		case cm_time_soonish:
 			then = tevent_timeval_add(&now, DELAY_SOONISH, 0);
-			t = tevent_add_timer(talloc_parent(context), NULL,
+			t = tevent_add_timer(talloc_parent(context), context,
 					     then, cm_timer_h, context);
 			cm_log(3, "Will revisit '%s' soonish.\n",
 			       context->entries[i]->cm_id);
 			break;
 		case cm_time_delay:
 			then = tevent_timeval_add(&now, delay, 0);
-			t = tevent_add_timer(talloc_parent(context), NULL,
+			t = tevent_add_timer(talloc_parent(context), context,
 					     then, cm_timer_h, context);
 			cm_log(3, "Will revisit '%s' in %d seconds.\n",
 			       context->entries[i]->cm_id, delay);
 			break;
 		case cm_time_no_time:
-			t = tevent_add_fd(talloc_parent(context), NULL,
+			t = tevent_add_fd(talloc_parent(context), context,
 					  fd, TEVENT_FD_READ,
 					  cm_fd_h, context);
 			cm_log(3, "Will revisit '%s' on traffic from %d.\n",
@@ -202,39 +202,15 @@ cm_service_one(struct cm_context *context, struct timeval *current_time, int i)
 			break;
 		}
 	}
+	talloc_free(context->events[i].next_event);
+	context->events[i].next_event = NULL;
 	return t;
-}
-
-int
-cm_start_all(struct cm_context *context)
-{
-	int i;
-	for (i = 0; i < context->n_entries; i++) {
-		context->events[i].next_event = cm_service_one(context,
-							       NULL, i);
-	}
-	return 0;
 }
 
 int
 cm_keep_going(struct cm_context *context)
 {
 	return context->should_quit;
-}
-
-void
-cm_stop_all(struct cm_context *context)
-{
-	int i;
-	for (i = 0; i < context->n_entries; i++) {
-		talloc_free(context->events[i].next_event);
-		context->events[i].next_event = NULL;
-		cm_iterate_done(context->entries[i],
-				context->events[i].iterate_state);
-		context->events[i].iterate_state = NULL;
-		cm_store_entry_save(context->entries[i]);
-	}
-	talloc_free(context);
 }
 
 int
@@ -337,6 +313,39 @@ cm_find_entry_by_id(struct cm_context *context, const char *id)
 	return -1;
 }
 
+int
+cm_start_all(struct cm_context *context)
+{
+	int i;
+	for (i = 0; i < context->n_entries; i++) {
+		if ((context->events[i].iterate_state == NULL) &&
+		    (cm_iterate_init(context->entries[i],
+				     &context->events[i].iterate_state)) != 0) {
+			cm_log(1, "Error starting \"%s\", please try again.\n",
+			       context->entries[i]->cm_id);
+		} else {
+			talloc_free(context->events[i].next_event);
+			context->events[i].next_event = cm_service_one(context,
+								       NULL, i);
+		}
+	}
+	return 0;
+}
+
+void
+cm_stop_all(struct cm_context *context)
+{
+	int i;
+	for (i = 0; i < context->n_entries; i++) {
+		talloc_free(context->events[i].next_event);
+		context->events[i].next_event = NULL;
+		cm_iterate_done(context->entries[i],
+				context->events[i].iterate_state);
+		context->events[i].iterate_state = NULL;
+		cm_store_entry_save(context->entries[i]);
+	}
+}
+
 dbus_bool_t
 cm_start_one(struct cm_context *context, const char *id)
 {
@@ -345,6 +354,7 @@ cm_start_one(struct cm_context *context, const char *id)
 	if (i != -1) {
 		if (cm_iterate_init(context->entries[i],
 				    &context->events[i].iterate_state) == 0) {
+			talloc_free(context->events[i].next_event);
 			context->events[i].next_event = cm_service_one(context,
 								       NULL, i);
 			return TRUE;
