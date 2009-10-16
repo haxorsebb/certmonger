@@ -18,11 +18,15 @@
 #include "config.h"
 
 #include <sys/types.h>
+#include <sys/file.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <fcntl.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <talloc.h>
 #include <tevent.h>
@@ -38,16 +42,73 @@ main(int argc, char **argv)
 {
 	struct tevent_context *ec;
 	struct cm_context *ctx;
-	int i;
+	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
+	int i, c, dlevel = 0, pfd;
+	pid_t pid;
+	FILE *pfp;
+	const char *pidfile = NULL;
+	dbus_bool_t dofork = TRUE;
 
-	cm_log_set_level(3);
-	cm_log_set_method(cm_log_stderr);
+	while ((c = getopt(argc, argv, "sSnd:")) != -1) {
+		switch (c) {
+		case 's':
+			bus = DBUS_BUS_SESSION;
+			break;
+		case 'S':
+			bus = DBUS_BUS_SYSTEM;
+			break;
+		case 'p':
+			pidfile = optarg;
+			break;
+		case 'd':
+			dlevel = atoi(optarg);
+			/* fall through */
+		case 'n':
+			dofork = FALSE;
+			break;
+		default:
+			printf("Usage: certmonger [-s|-S] [-n] [-n [-d LEVEL]] "
+			       "[-p FILE]\n"
+			       "\t-s         use session bus\n"
+			       "\t-S         use system bus\n"
+			       "\t-n         don't become a daemon\n"
+			       "\t-d LEVEL   set debugging level\n"
+			       "\t-p FILE    write service PID to file\n");
+			exit(1);
+			break;
+		}
+	}
+
+	cm_log_set_level(dlevel);
+	cm_log_set_method((dlevel > 0) ? cm_log_stderr : cm_log_syslog);
 	cm_log(3, "Starting up.\n");
 
 	ec = tevent_context_init(NULL);
 	if (ec == NULL) {
 		fprintf(stderr, "Error initializing tevent.\n");
-		return 1;
+		exit(1);
+	}
+
+	if (pidfile != NULL) {
+		pfd = open(pidfile, O_RDWR);
+		if (pfd == -1) {
+			fprintf(stderr, "Error opening pidfile \"%s\": %s\n",
+				pidfile, strerror(errno));
+			exit(1);
+		}
+		if (flock(pfd, LOCK_EX | LOCK_NB) != 0) {
+			fprintf(stderr, "Error locking pidfile \"%s\": %s\n",
+				pidfile, strerror(errno));
+			exit(1);
+		}
+		pfp = fdopen(pfd, "w");
+		if (pfp == NULL) {
+			fprintf(stderr, "Error opening pidfile \"%s\": %s\n",
+				pidfile, strerror(errno));
+			exit(1);
+		}
+	} else {
+		pfp = NULL;
 	}
 
 	ctx = NULL;
@@ -55,12 +116,53 @@ main(int argc, char **argv)
 	if (i != 0) {
 		fprintf(stderr, "Error: %s\n", strerror(i));
 		talloc_free(ec);
-		return 1;
+		exit(1);
 	}
-	if (cm_tdbus_setup(ec, CM_DBUS_DEFAULT_BUS, ctx) != 0) {
+
+	if (dofork) {
+		pid = fork();
+		switch (pid) {
+		case -1:
+			/* failure */
+			fprintf(stderr, "fork() error: %s\n", strerror(errno));
+			if (pfp != NULL) {
+				remove(pidfile);
+			}
+			exit(1);
+			break;
+		case 0:
+			/* child; keep going */
+			if (daemon(0, 0) != 0) {
+				fprintf(stderr, "daemon() error: %s\n",
+					strerror(errno));
+				exit(1);
+			}
+			if (pfp != NULL) {
+				fprintf(pfp, "%ld\n", (long) getpid());
+				fclose(pfp);
+				pfp = NULL;
+			}
+			break;
+		default:
+			/* parent; exit cleanly */
+			exit(0);
+			break;
+		}
+	} else {
+		if (pfp != NULL) {
+			fprintf(pfp, "%ld\n", (long) getpid());
+			fclose(pfp);
+			pfp = NULL;
+		}
+	}
+
+	if (cm_tdbus_setup(ec, bus, ctx) != 0) {
 		fprintf(stderr, "Error connecting to D-Bus.\n");
 		talloc_free(ec);
-		return 1;
+		if (pidfile != NULL) {
+			remove(pidfile);
+		}
+		exit(1);
 	}
 	cm_start_all(ctx);
 	do {
@@ -71,7 +173,10 @@ main(int argc, char **argv)
 		}
 	} while (cm_keep_going(ctx) == 0);
 	cm_log(3, "Shutting down.\n");
-	cm_done(ctx);
+	cm_stop_all(ctx);
 	talloc_free(ec);
+	if (pidfile != NULL) {
+		remove(pidfile);
+	}
 	return 0;
 }
