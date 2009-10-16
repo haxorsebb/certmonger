@@ -223,7 +223,7 @@ cm_keep_going(struct cm_context *context)
 }
 
 void
-cm_done(struct cm_context *context)
+cm_stop_all(struct cm_context *context)
 {
 	int i;
 	for (i = 0; i < context->n_entries; i++) {
@@ -313,14 +313,10 @@ cm_add_entry(struct cm_context *context, struct cm_store_entry *new_entry)
 	if ((entries != NULL) && (events != NULL)) {
 		/* Prepare to set this entry in motion. */
 		i = context->n_entries - 1;
-		if (cm_iterate_init(context->entries[i],
-				    &context->events[i].iterate_state) != 0) {
+		if (cm_start_one(context,
+				 context->entries[i]->cm_id) == FALSE) {
 			cm_log(3, "Error starting '%s', please retry.\n",
 			       context->entries[i]->cm_id);
-		} else {
-			/* Set this entry in motion. */
-			context->events[i].next_event = cm_service_one(context,
-								       NULL, i);
 		}
 		/* Save this entry to the store, too. */
 		cm_store_entry_save(new_entry);
@@ -372,6 +368,7 @@ cm_stop_one(struct cm_context *context, const char *id)
 		cm_iterate_done(context->entries[i],
 				context->events[i].iterate_state);
 		context->events[i].iterate_state = NULL;
+		cm_store_entry_save(context->entries[i]);
 		return TRUE;
 	} else {
 		cm_log(3, "No entry matching '%s'.\n", id);

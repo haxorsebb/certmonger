@@ -25,7 +25,7 @@ struct tevent_context;
 int cm_init(struct tevent_context *parent, struct cm_context **context);
 int cm_start_all(struct cm_context *context);
 int cm_keep_going(struct cm_context *context);
-void cm_done(struct cm_context *context);
+void cm_stop_all(struct cm_context *context);
 
 int cm_get_n_entries(struct cm_context *context);
 struct cm_store_entry *cm_get_entry_by_index(struct cm_context *c, int i);
