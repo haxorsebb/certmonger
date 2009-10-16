@@ -74,11 +74,12 @@ cm_init(struct tevent_context *parent, struct cm_context **context)
 		continue;
 	}
 	ctx->n_entries = i;
-	ctx->events = talloc_array_ptrtype(ctx, ctx->events, i);
+	ctx->events = talloc_array_ptrtype(ctx, ctx->events, ctx->n_entries);
 	if (ctx->events == NULL) {
 		talloc_free(ctx);
 		return ENOMEM;
 	}
+	memset(ctx->events, 0, sizeof(ctx->events[0]) * ctx->n_entries);
 	tevent_add_signal(parent, NULL, SIGINT, 0, cm_break_h, ctx);
 	tevent_add_signal(parent, NULL, SIGTERM, 0, cm_break_h, ctx);
 	for (i = 0; i < ctx->n_entries; i++) {
