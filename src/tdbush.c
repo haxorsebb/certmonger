@@ -225,14 +225,14 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		if (cert_storage != e->cm_cert_storage_type) {
 			continue;
 		}
-		if (strcmp(cert_location, e->cm_cert_storage_location) == 0) {
+		if (strcmp(cert_location, e->cm_cert_storage_location) != 0) {
 			continue;
 		}
 		switch (cert_storage) {
 		case cm_cert_storage_file:
 			break;
 		case cm_cert_storage_nssdb:
-			if (strcmp(cert_nickname, e->cm_cert_nickname) == 0) {
+			if (strcmp(cert_nickname, e->cm_cert_nickname) != 0) {
 				continue;
 			}
 			break;
@@ -332,17 +332,17 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 				break;
 			case cm_key_storage_file:
 				if (strcmp(key_location,
-					   e->cm_key_storage_location) == 0) {
+					   e->cm_key_storage_location) != 0) {
 					continue;
 				}
 				break;
 			case cm_key_storage_nssdb:
 				if (strcmp(key_location,
-					   e->cm_key_storage_location) == 0) {
+					   e->cm_key_storage_location) != 0) {
 					continue;
 				}
 				if (strcmp(key_nickname,
-					   e->cm_key_nickname) == 0) {
+					   e->cm_key_nickname) != 0) {
 					continue;
 				}
 				break;
