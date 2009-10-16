@@ -25,8 +25,9 @@
 struct cm_submit_state *
 cm_submit_start(struct cm_store_entry *entry)
 {
-	switch (entry->cm_ca_type) {
-	case cm_ca_dummy:
+	enum cm_submit_type submit_type = cm_submit_self;
+	switch (submit_type) {
+	case cm_submit_self:
 		switch (entry->cm_key_storage_type) {
 		case cm_key_storage_none:
 			cm_log(1, "Can't self-sign \"%s\" without access to "
@@ -34,12 +35,12 @@ cm_submit_start(struct cm_store_entry *entry)
 			break;
 #ifdef HAVE_OPENSSL
 		case cm_key_storage_file:
-			return cm_submit_o_start(entry);
+			return cm_submit_so_start(entry);
 			break;
 #endif
 #ifdef HAVE_NSS
 		case cm_key_storage_nssdb:
-			return cm_submit_n_start(entry);
+			return cm_submit_sn_start(entry);
 			break;
 #endif
 		}
@@ -53,21 +54,26 @@ cm_submit_start(struct cm_store_entry *entry)
 struct cm_submit_state *
 cm_submit_resume(struct cm_store_entry *entry)
 {
-	switch (entry->cm_key_storage_type) {
-	case cm_key_storage_none:
-		cm_log(1, "Can't self-sign \"%s\" without access to "
-		       "the private key.\n", entry->cm_id);
-		break;
+	enum cm_submit_type submit_type = cm_submit_self;
+	switch (submit_type) {
+	case cm_submit_self:
+		switch (entry->cm_key_storage_type) {
+		case cm_key_storage_none:
+			cm_log(1, "Can't self-sign \"%s\" without access to "
+			       "the private key.\n", entry->cm_id);
+			break;
 #ifdef HAVE_OPENSSL
-	case cm_key_storage_file:
-		return cm_submit_o_resume(entry);
-		break;
+		case cm_key_storage_file:
+			return cm_submit_so_resume(entry);
+			break;
 #endif
 #ifdef HAVE_NSS
-	case cm_key_storage_nssdb:
-		return cm_submit_n_resume(entry);
-		break;
+		case cm_key_storage_nssdb:
+			return cm_submit_sn_resume(entry);
+			break;
 #endif
+		}
+		break;
 	}
 	return NULL;
 }

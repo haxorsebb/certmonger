@@ -90,8 +90,7 @@ enum cm_store_file_field {
 	cm_store_file_field_monitor,
 
 	cm_store_file_field_ca_default,
-	cm_store_file_field_ca_type,
-	cm_store_file_field_ca_location,
+	cm_store_file_field_ca_name,
 
 	cm_store_file_field_submitted,
 	cm_store_file_field_ca_cookie,
@@ -156,8 +155,7 @@ static struct cm_store_file_field_list {
 	{cm_store_file_field_monitor, "monitor"},
 
 	{cm_store_file_field_ca_default, "ca_default"},
-	{cm_store_file_field_ca_type, "ca_type"},
-	{cm_store_file_field_ca_location, "ca_location"},
+	{cm_store_file_field_ca_name, "ca_name"},
 
 	{cm_store_file_field_submitted, "submitted"},
 	{cm_store_file_field_ca_cookie, "ca_cookie"},
@@ -538,16 +536,8 @@ cm_store_file_read(void *parent, const char *filename, FILE *fp)
 				ret->cm_ca_default = atoi(p);
 				talloc_free(p);
 				break;
-			case cm_store_file_field_ca_type:
-				if (strcasecmp(p, "DUMMY") == 0) {
-					ret->cm_ca_type = cm_ca_dummy;
-				} else {
-					ret->cm_ca_type = cm_ca_dummy;
-				}
-				talloc_free(p);
-				break;
-			case cm_store_file_field_ca_location:
-				ret->cm_ca_location = free_if_empty(p);
+			case cm_store_file_field_ca_name:
+				ret->cm_ca_name = free_if_empty(p);
 				break;
 			case cm_store_file_field_submitted:
 				ret->cm_submitted =
@@ -839,14 +829,8 @@ cm_store_file_write(FILE *fp, struct cm_store_entry *entry)
 
 	cm_store_file_write_int(fp, cm_store_file_field_ca_default,
 				entry->cm_ca_default);
-	switch (entry->cm_ca_type) {
-	case cm_ca_dummy:
-		cm_store_file_write_str(fp, cm_store_file_field_ca_type,
-					"DUMMY");
-		break;
-	}
-	cm_store_file_write_str(fp, cm_store_file_field_ca_location,
-				entry->cm_ca_location);
+	cm_store_file_write_str(fp, cm_store_file_field_ca_name,
+				entry->cm_ca_name);
 	cm_store_file_write_str(fp, cm_store_file_field_submitted,
 				cm_store_timestamp_from_time(entry->cm_submitted,
 							     timestamp));

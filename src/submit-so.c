@@ -42,7 +42,7 @@ struct cm_submit_state {
 };
 
 static void
-cm_submit_o_main(int fd, struct cm_store_entry *entry)
+cm_submit_so_main(int fd, struct cm_store_entry *entry)
 {
 	FILE *keyfp, *pem;
 	RSA *rsa;
@@ -123,22 +123,22 @@ cm_submit_o_main(int fd, struct cm_store_entry *entry)
 
 /* Get a selectable-for-read descriptor we can poll for status changes. */
 static int
-cm_submit_o_get_fd(struct cm_store_entry *entry, struct cm_submit_state *state)
+cm_submit_so_get_fd(struct cm_store_entry *entry, struct cm_submit_state *state)
 {
 	return state->fd;
 }
 
 /* Check if the CSR was received by the CA yet. */
 static int
-cm_submit_o_sent(struct cm_store_entry *entry, struct cm_submit_state *state)
+cm_submit_so_sent(struct cm_store_entry *entry, struct cm_submit_state *state)
 {
 	return 0;
 }
 
 /* Save CA-specific identifier for our submitted request. */
 static int
-cm_submit_o_save_ca_cookie(struct cm_store_entry *entry,
-			 struct cm_submit_state *state)
+cm_submit_so_save_ca_cookie(struct cm_store_entry *entry,
+			    struct cm_submit_state *state)
 {
 	talloc_free(entry->cm_ca_cookie);
 	entry->cm_ca_cookie = talloc_strdup(entry,
@@ -153,7 +153,7 @@ cm_submit_o_save_ca_cookie(struct cm_store_entry *entry,
 /* Pick up after a CSR has been "submitted", in case we haven't yet gotten a
  * decision about it. */
 struct cm_submit_state *
-cm_submit_o_resume(struct cm_store_entry *entry)
+cm_submit_so_resume(struct cm_store_entry *entry)
 {
 	struct cm_submit_state *state;
 	state = cm_submit_start(entry);
@@ -163,8 +163,8 @@ cm_submit_o_resume(struct cm_store_entry *entry)
 
 /* Check if an attempt to get status has succeeded. */
 static int
-cm_submit_o_status_ready(struct cm_store_entry *entry,
-		       struct cm_submit_state *state)
+cm_submit_so_status_ready(struct cm_store_entry *entry,
+			  struct cm_submit_state *state)
 {
 	ssize_t i, remainder;
 	int status;
@@ -195,7 +195,7 @@ cm_submit_o_status_ready(struct cm_store_entry *entry,
 
 /* Check if the certificate was issued. */
 static int
-cm_submit_o_issued(struct cm_store_entry *entry, struct cm_submit_state *state)
+cm_submit_so_issued(struct cm_store_entry *entry, struct cm_submit_state *state)
 {
 	if ((strstr(state->msg, "-----BEGIN CERTIFICATE-----") != NULL) &&
 	    (strstr(state->msg, "-----END CERTIFICATE-----") != NULL)) {
@@ -208,15 +208,15 @@ cm_submit_o_issued(struct cm_store_entry *entry, struct cm_submit_state *state)
 
 /* Check if we need to make another request to actually retrieve the cert. */
 static int
-cm_submit_o_needs_retrieval(struct cm_store_entry *entry,
-			  struct cm_submit_state *state)
+cm_submit_so_needs_retrieval(struct cm_store_entry *entry,
+			     struct cm_submit_state *state)
 {
 	return -1; /* already have data, no additional retrieval step needed */
 }
 
 /* Done talking to the CA. */
 static void
-cm_submit_o_done(struct cm_store_entry *entry, struct cm_submit_state *state)
+cm_submit_so_done(struct cm_store_entry *entry, struct cm_submit_state *state)
 {
 	if (state->pid != -1) {
 		kill(state->pid, SIGKILL);
@@ -229,7 +229,7 @@ cm_submit_o_done(struct cm_store_entry *entry, struct cm_submit_state *state)
 
 /* Start CSR submission using parameters stored in the entry. */
 struct cm_submit_state *
-cm_submit_o_start(struct cm_store_entry *entry)
+cm_submit_so_start(struct cm_store_entry *entry)
 {
 	int fds[2];
 	struct cm_submit_state *state;
@@ -241,13 +241,13 @@ cm_submit_o_start(struct cm_store_entry *entry)
 	state = talloc_ptrtype(entry, state);
 	if (state != NULL) {
 		memset(state, 0, sizeof(*state));
-		state->pvt.get_fd = cm_submit_o_get_fd;
-		state->pvt.sent = cm_submit_o_sent;
-		state->pvt.save_ca_cookie = cm_submit_o_save_ca_cookie;
-		state->pvt.status_ready = cm_submit_o_status_ready;
-		state->pvt.issued = cm_submit_o_issued;
-		state->pvt.needs_retrieval = cm_submit_o_needs_retrieval;
-		state->pvt.done = cm_submit_o_done;
+		state->pvt.get_fd = cm_submit_so_get_fd;
+		state->pvt.sent = cm_submit_so_sent;
+		state->pvt.save_ca_cookie = cm_submit_so_save_ca_cookie;
+		state->pvt.status_ready = cm_submit_so_status_ready;
+		state->pvt.issued = cm_submit_so_issued;
+		state->pvt.needs_retrieval = cm_submit_so_needs_retrieval;
+		state->pvt.done = cm_submit_so_done;
 		state->fd = -1;
 		if (pipe(fds) != -1) {
 			state->pid = fork();
@@ -260,7 +260,7 @@ cm_submit_o_start(struct cm_store_entry *entry)
 				break;
 			case 0:
 				close(fds[0]);
-				cm_submit_o_main(fds[1], entry);
+				cm_submit_so_main(fds[1], entry);
 				_exit(0);
 				break;
 			default:

@@ -118,10 +118,7 @@ struct cm_store_entry {
 	unsigned int cm_monitor:1;
 	/* Type and location of CA [or use default settings] */
 	unsigned int cm_ca_default:1;
-	enum cm_ca_type {
-		cm_ca_dummy = 0,
-	} cm_ca_type;
-	char *cm_ca_location;
+	char *cm_ca_name;
 	/* Date of submission for in-progress submissions. */
 	time_t cm_submitted;
 	/* Value of CA cookie for in-progress submissions. */

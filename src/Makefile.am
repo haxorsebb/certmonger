@@ -46,7 +46,7 @@ libcm_o_a_SOURCES += \
 	csrgen-o.c \
 	keygen-o.c \
 	keyiread-o.c \
-	submit-do.c
+	submit-so.c
 endif
 libcm_o_a_CFLAGS = @OPENSSL_CFLAGS@
 libcm_n_a_SOURCES =
@@ -58,7 +58,7 @@ libcm_n_a_SOURCES += \
 	csrgen-n.c \
 	keygen-n.c \
 	keyiread-n.c \
-	submit-dn.c
+	submit-sn.c
 libcm_n_a_CFLAGS = @NSS_CFLAGS@
 libcm_a_LIBADD = $(libcm_o_a_OBJECTS) $(libcm_n_a_OBJECTS)
 bin_PROGRAMS = getcert
