@@ -272,6 +272,7 @@ cm_add_entry(struct cm_context *context, struct cm_store_entry *new_entry)
 		new_entry->cm_id = talloc_strdup(new_entry, new_entry->cm_id);
 	}
 	/* Allocate storage for a new entry array. */
+	events = NULL;
 	entries = talloc_array(context, struct cm_store_entry *,
 			       context->n_entries + 1);
 	if (entries != NULL) {
@@ -285,10 +286,11 @@ cm_add_entry(struct cm_context *context, struct cm_store_entry *new_entry)
 						context->entries[i]);
 				entries[i] = context->entries[i];
 			}
-			/* The pointers in this structure belong to the entry,
-			 * so we don't need to worry about reparenting them. */
+			/* The pointers in this structure belong to the tevent
+			 * context, so we don't need to worry about reparenting
+			 * them. */
 			memcpy(events, context->events,
-			       sizeof(struct cm_event) * context->n_entries);
+			       sizeof(context->events[0]) * context->n_entries);
 			/* Add the new members. */
 			talloc_reparent(talloc_parent(new_entry), entries,
 					new_entry);
