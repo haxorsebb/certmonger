@@ -87,8 +87,6 @@ cm_init(struct tevent_context *parent, struct cm_context **context)
 		if (cm_iterate_init(ctx->entries[i],
 				    &ctx->events[i].iterate_state) != 0) {
 			for (j = 0; j < i; j++) {
-				talloc_free(ctx->events[j].next_event);
-				ctx->events[j].next_event = NULL;
 				cm_iterate_done(ctx->entries[j],
 						ctx->events[j].iterate_state);
 				ctx->events[j].iterate_state = NULL;
@@ -109,11 +107,10 @@ cm_timer_h(struct tevent_context *ec, struct tevent_timer *te,
 	int i;
 	for (i = 0; i < context->n_entries; i++) {
 		if (context->events[i].next_event == te) {
-			context->events[i].next_event = NULL;
 			context->events[i].next_event = cm_service_one(context,
 								       NULL, i);
+			break;
 		}
-		break;
 	}
 	if (i >= context->n_entries) {
 		cm_log(3, "Bug: unowned timer fired.\n");
@@ -128,11 +125,10 @@ cm_fd_h(struct tevent_context *ec,
 	int i;
 	for (i = 0; i < context->n_entries; i++) {
 		if (context->events[i].next_event == fde) {
-			context->events[i].next_event = NULL;
 			context->events[i].next_event = cm_service_one(context,
 								       NULL, i);
+			break;
 		}
-		break;
 	}
 	if (i >= context->n_entries) {
 		cm_log(3, "Bug: unowned FD watch fired.\n");
@@ -202,8 +198,6 @@ cm_service_one(struct cm_context *context, struct timeval *current_time, int i)
 			break;
 		}
 	}
-	talloc_free(context->events[i].next_event);
-	context->events[i].next_event = NULL;
 	return t;
 }
 
@@ -324,8 +318,6 @@ cm_start_all(struct cm_context *context)
 			cm_log(1, "Error starting \"%s\", please try again.\n",
 			       context->entries[i]->cm_id);
 		} else {
-			talloc_free(context->events[i].next_event);
-			context->events[i].next_event = NULL;
 			context->events[i].next_event = cm_service_one(context,
 								       NULL, i);
 		}
@@ -355,8 +347,6 @@ cm_start_one(struct cm_context *context, const char *id)
 	if (i != -1) {
 		if (cm_iterate_init(context->entries[i],
 				    &context->events[i].iterate_state) == 0) {
-			talloc_free(context->events[i].next_event);
-			context->events[i].next_event = NULL;
 			context->events[i].next_event = cm_service_one(context,
 								       NULL, i);
 			return TRUE;
