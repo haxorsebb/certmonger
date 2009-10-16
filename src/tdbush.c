@@ -249,7 +249,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	/* Key storage.  We can afford to be a bit more lax about this because
 	 * we don't require that we know anything about the key. */
 	param = cm_tdbusm_find_dict_entry(d, "KEY_STORAGE", cm_tdbusm_dict_s);
-	if (param != NULL) {
+	if (param == NULL) {
 		key_storage = defaults->cm_key_storage_type;
 		key_location = defaults->cm_key_storage_location;
 		key_nickname = defaults->cm_key_nickname;
