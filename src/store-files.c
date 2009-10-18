@@ -30,6 +30,7 @@
 #include <unistd.h>
 #include <time.h>
 
+#include <dbus/dbus.h>
 #include <talloc.h>
 
 #include "store.h"
@@ -213,6 +214,24 @@ cm_store_file_line_of_field(enum cm_store_file_field field)
 		}
 	}
 	return NULL;
+}
+
+static dbus_bool_t
+cm_store_should_ignore_file(const char *filename)
+{
+	const char *ignore[] = {".tmp",
+				".rpmsave", ".rpmorig", ".rpmnew",
+				"~"};
+	unsigned int i, len, ilen;
+	len = strlen(filename);
+	for (i = 0; i < sizeof(ignore) / sizeof(ignore[0]); i++) {
+		ilen = strlen(ignore[i]);
+		if ((len > ilen) &&
+		    (strcmp(filename + len - ilen, ignore[i] == 0))) {
+			return TRUE;
+		}
+	}
+	return FALSE;
 }
 
 static char **
@@ -1076,11 +1095,8 @@ cm_store_get_all_entries(void *parent)
 		if (ret != NULL) {
 			for (i = 0, j = 0; i < globs.gl_pathc; i++) {
 				p = globs.gl_pathv[i];
-				if (strlen(p) > 4) {
-					p = p + strlen(p) - 4;
-					if (strcmp(p, ".tmp") == 0) {
-						continue;
-					}
+				if (cm_store_should_ignore_file(p)) {
+					continue;
 				}
 				fp = fopen(globs.gl_pathv[i], "r");
 				if (fp != NULL) {
@@ -1230,11 +1246,8 @@ cm_store_get_all_cas(void *parent)
 	if (ret != NULL) {
 		for (i = 0, j = 0; i < globs.gl_pathc; i++) {
 			p = globs.gl_pathv[i];
-			if (strlen(p) > 4) {
-				p = p + strlen(p) - 4;
-				if (strcmp(p, ".tmp") == 0) {
-					continue;
-				}
+			if (cm_store_should_ignore_file(p)) {
+				continue;
 			}
 			fp = fopen(globs.gl_pathv[i], "r");
 			if (fp != NULL) {
