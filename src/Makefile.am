@@ -62,10 +62,12 @@ libcm_n_a_SOURCES += \
 	submit-sn.c
 libcm_n_a_CFLAGS = @NSS_CFLAGS@
 libcm_a_LIBADD = $(libcm_o_a_OBJECTS) $(libcm_n_a_OBJECTS)
-bin_PROGRAMS = getcert
+bin_PROGRAMS = getcert ipa-getcert
 sbin_PROGRAMS = certmonger
 getcert_SOURCES = getcert.c
 getcert_LDADD = libcm.a @GETCERT_LIBS@
+ipa_getcert_SOURCES = ipa-getcert.c
+ipa_getcert_LDADD = $(getcert_LDADD)
 certmonger_SOURCES = main.c
 certmonger_LDADD = libcm.a @OPENSSL_LIBS@ @CERTMONGER_LIBS@ @KRB5_LIBS@
 noinst_PROGRAMS = tdbusm-check serial-check

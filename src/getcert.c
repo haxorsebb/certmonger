@@ -37,6 +37,14 @@
 #include "tdbus.h"
 #include "tdbusm.h"
 
+#ifdef FORCE_CA
+#define GETOPT_CA ""
+#define DEFAULT_CA FORCE_CA
+#else
+#define GETOPT_CA "c:"
+#define DEFAULT_CA NULL
+#endif
+
 static void help(const char *cmd, const char *category);
 
 static struct {
@@ -162,7 +170,7 @@ request(const char *argv0, int argc, char **argv)
 	char *dbdir = NULL, *token = NULL, *nickname = NULL;
 	char *keyfile = NULL, *certfile = NULL;
 	int keysize = 0, track_exp = 0, auto_renew = 0, c, i;
-	char *ca = NULL, *subject = NULL, **eku = NULL;
+	char *ca = DEFAULT_CA, *subject = NULL, **eku = NULL;
 	char **principal = NULL, **dns = NULL, **email = NULL;
 	struct cm_tdbusm_dict param[32];
 	const struct cm_tdbusm_dict *params[32];
@@ -178,7 +186,8 @@ request(const char *argv0, int argc, char **argv)
 	}
 	subject = subject_default;
 
-	while ((c = getopt(argc, argv, "d:n:t:k:f:g:erc:s:U:K:D:E:")) != -1) {
+	while ((c = getopt(argc, argv,
+			   "d:n:t:k:f:g:ers:U:K:D:E:" GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
 			dbdir = talloc_strdup(globals.tctx, optarg);
@@ -594,10 +603,10 @@ set_tracking(const char *argv0, int argc, char **argv, dbus_bool_t track)
 	struct cm_tdbusm_dict param[3];
 	const struct cm_tdbusm_dict *params[3];
 	char *dbdir = NULL, *token = NULL, *nickname = NULL;
-	char *keyfile = NULL, *certfile = NULL, *ca = NULL;
+	char *keyfile = NULL, *certfile = NULL, *ca = DEFAULT_CA;
 	dbus_bool_t b;
 	int c, auto_renew = 0, i;
-	while ((c = getopt(argc, argv, "d:n:t:k:f:g:rc:")) != -1) {
+	while ((c = getopt(argc, argv, "d:n:t:k:f:g:r" GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
 			dbdir = talloc_strdup(globals.tctx, optarg);
@@ -683,13 +692,13 @@ list(const char *argv0, int argc, char **argv)
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	enum cm_state state;
 	DBusMessage *rep;
-	char **requests, *s, *p, *nickname, *only_ca = NULL, *ca_name;
+	char **requests, *s, *p, *nickname, *only_ca = DEFAULT_CA, *ca_name;
 	dbus_bool_t b;
 	char *s1, *s2, *s3, *s4;
 	long n1, n2;
 	char **as1, **as2, **as3, **as4, t[15];
 	int requests_only = 0, tracking_only = 0, c, i, j;
-	while ((c = getopt(argc, argv, "rtc:")) != -1) {
+	while ((c = getopt(argc, argv, "rt" GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'c':
 			only_ca = optarg;
@@ -912,7 +921,9 @@ help(const char *cmd, const char *category)
 	"  -g SIZE	size of key to be generated if one is not already in place\n"
 	"  -e		track and warn of impending expiration of certificate\n"
 	"  -r		attempt to renew the certificate when expiration nears\n"
+#ifndef FORCE_CA
 	"  -c CA	use the specified CA rather than the default\n"
+#endif
 	"* Parameters for the signing request:\n"
 	"  -s NAME	set requested subject name (default: CN=<hostname>)\n"
 	"  -U EXTUSAGE	add requested extended key usage OID\n"
@@ -934,7 +945,10 @@ help(const char *cmd, const char *category)
 	"Optional arguments:\n"
 	"* Certificate handling settings:\n"
 	"  -r		attempt to renew the certificate when expiration nears\n"
-	"  -c CA	use the specified CA rather than the default\n",},
+#ifndef FORCE_CA
+	"  -c CA	use the specified CA rather than the default\n"
+#endif
+	,},
 	{"stop-tracking",
 	"Usage: %s stop-tracking [options]\n"
 	"\n"
@@ -949,7 +963,9 @@ help(const char *cmd, const char *category)
 	{"list",
 	"Usage: %s list [options]\n"
 	"* General options:\n"
+#ifndef FORCE_CA
 	"  -c CA	list only requests and cert associated with this CA\n"
+#endif
 	"  -r		list only information about outstanding requests\n"
 	"  -t		list only information about tracked certificates\n"}};
 	for (i = 0; i < sizeof(msgs) / sizeof(msgs[0]); i++) {
