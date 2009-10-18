@@ -60,6 +60,25 @@ get_entry_for_request_message(DBusMessage *msg, struct cm_context *ctx)
 {
 	return msg ? get_entry_for_path(ctx, dbus_message_get_path(msg)) : NULL;
 }
+static struct cm_store_ca *
+get_ca_for_path(struct cm_context *ctx, const char *path)
+{
+	int initial;
+	if (path != NULL) {
+		initial = strlen(CM_DBUS_CA_PATH);
+		if (strncmp(path, CM_DBUS_CA_PATH, initial) == 0) {
+			if (path[initial] == '/') {
+				return cm_get_ca_by_id(ctx, path + initial + 1);
+			}
+		}
+	}
+	return NULL;
+}
+static struct cm_store_ca *
+get_ca_for_request_message(DBusMessage *msg, struct cm_context *ctx)
+{
+	return msg ? get_ca_for_path(ctx, dbus_message_get_path(msg)) : NULL;
+}
 static dbus_bool_t
 is_ca(struct cm_context *ctx, const char *path,
       const char *interface, const char *member)
@@ -474,7 +493,32 @@ static DBusHandlerResult
 base_get_known_cas(DBusConnection *conn, DBusMessage *msg,
 		   struct cm_context *ctx)
 {
-	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	int i, n_cas;
+	struct cm_store_ca *ca;
+	char **ret;
+	DBusMessage *rep;
+	n_cas = cm_get_n_entries(ctx);
+	ret = talloc_array(ctx, char *, n_cas + 1);
+	if (ret != NULL) {
+		for (i = 0; i < n_cas; i++) {
+			ca = cm_get_ca_by_index(ctx, i);
+			if (ca == NULL) {
+				break;
+			}
+			ret[i] = talloc_asprintf(ret, "%s/%s",
+						 CM_DBUS_CA_PATH, ca->cm_id);
+		}
+		ret[i] = NULL;
+	}
+	rep = dbus_message_new_method_return(msg);
+	if (rep != NULL) {
+		if (cm_tdbusm_set_as(rep, (const char **) ret) == 0) {
+			dbus_connection_send(conn, rep, NULL);
+		}
+		dbus_message_unref(rep);
+	}
+	talloc_free(ret);
+	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
 static DBusHandlerResult
@@ -507,22 +551,6 @@ base_get_requests(DBusConnection *conn, DBusMessage *msg,
 		dbus_message_unref(rep);
 	}
 	talloc_free(ret);
-	return DBUS_HANDLER_RESULT_HANDLED;
-}
-
-static DBusHandlerResult
-base_get_supported_ca_types(DBusConnection *conn, DBusMessage *msg,
-			    struct cm_context *ctx)
-{
-	const char *ca_types[] = {"SELF", "IPA", NULL};
-	DBusMessage *rep;
-	rep = dbus_message_new_method_return(msg);
-	if (rep != NULL) {
-		if (cm_tdbusm_set_as(rep, ca_types) == 0) {
-			dbus_connection_send(conn, rep, NULL);
-		}
-		dbus_message_unref(rep);
-	}
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
@@ -581,6 +609,16 @@ base_remove_request(DBusConnection *conn, DBusMessage *msg,
 static DBusHandlerResult
 ca_get_nickname(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 {
+	DBusMessage *rep;
+	struct cm_store_ca *ca;
+	ca = get_ca_for_request_message(msg, ctx);
+	rep = dbus_message_new_method_return(msg);
+	if (rep != NULL) {
+		if (cm_tdbusm_set_s(rep, ca->cm_id) == 0) {
+			dbus_connection_send(conn, rep, NULL);
+		}
+		dbus_message_unref(rep);
+	}
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
@@ -588,6 +626,16 @@ static DBusHandlerResult
 ca_get_is_default(DBusConnection *conn, DBusMessage *msg,
 		  struct cm_context *ctx)
 {
+	DBusMessage *rep;
+	struct cm_store_ca *ca;
+	ca = get_ca_for_request_message(msg, ctx);
+	rep = dbus_message_new_method_return(msg);
+	if (rep != NULL) {
+		if (cm_tdbusm_set_b(rep, ca->cm_ca_is_default) == 0) {
+			dbus_connection_send(conn, rep, NULL);
+		}
+		dbus_message_unref(rep);
+	}
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
@@ -595,25 +643,67 @@ static DBusHandlerResult
 ca_get_issuer_names(DBusConnection *conn, DBusMessage *msg,
 		    struct cm_context *ctx)
 {
+	DBusMessage *rep;
+	struct cm_store_ca *ca;
+	const char **names;
+	ca = get_ca_for_request_message(msg, ctx);
+	rep = dbus_message_new_method_return(msg);
+	if (rep != NULL) {
+		names = (const char **) ca->cm_ca_known_issuer_names;
+		if (cm_tdbusm_set_as(rep, names) == 0) {
+			dbus_connection_send(conn, rep, NULL);
+		}
+		dbus_message_unref(rep);
+	}
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
 static DBusHandlerResult
 ca_get_location(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 {
+	DBusMessage *rep;
+	struct cm_store_ca *ca;
+	ca = get_ca_for_request_message(msg, ctx);
+	rep = dbus_message_new_method_return(msg);
+	if (rep != NULL) {
+		if (cm_tdbusm_set_s(rep, ca->cm_ca_external_helper) == 0) {
+			dbus_connection_send(conn, rep, NULL);
+		}
+		dbus_message_unref(rep);
+	}
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
 static DBusHandlerResult
 ca_get_type(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 {
+	DBusMessage *rep;
+	struct cm_store_ca *ca;
+	const char *ca_type;
+	ca = get_ca_for_request_message(msg, ctx);
+	rep = dbus_message_new_method_return(msg);
+	if (rep != NULL) {
+		ca_type = NULL;
+		switch (ca->cm_ca_type) {
+		case cm_ca_internal_self:
+			ca_type = "INTERNAL:SELF";
+			break;
+		case cm_ca_external:
+			ca_type = "EXTERNAL";
+			break;
+		}
+		if (cm_tdbusm_set_s(rep, ca_type) == 0) {
+			dbus_connection_send(conn, rep, NULL);
+		}
+		dbus_message_unref(rep);
+	}
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
 static DBusHandlerResult
 ca_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 {
-	return DBUS_HANDLER_RESULT_HANDLED;
+	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
 /* Functions implemented for request objects. */
@@ -1021,8 +1111,6 @@ static struct {
 	 base_get_supported_key_types},
 	{&is_base, CM_DBUS_BASE_INTERFACE, "get_supported_key_storage",
 	 base_get_supported_key_and_cert_storage},
-	{&is_base, CM_DBUS_BASE_INTERFACE, "get_supported_ca_types",
-	 base_get_supported_ca_types},
 	{&is_base, CM_DBUS_BASE_INTERFACE, "get_supported_cert_storage",
 	 base_get_supported_key_and_cert_storage},
 	{&is_base, CM_DBUS_BASE_INTERFACE, "remove_known_ca",
