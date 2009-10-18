@@ -221,7 +221,7 @@ cm_store_should_ignore_file(const char *filename)
 {
 	const char *ignore[] = {".tmp",
 				".rpmsave", ".rpmorig", ".rpmnew",
-				"~"};
+				"~", "#"};
 	unsigned int i, len, ilen;
 	len = strlen(filename);
 	for (i = 0; i < sizeof(ignore) / sizeof(ignore[0]); i++) {
