@@ -701,6 +701,29 @@ ca_get_type(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 }
 
 static DBusHandlerResult
+ca_get_serial(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
+{
+	DBusMessage *rep;
+	struct cm_store_ca *ca;
+	const char *serial;
+	ca = get_ca_for_request_message(msg, ctx);
+	rep = dbus_message_new_method_return(msg);
+	if (rep != NULL) {
+		switch (ca->cm_ca_type) {
+		case cm_ca_internal_self:
+			serial = ca->cm_ca_internal_serial;
+			cm_tdbusm_set_s(rep, serial);
+			break;
+		case cm_ca_external:
+			break;
+		}
+		dbus_connection_send(conn, rep, NULL);
+		dbus_message_unref(rep);
+	}
+	return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+static DBusHandlerResult
 ca_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 {
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
@@ -1165,6 +1188,7 @@ static struct {
 	{&is_ca, CM_DBUS_CA_INTERFACE, "get_nickname", ca_get_nickname},
 	{&is_ca, CM_DBUS_CA_INTERFACE, "get_is_default", ca_get_is_default},
 	{&is_ca, CM_DBUS_CA_INTERFACE, "get_type", ca_get_type},
+	{&is_ca, CM_DBUS_CA_INTERFACE, "get_serial", ca_get_serial},
 	{&is_ca, CM_DBUS_CA_INTERFACE, "get_location", ca_get_location},
 	{&is_ca, CM_DBUS_CA_INTERFACE, "get_issuer_names", ca_get_issuer_names},
 	{&is_ca, CM_DBUS_CA_INTERFACE, "modify", ca_modify},

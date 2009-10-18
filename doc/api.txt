@@ -142,6 +142,8 @@ o object layout
     returns: boolean -> if this is implemented by an external helper
   - get-helper-location
     returns: string -> path to external helper
+  - get-serial
+    returns: string -> hex value (optional)
   - get-issuer-names
     returns: array of string (optional) -> set of known issuer names
   - modify

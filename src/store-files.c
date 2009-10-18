@@ -697,7 +697,7 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 		}
 	}
 	if (ret->cm_ca_internal_serial == NULL) {
-		ret->cm_ca_internal_serial = talloc_strdup(ret, "01");
+		ret->cm_ca_internal_serial = talloc_strdup(ret, "00");
 	}
 	return ret;
 }
@@ -1284,7 +1284,10 @@ cm_store_get_all_cas(void *parent)
 		}
 		if (k == j) {
 			ret[j] = cm_store_ca_new(ret);
-			ret[j]->cm_id = talloc_strdup(ret[i], "SelfSign");
+			ret[j]->cm_id = talloc_strdup(ret[j], "SelfSign");
+			ret[j]->cm_ca_type = cm_ca_internal_self;
+			ret[j]->cm_ca_internal_serial = talloc_strdup(ret[j],
+								      "00");
 			ret[j]->cm_ca_type = cm_ca_internal_self;
 			j++;
 		}
