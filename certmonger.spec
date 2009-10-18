@@ -9,7 +9,7 @@ URL:		http://certmonger.fedorahosted.org
 Source0:	certmonger-%{version}.tar.gz
 BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
-BuildRequires:	dbus-devel, nspr-devel, nss-devel, openssl-deve
+BuildRequires:	dbus-devel, nspr-devel, nss-devel, openssl-devel
 
 %description
 Certmonger is a service which is primarily concerned with getting your
@@ -32,6 +32,9 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root,-)
 %doc README LICENSE STATUS doc
+/etc/dbus-1/system.d/*
+%{_bindir}/*
+%{_sbindir}/*
 
 %changelog
 * Sun Oct 18 2009 Nalin Dahyabhai <nalin@redhat.com> 0.0-1

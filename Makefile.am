@@ -2,10 +2,10 @@ EXTRA_FILES = doc/*.txt
 SUBDIRS = src dbus
 EXTRA_DIST = certmonger.spec LICENSE README STATUS doc
 
-VERSION=$(shell rpm -q --specfile $(top_srcdir)/certmonger.spec --qf '%{version}\n' | head -n1)
-RELEASE=$(shell rpm -q --specfile $(top_srcdir)/certmonger.spec --qf '%{release}\n' | head -n1)
-GITTAG=certmonger-$(shell rpm -q --specfile $(top_srcdir)/certmonger.spec --qf '%{version}-%{release}\n' --define 'dist %{nil}' 2> /dev/null | head -n1)
-distdir=$(shell rpm -q --specfile --qf '%{name}-%{version}-%{release}\n' --define 'dist %{nil}' $(top_srcdir)/certmonger.spec | head -n1)
+VERSION=$(shell rpm -q --specfile $(top_srcdir)/certmonger.spec --qf '%{version}\n' --define 'dist %{nil}' | head -n1)
+RELEASE=$(shell rpm -q --specfile $(top_srcdir)/certmonger.spec --qf '%{release}\n' --define 'dist %{nil}' | head -n1)
+GITTAG=certmonger-$(shell rpm -q --specfile $(top_srcdir)/certmonger.spec --qf '%{version}\n' --define 'dist %{nil}' 2> /dev/null | head -n1)
+distdir=$(shell rpm -q --specfile --qf '%{name}-%{version}\n' --define 'dist %{nil}' $(top_srcdir)/certmonger.spec | head -n1)
 
 tag:
 	git tag $(GITTAG)
@@ -26,7 +26,7 @@ archive:
 		git clone $(ORIGIN) $$tmpdir/certmonger;\
 		cd $$tmpdir/certmonger;\
 		git checkout $(GITTAG);\
-		./autogen;\
+		./autogen.sh;\
 		make dist;\
 		mkdir -p $$tmpdir/rpm-build-top;\
 		rpmbuild \
