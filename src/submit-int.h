@@ -46,11 +46,17 @@ struct cm_submit_state_pvt {
 		     struct cm_submit_state *state);
 };
 
-struct cm_submit_state *cm_submit_sn_start(struct cm_store_entry *entry);
-struct cm_submit_state *cm_submit_so_start(struct cm_store_entry *entry);
-struct cm_submit_state *cm_submit_sn_resume(struct cm_store_entry *entry);
-struct cm_submit_state *cm_submit_so_resume(struct cm_store_entry *entry);
-
-enum cm_submit_type { cm_submit_self, cm_submit_external };
+struct cm_submit_state *cm_submit_e_start(struct cm_store_ca *ca,
+					  struct cm_store_entry *entry);
+struct cm_submit_state *cm_submit_sn_start(struct cm_store_ca *ca,
+					   struct cm_store_entry *entry);
+struct cm_submit_state *cm_submit_so_start(struct cm_store_ca *ca,
+					   struct cm_store_entry *entry);
+struct cm_submit_state *cm_submit_e_resume(struct cm_store_ca *ca,
+					   struct cm_store_entry *entry);
+struct cm_submit_state *cm_submit_sn_resume(struct cm_store_ca *ca,
+					    struct cm_store_entry *entry);
+struct cm_submit_state *cm_submit_so_resume(struct cm_store_ca *ca,
+					    struct cm_store_entry *entry);
 
 #endif

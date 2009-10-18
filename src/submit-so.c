@@ -21,6 +21,7 @@
 #include <sys/wait.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #include <openssl/ssl.h>
@@ -153,10 +154,10 @@ cm_submit_so_save_ca_cookie(struct cm_store_entry *entry,
 /* Pick up after a CSR has been "submitted", in case we haven't yet gotten a
  * decision about it. */
 struct cm_submit_state *
-cm_submit_so_resume(struct cm_store_entry *entry)
+cm_submit_so_resume(struct cm_store_ca *ca, struct cm_store_entry *entry)
 {
 	struct cm_submit_state *state;
-	state = cm_submit_start(entry);
+	state = cm_submit_start(ca, entry);
 	cm_submit_save_ca_cookie(entry, state);
 	return state;
 }
@@ -229,7 +230,7 @@ cm_submit_so_done(struct cm_store_entry *entry, struct cm_submit_state *state)
 
 /* Start CSR submission using parameters stored in the entry. */
 struct cm_submit_state *
-cm_submit_so_start(struct cm_store_entry *entry)
+cm_submit_so_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 {
 	int fds[2];
 	struct cm_submit_state *state;

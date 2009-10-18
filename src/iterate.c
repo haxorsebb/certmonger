@@ -28,14 +28,14 @@
 #include "certread.h"
 #include "certsave.h"
 #include "csrgen.h"
+#include "iterate.h"
 #include "keygen.h"
 #include "keyiread.h"
 #include "log.h"
 #include "notify.h"
-#include "submit.h"
 #include "store.h"
-#include "iterate.h"
 #include "store-int.h"
+#include "submit.h"
 
 struct cm_iterate_state {
 	struct cm_keygen_state *cm_keygen_state;
@@ -204,7 +204,7 @@ cm_check_expiration_is_noteworthy(struct cm_store_entry *entry)
 }
 
 int
-cm_iterate(struct cm_store_entry *entry,
+cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 	   void *cm_iterate_state,
 	   enum cm_time *when, int *delay, int *readfd)
 {
@@ -318,7 +318,7 @@ cm_iterate(struct cm_store_entry *entry,
 		*when = cm_time_now;
 		break;
 	case CM_NEED_TO_SUBMIT:
-		state->cm_submit_state = cm_submit_start(entry);
+		state->cm_submit_state = cm_submit_start(ca, entry);
 		if (state->cm_submit_state != NULL) {
 			/* Note that we're in the process of submitting the CSR
 			 * to a CA. */
@@ -394,7 +394,7 @@ cm_iterate(struct cm_store_entry *entry,
 	case CM_NEED_CA_STATUS:
 		if (state->cm_submit_state == NULL) {
 			/* Pick up where we left off, if need be. */
-			state->cm_submit_state = cm_submit_resume(entry);
+			state->cm_submit_state = cm_submit_resume(ca, entry);
 		}
 		if (state->cm_submit_state != NULL) {
 			/* We're working on checking our status. */

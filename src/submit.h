@@ -20,13 +20,16 @@
 
 struct cm_submit_state;
 struct cm_store_entry;
+struct cm_store_ca;
 
 /* Start CSR submission using parameters stored in the entry. */
-struct cm_submit_state *cm_submit_start(struct cm_store_entry *entry);
+struct cm_submit_state *cm_submit_start(struct cm_store_ca *ca,
+					struct cm_store_entry *entry);
 
 /* Pick up after a CSR has been submitted, in case we haven't yet gotten a
  * decision about it. */
-struct cm_submit_state *cm_submit_resume(struct cm_store_entry *entry);
+struct cm_submit_state *cm_submit_resume(struct cm_store_ca *ca,
+					 struct cm_store_entry *entry);
 
 /* Get a selectable-for-read descriptor we can poll for status changes. */
 int cm_submit_get_fd(struct cm_store_entry *entry,

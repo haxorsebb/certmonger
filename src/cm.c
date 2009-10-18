@@ -151,6 +151,12 @@ cm_break_h(struct tevent_context *ec, struct tevent_signal *se,
 	ctx->should_quit++;
 }
 
+struct cm_store_ca *
+cm_find_ca_by_entry(struct cm_context *c, struct cm_store_entry *entry)
+{
+	return entry->cm_ca_name ? cm_get_ca_by_id(c, entry->cm_ca_name) : NULL;
+}
+
 static void *
 cm_service_one(struct cm_context *context, struct timeval *current_time, int i)
 {
@@ -164,7 +170,9 @@ cm_service_one(struct cm_context *context, struct timeval *current_time, int i)
 	} else {
 		now = tevent_timeval_current();
 	}
-	ret = cm_iterate(context->entries[i], context->events[i].iterate_state,
+	ret = cm_iterate(context->entries[i],
+			 cm_find_ca_by_entry(context, context->entries[i]),
+			 context->events[i].iterate_state,
 			 &when, &delay, &fd);
 	t = NULL;
 	if (ret == 0) {

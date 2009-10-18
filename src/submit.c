@@ -23,11 +23,10 @@
 
 /* Start CSR submission using parameters stored in the entry. */
 struct cm_submit_state *
-cm_submit_start(struct cm_store_entry *entry)
+cm_submit_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 {
-	enum cm_submit_type submit_type = cm_submit_self;
-	switch (submit_type) {
-	case cm_submit_self:
+	switch (ca->cm_ca_type) {
+	case cm_ca_internal_self:
 		switch (entry->cm_key_storage_type) {
 		case cm_key_storage_none:
 			cm_log(1, "Can't self-sign \"%s\" without access to "
@@ -35,16 +34,18 @@ cm_submit_start(struct cm_store_entry *entry)
 			break;
 #ifdef HAVE_OPENSSL
 		case cm_key_storage_file:
-			return cm_submit_so_start(entry);
+			return cm_submit_so_start(ca, entry);
 			break;
 #endif
 #ifdef HAVE_NSS
 		case cm_key_storage_nssdb:
-			return cm_submit_sn_start(entry);
+			return cm_submit_sn_start(ca, entry);
 			break;
 #endif
 		}
 		break;
+	case cm_ca_external:
+		return cm_submit_e_start(ca, entry);
 	}
 	return NULL;
 }
@@ -52,11 +53,10 @@ cm_submit_start(struct cm_store_entry *entry)
 /* Pick up after a CSR has been submitted, in case we haven't yet gotten a
  * decision about it. */
 struct cm_submit_state *
-cm_submit_resume(struct cm_store_entry *entry)
+cm_submit_resume(struct cm_store_ca *ca, struct cm_store_entry *entry)
 {
-	enum cm_submit_type submit_type = cm_submit_self;
-	switch (submit_type) {
-	case cm_submit_self:
+	switch (ca->cm_ca_type) {
+	case cm_ca_internal_self:
 		switch (entry->cm_key_storage_type) {
 		case cm_key_storage_none:
 			cm_log(1, "Can't self-sign \"%s\" without access to "
@@ -64,15 +64,18 @@ cm_submit_resume(struct cm_store_entry *entry)
 			break;
 #ifdef HAVE_OPENSSL
 		case cm_key_storage_file:
-			return cm_submit_so_resume(entry);
+			return cm_submit_so_resume(ca, entry);
 			break;
 #endif
 #ifdef HAVE_NSS
 		case cm_key_storage_nssdb:
-			return cm_submit_sn_resume(entry);
+			return cm_submit_sn_resume(ca, entry);
 			break;
 #endif
 		}
+		break;
+	case cm_ca_external:
+		return cm_submit_e_resume(ca, entry);
 		break;
 	}
 	return NULL;

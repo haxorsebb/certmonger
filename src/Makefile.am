@@ -30,6 +30,7 @@ libcm_a_SOURCES = \
 	store-files.c \
 	store-gen.c \
 	submit.c \
+	submit-e.c \
 	submit.h \
 	submit-int.h \
 	tdbus.c \

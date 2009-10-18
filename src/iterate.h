@@ -19,6 +19,7 @@
 #define iterate_h
 
 struct cm_store_entry;
+struct cm_store_ca;
 
 /* Start tracking a working state for this entry. */
 int cm_iterate_init(struct cm_store_entry *entry, void **cm_iterate_state);
@@ -32,6 +33,7 @@ enum cm_time {
 	cm_time_no_time	/* Wait for data on specified descriptor. */
 };
 int cm_iterate(struct cm_store_entry *entry,
+	       struct cm_store_ca *ca,
 	       void *cm_iterate_state,
 	       enum cm_time *when,
 	       int *delay,
