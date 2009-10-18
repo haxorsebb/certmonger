@@ -329,23 +329,28 @@ free_if_empty_multi(void *parent, char *p)
 		s[i] = talloc_strdup(parent, p);
 		j = 0;
 		k = 0;
-		while ((s[i][j] != ',') && (s[i][j] != '\0')) {
-			switch (s[i][j]) {
+		while ((p[j] != ',') && (p[j] != '\0')) {
+			switch (p[j]) {
 			case '\\':
 				j++;
-				/* fall through */
+				memmove(s[i] + k, p + j,
+					strlen(p + j));
+				break;
 			default:
-				memmove(s[i] + k, s[i] + j,
-					strlen(s[i] + k) + 1);
 				break;
 			}
 			j++;
 			k++;
 		}
 		s[i][k] = '\0';
-		p += (j + 1);
 		i++;
+		if (p[j] == '\0') {
+			break;
+		} else {
+			p += (j + 1);
+		}
 	}
+	s[i] = NULL;
 	return s;
 }
 
