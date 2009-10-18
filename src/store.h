@@ -39,5 +39,6 @@ struct cm_store_ca **cm_store_get_all_cas(void *parent);
 /* Utility functions. */
 time_t cm_store_time_from_timestamp(const char *timestamp);
 char *cm_store_timestamp_from_time(time_t when, char timestamp[15]);
+char *cm_store_increment_serial(void *parent, const char *old_serial);
 
 #endif

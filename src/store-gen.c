@@ -175,3 +175,60 @@ cm_store_timestamp_from_time(time_t when, char timestamp[15])
 	}
 	return timestamp;
 }
+
+char *
+cm_store_increment_serial(void *parent, const char *old_serial)
+{
+	char *tmp, *serial;
+	int len, i;
+	if ((old_serial == NULL) || (strlen(old_serial) < 2)) {
+		return talloc_strdup(parent, "01");
+	}
+	tmp = talloc_strdup(parent, old_serial);
+	len = strlen(tmp);
+	for (i = len - 1; i >= 0; i--) {
+		switch (tmp[i]) {
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case 'A':
+		case 'B':
+		case 'C':
+		case 'D':
+		case 'E':
+		case 'a':
+		case 'b':
+		case 'c':
+		case 'd':
+		case 'e':
+			tmp[i]++;
+			break;
+		case '9':
+			tmp[i] = 'A';
+			break;
+		case 'F':
+		case 'f':
+			tmp[i] = '0';
+			/* carry */
+			continue;
+			break;
+		}
+		/* stop */
+		break;
+	}
+	if (i < 0) {
+		/* ran out of digits, need to prepend another byte */
+		serial = talloc_asprintf(parent, "01%s", tmp);
+		talloc_free(tmp);
+	} else {
+		/* ok as is */
+		serial = tmp;
+	}
+	return serial;
+}
