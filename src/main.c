@@ -150,8 +150,6 @@ main(int argc, char **argv)
 			}
 			if (pfp != NULL) {
 				fprintf(pfp, "%ld\n", (long) getpid());
-				fclose(pfp);
-				pfp = NULL;
 			}
 			break;
 		default:
@@ -162,8 +160,6 @@ main(int argc, char **argv)
 	} else {
 		if (pfp != NULL) {
 			fprintf(pfp, "%ld\n", (long) getpid());
-			fclose(pfp);
-			pfp = NULL;
 		}
 	}
 
@@ -179,6 +175,10 @@ main(int argc, char **argv)
 	cm_stop_all(ctx);
 	talloc_free(ctx);
 	talloc_free(ec);
+	if (pfp != NULL) {
+		fclose(pfp);
+		pfp = NULL;
+	}
 	if (pidfile != NULL) {
 		remove(pidfile);
 	}
