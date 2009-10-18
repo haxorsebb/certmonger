@@ -34,7 +34,7 @@ struct cm_store_entry **cm_store_get_all_entries(void *parent);
 /* Store-specific CA storage. */
 int cm_store_ca_save(struct cm_store_ca *ca);
 int cm_store_ca_delete(struct cm_store_ca *ca);
-struct cm_store_entry **cm_store_get_all_cas(void *parent);
+struct cm_store_ca **cm_store_get_all_cas(void *parent);
 
 /* Utility functions. */
 time_t cm_store_time_from_timestamp(const char *timestamp);
