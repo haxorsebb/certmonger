@@ -127,6 +127,28 @@ struct cm_store_entry {
 	char *cm_cert;
 };
 
+struct cm_store_ca {
+	/* Store-private data - usually an identifier for the nonvolatile
+	 * saved copy, might be other stuff. */
+	void *cm_store_private;
+	/* A unique identifier or nickname. */
+	char *cm_id;
+	/* A list of issuer names.  If no CA is specified when we create a new
+	 * request, and the certificate already exists and was issued by one of
+	 * these names, we'll use this CA. */
+	char **cm_ca_known_issuer_names;
+	/* Whether or not this is the default, absent any matches with issuer
+	 * names of other CAs. */
+	int cm_ca_is_default:1;
+	/* Type of CA.  Internal helpers can't be deleted and are handled by
+	 * internal logic.  External helpers can be deleted, and call out to a
+	 * helper to do the actual submission. */
+	enum cm_ca_type {
+		cm_ca_internal, cm_ca_external,
+	} cm_ca_type;
+	char *cm_ca_external_helper;
+};
+
 const char *cm_store_state_as_string(enum cm_state state);
 enum cm_state cm_store_state_from_string(const char *name);
 

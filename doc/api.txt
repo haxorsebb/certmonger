@@ -44,12 +44,9 @@ o object layout
     returns: boolean -> succeeded
   - get-known-cas
     returns: array of path -> object paths for known cas
-  - get-supported-ca-types
-    returns: array of string -> "SELF", "IPA"
   - add-known-ca
     arguments: string -> ca nickname
-               string -> ca type
-               string (optional, if type needs it) -> ca location
+               string -> external helper
                array of string (optional) -> known issuer names used by ca
     returns: boolean -> succeeded
   - remove-known-ca
@@ -57,6 +54,8 @@ o object layout
     returns: boolean -> succeeded
   (objects whose names are returned by "get-requests" or "get-defaults")
   interface=TBD.request
+  - get-nickname
+    returns: string
   - get-status
     returns: string -> state name
              boolean -> i-am-stuck
@@ -137,10 +136,10 @@ o object layout
     returns: string
   - get-is-default
     returns: boolean -> is-the-default-ca
-  - get-type
-    returns: string -> type of ca
-  - get-location
-    returns: string -> location of ca
+  - get-uses-helper
+    returns: boolean -> if this is implemented by an external helper
+  - get-helper-location
+    returns: string -> path to external helper
   - get-issuer-names
     returns: array of string (optional) -> set of known issuer names
   - modify
@@ -150,11 +149,8 @@ o object layout
     - is-default
       arguments: boolean -> should-be-the-default-ca
       returns: boolean -> is-the-default-ca
-    - type
-      arguments: string -> type of ca
-      returns: boolean -> changed?
-    - location
-      arguments: string -> location of ca
+    - helper-location
+      arguments: string -> path to external helper
       returns: boolean -> changed?
     - associated issuer names (for when we have to guess which CA to use)
       arguments: array of string (optional) -> set of issuer names
