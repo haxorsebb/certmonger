@@ -1,5 +1,5 @@
 Name:		certmonger
-Version:	0.0
+Version:	0.1
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
