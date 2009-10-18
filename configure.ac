@@ -42,8 +42,15 @@ AC_DEFINE_UNQUOTED(CM_DBUS_BASE_PATH,"$CM_DBUS_BASE_PATH",
 PKG_CHECK_MODULES(TALLOC,talloc)
 PKG_CHECK_MODULES(TEVENT,tevent)
 PKG_CHECK_MODULES(DBUS,dbus-1)
-PKG_CHECK_MODULES(XMLRPC,xmlrpc_client)
+PKG_CHECK_MODULES(CERTMONGER,dbus-1 talloc tevent nss)
+PKG_CHECK_MODULES(GETCERT,dbus-1 talloc)
 
+dnl Don't need this (yet).
+if false; then
+PKG_CHECK_MODULES(XMLRPC,xmlrpc_client)
+fi
+
+dnl Don't need this (yet).
 if false ; then
 savedCFLAGS="$CFLAGS"
 CFLAGS=
@@ -55,13 +62,13 @@ fi
 AC_MSG_CHECKING(for krb5 CFLAGS)
 KRB5_CFLAGS=`${KRB5_CONFIG} --cflags`
 AC_MSG_RESULT([$KRB5_CFLAGS])
-AC_SUBST(KRB5_CFLAGS)
 AC_MSG_CHECKING(for krb5 LIBS)
 KRB5_LIBS=`${KRB5_CONFIG} --libs`
 AC_MSG_RESULT([$KRB5_LIBS])
-AC_SUBST(KRB5_LIBS)
 CFLAGS="$savedCFLAGS"
 fi
+AC_SUBST(KRB5_CFLAGS)
+AC_SUBST(KRB5_LIBS)
 
 AC_ARG_WITH(openssl,
 	    AS_HELP_STRING(--without-openssl,
@@ -99,4 +106,4 @@ AC_DEFINE_UNQUOTED(CM_DEFAULT_PUBKEY_SIZE,2048,[Define to the default public key
 AC_DEFINE_UNQUOTED(CM_DEFAULT_TTL_LIST,[30*24*60*60,7*24*60*60,3*24*60*60,2*24*60*60,1*24*60*60],[Define to the list of default time-left thresholds at which we need to warn the user.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_LIFETIME,30,[Define to the default certificate lifetime, in days.])
 
-AC_OUTPUT(Makefile src/Makefile dbus/Makefile dbus/certmonger.conf)
+AC_OUTPUT(Makefile src/Makefile dbus/Makefile dbus/certmonger.conf src/certmonger.init)
