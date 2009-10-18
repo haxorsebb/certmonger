@@ -23,10 +23,12 @@
 #include <string.h>
 #include <time.h>
 
+#include <dbus/dbus.h>
 #include <talloc.h>
 
 #include "certread.h"
 #include "certsave.h"
+#include "cm.h"
 #include "csrgen.h"
 #include "iterate.h"
 #include "keygen.h"
@@ -205,10 +207,13 @@ cm_check_expiration_is_noteworthy(struct cm_store_entry *entry)
 
 int
 cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
+	   struct cm_context *context,
 	   void *cm_iterate_state,
 	   enum cm_time *when, int *delay, int *readfd)
 {
+	int i, j;
 	struct cm_iterate_state *state;
+	struct cm_store_ca *tmp_ca;
 	enum cm_state old_entry_state;
 	state = cm_iterate_state;
 	*readfd = -1;
@@ -693,8 +698,32 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		}
 		break;
 	case CM_NEWLY_ADDED_DECIDING:
-		/* Decide what to do next: if we have a certificate, we go
-		 * straight to monitoring it. */
+		/* Decide what to do next.  Assign a CA if it doesn't have one
+		 * assigned to it already. */
+		if ((entry->cm_ca_name == NULL) &&
+		    (entry->cm_cert_issuer != NULL)) {
+			for (i = 0; i < cm_get_n_cas(context); i++) {
+				tmp_ca = cm_get_ca_by_index(context, i);
+				for (j = 0;
+				     (tmp_ca->cm_ca_known_issuer_names != NULL) &&
+				     (tmp_ca->cm_ca_known_issuer_names[j] != NULL);
+				     j++) {
+					if (strcmp(tmp_ca->cm_ca_known_issuer_names[j],
+						   entry->cm_cert_issuer) == 0) {
+						entry->cm_ca_name = talloc_strdup(entry, tmp_ca->cm_id);
+					}
+				}
+			}
+		}
+		if (entry->cm_ca_name == NULL) {
+			for (i = 0; i < cm_get_n_cas(context); i++) {
+				tmp_ca = cm_get_ca_by_index(context, i);
+				if (tmp_ca->cm_ca_is_default) {
+					entry->cm_ca_name = talloc_strdup(entry, tmp_ca->cm_id);
+				}
+			}
+		}
+		/* If we have a certificate, we go straight to monitoring it. */
 		if (entry->cm_cert != NULL) {
 			cm_log(3, "'%s' has a certificate, monitoring it\n",
 			       entry->cm_id);

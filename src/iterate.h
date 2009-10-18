@@ -20,6 +20,7 @@
 
 struct cm_store_entry;
 struct cm_store_ca;
+struct cm_context;
 
 /* Start tracking a working state for this entry. */
 int cm_iterate_init(struct cm_store_entry *entry, void **cm_iterate_state);
@@ -34,6 +35,7 @@ enum cm_time {
 };
 int cm_iterate(struct cm_store_entry *entry,
 	       struct cm_store_ca *ca,
+	       struct cm_context *context,
 	       void *cm_iterate_state,
 	       enum cm_time *when,
 	       int *delay,
