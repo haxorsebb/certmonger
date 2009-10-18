@@ -90,7 +90,7 @@ main(int argc, char **argv)
 	}
 
 	if (pidfile != NULL) {
-		pfd = open(pidfile, O_RDWR);
+		pfd = open(pidfile, O_RDWR | O_CREAT);
 		if (pfd == -1) {
 			fprintf(stderr, "Error opening pidfile \"%s\": %s\n",
 				pidfile, strerror(errno));
