@@ -102,6 +102,8 @@ o object layout
              array of string -> oid values
   - get-csr-data
     returns: string -> signing request in PEM format
+  - get-ca
+    returns: path(optional) -> path to CA object
   - get-submitted-date
     returns: number(optional) -> time of last submission to a CA (as time_t)
   - get-submitted-cookie

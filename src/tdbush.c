@@ -1025,6 +1025,35 @@ request_get_status(DBusConnection *conn, DBusMessage *msg,
 }
 
 static DBusHandlerResult
+request_get_ca(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
+{
+	void *parent;
+	DBusMessage *rep;
+	struct cm_store_entry *entry;
+	char *path;
+	parent = talloc_new(NULL);
+	entry = get_entry_for_request_message(msg, ctx);
+	if (entry != NULL) {
+		rep = dbus_message_new_method_return(msg);
+		if (rep != NULL) {
+			if (entry->cm_ca_name == NULL) {
+				path = NULL;
+			} else {
+				path = talloc_asprintf(parent, "%s/%s",
+						       CM_DBUS_CA_PATH,
+						       entry->cm_ca_name);
+			}
+			if (cm_tdbusm_set_p(rep, path) == 0) {
+				dbus_connection_send(conn, rep, NULL);
+			}
+			dbus_message_unref(rep);
+		}
+	}
+	talloc_free(parent);
+	return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+static DBusHandlerResult
 request_get_submitted_cookie(DBusConnection *conn, DBusMessage *msg,
 			     struct cm_context *ctx)
 {
@@ -1147,6 +1176,8 @@ static struct {
 	 request_get_notification_info},
 	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_status",
 	 request_get_status},
+	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_ca",
+	 request_get_ca},
 	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_submitted_cookie",
 	 request_get_submitted_cookie},
 	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_submitted_date",
