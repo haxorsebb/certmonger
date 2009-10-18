@@ -44,6 +44,7 @@ PKG_CHECK_MODULES(TEVENT,tevent)
 PKG_CHECK_MODULES(DBUS,dbus-1)
 PKG_CHECK_MODULES(XMLRPC,xmlrpc_client)
 
+if false ; then
 savedCFLAGS="$CFLAGS"
 CFLAGS=
 AC_ARG_VAR(KRB5_CONFIG,[the full path of the krb5-config command])
@@ -60,6 +61,7 @@ KRB5_LIBS=`${KRB5_CONFIG} --libs`
 AC_MSG_RESULT([$KRB5_LIBS])
 AC_SUBST(KRB5_LIBS)
 CFLAGS="$savedCFLAGS"
+fi
 
 AC_ARG_WITH(openssl,
 	    AS_HELP_STRING(--without-openssl,
