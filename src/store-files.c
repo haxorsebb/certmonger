@@ -102,6 +102,7 @@ enum cm_store_file_field {
 	cm_store_ca_field_is_default,
 
 	cm_store_ca_field_type,
+	cm_store_ca_field_internal_serial,
 	cm_store_ca_field_external_helper,
 
 	cm_store_file_field_invalid_high,
@@ -173,6 +174,7 @@ static struct cm_store_file_field_list {
 	{cm_store_ca_field_is_default, "ca_is_default"},
 
 	{cm_store_ca_field_type, "ca_type"},
+	{cm_store_ca_field_internal_serial, "ca_internal_serial"},
 	{cm_store_ca_field_external_helper, "ca_external_helper"},
 };
 
@@ -369,6 +371,7 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_ca_field_known_issuer_names:
 			case cm_store_ca_field_is_default:
 			case cm_store_ca_field_type:
+			case cm_store_ca_field_internal_serial:
 			case cm_store_ca_field_external_helper:
 				break;
 			case cm_store_file_field_id:
@@ -679,11 +682,17 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 				}
 				talloc_free(p);
 				break;
+			case cm_store_ca_field_internal_serial:
+				ret->cm_ca_internal_serial = free_if_empty(p);
+				break;
 			case cm_store_ca_field_external_helper:
 				ret->cm_ca_external_helper = free_if_empty(p);
 				break;
 			}
 		}
+	}
+	if (ret->cm_ca_internal_serial == NULL) {
+		ret->cm_ca_internal_serial = talloc_strdup(ret, "01");
 	}
 	return ret;
 }
@@ -1137,14 +1146,16 @@ cm_store_ca_write(FILE *fp, struct cm_store_ca *ca)
 	case cm_ca_internal_self:
 		cm_store_file_write_str(fp, cm_store_ca_field_type,
 					"INTERNAL:SELF");
+		cm_store_file_write_str(fp, cm_store_ca_field_internal_serial,
+					ca->cm_ca_internal_serial);
 		break;
 	case cm_ca_external:
 		cm_store_file_write_str(fp, cm_store_ca_field_type,
 					"EXTERNAL");
+		cm_store_file_write_str(fp, cm_store_ca_field_external_helper,
+					ca->cm_ca_external_helper);
 		break;
 	}
-	cm_store_file_write_str(fp, cm_store_ca_field_external_helper,
-				ca->cm_ca_external_helper);
 	if (ferror(fp)) {
 		return -1;
 	}
