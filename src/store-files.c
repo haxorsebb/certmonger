@@ -227,7 +227,7 @@ cm_store_should_ignore_file(const char *filename)
 	for (i = 0; i < sizeof(ignore) / sizeof(ignore[0]); i++) {
 		ilen = strlen(ignore[i]);
 		if ((len > ilen) &&
-		    (strcmp(filename + len - ilen, ignore[i] == 0))) {
+		    (strcmp(filename + len - ilen, ignore[i]) == 0)) {
 			return TRUE;
 		}
 	}
