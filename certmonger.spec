@@ -20,12 +20,15 @@ system enrolled with a certificate authority (CA) and keeping it enrolled.
 %setup -q
 
 %build
-%configure
+%configure --with-file-store-dir=%{_localstatedir}/lib/certmonger
 make %{?_smp_mflags}
 
 %install
 rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
+mkdir -p $RPM_BUILD_ROOT/%{_initddir}
+mkdir -p $RPM_BUILD_ROOT/%{_localstatedir}/lib/certmonger/{cas,requests}
+install -m755 src/certmonger.init $RPM_BUILD_ROOT/%{_initddir}/certmonger
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -34,8 +37,10 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %doc README LICENSE STATUS doc
 /etc/dbus-1/system.d/*
+%config(noreplace) %{_initddir}/certmonger
 %{_bindir}/*
 %{_sbindir}/*
+%{_localstatedir}/lib/certmonger
 
 %changelog
 * Sun Oct 18 2009 Nalin Dahyabhai <nalin@redhat.com> 0.0-1
