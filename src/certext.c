@@ -222,6 +222,9 @@ static const SECOidData oid_pkinit_san = {
 	.supportedExtension = UNSUPPORTED_CERT_EXTENSION,
 };
 
+/* Read the keyUsage extension and store it as a string in the entry, with each
+ * bit being represented by either a "1" or a "0", most significant bit first.
+ * */
 static void
 cm_certext_read_ku(struct cm_store_entry *entry, PLArenaPool *arena,
 		   CERTCertExtension *ku_ext)
@@ -231,6 +234,8 @@ cm_certext_read_ku(struct cm_store_entry *entry, PLArenaPool *arena,
 	if (SEC_ASN1DecodeItem(arena, &item, SEC_BitStringTemplate,
 			       &ku_ext->value) == SECSuccess) {
 		talloc_free(entry->cm_cert_ku);
+		/* A bitString decodes with length == number of bits, not
+		 * bytes, which is what we want anyway. */
 		entry->cm_cert_ku = talloc_zero_size(entry, item.len + 1);
 		for (i = 0; i < item.len; i++) {
 			bit = (item.data[i / 8] & (0x80 >> (i % 8))) ? 1 : 0;
@@ -239,6 +244,8 @@ cm_certext_read_ku(struct cm_store_entry *entry, PLArenaPool *arena,
 	}
 }
 
+/* Build a keyUsage extension value from a string, with each bit being
+ * represented by either a "1" or a "0", most significant bit first. */
 static SECItem *
 cm_certext_build_ku(struct cm_store_entry *entry, PLArenaPool *arena,
 		    const char *ku_value)
@@ -252,6 +259,8 @@ cm_certext_build_ku(struct cm_store_entry *entry, PLArenaPool *arena,
 		val = ((ku_value[i] == '1') ? 0x80 : 0x00) >> (i % 8);
 		bits->data[i / 8] |= val;
 	}
+	/* A bitString encodes with length == number of bits, not bytes, but
+	 * luckily we have that information. */
 	bits->len = i;
 	memset(&encoded, 0, sizeof(encoded));
 	if (SEC_ASN1EncodeItem(arena, &encoded, bits,
@@ -263,6 +272,8 @@ cm_certext_build_ku(struct cm_store_entry *entry, PLArenaPool *arena,
 	return ret;
 }
 
+/* Convert an OID to a printable string.  For now, we're limited to components
+ * that will fit into a "long". */
 static char *
 oid_to_string(void *parent, SECItem *oid)
 {
@@ -301,6 +312,8 @@ oid_to_string(void *parent, SECItem *oid)
 	return s;
 }
 
+/* Convert an OID from a printable string into binary form.  For now, we're
+ * limited to components that will fit into a "long". */
 SECItem *
 oid_from_string(const char *oid, int n, PLArenaPool *arena)
 {
@@ -379,6 +392,8 @@ oid_from_string(const char *oid, int n, PLArenaPool *arena)
 	return ret;
 }
 
+/* Read an extendedKeyUsage value, convert it into a comma-separated list of
+ * string-formatted OIDs, and store it in the entry. */
 static void
 cm_certext_read_eku(struct cm_store_entry *entry, PLArenaPool *arena,
 		    CERTCertExtension *eku_ext)
@@ -394,7 +409,7 @@ cm_certext_read_eku(struct cm_store_entry *entry, PLArenaPool *arena,
 			if (entry->cm_cert_eku != NULL) {
 				p = oid_to_string(entry, oids[i]);
 #if 1
-				/* Yeah, gotta sanity-check myself here. */
+				/* Yeah, gotta sanity-check myself here. XXX */
 				if (strcmp(oid_to_string(entry,
 					  		 oid_from_string(p,
 									 -1,
@@ -416,6 +431,8 @@ cm_certext_read_eku(struct cm_store_entry *entry, PLArenaPool *arena,
 	}
 }
 
+/* Build an extendedKeyUsage value from the comma-separated list stored in the
+ * entry. */
 static SECItem *
 cm_certext_build_eku(struct cm_store_entry *entry, PLArenaPool *arena,
 		     const char *eku_value)
@@ -426,7 +443,9 @@ cm_certext_build_eku(struct cm_store_entry *entry, PLArenaPool *arena,
 	p = eku_value;
 	i = 0;
 	while ((p != NULL) && (*p != '\0')) {
+		/* Find the first (or next) value. */
 		q = p + strcspn(p, ",");
+		/* Make a copy and convert it to binary form. */
 		tmp = PORT_ArenaZAlloc(arena, sizeof(SECItem *) * (i + 2));
 		if (tmp != NULL) {
 			if (i > 0) {
@@ -436,12 +455,14 @@ cm_certext_build_eku(struct cm_store_entry *entry, PLArenaPool *arena,
 			i++;
 			oids = tmp;
 		}
+		/* Do we have any more? */
 		if (*q == ',') {
 			p = q + 1;
 		} else {
 			p = q;
 		}
 	}
+	/* Encode the sequence of OIDs. */
 	memset(&encoded, 0, sizeof(encoded));
 	if (SEC_ASN1EncodeItem(arena, &encoded, &oids,
 			       SEC_SequenceOfObjectIDTemplate) != &encoded) {
@@ -452,6 +473,7 @@ cm_certext_build_eku(struct cm_store_entry *entry, PLArenaPool *arena,
 	return ret;
 }
 
+/* Convert a principal name structure into a string. */
 static char *
 cm_certext_parse_principal(void *parent, struct kerberos_principal_name *p)
 {
@@ -490,7 +512,8 @@ cm_certext_parse_principal(void *parent, struct kerberos_principal_name *p)
 			name_type = KRB5_NT_UNKNOWN;
 		}
 		princ.type = name_type;
-		/* Convert that into a string. */
+		/* Convert that into a string.  Use the library function so
+		 * that it can take care of escaping. */
 		if (krb5_unparse_name(ctx, &princ, &unparsed) == 0) {
 			ret = talloc_strdup(parent, unparsed);
 			krb5_free_unparsed_name(ctx, unparsed);
@@ -501,6 +524,8 @@ cm_certext_parse_principal(void *parent, struct kerberos_principal_name *p)
 	return ret;
 }
 
+/* Read an otherName, which might be either a Kerberos principal name or just
+ * an NT principal name. */
 static void
 cm_certext_read_other_name(struct cm_store_entry *entry, PLArenaPool *arena,
 			   CERTGeneralName *name)
@@ -511,12 +536,14 @@ cm_certext_read_other_name(struct cm_store_entry *entry, PLArenaPool *arena,
 	int i;
 
 	item = &name->name.OthName.name;
+	/* The Kerberos principal name case. */
 	if (SECITEM_ItemsAreEqual(&name->name.OthName.oid,
 				  &oid_pkinit_san.oid)) {
 		memset(&p, 0, sizeof(p));
 		if (SEC_ASN1DecodeItem(arena, &p,
 				       cm_kerberos_principal_name_template,
 				       item) == SECSuccess) {
+			/* Add it to the array. */
 			for (i = 0;
 			     (entry->cm_cert_principal != NULL) &&
 			     (entry->cm_cert_principal[i] != NULL);
@@ -532,12 +559,14 @@ cm_certext_read_other_name(struct cm_store_entry *entry, PLArenaPool *arena,
 			entry->cm_cert_principal = names;
 		}
 	}
+	/* The NT principal name case. */
 	if (SECITEM_ItemsAreEqual(&name->name.OthName.oid,
 				  &oid_ms_upn_name.oid)) {
 		memset(&upn, 0, sizeof(upn));
 		if (SEC_ASN1DecodeItem(arena, &upn,
 				       cm_ms_upn_name_template,
 				       item) == SECSuccess) {
+			/* Add it to the array. */
 			for (i = 0;
 			     (entry->cm_cert_principal != NULL) &&
 			     (entry->cm_cert_principal[i] != NULL);
@@ -556,6 +585,7 @@ cm_certext_read_other_name(struct cm_store_entry *entry, PLArenaPool *arena,
 		if (SEC_ASN1DecodeItem(arena, &upn,
 				       SEC_UTF8StringTemplate,
 				       item) == SECSuccess) {
+			/* Add it to the array. */
 			for (i = 0;
 			     (entry->cm_cert_principal != NULL) &&
 			     (entry->cm_cert_principal[i] != NULL);
@@ -574,6 +604,7 @@ cm_certext_read_other_name(struct cm_store_entry *entry, PLArenaPool *arena,
 	}
 }
 
+/* Extract applicable subjectAltName values. */
 static void
 cm_certext_read_san(struct cm_store_entry *entry, PLArenaPool *arena,
 		    CERTCertExtension *san_ext)
@@ -593,6 +624,7 @@ cm_certext_read_san(struct cm_store_entry *entry, PLArenaPool *arena,
 	while (san != NULL) {
 		switch (san->type) {
 		case certDNSName:
+			/* A dnsName is just a string. */
 			for (j = 0;
 			     (entry->cm_cert_hostname != NULL) &&
 			     (entry->cm_cert_hostname[j] != NULL);
@@ -610,9 +642,10 @@ cm_certext_read_san(struct cm_store_entry *entry, PLArenaPool *arena,
 			entry->cm_cert_hostname = s;
 			break;
 		case certIPAddress:
-			/* binary data - see rfc5280 */
+			/* binary data - see rfc5280 - XXX */
 			break;
 		case certRFC822Name:
+			/* An email address is just a string. */
 			for (j = 0;
 			     (entry->cm_cert_email != NULL) &&
 			     (entry->cm_cert_email[j] != NULL);
@@ -649,6 +682,7 @@ cm_certext_read_san(struct cm_store_entry *entry, PLArenaPool *arena,
 	}
 }
 
+/* Build an NT principal name binary value. */
 static SECItem *
 cm_certext_build_upn(struct cm_store_entry *entry, PLArenaPool *arena,
 		     const char *principal)
@@ -668,6 +702,7 @@ cm_certext_build_upn(struct cm_store_entry *entry, PLArenaPool *arena,
 	return SECITEM_ArenaDupItem(arena, &upn);
 }
 
+/* Build a Kerberos principal name binary value. */
 static SECItem *
 cm_certext_build_principal(struct cm_store_entry *entry, PLArenaPool *arena,
 			   const char *principal)
@@ -686,10 +721,12 @@ cm_certext_build_principal(struct cm_store_entry *entry, PLArenaPool *arena,
 		return NULL;
 	}
 	princ = NULL;
+	/* Use the library routine to let it handle escaping for us. */
 	if (krb5_parse_name(ctx, principal, &princ) != 0) {
 		krb5_free_context(ctx);
 		return NULL;
 	}
+	/* Now stuff the values into a structure we can encode. */
 	memset(&p, 0, sizeof(p));
 	/* realm */
 	p.realm.name.data = (unsigned char *) krb5_princ_realm(ctx, princ)->data;
@@ -728,6 +765,7 @@ cm_certext_build_principal(struct cm_store_entry *entry, PLArenaPool *arena,
 	return SECITEM_ArenaDupItem(arena, &encoded);
 }
 
+/* Build up a subjectAltName extension value using information for the entry. */
 static SECItem *
 cm_certext_build_san(struct cm_store_entry *entry, PLArenaPool *arena,
 		     char **hostname, char **email, char **principal)
@@ -735,10 +773,12 @@ cm_certext_build_san(struct cm_store_entry *entry, PLArenaPool *arena,
 	CERTGeneralName *name, *next;
 	SECItem encoded, *item;
 	int i;
+	/* Anything to do? */
 	if ((hostname == NULL) && (email == NULL) && (principal == NULL)) {
 		return NULL;
 	}
 	name = NULL;
+	/* Build a list of dnsName values. */
 	for (i = 0; (hostname != NULL) && (hostname[i] != NULL); i++) {
 		next = PORT_ArenaZAlloc(arena, sizeof(*next));
 		if (next != NULL) {
@@ -753,6 +793,7 @@ cm_certext_build_san(struct cm_store_entry *entry, PLArenaPool *arena,
 			}
 		}
 	}
+	/* Build a list of email address values. */
 	for (i = 0; (email != NULL) && (email[i] != NULL); i++) {
 		next = PORT_ArenaZAlloc(arena, sizeof(*next));
 		if (next != NULL) {
@@ -767,6 +808,8 @@ cm_certext_build_san(struct cm_store_entry *entry, PLArenaPool *arena,
 			}
 		}
 	}
+	/* Build a list of otherName values. Encode every principal name in two
+	 * forms. */
 	for (i = 0; (principal != NULL) && (principal[i] != NULL); i++) {
 		item = cm_certext_build_upn(entry, arena, principal[i]);
 		if (item != NULL) {
@@ -799,6 +842,7 @@ cm_certext_build_san(struct cm_store_entry *entry, PLArenaPool *arena,
 			}
 		}
 	}
+	/* Encode all of the values. */
 	memset(&encoded, 0, sizeof(encoded));
 	if ((name != NULL) &&
 	    (CERT_EncodeAltNameExtension(arena, name,
@@ -810,6 +854,7 @@ cm_certext_build_san(struct cm_store_entry *entry, PLArenaPool *arena,
 	return item;
 }
 
+/* Build a requestedExtensions attribute. */
 void
 cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 				unsigned char **extensions, size_t *length)
@@ -885,6 +930,7 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 	PORT_FreeArena(arena, PR_TRUE);
 }
 
+/* Read the extensions from a certificate. */
 void
 cm_certext_read_extensions(struct cm_store_entry *entry, PLArenaPool *arena,
 			   CERTCertExtension **extensions)

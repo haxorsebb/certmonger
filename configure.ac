@@ -50,8 +50,6 @@ if false; then
 PKG_CHECK_MODULES(XMLRPC,xmlrpc_client)
 fi
 
-dnl Don't need this (yet).
-if false ; then
 savedCFLAGS="$CFLAGS"
 CFLAGS=
 AC_ARG_VAR(KRB5_CONFIG,[the full path of the krb5-config command])
@@ -62,13 +60,12 @@ fi
 AC_MSG_CHECKING(for krb5 CFLAGS)
 KRB5_CFLAGS=`${KRB5_CONFIG} --cflags`
 AC_MSG_RESULT([$KRB5_CFLAGS])
+AC_SUBST(KRB5_CFLAGS)
 AC_MSG_CHECKING(for krb5 LIBS)
 KRB5_LIBS=`${KRB5_CONFIG} --libs`
 AC_MSG_RESULT([$KRB5_LIBS])
-CFLAGS="$savedCFLAGS"
-fi
-AC_SUBST(KRB5_CFLAGS)
 AC_SUBST(KRB5_LIBS)
+CFLAGS="$savedCFLAGS"
 
 AC_ARG_WITH(openssl,
 	    AS_HELP_STRING(--without-openssl,
