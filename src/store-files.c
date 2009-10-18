@@ -1223,42 +1223,44 @@ cm_store_get_all_cas(void *parent)
 	snprintf(path, sizeof(path), "%s/*", directory);
 	memset(&globs, 0, sizeof(globs));
 	ret = NULL;
-	if (glob(path, 0, NULL, &globs) == 0) {
-		ret = talloc_array_ptrtype(parent, ret, globs.gl_pathc + 2);
-		if (ret != NULL) {
-			for (i = 0, j = 0; i < globs.gl_pathc; i++) {
-				p = globs.gl_pathv[i];
-				if (strlen(p) > 4) {
-					p = p + strlen(p) - 4;
-					if (strcmp(p, ".tmp") == 0) {
-						continue;
-					}
-				}
-				fp = fopen(globs.gl_pathv[i], "r");
-				if (fp != NULL) {
-					ret[j] = cm_store_ca_read(ret,
-								  globs.gl_pathv[i],
-								  fp);
-					if (ret[j] != NULL) {
-						j++;
-					}
-					fclose(fp);
+	if (glob(path, 0, NULL, &globs) != 0) {
+		globs.gl_pathc = 0;
+	}
+	ret = talloc_array_ptrtype(parent, ret, globs.gl_pathc + 2);
+	if (ret != NULL) {
+		for (i = 0, j = 0; i < globs.gl_pathc; i++) {
+			p = globs.gl_pathv[i];
+			if (strlen(p) > 4) {
+				p = p + strlen(p) - 4;
+				if (strcmp(p, ".tmp") == 0) {
+					continue;
 				}
 			}
-			for (k = 0; k < j; k++) {
-				if (ret[k]->cm_ca_type == cm_ca_internal_self) {
-					break;
+			fp = fopen(globs.gl_pathv[i], "r");
+			if (fp != NULL) {
+				ret[j] = cm_store_ca_read(ret,
+							  globs.gl_pathv[i],
+							  fp);
+				if (ret[j] != NULL) {
+					j++;
 				}
+				fclose(fp);
 			}
-			if (k == j) {
-				ret[j] = cm_store_ca_new(ret);
-				ret[j]->cm_id = talloc_strdup(ret[i],
-							      "SelfSign");
-				ret[j]->cm_ca_type = cm_ca_internal_self;
-				j++;
-			}
-			ret[j] = NULL;
 		}
+		for (k = 0; k < j; k++) {
+			if (ret[k]->cm_ca_type == cm_ca_internal_self) {
+				break;
+			}
+		}
+		if (k == j) {
+			ret[j] = cm_store_ca_new(ret);
+			ret[j]->cm_id = talloc_strdup(ret[i], "SelfSign");
+			ret[j]->cm_ca_type = cm_ca_internal_self;
+			j++;
+		}
+		ret[j] = NULL;
+	}
+	if (globs.gl_pathc > 0) {
 		globfree(&globs);
 	}
 	return ret;
