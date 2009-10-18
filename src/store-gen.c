@@ -98,6 +98,17 @@ cm_store_entry_new(void *parent)
 	return entry;
 }
 
+struct cm_store_ca *
+cm_store_ca_new(void *parent)
+{
+	struct cm_store_ca *ca;
+	ca = talloc_ptrtype(parent, ca);
+	if (ca != NULL) {
+		memset(ca, 0, sizeof(*ca));
+	}
+	return ca;
+}
+
 time_t
 cm_store_time_from_timestamp(const char *timestamp)
 {
