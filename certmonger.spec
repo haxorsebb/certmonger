@@ -10,6 +10,7 @@ Source0:	certmonger-%{version}.tar.gz
 BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 BuildRequires:	dbus-devel, nspr-devel, nss-devel, openssl-devel
+BuildRequires:	libtalloc-devel, libtevent-devel
 
 %description
 Certmonger is a service which is primarily concerned with getting your
