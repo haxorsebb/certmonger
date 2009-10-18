@@ -1,2 +1,2 @@
 EXTRA_FILES = doc/*.txt
-SUBDIRS = src
+SUBDIRS = src dbus

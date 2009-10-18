@@ -1,0 +1,18 @@
+<!DOCTYPE busconfig PUBLIC
+ "-//freedesktop//DTD D-BUS Bus Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
+<busconfig>
+
+  <!-- Only root can own and communicate with the service -->
+  <policy user="root">
+    <allow own="@CM_DBUS_NAME@"/>
+
+    <allow send_destination="@CM_DBUS_NAME@"
+           send_interface="@CM_DBUS_NAME@"/>
+    <allow send_destination="@CM_DBUS_NAME@"
+           send_interface="@CM_DBUS_NAME@.ca"/>
+    <allow send_destination="@CM_DBUS_NAME@"
+           send_interface="@CM_DBUS_NAME@.request"/>
+  </policy>
+
+</busconfig>

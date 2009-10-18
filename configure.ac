@@ -31,6 +31,14 @@ UPCASE_PACKAGE_NAME=`echo "${PACKAGE_NAME}" | tr '[a-z]' '[A-Z]'`
 AC_DEFINE_UNQUOTED(CM_STORE_CAS_DIRECTORY_ENV,"${UPCASE_PACKAGE_NAME}_CAS_DIR",
 		   [Define to the name of the environment variable which can specify the directory for tracking CAs.])
 
+CM_DBUS_NAME=org.hamdingers.certmonger
+AC_DEFINE_UNQUOTED(CM_DBUS_NAME,"$CM_DBUS_NAME",
+		   [Define to the name of the certmonger service.])
+AC_SUBST(CM_DBUS_NAME)
+CM_DBUS_BASE_PATH=/org/hamdingers/certmonger
+AC_DEFINE_UNQUOTED(CM_DBUS_BASE_PATH,"$CM_DBUS_BASE_PATH",
+		   [Define to the path of the certmonger main node.])
+
 PKG_CHECK_MODULES(TALLOC,talloc)
 PKG_CHECK_MODULES(TEVENT,tevent)
 PKG_CHECK_MODULES(DBUS,dbus-1)
@@ -89,4 +97,4 @@ AC_DEFINE_UNQUOTED(CM_DEFAULT_PUBKEY_SIZE,2048,[Define to the default public key
 AC_DEFINE_UNQUOTED(CM_DEFAULT_TTL_LIST,[30*24*60*60,7*24*60*60,3*24*60*60,2*24*60*60,1*24*60*60],[Define to the list of default time-left thresholds at which we need to warn the user.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_LIFETIME,30,[Define to the default certificate lifetime, in days.])
 
-AC_OUTPUT(Makefile src/Makefile)
+AC_OUTPUT(Makefile src/Makefile dbus/Makefile dbus/certmonger.conf)

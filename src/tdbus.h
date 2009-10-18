@@ -18,10 +18,8 @@
 #ifndef cmtdbus_h
 #define cmtdbus_h
 
-#define CM_DBUS_NAME "org.hamdingers.certmonger"
-#define CM_DBUS_BASE_PATH "/org/hamdingers/certmonger"
 #define CM_DBUS_BASE_INTERFACE CM_DBUS_NAME
-#define CM_DBUS_DEFAULT_BUS cm_tdbus_session
+#define CM_DBUS_DEFAULT_BUS cm_tdbus_system
 #define CM_DBUS_CA_PATH CM_DBUS_BASE_PATH "/cas"
 #define CM_DBUS_CA_INTERFACE CM_DBUS_BASE_INTERFACE ".ca"
 #define CM_DBUS_REQUEST_PATH CM_DBUS_BASE_PATH "/requests"
