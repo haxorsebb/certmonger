@@ -104,18 +104,16 @@ cm_tdbus_handle_fd(struct tevent_context *ec, struct tevent_fd *tfd,
 	struct tdbus_watch *watch;
 	int fd, flags;
 	watch = pvt;
+	watch->tfd = NULL;
 	if (watch->active) {
 		cm_log(3, "Handling D-Bus traffic on %d.\n",
 		       dbus_watch_get_unix_fd(watch->watch));
-		talloc_free(watch->tfd);
 		flags = cm_tdbus_watch_flags_for_tfd_flags(tflags);
 		if (dbus_watch_handle(watch->watch, flags)) {
 			fd = dbus_watch_get_unix_fd(watch->watch);
 			watch->tfd = tevent_add_fd(ec, watch, fd,
 						   watch->tfdflags,
 						   cm_tdbus_handle_fd, watch);
-		} else {
-			watch->tfd = NULL;
 		}
 	}
 }
@@ -127,17 +125,15 @@ cm_tdbus_handle_timer(struct tevent_context *ec, struct tevent_timer *timer,
 	struct tdbus_timer *tdb_timer;
 	struct timeval next_time;
 	tdb_timer = pvt;
+	tdb_timer->tt = NULL;
 	if (tdb_timer->active) {
 		cm_log(3, "Handling D-Bus timeout.\n");
-		talloc_free(tdb_timer->tt);
 		if (dbus_timeout_handle(tdb_timer->timeout)) {
 			next_time = tevent_timeval_current_ofs(tdb_timer->d_interval, 0);
 			tdb_timer->tt = tevent_add_timer(ec, tdb_timer,
 							 next_time,
 							 cm_tdbus_handle_timer,
 							 tdb_timer);
-		} else {
-			tdb_timer->tt = NULL;
 		}
 	}
 }
@@ -177,7 +173,6 @@ cm_tdbus_watch_add(DBusWatch *watch, void *data)
 			return TRUE;
 		}
 	}
-	talloc_free(tdb_watch);
 	return FALSE;
 }
 
@@ -283,7 +278,6 @@ cm_tdbus_timeout_add(DBusTimeout *timeout, void *data)
 			return TRUE;
 		}
 	}
-	talloc_free(tdb_timer);
 	return FALSE;
 }
 
@@ -391,6 +385,7 @@ cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type,
 	       void *data)
 {
 	DBusConnection *conn;
+	DBusError err;
 	const char *bus_desc;
 	struct tdbus_connection *tdb;
 	/* Build our own context. */
@@ -448,9 +443,11 @@ cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type,
 		return -1;
 	}
 	/* Bind to the well-known name we intend to use. */
-	if (!dbus_bus_request_name(conn, CM_DBUS_NAME, 0, NULL)) {
-		cm_log(1, "Unable to set well-known bus name \"%s\".\n",
-		       CM_DBUS_NAME);
+	memset(&err, 0, sizeof(err));
+	if (!dbus_bus_request_name(conn, CM_DBUS_NAME, 0, &err) ||
+	    dbus_error_is_set(&err)) {
+		cm_log(1, "Unable to set well-known bus name \"%s\": %s.\n",
+		       CM_DBUS_NAME, err.message ? err.message : err.name);
 		return -1;
 	}
 	/* Handle any messages that are already pending. */
