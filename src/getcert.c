@@ -420,7 +420,7 @@ find_request_by_storage(void *parent, enum cm_tdbus_type bus,
 	char *cert_stype, *cert_sloc, *cert_nick, *cert_tok;
 	rep = query_rep(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
 			"get_requests");
-	if (cm_tdbusm_get_as(rep, globals.tctx, &requests) != 0) {
+	if (cm_tdbusm_get_ap(rep, globals.tctx, &requests) != 0) {
 		printf("Error parsing server response.\n");
 		exit(1);
 	}

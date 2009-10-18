@@ -7,9 +7,9 @@ o object layout
   /TBD
   interface=TBD
   - get-requests
-    returns: path -> object paths for requests
+    returns: array of paths -> object paths for requests
   - get-defaults
-    returns: path -> object paths for defaults object
+    returns: path -> object path for defaults object
   - get-supported-key-types
     returns: array of string -> "RSA"
   - get-supported-key-storage

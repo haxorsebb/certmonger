@@ -459,9 +459,8 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		cm_log(1, "Error adding entry to main loop.\n");
 		rep = dbus_message_new_method_return(msg);
 		if (rep != NULL) {
-			if (cm_tdbusm_set_bp(rep, FALSE, "") == 0) {
-				dbus_connection_send(conn, rep, NULL);
-			}
+			cm_tdbusm_set_b(rep, FALSE);
+			dbus_connection_send(conn, rep, NULL);
 			dbus_message_unref(rep);
 		}
 		talloc_free(parent);
@@ -472,9 +471,8 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 			path = talloc_asprintf(parent, "%s/%s",
 					       CM_DBUS_REQUEST_PATH,
 					       new_entry->cm_id);
-			if (cm_tdbusm_set_bp(rep, TRUE, path) == 0) {
-				dbus_connection_send(conn, rep, NULL);
-			}
+			cm_tdbusm_set_bp(rep, TRUE, path);
+			dbus_connection_send(conn, rep, NULL);
 			dbus_message_unref(rep);
 		}
 		talloc_free(parent);
@@ -512,9 +510,8 @@ base_get_known_cas(DBusConnection *conn, DBusMessage *msg,
 	}
 	rep = dbus_message_new_method_return(msg);
 	if (rep != NULL) {
-		if (cm_tdbusm_set_as(rep, (const char **) ret) == 0) {
-			dbus_connection_send(conn, rep, NULL);
-		}
+		cm_tdbusm_set_as(rep, (const char **) ret);
+		dbus_connection_send(conn, rep, NULL);
 		dbus_message_unref(rep);
 	}
 	talloc_free(ret);
@@ -545,9 +542,8 @@ base_get_requests(DBusConnection *conn, DBusMessage *msg,
 	}
 	rep = dbus_message_new_method_return(msg);
 	if (rep != NULL) {
-		if (cm_tdbusm_set_as(rep, (const char **) ret) == 0) {
-			dbus_connection_send(conn, rep, NULL);
-		}
+		cm_tdbusm_set_ap(rep, (const char **) ret);
+		dbus_connection_send(conn, rep, NULL);
 		dbus_message_unref(rep);
 	}
 	talloc_free(ret);
@@ -562,9 +558,8 @@ base_get_supported_key_types(DBusConnection *conn, DBusMessage *msg,
 	DBusMessage *rep;
 	rep = dbus_message_new_method_return(msg);
 	if (rep != NULL) {
-		if (cm_tdbusm_set_as(rep, key_types) == 0) {
-			dbus_connection_send(conn, rep, NULL);
-		}
+		cm_tdbusm_set_as(rep, key_types);
+		dbus_connection_send(conn, rep, NULL);
 		dbus_message_unref(rep);
 	}
 	return DBUS_HANDLER_RESULT_HANDLED;
@@ -583,9 +578,8 @@ base_get_supported_key_and_cert_storage(DBusConnection *conn, DBusMessage *msg,
 	DBusMessage *rep;
 	rep = dbus_message_new_method_return(msg);
 	if (rep != NULL) {
-		if (cm_tdbusm_set_as(rep, storage_types) == 0) {
-			dbus_connection_send(conn, rep, NULL);
-		}
+		cm_tdbusm_set_as(rep, storage_types);
+		dbus_connection_send(conn, rep, NULL);
 		dbus_message_unref(rep);
 	}
 	return DBUS_HANDLER_RESULT_HANDLED;
@@ -614,9 +608,10 @@ ca_get_nickname(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 	ca = get_ca_for_request_message(msg, ctx);
 	rep = dbus_message_new_method_return(msg);
 	if (rep != NULL) {
-		if (cm_tdbusm_set_s(rep, ca->cm_id) == 0) {
-			dbus_connection_send(conn, rep, NULL);
+		if (ca->cm_id != NULL) {
+			cm_tdbusm_set_s(rep, ca->cm_id);
 		}
+		dbus_connection_send(conn, rep, NULL);
 		dbus_message_unref(rep);
 	}
 	return DBUS_HANDLER_RESULT_HANDLED;
@@ -631,9 +626,8 @@ ca_get_is_default(DBusConnection *conn, DBusMessage *msg,
 	ca = get_ca_for_request_message(msg, ctx);
 	rep = dbus_message_new_method_return(msg);
 	if (rep != NULL) {
-		if (cm_tdbusm_set_b(rep, ca->cm_ca_is_default) == 0) {
-			dbus_connection_send(conn, rep, NULL);
-		}
+		cm_tdbusm_set_b(rep, ca->cm_ca_is_default);
+		dbus_connection_send(conn, rep, NULL);
 		dbus_message_unref(rep);
 	}
 	return DBUS_HANDLER_RESULT_HANDLED;
@@ -650,9 +644,8 @@ ca_get_issuer_names(DBusConnection *conn, DBusMessage *msg,
 	rep = dbus_message_new_method_return(msg);
 	if (rep != NULL) {
 		names = (const char **) ca->cm_ca_known_issuer_names;
-		if (cm_tdbusm_set_as(rep, names) == 0) {
-			dbus_connection_send(conn, rep, NULL);
-		}
+		cm_tdbusm_set_as(rep, names);
+		dbus_connection_send(conn, rep, NULL);
 		dbus_message_unref(rep);
 	}
 	return DBUS_HANDLER_RESULT_HANDLED;
@@ -666,9 +659,8 @@ ca_get_location(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 	ca = get_ca_for_request_message(msg, ctx);
 	rep = dbus_message_new_method_return(msg);
 	if (rep != NULL) {
-		if (cm_tdbusm_set_s(rep, ca->cm_ca_external_helper) == 0) {
-			dbus_connection_send(conn, rep, NULL);
-		}
+		cm_tdbusm_set_s(rep, ca->cm_ca_external_helper);
+		dbus_connection_send(conn, rep, NULL);
 		dbus_message_unref(rep);
 	}
 	return DBUS_HANDLER_RESULT_HANDLED;
@@ -692,9 +684,8 @@ ca_get_type(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 			ca_type = "EXTERNAL";
 			break;
 		}
-		if (cm_tdbusm_set_s(rep, ca_type) == 0) {
-			dbus_connection_send(conn, rep, NULL);
-		}
+		cm_tdbusm_set_s(rep, ca_type);
+		dbus_connection_send(conn, rep, NULL);
 		dbus_message_unref(rep);
 	}
 	return DBUS_HANDLER_RESULT_HANDLED;
@@ -740,9 +731,10 @@ request_get_nickname(DBusConnection *conn, DBusMessage *msg,
 	if (entry != NULL) {
 		rep = dbus_message_new_method_return(msg);
 		if (rep != NULL) {
-			if (cm_tdbusm_set_s(rep, entry->cm_id) == 0) {
-				dbus_connection_send(conn, rep, NULL);
+			if (entry->cm_id != NULL) {
+				cm_tdbusm_set_s(rep, entry->cm_id);
 			}
+			dbus_connection_send(conn, rep, NULL);
 			dbus_message_unref(rep);
 		}
 	}
@@ -759,9 +751,8 @@ request_get_autorenew(DBusConnection *conn, DBusMessage *msg,
 	if (entry != NULL) {
 		rep = dbus_message_new_method_return(msg);
 		if (rep != NULL) {
-			if (cm_tdbusm_set_b(rep, entry->cm_autorenew) == 0) {
-				dbus_connection_send(conn, rep, NULL);
-			}
+			cm_tdbusm_set_b(rep, entry->cm_autorenew);
+			dbus_connection_send(conn, rep, NULL);
 			dbus_message_unref(rep);
 		}
 	}
@@ -778,9 +769,11 @@ request_get_cert_data(DBusConnection *conn, DBusMessage *msg,
 	if (entry != NULL) {
 		rep = dbus_message_new_method_return(msg);
 		if (rep != NULL) {
-			if (cm_tdbusm_set_s(rep, entry->cm_cert) == 0) {
-				dbus_connection_send(conn, rep, NULL);
+			if (entry->cm_cert != NULL) {
+				cm_tdbusm_set_s(rep, entry->cm_cert);
 			}
+			dbus_connection_send(conn, rep, NULL);
+			dbus_message_unref(rep);
 		}
 	}
 	return DBUS_HANDLER_RESULT_HANDLED;
@@ -835,18 +828,18 @@ request_get_cert_info(DBusConnection *conn, DBusMessage *msg,
 		rep = dbus_message_new_method_return(msg);
 		if (rep != NULL) {
 			eku = eku_splitv(entry->cm_cert_eku);
-			if (cm_tdbusm_set_sssnasasasnas(rep,
-							entry->cm_cert_issuer,
-							entry->cm_cert_serial,
-							entry->cm_cert_subject,
-							entry->cm_cert_expiration,
-							(const char **) entry->cm_cert_email,
-							(const char **) entry->cm_cert_hostname,
-							(const char **) entry->cm_cert_principal,
-							ku_from_string(entry->cm_cert_eku),
-							(const char **) eku) == 0) {
-				dbus_connection_send(conn, rep, NULL);
-			}
+			cm_tdbusm_set_sssnasasasnas(rep,
+						    entry->cm_cert_issuer,
+						    entry->cm_cert_serial,
+						    entry->cm_cert_subject,
+						    entry->cm_cert_expiration,
+						    (const char **) entry->cm_cert_email,
+						    (const char **) entry->cm_cert_hostname,
+						    (const char **) entry->cm_cert_principal,
+						    ku_from_string(entry->cm_cert_eku),
+						    (const char **) eku);
+			dbus_connection_send(conn, rep, NULL);
+			dbus_message_unref(rep);
 			talloc_free(eku);
 		}
 	}
@@ -857,6 +850,19 @@ static DBusHandlerResult
 request_get_cert_last_checked(DBusConnection *conn, DBusMessage *msg,
 			      struct cm_context *ctx)
 {
+	DBusMessage *rep;
+	struct cm_store_entry *entry;
+	entry = get_entry_for_request_message(msg, ctx);
+	if (entry != NULL) {
+		rep = dbus_message_new_method_return(msg);
+		if (rep != NULL) {
+			if (entry->cm_submitted != 0) {
+				cm_tdbusm_set_n(rep, entry->cm_submitted);
+			}
+			dbus_connection_send(conn, rep, NULL);
+			dbus_message_unref(rep);
+		}
+	}
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
@@ -875,30 +881,28 @@ request_get_cert_storage_info(DBusConnection *conn, DBusMessage *msg,
 			switch (entry->cm_cert_storage_type) {
 			case cm_cert_storage_file:
 				type = "FILE";
-				if (cm_tdbusm_set_ss(rep, type,
-						     location) == 0) {
-					dbus_connection_send(conn, rep, NULL);
-				}
+				cm_tdbusm_set_ss(rep, type, location);
+				dbus_connection_send(conn, rep, NULL);
 				break;
 			case cm_cert_storage_nssdb:
 				type = "NSSDB";
 				token = entry->cm_cert_token;
 				nick = entry->cm_cert_nickname;
-				if ((token != NULL) &&
-				    (cm_tdbusm_set_ssss(rep, type,
-						        location,
-						        nick,
-						        token) == 0)) {
+				if (token != NULL) {
+					cm_tdbusm_set_ssss(rep, type,
+							   location,
+							   nick,
+							   token);
 					dbus_connection_send(conn, rep, NULL);
 				} else
-				if ((nick != NULL) &&
-				    (cm_tdbusm_set_sss(rep, type,
-						       location,
-						       nick) == 0)) {
+				if (nick != NULL) {
+					cm_tdbusm_set_sss(rep, type,
+							  location,
+							  nick);
 					dbus_connection_send(conn, rep, NULL);
-				} else
-				if ((cm_tdbusm_set_ss(rep, type,
-						      location) == 0)) {
+				} else {
+					cm_tdbusm_set_ss(rep, type,
+							 location);
 					dbus_connection_send(conn, rep, NULL);
 				}
 				break;
@@ -919,9 +923,11 @@ request_get_csr_data(DBusConnection *conn, DBusMessage *msg,
 	if (entry != NULL) {
 		rep = dbus_message_new_method_return(msg);
 		if (rep != NULL) {
-			if (cm_tdbusm_set_s(rep, entry->cm_csr) == 0) {
-				dbus_connection_send(conn, rep, NULL);
+			if (entry->cm_csr != NULL) {
+				cm_tdbusm_set_s(rep, entry->cm_csr);
 			}
+			dbus_connection_send(conn, rep, NULL);
+			dbus_message_unref(rep);
 		}
 	}
 	return DBUS_HANDLER_RESULT_HANDLED;
@@ -949,36 +955,32 @@ request_get_key_storage_info(DBusConnection *conn, DBusMessage *msg,
 			switch (entry->cm_key_storage_type) {
 			case cm_key_storage_none:
 				type = "NONE";
-				if (cm_tdbusm_set_s(rep, type) == 0) {
-					dbus_connection_send(conn, rep, NULL);
-				}
+				cm_tdbusm_set_s(rep, type);
+				dbus_connection_send(conn, rep, NULL);
 				break;
 			case cm_key_storage_file:
 				type = "FILE";
-				if (cm_tdbusm_set_ss(rep, type,
-						     location) == 0) {
-					dbus_connection_send(conn, rep, NULL);
-				}
+				cm_tdbusm_set_ss(rep, type, location);
+				dbus_connection_send(conn, rep, NULL);
 				break;
 			case cm_key_storage_nssdb:
 				type = "NSSDB";
 				token = entry->cm_key_token;
 				nick = entry->cm_key_nickname;
-				if ((token != NULL) &&
-				    (cm_tdbusm_set_ssss(rep, type,
-						        location,
-						        nick,
-						        token) == 0)) {
+				if (token != NULL) {
+					cm_tdbusm_set_ssss(rep, type,
+							   location,
+							   nick, token);
 					dbus_connection_send(conn, rep, NULL);
 				} else
-				if ((nick != NULL) &&
-				    (cm_tdbusm_set_sss(rep, type,
-						       location,
-						       nick) == 0)) {
+				if (nick != NULL) {
+					cm_tdbusm_set_sss(rep, type,
+							  location,
+							  nick);
 					dbus_connection_send(conn, rep, NULL);
-				} else
-				if ((cm_tdbusm_set_ss(rep, type,
-						      location) == 0)) {
+				} else {
+					cm_tdbusm_set_ss(rep, type,
+							 location);
 					dbus_connection_send(conn, rep, NULL);
 				}
 				break;
@@ -1008,9 +1010,8 @@ request_get_key_type_and_size(DBusConnection *conn, DBusMessage *msg,
 		}
 		if (rep != NULL) {
 			size = entry->cm_key_type.cm_key_size;
-			if (cm_tdbusm_set_sn(rep, type, size) == 0) {
-				dbus_connection_send(conn, rep, NULL);
-			}
+			cm_tdbusm_set_sn(rep, type, size);
+			dbus_connection_send(conn, rep, NULL);
 			dbus_message_unref(rep);
 		}
 	}
@@ -1027,9 +1028,8 @@ request_get_monitoring(DBusConnection *conn, DBusMessage *msg,
 	if (entry != NULL) {
 		rep = dbus_message_new_method_return(msg);
 		if (rep != NULL) {
-			if (cm_tdbusm_set_b(rep, entry->cm_monitor) == 0) {
-				dbus_connection_send(conn, rep, NULL);
-			}
+			cm_tdbusm_set_b(rep, entry->cm_monitor);
+			dbus_connection_send(conn, rep, NULL);
 			dbus_message_unref(rep);
 		}
 	}
@@ -1050,16 +1050,20 @@ request_get_status(DBusConnection *conn, DBusMessage *msg,
 	DBusMessage *rep;
 	struct cm_store_entry *entry;
 	const char *state;
+	dbus_bool_t stuck;
 	entry = get_entry_for_request_message(msg, ctx);
 	if (entry != NULL) {
 		rep = dbus_message_new_method_return(msg);
 		if (rep != NULL) {
 			state = cm_store_state_as_string(entry->cm_state);
-			if (cm_tdbusm_set_sb(rep,
-					     state,
-					     FALSE) == 0) {
-				dbus_connection_send(conn, rep, NULL);
+			switch (entry->cm_state) {
+			/* XXX */
+			default:
+				stuck = FALSE;
+				break;
 			}
+			cm_tdbusm_set_sb(rep, state, FALSE);
+			dbus_connection_send(conn, rep, NULL);
 			dbus_message_unref(rep);
 		}
 	}
@@ -1102,9 +1106,10 @@ request_get_submitted_cookie(DBusConnection *conn, DBusMessage *msg,
 	if (entry != NULL) {
 		rep = dbus_message_new_method_return(msg);
 		if (rep != NULL) {
-			if (cm_tdbusm_set_n(rep, entry->cm_submitted) == 0) {
-				dbus_connection_send(conn, rep, NULL);
+			if (entry->cm_ca_cookie != NULL) {
+				cm_tdbusm_set_s(rep, entry->cm_ca_cookie);
 			}
+			dbus_connection_send(conn, rep, NULL);
 			dbus_message_unref(rep);
 		}
 	}
@@ -1121,9 +1126,10 @@ request_get_submitted_date(DBusConnection *conn, DBusMessage *msg,
 	if (entry != NULL) {
 		rep = dbus_message_new_method_return(msg);
 		if (rep != NULL) {
-			if (cm_tdbusm_set_n(rep, entry->cm_submitted) == 0) {
-				dbus_connection_send(conn, rep, NULL);
+			if (entry->cm_submitted != 0) {
+				cm_tdbusm_set_n(rep, entry->cm_submitted);
 			}
+			dbus_connection_send(conn, rep, NULL);
 			dbus_message_unref(rep);
 		}
 	}
@@ -1140,6 +1146,26 @@ static DBusHandlerResult
 request_reenroll(DBusConnection *conn, DBusMessage *msg,
 		 struct cm_context *ctx)
 {
+	DBusMessage *rep;
+	struct cm_store_entry *entry;
+	entry = get_entry_for_request_message(msg, ctx);
+	if (entry != NULL) {
+		rep = dbus_message_new_method_return(msg);
+		if (rep != NULL) {
+			if (cm_stop_one(ctx, entry->cm_id) == 0) {
+				entry->cm_state = CM_NEED_CSR;
+				if (cm_start_one(ctx, entry->cm_id) == 0) {
+					cm_tdbusm_set_b(rep, TRUE);
+				} else {
+					cm_tdbusm_set_b(rep, FALSE);
+				}
+			} else {
+				cm_tdbusm_set_b(rep, FALSE);
+			}
+			dbus_connection_send(conn, rep, NULL);
+			dbus_message_unref(rep);
+		}
+	}
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
@@ -1147,6 +1173,26 @@ static DBusHandlerResult
 request_rekey_and_submit(DBusConnection *conn, DBusMessage *msg,
 			 struct cm_context *ctx)
 {
+	DBusMessage *rep;
+	struct cm_store_entry *entry;
+	entry = get_entry_for_request_message(msg, ctx);
+	if (entry != NULL) {
+		rep = dbus_message_new_method_return(msg);
+		if (rep != NULL) {
+			if (cm_stop_one(ctx, entry->cm_id) == 0) {
+				entry->cm_state = CM_NEED_KEY_PAIR;
+				if (cm_start_one(ctx, entry->cm_id) == 0) {
+					cm_tdbusm_set_b(rep, TRUE);
+				} else {
+					cm_tdbusm_set_b(rep, FALSE);
+				}
+			} else {
+				cm_tdbusm_set_b(rep, FALSE);
+			}
+			dbus_connection_send(conn, rep, NULL);
+			dbus_message_unref(rep);
+		}
+	}
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
@@ -1154,6 +1200,26 @@ static DBusHandlerResult
 request_resubmit(DBusConnection *conn, DBusMessage *msg,
 		 struct cm_context *ctx)
 {
+	DBusMessage *rep;
+	struct cm_store_entry *entry;
+	entry = get_entry_for_request_message(msg, ctx);
+	if (entry != NULL) {
+		rep = dbus_message_new_method_return(msg);
+		if (rep != NULL) {
+			if (cm_stop_one(ctx, entry->cm_id) == 0) {
+				entry->cm_state = CM_HAVE_CSR;
+				if (cm_start_one(ctx, entry->cm_id) == 0) {
+					cm_tdbusm_set_b(rep, TRUE);
+				} else {
+					cm_tdbusm_set_b(rep, FALSE);
+				}
+			} else {
+				cm_tdbusm_set_b(rep, FALSE);
+			}
+			dbus_connection_send(conn, rep, NULL);
+			dbus_message_unref(rep);
+		}
+	}
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
