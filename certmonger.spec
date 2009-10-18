@@ -11,6 +11,8 @@ BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 BuildRequires:	dbus-devel, nspr-devel, nss-devel, openssl-devel
 BuildRequires:	libtalloc-devel, libtevent-devel
+Requires(post):	/sbin/chkconfig
+Requires(preun):	/sbin/chkconfig, /sbin/service
 
 %description
 Certmonger is a service which is primarily concerned with getting your
@@ -32,6 +34,22 @@ install -m755 src/certmonger.init $RPM_BUILD_ROOT/%{_initddir}/certmonger
 
 %clean
 rm -rf $RPM_BUILD_ROOT
+
+%post
+/sbin/chkconfig --add certmonger
+
+%postun
+if test $1 -gt 0 ; then
+	/sbin/service certmonger condrestart 2>&1 > /dev/null
+fi
+exit 0
+
+%preun
+if test $1 -eq 0 ; then
+	/sbin/service certmonger stop 2>&1 > /dev/null
+	/sbin/chkconfig --del certmonger
+fi
+exit 0
 
 %files
 %defattr(-,root,root,-)

@@ -20,12 +20,15 @@ pidfile=/var/run/certmonger.pid
 if [ -f /etc/rc.d/init.d/functions ]; then
 	. /etc/rc.d/init.d/functions
 fi
+if [ -f /etc/sysconfig/certmonger ]; then
+	. /etc/sysconfig/certmonger
+fi
 
 RETVAL=0
 
 start() {
     echo -n $"Starting $prog: "
-    daemon $program
+    daemon $program -S -p ${pidfile} $OPTS
     RETVAL=$?
     echo
     [ $RETVAL -eq 0 ] && touch /var/lock/subsys/$prog
