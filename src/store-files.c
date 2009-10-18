@@ -1127,6 +1127,7 @@ cm_store_ca_write(FILE *fp, struct cm_store_ca *ca)
 	} else {
 		p = ca->cm_id;
 	}
+	cm_store_file_write_str(fp, cm_store_file_field_id, p);
 	cm_store_file_write_strs(fp,
 				 cm_store_ca_field_known_issuer_names,
 				 ca->cm_ca_known_issuer_names);
