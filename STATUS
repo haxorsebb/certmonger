@@ -17,16 +17,20 @@ Complete:
   * Maintaining queued items in an upgrade-proofable format.
   * Should offer an API over D-Bus which the client uses instead of
     mutilating the queue directly (see doc/api.txt):
+    * Add new entry.  Figure out the state based on what the requester supplies
+      (i.e., if there's a certificate where the request says it should go,
+      assume it's been issued; ditto for private keys).
     * List entries.
+    * List known CAs.
+  * Make certmonger a proper daemon.
+    * Detach from console, foreground for debugging.
+    * Sort out an init script. (1 day)
+  * Sort out storage for system-local defaults which are consulted
+    before falling back to compiled-in defaults.
 
 To-do:
   * Should offer an API over D-Bus which the client uses instead of
     mutilating the queue directly (see doc/api.txt):
-    * Add new entry at any of need-key, need-csr, need-submit,
-      have-issued states.  Optionally, figure out the state based on what the
-      requester supplies (i.e., if there's a certificate where the request says
-      it should go, assume it's been issued; ditto for private keys) (5 days)
-      MUST
     * Remove entry. (1 day)
       MUST
     * Resubmit CA-denied requests. (1 day)
@@ -42,24 +46,12 @@ To-do:
     for a server to become reachable.
   * Learn to submit to at least one actual CA: IPA via XML-RPC over
     HTTPS, authenticating using Negotiate.
-    * Learn to obtain Kerberos credentials. (1 day)
-      MUST
-    * Learn to retrieve the root certificate from the IPA directory server
-      using GSSAPI for mutual authentication. (1 day)
-      MUST
-    * Learn to issue XML-RPC requests. (2 days)
+    * Learn to exec a helper to do enrollment. (1 day)
       MUST
   * Make certmonger a proper daemon.
-    * Detach from console, foreground for debugging. (1 day)
-    MUST
     * Sort out logging levels for log messages. (1 day)
     MUST
-    * Sort out an init script. (1 day)
-    MUST
     * Sort out SELinux policy. (unscoped)
-    MUST
-  * Sort out storage for system-local defaults which are consulted
-    before falling back to compiled-in defaults. (1 day)
     MUST
   * Figure out how to let the local deamon's client do key generation.
     It's either that or force them to give the daemon the PIN for
