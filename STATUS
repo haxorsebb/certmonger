@@ -21,20 +21,20 @@ Complete:
       assume it's been issued; ditto for private keys).
     * List entries.
     * List known CAs.
+    * Resubmit CA-denied requests.
+    * Re-enroll for expired but not-auto-renew certificates.
   * Make certmonger a proper daemon.
     * Detach from console, foreground for debugging.
-    * Sort out an init script. (1 day)
+    * Sort out an init script.
   * Sort out storage for system-local defaults which are consulted
     before falling back to compiled-in defaults.
 
 To-do:
+  * Actually do notification of expiration and impending expiration.
   * Should offer an API over D-Bus which the client uses instead of
     mutilating the queue directly (see doc/api.txt):
     * Remove entry. (1 day)
       MUST
-    * Resubmit CA-denied requests. (1 day)
-      MUST
-    * Re-enroll for expired but not-auto-renew certificates. (1 day)
       MUST
     * Modify requested data and regenerate signing requests. (3 days)
       MUST
@@ -49,9 +49,9 @@ To-do:
       MUST
   * Make certmonger a proper daemon.
     * Sort out logging levels for log messages. (1 day)
-    MUST
+      MUST
     * Sort out SELinux policy. (unscoped)
-    MUST
+      MUST
   * Figure out how to let the local deamon's client do key generation.
     It's either that or force them to give the daemon the PIN for
     encrypted storage. (3 days)
@@ -65,12 +65,12 @@ To-do:
   * Local signing should support signing with a key other than the one
     used to generate the CSR. (2 days)
     * Make the the "next" serial number into a per-key default (1 day)
-    SHOULD
+      SHOULD
   * Learn to submit to a second CA: certmaster via XML-RPC over HTTPS.
     * Learn how certmaster's root gets distributed. (1 day)
     * Learn to submit to certmaster's XMLRPC interface, preferably by
       calling out to the python library it supplies. (2 days)
-    COULD
+      COULD
   * Local signing should track a revocation list for each signing key
     and publish a CRL for it. (3 days)
     COULD
