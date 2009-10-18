@@ -47,6 +47,8 @@ struct cm_context {
 		void *iterate_state;
 		void *next_event;
 	} *events;
+	int n_cas;
+	struct cm_store_ca **cas;
 };
 
 static void *cm_service_one(struct cm_context *context,
@@ -80,6 +82,11 @@ cm_init(struct tevent_context *parent, struct cm_context **context)
 		return ENOMEM;
 	}
 	memset(ctx->events, 0, sizeof(ctx->events[0]) * ctx->n_entries);
+	ctx->cas = cm_store_get_all_cas(ctx);
+	for (i = 0; (ctx->cas != NULL) && (ctx->cas[i] != NULL); i++) {
+		continue;
+	}
+	ctx->n_cas = i;
 	tevent_add_signal(parent, ctx, SIGINT, 0, cm_break_h, ctx);
 	tevent_add_signal(parent, ctx, SIGTERM, 0, cm_break_h, ctx);
 	for (i = 0; i < ctx->n_entries; i++) {
@@ -337,6 +344,9 @@ cm_stop_all(struct cm_context *context)
 		context->events[i].iterate_state = NULL;
 		cm_store_entry_save(context->entries[i]);
 	}
+	for (i = 0; i < context->n_cas; i++) {
+		cm_store_ca_save(context->cas[i]);
+	}
 }
 
 dbus_bool_t
@@ -409,4 +419,82 @@ int
 cm_get_n_entries(struct cm_context *context)
 {
 	return context->n_entries;
+}
+
+int
+cm_add_ca(struct cm_context *context, struct cm_store_ca *new_ca)
+{
+	struct cm_store_ca **cas;
+	int i;
+	time_t now;
+	char timestamp[15];
+	/* Check for duplicates and count the number of CAs we're already
+	 * managing. */
+	if (new_ca->cm_id != NULL) {
+		for (i = 0; i < context->n_cas; i++) {
+			if (strcmp(context->cas[i]->cm_id,
+				   new_ca->cm_id) == 0) {
+				return -1;
+			}
+		}
+	} else {
+		do {
+			/* Try to assign a new ID. */
+			now = time(NULL);
+			new_ca->cm_id = cm_store_timestamp_from_time(now,
+								     timestamp);
+			/* Check for duplicates. */
+			for (i = 0; i < context->n_cas; i++) {
+				if (strcmp(context->cas[i]->cm_id,
+					   new_ca->cm_id) == 0) {
+					/* Busy wait 0.1s. Ugh. */
+					usleep(100000);
+					break;
+				}
+			}
+		} while (i < context->n_cas);
+		new_ca->cm_id = talloc_strdup(new_ca, new_ca->cm_id);
+	}
+	/* Allocate storage for a new CA array. */
+	cas = talloc_array(context, struct cm_store_ca *, context->n_cas + 1);
+	if (cas != NULL) {
+		/* Copy the entries to the new arrays. */
+		for (i = 0; i < context->n_cas; i++) {
+			talloc_reparent(context->cas, cas, context->cas[i]);
+			cas[i] = context->cas[i];
+		}
+		/* Save this entry to the store. */
+		cm_store_ca_save(new_ca);
+		/* Reset the recorded count of CAs. */
+		context->n_cas++;
+		return 0;
+	}
+	return -1;
+}
+
+struct cm_store_ca *
+cm_get_ca_by_id(struct cm_context *context, const char *id)
+{
+	int i;
+	for (i = 0; i < context->n_cas; i++) {
+		if (strcmp(context->cas[i]->cm_id, id) == 0) {
+			return context->cas[i];
+		}
+	}
+	return NULL;
+}
+
+struct cm_store_ca *
+cm_get_ca_by_index(struct cm_context *context, int i)
+{
+	if (i < context->n_cas) {
+		return context->cas[i];
+	}
+	return NULL;
+}
+
+int
+cm_get_n_cas(struct cm_context *context)
+{
+	return context->n_cas;
 }
