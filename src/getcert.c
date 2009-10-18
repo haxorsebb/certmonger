@@ -683,11 +683,17 @@ list(const char *argv0, int argc, char **argv)
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	enum cm_state state;
 	DBusMessage *rep;
-	char **requests, *s;
+	char **requests, *s, *p, *nickname, *only_ca = NULL, *ca_name;
 	dbus_bool_t b;
+	char *s1, *s2, *s3, *s4;
+	long n1, n2;
+	char **as1, **as2, **as3, **as4, t[15];
 	int requests_only = 0, tracking_only = 0, c, i, j;
-	while ((c = getopt(argc, argv, "rt")) != -1) {
+	while ((c = getopt(argc, argv, "rtc:")) != -1) {
 		switch (c) {
+		case 'c':
+			only_ca = optarg;
+			break;
 		case 'r':
 			requests_only++;
 			break;
@@ -707,9 +713,29 @@ list(const char *argv0, int argc, char **argv)
 	}
 	dbus_message_unref(rep);
 	for (i = 0; (requests != NULL) && (requests[i] != NULL); i++) {
-		char *s1, *s2, *s3, *s4;
-		long n1, n2;
-		char **as1, **as2, **as3, **as4, t[15];
+		/* Filter out based on the CA. */
+		ca_name = NULL;
+		rep = query_rep(bus, requests[i],
+				CM_DBUS_REQUEST_INTERFACE, "get_ca");
+		if (cm_tdbusm_get_p(rep, globals.tctx, &p) == 0) {
+			dbus_message_unref(rep);
+			rep = query_rep(bus, p,
+					CM_DBUS_CA_INTERFACE,
+					"get_nickname");
+			if (cm_tdbusm_get_s(rep, globals.tctx,
+					    &ca_name) != 0) {
+				ca_name = NULL;
+			}
+		}
+		dbus_message_unref(rep);
+		if (only_ca != NULL) {
+			if (ca_name == NULL) {
+				continue;
+			}
+			if (strcmp(only_ca, ca_name) != 0) {
+				continue;
+			}
+		}
 		/* Get the status of this request. */
 		rep = query_rep(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
 				"get_status");
@@ -760,7 +786,13 @@ list(const char *argv0, int argc, char **argv)
 			break;
 		}
 		/* Basic info. */
-		printf("Request '%s':\n", requests[i]);
+		rep = query_rep(bus, requests[i],
+				CM_DBUS_REQUEST_INTERFACE, "get_nickname");
+		if (cm_tdbusm_get_s(rep, globals.tctx, &nickname) != 0) {
+			nickname = requests[i];
+		}
+		dbus_message_unref(rep);
+		printf("Request '%s':\n", nickname);
 		printf("\tstatus: %s\n", s);
 		printf("\tstuck: %s\n", b ? "yes" : "no");
 		/* Get key/cert storage info. */
@@ -800,6 +832,9 @@ list(const char *argv0, int argc, char **argv)
 			exit(1);
 		}
 		dbus_message_unref(rep);
+		if (ca_name != NULL) {
+			printf("\tCA: %s\n", ca_name);
+		}
 		printf("\tissuer: %s\n", s1);
 		printf("\tsubject: %s\n", s3);
 		printf("\texpires: %s\n",
@@ -877,7 +912,7 @@ help(const char *cmd, const char *category)
 	"  -g SIZE	size of key to be generated if one is not already in place\n"
 	"  -e		track and warn of impending expiration of certificate\n"
 	"  -r		attempt to renew the certificate when expiration nears\n"
-	"  -c LOCATION	use the specified CA rather than the default\n"
+	"  -c CA	use the specified CA rather than the default\n"
 	"* Parameters for the signing request:\n"
 	"  -s NAME	set requested subject name (default: CN=<hostname>)\n"
 	"  -U EXTUSAGE	add requested extended key usage OID\n"
@@ -899,7 +934,7 @@ help(const char *cmd, const char *category)
 	"Optional arguments:\n"
 	"* Certificate handling settings:\n"
 	"  -r		attempt to renew the certificate when expiration nears\n"
-	"  -c LOCATION	use the specified CA rather than the default\n",},
+	"  -c CA	use the specified CA rather than the default\n",},
 	{"stop-tracking",
 	"Usage: %s stop-tracking [options]\n"
 	"\n"
@@ -914,6 +949,7 @@ help(const char *cmd, const char *category)
 	{"list",
 	"Usage: %s list [options]\n"
 	"* General options:\n"
+	"  -c CA	list only requests and cert associated with this CA\n"
 	"  -r		list only information about outstanding requests\n"
 	"  -t		list only information about tracked certificates\n"}};
 	for (i = 0; i < sizeof(msgs) / sizeof(msgs[0]); i++) {
