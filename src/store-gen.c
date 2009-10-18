@@ -18,6 +18,7 @@
 #include "config.h"
 
 #include <sys/types.h>
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -231,4 +232,35 @@ cm_store_increment_serial(void *parent, const char *old_serial)
 		serial = tmp;
 	}
 	return serial;
+}
+
+char *
+cm_store_serial_from_binary(void *parent,
+			    const unsigned char *serial, int length)
+{
+	char *ret;
+	int i;
+	ret = talloc_zero_size(parent, length * 2 + 1);
+	for (i = 0; i < length; i++) {
+		ret[i * 2] = toupper((serial[i / 2] & 0xf0) >> 4);
+		ret[i * 2 + 1] = toupper((serial[i / 2]) >> 4);
+	}
+	ret[i * 2] = '\0';
+	return ret;
+}
+
+char *
+cm_store_serial_to_der(void *parent, const unsigned char *serial, int length)
+{
+	char *ret;
+	int i;
+	ret = talloc_zero_size(parent, length * 2 + 3);
+	ret[0] = 2;
+	ret[1] = length;
+	for (i = 0; i < length; i++) {
+		ret[2 + i * 2] = toupper((serial[i / 2] & 0xf0) >> 4);
+		ret[2 + i * 2 + 1] = toupper((serial[i / 2]) >> 4);
+	}
+	ret[i * 2] = '\0';
+	return ret;
 }

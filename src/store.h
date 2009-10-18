@@ -40,5 +40,11 @@ struct cm_store_ca **cm_store_get_all_cas(void *parent);
 time_t cm_store_time_from_timestamp(const char *timestamp);
 char *cm_store_timestamp_from_time(time_t when, char timestamp[15]);
 char *cm_store_increment_serial(void *parent, const char *old_serial);
+char *cm_store_serial_from_binary(void *parent,
+				  const unsigned char *serial, int length);
+char *cm_store_serial_to_binary(void *parent,
+				const unsigned char *serial, int length);
+char *cm_store_serial_to_der(void *parent,
+			     const unsigned char *serial, int length);
 
 #endif
