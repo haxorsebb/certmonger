@@ -19,6 +19,7 @@
 
 #include <sys/types.h>
 #include <sys/file.h>
+#include <sys/stat.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <fcntl.h>
@@ -90,7 +91,8 @@ main(int argc, char **argv)
 	}
 
 	if (pidfile != NULL) {
-		pfd = open(pidfile, O_RDWR | O_CREAT);
+		pfd = open(pidfile, O_RDWR | O_CREAT,
+			   S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 		if (pfd == -1) {
 			fprintf(stderr, "Error opening pidfile \"%s\": %s\n",
 				pidfile, strerror(errno));
