@@ -83,7 +83,7 @@ static dbus_bool_t
 is_ca(struct cm_context *ctx, const char *path,
       const char *interface, const char *member)
 {
-	return FALSE;
+	return get_ca_for_path(ctx, path) != NULL;
 }
 static dbus_bool_t
 is_request(struct cm_context *ctx, const char *path,
@@ -708,6 +708,25 @@ ca_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 
 /* Functions implemented for request objects. */
 static DBusHandlerResult
+request_get_nickname(DBusConnection *conn, DBusMessage *msg,
+		     struct cm_context *ctx)
+{
+	DBusMessage *rep;
+	struct cm_store_entry *entry;
+	entry = get_entry_for_request_message(msg, ctx);
+	if (entry != NULL) {
+		rep = dbus_message_new_method_return(msg);
+		if (rep != NULL) {
+			if (cm_tdbusm_set_s(rep, entry->cm_id) == 0) {
+				dbus_connection_send(conn, rep, NULL);
+			}
+			dbus_message_unref(rep);
+		}
+	}
+	return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+static DBusHandlerResult
 request_get_autorenew(DBusConnection *conn, DBusMessage *msg,
 		      struct cm_context *ctx)
 {
@@ -1036,16 +1055,13 @@ request_get_ca(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 	if (entry != NULL) {
 		rep = dbus_message_new_method_return(msg);
 		if (rep != NULL) {
-			if (entry->cm_ca_name == NULL) {
-				path = NULL;
-			} else {
+			if (entry->cm_ca_name != NULL) {
 				path = talloc_asprintf(parent, "%s/%s",
 						       CM_DBUS_CA_PATH,
 						       entry->cm_ca_name);
+				cm_tdbusm_set_p(rep, path);
 			}
-			if (cm_tdbusm_set_p(rep, path) == 0) {
-				dbus_connection_send(conn, rep, NULL);
-			}
+			dbus_connection_send(conn, rep, NULL);
 			dbus_message_unref(rep);
 		}
 	}
@@ -1152,6 +1168,8 @@ static struct {
 	{&is_ca, CM_DBUS_CA_INTERFACE, "get_location", ca_get_location},
 	{&is_ca, CM_DBUS_CA_INTERFACE, "get_issuer_names", ca_get_issuer_names},
 	{&is_ca, CM_DBUS_CA_INTERFACE, "modify", ca_modify},
+	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_nickname",
+	 request_get_nickname},
 	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_autorenew",
 	 request_get_autorenew},
 	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_cert_data",
