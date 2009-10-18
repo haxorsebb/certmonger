@@ -16,15 +16,20 @@ mylocalstatedir=`eval echo $mylocalstatedir | sed "s,NONE,$prefix,g"`
 mylocalstatedir=`eval echo $mylocalstatedir | sed "s,NONE,$ac_default_prefix,g"`
 mylocalstatedir=`eval echo $mylocalstatedir | sed "s,NONE,,g"`
 AC_DEFINE_UNQUOTED(CM_STORE_REQUESTS_DIRECTORY,"$mylocalstatedir/requests",
-		   [Define to the default path for tracking files.])
+		   [Define to the default path for request tracking files.])
 UPCASE_PACKAGE_NAME=`echo "${PACKAGE_NAME}" | tr '[a-z]' '[A-Z]'`
 AC_DEFINE_UNQUOTED(CM_STORE_REQUESTS_DIRECTORY_ENV,"${UPCASE_PACKAGE_NAME}_REQUESTS_DIR",
 		   [Define to the name of the environment variable which can specify the directory for tracking requests.])
-AC_DEFINE_UNQUOTED(CM_STORE_DEFAULTS,"$mylocalstatedir/defaults",
-		   [Define to the location of run-time defaults.])
+AC_DEFINE_UNQUOTED(CM_STORE_REQUEST_DEFAULTS,"$mylocalstatedir/defaults",
+		   [Define to the location of run-time defaults for requests.])
 UPCASE_PACKAGE_NAME=`echo "${PACKAGE_NAME}" | tr '[a-z]' '[A-Z]'`
-AC_DEFINE_UNQUOTED(CM_STORE_DEFAULTS_ENV,"${UPCASE_PACKAGE_NAME}_DEFAULTS_FILE",
-		   [Define to the name of the environment variable which can specify the path for the defaults file.])
+AC_DEFINE_UNQUOTED(CM_STORE_REQUEST_DEFAULTS_ENV,"${UPCASE_PACKAGE_NAME}_REQUEST_DEFAULTS_FILE",
+		   [Define to the name of the environment variable which can specify the path for the request defaults file.])
+AC_DEFINE_UNQUOTED(CM_STORE_CAS_DIRECTORY,"$mylocalstatedir/cas",
+		   [Define to the default path for CA tracking files.])
+UPCASE_PACKAGE_NAME=`echo "${PACKAGE_NAME}" | tr '[a-z]' '[A-Z]'`
+AC_DEFINE_UNQUOTED(CM_STORE_CAS_DIRECTORY_ENV,"${UPCASE_PACKAGE_NAME}_CAS_DIR",
+		   [Define to the name of the environment variable which can specify the directory for tracking CAs.])
 
 PKG_CHECK_MODULES(TALLOC,talloc)
 PKG_CHECK_MODULES(TEVENT,tevent)
