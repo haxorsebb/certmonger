@@ -34,3 +34,5 @@ able to submit requests to:
 And perhaps also:
   * KMIP-compatible systems
   * SCEP
+
+This package is hosted at http://certmonger.fedorahosted.org/.
