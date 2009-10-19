@@ -82,7 +82,7 @@ cm_notify_get_fd(struct cm_store_entry *entry, struct cm_notify_state *state)
 	return state->fd;
 }
 
-/* Get a selectable-for-read descriptor we can poll for status changes. */
+/* Check if our child process has exited. */
 int
 cm_notify_ready(struct cm_store_entry *entry, struct cm_notify_state *state)
 {

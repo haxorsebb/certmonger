@@ -187,7 +187,7 @@ request(const char *argv0, int argc, char **argv)
 	subject = subject_default;
 
 	while ((c = getopt(argc, argv,
-			   "d:n:t:k:f:g:ers:U:K:D:E:" GETOPT_CA)) != -1) {
+			   "d:n:t:k:f:g:erN:U:K:D:E:" GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
 			dbdir = talloc_strdup(globals.tctx, optarg);
@@ -216,7 +216,7 @@ request(const char *argv0, int argc, char **argv)
 		case 'c':
 			ca = talloc_strdup(globals.tctx, optarg);
 			break;
-		case 's':
+		case 'N':
 			subject = talloc_strdup(globals.tctx, optarg);
 			break;
 		case 'U':
@@ -925,7 +925,7 @@ help(const char *cmd, const char *category)
 	"  -c CA	use the specified CA rather than the default\n"
 #endif
 	"* Parameters for the signing request:\n"
-	"  -s NAME	set requested subject name (default: CN=<hostname>)\n"
+	"  -N NAME	set requested subject name (default: CN=<hostname>)\n"
 	"  -U EXTUSAGE	add requested extended key usage OID\n"
 	"  -K NAME	add requested principal name\n"
 	"  -D DNSNAME	add requested DNS name\n"
