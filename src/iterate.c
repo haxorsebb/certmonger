@@ -373,13 +373,11 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				entry->cm_state = CM_HAVE_SUBMITTED;
 				*when = cm_time_now;
 			} else {
-				/* Couldn't retrieve acknowledgement from the
-				 * CA, so we have to try submitting another
-				 * request. */
+				/* The CA denied our request. HELP! */
 				cm_submit_done(entry, state->cm_submit_state);
 				state->cm_submit_state = NULL;
-				entry->cm_state = CM_NEED_TO_SUBMIT;
-				*when = cm_time_soon;
+				entry->cm_state = CM_NEED_GUIDANCE;
+				*when = cm_time_now;
 			}
 		} else {
 			/* Wait for status update, or poll. */

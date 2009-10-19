@@ -1,0 +1,40 @@
+The CA submission internal API is a bit haphazard, but as the way
+forward appears to be all about using external helpers anyway, that's
+probably forgivable.
+
+This is how it looks from the application's standpoint.
+
+Transmitting enrollment request:
+1. Call submit_start().
+2. Wait/poll until submit_sent() returns 0.
+
+Checking initial submission results:
+3. If submit_issued() returns non-0:
+   * If submit_save_ca_cookie() returns 0, jump to step 5.
+4. If submit_issued() returned 0, the CA has issued a certificate.
+    * If submit_needs_retrieval() returns 0, wait/poll until
+      submit_status_ready() returns 0.
+    * Done; move on to saving the certificate.
+
+Polling submission results.
+5. * Wait/poll until submit_status_ready() returns 0.
+6. If submit_issued() returned 0, the CA has issued a certificate.
+    * If submit_needs_retrieval() returns 0, wait/poll until
+      submit_status_ready() returns 0.
+    * Done; move on to saving the certificate.
+
+An external helper has a few jobs, then:
+* Invoked either with "start" or "resume" as the value of the $TBD environment
+  value, with command-line arguments as specified in certmaster's configuration.
+* If in "start" mode, read PEM-formatted CSR on stdin.
+  * Submit request to CA.
+    * Issued         -> output PEM-formatted cert on stdout, exit with status 0.
+    * Wait a bit     -> output CA cookie value on stdout, exit with status 1.
+    * Rejected       -> exit with status 2.
+    * Connect error  -> exit with status 3.
+* If in "resume" mode, read CA cookie value on stdin.
+  * Poll CA for result of previously-started enrollment operation.
+    * Issued         -> output PEM-formatted cert on stdout, exit with status 0.
+    * Wait some more -> output CA cookie value on stdout, exit with status 1.
+    * Rejected       -> exit with status 2.
+    * Connect error  -> exit with status 3.
