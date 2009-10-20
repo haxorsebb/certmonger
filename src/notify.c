@@ -20,6 +20,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <stdlib.h>
+#include <string.h>
 #include <syslog.h>
 #include <unistd.h>
 
@@ -39,7 +40,146 @@ struct cm_notify_state {
 static void
 cm_notify_main(int fd, struct cm_store_entry *entry)
 {
-	/* XXX */
+	enum cm_notification_method method;
+	const char *dest, *p, *q, *message = NULL;
+	char *tok, t[15];
+	int facility, level;
+	struct {
+		const char *name;
+		int value;
+	} facilities[] = {
+		{"auth", LOG_AUTH},
+		{"authpriv", LOG_AUTHPRIV},
+		{"cron", LOG_CRON},
+		{"daemon", LOG_DAEMON},
+		{"ftp", LOG_FTP},
+		{"kern", LOG_KERN},
+		{"local0", LOG_LOCAL0},
+		{"local1", LOG_LOCAL1},
+		{"local2", LOG_LOCAL2},
+		{"local3", LOG_LOCAL3},
+		{"local4", LOG_LOCAL4},
+		{"local5", LOG_LOCAL5},
+		{"local6", LOG_LOCAL6},
+		{"local7", LOG_LOCAL7},
+		{"lpr", LOG_LPR},
+		{"mail", LOG_MAIL},
+		{"news", LOG_NEWS},
+		{"user", LOG_USER},
+		{"uucp", LOG_UUCP},
+	},
+	levels[] = {
+		{"emerg", LOG_EMERG},
+		{"alert", LOG_ALERT},
+		{"crit", LOG_CRIT},
+		{"err", LOG_ERR},
+		{"warning", LOG_WARNING},
+		{"notice", LOG_NOTICE},
+		{"info", LOG_INFO},
+		{"debug", LOG_DEBUG},
+	};
+	unsigned int i;
+	if (entry->cm_cert_expiration > time(NULL)) {
+		switch (entry->cm_cert_storage_type) {
+		case cm_cert_storage_nssdb:
+			if (entry->cm_cert_token != NULL) {
+				message = talloc_asprintf(entry, "Certificate "
+							  "named \"%s\" "
+							  "in token \"%s\" "
+							  "in database \"%s\" "
+							  "will expire at "
+							  "%s.\n",
+							  entry->cm_cert_token,
+							  entry->cm_cert_nickname,
+							  entry->cm_cert_storage_location,
+							  cm_store_timestamp_from_time(entry->cm_cert_expiration, t));
+			} else {
+				message = talloc_asprintf(entry, "Certificate "
+							  "named \"%s\" "
+							  "in database \"%s\" "
+							  "will expire at "
+							  "%s.\n",
+							  entry->cm_cert_nickname,
+							  entry->cm_cert_storage_location,
+							  cm_store_timestamp_from_time(entry->cm_cert_expiration, t));
+			}
+			break;
+		case cm_cert_storage_file:
+			message = talloc_asprintf(entry, "Certificate "
+						  "in file \"%s\" will expire "
+						  "at %s.\n",
+						  entry->cm_cert_storage_location,
+						  cm_store_timestamp_from_time(entry->cm_cert_expiration, t));
+			break;
+		}
+	} else {
+		switch (entry->cm_cert_storage_type) {
+		case cm_cert_storage_nssdb:
+			if (entry->cm_cert_token != NULL) {
+				message = talloc_asprintf(entry, "Certificate "
+							  "named \"%s\" "
+							  "in token \"%s\" "
+							  "in database \"%s\" "
+							  "is expired.",
+							  entry->cm_cert_token,
+							  entry->cm_cert_nickname,
+							  entry->cm_cert_storage_location);
+			} else {
+				message = talloc_asprintf(entry, "Certificate "
+							  "named \"%s\" "
+							  "in database \"%s\" "
+							  "is expired.",
+							  entry->cm_cert_nickname,
+							  entry->cm_cert_storage_location);
+			}
+			break;
+		case cm_cert_storage_file:
+			message = talloc_asprintf(entry, "Certificate "
+						  "in file \"%s\" is expired.",
+						  entry->cm_cert_storage_location);
+			break;
+		}
+	}
+	if (entry->cm_notification_default) {
+		method = cm_store_get_defaults()->cm_notification_method;
+		dest = cm_store_get_defaults()->cm_notification_destination;
+	} else {
+		method = entry->cm_notification_method;
+		dest = entry->cm_notification_destination;
+	}
+	switch (method) {
+	case cm_notification_syslog:
+		facility = LOG_USER;
+		level = LOG_NOTICE;
+		for (p = dest; *p != '\0'; p = q) {
+			q = p + strcspn(p, ".,:/");
+			tok = talloc_strndup(entry, p, q - p);
+			if (tok == NULL) {
+				continue;
+			}
+			for (i = 0;
+			     i < sizeof(facilities) / sizeof(facilities[0]);
+			     i++) {
+				if (strcasecmp(facilities[i].name, tok) == 0) {
+					facility = facilities[i].value;
+				}
+			}
+			for (i = 0;
+			     i < sizeof(levels) / sizeof(levels[0]);
+			     i++) {
+				if (strcasecmp(levels[i].name, tok) == 0) {
+					level = levels[i].value;
+				}
+			}
+			q += strspn(q, ".,:/");
+		}
+		cm_log(4, "0x%02x %s\n", facility | level, message);
+		syslog(facility | level, "%s", message);
+		break;
+	case cm_notification_email:
+		execlp("mail", "mail", "-s", message, dest, NULL);
+		break;
+	}
 }
 
 /* Start notifying the user that the certificate will expire soon. */

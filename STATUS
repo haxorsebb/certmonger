@@ -28,9 +28,9 @@ Complete:
     * Sort out an init script.
   * Sort out storage for system-local defaults which are consulted
     before falling back to compiled-in defaults.
+  * Actually do notification of expiration and impending expiration.
 
 To-do:
-  * Actually do notification of expiration and impending expiration.
   * Should offer an API over D-Bus which the client uses instead of
     mutilating the queue directly (see doc/api.txt):
     * Remove entry. (1 day)

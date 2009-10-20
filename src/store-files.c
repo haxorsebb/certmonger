@@ -1066,6 +1066,17 @@ cm_store_get_defaults(void)
 	static struct cm_store_entry *defaults = NULL;
 	const char *filename;
 	FILE *fp;
+	enum cm_notification_method method = CM_NOTIFICATION_DEFAULT_METHOD;
+	const char *dest = NULL;
+
+	switch (method) {
+	case cm_notification_syslog:
+		dest = CM_NOTIFICATION_DEFAULT_SYSLOG_FACILITY;
+		break;
+	case cm_notification_email:
+		dest = CM_NOTIFICATION_DEFAULT_MAIL;
+		break;
+	}
 
 	if (defaults == NULL) {
 		filename = getenv(CM_STORE_REQUEST_DEFAULTS_ENV);
@@ -1080,6 +1091,9 @@ cm_store_get_defaults(void)
 			defaults = talloc_ptrtype(NULL, defaults);
 			if (defaults != NULL) {
 				memset(defaults, 0, sizeof(*defaults));
+				defaults->cm_notification_method = method;
+				defaults->cm_notification_destination =
+					talloc_strdup(defaults, dest);
 			}
 		}
 	}
