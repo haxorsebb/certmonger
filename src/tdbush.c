@@ -937,7 +937,7 @@ static DBusHandlerResult
 request_get_csr_info(DBusConnection *conn, DBusMessage *msg,
 		     struct cm_context *ctx)
 {
-	return DBUS_HANDLER_RESULT_HANDLED;
+	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
 static DBusHandlerResult
@@ -1040,6 +1040,35 @@ static DBusHandlerResult
 request_get_notification_info(DBusConnection *conn, DBusMessage *msg,
 			      struct cm_context *ctx)
 {
+	DBusMessage *rep;
+	struct cm_store_entry *entry;
+	enum cm_notification_method m;
+	const char *method, *d;
+	entry = get_entry_for_request_message(msg, ctx);
+	if (entry != NULL) {
+		if (entry->cm_notification_default) {
+			m = cm_store_get_defaults()->cm_notification_method;
+			d = cm_store_get_defaults()->cm_notification_destination;
+		} else {
+			m = entry->cm_notification_method;
+			d = entry->cm_notification_destination;
+		}
+		method = NULL;
+		switch (m) {
+		case cm_notification_syslog:
+			method = "syslog";
+			break;
+		case cm_notification_email:
+			method = "email";
+			break;
+		}
+		rep = dbus_message_new_method_return(msg);
+		if (rep != NULL) {
+			cm_tdbusm_set_ss(rep, method, d);
+			dbus_connection_send(conn, rep, NULL);
+			dbus_message_unref(rep);
+		}
+	}
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
