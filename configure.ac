@@ -102,8 +102,8 @@ AC_DEFINE_UNQUOTED(CM_DEFAULT_RSA_MODULUS,0x10001,[Define to the default RSA key
 AC_DEFINE_UNQUOTED(CM_DEFAULT_PUBKEY_SIZE,2048,[Define to the default public key size.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_TTL_LIST,[30*24*60*60,7*24*60*60,3*24*60*60,2*24*60*60,1*24*60*60],[Define to the list of default time-left thresholds at which we need to warn the user.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_LIFETIME,30,[Define to the default certificate lifetime, in days.])
-AC_DEFINE_UNQUOTED(CM_NOTIFICATION_DEFAULT_METHOD,cm_notification_syslog,[Define to the default method of notification.])
-AC_DEFINE_UNQUOTED(CM_NOTIFICATION_DEFAULT_MAIL,"root",[Define to the address where notification mail should be sent by default.])
-AC_DEFINE_UNQUOTED(CM_NOTIFICATION_DEFAULT_SYSLOG_FACILITY,"daemon.notice",[Define to the syslog facility from which notification messages should be sent by default.])
+AC_DEFINE_UNQUOTED(CM_DEFAULT_NOTIFICATION_METHOD,cm_notification_syslog,[Define to the default method of notification.])
+AC_DEFINE_UNQUOTED(CM_DEFAULT_NOTIFICATION_MAIL,"root",[Define to the address where notification mail should be sent by default.])
+AC_DEFINE_UNQUOTED(CM_DEFAULT_NOTIFICATION_SYSLOG_PRIORITY,"daemon.notice",[Define to the syslog facility from which notification messages should be sent by default.])
 
 AC_OUTPUT(Makefile src/Makefile dbus/Makefile dbus/certmonger.conf src/certmonger.init)

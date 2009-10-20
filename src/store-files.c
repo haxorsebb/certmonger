@@ -1066,15 +1066,15 @@ cm_store_get_defaults(void)
 	static struct cm_store_entry *defaults = NULL;
 	const char *filename;
 	FILE *fp;
-	enum cm_notification_method method = CM_NOTIFICATION_DEFAULT_METHOD;
+	enum cm_notification_method method = CM_DEFAULT_NOTIFICATION_METHOD;
 	const char *dest = NULL;
 
 	switch (method) {
 	case cm_notification_syslog:
-		dest = CM_NOTIFICATION_DEFAULT_SYSLOG_FACILITY;
+		dest = CM_DEFAULT_NOTIFICATION_SYSLOG_PRIORITY;
 		break;
 	case cm_notification_email:
-		dest = CM_NOTIFICATION_DEFAULT_MAIL;
+		dest = CM_DEFAULT_NOTIFICATION_MAIL;
 		break;
 	}
 
