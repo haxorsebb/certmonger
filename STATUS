@@ -75,6 +75,11 @@ To-do:
   * Local signing should track a revocation list for each signing key
     and publish a CRL for it. (3 days)
     COULD
+  * Learn to handle keys and certificates stored in files in virtual
+    guests of the current OS instance (using libguestfs).  Would need
+    to refactor some of the current storage code to to it for "file".
+    Not at all sure how to do it for "nssdb".
+    COULD
   * Queue management.
     COULD -> Move entries from hand-rolled files to simple XML. (2 days)
     COULD -> Move the whole thing to an ldb. (3 days)
