@@ -38,6 +38,7 @@ To-do:
       MUST
     * Modify requested data and regenerate signing requests. (3 days)
       MUST
+    * Provide introspection data as a well-behaved DBus service would. (1 day)
     * Set/reset PIN for encrypted key storage. (1 day)
       MUST
   * Detect when network connections go up (hopefully using NetworkManager
