@@ -202,7 +202,7 @@ cm_service_one(struct cm_context *context, struct timeval *current_time, int i)
 			       context->entries[i]->cm_id, delay);
 			break;
 		case cm_time_no_time:
-			if (fd == -1) {
+			if (fd != -1) {
 				t = tevent_add_fd(talloc_parent(context),
 						  context,
 						  fd, TEVENT_FD_READ,

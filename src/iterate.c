@@ -377,11 +377,11 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			} else
 			if (cm_submit_rejected(entry,
 					       state->cm_submit_state) == 0) {
-				/* The requeste was flat-out rejected. */
+				/* The request was flat-out rejected. */
 				entry->cm_state = CM_REJECTED;
 				*when = cm_time_now;
 			} else {
-				/* The CA denied our request. HELP! */
+				/* Don't know what's going on. HELP! */
 				cm_submit_done(entry, state->cm_submit_state);
 				state->cm_submit_state = NULL;
 				entry->cm_state = CM_NEED_GUIDANCE;
@@ -470,11 +470,11 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			} else
 			if (cm_submit_rejected(entry,
 					       state->cm_submit_state) == 0) {
-				/* The requeste was flat-out rejected. */
+				/* The request was flat-out rejected. */
 				entry->cm_state = CM_REJECTED;
 				*when = cm_time_now;
 			} else {
-				/* The CA denied our request. HELP! */
+				/* Don't know what's going on. HELP! */
 				cm_submit_done(entry, state->cm_submit_state);
 				state->cm_submit_state = NULL;
 				entry->cm_state = CM_NEED_GUIDANCE;
@@ -737,6 +737,9 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		 * assigned to it already. */
 		if ((entry->cm_ca_name == NULL) &&
 		    (entry->cm_cert_issuer != NULL)) {
+			/* Walk the list of known names of known CAs and try to
+			 * match one with the issuer of the certificate we
+			 * already have. */
 			for (i = 0; i < cm_get_n_cas(context); i++) {
 				tmp_ca = cm_get_ca_by_index(context, i);
 				for (j = 0;
@@ -750,6 +753,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				}
 			}
 		}
+		/* No match -> assign the default. */
 		if (entry->cm_ca_name == NULL) {
 			for (i = 0; i < cm_get_n_cas(context); i++) {
 				tmp_ca = cm_get_ca_by_index(context, i);
