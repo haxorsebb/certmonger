@@ -203,11 +203,18 @@ cm_service_one(struct cm_context *context, struct timeval *current_time, int i)
 			       context->entries[i]->cm_id, delay);
 			break;
 		case cm_time_no_time:
-			t = tevent_add_fd(talloc_parent(context), context,
-					  fd, TEVENT_FD_READ,
-					  cm_fd_h, context);
-			cm_log(3, "Will revisit '%s' on traffic from %d.\n",
-			       context->entries[i]->cm_id, fd);
+			if (fd == -1) {
+				t = tevent_add_fd(talloc_parent(context),
+						  context,
+						  fd, TEVENT_FD_READ,
+						  cm_fd_h, context);
+				cm_log(3, "Will revisit '%s' on "
+				       "traffic from %d.\n",
+				       context->entries[i]->cm_id, fd);
+			} else {
+				cm_log(3, "Request '%s' was rejected.\n",
+				       context->entries[i]->cm_id);
+			}
 			break;
 		}
 	}
