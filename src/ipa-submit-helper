@@ -1,2 +1,37 @@
 #!/bin/sh
+# Create temporary files.
+ccfile=`mktemp ${TMPDIR:-/tmp}/ipaccXXXXXX`
+if test -z "$ccfile" ; then
+	logger `basename $0`:"Unable to create temporary ccache file."
+	exit 3
+fi
+csrfile=`mktemp ${TMPDIR:-/tmp}/ipacsrXXXXXX`
+if test -z "$csrfile" ; then
+	logger `basename $0`:"Unable to create temporary CSR file."
+	exit 3
+fi
+trap 'rm -f "$ccfile" "$csrfile"' EXIT
+
+# Get Kerberos credentials.
+KRB5CCNAME="FILE:$ccfile"; export KRB5CCNAME
+kinit -k
+
+# Stash the input somewhere.
+echo "$CERTMONGER_INPUT" > "$csrfile"
+cat > "$csrfile"
+
+# Figure out what we're doing here.
+case "$CERTMONGER_OPERATION" in
+SUBMIT|)
+	if ipa cert-request file://"$csrfile" ; then
+		exit 0
+	else
+		exit 3
+	fi
+	;;
+POLL)
+	logger `basename $0`:"Don't know how to poll."
+	exit 3
+	;;
+esac
 exit 3
