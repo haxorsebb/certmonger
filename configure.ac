@@ -105,5 +105,7 @@ AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_LIFETIME,30,[Define to the default certificat
 AC_DEFINE_UNQUOTED(CM_DEFAULT_NOTIFICATION_METHOD,cm_notification_syslog,[Define to the default method of notification.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_NOTIFICATION_MAIL,"root",[Define to the address where notification mail should be sent by default.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_NOTIFICATION_SYSLOG_PRIORITY,"daemon.notice",[Define to the syslog facility from which notification messages should be sent by default.])
-
+AC_DEFINE(CM_DELAY_SOON,1,[Define to the time to wait for something that will happen soon.])
+AC_DEFINE(CM_DELAY_SOONISH,5,[Define to the time to wait for something that will happen soon, but not that soon.])
+AC_DEFINE(CM_DELAY_CA_POLL,(60 * 60),[Define to the time to wait between attempts to see if the CA issued a certificate.])
 AC_OUTPUT(Makefile src/Makefile dbus/Makefile dbus/certmonger.conf src/certmonger.init)

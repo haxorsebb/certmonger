@@ -37,9 +37,6 @@
 #include "store.h"
 #include "store-int.h"
 
-#define DELAY_SOON	1
-#define DELAY_SOONISH	5
-
 struct cm_context {
 	int n_entries, should_quit;
 	struct cm_store_entry **entries;
@@ -185,14 +182,14 @@ cm_service_one(struct cm_context *context, struct timeval *current_time, int i)
 			       context->entries[i]->cm_id);
 			break;
 		case cm_time_soon:
-			then = tevent_timeval_add(&now, DELAY_SOON, 0);
+			then = tevent_timeval_add(&now, CM_DELAY_SOON, 0);
 			t = tevent_add_timer(talloc_parent(context), context,
 					     then, cm_timer_h, context);
 			cm_log(3, "Will revisit '%s' soon.\n",
 			       context->entries[i]->cm_id);
 			break;
 		case cm_time_soonish:
-			then = tevent_timeval_add(&now, DELAY_SOONISH, 0);
+			then = tevent_timeval_add(&now, CM_DELAY_SOONISH, 0);
 			t = tevent_add_timer(talloc_parent(context), context,
 					     then, cm_timer_h, context);
 			cm_log(3, "Will revisit '%s' soonish.\n",
