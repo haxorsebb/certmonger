@@ -37,6 +37,9 @@
 #include "tdbus.h"
 #include "tdbusm.h"
 
+#define N_(_msg) (_msg)
+#define _(_msg) (_msg)
+
 #ifdef FORCE_CA
 #define GETOPT_CA ""
 #define DEFAULT_CA FORCE_CA
@@ -898,77 +901,92 @@ static struct {
 static void
 help(const char *cmd, const char *category)
 {
-	unsigned int i;
+	unsigned int i, j;
+	const char *general_help[] = {
+		N_("%s - client certificate enrollment tool\n"),
+		NULL,
+	};
+	const char *request_help[] = {
+		N_("Usage: %s request [options]\n"),
+		"\n",
+		N_("Required arguments:\n"),
+		N_("* If using an NSS database for storage:\n"),
+		N_("  -d DIR	NSS database for key and cert\n"),
+		N_("  -n NAME	nickname for NSS-based storage (only valid with -d)\n"),
+		N_("  -t NAME	optional token name for NSS-based storage (only valid with -d)\n"),
+		N_("* If using files for storage:\n"),
+		N_("  -k FILE	PEM file for private key\n"),
+		N_("  -f FILE	PEM file for certificate (only valid with -k)\n"),
+		"\n",
+		N_("Optional arguments:\n"),
+		N_("* Certificate handling settings:\n"),
+		N_("  -g SIZE	size of key to be generated if one is not already in place\n"),
+		N_("  -e		track and warn of impending expiration of certificate\n"),
+		N_("  -r		attempt to renew the certificate when expiration nears\n"),
+#ifndef FORCE_CA
+		N_("  -c CA	use the specified CA rather than the default\n"),
+#endif
+		N_("* Parameters for the signing request:\n"),
+		N_("  -N NAME	set requested subject name (default: CN=<hostname>)\n"),
+		N_("  -U EXTUSAGE	add requested extended key usage OID\n"),
+		N_("  -K NAME	add requested principal name\n"),
+		N_("  -D DNSNAME	add requested DNS name\n"),
+		N_("  -E EMAIL	add requested email address\n"),
+		NULL,
+	};
+	const char *start_tracking_help[] = {
+		N_("Usage: %s start-tracking [options]\n"),
+		"\n",
+		N_("Required arguments:\n"),
+		N_("* If using an NSS database for storage:\n"),
+		N_("  -d DIR	NSS database for key and cert\n"),
+		N_("  -n NAME	nickname for NSS-based storage (only valid with -d)\n"),
+		N_("  -t NAME	optional token name for NSS-based storage (only valid with -d)\n"),
+		N_("* If using files for storage:\n"),
+		N_("  -k FILE	PEM file for private key\n"),
+		N_("  -f FILE	PEM file for certificate (only valid with -k)\n"),
+		"\n",
+		N_("Optional arguments:\n"),
+		N_("* Certificate handling settings:\n"),
+		N_("  -r		attempt to renew the certificate when expiration nears\n"),
+#ifndef FORCE_CA
+		N_("  -c CA	use the specified CA rather than the default\n"),
+#endif
+		NULL,
+	};
+	const char *stop_tracking_help[] = {
+		N_("Usage: %s stop-tracking [options]\n"),
+		"\n",
+		N_("Required arguments:\n"),
+		N_("* If using an NSS database for storage:\n"),
+		N_("  -d DIR	NSS database for key and cert\n"),
+		N_("  -n NAME	nickname for NSS-based storage (only valid with -d)\n"),
+		N_("  -t NAME	optional token name for NSS-based storage (only valid with -d)\n"),
+		N_("* If using files for storage:\n"),
+		N_("  -k FILE	PEM file for private key\n"),
+		N_("  -f FILE	PEM file for certificate (only valid with -k)\n"),
+		NULL,
+	};
+	const char *list_help[] = {
+		N_("Usage: %s list [options]\n"),
+		N_("* General options:\n"),
+#ifndef FORCE_CA
+		N_("  -c CA	list only requests and cert associated with this CA\n"),
+#endif
+		N_("  -r		list only information about outstanding requests\n"),
+		N_("  -t		list only information about tracked certificates\n"),
+		NULL,
+	};
 	struct {
 		const char *category;
-		const char *msg;
+		const char **msgs;
 	} msgs[] = {
-	{NULL,
-	"%s - client certificate enrollment tool\n"},
-	{"request",
-	"Usage: %s request [options]\n"
-	"\n"
-	"Required arguments:\n"
-	"* If using an NSS database for storage:\n"
-	"  -d DIR	NSS database for key and cert\n"
-	"  -n NAME	nickname for NSS-based storage (only valid with -d)\n"
-	"  -t NAME	optional token name for NSS-based storage (only valid with -d)\n"
-	"* If using files for storage:\n"
-	"  -k FILE	PEM file for private key\n"
-	"  -f FILE	PEM file for certificate (only valid with -k)\n"
-	"\n"
-	"Optional arguments:\n"
-	"* Certificate handling settings:\n"
-	"  -g SIZE	size of key to be generated if one is not already in place\n"
-	"  -e		track and warn of impending expiration of certificate\n"
-	"  -r		attempt to renew the certificate when expiration nears\n"
-#ifndef FORCE_CA
-	"  -c CA	use the specified CA rather than the default\n"
-#endif
-	"* Parameters for the signing request:\n"
-	"  -N NAME	set requested subject name (default: CN=<hostname>)\n"
-	"  -U EXTUSAGE	add requested extended key usage OID\n"
-	"  -K NAME	add requested principal name\n"
-	"  -D DNSNAME	add requested DNS name\n"
-	"  -E EMAIL	add requested email address\n",},
-	{"start-tracking",
-	"Usage: %s start-tracking [options]\n"
-	"\n"
-	"Required arguments:\n"
-	"* If using an NSS database for storage:\n"
-	"  -d DIR	NSS database for key and cert\n"
-	"  -n NAME	nickname for NSS-based storage (only valid with -d)\n"
-	"  -t NAME	optional token name for NSS-based storage (only valid with -d)\n"
-	"* If using files for storage:\n"
-	"  -k FILE	PEM file for private key\n"
-	"  -f FILE	PEM file for certificate (only valid with -k)\n"
-	"\n"
-	"Optional arguments:\n"
-	"* Certificate handling settings:\n"
-	"  -r		attempt to renew the certificate when expiration nears\n"
-#ifndef FORCE_CA
-	"  -c CA	use the specified CA rather than the default\n"
-#endif
-	,},
-	{"stop-tracking",
-	"Usage: %s stop-tracking [options]\n"
-	"\n"
-	"Required arguments:\n"
-	"* If using an NSS database for storage:\n"
-	"  -d DIR	NSS database for key and cert\n"
-	"  -n NAME	nickname for NSS-based storage (only valid with -d)\n"
-	"  -t NAME	optional token name for NSS-based storage (only valid with -d)\n"
-	"* If using files for storage:\n"
-	"  -k FILE	PEM file for private key\n"
-	"  -f FILE	PEM file for certificate (only valid with -k)\n",},
-	{"list",
-	"Usage: %s list [options]\n"
-	"* General options:\n"
-#ifndef FORCE_CA
-	"  -c CA	list only requests and cert associated with this CA\n"
-#endif
-	"  -r		list only information about outstanding requests\n"
-	"  -t		list only information about tracked certificates\n"}};
+		{NULL, general_help},
+		{"request", request_help},
+		{"start-tracking", start_tracking_help},
+		{"stop-tracking", stop_tracking_help},
+		{"list", list_help},
+	};
 	for (i = 0; i < sizeof(msgs) / sizeof(msgs[0]); i++) {
 		if ((category != NULL) && (msgs[i].category != NULL) &&
 		    (strcmp(category, msgs[i].category) != 0)) {
@@ -977,7 +995,9 @@ help(const char *cmd, const char *category)
 		if (i > 0) {
 			printf("\n");
 		}
-		printf(msgs[i].msg, cmd);
+		for (j = 0; msgs[i].msgs[j] != NULL; j++) {
+			printf(_(msgs[i].msgs[j]), cmd);
+		}
 	}
 }
 
@@ -1000,7 +1020,7 @@ main(int argc, char **argv)
 		}
 		talloc_free(globals.tctx);
 		globals.tctx = NULL;
-		fprintf(stderr, "%s: unrecognized command\n", verb);
+		fprintf(stderr, _("%s: unrecognized command\n"), verb);
 		return 1;
 	} else {
 		help(p, NULL);
