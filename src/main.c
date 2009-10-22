@@ -89,6 +89,9 @@ main(int argc, char **argv)
 		fprintf(stderr, "Error initializing tevent.\n");
 		exit(1);
 	}
+	if (dlevel > 0) {
+		tevent_set_debug_stderr(ec);
+	}
 
 	if (pidfile != NULL) {
 		pfd = open(pidfile, O_RDWR | O_CREAT,
