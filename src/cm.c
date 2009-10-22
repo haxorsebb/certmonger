@@ -172,7 +172,6 @@ cm_service_one(struct cm_context *context, struct timeval *current_time, int i)
 			 context,
 			 context->events[i].iterate_state,
 			 &when, &delay, &fd);
-	t = NULL;
 	if (ret == 0) {
 		switch (when) {
 		case cm_time_now:
@@ -214,6 +213,7 @@ cm_service_one(struct cm_context *context, struct timeval *current_time, int i)
 			} else {
 				cm_log(3, "Waiting for instructions for "
 				       "'%s'.\n", context->entries[i]->cm_id);
+				t = NULL;
 			}
 			break;
 		}

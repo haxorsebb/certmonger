@@ -415,6 +415,14 @@ cm_submit_sn_rejected(struct cm_store_entry *entry,
 	return -1; /* it never gets rejected */
 }
 
+/* Check if the CA was unreachable. */
+static int
+cm_submit_sn_unreachable(struct cm_store_entry *entry,
+			 struct cm_submit_state *state)
+{
+	return -1; /* uh, we're the CA */
+}
+
 /* Check if we need to make another request to actually retrieve the cert. */
 static int
 cm_submit_sn_needs_retrieval(struct cm_store_entry *entry,
@@ -456,6 +464,7 @@ cm_submit_sn_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 		state->pvt.status_ready = cm_submit_sn_status_ready;
 		state->pvt.issued = cm_submit_sn_issued;
 		state->pvt.rejected = cm_submit_sn_rejected;
+		state->pvt.unreachable = cm_submit_sn_unreachable;
 		state->pvt.needs_retrieval = cm_submit_sn_needs_retrieval;
 		state->pvt.done = cm_submit_sn_done;
 		state->fd = -1;

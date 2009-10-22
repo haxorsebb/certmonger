@@ -38,7 +38,7 @@ enum cm_external_status {
 	STATUS_ISSUED = 0,
 	STATUS_WAIT = 1,
 	STATUS_REJECTED = 2,
-	STATUS_CONNECT = 3,
+	STATUS_UNREACHABLE = 3,
 };
 
 struct cm_submit_state {
@@ -201,6 +201,21 @@ cm_submit_e_rejected(struct cm_store_entry *entry,
 	return -1;
 }
 
+/* Check if the CA was unreachable.  If the exit status was right, then we
+ * never actually talked to the CA. */
+static int
+cm_submit_e_unreachable(struct cm_store_entry *entry,
+			struct cm_submit_state *state)
+{
+	if (state->pid == -1) {
+		if (WIFEXITED(state->status) &&
+		    (WEXITSTATUS(state->status) == STATUS_UNREACHABLE)) {
+			return 0;
+		}
+	}
+	return -1;
+}
+
 /* Check if we need to make another request to actually retrieve the cert. */
 static int
 cm_submit_e_needs_retrieval(struct cm_store_entry *entry,
@@ -246,6 +261,7 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 		state->pvt.status_ready = cm_submit_e_status_ready;
 		state->pvt.issued = cm_submit_e_issued;
 		state->pvt.rejected = cm_submit_e_rejected;
+		state->pvt.unreachable = cm_submit_e_unreachable;
 		state->pvt.needs_retrieval = cm_submit_e_needs_retrieval;
 		state->pvt.done = cm_submit_e_done;
 		state->fd = -1;

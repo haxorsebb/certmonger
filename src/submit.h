@@ -54,6 +54,10 @@ int cm_submit_issued(struct cm_store_entry *entry,
 int cm_submit_rejected(struct cm_store_entry *entry,
 		       struct cm_submit_state *state);
 
+/* Check if the CA was unreachable. */
+int cm_submit_unreachable(struct cm_store_entry *entry,
+			  struct cm_submit_state *state);
+
 /* Check if we need to make another request to actually retrieve the cert. */
 int cm_submit_needs_retrieval(struct cm_store_entry *entry,
 			      struct cm_submit_state *state);

@@ -39,7 +39,10 @@ struct cm_submit_state_pvt {
 		      struct cm_submit_state *state);
 	/* Check if the certificate request was rejected. */
 	int (*rejected)(struct cm_store_entry *entry,
-		        struct cm_submit_state *state);
+			struct cm_submit_state *state);
+	/* Check if the CA was unreachable for some reason. */
+	int (*unreachable)(struct cm_store_entry *entry,
+			   struct cm_submit_state *state);
 	/* Check if we need to make another request to actually retrieve the
 	 * cert. */
 	int (*needs_retrieval)(struct cm_store_entry *entry,
