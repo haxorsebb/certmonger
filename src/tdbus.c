@@ -78,7 +78,6 @@ cm_tdbus_tfd_flags_for_watch_flags(unsigned int watch_flags)
 	}
 	if (watch_flags & DBUS_WATCH_HANGUP) {
 		tfd_flags |= TEVENT_FD_READ;
-		tfd_flags |= TEVENT_FD_WRITE;
 	}
 	return tfd_flags;
 }
@@ -104,6 +103,7 @@ cm_tdbus_handle_fd(struct tevent_context *ec, struct tevent_fd *tfd,
 	struct tdbus_watch *watch;
 	int fd, flags;
 	watch = pvt;
+	talloc_free(watch->tfd);
 	watch->tfd = NULL;
 	if (watch->active) {
 		cm_log(3, "Handling D-Bus traffic on %d.\n",
@@ -125,6 +125,7 @@ cm_tdbus_handle_timer(struct tevent_context *ec, struct tevent_timer *timer,
 	struct tdbus_timer *tdb_timer;
 	struct timeval next_time;
 	tdb_timer = pvt;
+	talloc_free(tdb_timer->tt);
 	tdb_timer->tt = NULL;
 	if (tdb_timer->active) {
 		cm_log(3, "Handling D-Bus timeout.\n");
