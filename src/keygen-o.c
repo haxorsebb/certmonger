@@ -63,7 +63,7 @@ cm_keygen_o_main(int fd, struct cm_store_entry *entry)
 		cm_key_size = CM_DEFAULT_PUBKEY_SIZE;
 	} else {
 		cm_key_algorithm = entry->cm_key_type.cm_key_algorithm;
-		cm_key_size = entry->cm_key_type.cm_key_size;
+		cm_key_size = entry->cm_key_type.cm_key_gen_size;
 		if (cm_key_size <= 0) {
 			cm_key_size = CM_DEFAULT_PUBKEY_SIZE;
 		}

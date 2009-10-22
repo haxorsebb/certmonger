@@ -31,8 +31,8 @@ struct cm_store_entry {
 	struct cm_key_type {
 		enum cm_key_algorithm {
 			cm_key_rsa = 0,
-		} cm_key_algorithm;
-		int cm_key_size;
+		} cm_key_algorithm, cm_key_gen_algorithm;
+		int cm_key_size, cm_key_gen_size;
 	} cm_key_type;
 	/* Location of key pair [use-once default] NSS,/etc/pki/nssdb */
 	enum cm_key_storage_type {

@@ -388,8 +388,8 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	param = cm_tdbusm_find_dict_entry(d, "KEY_SIZE", cm_tdbusm_dict_n);
 	if (param != NULL) {
 		new_entry->cm_key_type_default = FALSE;
-		new_entry->cm_key_type.cm_key_algorithm = cm_key_rsa;
-		new_entry->cm_key_type.cm_key_size = param->value.n;
+		new_entry->cm_key_type.cm_key_gen_algorithm = cm_key_rsa;
+		new_entry->cm_key_type.cm_key_gen_size = param->value.n;
 	} else {
 		new_entry->cm_key_type_default = TRUE;
 	}

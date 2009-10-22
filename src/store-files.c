@@ -43,7 +43,9 @@ enum cm_store_file_field {
 
 	cm_store_entry_field_key_type_default,
 	cm_store_entry_field_key_type,
+	cm_store_entry_field_key_gen_type,
 	cm_store_entry_field_key_size,
+	cm_store_entry_field_key_gen_size,
 
 	cm_store_entry_field_key_storage_type,
 	cm_store_entry_field_key_storage_location,
@@ -114,7 +116,9 @@ static struct cm_store_file_field_list {
 	{cm_store_file_field_id, "id"},
 	{cm_store_entry_field_key_type_default, "key_type_default"},
 	{cm_store_entry_field_key_type, "key_type"},
+	{cm_store_entry_field_key_gen_type, "key_gen_type"},
 	{cm_store_entry_field_key_size, "key_size"},
+	{cm_store_entry_field_key_gen_size, "key_gen_size"},
 
 	{cm_store_entry_field_key_storage_type, "key_storage_type"},
 	{cm_store_entry_field_key_storage_location, "key_storage_location"},
@@ -396,8 +400,22 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 				}
 				talloc_free(p);
 				break;
+			case cm_store_entry_field_key_gen_type:
+				if (strcasecmp(s[i], "RSA") == 0) {
+					ret->cm_key_type.cm_key_gen_algorithm =
+						cm_key_rsa;
+				} else {
+					ret->cm_key_type.cm_key_gen_algorithm =
+						cm_key_rsa;
+				}
+				talloc_free(p);
+				break;
 			case cm_store_entry_field_key_size:
 				ret->cm_key_type.cm_key_size = atoi(p);
+				talloc_free(p);
+				break;
+			case cm_store_entry_field_key_gen_size:
+				ret->cm_key_type.cm_key_gen_size = atoi(p);
 				talloc_free(p);
 				break;
 			case cm_store_entry_field_key_storage_type:
@@ -621,7 +639,9 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 				break;
 			case cm_store_entry_field_key_type_default:
 			case cm_store_entry_field_key_type:
+			case cm_store_entry_field_key_gen_type:
 			case cm_store_entry_field_key_size:
+			case cm_store_entry_field_key_gen_size:
 			case cm_store_entry_field_key_storage_type:
 			case cm_store_entry_field_key_storage_location:
 			case cm_store_entry_field_key_token:
@@ -837,8 +857,16 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 					"RSA");
 		break;
 	}
+	switch (entry->cm_key_type.cm_key_gen_algorithm) {
+	case cm_key_rsa:
+		cm_store_file_write_str(fp, cm_store_entry_field_key_gen_type,
+					"RSA");
+		break;
+	}
 	cm_store_file_write_int(fp, cm_store_entry_field_key_size,
 				entry->cm_key_type.cm_key_size);
+	cm_store_file_write_int(fp, cm_store_entry_field_key_gen_size,
+				entry->cm_key_type.cm_key_gen_size);
 
 	switch (entry->cm_key_storage_type) {
 	case cm_key_storage_file:
