@@ -212,8 +212,8 @@ cm_service_one(struct cm_context *context, struct timeval *current_time, int i)
 				       "traffic from %d.\n",
 				       context->entries[i]->cm_id, fd);
 			} else {
-				cm_log(3, "Request '%s' was rejected.\n",
-				       context->entries[i]->cm_id);
+				cm_log(3, "Waiting for instructions for "
+				       "'%s'.\n", context->entries[i]->cm_id);
 			}
 			break;
 		}
