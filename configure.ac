@@ -8,6 +8,10 @@ if test x$GCC = xyes ; then
 	CFLAGS="$CFLAGS -Wall -Wextra"
 fi
 
+mylibexecdir="$libexecdir/${PACKAGE_NAME}"
+mylibexecdir=`eval echo $mylibexecdir | sed "s,NONE,$prefix,g"`
+mylibexecdir=`eval echo $mylibexecdir | sed "s,NONE,$ac_default_prefix,g"`
+mylibexecdir=`eval echo $mylibexecdir | sed "s,NONE,,g"`
 AC_ARG_WITH(file-store-dir,
 AS_HELP_STRING([--with-file-store-dir=/var/lib/certmonger],[directory to use for storing data]),
 mylocalstatedir=$withval,
@@ -108,4 +112,10 @@ AC_DEFINE_UNQUOTED(CM_DEFAULT_NOTIFICATION_SYSLOG_PRIORITY,"daemon.notice",[Defi
 AC_DEFINE(CM_DELAY_SOON,1,[Define to the time to wait for something that will happen soon.])
 AC_DEFINE(CM_DELAY_SOONISH,5,[Define to the time to wait for something that will happen soon, but not that soon.])
 AC_DEFINE(CM_DELAY_CA_POLL,(60 * 60),[Define to the time to wait between attempts to see if the CA issued a certificate.])
+
+AC_DEFINE(WITH_IPA,1,[Define to ensure that there's always an IPA CA defined.])
+AC_DEFINE_UNQUOTED(WITH_IPA_CA_NAME,"IPA",[Define to the name that the default IPA CA will be known by.])
+AC_DEFINE_UNQUOTED(WITH_IPA_HELPER_PATH,"$mylibexecdir/ipa-submit-helper",[Define to the path of the IPA submission helper.])
+AM_CONDITIONAL(WITH_IPA,true)
+
 AC_OUTPUT(Makefile src/Makefile dbus/Makefile dbus/certmonger.conf src/certmonger.init)

@@ -1319,6 +1319,7 @@ cm_store_get_all_cas(void *parent)
 				fclose(fp);
 			}
 		}
+		/* Make sure we get at least one internal/self sign entry. */
 		for (k = 0; k < j; k++) {
 			if (ret[k]->cm_ca_type == cm_ca_internal_self) {
 				break;
@@ -1330,9 +1331,24 @@ cm_store_get_all_cas(void *parent)
 			ret[j]->cm_ca_type = cm_ca_internal_self;
 			ret[j]->cm_ca_internal_serial = talloc_strdup(ret[j],
 								      "00");
-			ret[j]->cm_ca_type = cm_ca_internal_self;
 			j++;
 		}
+#ifdef WITH_IPA
+		/* Make sure we get at least one IPA entry. */
+		for (k = 0; k < j; k++) {
+			if (ret[k]->cm_ca_type == cm_ca_external) {
+				break;
+			}
+		}
+		if (k == j) {
+			ret[j] = cm_store_ca_new(ret);
+			ret[j]->cm_id = talloc_strdup(ret[j], WITH_IPA_CA_NAME);
+			ret[j]->cm_ca_type = cm_ca_external;
+			ret[j]->cm_ca_external_helper = talloc_strdup(ret[j],
+								      WITH_IPA_HELPER_PATH);
+			j++;
+		}
+#endif
 		ret[j] = NULL;
 	}
 	if (globs.gl_pathc > 0) {

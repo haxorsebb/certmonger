@@ -58,8 +58,10 @@ exit 0
 %config(noreplace) %{_initddir}/certmonger
 %{_bindir}/*
 %{_sbindir}/*
+%{_libexecdir}/*
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Thu Oct 22 2009 Nalin Dahyabhai <nalin@redhat.com> 0.1-1
 * Sun Oct 18 2009 Nalin Dahyabhai <nalin@redhat.com> 0.0-1
 - initial package
