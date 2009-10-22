@@ -395,10 +395,12 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		*when = cm_time_now;
 		break;
 	case CM_NEED_CA_STATUS:
-		if (state->cm_submit_state == NULL) {
-			/* Pick up where we left off, if need be. */
-			state->cm_submit_state = cm_submit_resume(ca, entry);
+		/* Recycle the helper. */
+		if (state->cm_submit_state != NULL) {
+			cm_submit_done(entry, state->cm_submit_state);
 		}
+		/* Pick up where we left off. */
+		state->cm_submit_state = cm_submit_resume(ca, entry);
 		if (state->cm_submit_state != NULL) {
 			/* We're working on checking our status. */
 			entry->cm_state = CM_POLLING_CA_STATUS;
@@ -439,6 +441,14 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 					entry->cm_state = CM_NEED_TO_SAVE_CERT;
 					*when = cm_time_now;
 				}
+			} else
+			if (cm_submit_save_ca_cookie(entry,
+						     state->cm_submit_state) == 0) {
+				/* Saved CA's identifier for our request; move
+				 * on. */
+				entry->cm_state = CM_HAVE_SUBMITTED;
+				*when = cm_time_delay;
+				*delay = CM_DELAY_CA_POLL;
 			} else {
 				/* The CA denied our request. HELP! */
 				cm_submit_done(entry, state->cm_submit_state);
