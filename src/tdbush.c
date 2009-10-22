@@ -1085,13 +1085,41 @@ request_get_status(DBusConnection *conn, DBusMessage *msg,
 		rep = dbus_message_new_method_return(msg);
 		if (rep != NULL) {
 			state = cm_store_state_as_string(entry->cm_state);
+			stuck = FALSE;
 			switch (entry->cm_state) {
-			/* XXX */
-			default:
+			case CM_INVALID:
+			case CM_NEED_KEY_PAIR:
+			case CM_GENERATING_KEY_PAIR:
+			case CM_HAVE_KEY_PAIR:
+			case CM_NEED_CSR:
+			case CM_GENERATING_CSR:
+			case CM_HAVE_CSR:
+			case CM_NEED_TO_SUBMIT:
+			case CM_SUBMITTING:
+			case CM_HAVE_SUBMITTED:
+			case CM_NEED_CA_STATUS:
+			case CM_POLLING_CA_STATUS:
+			case CM_RETRIEVING_CERT:
+			case CM_NEED_TO_SAVE_CERT:
+			case CM_SAVING_CERT:
+			case CM_NEED_TO_READ_CERT:
+			case CM_READING_CERT:
+			case CM_SAVED_CERT:
+			case CM_MONITORING:
+			case CM_NOTIFYING:
+			case CM_NEWLY_ADDED:
+			case CM_NEWLY_ADDED_READING_KEYI:
+			case CM_NEWLY_ADDED_START_READING_CERT:
+			case CM_NEWLY_ADDED_READING_CERT:
+			case CM_NEWLY_ADDED_DECIDING:
 				stuck = FALSE;
 				break;
+			case CM_NEED_GUIDANCE:
+			case CM_REJECTED:
+				stuck = TRUE;
+				break;
 			}
-			cm_tdbusm_set_sb(rep, state, FALSE);
+			cm_tdbusm_set_sb(rep, state, stuck);
 			dbus_connection_send(conn, rep, NULL);
 			dbus_message_unref(rep);
 		}

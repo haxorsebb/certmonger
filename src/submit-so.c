@@ -207,6 +207,14 @@ cm_submit_so_issued(struct cm_store_entry *entry, struct cm_submit_state *state)
 	return -1;
 }
 
+/* Check if the signing request was rejected. */
+static int
+cm_submit_so_rejected(struct cm_store_entry *entry,
+		      struct cm_submit_state *state)
+{
+	return -1; /* it never gets rejected */
+}
+
 /* Check if we need to make another request to actually retrieve the cert. */
 static int
 cm_submit_so_needs_retrieval(struct cm_store_entry *entry,
@@ -247,6 +255,7 @@ cm_submit_so_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 		state->pvt.save_ca_cookie = cm_submit_so_save_ca_cookie;
 		state->pvt.status_ready = cm_submit_so_status_ready;
 		state->pvt.issued = cm_submit_so_issued;
+		state->pvt.rejected = cm_submit_so_rejected;
 		state->pvt.needs_retrieval = cm_submit_so_needs_retrieval;
 		state->pvt.done = cm_submit_so_done;
 		state->fd = -1;

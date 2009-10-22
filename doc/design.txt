@@ -22,6 +22,8 @@ Now with some arbitrarily-named states for our per-certificate state machine:
 	* Saving certificate to the desired location and parsing it for the
 	  information we think is interesting.
 	States: NEED_TO_SAVE_CERT, SAVING_CERT[*], READING_CERT[*], SAVED_CERT
+	* Rejected, very sad.
+	States: REJECTED [*]
 	* Waiting for certificate to near expiration.
 	States: MONITORING
 	* Waiting for user input
@@ -107,6 +109,9 @@ State logic:
 					if ca-issued-cert
 						state_next = RETRIEVING_CERT
 						state_transition = now
+					elseif ca-rejected-us
+						state_next = REJECTED
+						state_transition = now
 					else
 						state_next = NEED_GUIDANCE
 						state_transition = now
@@ -143,12 +148,19 @@ State logic:
 				if ca-issued-cert
 					state_next = RETRIEVING_CERT
 					state_transition = now
+				elseif ca-rejected-us
+					state_next = REJECTED
+					state_transition = now
 				else
 					state_next = NEED_GUIDANCE
 					state_transition = now
+			elseif ca-is-thinking-about-it
+				store-ca-cookie
+				state_next = HAVE_SUBMITTED
+				state_transition = now
 			else
 				state_next = NEED_CA_STATUS
-				state_transition = now
+				state_transition = timeout
 		break
 	RETRIEVING_CERT:
 		if ca-is-reachable
@@ -173,6 +185,11 @@ State logic:
 		else
 			state_next = NEED_GUIDANCE
 			state_transition = timeout
+		break
+	
+	REJECTED:
+		state_next = REJECTED
+		state_waitfor = ever
 		break
 
 	MONITORING:

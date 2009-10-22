@@ -123,6 +123,14 @@ cm_submit_issued(struct cm_store_entry *entry, struct cm_submit_state *state)
 	return pvt->issued(entry, state);
 }
 
+/* Check if the certificate was rejected. */
+int
+cm_submit_rejected(struct cm_store_entry *entry, struct cm_submit_state *state)
+{
+	struct cm_submit_state_pvt *pvt = (struct cm_submit_state_pvt *) state;
+	return pvt->rejected(entry, state);
+}
+
 /* Check if we need to make another request to actually retrieve the cert. */
 int
 cm_submit_needs_retrieval(struct cm_store_entry *entry,

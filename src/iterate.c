@@ -84,6 +84,8 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 	case CM_SAVED_CERT:
 		entry->cm_state = CM_MONITORING;
 		break;
+	case CM_REJECTED:
+		break;
 	case CM_NEED_GUIDANCE:
 		break;
 	case CM_MONITORING:
@@ -368,9 +370,15 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			} else
 			if (cm_submit_save_ca_cookie(entry,
 						     state->cm_submit_state) == 0) {
-				/* Saved CA's identifier for our request; move
-				 * on. */
+				/* Saved CA's identifier for our request; give
+				 * it a little time and then ask. */
 				entry->cm_state = CM_HAVE_SUBMITTED;
+				*when = cm_time_soonish;
+			} else
+			if (cm_submit_rejected(entry,
+					       state->cm_submit_state) == 0) {
+				/* The requeste was flat-out rejected. */
+				entry->cm_state = CM_REJECTED;
 				*when = cm_time_now;
 			} else {
 				/* The CA denied our request. HELP! */
@@ -444,11 +452,17 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			} else
 			if (cm_submit_save_ca_cookie(entry,
 						     state->cm_submit_state) == 0) {
-				/* Saved CA's identifier for our request; move
-				 * on. */
+				/* Saved CA's identifier for our request; ask
+				 * again after a while. */
 				entry->cm_state = CM_HAVE_SUBMITTED;
 				*when = cm_time_delay;
 				*delay = CM_DELAY_CA_POLL;
+			} else
+			if (cm_submit_rejected(entry,
+					       state->cm_submit_state) == 0) {
+				/* The requeste was flat-out rejected. */
+				entry->cm_state = CM_REJECTED;
+				*when = cm_time_now;
 			} else {
 				/* The CA denied our request. HELP! */
 				cm_submit_done(entry, state->cm_submit_state);
@@ -574,6 +588,9 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 	case CM_SAVED_CERT:
 		entry->cm_state = CM_MONITORING;
 		*when = cm_time_now;
+		break;
+	case CM_REJECTED:
+		*when = cm_time_soonish;
 		break;
 	case CM_NEED_GUIDANCE:
 		*when = cm_time_soonish;
