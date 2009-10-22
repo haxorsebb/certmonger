@@ -1,5 +1,6 @@
-Limited local-only support.  Keys can be self-signed, but the request's name
-and requested extensions aren't added to the certificate.
+Limited local-only support, no support for external CAs yet.  Keys can be
+self-signed, but the request's name and requested extensions aren't added to
+the produced certificate.
 
 Complete:
   * Generating RSA keys of configurable size.
@@ -41,6 +42,8 @@ To-do:
     * Provide introspection data as a well-behaved DBus service would. (1 day)
     * Set/reset PIN for encrypted key storage. (1 day)
       MUST
+  * Be able to use hashes other than the current hard-wired SHA256.
+    MUST
   * Detect when network connections go up (hopefully using NetworkManager
     signals, or learn to use netlink) and "kick" anything that's waiting
     for a server to become reachable.
