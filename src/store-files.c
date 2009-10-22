@@ -1301,7 +1301,7 @@ cm_store_get_all_cas(void *parent)
 	if (glob(path, 0, NULL, &globs) != 0) {
 		globs.gl_pathc = 0;
 	}
-	ret = talloc_array_ptrtype(parent, ret, globs.gl_pathc + 2);
+	ret = talloc_array_ptrtype(parent, ret, globs.gl_pathc + 3);
 	if (ret != NULL) {
 		for (i = 0, j = 0; i < globs.gl_pathc; i++) {
 			p = globs.gl_pathv[i];
@@ -1336,7 +1336,8 @@ cm_store_get_all_cas(void *parent)
 #ifdef WITH_IPA
 		/* Make sure we get at least one IPA entry. */
 		for (k = 0; k < j; k++) {
-			if (ret[k]->cm_ca_type == cm_ca_external) {
+			if ((ret[k]->cm_ca_type == cm_ca_external) &&
+			    (strcmp(ret[k]->cm_id, WITH_IPA_CA_NAME) == 0)) {
 				break;
 			}
 		}
