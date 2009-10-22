@@ -167,6 +167,7 @@ cm_service_one(struct cm_context *context, struct timeval *current_time, int i)
 	} else {
 		now = tevent_timeval_current();
 	}
+	fd = -1;
 	ret = cm_iterate(context->entries[i],
 			 cm_find_ca_by_entry(context, context->entries[i]),
 			 context,

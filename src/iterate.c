@@ -380,6 +380,15 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				/* The request was flat-out rejected. */
 				entry->cm_state = CM_REJECTED;
 				*when = cm_time_now;
+			} else
+			if (cm_submit_unreachable(entry,
+						  state->cm_submit_state) == 0) {
+				/* Let's try again later. */
+				cm_submit_done(entry, state->cm_submit_state);
+				state->cm_submit_state = NULL;
+				entry->cm_state = CM_NEED_TO_SUBMIT;
+				*when = cm_time_delay;
+				*delay = CM_DELAY_CA_POLL;
 			} else {
 				/* Don't know what's going on. HELP! */
 				cm_submit_done(entry, state->cm_submit_state);
@@ -473,6 +482,15 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				/* The request was flat-out rejected. */
 				entry->cm_state = CM_REJECTED;
 				*when = cm_time_now;
+			} else
+			if (cm_submit_unreachable(entry,
+						  state->cm_submit_state) == 0) {
+				/* Let's try again later. */
+				cm_submit_done(entry, state->cm_submit_state);
+				state->cm_submit_state = NULL;
+				entry->cm_state = CM_NEED_TO_SUBMIT;
+				*when = cm_time_delay;
+				*delay = CM_DELAY_CA_POLL;
 			} else {
 				/* Don't know what's going on. HELP! */
 				cm_submit_done(entry, state->cm_submit_state);
@@ -480,6 +498,15 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				entry->cm_state = CM_NEED_GUIDANCE;
 				*when = cm_time_now;
 			}
+		} else
+		if (cm_submit_unreachable(entry,
+					  state->cm_submit_state) == 0) {
+			/* Let's try again later. */
+			cm_submit_done(entry, state->cm_submit_state);
+			state->cm_submit_state = NULL;
+			entry->cm_state = CM_NEED_TO_SUBMIT;
+			*when = cm_time_delay;
+			*delay = CM_DELAY_CA_POLL;
 		} else {
 			/* Wait for status update, or poll. */
 			*readfd = cm_submit_get_fd(entry,
