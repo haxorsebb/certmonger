@@ -111,6 +111,7 @@ cm_timer_h(struct tevent_context *ec, struct tevent_timer *te,
 	int i;
 	for (i = 0; i < context->n_entries; i++) {
 		if (context->events[i].next_event == te) {
+			talloc_free(te);
 			context->events[i].next_event = cm_service_one(context,
 								       NULL, i);
 			break;
@@ -129,6 +130,7 @@ cm_fd_h(struct tevent_context *ec,
 	int i;
 	for (i = 0; i < context->n_entries; i++) {
 		if (context->events[i].next_event == fde) {
+			talloc_free(fde);
 			context->events[i].next_event = cm_service_one(context,
 								       NULL, i);
 			break;
