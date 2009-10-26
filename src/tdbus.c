@@ -34,12 +34,16 @@
 struct tdbus_connection {
 	DBusConnection *conn;
 	struct tdbus_watch {
-		struct tdbus_connection *conn;
 		struct tdbus_watch *next;
-		DBusWatch *watch;
+		struct tdbus_connection *conn;
+		int fd;
 		struct tevent_fd *tfd;
-		int tfdflags;
-		dbus_bool_t active;
+		struct tdbus_dwatch {
+			struct tdbus_dwatch *next;
+			DBusWatch *watch;
+			int dflags;
+			dbus_bool_t active;
+		} *dwatches;
 	} *watches;
 	struct tdbus_timer {
 		struct tdbus_connection *conn;
@@ -89,6 +93,7 @@ cm_tdbus_watch_flags_for_tfd_flags(unsigned int tfd_flags)
 	watch_flags = 0;
 	if (tfd_flags & TEVENT_FD_READ) {
 		watch_flags |= DBUS_WATCH_READABLE;
+		watch_flags |= DBUS_WATCH_HANGUP;
 	}
 	if (tfd_flags & TEVENT_FD_WRITE) {
 		watch_flags |= DBUS_WATCH_WRITABLE;
@@ -97,25 +102,53 @@ cm_tdbus_watch_flags_for_tfd_flags(unsigned int tfd_flags)
 }
 
 static void
+cm_tdbus_queue_fd(struct tevent_context *ec, struct tdbus_watch *watch,
+		  tevent_fd_handler_t handler)
+{
+	struct tdbus_dwatch *dwatch;
+	int newtflags, dflags;
+	newtflags = 0;
+	dwatch = watch->dwatches;
+	while (dwatch != NULL) {
+		if (dwatch->active) {
+			dwatch->dflags = dbus_watch_get_flags(dwatch->watch);
+			dflags = dwatch->dflags;
+			newtflags |= cm_tdbus_tfd_flags_for_watch_flags(dflags);
+		}
+		dwatch = dwatch->next;
+	}
+	if (newtflags != 0) {
+		cm_log(3, "Queuing FD %d for 0x%02x.\n", watch->fd, newtflags);
+		watch->tfd = tevent_add_fd(ec, watch, watch->fd, newtflags,
+					   handler, watch);
+	} else {
+		watch->tfd = NULL;
+	}
+}
+
+static void
 cm_tdbus_handle_fd(struct tevent_context *ec, struct tevent_fd *tfd,
 		   uint16_t tflags, void *pvt)
 {
 	struct tdbus_watch *watch;
-	int fd, flags;
+	struct tdbus_dwatch *dwatch;
+	int dflags;
 	watch = pvt;
 	talloc_free(watch->tfd);
 	watch->tfd = NULL;
-	if (watch->active) {
-		cm_log(3, "Handling D-Bus traffic on %d.\n",
-		       dbus_watch_get_unix_fd(watch->watch));
-		flags = cm_tdbus_watch_flags_for_tfd_flags(tflags);
-		if (dbus_watch_handle(watch->watch, flags)) {
-			fd = dbus_watch_get_unix_fd(watch->watch);
-			watch->tfd = tevent_add_fd(ec, watch, fd,
-						   watch->tfdflags,
-						   cm_tdbus_handle_fd, watch);
+	dwatch = watch->dwatches;
+	dflags = cm_tdbus_watch_flags_for_tfd_flags(tflags);
+	while (dwatch != NULL) {
+		if (dwatch->active) {
+			cm_log(3, "Handling D-Bus traffic on %d.\n", watch->fd);
+			if ((dflags & dwatch->dflags) != 0) {
+				dbus_watch_handle(dwatch->watch,
+						  dflags & dwatch->dflags);
+			}
 		}
+		dwatch = dwatch->next;
 	}
+	cm_tdbus_queue_fd(ec, watch, cm_tdbus_handle_fd);
 }
 
 static void
@@ -144,106 +177,141 @@ cm_tdbus_watch_add(DBusWatch *watch, void *data)
 {
 	struct tdbus_connection *conn;
 	struct tdbus_watch *tdb_watch;
-	unsigned int flags;
+	struct tdbus_dwatch *tdb_dwatch;
 	int fd;
 	conn = data;
-	tdb_watch = talloc_ptrtype(conn, tdb_watch);
-	if (tdb_watch != NULL) {
-		memset(tdb_watch, 0, sizeof(*tdb_watch));
-		tdb_watch->watch = watch;
-		flags = dbus_watch_get_flags(watch);
-		tdb_watch->conn = conn;
-		tdb_watch->tfdflags = cm_tdbus_tfd_flags_for_watch_flags(flags);
-		tdb_watch->active = dbus_watch_get_enabled(watch);
-		if (tdb_watch->active) {
-			fd = dbus_watch_get_unix_fd(watch);
-			tdb_watch->tfd = tevent_add_fd(talloc_parent(conn),
-						       tdb_watch,
-						       fd,
-						       tdb_watch->tfdflags,
-						       cm_tdbus_handle_fd,
-						       tdb_watch);
-			if (tdb_watch->tfd != NULL) {
-				tdb_watch->next = conn->watches;
-				conn->watches = tdb_watch;
-				return TRUE;
-			}
-		} else {
-			tdb_watch->next = conn->watches;
-			conn->watches = tdb_watch;
-			return TRUE;
+	fd = dbus_watch_get_unix_fd(watch);
+	cm_log(3, "Adding DBus watch on %d.\n", fd);
+	/* Find the tevent watch for this fd. */
+	tdb_watch = conn->watches;
+	while (tdb_watch != NULL) {
+		if (tdb_watch->fd == fd) {
+			break;
 		}
+		tdb_watch = tdb_watch->next;
 	}
-	return FALSE;
+	/* If we couldn't find one, add it. */
+	if (tdb_watch == NULL) {
+		cm_log(3, "Adding a new tevent FD for %d.\n", fd);
+		tdb_watch = talloc_ptrtype(conn, tdb_watch);
+		if (tdb_watch == NULL) {
+			return FALSE;
+		}
+		memset(tdb_watch, 0, sizeof(*tdb_watch));
+		tdb_watch->conn = conn;
+		tdb_watch->fd = fd;
+		tdb_watch->tfd = NULL;
+		tdb_watch->dwatches = NULL;
+		tdb_watch->next = conn->watches;
+		conn->watches = tdb_watch;
+	}
+	/* Add a new dwatch to the watch. */
+	tdb_dwatch = talloc_ptrtype(tdb_watch, tdb_dwatch);
+	if (tdb_dwatch == NULL) {
+		return FALSE;
+	}
+	memset(tdb_dwatch, 0, sizeof(*tdb_dwatch));
+	tdb_dwatch->watch = watch;
+	tdb_dwatch->dflags = dbus_watch_get_flags(watch);
+	tdb_dwatch->active = dbus_watch_get_enabled(watch);
+	tdb_dwatch->next = tdb_watch->dwatches;
+	tdb_watch->dwatches = tdb_dwatch;
+	/* (Re-)queue the tfd. */
+	talloc_free(tdb_watch->tfd);
+	cm_tdbus_queue_fd(talloc_parent(conn), tdb_watch, cm_tdbus_handle_fd);
+	return TRUE;
 }
 
 static void
 cm_tdbus_watch_remove(DBusWatch *watch, void *data)
 {
 	struct tdbus_connection *conn;
-	struct tdbus_watch *tdb_watch, *prev;
+	struct tdbus_watch *tdb_watch;
+	struct tdbus_dwatch *tdb_dwatch, *prev;
+	int fd;
 	conn = data;
-	for (prev = NULL, tdb_watch = conn->watches;
-	     tdb_watch != NULL;
-	     tdb_watch = tdb_watch->next) {
-		if (tdb_watch->watch == watch) {
+	fd = dbus_watch_get_unix_fd(watch);
+	cm_log(3, "Removing a DBus watch for %d.\n", fd);
+	/* Find the tevent watch for this fd. */
+	tdb_watch = conn->watches;
+	while (tdb_watch != NULL) {
+		if (tdb_watch->fd == fd) {
+			break;
+		}
+		tdb_watch = tdb_watch->next;
+	}
+	if (tdb_watch == NULL) {
+		return;
+	}
+	/* Find the watch in the list of dwatches. */
+	for (prev = NULL, tdb_dwatch = tdb_watch->dwatches;
+	     tdb_dwatch != NULL;
+	     tdb_dwatch = tdb_dwatch->next) {
+		if (tdb_dwatch->watch == watch) {
 			if (prev != NULL) {
-				prev->next = tdb_watch->next;
-				tdb_watch->next = NULL;
-				talloc_free(tdb_watch);
+				prev->next = tdb_dwatch->next;
+				tdb_dwatch->next = NULL;
+				talloc_free(tdb_dwatch);
 			} else {
-				conn->watches = tdb_watch->next;
-				tdb_watch->next = NULL;
-				talloc_free(tdb_watch);
+				tdb_watch->dwatches = tdb_dwatch->next;
+				tdb_dwatch->next = NULL;
+				talloc_free(tdb_dwatch);
 			}
 			break;
 		}
-		prev = tdb_watch;
+		prev = tdb_dwatch;
 	}
+	/* (Re-)queue the tfd. */
+	talloc_free(tdb_watch->tfd);
+	cm_tdbus_queue_fd(talloc_parent(conn), tdb_watch, cm_tdbus_handle_fd);
 }
 
 static void
 cm_tdbus_watch_toggle(DBusWatch *watch, void *data)
 {
 	struct tdbus_connection *conn;
-	struct tdbus_watch *tdb_watch, *prev;
-	unsigned int flags;
-	int fd, tfd_flags;
-	void *parent;
+	struct tdbus_watch *tdb_watch;
+	struct tdbus_dwatch *tdb_dwatch;
+	int fd;
 	conn = data;
-	for (prev = NULL, tdb_watch = conn->watches;
-	     tdb_watch != NULL;
-	     tdb_watch = tdb_watch->next) {
-		if (tdb_watch->watch == watch) {
-			flags = dbus_watch_get_flags(watch);
-			tfd_flags = cm_tdbus_tfd_flags_for_watch_flags(flags);
-			tdb_watch->active = dbus_watch_get_enabled(watch);
-			talloc_free(tdb_watch->tfd);
-			if (tdb_watch->active) {
-				fd = dbus_watch_get_unix_fd(watch),
-				parent = talloc_parent(conn);
-				tdb_watch->tfd = tevent_add_fd(parent,
-							       tdb_watch,
-							       fd,
-							       tfd_flags,
-							       cm_tdbus_handle_fd,
-							       tdb_watch);
-			} else {
-				tdb_watch->tfd = NULL;
-			}
+	fd = dbus_watch_get_unix_fd(watch);
+	/* Find the tevent watch for this fd. */
+	tdb_watch = conn->watches;
+	while (tdb_watch != NULL) {
+		if (tdb_watch->fd == fd) {
 			break;
 		}
-		prev = tdb_watch;
+		tdb_watch = tdb_watch->next;
 	}
+	if (tdb_watch == NULL) {
+		return;
+	}
+	/* Find the watch in the list of dwatches. */
+	tdb_dwatch = tdb_watch->dwatches;
+	while (tdb_dwatch != NULL) {
+		if (tdb_dwatch->watch == watch) {
+			tdb_dwatch->active = dbus_watch_get_enabled(watch);
+			break;
+		}
+		tdb_dwatch = tdb_dwatch->next;
+	}
+	/* (Re-)queue the tfd. */
+	talloc_free(tdb_watch->tfd);
+	cm_tdbus_queue_fd(talloc_parent(conn), tdb_watch, cm_tdbus_handle_fd);
 }
 
 static void
 cm_tdbus_watch_cleanup(void *data)
 {
 	struct tdbus_connection *conn;
+	struct tdbus_watch *watch;
 	conn = data;
-	while (conn->watches != NULL) {
-		cm_tdbus_watch_remove(conn->watches->watch, data);
+	watch = conn->watches;
+	while (watch != NULL) {
+		while (watch->dwatches != NULL) {
+			cm_tdbus_watch_remove(watch->dwatches->watch, data);
+		}
+		watch = watch->next;
 	}
 }
 
