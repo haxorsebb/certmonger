@@ -2,10 +2,9 @@ EXTRA_FILES = doc/*.txt
 SUBDIRS = src dbus
 EXTRA_DIST = certmonger.spec LICENSE README STATUS doc
 
-VERSION=$(shell rpm -q --specfile $(top_srcdir)/certmonger.spec --qf '%{version}\n' --define 'dist %{nil}' | head -n1)
-RELEASE=$(shell rpm -q --specfile $(top_srcdir)/certmonger.spec --qf '%{release}\n' --define 'dist %{nil}' | head -n1)
-GITTAG=certmonger-$(shell rpm -q --specfile $(top_srcdir)/certmonger.spec --qf '%{version}\n' --define 'dist %{nil}' 2> /dev/null | head -n1)
-distdir=$(shell rpm -q --specfile --qf '%{name}-%{version}\n' --define 'dist %{nil}' $(top_srcdir)/certmonger.spec | head -n1)
+VERSION=$(PACKAGE_VERSION)
+RELEASE=
+GITTAG=certmonger-$(VERSION)
 
 tag:
 	git tag $(GITTAG)
