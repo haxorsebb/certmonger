@@ -35,11 +35,11 @@ UPCASE_PACKAGE_NAME=`echo "${PACKAGE_NAME}" | tr '[a-z]' '[A-Z]'`
 AC_DEFINE_UNQUOTED(CM_STORE_CAS_DIRECTORY_ENV,"${UPCASE_PACKAGE_NAME}_CAS_DIR",
 		   [Define to the name of the environment variable which can specify the directory for tracking CAs.])
 
-CM_DBUS_NAME=org.hamdingers.certmonger
+CM_DBUS_NAME=org.fedorahosted.certmonger
 AC_DEFINE_UNQUOTED(CM_DBUS_NAME,"$CM_DBUS_NAME",
 		   [Define to the name of the certmonger service.])
 AC_SUBST(CM_DBUS_NAME)
-CM_DBUS_BASE_PATH=/org/hamdingers/certmonger
+CM_DBUS_BASE_PATH=/org/fedorahosted/certmonger
 AC_DEFINE_UNQUOTED(CM_DBUS_BASE_PATH,"$CM_DBUS_BASE_PATH",
 		   [Define to the path of the certmonger main node.])
 

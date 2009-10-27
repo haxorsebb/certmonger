@@ -2,10 +2,10 @@ Note: use the NetworkManager API to get a feel for how these tend to be done:
 http://people.redhat.com/dcbw/NetworkManager/NetworkManager%20DBUS%20API.txt
 
 The D-Bus API:
-o service name = TBD
+o service name = org.fedorahosted.certmonger
 o object layout
-  /TBD
-  interface=TBD
+  /org/fedorahosted/certmonger
+  interface=org.fedorahosted.certmonger
   - get-requests
     returns: array of paths -> object paths for requests
   - get-defaults
@@ -53,7 +53,7 @@ o object layout
     arguments: path -> object path for ca
     returns: boolean -> succeeded
   (objects whose names are returned by "get-requests" or "get-defaults")
-  interface=TBD.request
+  interface=org.fedorahosted.certmonger.request
   - get-nickname
     returns: string
   - get-status
@@ -133,7 +133,7 @@ o object layout
   - reenroll (for requests that we don't auto-submit, generates a new csr)
     returns: boolean -> working-on-it?
   (objects whose names are returned by "get-known-cas")
-  interface=TBD.ca
+  interface=org.fedorahosted.certmonger.ca
   - get-nickname
     returns: string
   - get-is-default
