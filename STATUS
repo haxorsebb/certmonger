@@ -63,6 +63,9 @@ To-do:
   * Local signing should accept extension values and add them to the
     signed certificates. (1 day)
     SHOULD
+  * Local signing should assign a configurable lifetime to the signed
+    certificates. (1 day)
+    SHOULD
   * Local signing should read-and-update the "next" serial number from
     the system-local defaults. (1 day)
     SHOULD
