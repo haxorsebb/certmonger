@@ -35,6 +35,7 @@
 #include "submit.h"
 #include "submit-int.h"
 
+
 struct cm_submit_state {
 	struct cm_submit_state_pvt pvt;
 	char msg[0x10000];
@@ -76,6 +77,8 @@ cm_submit_so_main(int fd, struct cm_store_entry *entry)
 									CM_DEFAULT_CERT_LIFETIME,
 									pkey);
 						X509_set_version(cert, 2);
+						/* XXX set a serial number */
+						cert->cert_info->extensions = X509_REQ_get_extensions(req);
 						X509_sign(cert, pkey,
 							  EVP_sha256());
 						status = 0;
