@@ -118,7 +118,7 @@ cm_tdbus_queue_fd(struct tevent_context *ec, struct tdbus_watch *watch,
 		dwatch = dwatch->next;
 	}
 	if (newtflags != 0) {
-		cm_log(3, "Queuing FD %d for 0x%02x.\n", watch->fd, newtflags);
+		cm_log(5, "Queuing FD %d for 0x%02x.\n", watch->fd, newtflags);
 		watch->tfd = tevent_add_fd(ec, watch, watch->fd, newtflags,
 					   handler, watch);
 	} else {
@@ -140,7 +140,7 @@ cm_tdbus_handle_fd(struct tevent_context *ec, struct tevent_fd *tfd,
 	dflags = cm_tdbus_watch_flags_for_tfd_flags(tflags);
 	while (dwatch != NULL) {
 		if (dwatch->active) {
-			cm_log(3, "Handling D-Bus traffic on %d.\n", watch->fd);
+			cm_log(5, "Handling D-Bus traffic on %d.\n", watch->fd);
 			if ((dflags & dwatch->dflags) != 0) {
 				dbus_watch_handle(dwatch->watch,
 						  dflags & dwatch->dflags);
@@ -161,7 +161,7 @@ cm_tdbus_handle_timer(struct tevent_context *ec, struct tevent_timer *timer,
 	talloc_free(tdb_timer->tt);
 	tdb_timer->tt = NULL;
 	if (tdb_timer->active) {
-		cm_log(3, "Handling D-Bus timeout.\n");
+		cm_log(5, "Handling D-Bus timeout.\n");
 		if (dbus_timeout_handle(tdb_timer->timeout)) {
 			next_time = tevent_timeval_current_ofs(tdb_timer->d_interval, 0);
 			tdb_timer->tt = tevent_add_timer(ec, tdb_timer,
@@ -181,7 +181,7 @@ cm_tdbus_watch_add(DBusWatch *watch, void *data)
 	int fd;
 	conn = data;
 	fd = dbus_watch_get_unix_fd(watch);
-	cm_log(3, "Adding DBus watch on %d.\n", fd);
+	cm_log(5, "Adding DBus watch on %d.\n", fd);
 	/* Find the tevent watch for this fd. */
 	tdb_watch = conn->watches;
 	while (tdb_watch != NULL) {
@@ -192,7 +192,7 @@ cm_tdbus_watch_add(DBusWatch *watch, void *data)
 	}
 	/* If we couldn't find one, add it. */
 	if (tdb_watch == NULL) {
-		cm_log(3, "Adding a new tevent FD for %d.\n", fd);
+		cm_log(5, "Adding a new tevent FD for %d.\n", fd);
 		tdb_watch = talloc_ptrtype(conn, tdb_watch);
 		if (tdb_watch == NULL) {
 			return FALSE;
@@ -231,7 +231,7 @@ cm_tdbus_watch_remove(DBusWatch *watch, void *data)
 	int fd;
 	conn = data;
 	fd = dbus_watch_get_unix_fd(watch);
-	cm_log(3, "Removing a DBus watch for %d.\n", fd);
+	cm_log(5, "Removing a DBus watch for %d.\n", fd);
 	/* Find the tevent watch for this fd. */
 	tdb_watch = conn->watches;
 	while (tdb_watch != NULL) {
