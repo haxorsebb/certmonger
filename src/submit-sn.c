@@ -35,6 +35,7 @@
 
 #include <talloc.h>
 
+#include "certext-n.h"
 #include "log.h"
 #include "store.h"
 #include "store-int.h"
@@ -65,12 +66,13 @@ cm_submit_sn_main(int fd, struct cm_store_entry *entry)
 	CERTValidity *validity;
 	PRTime now, life;
 	PLArenaPool *arena = NULL;
-	SECOidData *sigoid;
+	SECOidData *sigoid, *extoid;
 	enum cm_key_algorithm cm_key_algorithm;
 	CK_MECHANISM_TYPE mech;
 	PK11SlotList *slotlist;
 	PK11SlotListElement *sle;
 	PK11SlotInfo *slot;
+	int i;
 
 	/* Start up NSS and open the database. */
 	error = NSS_InitReadWrite(entry->cm_key_storage_location);
@@ -216,6 +218,16 @@ cm_submit_sn_main(int fd, struct cm_store_entry *entry)
 		data = &sdata;
 	}
 	sigoid = SECOID_FindOIDByTag(SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION);
+	if (sigoid == NULL) {
+		cm_log(1, "Internal error resolving signature OID.\n");
+		_exit(1);
+	}
+	extoid = SECOID_FindOIDByTag(SEC_OID_PKCS9_EXTENSION_REQUEST);
+	if (extoid == NULL) {
+		cm_log(1, "Internal error resolving extension OID.\n");
+		_exit(1);
+	}
+
 	/* Decode the CSR from the signeddata structure into a usable request.
 	 */
 	memset(&sreq, 0, sizeof(sreq));
@@ -229,7 +241,7 @@ cm_submit_sn_main(int fd, struct cm_store_entry *entry)
 	}
 	/* Build a certificate using the contents of the signing request. */
 	now = PR_Now();
-	life = CM_DEFAULT_CERT_LIFETIME * 24 * 60 * 60 * 1000000L;
+	life = CM_DEFAULT_CERT_LIFETIME * 24 * 60 * 60 * 1000000L; /* XXX */
 	validity = CERT_CreateValidity(now, now + life);
 	if (validity == NULL) {
 		cm_log(1, "Unable to create validity structure.\n");
@@ -262,9 +274,21 @@ cm_submit_sn_main(int fd, struct cm_store_entry *entry)
 	ucert->subject = req->subject;
 	ucert->subjectPublicKeyInfo = req->subjectPublicKeyInfo;
 	/* Try to copy the extensions from the request into the certificate. */
-	if (CERT_GetCertificateRequestExtensions(req,
-						 &ucert->extensions) != SECSuccess) {
-		cm_log(1, "Error getting certificate request extensions.\n");
+	for (i = 0;
+	     (req->attributes != NULL) && (req->attributes[i] != NULL);
+	     i++) {
+		if (SECITEM_ItemsAreEqual(&req->attributes[i]->attrType,
+					  &extoid->oid)) {
+			/* Found the requested-extensions attribute. */
+			break;
+		}
+	}
+	if ((req->attributes != NULL) && (req->attributes[i] != NULL)) {
+		if (SEC_ASN1DecodeItem(arena, &ucert->extensions,
+				       CERT_SequenceOfCertExtensionTemplate,
+				       req->attributes[i]->attrValue[0]) != SECSuccess) {
+			cm_log(1, "Error decoding requested extensions.\n");
+		}
 	}
 	/* Encode the certificate. */
 	ecert = SEC_ASN1EncodeItem(arena, NULL, ucert,
