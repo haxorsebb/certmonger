@@ -252,6 +252,9 @@ cm_certext_build_ku(struct cm_store_entry *entry, PLArenaPool *arena,
 {
 	SECItem *ret, encoded, *bits;
 	unsigned int i, val, len;
+	if ((ku_value == NULL) || (strlen(ku_value) == 0)) {
+		return NULL;
+	}
 	len = strlen(ku_value ? ku_value : "") + 1;
 	bits = SECITEM_AllocItem(arena, NULL, len);
 	memset(bits->data, '\0', len);
@@ -440,6 +443,9 @@ cm_certext_build_eku(struct cm_store_entry *entry, PLArenaPool *arena,
 	int i;
 	const char *p, *q;
 	SECItem **oids = NULL, **tmp, encoded, *ret;
+	if ((eku_value == NULL) || (strlen(eku_value) == 0)) {
+		return NULL;
+	}
 	p = eku_value;
 	i = 0;
 	while ((p != NULL) && (*p != '\0')) {
@@ -689,7 +695,7 @@ cm_certext_build_upn(struct cm_store_entry *entry, PLArenaPool *arena,
 {
 	SECItem upn, princ;
 	
-	if (principal == NULL) {
+	if ((principal == NULL) || (strlen(principal) == 0)) {
 		return NULL;
 	}
 	memset(&upn, 0, sizeof(upn));
@@ -713,7 +719,7 @@ cm_certext_build_principal(struct cm_store_entry *entry, PLArenaPool *arena,
 	krb5_principal princ;
 	int i;
 
-	if (principal == NULL) {
+	if ((principal == NULL) || (strlen(principal) == 0)) {
 		return NULL;
 	}
 	ctx = NULL;
