@@ -14,6 +14,7 @@ Complete:
     of type email, dns, or kerberos/nt principal name).
   * Populate requested-extensions in signing requests with as much
     information as we can.
+    * Locally-signed certificates use the requested extension values.
   * Maintaining queued items in an upgrade-proofable format.
   * Should offer an API over D-Bus which the client uses instead of
     mutilating the queue directly (see doc/api.txt):
@@ -59,9 +60,6 @@ To-do:
   * Figure out how to let the local deamon's client do key generation.
     It's either that or force them to give the daemon the PIN for
     encrypted storage. (3 days)
-    SHOULD
-  * Local signing should accept extension values and add them to the
-    signed certificates. (1 day)
     SHOULD
   * Local signing should assign a configurable lifetime to the signed
     certificates. (1 day)
