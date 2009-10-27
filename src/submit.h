@@ -22,29 +22,23 @@ struct cm_submit_state;
 struct cm_store_entry;
 struct cm_store_ca;
 
-/* Start CSR submission using parameters stored in the entry. */
+/* Start CSR submission using parameters stored in the entry.  If we have a
+ * cookie in the entry, poll for its status. */
 struct cm_submit_state *cm_submit_start(struct cm_store_ca *ca,
 					struct cm_store_entry *entry);
-
-/* Pick up after a CSR has been submitted, in case we haven't yet gotten a
- * decision about it. */
-struct cm_submit_state *cm_submit_resume(struct cm_store_ca *ca,
-					 struct cm_store_entry *entry);
 
 /* Get a selectable-for-read descriptor we can poll for status changes. */
 int cm_submit_get_fd(struct cm_store_entry *entry,
 		     struct cm_submit_state *state);
 
-/* Check if the CSR was submitted to the CA yet. */
-int cm_submit_sent(struct cm_store_entry *entry, struct cm_submit_state *state);
+/* Check if either the CSR was submitted to the CA yet, or we figured out that
+ * we weren't going to be able to send it. */
+int cm_submit_ready(struct cm_store_entry *entry,
+		    struct cm_submit_state *state);
 
 /* Save CA-specific identifier for our submitted request. */
 int cm_submit_save_ca_cookie(struct cm_store_entry *entry,
 			     struct cm_submit_state *state);
-
-/* Check if an attempt to get status has succeeded. */
-int cm_submit_status_ready(struct cm_store_entry *entry,
-			   struct cm_submit_state *state);
 
 /* Check if the certificate was issued. */
 int cm_submit_issued(struct cm_store_entry *entry,
@@ -57,10 +51,6 @@ int cm_submit_rejected(struct cm_store_entry *entry,
 /* Check if the CA was unreachable. */
 int cm_submit_unreachable(struct cm_store_entry *entry,
 			  struct cm_submit_state *state);
-
-/* Check if we need to make another request to actually retrieve the cert. */
-int cm_submit_needs_retrieval(struct cm_store_entry *entry,
-			      struct cm_submit_state *state);
 
 /* Done talking to the CA. */
 void cm_submit_done(struct cm_store_entry *entry,

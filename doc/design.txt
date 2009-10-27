@@ -16,9 +16,7 @@ Now with some arbitrarily-named states for our per-certificate state machine:
 	* Generating a CSR containing public key.
 	States: NEED_CSR, GENERATING_CSR [*], HAVE_CSR
 	* Submitting CSR to a CA.
-	States: NEED_TO_SUBMIT, SUBMITTING [*], HAVE_SUBMITTED
-	* Checking for response from CA.
-	States: NEED_CA_STATUS, POLLING_CA_STATUS [*], RETRIEVING_CERT [*]
+	States: NEED_TO_SUBMIT, SUBMITTING [*]
 	* Saving certificate to the desired location and parsing it for the
 	  information we think is interesting.
 	States: NEED_TO_SAVE_CERT, SAVING_CERT[*], READING_CERT[*], SAVED_CERT
@@ -91,34 +89,30 @@ State logic:
 		break
 
 	NEED_TO_SUBMIT:
-		if ca-is-reachable
-			start-csr-submission
-			state_next = SUBMITTING
-			state_transition = now
-		else
-			state_next = NEED_TO_SUBMIT
-			state_transition = on-timeout-or-net-change
-		break
+		start-csr-submission
+		state_next = SUBMITTING
+		state_transition = now
+
 	SUBMITTING:
 		if starting-up
 			state_next = NEED_TO_SUBMIT
 			state_transition = now
 		else
-			if csr-submission-completed
-				if ca-made-a-decision
-					if ca-issued-cert
-						state_next = RETRIEVING_CERT
-						state_transition = now
-					elseif ca-rejected-us
-						state_next = REJECTED
-						state_transition = now
-					else
-						state_next = NEED_GUIDANCE
-						state_transition = now
+			if csr-submission-attempt-completed
+				if ca-issued-cert
+					state_next = NEED_TO_SAVE_CERT
+					state_transition = now
+				elseif ca-rejected-us
+					state_next = REJECTED
+					state_transition = now
+				elseif ca-is-unreachable
+					store-ca-cookie
+					state_next = NEED_TO_SUBMIT
+					state_transition = later
 				elseif ca-is-thinking-about-it
 					store-ca-cookie
-					state_next = HAVE_SUBMITTED
-					state_transition = now
+					state_next = NEED_TO_SUBMIT
+					state_transition = soon
 				else
 					state_next = NEED_GUIDANCE
 					state_transition = now
@@ -126,55 +120,28 @@ State logic:
 				state_next = SUBMITTING 
 				state_transition = when-notified
 		break
-	HAVE_SUBMITTED:
-		state_next = NEED_CA_STATUS
+
+	NEED_TO_SAVE_CERT:
+		start-saving-cert
+		state_next = SAVING_CERT
 		state_transition = now
 		break
 
-	NEED_CA_STATUS:
-		if ca-is-reachable
-			state_next = POLLING_CA_STATUS
+	SAVING_CERT:
+		if cert-save-completed:
+			state_next = NEED_TO_READ_CERT
 			state_transition = now
-		else
-			state_next = NEED_CA_STATUS
-			state_transition = timeout-or-net-change
 		break
-	POLLING_CA_STATUS:
-		if starting-up
-			state_next = NEED_CA_STATUS
-			state_transition = now
-		else
-			if ca-made-a-decision
-				if ca-issued-cert
-					state_next = RETRIEVING_CERT
-					state_transition = now
-				elseif ca-rejected-us
-					state_next = REJECTED
-					state_transition = now
-				else
-					state_next = NEED_GUIDANCE
-					state_transition = now
-			elseif ca-is-thinking-about-it
-				store-ca-cookie
-				state_next = HAVE_SUBMITTED
-				state_transition = now
-			else
-				state_next = NEED_CA_STATUS
-				state_transition = timeout
+
+	NEED_TO_READ_CERT:
+		start-reading-cert
+		state_next = READING_CERT
+		state_transition = now
 		break
-	RETRIEVING_CERT:
-		if ca-is-reachable
-			retrieve-cert
-			save-cert-to-disk
-			if cert-should-be-monitored
-				add-cert-to-monitoring-list
-				state_next = MONITORING
-				state_transition = now
-			else
-				state_next = NEED_GUIDANCE
-				state_transition = now
-		else
-			state_next = NEED_CA_STATUS
+
+	READING_CERT:
+		if cert-read-completed:
+			state_next = MONITORING
 			state_transition = now
 		break
 

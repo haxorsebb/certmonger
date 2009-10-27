@@ -69,12 +69,6 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 	case CM_SUBMITTING:
 		entry->cm_state = CM_HAVE_CSR;
 		break;
-	case CM_HAVE_SUBMITTED:
-	case CM_NEED_CA_STATUS:
-	case CM_POLLING_CA_STATUS:
-	case CM_RETRIEVING_CERT:
-		entry->cm_state = CM_HAVE_SUBMITTED;
-		break;
 	case CM_NEED_TO_SAVE_CERT:
 	case CM_SAVING_CERT:
 		entry->cm_state = CM_NEED_TO_SAVE_CERT;
@@ -345,50 +339,38 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		}
 		break;
 	case CM_SUBMITTING:
-		if (cm_submit_sent(entry, state->cm_submit_state) == 0) {
+		if (cm_submit_ready(entry, state->cm_submit_state) == 0) {
 			entry->cm_submitted = time(NULL);
 			if (cm_submit_issued(entry,
 					     state->cm_submit_state) == 0) {
-				/* CA issued a cert. */
-				if (cm_submit_needs_retrieval(entry,
-							      state->cm_submit_state) == 0) {
-					/* We're done, but we need to retrieve
-					 * the certificate in another step.
-					 * Give the CA a second to be polite. */
-					entry->cm_state = CM_RETRIEVING_CERT;
-					*when = cm_time_soon;
-				} else {
-					/* We're all done, and we even have the
-					 * issued certificate.  Save the
-					 * certificate to its real home. */
-					cm_submit_done(entry,
-						       state->cm_submit_state);
-					state->cm_submit_state = NULL;
-					entry->cm_state = CM_NEED_TO_SAVE_CERT;
-					*when = cm_time_now;
-				}
+				/* We're all done.  Save the certificate to its
+				 * real home. */
+				cm_submit_done(entry, state->cm_submit_state);
+				state->cm_submit_state = NULL;
+				entry->cm_state = CM_NEED_TO_SAVE_CERT;
+				*when = cm_time_now;
+			} else
+			if (cm_submit_rejected(entry,
+					       state->cm_submit_state) == 0) {
+				/* The request was flat-out rejected. */
+				entry->cm_state = CM_REJECTED;
+				*when = cm_time_now;
+			} else
+			if (cm_submit_unreachable(entry,
+						  state->cm_submit_state) == 0) {
+				/* Let's try again later. */
+				cm_submit_done(entry, state->cm_submit_state);
+				state->cm_submit_state = NULL;
+				entry->cm_state = CM_NEED_TO_SUBMIT;
+				*when = cm_time_delay;
+				*delay = CM_DELAY_CA_POLL;
 			} else
 			if (cm_submit_save_ca_cookie(entry,
 						     state->cm_submit_state) == 0) {
 				/* Saved CA's identifier for our request; give
 				 * it a little time and then ask. */
-				entry->cm_state = CM_HAVE_SUBMITTED;
+				entry->cm_state = CM_NEED_TO_SUBMIT;
 				*when = cm_time_soonish;
-			} else
-			if (cm_submit_rejected(entry,
-					       state->cm_submit_state) == 0) {
-				/* The request was flat-out rejected. */
-				entry->cm_state = CM_REJECTED;
-				*when = cm_time_now;
-			} else
-			if (cm_submit_unreachable(entry,
-						  state->cm_submit_state) == 0) {
-				/* Let's try again later. */
-				cm_submit_done(entry, state->cm_submit_state);
-				state->cm_submit_state = NULL;
-				entry->cm_state = CM_NEED_TO_SUBMIT;
-				*when = cm_time_delay;
-				*delay = CM_DELAY_CA_POLL;
 			} else {
 				/* Don't know what's going on. HELP! */
 				cm_submit_done(entry, state->cm_submit_state);
@@ -396,137 +378,6 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				entry->cm_state = CM_NEED_GUIDANCE;
 				*when = cm_time_now;
 			}
-		} else
-		if (cm_submit_unreachable(entry,
-					  state->cm_submit_state) == 0) {
-			/* The request never made it to the CA.  We'll have to
-			 * give it a shot again sometime later. */
-			cm_submit_done(entry, state->cm_submit_state);
-			state->cm_submit_state = NULL;
-			entry->cm_state = CM_NEED_TO_SUBMIT;
-			*when = cm_time_delay;
-			*delay = CM_DELAY_CA_POLL;
-		} else {
-			/* Wait for status update, or poll. */
-			*readfd = cm_submit_get_fd(entry,
-						   state->cm_submit_state);
-			if (*readfd == -1) {
-				*when = cm_time_soon;
-			} else {
-				*when = cm_time_no_time;
-			}
-		}
-		break;
-	case CM_HAVE_SUBMITTED:
-		entry->cm_state = CM_NEED_CA_STATUS;
-		*when = cm_time_now;
-		break;
-	case CM_NEED_CA_STATUS:
-		/* Recycle the helper. */
-		if (state->cm_submit_state != NULL) {
-			cm_submit_done(entry, state->cm_submit_state);
-		}
-		/* Pick up where we left off. */
-		state->cm_submit_state = cm_submit_resume(ca, entry);
-		if (state->cm_submit_state != NULL) {
-			/* We're working on checking our status. */
-			entry->cm_state = CM_POLLING_CA_STATUS;
-			/* Wait for status update, or poll. */
-			*readfd = cm_submit_get_fd(entry,
-						   state->cm_submit_state);
-			if (*readfd == -1) {
-				*when = cm_time_soon;
-			} else {
-				*when = cm_time_no_time;
-			}
-		} else {
-			/* Couldn't start polling for status; try again after a
-			 * bit. */
-			*when = cm_time_soonish;
-		}
-		break;
-	case CM_POLLING_CA_STATUS:
-		if (cm_submit_status_ready(entry,
-					   state->cm_submit_state) == 0) {
-			/* We've retrieved status from the CA. */
-			if (cm_submit_issued(entry,
-					     state->cm_submit_state) == 0) {
-				/* CA issued a cert. */
-				if (cm_submit_needs_retrieval(entry,
-							      state->cm_submit_state) == 0) {
-					/* We're done, but we need to retrieve
-					 * the certificate in another step. */
-					entry->cm_state = CM_RETRIEVING_CERT;
-					*when = cm_time_soon;
-				} else {
-					/* We're all done, and we even have the
-					 * issued certificate.  Save the
-					 * certificate to its real home. */
-					cm_submit_done(entry,
-						       state->cm_submit_state);
-					state->cm_submit_state = NULL;
-					entry->cm_state = CM_NEED_TO_SAVE_CERT;
-					*when = cm_time_now;
-				}
-			} else
-			if (cm_submit_save_ca_cookie(entry,
-						     state->cm_submit_state) == 0) {
-				/* Saved CA's identifier for our request; ask
-				 * again after a while. */
-				entry->cm_state = CM_HAVE_SUBMITTED;
-				*when = cm_time_delay;
-				*delay = CM_DELAY_CA_POLL;
-			} else
-			if (cm_submit_rejected(entry,
-					       state->cm_submit_state) == 0) {
-				/* The request was flat-out rejected. */
-				entry->cm_state = CM_REJECTED;
-				*when = cm_time_now;
-			} else
-			if (cm_submit_unreachable(entry,
-						  state->cm_submit_state) == 0) {
-				/* Let's try again later. */
-				cm_submit_done(entry, state->cm_submit_state);
-				state->cm_submit_state = NULL;
-				entry->cm_state = CM_NEED_TO_SUBMIT;
-				*when = cm_time_delay;
-				*delay = CM_DELAY_CA_POLL;
-			} else {
-				/* Don't know what's going on. HELP! */
-				cm_submit_done(entry, state->cm_submit_state);
-				state->cm_submit_state = NULL;
-				entry->cm_state = CM_NEED_GUIDANCE;
-				*when = cm_time_now;
-			}
-		} else
-		if (cm_submit_unreachable(entry,
-					  state->cm_submit_state) == 0) {
-			/* Let's try again later. */
-			cm_submit_done(entry, state->cm_submit_state);
-			state->cm_submit_state = NULL;
-			entry->cm_state = CM_NEED_TO_SUBMIT;
-			*when = cm_time_delay;
-			*delay = CM_DELAY_CA_POLL;
-		} else {
-			/* Wait for status update, or poll. */
-			*readfd = cm_submit_get_fd(entry,
-						   state->cm_submit_state);
-			if (*readfd == -1) {
-				*when = cm_time_soon;
-			} else {
-				*when = cm_time_no_time;
-			}
-		}
-		break;
-	case CM_RETRIEVING_CERT:
-		if (cm_submit_status_ready(entry,
-					   state->cm_submit_state) == 0) {
-			/* We've retrieved the cert, but we haven't saved it
-			 * anywhere yet. */
-			cm_submit_done(entry, state->cm_submit_state);
-			state->cm_submit_state = NULL;
-			entry->cm_state = CM_NEED_TO_SAVE_CERT;
-			*when = cm_time_now;
 		} else {
 			/* Wait for status update, or poll. */
 			*readfd = cm_submit_get_fd(entry,

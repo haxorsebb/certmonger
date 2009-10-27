@@ -25,15 +25,13 @@ struct cm_submit_state_pvt {
 	 */
 	int (*get_fd)(struct cm_store_entry *entry,
 		      struct cm_submit_state *state);
-	/* Check if the CSR was submitted to the CA yet. */
-	int (*sent)(struct cm_store_entry *entry,
-		    struct cm_submit_state *state);
+	/* Check if the CSR was submitted to the CA yet, or we determined that
+	 * doing so was not possible at this time. */
+	int (*ready)(struct cm_store_entry *entry,
+		     struct cm_submit_state *state);
 	/* Save CA-specific identifier for our submitted request. */
 	int (*save_ca_cookie)(struct cm_store_entry *entry,
 			      struct cm_submit_state *state);
-	/* Check if an attempt to get status has succeeded. */
-	int (*status_ready)(struct cm_store_entry *entry,
-			    struct cm_submit_state *state);
 	/* Check if the certificate was issued. */
 	int (*issued)(struct cm_store_entry *entry,
 		      struct cm_submit_state *state);
@@ -43,10 +41,6 @@ struct cm_submit_state_pvt {
 	/* Check if the CA was unreachable for some reason. */
 	int (*unreachable)(struct cm_store_entry *entry,
 			   struct cm_submit_state *state);
-	/* Check if we need to make another request to actually retrieve the
-	 * cert. */
-	int (*needs_retrieval)(struct cm_store_entry *entry,
-			       struct cm_submit_state *state);
 	/* Done talking to the CA. */
 	void (*done)(struct cm_store_entry *entry,
 		     struct cm_submit_state *state);
@@ -58,11 +52,5 @@ struct cm_submit_state *cm_submit_sn_start(struct cm_store_ca *ca,
 					   struct cm_store_entry *entry);
 struct cm_submit_state *cm_submit_so_start(struct cm_store_ca *ca,
 					   struct cm_store_entry *entry);
-struct cm_submit_state *cm_submit_e_resume(struct cm_store_ca *ca,
-					   struct cm_store_entry *entry);
-struct cm_submit_state *cm_submit_sn_resume(struct cm_store_ca *ca,
-					    struct cm_store_entry *entry);
-struct cm_submit_state *cm_submit_so_resume(struct cm_store_ca *ca,
-					    struct cm_store_entry *entry);
 
 #endif

@@ -55,47 +55,6 @@ cm_submit_e_get_fd(struct cm_store_entry *entry, struct cm_submit_state *state)
 	return state->fd;
 }
 
-/* Check if we're done trying to send the CSR to the CA yet. */
-static int
-cm_submit_e_sent(struct cm_store_entry *entry, struct cm_submit_state *state)
-{
-	ssize_t i, remainder;
-	int status;
-	if (state->pid == -1) {
-		cm_log(1, "Certificate already sent.\n");
-		return 0;
-	} else {
-		do {
-			remainder = (sizeof(state->msg) - state->count) - 1;
-			i = read(state->fd, state->msg + state->count,
-				 remainder);
-			switch (i) {
-			case -1:
-			case 0:
-				break;
-			default:
-				state->count += i;
-				break;
-			}
-		} while (i > 0);
-		if ((i == -1) && ((errno == EAGAIN) || (errno == EINTR))) {
-			status = -1;
-			cm_log(1, "Certificate not submitted yet.\n");
-		} else {
-			state->msg[state->count] = '\0';
-			close(state->fd);
-			state->fd = -1;
-			waitpid(state->pid, &state->status, 0);
-			cm_log(1, "Child status = %d.\n",
-			       WEXITSTATUS(state->status));
-			state->pid = -1;
-			cm_log(1, "Certificate submitted.\n");
-			status = 0;
-		}
-		return status;
-	}
-}
-
 /* Try to save a CA-specific identifier for our submitted request.  That is, if
  * it even gave us one. */
 static int
@@ -121,15 +80,14 @@ cm_submit_e_save_ca_cookie(struct cm_store_entry *entry,
 	return -1;
 }
 
-/* Check if an attempt to get status has succeeded. */
+/* Check if an attempt to submit the CSR has completed. */
 static int
-cm_submit_e_status_ready(struct cm_store_entry *entry,
-		         struct cm_submit_state *state)
+cm_submit_e_ready(struct cm_store_entry *entry, struct cm_submit_state *state)
 {
 	ssize_t i, remainder;
 	int status;
 	if (state->pid == -1) {
-		cm_log(1, "Certificate status ready.\n");
+		cm_log(1, "Certificate submission attempt complete.\n");
 		return 0;
 	} else {
 		do {
@@ -147,7 +105,7 @@ cm_submit_e_status_ready(struct cm_store_entry *entry,
 		} while (i > 0);
 		if ((i == -1) && ((errno == EAGAIN) || (errno == EINTR))) {
 			status = -1;
-			cm_log(1, "Certificate status NOT ready yet.\n");
+			cm_log(1, "Certificate submission still ongoing.\n");
 		} else {
 			state->msg[state->count] = '\0';
 			close(state->fd);
@@ -156,7 +114,7 @@ cm_submit_e_status_ready(struct cm_store_entry *entry,
 			cm_log(1, "Child status = %d.\n",
 			       WEXITSTATUS(state->status));
 			state->pid = -1;
-			cm_log(1, "Certificate status ready.\n");
+			cm_log(1, "Certificate submission completed.\n");
 			status = 0;
 		}
 		return status;
@@ -216,15 +174,6 @@ cm_submit_e_unreachable(struct cm_store_entry *entry,
 	return -1;
 }
 
-/* Check if we need to make another request to actually retrieve the cert. */
-static int
-cm_submit_e_needs_retrieval(struct cm_store_entry *entry,
-			    struct cm_submit_state *state)
-{
-	/* We never do. */
-	return -1;
-}
-
 /* Done talking to the CA; clean up. */
 static void
 cm_submit_e_done(struct cm_store_entry *entry, struct cm_submit_state *state)
@@ -256,13 +205,11 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 		execfds[1] = -1;
 		memset(state, 0, sizeof(*state));
 		state->pvt.get_fd = cm_submit_e_get_fd;
-		state->pvt.sent = cm_submit_e_sent;
 		state->pvt.save_ca_cookie = cm_submit_e_save_ca_cookie;
-		state->pvt.status_ready = cm_submit_e_status_ready;
+		state->pvt.ready = cm_submit_e_ready;
 		state->pvt.issued = cm_submit_e_issued;
 		state->pvt.rejected = cm_submit_e_rejected;
 		state->pvt.unreachable = cm_submit_e_unreachable;
-		state->pvt.needs_retrieval = cm_submit_e_needs_retrieval;
 		state->pvt.done = cm_submit_e_done;
 		state->fd = -1;
 		if ((pipe(outfds) != -1) && (pipe(execfds) != -1)) {
@@ -346,17 +293,16 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 	return state;
 }
 
-/* Pick up after a CSR has been "submitted", in case we haven't yet gotten a
- * decision about it. */
-struct cm_submit_state *
-cm_submit_e_resume(struct cm_store_ca *ca, struct cm_store_entry *entry)
-{
-	return cm_submit_e_start_or_resume(ca, entry, entry->cm_csr, "POLL");
-}
-
 /* Start CSR submission using parameters stored in the entry. */
 struct cm_submit_state *
 cm_submit_e_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 {
-	return cm_submit_e_start_or_resume(ca, entry, entry->cm_csr, "SUBMIT");
+	if ((entry->cm_ca_cookie != NULL) &&
+	    (strlen(entry->cm_ca_cookie) > 0)) {
+		return cm_submit_e_start_or_resume(ca, entry,
+						   entry->cm_ca_cookie, "POLL");
+	} else {
+		return cm_submit_e_start_or_resume(ca, entry,
+						   entry->cm_csr, "SUBMIT");
+	}
 }

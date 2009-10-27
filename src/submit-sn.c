@@ -323,13 +323,6 @@ cm_submit_sn_get_fd(struct cm_store_entry *entry, struct cm_submit_state *state)
 	return state->fd;
 }
 
-/* Check if the CSR was received by the CA yet. */
-static int
-cm_submit_sn_sent(struct cm_store_entry *entry, struct cm_submit_state *state)
-{
-	return 0;
-}
-
 /* Save CA-specific identifier for our submitted request. */
 static int
 cm_submit_sn_save_ca_cookie(struct cm_store_entry *entry,
@@ -345,21 +338,9 @@ cm_submit_sn_save_ca_cookie(struct cm_store_entry *entry,
 	return 0;
 }
 
-/* Pick up after a CSR has been "submitted", in case we haven't yet gotten a
- * decision about it. */
-struct cm_submit_state *
-cm_submit_sn_resume(struct cm_store_ca *ca, struct cm_store_entry *entry)
-{
-	struct cm_submit_state *state;
-	state = cm_submit_start(ca, entry);
-	cm_submit_save_ca_cookie(entry, state);
-	return state;
-}
-
-/* Check if an attempt to get status has succeeded. */
+/* Check if an attempt to submit has completed. */
 static int
-cm_submit_sn_status_ready(struct cm_store_entry *entry,
-		          struct cm_submit_state *state)
+cm_submit_sn_ready(struct cm_store_entry *entry, struct cm_submit_state *state)
 {
 	ssize_t i, remainder;
 	int status;
@@ -423,14 +404,6 @@ cm_submit_sn_unreachable(struct cm_store_entry *entry,
 	return -1; /* uh, we're the CA */
 }
 
-/* Check if we need to make another request to actually retrieve the cert. */
-static int
-cm_submit_sn_needs_retrieval(struct cm_store_entry *entry,
-			     struct cm_submit_state *state)
-{
-	return -1; /* already have data, no additional retrieval step needed */
-}
-
 /* Done talking to the CA. */
 static void
 cm_submit_sn_done(struct cm_store_entry *entry, struct cm_submit_state *state)
@@ -459,13 +432,11 @@ cm_submit_sn_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 	if (state != NULL) {
 		memset(state, 0, sizeof(*state));
 		state->pvt.get_fd = cm_submit_sn_get_fd;
-		state->pvt.sent = cm_submit_sn_sent;
 		state->pvt.save_ca_cookie = cm_submit_sn_save_ca_cookie;
-		state->pvt.status_ready = cm_submit_sn_status_ready;
+		state->pvt.ready = cm_submit_sn_ready;
 		state->pvt.issued = cm_submit_sn_issued;
 		state->pvt.rejected = cm_submit_sn_rejected;
 		state->pvt.unreachable = cm_submit_sn_unreachable;
-		state->pvt.needs_retrieval = cm_submit_sn_needs_retrieval;
 		state->pvt.done = cm_submit_sn_done;
 		state->fd = -1;
 		if (pipe(fds) != -1) {

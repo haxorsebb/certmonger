@@ -771,10 +771,6 @@ list(const char *argv0, int argc, char **argv)
 		case CM_HAVE_CSR:
 		case CM_NEED_TO_SUBMIT:
 		case CM_SUBMITTING:
-		case CM_HAVE_SUBMITTED:
-		case CM_NEED_CA_STATUS:
-		case CM_POLLING_CA_STATUS:
-		case CM_RETRIEVING_CERT:
 		case CM_NEED_TO_SAVE_CERT:
 		case CM_SAVING_CERT:
 		case CM_SAVED_CERT:

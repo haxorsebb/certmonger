@@ -50,37 +50,6 @@ cm_submit_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 	return NULL;
 }
 
-/* Pick up after a CSR has been submitted, in case we haven't yet gotten a
- * decision about it. */
-struct cm_submit_state *
-cm_submit_resume(struct cm_store_ca *ca, struct cm_store_entry *entry)
-{
-	switch (ca->cm_ca_type) {
-	case cm_ca_internal_self:
-		switch (entry->cm_key_storage_type) {
-		case cm_key_storage_none:
-			cm_log(1, "Can't self-sign \"%s\" without access to "
-			       "the private key.\n", entry->cm_id);
-			break;
-#ifdef HAVE_OPENSSL
-		case cm_key_storage_file:
-			return cm_submit_so_resume(ca, entry);
-			break;
-#endif
-#ifdef HAVE_NSS
-		case cm_key_storage_nssdb:
-			return cm_submit_sn_resume(ca, entry);
-			break;
-#endif
-		}
-		break;
-	case cm_ca_external:
-		return cm_submit_e_resume(ca, entry);
-		break;
-	}
-	return NULL;
-}
-
 /* Get a selectable-for-read descriptor we can poll for status changes. */
 int
 cm_submit_get_fd(struct cm_store_entry *entry, struct cm_submit_state *state)
@@ -89,12 +58,13 @@ cm_submit_get_fd(struct cm_store_entry *entry, struct cm_submit_state *state)
 	return pvt->get_fd(entry, state);
 }
 
-/* Check if the CSR was submitted to the CA yet. */
+/* Check if the CSR was submitted to the CA yet, or we figured out that it
+ * wasn't possible to accomplish it. */
 int
-cm_submit_sent(struct cm_store_entry *entry, struct cm_submit_state *state)
+cm_submit_ready(struct cm_store_entry *entry, struct cm_submit_state *state)
 {
 	struct cm_submit_state_pvt *pvt = (struct cm_submit_state_pvt *) state;
-	return pvt->sent(entry, state);
+	return pvt->ready(entry, state);
 }
 
 /* Save CA-specific identifier for our submitted request. */
@@ -104,15 +74,6 @@ cm_submit_save_ca_cookie(struct cm_store_entry *entry,
 {
 	struct cm_submit_state_pvt *pvt = (struct cm_submit_state_pvt *) state;
 	return pvt->save_ca_cookie(entry, state);
-}
-
-/* Check if an attempt to get status has succeeded. */
-int
-cm_submit_status_ready(struct cm_store_entry *entry,
-		       struct cm_submit_state *state)
-{
-	struct cm_submit_state_pvt *pvt = (struct cm_submit_state_pvt *) state;
-	return pvt->status_ready(entry, state);
 }
 
 /* Check if the certificate was issued. */
@@ -138,15 +99,6 @@ cm_submit_unreachable(struct cm_store_entry *entry,
 {
 	struct cm_submit_state_pvt *pvt = (struct cm_submit_state_pvt *) state;
 	return pvt->unreachable(entry, state);
-}
-
-/* Check if we need to make another request to actually retrieve the cert. */
-int
-cm_submit_needs_retrieval(struct cm_store_entry *entry,
-			  struct cm_submit_state *state)
-{
-	struct cm_submit_state_pvt *pvt = (struct cm_submit_state_pvt *) state;
-	return pvt->needs_retrieval(entry, state);
 }
 
 /* Done talking to the CA. */
