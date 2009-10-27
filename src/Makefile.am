@@ -65,7 +65,7 @@ libcm_n_a_CFLAGS = @NSS_CFLAGS@
 libcm_a_LIBADD = $(libcm_o_a_OBJECTS) $(libcm_n_a_OBJECTS)
 bin_PROGRAMS = getcert
 getcert_SOURCES = getcert.c
-getcert_LDADD = libcm.a @GETCERT_LIBS@
+getcert_LDADD = libcm.a @GETCERT_LIBS@ @KRB5_LIBS@
 if WITH_IPA
 bin_PROGRAMS += ipa-getcert
 ipa_getcert_SOURCES = ipa-getcert.c

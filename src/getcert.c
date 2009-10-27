@@ -31,6 +31,8 @@
 
 #include <dbus/dbus.h>
 
+#include <krb5.h>
+
 #include "cm.h"
 #include "store.h"
 #include "store-int.h"
@@ -180,6 +182,10 @@ request(const char *argv0, int argc, char **argv)
 	DBusMessage *req, *rep;
 	dbus_bool_t b;
 	char *p;
+	krb5_context kctx;
+	krb5_error_code kret;
+	krb5_principal kprincipal;
+	char *krealm, *kuprincipal;
 
 	memset(subject_default, '\0', sizeof(subject_default));
 	strcpy(subject_default, "CN=");
@@ -188,6 +194,20 @@ request(const char *argv0, int argc, char **argv)
 		strcpy(subject_default, "CN=localhost");
 	}
 	subject = subject_default;
+
+	kctx = NULL;
+	if ((kret = krb5_init_context(&kctx)) != 0) {
+		kctx = NULL;
+		printf("Error initializing Kerberos library: %s.\n",
+		       error_message(kret));
+		return 1;
+	}
+	krealm = NULL;
+	if ((kret = krb5_get_default_realm(kctx, &krealm)) != 0) {
+		printf("Error determining default Kerberos realm: %s.\n",
+		       error_message(kret));
+		return 1;
+	}
 
 	while ((c = getopt(argc, argv,
 			   "d:n:t:k:f:g:erN:U:K:D:E:" GETOPT_CA)) != -1) {
@@ -226,7 +246,24 @@ request(const char *argv0, int argc, char **argv)
 			add_string(globals.tctx, &eku, optarg);
 			break;
 		case 'K':
-			add_string(globals.tctx, &principal, optarg);
+			kprincipal = NULL;
+			if ((kret = krb5_parse_name(kctx, optarg,
+						    &kprincipal)) != 0) {
+				printf("Error parsing Kerberos principal "
+				       "name \"%s\": %s.\n", optarg,
+				       error_message(kret));
+				return 1;
+			}
+			kuprincipal = NULL;
+			if ((kret = krb5_unparse_name(kctx, kprincipal,
+						      &kuprincipal)) != 0) {
+				printf("Error unparsing Kerberos principal "
+				       "name \"%s\": %s.\n", optarg,
+				       error_message(kret));
+				return 1;
+			}
+			add_string(globals.tctx, &principal, kuprincipal);
+			krb5_free_principal(kctx, kprincipal);
 			break;
 		case 'D':
 			add_string(globals.tctx, &dns, optarg);
@@ -259,6 +296,18 @@ request(const char *argv0, int argc, char **argv)
 		return 1;
 	}
 	i = 0;
+	/* If the caller supplied _no_ naming information, substitute our own
+	 * defaults. */
+	if ((subject == subject_default) &&
+	    (eku == NULL) &&
+	    (principal == NULL) &&
+	    (dns == NULL) &&
+	    (email == NULL)) {
+		add_string(globals.tctx, &eku, "1.3.6.1.5.5.7.3.1");
+		add_string(globals.tctx, &principal,
+			   talloc_asprintf("host/%s@%s", subject + 3, krealm));
+		add_string(globals.tctx, &dns, subject + 3);
+	}
 	if ((dbdir != NULL) && (nickname != NULL)) {
 		param[i].key = "KEY_STORAGE";
 		param[i].value_type = cm_tdbusm_dict_s;
