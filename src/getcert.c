@@ -208,6 +208,10 @@ request(const char *argv0, int argc, char **argv)
 		       error_message(kret));
 		return 1;
 	}
+	if (krealm == NULL) {
+		printf("Error determining default Kerberos realm.\n");
+		return 1;
+	}
 
 	while ((c = getopt(argc, argv,
 			   "d:n:t:k:f:g:erN:U:K:D:E:" GETOPT_CA)) != -1) {
@@ -305,7 +309,8 @@ request(const char *argv0, int argc, char **argv)
 	    (email == NULL)) {
 		add_string(globals.tctx, &eku, "1.3.6.1.5.5.7.3.1");
 		add_string(globals.tctx, &principal,
-			   talloc_asprintf("host/%s@%s", subject + 3, krealm));
+			   talloc_asprintf(globals.tctx,
+			   		   "host/%s@%s", subject + 3, krealm));
 		add_string(globals.tctx, &dns, subject + 3);
 	}
 	if ((dbdir != NULL) && (nickname != NULL)) {
