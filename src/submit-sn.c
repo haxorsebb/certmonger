@@ -65,7 +65,7 @@ cm_submit_sn_main(int fd, struct cm_store_entry *entry)
 	CERTValidity *validity;
 	PRTime now, life;
 	PLArenaPool *arena = NULL;
-	SECOidData *oid;
+	SECOidData *sigoid;
 	enum cm_key_algorithm cm_key_algorithm;
 	CK_MECHANISM_TYPE mech;
 	PK11SlotList *slotlist;
@@ -215,7 +215,7 @@ cm_submit_sn_main(int fd, struct cm_store_entry *entry)
 	} else {
 		data = &sdata;
 	}
-	oid = SECOID_FindOIDByTag(SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION);
+	sigoid = SECOID_FindOIDByTag(SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION);
 	/* Decode the CSR from the signeddata structure into a usable request.
 	 */
 	memset(&sreq, 0, sizeof(sreq));
@@ -254,13 +254,18 @@ cm_submit_sn_main(int fd, struct cm_store_entry *entry)
 		_exit(1);
 	}
 	if (SECOID_SetAlgorithmID(arena, &ucert->signature,
-				  oid->offset, NULL) != SECSuccess) {
+				  sigoid->offset, NULL) != SECSuccess) {
 		cm_log(1, "Unable to set signature algorithm ID.\n");
 		_exit(1);
 	}
 	ucert->issuer = req->subject;
 	ucert->subject = req->subject;
 	ucert->subjectPublicKeyInfo = req->subjectPublicKeyInfo;
+	/* Try to copy the extensions from the request into the certificate. */
+	if (CERT_GetCertificateRequestExtensions(req,
+						 &ucert->extensions) != SECSuccess) {
+		cm_log(1, "Error getting certificate request extensions.\n");
+	}
 	/* Encode the certificate. */
 	ecert = SEC_ASN1EncodeItem(arena, NULL, ucert,
 				   CERT_CertificateTemplate);
@@ -272,12 +277,12 @@ cm_submit_sn_main(int fd, struct cm_store_entry *entry)
 	memset(&scert, 0, sizeof(scert));
 	scert.data = *ecert;
 	if (SECOID_SetAlgorithmID(arena, &scert.signatureAlgorithm,
-				  oid->offset, NULL) != SECSuccess) {
+				  sigoid->offset, NULL) != SECSuccess) {
 		cm_log(1, "Unable to set signature algorithm ID.\n");
 		_exit(1);
 	}
 	if (SEC_SignData(&scert.signature, ecert->data, ecert->len,
-			 privkey, oid->offset) != SECSuccess) {
+			 privkey, sigoid->offset) != SECSuccess) {
 		cm_log(1, "Unable to generate signature.\n");
 		_exit(1);
 	}
