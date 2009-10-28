@@ -24,6 +24,12 @@
 #define CM_DBUS_CA_INTERFACE CM_DBUS_BASE_INTERFACE ".ca"
 #define CM_DBUS_REQUEST_PATH CM_DBUS_BASE_PATH "/requests"
 #define CM_DBUS_REQUEST_INTERFACE CM_DBUS_BASE_INTERFACE ".request"
+#define CM_DBUS_ERROR_BASE CM_DBUS_BASE_INTERFACE
+#define CM_DBUS_ERROR_CA CM_DBUS_ERROR_BASE ".ca"
+#define CM_DBUS_ERROR_REQUEST CM_DBUS_ERROR_BASE ".request"
+#define CM_DBUS_ERROR_BASE_INTERNAL CM_DBUS_ERROR_BASE ".internal"
+#define CM_DBUS_ERROR_CA_INTERNAL CM_DBUS_ERROR_CA ".internal"
+#define CM_DBUS_ERROR_REQUEST_INTERNAL CM_DBUS_ERROR_REQUEST ".internal"
 
 enum cm_tdbus_type { cm_tdbus_system, cm_tdbus_session };
 int cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type,
