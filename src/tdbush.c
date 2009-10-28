@@ -37,10 +37,55 @@
 /* Functions which tell us if, based on the path alone, there's an object of
  * the specified type with that path. */
 static dbus_bool_t
+is_ancestor_of_base(struct cm_context *ctx, const char *path,
+		    const char *interface, const char *member)
+{
+	int basepathlen = strlen(CM_DBUS_BASE_PATH);
+	int pathlen = strlen(path);
+	return (strcmp(path, "/") == 0) ||
+	       ((pathlen < basepathlen) &&
+		(strncmp(path, CM_DBUS_BASE_PATH, pathlen) == 0) &&
+		(CM_DBUS_BASE_PATH[pathlen] == '/'));
+}
+static dbus_bool_t
+is_ancestor_of_cas(struct cm_context *ctx, const char *path,
+		   const char *interface, const char *member)
+{
+	int capathlen = strlen(CM_DBUS_CA_PATH);
+	int pathlen = strlen(path);
+	return (strcmp(path, "/") == 0) ||
+	       ((pathlen < capathlen) &&
+		(strncmp(path, CM_DBUS_CA_PATH, pathlen) == 0) &&
+		(CM_DBUS_CA_PATH[pathlen] == '/'));
+}
+static dbus_bool_t
+is_ancestor_of_requests(struct cm_context *ctx, const char *path,
+		        const char *interface, const char *member)
+{
+	int reqpathlen = strlen(CM_DBUS_REQUEST_PATH);
+	int pathlen = strlen(path);
+	return (strcmp(path, "/") == 0) ||
+	       ((pathlen < reqpathlen) &&
+		(strncmp(path, CM_DBUS_REQUEST_PATH, pathlen) == 0) &&
+		(CM_DBUS_REQUEST_PATH[pathlen] == '/'));
+}
+static dbus_bool_t
 is_base(struct cm_context *ctx, const char *path,
 	const char *interface, const char *member)
 {
 	return (strcmp(path, CM_DBUS_BASE_PATH) == 0);
+}
+static dbus_bool_t
+is_ca_group(struct cm_context *ctx, const char *path,
+	    const char *interface, const char *member)
+{
+	return (strcmp(path, CM_DBUS_CA_PATH) == 0);
+}
+static dbus_bool_t
+is_request_group(struct cm_context *ctx, const char *path,
+		 const char *interface, const char *member)
+{
+	return (strcmp(path, CM_DBUS_REQUEST_PATH) == 0);
 }
 static struct cm_store_entry *
 get_entry_for_path(struct cm_context *ctx, const char *path)
@@ -92,12 +137,6 @@ is_request(struct cm_context *ctx, const char *path,
 	   const char *interface, const char *member)
 {
 	return get_entry_for_path(ctx, path) != NULL;
-}
-static DBusHandlerResult
-generic_introspect(DBusConnection *conn, DBusMessage *msg,
-		   struct cm_context *ctx)
-{
-	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
 /* Functions implemented for the base object. */
@@ -1495,6 +1534,127 @@ request_resubmit(DBusConnection *conn, DBusMessage *msg,
 	} else {
 		return send_internal_request_error(conn, msg);
 	}
+}
+
+static char *
+ancestor_of_base_introspect(struct cm_context *ctx, const char *path)
+{
+	const char *p;
+	int i;
+	p = CM_DBUS_BASE_PATH + strlen(path);
+	p += strspn(p, "/");
+	i = strcspn(p, "/");
+	return talloc_asprintf(ctx, "<node name=\"%.*s\"/>\n", i, p);
+}
+
+static char *
+ancestor_of_ca_introspect(struct cm_context *ctx, const char *path)
+{
+	const char *p;
+	int i;
+	p = CM_DBUS_CA_PATH + strlen(path);
+	p += strspn(p, "/");
+	i = strcspn(p, "/");
+	return talloc_asprintf(ctx, "<node name=\"%.*s\"/>\n", i, p);
+}
+
+static char *
+ancestor_of_request_introspect(struct cm_context *ctx, const char *path)
+{
+	const char *p;
+	int i;
+	p = CM_DBUS_REQUEST_PATH + strlen(path);
+	p += strspn(p, "/");
+	i = strcspn(p, "/");
+	return talloc_asprintf(ctx, "<node name=\"%.*s\"/>\n", i, p);
+}
+
+static char *
+base_introspect(struct cm_context *ctx, const char *path)
+{
+	return talloc_asprintf(ctx, "BASE");
+}
+
+static char *
+request_introspect(struct cm_context *ctx, const char *path)
+{
+	return talloc_asprintf(ctx, "REQUEST");
+}
+
+static char *
+ca_introspect(struct cm_context *ctx, const char *path)
+{
+	return talloc_asprintf(ctx, "CA");
+}
+
+static char *
+request_group_introspect(struct cm_context *ctx, const char *path)
+{
+	return talloc_asprintf(ctx, "REQUEST NODE LIST");
+}
+
+static char *
+ca_group_introspect(struct cm_context *ctx, const char *path)
+{
+	return talloc_asprintf(ctx, "CA NODE LIST");
+}
+
+static DBusHandlerResult
+generic_introspect(DBusConnection *conn, DBusMessage *msg,
+		   struct cm_context *ctx)
+{
+	DBusHandlerResult ret;
+	DBusMessage *rep;
+	const char *path, *interface, *method;
+	char *data = NULL, *xml;
+	path = dbus_message_get_path(msg);
+	interface = dbus_message_get_interface(msg);
+	method = dbus_message_get_member(msg);
+	ret = DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	if (is_base(ctx, path, interface, method)) {
+		data = base_introspect(ctx, path);
+	} else
+	if (is_ca_group(ctx, path, interface, method)) {
+		data = ca_group_introspect(ctx, path);
+	} else
+	if (is_ca(ctx, path, interface, method)) {
+		data = ca_introspect(ctx, path);
+	} else
+	if (is_request_group(ctx, path, interface, method)) {
+		data = request_group_introspect(ctx, path);
+	} else
+	if (is_request(ctx, path, interface, method)) {
+		data = request_introspect(ctx, path);
+	} else
+	if (is_ancestor_of_base(ctx, path, interface, method)) {
+		data = ancestor_of_base_introspect(ctx, path);
+	} else
+	if (is_ancestor_of_cas(ctx, path, interface, method)) {
+		data = ancestor_of_ca_introspect(ctx, path);
+	} else
+	if (is_ancestor_of_requests(ctx, path, interface, method)) {
+		data = ancestor_of_request_introspect(ctx, path);
+	}
+	if (data != NULL) {
+		xml = talloc_asprintf(ctx,
+				      "%s\n<node name=\"%s\">\n%s</node>\n",
+				      DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE,
+				      path,
+				      data);
+		if (xml != NULL) {
+			rep = dbus_message_new_method_return(msg);
+			if (rep != NULL) {
+				if (cm_tdbusm_set_s(rep, xml) == 0) {
+					dbus_connection_send(conn, rep, NULL);
+					ret = DBUS_HANDLER_RESULT_HANDLED;
+				}
+				dbus_message_unref(rep);
+			}
+			talloc_free(xml);
+		}
+		talloc_free(data);
+	}
+	return ret;
 }
 
 static struct {
