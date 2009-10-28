@@ -37,7 +37,6 @@ To-do:
     mutilating the queue directly (see doc/api.txt):
     * Remove entry. (1 day)
       MUST
-      MUST
     * Modify requested data and regenerate signing requests. (3 days)
       MUST
     * Provide introspection data as a well-behaved DBus service would. (1 day)
