@@ -25,6 +25,10 @@
 struct cm_submit_state *
 cm_submit_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 {
+	if (ca == NULL) {
+		cm_log(1, "No matching CA.\n");
+		return NULL;
+	}
 	switch (ca->cm_ca_type) {
 	case cm_ca_internal_self:
 		switch (entry->cm_key_storage_type) {
