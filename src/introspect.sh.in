@@ -1,0 +1,10 @@
+#!/bin/sh
+bus=--system
+for object in "$@" ; do
+	case "$object" in
+	--*)
+		bus="$object";;
+	*)
+		dbus-send $bus --print-reply --dest=@CM_DBUS_NAME@ "${object:-/}" org.freedesktop.DBus.Introspectable.Introspect
+	esac
+done

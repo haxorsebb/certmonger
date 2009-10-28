@@ -93,6 +93,12 @@ is_request(struct cm_context *ctx, const char *path,
 {
 	return get_entry_for_path(ctx, path) != NULL;
 }
+static DBusHandlerResult
+generic_introspect(DBusConnection *conn, DBusMessage *msg,
+		   struct cm_context *ctx)
+{
+	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
 
 /* Functions implemented for the base object. */
 static DBusHandlerResult
@@ -168,6 +174,56 @@ send_internal_base_error(DBusConnection *conn, DBusMessage *req)
 }
 
 static DBusHandlerResult
+send_internal_base_missing_arg_error(DBusConnection *conn, DBusMessage *req,
+				     const char *text, const char *arg)
+{
+	DBusMessage *msg;
+	msg = dbus_message_new_error(req, CM_DBUS_ERROR_BASE_MISSING_ARG, text);
+	if (msg != NULL) {
+		cm_tdbusm_set_s(msg, arg);
+		dbus_connection_send(conn, msg, NULL);
+		dbus_message_unref(msg);
+		return DBUS_HANDLER_RESULT_HANDLED;
+	}
+	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
+static DBusHandlerResult
+send_internal_base_bad_arg_error(DBusConnection *conn, DBusMessage *req,
+				 const char *text, const char *badval,
+				 const char *arg)
+{
+	DBusMessage *msg;
+	msg = dbus_message_new_error_printf(req, CM_DBUS_ERROR_BASE_BAD_ARG,
+					    text, badval);
+	if (msg != NULL) {
+		cm_tdbusm_set_s(msg, arg);
+		dbus_connection_send(conn, msg, NULL);
+		dbus_message_unref(msg);
+		return DBUS_HANDLER_RESULT_HANDLED;
+	}
+	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
+static DBusHandlerResult
+send_internal_base_duplicate_error(DBusConnection *conn, DBusMessage *req,
+				   const char *text, const char *dup,
+				   const char *arg1, const char *arg2)
+{
+	DBusMessage *msg;
+	const char *args[] = {arg1, arg2, NULL};
+	msg = dbus_message_new_error_printf(req, CM_DBUS_ERROR_BASE_DUPLICATE,
+					    text, dup);
+	if (msg != NULL) {
+		cm_tdbusm_set_as(msg, args);
+		dbus_connection_send(conn, msg, NULL);
+		dbus_message_unref(msg);
+		return DBUS_HANDLER_RESULT_HANDLED;
+	}
+	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
+static DBusHandlerResult
 base_add_request(DBusConnection *conn, DBusMessage *msg,
 		 struct cm_context *ctx)
 {
@@ -197,7 +253,9 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		/* This is a required parameter. */
 		cm_log(1, "Cert storage type not specified.\n");
 		talloc_free(parent);
-		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		return send_internal_base_missing_arg_error(conn, msg,
+							    _("Certificate storage type not specified."),
+							    "CERT_STORAGE");
 	} else {
 		/* Check that it's a known/supported type. */
 		if (strcasecmp(param->value.s, "FILE") == 0) {
@@ -206,10 +264,15 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		if (strcasecmp(param->value.s, "NSSDB") == 0) {
 			cert_storage = cm_cert_storage_nssdb;
 		} else {
+			DBusHandlerResult ret;
 			cm_log(1, "Unknown cert storage type \"%s\".\n",
 			       param->value.s);
+			ret = send_internal_base_bad_arg_error(conn, msg,
+							       _("Certificate storage type \"%s\" not supported."),
+							       param->value.s,
+							       "CERT_STORAGE");
 			talloc_free(parent);
-			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+			return ret;
 		}
 	}
 	/* Check that other required information about the
@@ -221,7 +284,9 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		if (param == NULL) {
 			cm_log(1, "Cert storage location not specified.\n");
 			talloc_free(parent);
-			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+			return send_internal_base_missing_arg_error(conn, msg,
+								    _("Certificate storage location not specified."),
+								    "CERT_LOCATION");
 		}
 		cert_location = param->value.s;
 		cert_nickname = NULL;
@@ -233,7 +298,9 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		if (param == NULL) {
 			cm_log(1, "Cert storage location not specified.\n");
 			talloc_free(parent);
-			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+			return send_internal_base_missing_arg_error(conn, msg,
+								    _("Certificate storage location not specified."),
+								    "CERT_LOCATION");
 		}
 		cert_location = param->value.s;
 		param = cm_tdbusm_find_dict_entry(d, "CERT_NICKNAME",
@@ -241,7 +308,9 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		if (param == NULL) {
 			cm_log(1, "Cert nickname not specified.\n");
 			talloc_free(parent);
-			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+			return send_internal_base_missing_arg_error(conn, msg,
+								    _("Certificate nickname not specified."),
+								    "CERT_NICKNAME");
 		}
 		cert_nickname = param->value.s;
 		param = cm_tdbusm_find_dict_entry(d, "CERT_TOKEN",
@@ -280,7 +349,12 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		cm_log(1, "Cert at same location is already being "
 		       "used for request \"%s\".\n", e->cm_id);
 		talloc_free(parent);
-		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		return send_internal_base_duplicate_error(conn, msg,
+							  _("Certificate at same location is already used by request \"%s\"."),
+							  e->cm_id,
+							  "CERT_LOCATION",
+							  cert_storage == cm_cert_storage_nssdb ?
+							  "CERT_NICKNAME" : NULL);
 	}
 	/* Key storage.  We can afford to be a bit more lax about this because
 	 * we don't require that we know anything about the key. */
@@ -301,10 +375,15 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		if (strcasecmp(param->value.s, "NONE") == 0) {
 			key_storage = cm_key_storage_none;
 		} else {
+			DBusHandlerResult ret;
 			cm_log(1, "Unknown key storage type \"%s\".\n",
 			       param->value.s);
+			ret = send_internal_base_bad_arg_error(conn, msg,
+							       _("Key storage type \"%s\" not supported."),
+							       param->value.s,
+							       "KEY_STORAGE");
 			talloc_free(parent);
-			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+			return ret;
 		}
 		/* Check that other required information about the key's
 		 * location is provided. */
@@ -321,7 +400,9 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 				cm_log(1,
 				       "Key storage location not specified.\n");
 				talloc_free(parent);
-				return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+				return send_internal_base_missing_arg_error(conn, msg,
+									    _("Key storage location not specified."),
+									    "KEY_LOCATION");
 			}
 			key_location = param->value.s;
 			key_nickname = NULL;
@@ -334,15 +415,19 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 				cm_log(1,
 				       "Key storage location not specified.\n");
 				talloc_free(parent);
-				return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+				return send_internal_base_missing_arg_error(conn, msg,
+									    _("Key storage location not specified."),
+									    "KEY_LOCATION");
 			}
 			key_location = param->value.s;
 			param = cm_tdbusm_find_dict_entry(d, "KEY_NICKNAME",
 							  cm_tdbusm_dict_s);
 			if (param == NULL) {
-				cm_log(1, "Cert nickname not specified.\n");
+				cm_log(1, "Key nickname not specified.\n");
 				talloc_free(parent);
-				return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+				return send_internal_base_missing_arg_error(conn, msg,
+									    _("Key nickname not specified."),
+									    "KEY_NICKNAME");
 			}
 			key_nickname = param->value.s;
 			param = cm_tdbusm_find_dict_entry(d, "KEY_TOKEN",
@@ -390,14 +475,19 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 			cm_log(1, "Key at same location is already being "
 			       "used for request \"%s\".\n", e->cm_id);
 			talloc_free(parent);
-			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+			return send_internal_base_duplicate_error(conn, msg,
+								  _("Key at same location is already used by request \"%s\"."),
+								  e->cm_id,
+								  "KEY_LOCATION",
+								  key_storage == cm_key_storage_nssdb ?
+								  "KEY_NICKNAME" : NULL);
 		}
 	}
 	/* Okay, we can go ahead and add the entry. */
 	new_entry = talloc_ptrtype(parent, new_entry);
 	if (new_entry == NULL) {
 		talloc_free(parent);
-		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		return send_internal_base_error(conn, msg);
 	}
 	memset(new_entry, 0, sizeof(*new_entry));
 	/* Populate it with all of the information we have. */
@@ -1482,6 +1572,8 @@ static struct {
 	 request_rekey_and_submit},
 	{&is_request, CM_DBUS_REQUEST_INTERFACE, "resubmit",
 	 request_resubmit},
+	{NULL, DBUS_INTERFACE_INTROSPECTABLE, "Introspect",
+	 generic_introspect},
 };
 
 DBusHandlerResult
@@ -1501,8 +1593,10 @@ cm_tdbush_handle(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 		if (strcmp(interface, cm_tdbush_methods[i].interface) != 0) {
 			continue;
 		}
-		if (!(*(cm_tdbush_methods[i].implements))(ctx, path,
-							  interface, member)) {
+		if ((cm_tdbush_methods[i].implements != NULL) &&
+		    (!(*(cm_tdbush_methods[i].implements))(ctx, path,
+							   interface,
+							   member))) {
 			continue;
 		}
 		if (cm_tdbush_methods[i].handle == NULL) {

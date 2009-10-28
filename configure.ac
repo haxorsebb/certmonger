@@ -118,4 +118,5 @@ AC_DEFINE_UNQUOTED(WITH_IPA_CA_NAME,"IPA",[Define to the name that the default I
 AC_DEFINE_UNQUOTED(WITH_IPA_HELPER_PATH,"$mylibexecdir/ipa-submit-helper",[Define to the path of the IPA submission helper.])
 AM_CONDITIONAL(WITH_IPA,true)
 
-AC_OUTPUT(Makefile src/Makefile dbus/Makefile dbus/certmonger.conf src/certmonger.init)
+AC_OUTPUT(Makefile src/Makefile dbus/Makefile dbus/certmonger.conf src/certmonger.init src/introspect.sh)
+dnl AC_CONFIG_COMMANDS(src/introspect.sh,[chmod +x src/introspect.sh])
