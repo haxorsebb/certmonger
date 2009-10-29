@@ -37,12 +37,15 @@ Complete:
 To-do:
   * Should offer an API over D-Bus which the client uses instead of
     mutilating the queue directly (see doc/api.txt):
+    * Finish implementing the server half of start-tracking and stop-tracking.
     * Remove entry. (1 day)
       MUST
     * Modify requested data and regenerate signing requests. (3 days)
       MUST
     * Set/reset PIN for encrypted key storage. (1 day)
       MUST
+  * Write some man pages.
+    MUST
   * Be able to use hashes other than the current hard-wired SHA256.
     MUST
   * Detect when network connections go up (it's not enough to depend on
