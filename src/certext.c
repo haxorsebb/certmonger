@@ -414,7 +414,7 @@ cm_certext_read_eku(struct cm_store_entry *entry, PLArenaPool *arena,
 #if 1
 				/* Yeah, gotta sanity-check myself here. XXX */
 				if (strcmp(oid_to_string(entry,
-					  		 oid_from_string(p,
+							 oid_from_string(p,
 									 -1,
 									 arena)),
 					   p) != 0) {
@@ -694,7 +694,7 @@ cm_certext_build_upn(struct cm_store_entry *entry, PLArenaPool *arena,
 		     const char *principal)
 {
 	SECItem upn, princ;
-	
+
 	if ((principal == NULL) || (strlen(principal) == 0)) {
 		return NULL;
 	}
@@ -852,7 +852,7 @@ cm_certext_build_san(struct cm_store_entry *entry, PLArenaPool *arena,
 	memset(&encoded, 0, sizeof(encoded));
 	if ((name != NULL) &&
 	    (CERT_EncodeAltNameExtension(arena, name,
-	   				 &encoded) == SECSuccess)) {
+					 &encoded) == SECSuccess)) {
 		item = SECITEM_ArenaDupItem(arena, &encoded);
 	} else {
 		item = NULL;
