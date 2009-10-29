@@ -832,6 +832,7 @@ list(const char *argv0, int argc, char **argv)
 		case CM_READING_CERT:
 		case CM_REJECTED:
 		case CM_NEED_GUIDANCE:
+		case CM_NEED_CA:
 		case CM_NEWLY_ADDED:
 		case CM_NEWLY_ADDED_START_READING_CERT:
 		case CM_NEWLY_ADDED_READING_KEYI:

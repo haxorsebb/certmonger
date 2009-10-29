@@ -67,6 +67,7 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 	case CM_HAVE_CSR:
 	case CM_NEED_TO_SUBMIT:
 	case CM_SUBMITTING:
+	case CM_NEED_CA:
 		entry->cm_state = CM_HAVE_CSR;
 		break;
 	case CM_NEED_TO_SAVE_CERT:
@@ -333,9 +334,15 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				*when = cm_time_no_time;
 			}
 		} else {
-			/* Failed to start submission; take a breather and try
-			 * again. */
-			*when = cm_time_soonish;
+			if (ca == NULL) {
+				/* No known CA is associated with this entry. */
+				entry->cm_state = CM_NEED_CA;
+				*when = cm_time_now;
+			} else {
+				/* Failed to start submission; take a breather
+				 * and try again. */
+				*when = cm_time_soonish;
+			}
 		}
 		break;
 	case CM_SUBMITTING:
@@ -481,6 +488,9 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		*when = cm_time_soonish;
 		break;
 	case CM_NEED_GUIDANCE:
+		*when = cm_time_soonish;
+		break;
+	case CM_NEED_CA:
 		*when = cm_time_soonish;
 		break;
 	case CM_MONITORING:
@@ -669,7 +679,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			}
 		} else {
 			/* And if we don't have a place for the key, we're
-			 * screwed. */
+			 * screwed.  Hopefully this didn't happen normally. */
 			cm_log(3, "'%s' has no key or certificate location, "
 			       "don't know what to do about that\n",
 			       entry->cm_id);

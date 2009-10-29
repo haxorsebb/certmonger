@@ -24,6 +24,8 @@ Now with some arbitrarily-named states for our per-certificate state machine:
 	States: REJECTED [*]
 	* Waiting for certificate to near expiration.
 	States: MONITORING
+	* Don't know which CA to submit to.
+	States: NEED_GUIDANCE [*]
 	* Waiting for user input
 	States: NEED_GUIDANCE [*]
 	* On hold
@@ -90,8 +92,14 @@ State logic:
 
 	NEED_TO_SUBMIT:
 		start-csr-submission
-		state_next = SUBMITTING
-		state_transition = now
+		if csr-submission-started
+			state_next = SUBMITTING
+			state_transition = now
+		else
+			if don't-know-a-ca
+				state_next = NEED_CA
+				state_transition = now
+		break
 
 	SUBMITTING:
 		if starting-up

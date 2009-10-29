@@ -1389,6 +1389,7 @@ request_get_status(DBusConnection *conn, DBusMessage *msg,
 			stuck = FALSE;
 			break;
 		case CM_NEED_GUIDANCE:
+		case CM_NEED_CA:
 		case CM_REJECTED:
 			stuck = TRUE;
 			break;
