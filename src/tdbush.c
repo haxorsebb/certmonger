@@ -1544,7 +1544,7 @@ ancestor_of_base_introspect(struct cm_context *ctx, const char *path)
 	p = CM_DBUS_BASE_PATH + strlen(path);
 	p += strspn(p, "/");
 	i = strcspn(p, "/");
-	return talloc_asprintf(ctx, "<node name=\"%.*s\"/>\n", i, p);
+	return talloc_asprintf(ctx, " <node name=\"%.*s\"/>\n", i, p);
 }
 
 static char *
@@ -1555,7 +1555,7 @@ ancestor_of_ca_introspect(struct cm_context *ctx, const char *path)
 	p = CM_DBUS_CA_PATH + strlen(path);
 	p += strspn(p, "/");
 	i = strcspn(p, "/");
-	return talloc_asprintf(ctx, "<node name=\"%.*s\"/>\n", i, p);
+	return talloc_asprintf(ctx, " <node name=\"%.*s\"/>\n", i, p);
 }
 
 static char *
@@ -1566,37 +1566,163 @@ ancestor_of_request_introspect(struct cm_context *ctx, const char *path)
 	p = CM_DBUS_REQUEST_PATH + strlen(path);
 	p += strspn(p, "/");
 	i = strcspn(p, "/");
-	return talloc_asprintf(ctx, "<node name=\"%.*s\"/>\n", i, p);
-}
-
-static char *
-base_introspect(struct cm_context *ctx, const char *path)
-{
-	return talloc_asprintf(ctx, "BASE");
+	return talloc_asprintf(ctx, " <node name=\"%.*s\"/>\n", i, p);
 }
 
 static char *
 request_introspect(struct cm_context *ctx, const char *path)
 {
-	return talloc_asprintf(ctx, "REQUEST");
+	return talloc_asprintf(ctx, "%s",
+			       " <interface name=\""
+			       CM_DBUS_REQUEST_INTERFACE
+			       "\">\n"
+			       "  <method name=\"get_nickname\">\n"
+			       "  </method>\n"
+			       "  <method name=\"get_autorenew\">\n"
+			       "  </method>\n"
+			       "  <method name=\"get_cert_data\">\n"
+			       "  </method>\n"
+			       "  <method name=\"get_cert_info\">\n"
+			       "  </method>\n"
+			       "  <method name=\"get_cert_last_checked\">\n"
+			       "  </method>\n"
+			       "  <method name=\"get_cert_storage_info\">\n"
+			       "  </method>\n"
+			       "  <method name=\"get_csr_data\">\n"
+			       "  </method>\n"
+			       "  <method name=\"get_csr_info\">\n"
+			       "  </method>\n"
+			       "  <method name=\"get_key_storage_info\">\n"
+			       "  </method>\n"
+			       "  <method name=\"get_key_type_and_size\">\n"
+			       "  </method>\n"
+			       "  <method name=\"get_monitoring\">\n"
+			       "  </method>\n"
+			       "  <method name=\"get_notification_info\">\n"
+			       "  </method>\n"
+			       "  <method name=\"get_status\">\n"
+			       "  </method>\n"
+			       "  <method name=\"get_ca\">\n"
+			       "  </method>\n"
+			       "  <method name=\"get_submitted_cookie\">\n"
+			       "  </method>\n"
+			       "  <method name=\"get_submitted_date\">\n"
+			       "  </method>\n"
+			       "  <method name=\"modify\">\n"
+			       "  </method>\n"
+			       "  <method name=\"reenroll\">\n"
+			       "  </method>\n"
+			       "  <method name=\"rekey_and_submit\">\n"
+			       "  </method>\n"
+			       "  <method name=\"resubmit\">\n"
+			       "  </method>\n"
+			       " </interface>\n");
 }
 
 static char *
 ca_introspect(struct cm_context *ctx, const char *path)
 {
-	return talloc_asprintf(ctx, "CA");
+	return talloc_asprintf(ctx, "%s",
+			       " <interface name=\""
+			       CM_DBUS_CA_INTERFACE
+			       "\">\n"
+			       "  <method name=\"get_nickname\">\n"
+			       "  </method>\n"
+			       "  <method name=\"get_is_default\">\n"
+			       "  </method>\n"
+			       "  <method name=\"get_type\">\n"
+			       "  </method>\n"
+			       "  <method name=\"get_serial\">\n"
+			       "  </method>\n"
+			       "  <method name=\"get_location\">\n"
+			       "  </method>\n"
+			       "  <method name=\"get_issuer_names\">\n"
+			       "  </method>\n"
+			       "  <method name=\"modify\">\n"
+			       "  </method>\n"
+			       " </interface>\n");
+}
+
+static char *
+base_introspect(struct cm_context *ctx, const char *path)
+{
+	char *reqs, *cas, *ret;
+	reqs = is_ancestor_of_requests(ctx, path,
+				       DBUS_INTERFACE_INTROSPECTABLE,
+				       "Introspect") ?
+	       ancestor_of_request_introspect(ctx, path) : NULL;
+	cas = is_ancestor_of_cas(ctx, path,
+				 DBUS_INTERFACE_INTROSPECTABLE,
+				 "Introspect") ?
+	      ancestor_of_ca_introspect(ctx, path) : NULL;
+	ret = talloc_asprintf(ctx, " %s %s%s", reqs ? reqs : "", cas ? cas : "",
+			       " <interface name=\""
+			       CM_DBUS_CA_INTERFACE
+			       "\">\n"
+			       "  <method name=\"add_known_ca\">\n"
+			       "  </method>\n"
+			       "  <method name=\"add_request\">\n"
+			       "  </method>\n"
+			       "  <method name=\"get_defaults\">\n"
+			       "  </method>\n"
+			       "  <method name=\"get_known_cas\">\n"
+			       "  </method>\n"
+			       "  <method name=\"get_requests\">\n"
+			       "  </method>\n"
+			       "  <method name=\"get_supported_key_types\">\n"
+			       "  </method>\n"
+			       "  <method name=\"get_supported_key_storage\">\n"
+			       "  </method>\n"
+			       "  <method name=\"get_supported_cert_storage\">\n"
+			       "  </method>\n"
+			       "  <method name=\"remove_known_ca\">\n"
+			       "  </method>\n"
+			       "  <method name=\"remove_request\">\n"
+			       "  </method>\n"
+			       " </interface>\n");
+	talloc_free(reqs);
+	talloc_free(cas);
+	return ret;
 }
 
 static char *
 request_group_introspect(struct cm_context *ctx, const char *path)
 {
-	return talloc_asprintf(ctx, "REQUEST NODE LIST");
+	int i;
+	char *p = NULL, *q;
+	struct cm_store_entry *entry;
+	i = cm_get_n_entries(ctx) - 1;
+	while (i >= 0) {
+		entry = cm_get_entry_by_index(ctx, i);
+		if (entry != NULL) {
+			q = talloc_asprintf(ctx, " <node name=\"%s\"/>\n%s",
+					    entry->cm_id, p ? p : "");
+			talloc_free(p);
+			p = q;
+		}
+		i--;
+	}
+	return p ? p : talloc_strdup(ctx, "");
 }
 
 static char *
 ca_group_introspect(struct cm_context *ctx, const char *path)
 {
-	return talloc_asprintf(ctx, "CA NODE LIST");
+	int i;
+	char *p = NULL, *q;
+	struct cm_store_ca *ca;
+	i = cm_get_n_cas(ctx) - 1;
+	while (i >= 0) {
+		ca = cm_get_ca_by_index(ctx, i);
+		if (ca != NULL) {
+			q = talloc_asprintf(ctx, " <node name=\"%s\"/>\n%s",
+					    ca->cm_id, p ? p : "");
+			talloc_free(p);
+			p = q;
+		}
+		i--;
+	}
+	return p ? p : talloc_strdup(ctx, "");
 }
 
 static DBusHandlerResult
