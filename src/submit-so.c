@@ -44,7 +44,7 @@ struct cm_submit_state {
 };
 
 static void
-cm_submit_so_main(int fd, struct cm_store_entry *entry)
+cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry)
 {
 	FILE *keyfp, *pem;
 	RSA *rsa;
@@ -55,12 +55,25 @@ cm_submit_so_main(int fd, struct cm_store_entry *entry)
 	int status;
 	long error;
 	char buf[LINE_MAX];
+	krb5_deltat lifedelta;
+	long life;
 
 	OpenSSL_add_ssl_algorithms();
 	ERR_load_crypto_strings();
 	status = 1;
 	cert = NULL;
 	keyfp = fopen(entry->cm_key_storage_location, "r");
+	if (krb5_string_to_deltat(ca->cm_ca_internal_lifetime,
+				  &lifedelta) == 0) {
+		life = lifedelta;
+	} else {
+		if (krb5_string_to_deltat(CM_DEFAULT_CERT_LIFETIME,
+					  &lifedelta) == 0) {
+			life = lifedelta;
+		} else {
+			life = 30 * 24 * 60 * 60;
+		}
+	}
 	if (keyfp != NULL) {
 		pkey = EVP_PKEY_new();
 		if (pkey != NULL) {
@@ -74,8 +87,9 @@ cm_submit_so_main(int fd, struct cm_store_entry *entry)
 								    NULL, NULL);
 					if (req != NULL) {
 						cert = X509_REQ_to_X509(req,
-									CM_DEFAULT_CERT_LIFETIME,
+									0,
 									pkey);
+						X509_time_adj(cert->cert_info->validity->notAfter, life, NULL);
 						X509_set_version(cert, 2);
 						/* XXX set a serial number */
 						cert->cert_info->extensions = X509_REQ_get_extensions(req);
@@ -253,7 +267,7 @@ cm_submit_so_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 				break;
 			case 0:
 				close(fds[0]);
-				cm_submit_so_main(fds[1], entry);
+				cm_submit_so_main(fds[1], ca, entry);
 				_exit(0);
 				break;
 			default:

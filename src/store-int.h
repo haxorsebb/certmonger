@@ -147,6 +147,7 @@ struct cm_store_ca {
 		cm_ca_internal_self, cm_ca_external,
 	} cm_ca_type;
 	char *cm_ca_internal_serial;
+	char *cm_ca_internal_lifetime;
 	char *cm_ca_external_helper;
 };
 

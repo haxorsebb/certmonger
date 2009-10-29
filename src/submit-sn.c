@@ -33,6 +33,8 @@
 #include <keyhi.h>
 #include <cryptohi.h>
 
+#include <krb5.h>
+
 #include <talloc.h>
 
 #include "certext-n.h"
@@ -50,7 +52,7 @@ struct cm_submit_state {
 };
 
 static void
-cm_submit_sn_main(int fd, struct cm_store_entry *entry)
+cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry)
 {
 	FILE *status;
 	char *b64;
@@ -65,6 +67,7 @@ cm_submit_sn_main(int fd, struct cm_store_entry *entry)
 	CERTSignedData *data = NULL, sdata, scert;
 	CERTValidity *validity;
 	PRTime now, life;
+	krb5_deltat lifedelta;
 	PLArenaPool *arena = NULL;
 	SECOidData *sigoid, *extoid;
 	enum cm_key_algorithm cm_key_algorithm;
@@ -241,7 +244,17 @@ cm_submit_sn_main(int fd, struct cm_store_entry *entry)
 	}
 	/* Build a certificate using the contents of the signing request. */
 	now = PR_Now();
-	life = CM_DEFAULT_CERT_LIFETIME * 24 * 60 * 60 * 1000000L; /* XXX */
+	if (krb5_string_to_deltat(ca->cm_ca_internal_lifetime,
+				  &lifedelta) == 0) {
+		life = lifedelta * 1000000L;
+	} else {
+		if (krb5_string_to_deltat(CM_DEFAULT_CERT_LIFETIME,
+					  &lifedelta) == 0) {
+			life = lifedelta * 1000000L;
+		} else {
+			life = 30 * 24 * 60 * 60 * 1000000L;
+		}
+	}
 	validity = CERT_CreateValidity(now, now + life);
 	if (validity == NULL) {
 		cm_log(1, "Unable to create validity structure.\n");
@@ -479,7 +492,7 @@ cm_submit_sn_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 				break;
 			case 0:
 				close(fds[0]);
-				cm_submit_sn_main(fds[1], entry);
+				cm_submit_sn_main(fds[1], ca, entry);
 				_exit(0);
 				break;
 			default:
