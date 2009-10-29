@@ -86,7 +86,7 @@ cm_oid_from_name(void *ctx, const char *name)
 	     i--) {
 		if (cm_is_a_prefix(cm_named_oids[i].name, p)) {
 			len = strlen(cm_named_oids[i].name);
-			q = talloc_asprintf("%s%s",
+			q = talloc_asprintf(ctx, "%s%s",
 					    cm_named_oids[i].oidish,
 					    p + len);
 			talloc_free(p);
