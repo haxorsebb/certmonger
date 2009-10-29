@@ -658,7 +658,7 @@ base_get_known_cas(DBusConnection *conn, DBusMessage *msg,
 	}
 	rep = dbus_message_new_method_return(msg);
 	if (rep != NULL) {
-		cm_tdbusm_set_as(rep, (const char **) ret);
+		cm_tdbusm_set_ap(rep, (const char **) ret);
 		dbus_connection_send(conn, rep, NULL);
 		dbus_message_unref(rep);
 		talloc_free(ret);

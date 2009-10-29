@@ -138,8 +138,8 @@ o object layout
     returns: string
   - get-is-default
     returns: boolean -> is-the-default-ca
-  - get-uses-helper
-    returns: boolean -> if this is implemented by an external helper
+  - get-type
+    returns: string -> "EXTERNAL" if this is implemented by an external helper
   - get-helper-location
     returns: string -> path to external helper
   - get-serial
