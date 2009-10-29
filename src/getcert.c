@@ -1138,7 +1138,7 @@ help(const char *cmd, const char *category)
 		N_("Usage: %s list [options]\n"),
 		N_("* General options:\n"),
 #ifndef FORCE_CA
-		N_("  -c CA	list only requests and cert associated with this CA\n"),
+		N_("  -c CA		list only requests and cert associated with this CA\n"),
 #endif
 		N_("  -r		list only information about outstanding requests\n"),
 		N_("  -t		list only information about tracked certificates\n"),
