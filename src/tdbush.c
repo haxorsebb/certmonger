@@ -1062,7 +1062,7 @@ request_get_cert_info(DBusConnection *conn, DBusMessage *msg,
 					    (const char **) entry->cm_cert_email,
 					    (const char **) entry->cm_cert_hostname,
 					    (const char **) entry->cm_cert_principal,
-					    ku_from_string(entry->cm_cert_eku),
+					    ku_from_string(entry->cm_cert_ku),
 					    (const char **) eku);
 		dbus_connection_send(conn, rep, NULL);
 		dbus_message_unref(rep);
@@ -1168,7 +1168,44 @@ static DBusHandlerResult
 request_get_csr_info(DBusConnection *conn, DBusMessage *msg,
 		     struct cm_context *ctx)
 {
-	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	DBusMessage *rep;
+	struct cm_store_entry *entry;
+	char **eku;
+	entry = get_entry_for_request_message(msg, ctx);
+	if (entry == NULL) {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+	rep = dbus_message_new_method_return(msg);
+	if (rep != NULL) {
+		if (entry->cm_csr != NULL) {
+			if (entry->cm_template_eku != NULL) {
+				eku = eku_splitv(entry->cm_template_eku);
+			} else {
+				eku = eku_splitv(entry->cm_cert_eku);
+			}
+			cm_tdbusm_set_sasasasnas(rep,
+						 entry->cm_template_subject ?
+						 entry->cm_template_subject :
+						 entry->cm_cert_subject,
+						 entry->cm_template_email ?
+						 (const char **) entry->cm_template_email :
+						 (const char **) entry->cm_cert_email,
+						 entry->cm_template_hostname ?
+						 (const char **) entry->cm_template_hostname :
+						 (const char **) entry->cm_cert_hostname,
+						 entry->cm_template_principal ?
+						 (const char **) entry->cm_template_principal :
+						 (const char **) entry->cm_cert_principal,
+						 ku_from_string(entry->cm_template_ku ? entry->cm_template_ku : entry->cm_cert_ku),
+						 (const char **) eku);
+			talloc_free(eku);
+		}
+		dbus_connection_send(conn, rep, NULL);
+		dbus_message_unref(rep);
+		return DBUS_HANDLER_RESULT_HANDLED;
+	} else {
+		return send_internal_request_error(conn, msg);
+	}
 }
 
 static DBusHandlerResult
@@ -1577,44 +1614,85 @@ request_introspect(struct cm_context *ctx, const char *path)
 			       CM_DBUS_REQUEST_INTERFACE
 			       "\">\n"
 			       "  <method name=\"get_nickname\">\n"
+			       "   <arg name=\"name\" type=\"s\" direction=\"out\"/>\n"
 			       "  </method>\n"
 			       "  <method name=\"get_autorenew\">\n"
+			       "   <arg name=\"enabled\" type=\"b\" direction=\"out\"/>\n"
 			       "  </method>\n"
 			       "  <method name=\"get_cert_data\">\n"
+			       "   <arg name=\"pem\" type=\"s\" direction=\"out\"/>\n"
 			       "  </method>\n"
 			       "  <method name=\"get_cert_info\">\n"
+			       "   <arg name=\"issuer\" type=\"s\" direction=\"out\"/>\n"
+			       "   <arg name=\"serial\" type=\"s\" direction=\"out\"/>\n"
+			       "   <arg name=\"subject\" type=\"s\" direction=\"out\"/>\n"
+			       "   <arg name=\"expiration\" type=\"x\" direction=\"out\"/>\n"
+			       "   <arg name=\"email\" type=\"as\" direction=\"out\"/>\n"
+			       "   <arg name=\"dns\" type=\"as\" direction=\"out\"/>\n"
+			       "   <arg name=\"principal_names\" type=\"as\" direction=\"out\"/>\n"
+			       "   <arg name=\"key_usage\" type=\"x\" direction=\"out\"/>\n"
+			       "   <arg name=\"extended_key_usage\" type=\"as\" direction=\"out\"/>\n"
 			       "  </method>\n"
 			       "  <method name=\"get_cert_last_checked\">\n"
+			       "   <arg name=\"date\" type=\"x\" direction=\"out\"/>\n"
 			       "  </method>\n"
 			       "  <method name=\"get_cert_storage_info\">\n"
+			       "   <arg name=\"type\" type=\"s\" direction=\"out\"/>\n"
+			       "   <arg name=\"location_or_nickname\" type=\"s\" direction=\"out\"/>\n"
+			       "   <arg name=\"nss_token\" type=\"s\" direction=\"out\"/>\n"
 			       "  </method>\n"
 			       "  <method name=\"get_csr_data\">\n"
+			       "   <arg name=\"pem\" type=\"s\" direction=\"out\"/>\n"
 			       "  </method>\n"
 			       "  <method name=\"get_csr_info\">\n"
+			       "   <arg name=\"subject\" type=\"s\" direction=\"out\"/>\n"
+			       "   <arg name=\"email\" type=\"as\" direction=\"out\"/>\n"
+			       "   <arg name=\"dns\" type=\"as\" direction=\"out\"/>\n"
+			       "   <arg name=\"principal_names\" type=\"as\" direction=\"out\"/>\n"
+			       "   <arg name=\"key_usage\" type=\"x\" direction=\"out\"/>\n"
+			       "   <arg name=\"extended_key_usage\" type=\"as\" direction=\"out\"/>\n"
 			       "  </method>\n"
 			       "  <method name=\"get_key_storage_info\">\n"
+			       "   <arg name=\"type\" type=\"s\" direction=\"out\"/>\n"
+			       "   <arg name=\"location_or_nickname\" type=\"s\" direction=\"out\"/>\n"
+			       "   <arg name=\"nss_token\" type=\"s\" direction=\"out\"/>\n"
 			       "  </method>\n"
 			       "  <method name=\"get_key_type_and_size\">\n"
+			       "   <arg name=\"type\" type=\"s\" direction=\"out\"/>\n"
+			       "   <arg name=\"size\" type=\"x\" direction=\"out\"/>\n"
 			       "  </method>\n"
 			       "  <method name=\"get_monitoring\">\n"
+			       "   <arg name=\"enabled\" type=\"b\" direction=\"out\"/>\n"
 			       "  </method>\n"
 			       "  <method name=\"get_notification_info\">\n"
+			       "   <arg name=\"method\" type=\"s\" direction=\"out\"/>\n"
+			       "   <arg name=\"destination\" type=\"s\" direction=\"out\"/>\n"
 			       "  </method>\n"
 			       "  <method name=\"get_status\">\n"
+			       "   <arg name=\"state\" type=\"s\" direction=\"out\"/>\n"
+			       "   <arg name=\"blocked\" type=\"b\" direction=\"out\"/>\n"
 			       "  </method>\n"
 			       "  <method name=\"get_ca\">\n"
+			       "   <arg name=\"name\" type=\"s\" direction=\"out\"/>\n"
 			       "  </method>\n"
 			       "  <method name=\"get_submitted_cookie\">\n"
+			       "   <arg name=\"cookie\" type=\"s\" direction=\"out\"/>\n"
 			       "  </method>\n"
 			       "  <method name=\"get_submitted_date\">\n"
+			       "   <arg name=\"date\" type=\"x\" direction=\"out\"/>\n"
 			       "  </method>\n"
+#if 0
 			       "  <method name=\"modify\">\n"
 			       "  </method>\n"
+#endif
 			       "  <method name=\"reenroll\">\n"
+			       "   <arg name=\"working\" type=\"b\" direction=\"out\"/>\n"
 			       "  </method>\n"
 			       "  <method name=\"rekey_and_submit\">\n"
+			       "   <arg name=\"working\" type=\"b\" direction=\"out\"/>\n"
 			       "  </method>\n"
 			       "  <method name=\"resubmit\">\n"
+			       "   <arg name=\"working\" type=\"b\" direction=\"out\"/>\n"
 			       "  </method>\n"
 			       " </interface>\n");
 }
@@ -1627,19 +1705,27 @@ ca_introspect(struct cm_context *ctx, const char *path)
 			       CM_DBUS_CA_INTERFACE
 			       "\">\n"
 			       "  <method name=\"get_nickname\">\n"
+			       "   <arg name=\"name\" type=\"s\" direction=\"out\"/>\n"
 			       "  </method>\n"
 			       "  <method name=\"get_is_default\">\n"
+			       "   <arg name=\"is\" type=\"b\" direction=\"out\"/>\n"
 			       "  </method>\n"
 			       "  <method name=\"get_type\">\n"
+			       "   <arg name=\"type\" type=\"s\" direction=\"out\"/>\n"
 			       "  </method>\n"
 			       "  <method name=\"get_serial\">\n"
+			       "   <arg name=\"serial\" type=\"s\" direction=\"out\"/>\n"
 			       "  </method>\n"
 			       "  <method name=\"get_location\">\n"
+			       "   <arg name=\"path\" type=\"s\" direction=\"out\"/>\n"
 			       "  </method>\n"
 			       "  <method name=\"get_issuer_names\">\n"
+			       "   <arg name=\"names\" type=\"as\" direction=\"out\"/>\n"
 			       "  </method>\n"
+#if 0
 			       "  <method name=\"modify\">\n"
 			       "  </method>\n"
+#endif
 			       " </interface>\n");
 }
 
@@ -1655,30 +1741,49 @@ base_introspect(struct cm_context *ctx, const char *path)
 				 DBUS_INTERFACE_INTROSPECTABLE,
 				 "Introspect") ?
 	      ancestor_of_ca_introspect(ctx, path) : NULL;
-	ret = talloc_asprintf(ctx, " %s %s%s", reqs ? reqs : "", cas ? cas : "",
+	ret = talloc_asprintf(ctx, "%s%s%s", reqs ? reqs : "", cas ? cas : "",
 			       " <interface name=\""
-			       CM_DBUS_CA_INTERFACE
+			       CM_DBUS_BASE_INTERFACE
 			       "\">\n"
+#if 0
 			       "  <method name=\"add_known_ca\">\n"
 			       "  </method>\n"
+#endif
 			       "  <method name=\"add_request\">\n"
+			       "   <arg name=\"template\" type=\"a{sv}\" direction=\"in\"/>\n"
+			       "   <arg name=\"status\" type=\"b\" direction=\"out\"/>\n"
+			       "   <arg name=\"name\" type=\"o\" direction=\"out\"/>\n"
 			       "  </method>\n"
+#if 0
 			       "  <method name=\"get_defaults\">\n"
+			       "   <arg name=\"defaults\" type=\"o\" direction=\"out\"/>\n"
 			       "  </method>\n"
+#endif
 			       "  <method name=\"get_known_cas\">\n"
+			       "   <arg name=\"ca_list\" type=\"ao\" direction=\"out\"/>\n"
 			       "  </method>\n"
 			       "  <method name=\"get_requests\">\n"
+			       "   <arg name=\"req_list\" type=\"ao\" direction=\"out\"/>\n"
 			       "  </method>\n"
 			       "  <method name=\"get_supported_key_types\">\n"
+			       "   <arg name=\"key_type_list\" type=\"as\" direction=\"out\"/>\n"
 			       "  </method>\n"
 			       "  <method name=\"get_supported_key_storage\">\n"
+			       "   <arg name=\"key_storage_list\" type=\"as\" direction=\"out\"/>\n"
 			       "  </method>\n"
 			       "  <method name=\"get_supported_cert_storage\">\n"
+			       "   <arg name=\"cert_storage_list\" type=\"as\" direction=\"out\"/>\n"
 			       "  </method>\n"
+#if 0
 			       "  <method name=\"remove_known_ca\">\n"
+			       "   <arg name=\"ca\" type=\"o\" direction=\"in\"/>\n"
+			       "   <arg name=\"status\" type=\"b\" direction=\"out\"/>\n"
 			       "  </method>\n"
 			       "  <method name=\"remove_request\">\n"
+			       "   <arg name=\"request_id\" type=\"o\" direction=\"in\"/>\n"
+			       "   <arg name=\"status\" type=\"b\" direction=\"out\"/>\n"
 			       "  </method>\n"
+#endif
 			       " </interface>\n");
 	talloc_free(reqs);
 	talloc_free(cas);
