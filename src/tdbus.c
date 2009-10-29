@@ -421,7 +421,7 @@ static DBusHandlerResult
 cm_tdbus_filter(DBusConnection *conn, DBusMessage *dmessage, void *data)
 {
 	struct tdbus_connection *tdb = data;
-	const char *destination, *path, *interface, *member;
+	const char *destination, *unique_name, *path, *interface, *member;
 	/* Catch weird-looking messages. */
 	destination = dbus_message_get_destination(dmessage);
 	path = dbus_message_get_path(dmessage);
@@ -438,7 +438,9 @@ cm_tdbus_filter(DBusConnection *conn, DBusMessage *dmessage, void *data)
 	case DBUS_MESSAGE_TYPE_METHOD_CALL:
 	case DBUS_MESSAGE_TYPE_METHOD_RETURN:
 		/* Check that the call or return is directed to us. */
-		if (strcmp(destination, CM_DBUS_NAME) != 0) {
+		if ((strcmp(destination, CM_DBUS_NAME) != 0) &&
+		    (((unique_name = dbus_bus_get_unique_name(conn)) == NULL) ||
+		      (strcmp(destination, unique_name) != 0))) {
 			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 		}
 		break;
