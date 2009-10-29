@@ -72,6 +72,9 @@ ipa_getcert_SOURCES = ipa-getcert.c
 ipa_getcert_LDADD = $(getcert_LDADD)
 pkglibexec_SCRIPTS = ipa-submit-helper
 endif
+bin_PROGRAMS += selfsign-getcert
+selfsign_getcert_SOURCES = selfsign-getcert.c
+selfsign_getcert_LDADD = $(getcert_LDADD)
 sbin_PROGRAMS = certmonger
 certmonger_SOURCES = main.c
 certmonger_LDADD = libcm.a @OPENSSL_LIBS@ @CERTMONGER_LIBS@ @KRB5_LIBS@

@@ -1327,7 +1327,8 @@ cm_store_get_all_cas(void *parent)
 		}
 		if (k == j) {
 			ret[j] = cm_store_ca_new(ret);
-			ret[j]->cm_id = talloc_strdup(ret[j], "SelfSign");
+			ret[j]->cm_id = talloc_strdup(ret[j],
+						      CM_SELF_SIGN_CA_NAME);
 			ret[j]->cm_ca_type = cm_ca_internal_self;
 			ret[j]->cm_ca_internal_serial = talloc_strdup(ret[j],
 								      "00");
@@ -1337,16 +1338,16 @@ cm_store_get_all_cas(void *parent)
 		/* Make sure we get at least one IPA entry. */
 		for (k = 0; k < j; k++) {
 			if ((ret[k]->cm_ca_type == cm_ca_external) &&
-			    (strcmp(ret[k]->cm_id, WITH_IPA_CA_NAME) == 0)) {
+			    (strcmp(ret[k]->cm_id, CM_IPA_CA_NAME) == 0)) {
 				break;
 			}
 		}
 		if (k == j) {
 			ret[j] = cm_store_ca_new(ret);
-			ret[j]->cm_id = talloc_strdup(ret[j], WITH_IPA_CA_NAME);
+			ret[j]->cm_id = talloc_strdup(ret[j], CM_IPA_CA_NAME);
 			ret[j]->cm_ca_type = cm_ca_external;
 			ret[j]->cm_ca_external_helper = talloc_strdup(ret[j],
-								      WITH_IPA_HELPER_PATH);
+								      CM_IPA_HELPER_PATH);
 			j++;
 		}
 #endif

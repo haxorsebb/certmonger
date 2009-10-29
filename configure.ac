@@ -1,4 +1,4 @@
-AC_INIT(certmonger,0.4)
+AC_INIT(certmonger,0.5)
 AM_INIT_AUTOMAKE([foreign])
 AM_MAINTAINER_MODE
 AC_PROG_CC
@@ -113,9 +113,15 @@ AC_DEFINE(CM_DELAY_SOON,1,[Define to the time to wait for something that will ha
 AC_DEFINE(CM_DELAY_SOONISH,5,[Define to the time to wait for something that will happen soon, but not that soon.])
 AC_DEFINE(CM_DELAY_CA_POLL,(60 * 60),[Define to the time to wait between attempts to see if the CA issued a certificate.])
 
+CM_SELF_SIGN_CA_NAME=SelfSign
+AC_SUBST(CM_SELF_SIGN_CA_NAME)
+AC_DEFINE_UNQUOTED(CM_SELF_SIGN_CA_NAME,"$CM_SELF_SIGN_CA_NAME",[Define to the name that the internal self-signing not-really-a-CA will be known by.])
+
 AC_DEFINE(WITH_IPA,1,[Define to ensure that there's always an IPA CA defined.])
-AC_DEFINE_UNQUOTED(WITH_IPA_CA_NAME,"IPA",[Define to the name that the default IPA CA will be known by.])
-AC_DEFINE_UNQUOTED(WITH_IPA_HELPER_PATH,"$mylibexecdir/ipa-submit-helper",[Define to the path of the IPA submission helper.])
+CM_IPA_CA_NAME=IPA
+AC_SUBST(CM_IPA_CA_NAME)
+AC_DEFINE_UNQUOTED(CM_IPA_CA_NAME,"$CM_IPA_CA_NAME",[Define to the name that the default IPA CA will be known by.])
+AC_DEFINE_UNQUOTED(CM_IPA_HELPER_PATH,"$mylibexecdir/ipa-submit-helper",[Define to the path of the IPA submission helper.])
 AM_CONDITIONAL(WITH_IPA,true)
 
 AC_CONFIG_COMMANDS(src_introspect_sh,[chmod +x src/introspect.sh])

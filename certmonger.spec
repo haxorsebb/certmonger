@@ -1,5 +1,5 @@
 Name:		certmonger
-Version:	0.4
+Version:	0.5
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -63,6 +63,11 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Thu Oct 29 2009 Nalin Dahyabhai <nalin@redhat.com> 0.5-1
+- update to 0.5
+  - packaging fixes
+  - add a selfsign-getcert client
+
 * Thu Oct 29 2009 Nalin Dahyabhai <nalin@redhat.com> 0.4-1
 - update to 0.4
 
