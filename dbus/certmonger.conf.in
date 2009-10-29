@@ -13,6 +13,8 @@
            send_interface="@CM_DBUS_NAME@.ca"/>
     <allow send_destination="@CM_DBUS_NAME@"
            send_interface="@CM_DBUS_NAME@.request"/>
+    <allow send_destination="@CM_DBUS_NAME@"
+           send_interface="org.freedesktop.DBus.Introspectable"/>
   </policy>
 
 </busconfig>
