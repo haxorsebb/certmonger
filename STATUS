@@ -25,12 +25,15 @@ Complete:
     * List known CAs.
     * Resubmit CA-denied requests.
     * Re-enroll for expired but not-auto-renew certificates.
+    * Provide introspection data as a well-behaved DBus service would.
+      * D-Feet seems to be happy.
   * Make certmonger a proper daemon.
     * Detach from console, foreground for debugging.
     * Sort out an init script.
   * Sort out storage for system-local defaults which are consulted
     before falling back to compiled-in defaults.
   * Actually do notification of expiration and impending expiration.
+  * Learn to exec a helper to do non-local enrollment.
 
 To-do:
   * Should offer an API over D-Bus which the client uses instead of
@@ -39,18 +42,17 @@ To-do:
       MUST
     * Modify requested data and regenerate signing requests. (3 days)
       MUST
-    * Provide introspection data as a well-behaved DBus service would. (1 day)
     * Set/reset PIN for encrypted key storage. (1 day)
       MUST
   * Be able to use hashes other than the current hard-wired SHA256.
     MUST
-  * Detect when network connections go up (hopefully using NetworkManager
-    signals, or learn to use netlink) and "kick" anything that's waiting
-    for a server to become reachable.
+  * Detect when network connections go up (it's not enough to depend on
+    signals from NetworkManager -- learn to use netlink?) and "kick"
+    anything that's waiting for a server to become reachable.
+    MUST
   * Learn to submit to at least one actual CA: IPA via XML-RPC over
     HTTPS, authenticating using Negotiate.
-    * Learn to exec a helper to do enrollment. (1 day)
-      MUST
+    MUST
   * Make certmonger a proper daemon.
     * Sort out logging levels for log messages. (1 day)
       MUST
