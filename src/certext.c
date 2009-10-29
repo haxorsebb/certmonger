@@ -41,6 +41,7 @@
 #include "certext.h"
 #include "certext-n.h"
 #include "log.h"
+#include "oiddict.h"
 #include "store.h"
 #include "store-int.h"
 
@@ -442,12 +443,15 @@ cm_certext_build_eku(struct cm_store_entry *entry, PLArenaPool *arena,
 {
 	int i;
 	const char *p, *q;
+	char *numeric, *symbolic;
+	void *tctx;
 	SECItem **oids = NULL, **tmp, encoded, *ret;
 	if ((eku_value == NULL) || (strlen(eku_value) == 0)) {
 		return NULL;
 	}
 	p = eku_value;
 	i = 0;
+	tctx = talloc_new(NULL);
 	while ((p != NULL) && (*p != '\0')) {
 		/* Find the first (or next) value. */
 		q = p + strcspn(p, ",");
@@ -457,8 +461,16 @@ cm_certext_build_eku(struct cm_store_entry *entry, PLArenaPool *arena,
 			if (i > 0) {
 				memcpy(tmp, oids, sizeof(SECItem *) * i);
 			}
-			tmp[i] = oid_from_string(p, q - p, arena);
-			i++;
+			symbolic = talloc_strndup(tctx, p, q - p);
+			numeric = cm_oid_from_name(tctx, symbolic);
+			if (numeric != NULL) {
+				tmp[i] = oid_from_string(numeric, -1, arena);
+				i++;
+			} else {
+				cm_log(1,
+				       "Couldn't parse OID \"%s\", ignoring.\n",
+				       q - p, p);
+			}
 			oids = tmp;
 		}
 		/* Do we have any more? */
@@ -468,6 +480,7 @@ cm_certext_build_eku(struct cm_store_entry *entry, PLArenaPool *arena,
 			p = q;
 		}
 	}
+	talloc_free(tctx);
 	/* Encode the sequence of OIDs. */
 	memset(&encoded, 0, sizeof(encoded));
 	if (SEC_ASN1EncodeItem(arena, &encoded, &oids,
