@@ -34,6 +34,7 @@
 #include <krb5.h>
 
 #include "cm.h"
+#include "oiddict.h"
 #include "store.h"
 #include "store-int.h"
 #include "tdbus.h"
@@ -71,7 +72,7 @@ add_string(void *parent, char ***dest, const char *value)
 	}
 	tmp = talloc_array_ptrtype(parent, tmp, i + 2);
 	if (tmp == NULL) {
-		printf("Error connecting to DBus.\n");
+		printf(_("Error connecting to DBus.\n"));
 		exit(1);
 	}
 	memcpy(tmp, *dest, sizeof(tmp[0]) * i);
@@ -97,14 +98,14 @@ prep_req(enum cm_tdbus_type which,
 			break;
 		}
 		if (globals.conn == NULL) {
-			printf("Error connecting to DBus.\n");
+			printf(_("Error connecting to DBus.\n"));
 			exit(1);
 		}
 	}
 	msg = dbus_message_new_method_call(CM_DBUS_NAME,
 					   path, interface, method);
 	if (msg == NULL) {
-		printf("Error creating DBus request message.\n");
+		printf(_("Error creating DBus request message.\n"));
 		exit(1);
 	}
 	return msg;
@@ -118,7 +119,7 @@ send_req(DBusMessage *req)
 	rep = dbus_connection_send_with_reply_and_block(globals.conn, req,
 							30 * 1000, NULL);
 	if (rep == NULL) {
-		printf("No response received from local service.\n");
+		printf(_("No response received from local service.\n"));
 		exit(1);
 	}
 	dbus_message_unref(req);
@@ -144,7 +145,7 @@ query_rep_b(enum cm_tdbus_type which,
 	dbus_bool_t b;
 	rep = query_rep(which, path, interface, method);
 	if (cm_tdbusm_get_b(rep, parent, &b) != 0) {
-		printf("Error parsing server response.\n");
+		printf(_("Error parsing server response.\n"));
 		exit(1);
 	}
 	dbus_message_unref(rep);
@@ -162,7 +163,7 @@ query_rep_s(enum cm_tdbus_type which,
 	char *s;
 	rep = query_rep(which, path, interface, method);
 	if (cm_tdbusm_get_s(rep, parent, &s) != 0) {
-		printf("Error parsing server response.\n");
+		printf(_("Error parsing server response.\n"));
 		exit(1);
 	}
 	dbus_message_unref(rep);
@@ -180,7 +181,7 @@ query_rep_as(enum cm_tdbus_type which,
 	char **as;
 	rep = query_rep(which, path, interface, method);
 	if (cm_tdbusm_get_as(rep, parent, &as) != 0) {
-		printf("Error parsing server response.\n");
+		printf(_("Error parsing server response.\n"));
 		exit(1);
 	}
 	dbus_message_unref(rep);
@@ -197,7 +198,7 @@ query_rep_sososos(enum cm_tdbus_type which,
 	DBusMessage *rep;
 	rep = query_rep(which, path, interface, method);
 	if (cm_tdbusm_get_sososos(rep, parent, s1, s2, s3, s4) != 0) {
-		printf("Error parsing server response.\n");
+		printf(_("Error parsing server response.\n"));
 		exit(1);
 	}
 	dbus_message_unref(rep);
@@ -211,7 +212,7 @@ request(const char *argv0, int argc, char **argv)
 	char *dbdir = NULL, *token = NULL, *nickname = NULL;
 	char *keyfile = NULL, *certfile = NULL;
 	int keysize = 0, track_exp = 0, auto_renew = 0, c, i;
-	char *ca = DEFAULT_CA, *subject = NULL, **eku = NULL;
+	char *ca = DEFAULT_CA, *subject = NULL, **eku = NULL, *oid;
 	char **principal = NULL, **dns = NULL, **email = NULL;
 	struct cm_tdbusm_dict param[32];
 	const struct cm_tdbusm_dict *params[32];
@@ -234,18 +235,18 @@ request(const char *argv0, int argc, char **argv)
 	kctx = NULL;
 	if ((kret = krb5_init_context(&kctx)) != 0) {
 		kctx = NULL;
-		printf("Error initializing Kerberos library: %s.\n",
+		printf(_("Error initializing Kerberos library: %s.\n"),
 		       error_message(kret));
 		return 1;
 	}
 	krealm = NULL;
 	if ((kret = krb5_get_default_realm(kctx, &krealm)) != 0) {
-		printf("Error determining default Kerberos realm: %s.\n",
+		printf(_("Error determining default Kerberos realm: %s.\n"),
 		       error_message(kret));
 		return 1;
 	}
 	if (krealm == NULL) {
-		printf("Error determining default Kerberos realm.\n");
+		printf(_("Error determining default Kerberos realm.\n"));
 		return 1;
 	}
 
@@ -283,22 +284,28 @@ request(const char *argv0, int argc, char **argv)
 			subject = talloc_strdup(globals.tctx, optarg);
 			break;
 		case 'U':
-			add_string(globals.tctx, &eku, optarg);
+			oid = cm_oid_from_name(globals.tctx, optarg);
+			if (strspn(oid, "0123456789.") != strlen(oid)) {
+				printf(_("Could not evaluate OID \"%s\".\n"),
+				       optarg);
+				return 1;
+			}
+			add_string(globals.tctx, &eku, oid);
 			break;
 		case 'K':
 			kprincipal = NULL;
 			if ((kret = krb5_parse_name(kctx, optarg,
 						    &kprincipal)) != 0) {
-				printf("Error parsing Kerberos principal "
-				       "name \"%s\": %s.\n", optarg,
+				printf(_("Error parsing Kerberos principal "
+				         "name \"%s\": %s.\n"), optarg,
 				       error_message(kret));
 				return 1;
 			}
 			kuprincipal = NULL;
 			if ((kret = krb5_unparse_name(kctx, kprincipal,
 						      &kuprincipal)) != 0) {
-				printf("Error unparsing Kerberos principal "
-				       "name \"%s\": %s.\n", optarg,
+				printf(_("Error unparsing Kerberos principal "
+				         "name \"%s\": %s.\n"), optarg,
 				       error_message(kret));
 				return 1;
 			}
@@ -318,20 +325,27 @@ request(const char *argv0, int argc, char **argv)
 	}
 	if (((dbdir != NULL) && (nickname == NULL)) ||
 	    ((dbdir == NULL) && (nickname != NULL))) {
-		printf("Database location or nickname specified "
-		       "without the other.\n");
+		printf(_("Database location or nickname specified "
+		         "without the other.\n"));
 		help(argv0, "request");
 		return 1;
 	}
 	if ((dbdir != NULL) && (certfile != NULL)) {
-		printf("Database directory and certificate file "
-		       "both specified.\n");
+		printf(_("Database directory and certificate file "
+		         "both specified.\n"));
 		help(argv0, "request");
 		return 1;
 	}
 	if ((dbdir == NULL) && (nickname == NULL) && (certfile == NULL)) {
-		printf("None of database directory and nickname or certificate "
-		       "file specified.\n");
+		printf(_("None of database directory and nickname or "
+			 "certificate " "file specified.\n"));
+		help(argv0, "request");
+		return 1;
+	}
+	if ((certfile != NULL) && (keyfile != NULL) &&
+	    (strcmp(certfile, keyfile) == 0)) {
+		printf(_("Key and certificate can not both be saved to the "
+			 "same file.\n"));
 		help(argv0, "request");
 		return 1;
 	}
@@ -343,10 +357,10 @@ request(const char *argv0, int argc, char **argv)
 	    (principal == NULL) &&
 	    (dns == NULL) &&
 	    (email == NULL)) {
-		add_string(globals.tctx, &eku, "1.3.6.1.5.5.7.3.1");
+		add_string(globals.tctx, &eku, "id-kp-serverAuth");
 		add_string(globals.tctx, &principal,
 			   talloc_asprintf(globals.tctx,
-			   		   "host/%s@%s", subject + 3, krealm));
+					   "host/%s@%s", subject + 3, krealm));
 		add_string(globals.tctx, &dns, subject + 3);
 	}
 	if ((dbdir != NULL) && (nickname != NULL)) {
@@ -491,19 +505,19 @@ request(const char *argv0, int argc, char **argv)
 	req = prep_req(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
 		       "add_request");
 	if (cm_tdbusm_set_d(req, params) != 0) {
-		printf("Error setting request arguments.\n");
+		printf(_("Error setting request arguments.\n"));
 		exit(1);
 	}
 	rep = send_req(req);
 	if (cm_tdbusm_get_bp(rep, globals.tctx, &b, &p) != 0) {
-		printf("Error parsing server response.\n");
+		printf(_("Error parsing server response.\n"));
 		exit(1);
 	}
 	dbus_message_unref(rep);
 	if (b) {
-		printf("Request \"%s\" added.\n", p);
+		printf(_("New signing request \"%s\" added.\n"), p);
 	} else {
-		printf("Request failed.\n");
+		printf(_("New signing request could not be added.\n"));
 		exit(1);
 	}
 	return 0;
@@ -511,8 +525,8 @@ request(const char *argv0, int argc, char **argv)
 
 static const char *
 find_request_by_storage(void *parent, enum cm_tdbus_type bus,
-			const char *dbdir, 
-			const char *nickname, 
+			const char *dbdir,
+			const char *nickname,
 			const char *token,
 			const char *certfile)
 {
@@ -523,7 +537,7 @@ find_request_by_storage(void *parent, enum cm_tdbus_type bus,
 	rep = query_rep(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
 			"get_requests");
 	if (cm_tdbusm_get_ap(rep, globals.tctx, &requests) != 0) {
-		printf("Error parsing server response.\n");
+		printf(_("Error parsing server response.\n"));
 		exit(1);
 	}
 	dbus_message_unref(rep);
@@ -669,20 +683,20 @@ add_basic_request(enum cm_tdbus_type bus,
 	req = prep_req(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
 		       "add_request");
 	if (cm_tdbusm_set_d(req, params) != 0) {
-		printf("Error setting request arguments.\n");
+		printf(_("Error setting request arguments.\n"));
 		exit(1);
 	}
 	rep = send_req(req);
 	if (cm_tdbusm_get_bp(rep, globals.tctx, &b, &p) != 0) {
-		printf("Error parsing server response.\n");
+		printf(_("Error parsing server response.\n"));
 		exit(1);
 	}
 	dbus_message_unref(rep);
 	if (b) {
-		printf("New request \"%s\" added.\n", p);
+		printf(_("New tracking request \"%s\" added.\n"), p);
 		return 0;
 	} else {
-		printf("New request could not be added.\n");
+		printf(_("New tracking request could not be added.\n"));
 		return 1;
 	}
 }
@@ -743,20 +757,20 @@ set_tracking(const char *argv0, int argc, char **argv, dbus_bool_t track)
 		req = prep_req(bus, request, CM_DBUS_REQUEST_INTERFACE,
 			       "modify");
 		if (cm_tdbusm_set_d(req, params) != 0) {
-			printf("Error setting request arguments.\n");
+			printf(_("Error setting request arguments.\n"));
 			exit(1);
 		}
 		rep = send_req(req);
 		if (cm_tdbusm_get_b(rep, globals.tctx, &b) != 0) {
-			printf("Error parsing server response.\n");
+			printf(_("Error parsing server response.\n"));
 			exit(1);
 		}
 		dbus_message_unref(rep);
 		if (b) {
-			printf("Request \"%s\" modified.\n", request);
+			printf(_("Request \"%s\" modified.\n"), request);
 			return 0;
 		} else {
-			printf("Request \"%s\" could not be modified.\n",
+			printf(_("Request \"%s\" could not be modified.\n"),
 			       request);
 			return 1;
 		}
@@ -810,7 +824,7 @@ list(const char *argv0, int argc, char **argv)
 	rep = query_rep(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
 			"get_requests");
 	if (cm_tdbusm_get_ap(rep, globals.tctx, &requests) != 0) {
-		printf("Error parsing server response.\n");
+		printf(_("Error parsing server response.\n"));
 		exit(1);
 	}
 	dbus_message_unref(rep);
@@ -842,7 +856,7 @@ list(const char *argv0, int argc, char **argv)
 		rep = query_rep(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
 				"get_status");
 		if (cm_tdbusm_get_sb(rep, globals.tctx, &s, &b) != 0) {
-			printf("Error parsing server response.\n");
+			printf(_("Error parsing server response.\n"));
 			exit(1);
 		}
 		dbus_message_unref(rep);
@@ -850,7 +864,7 @@ list(const char *argv0, int argc, char **argv)
 		state = cm_store_state_from_string(s);
 		switch (state) {
 		case CM_INVALID:
-			printf("'%s' is in an invalid state!\n", s);
+			printf(("'%s' is in an invalid state!\n"), s);
 			continue;
 			break;
 		case CM_NEED_KEY_PAIR:
@@ -892,35 +906,35 @@ list(const char *argv0, int argc, char **argv)
 			nickname = requests[i];
 		}
 		dbus_message_unref(rep);
-		printf("Request '%s':\n", nickname);
-		printf("\tstatus: %s\n", s);
-		printf("\tstuck: %s\n", b ? "yes" : "no");
+		printf(_("Request '%s':\n"), nickname);
+		printf(_("\tstatus: %s\n"), s);
+		printf(_("\tstuck: %s\n"), b ? "yes" : "no");
 		/* Get key/cert storage info. */
 		rep = query_rep(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
 				"get_key_storage_info");
 		if (cm_tdbusm_get_sososos(rep, globals.tctx,
 				          &s1, &s2, &s3, &s4) != 0) {
-			printf("Error parsing server response.\n");
+			printf(_("Error parsing server response.\n"));
 			exit(1);
 		}
 		dbus_message_unref(rep);
-		printf("\tkey pair storage: %s%s%s%s%s%s%s%s%s\n",
-		       strcmp(s1, "NONE") ? "type=" : "", s1 ? s1 : "",
-		       s2 ? ",location='" : "", s2 ? s2 : "", s2 ? "'" : "",
-		       s3 ? ",nickname=" : "", s3 ? s3 : "",
-		       s4 ? ",token=" : "", s4 ? s4 : "");
+		printf(_("\tkey pair storage: %s%s%s%s%s%s%s%s%s\n"),
+		       strcmp(s1, "NONE") ? _("type=") : "", s1 ? s1 : "",
+		       s2 ? _(",location='") : "", s2 ? s2 : "", s2 ? "'" : "",
+		       s3 ? _(",nickname=") : "", s3 ? s3 : "",
+		       s4 ? _(",token=") : "", s4 ? s4 : "");
 		rep = query_rep(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
 				"get_cert_storage_info");
 		if (cm_tdbusm_get_ssosos(rep, globals.tctx,
 				         &s1, &s2, &s3, &s4) != 0) {
-			printf("Error parsing server response.\n");
+			printf(_("Error parsing server response.\n"));
 			exit(1);
 		}
 		dbus_message_unref(rep);
-		printf("\tcertificate: type=%s,location='%s'%s%s%s%s\n",
+		printf(_("\tcertificate: type=%s,location='%s'%s%s%s%s\n"),
 		       s1, s2,
-		       s3 ? ",nickname=" : "", s3 ? s3 : "",
-		       s4 ? ",token=" : "", s4 ? s4 : "");
+		       s3 ? _(",nickname=") : "", s3 ? s3 : "",
+		       s4 ? _(",token=") : "", s4 ? s4 : "");
 		/* Information from the certificate. */
 		rep = query_rep(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
 				"get_cert_info");
@@ -928,46 +942,46 @@ list(const char *argv0, int argc, char **argv)
 						&s1, &s2, &s3, &n1,
 						&as1, &as2, &as3,
 						&n2, &as4) != 0) {
-			printf("Error parsing server response.\n");
+			printf(_("Error parsing server response.\n"));
 			exit(1);
 		}
 		dbus_message_unref(rep);
 		if (ca_name != NULL) {
-			printf("\tCA: %s\n", ca_name);
+			printf(_("\tCA: %s\n"), ca_name);
 		}
-		printf("\tissuer: %s\n", s1);
-		printf("\tsubject: %s\n", s3);
-		printf("\texpires: %s\n",
-		       n1 ? cm_store_timestamp_from_time(n1, t) : "unknown");
+		printf(_("\tissuer: %s\n"), s1);
+		printf(_("\tsubject: %s\n"), s3);
+		printf(_("\texpires: %s\n"),
+		       n1 ? cm_store_timestamp_from_time(n1, t) : _("unknown"));
 		for (j = 0; (as1 != NULL) && (as1[j] != NULL); j++) {
 			printf("%s%s%s",
-			       j == 0 ? "\temail: " : ",",
+			       j == 0 ? _("\temail: ") : ",",
 			       as1[j],
 			       as1[j + 1] ? "" : "\n");
 		}
 		for (j = 0; (as2 != NULL) && (as2[j] != NULL); j++) {
 			printf("%s%s%s",
-			       j == 0 ? "\tdns: " : ",",
+			       j == 0 ? _("\tdns: ") : ",",
 			       as2[j],
 			       as2[j + 1] ? "" : "\n");
 		}
 		for (j = 0; (as3 != NULL) && (as3[j] != NULL); j++) {
 			printf("%s%s%s",
-			       j == 0 ? "\tprincipal: " : ",",
+			       j == 0 ? _("\tprincipal name: ") : ",",
 			       as3[j],
 			       as3[j + 1] ? "" : "\n");
 		}
 		for (j = 0; (as4 != NULL) && (as4[j] != NULL); j++) {
 			printf("%s%s%s",
-			       j == 0 ? "\teku: " : ",",
-			       as4[j],
+			       j == 0 ? _("\teku: ") : ",",
+			       cm_oid_to_name(NULL, as4[j]),
 			       as4[j + 1] ? "" : "\n");
 		}
-		printf("\ttrack: %s\n",
+		printf(_("\ttrack: %s\n"),
 		       query_rep_b(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
 				   "get_monitoring", globals.tctx) ?
 		       "yes" : "no");
-		printf("\tauto-renew: %s\n",
+		printf(_("\tauto-renew: %s\n"),
 		       query_rep_b(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
 				   "get_autorenew", globals.tctx) ?
 		       "yes" : "no");
@@ -1010,28 +1024,28 @@ list_cas(const char *argv0, int argc, char **argv)
 				continue;
 			}
 		}
-		printf("CA '%s':\n", s);
+		printf(_("CA '%s':\n"), s);
 		printf("\tis-default: %s\n",
 		       query_rep_b(bus, cas[i], CM_DBUS_CA_INTERFACE,
 				   "get_is_default", globals.tctx) ?
 		       "yes" : "no");
 		s = query_rep_s(bus, cas[i], CM_DBUS_CA_INTERFACE,
 				"get_type", globals.tctx);
-		printf("\tca-type: %s\n", s);
+		printf(_("\tca-type: %s\n"), s);
 		if (strcmp(s, "EXTERNAL") == 0) {
-			printf("\thelper-location: %s\n",
+			printf(_("\thelper-location: %s\n"),
 			       query_rep_s(bus, cas[i], CM_DBUS_CA_INTERFACE,
 					   "get_location", globals.tctx));
 		} else {
-			printf("\tnext-serial-number: %s\n",
+			printf(_("\tnext-serial-number: %s\n"),
 			       query_rep_s(bus, cas[i], CM_DBUS_CA_INTERFACE,
-			       		   "get_serial", globals.tctx));
+					   "get_serial", globals.tctx));
 		}
 		as = query_rep_as(bus, cas[i],
-			      	  CM_DBUS_CA_INTERFACE, "get_issuer_names",
+				  CM_DBUS_CA_INTERFACE, "get_issuer_names",
 				  globals.tctx);
 		if (as != NULL) {
-			printf("\tknown-issuer-names:\n");
+			printf(_("\tknown-issuer-names:\n"));
 			for (j = 0; as[j] != NULL; j++) {
 				printf("\t\t%s\n", as[j]);
 			}
