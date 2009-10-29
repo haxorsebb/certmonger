@@ -26,6 +26,8 @@ libcm_a_SOURCES = \
 	log.c \
 	notify.h \
 	notify.c \
+	oiddict.h \
+	oiddict.c \
 	store.h \
 	store-int.h \
 	store-files.c \
