@@ -1,5 +1,8 @@
 #!/bin/sh
 #
+# certmonger monitors certificates for impending expiration and can
+# attempt to re-enroll when they expire
+#
 # chkconfig: - 99 01 
 # description: Provides certificate monitoring and PKI enrollment.
 # processname: @mysbindir@/certmonger
@@ -8,7 +11,10 @@
 
 ### BEGIN INIT INFO
 # Provides: certmonger
-# Required-Start: $network messagebus
+# Required-Start: messagebus
+# Required-Stop: messagebus
+# Should-Start: $network
+# Should-Stop: $network
 # Short-Description: Certificate monitor and PKI enrollment client
 # Description: Provides certificate monitoring and PKI enrollment.
 ### END INIT INFO
@@ -16,6 +22,7 @@
 program=/usr/sbin/certmonger
 prog=${program##*/}
 pidfile=/var/run/certmonger.pid
+lockfile=/var/lock/subsys/certmonger
 
 if [ -f /etc/rc.d/init.d/functions ]; then
 	. /etc/rc.d/init.d/functions
@@ -28,10 +35,11 @@ RETVAL=0
 
 start() {
     echo -n $"Starting $prog: "
+    [ -x $program ] || exit 5
     daemon $program -S -p ${pidfile} $OPTS
     RETVAL=$?
     echo
-    [ $RETVAL -eq 0 ] && touch /var/lock/subsys/$prog
+    [ $RETVAL -eq 0 ] && touch $lockfile
     return $RETVAL
 }
 
@@ -41,7 +49,7 @@ stop() {
     RETVAL=$?
     echo
     if [ $RETVAL -eq 0 ]; then
-	rm -f /var/lock/subsys/$prog
+	rm -f $lockfile
     fi
 }
 
@@ -53,11 +61,11 @@ restart() {
 # See how we were called.
 case "$1" in
     start)
-        [ -f /var/lock/subsys/$prog ] && exit 0
+        [ -f $lockfile ] && exit 0
         $1
         ;;
     stop)
-        [ -f /var/lock/subsys/$prog ] || exit 0
+        [ -f $lockfile ] || exit 0
         $1
         ;;
     restart)
@@ -68,7 +76,7 @@ case "$1" in
         RETVAL=$?
         ;;
     condrestart|try-restart)
-        [ -f /var/lock/subsys/$prog ] && restart || :
+        [ -f $lockfile ] && restart || :
         ;;
     reload)
         echo "can't reload configuration, you have to restart it"

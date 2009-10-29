@@ -6,12 +6,13 @@ Summary:	Certificate status monitor and PKI enrollment client
 Group:		System Environment/Daemons
 License:	GPLv3+
 URL:		http://certmonger.fedorahosted.org
-Source0:	certmonger-%{version}.tar.gz
+Source0:	http://fedorahosted.org/released/certmonger/certmonger-%{version}.tar.gz
 BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 BuildRequires:	dbus-devel, nspr-devel, nss-devel, openssl-devel
 BuildRequires:	libtalloc-devel, libtevent-devel
-Requires(post):	/sbin/chkconfig
+BuildRequires:	xmlrpc-c-client
+Requires(post):	/sbin/chkconfig, /sbin/service
 Requires(preun):	/sbin/chkconfig, /sbin/service
 
 %description
@@ -53,15 +54,20 @@ exit 0
 
 %files
 %defattr(-,root,root,-)
-%doc README LICENSE STATUS doc
-/etc/dbus-1/system.d/*
-%config(noreplace) %{_initddir}/certmonger
+%doc README LICENSE STATUS doc/*
+%config /etc/dbus-1/system.d/*
+%{_initddir}/certmonger
 %{_bindir}/*
-%{_sbindir}/*
-%{_libexecdir}/*
+%{_sbindir}/certmonger
+%{_libexecdir}/%{name}
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Thu Oct 29 2009 Nalin Dahyabhai <nalin@redhat.com> 0.4-1
+- update to 0.4
+
 * Thu Oct 22 2009 Nalin Dahyabhai <nalin@redhat.com> 0.1-1
+- update to 0.1
+
 * Sun Oct 18 2009 Nalin Dahyabhai <nalin@redhat.com> 0.0-1
 - initial package
