@@ -46,5 +46,6 @@ char *cm_store_serial_to_binary(void *parent,
 				const unsigned char *serial, int length);
 char *cm_store_serial_to_der(void *parent,
 			     const unsigned char *serial, int length);
+void cm_store_hex_to_bin(const char *serial, unsigned char *buf, int length);
 
 #endif

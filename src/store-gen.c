@@ -262,3 +262,36 @@ cm_store_serial_to_der(void *parent, const unsigned char *serial, int length)
 	ret[i * 2] = '\0';
 	return ret;
 }
+
+/* Convert hex chars to fill a buffer.  Input characters which don't belong are
+ * treated as zeros.  We stop when we run out of input characters or run out of
+ * space in the output buffer. */
+void
+cm_store_hex_to_bin(const char *serial, unsigned char *buf, int length)
+{
+	const char *p, *q, *chars = "0123456789abcdef";
+	unsigned char *b, u;
+	p = serial;
+	b = buf;
+	for (p = serial, b = buf;
+	     ((*p != '\0') && (b - buf < length));
+	     p++) {
+		switch ((p - serial) % 2) {
+		case 0:
+			q = strchr(chars, tolower(*p));
+			if (q == NULL) {
+				q = strchr(chars, toupper(*p));
+			}
+			u = q ? q - chars : 0;
+			break;
+		case 1:
+			q = strchr(chars, tolower(*p));
+			if (q == NULL) {
+				q = strchr(chars, toupper(*p));
+			}
+			u = (u << 4) | (q ? q - chars : 0);
+			*b++ = u;
+			break;
+		}
+	}
+}
