@@ -791,7 +791,7 @@ cm_certext_build_san(struct cm_store_entry *entry, PLArenaPool *arena,
 {
 	CERTGeneralName *name, *next;
 	SECItem encoded, *item;
-	int i;
+	int i, j;
 	/* Anything to do? */
 	if ((hostname == NULL) && (email == NULL) && (principal == NULL)) {
 		return NULL;
@@ -830,6 +830,15 @@ cm_certext_build_san(struct cm_store_entry *entry, PLArenaPool *arena,
 	/* Build a list of otherName values. Encode every principal name in two
 	 * forms. */
 	for (i = 0; (principal != NULL) && (principal[i] != NULL); i++) {
+		for (j = 0; (j < i) && (principal[j] != NULL); j++) {
+			if (strcmp(principal[i], principal[j]) == 0) {
+				/* We've already seen [i]; skip it. */
+				break;
+			}
+		}
+		if (j != i) {
+			continue;
+		}
 		item = cm_certext_build_upn(entry, arena, principal[i]);
 		if (item != NULL) {
 			next = PORT_ArenaZAlloc(arena, sizeof(*next));
