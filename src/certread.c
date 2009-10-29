@@ -165,10 +165,12 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 			j = 0;
 			while ((*u != '\0') && (u < q)) {
 				v = u + strcspn(u, ",\r\n");
-				entry->cm_cert_hostname[j] = talloc_strndup(vals,
-									    u,
-									    v - u);
-				j++;
+				if (v > u) {
+					entry->cm_cert_hostname[j] = talloc_strndup(vals,
+										    u,
+										    v - u);
+					j++;
+				}
 				u = v + strspn(u, ",\r\n");
 			}
 			break;
@@ -182,10 +184,12 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 			j = 0;
 			while ((*u != '\0') && (u < q)) {
 				v = u + strcspn(u, ",\r\n");
-				entry->cm_cert_email[j] = talloc_strndup(vals,
-									 u,
-									 v - u);
-				j++;
+				if (v > u) {
+					entry->cm_cert_email[j] = talloc_strndup(vals,
+										 u,
+										 v - u);
+					j++;
+				}
 				u = v + strspn(u, ",\r\n");
 			}
 			break;
@@ -199,10 +203,12 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 			j = 0;
 			while ((*u != '\0') && (u < q)) {
 				v = u + strcspn(u, ",\r\n");
-				entry->cm_cert_principal[j] = talloc_strndup(vals,
-									     u,
-									     v - u);
-				j++;
+				if (v > u) {
+					entry->cm_cert_principal[j] = talloc_strndup(vals,
+										     u,
+										     v - u);
+					j++;
+				}
 				u = v + strspn(u, ",\r\n");
 			}
 			break;
