@@ -1,6 +1,5 @@
-Limited local-only support, no support for external CAs yet.  Keys can be
-self-signed, but the request's name and requested extensions aren't added to
-the produced certificate.
+Limited local-only support, no useful helpers for external CAs yet.  Keys can
+be self-signed.
 
 Complete:
   * Generating RSA keys of configurable size.
