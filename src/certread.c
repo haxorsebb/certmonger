@@ -93,7 +93,7 @@ cm_certread_write_data_to_pipe(struct cm_store_entry *entry, FILE *fp)
 		fprintf(fp, "%s%s", (i > 0) ? "," : " ",
 			entry->cm_cert_hostname[i]);
 	}
-	fprintf(fp, "\n");
+	fprintf(fp, "%s\n", i > 0 ? "" : " ");
 	for (i = 0;
 	     (entry->cm_cert_email != NULL) &&
 	     (entry->cm_cert_email[i] != NULL);
@@ -101,7 +101,7 @@ cm_certread_write_data_to_pipe(struct cm_store_entry *entry, FILE *fp)
 		fprintf(fp, "%s%s", (i > 0) ? "," : " ",
 			entry->cm_cert_email[i]);
 	}
-	fprintf(fp, "\n");
+	fprintf(fp, "%s\n", i > 0 ? "" : " ");
 	for (i = 0;
 	     (entry->cm_cert_principal != NULL) &&
 	     (entry->cm_cert_principal[i] != NULL);
@@ -109,7 +109,7 @@ cm_certread_write_data_to_pipe(struct cm_store_entry *entry, FILE *fp)
 		fprintf(fp, "%s%s", (i > 0) ? "," : " ",
 			entry->cm_cert_principal[i]);
 	}
-	fprintf(fp, "\n");
+	fprintf(fp, "%s\n", i > 0 ? "" : " ");
 	fprintf(fp, " %s\n", entry->cm_cert_ku ?: "");
 	fprintf(fp, " %s\n", entry->cm_cert_eku ?: "");
 }
@@ -221,4 +221,3 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 		p = q + strspn(q, "\r\n");
 	}
 }
-
