@@ -81,7 +81,7 @@ main(int argc, char **argv)
 	}
 
 	cm_log_set_level(dlevel);
-	cm_log_set_method((dlevel > 0) ? cm_log_stderr : cm_log_syslog);
+	cm_log_set_method(dofork ? cm_log_syslog : cm_log_stderr);
 	cm_log(3, "Starting up.\n");
 
 	ec = tevent_context_init(NULL);
