@@ -523,7 +523,7 @@ cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type,
 	}
 	/* Handle any messages that are already pending. */
 	cm_tdbus_dispatch_status(conn,
-				 dbus_connection_get_dispatch_status(conn), 
+				 dbus_connection_get_dispatch_status(conn),
 				 tdb);
 	cm_log(3, "Connected to %s message bus with name \"%s\", "
 	       "unique name \"%s\".\n",
