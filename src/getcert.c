@@ -152,6 +152,42 @@ query_rep_b(enum cm_tdbus_type which,
 }
 
 /* Send the specified, argument-less method call to the named object, and
+ * return the single string from the response. */
+static char *
+query_rep_s(enum cm_tdbus_type which,
+	    const char *path, const char *interface, const char *method,
+	    void *parent)
+{
+	DBusMessage *rep;
+	char *s;
+	rep = query_rep(which, path, interface, method);
+	if (cm_tdbusm_get_s(rep, parent, &s) != 0) {
+		printf("Error parsing server response.\n");
+		exit(1);
+	}
+	dbus_message_unref(rep);
+	return s;
+}
+
+/* Send the specified, argument-less method call to the named object, and
+ * return the array of strings from the response. */
+static char **
+query_rep_as(enum cm_tdbus_type which,
+	     const char *path, const char *interface, const char *method,
+	     void *parent)
+{
+	DBusMessage *rep;
+	char **as;
+	rep = query_rep(which, path, interface, method);
+	if (cm_tdbusm_get_as(rep, parent, &as) != 0) {
+		printf("Error parsing server response.\n");
+		exit(1);
+	}
+	dbus_message_unref(rep);
+	return as;
+}
+
+/* Send the specified, argument-less method call to the named object, and
  * return from two to four strings from the response. */
 static void
 query_rep_sososos(enum cm_tdbus_type which,
@@ -939,6 +975,71 @@ list(const char *argv0, int argc, char **argv)
 	return 0;
 }
 
+static int
+list_cas(const char *argv0, int argc, char **argv)
+{
+	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
+	DBusMessage *rep;
+	char **cas, *s, *only_ca = DEFAULT_CA, *ca_name;
+	char **as;
+	int c, i, j;
+	while ((c = getopt(argc, argv, "" GETOPT_CA)) != -1) {
+		switch (c) {
+		case 'c':
+			only_ca = optarg;
+			break;
+		default:
+			help(argv0, "list");
+			return 1;
+		}
+	}
+	rep = query_rep(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
+			"get_known_cas");
+	if (cm_tdbusm_get_ap(rep, globals.tctx, &cas) != 0) {
+		printf("Error parsing server response.\n");
+		exit(1);
+	}
+	dbus_message_unref(rep);
+	for (i = 0; (cas != NULL) && (cas[i] != NULL); i++) {
+		/* Filter out based on the CA. */
+		ca_name = NULL;
+		rep = query_rep(bus, cas[i],
+				CM_DBUS_CA_INTERFACE, "get_nickname");
+		if (cm_tdbusm_get_s(rep, globals.tctx, &s) == 0) {
+			if ((only_ca != NULL) && (strcmp(s, only_ca) != 0)) {
+				continue;
+			}
+		}
+		printf("CA '%s':\n", s);
+		printf("\tis-default: %s\n",
+		       query_rep_b(bus, cas[i], CM_DBUS_CA_INTERFACE,
+				   "get_is_default", globals.tctx) ?
+		       "yes" : "no");
+		s = query_rep_s(bus, cas[i], CM_DBUS_CA_INTERFACE,
+				"get_type", globals.tctx);
+		printf("\tca-type: %s\n", s);
+		if (strcmp(s, "EXTERNAL") == 0) {
+			printf("\thelper-location: %s\n",
+			       query_rep_s(bus, cas[i], CM_DBUS_CA_INTERFACE,
+					   "get_location", globals.tctx));
+		} else {
+			printf("\tnext-serial-number: %s\n",
+			       query_rep_s(bus, cas[i], CM_DBUS_CA_INTERFACE,
+			       		   "get_serial", globals.tctx));
+		}
+		as = query_rep_as(bus, cas[i],
+			      	  CM_DBUS_CA_INTERFACE, "get_issuer_names",
+				  globals.tctx);
+		if (as != NULL) {
+			printf("\tknown-issuer-names:\n");
+			for (j = 0; as[j] != NULL; j++) {
+				printf("\t\t%s\n", as[j]);
+			}
+		}
+	}
+	return 0;
+}
+
 static struct {
 	const char *verb;
 	int (*fn)(const char *, int, char **);
@@ -947,6 +1048,7 @@ static struct {
 	{"start-tracking", start_tracking},
 	{"stop-tracking", stop_tracking},
 	{"list", list},
+	{"list-cas", list_cas},
 };
 
 static void
@@ -1028,6 +1130,14 @@ help(const char *cmd, const char *category)
 		N_("  -t		list only information about tracked certificates\n"),
 		NULL,
 	};
+	const char *list_cas_help[] = {
+		N_("Usage: %s list-cas [options]\n"),
+#ifndef FORCE_CA
+		N_("* General options:\n"),
+		N_("  -c CA	list only information about the CA with this name\n"),
+#endif
+		NULL,
+	};
 	struct {
 		const char *category;
 		const char **msgs;
@@ -1037,6 +1147,7 @@ help(const char *cmd, const char *category)
 		{"start-tracking", start_tracking_help},
 		{"stop-tracking", stop_tracking_help},
 		{"list", list_help},
+		{"list-cas", list_cas_help},
 	};
 	for (i = 0; i < sizeof(msgs) / sizeof(msgs[0]); i++) {
 		if ((category != NULL) && (msgs[i].category != NULL) &&
