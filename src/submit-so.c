@@ -52,7 +52,11 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry)
 	X509_REQ *req;
 	X509 *cert;
 	BIO *bio;
-	int status;
+	ASN1_INTEGER *seriali;
+	unsigned char *seriald;
+	const unsigned char *serialtmp;
+	char *serial;
+	int status, seriall;
 	long error;
 	char buf[LINE_MAX];
 	krb5_deltat lifedelta;
@@ -91,7 +95,13 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry)
 									pkey);
 						X509_time_adj(cert->cert_info->validity->notAfter, life, NULL);
 						X509_set_version(cert, 2);
-						/* XXX set a serial number */
+						serial = cm_store_serial_to_der(ca, ca->cm_ca_internal_serial);
+						seriall = strlen(serial) / 2;
+						seriald = talloc_size(ca, seriall);
+						cm_store_hex_to_bin(serial, seriald, seriall);
+						serialtmp = seriald;
+						seriali = d2i_ASN1_INTEGER(NULL, &serialtmp, seriall);
+						X509_set_serialNumber(cert, seriali);
 						cert->cert_info->extensions = X509_REQ_get_extensions(req);
 						X509_sign(cert, pkey,
 							  EVP_sha256());

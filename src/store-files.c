@@ -723,7 +723,7 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 		}
 	}
 	if (ret->cm_ca_internal_serial == NULL) {
-		ret->cm_ca_internal_serial = talloc_strdup(ret, "00");
+		ret->cm_ca_internal_serial = talloc_strdup(ret, CM_DEFAULT_CERT_SERIAL);
 	}
 	if (ret->cm_ca_internal_lifetime == NULL) {
 		ret->cm_ca_internal_lifetime = talloc_strdup(ret, CM_DEFAULT_CERT_LIFETIME);
@@ -1342,7 +1342,7 @@ cm_store_get_all_cas(void *parent)
 						      CM_SELF_SIGN_CA_NAME);
 			ret[j]->cm_ca_type = cm_ca_internal_self;
 			ret[j]->cm_ca_internal_serial = talloc_strdup(ret[j],
-								      "00");
+								      CM_DEFAULT_CERT_SERIAL);
 			ret[j]->cm_ca_internal_lifetime = talloc_strdup(ret[j],
 									CM_DEFAULT_CERT_LIFETIME);
 			j++;

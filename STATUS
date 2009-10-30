@@ -15,6 +15,7 @@ Complete:
     information as we can.
     * Locally-signed certificates use the requested extension values.
     * Locally-signed certificates get a configured validity lifetime.
+    * Locally-signed certificates get a somewhat-useful serial number.
   * Maintaining queued items in an upgrade-proofable format.
   * Should offer an API over D-Bus which the client uses instead of
     mutilating the queue directly (see doc/api.txt):
@@ -64,9 +65,6 @@ To-do:
   * Figure out how to let the local deamon's client do key generation.
     It's either that or force them to give the daemon the PIN for
     encrypted storage. (3 days)
-    SHOULD
-  * Local signing should read-and-update the "next" serial number from
-    the system-local defaults. (1 day)
     SHOULD
   * Local signing should support signing with a key other than the one
     used to generate the CSR. (2 days)

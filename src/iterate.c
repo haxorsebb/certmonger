@@ -212,6 +212,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 	struct cm_iterate_state *state;
 	struct cm_store_ca *tmp_ca;
 	enum cm_state old_entry_state;
+	char *serial;
 	state = cm_iterate_state;
 	*readfd = -1;
 	*when = cm_time_no_time;
@@ -332,6 +333,19 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				*when = cm_time_soon;
 			} else {
 				*when = cm_time_no_time;
+			}
+			/* Mark this serial number as used. */
+			if (ca != NULL) {
+				switch (ca->cm_ca_type) {
+				case cm_ca_external:
+					break;
+				case cm_ca_internal_self:
+					serial = ca->cm_ca_internal_serial;
+					ca->cm_ca_internal_serial =
+						cm_store_increment_serial(ca, serial);
+					talloc_free(serial);
+					cm_store_ca_save(ca);
+				}
 			}
 		} else {
 			if (ca == NULL) {

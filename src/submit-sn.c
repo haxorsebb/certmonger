@@ -55,10 +55,10 @@ static void
 cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry)
 {
 	FILE *status;
-	char *b64;
+	char *b64, *serial;
 	const char *keyname, *token, *p, *q;
 	SECStatus error;
-	SECItem *esdata = NULL, *ecert = NULL, *item;
+	SECItem *esdata = NULL, *ecert = NULL;
 	SECKEYPrivateKey *privkey;
 	SECKEYPrivateKeyList *privkeys;
 	SECKEYPrivateKeyListNode *node;
@@ -75,7 +75,7 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry)
 	PK11SlotList *slotlist;
 	PK11SlotListElement *sle;
 	PK11SlotInfo *slot;
-	int i;
+	int i, serial_length;
 
 	/* Start up NSS and open the database. */
 	error = NSS_InitReadWrite(entry->cm_key_storage_location);
@@ -268,13 +268,16 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry)
 		}
 	}
 	/* Populate the certificate's fields. */
-	item = SEC_ASN1EncodeUnsignedInteger(arena, &ucert->version, 2);
-	if (item == NULL) {
-		cm_log(1, "Unable to set certificate structure version.\n");
-		_exit(1);
-	}
-	item = SEC_ASN1EncodeUnsignedInteger(arena, &ucert->serialNumber, 0); /* XXX */
-	if (item == NULL) {
+	serial = ca->cm_ca_internal_serial;
+	if (serial != NULL) {
+		cm_log(1, "Setting certificate serial number \"%s\".\n", serial);
+		serial_length = strlen(serial) / 2;
+		ucert->serialNumber.data = PORT_ArenaZAlloc(arena,
+							    serial_length);
+		ucert->serialNumber.len = serial_length;
+		cm_store_hex_to_bin(serial,
+				    ucert->serialNumber.data, serial_length);
+	} else {
 		cm_log(1, "Unable to set certificate serial number.\n");
 		_exit(1);
 	}
