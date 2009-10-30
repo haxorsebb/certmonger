@@ -282,9 +282,9 @@ cm_store_hex_to_bin(const char *serial, unsigned char *buf, int length)
 	const char *p, *q, *chars = "0123456789abcdef";
 	unsigned char *b, u;
 	p = serial;
-	b = (unsigned char *) buf;
+	b = buf;
 	for (p = serial, b = buf;
-	     ((*p != '\0') && (b - ((unsigned char *) buf) < length));
+	     ((*p != '\0') && ((b - buf) < length));
 	     p++) {
 		switch ((p - serial) % 2) {
 		case 0:
