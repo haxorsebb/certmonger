@@ -301,42 +301,46 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry)
 			break;
 		}
 	}
+	/* Add the requested extensions. */
 	if ((req->attributes != NULL) && (req->attributes[i] != NULL)) {
 		if (SEC_ASN1DecodeItem(arena, &ucert->extensions,
 				       CERT_SequenceOfCertExtensionTemplate,
 				       req->attributes[i]->attrValue[0]) != SECSuccess) {
 			cm_log(1, "Error decoding requested extensions.\n");
-		} else {
-			basicoid = SECOID_FindOIDByTag(SEC_OID_X509_BASIC_CONSTRAINTS);
-			if (basicoid == NULL) {
-				cm_log(1, "Unable to get basic constraints OID.\n");
-				_exit(1);
-			}
-			if (ucert->extensions == NULL) {
-				i = 0;
-			} else {
-				for (i = 0; ucert->extensions[i] != NULL; i++) {
-					continue;
-				}
-			}
-			extensions = PORT_ArenaZAlloc(arena, (i + 2) * sizeof(extensions[0]));
-			if (extensions != NULL) {
-				memcpy(extensions, ucert->extensions,
-				       i * sizeof(extensions[0]));
-				extensions[i] = PORT_ArenaZAlloc(arena, sizeof(*(extensions[i])));
-				extensions[i + 1] = NULL;
-			}
-			if ((extensions != NULL) && (extensions[i] != NULL)) {
-				extensions[i]->id = basicoid->oid;
-				extensions[i]->critical.data = &btrue;
-				extensions[i]->critical.len = 1;
-				basic_length = strlen(CM_BASIC_CONSTRAINT_NOT_CA) / 2;
-				extensions[i]->value.data = PORT_ArenaZAlloc(arena, basic_length);
-				extensions[i]->value.len = basic_length;
-				cm_store_hex_to_bin(CM_BASIC_CONSTRAINT_NOT_CA, extensions[i]->value.data, extensions[i]->value.len);
-				ucert->extensions = extensions;
-			}
 		}
+	}
+	/* Figure out the OID for basicConstraints. */
+	basicoid = SECOID_FindOIDByTag(SEC_OID_X509_BASIC_CONSTRAINTS);
+	if (basicoid == NULL) {
+		cm_log(1, "Unable to get basic constraints OID.\n");
+		_exit(1);
+	}
+	/* Count the number of extensions. */
+	if (ucert->extensions == NULL) {
+		i = 0;
+	} else {
+		for (i = 0; ucert->extensions[i] != NULL; i++) {
+			continue;
+		}
+	}
+	/* Allocate space for one more. */
+	extensions = PORT_ArenaZAlloc(arena, (i + 2) * sizeof(extensions[0]));
+	if (extensions != NULL) {
+		memcpy(extensions, ucert->extensions,
+		       i * sizeof(extensions[0]));
+		extensions[i] = PORT_ArenaZAlloc(arena, sizeof(*(extensions[i])));
+		extensions[i + 1] = NULL;
+		ucert->extensions = extensions;
+	}
+	/* Add basic constraints. */
+	if ((extensions != NULL) && (extensions[i] != NULL)) {
+		extensions[i]->id = basicoid->oid;
+		extensions[i]->critical.data = &btrue;
+		extensions[i]->critical.len = 1;
+		basic_length = strlen(CM_BASIC_CONSTRAINT_NOT_CA) / 2;
+		extensions[i]->value.data = PORT_ArenaZAlloc(arena, basic_length);
+		extensions[i]->value.len = basic_length;
+		cm_store_hex_to_bin(CM_BASIC_CONSTRAINT_NOT_CA, extensions[i]->value.data, extensions[i]->value.len);
 	}
 	/* Encode the certificate. */
 	ecert = SEC_ASN1EncodeItem(arena, NULL, ucert,
