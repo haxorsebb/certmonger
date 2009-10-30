@@ -63,10 +63,12 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
-* Thu Oct 29 2009 Nalin Dahyabhai <nalin@redhat.com> 0.5-1
+* Fri Oct 30 2009 Nalin Dahyabhai <nalin@redhat.com> 0.5-1
 - update to 0.5
   - packaging fixes
   - add a selfsign-getcert client
+  - self-signed certs now get basic constraints and their own serial numbers
+  - accept id-ms-kp-sc-logon as a named EKU value in a request
 
 * Thu Oct 29 2009 Nalin Dahyabhai <nalin@redhat.com> 0.4-1
 - update to 0.4
