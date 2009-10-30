@@ -226,40 +226,50 @@ cm_store_increment_serial(void *parent, const char *old_serial)
 		serial = talloc_asprintf(parent, "01%s", tmp);
 		talloc_free(tmp);
 	} else {
-		/* ok as is */
-		serial = tmp;
+		if (strchr("890abcdefABCDEF", tmp[0]) != NULL) {
+			/* prepend a zero byte to keep it unsigned */
+			serial = talloc_asprintf(parent, "00%s", tmp);
+			talloc_free(tmp);
+		} else {
+			/* ok as is */
+			serial = tmp;
+		}
 	}
 	return serial;
 }
 
+/* Produce a hex representation of the binary data. */
 char *
 cm_store_serial_from_binary(void *parent,
 			    const unsigned char *serial, int length)
 {
+	const char *hexchars = "0123456789ABCDEF";
 	char *ret;
 	int i;
 	ret = talloc_zero_size(parent, length * 2 + 1);
 	for (i = 0; i < length; i++) {
-		ret[i * 2] = toupper((serial[i / 2] & 0xf0) >> 4);
-		ret[i * 2 + 1] = toupper((serial[i / 2]) >> 4);
+		ret[i * 2] = hexchars[(serial[i] >> 4) & 0x0f];
+		ret[i * 2 + 1] = hexchars[(serial[i]) & 0x0f];
 	}
 	ret[i * 2] = '\0';
 	return ret;
 }
 
+/* Produce a hex representation of the hex serial number encoded as a DER
+ * integer. */
 char *
-cm_store_serial_to_der(void *parent, const unsigned char *serial, int length)
+cm_store_serial_to_der(void *parent, const char *serial)
 {
+	const char *hexchars = "0123456789ABCDEF";
 	char *ret;
-	int i;
-	ret = talloc_zero_size(parent, length * 2 + 3);
-	ret[0] = 2;
-	ret[1] = length;
-	for (i = 0; i < length; i++) {
-		ret[2 + i * 2] = toupper((serial[i / 2] & 0xf0) >> 4);
-		ret[2 + i * 2 + 1] = toupper((serial[i / 2]) >> 4);
-	}
-	ret[i * 2] = '\0';
+	int length;
+	length = strlen(serial);
+	ret = talloc_zero_size(parent, length + 5);
+	ret[0] = '0';
+	ret[1] = '2';
+	ret[2] = hexchars[((length / 2) >> 4) & 0x0f];
+	ret[3] = hexchars[(length / 2) & 0x0f];
+	strcpy(ret + 4, serial);
 	return ret;
 }
 
@@ -272,9 +282,9 @@ cm_store_hex_to_bin(const char *serial, unsigned char *buf, int length)
 	const char *p, *q, *chars = "0123456789abcdef";
 	unsigned char *b, u;
 	p = serial;
-	b = buf;
+	b = (unsigned char *) buf;
 	for (p = serial, b = buf;
-	     ((*p != '\0') && (b - buf < length));
+	     ((*p != '\0') && (b - ((unsigned char *) buf) < length));
 	     p++) {
 		switch ((p - serial) % 2) {
 		case 0:
