@@ -38,6 +38,7 @@ static const struct {
 	{"id-pkinit", "1.3.6.1.5.2.3"},
 	{"id-pkinit-KPClientAuth", "id-pkinit.4"},
 	{"id-pkinit-KPKdc", "id-pkinit.5"},
+	{"id-ms-kp-sc-logon", "1.3.6.1.4.1.311.20.2.2"},
 };
 
 static int
