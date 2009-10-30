@@ -26,7 +26,17 @@ struct cm_submit_state *
 cm_submit_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 {
 	if (ca == NULL) {
-		cm_log(1, "No matching CA.\n");
+		if (entry != NULL) {
+			if (entry->cm_ca_name != NULL) {
+				cm_log(1, "No matching CA \"%s\" for \"%s\".\n",
+				       entry->cm_ca_name, entry->cm_id);
+			} else {
+				cm_log(1, "No matching CA for \"%s\".\n",
+				       entry->cm_id);
+			}
+		} else {
+			cm_log(1, "No matching CA.\n");
+		}
 		return NULL;
 	}
 	switch (ca->cm_ca_type) {
