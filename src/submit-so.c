@@ -26,6 +26,8 @@
 
 #include <openssl/ssl.h>
 #include <openssl/err.h>
+#include <openssl/x509.h>
+#include <openssl/x509v3.h>
 
 #include <talloc.h>
 
@@ -53,10 +55,11 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry)
 	X509 *cert;
 	BIO *bio;
 	ASN1_INTEGER *seriali;
-	unsigned char *seriald;
-	const unsigned char *serialtmp;
+	BASIC_CONSTRAINTS *basic;
+	unsigned char *seriald, *basicd;
+	const unsigned char *serialtmp, *basictmp;
 	char *serial;
-	int status, seriall;
+	int status, seriall, basicl;
 	long error;
 	char buf[LINE_MAX];
 	krb5_deltat lifedelta;
@@ -103,6 +106,12 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry)
 						seriali = d2i_ASN1_INTEGER(NULL, &serialtmp, seriall);
 						X509_set_serialNumber(cert, seriali);
 						cert->cert_info->extensions = X509_REQ_get_extensions(req);
+						basicl = strlen(CM_BASIC_CONSTRAINT_NOT_CA) / 2;
+						basicd = talloc_size(ca, basicl);
+						cm_store_hex_to_bin(CM_BASIC_CONSTRAINT_NOT_CA, basicd, basicl);
+						basictmp = basicd;
+						basic = d2i_BASIC_CONSTRAINTS(NULL, &basictmp, basicl);
+						X509_add1_ext_i2d(cert, NID_basic_constraints, basic, 1, 0);
 						X509_sign(cert, pkey,
 							  EVP_sha256());
 						status = 0;

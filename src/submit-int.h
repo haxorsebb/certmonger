@@ -53,4 +53,6 @@ struct cm_submit_state *cm_submit_sn_start(struct cm_store_ca *ca,
 struct cm_submit_state *cm_submit_so_start(struct cm_store_ca *ca,
 					   struct cm_store_entry *entry);
 
+#define CM_BASIC_CONSTRAINT_NOT_CA "3003010100"
+
 #endif

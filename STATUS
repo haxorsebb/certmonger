@@ -16,6 +16,7 @@ Complete:
     * Locally-signed certificates use the requested extension values.
     * Locally-signed certificates get a configured validity lifetime.
     * Locally-signed certificates get a somewhat-useful serial number.
+    * Locally-signed certificates are marked as not being CAs.
   * Maintaining queued items in an upgrade-proofable format.
   * Should offer an API over D-Bus which the client uses instead of
     mutilating the queue directly (see doc/api.txt):

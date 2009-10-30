@@ -63,19 +63,21 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry)
 	SECKEYPrivateKeyList *privkeys;
 	SECKEYPrivateKeyListNode *node;
 	CERTCertificate *ucert = NULL;
+	CERTCertExtension **extensions;
 	CERTCertificateRequest *req = NULL, sreq;
 	CERTSignedData *data = NULL, sdata, scert;
 	CERTValidity *validity;
 	PRTime now, life;
 	krb5_deltat lifedelta;
 	PLArenaPool *arena = NULL;
-	SECOidData *sigoid, *extoid;
+	SECOidData *sigoid, *extoid, *basicoid;
 	enum cm_key_algorithm cm_key_algorithm;
 	CK_MECHANISM_TYPE mech;
 	PK11SlotList *slotlist;
 	PK11SlotListElement *sle;
 	PK11SlotInfo *slot;
-	int i, serial_length;
+	int i, serial_length, basic_length;
+	unsigned char btrue = 0xff;
 
 	/* Start up NSS and open the database. */
 	error = NSS_InitReadWrite(entry->cm_key_storage_location);
@@ -304,6 +306,36 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry)
 				       CERT_SequenceOfCertExtensionTemplate,
 				       req->attributes[i]->attrValue[0]) != SECSuccess) {
 			cm_log(1, "Error decoding requested extensions.\n");
+		} else {
+			basicoid = SECOID_FindOIDByTag(SEC_OID_X509_BASIC_CONSTRAINTS);
+			if (basicoid == NULL) {
+				cm_log(1, "Unable to get basic constraints OID.\n");
+				_exit(1);
+			}
+			if (ucert->extensions == NULL) {
+				i = 0;
+			} else {
+				for (i = 0; ucert->extensions[i] != NULL; i++) {
+					continue;
+				}
+			}
+			extensions = PORT_ArenaZAlloc(arena, (i + 2) * sizeof(extensions[0]));
+			if (extensions != NULL) {
+				memcpy(extensions, ucert->extensions,
+				       i * sizeof(extensions[0]));
+				extensions[i] = PORT_ArenaZAlloc(arena, sizeof(*(extensions[i])));
+				extensions[i + 1] = NULL;
+			}
+			if ((extensions != NULL) && (extensions[i] != NULL)) {
+				extensions[i]->id = basicoid->oid;
+				extensions[i]->critical.data = &btrue;
+				extensions[i]->critical.len = 1;
+				basic_length = strlen(CM_BASIC_CONSTRAINT_NOT_CA) / 2;
+				extensions[i]->value.data = PORT_ArenaZAlloc(arena, basic_length);
+				extensions[i]->value.len = basic_length;
+				cm_store_hex_to_bin(CM_BASIC_CONSTRAINT_NOT_CA, extensions[i]->value.data, extensions[i]->value.len);
+				ucert->extensions = extensions;
+			}
 		}
 	}
 	/* Encode the certificate. */
