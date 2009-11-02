@@ -36,7 +36,7 @@ case "$CERTMONGER_OPERATION" in
 SUBMIT)
 	defprinc="host/`hostname -f`"
 	princ=`echo "$CERTMONGER_REQ_PRINCIPAL" | head -n 1`
-	ipa cert-request --principal="${princ:-${defprinc}}" --add `cat "$csrfile"` 2>&1 > "$logfile"
+	ipa cert-request --principal="${princ:-${defprinc}}" --add `cat "$csrfile"` < /dev/null > "$logfile" 2>&1
 	status=$?
 	case "$status" in
 	0)
