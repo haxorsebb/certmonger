@@ -53,6 +53,7 @@ SUBMIT)
 		exit 3
 		;;
 	esac
+	;;
 POLL)
 	logger `basename $0`:"Don't know how to poll."
 	exit 3
