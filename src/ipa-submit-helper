@@ -26,7 +26,7 @@ END {print csr}' > "$csrfile"
 
 # Figure out what we're doing here.
 case "$CERTMONGER_OPERATION" in
-SUBMIT|)
+SUBMIT)
 	if ipa cert-request --add `cat "$csrfile"` ; then
 		exit 0
 	else
