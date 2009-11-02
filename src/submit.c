@@ -16,6 +16,11 @@
  */
 
 #include "config.h"
+
+#include <string.h>
+
+#include <talloc.h>
+
 #include "log.h"
 #include "submit.h"
 #include "submit-int.h"
@@ -121,4 +126,27 @@ cm_submit_done(struct cm_store_entry *entry, struct cm_submit_state *state)
 {
 	struct cm_submit_state_pvt *pvt = (struct cm_submit_state_pvt *) state;
 	pvt->done(entry, state);
+}
+
+/* Concatenate some strings. */
+char *
+cm_submit_maybe_joinv(void *parent, const char *sep, char **s)
+{
+	int i, l;
+	char *ret = NULL;
+	for (i = 0, l = 0; (s != NULL) && (s[i] != NULL); i++) {
+		l += i ? strlen(sep) + strlen(s[i]) : strlen(s[i]);
+	}
+	if (l > 0) {
+		ret = talloc_zero_size(parent, l + 1);
+		if (ret != NULL) {
+			for (i = 0; s[i] != NULL; i++) {
+				if (i > 0) {
+					strcat(ret, sep);
+				}
+				strcat(ret, s[i]);
+			}
+		}
+	}
+	return ret;
 }

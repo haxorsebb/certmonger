@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef cmtdbusr_h
-#define cmtdbusr_h
+#ifndef cmtdbush_h
+#define cmtdbush_h
 
 struct cm_context;
 DBusHandlerResult cm_tdbush_handle(DBusConnection *conn, DBusMessage *msg,

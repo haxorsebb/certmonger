@@ -29,6 +29,7 @@
 #include "cm.h"
 #include "store.h"
 #include "store-int.h"
+#include "submit-int.h"
 #include "tdbus.h"
 #include "tdbusm.h"
 
@@ -171,28 +172,6 @@ maybe_strdupv(void *parent, char **s)
 				ret[i] = talloc_strdup(ret, s[i]);
 			}
 			ret[i] = NULL;
-		}
-	}
-	return ret;
-}
-
-static char *
-maybe_joinv(void *parent, const char *sep, char **s)
-{
-	int i, l;
-	char *ret = NULL;
-	for (i = 0, l = 0; (s != NULL) && (s[i] != NULL); i++) {
-		l += i ? strlen(sep) + strlen(s[i]) : strlen(s[i]);
-	}
-	if (l > 0) {
-		ret = talloc_zero_size(parent, l + 1);
-		if (ret != NULL) {
-			for (i = 0; s[i] != NULL; i++) {
-				if (i > 0) {
-					strcat(ret, sep);
-				}
-				strcat(ret, s[i]);
-			}
 		}
 	}
 	return ret;
@@ -580,8 +559,9 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	}
 	param = cm_tdbusm_find_dict_entry(d, "EKU", cm_tdbusm_dict_as);
 	if (param != NULL) {
-		new_entry->cm_template_eku = maybe_joinv(new_entry, ",",
-							 param->value.as);
+		new_entry->cm_template_eku = cm_submit_maybe_joinv(new_entry,
+								   ",",
+								   param->value.as);
 	}
 	param = cm_tdbusm_find_dict_entry(d, "PRINCIPAL", cm_tdbusm_dict_as);
 	if (param != NULL) {

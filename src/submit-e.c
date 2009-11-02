@@ -233,6 +233,25 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 				}
 				close(outfds[0]);
 				close(outfds[1]);
+
+				if (entry->cm_template_email != NULL) {
+					setenv("CERTMONGER_REQ_EMAIL",
+					       cm_submit_maybe_joinv(NULL, "\n",
+								     entry->cm_template_email),
+					       1);
+				}
+				if (entry->cm_template_hostname != NULL) {
+					setenv("CERTMONGER_REQ_HOSTNAME",
+					       cm_submit_maybe_joinv(NULL, "\n",
+								     entry->cm_template_hostname),
+					       1);
+				}
+				if (entry->cm_template_principal != NULL) {
+					setenv("CERTMONGER_REQ_PRINCIPAL",
+					       cm_submit_maybe_joinv(NULL, "\n",
+								     entry->cm_template_principal),
+					       1);
+				}
 				setenv("CERTMONGER_OPERATION", operation, 1);
 				setenv("CERTMONGER_INPUT", input, 1);
 				cm_log(1, "Running helper \"%s\".\n",
