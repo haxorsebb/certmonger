@@ -1461,7 +1461,61 @@ request_get_submitted_date(DBusConnection *conn, DBusMessage *msg,
 static DBusHandlerResult
 request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 {
-	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	DBusMessage *rep;
+	struct cm_store_entry *entry;
+	struct cm_tdbusm_dict **d;
+	const struct cm_tdbusm_dict *param;
+	void *parent;
+	int i;
+
+	entry = get_entry_for_request_message(msg, ctx);
+	if (entry == NULL) {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+	parent = talloc_new(NULL);
+	if (cm_tdbusm_get_d(msg, parent, &d) != 0) {
+		cm_log(1, "Error parsing arguments.\n");
+		talloc_free(parent);
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+	rep = dbus_message_new_method_return(msg);
+	if (rep != NULL) {
+		for (i = 0; (d != NULL) && (d[i] != NULL); i++) {
+			param = d[i];
+			if ((param->value_type == cm_tdbusm_dict_b) &&
+			    (strcasecmp(param->key, "RENEW") == 0)) {
+				entry->cm_autorenew_default = FALSE;
+				entry->cm_autorenew = param->value.b;
+			} else
+			if ((param->value_type == cm_tdbusm_dict_b) &&
+			    (strcasecmp(param->key, "TRACK") == 0)) {
+				entry->cm_monitor_default = FALSE;
+				entry->cm_monitor = param->value.b;
+			} else {
+				break;
+			}
+		}
+		if (d[i] == NULL) {
+			cm_tdbusm_set_b(rep, cm_restart_one(ctx, entry->cm_id));
+			dbus_connection_send(conn, rep, NULL);
+			dbus_message_unref(rep);
+			return DBUS_HANDLER_RESULT_HANDLED;
+		} else {
+			dbus_message_unref(rep);
+			rep = dbus_message_new_error(msg,
+						     CM_DBUS_ERROR_REQUEST_BAD_ARG,
+						     _("Unrecognized parameter or wrong value type."));
+			if (rep != NULL) {
+				cm_tdbusm_set_s(rep, d[i]->key);
+				dbus_connection_send(conn, rep, NULL);
+				dbus_message_unref(rep);
+				return DBUS_HANDLER_RESULT_HANDLED;
+			}
+			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		}
+	} else {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
 }
 
 static DBusHandlerResult

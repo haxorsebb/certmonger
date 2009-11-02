@@ -33,6 +33,7 @@
 #define CM_DBUS_ERROR_BASE_DUPLICATE CM_DBUS_ERROR_BASE ".duplicate"
 #define CM_DBUS_ERROR_CA_INTERNAL CM_DBUS_ERROR_CA ".internal"
 #define CM_DBUS_ERROR_REQUEST_INTERNAL CM_DBUS_ERROR_REQUEST ".internal"
+#define CM_DBUS_ERROR_REQUEST_BAD_ARG CM_DBUS_ERROR_REQUEST ".bad_arg"
 
 enum cm_tdbus_type { cm_tdbus_system, cm_tdbus_session };
 int cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type,

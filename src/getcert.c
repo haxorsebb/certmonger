@@ -336,9 +336,11 @@ request(const char *argv0, int argc, char **argv)
 		help(argv0, "request");
 		return 1;
 	}
-	if ((dbdir == NULL) && (nickname == NULL) && (certfile == NULL)) {
+	if ((dbdir == NULL) &&
+	    (nickname == NULL) &&
+	    (certfile == NULL)) {
 		printf(_("None of database directory and nickname or "
-			 "certificate " "file specified.\n"));
+			 "certificate file specified.\n"));
 		help(argv0, "request");
 		return 1;
 	}
@@ -524,6 +526,36 @@ request(const char *argv0, int argc, char **argv)
 }
 
 static const char *
+find_request_by_name(void *parent, enum cm_tdbus_type bus, const char *name)
+{
+	DBusMessage *rep;
+	char **requests;
+	int i, which;
+	char *thisname;
+	rep = query_rep(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
+			"get_requests");
+	if (cm_tdbusm_get_ap(rep, globals.tctx, &requests) != 0) {
+		printf(_("Error parsing server response.\n"));
+		exit(1);
+	}
+	dbus_message_unref(rep);
+	which = -1;
+	for (i = 0; (requests != NULL) && (requests[i] != NULL); i++) {
+		thisname = query_rep_s(bus, requests[i],
+				       CM_DBUS_REQUEST_INTERFACE,
+				       "get_nickname",
+				       parent);
+		if (strcasecmp(name, thisname) == 0) {
+			which = i;
+		}
+	}
+	if (which != -1) {
+		return requests[which];
+	}
+	return NULL;
+}
+
+static const char *
 find_request_by_storage(void *parent, enum cm_tdbus_type bus,
 			const char *dbdir,
 			const char *nickname,
@@ -702,18 +734,19 @@ add_basic_request(enum cm_tdbus_type bus,
 }
 
 static int
-set_tracking(const char *argv0, int argc, char **argv, dbus_bool_t track)
+set_tracking(const char *argv0, const char *category,
+	     int argc, char **argv, dbus_bool_t track)
 {
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	DBusMessage *req, *rep;
 	const char *request;
 	struct cm_tdbusm_dict param[3];
 	const struct cm_tdbusm_dict *params[3];
-	char *dbdir = NULL, *token = NULL, *nickname = NULL;
+	char *dbdir = NULL, *token = NULL, *nickname = NULL, *id = NULL;
 	char *keyfile = NULL, *certfile = NULL, *ca = DEFAULT_CA;
 	dbus_bool_t b;
 	int c, auto_renew = 0, i;
-	while ((c = getopt(argc, argv, "d:n:t:k:f:g:r" GETOPT_CA)) != -1) {
+	while ((c = getopt(argc, argv, "d:n:t:k:f:g:ri:" GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
 			dbdir = talloc_strdup(globals.tctx, optarg);
@@ -736,16 +769,29 @@ set_tracking(const char *argv0, int argc, char **argv, dbus_bool_t track)
 		case 'c':
 			ca = talloc_strdup(globals.tctx, optarg);
 			break;
+		case 'i':
+			id = talloc_strdup(globals.tctx, optarg);
+			break;
 		}
 	}
-	request = find_request_by_storage(globals.tctx, bus,
-					  dbdir, nickname, token,
-					  certfile);
+	if (id != NULL) {
+		request = find_request_by_name(globals.tctx, bus, id);
+		if (request == NULL) {
+			printf(_("Unable to locate known certificate with "
+				 "the specified nickname.\n"));
+			help(argv0, category);
+			return 1;
+		}
+	} else {
+		request = find_request_by_storage(globals.tctx, bus,
+						  dbdir, nickname, token,
+						  certfile);
+	}
 	if (request != NULL) {
 		i = 0;
 		param[i].key = "TRACK";
 		param[i].value_type = cm_tdbusm_dict_b;
-		param[i].value.b = TRUE;
+		param[i].value.b = track;
 		params[i] = &param[i];
 		i++;
 		param[i].key = "RENEW";
@@ -775,6 +821,27 @@ set_tracking(const char *argv0, int argc, char **argv, dbus_bool_t track)
 			return 1;
 		}
 	} else {
+		if (((dbdir != NULL) && (nickname == NULL)) ||
+		    ((dbdir == NULL) && (nickname != NULL))) {
+			printf(_("Database location or nickname specified "
+				 "without the other.\n"));
+			help(argv0, category);
+			return 1;
+		}
+		if ((dbdir != NULL) && (certfile != NULL)) {
+			printf(_("Database directory and certificate file "
+				 "both specified.\n"));
+			help(argv0, category);
+			return 1;
+		}
+		if ((dbdir == NULL) &&
+		    (nickname == NULL) &&
+		    (certfile == NULL)) {
+			printf(_("None of database directory and nickname or "
+				 "certificate file specified.\n"));
+			help(argv0, category);
+			return 1;
+		}
 		return add_basic_request(bus, dbdir, nickname, token,
 					 keyfile, certfile,
 					 ca, track, track && (auto_renew > 0));
@@ -784,13 +851,13 @@ set_tracking(const char *argv0, int argc, char **argv, dbus_bool_t track)
 static int
 start_tracking(const char *argv0, int argc, char **argv)
 {
-	return set_tracking(argv0, argc, argv, TRUE);
+	return set_tracking(argv0, "start-tracking", argc, argv, TRUE);
 }
 
 static int
 stop_tracking(const char *argv0, int argc, char **argv)
 {
-	return set_tracking(argv0, argc, argv, FALSE);
+	return set_tracking(argv0, "stop-tracking", argc, argv, FALSE);
 }
 
 static int
@@ -1105,6 +1172,8 @@ help(const char *cmd, const char *category)
 		N_("Usage: %s start-tracking [options]\n"),
 		"\n",
 		N_("Required arguments:\n"),
+		N_("* By request identifier:\n"),
+		N_("  -i NAME	nickname for tracking request\n"),
 		N_("* If using an NSS database for storage:\n"),
 		N_("  -d DIR	NSS database for key and cert\n"),
 		N_("  -n NAME	nickname for NSS-based storage (only valid with -d)\n"),
@@ -1125,6 +1194,8 @@ help(const char *cmd, const char *category)
 		N_("Usage: %s stop-tracking [options]\n"),
 		"\n",
 		N_("Required arguments:\n"),
+		N_("* By request identifier:\n"),
+		N_("  -i NAME	nickname for tracking request\n"),
 		N_("* If using an NSS database for storage:\n"),
 		N_("  -d DIR	NSS database for key and cert\n"),
 		N_("  -n NAME	nickname for NSS-based storage (only valid with -d)\n"),

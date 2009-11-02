@@ -29,6 +29,8 @@ Complete:
     * Re-enroll for expired but not-auto-renew certificates.
     * Provide introspection data as a well-behaved DBus service would.
       * D-Feet seems to be happy.
+    * Regenerate signing requests.
+    * Start and stop tracking (i.e., notification of expiration).
   * Make certmonger a proper daemon.
     * Detach from console, foreground for debugging.
     * Sort out an init script.
@@ -40,10 +42,7 @@ Complete:
 To-do:
   * Should offer an API over D-Bus which the client uses instead of
     mutilating the queue directly (see doc/api.txt):
-    * Finish implementing the server half of start-tracking and stop-tracking.
     * Remove entry. (1 day)
-      MUST
-    * Modify requested data and regenerate signing requests. (3 days)
       MUST
     * Set/reset PIN for encrypted key storage. (1 day)
       MUST
