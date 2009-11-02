@@ -8,9 +8,16 @@ fi
 csrfile=`mktemp ${TMPDIR:-/tmp}/ipacsrXXXXXX`
 if test -z "$csrfile" ; then
 	logger `basename $0`:"Unable to create temporary CSR file."
+	rm -f "$ccfile"
 	exit 3
 fi
-trap 'rm -f "$ccfile" "$csrfile"' EXIT
+logfile=`mktemp ${TMPDIR:-/tmp}/ipalogXXXXXX`
+if test -z "$logfile" ; then
+	logger `basename $0`:"Unable to create temporary log file."
+	rm -f "$ccfile" "$csrfile"
+	exit 3
+fi
+trap 'rm -f "$ccfile" "$csrfile" "$logfile"' EXIT
 
 # Get Kerberos credentials.
 KRB5CCNAME="FILE:$ccfile"; export KRB5CCNAME
@@ -29,12 +36,23 @@ case "$CERTMONGER_OPERATION" in
 SUBMIT)
 	defprinc="host/`hostname -f`"
 	princ=`echo "$CERTMONGER_REQ_PRINCIPAL" | head -n 1`
-	if ipa cert-request --principal="${princ:-${defprinc}}" --add `cat "$csrfile"` ; then
+	ipa cert-request --principal="${princ:-${defprinc}}" --add `cat "$csrfile"` 2>&1 > "$logfile"
+	status=$?
+	case "$status" in
+	0)
 		exit 0
-	else
+		;;
+	1)
+		if grep -q "cannot connect" "$logfile" ; then
+			exit 3
+		else
+			exit 2
+		fi
+		;;
+	*)
 		exit 3
-	fi
-	;;
+		;;
+	esac
 POLL)
 	logger `basename $0`:"Don't know how to poll."
 	exit 3
