@@ -27,7 +27,9 @@ END {print csr}' > "$csrfile"
 # Figure out what we're doing here.
 case "$CERTMONGER_OPERATION" in
 SUBMIT)
-	if ipa cert-request --add `cat "$csrfile"` ; then
+	defprinc="host/`hostname -f`"
+	princ=`echo "$CERTMONGER_REQ_PRINCIPAL" | head -n 1`
+	if ipa cert-request --principal="${princ:-${defprinc}}" --add `cat "$csrfile"` ; then
 		exit 0
 	else
 		exit 3
