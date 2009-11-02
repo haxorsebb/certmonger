@@ -317,6 +317,31 @@ get_ssss(DBusMessage *rep, int msgid)
 	return ret;
 }
 static int
+get_ssosos(DBusMessage *rep, int msgid)
+{
+	int ret;
+	char *s1, *s2, *s3, *s4;
+	ret = cm_tdbusm_get_ssosos(rep, NULL, &s1, &s2, &s3, &s4);
+	if (ret == 0) {
+		printf("Message %d - s:%s,s:%ss:%ss:%s\n", msgid,
+		       s1, s2, s3 ? s3 : "(NULL)", s4 ? s4 : "(NULL)");
+	}
+	return ret;
+}
+static int
+get_sososos(DBusMessage *rep, int msgid)
+{
+	int ret;
+	char *s1, *s2, *s3, *s4;
+	ret = cm_tdbusm_get_sososos(rep, NULL, &s1, &s2, &s3, &s4);
+	if (ret == 0) {
+		printf("Message %d - s:%s,s:%ss:%s,s:%s\n", msgid,
+		       s1, s2 ? s2 : "(NULL)",
+		       s3 ? s3 : "(NULL)", s4 ? s4 : "(NULL)");
+	}
+	return ret;
+}
+static int
 get_sssas(DBusMessage *rep, int msgid)
 {
 	int ret, i;
@@ -457,6 +482,13 @@ main(int argc, char **argv)
 		{&set_as, &get_as},
 		{&set_sss, &get_sss},
 		{&set_ssss, &get_ssss},
+		{&set_ss, &get_ssosos},
+		{&set_sss, &get_ssosos},
+		{&set_ssss, &get_ssosos},
+		{&set_s, &get_sososos},
+		{&set_ss, &get_sososos},
+		{&set_sss, &get_sososos},
+		{&set_ssss, &get_sososos},
 		{&set_sssas, &get_sssas},
 		{&set_sssnasasasnas, &get_sssnasasasnas},
 		{&set_sasasasnas, &get_sasasasnas},
