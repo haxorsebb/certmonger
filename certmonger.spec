@@ -63,7 +63,7 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
-* Fri Oct 30 2009 Nalin Dahyabhai <nalin@redhat.com> 0.5-1
+* Mon Nov  2 2009 Nalin Dahyabhai <nalin@redhat.com> 0.5-1
 - update to 0.5
   - packaging fixes
   - add a selfsign-getcert client
