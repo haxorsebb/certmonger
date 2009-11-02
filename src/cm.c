@@ -276,8 +276,7 @@ cm_add_entry(struct cm_context *context, struct cm_store_entry *new_entry)
 		if (events != NULL) {
 			/* Copy the entries to the new arrays. */
 			for (i = 0; i < context->n_entries; i++) {
-				talloc_reparent(context->entries, entries,
-						context->entries[i]);
+				talloc_steal(entries, context->entries[i]);
 				entries[i] = context->entries[i];
 			}
 			/* The pointers in this structure belong to the tevent
@@ -286,8 +285,7 @@ cm_add_entry(struct cm_context *context, struct cm_store_entry *new_entry)
 			memcpy(events, context->events,
 			       sizeof(context->events[0]) * context->n_entries);
 			/* Add the new members. */
-			talloc_reparent(talloc_parent(new_entry), entries,
-					new_entry);
+			talloc_steal(entries, new_entry);
 			entries[context->n_entries] = new_entry;
 			memset(&events[context->n_entries], 0,
 			       sizeof(events[context->n_entries]));
@@ -476,7 +474,7 @@ cm_add_ca(struct cm_context *context, struct cm_store_ca *new_ca)
 	if (cas != NULL) {
 		/* Copy the entries to the new arrays. */
 		for (i = 0; i < context->n_cas; i++) {
-			talloc_reparent(context->cas, cas, context->cas[i]);
+			talloc_steal(cas, context->cas[i]);
 			cas[i] = context->cas[i];
 		}
 		/* Save this entry to the store. */
