@@ -44,7 +44,6 @@ To-do:
     mutilating the queue directly (see doc/api.txt):
     * Set/reset PIN for encrypted key storage. (1 day)
       MUST
-  * Locate NSSDB private keys by association with certificate with nickname.
   * Write some man pages.
     MUST
   * Be able to use hashes other than the current hard-wired SHA256.
