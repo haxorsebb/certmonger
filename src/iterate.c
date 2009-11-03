@@ -720,29 +720,31 @@ cm_iterate_done(struct cm_store_entry *entry, void *cm_iterate_state)
 {
 	struct cm_iterate_state *state;
 	state = cm_iterate_state;
-	if (state->cm_submit_state != NULL) {
-		cm_submit_done(entry, state->cm_submit_state);
-		state->cm_submit_state = NULL;
-	}
-	if (state->cm_csrgen_state != NULL) {
-		cm_csrgen_done(entry, state->cm_csrgen_state);
-		state->cm_csrgen_state = NULL;
-	}
-	if (state->cm_keyiread_state != NULL) {
-		cm_keyiread_done(entry, state->cm_keyiread_state);
-		state->cm_keyiread_state = NULL;
-	}
-	if (state->cm_keygen_state != NULL) {
-		cm_keygen_done(entry, state->cm_keygen_state);
-		state->cm_keygen_state = NULL;
-	}
-	if (state->cm_notify_state != NULL) {
-		cm_notify_done(entry, state->cm_notify_state);
-		state->cm_notify_state = NULL;
+	if (state != NULL) {
+		if (state->cm_submit_state != NULL) {
+			cm_submit_done(entry, state->cm_submit_state);
+			state->cm_submit_state = NULL;
+		}
+		if (state->cm_csrgen_state != NULL) {
+			cm_csrgen_done(entry, state->cm_csrgen_state);
+			state->cm_csrgen_state = NULL;
+		}
+		if (state->cm_keyiread_state != NULL) {
+			cm_keyiread_done(entry, state->cm_keyiread_state);
+			state->cm_keyiread_state = NULL;
+		}
+		if (state->cm_keygen_state != NULL) {
+			cm_keygen_done(entry, state->cm_keygen_state);
+			state->cm_keygen_state = NULL;
+		}
+		if (state->cm_notify_state != NULL) {
+			cm_notify_done(entry, state->cm_notify_state);
+			state->cm_notify_state = NULL;
+		}
+		talloc_free(state);
 	}
 	cm_entry_reset_state(entry);
 	cm_log(3, "'%s' ends in state '%s'\n", entry->cm_id,
 	       cm_store_state_as_string(entry->cm_state));
-	talloc_free(cm_iterate_state);
 	return 0;
 }
