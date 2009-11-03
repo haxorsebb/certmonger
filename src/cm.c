@@ -402,6 +402,36 @@ cm_stop_one(struct cm_context *context, const char *id)
 	}
 }
 
+int
+cm_remove_entry(struct cm_context *context, const char *id)
+{
+	int i;
+	if (cm_stop_one(context, id)) {
+		i = cm_find_entry_by_id(context, id);
+		if (i != -1) {
+			if (cm_store_entry_delete(context->entries[i]) == 0) {
+				/* Free the entry. */
+				talloc_free(context->entries[i]);
+				/* Shorten up the arrays of entries and event
+				 * information. */
+				memmove(context->entries + i,
+					context->entries + i + 1,
+					(context->n_entries - i - 1) *
+					sizeof(context->entries[i]));
+				memmove(context->events + i,
+					context->events + i + 1,
+					(context->n_entries - i - 1) *
+					sizeof(context->events[i]));
+				context->n_entries--;
+				return 0;
+			} else {
+				return -1;
+			}
+		}
+	}
+	return -1;
+}
+
 dbus_bool_t
 cm_restart_one(struct cm_context *context, const char *id)
 {
