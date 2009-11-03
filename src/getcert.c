@@ -626,18 +626,25 @@ find_request_by_storage(void *parent, enum cm_tdbus_type bus,
 }
 
 static int
-add_basic_request(enum cm_tdbus_type bus,
+add_basic_request(enum cm_tdbus_type bus, char *id,
 		  char *dbdir, char *nickname, char *token,
 		  char *keyfile, char *certfile,
 		  char *ca, dbus_bool_t track, dbus_bool_t auto_renew)
 {
 	DBusMessage *req, *rep;
 	int i;
-	struct cm_tdbusm_dict param[16];
-	const struct cm_tdbusm_dict *params[16];
+	struct cm_tdbusm_dict param[17];
+	const struct cm_tdbusm_dict *params[17];
 	dbus_bool_t b;
 	char *p;
 	i = 0;
+	if (id != NULL) {
+		param[i].key = "NICKNAME";
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = id;
+		params[i] = &param[i];
+		i++;
+	}
 	if ((dbdir != NULL) && (nickname != NULL)) {
 		param[i].key = "KEY_STORAGE";
 		param[i].value_type = cm_tdbusm_dict_s;
@@ -795,27 +802,21 @@ set_tracking(const char *argv0, const char *category,
 		case 'S':
 			bus = cm_tdbus_system;
 			break;
+		default:
+			help(argv0, category);
+			return 1;
 		}
 	}
 	if (id != NULL) {
 		request = find_request_by_name(globals.tctx, bus, id);
-		if ((request == NULL) && !track) {
-			printf(_("Unable to locate known certificate with "
-				 "the specified nickname.\n"));
-			return 1;
-		}
 	} else {
 		request = find_request_by_storage(globals.tctx, bus,
 						  dbdir, nickname, token,
 						  certfile);
-		if ((request == NULL) && !track) {
-			printf(_("Unable to locate known certificate with "
-				 "the specified criteria.\n"));
-			return 1;
-		}
 	}
-	if (request != NULL) {
-		if (track) {
+	if (track) {
+		if (request != NULL) {
+			/* Modify settings for an existing request. */
 			i = 0;
 			param[i].key = "TRACK";
 			param[i].value_type = cm_tdbusm_dict_b;
@@ -851,59 +852,70 @@ set_tracking(const char *argv0, const char *category,
 				return 1;
 			}
 		} else {
-			req = prep_req(bus, CM_DBUS_BASE_PATH,
-				       CM_DBUS_BASE_INTERFACE,
-				       "remove_request");
-			if (cm_tdbusm_set_p(req, request) != 0) {
-				printf(_("Error setting request arguments.\n"));
-				exit(1);
-			}
-			rep = send_req(req);
-			if (cm_tdbusm_get_b(rep, globals.tctx, &b) != 0) {
-				printf(_("Error parsing server response.\n"));
-				exit(1);
-			}
-			dbus_message_unref(rep);
-			if (b) {
-				printf(_("Request \"%s\" removed.\n"),
-				       request);
-				return 0;
-			} else {
-				printf(_("Request \"%s\" could not be "
-					 "removed.\n"),
-				       request);
+			/* Add a new request. */
+			if (((dbdir != NULL) && (nickname == NULL)) ||
+			    ((dbdir == NULL) && (nickname != NULL))) {
+				printf(_("Database location or nickname "
+				         "specified without the other.\n"));
+				help(argv0, category);
 				return 1;
 			}
+			if ((dbdir != NULL) && (certfile != NULL)) {
+				printf(_("Database directory and certificate "
+					 "file both specified.\n"));
+				help(argv0, category);
+				return 1;
+			}
+			if ((dbdir == NULL) &&
+			    (nickname == NULL) &&
+			    (certfile == NULL)) {
+				printf(_("None of database directory and "
+					 "nickname or certificate file "
+					 "specified.\n"));
+				help(argv0, category);
+				return 1;
+			}
+			return add_basic_request(bus, id,
+						 dbdir, nickname, token,
+						 keyfile, certfile,
+						 ca, track,
+						 track && (auto_renew > 0));
 		}
 	} else {
-		if (!track) {
-			printf(_("No matching request found.\n"));
-			return 0;
-		}
-		if (((dbdir != NULL) && (nickname == NULL)) ||
-		    ((dbdir == NULL) && (nickname != NULL))) {
-			printf(_("Database location or nickname specified "
-				 "without the other.\n"));
-			help(argv0, category);
-			return 1;
-		}
-		if ((dbdir != NULL) && (certfile != NULL)) {
-			printf(_("Database directory and certificate file "
-				 "both specified.\n"));
-			help(argv0, category);
-			return 1;
-		}
-		if ((dbdir == NULL) &&
+		/* Drop a request. */
+		if ((request == NULL) &&
+		    (id == NULL) &&
+		    (dbdir == NULL) &&
 		    (nickname == NULL) &&
 		    (certfile == NULL)) {
-			printf(_("None of database directory and nickname or "
-				 "certificate file specified.\n"));
 			help(argv0, category);
 			return 1;
 		}
-		return add_basic_request(bus, dbdir, nickname, token,
-					 keyfile, certfile,
-					 ca, track, track && (auto_renew > 0));
+		if (request == NULL) {
+			printf(_("No request found that matched arguments.\n"));
+			return 1;
+		}
+		req = prep_req(bus, CM_DBUS_BASE_PATH,
+			       CM_DBUS_BASE_INTERFACE,
+			       "remove_request");
+		if (cm_tdbusm_set_p(req, request) != 0) {
+			printf(_("Error setting request arguments.\n"));
+			exit(1);
+		}
+		rep = send_req(req);
+		if (cm_tdbusm_get_b(rep, globals.tctx, &b) != 0) {
+			printf(_("Error parsing server response.\n"));
+			exit(1);
+		}
+		dbus_message_unref(rep);
+		if (b) {
+			printf(_("Request \"%s\" removed.\n"), request);
+			return 0;
+		} else {
+			printf(_("Request \"%s\" could not be removed.\n"),
+			       request);
+			return 1;
+		}
 	}
 }
 
@@ -1225,11 +1237,12 @@ help(const char *cmd, const char *category)
 		"\n",
 		N_("Optional arguments:\n"),
 		N_("* Certificate handling settings:\n"),
+		N_("  -i NAME	nickname to assign to the request\n"),
 		N_("  -g SIZE	size of key to be generated if one is not already in place\n"),
 		N_("  -e		track and warn of impending expiration of certificate\n"),
 		N_("  -r		attempt to renew the certificate when expiration nears\n"),
 #ifndef FORCE_CA
-		N_("  -c CA	use the specified CA rather than the default\n"),
+		N_("  -c CA		use the specified CA rather than the default\n"),
 #endif
 		N_("* Parameters for the signing request:\n"),
 		N_("  -N NAME	set requested subject name (default: CN=<hostname>)\n"),
@@ -1238,16 +1251,14 @@ help(const char *cmd, const char *category)
 		N_("  -D DNSNAME	add requested DNS name\n"),
 		N_("  -E EMAIL	add requested email address\n"),
 		N_("* Bus options:\n"),
-		N_("  -S	connect to the certmonger service on the system bus\n"),
-		N_("  -s	connect to the certmonger service on the session bus\n"),
+		N_("  -S		connect to the certmonger service on the system bus\n"),
+		N_("  -s		connect to the certmonger service on the session bus\n"),
 		NULL,
 	};
 	const char *start_tracking_help[] = {
 		N_("Usage: %s start-tracking [options]\n"),
 		"\n",
 		N_("Required arguments:\n"),
-		N_("* By request identifier:\n"),
-		N_("  -i NAME	nickname for tracking request\n"),
 		N_("* If using an NSS database for storage:\n"),
 		N_("  -d DIR	NSS database for key and cert\n"),
 		N_("  -n NAME	nickname for NSS-based storage (only valid with -d)\n"),
@@ -1258,13 +1269,14 @@ help(const char *cmd, const char *category)
 		"\n",
 		N_("Optional arguments:\n"),
 		N_("* Certificate handling settings:\n"),
+		N_("  -i NAME	nickname to give to tracking request\n"),
 		N_("  -r		attempt to renew the certificate when expiration nears\n"),
 #ifndef FORCE_CA
-		N_("  -c CA	use the specified CA rather than the default\n"),
+		N_("  -c CA		use the specified CA rather than the default\n"),
 #endif
 		N_("* Bus options:\n"),
-		N_("  -S	connect to the certmonger service on the system bus\n"),
-		N_("  -s	connect to the certmonger service on the session bus\n"),
+		N_("  -S		connect to the certmonger service on the system bus\n"),
+		N_("  -s		connect to the certmonger service on the session bus\n"),
 		NULL,
 	};
 	const char *stop_tracking_help[] = {
@@ -1283,8 +1295,8 @@ help(const char *cmd, const char *category)
 		"\n",
 		N_("Optional arguments:\n"),
 		N_("* Bus options:\n"),
-		N_("  -S	connect to the certmonger service on the system bus\n"),
-		N_("  -s	connect to the certmonger service on the session bus\n"),
+		N_("  -S		connect to the certmonger service on the system bus\n"),
+		N_("  -s		connect to the certmonger service on the session bus\n"),
 		NULL,
 	};
 	const char *list_help[] = {
