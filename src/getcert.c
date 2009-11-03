@@ -1235,7 +1235,7 @@ help(const char *cmd, const char *category)
 		N_("* Certificate handling settings:\n"),
 		N_("  -i NAME	nickname to assign to the request\n"),
 		N_("  -g SIZE	size of key to be generated if one is not already in place\n"),
-		N_("  -r		attempt to renew the certificate when expiration nears\n"),
+		N_("  -r		attempt to refresh the certificate when expiration nears\n"),
 #ifndef FORCE_CA
 		N_("  -c CA		use the specified CA rather than the default\n"),
 #endif
