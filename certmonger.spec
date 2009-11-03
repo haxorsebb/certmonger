@@ -64,6 +64,14 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Tue Nov  3 2009 Nalin Dahyabhai <nalin@redhat.com> 0.6-1
+- update to 0.6
+  - man pages
+  - 'getcert stop-tracking' actually makes the server forget now
+  - 'getcert request -e' was redundant, dropped the -e option
+  - 'getcert request -i' now sets the request nickname
+  - 'getcert start-tracking -i' now sets the request nickname
+
 * Mon Nov  2 2009 Nalin Dahyabhai <nalin@redhat.com> 0.5-1
 - update to 0.5
   - packaging fixes
