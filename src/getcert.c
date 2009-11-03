@@ -212,7 +212,7 @@ request(const char *argv0, int argc, char **argv)
 	char subject_default[LINE_MAX];
 	char *dbdir = NULL, *token = NULL, *nickname = NULL;
 	char *keyfile = NULL, *certfile = NULL;
-	int keysize = 0, track_exp = 0, auto_renew = 0, c, i;
+	int keysize = 0, auto_renew = 0, c, i;
 	char *ca = DEFAULT_CA, *subject = NULL, **eku = NULL, *oid;
 	char **principal = NULL, **dns = NULL, **email = NULL;
 	struct cm_tdbusm_dict param[32];
@@ -447,7 +447,7 @@ request(const char *argv0, int argc, char **argv)
 	}
 	param[i].key = "TRACK";
 	param[i].value_type = cm_tdbusm_dict_b;
-	param[i].value.b = track_exp > 0;
+	param[i].value.b = TRUE;
 	params[i] = &param[i];
 	i++;
 	param[i].key = "RENEW";
@@ -626,7 +626,7 @@ static int
 add_basic_request(enum cm_tdbus_type bus, char *id,
 		  char *dbdir, char *nickname, char *token,
 		  char *keyfile, char *certfile,
-		  char *ca, dbus_bool_t track, dbus_bool_t auto_renew)
+		  char *ca, dbus_bool_t auto_renew)
 {
 	DBusMessage *req, *rep;
 	int i;
@@ -714,7 +714,7 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 	}
 	param[i].key = "TRACK";
 	param[i].value_type = cm_tdbusm_dict_b;
-	param[i].value.b = track;
+	param[i].value.b = TRUE;
 	params[i] = &param[i];
 	i++;
 	param[i].key = "RENEW";
@@ -875,8 +875,7 @@ set_tracking(const char *argv0, const char *category,
 			return add_basic_request(bus, id,
 						 dbdir, nickname, token,
 						 keyfile, certfile,
-						 ca, track,
-						 track && (auto_renew > 0));
+						 ca, (auto_renew > 0));
 		}
 	} else {
 		/* Drop a request. */
