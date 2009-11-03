@@ -28,6 +28,7 @@
 
 #include <nss.h>
 #include <nssb64.h>
+#include <cert.h>
 #include <keyhi.h>
 #include <keythi.h>
 #include <pk11pub.h>
@@ -63,10 +64,12 @@ cm_keyiread_n_main(int fd, struct cm_store_entry *entry)
 	PK11SlotListElement *sle;
 	PK11SlotInfo *slot;
 	SECKEYPrivateKeyList *keys;
-	SECKEYPrivateKeyListNode *node;
+	SECKEYPrivateKeyListNode *knode;
 	SECKEYPrivateKey *key;
 	SECKEYPublicKey *pubkey;
 	CK_MECHANISM_TYPE mech;
+	CERTCertList *certs;
+	CERTCertListNode *cnode;
 	FILE *fp;
 	/* Open the status descriptor for stdio. */
 	fp = fdopen(fd, "w");
@@ -132,23 +135,58 @@ cm_keyiread_n_main(int fd, struct cm_store_entry *entry)
 	/* Walk the list of private keys in the slot, looking at each one which
 	 * matches the specified nickname. */
 	keys = PK11_ListPrivKeysInSlot(slot, entry->cm_key_nickname, NULL);
+	certs = NULL;
 	if (keys == NULL) {
-		cm_log(1, "Token contains no private keys with the specified "
+		cm_log(2, "Token contains no private keys with the specified "
 		       "nickname!\n");
-		PK11_FreeSlotList(slotlist);
-		if (NSS_Shutdown() != SECSuccess) {
-			cm_log(1, "Error shutting down NSS.\n");
+		certs = PK11_ListCertsInSlot(slot);
+		if (certs == NULL) {
+			cm_log(2, "Token contains no certificates, either!\n");
+			PK11_FreeSlotList(slotlist);
+			if (NSS_Shutdown() != SECSuccess) {
+				cm_log(1, "Error shutting down NSS.\n");
+			}
+			_exit(2);
 		}
-		_exit(2);
 	}
 	key = NULL;
-	for (node = PRIVKEY_LIST_HEAD(keys);
-	     !PRIVKEY_LIST_EMPTY(keys) &&
-	     !PRIVKEY_LIST_END(node, keys);
-	     node = PRIVKEY_LIST_NEXT(node)) {
-		cm_log(3, "Located the key.\n");
-		key = node->key;
-		break;
+	if (keys != NULL) {
+		for (knode = PRIVKEY_LIST_HEAD(keys);
+		     !PRIVKEY_LIST_EMPTY(keys) &&
+		     !PRIVKEY_LIST_END(knode, keys);
+		     knode = PRIVKEY_LIST_NEXT(knode)) {
+			cm_log(3, "Located the key.\n");
+			key = knode->key;
+			break;
+		}
+	}
+	if (key == NULL) {
+		if (certs == NULL) {
+			certs = PK11_ListCertsInSlot(slot);
+		}
+		if (certs != NULL) {
+			for (cnode = CERT_LIST_HEAD(certs);
+			     !CERT_LIST_EMPTY(certs) &&
+			     !CERT_LIST_END(cnode, certs);
+			     cnode = CERT_LIST_NEXT(cnode)) {
+				if (strcmp(cnode->cert->nickname,
+					   entry->cm_cert_nickname) == 0) {
+					cm_log(3, "Located a certificate with "
+					       "the nickname \"%s\".\n");
+					key = PK11_FindPrivateKeyFromCert(slot,
+									  cnode->cert,
+									  NULL);
+					if (key != NULL) {
+						cm_log(3, "Located its "
+						       "private key.\n");
+						break;
+					}
+				}
+			}
+		}
+	}
+	if (certs != NULL) {
+		CERT_DestroyCertList(certs);
 	}
 	alg = "";
 	size = 0;
@@ -182,7 +220,9 @@ cm_keyiread_n_main(int fd, struct cm_store_entry *entry)
 	}
 	fclose(fp);
 	PORT_FreeArena(arena, PR_TRUE);
-	SECKEY_DestroyPrivateKeyList(keys);
+	if (keys != NULL) {
+		SECKEY_DestroyPrivateKeyList(keys);
+	}
 	PK11_FreeSlotList(slotlist);
 	if (NSS_Shutdown() != SECSuccess) {
 		cm_log(1, "Error shutting down NSS.\n");
