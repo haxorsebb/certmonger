@@ -273,7 +273,7 @@ request(const char *argv0, int argc, char **argv)
 			keysize = atoi(optarg);
 			break;
 		case 'i':
-			id = talloc_strdup(globals.ctx, optarg);
+			id = talloc_strdup(globals.tctx, optarg);
 			break;
 		case 'r':
 			auto_renew++;
