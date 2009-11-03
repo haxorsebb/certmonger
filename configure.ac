@@ -103,7 +103,9 @@ AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_TOKEN,NULL,[Define to the default token used 
 AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_NICKNAME,"Server-Cert",[Define to the default nickname given to certificates.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_PUBKEY_TYPE,cm_key_rsa,[Define to the default public key type.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_RSA_MODULUS,0x10001,[Define to the default RSA key modulus.])
-AC_DEFINE_UNQUOTED(CM_DEFAULT_PUBKEY_SIZE,2048,[Define to the default public key size.])
+CM_DEFAULT_PUBKEY_SIZE=2048
+AC_DEFINE_UNQUOTED(CM_DEFAULT_PUBKEY_SIZE,$CM_DEFAULT_PUBKEY_SIZE,[Define to the default public key size.])
+AC_SUBST(CM_DEFAULT_PUBKEY_SIZE)
 AC_DEFINE_UNQUOTED(CM_DEFAULT_TTL_LIST,[30*24*60*60,7*24*60*60,3*24*60*60,2*24*60*60,1*24*60*60],[Define to the list of default time-left thresholds at which we need to warn the user.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_LIFETIME,"30d",[Define to the default certificate lifetime for self-signed certificates.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_SERIAL,"01",[Define to the default starting serial number for self-signed certificates.])
@@ -126,4 +128,4 @@ AC_DEFINE_UNQUOTED(CM_IPA_HELPER_PATH,"$mylibexecdir/ipa-submit-helper",[Define 
 AM_CONDITIONAL(WITH_IPA,true)
 
 AC_CONFIG_COMMANDS(src_introspect_sh,[chmod +x src/introspect.sh])
-AC_OUTPUT(Makefile src/Makefile dbus/Makefile dbus/certmonger.conf src/certmonger.init src/introspect.sh src/certmonger.8)
+AC_OUTPUT(Makefile src/Makefile dbus/Makefile dbus/certmonger.conf src/certmonger.init src/introspect.sh src/certmonger.8 src/getcert.1 src/getcert-request.1 src/getcert-list.1 src/getcert-start-tracking.1)
