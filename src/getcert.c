@@ -213,7 +213,7 @@ request(const char *argv0, int argc, char **argv)
 	char *dbdir = NULL, *token = NULL, *nickname = NULL;
 	char *keyfile = NULL, *certfile = NULL;
 	int keysize = 0, auto_renew = 0, c, i;
-	char *ca = DEFAULT_CA, *subject = NULL, **eku = NULL, *oid;
+	char *ca = DEFAULT_CA, *subject = NULL, **eku = NULL, *oid, *id = NULL;
 	char **principal = NULL, **dns = NULL, **email = NULL;
 	struct cm_tdbusm_dict param[32];
 	const struct cm_tdbusm_dict *params[32];
@@ -252,7 +252,7 @@ request(const char *argv0, int argc, char **argv)
 	}
 
 	while ((c = getopt(argc, argv,
-			   "d:n:t:k:f:g:rN:U:K:D:E:sS" GETOPT_CA)) != -1) {
+			   "d:n:t:k:f:i:g:rN:U:K:D:E:sS" GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
 			dbdir = talloc_strdup(globals.tctx, optarg);
@@ -271,6 +271,9 @@ request(const char *argv0, int argc, char **argv)
 			break;
 		case 'g':
 			keysize = atoi(optarg);
+			break;
+		case 'i':
+			id = talloc_strdup(globals.ctx, optarg);
 			break;
 		case 'r':
 			auto_renew++;
@@ -464,6 +467,13 @@ request(const char *argv0, int argc, char **argv)
 		param[i].key = "KEY_SIZE";
 		param[i].value_type = cm_tdbusm_dict_n;
 		param[i].value.n = keysize;
+		params[i] = &param[i];
+		i++;
+	}
+	if (id != NULL) {
+		param[i].key = "NICKNAME";
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = id;
 		params[i] = &param[i];
 		i++;
 	}
