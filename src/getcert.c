@@ -252,7 +252,7 @@ request(const char *argv0, int argc, char **argv)
 	}
 
 	while ((c = getopt(argc, argv,
-			   "d:n:t:k:f:g:erN:U:K:D:E:sS" GETOPT_CA)) != -1) {
+			   "d:n:t:k:f:g:rN:U:K:D:E:sS" GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
 			dbdir = talloc_strdup(globals.tctx, optarg);
@@ -271,9 +271,6 @@ request(const char *argv0, int argc, char **argv)
 			break;
 		case 'g':
 			keysize = atoi(optarg);
-			break;
-		case 'e':
-			track_exp++;
 			break;
 		case 'r':
 			auto_renew++;
@@ -1239,7 +1236,6 @@ help(const char *cmd, const char *category)
 		N_("* Certificate handling settings:\n"),
 		N_("  -i NAME	nickname to assign to the request\n"),
 		N_("  -g SIZE	size of key to be generated if one is not already in place\n"),
-		N_("  -e		track and warn of impending expiration of certificate\n"),
 		N_("  -r		attempt to renew the certificate when expiration nears\n"),
 #ifndef FORCE_CA
 		N_("  -c CA		use the specified CA rather than the default\n"),
