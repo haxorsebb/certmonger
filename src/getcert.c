@@ -119,7 +119,8 @@ send_req(DBusMessage *req)
 	rep = dbus_connection_send_with_reply_and_block(globals.conn, req,
 							30 * 1000, NULL);
 	if (rep == NULL) {
-		printf(_("No response received from local service.\n"));
+		printf(_("No response received from %s service.\n"),
+		       CM_DBUS_NAME);
 		exit(1);
 	}
 	dbus_message_unref(req);
@@ -251,7 +252,7 @@ request(const char *argv0, int argc, char **argv)
 	}
 
 	while ((c = getopt(argc, argv,
-			   "d:n:t:k:f:g:erN:U:K:D:E:" GETOPT_CA)) != -1) {
+			   "d:n:t:k:f:g:erN:U:K:D:E:sS" GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
 			dbdir = talloc_strdup(globals.tctx, optarg);
@@ -317,6 +318,12 @@ request(const char *argv0, int argc, char **argv)
 			break;
 		case 'E':
 			add_string(globals.tctx, &email, optarg);
+			break;
+		case 's':
+			bus = cm_tdbus_session;
+			break;
+		case 'S':
+			bus = cm_tdbus_system;
 			break;
 		default:
 			help(argv0, "request");
@@ -746,7 +753,7 @@ set_tracking(const char *argv0, const char *category,
 	char *keyfile = NULL, *certfile = NULL, *ca = DEFAULT_CA;
 	dbus_bool_t b;
 	int c, auto_renew = 0, i;
-	while ((c = getopt(argc, argv, "d:n:t:k:f:g:ri:" GETOPT_CA)) != -1) {
+	while ((c = getopt(argc, argv, "d:n:t:k:f:g:ri:sS" GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
 			dbdir = talloc_strdup(globals.tctx, optarg);
@@ -781,6 +788,12 @@ set_tracking(const char *argv0, const char *category,
 			break;
 		case 'i':
 			id = talloc_strdup(globals.tctx, optarg);
+			break;
+		case 's':
+			bus = cm_tdbus_session;
+			break;
+		case 'S':
+			bus = cm_tdbus_system;
 			break;
 		}
 	}
@@ -918,7 +931,7 @@ list(const char *argv0, int argc, char **argv)
 	long n1, n2;
 	char **as1, **as2, **as3, **as4, t[15];
 	int requests_only = 0, tracking_only = 0, c, i, j;
-	while ((c = getopt(argc, argv, "rt" GETOPT_CA)) != -1) {
+	while ((c = getopt(argc, argv, "rtsS" GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'c':
 			only_ca = optarg;
@@ -928,6 +941,12 @@ list(const char *argv0, int argc, char **argv)
 			break;
 		case 't':
 			tracking_only++;
+			break;
+		case 's':
+			bus = cm_tdbus_session;
+			break;
+		case 'S':
+			bus = cm_tdbus_system;
 			break;
 		default:
 			help(argv0, "list");
@@ -1110,10 +1129,16 @@ list_cas(const char *argv0, int argc, char **argv)
 	char **cas, *s, *only_ca = DEFAULT_CA, *ca_name;
 	char **as;
 	int c, i, j;
-	while ((c = getopt(argc, argv, "" GETOPT_CA)) != -1) {
+	while ((c = getopt(argc, argv, "sS" GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'c':
 			only_ca = optarg;
+			break;
+		case 's':
+			bus = cm_tdbus_session;
+			break;
+		case 'S':
+			bus = cm_tdbus_system;
 			break;
 		default:
 			help(argv0, "list");
@@ -1212,6 +1237,9 @@ help(const char *cmd, const char *category)
 		N_("  -K NAME	add requested principal name\n"),
 		N_("  -D DNSNAME	add requested DNS name\n"),
 		N_("  -E EMAIL	add requested email address\n"),
+		N_("* Bus options:\n"),
+		N_("  -S	connect to the certmonger service on the system bus\n"),
+		N_("  -s	connect to the certmonger service on the session bus\n"),
 		NULL,
 	};
 	const char *start_tracking_help[] = {
@@ -1234,6 +1262,9 @@ help(const char *cmd, const char *category)
 #ifndef FORCE_CA
 		N_("  -c CA	use the specified CA rather than the default\n"),
 #endif
+		N_("* Bus options:\n"),
+		N_("  -S	connect to the certmonger service on the system bus\n"),
+		N_("  -s	connect to the certmonger service on the session bus\n"),
 		NULL,
 	};
 	const char *stop_tracking_help[] = {
@@ -1249,24 +1280,39 @@ help(const char *cmd, const char *category)
 		N_("* If using files for storage:\n"),
 		N_("  -k FILE	PEM file for private key\n"),
 		N_("  -f FILE	PEM file for certificate (only valid with -k)\n"),
+		"\n",
+		N_("Optional arguments:\n"),
+		N_("* Bus options:\n"),
+		N_("  -S	connect to the certmonger service on the system bus\n"),
+		N_("  -s	connect to the certmonger service on the session bus\n"),
 		NULL,
 	};
 	const char *list_help[] = {
 		N_("Usage: %s list [options]\n"),
+		"\n",
+		N_("Optional arguments:\n"),
 		N_("* General options:\n"),
 #ifndef FORCE_CA
-		N_("  -c CA		list only requests and certs associated with this CA\n"),
+		N_("  -c CA	list only requests and certs associated with this CA\n"),
 #endif
-		N_("  -r		list only information about outstanding requests\n"),
-		N_("  -t		list only information about tracked certificates\n"),
+		N_("  -r	list only information about outstanding requests\n"),
+		N_("  -t	list only information about tracked certificates\n"),
+		N_("* Bus options:\n"),
+		N_("  -S	connect to the certmonger service on the system bus\n"),
+		N_("  -s	connect to the certmonger service on the session bus\n"),
 		NULL,
 	};
 	const char *list_cas_help[] = {
 		N_("Usage: %s list-cas [options]\n"),
+		"\n",
+		N_("Optional arguments:\n"),
 #ifndef FORCE_CA
 		N_("* General options:\n"),
 		N_("  -c CA	list only information about the CA with this name\n"),
 #endif
+		N_("* Bus options:\n"),
+		N_("  -S	connect to the certmonger service on the system bus\n"),
+		N_("  -s	connect to the certmonger service on the session bus\n"),
 		NULL,
 	};
 	struct {
@@ -1314,6 +1360,9 @@ main(int argc, char **argv)
 		talloc_free(globals.tctx);
 		globals.tctx = NULL;
 		fprintf(stderr, _("%s: unrecognized command\n"), verb);
+		if (verb[0] == '-') {
+			help(p, NULL);
+		}
 		return 1;
 	} else {
 		help(p, NULL);
