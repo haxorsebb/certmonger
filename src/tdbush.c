@@ -1716,10 +1716,10 @@ request_introspect(struct cm_context *ctx, const char *path)
 			       "  <method name=\"get_submitted_date\">\n"
 			       "   <arg name=\"date\" type=\"x\" direction=\"out\"/>\n"
 			       "  </method>\n"
-#if 0
 			       "  <method name=\"modify\">\n"
+			       "   <arg name=\"updates\" type=\"a{sv}\" direction=\"in\"/>\n"
+			       "   <arg name=\"status\" type=\"b\" direction=\"out\"/>\n"
 			       "  </method>\n"
-#endif
 			       "  <method name=\"reenroll\">\n"
 			       "   <arg name=\"working\" type=\"b\" direction=\"out\"/>\n"
 			       "  </method>\n"
