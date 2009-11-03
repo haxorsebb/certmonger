@@ -42,7 +42,7 @@ Complete:
 To-do:
   * Should offer an API over D-Bus which the client uses instead of
     mutilating the queue directly (see doc/api.txt):
-    * Set/reset PIN for encrypted key storage. (1 day)
+    * Set/reset PIN for encrypted key storage... maybe? (1 day)
       MUST
   * Write some man pages.
     MUST
@@ -53,7 +53,9 @@ To-do:
     anything that's waiting for a server to become reachable.
     MUST
   * Learn to submit to at least one actual CA: IPA via XML-RPC over
-    HTTPS, authenticating using Negotiate.
+    HTTPS, authenticating using Negotiate with creds obtained using
+    the host's keytab (administrator may have logged off long before
+    we could have contacted the CA).
     MUST
   * Make certmonger a proper daemon.
     * Sort out logging levels for log messages. (1 day)
@@ -62,12 +64,11 @@ To-do:
       MUST
   * Figure out how to let the local deamon's client do key generation.
     It's either that or force them to give the daemon the PIN for
-    encrypted storage. (3 days)
+    encrypted storage.  Or don't support encrypted key storage at all,
+    which is probably not going to be a popular limitation to have. (3 days)
     SHOULD
   * Local signing should support signing with a key other than the one
     used to generate the CSR. (2 days)
-    * Make the the "next" serial number into a per-key default (1 day)
-      SHOULD
   * Learn to submit to a second CA: certmaster via XML-RPC over HTTPS.
     * Learn how certmaster's root gets distributed. (1 day)
     * Learn to submit to certmaster's XMLRPC interface, preferably by
@@ -82,5 +83,6 @@ To-do:
     Not at all sure how to do it for "nssdb".
     COULD
   * Queue management.
-    COULD -> Move entries from hand-rolled files to simple XML. (2 days)
-    COULD -> Move the whole thing to an ldb. (3 days)
+    COULD -> Move entries and CAs from hand-rolled files to simple XML. (2 days)
+    COULD -> Move them to an ldb. (3 days)
+    COULD -> Move them to something that's more end-user-serviceable. (3 days)
