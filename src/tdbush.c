@@ -242,6 +242,20 @@ send_internal_base_duplicate_error(DBusConnection *conn, DBusMessage *req,
 }
 
 static DBusHandlerResult
+send_internal_base_no_such_entry_error(DBusConnection *conn, DBusMessage *req)
+{
+	DBusMessage *msg;
+	msg = dbus_message_new_error(req, CM_DBUS_ERROR_BASE_NO_SUCH_ENTRY,
+				     _("No matching entry found.\n"));
+	if (msg != NULL) {
+		dbus_connection_send(conn, msg, NULL);
+		dbus_message_unref(msg);
+		return DBUS_HANDLER_RESULT_HANDLED;
+	}
+	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
+static DBusHandlerResult
 base_add_request(DBusConnection *conn, DBusMessage *msg,
 		 struct cm_context *ctx)
 {
@@ -734,7 +748,37 @@ static DBusHandlerResult
 base_remove_request(DBusConnection *conn, DBusMessage *msg,
 		    struct cm_context *ctx)
 {
-	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	DBusMessage *rep;
+	struct cm_store_entry *entry;
+	int ret;
+	void *parent;
+	char *path;
+
+	rep = dbus_message_new_method_return(msg);
+	if (rep == NULL) {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+
+	parent = talloc_new(NULL);
+	if (cm_tdbusm_get_p(msg, parent, &path) == 0) {
+		entry = get_entry_for_path(ctx, path);
+		talloc_free(parent);
+		if (entry != NULL) {
+			ret = cm_remove_entry(ctx, entry->cm_id);
+			cm_tdbusm_set_b(rep, (ret == 0));
+			dbus_connection_send(conn, rep, NULL);
+			dbus_message_unref(rep);
+			return DBUS_HANDLER_RESULT_HANDLED;
+		} else {
+			dbus_message_unref(rep);
+			return send_internal_base_no_such_entry_error(conn,
+								      msg);
+		}
+	} else {
+		talloc_free(parent);
+		dbus_message_unref(rep);
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
 }
 
 /* Functions implemented for known CAs. */
@@ -1814,11 +1858,11 @@ base_introspect(struct cm_context *ctx, const char *path)
 			       "   <arg name=\"ca\" type=\"o\" direction=\"in\"/>\n"
 			       "   <arg name=\"status\" type=\"b\" direction=\"out\"/>\n"
 			       "  </method>\n"
+#endif
 			       "  <method name=\"remove_request\">\n"
 			       "   <arg name=\"request_id\" type=\"o\" direction=\"in\"/>\n"
 			       "   <arg name=\"status\" type=\"b\" direction=\"out\"/>\n"
 			       "  </method>\n"
-#endif
 			       " </interface>\n");
 	talloc_free(reqs);
 	talloc_free(cas);
