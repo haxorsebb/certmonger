@@ -1027,6 +1027,30 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 }
 
 int
+cm_store_entry_delete(struct cm_store_entry *entry)
+{
+	int ret;
+
+	if (entry->cm_store_private != NULL) {
+		ret = remove(entry->cm_store_private);
+		if (ret == 0) {
+			cm_log(3, "Removed file \"%s\".\n",
+			       entry->cm_store_private);
+			talloc_free(entry->cm_store_private);
+			entry->cm_store_private = NULL;
+		} else {
+			cm_log(1, "Failed to remove file \"%s\": %s.\n",
+			       entry->cm_store_private, strerror(errno));
+		}
+	} else {
+		cm_log(3, "No file to remove for \"%s\".\n",
+		       entry->cm_id);
+		ret = 0;
+	}
+	return 0;
+}
+
+int
 cm_store_entry_save(struct cm_store_entry *entry)
 {
 	FILE *fp;
@@ -1217,6 +1241,29 @@ cm_store_ca_write(FILE *fp, struct cm_store_ca *ca)
 	}
 	if (ferror(fp)) {
 		return -1;
+	}
+	return 0;
+}
+
+int
+cm_store_ca_delete(struct cm_store_ca *ca)
+{
+	int ret;
+
+	if (ca->cm_store_private != NULL) {
+		ret = remove(ca->cm_store_private);
+		if (ret == 0) {
+			cm_log(3, "Removed file \"%s\".\n",
+			       ca->cm_store_private);
+			talloc_free(ca->cm_store_private);
+			ca->cm_store_private = NULL;
+		} else {
+			cm_log(1, "Failed to remove file \"%s\": %s.\n",
+			       ca->cm_store_private, strerror(errno));
+		}
+	} else {
+		cm_log(3, "No file to remove for \"%s\".\n", ca->cm_id);
+		ret = 0;
 	}
 	return 0;
 }
