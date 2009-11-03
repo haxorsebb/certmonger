@@ -59,6 +59,7 @@ exit 0
 %{_initddir}/certmonger
 %{_bindir}/*
 %{_sbindir}/certmonger
+%{_mandir}/man*/*
 %{_libexecdir}/%{name}
 %{_localstatedir}/lib/certmonger
 
