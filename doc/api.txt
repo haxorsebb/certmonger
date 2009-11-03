@@ -18,6 +18,7 @@ o object layout
     returns: array of string -> "NSSDB", "FILE"
   - add-request
     arguments: [dict{string,variant{string/array-of-string/number/boolean}}]
+               {"NICKNAME",string}
                {"KEY_TYPE","RSA"}
                {"KEY_SIZE",integer}
                {"KEY_STORAGE","NSSDB"/"FILE"/"NONE"}*

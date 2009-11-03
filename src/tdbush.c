@@ -523,6 +523,10 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	}
 	memset(new_entry, 0, sizeof(*new_entry));
 	/* Populate it with all of the information we have. */
+	param = cm_tdbusm_find_dict_entry(d, "NICKNAME", cm_tdbusm_dict_s);
+	if (param != NULL) {
+		new_entry->cm_id = talloc_strdup(new_entry, param->value.s);
+	}
 	param = cm_tdbusm_find_dict_entry(d, "KEY_SIZE", cm_tdbusm_dict_n);
 	if (param != NULL) {
 		new_entry->cm_key_type_default = FALSE;
