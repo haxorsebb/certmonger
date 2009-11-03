@@ -764,10 +764,20 @@ set_tracking(const char *argv0, const char *category,
 			certfile = talloc_strdup(globals.tctx, optarg);
 			break;
 		case 'r':
-			auto_renew++;
+			if (track) {
+				auto_renew++;
+			} else {
+				help(argv0, category);
+				return 1;
+			}
 			break;
 		case 'c':
-			ca = talloc_strdup(globals.tctx, optarg);
+			if (track) {
+				ca = talloc_strdup(globals.tctx, optarg);
+			} else {
+				help(argv0, category);
+				return 1;
+			}
 			break;
 		case 'i':
 			id = talloc_strdup(globals.tctx, optarg);
@@ -776,51 +786,87 @@ set_tracking(const char *argv0, const char *category,
 	}
 	if (id != NULL) {
 		request = find_request_by_name(globals.tctx, bus, id);
-		if (request == NULL) {
+		if ((request == NULL) && !track) {
 			printf(_("Unable to locate known certificate with "
 				 "the specified nickname.\n"));
-			help(argv0, category);
 			return 1;
 		}
 	} else {
 		request = find_request_by_storage(globals.tctx, bus,
 						  dbdir, nickname, token,
 						  certfile);
-	}
-	if (request != NULL) {
-		i = 0;
-		param[i].key = "TRACK";
-		param[i].value_type = cm_tdbusm_dict_b;
-		param[i].value.b = track;
-		params[i] = &param[i];
-		i++;
-		param[i].key = "RENEW";
-		param[i].value_type = cm_tdbusm_dict_b;
-		param[i].value.b = auto_renew > 0;
-		params[i] = &param[i];
-		i++;
-		params[i] = NULL;
-		req = prep_req(bus, request, CM_DBUS_REQUEST_INTERFACE,
-			       "modify");
-		if (cm_tdbusm_set_d(req, params) != 0) {
-			printf(_("Error setting request arguments.\n"));
-			exit(1);
-		}
-		rep = send_req(req);
-		if (cm_tdbusm_get_b(rep, globals.tctx, &b) != 0) {
-			printf(_("Error parsing server response.\n"));
-			exit(1);
-		}
-		dbus_message_unref(rep);
-		if (b) {
-			printf(_("Request \"%s\" modified.\n"), request);
-			return 0;
-		} else {
-			printf(_("Request \"%s\" could not be modified.\n"),
-			       request);
+		if ((request == NULL) && !track) {
+			printf(_("Unable to locate known certificate with "
+				 "the specified criteria.\n"));
 			return 1;
 		}
+	}
+	if (request != NULL) {
+		if (track) {
+			i = 0;
+			param[i].key = "TRACK";
+			param[i].value_type = cm_tdbusm_dict_b;
+			param[i].value.b = TRUE;
+			params[i] = &param[i];
+			i++;
+			param[i].key = "RENEW";
+			param[i].value_type = cm_tdbusm_dict_b;
+			param[i].value.b = auto_renew > 0;
+			params[i] = &param[i];
+			i++;
+			params[i] = NULL;
+			req = prep_req(bus, request, CM_DBUS_REQUEST_INTERFACE,
+				       "modify");
+			if (cm_tdbusm_set_d(req, params) != 0) {
+				printf(_("Error setting request arguments.\n"));
+				exit(1);
+			}
+			rep = send_req(req);
+			if (cm_tdbusm_get_b(rep, globals.tctx, &b) != 0) {
+				printf(_("Error parsing server response.\n"));
+				exit(1);
+			}
+			dbus_message_unref(rep);
+			if (b) {
+				printf(_("Request \"%s\" modified.\n"),
+				       request);
+				return 0;
+			} else {
+				printf(_("Request \"%s\" could not be "
+					 "modified.\n"),
+				       request);
+				return 1;
+			}
+		} else {
+			req = prep_req(bus, CM_DBUS_BASE_PATH,
+				       CM_DBUS_BASE_INTERFACE,
+				       "remove_request");
+			if (cm_tdbusm_set_p(req, request) != 0) {
+				printf(_("Error setting request arguments.\n"));
+				exit(1);
+			}
+			rep = send_req(req);
+			if (cm_tdbusm_get_b(rep, globals.tctx, &b) != 0) {
+				printf(_("Error parsing server response.\n"));
+				exit(1);
+			}
+			dbus_message_unref(rep);
+			if (b) {
+				printf(_("Request \"%s\" removed.\n"),
+				       request);
+				return 0;
+			} else {
+				printf(_("Request \"%s\" could not be "
+					 "removed.\n"),
+				       request);
+				return 1;
+			}
+		}
 	} else {
+		if (!track) {
+			printf(_("No matching request found.\n"));
+			return 0;
+		}
 		if (((dbdir != NULL) && (nickname == NULL)) ||
 		    ((dbdir == NULL) && (nickname != NULL))) {
 			printf(_("Database location or nickname specified "
@@ -1209,7 +1255,7 @@ help(const char *cmd, const char *category)
 		N_("Usage: %s list [options]\n"),
 		N_("* General options:\n"),
 #ifndef FORCE_CA
-		N_("  -c CA		list only requests and cert associated with this CA\n"),
+		N_("  -c CA		list only requests and certs associated with this CA\n"),
 #endif
 		N_("  -r		list only information about outstanding requests\n"),
 		N_("  -t		list only information about tracked certificates\n"),
