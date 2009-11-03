@@ -1087,11 +1087,12 @@ cm_store_entry_save(struct cm_store_entry *entry)
 		if (cm_store_entry_write(fp, entry) == 0) {
 			fclose(fp);
 			rename(path, (const char *) entry->cm_store_private);
+			return 0;
 		} else {
 			fclose(fp);
 			remove(path);
+			return -1;
 		}
-		return 0;
 	} else {
 		return -1;
 	}
