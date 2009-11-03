@@ -32,8 +32,8 @@ Set debugging level.  Higher values produce more debugging output.
 -p FILE
 Store the daemon's process ID in the named file.
 
-.SH SEE ALSO
-\fBgetcert\fR(1)
-
 .SH BUGS
 Bugs happen.  Please file tickets for any that you find at https://fedorahosted.org/certmonger/
+
+.SH SEE ALSO
+\fBgetcert\fR(1)
