@@ -1,4 +1,4 @@
-AC_INIT(certmonger,0.5)
+AC_INIT(certmonger,0.6)
 AM_INIT_AUTOMAKE([foreign])
 AM_MAINTAINER_MODE
 AC_PROG_CC
