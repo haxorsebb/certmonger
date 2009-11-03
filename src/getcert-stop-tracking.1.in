@@ -1,0 +1,52 @@
+.TH certmonger 1 "3 November 2009" "certmonger Manual"
+
+.SH NAME
+getcert
+
+.SH SYNOPSIS
+getcert stop-tracking [options]
+
+.SH DESCRIPTION
+Tells \fIcertmonger\fR to stop monitoring or attempting to obtain or
+refresh a certificate.
+
+.SH TRACKING OPTIONS
+.TP
+\fB\-i\fR NAME
+The certificate was tracked using the request with the specified nickname.
+If this option is not specified, some combination of \fB\-d\fR and
+\fB\-n\fR or \fB\-f\fR can be used to specify which certificate should
+henceforth be forgotten.
+
+.SH KEY AND CERTIFICATE STORAGE OPTIONS
+.TP
+\fB\-d\fR DIR
+The certificate is the one stored in the specified NSS database.
+.TP
+\fB\-n\fR NAME
+The certificate is the one which has this nickname.  Only valid with
+\fB\-d\fR.
+.TP
+\fB\-t\fR TOKEN
+If the NSS database has more than one token available, the certificate
+is stored in this token.  This argument only rarely needs to be
+specified.
+Only valid with \fB\-d\fR.
+.TP
+\fB\-f\fR FILE
+The certificate is or was to be stored in this file.
+.TP
+\fB\-k\fR FILE
+The private key is or was to be stored in this file.
+Only valid with \fB\-f\fR.
+
+.SH BUGS
+Please file tickets for any that you find at https://fedorahosted.org/certmonger/
+
+.SH SEE ALSO
+\fBcertmonger\fR(8)
+\fBgetcert\fR(1)
+\fBgetcert-list\fR(1)
+\fBgetcert-list-cas\fR(1)
+\fBgetcert-request\fR(1)
+\fBgetcert-start-tracking\fR(1)

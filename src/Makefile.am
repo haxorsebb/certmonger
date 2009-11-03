@@ -1,6 +1,6 @@
 EXTRA_DIST = ipa-submit-helper
 AM_CFLAGS = @TALLOC_CFLAGS@ @TEVENT_CFLAGS@ @DBUS_CFLAGS@ @KRB5_CFLAGS@
-man_MANS = certmonger.8 getcert.1 getcert-request.1 getcert-list.1 getcert-start-tracking.1
+man_MANS = certmonger.8 getcert.1 getcert-request.1 getcert-list.1 getcert-list-cas.1 getcert-start-tracking.1 getcert-stop-tracking.1 selfsign-getcert.1 ipa-getcert.1
 noinst_LIBRARIES = libcm.a libcm-o.a libcm-n.a
 libcm_a_SOURCES = \
 	certext.h \

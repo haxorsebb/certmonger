@@ -1,14 +1,14 @@
-.TH getcert 1 "3 November 2009" "certmonger Manual"
+.TH certmonger 1 "3 November 2009" "certmonger Manual"
 
 .SH NAME
 getcert
 
 .SH SYNOPSIS
-getcert request [options]
-getcert start-tracking [options]
-getcert stop-tracking [options]
-getcert list [options]
-getcert list-cas [options]
+ getcert request [options]
+ getcert start-tracking [options]
+ getcert stop-tracking [options]
+ getcert list [options]
+ getcert list-cas [options]
 
 .SH DESCRIPTION
 The \fIgetcert\fR tool issues requests to a @CM_DBUS_NAME@ service on
@@ -19,8 +19,8 @@ expiration, and optionally to refresh it when expiration nears, it can
 list the set of certificates that the service is already monitoring, or
 it can list the set of CAs that the service is capable of using.
 
-If no request is given as the first command-line argument, \fIgetcert\fR
-will print short usage information for each of these functions.
+If no command is given as the first command-line argument, \fIgetcert\fR
+will print short usage information for each of its functions.
 
 .SH COMMON ARGUMENTS
 All commands can take either the \fB-s\fR or \fB-S\fR arguments, which
@@ -33,8 +33,8 @@ Please file tickets for any that you find at https://fedorahosted.org/certmonger
 
 .SH SEE ALSO
 \fBcertmonger\fR(8)
+\fBgetcert-list\fR(1)
+\fBgetcert-list-cas\fR(1)
 \fBgetcert-request\fR(1)
 \fBgetcert-start-tracking\fR(1)
 \fBgetcert-stop-tracking\fR(1)
-\fBgetcert-list\fR(1)
-\fBgetcert-list-cas\fR(1)
