@@ -68,12 +68,12 @@ main(int argc, char **argv)
 			dofork = FALSE;
 			break;
 		default:
-			printf("Usage: certmonger [-s|-S] [-n] [-n [-d LEVEL]] "
+			printf("Usage: certmonger [-s|-S] [-n] [-d LEVEL] "
 			       "[-p FILE]\n"
 			       "\t-s         use session bus\n"
 			       "\t-S         use system bus\n"
 			       "\t-n         don't become a daemon\n"
-			       "\t-d LEVEL   set debugging level\n"
+			       "\t-d LEVEL   set debugging level (implies -n)\n"
 			       "\t-p FILE    write service PID to file\n");
 			exit(1);
 			break;
