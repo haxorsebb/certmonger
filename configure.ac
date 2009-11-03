@@ -126,4 +126,4 @@ AC_DEFINE_UNQUOTED(CM_IPA_HELPER_PATH,"$mylibexecdir/ipa-submit-helper",[Define 
 AM_CONDITIONAL(WITH_IPA,true)
 
 AC_CONFIG_COMMANDS(src_introspect_sh,[chmod +x src/introspect.sh])
-AC_OUTPUT(Makefile src/Makefile dbus/Makefile dbus/certmonger.conf src/certmonger.init src/introspect.sh)
+AC_OUTPUT(Makefile src/Makefile dbus/Makefile dbus/certmonger.conf src/certmonger.init src/introspect.sh src/certmonger.8)

@@ -1,0 +1,39 @@
+.TH certmonger 8 "3 November 2009" "certmonger Manual"
+
+.SH NAME
+certmonger
+
+.SH SYNOPSIS
+certmonger [-s|-S] [-n] [-d LEVEL] [-p FILE]
+
+.SH DESCRIPTION
+The \fIcertmonger\fR daemon monitors certificates for impending
+expiration, and can optionally refresh soon-to-be-expired certificates
+with the help of a CA.  If told to, it can drive the entire enrollment
+process from key generation through enrollment and refresh.
+
+The daemon provides a control interface via the \fI@CM_DBUS_NAME@\fR
+service, with which client tools such as \fBgetcert\fR(1) interact.
+
+.SH OPTIONS
+.TP
+-s
+Listen on the session bus rather than the system bus.
+.TP
+-s
+Listen on the system bus rather than the session bus.  This is the default.
+.TP
+-n
+Don't fork, and log messages to stderr rather than syslog.
+.TP
+-d LEVEL
+Set debugging level.  Higher values produce more debugging output.
+.TP
+-p FILE
+Store the daemon's process ID in the named file.
+
+.SH SEE ALSO
+\fBgetcert\fR(1)
+
+.SH BUGS
+Bugs happen.  Please file tickets for any that you find at https://fedorahosted.org/certmonger/
