@@ -191,7 +191,8 @@ cm_submit_e_done(struct cm_store_entry *entry, struct cm_submit_state *state)
 struct cm_submit_state *
 cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 			    struct cm_store_entry *entry,
-			    const char *input,
+			    const char *csr,
+			    const char *cookie,
 			    const char *operation)
 {
 	int outfds[2], execfds[2], i;
@@ -234,6 +235,11 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 				close(outfds[0]);
 				close(outfds[1]);
 
+				if (entry->cm_template_subject != NULL) {
+					setenv("CERTMONGER_REQ_SUBJECT",
+					       entry->cm_template_subject,
+					       1);
+				}
 				if (entry->cm_template_email != NULL) {
 					setenv("CERTMONGER_REQ_EMAIL",
 					       cm_submit_maybe_joinv(NULL, "\n",
@@ -253,7 +259,12 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 					       1);
 				}
 				setenv("CERTMONGER_OPERATION", operation, 1);
-				setenv("CERTMONGER_INPUT", input, 1);
+				if ((csr != NULL) && (strlen(csr) > 0)) {
+					setenv("CERTMONGER_CSR", csr, 1);
+				}
+				if ((cookie != NULL) && (strlen(cookie) > 0)) {
+					setenv("CERTMONGER_COOKIE", cookie, 1);
+				}
 				cm_log(1, "Running helper \"%s\".\n",
 				       ca->cm_ca_external_helper);
 				for (i = sysconf(_SC_OPEN_MAX) - 1;
@@ -318,10 +329,11 @@ cm_submit_e_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 {
 	if ((entry->cm_ca_cookie != NULL) &&
 	    (strlen(entry->cm_ca_cookie) > 0)) {
-		return cm_submit_e_start_or_resume(ca, entry,
+		return cm_submit_e_start_or_resume(ca, entry, entry->cm_csr,
 						   entry->cm_ca_cookie, "POLL");
 	} else {
-		return cm_submit_e_start_or_resume(ca, entry,
-						   entry->cm_csr, "SUBMIT");
+		return cm_submit_e_start_or_resume(ca, entry, entry->cm_csr,
+						   entry->cm_ca_cookie,
+						   "SUBMIT");
 	}
 }

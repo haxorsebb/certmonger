@@ -1,6 +1,6 @@
-The CA submission internal API is a bit haphazard, but as the way
-forward appears to be all about using external helpers anyway, that's
-probably forgivable.
+The CA submission internal API uses child processes to do the heavy
+lifting.  Self-signing is handled internally, but interaction with
+most CAs is done through external helpers.
 
 This is how it looks from the application's standpoint.
 
@@ -24,15 +24,21 @@ Polling submission results.
     * Done; move on to saving the certificate.
 
 An external helper has a few jobs, then:
-* Invoked either with "start" or "resume" as the value of the $TBD environment
-  value, with command-line arguments as specified in certmaster's configuration.
-* If in "start" mode, read PEM-formatted CSR on stdin.
+* Invoked either with "SUBMIT" or "POLL" as the value of the
+  $CERTMONGER_OPERATION environment value, with command-line arguments as
+  specified in certmaster's configuration.  Some of the data from the request
+  is also provided in the environment.
+  * $CERTMONGER_REQ_SUBJECT   -> requested subject name
+  * $CERTMONGER_REQ_EMAIL     -> email address subjectAltName values
+  * $CERTMONGER_REQ_HOSTNAME  -> DNS name subjectAltName values
+  * $CERTMONGER_REQ_PRINCIPAL -> Kerberos principal name subjectAltName values
+* If in "submit" mode, $CERTMONGER_CSR has as its value a PEM-formatted CSR.
   * Submit request to CA.
     * Issued         -> output PEM-formatted cert on stdout, exit with status 0.
     * Wait a bit     -> output CA cookie value on stdout, exit with status 1.
     * Rejected       -> exit with status 2.
     * Connect error  -> exit with status 3.
-* If in "resume" mode, read CA cookie value on stdin.
+* If in "poll" mode, $CERTMONGER_COOKIE has as its value a CA cookie value.
   * Poll CA for result of previously-started enrollment operation.
     * Issued         -> output PEM-formatted cert on stdout, exit with status 0.
     * Wait some more -> output CA cookie value on stdout, exit with status 1.

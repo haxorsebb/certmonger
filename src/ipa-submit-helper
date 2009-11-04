@@ -24,7 +24,7 @@ KRB5CCNAME="FILE:$ccfile"; export KRB5CCNAME
 kinit -k
 
 # Stash the input somewhere.
-echo "$CERTMONGER_INPUT" | awk '
+echo "$CERTMONGER_CSR" | awk '
 BEGIN {csr = ""; incsr = 0;}
 /^-----BEGIN/ { incsr = 1; next;}
 /^-----END/   { incsr = 0; next;}
