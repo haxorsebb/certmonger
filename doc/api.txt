@@ -1,22 +1,28 @@
-Note: use the NetworkManager API to get a feel for how these tend to be done:
+This is modeled after the NetworkManager API, which seems to expose quite a
+bit to unprivileged processes running on the desktop.
 http://people.redhat.com/dcbw/NetworkManager/NetworkManager%20DBUS%20API.txt
+
+Despite efforts, this may not match introspection data and the implementation,
+since they're only kept in agreement manually.  These may not all be
+implemented yet, but if you find a piece you need, please add a ticket or a
+patch to do so.  Eventually we'll get it all.
 
 The D-Bus API:
 o service name = org.fedorahosted.certmonger
 o object layout
   /org/fedorahosted/certmonger
   interface=org.fedorahosted.certmonger
-  - get-requests
+  - get_requests
     returns: array of paths -> object paths for requests
-  - get-defaults
+  - get_defaults
     returns: path -> object path for defaults object
-  - get-supported-key-types
+  - get_supported_key_types
     returns: array of string -> "RSA"
-  - get-supported-key-storage
+  - get_supported_key_storage
     returns: array of string -> "NSSDB", "FILE"
-  - get-supported-cert-storage
+  - get_supported_cert_storage
     returns: array of string -> "NSSDB", "FILE"
-  - add-request
+  - add_request
     arguments: [dict{string,variant{string/array-of-string/number/boolean}}]
                {"NICKNAME",string}
                {"KEY_TYPE","RSA"}
@@ -40,42 +46,42 @@ o object layout
 	       * = required values
     returns: boolean -> succeeded
              path (optional) -> object path for new request
-  - remove-request
+  - remove_request
     arguments: path -> object path for request
     returns: boolean -> succeeded
-  - get-known-cas
+  - get_known_cas
     returns: array of path -> object paths for known cas
-  - add-known-ca
+  - add_known_ca
     arguments: string -> ca nickname
                string -> external helper
                array of string (optional) -> known issuer names used by ca
     returns: boolean -> succeeded
-  - remove-known-ca
+  - remove_known_ca
     arguments: path -> object path for ca
     returns: boolean -> succeeded
   (objects whose names are returned by "get-requests" or "get-defaults")
   interface=org.fedorahosted.certmonger.request
-  - get-nickname
+  - get_nickname
     returns: string
-  - get-status
+  - get_status
     returns: string -> state name
              boolean -> i-am-stuck
-  - get-key-type-and-size
+  - get_key_type_and_size
     returns: string -> key algorithm
              number -> key size
-  - get-key-storage-info
+  - get_key_storage_info
     returns: string -> "file", "nssdb"
              string(required for "nssdb" or "file") -> filename (for "file"), or directory (for "nssdb")
              string(required for "nssdb") -> nssdb nickname
              string(optional) -> nssdb token name
-  - get-cert-storage-info
+  - get_cert_storage_info
     returns: string -> "file", "nssdb"
              string -> filename (for "file"), or directory (for "nssdb")
              string(required for "nssdb") -> nssdb nickname
              string(optional) -> nssdb token name
-  - get-cert-data
+  - get_cert_data
     returns: string -> certificate in PEM format
-  - get-cert-info
+  - get_cert_info
     returns: string -> issuer
              string -> serial number
              string -> subject
@@ -85,29 +91,29 @@ o object layout
              array of string -> principal names
              number -> key usage as bitfield based on RFC5280's values
              array of string -> oid values
-  - get-monitoring
+  - get_monitoring
     returns: boolean -> enabled?
-  - get-cert-last-checked
+  - get_cert_last_checked
     returns: number -> time of last check for expiration (unix time)
-  - get-notification-info
+  - get_notification_info
     returns: string -> method ("syslog", "email")
              string -> destination (log level or recipient)
-  - get-autorenew
+  - get_autorenew
     returns: boolean -> enabled?
-  - get-csr-info
+  - get_csr_info
     returns: string -> subject
              array of string -> email addresses
              array of string -> dns names
              array of string -> principal names
              number -> key usage as bitfield based on RFC5280's values
              array of string -> oid values
-  - get-csr-data
+  - get_csr_data
     returns: string -> signing request in PEM format
-  - get-ca
+  - get_ca
     returns: path(optional) -> path to CA object
-  - get-submitted-date
+  - get_submitted_date
     returns: number(optional) -> time of last submission to a CA (as time_t)
-  - get-submitted-cookie
+  - get_submitted_cookie
     returns: string(optional) -> CA-specific value
   - modify
     - requested subject name
@@ -127,7 +133,7 @@ o object layout
     - otherwise-not-known-ca
       arguments: string -> type of CA
                  string (optional) -> location of CA
-  - rekey-and-submit (for whatever reason) (?)
+  - rekey_and_submit (for whatever reason) (?)
     returns: boolean -> working-on-it?
   - resubmit (for requests that have been denied, generates a new csr)
     returns: boolean -> working-on-it?
@@ -135,17 +141,17 @@ o object layout
     returns: boolean -> working-on-it?
   (objects whose names are returned by "get-known-cas")
   interface=org.fedorahosted.certmonger.ca
-  - get-nickname
+  - get_nickname
     returns: string
-  - get-is-default
+  - get_is_default
     returns: boolean -> is-the-default-ca
-  - get-type
+  - get_type
     returns: string -> "EXTERNAL" if this is implemented by an external helper
-  - get-helper-location
+  - get_helper-location
     returns: string -> path to external helper
-  - get-serial
+  - get_serial
     returns: string -> hex value (optional)
-  - get-issuer-names
+  - get_issuer-names
     returns: array of string (optional) -> set of known issuer names
   - modify
     - nickname
