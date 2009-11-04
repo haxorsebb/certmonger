@@ -44,8 +44,6 @@ To-do:
     mutilating the queue directly (see doc/api.txt):
     * Set/reset PIN for encrypted key storage... maybe? (1 day)
       MUST
-  * Write some man pages.
-    MUST
   * Be able to use hashes other than the current hard-wired SHA256.
     MUST
   * Detect when network connections go up (it's not enough to depend on
