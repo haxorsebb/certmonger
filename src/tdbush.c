@@ -354,6 +354,24 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		}
 		break;
 	}
+	/* Check that the requested nickname will be unique. */
+	param = cm_tdbusm_find_dict_entry(d, "NICKNAME", cm_tdbusm_dict_s);
+	if (param != NULL) {
+		n_entries = cm_get_n_entries(ctx);
+		for (i = 0; i < n_entries; i++) {
+			e = cm_get_entry_by_index(ctx, i);
+			if (strcasecmp(e->cm_id, param->value.s) == 0) {
+				cm_log(1, "There is already a request with "
+				       "the nickname \"%s\".\n", e->cm_id);
+				talloc_free(parent);
+				return send_internal_base_duplicate_error(conn, msg,
+									  _("There is already a request with the nickname \"%s\"."),
+									  e->cm_id,
+									  "NICKNAME",
+									  NULL);
+			}
+		}
+	}
 	/* Check for a duplicate of another entry's certificate storage
 	 * information. */
 	n_entries = cm_get_n_entries(ctx);
