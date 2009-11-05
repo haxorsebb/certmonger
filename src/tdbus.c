@@ -431,7 +431,7 @@ cm_tdbus_filter(DBusConnection *conn, DBusMessage *dmessage, void *data)
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
 	/* Make sure it's a message we care about. */
-	cm_log(3, "message %p(%s)->%s:%s:%s.%s\n", tdb,
+	cm_log(4, "message %p(%s)->%s:%s:%s.%s\n", tdb,
 	       dbus_message_type_to_string(dbus_message_get_type(dmessage)),
 	       destination, path, interface ? interface : "", member);
 	switch (dbus_message_get_type(dmessage)) {

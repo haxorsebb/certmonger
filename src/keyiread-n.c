@@ -80,13 +80,14 @@ cm_keyiread_n_main(int fd, struct cm_store_entry *entry)
 	/* Open the database. */
 	error = NSS_InitReadWrite(entry->cm_key_storage_location);
 	if (error != SECSuccess) {
-		cm_log(1, "Unable to open NSS database.\n");
+		cm_log(1, "Unable to open NSS database '%s'.\n",
+		       entry->cm_key_storage_location);
 		_exit(1);
 	}
 	/* Allocate a memory pool. */
 	arena = PORT_NewArena(sizeof(double));
 	if (arena == NULL) {
-		cm_log(1, "Error opening database '%s'.\n",
+		cm_log(1, "Out of memory opening database '%s'.\n",
 		       entry->cm_key_storage_location);
 		if (NSS_Shutdown() != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
@@ -97,7 +98,7 @@ cm_keyiread_n_main(int fd, struct cm_store_entry *entry)
 	mech = 0;
 	slotlist = PK11_GetAllTokens(mech, PR_FALSE, PR_FALSE, NULL);
 	if (slotlist == NULL) {
-		cm_log(1, "Error locating slot used for key storage.\n");
+		cm_log(1, "Error locating token to be used for key storage.\n");
 		if (NSS_Shutdown() != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
@@ -124,7 +125,7 @@ cm_keyiread_n_main(int fd, struct cm_store_entry *entry)
 		}
 	}
 	if (slot == NULL) {
-		cm_log(1, "Error locating slot used for key storage.\n");
+		cm_log(1, "Error locating token to be used for key storage.\n");
 		PK11_FreeSlotList(slotlist);
 		if (NSS_Shutdown() != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");

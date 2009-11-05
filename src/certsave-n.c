@@ -60,7 +60,8 @@ cm_certsave_n_main(struct cm_store_entry *entry)
 	/* Open the database. */
 	error = NSS_InitReadWrite(entry->cm_cert_storage_location);
 	if (error != SECSuccess) {
-		cm_log(1, "Unable to open NSS database.\n");
+		cm_log(1, "Unable to open NSS database '%s'.\n",
+		       entry->cm_cert_storage_location);
 	} else {
 		/* Allocate a memory pool. */
 		arena = PORT_NewArena(sizeof(double));

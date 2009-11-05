@@ -92,7 +92,7 @@ cm_certread_n_main(int fd, struct cm_store_entry *entry)
 	mech = 0;
 	slotlist = PK11_GetAllTokens(mech, PR_FALSE, PR_FALSE, NULL);
 	if (slotlist == NULL) {
-		cm_log(1, "Error locating slot used for cert storage.\n");
+		cm_log(1, "Error getting list of tokens.\n");
 		if (NSS_Shutdown() != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
@@ -107,6 +107,8 @@ cm_certread_n_main(int fd, struct cm_store_entry *entry)
 		token = PK11_GetTokenName(sle->slot);
 		if (token != NULL) {
 			cm_log(3, "Found token '%s'.\n", token);
+		} else {
+			cm_log(3, "Found unnamed token.\n");
 		}
 		if ((entry->cm_cert_token == NULL) ||
 		    (strlen(entry->cm_cert_token) == 0) ||
@@ -119,7 +121,8 @@ cm_certread_n_main(int fd, struct cm_store_entry *entry)
 		}
 	}
 	if (slot == NULL) {
-		cm_log(1, "Error locating slot used for cert storage.\n");
+		cm_log(1,
+		       "Error locating token to be used for cert storage.\n");
 		PK11_FreeSlotList(slotlist);
 		if (NSS_Shutdown() != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
@@ -131,7 +134,12 @@ cm_certread_n_main(int fd, struct cm_store_entry *entry)
 	 * matches the specified nickname. */
 	certs = PK11_ListCertsInSlot(slot);
 	if (certs == NULL) {
-		cm_log(1, "Token contains no certificates!\n");
+		if (PK11_GetTokenName(slot) != NULL) {
+			cm_log(1, "Token \"%s\" contains no certificates!\n",
+			       PK11_GetTokenName(slot));
+		} else {
+			cm_log(1, "Unnamed token contains no certificates!\n");
+		}
 		PK11_FreeSlotList(slotlist);
 		if (NSS_Shutdown() != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
@@ -145,7 +153,8 @@ cm_certread_n_main(int fd, struct cm_store_entry *entry)
 	     node = CERT_LIST_NEXT(node)) {
 		if (strcmp(node->cert->nickname,
 			   entry->cm_cert_nickname) == 0) {
-			cm_log(3, "Located the certificate.\n");
+			cm_log(3, "Located the certificate \"%s\".\n",
+			       entry->cm_cert_nickname);
 			cert = node->cert;
 			break;
 		}
@@ -207,19 +216,10 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 	item.len = der_cert_len;
 	items = &item;
 	certs = NULL;
-	if (CERT_ImportCerts(CERT_GetDefaultCertDB(), 0,
-			     1, &items, &certs, PR_FALSE, PR_FALSE,
-			     "temp") != SECSuccess) {
-		cm_log(1, "Error decoding certificate.\n");
-		PORT_FreeArena(arena, PR_TRUE);
-		if (initialize) {
-			if (NSS_Shutdown() != SECSuccess) {
-				cm_log(1, "Error shutting down NSS.\n");
-			}
-		}
-		_exit(1);
-	}
-	if (certs == NULL) {
+	if ((CERT_ImportCerts(CERT_GetDefaultCertDB(), 0,
+			      1, &items, &certs, PR_FALSE, PR_FALSE,
+			      "temp") != SECSuccess) ||
+	    (certs == NULL)) {
 		cm_log(1, "Error decoding certificate.\n");
 		PORT_FreeArena(arena, PR_TRUE);
 		if (initialize) {
@@ -245,7 +245,7 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 	/* Subject name */
 	talloc_free(entry->cm_cert_subject);
 	entry->cm_cert_subject = talloc_strdup(entry, cert->subjectName);
-	/* Subject Public Key Info, encoded */
+	/* Subject Public Key Info, encoded into a blob. */
 	talloc_free(entry->cm_cert_spki);
 	if (SEC_ASN1EncodeItem(arena, items, &cert->subjectPublicKeyInfo,
 			       CERT_SubjectPublicKeyInfoTemplate) != items) {

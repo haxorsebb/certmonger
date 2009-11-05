@@ -112,8 +112,8 @@ cm_keygen_o_main(int fd, struct cm_store_entry *entry)
 		fclose(fp);
 		break;
 	default:
-		fprintf(status, "Unknown key type.\n");
-		cm_log(1, "Unknown key type.\n");
+		fprintf(status, "Unknown or unsupported key type.\n");
+		cm_log(1, "Unknown or unsupported key type.\n");
 		_exit(2);
 		break;
 	}

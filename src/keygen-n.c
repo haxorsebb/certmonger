@@ -96,16 +96,16 @@ cm_keygen_n_main(int fd, struct cm_store_entry *entry)
 		mech = CKM_RSA_PKCS_KEY_PAIR_GEN;
 		break;
 	default:
-		fprintf(status, "Unknown key type.\n");
-		cm_log(1, "Unknown key type.\n");
+		fprintf(status, "Unknown or unsupported key type.\n");
+		cm_log(1, "Unknown or unsupported key type.\n");
 		_exit(2);
 		break;
 	}
 	/* Find the tokens that we might use for key generation. */
 	slotlist = PK11_GetAllTokens(mech, PR_TRUE, PR_FALSE, NULL);
 	if (slotlist == NULL) {
-		fprintf(status, "Error locating slot for key generation.\n");
-		cm_log(1, "Error locating slot for key generation.\n");
+		fprintf(status, "Error locating token for key generation.\n");
+		cm_log(1, "Error locating token for key generation.\n");
 		_exit(2);
 	}
 	/* Walk the list looking for the requested slot, or the first one if
@@ -129,8 +129,8 @@ cm_keygen_n_main(int fd, struct cm_store_entry *entry)
 		}
 	}
 	if (slot == NULL) {
-		fprintf(status, "Error locating slot for key generation.\n");
-		cm_log(1, "Error locating slot for key generation.\n");
+		fprintf(status, "Error locating token for key generation.\n");
+		cm_log(1, "Error locating token for key generation.\n");
 		_exit(2);
 	}
 	/* Select the optimum key size. */

@@ -83,16 +83,17 @@ cm_keyiread_o_main(int fd, struct cm_store_entry *entry)
 		alg = "";
 		size = 0;
 		if (pkey != NULL) {
-			cm_log(3, "Key is of type %d.\n",
-			       EVP_PKEY_type(pkey->type));
 			switch (EVP_PKEY_type(pkey->type)) {
 			case EVP_PKEY_RSA:
+				cm_log(3, "Key is an RSA key.\n");
 				alg = "RSA";
 				break;
 			case EVP_PKEY_DSA:
+				cm_log(3, "Key is a DSA key.\n");
 				alg = "DSA";
 				break;
 			default:
+				cm_log(3, "Key is for an unknown algorithm.\n");
 				alg = "";
 				break;
 			}

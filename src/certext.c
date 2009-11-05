@@ -419,7 +419,10 @@ cm_certext_read_eku(struct cm_store_entry *entry, PLArenaPool *arena,
 									 -1,
 									 arena)),
 					   p) != 0) {
-					cm_log(1, "Internal error.\n");
+					cm_log(1, "Internal error: converting "
+					       "string to binary OID to string "
+					       "didn't produce the expected "
+					       "result.\n");
 				}
 #endif
 				s = talloc_asprintf(entry, "%s,%s",
@@ -987,19 +990,19 @@ cm_certext_read_extensions(struct cm_store_entry *entry, PLArenaPool *arena,
 	ku_oid = SECOID_FindOIDByTag(SEC_OID_X509_KEY_USAGE);
 	if (ku_oid == NULL) {
 		cm_log(1, "Internal library error: unable to look up OID for "
-		       "key usage extension.\n");
+		       "certificate key usage extension.\n");
 		return;
 	}
 	eku_oid = SECOID_FindOIDByTag(SEC_OID_X509_EXT_KEY_USAGE);
 	if (eku_oid == NULL) {
 		cm_log(1, "Internal library error: unable to look up OID for "
-		       "extended key usage extension.\n");
+		       "certificate extended key usage extension.\n");
 		return;
 	}
 	san_oid = SECOID_FindOIDByTag(SEC_OID_X509_SUBJECT_ALT_NAME);
 	if (san_oid == NULL) {
 		cm_log(1, "Internal library error: unable to look up OID for "
-		       "subject alternative name extension.\n");
+		       "certificate subject alternative name extension.\n");
 		return;
 	}
 	for (i = 0; extensions[i] != NULL; i++) {

@@ -198,14 +198,14 @@ cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
 		mech = CKM_RSA_PKCS_KEY_PAIR_GEN;
 		break;
 	default:
-		cm_log(1, "Unknown key type.\n");
+		cm_log(1, "Unknown or unsupported key type.\n");
 		_exit(2);
 		break;
 	}
 	/* Find the token that contains our key pair. */
 	slotlist = PK11_GetAllTokens(mech, PR_TRUE, PR_FALSE, NULL);
 	if (slotlist == NULL) {
-		cm_log(1, "Error locating slot for CSR generation.\n");
+		cm_log(1, "Error locating tokens for holding keys.\n");
 		_exit(2);
 	}
 	/* Walk the list looking for the requested slot, or the first one if
@@ -217,6 +217,8 @@ cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
 		token = PK11_GetTokenName(sle->slot);
 		if (token != NULL) {
 			cm_log(3, "Found token '%s'.\n", token);
+		} else {
+			cm_log(3, "Found unnamed token.\n");
 		}
 		if ((entry->cm_key_token == NULL) ||
 		    (strlen(entry->cm_key_token) == 0) ||
@@ -229,7 +231,7 @@ cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
 		}
 	}
 	if (slot == NULL) {
-		cm_log(1, "Error locating slot for key generation.\n");
+		cm_log(1, "Error locating token for holding keys.\n");
 		PK11_FreeSlotList(slotlist);
 		error = NSS_Shutdown();
 		if (error != SECSuccess) {
@@ -241,7 +243,8 @@ cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
 	if (PK11_NeedLogin(slot) || !PK11_IsFriendly(slot)) {
 		error = PK11_Authenticate(slot, PR_TRUE, NULL);
 		if (error != SECSuccess) {
-			cm_log(1, "Error authenticating to key store.\n");
+			cm_log(1, "Error authenticating to token \"%s\".\n",
+		               PK11_GetTokenName(slot));
 			PK11_FreeSlotList(slotlist);
 			error = NSS_Shutdown();
 			if (error != SECSuccess) {
@@ -253,7 +256,8 @@ cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
 	/* Locate the key pair. */
 	privkeys = PK11_ListPrivKeysInSlot(slot, entry->cm_key_nickname, NULL);
 	if (privkeys == NULL) {
-		cm_log(1, "Error finding matching key pairs.\n");
+		cm_log(1, "Error finding key pairs named \"%s\" in \"%s\".\n",
+		       entry->cm_key_nickname, PK11_GetTokenName(slot));
 		PK11_FreeSlotList(slotlist);
 		error = NSS_Shutdown();
 		if (error != SECSuccess) {
@@ -279,7 +283,7 @@ cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
 		}
 	}
 	if (privkey == NULL) {
-		cm_log(1, "Error finding designated key pair.\n");
+		cm_log(1, "Error finding key pair \"%s\".\n");
 		SECKEY_DestroyPrivateKeyList(privkeys);
 		PK11_FreeSlotList(slotlist);
 		error = NSS_Shutdown();
@@ -319,9 +323,9 @@ cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
 	if (spki == NULL) {
 		ec = PR_GetError();
 		if (ec == 0) {
-			cm_log(1, "Error building spki.\n");
+			cm_log(1, "Error building spki value.\n");
 		} else {
-			cm_log(1, "Error building spki: %s.\n",
+			cm_log(1, "Error building spki value: %s.\n",
 			       PR_ErrorToString(ec, PR_LANGUAGE_I_DEFAULT));
 		}
 		SECKEY_DestroyPublicKey(pubkey);
@@ -338,9 +342,9 @@ cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
 	if (req == NULL) {
 		ec = PR_GetError();
 		if (ec == 0) {
-			cm_log(1, "Error building request.\n");
+			cm_log(1, "Error building certificate request.\n");
 		} else {
-			cm_log(1, "Error building request: %s.\n",
+			cm_log(1, "Error building certificate request: %s.\n",
 			       PR_ErrorToString(ec, PR_LANGUAGE_I_DEFAULT));
 		}
 		SECKEY_DestroyPublicKey(pubkey);
@@ -358,7 +362,7 @@ cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
 	if (SEC_ASN1EncodeInteger(arena, &req->version,
 				  SEC_CERTIFICATE_REQUEST_VERSION) !=
 	    &req->version) {
-		cm_log(1, "Error encoding request version.\n");
+		cm_log(1, "Error encoding certificate request version.\n");
 	}
 	/* Tack on requested values for various extensions. */
 	req->attributes = NULL;
@@ -372,7 +376,7 @@ cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
 	if (SEC_ASN1EncodeItem(arena, &ereq, req,
 			       CERT_CertificateRequestTemplate) !=
 	    &ereq) {
-		cm_log(1, "Error encoding request.\n");
+		cm_log(1, "Error encoding certificate request.\n");
 		SECKEY_DestroyPublicKey(pubkey);
 		SECKEY_DestroyPrivateKeyList(privkeys);
 		PK11_FreeSlotList(slotlist);
@@ -389,7 +393,8 @@ cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
 	sreq.data = ereq;
 	if (SECOID_SetAlgorithmID(arena, &sreq.signatureAlgorithm,
 				  sigoid->offset, NULL) != SECSuccess) {
-		cm_log(1, "Error setting up algorithm ID.\n");
+		cm_log(1, "Error setting up algorithm ID for signing the "
+		       "certificate request.\n");
 		SECKEY_DestroyPublicKey(pubkey);
 		SECKEY_DestroyPrivateKeyList(privkeys);
 		PK11_FreeSlotList(slotlist);
@@ -402,7 +407,8 @@ cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
 	}
 	if (SEC_SignData(&sreq.signature, sreq.data.data, sreq.data.len,
 			 privkey, sigoid->offset) != SECSuccess) {
-		cm_log(1, "Error signing request.\n");
+		cm_log(1, "Error signing certificate request with the client's "
+		       "key.\n");
 		SECKEY_DestroyPublicKey(pubkey);
 		SECKEY_DestroyPrivateKeyList(privkeys);
 		PK11_FreeSlotList(slotlist);
@@ -418,7 +424,7 @@ cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
 	if (SEC_ASN1EncodeItem(arena, &esreq, &sreq,
 			       CERT_SignedDataTemplate) !=
 	    &esreq) {
-		cm_log(1, "Error encoding signed request.\n");
+		cm_log(1, "Error encoding signed certificate request.\n");
 		SECKEY_DestroyPublicKey(pubkey);
 		SECKEY_DestroyPrivateKeyList(privkeys);
 		PK11_FreeSlotList(slotlist);

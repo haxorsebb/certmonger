@@ -113,7 +113,7 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry)
 	/* Find the token that contains our key pair. */
 	slotlist = PK11_GetAllTokens(mech, PR_TRUE, PR_FALSE, NULL);
 	if (slotlist == NULL) {
-		cm_log(1, "Error locating slot for CSR generation.\n");
+		cm_log(1, "Error locating token for private key.\n");
 		_exit(2);
 	}
 	/* Walk the list looking for the requested slot, or the first one if
@@ -137,7 +137,7 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry)
 		}
 	}
 	if (slot == NULL) {
-		cm_log(1, "Error locating slot for key generation.\n");
+		cm_log(1, "Error locating token for key storage.\n");
 		PK11_FreeSlotList(slotlist);
 		error = NSS_Shutdown();
 		if (error != SECSuccess) {
@@ -272,7 +272,8 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry)
 	/* Populate the certificate's fields. */
 	serial = ca->cm_ca_internal_serial;
 	if (serial != NULL) {
-		cm_log(1, "Setting certificate serial number \"%s\".\n", serial);
+		cm_log(1, "Setting certificate serial number \"%s\".\n",
+		       serial);
 		serial_length = strlen(serial) / 2;
 		ucert->serialNumber.data = PORT_ArenaZAlloc(arena,
 							    serial_length);

@@ -56,7 +56,9 @@ cm_certsave_o_main(struct cm_store_entry *entry)
 			pem = fopen(entry->cm_cert_storage_location, "w");
 			if (pem != NULL) {
 				if (PEM_write_X509(pem, cert) == 0) {
-					cm_log(1, "Error saving cert.\n");
+					cm_log(1, "Error saving certificate "
+					       "to '%s'.\n",
+					       entry->cm_cert_storage_location);
 				} else {
 					status = 0;
 				}
