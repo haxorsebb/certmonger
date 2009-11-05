@@ -38,6 +38,7 @@
 
 #include "keyiread.h"
 #include "keyiread-int.h"
+#include "keyiread-n.h"
 #include "log.h"
 #include "store.h"
 #include "store-int.h"
@@ -53,11 +54,10 @@ struct cm_keyiread_state {
 	int fd, count, status;
 };
 
-static void
-cm_keyiread_n_main(int fd, struct cm_store_entry *entry)
+SECKEYPrivateKey *
+cm_keyiread_n_get_private_key(struct cm_store_entry *entry)
 {
-	int status = 1, size;
-	const char *token, *alg;
+	const char *token;
 	PLArenaPool *arena;
 	SECStatus error;
 	PK11SlotList *slotlist;
@@ -65,18 +65,11 @@ cm_keyiread_n_main(int fd, struct cm_store_entry *entry)
 	PK11SlotInfo *slot;
 	SECKEYPrivateKeyList *keys;
 	SECKEYPrivateKeyListNode *knode;
-	SECKEYPrivateKey *key;
-	SECKEYPublicKey *pubkey;
+	SECKEYPrivateKey *key, *ret;
 	CK_MECHANISM_TYPE mech;
 	CERTCertList *certs;
 	CERTCertListNode *cnode;
-	FILE *fp;
-	/* Open the status descriptor for stdio. */
-	fp = fdopen(fd, "w");
-	if (fp == NULL) {
-		cm_log(1, "Unable to initialize I/O.\n");
-		_exit(1);
-	}
+
 	/* Open the database. */
 	error = NSS_InitReadWrite(entry->cm_key_storage_location);
 	if (error != SECSuccess) {
@@ -84,6 +77,7 @@ cm_keyiread_n_main(int fd, struct cm_store_entry *entry)
 		       entry->cm_key_storage_location);
 		_exit(1);
 	}
+
 	/* Allocate a memory pool. */
 	arena = PORT_NewArena(sizeof(double));
 	if (arena == NULL) {
@@ -94,6 +88,7 @@ cm_keyiread_n_main(int fd, struct cm_store_entry *entry)
 		}
 		_exit(ENOMEM);
 	}
+
 	/* Find the tokens that we might use for key storage. */
 	mech = 0;
 	slotlist = PK11_GetAllTokens(mech, PR_FALSE, PR_FALSE, NULL);
@@ -104,7 +99,8 @@ cm_keyiread_n_main(int fd, struct cm_store_entry *entry)
 		}
 		_exit(2);
 	}
-	/* Walk the list looking for the requested slot, or the first one if
+
+	/* Walk the list looking for the requested token, or the first one if
 	 * none was requested. */
 	slot = NULL;
 	for (sle = slotlist->head;
@@ -125,7 +121,7 @@ cm_keyiread_n_main(int fd, struct cm_store_entry *entry)
 		}
 	}
 	if (slot == NULL) {
-		cm_log(1, "Error locating token to be used for key storage.\n");
+		cm_log(1, "Error locating token used for key storage.\n");
 		PK11_FreeSlotList(slotlist);
 		if (NSS_Shutdown() != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
@@ -133,23 +129,27 @@ cm_keyiread_n_main(int fd, struct cm_store_entry *entry)
 		_exit(2);
 	}
 
-	/* Walk the list of private keys in the slot, looking at each one which
+	/* Walk the list of private keys in the token, looking at each one which
 	 * matches the specified nickname. */
 	keys = PK11_ListPrivKeysInSlot(slot, entry->cm_key_nickname, NULL);
-	certs = NULL;
+	certs = PK11_ListCertsInSlot(slot);
 	if (keys == NULL) {
 		cm_log(2, "Token contains no private keys with the specified "
 		       "nickname!\n");
-		certs = PK11_ListCertsInSlot(slot);
 		if (certs == NULL) {
 			cm_log(2, "Token contains no certificates, either!\n");
+			CERT_DestroyCertList(certs);
 			PK11_FreeSlotList(slotlist);
+			PORT_FreeArena(arena, PR_TRUE);
 			if (NSS_Shutdown() != SECSuccess) {
 				cm_log(1, "Error shutting down NSS.\n");
 			}
 			_exit(2);
 		}
 	}
+
+	/* If we got a list of keys with matching nicknames, the first entry's
+	 * good enough, right? */
 	key = NULL;
 	if (keys != NULL) {
 		for (knode = PRIVKEY_LIST_HEAD(keys);
@@ -161,48 +161,78 @@ cm_keyiread_n_main(int fd, struct cm_store_entry *entry)
 			break;
 		}
 	}
-	if (key == NULL) {
-		if (certs == NULL) {
-			certs = PK11_ListCertsInSlot(slot);
-		}
-		if (certs != NULL) {
-			for (cnode = CERT_LIST_HEAD(certs);
-			     !CERT_LIST_EMPTY(certs) &&
-			     !CERT_LIST_END(cnode, certs);
-			     cnode = CERT_LIST_NEXT(cnode)) {
-				if (strcmp(cnode->cert->nickname,
-					   entry->cm_cert_nickname) == 0) {
-					cm_log(3, "Located a certificate with "
-					       "the nickname \"%s\".\n");
-					key = PK11_FindPrivateKeyFromCert(slot,
-									  cnode->cert,
-									  NULL);
-					if (key != NULL) {
-						cm_log(3, "Located its "
-						       "private key.\n");
-						break;
-					}
+	if ((key == NULL) && (certs != NULL)) {
+		/* No key by that nickname.  Search for certs with that
+		 * nickname which have private keys associated with them. */
+		for (cnode = CERT_LIST_HEAD(certs);
+		     !CERT_LIST_EMPTY(certs) &&
+		     !CERT_LIST_END(cnode, certs);
+		     cnode = CERT_LIST_NEXT(cnode)) {
+			if (strcmp(cnode->cert->nickname,
+				   entry->cm_cert_nickname) == 0) {
+				cm_log(3, "Located a certificate with "
+				       "the nickname \"%s\".\n");
+				key = PK11_FindPrivateKeyFromCert(slot,
+								  cnode->cert,
+								  NULL);
+				if (key != NULL) {
+					cm_log(3, "Located its private key.\n");
+					break;
 				}
 			}
 		}
 	}
+	/* If we found a key, take a copy. */
+	if (key != NULL) {
+		ret = SECKEY_CopyPrivateKey(key);
+	} else {
+		ret = NULL;
+	}
+	/* Clean up and return. */
 	if (certs != NULL) {
 		CERT_DestroyCertList(certs);
 	}
+	if (keys != NULL) {
+		SECKEY_DestroyPrivateKeyList(keys);
+	}
+	PORT_FreeArena(arena, PR_TRUE);
+	PK11_FreeSlotList(slotlist);
+	return ret;
+}
+
+static void
+cm_keyiread_n_main(int fd, struct cm_store_entry *entry)
+{
+	SECKEYPrivateKey *key;
+	SECKEYPublicKey *pubkey;
+	const char *alg;
+	int status = 1, size;
+	FILE *fp;
+
+	/* Open the status descriptor for stdio. */
+	fp = fdopen(fd, "w");
+	if (fp == NULL) {
+		cm_log(1, "Unable to initialize I/O.\n");
+		_exit(1);
+	}
+
+	/* Read the key. */
+	key = cm_keyiread_n_get_private_key(entry);
 	alg = "";
 	size = 0;
 	if (key != NULL) {
-		cm_log(3, "Key is of type %d.\n",
-		       SECKEY_GetPrivateKeyType(key));
 		switch (SECKEY_GetPrivateKeyType(key)) {
 		case rsaKey:
+			cm_log(3, "Key is an RSA key.\n");
 			alg = "RSA";
 			break;
 		case dsaKey:
+			cm_log(3, "Key is a DSA key.\n");
 			alg = "DSA";
 			break;
 		case nullKey:
 		default:
+			cm_log(3, "Key is of an unknown type.\n");
 			break;
 		}
 		if (strlen(alg) > 0) {
@@ -218,13 +248,9 @@ cm_keyiread_n_main(int fd, struct cm_store_entry *entry)
 				       "to public key.\n");
 			}
 		}
+		SECKEY_DestroyPrivateKey(key);
 	}
 	fclose(fp);
-	PORT_FreeArena(arena, PR_TRUE);
-	if (keys != NULL) {
-		SECKEY_DestroyPrivateKeyList(keys);
-	}
-	PK11_FreeSlotList(slotlist);
 	if (NSS_Shutdown() != SECSuccess) {
 		cm_log(1, "Error shutting down NSS.\n");
 	}
