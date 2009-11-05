@@ -18,6 +18,7 @@
 #ifndef cmkeyireadn_h
 #define cmkeyireadn_h
 
-SECKEYPrivateKey *cm_keyiread_n_get_private_key(struct cm_store_entry *entry);
+SECKEYPrivateKey *cm_keyiread_n_get_private_key(struct cm_store_entry *entry,
+						int readwrite);
 
 #endif

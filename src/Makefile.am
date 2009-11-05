@@ -63,6 +63,7 @@ libcm_n_a_SOURCES += \
 	csrgen-n.c \
 	keygen-n.c \
 	keyiread-n.c \
+	keyiread-n.h \
 	submit-sn.c
 libcm_n_a_CFLAGS = @NSS_CFLAGS@
 libcm_a_LIBADD = $(libcm_o_a_OBJECTS) $(libcm_n_a_OBJECTS)

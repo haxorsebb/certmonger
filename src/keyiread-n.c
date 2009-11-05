@@ -55,7 +55,7 @@ struct cm_keyiread_state {
 };
 
 SECKEYPrivateKey *
-cm_keyiread_n_get_private_key(struct cm_store_entry *entry)
+cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 {
 	const char *token;
 	PLArenaPool *arena;
@@ -71,7 +71,8 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry)
 	CERTCertListNode *cnode;
 
 	/* Open the database. */
-	error = NSS_InitReadWrite(entry->cm_key_storage_location);
+	error = readwrite ? NSS_InitReadWrite(entry->cm_key_storage_location) :
+			    NSS_Init(entry->cm_key_storage_location);
 	if (error != SECSuccess) {
 		cm_log(1, "Unable to open NSS database '%s'.\n",
 		       entry->cm_key_storage_location);
@@ -217,7 +218,7 @@ cm_keyiread_n_main(int fd, struct cm_store_entry *entry)
 	}
 
 	/* Read the key. */
-	key = cm_keyiread_n_get_private_key(entry);
+	key = cm_keyiread_n_get_private_key(entry, 0);
 	alg = "";
 	size = 0;
 	if (key != NULL) {
