@@ -41,6 +41,7 @@
 #include "csrgen.h"
 #include "csrgen-int.h"
 #include "keygen.h"
+#include "keyiread-n.h"
 #include "log.h"
 #include "store.h"
 #include "store-int.h"
@@ -148,20 +149,12 @@ cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
 {
 	FILE *status;
 	SECStatus error;
-	SECKEYPrivateKeyList *privkeys;
-	SECKEYPrivateKeyListNode *node;
 	SECKEYPrivateKey *privkey;
 	SECKEYPublicKey *pubkey;
-	CK_MECHANISM_TYPE mech;
-	PK11SlotList *slotlist;
-	PK11SlotListElement *sle;
-	PK11SlotInfo *slot;
-	enum cm_key_algorithm cm_key_algorithm;
 	CERTSubjectPublicKeyInfo *spki;
 	CERTCertificateRequest *req;
 	CERTSignedData sreq;
 	CERTName *name;
-	const char *token, *keyname;
 	PLArenaPool *arena;
 	SECItem ereq, esreq, *attrs;
 	PRErrorCode ec;
@@ -179,120 +172,18 @@ cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
 		cm_log(1, "Internal error: %s.\n", strerror(errno));
 		_exit(1);
 	}
-	/* Start up NSS and open the database. */
-	error = NSS_Init(entry->cm_key_storage_location);
-	if (error != SECSuccess) {
-		cm_log(1, "Error opening database '%s'.\n",
-		       entry->cm_key_storage_location);
-		_exit(1);
-	}
-	/* Handle defaults. */
-	if (entry->cm_key_type_default) {
-		cm_key_algorithm = CM_DEFAULT_PUBKEY_TYPE;
-	} else {
-		cm_key_algorithm = entry->cm_key_type.cm_key_algorithm;
-	}
-	/* Convert our key type to a mechanism. */
-	switch (cm_key_algorithm) {
-	case cm_key_rsa:
-		mech = CKM_RSA_PKCS_KEY_PAIR_GEN;
-		break;
-	default:
-		cm_log(1, "Unknown or unsupported key type.\n");
-		_exit(2);
-		break;
-	}
-	/* Find the token that contains our key pair. */
-	slotlist = PK11_GetAllTokens(mech, PR_TRUE, PR_FALSE, NULL);
-	if (slotlist == NULL) {
-		cm_log(1, "Error locating tokens for holding keys.\n");
-		_exit(2);
-	}
-	/* Walk the list looking for the requested slot, or the first one if
-	 * none was requested. */
-	slot = NULL;
-	for (sle = slotlist->head;
-	     ((sle != NULL) && (sle->slot != NULL));
-	     sle = sle->next) {
-		token = PK11_GetTokenName(sle->slot);
-		if (token != NULL) {
-			cm_log(3, "Found token '%s'.\n", token);
-		} else {
-			cm_log(3, "Found unnamed token.\n");
-		}
-		if ((entry->cm_key_token == NULL) ||
-		    (strlen(entry->cm_key_token) == 0) ||
-		    (strcmp(entry->cm_key_token, token) == 0)) {
-			slot = sle->slot;
-			break;
-		}
-		if (sle == slotlist->tail) {
-			break;
-		}
-	}
-	if (slot == NULL) {
-		cm_log(1, "Error locating token for holding keys.\n");
-		PK11_FreeSlotList(slotlist);
-		error = NSS_Shutdown();
-		if (error != SECSuccess) {
-			cm_log(1, "Error shutting down NSS.\n");
-		}
-		_exit(2);
-	}
-	/* Log in to the database, if we can. */
-	if (PK11_NeedLogin(slot) || !PK11_IsFriendly(slot)) {
-		error = PK11_Authenticate(slot, PR_TRUE, NULL);
-		if (error != SECSuccess) {
-			cm_log(1, "Error authenticating to token \"%s\".\n",
-		               PK11_GetTokenName(slot));
-			PK11_FreeSlotList(slotlist);
-			error = NSS_Shutdown();
-			if (error != SECSuccess) {
-				cm_log(1, "Error shutting down NSS.\n");
-			}
-			_exit(2);
-		}
-	}
-	/* Locate the key pair. */
-	privkeys = PK11_ListPrivKeysInSlot(slot, entry->cm_key_nickname, NULL);
-	if (privkeys == NULL) {
-		cm_log(1, "Error finding key pairs named \"%s\" in \"%s\".\n",
-		       entry->cm_key_nickname, PK11_GetTokenName(slot));
-		PK11_FreeSlotList(slotlist);
-		error = NSS_Shutdown();
-		if (error != SECSuccess) {
-			cm_log(1, "Error shutting down NSS.\n");
-		}
-		_exit(2);
-	}
-	privkey = NULL;
-	if (!PR_CLIST_IS_EMPTY(&(privkeys->list))) {
-		for (node = PRIVKEY_LIST_HEAD(privkeys);
-		     ((node != NULL) && (node->key != NULL));
-		     node = PRIVKEY_LIST_NEXT(node)) {
-			keyname = PK11_GetPrivateKeyNickname(node->key);
-			if ((entry->cm_key_nickname == NULL) ||
-			    (strlen(entry->cm_key_nickname) == 0) ||
-			    (strcmp(entry->cm_key_nickname, keyname) == 0)) {
-				privkey = node->key;
-				break;
-			}
-			if (PRIVKEY_LIST_END(node, privkeys)) {
-				break;
-			}
-		}
-	}
+
+	/* Start up NSS and find the key pair. */
+	privkey = cm_keyiread_n_get_private_key(entry, 0);
 	if (privkey == NULL) {
 		cm_log(1, "Error finding key pair \"%s\".\n");
-		SECKEY_DestroyPrivateKeyList(privkeys);
-		PK11_FreeSlotList(slotlist);
 		error = NSS_Shutdown();
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
 		_exit(2);
 	}
-	/* Create the request. */
+	/* Select a subject name. */
 	if (!entry->cm_template_default &&
 	    (entry->cm_template_subject != NULL) &&
 	    (strlen(entry->cm_template_subject) != 0)) {
@@ -300,6 +191,7 @@ cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
 	} else {
 		name = CERT_AsciiToName("CN=localhost");
 	}
+	/* Find the public key. */
 	pubkey = SECKEY_ConvertToPublicKey(privkey);
 	if (pubkey == NULL) {
 		ec = PR_GetError();
@@ -310,8 +202,7 @@ cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
 			       PR_ErrorToString(ec, PR_LANGUAGE_I_DEFAULT));
 		}
 		SECKEY_DestroyPublicKey(pubkey);
-		SECKEY_DestroyPrivateKeyList(privkeys);
-		PK11_FreeSlotList(slotlist);
+		SECKEY_DestroyPrivateKey(privkey);
 		error = NSS_Shutdown();
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
@@ -319,6 +210,7 @@ cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
 		fclose(status);
 		_exit(2);
 	}
+	/* Generate a subjectPublicKeyInfo. */
 	spki = SECKEY_CreateSubjectPublicKeyInfo(pubkey);
 	if (spki == NULL) {
 		ec = PR_GetError();
@@ -329,8 +221,7 @@ cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
 			       PR_ErrorToString(ec, PR_LANGUAGE_I_DEFAULT));
 		}
 		SECKEY_DestroyPublicKey(pubkey);
-		SECKEY_DestroyPrivateKeyList(privkeys);
-		PK11_FreeSlotList(slotlist);
+		SECKEY_DestroyPrivateKey(privkey);
 		error = NSS_Shutdown();
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
@@ -338,6 +229,7 @@ cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
 		fclose(status);
 		_exit(2);
 	}
+	/* Build the request. */
 	req = CERT_CreateCertificateRequest(name, spki, NULL);
 	if (req == NULL) {
 		ec = PR_GetError();
@@ -348,8 +240,7 @@ cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
 			       PR_ErrorToString(ec, PR_LANGUAGE_I_DEFAULT));
 		}
 		SECKEY_DestroyPublicKey(pubkey);
-		SECKEY_DestroyPrivateKeyList(privkeys);
-		PK11_FreeSlotList(slotlist);
+		SECKEY_DestroyPrivateKey(privkey);
 		error = NSS_Shutdown();
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
@@ -357,20 +248,21 @@ cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
 		fclose(status);
 		_exit(2);
 	}
-	req->arena = arena;
-	req->subjectPublicKeyInfo = *spki;
+	/* Generate requested values for various extensions and a friendly
+	 * name. */
+	attrs = cm_csrgen_n_attributes(entry, arena);
+	if ((attrs == NULL) ||
+	    (SEC_ASN1DecodeItem(arena, &req->attributes,
+			        cm_csrgen_n_sequence_of_cert_tmpattr_template,
+			        attrs) != SECSuccess)) {
+		req->attributes = NULL;
+	}
+	/* req->arena = arena;
+	req->subjectPublicKeyInfo = *spki; redundant? */
 	if (SEC_ASN1EncodeInteger(arena, &req->version,
 				  SEC_CERTIFICATE_REQUEST_VERSION) !=
 	    &req->version) {
 		cm_log(1, "Error encoding certificate request version.\n");
-	}
-	/* Tack on requested values for various extensions. */
-	req->attributes = NULL;
-	attrs = cm_csrgen_n_attributes(entry, arena);
-	if (SEC_ASN1DecodeItem(arena, &req->attributes,
-			       cm_csrgen_n_sequence_of_cert_tmpattr_template,
-			       attrs) != SECSuccess) {
-		req->attributes = NULL;
 	}
 	/* Encode the request. */
 	if (SEC_ASN1EncodeItem(arena, &ereq, req,
@@ -378,8 +270,7 @@ cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
 	    &ereq) {
 		cm_log(1, "Error encoding certificate request.\n");
 		SECKEY_DestroyPublicKey(pubkey);
-		SECKEY_DestroyPrivateKeyList(privkeys);
-		PK11_FreeSlotList(slotlist);
+		SECKEY_DestroyPrivateKey(privkey);
 		error = NSS_Shutdown();
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
@@ -396,8 +287,7 @@ cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
 		cm_log(1, "Error setting up algorithm ID for signing the "
 		       "certificate request.\n");
 		SECKEY_DestroyPublicKey(pubkey);
-		SECKEY_DestroyPrivateKeyList(privkeys);
-		PK11_FreeSlotList(slotlist);
+		SECKEY_DestroyPrivateKey(privkey);
 		error = NSS_Shutdown();
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
@@ -410,8 +300,7 @@ cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
 		cm_log(1, "Error signing certificate request with the client's "
 		       "key.\n");
 		SECKEY_DestroyPublicKey(pubkey);
-		SECKEY_DestroyPrivateKeyList(privkeys);
-		PK11_FreeSlotList(slotlist);
+		SECKEY_DestroyPrivateKey(privkey);
 		error = NSS_Shutdown();
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
@@ -426,8 +315,7 @@ cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
 	    &esreq) {
 		cm_log(1, "Error encoding signed certificate request.\n");
 		SECKEY_DestroyPublicKey(pubkey);
-		SECKEY_DestroyPrivateKeyList(privkeys);
-		PK11_FreeSlotList(slotlist);
+		SECKEY_DestroyPrivateKey(privkey);
 		error = NSS_Shutdown();
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
@@ -447,8 +335,7 @@ cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
 		}
 		fprintf(status, "-----END NEW CERTIFICATE REQUEST-----\n");
 		SECKEY_DestroyPublicKey(pubkey);
-		SECKEY_DestroyPrivateKeyList(privkeys);
-		PK11_FreeSlotList(slotlist);
+		SECKEY_DestroyPrivateKey(privkey);
 		error = NSS_Shutdown();
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
@@ -458,8 +345,7 @@ cm_csrgen_n_main(int fd, struct cm_store_entry *entry)
 	}
 	/* Clean up.  We're not really doing anything here yet. */
 	SECKEY_DestroyPublicKey(pubkey);
-	SECKEY_DestroyPrivateKeyList(privkeys);
-	PK11_FreeSlotList(slotlist);
+	SECKEY_DestroyPrivateKey(privkey);
 	error = NSS_Shutdown();
 	if (error != SECSuccess) {
 		cm_log(1, "Error shutting down NSS.\n");
