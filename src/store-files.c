@@ -984,7 +984,7 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 				entry->cm_template_default);
 	cm_store_file_write_str(fp, cm_store_entry_field_template_subject,
 				entry->cm_template_subject);
-	cm_store_file_write_strs(fp, cm_store_entry_field_template_subject,
+	cm_store_file_write_strs(fp, cm_store_entry_field_template_hostname,
 				 entry->cm_template_hostname);
 	cm_store_file_write_strs(fp, cm_store_entry_field_template_email,
 				 entry->cm_template_email);
