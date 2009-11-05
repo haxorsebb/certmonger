@@ -38,6 +38,7 @@
 #include <talloc.h>
 
 #include "certext-n.h"
+#include "keyiread-n.h"
 #include "log.h"
 #include "store.h"
 #include "store-int.h"
@@ -56,12 +57,10 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry)
 {
 	FILE *status;
 	char *b64, *serial;
-	const char *keyname, *token, *p, *q;
+	const char *p, *q;
 	SECStatus error;
 	SECItem *esdata = NULL, *ecert = NULL;
 	SECKEYPrivateKey *privkey;
-	SECKEYPrivateKeyList *privkeys;
-	SECKEYPrivateKeyListNode *node;
 	CERTCertificate *ucert = NULL;
 	CERTCertExtension **extensions;
 	CERTCertificateRequest *req = NULL, sreq;
@@ -71,20 +70,18 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry)
 	krb5_deltat lifedelta;
 	PLArenaPool *arena = NULL;
 	SECOidData *sigoid, *extoid, *basicoid;
-	enum cm_key_algorithm cm_key_algorithm;
-	CK_MECHANISM_TYPE mech;
-	PK11SlotList *slotlist;
-	PK11SlotListElement *sle;
-	PK11SlotInfo *slot;
 	int i, serial_length, basic_length;
 	unsigned char btrue = 0xff;
 
 	/* Start up NSS and open the database. */
-	error = NSS_InitReadWrite(entry->cm_key_storage_location);
-	if (error != SECSuccess) {
-		cm_log(1, "Error opening database '%s'.\n",
-		       entry->cm_key_storage_location);
-		_exit(1);
+	privkey = cm_keyiread_n_get_private_key(entry, 0);
+	if (privkey == NULL) {
+		cm_log(1, "Unable to locate private key for self-signing.\n");
+		error = NSS_Shutdown();
+		if (error != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
+		}
+		_exit(2);
 	}
 	/* Allocate a memory pool. */
 	arena = PORT_NewArena(sizeof(double));
@@ -93,108 +90,6 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry)
 		       entry->cm_key_storage_location);
 		NSS_Shutdown();
 		_exit(ENOMEM);
-	}
-	/* Handle defaults. */
-	if (entry->cm_key_type_default) {
-		cm_key_algorithm = CM_DEFAULT_PUBKEY_TYPE;
-	} else {
-		cm_key_algorithm = entry->cm_key_type.cm_key_algorithm;
-	}
-	/* Convert our key type to a mechanism. */
-	switch (cm_key_algorithm) {
-	case cm_key_rsa:
-		mech = CKM_RSA_PKCS_KEY_PAIR_GEN;
-		break;
-	default:
-		cm_log(1, "Unknown key type.\n");
-		_exit(2);
-		break;
-	}
-	/* Find the token that contains our key pair. */
-	slotlist = PK11_GetAllTokens(mech, PR_TRUE, PR_FALSE, NULL);
-	if (slotlist == NULL) {
-		cm_log(1, "Error locating token for private key.\n");
-		_exit(2);
-	}
-	/* Walk the list looking for the requested slot, or the first one if
-	 * none was requested. */
-	slot = NULL;
-	for (sle = slotlist->head;
-	     ((sle != NULL) && (sle->slot != NULL));
-	     sle = sle->next) {
-		token = PK11_GetTokenName(sle->slot);
-		if (token != NULL) {
-			cm_log(3, "Found token '%s'.\n", token);
-		}
-		if ((entry->cm_key_token == NULL) ||
-		    (strlen(entry->cm_key_token) == 0) ||
-		    (strcmp(entry->cm_key_token, token) == 0)) {
-			slot = sle->slot;
-			break;
-		}
-		if (sle == slotlist->tail) {
-			break;
-		}
-	}
-	if (slot == NULL) {
-		cm_log(1, "Error locating token for key storage.\n");
-		PK11_FreeSlotList(slotlist);
-		error = NSS_Shutdown();
-		if (error != SECSuccess) {
-			cm_log(1, "Error shutting down NSS.\n");
-		}
-		_exit(2);
-	}
-	/* Log in to the database, if we can. */
-	if (PK11_NeedLogin(slot) || !PK11_IsFriendly(slot)) {
-		error = PK11_Authenticate(slot, PR_TRUE, NULL);
-		if (error != SECSuccess) {
-			cm_log(1, "Error authenticating to key store.\n");
-			PK11_FreeSlotList(slotlist);
-			error = NSS_Shutdown();
-			if (error != SECSuccess) {
-				cm_log(1, "Error shutting down NSS.\n");
-			}
-			_exit(2);
-		}
-	}
-	/* Locate the key pair. */
-	privkeys = PK11_ListPrivKeysInSlot(slot, entry->cm_key_nickname, NULL);
-	if (privkeys == NULL) {
-		cm_log(1, "Error finding matching key pairs.\n");
-		PK11_FreeSlotList(slotlist);
-		error = NSS_Shutdown();
-		if (error != SECSuccess) {
-			cm_log(1, "Error shutting down NSS.\n");
-		}
-		_exit(2);
-	}
-	privkey = NULL;
-	if (!PR_CLIST_IS_EMPTY(&(privkeys->list))) {
-		for (node = PRIVKEY_LIST_HEAD(privkeys);
-		     ((node != NULL) && (node->key != NULL));
-		     node = PRIVKEY_LIST_NEXT(node)) {
-			keyname = PK11_GetPrivateKeyNickname(node->key);
-			if ((entry->cm_key_nickname == NULL) ||
-			    (strlen(entry->cm_key_nickname) == 0) ||
-			    (strcmp(entry->cm_key_nickname, keyname) == 0)) {
-				privkey = node->key;
-				break;
-			}
-			if (PRIVKEY_LIST_END(node, privkeys)) {
-				break;
-			}
-		}
-	}
-	if (privkey == NULL) {
-		cm_log(1, "Error finding designated key pair.\n");
-		SECKEY_DestroyPrivateKeyList(privkeys);
-		PK11_FreeSlotList(slotlist);
-		error = NSS_Shutdown();
-		if (error != SECSuccess) {
-			cm_log(1, "Error shutting down NSS.\n");
-		}
-		_exit(2);
 	}
 	/* Decode the CSR into a signeddata structure. */
 	p = entry->cm_csr;
