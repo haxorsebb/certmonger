@@ -1,8 +1,28 @@
-Certificates
+Background: Certificates
 
-Certificates are awesome.  You should want one.  You need one.  You love them.
+An X.509 certificate (also commonly known as an SSL certificate), basically,
+contains a public key and an indication of to whom the key belongs (referred
+to as the certificate's _subject_) that have been cryptographically signed.
+By signing the certificate, the _issuer_ asserts that the key belongs to the
+_subject_.
 
-Certificate Extensions
+If the certificate is being used by an SSL-enabled server, for example, where
+the public key is used to help set up the encryption, a client who verifies
+the signature has verified that the issuer asserted that the party on the
+other end of the connection, who used the public key, has a specific name.
+
+If that name doesn't match the hostname that the client intended to connect
+with, then cleary something has gone wrong.  The client may have connected to
+the wrong server.  If the certificate isn't signed by an _issuer_ that the
+client trusts to be honest about things, then the client can't trust that the
+_subject_ name in the certificate isn't forged.
+
+The _issuer_ who signs certificates is called a _certifying_ _authority_, or
+alternately, a _certificate_ _authority_ (or more simply as a _CA_).  If
+you're deploying an SSL-enabled service, the certificates it uses need to be
+_issued_ (verified and signed) by a CA that your clients trust.
+
+Background: Certificate Extensions
 
 In addition to the subject's name and that subject's private key, a CA can
 embed arbitrary data into a certificate in the certificate's _extensions_
@@ -14,6 +34,28 @@ useful, an extension needs to be understood by all of the parties that will
 use the certificate in some way, so in practice most certificates will only
 contain some of a number of widely-used extensions.
 
-Certificate Requests
+One of the more commonly-used extensions is the subjectAlternateName (also
+known as subjectAltName, or SAN) extension.  It contains one or more names by
+which the subject might also be known.  Because the _subject_ field of a
+certificate is formatted as a _distinguished_ _name_, for example, SSL clients
+typically have to extract the hostname from the subject field, which can be an
+error-prone process, in order to compare them with the hostname that the
+client attempted to use.  A SAN of type _dnsName_ with the hostname as its
+value removes all ambiguity.  The SAN extension can also contain other types
+of names, for example IPv4 and IPv6 addresses, email addresses, and Kerberos
+principal names.
 
+Background: Certificate Requests
 
+In order to obtain a certificate, the CA needs to obtain a copy of the public
+key which should be recorded in the certificate.  Most often, this key is
+combined with other requested information, such as a requested subject name,
+into a _certificate_ _signing_ _request_ (a CSR) and submitted to the CA for
+processing.  The CSR is usually signed with the submitter's public key.
+
+A CSR can also contain arbitrary attributes, and one of those attributes can
+be a set of requested extension values.  In this way, a client can supply
+almost all of the contents of the certificate it desires as part of its
+request.  While this can be very useful in some scenaries, it's important to
+recognize that in assembling a certificate to be issued, the CA is free to
+validate, reject, or simply discard any part of the client's request.
