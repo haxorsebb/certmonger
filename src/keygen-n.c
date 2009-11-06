@@ -38,16 +38,18 @@
 #include "log.h"
 #include "store.h"
 #include "store-int.h"
+#include "subproc.h"
+
+#define PRIVKEY_LIST_EMPTY(l) PRIVKEY_LIST_END(PRIVKEY_LIST_HEAD(l), l)
 
 struct cm_keygen_state {
 	struct cm_keygen_state_pvt pvt;
-	char msg[0x10000];
-	pid_t pid;
-	int fd, count, status;
+	struct cm_subproc_state *subproc;
 };
 
-static void
-cm_keygen_n_main(int fd, struct cm_store_entry *entry)
+static int
+cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
+		 void *userdata)
 {
 	FILE *status;
 	enum cm_key_algorithm cm_key_algorithm;
@@ -194,7 +196,7 @@ cm_keygen_n_main(int fd, struct cm_store_entry *entry)
 	}
 	/* Try to remove any conflicting keys. */
 	privkeys = PK11_ListPrivKeysInSlot(slot, entry->cm_key_nickname, NULL);
-	if ((privkeys != NULL) && !PR_CLIST_IS_EMPTY(&(privkeys->list))) {
+	if ((privkeys != NULL) && !PRIVKEY_LIST_EMPTY(privkeys)) {
 		for (node = PRIVKEY_LIST_HEAD(privkeys);
 		     ((node != NULL) && (node->key != NULL));
 		     node = PRIVKEY_LIST_NEXT(node)) {
@@ -217,15 +219,6 @@ cm_keygen_n_main(int fd, struct cm_store_entry *entry)
 	if (error != SECSuccess) {
 		cm_log(1, "Error setting nickname on public key.\n");
 	}
-	/* Record the token name if we didn't already have one. */
-	if ((entry->cm_key_token == NULL) ||
-	    (strlen(entry->cm_key_token) == 0)) {
-		talloc_free(entry->cm_key_token);
-		entry->cm_key_token = talloc_strdup(entry, token);
-		if (entry->cm_key_token == NULL) {
-			cm_log(1, "Error recording token name.\n");
-		}
-	}
 	SECKEY_DestroyPrivateKey(privkey);
 	SECKEY_DestroyPublicKey(pubkey);
 	PK11_FreeSlotList(slotlist);
@@ -234,44 +227,21 @@ cm_keygen_n_main(int fd, struct cm_store_entry *entry)
 		cm_log(1, "Error shutting down NSS.\n");
 	}
 	fclose(status);
+	return 0;
 }
 
 /* Check if the keypair is ready. */
 static int
 cm_keygen_n_ready(struct cm_store_entry *entry, struct cm_keygen_state *state)
 {
-	ssize_t i, remainder;
-	int status;
-	do {
-		remainder = (sizeof(state->msg) - state->count) - 1;
-		i = read(state->fd, state->msg + state->count, remainder);
-		switch (i) {
-		case -1:
-		case 0:
-			break;
-		default:
-			state->count += i;
-			break;
-		}
-	} while (i > 0);
-	if ((i == -1) && ((errno == EAGAIN) || (errno == EINTR))) {
-		status = -1;
-	} else {
-		state->msg[state->count] = '\0';
-		close(state->fd);
-		state->fd = -1;
-		waitpid(state->pid, &state->status, 0);
-		state->pid = -1;
-		status = 0;
-	}
-	return status;
+	return cm_subproc_ready(entry, state->subproc);
 }
 
 /* Get a selectable-for-read descriptor we can poll for status changes. */
 static int
 cm_keygen_n_get_fd(struct cm_store_entry *entry, struct cm_keygen_state *state)
 {
-	return state->fd;
+	return cm_subproc_get_fd(entry, state->subproc);
 }
 
 /* Tell us if the keypair was saved to the location specified in the entry. */
@@ -279,8 +249,9 @@ static int
 cm_keygen_n_saved_keypair(struct cm_store_entry *entry,
 		          struct cm_keygen_state *state)
 {
-
-	if (WIFEXITED(state->status) && (WEXITSTATUS(state->status) == 0)) {
+	int status;
+	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	if (WIFEXITED(status) && (WEXITSTATUS(status) == 0)) {
 		return 0;
 	}
 	return -1;
@@ -290,11 +261,8 @@ cm_keygen_n_saved_keypair(struct cm_store_entry *entry,
 static void
 cm_keygen_n_done(struct cm_store_entry *entry, struct cm_keygen_state *state)
 {
-	if (state->pid != -1) {
-		kill(state->pid, SIGKILL);
-	}
-	if (state->fd != -1) {
-		close(state->fd);
+	if (state->subproc != NULL) {
+		cm_subproc_done(entry, state->subproc);
 	}
 	talloc_free(state);
 }
@@ -303,10 +271,8 @@ cm_keygen_n_done(struct cm_store_entry *entry, struct cm_keygen_state *state)
 struct cm_keygen_state *
 cm_keygen_n_start(struct cm_store_entry *entry)
 {
-	int fds[2];
-	long flags;
 	struct cm_keygen_state *state;
-	if (entry->cm_key_storage_type != cm_key_storage_nssdb) {
+	if (entry->cm_key_storage_type != cm_key_storage_file) {
 		return NULL;
 	}
 	state = talloc_ptrtype(entry, state);
@@ -316,28 +282,11 @@ cm_keygen_n_start(struct cm_store_entry *entry)
 		state->pvt.get_fd = cm_keygen_n_get_fd;
 		state->pvt.saved_keypair = cm_keygen_n_saved_keypair;
 		state->pvt.done = cm_keygen_n_done;
-		state->fd = -1;
-		if (pipe(fds) != -1) {
-			state->pid = fork();
-			switch (state->pid) {
-			case -1:
-				close(fds[0]);
-				close(fds[1]);
-				talloc_free(state);
-				state = NULL;
-				break;
-			case 0:
-				close(fds[0]);
-				cm_keygen_n_main(fds[1], entry);
-				_exit(0);
-				break;
-			default:
-				state->fd = fds[0];
-				flags = fcntl(state->fd, F_GETFL);
-				fcntl(state->fd, F_SETFL, flags | O_NONBLOCK);
-				close(fds[1]);
-				break;
-			}
+		state->subproc = cm_subproc_start(cm_keygen_n_main,
+						  NULL, entry, NULL);
+		if (state->subproc == NULL) {
+			talloc_free(state);
+			return NULL;
 		}
 	}
 	return state;
