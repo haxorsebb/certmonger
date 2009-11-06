@@ -155,7 +155,7 @@ cm_keyiread_o_get_fd(struct cm_store_entry *entry,
 	return state->fd;
 }
 
-/* Clean up after reading the keyiificate. */
+/* Clean up after reading the key. */
 static void
 cm_keyiread_o_done(struct cm_store_entry *entry,
 		   struct cm_keyiread_state *state)
@@ -172,7 +172,7 @@ cm_keyiread_o_done(struct cm_store_entry *entry,
 	talloc_free(state);
 }
 
-/* Start reading the keyiificate from the configured location. */
+/* Start reading the key from the configured location. */
 struct cm_keyiread_state *
 cm_keyiread_o_start(struct cm_store_entry *entry)
 {
