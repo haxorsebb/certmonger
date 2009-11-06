@@ -1,0 +1,19 @@
+Certificates
+
+Certificates are awesome.  You should want one.  You need one.  You love them.
+
+Certificate Extensions
+
+In addition to the subject's name and that subject's private key, a CA can
+embed arbitrary data into a certificate in the certificate's _extensions_
+field.  Extensions are identified by OID and the data they contain is in a
+format specific to that OID.
+
+While this flexibility could allow for all sorts of hijinks, in order to be
+useful, an extension needs to be understood by all of the parties that will
+use the certificate in some way, so in practice most certificates will only
+contain some of a number of widely-used extensions.
+
+Certificate Requests
+
+
