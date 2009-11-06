@@ -37,6 +37,8 @@ libcm_a_SOURCES = \
 	submit-e.c \
 	submit.h \
 	submit-int.h \
+	subproc.c \
+	subproc.h \
 	tdbus.c \
 	tdbus.h \
 	tdbush.c \
