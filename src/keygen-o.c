@@ -177,7 +177,7 @@ cm_keygen_o_start(struct cm_store_entry *entry)
 						  NULL, entry, NULL);
 		if (state->subproc == NULL) {
 			talloc_free(state);
-			return NULL;
+			state = NULL;
 		}
 	}
 	return state;
