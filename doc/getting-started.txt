@@ -59,3 +59,95 @@ almost all of the contents of the certificate it desires as part of its
 request.  While this can be very useful in some scenaries, it's important to
 recognize that in assembling a certificate to be issued, the CA is free to
 validate, reject, or simply discard any part of the client's request.
+
+Where certmonger Fits In
+
+The certmonger daemon, along with its command-line clients, attempts to
+simplify the process of generating public/private key pairs and CSRs and
+submitting CSRs to CAs for signing.
+
+Perhaps the simplest use case is to generate a certificate which is signed by
+the subject itself.  (They're not very useful in production, but they're great
+for testing.)
+
+   selfsign-getcert request -f /tmp/server.crt -k /tmp/server.key
+
+What we've done above is to tell certmonger that we want a key to be stored in
+the file /tmp/server.key, to get a corresponding certificate, and to store
+that certificate in the file /tmp/server.crt.  (Using selfsign-getcert to tell
+it that also implicitly tells it to go ahead and _self-sign_ the CSR, which it
+generates and uses internally, with the subject's own key.)
+
+What certmonger did was to check if there was already a key there, and since
+there wasn't, to go ahead and generate one.  That done, it created a CSR and
+then used the same key to produce a signed certificate.
+
+The example above used plain files for holding the key and the certificate,
+but we could have specified storage using an NSS database by passing the
+database's location and a nickname to give to the certificate, like so:
+   certutil -d /tmp -N
+   selfsign-getcert request -d /tmp -n Testing-Certificate
+
+Of course, we had to create the NSS database first.  And we used a nickname of
+"Testing-Certificate" because, well, why not?
+
+We can tell certmonger to embed a specific _subject_ name into the CSR, and we
+can tell it to include one or more of several types of SAN values, too:
+   -N _subject_      -> specifies a subject name
+   -K _principal_add -> specifies a Kerberos principal name SAN
+   -D _hostname_     -> specifies a dnsName SAN
+   -E _email_        -> specifies an rfc822address (email) SAN
+
+Let's create another certificate:
+
+   selfsign-getcert request -f /tmp/babs.crt -k /tmp/babs.key \
+   	-N cn="Babs Jensen" -K bjensen@EXAMPLE.COM -E babs@example.com
+
+For flat files, we can use OpenSSL to look at the certificate's contents.
+Have a look at the first certificate we generated:
+
+   openssl x509 -noout -text -in /tmp/server.crt
+
+You'll notice that even though we didn't specify what to put in the
+certificate, certmonger went ahead and added some things.  These are its
+default settings.  Now look at the one we just generated for Babs:
+
+   openssl x509 -noout -text -in /tmp/babs.crt
+
+You'll see that the subject name is the one we requested, and that the email
+address is being shown correctly.  As of this writing, the openssl command
+doesn't know how to display Kerberos principal names, but that's okay.
+
+While we're here, we can use NSS's certutil to examine the second certificate
+we generated:
+
+   certutil -d /tmp -L -n Testing-Certificate
+
+The output format is a bit different, but the contents of the certificate
+should be pretty much the same.
+
+You may have noticed that in each case, the certificates had a validity time
+associated with them -- after a certain point, they won't be considered valid
+any more.  That's okay.  We can tell certmonger to go ahead and get a new
+certificate when the existing one expires:
+
+   selfsign-getcert start-tracking -f /tmp/server.crt -r
+
+We could have added the "-r" when we initially requested the certificate and
+skipped this step, but this is documentation, so sometimes we go the long way.
+
+Using certmonger With Real CAs
+
+Having certmonger send a CSR to a real CA rather than self-signing everything
+is supposed to be trivial.  For example, certmonger already "knows" how to
+interact with the CA component of an IPA system, so the only thing you'd do
+differently is call "ipa-getcert" instead of "selfsign-getcert".
+
+   ipa-getcert request -r \
+   	-f /etc/httpd/conf/ssl.crt/server.crt \
+	-k /etc/httpd/conf/ssl.key/server.key \
+	-N CN=`hostname --fqdn` \
+	-D `hostname --fqdn` \
+	-U id-kp-serverAuth
+
+That's all there is to it.  If there's more than that to it, that's a bug.
