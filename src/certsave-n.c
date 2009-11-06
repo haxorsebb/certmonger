@@ -83,6 +83,10 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			q = strstr(p, "-----END");
 			if ((p == NULL) || (q == NULL)) {
 				cm_log(1, "Unable to parse certificate.\n");
+				PORT_FreeArena(arena, PR_TRUE);
+				if (NSS_Shutdown() != SECSuccess) {
+					cm_log(1, "Error shutting down NSS.\n");
+				}
 				_exit(1);
 			}
 			/* Handle the base64 decode. */
@@ -90,6 +94,10 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			if (item == NULL) {
 				cm_log(1, "Unable to decode certificate "
 				       "into buffer.\n");
+				PORT_FreeArena(arena, PR_TRUE);
+				if (NSS_Shutdown() != SECSuccess) {
+					cm_log(1, "Error shutting down NSS.\n");
+				}
 				_exit(1);
 			}
 			error = CERT_ImportCerts(certdb,
@@ -131,6 +139,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		} else {
 			cm_log(1, "Error getting handle to default NSS DB.\n");
 		}
+		PORT_FreeArena(arena, PR_TRUE);
 		if (NSS_Shutdown() != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
