@@ -44,7 +44,6 @@ cm_subproc_start(int (*cb)(int fd,
 			   struct cm_store_ca *ca,
 			   struct cm_store_entry *entry,
 			   void *data),
-		 int fd,
 		 struct cm_store_ca *ca,
 		 struct cm_store_entry *entry,
 		 void *data)
