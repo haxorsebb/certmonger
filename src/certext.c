@@ -718,7 +718,8 @@ cm_certext_build_upn(struct cm_store_entry *entry, PLArenaPool *arena,
 	princ.len = strlen(principal);
 	princ.data = (unsigned char *) principal;
 	if (SEC_ASN1EncodeItem(arena, &upn, &princ,
-			       cm_ms_upn_name_template) != &upn) {
+			       SEC_UTF8StringTemplate
+			       /* cm_ms_upn_name_template */) != &upn) {
 		return NULL;
 	}
 	return SECITEM_ArenaDupItem(arena, &upn);
