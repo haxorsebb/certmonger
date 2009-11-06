@@ -177,6 +177,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	privkey = cm_keyiread_n_get_private_key(entry, 0);
 	if (privkey == NULL) {
 		cm_log(1, "Error finding key pair \"%s\".\n");
+		PORT_FreeArena(arena, PR_TRUE);
 		error = NSS_Shutdown();
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
@@ -203,6 +204,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 		SECKEY_DestroyPublicKey(pubkey);
 		SECKEY_DestroyPrivateKey(privkey);
+		PORT_FreeArena(arena, PR_TRUE);
 		error = NSS_Shutdown();
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
@@ -222,6 +224,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 		SECKEY_DestroyPublicKey(pubkey);
 		SECKEY_DestroyPrivateKey(privkey);
+		PORT_FreeArena(arena, PR_TRUE);
 		error = NSS_Shutdown();
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
@@ -241,6 +244,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 		SECKEY_DestroyPublicKey(pubkey);
 		SECKEY_DestroyPrivateKey(privkey);
+		PORT_FreeArena(arena, PR_TRUE);
 		error = NSS_Shutdown();
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
@@ -271,6 +275,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		cm_log(1, "Error encoding certificate request.\n");
 		SECKEY_DestroyPublicKey(pubkey);
 		SECKEY_DestroyPrivateKey(privkey);
+		PORT_FreeArena(arena, PR_TRUE);
 		error = NSS_Shutdown();
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
@@ -288,6 +293,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		       "certificate request.\n");
 		SECKEY_DestroyPublicKey(pubkey);
 		SECKEY_DestroyPrivateKey(privkey);
+		PORT_FreeArena(arena, PR_TRUE);
 		error = NSS_Shutdown();
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
@@ -301,6 +307,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		       "key.\n");
 		SECKEY_DestroyPublicKey(pubkey);
 		SECKEY_DestroyPrivateKey(privkey);
+		PORT_FreeArena(arena, PR_TRUE);
 		error = NSS_Shutdown();
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
@@ -316,6 +323,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		cm_log(1, "Error encoding signed certificate request.\n");
 		SECKEY_DestroyPublicKey(pubkey);
 		SECKEY_DestroyPrivateKey(privkey);
+		PORT_FreeArena(arena, PR_TRUE);
 		error = NSS_Shutdown();
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
@@ -336,6 +344,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		fprintf(status, "-----END NEW CERTIFICATE REQUEST-----\n");
 		SECKEY_DestroyPublicKey(pubkey);
 		SECKEY_DestroyPrivateKey(privkey);
+		PORT_FreeArena(arena, PR_TRUE);
 		error = NSS_Shutdown();
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
@@ -343,9 +352,10 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		fclose(status);
 		_exit(0);
 	}
-	/* Clean up.  We're not really doing anything here yet. */
+	/* Clean up. */
 	SECKEY_DestroyPublicKey(pubkey);
 	SECKEY_DestroyPrivateKey(privkey);
+	PORT_FreeArena(arena, PR_TRUE);
 	error = NSS_Shutdown();
 	if (error != SECSuccess) {
 		cm_log(1, "Error shutting down NSS.\n");
