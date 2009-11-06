@@ -93,6 +93,7 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	slotlist = PK11_GetAllTokens(mech, PR_FALSE, PR_FALSE, NULL);
 	if (slotlist == NULL) {
 		cm_log(1, "Error getting list of tokens.\n");
+		PORT_FreeArena(arena, PR_TRUE);
 		if (NSS_Shutdown() != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
@@ -121,9 +122,9 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 	}
 	if (slot == NULL) {
-		cm_log(1,
-		       "Error locating token to be used for cert storage.\n");
+		cm_log(1, "Error locating token used for cert storage.\n");
 		PK11_FreeSlotList(slotlist);
+		PORT_FreeArena(arena, PR_TRUE);
 		if (NSS_Shutdown() != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
@@ -141,6 +142,7 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(1, "Unnamed token contains no certificates!\n");
 		}
 		PK11_FreeSlotList(slotlist);
+		PORT_FreeArena(arena, PR_TRUE);
 		if (NSS_Shutdown() != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
@@ -165,9 +167,9 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		cm_certread_write_data_to_pipe(entry, fp);
 	}
 	fclose(fp);
-	PORT_FreeArena(arena, PR_TRUE);
 	CERT_DestroyCertList(certs);
 	PK11_FreeSlotList(slotlist);
+	PORT_FreeArena(arena, PR_TRUE);
 	if (NSS_Shutdown() != SECSuccess) {
 		cm_log(1, "Error shutting down NSS.\n");
 	}
