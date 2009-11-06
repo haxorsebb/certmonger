@@ -1,5 +1,5 @@
 Name:		certmonger
-Version:	0.7
+Version:	0.8
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -64,6 +64,10 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Tue Nov 10 2009 Nalin Dahyabhai <nalin@redhat.com> 0.8-1
+- update to 0.8
+  - encode windows UPN values in requests correctly
+
 * Fri Nov  6 2009 Nalin Dahyabhai <nalin@redhat.com> 0.7-1
 - update to 0.7
   - first cut at a getting-started document

@@ -33,6 +33,7 @@
 #include "store-int.h"
 #include "submit.h"
 #include "submit-int.h"
+#include "subproc.h"
 
 enum cm_external_status {
 	STATUS_ISSUED = 0,
@@ -43,16 +44,14 @@ enum cm_external_status {
 
 struct cm_submit_state {
 	struct cm_submit_state_pvt pvt;
-	char msg[0x10000];
-	pid_t pid;
-	int fd, count, status;
+	struct cm_subproc_state *subproc;
 };
 
 /* Get a selectable-for-read descriptor we can poll for status changes. */
 static int
 cm_submit_e_get_fd(struct cm_store_entry *entry, struct cm_submit_state *state)
 {
-	return state->fd;
+	return cm_subproc_get_fd(entry, state->subproc);
 }
 
 /* Try to save a CA-specific identifier for our submitted request.  That is, if
@@ -61,21 +60,21 @@ static int
 cm_submit_e_save_ca_cookie(struct cm_store_entry *entry,
 			   struct cm_submit_state *state)
 {
+	const char *msg;
 	talloc_free(entry->cm_ca_cookie);
 	entry->cm_ca_cookie = NULL;
-	if (state->pid == -1) {
-		if (WIFEXITED(state->status) &&
-		    (WEXITSTATUS(state->status) == STATUS_WAIT)) {
-			entry->cm_ca_cookie = talloc_strdup(entry, state->msg);
-			if (entry->cm_ca_cookie == NULL) {
-				cm_log(1, "Out of memory.\n");
-				return -ENOMEM;
-			}
-			cm_log(1, "Saved cookie.\n");
-			return 0;
-		} else {
-			cm_log(1, "Helper still running; no cookie.\n");
+	msg = cm_subproc_get_msg(entry, state->subproc, NULL);
+	if ((msg != NULL) && (strlen(msg) > 0)) {
+		entry->cm_ca_cookie = talloc_strdup(entry, msg);
+		if (entry->cm_ca_cookie == NULL) {
+			cm_log(1, "Out of memory.\n");
+			return -ENOMEM;
 		}
+		cm_log(1, "Saved cookie.\n");
+		return 0;
+	} else {
+		cm_log(1, "No cookie.\n");
+		return -1;
 	}
 	return -1;
 }
@@ -84,40 +83,24 @@ cm_submit_e_save_ca_cookie(struct cm_store_entry *entry,
 static int
 cm_submit_e_ready(struct cm_store_entry *entry, struct cm_submit_state *state)
 {
-	ssize_t i, remainder;
-	int status;
-	if (state->pid == -1) {
+	int status, ready;
+	ready = cm_subproc_ready(entry, state->subproc);
+	switch (ready) {
+	case 0:
+		status = cm_subproc_get_exitstatus(entry, state->subproc);
 		cm_log(1, "Certificate submission attempt complete.\n");
-		return 0;
-	} else {
-		do {
-			remainder = (sizeof(state->msg) - state->count) - 1;
-			i = read(state->fd, state->msg + state->count,
-				 remainder);
-			switch (i) {
-			case -1:
-			case 0:
-				break;
-			default:
-				state->count += i;
-				break;
-			}
-		} while (i > 0);
-		if ((i == -1) && ((errno == EAGAIN) || (errno == EINTR))) {
-			status = -1;
-			cm_log(1, "Certificate submission still ongoing.\n");
+		if (WIFEXITED(status)) {
+			cm_log(1, "Child status = %d.\n", WEXITSTATUS(status));
+			return 0;
 		} else {
-			state->msg[state->count] = '\0';
-			close(state->fd);
-			state->fd = -1;
-			waitpid(state->pid, &state->status, 0);
-			cm_log(1, "Child status = %d.\n",
-			       WEXITSTATUS(state->status));
-			state->pid = -1;
-			cm_log(1, "Certificate submission completed.\n");
-			status = 0;
+			cm_log(1, "Child exited unexpectedly.\n");
+			return 0;
 		}
-		return status;
+		break;
+	default:
+		cm_log(1, "Certificate submission still ongoing.\n");
+		return -1;
+		break;
 	}
 }
 
@@ -126,16 +109,12 @@ cm_submit_e_ready(struct cm_store_entry *entry, struct cm_submit_state *state)
 static int
 cm_submit_e_issued(struct cm_store_entry *entry, struct cm_submit_state *state)
 {
-	if (state->pid == -1) {
-		if (!WIFEXITED(state->status) ||
-		    (WEXITSTATUS(state->status) != STATUS_ISSUED)) {
-			return -1;
-		}
-	}
-	if ((strstr(state->msg, "-----BEGIN CERTIFICATE-----") != NULL) &&
-	    (strstr(state->msg, "-----END CERTIFICATE-----") != NULL)) {
+	const char *msg;
+	msg = cm_subproc_get_msg(entry, state->subproc, NULL);
+	if ((strstr(msg, "-----BEGIN CERTIFICATE-----") != NULL) &&
+	    (strstr(msg, "-----END CERTIFICATE-----") != NULL)) {
 		talloc_free(entry->cm_cert);
-		entry->cm_cert = talloc_strdup(entry, state->msg);
+		entry->cm_cert = talloc_strdup(entry, msg);
 		cm_log(1, "Certificate issued.\n");
 		return 0;
 	} else {
@@ -150,11 +129,10 @@ static int
 cm_submit_e_rejected(struct cm_store_entry *entry,
 		     struct cm_submit_state *state)
 {
-	if (state->pid == -1) {
-		if (WIFEXITED(state->status) &&
-		    (WEXITSTATUS(state->status) == STATUS_REJECTED)) {
-			return 0;
-		}
+	int status;
+	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	if (WIFEXITED(status) && (WEXITSTATUS(status) == STATUS_REJECTED)) {
+		return 0;
 	}
 	return -1;
 }
@@ -165,11 +143,10 @@ static int
 cm_submit_e_unreachable(struct cm_store_entry *entry,
 			struct cm_submit_state *state)
 {
-	if (state->pid == -1) {
-		if (WIFEXITED(state->status) &&
-		    (WEXITSTATUS(state->status) == STATUS_UNREACHABLE)) {
-			return 0;
-		}
+	int status;
+	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	if (WIFEXITED(status) && (WEXITSTATUS(status) == STATUS_UNREACHABLE)) {
+		return 0;
 	}
 	return -1;
 }
@@ -178,13 +155,65 @@ cm_submit_e_unreachable(struct cm_store_entry *entry,
 static void
 cm_submit_e_done(struct cm_store_entry *entry, struct cm_submit_state *state)
 {
-	if (state->pid != -1) {
-		kill(state->pid, SIGKILL);
-	}
-	if (state->fd != -1) {
-		close(state->fd);
+	if (state->subproc != NULL) {
+		cm_subproc_done(entry, state->subproc);
 	}
 	talloc_free(state);
+}
+
+/* Attempt to exec the helper. */
+struct cm_submit_e_args {
+	int error_fd;
+	const char *csr, *cookie, *operation;
+};
+
+static int
+cm_submit_e_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
+		 void *userdata)
+{
+	struct cm_submit_e_args *args = userdata;
+	int i;
+	unsigned char u;
+	if (entry->cm_template_subject != NULL) {
+		setenv("CERTMONGER_REQ_SUBJECT", entry->cm_template_subject, 1);
+	}
+	if (entry->cm_template_email != NULL) {
+		setenv("CERTMONGER_REQ_EMAIL",
+		       cm_submit_maybe_joinv(NULL, "\n",
+					     entry->cm_template_email),
+		       1);
+	}
+	if (entry->cm_template_hostname != NULL) {
+		setenv("CERTMONGER_REQ_HOSTNAME",
+		       cm_submit_maybe_joinv(NULL, "\n",
+					     entry->cm_template_hostname),
+		       1);
+	}
+	if (entry->cm_template_principal != NULL) {
+		setenv("CERTMONGER_REQ_PRINCIPAL",
+		       cm_submit_maybe_joinv(NULL, "\n",
+					     entry->cm_template_principal),
+		       1);
+	}
+	if ((args->operation != NULL) && (strlen(args->operation) > 0)) {
+		setenv("CERTMONGER_OPERATION", args->operation, 1);
+	}
+	if ((args->csr != NULL) && (strlen(args->csr) > 0)) {
+		setenv("CERTMONGER_CSR", args->csr, 1);
+	}
+	if ((args->cookie != NULL) && (strlen(args->cookie) > 0)) {
+		setenv("CERTMONGER_COOKIE", args->cookie, 1);
+	}
+	cm_log(1, "Running helper \"%s\".\n", ca->cm_ca_external_helper);
+	for (i = sysconf(_SC_OPEN_MAX) - 1; i >= 0; i--) {
+		if ((i != STDOUT_FILENO) && (i != args->error_fd)) {
+			close(i);
+		}
+	}
+	execlp(ca->cm_ca_external_helper, ca->cm_ca_external_helper, NULL);
+	u = errno;
+	write(args->error_fd, &u, 1);
+	return u;
 }
 
 /* Start CSR submission using parameters stored in the entry. */
@@ -195,15 +224,12 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 			    const char *cookie,
 			    const char *operation)
 {
-	int outfds[2], execfds[2], i;
+	int errorfds[0];
 	unsigned char u;
 	struct cm_submit_state *state;
+	struct cm_submit_e_args args;
 	state = talloc_ptrtype(entry, state);
 	if (state != NULL) {
-		outfds[0] = -1;
-		outfds[1] = -1;
-		execfds[0] = -1;
-		execfds[1] = -1;
 		memset(state, 0, sizeof(*state));
 		state->pvt.get_fd = cm_submit_e_get_fd;
 		state->pvt.save_ca_cookie = cm_submit_e_save_ca_cookie;
@@ -212,81 +238,20 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 		state->pvt.rejected = cm_submit_e_rejected;
 		state->pvt.unreachable = cm_submit_e_unreachable;
 		state->pvt.done = cm_submit_e_done;
-		state->fd = -1;
-		if ((pipe(outfds) != -1) && (pipe(execfds) != -1)) {
-			fcntl(execfds[0], F_SETFD, 1L);
-			fcntl(execfds[1], F_SETFD, 1L);
-			state->pid = fork();
-			switch (state->pid) {
-			case -1:
-				close(outfds[0]);
-				close(outfds[1]);
-				close(execfds[0]);
-				close(execfds[1]);
+		if (pipe(errorfds) != -1) {
+			fcntl(errorfds[1], F_SETFD, 1L);
+			args.error_fd = errorfds[1];
+			args.csr = csr;
+			args.cookie = cookie;
+			args.operation = operation;
+			state->subproc = cm_subproc_start(cm_submit_e_main,
+							  ca, entry, &args);
+			close(errorfds[1]);
+			if (state->subproc == NULL) {
 				talloc_free(state);
 				state = NULL;
-				break;
-			case 0:
-				if (dup2(outfds[1], STDOUT_FILENO) == -1) {
-					u = errno;
-					write(execfds[1], &u, 1);
-					_exit(u);
-				}
-				close(outfds[0]);
-				close(outfds[1]);
-
-				if (entry->cm_template_subject != NULL) {
-					setenv("CERTMONGER_REQ_SUBJECT",
-					       entry->cm_template_subject,
-					       1);
-				}
-				if (entry->cm_template_email != NULL) {
-					setenv("CERTMONGER_REQ_EMAIL",
-					       cm_submit_maybe_joinv(NULL, "\n",
-								     entry->cm_template_email),
-					       1);
-				}
-				if (entry->cm_template_hostname != NULL) {
-					setenv("CERTMONGER_REQ_HOSTNAME",
-					       cm_submit_maybe_joinv(NULL, "\n",
-								     entry->cm_template_hostname),
-					       1);
-				}
-				if (entry->cm_template_principal != NULL) {
-					setenv("CERTMONGER_REQ_PRINCIPAL",
-					       cm_submit_maybe_joinv(NULL, "\n",
-								     entry->cm_template_principal),
-					       1);
-				}
-				setenv("CERTMONGER_OPERATION", operation, 1);
-				if ((csr != NULL) && (strlen(csr) > 0)) {
-					setenv("CERTMONGER_CSR", csr, 1);
-				}
-				if ((cookie != NULL) && (strlen(cookie) > 0)) {
-					setenv("CERTMONGER_COOKIE", cookie, 1);
-				}
-				cm_log(1, "Running helper \"%s\".\n",
-				       ca->cm_ca_external_helper);
-				for (i = sysconf(_SC_OPEN_MAX) - 1;
-						 i >= 0;
-						 i--) {
-					if ((i != STDOUT_FILENO) &&
-					    (i != STDERR_FILENO)) {
-						close(i);
-					}
-				}
-				execlp(ca->cm_ca_external_helper,
-				       ca->cm_ca_external_helper,
-				       NULL);
-				u = errno;
-				write(execfds[1], &u, 1);
-				_exit(u);
-				break;
-			default:
-				state->fd = outfds[0];
-				close(outfds[1]);
-				close(execfds[1]);
-				switch (read(execfds[0], &u, 1)) {
+			} else {
+				switch (read(errorfds[0], &u, 1)) {
 				case 0:
 					/* no data = kernel closed-on-exec, so
 					 * the helper started */
@@ -296,10 +261,7 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 					cm_log(1, "Unexpected error while "
 					       "starting helper \"%s\".",
 					       ca->cm_ca_external_helper);
-					close(outfds[0]);
-					close(outfds[1]);
-					close(execfds[0]);
-					close(execfds[1]);
+					cm_subproc_done(entry, state->subproc);
 					talloc_free(state);
 					state = NULL;
 					break;
@@ -308,16 +270,13 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 					       "\"%s\": %s.",
 					       ca->cm_ca_external_helper,
 					       strerror(u));
-					close(outfds[0]);
-					close(outfds[1]);
-					close(execfds[0]);
-					close(execfds[1]);
+					cm_subproc_done(entry, state->subproc);
 					talloc_free(state);
 					state = NULL;
 					break;
 				}
-				break;
 			}
+			close(errorfds[0]);
 		}
 	}
 	return state;

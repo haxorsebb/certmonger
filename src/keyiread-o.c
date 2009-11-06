@@ -37,16 +37,16 @@
 #include "log.h"
 #include "store.h"
 #include "store-int.h"
+#include "subproc.h"
 
 struct cm_keyiread_state {
 	struct cm_keyiread_state_pvt pvt;
-	char msg[0x1000];
-	pid_t pid;
-	int fd, count, status;
+	struct cm_subproc_state *subproc;
 };
 
-static void
-cm_keyiread_o_main(int fd, struct cm_store_entry *entry)
+static int
+cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
+		   void *userdata)
 {
 	FILE *pem, *fp;
 	EVP_PKEY *pkey;
@@ -112,6 +112,7 @@ cm_keyiread_o_main(int fd, struct cm_store_entry *entry)
 	if (status != 0) {
 		_exit(status);
 	}
+	return 0;
 }
 
 /* Check if something changed, for example we finished reading the data we need
@@ -120,31 +121,7 @@ static int
 cm_keyiread_o_ready(struct cm_store_entry *entry,
 		    struct cm_keyiread_state *state)
 {
-	ssize_t i, remainder;
-	int status;
-	do {
-		remainder = (sizeof(state->msg) - state->count) - 1;
-		i = read(state->fd, state->msg + state->count, remainder);
-		switch (i) {
-		case -1:
-		case 0:
-			break;
-		default:
-			state->count += i;
-			break;
-		}
-	} while (i > 0);
-	if ((i == -1) && ((errno == EAGAIN) || (errno == EINTR))) {
-		status = -1;
-	} else {
-		state->msg[state->count] = '\0';
-		close(state->fd);
-		state->fd = -1;
-		waitpid(state->pid, &state->status, 0);
-		state->pid = -1;
-		status = 0;
-	}
-	return status;
+	return cm_subproc_ready(entry, state->subproc);
 }
 
 /* Get a selectable-for-read descriptor we can poll for status changes. */
@@ -152,7 +129,7 @@ static int
 cm_keyiread_o_get_fd(struct cm_store_entry *entry,
 		     struct cm_keyiread_state *state)
 {
-	return state->fd;
+	return cm_subproc_get_fd(entry, state->subproc);
 }
 
 /* Clean up after reading the key. */
@@ -160,14 +137,12 @@ static void
 cm_keyiread_o_done(struct cm_store_entry *entry,
 		   struct cm_keyiread_state *state)
 {
-	if (state->count > 0) {
-		cm_keyiread_read_data_from_buffer(entry, state->msg);
-	}
-	if (state->pid != -1) {
-		kill(state->pid, SIGKILL);
-	}
-	if (state->fd != -1) {
-		close(state->fd);
+	if (state->subproc != NULL) {
+		cm_keyiread_read_data_from_buffer(entry,
+						  cm_subproc_get_msg(entry,
+						  		     state->subproc,
+								     NULL));
+		cm_subproc_done(entry, state->subproc);
 	}
 	talloc_free(state);
 }
@@ -176,8 +151,6 @@ cm_keyiread_o_done(struct cm_store_entry *entry,
 struct cm_keyiread_state *
 cm_keyiread_o_start(struct cm_store_entry *entry)
 {
-	int fds[2];
-	long flags;
 	struct cm_keyiread_state *state;
 	if (entry->cm_key_storage_type != cm_key_storage_file) {
 		cm_log(1, "Wrong read method: can only read keys "
@@ -190,28 +163,11 @@ cm_keyiread_o_start(struct cm_store_entry *entry)
 		state->pvt.ready = cm_keyiread_o_ready;
 		state->pvt.get_fd= cm_keyiread_o_get_fd;
 		state->pvt.done= cm_keyiread_o_done;
-		state->fd = -1;
-		if (pipe(fds) != -1) {
-			state->pid = fork();
-			switch (state->pid) {
-			case -1:
-				close(fds[0]);
-				close(fds[1]);
-				talloc_free(state);
-				state = NULL;
-				break;
-			case 0:
-				close(fds[0]);
-				cm_keyiread_o_main(fds[1], entry);
-				_exit(0);
-				break;
-			default:
-				state->fd = fds[0];
-				flags = fcntl(state->fd, F_GETFL);
-				fcntl(state->fd, F_SETFL, flags | O_NONBLOCK);
-				close(fds[1]);
-				break;
-			}
+		state->subproc = cm_subproc_start(cm_keyiread_o_main,
+						  NULL, entry, NULL);
+		if (state->subproc == NULL) {
+			talloc_free(state);
+			state = NULL;
 		}
 	}
 	return state;

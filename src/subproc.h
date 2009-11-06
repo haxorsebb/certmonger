@@ -22,6 +22,7 @@ struct cm_store_ca;
 struct cm_store_entry;
 struct cm_subproc_state;
 
+/* Start calling the callback in a subprocess. */
 struct cm_subproc_state *cm_subproc_start(int (*cb)(int fd,
 						    struct cm_store_ca *ca,
 						    struct cm_store_entry *e,
@@ -29,15 +30,21 @@ struct cm_subproc_state *cm_subproc_start(int (*cb)(int fd,
 					  struct cm_store_ca *ca,
 					  struct cm_store_entry *entry,
 					  void *data);
+/* Return a descriptor we can monitor.  If we return -1, the caller must poll.
+ */
 int cm_subproc_get_fd(struct cm_store_entry *entry,
 		      struct cm_subproc_state *state);
+/* Return 0 if the process has finished its run. */
 int cm_subproc_ready(struct cm_store_entry *entry,
 		     struct cm_subproc_state *state);
+/* Return the subprocess's output. */
 const char *cm_subproc_get_msg(struct cm_store_entry *entry,
 			       struct cm_subproc_state *state,
 			       int *length);
+/* Return the subprocess's exit status. */
 int cm_subproc_get_exitstatus(struct cm_store_entry *entry,
 			      struct cm_subproc_state *state);
+/* Clean up. */
 void cm_subproc_done(struct cm_store_entry *entry,
 		     struct cm_subproc_state *state);
 

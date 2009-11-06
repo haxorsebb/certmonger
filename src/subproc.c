@@ -97,7 +97,7 @@ cm_subproc_get_msg(struct cm_store_entry *entry, struct cm_subproc_state *state,
 	if (length != NULL) {
 		*length = state->count;
 	}
-	return state->msg;
+	return state->msg ? state->msg : "";
 }
 
 /* Get the exit status. */

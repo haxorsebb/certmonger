@@ -36,17 +36,16 @@
 #include "store-int.h"
 #include "submit.h"
 #include "submit-int.h"
-
+#include "subproc.h"
 
 struct cm_submit_state {
 	struct cm_submit_state_pvt pvt;
-	char msg[0x10000];
-	pid_t pid;
-	int fd, count, status;
+	struct cm_subproc_state *subproc;
 };
 
-static void
-cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry)
+static int
+cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
+		  void *userdata)
 {
 	FILE *keyfp, *pem;
 	RSA *rsa;
@@ -159,13 +158,14 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry)
 	if (status != 0) {
 		_exit(status);
 	}
+	return 0;
 }
 
 /* Get a selectable-for-read descriptor we can poll for status changes. */
 static int
 cm_submit_so_get_fd(struct cm_store_entry *entry, struct cm_submit_state *state)
 {
-	return state->fd;
+	return cm_subproc_get_fd(entry, state->subproc);
 }
 
 /* Save CA-specific identifier for our submitted request. */
@@ -187,41 +187,19 @@ cm_submit_so_save_ca_cookie(struct cm_store_entry *entry,
 static int
 cm_submit_so_ready(struct cm_store_entry *entry, struct cm_submit_state *state)
 {
-	ssize_t i, remainder;
-	int status;
-	do {
-		remainder = (sizeof(state->msg) - state->count) - 1;
-		i = read(state->fd, state->msg + state->count, remainder);
-		switch (i) {
-		case -1:
-		case 0:
-			break;
-		default:
-			state->count += i;
-			break;
-		}
-	} while (i > 0);
-	if ((i == -1) && ((errno == EAGAIN) || (errno == EINTR))) {
-		status = -1;
-	} else {
-		state->msg[state->count] = '\0';
-		close(state->fd);
-		state->fd = -1;
-		waitpid(state->pid, &state->status, 0);
-		state->pid = -1;
-		status = 0;
-	}
-	return status;
+	return cm_subproc_ready(entry, state->subproc);
 }
 
 /* Check if the certificate was issued. */
 static int
 cm_submit_so_issued(struct cm_store_entry *entry, struct cm_submit_state *state)
 {
-	if ((strstr(state->msg, "-----BEGIN CERTIFICATE-----") != NULL) &&
-	    (strstr(state->msg, "-----END CERTIFICATE-----") != NULL)) {
+	const char *msg;
+	msg = cm_subproc_get_msg(entry, state->subproc, NULL);
+	if ((strstr(msg, "-----BEGIN CERTIFICATE-----") != NULL) &&
+	    (strstr(msg, "-----END CERTIFICATE-----") != NULL)) {
 		talloc_free(entry->cm_cert);
-		entry->cm_cert = talloc_strdup(entry, state->msg);
+		entry->cm_cert = talloc_strdup(entry, msg);
 		return 0;
 	}
 	return -1;
@@ -247,11 +225,8 @@ cm_submit_so_unreachable(struct cm_store_entry *entry,
 static void
 cm_submit_so_done(struct cm_store_entry *entry, struct cm_submit_state *state)
 {
-	if (state->pid != -1) {
-		kill(state->pid, SIGKILL);
-	}
-	if (state->fd != -1) {
-		close(state->fd);
+	if (state->subproc != NULL) {
+		cm_subproc_done(entry, state->subproc);
 	}
 	talloc_free(state);
 }
@@ -260,7 +235,6 @@ cm_submit_so_done(struct cm_store_entry *entry, struct cm_submit_state *state)
 struct cm_submit_state *
 cm_submit_so_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 {
-	int fds[2];
 	struct cm_submit_state *state;
 	if (entry->cm_key_storage_type != cm_key_storage_file) {
 		cm_log(1, "Wrong submission method: only keys stored "
@@ -277,26 +251,11 @@ cm_submit_so_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 		state->pvt.rejected = cm_submit_so_rejected;
 		state->pvt.unreachable = cm_submit_so_unreachable;
 		state->pvt.done = cm_submit_so_done;
-		state->fd = -1;
-		if (pipe(fds) != -1) {
-			state->pid = fork();
-			switch (state->pid) {
-			case -1:
-				close(fds[0]);
-				close(fds[1]);
-				talloc_free(state);
-				state = NULL;
-				break;
-			case 0:
-				close(fds[0]);
-				cm_submit_so_main(fds[1], ca, entry);
-				_exit(0);
-				break;
-			default:
-				state->fd = fds[0];
-				close(fds[1]);
-				break;
-			}
+		state->subproc = cm_subproc_start(cm_submit_so_main,
+						  ca, entry, NULL);
+		if (state->subproc == NULL) {
+			talloc_free(state);
+			state = NULL;
 		}
 	}
 	return state;

@@ -38,16 +38,16 @@
 #include "log.h"
 #include "store.h"
 #include "store-int.h"
+#include "subproc.h"
 
 struct cm_certsave_state {
 	struct cm_certsave_state_pvt pvt;
-	char msg[0x10000];
-	pid_t pid;
-	int fd, count, status;
+	struct cm_subproc_state *subproc;
 };
 
-static void
-cm_certsave_n_main(struct cm_store_entry *entry)
+static int
+cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
+		   void *userdata)
 {
 	int status = 1;
 	PLArenaPool *arena;
@@ -138,6 +138,7 @@ cm_certsave_n_main(struct cm_store_entry *entry)
 	if (status != 0) {
 		_exit(status);
 	}
+	return 0;
 }
 
 /* Check if something changed, for example we finished saving the cert. */
@@ -145,31 +146,7 @@ static int
 cm_certsave_n_ready(struct cm_store_entry *entry,
 		    struct cm_certsave_state *state)
 {
-	ssize_t i, remainder;
-	int status;
-	do {
-		remainder = (sizeof(state->msg) - state->count) - 1;
-		i = read(state->fd, state->msg + state->count, remainder);
-		switch (i) {
-		case -1:
-		case 0:
-			break;
-		default:
-			state->count += i;
-			break;
-		}
-	} while (i > 0);
-	if ((i == -1) && ((errno == EAGAIN) || (errno == EINTR))) {
-		status = -1;
-	} else {
-		state->msg[state->count] = '\0';
-		close(state->fd);
-		state->fd = -1;
-		waitpid(state->pid, &state->status, 0);
-		state->pid = -1;
-		status = 0;
-	}
-	return status;
+	return cm_subproc_ready(entry, state->subproc);
 }
 
 /* Get a selectable-for-read descriptor we can poll for status changes. */
@@ -177,7 +154,7 @@ static int
 cm_certsave_n_get_fd(struct cm_store_entry *entry,
 		     struct cm_certsave_state *state)
 {
-	return state->fd;
+	return cm_subproc_get_fd(entry, state->subproc);
 }
 
 /* Check if we saved the certificate -- the child exited with status 0. */
@@ -185,14 +162,12 @@ static int
 cm_certsave_n_saved(struct cm_store_entry *entry,
 		    struct cm_certsave_state *state)
 {
-	if (state->pid == -1) {
-		if (!WIFEXITED(state->status) ||
-		    (WEXITSTATUS(state->status) != 0)) {
-			return -1;
-		}
-		return 0;
+	int status;
+	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	if (!WIFEXITED(status) || (WEXITSTATUS(status) != 0)) {
+		return -1;
 	}
-	return -1;
+	return 0;
 }
 
 /* Clean up after saving the certificate. */
@@ -200,11 +175,8 @@ static void
 cm_certsave_n_done(struct cm_store_entry *entry,
 		   struct cm_certsave_state *state)
 {
-	if (state->pid != -1) {
-		kill(state->pid, SIGKILL);
-	}
-	if (state->fd != -1) {
-		close(state->fd);
+	if (state->subproc != NULL) {
+		cm_subproc_done(entry, state->subproc);
 	}
 	talloc_free(state);
 }
@@ -213,8 +185,6 @@ cm_certsave_n_done(struct cm_store_entry *entry,
 struct cm_certsave_state *
 cm_certsave_n_start(struct cm_store_entry *entry)
 {
-	int fds[2];
-	long flags;
 	struct cm_certsave_state *state;
 	if (entry->cm_cert_storage_type != cm_cert_storage_nssdb) {
 		cm_log(1, "Wrong save method: can only save certificates "
@@ -228,28 +198,11 @@ cm_certsave_n_start(struct cm_store_entry *entry)
 		state->pvt.get_fd= cm_certsave_n_get_fd;
 		state->pvt.saved= cm_certsave_n_saved;
 		state->pvt.done= cm_certsave_n_done;
-		state->fd = -1;
-		if (pipe(fds) != -1) {
-			state->pid = fork();
-			switch (state->pid) {
-			case -1:
-				close(fds[0]);
-				close(fds[1]);
-				talloc_free(state);
-				state = NULL;
-				break;
-			case 0:
-				close(fds[0]);
-				cm_certsave_n_main(entry);
-				_exit(0);
-				break;
-			default:
-				state->fd = fds[0];
-				flags = fcntl(state->fd, F_GETFL);
-				fcntl(state->fd, F_SETFL, flags | O_NONBLOCK);
-				close(fds[1]);
-				break;
-			}
+		state->subproc = cm_subproc_start(cm_certsave_n_main,
+						  NULL, entry, NULL);
+		if (state->subproc == NULL) {
+			talloc_free(state);
+			state = NULL;
 		}
 	}
 	return state;

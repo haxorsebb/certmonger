@@ -30,15 +30,16 @@
 #include "notify.h"
 #include "store.h"
 #include "store-int.h"
+#include "subproc.h"
 
 struct cm_notify_state {
-	pid_t pid;
-	int fd, status;
+	struct cm_subproc_state *subproc;
 };
 
 /* Fire off the proper notification. */
-static void
-cm_notify_main(int fd, struct cm_store_entry *entry)
+static int
+cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
+	       void *userdata)
 {
 	enum cm_notification_method method;
 	const char *dest, *p, *q, *message = NULL;
@@ -180,36 +181,21 @@ cm_notify_main(int fd, struct cm_store_entry *entry)
 		execlp("mail", "mail", "-s", message, dest, NULL);
 		break;
 	}
+	return 0;
 }
 
 /* Start notifying the user that the certificate will expire soon. */
 struct cm_notify_state *
 cm_notify_start(struct cm_store_entry *entry)
 {
-	int fds[2];
 	struct cm_notify_state *state;
 	state = talloc_ptrtype(entry, state);
 	if (state != NULL) {
-		state->fd = -1;
-		if (pipe(fds) != -1) {
-			state->pid = fork();
-			switch (state->pid) {
-			case -1:
-				close(fds[0]);
-				close(fds[1]);
-				talloc_free(state);
-				state = NULL;
-				break;
-			case 0:
-				close(fds[0]);
-				cm_notify_main(fds[1], entry);
-				_exit(0);
-				break;
-			default:
-				state->fd = fds[0];
-				close(fds[1]);
-				break;
-			}
+		state->subproc = cm_subproc_start(cm_notify_main,
+						  NULL, entry, NULL);
+		if (state->subproc == NULL) {
+			talloc_free(state);
+			state = NULL;
 		}
 	}
 	return state;
@@ -219,31 +205,22 @@ cm_notify_start(struct cm_store_entry *entry)
 int
 cm_notify_get_fd(struct cm_store_entry *entry, struct cm_notify_state *state)
 {
-	return state->fd;
+	return cm_subproc_get_fd(entry, state->subproc);
 }
 
 /* Check if our child process has exited. */
 int
 cm_notify_ready(struct cm_store_entry *entry, struct cm_notify_state *state)
 {
-	if (state->pid != -1) {
-		close(state->fd);
-		state->fd = -1;
-		waitpid(state->pid, &state->status, 0);
-		state->pid = -1;
-	}
-	return 0;
+	return cm_subproc_ready(entry, state->subproc);
 }
 
 /* Clean up after notification. */
 void
 cm_notify_done(struct cm_store_entry *entry, struct cm_notify_state *state)
 {
-	if (state->pid != -1) {
-		kill(state->pid, SIGKILL);
-	}
-	if (state->fd != -1) {
-		close(state->fd);
+	if (state->subproc != NULL) {
+		cm_subproc_done(entry, state->subproc);
 	}
 	talloc_free(state);
 }

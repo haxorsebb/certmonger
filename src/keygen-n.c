@@ -272,7 +272,7 @@ struct cm_keygen_state *
 cm_keygen_n_start(struct cm_store_entry *entry)
 {
 	struct cm_keygen_state *state;
-	if (entry->cm_key_storage_type != cm_key_storage_file) {
+	if (entry->cm_key_storage_type != cm_key_storage_nssdb) {
 		return NULL;
 	}
 	state = talloc_ptrtype(entry, state);
