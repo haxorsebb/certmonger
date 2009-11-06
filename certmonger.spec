@@ -1,5 +1,5 @@
 Name:		certmonger
-Version:	0.6
+Version:	0.7
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -54,7 +54,7 @@ exit 0
 
 %files
 %defattr(-,root,root,-)
-%doc README LICENSE STATUS doc/*
+%doc README LICENSE STATUS doc/*.txt
 %config /etc/dbus-1/system.d/*
 %{_initddir}/certmonger
 %{_bindir}/*
@@ -64,6 +64,12 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Fri Nov  6 2009 Nalin Dahyabhai <nalin@redhat.com> 0.7-1
+- update to 0.7
+  - first cut at a getting-started document
+  - refactor some internal key handling with NSS
+  - check for duplicate request nicknames at add-time
+
 * Tue Nov  3 2009 Nalin Dahyabhai <nalin@redhat.com> 0.6-1
 - update to 0.6
   - man pages
