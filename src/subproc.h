@@ -1,0 +1,45 @@
+/*
+ * Copyright (C) 2009 Red Hat, Inc.
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef cmsubproc_h
+#define cmsubproc_h
+
+struct cm_store_ca;
+struct cm_store_entry;
+struct cm_subproc_state;
+
+struct cm_subproc_state *cm_subproc_start(int (*cb)(int fd,
+						    struct cm_store_ca *ca,
+						    struct cm_store_entry *e,
+						    void *data),
+					  int fd,
+					  struct cm_store_ca *ca,
+					  struct cm_store_entry *entry,
+					  void *data);
+int cm_subproc_get_fd(struct cm_store_entry *entry,
+		      struct cm_subproc_state *state);
+int cm_subproc_ready(struct cm_store_entry *entry,
+		     struct cm_subproc_state *state);
+const char *cm_subproc_get_msg(struct cm_store_entry *entry,
+			       struct cm_subproc_state *state,
+			       int *length);
+int cm_subproc_get_exitstatus(struct cm_store_entry *entry,
+			      struct cm_subproc_state *state);
+void cm_subproc_done(struct cm_store_entry *entry,
+		     struct cm_subproc_state *state);
+
+#endif

@@ -1,0 +1,173 @@
+/*
+ * Copyright (C) 2009 Red Hat, Inc.
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "config.h"
+
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#include <talloc.h>
+
+#include "log.h"
+#include "subproc.h"
+
+#define GROW_SIZE 0x2000
+
+struct cm_subproc_state {
+	pid_t pid;
+	char *msg;
+	int fd, count, bufsize, status;
+};
+
+struct cm_subproc_state *
+cm_subproc_start(int (*cb)(int fd,
+			   struct cm_store_ca *ca,
+			   struct cm_store_entry *entry,
+			   void *data),
+		 int fd,
+		 struct cm_store_ca *ca,
+		 struct cm_store_entry *entry,
+		 void *data)
+{
+	struct cm_subproc_state *state;
+	int fds[2];
+	long flags;
+	state = talloc_ptrtype(entry, state);
+	if (state != NULL) {
+		memset(state, 0, sizeof(*state));
+		state->fd = -1;
+		state->msg = NULL;
+		state->status = -1;
+		if (pipe(fds) != -1) {
+			state->pid = fork();
+			switch (state->pid) {
+			case -1:
+				close(fds[0]);
+				close(fds[1]);
+				talloc_free(state);
+				state = NULL;
+				break;
+			case 0:
+				close(fds[0]);
+				exit((*cb)(fds[1], ca, entry, data));
+				break;
+			default:
+				state->fd = fds[0];
+				flags = fcntl(state->fd, F_GETFL);
+				fcntl(state->fd, F_SETFL, flags | O_NONBLOCK);
+				close(fds[1]);
+				break;
+			}
+		}
+	}
+	return state;
+}
+
+/* Get a selectable-for-read descriptor we can poll for status changes. */
+int
+cm_subproc_get_fd(struct cm_store_entry *entry, struct cm_subproc_state *state)
+{
+	return state->fd;
+}
+
+/* Get the output to-date. */
+const char *
+cm_subproc_get_msg(struct cm_store_entry *entry, struct cm_subproc_state *state,
+		   int *length)
+{
+	if (length != NULL) {
+		*length = state->count;
+	}
+	return state->msg;
+}
+
+/* Get the exit status. */
+int
+cm_subproc_get_exitstatus(struct cm_store_entry *entry,
+			  struct cm_subproc_state *state)
+{
+	return state->status;
+}
+
+/* Clean up when we're done. */
+void
+cm_subproc_done(struct cm_store_entry *entry, struct cm_subproc_state *state)
+{
+	if (state->pid != -1) {
+		kill(state->pid, SIGKILL);
+	}
+	if (state->fd != -1) {
+		close(state->fd);
+	}
+	talloc_free(state);
+}
+
+/* Check if we're done (return 0), or need to be called again (-1). */
+int
+cm_subproc_ready(struct cm_store_entry *entry,
+		 struct cm_subproc_state *state)
+{
+	ssize_t i, remainder;
+	char *tmp;
+	int status;
+	if (state->pid == -1) {
+		return state->status;
+	}
+	do {
+		remainder = state->bufsize - state->count;
+		if (remainder <= 0) {
+			tmp = talloc_realloc_size(state, state->msg,
+						  state->bufsize + GROW_SIZE + 1);
+			if (tmp != NULL) {
+				state->msg = tmp;
+				state->bufsize += GROW_SIZE;
+				state->msg[state->bufsize] = '\0';
+				remainder = state->bufsize - state->count;
+			} else {
+				errno = EINTR;
+				i = -1;
+				break;
+			}
+		}
+		i = read(state->fd, state->msg + state->count, remainder);
+		switch (i) {
+		case -1:
+		case 0:
+			break;
+		default:
+			state->count += i;
+			break;
+		}
+	} while (i > 0);
+	if ((i == -1) && ((errno == EAGAIN) || (errno == EINTR))) {
+		status = -1;
+	} else {
+		state->msg[state->count] = '\0';
+		close(state->fd);
+		state->fd = -1;
+		waitpid(state->pid, &state->status, 0);
+		state->pid = -1;
+		status = 0;
+	}
+	return status;
+}
