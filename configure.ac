@@ -21,9 +21,13 @@ mylocalstatedir=`eval echo $mylocalstatedir | sed "s,NONE,$ac_default_prefix,g"`
 mylocalstatedir=`eval echo $mylocalstatedir | sed "s,NONE,,g"`
 AC_DEFINE_UNQUOTED(CM_STORE_REQUESTS_DIRECTORY,"$mylocalstatedir/requests",
 		   [Define to the default path for request tracking files.])
+CM_STORE_REQUESTS_DIRECTORY="$mylocalstatedir/requests"
+AC_SUBST(CM_STORE_REQUESTS_DIRECTORY)
 UPCASE_PACKAGE_NAME=`echo "${PACKAGE_NAME}" | tr '[a-z]' '[A-Z]'`
 AC_DEFINE_UNQUOTED(CM_STORE_REQUESTS_DIRECTORY_ENV,"${UPCASE_PACKAGE_NAME}_REQUESTS_DIR",
 		   [Define to the name of the environment variable which can specify the directory for tracking requests.])
+CM_STORE_REQUESTS_DIRECTORY_ENV="${UPCASE_PACKAGE_NAME}_REQUESTS_DIR"
+AC_SUBST(CM_STORE_REQUESTS_DIRECTORY_ENV)
 AC_DEFINE_UNQUOTED(CM_STORE_REQUEST_DEFAULTS,"$mylocalstatedir/defaults",
 		   [Define to the location of run-time defaults for requests.])
 UPCASE_PACKAGE_NAME=`echo "${PACKAGE_NAME}" | tr '[a-z]' '[A-Z]'`
