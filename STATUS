@@ -38,6 +38,8 @@ Complete:
     before falling back to compiled-in defaults.
   * Actually do notification of expiration and impending expiration.
   * Learn to exec a helper to do non-local enrollment.
+  * Detect when network connections go up and "kick" anything that's
+    waiting for a server to become reachable.
 
 To-do:
   * Should offer an API over D-Bus which the client uses instead of
@@ -45,10 +47,6 @@ To-do:
     * Set/reset PIN for encrypted key storage... maybe? (1 day)
       MUST
   * Be able to use hashes other than the current hard-wired SHA256.
-    MUST
-  * Detect when network connections go up (it's not enough to depend on
-    signals from NetworkManager -- learn to use netlink?) and "kick"
-    anything that's waiting for a server to become reachable.
     MUST
   * Learn to submit to at least one actual CA: IPA via XML-RPC over
     HTTPS, authenticating using Negotiate with creds obtained using

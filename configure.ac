@@ -3,6 +3,14 @@ AM_INIT_AUTOMAKE([foreign])
 AM_MAINTAINER_MODE
 AC_PROG_CC
 AC_PROG_RANLIB
+AC_CHECK_HEADERS(linux/types.h linux/netlink.h linux/rtnetlink.h,,,[
+	#ifdef HAVE_LINUX_TYPES_H
+	#include <linux/types.h>
+	#endif
+	#ifdef HAVE_LINUX_NETLINK_H
+	#include <linux/netlink.h>
+	#endif
+])
 AC_CONFIG_HEADER(src/config.h)
 if test x$GCC = xyes ; then
 	CFLAGS="$CFLAGS -Wall -Wextra"
@@ -118,7 +126,7 @@ AC_DEFINE_UNQUOTED(CM_DEFAULT_NOTIFICATION_MAIL,"root",[Define to the address wh
 AC_DEFINE_UNQUOTED(CM_DEFAULT_NOTIFICATION_SYSLOG_PRIORITY,"daemon.notice",[Define to the syslog facility from which notification messages should be sent by default.])
 AC_DEFINE(CM_DELAY_SOON,1,[Define to the time to wait for something that will happen soon.])
 AC_DEFINE(CM_DELAY_SOONISH,5,[Define to the time to wait for something that will happen soon, but not that soon.])
-AC_DEFINE(CM_DELAY_CA_POLL,(60 * 60),[Define to the time to wait between attempts to see if the CA issued a certificate.])
+AC_DEFINE(CM_DELAY_CA_POLL,(7 * 24 * 60 * 60),[Define to the time to wait between attempts to see if the CA issued a certificate.])
 
 CM_SELF_SIGN_CA_NAME=SelfSign
 AC_SUBST(CM_SELF_SIGN_CA_NAME)

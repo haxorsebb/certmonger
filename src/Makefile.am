@@ -25,6 +25,8 @@ libcm_a_SOURCES = \
 	keyiread-int.h \
 	log.h \
 	log.c \
+	netlink.h \
+	netlink.c \
 	notify.h \
 	notify.c \
 	oiddict.h \
