@@ -1321,7 +1321,6 @@ cm_store_ca_save(struct cm_store_ca *ca)
 			fclose(fp);
 			rename(path, (const char *) ca->cm_store_private);
 		} else {
-			fclose(fp);
 			remove(path);
 		}
 		return 0;
