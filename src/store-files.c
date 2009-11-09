@@ -1041,6 +1041,31 @@ cm_store_entry_delete(struct cm_store_entry *entry)
 	return 0;
 }
 
+static void
+cm_store_create_containing_dir(const char *path, int mode)
+{
+	char dir[PATH_MAX];
+	struct stat st;
+	int i;
+	if (strlen(path) >= sizeof(dir)) {
+		return;
+	}
+	for (i = 0, dir[0] = '\0'; path[i] != '\0'; i++) {
+		if ((i > 0) && (path[i] == '/')) { /* XXX */
+			if ((stat(dir, &st) == -1) && (errno == ENOENT)) {
+				if (mkdir(dir, mode) == -1) {
+					cm_log(1, "Failed to create \"%s\": "
+					       "%s.\n", dir, strerror(errno));
+					break;
+				}
+				cm_log(2, "Created \"%s\".\n", dir);
+			}
+		}
+		dir[i] = path[i];
+		dir[i + 1] = '\0';
+	}
+}
+
 int
 cm_store_entry_save(struct cm_store_entry *entry)
 {
@@ -1059,6 +1084,12 @@ cm_store_entry_save(struct cm_store_entry *entry)
 		fd = open(path,
 			  O_WRONLY | O_CREAT | O_EXCL,
 			  S_IRUSR | S_IWUSR);
+		if ((fd == -1) && (errno == ENOENT)) {
+			cm_store_create_containing_dir(path, S_IRWXU);
+			fd = open(path,
+				  O_WRONLY | O_CREAT | O_EXCL,
+				  S_IRUSR | S_IWUSR);
+		}
 		if (fd == -1) {
 			switch (errno) {
 			case ENOENT:
@@ -1109,6 +1140,8 @@ cm_store_entry_save(struct cm_store_entry *entry)
 			return -1;
 		}
 	} else {
+		cm_log(1, "Error opening \"%s\" for writing: %s.\n",
+		       strerror(errno));
 		return -1;
 	}
 }
@@ -1277,6 +1310,12 @@ cm_store_ca_save(struct cm_store_ca *ca)
 		fd = open(path,
 			  O_WRONLY | O_CREAT | O_EXCL,
 			  S_IRUSR | S_IWUSR);
+		if ((fd == -1) && (errno == ENOENT)) {
+			cm_store_create_containing_dir(path, S_IRWXU);
+			fd = open(path,
+				  O_WRONLY | O_CREAT | O_EXCL,
+				  S_IRUSR | S_IWUSR);
+		}
 		if (fd == -1) {
 			switch (errno) {
 			case ENOENT:
@@ -1321,10 +1360,13 @@ cm_store_ca_save(struct cm_store_ca *ca)
 			fclose(fp);
 			rename(path, (const char *) ca->cm_store_private);
 		} else {
+			fclose(fp);
 			remove(path);
 		}
 		return 0;
 	} else {
+		cm_log(1, "Error opening \"%s\" for writing: %s.\n",
+		       strerror(errno));
 		return -1;
 	}
 }
