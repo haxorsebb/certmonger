@@ -52,7 +52,7 @@ size of the key.  If not specified, a reasonable default (currently
 Attempt to obtain a new certificate from the CA when the expiration date of a
 certificate nears.
 .TP
-\fB\-i\fR NAME
+\fB\-I\fR NAME
 Assign the specified nickname to this task.  If this option is not specified,
 a name will be assigned automatically.
 

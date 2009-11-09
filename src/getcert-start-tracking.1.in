@@ -13,6 +13,14 @@ pair (or to generate one if one is not already found in the specified
 location), to generate a signing request using the key pair and to
 submit them for signing to a CA.
 
+.SH SPECIFYING EXISTING REQUESTS
+.TP
+\fB\-i\fR NAME
+Modify the request which has this nickname.  If this option is not specified,
+and a tracking entry which matches the key and certificate storage options
+which are specified already exists, that entry will be modified.  Otherwise, a
+new tracking entry will be added.
+
 .SH KEY AND CERTIFICATE STORAGE OPTIONS
 .TP
 \fB\-d\fR DIR
@@ -43,7 +51,7 @@ Only valid with \fB\-f\fR.
 
 .SH TRACKING OPTIONS
 .TP
-\fB\-i\fR NAME
+\fB\-I\fR NAME
 Assign the specified nickname to this task.  If this option is not specified,
 a name will be assigned automatically.
 .TP

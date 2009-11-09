@@ -116,11 +116,32 @@ static DBusMessage *
 send_req(DBusMessage *req)
 {
 	DBusMessage *rep;
+	DBusError err;
+	memset(&err, 0, sizeof(err));
 	rep = dbus_connection_send_with_reply_and_block(globals.conn, req,
-							30 * 1000, NULL);
+							30 * 1000, &err);
 	if (rep == NULL) {
-		printf(_("No response received from %s service.\n"),
-		       CM_DBUS_NAME);
+		if (dbus_error_is_set(&err)) {
+			if (err.name != NULL) {
+				if (err.message != NULL) {
+					printf(_("Error %s: %s\n"), err.name,
+					       err.message);
+				} else {
+					printf(_("Error %s\n"), err.name);
+				}
+			} else {
+				if (err.message != NULL) {
+					printf(_("Error: %s\n"), err.message);
+				} else {
+					printf(_("Received error response from "
+						 "local %s service.\n"),
+						 CM_DBUS_NAME);
+				}
+			}
+		} else {
+			printf(_("No response received from %s service.\n"),
+			       CM_DBUS_NAME);
+		}
 		exit(1);
 	}
 	dbus_message_unref(req);
@@ -252,7 +273,7 @@ request(const char *argv0, int argc, char **argv)
 	}
 
 	while ((c = getopt(argc, argv,
-			   "d:n:t:k:f:i:g:rN:U:K:D:E:sS" GETOPT_CA)) != -1) {
+			   "d:n:t:k:f:I:g:rN:U:K:D:E:sS" GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
 			dbdir = talloc_strdup(globals.tctx, optarg);
@@ -272,7 +293,7 @@ request(const char *argv0, int argc, char **argv)
 		case 'g':
 			keysize = atoi(optarg);
 			break;
-		case 'i':
+		case 'I':
 			id = talloc_strdup(globals.tctx, optarg);
 			break;
 		case 'r':
@@ -761,13 +782,15 @@ set_tracking(const char *argv0, const char *category,
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	DBusMessage *req, *rep;
 	const char *request;
-	struct cm_tdbusm_dict param[3];
-	const struct cm_tdbusm_dict *params[3];
-	char *dbdir = NULL, *token = NULL, *nickname = NULL, *id = NULL;
+	struct cm_tdbusm_dict param[4];
+	const struct cm_tdbusm_dict *params[5];
+	char *dbdir = NULL, *token = NULL, *nickname = NULL;
+	char *id = NULL, *new_id = NULL;
 	char *keyfile = NULL, *certfile = NULL, *ca = DEFAULT_CA;
 	dbus_bool_t b;
 	int c, auto_renew = 0, i;
-	while ((c = getopt(argc, argv, "d:n:t:k:f:g:ri:sS" GETOPT_CA)) != -1) {
+	while ((c = getopt(argc, argv,
+			   "d:n:t:k:f:g:ri:I:sS" GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
 			dbdir = talloc_strdup(globals.tctx, optarg);
@@ -803,6 +826,9 @@ set_tracking(const char *argv0, const char *category,
 		case 'i':
 			id = talloc_strdup(globals.tctx, optarg);
 			break;
+		case 'I':
+			new_id = talloc_strdup(globals.tctx, optarg);
+			break;
 		case 's':
 			bus = cm_tdbus_session;
 			break;
@@ -835,6 +861,13 @@ set_tracking(const char *argv0, const char *category,
 			param[i].value.b = auto_renew > 0;
 			params[i] = &param[i];
 			i++;
+			if (new_id != NULL) {
+				param[i].key = "NICKNAME";
+				param[i].value_type = cm_tdbusm_dict_s;
+				param[i].value.s = new_id;
+				params[i] = &param[i];
+				i++;
+			}
 			params[i] = NULL;
 			req = prep_req(bus, request, CM_DBUS_REQUEST_INTERFACE,
 				       "modify");
@@ -1243,7 +1276,7 @@ help(const char *cmd, const char *category)
 		"\n",
 		N_("Optional arguments:\n"),
 		N_("* Certificate handling settings:\n"),
-		N_("  -i NAME	nickname to assign to the request\n"),
+		N_("  -I NAME	nickname to assign to the request\n"),
 		N_("  -g SIZE	size of key to be generated if one is not already in place\n"),
 		N_("  -r		attempt to refresh the certificate when expiration nears\n"),
 #ifndef FORCE_CA
@@ -1264,6 +1297,8 @@ help(const char *cmd, const char *category)
 		N_("Usage: %s start-tracking [options]\n"),
 		"\n",
 		N_("Required arguments:\n"),
+		N_("* If modifying an existing request:\n"),
+		N_("  -i NAME	nickname of an existing tracking request\n"),
 		N_("* If using an NSS database for storage:\n"),
 		N_("  -d DIR	NSS database for key and cert\n"),
 		N_("  -n NAME	nickname for NSS-based storage (only valid with -d)\n"),
@@ -1274,7 +1309,7 @@ help(const char *cmd, const char *category)
 		"\n",
 		N_("Optional arguments:\n"),
 		N_("* Certificate handling settings:\n"),
-		N_("  -i NAME	nickname to give to tracking request\n"),
+		N_("  -I NAME	nickname to give to tracking request\n"),
 		N_("  -r		attempt to renew the certificate when expiration nears\n"),
 #ifndef FORCE_CA
 		N_("  -c CA		use the specified CA rather than the default\n"),
