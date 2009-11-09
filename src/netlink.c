@@ -47,6 +47,10 @@ cm_netlink_socket(void)
 		close(fd);
 		return -1;
 	};
+	if (fcntl(fd, F_SETFD, (long) 1) == -1) {
+		close(fd);
+		return -1;
+	};
 	memset(&sn, 0, sizeof(sn));
 	sn.nl_family = AF_NETLINK;
 	sn.nl_pad = 0;
