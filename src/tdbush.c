@@ -1557,6 +1557,19 @@ request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 			    (strcasecmp(param->key, "TRACK") == 0)) {
 				entry->cm_monitor_default = FALSE;
 				entry->cm_monitor = param->value.b;
+			} else
+			if ((param->value_type == cm_tdbusm_dict_s) &&
+			    (strcasecmp(param->key, "NICKNAME") == 0)) {
+				if (cm_get_entry_by_id(ctx, param->value.s) == NULL) {
+					entry->cm_id = talloc_strdup(entry,
+								     param->value.s);
+				} else {
+					return send_internal_base_duplicate_error(conn, msg,
+										  _("There is already a request with the nickname \"%s\"."),
+										  param->value.s,
+										  "NICKNAME",
+										  NULL);
+				}
 			} else {
 				break;
 			}
