@@ -185,8 +185,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		_exit(2);
 	}
 	/* Select a subject name. */
-	if (!entry->cm_template_default &&
-	    (entry->cm_template_subject != NULL) &&
+	if ((entry->cm_template_subject != NULL) &&
 	    (strlen(entry->cm_template_subject) != 0)) {
 		name = CERT_AsciiToName(entry->cm_template_subject);
 	} else {

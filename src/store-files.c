@@ -76,7 +76,6 @@ enum cm_store_file_field {
 	cm_store_entry_field_notification_method,
 	cm_store_entry_field_notification_destination,
 
-	cm_store_entry_field_template_default,
 	cm_store_entry_field_template_subject,
 	cm_store_entry_field_template_hostname,
 	cm_store_entry_field_template_email,
@@ -151,7 +150,6 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_notification_destination,
 	 "notification_destination"},
 
-	{cm_store_entry_field_template_default, "template_default"},
 	{cm_store_entry_field_template_subject, "template_subject"},
 	{cm_store_entry_field_template_hostname, "template_hostname"},
 	{cm_store_entry_field_template_email, "template_email"},
@@ -549,10 +547,6 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 				ret->cm_notification_destination =
 					free_if_empty(p);
 				break;
-			case cm_store_entry_field_template_default:
-				ret->cm_template_default = atoi(p);
-				talloc_free(p);
-				break;
 			case cm_store_entry_field_template_subject:
 				ret->cm_template_subject = free_if_empty(p);
 				break;
@@ -669,7 +663,6 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_notification_default:
 			case cm_store_entry_field_notification_method:
 			case cm_store_entry_field_notification_destination:
-			case cm_store_entry_field_template_default:
 			case cm_store_entry_field_template_subject:
 			case cm_store_entry_field_template_hostname:
 			case cm_store_entry_field_template_email:
@@ -980,8 +973,6 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 				cm_store_entry_field_notification_destination,
 				entry->cm_notification_destination);
 
-	cm_store_file_write_int(fp, cm_store_entry_field_template_default,
-				entry->cm_template_default);
 	cm_store_file_write_str(fp, cm_store_entry_field_template_subject,
 				entry->cm_template_subject);
 	cm_store_file_write_strs(fp, cm_store_entry_field_template_hostname,

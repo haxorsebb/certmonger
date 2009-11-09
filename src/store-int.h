@@ -83,7 +83,6 @@ struct cm_store_entry {
 	   *  email
 	   *  principal name
 	   * ku, eku */
-	unsigned int cm_template_default:1;
 	char *cm_template_subject;
 	char **cm_template_hostname;
 	char **cm_template_email;
