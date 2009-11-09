@@ -1561,6 +1561,7 @@ request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 			if ((param->value_type == cm_tdbusm_dict_s) &&
 			    (strcasecmp(param->key, "NICKNAME") == 0)) {
 				if (cm_get_entry_by_id(ctx, param->value.s) == NULL) {
+					talloc_free(entry->cm_id);
 					entry->cm_id = talloc_strdup(entry,
 								     param->value.s);
 				} else {
