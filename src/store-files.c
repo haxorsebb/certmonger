@@ -615,6 +615,21 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 	return ret;
 }
 
+struct cm_store_entry *
+cm_store_files_entry_read(void *parent, const char *filename)
+{
+	FILE *fp;
+	struct cm_store_entry *ret;
+	fp = fopen(filename, "r");
+	if (fp != NULL) {
+		ret = cm_store_entry_read(parent, filename, fp);
+		fclose(fp);
+	} else {
+		ret = NULL;
+	}
+	return ret;
+}
+
 static struct cm_store_ca *
 cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 {
@@ -720,6 +735,21 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 	}
 	if (ret->cm_ca_internal_lifetime == NULL) {
 		ret->cm_ca_internal_lifetime = talloc_strdup(ret, CM_DEFAULT_CERT_LIFETIME);
+	}
+	return ret;
+}
+
+struct cm_store_ca *
+cm_store_files_ca_read(void *parent, const char *filename)
+{
+	FILE *fp;
+	struct cm_store_ca *ret;
+	fp = fopen(filename, "r");
+	if (fp != NULL) {
+		ret = cm_store_ca_read(parent, filename, fp);
+		fclose(fp);
+	} else {
+		ret = NULL;
 	}
 	return ret;
 }

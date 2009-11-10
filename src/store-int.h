@@ -153,4 +153,8 @@ struct cm_store_ca {
 const char *cm_store_state_as_string(enum cm_state state);
 enum cm_state cm_store_state_from_string(const char *name);
 
+struct cm_store_entry *cm_store_files_entry_read(void *parent,
+						 const char *filename);
+struct cm_store_ca *cm_store_files_ca_read(void *parent,
+					   const char *filename);
 #endif

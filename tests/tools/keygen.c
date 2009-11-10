@@ -1,0 +1,90 @@
+/*
+ * Copyright (C) 2009 Red Hat, Inc.
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "../../src/config.h"
+
+#include <sys/types.h>
+#include <sys/select.h>
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <talloc.h>
+#include <unistd.h>
+
+#include "../../src/keygen.h"
+#include "../../src/store-int.h"
+
+static void
+wait_to_read(int fd)
+{
+	fd_set rfds;
+	struct timeval tv;
+	FD_ZERO(&rfds);
+	FD_SET(fd, &rfds);
+	tv.tv_sec = 1;
+	tv.tv_usec = 0;
+	select(fd + 1, &rfds, NULL, NULL, &tv);
+}
+
+int
+main(int argc, char **argv)
+{
+	struct cm_keygen_state *state;
+	struct cm_store_entry *entry;
+	int fd, ret;
+	void *parent;
+	parent = talloc_new(NULL);
+	if (argc > 1) {
+		entry = cm_store_files_entry_read(parent, argv[1]);
+		if (entry == NULL) {
+			printf("Error reading %s: %s.\n", argv[1],
+			       strerror(errno));
+			return 1;
+		}
+	} else {
+		printf("Specify an entry file as the single argument.\n");
+		return 1;
+	}
+	state = cm_keygen_start(entry);
+	if (state != NULL) {
+		for (;;) {
+			fd = cm_keygen_get_fd(entry, state);
+			if (fd != -1) {
+				wait_to_read(fd);
+			} else {
+				sleep(1);
+			}
+			if (cm_keygen_ready(entry, state) == 0) {
+				break;
+			}
+		}
+		if (cm_keygen_saved_keypair(entry, state) == 0) {
+			printf("OK.\n");
+			ret = 0;
+		} else {
+			printf("Failed to save.\n");
+			ret = 1;
+		}
+		cm_keygen_done(entry, state);
+	} else {
+		printf("Failed to start.\n");
+		ret = 1;
+	}
+	talloc_free(parent);
+	return ret;
+}
