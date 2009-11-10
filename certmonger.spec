@@ -33,6 +33,9 @@ mkdir -p $RPM_BUILD_ROOT/%{_initddir}
 mkdir -p $RPM_BUILD_ROOT/%{_localstatedir}/lib/certmonger/{cas,requests}
 install -m755 src/certmonger.init $RPM_BUILD_ROOT/%{_initddir}/certmonger
 
+%check
+make check
+
 %clean
 rm -rf $RPM_BUILD_ROOT
 
@@ -67,6 +70,8 @@ exit 0
 * Tue Nov 10 2009 Nalin Dahyabhai <nalin@redhat.com> 0.8-1
 - update to 0.8
   - encode windows UPN values in requests correctly
+  - watch for netlink routing changes and restart stalled submission requests
+  - 'getcert resubmit' can force a regeneration of the CSR and submission
 
 * Fri Nov  6 2009 Nalin Dahyabhai <nalin@redhat.com> 0.7-1
 - update to 0.7
