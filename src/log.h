@@ -19,7 +19,8 @@
 #define cmlog_h
 
 enum cm_log_method {
-	cm_log_syslog = 0,
+	cm_log_none = 0,
+	cm_log_syslog,
 	cm_log_stderr,
 };
 

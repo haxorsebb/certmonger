@@ -63,6 +63,8 @@ cm_log(int level, const char *fmt, ...)
 	time_t now;
 	if (level <= cm_log_level) {
 		switch (cm_log_method) {
+		case cm_log_none:
+			break;
 		case cm_log_stderr:
 			now = time(NULL);
 			localtime_r(&now, &lt);
