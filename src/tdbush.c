@@ -1599,66 +1599,6 @@ request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 }
 
 static DBusHandlerResult
-request_reenroll(DBusConnection *conn, DBusMessage *msg,
-		 struct cm_context *ctx)
-{
-	DBusMessage *rep;
-	struct cm_store_entry *entry;
-	entry = get_entry_for_request_message(msg, ctx);
-	if (entry == NULL) {
-		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-	}
-	rep = dbus_message_new_method_return(msg);
-	if (rep != NULL) {
-		if (cm_stop_one(ctx, entry->cm_id) == 0) {
-			entry->cm_state = CM_NEED_CSR;
-			if (cm_start_one(ctx, entry->cm_id) == 0) {
-				cm_tdbusm_set_b(rep, TRUE);
-			} else {
-				cm_tdbusm_set_b(rep, FALSE);
-			}
-		} else {
-			cm_tdbusm_set_b(rep, FALSE);
-		}
-		dbus_connection_send(conn, rep, NULL);
-		dbus_message_unref(rep);
-		return DBUS_HANDLER_RESULT_HANDLED;
-	} else {
-		return send_internal_request_error(conn, msg);
-	}
-}
-
-static DBusHandlerResult
-request_rekey_and_submit(DBusConnection *conn, DBusMessage *msg,
-			 struct cm_context *ctx)
-{
-	DBusMessage *rep;
-	struct cm_store_entry *entry;
-	entry = get_entry_for_request_message(msg, ctx);
-	if (entry == NULL) {
-		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-	}
-	rep = dbus_message_new_method_return(msg);
-	if (rep != NULL) {
-		if (cm_stop_one(ctx, entry->cm_id) == 0) {
-			entry->cm_state = CM_NEED_KEY_PAIR;
-			if (cm_start_one(ctx, entry->cm_id) == 0) {
-				cm_tdbusm_set_b(rep, TRUE);
-			} else {
-				cm_tdbusm_set_b(rep, FALSE);
-			}
-		} else {
-			cm_tdbusm_set_b(rep, FALSE);
-		}
-		dbus_connection_send(conn, rep, NULL);
-		dbus_message_unref(rep);
-		return DBUS_HANDLER_RESULT_HANDLED;
-	} else {
-		return send_internal_request_error(conn, msg);
-	}
-}
-
-static DBusHandlerResult
 request_resubmit(DBusConnection *conn, DBusMessage *msg,
 		 struct cm_context *ctx)
 {
@@ -1671,7 +1611,7 @@ request_resubmit(DBusConnection *conn, DBusMessage *msg,
 	rep = dbus_message_new_method_return(msg);
 	if (rep != NULL) {
 		if (cm_stop_one(ctx, entry->cm_id) == 0) {
-			entry->cm_state = CM_HAVE_CSR;
+			entry->cm_state = CM_NEED_CSR;
 			if (cm_start_one(ctx, entry->cm_id) == 0) {
 				cm_tdbusm_set_b(rep, TRUE);
 			} else {
@@ -1799,12 +1739,6 @@ request_introspect(struct cm_context *ctx, const char *path)
 			       "  <method name=\"modify\">\n"
 			       "   <arg name=\"updates\" type=\"a{sv}\" direction=\"in\"/>\n"
 			       "   <arg name=\"status\" type=\"b\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"reenroll\">\n"
-			       "   <arg name=\"working\" type=\"b\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"rekey_and_submit\">\n"
-			       "   <arg name=\"working\" type=\"b\" direction=\"out\"/>\n"
 			       "  </method>\n"
 			       "  <method name=\"resubmit\">\n"
 			       "   <arg name=\"working\" type=\"b\" direction=\"out\"/>\n"
@@ -2072,10 +2006,6 @@ static struct {
 	 request_get_submitted_date},
 	{&is_request, CM_DBUS_REQUEST_INTERFACE, "modify",
 	 request_modify},
-	{&is_request, CM_DBUS_REQUEST_INTERFACE, "reenroll",
-	 request_reenroll},
-	{&is_request, CM_DBUS_REQUEST_INTERFACE, "rekey_and_submit",
-	 request_rekey_and_submit},
 	{&is_request, CM_DBUS_REQUEST_INTERFACE, "resubmit",
 	 request_resubmit},
 	{NULL, DBUS_INTERFACE_INTROSPECTABLE, "Introspect",

@@ -133,11 +133,7 @@ o object layout
     - otherwise-not-known-ca
       arguments: string -> type of CA
                  string (optional) -> location of CA
-  - rekey_and_submit (for whatever reason) (?)
-    returns: boolean -> working-on-it?
   - resubmit (for requests that have been denied, generates a new csr)
-    returns: boolean -> working-on-it?
-  - reenroll (for requests that we don't auto-submit, generates a new csr)
     returns: boolean -> working-on-it?
   (objects whose names are returned by "get-known-cas")
   interface=org.fedorahosted.certmonger.ca
