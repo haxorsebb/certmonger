@@ -1,5 +1,5 @@
 SUBDIRS = tools
-EXTRA_FILES = \
+EXTRA_DIST = \
 	run-tests.sh functions \
 	001-keyiread/run.sh \
 	001-keyiread/expected.out \
@@ -9,4 +9,4 @@ EXTRA_FILES = \
 check:
 	env	srcdir=$(abs_srcdir) \
 	builddir=$(abs_builddir) \
-	./run-tests.sh
+	$(srcdir)/run-tests.sh
