@@ -1585,6 +1585,37 @@ request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 										  "NICKNAME",
 										  NULL);
 				}
+			} else
+			if ((param->value_type == cm_tdbusm_dict_s) &&
+			    (strcasecmp(param->key, "SUBJECT") == 0)) {
+				talloc_free(entry->cm_template_subject);
+				entry->cm_template_subject = maybe_strdup(entry,
+									  param->value.s);
+			} else
+			if ((param->value_type == cm_tdbusm_dict_as) &&
+			    (strcasecmp(param->key, "EKU") == 0)) {
+				talloc_free(entry->cm_template_eku);
+				entry->cm_template_eku = cm_submit_maybe_joinv(entry,
+									       ",",
+									       param->value.as);
+			} else
+			if ((param->value_type == cm_tdbusm_dict_as) &&
+			    (strcasecmp(param->key, "PRINCIPAL") == 0)) {
+				talloc_free(entry->cm_template_principal);
+				entry->cm_template_principal = maybe_strdupv(entry,
+									     param->value.as);
+			} else
+			if ((param->value_type == cm_tdbusm_dict_as) &&
+			    (strcasecmp(param->key, "DNS") == 0)) {
+				talloc_free(entry->cm_template_hostname);
+				entry->cm_template_hostname = maybe_strdupv(entry,
+									    param->value.as);
+			} else
+			if ((param->value_type == cm_tdbusm_dict_as) &&
+			    (strcasecmp(param->key, "EMAIL") == 0)) {
+				talloc_free(entry->cm_template_email);
+				entry->cm_template_email = maybe_strdupv(entry,
+									 param->value.as);
 			} else {
 				break;
 			}
