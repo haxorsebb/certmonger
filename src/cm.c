@@ -49,7 +49,7 @@ struct cm_context {
 	int n_cas;
 	struct cm_store_ca **cas;
 	int netlink;
-	void *netlink_event;
+	void *netlink_tfd, *netlink_delayed_event;
 };
 
 static void *cm_service_one(struct cm_context *context,
@@ -60,8 +60,8 @@ static void cm_timer_h(struct tevent_context *ec, struct tevent_timer *te,
 		       struct timeval current_time, void *pvt);
 static void cm_break_h(struct tevent_context *ec, struct tevent_signal *se,
 		       int signum, int count, void *siginfo, void *ctx);
-static void cm_netlink_h(struct tevent_context *ec, struct tevent_fd *fde,
-			 uint16_t flags, void *pvt);
+static void cm_netlink_fd_h(struct tevent_context *ec, struct tevent_fd *fde,
+			    uint16_t flags, void *pvt);
 
 int
 cm_init(struct tevent_context *parent, struct cm_context **context)
@@ -114,9 +114,9 @@ cm_init(struct tevent_context *parent, struct cm_context **context)
 	 * waiting for us to read notifications. */
 	ctx->netlink = cm_netlink_socket();
 	if (ctx->netlink != -1) {
-		ctx->netlink_event = tevent_add_fd(parent, ctx, ctx->netlink,
-						   TEVENT_FD_READ,
-						   cm_netlink_h, ctx);
+		ctx->netlink_tfd = tevent_add_fd(parent, ctx, ctx->netlink,
+						 TEVENT_FD_READ,
+						 cm_netlink_fd_h, ctx);
 	}
 	*context = ctx;
 	return 0;
@@ -170,12 +170,37 @@ cm_break_h(struct tevent_context *ec, struct tevent_signal *se,
 }
 
 static void
-cm_netlink_h(struct tevent_context *ec,
-	     struct tevent_fd *fde, uint16_t flags, void *pvt)
+cm_netlink_delayed_h(struct tevent_context *ec, struct tevent_timer *te,
+		     struct timeval current_time, void *pvt)
+{
+	struct cm_context *ctx = pvt;
+	int i;
+	for (i = 0; i < ctx->n_entries; i++) {
+		if (ctx->events[i].next_event != NULL) {
+			switch (ctx->entries[i]->cm_state) {
+			case CM_NEED_TO_SUBMIT:
+				cm_restart_one(ctx, ctx->entries[i]->cm_id);
+				break;
+			default:
+				break;
+			}
+		}
+	}
+	if (te == ctx->netlink_delayed_event) {
+		talloc_free(ctx->netlink_delayed_event);
+		ctx->netlink_delayed_event = NULL;
+	}
+}
+
+static void
+cm_netlink_fd_h(struct tevent_context *ec,
+		struct tevent_fd *fde, uint16_t flags, void *pvt)
 {
 	struct cm_context *ctx = pvt;
 	char buf[0x10000];
-	int len, i;
+	int len;
+	struct timeval later;
+
 	/* Drain the buffer. */
 	cm_log(3, "Got netlink traffic.\n");
 	while ((len = recv(ctx->netlink, buf, sizeof(buf), 0)) != -1) {
@@ -189,18 +214,13 @@ cm_netlink_h(struct tevent_context *ec,
 			break;
 		}
 	}
-	/* Restart any pending items in states that need it. */
-	for (i = 0; i < ctx->n_entries; i++) {
-		if (ctx->events[i].next_event != NULL) {
-			switch (ctx->entries[i]->cm_state) {
-			case CM_NEED_TO_SUBMIT:
-				cm_restart_one(ctx, ctx->entries[i]->cm_id);
-				break;
-			default:
-				break;
-			}
-		}
-	}
+	/* Queue delayed processing. */
+	talloc_free(ctx->netlink_delayed_event);
+	later = tevent_timeval_current_ofs(CM_DELAY_NETLINK, 0);
+	ctx->netlink_delayed_event = tevent_add_timer(talloc_parent(ctx), ctx,
+						      later,
+						      cm_netlink_delayed_h,
+						      ctx);
 	/* Sign off. */
 	if (len != 0) {
 		cm_log(3, "No more netlink traffic (for now).\n");

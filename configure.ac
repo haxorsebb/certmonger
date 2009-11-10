@@ -127,6 +127,7 @@ AC_DEFINE_UNQUOTED(CM_DEFAULT_NOTIFICATION_SYSLOG_PRIORITY,"daemon.notice",[Defi
 AC_DEFINE(CM_DELAY_SOON,1,[Define to the time to wait for something that will happen soon.])
 AC_DEFINE(CM_DELAY_SOONISH,5,[Define to the time to wait for something that will happen soon, but not that soon.])
 AC_DEFINE(CM_DELAY_CA_POLL,(7 * 24 * 60 * 60),[Define to the time to wait between attempts to see if the CA issued a certificate.])
+AC_DEFINE(CM_DELAY_NETLINK,(60),[Define to the time to wait after a netlink routing notification to retry submissions.])
 
 CM_SELF_SIGN_CA_NAME=SelfSign
 AC_SUBST(CM_SELF_SIGN_CA_NAME)
