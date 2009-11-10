@@ -12,6 +12,19 @@ BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 BuildRequires:	dbus-devel, nspr-devel, nss-devel, openssl-devel
 BuildRequires:	libtalloc-devel, libtevent-devel
 BuildRequires:	xmlrpc-c-client
+%if 0
+# Required for 'make check':
+#  for diff and cmp
+BuildRequires:	diffutils
+#  for expect
+BuildRequires:	expect
+#  for mktemp, which was absorbed into coreutils at some point
+BuildRequires:	mktemp
+#  for certutil and pk12util
+BuildRequires:	nss-tools
+#  for openssl
+BuildRequires:	openssl
+%endif
 Requires(post):	/sbin/chkconfig, /sbin/service
 Requires(preun):	/sbin/chkconfig, /sbin/service
 
@@ -34,7 +47,8 @@ mkdir -p $RPM_BUILD_ROOT/%{_localstatedir}/lib/certmonger/{cas,requests}
 install -m755 src/certmonger.init $RPM_BUILD_ROOT/%{_initddir}/certmonger
 
 %check
-make check
+# Needs to be able to create pseudoterminals to drive certutil.
+: make check
 
 %clean
 rm -rf $RPM_BUILD_ROOT
