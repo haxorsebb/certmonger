@@ -653,6 +653,36 @@ find_request_by_storage(void *parent, enum cm_tdbus_type bus,
 	return NULL;
 }
 
+static const char *
+find_ca_by_name(void *parent, enum cm_tdbus_type bus, const char *name)
+{
+	DBusMessage *rep;
+	char **cas;
+	int i, which;
+	char *thisname;
+	rep = query_rep(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
+			"get_known_cas");
+	if (cm_tdbusm_get_ap(rep, globals.tctx, &cas) != 0) {
+		printf(_("Error parsing server response.\n"));
+		exit(1);
+	}
+	dbus_message_unref(rep);
+	which = -1;
+	for (i = 0; (cas != NULL) && (cas[i] != NULL); i++) {
+		thisname = query_rep_s(bus, cas[i],
+				       CM_DBUS_CA_INTERFACE,
+				       "get_nickname",
+				       parent);
+		if (strcasecmp(name, thisname) == 0) {
+			which = i;
+		}
+	}
+	if (which != -1) {
+		return cas[which];
+	}
+	return NULL;
+}
+
 static int
 add_basic_request(enum cm_tdbus_type bus, char *id,
 		  char *dbdir, char *nickname, char *token,
@@ -971,6 +1001,126 @@ stop_tracking(const char *argv0, int argc, char **argv)
 }
 
 static int
+resubmit(const char *argv0, int argc, char **argv)
+{
+	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
+	DBusMessage *req, *rep;
+	const char *request, *capath;
+	struct cm_tdbusm_dict param[1];
+	const struct cm_tdbusm_dict *params[2];
+	char *dbdir = NULL, *token = NULL, *nickname = NULL, *certfile = NULL;
+	char *id = NULL, *ca = NULL;
+	dbus_bool_t b;
+	int c, i;
+	while ((c = getopt(argc, argv,
+			   "d:n:t:f:i:sS" GETOPT_CA)) != -1) {
+		switch (c) {
+		case 'd':
+			dbdir = talloc_strdup(globals.tctx, optarg);
+			break;
+		case 't':
+			token = talloc_strdup(globals.tctx, optarg);
+			break;
+		case 'n':
+			nickname = talloc_strdup(globals.tctx, optarg);
+			break;
+		case 'f':
+			certfile = talloc_strdup(globals.tctx, optarg);
+			break;
+		case 'c':
+			ca = talloc_strdup(globals.tctx, optarg);
+			break;
+		case 'i':
+			id = talloc_strdup(globals.tctx, optarg);
+			break;
+		case 's':
+			bus = cm_tdbus_session;
+			break;
+		case 'S':
+			bus = cm_tdbus_system;
+			break;
+		default:
+			help(argv0, "resubmit");
+			return 1;
+		}
+	}
+	if (id != NULL) {
+		request = find_request_by_name(globals.tctx, bus, id);
+	} else {
+		request = find_request_by_storage(globals.tctx, bus,
+						  dbdir, nickname, token,
+						  certfile);
+	}
+	if (request == NULL) {
+		if (((dbdir != NULL) && (nickname == NULL)) ||
+		    ((dbdir == NULL) && (nickname != NULL))) {
+			printf(_("Database location or nickname "
+				 "specified without the other.\n"));
+			help(argv0, "resubmit");
+			return 1;
+		}
+		if ((dbdir != NULL) && (certfile != NULL)) {
+			printf(_("Database directory and certificate "
+				 "file both specified.\n"));
+			help(argv0, "resubmit");
+			return 1;
+		}
+		if ((dbdir == NULL) &&
+		    (nickname == NULL) &&
+		    (certfile == NULL)) {
+			printf(_("None of database directory and "
+				 "nickname or certificate file "
+				 "specified.\n"));
+			help(argv0, "resubmit");
+			return 1;
+		}
+		printf(_("No request found that matched arguments.\n"));
+		return 1;
+	}
+	if (ca != NULL) {
+		capath = find_ca_by_name(globals.tctx, bus, ca);
+		if (capath == NULL) {
+			printf(_("No CA with name \"%s\" found.\n"), ca);
+			exit(1);
+		}
+		i = 0;
+		param[i].key = "CA";
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = talloc_strdup(globals.tctx, capath);
+		params[i] = &param[i];
+		i++;
+		params[i] = NULL;
+		req = prep_req(bus, request, CM_DBUS_REQUEST_INTERFACE,
+			       "modify");
+		if (cm_tdbusm_set_d(req, params) != 0) {
+			printf(_("Error setting request arguments.\n"));
+			exit(1);
+		}
+		rep = send_req(req);
+		if (cm_tdbusm_get_b(rep, globals.tctx, &b) != 0) {
+			printf(_("Error parsing server response.\n"));
+			exit(1);
+		}
+		dbus_message_unref(rep);
+		if (!b) {
+			printf(_("Error setting CA for \"%s\" to \"%s\".\n"),
+			       request, ca);
+			exit(1);
+		}
+	}
+	if (query_rep_b(bus, request, CM_DBUS_REQUEST_INTERFACE, "resubmit",
+			globals.tctx)) {
+		printf(_("Resubmitting \"%s\" to \"%s\".\n"),
+		       request, ca);
+		return 0;
+	} else {
+		printf(_("Error attempting to submit \"%s\" to \"%s\".\n"),
+		       request, ca);
+		return 1;
+	}
+}
+
+static int
 list(const char *argv0, int argc, char **argv)
 {
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
@@ -1250,6 +1400,7 @@ static struct {
 	{"request", request},
 	{"start-tracking", start_tracking},
 	{"stop-tracking", stop_tracking},
+	{"resubmit", resubmit},
 	{"list", list},
 	{"list-cas", list_cas},
 };
@@ -1339,6 +1490,29 @@ help(const char *cmd, const char *category)
 		N_("  -s		connect to the certmonger service on the session bus\n"),
 		NULL,
 	};
+	const char *resubmit_help[] = {
+		N_("Usage: %s resubmit [options]\n"),
+		"\n",
+		N_("Required arguments:\n"),
+		N_("* By request identifier:\n"),
+		N_("  -i NAME	nickname for tracking request\n"),
+		N_("* If using an NSS database for storage:\n"),
+		N_("  -d DIR	NSS database for key and cert\n"),
+		N_("  -n NAME	nickname for NSS-based storage (only valid with -d)\n"),
+		N_("  -t NAME	optional token name for NSS-based storage (only valid with -d)\n"),
+		N_("* If using files for storage:\n"),
+		N_("  -f FILE	PEM file for certificate (only valid with -k)\n"),
+		"\n",
+		N_("Optional arguments:\n"),
+#ifndef FORCE_CA
+		N_("* Certificate handling settings:\n"),
+		N_("  -c CA		use the specified CA rather than the current one\n"),
+#endif
+		N_("* Bus options:\n"),
+		N_("  -S		connect to the certmonger service on the system bus\n"),
+		N_("  -s		connect to the certmonger service on the session bus\n"),
+		NULL,
+	};
 	const char *list_help[] = {
 		N_("Usage: %s list [options]\n"),
 		"\n",
@@ -1375,6 +1549,7 @@ help(const char *cmd, const char *category)
 		{"request", request_help},
 		{"start-tracking", start_tracking_help},
 		{"stop-tracking", stop_tracking_help},
+		{"resubmit", resubmit_help},
 		{"list", list_help},
 		{"list-cas", list_cas_help},
 	};

@@ -130,9 +130,6 @@ o object layout
       argument: array of string -> requested OIDs
     - known-ca to use
       argument: path -> object path of CA
-    - otherwise-not-known-ca
-      arguments: string -> type of CA
-                 string (optional) -> location of CA
   - resubmit (for requests that have been denied, generates a new csr)
     returns: boolean -> working-on-it?
   (objects whose names are returned by "get-known-cas")
