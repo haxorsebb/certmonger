@@ -1529,6 +1529,7 @@ request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	struct cm_store_entry *entry;
+	struct cm_store_ca *ca;
 	struct cm_tdbusm_dict **d;
 	const struct cm_tdbusm_dict *param;
 	void *parent;
@@ -1557,6 +1558,19 @@ request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 			    (strcasecmp(param->key, "TRACK") == 0)) {
 				entry->cm_monitor_default = FALSE;
 				entry->cm_monitor = param->value.b;
+			} else
+			if ((param->value_type == cm_tdbusm_dict_s) &&
+			    (strcasecmp(param->key, "CA") == 0)) {
+				ca = get_ca_for_path(ctx, param->value.s);
+				if (ca == NULL) {
+					return send_internal_base_bad_arg_error(conn, msg,
+									        _("Certificate authority \"%s\" not known."),
+									        param->value.s,
+									        "CA");
+				}
+				talloc_free(entry->cm_ca_name);
+				entry->cm_ca_name = talloc_strdup(entry,
+								  ca->cm_id);
 			} else
 			if ((param->value_type == cm_tdbusm_dict_s) &&
 			    (strcasecmp(param->key, "NICKNAME") == 0)) {
@@ -1610,9 +1624,9 @@ request_resubmit(DBusConnection *conn, DBusMessage *msg,
 	}
 	rep = dbus_message_new_method_return(msg);
 	if (rep != NULL) {
-		if (cm_stop_one(ctx, entry->cm_id) == 0) {
+		if (cm_stop_one(ctx, entry->cm_id)) {
 			entry->cm_state = CM_NEED_CSR;
-			if (cm_start_one(ctx, entry->cm_id) == 0) {
+			if (cm_start_one(ctx, entry->cm_id)) {
 				cm_tdbusm_set_b(rep, TRUE);
 			} else {
 				cm_tdbusm_set_b(rep, FALSE);
