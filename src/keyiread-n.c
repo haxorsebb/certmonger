@@ -211,8 +211,8 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	if (keys != NULL) {
 		SECKEY_DestroyPrivateKeyList(keys);
 	}
-	PORT_FreeArena(arena, PR_TRUE);
 	PK11_FreeSlotList(slotlist);
+	PORT_FreeArena(arena, PR_TRUE);
 	return ret;
 }
 
