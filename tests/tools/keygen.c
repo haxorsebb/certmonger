@@ -27,6 +27,7 @@
 #include <unistd.h>
 
 #include "../../src/keygen.h"
+#include "../../src/log.h"
 #include "../../src/store-int.h"
 
 static void
@@ -48,6 +49,8 @@ main(int argc, char **argv)
 	struct cm_store_entry *entry;
 	int fd, ret;
 	void *parent;
+	cm_log_set_method(cm_log_stderr);
+	cm_log_set_level(1);
 	parent = talloc_new(NULL);
 	if (argc > 1) {
 		entry = cm_store_files_entry_read(parent, argv[1]);

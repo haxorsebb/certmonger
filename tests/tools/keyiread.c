@@ -27,6 +27,7 @@
 #include <unistd.h>
 
 #include "../../src/keyiread.h"
+#include "../../src/log.h"
 #include "../../src/store-int.h"
 
 static void
@@ -48,6 +49,8 @@ main(int argc, char **argv)
 	struct cm_store_entry *entry;
 	int fd, ret;
 	void *parent;
+	cm_log_set_method(cm_log_stderr);
+	cm_log_set_level(1);
 	parent = talloc_new(NULL);
 	if (argc > 1) {
 		entry = cm_store_files_entry_read(parent, argv[1]);
@@ -79,7 +82,17 @@ main(int argc, char **argv)
 			printf("OK (%d).\n", entry->cm_key_type.cm_key_size);
 			ret = 0;
 		} else {
-			printf("Failed to read key.\n");
+			switch (entry->cm_key_storage_type) {
+			case cm_key_storage_file:
+				printf("Failed to read key \"%s\".\n",
+				       entry->cm_key_storage_location);
+				break;
+			case cm_key_storage_nssdb:
+				printf("Failed to read key \"%s\":\"%s\".\n",
+				       entry->cm_key_storage_location,
+				       entry->cm_key_nickname);
+				break;
+			}
 			ret = 1;
 		}
 	} else {
