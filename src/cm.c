@@ -430,12 +430,14 @@ cm_start_one(struct cm_context *context, const char *id)
 				    &context->events[i].iterate_state) == 0) {
 			context->events[i].next_event = cm_service_one(context,
 								       NULL, i);
+			cm_log(3, "Started '%s'.\n", id);
 			return TRUE;
 		} else {
 			cm_log(3, "Error starting '%s', please retry.\n", id);
 			return FALSE;
 		}
 	} else {
+		cm_log(3, "No entry matching '%s'.\n", id);
 		return FALSE;
 	}
 }
@@ -452,6 +454,7 @@ cm_stop_one(struct cm_context *context, const char *id)
 				context->events[i].iterate_state);
 		context->events[i].iterate_state = NULL;
 		cm_store_entry_save(context->entries[i]);
+		cm_log(3, "Stopped '%s'.\n", id);
 		return TRUE;
 	} else {
 		cm_log(3, "No entry matching '%s'.\n", id);
