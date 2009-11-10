@@ -68,6 +68,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	CK_MECHANISM_TYPE mech;
 	CERTCertList *certs;
 	CERTCertListNode *cnode;
+	PRBool key_came_from_cert;
 
 	/* Open the database. */
 	error = readwrite ? NSS_InitReadWrite(entry->cm_key_storage_location) :
@@ -151,6 +152,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	/* If we got a list of keys with matching nicknames, the first entry's
 	 * good enough, right? */
 	key = NULL;
+	key_came_from_cert = PR_FALSE;
 	if (keys != NULL) {
 		for (knode = PRIVKEY_LIST_HEAD(keys);
 		     !PRIVKEY_LIST_EMPTY(keys) &&
@@ -158,6 +160,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 		     knode = PRIVKEY_LIST_NEXT(knode)) {
 			cm_log(3, "Located the key.\n");
 			key = knode->key;
+			key_came_from_cert = PR_FALSE;
 			break;
 		}
 	}
@@ -178,6 +181,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 								  cnode->cert,
 								  NULL);
 				if (key != NULL) {
+					key_came_from_cert = PR_TRUE;
 					cm_log(3, "Located its private key.\n");
 					break;
 				}
@@ -192,15 +196,20 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 								  cnode->cert,
 								  NULL);
 				if (key != NULL) {
+					key_came_from_cert = PR_TRUE;
 					cm_log(3, "Located its private key.\n");
 					break;
 				}
 			}
 		}
 	}
-	/* If we found a key, take a copy. */
+	/* If we found a key and we didn't create it, take a copy. */
 	if (key != NULL) {
-		ret = SECKEY_CopyPrivateKey(key);
+		if (key_came_from_cert) {
+			ret = key;
+		} else {
+			ret = SECKEY_CopyPrivateKey(key);
+		}
 	} else {
 		ret = NULL;
 	}
