@@ -113,8 +113,11 @@ cm_init(struct tevent_context *parent, struct cm_context **context)
 	/* Start draining the netlink socket so that it doesn't get backed up
 	 * waiting for us to read notifications. */
 	ctx->netlink = cm_netlink_socket();
-	ctx->netlink_event = tevent_add_fd(parent, ctx, ctx->netlink,
-					   TEVENT_FD_READ, cm_netlink_h, ctx);
+	if (ctx->netlink != -1) {
+		ctx->netlink_event = tevent_add_fd(parent, ctx, ctx->netlink,
+						   TEVENT_FD_READ,
+						   cm_netlink_h, ctx);
+	}
 	*context = ctx;
 	return 0;
 }
