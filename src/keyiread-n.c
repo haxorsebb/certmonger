@@ -56,7 +56,7 @@ struct cm_keyiread_state {
 SECKEYPrivateKey *
 cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 {
-	const char *token;
+	const char *token, *nickname;
 	PLArenaPool *arena;
 	SECStatus error;
 	PK11SlotList *slotlist;
@@ -168,10 +168,26 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 		     !CERT_LIST_EMPTY(certs) &&
 		     !CERT_LIST_END(cnode, certs);
 		     cnode = CERT_LIST_NEXT(cnode)) {
-			if (strcmp(cnode->cert->nickname,
-				   entry->cm_cert_nickname) == 0) {
+			nickname = entry->cm_key_nickname;
+			if ((nickname != NULL) &&
+			    (strcmp(cnode->cert->nickname, nickname) == 0)) {
 				cm_log(3, "Located a certificate with "
-				       "the nickname \"%s\".\n");
+				       "the key's nickname (\"%s\").\n",
+				       nickname);
+				key = PK11_FindPrivateKeyFromCert(slot,
+								  cnode->cert,
+								  NULL);
+				if (key != NULL) {
+					cm_log(3, "Located its private key.\n");
+					break;
+				}
+			}
+			nickname = entry->cm_cert_nickname;
+			if ((nickname != NULL) &&
+			    (strcmp(cnode->cert->nickname, nickname) == 0)) {
+				cm_log(3, "Located a certificate with "
+				       "matching nickname (\"%s\").\n",
+				       nickname);
 				key = PK11_FindPrivateKeyFromCert(slot,
 								  cnode->cert,
 								  NULL);
