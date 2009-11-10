@@ -116,6 +116,8 @@ o object layout
   - get_submitted_cookie
     returns: string(optional) -> CA-specific value
   - modify
+    - nickname for request
+      argument: string -> new ID
     - requested subject name
       argument: string -> requested subject
     - requested subject alternative name(s): email
