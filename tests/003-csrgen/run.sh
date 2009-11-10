@@ -20,7 +20,7 @@ for size in 512 1024 1536 2048 3072 4096 ; do
 	# Export the certificate and key.
 	pk12util -d "$tmpdir" -o $size.p12 -W "" -n "keyi$size"
 	openssl pkcs12 -in $size.p12 -passin pass: -out key.$size -nodes 2>&1
-	# Generate a new CSR using the key.
+	# Generate a new CSR using the extracted key.
 	cat > entry.$size <<- EOF
 	key_storage_type=FILE
 	key_storage_location=$tmpdir/key.$size
