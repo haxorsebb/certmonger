@@ -9,4 +9,4 @@ EXTRA_DIST = \
 check:
 	env	srcdir=$(abs_srcdir) \
 	builddir=$(abs_builddir) \
-	$(srcdir)/run-tests.sh
+	$(abs_srcdir)/run-tests.sh

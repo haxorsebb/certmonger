@@ -26,7 +26,7 @@ cd "$builddir"
 stat=0
 subdirs=
 if test -z "$@" ; then
-	subdirs=`cd "$builddir"; ls -1 | grep '^[0-9]'`
+	subdirs=`cd "$srcdir"; ls -1 | grep '^[0-9]'`
 fi
 for testid in "$@" $subdirs ; do
 	if test -x ./"$testid"/run.sh ; then
