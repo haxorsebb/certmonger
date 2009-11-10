@@ -541,6 +541,10 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			state->cm_notify_state = NULL;
 		}
 		if ((entry->cm_autorenew || entry->cm_autorenew_default)) {
+			/* We need to go all the way back to generating the CSR
+			 * because the user may have asked us to request with
+			 * parameters that have changed since we last generated
+			 * a CSR. */
 			entry->cm_state = CM_NEED_CSR;
 			*when = cm_time_soon;
 		} else {
