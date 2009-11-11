@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/sh
 tmpfile=`mktemp ${TMPDIR:-/tmp}/runtestsXXXXXX`
 if test -z "$tmpfile" ; then
 	echo Error creating temporary file.
