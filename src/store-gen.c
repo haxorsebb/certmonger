@@ -226,7 +226,7 @@ cm_store_increment_serial(void *parent, const char *old_serial)
 		serial = talloc_asprintf(parent, "01%s", tmp);
 		talloc_free(tmp);
 	} else {
-		if (strchr("890abcdefABCDEF", tmp[0]) != NULL) {
+		if (strchr("89abcdefABCDEF", tmp[0]) != NULL) {
 			/* prepend a zero byte to keep it unsigned */
 			serial = talloc_asprintf(parent, "00%s", tmp);
 			talloc_free(tmp);
