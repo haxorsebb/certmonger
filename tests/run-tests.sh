@@ -37,11 +37,11 @@ if test -z "$@" ; then
 	subdirs=`cd "$srcdir"; ls -1 | grep '^[0-9]'`
 fi
 for testid in "$@" $subdirs ; do
-	if test -x ./"$testid"/run.sh ; then
-		pushd ./"$testid" > /dev/null
+	if test -x "$srcdir"/"$testid"/run.sh ; then
+		pushd "$srcdir"/"$testid" > /dev/null
 		rm -fr "$tmpdir"/*
 		if test -r ./expected.out ; then
-			echo -n "Running "$testid"... "
+			echo -n "Running test "$testid"... "
 			./run.sh "$tmpdir" > "$tmpfile"
 			if cmp "$tmpfile" expected.out ; then
 				stat=0
@@ -52,7 +52,7 @@ for testid in "$@" $subdirs ; do
 				diff -u expected.out "$tmpfile" | sed s,"^\+\+\+ $tmpfile","+++ actual",g
 			fi
 		else
-			echo "Running "$testid"."
+			echo "Running test "$testid"."
 			./run.sh "$tmpdir"
 			stat=$?
 		fi
