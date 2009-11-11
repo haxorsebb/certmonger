@@ -47,8 +47,9 @@ main(int argc, char **argv)
 {
 	struct cm_csrgen_state *state;
 	struct cm_store_entry *entry;
-	int fd, ret;
+	int fd, ret, i;
 	void *parent;
+	char *p;
 	cm_log_set_method(cm_log_stderr);
 	cm_log_set_level(1);
 	parent = talloc_new(NULL);
@@ -77,8 +78,18 @@ main(int argc, char **argv)
 			}
 		}
 		if (cm_csrgen_save_csr(entry, state) == 0) {
-			printf("OK.\n");
-			printf("%s\n", entry->cm_csr);
+			while (strlen(entry->cm_csr) > 0) {
+				i = strlen(entry->cm_csr) - 1;
+				if (entry->cm_csr[i] == '\n') {
+					entry->cm_csr[i] = '\0';
+				} else {
+					break;
+				}
+			}
+			p = talloc_asprintf(entry, "%s\n", entry->cm_csr);
+			talloc_free(entry->cm_csr);
+			entry->cm_csr = p;
+			printf("%s", entry->cm_csr);
 			ret = 0;
 		} else {
 			printf("Failed to save.\n");
