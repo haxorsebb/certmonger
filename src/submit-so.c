@@ -63,6 +63,7 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	char buf[LINE_MAX];
 	krb5_deltat lifedelta;
 	long life;
+	time_t now;
 
 	OpenSSL_add_ssl_algorithms();
 	ERR_load_crypto_strings();
@@ -95,7 +96,13 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 						cert = X509_REQ_to_X509(req,
 									0,
 									pkey);
-						X509_time_adj(cert->cert_info->validity->notAfter, life, NULL);
+						if (ca->cm_ca_internal_force_issue_time) {
+							now = ca->cm_ca_internal_issue_time;
+						} else {
+							now = time(NULL);
+						}
+						ASN1_TIME_set(cert->cert_info->validity->notBefore, now);
+						ASN1_TIME_set(cert->cert_info->validity->notAfter, now + life);
 						X509_set_version(cert, 2);
 						/* set the serial number */
 						serial = cm_store_serial_to_der(ca, ca->cm_ca_internal_serial);

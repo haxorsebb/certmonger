@@ -140,7 +140,11 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		req = &sreq;
 	}
 	/* Build a certificate using the contents of the signing request. */
-	now = PR_Now();
+	if (ca->cm_ca_internal_force_issue_time) {
+		now = ca->cm_ca_internal_issue_time * 1000000L;
+	} else {
+		now = PR_Now();
+	}
 	if (krb5_string_to_deltat(ca->cm_ca_internal_lifetime,
 				  &lifedelta) == 0) {
 		life = lifedelta * 1000000L;
