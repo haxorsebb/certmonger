@@ -143,6 +143,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 								  unickname,
 								  strlen(nickname));
 				}
+				X509_REQ_sign(req, pkey, EVP_sha256()); /* XXX */
 				PEM_write_X509_REQ_NEW(status, req);
 			} else {
 				fprintf(status,
