@@ -105,6 +105,8 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 						ASN1_TIME_set(cert->cert_info->validity->notAfter, now + life);
 						X509_set_version(cert, 2);
 						/* set the serial number */
+						cm_log(1, "Setting certificate serial number \"%s\".\n",
+						       ca->cm_ca_internal_serial);
 						serial = cm_store_serial_to_der(ca, ca->cm_ca_internal_serial);
 						seriall = strlen(serial) / 2;
 						seriald = talloc_size(ca, seriall);
