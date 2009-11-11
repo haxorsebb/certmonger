@@ -28,6 +28,7 @@
 
 #include "../../src/log.h"
 #include "../../src/store-int.h"
+#include "../../src/store.h"
 #include "../../src/submit.h"
 
 static void
@@ -120,6 +121,7 @@ main(int argc, char **argv)
 		printf("Failed to start.\n");
 		ret = -1;
 	}
+	cm_store_entry_save(entry);
 	talloc_free(parent);
 	return ret;
 }
