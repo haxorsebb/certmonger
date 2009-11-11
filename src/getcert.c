@@ -193,6 +193,24 @@ query_rep_s(enum cm_tdbus_type which,
 }
 
 /* Send the specified, argument-less method call to the named object, and
+ * return the single object path from the response. */
+static char *
+query_rep_p(enum cm_tdbus_type which,
+	    const char *path, const char *interface, const char *method,
+	    void *parent)
+{
+	DBusMessage *rep;
+	char *p;
+	rep = query_rep(which, path, interface, method);
+	if (cm_tdbusm_get_p(rep, parent, &p) != 0) {
+		printf(_("Error parsing server response.\n"));
+		exit(1);
+	}
+	dbus_message_unref(rep);
+	return p;
+}
+
+/* Send the specified, argument-less method call to the named object, and
  * return the array of strings from the response. */
 static char **
 query_rep_as(enum cm_tdbus_type which,
@@ -1107,15 +1125,31 @@ resubmit(const char *argv0, int argc, char **argv)
 			       request, ca);
 			exit(1);
 		}
+	} else {
+		ca = query_rep_p(bus, request, CM_DBUS_REQUEST_INTERFACE,
+				 "get_ca", globals.tctx);
+		if (ca != NULL) {
+			ca = query_rep_s(bus, ca, CM_DBUS_CA_INTERFACE,
+					 "get_nickname", globals.tctx);
+		}
 	}
 	if (query_rep_b(bus, request, CM_DBUS_REQUEST_INTERFACE, "resubmit",
 			globals.tctx)) {
-		printf(_("Resubmitting \"%s\" to \"%s\".\n"),
-		       request, ca);
+		if (ca != NULL) {
+			printf(_("Resubmitting \"%s\" to \"%s\".\n"),
+			       request, ca);
+		} else {
+			printf(_("Resubmitting \"%s\".\n"), request);
+		}
 		return 0;
 	} else {
-		printf(_("Error attempting to submit \"%s\" to \"%s\".\n"),
-		       request, ca);
+		if (ca != NULL) {
+			printf(_("Error attempting to submit \"%s\" to "
+				 "\"%s\".\n"), request, ca);
+		} else {
+			printf(_("Error attempting to submit \"%s\".\n"),
+			       request);
+		}
 		return 1;
 	}
 }
