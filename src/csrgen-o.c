@@ -58,6 +58,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	const char *default_cn = CM_DEFAULT_CERT_SUBJECT_CN;
 	size_t extensions_len;
 	long error;
+	int i;
 
 	status = fdopen(fd, "w");
 	if (status == NULL) {
@@ -92,6 +93,9 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				while (*p != '\0') {
 					if ((s = memchr(p, '=', q - p)) != NULL) {
 						*s = '\0';
+						for (i = 0; p[i] != '\0'; i++) {
+							p[i] = toupper(p[i]);
+						}
 						X509_NAME_add_entry_by_txt(x->cert_info->subject,
 									   p, MBSTRING_UTF8,
 									   (unsigned char *) (s + 1), q - s - 1,
