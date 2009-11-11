@@ -172,7 +172,7 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	SEC_ASN1EncodeInteger(arena, &ucert->version, 2);
 	serial = ca->cm_ca_internal_serial;
 	if (serial != NULL) {
-		cm_log(1, "Setting certificate serial number \"%s\".\n",
+		cm_log(3, "Setting certificate serial number \"%s\".\n",
 		       serial);
 		serial_length = strlen(serial) / 2;
 		ucert->serialNumber.data = PORT_ArenaZAlloc(arena,
