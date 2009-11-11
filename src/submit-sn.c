@@ -169,6 +169,7 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 	}
 	/* Populate the certificate's fields. */
+	SEC_ASN1EncodeInteger(arena, &ucert->version, 2);
 	serial = ca->cm_ca_internal_serial;
 	if (serial != NULL) {
 		cm_log(1, "Setting certificate serial number \"%s\".\n",
