@@ -13,6 +13,14 @@ if test -z "$tmpdir" ; then
 else
 	trap 'rm -f "$tmpfile"; rm -fr "$tmpdir"' EXIT
 fi
+unset DBUS_SESSION_BUS_ADDRESS
+eval `dbus-launch --sh-syntax`
+if test -z "$DBUS_SESSION_BUS_ADDRESS" ; then
+	echo Error launching session bus.
+	exit 1
+else
+	trap 'rm -f "$tmpfile"; rm -fr "$tmpdir"; kill "$DBUS_SESSION_BUS_PID"' EXIT
+fi
 
 builddir=${builddir:-`pwd`}
 srcdir=${srcdir:-`pwd`}
