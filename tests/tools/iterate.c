@@ -50,7 +50,7 @@ struct cm_context {
 static struct cm_store_ca *
 get_ca_by_index(struct cm_context *cm, int i)
 {
-	if (i != 0) {
+	if (i == 0) {
 		return cm->ca;
 	} else {
 		return NULL;
@@ -106,9 +106,9 @@ main(int argc, char **argv)
 	while (cm_iterate(entry, ca.ca, &ca, get_ca_by_index, get_n_cas,
 			  istate, &when, &delay, &readfd) == 0) {
 		/* Check if this state is in our continue-states list. */
-		for (p = states; *p != '\0'; p = p + strcspn(p, ",")) {
+		for (p = states; *p != '\0'; p = q + strspn(q, ",")) {
 			q = p + strcspn(p, ",");
-			tmp = talloc_strndup(states, p, q - p);
+			tmp = talloc_strndup(parent, p, q - p);
 			if (entry->cm_state ==
 			    cm_store_state_from_string(tmp)) {
 				printf("%s\n", tmp);
