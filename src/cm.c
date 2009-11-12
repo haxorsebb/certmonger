@@ -215,12 +215,14 @@ cm_netlink_fd_h(struct tevent_context *ec,
 		}
 	}
 	/* Queue delayed processing. */
-	talloc_free(ctx->netlink_delayed_event);
-	later = tevent_timeval_current_ofs(CM_DELAY_NETLINK, 0);
-	ctx->netlink_delayed_event = tevent_add_timer(talloc_parent(ctx), ctx,
-						      later,
-						      cm_netlink_delayed_h,
-						      ctx);
+	if (cm_netlink_pkt_is_route_change(buf, len) == 0) {
+		talloc_free(ctx->netlink_delayed_event);
+		later = tevent_timeval_current_ofs(CM_DELAY_NETLINK, 0);
+		ctx->netlink_delayed_event = tevent_add_timer(talloc_parent(ctx), ctx,
+							      later,
+							      cm_netlink_delayed_h,
+							      ctx);
+	}
 	/* Sign off. */
 	if (len != 0) {
 		cm_log(3, "No more netlink traffic (for now).\n");
