@@ -250,6 +250,8 @@ cm_service_one(struct cm_context *context, struct timeval *current_time, int i)
 	ret = cm_iterate(context->entries[i],
 			 cm_find_ca_by_entry(context, context->entries[i]),
 			 context,
+			 &cm_get_ca_by_index,
+			 &cm_get_n_cas,
 			 context->events[i].iterate_state,
 			 &when, &delay, &fd);
 	if (ret == 0) {

@@ -205,6 +205,8 @@ cm_check_expiration_is_noteworthy(struct cm_store_entry *entry)
 int
 cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 	   struct cm_context *context,
+	   struct cm_store_ca *(*get_ca_by_index)(struct cm_context *, int),
+	   int (*get_n_cas)(struct cm_context *),
 	   void *cm_iterate_state,
 	   enum cm_time *when, int *delay, int *readfd)
 {
@@ -646,8 +648,8 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			/* Walk the list of known names of known CAs and try to
 			 * match one with the issuer of the certificate we
 			 * already have. */
-			for (i = 0; i < cm_get_n_cas(context); i++) {
-				tmp_ca = cm_get_ca_by_index(context, i);
+			for (i = 0; i < (*get_n_cas)(context); i++) {
+				tmp_ca = (*get_ca_by_index)(context, i);
 				for (j = 0;
 				     (tmp_ca->cm_ca_known_issuer_names != NULL) &&
 				     (tmp_ca->cm_ca_known_issuer_names[j] != NULL);
@@ -661,8 +663,8 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		}
 		/* No match -> assign the default. */
 		if (entry->cm_ca_name == NULL) {
-			for (i = 0; i < cm_get_n_cas(context); i++) {
-				tmp_ca = cm_get_ca_by_index(context, i);
+			for (i = 0; i < (*get_n_cas)(context); i++) {
+				tmp_ca = (*get_ca_by_index)(context, i);
 				if (tmp_ca->cm_ca_is_default) {
 					entry->cm_ca_name = talloc_strdup(entry, tmp_ca->cm_id);
 				}
