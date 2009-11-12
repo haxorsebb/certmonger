@@ -59,9 +59,33 @@ cm_netlink_socket(void)
 	return fd;
 }
 
+int
+cm_netlink_pkt_is_route_change(char *buf, int len)
+{
+	struct nlmsghdr *nlmsg;
+	for (nlmsg = (struct nlmsghdr *) buf;
+	     (len > 0) && NLMSG_OK(nlmsg, (unsigned int) len);
+	     nlmsg = NLMSG_NEXT(nlmsg, len)) {
+		switch (nlmsg->nlmsg_type) {
+		case RTM_NEWLINK:
+		case RTM_DELLINK:
+		case RTM_NEWROUTE:
+		case RTM_DELROUTE:
+			return 0;
+			break;
+		}
+	}
+	return -1;
+}
+
 #else
 int
 cm_netlink_socket(void)
+{
+	return -1;
+}
+int
+cm_netlink_pkt_is_route_change(char *buf, int len)
 {
 	return -1;
 }
