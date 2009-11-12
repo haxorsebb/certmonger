@@ -147,7 +147,7 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 		fclose(keyfp);
 	} else {
-		cm_log(1, "Error opening '%s': %s.\n",
+		cm_log(1, "Error opening key file '%s' for reading: %s.\n",
 		       entry->cm_key_storage_location, strerror(errno));
 	}
 	if (status == 0) {
