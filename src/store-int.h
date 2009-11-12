@@ -73,8 +73,9 @@ struct cm_store_entry {
 	   syslog(LOG_AUTHPRIV?) or mail to root@? */
 	unsigned int cm_notification_default:1;
 	enum cm_notification_method {
-		cm_notification_syslog = 0,
+		cm_notification_syslog = 1,
 		cm_notification_email,
+		cm_notification_stdout,	/* for testing _ONLY_ */
 	} cm_notification_method;
 	char *cm_notification_destination;
 	/* CSR template information [or imported from existing certificate]
@@ -100,7 +101,7 @@ struct cm_store_entry {
 		CM_NEED_TO_SAVE_CERT, CM_SAVING_CERT,
 		CM_NEED_TO_READ_CERT, CM_READING_CERT,
 		CM_SAVED_CERT,
-		CM_MONITORING, CM_NOTIFYING,
+		CM_MONITORING, CM_NEED_TO_NOTIFY, CM_NOTIFYING,
 		CM_REJECTED,
 		CM_NEED_GUIDANCE,
 		CM_NEWLY_ADDED,

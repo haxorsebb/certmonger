@@ -536,6 +536,9 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 				talloc_free(p);
 				break;
 			case cm_store_entry_field_notification_method:
+				if (strcasecmp(p, "STDOUT") == 0) {
+					ret->cm_notification_method = cm_notification_stdout;
+				} else
 				if (strcasecmp(p, "SYSLOG") == 0) {
 					ret->cm_notification_method = cm_notification_syslog;
 				} else
@@ -996,6 +999,11 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 	cm_store_file_write_int(fp, cm_store_entry_field_notification_default,
 				entry->cm_notification_default);
 	switch (entry->cm_notification_method) {
+	case cm_notification_stdout:
+		cm_store_file_write_str(fp,
+					cm_store_entry_field_notification_method,
+					"STDOUT");
+		break;
 	case cm_notification_syslog:
 		cm_store_file_write_str(fp,
 					cm_store_entry_field_notification_method,
@@ -1194,6 +1202,8 @@ cm_store_get_defaults(void)
 	const char *dest = NULL;
 
 	switch (method) {
+	case cm_notification_stdout:
+		break;
 	case cm_notification_syslog:
 		dest = CM_DEFAULT_NOTIFICATION_SYSLOG_PRIORITY;
 		break;

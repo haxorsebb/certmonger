@@ -1376,6 +1376,9 @@ request_get_notification_info(DBusConnection *conn, DBusMessage *msg,
 	}
 	method = NULL;
 	switch (m) {
+	case cm_notification_stdout:
+		method = "stdout";
+		break;
 	case cm_notification_syslog:
 		method = "syslog";
 		break;
@@ -1426,6 +1429,7 @@ request_get_status(DBusConnection *conn, DBusMessage *msg,
 		case CM_READING_CERT:
 		case CM_SAVED_CERT:
 		case CM_MONITORING:
+		case CM_NEED_TO_NOTIFY:
 		case CM_NOTIFYING:
 		case CM_NEWLY_ADDED:
 		case CM_NEWLY_ADDED_READING_KEYI:
