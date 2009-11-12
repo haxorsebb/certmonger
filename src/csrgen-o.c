@@ -66,17 +66,17 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 	keyfp = fopen(entry->cm_key_storage_location, "r");
 	if (keyfp == NULL) {
-		fprintf(status, "Error opening key file \"%s\" for reading.\n",
-			entry->cm_key_storage_location);
-		cm_log(1, "Error opening key file \"%s\" for reading.\n",
-		       entry->cm_key_storage_location);
+		if (errno != ENOENT) {
+			cm_log(1, "Error opening key file \"%s\" "
+			       "for reading.\n",
+			       entry->cm_key_storage_location);
+		}
 		_exit(2);
 	}
 	OpenSSL_add_ssl_algorithms();
 	ERR_load_crypto_strings();
 	pkey = EVP_PKEY_new();
 	if (pkey == NULL) {
-		fprintf(status, "Internal error generating CSR.\n");
 		cm_log(1, "Internal error generating CSR.\n");
 		_exit(2);
 	}
@@ -150,9 +150,6 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				X509_REQ_sign(req, pkey, EVP_sha256()); /* XXX */
 				PEM_write_X509_REQ_NEW(status, req);
 			} else {
-				fprintf(status,
-					"Error converting template certificate "
-					"into a CSR.\n");
 				cm_log(1,
 				       "Error converting template certificate "
 				       "into a CSR.\n");
@@ -164,8 +161,6 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				_exit(2);
 			}
 		} else {
-			fprintf(status,
-				"Error creating template certificate.\n");
 			cm_log(1, "Error creating template certificate.\n");
 			while ((error = ERR_get_error()) != 0) {
 				ERR_error_string_n(error, buf, sizeof(buf));
@@ -175,8 +170,6 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 	} else {
 		error = errno;
-		fprintf(status, "Error reading private key '%s': %s.\n",
-		        entry->cm_key_storage_location, strerror(error));
 		cm_log(1, "Error reading private key '%s': %s.\n",
 		       entry->cm_key_storage_location, strerror(error));
 		while ((error = ERR_get_error()) != 0) {
@@ -189,7 +182,6 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		ERR_error_string_n(error, buf, sizeof(buf));
 		cm_log(1, "%s\n", buf);
 	}
-	fflush(status);
 	fclose(status);
 	fclose(keyfp);
 	return 0;

@@ -74,14 +74,12 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		ERR_load_crypto_strings();
 		pkey = EVP_PKEY_new();
 		if (pkey == NULL) {
-			fprintf(status, "Internal error generating key.\n");
 			cm_log(1, "Internal error generating key.\n");
 			_exit(2);
 		}
 		rsa = RSA_generate_key(cm_key_size, CM_DEFAULT_RSA_MODULUS,
 				       NULL, NULL);
 		if (rsa == NULL) {
-			fprintf(status, "Error generating key.\n");
 			cm_log(1, "Error generating key.\n");
 			while ((error = ERR_get_error()) != 0) {
 				ERR_error_string_n(error, buf, sizeof(buf));
@@ -92,12 +90,12 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		EVP_PKEY_assign_RSA(pkey, rsa);
 		fp = fopen(entry->cm_key_storage_location, "w");
 		if (fp == NULL) {
-			fprintf(status,
-				"Error opening key file \"%s\" for writing.\n",
-				entry->cm_key_storage_location);
-			cm_log(1,
-			       "Error opening key file \"%s\" for writing.\n",
-			       entry->cm_key_storage_location);
+			if (errno != ENOENT) {
+				cm_log(1,
+				       "Error opening key file \"%s\" "
+				       "for writing.\n",
+				       entry->cm_key_storage_location);
+			}
 			_exit(2);
 		}
 		if (PEM_write_PrivateKey(fp, pkey, NULL,
@@ -112,7 +110,6 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		fclose(fp);
 		break;
 	default:
-		fprintf(status, "Unknown or unsupported key type.\n");
 		cm_log(1, "Unknown or unsupported key type.\n");
 		_exit(2);
 		break;
