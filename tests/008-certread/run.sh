@@ -48,6 +48,18 @@ egrep -v '^(cert_storage_type|cert_storage_location|cert_nickname)' entry.nss >\
 entry.nss.clean
 egrep -v '^(cert_storage_type|cert_storage_location|cert_nickname)' entry.openssl >\
 entry.openssl.clean
+awk '/^cert=.*BEGIN CERTIFICATE/,/END CERTIFICATE/{print}{;}' entry.nss >> entry.nss.clean
+awk '/^cert=.*BEGIN CERTIFICATE/,/END CERTIFICATE/{print}{;}' entry.openssl >> entry.openssl.clean
+if ! grep -q '^cert=.*BEGIN CERTIFICATE' entry.nss.clean && \
+   ! grep -q '^ -----END CERTIFICATE-----' entry.nss.clean ; then
+	echo Failed to pull certificate out of NSS.
+	exit 1
+fi
+if ! grep -q '^cert=.*BEGIN CERTIFICATE' entry.openssl.clean && \
+   ! grep -q '^ -----END CERTIFICATE-----' entry.openssl.clean ; then
+	echo Failed to pull certificate out of OpenSSL.
+	exit 1
+fi
 # Compare the two cleaned entry files.
 if ! cmp entry.nss.clean entry.openssl.clean ; then
 	echo Read certificates differently.
