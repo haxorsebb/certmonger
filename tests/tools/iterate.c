@@ -102,6 +102,7 @@ main(int argc, char **argv)
 	old_state = entry->cm_state;
 	printf("%s\n-START-\n",
 	       cm_store_state_as_string(entry->cm_state));
+	fflush(NULL);
 	p = states;
 	while (cm_iterate(entry, ca.ca, &ca, get_ca_by_index, get_n_cas,
 			  istate, &when, &delay, &readfd) == 0) {
@@ -112,6 +113,7 @@ main(int argc, char **argv)
 			if (entry->cm_state ==
 			    cm_store_state_from_string(tmp)) {
 				printf("%s\n", tmp);
+				fflush(NULL);
 				talloc_free(tmp);
 				break;
 			}
@@ -121,6 +123,7 @@ main(int argc, char **argv)
 		if (*p == '\0') {
 			printf("%s\n-STOP-\n",
 			       cm_store_state_as_string(entry->cm_state));
+			fflush(NULL);
 			break;
 		}
 		/* Reset 'p' so that it's not an empty string. */
@@ -147,6 +150,7 @@ main(int argc, char **argv)
 	if (*p != '\0') {
 		printf("%s\n-ERROR-\n",
 		       cm_store_state_as_string(entry->cm_state));
+		fflush(NULL);
 	}
 	cm_iterate_done(entry, istate);
 	talloc_free(parent);

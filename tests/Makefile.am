@@ -18,7 +18,9 @@ EXTRA_DIST = \
 	008-certread/run.sh \
 	008-certread/expected.out \
 	009-oiddict/run.sh \
-	009-oiddict/expected.out
+	009-oiddict/expected.out \
+	010-iterate/run.sh \
+	010-iterate/expected.out
 
 check:
 	env	srcdir=$(abs_srcdir) \
