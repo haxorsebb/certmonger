@@ -37,12 +37,21 @@ cm_keyiread_start(struct cm_store_entry *entry)
 		break;
 #ifdef HAVE_OPENSSL
 	case cm_key_storage_file:
-		return cm_keyiread_o_start(entry);
+		if (entry->cm_key_storage_location != NULL) {
+			return cm_keyiread_o_start(entry);
+		} else {
+			return NULL;
+		}
 		break;
 #endif
 #ifdef HAVE_NSS
 	case cm_key_storage_nssdb:
-		return cm_keyiread_n_start(entry);
+		if ((entry->cm_key_storage_location != NULL) &&
+		    (entry->cm_key_nickname != NULL)) {
+			return cm_keyiread_n_start(entry);
+		} else {
+			return NULL;
+		}
 		break;
 #endif
 	}

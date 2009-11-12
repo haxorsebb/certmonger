@@ -36,12 +36,21 @@ cm_certread_start(struct cm_store_entry *entry)
 	switch (entry->cm_cert_storage_type) {
 #ifdef HAVE_OPENSSL
 	case cm_cert_storage_file:
-		return cm_certread_o_start(entry);
+		if (entry->cm_cert_storage_location != NULL) {
+			return cm_certread_o_start(entry);
+		} else {
+			return NULL;
+		}
 		break;
 #endif
 #ifdef HAVE_NSS
 	case cm_cert_storage_nssdb:
-		return cm_certread_n_start(entry);
+		if ((entry->cm_cert_storage_location != NULL) &&
+		    (entry->cm_cert_nickname != NULL)) {
+			return cm_certread_n_start(entry);
+		} else {
+			return NULL;
+		}
 		break;
 #endif
 	}
