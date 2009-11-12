@@ -84,7 +84,10 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 	case CM_NEED_GUIDANCE:
 		break;
 	case CM_MONITORING:
+		break;
+	case CM_NEED_TO_NOTIFY:
 	case CM_NOTIFYING:
+		entry->cm_state = CM_NEED_TO_NOTIFY;
 		break;
 	case CM_NEWLY_ADDED:
 	case CM_NEWLY_ADDED_READING_KEYI:
@@ -166,13 +169,13 @@ cm_check_expiration_is_noteworthy(struct cm_store_entry *entry)
 	time_t now;
 	now = time(NULL);
 	/* How much time is left? */
-	if (entry->cm_cert_expiration > now) {
+	if (entry->cm_cert_expiration < now) {
 		ttl = 0;
 	} else {
 		ttl = entry->cm_cert_expiration - now;
 	}
 	/* How much time was left, last time we checked? */
-	if (entry->cm_cert_expiration > entry->cm_last_expiration_check) {
+	if (entry->cm_cert_expiration < entry->cm_last_expiration_check) {
 		previous_ttl = 0;
 	} else {
 		previous_ttl = entry->cm_cert_expiration -
@@ -198,6 +201,10 @@ cm_check_expiration_is_noteworthy(struct cm_store_entry *entry)
 		if ((ttl >= ttls[i]) && (previous_ttl < ttls[i])) {
 			return 0;
 		}
+	}
+	/* The certificate has expired. */
+	if (ttl == 0) {
+		return 0;
 	}
 	return -1;
 }
@@ -512,29 +519,30 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 	case CM_MONITORING:
 		if ((entry->cm_monitor || entry->cm_monitor_default) && /* XXX */
 		    (cm_check_expiration_is_noteworthy(entry) == 0)) {
-			state->cm_notify_state = cm_notify_start(entry);
-			if (state->cm_notify_state != NULL) {
-				entry->cm_state = CM_NOTIFYING;
-				/* Wait for status update, or poll. */
-				*readfd = cm_notify_get_fd(entry,
-							   state->cm_notify_state);
-				if (*readfd == -1) {
-					*when = cm_time_soon;
-				} else {
-					*when = cm_time_no_time;
-				}
-			} else {
-				/* Try to log it ourselves. */
-				cm_log(0, "'%s' will expire in %d days.\n",
-				       (entry->cm_cert_expiration - time(NULL))/
-				       (24 * 60 * 60));
-				*delay = 24 * 60 * 60; /* XXX */
-				*when = cm_time_delay;
-			}
+			/* Kick off a notification. */
+			entry->cm_state = CM_NEED_TO_NOTIFY;
+			*when = cm_time_now;
 		} else {
 			/* Nothing to do here. */
 			*delay = 24 * 60 * 60; /* XXX */
 			*when = cm_time_delay;
+		}
+		break;
+	case CM_NEED_TO_NOTIFY:
+		state->cm_notify_state = cm_notify_start(entry);
+		if (state->cm_notify_state != NULL) {
+			entry->cm_state = CM_NOTIFYING;
+			/* Wait for status update, or poll. */
+			*readfd = cm_notify_get_fd(entry,
+						   state->cm_notify_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
+		} else {
+			/* Failed to start notifying; try again. */
+			*when = cm_time_soonish;
 		}
 		break;
 	case CM_NOTIFYING:
