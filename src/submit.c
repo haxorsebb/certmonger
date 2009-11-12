@@ -64,6 +64,11 @@ cm_submit_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 		}
 		break;
 	case cm_ca_external:
+		if (ca->cm_ca_external_helper == NULL) {
+			cm_log(1, "No helper defined for CA \"%s\".\n",
+			       entry->cm_id);
+			return NULL;
+		}
 		return cm_submit_e_start(ca, entry);
 	}
 	return NULL;
