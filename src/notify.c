@@ -149,6 +149,9 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		dest = entry->cm_notification_destination;
 	}
 	switch (method) {
+	case cm_notification_stdout:
+		printf("%s\n", message);
+		break;
 	case cm_notification_syslog:
 		facility = LOG_USER;
 		level = LOG_NOTICE;
