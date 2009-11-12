@@ -224,7 +224,7 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 			    const char *cookie,
 			    const char *operation)
 {
-	int errorfds[0];
+	int errorfds[2];
 	unsigned char u;
 	struct cm_submit_state *state;
 	struct cm_submit_e_args args;
