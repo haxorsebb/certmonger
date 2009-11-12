@@ -121,6 +121,7 @@ cm_certread_write_data_to_pipe(struct cm_store_entry *entry, FILE *fp)
 	fprintf(fp, "%s\n", i > 0 ? "" : " ");
 	fprintf(fp, " %s\n", entry->cm_cert_ku ?: "");
 	fprintf(fp, " %s\n", entry->cm_cert_eku ?: "");
+	fprintf(fp, " %s\n", entry->cm_cert ?: "");
 }
 
 /* Parse what we know about this certificate from a buffer. */
@@ -230,6 +231,12 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 			talloc_free(entry->cm_cert_eku);
 			entry->cm_cert_eku = (p == q) ? NULL :
 					     talloc_strndup(entry, p, q - p);
+			break;
+		case 10:
+			talloc_free(entry->cm_cert);
+			entry->cm_cert = (p[strspn(p, " \r\n")] == '\0') ?
+					 NULL :
+					 talloc_strdup(entry, p);
 			break;
 		}
 		/* Find the beginning of the next line. */
