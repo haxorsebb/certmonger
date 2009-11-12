@@ -70,7 +70,7 @@ cm_log(int level, const char *fmt, ...)
 			localtime_r(&now, &lt);
 			now = time(NULL);
 			p = talloc_asprintf(NULL,
-					    "%04d-%02d-%02d %d:%02d:%02d "
+					    "%04d-%02d-%02d %02d:%02d:%02d "
 					    "[%lu] %s",
 					    lt.tm_year + 1900,
 					    lt.tm_mon + 1,
