@@ -176,7 +176,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	/* Start up NSS and find the key pair. */
 	privkey = cm_keyiread_n_get_private_key(entry, 0);
 	if (privkey == NULL) {
-		cm_log(1, "Error finding key pair \"%s\".\n");
+		cm_log(1, "Error finding key pair for \"%s\".\n", entry->cm_id);
 		PORT_FreeArena(arena, PR_TRUE);
 		error = NSS_Shutdown();
 		if (error != SECSuccess) {

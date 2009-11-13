@@ -471,8 +471,8 @@ cm_certext_build_eku(struct cm_store_entry *entry, PLArenaPool *arena,
 				i++;
 			} else {
 				cm_log(1,
-				       "Couldn't parse OID \"%s\", ignoring.\n",
-				       q - p, p);
+				       "Couldn't parse OID \"%.*s\", "
+				       "ignoring.\n", (int) (q - p), p);
 			}
 			oids = tmp;
 		}

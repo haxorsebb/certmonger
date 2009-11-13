@@ -1067,17 +1067,18 @@ int
 cm_store_entry_delete(struct cm_store_entry *entry)
 {
 	int ret;
+	const char *filename;
 
 	if (entry->cm_store_private != NULL) {
-		ret = remove(entry->cm_store_private);
+		filename = (const char *) entry->cm_store_private;
+		ret = remove(filename);
 		if (ret == 0) {
-			cm_log(3, "Removed file \"%s\".\n",
-			       entry->cm_store_private);
+			cm_log(3, "Removed file \"%s\".\n", filename);
 			talloc_free(entry->cm_store_private);
 			entry->cm_store_private = NULL;
 		} else {
 			cm_log(1, "Failed to remove file \"%s\": %s.\n",
-			       entry->cm_store_private, strerror(errno));
+			       filename, strerror(errno));
 		}
 	} else {
 		cm_log(3, "No file to remove for \"%s\".\n",
@@ -1187,7 +1188,7 @@ cm_store_entry_save(struct cm_store_entry *entry)
 		}
 	} else {
 		cm_log(1, "Error opening \"%s\" for writing: %s.\n",
-		       strerror(errno));
+		       path, strerror(errno));
 		return -1;
 	}
 }
@@ -1325,17 +1326,18 @@ int
 cm_store_ca_delete(struct cm_store_ca *ca)
 {
 	int ret;
+	const char *filename;
 
 	if (ca->cm_store_private != NULL) {
+		filename = (const char *) ca->cm_store_private;
 		ret = remove(ca->cm_store_private);
 		if (ret == 0) {
-			cm_log(3, "Removed file \"%s\".\n",
-			       ca->cm_store_private);
+			cm_log(3, "Removed file \"%s\".\n", filename);
 			talloc_free(ca->cm_store_private);
 			ca->cm_store_private = NULL;
 		} else {
 			cm_log(1, "Failed to remove file \"%s\": %s.\n",
-			       ca->cm_store_private, strerror(errno));
+			       filename, strerror(errno));
 		}
 	} else {
 		cm_log(3, "No file to remove for \"%s\".\n", ca->cm_id);
@@ -1417,7 +1419,7 @@ cm_store_ca_save(struct cm_store_ca *ca)
 		}
 		return 0;
 	} else {
-		cm_log(1, "Error opening \"%s\" for writing: %s.\n",
+		cm_log(1, "Error opening \"%s\" for writing: %s.\n", path,
 		       strerror(errno));
 		return -1;
 	}
