@@ -1,5 +1,5 @@
 Name:		certmonger
-Version:	0.8
+Version:	0.9
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -81,6 +81,15 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Fri Nov 13 2009 Nalin Dahyabhai <nalin@redhat.com> 0.9-1
+- update to 0.9
+  - run external submission helpers correctly
+  - fix signing of signing requests generated for keys stored in files
+  - only care about new interface and route notifications from netlink,
+    and ignore notifications that don't come from pid 0
+  - fix logic for determining expiration status
+  - correct the version number in self-signed certificates
+
 * Tue Nov 10 2009 Nalin Dahyabhai <nalin@redhat.com> 0.8-1
 - update to 0.8
   - encode windows UPN values in requests correctly
