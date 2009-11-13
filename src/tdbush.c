@@ -1553,6 +1553,33 @@ request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 	}
 	rep = dbus_message_new_method_return(msg);
 	if (rep != NULL) {
+		/* Check any new nickname values, because we need to reject
+		 * those outright if the new value's already being used. */
+		param = cm_tdbusm_find_dict_entry(d, "NICKNAME",
+						  cm_tdbusm_dict_s);
+		if (param != NULL) {
+			if (cm_get_entry_by_id(ctx, param->value.s) != NULL) {
+				return send_internal_base_duplicate_error(conn, msg,
+									  _("There is already a request with the nickname \"%s\"."),
+									  param->value.s,
+									  "NICKNAME",
+									  NULL);
+			}
+		}
+		/* If we're being asked to change the CA, check that the new CA
+		 * exists. */
+		param = cm_tdbusm_find_dict_entry(d, "CA", cm_tdbusm_dict_s);
+		if (param != NULL) {
+			ca = get_ca_for_path(ctx, param->value.s);
+			if (ca == NULL) {
+				return send_internal_base_bad_arg_error(conn, msg,
+									_("Certificate authority \"%s\" not known."),
+									param->value.s,
+									"CA");
+			}
+		}
+		/* Now walk the list of other things the client asked us to
+		 * change. */
 		for (i = 0; (d != NULL) && (d[i] != NULL); i++) {
 			param = d[i];
 			if ((param->value_type == cm_tdbusm_dict_b) &&
@@ -1568,29 +1595,15 @@ request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 			if ((param->value_type == cm_tdbusm_dict_s) &&
 			    (strcasecmp(param->key, "CA") == 0)) {
 				ca = get_ca_for_path(ctx, param->value.s);
-				if (ca == NULL) {
-					return send_internal_base_bad_arg_error(conn, msg,
-									        _("Certificate authority \"%s\" not known."),
-									        param->value.s,
-									        "CA");
-				}
 				talloc_free(entry->cm_ca_name);
 				entry->cm_ca_name = talloc_strdup(entry,
 								  ca->cm_id);
 			} else
 			if ((param->value_type == cm_tdbusm_dict_s) &&
 			    (strcasecmp(param->key, "NICKNAME") == 0)) {
-				if (cm_get_entry_by_id(ctx, param->value.s) == NULL) {
-					talloc_free(entry->cm_id);
-					entry->cm_id = talloc_strdup(entry,
-								     param->value.s);
-				} else {
-					return send_internal_base_duplicate_error(conn, msg,
-										  _("There is already a request with the nickname \"%s\"."),
-										  param->value.s,
-										  "NICKNAME",
-										  NULL);
-				}
+				talloc_free(entry->cm_id);
+				entry->cm_id = talloc_strdup(entry,
+							     param->value.s);
 			} else
 			if ((param->value_type == cm_tdbusm_dict_s) &&
 			    (strcasecmp(param->key, "SUBJECT") == 0)) {
