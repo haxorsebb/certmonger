@@ -32,15 +32,9 @@
 #include "store.h"
 #include "store-int.h"
 #include "submit.h"
+#include "submit-e.h"
 #include "submit-int.h"
 #include "subproc.h"
-
-enum cm_external_status {
-	STATUS_ISSUED = 0,
-	STATUS_WAIT = 1,
-	STATUS_REJECTED = 2,
-	STATUS_UNREACHABLE = 3,
-};
 
 struct cm_submit_state {
 	struct cm_submit_state_pvt pvt;

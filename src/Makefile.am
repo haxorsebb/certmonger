@@ -38,6 +38,7 @@ libcm_a_SOURCES = \
 	submit.c \
 	submit-e.c \
 	submit.h \
+	submit-e.h \
 	submit-int.h \
 	subproc.c \
 	subproc.h \
