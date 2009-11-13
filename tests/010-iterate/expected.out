@@ -109,3 +109,35 @@ NOTIFYING
 Certificate in file "$tmpdir/certfile2" is expired.
 NEED_CSR
 -STOP-
+
+[Enroll until we notice we have no specified CA.]
+HAVE_KEY_PAIR
+-START-
+NEED_CSR
+GENERATING_CSR
+HAVE_CSR
+-STOP-
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+NEED_CA
+-STOP-
+
+[Enroll until the CA tells us to come back later.]
+HAVE_KEY_PAIR
+-START-
+NEED_CSR
+GENERATING_CSR
+HAVE_CSR
+-STOP-
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+SUBMITTING
+SUBMITTING
+CA_WORKING
+-STOP-
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+-STOP-
