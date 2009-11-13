@@ -60,14 +60,14 @@ get_ca_by_index(struct cm_context *cm, int i)
 static int
 get_n_cas(struct cm_context *cm)
 {
-	return 1;
+	return (cm->ca != NULL) ? 1 : 0;
 }
 
 int
 main(int argc, char **argv)
 {
 	struct cm_store_entry *entry;
-	struct cm_context ca;
+	struct cm_context cm;
 	enum cm_state old_state;
 	int readfd, delay;
 	void *parent, *istate;
@@ -77,8 +77,8 @@ main(int argc, char **argv)
 	cm_log_set_level(1);
 	parent = talloc_new(NULL);
 	if (argc > 3) {
-		ca.ca = cm_store_files_ca_read(parent, argv[1]);
-		if (ca.ca == NULL) {
+		cm.ca = cm_store_files_ca_read(parent, argv[1]);
+		if (cm.ca == NULL) {
 			printf("Error reading %s: %s.\n", argv[1],
 			       strerror(errno));
 			return 1;
@@ -88,6 +88,12 @@ main(int argc, char **argv)
 			printf("Error reading %s: %s.\n", argv[2],
 			       strerror(errno));
 			return 1;
+		}
+		if ((entry->cm_ca_name == NULL) ||
+		    (cm.ca->cm_id == NULL) ||
+		    (strcasecmp(entry->cm_ca_name, cm.ca->cm_id) != 0)) {
+			talloc_free(cm.ca);
+			cm.ca = NULL;
 		}
 		states = argv[3];
 	} else {
@@ -104,7 +110,7 @@ main(int argc, char **argv)
 	       cm_store_state_as_string(entry->cm_state));
 	fflush(NULL);
 	p = states;
-	while (cm_iterate(entry, ca.ca, &ca, get_ca_by_index, get_n_cas,
+	while (cm_iterate(entry, cm.ca, &cm, get_ca_by_index, get_n_cas,
 			  istate, &when, &delay, &readfd) == 0) {
 		/* Check if this state is in our continue-states list. */
 		for (p = states; *p != '\0'; p = q + strspn(q, ",")) {
