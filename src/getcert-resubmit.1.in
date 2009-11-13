@@ -43,6 +43,31 @@ The certificate is stored in the named file.
 Submit the new signing request to the specified CA rather than the one which
 was previously associated with this certificate.  The name of
 the CA should correspond to one listed by \fIgetcert list-cas\fR.
+.TP
+\fB\-I\fR NAME
+Assign the specified nickname to this task, replacing the previous nickname.
+
+.SH SIGNING REQUEST OPTIONS
+.TP
+\fB\-N\fR NAME
+Change the subject name to include in the signing request.
+.TP
+\fB\-U\fR EKU
+Change the extendedKeyUsage value specified in an extendedKeyUsage
+extension part of the extensionRequest attribute in the signing
+request.  The EKU value is expected to be an object identifier (OID).
+.TP
+\fB\-K\fR NAME
+Change the Kerberos principal name specified as part of a subjectAltName
+extension part of the extensionRequest attribute in the signing request.
+.TP
+\fB\-E\fR EMAIL
+Change the email address specified as part of a subjectAltName
+extension part of the extensionRequest attribute in the signing request.
+.TP
+\fB\-D\fR DNSNAME
+Change the DNS name specified as part of a subjectAltName extension part of the
+extensionRequest attribute in the signing request.
 
 .SH BUGS
 Please file tickets for any that you find at https://fedorahosted.org/certmonger/
