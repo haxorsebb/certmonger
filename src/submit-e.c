@@ -204,6 +204,13 @@ cm_submit_e_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	if ((args->cookie != NULL) && (strlen(args->cookie) > 0)) {
 		setenv("CERTMONGER_COOKIE", args->cookie, 1);
 	}
+	if (dup2(fd, STDOUT_FILENO) == -1) {
+		u = errno;
+		cm_log(1, "Error redirecting standard out for helper: %s.\n",
+		       strerror(errno));
+		write(args->error_fd, &u, 1);
+		return u;
+	}
 	cm_log(1, "Running helper \"%s\".\n", ca->cm_ca_external_helper);
 	for (i = sysconf(_SC_OPEN_MAX) - 1; i >= 0; i--) {
 		if ((i != STDOUT_FILENO) && (i != args->error_fd)) {
