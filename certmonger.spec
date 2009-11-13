@@ -1,5 +1,5 @@
 Name:		certmonger
-Version:	0.9
+Version:	0.10
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -81,6 +81,10 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Fri Nov 13 2009 Nalin Dahyabhai <nalin@redhat.com> 0.10-1
+- update to 0.10
+  - add some compiler warnings and then fix them
+
 * Fri Nov 13 2009 Nalin Dahyabhai <nalin@redhat.com> 0.9-1
 - update to 0.9
   - run external submission helpers correctly
