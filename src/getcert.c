@@ -872,7 +872,7 @@ set_tracking(const char *argv0, const char *category,
 	struct cm_tdbusm_dict param[4];
 	const struct cm_tdbusm_dict *params[5];
 	char *dbdir = NULL, *token = NULL, *nickname = NULL;
-	char *id = NULL, *new_id = NULL;
+	char *id = NULL, *new_id = NULL, *new_request;
 	char *keyfile = NULL, *certfile = NULL, *ca = DEFAULT_CA;
 	dbus_bool_t b;
 	int c, auto_renew = 0, i;
@@ -963,10 +963,12 @@ set_tracking(const char *argv0, const char *category,
 				exit(1);
 			}
 			rep = send_req(req);
-			if (cm_tdbusm_get_b(rep, globals.tctx, &b) != 0) {
+			if (cm_tdbusm_get_bp(rep, globals.tctx, &b,
+					     &new_request) != 0) {
 				printf(_("Error parsing server response.\n"));
 				exit(1);
 			}
+			request = new_request;
 			dbus_message_unref(rep);
 			nickname =  find_request_name(globals.tctx, bus,
 						      request);
@@ -1070,7 +1072,7 @@ resubmit(const char *argv0, int argc, char **argv)
 	struct cm_tdbusm_dict param[15];
 	const struct cm_tdbusm_dict *params[16];
 	char *dbdir = NULL, *token = NULL, *nickname = NULL, *certfile = NULL;
-	char *id = NULL, *new_id = NULL, *ca = NULL;
+	char *id = NULL, *new_id = NULL, *ca = NULL, *new_request;
 	char *subject = NULL, **eku = NULL, *oid = NULL;
 	char **principal = NULL, **dns = NULL, **email = NULL;
 	dbus_bool_t b;
@@ -1268,10 +1270,12 @@ resubmit(const char *argv0, int argc, char **argv)
 			exit(1);
 		}
 		rep = send_req(req);
-		if (cm_tdbusm_get_b(rep, globals.tctx, &b) != 0) {
+		if (cm_tdbusm_get_bp(rep, globals.tctx, &b,
+				     &new_request) != 0) {
 			printf(_("Error parsing server response.\n"));
 			exit(1);
 		}
+		request = new_request;
 		dbus_message_unref(rep);
 		if (!b) {
 			nickname = find_request_name(globals.tctx, bus,
@@ -1284,7 +1288,7 @@ resubmit(const char *argv0, int argc, char **argv)
 	capath = query_rep_p(bus, request, CM_DBUS_REQUEST_INTERFACE,
 			     "get_ca", globals.tctx);
 	if (capath != NULL) {
-		ca = find_ca_name(globals.tctx, bus, ca);
+		ca = find_ca_name(globals.tctx, bus, capath);
 	} else {
 		ca = NULL;
 	}

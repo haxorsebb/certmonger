@@ -1538,6 +1538,7 @@ request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 	struct cm_store_ca *ca;
 	struct cm_tdbusm_dict **d;
 	const struct cm_tdbusm_dict *param;
+	char *new_request_path;
 	void *parent;
 	int i;
 
@@ -1640,9 +1641,14 @@ request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 			}
 		}
 		if (d[i] == NULL) {
-			cm_tdbusm_set_b(rep, cm_restart_one(ctx, entry->cm_id));
+			new_request_path = talloc_asprintf(parent, "%s/%s",
+							   CM_DBUS_REQUEST_PATH,
+							   entry->cm_id);
+			cm_tdbusm_set_bp(rep, cm_restart_one(ctx, entry->cm_id),
+					 new_request_path);
 			dbus_connection_send(conn, rep, NULL);
 			dbus_message_unref(rep);
+			talloc_free(new_request_path);
 			return DBUS_HANDLER_RESULT_HANDLED;
 		} else {
 			dbus_message_unref(rep);
@@ -1803,6 +1809,7 @@ request_introspect(struct cm_context *ctx, const char *path)
 			       "  <method name=\"modify\">\n"
 			       "   <arg name=\"updates\" type=\"a{sv}\" direction=\"in\"/>\n"
 			       "   <arg name=\"status\" type=\"b\" direction=\"out\"/>\n"
+			       "   <arg name=\"path\" type=\"o\" direction=\"out\"/>\n"
 			       "  </method>\n"
 			       "  <method name=\"resubmit\">\n"
 			       "   <arg name=\"working\" type=\"b\" direction=\"out\"/>\n"
