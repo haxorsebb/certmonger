@@ -60,4 +60,5 @@ if ! cmp cert.nss cert.openssl ; then
 	cat cert.nss cert.openssl
 	exit 1
 fi
-echo OK
+
+echo Test complete.

@@ -104,3 +104,4 @@ done
 done
 echo "The last CSR (the one with everything) was:"
 openssl req -in csr.nss.$size -outform der | openssl asn1parse -inform der
+echo Test complete.

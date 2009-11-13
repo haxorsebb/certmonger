@@ -201,7 +201,6 @@ EOF
 $toolsdir/iterate ca3 entry3 NEED_CSR,GENERATING_CSR
 $toolsdir/iterate ca3 entry3 NEED_TO_SUBMIT,SUBMITTING
 $toolsdir/iterate ca3 entry3 ""
-exit 0
 echo
 echo '[Enroll until the CA rejects us.]'
 cat > entry3 << EOF
@@ -236,4 +235,4 @@ EOF
 $toolsdir/iterate ca3 entry3 NEED_CSR,GENERATING_CSR
 $toolsdir/iterate ca3 entry3 NEED_TO_SUBMIT,SUBMITTING
 $toolsdir/iterate ca3 entry3 ""
-exit 0
+echo Test complete.

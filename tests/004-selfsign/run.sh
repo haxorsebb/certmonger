@@ -63,3 +63,4 @@ for size in 512 1024 1536 2048 3072 4096 ; do
 		echo $size OK.
 	fi
 done
+echo Test complete.

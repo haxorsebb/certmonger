@@ -51,3 +51,4 @@ The last CSR (the one with everything) was:
   544:d=2  hl=2 l=   9 prim: OBJECT            :sha256WithRSAEncryption
   555:d=2  hl=2 l=   0 prim: NULL              
   557:d=1  hl=3 l= 129 prim: BIT STRING        
+Test complete.

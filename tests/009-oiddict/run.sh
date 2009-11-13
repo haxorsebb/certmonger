@@ -45,3 +45,5 @@ for oid in $oids ; do
 	name=`$toolsdir/oid2name "$oid"`
 	echo $oid '->' $name
 done
+
+echo Test complete.

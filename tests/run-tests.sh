@@ -42,7 +42,7 @@ for testid in "$@" $subdirs ; do
 		rm -fr "$tmpdir"/*
 		if test -r ./expected.out ; then
 			echo -n "Running test "$testid"... "
-			./run.sh "$tmpdir" > "$tmpfile"
+			./run.sh "$tmpdir" > "$tmpfile" 2> /dev/null
 			if cmp "$tmpfile" expected.out ; then
 				stat=0
 				echo "OK"

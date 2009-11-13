@@ -68,4 +68,5 @@ if ! cmp entry.nss.clean entry.openssl.clean ; then
 fi
 # Let the caller make sure it looks right.
 grep ^cert_ entry.nss.clean | sort
-exit 0
+
+echo Test complete.
