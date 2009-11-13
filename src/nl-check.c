@@ -53,15 +53,17 @@ dump_rta(struct rtattr *buf, int len)
 }
 
 static void
-dump_nlmsg(unsigned char *buf, int len)
+dump_nlmsg(unsigned char *buf, int len,
+	   struct sockaddr_nl *nlmsgsrc)
 {
 	struct nlmsghdr *nlmsg;
 	struct rtmsg *rtm;
 	for (nlmsg = (struct nlmsghdr *) buf;
 	     (len > 0) && NLMSG_OK(nlmsg, (unsigned int) len);
 	     nlmsg = NLMSG_NEXT(nlmsg, len)) {
-		printf("Got a full message with payload length %ld.\n",
-		       (long ) NLMSG_PAYLOAD(nlmsg, 0));
+		printf("Got a full message with payload length %ld from %ld.\n",
+		       (long) NLMSG_PAYLOAD(nlmsg, 0),
+		       (long) nlmsgsrc->nl_pid);
 		rtm = NLMSG_DATA(nlmsg);
 		switch (nlmsg->nlmsg_type) {
 		case RTM_NEWLINK:
@@ -141,6 +143,8 @@ main(int argc, char **argv)
 	fd_set fds;
 	int nl, len, err;
 	unsigned char buf[0x10000];
+	struct sockaddr_nl nlmsgsrc;
+	socklen_t nlmsgsrclen;
 	nl = cm_netlink_socket();
 	if (nl == -1) {
 		printf("Error creating socket.\n");
@@ -151,7 +155,10 @@ main(int argc, char **argv)
 		FD_ZERO(&fds);
 		FD_SET(nl, &fds);
 		select(nl + 1, &fds, NULL, NULL, NULL);
-		len = recv(nl, buf, sizeof(buf), 0);
+		memset(&nlmsgsrc, 0, sizeof(nlmsgsrc));
+		nlmsgsrclen = sizeof(nlmsgsrc);
+		len = recvfrom(nl, buf, sizeof(buf), 0,
+			       (struct sockaddr *) &nlmsgsrc, &nlmsgsrclen);
 		switch (len) {
 		case 0:
 			printf("EOF\n");
@@ -163,8 +170,19 @@ main(int argc, char **argv)
 			return err;
 			break;
 		}
+		if (nlmsgsrclen != sizeof(struct sockaddr_nl)) {
+			/* The heck? */
+			printf("Sender did not have a netlink address-sized "
+			       "address?\n");
+			return -1;
+		}
+		if (nlmsgsrc.nl_family != AF_NETLINK) {
+			/* The heck? */
+			printf("Sender did not have a netlink address?\n");
+			return -1;
+		}
 		printf("Received %d bytes.\n", len);
-		dump_nlmsg(buf, len);
+		dump_nlmsg(buf, len, &nlmsgsrc);
 	}
 	return 0;
 }

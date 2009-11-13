@@ -19,6 +19,8 @@
 #define cmnetlink_h
 
 int cm_netlink_socket(void);
-int cm_netlink_pkt_is_route_change(char *buf, int len);
+int cm_netlink_pkt_is_route_change(char *buf, int len,
+			           struct sockaddr *src_addr,
+				   socklen_t addrlen);
 
 #endif
