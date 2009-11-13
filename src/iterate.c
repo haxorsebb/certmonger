@@ -68,6 +68,7 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 	case CM_NEED_TO_SUBMIT:
 	case CM_SUBMITTING:
 	case CM_NEED_CA:
+	case CM_CA_UNREACHABLE:
 		entry->cm_state = CM_HAVE_CSR;
 		break;
 	case CM_NEED_TO_SAVE_CERT:
@@ -79,7 +80,7 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 	case CM_SAVED_CERT:
 		entry->cm_state = CM_MONITORING;
 		break;
-	case CM_REJECTED:
+	case CM_CA_REJECTED:
 		break;
 	case CM_NEED_GUIDANCE:
 		break;
@@ -383,15 +384,16 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			if (cm_submit_rejected(entry,
 					       state->cm_submit_state) == 0) {
 				/* The request was flat-out rejected. */
-				entry->cm_state = CM_REJECTED;
-				*when = cm_time_now;
+				entry->cm_state = CM_CA_REJECTED;
+				*when = cm_time_delay;
+				*delay = CM_DELAY_CA_POLL;
 			} else
 			if (cm_submit_unreachable(entry,
 						  state->cm_submit_state) == 0) {
 				/* Let's try again later. */
 				cm_submit_done(entry, state->cm_submit_state);
 				state->cm_submit_state = NULL;
-				entry->cm_state = CM_NEED_TO_SUBMIT;
+				entry->cm_state = CM_CA_UNREACHABLE;
 				*when = cm_time_delay;
 				*delay = CM_DELAY_CA_POLL;
 			} else
@@ -507,8 +509,12 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		entry->cm_state = CM_MONITORING;
 		*when = cm_time_now;
 		break;
-	case CM_REJECTED:
+	case CM_CA_REJECTED:
 		*when = cm_time_soonish;
+		break;
+	case CM_CA_UNREACHABLE:
+		entry->cm_state = CM_NEED_TO_SUBMIT;
+		*when = cm_time_now;
 		break;
 	case CM_NEED_GUIDANCE:
 		*when = cm_time_soonish;

@@ -1440,7 +1440,8 @@ request_get_status(DBusConnection *conn, DBusMessage *msg,
 			break;
 		case CM_NEED_GUIDANCE:
 		case CM_NEED_CA:
-		case CM_REJECTED:
+		case CM_CA_REJECTED:
+		case CM_CA_UNREACHABLE:
 			stuck = TRUE;
 			break;
 		}

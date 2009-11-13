@@ -178,7 +178,7 @@ cm_netlink_delayed_h(struct tevent_context *ec, struct tevent_timer *te,
 	for (i = 0; i < ctx->n_entries; i++) {
 		if (ctx->events[i].next_event != NULL) {
 			switch (ctx->entries[i]->cm_state) {
-			case CM_NEED_TO_SUBMIT:
+			case CM_CA_UNREACHABLE:
 				cm_restart_one(ctx, ctx->entries[i]->cm_id);
 				break;
 			default:
