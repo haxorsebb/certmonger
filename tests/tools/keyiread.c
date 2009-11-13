@@ -84,6 +84,9 @@ main(int argc, char **argv)
 			ret = 0;
 		} else {
 			switch (entry->cm_key_storage_type) {
+			case cm_key_storage_none:
+				printf("No key to read.\n");
+				break;
 			case cm_key_storage_file:
 				printf("Failed to read key \"%s\".\n",
 				       entry->cm_key_storage_location);
