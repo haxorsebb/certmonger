@@ -69,6 +69,7 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 	case CM_SUBMITTING:
 	case CM_NEED_CA:
 	case CM_CA_UNREACHABLE:
+	case CM_CA_WORKING:
 		entry->cm_state = CM_HAVE_CSR;
 		break;
 	case CM_NEED_TO_SAVE_CERT:
@@ -401,7 +402,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 						     state->cm_submit_state) == 0) {
 				/* Saved CA's identifier for our request; give
 				 * it a little time and then ask. */
-				entry->cm_state = CM_NEED_TO_SUBMIT;
+				entry->cm_state = CM_CA_WORKING;
 				*when = cm_time_soonish;
 			} else {
 				/* Don't know what's going on. HELP! */
@@ -511,6 +512,10 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		break;
 	case CM_CA_REJECTED:
 		*when = cm_time_soonish;
+		break;
+	case CM_CA_WORKING:
+		entry->cm_state = CM_NEED_TO_SUBMIT;
+		*when = cm_time_now;
 		break;
 	case CM_CA_UNREACHABLE:
 		entry->cm_state = CM_NEED_TO_SUBMIT;
