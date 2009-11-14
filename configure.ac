@@ -60,11 +60,7 @@ PKG_CHECK_MODULES(TEVENT,tevent)
 PKG_CHECK_MODULES(DBUS,dbus-1)
 PKG_CHECK_MODULES(CERTMONGER,dbus-1 talloc tevent nss)
 PKG_CHECK_MODULES(GETCERT,dbus-1 talloc)
-
-dnl Don't need this (yet).
-if false; then
 PKG_CHECK_MODULES(XMLRPC,xmlrpc_client)
-fi
 
 savedCFLAGS="$CFLAGS"
 CFLAGS=
