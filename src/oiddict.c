@@ -26,8 +26,12 @@ static const struct {
 	const char *name;
 	const char *oidish;
 } cm_named_oids[] = {
-	{"id-pkix", "1.3.6.1.5.5.7"},
+	{"iso.org.dod.internet.security", "1.3.6.1.5"},
+	{"iso.org.dod.internet.security.kerberosV5", "iso.org.dod.internet.security.2"},
+	{"iso.org.dod.internet.security.mechanisms", "iso.org.dod.internet.security.5"},
+	{"id-pkix", "iso.org.dod.internet.security.mechanisms.7"},
 	{"id-pe", "id-pkix.1"},
+	{"id-pe-authorityInfoAccess", "id-pe.1"},
 	{"id-kp", "id-pkix.3"},
 	{"id-kp-serverAuth", "id-kp.1"},
 	{"id-kp-clientAuth", "id-kp.2"},
@@ -35,10 +39,22 @@ static const struct {
 	{"id-kp-emailProtection", "id-kp.4"},
 	{"id-kp-timeStamping", "id-kp.8"},
 	{"id-kp-OCSPSigning", "id-kp.9"},
-	{"id-pkinit", "1.3.6.1.5.2.3"},
+	{"id-ad", "id-pkix.48"},
+	{"id-ad-ca-Issuers", "id-ad.2"},
+	{"id-pkinit", "iso.org.dod.internet.security.kerberosV5.3"},
 	{"id-pkinit-KPClientAuth", "id-pkinit.4"},
 	{"id-pkinit-KPKdc", "id-pkinit.5"},
 	{"id-ms-kp-sc-logon", "1.3.6.1.4.1.311.20.2.2"},
+	{"id-ce", "2.5.29"},
+	{"id-ce-authorityKeyIdentifier", "id-ce.35"},
+	{"id-ce-subjectKeyIdentifier", "id-ce.14"},
+	{"id-ce-keyUsage", "id-ce.15"},
+	{"id-ce-subjectAltName", "id-ce.17"},
+	{"id-ce-issuerAltName", "id-ce.18"},
+	{"id-ce-basicConstraints", "id-ce.19"},
+	{"id-ce-cRLNumber", "id-ce.20"},
+	{"id-ce-extKeyUsage", "id-ce.37"},
+	{"id-ce-cRLDistributionPoints", "id-ce.31"},
 };
 
 static int

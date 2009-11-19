@@ -30,8 +30,7 @@ main(int argc, char **argv)
 	char *serial;
 	parent = talloc_new(NULL);
 	serial = cm_store_increment_serial(parent, NULL);
-	printf("%s\n", serial);
-	serial = NULL;
+	printf("Starting value = %s\n", serial);
 	for (i = 0; i < 1024; i++) {
 		serial = cm_store_increment_serial(parent, serial);
 		printf("%s\n", serial);

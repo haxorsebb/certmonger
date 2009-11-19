@@ -116,6 +116,8 @@ o object layout
   - get_submitted_cookie
     returns: string(optional) -> CA-specific value
   - modify
+    - nickname for request
+      argument: string -> new ID
     - requested subject name
       argument: string -> requested subject
     - requested subject alternative name(s): email
@@ -130,14 +132,9 @@ o object layout
       argument: array of string -> requested OIDs
     - known-ca to use
       argument: path -> object path of CA
-    - otherwise-not-known-ca
-      arguments: string -> type of CA
-                 string (optional) -> location of CA
-  - rekey_and_submit (for whatever reason) (?)
-    returns: boolean -> working-on-it?
+    returns: boolean -> ok
+             path    -> object path, in case it changed
   - resubmit (for requests that have been denied, generates a new csr)
-    returns: boolean -> working-on-it?
-  - reenroll (for requests that we don't auto-submit, generates a new csr)
     returns: boolean -> working-on-it?
   (objects whose names are returned by "get-known-cas")
   interface=org.fedorahosted.certmonger.ca

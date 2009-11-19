@@ -1,5 +1,5 @@
 Name:		certmonger
-Version:	0.8
+Version:	0.10
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -11,7 +11,20 @@ BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 BuildRequires:	dbus-devel, nspr-devel, nss-devel, openssl-devel
 BuildRequires:	libtalloc-devel, libtevent-devel
-BuildRequires:	xmlrpc-c-client
+BuildRequires:	xmlrpc-c-devel
+%if 0
+# Required for 'make check':
+#  for diff and cmp
+BuildRequires:	diffutils
+#  for expect
+BuildRequires:	expect
+#  for mktemp, which was absorbed into coreutils at some point
+BuildRequires:	mktemp
+#  for certutil and pk12util
+BuildRequires:	nss-tools
+#  for openssl
+BuildRequires:	openssl
+%endif
 Requires(post):	/sbin/chkconfig, /sbin/service
 Requires(preun):	/sbin/chkconfig, /sbin/service
 
@@ -32,6 +45,10 @@ make install DESTDIR=$RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT/%{_initddir}
 mkdir -p $RPM_BUILD_ROOT/%{_localstatedir}/lib/certmonger/{cas,requests}
 install -m755 src/certmonger.init $RPM_BUILD_ROOT/%{_initddir}/certmonger
+
+%check
+# Needs to be able to create pseudoterminals to drive certutil.
+: make check
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -64,9 +81,24 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Fri Nov 13 2009 Nalin Dahyabhai <nalin@redhat.com> 0.10-1
+- update to 0.10
+  - add some compiler warnings and then fix them
+
+* Fri Nov 13 2009 Nalin Dahyabhai <nalin@redhat.com> 0.9-1
+- update to 0.9
+  - run external submission helpers correctly
+  - fix signing of signing requests generated for keys stored in files
+  - only care about new interface and route notifications from netlink,
+    and ignore notifications that don't come from pid 0
+  - fix logic for determining expiration status
+  - correct the version number in self-signed certificates
+
 * Tue Nov 10 2009 Nalin Dahyabhai <nalin@redhat.com> 0.8-1
 - update to 0.8
   - encode windows UPN values in requests correctly
+  - watch for netlink routing changes and restart stalled submission requests
+  - 'getcert resubmit' can force a regeneration of the CSR and submission
 
 * Fri Nov  6 2009 Nalin Dahyabhai <nalin@redhat.com> 0.7-1
 - update to 0.7

@@ -41,13 +41,17 @@ static struct {
 	{"HAVE_CSR", CM_HAVE_CSR},
 	{"NEED_TO_SUBMIT", CM_NEED_TO_SUBMIT},
 	{"SUBMITTING", CM_SUBMITTING},
-	{"REJECTED", CM_REJECTED},
+	{"CA_WORKING", CM_CA_WORKING},
+	{"CA_REJECTED", CM_CA_REJECTED},
+	{"CA_UNREACHABLE", CM_CA_UNREACHABLE},
 	{"NEED_TO_SAVE_CERT", CM_NEED_TO_SAVE_CERT},
 	{"SAVING_CERT", CM_SAVING_CERT},
 	{"NEED_TO_READ_CERT", CM_NEED_TO_READ_CERT},
 	{"READING_CERT", CM_READING_CERT},
 	{"SAVED_CERT", CM_SAVED_CERT},
 	{"MONITORING", CM_MONITORING},
+	{"NEED_TO_NOTIFY", CM_NEED_TO_NOTIFY},
+	{"NOTIFYING", CM_NOTIFYING},
 	{"NEED_CA", CM_NEED_CA},
 	{"NEED_GUIDANCE", CM_NEED_GUIDANCE},
 	{"NEWLY_ADDED", CM_NEWLY_ADDED},
@@ -226,7 +230,7 @@ cm_store_increment_serial(void *parent, const char *old_serial)
 		serial = talloc_asprintf(parent, "01%s", tmp);
 		talloc_free(tmp);
 	} else {
-		if (strchr("890abcdefABCDEF", tmp[0]) != NULL) {
+		if (strchr("89abcdefABCDEF", tmp[0]) != NULL) {
 			/* prepend a zero byte to keep it unsigned */
 			serial = talloc_asprintf(parent, "00%s", tmp);
 			talloc_free(tmp);

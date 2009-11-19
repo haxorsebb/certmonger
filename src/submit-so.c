@@ -63,6 +63,7 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	char buf[LINE_MAX];
 	krb5_deltat lifedelta;
 	long life;
+	time_t now;
 
 	OpenSSL_add_ssl_algorithms();
 	ERR_load_crypto_strings();
@@ -95,9 +96,17 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 						cert = X509_REQ_to_X509(req,
 									0,
 									pkey);
-						X509_time_adj(cert->cert_info->validity->notAfter, life, NULL);
+						if (ca->cm_ca_internal_force_issue_time) {
+							now = ca->cm_ca_internal_issue_time;
+						} else {
+							now = time(NULL);
+						}
+						ASN1_TIME_set(cert->cert_info->validity->notBefore, now);
+						ASN1_TIME_set(cert->cert_info->validity->notAfter, now + life);
 						X509_set_version(cert, 2);
 						/* set the serial number */
+						cm_log(3, "Setting certificate serial number \"%s\".\n",
+						       ca->cm_ca_internal_serial);
 						serial = cm_store_serial_to_der(ca, ca->cm_ca_internal_serial);
 						seriall = strlen(serial) / 2;
 						seriald = talloc_size(ca, seriall);
@@ -138,7 +147,7 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 		fclose(keyfp);
 	} else {
-		cm_log(1, "Error opening '%s': %s.\n",
+		cm_log(1, "Error opening key file '%s' for reading: %s.\n",
 		       entry->cm_key_storage_location, strerror(errno));
 	}
 	if (status == 0) {

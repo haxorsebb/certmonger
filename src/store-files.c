@@ -105,6 +105,7 @@ enum cm_store_file_field {
 	cm_store_ca_field_type,
 	cm_store_ca_field_internal_serial,
 	cm_store_ca_field_internal_lifetime,
+	cm_store_ca_field_internal_issue_time,
 	cm_store_ca_field_external_helper,
 
 	cm_store_file_field_invalid_high,
@@ -179,6 +180,7 @@ static struct cm_store_file_field_list {
 	{cm_store_ca_field_type, "ca_type"},
 	{cm_store_ca_field_internal_serial, "ca_internal_serial"},
 	{cm_store_ca_field_internal_lifetime, "ca_internal_lifetime"},
+	{cm_store_ca_field_internal_issue_time, "ca_internal_issue_time"},
 	{cm_store_ca_field_external_helper, "ca_external_helper"},
 };
 
@@ -382,6 +384,7 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_ca_field_type:
 			case cm_store_ca_field_internal_serial:
 			case cm_store_ca_field_internal_lifetime:
+			case cm_store_ca_field_internal_issue_time:
 			case cm_store_ca_field_external_helper:
 				break;
 			case cm_store_file_field_id:
@@ -533,6 +536,9 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 				talloc_free(p);
 				break;
 			case cm_store_entry_field_notification_method:
+				if (strcasecmp(p, "STDOUT") == 0) {
+					ret->cm_notification_method = cm_notification_stdout;
+				} else
 				if (strcasecmp(p, "SYSLOG") == 0) {
 					ret->cm_notification_method = cm_notification_syslog;
 				} else
@@ -611,6 +617,21 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 				break;
 			}
 		}
+	}
+	return ret;
+}
+
+struct cm_store_entry *
+cm_store_files_entry_read(void *parent, const char *filename)
+{
+	FILE *fp;
+	struct cm_store_entry *ret;
+	fp = fopen(filename, "r");
+	if (fp != NULL) {
+		ret = cm_store_entry_read(parent, filename, fp);
+		fclose(fp);
+	} else {
+		ret = NULL;
 	}
 	return ret;
 }
@@ -709,6 +730,11 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_ca_field_internal_lifetime:
 				ret->cm_ca_internal_lifetime = free_if_empty(p);
 				break;
+			case cm_store_ca_field_internal_issue_time:
+				ret->cm_ca_internal_force_issue_time = 1;
+				ret->cm_ca_internal_issue_time = atol(p);
+				talloc_free(p);
+				break;
 			case cm_store_ca_field_external_helper:
 				ret->cm_ca_external_helper = free_if_empty(p);
 				break;
@@ -720,6 +746,21 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 	}
 	if (ret->cm_ca_internal_lifetime == NULL) {
 		ret->cm_ca_internal_lifetime = talloc_strdup(ret, CM_DEFAULT_CERT_LIFETIME);
+	}
+	return ret;
+}
+
+struct cm_store_ca *
+cm_store_files_ca_read(void *parent, const char *filename)
+{
+	FILE *fp;
+	struct cm_store_ca *ret;
+	fp = fopen(filename, "r");
+	if (fp != NULL) {
+		ret = cm_store_ca_read(parent, filename, fp);
+		fclose(fp);
+	} else {
+		ret = NULL;
 	}
 	return ret;
 }
@@ -958,6 +999,11 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 	cm_store_file_write_int(fp, cm_store_entry_field_notification_default,
 				entry->cm_notification_default);
 	switch (entry->cm_notification_method) {
+	case cm_notification_stdout:
+		cm_store_file_write_str(fp,
+					cm_store_entry_field_notification_method,
+					"STDOUT");
+		break;
 	case cm_notification_syslog:
 		cm_store_file_write_str(fp,
 					cm_store_entry_field_notification_method,
@@ -1021,17 +1067,18 @@ int
 cm_store_entry_delete(struct cm_store_entry *entry)
 {
 	int ret;
+	const char *filename;
 
 	if (entry->cm_store_private != NULL) {
-		ret = remove(entry->cm_store_private);
+		filename = (const char *) entry->cm_store_private;
+		ret = remove(filename);
 		if (ret == 0) {
-			cm_log(3, "Removed file \"%s\".\n",
-			       entry->cm_store_private);
+			cm_log(3, "Removed file \"%s\".\n", filename);
 			talloc_free(entry->cm_store_private);
 			entry->cm_store_private = NULL;
 		} else {
 			cm_log(1, "Failed to remove file \"%s\": %s.\n",
-			       entry->cm_store_private, strerror(errno));
+			       filename, strerror(errno));
 		}
 	} else {
 		cm_log(3, "No file to remove for \"%s\".\n",
@@ -1141,7 +1188,7 @@ cm_store_entry_save(struct cm_store_entry *entry)
 		}
 	} else {
 		cm_log(1, "Error opening \"%s\" for writing: %s.\n",
-		       strerror(errno));
+		       path, strerror(errno));
 		return -1;
 	}
 }
@@ -1156,6 +1203,8 @@ cm_store_get_defaults(void)
 	const char *dest = NULL;
 
 	switch (method) {
+	case cm_notification_stdout:
+		break;
 	case cm_notification_syslog:
 		dest = CM_DEFAULT_NOTIFICATION_SYSLOG_PRIORITY;
 		break;
@@ -1255,6 +1304,10 @@ cm_store_ca_write(FILE *fp, struct cm_store_ca *ca)
 					ca->cm_ca_internal_serial);
 		cm_store_file_write_str(fp, cm_store_ca_field_internal_lifetime,
 					ca->cm_ca_internal_lifetime);
+		if (ca->cm_ca_internal_force_issue_time) {
+			cm_store_file_write_int(fp, cm_store_ca_field_internal_issue_time,
+						ca->cm_ca_internal_issue_time);
+		}
 		break;
 	case cm_ca_external:
 		cm_store_file_write_str(fp, cm_store_ca_field_type,
@@ -1273,17 +1326,18 @@ int
 cm_store_ca_delete(struct cm_store_ca *ca)
 {
 	int ret;
+	const char *filename;
 
 	if (ca->cm_store_private != NULL) {
+		filename = (const char *) ca->cm_store_private;
 		ret = remove(ca->cm_store_private);
 		if (ret == 0) {
-			cm_log(3, "Removed file \"%s\".\n",
-			       ca->cm_store_private);
+			cm_log(3, "Removed file \"%s\".\n", filename);
 			talloc_free(ca->cm_store_private);
 			ca->cm_store_private = NULL;
 		} else {
 			cm_log(1, "Failed to remove file \"%s\": %s.\n",
-			       ca->cm_store_private, strerror(errno));
+			       filename, strerror(errno));
 		}
 	} else {
 		cm_log(3, "No file to remove for \"%s\".\n", ca->cm_id);
@@ -1365,7 +1419,7 @@ cm_store_ca_save(struct cm_store_ca *ca)
 		}
 		return 0;
 	} else {
-		cm_log(1, "Error opening \"%s\" for writing: %s.\n",
+		cm_log(1, "Error opening \"%s\" for writing: %s.\n", path,
 		       strerror(errno));
 		return -1;
 	}

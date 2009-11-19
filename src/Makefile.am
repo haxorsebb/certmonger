@@ -1,6 +1,6 @@
 EXTRA_DIST = ipa-submit-helper
 AM_CFLAGS = @TALLOC_CFLAGS@ @TEVENT_CFLAGS@ @DBUS_CFLAGS@ @KRB5_CFLAGS@
-man_MANS = certmonger.8 getcert.1 getcert-request.1 getcert-list.1 getcert-list-cas.1 getcert-start-tracking.1 getcert-stop-tracking.1 selfsign-getcert.1 ipa-getcert.1
+man_MANS = certmonger.8 getcert.1 getcert-request.1 getcert-list.1 getcert-list-cas.1 getcert-start-tracking.1 getcert-stop-tracking.1 selfsign-getcert.1 ipa-getcert.1 getcert-resubmit.1
 noinst_LIBRARIES = libcm.a libcm-o.a libcm-n.a
 libcm_a_SOURCES = \
 	certext.h \
@@ -38,6 +38,7 @@ libcm_a_SOURCES = \
 	submit.c \
 	submit-e.c \
 	submit.h \
+	submit-e.h \
 	submit-int.h \
 	subproc.c \
 	subproc.h \
@@ -86,8 +87,8 @@ selfsign_getcert_LDADD = $(getcert_LDADD)
 sbin_PROGRAMS = certmonger
 certmonger_SOURCES = main.c
 certmonger_LDADD = libcm.a @OPENSSL_LIBS@ @CERTMONGER_LIBS@ @KRB5_LIBS@
-noinst_PROGRAMS = tdbusm-check serial-check
-tdbusm_check_SOURCES = tdbusm-check.c
+noinst_PROGRAMS = tdbusm-check serial-check nl-check submit-x
 tdbusm_check_LDADD = libcm.a @CERTMONGER_LIBS@
-serial_check_SOURCES = serial-check.c
 serial_check_LDADD = libcm.a @CERTMONGER_LIBS@
+nl_check_LDADD = libcm.a @CERTMONGER_LIBS@
+submit_x_LDADD = @XMLRPC_LIBS@

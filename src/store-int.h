@@ -73,8 +73,9 @@ struct cm_store_entry {
 	   syslog(LOG_AUTHPRIV?) or mail to root@? */
 	unsigned int cm_notification_default:1;
 	enum cm_notification_method {
-		cm_notification_syslog = 0,
+		cm_notification_syslog = 1,
 		cm_notification_email,
+		cm_notification_stdout,	/* for testing _ONLY_ */
 	} cm_notification_method;
 	char *cm_notification_destination;
 	/* CSR template information [or imported from existing certificate]
@@ -100,8 +101,8 @@ struct cm_store_entry {
 		CM_NEED_TO_SAVE_CERT, CM_SAVING_CERT,
 		CM_NEED_TO_READ_CERT, CM_READING_CERT,
 		CM_SAVED_CERT,
-		CM_MONITORING, CM_NOTIFYING,
-		CM_REJECTED,
+		CM_MONITORING, CM_NEED_TO_NOTIFY, CM_NOTIFYING,
+		CM_CA_WORKING, CM_CA_REJECTED, CM_CA_UNREACHABLE,
 		CM_NEED_GUIDANCE,
 		CM_NEWLY_ADDED,
 		CM_NEWLY_ADDED_READING_KEYI,
@@ -147,10 +148,16 @@ struct cm_store_ca {
 	} cm_ca_type;
 	char *cm_ca_internal_serial;
 	char *cm_ca_internal_lifetime;
+	int cm_ca_internal_force_issue_time:1;
+	time_t cm_ca_internal_issue_time;
 	char *cm_ca_external_helper;
 };
 
 const char *cm_store_state_as_string(enum cm_state state);
 enum cm_state cm_store_state_from_string(const char *name);
 
+struct cm_store_entry *cm_store_files_entry_read(void *parent,
+						 const char *filename);
+struct cm_store_ca *cm_store_files_ca_read(void *parent,
+					   const char *filename);
 #endif

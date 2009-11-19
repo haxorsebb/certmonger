@@ -68,6 +68,8 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 	case CM_NEED_TO_SUBMIT:
 	case CM_SUBMITTING:
 	case CM_NEED_CA:
+	case CM_CA_UNREACHABLE:
+	case CM_CA_WORKING:
 		entry->cm_state = CM_HAVE_CSR;
 		break;
 	case CM_NEED_TO_SAVE_CERT:
@@ -79,12 +81,15 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 	case CM_SAVED_CERT:
 		entry->cm_state = CM_MONITORING;
 		break;
-	case CM_REJECTED:
+	case CM_CA_REJECTED:
 		break;
 	case CM_NEED_GUIDANCE:
 		break;
 	case CM_MONITORING:
+		break;
+	case CM_NEED_TO_NOTIFY:
 	case CM_NOTIFYING:
+		entry->cm_state = CM_NEED_TO_NOTIFY;
 		break;
 	case CM_NEWLY_ADDED:
 	case CM_NEWLY_ADDED_READING_KEYI:
@@ -166,13 +171,13 @@ cm_check_expiration_is_noteworthy(struct cm_store_entry *entry)
 	time_t now;
 	now = time(NULL);
 	/* How much time is left? */
-	if (entry->cm_cert_expiration > now) {
+	if (entry->cm_cert_expiration < now) {
 		ttl = 0;
 	} else {
 		ttl = entry->cm_cert_expiration - now;
 	}
 	/* How much time was left, last time we checked? */
-	if (entry->cm_cert_expiration > entry->cm_last_expiration_check) {
+	if (entry->cm_cert_expiration < entry->cm_last_expiration_check) {
 		previous_ttl = 0;
 	} else {
 		previous_ttl = entry->cm_cert_expiration -
@@ -199,12 +204,18 @@ cm_check_expiration_is_noteworthy(struct cm_store_entry *entry)
 			return 0;
 		}
 	}
+	/* The certificate has expired. */
+	if (ttl == 0) {
+		return 0;
+	}
 	return -1;
 }
 
 int
 cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 	   struct cm_context *context,
+	   struct cm_store_ca *(*get_ca_by_index)(struct cm_context *, int),
+	   int (*get_n_cas)(struct cm_context *),
 	   void *cm_iterate_state,
 	   enum cm_time *when, int *delay, int *readfd)
 {
@@ -374,15 +385,16 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			if (cm_submit_rejected(entry,
 					       state->cm_submit_state) == 0) {
 				/* The request was flat-out rejected. */
-				entry->cm_state = CM_REJECTED;
-				*when = cm_time_now;
+				entry->cm_state = CM_CA_REJECTED;
+				*when = cm_time_delay;
+				*delay = CM_DELAY_CA_POLL;
 			} else
 			if (cm_submit_unreachable(entry,
 						  state->cm_submit_state) == 0) {
 				/* Let's try again later. */
 				cm_submit_done(entry, state->cm_submit_state);
 				state->cm_submit_state = NULL;
-				entry->cm_state = CM_NEED_TO_SUBMIT;
+				entry->cm_state = CM_CA_UNREACHABLE;
 				*when = cm_time_delay;
 				*delay = CM_DELAY_CA_POLL;
 			} else
@@ -390,7 +402,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 						     state->cm_submit_state) == 0) {
 				/* Saved CA's identifier for our request; give
 				 * it a little time and then ask. */
-				entry->cm_state = CM_NEED_TO_SUBMIT;
+				entry->cm_state = CM_CA_WORKING;
 				*when = cm_time_soonish;
 			} else {
 				/* Don't know what's going on. HELP! */
@@ -498,8 +510,16 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		entry->cm_state = CM_MONITORING;
 		*when = cm_time_now;
 		break;
-	case CM_REJECTED:
+	case CM_CA_REJECTED:
 		*when = cm_time_soonish;
+		break;
+	case CM_CA_WORKING:
+		entry->cm_state = CM_NEED_TO_SUBMIT;
+		*when = cm_time_now;
+		break;
+	case CM_CA_UNREACHABLE:
+		entry->cm_state = CM_NEED_TO_SUBMIT;
+		*when = cm_time_now;
 		break;
 	case CM_NEED_GUIDANCE:
 		*when = cm_time_soonish;
@@ -510,29 +530,30 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 	case CM_MONITORING:
 		if ((entry->cm_monitor || entry->cm_monitor_default) && /* XXX */
 		    (cm_check_expiration_is_noteworthy(entry) == 0)) {
-			state->cm_notify_state = cm_notify_start(entry);
-			if (state->cm_notify_state != NULL) {
-				entry->cm_state = CM_NOTIFYING;
-				/* Wait for status update, or poll. */
-				*readfd = cm_notify_get_fd(entry,
-							   state->cm_notify_state);
-				if (*readfd == -1) {
-					*when = cm_time_soon;
-				} else {
-					*when = cm_time_no_time;
-				}
-			} else {
-				/* Try to log it ourselves. */
-				cm_log(0, "'%s' will expire in %d days.\n",
-				       (entry->cm_cert_expiration - time(NULL))/
-				       (24 * 60 * 60));
-				*delay = 24 * 60 * 60; /* XXX */
-				*when = cm_time_delay;
-			}
+			/* Kick off a notification. */
+			entry->cm_state = CM_NEED_TO_NOTIFY;
+			*when = cm_time_now;
 		} else {
 			/* Nothing to do here. */
 			*delay = 24 * 60 * 60; /* XXX */
 			*when = cm_time_delay;
+		}
+		break;
+	case CM_NEED_TO_NOTIFY:
+		state->cm_notify_state = cm_notify_start(entry);
+		if (state->cm_notify_state != NULL) {
+			entry->cm_state = CM_NOTIFYING;
+			/* Wait for status update, or poll. */
+			*readfd = cm_notify_get_fd(entry,
+						   state->cm_notify_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
+		} else {
+			/* Failed to start notifying; try again. */
+			*when = cm_time_soonish;
 		}
 		break;
 	case CM_NOTIFYING:
@@ -541,6 +562,10 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			state->cm_notify_state = NULL;
 		}
 		if ((entry->cm_autorenew || entry->cm_autorenew_default)) {
+			/* We need to go all the way back to generating the CSR
+			 * because the user may have asked us to request with
+			 * parameters that have changed since we last generated
+			 * a CSR. */
 			entry->cm_state = CM_NEED_CSR;
 			*when = cm_time_soon;
 		} else {
@@ -642,8 +667,8 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			/* Walk the list of known names of known CAs and try to
 			 * match one with the issuer of the certificate we
 			 * already have. */
-			for (i = 0; i < cm_get_n_cas(context); i++) {
-				tmp_ca = cm_get_ca_by_index(context, i);
+			for (i = 0; i < (*get_n_cas)(context); i++) {
+				tmp_ca = (*get_ca_by_index)(context, i);
 				for (j = 0;
 				     (tmp_ca->cm_ca_known_issuer_names != NULL) &&
 				     (tmp_ca->cm_ca_known_issuer_names[j] != NULL);
@@ -657,8 +682,8 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		}
 		/* No match -> assign the default. */
 		if (entry->cm_ca_name == NULL) {
-			for (i = 0; i < cm_get_n_cas(context); i++) {
-				tmp_ca = cm_get_ca_by_index(context, i);
+			for (i = 0; i < (*get_n_cas)(context); i++) {
+				tmp_ca = (*get_ca_by_index)(context, i);
 				if (tmp_ca->cm_ca_is_default) {
 					entry->cm_ca_name = talloc_strdup(entry, tmp_ca->cm_id);
 				}

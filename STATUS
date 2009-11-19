@@ -25,11 +25,9 @@ Complete:
       assume it's been issued; ditto for private keys).
     * List entries.
     * List known CAs.
-    * Resubmit CA-denied requests.
-    * Re-enroll for expired but not-auto-renew certificates.
+    * Resubmit requests after generating a new signing request.
     * Provide introspection data as a well-behaved DBus service would.
       * D-Feet seems to be happy.
-    * Regenerate signing requests.
     * Start and stop tracking (i.e., notification of expiration).
   * Make certmonger a proper daemon.
     * Detach from console, foreground for debugging.

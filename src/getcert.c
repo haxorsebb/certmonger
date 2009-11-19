@@ -61,6 +61,15 @@ static struct {
 	.tctx = NULL
 };
 
+static char *find_ca_by_name(void *parent, enum cm_tdbus_type bus,
+			     const char *nickname);
+static char *find_request_by_name(void *parent, enum cm_tdbus_type bus,
+				  const char *path);
+static char *find_ca_name(void *parent, enum cm_tdbus_type bus,
+			  const char *path);
+static char *find_request_name(void *parent, enum cm_tdbus_type bus,
+			       const char *path);
+
 /* Add a string to a list. */
 static void
 add_string(void *parent, char ***dest, const char *value)
@@ -111,7 +120,7 @@ prep_req(enum cm_tdbus_type which,
 	return msg;
 }
 
-/* Send our request and ensure that we get a response. */
+/* Send our request and return the response.  If there's an error, exit. */
 static DBusMessage *
 send_req(DBusMessage *req)
 {
@@ -148,7 +157,8 @@ send_req(DBusMessage *req)
 	return rep;
 }
 
-/* Send the specified, argument-less method call to the named object. */
+/* Send the specified, argument-less method call to the named object and return
+ * the reply message. */
 static DBusMessage *
 query_rep(enum cm_tdbus_type which,
 	  const char *path, const char *interface, const char *method)
@@ -193,6 +203,24 @@ query_rep_s(enum cm_tdbus_type which,
 }
 
 /* Send the specified, argument-less method call to the named object, and
+ * return the single object path from the response. */
+static char *
+query_rep_p(enum cm_tdbus_type which,
+	    const char *path, const char *interface, const char *method,
+	    void *parent)
+{
+	DBusMessage *rep;
+	char *p;
+	rep = query_rep(which, path, interface, method);
+	if (cm_tdbusm_get_p(rep, parent, &p) != 0) {
+		printf(_("Error parsing server response.\n"));
+		exit(1);
+	}
+	dbus_message_unref(rep);
+	return p;
+}
+
+/* Send the specified, argument-less method call to the named object, and
  * return the array of strings from the response. */
 static char **
 query_rep_as(enum cm_tdbus_type which,
@@ -211,6 +239,24 @@ query_rep_as(enum cm_tdbus_type which,
 }
 
 /* Send the specified, argument-less method call to the named object, and
+ * return the array of paths from the response. */
+static char **
+query_rep_ap(enum cm_tdbus_type which,
+	     const char *path, const char *interface, const char *method,
+	     void *parent)
+{
+	DBusMessage *rep;
+	char **ap;
+	rep = query_rep(which, path, interface, method);
+	if (cm_tdbusm_get_ap(rep, parent, &ap) != 0) {
+		printf(_("Error parsing server response.\n"));
+		exit(1);
+	}
+	dbus_message_unref(rep);
+	return ap;
+}
+
+/* Send the specified, argument-less method call to the named object, and
  * return from two to four strings from the response. */
 static void
 query_rep_sososos(enum cm_tdbus_type which,
@@ -226,13 +272,14 @@ query_rep_sososos(enum cm_tdbus_type which,
 	dbus_message_unref(rep);
 }
 
+/* Add a new request. */
 static int
 request(const char *argv0, int argc, char **argv)
 {
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	char subject_default[LINE_MAX];
 	char *dbdir = NULL, *token = NULL, *nickname = NULL;
-	char *keyfile = NULL, *certfile = NULL;
+	char *keyfile = NULL, *certfile = NULL, *capath;
 	int keysize = 0, auto_renew = 0, c, i;
 	char *ca = DEFAULT_CA, *subject = NULL, **eku = NULL, *oid, *id = NULL;
 	char **principal = NULL, **dns = NULL, **email = NULL;
@@ -499,9 +546,19 @@ request(const char *argv0, int argc, char **argv)
 		i++;
 	}
 	if (ca != NULL) {
+		if (ca != NULL) {
+			capath = find_ca_by_name(globals.tctx, bus, ca);
+			if (capath == NULL) {
+				printf(_("No CA with name \"%s\" found.\n"),
+				       ca);
+				return 1;
+			}
+		} else {
+			capath = NULL;
+		}
 		param[i].key = "CA";
 		param[i].value_type = cm_tdbusm_dict_s;
-		param[i].value.s = ca;
+		param[i].value.s = capath;
 		params[i] = &param[i];
 		i++;
 	}
@@ -552,7 +609,9 @@ request(const char *argv0, int argc, char **argv)
 	}
 	dbus_message_unref(rep);
 	if (b) {
-		printf(_("New signing request \"%s\" added.\n"), p);
+		nickname =  find_request_name(globals.tctx, bus, p);
+		printf(_("New signing request \"%s\" added.\n"),
+		       nickname ? nickname : p);
 	} else {
 		printf(_("New signing request could not be added.\n"));
 		exit(1);
@@ -560,28 +619,36 @@ request(const char *argv0, int argc, char **argv)
 	return 0;
 }
 
-static const char *
+static char *
+find_request_name(void *parent, enum cm_tdbus_type bus, const char *path)
+{
+	return query_rep_s(bus, path, CM_DBUS_REQUEST_INTERFACE, "get_nickname",
+			   parent);
+}
+
+static char *
+find_ca_name(void *parent, enum cm_tdbus_type bus, const char *path)
+{
+	return query_rep_s(bus, path, CM_DBUS_CA_INTERFACE, "get_nickname",
+			   parent);
+}
+
+static char *
 find_request_by_name(void *parent, enum cm_tdbus_type bus, const char *name)
 {
-	DBusMessage *rep;
 	char **requests;
 	int i, which;
 	char *thisname;
-	rep = query_rep(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
-			"get_requests");
-	if (cm_tdbusm_get_ap(rep, globals.tctx, &requests) != 0) {
-		printf(_("Error parsing server response.\n"));
-		exit(1);
-	}
-	dbus_message_unref(rep);
+	requests = query_rep_ap(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
+				"get_requests", globals.tctx);
 	which = -1;
 	for (i = 0; (requests != NULL) && (requests[i] != NULL); i++) {
-		thisname = query_rep_s(bus, requests[i],
-				       CM_DBUS_REQUEST_INTERFACE,
-				       "get_nickname",
-				       parent);
-		if (strcasecmp(name, thisname) == 0) {
-			which = i;
+		thisname = find_request_name(parent, bus, requests[i]);
+		if (thisname != NULL) {
+			if (strcasecmp(name, thisname) == 0) {
+				which = i;
+			}
+			talloc_free(thisname);
 		}
 	}
 	if (which != -1) {
@@ -597,17 +664,11 @@ find_request_by_storage(void *parent, enum cm_tdbus_type bus,
 			const char *token,
 			const char *certfile)
 {
-	DBusMessage *rep;
 	char **requests;
 	int i, which;
 	char *cert_stype, *cert_sloc, *cert_nick, *cert_tok;
-	rep = query_rep(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
-			"get_requests");
-	if (cm_tdbusm_get_ap(rep, globals.tctx, &requests) != 0) {
-		printf(_("Error parsing server response.\n"));
-		exit(1);
-	}
-	dbus_message_unref(rep);
+	requests = query_rep_ap(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
+				"get_requests", globals.tctx);
 	which = -1;
 	for (i = 0; (requests != NULL) && (requests[i] != NULL); i++) {
 		query_rep_sososos(bus, requests[i],
@@ -649,6 +710,30 @@ find_request_by_storage(void *parent, enum cm_tdbus_type bus,
 	}
 	if (which != -1) {
 		return requests[which];
+	}
+	return NULL;
+}
+
+static char *
+find_ca_by_name(void *parent, enum cm_tdbus_type bus, const char *name)
+{
+	char **cas;
+	int i, which;
+	char *thisname;
+	cas = query_rep_ap(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
+			   "get_known_cas", globals.tctx);
+	which = -1;
+	for (i = 0; (cas != NULL) && (cas[i] != NULL); i++) {
+		thisname = find_ca_name(parent, bus, cas[i]);
+		if (thisname != NULL) {
+			if (strcasecmp(name, thisname) == 0) {
+				which = i;
+			}
+			talloc_free(thisname);
+		}
+	}
+	if (which != -1) {
+		return cas[which];
 	}
 	return NULL;
 }
@@ -767,7 +852,9 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 	}
 	dbus_message_unref(rep);
 	if (b) {
-		printf(_("New tracking request \"%s\" added.\n"), p);
+		nickname =  find_request_name(globals.tctx, bus, p);
+		printf(_("New tracking request \"%s\" added.\n"),
+		       nickname ? nickname : p);
 		return 0;
 	} else {
 		printf(_("New tracking request could not be added.\n"));
@@ -785,7 +872,7 @@ set_tracking(const char *argv0, const char *category,
 	struct cm_tdbusm_dict param[4];
 	const struct cm_tdbusm_dict *params[5];
 	char *dbdir = NULL, *token = NULL, *nickname = NULL;
-	char *id = NULL, *new_id = NULL;
+	char *id = NULL, *new_id = NULL, *new_request;
 	char *keyfile = NULL, *certfile = NULL, *ca = DEFAULT_CA;
 	dbus_bool_t b;
 	int c, auto_renew = 0, i;
@@ -876,19 +963,23 @@ set_tracking(const char *argv0, const char *category,
 				exit(1);
 			}
 			rep = send_req(req);
-			if (cm_tdbusm_get_b(rep, globals.tctx, &b) != 0) {
+			if (cm_tdbusm_get_bp(rep, globals.tctx, &b,
+					     &new_request) != 0) {
 				printf(_("Error parsing server response.\n"));
 				exit(1);
 			}
+			request = new_request;
 			dbus_message_unref(rep);
+			nickname =  find_request_name(globals.tctx, bus,
+						      request);
 			if (b) {
 				printf(_("Request \"%s\" modified.\n"),
-				       request);
+				       nickname ? nickname : request);
 				return 0;
 			} else {
 				printf(_("Request \"%s\" could not be "
 					 "modified.\n"),
-				       request);
+				       nickname ? nickname : request);
 				return 1;
 			}
 		} else {
@@ -947,12 +1038,14 @@ set_tracking(const char *argv0, const char *category,
 			exit(1);
 		}
 		dbus_message_unref(rep);
+		nickname = find_request_name(globals.tctx, bus, request);
 		if (b) {
-			printf(_("Request \"%s\" removed.\n"), request);
+			printf(_("Request \"%s\" removed.\n"),
+			       nickname ? nickname : request);
 			return 0;
 		} else {
 			printf(_("Request \"%s\" could not be removed.\n"),
-			       request);
+			       nickname ? nickname : request);
 			return 1;
 		}
 	}
@@ -968,6 +1061,258 @@ static int
 stop_tracking(const char *argv0, int argc, char **argv)
 {
 	return set_tracking(argv0, "stop-tracking", argc, argv, FALSE);
+}
+
+static int
+resubmit(const char *argv0, int argc, char **argv)
+{
+	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
+	DBusMessage *req, *rep;
+	const char *request, *capath;
+	struct cm_tdbusm_dict param[15];
+	const struct cm_tdbusm_dict *params[16];
+	char *dbdir = NULL, *token = NULL, *nickname = NULL, *certfile = NULL;
+	char *id = NULL, *new_id = NULL, *ca = NULL, *new_request;
+	char *subject = NULL, **eku = NULL, *oid = NULL;
+	char **principal = NULL, **dns = NULL, **email = NULL;
+	dbus_bool_t b;
+	int c, i;
+	krb5_context kctx;
+	krb5_error_code kret;
+	krb5_principal kprincipal;
+	char *krealm, *kuprincipal;
+
+	kctx = NULL;
+	if ((kret = krb5_init_context(&kctx)) != 0) {
+		kctx = NULL;
+		printf(_("Error initializing Kerberos library: %s.\n"),
+		       error_message(kret));
+		return 1;
+	}
+	krealm = NULL;
+	if ((kret = krb5_get_default_realm(kctx, &krealm)) != 0) {
+		printf(_("Error determining default Kerberos realm: %s.\n"),
+		       error_message(kret));
+		return 1;
+	}
+	if (krealm == NULL) {
+		printf(_("Error determining default Kerberos realm.\n"));
+		return 1;
+	}
+
+	while ((c = getopt(argc, argv,
+			   "d:n:N:t:U:K:E:D:f:i:I:sS" GETOPT_CA)) != -1) {
+		switch (c) {
+		case 'd':
+			dbdir = talloc_strdup(globals.tctx, optarg);
+			break;
+		case 't':
+			token = talloc_strdup(globals.tctx, optarg);
+			break;
+		case 'n':
+			nickname = talloc_strdup(globals.tctx, optarg);
+			break;
+		case 'f':
+			certfile = talloc_strdup(globals.tctx, optarg);
+			break;
+		case 'c':
+			ca = talloc_strdup(globals.tctx, optarg);
+			break;
+		case 'i':
+			id = talloc_strdup(globals.tctx, optarg);
+			break;
+		case 'I':
+			new_id = talloc_strdup(globals.tctx, optarg);
+			break;
+		case 'N':
+			subject = talloc_strdup(globals.tctx, optarg);
+			break;
+		case 'U':
+			oid = cm_oid_from_name(globals.tctx, optarg);
+			if (strspn(oid, "0123456789.") != strlen(oid)) {
+				printf(_("Could not evaluate OID \"%s\".\n"),
+				       optarg);
+				return 1;
+			}
+			add_string(globals.tctx, &eku, oid);
+			break;
+		case 'K':
+			kprincipal = NULL;
+			if ((kret = krb5_parse_name(kctx, optarg,
+						    &kprincipal)) != 0) {
+				printf(_("Error parsing Kerberos principal "
+				         "name \"%s\": %s.\n"), optarg,
+				       error_message(kret));
+				return 1;
+			}
+			kuprincipal = NULL;
+			if ((kret = krb5_unparse_name(kctx, kprincipal,
+						      &kuprincipal)) != 0) {
+				printf(_("Error unparsing Kerberos principal "
+				         "name \"%s\": %s.\n"), optarg,
+				       error_message(kret));
+				return 1;
+			}
+			add_string(globals.tctx, &principal, kuprincipal);
+			krb5_free_principal(kctx, kprincipal);
+			break;
+		case 'D':
+			add_string(globals.tctx, &dns, optarg);
+			break;
+		case 'E':
+			add_string(globals.tctx, &email, optarg);
+			break;
+		case 's':
+			bus = cm_tdbus_session;
+			break;
+		case 'S':
+			bus = cm_tdbus_system;
+			break;
+		default:
+			help(argv0, "resubmit");
+			return 1;
+		}
+	}
+	if (id != NULL) {
+		request = find_request_by_name(globals.tctx, bus, id);
+	} else {
+		request = find_request_by_storage(globals.tctx, bus,
+						  dbdir, nickname, token,
+						  certfile);
+	}
+	if (request == NULL) {
+		if (((dbdir != NULL) && (nickname == NULL)) ||
+		    ((dbdir == NULL) && (nickname != NULL))) {
+			printf(_("Database location or nickname "
+				 "specified without the other.\n"));
+			help(argv0, "resubmit");
+			return 1;
+		}
+		if ((dbdir != NULL) && (certfile != NULL)) {
+			printf(_("Database directory and certificate "
+				 "file both specified.\n"));
+			help(argv0, "resubmit");
+			return 1;
+		}
+		if ((dbdir == NULL) &&
+		    (nickname == NULL) &&
+		    (certfile == NULL)) {
+			printf(_("None of database directory and "
+				 "nickname or certificate file "
+				 "specified.\n"));
+			help(argv0, "resubmit");
+			return 1;
+		}
+		printf(_("No request found that matched arguments.\n"));
+		return 1;
+	}
+	i = 0;
+	if (new_id != NULL) {
+		param[i].key = "NICKNAME";
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = new_id;
+		params[i] = &param[i];
+		i++;
+	}
+	if (ca != NULL) {
+		capath = find_ca_by_name(globals.tctx, bus, ca);
+		if (capath == NULL) {
+			printf(_("No CA with name \"%s\" found.\n"), ca);
+			exit(1);
+		}
+		param[i].key = "CA";
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = talloc_strdup(globals.tctx, capath);
+		params[i] = &param[i];
+		i++;
+	}
+	if (subject != NULL) {
+		param[i].key = "SUBJECT";
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = subject;
+		params[i] = &param[i];
+		i++;
+	}
+	if (principal != NULL) {
+		param[i].key = "PRINCIPAL";
+		param[i].value_type = cm_tdbusm_dict_as;
+		param[i].value.as = principal;
+		params[i] = &param[i];
+		i++;
+	}
+	if (dns != NULL) {
+		param[i].key = "DNS";
+		param[i].value_type = cm_tdbusm_dict_as;
+		param[i].value.as = dns;
+		params[i] = &param[i];
+		i++;
+	}
+	if (email != NULL) {
+		param[i].key = "EMAIL";
+		param[i].value_type = cm_tdbusm_dict_as;
+		param[i].value.as = email;
+		params[i] = &param[i];
+		i++;
+	}
+	if (eku != NULL) {
+		param[i].key = "EKU";
+		param[i].value_type = cm_tdbusm_dict_as;
+		param[i].value.as = eku;
+		params[i] = &param[i];
+		i++;
+	}
+	params[i] = NULL;
+	if (i > 0) {
+		req = prep_req(bus, request, CM_DBUS_REQUEST_INTERFACE,
+			       "modify");
+		if (cm_tdbusm_set_d(req, params) != 0) {
+			printf(_("Error setting request arguments.\n"));
+			exit(1);
+		}
+		rep = send_req(req);
+		if (cm_tdbusm_get_bp(rep, globals.tctx, &b,
+				     &new_request) != 0) {
+			printf(_("Error parsing server response.\n"));
+			exit(1);
+		}
+		request = new_request;
+		dbus_message_unref(rep);
+		if (!b) {
+			nickname = find_request_name(globals.tctx, bus,
+						     request);
+			printf(_("Error modifying \"%s\".\n"),
+			       nickname ? nickname : request);
+			exit(1);
+		}
+	}
+	capath = query_rep_p(bus, request, CM_DBUS_REQUEST_INTERFACE,
+			     "get_ca", globals.tctx);
+	if (capath != NULL) {
+		ca = find_ca_name(globals.tctx, bus, capath);
+	} else {
+		ca = NULL;
+	}
+	nickname = find_request_name(globals.tctx, bus, request);
+	if (query_rep_b(bus, request, CM_DBUS_REQUEST_INTERFACE, "resubmit",
+			globals.tctx)) {
+		if (ca != NULL) {
+			printf(_("Resubmitting \"%s\" to \"%s\".\n"),
+			       nickname ? nickname : request, ca);
+		} else {
+			printf(_("Resubmitting \"%s\".\n"),
+			       nickname ? nickname : request);
+		}
+		return 0;
+	} else {
+		if (ca != NULL) {
+			printf(_("Error attempting to submit \"%s\" to "
+				 "\"%s\".\n"), request, ca);
+		} else {
+			printf(_("Error attempting to submit \"%s\".\n"),
+			       request);
+		}
+		return 1;
+	}
 }
 
 static int
@@ -1004,27 +1349,15 @@ list(const char *argv0, int argc, char **argv)
 			return 1;
 		}
 	}
-	rep = query_rep(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
-			"get_requests");
-	if (cm_tdbusm_get_ap(rep, globals.tctx, &requests) != 0) {
-		printf(_("Error parsing server response.\n"));
-		exit(1);
-	}
-	dbus_message_unref(rep);
+	requests = query_rep_ap(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
+				"get_requests", globals.tctx);
 	for (i = 0; (requests != NULL) && (requests[i] != NULL); i++) {
 		/* Filter out based on the CA. */
 		ca_name = NULL;
 		rep = query_rep(bus, requests[i],
 				CM_DBUS_REQUEST_INTERFACE, "get_ca");
 		if (cm_tdbusm_get_p(rep, globals.tctx, &p) == 0) {
-			dbus_message_unref(rep);
-			rep = query_rep(bus, p,
-					CM_DBUS_CA_INTERFACE,
-					"get_nickname");
-			if (cm_tdbusm_get_s(rep, globals.tctx,
-					    &ca_name) != 0) {
-				ca_name = NULL;
-			}
+			ca_name = find_ca_name(globals.tctx, bus, p);
 		}
 		dbus_message_unref(rep);
 		if (only_ca != NULL) {
@@ -1063,7 +1396,9 @@ list(const char *argv0, int argc, char **argv)
 		case CM_SAVED_CERT:
 		case CM_NEED_TO_READ_CERT:
 		case CM_READING_CERT:
-		case CM_REJECTED:
+		case CM_CA_WORKING:
+		case CM_CA_REJECTED:
+		case CM_CA_UNREACHABLE:
 		case CM_NEED_GUIDANCE:
 		case CM_NEED_CA:
 		case CM_NEWLY_ADDED:
@@ -1076,6 +1411,7 @@ list(const char *argv0, int argc, char **argv)
 			}
 			break;
 		case CM_MONITORING:
+		case CM_NEED_TO_NOTIFY:
 		case CM_NOTIFYING:
 			if (requests_only) {
 				continue;
@@ -1083,12 +1419,7 @@ list(const char *argv0, int argc, char **argv)
 			break;
 		}
 		/* Basic info. */
-		rep = query_rep(bus, requests[i],
-				CM_DBUS_REQUEST_INTERFACE, "get_nickname");
-		if (cm_tdbusm_get_s(rep, globals.tctx, &nickname) != 0) {
-			nickname = requests[i];
-		}
-		dbus_message_unref(rep);
+		nickname = find_request_name(globals.tctx, bus, requests[i]);
 		printf(_("Request '%s':\n"), nickname);
 		printf(_("\tstatus: %s\n"), s);
 		printf(_("\tstuck: %s\n"), b ? "yes" : "no");
@@ -1176,7 +1507,6 @@ static int
 list_cas(const char *argv0, int argc, char **argv)
 {
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
-	DBusMessage *rep;
 	char **cas, *s, *only_ca = DEFAULT_CA, *ca_name;
 	char **as;
 	int c, i, j;
@@ -1196,19 +1526,13 @@ list_cas(const char *argv0, int argc, char **argv)
 			return 1;
 		}
 	}
-	rep = query_rep(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
-			"get_known_cas");
-	if (cm_tdbusm_get_ap(rep, globals.tctx, &cas) != 0) {
-		printf("Error parsing server response.\n");
-		exit(1);
-	}
-	dbus_message_unref(rep);
+	cas = query_rep_ap(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
+			   "get_known_cas", globals.tctx);
 	for (i = 0; (cas != NULL) && (cas[i] != NULL); i++) {
 		/* Filter out based on the CA. */
 		ca_name = NULL;
-		rep = query_rep(bus, cas[i],
-				CM_DBUS_CA_INTERFACE, "get_nickname");
-		if (cm_tdbusm_get_s(rep, globals.tctx, &s) == 0) {
+		s = find_ca_name(globals.tctx, bus, cas[i]);
+		if (s != NULL) {
 			if ((only_ca != NULL) && (strcmp(s, only_ca) != 0)) {
 				continue;
 			}
@@ -1250,6 +1574,7 @@ static struct {
 	{"request", request},
 	{"start-tracking", start_tracking},
 	{"stop-tracking", stop_tracking},
+	{"resubmit", resubmit},
 	{"list", list},
 	{"list-cas", list_cas},
 };
@@ -1284,10 +1609,10 @@ help(const char *cmd, const char *category)
 #endif
 		N_("* Parameters for the signing request:\n"),
 		N_("  -N NAME	set requested subject name (default: CN=<hostname>)\n"),
-		N_("  -U EXTUSAGE	add requested extended key usage OID\n"),
-		N_("  -K NAME	add requested principal name\n"),
-		N_("  -D DNSNAME	add requested DNS name\n"),
-		N_("  -E EMAIL	add requested email address\n"),
+		N_("  -U EXTUSAGE	set requested extended key usage OID\n"),
+		N_("  -K NAME	set requested principal name\n"),
+		N_("  -D DNSNAME	set requested DNS name\n"),
+		N_("  -E EMAIL	set requested email address\n"),
 		N_("* Bus options:\n"),
 		N_("  -S		connect to the certmonger service on the system bus\n"),
 		N_("  -s		connect to the certmonger service on the session bus\n"),
@@ -1339,6 +1664,37 @@ help(const char *cmd, const char *category)
 		N_("  -s		connect to the certmonger service on the session bus\n"),
 		NULL,
 	};
+	const char *resubmit_help[] = {
+		N_("Usage: %s resubmit [options]\n"),
+		"\n",
+		N_("Required arguments:\n"),
+		N_("* By request identifier:\n"),
+		N_("  -i NAME	nickname for tracking request\n"),
+		N_("* If using an NSS database for storage:\n"),
+		N_("  -d DIR	NSS database for key and cert\n"),
+		N_("  -n NAME	nickname for NSS-based storage (only valid with -d)\n"),
+		N_("  -t NAME	optional token name for NSS-based storage (only valid with -d)\n"),
+		N_("* If using files for storage:\n"),
+		N_("  -f FILE	PEM file for certificate\n"),
+		"\n",
+		N_("* New parameter values for the signing request:\n"),
+		N_("  -N NAME	set requested subject name (default: CN=<hostname>)\n"),
+		N_("  -U EXTUSAGE	set requested extended key usage OID\n"),
+		N_("  -K NAME	set requested principal name\n"),
+		N_("  -D DNSNAME	set requested DNS name\n"),
+		N_("  -E EMAIL	set requested email address\n"),
+		"\n",
+		N_("Optional arguments:\n"),
+		N_("* Certificate handling settings:\n"),
+		N_("  -I NAME	new nickname to give to tracking request\n"),
+#ifndef FORCE_CA
+		N_("  -c CA		use the specified CA rather than the current one\n"),
+#endif
+		N_("* Bus options:\n"),
+		N_("  -S		connect to the certmonger service on the system bus\n"),
+		N_("  -s		connect to the certmonger service on the session bus\n"),
+		NULL,
+	};
 	const char *list_help[] = {
 		N_("Usage: %s list [options]\n"),
 		"\n",
@@ -1375,6 +1731,7 @@ help(const char *cmd, const char *category)
 		{"request", request_help},
 		{"start-tracking", start_tracking_help},
 		{"stop-tracking", stop_tracking_help},
+		{"resubmit", resubmit_help},
 		{"list", list_help},
 		{"list-cas", list_cas_help},
 	};

@@ -460,7 +460,7 @@ int
 main(int argc, char **argv)
 {
 	DBusConnection *conn;
-	DBusMessage *msg, *rep;
+	DBusMessage *msg;
 	DBusError err;
 	DBusBusType bus = DBUS_BUS_SESSION;
 	int c, ret;
@@ -524,16 +524,9 @@ main(int argc, char **argv)
 			       i);
 			continue;
 		}
-		memset(&err, 0, sizeof(err));
-		rep = dbus_connection_send_with_reply_and_block(conn, msg,
-							        30000, &err);
-		if (rep == NULL) {
-			printf("No reply to message %d.\n", i);
-			rep = msg;
-		}
-		ret = (*(tests[i].get))(rep, i);
+		ret = (*(tests[i].get))(msg, i);
 		if (ret != 0) {
-			printf("Error parsing response %d.\n", i);
+			printf("Error parsing parameters in message %d.\n", i);
 		}
 	}
 	return 0;

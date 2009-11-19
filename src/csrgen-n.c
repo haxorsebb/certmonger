@@ -119,7 +119,7 @@ cm_csrgen_n_attributes(struct cm_store_entry *entry, PLArenaPool *arena)
 	extensions = NULL;
 	cm_certext_build_csr_extensions(entry, &extensions, &extensions_length);
 	/* Build an attribute to hold the extensions. */
-	if (extensions != NULL) {
+	if ((extensions != NULL) && (extensions_length > 0)) {
 		encoded_exts.data = extensions;
 		encoded_exts.len = extensions_length;
 		exts[0] = &encoded_exts;
@@ -176,7 +176,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	/* Start up NSS and find the key pair. */
 	privkey = cm_keyiread_n_get_private_key(entry, 0);
 	if (privkey == NULL) {
-		cm_log(1, "Error finding key pair \"%s\".\n");
+		cm_log(1, "Error finding key pair for \"%s\".\n", entry->cm_id);
 		PORT_FreeArena(arena, PR_TRUE);
 		error = NSS_Shutdown();
 		if (error != SECSuccess) {
@@ -189,7 +189,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	    (strlen(entry->cm_template_subject) != 0)) {
 		name = CERT_AsciiToName(entry->cm_template_subject);
 	} else {
-		name = CERT_AsciiToName("CN=localhost");
+		name = CERT_AsciiToName("CN=" CM_DEFAULT_CERT_SUBJECT_CN);
 	}
 	/* Find the public key. */
 	pubkey = SECKEY_ConvertToPublicKey(privkey);

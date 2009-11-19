@@ -1,0 +1,11 @@
+#!/bin/sh
+function initnssdb() {
+	echo 'spawn -noecho certutil -d '"$1"' -N
+	for { set keepgoing 1 } {$keepgoing>0} {} {
+		expect {
+			eof { set keepgoing 0; exit}
+			": " {sleep 1; send "\r"; exp_continue}
+		}
+	}' > "$1"/expect-script
+	env LANG=C expect -f "$1"/expect-script > /dev/null 2> /dev/null
+}

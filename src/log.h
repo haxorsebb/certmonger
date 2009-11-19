@@ -19,12 +19,17 @@
 #define cmlog_h
 
 enum cm_log_method {
-	cm_log_syslog = 0,
+	cm_log_none = 0,
+	cm_log_syslog,
 	cm_log_stderr,
 };
 
 int cm_log_set_level(int level);
 enum cm_log_method cm_log_set_method(enum cm_log_method method);
-void cm_log(int level, const char *fmt, ...);
+void cm_log(int level, const char *fmt, ...)
+#ifdef __GNUC__
+__attribute__((format(printf,2,3)))
+#endif
+;
 
 #endif

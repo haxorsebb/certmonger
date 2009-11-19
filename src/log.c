@@ -63,12 +63,14 @@ cm_log(int level, const char *fmt, ...)
 	time_t now;
 	if (level <= cm_log_level) {
 		switch (cm_log_method) {
+		case cm_log_none:
+			break;
 		case cm_log_stderr:
 			now = time(NULL);
 			localtime_r(&now, &lt);
 			now = time(NULL);
 			p = talloc_asprintf(NULL,
-					    "%04d-%02d-%02d %d:%02d:%02d "
+					    "%04d-%02d-%02d %02d:%02d:%02d "
 					    "[%lu] %s",
 					    lt.tm_year + 1900,
 					    lt.tm_mon + 1,

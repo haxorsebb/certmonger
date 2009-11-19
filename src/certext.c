@@ -471,8 +471,8 @@ cm_certext_build_eku(struct cm_store_entry *entry, PLArenaPool *arena,
 				i++;
 			} else {
 				cm_log(1,
-				       "Couldn't parse OID \"%s\", ignoring.\n",
-				       q - p, p);
+				       "Couldn't parse OID \"%.*s\", "
+				       "ignoring.\n", (int) (q - p), p);
 			}
 			oids = tmp;
 		}
@@ -927,7 +927,7 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 				    entry->cm_template_hostname,
 				    entry->cm_template_email,
 				    entry->cm_template_principal);
-	if (item) {
+	if (item != NULL) {
 		oid = SECOID_FindOIDByTag(SEC_OID_X509_SUBJECT_ALT_NAME);
 		if (oid != NULL) {
 			ext[i].id = oid->oid;
@@ -938,7 +938,7 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 		}
 	}
 	item = cm_certext_build_eku(entry, arena, entry->cm_template_eku);
-	if (item) {
+	if (item != NULL) {
 		oid = SECOID_FindOIDByTag(SEC_OID_X509_EXT_KEY_USAGE);
 		if (oid != NULL) {
 			ext[i].id = oid->oid;
@@ -952,12 +952,17 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 	exts_ptr = exts;
 	/* Encode the sequence. */
 	memset(&encoded, 0, sizeof(encoded));
-	if (SEC_ASN1EncodeItem(arena, &encoded, &exts_ptr,
-			       cm_certext_sequence_of_cert_extension_template) == &encoded) {
-		*extensions = talloc_memdup(entry, encoded.data, encoded.len);
-		if (*extensions != NULL) {
-			*length = encoded.len;
+	if (i > 1) {
+		if (SEC_ASN1EncodeItem(arena, &encoded, &exts_ptr,
+				       cm_certext_sequence_of_cert_extension_template) == &encoded) {
+			*extensions = talloc_memdup(entry, encoded.data, encoded.len);
+			if (*extensions != NULL) {
+				*length = encoded.len;
+			}
 		}
+	} else {
+		*extensions = NULL;
+		*length = 0;
 	}
 	PORT_FreeArena(arena, PR_TRUE);
 }

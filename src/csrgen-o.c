@@ -55,8 +55,10 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	EVP_PKEY *pkey;
 	char buf[LINE_MAX], *p, *q, *s, *nickname;
 	unsigned char *extensions, *unickname;
+	const char *default_cn = CM_DEFAULT_CERT_SUBJECT_CN;
 	size_t extensions_len;
 	long error;
+	int i;
 
 	status = fdopen(fd, "w");
 	if (status == NULL) {
@@ -64,17 +66,17 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 	keyfp = fopen(entry->cm_key_storage_location, "r");
 	if (keyfp == NULL) {
-		fprintf(status, "Error opening key file \"%s\" for reading.\n",
-			entry->cm_key_storage_location);
-		cm_log(1, "Error opening key file \"%s\" for reading.\n",
-		       entry->cm_key_storage_location);
+		if (errno != ENOENT) {
+			cm_log(1, "Error opening key file \"%s\" "
+			       "for reading.\n",
+			       entry->cm_key_storage_location);
+		}
 		_exit(2);
 	}
 	OpenSSL_add_ssl_algorithms();
 	ERR_load_crypto_strings();
 	pkey = EVP_PKEY_new();
 	if (pkey == NULL) {
-		fprintf(status, "Internal error generating CSR.\n");
 		cm_log(1, "Internal error generating CSR.\n");
 		_exit(2);
 	}
@@ -91,6 +93,9 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				while (*p != '\0') {
 					if ((s = memchr(p, '=', q - p)) != NULL) {
 						*s = '\0';
+						for (i = 0; p[i] != '\0'; i++) {
+							p[i] = toupper(p[i]);
+						}
 						X509_NAME_add_entry_by_txt(x->cert_info->subject,
 									   p, MBSTRING_UTF8,
 									   (unsigned char *) (s + 1), q - s - 1,
@@ -105,6 +110,12 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					p = q + strspn(q, ",");
 					q = p + strcspn(p, ",");
 				}
+			} else {
+				X509_NAME_add_entry_by_txt(x->cert_info->subject,
+							   "CN", MBSTRING_UTF8,
+							   (const unsigned char *) default_cn,
+							   strlen(default_cn),
+							   -1, 0);
 			}
 			X509_set_pubkey(x, pkey);
 			req = X509_to_X509_REQ(x, pkey, EVP_sha256()); /* XXX */
@@ -114,7 +125,8 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				cm_certext_build_csr_extensions(entry,
 								&extensions,
 								&extensions_len);
-				if (extensions != NULL) {
+				if ((extensions != NULL) &&
+				    (extensions_len> 0)) {
 					X509_REQ_add1_attr_by_NID(req,
 								  NID_ext_req,
 								  V_ASN1_SEQUENCE,
@@ -135,11 +147,9 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 								  unickname,
 								  strlen(nickname));
 				}
+				X509_REQ_sign(req, pkey, EVP_sha256()); /* XXX */
 				PEM_write_X509_REQ_NEW(status, req);
 			} else {
-				fprintf(status,
-					"Error converting template certificate "
-					"into a CSR.\n");
 				cm_log(1,
 				       "Error converting template certificate "
 				       "into a CSR.\n");
@@ -151,8 +161,6 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				_exit(2);
 			}
 		} else {
-			fprintf(status,
-				"Error creating template certificate.\n");
 			cm_log(1, "Error creating template certificate.\n");
 			while ((error = ERR_get_error()) != 0) {
 				ERR_error_string_n(error, buf, sizeof(buf));
@@ -162,8 +170,6 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 	} else {
 		error = errno;
-		fprintf(status, "Error reading private key '%s': %s.\n",
-		        entry->cm_key_storage_location, strerror(error));
 		cm_log(1, "Error reading private key '%s': %s.\n",
 		       entry->cm_key_storage_location, strerror(error));
 		while ((error = ERR_get_error()) != 0) {
@@ -176,7 +182,6 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		ERR_error_string_n(error, buf, sizeof(buf));
 		cm_log(1, "%s\n", buf);
 	}
-	fflush(status);
 	fclose(status);
 	fclose(keyfp);
 	return 0;

@@ -36,6 +36,8 @@ enum cm_time {
 int cm_iterate(struct cm_store_entry *entry,
 	       struct cm_store_ca *ca,
 	       struct cm_context *context,
+	       struct cm_store_ca *(*get_ca_by_index)(struct cm_context *, int),
+	       int (*get_n_cas)(struct cm_context *),
 	       void *cm_iterate_state,
 	       enum cm_time *when,
 	       int *delay,

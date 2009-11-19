@@ -73,8 +73,12 @@ cm_certread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 		fclose(pem);
 	} else {
-		cm_log(1, "Error opening '%s': %s.\n",
-		       entry->cm_cert_storage_location, strerror(errno));
+		if (errno != ENOENT) {
+			cm_log(1, "Error opening cert file '%s' "
+			       "for reading: %s.\n",
+			       entry->cm_cert_storage_location,
+			       strerror(errno));
+		}
 		cert = NULL;
 	}
 	if (status == 0) {

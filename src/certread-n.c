@@ -191,6 +191,7 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 	CERTCertificate *cert, **certs;
 	PRBool initialize;
 	char *p;
+	const char *nl;
 	unsigned int i;
 
 	initialize = !NSS_IsInitialized();
@@ -295,11 +296,18 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 	/* The certificate itself. */
 	p = NSSBase64_EncodeItem(arena, NULL, 0, &cert->derCert);
 	if (p != NULL) {
+		i = strlen(p);
+		if ((i > 0) && (p[i - 1] != '\n')) {
+			nl = "\n";
+		} else {
+			nl = "";
+		}
 		talloc_free(entry->cm_cert);
-		p = talloc_asprintf(entry, "%s%s%s",
+		p = talloc_asprintf(entry, "%s%s%s%s",
 				    "-----BEGIN CERTIFICATE-----\n",
-				    p,
+				    p, nl,
 				    "-----END CERTIFICATE-----\n");
+		entry->cm_cert = p;
 	}
 	/* Clean up. */
 	CERT_DestroyCertArray(certs, 1);

@@ -1376,6 +1376,9 @@ request_get_notification_info(DBusConnection *conn, DBusMessage *msg,
 	}
 	method = NULL;
 	switch (m) {
+	case cm_notification_stdout:
+		method = "stdout";
+		break;
 	case cm_notification_syslog:
 		method = "syslog";
 		break;
@@ -1420,12 +1423,14 @@ request_get_status(DBusConnection *conn, DBusMessage *msg,
 		case CM_HAVE_CSR:
 		case CM_NEED_TO_SUBMIT:
 		case CM_SUBMITTING:
+		case CM_CA_WORKING:
 		case CM_NEED_TO_SAVE_CERT:
 		case CM_SAVING_CERT:
 		case CM_NEED_TO_READ_CERT:
 		case CM_READING_CERT:
 		case CM_SAVED_CERT:
 		case CM_MONITORING:
+		case CM_NEED_TO_NOTIFY:
 		case CM_NOTIFYING:
 		case CM_NEWLY_ADDED:
 		case CM_NEWLY_ADDED_READING_KEYI:
@@ -1436,7 +1441,8 @@ request_get_status(DBusConnection *conn, DBusMessage *msg,
 			break;
 		case CM_NEED_GUIDANCE:
 		case CM_NEED_CA:
-		case CM_REJECTED:
+		case CM_CA_REJECTED:
+		case CM_CA_UNREACHABLE:
 			stuck = TRUE;
 			break;
 		}
@@ -1529,8 +1535,10 @@ request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	struct cm_store_entry *entry;
+	struct cm_store_ca *ca;
 	struct cm_tdbusm_dict **d;
 	const struct cm_tdbusm_dict *param;
+	char *new_request_path;
 	void *parent;
 	int i;
 
@@ -1546,6 +1554,33 @@ request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 	}
 	rep = dbus_message_new_method_return(msg);
 	if (rep != NULL) {
+		/* Check any new nickname values, because we need to reject
+		 * those outright if the new value's already being used. */
+		param = cm_tdbusm_find_dict_entry(d, "NICKNAME",
+						  cm_tdbusm_dict_s);
+		if (param != NULL) {
+			if (cm_get_entry_by_id(ctx, param->value.s) != NULL) {
+				return send_internal_base_duplicate_error(conn, msg,
+									  _("There is already a request with the nickname \"%s\"."),
+									  param->value.s,
+									  "NICKNAME",
+									  NULL);
+			}
+		}
+		/* If we're being asked to change the CA, check that the new CA
+		 * exists. */
+		param = cm_tdbusm_find_dict_entry(d, "CA", cm_tdbusm_dict_s);
+		if (param != NULL) {
+			ca = get_ca_for_path(ctx, param->value.s);
+			if (ca == NULL) {
+				return send_internal_base_bad_arg_error(conn, msg,
+									_("Certificate authority \"%s\" not known."),
+									param->value.s,
+									"CA");
+			}
+		}
+		/* Now walk the list of other things the client asked us to
+		 * change. */
 		for (i = 0; (d != NULL) && (d[i] != NULL); i++) {
 			param = d[i];
 			if ((param->value_type == cm_tdbusm_dict_b) &&
@@ -1559,26 +1594,61 @@ request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 				entry->cm_monitor = param->value.b;
 			} else
 			if ((param->value_type == cm_tdbusm_dict_s) &&
+			    (strcasecmp(param->key, "CA") == 0)) {
+				ca = get_ca_for_path(ctx, param->value.s);
+				talloc_free(entry->cm_ca_name);
+				entry->cm_ca_name = talloc_strdup(entry,
+								  ca->cm_id);
+			} else
+			if ((param->value_type == cm_tdbusm_dict_s) &&
 			    (strcasecmp(param->key, "NICKNAME") == 0)) {
-				if (cm_get_entry_by_id(ctx, param->value.s) == NULL) {
-					talloc_free(entry->cm_id);
-					entry->cm_id = talloc_strdup(entry,
-								     param->value.s);
-				} else {
-					return send_internal_base_duplicate_error(conn, msg,
-										  _("There is already a request with the nickname \"%s\"."),
-										  param->value.s,
-										  "NICKNAME",
-										  NULL);
-				}
+				talloc_free(entry->cm_id);
+				entry->cm_id = talloc_strdup(entry,
+							     param->value.s);
+			} else
+			if ((param->value_type == cm_tdbusm_dict_s) &&
+			    (strcasecmp(param->key, "SUBJECT") == 0)) {
+				talloc_free(entry->cm_template_subject);
+				entry->cm_template_subject = maybe_strdup(entry,
+									  param->value.s);
+			} else
+			if ((param->value_type == cm_tdbusm_dict_as) &&
+			    (strcasecmp(param->key, "EKU") == 0)) {
+				talloc_free(entry->cm_template_eku);
+				entry->cm_template_eku = cm_submit_maybe_joinv(entry,
+									       ",",
+									       param->value.as);
+			} else
+			if ((param->value_type == cm_tdbusm_dict_as) &&
+			    (strcasecmp(param->key, "PRINCIPAL") == 0)) {
+				talloc_free(entry->cm_template_principal);
+				entry->cm_template_principal = maybe_strdupv(entry,
+									     param->value.as);
+			} else
+			if ((param->value_type == cm_tdbusm_dict_as) &&
+			    (strcasecmp(param->key, "DNS") == 0)) {
+				talloc_free(entry->cm_template_hostname);
+				entry->cm_template_hostname = maybe_strdupv(entry,
+									    param->value.as);
+			} else
+			if ((param->value_type == cm_tdbusm_dict_as) &&
+			    (strcasecmp(param->key, "EMAIL") == 0)) {
+				talloc_free(entry->cm_template_email);
+				entry->cm_template_email = maybe_strdupv(entry,
+									 param->value.as);
 			} else {
 				break;
 			}
 		}
 		if (d[i] == NULL) {
-			cm_tdbusm_set_b(rep, cm_restart_one(ctx, entry->cm_id));
+			new_request_path = talloc_asprintf(parent, "%s/%s",
+							   CM_DBUS_REQUEST_PATH,
+							   entry->cm_id);
+			cm_tdbusm_set_bp(rep, cm_restart_one(ctx, entry->cm_id),
+					 new_request_path);
 			dbus_connection_send(conn, rep, NULL);
 			dbus_message_unref(rep);
+			talloc_free(new_request_path);
 			return DBUS_HANDLER_RESULT_HANDLED;
 		} else {
 			dbus_message_unref(rep);
@@ -1599,66 +1669,6 @@ request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 }
 
 static DBusHandlerResult
-request_reenroll(DBusConnection *conn, DBusMessage *msg,
-		 struct cm_context *ctx)
-{
-	DBusMessage *rep;
-	struct cm_store_entry *entry;
-	entry = get_entry_for_request_message(msg, ctx);
-	if (entry == NULL) {
-		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-	}
-	rep = dbus_message_new_method_return(msg);
-	if (rep != NULL) {
-		if (cm_stop_one(ctx, entry->cm_id) == 0) {
-			entry->cm_state = CM_NEED_CSR;
-			if (cm_start_one(ctx, entry->cm_id) == 0) {
-				cm_tdbusm_set_b(rep, TRUE);
-			} else {
-				cm_tdbusm_set_b(rep, FALSE);
-			}
-		} else {
-			cm_tdbusm_set_b(rep, FALSE);
-		}
-		dbus_connection_send(conn, rep, NULL);
-		dbus_message_unref(rep);
-		return DBUS_HANDLER_RESULT_HANDLED;
-	} else {
-		return send_internal_request_error(conn, msg);
-	}
-}
-
-static DBusHandlerResult
-request_rekey_and_submit(DBusConnection *conn, DBusMessage *msg,
-			 struct cm_context *ctx)
-{
-	DBusMessage *rep;
-	struct cm_store_entry *entry;
-	entry = get_entry_for_request_message(msg, ctx);
-	if (entry == NULL) {
-		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-	}
-	rep = dbus_message_new_method_return(msg);
-	if (rep != NULL) {
-		if (cm_stop_one(ctx, entry->cm_id) == 0) {
-			entry->cm_state = CM_NEED_KEY_PAIR;
-			if (cm_start_one(ctx, entry->cm_id) == 0) {
-				cm_tdbusm_set_b(rep, TRUE);
-			} else {
-				cm_tdbusm_set_b(rep, FALSE);
-			}
-		} else {
-			cm_tdbusm_set_b(rep, FALSE);
-		}
-		dbus_connection_send(conn, rep, NULL);
-		dbus_message_unref(rep);
-		return DBUS_HANDLER_RESULT_HANDLED;
-	} else {
-		return send_internal_request_error(conn, msg);
-	}
-}
-
-static DBusHandlerResult
 request_resubmit(DBusConnection *conn, DBusMessage *msg,
 		 struct cm_context *ctx)
 {
@@ -1670,9 +1680,9 @@ request_resubmit(DBusConnection *conn, DBusMessage *msg,
 	}
 	rep = dbus_message_new_method_return(msg);
 	if (rep != NULL) {
-		if (cm_stop_one(ctx, entry->cm_id) == 0) {
-			entry->cm_state = CM_HAVE_CSR;
-			if (cm_start_one(ctx, entry->cm_id) == 0) {
+		if (cm_stop_one(ctx, entry->cm_id)) {
+			entry->cm_state = CM_NEED_CSR;
+			if (cm_start_one(ctx, entry->cm_id)) {
 				cm_tdbusm_set_b(rep, TRUE);
 			} else {
 				cm_tdbusm_set_b(rep, FALSE);
@@ -1799,12 +1809,7 @@ request_introspect(struct cm_context *ctx, const char *path)
 			       "  <method name=\"modify\">\n"
 			       "   <arg name=\"updates\" type=\"a{sv}\" direction=\"in\"/>\n"
 			       "   <arg name=\"status\" type=\"b\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"reenroll\">\n"
-			       "   <arg name=\"working\" type=\"b\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"rekey_and_submit\">\n"
-			       "   <arg name=\"working\" type=\"b\" direction=\"out\"/>\n"
+			       "   <arg name=\"path\" type=\"o\" direction=\"out\"/>\n"
 			       "  </method>\n"
 			       "  <method name=\"resubmit\">\n"
 			       "   <arg name=\"working\" type=\"b\" direction=\"out\"/>\n"
@@ -2072,10 +2077,6 @@ static struct {
 	 request_get_submitted_date},
 	{&is_request, CM_DBUS_REQUEST_INTERFACE, "modify",
 	 request_modify},
-	{&is_request, CM_DBUS_REQUEST_INTERFACE, "reenroll",
-	 request_reenroll},
-	{&is_request, CM_DBUS_REQUEST_INTERFACE, "rekey_and_submit",
-	 request_rekey_and_submit},
 	{&is_request, CM_DBUS_REQUEST_INTERFACE, "resubmit",
 	 request_resubmit},
 	{NULL, DBUS_INTERFACE_INTROSPECTABLE, "Introspect",

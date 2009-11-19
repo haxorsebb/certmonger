@@ -1,4 +1,4 @@
-AC_INIT(certmonger,0.7)
+AC_INIT(certmonger,0.10)
 AM_INIT_AUTOMAKE([foreign])
 AM_MAINTAINER_MODE
 AC_PROG_CC
@@ -60,11 +60,7 @@ PKG_CHECK_MODULES(TEVENT,tevent)
 PKG_CHECK_MODULES(DBUS,dbus-1)
 PKG_CHECK_MODULES(CERTMONGER,dbus-1 talloc tevent nss)
 PKG_CHECK_MODULES(GETCERT,dbus-1 talloc)
-
-dnl Don't need this (yet).
-if false; then
 PKG_CHECK_MODULES(XMLRPC,xmlrpc_client)
-fi
 
 savedCFLAGS="$CFLAGS"
 CFLAGS=
@@ -119,6 +115,7 @@ CM_DEFAULT_PUBKEY_SIZE=2048
 AC_DEFINE_UNQUOTED(CM_DEFAULT_PUBKEY_SIZE,$CM_DEFAULT_PUBKEY_SIZE,[Define to the default public key size.])
 AC_SUBST(CM_DEFAULT_PUBKEY_SIZE)
 AC_DEFINE_UNQUOTED(CM_DEFAULT_TTL_LIST,[30*24*60*60,7*24*60*60,3*24*60*60,2*24*60*60,1*24*60*60],[Define to the list of default time-left thresholds at which we need to warn the user.])
+AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_SUBJECT_CN,"localhost",[Define to the last-ditch default CN value for a signing request.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_LIFETIME,"30d",[Define to the default certificate lifetime for self-signed certificates.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_SERIAL,"01",[Define to the default starting serial number for self-signed certificates.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_NOTIFICATION_METHOD,cm_notification_syslog,[Define to the default method of notification.])
@@ -127,6 +124,7 @@ AC_DEFINE_UNQUOTED(CM_DEFAULT_NOTIFICATION_SYSLOG_PRIORITY,"daemon.notice",[Defi
 AC_DEFINE(CM_DELAY_SOON,1,[Define to the time to wait for something that will happen soon.])
 AC_DEFINE(CM_DELAY_SOONISH,5,[Define to the time to wait for something that will happen soon, but not that soon.])
 AC_DEFINE(CM_DELAY_CA_POLL,(7 * 24 * 60 * 60),[Define to the time to wait between attempts to see if the CA issued a certificate.])
+AC_DEFINE(CM_DELAY_NETLINK,(60),[Define to the time to wait after a netlink routing notification to retry submissions.])
 
 CM_SELF_SIGN_CA_NAME=SelfSign
 AC_SUBST(CM_SELF_SIGN_CA_NAME)
@@ -140,4 +138,4 @@ AC_DEFINE_UNQUOTED(CM_IPA_HELPER_PATH,"$mylibexecdir/ipa-submit-helper",[Define 
 AM_CONDITIONAL(WITH_IPA,true)
 
 AC_CONFIG_COMMANDS(src_introspect_sh,[chmod +x src/introspect.sh])
-AC_OUTPUT(Makefile src/Makefile dbus/Makefile dbus/certmonger.conf src/certmonger.init src/introspect.sh src/certmonger.8 src/getcert.1 src/getcert-request.1 src/getcert-list.1 src/getcert-list-cas.1 src/getcert-start-tracking.1 src/getcert-stop-tracking.1 src/selfsign-getcert.1 src/ipa-getcert.1)
+AC_OUTPUT(Makefile src/Makefile dbus/Makefile tests/Makefile tests/tools/Makefile dbus/certmonger.conf src/certmonger.init src/introspect.sh src/certmonger.8 src/getcert.1 src/getcert-request.1 src/getcert-list.1 src/getcert-list-cas.1 src/getcert-start-tracking.1 src/getcert-stop-tracking.1 src/selfsign-getcert.1 src/ipa-getcert.1 src/getcert-resubmit.1)

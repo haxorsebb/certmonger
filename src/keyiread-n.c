@@ -56,7 +56,7 @@ struct cm_keyiread_state {
 SECKEYPrivateKey *
 cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 {
-	const char *token;
+	const char *token, *nickname;
 	PLArenaPool *arena;
 	SECStatus error;
 	PK11SlotList *slotlist;
@@ -68,6 +68,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	CK_MECHANISM_TYPE mech;
 	CERTCertList *certs;
 	CERTCertListNode *cnode;
+	PRBool key_came_from_cert;
 
 	/* Open the database. */
 	error = readwrite ? NSS_InitReadWrite(entry->cm_key_storage_location) :
@@ -151,6 +152,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	/* If we got a list of keys with matching nicknames, the first entry's
 	 * good enough, right? */
 	key = NULL;
+	key_came_from_cert = PR_FALSE;
 	if (keys != NULL) {
 		for (knode = PRIVKEY_LIST_HEAD(keys);
 		     !PRIVKEY_LIST_EMPTY(keys) &&
@@ -158,6 +160,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 		     knode = PRIVKEY_LIST_NEXT(knode)) {
 			cm_log(3, "Located the key.\n");
 			key = knode->key;
+			key_came_from_cert = PR_FALSE;
 			break;
 		}
 	}
@@ -168,23 +171,45 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 		     !CERT_LIST_EMPTY(certs) &&
 		     !CERT_LIST_END(cnode, certs);
 		     cnode = CERT_LIST_NEXT(cnode)) {
-			if (strcmp(cnode->cert->nickname,
-				   entry->cm_cert_nickname) == 0) {
+			nickname = entry->cm_key_nickname;
+			if ((nickname != NULL) &&
+			    (strcmp(cnode->cert->nickname, nickname) == 0)) {
 				cm_log(3, "Located a certificate with "
-				       "the nickname \"%s\".\n");
+				       "the key's nickname (\"%s\").\n",
+				       nickname);
 				key = PK11_FindPrivateKeyFromCert(slot,
 								  cnode->cert,
 								  NULL);
 				if (key != NULL) {
+					key_came_from_cert = PR_TRUE;
+					cm_log(3, "Located its private key.\n");
+					break;
+				}
+			}
+			nickname = entry->cm_cert_nickname;
+			if ((nickname != NULL) &&
+			    (strcmp(cnode->cert->nickname, nickname) == 0)) {
+				cm_log(3, "Located a certificate with "
+				       "matching nickname (\"%s\").\n",
+				       nickname);
+				key = PK11_FindPrivateKeyFromCert(slot,
+								  cnode->cert,
+								  NULL);
+				if (key != NULL) {
+					key_came_from_cert = PR_TRUE;
 					cm_log(3, "Located its private key.\n");
 					break;
 				}
 			}
 		}
 	}
-	/* If we found a key, take a copy. */
+	/* If we found a key and we didn't create it, take a copy. */
 	if (key != NULL) {
-		ret = SECKEY_CopyPrivateKey(key);
+		if (key_came_from_cert) {
+			ret = key;
+		} else {
+			ret = SECKEY_CopyPrivateKey(key);
+		}
 	} else {
 		ret = NULL;
 	}
@@ -195,8 +220,8 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	if (keys != NULL) {
 		SECKEY_DestroyPrivateKeyList(keys);
 	}
-	PORT_FreeArena(arena, PR_TRUE);
 	PK11_FreeSlotList(slotlist);
+	PORT_FreeArena(arena, PR_TRUE);
 	return ret;
 }
 
