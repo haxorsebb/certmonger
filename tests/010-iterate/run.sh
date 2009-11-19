@@ -19,8 +19,13 @@ cat > ca-unreachable << EOF
 #!/bin/sh
 exit 3
 EOF
-
 chmod u+x ca-unreachable
+cat > ca-unconfigured << EOF
+#!/bin/sh
+exit 4
+EOF
+chmod u+x ca-unconfigured
+
 cat > ca << EOF
 id=SelfSign
 ca_type=INTERNAL:SELF
@@ -231,6 +236,23 @@ cat > ca3 << EOF
 id=Lostie
 ca_type=EXTERNAL
 ca_external_helper=$tmpdir/ca-unreachable
+EOF
+$toolsdir/iterate ca3 entry3 NEED_CSR,GENERATING_CSR
+$toolsdir/iterate ca3 entry3 NEED_TO_SUBMIT,SUBMITTING
+$toolsdir/iterate ca3 entry3 ""
+echo
+echo '[Enroll until the CA client turns out to be unconfigured.]'
+cat > entry3 << EOF
+id=Test
+ca_name=Lostie
+state=HAVE_KEY_PAIR
+key_storage_type=FILE
+key_storage_location=$tmpdir/keyfile
+EOF
+cat > ca3 << EOF
+id=Lostie
+ca_type=EXTERNAL
+ca_external_helper=$tmpdir/ca-unconfigured
 EOF
 $toolsdir/iterate ca3 entry3 NEED_CSR,GENERATING_CSR
 $toolsdir/iterate ca3 entry3 NEED_TO_SUBMIT,SUBMITTING

@@ -1399,6 +1399,7 @@ list(const char *argv0, int argc, char **argv)
 		case CM_CA_WORKING:
 		case CM_CA_REJECTED:
 		case CM_CA_UNREACHABLE:
+		case CM_CA_UNCONFIGURED:
 		case CM_NEED_GUIDANCE:
 		case CM_NEED_CA:
 		case CM_NEWLY_ADDED:
