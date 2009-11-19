@@ -31,6 +31,16 @@
 
 #include "submit-e.h"
 
+static char *
+my_stpcpy(char *dest, char *src)
+{
+	size_t len;
+	len = strlen(src);
+	memcpy(dest, src, len);
+	dest[len] = '\0';
+	return dest + len;
+}
+
 int
 main(int argc, char **argv)
 {
@@ -44,7 +54,7 @@ main(int argc, char **argv)
 	xmlrpc_bool boo;
 	int i, c, ret, k5 = FALSE;
 	const char *uri = NULL, *method = NULL, *ktname = NULL, *kpname = NULL;
-	const char *s;
+	const char *s, *capath = NULL;
 	char *csr, *p, buf[BUFSIZ];
 	krb5_context ctx;
 	krb5_keytab keytab;
@@ -57,7 +67,7 @@ main(int argc, char **argv)
 	xmlrpc_env_init(&xenv);
 	xmlrpc_client_setup_global_const(&xenv);
 
-	while ((c = getopt(argc, argv, "s:m:kt:p:")) != -1) {
+	while ((c = getopt(argc, argv, "s:m:kt:p:c:")) != -1) {
 		switch (c) {
 		case 's':
 			uri = optarg;
@@ -74,10 +84,13 @@ main(int argc, char **argv)
 		case 'k':
 			k5 = TRUE;
 			break;
+		case 'c':
+			capath = optarg;
+			break;
 		default:
 			fprintf(stderr,
 				"Usage: %s [-s serverURI] [-m method] "
-				"[-k] [-t keytab] [-p principal]\n"
+				"[-k] [-t keytab] [-p principal] [-c capath]\n"
 				"Examples:\n"
 				"           -s http://localhost:51235/\n"
 				"           -m wait_for_cert\n"
@@ -92,7 +105,7 @@ main(int argc, char **argv)
 	if ((uri == NULL) || (method == NULL)) {
 		fprintf(stderr,
 			"Usage: %s [-s serverURI] [-m method] "
-			"[-k] [-t keytab] [-p principal]\n"
+			"[-k] [-t keytab] [-p principal] [-c capath]\n"
 			"Examples:\n"
 			"           -s http://localhost:51235/\n"
 			"           -m wait_for_cert\n"
@@ -118,7 +131,7 @@ main(int argc, char **argv)
 				if (p == NULL) {
 					return CM_STATUS_UNREACHABLE;
 				}
-				memcpy(stpcpy(p, csr), buf, sizeof(buf));
+				memcpy(my_stpcpy(p, csr), buf, sizeof(buf));
 				free(csr);
 				csr = p;
 			}
@@ -216,6 +229,7 @@ main(int argc, char **argv)
 		}
 
 		memset(&xparams, 0, sizeof(xparams));
+		xparams.capath = capath;
 		(*xmlrpc_curl_transport_ops.create)(&xenv, 0,
 						    PACKAGE_NAME,
 						    PACKAGE_VERSION,
