@@ -125,7 +125,7 @@ cm_submit_e_rejected(struct cm_store_entry *entry,
 {
 	int status;
 	status = cm_subproc_get_exitstatus(entry, state->subproc);
-	if (WIFEXITED(status) && (WEXITSTATUS(status) == STATUS_REJECTED)) {
+	if (WIFEXITED(status) && (WEXITSTATUS(status) == CM_STATUS_REJECTED)) {
 		return 0;
 	}
 	return -1;
@@ -139,7 +139,8 @@ cm_submit_e_unreachable(struct cm_store_entry *entry,
 {
 	int status;
 	status = cm_subproc_get_exitstatus(entry, state->subproc);
-	if (WIFEXITED(status) && (WEXITSTATUS(status) == STATUS_UNREACHABLE)) {
+	if (WIFEXITED(status) &&
+	    (WEXITSTATUS(status) == CM_STATUS_UNREACHABLE)) {
 		return 0;
 	}
 	return -1;
@@ -169,34 +170,35 @@ cm_submit_e_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	int i;
 	unsigned char u;
 	if (entry->cm_template_subject != NULL) {
-		setenv("CERTMONGER_REQ_SUBJECT", entry->cm_template_subject, 1);
+		setenv(CM_SUBMIT_REQ_SUBJECT_ENV,
+		       entry->cm_template_subject, 1);
 	}
 	if (entry->cm_template_email != NULL) {
-		setenv("CERTMONGER_REQ_EMAIL",
+		setenv(CM_SUBMIT_REQ_EMAIL_ENV,
 		       cm_submit_maybe_joinv(NULL, "\n",
 					     entry->cm_template_email),
 		       1);
 	}
 	if (entry->cm_template_hostname != NULL) {
-		setenv("CERTMONGER_REQ_HOSTNAME",
+		setenv(CM_SUBMIT_REQ_HOSTNAME_ENV,
 		       cm_submit_maybe_joinv(NULL, "\n",
 					     entry->cm_template_hostname),
 		       1);
 	}
 	if (entry->cm_template_principal != NULL) {
-		setenv("CERTMONGER_REQ_PRINCIPAL",
+		setenv(CM_SUBMIT_REQ_PRINCIPAL_ENV,
 		       cm_submit_maybe_joinv(NULL, "\n",
 					     entry->cm_template_principal),
 		       1);
 	}
 	if ((args->operation != NULL) && (strlen(args->operation) > 0)) {
-		setenv("CERTMONGER_OPERATION", args->operation, 1);
+		setenv(CM_SUBMIT_OPERATION_ENV, args->operation, 1);
 	}
 	if ((args->csr != NULL) && (strlen(args->csr) > 0)) {
-		setenv("CERTMONGER_CSR", args->csr, 1);
+		setenv(CM_SUBMIT_CSR_ENV, args->csr, 1);
 	}
 	if ((args->cookie != NULL) && (strlen(args->cookie) > 0)) {
-		setenv("CERTMONGER_COOKIE", args->cookie, 1);
+		setenv(CM_SUBMIT_COOKIE_ENV, args->cookie, 1);
 	}
 	if (dup2(fd, STDOUT_FILENO) == -1) {
 		u = errno;
