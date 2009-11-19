@@ -27,6 +27,8 @@
 #include <xmlrpc-c/client.h>
 #include <xmlrpc-c/transport.h>
 
+#include <krb5.h>
+
 #include "submit-e.h"
 
 int
@@ -40,15 +42,22 @@ main(int argc, char **argv)
 	struct xmlrpc_curl_xportparms xparams;
 	xmlrpc_client_transport *xtransport;
 	xmlrpc_bool boo;
-	int i, c, ret;
-	const char *uri = NULL, *method = NULL, *s;
+	int i, c, ret, k5 = FALSE;
+	const char *uri = NULL, *method = NULL, *ktname = NULL, *kpname = NULL;
+	const char *s;
 	char *csr, *p, buf[BUFSIZ];
+	krb5_context ctx;
+	krb5_keytab keytab;
+	krb5_ccache ccache;
+	krb5_creds creds;
+	krb5_principal princ;
+	krb5_error_code kret;
 
 	memset(&xenv, 0, sizeof(xenv));
 	xmlrpc_env_init(&xenv);
 	xmlrpc_client_setup_global_const(&xenv);
 
-	while ((c = getopt(argc, argv, "s:m:")) != -1) {
+	while ((c = getopt(argc, argv, "s:m:kt:p:")) != -1) {
 		switch (c) {
 		case 's':
 			uri = optarg;
@@ -56,12 +65,23 @@ main(int argc, char **argv)
 		case 'm':
 			method = optarg;
 			break;
+		case 'p':
+			kpname = optarg;
+			break;
+		case 't':
+			ktname = optarg;
+			break;
+		case 'k':
+			k5 = TRUE;
+			break;
 		default:
 			fprintf(stderr,
-				"Usage: %s [-s serverURI] [-m method]\n"
+				"Usage: %s [-s serverURI] [-m method] "
+				"[-k] [-t keytab] [-p principal]\n"
 				"Examples:\n"
 				"           -s http://localhost:51235/\n"
-				"           -m wait_for_cert\n",
+				"           -m wait_for_cert\n"
+				"           -k /etc/krb5.keytab\n",
 				strchr(argv[0], '/') ?
 				strrchr(argv[0], '/') + 1 :
 				argv[0]);
@@ -71,10 +91,12 @@ main(int argc, char **argv)
 	}
 	if ((uri == NULL) || (method == NULL)) {
 		fprintf(stderr,
-			"Usage: %s [-s serverURI] [-m method]\n"
+			"Usage: %s [-s serverURI] [-m method] "
+			"[-k] [-t keytab] [-p principal]\n"
 			"Examples:\n"
 			"           -s http://localhost:51235/\n"
-			"           -m wait_for_cert\n",
+			"           -m wait_for_cert\n"
+			"           -k /etc/krb5.keytab\n",
 			strchr(argv[0], '/') ?
 			strrchr(argv[0], '/') + 1 :
 			argv[0]);
@@ -113,6 +135,60 @@ main(int argc, char **argv)
 		}
 	}
 
+	if (k5 || (kpname != NULL) || (ktname != NULL)) {
+		kret = krb5_init_context(&ctx);
+		if (kret != 0) {
+			printf("Error initializing Kerberos: %s.\n",
+			       error_message(kret));
+			return CM_STATUS_UNCONFIGURED;
+		}
+		if (ktname != NULL) {
+			kret = krb5_kt_resolve(ctx, ktname, &keytab);
+		} else {
+			kret = krb5_kt_default(ctx, &keytab);
+		}
+		if (kret != 0) {
+			printf("Error resolving keytab: %s.\n",
+			       error_message(kret));
+			return CM_STATUS_UNCONFIGURED;
+		}
+		princ = NULL;
+		if (kpname != NULL) {
+			kret = krb5_parse_name(ctx, kpname, &princ);
+			if (kret != 0) {
+				printf("Error parsing \"%s\": %s.\n", kpname,
+				       error_message(kret));
+				return CM_STATUS_UNCONFIGURED;
+			}
+		}
+		memset(&creds, 0, sizeof(creds));
+		kret = krb5_get_init_creds_keytab(ctx, &creds, princ, keytab,
+						  0, NULL, NULL);
+		if (kret != 0) {
+			printf("Error obtaining initial credentials: %s.\n",
+			       error_message(kret));
+			return CM_STATUS_UNREACHABLE;
+		}
+		ccache = NULL;
+		kret = krb5_cc_resolve(ctx, "MEMORY:" PACKAGE_NAME "_submit",
+				       &ccache);
+		if (kret == 0) {
+			kret = krb5_cc_initialize(ctx, ccache, creds.client);
+		}
+		if (kret != 0) {
+			printf("Error initializing credential cache: %s.\n",
+			       error_message(kret));
+			return CM_STATUS_UNREACHABLE;
+		}
+		kret = krb5_cc_store_cred(ctx, ccache, &creds);
+		if (kret != 0) {
+			printf("Error storing creds in credential cache: %s.\n",
+			       error_message(kret));
+			return CM_STATUS_UNREACHABLE;
+		}
+		k5 = TRUE;
+	}
+
 	if (server != NULL) {
 		xmlrpc_server_info_disallow_auth_basic(&xenv, server);
 		if (xenv.fault_occurred) {
@@ -120,11 +196,23 @@ main(int argc, char **argv)
 			       xenv.fault_code, xenv.fault_string);
 			xmlrpc_env_clean(&xenv);
 		}
-		xmlrpc_server_info_disallow_auth_negotiate(&xenv, server);
-		if (xenv.fault_occurred) {
-			printf("Fault %d turning off negotiate auth: (%s).\n",
-			       xenv.fault_code, xenv.fault_string);
-			xmlrpc_env_clean(&xenv);
+		if (k5) {
+			xmlrpc_server_info_allow_auth_negotiate(&xenv, server);
+			if (xenv.fault_occurred) {
+				printf("Fault %d turning on negotiate auth: "
+				       "(%s).\n",
+				       xenv.fault_code, xenv.fault_string);
+				xmlrpc_env_clean(&xenv);
+			}
+		} else {
+			xmlrpc_server_info_disallow_auth_negotiate(&xenv,
+								   server);
+			if (xenv.fault_occurred) {
+				printf("Fault %d turning off negotiate auth: "
+				       "(%s).\n",
+				       xenv.fault_code, xenv.fault_string);
+				xmlrpc_env_clean(&xenv);
+			}
 		}
 
 		memset(&xparams, 0, sizeof(xparams));
@@ -263,6 +351,5 @@ main(int argc, char **argv)
 			}
 		}
 	}
-
 	return ret;
 }
