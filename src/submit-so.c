@@ -230,6 +230,14 @@ cm_submit_so_unreachable(struct cm_store_entry *entry,
 	return -1; /* uh, we're the CA */
 }
 
+/* Check if the CA was unconfigured. */
+static int
+cm_submit_so_unconfigured(struct cm_store_entry *entry,
+			  struct cm_submit_state *state)
+{
+	return -1; /* uh, we're the CA */
+}
+
 /* Done talking to the CA. */
 static void
 cm_submit_so_done(struct cm_store_entry *entry, struct cm_submit_state *state)
@@ -259,6 +267,7 @@ cm_submit_so_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 		state->pvt.issued = cm_submit_so_issued;
 		state->pvt.rejected = cm_submit_so_rejected;
 		state->pvt.unreachable = cm_submit_so_unreachable;
+		state->pvt.unconfigured = cm_submit_so_unconfigured;
 		state->pvt.done = cm_submit_so_done;
 		state->subproc = cm_subproc_start(cm_submit_so_main,
 						  ca, entry, NULL);

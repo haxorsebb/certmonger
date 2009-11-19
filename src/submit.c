@@ -118,6 +118,15 @@ cm_submit_rejected(struct cm_store_entry *entry, struct cm_submit_state *state)
 
 /* Check if the CA was unreachable. */
 int
+cm_submit_unconfigured(struct cm_store_entry *entry,
+		       struct cm_submit_state *state)
+{
+	struct cm_submit_state_pvt *pvt = (struct cm_submit_state_pvt *) state;
+	return pvt->unconfigured(entry, state);
+}
+
+/* Check if the CA was unreachable. */
+int
 cm_submit_unreachable(struct cm_store_entry *entry,
 		      struct cm_submit_state *state)
 {

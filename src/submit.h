@@ -52,6 +52,10 @@ int cm_submit_rejected(struct cm_store_entry *entry,
 int cm_submit_unreachable(struct cm_store_entry *entry,
 			  struct cm_submit_state *state);
 
+/* Check if we're missing some configuration. */
+int cm_submit_unconfigured(struct cm_store_entry *entry,
+			   struct cm_submit_state *state);
+
 /* Done talking to the CA. */
 void cm_submit_done(struct cm_store_entry *entry,
 		    struct cm_submit_state *state);

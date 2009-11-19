@@ -41,6 +41,9 @@ struct cm_submit_state_pvt {
 	/* Check if the CA was unreachable for some reason. */
 	int (*unreachable)(struct cm_store_entry *entry,
 			   struct cm_submit_state *state);
+	/* Check if the CA was unconfigured in some way. */
+	int (*unconfigured)(struct cm_store_entry *entry,
+			    struct cm_submit_state *state);
 	/* Done talking to the CA. */
 	void (*done)(struct cm_store_entry *entry,
 		     struct cm_submit_state *state);

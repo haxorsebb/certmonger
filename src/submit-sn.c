@@ -363,6 +363,14 @@ cm_submit_sn_unreachable(struct cm_store_entry *entry,
 	return -1; /* uh, we're the CA */
 }
 
+/* Check if the CA was unconfigured. */
+static int
+cm_submit_sn_unconfigured(struct cm_store_entry *entry,
+			  struct cm_submit_state *state)
+{
+	return -1; /* uh, we're the CA */
+}
+
 /* Done talking to the CA. */
 static void
 cm_submit_sn_done(struct cm_store_entry *entry, struct cm_submit_state *state)
@@ -392,6 +400,7 @@ cm_submit_sn_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 		state->pvt.issued = cm_submit_sn_issued;
 		state->pvt.rejected = cm_submit_sn_rejected;
 		state->pvt.unreachable = cm_submit_sn_unreachable;
+		state->pvt.unconfigured = cm_submit_sn_unconfigured;
 		state->pvt.done = cm_submit_sn_done;
 		state->subproc = cm_subproc_start(cm_submit_sn_main,
 						  ca, entry, NULL);

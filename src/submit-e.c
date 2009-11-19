@@ -117,6 +117,20 @@ cm_submit_e_issued(struct cm_store_entry *entry, struct cm_submit_state *state)
 	}
 }
 
+/* Check if the submission helper is just unconfigured. */
+static int
+cm_submit_e_unconfigured(struct cm_store_entry *entry,
+			 struct cm_submit_state *state)
+{
+	int status;
+	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	if (WIFEXITED(status) &&
+	    (WEXITSTATUS(status) == CM_STATUS_UNCONFIGURED)) {
+		return 0;
+	}
+	return -1;
+}
+
 /* Check if the certificate was issued.  If the exit status was 0, it was
  * issued. */
 static int
@@ -254,6 +268,7 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 		state->pvt.issued = cm_submit_e_issued;
 		state->pvt.rejected = cm_submit_e_rejected;
 		state->pvt.unreachable = cm_submit_e_unreachable;
+		state->pvt.unconfigured = cm_submit_e_unconfigured;
 		state->pvt.done = cm_submit_e_done;
 		if (pipe(errorfds) != -1) {
 			fcntl(errorfds[1], F_SETFD, 1L);
