@@ -1240,7 +1240,7 @@ cm_store_get_all_entries(void *parent)
 {
 	struct cm_store_entry **ret;
 	unsigned int i;
-	int j;
+	int j, k;
 	const char *directory;
 	char path[PATH_MAX + 1], *p;
 	FILE *fp;
@@ -1267,7 +1267,19 @@ cm_store_get_all_entries(void *parent)
 								     globs.gl_pathv[i],
 								     fp);
 					if (ret[j] != NULL) {
-						j++;
+						/* Check for duplicate names. */
+						for (k = 0; k < j; k++) {
+							if (strcmp(ret[k]->cm_id,
+								   ret[j]->cm_id) == 0) {
+								cm_store_entry_delete(ret[j]);
+								talloc_free(ret[j]);
+								ret[j] = NULL;
+								break;
+							}
+						}
+						if (k == j) {
+							j++;
+						}
 					}
 					fclose(fp);
 				}
@@ -1459,7 +1471,19 @@ cm_store_get_all_cas(void *parent)
 							  globs.gl_pathv[i],
 							  fp);
 				if (ret[j] != NULL) {
-					j++;
+					/* Check for duplicate names. */
+					for (k = 0; k < j; k++) {
+						if (strcmp(ret[k]->cm_id,
+							   ret[j]->cm_id) == 0) {
+							cm_store_ca_delete(ret[j]);
+							talloc_free(ret[j]);
+							ret[j] = NULL;
+							break;
+						}
+					}
+					if (k == j) {
+						j++;
+					}
 				}
 				fclose(fp);
 			}
