@@ -170,3 +170,142 @@ cm_subproc_ready(struct cm_store_entry *entry,
 	}
 	return status;
 }
+
+/* Adapted from oddjob's parse_args(). */
+char **
+cm_subproc_parse_args(void *parent, const char *cmdline, const char **error)
+{
+	const char *p;
+	char *q, *bigbuf;
+	char **argv;
+	int sqlevel, dqlevel, escape, word;
+	size_t buffersize, words;
+
+	buffersize = strlen(cmdline) * 3;
+	bigbuf = talloc_zero_size(parent, buffersize);
+
+	sqlevel = dqlevel = escape = 0;
+	word = 0;
+	p = cmdline;
+	q = bigbuf;
+	while (*p != '\0') {
+		switch (*p) {
+		case '\\':
+			if ((dqlevel != 0) || (sqlevel != 0) || escape) {
+				*q++ = *p++;
+				escape = 0;
+			} else {
+				escape = 1;
+				p++;
+			}
+			break;
+		case '\'':
+			switch (sqlevel) {
+			case 0:
+				if (escape || (dqlevel > 0)) {
+					*q++ = *p++;
+					escape = 0;
+				} else {
+					sqlevel = 1;
+					p++;
+				}
+				break;
+			case 1:
+				sqlevel = 0;
+				p++;
+				break;
+			default:
+				break;
+			}
+			break;
+		case '"':
+			switch (dqlevel) {
+			case 0:
+				if (escape || (sqlevel > 0)) {
+					*q++ = *p++;
+					escape = 0;
+				} else {
+					dqlevel = 1;
+					p++;
+				}
+				break;
+			case 1:
+				dqlevel = 0;
+				p++;
+				break;
+			default:
+				break;
+			}
+			break;
+		case '\r':
+		case '\n':
+		case '\t':
+		case ' ':
+			if (escape || (dqlevel > 0) || (sqlevel > 0)) {
+				*q++ = *p;
+			} else {
+				*q++ = '\0';
+			}
+			p++;
+			break;
+		default:
+			*q++ = *p++;
+			break;
+		}
+	}
+	if (error) {
+		*error = NULL;
+	}
+	if (dqlevel > 0) {
+		if (error) {
+			*error = "Unmatched \"";
+		}
+		talloc_free(bigbuf);
+		return NULL;
+	}
+	if (sqlevel > 0) {
+		if (error) {
+			*error = "Unmatched '";
+		}
+		talloc_free(bigbuf);
+		return NULL;
+	}
+	if (escape) {
+		if (error) {
+			*error = "Attempt to escape end-of-command";
+		}
+		talloc_free(bigbuf);
+		return NULL;
+	}
+	p = NULL;
+	words = 0;
+	for (q = bigbuf; q < bigbuf + buffersize; q++) {
+		if (*q != '\0') {
+			if (p == NULL) {
+				p = q;
+			}
+		} else {
+			if (p != NULL) {
+				words++;
+				p = NULL;
+			}
+		}
+	}
+	argv = talloc_zero_size(parent, sizeof(char*) * (words + 1));
+	p = NULL;
+	words = 0;
+	for (q = bigbuf; q < bigbuf + buffersize; q++) {
+		if (*q != '\0') {
+			if (p == NULL) {
+				p = q;
+			}
+		} else {
+			if (p != NULL) {
+				argv[words++] = talloc_strdup(argv, p);
+				p = NULL;
+			}
+		}
+	}
+	talloc_free(bigbuf);
+	return argv;
+}

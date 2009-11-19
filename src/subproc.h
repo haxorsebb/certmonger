@@ -48,4 +48,8 @@ int cm_subproc_get_exitstatus(struct cm_store_entry *entry,
 void cm_subproc_done(struct cm_store_entry *entry,
 		     struct cm_subproc_state *state);
 
+/* Parse args. */
+char **cm_subproc_parse_args(void *parent, const char *cmdline,
+			     const char **error);
+
 #endif
