@@ -167,6 +167,8 @@ cm_submit_e_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		 void *userdata)
 {
 	struct cm_submit_e_args *args = userdata;
+	char **argv;
+	const char *error;
 	int i;
 	unsigned char u;
 	if (entry->cm_template_subject != NULL) {
@@ -207,13 +209,25 @@ cm_submit_e_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		write(args->error_fd, &u, 1);
 		return u;
 	}
-	cm_log(1, "Running helper \"%s\".\n", ca->cm_ca_external_helper);
+	error = NULL;
+	argv = cm_subproc_parse_args(ca, ca->cm_ca_external_helper, &error);
+	if (argv == NULL) {
+		if (error != NULL) {
+			cm_log(0, "Error parsing \"%s\": %s.\n",
+			       ca->cm_ca_external_helper, error);
+		} else {
+			cm_log(0, "Error parsing \"%s\".\n",
+			       ca->cm_ca_external_helper);
+		}
+		return -1;
+	}
+	cm_log(1, "Running helper \"%s\".\n", argv[0]);
 	for (i = sysconf(_SC_OPEN_MAX) - 1; i >= 0; i--) {
 		if ((i != STDOUT_FILENO) && (i != args->error_fd)) {
 			close(i);
 		}
 	}
-	execlp(ca->cm_ca_external_helper, ca->cm_ca_external_helper, NULL);
+	execvp(argv[0], argv);
 	u = errno;
 	write(args->error_fd, &u, 1);
 	return u;
