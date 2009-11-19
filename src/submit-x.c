@@ -70,6 +70,14 @@ main(int argc, char **argv)
 		}
 	}
 	if ((uri == NULL) || (method == NULL)) {
+		fprintf(stderr,
+			"Usage: %s [-s serverURI] [-m method]\n"
+			"Examples:\n"
+			"           -s http://localhost:51235/\n"
+			"           -m wait_for_cert\n",
+			strchr(argv[0], '/') ?
+			strrchr(argv[0], '/') + 1 :
+			argv[0]);
 		return CM_STATUS_UNCONFIGURED;
 	}
 	server = xmlrpc_server_info_new(&xenv, uri);
