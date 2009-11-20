@@ -47,7 +47,7 @@ main(int argc, char **argv)
 	xmlrpc_env xenv;
 	xmlrpc_server_info *server;
 	xmlrpc_client *client;
-	xmlrpc_value *req, *params, *arg, *results;
+	xmlrpc_value *req, *params, *arg, *named, *results;
 	struct xmlrpc_clientparms cparams;
 	struct xmlrpc_curl_xportparms xparams;
 	xmlrpc_client_transport *xtransport;
@@ -55,7 +55,7 @@ main(int argc, char **argv)
 	int i, c, ret, k5 = FALSE;
 	const char *uri = NULL, *method = NULL, *ktname = NULL, *kpname = NULL;
 	const char *s, *cainfo = NULL, *capath = NULL;
-	char *csr, *p, buf[BUFSIZ], tgs[LINE_MAX];
+	char *csr, *p, buf[BUFSIZ], tgs[LINE_MAX], *skey, *sval;
 	krb5_context ctx;
 	krb5_keytab keytab;
 	krb5_ccache ccache;
@@ -126,13 +126,14 @@ main(int argc, char **argv)
 	ret = CM_STATUS_UNREACHABLE;
 	csr = getenv(CM_SUBMIT_CSR_ENV);
 	if (csr == NULL) {
-		if (optind < argc) {
+		if ((optind < argc) && (strchr(argv[optind], '=') == NULL)) {
 			fp = fopen(argv[optind], "r");
 			if (fp == NULL) {
 				printf("Error opening \"%s\": %s.\n",
 				       argv[optind], strerror(errno));
 				return CM_STATUS_UNCONFIGURED;
 			}
+			optind++;
 		} else {
 			fp = stdin;
 		}
@@ -322,6 +323,20 @@ main(int argc, char **argv)
 						xmlrpc_array_append_item(&xenv,
 									 params,
 									 req);
+					}
+					if ((optind < argc) &&
+					    ((named = xmlrpc_struct_new(&xenv)) != NULL)) {
+						for (i = optind; i < argc; i++) {
+							skey = strdup(argv[i]);
+							sval = skey + strcspn(skey, "=");
+							if (*sval != '\0') {
+								*sval++ = '\0';
+							}
+							xmlrpc_struct_set_value(&xenv, named, skey, xmlrpc_string_new(&xenv, sval));
+						}
+						xmlrpc_array_append_item(&xenv,
+									 params,
+									 named);
 					}
 					xmlrpc_client_call2(&xenv,
 							    client,
