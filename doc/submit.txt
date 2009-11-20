@@ -38,9 +38,26 @@ An external helper has a few jobs, then:
     * Wait a bit     -> output CA cookie value on stdout, exit with status 1.
     * Rejected       -> exit with status 2.
     * Connect error  -> exit with status 3.
+    * Underconfigured-> exit with status 4.
 * If in "poll" mode, $CERTMONGER_COOKIE has as its value a CA cookie value.
   * Poll CA for result of previously-started enrollment operation.
     * Issued         -> output PEM-formatted cert on stdout, exit with status 0.
     * Wait some more -> output CA cookie value on stdout, exit with status 1.
     * Rejected       -> exit with status 2.
     * Connect error  -> exit with status 3.
+    * Underconfigured-> exit with status 4.
+
+For testing purposes, a helper can be added by creating a file in the CAs
+directory (usually /var/lib/certmonger/cas) with these contents:
+  id=Test
+  ca_type=EXTERNAL
+  ca_is_default=0
+  ca_external_helper=/usr/libexec/certmonger/test-submit-helper
+
+Passing the "-c Test" flag to the "getcert request" command will then use the
+helper to attempt enrollment.
+
+This, with some built-in defaults that provide the same result when no
+existing CAs file defines a CA named "IPA", is how the daemon knows about IPA.
+The ipa-getcert client, meanwhile, just assumes that clients want to use the
+CA nicknamed "IPA".

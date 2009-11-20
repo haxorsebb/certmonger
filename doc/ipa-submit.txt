@@ -1,0 +1,36 @@
+The submission protocol is a set of XMLRPCs.
+
+All requests go to https://server/ipa/xml.  The server's name is given
+in /etc/ipa/ipa.conf.  The client authenticates using negotiate auth,
+presumably as a client of the server's realm, which is also named in
+/etc/ipa/ipa.conf.
+
+IPA expects all XMLRPCs to include unnamed arguments first, and then a
+dictionary (XMLRPC-jargon: "struct") of named arguments, some of which
+are optional (i.e., because the server defines a default value for them).
+
+Initial request method = "cert_request".
+
+The unnamed required parameter is the CSR in base64-encoded form, with
+all whitespace (including newlines) stripped.
+
+A required named parameter is 'principal', a string-form principal name
+for which this certificate will be provisioned.
+
+An optional named parameter is 'add', with default False, controlling
+whether or not an entry in the directory should be created for the
+principal if no such entry already exists.
+
+An optional named parameter is 'type', with default 'pkcs10', and other
+values undefined.  It's possible that 'crmf' would be accepted, too, but
+we don't generate that (or not yet, anyway).
+
+Response is a struct with these members:
+  status: 0 or 2
+Response struct may also contain some of these members:
+  subject: issued subject, as a string
+  certificate: issued certificate, base64-encoded, no whitespace
+  serial_number: "0x..."
+  request_id: ???
+
+- Based on ipalib/plugins/cert.py from ipa 2.0 branch on 2009111917

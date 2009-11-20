@@ -1,0 +1,18 @@
+The submission protocol is a single XMLRPC.
+
+Request to http://server:port/, method = "wait_for_cert".  The port,
+default "51235", is given in the server's certmaster.conf, and both the
+server and the port number are given in the client's minion.conf.  The
+client does not authenticate.
+
+Request parameters are a single argument, PEM-formatted CSR, with the
+limitation that the header must be for "CERTIFICATE REQUEST" and not
+"NEW CERTIFICATE REQUEST".  The request as-sent is compared to a rebuilt
+copy which uses this header to determine if the request matches one
+which has already been received.
+
+Response is a sequence of (boolean, string, string), either (true,
+issued-cert, issuer-cert), or (false, '', '').  The issued certificate
+is returned in PEM format.
+
+- Based on certmaster.py from certmaster 0.25.
