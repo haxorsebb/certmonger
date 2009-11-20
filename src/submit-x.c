@@ -55,13 +55,14 @@ main(int argc, char **argv)
 	int i, c, ret, k5 = FALSE;
 	const char *uri = NULL, *method = NULL, *ktname = NULL, *kpname = NULL;
 	const char *s, *capath = NULL;
-	char *csr, *p, buf[BUFSIZ];
+	char *csr, *p, buf[BUFSIZ], tgs[LINE_MAX];
 	krb5_context ctx;
 	krb5_keytab keytab;
 	krb5_ccache ccache;
 	krb5_creds creds;
 	krb5_principal princ;
 	krb5_error_code kret;
+	FILE *fp;
 
 	memset(&xenv, 0, sizeof(xenv));
 	xmlrpc_env_init(&xenv);
@@ -94,7 +95,7 @@ main(int argc, char **argv)
 				"Examples:\n"
 				"           -s http://localhost:51235/\n"
 				"           -m wait_for_cert\n"
-				"           -k /etc/krb5.keytab\n",
+				"           -t /etc/krb5.keytab\n",
 				strchr(argv[0], '/') ?
 				strrchr(argv[0], '/') + 1 :
 				argv[0]);
@@ -109,7 +110,7 @@ main(int argc, char **argv)
 			"Examples:\n"
 			"           -s http://localhost:51235/\n"
 			"           -m wait_for_cert\n"
-			"           -k /etc/krb5.keytab\n",
+			"           -t /etc/krb5.keytab\n",
 			strchr(argv[0], '/') ?
 			strrchr(argv[0], '/') + 1 :
 			argv[0]);
@@ -120,7 +121,17 @@ main(int argc, char **argv)
 	ret = CM_STATUS_UNREACHABLE;
 	csr = getenv(CM_SUBMIT_CSR_ENV);
 	if (csr == NULL) {
-		while (fgets(buf, sizeof(buf), stdin) != NULL) {
+		if (optind < argc) {
+			fp = fopen(argv[optind], "r");
+			if (fp == NULL) {
+				printf("Error opening \"%s\": %s.\n",
+				       argv[optind], strerror(errno));
+				return CM_STATUS_UNCONFIGURED;
+			}
+		} else {
+			fp = stdin;
+		}
+		while (fgets(buf, sizeof(buf), fp) != NULL) {
 			if (csr == NULL) {
 				csr = strdup(buf);
 				if (csr == NULL) {
@@ -135,6 +146,9 @@ main(int argc, char **argv)
 				free(csr);
 				csr = p;
 			}
+		}
+		if (fp != stdin) {
+			fclose(fp);
 		}
 	}
 	if (strcmp(method, "wait_for_cert") == 0) {
@@ -173,10 +187,25 @@ main(int argc, char **argv)
 				       error_message(kret));
 				return CM_STATUS_UNCONFIGURED;
 			}
+		} else {
+			kret = krb5_sname_to_principal(ctx, NULL, NULL,
+						       KRB5_NT_SRV_HST, &princ);
+			if (kret != 0) {
+				printf("Error building client name: %s.\n",
+				       error_message(kret));
+				return CM_STATUS_UNCONFIGURED;
+			}
 		}
+		strcpy(tgs, KRB5_TGS_NAME);
+		snprintf(tgs + strlen(tgs), sizeof(tgs) - strlen(tgs), "/%.*s",
+			 (krb5_princ_realm(ctx, princ))->length,
+			 (krb5_princ_realm(ctx, princ))->data);
+		snprintf(tgs + strlen(tgs), sizeof(tgs) - strlen(tgs), "@%.*s",
+			 (krb5_princ_realm(ctx, princ))->length,
+			 (krb5_princ_realm(ctx, princ))->data);
 		memset(&creds, 0, sizeof(creds));
 		kret = krb5_get_init_creds_keytab(ctx, &creds, princ, keytab,
-						  0, NULL, NULL);
+						  0, tgs, NULL);
 		if (kret != 0) {
 			printf("Error obtaining initial credentials: %s.\n",
 			       error_message(kret));
@@ -199,13 +228,14 @@ main(int argc, char **argv)
 			       error_message(kret));
 			return CM_STATUS_UNREACHABLE;
 		}
+		putenv("KRB5CCNAME=MEMORY:" PACKAGE_NAME "_submit");
 		k5 = TRUE;
 	}
 
 	if (server != NULL) {
-		xmlrpc_server_info_disallow_auth_basic(&xenv, server);
+		xmlrpc_server_info_set_user(&xenv, server, "", "");
 		if (xenv.fault_occurred) {
-			printf("Fault %d turning off basic auth: (%s).\n",
+			printf("Fault %d faking up basic auth: (%s).\n",
 			       xenv.fault_code, xenv.fault_string);
 			xmlrpc_env_clean(&xenv);
 		}
@@ -235,15 +265,15 @@ main(int argc, char **argv)
 						    PACKAGE_VERSION,
 						    &xparams, sizeof(xparams),
 						    &xtransport);
+		if (xenv.fault_occurred) {
+			printf("Fault %d: (%s).\n",
+			       xenv.fault_code, xenv.fault_string);
+			xmlrpc_env_clean(&xenv);
+		}
 		if (xtransport != NULL) {
 			memset(&cparams, 0, sizeof(cparams));
 			cparams.transportOpsP = &xmlrpc_curl_transport_ops;
 			cparams.transportP = xtransport;
-			if (xenv.fault_occurred) {
-				printf("Fault %d: (%s).\n",
-				       xenv.fault_code, xenv.fault_string);
-				xmlrpc_env_clean(&xenv);
-			}
 			xmlrpc_client_create(&xenv,
 					     XMLRPC_CLIENT_NO_FLAGS,
 					     PACKAGE_NAME,
