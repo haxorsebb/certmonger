@@ -54,7 +54,7 @@ main(int argc, char **argv)
 	xmlrpc_bool boo;
 	int i, c, ret, k5 = FALSE;
 	const char *uri = NULL, *method = NULL, *ktname = NULL, *kpname = NULL;
-	const char *s, *capath = NULL;
+	const char *s, *cainfo = NULL, *capath = NULL;
 	char *csr, *p, buf[BUFSIZ], tgs[LINE_MAX];
 	krb5_context ctx;
 	krb5_keytab keytab;
@@ -85,13 +85,17 @@ main(int argc, char **argv)
 		case 'k':
 			k5 = TRUE;
 			break;
-		case 'c':
+		case 'C':
 			capath = optarg;
+			break;
+		case 'c':
+			cainfo = optarg;
 			break;
 		default:
 			fprintf(stderr,
 				"Usage: %s [-s serverURI] [-m method] "
-				"[-k] [-t keytab] [-p principal] [-c capath]\n"
+				"[-k] [-t keytab] [-p principal] "
+				"[-C capath] [-c cainfo]\n"
 				"Examples:\n"
 				"           -s http://localhost:51235/\n"
 				"           -m wait_for_cert\n"
@@ -106,7 +110,8 @@ main(int argc, char **argv)
 	if ((uri == NULL) || (method == NULL)) {
 		fprintf(stderr,
 			"Usage: %s [-s serverURI] [-m method] "
-			"[-k] [-t keytab] [-p principal] [-c capath]\n"
+			"[-k] [-t keytab] [-p principal] "
+			"[-C capath] [-c cainfo]\n"
 			"Examples:\n"
 			"           -s http://localhost:51235/\n"
 			"           -m wait_for_cert\n"
@@ -150,7 +155,11 @@ main(int argc, char **argv)
 		if (fp != stdin) {
 			fclose(fp);
 		}
+		if (csr == NULL) {
+			csr = strdup("");
+		}
 	}
+
 	if (strcmp(method, "wait_for_cert") == 0) {
 		/* certmaster rewrites the incoming request to its cache
 		 * previously-received requests, and in doing so uses a
@@ -159,6 +168,27 @@ main(int argc, char **argv)
 		 * REQUEST". */
 		while ((p = strstr(csr, "NEW CERTIFICATE REQUEST")) != NULL) {
 			memmove(p, p + 4, strlen(p + 4) + 1);
+		}
+	}
+	if (strcmp(method, "cert_request") == 0) {
+		/* IPA just wants base64-encoded binary data, no whitepace */
+		p = strstr(csr, "-----BEGIN");
+		if (p != NULL) {
+			p += strcspn(p, "\n");
+			if (*p == '\n') {
+				p++;
+			}
+			memmove(csr, p, strlen(p) + 1);
+		}
+		p = strstr(csr, "\n-----END");
+		if (p != NULL) {
+			*p = '\0';
+		}
+		while ((p = strchr(csr, '\r')) != NULL) {
+			memmove(p, p + 1, strlen(p));
+		}
+		while ((p = strchr(csr, '\n')) != NULL) {
+			memmove(p, p + 1, strlen(p));
 		}
 	}
 
@@ -228,6 +258,7 @@ main(int argc, char **argv)
 			       error_message(kret));
 			return CM_STATUS_UNREACHABLE;
 		}
+		krb5_cc_close(ctx, ccache);
 		putenv("KRB5CCNAME=MEMORY:" PACKAGE_NAME "_submit");
 		k5 = TRUE;
 	}
@@ -259,6 +290,7 @@ main(int argc, char **argv)
 		}
 
 		memset(&xparams, 0, sizeof(xparams));
+		xparams.cainfo = cainfo;
 		xparams.capath = capath;
 		(*xmlrpc_curl_transport_ops.create)(&xenv, 0,
 						    PACKAGE_NAME,
