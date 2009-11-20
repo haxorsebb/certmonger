@@ -23,6 +23,9 @@ EXTRA_DIST = \
 	010-iterate/expected.out
 
 check:
+	for required in certutil pk12util openssl expect diff cmp mktemp ; do \
+		which $$required ; \
+	done
 	env	srcdir=$(srcdir) \
 	builddir=$(top_builddir)/tests \
 	$(srcdir)/run-tests.sh
