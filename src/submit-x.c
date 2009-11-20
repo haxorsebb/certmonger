@@ -332,7 +332,14 @@ main(int argc, char **argv)
 							if (*sval != '\0') {
 								*sval++ = '\0';
 							}
-							xmlrpc_struct_set_value(&xenv, named, skey, xmlrpc_string_new(&xenv, sval));
+							if (strcasecmp(sval, "true") == 0) {
+								xmlrpc_struct_set_value(&xenv, named, skey, xmlrpc_bool_new(&xenv, 1));
+							} else
+							if (strcasecmp(sval, "false") == 0) {
+								xmlrpc_struct_set_value(&xenv, named, skey, xmlrpc_bool_new(&xenv, 0));
+							} else {
+								xmlrpc_struct_set_value(&xenv, named, skey, xmlrpc_string_new(&xenv, sval));
+							}
 						}
 						xmlrpc_array_append_item(&xenv,
 									 params,
