@@ -166,7 +166,7 @@ main(int argc, char **argv)
 		 * previously-received requests, and in doing so uses a
 		 * different PEM header than the one we default to using.  So
 		 * turn any "NEW CERTIFICATE REQUEST" notes into "CERTIFICATE
-		 * REQUEST". */
+		 * REQUEST" before sending them. */
 		while ((p = strstr(csr, "NEW CERTIFICATE REQUEST")) != NULL) {
 			memmove(p, p + 4, strlen(p + 4) + 1);
 		}
