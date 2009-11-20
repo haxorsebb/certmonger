@@ -33,4 +33,8 @@ Response struct may also contain some of these members:
   serial_number: "0x..."
   request_id: ???
 
+And John was right: if you have any problems getting those creds for
+negotiate, xmlrpc-c will not return.  Not current versions, anyway.
+And that includes not having [domain_realm] mappings set up right.
+
 - Based on ipalib/plugins/cert.py from ipa 2.0 branch on 2009111917
