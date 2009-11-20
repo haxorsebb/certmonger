@@ -60,7 +60,24 @@ PKG_CHECK_MODULES(TEVENT,tevent)
 PKG_CHECK_MODULES(DBUS,dbus-1)
 PKG_CHECK_MODULES(CERTMONGER,dbus-1 talloc tevent nss)
 PKG_CHECK_MODULES(GETCERT,dbus-1 talloc)
-PKG_CHECK_MODULES(XMLRPC,xmlrpc_client)
+
+dnl PKG_CHECK_MODULES(XMLRPC,xmlrpc_client)
+savedCFLAGS="$CFLAGS"
+CFLAGS=
+AC_ARG_VAR(XMLRPC_C_CONFIG,[the full path of the xmlrpc-c-config command])
+AC_PATH_PROG(XMLRPC_C_CONFIG,[xmlrpc-c-config],,[$PATH$PATH_SEPARATOR/usr/xmlrpc/bin$PATH_SEPARATOR/usr/xmlrpc-c/bin])
+if test -z "$XMLRPC_C_CONFIG" ; then
+	AC_MSG_ERROR(xmlrpc-c-config not found)
+fi
+AC_MSG_CHECKING(for XMLRPC CFLAGS)
+XMLRPC_CFLAGS=`${XMLRPC_C_CONFIG} client --cflags`
+AC_MSG_RESULT([$XMLRPC_CFLAGS])
+AC_SUBST(XMLRPC_C_CFLAGS)
+AC_MSG_CHECKING(for XMLRPC LIBS)
+XMLRPC_LIBS=`${XMLRPC_C_CONFIG} client --libs`
+AC_MSG_RESULT([$XMLRPC_LIBS])
+AC_SUBST(XMLRPC_LIBS)
+CFLAGS="$savedCFLAGS"
 
 savedCFLAGS="$CFLAGS"
 CFLAGS=
