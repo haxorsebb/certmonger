@@ -23,6 +23,6 @@ EXTRA_DIST = \
 	010-iterate/expected.out
 
 check:
-	env	srcdir=$(abs_srcdir) \
-	builddir=$(abs_builddir) \
+	env	srcdir=$(srcdir) \
+	builddir=$(builddir) \
 	$(abs_srcdir)/run-tests.sh

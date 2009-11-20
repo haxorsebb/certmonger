@@ -1,4 +1,5 @@
 #!/bin/sh
+
 tmpfile=`mktemp ${TMPDIR:-/tmp}/runtestsXXXXXX`
 if test -z "$tmpfile" ; then
 	echo Error creating temporary file.
@@ -22,8 +23,16 @@ else
 	trap 'rm -f "$tmpfile"; rm -fr "$tmpdir"; kill "$DBUS_SESSION_BUS_PID"' EXIT
 fi
 
-builddir=${builddir:-`pwd`}
 srcdir=${srcdir:-`pwd`}
+pushd "$srcdir" > /dev/null
+srcdir=`pwd`
+popd > /dev/null
+
+builddir=${builddir:-`pwd`}
+pushd "$builddir" > /dev/null
+builddir=`pwd`
+popd > /dev/null
+
 toolsdir=${toolsdir:-${builddir}/tools}
 export builddir
 export srcdir
