@@ -31,6 +31,87 @@
 
 #include "submit-e.h"
 
+static int
+cm_submit_x_make_ccache(const char *ktname, const char *principal)
+{
+	krb5_context ctx;
+	krb5_keytab keytab;
+	krb5_ccache ccache;
+	krb5_creds creds;
+	krb5_principal princ;
+	krb5_error_code kret;
+	char tgs[LINE_MAX];
+
+	kret = krb5_init_context(&ctx);
+	if (kret != 0) {
+		printf("Error initializing Kerberos: %s.\n",
+		       error_message(kret));
+		return kret;
+	}
+	if (ktname != NULL) {
+		kret = krb5_kt_resolve(ctx, ktname, &keytab);
+	} else {
+		kret = krb5_kt_default(ctx, &keytab);
+	}
+	if (kret != 0) {
+		printf("Error resolving keytab: %s.\n",
+		       error_message(kret));
+		return kret;
+	}
+	princ = NULL;
+	if (principal != NULL) {
+		kret = krb5_parse_name(ctx, principal, &princ);
+		if (kret != 0) {
+			printf("Error parsing \"%s\": %s.\n", principal,
+			       error_message(kret));
+			return kret;
+		}
+	} else {
+		kret = krb5_sname_to_principal(ctx, NULL, NULL,
+					       KRB5_NT_SRV_HST, &princ);
+		if (kret != 0) {
+			printf("Error building client name: %s.\n",
+			       error_message(kret));
+			return kret;
+		}
+	}
+	strcpy(tgs, KRB5_TGS_NAME);
+	snprintf(tgs + strlen(tgs), sizeof(tgs) - strlen(tgs), "/%.*s",
+		 (krb5_princ_realm(ctx, princ))->length,
+		 (krb5_princ_realm(ctx, princ))->data);
+	snprintf(tgs + strlen(tgs), sizeof(tgs) - strlen(tgs), "@%.*s",
+		 (krb5_princ_realm(ctx, princ))->length,
+		 (krb5_princ_realm(ctx, princ))->data);
+	memset(&creds, 0, sizeof(creds));
+	kret = krb5_get_init_creds_keytab(ctx, &creds, princ, keytab,
+					  0, tgs, NULL);
+	if (kret != 0) {
+		printf("Error obtaining initial credentials: %s.\n",
+		       error_message(kret));
+		return kret;
+	}
+	ccache = NULL;
+	kret = krb5_cc_resolve(ctx, "MEMORY:" PACKAGE_NAME "_submit",
+			       &ccache);
+	if (kret == 0) {
+		kret = krb5_cc_initialize(ctx, ccache, creds.client);
+	}
+	if (kret != 0) {
+		printf("Error initializing credential cache: %s.\n",
+		       error_message(kret));
+		return kret;
+	}
+	kret = krb5_cc_store_cred(ctx, ccache, &creds);
+	if (kret != 0) {
+		printf("Error storing creds in credential cache: %s.\n",
+		       error_message(kret));
+		return kret;
+	}
+	krb5_cc_close(ctx, ccache);
+	putenv("KRB5CCNAME=MEMORY:" PACKAGE_NAME "_submit");
+	return 0;
+}
+
 static char *
 my_stpcpy(char *dest, char *src)
 {
@@ -55,13 +136,7 @@ main(int argc, char **argv)
 	int i, c, ret, k5 = FALSE;
 	const char *uri = NULL, *method = NULL, *ktname = NULL, *kpname = NULL;
 	const char *s, *cainfo = NULL, *capath = NULL;
-	char *csr, *p, buf[BUFSIZ], tgs[LINE_MAX], *skey, *sval;
-	krb5_context ctx;
-	krb5_keytab keytab;
-	krb5_ccache ccache;
-	krb5_creds creds;
-	krb5_principal princ;
-	krb5_error_code kret;
+	char *csr, *p, buf[BUFSIZ], *skey, *sval;
 	FILE *fp;
 
 	memset(&xenv, 0, sizeof(xenv));
@@ -194,74 +269,9 @@ main(int argc, char **argv)
 	}
 
 	if (k5 || (kpname != NULL) || (ktname != NULL)) {
-		kret = krb5_init_context(&ctx);
-		if (kret != 0) {
-			printf("Error initializing Kerberos: %s.\n",
-			       error_message(kret));
-			return CM_STATUS_UNCONFIGURED;
+		if (cm_submit_x_make_ccache(ktname, kpname) == 0) {
+			k5 = TRUE;
 		}
-		if (ktname != NULL) {
-			kret = krb5_kt_resolve(ctx, ktname, &keytab);
-		} else {
-			kret = krb5_kt_default(ctx, &keytab);
-		}
-		if (kret != 0) {
-			printf("Error resolving keytab: %s.\n",
-			       error_message(kret));
-			return CM_STATUS_UNCONFIGURED;
-		}
-		princ = NULL;
-		if (kpname != NULL) {
-			kret = krb5_parse_name(ctx, kpname, &princ);
-			if (kret != 0) {
-				printf("Error parsing \"%s\": %s.\n", kpname,
-				       error_message(kret));
-				return CM_STATUS_UNCONFIGURED;
-			}
-		} else {
-			kret = krb5_sname_to_principal(ctx, NULL, NULL,
-						       KRB5_NT_SRV_HST, &princ);
-			if (kret != 0) {
-				printf("Error building client name: %s.\n",
-				       error_message(kret));
-				return CM_STATUS_UNCONFIGURED;
-			}
-		}
-		strcpy(tgs, KRB5_TGS_NAME);
-		snprintf(tgs + strlen(tgs), sizeof(tgs) - strlen(tgs), "/%.*s",
-			 (krb5_princ_realm(ctx, princ))->length,
-			 (krb5_princ_realm(ctx, princ))->data);
-		snprintf(tgs + strlen(tgs), sizeof(tgs) - strlen(tgs), "@%.*s",
-			 (krb5_princ_realm(ctx, princ))->length,
-			 (krb5_princ_realm(ctx, princ))->data);
-		memset(&creds, 0, sizeof(creds));
-		kret = krb5_get_init_creds_keytab(ctx, &creds, princ, keytab,
-						  0, tgs, NULL);
-		if (kret != 0) {
-			printf("Error obtaining initial credentials: %s.\n",
-			       error_message(kret));
-			return CM_STATUS_UNREACHABLE;
-		}
-		ccache = NULL;
-		kret = krb5_cc_resolve(ctx, "MEMORY:" PACKAGE_NAME "_submit",
-				       &ccache);
-		if (kret == 0) {
-			kret = krb5_cc_initialize(ctx, ccache, creds.client);
-		}
-		if (kret != 0) {
-			printf("Error initializing credential cache: %s.\n",
-			       error_message(kret));
-			return CM_STATUS_UNREACHABLE;
-		}
-		kret = krb5_cc_store_cred(ctx, ccache, &creds);
-		if (kret != 0) {
-			printf("Error storing creds in credential cache: %s.\n",
-			       error_message(kret));
-			return CM_STATUS_UNREACHABLE;
-		}
-		krb5_cc_close(ctx, ccache);
-		putenv("KRB5CCNAME=MEMORY:" PACKAGE_NAME "_submit");
-		k5 = TRUE;
 	}
 
 	if (server != NULL) {
