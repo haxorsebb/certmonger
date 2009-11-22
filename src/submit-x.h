@@ -27,6 +27,7 @@ struct cm_submit_x_context *cm_submit_x_init(void *parent, const char *uri,
 					     const char *capath,
 					     int negotiate);
 void cm_submit_x_run(struct cm_submit_x_context *ctx);
+int cm_submit_x_has_results(struct cm_submit_x_context *ctx);
 
 void cm_submit_x_add_arg_s(struct cm_submit_x_context *ctx, const char *s);
 void cm_submit_x_add_arg_b(struct cm_submit_x_context *ctx, int b);

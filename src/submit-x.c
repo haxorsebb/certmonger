@@ -269,6 +269,7 @@ cm_submit_x_run(struct cm_submit_x_context *ctx)
 					 ctx->params,
 					 ctx->namedarg);
 	}
+	ctx->results = NULL;
 	xmlrpc_client_call2(&ctx->xenv,
 			    ctx->client,
 			    ctx->server,
@@ -284,12 +285,21 @@ cm_submit_x_run(struct cm_submit_x_context *ctx)
 }
 
 int
+cm_submit_x_has_results(struct cm_submit_x_context *ctx)
+{
+	return (ctx->results != NULL) ? 0 : -1;
+}
+
+int
 cm_submit_x_get_bss(struct cm_submit_x_context *ctx,
 		    int *b, char **s1, char **s2)
 {
 	const char *p;
 	xmlrpc_bool boo;
 	xmlrpc_value *arg;
+	*b = 0;
+	*s1 = NULL;
+	*s2 = NULL;
 	xmlrpc_array_read_item(&ctx->xenv, ctx->results, 0, &arg);
 	if (ctx->xenv.fault_occurred) {
 		xmlrpc_env_clean(&ctx->xenv);
@@ -334,6 +344,7 @@ cm_submit_x_get_b(struct cm_submit_x_context *ctx, int idx, int *b)
 {
 	xmlrpc_bool boo;
 	xmlrpc_value *arg;
+	*b = 0;
 	xmlrpc_array_read_item(&ctx->xenv, ctx->results, idx, &arg);
 	if (ctx->xenv.fault_occurred) {
 		xmlrpc_env_clean(&ctx->xenv);
@@ -354,6 +365,7 @@ cm_submit_x_get_s(struct cm_submit_x_context *ctx, int idx, char **s)
 {
 	const char *p;
 	xmlrpc_value *arg;
+	*s = NULL;
 	xmlrpc_array_read_item(&ctx->xenv, ctx->results, idx, &arg);
 	if (ctx->xenv.fault_occurred) {
 		xmlrpc_env_clean(&ctx->xenv);
@@ -400,6 +412,7 @@ cm_submit_x_get_named_n(struct cm_submit_x_context *ctx,
 {
 	int i;
 	xmlrpc_value *arg, *val;
+	*n = 0;
 	arg = cm_submit_x_get_struct(ctx);
 	if (arg == NULL) {
 		return -1;
@@ -423,6 +436,7 @@ cm_submit_x_get_named_b(struct cm_submit_x_context *ctx,
 {
 	xmlrpc_bool boo;
 	xmlrpc_value *arg, *val;
+	*b = 0;
 	arg = cm_submit_x_get_struct(ctx);
 	if (arg == NULL) {
 		return -1;
@@ -446,6 +460,7 @@ cm_submit_x_get_named_s(struct cm_submit_x_context *ctx,
 {
 	const char *p;
 	xmlrpc_value *arg, *val;
+	*s = NULL;
 	arg = cm_submit_x_get_struct(ctx);
 	if (arg == NULL) {
 		return -1;
@@ -466,19 +481,16 @@ cm_submit_x_get_named_s(struct cm_submit_x_context *ctx,
 int
 main(int argc, char **argv)
 {
-	xmlrpc_env xenv;
-	xmlrpc_server_info *server;
-	xmlrpc_client *client;
-	xmlrpc_value *req, *params, *arg, *named, *results;
-	struct xmlrpc_clientparms cparams;
-	struct xmlrpc_curl_xportparms xparams;
-	xmlrpc_client_transport *xtransport;
-	xmlrpc_bool boo;
-	int i, c, ret, k5 = FALSE;
+	int i, j, c, ret, k5 = FALSE;
+	int64_t i8;
+	int32_t i32;
 	const char *uri = NULL, *method = NULL, *ktname = NULL, *kpname = NULL;
 	const char *s, *cainfo = NULL, *capath = NULL;
-	char *csr, *p, buf[BUFSIZ], *skey, *sval;
+	char *csr, *p, buf[BUFSIZ], *skey, *sval, *s1, *s2;
 	FILE *fp;
+	struct cm_submit_x_context *ctx;
+	xmlrpc_value *arg, *key, *val;
+	xmlrpc_bool boo;
 
 	while ((c = getopt(argc, argv, "s:m:kt:p:c:")) != -1) {
 		switch (c) {
@@ -533,8 +545,9 @@ main(int argc, char **argv)
 			argv[0]);
 		return CM_STATUS_UNCONFIGURED;
 	}
-	results = NULL;
 	ret = CM_STATUS_UNREACHABLE;
+
+	/* Read the CSR from the environment, or from the command-line. */
 	csr = getenv(CM_SUBMIT_CSR_ENV);
 	if (csr == NULL) {
 		if ((optind < argc) && (strchr(argv[optind], '=') == NULL)) {
@@ -604,197 +617,136 @@ main(int argc, char **argv)
 		}
 	}
 
+	/* Initialize for XML-RPC. */
+	ctx = cm_submit_x_init(NULL, uri, method, cainfo, capath,
+			       k5 || (kpname != NULL) || (ktname != NULL));
+	if (ctx == NULL) {
+		printf("Error setting up for XMLRPC.\n");
+		return CM_STATUS_UNCONFIGURED;
+	}
+
+	/* Both servers take the CSR, in their preferred format, first. */
+	cm_submit_x_add_arg_s(ctx, csr);
+
+	/* Maybe we need a ccache. */
 	if (k5 || (kpname != NULL) || (ktname != NULL)) {
 		if (cm_submit_x_make_ccache(ktname, kpname) == 0) {
 			k5 = TRUE;
 		}
 	}
 
-	server = xmlrpc_server_info_new(&xenv, uri);
-	if (server != NULL) {
-		xmlrpc_server_info_set_user(&xenv, server, "", "");
-		if (xenv.fault_occurred) {
-			printf("Fault %d faking up basic auth: (%s).\n",
-			       xenv.fault_code, xenv.fault_string);
-			xmlrpc_env_clean(&xenv);
+	/* Add additional arguments as dict values. */
+	for (i = optind; i < argc; i++) {
+		skey = strdup(argv[i]);
+		sval = skey + strcspn(skey, "=");
+		if (*sval != '\0') {
+			*sval++ = '\0';
 		}
-		if (k5) {
-			xmlrpc_server_info_allow_auth_negotiate(&xenv, server);
-			if (xenv.fault_occurred) {
-				printf("Fault %d turning on negotiate auth: "
-				       "(%s).\n",
-				       xenv.fault_code, xenv.fault_string);
-				xmlrpc_env_clean(&xenv);
-			}
+		if (strcasecmp(sval, "true") == 0) {
+			cm_submit_x_add_named_arg_b(ctx, skey, 1);
+		} else
+		if (strcasecmp(sval, "false") == 0) {
+			cm_submit_x_add_named_arg_b(ctx, skey, 0);
 		} else {
-			xmlrpc_server_info_disallow_auth_negotiate(&xenv,
-								   server);
-			if (xenv.fault_occurred) {
-				printf("Fault %d turning off negotiate auth: "
-				       "(%s).\n",
-				       xenv.fault_code, xenv.fault_string);
-				xmlrpc_env_clean(&xenv);
-			}
+			cm_submit_x_add_named_arg_s(ctx, skey, sval);
 		}
+	}
 
-		memset(&xparams, 0, sizeof(xparams));
-		xparams.cainfo = cainfo;
-		xparams.capath = capath;
-		(*xmlrpc_curl_transport_ops.create)(&xenv, 0,
-						    PACKAGE_NAME,
-						    PACKAGE_VERSION,
-						    &xparams, sizeof(xparams),
-						    &xtransport);
-		if (xenv.fault_occurred) {
-			printf("Fault %d: (%s).\n",
-			       xenv.fault_code, xenv.fault_string);
-			xmlrpc_env_clean(&xenv);
-		}
-		if (xtransport != NULL) {
-			memset(&cparams, 0, sizeof(cparams));
-			cparams.transportOpsP = &xmlrpc_curl_transport_ops;
-			cparams.transportP = xtransport;
-			xmlrpc_client_create(&xenv,
-					     XMLRPC_CLIENT_NO_FLAGS,
-					     PACKAGE_NAME,
-					     PACKAGE_VERSION,
-					     &cparams, sizeof(cparams),
-					     &client);
-			if (client != NULL) {
-				params = NULL;
-				results = NULL;
-				params = xmlrpc_array_new(&xenv);
-				if (params != NULL) {
-					req = xmlrpc_string_new(&xenv, csr);
-					if (req != NULL) {
-						xmlrpc_array_append_item(&xenv,
-									 params,
-									 req);
-					}
-					if ((optind < argc) &&
-					    ((named = xmlrpc_struct_new(&xenv)) != NULL)) {
-						for (i = optind; i < argc; i++) {
-							skey = strdup(argv[i]);
-							sval = skey + strcspn(skey, "=");
-							if (*sval != '\0') {
-								*sval++ = '\0';
-							}
-							if (strcasecmp(sval, "true") == 0) {
-								xmlrpc_struct_set_value(&xenv, named, skey, xmlrpc_bool_new(&xenv, 1));
-							} else
-							if (strcasecmp(sval, "false") == 0) {
-								xmlrpc_struct_set_value(&xenv, named, skey, xmlrpc_bool_new(&xenv, 0));
-							} else {
-								xmlrpc_struct_set_value(&xenv, named, skey, xmlrpc_string_new(&xenv, sval));
-							}
-						}
-						xmlrpc_array_append_item(&xenv,
-									 params,
-									 named);
-					}
-					xmlrpc_client_call2(&xenv,
-							    client,
-							    server,
-							    method,
-							    params,
-							    &results);
-					if (xenv.fault_occurred) {
-						printf("Fault %d: (%s).\n",
-						       xenv.fault_code,
-						       xenv.fault_string);
-						xmlrpc_env_clean(&xenv);
-					}
-				} else {
-					printf("Error creating params.\n");
-					if (xenv.fault_occurred) {
-						printf("Fault %d: (%s).\n",
-						       xenv.fault_code,
-						       xenv.fault_string);
-						xmlrpc_env_clean(&xenv);
-					}
-				}
-			} else {
-				printf("Error creating client.\n");
-				if (xenv.fault_occurred) {
-					printf("Fault %d: (%s).\n",
-					       xenv.fault_code,
-					       xenv.fault_string);
-					xmlrpc_env_clean(&xenv);
-				}
-			}
-		} else {
-			printf("Error creating transport.\n");
-			if (xenv.fault_occurred) {
+	/* Submit the request. */
+	cm_submit_x_run(ctx);
+
+	/* Check the results. */
+	if (cm_submit_x_has_results(ctx) == 0) {
+		for (i = 0; i < xmlrpc_array_size(&ctx->xenv, ctx->results); i++) {
+			xmlrpc_array_read_item(&ctx->xenv, ctx->results, i, &arg);
+			if (ctx->xenv.fault_occurred) {
 				printf("Fault %d: (%s).\n",
-				       xenv.fault_code, xenv.fault_string);
-				xmlrpc_env_clean(&xenv);
-			}
-		}
-		xmlrpc_server_info_free(server);
-	} else {
-		printf("Error creating server info.\n");
-		if (xenv.fault_occurred) {
-			printf("Fault %d: (%s).\n",
-			       xenv.fault_code, xenv.fault_string);
-			xmlrpc_env_clean(&xenv);
-		}
-	}
-
-	if (results != NULL) {
-		i = xmlrpc_array_size(&xenv, results);
-		if (xenv.fault_occurred) {
-			printf("Fault %d: (%s).\n",
-			       xenv.fault_code, xenv.fault_string);
-			xmlrpc_env_clean(&xenv);
-		} else {
-			printf("%d arguments for response.\n", i);
-			if (i > 0) {
-				/* The first element is a boolean. */
-				arg = NULL;
-				xmlrpc_array_read_item(&xenv, results, 0, &arg);
-				if (xenv.fault_occurred) {
-					printf("Fault %d: (%s).\n",
-					       xenv.fault_code,
-					       xenv.fault_string);
-					xmlrpc_env_clean(&xenv);
-				} else {
-					xmlrpc_read_bool(&xenv, arg, &boo);
-					if (xenv.fault_occurred) {
-						printf("Fault %d: (%s).\n",
-						       xenv.fault_code,
-						       xenv.fault_string);
-						xmlrpc_env_clean(&xenv);
-					} else {
-						printf("Status: %d.\n", boo);
-						if (boo) {
-							ret = CM_STATUS_ISSUED;
-						}
-						if (i > 2) {
-							/* The next two are our
-							 * certificate and the
-							 * CA's certificate. */
-							xmlrpc_array_read_item(&xenv, results, 1, &arg);
-							if (xenv.fault_occurred) {
-								printf("Fault %d: (%s).\n",
-								       xenv.fault_code,
-								       xenv.fault_string);
-								xmlrpc_env_clean(&xenv);
-							} else {
-								xmlrpc_read_string(&xenv, arg, &s);
-								if (xenv.fault_occurred) {
-									printf("Fault %d: (%s).\n",
-									       xenv.fault_code,
-									       xenv.fault_string);
-									xmlrpc_env_clean(&xenv);
-								} else {
-									printf("\"%s\"\n", s);
-								}
+				       ctx->xenv.fault_code, ctx->xenv.fault_string);
+				xmlrpc_env_clean(&ctx->xenv);
+			} else {
+				switch (xmlrpc_value_type(arg)) {
+				case XMLRPC_TYPE_BOOL:
+					xmlrpc_read_bool(&ctx->xenv, arg, &boo);
+					printf("b: %s\n",
+					       boo ? "true" : "false");
+					break;
+				case XMLRPC_TYPE_STRING:
+					xmlrpc_read_string(&ctx->xenv, arg, &s);
+					printf("s: %s\n", s);
+					break;
+				case XMLRPC_TYPE_I8:
+					xmlrpc_read_i8(&ctx->xenv, arg, &i8);
+					printf("n: %lld\n", (long long) i8);
+					break;
+				case XMLRPC_TYPE_INT:
+					xmlrpc_read_int(&ctx->xenv, arg, &i32);
+					printf("n: %ld\n", (long) i32);
+					break;
+				case XMLRPC_TYPE_STRUCT:
+					for (j = 0;
+					     j < xmlrpc_struct_size(&ctx->xenv,
+					    			    arg);
+					     j++) {
+						xmlrpc_struct_read_member(&ctx->xenv, arg, j,
+									  &key, &val);
+						xmlrpc_read_string(&ctx->xenv, key, &s);
+						if (ctx->xenv.fault_occurred) {
+							printf("Fault %d: (%s).\n",
+							       ctx->xenv.fault_code, ctx->xenv.fault_string);
+							xmlrpc_env_clean(&ctx->xenv);
+						} else {
+							skey = (char *) s;
+							switch (xmlrpc_value_type(val)) {
+							case XMLRPC_TYPE_BOOL:
+								xmlrpc_read_bool(&ctx->xenv, val, &boo);
+								printf("%s: b: %s\n", skey,
+								       boo ? "true" : "false");
+								break;
+							case XMLRPC_TYPE_STRING:
+								xmlrpc_read_string(&ctx->xenv, arg, &s);
+								printf("%s: s: %s\n", skey, s);
+								break;
+							case XMLRPC_TYPE_I8:
+								xmlrpc_read_i8(&ctx->xenv, val, &i8);
+								printf("%s: n: %lld\n", skey, (long long) i8);
+								break;
+							case XMLRPC_TYPE_INT:
+								xmlrpc_read_int(&ctx->xenv, val, &i32);
+								printf("%s: n: %ld\n", skey, (long) i32);
+								break;
+							default:
+								break;
 							}
 						}
 					}
+					break;
+				default:
+					break;
+				}
+				if (ctx->xenv.fault_occurred) {
+					printf("Fault %d: (%s).\n",
+					       ctx->xenv.fault_code, ctx->xenv.fault_string);
+					xmlrpc_env_clean(&ctx->xenv);
 				}
 			}
 		}
 	}
+
+	/* Try formatted output, specific. */
+	if (strcmp(method, "wait_for_cert") == 0) {
+		if (cm_submit_x_get_bss(ctx, &i, &s1, &s2) == 0) {
+			printf("BSS: OK\nb: %s\ns1 = \"%s\"\ns2 = \"%s\"\n",
+			       i ? "true" : "false", s1, s2);
+		}
+	}
+	if (strcmp(method, "cert_request") == 0) {
+		if (cm_submit_x_get_named_n(ctx, "status", &i) == 0) {
+			printf("Status: %d\n", i);
+		}
+		if (cm_submit_x_get_named_s(ctx, "certificate", &s1) == 0) {
+			printf("Certificate: \"%s\"\n", s1);
+		}
+	}
+
 	return ret;
 }
