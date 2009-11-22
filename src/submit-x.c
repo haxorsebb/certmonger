@@ -47,8 +47,8 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal)
 
 	kret = krb5_init_context(&ctx);
 	if (kret != 0) {
-		printf("Error initializing Kerberos: %s.\n",
-		       error_message(kret));
+		fprintf(stderr, "Error initializing Kerberos: %s.\n",
+			error_message(kret));
 		return kret;
 	}
 	if (ktname != NULL) {
@@ -57,24 +57,24 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal)
 		kret = krb5_kt_default(ctx, &keytab);
 	}
 	if (kret != 0) {
-		printf("Error resolving keytab: %s.\n",
-		       error_message(kret));
+		fprintf(stderr, "Error resolving keytab: %s.\n",
+			error_message(kret));
 		return kret;
 	}
 	princ = NULL;
 	if (principal != NULL) {
 		kret = krb5_parse_name(ctx, principal, &princ);
 		if (kret != 0) {
-			printf("Error parsing \"%s\": %s.\n", principal,
-			       error_message(kret));
+			fprintf(stderr, "Error parsing \"%s\": %s.\n", principal,
+				error_message(kret));
 			return kret;
 		}
 	} else {
 		kret = krb5_sname_to_principal(ctx, NULL, NULL,
 					       KRB5_NT_SRV_HST, &princ);
 		if (kret != 0) {
-			printf("Error building client name: %s.\n",
-			       error_message(kret));
+			fprintf(stderr, "Error building client name: %s.\n",
+				error_message(kret));
 			return kret;
 		}
 	}
@@ -89,8 +89,8 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal)
 	kret = krb5_get_init_creds_keytab(ctx, &creds, princ, keytab,
 					  0, tgs, NULL);
 	if (kret != 0) {
-		printf("Error obtaining initial credentials: %s.\n",
-		       error_message(kret));
+		fprintf(stderr, "Error obtaining initial credentials: %s.\n",
+			error_message(kret));
 		return kret;
 	}
 	ccache = NULL;
@@ -100,14 +100,14 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal)
 		kret = krb5_cc_initialize(ctx, ccache, creds.client);
 	}
 	if (kret != 0) {
-		printf("Error initializing credential cache: %s.\n",
-		       error_message(kret));
+		fprintf(stderr, "Error initializing credential cache: %s.\n",
+			error_message(kret));
 		return kret;
 	}
 	kret = krb5_cc_store_cred(ctx, ccache, &creds);
 	if (kret != 0) {
-		printf("Error storing creds in credential cache: %s.\n",
-		       error_message(kret));
+		fprintf(stderr, "Error storing creds in credential cache: %s.\n",
+			error_message(kret));
 		return kret;
 	}
 	krb5_cc_close(ctx, ccache);
@@ -156,26 +156,26 @@ cm_submit_x_init(void *parent, const char *uri, const char *method,
 	}
 	xmlrpc_server_info_set_user(&ctx->xenv, ctx->server, "", "");
 	if (ctx->xenv.fault_occurred) {
-		printf("Fault %d faking up basic auth: (%s).\n",
-		       ctx->xenv.fault_code, ctx->xenv.fault_string);
+		fprintf(stderr, "Fault %d faking up basic auth: (%s).\n",
+			ctx->xenv.fault_code, ctx->xenv.fault_string);
 		xmlrpc_env_clean(&ctx->xenv);
 	}
 	if (negotiate) {
 		xmlrpc_server_info_allow_auth_negotiate(&ctx->xenv,
 							ctx->server);
 		if (ctx->xenv.fault_occurred) {
-			printf("Fault %d turning on negotiate auth: "
-			       "(%s).\n",
-			       ctx->xenv.fault_code, ctx->xenv.fault_string);
+			fprintf(stderr, "Fault %d turning on negotiate auth: "
+				"(%s).\n",
+				ctx->xenv.fault_code, ctx->xenv.fault_string);
 			xmlrpc_env_clean(&ctx->xenv);
 		}
 	} else {
 		xmlrpc_server_info_disallow_auth_negotiate(&ctx->xenv,
 							   ctx->server);
 		if (ctx->xenv.fault_occurred) {
-			printf("Fault %d turning off negotiate auth: "
-			       "(%s).\n",
-			       ctx->xenv.fault_code, ctx->xenv.fault_string);
+			fprintf(stderr, "Fault %d turning off negotiate auth: "
+				"(%s).\n",
+				ctx->xenv.fault_code, ctx->xenv.fault_string);
 			xmlrpc_env_clean(&ctx->xenv);
 		}
 	}
@@ -190,8 +190,8 @@ cm_submit_x_init(void *parent, const char *uri, const char *method,
 					    sizeof(ctx->xparams),
 					    &ctx->xtransport);
 	if (ctx->xenv.fault_occurred) {
-		printf("Fault %d: (%s).\n",
-		       ctx->xenv.fault_code, ctx->xenv.fault_string);
+		fprintf(stderr, "Fault %d: (%s).\n",
+			ctx->xenv.fault_code, ctx->xenv.fault_string);
 		xmlrpc_env_clean(&ctx->xenv);
 	}
 	if (ctx->xtransport != NULL) {
@@ -277,9 +277,8 @@ cm_submit_x_run(struct cm_submit_x_context *ctx)
 			    ctx->params,
 			    &ctx->results);
 	if (ctx->xenv.fault_occurred) {
-		printf("Fault %d: (%s).\n",
-		       ctx->xenv.fault_code,
-		       ctx->xenv.fault_string);
+		fprintf(stderr, "Fault %d: (%s).\n",
+			ctx->xenv.fault_code, ctx->xenv.fault_string);
 		xmlrpc_env_clean(&ctx->xenv);
 	}
 }
@@ -553,8 +552,8 @@ main(int argc, char **argv)
 		if ((optind < argc) && (strchr(argv[optind], '=') == NULL)) {
 			fp = fopen(argv[optind], "r");
 			if (fp == NULL) {
-				printf("Error opening \"%s\": %s.\n",
-				       argv[optind], strerror(errno));
+				fprintf(stderr, "Error opening \"%s\": %s.\n",
+					argv[optind], strerror(errno));
 				return CM_STATUS_UNCONFIGURED;
 			}
 			optind++;
@@ -621,7 +620,7 @@ main(int argc, char **argv)
 	ctx = cm_submit_x_init(NULL, uri, method, cainfo, capath,
 			       k5 || (kpname != NULL) || (ktname != NULL));
 	if (ctx == NULL) {
-		printf("Error setting up for XMLRPC.\n");
+		fprintf(stderr, "Error setting up for XMLRPC.\n");
 		return CM_STATUS_UNCONFIGURED;
 	}
 
@@ -660,8 +659,8 @@ main(int argc, char **argv)
 		for (i = 0; i < xmlrpc_array_size(&ctx->xenv, ctx->results); i++) {
 			xmlrpc_array_read_item(&ctx->xenv, ctx->results, i, &arg);
 			if (ctx->xenv.fault_occurred) {
-				printf("Fault %d: (%s).\n",
-				       ctx->xenv.fault_code, ctx->xenv.fault_string);
+				fprintf(stderr, "Fault %d: (%s).\n",
+					ctx->xenv.fault_code, ctx->xenv.fault_string);
 				xmlrpc_env_clean(&ctx->xenv);
 			} else {
 				switch (xmlrpc_value_type(arg)) {
@@ -691,8 +690,8 @@ main(int argc, char **argv)
 									  &key, &val);
 						xmlrpc_read_string(&ctx->xenv, key, &s);
 						if (ctx->xenv.fault_occurred) {
-							printf("Fault %d: (%s).\n",
-							       ctx->xenv.fault_code, ctx->xenv.fault_string);
+							fprintf(stderr, "Fault %d: (%s).\n",
+								ctx->xenv.fault_code, ctx->xenv.fault_string);
 							xmlrpc_env_clean(&ctx->xenv);
 						} else {
 							skey = (char *) s;
@@ -724,8 +723,8 @@ main(int argc, char **argv)
 					break;
 				}
 				if (ctx->xenv.fault_occurred) {
-					printf("Fault %d: (%s).\n",
-					       ctx->xenv.fault_code, ctx->xenv.fault_string);
+					fprintf(stderr, "Fault %d: (%s).\n",
+						ctx->xenv.fault_code, ctx->xenv.fault_string);
 					xmlrpc_env_clean(&ctx->xenv);
 				}
 			}
