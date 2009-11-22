@@ -36,10 +36,12 @@ libcm_a_SOURCES = \
 	store-files.c \
 	store-gen.c \
 	submit.c \
-	submit-e.c \
 	submit.h \
+	submit-e.c \
 	submit-e.h \
 	submit-int.h \
+	submit-x.c \
+	submit-x.h \
 	subproc.c \
 	subproc.h \
 	tdbus.c \
@@ -91,5 +93,6 @@ noinst_PROGRAMS = tdbusm-check serial-check nl-check submit-x
 tdbusm_check_LDADD = libcm.a @CERTMONGER_LIBS@
 serial_check_LDADD = libcm.a @CERTMONGER_LIBS@
 nl_check_LDADD = libcm.a @CERTMONGER_LIBS@
+submit_x_CFLAGS = $(AM_CFLAGS) -DCM_SUBMIT_X_MAIN
 submit_x_SOURCES = submit-x.c submit-e.h submit-x.h
 submit_x_LDADD = @XMLRPC_LIBS@ @TALLOC_LIBS@
