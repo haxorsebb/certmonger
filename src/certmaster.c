@@ -55,7 +55,8 @@ main(int argc, char **argv)
 			break;
 		default:
 			fprintf(stderr,
-				"Usage: %s [-h serverHost] [csrfile]\n",
+				"Usage: %s [-h serverHost] "
+				"[-c cafile] [-C capath] [csrfile]\n",
 				strchr(argv[0], '/') ?
 				strrchr(argv[0], '/') + 1 :
 				argv[0]);
@@ -73,7 +74,8 @@ main(int argc, char **argv)
 	}
 	if ((csr == NULL) || (strlen(csr) == 0)) {
 		fprintf(stderr,
-			"Usage: %s [-h serverHost] [csrfile]\n",
+			"Usage: %s [-h serverHost] "
+			"[-c cafile] [-C capath] [csrfile]\n",
 			strchr(argv[0], '/') ?
 			strrchr(argv[0], '/') + 1 :
 			argv[0]);
@@ -90,7 +92,9 @@ main(int argc, char **argv)
 	}
 
 	/* Initialize for XML-RPC. */
-	snprintf(uri, sizeof(uri), "http://%s/", host);
+	snprintf(uri, sizeof(uri), "http%s://%s/",
+		 ((cainfo != NULL) || (capath != NULL)) ? "s" : "",
+		 host);
 	ctx = cm_submit_x_init(NULL, uri, "wait_for_cert", cainfo, capath, 0);
 	if (ctx == NULL) {
 		fprintf(stderr, "Error setting up for XMLRPC.\n");
