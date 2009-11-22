@@ -91,4 +91,4 @@ noinst_PROGRAMS = tdbusm-check serial-check nl-check submit-x
 tdbusm_check_LDADD = libcm.a @CERTMONGER_LIBS@
 serial_check_LDADD = libcm.a @CERTMONGER_LIBS@
 nl_check_LDADD = libcm.a @CERTMONGER_LIBS@
-submit_x_LDADD = @XMLRPC_LIBS@
+submit_x_LDADD = @XMLRPC_LIBS@ @TALLOC_LIBS@
