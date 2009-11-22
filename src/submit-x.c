@@ -32,8 +32,9 @@
 #include <krb5.h>
 
 #include "submit-e.h"
+#include "submit-x.h"
 
-static int
+int
 cm_submit_x_make_ccache(const char *ktname, const char *principal)
 {
 	krb5_context ctx;
@@ -368,7 +369,7 @@ cm_submit_x_get_s(struct cm_submit_x_context *ctx, int idx, char **s)
 	return 0;
 }
 
-xmlrpc_value *
+static xmlrpc_value *
 cm_submit_x_get_struct(struct cm_submit_x_context *ctx)
 {
 	int i;
