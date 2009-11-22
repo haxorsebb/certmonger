@@ -373,8 +373,7 @@ cm_submit_x_get_struct(struct cm_submit_x_context *ctx)
 {
 	int i;
 	xmlrpc_value *arg;
-	i = 0;
-	for (;;) {
+	for (i = 0;; i++) {
 		xmlrpc_array_read_item(&ctx->xenv, ctx->results, i, &arg);
 		if (arg == NULL) {
 			break;
