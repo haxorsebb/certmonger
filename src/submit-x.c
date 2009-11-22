@@ -115,16 +115,6 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal)
 	return 0;
 }
 
-static char *
-my_stpcpy(char *dest, char *src)
-{
-	size_t len;
-	len = strlen(src);
-	memcpy(dest, src, len);
-	dest[len] = '\0';
-	return dest + len;
-}
-
 struct cm_submit_x_context {
 	xmlrpc_env xenv;
 	xmlrpc_server_info *server;
@@ -477,6 +467,16 @@ cm_submit_x_get_named_s(struct cm_submit_x_context *ctx,
 	return 0;
 }
 
+#ifdef CM_SUBMIT_X_MAIN
+static char *
+my_stpcpy(char *dest, char *src)
+{
+	size_t len;
+	len = strlen(src);
+	memcpy(dest, src, len);
+	dest[len] = '\0';
+	return dest + len;
+}
 int
 main(int argc, char **argv)
 {
@@ -732,13 +732,15 @@ main(int argc, char **argv)
 	}
 
 	/* Try formatted output, specific. */
-	if (strcmp(method, "wait_for_cert") == 0) {
+	if ((cm_submit_x_has_results(ctx) == 0) &&
+	    (strcmp(method, "wait_for_cert") == 0)) {
 		if (cm_submit_x_get_bss(ctx, &i, &s1, &s2) == 0) {
 			printf("BSS: OK\nb: %s\ns1 = \"%s\"\ns2 = \"%s\"\n",
 			       i ? "true" : "false", s1, s2);
 		}
 	}
-	if (strcmp(method, "cert_request") == 0) {
+	if ((cm_submit_x_has_results(ctx) == 0) &&
+	    (strcmp(method, "cert_request") == 0)) {
 		if (cm_submit_x_get_named_n(ctx, "status", &i) == 0) {
 			printf("Status: %d\n", i);
 		}
@@ -749,3 +751,4 @@ main(int argc, char **argv)
 
 	return ret;
 }
+#endif
