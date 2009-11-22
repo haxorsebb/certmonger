@@ -235,9 +235,26 @@ cm_submit_e_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 		return -1;
 	}
+	i = open("/dev/null", O_RDONLY);
+	if (i != -1) {
+		dup2(i, STDIN_FILENO);
+		close(i);
+	} else {
+		close(STDIN_FILENO);
+	}
+	i = open("/dev/null", O_WRONLY);
+	if (i != -1) {
+		dup2(i, STDERR_FILENO);
+		close(i);
+	} else {
+		close(STDERR_FILENO);
+	}
 	cm_log(1, "Running helper \"%s\".\n", argv[0]);
 	for (i = sysconf(_SC_OPEN_MAX) - 1; i >= 0; i--) {
-		if ((i != STDOUT_FILENO) && (i != args->error_fd)) {
+		if ((i != STDIN_FILENO) &&
+		    (i != STDOUT_FILENO) &&
+		    (i != STDERR_FILENO) &&
+		    (i != args->error_fd)) {
 			close(i);
 		}
 	}
