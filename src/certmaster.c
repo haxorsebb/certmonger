@@ -71,6 +71,14 @@ main(int argc, char **argv)
 		csr = cm_submit_x_from_file((optind < argc) ?
 					    argv[optind++] : NULL);
 	}
+	if ((csr == NULL) || (strlen(csr) == 0)) {
+		fprintf(stderr,
+			"Usage: %s [-h serverHost] [csrfile]\n",
+			strchr(argv[0], '/') ?
+			strrchr(argv[0], '/') + 1 :
+			argv[0]);
+		return CM_STATUS_UNCONFIGURED;
+	}
 
 	/* Clean up the CSR -- make sure it's not a "NEW" request.  certmaster
 	 * rewrites the incoming request to its cache previously-received
