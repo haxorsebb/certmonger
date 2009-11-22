@@ -75,6 +75,7 @@ libcm_n_a_SOURCES += \
 libcm_n_a_CFLAGS = @NSS_CFLAGS@
 libcm_a_LIBADD = $(libcm_o_a_OBJECTS) $(libcm_n_a_OBJECTS)
 bin_PROGRAMS = getcert
+pkglibexec_PROGRAMS =
 getcert_SOURCES = getcert.c
 getcert_LDADD = libcm.a @GETCERT_LIBS@ @KRB5_LIBS@
 if WITH_IPA
@@ -96,3 +97,6 @@ nl_check_LDADD = libcm.a @CERTMONGER_LIBS@
 submit_x_CFLAGS = $(AM_CFLAGS) -DCM_SUBMIT_X_MAIN
 submit_x_SOURCES = submit-x.c submit-e.h submit-x.h
 submit_x_LDADD = @XMLRPC_LIBS@ @TALLOC_LIBS@
+pkglibexec_PROGRAMS += certmaster-submit
+certmaster_submit_SOURCES = certmaster.c submit-x.c submit-x.h submit-e.h
+certmaster_submit_LDADD = @XMLRPC_LIBS@ @TALLOC_LIBS@

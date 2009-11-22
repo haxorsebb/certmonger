@@ -1,0 +1,114 @@
+/*
+ * Copyright (C) 2009 Red Hat, Inc.
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "config.h"
+
+#include <sys/types.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+
+#include <talloc.h>
+
+#include <xmlrpc-c/client.h>
+#include <xmlrpc-c/transport.h>
+
+#include <krb5.h>
+
+#include "submit-e.h"
+#include "submit-x.h"
+
+int
+main(int argc, char **argv)
+{
+	int i, c, ret;
+	const char *host = "localhost:51235", *cainfo = NULL, *capath = NULL;
+	char *csr, *p, uri[LINE_MAX], *s1, *s2;
+	struct cm_submit_x_context *ctx;
+
+	while ((c = getopt(argc, argv, "h:C:c:")) != -1) {
+		switch (c) {
+		case 'h':
+			host = optarg;
+			break;
+		case 'C':
+			capath = optarg;
+			break;
+		case 'c':
+			cainfo = optarg;
+			break;
+		default:
+			fprintf(stderr,
+				"Usage: %s [-h serverHost] [csrfile]\n",
+				strchr(argv[0], '/') ?
+				strrchr(argv[0], '/') + 1 :
+				argv[0]);
+			return CM_STATUS_UNCONFIGURED;
+			break;
+		}
+	}
+	ret = CM_STATUS_UNREACHABLE;
+
+	/* Read the CSR from the environment, or from the command-line. */
+	csr = getenv(CM_SUBMIT_CSR_ENV);
+	if (csr == NULL) {
+		csr = cm_submit_x_from_file((optind < argc) ?
+					    argv[optind++] : NULL);
+	}
+
+	/* Clean up the CSR -- make sure it's not a "NEW" request.  certmaster
+	 * rewrites the incoming request to its cache previously-received
+	 * requests, and in doing so uses a different PEM header than the one
+	 * we default to using.  So turn any "NEW CERTIFICATE REQUEST" notes
+	 * into "CERTIFICATE REQUEST" before sending them. */
+	while ((p = strstr(csr, "NEW CERTIFICATE REQUEST")) != NULL) {
+		memmove(p, p + 4, strlen(p + 4) + 1);
+	}
+
+	/* Initialize for XML-RPC. */
+	snprintf(uri, sizeof(uri), "http://%s/", host);
+	ctx = cm_submit_x_init(NULL, uri, "wait_for_cert", cainfo, capath, 0);
+	if (ctx == NULL) {
+		fprintf(stderr, "Error setting up for XMLRPC.\n");
+		return CM_STATUS_UNCONFIGURED;
+	}
+
+	/* Add the CSR as the sole argument. */
+	cm_submit_x_add_arg_s(ctx, csr);
+
+	/* Submit the request. */
+	fprintf(stderr, "Submitting request to \"%s\".\n", uri);
+	cm_submit_x_run(ctx);
+
+	/* Check the results. */
+	if (cm_submit_x_has_results(ctx) == 0) {
+		if (cm_submit_x_get_bss(ctx, &i, &s1, &s2) == 0) {
+			if (i) {
+				printf("%s", s1);
+				return CM_STATUS_ISSUED;
+			} else {
+				return CM_STATUS_WAIT;
+			}
+		} else {
+			return CM_STATUS_UNREACHABLE;
+		}
+	} else {
+		return CM_STATUS_UNREACHABLE;
+	}
+}

@@ -478,7 +478,7 @@ my_stpcpy(char *dest, char *src)
 }
 
 char *
-cm_submit_x_from_file(void *parent, const char *filename)
+cm_submit_x_from_file(const char *filename)
 {
 	FILE *fp;
 	char *csr, *p, buf[BUFSIZ];
@@ -596,8 +596,7 @@ main(int argc, char **argv)
 	/* Read the CSR from the environment, or from the command-line. */
 	csr = getenv(CM_SUBMIT_CSR_ENV);
 	if (csr == NULL) {
-		csr = cm_submit_x_from_file(NULL,
-					    (optind < argc) ?
+		csr = cm_submit_x_from_file((optind < argc) ?
 					    argv[optind++] : NULL);
 	}
 
