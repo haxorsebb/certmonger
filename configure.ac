@@ -1,4 +1,4 @@
-AC_INIT(certmonger,0.10)
+AC_INIT(certmonger,0.11)
 AM_INIT_AUTOMAKE([foreign])
 AM_MAINTAINER_MODE
 AC_PROG_CC
@@ -151,8 +151,15 @@ AC_DEFINE(WITH_IPA,1,[Define to ensure that there's always an IPA CA defined.])
 CM_IPA_CA_NAME=IPA
 AC_SUBST(CM_IPA_CA_NAME)
 AC_DEFINE_UNQUOTED(CM_IPA_CA_NAME,"$CM_IPA_CA_NAME",[Define to the name that the default IPA CA will be known by.])
-AC_DEFINE_UNQUOTED(CM_IPA_HELPER_PATH,"$mylibexecdir/ipa-submit-helper",[Define to the path of the IPA submission helper.])
+AC_DEFINE_UNQUOTED(CM_IPA_HELPER_PATH,"$mylibexecdir/ipa-submit",[Define to the path of the IPA submission helper.])
 AM_CONDITIONAL(WITH_IPA,true)
+
+AC_DEFINE(WITH_CERTMASTER,1,[Define to ensure that there's always a CERTMASTER CA defined.])
+CM_CERTMASTER_CA_NAME=certmaster
+AC_SUBST(CM_CERTMASTER_CA_NAME)
+AC_DEFINE_UNQUOTED(CM_CERTMASTER_CA_NAME,"$CM_CERTMASTER_CA_NAME",[Define to the name that the default certmaster CA will be known by.])
+AC_DEFINE_UNQUOTED(CM_CERTMASTER_HELPER_PATH,"$mylibexecdir/certmaster-submit",[Define to the path of the CERTMASTER submission helper.])
+AM_CONDITIONAL(WITH_CERTMASTER,true)
 
 AC_CONFIG_COMMANDS(src_introspect_sh,[chmod +x src/introspect.sh])
 AC_OUTPUT(Makefile src/Makefile dbus/Makefile tests/Makefile tests/tools/Makefile dbus/certmonger.conf src/certmonger.init src/introspect.sh src/certmonger.8 src/getcert.1 src/getcert-request.1 src/getcert-list.1 src/getcert-list-cas.1 src/getcert-start-tracking.1 src/getcert-stop-tracking.1 src/selfsign-getcert.1 src/ipa-getcert.1 src/getcert-resubmit.1)

@@ -97,7 +97,12 @@ nl_check_LDADD = libcm.a @CERTMONGER_LIBS@
 submit_x_CFLAGS = $(AM_CFLAGS) -DCM_SUBMIT_X_MAIN
 submit_x_SOURCES = submit-x.c submit-e.h submit-x.h
 submit_x_LDADD = @XMLRPC_LIBS@ @TALLOC_LIBS@
-pkglibexec_PROGRAMS += certmaster-submit ipa-submit
+if WITH_CERTMASTER
+pkglibexec_PROGRAMS += certmaster-submit
+endif
+if WITH_IPA
+pkglibexec_PROGRAMS += ipa-submit
+endif
 ipa_submit_SOURCES = ipa.c submit-x.c submit-x.h submit-e.h
 ipa_submit_LDADD = @XMLRPC_LIBS@ @KRB5_LIBS@ @TALLOC_LIBS@
 certmaster_submit_SOURCES = certmaster.c submit-x.c submit-x.h submit-e.h
