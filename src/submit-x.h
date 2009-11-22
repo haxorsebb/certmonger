@@ -19,6 +19,7 @@
 #define cmsubmitx_h
 
 int cm_submit_x_make_ccache(const char *ktname, const char *principal);
+char *cm_submit_x_from_file(void *parent, const char *filename);
 
 struct cm_submit_x_context;
 struct cm_submit_x_context *cm_submit_x_init(void *parent, const char *uri,

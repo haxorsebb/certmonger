@@ -467,7 +467,6 @@ cm_submit_x_get_named_s(struct cm_submit_x_context *ctx,
 	return 0;
 }
 
-#ifdef CM_SUBMIT_X_MAIN
 static char *
 my_stpcpy(char *dest, char *src)
 {
@@ -477,6 +476,55 @@ my_stpcpy(char *dest, char *src)
 	dest[len] = '\0';
 	return dest + len;
 }
+
+char *
+cm_submit_x_from_file(void *parent, const char *filename)
+{
+	FILE *fp;
+	char *csr, *p, buf[BUFSIZ];
+	if ((filename == NULL) || (strcmp(filename, "-") == 0)) {
+		fp = stdin;
+	} else {
+		fp = fopen(filename, "r");
+		if (fp == NULL) {
+			fprintf(stderr, "Error opening \"%s\": %s.\n",
+				filename, strerror(errno));
+			return NULL;
+		}
+	}
+	csr = NULL;
+	while (fgets(buf, sizeof(buf), fp) != NULL) {
+		if (csr == NULL) {
+			csr = strdup(buf);
+			if (csr == NULL) {
+				if (fp != stdin) {
+					fclose(fp);
+				}
+				return NULL;
+			}
+		} else {
+			p = malloc(strlen(csr) + sizeof(buf));
+			if (p == NULL) {
+				if (fp != stdin) {
+					fclose(fp);
+				}
+				return NULL;
+			}
+			memcpy(my_stpcpy(p, csr), buf, sizeof(buf));
+			free(csr);
+			csr = p;
+		}
+	}
+	if (fp != stdin) {
+		fclose(fp);
+	}
+	if (csr == NULL) {
+		csr = strdup("");
+	}
+	return csr;
+}
+
+#ifdef CM_SUBMIT_X_MAIN
 int
 main(int argc, char **argv)
 {
@@ -485,8 +533,7 @@ main(int argc, char **argv)
 	int32_t i32;
 	const char *uri = NULL, *method = NULL, *ktname = NULL, *kpname = NULL;
 	const char *s, *cainfo = NULL, *capath = NULL;
-	char *csr, *p, buf[BUFSIZ], *skey, *sval, *s1, *s2;
-	FILE *fp;
+	char *csr, *p, *skey, *sval, *s1, *s2;
 	struct cm_submit_x_context *ctx;
 	xmlrpc_value *arg, *key, *val;
 	xmlrpc_bool boo;
@@ -549,41 +596,12 @@ main(int argc, char **argv)
 	/* Read the CSR from the environment, or from the command-line. */
 	csr = getenv(CM_SUBMIT_CSR_ENV);
 	if (csr == NULL) {
-		if ((optind < argc) && (strchr(argv[optind], '=') == NULL)) {
-			fp = fopen(argv[optind], "r");
-			if (fp == NULL) {
-				fprintf(stderr, "Error opening \"%s\": %s.\n",
-					argv[optind], strerror(errno));
-				return CM_STATUS_UNCONFIGURED;
-			}
-			optind++;
-		} else {
-			fp = stdin;
-		}
-		while (fgets(buf, sizeof(buf), fp) != NULL) {
-			if (csr == NULL) {
-				csr = strdup(buf);
-				if (csr == NULL) {
-					return CM_STATUS_UNREACHABLE;
-				}
-			} else {
-				p = malloc(strlen(csr) + sizeof(buf));
-				if (p == NULL) {
-					return CM_STATUS_UNREACHABLE;
-				}
-				memcpy(my_stpcpy(p, csr), buf, sizeof(buf));
-				free(csr);
-				csr = p;
-			}
-		}
-		if (fp != stdin) {
-			fclose(fp);
-		}
-		if (csr == NULL) {
-			csr = strdup("");
-		}
+		csr = cm_submit_x_from_file(NULL,
+					    (optind < argc) ?
+					    argv[optind++] : NULL);
 	}
 
+	/* Clean up the CSR. */
 	if (strcmp(method, "wait_for_cert") == 0) {
 		/* certmaster rewrites the incoming request to its cache
 		 * previously-received requests, and in doing so uses a
