@@ -81,6 +81,11 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Mon Nov 23 2009 Nalin Dahyabhai <nalin@redhat.com> 0.11-1
+- update to 0.11
+  - add XML-RPC submission for certmaster and IPA
+  - prune entries with duplicate names from the data store
+
 * Fri Nov 13 2009 Nalin Dahyabhai <nalin@redhat.com> 0.10-1
 - update to 0.10
   - add some compiler warnings and then fix them

@@ -1522,6 +1522,23 @@ cm_store_get_all_cas(void *parent)
 			j++;
 		}
 #endif
+#ifdef WITH_CERTMASTER
+		/* Make sure we get at least one certmaster entry. */
+		for (k = 0; k < j; k++) {
+			if ((ret[k]->cm_ca_type == cm_ca_external) &&
+			    (strcmp(ret[k]->cm_id, CM_CERTMASTER_CA_NAME) == 0)) {
+				break;
+			}
+		}
+		if (k == j) {
+			ret[j] = cm_store_ca_new(ret);
+			ret[j]->cm_id = talloc_strdup(ret[j], CM_CERTMASTER_CA_NAME);
+			ret[j]->cm_ca_type = cm_ca_external;
+			ret[j]->cm_ca_external_helper = talloc_strdup(ret[j],
+								      CM_CERTMASTER_HELPER_PATH);
+			j++;
+		}
+#endif
 		ret[j] = NULL;
 	}
 	if (globs.gl_pathc > 0) {

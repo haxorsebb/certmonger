@@ -82,7 +82,12 @@ if WITH_IPA
 bin_PROGRAMS += ipa-getcert
 ipa_getcert_SOURCES = ipa-getcert.c
 ipa_getcert_LDADD = $(getcert_LDADD)
-pkglibexec_SCRIPTS = ipa-submit-helper
+#pkglibexec_SCRIPTS = ipa-submit-helper
+endif
+if WITH_IPA
+bin_PROGRAMS += certmaster-getcert
+certmaster_getcert_SOURCES = certmaster-getcert.c
+certmaster_getcert_LDADD = $(getcert_LDADD)
 endif
 bin_PROGRAMS += selfsign-getcert
 selfsign_getcert_SOURCES = selfsign-getcert.c
