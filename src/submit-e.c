@@ -78,6 +78,7 @@ static int
 cm_submit_e_ready(struct cm_store_entry *entry, struct cm_submit_state *state)
 {
 	int status, ready;
+	const char *msg;
 	ready = cm_subproc_ready(entry, state->subproc);
 	switch (ready) {
 	case 0:
@@ -85,6 +86,15 @@ cm_submit_e_ready(struct cm_store_entry *entry, struct cm_submit_state *state)
 		cm_log(1, "Certificate submission attempt complete.\n");
 		if (WIFEXITED(status)) {
 			cm_log(1, "Child status = %d.\n", WEXITSTATUS(status));
+			msg = cm_subproc_get_msg(entry, state->subproc, NULL);
+			if ((msg != NULL) && (strlen(msg) > 0)) {
+				cm_log(1, "Child output:\n%s\n", msg);
+				/* If it's a single line, assume it's
+				 * log-worthy. */
+				if (strcspn(msg, "\n") >= (strlen(msg) - 2)) {
+					cm_log(0, "%s", msg);
+				}
+			}
 			return 0;
 		} else {
 			cm_log(1, "Child exited unexpectedly.\n");
