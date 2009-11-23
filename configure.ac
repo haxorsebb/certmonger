@@ -3,7 +3,13 @@ AM_INIT_AUTOMAKE([foreign])
 AM_MAINTAINER_MODE
 AC_PROG_CC
 AC_PROG_RANLIB
-AC_CHECK_HEADERS(linux/types.h linux/netlink.h linux/rtnetlink.h,,,[
+AC_CHECK_HEADERS(sys/types.h sys/socket.h linux/types.h linux/netlink.h linux/rtnetlink.h,,,[
+	#ifdef HAVE_SYS_TYPES_H
+	#include <sys/types.h>
+	#endif
+	#ifdef HAVE_SYS_SOCKET_H
+	#include <sys/socket.h>
+	#endif
 	#ifdef HAVE_LINUX_TYPES_H
 	#include <linux/types.h>
 	#endif
