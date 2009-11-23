@@ -440,6 +440,16 @@ request(const char *argv0, int argc, char **argv)
 					   "host/%s@%s", subject + 3, krealm));
 		add_string(globals.tctx, &dns, subject + 3);
 	}
+#ifdef WITH_IPA
+	if ((ca != NULL) && (strcmp(ca, "IPA") == 0)) {
+		if (principal == NULL) {
+			printf(_("IPA requires that a principal name be "
+			         "specified using the -K option.\n"));
+			help(argv0, "request");
+			return 1;
+		}
+	}
+#endif
 	if ((dbdir != NULL) && (nickname != NULL)) {
 		param[i].key = "KEY_STORAGE";
 		param[i].value_type = cm_tdbusm_dict_s;
