@@ -98,7 +98,8 @@ cm_netlink_socket(void)
 	return -1;
 }
 int
-cm_netlink_pkt_is_route_change(char *buf, int len)
+cm_netlink_pkt_is_route_change(char *buf, int len,
+			       struct sockaddr *src_addr, socklen_t addrlen)
 {
 	return -1;
 }
