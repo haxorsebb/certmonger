@@ -33,6 +33,7 @@
 
 #include "submit-e.h"
 #include "submit-x.h"
+#include "util.h"
 
 int
 main(int argc, char **argv)
@@ -40,7 +41,7 @@ main(int argc, char **argv)
 	int i, c, ret;
 	const char *host = NULL, *cainfo = NULL, *capath = NULL;
 	const char *ktname = NULL, *kpname = NULL;
-	char *csr, *p, uri[LINE_MAX], *s, *reqprinc = NULL;
+	char *csr, *p, uri[LINE_MAX], *s, *reqprinc = NULL, *ipaconfig;
 	struct cm_submit_x_context *ctx;
 
 	reqprinc = getenv(CM_SUBMIT_REQ_PRINCIPAL_ENV);
@@ -100,6 +101,14 @@ main(int argc, char **argv)
 		return CM_STATUS_UNCONFIGURED;
 	}
 	ret = CM_STATUS_UNREACHABLE;
+
+	if (cainfo == NULL) {
+		cainfo = "/etc/ipa/ca.crt";
+	}
+	if (host == NULL) {
+		ipaconfig = read_config_file("/etc/ipa/ipa.conf");
+		host = get_ipa_server(ipaconfig);
+	}
 
 	/* Read the CSR from the environment, or from the command-line. */
 	csr = getenv(CM_SUBMIT_CSR_ENV);

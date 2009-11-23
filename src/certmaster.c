@@ -18,6 +18,7 @@
 #include "config.h"
 
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -33,14 +34,16 @@
 
 #include "submit-e.h"
 #include "submit-x.h"
+#include "util.h"
 
 int
 main(int argc, char **argv)
 {
 	int i, c, ret;
-	const char *host = "localhost:51235", *cainfo = NULL, *capath = NULL;
-	char *csr, *p, uri[LINE_MAX], *s1, *s2;
+	const char *host = NULL, *port = NULL, *cainfo = NULL, *capath = NULL;
+	char *csr, *p, uri[LINE_MAX], *s1, *s2, *config;
 	struct cm_submit_x_context *ctx;
+	struct stat st;
 
 	while ((c = getopt(argc, argv, "h:C:c:")) != -1) {
 		switch (c) {
@@ -65,6 +68,21 @@ main(int argc, char **argv)
 		}
 	}
 	ret = CM_STATUS_UNREACHABLE;
+
+	if (host == NULL) {
+		if (stat("/var/run/certmaster.pid", &st) == 0) {
+			config = read_config_file("/etc/certmaster/"
+						  "certmaster.conf");
+			host = "localhost";
+			port = get_config_entry(config, "main", "listen_port");
+		} else {
+			config = read_config_file("/etc/certmaster/"
+						  "minion.conf");
+			host = get_config_entry(config, "main", "certmaster");
+			port = get_config_entry(config,
+						"main", "certmaster_port");
+		}
+	}
 
 	/* Read the CSR from the environment, or from the command-line. */
 	csr = getenv(CM_SUBMIT_CSR_ENV);
@@ -92,9 +110,11 @@ main(int argc, char **argv)
 	}
 
 	/* Initialize for XML-RPC. */
-	snprintf(uri, sizeof(uri), "http%s://%s/",
+	snprintf(uri, sizeof(uri), "http%s://%s%s%s/",
 		 ((cainfo != NULL) || (capath != NULL)) ? "s" : "",
-		 host);
+		 host,
+		 ((port != NULL) && (strlen(port) > 0)) ? ":" : "",
+		 port ? port : "");
 	ctx = cm_submit_x_init(NULL, uri, "wait_for_cert", cainfo, capath, 0);
 	if (ctx == NULL) {
 		fprintf(stderr, "Error setting up for XMLRPC.\n");
