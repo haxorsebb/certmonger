@@ -264,6 +264,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	struct cm_tdbusm_dict **d;
 	const struct cm_tdbusm_dict *param;
 	struct cm_store_entry *e, *new_entry, *defaults;
+	struct cm_store_ca *ca;
 	int i, n_entries;
 	enum cm_key_storage_type key_storage;
 	char *key_location, *key_nickname, *key_token;
@@ -568,7 +569,19 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	param = cm_tdbusm_find_dict_entry(d, "CA", cm_tdbusm_dict_s);
 	if (param != NULL) {
 		new_entry->cm_ca_default = FALSE;
-		new_entry->cm_ca_name = maybe_strdup(new_entry, param->value.s);
+		ca = get_ca_for_path(ctx, param->value.s);
+		if (ca != NULL) {
+			new_entry->cm_ca_name = talloc_strdup(new_entry,
+							      ca->cm_id);
+		} else {
+			cm_log(1, "No CA with path \"%s\" known.\n",
+			       param->value.s);
+			talloc_free(parent);
+			return send_internal_base_bad_arg_error(conn, msg,
+								_("No such CA."),
+								param->value.s,
+								"CA");
+		}
 	} else {
 		new_entry->cm_ca_default = TRUE;
 	}
@@ -1470,7 +1483,8 @@ request_get_ca(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 	rep = dbus_message_new_method_return(msg);
 	if (rep != NULL) {
 		parent = talloc_new(NULL);
-		if (entry->cm_ca_name != NULL) {
+		if ((entry->cm_ca_name != NULL) &&
+		    (strlen(entry->cm_ca_name) > 0)) {
 			path = talloc_asprintf(parent, "%s/%s",
 					       CM_DBUS_CA_PATH,
 					       entry->cm_ca_name);
