@@ -33,6 +33,7 @@
 
 struct tdbus_connection {
 	DBusConnection *conn;
+	enum cm_tdbus_type conn_type;
 	struct tdbus_watch {
 		struct tdbus_watch *next;
 		struct tdbus_connection *conn;
@@ -55,6 +56,8 @@ struct tdbus_connection {
 	} *timers;
 	void *data;
 };
+
+static int cm_tdbus_setup_connection(struct tdbus_connection *tdb);
 
 static void
 cm_tdbus_dispatch_status(DBusConnection *conn, DBusDispatchStatus new_status,
@@ -417,11 +420,57 @@ cm_tdbus_timeout_cleanup(void *data)
 	}
 }
 
+static void
+cm_tdbus_reconnect(struct tevent_context *ec, struct tevent_timer *timer,
+		   struct timeval current_time, void *pvt)
+{
+	const char *bus_desc;
+	struct tdbus_connection *tdb;
+	struct timeval later;
+	tdb = pvt;
+	talloc_free(timer);
+	if (!dbus_connection_get_is_connected(tdb->conn)) {
+		/* Close the current connection and open a new one. */
+		dbus_connection_unref(tdb->conn);
+		switch (tdb->conn_type) {
+		case cm_tdbus_system:
+			cm_log(1, "Attempting to reconnect to system bus.\n");
+			tdb->conn = dbus_bus_get(DBUS_BUS_SYSTEM, NULL);
+			bus_desc = "system";
+			break;
+		case cm_tdbus_session:
+			cm_log(1, "Attempting to reconnect to session bus.\n");
+			tdb->conn = dbus_bus_get(DBUS_BUS_SESSION, NULL);
+			bus_desc = "session";
+			break;
+		}
+		if (dbus_connection_get_is_connected(tdb->conn)) {
+			/* We're reconnected; reset our handlers. */
+			cm_log(1, "Reconnected to %s bus.\n", bus_desc);
+			cm_tdbus_setup_connection(tdb);
+		} else {
+			/* Try reconnecting again later. */
+			later = tevent_timeval_current_ofs(CM_DBUS_RECONNECT_TIMEOUT, 0),
+			tevent_add_timer(ec, tdb, later,
+					 cm_tdbus_reconnect,
+					 tdb);
+		}
+	}
+}
+
 static DBusHandlerResult
 cm_tdbus_filter(DBusConnection *conn, DBusMessage *dmessage, void *data)
 {
 	struct tdbus_connection *tdb = data;
 	const char *destination, *unique_name, *path, *interface, *member;
+	/* If we're disconnected, queue a reconnect. */
+	if (!dbus_connection_get_is_connected(conn)) {
+		tevent_add_timer(talloc_parent(tdb), tdb,
+				 tevent_timeval_current(),
+				 cm_tdbus_reconnect,
+				 tdb);
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
 	/* Catch weird-looking messages. */
 	destination = dbus_message_get_destination(dmessage);
 	path = dbus_message_get_path(dmessage);
@@ -451,12 +500,77 @@ cm_tdbus_filter(DBusConnection *conn, DBusMessage *dmessage, void *data)
 	return cm_tdbush_handle(conn, dmessage, tdb->data);
 }
 
+static int
+cm_tdbus_setup_connection(struct tdbus_connection *tdb)
+{
+	DBusError err;
+	const char *bus_desc;
+	/* Don't exit if we get disconnected. */
+	dbus_connection_set_exit_on_disconnect(tdb->conn, FALSE);
+	/* Set the callback to be called when I/O processing has yielded a
+	 * request that we need to act on. */
+	dbus_connection_set_dispatch_status_function(tdb->conn,
+						     cm_tdbus_dispatch_status,
+						     tdb, NULL);
+	/* Hook up the I/O callbacks so that D-Bus can actually do its thing. */
+	if (!dbus_connection_set_watch_functions(tdb->conn,
+						 &cm_tdbus_watch_add,
+						 &cm_tdbus_watch_remove,
+						 &cm_tdbus_watch_toggle,
+						 tdb,
+						 &cm_tdbus_watch_cleanup)) {
+		cm_log(1, "Unable to add timer callbacks.\n");
+		return -1;
+	}
+	/* Hook up the (unused?) timer callbacks to be polite. */
+	if (!dbus_connection_set_timeout_functions(tdb->conn,
+						   cm_tdbus_timeout_add,
+						   cm_tdbus_timeout_remove,
+						   cm_tdbus_timeout_toggle,
+						   tdb,
+						   cm_tdbus_timeout_cleanup)) {
+		cm_log(1, "Unable to add timer callbacks.\n");
+		return -1;
+	}
+	/* Set the filter on messages. */
+	if (!dbus_connection_add_filter(tdb->conn, cm_tdbus_filter,
+					tdb, NULL)) {
+		cm_log(1, "Unable to add filter.\n");
+		return -1;
+	}
+	/* Bind to the well-known name we intend to use. */
+	memset(&err, 0, sizeof(err));
+	if (!dbus_bus_request_name(tdb->conn, CM_DBUS_NAME, 0, &err) ||
+	    dbus_error_is_set(&err)) {
+		cm_log(1, "Unable to set well-known bus name \"%s\": %s.\n",
+		       CM_DBUS_NAME, err.message ? err.message : err.name);
+		return -1;
+	}
+	/* Handle any messages that are already pending. */
+	cm_tdbus_dispatch_status(tdb->conn,
+				 dbus_connection_get_dispatch_status(tdb->conn),
+				 tdb);
+	bus_desc = NULL;
+	switch (tdb->conn_type) {
+	case cm_tdbus_system:
+		bus_desc = "system";
+		break;
+	case cm_tdbus_session:
+		bus_desc = "session";
+		break;
+	}
+	cm_log(3, "Connected to %s message bus with name \"%s\", "
+	       "unique name \"%s\".\n",
+	       bus_desc, dbus_bus_get_unique_name(tdb->conn) ?: "(unknown)",
+	       CM_DBUS_NAME);
+	return 0;
+}
+
 int
 cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type,
 	       void *data)
 {
 	DBusConnection *conn;
-	DBusError err;
 	const char *bus_desc;
 	struct tdbus_connection *tdb;
 	/* Build our own context. */
@@ -482,52 +596,7 @@ cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type,
 		return -1;
 	}
 	tdb->conn = conn;
+	tdb->conn_type = bus_type;
 	tdb->data = data;
-	/* Set the callback to be called when I/O processing has yielded a
-	 * request that we need to act on. */
-	dbus_connection_set_dispatch_status_function(conn,
-						     cm_tdbus_dispatch_status,
-						     tdb, NULL);
-	/* Hook up the I/O callbacks so that D-Bus can actually do its thing. */
-	if (!dbus_connection_set_watch_functions(conn,
-						 &cm_tdbus_watch_add,
-						 &cm_tdbus_watch_remove,
-						 &cm_tdbus_watch_toggle,
-						 tdb,
-						 &cm_tdbus_watch_cleanup)) {
-		cm_log(1, "Unable to add timer callbacks.\n");
-		return -1;
-	}
-	/* Hook up the (unused?) timer callbacks to be polite. */
-	if (!dbus_connection_set_timeout_functions(conn,
-						   cm_tdbus_timeout_add,
-						   cm_tdbus_timeout_remove,
-						   cm_tdbus_timeout_toggle,
-						   tdb,
-						   cm_tdbus_timeout_cleanup)) {
-		cm_log(1, "Unable to add timer callbacks.\n");
-		return -1;
-	}
-	/* Set the filter on messages. */
-	if (!dbus_connection_add_filter(conn, cm_tdbus_filter, tdb, NULL)) {
-		cm_log(1, "Unable to add filter.\n");
-		return -1;
-	}
-	/* Bind to the well-known name we intend to use. */
-	memset(&err, 0, sizeof(err));
-	if (!dbus_bus_request_name(conn, CM_DBUS_NAME, 0, &err) ||
-	    dbus_error_is_set(&err)) {
-		cm_log(1, "Unable to set well-known bus name \"%s\": %s.\n",
-		       CM_DBUS_NAME, err.message ? err.message : err.name);
-		return -1;
-	}
-	/* Handle any messages that are already pending. */
-	cm_tdbus_dispatch_status(conn,
-				 dbus_connection_get_dispatch_status(conn),
-				 tdb);
-	cm_log(3, "Connected to %s message bus with name \"%s\", "
-	       "unique name \"%s\".\n",
-	       bus_desc, dbus_bus_get_unique_name(conn) ?: "(unknown)",
-	       CM_DBUS_NAME);
-	return 0;
+	return cm_tdbus_setup_connection(tdb);
 }

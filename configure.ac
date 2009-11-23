@@ -54,6 +54,8 @@ AC_SUBST(CM_DBUS_NAME)
 CM_DBUS_BASE_PATH=/org/fedorahosted/certmonger
 AC_DEFINE_UNQUOTED(CM_DBUS_BASE_PATH,"$CM_DBUS_BASE_PATH",
 		   [Define to the path of the certmonger main node.])
+AC_DEFINE_UNQUOTED(CM_DBUS_RECONNECT_TIMEOUT,30,
+		   [Define to the amount of time to wait between attempts to reconnect to the message bus if we get disconnected.])
 
 PKG_CHECK_MODULES(TALLOC,talloc)
 PKG_CHECK_MODULES(TEVENT,tevent)
