@@ -135,6 +135,7 @@ main(int argc, char **argv)
 				printf("%s", s1);
 				return CM_STATUS_ISSUED;
 			} else {
+				printf("SUBMITTED COOKIE\n");
 				return CM_STATUS_WAIT;
 			}
 		} else {
