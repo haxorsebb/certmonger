@@ -72,7 +72,7 @@ main(int argc, char **argv)
 			break;
 		default:
 			fprintf(stderr,
-				"Usage: %s -h serverHost "
+				"Usage: %s [-h serverHost] "
 				"[-c cafile] "
 				"[-C capath] "
 				"[-t keytab] "
@@ -86,9 +86,16 @@ main(int argc, char **argv)
 			break;
 		}
 	}
+	if (cainfo == NULL) {
+		cainfo = "/etc/ipa/ca.crt";
+	}
+	if (host == NULL) {
+		ipaconfig = read_config_file("/etc/ipa/ipa.conf");
+		host = get_ipa_server(ipaconfig);
+	}
 	if ((reqprinc == NULL) || (host == NULL)) {
 		fprintf(stderr,
-			"Usage: %s -h serverHost "
+			"Usage: %s [-h serverHost] "
 			"[-c cafile] "
 			"[-C capath] "
 			"[-t keytab] "
@@ -102,14 +109,6 @@ main(int argc, char **argv)
 	}
 	ret = CM_STATUS_UNREACHABLE;
 
-	if (cainfo == NULL) {
-		cainfo = "/etc/ipa/ca.crt";
-	}
-	if (host == NULL) {
-		ipaconfig = read_config_file("/etc/ipa/ipa.conf");
-		host = get_ipa_server(ipaconfig);
-	}
-
 	/* Read the CSR from the environment, or from the command-line. */
 	csr = getenv(CM_SUBMIT_CSR_ENV);
 	if (csr == NULL) {
@@ -118,7 +117,7 @@ main(int argc, char **argv)
 	}
 	if ((csr == NULL) || (strlen(csr) == 0)) {
 		fprintf(stderr,
-			"Usage: %s -h serverHost "
+			"Usage: %s [-h serverHost] "
 			"[-c cafile] "
 			"[-C capath] "
 			"[-t keytab] "
