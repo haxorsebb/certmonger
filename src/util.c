@@ -163,7 +163,7 @@ get_config_entry(char * in_data, const char *section, const char *key)
 char *
 get_ipa_server(char * data)
 {
-    return get_config_entry(data, "global", "server");
+    return get_config_entry(data, "defaults", "server");
 }
 
 /* Get the IPA realm from the configuration file.
@@ -172,5 +172,5 @@ get_ipa_server(char * data)
 char *
 get_ipa_realm(char * data)
 {
-    return get_config_entry(data, "global", "realm");
+    return get_config_entry(data, "defaults", "realm");
 }
