@@ -127,6 +127,8 @@ struct cm_submit_x_context {
 	xmlrpc_client *client;
 	const char *method;
 	xmlrpc_value *params, *namedarg, *results;
+	int fault_occurred:1, fault_code;
+	const char *fault_text;
 };
 
 struct cm_submit_x_context *
@@ -272,6 +274,9 @@ cm_submit_x_run(struct cm_submit_x_context *ctx)
 	if (ctx->xenv.fault_occurred) {
 		fprintf(stderr, "Fault %d: (%s).\n",
 			ctx->xenv.fault_code, ctx->xenv.fault_string);
+		ctx->fault_occurred = TRUE;
+		ctx->fault_code = ctx->xenv.fault_code;
+		ctx->fault_text = talloc_strdup(ctx, ctx->xenv.fault_string);
 		xmlrpc_env_clean(&ctx->xenv);
 	}
 }
@@ -280,6 +285,24 @@ int
 cm_submit_x_has_results(struct cm_submit_x_context *ctx)
 {
 	return (ctx->results != NULL) ? 0 : -1;
+}
+
+int
+cm_submit_x_faulted(struct cm_submit_x_context *ctx)
+{
+	return ctx->fault_occurred ? 0 : -1;
+}
+
+int
+cm_submit_x_fault_code(struct cm_submit_x_context *ctx)
+{
+	return ctx->fault_occurred ? ctx->fault_code : -1;
+}
+
+const char *
+cm_submit_x_fault_text(struct cm_submit_x_context *ctx)
+{
+	return ctx->fault_occurred ? ctx->fault_text : NULL;
 }
 
 int
