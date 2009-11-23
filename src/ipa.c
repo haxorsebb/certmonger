@@ -178,6 +178,29 @@ main(int argc, char **argv)
 	cm_submit_x_run(ctx);
 
 	/* Check the results. */
+	if (cm_submit_x_faulted(ctx) == 0) {
+		i = cm_submit_x_fault_code(ctx);
+		/* Interpret the error.  See errors.py to get the
+		 * classifications. */
+		switch (i / 1000) {
+		case 2: /* authorization error - permanent */
+		case 3: /* invocation error - permanent */
+			printf("Server denied our request, giving up: "
+			       "%d (%s).\n", i,
+			       cm_submit_x_fault_text(ctx));
+			return CM_STATUS_REJECTED;
+			break;
+		case 1: /* authentication error - transient? */
+		case 4: /* execution error - transient? */
+		case 5: /* generic error - transient? */
+		default:
+			printf("Server failed request, will retry: "
+			       "%d (%s).\n", i,
+			       cm_submit_x_fault_text(ctx));
+			return CM_STATUS_UNREACHABLE;
+			break;
+		}
+	} else
 	if (cm_submit_x_has_results(ctx) == 0) {
 		if (cm_submit_x_get_named_n(ctx, "status", &i) == 0) {
 			fprintf(stderr, "Status: %d\n", i);
@@ -206,11 +229,13 @@ main(int argc, char **argv)
 				}
 			}
 		} else {
-			/* No status?  Try again, from scratch, later. */
+			/* No status, no fault?  Try again, from scratch,
+			 * later. */
 			return CM_STATUS_UNREACHABLE;
 		}
 	} else {
-		/* No useful response.  Try again, from scratch, later. */
+		/* No useful response, no fault.  Try again, from scratch,
+		 * later. */
 		return CM_STATUS_UNREACHABLE;
 	}
 }
