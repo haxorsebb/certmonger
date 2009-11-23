@@ -43,6 +43,7 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal)
 	krb5_creds creds;
 	krb5_principal princ;
 	krb5_error_code kret;
+	krb5_get_init_creds_opt gicopts;
 	char tgs[LINE_MAX];
 
 	kret = krb5_init_context(&ctx);
@@ -86,8 +87,10 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal)
 		 (krb5_princ_realm(ctx, princ))->length,
 		 (krb5_princ_realm(ctx, princ))->data);
 	memset(&creds, 0, sizeof(creds));
+	krb5_get_init_creds_opt_init(&gicopts);
+	krb5_get_init_creds_opt_set_forwardable(&gicopts, 1);
 	kret = krb5_get_init_creds_keytab(ctx, &creds, princ, keytab,
-					  0, tgs, NULL);
+					  0, tgs, &gicopts);
 	if (kret != 0) {
 		fprintf(stderr, "Error obtaining initial credentials: %s.\n",
 			error_message(kret));
