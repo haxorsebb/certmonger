@@ -108,7 +108,7 @@ endif
 if WITH_IPA
 pkglibexec_PROGRAMS += ipa-submit
 endif
-ipa_submit_SOURCES = ipa.c submit-x.c submit-x.h submit-e.h
+ipa_submit_SOURCES = ipa.c submit-x.c submit-x.h submit-e.h util.c util.h
 ipa_submit_LDADD = @XMLRPC_LIBS@ @KRB5_LIBS@ @TALLOC_LIBS@
-certmaster_submit_SOURCES = certmaster.c submit-x.c submit-x.h submit-e.h
+certmaster_submit_SOURCES = certmaster.c submit-x.c submit-x.h submit-e.h util.c util.h
 certmaster_submit_LDADD = @XMLRPC_LIBS@ @TALLOC_LIBS@
