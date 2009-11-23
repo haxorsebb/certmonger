@@ -432,6 +432,7 @@ cm_tdbus_reconnect(struct tevent_context *ec, struct tevent_timer *timer,
 	if (!dbus_connection_get_is_connected(tdb->conn)) {
 		/* Close the current connection and open a new one. */
 		dbus_connection_unref(tdb->conn);
+		bus_desc = NULL;
 		switch (tdb->conn_type) {
 		case cm_tdbus_system:
 			cm_log(1, "Attempting to reconnect to system bus.\n");
@@ -581,6 +582,7 @@ cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type,
 	memset(tdb, 0, sizeof(*tdb));
 	/* Connect to the right bus. */
 	bus_desc = NULL;
+	conn = NULL;
 	switch (bus_type) {
 	case cm_tdbus_system:
 		conn = dbus_bus_get(DBUS_BUS_SYSTEM, NULL);

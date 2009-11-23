@@ -288,6 +288,7 @@ cm_store_hex_to_bin(const char *serial, unsigned char *buf, int length)
 	unsigned char *b, u;
 	p = serial;
 	b = buf;
+	u = 0;
 	for (p = serial, b = buf;
 	     ((*p != '\0') && ((b - buf) < length));
 	     p++) {

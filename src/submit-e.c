@@ -220,7 +220,9 @@ cm_submit_e_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		u = errno;
 		cm_log(1, "Error redirecting standard out for helper: %s.\n",
 		       strerror(errno));
-		write(args->error_fd, &u, 1);
+		if (write(args->error_fd, &u, 1) != 1) {
+			cm_log(1, "Error sending error result to parent.\n");
+		}
 		return u;
 	}
 	error = NULL;
@@ -260,7 +262,9 @@ cm_submit_e_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 	execvp(argv[0], argv);
 	u = errno;
-	write(args->error_fd, &u, 1);
+	if (write(args->error_fd, &u, 1) != 1) {
+		cm_log(1, "Error sending error result to parent.\n");
+	}
 	return u;
 }
 

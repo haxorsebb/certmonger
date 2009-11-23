@@ -86,7 +86,7 @@ read_config_file(const char *filename)
 char *
 get_config_entry(char * in_data, const char *section, const char *key)
 {
-    char *ptr, *p, *tmp;
+    char *ptr = NULL, *p, *tmp;
     char *line;
     int in_section = 0;
     char * data = strdup(in_data);

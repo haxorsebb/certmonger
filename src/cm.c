@@ -267,6 +267,7 @@ cm_service_one(struct cm_context *context, struct timeval *current_time, int i)
 			 &cm_get_n_cas,
 			 context->events[i].iterate_state,
 			 &when, &delay, &fd);
+	t = NULL;
 	if (ret == 0) {
 		switch (when) {
 		case cm_time_now:
