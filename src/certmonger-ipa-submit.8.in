@@ -1,0 +1,74 @@
+.TH certmonger 1 "23 November 2009" "certmonger Manual"
+
+.SH NAME
+ipa-submit
+
+.SH SYNOPSIS
+ipa-submit [-h serverHost] [-c cafile] [-C capath]
+[-t keytab] [-k submitterPrincipal] [-P principalOfRequest] [csrfile]
+
+.SH DESCRIPTION
+\fIipa-submit\fR is the helper which \fIcertmonger\fR uses to make
+requests to IPA-based CAs.  It is not normally run interactively,
+but it can be for troubleshooting purposes.  The signing request which is
+to be submitted should either be in a file whose name is given as an argument,
+or fed into \fIipa-submit\fR via stdin.
+
+.SH OPTIONS
+.TP
+\fB\-P\fR principal
+Identifies the principal name of the service for which the certificate is being
+issued.  This setting is required by IPA and must always be specified.
+.TP
+\fB\-h\fR serverHost
+Submit the request to the IPA server running on the named host.  The default is
+to read the name of the host from \fB/etc/ipa/ipa.conf\fR.
+.TP
+\fB\-c\fR cafile
+The server's certificate was issued by the CA whose certificate is in the named
+file.  The default value is \fI/etc/ipa/ca.crt\fR.
+.TP
+\fB\-C\fR capath
+Trust the server if its certificate was issued by a CA whose certificate is in
+a file in the named directory.  There is no default for this option, but it
+does not expected to be necessary.
+.TP
+\fB\-t\fR keytab
+Authenticate to the IPA server using credentials derived from keys stored in
+the named keytab.  The default value can vary, but it is usually
+\fI/etc/krb5.keytab\fR.
+.TP
+\fB\-k\fR capath
+Authenticate to the IPA server using credentials derived from keys stored in
+the named keytab for this principal name.  The default value is the \fBhost\fR
+service for the local host in the local realm.
+
+.SH EXIT STATUS
+.TP
+0
+if the certificate was issued. The certificate will be printed.
+.TP
+1
+if the CA is still thinking.  A cookie value will be printed.
+.TP
+2
+if the CA rejected the request
+.TP
+3
+if the CA was unreachable
+.TP
+4
+if critical configuration information is missing
+
+.SH BUGS
+Please file tickets for any that you find at https://fedorahosted.org/certmonger/
+
+.SH SEE ALSO
+\fBcertmonger\fR(8)
+\fBgetcert\fR(1)
+\fBgetcert-list\fR(1)
+\fBgetcert-list-cas\fR(1)
+\fBgetcert-resubmit\fR(1)
+\fBgetcert-start-tracking\fR(1)
+\fBgetcert-stop-tracking\fR(1)
+\fBcertmonger-certmaster-submit\fR(8)
