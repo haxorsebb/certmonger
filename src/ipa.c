@@ -41,7 +41,7 @@ main(int argc, char **argv)
 	int i, c, ret;
 	const char *host = NULL, *cainfo = NULL, *capath = NULL;
 	const char *ktname = NULL, *kpname = NULL;
-	char *csr, *p, uri[LINE_MAX], *s, *reqprinc = NULL, *ipaconfig;
+	char *csr, *p, *q, uri[LINE_MAX], *s, *reqprinc = NULL, *ipaconfig;
 	struct cm_submit_x_context *ctx;
 
 	reqprinc = getenv(CM_SUBMIT_REQ_PRINCIPAL_ENV);
@@ -187,7 +187,16 @@ main(int argc, char **argv)
 				/* If we got a certificate, we're probably
 				 * okay. */
 				fprintf(stderr, "Certificate: \"%s\"\n", s);
-				printf("%s", s);
+				printf("-----BEGIN CERTIFICATE-----\n");
+				for (p = s; *p != '\0'; p = q) {
+					if (strlen(p) > 64) {
+						q = p + 64;
+					} else {
+						q = p + strlen(p);
+					}
+					printf("%.*s\n", (int) (q - p), p);
+				}
+				printf("-----END CERTIFICATE-----\n");
 				return CM_STATUS_ISSUED;
 			} else {
 				/* Interpret the server-reported status. */
