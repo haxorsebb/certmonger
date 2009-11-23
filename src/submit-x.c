@@ -292,6 +292,9 @@ cm_submit_x_get_bss(struct cm_submit_x_context *ctx,
 	*b = 0;
 	*s1 = NULL;
 	*s2 = NULL;
+	if (xmlrpc_value_type(ctx->results) != XMLRPC_TYPE_ARRAY) {
+		return -1;
+	}
 	xmlrpc_array_read_item(&ctx->xenv, ctx->results, 0, &arg);
 	if (ctx->xenv.fault_occurred) {
 		xmlrpc_env_clean(&ctx->xenv);
@@ -337,6 +340,9 @@ cm_submit_x_get_b(struct cm_submit_x_context *ctx, int idx, int *b)
 	xmlrpc_bool boo;
 	xmlrpc_value *arg;
 	*b = 0;
+	if (xmlrpc_value_type(ctx->results) != XMLRPC_TYPE_ARRAY) {
+		return -1;
+	}
 	xmlrpc_array_read_item(&ctx->xenv, ctx->results, idx, &arg);
 	if (ctx->xenv.fault_occurred) {
 		xmlrpc_env_clean(&ctx->xenv);
@@ -358,6 +364,9 @@ cm_submit_x_get_s(struct cm_submit_x_context *ctx, int idx, char **s)
 	const char *p;
 	xmlrpc_value *arg;
 	*s = NULL;
+	if (xmlrpc_value_type(ctx->results) != XMLRPC_TYPE_ARRAY) {
+		return -1;
+	}
 	xmlrpc_array_read_item(&ctx->xenv, ctx->results, idx, &arg);
 	if (ctx->xenv.fault_occurred) {
 		xmlrpc_env_clean(&ctx->xenv);
@@ -378,6 +387,12 @@ cm_submit_x_get_struct(struct cm_submit_x_context *ctx)
 {
 	int i;
 	xmlrpc_value *arg;
+	if (xmlrpc_value_type(ctx->results) == XMLRPC_TYPE_STRUCT) {
+		return ctx->results;
+	}
+	if (xmlrpc_value_type(ctx->results) != XMLRPC_TYPE_ARRAY) {
+		return NULL;
+	}
 	for (i = 0;; i++) {
 		xmlrpc_array_read_item(&ctx->xenv, ctx->results, i, &arg);
 		if (arg == NULL) {
@@ -413,6 +428,11 @@ cm_submit_x_get_named_n(struct cm_submit_x_context *ctx,
 	if (val == NULL) {
 		return -1;
 	}
+	if (xmlrpc_value_type(val) != XMLRPC_TYPE_INT) {
+		fprintf(stderr, "Expected value \"%s\" is not an integer.\n",
+			name);
+		return -1;
+	}
 	xmlrpc_read_int(&ctx->xenv, val, &i);
 	if (ctx->xenv.fault_occurred) {
 		xmlrpc_env_clean(&ctx->xenv);
@@ -437,6 +457,11 @@ cm_submit_x_get_named_b(struct cm_submit_x_context *ctx,
 	if (val == NULL) {
 		return -1;
 	}
+	if (xmlrpc_value_type(val) != XMLRPC_TYPE_BOOL) {
+		fprintf(stderr, "Expected value \"%s\" is not a boolean.\n",
+			name);
+		return -1;
+	}
 	xmlrpc_read_bool(&ctx->xenv, val, &boo);
 	if (ctx->xenv.fault_occurred) {
 		xmlrpc_env_clean(&ctx->xenv);
@@ -451,6 +476,9 @@ cm_submit_x_get_named_s(struct cm_submit_x_context *ctx,
 			const char *name, char **s)
 {
 	const char *p;
+	char *tmp;
+	const unsigned char *binary;
+	size_t length;
 	xmlrpc_value *arg, *val;
 	*s = NULL;
 	arg = cm_submit_x_get_struct(ctx);
@@ -460,6 +488,28 @@ cm_submit_x_get_named_s(struct cm_submit_x_context *ctx,
 	xmlrpc_struct_find_value(&ctx->xenv, arg, name, &val);
 	if (val == NULL) {
 		return -1;
+	}
+	if (xmlrpc_value_type(val) != XMLRPC_TYPE_STRING) {
+		if (xmlrpc_value_type(val) == XMLRPC_TYPE_BASE64) {
+			xmlrpc_read_base64(&ctx->xenv, val, &length, &binary);
+			tmp = talloc_strndup(ctx, (const char *) binary,
+					     length);
+			if (strlen(tmp) == length) {
+				*s = tmp;
+				return 0;
+			} else {
+				fprintf(stderr,
+					"Expected value \"%s\" is "
+					"not a string.\n",
+					name);
+				return -1;
+			}
+		} else {
+			fprintf(stderr,
+				"Expected value \"%s\" is not a string.\n",
+				name);
+			return -1;
+		}
 	}
 	xmlrpc_read_string(&ctx->xenv, val, &p);
 	if (ctx->xenv.fault_occurred) {
@@ -676,11 +726,16 @@ main(int argc, char **argv)
 
 	/* Check the results. */
 	if (cm_submit_x_has_results(ctx) == 0) {
-		for (i = 0; i < xmlrpc_array_size(&ctx->xenv, ctx->results); i++) {
-			xmlrpc_array_read_item(&ctx->xenv, ctx->results, i, &arg);
+		for (i = 0;
+		     (xmlrpc_value_type(ctx->results) == XMLRPC_TYPE_ARRAY) &&
+		     (i < xmlrpc_array_size(&ctx->xenv, ctx->results));
+		     i++) {
+			xmlrpc_array_read_item(&ctx->xenv, ctx->results,
+					       i, &arg);
 			if (ctx->xenv.fault_occurred) {
 				fprintf(stderr, "Fault %d: (%s).\n",
-					ctx->xenv.fault_code, ctx->xenv.fault_string);
+					ctx->xenv.fault_code,
+					ctx->xenv.fault_string);
 				xmlrpc_env_clean(&ctx->xenv);
 			} else {
 				switch (xmlrpc_value_type(arg)) {
