@@ -47,6 +47,10 @@ if the CA was unreachable
 4
 if critical configuration information is missing
 
+.SH KNOWN BUGS
+Checking for the existence of certmaster's PID file is a terrible way to
+figure out whether we're a minion or not.
+
 .SH BUGS
 Please file tickets for any that you find at https://fedorahosted.org/certmonger/
 
