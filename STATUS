@@ -1,5 +1,5 @@
-Limited local-only support, no useful helpers for external CAs yet.  Keys can
-be self-signed.
+Limited local-only support, helpers for external IPA and certmaster-based CAs.
+Keys can also be self-signed.
 
 Complete:
   * Generating RSA keys of configurable size.
