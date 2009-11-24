@@ -672,7 +672,7 @@ base_get_known_cas(DBusConnection *conn, DBusMessage *msg,
 	struct cm_store_ca *ca;
 	char **ret;
 	DBusMessage *rep;
-	n_cas = cm_get_n_entries(ctx);
+	n_cas = cm_get_n_cas(ctx);
 	ret = talloc_array(ctx, char *, n_cas + 1);
 	if (ret != NULL) {
 		for (i = 0; i < n_cas; i++) {
