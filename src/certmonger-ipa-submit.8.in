@@ -52,13 +52,13 @@ if the certificate was issued. The certificate will be printed.
 if the CA is still thinking.  A cookie value will be printed.
 .TP
 2
-if the CA rejected the request
+if the CA rejected the request.  An error message may be printed.
 .TP
 3
-if the CA was unreachable
+if the CA was unreachable.  An error message may be printed.
 .TP
 4
-if critical configuration information is missing
+if critical configuration information is missing.  An error message may be printed.
 
 .SH BUGS
 Please file tickets for any that you find at https://fedorahosted.org/certmonger/
