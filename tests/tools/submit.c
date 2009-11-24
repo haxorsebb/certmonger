@@ -106,12 +106,33 @@ main(int argc, char **argv)
 			ret = 1;
 		} else
 		if (cm_submit_rejected(entry, state) == 0) {
-			printf("Request rejected.\n");
+			if (entry->cm_ca_error != NULL) {
+				printf("Request rejected: %s.\n",
+				       entry->cm_ca_error);
+			} else {
+				printf("Request rejected.\n");
+			}
 			ret = 2;
 		} else
 		if (cm_submit_unreachable(entry, state) == 0) {
-			printf("CA was unreachable.\n");
+			if (entry->cm_ca_error != NULL) {
+				printf("CA was unreachable: %s.\n",
+				       entry->cm_ca_error);
+			} else {
+				printf("CA was unreachable.\n");
+			}
 			ret = 3;
+		} else
+		if (cm_submit_unconfigured(entry, state) == 0) {
+			if (entry->cm_ca_error != NULL) {
+				printf("CA helper was un- or "
+				       "under-configured: %s.\n",
+				       entry->cm_ca_error);
+			} else {
+				printf("CA helper was un- or "
+				       "under-configured.\n");
+			}
+			ret = 4;
 		} else {
 			printf("Can't explain what happened.\n");
 			ret = -1;
