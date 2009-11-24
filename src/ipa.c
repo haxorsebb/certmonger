@@ -175,7 +175,25 @@ main(int argc, char **argv)
 	/* Setup a ccache. */
 	if (cm_submit_x_make_ccache(ktname, kpname) != 0) {
 		fprintf(stderr, "Error setting up ccache.\n");
-		printf(_("Error setting up ccache.\n"));
+		if (ktname == NULL) {
+			if (kpname == NULL) {
+				printf(_("Error setting up ccache using "
+					 "default keytab.\n"));
+			} else {
+				printf(_("Error setting up ccache for "
+					 "\"%s\" using default keytab.\n"),
+					 kpname);
+			}
+		} else {
+			if (kpname == NULL) {
+				printf(_("Error setting up ccache using "
+					 "keytab \"%s\".\n"), ktname);
+			} else {
+				printf(_("Error setting up ccache for "
+					 "\"%s\" using keytab \"%s\".\n"),
+					 kpname, ktname);
+			}
+		}
 		return CM_STATUS_UNCONFIGURED;
 	}
 
