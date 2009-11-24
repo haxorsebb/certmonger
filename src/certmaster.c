@@ -74,13 +74,19 @@ main(int argc, char **argv)
 			config = read_config_file("/etc/certmaster/"
 						  "certmaster.conf");
 			host = "localhost";
-			port = get_config_entry(config, "main", "listen_port");
+			if (config != NULL) {
+				port = get_config_entry(config,
+							"main", "listen_port");
+			}
 		} else {
 			config = read_config_file("/etc/certmaster/"
 						  "minion.conf");
 			host = get_config_entry(config, "main", "certmaster");
-			port = get_config_entry(config,
-						"main", "certmaster_port");
+			if (config != NULL) {
+				port = get_config_entry(config,
+							"main",
+							"certmaster_port");
+			}
 		}
 	}
 

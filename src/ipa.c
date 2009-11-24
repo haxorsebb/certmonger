@@ -91,7 +91,9 @@ main(int argc, char **argv)
 	}
 	if (host == NULL) {
 		ipaconfig = read_config_file("/etc/ipa/ipa.conf");
-		host = get_ipa_server(ipaconfig);
+		if (ipaconfig != NULL) {
+			host = get_ipa_server(ipaconfig);
+		}
 	}
 	if ((reqprinc == NULL) || (host == NULL)) {
 		fprintf(stderr,
