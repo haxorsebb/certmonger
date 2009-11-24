@@ -1,5 +1,5 @@
 Name:		certmonger
-Version:	0.12
+Version:	0.13
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -90,6 +90,11 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Tue Nov 24 2009 Nalin Dahyabhai <nalin@redhat.com> 0.13-1
+- update to 0.13
+  - change the default so that we default to trying to auto-refresh
+    certificates unless told otherwise
+
 * Tue Nov 24 2009 Nalin Dahyabhai <nalin@redhat.com> 0.12-1
 - update to 0.12
   - add a crucial bit of error reporting when CAs reject our requests
