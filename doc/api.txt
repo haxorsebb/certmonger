@@ -137,7 +137,7 @@ o object layout
     returns: boolean -> ok
              path    -> object path, in case it changed
   - resubmit (for requests that have been denied, generates a new csr)
-    returns: boolean -> working-on-it?
+    returns: boolean -> working-on-it
   (objects whose names are returned by "get-known-cas")
   interface=org.fedorahosted.certmonger.ca
   - get_nickname
@@ -175,16 +175,18 @@ Arguments:
 	array-of-string
 	dict{string,variant{string/array-of-string/number/boolean}}
 Return:
+	boolean
+	number
 	string
 	path
-	boolean
 	boolean,string
 	boolean,path
 	string,boolean
 	string,number
-	number
-	array-of-string
+	string,string
 	array-of-path
+	array-of-string
+	string,string,string
 	string,string,string,string
+	string,string,string,array-of-string
 	string,string,string,number,array-of-string,array-of-string,array-of-string,number,array-of-string
-	string,array-of-string,array-of-string,array-of-string,number,array-of-string
