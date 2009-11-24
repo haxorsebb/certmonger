@@ -421,6 +421,9 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				*delay = CM_DELAY_CA_POLL;
 			} else {
 				/* Don't know what's going on. HELP! */
+				cm_log(1,
+				       "Unable to determine course of action "
+				       "for \"%s\".\n", entry->cm_id);
 				cm_submit_done(entry, state->cm_submit_state);
 				state->cm_submit_state = NULL;
 				entry->cm_state = CM_NEED_GUIDANCE;
