@@ -38,6 +38,15 @@ Complete:
   * Learn to exec a helper to do non-local enrollment.
   * Detect when network connections go up and "kick" anything that's
     waiting for a server to become reachable.
+  * Learn to submit to at least one actual CA: IPA via XML-RPC over
+    HTTPS, authenticating using Negotiate with creds obtained using
+    the host's keytab (administrator may have logged off long before
+    we could have contacted the CA).
+  * Learn to submit to a second CA: certmaster via XML-RPC over HTTP.
+    * Learn how certmaster's root gets distributed.  It doesn't.
+    * Learn to submit to certmaster's XMLRPC interface, preferably by
+      calling out to the python library it supplies.  Ended up reusing
+      large chunks of the IPA client code, so it's in C.
 
 To-do:
   * Should offer an API over D-Bus which the client uses instead of
@@ -45,11 +54,6 @@ To-do:
     * Set/reset PIN for encrypted key storage... maybe? (1 day)
       MUST
   * Be able to use hashes other than the current hard-wired SHA256.
-    MUST
-  * Learn to submit to at least one actual CA: IPA via XML-RPC over
-    HTTPS, authenticating using Negotiate with creds obtained using
-    the host's keytab (administrator may have logged off long before
-    we could have contacted the CA).
     MUST
   * Make certmonger a proper daemon.
     * Sort out logging levels for log messages. (1 day)
@@ -63,11 +67,6 @@ To-do:
     SHOULD
   * Local signing should support signing with a key other than the one
     used to generate the CSR. (2 days)
-  * Learn to submit to a second CA: certmaster via XML-RPC over HTTPS.
-    * Learn how certmaster's root gets distributed. (1 day)
-    * Learn to submit to certmaster's XMLRPC interface, preferably by
-      calling out to the python library it supplies. (2 days)
-      COULD
   * Local signing should track a revocation list for each signing key
     and publish a CRL for it. (3 days)
     COULD
@@ -80,3 +79,4 @@ To-do:
     COULD -> Move entries and CAs from hand-rolled files to simple XML. (2 days)
     COULD -> Move them to an ldb. (3 days)
     COULD -> Move them to something that's more end-user-serviceable. (3 days)
+  * Put NSS into FIPS mode.
