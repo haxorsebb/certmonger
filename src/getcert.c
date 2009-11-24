@@ -1472,7 +1472,7 @@ list(const char *argv0, int argc, char **argv)
 		}
 		/* Basic info. */
 		nickname = find_request_name(globals.tctx, bus, requests[i]);
-		printf(_("Request '%s':\n"), nickname);
+		printf(_("Request ID '%s':\n"), nickname);
 		printf(_("\tstatus: %s\n"), s);
 		rep = query_rep(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
 				"get_ca_error");
