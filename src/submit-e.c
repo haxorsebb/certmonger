@@ -94,6 +94,13 @@ cm_submit_e_ready(struct cm_store_entry *entry, struct cm_submit_state *state)
 				if (strcspn(msg, "\n") >= (strlen(msg) - 2)) {
 					cm_log(0, "%s", msg);
 				}
+				/* If it was an error, save it. */
+				if ((WEXITSTATUS(status) != CM_STATUS_ISSUED) &&
+				    (WEXITSTATUS(status) != CM_STATUS_WAIT)) {
+					talloc_free(entry->cm_ca_error);
+					entry->cm_ca_error =
+						talloc_strdup(entry, msg);
+				}
 			}
 			return 0;
 		} else {
