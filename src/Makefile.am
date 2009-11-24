@@ -75,6 +75,7 @@ libcm_n_a_CFLAGS = @NSS_CFLAGS@
 libcm_a_LIBADD = $(libcm_o_a_OBJECTS) $(libcm_n_a_OBJECTS)
 bin_PROGRAMS = getcert
 pkglibexec_PROGRAMS =
+pkglibexecdir = $(libexecdir)/$(PACKAGE)
 getcert_SOURCES = getcert.c
 getcert_LDADD = libcm.a @GETCERT_LIBS@ @KRB5_LIBS@
 if WITH_IPA
