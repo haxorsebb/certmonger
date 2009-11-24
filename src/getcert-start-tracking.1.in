@@ -56,9 +56,13 @@ Assign the specified nickname to this task.  If this option is not specified,
 a name will be assigned automatically.
 .TP
 \fB\-r\fR
-Attempt to obtain a new certificate from the CA when the expiration date
-of a certificate nears.  By default, if this option is not specified, an
-expired certificate will simply stay expired.  Typically used with \fB\-c\fR.
+Attempt to obtain a new certificate from the CA when the expiration date of a
+certificate nears.  This is the default setting.
+.TP
+\fB\-R\fR
+Don't attempt to obtain a new certificate from the CA when the expiration date
+of a certificate nears.  If this option is specified, an expired certificate
+will simply stay expired.
 
 .SH ENROLLMENT OPTIONS
 .TP

@@ -320,7 +320,7 @@ request(const char *argv0, int argc, char **argv)
 	}
 
 	while ((c = getopt(argc, argv,
-			   "d:n:t:k:f:I:g:rN:U:K:D:E:sS" GETOPT_CA)) != -1) {
+			   "d:n:t:k:f:I:g:rRN:U:K:D:E:sS" GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
 			dbdir = talloc_strdup(globals.tctx, optarg);
@@ -345,6 +345,9 @@ request(const char *argv0, int argc, char **argv)
 			break;
 		case 'r':
 			auto_renew++;
+			break;
+		case 'R':
+			auto_renew = 0;
 			break;
 		case 'c':
 			ca = talloc_strdup(globals.tctx, optarg);
@@ -752,7 +755,7 @@ static int
 add_basic_request(enum cm_tdbus_type bus, char *id,
 		  char *dbdir, char *nickname, char *token,
 		  char *keyfile, char *certfile,
-		  char *ca, dbus_bool_t auto_renew)
+		  char *ca, dbus_bool_t auto_renew_stop)
 {
 	DBusMessage *req, *rep;
 	int i;
@@ -845,7 +848,7 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 	i++;
 	param[i].key = "RENEW";
 	param[i].value_type = cm_tdbusm_dict_b;
-	param[i].value.b = auto_renew > 0;
+	param[i].value.b = !auto_renew_stop;
 	params[i] = &param[i];
 	i++;
 	params[i] = NULL;
@@ -885,9 +888,9 @@ set_tracking(const char *argv0, const char *category,
 	char *id = NULL, *new_id = NULL, *new_request;
 	char *keyfile = NULL, *certfile = NULL, *ca = DEFAULT_CA;
 	dbus_bool_t b;
-	int c, auto_renew = 0, i;
+	int c, auto_renew_start = 0, auto_renew_stop = 0, i;
 	while ((c = getopt(argc, argv,
-			   "d:n:t:k:f:g:ri:I:sS" GETOPT_CA)) != -1) {
+			   "d:n:t:k:f:g:rRi:I:sS" GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
 			dbdir = talloc_strdup(globals.tctx, optarg);
@@ -906,7 +909,15 @@ set_tracking(const char *argv0, const char *category,
 			break;
 		case 'r':
 			if (track) {
-				auto_renew++;
+				auto_renew_start++;
+			} else {
+				help(argv0, category);
+				return 1;
+			}
+			break;
+		case 'R':
+			if (track) {
+				auto_renew_stop++;
 			} else {
 				help(argv0, category);
 				return 1;
@@ -937,6 +948,34 @@ set_tracking(const char *argv0, const char *category,
 			return 1;
 		}
 	}
+	if (((dbdir != NULL) && (nickname == NULL)) ||
+	    ((dbdir == NULL) && (nickname != NULL))) {
+		printf(_("Database location or nickname specified "
+		         "without the other.\n"));
+		help(argv0, category);
+		return 1;
+	}
+	if ((dbdir != NULL) && (certfile != NULL)) {
+		printf(_("Database directory and certificate file "
+		         "both specified.\n"));
+		help(argv0, category);
+		return 1;
+	}
+	if ((dbdir == NULL) &&
+	    (nickname == NULL) &&
+	    (certfile == NULL)) {
+		printf(_("None of database directory and nickname or "
+			 "certificate file specified.\n"));
+		help(argv0, category);
+		return 1;
+	}
+	if ((certfile != NULL) && (keyfile != NULL) &&
+	    (strcmp(certfile, keyfile) == 0)) {
+		printf(_("Key and certificate can not both be saved to the "
+			 "same file.\n"));
+		help(argv0, category);
+		return 1;
+	}
 	if (id != NULL) {
 		request = find_request_by_name(globals.tctx, bus, id);
 	} else {
@@ -953,11 +992,13 @@ set_tracking(const char *argv0, const char *category,
 			param[i].value.b = TRUE;
 			params[i] = &param[i];
 			i++;
-			param[i].key = "RENEW";
-			param[i].value_type = cm_tdbusm_dict_b;
-			param[i].value.b = auto_renew > 0;
-			params[i] = &param[i];
-			i++;
+			if (auto_renew_start || auto_renew_stop) {
+				param[i].key = "RENEW";
+				param[i].value_type = cm_tdbusm_dict_b;
+				param[i].value.b = auto_renew_start > 0;
+				params[i] = &param[i];
+				i++;
+			}
 			if (new_id != NULL) {
 				param[i].key = "NICKNAME";
 				param[i].value_type = cm_tdbusm_dict_s;
@@ -1019,7 +1060,7 @@ set_tracking(const char *argv0, const char *category,
 			return add_basic_request(bus, id,
 						 dbdir, nickname, token,
 						 keyfile, certfile,
-						 ca, (auto_renew > 0));
+						 ca, (auto_renew_stop > 0));
 		}
 	} else {
 		/* Drop a request. */
@@ -1619,7 +1660,8 @@ help(const char *cmd, const char *category)
 		N_("* Certificate handling settings:\n"),
 		N_("  -I NAME	nickname to assign to the request\n"),
 		N_("  -g SIZE	size of key to be generated if one is not already in place\n"),
-		N_("  -r		attempt to refresh the certificate when expiration nears\n"),
+		N_("  -r		attempt to renew the certificate when expiration nears (default)\n"),
+		N_("  -R		don't attempt to renew the certificate when expiration nears\n"),
 #ifndef FORCE_CA
 		N_("  -c CA		use the specified CA rather than the default\n"),
 #endif
@@ -1651,7 +1693,8 @@ help(const char *cmd, const char *category)
 		N_("Optional arguments:\n"),
 		N_("* Certificate handling settings:\n"),
 		N_("  -I NAME	nickname to give to tracking request\n"),
-		N_("  -r		attempt to renew the certificate when expiration nears\n"),
+		N_("  -r		attempt to renew the certificate when expiration nears (default)\n"),
+		N_("  -R		don't attempt to renew the certificate when expiration nears\n"),
 #ifndef FORCE_CA
 		N_("  -c CA		use the specified CA rather than the default\n"),
 #endif

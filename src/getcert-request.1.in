@@ -50,7 +50,12 @@ size of the key.  If not specified, a reasonable default (currently
 .TP
 \fB\-r\fR
 Attempt to obtain a new certificate from the CA when the expiration date of a
-certificate nears.
+certificate nears.  This is the default setting.
+.TP
+\fB\-R\fR
+Don't attempt to obtain a new certificate from the CA when the expiration date
+of a certificate nears.  If this option is specified, an expired certificate
+will simply stay expired.
 .TP
 \fB\-I\fR NAME
 Assign the specified nickname to this task.  If this option is not specified,
