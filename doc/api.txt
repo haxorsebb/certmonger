@@ -115,6 +115,8 @@ o object layout
     returns: number(optional) -> time of last submission to a CA (as time_t)
   - get_submitted_cookie
     returns: string(optional) -> CA-specific value
+  - get_ca_error
+    returns: text(optional) -> error text sent by the CA
   - modify
     - nickname for request
       argument: string -> new ID

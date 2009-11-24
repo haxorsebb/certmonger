@@ -1433,6 +1433,11 @@ list(const char *argv0, int argc, char **argv)
 		nickname = find_request_name(globals.tctx, bus, requests[i]);
 		printf(_("Request '%s':\n"), nickname);
 		printf(_("\tstatus: %s\n"), s);
+		rep = query_rep(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
+				"get_ca_error");
+		if (cm_tdbusm_get_s(rep, globals.tctx, &s) == 0) {
+			printf(_("\tca-error: %s\n"), s);
+		}
 		printf(_("\tstuck: %s\n"), b ? "yes" : "no");
 		/* Get key/cert storage info. */
 		rep = query_rep(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,

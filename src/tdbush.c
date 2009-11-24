@@ -1500,6 +1500,33 @@ request_get_ca(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 }
 
 static DBusHandlerResult
+request_get_ca_error(DBusConnection *conn, DBusMessage *msg,
+		     struct cm_context *ctx)
+{
+	void *parent;
+	DBusMessage *rep;
+	struct cm_store_entry *entry;
+	entry = get_entry_for_request_message(msg, ctx);
+	if (entry == NULL) {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+	rep = dbus_message_new_method_return(msg);
+	if (rep != NULL) {
+		parent = talloc_new(NULL);
+		if ((entry->cm_ca_error != NULL) &&
+		    (strlen(entry->cm_ca_error) > 0)) {
+			cm_tdbusm_set_s(rep, entry->cm_ca_error);
+		}
+		dbus_connection_send(conn, rep, NULL);
+		dbus_message_unref(rep);
+		talloc_free(parent);
+		return DBUS_HANDLER_RESULT_HANDLED;
+	} else {
+		return send_internal_request_error(conn, msg);
+	}
+}
+
+static DBusHandlerResult
 request_get_submitted_cookie(DBusConnection *conn, DBusMessage *msg,
 			     struct cm_context *ctx)
 {
@@ -1818,6 +1845,9 @@ request_introspect(struct cm_context *ctx, const char *path)
 			       "  <method name=\"get_submitted_cookie\">\n"
 			       "   <arg name=\"cookie\" type=\"s\" direction=\"out\"/>\n"
 			       "  </method>\n"
+			       "  <method name=\"get_ca_error\">\n"
+			       "   <arg name=\"text\" type=\"s\" direction=\"out\"/>\n"
+			       "  </method>\n"
 			       "  <method name=\"get_submitted_date\">\n"
 			       "   <arg name=\"date\" type=\"x\" direction=\"out\"/>\n"
 			       "  </method>\n"
@@ -2086,6 +2116,8 @@ static struct {
 	 request_get_status},
 	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_ca",
 	 request_get_ca},
+	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_ca_error",
+	 request_get_ca_error},
 	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_submitted_cookie",
 	 request_get_submitted_cookie},
 	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_submitted_date",
