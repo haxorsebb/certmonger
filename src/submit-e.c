@@ -104,7 +104,9 @@ cm_submit_e_ready(struct cm_store_entry *entry, struct cm_submit_state *state)
 				    (WEXITSTATUS(status) != CM_STATUS_WAIT)) {
 					talloc_free(entry->cm_ca_error);
 					entry->cm_ca_error =
-						talloc_strdup(entry, msg);
+						talloc_strndup(entry, msg,
+							       strcspn(msg,
+								       "\r\n"));
 				}
 			}
 			return 0;
