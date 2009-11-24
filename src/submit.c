@@ -44,6 +44,8 @@ cm_submit_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 		}
 		return NULL;
 	}
+	talloc_free(entry->cm_ca_error);
+	entry->cm_ca_error = NULL;
 	switch (ca->cm_ca_type) {
 	case cm_ca_internal_self:
 		switch (entry->cm_key_storage_type) {
