@@ -1,0 +1,137 @@
+For The Wiki
+
+IPA Client Design
+
+To be able to request a certificate from the IPA client automatically
+there should be a utility tightly integrated with the IPA client that
+would aid in requesting the certificate for a service running on the
+host. The following diagram shows all the IPA client components involved
+in the operation. 
+
+  ┌───────────────┐
+  │  ipa-getcert  │
+  │    utility    │
+  └───────────────┘
+          │
+          │ D-Bus interface
+          │
+   ┌──────────────┐                                       ┌──────────┐
+   │  certmonger  │                                       │          │
+   │    system    │────── XML-RPC Connection to IPA ──────│  IPA CA  │
+   │    daemon    │                                       │          │
+   └──────────────┘                                       └──────────┘
+
+1. The cert utility, named ipa-getcert in the diagram, will accept
+   command line parameters and issue requests to certmonger. This is the
+   only thing it will do. 
+2. The daemon will be event-based, like most other services on the
+   client designed so far.  It will respond to requests from the
+   ipa-getcert client, and if necessary, poll for completion of any
+   time-consuming tasks that it has started.  Such tasks include:
+   * key generation
+   * generating certificate signing requests (CSRs)
+   * submitting signing requests to CAs
+3. The daemon keeps track of its own work items.  The client can afford
+   to be rather dumb by comparison.
+4. As an implementation detail, the daemon talks to the CA by means of a
+   helper which it runs.  The helper can also be run directly for
+   troubleshooting purposes, and even replaced entirely.
+
+Command Line Utility
+
+Now it's time to talk about how ipa-getcert is used.  At its core, the
+tool's function is analogous to that of ipa-getkeytab, so we're aiming
+for a command-line interface which feels familiar.
+
+There are five general tasks which the tool needs to be able to do:
+  * Request a new certificate and track (by default or not, if told not
+    to) its expiration date.
+  * Resubmit a previously-denied enrollment request.
+  * Start tracking expiration for an already-provisioned certificate.
+  * Stop tracking expiration for an already-provisioned certificate.
+  * Status: list current pending requests and/or currently tracked certs
+    and the set of known CAs.
+
+In the case of requesting a certificate the command looks like this:
+
+  ipa-getcert request [options]
+
+  Required arguments:
+  * If using an NSS database for storage:
+    -d DIR      NSS database for key and cert
+    -n NAME     nickname for NSS-based storage (only valid with -d)
+    -t NAME     optional token name for NSS-based storage (only valid with -d)
+  * If using files for storage:
+    -k FILE     PEM file for private key
+    -f FILE     PEM file for certificate (only valid with -k)
+
+  Optional arguments:
+  * Certificate handling settings:
+    -I NAME     nickname to assign to the request
+    -g SIZE     size of key to be generated if one is not already in place
+    -r          attempt to renew the certificate when expiration nears (default)
+    -R          don't attempt to renew the certificate when expiration nears
+    -c CA       use the specified CA rather than the default (IPA's)
+  * Parameters for the signing request:
+    -N NAME     set requested subject name (default: CN=<hostname>)
+    -U EXTUSAGE set requested extended key usage OID
+    -K NAME     set requested principal name
+    -D DNSNAME  set requested DNS name
+    -E EMAIL    set requested email address
+
+  The simplest invocation might look like this:
+
+  ipa-getcert -d /etc/pki/nssdb -n "ServerCert"
+
+In case of starting to track a certificate's expiration, one shall
+provide the following command line: 
+
+  ipa-getcert start-tracking [options]
+
+  Required arguments:
+  * If modifying an existing request:
+    -i NAME    nickname of an existing tracking request
+  * If using an NSS database for storage:
+    -d DIR     NSS database for key and cert
+    -n NAME    nickname for NSS-based storage (only valid with -d)
+    -t NAME    optional token name for NSS-based storage (only valid with -d)
+  * If using files for storage:
+    -k FILE    PEM file for private key
+    -f FILE    PEM file for certificate (only valid with -k)
+
+  Optional arguments:
+  * Certificate handling settings:
+    -I NAME    nickname to give to tracking request
+    -r         attempt to renew the certificate when expiration nears (default)
+    -R         don't attempt to renew the certificate when expiration nears
+    -c CA      use the specified CA rather than the default
+
+  If there's no certificate in the specified location, the daemon will
+  attempt to have one issued.  The daemon will cache information about
+  the certificate for bookkeeping.
+
+In case of stopping the tracking of a certificate's expiration, it would
+be more like this:
+
+  Usage: getcert stop-tracking [options]
+
+  Required arguments:
+  * By request identifier:
+    -i NAME    nickname for tracking request
+  * If using an NSS database for storage:
+    -d DIR     NSS database for key and cert
+    -n NAME    nickname for NSS-based storage (only valid with -d)
+    -t NAME    optional token name for NSS-based storage (only valid with -d)
+  * If using files for storage:
+    -k FILE    PEM file for private key
+    -f FILE    PEM file for certificate (only valid with -k)
+
+The status commands list the work items that the daemon is tracking.
+
+  Usage: getcert list [options]
+
+  Optional arguments:
+  * General options:
+    -c CA   list only requests and certs associated with this CA
+    -r      list only information about in-progress enrollment requests
+    -t      list only information about tracked certificates
