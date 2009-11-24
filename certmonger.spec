@@ -93,6 +93,7 @@ exit 0
 * Tue Nov 24 2009 Nalin Dahyabhai <nalin@redhat.com> 0.12-1
 - update to 0.12
   - add a crucial bit of error reporting when CAs reject our requests
+  - count the number of configured CAs correctly
 
 * Mon Nov 23 2009 Nalin Dahyabhai <nalin@redhat.com> 0.11-1
 - update to 0.11
