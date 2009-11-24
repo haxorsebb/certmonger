@@ -36,6 +36,8 @@
 #include "submit-x.h"
 #include "util.h"
 
+#define _(_x) (_x)
+
 int
 main(int argc, char **argv)
 {
@@ -89,6 +91,16 @@ main(int argc, char **argv)
 			}
 		}
 	}
+	if (host == NULL) {
+		printf(_("Unable to determine hostname of CA.\n"));
+		fprintf(stderr,
+			"Usage: %s [-h serverHost] "
+			"[-c cafile] [-C capath] [csrfile]\n",
+			strchr(argv[0], '/') ?
+			strrchr(argv[0], '/') + 1 :
+			argv[0]);
+		return CM_STATUS_UNCONFIGURED;
+	}
 
 	/* Read the CSR from the environment, or from the command-line. */
 	csr = getenv(CM_SUBMIT_CSR_ENV);
@@ -97,6 +109,7 @@ main(int argc, char **argv)
 					    argv[optind++] : NULL);
 	}
 	if ((csr == NULL) || (strlen(csr) == 0)) {
+		printf(_("Unable to read signing request.\n"));
 		fprintf(stderr,
 			"Usage: %s [-h serverHost] "
 			"[-c cafile] [-C capath] [csrfile]\n",
@@ -124,6 +137,7 @@ main(int argc, char **argv)
 	ctx = cm_submit_x_init(NULL, uri, "wait_for_cert", cainfo, capath, 0);
 	if (ctx == NULL) {
 		fprintf(stderr, "Error setting up for XMLRPC.\n");
+		printf(_("Error setting up for XMLRPC.\n"));
 		return CM_STATUS_UNCONFIGURED;
 	}
 
@@ -145,9 +159,11 @@ main(int argc, char **argv)
 				return CM_STATUS_WAIT;
 			}
 		} else {
+			printf(_("Error parsing server reply.\n"));
 			return CM_STATUS_UNREACHABLE;
 		}
 	} else {
+		printf(_("Server error.\n"));
 		return CM_STATUS_UNREACHABLE;
 	}
 }
