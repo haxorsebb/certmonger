@@ -1466,7 +1466,7 @@ cm_store_get_all_cas(void *parent)
 	if (glob(path, 0, NULL, &globs) != 0) {
 		globs.gl_pathc = 0;
 	}
-	ret = talloc_array_ptrtype(parent, ret, globs.gl_pathc + 3);
+	ret = talloc_array_ptrtype(parent, ret, globs.gl_pathc + 4);
 	if (ret != NULL) {
 		for (i = 0, j = 0; i < globs.gl_pathc; i++) {
 			p = globs.gl_pathv[i];
