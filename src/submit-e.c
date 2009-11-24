@@ -54,21 +54,26 @@ static int
 cm_submit_e_save_ca_cookie(struct cm_store_entry *entry,
 			   struct cm_submit_state *state)
 {
+	int status;
 	const char *msg;
 	talloc_free(entry->cm_ca_cookie);
 	entry->cm_ca_cookie = NULL;
-	msg = cm_subproc_get_msg(entry, state->subproc, NULL);
-	if ((msg != NULL) && (strlen(msg) > 0)) {
-		entry->cm_ca_cookie = talloc_strdup(entry, msg);
-		if (entry->cm_ca_cookie == NULL) {
-			cm_log(1, "Out of memory.\n");
-			return -ENOMEM;
+	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	if (WIFEXITED(status) &&
+	    (WEXITSTATUS(status) == CM_STATUS_WAIT)) {
+		msg = cm_subproc_get_msg(entry, state->subproc, NULL);
+		if ((msg != NULL) && (strlen(msg) > 0)) {
+			entry->cm_ca_cookie = talloc_strdup(entry, msg);
+			if (entry->cm_ca_cookie == NULL) {
+				cm_log(1, "Out of memory.\n");
+				return -ENOMEM;
+			}
+			cm_log(1, "Saved cookie.\n");
+			return 0;
+		} else {
+			cm_log(1, "No cookie.\n");
+			return -1;
 		}
-		cm_log(1, "Saved cookie.\n");
-		return 0;
-	} else {
-		cm_log(1, "No cookie.\n");
-		return -1;
 	}
 	return -1;
 }
