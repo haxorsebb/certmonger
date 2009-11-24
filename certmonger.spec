@@ -94,6 +94,8 @@ exit 0
 - update to 0.13
   - change the default so that we default to trying to auto-refresh
     certificates unless told otherwise
+  - preemptively enforce limitations on request nicknames so that they
+    make valid D-Bus object path components
 
 * Tue Nov 24 2009 Nalin Dahyabhai <nalin@redhat.com> 0.12-1
 - update to 0.12

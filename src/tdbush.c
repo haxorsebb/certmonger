@@ -255,6 +255,21 @@ send_internal_base_no_such_entry_error(DBusConnection *conn, DBusMessage *req)
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
+static int
+cm_tdbush_check_path_component(struct cm_context *ctx, const char *name)
+{
+	if (strlen(name) == 0) {
+		return -1;
+	}
+	if (strspn(name,
+		   "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		   "abcdefghijklmnopqrstuvwxyz"
+		   "0123456789_") != strlen(name)) {
+		return -1;
+	}
+	return 0;
+}
+
 static DBusHandlerResult
 base_add_request(DBusConnection *conn, DBusMessage *msg,
 		 struct cm_context *ctx)
@@ -371,6 +386,12 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 									  "NICKNAME",
 									  NULL);
 			}
+		}
+		if (cm_tdbush_check_path_component(ctx, param->value.s) != 0) {
+			return send_internal_base_bad_arg_error(conn, msg,
+								_("The nickname \"%s\" is not allowed."),
+								param->value.s,
+								"NICKNAME");
 		}
 	}
 	/* Check for a duplicate of another entry's certificate storage
@@ -1607,6 +1628,12 @@ request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 									  param->value.s,
 									  "NICKNAME",
 									  NULL);
+			}
+			if (cm_tdbush_check_path_component(ctx, param->value.s) != 0) {
+				return send_internal_base_bad_arg_error(conn, msg,
+									_("The nickname \"%s\" is not allowed."),
+									param->value.s,
+									"NICKNAME");
 			}
 		}
 		/* If we're being asked to change the CA, check that the new CA
