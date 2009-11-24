@@ -73,7 +73,11 @@ exit 0
 %defattr(-,root,root,-)
 %doc README LICENSE STATUS doc/*.txt
 %config /etc/dbus-1/system.d/*
+%if 0%{fedora} <= 9
+%{_initrddir}/certmonger
+%else
 %{_initddir}/certmonger
+%endif
 %{_bindir}/*
 %{_sbindir}/certmonger
 %{_mandir}/man*/*
