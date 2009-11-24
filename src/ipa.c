@@ -177,7 +177,8 @@ main(int argc, char **argv)
 		fprintf(stderr, "Error setting up ccache.\n");
 		if (ktname == NULL) {
 			if (kpname == NULL) {
-				printf(_("Error setting up ccache using "
+				printf(_("Error setting up ccache for local "
+					 "\"host\" service using "
 					 "default keytab.\n"));
 			} else {
 				printf(_("Error setting up ccache for "
@@ -186,7 +187,8 @@ main(int argc, char **argv)
 			}
 		} else {
 			if (kpname == NULL) {
-				printf(_("Error setting up ccache using "
+				printf(_("Error setting up ccache for local "
+					 "\"host\" service using "
 					 "keytab \"%s\".\n"), ktname);
 			} else {
 				printf(_("Error setting up ccache for "
