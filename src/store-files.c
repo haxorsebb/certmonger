@@ -96,6 +96,7 @@ enum cm_store_file_field {
 
 	cm_store_entry_field_submitted,
 	cm_store_entry_field_ca_cookie,
+	cm_store_entry_field_ca_error,
 
 	cm_store_entry_field_cert,
 
@@ -171,6 +172,7 @@ static struct cm_store_file_field_list {
 
 	{cm_store_entry_field_submitted, "submitted"},
 	{cm_store_entry_field_ca_cookie, "ca_cookie"},
+	{cm_store_entry_field_ca_error, "ca_error"},
 
 	{cm_store_entry_field_cert, "cert"},
 
@@ -612,6 +614,9 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_ca_cookie:
 				ret->cm_ca_cookie = free_if_empty(p);
 				break;
+			case cm_store_entry_field_ca_error:
+				ret->cm_ca_error = free_if_empty(p);
+				break;
 			case cm_store_entry_field_cert:
 				ret->cm_cert = free_if_empty(p);
 				break;
@@ -700,6 +705,7 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_ca_name:
 			case cm_store_entry_field_submitted:
 			case cm_store_entry_field_ca_cookie:
+			case cm_store_entry_field_ca_error:
 			case cm_store_entry_field_cert:
 				break;
 			case cm_store_file_field_id:
@@ -1056,6 +1062,8 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 							      timestamp));
 	cm_store_file_write_str(fp, cm_store_entry_field_ca_cookie,
 				entry->cm_ca_cookie);
+	cm_store_file_write_str(fp, cm_store_entry_field_ca_error,
+				entry->cm_ca_error);
 	cm_store_file_write_str(fp, cm_store_entry_field_cert, entry->cm_cert);
 	if (ferror(fp)) {
 		return -1;

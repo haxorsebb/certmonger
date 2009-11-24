@@ -123,6 +123,8 @@ struct cm_store_entry {
 	time_t cm_submitted;
 	/* Value of CA cookie for in-progress submissions. */
 	char *cm_ca_cookie;
+	/* An error message from the CA, hopefully a useful one. */
+	char *cm_ca_error;
 	/* The certificate, if we have one. */
 	char *cm_cert;
 };
