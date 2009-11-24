@@ -42,9 +42,14 @@ make %{?_smp_mflags}
 %install
 rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
-mkdir -p $RPM_BUILD_ROOT/%{_initddir}
 mkdir -p $RPM_BUILD_ROOT/%{_localstatedir}/lib/certmonger/{cas,requests}
+%if 0%{?fedora} <= 9
+mkdir -p $RPM_BUILD_ROOT/%{_initrddir}
+install -m755 src/certmonger.init $RPM_BUILD_ROOT/%{_initrddir}/certmonger
+%else
+mkdir -p $RPM_BUILD_ROOT/%{_initddir}
 install -m755 src/certmonger.init $RPM_BUILD_ROOT/%{_initddir}/certmonger
+%endif
 
 %check
 # Needs to be able to create pseudoterminals to drive certutil.
@@ -73,7 +78,7 @@ exit 0
 %defattr(-,root,root,-)
 %doc README LICENSE STATUS doc/*.txt
 %config /etc/dbus-1/system.d/*
-%if 0%{fedora} <= 9
+%if 0%{?fedora} <= 9
 %{_initrddir}/certmonger
 %else
 %{_initddir}/certmonger
