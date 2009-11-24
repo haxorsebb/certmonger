@@ -12,16 +12,19 @@ EOF
 chmod u+x ca-ask-again
 cat > ca-reject << EOF
 #!/bin/sh
+echo CA rejected us, must have been having a bad day.
 exit 2
 EOF
 chmod u+x ca-reject
 cat > ca-unreachable << EOF
 #!/bin/sh
+echo Could not contact CA.
 exit 3
 EOF
 chmod u+x ca-unreachable
 cat > ca-unconfigured << EOF
 #!/bin/sh
+echo Something is wrong with my brain.
 exit 4
 EOF
 chmod u+x ca-unconfigured
