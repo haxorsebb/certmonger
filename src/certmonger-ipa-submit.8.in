@@ -30,8 +30,8 @@ file.  The default value is \fI/etc/ipa/ca.crt\fR.
 .TP
 \fB\-C\fR capath
 Trust the server if its certificate was issued by a CA whose certificate is in
-a file in the named directory.  There is no default for this option, but it
-does not expected to be necessary.
+a file in the named directory.  There is no default for this option, and it
+is not expected to be necessary.
 .TP
 \fB\-t\fR keytab
 Authenticate to the IPA server using credentials derived from keys stored in
