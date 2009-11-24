@@ -837,7 +837,7 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 		i++;
 		param[i].key = "CERT_LOCATION";
 		param[i].value_type = cm_tdbusm_dict_s;
-		param[i].value.s = keyfile;
+		param[i].value.s = certfile;
 		params[i] = &param[i];
 		i++;
 	}
@@ -961,10 +961,11 @@ set_tracking(const char *argv0, const char *category,
 		help(argv0, category);
 		return 1;
 	}
-	if ((dbdir == NULL) &&
+	if ((id == NULL) &&
+	    (dbdir == NULL) &&
 	    (nickname == NULL) &&
 	    (certfile == NULL)) {
-		printf(_("None of database directory and nickname or "
+		printf(_("None of ID or database directory and nickname or "
 			 "certificate file specified.\n"));
 		help(argv0, category);
 		return 1;
@@ -1057,7 +1058,7 @@ set_tracking(const char *argv0, const char *category,
 				help(argv0, category);
 				return 1;
 			}
-			return add_basic_request(bus, id,
+			return add_basic_request(bus, new_id,
 						 dbdir, nickname, token,
 						 keyfile, certfile,
 						 ca, (auto_renew_stop > 0));
@@ -1076,6 +1077,7 @@ set_tracking(const char *argv0, const char *category,
 			printf(_("No request found that matched arguments.\n"));
 			return 1;
 		}
+		nickname = find_request_name(globals.tctx, bus, request);
 		req = prep_req(bus, CM_DBUS_BASE_PATH,
 			       CM_DBUS_BASE_INTERFACE,
 			       "remove_request");
@@ -1089,7 +1091,6 @@ set_tracking(const char *argv0, const char *category,
 			exit(1);
 		}
 		dbus_message_unref(rep);
-		nickname = find_request_name(globals.tctx, bus, request);
 		if (b) {
 			printf(_("Request \"%s\" removed.\n"),
 			       nickname ? nickname : request);
