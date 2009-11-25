@@ -280,7 +280,7 @@ request(const char *argv0, int argc, char **argv)
 	char subject_default[LINE_MAX];
 	char *dbdir = NULL, *token = NULL, *nickname = NULL;
 	char *keyfile = NULL, *certfile = NULL, *capath;
-	int keysize = 0, auto_renew = 0, c, i;
+	int keysize = 0, auto_renew = 1, c, i;
 	char *ca = DEFAULT_CA, *subject = NULL, **eku = NULL, *oid, *id = NULL;
 	char **principal = NULL, **dns = NULL, **email = NULL;
 	struct cm_tdbusm_dict param[32];
