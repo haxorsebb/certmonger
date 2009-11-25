@@ -5,6 +5,7 @@ selfsign-getcert
 
 .SH SYNOPSIS
  selfsign-getcert request [options]
+ selfsign-getcert resubmit [options]
  selfsign-getcert start-tracking [options]
  selfsign-getcert stop-tracking [options]
  selfsign-getcert list [options]

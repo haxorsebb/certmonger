@@ -5,6 +5,7 @@ certmaster-getcert
 
 .SH SYNOPSIS
  certmaster-getcert request [options]
+ certmaster-getcert resubmit [options]
  certmaster-getcert start-tracking [options]
  certmaster-getcert stop-tracking [options]
  certmaster-getcert list [options]

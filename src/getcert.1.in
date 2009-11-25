@@ -5,6 +5,7 @@ getcert
 
 .SH SYNOPSIS
  getcert request [options]
+ getcert resubmit [options]
  getcert start-tracking [options]
  getcert stop-tracking [options]
  getcert list [options]

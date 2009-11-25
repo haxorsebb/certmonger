@@ -5,6 +5,7 @@ ipa-getcert
 
 .SH SYNOPSIS
  ipa-getcert request [options]
+ ipa-getcert resubmit [options]
  ipa-getcert start-tracking [options]
  ipa-getcert stop-tracking [options]
  ipa-getcert list [options]
