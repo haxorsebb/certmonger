@@ -774,6 +774,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	} else {
 		new_entry->cm_monitor_default = TRUE;
 	}
+	new_entry->cm_ttls_default = TRUE;
 	/* Template information. */
 	param = cm_tdbusm_find_dict_entry(d, "SUBJECT", cm_tdbusm_dict_s);
 	if (param != NULL) {
