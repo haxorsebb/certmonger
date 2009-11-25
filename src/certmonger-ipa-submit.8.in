@@ -4,7 +4,7 @@
 ipa-submit
 
 .SH SYNOPSIS
-ipa-submit [-h serverHost] [-c cafile] [-C capath]
+ipa-submit [-h serverHost] [-H serverURI] [-c cafile] [-C capath]
 [-t keytab] [-k submitterPrincipal] [-P principalOfRequest] [csrfile]
 
 .SH DESCRIPTION
@@ -22,7 +22,11 @@ issued.  This setting is required by IPA and must always be specified.
 .TP
 \fB\-h\fR serverHost
 Submit the request to the IPA server running on the named host.  The default is
-to read the name of the host from \fB/etc/ipa/ipa.conf\fR.
+to read the location of the host from \fB/etc/ipa/default.conf\fR.
+.TP
+\fB\-H\fR serverURI
+Submit the request to the IPA server at the specified location.  The default is
+to read the location of the host from \fB/etc/ipa/default.conf\fR.
 .TP
 \fB\-c\fR cafile
 The server's certificate was issued by the CA whose certificate is in the named

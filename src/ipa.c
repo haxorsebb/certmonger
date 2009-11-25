@@ -40,7 +40,7 @@
 int
 main(int argc, char **argv)
 {
-	int i, c, ret;
+	int i, c, ret, host_is_uri = 0;
 	const char *host = NULL, *cainfo = NULL, *capath = NULL;
 	const char *ktname = NULL, *kpname = NULL;
 	char *csr, *p, *q, uri[LINE_MAX], *s, *reqprinc = NULL, *ipaconfig;
@@ -52,10 +52,15 @@ main(int argc, char **argv)
 		reqprinc[strcspn(reqprinc, "\r\n")] = '\0';
 	}
 
-	while ((c = getopt(argc, argv, "h:C:c:t:k:P:")) != -1) {
+	while ((c = getopt(argc, argv, "h:H:C:c:t:k:P:")) != -1) {
 		switch (c) {
 		case 'h':
 			host = optarg;
+			host_is_uri = 0;
+			break;
+		case 'H':
+			host = optarg;
+			host_is_uri = 1;
 			break;
 		case 'C':
 			capath = optarg;
@@ -75,6 +80,7 @@ main(int argc, char **argv)
 		default:
 			fprintf(stderr,
 				"Usage: %s [-h serverHost] "
+				"[-H serverUri] "
 				"[-c cafile] "
 				"[-C capath] "
 				"[-t keytab] "
@@ -92,14 +98,23 @@ main(int argc, char **argv)
 		cainfo = "/etc/ipa/ca.crt";
 	}
 	if (host == NULL) {
-		ipaconfig = read_config_file("/etc/ipa/ipa.conf");
+		ipaconfig = read_config_file("/etc/ipa/default.conf");
 		if (ipaconfig != NULL) {
-			host = get_ipa_server(ipaconfig);
+			host = get_config_entry(ipaconfig,
+						"global",
+						"xmlrpc_uri");
+			host_is_uri = 1;
 		}
 	}
 	if ((reqprinc == NULL) || (host == NULL)) {
 		if (host == NULL) {
-			printf(_("Unable to determine hostname of CA.\n"));
+			if (host_is_uri) {
+				printf(_("Unable to determine location of "
+					 "CA's XMLRPC server.\n"));
+			} else {
+				printf(_("Unable to determine hostname of "
+					 "CA.\n"));
+			}
 		}
 		if (reqprinc == NULL) {
 			printf(_("Unable to determine principal name for "
@@ -107,6 +122,7 @@ main(int argc, char **argv)
 		}
 		fprintf(stderr,
 			"Usage: %s [-h serverHost] "
+			"[-H serverUri] "
 			"[-c cafile] "
 			"[-C capath] "
 			"[-t keytab] "
@@ -130,6 +146,7 @@ main(int argc, char **argv)
 		printf(_("Unable to read signing request.\n"));
 		fprintf(stderr,
 			"Usage: %s [-h serverHost] "
+			"[-H serverUri] "
 			"[-c cafile] "
 			"[-C capath] "
 			"[-t keytab] "
@@ -164,7 +181,11 @@ main(int argc, char **argv)
 	}
 
 	/* Initialize for XML-RPC. */
-	snprintf(uri, sizeof(uri), "https://%s/ipa/xml", host);
+	if (host_is_uri) {
+		snprintf(uri, sizeof(uri), "%s", host);
+	} else {
+		snprintf(uri, sizeof(uri), "https://%s/ipa/xml", host);
+	}
 	ctx = cm_submit_x_init(NULL, uri, "cert_request", cainfo, capath, 1);
 	if (ctx == NULL) {
 		fprintf(stderr, "Error setting up for XMLRPC.\n");
