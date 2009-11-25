@@ -441,7 +441,7 @@ cm_submit_x_get_named_n(struct cm_submit_x_context *ctx,
 			const char *name, int *n)
 {
 	int i;
-	xmlrpc_value *arg, *val;
+	xmlrpc_value *arg, *val, *result;
 	*n = 0;
 	arg = cm_submit_x_get_struct(ctx);
 	if (arg == NULL) {
@@ -449,7 +449,17 @@ cm_submit_x_get_named_n(struct cm_submit_x_context *ctx,
 	}
 	xmlrpc_struct_find_value(&ctx->xenv, arg, name, &val);
 	if (val == NULL) {
-		return -1;
+		xmlrpc_struct_find_value(&ctx->xenv, arg, "result", &result);
+		if (result == NULL) {
+			return -1;
+		}
+		if (xmlrpc_value_type(result) != XMLRPC_TYPE_STRUCT) {
+			return -1;
+		}
+		xmlrpc_struct_find_value(&ctx->xenv, result, name, &val);
+		if (val == NULL) {
+			return -1;
+		}
 	}
 	if (xmlrpc_value_type(val) != XMLRPC_TYPE_INT) {
 		fprintf(stderr, "Expected value \"%s\" is not an integer.\n",
@@ -470,7 +480,7 @@ cm_submit_x_get_named_b(struct cm_submit_x_context *ctx,
 			const char *name, int *b)
 {
 	xmlrpc_bool boo;
-	xmlrpc_value *arg, *val;
+	xmlrpc_value *arg, *val, *result;
 	*b = 0;
 	arg = cm_submit_x_get_struct(ctx);
 	if (arg == NULL) {
@@ -478,7 +488,17 @@ cm_submit_x_get_named_b(struct cm_submit_x_context *ctx,
 	}
 	xmlrpc_struct_find_value(&ctx->xenv, arg, name, &val);
 	if (val == NULL) {
-		return -1;
+		xmlrpc_struct_find_value(&ctx->xenv, arg, "result", &result);
+		if (result == NULL) {
+			return -1;
+		}
+		if (xmlrpc_value_type(result) != XMLRPC_TYPE_STRUCT) {
+			return -1;
+		}
+		xmlrpc_struct_find_value(&ctx->xenv, result, name, &val);
+		if (val == NULL) {
+			return -1;
+		}
 	}
 	if (xmlrpc_value_type(val) != XMLRPC_TYPE_BOOL) {
 		fprintf(stderr, "Expected value \"%s\" is not a boolean.\n",
@@ -502,7 +522,7 @@ cm_submit_x_get_named_s(struct cm_submit_x_context *ctx,
 	char *tmp;
 	const unsigned char *binary;
 	size_t length;
-	xmlrpc_value *arg, *val;
+	xmlrpc_value *arg, *val, *result;
 	*s = NULL;
 	arg = cm_submit_x_get_struct(ctx);
 	if (arg == NULL) {
@@ -510,7 +530,17 @@ cm_submit_x_get_named_s(struct cm_submit_x_context *ctx,
 	}
 	xmlrpc_struct_find_value(&ctx->xenv, arg, name, &val);
 	if (val == NULL) {
-		return -1;
+		xmlrpc_struct_find_value(&ctx->xenv, arg, "result", &result);
+		if (result == NULL) {
+			return -1;
+		}
+		if (xmlrpc_value_type(result) != XMLRPC_TYPE_STRUCT) {
+			return -1;
+		}
+		xmlrpc_struct_find_value(&ctx->xenv, result, name, &val);
+		if (val == NULL) {
+			return -1;
+		}
 	}
 	if (xmlrpc_value_type(val) != XMLRPC_TYPE_STRING) {
 		if (xmlrpc_value_type(val) == XMLRPC_TYPE_BASE64) {
