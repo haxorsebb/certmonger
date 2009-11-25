@@ -70,6 +70,28 @@ static char *find_ca_name(void *parent, enum cm_tdbus_type bus,
 static char *find_request_name(void *parent, enum cm_tdbus_type bus,
 			       const char *path);
 
+/* Ensure that a pathname is an absolute pathname. */
+static char *
+ensure_absolute(void *parent, const char *path)
+{
+	char buf[PATH_MAX + 1], *ret;
+	if (path[0] == '/') {
+		return talloc_strdup(parent, path);
+	} else {
+		if (getcwd(buf, sizeof(buf)) == buf) {
+			ret = talloc_asprintf(parent, "%s/%s", buf, path);
+			printf(_("Path \"%s\" is not absolute, using \"%s\" "
+			         "instead.\n"), path, ret);
+			return ret;
+		} else {
+			printf(_("Path \"%s\" is not absolute, and there "
+			         "was an error determining the name of the "
+				 "current directory.\n"), path);
+			exit(1);
+		}
+	}
+}
+
 /* Add a string to a list. */
 static void
 add_string(void *parent, char ***dest, const char *value)
@@ -323,7 +345,7 @@ request(const char *argv0, int argc, char **argv)
 			   "d:n:t:k:f:I:g:rRN:U:K:D:E:sS" GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
-			dbdir = talloc_strdup(globals.tctx, optarg);
+			dbdir = ensure_absolute(globals.tctx, optarg);
 			break;
 		case 't':
 			token = talloc_strdup(globals.tctx, optarg);
@@ -332,10 +354,10 @@ request(const char *argv0, int argc, char **argv)
 			nickname = talloc_strdup(globals.tctx, optarg);
 			break;
 		case 'k':
-			keyfile = talloc_strdup(globals.tctx, optarg);
+			keyfile = ensure_absolute(globals.tctx, optarg);
 			break;
 		case 'f':
-			certfile = talloc_strdup(globals.tctx, optarg);
+			certfile = ensure_absolute(globals.tctx, optarg);
 			break;
 		case 'g':
 			keysize = atoi(optarg);
@@ -893,7 +915,7 @@ set_tracking(const char *argv0, const char *category,
 			   "d:n:t:k:f:g:rRi:I:sS" GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
-			dbdir = talloc_strdup(globals.tctx, optarg);
+			dbdir = ensure_absolute(globals.tctx, optarg);
 			break;
 		case 't':
 			token = talloc_strdup(globals.tctx, optarg);
@@ -902,10 +924,10 @@ set_tracking(const char *argv0, const char *category,
 			nickname = talloc_strdup(globals.tctx, optarg);
 			break;
 		case 'k':
-			keyfile = talloc_strdup(globals.tctx, optarg);
+			keyfile = ensure_absolute(globals.tctx, optarg);
 			break;
 		case 'f':
-			certfile = talloc_strdup(globals.tctx, optarg);
+			certfile = ensure_absolute(globals.tctx, optarg);
 			break;
 		case 'r':
 			if (track) {
@@ -1156,7 +1178,7 @@ resubmit(const char *argv0, int argc, char **argv)
 			   "d:n:N:t:U:K:E:D:f:i:I:sS" GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
-			dbdir = talloc_strdup(globals.tctx, optarg);
+			dbdir = ensure_absolute(globals.tctx, optarg);
 			break;
 		case 't':
 			token = talloc_strdup(globals.tctx, optarg);
@@ -1165,7 +1187,7 @@ resubmit(const char *argv0, int argc, char **argv)
 			nickname = talloc_strdup(globals.tctx, optarg);
 			break;
 		case 'f':
-			certfile = talloc_strdup(globals.tctx, optarg);
+			certfile = ensure_absolute(globals.tctx, optarg);
 			break;
 		case 'c':
 			ca = talloc_strdup(globals.tctx, optarg);
