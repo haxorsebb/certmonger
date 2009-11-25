@@ -362,6 +362,12 @@ free_if_empty_multi(void *parent, char *p)
 	return s;
 }
 
+static int
+cm_store_compare_ttl_values(const void *a, const void *b)
+{
+	return *(time_t *)a - *(time_t *) b;
+}
+
 static struct cm_store_entry *
 cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 {
@@ -525,6 +531,9 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 						j++;
 					}
 					ret->cm_n_ttls = j;
+					qsort(ret->cm_ttls, ret->cm_n_ttls,
+					      sizeof(ret->cm_ttls[0]),
+					      &cm_store_compare_ttl_values);
 				}
 				talloc_free(s[i]);
 				break;
