@@ -1,5 +1,5 @@
 Name:		certmonger
-Version:	0.13
+Version:	0.14
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -90,6 +90,13 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Wed Nov 24 2009 Nalin Dahyabhai <nalin@redhat.com> 0.14-1
+- update to 0.14
+  - check key and certificate location at add-time to make sure they're
+    absolute paths to files or directories, as appropriate
+  - IPA: dig into the 'result' item if the named result value we're looking
+    for isn't in the result struct
+
 * Tue Nov 24 2009 Nalin Dahyabhai <nalin@redhat.com> 0.13-1
 - update to 0.13
   - change the default so that we default to trying to auto-refresh
