@@ -167,7 +167,9 @@ main(int argc, char **argv)
 			fflush(pfp);
 		}
 	}
-
+	if (pfp != NULL) {
+		fclose(pfp);
+	}
 	cm_start_all(ctx);
 	do {
 		i = tevent_loop_once(ec);
@@ -180,11 +182,7 @@ main(int argc, char **argv)
 	cm_stop_all(ctx);
 	talloc_free(ctx);
 	talloc_free(ec);
-	if (pfp != NULL) {
-		fclose(pfp);
-		pfp = NULL;
-	}
-	if (pidfile != NULL) {
+	if ((pidfile != NULL) && (pfp != NULL)) {
 		remove(pidfile);
 	}
 	return 0;
