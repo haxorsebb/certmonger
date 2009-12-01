@@ -163,6 +163,7 @@ main(int argc, char **argv)
 	} else {
 		if (pfp != NULL) {
 			fprintf(pfp, "%ld\n", (long) getpid());
+			fflush(pfp);
 		}
 	}
 
