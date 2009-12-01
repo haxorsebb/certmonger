@@ -153,6 +153,7 @@ main(int argc, char **argv)
 			}
 			if (pfp != NULL) {
 				fprintf(pfp, "%ld\n", (long) getpid());
+				fflush(pfp);
 			}
 			break;
 		default:
