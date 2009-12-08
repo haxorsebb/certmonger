@@ -1,5 +1,5 @@
 Name:		certmonger
-Version:	0.14
+Version:	0.15
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -90,6 +90,13 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Tue Dec  8 2009 Nalin Dahyabhai <nalin@redhat.com> 0.15-1
+- update to 0.15
+  - notice that a directory with a trailing '/' is the same location as the
+    directory without it
+  - fix handling of the pid file when we write one (by actually giving it
+    contents)
+
 * Wed Nov 24 2009 Nalin Dahyabhai <nalin@redhat.com> 0.14-1
 - update to 0.14
   - check key and certificate location at add-time to make sure they're
