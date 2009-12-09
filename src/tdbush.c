@@ -290,21 +290,6 @@ cm_tdbush_check_arg_is_directory(const char *path)
 	return -1;
 }
 
-static char *
-cm_tdbush_canonicalize_directory(void *parent, const char *path)
-{
-	int i;
-	i = strlen(path);
-	if (i > 1) {
-		while ((i > 1) && (path[i - 1] == '/')) {
-			i--;
-		}
-		return talloc_strndup(parent, path, i);
-	} else {
-		return talloc_strdup(parent, path);
-	}
-}
-
 static int
 cm_tdbush_check_arg_is_reg_or_missing(const char *path)
 {
@@ -472,8 +457,8 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 								param->value.s,
 								"CERT_LOCATION");
 		}
-		cert_location = cm_tdbush_canonicalize_directory(parent,
-								 param->value.s);
+		cert_location = cm_store_canonicalize_directory(parent,
+								param->value.s);
 		param = cm_tdbusm_find_dict_entry(d, "CERT_NICKNAME",
 						  cm_tdbusm_dict_s);
 		if (param == NULL) {
@@ -660,8 +645,8 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 									param->value.s,
 									"KEY_LOCATION");
 			}
-			key_location = cm_tdbush_canonicalize_directory(parent,
-									param->value.s);
+			key_location = cm_store_canonicalize_directory(parent,
+								       param->value.s);
 			param = cm_tdbusm_find_dict_entry(d, "KEY_NICKNAME",
 							  cm_tdbusm_dict_s);
 			if (param == NULL) {

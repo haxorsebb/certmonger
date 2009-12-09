@@ -346,6 +346,8 @@ request(const char *argv0, int argc, char **argv)
 		switch (c) {
 		case 'd':
 			dbdir = ensure_absolute(globals.tctx, optarg);
+			dbdir = cm_store_canonicalize_directory(globals.tctx,
+								dbdir);
 			break;
 		case 't':
 			token = talloc_strdup(globals.tctx, optarg);
@@ -916,6 +918,8 @@ set_tracking(const char *argv0, const char *category,
 		switch (c) {
 		case 'd':
 			dbdir = ensure_absolute(globals.tctx, optarg);
+			dbdir = cm_store_canonicalize_directory(globals.tctx,
+								dbdir);
 			break;
 		case 't':
 			token = talloc_strdup(globals.tctx, optarg);
@@ -1179,6 +1183,8 @@ resubmit(const char *argv0, int argc, char **argv)
 		switch (c) {
 		case 'd':
 			dbdir = ensure_absolute(globals.tctx, optarg);
+			dbdir = cm_store_canonicalize_directory(globals.tctx,
+								dbdir);
 			break;
 		case 't':
 			token = talloc_strdup(globals.tctx, optarg);

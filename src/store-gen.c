@@ -311,3 +311,18 @@ cm_store_hex_to_bin(const char *serial, unsigned char *buf, int length)
 		}
 	}
 }
+
+char *
+cm_store_canonicalize_directory(void *parent, const char *path)
+{
+	int i;
+	i = strlen(path);
+	if (i > 1) {
+		while ((i > 1) && (path[i - 1] == '/')) {
+			i--;
+		}
+		return talloc_strndup(parent, path, i);
+	} else {
+		return talloc_strdup(parent, path);
+	}
+}
