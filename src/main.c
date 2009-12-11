@@ -116,6 +116,8 @@ main(int argc, char **argv)
 		pfp = NULL;
 	}
 
+	umask(S_IRWXG | S_IRWXO);
+
 	ctx = NULL;
 	i = cm_init(ec, &ctx);
 	if (i != 0) {
