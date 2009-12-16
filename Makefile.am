@@ -33,8 +33,9 @@ archive:
 			--define "_sourcedir $$tmpdir/rpm-build-top" \
 			--define "_specdir $$tmpdir/rpm-build-top" \
 			--define "_builddir $$tmpdir/rpm-build-top" \
+			--define "_buildrootdir $$tmpdir/rpm-build-top" \
 			--define "_srpmdir $$tmpdir/rpm-build-top" \
-			--define "_rpmdir $$tmpdir/rpm-build-top" \
+			--define "_srcrpmdir $$tmpdir/rpm-build-top" \
 			--define "_rpmdir $$tmpdir/rpm-build-top" \
 			-tb $(distdir).tar.gz;\
 		cp -v $(distdir).tar.gz $(ARCHIVEOUTDIR)/;\
