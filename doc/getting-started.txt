@@ -24,10 +24,11 @@ _issued_ (verified and signed) by a CA that your clients trust.
 
 Background: Certificate Extensions
 
-In addition to the subject's name and that subject's private key, a CA can
-embed arbitrary data into a certificate in the certificate's _extensions_
-field.  Extensions are identified by OID and the data they contain is in a
-format specific to that OID.
+An X.509 certificate minimally needs to contain the subject's name and that
+subject's public key.  An issuer is also free to embed arbitrary data into
+a certificate in the certificate's _extensions_ field.  Extensions are
+identified by OID and the data they contain is in a format specific to that
+OID.
 
 While this flexibility could allow for all sorts of hijinks, in order to be
 useful, an extension needs to be understood by all of the parties that will
@@ -51,7 +52,7 @@ In order to obtain a certificate, the CA needs to obtain a copy of the public
 key which should be recorded in the certificate.  Most often, this key is
 combined with other requested information, such as a requested subject name,
 into a _certificate_ _signing_ _request_ (a CSR) and submitted to the CA for
-processing.  The CSR is usually signed with the submitter's public key.
+processing.  The CSR is usually signed with the submitter's private key.
 
 A CSR can also contain arbitrary attributes, and one of those attributes can
 be a set of requested extension values.  In this way, a client can supply
@@ -102,7 +103,7 @@ can tell it to include one or more of several types of SAN values, too:
 Let's create another certificate:
 
    selfsign-getcert request -f /tmp/babs.crt -k /tmp/babs.key \
-   	-N cn="Babs Jensen" -K bjensen@EXAMPLE.COM -E babs@example.com
+   	-N "CN=Babs Jensen" -K bjensen@EXAMPLE.COM -E babs@example.com
 
 For flat files, we can use OpenSSL to look at the certificate's contents.
 Have a look at the first certificate we generated:
