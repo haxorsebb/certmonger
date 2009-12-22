@@ -257,36 +257,24 @@ main(int argc, char **argv)
 		}
 	} else
 	if (cm_submit_x_has_results(ctx) == 0) {
-		if (cm_submit_x_get_named_n(ctx, "status", &i) == 0) {
-			fprintf(stderr, "Status: %d\n", i);
-			if (cm_submit_x_get_named_s(ctx, "certificate",
-						    &s) == 0) {
-				/* If we got a certificate, we're probably
-				 * okay. */
-				fprintf(stderr, "Certificate: \"%s\"\n", s);
-				printf("-----BEGIN CERTIFICATE-----\n");
-				for (p = s; *p != '\0'; p = q) {
-					if (strlen(p) > 64) {
-						q = p + 64;
-					} else {
-						q = p + strlen(p);
-					}
-					printf("%.*s\n", (int) (q - p), p);
+		if (cm_submit_x_get_named_s(ctx, "certificate",
+					    &s) == 0) {
+			/* If we got a certificate, we're probably
+			 * okay. */
+			fprintf(stderr, "Certificate: \"%s\"\n", s);
+			printf("-----BEGIN CERTIFICATE-----\n");
+			for (p = s; *p != '\0'; p = q) {
+				if (strlen(p) > 64) {
+					q = p + 64;
+				} else {
+					q = p + strlen(p);
 				}
-				printf("-----END CERTIFICATE-----\n");
-				return CM_STATUS_ISSUED;
-			} else {
-				/* Interpret the server-reported status. */
-				switch (i) {
-				default:
-					/* Failure? */
-					return CM_STATUS_REJECTED;
-				}
+				printf("%.*s\n", (int) (q - p), p);
 			}
+			printf("-----END CERTIFICATE-----\n");
+			return CM_STATUS_ISSUED;
 		} else {
-			/* No status, no fault?  Try again, from scratch,
-			 * later. */
-			return CM_STATUS_UNREACHABLE;
+			return CM_STATUS_REJECTED;
 		}
 	} else {
 		/* No useful response, no fault.  Try again, from scratch,

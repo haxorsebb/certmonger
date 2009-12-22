@@ -20,7 +20,7 @@ service, with which client tools such as \fBgetcert\fR(1) interact.
 -s
 Listen on the session bus rather than the system bus.
 .TP
--s
+-S
 Listen on the system bus rather than the session bus.  This is the default.
 .TP
 -n
