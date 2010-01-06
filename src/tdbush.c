@@ -1243,7 +1243,7 @@ static long
 ku_from_string(const char *ku)
 {
 	long i = 0;
-	while ((ku != NULL) && (*ku != '\0')) {
+	while ((ku != NULL) && (*ku++ != '\0')) {
 		i <<= 1;
 		i |= 1;
 	}
