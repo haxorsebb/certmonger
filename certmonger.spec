@@ -1,5 +1,5 @@
 Name:		certmonger
-Version:	0.16
+Version:	0.17
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -90,6 +90,12 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Wed Jan  6 2010 Nalin Dahyabhai <nalin@redhat.com> 0.17-1
+- update to 0.17
+  - fix a hang in the daemon (Rob Crittenden)
+  - documentation updates
+  - fix parsing of submission results from IPA (Rob Crittenden)
+
 * Fri Dec 11 2009 Nalin Dahyabhai <nalin@redhat.com> 0.16-1
 - update to 0.16
   - set a umask at startup (Dan Walsh)
