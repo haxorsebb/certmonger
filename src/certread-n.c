@@ -54,7 +54,6 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		   void *userdata)
 {
 	int status = 1;
-	unsigned int i;
 	const char *token;
 	PLArenaPool *arena;
 	SECStatus error;
@@ -149,7 +148,7 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		_exit(2);
 	}
 	cert = NULL;
-	for (i = 1, node = CERT_LIST_HEAD(certs);
+	for (node = CERT_LIST_HEAD(certs);
 	     !CERT_LIST_EMPTY(certs) &&
 	     !CERT_LIST_END(node, certs);
 	     node = CERT_LIST_NEXT(node)) {
