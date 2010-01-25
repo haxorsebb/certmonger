@@ -1,6 +1,9 @@
+%{!?_with_check: %global pcheck 0}
+%{?_with_check: %global pcheck 1}
+
 Name:		certmonger
 Version:	0.17
-Release:	1%{?dist}
+Release:	2%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
 Group:		System Environment/Daemons
@@ -12,7 +15,7 @@ BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 BuildRequires:	dbus-devel, nspr-devel, nss-devel, openssl-devel
 BuildRequires:	libtalloc-devel, libtevent-devel
 BuildRequires:	xmlrpc-c-devel
-%if 0
+%if 0%{?pcheck}
 # Required for 'make check':
 #  for diff and cmp
 BuildRequires:	diffutils
@@ -52,8 +55,9 @@ install -m755 src/certmonger.init $RPM_BUILD_ROOT/%{_initddir}/certmonger
 %endif
 
 %check
-# Needs to be able to create pseudoterminals to drive certutil.
-: make check
+%if 0%{?pcheck}
+make check
+%endif
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -77,7 +81,7 @@ exit 0
 %files
 %defattr(-,root,root,-)
 %doc README LICENSE STATUS doc/*.txt
-%config /etc/dbus-1/system.d/*
+%config(noreplace) %{_sysconfdir}/dbus-1/system.d/*
 %if 0%{?fedora} <= 9
 %{_initrddir}/certmonger
 %else
@@ -90,6 +94,11 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Mon Jan 25 2010 Nalin Dahyabhai <nalin@redhat.com> 0.17-2
+- make the D-Bus configuration file (noreplace) (#541072)
+- make the %%check section and the deps we have just for it conditional on
+  the same macro (#541072)
+
 * Wed Jan  6 2010 Nalin Dahyabhai <nalin@redhat.com> 0.17-1
 - update to 0.17
   - fix a hang in the daemon (Rob Crittenden)
