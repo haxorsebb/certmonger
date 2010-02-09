@@ -1256,8 +1256,10 @@ cm_store_get_defaults(void)
 			if (defaults != NULL) {
 				memset(defaults, 0, sizeof(*defaults));
 				defaults->cm_notification_method = method;
-				defaults->cm_notification_destination =
-					talloc_strdup(defaults, dest);
+				if (dest != NULL) {
+					defaults->cm_notification_destination =
+						talloc_strdup(defaults, dest);
+				}
 			}
 		}
 	}

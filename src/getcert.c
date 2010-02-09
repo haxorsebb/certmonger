@@ -91,6 +91,31 @@ ensure_absolute(void *parent, const char *path)
 		}
 	}
 }
+static char *
+ensure_absolute_maybe_sql(void *parent, const char *path, dbus_bool_t *is_sql)
+{
+	char buf[PATH_MAX + 1], *ret;
+	*is_sql = FALSE;
+	if (strncmp(path, "sql:", 4) == 0) {
+		*is_sql = TRUE;
+		path += 4;
+	}
+	if (path[0] == '/') {
+		return talloc_strdup(parent, path);
+	} else {
+		if (getcwd(buf, sizeof(buf)) == buf) {
+			ret = talloc_asprintf(parent, "%s/%s", buf, path);
+			printf(_("Path \"%s\" is not absolute, using \"%s\" "
+			         "instead.\n"), path, ret);
+			return ret;
+		} else {
+			printf(_("Path \"%s\" is not absolute, and there "
+			         "was an error determining the name of the "
+				 "current directory.\n"), path);
+			exit(1);
+		}
+	}
+}
 
 /* Add a string to a list. */
 static void
@@ -308,7 +333,7 @@ request(const char *argv0, int argc, char **argv)
 	struct cm_tdbusm_dict param[32];
 	const struct cm_tdbusm_dict *params[32];
 	DBusMessage *req, *rep;
-	dbus_bool_t b;
+	dbus_bool_t b, is_sql;
 	char *p;
 	krb5_context kctx;
 	krb5_error_code kret;
@@ -345,9 +370,14 @@ request(const char *argv0, int argc, char **argv)
 			   "d:n:t:k:f:I:g:rRN:U:K:D:E:sS" GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
-			dbdir = ensure_absolute(globals.tctx, optarg);
+			dbdir = ensure_absolute_maybe_sql(globals.tctx, optarg,
+							  &is_sql);
 			dbdir = cm_store_canonicalize_directory(globals.tctx,
 								dbdir);
+			if (is_sql) {
+				dbdir = talloc_asprintf(globals.tctx, "sql:%s",
+							dbdir);
+			}
 			break;
 		case 't':
 			token = talloc_strdup(globals.tctx, optarg);
@@ -911,15 +941,20 @@ set_tracking(const char *argv0, const char *category,
 	char *dbdir = NULL, *token = NULL, *nickname = NULL;
 	char *id = NULL, *new_id = NULL, *new_request;
 	char *keyfile = NULL, *certfile = NULL, *ca = DEFAULT_CA;
-	dbus_bool_t b;
+	dbus_bool_t b, is_sql;
 	int c, auto_renew_start = 0, auto_renew_stop = 0, i;
 	while ((c = getopt(argc, argv,
 			   "d:n:t:k:f:g:rRi:I:sS" GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
-			dbdir = ensure_absolute(globals.tctx, optarg);
+			dbdir = ensure_absolute_maybe_sql(globals.tctx, optarg,
+							  &is_sql);
 			dbdir = cm_store_canonicalize_directory(globals.tctx,
 								dbdir);
+			if (is_sql) {
+				dbdir = talloc_asprintf(globals.tctx, "sql:%s",
+							dbdir);
+			}
 			break;
 		case 't':
 			token = talloc_strdup(globals.tctx, optarg);
@@ -1153,7 +1188,7 @@ resubmit(const char *argv0, int argc, char **argv)
 	char *id = NULL, *new_id = NULL, *ca = NULL, *new_request;
 	char *subject = NULL, **eku = NULL, *oid = NULL;
 	char **principal = NULL, **dns = NULL, **email = NULL;
-	dbus_bool_t b;
+	dbus_bool_t b, is_sql;
 	int c, i;
 	krb5_context kctx;
 	krb5_error_code kret;
@@ -1182,9 +1217,14 @@ resubmit(const char *argv0, int argc, char **argv)
 			   "d:n:N:t:U:K:E:D:f:i:I:sS" GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
-			dbdir = ensure_absolute(globals.tctx, optarg);
+			dbdir = ensure_absolute_maybe_sql(globals.tctx, optarg,
+							  &is_sql);
 			dbdir = cm_store_canonicalize_directory(globals.tctx,
 								dbdir);
+			if (is_sql) {
+				dbdir = talloc_asprintf(globals.tctx, "sql:%s",
+							dbdir);
+			}
 			break;
 		case 't':
 			token = talloc_strdup(globals.tctx, optarg);
