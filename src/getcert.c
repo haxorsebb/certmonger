@@ -92,12 +92,16 @@ ensure_absolute(void *parent, const char *path)
 	}
 }
 static char *
-ensure_absolute_maybe_sql(void *parent, const char *path, dbus_bool_t *is_sql)
+ensure_absolute_maybe_nss(void *parent, const char *path, char **nss_scheme)
 {
 	char buf[PATH_MAX + 1], *ret;
-	*is_sql = FALSE;
+	*nss_scheme = NULL;
 	if (strncmp(path, "sql:", 4) == 0) {
-		*is_sql = TRUE;
+		*nss_scheme = talloc_strdup(parent, "sql");
+		path += 4;
+	} else
+	if (strncmp(path, "dbm:", 4) == 0) {
+		*nss_scheme = talloc_strdup(parent, "dbm");
 		path += 4;
 	}
 	if (path[0] == '/') {
@@ -325,7 +329,7 @@ request(const char *argv0, int argc, char **argv)
 {
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	char subject_default[LINE_MAX];
-	char *dbdir = NULL, *token = NULL, *nickname = NULL;
+	char *nss_scheme, *dbdir = NULL, *token = NULL, *nickname = NULL;
 	char *keyfile = NULL, *certfile = NULL, *capath;
 	int keysize = 0, auto_renew = 1, c, i;
 	char *ca = DEFAULT_CA, *subject = NULL, **eku = NULL, *oid, *id = NULL;
@@ -333,7 +337,7 @@ request(const char *argv0, int argc, char **argv)
 	struct cm_tdbusm_dict param[32];
 	const struct cm_tdbusm_dict *params[32];
 	DBusMessage *req, *rep;
-	dbus_bool_t b, is_sql;
+	dbus_bool_t b;
 	char *p;
 	krb5_context kctx;
 	krb5_error_code kret;
@@ -370,13 +374,14 @@ request(const char *argv0, int argc, char **argv)
 			   "d:n:t:k:f:I:g:rRN:U:K:D:E:sS" GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
-			dbdir = ensure_absolute_maybe_sql(globals.tctx, optarg,
-							  &is_sql);
+			nss_scheme = NULL;
+			dbdir = ensure_absolute_maybe_nss(globals.tctx, optarg,
+							  &nss_scheme);
 			dbdir = cm_store_canonicalize_directory(globals.tctx,
 								dbdir);
-			if (is_sql) {
-				dbdir = talloc_asprintf(globals.tctx, "sql:%s",
-							dbdir);
+			if (nss_scheme != NULL) {
+				dbdir = talloc_asprintf(globals.tctx, "%s:%s",
+							nss_scheme, dbdir);
 			}
 			break;
 		case 't':
@@ -938,22 +943,23 @@ set_tracking(const char *argv0, const char *category,
 	const char *request;
 	struct cm_tdbusm_dict param[4];
 	const struct cm_tdbusm_dict *params[5];
-	char *dbdir = NULL, *token = NULL, *nickname = NULL;
+	char *nss_scheme, *dbdir = NULL, *token = NULL, *nickname = NULL;
 	char *id = NULL, *new_id = NULL, *new_request;
 	char *keyfile = NULL, *certfile = NULL, *ca = DEFAULT_CA;
-	dbus_bool_t b, is_sql;
+	dbus_bool_t b;
 	int c, auto_renew_start = 0, auto_renew_stop = 0, i;
 	while ((c = getopt(argc, argv,
 			   "d:n:t:k:f:g:rRi:I:sS" GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
-			dbdir = ensure_absolute_maybe_sql(globals.tctx, optarg,
-							  &is_sql);
+			nss_scheme = NULL;
+			dbdir = ensure_absolute_maybe_nss(globals.tctx, optarg,
+							  &nss_scheme);
 			dbdir = cm_store_canonicalize_directory(globals.tctx,
 								dbdir);
-			if (is_sql) {
-				dbdir = talloc_asprintf(globals.tctx, "sql:%s",
-							dbdir);
+			if (nss_scheme != NULL) {
+				dbdir = talloc_asprintf(globals.tctx, "%s:%s",
+							nss_scheme, dbdir);
 			}
 			break;
 		case 't':
@@ -1185,10 +1191,10 @@ resubmit(const char *argv0, int argc, char **argv)
 	struct cm_tdbusm_dict param[15];
 	const struct cm_tdbusm_dict *params[16];
 	char *dbdir = NULL, *token = NULL, *nickname = NULL, *certfile = NULL;
-	char *id = NULL, *new_id = NULL, *ca = NULL, *new_request;
+	char *id = NULL, *new_id = NULL, *ca = NULL, *new_request, *nss_scheme;
 	char *subject = NULL, **eku = NULL, *oid = NULL;
 	char **principal = NULL, **dns = NULL, **email = NULL;
-	dbus_bool_t b, is_sql;
+	dbus_bool_t b;
 	int c, i;
 	krb5_context kctx;
 	krb5_error_code kret;
@@ -1217,13 +1223,14 @@ resubmit(const char *argv0, int argc, char **argv)
 			   "d:n:N:t:U:K:E:D:f:i:I:sS" GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
-			dbdir = ensure_absolute_maybe_sql(globals.tctx, optarg,
-							  &is_sql);
+			nss_scheme = NULL;
+			dbdir = ensure_absolute_maybe_nss(globals.tctx, optarg,
+							  &nss_scheme);
 			dbdir = cm_store_canonicalize_directory(globals.tctx,
 								dbdir);
-			if (is_sql) {
-				dbdir = talloc_asprintf(globals.tctx, "sql:%s",
-							dbdir);
+			if (nss_scheme != NULL) {
+				dbdir = talloc_asprintf(globals.tctx, "%s:%s",
+							nss_scheme, dbdir);
 			}
 			break;
 		case 't':

@@ -279,9 +279,12 @@ cm_tdbush_check_arg_is_absolute_path(const char *path)
 }
 
 static int
-cm_tdbush_check_arg_is_absolute_sql_path(const char *path)
+cm_tdbush_check_arg_is_absolute_nss_path(const char *path)
 {
 	if (strncmp(path, "sql:", 4) == 0) {
+		path += 4;
+	} else
+	if (strncmp(path, "dbm:", 4) == 0) {
 		path += 4;
 	}
 	return (path[0] == '/') ? 0 : -1;
@@ -300,10 +303,13 @@ cm_tdbush_check_arg_is_directory(const char *path)
 }
 
 static int
-cm_tdbush_check_arg_is_sql_directory(const char *path)
+cm_tdbush_check_arg_is_nss_directory(const char *path)
 {
 	struct stat st;
 	if (strncmp(path, "sql:", 4) == 0) {
+		path += 4;
+	} else
+	if (strncmp(path, "dbm:", 4) == 0) {
 		path += 4;
 	}
 	if (stat(path, &st) == 0) {
@@ -463,7 +469,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 								    _("Certificate storage location not specified."),
 								    "CERT_LOCATION");
 		}
-		if (cm_tdbush_check_arg_is_absolute_sql_path(param->value.s) != 0) {
+		if (cm_tdbush_check_arg_is_absolute_nss_path(param->value.s) != 0) {
 			cm_log(1, "Cert storage location is not an absolute "
 			       "path.\n");
 			talloc_free(parent);
@@ -472,7 +478,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 								param->value.s,
 								"CERT_LOCATION");
 		}
-		if (cm_tdbush_check_arg_is_sql_directory(param->value.s) != 0) {
+		if (cm_tdbush_check_arg_is_nss_directory(param->value.s) != 0) {
 			cm_log(1, "Cert storage location must be "
 			       "a directory.\n");
 			talloc_free(parent);
@@ -651,7 +657,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 									    _("Key storage location not specified."),
 									    "KEY_LOCATION");
 			}
-			if (cm_tdbush_check_arg_is_absolute_sql_path(param->value.s) != 0) {
+			if (cm_tdbush_check_arg_is_absolute_nss_path(param->value.s) != 0) {
 				cm_log(1, "Key storage location is not an "
 				       "absolute path.\n");
 				talloc_free(parent);
@@ -660,7 +666,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 									param->value.s,
 									"KEY_LOCATION");
 			}
-			if (cm_tdbush_check_arg_is_sql_directory(param->value.s) != 0) {
+			if (cm_tdbush_check_arg_is_nss_directory(param->value.s) != 0) {
 				cm_log(1, "Key storage location must be "
 				       "a directory.\n");
 				talloc_free(parent);
