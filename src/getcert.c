@@ -361,13 +361,7 @@ request(const char *argv0, int argc, char **argv)
 	}
 	krealm = NULL;
 	if ((kret = krb5_get_default_realm(kctx, &krealm)) != 0) {
-		printf(_("Error determining default Kerberos realm: %s.\n"),
-		       error_message(kret));
-		return 1;
-	}
-	if (krealm == NULL) {
-		printf(_("Error determining default Kerberos realm.\n"));
-		return 1;
+		krealm = NULL;
 	}
 
 	while ((c = getopt(argc, argv,
@@ -497,9 +491,12 @@ request(const char *argv0, int argc, char **argv)
 	    (dns == NULL) &&
 	    (email == NULL)) {
 		add_string(globals.tctx, &eku, "id-kp-serverAuth");
-		add_string(globals.tctx, &principal,
-			   talloc_asprintf(globals.tctx,
-					   "host/%s@%s", subject + 3, krealm));
+		if (krealm != NULL) {
+			add_string(globals.tctx, &principal,
+				   talloc_asprintf(globals.tctx,
+						   "host/%s@%s",
+						   subject + 3, krealm));
+		}
 		add_string(globals.tctx, &dns, subject + 3);
 	}
 #ifdef WITH_IPA
@@ -1199,23 +1196,13 @@ resubmit(const char *argv0, int argc, char **argv)
 	krb5_context kctx;
 	krb5_error_code kret;
 	krb5_principal kprincipal;
-	char *krealm, *kuprincipal;
+	char *kuprincipal;
 
 	kctx = NULL;
 	if ((kret = krb5_init_context(&kctx)) != 0) {
 		kctx = NULL;
 		printf(_("Error initializing Kerberos library: %s.\n"),
 		       error_message(kret));
-		return 1;
-	}
-	krealm = NULL;
-	if ((kret = krb5_get_default_realm(kctx, &krealm)) != 0) {
-		printf(_("Error determining default Kerberos realm: %s.\n"),
-		       error_message(kret));
-		return 1;
-	}
-	if (krealm == NULL) {
-		printf(_("Error determining default Kerberos realm.\n"));
 		return 1;
 	}
 
