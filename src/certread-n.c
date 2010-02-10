@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2010 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,12 +48,15 @@ struct cm_certread_state {
 	struct cm_certread_state_pvt pvt;
 	struct cm_subproc_state *subproc;
 };
+struct cm_certread_n_settings {
+	int readwrite:1;
+};
 
 static int
 cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		   void *userdata)
 {
-	int status = 1;
+	int status = 1, readwrite;
 	const char *token;
 	PLArenaPool *arena;
 	SECStatus error;
@@ -64,6 +67,7 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	CERTCertListNode *node;
 	CERTCertificate *cert;
 	CK_MECHANISM_TYPE mech;
+	struct cm_certread_n_settings *settings;
 	FILE *fp;
 	/* Open the status descriptor for stdio. */
 	fp = fdopen(fd, "w");
@@ -72,7 +76,10 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		_exit(1);
 	}
 	/* Open the database. */
-	error = NSS_InitReadWrite(entry->cm_cert_storage_location);
+	settings = userdata;
+	readwrite = settings->readwrite;
+	error = readwrite ? NSS_InitReadWrite(entry->cm_cert_storage_location) :
+			    NSS_Init(entry->cm_cert_storage_location);
 	if (error != SECSuccess) {
 		cm_log(1, "Unable to open NSS database.\n");
 		_exit(1);
@@ -355,6 +362,9 @@ struct cm_certread_state *
 cm_certread_n_start(struct cm_store_entry *entry)
 {
 	struct cm_certread_state *state;
+	struct cm_certread_n_settings settings = {
+		.readwrite = 0,
+	};
 	if (entry->cm_cert_storage_type != cm_cert_storage_nssdb) {
 		cm_log(1, "Wrong read method: can only read certificates "
 		       "from an NSS database.\n");
@@ -367,7 +377,7 @@ cm_certread_n_start(struct cm_store_entry *entry)
 		state->pvt.get_fd= cm_certread_n_get_fd;
 		state->pvt.done= cm_certread_n_done;
 		state->subproc = cm_subproc_start(cm_certread_n_main,
-						  NULL, entry, NULL);
+						  NULL, entry, &settings);
 		if (state->subproc == NULL) {
 			talloc_free(state);
 			state = NULL;

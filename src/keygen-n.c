@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2010 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,6 +46,9 @@ struct cm_keygen_state {
 	struct cm_keygen_state_pvt pvt;
 	struct cm_subproc_state *subproc;
 };
+struct cm_keygen_n_settings {
+	int readwrite:1;
+};
 
 static int
 cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
@@ -53,7 +56,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 {
 	FILE *status;
 	enum cm_key_algorithm cm_key_algorithm;
-	int cm_key_size, cm_requested_key_size;
+	int cm_key_size, cm_requested_key_size, readwrite;
 	CK_MECHANISM_TYPE mech;
 	SECStatus error;
 	PK11SlotList *slotlist;
@@ -67,13 +70,17 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	SECKEYPublicKey *pubkey;
 	PRErrorCode ec;
 	const char *es, *token, *keyname;
+	struct cm_keygen_n_settings *settings;
 
 	status = fdopen(fd, "w");
 	if (status == NULL) {
 		_exit(1);
 	}
 	/* Start up NSS and open the database. */
-	error = NSS_InitReadWrite(entry->cm_key_storage_location);
+	settings = userdata;
+	readwrite = settings->readwrite;
+	error = readwrite ? NSS_InitReadWrite(entry->cm_key_storage_location) :
+			    NSS_Init(entry->cm_key_storage_location);
 	if (error != SECSuccess) {
 		fprintf(status, "Error initializing database '%s'.\n",
 			entry->cm_key_storage_location);
@@ -272,6 +279,9 @@ struct cm_keygen_state *
 cm_keygen_n_start(struct cm_store_entry *entry)
 {
 	struct cm_keygen_state *state;
+	struct cm_keygen_n_settings settings = {
+		.readwrite = 1,
+	};
 	if (entry->cm_key_storage_type != cm_key_storage_nssdb) {
 		return NULL;
 	}
@@ -283,7 +293,7 @@ cm_keygen_n_start(struct cm_store_entry *entry)
 		state->pvt.saved_keypair = cm_keygen_n_saved_keypair;
 		state->pvt.done = cm_keygen_n_done;
 		state->subproc = cm_subproc_start(cm_keygen_n_main,
-						  NULL, entry, NULL);
+						  NULL, entry, &settings);
 		if (state->subproc == NULL) {
 			talloc_free(state);
 			state = NULL;

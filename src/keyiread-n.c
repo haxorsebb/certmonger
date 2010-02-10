@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2010 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,6 +51,9 @@
 struct cm_keyiread_state {
 	struct cm_keyiread_state_pvt pvt;
 	struct cm_subproc_state *subproc;
+};
+struct cm_keyiread_n_settings {
+	int readwrite:1;
 };
 
 SECKEYPrivateKey *
@@ -232,8 +235,9 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	SECKEYPrivateKey *key;
 	SECKEYPublicKey *pubkey;
 	const char *alg;
-	int status = 1, size;
+	int status = 1, size, readwrite;
 	FILE *fp;
+	struct cm_keyiread_n_settings *settings;
 
 	/* Open the status descriptor for stdio. */
 	fp = fdopen(fd, "w");
@@ -243,7 +247,9 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 
 	/* Read the key. */
-	key = cm_keyiread_n_get_private_key(entry, 0);
+	settings = userdata;
+	readwrite = settings->readwrite;
+	key = cm_keyiread_n_get_private_key(entry, readwrite);
 	alg = "";
 	size = 0;
 	if (key != NULL) {
@@ -323,6 +329,9 @@ struct cm_keyiread_state *
 cm_keyiread_n_start(struct cm_store_entry *entry)
 {
 	struct cm_keyiread_state *state;
+	struct cm_keyiread_n_settings settings = {
+		.readwrite = 0,
+	};
 	if (entry->cm_key_storage_type != cm_key_storage_nssdb) {
 		cm_log(1, "Wrong read method: can only read keys "
 		       "from an NSS database.\n");
@@ -335,7 +344,7 @@ cm_keyiread_n_start(struct cm_store_entry *entry)
 		state->pvt.get_fd= cm_keyiread_n_get_fd;
 		state->pvt.done= cm_keyiread_n_done;
 		state->subproc = cm_subproc_start(cm_keyiread_n_main,
-						  NULL, entry, NULL);
+						  NULL, entry, &settings);
 		if (state->subproc == NULL) {
 			talloc_free(state);
 			state = NULL;

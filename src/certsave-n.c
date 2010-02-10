@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2010 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,12 +44,15 @@ struct cm_certsave_state {
 	struct cm_certsave_state_pvt pvt;
 	struct cm_subproc_state *subproc;
 };
+struct cm_certsave_n_settings {
+	int readwrite:1;
+};
 
 static int
 cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		   void *userdata)
 {
-	int status = 1;
+	int status = 1, readwrite;
 	PLArenaPool *arena;
 	SECStatus error;
 	SECItem *item;
@@ -57,8 +60,12 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	CERTCertDBHandle *certdb;
 	CERTCertList *certlist;
 	CERTCertListNode *node;
+	struct cm_certsave_n_settings *settings;
 	/* Open the database. */
-	error = NSS_InitReadWrite(entry->cm_cert_storage_location);
+	settings = userdata;
+	readwrite = settings->readwrite;
+	error = readwrite ? NSS_InitReadWrite(entry->cm_cert_storage_location) :
+			    NSS_Init(entry->cm_cert_storage_location);
 	if (error != SECSuccess) {
 		cm_log(1, "Unable to open NSS database '%s'.\n",
 		       entry->cm_cert_storage_location);
@@ -195,6 +202,9 @@ struct cm_certsave_state *
 cm_certsave_n_start(struct cm_store_entry *entry)
 {
 	struct cm_certsave_state *state;
+	struct cm_certsave_n_settings settings = {
+		.readwrite = 1,
+	};
 	if (entry->cm_cert_storage_type != cm_cert_storage_nssdb) {
 		cm_log(1, "Wrong save method: can only save certificates "
 		       "to an NSS database.\n");
@@ -208,7 +218,7 @@ cm_certsave_n_start(struct cm_store_entry *entry)
 		state->pvt.saved= cm_certsave_n_saved;
 		state->pvt.done= cm_certsave_n_done;
 		state->subproc = cm_subproc_start(cm_certsave_n_main,
-						  NULL, entry, NULL);
+						  NULL, entry, &settings);
 		if (state->subproc == NULL) {
 			talloc_free(state);
 			state = NULL;
