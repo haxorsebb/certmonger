@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2010 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -118,7 +118,9 @@ main(int argc, char **argv)
 			tmp = talloc_strndup(parent, p, q - p);
 			if (entry->cm_state ==
 			    cm_store_state_from_string(tmp)) {
-				printf("%s\n", tmp);
+				if (entry->cm_state != old_state) {
+					printf("%s\n", tmp);
+				}
 				fflush(NULL);
 				talloc_free(tmp);
 				break;
