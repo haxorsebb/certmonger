@@ -58,8 +58,6 @@ enum cm_store_file_field {
 	cm_store_entry_field_cert_storage_location,
 	cm_store_entry_field_cert_token,
 	cm_store_entry_field_cert_nickname,
-	cm_store_entry_field_cert_pin,
-	cm_store_entry_field_cert_pin_file,
 
 	cm_store_entry_field_cert_issuer,
 	cm_store_entry_field_cert_serial,
@@ -137,8 +135,6 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_cert_storage_location, "cert_storage_location"},
 	{cm_store_entry_field_cert_token, "cert_token"},
 	{cm_store_entry_field_cert_nickname, "cert_nickname"},
-	{cm_store_entry_field_cert_pin, "cert_pin"},
-	{cm_store_entry_field_cert_pin_file, "cert_pin_file"},
 
 	{cm_store_entry_field_cert_issuer, "cert_issuer"},
 	{cm_store_entry_field_cert_serial, "cert_serial"},
@@ -506,12 +502,6 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_cert_nickname:
 				ret->cm_cert_nickname = free_if_empty(p);
 				break;
-			case cm_store_entry_field_cert_pin:
-				ret->cm_cert_pin = free_if_empty(p);
-				break;
-			case cm_store_entry_field_cert_pin_file:
-				ret->cm_cert_pin_file = free_if_empty(p);
-				break;
 			case cm_store_entry_field_cert_issuer:
 				ret->cm_cert_issuer = free_if_empty(p);
 				break;
@@ -716,8 +706,6 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_cert_storage_location:
 			case cm_store_entry_field_cert_token:
 			case cm_store_entry_field_cert_nickname:
-			case cm_store_entry_field_cert_pin:
-			case cm_store_entry_field_cert_pin_file:
 			case cm_store_entry_field_cert_issuer:
 			case cm_store_entry_field_cert_serial:
 			case cm_store_entry_field_cert_subject:
@@ -1008,10 +996,6 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 				entry->cm_cert_token);
 	cm_store_file_write_str(fp, cm_store_entry_field_cert_nickname,
 				entry->cm_cert_nickname);
-	cm_store_file_write_str(fp, cm_store_entry_field_cert_pin,
-				entry->cm_cert_pin);
-	cm_store_file_write_str(fp, cm_store_entry_field_cert_pin_file,
-				entry->cm_cert_pin_file);
 
 	cm_store_file_write_str(fp, cm_store_entry_field_cert_issuer,
 				entry->cm_cert_issuer);

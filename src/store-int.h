@@ -54,8 +54,6 @@ struct cm_store_entry {
 	char *cm_cert_storage_location;
 	char *cm_cert_token;
 	char *cm_cert_nickname;
-	char *cm_cert_pin;
-	char *cm_cert_pin_file;
 	/* Cached certificate issuer/serial/subject/spki/expiration */
 	char *cm_cert_issuer;
 	char *cm_cert_serial;

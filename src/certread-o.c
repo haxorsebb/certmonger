@@ -65,7 +65,7 @@ cm_certread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 	pem = fopen(entry->cm_cert_storage_location, "r");
 	if (pem != NULL) {
-		cert = PEM_read_X509(pem, NULL, NULL, cm_pin_read_cert(entry));
+		cert = PEM_read_X509(pem, NULL, NULL, NULL);
 		if (cert != NULL) {
 			status = 0;
 		} else {

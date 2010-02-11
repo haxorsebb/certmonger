@@ -40,7 +40,6 @@
 
 enum cm_pin_type {
 	cm_pin_key,
-	cm_pin_cert,
 };
 
 const EVP_CIPHER *
@@ -61,10 +60,6 @@ cm_pin_read(struct cm_store_entry *entry, enum cm_pin_type pin_type)
 	case cm_pin_key:
 		pinfile = entry->cm_key_pin_file;
 		pinvalue = entry->cm_key_pin;
-		break;
-	case cm_pin_cert:
-		pinfile = entry->cm_cert_pin_file;
-		pinvalue = entry->cm_cert_pin;
 		break;
 	}
 
@@ -139,19 +134,7 @@ cm_pin_read_key(struct cm_store_entry *entry)
 }
 
 char *
-cm_pin_read_cert(struct cm_store_entry *entry)
-{
-	return cm_pin_read(entry, cm_pin_cert);
-}
-
-char *
 cm_pin_cb_key(PK11SlotInfo *slot, PRBool retry, void *arg)
-{
-	return cm_pin_cb(slot, retry, arg, cm_pin_key);
-}
-
-char *
-cm_pin_cb_cert(PK11SlotInfo *slot, PRBool retry, void *arg)
 {
 	return cm_pin_cb(slot, retry, arg, cm_pin_key);
 }
