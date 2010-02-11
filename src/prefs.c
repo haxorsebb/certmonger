@@ -18,12 +18,66 @@
 #include "config.h"
 
 #include <nss.h>
+#include <nss.h>
+#include <keythi.h>
 #include <secoidt.h>
 
 #include "prefs.h"
+#include "prefs-int.h"
+
+enum cm_prefs_cipher
+cm_prefs_preferred_cipher(void)
+{
+	return cm_prefs_aes128;
+}
+
+enum cm_prefs_digest
+cm_prefs_preferred_digest(void)
+{
+	return cm_prefs_sha256;
+}
 
 unsigned int
-cm_prefs_nss_sig_alg(void)
+cm_prefs_nss_sig_alg(SECKEYPublicKey *pkey)
 {
-	return SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION;
+	switch (pkey->keyType) {
+	case nullKey:
+		switch (cm_prefs_preferred_digest()) {
+		case cm_prefs_sha1:
+			return SEC_OID_SHA1;
+			break;
+		case cm_prefs_sha256:
+			return SEC_OID_SHA256;
+			break;
+		case cm_prefs_sha384:
+			return SEC_OID_SHA384;
+			break;
+		case cm_prefs_sha512:
+			return SEC_OID_SHA512;
+			break;
+		}
+		return SEC_OID_SHA256;
+		break;
+		break;
+	case rsaKey:
+		switch (cm_prefs_preferred_digest()) {
+		case cm_prefs_sha1:
+			return SEC_OID_PKCS1_SHA1_WITH_RSA_ENCRYPTION;
+			break;
+		case cm_prefs_sha256:
+			return SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION;
+			break;
+		case cm_prefs_sha384:
+			return SEC_OID_PKCS1_SHA384_WITH_RSA_ENCRYPTION;
+			break;
+		case cm_prefs_sha512:
+			return SEC_OID_PKCS1_SHA512_WITH_RSA_ENCRYPTION;
+			break;
+		}
+		return SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION;
+		break;
+	default:
+		return SEC_OID_UNKNOWN;
+		break;
+	}
 }

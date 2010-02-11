@@ -62,6 +62,7 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	SECStatus error;
 	SECItem *esdata = NULL, *ecert = NULL;
 	SECKEYPrivateKey *privkey;
+	SECKEYPublicKey *pubkey;
 	CERTCertificate *ucert = NULL;
 	CERTCertExtension **extensions;
 	CERTCertificateRequest *req = NULL, sreq;
@@ -118,7 +119,12 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	} else {
 		data = &sdata;
 	}
-	sigoid = SECOID_FindOIDByTag(cm_prefs_nss_sig_alg());
+	pubkey = SECKEY_ConvertToPublicKey(privkey);
+	if (pubkey == NULL) {
+		cm_log(1, "Unable to convert private key to public key.\n");
+		_exit(1);
+	}
+	sigoid = SECOID_FindOIDByTag(cm_prefs_nss_sig_alg(pubkey));
 	if (sigoid == NULL) {
 		cm_log(1, "Internal error resolving signature OID.\n");
 		_exit(1);

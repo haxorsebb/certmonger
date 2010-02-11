@@ -43,6 +43,7 @@ libcm_a_SOURCES = \
 	pin.h \
 	prefs.c \
 	prefs.h \
+	prefs-int.h \
 	store-files.c \
 	store-gen.c \
 	store.h \

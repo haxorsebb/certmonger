@@ -15,9 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef cmprefs_h
-#define cmprefs_h
+#ifndef cmprefsint_h
+#define cmprefsint_h
 
-unsigned int cm_prefs_nss_sig_alg(SECKEYPublicKey *pkey);
+enum cm_prefs_cipher {
+	cm_prefs_aes128,
+	cm_prefs_aes256,
+};
+
+enum cm_prefs_digest {
+	cm_prefs_sha256,
+	cm_prefs_sha384,
+	cm_prefs_sha512,
+	cm_prefs_sha1,
+};
+
+enum cm_prefs_cipher cm_prefs_preferred_cipher(void);
+enum cm_prefs_digest cm_prefs_preferred_digest(void);
 
 #endif

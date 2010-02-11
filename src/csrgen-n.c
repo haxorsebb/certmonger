@@ -285,7 +285,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		_exit(2);
 	}
 	/* Sign the request using the private key. */
-	sigoid = SECOID_FindOIDByTag(cm_prefs_nss_sig_alg());
+	sigoid = SECOID_FindOIDByTag(cm_prefs_nss_sig_alg(pubkey));
 	memset(&sreq, 0, sizeof(sreq));
 	sreq.data = ereq;
 	if (SECOID_SetAlgorithmID(arena, &sreq.signatureAlgorithm,
