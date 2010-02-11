@@ -170,7 +170,18 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		params = NULL;
 		break;
 	}
-	/* Log in to the database, if we can. */
+	/* If we need to set a PIN to finish properly initializing the
+	 * slot's data store, do it. */
+	if (PK11_NeedUserInit(slot)) {
+		if (readwrite) {
+			PK11_InitPin(slot, "", "");
+		}
+		if (PK11_NeedUserInit(slot)) {
+			cm_log(1, "Key generation slot still requires "
+			       "user initialization.\n");
+		}
+	}
+	/* Now log in, if we have to. */
 	if (PK11_NeedLogin(slot) || !PK11_IsFriendly(slot)) {
 		error = PK11_Authenticate(slot, PR_TRUE, NULL);
 		if (error != SECSuccess) {
