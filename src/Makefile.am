@@ -71,7 +71,7 @@ libcm_o_a_SOURCES += \
 	keyiread-o.c \
 	submit-so.c
 endif
-libcm_o_a_CFLAGS = $(OPENSSL_CFLAGS)
+libcm_o_a_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS) $(OPENSSL_CFLAGS)
 libcm_a_LIBADD = $(libcm_o_a_OBJECTS)
 bin_PROGRAMS = getcert
 pkglibexec_PROGRAMS =
