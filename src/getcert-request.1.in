@@ -39,6 +39,17 @@ Use the key stored in this file to generate the signing request.  If no
 such file is found, generate a new key pair and store them in the file.
 Only valid with \fB\-f\fR.
 
+.SH KEY ENCRYPTION OPTIONS
+\fB\-p\fR FILE
+Encrypt private key files or databases using the PIN stored in the named
+file as the passphrase.
+.TP
+\fB\-P\fR PIN
+Encrypt private key files or databases using the specified PIN as the
+passphrase.  Because command-line arguments to running processes are
+trivially discoverable, use of this option is not recommended except
+for testing.
+
 .SH KEY GENERATION OPTIONS
 .TP
 \fB\-g\fR BITS

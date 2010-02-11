@@ -331,6 +331,7 @@ request(const char *argv0, int argc, char **argv)
 	char subject_default[LINE_MAX];
 	char *nss_scheme, *dbdir = NULL, *token = NULL, *nickname = NULL;
 	char *keyfile = NULL, *certfile = NULL, *capath;
+	char *pin = NULL, *pinfile = NULL;
 	int keysize = 0, auto_renew = 1, c, i;
 	char *ca = DEFAULT_CA, *subject = NULL, **eku = NULL, *oid, *id = NULL;
 	char **principal = NULL, **dns = NULL, **email = NULL;
@@ -365,7 +366,8 @@ request(const char *argv0, int argc, char **argv)
 	}
 
 	while ((c = getopt(argc, argv,
-			   "d:n:t:k:f:I:g:rRN:U:K:D:E:sS" GETOPT_CA)) != -1) {
+			   "d:n:t:k:f:I:g:rRN:U:K:D:E:sSp:P:"
+			   GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
 			nss_scheme = NULL;
@@ -448,6 +450,12 @@ request(const char *argv0, int argc, char **argv)
 			break;
 		case 'S':
 			bus = cm_tdbus_system;
+			break;
+		case 'p':
+			pinfile = optarg;
+			break;
+		case 'P':
+			pin = optarg;
 			break;
 		default:
 			help(argv0, "request");
@@ -582,6 +590,20 @@ request(const char *argv0, int argc, char **argv)
 		param[i].key = "CERT_LOCATION";
 		param[i].value_type = cm_tdbusm_dict_s;
 		param[i].value.s = certfile;
+		params[i] = &param[i];
+		i++;
+	}
+	if (pin != NULL) {
+		param[i].key = "KEY_PIN";
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = pin;
+		params[i] = &param[i];
+		i++;
+	}
+	if (pinfile != NULL) {
+		param[i].key = "KEY_PIN_FILE";
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = pinfile;
 		params[i] = &param[i];
 		i++;
 	}
@@ -1718,6 +1740,9 @@ help(const char *cmd, const char *category)
 		N_("* If using files for storage:\n"),
 		N_("  -k FILE	PEM file for private key\n"),
 		N_("  -f FILE	PEM file for certificate (only valid with -k)\n"),
+		N_("* If keys are encrypted:\n"),
+		N_("  -p FILE	file which holds the encryption PIN\n"),
+		N_("  -P PIN 	PIN value\n"),
 		"\n",
 		N_("Optional arguments:\n"),
 		N_("* Certificate handling settings:\n"),
