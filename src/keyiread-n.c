@@ -111,16 +111,19 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	for (sle = slotlist->head;
 	     ((sle != NULL) && (sle->slot != NULL));
 	     sle = sle->next) {
+		/* Read the token's name. */
 		token = PK11_GetTokenName(sle->slot);
 		if (token != NULL) {
 			cm_log(3, "Found token '%s'.\n", token);
 		}
+		/* If this is the right token, stop walking. */
 		if ((entry->cm_key_token == NULL) ||
 		    (strlen(entry->cm_key_token) == 0) ||
 		    (strcmp(entry->cm_key_token, token) == 0)) {
 			slot = sle->slot;
 			break;
 		}
+		/* If this was the last token, stop walking. */
 		if (sle == slotlist->tail) {
 			break;
 		}
