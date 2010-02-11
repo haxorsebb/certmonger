@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2010 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,6 +43,8 @@ struct cm_store_entry {
 	char *cm_key_storage_location;
 	char *cm_key_token;
 	char *cm_key_nickname;
+	char *cm_key_pin;
+	char *cm_key_pin_file;
 	/* Location of certificate [use-once default]
 	 * NSS,/etc/pki/nssdb,Server-Cert-default */
 	enum cm_cert_storage_type {
@@ -52,6 +54,8 @@ struct cm_store_entry {
 	char *cm_cert_storage_location;
 	char *cm_cert_token;
 	char *cm_cert_nickname;
+	char *cm_cert_pin;
+	char *cm_cert_pin_file;
 	/* Cached certificate issuer/serial/subject/spki/expiration */
 	char *cm_cert_issuer;
 	char *cm_cert_serial;
