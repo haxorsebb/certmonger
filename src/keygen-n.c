@@ -175,7 +175,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	 * slot's data store, do it. */
 	if (PK11_NeedUserInit(slot)) {
 		if (readwrite) {
-			PK11_InitPin(slot, "", "");
+			PK11_InitPin(slot, "", cm_pin_read_key(entry));
 		}
 		if (PK11_NeedUserInit(slot)) {
 			cm_log(1, "Key generation slot still requires "
