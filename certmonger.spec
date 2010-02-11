@@ -2,8 +2,8 @@
 %{?_with_check: %global pcheck 1}
 
 Name:		certmonger
-Version:	0.17
-Release:	2%{?dist}
+Version:	0.18
+Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
 Group:		System Environment/Daemons
@@ -96,6 +96,13 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Fri Feb 12 2010 Nalin Dahyabhai <nalin@redhat.com> 0.18-1
+- update to 0.18
+  - add support for using encrypted storage for keys, using PIN values
+    supplied directly or read from files whose names are supplied
+  - don't choke on NSS database locations that use the "sql:" or "dbm:"
+    prefix
+
 * Mon Jan 25 2010 Nalin Dahyabhai <nalin@redhat.com> 0.17-2
 - make the D-Bus configuration file (noreplace) (#541072)
 - make the %%check section and the deps we have just for it conditional on
