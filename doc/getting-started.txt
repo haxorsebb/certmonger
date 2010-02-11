@@ -86,12 +86,12 @@ then used the same key to produce a signed certificate.
 The example above used plain files for holding the key and the certificate,
 but we could have specified storage using an NSS database by passing the
 database's location and a nickname to give to the certificate, like so:
-   certutil -d /tmp -N
+
    selfsign-getcert request -d /tmp -n Testing-Certificate
 
-Of course, we had to create the NSS database first, and we had to give it an
-empty password because certmonger doesn't want to know any passwords.  And we
-used a nickname of "Testing-Certificate" because, well, why not?
+Of course, we had to supply a certificate nickname, because certmonger isn't
+all that creative.  We used a nickname of "Testing-Certificate" because, well,
+why not?
 
 We can tell certmonger to embed a specific _subject_ name into the CSR, and we
 can tell it to include one or more of several types of SAN values, too:
