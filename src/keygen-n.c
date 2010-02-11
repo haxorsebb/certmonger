@@ -184,7 +184,8 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 	/* Now log in, if we have to. */
 	if (PK11_NeedLogin(slot) || !PK11_IsFriendly(slot)) {
-		error = PK11_Authenticate(slot, PR_TRUE, NULL);
+		PK11_SetPasswordFunc(&cm_pin_cb_key);
+		error = PK11_Authenticate(slot, PR_TRUE, entry);
 		if (error != SECSuccess) {
 			cm_log(1, "Error authenticating to key store.\n");
 			PK11_FreeSlotList(slotlist);
