@@ -133,6 +133,20 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 		_exit(2);
 	}
 
+	/* Now log in, if we have to. */
+	if (PK11_NeedLogin(slot) || !PK11_IsFriendly(slot)) {
+		error = PK11_Authenticate(slot, PR_TRUE, NULL);
+		if (error != SECSuccess) {
+			cm_log(1, "Error authenticating to key store.\n");
+			PK11_FreeSlotList(slotlist);
+			error = NSS_Shutdown();
+			if (error != SECSuccess) {
+				cm_log(1, "Error shutting down NSS.\n");
+			}
+			_exit(2);
+		}
+	}
+
 	/* Walk the list of private keys in the token, looking at each one which
 	 * matches the specified nickname. */
 	keys = PK11_ListPrivKeysInSlot(slot, entry->cm_key_nickname, NULL);
