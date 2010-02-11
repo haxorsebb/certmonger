@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2010 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@
 #include "csrgen-int.h"
 #include "keygen.h"
 #include "log.h"
+#include "pin-o.h"
 #include "store.h"
 #include "store-int.h"
 #include "subproc.h"
@@ -80,7 +81,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		cm_log(1, "Internal error generating CSR.\n");
 		_exit(2);
 	}
-	rsa = PEM_read_RSAPrivateKey(keyfp, NULL, NULL, NULL);
+	rsa = PEM_read_RSAPrivateKey(keyfp, NULL, NULL, cm_pin_read_key(entry));
 	if (rsa != NULL) {
 		EVP_PKEY_assign_RSA(pkey, rsa); /* pkey owns rsa now */
 		x = X509_new();

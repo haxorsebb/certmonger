@@ -40,6 +40,7 @@
 #include "certread.h"
 #include "certread-int.h"
 #include "log.h"
+#include "pin-n.h"
 #include "store.h"
 #include "store-int.h"
 #include "subproc.h"

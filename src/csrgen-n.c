@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2010 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,6 +43,7 @@
 #include "keygen.h"
 #include "keyiread-n.h"
 #include "log.h"
+#include "pin-n.h"
 #include "store.h"
 #include "store-int.h"
 #include "subproc.h"

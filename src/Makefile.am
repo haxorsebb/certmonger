@@ -40,7 +40,8 @@ libcm_a_SOURCES = \
 	oiddict.c \
 	oiddict.h \
 	pin.c \
-	pin.h \
+	pin-n.h \
+	pin-o.h \
 	store-files.c \
 	store-gen.c \
 	store.h \

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2010 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@
 #include "keyiread.h"
 #include "keyiread-int.h"
 #include "log.h"
+#include "pin-o.h"
 #include "store.h"
 #include "store-int.h"
 #include "subproc.h"
@@ -66,7 +67,8 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 	pem = fopen(entry->cm_key_storage_location, "r");
 	if (pem != NULL) {
-		pkey = PEM_read_PrivateKey(pem, NULL, NULL, NULL);
+		pkey = PEM_read_PrivateKey(pem, NULL, NULL,
+					   cm_pin_read_key(entry));
 		if (pkey != NULL) {
 			status = 0;
 		} else {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2010 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@
 #include "certsave.h"
 #include "certsave-int.h"
 #include "log.h"
+#include "pin-o.h"
 #include "store.h"
 #include "store-int.h"
 #include "subproc.h"
@@ -51,7 +52,8 @@ cm_certsave_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	X509 *cert;
 	bio = BIO_new_mem_buf(entry->cm_cert, strlen(entry->cm_cert));
 	if (bio != NULL) {
-		cert = PEM_read_bio_X509(bio, NULL, NULL, NULL);
+		cert = PEM_read_bio_X509(bio, NULL, NULL,
+					 cm_pin_read_cert(entry));
 		if (cert != NULL) {
 			pem = fopen(entry->cm_cert_storage_location, "w");
 			if (pem != NULL) {

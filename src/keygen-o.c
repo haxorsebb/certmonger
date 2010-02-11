@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2010 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@
 #include "keygen.h"
 #include "keygen-int.h"
 #include "log.h"
+#include "pin-o.h"
 #include "store.h"
 #include "store-int.h"
 #include "subproc.h"
@@ -99,7 +100,8 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			_exit(2);
 		}
 		if (PEM_write_PrivateKey(fp, pkey, NULL,
-					 NULL, 0, NULL, NULL) == 0) {
+					 NULL, 0, NULL,
+					 cm_pin_read_key(entry)) == 0) {
 			cm_log(1, "Error storing key.\n");
 			while ((error = ERR_get_error()) != 0) {
 				ERR_error_string_n(error, buf, sizeof(buf));
