@@ -109,45 +109,52 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	/* Walk the list looking for the requested slot, or the first one if
 	 * none was requested. */
 	slot = NULL;
+	cert = NULL;
 	for (sle = slotlist->head;
 	     ((sle != NULL) && (sle->slot != NULL));
 	     sle = sle->next) {
-		token = PK11_GetTokenName(sle->slot);
+		/* Log the slot's name. */
+		slot = sle->slot;
+		token = PK11_GetTokenName(slot);
 		if (token != NULL) {
 			cm_log(3, "Found token '%s'.\n", token);
 		} else {
 			cm_log(3, "Found unnamed token.\n");
 		}
-		if ((entry->cm_cert_token == NULL) ||
-		    (strlen(entry->cm_cert_token) == 0) ||
-		    (strcmp(entry->cm_cert_token, token) == 0)) {
-			slot = sle->slot;
-			break;
+		/* If we're looking for a specific slot, and this isn't it,
+		 * keep going. */
+		if ((entry->cm_cert_token != NULL) &&
+		    (strlen(entry->cm_cert_token) != 0) &&
+		    (strcmp(entry->cm_cert_token, token) != 0)) {
+			goto next_slot;
 		}
+		/* Walk the list of certificates in the slot, looking for one
+		 * which matches the specified nickname. */
+		certs = PK11_ListCertsInSlot(slot);
+		if (certs != NULL) {
+			for (node = CERT_LIST_HEAD(certs);
+			     !CERT_LIST_EMPTY(certs) &&
+			     !CERT_LIST_END(node, certs);
+			     node = CERT_LIST_NEXT(node)) {
+				if (strcmp(node->cert->nickname,
+					   entry->cm_cert_nickname) == 0) {
+					cm_log(3, "Located the certificate "
+					       "\"%s\".\n",
+					       entry->cm_cert_nickname);
+					cert = CERT_DupCertificate(node->cert);
+					break;
+				}
+			}
+			CERT_DestroyCertList(certs);
+		}
+next_slot:
 		if (sle == slotlist->tail) {
 			break;
 		}
 	}
-	if (slot == NULL) {
-		cm_log(1, "Error locating token used for cert storage.\n");
-		PK11_FreeSlotList(slotlist);
-		PORT_FreeArena(arena, PR_TRUE);
-		if (NSS_Shutdown() != SECSuccess) {
-			cm_log(1, "Error shutting down NSS.\n");
-		}
-		_exit(2);
-	}
 
-	/* Walk the list of certificates in the slot, looking for one which
-	 * matches the specified nickname. */
-	certs = PK11_ListCertsInSlot(slot);
-	if (certs == NULL) {
-		if (PK11_GetTokenName(slot) != NULL) {
-			cm_log(1, "Token \"%s\" contains no certificates!\n",
-			       PK11_GetTokenName(slot));
-		} else {
-			cm_log(1, "Unnamed token contains no certificates!\n");
-		}
+	if (cert == NULL) {
+		cm_log(1, "Error locating certificate.\n");
 		PK11_FreeSlotList(slotlist);
 		PORT_FreeArena(arena, PR_TRUE);
 		if (NSS_Shutdown() != SECSuccess) {
@@ -155,26 +162,10 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 		_exit(2);
 	}
-	cert = NULL;
-	for (node = CERT_LIST_HEAD(certs);
-	     !CERT_LIST_EMPTY(certs) &&
-	     !CERT_LIST_END(node, certs);
-	     node = CERT_LIST_NEXT(node)) {
-		if (strcmp(node->cert->nickname,
-			   entry->cm_cert_nickname) == 0) {
-			cm_log(3, "Located the certificate \"%s\".\n",
-			       entry->cm_cert_nickname);
-			cert = node->cert;
-			break;
-		}
-	}
-	if (cert != NULL) {
-		cm_certread_n_parse(entry,
-				    cert->derCert.data, cert->derCert.len);
-		cm_certread_write_data_to_pipe(entry, fp);
-	}
+	cm_certread_n_parse(entry, cert->derCert.data, cert->derCert.len);
+	cm_certread_write_data_to_pipe(entry, fp);
 	fclose(fp);
-	CERT_DestroyCertList(certs);
+	CERT_DestroyCertificate(cert);
 	PK11_FreeSlotList(slotlist);
 	PORT_FreeArena(arena, PR_TRUE);
 	if (NSS_Shutdown() != SECSuccess) {
