@@ -29,6 +29,7 @@
 
 #include <nss.h>
 #include <pk11pub.h>
+#include <prmem.h>
 
 #include <talloc.h>
 
@@ -116,8 +117,19 @@ cm_pin_cb(PK11SlotInfo *slot, PRBool retry, void *arg,
 	  enum cm_pin_type pin_type)
 {
 	struct cm_store_entry *entry;
+	char *pin, *ret;
 	entry = arg;
-	return cm_pin_read(entry, pin_type);
+	pin = cm_pin_read(entry, pin_type);
+	if (pin != NULL) {
+		ret = PR_Malloc(strlen(pin) + 1);
+		if (ret != NULL) {
+			strcpy(ret, pin);
+		}
+		talloc_free(pin);
+	} else {
+		ret = NULL;
+	}
+	return ret;
 }
 
 char *
