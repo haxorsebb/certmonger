@@ -15,12 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef cmpin_h
-#define cmpin_h
+#ifndef cmpinn_h
+#define cmpinn_h
 
-struct cm_store_entry;
-char *cm_pin_read_key(struct cm_store_entry *entry);
-char *cm_pin_read_cert(struct cm_store_entry *entry);
 char *cm_pin_cb_key(PK11SlotInfo *slot, PRBool retry, void *arg);
 char *cm_pin_cb_cert(PK11SlotInfo *slot, PRBool retry, void *arg);
 
