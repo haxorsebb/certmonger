@@ -1,44 +1,56 @@
 AM_CFLAGS = $(TALLOC_CFLAGS) $(TEVENT_CFLAGS) $(DBUS_CFLAGS) $(KRB5_CFLAGS)
 man_MANS = certmonger.8 getcert.1 getcert-request.1 getcert-list.1 getcert-list-cas.1 getcert-start-tracking.1 getcert-stop-tracking.1 selfsign-getcert.1 ipa-getcert.1 certmaster-getcert.1 getcert-resubmit.1 certmonger-ipa-submit.8 certmonger-certmaster-submit.8
-noinst_LIBRARIES = libcm.a libcm-o.a libcm-n.a
+noinst_LIBRARIES = libcm.a libcm-o.a
+libcm_a_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS)
 libcm_a_SOURCES = \
+	certext.c \
 	certext.h \
+	certext-n.h \
 	certread.c \
 	certread.h \
 	certread-int.h \
+	certread-n.c \
 	certsave.c \
 	certsave.h \
 	certsave-int.h \
+	certsave-n.c \
 	cm.c \
 	cm.h \
 	csrgen.c \
 	csrgen.h \
 	csrgen-int.h \
+	csrgen-n.c \
 	iterate.c \
 	iterate.h \
 	keygen.c \
 	keygen.h \
 	keygen-int.h \
+	keygen-n.c \
 	keyiread.c \
 	keyiread.h \
 	keyiread-int.h \
-	log.h \
+	keyiread-n.c \
+	keyiread-n.h \
 	log.c \
-	netlink.h \
+	log.h \
 	netlink.c \
-	notify.h \
+	netlink.h \
 	notify.c \
-	oiddict.h \
+	notify.h \
 	oiddict.c \
-	store.h \
-	store-int.h \
+	oiddict.h \
+	pin.c \
+	pin.h \
 	store-files.c \
 	store-gen.c \
+	store.h \
+	store-int.h \
 	submit.c \
-	submit.h \
 	submit-e.c \
 	submit-e.h \
+	submit.h \
 	submit-int.h \
+	submit-sn.c \
 	submit-x.c \
 	submit-x.h \
 	subproc.c \
@@ -60,19 +72,7 @@ libcm_o_a_SOURCES += \
 	submit-so.c
 endif
 libcm_o_a_CFLAGS = $(OPENSSL_CFLAGS)
-libcm_n_a_SOURCES =
-libcm_n_a_SOURCES += \
-	certext.c \
-	certext-n.h \
-	certread-n.c \
-	certsave-n.c \
-	csrgen-n.c \
-	keygen-n.c \
-	keyiread-n.c \
-	keyiread-n.h \
-	submit-sn.c
-libcm_n_a_CFLAGS = $(NSS_CFLAGS)
-libcm_a_LIBADD = $(libcm_o_a_OBJECTS) $(libcm_n_a_OBJECTS)
+libcm_a_LIBADD = $(libcm_o_a_OBJECTS)
 bin_PROGRAMS = getcert
 pkglibexec_PROGRAMS =
 pkglibexecdir = $(libexecdir)/$(PACKAGE)
