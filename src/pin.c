@@ -31,7 +31,6 @@
 #include <talloc.h>
 
 #include "log.h"
-#include "pin.h"
 #include "store-int.h"
 
 enum cm_pin_type {
