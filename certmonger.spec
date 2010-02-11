@@ -48,7 +48,7 @@ make %{?_smp_mflags} XMLRPC_LIBS="-lxmlrpc_client -lxmlrpc_util -lxmlrpc"
 rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT/%{_localstatedir}/lib/certmonger/{cas,requests}
-%if 0%{?fedora} <= 9
+%if 0%{?fedora} <= 9 || 0%{?rhel} < 6
 mkdir -p $RPM_BUILD_ROOT/%{_initrddir}
 install -m755 src/certmonger.init $RPM_BUILD_ROOT/%{_initrddir}/certmonger
 %else
@@ -84,7 +84,7 @@ exit 0
 %defattr(-,root,root,-)
 %doc README LICENSE STATUS doc/*.txt
 %config(noreplace) %{_sysconfdir}/dbus-1/system.d/*
-%if 0%{?fedora} <= 9
+%if 0%{?fedora} <= 9 || 0%{?rhel} < 6
 %{_initrddir}/certmonger
 %else
 %{_initddir}/certmonger
