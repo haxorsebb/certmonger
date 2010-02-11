@@ -1,31 +1,34 @@
-Generating key.
+[Generating key.]
 OK.
 certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
-< 0> rsa PRIVATE KEY Test
-Saving certificate.
+< 0> rsa PRIVATE-KEY Test
+[Saving certificate.]
+OK
 
 Certificate Nickname Trust Attributes
  SSL,S/MIME,JAR/XPI
 
-OK
-Generating key (dbm).
+Test ,, 
+[Generating key (dbm).]
 OK.
 certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
-< 0> rsa PRIVATE KEY Test
-Saving certificate (dbm).
+< 0> rsa PRIVATE-KEY Test
+[Saving certificate (dbm).]
+OK
 
 Certificate Nickname Trust Attributes
  SSL,S/MIME,JAR/XPI
 
-OK
-Generating key (sql).
+Test ,, 
+[Generating key (sql).]
 OK.
 certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
-< 0> rsa PRIVATE KEY Test
-Saving certificate (sql).
+< 0> rsa PRIVATE-KEY Test
+[Saving certificate (sql).]
+OK
 
 Certificate Nickname Trust Attributes
  SSL,S/MIME,JAR/XPI
 
-OK
-Test complete.
+Test ,, 
+[Test complete.]
