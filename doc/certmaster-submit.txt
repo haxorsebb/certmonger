@@ -7,9 +7,9 @@ client does not authenticate.
 
 Request parameters are a single argument, PEM-formatted CSR, with the
 limitation that the header must be for "CERTIFICATE REQUEST" and not
-"NEW CERTIFICATE REQUEST".  The request as-sent is compared to a rebuilt
+"NEW CERTIFICATE REQUEST".  (The request as-sent is compared to a rebuilt
 copy which uses this header to determine if the request matches one
-which has already been received.
+which has already been received.)
 
 Response is a sequence of (boolean, string, string), either (true,
 issued-cert, issuer-cert), or (false, '', '').  The issued certificate
