@@ -31,6 +31,8 @@ o object layout
                {"KEY_LOCATION",string}*
                {"KEY_NICKNAME",string}
                {"KEY_TOKEN",string}
+               {"KEY_PIN",string}
+               {"KEY_PIN_FILE",string}
                {"CERT_STORAGE","NSSDB"/"FILE"}*
                {"CERT_LOCATION",string}*
                {"CERT_NICKNAME",string}

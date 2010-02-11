@@ -374,7 +374,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	struct cm_store_ca *ca;
 	int i, n_entries;
 	enum cm_key_storage_type key_storage;
-	char *key_location, *key_nickname, *key_token;
+	char *key_location, *key_nickname, *key_token, *key_pin, *key_pin_file;
 	enum cm_cert_storage_type cert_storage;
 	char *cert_location, *cert_nickname, *cert_token;
 	char *path;
@@ -414,6 +414,28 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 			talloc_free(parent);
 			return ret;
 		}
+	}
+	/* Handle parameters for either a PIN or the location of a PIN. */
+	param = cm_tdbusm_find_dict_entry(d, "KEY_PIN", cm_tdbusm_dict_s);
+	if (param == NULL) {
+		key_pin = NULL;
+	} else {
+		key_pin = param->value.s;
+	}
+	param = cm_tdbusm_find_dict_entry(d, "KEY_PIN_FILE", cm_tdbusm_dict_s);
+	if (param == NULL) {
+		key_pin_file = NULL;
+	} else {
+		if (cm_tdbush_check_arg_is_absolute_path(param->value.s) != 0) {
+			cm_log(1, "PIN storage location is not an absolute "
+			       "path.\n");
+			talloc_free(parent);
+			return send_internal_base_bad_arg_error(conn, msg,
+								_("The location \"%s\" must be an absolute path."),
+								param->value.s,
+								"KEY_PIN_FILE");
+		}
+		key_pin_file = param->value.s;
 	}
 	/* Check that other required information about the
 	 * certificate's location is provided. */
@@ -766,6 +788,8 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 							  key_location);
 	new_entry->cm_key_nickname = maybe_strdup(new_entry, key_nickname);
 	new_entry->cm_key_token = maybe_strdup(new_entry, key_token);
+	new_entry->cm_key_pin = maybe_strdup(new_entry, key_pin);
+	new_entry->cm_key_pin_file = maybe_strdup(new_entry, key_pin_file);
 	new_entry->cm_cert_storage_type = cert_storage;
 	new_entry->cm_cert_storage_location = maybe_strdup(new_entry,
 							   cert_location);
