@@ -47,11 +47,11 @@ Complete:
     * Learn to submit to certmaster's XMLRPC interface, preferably by
       calling out to the python library it supplies.  Ended up reusing
       large chunks of the IPA client code, so it's in C.
+  * Handle PIN values for encrypted key storage.
 
 To-do:
   * Should offer an API over D-Bus which the client uses instead of
     mutilating the queue directly (see doc/api.txt):
-    * Set/reset PIN for encrypted key storage... maybe? (1 day)
       MUST
   * Be able to use hashes other than the current hard-wired SHA256.
     MUST
