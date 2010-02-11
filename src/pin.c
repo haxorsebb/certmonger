@@ -25,6 +25,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <openssl/evp.h>
+
 #include <nss.h>
 #include <pk11pub.h>
 
@@ -39,6 +41,12 @@ enum cm_pin_type {
 	cm_pin_key,
 	cm_pin_cert,
 };
+
+const EVP_CIPHER *
+cm_pin_preferred_cipher(void)
+{
+	return EVP_aes_128_cbc();
+}
 
 static char *
 cm_pin_read(struct cm_store_entry *entry, enum cm_pin_type pin_type)

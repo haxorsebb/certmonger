@@ -99,9 +99,9 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			}
 			_exit(2);
 		}
-		if (PEM_write_PrivateKey(fp, pkey, NULL,
-					 NULL, 0, NULL,
-					 cm_pin_read_key(entry)) == 0) {
+		if (PEM_write_PrivateKey(fp, pkey, cm_pin_preferred_cipher(),
+					 NULL, 0,
+					 NULL, cm_pin_read_key(entry)) == 0) {
 			cm_log(1, "Error storing key.\n");
 			while ((error = ERR_get_error()) != 0) {
 				ERR_error_string_n(error, buf, sizeof(buf));

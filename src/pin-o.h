@@ -21,5 +21,6 @@
 struct cm_store_entry;
 char *cm_pin_read_key(struct cm_store_entry *entry);
 char *cm_pin_read_cert(struct cm_store_entry *entry);
+const EVP_CIPHER *cm_pin_preferred_cipher(void);
 
 #endif
