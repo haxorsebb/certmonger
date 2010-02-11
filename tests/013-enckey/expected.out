@@ -1,0 +1,96 @@
+[Read Key Info With PIN.]
+OK (2048).
+[Read Key Info With PIN File.]
+OK (2048).
+[Generate Key With PIN.]
+OK.
+-----BEGIN ENCRYPTED PRIVATE KEY-----
+-----END ENCRYPTED PRIVATE KEY-----
+[Generate CSR With PIN.]
+-----BEGIN NEW CERTIFICATE REQUEST-----
+-----END NEW CERTIFICATE REQUEST-----
+[Not Pre-creating database.]
+[Generating key with PIN.]
+OK.
+certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
+< 0> rsa PRIVATE-KEY Test
+[Reading Key Info With PIN.]
+OK (2048).
+certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
+< 0> rsa PRIVATE-KEY Test
+[Generating CSR With PIN.]
+-----BEGIN NEW CERTIFICATE REQUEST-----
+-----END NEW CERTIFICATE REQUEST-----
+certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
+< 0> rsa PRIVATE-KEY Test
+[Not Pre-creating database.]
+[Generating key (dbm) with PIN.]
+OK.
+certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
+< 0> rsa PRIVATE-KEY Test
+[Reading Key Info With PIN.]
+OK (2048).
+certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
+< 0> rsa PRIVATE-KEY Test
+[Generating CSR With PIN.]
+-----BEGIN NEW CERTIFICATE REQUEST-----
+-----END NEW CERTIFICATE REQUEST-----
+certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
+< 0> rsa PRIVATE-KEY Test
+[Not Pre-creating database.]
+[Generating key (sql) with PIN.]
+OK.
+certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
+< 0> rsa PRIVATE-KEY Test
+[Reading Key Info With PIN.]
+OK (2048).
+certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
+< 0> rsa PRIVATE-KEY Test
+[Generating CSR With PIN.]
+-----BEGIN NEW CERTIFICATE REQUEST-----
+-----END NEW CERTIFICATE REQUEST-----
+certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
+< 0> rsa PRIVATE-KEY Test
+[Creating database.]
+[Generating key with PIN.]
+OK.
+certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
+< 0> rsa PRIVATE-KEY Test
+[Reading Key Info With PIN.]
+OK (2048).
+certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
+< 0> rsa PRIVATE-KEY Test
+[Generating CSR With PIN.]
+-----BEGIN NEW CERTIFICATE REQUEST-----
+-----END NEW CERTIFICATE REQUEST-----
+certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
+< 0> rsa PRIVATE-KEY Test
+[Creating database.]
+[Generating key (dbm) with PIN.]
+OK.
+certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
+< 0> rsa PRIVATE-KEY Test
+[Reading Key Info With PIN.]
+OK (2048).
+certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
+< 0> rsa PRIVATE-KEY Test
+[Generating CSR With PIN.]
+-----BEGIN NEW CERTIFICATE REQUEST-----
+-----END NEW CERTIFICATE REQUEST-----
+certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
+< 0> rsa PRIVATE-KEY Test
+[Creating database.]
+[Generating key (sql) with PIN.]
+OK.
+certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
+< 0> rsa PRIVATE-KEY Test
+[Reading Key Info With PIN.]
+OK (2048).
+certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
+< 0> rsa PRIVATE-KEY Test
+[Generating CSR With PIN.]
+-----BEGIN NEW CERTIFICATE REQUEST-----
+-----END NEW CERTIFICATE REQUEST-----
+certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
+< 0> rsa PRIVATE-KEY Test
+[Test complete.]
