@@ -26,6 +26,9 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <nss.h>
+#include <pk11pub.h>
+
 #include <openssl/err.h>
 #include <openssl/pem.h>
 #include <openssl/ssl.h>
@@ -35,7 +38,7 @@
 #include "keyiread.h"
 #include "keyiread-int.h"
 #include "log.h"
-#include "pin-o.h"
+#include "pin.h"
 #include "store.h"
 #include "store-int.h"
 #include "subproc.h"

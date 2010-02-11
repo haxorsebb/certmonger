@@ -40,8 +40,9 @@ libcm_a_SOURCES = \
 	oiddict.c \
 	oiddict.h \
 	pin.c \
-	pin-n.h \
-	pin-o.h \
+	pin.h \
+	prefs.c \
+	prefs.h \
 	store-files.c \
 	store-gen.c \
 	store.h \
@@ -70,6 +71,8 @@ libcm_o_a_SOURCES += \
 	csrgen-o.c \
 	keygen-o.c \
 	keyiread-o.c \
+	prefs-o.h \
+	prefs-o.c \
 	submit-so.c
 endif
 libcm_o_a_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS) $(OPENSSL_CFLAGS)

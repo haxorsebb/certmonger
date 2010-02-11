@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2010 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,6 +40,7 @@
 #include "certext-n.h"
 #include "keyiread-n.h"
 #include "log.h"
+#include "prefs.h"
 #include "store.h"
 #include "store-int.h"
 #include "submit.h"
@@ -117,7 +118,7 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	} else {
 		data = &sdata;
 	}
-	sigoid = SECOID_FindOIDByTag(SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION);
+	sigoid = SECOID_FindOIDByTag(cm_prefs_nss_sig_alg());
 	if (sigoid == NULL) {
 		cm_log(1, "Internal error resolving signature OID.\n");
 		_exit(1);

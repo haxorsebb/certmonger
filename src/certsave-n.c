@@ -36,7 +36,7 @@
 #include "certsave.h"
 #include "certsave-int.h"
 #include "log.h"
-#include "pin-n.h"
+#include "pin.h"
 #include "store.h"
 #include "store-int.h"
 #include "subproc.h"

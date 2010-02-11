@@ -25,6 +25,9 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <nss.h>
+#include <pk11pub.h>
+
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
@@ -35,7 +38,8 @@
 #include "csrgen-int.h"
 #include "keygen.h"
 #include "log.h"
-#include "pin-o.h"
+#include "pin.h"
+#include "prefs-o.h"
 #include "store.h"
 #include "store-int.h"
 #include "subproc.h"
@@ -119,7 +123,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 							   -1, 0);
 			}
 			X509_set_pubkey(x, pkey);
-			req = X509_to_X509_REQ(x, pkey, EVP_sha256()); /* XXX */
+			req = X509_to_X509_REQ(x, pkey, cm_prefs_ossl_hash());
 			if (req != NULL) {
 				/* Add attributes. */
 				extensions = NULL;
@@ -148,7 +152,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 								  unickname,
 								  strlen(nickname));
 				}
-				X509_REQ_sign(req, pkey, EVP_sha256()); /* XXX */
+				X509_REQ_sign(req, pkey, cm_prefs_ossl_hash());
 				PEM_write_X509_REQ_NEW(status, req);
 			} else {
 				cm_log(1,

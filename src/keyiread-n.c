@@ -40,7 +40,7 @@
 #include "keyiread-int.h"
 #include "keyiread-n.h"
 #include "log.h"
-#include "pin-n.h"
+#include "pin.h"
 #include "store.h"
 #include "store-int.h"
 #include "subproc.h"

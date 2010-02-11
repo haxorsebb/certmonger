@@ -21,10 +21,14 @@
 #include <sys/wait.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+#include <nss.h>
+#include <pk11pub.h>
 
 #include <openssl/err.h>
 #include <openssl/pem.h>
@@ -35,7 +39,7 @@
 #include "certread.h"
 #include "certread-int.h"
 #include "log.h"
-#include "pin-o.h"
+#include "pin.h"
 #include "store.h"
 #include "store-int.h"
 #include "subproc.h"

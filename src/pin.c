@@ -34,19 +34,12 @@
 #include <talloc.h>
 
 #include "log.h"
-#include "pin-n.h"
-#include "pin-o.h"
+#include "pin.h"
 #include "store-int.h"
 
 enum cm_pin_type {
 	cm_pin_key,
 };
-
-const EVP_CIPHER *
-cm_pin_preferred_cipher(void)
-{
-	return EVP_aes_128_cbc();
-}
 
 static char *
 cm_pin_read(struct cm_store_entry *entry, enum cm_pin_type pin_type)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2010 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,9 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <nss.h>
+#include <pk11pub.h>
+
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/x509.h>
@@ -32,7 +35,8 @@
 #include <talloc.h>
 
 #include "log.h"
-#include "pin-o.h"
+#include "pin.h"
+#include "prefs-o.h"
 #include "store.h"
 #include "store-int.h"
 #include "submit.h"
@@ -126,7 +130,7 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 						X509_add1_ext_i2d(cert, NID_basic_constraints, basic, 1, 0);
 						/* finish up */
 						X509_sign(cert, pkey,
-							  EVP_sha256());
+							  cm_prefs_ossl_hash());
 						status = 0;
 					} else {
 						cm_log(1, "Error reading "

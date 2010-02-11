@@ -24,6 +24,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include <nss.h>
+#include <pk11pub.h>
+
 #include <openssl/ssl.h>
 #include <openssl/rsa.h>
 #include <openssl/err.h>
@@ -33,7 +36,8 @@
 #include "keygen.h"
 #include "keygen-int.h"
 #include "log.h"
-#include "pin-o.h"
+#include "pin.h"
+#include "prefs-o.h"
 #include "store.h"
 #include "store-int.h"
 #include "subproc.h"
@@ -101,7 +105,7 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 		pin = cm_pin_read_key(entry);
 		if (PEM_write_PrivateKey(fp, pkey,
-					 pin ? cm_pin_preferred_cipher() : NULL,
+					 pin ? cm_prefs_ossl_cipher() : NULL,
 					 NULL, 0,
 					 NULL, pin) == 0) {
 			cm_log(1, "Error storing key.\n");

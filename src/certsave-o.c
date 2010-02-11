@@ -24,6 +24,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include <nss.h>
+#include <pk11pub.h>
+
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
@@ -32,7 +35,7 @@
 #include "certsave.h"
 #include "certsave-int.h"
 #include "log.h"
-#include "pin-o.h"
+#include "pin.h"
 #include "store.h"
 #include "store-int.h"
 #include "subproc.h"

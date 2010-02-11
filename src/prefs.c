@@ -15,12 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef cmpino_h
-#define cmpino_h
+#include "config.h"
 
-struct cm_store_entry;
-char *cm_pin_read_key(struct cm_store_entry *entry);
-char *cm_pin_read_cert(struct cm_store_entry *entry);
-const EVP_CIPHER *cm_pin_preferred_cipher(void);
+#include <nss.h>
+#include <secoidt.h>
 
-#endif
+#include "prefs.h"
+
+unsigned int
+cm_prefs_nss_sig_alg(void)
+{
+	return SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION;
+}
