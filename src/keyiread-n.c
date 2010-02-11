@@ -158,7 +158,11 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 		/* Walk the list of certificates in the token, looking at each
 		 * one to see if it matches the specified nickname and has a
 		 * private key associated with it. */
-		certs = PK11_ListCertsInSlot(slot);
+		if (key == NULL) {
+			certs = PK11_ListCertsInSlot(slot);
+		} else {
+			certs = NULL;
+		}
 		if (certs != NULL) {
 			for (cnode = CERT_LIST_HEAD(certs);
 			     !CERT_LIST_EMPTY(certs) &&
