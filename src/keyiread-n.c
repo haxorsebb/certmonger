@@ -68,11 +68,11 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	PK11SlotInfo *slot;
 	SECKEYPrivateKeyList *keys;
 	SECKEYPrivateKeyListNode *knode;
-	SECKEYPrivateKey *key, *ret;
+	SECKEYPrivateKey *key;
 	CK_MECHANISM_TYPE mech;
 	CERTCertList *certs;
 	CERTCertListNode *cnode;
-	PRBool key_came_from_cert;
+	CERTCertificate *cert;
 
 	/* Open the database. */
 	error = readwrite ? NSS_InitReadWrite(entry->cm_key_storage_location) :
@@ -105,146 +105,100 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 		_exit(2);
 	}
 
-	/* Walk the list looking for the requested token, or the first one if
-	 * none was requested. */
+	/* Walk the list looking for the requested token, or look at all of
+	 * them if none specifically was requested. */
+	key = NULL;
 	slot = NULL;
+	PK11_SetPasswordFunc(&cm_pin_cb_key);
 	for (sle = slotlist->head;
 	     ((sle != NULL) && (sle->slot != NULL));
 	     sle = sle->next) {
 		/* Read the token's name. */
-		token = PK11_GetTokenName(sle->slot);
+		slot = sle->slot;
+		token = PK11_GetTokenName(slot);
 		if (token != NULL) {
 			cm_log(3, "Found token '%s'.\n", token);
 		}
-		/* If this is the right token, stop walking. */
-		if ((entry->cm_key_token == NULL) ||
-		    (strlen(entry->cm_key_token) == 0) ||
-		    (strcmp(entry->cm_key_token, token) == 0)) {
-			slot = sle->slot;
-			break;
+
+		/* If this is the wrong token, move on. */
+		if ((entry->cm_key_token != NULL) &&
+		    (strlen(entry->cm_key_token) > 0) &&
+		    (strcmp(entry->cm_key_token, token) != 0)) {
+			cm_log(1, "Token is named \"%s\", not \"%s\".\n",
+			       token, entry->cm_key_token);
+			goto next_slot;
 		}
+
+		/* Try to log in, if we have to. */
+		if (PK11_NeedLogin(slot) || !PK11_IsFriendly(slot)) {
+			error = PK11_Authenticate(slot, PR_TRUE, entry);
+			if (error != SECSuccess) {
+				cm_log(1, "Error authenticating to token "
+				       "\"%s\".\n", token);
+				goto next_slot;
+			}
+		}
+
+		/* Walk the list of private keys in the token, looking at each
+		 * one to see if it matches the specified nickname. */
+		keys = PK11_ListPrivKeysInSlot(slot, entry->cm_key_nickname,
+					       NULL);
+		if (keys != NULL) {
+			for (knode = PRIVKEY_LIST_HEAD(keys);
+			     !PRIVKEY_LIST_EMPTY(keys) &&
+			     !PRIVKEY_LIST_END(knode, keys);
+			     knode = PRIVKEY_LIST_NEXT(knode)) {
+				cm_log(3, "Located the key.\n");
+				key = SECKEY_CopyPrivateKey(knode->key);
+				break;
+			}
+			SECKEY_DestroyPrivateKeyList(keys);
+		}
+
+		/* Walk the list of certificates in the token, looking at each
+		 * one to see if it matches the specified nickname and has a
+		 * private key associated with it. */
+		certs = PK11_ListCertsInSlot(slot);
+		if (certs != NULL) {
+			for (cnode = CERT_LIST_HEAD(certs);
+			     !CERT_LIST_EMPTY(certs) &&
+			     !CERT_LIST_END(cnode, certs);
+			     cnode = CERT_LIST_NEXT(cnode)) {
+				nickname = entry->cm_key_nickname;
+				cert = cnode->cert;
+				if ((nickname != NULL) &&
+				    (strcmp(cert->nickname, nickname) == 0)) {
+					cm_log(3, "Located a certificate with "
+					       "the key's nickname (\"%s\").\n",
+					       nickname);
+					key = PK11_FindPrivateKeyFromCert(slot,
+									  cert,
+									  NULL);
+					if (key != NULL) {
+						cm_log(3, "Located its private "
+						       "key.\n");
+						break;
+					}
+				}
+			}
+			CERT_DestroyCertList(certs);
+		}
+
+next_slot:
 		/* If this was the last token, stop walking. */
 		if (sle == slotlist->tail) {
 			break;
 		}
 	}
-	if (slot == NULL) {
-		cm_log(1, "Error locating token used for key storage.\n");
-		PK11_FreeSlotList(slotlist);
-		if (NSS_Shutdown() != SECSuccess) {
-			cm_log(1, "Error shutting down NSS.\n");
-		}
-		_exit(2);
-	}
 
-	/* Now log in, if we have to. */
-	if (PK11_NeedLogin(slot) || !PK11_IsFriendly(slot)) {
-		PK11_SetPasswordFunc(&cm_pin_cb_key);
-		error = PK11_Authenticate(slot, PR_TRUE, entry);
-		if (error != SECSuccess) {
-			cm_log(1, "Error authenticating to key store.\n");
-			PK11_FreeSlotList(slotlist);
-			error = NSS_Shutdown();
-			if (error != SECSuccess) {
-				cm_log(1, "Error shutting down NSS.\n");
-			}
-			_exit(2);
-		}
-	}
-
-	/* Walk the list of private keys in the token, looking at each one which
-	 * matches the specified nickname. */
-	keys = PK11_ListPrivKeysInSlot(slot, entry->cm_key_nickname, NULL);
-	certs = PK11_ListCertsInSlot(slot);
-	if (keys == NULL) {
-		cm_log(2, "Token contains no private keys with the specified "
-		       "nickname!\n");
-		if (certs == NULL) {
-			cm_log(2, "Token contains no certificates, either!\n");
-			CERT_DestroyCertList(certs);
-			PK11_FreeSlotList(slotlist);
-			PORT_FreeArena(arena, PR_TRUE);
-			if (NSS_Shutdown() != SECSuccess) {
-				cm_log(1, "Error shutting down NSS.\n");
-			}
-			_exit(2);
-		}
-	}
-
-	/* If we got a list of keys with matching nicknames, the first entry's
-	 * good enough, right? */
-	key = NULL;
-	key_came_from_cert = PR_FALSE;
-	if (keys != NULL) {
-		for (knode = PRIVKEY_LIST_HEAD(keys);
-		     !PRIVKEY_LIST_EMPTY(keys) &&
-		     !PRIVKEY_LIST_END(knode, keys);
-		     knode = PRIVKEY_LIST_NEXT(knode)) {
-			cm_log(3, "Located the key.\n");
-			key = knode->key;
-			key_came_from_cert = PR_FALSE;
-			break;
-		}
-	}
-	if ((key == NULL) && (certs != NULL)) {
-		/* No key by that nickname.  Search for certs with that
-		 * nickname which have private keys associated with them. */
-		for (cnode = CERT_LIST_HEAD(certs);
-		     !CERT_LIST_EMPTY(certs) &&
-		     !CERT_LIST_END(cnode, certs);
-		     cnode = CERT_LIST_NEXT(cnode)) {
-			nickname = entry->cm_key_nickname;
-			if ((nickname != NULL) &&
-			    (strcmp(cnode->cert->nickname, nickname) == 0)) {
-				cm_log(3, "Located a certificate with "
-				       "the key's nickname (\"%s\").\n",
-				       nickname);
-				key = PK11_FindPrivateKeyFromCert(slot,
-								  cnode->cert,
-								  NULL);
-				if (key != NULL) {
-					key_came_from_cert = PR_TRUE;
-					cm_log(3, "Located its private key.\n");
-					break;
-				}
-			}
-			nickname = entry->cm_cert_nickname;
-			if ((nickname != NULL) &&
-			    (strcmp(cnode->cert->nickname, nickname) == 0)) {
-				cm_log(3, "Located a certificate with "
-				       "matching nickname (\"%s\").\n",
-				       nickname);
-				key = PK11_FindPrivateKeyFromCert(slot,
-								  cnode->cert,
-								  NULL);
-				if (key != NULL) {
-					key_came_from_cert = PR_TRUE;
-					cm_log(3, "Located its private key.\n");
-					break;
-				}
-			}
-		}
-	}
-	/* If we found a key and we didn't create it, take a copy. */
-	if (key != NULL) {
-		if (key_came_from_cert) {
-			ret = key;
-		} else {
-			ret = SECKEY_CopyPrivateKey(key);
-		}
-	} else {
-		ret = NULL;
-	}
-	/* Clean up and return. */
-	if (certs != NULL) {
-		CERT_DestroyCertList(certs);
-	}
-	if (keys != NULL) {
-		SECKEY_DestroyPrivateKeyList(keys);
-	}
 	PK11_FreeSlotList(slotlist);
+
+	if (key == NULL) {
+		cm_log(1, "Error locating key.\n");
+	}
+
 	PORT_FreeArena(arena, PR_TRUE);
-	return ret;
+	return key;
 }
 
 static int
