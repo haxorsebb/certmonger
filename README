@@ -22,7 +22,7 @@ it can go ahead and try to re-enroll if you like.
 
 Keys and certificates can be stored and read in any of these formats:
   * PEM-formatted files
-  * NSS database
+  * NSS database (dbm or sql)
 
 The certmonger daemon knows how to self-sign certificates, and will be
 able to submit requests to:
