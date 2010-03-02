@@ -126,6 +126,10 @@ o object layout
   - modify
     - nickname for request
       argument: string -> new ID
+    - pin for key storage
+      argument: string -> PIN used for key storage
+    - pin file for key storage
+      argument: string -> name of file containing PIN used for key storage
     - requested subject name
       argument: string -> requested subject
     - requested subject alternative name(s): email
