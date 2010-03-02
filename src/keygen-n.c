@@ -75,7 +75,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 
 	status = fdopen(fd, "w");
 	if (status == NULL) {
-		_exit(1);
+		_exit(CM_STATUS_ERROR_INTERNAL);
 	}
 	/* Start up NSS and open the database. */
 	settings = userdata;
@@ -87,7 +87,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			entry->cm_key_storage_location);
 		cm_log(1, "Error initializing database '%s'.\n",
 		       entry->cm_key_storage_location);
-		_exit(1);
+		_exit(CM_STATUS_ERROR_INITIALIZING);
 	}
 	/* Handle defaults. */
 	if (entry->cm_key_type_default) {
@@ -108,7 +108,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	default:
 		fprintf(status, "Unknown or unsupported key type.\n");
 		cm_log(1, "Unknown or unsupported key type.\n");
-		_exit(2);
+		_exit(CM_STATUS_ERROR_INTERNAL);
 		break;
 	}
 	/* Find the tokens that we might use for key generation. */
@@ -116,7 +116,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	if (slotlist == NULL) {
 		fprintf(status, "Error locating token for key generation.\n");
 		cm_log(1, "Error locating token for key generation.\n");
-		_exit(2);
+		_exit(CM_STATUS_ERROR_NO_TOKEN);
 	}
 	/* Walk the list looking for the requested slot, or the first one if
 	 * none was requested. */
@@ -141,7 +141,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	if (slot == NULL) {
 		fprintf(status, "Error locating token for key generation.\n");
 		cm_log(1, "Error locating token for key generation.\n");
-		_exit(2);
+		_exit(CM_STATUS_ERROR_NO_TOKEN);
 	}
 	/* Select the optimum key size. */
 	cm_key_size = PK11_GetBestKeyLength(slot, mech);
@@ -193,7 +193,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			if (error != SECSuccess) {
 				cm_log(1, "Error shutting down NSS.\n");
 			}
-			_exit(2);
+			_exit(CM_STATUS_ERROR_AUTH);
 		}
 	}
 	/* Generate the key pair. */
@@ -212,7 +212,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		} else {
 			cm_log(1, "Error generating key pair.\n");
 		}
-		_exit(2);
+		_exit(CM_STATUS_ERROR_INTERNAL);
 	}
 	/* Try to remove any conflicting keys. */
 	privkeys = PK11_ListPrivKeysInSlot(slot, entry->cm_key_nickname, NULL);
@@ -277,6 +277,20 @@ cm_keygen_n_saved_keypair(struct cm_store_entry *entry,
 	return -1;
 }
 
+/* Tell us if we need a new/correct PIN to use the key store. */
+static int
+cm_keygen_n_need_pin(struct cm_store_entry *entry,
+		     struct cm_keygen_state *state)
+{
+	int status;
+	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	if (WIFEXITED(status) &&
+	    (WEXITSTATUS(status) == CM_STATUS_ERROR_AUTH)) {
+		return 0;
+	}
+	return -1;
+}
+
 /* Clean up after key generation. */
 static void
 cm_keygen_n_done(struct cm_store_entry *entry, struct cm_keygen_state *state)
@@ -304,6 +318,7 @@ cm_keygen_n_start(struct cm_store_entry *entry)
 		state->pvt.ready = cm_keygen_n_ready;
 		state->pvt.get_fd = cm_keygen_n_get_fd;
 		state->pvt.saved_keypair = cm_keygen_n_saved_keypair;
+		state->pvt.need_pin = cm_keygen_n_need_pin;
 		state->pvt.done = cm_keygen_n_done;
 		state->subproc = cm_subproc_start(cm_keygen_n_main,
 						  NULL, entry, &settings);

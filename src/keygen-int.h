@@ -18,6 +18,11 @@
 #ifndef cmkeygenint_h
 #define cmkeygenint_h
 
+#define CM_STATUS_ERROR_INITIALIZING	1
+#define CM_STATUS_ERROR_INTERNAL	2
+#define CM_STATUS_ERROR_NO_TOKEN	3
+#define CM_STATUS_ERROR_AUTH		4
+
 struct cm_keygen_state_pvt {
 	/* Check if the keypair is ready. */
 	int (*ready)(struct cm_store_entry *entry,
@@ -29,6 +34,9 @@ struct cm_keygen_state_pvt {
 	/* Tell us if the keypair was saved to the right location. */
 	int (*saved_keypair)(struct cm_store_entry *entry,
 			     struct cm_keygen_state *state);
+	/* Tell us if we need a PIN (or a new PIN) to access the key store. */
+	int (*need_pin)(struct cm_store_entry *entry,
+			struct cm_keygen_state *state);
 	/* Clean up after key generation. */
 	void (*done)(struct cm_store_entry *entry,
 		     struct cm_keygen_state *state);

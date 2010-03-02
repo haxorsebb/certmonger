@@ -57,6 +57,7 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 	switch (entry->cm_state) {
 	case CM_NEED_KEY_PAIR:
 	case CM_GENERATING_KEY_PAIR:
+	case CM_NEED_KEY_GEN_PIN:
 		entry->cm_state = CM_NEED_KEY_PAIR;
 		break;
 	case CM_HAVE_KEY_PAIR:
@@ -250,6 +251,10 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			*when = cm_time_soonish;
 		}
 		break;
+	case CM_NEED_KEY_GEN_PIN:
+		/* Revisit this later. */
+		*when = cm_time_soonish;
+		break;
 	case CM_GENERATING_KEY_PAIR:
 		if (cm_keygen_ready(entry, state->cm_keygen_state) == 0) {
 			if (cm_keygen_saved_keypair(entry,
@@ -258,6 +263,14 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				cm_keygen_done(entry, state->cm_keygen_state);
 				state->cm_keygen_state = NULL;
 				entry->cm_state = CM_HAVE_KEY_PAIR;
+				*when = cm_time_now;
+			} else
+			if (cm_keygen_need_pin(entry,
+					       state->cm_keygen_state) == 0) {
+				/* Whoops, we need help. */
+				cm_keygen_done(entry, state->cm_keygen_state);
+				state->cm_keygen_state = NULL;
+				entry->cm_state = CM_NEED_KEY_GEN_PIN;
 				*when = cm_time_now;
 			} else {
 				/* Failed to save key pair; take a breather and

@@ -68,6 +68,15 @@ cm_keygen_saved_keypair(struct cm_store_entry *entry,
 	return pvt->saved_keypair(entry, state);
 }
 
+/* Tell us if we need a PIN (or a new PIN) to access the key store. */
+int
+cm_keygen_need_pin(struct cm_store_entry *entry,
+		   struct cm_keygen_state *state)
+{
+	struct cm_keygen_state_pvt *pvt = (struct cm_keygen_state_pvt *) state;
+	return pvt->need_pin(entry, state);
+}
+
 /* Clean up after key generation. */
 void
 cm_keygen_done(struct cm_store_entry *entry, struct cm_keygen_state *state)

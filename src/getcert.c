@@ -1541,6 +1541,7 @@ list(const char *argv0, int argc, char **argv)
 			continue;
 			break;
 		case CM_NEED_KEY_PAIR:
+		case CM_NEED_KEY_GEN_PIN:
 		case CM_GENERATING_KEY_PAIR:
 		case CM_HAVE_KEY_PAIR:
 		case CM_NEED_CSR:
