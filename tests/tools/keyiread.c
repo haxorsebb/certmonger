@@ -48,7 +48,7 @@ main(int argc, char **argv)
 {
 	struct cm_keyiread_state *state;
 	struct cm_store_entry *entry;
-	int fd, ret;
+	int fd, ret, need_pin;
 	void *parent;
 	cm_log_set_method(cm_log_stderr);
 	cm_log_set_level(1);
@@ -78,6 +78,7 @@ main(int argc, char **argv)
 				break;
 			}
 		}
+		need_pin = cm_keyiread_need_pin(entry, state);
 		cm_keyiread_done(entry, state);
 		if (entry->cm_key_type.cm_key_size != 0) {
 			printf("OK (%d).\n", entry->cm_key_type.cm_key_size);
@@ -96,6 +97,9 @@ main(int argc, char **argv)
 				       entry->cm_key_storage_location,
 				       entry->cm_key_nickname);
 				break;
+			}
+			if (need_pin == 0) {
+				printf("(Need PIN.)\n");
 			}
 			ret = 1;
 		}
