@@ -85,7 +85,8 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		cm_log(1, "Internal error generating CSR.\n");
 		_exit(CM_STATUS_ERROR_INTERNAL);
 	}
-	rsa = PEM_read_RSAPrivateKey(keyfp, NULL, NULL, cm_pin_read_key(entry));
+	rsa = PEM_read_RSAPrivateKey(keyfp, NULL,
+				     cm_pin_read_key_ossl_cb, entry);
 	if (rsa != NULL) {
 		EVP_PKEY_assign_RSA(pkey, rsa); /* pkey owns rsa now */
 		x = X509_new();

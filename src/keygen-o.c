@@ -107,7 +107,7 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		if (PEM_write_PrivateKey(fp, pkey,
 					 pin ? cm_prefs_ossl_cipher() : NULL,
 					 NULL, 0,
-					 NULL, pin) == 0) {
+					 cm_pin_read_key_ossl_cb, entry) == 0) {
 			cm_log(1, "Error storing key.\n");
 			while ((error = ERR_get_error()) != 0) {
 				ERR_error_string_n(error, buf, sizeof(buf));

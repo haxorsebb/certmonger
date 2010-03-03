@@ -70,8 +70,8 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 	pem = fopen(entry->cm_key_storage_location, "r");
 	if (pem != NULL) {
-		pkey = PEM_read_PrivateKey(pem, NULL, NULL,
-					   cm_pin_read_key(entry));
+		pkey = PEM_read_PrivateKey(pem, NULL,
+					   cm_pin_read_key_ossl_cb, entry);
 		if (pkey != NULL) {
 			status = 0;
 		} else {

@@ -110,15 +110,15 @@ cm_pin_read_key_ossl_cb(char *buf, int size, int rwflag, void *u)
 	memset(buf, '\0', size);
 	pin = cm_pin_read(entry, cm_pin_key);
 	if (pin != NULL) {
-		if ((int) strlen(pin) < size) {
+		ret = strlen(pin);
+		if (ret < size) {
 			strcpy(buf, pin);
-			ret = 0;
 		} else {
-			ret = -1;
+			ret = 0;
 		}
 		talloc_free(pin);
 	} else {
-		ret = -1;
+		ret = 0;
 	}
 	return ret;
 }
