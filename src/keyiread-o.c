@@ -73,10 +73,11 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		pkey = PEM_read_PrivateKey(pem, NULL, NULL,
 					   cm_pin_read_key(entry));
 		if (pkey != NULL) {
-			status = CM_STATUS_ERROR_AUTH; /* XXX */
+			status = 0;
 		} else {
 			cm_log(1, "Internal error reading key from \"%s\".\n",
 			       entry->cm_key_storage_location);
+			status = CM_STATUS_ERROR_AUTH; /* XXX */
 		}
 		fclose(pem);
 	} else {
