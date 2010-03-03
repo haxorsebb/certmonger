@@ -62,6 +62,7 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 		break;
 	case CM_HAVE_KEY_PAIR:
 	case CM_NEED_CSR:
+	case CM_NEED_CSR_GEN_PIN:
 	case CM_GENERATING_CSR:
 		entry->cm_state = CM_HAVE_KEY_PAIR;
 		break;
@@ -95,6 +96,7 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 		break;
 	case CM_NEWLY_ADDED:
 	case CM_NEWLY_ADDED_READING_KEYI:
+	case CM_NEED_KEYINFO_READ_PIN:
 	case CM_NEWLY_ADDED_START_READING_CERT:
 	case CM_NEWLY_ADDED_READING_CERT:
 	case CM_NEWLY_ADDED_DECIDING:
@@ -323,6 +325,14 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				state->cm_csrgen_state = NULL;
 				entry->cm_state = CM_HAVE_CSR;
 				*when = cm_time_now;
+			} else
+			if (cm_csrgen_need_pin(entry,
+					       state->cm_csrgen_state) == 0) {
+				/* Need a PIN; wait for it. */
+				cm_csrgen_done(entry, state->cm_csrgen_state);
+				state->cm_csrgen_state = NULL;
+				entry->cm_state = CM_NEED_CSR_GEN_PIN;
+				*when = cm_time_now;
 			} else {
 				/* Failed to save CSR; try again. */
 				cm_csrgen_done(entry, state->cm_csrgen_state);
@@ -340,6 +350,10 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				*when = cm_time_no_time;
 			}
 		}
+		break;
+	case CM_NEED_CSR_GEN_PIN:
+		/* Revisit this later. */
+		*when = cm_time_soonish;
 		break;
 	case CM_HAVE_CSR:
 		entry->cm_state = CM_NEED_TO_SUBMIT;
@@ -640,10 +654,23 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		/* If we finished reading info about the key, move on to try
 		 * and read the certificate. */
 		if (cm_keyiread_ready(entry, state->cm_keyiread_state) == 0) {
+			if (cm_keyiread_finished_reading(entry,
+							 state->cm_keyiread_state) == 0) {
+				entry->cm_state = CM_NEWLY_ADDED_START_READING_CERT;
+				*when = cm_time_now;
+			} else
+			if (cm_keyiread_need_pin(entry,
+						 state->cm_keyiread_state) == 0) {
+				/* If we need the PIN, just hang on. */
+				entry->cm_state = CM_NEED_KEYINFO_READ_PIN;
+				*when = cm_time_now;
+			} else {
+				/* Otherwise try to move on. */
+				entry->cm_state = CM_NEWLY_ADDED_START_READING_CERT;
+				*when = cm_time_now;
+			}
 			cm_keyiread_done(entry, state->cm_keyiread_state);
 			state->cm_keyiread_state = NULL;
-			entry->cm_state = CM_NEWLY_ADDED_START_READING_CERT;
-			*when = cm_time_now;
 		} else {
 			/* Wait for status update, or poll. */
 			*readfd = cm_keyiread_get_fd(entry,
@@ -654,6 +681,10 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				*when = cm_time_no_time;
 			}
 		}
+		break;
+	case CM_NEED_KEYINFO_READ_PIN:
+		/* Revisit this later. */
+		*when = cm_time_soonish;
 		break;
 	case CM_NEWLY_ADDED_START_READING_CERT:
 		/* Try to read the certificate. */

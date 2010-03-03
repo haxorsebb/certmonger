@@ -62,18 +62,18 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 
 	OpenSSL_add_ssl_algorithms();
 	ERR_load_crypto_strings();
-	status = 1;
+	status = CM_STATUS_ERROR_INTERNAL;
 	fp = fdopen(fd, "w");
 	if (fp == NULL) {
 		cm_log(1, "Unable to initialize I/O.\n");
-		_exit(1);
+		_exit(CM_STATUS_ERROR_INTERNAL);
 	}
 	pem = fopen(entry->cm_key_storage_location, "r");
 	if (pem != NULL) {
 		pkey = PEM_read_PrivateKey(pem, NULL, NULL,
 					   cm_pin_read_key(entry));
 		if (pkey != NULL) {
-			status = 0;
+			status = CM_STATUS_ERROR_AUTH; /* XXX */
 		} else {
 			cm_log(1, "Internal error reading key from \"%s\".\n",
 			       entry->cm_key_storage_location);
@@ -124,6 +124,33 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	return 0;
 }
 
+/* Check if we were able to successfully read the key information. */
+static int
+cm_keyiread_o_finished_reading(struct cm_store_entry *entry,
+			       struct cm_keyiread_state *state)
+{
+	int status;
+	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	if (WIFEXITED(status) && (WEXITSTATUS(status) == 0)) {
+		return 0;
+	}
+	return -1;
+}
+
+/* Check if we need a PIN (or a new PIN) to access the key information. */
+static int
+cm_keyiread_o_need_pin(struct cm_store_entry *entry,
+		       struct cm_keyiread_state *state)
+{
+	int status;
+	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	if (WIFEXITED(status) &&
+	    (WEXITSTATUS(status) == CM_STATUS_ERROR_AUTH)) {
+		return 0;
+	}
+	return -1;
+}
+
 /* Check if something changed, for example we finished reading the data we need
  * from the key file. */
 static int
@@ -169,6 +196,8 @@ cm_keyiread_o_start(struct cm_store_entry *entry)
 	state = talloc_ptrtype(entry, state);
 	if (state != NULL) {
 		memset(state, 0, sizeof(*state));
+		state->pvt.finished_reading = cm_keyiread_o_finished_reading;
+		state->pvt.need_pin = cm_keyiread_o_need_pin;
 		state->pvt.ready = cm_keyiread_o_ready;
 		state->pvt.get_fd= cm_keyiread_o_get_fd;
 		state->pvt.done= cm_keyiread_o_done;

@@ -29,6 +29,12 @@ struct cm_keyiread_state *cm_keyiread_o_start(struct cm_store_entry *entry);
 /* Check if something changed, for example we finished reading the key info. */
 int cm_keyiread_ready(struct cm_store_entry *entry,
 		      struct cm_keyiread_state *state);
+/* Check if we were able to read the information. */
+int cm_keyiread_finished_reading(struct cm_store_entry *entry,
+				 struct cm_keyiread_state *state);
+/* Check if we need to supply a PIN (or a new PIN) to try again. */
+int cm_keyiread_need_pin(struct cm_store_entry *entry,
+			 struct cm_keyiread_state *state);
 /* Get a selectable-for-read descriptor we can poll for status changes. */
 int cm_keyiread_get_fd(struct cm_store_entry *entry,
 		       struct cm_keyiread_state *state);

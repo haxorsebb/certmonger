@@ -1726,11 +1726,13 @@ request_get_status(DBusConnection *conn, DBusMessage *msg,
 			stuck = FALSE;
 			break;
 		case CM_NEED_KEY_GEN_PIN:
+		case CM_NEED_CSR_GEN_PIN:
 		case CM_NEED_GUIDANCE:
 		case CM_NEED_CA:
 		case CM_CA_REJECTED:
 		case CM_CA_UNREACHABLE:
 		case CM_CA_UNCONFIGURED:
+		case CM_NEED_KEYINFO_READ_PIN:
 			stuck = TRUE;
 			break;
 		}

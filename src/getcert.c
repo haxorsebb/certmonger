@@ -1545,6 +1545,7 @@ list(const char *argv0, int argc, char **argv)
 		case CM_GENERATING_KEY_PAIR:
 		case CM_HAVE_KEY_PAIR:
 		case CM_NEED_CSR:
+		case CM_NEED_CSR_GEN_PIN:
 		case CM_GENERATING_CSR:
 		case CM_HAVE_CSR:
 		case CM_NEED_TO_SUBMIT:
@@ -1563,6 +1564,7 @@ list(const char *argv0, int argc, char **argv)
 		case CM_NEWLY_ADDED:
 		case CM_NEWLY_ADDED_START_READING_CERT:
 		case CM_NEWLY_ADDED_READING_KEYI:
+		case CM_NEED_KEYINFO_READ_PIN:
 		case CM_NEWLY_ADDED_READING_CERT:
 		case CM_NEWLY_ADDED_DECIDING:
 			if (tracking_only) {

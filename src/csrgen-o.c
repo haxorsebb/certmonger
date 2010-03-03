@@ -67,7 +67,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 
 	status = fdopen(fd, "w");
 	if (status == NULL) {
-		_exit(1);
+		_exit(CM_STATUS_ERROR_INTERNAL);
 	}
 	keyfp = fopen(entry->cm_key_storage_location, "r");
 	if (keyfp == NULL) {
@@ -76,14 +76,14 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			       "for reading.\n",
 			       entry->cm_key_storage_location);
 		}
-		_exit(2);
+		_exit(CM_STATUS_ERROR_INTERNAL);
 	}
 	OpenSSL_add_ssl_algorithms();
 	ERR_load_crypto_strings();
 	pkey = EVP_PKEY_new();
 	if (pkey == NULL) {
 		cm_log(1, "Internal error generating CSR.\n");
-		_exit(2);
+		_exit(CM_STATUS_ERROR_INTERNAL);
 	}
 	rsa = PEM_read_RSAPrivateKey(keyfp, NULL, NULL, cm_pin_read_key(entry));
 	if (rsa != NULL) {
@@ -163,7 +163,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 							   sizeof(buf));
 					cm_log(1, "%s\n", buf);
 				}
-				_exit(2);
+				_exit(CM_STATUS_ERROR_INTERNAL);
 			}
 		} else {
 			cm_log(1, "Error creating template certificate.\n");
@@ -171,7 +171,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				ERR_error_string_n(error, buf, sizeof(buf));
 				cm_log(1, "%s\n", buf);
 			}
-			_exit(2);
+			_exit(CM_STATUS_ERROR_INTERNAL);
 		}
 	} else {
 		error = errno;
@@ -181,7 +181,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			ERR_error_string_n(error, buf, sizeof(buf));
 			cm_log(1, "%s\n", buf);
 		}
-		_exit(2);
+		_exit(CM_STATUS_ERROR_AUTH); /* XXX */
 	}
 	while ((error = ERR_get_error()) != 0) {
 		ERR_error_string_n(error, buf, sizeof(buf));
@@ -227,6 +227,20 @@ cm_csrgen_o_save_csr(struct cm_store_entry *entry,
 	return 0;
 }
 
+/* Check if we need a PIN (or a new PIN) to access the key information. */
+static int
+cm_csrgen_o_need_pin(struct cm_store_entry *entry,
+		     struct cm_csrgen_state *state)
+{
+	int status;
+	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	if (WIFEXITED(status) &&
+	    (WEXITSTATUS(status) == CM_STATUS_ERROR_AUTH)) {
+		return 0;
+	}
+	return -1;
+}
+
 /* Clean up after CSR generation. */
 static void
 cm_csrgen_o_done(struct cm_store_entry *entry, struct cm_csrgen_state *state)
@@ -248,6 +262,7 @@ cm_csrgen_o_start(struct cm_store_entry *entry)
 		state->pvt.ready = &cm_csrgen_o_ready;
 		state->pvt.get_fd = &cm_csrgen_o_get_fd;
 		state->pvt.save_csr = &cm_csrgen_o_save_csr;
+		state->pvt.need_pin = &cm_csrgen_o_need_pin;
 		state->pvt.done = &cm_csrgen_o_done;
 		state->subproc = cm_subproc_start(cm_csrgen_o_main,
 						  NULL, entry, NULL);

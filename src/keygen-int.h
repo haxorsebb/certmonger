@@ -18,11 +18,6 @@
 #ifndef cmkeygenint_h
 #define cmkeygenint_h
 
-#define CM_STATUS_ERROR_INITIALIZING	1
-#define CM_STATUS_ERROR_INTERNAL	2
-#define CM_STATUS_ERROR_NO_TOKEN	3
-#define CM_STATUS_ERROR_AUTH		4
-
 struct cm_keygen_state_pvt {
 	/* Check if the keypair is ready. */
 	int (*ready)(struct cm_store_entry *entry,
