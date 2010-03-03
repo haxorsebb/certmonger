@@ -19,6 +19,7 @@
 #define cmpin_h
 
 struct cm_store_entry;
+int cm_pin_read_key_ossl_cb(char *buf, int size, int rwflag, void *u);
 char *cm_pin_read_key(struct cm_store_entry *entry);
 char *cm_pin_read_cert(struct cm_store_entry *entry);
 char *cm_pin_cb_key(PK11SlotInfo *slot, PRBool retry, void *arg);

@@ -100,6 +100,29 @@ cm_pin_read(struct cm_store_entry *entry, enum cm_pin_type pin_type)
 	return pin;
 }
 
+int
+cm_pin_read_key_ossl_cb(char *buf, int size, int rwflag, void *u)
+{
+	struct cm_store_entry *entry;
+	char *pin;
+	int ret;
+	entry = u;
+	memset(buf, '\0', size);
+	pin = cm_pin_read(entry, cm_pin_key);
+	if (pin != NULL) {
+		if ((int) strlen(pin) < size) {
+			strcpy(buf, pin);
+			ret = 0;
+		} else {
+			ret = -1;
+		}
+		talloc_free(pin);
+	} else {
+		ret = -1;
+	}
+	return ret;
+}
+
 char *
 cm_pin_cb(PK11SlotInfo *slot, PRBool retry, void *arg,
 	  enum cm_pin_type pin_type)
