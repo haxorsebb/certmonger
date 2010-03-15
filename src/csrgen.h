@@ -34,6 +34,10 @@ int cm_csrgen_ready(struct cm_store_entry *entry,
 int cm_csrgen_get_fd(struct cm_store_entry *entry,
 		     struct cm_csrgen_state *state);
 
+/* Check if we need a PIN (or a new PIN) to generate a CSR. */
+int cm_csrgen_need_pin(struct cm_store_entry *entry,
+		       struct cm_csrgen_state *state);
+
 /* Save the CSR to the entry. */
 int cm_csrgen_save_csr(struct cm_store_entry *entry,
 		       struct cm_csrgen_state *state);

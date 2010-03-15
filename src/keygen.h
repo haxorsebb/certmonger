@@ -34,6 +34,10 @@ int cm_keygen_ready(struct cm_store_entry *entry,
 int cm_keygen_get_fd(struct cm_store_entry *entry,
 		     struct cm_keygen_state *state);
 
+/* Check if we need a PIN (or a new PIN) to generate a key pair. */
+int cm_keygen_need_pin(struct cm_store_entry *entry,
+		       struct cm_keygen_state *state);
+
 /* Tell us if the keypair was saved to the location specified in the entry. */
 int cm_keygen_saved_keypair(struct cm_store_entry *entry,
 			    struct cm_keygen_state *state);
