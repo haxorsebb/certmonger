@@ -1677,6 +1677,7 @@ request_get_status(DBusConnection *conn, DBusMessage *msg,
 		case CM_NEED_TO_NOTIFY:
 		case CM_NOTIFYING:
 		case CM_NEWLY_ADDED:
+		case CM_NEWLY_ADDED_START_READING_KEYI:
 		case CM_NEWLY_ADDED_READING_KEYI:
 		case CM_NEWLY_ADDED_START_READING_CERT:
 		case CM_NEWLY_ADDED_READING_CERT:
