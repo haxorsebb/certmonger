@@ -12,26 +12,38 @@ We model that life cycle as a state machine.
 
 Now with some arbitrarily-named states for our per-certificate state machine:
 	* Generating a key pair.
-	States: NEED_KEY_PAIR, GENERATING_KEY_PAIR [*], HAVE_KEY_PAIR
+	  States: NEED_KEY_PAIR, GENERATING_KEY_PAIR [*], HAVE_KEY_PAIR
 	* Generating a CSR containing public key.
-	States: NEED_CSR, GENERATING_CSR [*], HAVE_CSR
+	  States: NEED_CSR, GENERATING_CSR [*], HAVE_CSR
 	* Submitting CSR to a CA.
-	States: NEED_TO_SUBMIT, SUBMITTING [*]
+	  States: NEED_TO_SUBMIT, SUBMITTING [*]
+	* Don't know which CA to submit to.
+	  States: NEED_CA [*]
+	* Don't have complete information about CA.
+	  States: CA_UNCONFIGURED [*]
+	* Can't contact CA.
+	  States: CA_UNREACHABLE [*]
+	* Rejected, very sad.
+	  States: CA_REJECTED [*]
+	* CA is thinking.
+	  States: CA_WORKING [*]
 	* Saving certificate to the desired location and parsing it for the
 	  information we think is interesting.
-	States: NEED_TO_SAVE_CERT, SAVING_CERT[*], READING_CERT[*], SAVED_CERT
-	* Rejected, very sad.
-	States: REJECTED [*]
+	  States: NEED_TO_SAVE_CERT, SAVING_CERT [*],
+		  NEED_TO_READ_CERT, READING_CERT [*],
+		  SAVED_CERT
 	* Waiting for certificate to near expiration.
-	States: MONITORING
-	* Don't know which CA to submit to.
-	States: NEED_GUIDANCE [*]
+	  States: MONITORING
+	* Notifying the admin of impending/passed expiration.
+	  States: NEED_TO_NOTIFY, NOTIFYING [*]
 	* Waiting for user input
-	States: NEED_GUIDANCE [*]
-	* On hold
-	States: NEED_GUIDANCE [*]
-	* Revoked
-	States: NEED_GUIDANCE [*]
+	  States: NEED_GUIDANCE [*]
+	* Getting our bearings
+	  States: NEWLY_ADDED,
+		  NEWLY_ADDED_READING_KEYI [*],
+		  NEWLY_ADDED_START_READING_CERT,
+		  NEWLY_ADDED_READING_CERT [*],
+		  NEWLY_ADDED_DECIDING [*]
 [*] Denotes states in which we have to wait for instructions from the user
     or completion of interaction with external systems.
 
@@ -41,6 +53,7 @@ State logic:
 		state_next = GENERATING_KEY_PAIR
 		state_transition = now
 		break
+
 	GENERATING_KEY_PAIR:
 		if starting-up
 			state_next = NEED_KEY_PAIR
@@ -57,21 +70,27 @@ State logic:
 				state_next = GENERATING_KEY_PAIR
 				state_transition = when-notified
 		break
+
 	HAVE_KEY_PAIR:
 		state_next = NEED_CSR
 		state_transition = now
 		break
 
 	NEED_CSR:
-		if don't-have-a-full-template
-			fill-in-template-values-based-on-defaults
-		start-csr-generation-using-template-values
-		state_next = GENERATING_CSR
-		state_transition = now
+		if starting-up
+			state_next = HAVE_KEY_PAIR
+			state_transition = now
+		else
+			if don't-have-a-full-template
+				fill-in-template-values-based-on-defaults
+			start-csr-generation-using-template-values
+			state_next = GENERATING_CSR
+			state_transition = now
 		break
+
 	GENERATING_CSR:
 		if starting-up
-			state_next = NEED_CSR
+			state_next = HAVE_KEY_PAIR
 			state_transition = now
 		else
 			if csrgen-finished
@@ -85,25 +104,30 @@ State logic:
 				state_next = GENERATING_CSR
 				state_transition = when-notified
 		break
+
 	HAVE_CSR:
 		state_next = NEED_TO_SUBMIT
 		state_transition = now
 		break
 
 	NEED_TO_SUBMIT:
-		start-csr-submission
-		if csr-submission-started
-			state_next = SUBMITTING
+		if starting-up
+			state_next = HAVE_CSR
 			state_transition = now
 		else
-			if don't-know-a-ca
-				state_next = NEED_CA
+			start-csr-submission
+			if csr-submission-started
+				state_next = SUBMITTING
 				state_transition = now
+			else
+				if don't-know-a-ca
+					state_next = NEED_CA
+					state_transition = now
 		break
 
 	SUBMITTING:
 		if starting-up
-			state_next = NEED_TO_SUBMIT
+			state_next = HAVE_CSR
 			state_transition = now
 		else
 			if csr-submission-attempt-completed
@@ -111,21 +135,25 @@ State logic:
 					state_next = NEED_TO_SAVE_CERT
 					state_transition = now
 				elseif ca-rejected-us
-					state_next = REJECTED
-					state_transition = now
+					state_next = CA_REJECTED
+					state_transition = later
 				elseif ca-is-unreachable
 					store-ca-cookie
-					state_next = NEED_TO_SUBMIT
+					state_next = CA_UNREACHABLE
 					state_transition = later
-				elseif ca-is-thinking-about-it
+				elseif ca-is-thinking-about-it-and-have-cookie
 					store-ca-cookie
-					state_next = NEED_TO_SUBMIT
+					state_next = CA_WORKING
 					state_transition = soon
+				elseif ca-is-underconfigured
+					store-ca-cookie
+					state_next = CA_UNCONFIGURED
+					state_transition = later
 				else
 					state_next = NEED_GUIDANCE
 					state_transition = now
 			else
-				state_next = SUBMITTING 
+				state_next = SUBMITTING
 				state_transition = when-notified
 		break
 
@@ -136,9 +164,13 @@ State logic:
 		break
 
 	SAVING_CERT:
-		if cert-save-completed:
-			state_next = NEED_TO_READ_CERT
+		if starting-up
+			state_next = NEED_TO_SAVE_CERT
 			state_transition = now
+		else
+			if cert-save-completed
+				state_next = NEED_TO_READ_CERT
+				state_transition = now
 		break
 
 	NEED_TO_READ_CERT:
@@ -148,9 +180,58 @@ State logic:
 		break
 
 	READING_CERT:
-		if cert-read-completed:
-			state_next = MONITORING
+		if starting-up
+			state_next = NEED_TO_READ_CERT
 			state_transition = now
+		else
+			if cert-read-completed
+				state_next = SAVED_CERT
+				state_transition = now
+		break
+
+	SAVED_CERT:
+		state_next = MONITORING
+		state_transition = now
+		break
+
+	CA_REJECTED:
+		state_transition = soon
+		break
+
+	CA_WORKING:
+		if starting-up
+			state_next = HAVE_CSR
+			state_transition = now
+		else
+			state_next = NEED_TO_SUBMIT
+			state_transition = soon
+		break
+
+	CA_UNREACHABLE:
+		if starting-up
+			state_next = HAVE_CSR
+			state_transition = now
+		else
+			state_next = NEED_TO_SUBMIT
+			state_transition = soon
+		break
+
+	CA_UNCONFIGURED:
+		if starting-up
+			state_next = HAVE_CSR
+			state_transition = now
+		else
+			state_next = NEED_TO_SUBMIT
+			state_transition = soon
+		break
+
+	NEED_CA:
+		if starting-up
+			state_next = HAVE_CSR
+			state_transition = now
+		else
+			state_next = NEED_TO_SUBMIT
+			state_transition = soon
 		break
 
 	NEED_GUIDANCE:
@@ -161,37 +242,102 @@ State logic:
 			state_next = NEED_GUIDANCE
 			state_transition = timeout
 		break
-	
-	REJECTED:
-		state_next = REJECTED
-		state_waitfor = ever
-		break
+
 
 	MONITORING:
-		if certificate-uses-auto-renew(cert)
-			if certificate-is-expired or
-			   (expiration-time-is-below-renewal-threshold-value and
-			    expiration-time-was-above-renewal-threshold-value)
-				update-template-values-based-on-cert
-				state_next = NEED_CSR
-				state_transition = now
-			else
-				state_next = MONITORING
-				state_transition = timeout
+		if certificate-is-expired or
+		   (expiration-time-is-below-renewal-threshold-value and
+		    expiration-time-was-above-renewal-threshold-value)
+			update-template-values-based-on-cert
+			state_next = NEED_TO_NOTIFY
+			state_transition = now
 		else
-			if certificate-is-expired
+			state_next = MONITORING
+			state_transition = timeout
+		break
+
+	NEED_TO_NOTIFY:
+		if starting-up
+			state_next = MONITORING
+			state_transition = now
+		else
+			start-notifying
+			state_next = NOTIFYING
+			state_transition = now
+		break
+
+	NOTIFYING:
+		if starting-up
+			state_next = NEED_TO_NOTIFY
+			state_transition = now
+		else
+			if notification-completed
+				if this-cert-gets-autorenew
+					state_next = NEED_CSR
+					state_transition = now
+				else
+					state_next = NOTIFYING
+					state_transition = now
+		break
+
+	NEWLY_ADDED:
+		if key-storage-is-known
+			state_next = NEWLY_ADDED_START_READING_KEYI
+			state_transition = now
+		else
+			state_next = NEWLY_ADDED_START_READING_CERT
+			state_transition = now
+		break
+
+	NEWLY_ADDED_START_READING_KEYI:
+		start-reading-key-information
+		state_next = NEWLY_ADDED_READING_KEYI
+		state_transition = now
+		break
+
+	NEWLY_ADDED_READING_KEYI:
+		if starting-up
+			state_next = NEWLY_ADDED_START_READING_KEYI
+			state_transition = now
+		else
+			if finished-reading-key-information
+				state_next = NEWLY_ADDED_START_READING_CERT
+				state_transition = now
+		break
+
+	NEWLY_ADDED_START_READING_CERT:
+		start-reading-cert
+		state_next = NEWLY_ADDED_READING_CERT
+		state_transition = now
+		break
+
+	NEWLY_ADDED_READING_CERT:
+		if starting-up
+			state_next = NEWLY_ADDED_START_READING_CERT
+			state_transition = now
+		else
+			if finished-reading-cert
+				state_next = NEWLY_ADDED_DECIDING
+				state_transition = now
+		break
+
+	NEWLY_ADDED_DECIDING:
+		if entry-has-no-associated-ca
+			try-to-set-ca-using-known-ca-list
+		if we-have-a-cert
+			state_next = MONITORING
+			state_transition = now
+		else
+			if key-storage-is-known
+				if key-is-present
+					state_next = NEED_CSR
+					state_transition = now
+				else
+					state_next = NEED_KEY_PAIR
+					state_transition = now
+			else
 				state_next = NEED_GUIDANCE
 				state_transition = now
-			elseif (expiration-time-is-below-a-threshold-value and
-			        expiration-time-was-above-a-threshold-value)
-				notify-administrator
-				store-last-checked-t(cert,now)
-				store-last-notified-t(cert,exp,ttl)
-				state_next = MONITORING
-				state_transition = timeout
-			else
-				state_next = MONITORING
-				state_transition = timeout
 		break
 
 Types of actions and user guidance:
