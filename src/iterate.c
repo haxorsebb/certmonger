@@ -60,12 +60,18 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 	case CM_GENERATING_KEY_PAIR:
 		entry->cm_state = CM_NEED_KEY_PAIR;
 		break;
+	case CM_NEED_KEY_GEN_PIN:
+		entry->cm_state = CM_NEED_KEY_PAIR;
+		break;
 	case CM_HAVE_KEY_PAIR:
 		break;
 	case CM_NEED_CSR:
 		entry->cm_state = CM_HAVE_KEY_PAIR;
 		break;
 	case CM_GENERATING_CSR:
+		entry->cm_state = CM_HAVE_KEY_PAIR;
+		break;
+	case CM_NEED_CSR_GEN_PIN:
 		entry->cm_state = CM_HAVE_KEY_PAIR;
 		break;
 	case CM_HAVE_CSR:
@@ -117,6 +123,9 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 	case CM_NEWLY_ADDED_START_READING_KEYI:
 		break;
 	case CM_NEWLY_ADDED_READING_KEYI:
+		entry->cm_state = CM_NEWLY_ADDED_START_READING_KEYI;
+		break;
+	case CM_NEWLY_ADDED_NEED_KEYI_READ_PIN:
 		entry->cm_state = CM_NEWLY_ADDED_START_READING_KEYI;
 		break;
 	case CM_NEWLY_ADDED_START_READING_CERT:

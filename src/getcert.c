@@ -1521,9 +1521,11 @@ list(const char *argv0, int argc, char **argv)
 			break;
 		case CM_NEED_KEY_PAIR:
 		case CM_GENERATING_KEY_PAIR:
+		case CM_NEED_KEY_GEN_PIN:
 		case CM_HAVE_KEY_PAIR:
 		case CM_NEED_CSR:
 		case CM_GENERATING_CSR:
+		case CM_NEED_CSR_GEN_PIN:
 		case CM_HAVE_CSR:
 		case CM_NEED_TO_SUBMIT:
 		case CM_SUBMITTING:
@@ -1541,6 +1543,7 @@ list(const char *argv0, int argc, char **argv)
 		case CM_NEWLY_ADDED:
 		case CM_NEWLY_ADDED_START_READING_KEYI:
 		case CM_NEWLY_ADDED_READING_KEYI:
+		case CM_NEWLY_ADDED_NEED_KEYI_READ_PIN:
 		case CM_NEWLY_ADDED_START_READING_CERT:
 		case CM_NEWLY_ADDED_READING_CERT:
 		case CM_NEWLY_ADDED_DECIDING:
