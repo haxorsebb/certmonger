@@ -69,6 +69,7 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	CERTCertificate *cert;
 	CK_MECHANISM_TYPE mech;
 	struct cm_certread_n_settings *settings;
+	PRTime before_a, after_a, before_b, after_b;
 	FILE *fp;
 	/* Open the status descriptor for stdio. */
 	fp = fdopen(fd, "w");
@@ -141,8 +142,19 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					cm_log(3, "Located the certificate "
 					       "\"%s\".\n",
 					       entry->cm_cert_nickname);
-					cert = CERT_DupCertificate(node->cert);
-					break;
+					if (cert == NULL) {
+						cert = CERT_DupCertificate(node->cert);
+					} else {
+						if ((CERT_GetCertTimes(node->cert, &before_a, &after_a) == SECSuccess) &&
+						    (CERT_GetCertTimes(cert, &before_b, &after_b) == SECSuccess) &&
+						    (after_a > after_b)) {
+							cm_log(3, "Located a newer certificate "
+							       "\"%s\".\n",
+							       entry->cm_cert_nickname);
+							CERT_DestroyCertificate(cert);
+							cert = CERT_DupCertificate(node->cert);
+						}
+					}
 				}
 			}
 			CERT_DestroyCertList(certs);

@@ -73,6 +73,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	CERTCertList *certs;
 	CERTCertListNode *cnode;
 	CERTCertificate *cert;
+	int n_login_attempts, n_login_success;
 
 	/* Open the database. */
 	error = readwrite ? NSS_InitReadWrite(entry->cm_key_storage_location) :
@@ -80,7 +81,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	if (error != SECSuccess) {
 		cm_log(1, "Unable to open NSS database '%s'.\n",
 		       entry->cm_key_storage_location);
-		_exit(1);
+		_exit(CM_STATUS_ERROR_INITIALIZING);
 	}
 
 	/* Allocate a memory pool. */
@@ -91,7 +92,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 		if (NSS_Shutdown() != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
-		_exit(ENOMEM);
+		_exit(CM_STATUS_ERROR_INITIALIZING);
 	}
 
 	/* Find the tokens that we might use for key storage. */
@@ -102,7 +103,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 		if (NSS_Shutdown() != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
-		_exit(2);
+		_exit(CM_STATUS_ERROR_NO_TOKEN);
 	}
 
 	/* Walk the list looking for the requested token, or look at all of
@@ -110,6 +111,8 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	key = NULL;
 	slot = NULL;
 	PK11_SetPasswordFunc(&cm_pin_cb_key);
+	n_login_attempts = 0;
+	n_login_success = 0;
 	for (sle = slotlist->head;
 	     ((sle != NULL) && (sle->slot != NULL));
 	     sle = sle->next) {
@@ -131,12 +134,14 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 
 		/* Try to log in, if we have to. */
 		if (PK11_NeedLogin(slot) || !PK11_IsFriendly(slot)) {
+			n_login_attempts++;
 			error = PK11_Authenticate(slot, PR_TRUE, entry);
 			if (error != SECSuccess) {
 				cm_log(1, "Error authenticating to token "
 				       "\"%s\".\n", token);
 				goto next_slot;
 			}
+			n_login_success++;
 		}
 
 		/* Walk the list of private keys in the token, looking at each
@@ -202,6 +207,12 @@ next_slot:
 	}
 
 	PORT_FreeArena(arena, PR_TRUE);
+
+	/* If we tried to log into a token and failed, flag that error. */
+	if (n_login_attempts < n_login_success) {
+		_exit(CM_STATUS_ERROR_AUTH);
+	}
+
 	return key;
 }
 
@@ -220,7 +231,7 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	fp = fdopen(fd, "w");
 	if (fp == NULL) {
 		cm_log(1, "Unable to initialize I/O.\n");
-		_exit(1);
+		_exit(CM_STATUS_ERROR_INTERNAL);
 	}
 
 	/* Read the key. */
@@ -278,6 +289,33 @@ cm_keyiread_n_ready(struct cm_store_entry *entry,
 	return cm_subproc_ready(entry, state->subproc);
 }
 
+/* Check if we were able to successfully read the key information. */
+static int
+cm_keyiread_n_finished_reading(struct cm_store_entry *entry,
+			       struct cm_keyiread_state *state)
+{
+	int status;
+	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	if (WIFEXITED(status) && (WEXITSTATUS(status) == 0)) {
+		return 0;
+	}
+	return -1;
+}
+
+/* Check if we need a PIN (or a new PIN) to access the key information. */
+static int
+cm_keyiread_n_need_pin(struct cm_store_entry *entry,
+		       struct cm_keyiread_state *state)
+{
+	int status;
+	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	if (WIFEXITED(status) &&
+	    (WEXITSTATUS(status) == CM_STATUS_ERROR_AUTH)) {
+		return 0;
+	}
+	return -1;
+}
+
 /* Get a selectable-for-read descriptor we can poll for status changes. */
 static int
 cm_keyiread_n_get_fd(struct cm_store_entry *entry,
@@ -317,6 +355,8 @@ cm_keyiread_n_start(struct cm_store_entry *entry)
 	state = talloc_ptrtype(entry, state);
 	if (state != NULL) {
 		memset(state, 0, sizeof(*state));
+		state->pvt.finished_reading = cm_keyiread_n_finished_reading;
+		state->pvt.need_pin = cm_keyiread_n_need_pin;
 		state->pvt.ready = cm_keyiread_n_ready;
 		state->pvt.get_fd= cm_keyiread_n_get_fd;
 		state->pvt.done= cm_keyiread_n_done;

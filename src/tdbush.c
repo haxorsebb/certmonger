@@ -1250,6 +1250,48 @@ request_get_nickname(DBusConnection *conn, DBusMessage *msg,
 }
 
 static DBusHandlerResult
+request_get_key_pin(DBusConnection *conn, DBusMessage *msg,
+		    struct cm_context *ctx)
+{
+	DBusMessage *rep;
+	struct cm_store_entry *entry;
+	entry = get_entry_for_request_message(msg, ctx);
+	if (entry == NULL) {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+	rep = dbus_message_new_method_return(msg);
+	if (rep != NULL) {
+		cm_tdbusm_set_s(rep, entry->cm_key_pin);
+		dbus_connection_send(conn, rep, NULL);
+		dbus_message_unref(rep);
+		return DBUS_HANDLER_RESULT_HANDLED;
+	} else {
+		return send_internal_request_error(conn, msg);
+	}
+}
+
+static DBusHandlerResult
+request_get_key_pin_file(DBusConnection *conn, DBusMessage *msg,
+			 struct cm_context *ctx)
+{
+	DBusMessage *rep;
+	struct cm_store_entry *entry;
+	entry = get_entry_for_request_message(msg, ctx);
+	if (entry == NULL) {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+	rep = dbus_message_new_method_return(msg);
+	if (rep != NULL) {
+		cm_tdbusm_set_s(rep, entry->cm_key_pin_file);
+		dbus_connection_send(conn, rep, NULL);
+		dbus_message_unref(rep);
+		return DBUS_HANDLER_RESULT_HANDLED;
+	} else {
+		return send_internal_request_error(conn, msg);
+	}
+}
+
+static DBusHandlerResult
 request_get_autorenew(DBusConnection *conn, DBusMessage *msg,
 		      struct cm_context *ctx)
 {
@@ -1895,6 +1937,26 @@ request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 				entry->cm_template_subject = maybe_strdup(entry,
 									  param->value.s);
 			} else
+			if ((param->value_type == cm_tdbusm_dict_s) &&
+			    (strcasecmp(param->key, "KEY_PIN") == 0)) {
+				talloc_free(entry->cm_key_pin);
+				entry->cm_key_pin = maybe_strdup(entry,
+								 param->value.s);
+			} else
+			if ((param->value_type == cm_tdbusm_dict_s) &&
+			    (strcasecmp(param->key, "KEY_PIN_FILE") == 0)) {
+				if (cm_tdbush_check_arg_is_absolute_path(param->value.s) != 0) {
+					cm_log(1, "PIN storage location is not "
+					       "an absolute path.\n");
+					return send_internal_base_bad_arg_error(conn, msg,
+										_("The location \"%s\" must be an absolute path."),
+										param->value.s,
+										"KEY_PIN_FILE");
+				}
+				talloc_free(entry->cm_key_pin_file);
+				entry->cm_key_pin_file = maybe_strdup(entry,
+								      param->value.s);
+			} else
 			if ((param->value_type == cm_tdbusm_dict_as) &&
 			    (strcasecmp(param->key, "EKU") == 0)) {
 				talloc_free(entry->cm_template_eku);
@@ -2333,6 +2395,10 @@ static struct {
 	 request_get_nickname},
 	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_autorenew",
 	 request_get_autorenew},
+	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_key_pin",
+	 request_get_key_pin},
+	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_key_pin_file",
+	 request_get_key_pin_file},
 	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_cert_data",
 	 request_get_cert_data},
 	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_cert_info",

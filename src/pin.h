@@ -18,7 +18,13 @@
 #ifndef cmpin_h
 #define cmpin_h
 
+#define CM_STATUS_ERROR_INITIALIZING	1
+#define CM_STATUS_ERROR_INTERNAL	2
+#define CM_STATUS_ERROR_NO_TOKEN	3
+#define CM_STATUS_ERROR_AUTH		4
+
 struct cm_store_entry;
+int cm_pin_read_key_ossl_cb(char *buf, int size, int rwflag, void *u);
 char *cm_pin_read_key(struct cm_store_entry *entry);
 char *cm_pin_read_cert(struct cm_store_entry *entry);
 char *cm_pin_cb_key(PK11SlotInfo *slot, PRBool retry, void *arg);

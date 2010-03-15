@@ -167,12 +167,12 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	arena = PORT_NewArena(sizeof(double));
 	if (arena == NULL) {
 		cm_log(1, "Out of memory?.\n");
-		_exit(1);
+		_exit(CM_STATUS_ERROR_INTERNAL);
 	}
 	status = fdopen(fd, "w");
 	if (status == NULL) {
 		cm_log(1, "Internal error: %s.\n", strerror(errno));
-		_exit(1);
+		_exit(CM_STATUS_ERROR_INTERNAL);
 	}
 
 	/* Start up NSS and find the key pair. */
@@ -184,7 +184,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
-		_exit(2);
+		_exit(CM_STATUS_ERROR_NO_TOKEN);
 	}
 	/* Select a subject name. */
 	if ((entry->cm_template_subject != NULL) &&
@@ -211,7 +211,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(1, "Error shutting down NSS.\n");
 		}
 		fclose(status);
-		_exit(2);
+		_exit(CM_STATUS_ERROR_INTERNAL);
 	}
 	/* Generate a subjectPublicKeyInfo. */
 	spki = SECKEY_CreateSubjectPublicKeyInfo(pubkey);
@@ -231,7 +231,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(1, "Error shutting down NSS.\n");
 		}
 		fclose(status);
-		_exit(2);
+		_exit(CM_STATUS_ERROR_INTERNAL);
 	}
 	/* Build the request. */
 	req = CERT_CreateCertificateRequest(name, spki, NULL);
@@ -251,7 +251,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(1, "Error shutting down NSS.\n");
 		}
 		fclose(status);
-		_exit(2);
+		_exit(CM_STATUS_ERROR_INTERNAL);
 	}
 	/* Generate requested values for various extensions and a friendly
 	 * name. */
@@ -282,7 +282,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(1, "Error shutting down NSS.\n");
 		}
 		fclose(status);
-		_exit(2);
+		_exit(CM_STATUS_ERROR_INTERNAL);
 	}
 	/* Sign the request using the private key. */
 	sigoid = SECOID_FindOIDByTag(cm_prefs_nss_sig_alg(pubkey));
@@ -300,7 +300,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(1, "Error shutting down NSS.\n");
 		}
 		fclose(status);
-		_exit(2);
+		_exit(CM_STATUS_ERROR_INTERNAL);
 	}
 	if (SEC_SignData(&sreq.signature, sreq.data.data, sreq.data.len,
 			 privkey, sigoid->offset) != SECSuccess) {
@@ -314,7 +314,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(1, "Error shutting down NSS.\n");
 		}
 		fclose(status);
-		_exit(2);
+		_exit(CM_STATUS_ERROR_INTERNAL);
 	}
 	/* Encode the signed request. */
 	sreq.signature.len *= 8;
@@ -330,7 +330,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(1, "Error shutting down NSS.\n");
 		}
 		fclose(status);
-		_exit(2);
+		_exit(CM_STATUS_ERROR_INTERNAL);
 	}
 	/* Encode the request into base-64 and pass it to our caller. */
 	b64 = NSSBase64_EncodeItem(arena, NULL, -1, &esreq);
@@ -362,7 +362,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		cm_log(1, "Error shutting down NSS.\n");
 	}
 	fclose(status);
-	_exit(2);
+	_exit(CM_STATUS_ERROR_INTERNAL);
 }
 
 /* Check if a CSR is ready. */
@@ -399,6 +399,20 @@ cm_csrgen_n_save_csr(struct cm_store_entry *entry,
 	return 0;
 }
 
+/* Check if we need a PIN (or a new PIN) to access the key information. */
+static int
+cm_csrgen_n_need_pin(struct cm_store_entry *entry,
+		     struct cm_csrgen_state *state)
+{
+	int status;
+	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	if (WIFEXITED(status) &&
+	    (WEXITSTATUS(status) == CM_STATUS_ERROR_AUTH)) {
+		return 0;
+	}
+	return -1;
+}
+
 /* Clean up after CSR generation. */
 static void
 cm_csrgen_n_done(struct cm_store_entry *entry, struct cm_csrgen_state *state)
@@ -420,6 +434,7 @@ cm_csrgen_n_start(struct cm_store_entry *entry)
 		state->pvt.ready = &cm_csrgen_n_ready;
 		state->pvt.get_fd = &cm_csrgen_n_get_fd;
 		state->pvt.save_csr = &cm_csrgen_n_save_csr;
+		state->pvt.need_pin = &cm_csrgen_n_need_pin;
 		state->pvt.done = &cm_csrgen_n_done;
 		state->subproc = cm_subproc_start(cm_csrgen_n_main,
 						  NULL, entry, NULL);

@@ -326,6 +326,9 @@ State logic:
 			elseif key-store-needs-pin
 				state_next = NEWLY_ADDED_NEED_KEYI_READ_PIN
 				state_transition = now
+			else
+				state_next = NEWLY_ADDED_START_READING_CERT
+				state_transition = now
 		break
 
 	NEWLY_ADDED_NEED_KEYI_READ_PIN:

@@ -1210,6 +1210,7 @@ resubmit(const char *argv0, int argc, char **argv)
 	struct cm_tdbusm_dict param[15];
 	const struct cm_tdbusm_dict *params[16];
 	char *dbdir = NULL, *token = NULL, *nickname = NULL, *certfile = NULL;
+	char *pin = NULL, *pinfile = NULL;
 	char *id = NULL, *new_id = NULL, *ca = NULL, *new_request, *nss_scheme;
 	char *subject = NULL, **eku = NULL, *oid = NULL;
 	char **principal = NULL, **dns = NULL, **email = NULL;
@@ -1229,7 +1230,7 @@ resubmit(const char *argv0, int argc, char **argv)
 	}
 
 	while ((c = getopt(argc, argv,
-			   "d:n:N:t:U:K:E:D:f:i:I:sS" GETOPT_CA)) != -1) {
+			   "d:n:N:t:U:K:E:D:f:i:I:sSp:P:" GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
 			nss_scheme = NULL;
@@ -1303,6 +1304,12 @@ resubmit(const char *argv0, int argc, char **argv)
 			break;
 		case 'S':
 			bus = cm_tdbus_system;
+			break;
+		case 'p':
+			pinfile = optarg;
+			break;
+		case 'P':
+			pin = optarg;
 			break;
 		default:
 			help(argv0, "resubmit");
@@ -1397,6 +1404,20 @@ resubmit(const char *argv0, int argc, char **argv)
 		params[i] = &param[i];
 		i++;
 	}
+	if (pin != NULL) {
+		param[i].key = "KEY_PIN";
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = pin;
+		params[i] = &param[i];
+		i++;
+	}
+	if (pinfile != NULL) {
+		param[i].key = "KEY_PIN_FILE";
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = pinfile;
+		params[i] = &param[i];
+		i++;
+	}
 	params[i] = NULL;
 	if (i > 0) {
 		req = prep_req(bus, request, CM_DBUS_REQUEST_INTERFACE,
@@ -1459,7 +1480,7 @@ list(const char *argv0, int argc, char **argv)
 	DBusMessage *rep;
 	char **requests, *s, *p, *nickname, *only_ca = DEFAULT_CA, *ca_name;
 	dbus_bool_t b;
-	char *s1, *s2, *s3, *s4;
+	char *s1, *s2, *s3, *s4, *s5, *s6;
 	long n1, n2;
 	char **as1, **as2, **as3, **as4, t[15];
 	int requests_only = 0, tracking_only = 0, c, i, j;
@@ -1520,12 +1541,12 @@ list(const char *argv0, int argc, char **argv)
 			continue;
 			break;
 		case CM_NEED_KEY_PAIR:
-		case CM_GENERATING_KEY_PAIR:
 		case CM_NEED_KEY_GEN_PIN:
+		case CM_GENERATING_KEY_PAIR:
 		case CM_HAVE_KEY_PAIR:
 		case CM_NEED_CSR:
-		case CM_GENERATING_CSR:
 		case CM_NEED_CSR_GEN_PIN:
+		case CM_GENERATING_CSR:
 		case CM_HAVE_CSR:
 		case CM_NEED_TO_SUBMIT:
 		case CM_SUBMITTING:
@@ -1578,11 +1599,23 @@ list(const char *argv0, int argc, char **argv)
 			exit(1);
 		}
 		dbus_message_unref(rep);
-		printf(_("\tkey pair storage: %s%s%s%s%s%s%s%s%s\n"),
+		s5 = query_rep_s(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
+				 "get_key_pin", globals.tctx);
+		if ((s5 != NULL) && (strlen(s5) == 0)) {
+			s5 = NULL;
+		}
+		s6 = query_rep_s(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
+				 "get_key_pin_file", globals.tctx);
+		if ((s6 != NULL) && (strlen(s6) == 0)) {
+			s6 = NULL;
+		}
+		printf(_("\tkey pair storage: %s%s%s%s%s%s%s%s%s%s%s%s%s\n"),
 		       strcmp(s1, "NONE") ? _("type=") : "", s1 ? s1 : "",
 		       s2 ? _(",location='") : "", s2 ? s2 : "", s2 ? "'" : "",
 		       s3 ? _(",nickname=") : "", s3 ? s3 : "",
-		       s4 ? _(",token=") : "", s4 ? s4 : "");
+		       s4 ? _(",token=") : "", s4 ? s4 : "",
+		       s5 ? _(",pin=") : "", s5 ? s5 : "",
+		       s6 ? _(",pinfile=") : "", s6 ? s6 : "");
 		rep = query_rep(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
 				"get_cert_storage_info");
 		if (cm_tdbusm_get_ssosos(rep, globals.tctx,
@@ -1827,6 +1860,10 @@ help(const char *cmd, const char *category)
 		N_("  -t NAME	optional token name for NSS-based storage (only valid with -d)\n"),
 		N_("* If using files for storage:\n"),
 		N_("  -f FILE	PEM file for certificate\n"),
+		"\n",
+		N_("* If keys are encrypted:\n"),
+		N_("  -p FILE	file which holds the encryption PIN\n"),
+		N_("  -P PIN 	PIN value\n"),
 		"\n",
 		N_("* New parameter values for the signing request:\n"),
 		N_("  -N NAME	set requested subject name (default: CN=<hostname>)\n"),

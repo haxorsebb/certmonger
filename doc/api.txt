@@ -109,6 +109,10 @@ o object layout
              array of string -> principal names
              number -> key usage as bitfield based on RFC5280's values
              array of string -> oid values
+  - get_key_pin
+    returns: string -> key storage PIN
+  - get_key_pin_file
+    returns: string -> path of file containing key storage PIN
   - get_csr_data
     returns: string -> signing request in PEM format
   - get_ca
@@ -122,6 +126,10 @@ o object layout
   - modify
     - nickname for request
       argument: string -> new ID
+    - pin for key storage
+      argument: string -> PIN used for key storage
+    - pin file for key storage
+      argument: string -> name of file containing PIN used for key storage
     - requested subject name
       argument: string -> requested subject
     - requested subject alternative name(s): email

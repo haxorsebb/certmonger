@@ -29,6 +29,9 @@ struct cm_csrgen_state_pvt {
 	/* Save the CSR to the entry. */
 	int (*save_csr)(struct cm_store_entry *entry,
 		        struct cm_csrgen_state *state);
+	/* Check if we need a PIN (or a new PIN) to get at the key material. */
+	int (*need_pin)(struct cm_store_entry *entry,
+		        struct cm_csrgen_state *state);
 	/* Clean up after CSR generation. */
 	void (*done)(struct cm_store_entry *entry,
 		     struct cm_csrgen_state *state);

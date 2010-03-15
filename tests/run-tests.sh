@@ -42,7 +42,7 @@ cd "$builddir"
 
 stat=0
 subdirs=
-if test -z "$@" ; then
+if test $# -eq 0 ; then
 	subdirs=`cd "$srcdir"; ls -1 | grep '^[0-9]'`
 fi
 for testid in "$@" $subdirs ; do

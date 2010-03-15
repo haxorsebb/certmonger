@@ -42,6 +42,11 @@ int cm_keygen_need_pin(struct cm_store_entry *entry,
 int cm_keygen_saved_keypair(struct cm_store_entry *entry,
 			    struct cm_keygen_state *state);
 
+/* Tell us if we need to add or change the PIN in order to access the key
+ * store. */
+int cm_keygen_need_pin(struct cm_store_entry *entry,
+		       struct cm_keygen_state *state);
+
 /* Clean up after key generation. */
 void cm_keygen_done(struct cm_store_entry *entry,
 		    struct cm_keygen_state *state);
