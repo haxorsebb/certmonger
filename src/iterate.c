@@ -286,6 +286,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			*when = cm_time_soonish;
 		}
 		break;
+
 	case CM_GENERATING_KEY_PAIR:
 		if (cm_keygen_ready(entry, state->cm_keygen_state) == 0) {
 			if (cm_keygen_saved_keypair(entry,
@@ -314,10 +315,16 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			}
 		}
 		break;
+
+	case CM_NEED_KEY_GEN_PIN:
+		*when = cm_time_no_time;
+		break;
+
 	case CM_HAVE_KEY_PAIR:
 		entry->cm_state = CM_NEED_CSR;
 		*when = cm_time_now;
 		break;
+
 	case CM_NEED_CSR:
 		state->cm_csrgen_state = cm_csrgen_start(entry);
 		if (state->cm_csrgen_state != NULL) {
@@ -337,6 +344,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			*when = cm_time_soonish;
 		}
 		break;
+
 	case CM_GENERATING_CSR:
 		if (cm_csrgen_ready(entry, state->cm_csrgen_state) == 0) {
 			if (cm_csrgen_save_csr(entry,
@@ -364,10 +372,16 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			}
 		}
 		break;
+
+	case CM_NEED_CSR_GEN_PIN:
+		*when = cm_time_no_time;
+		break;
+
 	case CM_HAVE_CSR:
 		entry->cm_state = CM_NEED_TO_SUBMIT;
 		*when = cm_time_now;
 		break;
+
 	case CM_NEED_TO_SUBMIT:
 		state->cm_submit_state = cm_submit_start(ca, entry);
 		if (state->cm_submit_state != NULL) {
@@ -408,6 +422,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			}
 		}
 		break;
+
 	case CM_SUBMITTING:
 		if (cm_submit_ready(entry, state->cm_submit_state) == 0) {
 			entry->cm_submitted = time(NULL);
@@ -477,6 +492,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			}
 		}
 		break;
+
 	case CM_NEED_TO_SAVE_CERT:
 		state->cm_certsave_state = cm_certsave_start(entry);
 		if (state->cm_certsave_state != NULL) {
@@ -495,6 +511,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			*when = cm_time_soonish;
 		}
 		break;
+
 	case CM_SAVING_CERT:
 		if (cm_certsave_ready(entry, state->cm_certsave_state) == 0) {
 			if (cm_certsave_saved(entry,
@@ -524,6 +541,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			}
 		}
 		break;
+
 	case CM_NEED_TO_READ_CERT:
 		state->cm_certread_state = cm_certread_start(entry);
 		if (state->cm_certread_state != NULL) {
@@ -543,6 +561,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			*when = cm_time_soonish;
 		}
 		break;
+
 	case CM_READING_CERT:
 		if (cm_certread_ready(entry, state->cm_certread_state) == 0) {
 			/* Finished reloading certificate. */
@@ -561,32 +580,40 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			}
 		}
 		break;
+
 	case CM_SAVED_CERT:
 		entry->cm_state = CM_MONITORING;
 		*when = cm_time_now;
 		break;
+
 	case CM_CA_REJECTED:
-		*when = cm_time_soonish;
+		*when = cm_time_no_time;
 		break;
+
 	case CM_CA_WORKING:
 		entry->cm_state = CM_NEED_TO_SUBMIT;
 		*when = cm_time_now;
 		break;
+
 	case CM_CA_UNREACHABLE:
 		entry->cm_state = CM_NEED_TO_SUBMIT;
 		*when = cm_time_now;
 		break;
+
 	case CM_CA_UNCONFIGURED:
 		entry->cm_state = CM_NEED_TO_SUBMIT;
 		*when = cm_time_now;
 		break;
+
 	case CM_NEED_GUIDANCE:
-		*when = cm_time_soonish;
+		*when = cm_time_no_time;
 		break;
+
 	case CM_NEED_CA:
 		entry->cm_state = CM_NEED_TO_SUBMIT;
 		*when = cm_time_soonish;
 		break;
+
 	case CM_MONITORING:
 		if ((entry->cm_monitor ||
 		     entry->cm_monitor_default) && /* XXX */
@@ -600,6 +627,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			*when = cm_time_delay;
 		}
 		break;
+
 	case CM_NEED_TO_NOTIFY:
 		state->cm_notify_state = cm_notify_start(entry);
 		if (state->cm_notify_state != NULL) {
@@ -617,6 +645,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			*when = cm_time_soonish;
 		}
 		break;
+
 	case CM_NOTIFYING:
 		if (cm_notify_ready(entry, state->cm_notify_state) == 0) {
 			cm_notify_done(entry, state->cm_notify_state);
@@ -634,6 +663,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			*when = cm_time_soon;
 		}
 		break;
+
 	case CM_NEWLY_ADDED:
 		/* We need to do some recon, and then decide what we need to
 		 * do to make things the way the user has specified that they
@@ -688,6 +718,10 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		}
 		break;
 
+	case CM_NEWLY_ADDED_NEED_KEYI_READ_PIN:
+		*when = cm_time_no_time;
+		break;
+
 	case CM_NEWLY_ADDED_START_READING_CERT:
 		/* Try to read the certificate. */
 		state->cm_certread_state = cm_certread_start(entry);
@@ -708,6 +742,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			*when = cm_time_soonish;
 		}
 		break;
+
 	case CM_NEWLY_ADDED_READING_CERT:
 		/* If we finished reading info about the cert, move on to try
 		 * to figure out what we should do next. */
@@ -727,6 +762,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			}
 		}
 		break;
+
 	case CM_NEWLY_ADDED_DECIDING:
 		/* Decide what to do next.  Assign a CA if it doesn't have one
 		 * assigned to it already. */
@@ -794,6 +830,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			*when = cm_time_now;
 		}
 		break;
+
 	case CM_INVALID:
 		/* not reached */
 		abort();
