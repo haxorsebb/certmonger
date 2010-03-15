@@ -376,7 +376,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				cm_csrgen_done(entry, state->cm_csrgen_state);
 				state->cm_csrgen_state = NULL;
 				entry->cm_state = CM_NEED_CSR;
-				*when = cm_time_soon;
+				*when = cm_time_soonish;
 			}
 		} else {
 			/* Wait for status update, or poll. */
@@ -462,7 +462,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 					       "certificate, going back to "
 					       "monitoring it\n", entry->cm_id);
 					entry->cm_state = CM_MONITORING;
-					*when = cm_time_soon;
+					*when = cm_time_soonish;
 				} else {
 					entry->cm_state = CM_CA_REJECTED;
 					*when = cm_time_delay;
@@ -498,7 +498,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 					       "certificate, going back to "
 					       "monitoring it\n", entry->cm_id);
 					entry->cm_state = CM_MONITORING;
-					*when = cm_time_soon;
+					*when = cm_time_soonish;
 				} else {
 					entry->cm_state = CM_CA_UNCONFIGURED;
 					*when = cm_time_delay;
@@ -690,10 +690,10 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			 * parameters that have changed since we last generated
 			 * a CSR. */
 			entry->cm_state = CM_NEED_CSR;
-			*when = cm_time_soon;
+			*when = cm_time_now;
 		} else {
 			entry->cm_state = CM_MONITORING;
-			*when = cm_time_soon;
+			*when = cm_time_now;
 		}
 		break;
 

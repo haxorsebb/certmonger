@@ -304,7 +304,7 @@ State logic:
 					state_next = NEED_CSR
 					state_transition = now
 				else
-					state_next = NOTIFYING
+					state_next = MONITORING
 					state_transition = now
 		break
 
