@@ -76,6 +76,12 @@ State logic:
 				state_transition = when-notified
 		break
 
+	NEED_KEY_GEN_PIN:
+		if starting-up
+			state_next = NEED_KEY_PAIR
+			state_transition = now
+		break
+
 	HAVE_KEY_PAIR:
 		state_next = NEED_CSR
 		state_transition = now
@@ -111,6 +117,12 @@ State logic:
 			else
 				state_next = GENERATING_CSR
 				state_transition = when-notified
+		break
+
+	NEED_CSR_GEN_PIN:
+		if starting-up
+			state_next = HAVE_KEY_PAIR
+			state_transition = now
 		break
 
 	HAVE_CSR:
@@ -314,6 +326,12 @@ State logic:
 			elseif key-store-needs-pin
 				state_next = NEWLY_ADDED_NEED_KEYI_READ_PIN
 				state_transition = now
+		break
+
+	NEWLY_ADDED_NEED_KEYI_READ_PIN:
+		if starting-up
+			state_next = NEWLY_ADDED_START_READING_KEYI
+			state_transition = now
 		break
 
 	NEWLY_ADDED_START_READING_CERT:
