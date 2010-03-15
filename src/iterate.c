@@ -457,9 +457,17 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				/* The request was flat-out rejected. */
 				cm_submit_done(entry, state->cm_submit_state);
 				state->cm_submit_state = NULL;
-				entry->cm_state = CM_CA_REJECTED;
-				*when = cm_time_delay;
-				*delay = CM_DELAY_CA_POLL;
+				if (entry->cm_cert != NULL) {
+					cm_log(3, "'%s' already had a "
+					       "certificate, going back to "
+					       "monitoring it\n", entry->cm_id);
+					entry->cm_state = CM_MONITORING;
+					*when = cm_time_soon;
+				} else {
+					entry->cm_state = CM_CA_REJECTED;
+					*when = cm_time_delay;
+					*delay = CM_DELAY_CA_POLL;
+				}
 			} else
 			if (cm_submit_unreachable(entry,
 						  state->cm_submit_state) == 0) {
@@ -485,9 +493,17 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				 * it a little time and then ask. */
 				cm_submit_done(entry, state->cm_submit_state);
 				state->cm_submit_state = NULL;
-				entry->cm_state = CM_CA_UNCONFIGURED;
-				*when = cm_time_delay;
-				*delay = CM_DELAY_CA_POLL;
+				if (entry->cm_cert != NULL) {
+					cm_log(3, "'%s' already had a "
+					       "certificate, going back to "
+					       "monitoring it\n", entry->cm_id);
+					entry->cm_state = CM_MONITORING;
+					*when = cm_time_soon;
+				} else {
+					entry->cm_state = CM_CA_UNCONFIGURED;
+					*when = cm_time_delay;
+					*delay = CM_DELAY_CA_POLL;
+				}
 			} else {
 				/* Don't know what's going on. HELP! */
 				cm_log(1,

@@ -155,8 +155,12 @@ State logic:
 					state_next = NEED_TO_SAVE_CERT
 					state_transition = now
 				elseif ca-rejected-us
-					state_next = CA_REJECTED
-					state_transition = later
+					if already-had-a-cert
+						state_next = MONITORING
+						state_transition = now
+					else
+						state_next = CA_REJECTED
+						state_transition = later
 				elseif ca-is-unreachable
 					store-ca-cookie
 					state_next = CA_UNREACHABLE
@@ -166,9 +170,13 @@ State logic:
 					state_next = CA_WORKING
 					state_transition = soon
 				elseif ca-is-underconfigured
-					store-ca-cookie
-					state_next = CA_UNCONFIGURED
-					state_transition = later
+					if already-had-a-cert
+						state_next = MONITORING
+						state_transition = now
+					else
+						store-ca-cookie
+						state_next = CA_UNCONFIGURED
+						state_transition = later
 				else
 					state_next = NEED_GUIDANCE
 					state_transition = now
