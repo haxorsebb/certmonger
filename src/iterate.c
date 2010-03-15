@@ -56,48 +56,75 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 {
 	switch (entry->cm_state) {
 	case CM_NEED_KEY_PAIR:
+		break;
 	case CM_GENERATING_KEY_PAIR:
 		entry->cm_state = CM_NEED_KEY_PAIR;
 		break;
 	case CM_HAVE_KEY_PAIR:
+		break;
 	case CM_NEED_CSR:
+		entry->cm_state = CM_HAVE_KEY_PAIR;
+		break;
 	case CM_GENERATING_CSR:
 		entry->cm_state = CM_HAVE_KEY_PAIR;
 		break;
 	case CM_HAVE_CSR:
+		break;
 	case CM_NEED_TO_SUBMIT:
+		entry->cm_state = CM_HAVE_CSR;
+		break;
 	case CM_SUBMITTING:
-	case CM_NEED_CA:
-	case CM_CA_UNREACHABLE:
-	case CM_CA_WORKING:
-	case CM_CA_UNCONFIGURED:
 		entry->cm_state = CM_HAVE_CSR;
 		break;
 	case CM_NEED_TO_SAVE_CERT:
+		break;
 	case CM_SAVING_CERT:
 		entry->cm_state = CM_NEED_TO_SAVE_CERT;
 		break;
 	case CM_NEED_TO_READ_CERT:
+		break;
 	case CM_READING_CERT:
+		entry->cm_state = CM_NEED_TO_READ_CERT;
+		break;
 	case CM_SAVED_CERT:
-		entry->cm_state = CM_MONITORING;
 		break;
 	case CM_CA_REJECTED:
+		break;
+	case CM_CA_WORKING:
+		entry->cm_state = CM_HAVE_CSR;
+		break;
+	case CM_CA_UNREACHABLE:
+		entry->cm_state = CM_HAVE_CSR;
+		break;
+	case CM_CA_UNCONFIGURED:
+		entry->cm_state = CM_HAVE_CSR;
+		break;
+	case CM_NEED_CA:
+		entry->cm_state = CM_HAVE_CSR;
 		break;
 	case CM_NEED_GUIDANCE:
 		break;
 	case CM_MONITORING:
 		break;
 	case CM_NEED_TO_NOTIFY:
+		entry->cm_state = CM_MONITORING;
+		break;
 	case CM_NOTIFYING:
 		entry->cm_state = CM_NEED_TO_NOTIFY;
 		break;
 	case CM_NEWLY_ADDED:
+		break;
+	case CM_NEWLY_ADDED_START_READING_KEYI:
+		break;
 	case CM_NEWLY_ADDED_READING_KEYI:
+		entry->cm_state = CM_NEWLY_ADDED_START_READING_KEYI;
+		break;
 	case CM_NEWLY_ADDED_START_READING_CERT:
+		break;
 	case CM_NEWLY_ADDED_READING_CERT:
+		entry->cm_state = CM_NEWLY_ADDED_START_READING_CERT;
+		break;
 	case CM_NEWLY_ADDED_DECIDING:
-		entry->cm_state = CM_NEWLY_ADDED;
 		break;
 	case CM_INVALID:
 		/* not reached */
@@ -346,7 +373,8 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			} else {
 				*when = cm_time_no_time;
 			}
-			/* Mark this serial number as used. */
+			/* If we're doing internal-CA, mark this serial number
+			 * as used. */
 			if (ca != NULL) {
 				switch (ca->cm_ca_type) {
 				case cm_ca_external:
@@ -547,10 +575,12 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		*when = cm_time_soonish;
 		break;
 	case CM_NEED_CA:
+		entry->cm_state = CM_NEED_TO_SUBMIT;
 		*when = cm_time_soonish;
 		break;
 	case CM_MONITORING:
-		if ((entry->cm_monitor || entry->cm_monitor_default) && /* XXX */
+		if ((entry->cm_monitor ||
+		     entry->cm_monitor_default) && /* XXX */
 		    (cm_check_expiration_is_noteworthy(entry) == 0)) {
 			/* Kick off a notification. */
 			entry->cm_state = CM_NEED_TO_NOTIFY;
@@ -600,29 +630,35 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		 * do to make things the way the user has specified that they
 		 * should be. */
 		if (entry->cm_key_storage_type != cm_key_storage_none) {
-			/* Try to read the key. */
-			state->cm_keyiread_state = cm_keyiread_start(entry);
-			if (state->cm_keyiread_state != NULL) {
-				entry->cm_state = CM_NEWLY_ADDED_READING_KEYI;
-				/* Note that we're reading information about
-				 * the key. */
-				*readfd = cm_keyiread_get_fd(entry,
-							     state->cm_keyiread_state);
-				if (*readfd == -1) {
-					*when = cm_time_soon;
-				} else {
-					*when = cm_time_no_time;
-				}
-			} else {
-				/* Failed to start reading info about the key;
-				 * try again soon. */
-				*when = cm_time_soonish;
-			}
+			entry->cm_state = CM_NEWLY_ADDED_START_READING_KEYI;
+			*when = cm_time_now;
 		} else {
 			entry->cm_state = CM_NEWLY_ADDED_START_READING_CERT;
 			*when = cm_time_now;
 		}
 		break;
+
+	case CM_NEWLY_ADDED_START_READING_KEYI:
+		/* Try to read information about the key. */
+		state->cm_keyiread_state = cm_keyiread_start(entry);
+		if (state->cm_keyiread_state != NULL) {
+			entry->cm_state = CM_NEWLY_ADDED_READING_KEYI;
+			/* Note that we're reading information about
+			 * the key. */
+			*readfd = cm_keyiread_get_fd(entry,
+						     state->cm_keyiread_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
+		} else {
+			/* Failed to start reading info about the key;
+			 * try again soon. */
+			*when = cm_time_soonish;
+		}
+		break;
+
 	case CM_NEWLY_ADDED_READING_KEYI:
 		/* If we finished reading info about the key, move on to try
 		 * and read the certificate. */
@@ -642,6 +678,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			}
 		}
 		break;
+
 	case CM_NEWLY_ADDED_START_READING_CERT:
 		/* Try to read the certificate. */
 		state->cm_certread_state = cm_certread_start(entry);
