@@ -151,6 +151,13 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 							cm_log(3, "Located a newer certificate "
 							       "\"%s\".\n",
 							       entry->cm_cert_nickname);
+							if (readwrite) {
+								error = SEC_DeletePermCertificate(cert);
+								if (error != SECSuccess) {
+									cm_log(3, "Error deleting old certificate: %s.\n",
+									       PR_ErrorToString(error, PR_LANGUAGE_I_DEFAULT));
+								}
+							}
 							CERT_DestroyCertificate(cert);
 							cert = CERT_DupCertificate(node->cert);
 						}
@@ -375,7 +382,7 @@ cm_certread_n_start(struct cm_store_entry *entry)
 {
 	struct cm_certread_state *state;
 	struct cm_certread_n_settings settings = {
-		.readwrite = 0,
+		.readwrite = 1,
 	};
 	if (entry->cm_cert_storage_type != cm_cert_storage_nssdb) {
 		cm_log(1, "Wrong read method: can only read certificates "
