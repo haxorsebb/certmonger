@@ -160,7 +160,7 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					  &lifedelta) == 0) {
 			life = lifedelta * 1000000L;
 		} else {
-			life = 30 * 24 * 60 * 60 * 1000000L;
+			life = 365 * 24 * 60 * 60 * 1000000L;
 		}
 	}
 	validity = CERT_CreateValidity(now, now + life);

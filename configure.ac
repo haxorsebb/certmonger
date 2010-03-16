@@ -139,9 +139,9 @@ AC_DEFINE_UNQUOTED(CM_DEFAULT_RSA_MODULUS,0x10001,[Define to the default RSA key
 CM_DEFAULT_PUBKEY_SIZE=2048
 AC_DEFINE_UNQUOTED(CM_DEFAULT_PUBKEY_SIZE,$CM_DEFAULT_PUBKEY_SIZE,[Define to the default public key size.])
 AC_SUBST(CM_DEFAULT_PUBKEY_SIZE)
-AC_DEFINE_UNQUOTED(CM_DEFAULT_TTL_LIST,[30*24*60*60,7*24*60*60,3*24*60*60,2*24*60*60,1*24*60*60],[Define to the list of default time-left thresholds at which we need to warn the user.])
+AC_DEFINE_UNQUOTED(CM_DEFAULT_TTL_LIST,[28*24*60*60,7*24*60*60,3*24*60*60,2*24*60*60,1*24*60*60],[Define to the list of default time-left thresholds at which we need to warn the user.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_SUBJECT_CN,"localhost",[Define to the last-ditch default CN value for a signing request.])
-AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_LIFETIME,"30d",[Define to the default certificate lifetime for self-signed certificates.])
+AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_LIFETIME,"1y",[Define to the default certificate lifetime for self-signed certificates.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_SERIAL,"01",[Define to the default starting serial number for self-signed certificates.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_NOTIFICATION_METHOD,cm_notification_syslog,[Define to the default method of notification.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_NOTIFICATION_MAIL,"root",[Define to the address where notification mail should be sent by default.])

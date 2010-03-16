@@ -83,7 +83,7 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					  &lifedelta) == 0) {
 			life = lifedelta;
 		} else {
-			life = 30 * 24 * 60 * 60;
+			life = 365 * 24 * 60 * 60;
 		}
 	}
 	if (keyfp != NULL) {
