@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2010 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -207,6 +207,10 @@ cm_check_expiration_is_noteworthy(struct cm_store_entry *entry)
 	time_t *ttls, ttl, previous_ttl, default_ttls[] = {CM_DEFAULT_TTL_LIST};
 	time_t now;
 	now = time(NULL);
+	/* Is it at least (some arbitrary minimum) old? */
+	if (entry->cm_cert_issued < (now + 60 * 60 )) {
+		return -1;
+	}
 	/* How much time is left? */
 	if (entry->cm_cert_expiration < now) {
 		ttl = 0;

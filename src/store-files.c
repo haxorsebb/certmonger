@@ -63,6 +63,7 @@ enum cm_store_file_field {
 	cm_store_entry_field_cert_serial,
 	cm_store_entry_field_cert_subject,
 	cm_store_entry_field_cert_spki,
+	cm_store_entry_field_cert_issued,
 	cm_store_entry_field_cert_expiration,
 	cm_store_entry_field_cert_hostname,
 	cm_store_entry_field_cert_email,
@@ -140,6 +141,7 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_cert_serial, "cert_serial"},
 	{cm_store_entry_field_cert_subject, "cert_subject"},
 	{cm_store_entry_field_cert_spki, "cert_spki"},
+	{cm_store_entry_field_cert_issued, "cert_issued"},
 	{cm_store_entry_field_cert_expiration, "cert_expiration"},
 	{cm_store_entry_field_cert_hostname, "cert_hostname"},
 	{cm_store_entry_field_cert_email, "cert_email"},
@@ -514,6 +516,11 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_cert_spki:
 				ret->cm_cert_spki = free_if_empty(p);
 				break;
+			case cm_store_entry_field_cert_issued:
+				ret->cm_cert_issued =
+					cm_store_time_from_timestamp(p);
+				talloc_free(p);
+				break;
 			case cm_store_entry_field_cert_expiration:
 				ret->cm_cert_expiration =
 					cm_store_time_from_timestamp(p);
@@ -710,6 +717,7 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_cert_serial:
 			case cm_store_entry_field_cert_subject:
 			case cm_store_entry_field_cert_spki:
+			case cm_store_entry_field_cert_issued:
 			case cm_store_entry_field_cert_expiration:
 			case cm_store_entry_field_cert_hostname:
 			case cm_store_entry_field_cert_email:
@@ -1005,6 +1013,9 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 				entry->cm_cert_subject);
 	cm_store_file_write_str(fp, cm_store_entry_field_cert_spki,
 				entry->cm_cert_spki);
+	cm_store_file_write_str(fp, cm_store_entry_field_cert_issued,
+				cm_store_timestamp_from_time(entry->cm_cert_issued,
+							     timestamp));
 	cm_store_file_write_str(fp, cm_store_entry_field_cert_expiration,
 				cm_store_timestamp_from_time(entry->cm_cert_expiration,
 							     timestamp));

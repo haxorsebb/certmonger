@@ -59,6 +59,7 @@ struct cm_store_entry {
 	char *cm_cert_serial;
 	char *cm_cert_subject;
 	char *cm_cert_spki;
+	time_t cm_cert_issued;
 	time_t cm_cert_expiration;
 	char **cm_cert_hostname;
 	char **cm_cert_email;

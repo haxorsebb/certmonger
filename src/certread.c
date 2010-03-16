@@ -94,6 +94,7 @@ cm_certread_write_data_to_pipe(struct cm_store_entry *entry, FILE *fp)
 	fprintf(fp, " %s\n", entry->cm_cert_serial ?: "");
 	fprintf(fp, " %s\n", entry->cm_cert_subject ?: "");
 	fprintf(fp, " %s\n", entry->cm_cert_spki ?: "");
+	fprintf(fp, " %lu\n", entry->cm_cert_issued ?: 0);
 	fprintf(fp, " %lu\n", entry->cm_cert_expiration ?: 0);
 	for (i = 0;
 	     (entry->cm_cert_hostname != NULL) &&
@@ -162,10 +163,15 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 			break;
 		case 4:
 			s = talloc_strndup(entry, p, q - p);
-			entry->cm_cert_expiration = atol(s);
+			entry->cm_cert_issued = atol(s);
 			talloc_free(s);
 			break;
 		case 5:
+			s = talloc_strndup(entry, p, q - p);
+			entry->cm_cert_expiration = atol(s);
+			talloc_free(s);
+			break;
+		case 6:
 			talloc_free(entry->cm_cert_hostname);
 			entry->cm_cert_hostname = talloc_zero_array(entry,
 								    char *,
@@ -184,7 +190,7 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 				u = v + strspn(u, ",\r\n");
 			}
 			break;
-		case 6:
+		case 7:
 			talloc_free(entry->cm_cert_email);
 			entry->cm_cert_email = talloc_zero_array(entry,
 								 char *,
@@ -203,7 +209,7 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 				u = v + strspn(u, ",\r\n");
 			}
 			break;
-		case 7:
+		case 8:
 			talloc_free(entry->cm_cert_principal);
 			entry->cm_cert_principal = talloc_zero_array(entry,
 								     char *,
@@ -222,17 +228,17 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 				u = v + strspn(u, ",\r\n");
 			}
 			break;
-		case 8:
+		case 9:
 			talloc_free(entry->cm_cert_ku);
 			entry->cm_cert_ku = (p == q) ? NULL :
 					    talloc_strndup(entry, p, q - p);
 			break;
-		case 9:
+		case 10:
 			talloc_free(entry->cm_cert_eku);
 			entry->cm_cert_eku = (p == q) ? NULL :
 					     talloc_strndup(entry, p, q - p);
 			break;
-		case 10:
+		case 11:
 			talloc_free(entry->cm_cert);
 			entry->cm_cert = (p[strspn(p, " \r\n")] == '\0') ?
 					 NULL :

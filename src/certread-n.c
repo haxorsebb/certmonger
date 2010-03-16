@@ -278,7 +278,15 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 		sprintf(entry->cm_cert_spki + i * 2, "%02x",
 			items->data[i] & 0xff);
 	}
-	/* Expiration date. */
+	/* Not-before date. */
+	p = talloc_strndup(entry, (char *) cert->validity.notBefore.data,
+			   cert->validity.notBefore.len);
+	if (p != NULL) {
+		entry->cm_cert_issued = cm_store_time_from_timestamp(p);
+	} else {
+		entry->cm_cert_issued = 0;
+	}
+	/* Not-after date. */
 	p = talloc_strndup(entry, (char *) cert->validity.notAfter.data,
 			   cert->validity.notAfter.len);
 	if (p != NULL) {
