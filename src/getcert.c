@@ -1609,11 +1609,11 @@ list(const char *argv0, int argc, char **argv)
 		if ((s6 != NULL) && (strlen(s6) == 0)) {
 			s6 = NULL;
 		}
-		printf(_("\tkey pair storage: %s%s%s%s%s%s%s%s%s%s%s%s%s\n"),
+		printf(_("\tkey pair storage: %s%s%s%s%s%s%s%s%s%s%s%s%s%s\n"),
 		       strcmp(s1, "NONE") ? _("type=") : "", s1 ? s1 : "",
 		       s2 ? _(",location='") : "", s2 ? s2 : "", s2 ? "'" : "",
 		       s3 ? _(",nickname=") : "", s3 ? s3 : "",
-		       s4 ? _(",token=") : "", s4 ? s4 : "",
+		       s4 ? _(",token='") : "", s4 ? s4 : "", s4 ? "'" : "",
 		       s5 ? _(",pin=") : "", s5 ? s5 : "",
 		       s6 ? _(",pinfile=") : "", s6 ? s6 : "");
 		rep = query_rep(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,

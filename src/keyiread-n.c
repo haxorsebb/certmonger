@@ -222,7 +222,8 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 {
 	SECKEYPrivateKey *key;
 	SECKEYPublicKey *pubkey;
-	const char *alg;
+	PK11SlotInfo *slot;
+	const char *alg, *name;
 	int status = 1, size, readwrite;
 	FILE *fp;
 	struct cm_keyiread_n_settings *settings;
@@ -255,12 +256,23 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(3, "Key is of an unknown type.\n");
 			break;
 		}
+		slot = PK11_GetSlotFromPrivateKey(key);
+		if (slot != NULL) {
+			name = PK11_GetTokenName(slot);
+			if ((name != NULL) && (strlen(name) == 0)) {
+				name = NULL;
+			}
+		} else {
+			name = NULL;
+		}
 		if (strlen(alg) > 0) {
 			pubkey = SECKEY_ConvertToPublicKey(key);
 			if (pubkey != NULL) {
 				size = SECKEY_PublicKeyStrengthInBits(pubkey);
 				cm_log(3, "Key size is %d.\n", size);
-				fprintf(fp, "%s/%d\n", alg, size);
+				fprintf(fp, "%s/%d%s%s\n", alg, size,
+					(name != NULL ? "/" : ""),
+					(name != NULL ? name : ""));
 				status = 0;
 				SECKEY_DestroyPublicKey(pubkey);
 			} else {

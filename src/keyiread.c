@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2010 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -126,6 +126,13 @@ cm_keyiread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 			if (size > 0) {
 				entry->cm_key_type.cm_key_algorithm = alg;
 				entry->cm_key_type.cm_key_size = size;
+			}
+			p = q + strspn(q, "/\r\n");
+			q = p + strcspn(p, "/\r\n");
+			if (p != q) {
+				talloc_free(entry->cm_key_token);
+				entry->cm_key_token = talloc_strndup(entry,
+								     p, q - p);
 			}
 		}
 	}
