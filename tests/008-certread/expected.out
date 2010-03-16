@@ -1,5 +1,6 @@
 cert_email=babs@example.com
 cert_expiration=20091211214654
+cert_issued=20091111214654
 cert_issuer=CN=Babs Jensen
 cert_principal=bjensen@EXAMPLE.COM,bjensen@EXAMPLE.COM
 cert_serial=47

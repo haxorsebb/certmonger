@@ -208,7 +208,7 @@ cm_check_expiration_is_noteworthy(struct cm_store_entry *entry)
 	time_t now;
 	now = time(NULL);
 	/* Is it at least (some arbitrary minimum) old? */
-	if (entry->cm_cert_issued < (now + 60 * 60 )) {
+	if (entry->cm_cert_issued > (now - 60 * 60 )) {
 		return -1;
 	}
 	/* How much time is left? */
