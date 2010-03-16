@@ -248,18 +248,12 @@ State logic:
 		if starting-up
 			state_next = HAVE_CSR
 			state_transition = now
-		else
-			state_next = NEED_TO_SUBMIT
-			state_transition = soon
 		break
 
 	NEED_CA:
 		if starting-up
 			state_next = HAVE_CSR
 			state_transition = now
-		else
-			state_next = NEED_TO_SUBMIT
-			state_transition = soon
 		break
 
 	NEED_GUIDANCE:

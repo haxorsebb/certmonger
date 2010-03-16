@@ -630,12 +630,11 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 
 	case CM_CA_UNREACHABLE:
 		entry->cm_state = CM_NEED_TO_SUBMIT;
-		*when = cm_time_now;
+		*when = cm_time_soonish;
 		break;
 
 	case CM_CA_UNCONFIGURED:
-		entry->cm_state = CM_NEED_TO_SUBMIT;
-		*when = cm_time_now;
+		*when = cm_time_no_time;
 		break;
 
 	case CM_NEED_GUIDANCE:
@@ -643,8 +642,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		break;
 
 	case CM_NEED_CA:
-		entry->cm_state = CM_NEED_TO_SUBMIT;
-		*when = cm_time_soonish;
+		*when = cm_time_no_time;
 		break;
 
 	case CM_MONITORING:
