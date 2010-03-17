@@ -151,7 +151,8 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 							cm_log(3, "Located a newer certificate "
 							       "\"%s\".\n",
 							       entry->cm_cert_nickname);
-							if (readwrite) {
+							if (readwrite &&
+							    (before_a > before_b)) {
 								error = SEC_DeletePermCertificate(cert);
 								if (error != SECSuccess) {
 									cm_log(3, "Error deleting old certificate: %s.\n",
