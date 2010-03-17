@@ -80,7 +80,7 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		{"debug", LOG_DEBUG},
 	};
 	unsigned int i;
-	if (entry->cm_cert_expiration > time(NULL)) {
+	if (entry->cm_cert_not_after > time(NULL)) {
 		switch (entry->cm_cert_storage_type) {
 		case cm_cert_storage_nssdb:
 			if (entry->cm_cert_token != NULL) {
@@ -88,12 +88,12 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 							  "named \"%s\" "
 							  "in token \"%s\" "
 							  "in database \"%s\" "
-							  "will expire at "
-							  "%s.\n",
+							  "will not be valid "
+							  "after %s.\n",
 							  entry->cm_cert_token,
 							  entry->cm_cert_nickname,
 							  entry->cm_cert_storage_location,
-							  cm_store_timestamp_from_time(entry->cm_cert_expiration, t));
+							  cm_store_timestamp_from_time(entry->cm_cert_not_after, t));
 			} else {
 				message = talloc_asprintf(entry, "Certificate "
 							  "named \"%s\" "
@@ -102,15 +102,15 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 							  "%s.\n",
 							  entry->cm_cert_nickname,
 							  entry->cm_cert_storage_location,
-							  cm_store_timestamp_from_time(entry->cm_cert_expiration, t));
+							  cm_store_timestamp_from_time(entry->cm_cert_not_after, t));
 			}
 			break;
 		case cm_cert_storage_file:
 			message = talloc_asprintf(entry, "Certificate "
-						  "in file \"%s\" will expire "
-						  "at %s.\n",
+						  "in file \"%s\" will not be "
+						  "valid after %s.\n",
 						  entry->cm_cert_storage_location,
-						  cm_store_timestamp_from_time(entry->cm_cert_expiration, t));
+						  cm_store_timestamp_from_time(entry->cm_cert_not_after, t));
 			break;
 		}
 	} else {

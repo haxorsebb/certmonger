@@ -207,21 +207,26 @@ cm_check_expiration_is_noteworthy(struct cm_store_entry *entry)
 	time_t *ttls, ttl, previous_ttl, default_ttls[] = {CM_DEFAULT_TTL_LIST};
 	time_t now;
 	now = time(NULL);
+	/* Do we have validity information? */
+	if ((entry->cm_cert_not_before == 0) ||
+	    (entry->cm_cert_not_after == 0)) {
+		return -1;
+	}
 	/* Is it at least (some arbitrary minimum) old? */
-	if (entry->cm_cert_issued > (now - 60 * 60 )) {
+	if (entry->cm_cert_not_before > (now - 60 * 60 )) {
 		return -1;
 	}
 	/* How much time is left? */
-	if (entry->cm_cert_expiration < now) {
+	if (entry->cm_cert_not_after < now) {
 		ttl = 0;
 	} else {
-		ttl = entry->cm_cert_expiration - now;
+		ttl = entry->cm_cert_not_after - now;
 	}
 	/* How much time was left, last time we checked? */
-	if (entry->cm_cert_expiration < entry->cm_last_expiration_check) {
+	if (entry->cm_cert_not_after < entry->cm_last_expiration_check) {
 		previous_ttl = 0;
 	} else {
-		previous_ttl = entry->cm_cert_expiration -
+		previous_ttl = entry->cm_cert_not_after -
 			       entry->cm_last_expiration_check;
 	}
 	/* Note that we're checking now. */

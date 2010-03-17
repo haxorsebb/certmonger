@@ -289,17 +289,17 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 	p = talloc_strndup(entry, (char *) cert->validity.notBefore.data,
 			   cert->validity.notBefore.len);
 	if (p != NULL) {
-		entry->cm_cert_issued = cm_store_time_from_timestamp(p);
+		entry->cm_cert_not_before = cm_store_time_from_timestamp(p);
 	} else {
-		entry->cm_cert_issued = 0;
+		entry->cm_cert_not_before = 0;
 	}
 	/* Not-after date. */
 	p = talloc_strndup(entry, (char *) cert->validity.notAfter.data,
 			   cert->validity.notAfter.len);
 	if (p != NULL) {
-		entry->cm_cert_expiration = cm_store_time_from_timestamp(p);
+		entry->cm_cert_not_after = cm_store_time_from_timestamp(p);
 	} else {
-		entry->cm_cert_expiration = 0;
+		entry->cm_cert_not_after = 0;
 	}
 	/* Hostname from subjectAltName extension. */
 	talloc_free(entry->cm_cert_hostname);

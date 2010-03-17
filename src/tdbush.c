@@ -1390,7 +1390,7 @@ request_get_cert_info(DBusConnection *conn, DBusMessage *msg,
 					    entry->cm_cert_issuer,
 					    entry->cm_cert_serial,
 					    entry->cm_cert_subject,
-					    entry->cm_cert_expiration,
+					    entry->cm_cert_not_after,
 					    (const char **) entry->cm_cert_email,
 					    (const char **) entry->cm_cert_hostname,
 					    (const char **) entry->cm_cert_principal,
@@ -2096,7 +2096,7 @@ request_introspect(struct cm_context *ctx, const char *path)
 			       "   <arg name=\"issuer\" type=\"s\" direction=\"out\"/>\n"
 			       "   <arg name=\"serial\" type=\"s\" direction=\"out\"/>\n"
 			       "   <arg name=\"subject\" type=\"s\" direction=\"out\"/>\n"
-			       "   <arg name=\"expiration\" type=\"x\" direction=\"out\"/>\n"
+			       "   <arg name=\"not_after\" type=\"x\" direction=\"out\"/>\n"
 			       "   <arg name=\"email\" type=\"as\" direction=\"out\"/>\n"
 			       "   <arg name=\"dns\" type=\"as\" direction=\"out\"/>\n"
 			       "   <arg name=\"principal_names\" type=\"as\" direction=\"out\"/>\n"
