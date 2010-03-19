@@ -98,7 +98,7 @@ MONITORING
 -START-
 NEED_TO_NOTIFY
 NOTIFYING
-Certificate in file "$tmpdir/certfile2" is expired.
+Certificate in file "$tmpdir/certfile2" is no longer valid.
 MONITORING
 -STOP-
 
@@ -109,7 +109,7 @@ MONITORING
 -START-
 NEED_TO_NOTIFY
 NOTIFYING
-Certificate in file "$tmpdir/certfile2" is expired.
+Certificate in file "$tmpdir/certfile2" is no longer valid.
 NEED_CSR
 -STOP-
 

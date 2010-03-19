@@ -211,6 +211,9 @@ cm_prefs_notification_method(void)
 		    (strcasecmp(method, "mailto") == 0)) {
 			ret = cm_notification_email;
 		}
+		if (strcasecmp(method, "stdout") == 0) {
+			ret = cm_notification_stdout;
+		}
 		free(method);
 	}
 	return ret;

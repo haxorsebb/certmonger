@@ -40,6 +40,9 @@ export toolsdir
 export tmpdir
 cd "$builddir"
 
+CERTMONGER_CONFIG_DIR=${srcdir}
+export CERTMONGER_CONFIG_DIR
+
 stat=0
 subdirs=
 if test $# -eq 0 ; then
