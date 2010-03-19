@@ -48,13 +48,12 @@ Complete:
       calling out to the python library it supplies.  Ended up reusing
       large chunks of the IPA client code, so it's in C.
   * Handle PIN values for encrypted key storage.
+  * Be able to use hashes other than the current hard-wired SHA256.
 
 To-do:
   * Should offer an API over D-Bus which the client uses instead of
     mutilating the queue directly (see doc/api.txt):
       MUST
-  * Be able to use hashes other than the current hard-wired SHA256.
-    MUST
   * Make certmonger a proper daemon.
     * Sort out logging levels for log messages. (1 day)
       MUST
