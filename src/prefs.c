@@ -78,12 +78,6 @@ cm_prefs_free(void)
 	}
 }
 
-static int
-cm_prefs_compare_ttl_values(const void *a, const void *b)
-{
-	return *(time_t *)a - *(time_t *) b;
-}
-
 enum cm_prefs_cipher
 cm_prefs_preferred_cipher(void)
 {
@@ -94,11 +88,13 @@ cm_prefs_preferred_cipher(void)
 			free(cipher);
 			return cm_prefs_aes128;
 		}
-		if (strcasecmp(cipher, "aes128") == 0) {
+		if ((strcasecmp(cipher, "aes128") == 0) ||
+		    (strcasecmp(cipher, "aes-128") == 0)) {
 			free(cipher);
 			return cm_prefs_aes128;
 		}
-		if (strcasecmp(cipher, "aes256") == 0) {
+		if ((strcasecmp(cipher, "aes256") == 0) ||
+		    (strcasecmp(cipher, "aes-256") == 0)) {
 			free(cipher);
 			return cm_prefs_aes256;
 		}
@@ -113,19 +109,23 @@ cm_prefs_preferred_digest(void)
 	char *digest;
 	digest = cm_prefs_config("digest");
 	if (digest != NULL) {
-		if (strcasecmp(digest, "sha1") == 0) {
+		if ((strcasecmp(digest, "sha1") == 0) ||
+		    (strcasecmp(digest, "sha-1") == 0)) {
 			free(digest);
 			return cm_prefs_sha1;
 		}
-		if (strcasecmp(digest, "sha256") == 0) {
+		if ((strcasecmp(digest, "sha256") == 0) ||
+		    (strcasecmp(digest, "sha-256") == 0)) {
 			free(digest);
 			return cm_prefs_sha256;
 		}
-		if (strcasecmp(digest, "sha384") == 0) {
+		if ((strcasecmp(digest, "sha384") == 0) ||
+		    (strcasecmp(digest, "sha-384") == 0)) {
 			free(digest);
 			return cm_prefs_sha384;
 		}
-		if (strcasecmp(digest, "sha512") == 0) {
+		if ((strcasecmp(digest, "sha512") == 0) ||
+		    (strcasecmp(digest, "sha-512") == 0)) {
 			free(digest);
 			return cm_prefs_sha512;
 		}
@@ -134,17 +134,65 @@ cm_prefs_preferred_digest(void)
 	return cm_prefs_sha256;
 }
 
-int
-cm_prefs_ttls(time_t **ttls, unsigned int *n_ttls)
+static int
+cm_prefs_compare_ttl_values(const void *a, const void *b)
 {
-	time_t default_ttls[] = {CM_DEFAULT_TTL_LIST};
-	char *confttls;
-	confttls = cm_prefs_config("ttls");
-	if (confttls == NULL) {
-		*ttls = default_ttls;
-		*n_ttls = sizeof(default_ttls) / sizeof(default_ttls[0]);
+	return *(time_t *)a - *(time_t *) b;
+}
+
+int
+cm_prefs_ttls(const time_t **ttls, unsigned int *n_ttls)
+{
+	static time_t default_ttls[] = {CM_DEFAULT_TTL_LIST};
+	static time_t *config = NULL;
+	static unsigned int n_config = 0;
+	char *confttls, *p;
+	int i;
+	if (config == NULL) {
+		confttls = cm_prefs_config("ttls");
+		if (confttls == NULL) {
+			config = default_ttls;
+			n_config = sizeof(default_ttls) /
+				   sizeof(default_ttls[0]);
+			qsort(config, n_config, sizeof(config[0]),
+			      &cm_prefs_compare_ttl_values);
+		} else {
+			config = malloc(strlen(confttls) * sizeof(config[0]));
+			if (config != NULL) {
+				i = 0;
+				p = confttls;
+				while (strspn(p, "0123456789") > 0) {
+					config[i] = strtol(p, &p, 10);
+					switch (p[0]) {
+					case 'w':
+						config[i] *= (60 * 60 * 24 * 7);
+						break;
+					case 'd':
+						config[i] *= (60 * 60 * 24);
+						break;
+					case 'h':
+						config[i] *= (60 * 60);
+						break;
+					case 'm':
+						config[i] *= (60);
+						break;
+					}
+					i++;
+					p += strcspn(p, "0123456789");
+				}
+				n_config = i;
+				qsort(config, n_config, sizeof(config[0]),
+				      &cm_prefs_compare_ttl_values);
+			}
+			free(confttls);
+		}
 	}
-	return 0;
+	if (config != NULL) {
+		*ttls = config;
+		*n_ttls = n_config;
+		return 0;
+	}
+	return -1;
 }
 
 enum cm_notification_method
@@ -158,7 +206,9 @@ cm_prefs_notification_method(void)
 		if (strcasecmp(method, "syslog") == 0) {
 			ret = cm_notification_syslog;
 		}
-		if (strcasecmp(method, "email") == 0) {
+		if ((strcasecmp(method, "email") == 0) ||
+		    (strcasecmp(method, "mail") == 0) ||
+		    (strcasecmp(method, "mailto") == 0)) {
 			ret = cm_notification_email;
 		}
 		free(method);

@@ -28,7 +28,7 @@ int
 main(int argc, char **argv)
 {
 	const char *dest;
-	time_t *ttls;
+	const time_t *ttls;
 	unsigned int i, n_ttls;
 
 	switch (cm_prefs_preferred_cipher()) {
@@ -57,7 +57,8 @@ main(int argc, char **argv)
 	if (cm_prefs_ttls(&ttls, &n_ttls) == 0) {
 		printf("ttls: ");
 		for (i = 0; i < n_ttls; i++) {
-			printf("%s%lu", ((i > 0) ? ", " : ""), ttls[i]);
+			printf("%s%llu", ((i > 0) ? ", " : ""),
+			       (unsigned long long) ttls[i]);
 		}
 		printf("\n");
 	}

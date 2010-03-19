@@ -36,7 +36,7 @@ enum cm_cert_storage_type;
 
 enum cm_prefs_cipher cm_prefs_preferred_cipher(void);
 enum cm_prefs_digest cm_prefs_preferred_digest(void);
-int cm_prefs_ttls(time_t **ttls, unsigned int *n_ttls);
+int cm_prefs_ttls(const time_t **ttls, unsigned int *n_ttls);
 enum cm_notification_method cm_prefs_notification_method(void);
 const char *cm_prefs_notification_destination(void);
 
