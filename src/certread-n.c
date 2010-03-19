@@ -142,6 +142,11 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					cm_log(3, "Located the certificate "
 					       "\"%s\".\n",
 					       entry->cm_cert_nickname);
+					if (entry->cm_cert_token == NULL) {
+						entry->cm_cert_token =
+							talloc_strdup(entry,
+								      token);
+					}
 					if (cert == NULL) {
 						cert = CERT_DupCertificate(node->cert);
 					} else {
