@@ -1,7 +1,7 @@
 /* Authors: Rob Crittenden <rcritten@redhat.com>
  *          John Dennis <jdennis@redhat.com>
  *
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2010 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* Simple and INI-style file reader.
+/* Simple INI-style file reader.
  *
  * usage is:
  * char * data = read_config_file("/path/to/something.conf")
@@ -30,6 +30,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
@@ -38,6 +39,7 @@
 #include <ctype.h>
 #include <errno.h>
 
+#include "log.h"
 #include "util.h"
 
 char *
@@ -50,14 +52,16 @@ read_config_file(const char *filename)
 
     fd = open(filename, O_RDONLY);
     if (fd == -1) {
-        fprintf(stderr, "cannot open configuration file %s\n", filename);
+        cm_log(1, "Cannot open configuration file \"%s\": %s.\n", filename,
+	       strerror(errno));
         return NULL;
     }
 
     /* stat() the file so we know the size and can pre-allocate the right
      * amount of memory. */
     if (fstat(fd, &st) == -1) {
-        fprintf(stderr, "cannot stat() configuration file %s\n", filename);
+        cm_log(1, "Cannot stat() configuration file \"%s\": %s.\n", filename,
+	       strerror(errno));
         return NULL;
     }
     left = st.st_size;
@@ -70,7 +74,8 @@ read_config_file(const char *filename)
         if (res == 0)
             break;
         if (res < 0) {
-            fprintf(stderr, "read error\n");
+            cm_log(1, "Read error reading \"%s\": %s\n", filename,
+	           strerror(errno));
             close(fd);
             free(dest);
             return NULL;

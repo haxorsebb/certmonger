@@ -32,6 +32,7 @@
 
 #include <krb5.h>
 
+#include "log.h"
 #include "submit-e.h"
 #include "submit-x.h"
 #include "util.h"
@@ -47,6 +48,7 @@ main(int argc, char **argv)
 	struct cm_submit_x_context *ctx;
 	struct stat st;
 
+	cm_log_set_method(cm_log_stderr);
 	while ((c = getopt(argc, argv, "h:C:c:")) != -1) {
 		switch (c) {
 		case 'h':

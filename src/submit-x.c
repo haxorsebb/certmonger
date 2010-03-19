@@ -31,6 +31,7 @@
 
 #include <krb5.h>
 
+#include "log.h"
 #include "submit-e.h"
 #include "submit-x.h"
 
@@ -644,6 +645,7 @@ main(int argc, char **argv)
 	xmlrpc_value *arg, *key, *val;
 	xmlrpc_bool boo;
 
+	cm_log_set_method(cm_log_stderr);
 	while ((c = getopt(argc, argv, "s:m:kt:p:c:")) != -1) {
 		switch (c) {
 		case 's':
