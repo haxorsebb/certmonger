@@ -22,6 +22,17 @@ if test x$GCC = xyes ; then
 	CFLAGS="$CFLAGS -Wall -Wextra"
 fi
 
+UPCASE_PACKAGE_NAME=`echo "${PACKAGE_NAME}" | tr '[a-z]' '[A-Z]'`
+mysysconfdir="$sysconfdir/${PACKAGE_NAME}"
+mysysconfdir=`eval echo $mysysconfdir | sed "s,NONE,$prefix,g"`
+mysysconfdir=`eval echo $mysysconfdir | sed "s,NONE,$ac_default_prefix,g"`
+mysysconfdir=`eval echo $mysysconfdir | sed "s,NONE,,g"`
+AC_DEFINE_UNQUOTED(CM_STORE_CONFIG_DIRECTORY,"$mysysconfdir",
+		   [Define to the directory which holds configuration files.])
+AC_DEFINE_UNQUOTED(CM_STORE_CONFIG_DIRECTORY_ENV,"${UPCASE_PACKAGE_NAME}_CONFIG_DIR",
+		   [Define to the name of the environment variable which can specify the directory which holds configuration files.])
+CM_STORE_CONFIG_DIRECTORY_ENV="${UPCASE_PACKAGE_NAME}_CONFIG_DIR"
+AC_SUBST(CM_STORE_CONFIG_DIRECTORY_ENV)
 mylibexecdir="$libexecdir/${PACKAGE_NAME}"
 mylibexecdir=`eval echo $mylibexecdir | sed "s,NONE,$prefix,g"`
 mylibexecdir=`eval echo $mylibexecdir | sed "s,NONE,$ac_default_prefix,g"`
@@ -37,7 +48,6 @@ AC_DEFINE_UNQUOTED(CM_STORE_REQUESTS_DIRECTORY,"$mylocalstatedir/requests",
 		   [Define to the default path for request tracking files.])
 CM_STORE_REQUESTS_DIRECTORY="$mylocalstatedir/requests"
 AC_SUBST(CM_STORE_REQUESTS_DIRECTORY)
-UPCASE_PACKAGE_NAME=`echo "${PACKAGE_NAME}" | tr '[a-z]' '[A-Z]'`
 AC_DEFINE_UNQUOTED(CM_STORE_REQUESTS_DIRECTORY_ENV,"${UPCASE_PACKAGE_NAME}_REQUESTS_DIR",
 		   [Define to the name of the environment variable which can specify the directory for tracking requests.])
 CM_STORE_REQUESTS_DIRECTORY_ENV="${UPCASE_PACKAGE_NAME}_REQUESTS_DIR"
