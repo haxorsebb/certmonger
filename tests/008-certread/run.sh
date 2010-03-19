@@ -44,9 +44,9 @@ cert_storage_location=$tmpdir/cert.openssl
 EOF
 $toolsdir/certread entry.openssl
 # Strip out storage keywords.
-egrep -v '^(cert_storage_type|cert_storage_location|cert_nickname)' entry.nss >\
+egrep -v '^(cert_storage_type|cert_storage_location|cert_nickname|cert_token)' entry.nss >\
 entry.nss.clean
-egrep -v '^(cert_storage_type|cert_storage_location|cert_nickname)' entry.openssl >\
+egrep -v '^(cert_storage_type|cert_storage_location|cert_nickname|cert_token)' entry.openssl >\
 entry.openssl.clean
 awk '/^cert=.*BEGIN CERTIFICATE/,/END CERTIFICATE/{print}{;}' entry.nss >> entry.nss.clean
 awk '/^cert=.*BEGIN CERTIFICATE/,/END CERTIFICATE/{print}{;}' entry.openssl >> entry.openssl.clean
@@ -68,5 +68,6 @@ if ! cmp entry.nss.clean entry.openssl.clean ; then
 fi
 # Let the caller make sure it looks right.
 grep ^cert_ entry.nss.clean | sort
+grep ^cert_token entry.nss
 
 echo Test complete.
