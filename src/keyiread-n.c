@@ -261,7 +261,10 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			name = PK11_GetTokenName(slot);
 			if ((name != NULL) && (strlen(name) == 0)) {
 				name = NULL;
+			} else {
+				name = talloc_strdup(entry, name);
 			}
+			PK11_FreeSlot(slot);
 		} else {
 			name = NULL;
 		}
