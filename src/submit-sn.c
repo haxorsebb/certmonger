@@ -40,7 +40,7 @@
 #include "certext-n.h"
 #include "keyiread-n.h"
 #include "log.h"
-#include "prefs.h"
+#include "prefs-n.h"
 #include "store.h"
 #include "store-int.h"
 #include "submit.h"
