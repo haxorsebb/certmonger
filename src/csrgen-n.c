@@ -44,7 +44,7 @@
 #include "keyiread-n.h"
 #include "log.h"
 #include "pin.h"
-#include "prefs.h"
+#include "prefs-n.h"
 #include "store.h"
 #include "store-int.h"
 #include "subproc.h"
