@@ -1,2 +1,2 @@
-noinst_PROGRAMS = keyiread keygen csrgen submit certread certsave oid2name name2oid iterate
+noinst_PROGRAMS = keyiread keygen csrgen submit certread certsave oid2name name2oid iterate prefs
 LDADD = ../../src/libcm.a @OPENSSL_LIBS@ @CERTMONGER_LIBS@ @KRB5_LIBS@

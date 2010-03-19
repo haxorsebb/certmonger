@@ -43,7 +43,8 @@ libcm_a_SOURCES = \
 	pin.h \
 	prefs.c \
 	prefs.h \
-	prefs-int.h \
+	prefs-n.c \
+	prefs-n.h \
 	store-files.c \
 	store-gen.c \
 	store.h \
@@ -63,7 +64,9 @@ libcm_a_SOURCES = \
 	tdbush.c \
 	tdbush.h \
 	tdbusm.c \
-	tdbusm.h
+	tdbusm.h \
+	util.c \
+	util.h
 libcm_o_a_SOURCES =
 if HAVE_OPENSSL
 libcm_o_a_SOURCES += \
@@ -112,7 +115,7 @@ endif
 if WITH_IPA
 pkglibexec_PROGRAMS += ipa-submit
 endif
-ipa_submit_SOURCES = ipa.c submit-x.c submit-x.h submit-e.h util.c util.h
+ipa_submit_SOURCES = ipa.c submit-x.c submit-x.h submit-e.h
 ipa_submit_LDADD = $(XMLRPC_LIBS) $(KRB5_LIBS) $(TALLOC_LIBS)
-certmaster_submit_SOURCES = certmaster.c submit-x.c submit-x.h submit-e.h util.c util.h
+certmaster_submit_SOURCES = certmaster.c submit-x.c submit-x.h submit-e.h
 certmaster_submit_LDADD = $(XMLRPC_LIBS) $(KRB5_LIBS) $(TALLOC_LIBS)

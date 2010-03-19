@@ -18,6 +18,26 @@
 #ifndef cmprefs_h
 #define cmprefs_h
 
-unsigned int cm_prefs_nss_sig_alg(SECKEYPublicKey *pkey);
+enum cm_prefs_cipher {
+	cm_prefs_aes128,
+	cm_prefs_aes256,
+};
+
+enum cm_prefs_digest {
+	cm_prefs_sha256,
+	cm_prefs_sha384,
+	cm_prefs_sha512,
+	cm_prefs_sha1,
+};
+
+enum cm_notification_method;
+enum cm_key_storage_type;
+enum cm_cert_storage_type;
+
+enum cm_prefs_cipher cm_prefs_preferred_cipher(void);
+enum cm_prefs_digest cm_prefs_preferred_digest(void);
+int cm_prefs_ttls(time_t **ttls, unsigned int *n_ttls);
+enum cm_notification_method cm_prefs_notification_method(void);
+const char *cm_prefs_notification_destination(void);
 
 #endif
