@@ -200,7 +200,7 @@ cm_prefs_notification_method(void)
 {
 	char *method;
 	enum cm_notification_method ret;
-	ret = cm_notification_syslog;
+	ret = CM_DEFAULT_NOTIFICATION_METHOD;
 	method = cm_prefs_config("notification_method");
 	if (method != NULL) {
 		if (strcasecmp(method, "syslog") == 0) {
@@ -226,8 +226,18 @@ cm_prefs_notification_destination(void)
 	if (destination == NULL) {
 		destination = cm_prefs_config("notification_destination");
 		if (destination == NULL) {
-			destination = "NOTICE";
+			destination = CM_DEFAULT_NOTIFICATION_SYSLOG_PRIORITY;
 		}
 	}
 	return destination;
+}
+
+const char *
+cm_prefs_default_ca(void)
+{
+	static const char *ca;
+	if (ca == NULL) {
+		ca = cm_prefs_config("default_ca");
+	}
+	return ca;
 }

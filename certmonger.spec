@@ -84,6 +84,8 @@ exit 0
 %defattr(-,root,root,-)
 %doc README LICENSE STATUS doc/*.txt
 %config(noreplace) %{_sysconfdir}/dbus-1/system.d/*
+%dir %{_sysconfdir}/certmonger
+%config(noreplace) %{_sysconfdir}/certmonger/certmonger.conf
 %if 0%{?fedora} <= 9 || 0%{?rhel} < 6
 %{_initrddir}/certmonger
 %else

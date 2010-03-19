@@ -35,6 +35,7 @@
 #include "keyiread.h"
 #include "log.h"
 #include "notify.h"
+#include "prefs.h"
 #include "store.h"
 #include "store-int.h"
 #include "submit.h"
@@ -204,12 +205,11 @@ static int
 cm_check_expiration_is_noteworthy(struct cm_store_entry *entry)
 {
 	unsigned int i, n_ttls;
-	time_t *ttls, ttl, previous_ttl, default_ttls[] = {CM_DEFAULT_TTL_LIST};
-	time_t now;
+	time_t now, ttl, previous_ttl;
+	const time_t *ttls;
 	now = time(NULL);
 	/* Do we have validity information? */
-	if ((entry->cm_cert_not_before == 0) ||
-	    (entry->cm_cert_not_after == 0)) {
+	if (entry->cm_cert_not_after == 0) {
 		return -1;
 	}
 	/* Is it at least (some arbitrary minimum) old? */
@@ -232,12 +232,10 @@ cm_check_expiration_is_noteworthy(struct cm_store_entry *entry)
 	/* Note that we're checking now. */
 	entry->cm_last_expiration_check = now;
 	/* Which list of interesting values are we consulting? */
-	if (entry->cm_ttls_default) {
-		ttls = default_ttls;
-		n_ttls = sizeof(default_ttls) / sizeof(default_ttls[0]);
-	} else {
-		ttls = entry->cm_ttls;
-		n_ttls = entry->cm_n_ttls;
+	ttls = NULL;
+	n_ttls = 0;
+	if ((cm_prefs_ttls(&ttls, &n_ttls) != 0) || (n_ttls == 0)) {
+		return -1;
 	}
 	/* Check for crosses. */
 	for (i = 0; i < n_ttls; i++) {
@@ -245,7 +243,7 @@ cm_check_expiration_is_noteworthy(struct cm_store_entry *entry)
 		if ((ttl < ttls[i]) && (previous_ttl >= ttls[i])) {
 			return 0;
 		}
-		/* We crossed a threshold, and time is running backwards. */
+		/* We crossed a threshold... and time is running backwards. */
 		if ((ttl >= ttls[i]) && (previous_ttl < ttls[i])) {
 			return 0;
 		}
@@ -270,6 +268,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 	struct cm_store_ca *tmp_ca;
 	enum cm_state old_entry_state;
 	char *serial;
+	const char *tmp_ca_name;
 	state = cm_iterate_state;
 	*readfd = -1;
 	*when = cm_time_no_time;
@@ -845,6 +844,14 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				if (tmp_ca->cm_ca_is_default) {
 					entry->cm_ca_name = talloc_strdup(entry, tmp_ca->cm_id);
 				}
+			}
+		}
+		/* No default in our data store -> use the config file's. */
+		if (entry->cm_ca_name == NULL) {
+			tmp_ca_name = cm_prefs_default_ca();
+			if (tmp_ca_name != NULL) {
+				entry->cm_ca_name = talloc_strdup(entry,
+								  tmp_ca_name);
 			}
 		}
 		/* If we have a certificate, we go straight to monitoring it. */

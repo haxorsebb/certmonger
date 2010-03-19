@@ -28,6 +28,7 @@
 
 #include "log.h"
 #include "notify.h"
+#include "prefs.h"
 #include "store.h"
 #include "store-int.h"
 #include "subproc.h"
@@ -121,7 +122,7 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 							  "named \"%s\" "
 							  "in token \"%s\" "
 							  "in database \"%s\" "
-							  "is expired.",
+							  "is no longer valid.",
 							  entry->cm_cert_token,
 							  entry->cm_cert_nickname,
 							  entry->cm_cert_storage_location);
@@ -129,26 +130,31 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				message = talloc_asprintf(entry, "Certificate "
 							  "named \"%s\" "
 							  "in database \"%s\" "
-							  "is expired.",
+							  "is no longer valid.",
 							  entry->cm_cert_nickname,
 							  entry->cm_cert_storage_location);
 			}
 			break;
 		case cm_cert_storage_file:
 			message = talloc_asprintf(entry, "Certificate "
-						  "in file \"%s\" is expired.",
+						  "in file \"%s\" is no longer "
+						  "valid.",
 						  entry->cm_cert_storage_location);
 			break;
 		}
 	}
-	if (entry->cm_notification_default) {
-		method = cm_store_get_defaults()->cm_notification_method;
-		dest = cm_store_get_defaults()->cm_notification_destination;
-	} else {
-		method = entry->cm_notification_method;
-		dest = entry->cm_notification_destination;
+	method = entry->cm_notification_method;
+	if (method == cm_notification_unspecified) {
+		method = cm_prefs_notification_method();
+	}
+	dest = entry->cm_notification_destination;
+	if (dest == NULL) {
+		dest = cm_prefs_notification_destination();
 	}
 	switch (method) {
+	case cm_notification_unspecified:
+		abort();
+		break;
 	case cm_notification_stdout:
 		printf("%s\n", message);
 		break;

@@ -29,6 +29,7 @@
 
 #include "log.h"
 #include "cm.h"
+#include "prefs.h"
 #include "store.h"
 #include "store-int.h"
 #include "submit-int.h"
@@ -370,7 +371,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	void *parent;
 	struct cm_tdbusm_dict **d;
 	const struct cm_tdbusm_dict *param;
-	struct cm_store_entry *e, *new_entry, *defaults;
+	struct cm_store_entry *e, *new_entry;
 	struct cm_store_ca *ca;
 	int i, n_entries;
 	enum cm_key_storage_type key_storage;
@@ -385,7 +386,6 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		talloc_free(parent);
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
-	defaults = cm_store_get_defaults();
 
 	/* Certificate storage. */
 	param = cm_tdbusm_find_dict_entry(d, "CERT_STORAGE", cm_tdbusm_dict_s);
@@ -593,10 +593,10 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	 * we don't require that we know anything about the key. */
 	param = cm_tdbusm_find_dict_entry(d, "KEY_STORAGE", cm_tdbusm_dict_s);
 	if (param == NULL) {
-		key_storage = defaults->cm_key_storage_type;
-		key_location = defaults->cm_key_storage_location;
-		key_nickname = defaults->cm_key_nickname;
-		key_token = defaults->cm_key_token;
+		key_storage = cm_key_storage_none;
+		key_location = NULL;
+		key_token = NULL;
+		key_nickname = NULL;
 	} else {
 		/* Check that it's a known/supported type. */
 		if (strcasecmp(param->value.s, "FILE") == 0) {
@@ -776,11 +776,11 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	}
 	param = cm_tdbusm_find_dict_entry(d, "KEY_SIZE", cm_tdbusm_dict_n);
 	if (param != NULL) {
-		new_entry->cm_key_type_default = FALSE;
-		new_entry->cm_key_type.cm_key_gen_algorithm = cm_key_rsa;
+		new_entry->cm_key_type.cm_key_gen_algorithm = CM_DEFAULT_PUBKEY_TYPE;
 		new_entry->cm_key_type.cm_key_gen_size = param->value.n;
 	} else {
-		new_entry->cm_key_type_default = TRUE;
+		new_entry->cm_key_type.cm_key_gen_algorithm = CM_DEFAULT_PUBKEY_TYPE;
+		new_entry->cm_key_type.cm_key_gen_size = CM_DEFAULT_PUBKEY_SIZE;
 	}
 	/* Key and certificate storage. */
 	new_entry->cm_key_storage_type = key_storage;
@@ -798,7 +798,6 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	/* Which CA to use. */
 	param = cm_tdbusm_find_dict_entry(d, "CA", cm_tdbusm_dict_s);
 	if (param != NULL) {
-		new_entry->cm_ca_default = FALSE;
 		ca = get_ca_for_path(ctx, param->value.s);
 		if (ca != NULL) {
 			new_entry->cm_ca_name = talloc_strdup(new_entry,
@@ -812,8 +811,6 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 								param->value.s,
 								"CA");
 		}
-	} else {
-		new_entry->cm_ca_default = TRUE;
 	}
 	/* Behavior settings. */
 	param = cm_tdbusm_find_dict_entry(d, "TRACK", cm_tdbusm_dict_b);
@@ -830,7 +827,6 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	} else {
 		new_entry->cm_monitor_default = TRUE;
 	}
-	new_entry->cm_ttls_default = TRUE;
 	/* Template information. */
 	param = cm_tdbusm_find_dict_entry(d, "SUBJECT", cm_tdbusm_dict_s);
 	if (param != NULL) {
@@ -1605,6 +1601,9 @@ request_get_key_type_and_size(DBusConnection *conn, DBusMessage *msg,
 	rep = dbus_message_new_method_return(msg);
 	type = "UNKNOWN";
 	switch (entry->cm_key_type.cm_key_algorithm) {
+	case cm_key_unspecified:
+		type = "UNKNOWN";
+		break;
 	case cm_key_rsa:
 		type = "RSA";
 		break;
@@ -1653,15 +1652,13 @@ request_get_notification_info(DBusConnection *conn, DBusMessage *msg,
 	if (entry == NULL) {
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
-	if (entry->cm_notification_default) {
-		m = cm_store_get_defaults()->cm_notification_method;
-		d = cm_store_get_defaults()->cm_notification_destination;
-	} else {
-		m = entry->cm_notification_method;
-		d = entry->cm_notification_destination;
-	}
+	m = cm_prefs_notification_method();
+	d = cm_prefs_notification_destination();
 	method = NULL;
 	switch (m) {
+	case cm_notification_unspecified:
+		abort();
+		break;
 	case cm_notification_stdout:
 		method = "stdout";
 		break;

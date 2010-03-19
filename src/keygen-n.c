@@ -89,17 +89,16 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		       entry->cm_key_storage_location);
 		_exit(CM_STATUS_ERROR_INITIALIZING);
 	}
-	/* Handle defaults. */
-	if (entry->cm_key_type_default) {
+	/* Handle the key size. */
+	cm_key_algorithm = entry->cm_key_type.cm_key_gen_algorithm;
+	if (cm_key_algorithm == cm_key_unspecified) {
 		cm_key_algorithm = CM_DEFAULT_PUBKEY_TYPE;
-		cm_requested_key_size = CM_DEFAULT_PUBKEY_SIZE;
-	} else {
-		cm_key_algorithm = entry->cm_key_type.cm_key_algorithm;
-		cm_requested_key_size = entry->cm_key_type.cm_key_gen_size;
-		if (cm_requested_key_size <= 0) {
-			cm_requested_key_size = CM_DEFAULT_PUBKEY_SIZE;
-		}
 	}
+	cm_key_size = entry->cm_key_type.cm_key_gen_size;
+	if (cm_key_size <= 0) {
+		cm_key_size = CM_DEFAULT_PUBKEY_SIZE;
+	}
+	cm_requested_key_size = entry->cm_key_type.cm_key_gen_size;
 	/* Convert our key type to a mechanism. */
 	switch (cm_key_algorithm) {
 	case cm_key_rsa:
@@ -146,8 +145,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	/* Select the optimum key size. */
 	cm_key_size = PK11_GetBestKeyLength(slot, mech);
 	if (cm_key_size > 0) {
-		if ((entry->cm_key_type_default == 0) &&
-		    (cm_key_size != cm_requested_key_size)) {
+		if (cm_key_size != cm_requested_key_size) {
 			cm_log(1,
 			       "Overriding requested key size of %d with %d.\n",
 			       cm_requested_key_size, cm_key_size);

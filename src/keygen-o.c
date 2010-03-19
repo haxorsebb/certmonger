@@ -63,15 +63,13 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	if (status == NULL) {
 		_exit(CM_STATUS_ERROR_INTERNAL);
 	}
-	if (entry->cm_key_type_default) {
+	cm_key_algorithm = entry->cm_key_type.cm_key_gen_algorithm;
+	if (cm_key_algorithm == cm_key_unspecified) {
 		cm_key_algorithm = CM_DEFAULT_PUBKEY_TYPE;
+	}
+	cm_key_size = entry->cm_key_type.cm_key_gen_size;
+	if (cm_key_size <= 0) {
 		cm_key_size = CM_DEFAULT_PUBKEY_SIZE;
-	} else {
-		cm_key_algorithm = entry->cm_key_type.cm_key_algorithm;
-		cm_key_size = entry->cm_key_type.cm_key_gen_size;
-		if (cm_key_size <= 0) {
-			cm_key_size = CM_DEFAULT_PUBKEY_SIZE;
-		}
 	}
 	switch (cm_key_algorithm) {
 	case cm_key_rsa:

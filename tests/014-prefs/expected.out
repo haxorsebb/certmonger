@@ -2,12 +2,12 @@
 cipher: AES128
 digest: SHA256
 ttls: 86400, 172800, 259200, 604800, 2419200
-notification: SYSLOG:NOTICE
+notification: SYSLOG:daemon.notice
 [Empty defaults.]
 cipher: AES128
 digest: SHA256
 ttls: 86400, 172800, 259200, 604800, 2419200
-notification: SYSLOG:NOTICE
+notification: SYSLOG:daemon.notice
 [Other settings.]
 cipher: AES128
 digest: SHA1

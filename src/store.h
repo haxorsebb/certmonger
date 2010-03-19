@@ -28,7 +28,6 @@ struct cm_store_ca *cm_store_ca_new(void *parent);
 /* Store-specific entry storage. */
 int cm_store_entry_save(struct cm_store_entry *entry);
 int cm_store_entry_delete(struct cm_store_entry *entry);
-struct cm_store_entry *cm_store_get_defaults(void);
 struct cm_store_entry **cm_store_get_all_entries(void *parent);
 
 /* Store-specific CA storage. */

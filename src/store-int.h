@@ -27,10 +27,10 @@ struct cm_store_entry {
 	/* A unique identifier. */
 	char *cm_id;
 	/* Type of key pair to generate [or use default settings] RSA,2048 */
-	unsigned int cm_key_type_default:1;
 	struct cm_key_type {
 		enum cm_key_algorithm {
-			cm_key_rsa = 0,
+			cm_key_unspecified = 0,
+			cm_key_rsa = 1,
 		} cm_key_algorithm, cm_key_gen_algorithm;
 		int cm_key_size, cm_key_gen_size;
 	} cm_key_type;
@@ -66,17 +66,11 @@ struct cm_store_entry {
 	char **cm_cert_principal;
 	char *cm_cert_ku;
 	char *cm_cert_eku;
-	/* Interesting TTL values [or use default settings]
-	   30*24*60*60,7*24*60*60,3*24*60*60,2*24*60*60,1*24*60*60 */
-	unsigned int cm_ttls_default:1;
-	int cm_n_ttls;
-	time_t *cm_ttls;
 	time_t cm_last_expiration_check;
-	/* How to notify administrator [or use default settings]
-	   syslog(LOG_AUTHPRIV?) or mail to root@? */
-	unsigned int cm_notification_default:1;
+	/* How to notify administrator: syslog(LOG_AUTHPRIV?), mail to root@? */
 	enum cm_notification_method {
-		cm_notification_syslog = 1,
+		cm_notification_unspecified,
+		cm_notification_syslog,
 		cm_notification_email,
 		cm_notification_stdout,	/* for testing _ONLY_ */
 	} cm_notification_method;
@@ -123,8 +117,7 @@ struct cm_store_entry {
 	/* Whether to start monitoring at issue [or use default settings] */
 	unsigned int cm_monitor_default:1;
 	unsigned int cm_monitor:1;
-	/* Type and location of CA [or use default settings] */
-	unsigned int cm_ca_default:1;
+	/* Type and location of CA [or use default if NULL] */
 	char *cm_ca_name;
 	/* Date of submission for in-progress submissions. */
 	time_t cm_submitted;
