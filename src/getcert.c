@@ -1624,10 +1624,10 @@ list(const char *argv0, int argc, char **argv)
 			exit(1);
 		}
 		dbus_message_unref(rep);
-		printf(_("\tcertificate: type=%s,location='%s'%s%s%s%s\n"),
+		printf(_("\tcertificate: type=%s,location='%s'%s%s%s%s%s\n"),
 		       s1, s2,
 		       s3 ? _(",nickname=") : "", s3 ? s3 : "",
-		       s4 ? _(",token=") : "", s4 ? s4 : "");
+		       s4 ? _(",token='") : "", s4 ? s4 : "", s4 ? "'" : "");
 		/* Information from the certificate. */
 		rep = query_rep(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
 				"get_cert_info");
