@@ -1,6 +1,6 @@
 EXTRA_FILES = doc/*.txt
 SUBDIRS = src dbus tests
-EXTRA_DIST = certmonger.spec LICENSE README STATUS doc
+EXTRA_DIST = certmonger.spec LICENSE README STATUS doc src/certmonger.conf
 
 VERSION=$(PACKAGE_VERSION)
 RELEASE=
