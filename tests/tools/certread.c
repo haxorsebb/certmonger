@@ -78,6 +78,7 @@ main(int argc, char **argv)
 			}
 		}
 		cm_certread_done(entry, state);
+		ret = 0;
 	} else {
 		printf("Failed to start.\n");
 		ret = 1;
