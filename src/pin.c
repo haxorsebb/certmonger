@@ -54,6 +54,10 @@ cm_pin_read(struct cm_store_entry *entry, enum cm_pin_type pin_type)
 		pinfile = entry->cm_key_pin_file;
 		pinvalue = entry->cm_key_pin;
 		break;
+	default:
+		pinfile = NULL;
+		pinvalue = NULL;
+		break;
 	}
 
 	pin = NULL;

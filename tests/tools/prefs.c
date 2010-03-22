@@ -65,6 +65,9 @@ main(int argc, char **argv)
 
 	dest = cm_prefs_notification_destination();
 	switch (cm_prefs_notification_method()) {
+	case cm_notification_unspecified:
+		printf("notification: UNSPECIFIED:%s\n", dest);
+		break;
 	case cm_notification_syslog:
 		printf("notification: SYSLOG:%s\n", dest);
 		break;
