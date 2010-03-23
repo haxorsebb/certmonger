@@ -65,12 +65,13 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	PK11SlotInfo *slot = NULL;
 	PK11RSAGenParams rsa_params;
 	void *params;
-	SECKEYPrivateKey *privkey;
+	SECKEYPrivateKey *privkey, *delkey;
 	SECKEYPrivateKeyList *privkeys;
 	SECKEYPrivateKeyListNode *node;
 	SECKEYPublicKey *pubkey;
 	PRErrorCode ec;
 	const char *es, *token, *keyname;
+	char *pin;
 	struct cm_keygen_n_settings *settings;
 
 	status = fdopen(fd, "w");
@@ -169,19 +170,20 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		params = NULL;
 		break;
 	}
-	/* If we need to set a PIN to finish properly initializing the
-	 * slot's data store, do it. */
-	if (PK11_NeedUserInit(slot)) {
-		if (readwrite) {
-			PK11_InitPin(slot, "", cm_pin_read_key(entry));
-		}
+	/* If we're supposed to be using a PIN, and we're offered a chance to
+	 * set one, do it now. */
+	if (readwrite) {
 		if (PK11_NeedUserInit(slot)) {
-			cm_log(1, "Key generation slot still requires "
-			       "user initialization.\n");
+			pin = cm_pin_read_key(entry);
+			PK11_InitPin(slot, NULL, pin);
+			if (PK11_NeedUserInit(slot)) {
+				cm_log(1, "Key generation slot still "
+				       "needs user PIN to be set.\n");
+			}
 		}
 	}
 	/* Now log in, if we have to. */
-	if (PK11_NeedLogin(slot) || !PK11_IsFriendly(slot)) {
+	if (PK11_NeedLogin(slot)) {
 		PK11_SetPasswordFunc(&cm_pin_cb_key);
 		error = PK11_Authenticate(slot, PR_TRUE, entry);
 		if (error != SECSuccess) {
@@ -214,19 +216,29 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 	/* Try to remove any conflicting keys. */
 	privkeys = PK11_ListPrivKeysInSlot(slot, entry->cm_key_nickname, NULL);
-	if ((privkeys != NULL) && !PRIVKEY_LIST_EMPTY(privkeys)) {
+	while ((privkeys != NULL) && !PRIVKEY_LIST_EMPTY(privkeys)) {
+		delkey = NULL;
 		for (node = PRIVKEY_LIST_HEAD(privkeys);
 		     ((node != NULL) && (node->key != NULL));
 		     node = PRIVKEY_LIST_NEXT(node)) {
 			keyname = PK11_GetPrivateKeyNickname(node->key);
-			if (strcmp(keyname, entry->cm_key_nickname) == 0) {
-				PK11_DeleteTokenPrivateKey(node->key, PR_TRUE);
+			if ((keyname != NULL) &&
+			    (strcmp(keyname, entry->cm_key_nickname) == 0)) {
+				/* Avoid stealing the key reference from the
+				 * list. */
+				delkey = SECKEY_CopyPrivateKey(node->key);
+				break;
 			}
 			if (PRIVKEY_LIST_END(node, privkeys)) {
 				break;
 			}
 		}
+		if (delkey != NULL) {
+			PK11_DeleteTokenPrivateKey(delkey, PR_TRUE);
+		}
 		SECKEY_DestroyPrivateKeyList(privkeys);
+		privkeys = PK11_ListPrivKeysInSlot(slot, entry->cm_key_nickname,
+						   NULL);
 	}
 	/* Attach the specified nickname to the key. */
 	error = PK11_SetPrivateKeyNickname(privkey, entry->cm_key_nickname);
