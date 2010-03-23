@@ -1,4 +1,4 @@
-AC_INIT(certmonger,0.18)
+AC_INIT(certmonger,0.19)
 AM_INIT_AUTOMAKE([foreign])
 AM_MAINTAINER_MODE
 AC_PROG_CC
@@ -150,6 +150,7 @@ CM_DEFAULT_PUBKEY_SIZE=2048
 AC_DEFINE_UNQUOTED(CM_DEFAULT_PUBKEY_SIZE,$CM_DEFAULT_PUBKEY_SIZE,[Define to the default public key size.])
 AC_SUBST(CM_DEFAULT_PUBKEY_SIZE)
 AC_DEFINE_UNQUOTED(CM_DEFAULT_TTL_LIST,[28*24*60*60,7*24*60*60,3*24*60*60,2*24*60*60,1*24*60*60],[Define to the list of default time-left thresholds at which we need to warn the user.])
+AC_SUBST(CM_DEFAULT_TTL_LIST)
 AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_SUBJECT_CN,"localhost",[Define to the last-ditch default CN value for a signing request.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_LIFETIME,"1y",[Define to the default certificate lifetime for self-signed certificates.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_SERIAL,"01",[Define to the default starting serial number for self-signed certificates.])
@@ -180,4 +181,4 @@ AC_DEFINE_UNQUOTED(CM_CERTMASTER_HELPER_PATH,"$mylibexecdir/certmaster-submit",[
 AM_CONDITIONAL(WITH_CERTMASTER,true)
 
 AC_CONFIG_COMMANDS(src_introspect_sh,[chmod +x src/introspect.sh])
-AC_OUTPUT(Makefile src/Makefile dbus/Makefile tests/Makefile tests/tools/Makefile dbus/certmonger.conf src/certmonger.init src/introspect.sh src/certmonger.8 src/getcert.1 src/getcert-request.1 src/getcert-list.1 src/getcert-list-cas.1 src/getcert-start-tracking.1 src/getcert-stop-tracking.1 src/selfsign-getcert.1 src/ipa-getcert.1 src/getcert-resubmit.1 src/certmonger-certmaster-submit.8 src/certmonger-ipa-submit.8 src/certmaster-getcert.1)
+AC_OUTPUT(Makefile src/Makefile dbus/Makefile tests/Makefile tests/tools/Makefile dbus/certmonger.conf src/certmonger.init src/introspect.sh src/certmonger.8 src/getcert.1 src/getcert-request.1 src/getcert-list.1 src/getcert-list-cas.1 src/getcert-start-tracking.1 src/getcert-stop-tracking.1 src/selfsign-getcert.1 src/ipa-getcert.1 src/getcert-resubmit.1 src/certmonger-certmaster-submit.8 src/certmonger-ipa-submit.8 src/certmaster-getcert.1 src/certmonger.conf.5)

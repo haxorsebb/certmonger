@@ -2,7 +2,7 @@
 %{?_with_check: %global pcheck 1}
 
 Name:		certmonger
-Version:	0.18
+Version:	0.19
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -98,6 +98,25 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Tue Mar 23 2010 Nalin Dahyabhai <nalin@redhat.com> 0.19-1
+- update to 0.19
+  - correctly initialize NSS databases that need to be using a PIN
+  - add certmonger.conf, for customizing notification timings and settings,
+    and use of digests other than the previously-hard-coded SHA256, and
+    drop those settings from individual requests
+  - up the default self-sign validity interval from 30 days to 365 days
+  - drop the first default notification interval from 30 days to 28 days
+    (these two combined to create a fun always-reissuing loop earlier)
+  - record the token which contains the key or certificate when we're
+    storing them in an NSS database, and report it
+  - improve handling of cases where we're supposed to use a PIN but we
+    either don't have one or we have the wrong one
+  - teach getcert to accept a PIN file's name or a PIN value when adding
+    a new entry
+  - update the IPA submission helper to use the new 'request_cert' signature
+    that's landing soon
+  - more tests
+
 * Fri Feb 12 2010 Nalin Dahyabhai <nalin@redhat.com> 0.18-1
 - update to 0.18
   - add support for using encrypted storage for keys, using PIN values
