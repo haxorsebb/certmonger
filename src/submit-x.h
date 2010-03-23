@@ -34,6 +34,7 @@ int cm_submit_x_fault_code(struct cm_submit_x_context *ctx);
 const char *cm_submit_x_fault_text(struct cm_submit_x_context *ctx);
 
 void cm_submit_x_add_arg_s(struct cm_submit_x_context *ctx, const char *s);
+void cm_submit_x_add_arg_as(struct cm_submit_x_context *ctx, const char **s);
 void cm_submit_x_add_arg_b(struct cm_submit_x_context *ctx, int b);
 void cm_submit_x_add_named_arg_s(struct cm_submit_x_context *ctx,
 				 const char *name, const char *s);

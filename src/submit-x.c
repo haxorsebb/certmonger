@@ -217,9 +217,24 @@ cm_submit_x_add_arg_s(struct cm_submit_x_context *ctx, const char *s)
 	xmlrpc_value *arg;
 	arg = xmlrpc_string_new(&ctx->xenv, s);
 	if (arg != NULL) {
-		xmlrpc_array_append_item(&ctx->xenv,
-					 ctx->params,
-					 arg);
+		xmlrpc_array_append_item(&ctx->xenv, ctx->params, arg);
+	}
+}
+
+void
+cm_submit_x_add_arg_as(struct cm_submit_x_context *ctx, const char **s)
+{
+	xmlrpc_value *arg, *str;
+	int i;
+	arg = xmlrpc_array_new(&ctx->xenv);
+	if (arg != NULL) {
+		for (i = 0; (s != NULL) && (s[i] != NULL); i++) {
+			str = xmlrpc_string_new(&ctx->xenv, s[i]);
+			if (str != NULL) {
+				xmlrpc_array_append_item(&ctx->xenv, arg, str);
+			}
+		}
+		xmlrpc_array_append_item(&ctx->xenv, ctx->params, arg);
 	}
 }
 
@@ -229,9 +244,7 @@ cm_submit_x_add_arg_b(struct cm_submit_x_context *ctx, int b)
 	xmlrpc_value *arg;
 	arg = xmlrpc_bool_new(&ctx->xenv, b != 0);
 	if (arg != NULL) {
-		xmlrpc_array_append_item(&ctx->xenv,
-					 ctx->params,
-					 arg);
+		xmlrpc_array_append_item(&ctx->xenv, ctx->params, arg);
 	}
 }
 
