@@ -133,16 +133,21 @@ cm_pin_cb(PK11SlotInfo *slot, PRBool retry, void *arg,
 {
 	struct cm_store_entry *entry;
 	char *pin, *ret;
-	entry = arg;
-	pin = cm_pin_read(entry, pin_type);
-	if (pin != NULL) {
-		ret = PR_Malloc(strlen(pin) + 1);
-		if (ret != NULL) {
-			strcpy(ret, pin);
-		}
-		talloc_free(pin);
-	} else {
+	if (retry) {
+		/* We're not going to change what we're suggesting. */
 		ret = NULL;
+	} else {
+		entry = arg;
+		pin = cm_pin_read(entry, pin_type);
+		if (pin != NULL) {
+			ret = PR_Malloc(strlen(pin) + 1);
+			if (ret != NULL) {
+				strcpy(ret, pin);
+			}
+			talloc_free(pin);
+		} else {
+			ret = NULL;
+		}
 	}
 	return ret;
 }
