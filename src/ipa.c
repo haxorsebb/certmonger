@@ -42,7 +42,7 @@ main(int argc, char **argv)
 {
 	int i, c, ret, host_is_uri = 0;
 	const char *host = NULL, *cainfo = NULL, *capath = NULL;
-	const char *ktname = NULL, *kpname = NULL;
+	const char *ktname = NULL, *kpname = NULL, *args[2];
 	char *csr, *p, *q, uri[LINE_MAX], *s, *reqprinc = NULL, *ipaconfig;
 	struct cm_submit_x_context *ctx;
 
@@ -221,7 +221,9 @@ main(int argc, char **argv)
 	}
 
 	/* Add the CSR as the sole unnamed argument. */
-	cm_submit_x_add_arg_s(ctx, csr);
+	args[0] = csr;
+	args[1] = NULL;
+	cm_submit_x_add_arg_as(ctx, args);
 	/* Add the principal name named argument. */
 	cm_submit_x_add_named_arg_s(ctx, "principal", reqprinc);
 	/* Tell the server to add entries for a principal if one doesn't exist
