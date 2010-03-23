@@ -88,7 +88,6 @@ for scheme in "" dbm sql ; do
 	fi
 
 	cat > entry <<- EOF
-	key_type_default=1
 	key_storage_type=NSSDB
 	key_storage_location=${scheme:+${scheme}:}$tmpdir/${scheme}db
 	key_nickname=Test

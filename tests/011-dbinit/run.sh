@@ -10,7 +10,6 @@ for scheme in "" dbm sql ; do
 	mkdir -p $tmpdir/${scheme}db
 	cat > entry <<- EOF
 	state=NEED_KEY_PAIR
-	key_type_default=1
 	key_storage_type=NSSDB
 	key_storage_location=${scheme:+${scheme}:}$tmpdir/${scheme}db
 	key_nickname=Test
