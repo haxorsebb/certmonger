@@ -59,6 +59,7 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 {
 	int status = 1, readwrite;
 	const char *token;
+	char *pin;
 	PLArenaPool *arena;
 	SECStatus error;
 	PK11SlotList *slotlist;
@@ -111,6 +112,7 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	 * none was requested. */
 	slot = NULL;
 	cert = NULL;
+	PK11_SetPasswordFunc(&cm_pin_cb_cert);
 	for (sle = slotlist->head;
 	     ((sle != NULL) && (sle->slot != NULL));
 	     sle = sle->next) {
@@ -128,6 +130,26 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		    (strlen(entry->cm_cert_token) != 0) &&
 		    (strcmp(entry->cm_cert_token, token) != 0)) {
 			goto next_slot;
+		}
+		/* If we're supposed to be using a PIN, and we're offered a
+		 * chance to set one, do it now. */
+		if (readwrite) {
+			if (PK11_NeedUserInit(sle->slot)) {
+				pin = cm_pin_read_cert(entry);
+				PK11_InitPin(slot, NULL, pin);
+				if (PK11_NeedUserInit(slot)) {
+					cm_log(1, "Key storage slot still "
+					       "needs user PIN to be set.\n");
+				}
+			}
+		}
+		/* If we need to log in in order to read certificates, do so. */
+		if (!PK11_IsFriendly(sle->slot) && PK11_NeedLogin(sle->slot)) {
+			error = PK11_Authenticate(slot, PR_TRUE, entry);
+			if (error != SECSuccess) {
+				cm_log(1, "Error authenticating to cert db.\n");
+				goto next_slot;
+			}
 		}
 		/* Walk the list of certificates in the slot, looking for one
 		 * which matches the specified nickname. */
