@@ -61,6 +61,7 @@ SECKEYPrivateKey *
 cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 {
 	const char *token, *nickname;
+	char *pin;
 	PLArenaPool *arena;
 	SECStatus error;
 	PK11SlotList *slotlist;
@@ -132,8 +133,21 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 			goto next_slot;
 		}
 
-		/* Try to log in, if we have to. */
-		if (PK11_NeedLogin(slot) || !PK11_IsFriendly(slot)) {
+		/* If we're supposed to be using a PIN, and we're offered a
+		 * chance to set one, do it now. */
+		if (readwrite) {
+			if (PK11_NeedUserInit(slot)) {
+				pin = cm_pin_read_key(entry);
+				PK11_InitPin(slot, NULL, pin);
+				if (PK11_NeedUserInit(slot)) {
+					cm_log(1, "Key storage slot still "
+					       "needs user PIN to be set.\n");
+				}
+			}
+		}
+
+		/* Now log in, if we have to. */
+		if (PK11_NeedLogin(slot)) {
 			n_login_attempts++;
 			error = PK11_Authenticate(slot, PR_TRUE, entry);
 			if (error != SECSuccess) {
