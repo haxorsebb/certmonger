@@ -1,0 +1,47 @@
+.TH certmonger.conf 5 "23 March 2010" "certmonger Manual"
+
+.SH NAME
+certmonger.conf - configuration file for certmonger
+
+.SH DESCRIPTION
+The \fIcertmonger.conf\fR file contains default settings used by certmonger.
+Its format is more or less that of a typical INI-style file.  The only section
+currently of note is named \fIdefaults\fR.  Within that section, these variables
+and values are recognized:
+
+.IP ttls
+This is the list of times, before a certificate's not-after validity date
+(often referred to as its expiration time) when \fIcertmonger\fR should warn
+that the certificate will soon no longer be valid.  If \fIcertmonger\fR is
+configured to automatically renew the certificate, it will also attempt to do
+so at these times.  The default list of values is "@CM_DEFAULT_TTL_LIST@".
+
+.IP notification_method
+This is the method by which \fIcertmonger\fP will notify the system
+administrator that a certificate will soon become invalid.  The recognized
+values are \fIsyslog\fP and \fImail\fP.  The default is \fIsyslog\fP.
+
+.IP notification_destination
+This is the destination to which \fIcertmonger\fP will send notifications.  It
+can be a syslog priority and/or facility, separated by a period, or it can be
+an email address.  The default value is
+\fI@CM_DEFAULT_NOTIFICATION_SYSLOG_PRIORITY@\fP.
+
+.IP symmetric_cipher
+This is the symmetric cipher which will be used to encrypt private keys stored
+in OpenSSL's PEM format.  Recognized values include \fIaes128\fP and
+\fIaes256\fP.  The default is \fIaes128\fP.  It is not recommended that this
+value be changed except in cases where it is incompatible with other software.
+
+.IP digest
+This is the digest algorithm which will be used when signing certificate
+signing requests and self-signed certificates.  Recognized values include
+\fIsha1\fP, \fIsha256\fP, \fIsha384\fP, and \fIsha512\fP.  The default is
+\fIsha256\fP.  It is not recommended that this value be changed except in cases
+where it is incompatible with other software.
+
+.SH BUGS
+Please file tickets for any that you find at https://fedorahosted.org/certmonger/
+
+.SH SEE ALSO
+\fBcertmonger\fR(8)
