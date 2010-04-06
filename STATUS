@@ -79,3 +79,11 @@ To-do:
     COULD -> Move them to an ldb. (3 days)
     COULD -> Move them to something that's more end-user-serviceable. (3 days)
   * Put NSS into FIPS mode.
+  * Offer to read and cache the CA certificate for CAs, just as we do for
+    regular requests.
+    * Default the locations to where we expect other CA clients to be storing
+      the certificate.
+    * Populate/update the known-issuer-names list using the CA certificate.
+    * If the CA cert includes a CRL distribution point extension, cache the
+      CRL, too.  This'll require a new dependency on a retrieval library
+      (probably libcurl) and a few changes to the internal state machine.
