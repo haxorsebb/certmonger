@@ -16,46 +16,17 @@
  */
 
 #include "config.h"
-
-#include <keythi.h>
-
-#include <openssl/evp.h>
-
-#include "prefs.h"
-#include "prefs.h"
-#include "prefs-o.h"
+#include <openssl/ssl.h>
 #include "util-o.h"
 
-const EVP_MD *
-cm_prefs_ossl_hash(void)
+void
+util_o_init(void)
 {
-	switch (cm_prefs_preferred_digest()) {
-	case cm_prefs_sha1:
-		return EVP_sha1();
-		break;
-	case cm_prefs_sha256:
-		return EVP_sha256();
-		break;
-	case cm_prefs_sha384:
-		return EVP_sha384();
-		break;
-	case cm_prefs_sha512:
-		return EVP_sha512();
-		break;
-	}
-	return EVP_sha256();
-}
-
-const EVP_CIPHER *
-cm_prefs_ossl_cipher(void)
-{
-	switch (cm_prefs_preferred_cipher()) {
-	case cm_prefs_aes128:
-		return EVP_aes_128_cbc();
-		break;
-	case cm_prefs_aes256:
-		return EVP_aes_256_cbc();
-		break;
-	}
-	return EVP_aes_128_cbc();
+#if defined(HAVE_DECL_OPENSSL_ADD_ALL_ALGORITHMS)
+	OpenSSL_add_all_algorithms();
+#elif defined(HAVE_DECL_OPENSSL_ADD_SSL_ALGORITHMS)
+	OpenSSL_add_ssl_algorithms();
+#else
+	SSL_library_init();
+#endif
 }

@@ -42,6 +42,7 @@
 #include "store.h"
 #include "store-int.h"
 #include "subproc.h"
+#include "util-o.h"
 
 struct cm_keyiread_state {
 	struct cm_keyiread_state_pvt pvt;
@@ -60,7 +61,7 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	int size;
 	long error;
 
-	OpenSSL_add_ssl_algorithms();
+	util_o_init();
 	ERR_load_crypto_strings();
 	status = CM_STATUS_ERROR_INTERNAL;
 	fp = fdopen(fd, "w");

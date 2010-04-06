@@ -124,6 +124,13 @@ AM_CONDITIONAL(HAVE_OPENSSL,test x$withopenssl != xno)
 if test x$withopenssl != xno ; then
 	PKG_CHECK_MODULES(OPENSSL,openssl)
 	AC_DEFINE(HAVE_OPENSSL,1,[Define if you have OpenSSL.])
+	CFLAGSsave="$CFLAGS"
+	LIBSsave="$LIBS"
+	CFLAGS="$OPENSSL_CFLAGS $LIBS"
+	LIBS="$OPENSSL_LIBS $LIBS"
+	AC_CHECK_DECLS([OpenSSL_add_all_algorithms,OpenSSL_add_ssl_algorithms],,,[#include <openssl/ssl.h>])
+	CFLAGS="$CFLAGSsave"
+	LIBS="$LIBSsave"
 fi
 
 AM_CONDITIONAL(HAVE_NSS,test x$withnss != xno)

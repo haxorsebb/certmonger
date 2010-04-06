@@ -43,6 +43,7 @@
 #include "store.h"
 #include "store-int.h"
 #include "subproc.h"
+#include "util-o.h"
 
 struct cm_certread_state {
 	struct cm_certread_state_pvt pvt;
@@ -59,7 +60,7 @@ cm_certread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	char buf[LINE_MAX], *der;
 	long error;
 
-	OpenSSL_add_ssl_algorithms();
+	util_o_init();
 	ERR_load_crypto_strings();
 	status = 1;
 	fp = fdopen(fd, "w");

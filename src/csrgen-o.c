@@ -43,6 +43,7 @@
 #include "store.h"
 #include "store-int.h"
 #include "subproc.h"
+#include "util-o.h"
 
 struct cm_csrgen_state {
 	struct cm_csrgen_state_pvt pvt;
@@ -78,7 +79,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 		_exit(CM_STATUS_ERROR_INTERNAL);
 	}
-	OpenSSL_add_ssl_algorithms();
+	util_o_init();
 	ERR_load_crypto_strings();
 	pkey = EVP_PKEY_new();
 	if (pkey == NULL) {

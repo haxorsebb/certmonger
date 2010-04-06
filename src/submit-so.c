@@ -42,6 +42,7 @@
 #include "submit.h"
 #include "submit-int.h"
 #include "subproc.h"
+#include "util-o.h"
 
 struct cm_submit_state {
 	struct cm_submit_state_pvt pvt;
@@ -70,7 +71,7 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	long life;
 	time_t now;
 
-	OpenSSL_add_ssl_algorithms();
+	util_o_init();
 	ERR_load_crypto_strings();
 	status = 1;
 	cert = NULL;

@@ -81,7 +81,9 @@ libcm_o_a_SOURCES += \
 	keyiread-o.c \
 	prefs-o.h \
 	prefs-o.c \
-	submit-so.c
+	submit-so.c \
+	util-o.c \
+	util-o.h
 endif
 libcm_o_a_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS) $(OPENSSL_CFLAGS)
 libcm_a_LIBADD = $(libcm_o_a_OBJECTS)

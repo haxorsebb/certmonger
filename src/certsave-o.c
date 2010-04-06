@@ -39,6 +39,7 @@
 #include "store.h"
 #include "store-int.h"
 #include "subproc.h"
+#include "util-o.h"
 
 struct cm_certsave_state {
 	struct cm_certsave_state_pvt pvt;
@@ -53,6 +54,7 @@ cm_certsave_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	BIO *bio;
 	FILE *pem;
 	X509 *cert;
+	util_o_init();
 	bio = BIO_new_mem_buf(entry->cm_cert, strlen(entry->cm_cert));
 	if (bio != NULL) {
 		cert = PEM_read_bio_X509(bio, NULL, NULL, NULL);
