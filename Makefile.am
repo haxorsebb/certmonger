@@ -1,7 +1,7 @@
 ACLOCAL_AMFLAGS = -I m4
 EXTRA_FILES = doc/*.txt
 SUBDIRS = po src dbus tests
-EXTRA_DIST = config.rpath m4/ChangeLog \
+EXTRA_DIST = config.rpath \
 	     certmonger.spec LICENSE README STATUS doc src/certmonger.conf
 
 VERSION=$(PACKAGE_VERSION)
