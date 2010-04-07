@@ -510,8 +510,9 @@ request(const char *argv0, int argc, char **argv)
 #ifdef WITH_IPA
 	if ((ca != NULL) && (strcmp(ca, "IPA") == 0)) {
 		if (principal == NULL) {
-			printf(_("IPA requires that a principal name be "
-			         "specified using the -K option.\n"));
+			printf(_("The IPA backend requires the use of the "
+				 "-K option (principal name) when the "
+				 "-N option (subject name) is used.\n"));
 			help(argv0, "request");
 			return 1;
 		}
