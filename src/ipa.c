@@ -35,7 +35,12 @@
 #include "submit-x.h"
 #include "util.h"
 
-#define _(_x) (_x)
+#ifdef ENABLE_NLS
+#include <libintl.h>
+#define _(_text) dgettext(PACKAGE, _text)
+#else
+#define _(_text) (_text)
+#endif
 
 int
 main(int argc, char **argv)
@@ -45,6 +50,10 @@ main(int argc, char **argv)
 	const char *ktname = NULL, *kpname = NULL, *args[2];
 	char *csr, *p, *q, uri[LINE_MAX], *s, *reqprinc = NULL, *ipaconfig;
 	struct cm_submit_x_context *ctx;
+
+#ifdef ENABLE_NLS
+	bindtextdomain(PACKAGE, MYLOCALEDIR);
+#endif
 
 	reqprinc = getenv(CM_SUBMIT_REQ_PRINCIPAL_ENV);
 	if (reqprinc != NULL) {

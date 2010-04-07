@@ -1,8 +1,10 @@
 AC_INIT(certmonger,0.19)
 AM_INIT_AUTOMAKE([foreign])
+AC_CONFIG_MACRO_DIR(m4)
 AM_MAINTAINER_MODE
 AC_PROG_CC
 AC_PROG_RANLIB
+AM_GNU_GETTEXT([external])
 AC_CHECK_HEADERS(sys/types.h sys/socket.h linux/types.h linux/netlink.h linux/rtnetlink.h,,,[
 	#ifdef HAVE_SYS_TYPES_H
 	#include <sys/types.h>
@@ -62,6 +64,12 @@ AC_DEFINE_UNQUOTED(CM_STORE_CAS_DIRECTORY,"$mylocalstatedir/cas",
 UPCASE_PACKAGE_NAME=`echo "${PACKAGE_NAME}" | tr '[a-z]' '[A-Z]'`
 AC_DEFINE_UNQUOTED(CM_STORE_CAS_DIRECTORY_ENV,"${UPCASE_PACKAGE_NAME}_CAS_DIR",
 		   [Define to the name of the environment variable which can specify the directory for tracking CAs.])
+mylocaledir="$localedir"
+mylocaledir=`eval echo $mylocaledir | sed "s,NONE,$prefix,g"`
+mylocaledir=`eval echo $mylocaledir | sed "s,NONE,$ac_default_prefix,g"`
+mylocaledir=`eval echo $mylocaledir | sed "s,NONE,,g"`
+AC_DEFINE_UNQUOTED(MYLOCALEDIR,"$mylocaledir",
+		   [Define to the name of the directory under which locale data will be installed.])
 
 CM_DBUS_NAME=org.fedorahosted.certmonger
 AC_DEFINE_UNQUOTED(CM_DBUS_NAME,"$CM_DBUS_NAME",
@@ -188,4 +196,4 @@ AC_DEFINE_UNQUOTED(CM_CERTMASTER_HELPER_PATH,"$mylibexecdir/certmaster-submit",[
 AM_CONDITIONAL(WITH_CERTMASTER,true)
 
 AC_CONFIG_COMMANDS(src_introspect_sh,[chmod +x src/introspect.sh])
-AC_OUTPUT(Makefile src/Makefile dbus/Makefile tests/Makefile tests/tools/Makefile dbus/certmonger.conf src/certmonger.init src/introspect.sh src/certmonger.8 src/getcert.1 src/getcert-request.1 src/getcert-list.1 src/getcert-list-cas.1 src/getcert-start-tracking.1 src/getcert-stop-tracking.1 src/selfsign-getcert.1 src/ipa-getcert.1 src/getcert-resubmit.1 src/certmonger-certmaster-submit.8 src/certmonger-ipa-submit.8 src/certmaster-getcert.1 src/certmonger.conf.5)
+AC_OUTPUT(Makefile src/Makefile dbus/Makefile tests/Makefile tests/tools/Makefile dbus/certmonger.conf src/certmonger.init src/introspect.sh src/certmonger.8 src/getcert.1 src/getcert-request.1 src/getcert-list.1 src/getcert-list-cas.1 src/getcert-start-tracking.1 src/getcert-stop-tracking.1 src/selfsign-getcert.1 src/ipa-getcert.1 src/getcert-resubmit.1 src/certmonger-certmaster-submit.8 src/certmonger-ipa-submit.8 src/certmaster-getcert.1 src/certmonger.conf.5 po/Makefile.in)

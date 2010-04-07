@@ -50,6 +50,10 @@ main(int argc, char **argv)
 	const char *pidfile = NULL;
 	dbus_bool_t dofork = TRUE;
 
+#ifdef ENABLE_NLS
+	bindtextdomain(PACKAGE, MYLOCALEDIR);
+#endif
+
 	while ((c = getopt(argc, argv, "sSp:d:n")) != -1) {
 		switch (c) {
 		case 's':

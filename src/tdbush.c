@@ -36,7 +36,12 @@
 #include "tdbus.h"
 #include "tdbusm.h"
 
+#ifdef ENABLE_NLS
+#include <libintl.h>
+#define _(_text) dgettext(PACKAGE, _text)
+#else
 #define _(_text) (_text)
+#endif
 
 /* Functions which tell us if, based on the path alone, there's an object of
  * the specified type with that path. */

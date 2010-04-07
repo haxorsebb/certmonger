@@ -40,8 +40,13 @@
 #include "tdbus.h"
 #include "tdbusm.h"
 
+#ifdef ENABLE_NLS
+#include <libintl.h>
+#define _(_text) dgettext(PACKAGE, _text)
+#else
+#define _(_text) (_text)
+#endif
 #define N_(_msg) (_msg)
-#define _(_msg) (_msg)
 
 #ifdef FORCE_CA
 #define GETOPT_CA ""
@@ -1943,6 +1948,9 @@ main(int argc, char **argv)
 {
 	const char *verb, *p;
 	unsigned int i;
+#ifdef ENABLE_NLS
+	bindtextdomain(PACKAGE, MYLOCALEDIR);
+#endif
 	p = argv[0];
 	if (strchr(p, '/') != NULL) {
 		p = strrchr(p, '/') + 1;
