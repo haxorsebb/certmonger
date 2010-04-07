@@ -170,7 +170,7 @@ main(int argc, char **argv)
 				return CM_STATUS_WAIT;
 			}
 		} else {
-			printf(_("Error parsing server reply.\n"));
+			printf(_("Error parsing server response.\n"));
 			return CM_STATUS_UNREACHABLE;
 		}
 	} else {
