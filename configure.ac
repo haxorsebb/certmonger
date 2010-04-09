@@ -6,6 +6,7 @@ AC_PROG_CC
 AC_PROG_RANLIB
 AM_GNU_GETTEXT([external])
 AM_GNU_GETTEXT_VERSION(0.17)
+ALL_LINGUAS="en@quot en@boldquot `ls -1 $srcdir/po/*.po | xargs -n 1 basename | xargs -n 1 -I'{}' basename '{}' .po`"
 AC_CHECK_HEADERS(sys/types.h sys/socket.h linux/types.h linux/netlink.h linux/rtnetlink.h,,,[
 	#ifdef HAVE_SYS_TYPES_H
 	#include <sys/types.h>

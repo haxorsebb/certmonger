@@ -56,6 +56,8 @@ mkdir -p $RPM_BUILD_ROOT/%{_initddir}
 install -m755 src/certmonger.init $RPM_BUILD_ROOT/%{_initddir}/certmonger
 %endif
 
+%{find_lang} %{name}
+
 %check
 %if 0%{?pcheck}
 make check
@@ -80,7 +82,7 @@ if test $1 -eq 0 ; then
 fi
 exit 0
 
-%files
+%files -f %{name}.lang
 %defattr(-,root,root,-)
 %doc README LICENSE STATUS doc/*.txt
 %config(noreplace) %{_sysconfdir}/dbus-1/system.d/*
