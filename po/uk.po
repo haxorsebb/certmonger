@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: uk\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2010-04-07 17:13-0400\n"
-"PO-Revision-Date: 2010-04-09 07:16+0300\n"
+"PO-Revision-Date: 2010-04-09 19:33+0300\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <translation@linux.org.ua>\n"
 "MIME-Version: 1.0\n"
@@ -47,14 +47,14 @@ msgstr "Помилка сервера.\n"
 #: src/getcert.c:88 src/getcert.c:117
 #, c-format
 msgid "Path \"%s\" is not absolute, using \"%s\" instead.\n"
-msgstr ""
+msgstr "Шлях «%s» не є абсолютним, буде використано шлях «%s».\n"
 
 #: src/getcert.c:92 src/getcert.c:121
 #, c-format
 msgid ""
 "Path \"%s\" is not absolute, and there was an error determining the name of "
 "the current directory.\n"
-msgstr ""
+msgstr "Шлях «%s» не є абсолютним, спроба визначення назви поточного каталогу також зазнала невдачі.\n"
 
 #: src/getcert.c:140 src/getcert.c:166
 #, c-format
@@ -99,22 +99,22 @@ msgstr "Помилка під час ініціалізації бібліоте
 #: src/getcert.c:421 src/getcert.c:1276
 #, c-format
 msgid "Could not evaluate OID \"%s\".\n"
-msgstr ""
+msgstr "Не вдалося визначити OID «%s».\n"
 
 #: src/getcert.c:431 src/getcert.c:1286
 #, c-format
 msgid "Error parsing Kerberos principal name \"%s\": %s.\n"
-msgstr ""
+msgstr "Помилка під час обробки реєстраційного запису Kerberos «%s»: %s.\n"
 
 #: src/getcert.c:439 src/getcert.c:1294
 #, c-format
 msgid "Error unparsing Kerberos principal name \"%s\": %s.\n"
-msgstr ""
+msgstr "Помилка під час пакування реєстраційного запису Kerberos «%s»: %s.\n"
 
 #: src/getcert.c:472 src/getcert.c:1045 src/getcert.c:1133 src/getcert.c:1335
 #, c-format
 msgid "Database location or nickname specified without the other.\n"
-msgstr ""
+msgstr "Вказано адресу бази даних або псевдонім без визначення іншого необхідного елемента.\n"
 
 #: src/getcert.c:478 src/getcert.c:1051 src/getcert.c:1139 src/getcert.c:1341
 #, c-format
@@ -124,12 +124,12 @@ msgstr "Одночасно вказано каталог бази даних і 
 #: src/getcert.c:486 src/getcert.c:1147 src/getcert.c:1349
 #, c-format
 msgid "None of database directory and nickname or certificate file specified.\n"
-msgstr ""
+msgstr "Не вказано ні каталогу бази даних з псевдонімом, ні файла сертифіката.\n"
 
 #: src/getcert.c:493 src/getcert.c:1067
 #, c-format
 msgid "Key and certificate can not both be saved to the same file.\n"
-msgstr ""
+msgstr "Ключ і сертифікат не можна зберігати у одному файлі.\n"
 
 #: src/getcert.c:518
 #, c-format
@@ -137,6 +137,8 @@ msgid ""
 "The IPA backend requires the use of the -K option (principal name) when the -"
 "N option (subject name) is used.\n"
 msgstr ""
+"Сервер IPA потребує використання параметра -K (назви реєстраційного запису), якщо використано параметр -N "
+"(призначення).\n"
 
 #: src/getcert.c:649 src/getcert.c:1369
 #, c-format
@@ -174,7 +176,7 @@ msgstr "Не вдалося додати новий запит щодо стеж
 msgid ""
 "None of ID or database directory and nickname or certificate file "
 "specified.\n"
-msgstr ""
+msgstr "Не вказано ні ідентифікатора, ні каталогу бази даних з псевдонімом, ні файла сертифіката.\n"
 
 #: src/getcert.c:1120
 #, c-format
@@ -189,67 +191,67 @@ msgstr "Не вдалося змінити запит «%s».\n"
 #: src/getcert.c:1169 src/getcert.c:1355
 #, c-format
 msgid "No request found that matched arguments.\n"
-msgstr ""
+msgstr "Запиту, що відповідає аргументам, не виявлено.\n"
 
 #: src/getcert.c:1187
 #, c-format
 msgid "Request \"%s\" removed.\n"
-msgstr ""
+msgstr "Запит «%s» вилучено.\n"
 
 #: src/getcert.c:1191
 #, c-format
 msgid "Request \"%s\" could not be removed.\n"
-msgstr ""
+msgstr "Не вдалося вилучити запит «%s».\n"
 
 #: src/getcert.c:1446
 #, c-format
 msgid "Error modifying \"%s\".\n"
-msgstr ""
+msgstr "Помилка під час спроби змінити «%s».\n"
 
 #: src/getcert.c:1462
 #, c-format
 msgid "Resubmitting \"%s\" to \"%s\".\n"
-msgstr ""
+msgstr "Повторне надсилання «%s» до «%s».\n"
 
 #: src/getcert.c:1465
 #, c-format
 msgid "Resubmitting \"%s\".\n"
-msgstr ""
+msgstr "Повторне надсилання «%s».\n"
 
 #: src/getcert.c:1471
 #, c-format
 msgid "Error attempting to submit \"%s\" to \"%s\".\n"
-msgstr ""
+msgstr "Помилка під час спроби надсилання «%s» до «%s».\n"
 
 #: src/getcert.c:1474
 #, c-format
 msgid "Error attempting to submit \"%s\".\n"
-msgstr ""
+msgstr "Помилка під час спроби надсилання «%s».\n"
 
 #: src/getcert.c:1591
 #, c-format
 msgid "Request ID '%s':\n"
-msgstr ""
+msgstr "Ідентифікатор запиту «%s»:\n"
 
 #: src/getcert.c:1592
 #, c-format
 msgid "\tstatus: %s\n"
-msgstr ""
+msgstr "\tстан: %s\n"
 
 #: src/getcert.c:1596
 #, c-format
 msgid "\tca-error: %s\n"
-msgstr ""
+msgstr "\tca-помилка: %s\n"
 
 #: src/getcert.c:1598
 #, c-format
 msgid "\tstuck: %s\n"
-msgstr ""
+msgstr "\tприв’язка: %s\n"
 
 #: src/getcert.c:1618
 #, c-format
 msgid "\tkey pair storage: %s%s%s%s%s%s%s%s%s%s%s%s%s%s\n"
-msgstr ""
+msgstr "\tсховище пар ключів: %s%s%s%s%s%s%s%s%s%s%s%s%s%s\n"
 
 #: src/getcert.c:1619
 msgid "type="
@@ -314,290 +316,290 @@ msgstr "\tdns: "
 
 #: src/getcert.c:1669
 msgid "\tprincipal name: "
-msgstr ""
+msgstr "\tреєстраційний запис: "
 
 #: src/getcert.c:1675
 msgid "\teku: "
-msgstr ""
+msgstr "\teku: "
 
 #: src/getcert.c:1679
 #, c-format
 msgid "\ttrack: %s\n"
-msgstr ""
+msgstr "\tстеження: %s\n"
 
 #: src/getcert.c:1683
 #, c-format
 msgid "\tauto-renew: %s\n"
-msgstr ""
+msgstr "\tавтооновлення: %s\n"
 
 #: src/getcert.c:1725
 #, c-format
 msgid "CA '%s':\n"
-msgstr ""
+msgstr "Служба сертифікації «%s»:\n"
 
 #: src/getcert.c:1732
 #, c-format
 msgid "\tca-type: %s\n"
-msgstr ""
+msgstr "\tca-тип: %s\n"
 
 #: src/getcert.c:1734
 #, c-format
 msgid "\thelper-location: %s\n"
-msgstr ""
+msgstr "\tадреса допоміжної програми: %s\n"
 
 #: src/getcert.c:1738
 #, c-format
 msgid "\tnext-serial-number: %s\n"
-msgstr ""
+msgstr "\tнаступний серійний номер: %s\n"
 
 #: src/getcert.c:1746
 #, c-format
 msgid "\tknown-issuer-names:\n"
-msgstr ""
+msgstr "\tвідомі назви видавця:\n"
 
 #: src/getcert.c:1772
 #, c-format
 msgid "%s - client certificate enrollment tool\n"
-msgstr ""
+msgstr "%s — інструмент реєстрації клієнтських сертифікатів\n"
 
 #: src/getcert.c:1776
 #, c-format
 msgid "Usage: %s request [options]\n"
-msgstr ""
+msgstr "Використання: %s request [параметри]\n"
 
 #: src/getcert.c:1778 src/getcert.c:1813 src/getcert.c:1840 src/getcert.c:1860
 msgid "Required arguments:\n"
-msgstr ""
+msgstr "Обов’язкові аргументи:\n"
 
 #: src/getcert.c:1779 src/getcert.c:1816 src/getcert.c:1843 src/getcert.c:1863
 msgid "* If using an NSS database for storage:\n"
-msgstr ""
+msgstr "* Якщо для зберігання даних використовується база даних NSS:\n"
 
 #: src/getcert.c:1780 src/getcert.c:1817 src/getcert.c:1844 src/getcert.c:1864
 msgid "  -d DIR\tNSS database for key and cert\n"
-msgstr ""
+msgstr "  -d КАТАЛОГ\tБаза даних ключів і сертифікатів NSS\n"
 
 #: src/getcert.c:1781 src/getcert.c:1818 src/getcert.c:1845 src/getcert.c:1865
 msgid "  -n NAME\tnickname for NSS-based storage (only valid with -d)\n"
-msgstr ""
+msgstr "  -n НАЗВА\tпсевдонім сховища на основі NSS (працюватиме, лише якщо вказано -d)\n"
 
 #: src/getcert.c:1782 src/getcert.c:1819 src/getcert.c:1846 src/getcert.c:1866
 msgid "  -t NAME\toptional token name for NSS-based storage (only valid with -d)\n"
-msgstr ""
+msgstr "  -t НАЗВА\tдодаткова назва ключа до заснованого на NSS сховища (працюватиме, лише якщо вказано -d)\n"
 
 #: src/getcert.c:1783 src/getcert.c:1820 src/getcert.c:1847 src/getcert.c:1867
 msgid "* If using files for storage:\n"
-msgstr ""
+msgstr "* Якщо для зберігання даних використовуються файли:\n"
 
 #: src/getcert.c:1784 src/getcert.c:1821 src/getcert.c:1848
 msgid "  -k FILE\tPEM file for private key\n"
-msgstr ""
+msgstr "  -k ФАЙЛ\tФайл PEM закритого ключа\n"
 
 #: src/getcert.c:1785 src/getcert.c:1822 src/getcert.c:1849
 msgid "  -f FILE\tPEM file for certificate (only valid with -k)\n"
-msgstr ""
+msgstr "  -f ФАЙЛ\tФайл PEM сертифіката (працюватиме, лише якщо вказано -k)\n"
 
 #: src/getcert.c:1786 src/getcert.c:1870
 msgid "* If keys are encrypted:\n"
-msgstr ""
+msgstr "* Якщо ключі зашифровано:\n"
 
 #: src/getcert.c:1787 src/getcert.c:1871
 msgid "  -p FILE\tfile which holds the encryption PIN\n"
-msgstr ""
+msgstr "  -p ФАЙЛ\tФайл, у якому зберігається PIN-код шифрування\n"
 
 #: src/getcert.c:1788 src/getcert.c:1872
 msgid "  -P PIN \tPIN value\n"
-msgstr ""
+msgstr "  -P PIN \tЗначення PIN-коду шифрування\n"
 
 #: src/getcert.c:1790 src/getcert.c:1824 src/getcert.c:1851 src/getcert.c:1881
 #: src/getcert.c:1895 src/getcert.c:1910
 msgid "Optional arguments:\n"
-msgstr ""
+msgstr "Необов’язкові аргументи:\n"
 
 #: src/getcert.c:1791 src/getcert.c:1825 src/getcert.c:1882
 msgid "* Certificate handling settings:\n"
-msgstr ""
+msgstr "* Параметри обробки сертифікатів:\n"
 
 #: src/getcert.c:1792
 msgid "  -I NAME\tnickname to assign to the request\n"
-msgstr ""
+msgstr "  -I НАЗВА\tпсевдонім, який слід пов’язати з запитом\n"
 
 #: src/getcert.c:1793
 msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
-msgstr ""
+msgstr "  -g РОЗМІР\tрозмір ключа, який слід створити, якщо не буде виявлено готового, у бітах\n"
 
 #: src/getcert.c:1794 src/getcert.c:1827
 msgid "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
-msgstr ""
+msgstr "  -r\t\tСпробувати оновити сертифікат, якщо наближається завершення строку дії (типова поведінка)\n"
 
 #: src/getcert.c:1795 src/getcert.c:1828
 msgid "  -R\t\tdon't attempt to renew the certificate when expiration nears\n"
-msgstr ""
+msgstr "  -R\t\tНе намагатися оновити сертифікат, якщо наближається завершення строку дії\n"
 
 #: src/getcert.c:1797 src/getcert.c:1830
 msgid "  -c CA\t\tuse the specified CA rather than the default\n"
-msgstr ""
+msgstr "  -c CA\t\tвикористовувати вказану службу сертифікації (CA), а не типову\n"
 
 #: src/getcert.c:1799
 msgid "* Parameters for the signing request:\n"
-msgstr ""
+msgstr "* Параметри запиту щодо підписування:\n"
 
 #: src/getcert.c:1800 src/getcert.c:1875
 msgid "  -N NAME\tset requested subject name (default: CN=<hostname>)\n"
-msgstr ""
+msgstr "  -N НАЗВА\tВстановити бажане призначення (Типово: CN=<назва вузла>)\n"
 
 #: src/getcert.c:1801 src/getcert.c:1876
 msgid "  -U EXTUSAGE\tset requested extended key usage OID\n"
-msgstr ""
+msgstr "  -U ДОД.ВИКОР.\tВстановити додаткове використання ключа за допомогою OID\n"
 
 #: src/getcert.c:1802 src/getcert.c:1877
 msgid "  -K NAME\tset requested principal name\n"
-msgstr ""
+msgstr "  -K НАЗВА\tВстановити вказану назву реєстраційного запису\n"
 
 #: src/getcert.c:1803 src/getcert.c:1878
 msgid "  -D DNSNAME\tset requested DNS name\n"
-msgstr ""
+msgstr "  -D НАЗВА-DNS\tвстановити вказану назву за DNS\n"
 
 #: src/getcert.c:1804 src/getcert.c:1879
 msgid "  -E EMAIL\tset requested email address\n"
-msgstr ""
+msgstr "  -E ЕЛ.ПОШТА\tвстановити вказану адресу електронної пошти\n"
 
 #: src/getcert.c:1805 src/getcert.c:1832 src/getcert.c:1852 src/getcert.c:1887
 #: src/getcert.c:1902 src/getcert.c:1915
 msgid "* Bus options:\n"
-msgstr ""
+msgstr "* Параметри каналу зв’язку:\n"
 
 #: src/getcert.c:1806 src/getcert.c:1833 src/getcert.c:1853 src/getcert.c:1888
 msgid "  -S\t\tconnect to the certmonger service on the system bus\n"
-msgstr ""
+msgstr "  -S\t\tВстановити зв’язок зі службою certmonger за допомогою системного каналу\n"
 
 #: src/getcert.c:1807 src/getcert.c:1834 src/getcert.c:1854 src/getcert.c:1889
 msgid "  -s\t\tconnect to the certmonger service on the session bus\n"
-msgstr ""
+msgstr "  -s\t\tВстановити зв’язок зі службою certmonger за допомогою каналу сеансу\n"
 
 #: src/getcert.c:1811
 #, c-format
 msgid "Usage: %s start-tracking [options]\n"
-msgstr ""
+msgstr "Використання: %s start-tracking [параметри]\n"
 
 #: src/getcert.c:1814
 msgid "* If modifying an existing request:\n"
-msgstr ""
+msgstr "* У разі зміни існуючого запиту:\n"
 
 #: src/getcert.c:1815
 msgid "  -i NAME\tnickname of an existing tracking request\n"
-msgstr ""
+msgstr "  -i НАЗВА\tПсевдонім існуючого запиту щодо стеження\n"
 
 #: src/getcert.c:1826
 msgid "  -I NAME\tnickname to give to tracking request\n"
-msgstr ""
+msgstr "  -I НАЗВА\tПсевдонім, який слід пов’язати з запитом щодо стеження\n"
 
 #: src/getcert.c:1838
 #, c-format
 msgid "Usage: %s stop-tracking [options]\n"
-msgstr ""
+msgstr "Використання: %s stop-tracking [параметри]\n"
 
 #: src/getcert.c:1841 src/getcert.c:1861
 msgid "* By request identifier:\n"
-msgstr ""
+msgstr "* За ідентифікатором запиту:\n"
 
 #: src/getcert.c:1842 src/getcert.c:1862
 msgid "  -i NAME\tnickname for tracking request\n"
-msgstr ""
+msgstr "  -i НАЗВА\tПсевдонім запиту щодо стеження\n"
 
 #: src/getcert.c:1858
 #, c-format
 msgid "Usage: %s resubmit [options]\n"
-msgstr ""
+msgstr "Використання: %s resubmit [параметри]\n"
 
 #: src/getcert.c:1868
 msgid "  -f FILE\tPEM file for certificate\n"
-msgstr ""
+msgstr "  -f ФАЙЛ\tФайл PEM сертифіката\n"
 
 #: src/getcert.c:1874
 msgid "* New parameter values for the signing request:\n"
-msgstr ""
+msgstr "* Нові значення параметрів запиту щодо підписування:\n"
 
 #: src/getcert.c:1883
 msgid "  -I NAME\tnew nickname to give to tracking request\n"
-msgstr ""
+msgstr "  -I НАЗВА\tНовий псевдонім, який слід пов’язати з запитом щодо стеження\n"
 
 #: src/getcert.c:1885
 msgid "  -c CA\t\tuse the specified CA rather than the current one\n"
-msgstr ""
+msgstr "  -c CA\t\tВикористовувати вказану службу сертифікації (CA), а не поточну\n"
 
 #: src/getcert.c:1893
 #, c-format
 msgid "Usage: %s list [options]\n"
-msgstr ""
+msgstr "Використання: %s list [параметри]\n"
 
 #: src/getcert.c:1896 src/getcert.c:1912
 msgid "* General options:\n"
-msgstr ""
+msgstr "* Загальні параметри:\n"
 
 #: src/getcert.c:1898
 msgid "  -c CA\tlist only requests and certs associated with this CA\n"
-msgstr ""
+msgstr "  -c CA\tПоказати список лише тих запитів та сертифікатів, які пов’язано з вказаною службою сертифікації (CA)\n"
 
 #: src/getcert.c:1900
 msgid "  -r\tlist only information about outstanding requests\n"
-msgstr ""
+msgstr "  -r\tПоказати лише відомості щодо нетипових запитів\n"
 
 #: src/getcert.c:1901
 msgid "  -t\tlist only information about tracked certificates\n"
-msgstr ""
+msgstr "  -t\tПоказати лише відомості щодо сертифікатів, за якими ведеться стеження\n"
 
 #: src/getcert.c:1903 src/getcert.c:1916
 msgid "  -S\tconnect to the certmonger service on the system bus\n"
-msgstr ""
+msgstr "  -S\tВстановити зв’язок зі службою certmonger за допомогою системного каналу\n"
 
 #: src/getcert.c:1904 src/getcert.c:1917
 msgid "  -s\tconnect to the certmonger service on the session bus\n"
-msgstr ""
+msgstr "  -s\tВстановити зв’язок зі службою certmonger за допомогою каналу сеансу\n"
 
 #: src/getcert.c:1908
 #, c-format
 msgid "Usage: %s list-cas [options]\n"
-msgstr ""
+msgstr "Використання: %s list-cas [параметри]\n"
 
 #: src/getcert.c:1913
 msgid "  -c CA\tlist only information about the CA with this name\n"
-msgstr ""
+msgstr "  -c CA\tПоказати лише відомості щодо служби сертифікації (CA) з вказаною назвою\n"
 
 #: src/getcert.c:1968
 #, c-format
 msgid "%s: unrecognized command\n"
-msgstr ""
+msgstr "%s: невідома команда\n"
 
 #: src/ipa.c:121
 #, c-format
 msgid "Unable to determine location of CA's XMLRPC server.\n"
-msgstr ""
+msgstr "Не вдалося визначити адресу сервера XMLRPC служби сертифікації (CA).\n"
 
 #: src/ipa.c:129
 #, c-format
 msgid "Unable to determine principal name for signing request.\n"
-msgstr ""
+msgstr "Не вдалося визначити назву реєстраційного запису запиту щодо підписування.\n"
 
 #: src/ipa.c:210
 #, c-format
 msgid "Error setting up ccache for local \"host\" service using default keytab.\n"
-msgstr ""
+msgstr "Помилка налаштування ccache для локальної служби «host» за допомогою типової таблиці ключів.\n"
 
 #: src/ipa.c:214
 #, c-format
 msgid "Error setting up ccache for \"%s\" using default keytab.\n"
-msgstr ""
+msgstr "Помилка налаштування ccache для «%s» за допомогою типової таблиці ключів.\n"
 
 #: src/ipa.c:220
 #, c-format
 msgid "Error setting up ccache for local \"host\" service using keytab \"%s\".\n"
-msgstr ""
+msgstr "Помилка налаштування ccache для локальної служби «host» за допомогою таблиці ключів «%s».\n"
 
 #: src/ipa.c:224
 #, c-format
 msgid "Error setting up ccache for \"%s\" using keytab \"%s\".\n"
-msgstr ""
+msgstr "Помилка налаштування ccache для «%s» за допомогою таблиці ключів «%s».\n"
 
 #: src/tdbush.c:193 src/tdbush.c:1057 src/tdbush.c:1221
 msgid "An internal error has occurred."
@@ -629,7 +631,7 @@ msgstr "Адресу сховища сертифікатів не вказано
 #: src/tdbush.c:472 src/tdbush.c:659
 #, c-format
 msgid "The parent of location \"%s\" must be a valid directory."
-msgstr ""
+msgstr "Батьківським каталогом адреси «%s» має бути коректний каталог."
 
 #: src/tdbush.c:481 src/tdbush.c:668
 #, c-format
@@ -648,22 +650,22 @@ msgstr "Псевдонім сертифіката не вказано."
 #: src/tdbush.c:549 src/tdbush.c:1885
 #, c-format
 msgid "There is already a request with the nickname \"%s\"."
-msgstr ""
+msgstr "Запит з псевдонімом «%s» вже існує."
 
 #: src/tdbush.c:558 src/tdbush.c:1892
 #, c-format
 msgid "The nickname \"%s\" is not allowed."
-msgstr ""
+msgstr "Псевдонім «%s» є некоректним."
 
 #: src/tdbush.c:591
 #, c-format
 msgid "Certificate at same location is already used by request \"%s\"."
-msgstr ""
+msgstr "Сертифікат з цією адресою вже використовується за запитом «%s»."
 
 #: src/tdbush.c:620
 #, c-format
 msgid "Key storage type \"%s\" not supported."
-msgstr ""
+msgstr "Підтримки типу сховищ ключів «%s» не передбачено."
 
 #: src/tdbush.c:642 src/tdbush.c:684
 msgid "Key storage location not specified."
@@ -676,19 +678,19 @@ msgstr "Псевдонім ключа не вказано."
 #: src/tdbush.c:763
 #, c-format
 msgid "Key at same location is already used by request \"%s\"."
-msgstr ""
+msgstr "Ключ за вказаною адресою вже використано запитом «%s»."
 
 #: src/tdbush.c:815
 msgid "No such CA."
-msgstr ""
+msgstr "Такої служби сертифікації (CA) не виявлено."
 
 #: src/tdbush.c:1904
 #, c-format
 msgid "Certificate authority \"%s\" not known."
-msgstr ""
+msgstr "Невідома служба сертифікації «%s»."
 
 #: src/tdbush.c:2004
 msgid "Unrecognized parameter or wrong value type."
-msgstr ""
+msgstr "Невідомий параметр або помилковий тип значення."
 
 
