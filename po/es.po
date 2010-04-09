@@ -9,7 +9,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2010-04-07 17:13-0400\n"
 "PO-Revision-Date: \n"
-"Last-Translator: Héctor Daniel Cabrera <logan@fedoraproject.org>\n"
+"Last-Translator: Claudio Rodrigo Pereyra Diaz <claudio@pereyradiaz.com.ar>\n"
 "Language-Team: Fedora Spanish <trans-es@lists.fedoraproject.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -17,17 +17,18 @@ msgstr ""
 "X-Poedit-Language: Spanish\n"
 "X-Poedit-Country: ARGENTINA\n"
 
+# Ver si corresponde CA o AC
 #: src/certmaster.c:106
 #: src/ipa.c:124
-#, c-format
+#, fuzzy, c-format
 msgid "Unable to determine hostname of CA.\n"
-msgstr "No es posible determinar el nombre del equipo de CA.\n"
+msgstr "No es posible determinar el nombre del equipo de AC.\n"
 
 #: src/certmaster.c:123
 #: src/ipa.c:155
-#, c-format
+#, fuzzy, c-format
 msgid "Unable to read signing request.\n"
-msgstr ""
+msgstr "Imposible leer el pedido de firma.\n"
 
 #: src/certmaster.c:151
 #: src/ipa.c:201
@@ -51,14 +52,14 @@ msgstr ""
 #: src/getcert.c:1604
 #: src/getcert.c:1629
 #: src/getcert.c:1644
-#, c-format
+#, fuzzy, c-format
 msgid "Error parsing server response.\n"
-msgstr ""
+msgstr "Error analizando la respuesta del servidor.\n"
 
 #: src/certmaster.c:177
 #, c-format
 msgid "Server error.\n"
-msgstr ""
+msgstr "Error de servidor.\n"
 
 #: src/getcert.c:88
 #: src/getcert.c:117
@@ -76,27 +77,27 @@ msgstr ""
 #: src/getcert.c:166
 #, c-format
 msgid "Error connecting to DBus.\n"
-msgstr ""
+msgstr "Error conectando con DBus.\n"
 
 #: src/getcert.c:173
-#, c-format
+#, fuzzy, c-format
 msgid "Error creating DBus request message.\n"
-msgstr ""
+msgstr "Error creando mensaje de solicitud DBus.\n"
 
 #: src/getcert.c:192
 #, c-format
 msgid "Error %s: %s\n"
-msgstr ""
+msgstr "Error %s: %s\n"
 
 #: src/getcert.c:195
 #, c-format
 msgid "Error %s\n"
-msgstr ""
+msgstr "Error %s\n"
 
 #: src/getcert.c:199
 #, c-format
 msgid "Error: %s\n"
-msgstr ""
+msgstr "Error: %s\n"
 
 #: src/getcert.c:201
 #, c-format
@@ -194,12 +195,12 @@ msgstr ""
 #: src/getcert.c:953
 #, c-format
 msgid "New tracking request \"%s\" added.\n"
-msgstr ""
+msgstr "Nueva solicitud de seguimiento \"%s\" agregada.\n"
 
 #: src/getcert.c:957
 #, c-format
 msgid "New tracking request could not be added.\n"
-msgstr ""
+msgstr "Nueva solicitud de seguimiento no puede ser agregada.\n"
 
 #: src/getcert.c:1060
 #, c-format
@@ -209,43 +210,43 @@ msgstr ""
 #: src/getcert.c:1120
 #, c-format
 msgid "Request \"%s\" modified.\n"
-msgstr ""
+msgstr "Solicitud \"%s\" modificada.\n"
 
 #: src/getcert.c:1124
 #, c-format
 msgid "Request \"%s\" could not be modified.\n"
-msgstr ""
+msgstr "Solicitud \"%s\" no puede ser modificada.\n"
 
 #: src/getcert.c:1169
 #: src/getcert.c:1355
-#, c-format
+#, fuzzy, c-format
 msgid "No request found that matched arguments.\n"
-msgstr ""
+msgstr "No se encontraron solicitudes que coincidan con los argumentos.\n"
 
 #: src/getcert.c:1187
-#, c-format
+#, fuzzy, c-format
 msgid "Request \"%s\" removed.\n"
-msgstr ""
+msgstr "Solicitud \"%s\" eliminada.\n"
 
 #: src/getcert.c:1191
-#, c-format
+#, fuzzy, c-format
 msgid "Request \"%s\" could not be removed.\n"
-msgstr ""
+msgstr "Solicitud \"%s\" no puede ser eliminada.\n"
 
 #: src/getcert.c:1446
 #, c-format
 msgid "Error modifying \"%s\".\n"
-msgstr ""
+msgstr "Error modificando \"%s\".\n"
 
 #: src/getcert.c:1462
 #, c-format
 msgid "Resubmitting \"%s\" to \"%s\".\n"
-msgstr ""
+msgstr "Reenviando \"%s\" to \"%s\".\n"
 
 #: src/getcert.c:1465
 #, c-format
 msgid "Resubmitting \"%s\".\n"
-msgstr ""
+msgstr "Reenviando \"%s\".\n"
 
 #: src/getcert.c:1471
 #, c-format
@@ -260,22 +261,22 @@ msgstr ""
 #: src/getcert.c:1591
 #, c-format
 msgid "Request ID '%s':\n"
-msgstr ""
+msgstr "ID de solicitud '%s':\n"
 
 #: src/getcert.c:1592
-#, c-format
+#, fuzzy, c-format
 msgid "\tstatus: %s\n"
-msgstr ""
+msgstr "\tstatus: %s\n"
 
 #: src/getcert.c:1596
-#, c-format
+#, fuzzy, c-format
 msgid "\tca-error: %s\n"
-msgstr ""
+msgstr "\tca-error: %s\n"
 
 #: src/getcert.c:1598
-#, c-format
+#, fuzzy, c-format
 msgid "\tstuck: %s\n"
-msgstr ""
+msgstr "\tstuck: %s\n"
 
 #: src/getcert.c:1618
 #, c-format
@@ -283,30 +284,36 @@ msgid "\tkey pair storage: %s%s%s%s%s%s%s%s%s%s%s%s%s%s\n"
 msgstr ""
 
 #: src/getcert.c:1619
+#, fuzzy
 msgid "type="
-msgstr ""
+msgstr "type="
 
 #: src/getcert.c:1620
+#, fuzzy
 msgid ",location='"
-msgstr ""
+msgstr ",location='"
 
 #: src/getcert.c:1621
 #: src/getcert.c:1635
+#, fuzzy
 msgid ",nickname="
-msgstr ""
+msgstr ",nickname="
 
 #: src/getcert.c:1622
 #: src/getcert.c:1636
+#, fuzzy
 msgid ",token='"
-msgstr ""
+msgstr ",token='"
 
 #: src/getcert.c:1623
+#, fuzzy
 msgid ",pin="
-msgstr ""
+msgstr ",pin="
 
 #: src/getcert.c:1624
+#, fuzzy
 msgid ",pinfile="
-msgstr ""
+msgstr ",pinfile="
 
 #: src/getcert.c:1633
 #, c-format
@@ -314,79 +321,84 @@ msgid "\tcertificate: type=%s,location='%s'%s%s%s%s%s\n"
 msgstr ""
 
 #: src/getcert.c:1649
-#, c-format
+#, fuzzy, c-format
 msgid "\tCA: %s\n"
-msgstr ""
+msgstr "\tCA: %s\n"
 
 #: src/getcert.c:1651
-#, c-format
+#, fuzzy, c-format
 msgid "\tissuer: %s\n"
-msgstr ""
+msgstr "\tissuer: %s\n"
 
 #: src/getcert.c:1652
-#, c-format
+#, fuzzy, c-format
 msgid "\tsubject: %s\n"
-msgstr ""
+msgstr "\tsubject: %s\n"
 
 #: src/getcert.c:1653
-#, c-format
+#, fuzzy, c-format
 msgid "\texpires: %s\n"
-msgstr ""
+msgstr "\texpires: %s\n"
 
 #: src/getcert.c:1654
 msgid "unknown"
-msgstr ""
+msgstr "desconocido"
 
 #: src/getcert.c:1657
+#, fuzzy
 msgid "\temail: "
-msgstr ""
+msgstr "\temail: "
 
 #: src/getcert.c:1663
+#, fuzzy
 msgid "\tdns: "
-msgstr ""
+msgstr "\tdns: "
 
 #: src/getcert.c:1669
+#, fuzzy
 msgid "\tprincipal name: "
-msgstr ""
+msgstr "\tprincipal name: "
 
 #: src/getcert.c:1675
+#, fuzzy
 msgid "\teku: "
-msgstr ""
+msgstr "\teku: "
 
 #: src/getcert.c:1679
-#, c-format
+#, fuzzy, c-format
 msgid "\ttrack: %s\n"
-msgstr ""
+msgstr "\ttrack: %s\n"
 
 #: src/getcert.c:1683
-#, c-format
+#, fuzzy, c-format
 msgid "\tauto-renew: %s\n"
-msgstr ""
+msgstr "\tauto-renew: %s\n"
 
+# Ver si corresponde AC o CA
 #: src/getcert.c:1725
-#, c-format
+#, fuzzy, c-format
 msgid "CA '%s':\n"
-msgstr ""
+msgstr "AC '%s':\n"
 
 #: src/getcert.c:1732
-#, c-format
+#, fuzzy, c-format
 msgid "\tca-type: %s\n"
-msgstr ""
+msgstr "\tca-type: %s\n"
 
 #: src/getcert.c:1734
-#, c-format
+#, fuzzy, c-format
 msgid "\thelper-location: %s\n"
-msgstr ""
+msgstr "\thelper-location: %s\n"
 
 #: src/getcert.c:1738
-#, c-format
+#, fuzzy, c-format
 msgid "\tnext-serial-number: %s\n"
-msgstr ""
+msgstr "\tnext-serial-number: %s\n"
 
 #: src/getcert.c:1746
-#, c-format
+#, fuzzy, c-format
 msgid "\tknown-issuer-names:\n"
-msgstr ""
+msgstr "\tknown-issuer-names:\n"
 
 #: src/getcert.c:1772
 #, c-format
@@ -403,7 +415,7 @@ msgstr ""
 #: src/getcert.c:1840
 #: src/getcert.c:1860
 msgid "Required arguments:\n"
-msgstr ""
+msgstr "Argumentos requeridos:\n"
 
 #: src/getcert.c:1779
 #: src/getcert.c:1816
@@ -730,17 +742,18 @@ msgstr ""
 #: src/tdbush.c:668
 #, c-format
 msgid "The location \"%s\" must be a file."
-msgstr ""
+msgstr "La ubicación \"%s\" debe ser un archivo."
 
 #: src/tdbush.c:513
 #: src/tdbush.c:701
 #, c-format
 msgid "The location \"%s\" must be a directory."
-msgstr ""
+msgstr "La ubicación \"%s\" debe ser un directorio."
 
 #: src/tdbush.c:525
+#, fuzzy
 msgid "Certificate nickname not specified."
-msgstr ""
+msgstr "Apodo de certificado no especificado."
 
 #: src/tdbush.c:549
 #: src/tdbush.c:1885
@@ -778,16 +791,18 @@ msgstr ""
 msgid "Key at same location is already used by request \"%s\"."
 msgstr ""
 
+# Ver si corresponde CA o AC
 #: src/tdbush.c:815
+#, fuzzy
 msgid "No such CA."
-msgstr ""
+msgstr "AC no encontrada."
 
 #: src/tdbush.c:1904
-#, c-format
+#, fuzzy, c-format
 msgid "Certificate authority \"%s\" not known."
-msgstr ""
+msgstr "Autoridad certificante \"%s\" desconocida."
 
 #: src/tdbush.c:2004
 msgid "Unrecognized parameter or wrong value type."
-msgstr ""
+msgstr "Parámetro irreconocible o tipo de valor erróneo."
 
