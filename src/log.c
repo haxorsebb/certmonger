@@ -83,7 +83,7 @@ cm_log(int level, const char *fmt, ...)
 				va_end(args);
 				talloc_free(p);
 			}
-			fflush(stderr);
+			fflush(NULL);
 			break;
 		case cm_log_syslog:
 			va_start(args, fmt);

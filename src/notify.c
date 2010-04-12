@@ -156,8 +156,12 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		abort();
 		break;
 	case cm_notification_stdout:
+		sleep(5);
+		/* XXX that was SO wrong, but it makes the output of the test
+		 * suite consistent when we mix the parent printing the current
+		 * state and this process also outputting the warning */
 		printf("%s\n", message);
-		fflush(stdout);
+		fflush(NULL);
 		break;
 	case cm_notification_syslog:
 		facility = LOG_USER;
