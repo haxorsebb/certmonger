@@ -166,7 +166,8 @@ AC_DEFINE_UNQUOTED(CM_DEFAULT_RSA_MODULUS,0x10001,[Define to the default RSA key
 CM_DEFAULT_PUBKEY_SIZE=2048
 AC_DEFINE_UNQUOTED(CM_DEFAULT_PUBKEY_SIZE,$CM_DEFAULT_PUBKEY_SIZE,[Define to the default public key size.])
 AC_SUBST(CM_DEFAULT_PUBKEY_SIZE)
-AC_DEFINE_UNQUOTED(CM_DEFAULT_TTL_LIST,[28*24*60*60,7*24*60*60,3*24*60*60,2*24*60*60,1*24*60*60],[Define to the list of default time-left thresholds at which we need to warn the user.])
+CM_DEFAULT_TTL_LIST="2419200, 604800, 259200, 172800, 86400"
+AC_DEFINE_UNQUOTED(CM_DEFAULT_TTL_LIST,[$CM_DEFAULT_TTL_LIST],[Define to the list of default time-left thresholds at which we need to warn the user.])
 AC_SUBST(CM_DEFAULT_TTL_LIST)
 AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_SUBJECT_CN,"localhost",[Define to the last-ditch default CN value for a signing request.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_LIFETIME,"1y",[Define to the default certificate lifetime for self-signed certificates.])
