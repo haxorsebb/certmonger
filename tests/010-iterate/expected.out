@@ -97,8 +97,8 @@ notAfter=Jan  2 00:00:00 1970 GMT
 MONITORING
 -START-
 NEED_TO_NOTIFY
-NOTIFYING
 Certificate in file "$tmpdir/certfile2" is no longer valid.
+NOTIFYING
 MONITORING
 -STOP-
 
@@ -108,8 +108,8 @@ notAfter=Jan  2 00:00:00 1970 GMT
 MONITORING
 -START-
 NEED_TO_NOTIFY
-NOTIFYING
 Certificate in file "$tmpdir/certfile2" is no longer valid.
+NOTIFYING
 NEED_CSR
 -STOP-
 

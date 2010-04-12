@@ -157,6 +157,7 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		break;
 	case cm_notification_stdout:
 		printf("%s\n", message);
+		fflush(stdout);
 		break;
 	case cm_notification_syslog:
 		facility = LOG_USER;
