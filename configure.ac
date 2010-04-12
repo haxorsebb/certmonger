@@ -173,7 +173,9 @@ AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_LIFETIME,"1y",[Define to the default certific
 AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_SERIAL,"01",[Define to the default starting serial number for self-signed certificates.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_NOTIFICATION_METHOD,cm_notification_syslog,[Define to the default method of notification.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_NOTIFICATION_MAIL,"root",[Define to the address where notification mail should be sent by default.])
-AC_DEFINE_UNQUOTED(CM_DEFAULT_NOTIFICATION_SYSLOG_PRIORITY,"daemon.notice",[Define to the syslog facility from which notification messages should be sent by default.])
+CM_DEFAULT_NOTIFICATION_SYSLOG_PRIORITY=daemon.notice
+AC_SUBST(CM_DEFAULT_NOTIFICATION_SYSLOG_PRIORITY)
+AC_DEFINE_UNQUOTED(CM_DEFAULT_NOTIFICATION_SYSLOG_PRIORITY,"$CM_DEFAULT_NOTIFICATION_SYSLOG_PRIORITY",[Define to the syslog facility from which notification messages should be sent by default.])
 AC_DEFINE(CM_DELAY_SOON,5,[Define to the time to wait for something that will happen soon.])
 AC_DEFINE(CM_DELAY_SOONISH,30,[Define to the time to wait for something that will happen soon, but not that soon.])
 AC_DEFINE(CM_DELAY_CA_POLL,(7 * 24 * 60 * 60),[Define to the time to wait between attempts to see if the CA issued a certificate.])
