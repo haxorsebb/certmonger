@@ -69,7 +69,7 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	CERTSignedData *data = NULL, sdata, scert;
 	CERTValidity *validity;
 	PRTime now, life;
-	krb5_deltat lifedelta;
+	time_t lifedelta;
 	PLArenaPool *arena = NULL;
 	SECOidData *sigoid, *extoid, *basicoid;
 	int i, serial_length, basic_length;
@@ -152,12 +152,14 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	} else {
 		now = PR_Now();
 	}
-	if (krb5_string_to_deltat(ca->cm_ca_internal_lifetime,
-				  &lifedelta) == 0) {
+	if (cm_submit_delta_from_string(ca->cm_ca_internal_lifetime,
+					now / 1000000L,
+					&lifedelta) == 0) {
 		life = lifedelta * 1000000L;
 	} else {
-		if (krb5_string_to_deltat(CM_DEFAULT_CERT_LIFETIME,
-					  &lifedelta) == 0) {
+		if (cm_submit_delta_from_string(CM_DEFAULT_CERT_LIFETIME,
+						now / 1000000L,
+						&lifedelta) == 0) {
 			life = lifedelta * 1000000L;
 		} else {
 			life = 365 * 24 * 60 * 60 * 1000000L;

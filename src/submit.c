@@ -17,6 +17,8 @@
 
 #include "config.h"
 
+#include <sys/types.h>
+#include <ctype.h>
 #include <string.h>
 
 #include <talloc.h>
@@ -165,4 +167,94 @@ cm_submit_maybe_joinv(void *parent, const char *sep, char **s)
 		}
 	}
 	return ret;
+}
+
+/* Convert a delta string to a time_t. */
+int
+cm_submit_delta_from_string(const char *deltas, time_t now, time_t *delta)
+{
+	struct tm now_tm, *pnow;
+	time_t start;
+	int multiple, i, val, done, digits;
+	unsigned char c;
+	val = 0;
+	digits = 0;
+	done = 0;
+	if (strlen(deltas) == 0) {
+		return -1;
+	}
+	start = now;
+	for (i = 0; !done; i++) {
+		c = (unsigned char) deltas[i];
+		switch (c) {
+		case '\0':
+			done++;
+			/* fall through */
+		case 's':
+			multiple = 1;
+			now += val * multiple;
+			val = 0;
+			break;
+		case 'm':
+			multiple = 60;
+			now += val * multiple;
+			val = 0;
+			break;
+		case 'h':
+			multiple = 60 * 60;
+			now += val * multiple;
+			val = 0;
+			break;
+		case 'd':
+			multiple = 60 * 60 * 24;
+			now += val * multiple;
+			val = 0;
+			break;
+		case 'M':
+			pnow = localtime_r(&now, &now_tm);
+			if (pnow == NULL) {
+				multiple = 60 * 60 * 24 * 30;
+				now += val * multiple;
+			} else {
+				now_tm.tm_mon += val;
+				now_tm.tm_year += (now_tm.tm_mon / 12);
+				now_tm.tm_mon %= 12;
+				now = mktime(&now_tm);
+			}
+			val = 0;
+			break;
+		case 'y':
+			pnow = localtime_r(&now, &now_tm);
+			if (pnow == NULL) {
+				multiple = 60 * 60 * 24 * 365;
+				now += val * multiple;
+			} else {
+				now_tm.tm_year += val;
+				now = mktime(&now_tm);
+			}
+			val = 0;
+			break;
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+			val = (val * 10) + (c - '0');
+			digits++;
+			break;
+		default:
+			/* just skip this character */
+			break;
+		}
+	}
+	if (digits == 0) {
+		return -1;
+	}
+	*delta = now - start;
+	return 0;
 }

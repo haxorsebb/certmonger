@@ -16,6 +16,6 @@ notification: MAILTO:root
 [Other settings.]
 cipher: AES128
 digest: SHA512
-ttls: 86400, 604800, 1209600, 2419200
+ttls: 86400, 604800, 1209600, 2419200, 31536000
 notification: MAILTO:root
 [Test complete.]

@@ -67,7 +67,7 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	int status, seriall, basicl;
 	long error;
 	char buf[LINE_MAX];
-	krb5_deltat lifedelta;
+	time_t lifedelta;
 	long life;
 	time_t now;
 
@@ -75,13 +75,18 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	ERR_load_crypto_strings();
 	status = 1;
 	cert = NULL;
+	if (ca->cm_ca_internal_force_issue_time) {
+		now = ca->cm_ca_internal_issue_time;
+	} else {
+		now = time(NULL);
+	}
 	keyfp = fopen(entry->cm_key_storage_location, "r");
-	if (krb5_string_to_deltat(ca->cm_ca_internal_lifetime,
-				  &lifedelta) == 0) {
+	if (cm_submit_delta_from_string(ca->cm_ca_internal_lifetime, now,
+					&lifedelta) == 0) {
 		life = lifedelta;
 	} else {
-		if (krb5_string_to_deltat(CM_DEFAULT_CERT_LIFETIME,
-					  &lifedelta) == 0) {
+		if (cm_submit_delta_from_string(CM_DEFAULT_CERT_LIFETIME, now,
+						&lifedelta) == 0) {
 			life = lifedelta;
 		} else {
 			life = 365 * 24 * 60 * 60;
@@ -103,11 +108,6 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 						cert = X509_REQ_to_X509(req,
 									0,
 									pkey);
-						if (ca->cm_ca_internal_force_issue_time) {
-							now = ca->cm_ca_internal_issue_time;
-						} else {
-							now = time(NULL);
-						}
 						ASN1_TIME_set(cert->cert_info->validity->notBefore, now);
 						ASN1_TIME_set(cert->cert_info->validity->notAfter, now + life);
 						X509_set_version(cert, 2);

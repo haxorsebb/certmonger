@@ -32,7 +32,7 @@ cat > certmonger.conf << EOF
 [defaults]
 cipher = aes128
 digest = sha512
-ttls = 1d 14d 7d 28d
+ttls = 1d 14d 7d 28d 1y
 notification_method = mail
 notification_destination = root
 EOF

@@ -25,6 +25,7 @@
 
 #include "prefs.h"
 #include "store-int.h"
+#include "submit.h"
 #include "util.h"
 
 static char *
@@ -146,7 +147,7 @@ cm_prefs_ttls(const time_t **ttls, unsigned int *n_ttls)
 	static time_t default_ttls[] = {CM_DEFAULT_TTL_LIST};
 	static time_t *config = NULL;
 	static unsigned int n_config = 0;
-	char *confttls, *p;
+	char *confttls, *p, *q, c;
 	int i;
 	if (config == NULL) {
 		confttls = cm_prefs_config("ttls");
@@ -161,24 +162,16 @@ cm_prefs_ttls(const time_t **ttls, unsigned int *n_ttls)
 			if (config != NULL) {
 				i = 0;
 				p = confttls;
-				while (strspn(p, "0123456789") > 0) {
-					config[i] = strtol(p, &p, 10);
-					switch (p[0]) {
-					case 'w':
-						config[i] *= (60 * 60 * 24 * 7);
-						break;
-					case 'd':
-						config[i] *= (60 * 60 * 24);
-						break;
-					case 'h':
-						config[i] *= (60 * 60);
-						break;
-					case 'm':
-						config[i] *= (60);
-						break;
-					}
-					i++;
-					p += strcspn(p, "0123456789");
+				while (strcspn(p, " \t,") > 0) {
+					q = p + strcspn(p, " \t,");
+					c = *q;
+					*q = '\0';
+					if (cm_submit_delta_from_string(p, time(NULL),
+									&config[i]) == 0) {
+						i++;
+					};
+					*q = c;
+					p = q + strspn(q, " \t,");
 				}
 				n_config = i;
 				qsort(config, n_config, sizeof(config[0]),
