@@ -689,17 +689,26 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		if (cm_notify_ready(entry, state->cm_notify_state) == 0) {
 			cm_notify_done(entry, state->cm_notify_state);
 			state->cm_notify_state = NULL;
-		}
-		if ((entry->cm_autorenew || entry->cm_autorenew_default)) {
-			/* We need to go all the way back to generating the CSR
-			 * because the user may have asked us to request with
-			 * parameters that have changed since we last generated
-			 * a CSR. */
-			entry->cm_state = CM_NEED_CSR;
-			*when = cm_time_now;
+			if ((entry->cm_autorenew || entry->cm_autorenew_default)) {
+				/* We need to go all the way back to generating
+				 * the CSR because the user may have asked us
+				 * to request with parameters that have changed
+				 * since we last generated a CSR. */
+				entry->cm_state = CM_NEED_CSR;
+				*when = cm_time_now;
+			} else {
+				entry->cm_state = CM_MONITORING;
+				*when = cm_time_now;
+			}
 		} else {
-			entry->cm_state = CM_MONITORING;
-			*when = cm_time_now;
+			/* Wait for status update, or poll. */
+			*readfd = cm_notify_get_fd(entry,
+						   state->cm_notify_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
 		}
 		break;
 
