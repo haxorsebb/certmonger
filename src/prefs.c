@@ -249,3 +249,17 @@ cm_prefs_validity_period(void)
 	}
 	return period;
 }
+
+int
+cm_prefs_monitor(void)
+{
+	/* The documented hard-coded default is to try. */
+	return 1;
+}
+
+int
+cm_prefs_autorenew(void)
+{
+	/* The documented hard-coded default is to try. */
+	return 1;
+}
