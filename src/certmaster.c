@@ -83,7 +83,9 @@ main(int argc, char **argv)
 	ret = CM_STATUS_UNREACHABLE;
 
 	if (host == NULL) {
+		/* Okay, we have to figure out what the master name is. */
 		if (stat("/var/run/certmaster.pid", &st) == 0) {
+			/* Guess that it's us if we have the service running. */
 			config = read_config_file("/etc/certmaster/"
 						  "certmaster.conf");
 			host = "localhost";
@@ -92,6 +94,7 @@ main(int argc, char **argv)
 							"main", "listen_port");
 			}
 		} else {
+			/* Hope the minion is configured. */
 			config = read_config_file("/etc/certmaster/"
 						  "minion.conf");
 			host = get_config_entry(config, "main", "certmaster");
