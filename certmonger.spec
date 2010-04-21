@@ -2,7 +2,7 @@
 %{?_with_check: %global pcheck 1}
 
 Name:		certmonger
-Version:	0.19
+Version:	0.20
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -100,6 +100,22 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Wed Apr 21 2010 Nalin Dahyabhai <nalin@redhat.com> 0.20-1
+- update to 0.20
+  - correctly parse certificate validity periods given in years (spotted by
+    Stephen Gallagher)
+  - setup for translation
+    - es by Héctor Daniel Cabrera!
+    - ru by Yulia Poyarkova!
+    - uk by Yuri Chornoivan!
+  - fix unpreprocessed defaults in certmonger.conf's man page
+  - tweak the IPA-specific message that indicates a principal name also needs
+    to be specified if we're not using the default subject name (#579542)
+  - make the validity period of self-signed certificates into a configuration
+    setting and not a piece of the state information we track about the signer
+  - init script: exit with status 2 instead of 1 when invoked with an
+    unrecognized argument (#584517)
+
 * Tue Mar 23 2010 Nalin Dahyabhai <nalin@redhat.com> 0.19-1
 - update to 0.19
   - correctly initialize NSS databases that need to be using a PIN

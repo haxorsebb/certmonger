@@ -1,4 +1,4 @@
-AC_INIT(certmonger,0.19)
+AC_INIT(certmonger,0.20)
 AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_MACRO_DIR(m4)
 AM_MAINTAINER_MODE
@@ -25,6 +25,13 @@ AC_CONFIG_HEADER(src/config.h)
 if test x$GCC = xyes ; then
 	CFLAGS="$CFLAGS -Wall -Wextra"
 fi
+
+mysbindir="$sbindir"
+mysbindir=`eval echo $mysbindir | sed "s,NONE,$prefix,g"`
+mysbindir=`eval echo $mysbindir | sed "s,NONE,$exec_prefix,g"`
+mysbindir=`eval echo $mysbindir | sed "s,NONE,$ac_default_prefix,g"`
+mysbindir=`eval echo $mysbindir | sed "s,NONE,,g"`
+AC_SUBST(mysbindir)
 
 UPCASE_PACKAGE_NAME=`echo "${PACKAGE_NAME}" | tr '[a-z]' '[A-Z]'`
 mysysconfdir="$sysconfdir/${PACKAGE_NAME}"
@@ -170,7 +177,9 @@ CM_DEFAULT_TTL_LIST="2419200, 604800, 259200, 172800, 86400"
 AC_DEFINE_UNQUOTED(CM_DEFAULT_TTL_LIST,[$CM_DEFAULT_TTL_LIST],[Define to the list of default time-left thresholds at which we need to warn the user.])
 AC_SUBST(CM_DEFAULT_TTL_LIST)
 AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_SUBJECT_CN,"localhost",[Define to the last-ditch default CN value for a signing request.])
-AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_LIFETIME,"1y",[Define to the default certificate lifetime for self-signed certificates.])
+CM_DEFAULT_CERT_LIFETIME=1y
+AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_LIFETIME,"$CM_DEFAULT_CERT_LIFETIME",[Define to the default certificate lifetime for self-signed certificates.])
+AC_SUBST(CM_DEFAULT_CERT_LIFETIME)
 AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_SERIAL,"01",[Define to the default starting serial number for self-signed certificates.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_NOTIFICATION_METHOD,cm_notification_syslog,[Define to the default method of notification.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_NOTIFICATION_MAIL,"root",[Define to the address where notification mail should be sent by default.])
