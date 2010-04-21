@@ -49,6 +49,9 @@ Complete:
       large chunks of the IPA client code, so it's in C.
   * Handle PIN values for encrypted key storage.
   * Be able to use hashes other than the current hard-wired SHA256.
+  * Make certmonger a proper daemon.
+    * Sort out SELinux policy. (unscoped)
+      MUST
 
 To-do:
   * Should offer an API over D-Bus which the client uses instead of
@@ -56,8 +59,6 @@ To-do:
       MUST
   * Make certmonger a proper daemon.
     * Sort out logging levels for log messages. (1 day)
-      MUST
-    * Sort out SELinux policy. (unscoped)
       MUST
   * Figure out how to let the local deamon's client do key generation.
     It's either that or force them to give the daemon the PIN for
