@@ -150,7 +150,6 @@ EOF
 cat > ca2 << EOF
 id=SelfSign
 ca_type=INTERNAL:SELF
-ca_internal_lifetime=1d
 ca_internal_issue_time=0
 EOF
 $toolsdir/iterate ca2 entry2 NEED_CSR,GENERATING_CSR
