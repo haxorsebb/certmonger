@@ -31,14 +31,15 @@ an email address.  The default value is
 This is the symmetric cipher which will be used to encrypt private keys stored
 in OpenSSL's PEM format.  Recognized values include \fIaes128\fP and
 \fIaes256\fP.  The default is \fIaes128\fP.  It is not recommended that this
-value be changed except in cases where it is incompatible with other software.
+value be changed except in cases where the default is incompatible with other
+software.
 
 .IP digest
 This is the digest algorithm which will be used when signing certificate
 signing requests and self-signed certificates.  Recognized values include
 \fIsha1\fP, \fIsha256\fP, \fIsha384\fP, and \fIsha512\fP.  The default is
 \fIsha256\fP.  It is not recommended that this value be changed except in cases
-where it is incompatible with other software.
+where the default is incompatible with other software.
 
 .SH BUGS
 Please file tickets for any that you find at https://fedorahosted.org/certmonger/
