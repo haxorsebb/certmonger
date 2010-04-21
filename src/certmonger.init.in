@@ -19,7 +19,7 @@
 # Description: Provides certificate monitoring and PKI enrollment.
 ### END INIT INFO
 
-program=/usr/sbin/certmonger
+program=@mysbindir@/certmonger
 prog=${program##*/}
 pidfile=/var/run/certmonger.pid
 lockfile=/var/lock/subsys/certmonger
