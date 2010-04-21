@@ -40,6 +40,7 @@
 #include "certext-n.h"
 #include "keyiread-n.h"
 #include "log.h"
+#include "prefs.h"
 #include "prefs-n.h"
 #include "store.h"
 #include "store-int.h"
@@ -152,7 +153,7 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	} else {
 		now = PR_Now();
 	}
-	if (cm_submit_delta_from_string(ca->cm_ca_internal_lifetime,
+	if (cm_submit_delta_from_string(cm_prefs_validity_period(),
 					now / 1000000L,
 					&lifedelta) == 0) {
 		life = lifedelta * 1000000L;

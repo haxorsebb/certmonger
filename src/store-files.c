@@ -100,7 +100,6 @@ enum cm_store_file_field {
 
 	cm_store_ca_field_type,
 	cm_store_ca_field_internal_serial,
-	cm_store_ca_field_internal_lifetime,
 	cm_store_ca_field_internal_issue_time,
 	cm_store_ca_field_external_helper,
 
@@ -172,7 +171,6 @@ static struct cm_store_file_field_list {
 
 	{cm_store_ca_field_type, "ca_type"},
 	{cm_store_ca_field_internal_serial, "ca_internal_serial"},
-	{cm_store_ca_field_internal_lifetime, "ca_internal_lifetime"},
 	{cm_store_ca_field_internal_issue_time, "ca_internal_issue_time"},
 	{cm_store_ca_field_external_helper, "ca_external_helper"},
 };
@@ -376,7 +374,6 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_ca_field_is_default:
 			case cm_store_ca_field_type:
 			case cm_store_ca_field_internal_serial:
-			case cm_store_ca_field_internal_lifetime:
 			case cm_store_ca_field_internal_issue_time:
 			case cm_store_ca_field_external_helper:
 				break;
@@ -694,9 +691,6 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_ca_field_internal_serial:
 				ret->cm_ca_internal_serial = free_if_empty(p);
 				break;
-			case cm_store_ca_field_internal_lifetime:
-				ret->cm_ca_internal_lifetime = free_if_empty(p);
-				break;
 			case cm_store_ca_field_internal_issue_time:
 				ret->cm_ca_internal_force_issue_time = 1;
 				ret->cm_ca_internal_issue_time = atol(p);
@@ -710,9 +704,6 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 	}
 	if (ret->cm_ca_internal_serial == NULL) {
 		ret->cm_ca_internal_serial = talloc_strdup(ret, CM_DEFAULT_CERT_SERIAL);
-	}
-	if (ret->cm_ca_internal_lifetime == NULL) {
-		ret->cm_ca_internal_lifetime = talloc_strdup(ret, CM_DEFAULT_CERT_LIFETIME);
 	}
 	return ret;
 }
@@ -1167,8 +1158,6 @@ cm_store_ca_write(FILE *fp, struct cm_store_ca *ca)
 					"INTERNAL:SELF");
 		cm_store_file_write_str(fp, cm_store_ca_field_internal_serial,
 					ca->cm_ca_internal_serial);
-		cm_store_file_write_str(fp, cm_store_ca_field_internal_lifetime,
-					ca->cm_ca_internal_lifetime);
 		if (ca->cm_ca_internal_force_issue_time) {
 			cm_store_file_write_int(fp, cm_store_ca_field_internal_issue_time,
 						ca->cm_ca_internal_issue_time);
@@ -1354,8 +1343,6 @@ cm_store_get_all_cas(void *parent)
 			ret[j]->cm_ca_type = cm_ca_internal_self;
 			ret[j]->cm_ca_internal_serial = talloc_strdup(ret[j],
 								      CM_DEFAULT_CERT_SERIAL);
-			ret[j]->cm_ca_internal_lifetime = talloc_strdup(ret[j],
-									CM_DEFAULT_CERT_LIFETIME);
 			j++;
 		}
 #ifdef WITH_IPA

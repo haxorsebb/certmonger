@@ -149,7 +149,6 @@ struct cm_store_ca {
 		cm_ca_internal_self, cm_ca_external,
 	} cm_ca_type;
 	char *cm_ca_internal_serial;
-	char *cm_ca_internal_lifetime;
 	int cm_ca_internal_force_issue_time:1;
 	time_t cm_ca_internal_issue_time;
 	char *cm_ca_external_helper;

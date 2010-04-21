@@ -51,7 +51,7 @@ cm_prefs_read(void)
 static void cm_prefs_free(void);
 
 static char *
-cm_prefs_config(const char *key)
+cm_prefs_config(const char *section, const char *key)
 {
 	static char *cm_configuration = NULL;
 	if (key == NULL) {
@@ -64,7 +64,9 @@ cm_prefs_config(const char *key)
 		}
 	}
 	if (cm_configuration != NULL) {
-		return get_config_entry(cm_configuration, "defaults", key);
+		return get_config_entry(cm_configuration,
+					section ? section : "defaults",
+					key);
 	}
 	return NULL;
 }
@@ -73,7 +75,7 @@ static void
 cm_prefs_free(void)
 {
 	char *prefs;
-	prefs = cm_prefs_config(NULL);
+	prefs = cm_prefs_config(NULL, NULL);
 	if (prefs != NULL) {
 		free(prefs);
 	}
@@ -83,7 +85,7 @@ enum cm_prefs_cipher
 cm_prefs_preferred_cipher(void)
 {
 	char *cipher;
-	cipher = cm_prefs_config("symmetric_cipher");
+	cipher = cm_prefs_config(NULL, "symmetric_cipher");
 	if (cipher != NULL) {
 		if (strcasecmp(cipher, "aes") == 0) {
 			free(cipher);
@@ -108,7 +110,7 @@ enum cm_prefs_digest
 cm_prefs_preferred_digest(void)
 {
 	char *digest;
-	digest = cm_prefs_config("digest");
+	digest = cm_prefs_config(NULL, "digest");
 	if (digest != NULL) {
 		if ((strcasecmp(digest, "sha1") == 0) ||
 		    (strcasecmp(digest, "sha-1") == 0)) {
@@ -150,7 +152,7 @@ cm_prefs_ttls(const time_t **ttls, unsigned int *n_ttls)
 	char *confttls, *p, *q, c;
 	int i;
 	if (config == NULL) {
-		confttls = cm_prefs_config("ttls");
+		confttls = cm_prefs_config(NULL, "ttls");
 		if (confttls == NULL) {
 			config = default_ttls;
 			n_config = sizeof(default_ttls) /
@@ -194,7 +196,7 @@ cm_prefs_notification_method(void)
 	char *method;
 	enum cm_notification_method ret;
 	ret = CM_DEFAULT_NOTIFICATION_METHOD;
-	method = cm_prefs_config("notification_method");
+	method = cm_prefs_config(NULL, "notification_method");
 	if (method != NULL) {
 		if (strcasecmp(method, "syslog") == 0) {
 			ret = cm_notification_syslog;
@@ -217,7 +219,7 @@ cm_prefs_notification_destination(void)
 {
 	static const char *destination;
 	if (destination == NULL) {
-		destination = cm_prefs_config("notification_destination");
+		destination = cm_prefs_config(NULL, "notification_destination");
 		if (destination == NULL) {
 			destination = CM_DEFAULT_NOTIFICATION_SYSLOG_PRIORITY;
 		}
@@ -230,7 +232,20 @@ cm_prefs_default_ca(void)
 {
 	static const char *ca;
 	if (ca == NULL) {
-		ca = cm_prefs_config("default_ca");
+		ca = cm_prefs_config(NULL, "default_ca");
 	}
 	return ca;
+}
+
+const char *
+cm_prefs_validity_period(void)
+{
+	static const char *period;
+	if (period == NULL) {
+		period = cm_prefs_config("selfsign", "validity_period");
+		if (period == NULL) {
+			period = CM_DEFAULT_CERT_LIFETIME;
+		}
+	}
+	return period;
 }

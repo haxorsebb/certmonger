@@ -36,6 +36,7 @@
 
 #include "log.h"
 #include "pin.h"
+#include "prefs.h"
 #include "prefs-o.h"
 #include "store.h"
 #include "store-int.h"
@@ -81,7 +82,7 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		now = time(NULL);
 	}
 	keyfp = fopen(entry->cm_key_storage_location, "r");
-	if (cm_submit_delta_from_string(ca->cm_ca_internal_lifetime, now,
+	if (cm_submit_delta_from_string(cm_prefs_validity_period(), now,
 					&lifedelta) == 0) {
 		life = lifedelta;
 	} else {
