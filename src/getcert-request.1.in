@@ -40,6 +40,7 @@ such file is found, generate a new key pair and store them in the file.
 Only valid with \fB\-f\fR.
 
 .SH KEY ENCRYPTION OPTIONS
+.TP
 \fB\-p\fR FILE
 Encrypt private key files or databases using the PIN stored in the named
 file as the passphrase.
