@@ -820,17 +820,15 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	/* Behavior settings. */
 	param = cm_tdbusm_find_dict_entry(d, "TRACK", cm_tdbusm_dict_b);
 	if (param != NULL) {
-		new_entry->cm_monitor_default = FALSE;
 		new_entry->cm_monitor = param->value.b;
 	} else {
-		new_entry->cm_monitor_default = TRUE;
+		new_entry->cm_monitor = cm_prefs_monitor();
 	}
 	param = cm_tdbusm_find_dict_entry(d, "RENEW", cm_tdbusm_dict_b);
 	if (param != NULL) {
-		new_entry->cm_autorenew_default = FALSE;
 		new_entry->cm_autorenew = param->value.b;
 	} else {
-		new_entry->cm_monitor_default = TRUE;
+		new_entry->cm_autorenew = cm_prefs_autorenew();
 	}
 	/* Template information. */
 	param = cm_tdbusm_find_dict_entry(d, "SUBJECT", cm_tdbusm_dict_s);
@@ -1912,12 +1910,10 @@ request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 			param = d[i];
 			if ((param->value_type == cm_tdbusm_dict_b) &&
 			    (strcasecmp(param->key, "RENEW") == 0)) {
-				entry->cm_autorenew_default = FALSE;
 				entry->cm_autorenew = param->value.b;
 			} else
 			if ((param->value_type == cm_tdbusm_dict_b) &&
 			    (strcasecmp(param->key, "TRACK") == 0)) {
-				entry->cm_monitor_default = FALSE;
 				entry->cm_monitor = param->value.b;
 			} else
 			if ((param->value_type == cm_tdbusm_dict_s) &&

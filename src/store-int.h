@@ -111,11 +111,9 @@ struct cm_store_entry {
 		CM_NEWLY_ADDED_READING_CERT,
 		CM_NEWLY_ADDED_DECIDING,
 	} cm_state;
-	/* Whether to autorenew-at-expiration [or use default settings] */
-	unsigned int cm_autorenew_default:1;
+	/* Whether to autorenew-at-expiration */
 	unsigned int cm_autorenew:1;
-	/* Whether to start monitoring at issue [or use default settings] */
-	unsigned int cm_monitor_default:1;
+	/* Whether to start monitoring at issue */
 	unsigned int cm_monitor:1;
 	/* Type and location of CA [or use default if NULL] */
 	char *cm_ca_name;

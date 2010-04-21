@@ -654,9 +654,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		break;
 
 	case CM_MONITORING:
-		if ((entry->cm_monitor_default ?
-		     cm_prefs_monitor() :
-		     entry->cm_monitor) &&
+		if (entry->cm_monitor &&
 		    (cm_check_expiration_is_noteworthy(entry) == 0)) {
 			/* Kick off a notification. */
 			entry->cm_state = CM_NEED_TO_NOTIFY;
@@ -690,9 +688,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		if (cm_notify_ready(entry, state->cm_notify_state) == 0) {
 			cm_notify_done(entry, state->cm_notify_state);
 			state->cm_notify_state = NULL;
-			if (entry->cm_autorenew_default ?
-			    cm_prefs_autorenew() :
-			    entry->cm_autorenew) {
+			if (entry->cm_autorenew) {
 				/* We need to go all the way back to generating
 				 * the CSR because the user may have asked us
 				 * to request with parameters that have changed
