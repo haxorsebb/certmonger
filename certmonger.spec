@@ -100,6 +100,11 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Thu Apr 22 2010 Nalin Dahyabhai <nalin@redhat.com>
+  - getcert/*-getcert: relay the desired CA to the local service, whether
+    specified on the command line (in getcert) or as a built-in hard-wired
+    default (in *-getcert) (#584983)
+
 * Wed Apr 21 2010 Nalin Dahyabhai <nalin@redhat.com> 0.20-1
 - update to 0.20
   - correctly parse certificate validity periods given in years (spotted by

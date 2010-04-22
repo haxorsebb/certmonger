@@ -643,21 +643,19 @@ request(const char *argv0, int argc, char **argv)
 		i++;
 	}
 	if (ca != NULL) {
-		if (ca != NULL) {
-			capath = find_ca_by_name(globals.tctx, bus, ca);
-			if (capath == NULL) {
-				printf(_("No CA with name \"%s\" found.\n"),
-				       ca);
-				return 1;
-			}
-		} else {
-			capath = NULL;
+		capath = find_ca_by_name(globals.tctx, bus, ca);
+		if (capath == NULL) {
+			printf(_("No CA with name \"%s\" found.\n"),
+			       ca);
+			return 1;
 		}
 		param[i].key = "CA";
 		param[i].value_type = cm_tdbusm_dict_s;
 		param[i].value.s = capath;
 		params[i] = &param[i];
 		i++;
+	} else {
+		capath = NULL;
 	}
 	param[i].key = "SUBJECT";
 	param[i].value_type = cm_tdbusm_dict_s;
@@ -846,6 +844,7 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 	struct cm_tdbusm_dict param[17];
 	const struct cm_tdbusm_dict *params[17];
 	dbus_bool_t b;
+	const char *capath;
 	char *p;
 	i = 0;
 	if (id != NULL) {
@@ -935,6 +934,21 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 	param[i].value.b = !auto_renew_stop;
 	params[i] = &param[i];
 	i++;
+	if (ca != NULL) {
+		capath = find_ca_by_name(globals.tctx, bus, ca);
+		if (capath == NULL) {
+			printf(_("No CA with name \"%s\" found.\n"),
+			       ca);
+			return 1;
+		}
+		param[i].key = "CA";
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = talloc_strdup(globals.tctx, capath);
+		params[i] = &param[i];
+		i++;
+	} else {
+		capath = NULL;
+	}
 	params[i] = NULL;
 	req = prep_req(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
 		       "add_request");
@@ -965,7 +979,7 @@ set_tracking(const char *argv0, const char *category,
 {
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	DBusMessage *req, *rep;
-	const char *request;
+	const char *request, *capath;
 	struct cm_tdbusm_dict param[4];
 	const struct cm_tdbusm_dict *params[5];
 	char *nss_scheme, *dbdir = NULL, *token = NULL, *nickname = NULL;
@@ -1098,6 +1112,22 @@ set_tracking(const char *argv0, const char *category,
 				param[i].value.s = new_id;
 				params[i] = &param[i];
 				i++;
+			}
+			if (ca != NULL) {
+				capath = find_ca_by_name(globals.tctx, bus, ca);
+				if (capath == NULL) {
+					printf(_("No CA with name \"%s\" found.\n"),
+					       ca);
+					return 1;
+				}
+				param[i].key = "CA";
+				param[i].value_type = cm_tdbusm_dict_s;
+				param[i].value.s = talloc_strdup(globals.tctx,
+								 capath);
+				params[i] = &param[i];
+				i++;
+			} else {
+				capath = NULL;
 			}
 			params[i] = NULL;
 			req = prep_req(bus, request, CM_DBUS_REQUEST_INTERFACE,
