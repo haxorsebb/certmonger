@@ -110,7 +110,7 @@ fi
 
 if $have_libcurl ; then
 	if $have_libxml ; then
-		AM_CONDITIONAL(HAVE_XMLHTTP,true)
+		AM_CONDITIONAL(WITH_CURL_AND_XML,true)
 	fi
 fi
 
