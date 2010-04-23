@@ -96,7 +96,25 @@ PKG_CHECK_MODULES(DBUS,dbus-1)
 PKG_CHECK_MODULES(CERTMONGER,dbus-1 talloc tevent nss)
 PKG_CHECK_MODULES(GETCERT,dbus-1 talloc)
 
-dnl PKG_CHECK_MODULES(XMLRPC,xmlrpc_client)
+have_libxml=true
+if pkg-config libxml-2.0 ; then
+	PKG_CHECK_MODULES(XML,libxml-2.0)
+	have_libxml=true
+fi
+
+have_libcurl=false
+if pkg-config libcurl ; then
+	PKG_CHECK_MODULES(CURL,libcurl)
+	have_libcurl=true
+fi
+
+if $have_libcurl ; then
+	if $have_libxml ; then
+		AM_CONDITIONAL(HAVE_XMLHTTP,true)
+	fi
+fi
+
+dnl PKG_CHECK_MODULES(XMLRPC,xmlrpc_client) # Not provided in upstream versions.
 savedCFLAGS="$CFLAGS"
 CFLAGS=
 AC_ARG_VAR(XMLRPC_C_CONFIG,[the full path of the xmlrpc-c-config command])
