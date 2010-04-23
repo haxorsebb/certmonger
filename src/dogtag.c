@@ -61,10 +61,7 @@ main(int argc, char **argv)
 	host_uri = NULL;
 	submit_uri = NULL;
 	poll_uri = NULL;
-	if (gethostname(hostname, sizeof(hostname) - 1) != 0) {
-		strcpy(hostname, "localhost");
-	}
-	identifier = talloc_asprintf(tctx, "%s(%s)", PACKAGE_NAME, hostname);
+	identifier = NULL;
 	while ((c = getopt(argc, argv, "c:C:h:H:i:S:P:")) != -1) {
 		switch (c) {
 		case 'c':
@@ -119,6 +116,17 @@ main(int argc, char **argv)
 			host = get_config_entry(dogtagconfig,
 						conftag, "server");
 		}
+	}
+	if (identifier == NULL) {
+		if (dogtagconfig != NULL) {
+			identifier = get_config_entry(dogtagconfig,
+						      conftag, "contact");
+		}
+		if (gethostname(hostname, sizeof(hostname) - 1) != 0) {
+			strcpy(hostname, "localhost");
+		}
+		identifier = talloc_asprintf(tctx, "%s(%s)",
+					     PACKAGE_NAME, hostname);
 	}
 	ret = CM_STATUS_UNREACHABLE;
 
