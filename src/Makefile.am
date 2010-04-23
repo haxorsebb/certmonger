@@ -121,7 +121,15 @@ endif
 if WITH_IPA
 pkglibexec_PROGRAMS += ipa-submit
 endif
-ipa_submit_SOURCES = ipa.c submit-x.c submit-x.h submit-u.c submit-u.h submit-e.h util.c util.h log.c log.h
+if WITH_CURL_AND_XML
+pkglibexec_PROGRAMS += dogtag-submit
+endif
+ipa_submit_SOURCES = ipa.c submit-x.c submit-x.h \
+		submit-u.c submit-u.h submit-e.h util.c util.h log.c log.h
 ipa_submit_LDADD = $(XMLRPC_LIBS) $(KRB5_LIBS) $(TALLOC_LIBS)
-certmaster_submit_SOURCES = certmaster.c submit-x.c submit-x.h submit-u.c submit-u.h submit-e.h log.c log.h util.c util.h
+certmaster_submit_SOURCES = certmaster.c submit-x.c submit-x.h \
+		submit-u.c submit-u.h submit-e.h util.c util.h log.c log.h
 certmaster_submit_LDADD = $(XMLRPC_LIBS) $(KRB5_LIBS) $(TALLOC_LIBS)
+dogtag_submit_SOURCES = dogtag.c submit-h.c submit-h.h \
+		submit-u.c submit-u.h submit-e.h util.c util.h log.c log.h
+dogtag_submit_LDADD = $(CURL_LIBS) $(XML_LIBS) $(TALLOC_LIBS)
