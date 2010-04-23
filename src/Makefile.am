@@ -113,7 +113,7 @@ tdbusm_check_LDADD = libcm.a $(CERTMONGER_LIBS)
 serial_check_LDADD = libcm.a $(CERTMONGER_LIBS)
 nl_check_LDADD = libcm.a $(CERTMONGER_LIBS)
 submit_x_CFLAGS = $(AM_CFLAGS) -DCM_SUBMIT_X_MAIN
-submit_x_SOURCES = submit-x.c submit-e.h submit-x.h log.c log.h
+submit_x_SOURCES = submit-x.c submit-x.h submit-u.c submit-u.h log.c log.h
 submit_x_LDADD = $(XMLRPC_LIBS) $(KRB5_LIBS) $(TALLOC_LIBS)
 if WITH_CERTMASTER
 pkglibexec_PROGRAMS += certmaster-submit
@@ -121,7 +121,7 @@ endif
 if WITH_IPA
 pkglibexec_PROGRAMS += ipa-submit
 endif
-ipa_submit_SOURCES = ipa.c submit-x.c submit-x.h submit-e.h util.c util.h log.c log.h
+ipa_submit_SOURCES = ipa.c submit-x.c submit-x.h submit-u.c submit-u.h submit-e.h util.c util.h log.c log.h
 ipa_submit_LDADD = $(XMLRPC_LIBS) $(KRB5_LIBS) $(TALLOC_LIBS)
-certmaster_submit_SOURCES = certmaster.c submit-x.c submit-x.h submit-e.h log.c log.h util.c util.h
+certmaster_submit_SOURCES = certmaster.c submit-x.c submit-x.h submit-u.c submit-u.h submit-e.h log.c log.h util.c util.h
 certmaster_submit_LDADD = $(XMLRPC_LIBS) $(KRB5_LIBS) $(TALLOC_LIBS)

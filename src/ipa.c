@@ -32,6 +32,7 @@
 #include <krb5.h>
 
 #include "submit-e.h"
+#include "submit-u.h"
 #include "submit-x.h"
 #include "util.h"
 
@@ -148,7 +149,7 @@ main(int argc, char **argv)
 	/* Read the CSR from the environment, or from the command-line. */
 	csr = getenv(CM_SUBMIT_CSR_ENV);
 	if (csr == NULL) {
-		csr = cm_submit_x_from_file((optind < argc) ?
+		csr = cm_submit_u_from_file((optind < argc) ?
 					    argv[optind++] : NULL);
 	}
 	if ((csr == NULL) || (strlen(csr) == 0)) {
