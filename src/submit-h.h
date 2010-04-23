@@ -19,7 +19,8 @@
 #define cmsubmith_h
 
 struct cm_submit_h_context;
-struct cm_submit_h_context *cm_submit_h_init(const char *method,
+struct cm_submit_h_context *cm_submit_h_init(void *parent,
+					     const char *method,
 					     const char *uri,
 					     const char *args);
 void cm_submit_h_run(struct cm_submit_h_context *ctx);

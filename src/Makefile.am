@@ -123,6 +123,7 @@ pkglibexec_PROGRAMS += ipa-submit
 endif
 if WITH_CURL_AND_XML
 pkglibexec_PROGRAMS += dogtag-submit
+noinst_PROGRAMS += submit-h
 endif
 ipa_submit_SOURCES = ipa.c submit-x.c submit-x.h \
 		submit-u.c submit-u.h submit-e.h util.c util.h log.c log.h
@@ -133,3 +134,6 @@ certmaster_submit_LDADD = $(XMLRPC_LIBS) $(KRB5_LIBS) $(TALLOC_LIBS)
 dogtag_submit_SOURCES = dogtag.c submit-h.c submit-h.h \
 		submit-u.c submit-u.h submit-e.h util.c util.h log.c log.h
 dogtag_submit_LDADD = $(CURL_LIBS) $(XML_LIBS) $(TALLOC_LIBS)
+submit_h_CFLAGS = $(AM_CFLAGS) -DCM_SUBMIT_H_MAIN
+submit_h_SOURCES = submit-h.c submit-h.h log.c log.h
+submit_h_LDADD = $(CURL_LIBS) $(XML_LIBS) $(TALLOC_LIBS)

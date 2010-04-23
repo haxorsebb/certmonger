@@ -238,7 +238,7 @@ main(int argc, char **argv)
 	}
 
 	/* Get ready to submit the request. */
-	ctx = cm_submit_h_init(method, uri, args);
+	ctx = cm_submit_h_init(tctx, method, uri, args);
 	if (ctx == NULL) {
 		fprintf(stderr, "Error setting up for contacting server.\n");
 		printf(_("Error setting up for contacting server.\n"));
