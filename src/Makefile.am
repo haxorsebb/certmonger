@@ -2,6 +2,7 @@ AM_CFLAGS = $(TALLOC_CFLAGS) $(TEVENT_CFLAGS) $(DBUS_CFLAGS) $(KRB5_CFLAGS) $(XM
 man_MANS = certmonger.8 getcert.1 getcert-request.1 getcert-list.1 getcert-list-cas.1 getcert-start-tracking.1 getcert-stop-tracking.1 selfsign-getcert.1 ipa-getcert.1 certmaster-getcert.1 getcert-resubmit.1 certmonger-ipa-submit.8 certmonger-certmaster-submit.8 certmonger.conf.5
 pkgsysconfdir = $(sysconfdir)/$(PACKAGE)
 pkgsysconf_DATA = certmonger.conf
+EXTRA_PROGRAMS =
 install-data-hook::
 	chmod go-rwx $(DESTDIR)/$(pkgsysconfdir)/certmonger.conf
 noinst_LIBRARIES = libcm.a libcm-o.a
@@ -122,8 +123,8 @@ if WITH_IPA
 pkglibexec_PROGRAMS += ipa-submit
 endif
 if WITH_CURL_AND_XML
-pkglibexec_PROGRAMS += dogtag-submit
-noinst_PROGRAMS += submit-h
+EXTRA_PROGRAMS += dogtag-submit
+noinst_PROGRAMS += submit-h submit-d
 endif
 ipa_submit_SOURCES = ipa.c submit-x.c submit-x.h \
 		submit-u.c submit-u.h submit-e.h util.c util.h log.c log.h
@@ -131,9 +132,14 @@ ipa_submit_LDADD = $(XMLRPC_LIBS) $(KRB5_LIBS) $(TALLOC_LIBS)
 certmaster_submit_SOURCES = certmaster.c submit-x.c submit-x.h \
 		submit-u.c submit-u.h submit-e.h util.c util.h log.c log.h
 certmaster_submit_LDADD = $(XMLRPC_LIBS) $(KRB5_LIBS) $(TALLOC_LIBS)
-dogtag_submit_SOURCES = dogtag.c submit-h.c submit-h.h \
+dogtag_submit_CFLAGS = $(AM_CFLAGS) $(XML_CFLAGS) $(CURL_LIBS)
+dogtag_submit_SOURCES = dogtag.c submit-d.c submit-d.h submit-h.c submit-h.h \
 		submit-u.c submit-u.h submit-e.h util.c util.h log.c log.h
 dogtag_submit_LDADD = $(CURL_LIBS) $(XML_LIBS) $(TALLOC_LIBS)
-submit_h_CFLAGS = $(AM_CFLAGS) -DCM_SUBMIT_H_MAIN
+submit_d_CFLAGS = $(AM_CFLAGS) $(CURL_CFLAGS) $(XML_CFLAGS) -DCM_SUBMIT_D_MAIN
+submit_d_SOURCES = submit-d.c submit-d.h submit-h.c submit-h.h \
+		   submit-u.c submit-u.h log.c log.h
+submit_d_LDADD = $(CURL_LIBS) $(XML_LIBS) $(TALLOC_LIBS)
+submit_h_CFLAGS = $(AM_CFLAGS) $(CURL_CFLAGS) $(XML_CFLAGS) -DCM_SUBMIT_H_MAIN
 submit_h_SOURCES = submit-h.c submit-h.h log.c log.h
 submit_h_LDADD = $(CURL_LIBS) $(XML_LIBS) $(TALLOC_LIBS)
