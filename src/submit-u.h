@@ -19,5 +19,6 @@
 #define cmsubmitu_h
 
 char *cm_submit_u_from_file(const char *filename);
+char *cm_submit_u_from_file_single(const char *filename);
 
 #endif

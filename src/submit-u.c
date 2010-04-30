@@ -85,3 +85,35 @@ cm_submit_u_from_file(const char *filename)
 	}
 	return csr;
 }
+
+/* Read a CSR from a file and return it as a single base64 blob. */
+char *
+cm_submit_u_from_file_single(const char *filename)
+{
+	char *csr, *p, *q;
+	unsigned int i;
+	const char *strip[] = {
+		"-----BEGIN CERTIFICATE REQUEST-----",
+		"-----END CERTIFICATE REQUEST-----",
+		"-----BEGIN NEW CERTIFICATE REQUEST-----",
+		"-----END NEW CERTIFICATE REQUEST-----",
+	};
+	csr = cm_submit_u_from_file(filename);
+	p = csr;
+	for (i = 0; i < sizeof(strip) / sizeof(strip[0]); i++) {
+		while ((p = strstr(csr, strip[i])) != NULL) {
+			q = p + strcspn(p, "\r\n");
+			memmove(p, q, strlen(q) + 1);
+		}
+	}
+	p = csr;
+	q = strdup(csr);
+	for (p = csr, i = 0; *p != '\0'; p++) {
+		if (strchr("\r\n\t ", *p) == NULL) {
+			q[i++] = *p;
+		}
+	}
+	q[i] = NULL;
+	free(csr);
+	return q;
+}
