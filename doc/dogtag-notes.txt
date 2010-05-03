@@ -1,0 +1,237 @@
+http://www.redhat.com/docs/manuals/cert-system/8.0/cli/html/SSLGet-Usage.html
+
+POST http://cats.bos.redhat.com:9180/ca/ee/ca/profileSubmit
+
+profileId=caServerCert&cert_request_type=pkcs10&requestor_name=TPS-server.example.com-7889&cert_request=MIIBGTCBxAIBADBfMSgwJgYDVQQKEx8yMDA2MTEwNngxMiBTZmJheSBSZWRoYXQgRG9tYWluMRIwEAYDVQQLEwlyaHBraS10cHMxHzAdBgNVBAMTFndhdGVyLnNmYmF5LnJlZGhhdC5jb20wXDANBgkqhkiG9w0BAQEFAANLADBIAkEAsMcYjKD2cDJOeKjhuAiyaC0YVh8hUzfcrf7ZJlVyROQx1pQrHiHmBQbcCdQxNzYK7rxWiR62BPDR4dHtQzj8RwIDAQABoAAwDQYJKoZIhvcNAQEEBQADQQAKpuTYGP%2BI1k50tjn6enPV6j%2B2lFFjrYNwlYWBe4qYhm3WoA0tIuplNLpzP0vw6ttIMZkpE8rcfAeMG10doUpp&xmlOutput=true&sessionID=-4771521138734965266&auth_hostname=cats.bos.redhat.com&auth_port=9180
+
+Returns "<?xml version="1.0" encoding="UTF-8"?><XMLResponse><Status>2</Status><Error>Request Deferred - defer request</Error><RequestId>  21</RequestId></XMLResponse>"
+
+Dig the request ID out of the XML.
+
+GET http://cats.bos.redhat.com:9180/ca/ee/ca/checkRequest?requestId=21
+
+You'll get some horrific code with javascript mixed in.
+snippet:
+<SCRIPT LANGUAGE="JavaScript">
+var header = new Object();
+var fixed = new Object();
+var recordSet = new Array;
+var result = new Object();
+var httpParamsCount = 0;
+var httpHeadersCount = 0;
+var authTokenCount = 0;
+var serverAttrsCount = 0;
+header.HTTP_PARAMS = new Array;
+header.HTTP_HEADERS = new Array;
+header.AUTH_TOKEN = new Array;
+header.SERVER_ATTRS = new Array;
+header.status = "pending";
+header.updatedOn = "1271975644";
+header.requestId = "21";
+header.authority = "ca";
+header.createdOn = "1271975644";
+result.header = header;
+result.fixed = fixed;
+result.recordSet = recordSet;
+</SCRIPT>
+
+Check header.status (UGH!).  "pending";"complete"
+snippet 2:
+
+<SCRIPT LANGUAGE="JavaScript">
+var header = new Object();
+var fixed = new Object();
+var recordSet = new Array;
+var result = new Object();
+var httpParamsCount = 0;
+var httpHeadersCount = 0;
+var authTokenCount = 0;
+var serverAttrsCount = 0;
+header.HTTP_PARAMS = new Array;
+header.HTTP_HEADERS = new Array;
+header.AUTH_TOKEN = new Array;
+header.SERVER_ATTRS = new Array;
+header.status = "complete";
+header.updatedOn = "1271976823";
+header.requestId = "21";
+header.authority = "ca";
+header.createdOn = "1271975644";
+var recordCount = 0;
+var record;
+record = new Object;
+record.HTTP_PARAMS = new Array;
+record.HTTP_HEADERS = new Array;
+record.AUTH_TOKEN = new Array;
+record.SERVER_ATTRS = new Array;
+record.serialNumber="14";
+recordSet[recordCount++] = record;
+record.recordSet = recordSet;
+result.header = header;
+result.fixed = fixed;
+result.recordSet = recordSet;
+</SCRIPT>
+
+<SCRIPT LANGUAGE="JavaScript">
+var header = new Object();
+var fixed = new Object();
+var recordSet = new Array;
+var result = new Object();
+var httpParamsCount = 0;
+var httpHeadersCount = 0;
+var authTokenCount = 0;
+var serverAttrsCount = 0;
+header.HTTP_PARAMS = new Array;
+header.HTTP_HEADERS = new Array;
+header.AUTH_TOKEN = new Array;
+header.SERVER_ATTRS = new Array;
+header.status = "rejected";
+header.updatedOn = "1271977112";
+header.requestId = "20";
+header.authority = "ca";
+header.createdOn = "1271975631";
+result.header = header;
+result.fixed = fixed;
+result.recordSet = recordSet;
+</SCRIPT>
+
+<SCRIPT LANGUAGE="JavaScript">
+var header = new Object();
+var fixed = new Object();
+var recordSet = new Array;
+var result = new Object();
+var httpParamsCount = 0;
+var httpHeadersCount = 0;
+var authTokenCount = 0;
+var serverAttrsCount = 0;
+header.HTTP_PARAMS = new Array;
+header.HTTP_HEADERS = new Array;
+header.AUTH_TOKEN = new Array;
+header.SERVER_ATTRS = new Array;
+header.requestNotes = "Blah update.";
+header.status = "pending";
+header.updatedOn = "1271977206";
+header.requestId = "22";
+header.authority = "ca";
+header.createdOn = "1271977180";
+result.header = header;
+result.fixed = fixed;
+result.recordSet = recordSet;
+</SCRIPT>
+
+<SCRIPT LANGUAGE="JavaScript">
+var header = new Object();
+var fixed = new Object();
+var recordSet = new Array;
+var result = new Object();
+var httpParamsCount = 0;
+var httpHeadersCount = 0;
+var authTokenCount = 0;
+var serverAttrsCount = 0;
+header.HTTP_PARAMS = new Array;
+header.HTTP_HEADERS = new Array;
+header.AUTH_TOKEN = new Array;
+header.SERVER_ATTRS = new Array;
+header.status = "canceled";
+header.updatedOn = "1271977289";
+header.requestId = "23";
+header.authority = "ca";
+header.createdOn = "1271977186";
+result.header = header;
+result.fixed = fixed;
+result.recordSet = recordSet;
+</SCRIPT>
+
+<SCRIPT LANGUAGE="JavaScript">
+var header = new Object();
+var fixed = new Object();
+var recordSet = new Array;
+var result = new Object();
+var httpParamsCount = 0;
+var httpHeadersCount = 0;
+var authTokenCount = 0;
+var serverAttrsCount = 0;
+header.HTTP_PARAMS = new Array;
+header.HTTP_HEADERS = new Array;
+header.AUTH_TOKEN = new Array;
+header.SERVER_ATTRS = new Array;
+header.status = "rejected";
+header.updatedOn = "1271977112";
+header.requestId = "20";
+header.authority = "ca";
+header.createdOn = "1271975631";
+result.header = header;
+result.fixed = fixed;
+result.recordSet = recordSet;
+</SCRIPT>
+
+<SCRIPT LANGUAGE="JavaScript">
+var header = new Object();
+var fixed = new Object();
+var recordSet = new Array;
+var result = new Object();
+var httpParamsCount = 0;
+var httpHeadersCount = 0;
+var authTokenCount = 0;
+var serverAttrsCount = 0;
+header.HTTP_PARAMS = new Array;
+header.HTTP_HEADERS = new Array;
+header.AUTH_TOKEN = new Array;
+header.SERVER_ATTRS = new Array;
+header.status = "pending";
+header.updatedOn = "1271977266";
+header.requestId = "24";
+header.authority = "ca";
+header.createdOn = "1271977247";
+result.header = header;
+result.fixed = fixed;
+result.recordSet = recordSet;
+</SCRIPT>
+
+<SCRIPT LANGUAGE="JavaScript">
+var header = new Object();
+var fixed = new Object();
+var recordSet = new Array;
+var result = new Object();
+var httpParamsCount = 0;
+var httpHeadersCount = 0;
+var authTokenCount = 0;
+var serverAttrsCount = 0;
+header.HTTP_PARAMS = new Array;
+header.HTTP_HEADERS = new Array;
+header.AUTH_TOKEN = new Array;
+header.SERVER_ATTRS = new Array;
+fixed.authorityName = "Certificate Manager";
+fixed.unexpectedError = "Request ID 25 was not found in the request queue.";
+fixed.requestStatus = "2";
+result.header = header;
+result.fixed = fixed;
+result.recordSet = recordSet;
+</SCRIPT>
+
+GET http://cats.bos.redhat.com:9180/ca/ee/ca/displayBySerial?serialNumber=0x14
+
+<SCRIPT LANGUAGE="JavaScript">
+var header = new Object();
+var fixed = new Object();
+var recordSet = new Array;
+var result = new Object();
+var httpParamsCount = 0;
+var httpHeadersCount = 0;
+var authTokenCount = 0;
+var serverAttrsCount = 0;
+header.HTTP_PARAMS = new Array;
+header.HTTP_HEADERS = new Array;
+header.AUTH_TOKEN = new Array;
+header.SERVER_ATTRS = new Array;
+header.certChainBase64 = "MIIC8jCCAdqgAwIBAgIBFDANBgkqhkiG9w0BAQsFADBHMSUwIwYDVQQKExxSZWQg\r\nSGF0IFdlc3Rmb3JkIERvbWFpbiBYVklJMR4wHAYDVQQDExVDZXJ0aWZpY2F0ZSBB\r\ndXRob3JpdHkwHhcNMTAwNDIyMjIzNDA0WhcNMTIwNDExMTk0ODI2WjBfMSgwJgYD\r\nVQQKEx8yMDA2MTEwNngxMiBTZmJheSBSZWRoYXQgRG9tYWluMRIwEAYDVQQLEwly\r\naHBraS10cHMxHzAdBgNVBAMTFndhdGVyLnNmYmF5LnJlZGhhdC5jb20wXDANBgkq\r\nhkiG9w0BAQEFAANLADBIAkEAsMcYjKD2cDJOeKjhuAiyaC0YVh8hUzfcrf7ZJlVy\r\nROQx1pQrHiHmBQbcCdQxNzYK7rxWiR62BPDR4dHtQzj8RwIDAQABo4GYMIGVMB8G\r\nA1UdIwQYMBaAFMIzoRNmqRgFbme8KperoucKRbhGMEMGCCsGAQUFBwEBBDcwNTAz\r\nBggrBgEFBQcwAYYnaHR0cDovL2NhdHMuYm9zLnJlZGhhdC5jb206OTE4MC9jYS9v\r\nY3NwMA4GA1UdDwEB/wQEAwIE8DAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUH\r\nAwIwDQYJKoZIhvcNAQELBQADggEBAG1tDjEy0EZzFoet1j2dTtmlNpkqiSKrI3Yg\r\nxNGTy8qKOKP9gIbsIJgtvYIoQlHcXXXPrskqa4WqfQtb9ItZcvNQ1Hw4sMcUGlDb\r\ncR5wgL6TgUf3sK2B9J8pNtzA97kFxAUKOUVjkxa2R7pw6U9mfJgS+08C5EabRmTS\r\nShaJ5md6dbiXXldoAk7uX640U4rxGodj+JwyNniiT9pXPFrk3PT+g1z6dXJmFsro\r\n3Sud6KlGwuWyzFXIrhkkMsMSyUlZtxZgP913af7BA3jBx7kSmam1byc4nmvWVFjY\r\nWz1Dakid3wSTtK4bXYkmV75o0E8qrm49j6dfH3FjiP956VQEGjw=";
+header.certFingerprint = "MD2:\n        CC:8A:EB:45:EB:06:F0:21:A5:0D:2D:91:B5:F3:86:B8\nMD5:\n        55:D7:BD:06:07:D8:88:6B:8A:33:14:04:3E:5D:3E:C7\nSHA1:\n        47:20:07:A7:45:6A:31:D8:E9:54:34:57:4D:B3:78:1B:\n        50:98:D7:0D\nSHA256:\n        02:C3:83:ED:5A:CD:76:22:06:8F:A1:82:1F:5A:66:85:\n        FC:DA:03:AF:77:B0:92:B1:B4:55:25:47:0A:9A:C6:25\nSHA512:\n        D4:8C:1A:22:16:78:81:40:E5:25:8B:6B:2E:8C:7B:60:\n        A2:BE:57:51:8A:B0:26:3A:08:D3:26:58:81:78:7A:94:\n        D9:19:5A:F7:0C:E1:73:0B:C3:AD:F2:60:A5:D2:6E:67:\n        6D:97:7F:69:FA:74:D7:65:AF:F2:7B:9E:73:5E:07:DD\n";
+header.authorityid = "ca";
+header.pkcs7ChainBase64 = "MIIG3AYJKoZIhvcNAQcCoIIGzTCCBskCAQExADAPBgkqhkiG9w0BBwGgAgQAoIIG\r\nrTCCAvIwggHaoAMCAQICARQwDQYJKoZIhvcNAQELBQAwRzElMCMGA1UEChMcUmVk\r\nIEhhdCBXZXN0Zm9yZCBEb21haW4gWFZJSTEeMBwGA1UEAxMVQ2VydGlmaWNhdGUg\r\nQXV0aG9yaXR5MB4XDTEwMDQyMjIyMzQwNFoXDTEyMDQxMTE5NDgyNlowXzEoMCYG\r\nA1UEChMfMjAwNjExMDZ4MTIgU2ZiYXkgUmVkaGF0IERvbWFpbjESMBAGA1UECxMJ\r\ncmhwa2ktdHBzMR8wHQYDVQQDExZ3YXRlci5zZmJheS5yZWRoYXQuY29tMFwwDQYJ\r\nKoZIhvcNAQEBBQADSwAwSAJBALDHGIyg9nAyTnio4bgIsmgtGFYfIVM33K3+2SZV\r\nckTkMdaUKx4h5gUG3AnUMTc2Cu68VoketgTw0eHR7UM4/EcCAwEAAaOBmDCBlTAf\r\nBgNVHSMEGDAWgBTCM6ETZqkYBW5nvCqXq6LnCkW4RjBDBggrBgEFBQcBAQQ3MDUw\r\nMwYIKwYBBQUHMAGGJ2h0dHA6Ly9jYXRzLmJvcy5yZWRoYXQuY29tOjkxODAvY2Ev\r\nb2NzcDAOBgNVHQ8BAf8EBAMCBPAwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUF\r\nBwMCMA0GCSqGSIb3DQEBCwUAA4IBAQBtbQ4xMtBGcxaHrdY9nU7ZpTaZKokiqyN2\r\nIMTRk8vKijij/YCG7CCYLb2CKEJR3F11z67JKmuFqn0LW/SLWXLzUNR8OLDHFBpQ\r\n23EecIC+k4FH97CtgfSfKTbcwPe5BcQFCjlFY5MWtke6cOlPZnyYEvtPAuRGm0Zk\r\n0koWieZnenW4l15XaAJO7l+uNFOK8RqHY/icMjZ4ok/aVzxa5Nz0/oNc+nVyZhbK\r\n6N0rneipRsLlssxVyK4ZJDLDEslJWbcWYD/dd2n+wQN4wce5EpmptW8nOJ5r1lRY\r\n2Fs9Q2pInd8Ek7SuG12JJle+aNBPKq5uPY+nXx9xY4j/eelUBBo8MIIDszCCApug\r\nAwIBAgIBATANBgkqhkiG9w0BAQsFADBHMSUwIwYDVQQKExxSZWQgSGF0IFdlc3Rm\r\nb3JkIERvbWFpbiBYVklJMR4wHAYDVQQDExVDZXJ0aWZpY2F0ZSBBdXRob3JpdHkw\r\nHhcNMTAwNDIyMTk0ODI2WhcNMTIwNDExMTk0ODI2WjBHMSUwIwYDVQQKExxSZWQg\r\nSGF0IFdlc3Rmb3JkIERvbWFpbiBYVklJMR4wHAYDVQQDExVDZXJ0aWZpY2F0ZSBB\r\ndXRob3JpdHkwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDWFJddTfhm\r\n5uOY8v821+rAAGhKfoqxju5mdfVj+BDrDTIl5ut5xO/whgdOOtGMnsUitXtkVa2P\r\nWKDcDjI0lgK2db25/pY5TWVUA3flfa3B6uY8QwvQTbhyXtN/kCmEJQLZAF4J6UXy\r\n48afJSjoauM9pq+RlW4SnEP0+02wVj9Dmq+vMRHCRo3v27/FDaG1u557VQqhpxLO\r\nCiq+iL8ZMi40sOVzr8gQINnfazvIcTtuG5kyw/vv2Oe33vtdZ1ugl90ugWqw/GJC\r\n2ab6Ax35GaW4Ny45jeNTlO8DXWQMa0xGL37DOCWMM9j/gNB6Dr6/3PV5fAsAbzDL\r\n6Q2SU11eBojfAgMBAAGjgakwgaYwHwYDVR0jBBgwFoAUwjOhE2apGAVuZ7wql6ui\r\n5wpFuEYwDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8BAf8EBAMCAcYwHQYDVR0OBBYE\r\nFMIzoRNmqRgFbme8KperoucKRbhGMEMGCCsGAQUFBwEBBDcwNTAzBggrBgEFBQcw\r\nAYYnaHR0cDovL2NhdHMuYm9zLnJlZGhhdC5jb206OTE4MC9jYS9vY3NwMA0GCSqG\r\nSIb3DQEBCwUAA4IBAQB0ScLkJ0WmIOJ3GbCa5ij37v50sBbmf5UuOQmZS3v8jXbg\r\n+KGlYQa7RyP+cQCQpI0kjqvKL1pda5fPsiypJm2kG3d0/lVx53lkJOB7JtogIzxL\r\nHYAMSQk2GDzpoo8BM7z3RivFSdrN1eWiOIIEOBKCz0yFlEmm4KMosRKwJKQ4FQqU\r\ngttwZA9Mo4tcvWjHxbUqH/Eb75iWCMcIJKgpzojs2bWUGwbWJpbk3h+5ZT6D/l7b\r\nhu5fz9taef8jdEKJGnmSKD1jm63918goQp9vnAPeCmo1mVUNqOYxwI0VQSKIV5sY\r\nMr21uA94+jitZR2SdPrBK4pDWQKRNKFCl6BttiAjMQA=";
+header.serialNumber = "14";
+header.emailCert = true;
+header.noCertImport = true;
+header.certPrettyPrint = "    Certificate: \n        Data: \n            Version:  v3\n            Serial Number: 0x14\n            Signature Algorithm: SHA256withRSA - 1.2.840.113549.1.1.11\n            Issuer: CN=Certificate Authority,O=Red Hat Westford Domain XVII\n            Validity: \n                Not Before: Thursday, April 22, 2010 6:34:04 PM EDT US/Eastern\n                Not  After: Wednesday, April 11, 2012 3:48:26 PM EDT US/Eastern\n            Subject: CN=water.sfbay.redhat.com,OU=rhpki-tps,O=20061106x12 Sfbay Redhat Domain\n            Subject Public Key Info: \n                Algorithm: RSA - 1.2.840.113549.1.1.1\n                Public Key: \n                    Exponent: 65537\n                    Public Key Modulus: (512 bits) :\n                        B0:C7:18:8C:A0:F6:70:32:4E:78:A8:E1:B8:08:B2:68:\n                        2D:18:56:1F:21:53:37:DC:AD:FE:D9:26:55:72:44:E4:\n                        31:D6:94:2B:1E:21:E6:05:06:DC:09:D4:31:37:36:0A:\n                        EE:BC:56:89:1E:B6:04:F0:D1:E1:D1:ED:43:38:FC:47\n            Extensions: \n                Identifier: Authority Key Identifier - 2.5.29.35\n                    Critical: no \n                    Key Identifier: \n                        C2:33:A1:13:66:A9:18:05:6E:67:BC:2A:97:AB:A2:E7:\n                        0A:45:B8:46\n                Identifier: Authority Info Access: - 1.3.6.1.5.5.7.1.1\n                    Critical: no \n                    Access Description: \n                        Method #0: ocsp\n                        Location #0: URIName: http://cats.bos.redhat.com:9180/ca/ocsp\n                Identifier: Key Usage: - 2.5.29.15\n                    Critical: yes \n                    Key Usage: \n                        Digital Signature \n                        Non Repudiation \n                        Key Encipherment \n                        Data Encipherment \n                Identifier: Extended Key Usage: - 2.5.29.37\n                    Critical: no \n                    Extended Key Usage: \n                        1.3.6.1.5.5.7.3.1\n                        1.3.6.1.5.5.7.3.2\n        Signature: \n            Algorithm: SHA256withRSA - 1.2.840.113549.1.1.11\n            Signature: \n                6D:6D:0E:31:32:D0:46:73:16:87:AD:D6:3D:9D:4E:D9:\n                A5:36:99:2A:89:22:AB:23:76:20:C4:D1:93:CB:CA:8A:\n                38:A3:FD:80:86:EC:20:98:2D:BD:82:28:42:51:DC:5D:\n                75:CF:AE:C9:2A:6B:85:AA:7D:0B:5B:F4:8B:59:72:F3:\n                50:D4:7C:38:B0:C7:14:1A:50:DB:71:1E:70:80:BE:93:\n                81:47:F7:B0:AD:81:F4:9F:29:36:DC:C0:F7:B9:05:C4:\n                05:0A:39:45:63:93:16:B6:47:BA:70:E9:4F:66:7C:98:\n                12:FB:4F:02:E4:46:9B:46:64:D2:4A:16:89:E6:67:7A:\n                75:B8:97:5E:57:68:02:4E:EE:5F:AE:34:53:8A:F1:1A:\n                87:63:F8:9C:32:36:78:A2:4F:DA:57:3C:5A:E4:DC:F4:\n                FE:83:5C:FA:75:72:66:16:CA:E8:DD:2B:9D:E8:A9:46:\n                C2:E5:B2:CC:55:C8:AE:19:24:32:C3:12:C9:49:59:B7:\n                16:60:3F:DD:77:69:FE:C1:03:78:C1:C7:B9:12:99:A9:\n                B5:6F:27:38:9E:6B:D6:54:58:D8:5B:3D:43:6A:48:9D:\n                DF:04:93:B4:AE:1B:5D:89:26:57:BE:68:D0:4F:2A:AE:\n                6E:3D:8F:A7:5F:1F:71:63:88:FF:79:E9:54:04:1A:3C\n        FingerPrint\n            MD2:\n                CC:8A:EB:45:EB:06:F0:21:A5:0D:2D:91:B5:F3:86:B8\n            MD5:\n                55:D7:BD:06:07:D8:88:6B:8A:33:14:04:3E:5D:3E:C7\n            SHA1:\n                47:20:07:A7:45:6A:31:D8:E9:54:34:57:4D:B3:78:1B:\n                50:98:D7:0D\n            SHA256:\n                02:C3:83:ED:5A:CD:76:22:06:8F:A1:82:1F:5A:66:85:\n                FC:DA:03:AF:77:B0:92:B1:B4:55:25:47:0A:9A:C6:25\n            SHA512:\n                D4:8C:1A:22:16:78:81:40:E5:25:8B:6B:2E:8C:7B:60:\n                A2:BE:57:51:8A:B0:26:3A:08:D3:26:58:81:78:7A:94:\n                D9:19:5A:F7:0C:E1:73:0B:C3:AD:F2:60:A5:D2:6E:67:\n                6D:97:7F:69:FA:74:D7:65:AF:F2:7B:9E:73:5E:07:DD\n";
+result.header = header;
+result.fixed = fixed;
+result.recordSet = recordSet;
+</SCRIPT>
