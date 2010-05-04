@@ -98,8 +98,9 @@ main(int argc, char **argv)
 			/* Hope the minion is configured. */
 			config = read_config_file("/etc/certmaster/"
 						  "minion.conf");
-			host = get_config_entry(config, "main", "certmaster");
 			if (config != NULL) {
+				host = get_config_entry(config,
+							"main", "certmaster");
 				port = get_config_entry(config,
 							"main",
 							"certmaster_port");
