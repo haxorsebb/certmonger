@@ -1,3 +1,9 @@
+http://www.redhat.com/docs/manuals/cert-system/pdf/cms601custom.pdf
+Use GET http://cats.bos.redhat.com:9180/ca/ee/ca/getBySerial?serialNumber=14
+(yes, that's a hex serial number).
+
+- older stuff -
+
 http://www.redhat.com/docs/manuals/cert-system/8.0/cli/html/SSLGet-Usage.html
 
 POST http://cats.bos.redhat.com:9180/ca/ee/ca/profileSubmit
