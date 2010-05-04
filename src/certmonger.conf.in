@@ -1,0 +1,17 @@
+# This is the certmonger configuration file.  The format is a rather basic
+# INI-style file.  See certmonger.conf(5) for notes about individual settings.
+# · initial whitespace is ignored
+# · whitespace between the key name and "=" is ignored
+# · whitespace after "=" is ignored
+# · trailing whitespace after values is ignored
+# · comments begin with "#"
+# · keys and section names are case-sensitive
+# · there is no end-of-line continuation
+#
+# [defaults]
+# notification_method = syslog
+# notification_destination = @CM_DEFAULT_NOTIFICATION_SYSLOG_PRIORITY@
+#
+# [selfsign]
+# validity_period = @CM_DEFAULT_CERT_LIFETIME@
+#

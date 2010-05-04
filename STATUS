@@ -88,3 +88,6 @@ To-do:
     * If the CA cert includes a CRL distribution point extension, cache the
       CRL, too.  This'll require a new dependency on a retrieval library
       (probably libcurl) and a few changes to the internal state machine.
+  * Lighten build requirements by crafting and parsing XML-RPC ourselves
+    since we're already going to have to deal with non-XML-RPC XML and HTTP
+    when DogTag support goes in.

@@ -2,7 +2,7 @@
 %{?_with_check: %global pcheck 1}
 
 Name:		certmonger
-Version:	0.20
+Version:	0.21
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -100,10 +100,13 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
-* Thu Apr 22 2010 Nalin Dahyabhai <nalin@redhat.com>
+* Tue May  4 2010 Nalin Dahyabhai <nalin@redhat.com> 0.21-1
+- update to 0.21
   - getcert/*-getcert: relay the desired CA to the local service, whether
     specified on the command line (in getcert) or as a built-in hard-wired
     default (in *-getcert) (#584983)
+  - flesh out the default certmonger.conf so that people can get a feel for
+    the expected formatting (Jenny Galipeau)
 
 * Wed Apr 21 2010 Nalin Dahyabhai <nalin@redhat.com> 0.20-1
 - update to 0.20

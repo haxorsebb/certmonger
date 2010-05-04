@@ -1,4 +1,4 @@
-AC_INIT(certmonger,0.20)
+AC_INIT(certmonger,0.21)
 AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_MACRO_DIR(m4)
 AM_MAINTAINER_MODE
@@ -228,4 +228,4 @@ AC_DEFINE_UNQUOTED(CM_CERTMASTER_HELPER_PATH,"$mylibexecdir/certmaster-submit",[
 AM_CONDITIONAL(WITH_CERTMASTER,true)
 
 AC_CONFIG_COMMANDS(src_introspect_sh,[chmod +x src/introspect.sh])
-AC_OUTPUT(Makefile src/Makefile dbus/Makefile tests/Makefile tests/tools/Makefile dbus/certmonger.conf src/certmonger.init src/introspect.sh src/certmonger.8 src/getcert.1 src/getcert-request.1 src/getcert-list.1 src/getcert-list-cas.1 src/getcert-start-tracking.1 src/getcert-stop-tracking.1 src/selfsign-getcert.1 src/ipa-getcert.1 src/getcert-resubmit.1 src/certmonger-certmaster-submit.8 src/certmonger-ipa-submit.8 src/certmaster-getcert.1 src/certmonger.conf.5 po/Makefile.in)
+AC_OUTPUT(Makefile src/Makefile dbus/Makefile tests/Makefile tests/tools/Makefile dbus/certmonger.conf src/certmonger.init src/introspect.sh src/certmonger.8 src/getcert.1 src/getcert-request.1 src/getcert-list.1 src/getcert-list-cas.1 src/getcert-start-tracking.1 src/getcert-stop-tracking.1 src/selfsign-getcert.1 src/ipa-getcert.1 src/getcert-resubmit.1 src/certmonger-certmaster-submit.8 src/certmonger-ipa-submit.8 src/certmaster-getcert.1 src/certmonger.conf.5 po/Makefile.in src/certmonger.conf)
