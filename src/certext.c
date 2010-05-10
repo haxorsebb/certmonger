@@ -546,6 +546,29 @@ cm_certext_parse_principal(void *parent, struct kerberos_principal_name *p)
 	return ret;
 }
 
+static void
+cm_certext_remove_duplicates(char **p)
+{
+	int n, i, j;
+	for (n = 0; (p != NULL) && (p[n] != NULL); n++) {
+		continue;
+	}
+	i = 0;
+	while (i < n) {
+		j = i + 1;
+		while (j < n) {
+			if (strcmp(p[i], p[j]) == 0) {
+				memmove(&p[j], &p[j + 1],
+					sizeof(p[j]) * (n - j));
+				n--;
+			} else {
+				j++;
+			}
+		}
+		i++;
+	}
+}
+
 /* Read an otherName, which might be either a Kerberos principal name or just
  * an NT principal name. */
 static void
@@ -555,7 +578,7 @@ cm_certext_read_other_name(struct cm_store_entry *entry, PLArenaPool *arena,
 	SECItem *item, upn;
 	struct kerberos_principal_name p;
 	char **names;
-	int i, j, n_names;
+	int i;
 
 	item = &name->name.OthName.name;
 	/* The Kerberos principal name case. */
@@ -627,29 +650,7 @@ cm_certext_read_other_name(struct cm_store_entry *entry, PLArenaPool *arena,
 	/* Prune duplicates.  We don't distinguish between the two cases, and
 	 * we throw the name_type away, so there's no point in listing any
 	 * value more than once. */
-	for (n_names = 0;
-	     (entry->cm_cert_principal != NULL) &&
-	     (entry->cm_cert_principal[n_names] != NULL);
-	     n_names++) {
-		continue;
-	}
-	i = 0;
-	while (i < n_names) {
-		j = i + 1;
-		while (j < n_names) {
-			if (strcmp(entry->cm_cert_principal[i],
-				   entry->cm_cert_principal[j]) == 0) {
-				memmove(&entry->cm_cert_principal[j],
-					&entry->cm_cert_principal[j + 1],
-					sizeof(entry->cm_cert_principal[j]) *
-					(n_names - j));
-				n_names--;
-			} else {
-				j++;
-			}
-		}
-		i++;
-	}
+	cm_certext_remove_duplicates(entry->cm_cert_principal);
 }
 
 /* Extract applicable subjectAltName values. */
@@ -688,6 +689,7 @@ cm_certext_read_san(struct cm_store_entry *entry, PLArenaPool *arena,
 					      (char *) san->name.other.data,
 					      san->name.other.len);
 			entry->cm_cert_hostname = s;
+			cm_certext_remove_duplicates(entry->cm_cert_hostname);
 			break;
 		case certIPAddress:
 			/* binary data - see rfc5280 - XXX */
@@ -709,6 +711,7 @@ cm_certext_read_san(struct cm_store_entry *entry, PLArenaPool *arena,
 					      (char *) san->name.other.data,
 					      san->name.other.len);
 			entry->cm_cert_email = s;
+			cm_certext_remove_duplicates(entry->cm_cert_email);
 			break;
 		case certOtherName:
 			/* need to parse these to recover principal names */
