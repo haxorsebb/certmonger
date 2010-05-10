@@ -30,7 +30,6 @@ main(int argc, char **argv)
 {
 	struct tm when;
 	time_t now, later, delta;
-	char cbuf[27];
 	int i;
 	if (argc > 1) {
 		for (i = 2; i < argc; i++) {
