@@ -555,7 +555,7 @@ cm_certext_read_other_name(struct cm_store_entry *entry, PLArenaPool *arena,
 	SECItem *item, upn;
 	struct kerberos_principal_name p;
 	char **names;
-	int i;
+	int i, j, n_names;
 
 	item = &name->name.OthName.name;
 	/* The Kerberos principal name case. */
@@ -623,6 +623,32 @@ cm_certext_read_other_name(struct cm_store_entry *entry, PLArenaPool *arena,
 						  (char *) upn.data, upn.len);
 			entry->cm_cert_principal = names;
 		}
+	}
+	/* Prune duplicates.  We don't distinguish between the two cases, and
+	 * we throw the name_type away, so there's no point in listing any
+	 * value more than once. */
+	for (n_names = 0;
+	     (entry->cm_cert_principal != NULL) &&
+	     (entry->cm_cert_principal[n_names] != NULL);
+	     n_names++) {
+		continue;
+	}
+	i = 0;
+	while (i < n_names) {
+		j = i + 1;
+		while (j < n_names) {
+			if (strcmp(entry->cm_cert_principal[i],
+				   entry->cm_cert_principal[j]) == 0) {
+				memmove(&entry->cm_cert_principal[j],
+					&entry->cm_cert_principal[j + 1],
+					sizeof(entry->cm_cert_principal[j]) *
+					(n_names - j));
+				n_names--;
+			} else {
+				j++;
+			}
+		}
+		i++;
 	}
 }
 
