@@ -237,7 +237,7 @@ main(int argc, char **argv)
 			       CM_SUBMIT_COOKIE_ENV);
 			return CM_STATUS_UNCONFIGURED;
 		}
-		args = talloc_strdup("requestId=%s", cookie);
+		args = talloc_strdup("requestId=%s&xml=true", cookie);
 		method = "GET";
 	} else {
 		printf(_("%s is not set to a recognized value.\n"),
@@ -271,7 +271,7 @@ main(int argc, char **argv)
 		printf("Results:%s\n", cm_submit_h_results(ctx));
 		return CM_STATUS_REJECTED;
 	} else {
-		/* No useful responsec.  Try again, from scratch, later. */
+		/* No useful response.  Try again, from scratch, later. */
 		return CM_STATUS_UNREACHABLE;
 	}
 }
