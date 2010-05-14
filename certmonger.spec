@@ -2,7 +2,7 @@
 %{?_with_check: %global pcheck 1}
 
 Name:		certmonger
-Version:	0.21
+Version:	0.22
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
