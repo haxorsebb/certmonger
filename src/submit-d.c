@@ -27,55 +27,66 @@
 #include <talloc.h>
 
 #include <libxml/parser.h>
+#include <libxml/xpath.h>
 
 #include "submit-d.h"
 #include "submit-h.h"
 #include "submit-u.h"
 
 static char *
-cm_submit_d_xml_value(void *parent, const char *xml, const char *name)
+cm_submit_d_xml_value(void *parent, const char *xml, const char *path)
 {
-	/* XMLResponse -> "name" -> content */
-	xmlDocPtr top, doc;
-	xmlNodePtr root, node = NULL, content = NULL;
+	/* "xpath" -> content */
+	xmlXPathContextPtr xpctx;
+	xmlXPathObjectPtr obj;
+	xmlDocPtr doc;
+	xmlNodePtr node;
+	xmlChar *xpath;
 	char *ret = NULL;
-	xmlChar *resp;
-	top = xmlParseMemory(xml, strlen(xml));
-	if (top != NULL) {
-		doc = top->doc;
-		if (doc != NULL) {
-			root = doc->children;
-			resp = xmlCharStrdup("XMLResponse");
-			while (root != NULL) {
-				if ((root->type == XML_ELEMENT_NODE) &&
-				    (xmlStrcasecmp(root->name, resp) == 0)) {
-					node = root->children;
-					break;
-				}
-				root = root->next;
+	const char *content;
+	int i;
+
+	doc = xmlParseMemory(xml, strlen(xml));
+	if (doc != NULL) {
+		xpctx = xmlXPathNewContext(doc);
+		if (xpctx != NULL) {
+			xpath = xmlCharStrdup(path);
+			obj = NULL;
+			if (xpath != NULL) {
+				obj = xmlXPathEval(xpath, xpctx);
+				xmlFree(xpath);
 			}
-			xmlFree(resp);
-			resp = xmlCharStrdup(name);
-			while (node != NULL) {
-				if ((node->type == XML_ELEMENT_NODE) &&
-				    (xmlStrcasecmp(node->name, resp) == 0)) {
-					content = node->children;
-					break;
+			node = NULL;
+			if ((obj != NULL) &&
+			    (obj->nodesetval != NULL) &&
+			    (obj->nodesetval->nodeNr > 0)) {
+				for (i = 0;
+				     (i < obj->nodesetval->nodeNr) &&
+				     (node == NULL);
+				     i++) {
+					node = obj->nodesetval->nodeTab[i]->children;
+					while (node != NULL) {
+						if (node->type == XML_TEXT_NODE) {
+							break;
+						}
+						node = node->next;
+					}
 				}
-				node = node->next;
 			}
-			xmlFree(resp);
-			while (content != NULL) {
-				if (content->type == XML_TEXT_NODE) {
-					ret = talloc_strdup(parent,
-							    (const char *) content->content);
-					break;
+			if (node != NULL) {
+				content = (const char *) node->content;
+				content = content + strspn(content, "\r\n");
+				i = strlen(content) - 1;
+				while ((i > 0) &&
+				       (strchr("\r\n", content[i]) != NULL)) {
+					i--;
 				}
-				content = content->next;
+				ret = talloc_strndup(parent, content, i + 1);
 			}
+			xmlXPathFreeContext(xpctx);
 		}
+		xmlFreeDoc(doc);
 	}
-	xmlFreeDoc(doc);
 	return ret;
 }
 
@@ -379,12 +390,29 @@ main(int argc, char **argv)
 	const char *method, *ca, *cgi, *file, *profile, *result;
 	const char *name, *email, *tele;
 	char *params, *uri, **var, **vars, *p, *request;
-	char *submit_x_vars[] = {"status", "error", "requestId", NULL};
-	char *check_h_vars[] = {"header.status", "header.requestId",
-				"record.serialNumber", "fixed.unexpectedError",
+	char *submit_h_vars[] = {"header.status",
+				 "header.error",
+				 "header.requestId",
+				 NULL};
+	char *submit_x_vars[] = {"/xmlResponse/status",
+				 "/xmlResponse/error",
+				 "/xmlResponse/requestId",
+				 NULL};
+	char *check_h_vars[] = {"header.status",
+				"header.requestId",
+				"record.serialNumber",
+				"fixed.unexpectedError",
+				NULL};
+	char *check_x_vars[] = {"/xml/header/status",
+				"/xml/header/requestId",
+				/* Doesn't give us a serial number!?!?! */
+				"/xml/fixed/unexpectedError",
 				NULL};
 	char *display_h_vars[] = {"header.certChainBase64",
 				  "header.certPrettyPrint",
+				  NULL};
+	char *display_x_vars[] = {"/xml/header/certChainBase64",
+				  "/xml/header/certPrettyPrint",
 				  NULL};
 	struct cm_submit_h_context *hctx;
 	pflag = 0;
@@ -399,7 +427,7 @@ main(int argc, char **argv)
 	email = NULL;
 	tele = NULL;
 	profile = "caServerCert";
-	while ((c = getopt(argc, argv, "PC:n:e:t:s:p:c:r:")) != -1) {
+	while ((c = getopt(argc, argv, "PC:n:e:t:p:s:c:r:x")) != -1) {
 		switch (c) {
 		case 'P':
 			parse_exercise();
@@ -487,21 +515,21 @@ main(int argc, char **argv)
 			params = talloc_asprintf(ctx, "%s&requestor_phone=%s",
 						 params, tele);
 		}
-		vars = submit_x_vars;
+		vars = try_xml ? submit_x_vars : submit_h_vars;
 	} else
 	if (check) {
 		method = "GET";
 		cgi = "checkRequest";
 		params = talloc_asprintf(ctx, "requestId=%d%s", id,
-					 try_xml ? "&xmlOutput=true" : "");
-		vars = check_h_vars;
+					 try_xml ? "&xml=true" : "");
+		vars = try_xml ? check_x_vars : check_h_vars;
 	} else
 	if (retrieve) {
 		method = "GET";
 		cgi = "displayBySerial";
 		params = talloc_asprintf(ctx, "serialNumber=%d%s", id,
-					 try_xml ? "&xmlOutput=true" : "");
-		vars = display_h_vars;
+					 try_xml ? "&xml=true" : "");
+		vars = try_xml ? display_x_vars : display_h_vars;
 	} else {
 		printf("Error: no specific request given.\n");
 		usage();
