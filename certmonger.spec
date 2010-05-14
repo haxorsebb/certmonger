@@ -100,6 +100,15 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Fri May 14 2010 Nalin Dahyabhai <nalin@redhat.com> 0.22-1
+- update to 0.22
+  - new translations
+    - de by Fabian Affolter!
+  - certmaster-submit: don't fall over when we can't find a certmaster.conf
+    or a minion.conf (i.e., certmaster isn't installed) (#588932)
+  - when reading extension values from certificates, prune out duplicate
+    principal names, email addresses, and hostnames
+
 * Tue May  4 2010 Nalin Dahyabhai <nalin@redhat.com> 0.21-1
 - update to 0.21
   - getcert/*-getcert: relay the desired CA to the local service, whether
