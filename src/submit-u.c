@@ -113,7 +113,7 @@ cm_submit_u_from_file_single(const char *filename)
 			q[i++] = *p;
 		}
 	}
-	q[i] = NULL;
+	q[i] = '\0';
 	free(csr);
 	return q;
 }

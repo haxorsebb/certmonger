@@ -38,6 +38,13 @@
 #include "log.h"
 #include "tdbus.h"
 
+#ifdef ENABLE_NLS
+#include <libintl.h>
+#define _(_text) dgettext(PACKAGE, _text)
+#else
+#define _(_text) (_text)
+#endif
+
 int
 main(int argc, char **argv)
 {
