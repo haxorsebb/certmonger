@@ -2,7 +2,7 @@
 %{?_with_check: %global pcheck 1}
 
 Name:		certmonger
-Version:	0.22
+Version:	0.23
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -100,6 +100,13 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Thu May 27 2010 Nalin Dahyabhai <nalin@redhat.com> 0.23-1
+- update to 0.23
+  - new translations
+    - pl by Piotr Drąg!
+  - cancel daemon startup if we can't gain ownership of our well-known
+    service name on the DBus (#596719)
+
 * Fri May 14 2010 Nalin Dahyabhai <nalin@redhat.com> 0.22-1
 - update to 0.22
   - new translations
