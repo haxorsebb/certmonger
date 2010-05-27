@@ -69,6 +69,19 @@ cm_tdbus_dispatch_status(DBusConnection *conn, DBusDispatchStatus new_status,
 }
 
 static int
+cm_tdbus_watch_get_fd(DBusWatch *watch)
+{
+#if defined(HAVE_DBUS_WATCH_GET_UNIX_FD)
+	return dbus_watch_get_unix_fd(watch);
+#elif defined(HAVE_DBUS_WATCH_GET_FD)
+	return dbus_watch_get_fd(watch);
+#else
+#error "Don't know how to retrieve a watchable descriptor from a DBus watch!"
+	return -1;
+#endif
+}
+
+static int
 cm_tdbus_tfd_flags_for_watch_flags(unsigned int watch_flags)
 {
 	int tfd_flags;
@@ -183,7 +196,7 @@ cm_tdbus_watch_add(DBusWatch *watch, void *data)
 	struct tdbus_dwatch *tdb_dwatch;
 	int fd;
 	conn = data;
-	fd = dbus_watch_get_unix_fd(watch);
+	fd = cm_tdbus_watch_get_fd(watch);
 	cm_log(5, "Adding DBus watch on %d.\n", fd);
 	/* Find the tevent watch for this fd. */
 	tdb_watch = conn->watches;
@@ -233,7 +246,7 @@ cm_tdbus_watch_remove(DBusWatch *watch, void *data)
 	struct tdbus_dwatch *tdb_dwatch, *prev;
 	int fd;
 	conn = data;
-	fd = dbus_watch_get_unix_fd(watch);
+	fd = cm_tdbus_watch_get_fd(watch);
 	cm_log(5, "Removing a DBus watch for %d.\n", fd);
 	/* Find the tevent watch for this fd. */
 	tdb_watch = conn->watches;
@@ -277,7 +290,7 @@ cm_tdbus_watch_toggle(DBusWatch *watch, void *data)
 	struct tdbus_dwatch *tdb_dwatch;
 	int fd;
 	conn = data;
-	fd = dbus_watch_get_unix_fd(watch);
+	fd = cm_tdbus_watch_get_fd(watch);
 	/* Find the tevent watch for this fd. */
 	tdb_watch = conn->watches;
 	while (tdb_watch != NULL) {
@@ -506,6 +519,7 @@ cm_tdbus_setup_connection(struct tdbus_connection *tdb)
 {
 	DBusError err;
 	const char *bus_desc;
+	int i;
 	/* Don't exit if we get disconnected. */
 	dbus_connection_set_exit_on_disconnect(tdb->conn, FALSE);
 	/* Set the callback to be called when I/O processing has yielded a
@@ -541,10 +555,15 @@ cm_tdbus_setup_connection(struct tdbus_connection *tdb)
 	}
 	/* Bind to the well-known name we intend to use. */
 	memset(&err, 0, sizeof(err));
-	if (!dbus_bus_request_name(tdb->conn, CM_DBUS_NAME, 0, &err) ||
+	i = dbus_bus_request_name(tdb->conn, CM_DBUS_NAME, 0, &err);
+	if ((i == 0) ||
+	    ((i != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER) &&
+	     (i != DBUS_REQUEST_NAME_REPLY_ALREADY_OWNER)) ||
 	    dbus_error_is_set(&err)) {
-		cm_log(1, "Unable to set well-known bus name \"%s\": %s.\n",
-		       CM_DBUS_NAME, err.message ? err.message : err.name);
+		cm_log(1, "Unable to set well-known bus name \"%s\": %s(%d).\n",
+		       CM_DBUS_NAME,
+		       err.message ? err.message : (err.name ? err.name : ""),
+		       i);
 		return -1;
 	}
 	/* Handle any messages that are already pending. */
