@@ -260,6 +260,6 @@ cm_submit_delta_from_string(const char *deltas, time_t now, time_t *delta)
 	if (digits == 0) {
 		return -1;
 	}
-	*delta = now - start;
+	*delta = now + val - start;
 	return 0;
 }
