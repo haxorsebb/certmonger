@@ -47,8 +47,10 @@ where the default is incompatible with other software.
 Within the \fIselfsign\fR section, these variables and values are recognized:
 
 .IP validity_period
-This is the validity period given to self-signed certificates.  The default
-value is \fI@CM_DEFAULT_CERT_LIFETIME@\fR.
+This is the validity period given to self-signed certificates.  The value is
+specified as a combination of years (y), months (M), weeks (w), days (d), hours
+(h), minutes (m), and/or seconds (s).  The default value is
+\fI@CM_DEFAULT_CERT_LIFETIME@\fR.
 
 .SH BUGS
 Please file tickets for any that you find at https://fedorahosted.org/certmonger/
