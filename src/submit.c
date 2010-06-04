@@ -210,6 +210,11 @@ cm_submit_delta_from_string(const char *deltas, time_t now, time_t *delta)
 			now += val * multiple;
 			val = 0;
 			break;
+		case 'w':
+			multiple = 60 * 60 * 24 * 7;
+			now += val * multiple;
+			val = 0;
+			break;
 		case 'M':
 			pnow = localtime_r(&now, &now_tm);
 			if (pnow == NULL) {
