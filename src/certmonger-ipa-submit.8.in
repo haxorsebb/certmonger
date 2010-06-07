@@ -1,4 +1,4 @@
-.TH certmonger 8 "23 November 2009" "certmonger Manual"
+.TH certmonger 8 "7 June 2010" "certmonger Manual"
 
 .SH NAME
 ipa-submit
@@ -63,6 +63,12 @@ if the CA was unreachable.  An error message may be printed.
 .TP
 4
 if critical configuration information is missing.  An error message may be printed.
+
+.SH FILES
+.TP
+.I /etc/ipa/default.conf
+is the IPA client configuration file.  This file is consulted to determine
+the URI for the IPA server's XML-RPC interface.
 
 .SH BUGS
 Please file tickets for any that you find at https://fedorahosted.org/certmonger/
