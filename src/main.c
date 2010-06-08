@@ -105,22 +105,30 @@ main(int argc, char **argv)
 	}
 
 	if (pidfile != NULL) {
-		pfd = open(pidfile, O_RDWR | O_CREAT | O_TRUNC,
+		pfd = open(pidfile, O_RDWR | O_CREAT,
 			   S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 		if (pfd == -1) {
 			fprintf(stderr, "Error opening pidfile \"%s\": %s\n",
 				pidfile, strerror(errno));
 			exit(1);
 		}
-		if (flock(pfd, LOCK_EX | LOCK_NB) != 0) {
+		if (lockf(pfd, F_TLOCK, 0) != 0) {
 			fprintf(stderr, "Error locking pidfile \"%s\": %s\n",
 				pidfile, strerror(errno));
+			close(pfd);
+			exit(1);
+		}
+		if (ftruncate(pfd, 0) != 0) {
+			fprintf(stderr, "Error truncating pidfile \"%s\": %s\n",
+				pidfile, strerror(errno));
+			close(pfd);
 			exit(1);
 		}
 		pfp = fdopen(pfd, "w");
 		if (pfp == NULL) {
 			fprintf(stderr, "Error opening pidfile \"%s\": %s\n",
 				pidfile, strerror(errno));
+			close(pfd);
 			exit(1);
 		}
 	} else {
@@ -134,14 +142,17 @@ main(int argc, char **argv)
 	if (i != 0) {
 		fprintf(stderr, "Error: %s\n", strerror(i));
 		talloc_free(ec);
+		if ((pidfile != NULL) && (pfp != NULL)) {
+			fclose(pfp);
+		}
 		exit(1);
 	}
 
 	if (cm_tdbus_setup(ec, bus, ctx) != 0) {
 		fprintf(stderr, "Error connecting to D-Bus.\n");
 		talloc_free(ec);
-		if (pidfile != NULL) {
-			remove(pidfile);
+		if ((pidfile != NULL) && (pfp != NULL)) {
+			fclose(pfp);
 		}
 		exit(1);
 	}
@@ -152,8 +163,8 @@ main(int argc, char **argv)
 		case -1:
 			/* failure */
 			fprintf(stderr, "fork() error: %s\n", strerror(errno));
-			if (pfp != NULL) {
-				remove(pidfile);
+			if ((pidfile != NULL) && (pfp != NULL)) {
+				fclose(pfp);
 			}
 			exit(1);
 			break;
@@ -164,7 +175,20 @@ main(int argc, char **argv)
 					strerror(errno));
 				exit(1);
 			}
-			if (pfp != NULL) {
+			/* lock the pid file now that our parent is exiting and
+			 * thus losing its lock; it should be safe to block
+			 * here, even if the parent gives up the lock before we
+			 * get here, because we've already ensured that only we
+			 * and our parent have the named connection to the bus,
+			 * and wouldn't have gotten here otherwise */
+			if ((pidfile != NULL) && (pfp != NULL)) {
+				if (lockf(pfd, F_LOCK, 0) != 0) {
+					cm_log(0,
+					       "Error locking pidfile \"%s\": "
+					       "%s\n",
+					       pidfile, strerror(errno));
+					exit(1);
+				}
 				fprintf(pfp, "%ld\n", (long) getpid());
 				fflush(pfp);
 			}
@@ -175,13 +199,10 @@ main(int argc, char **argv)
 			break;
 		}
 	} else {
-		if (pfp != NULL) {
+		if ((pidfile != NULL) && (pfp != NULL)) {
 			fprintf(pfp, "%ld\n", (long) getpid());
 			fflush(pfp);
 		}
-	}
-	if (pfp != NULL) {
-		fclose(pfp);
 	}
 	cm_start_all(ctx);
 	do {
@@ -197,6 +218,7 @@ main(int argc, char **argv)
 	talloc_free(ec);
 	if ((pidfile != NULL) && (pfp != NULL)) {
 		remove(pidfile);
+		fclose(pfp);
 	}
 	return 0;
 }

@@ -1,4 +1,4 @@
-.TH certmonger 8 "23 November 2009" "certmonger Manual"
+.TH certmonger 8 "7 June 2010" "certmonger Manual"
 
 .SH NAME
 certmaster-submit
@@ -46,6 +46,18 @@ if the CA was unreachable.  An error message may be printed.
 .TP
 4
 if critical configuration information is missing.  An error message may be printed.
+
+.SH FILES
+.TP
+.I /var/run/certmaster.pid
+the certmaster service's PID file.  Its presence is taken to indicate that this
+system is a CA, and that requests should be submitted to a certmaster server
+running on the local system.
+.TP
+.I /etc/certmaster/minion.conf
+the certmaster minion configuration file.  If there is no indication that the
+local system is a certmaster server, then this file is consulted to determine
+the location of the certmaster server.
 
 .SH KNOWN BUGS
 Checking for the existence of certmaster's PID file is a terrible way to
