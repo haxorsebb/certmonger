@@ -2,7 +2,7 @@
 %{?_with_check: %global pcheck 1}
 
 Name:		certmonger
-Version:	0.23
+Version:	0.24
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -100,6 +100,13 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Tue Jun  8 2010 Nalin Dahyabhai <nalin@redhat.com> 0.24-1
+- update to 0.24
+  - keep the lock on the pid file, if we have one, when we fork, and cancel
+    daemon startup if we can't gain ownership of the lock (the rest of #596719)
+  - make the man pages note which external configuration files we consult when
+    submitting requests to certmaster and ipa CAs
+
 * Thu May 27 2010 Nalin Dahyabhai <nalin@redhat.com> 0.23-1
 - update to 0.23
   - new translations
