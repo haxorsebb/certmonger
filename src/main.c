@@ -104,6 +104,22 @@ main(int argc, char **argv)
 		tevent_set_debug_stderr(ec);
 	}
 
+	umask(S_IRWXG | S_IRWXO);
+
+	ctx = NULL;
+	i = cm_init(ec, &ctx);
+	if (i != 0) {
+		fprintf(stderr, "Error: %s\n", strerror(i));
+		talloc_free(ec);
+		exit(1);
+	}
+
+	if (cm_tdbus_setup(ec, bus, ctx) != 0) {
+		fprintf(stderr, "Error connecting to D-Bus.\n");
+		talloc_free(ec);
+		exit(1);
+	}
+
 	if (pidfile != NULL) {
 		pfd = open(pidfile, O_RDWR | O_CREAT,
 			   S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
@@ -133,28 +149,6 @@ main(int argc, char **argv)
 		}
 	} else {
 		pfp = NULL;
-	}
-
-	umask(S_IRWXG | S_IRWXO);
-
-	ctx = NULL;
-	i = cm_init(ec, &ctx);
-	if (i != 0) {
-		fprintf(stderr, "Error: %s\n", strerror(i));
-		talloc_free(ec);
-		if ((pidfile != NULL) && (pfp != NULL)) {
-			fclose(pfp);
-		}
-		exit(1);
-	}
-
-	if (cm_tdbus_setup(ec, bus, ctx) != 0) {
-		fprintf(stderr, "Error connecting to D-Bus.\n");
-		talloc_free(ec);
-		if ((pidfile != NULL) && (pfp != NULL)) {
-			fclose(pfp);
-		}
-		exit(1);
 	}
 
 	if (dofork) {
