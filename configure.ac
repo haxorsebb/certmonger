@@ -112,11 +112,7 @@ if pkg-config libcurl ; then
 	have_libcurl=true
 fi
 
-if $have_libcurl ; then
-	if $have_libxml ; then
-		AM_CONDITIONAL(WITH_CURL_AND_XML,true)
-	fi
-fi
+AM_CONDITIONAL(WITH_CURL_AND_XML,$have_libcurl && $have_libxml)
 
 dnl PKG_CHECK_MODULES(XMLRPC,xmlrpc_client) # Not provided in upstream versions.
 savedCFLAGS="$CFLAGS"
