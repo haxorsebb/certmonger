@@ -14,7 +14,7 @@ BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 BuildRequires:	dbus-devel, nspr-devel, nss-devel, openssl-devel
 BuildRequires:	libtalloc-devel, libtevent-devel
-BuildRequires:	xmlrpc-c-devel
+BuildRequires:	libxml2-devel xmlrpc-c-devel
 %if 0%{?pcheck}
 # Required for 'make check':
 #  for diff and cmp
