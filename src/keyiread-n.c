@@ -223,7 +223,7 @@ next_slot:
 	PORT_FreeArena(arena, PR_TRUE);
 
 	/* If we tried to log into a token and failed, flag that error. */
-	if (n_login_attempts < n_login_success) {
+	if (n_login_success < n_login_attempts) {
 		_exit(CM_STATUS_ERROR_AUTH);
 	}
 
