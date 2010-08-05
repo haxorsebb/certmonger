@@ -107,7 +107,7 @@ exit 0
   - fix detection of cases where we can't access a private key in an NSS
     database because we don't have the PIN
   - teach '*getcert start-tracking' about the -p and -P options which the
-    '*getcert request' commands already understand
+    '*getcert request' commands already understand (#621670)
 
 * Mon Jun 28 2010 Nalin Dahyabhai <nalin@redhat.com> 0.24-4
 - init script: ensure that the subsys lock is created whenever we're called to
