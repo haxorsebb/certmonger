@@ -49,6 +49,17 @@ refreshing the certificate.  If no such file is found when needed,
 generate a new key pair and store them in the file.
 Only valid with \fB\-f\fR.
 
+.SH KEY ENCRYPTION OPTIONS
+.TP
+\fB\-p\fR FILE
+The private key files or databases are encrypted using the PIN stored in the
+named file as the passphrase.
+.TP
+\fB\-P\fR PIN
+The private key files or databases are encrypted using the specified PIN as the
+passphrase.  Because command-line arguments to running processes are trivially
+discoverable, use of this option is not recommended except for testing.
+
 .SH TRACKING OPTIONS
 .TP
 \fB\-I\fR NAME

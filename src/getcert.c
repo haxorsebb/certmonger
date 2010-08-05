@@ -837,12 +837,13 @@ static int
 add_basic_request(enum cm_tdbus_type bus, char *id,
 		  char *dbdir, char *nickname, char *token,
 		  char *keyfile, char *certfile,
+		  char *pin, char *pinfile,
 		  char *ca, dbus_bool_t auto_renew_stop)
 {
 	DBusMessage *req, *rep;
 	int i;
-	struct cm_tdbusm_dict param[17];
-	const struct cm_tdbusm_dict *params[17];
+	struct cm_tdbusm_dict param[19];
+	const struct cm_tdbusm_dict *params[19];
 	dbus_bool_t b;
 	const char *capath;
 	char *p;
@@ -924,6 +925,20 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 		params[i] = &param[i];
 		i++;
 	}
+	if (pin != NULL) {
+		param[i].key = "KEY_PIN";
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = pin;
+		params[i] = &param[i];
+		i++;
+	}
+	if (pinfile != NULL) {
+		param[i].key = "KEY_PIN_FILE";
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = pinfile;
+		params[i] = &param[i];
+		i++;
+	}
 	param[i].key = "TRACK";
 	param[i].value_type = cm_tdbusm_dict_b;
 	param[i].value.b = TRUE;
@@ -981,14 +996,15 @@ set_tracking(const char *argv0, const char *category,
 	DBusMessage *req, *rep;
 	const char *request, *capath;
 	struct cm_tdbusm_dict param[4];
-	const struct cm_tdbusm_dict *params[5];
+	const struct cm_tdbusm_dict *params[7];
 	char *nss_scheme, *dbdir = NULL, *token = NULL, *nickname = NULL;
 	char *id = NULL, *new_id = NULL, *new_request;
 	char *keyfile = NULL, *certfile = NULL, *ca = DEFAULT_CA;
+	char *pin = NULL, *pinfile = NULL;
 	dbus_bool_t b;
 	int c, auto_renew_start = 0, auto_renew_stop = 0, i;
 	while ((c = getopt(argc, argv,
-			   "d:n:t:k:f:g:rRi:I:sS" GETOPT_CA)) != -1) {
+			   "d:n:t:k:f:g:p:P:rRi:I:sS" GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
 			nss_scheme = NULL;
@@ -1048,6 +1064,12 @@ set_tracking(const char *argv0, const char *category,
 			break;
 		case 'S':
 			bus = cm_tdbus_system;
+			break;
+		case 'p':
+			pinfile = optarg;
+			break;
+		case 'P':
+			pin = optarg;
 			break;
 		default:
 			help(argv0, category);
@@ -1110,6 +1132,20 @@ set_tracking(const char *argv0, const char *category,
 				param[i].key = "NICKNAME";
 				param[i].value_type = cm_tdbusm_dict_s;
 				param[i].value.s = new_id;
+				params[i] = &param[i];
+				i++;
+			}
+			if (pin != NULL) {
+				param[i].key = "KEY_PIN";
+				param[i].value_type = cm_tdbusm_dict_s;
+				param[i].value.s = pin;
+				params[i] = &param[i];
+				i++;
+			}
+			if (pinfile != NULL) {
+				param[i].key = "KEY_PIN_FILE";
+				param[i].value_type = cm_tdbusm_dict_s;
+				param[i].value.s = pinfile;
 				params[i] = &param[i];
 				i++;
 			}
@@ -1183,6 +1219,7 @@ set_tracking(const char *argv0, const char *category,
 			return add_basic_request(bus, new_id,
 						 dbdir, nickname, token,
 						 keyfile, certfile,
+						 pin, pinfile,
 						 ca, (auto_renew_stop > 0));
 		}
 	} else {
@@ -1813,7 +1850,7 @@ help(const char *cmd, const char *category)
 		N_("* If using files for storage:\n"),
 		N_("  -k FILE	PEM file for private key\n"),
 		N_("  -f FILE	PEM file for certificate (only valid with -k)\n"),
-		N_("* If keys are encrypted:\n"),
+		N_("* If keys are to be encrypted:\n"),
 		N_("  -p FILE	file which holds the encryption PIN\n"),
 		N_("  -P PIN	PIN value\n"),
 		"\n",
@@ -1850,6 +1887,10 @@ help(const char *cmd, const char *category)
 		N_("* If using files for storage:\n"),
 		N_("  -k FILE	PEM file for private key\n"),
 		N_("  -f FILE	PEM file for certificate (only valid with -k)\n"),
+		"\n",
+		N_("* If keys are encrypted:\n"),
+		N_("  -p FILE	file which holds the encryption PIN\n"),
+		N_("  -P PIN	PIN value\n"),
 		"\n",
 		N_("Optional arguments:\n"),
 		N_("* Certificate handling settings:\n"),
