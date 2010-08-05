@@ -100,6 +100,27 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Thu Aug  5 2010 Nalin Dahyabhai <nalin@redhat.com> 0.25-1
+- update to 0.25
+  - new translations
+    - in by Okta Purnama Rahadian!
+  - fix detection of cases where we can't access a private key in an NSS
+    database because we don't have the PIN
+  - teach '*getcert start-tracking' about the -p and -P options which the
+    '*getcert request' commands already understand
+
+* Mon Jun 28 2010 Nalin Dahyabhai <nalin@redhat.com> 0.24-4
+- init script: ensure that the subsys lock is created whenever we're called to
+  "start" when we're already running (even more of #596719)
+
+* Tue Jun 15 2010 Nalin Dahyabhai <nalin@redhat.com> 0.24-3
+- more gracefully handle manual daemon startups and cleaning up of unexpected
+  crashes (still more of #596719)
+
+* Thu Jun 10 2010 Nalin Dahyabhai <nalin@redhat.com> 0.24-2
+- don't create the daemon pidfile until after we've connected to the D-Bus
+  (still more of #596719)
+
 * Tue Jun  8 2010 Nalin Dahyabhai <nalin@redhat.com> 0.24-1
 - update to 0.24
   - keep the lock on the pid file, if we have one, when we fork, and cancel
