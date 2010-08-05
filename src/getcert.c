@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009,2010 Red Hat, Inc.
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -704,7 +704,7 @@ request(const char *argv0, int argc, char **argv)
 	}
 	dbus_message_unref(rep);
 	if (b) {
-		nickname =  find_request_name(globals.tctx, bus, p);
+		nickname = find_request_name(globals.tctx, bus, p);
 		printf(_("New signing request \"%s\" added.\n"),
 		       nickname ? nickname : p);
 	} else {
@@ -963,7 +963,7 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 	}
 	dbus_message_unref(rep);
 	if (b) {
-		nickname =  find_request_name(globals.tctx, bus, p);
+		nickname = find_request_name(globals.tctx, bus, p);
 		printf(_("New tracking request \"%s\" added.\n"),
 		       nickname ? nickname : p);
 		return 0;
@@ -1144,8 +1144,8 @@ set_tracking(const char *argv0, const char *category,
 			}
 			request = new_request;
 			dbus_message_unref(rep);
-			nickname =  find_request_name(globals.tctx, bus,
-						      request);
+			nickname = find_request_name(globals.tctx, bus,
+						     request);
 			if (b) {
 				printf(_("Request \"%s\" modified.\n"),
 				       nickname ? nickname : request);
@@ -1815,7 +1815,7 @@ help(const char *cmd, const char *category)
 		N_("  -f FILE	PEM file for certificate (only valid with -k)\n"),
 		N_("* If keys are encrypted:\n"),
 		N_("  -p FILE	file which holds the encryption PIN\n"),
-		N_("  -P PIN 	PIN value\n"),
+		N_("  -P PIN	PIN value\n"),
 		"\n",
 		N_("Optional arguments:\n"),
 		N_("* Certificate handling settings:\n"),
@@ -1899,7 +1899,7 @@ help(const char *cmd, const char *category)
 		"\n",
 		N_("* If keys are encrypted:\n"),
 		N_("  -p FILE	file which holds the encryption PIN\n"),
-		N_("  -P PIN 	PIN value\n"),
+		N_("  -P PIN	PIN value\n"),
 		"\n",
 		N_("* New parameter values for the signing request:\n"),
 		N_("  -N NAME	set requested subject name (default: CN=<hostname>)\n"),
