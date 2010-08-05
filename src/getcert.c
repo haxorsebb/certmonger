@@ -1887,7 +1887,6 @@ help(const char *cmd, const char *category)
 		N_("* If using files for storage:\n"),
 		N_("  -k FILE	PEM file for private key\n"),
 		N_("  -f FILE	PEM file for certificate (only valid with -k)\n"),
-		"\n",
 		N_("* If keys are encrypted:\n"),
 		N_("  -p FILE	file which holds the encryption PIN\n"),
 		N_("  -P PIN	PIN value\n"),
