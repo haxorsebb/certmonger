@@ -1,788 +1,702 @@
-
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Red Hat, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: certmonger.master.certmonger\n"
+"Project-Id-Version: certmonger 0.24\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2010-04-07 17:13-0400\n"
-"PO-Revision-Date: \n"
-"Last-Translator: Okta Purnama Rahadian <oktarahadian@fedoraproject.org>\n"
+"POT-Creation-Date: 2010-08-05 14:30-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/certmaster.c:106
-#: src/ipa.c:124
+#: src/certmaster.c:111 src/ipa.c:125
 #, c-format
 msgid "Unable to determine hostname of CA.\n"
-msgstr "tidak dapat menentukan nama host dari CA.\n"
+msgstr ""
 
-#: src/certmaster.c:123
-#: src/ipa.c:155
+#: src/certmaster.c:128 src/ipa.c:156
 #, c-format
 msgid "Unable to read signing request.\n"
-msgstr "Tidak dapat membaca tanda permintaan.\n"
+msgstr ""
 
-#: src/certmaster.c:151
-#: src/ipa.c:201
+#: src/certmaster.c:156 src/ipa.c:202
 #, c-format
 msgid "Error setting up for XMLRPC.\n"
-msgstr "Setting kesalahan untuk XMLRPC"
+msgstr ""
 
-#: src/certmaster.c:173
-#: src/getcert.c:236
-#: src/getcert.c:254
-#: src/getcert.c:272
-#: src/getcert.c:290
-#: src/getcert.c:308
-#: src/getcert.c:325
-#: src/getcert.c:704
-#: src/getcert.c:947
-#: src/getcert.c:1112
-#: src/getcert.c:1182
-#: src/getcert.c:1438
-#: src/getcert.c:1538
-#: src/getcert.c:1604
-#: src/getcert.c:1629
-#: src/getcert.c:1644
+#: src/certmaster.c:178 src/getcert.c:236 src/getcert.c:254 src/getcert.c:272
+#: src/getcert.c:290 src/getcert.c:308 src/getcert.c:325 src/getcert.c:702
+#: src/getcert.c:976 src/getcert.c:1178 src/getcert.c:1249 src/getcert.c:1505
+#: src/getcert.c:1605 src/getcert.c:1671 src/getcert.c:1696 src/getcert.c:1711
 #, c-format
 msgid "Error parsing server response.\n"
-msgstr "merespon pelayanan penguraian kesalahan.\n"
+msgstr ""
 
-#: src/certmaster.c:177
+#: src/certmaster.c:182
 #, c-format
 msgid "Server error.\n"
-msgstr "Kesalahan server.\n"
+msgstr ""
 
-#: src/getcert.c:88
-#: src/getcert.c:117
+#: src/getcert.c:88 src/getcert.c:117
 #, c-format
 msgid "Path \"%s\" is not absolute, using \"%s\" instead.\n"
-msgstr "Path \"%s\" tidak mutlak digunakan\"%s\"sebagai ganti.\n"
+msgstr ""
 
-#: src/getcert.c:92
-#: src/getcert.c:121
+#: src/getcert.c:92 src/getcert.c:121
 #, c-format
-msgid "Path \"%s\" is not absolute, and there was an error determining the name of the current directory.\n"
-msgstr "Path \"%s\"tidak mutlak, dan ada eror yang menentukan nama dari sebuah direktori.\n"
+msgid ""
+"Path \"%s\" is not absolute, and there was an error determining the name of "
+"the current directory.\n"
+msgstr ""
 
-#: src/getcert.c:140
-#: src/getcert.c:166
+#: src/getcert.c:140 src/getcert.c:166
 #, c-format
 msgid "Error connecting to DBus.\n"
-msgstr "Kesalahan koneksi untuk ke DBus.\n"
+msgstr ""
 
 #: src/getcert.c:173
 #, c-format
 msgid "Error creating DBus request message.\n"
-msgstr "permintaan pesan Eror penciptaan DBus.\n"
+msgstr ""
 
 #: src/getcert.c:192
 #, c-format
 msgid "Error %s: %s\n"
-msgstr "Error %s: %s\n"
+msgstr ""
 
 #: src/getcert.c:195
 #, c-format
 msgid "Error %s\n"
-msgstr "Error %s\n"
+msgstr ""
 
 #: src/getcert.c:199
 #, c-format
 msgid "Error: %s\n"
-msgstr "Error: %s\n"
+msgstr ""
 
 #: src/getcert.c:201
 #, c-format
 msgid "Received error response from local %s service.\n"
-msgstr "Menerima respon eror dari lokal %s layanan.\n"
+msgstr ""
 
 #: src/getcert.c:207
 #, c-format
 msgid "No response received from %s service.\n"
-msgstr "Tidak menerima respon dari %s layanan.\n"
+msgstr ""
 
-#: src/getcert.c:364
-#: src/getcert.c:1233
+#: src/getcert.c:364 src/getcert.c:1300
 #, c-format
 msgid "Error initializing Kerberos library: %s.\n"
-msgstr "Menginisialisasi Kesalahan Kerberos : %s.\n"
+msgstr ""
 
-#: src/getcert.c:421
-#: src/getcert.c:1276
+#: src/getcert.c:421 src/getcert.c:1343
 #, c-format
 msgid "Could not evaluate OID \"%s\".\n"
-msgstr "Tidak dapat mengevaluasi OID\"%s\".\n"
+msgstr ""
 
-#: src/getcert.c:431
-#: src/getcert.c:1286
+#: src/getcert.c:431 src/getcert.c:1353
 #, c-format
 msgid "Error parsing Kerberos principal name \"%s\": %s.\n"
-msgstr "Kesalahan menguraikan nama utama Kerberos \"%s\": %s.\n"
+msgstr ""
 
-#: src/getcert.c:439
-#: src/getcert.c:1294
+#: src/getcert.c:439 src/getcert.c:1361
 #, c-format
 msgid "Error unparsing Kerberos principal name \"%s\": %s.\n"
-msgstr "Kesalahan tanpa menguraikan nama utama Kerberos \"%s\": %s.\n"
+msgstr ""
 
-#: src/getcert.c:472
-#: src/getcert.c:1045
-#: src/getcert.c:1133
-#: src/getcert.c:1335
+#: src/getcert.c:472 src/getcert.c:1081 src/getcert.c:1199 src/getcert.c:1402
 #, c-format
 msgid "Database location or nickname specified without the other.\n"
-msgstr "Lokasi database atau nama panggilan khusus tanpa yang lain. \n"
+msgstr ""
 
-#: src/getcert.c:478
-#: src/getcert.c:1051
-#: src/getcert.c:1139
-#: src/getcert.c:1341
+#: src/getcert.c:478 src/getcert.c:1087 src/getcert.c:1205 src/getcert.c:1408
 #, c-format
 msgid "Database directory and certificate file both specified.\n"
-msgstr "Direktori database dan sertifikat file kedua secara khusus.\n"
+msgstr ""
 
-#: src/getcert.c:486
-#: src/getcert.c:1147
-#: src/getcert.c:1349
+#: src/getcert.c:486 src/getcert.c:1213 src/getcert.c:1416
 #, c-format
-msgid "None of database directory and nickname or certificate file specified.\n"
-msgstr "Tidak ada dari direktori database dan nama panggilan atau sertifikat berkas khusus.\n"
+msgid ""
+"None of database directory and nickname or certificate file specified.\n"
+msgstr ""
 
-#: src/getcert.c:493
-#: src/getcert.c:1067
+#: src/getcert.c:493 src/getcert.c:1103
 #, c-format
 msgid "Key and certificate can not both be saved to the same file.\n"
-msgstr "Kunci dan sertifikat tidak dapat di simpan seluruhnya pada file yang sama.\n"
+msgstr ""
 
 #: src/getcert.c:518
 #, c-format
-msgid "The IPA backend requires the use of the -K option (principal name) when the -N option (subject name) is used.\n"
-msgstr "IPA kembali memerlukan kegunaan dari pilihan -K (nama utama) di mana ketika pilihan -N (nama subjek) telah digunakan.\n"
+msgid ""
+"The IPA backend requires the use of the -K option (principal name) when the -"
+"N option (subject name) is used.\n"
+msgstr ""
 
-#: src/getcert.c:649
-#: src/getcert.c:1369
+#: src/getcert.c:648 src/getcert.c:955 src/getcert.c:1155 src/getcert.c:1436
 #, c-format
 msgid "No CA with name \"%s\" found.\n"
-msgstr "Tidak ada CA dengan nama \"%s\"menemukan.\n"
+msgstr ""
 
-#: src/getcert.c:699
-#: src/getcert.c:942
-#: src/getcert.c:1106
-#: src/getcert.c:1177
-#: src/getcert.c:1432
+#: src/getcert.c:697 src/getcert.c:971 src/getcert.c:1172 src/getcert.c:1244
+#: src/getcert.c:1499
 #, c-format
 msgid "Error setting request arguments.\n"
-msgstr "Pengaturan kesalahan permintaan beberapa argumen.\n"
+msgstr ""
 
-#: src/getcert.c:710
+#: src/getcert.c:708
 #, c-format
 msgid "New signing request \"%s\" added.\n"
-msgstr "Menandai permintaan baru \"%s\" yang di tambah.\n"
+msgstr ""
 
-#: src/getcert.c:713
+#: src/getcert.c:711
 #, c-format
 msgid "New signing request could not be added.\n"
-msgstr "Menandai permintaan baru yang tidak dapat ditambahkan.\n"
+msgstr ""
 
-#: src/getcert.c:953
+#: src/getcert.c:982
 #, c-format
 msgid "New tracking request \"%s\" added.\n"
-msgstr "Permintaan pelacakan di tambahkan \"%s\"added.\n"
+msgstr ""
 
-#: src/getcert.c:957
+#: src/getcert.c:986
 #, c-format
 msgid "New tracking request could not be added.\n"
-msgstr "Permintaan pelacakan tidak dapat di tambahkan.\n"
+msgstr ""
 
-#: src/getcert.c:1060
+#: src/getcert.c:1096
 #, c-format
-msgid "None of ID or database directory and nickname or certificate file specified.\n"
-msgstr "ID kosong atau direktori database dan nama panggilan atau sertifikat berkas khusus.\n"
+msgid ""
+"None of ID or database directory and nickname or certificate file "
+"specified.\n"
+msgstr ""
 
-#: src/getcert.c:1120
+#: src/getcert.c:1186
 #, c-format
 msgid "Request \"%s\" modified.\n"
-msgstr "Permintaan \"%s\" memodifikasi.\n"
+msgstr ""
 
-#: src/getcert.c:1124
+#: src/getcert.c:1190
 #, c-format
 msgid "Request \"%s\" could not be modified.\n"
-msgstr "Permintaan \"%s\" tidak dapat dimodifikasi.\n"
+msgstr ""
 
-#: src/getcert.c:1169
-#: src/getcert.c:1355
+#: src/getcert.c:1236 src/getcert.c:1422
 #, c-format
 msgid "No request found that matched arguments.\n"
-msgstr "Tidak menemukan permintaan mengenai argumen yang cocok.\n"
+msgstr ""
 
-#: src/getcert.c:1187
+#: src/getcert.c:1254
 #, c-format
 msgid "Request \"%s\" removed.\n"
-msgstr "Permintaan \"%s\" menghapus.\n"
+msgstr ""
 
-#: src/getcert.c:1191
+#: src/getcert.c:1258
 #, c-format
 msgid "Request \"%s\" could not be removed.\n"
-msgstr "Permintaan \"%s\" tidak dapat menghapus.\n"
+msgstr ""
 
-#: src/getcert.c:1446
+#: src/getcert.c:1513
 #, c-format
 msgid "Error modifying \"%s\".\n"
-msgstr "Modifikasi eror \"%s\".\n"
+msgstr ""
 
-#: src/getcert.c:1462
+#: src/getcert.c:1529
 #, c-format
 msgid "Resubmitting \"%s\" to \"%s\".\n"
-msgstr "Pengajuan kembali \"%s\" to \"%s\".\n"
+msgstr ""
 
-#: src/getcert.c:1465
+#: src/getcert.c:1532
 #, c-format
 msgid "Resubmitting \"%s\".\n"
-msgstr "Pengajuan kembali \"%s\".\n"
+msgstr ""
 
-#: src/getcert.c:1471
+#: src/getcert.c:1538
 #, c-format
 msgid "Error attempting to submit \"%s\" to \"%s\".\n"
-msgstr "Usaha eror untuk di ajukan \"%s\"untuk \"%s\".\n"
+msgstr ""
 
-#: src/getcert.c:1474
+#: src/getcert.c:1541
 #, c-format
 msgid "Error attempting to submit \"%s\".\n"
-msgstr "Usaha eror untuk di ajukan \"%s\".\n"
+msgstr ""
 
-#: src/getcert.c:1591
+#: src/getcert.c:1658
 #, c-format
 msgid "Request ID '%s':\n"
-msgstr "ID de solicitud '%s':\n"
+msgstr ""
 
-#: src/getcert.c:1592
+#: src/getcert.c:1659
 #, c-format
 msgid "\tstatus: %s\n"
-msgstr "\tstatus: %s\n"
-
-#: src/getcert.c:1596
-#, c-format
-msgid "\tca-error: %s\n"
-msgstr "\tca-error: %s\n"
-
-#: src/getcert.c:1598
-#, c-format
-msgid "\tstuck: %s\n"
-msgstr "\tstuck: %s\n"
-
-#: src/getcert.c:1618
-#, c-format
-msgid "\tkey pair storage: %s%s%s%s%s%s%s%s%s%s%s%s%s%s\n"
-msgstr "\tkey pair storage: %s%s%s%s%s%s%s%s%s%s%s%s%s%s\n"
-
-#: src/getcert.c:1619
-msgid "type="
-msgstr "type="
-
-#: src/getcert.c:1620
-msgid ",location='"
-msgstr ",location='"
-
-#: src/getcert.c:1621
-#: src/getcert.c:1635
-msgid ",nickname="
-msgstr ",nickname="
-
-#: src/getcert.c:1622
-#: src/getcert.c:1636
-msgid ",token='"
-msgstr ",token='"
-
-#: src/getcert.c:1623
-msgid ",pin="
-msgstr ",pin="
-
-#: src/getcert.c:1624
-msgid ",pinfile="
-msgstr ",pinfile="
-
-#: src/getcert.c:1633
-#, c-format
-msgid "\tcertificate: type=%s,location='%s'%s%s%s%s%s\n"
-msgstr "\tcertificate: type=%s,location='%s'%s%s%s%s%s\n"
-
-#: src/getcert.c:1649
-#, c-format
-msgid "\tCA: %s\n"
-msgstr "\tCA: %s\n"
-
-#: src/getcert.c:1651
-#, c-format
-msgid "\tissuer: %s\n"
-msgstr "\tissuer: %s\n"
-
-#: src/getcert.c:1652
-#, c-format
-msgid "\tsubject: %s\n"
-msgstr "\tsubject: %s\n"
-
-#: src/getcert.c:1653
-#, c-format
-msgid "\texpires: %s\n"
-msgstr "\texpires: %s\n"
-
-#: src/getcert.c:1654
-msgid "unknown"
-msgstr "Tidak diketauhui"
-
-#: src/getcert.c:1657
-msgid "\temail: "
-msgstr "\temail: "
+msgstr ""
 
 #: src/getcert.c:1663
+#, c-format
+msgid "\tca-error: %s\n"
+msgstr ""
+
+#: src/getcert.c:1665
+#, c-format
+msgid "\tstuck: %s\n"
+msgstr ""
+
+#: src/getcert.c:1685
+#, c-format
+msgid "\tkey pair storage: %s%s%s%s%s%s%s%s%s%s%s%s%s%s\n"
+msgstr ""
+
+#: src/getcert.c:1686
+msgid "type="
+msgstr ""
+
+#: src/getcert.c:1687
+msgid ",location='"
+msgstr ""
+
+#: src/getcert.c:1688 src/getcert.c:1702
+msgid ",nickname="
+msgstr ""
+
+#: src/getcert.c:1689 src/getcert.c:1703
+msgid ",token='"
+msgstr ""
+
+#: src/getcert.c:1690
+msgid ",pin="
+msgstr ""
+
+#: src/getcert.c:1691
+msgid ",pinfile="
+msgstr ""
+
+#: src/getcert.c:1700
+#, c-format
+msgid "\tcertificate: type=%s,location='%s'%s%s%s%s%s\n"
+msgstr ""
+
+#: src/getcert.c:1716
+#, c-format
+msgid "\tCA: %s\n"
+msgstr ""
+
+#: src/getcert.c:1718
+#, c-format
+msgid "\tissuer: %s\n"
+msgstr ""
+
+#: src/getcert.c:1719
+#, c-format
+msgid "\tsubject: %s\n"
+msgstr ""
+
+#: src/getcert.c:1720
+#, c-format
+msgid "\texpires: %s\n"
+msgstr ""
+
+#: src/getcert.c:1721
+msgid "unknown"
+msgstr ""
+
+#: src/getcert.c:1724
+msgid "\temail: "
+msgstr ""
+
+#: src/getcert.c:1730
 msgid "\tdns: "
-msgstr "\tdns: "
+msgstr ""
 
-#: src/getcert.c:1669
+#: src/getcert.c:1736
 msgid "\tprincipal name: "
-msgstr "\tprincipal name: "
+msgstr ""
 
-#: src/getcert.c:1675
+#: src/getcert.c:1742
 msgid "\teku: "
-msgstr "\teku: "
-
-#: src/getcert.c:1679
-#, c-format
-msgid "\ttrack: %s\n"
-msgstr "\ttrack: %s\n"
-
-#: src/getcert.c:1683
-#, c-format
-msgid "\tauto-renew: %s\n"
-msgstr "\tauto-renew: %s\n"
-
-# Ver si corresponde AC o CA
-#: src/getcert.c:1725
-#, c-format
-msgid "CA '%s':\n"
-msgstr "AC '%s':\n"
-
-#: src/getcert.c:1732
-#, c-format
-msgid "\tca-type: %s\n"
-msgstr "\tca-type: %s\n"
-
-#: src/getcert.c:1734
-#, c-format
-msgid "\thelper-location: %s\n"
-msgstr "\thelper-location: %s\n"
-
-#: src/getcert.c:1738
-#, c-format
-msgid "\tnext-serial-number: %s\n"
-msgstr "\tnext-serial-number: %s\n"
+msgstr ""
 
 #: src/getcert.c:1746
 #, c-format
-msgid "\tknown-issuer-names:\n"
-msgstr "\tknown-issuer-names:\n"
+msgid "\ttrack: %s\n"
+msgstr ""
 
-#: src/getcert.c:1772
+#: src/getcert.c:1750
 #, c-format
-msgid "%s - client certificate enrollment tool\n"
-msgstr "%s - sertifikat pendaftaran pelanggan\n"
-
-#: src/getcert.c:1776
-#, c-format
-msgid "Usage: %s request [options]\n"
-msgstr "Pemakaian: %s request[options]\n"
-
-#: src/getcert.c:1778
-#: src/getcert.c:1813
-#: src/getcert.c:1840
-#: src/getcert.c:1860
-msgid "Required arguments:\n"
-msgstr "Argumentasi yang di butuhkan:\n"
-
-#: src/getcert.c:1779
-#: src/getcert.c:1816
-#: src/getcert.c:1843
-#: src/getcert.c:1863
-msgid "* If using an NSS database for storage:\n"
-msgstr "*Jika menggunakan database NSS untuk menyimpan:\n"
-
-#: src/getcert.c:1780
-#: src/getcert.c:1817
-#: src/getcert.c:1844
-#: src/getcert.c:1864
-msgid "  -d DIR\tNSS database for key and cert\n"
-msgstr "-d DIR\tNSS database untuk kunci dan pemastian\n"
-
-#: src/getcert.c:1781
-#: src/getcert.c:1818
-#: src/getcert.c:1845
-#: src/getcert.c:1865
-msgid "  -n NAME\tnickname for NSS-based storage (only valid with -d)\n"
-msgstr "-n NAME\tnickname untuk dasar penyimpanan NSS (hanya valid dengan -d)\n"
-
-#: src/getcert.c:1782
-#: src/getcert.c:1819
-#: src/getcert.c:1846
-#: src/getcert.c:1866
-msgid "  -t NAME\toptional token name for NSS-based storage (only valid with -d)\n"
-msgstr "-t NAME\toptional tanda nama untuk dasar penyimpanan NSS (hanya valid dengan -d)\n"
-
-#: src/getcert.c:1783
-#: src/getcert.c:1820
-#: src/getcert.c:1847
-#: src/getcert.c:1867
-msgid "* If using files for storage:\n"
-msgstr "*Jika menggunakan berkas untuk penyimpanan:\n"
-
-#: src/getcert.c:1784
-#: src/getcert.c:1821
-#: src/getcert.c:1848
-msgid "  -k FILE\tPEM file for private key\n"
-msgstr "-k FILE\tPEM berkas untuk kunci privasi\n"
-
-#: src/getcert.c:1785
-#: src/getcert.c:1822
-#: src/getcert.c:1849
-msgid "  -f FILE\tPEM file for certificate (only valid with -k)\n"
-msgstr "-f FILE\tPEM berkas untuk sertifikat (hanya valid dengan -k)\n"
-
-#: src/getcert.c:1786
-#: src/getcert.c:1870
-msgid "* If keys are encrypted:\n"
-msgstr "* Jika kunci adalah enkripsi:\n"
-
-#: src/getcert.c:1787
-#: src/getcert.c:1871
-msgid "  -p FILE\tfile which holds the encryption PIN\n"
-msgstr "-p FILE\tfile yang memegang enkripsi suatu PIN\n"
-
-#: src/getcert.c:1788
-#: src/getcert.c:1872
-msgid "  -P PIN \tPIN value\n"
-msgstr "-P PIN \tPIN nilai\n"
-
-#: src/getcert.c:1790
-#: src/getcert.c:1824
-#: src/getcert.c:1851
-#: src/getcert.c:1881
-#: src/getcert.c:1895
-#: src/getcert.c:1910
-msgid "Optional arguments:\n"
-msgstr "Pilihan argumen-argumen:\n"
-
-#: src/getcert.c:1791
-#: src/getcert.c:1825
-#: src/getcert.c:1882
-msgid "* Certificate handling settings:\n"
-msgstr "* Keadaan menangani sertifikat:\n"
+msgid "\tauto-renew: %s\n"
+msgstr ""
 
 #: src/getcert.c:1792
-msgid "  -I NAME\tnickname to assign to the request\n"
-msgstr "-I NAME\tnickname untuk menandai sebuah permintaan\n"
-
-#: src/getcert.c:1793
-msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
-msgstr "-g SIZE\tsize  sebuah kunci untuk menghasilkan jika salah satu telah tidak berada di dalam tempat\n"
-
-#: src/getcert.c:1794
-#: src/getcert.c:1827
-msgid "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
-msgstr "-r\t\tattempt untuk memperbarui sertifikat ketika mendekati akhir waktu (kegagalan)\n"
-
-#: src/getcert.c:1795
-#: src/getcert.c:1828
-msgid "  -R\t\tdon't attempt to renew the certificate when expiration nears\n"
-msgstr "-R\t\tdon't usaha untuk memperbarui sertifikat ketika mendekati akhir waktu\n"
-
-#: src/getcert.c:1797
-#: src/getcert.c:1830
-msgid "  -c CA\t\tuse the specified CA rather than the default\n"
-msgstr " -c CA\t\tuse CA khusus lebih baik daripada kegagalan\n"
+#, c-format
+msgid "CA '%s':\n"
+msgstr ""
 
 #: src/getcert.c:1799
-msgid "* Parameters for the signing request:\n"
-msgstr "* Beberapa parameter untuk menandai permintaan:\n"
-
-#: src/getcert.c:1800
-#: src/getcert.c:1875
-msgid "  -N NAME\tset requested subject name (default: CN=<hostname>)\n"
-msgstr "  -N NAME\tset permintaan nama subjek (kegagalan: CN=<hostname>)\n"
+#, c-format
+msgid "\tca-type: %s\n"
+msgstr ""
 
 #: src/getcert.c:1801
-#: src/getcert.c:1876
-msgid "  -U EXTUSAGE\tset requested extended key usage OID\n"
-msgstr "-U EXTUSAGE\tset memperluas permintaan pemakaian kunci OID\n"
-
-#: src/getcert.c:1802
-#: src/getcert.c:1877
-msgid "  -K NAME\tset requested principal name\n"
-msgstr "-K NAME\tset permintaan nama utama\n"
-
-#: src/getcert.c:1803
-#: src/getcert.c:1878
-msgid "  -D DNSNAME\tset requested DNS name\n"
-msgstr "-D DNSNAME\tset permintaan nama DNS\n"
-
-#: src/getcert.c:1804
-#: src/getcert.c:1879
-msgid "  -E EMAIL\tset requested email address\n"
-msgstr "-E EMAIL\tset permintaan alamat email\n"
+#, c-format
+msgid "\thelper-location: %s\n"
+msgstr ""
 
 #: src/getcert.c:1805
-#: src/getcert.c:1832
-#: src/getcert.c:1852
-#: src/getcert.c:1887
-#: src/getcert.c:1902
-#: src/getcert.c:1915
-msgid "* Bus options:\n"
-msgstr "* Pilihan Bus:\n"
+#, c-format
+msgid "\tnext-serial-number: %s\n"
+msgstr ""
 
-#: src/getcert.c:1806
-#: src/getcert.c:1833
+#: src/getcert.c:1813
+#, c-format
+msgid "\tknown-issuer-names:\n"
+msgstr ""
+
+#: src/getcert.c:1839
+#, c-format
+msgid "%s - client certificate enrollment tool\n"
+msgstr ""
+
+#: src/getcert.c:1843
+#, c-format
+msgid "Usage: %s request [options]\n"
+msgstr ""
+
+#: src/getcert.c:1845 src/getcert.c:1880 src/getcert.c:1911 src/getcert.c:1931
+msgid "Required arguments:\n"
+msgstr ""
+
+#: src/getcert.c:1846 src/getcert.c:1883 src/getcert.c:1914 src/getcert.c:1934
+msgid "* If using an NSS database for storage:\n"
+msgstr ""
+
+#: src/getcert.c:1847 src/getcert.c:1884 src/getcert.c:1915 src/getcert.c:1935
+msgid "  -d DIR\tNSS database for key and cert\n"
+msgstr ""
+
+#: src/getcert.c:1848 src/getcert.c:1885 src/getcert.c:1916 src/getcert.c:1936
+msgid "  -n NAME\tnickname for NSS-based storage (only valid with -d)\n"
+msgstr ""
+
+#: src/getcert.c:1849 src/getcert.c:1886 src/getcert.c:1917 src/getcert.c:1937
+msgid ""
+"  -t NAME\toptional token name for NSS-based storage (only valid with -d)\n"
+msgstr ""
+
+#: src/getcert.c:1850 src/getcert.c:1887 src/getcert.c:1918 src/getcert.c:1938
+msgid "* If using files for storage:\n"
+msgstr ""
+
+#: src/getcert.c:1851 src/getcert.c:1888 src/getcert.c:1919
+msgid "  -k FILE\tPEM file for private key\n"
+msgstr ""
+
+#: src/getcert.c:1852 src/getcert.c:1889 src/getcert.c:1920
+msgid "  -f FILE\tPEM file for certificate (only valid with -k)\n"
+msgstr ""
+
 #: src/getcert.c:1853
-#: src/getcert.c:1888
+msgid "* If keys are to be encrypted:\n"
+msgstr ""
+
+#: src/getcert.c:1854 src/getcert.c:1892 src/getcert.c:1942
+msgid "  -p FILE\tfile which holds the encryption PIN\n"
+msgstr ""
+
+#: src/getcert.c:1855 src/getcert.c:1893 src/getcert.c:1943
+msgid "  -P PIN\tPIN value\n"
+msgstr ""
+
+#: src/getcert.c:1857 src/getcert.c:1895 src/getcert.c:1922 src/getcert.c:1952
+#: src/getcert.c:1966 src/getcert.c:1981
+msgid "Optional arguments:\n"
+msgstr ""
+
+#: src/getcert.c:1858 src/getcert.c:1896 src/getcert.c:1953
+msgid "* Certificate handling settings:\n"
+msgstr ""
+
+#: src/getcert.c:1859
+msgid "  -I NAME\tnickname to assign to the request\n"
+msgstr ""
+
+#: src/getcert.c:1860
+msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
+msgstr ""
+
+#: src/getcert.c:1861 src/getcert.c:1898
+msgid ""
+"  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
+msgstr ""
+
+#: src/getcert.c:1862 src/getcert.c:1899
+msgid "  -R\t\tdon't attempt to renew the certificate when expiration nears\n"
+msgstr ""
+
+#: src/getcert.c:1864 src/getcert.c:1901
+msgid "  -c CA\t\tuse the specified CA rather than the default\n"
+msgstr ""
+
+#: src/getcert.c:1866
+msgid "* Parameters for the signing request:\n"
+msgstr ""
+
+#: src/getcert.c:1867 src/getcert.c:1946
+msgid "  -N NAME\tset requested subject name (default: CN=<hostname>)\n"
+msgstr ""
+
+#: src/getcert.c:1868 src/getcert.c:1947
+msgid "  -U EXTUSAGE\tset requested extended key usage OID\n"
+msgstr ""
+
+#: src/getcert.c:1869 src/getcert.c:1948
+msgid "  -K NAME\tset requested principal name\n"
+msgstr ""
+
+#: src/getcert.c:1870 src/getcert.c:1949
+msgid "  -D DNSNAME\tset requested DNS name\n"
+msgstr ""
+
+#: src/getcert.c:1871 src/getcert.c:1950
+msgid "  -E EMAIL\tset requested email address\n"
+msgstr ""
+
+#: src/getcert.c:1872 src/getcert.c:1903 src/getcert.c:1923 src/getcert.c:1958
+#: src/getcert.c:1973 src/getcert.c:1986
+msgid "* Bus options:\n"
+msgstr ""
+
+#: src/getcert.c:1873 src/getcert.c:1904 src/getcert.c:1924 src/getcert.c:1959
 msgid "  -S\t\tconnect to the certmonger service on the system bus\n"
-msgstr "-S\t\tconnect untuk layanan pemastian dalam sistem bus\n"
+msgstr ""
 
-#: src/getcert.c:1807
-#: src/getcert.c:1834
-#: src/getcert.c:1854
-#: src/getcert.c:1889
+#: src/getcert.c:1874 src/getcert.c:1905 src/getcert.c:1925 src/getcert.c:1960
 msgid "  -s\t\tconnect to the certmonger service on the session bus\n"
-msgstr "-s\t\tconnect untuk layanan pemastian pada pembahasan bus\n"
+msgstr ""
 
-#: src/getcert.c:1811
+#: src/getcert.c:1878
 #, c-format
 msgid "Usage: %s start-tracking [options]\n"
-msgstr "Pemakaian: %s start-tracking [options]\n"
+msgstr ""
 
-#: src/getcert.c:1814
+#: src/getcert.c:1881
 msgid "* If modifying an existing request:\n"
-msgstr "* Jika memodifikasi permintaan yang ada:\n"
+msgstr ""
 
-#: src/getcert.c:1815
+#: src/getcert.c:1882
 msgid "  -i NAME\tnickname of an existing tracking request\n"
-msgstr "-i NAME\tnickname permintaan mengikuti jalan yang ada\n"
+msgstr ""
 
-#: src/getcert.c:1826
+#: src/getcert.c:1891 src/getcert.c:1941
+msgid "* If keys are encrypted:\n"
+msgstr ""
+
+#: src/getcert.c:1897
 msgid "  -I NAME\tnickname to give to tracking request\n"
-msgstr "-I NAME\tnickname untuk memberi mengikuti permintaan\n"
+msgstr ""
 
-#: src/getcert.c:1838
+#: src/getcert.c:1909
 #, c-format
 msgid "Usage: %s stop-tracking [options]\n"
-msgstr "Pemakaian:  %s stop-tracking [options]\n"
+msgstr ""
 
-#: src/getcert.c:1841
-#: src/getcert.c:1861
+#: src/getcert.c:1912 src/getcert.c:1932
 msgid "* By request identifier:\n"
-msgstr "* Dengan memperkenalkan permintaan:\n"
+msgstr ""
 
-#: src/getcert.c:1842
-#: src/getcert.c:1862
+#: src/getcert.c:1913 src/getcert.c:1933
 msgid "  -i NAME\tnickname for tracking request\n"
-msgstr "-i NAME\tnickname untuk mengikuti permintaan\n"
+msgstr ""
 
-#: src/getcert.c:1858
+#: src/getcert.c:1929
 #, c-format
 msgid "Usage: %s resubmit [options]\n"
-msgstr "Pemakaian: %s resubmit [options]\n"
+msgstr ""
 
-#: src/getcert.c:1868
+#: src/getcert.c:1939
 msgid "  -f FILE\tPEM file for certificate\n"
-msgstr "-f FILE\tPEM berkas untuk sertifikat\n"
+msgstr ""
 
-#: src/getcert.c:1874
+#: src/getcert.c:1945
 msgid "* New parameter values for the signing request:\n"
-msgstr "* Parameter baru bernilai untuk menandai permintaan:\n"
+msgstr ""
 
-#: src/getcert.c:1883
+#: src/getcert.c:1954
 msgid "  -I NAME\tnew nickname to give to tracking request\n"
-msgstr "-I NAME\tnew nama panggilan untuk memberikan mengikuti permintaan\n"
+msgstr ""
 
-#: src/getcert.c:1885
+#: src/getcert.c:1956
 msgid "  -c CA\t\tuse the specified CA rather than the current one\n"
-msgstr "-c CA\t\tuse CA khusus lebih baik daripada saat ini\n"
+msgstr ""
 
-#: src/getcert.c:1893
+#: src/getcert.c:1964
 #, c-format
 msgid "Usage: %s list [options]\n"
-msgstr "Pemakaian:  %s list [options]\n"
+msgstr ""
 
-#: src/getcert.c:1896
-#: src/getcert.c:1912
+#: src/getcert.c:1967 src/getcert.c:1983
 msgid "* General options:\n"
-msgstr "* Pilihan umum:\n"
+msgstr ""
 
-#: src/getcert.c:1898
+#: src/getcert.c:1969
 msgid "  -c CA\tlist only requests and certs associated with this CA\n"
-msgstr "-c CA\tlist hanya permintaan dan pemastian kolega dengan CA ini\n"
+msgstr ""
 
-#: src/getcert.c:1900
+#: src/getcert.c:1971
 msgid "  -r\tlist only information about outstanding requests\n"
-msgstr "-r\tlist hanya informasi tentang permintaan terkemuka\n"
+msgstr ""
 
-#: src/getcert.c:1901
+#: src/getcert.c:1972
 msgid "  -t\tlist only information about tracked certificates\n"
-msgstr "-t\tlist hanya informasi tentang jalannya sertifikat\n"
+msgstr ""
 
-#: src/getcert.c:1903
-#: src/getcert.c:1916
+#: src/getcert.c:1974 src/getcert.c:1987
 msgid "  -S\tconnect to the certmonger service on the system bus\n"
-msgstr "-S\tconnect untuk layanan pemastian pada sistem bus\n"
+msgstr ""
 
-#: src/getcert.c:1904
-#: src/getcert.c:1917
+#: src/getcert.c:1975 src/getcert.c:1988
 msgid "  -s\tconnect to the certmonger service on the session bus\n"
-msgstr "-s\tconnect untuk layanan pemastian pada pembahasan bus\n"
+msgstr ""
 
-#: src/getcert.c:1908
+#: src/getcert.c:1979
 #, c-format
 msgid "Usage: %s list-cas [options]\n"
-msgstr "Pemakaian: %s list-cas [options]\n"
+msgstr ""
 
-#: src/getcert.c:1913
+#: src/getcert.c:1984
 msgid "  -c CA\tlist only information about the CA with this name\n"
-msgstr "-c CA\tlist hanya informasi tentang CA dengan nama ini\n"
+msgstr ""
 
-#: src/getcert.c:1968
+#: src/getcert.c:2039
 #, c-format
 msgid "%s: unrecognized command\n"
-msgstr "%s: tidak mengenali perintah\n"
+msgstr ""
 
-#: src/ipa.c:121
+#: src/ipa.c:122
 #, c-format
 msgid "Unable to determine location of CA's XMLRPC server.\n"
-msgstr "Tidak dapat untuk menentukan lokasi dari penyedia CA XMLRPC.\n"
+msgstr ""
 
-#: src/ipa.c:129
+#: src/ipa.c:130
 #, c-format
 msgid "Unable to determine principal name for signing request.\n"
-msgstr "Tidak dapat untuk menentukan nama utama untuk menandai permintaan.\n"
+msgstr ""
 
-#: src/ipa.c:210
+#: src/ipa.c:211
 #, c-format
-msgid "Error setting up ccache for local \"host\" service using default keytab.\n"
-msgstr "Menyembunyikan setting eror untuk lokal \"host\"  layanan menggunakan default kunci tab.\n"
+msgid ""
+"Error setting up ccache for local \"host\" service using default keytab.\n"
+msgstr ""
 
-#: src/ipa.c:214
+#: src/ipa.c:215
 #, c-format
 msgid "Error setting up ccache for \"%s\" using default keytab.\n"
-msgstr "Menyembunyikan setting eror untuk  \"%s\"  menggunakan default kunci tab.\n"
+msgstr ""
 
-#: src/ipa.c:220
+#: src/ipa.c:221
 #, c-format
-msgid "Error setting up ccache for local \"host\" service using keytab \"%s\".\n"
-msgstr "Menyembunyikan setting eror untuk  lokal \"host\"  menggunakan layanan  kunci tab\"%s\".\n"
+msgid ""
+"Error setting up ccache for local \"host\" service using keytab \"%s\".\n"
+msgstr ""
 
-#: src/ipa.c:224
+#: src/ipa.c:225
 #, c-format
 msgid "Error setting up ccache for \"%s\" using keytab \"%s\".\n"
-msgstr "Menyembunyikan setting eror untuk  \"%s\"  menggunakan kunci tab\"%s\".\n"
+msgstr ""
 
-#: src/tdbush.c:193
-#: src/tdbush.c:1057
-#: src/tdbush.c:1221
+#: src/tdbush.c:193 src/tdbush.c:1055 src/tdbush.c:1219
 msgid "An internal error has occurred."
-msgstr "Eror pada bagian dalam telah terjadi"
+msgstr ""
 
 #: src/tdbush.c:257
 msgid "No matching entry found.\n"
-msgstr "Tidak menemukan catatan masuk yang cocok.\n"
+msgstr ""
 
 #: src/tdbush.c:402
 msgid "Certificate storage type not specified."
-msgstr "Tipe penyimpanan sertifikat tidak khusus."
+msgstr ""
 
 #: src/tdbush.c:416
 #, c-format
 msgid "Certificate storage type \"%s\" not supported."
-msgstr "Tipe penyimpanan sertifikat \"%s\" tidak mendukung."
+msgstr ""
 
-#: src/tdbush.c:439
-#: src/tdbush.c:463
-#: src/tdbush.c:504
-#: src/tdbush.c:650
-#: src/tdbush.c:692
-#: src/tdbush.c:1954
+#: src/tdbush.c:439 src/tdbush.c:463 src/tdbush.c:504 src/tdbush.c:650
+#: src/tdbush.c:692 src/tdbush.c:1950
 #, c-format
 msgid "The location \"%s\" must be an absolute path."
-msgstr "Lokasi \"%s\" harus analisa yang tepat."
+msgstr ""
 
-#: src/tdbush.c:455
-#: src/tdbush.c:496
+#: src/tdbush.c:455 src/tdbush.c:496
 msgid "Certificate storage location not specified."
-msgstr "Lokasi penyimpanan sertifikat tidak khusus."
+msgstr ""
 
-#: src/tdbush.c:472
-#: src/tdbush.c:659
+#: src/tdbush.c:472 src/tdbush.c:659
 #, c-format
 msgid "The parent of location \"%s\" must be a valid directory."
-msgstr "induk dari lokasi \"%s\" harus sebuah direktori yang valid."
+msgstr ""
 
-#: src/tdbush.c:481
-#: src/tdbush.c:668
+#: src/tdbush.c:481 src/tdbush.c:668
 #, c-format
 msgid "The location \"%s\" must be a file."
-msgstr "Lokasi \"%s\" harus berupa berkas."
+msgstr ""
 
-#: src/tdbush.c:513
-#: src/tdbush.c:701
+#: src/tdbush.c:513 src/tdbush.c:701
 #, c-format
 msgid "The location \"%s\" must be a directory."
-msgstr "Lokasi \"%s\" harus berupa direktori."
+msgstr ""
 
 #: src/tdbush.c:525
 msgid "Certificate nickname not specified."
-msgstr "nama panggilan sertifikat tidak khusus."
+msgstr ""
 
-#: src/tdbush.c:549
-#: src/tdbush.c:1885
+#: src/tdbush.c:549 src/tdbush.c:1883
 #, c-format
 msgid "There is already a request with the nickname \"%s\"."
-msgstr "Permintaan telah dilakukan dengan nama panggilan \"%s\"."
+msgstr ""
 
-#: src/tdbush.c:558
-#: src/tdbush.c:1892
+#: src/tdbush.c:558 src/tdbush.c:1890
 #, c-format
 msgid "The nickname \"%s\" is not allowed."
-msgstr "Nama panggilan \"%s\" tidak dapat diikuti."
+msgstr ""
 
 #: src/tdbush.c:591
 #, c-format
 msgid "Certificate at same location is already used by request \"%s\"."
-msgstr "sertifikat di lokasi yang sama telah selesai digunakan oleh  permintaan \"%s\"."
+msgstr ""
 
 #: src/tdbush.c:620
 #, c-format
 msgid "Key storage type \"%s\" not supported."
-msgstr "Tipe kunci penyimpanan \"%s\" tidak mendukung."
+msgstr ""
 
-#: src/tdbush.c:642
-#: src/tdbush.c:684
+#: src/tdbush.c:642 src/tdbush.c:684
 msgid "Key storage location not specified."
-msgstr "lokasi kunci penyimpanan tidak khusus."
+msgstr ""
 
 #: src/tdbush.c:713
 msgid "Key nickname not specified."
-msgstr "kunci nama panggilan tidak khusus."
+msgstr ""
 
 #: src/tdbush.c:763
 #, c-format
 msgid "Key at same location is already used by request \"%s\"."
-msgstr "kunci di lokasi yang sama telah digunakan oleh permintaan \"%s\"."
+msgstr ""
 
-# Ver si corresponde CA o AC
 #: src/tdbush.c:815
 msgid "No such CA."
-msgstr "CA tidak serupa."
+msgstr ""
 
-#: src/tdbush.c:1904
+#: src/tdbush.c:1902
 #, c-format
 msgid "Certificate authority \"%s\" not known."
-msgstr "Wewenang sertifikat \"%s\" tidak diketahui."
+msgstr ""
 
-#: src/tdbush.c:2004
+#: src/tdbush.c:2000
 msgid "Unrecognized parameter or wrong value type."
-msgstr "Tidak mengenal parameter atau salah tipe nilai."
-
+msgstr ""
