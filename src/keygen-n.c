@@ -214,12 +214,13 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 		_exit(CM_STATUS_ERROR_INTERNAL);
 	}
-	/* Try to remove any conflicting keys. */
+	/* Try to remove any keys with conflicting names. */
 	privkeys = PK11_ListPrivKeysInSlot(slot, entry->cm_key_nickname, NULL);
 	while ((privkeys != NULL) && !PRIVKEY_LIST_EMPTY(privkeys)) {
 		delkey = NULL;
 		for (node = PRIVKEY_LIST_HEAD(privkeys);
-		     ((node != NULL) && (node->key != NULL));
+		     !PRIVKEY_LIST_EMPTY(privkeys) &&
+		     !PRIVKEY_LIST_END(node, privkeys);
 		     node = PRIVKEY_LIST_NEXT(node)) {
 			keyname = PK11_GetPrivateKeyNickname(node->key);
 			if ((keyname != NULL) &&
@@ -230,16 +231,17 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				delkey = SECKEY_CopyPrivateKey(node->key);
 				break;
 			}
-			if (PRIVKEY_LIST_END(node, privkeys)) {
-				break;
-			}
-		}
-		if (delkey != NULL) {
-			PK11_DeleteTokenPrivateKey(delkey, PR_TRUE);
 		}
 		SECKEY_DestroyPrivateKeyList(privkeys);
-		privkeys = PK11_ListPrivKeysInSlot(slot, entry->cm_key_nickname,
-						   NULL);
+		if (delkey != NULL) {
+			PK11_DeleteTokenPrivateKey(delkey, PR_TRUE);
+			/* If we found at least one key before, scan again. */
+			privkeys = PK11_ListPrivKeysInSlot(slot,
+							   entry->cm_key_nickname,
+							   NULL);
+		} else {
+			privkeys = NULL;
+		}
 	}
 	/* Attach the specified nickname to the key. */
 	error = PK11_SetPrivateKeyNickname(privkey, entry->cm_key_nickname);
