@@ -100,7 +100,7 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
-* Thu Aug  5 2010 Nalin Dahyabhai <nalin@redhat.com> 0.25-1
+* Tue Aug 10 2010 Nalin Dahyabhai <nalin@redhat.com> 0.25-1
 - update to 0.25
   - new translations
     - in by Okta Purnama Rahadian!
@@ -108,6 +108,9 @@ exit 0
     database because we don't have the PIN
   - teach '*getcert start-tracking' about the -p and -P options which the
     '*getcert request' commands already understand (#621670)
+  - double-check that the nicknames of keys we get back from
+    PK11_ListPrivKeysInSlot() match the desired nickname before accepting
+    them as matches, so that our tests won't just blow up on EL5
 
 * Mon Jun 28 2010 Nalin Dahyabhai <nalin@redhat.com> 0.24-4
 - init script: ensure that the subsys lock is created whenever we're called to

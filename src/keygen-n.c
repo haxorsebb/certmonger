@@ -223,6 +223,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		     node = PRIVKEY_LIST_NEXT(node)) {
 			keyname = PK11_GetPrivateKeyNickname(node->key);
 			if ((keyname != NULL) &&
+			    (entry->cm_key_nickname != NULL) &&
 			    (strcmp(keyname, entry->cm_key_nickname) == 0)) {
 				/* Avoid stealing the key reference from the
 				 * list. */

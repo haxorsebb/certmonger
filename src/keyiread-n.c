@@ -167,9 +167,16 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 			     !PRIVKEY_LIST_EMPTY(keys) &&
 			     !PRIVKEY_LIST_END(knode, keys);
 			     knode = PRIVKEY_LIST_NEXT(knode)) {
-				cm_log(3, "Located the key.\n");
-				key = SECKEY_CopyPrivateKey(knode->key);
-				break;
+				nickname = PK11_GetPrivateKeyNickname(knode->key);
+				if ((nickname != NULL) &&
+				    (entry->cm_key_nickname != NULL) &&
+				    (strcmp(entry->cm_key_nickname,
+					    nickname) == 0)) {
+					cm_log(3, "Located the key '%s'.\n",
+					       nickname);
+					key = SECKEY_CopyPrivateKey(knode->key);
+					break;
+				}
 			}
 			SECKEY_DestroyPrivateKeyList(keys);
 		}
