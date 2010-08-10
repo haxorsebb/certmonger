@@ -16,7 +16,7 @@ for scheme in "" dbm sql ; do
 	key_nickname=Test
 	EOF
 	$toolsdir/keygen entry
-	certutil -K -d ${scheme:+${scheme}:}$tmpdir/${scheme}db 2>&1 | sed -re 's,rsa .* Test,rsa PRIVATE-KEY Test,g' -e 's,[ \t]+, ,g'
+	certutil -K -d ${scheme:+${scheme}:}$tmpdir/${scheme}db 2>&1 | sed -re 's,rsa .* Test,rsa PRIVATE-KEY Test,g' -e 's,[ \t]+, ,g' -e 's,Services ",Services",g'
 
 	echo '['Saving certificate${scheme:+ \($scheme\)}.']'
 	rm -fr $tmpdir/${scheme}db
@@ -48,6 +48,6 @@ for scheme in "" dbm sql ; do
 	EOF
 	$toolsdir/certsave entry
 	echo OK
-	certutil -L -d ${scheme:+${scheme}:}$tmpdir/${scheme}db 2>&1 | sed -re 's,[ \t]+, ,g'
+	certutil -L -d ${scheme:+${scheme}:}$tmpdir/${scheme}db 2>&1 | sed -re 's,[ \t]+, ,g' -e 's,Services ",Services",g'
 done
 echo '['Test complete.']'
