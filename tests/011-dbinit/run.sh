@@ -8,19 +8,19 @@ for scheme in "" dbm sql ; do
 	echo '['Generating key${scheme:+ \($scheme\)}.']'
 	rm -fr $tmpdir/${scheme}db
 	mkdir -p $tmpdir/${scheme}db
-	cat > entry <<- EOF
+	cat > entry.key${scheme:+.$scheme} <<- EOF
 	state=NEED_KEY_PAIR
 	key_storage_type=NSSDB
 	key_storage_location=${scheme:+${scheme}:}$tmpdir/${scheme}db
 	key_nickname=Test
 	EOF
-	$toolsdir/keygen entry
+	$toolsdir/keygen entry.key${scheme:+.$scheme}
 	certutil -K -d ${scheme:+${scheme}:}$tmpdir/${scheme}db 2>&1 | sed -re 's,rsa .* Test,rsa PRIVATE-KEY Test,g' -e 's,[ \t]+, ,g' -e 's,Services ",Services",g'
 
 	echo '['Saving certificate${scheme:+ \($scheme\)}.']'
 	rm -fr $tmpdir/${scheme}db
 	mkdir -p $tmpdir/${scheme}db
-	cat > entry <<- EOF
+	cat > entry.cert${scheme:+.$scheme} <<- EOF
 	state=NEED_TO_SAVE_CERT
 	cert_storage_type=NSSDB
 	cert_storage_location=${scheme:+${scheme}:}$tmpdir/${scheme}db
@@ -44,7 +44,7 @@ for scheme in "" dbm sql ; do
 	 8Vw+Zwf78Wg6L4tcAJ6Y4W/Z
 	 -----END CERTIFICATE-----
 	EOF
-	$toolsdir/certsave entry
+	$toolsdir/certsave entry.cert${scheme:+.$scheme}
 	echo OK
 	certutil -L -d ${scheme:+${scheme}:}$tmpdir/${scheme}db 2>&1 | sed -re 's,[ \t]+, ,g' -e 's,Services ",Services",g'
 done
