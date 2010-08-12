@@ -1613,25 +1613,13 @@ request_get_csr_info(DBusConnection *conn, DBusMessage *msg,
 	rep = dbus_message_new_method_return(msg);
 	if (rep != NULL) {
 		if (entry->cm_csr != NULL) {
-			if (entry->cm_template_eku != NULL) {
-				eku = eku_splitv(entry->cm_template_eku);
-			} else {
-				eku = eku_splitv(entry->cm_cert_eku);
-			}
+			eku = eku_splitv(entry->cm_template_eku);
 			cm_tdbusm_set_sasasasnas(rep,
-						 entry->cm_template_subject ?
-						 entry->cm_template_subject :
-						 entry->cm_cert_subject,
-						 entry->cm_template_email ?
-						 (const char **) entry->cm_template_email :
-						 (const char **) entry->cm_cert_email,
-						 entry->cm_template_hostname ?
-						 (const char **) entry->cm_template_hostname :
-						 (const char **) entry->cm_cert_hostname,
-						 entry->cm_template_principal ?
-						 (const char **) entry->cm_template_principal :
-						 (const char **) entry->cm_cert_principal,
-						 ku_from_string(entry->cm_template_ku ? entry->cm_template_ku : entry->cm_cert_ku),
+						 entry->cm_template_subject,
+						 (const char **) entry->cm_template_email,
+						 (const char **) entry->cm_template_hostname,
+						 (const char **) entry->cm_template_principal,
+						 ku_from_string(entry->cm_template_ku),
 						 (const char **) eku);
 			talloc_free(eku);
 		}
