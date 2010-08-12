@@ -149,13 +149,6 @@ is_request(struct cm_context *ctx, const char *path,
 }
 
 /* Functions implemented for the base object. */
-static DBusHandlerResult
-base_add_known_ca(DBusConnection *conn, DBusMessage *msg,
-		  struct cm_context *ctx)
-{
-	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-}
-
 static char *
 maybe_strdup(void *parent, const char *s)
 {
@@ -366,6 +359,87 @@ cm_tdbush_check_arg_parent_is_directory(const char *path)
 		free(tmp);
 	}
 	return -1;
+}
+
+static DBusHandlerResult
+base_add_known_ca(DBusConnection *conn, DBusMessage *msg,
+		  struct cm_context *ctx)
+{
+	DBusMessage *rep;
+	void *parent;
+	char *ca_name, *ca_command, **ca_issuer_names, *path;
+	struct cm_store_ca *ca, *new_ca;
+	int i, n_cas;
+
+	parent = talloc_new(NULL);
+	if (cm_tdbusm_get_ssoas(msg, parent,
+				&ca_name, &ca_command,
+				&ca_issuer_names) != 0) {
+		cm_log(1, "Error parsing arguments.\n");
+		talloc_free(parent);
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+
+	n_cas = cm_get_n_cas(ctx);
+	for (i = 0; i < n_cas; i++) {
+		ca = cm_get_ca_by_index(ctx, i);
+		if (strcasecmp(ca->cm_id, ca_name) == 0) {
+			cm_log(1, "There is already a CA with "
+			       "the nickname \"%s\".\n", ca->cm_id);
+			talloc_free(parent);
+			return send_internal_base_duplicate_error(conn, msg,
+								  _("There is already a CA with the nickname \"%s\"."),
+								  ca->cm_id,
+								  NULL,
+								  NULL);
+		}
+	}
+	if (cm_tdbush_check_object_path_component(ctx, ca_name) != 0) {
+		return send_internal_base_bad_arg_error(conn, msg,
+							_("The nickname \"%s\" is not allowed."),
+							ca_name, NULL);
+	}
+	/* Okay, we can go ahead and add the CA. */
+	new_ca = talloc_ptrtype(parent, new_ca);
+	if (new_ca == NULL) {
+		talloc_free(parent);
+		return send_internal_base_error(conn, msg);
+	}
+	memset(new_ca, 0, sizeof(*new_ca));
+	/* Populate it with all of the information we have. */
+	new_ca->cm_id = talloc_strdup(new_ca, ca_name);
+	new_ca->cm_ca_known_issuer_names = maybe_strdupv(new_ca,
+							 ca_issuer_names);
+	new_ca->cm_ca_is_default = 0;
+	new_ca->cm_ca_type = cm_ca_external;
+	new_ca->cm_ca_external_helper = talloc_strdup(new_ca, ca_command);
+	/* Hand it off to the main loop. */
+	if (cm_add_ca(ctx, new_ca) != 0) {
+		cm_log(1, "Error adding CA to main context.\n");
+		rep = dbus_message_new_method_return(msg);
+		if (rep != NULL) {
+			cm_tdbusm_set_b(rep, FALSE);
+			dbus_connection_send(conn, rep, NULL);
+			dbus_message_unref(rep);
+		}
+		talloc_free(parent);
+		return DBUS_HANDLER_RESULT_HANDLED;
+	} else {
+		rep = dbus_message_new_method_return(msg);
+		if (rep != NULL) {
+			path = talloc_asprintf(parent, "%s/%s",
+					       CM_DBUS_CA_PATH,
+					       new_ca->cm_id);
+			cm_tdbusm_set_bp(rep, TRUE, path);
+			dbus_connection_send(conn, rep, NULL);
+			dbus_message_unref(rep);
+			talloc_free(parent);
+			return DBUS_HANDLER_RESULT_HANDLED;
+		} else {
+			talloc_free(parent);
+			return send_internal_base_error(conn, msg);
+		}
+	}
 }
 
 static DBusHandlerResult
@@ -1006,7 +1080,37 @@ static DBusHandlerResult
 base_remove_known_ca(DBusConnection *conn, DBusMessage *msg,
 		     struct cm_context *ctx)
 {
-	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	DBusMessage *rep;
+	struct cm_store_ca *ca;
+	int ret;
+	void *parent;
+	char *path;
+
+	rep = dbus_message_new_method_return(msg);
+	if (rep == NULL) {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+
+	parent = talloc_new(NULL);
+	if (cm_tdbusm_get_p(msg, parent, &path) == 0) {
+		ca = get_ca_for_path(ctx, path);
+		talloc_free(parent);
+		if (ca != NULL) {
+			ret = cm_remove_ca(ctx, ca->cm_id);
+			cm_tdbusm_set_b(rep, (ret == 0));
+			dbus_connection_send(conn, rep, NULL);
+			dbus_message_unref(rep);
+			return DBUS_HANDLER_RESULT_HANDLED;
+		} else {
+			dbus_message_unref(rep);
+			return send_internal_base_no_such_entry_error(conn,
+								      msg);
+		}
+	} else {
+		talloc_free(parent);
+		dbus_message_unref(rep);
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
 }
 
 static DBusHandlerResult
@@ -2211,10 +2315,13 @@ base_introspect(struct cm_context *ctx, const char *path)
 			       " <interface name=\""
 			       CM_DBUS_BASE_INTERFACE
 			       "\">\n"
-#if 0
 			       "  <method name=\"add_known_ca\">\n"
+			       "   <arg name=\"nickname\" type=\"s\" direction=\"in\"/>\n"
+			       "   <arg name=\"command\" type=\"s\" direction=\"in\"/>\n"
+			       "   <arg name=\"known_names\" type=\"as\" direction=\"in\"/>\n"
+			       "   <arg name=\"status\" type=\"b\" direction=\"out\"/>\n"
+			       "   <arg name=\"name\" type=\"o\" direction=\"out\"/>\n"
 			       "  </method>\n"
-#endif
 			       "  <method name=\"add_request\">\n"
 			       "   <arg name=\"template\" type=\"a{sv}\" direction=\"in\"/>\n"
 			       "   <arg name=\"status\" type=\"b\" direction=\"out\"/>\n"
@@ -2240,12 +2347,10 @@ base_introspect(struct cm_context *ctx, const char *path)
 			       "  <method name=\"get_supported_cert_storage\">\n"
 			       "   <arg name=\"cert_storage_list\" type=\"as\" direction=\"out\"/>\n"
 			       "  </method>\n"
-#if 0
 			       "  <method name=\"remove_known_ca\">\n"
 			       "   <arg name=\"ca\" type=\"o\" direction=\"in\"/>\n"
 			       "   <arg name=\"status\" type=\"b\" direction=\"out\"/>\n"
 			       "  </method>\n"
-#endif
 			       "  <method name=\"remove_request\">\n"
 			       "   <arg name=\"request_id\" type=\"o\" direction=\"in\"/>\n"
 			       "   <arg name=\"status\" type=\"b\" direction=\"out\"/>\n"
