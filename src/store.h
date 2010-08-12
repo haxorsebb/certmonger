@@ -47,4 +47,7 @@ char *cm_store_serial_to_der(void *parent, const char *serial);
 void cm_store_hex_to_bin(const char *serial, unsigned char *buf, int length);
 char *cm_store_canonicalize_directory(void *parent, const char *path);
 
+void cm_store_set_if_not_set_s(void *parent, char **dest, char *src);
+void cm_store_set_if_not_set_as(void *parent, char ***dest, char **src);
+
 #endif

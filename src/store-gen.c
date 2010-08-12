@@ -333,3 +333,42 @@ cm_store_canonicalize_directory(void *parent, const char *path)
 		return talloc_strdup(parent, path);
 	}
 }
+
+void
+cm_store_set_if_not_set_s(void *parent, char **dest, char *src)
+{
+	if ((*dest == NULL) && (src != NULL) && (strlen(src) > 0)) {
+		*dest = talloc_strdup(parent, src);
+	}
+}
+
+void
+cm_store_set_if_not_set_as(void *parent, char ***dest, char **src)
+{
+	int i, j;
+	char **ret;
+	if (*dest == NULL) {
+		for (i = 0; (src != NULL) && (src[i] != NULL); i++) {
+			continue;
+		}
+		if (i > 0) {
+			ret = talloc_zero_size(parent,
+					       sizeof(char *) * (i + 1));
+			if (ret != NULL) {
+				for (j = 0; j < i; j++) {
+					ret[j] = talloc_strdup(ret, src[j]);
+					if (ret[j] == NULL) {
+						/* Out of space? */
+						break;
+					}
+				}
+				ret[j] = NULL;
+				if (i != j) {
+					/* Out of space? */
+					ret = NULL;
+				}
+			}
+			*dest = ret;
+		}
+	}
+}

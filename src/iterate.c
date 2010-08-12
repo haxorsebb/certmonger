@@ -862,8 +862,29 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 								  tmp_ca_name);
 			}
 		}
-		/* If we have a certificate, we go straight to monitoring it. */
+		/* If we have a certificate, we go straight to monitoring it.
+		 * If we didn't get any explicit requests for names, SAN, KU
+		 * and EKU values, then try to pull them from the certificate,
+		 * too. */
 		if (entry->cm_cert != NULL) {
+			cm_store_set_if_not_set_s(entry,
+						  &entry->cm_template_subject,
+						  entry->cm_cert_subject);
+			cm_store_set_if_not_set_as(entry,
+						   &entry->cm_template_hostname,
+						   entry->cm_cert_hostname);
+			cm_store_set_if_not_set_as(entry,
+						   &entry->cm_template_email,
+						   entry->cm_cert_email);
+			cm_store_set_if_not_set_as(entry,
+						   &entry->cm_template_principal,
+						   entry->cm_cert_principal);
+			cm_store_set_if_not_set_s(entry,
+						  &entry->cm_template_ku,
+						  entry->cm_cert_ku);
+			cm_store_set_if_not_set_s(entry,
+						  &entry->cm_template_eku,
+						  entry->cm_cert_eku);
 			cm_log(3, "'%s' has a certificate, monitoring it\n",
 			       entry->cm_id);
 			entry->cm_state = CM_MONITORING;
