@@ -996,15 +996,35 @@ set_tracking(const char *argv0, const char *category,
 	DBusMessage *req, *rep;
 	const char *request, *capath;
 	struct cm_tdbusm_dict param[4];
-	const struct cm_tdbusm_dict *params[7];
+	const struct cm_tdbusm_dict *params[11];
 	char *nss_scheme, *dbdir = NULL, *token = NULL, *nickname = NULL;
 	char *id = NULL, *new_id = NULL, *new_request;
 	char *keyfile = NULL, *certfile = NULL, *ca = DEFAULT_CA;
 	char *pin = NULL, *pinfile = NULL;
 	dbus_bool_t b;
 	int c, auto_renew_start = 0, auto_renew_stop = 0, i;
+	char **eku = NULL, *oid;
+	char **principal = NULL, **dns = NULL, **email = NULL;
+	krb5_context kctx;
+	krb5_error_code kret;
+	krb5_principal kprincipal;
+	char *krealm, *kuprincipal;
+
+	kctx = NULL;
+	if ((kret = krb5_init_context(&kctx)) != 0) {
+		kctx = NULL;
+		printf(_("Error initializing Kerberos library: %s.\n"),
+		       error_message(kret));
+		return 1;
+	}
+	krealm = NULL;
+	if ((kret = krb5_get_default_realm(kctx, &krealm)) != 0) {
+		krealm = NULL;
+	}
+
 	while ((c = getopt(argc, argv,
-			   "d:n:t:k:f:g:p:P:rRi:I:sS" GETOPT_CA)) != -1) {
+			   "d:n:t:k:f:g:p:P:rRi:I:U:K:D:E:sS"
+			   GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
 			nss_scheme = NULL;
@@ -1059,6 +1079,41 @@ set_tracking(const char *argv0, const char *category,
 		case 'I':
 			new_id = talloc_strdup(globals.tctx, optarg);
 			break;
+		case 'U':
+			oid = cm_oid_from_name(globals.tctx, optarg);
+			if (strspn(oid, "0123456789.") != strlen(oid)) {
+				printf(_("Could not evaluate OID \"%s\".\n"),
+				       optarg);
+				return 1;
+			}
+			add_string(globals.tctx, &eku, oid);
+			break;
+		case 'K':
+			kprincipal = NULL;
+			if ((kret = krb5_parse_name(kctx, optarg,
+						    &kprincipal)) != 0) {
+				printf(_("Error parsing Kerberos principal "
+				         "name \"%s\": %s.\n"), optarg,
+				       error_message(kret));
+				return 1;
+			}
+			kuprincipal = NULL;
+			if ((kret = krb5_unparse_name(kctx, kprincipal,
+						      &kuprincipal)) != 0) {
+				printf(_("Error unparsing Kerberos principal "
+				         "name \"%s\": %s.\n"), optarg,
+				       error_message(kret));
+				return 1;
+			}
+			add_string(globals.tctx, &principal, kuprincipal);
+			krb5_free_principal(kctx, kprincipal);
+			break;
+		case 'D':
+			add_string(globals.tctx, &dns, optarg);
+			break;
+		case 'E':
+			add_string(globals.tctx, &email, optarg);
+			break;
 		case 's':
 			bus = cm_tdbus_session;
 			break;
@@ -1076,6 +1131,9 @@ set_tracking(const char *argv0, const char *category,
 			return 1;
 		}
 	}
+
+	krb5_free_context(kctx);
+
 	if (((dbdir != NULL) && (nickname == NULL)) ||
 	    ((dbdir == NULL) && (nickname != NULL))) {
 		printf(_("Database location or nickname specified "
@@ -1125,6 +1183,34 @@ set_tracking(const char *argv0, const char *category,
 				param[i].key = "RENEW";
 				param[i].value_type = cm_tdbusm_dict_b;
 				param[i].value.b = auto_renew_start > 0;
+				params[i] = &param[i];
+				i++;
+			}
+			if (principal != NULL) {
+				param[i].key = "PRINCIPAL";
+				param[i].value_type = cm_tdbusm_dict_as;
+				param[i].value.as = principal;
+				params[i] = &param[i];
+				i++;
+			}
+			if (dns != NULL) {
+				param[i].key = "DNS";
+				param[i].value_type = cm_tdbusm_dict_as;
+				param[i].value.as = dns;
+				params[i] = &param[i];
+				i++;
+			}
+			if (email != NULL) {
+				param[i].key = "EMAIL";
+				param[i].value_type = cm_tdbusm_dict_as;
+				param[i].value.as = email;
+				params[i] = &param[i];
+				i++;
+			}
+			if (eku != NULL) {
+				param[i].key = "EKU";
+				param[i].value_type = cm_tdbusm_dict_as;
+				param[i].value.as = eku;
 				params[i] = &param[i];
 				i++;
 			}
@@ -1389,6 +1475,9 @@ resubmit(const char *argv0, int argc, char **argv)
 			return 1;
 		}
 	}
+
+	krb5_free_context(kctx);
+
 	if (id != NULL) {
 		request = find_request_by_name(globals.tctx, bus, id);
 	} else {
@@ -1899,6 +1988,11 @@ help(const char *cmd, const char *category)
 #ifndef FORCE_CA
 		N_("  -c CA		use the specified CA rather than the default\n"),
 #endif
+		N_("* Parameters for the signing request at renewal time:\n"),
+		N_("  -U EXTUSAGE	override requested extended key usage OID\n"),
+		N_("  -K NAME	override requested principal name\n"),
+		N_("  -D DNSNAME	override requested DNS name\n"),
+		N_("  -E EMAIL	override requested email address\n"),
 		N_("* Bus options:\n"),
 		N_("  -S		connect to the certmonger service on the system bus\n"),
 		N_("  -s		connect to the certmonger service on the session bus\n"),
