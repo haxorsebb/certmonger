@@ -421,6 +421,18 @@ cm_find_entry_by_id(struct cm_context *context, const char *id)
 	return -1;
 }
 
+static int
+cm_find_ca_by_id(struct cm_context *context, const char *id)
+{
+	int i;
+	for (i = 0; i < context->n_cas; i++) {
+		if (strcmp(context->cas[i]->cm_id, id) == 0) {
+			return i;
+		}
+	}
+	return -1;
+}
+
 int
 cm_start_all(struct cm_context *context)
 {
@@ -596,7 +608,7 @@ cm_add_ca(struct cm_context *context, struct cm_store_ca *new_ca)
 		new_ca->cm_id = talloc_strdup(new_ca, new_ca->cm_id);
 	}
 	/* Allocate storage for a new CA array. */
-	cas = talloc_array(context, struct cm_store_ca *, context->n_cas + 1);
+	cas = talloc_array(context, struct cm_store_ca *, context->n_cas + 2);
 	if (cas != NULL) {
 		/* Copy the entries to the new arrays. */
 		for (i = 0; i < context->n_cas; i++) {
@@ -605,6 +617,10 @@ cm_add_ca(struct cm_context *context, struct cm_store_ca *new_ca)
 		}
 		/* Save this entry to the store. */
 		cm_store_ca_save(new_ca);
+		talloc_steal(cas, new_ca);
+		cas[i++] = new_ca;
+		cas[i++] = NULL;
+		context->cas = cas;
 		/* Reset the recorded count of CAs. */
 		context->n_cas++;
 		return 0;
@@ -638,3 +654,28 @@ cm_get_n_cas(struct cm_context *context)
 {
 	return context->n_cas;
 }
+
+int
+cm_remove_ca(struct cm_context *context, const char *id)
+{
+	int i;
+	i = cm_find_ca_by_id(context, id);
+	if (i != -1) {
+		if (cm_store_ca_delete(context->cas[i]) == 0) {
+			/* Free the entry. */
+			talloc_free(context->cas[i]);
+			/* Shorten up the arrays of entries and event
+			 * information. */
+			memmove(context->cas + i,
+				context->cas + i + 1,
+				(context->n_cas - i - 1) *
+				sizeof(context->cas[i]));
+			context->n_cas--;
+			return 0;
+		} else {
+			return -1;
+		}
+	}
+	return -1;
+}
+

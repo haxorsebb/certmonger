@@ -36,6 +36,7 @@ int cm_get_n_cas(struct cm_context *context);
 struct cm_store_ca *cm_get_ca_by_index(struct cm_context *c, int i);
 struct cm_store_ca *cm_get_ca_by_id(struct cm_context *c, const char *id);
 int cm_add_ca(struct cm_context *context, struct cm_store_ca *new_ca);
+int cm_remove_ca(struct cm_context *context, const char *id);
 dbus_bool_t cm_restart_one(struct cm_context *c, const char *id);
 dbus_bool_t cm_stop_one(struct cm_context *c, const char *id);
 dbus_bool_t cm_start_one(struct cm_context *c, const char *id);
