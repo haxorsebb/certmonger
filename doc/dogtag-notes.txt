@@ -241,3 +241,9 @@ result.header = header;
 result.fixed = fixed;
 result.recordSet = recordSet;
 </SCRIPT>
+
+As of 7.3, all of profileSubmit, checkRequest, and displayBySerial should
+support XML output of some kind, but it's not until 8.0 that checkRequest
+gives us the serial number of the issued cert when it tells us that our
+request succeeded, so if the goal is to avoid scraping Javascript, we have
+to require 8.0.
