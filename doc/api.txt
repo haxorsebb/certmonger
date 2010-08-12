@@ -55,7 +55,7 @@ o object layout
     returns: array of path -> object paths for known cas
   - add_known_ca
     arguments: string -> ca nickname
-               string -> external helper
+               string -> external helper command
                array of string (optional) -> known issuer names used by ca
     returns: boolean -> succeeded
   - remove_known_ca
