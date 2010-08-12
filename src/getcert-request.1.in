@@ -83,7 +83,7 @@ the CA should correspond to one listed by \fIgetcert list-cas\fR.
 
 If none of \fB\-N\fR, \fB\-U\fR, \fB\-K\fR, \fB\-E\fR, and \fB\-D\fR are
 specified, a default group of settings will be used to request an SSL
-servercertificate for the current host, with the \fIhost\fR Kerberos
+server certificate for the current host, with the \fIhost\fR Kerberos
 service as an additional name.
 
 .TP
