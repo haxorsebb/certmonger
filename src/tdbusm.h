@@ -37,6 +37,8 @@ int cm_tdbusm_get_ssosos(DBusMessage *msg, void *parent,
 			 char **s1, char **s2, char **s3, char **s4);
 int cm_tdbusm_get_sososos(DBusMessage *msg, void *parent,
 			  char **s1, char **s2, char **s3, char **s4);
+int cm_tdbusm_get_ssoas(DBusMessage *msg, void *parent,
+			char **s1, char **s2, char ***as);
 int cm_tdbusm_get_sssas(DBusMessage *msg, void *parent,
 			char **s1, char **s2, char **s3, char ***as);
 int cm_tdbusm_get_sssnasasasnas(DBusMessage *msg, void *parent,
@@ -80,6 +82,8 @@ int cm_tdbusm_set_sss(DBusMessage *msg,
 int cm_tdbusm_set_ssss(DBusMessage *msg,
 		       const char *s1, const char *s2,
 		       const char *s3, const char *s4);
+int cm_tdbusm_set_ssoas(DBusMessage *msg,
+			const char *s1, const char *s2, const char **as);
 int cm_tdbusm_set_sssas(DBusMessage *msg,
 		        const char *s1, const char *s2,
 		        const char *s3, const char **as);
