@@ -112,8 +112,12 @@ cm_subproc_get_exitstatus(struct cm_store_entry *entry,
 void
 cm_subproc_done(struct cm_store_entry *entry, struct cm_subproc_state *state)
 {
+	pid_t pid;
 	if (state->pid != -1) {
 		kill(state->pid, SIGKILL);
+		do {
+			pid = waitpid(state->pid, &state->status, 0);
+		} while ((pid == -1) && (errno == EINTR));
 	}
 	if (state->fd != -1) {
 		close(state->fd);
