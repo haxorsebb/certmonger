@@ -2,7 +2,7 @@
 %{?_with_check: %global pcheck 1}
 
 Name:		certmonger
-Version:	0.25
+Version:	0.26
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -100,6 +100,11 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Fri Aug 13 2010 Nalin Dahyabhai <nalin@redhat.com> 0.26-1
+- update to 0.26
+  - when canceling a submission request that's being handled by a helper,
+    reap the child process's status after killing it (#624120)
+
 * Fri Aug 13 2010 Nalin Dahyabhai <nalin@redhat.com> 0.25-1
 - update to 0.25
   - new translations
@@ -111,7 +116,7 @@ exit 0
     the -U, -K, -E, and -D flags
   - double-check that the nicknames of keys we get back from
     PK11_ListPrivKeysInSlot() match the desired nickname before accepting
-    them as matches, so that our tests won't just blow up on EL5
+    them as matches, so that our tests won't all blow up on EL5
   - fix dynamic addition and removal of CAs implemented through helpers
 
 * Mon Jun 28 2010 Nalin Dahyabhai <nalin@redhat.com> 0.24-4
