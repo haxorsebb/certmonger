@@ -133,6 +133,7 @@ AC_SUBST(XMLRPC_LIBS)
 CFLAGS="$savedCFLAGS"
 
 savedCFLAGS="$CFLAGS"
+savedCPPFLAGS="$CPPFLAGS"
 savedLDFLAGS="$LDFLAGS"
 CFLAGS=
 AC_ARG_VAR(KRB5_CONFIG,[the full path of the krb5-config command])
@@ -149,10 +150,12 @@ KRB5_LIBS=`${KRB5_CONFIG} --libs`
 AC_MSG_RESULT([$KRB5_LIBS])
 AC_SUBST(KRB5_LIBS)
 CFLAGS="$CFLAGS $KRB5_CFLAGS"
+CPPFLAGS="$CPPFLAGS $KRB5_CFLAGS"
 LDFLAGS="$LDFLAGS $KRB5_LIBS"
-AC_CHECK_DECLS([krb5_princ_component,krb5_princ_name,krb5_princ_realm,krb5_princ_set_realm_length,krb5_princ_size,krb5_princ_type],,,[#include <krb5.h>])
+AC_CHECK_DECLS([krb5_princ_component,krb5_princ_name,krb5_princ_set_realm_length,krb5_princ_size,krb5_princ_type],,,[#include <krb5.h>])
 AC_CHECK_FUNCS(krb5_free_unparsed_name)
 CFLAGS="$savedCFLAGS"
+CPPFLAGS="$savedCPPFLAGS"
 LDFLAGS="$savedLDFLAGS"
 
 AC_ARG_WITH(openssl,
