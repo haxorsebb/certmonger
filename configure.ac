@@ -166,7 +166,11 @@ AC_ARG_WITH(openssl,
 
 AM_CONDITIONAL(HAVE_OPENSSL,test x$withopenssl != xno)
 if test x$withopenssl != xno ; then
-	PKG_CHECK_MODULES(OPENSSL,openssl)
+	if pkg-config libcrypto 2> /dev/null ; then
+		PKG_CHECK_MODULES(OPENSSL,libcrypto)
+	else
+		PKG_CHECK_MODULES(OPENSSL,openssl)
+	fi
 	AC_DEFINE(HAVE_OPENSSL,1,[Define if you have OpenSSL.])
 	CFLAGSsave="$CFLAGS"
 	LIBSsave="$LIBS"
