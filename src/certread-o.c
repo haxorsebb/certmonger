@@ -34,6 +34,8 @@
 #include <openssl/pem.h>
 #include <openssl/ssl.h>
 
+#include <krb5.h>
+
 #include <talloc.h>
 
 #include "certread.h"

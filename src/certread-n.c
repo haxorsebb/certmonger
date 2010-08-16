@@ -33,6 +33,8 @@
 #include <pk11pub.h>
 #include <prerror.h>
 
+#include <krb5.h>
+
 #include <talloc.h>
 
 #include "certext.h"

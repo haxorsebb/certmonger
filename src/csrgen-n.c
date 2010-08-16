@@ -35,6 +35,8 @@
 #include <cert.h>
 #include <certt.h>
 
+#include <krb5.h>
+
 #include <talloc.h>
 
 #include "certext.h"

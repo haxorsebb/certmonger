@@ -24,6 +24,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <krb5.h>
+
 #include <talloc.h>
 
 #include <libxml/parser.h>
