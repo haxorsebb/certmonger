@@ -27,9 +27,9 @@ Keys and certificates can be stored and read in any of these formats:
 The certmonger daemon knows how to self-sign certificates, and will be
 able to submit requests to:
   * self-signing [implemented]
-  * IPA [in progress]
+  * IPA [implemented]
+  * certmaster [implemented]
 I'd like for it to also be able to submit requests to:
-  * certmaster
   * Dogtag/RHCS
   * ADCS
 And perhaps also:
