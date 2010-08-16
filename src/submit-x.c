@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2010 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 
 #include <sys/types.h>
 #include <errno.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -31,6 +32,7 @@
 
 #include <krb5.h>
 
+#include "certext.h"
 #include "log.h"
 #include "submit-e.h"
 #include "submit-u.h"
@@ -83,11 +85,11 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal)
 	}
 	strcpy(tgs, KRB5_TGS_NAME);
 	snprintf(tgs + strlen(tgs), sizeof(tgs) - strlen(tgs), "/%.*s",
-		 (krb5_princ_realm(ctx, princ))->length,
-		 (krb5_princ_realm(ctx, princ))->data);
+		 cm_submit_princ_realm_len(ctx, princ),
+		 cm_submit_princ_realm_data(ctx, princ));
 	snprintf(tgs + strlen(tgs), sizeof(tgs) - strlen(tgs), "@%.*s",
-		 (krb5_princ_realm(ctx, princ))->length,
-		 (krb5_princ_realm(ctx, princ))->data);
+		 cm_submit_princ_realm_len(ctx, princ),
+		 cm_submit_princ_realm_data(ctx, princ));
 	memset(&creds, 0, sizeof(creds));
 	krb5_get_init_creds_opt_init(&gicopts);
 	krb5_get_init_creds_opt_set_forwardable(&gicopts, 1);
