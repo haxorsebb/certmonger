@@ -28,9 +28,9 @@
 #include <nss.h>
 #include <pk11pub.h>
 
-#include <openssl/ssl.h>
-#include <openssl/rsa.h>
 #include <openssl/err.h>
+#include <openssl/pem.h>
+#include <openssl/rsa.h>
 
 #include <talloc.h>
 

@@ -16,7 +16,7 @@
  */
 
 #include "config.h"
-#include <openssl/ssl.h>
+#include <openssl/pem.h>
 #include "util-o.h"
 
 void

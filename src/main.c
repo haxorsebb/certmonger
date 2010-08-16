@@ -51,7 +51,7 @@ main(int argc, char **argv)
 	struct tevent_context *ec;
 	struct cm_context *ctx;
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
-	int i, c, dlevel = 0, pfd;
+	int i, c, dlevel = 0, pfd = -1;
 	pid_t pid;
 	FILE *pfp;
 	const char *pidfile = NULL;

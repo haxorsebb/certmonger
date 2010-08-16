@@ -32,7 +32,6 @@
 
 #include <openssl/err.h>
 #include <openssl/pem.h>
-#include <openssl/ssl.h>
 
 #include <krb5.h>
 

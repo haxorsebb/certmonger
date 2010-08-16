@@ -28,8 +28,8 @@
 #include <nss.h>
 #include <pk11pub.h>
 
-#include <openssl/ssl.h>
 #include <openssl/err.h>
+#include <openssl/pem.h>
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
 
