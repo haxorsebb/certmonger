@@ -499,13 +499,13 @@ static unsigned char *
 cm_certext_princ_data(krb5_context ctx, krb5_principal princ, int i)
 {
 	if (i < 0) {
-#ifdef HAVE_DECL_KRB5_PRINC_REALM
+#if HAVE_DECL_KRB5_PRINC_COMPONENT
 		return (unsigned char *) (krb5_princ_realm(ctx, princ))->data;
 #else
 		return (unsigned char *) princ->realm;
 #endif
 	} else {
-#ifdef HAVE_DECL_KRB5_PRINC_COMPONENT
+#if HAVE_DECL_KRB5_PRINC_COMPONENT
 		return (unsigned char *) (krb5_princ_component(ctx, princ, i))->data;
 #else
 		return (unsigned char *) princ->name.name_string.val[i];
@@ -517,13 +517,13 @@ static int
 cm_certext_princ_len(krb5_context ctx, krb5_principal princ, int i)
 {
 	if (i < 0) {
-#ifdef HAVE_DECL_KRB5_PRINC_REALM
+#if HAVE_DECL_KRB5_PRINC_COMPONENT
 		return (krb5_princ_realm(ctx, princ))->length;
 #else
 		return strlen(princ->realm);
 #endif
 	} else {
-#ifdef HAVE_DECL_KRB5_PRINC_COMPONENT
+#if HAVE_DECL_KRB5_PRINC_COMPONENT
 		return (krb5_princ_component(ctx, princ, i))->length;
 #else
 		return strlen(princ->name.name_string.val[i]);
@@ -534,7 +534,7 @@ cm_certext_princ_len(krb5_context ctx, krb5_principal princ, int i)
 static int
 cm_certext_princ_get_type(krb5_context ctx, krb5_principal princ)
 {
-#ifdef HAVE_DECL_KRB5_PRINC_TYPE
+#if HAVE_DECL_KRB5_PRINC_TYPE
 	return krb5_princ_type(ctx, princ);
 #else
 	return princ->name.name_type;
@@ -544,7 +544,7 @@ cm_certext_princ_get_type(krb5_context ctx, krb5_principal princ)
 static void
 cm_certext_princ_set_type(krb5_context ctx, krb5_principal princ, int nt)
 {
-#ifdef HAVE_DECL_KRB5_PRINC_TYPE
+#if HAVE_DECL_KRB5_PRINC_TYPE
 	krb5_princ_type(ctx, princ) = nt;
 #else
 	princ->name.name_type = nt;
@@ -564,7 +564,7 @@ cm_certext_free_unparsed_name(krb5_context ctx, char *name)
 static int
 cm_certext_princ_get_length(krb5_context ctx, krb5_principal princ)
 {
-#ifdef HAVE_DECL_KRB5_PRINC_SIZE
+#if HAVE_DECL_KRB5_PRINC_SIZE
 	return krb5_princ_size(ctx, princ);
 #else
 	return princ->name.name_string.len;
@@ -574,7 +574,7 @@ cm_certext_princ_get_length(krb5_context ctx, krb5_principal princ)
 static void
 cm_certext_princ_set_length(krb5_context ctx, krb5_principal princ, int length)
 {
-#ifdef HAVE_DECL_KRB5_PRINC_SIZE
+#if HAVE_DECL_KRB5_PRINC_SIZE
 	krb5_princ_size(ctx, princ) = length;
 #else
 	princ->name.name_string.len = length;
@@ -585,7 +585,7 @@ static void
 cm_certext_princ_set_realm(krb5_context ctx, void *parent, krb5_principal princ,
 			   int length, char *name)
 {
-#ifdef HAVE_DECL_KRB5_PRINC_SET_REALM_LENGTH
+#if HAVE_DECL_KRB5_PRINC_SET_REALM_LENGTH
 	char *p;
 	p = talloc_zero_size(parent, length);
 	if (p != NULL) {
@@ -602,7 +602,7 @@ static void
 cm_certext_princ_append_comp(krb5_context ctx, void *parent,
 			     krb5_principal princ, char *name, int length)
 {
-#ifdef HAVE_DECL_KRB5_PRINC_NAME
+#if HAVE_DECL_KRB5_PRINC_NAME
 	krb5_data *comps;
 	int i;
 	i = cm_certext_princ_get_length(ctx, princ);
