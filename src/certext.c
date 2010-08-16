@@ -495,6 +495,145 @@ cm_certext_build_eku(struct cm_store_entry *entry, PLArenaPool *arena,
 	return ret;
 }
 
+static unsigned char *
+cm_certext_princ_data(krb5_context ctx, krb5_principal princ, int i)
+{
+	if (i < 0) {
+#ifdef HAVE_DECL_KRB5_PRINC_REALM
+		return (unsigned char *) (krb5_princ_realm(ctx, princ))->data;
+#else
+		return (unsigned char *) princ->realm;
+#endif
+	} else {
+#ifdef HAVE_DECL_KRB5_PRINC_COMPONENT
+		return (unsigned char *) (krb5_princ_component(ctx, princ, i))->data;
+#else
+		return (unsigned char *) princ->name.name_string.val[i];
+#endif
+	}
+}
+
+static int
+cm_certext_princ_len(krb5_context ctx, krb5_principal princ, int i)
+{
+	if (i < 0) {
+#ifdef HAVE_DECL_KRB5_PRINC_REALM
+		return (krb5_princ_realm(ctx, princ))->length;
+#else
+		return strlen(princ->realm);
+#endif
+	} else {
+#ifdef HAVE_DECL_KRB5_PRINC_COMPONENT
+		return (krb5_princ_component(ctx, princ, i))->length;
+#else
+		return strlen(princ->name.name_string.val[i]);
+#endif
+	}
+}
+
+static int
+cm_certext_princ_get_type(krb5_context ctx, krb5_principal princ)
+{
+#ifdef HAVE_DECL_KRB5_PRINC_TYPE
+	return krb5_princ_type(ctx, princ);
+#else
+	return princ->name.name_type;
+#endif
+}
+
+static void
+cm_certext_princ_set_type(krb5_context ctx, krb5_principal princ, int nt)
+{
+#ifdef HAVE_DECL_KRB5_PRINC_TYPE
+	krb5_princ_type(ctx, princ) = nt;
+#else
+	princ->name.name_type = nt;
+#endif
+}
+
+static void
+cm_certext_free_unparsed_name(krb5_context ctx, char *name)
+{
+#ifdef HAVE_KRB5_FREE_UNPARSED_NAME
+	krb5_free_unparsed_name(ctx, name);
+#else
+	free(name);
+#endif
+}
+
+static int
+cm_certext_princ_get_length(krb5_context ctx, krb5_principal princ)
+{
+#ifdef HAVE_DECL_KRB5_PRINC_SIZE
+	return krb5_princ_size(ctx, princ);
+#else
+	return princ->name.name_string.len;
+#endif
+}
+
+static void
+cm_certext_princ_set_length(krb5_context ctx, krb5_principal princ, int length)
+{
+#ifdef HAVE_DECL_KRB5_PRINC_SIZE
+	krb5_princ_size(ctx, princ) = length;
+#else
+	princ->name.name_string.len = length;
+#endif
+}
+
+static void
+cm_certext_princ_set_realm(krb5_context ctx, void *parent, krb5_principal princ,
+			   int length, char *name)
+{
+#ifdef HAVE_DECL_KRB5_PRINC_SET_REALM_LENGTH
+	char *p;
+	p = talloc_zero_size(parent, length);
+	if (p != NULL) {
+		krb5_princ_set_realm_length(ctx, princ, length);
+		krb5_princ_set_realm_data(ctx, princ, p);
+		memcpy(p, name, length);
+	}
+#else
+	princ->realm = talloc_strndup(parent, name, length);
+#endif
+}
+
+static void
+cm_certext_princ_append_comp(krb5_context ctx, void *parent,
+			     krb5_principal princ, char *name, int length)
+{
+#ifdef HAVE_DECL_KRB5_PRINC_NAME
+	krb5_data *comps;
+	int i;
+	i = cm_certext_princ_get_length(ctx, princ);
+	comps = talloc_zero_array(parent, krb5_data, i + 1);
+	if (i > 0) {
+		memcpy(comps, krb5_princ_name(ctx, princ),
+		       sizeof(krb5_data) * i);
+	}
+	comps[i].data = talloc_zero_size(parent, length);
+	if (comps[i].data != NULL) {
+		memcpy(comps[i].data, name, length);
+		comps[i].length = length;
+		krb5_princ_name(ctx, princ) = comps;
+		cm_certext_princ_set_length(ctx, princ, i + 1);
+	}
+#else
+	int i;
+	char **comps;
+	i = cm_certext_princ_get_length(ctx, princ);
+	comps = talloc_zero_array(parent, char *, i + 1);
+	if (comps != NULL) {
+		memcpy(comps, princ->name.name_string.val, sizeof(char *) * i);
+		comps[i] = talloc_strndup(parent, name, length);
+		if (comps[i] != NULL) {
+			princ->name.name_string.val = comps;
+			cm_certext_princ_set_length(ctx, princ, i + 1);
+		}
+	}
+#endif
+}
+
 /* Convert a principal name structure into a string. */
 static char *
 cm_certext_parse_principal(void *parent, struct kerberos_principal_name *p)
@@ -505,27 +644,28 @@ cm_certext_parse_principal(void *parent, struct kerberos_principal_name *p)
 	char *unparsed, *ret;
 	int i, j;
 	unsigned long name_type;
+	void *tctx;
 	ret = NULL;
 	ctx = NULL;
+	tctx = talloc_new(parent);
 	if (krb5_init_context(&ctx) == 0) {
 		memset(&princ, 0, sizeof(princ));
 		/* Copy the realm over. */
-		princ.realm.length = p->realm.name.len;
-		princ.realm.data = (char *) p->realm.name.data;
+		cm_certext_princ_set_realm(ctx, tctx, &princ,
+					   (int) p->realm.name.len,
+					   (char *) p->realm.name.data);
 		/* Count the number of name components. */
 		comps = p->principal_name.name_string;
 		for (i = 0; (comps != NULL) && (comps[i] != NULL); i++) {
 			continue;
 		}
 		/* Set the number of name components. */
-		princ.length = i;
+		cm_certext_princ_set_length(ctx, &princ, 0);
 		/* Allocate and populate the name components. */
-		princ.data = talloc_zero_array(parent, krb5_data, i);
-		if (princ.data != NULL) {
-			for (j = 0; j < i; j++) {
-				princ.data[j].length = comps[j]->len;
-				princ.data[j].data = (char *) comps[j]->data;
-			}
+		for (j = 0; j < i; j++) {
+			cm_certext_princ_append_comp(ctx, tctx, &princ,
+						     (char *) comps[j]->data,
+						     (int) comps[j]->len);
 		}
 		/* Try to decode the name type. */
 		if (SEC_ASN1DecodeInteger(&p->principal_name.name_type,
@@ -533,14 +673,14 @@ cm_certext_parse_principal(void *parent, struct kerberos_principal_name *p)
 			/* Try to decode the name type. */
 			name_type = KRB5_NT_UNKNOWN;
 		}
-		princ.type = name_type;
+		cm_certext_princ_set_type(ctx, &princ, name_type);
 		/* Convert that into a string.  Use the library function so
 		 * that it can take care of escaping. */
 		if (krb5_unparse_name(ctx, &princ, &unparsed) == 0) {
 			ret = talloc_strdup(parent, unparsed);
-			krb5_free_unparsed_name(ctx, unparsed);
+			cm_certext_free_unparsed_name(ctx, unparsed);
 		}
-		talloc_free(princ.data);
+		talloc_free(tctx);
 		krb5_free_context(ctx);
 	}
 	return ret;
@@ -781,24 +921,23 @@ cm_certext_build_principal(struct cm_store_entry *entry, PLArenaPool *arena,
 	/* Now stuff the values into a structure we can encode. */
 	memset(&p, 0, sizeof(p));
 	/* realm */
-	p.realm.name.data = (unsigned char *) krb5_princ_realm(ctx, princ)->data;
-	p.realm.name.len = krb5_princ_realm(ctx, princ)->length;
+	p.realm.name.data = cm_certext_princ_data(ctx, princ, -1);
+	p.realm.name.len = cm_certext_princ_len(ctx, princ, -1);
 	/* name type */
 	if (SEC_ASN1EncodeInteger(arena, &p.principal_name.name_type,
-				  krb5_princ_type(ctx, princ)) !=
+				  cm_certext_princ_get_type(ctx, princ)) !=
 	    &p.principal_name.name_type) {
 		memset(&p.principal_name.name_type, 0,
 		       sizeof(p.principal_name.name_type));
 	}
 	/* the component names */
-	comp = PORT_ArenaZAlloc(arena,
-				sizeof(SECItem) * krb5_princ_size(ctx, princ));
-	comps = PORT_ArenaZAlloc(arena,
-				 sizeof(SECItem *) * (krb5_princ_size(ctx, princ) + 1));
+	i = cm_certext_princ_get_length(ctx, princ);
+	comp = PORT_ArenaZAlloc(arena, sizeof(SECItem) * (i + 1));
+	comps = PORT_ArenaZAlloc(arena, sizeof(SECItem *) * (i + 1));
 	if (comp != NULL) {
-		for (i = 0; i < krb5_princ_size(ctx, princ); i++) {
-			comp[i].len = krb5_princ_component(ctx, princ, i)->length;
-			comp[i].data = (unsigned char *) krb5_princ_component(ctx, princ, i)->data;
+		for (i = 0; i < cm_certext_princ_get_length(ctx, princ); i++) {
+			comp[i].len = cm_certext_princ_len(ctx, princ, i);
+			comp[i].data = cm_certext_princ_data(ctx, princ, i);
 			comps[i] = &comp[i];
 		}
 		p.principal_name.name_string = comps;

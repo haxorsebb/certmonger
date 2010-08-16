@@ -20,5 +20,7 @@
 
 char *cm_submit_u_from_file(const char *filename);
 char *cm_submit_u_from_file_single(const char *filename);
+char *cm_submit_princ_realm_data(krb5_context ctx, krb5_principal princ);
+int cm_submit_princ_realm_len(krb5_context ctx, krb5_principal princ);
 
 #endif

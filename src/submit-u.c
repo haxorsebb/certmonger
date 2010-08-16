@@ -25,6 +25,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <krb5.h>
+
 #include "log.h"
 #include "submit-u.h"
 
@@ -116,4 +118,24 @@ cm_submit_u_from_file_single(const char *filename)
 	q[i] = '\0';
 	free(csr);
 	return q;
+}
+
+char *
+cm_submit_princ_realm_data(krb5_context ctx, krb5_principal princ)
+{
+#ifdef HAVE_DECL_KRB5_PRINC_REALM
+	return (krb5_princ_realm(ctx, princ))->data;
+#else
+	return princ->realm;
+#endif
+}
+
+int
+cm_submit_princ_realm_len(krb5_context ctx, krb5_principal princ)
+{
+#ifdef HAVE_DECL_KRB5_PRINC_REALM
+	return (krb5_princ_realm(ctx, princ))->length;
+#else
+	return strlen(princ->realm);
+#endif
 }
