@@ -160,7 +160,7 @@ LDFLAGS="$savedLDFLAGS"
 
 AC_ARG_WITH(openssl,
 	    AS_HELP_STRING(--without-openssl,
-	    		   [build without support for storing keys and certificates in files]),
+			   [build without support for storing keys and certificates in files]),
 	    withopenssl=$withval,
 	    withopenssl=yes)
 
@@ -189,6 +189,43 @@ if test x$withnss != xno ; then
 		PKG_CHECK_MODULES(NSS,nss)
 	fi
 	AC_DEFINE(HAVE_NSS,1,[Define if you have NSS.])
+	savedCFLAGS="$CFLAGS"
+	savedCPPFLAGS="$CPPFLAGS"
+	savedLDFLAGS="$LDFLAGS"
+	CFLAGS="$CFLAGS $NSS_CFLAGS"
+	CPPFLAGS="$CPPFLAGS $NSS_CFLAGS"
+	LDFLAGS="$LDFLAGS $NSS_LIBS"
+	AC_MSG_CHECKING([if NSS supports "sql:" databases])
+	AC_TRY_RUN([
+			#include <stdio.h>
+			#include <prerror.h>
+			#include <nss.h>
+			int
+			main(int argc, char **argv)
+			{
+				SECStatus status;
+				PRErrorCode err;
+				status = NSS_InitReadWrite((argc > 1) ? argv[1] : "sql:.");
+				if (status == SECSuccess) {
+					return 0;
+				}
+				err = PR_GetError();
+				printf("%s\n",
+				       PR_ErrorToString(err,
+							PR_LANGUAGE_I_DEFAULT));
+				return 1;
+			}
+		],
+		AC_DEFINE(HAVE_SQL_NSSDB,1,[Define if your copy of NSS supports SQLite databases.])
+		have_sql_nssdb=yes,
+		have_sql_nssdb=no,
+		AC_DEFINE(HAVE_SQL_NSSDB,1,[Define if your copy of NSS supports SQLite databases.])
+		have_sql_nssdb="guessing yes")
+	AC_MSG_RESULT($have_sql_nssdb)
+	AM_CONDITIONAL(HAVE_SQL_NSSDB,test "x$have_sql_nssdb" != xno)
+	CFLAGS="$savedCFLAGS"
+	CPPFLAGS="$savedCPPFLAGS"
+	LDFLAGS="$savedLDFLAGS"
 fi
 
 AC_DEFINE_UNQUOTED(CM_DEFAULT_KEY_STORAGE_TYPE,cm_key_storage_nssdb,[Define to the default type of storage used for keys.])
