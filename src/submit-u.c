@@ -123,7 +123,7 @@ cm_submit_u_from_file_single(const char *filename)
 char *
 cm_submit_princ_realm_data(krb5_context ctx, krb5_principal princ)
 {
-#ifdef HAVE_DECL_KRB5_PRINC_REALM
+#if HAVE_DECL_KRB5_PRINC_COMPONENT
 	return (krb5_princ_realm(ctx, princ))->data;
 #else
 	return princ->realm;
@@ -133,7 +133,7 @@ cm_submit_princ_realm_data(krb5_context ctx, krb5_principal princ)
 int
 cm_submit_princ_realm_len(krb5_context ctx, krb5_principal princ)
 {
-#ifdef HAVE_DECL_KRB5_PRINC_REALM
+#if HAVE_DECL_KRB5_PRINC_COMPONENT
 	return (krb5_princ_realm(ctx, princ))->length;
 #else
 	return strlen(princ->realm);
