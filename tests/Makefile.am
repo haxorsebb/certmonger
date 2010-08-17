@@ -21,6 +21,68 @@ EXTRA_DIST = \
 	009-oiddict/expected.out \
 	010-iterate/run.sh \
 	010-iterate/expected.out
+	011-dbinit/expected.out
+	011-dbinit/run.sh
+	011-dbinit-dbm/expected.out
+	011-dbinit-dbm/run.sh
+	011-dbinit-sql/expected.out
+	011-dbinit-sql/run.sh
+	012-dbadd/expected.out
+	012-dbadd/run.sh
+	012-dbadd-dbm/expected.out
+	012-dbadd-dbm/run.sh
+	012-dbadd-sql/expected.out
+	012-dbadd-sql/run.sh
+	013-enckey/expected.out
+	013-enckey/run.sh
+	013-enckey-dbm/expected.out
+	013-enckey-dbm/run.sh
+	013-enckey-sql/expected.out
+	013-enckey-sql/run.sh
+	014-prefs/expected.out
+	014-prefs/run.sh
+	015-lockedkey/expected.out
+	015-lockedkey/run.sh
+	015-lockedkey-dbm/expected.out
+	015-lockedkey-dbm/run.sh
+	015-lockedkey-sql/expected.out
+	015-lockedkey-sql/run.sh
+	016-dates/expected.out
+	016-dates/run.sh
+
+subdirs = \
+	001-keyiread \
+	002-keygen \
+	003-csrgen \
+	004-selfsign \
+	005-dbusm \
+	006-serial \
+	007-certsave \
+	008-certread \
+	009-oiddict \
+	010-iterate \
+	011-dbinit \
+	012-dbadd \
+	013-enckey \
+	014-prefs \
+	015-lockedkey \
+	016-dates
+
+if HAVE_DBM_NSSDB
+subdirs += \
+	011-dbinit-dbm \
+	012-dbadd-dbm \
+	013-enckey-dbm \
+	015-lockedkey-dbm
+endif
+
+if HAVE_SQL_NSSDB
+subdirs += \
+	011-dbinit-sql \
+	012-dbadd-sql \
+	013-enckey-sql \
+	015-lockedkey-sql
+endif
 
 check:
 	for required in certutil pk12util openssl expect diff cmp mktemp dos2unix ; do \
@@ -28,4 +90,4 @@ check:
 	done
 	env	srcdir=$(srcdir) \
 	builddir=$(top_builddir)/tests \
-	$(srcdir)/run-tests.sh
+	$(srcdir)/run-tests.sh $(subdirs)

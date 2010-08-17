@@ -1,8 +1,8 @@
-[Generating key.]
+[Generating key (sql).]
 OK.
 certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
 < 0> rsa PRIVATE-KEY Test
-[Saving certificate.]
+[Saving certificate (sql).]
 OK
 
 Certificate Nickname Trust Attributes

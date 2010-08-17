@@ -102,7 +102,7 @@ $toolsdir/csrgen entry > csr.pem | clean
 egrep '(: |REQUEST)' $tmpdir/csr.pem
 
 for precreate in false true ; do
-for scheme in "" dbm sql ; do
+
 	rm -fr $tmpdir/${scheme}db
 	mkdir -p $tmpdir/${scheme}db
 	if $precreate ; then
@@ -134,11 +134,11 @@ for scheme in "" dbm sql ; do
 	$toolsdir/csrgen entry > csr.pem | clean
 	egrep '(: |REQUEST)' $tmpdir/csr.pem
 	$toolsdir/notty certutil -K -d ${scheme:+${scheme}:}$tmpdir/${scheme}db 2>&1 | sed -re 's,rsa .* Test,rsa PRIVATE-KEY Test,g' -e 's,[ \t]+, ,g' | clean -e 's,Services ",Services",g'
-done
+
 done
 
 for precreate in false true ; do
-for scheme in "" dbm sql ; do
+
 	rm -fr $tmpdir/${scheme}db
 	mkdir -p $tmpdir/${scheme}db
 	if $precreate ; then
@@ -187,7 +187,7 @@ for scheme in "" dbm sql ; do
 	rm -f csr.pem
 	$toolsdir/csrgen entry > csr.pem | clean
 	egrep '(: |REQUEST)' $tmpdir/csr.pem
-done
+
 done
 
 echo '['Test complete.']'

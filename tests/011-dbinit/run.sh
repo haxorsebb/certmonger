@@ -4,7 +4,6 @@ cd "$tmpdir"
 
 source "$srcdir"/functions
 
-for scheme in "" dbm sql ; do
 	echo '['Generating key${scheme:+ \($scheme\)}.']'
 	rm -fr $tmpdir/${scheme}db
 	mkdir -p $tmpdir/${scheme}db
@@ -47,5 +46,5 @@ for scheme in "" dbm sql ; do
 	$toolsdir/certsave entry.cert${scheme:+.$scheme}
 	echo OK
 	certutil -L -d ${scheme:+${scheme}:}$tmpdir/${scheme}db 2>&1 | sed -re 's,[ \t]+, ,g' -e 's,Services ",Services",g'
-done
+
 echo '['Test complete.']'

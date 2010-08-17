@@ -77,7 +77,7 @@ $toolsdir/csrgen entry > csr.pem
 egrep '(: |REQUEST)' $tmpdir/csr.pem
 
 for precreate in false true ; do
-for scheme in "" dbm sql ; do
+
 	rm -fr $tmpdir/${scheme}db
 	mkdir -p $tmpdir/${scheme}db
 	if $precreate ; then
@@ -107,7 +107,7 @@ for scheme in "" dbm sql ; do
 	$toolsdir/csrgen entry > csr.pem
 	egrep '(: |REQUEST)' $tmpdir/csr.pem
 	certutil -K -f $tmpdir/pin.txt -d ${scheme:+${scheme}:}$tmpdir/${scheme}db 2>&1 | sed -re 's,rsa .* Test,rsa PRIVATE-KEY Test,g' -e 's,[ \t]+, ,g' -e 's,Services ",Services",g'
-done
+
 done
 
 echo '['Test complete.']'
