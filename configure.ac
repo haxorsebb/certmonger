@@ -196,6 +196,7 @@ if test x$withnss != xno ; then
 	CPPFLAGS="$CPPFLAGS $NSS_CFLAGS"
 	LDFLAGS="$LDFLAGS $NSS_LIBS"
 	AC_MSG_CHECKING([if NSS supports "sql:" databases])
+	mkdir _nss_db_testdir || :
 	AC_TRY_RUN([
 			#include <stdio.h>
 			#include <prerror.h>
@@ -205,7 +206,7 @@ if test x$withnss != xno ; then
 			{
 				SECStatus status;
 				PRErrorCode err;
-				status = NSS_InitReadWrite((argc > 1) ? argv[1] : "sql:.");
+				status = NSS_InitReadWrite((argc > 1) ? argv[1] : "sql:_nss_db_testdir");
 				if (status == SECSuccess) {
 					return 0;
 				}
@@ -221,9 +222,11 @@ if test x$withnss != xno ; then
 		have_sql_nssdb=no,
 		AC_DEFINE(HAVE_SQL_NSSDB,1,[Define if your copy of NSS supports SQLite databases.])
 		have_sql_nssdb="guessing yes")
+	rm -f -r _nss_db_testdir
 	AC_MSG_RESULT($have_sql_nssdb)
-	AM_CONDITIONAL(HAVE_SQL_NSSDB,test "x$have_sql_nssdb" != xno)
+	AM_CONDITIONAL(HAVE_SQL_NSSDB,[test "x$have_sql_nssdb" != xno])
 	AC_MSG_CHECKING([if NSS supports "dbm:" databases])
+	mkdir _nss_db_testdir || :
 	AC_TRY_RUN([
 			#include <stdio.h>
 			#include <prerror.h>
@@ -233,7 +236,7 @@ if test x$withnss != xno ; then
 			{
 				SECStatus status;
 				PRErrorCode err;
-				status = NSS_InitReadWrite((argc > 1) ? argv[1] : "dbm:.");
+				status = NSS_InitReadWrite((argc > 1) ? argv[1] : "dbm:_nss_db_testdir");
 				if (status == SECSuccess) {
 					return 0;
 				}
@@ -249,8 +252,9 @@ if test x$withnss != xno ; then
 		have_dbm_nssdb=no,
 		AC_DEFINE(HAVE_DBM_NSSDB,1,[Define if your copy of NSS supports DBMite databases.])
 		have_dbm_nssdb="guessing yes")
+	rm -f -r _nss_db_testdir
 	AC_MSG_RESULT($have_dbm_nssdb)
-	AM_CONDITIONAL(HAVE_DBM_NSSDB,test "x$have_dbm_nssdb" != xno)
+	AM_CONDITIONAL(HAVE_DBM_NSSDB,[test "x$have_dbm_nssdb" != xno])
 	CFLAGS="$savedCFLAGS"
 	CPPFLAGS="$savedCPPFLAGS"
 	LDFLAGS="$savedLDFLAGS"
