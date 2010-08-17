@@ -211,7 +211,7 @@ if test x$withnss != xno ; then
 					return 0;
 				}
 				err = PR_GetError();
-				printf("%s\n",
+				printf("%s",
 				       PR_ErrorToString(err,
 							PR_LANGUAGE_I_DEFAULT));
 				return 1;
@@ -241,7 +241,7 @@ if test x$withnss != xno ; then
 					return 0;
 				}
 				err = PR_GetError();
-				printf("%s\n",
+				printf("%s",
 				       PR_ErrorToString(err,
 							PR_LANGUAGE_I_DEFAULT));
 				return 1;
