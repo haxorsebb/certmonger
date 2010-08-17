@@ -1,5 +1,5 @@
 Name:		certmonger
-Version:	0.27
+Version:	0.28
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -98,6 +98,9 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Tue Aug 17 2010 Nalin Dahyabhai <nalin@redhat.com> 0.28-1
+- fix self-signing certificate notBefore and notAfter values on 32-bit machines
+
 * Tue Aug 17 2010 Nalin Dahyabhai <nalin@redhat.com> 0.27-1
 - update to 0.27
   - portability and test fixes
