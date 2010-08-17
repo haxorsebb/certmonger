@@ -223,6 +223,34 @@ if test x$withnss != xno ; then
 		have_sql_nssdb="guessing yes")
 	AC_MSG_RESULT($have_sql_nssdb)
 	AM_CONDITIONAL(HAVE_SQL_NSSDB,test "x$have_sql_nssdb" != xno)
+	AC_MSG_CHECKING([if NSS supports "dbm:" databases])
+	AC_TRY_RUN([
+			#include <stdio.h>
+			#include <prerror.h>
+			#include <nss.h>
+			int
+			main(int argc, char **argv)
+			{
+				SECStatus status;
+				PRErrorCode err;
+				status = NSS_InitReadWrite((argc > 1) ? argv[1] : "dbm:.");
+				if (status == SECSuccess) {
+					return 0;
+				}
+				err = PR_GetError();
+				printf("%s\n",
+				       PR_ErrorToString(err,
+							PR_LANGUAGE_I_DEFAULT));
+				return 1;
+			}
+		],
+		AC_DEFINE(HAVE_DBM_NSSDB,1,[Define if your copy of NSS supports DBMite databases.])
+		have_dbm_nssdb=yes,
+		have_dbm_nssdb=no,
+		AC_DEFINE(HAVE_DBM_NSSDB,1,[Define if your copy of NSS supports DBMite databases.])
+		have_dbm_nssdb="guessing yes")
+	AC_MSG_RESULT($have_dbm_nssdb)
+	AM_CONDITIONAL(HAVE_DBM_NSSDB,test "x$have_dbm_nssdb" != xno)
 	CFLAGS="$savedCFLAGS"
 	CPPFLAGS="$savedCPPFLAGS"
 	LDFLAGS="$savedLDFLAGS"
