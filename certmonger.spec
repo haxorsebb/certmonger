@@ -1,8 +1,5 @@
-%{!?_with_check: %global pcheck 0}
-%{?_with_check: %global pcheck 1}
-
 Name:		certmonger
-Version:	0.26
+Version:	0.27
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -15,7 +12,6 @@ BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 BuildRequires:	dbus-devel, nspr-devel, nss-devel, openssl-devel
 BuildRequires:	libtalloc-devel, libtevent-devel
 BuildRequires:	libxml2-devel xmlrpc-c-devel
-%if 0%{?pcheck}
 # Required for 'make check':
 #  for diff and cmp
 BuildRequires:	diffutils
@@ -27,7 +23,11 @@ BuildRequires:	mktemp
 BuildRequires:	nss-tools
 #  for openssl
 BuildRequires:	openssl
-%endif
+#  for dbus-launch
+BuildRequires:	/usr/bin/dbus-launch
+#  for dos2unix
+BuildRequires:	/usr/bin/dos2unix
+
 Requires(post):	/sbin/chkconfig, /sbin/service
 Requires(preun):	/sbin/chkconfig, /sbin/service
 
@@ -59,9 +59,7 @@ install -m755 src/certmonger.init $RPM_BUILD_ROOT/%{_initddir}/certmonger
 %{find_lang} %{name}
 
 %check
-%if 0%{?pcheck}
 make check
-%endif
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -100,6 +98,10 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Tue Aug 17 2010 Nalin Dahyabhai <nalin@redhat.com> 0.27-1
+- update to 0.27
+  - portability and test fixes
+
 * Fri Aug 13 2010 Nalin Dahyabhai <nalin@redhat.com> 0.26-1
 - update to 0.26
   - when canceling a submission request that's being handled by a helper,
