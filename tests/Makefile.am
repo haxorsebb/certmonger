@@ -1,6 +1,6 @@
 SUBDIRS = tools
 EXTRA_DIST = \
-	run-tests.sh functions \
+	run-tests.sh functions certmonger.conf \
 	001-keyiread/run.sh \
 	001-keyiread/expected.out \
 	002-keygen/run.sh \
