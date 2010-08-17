@@ -5,6 +5,13 @@ cd "$tmpdir"
 source "$srcdir"/functions
 initnssdb "$tmpdir"
 
+grep -v ^validity_period $CERTMONGER_CONFIG_DIR/certmonger.conf > \
+	$tmpdir/certmonger.conf
+cat >> $tmpdir/certmonger.conf << EOF
+[selfsign]
+validity_period = 46129s
+EOF
+
 function append() {
 	cat >> $1 <<- EOF
 	subject=CN=Babs Jensen
@@ -22,7 +29,6 @@ function setupca() {
 	ca_is_default=0
 	ca_type=INTERNAL:SELF
 	ca_internal_serial=04
-	ca_internal_lifetime=46129s
 	ca_internal_issue_time=40271
 	EOF
 }
