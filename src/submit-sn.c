@@ -149,23 +149,25 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 	/* Build a certificate using the contents of the signing request. */
 	if (ca->cm_ca_internal_force_issue_time) {
-		now = ca->cm_ca_internal_issue_time * 1000000L;
+		now = ca->cm_ca_internal_issue_time;
+		now *= 1000000;
 	} else {
 		now = PR_Now();
 	}
 	if (cm_submit_delta_from_string(cm_prefs_validity_period(),
-					now / 1000000L,
+					now / 1000000,
 					&lifedelta) == 0) {
-		life = lifedelta * 1000000L;
+		life = lifedelta;
 	} else {
 		if (cm_submit_delta_from_string(CM_DEFAULT_CERT_LIFETIME,
-						now / 1000000L,
+						now / 1000000,
 						&lifedelta) == 0) {
-			life = lifedelta * 1000000L;
+			life = lifedelta;
 		} else {
-			life = 365 * 24 * 60 * 60 * 1000000L;
+			life = 365 * 24 * 60 * 60;
 		}
 	}
+	life *= 1000000L;
 	validity = CERT_CreateValidity(now, now + life);
 	if (validity == NULL) {
 		cm_log(1, "Unable to create validity structure.\n");
