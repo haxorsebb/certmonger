@@ -1137,6 +1137,7 @@ cm_tdbusm_set_sasasasnas(DBusMessage *msg, const char *s,
 			 const char **as1, const char **as2,
 			 const char **as3, long n, const char **as4)
 {
+	int64_t i = n;
 	if (s == NULL) {
 		s = empty_string;
 	}
@@ -1160,7 +1161,7 @@ cm_tdbusm_set_sasasasnas(DBusMessage *msg, const char *s,
 				     &as2, cm_tdbusm_array_length(as2),
 				     DBUS_TYPE_ARRAY, DBUS_TYPE_STRING,
 				     &as3, cm_tdbusm_array_length(as3),
-				     DBUS_TYPE_INT64, &n,
+				     DBUS_TYPE_INT64, &i,
 				     DBUS_TYPE_ARRAY, DBUS_TYPE_STRING,
 				     &as4, cm_tdbusm_array_length(as4),
 				     DBUS_TYPE_INVALID)) {
@@ -1175,7 +1176,7 @@ cm_tdbusm_set_d(DBusMessage *msg, const struct cm_tdbusm_dict **d)
 {
 	DBusMessageIter args, array, entry, val, elt;
 	int i;
-	long l;
+	int64_t l;
 	memset(&args, 0, sizeof(args));
 	dbus_message_iter_init_append(msg, &args);
 	memset(&array, 0, sizeof(array));
