@@ -20,34 +20,34 @@ EXTRA_DIST = \
 	009-oiddict/run.sh \
 	009-oiddict/expected.out \
 	010-iterate/run.sh \
-	010-iterate/expected.out
-	011-dbinit/expected.out
-	011-dbinit/run.sh
-	011-dbinit-dbm/expected.out
-	011-dbinit-dbm/run.sh
-	011-dbinit-sql/expected.out
-	011-dbinit-sql/run.sh
-	012-dbadd/expected.out
-	012-dbadd/run.sh
-	012-dbadd-dbm/expected.out
-	012-dbadd-dbm/run.sh
-	012-dbadd-sql/expected.out
-	012-dbadd-sql/run.sh
-	013-enckey/expected.out
-	013-enckey/run.sh
-	013-enckey-dbm/expected.out
-	013-enckey-dbm/run.sh
-	013-enckey-sql/expected.out
-	013-enckey-sql/run.sh
-	014-prefs/expected.out
-	014-prefs/run.sh
-	015-lockedkey/expected.out
-	015-lockedkey/run.sh
-	015-lockedkey-dbm/expected.out
-	015-lockedkey-dbm/run.sh
-	015-lockedkey-sql/expected.out
-	015-lockedkey-sql/run.sh
-	016-dates/expected.out
+	010-iterate/expected.out \
+	011-dbinit/expected.out \
+	011-dbinit/run.sh \
+	011-dbinit-dbm/expected.out \
+	011-dbinit-dbm/run.sh \
+	011-dbinit-sql/expected.out \
+	011-dbinit-sql/run.sh \
+	012-dbadd/expected.out \
+	012-dbadd/run.sh \
+	012-dbadd-dbm/expected.out \
+	012-dbadd-dbm/run.sh \
+	012-dbadd-sql/expected.out \
+	012-dbadd-sql/run.sh \
+	013-enckey/expected.out \
+	013-enckey/run.sh \
+	013-enckey-dbm/expected.out \
+	013-enckey-dbm/run.sh \
+	013-enckey-sql/expected.out \
+	013-enckey-sql/run.sh \
+	014-prefs/expected.out \
+	014-prefs/run.sh \
+	015-lockedkey/expected.out \
+	015-lockedkey/run.sh \
+	015-lockedkey-dbm/expected.out \
+	015-lockedkey-dbm/run.sh \
+	015-lockedkey-sql/expected.out \
+	015-lockedkey-sql/run.sh \
+	016-dates/expected.out \
 	016-dates/run.sh
 
 subdirs = \
