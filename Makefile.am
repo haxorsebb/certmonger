@@ -28,7 +28,7 @@ archive:
 		cd $$tmpdir/certmonger;\
 		git checkout $(GITTAG);\
 		./autogen.sh;\
-		make dist;\
+		make distcheck;\
 		mkdir -p $$tmpdir/rpm-build-top;\
 		rpmbuild \
 			--define "_topdir $$tmpdir/rpm-build-top" \
