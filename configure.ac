@@ -1,4 +1,4 @@
-AC_INIT(certmonger,0.28)
+AC_INIT(certmonger,0.29)
 AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_MACRO_DIR(m4)
 AM_MAINTAINER_MODE

@@ -1,5 +1,5 @@
 Name:		certmonger
-Version:	0.28
+Version:	0.29
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -98,8 +98,15 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Mon Aug 23 2010 Nalin Dahyabhai <nalin@redhat.com> 0.29-1
+- update to 0.29
+  - fix 64-bit cleanliness issue using libdbus
+  - actually include the full set of tests in tarballs
+
 * Tue Aug 17 2010 Nalin Dahyabhai <nalin@redhat.com> 0.28-1
-- fix self-signing certificate notBefore and notAfter values on 32-bit machines
+- update to 0.28
+  - fix self-signing certificate notBefore and notAfter values on 32-bit
+    machines
 
 * Tue Aug 17 2010 Nalin Dahyabhai <nalin@redhat.com> 0.27-1
 - update to 0.27
