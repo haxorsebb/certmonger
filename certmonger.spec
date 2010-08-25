@@ -1,5 +1,5 @@
 Name:		certmonger
-Version:	0.29
+Version:	0.30
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -98,6 +98,11 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Wed Aug 25 2010 Nalin Dahyabhai <nalin@redhat.com> 0.30-1
+- update to 0.30
+  - fix errors computing the time at the end of an interval that were
+    caught by self-tests
+
 * Mon Aug 23 2010 Nalin Dahyabhai <nalin@redhat.com> 0.29-1
 - update to 0.29
   - fix 64-bit cleanliness issue using libdbus
