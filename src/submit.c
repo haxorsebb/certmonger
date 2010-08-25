@@ -224,6 +224,7 @@ cm_submit_delta_from_string(const char *deltas, time_t now, time_t *delta)
 				now_tm.tm_mon += val;
 				now_tm.tm_year += (now_tm.tm_mon / 12);
 				now_tm.tm_mon %= 12;
+				now_tm.tm_isdst = -1;
 				now = mktime(&now_tm);
 			}
 			val = 0;
