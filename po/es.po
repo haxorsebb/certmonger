@@ -9,7 +9,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2010-08-05 14:30-0400\n"
 "PO-Revision-Date: \n"
-"Last-Translator: Héctor Daniel Cabrera <logan@fedoraproject.org>\n"
+"Last-Translator: Claudio Rodrigo Pereyra Diaz <claudiorodrigo@pereyradiaz.com.ar>\n"
 "Language-Team: Fedora Spanish <trans-es@lists.fedoraproject.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -20,9 +20,9 @@ msgstr ""
 # Ver si corresponde CA o AC
 #: src/certmaster.c:111
 #: src/ipa.c:125
-#, fuzzy, c-format
+#, c-format
 msgid "Unable to determine hostname of CA.\n"
-msgstr "No es posible determinar el nombre del equipo de AC.\n"
+msgstr "No es posible determinar el nombre del equipo de CA.\n"
 
 #: src/certmaster.c:128
 #: src/ipa.c:156
@@ -368,9 +368,9 @@ msgstr "\tauto renovación: %s\n"
 
 # Ver si corresponde AC o CA
 #: src/getcert.c:1792
-#, fuzzy, c-format
+#, c-format
 msgid "CA '%s':\n"
-msgstr "AC '%s':\n"
+msgstr "CA '%s':\n"
 
 #: src/getcert.c:1799
 #, c-format
@@ -653,7 +653,7 @@ msgid "  -s\tconnect to the certmonger service on the session bus\n"
 msgstr "  -s\tconectar con el servicio certmonger en el bus de la sesión\n"
 
 #: src/getcert.c:1979
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s list-cas [options]\n"
 msgstr "Utilización: %s list-cas [opciones]\n"
 
@@ -790,9 +790,8 @@ msgstr "Una llave en la misma ubicación ya está siendo utilizad por la petici�
 
 # Ver si corresponde CA o AC
 #: src/tdbush.c:815
-#, fuzzy
 msgid "No such CA."
-msgstr "No existe tal AC."
+msgstr "No existe el CA."
 
 #: src/tdbush.c:1902
 #, c-format
