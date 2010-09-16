@@ -47,7 +47,7 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal)
 	krb5_creds creds;
 	krb5_principal princ;
 	krb5_error_code kret;
-	krb5_get_init_creds_opt gicopts;
+	krb5_get_init_creds_opt gicopts, *gicoptsp;
 	char tgs[LINE_MAX];
 
 	kret = krb5_init_context(&ctx);
@@ -91,10 +91,24 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal)
 		 cm_submit_princ_realm_len(ctx, princ),
 		 cm_submit_princ_realm_data(ctx, princ));
 	memset(&creds, 0, sizeof(creds));
+#ifdef HAVE_KRB5_GET_INIT_CREDS_OPT_ALLOC
+	memset(&gicopts, 0, sizeof(gicopts));
+	gicoptsp = NULL;
+	kret = krb5_get_init_creds_opt_alloc(ctx, &gicoptsp);
+	if (kret != 0) {
+		fprintf(stderr, "Internal error: %s.\n", error_message(kret));
+		return kret;
+	}
+#else
 	krb5_get_init_creds_opt_init(&gicopts);
-	krb5_get_init_creds_opt_set_forwardable(&gicopts, 1);
+	gicoptsp = &gicopts;
+#endif
+	krb5_get_init_creds_opt_set_forwardable(gicoptsp, 1);
 	kret = krb5_get_init_creds_keytab(ctx, &creds, princ, keytab,
-					  0, tgs, &gicopts);
+					  0, tgs, gicoptsp);
+#ifdef HAVE_KRB5_GET_INIT_CREDS_OPT_ALLOC
+	krb5_get_init_creds_opt_free(ctx, gicoptsp);
+#endif
 	if (kret != 0) {
 		fprintf(stderr, "Error obtaining initial credentials: %s.\n",
 			error_message(kret));
@@ -118,6 +132,9 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal)
 		return kret;
 	}
 	krb5_cc_close(ctx, ccache);
+	krb5_kt_close(ctx, keytab);
+	krb5_free_principal(ctx, princ);
+	krb5_free_context(ctx);
 	putenv("KRB5CCNAME=MEMORY:" PACKAGE_NAME "_submit");
 	return 0;
 }
