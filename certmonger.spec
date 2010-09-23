@@ -1,6 +1,6 @@
 Name:		certmonger
 Version:	0.30
-Release:	1%{?dist}
+Release:	2%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
 Group:		System Environment/Daemons
@@ -65,6 +65,9 @@ make check
 rm -rf $RPM_BUILD_ROOT
 
 %post
+if test $1 -eq 1 ; then
+	killall -HUP dbus-daemon 2>&1 > /dev/null
+fi
 /sbin/chkconfig --add certmonger
 
 %postun
@@ -98,6 +101,11 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Thu Sep 23 2010 Nalin Dahyabhai <nalin@redhat.com> 0.30-2
+- try to SIGHUP the messagebus daemon at first install so that it'll
+  let us claim our service name if it isn't restarted before we are
+  first started (#636876)
+
 * Wed Aug 25 2010 Nalin Dahyabhai <nalin@redhat.com> 0.30-1
 - update to 0.30
   - fix errors computing the time at the end of an interval that were
