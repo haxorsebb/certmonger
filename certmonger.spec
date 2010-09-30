@@ -1,6 +1,6 @@
 Name:		certmonger
 Version:	0.30
-Release:	2%{?dist}
+Release:	4%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
 Group:		System Environment/Daemons
@@ -27,6 +27,9 @@ BuildRequires:	openssl
 BuildRequires:	/usr/bin/dbus-launch
 #  for dos2unix
 BuildRequires:	/usr/bin/dos2unix
+
+# we need a running system bus
+Requires:	dbus
 
 Requires(post):	/sbin/chkconfig, /sbin/service
 Requires(preun):	/sbin/chkconfig, /sbin/service
@@ -101,6 +104,13 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Thu Sep 30 2010 Nalin Dahyabhai <nalin@redhat.com> 0.30-4
+- explicitly require "dbus" to try to ensure we have a running system bus
+  when we get started (#639126)
+
+* Wed Sep 29 2010 jkeating - 0.30-3
+- Rebuilt for gcc bug 634757
+
 * Thu Sep 23 2010 Nalin Dahyabhai <nalin@redhat.com> 0.30-2
 - try to SIGHUP the messagebus daemon at first install so that it'll
   let us claim our service name if it isn't restarted before we are
