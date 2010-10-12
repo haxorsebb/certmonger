@@ -309,5 +309,22 @@ AC_DEFINE_UNQUOTED(CM_CERTMASTER_CA_NAME,"$CM_CERTMASTER_CA_NAME",[Define to the
 AC_DEFINE_UNQUOTED(CM_CERTMASTER_HELPER_PATH,"$mylibexecdir/certmaster-submit",[Define to the path of the CERTMASTER submission helper.])
 AM_CONDITIONAL(WITH_CERTMASTER,true)
 
+AC_ARG_WITH(uuid,
+AS_HELP_STRING([--with-uuid],[populate subjectUniqueID in self-signed certs]),
+[PKG_CHECK_MODULES(UUID,uuid)
+uuid=yes],
+[uuid=no
+if pkg-config uuid ; then
+	PKG_CHECK_MODULES(UUID,uuid)
+	uuid=yes
+fi
+])
+if test x$uuid = xyes ; then
+	AC_DEFINE(HAVE_UUID,1,[Define to populate subjectUniqueID in self-signed certs.])
+fi
+AM_CONDITIONAL(HAVE_UUID,test x$uuid = xyes)
+AC_SUBST(UUID_CFLAGS)
+AC_SUBST(UUID_LIBS)
+
 AC_CONFIG_COMMANDS(src_introspect_sh,[chmod +x src/introspect.sh])
 AC_OUTPUT(Makefile src/Makefile dbus/Makefile tests/Makefile tests/tools/Makefile dbus/certmonger.conf src/certmonger.init src/introspect.sh src/certmonger.8 src/getcert.1 src/getcert-request.1 src/getcert-list.1 src/getcert-list-cas.1 src/getcert-start-tracking.1 src/getcert-stop-tracking.1 src/selfsign-getcert.1 src/ipa-getcert.1 src/getcert-resubmit.1 src/certmonger-certmaster-submit.8 src/certmonger-ipa-submit.8 src/certmaster-getcert.1 src/certmonger.conf.5 po/Makefile.in src/certmonger.conf)
