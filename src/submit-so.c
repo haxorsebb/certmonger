@@ -33,6 +33,8 @@
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
 
+#include <krb5.h>
+
 #include <talloc.h>
 
 #include "log.h"
@@ -43,6 +45,7 @@
 #include "store-int.h"
 #include "submit.h"
 #include "submit-int.h"
+#include "submit-u.h"
 #include "subproc.h"
 #include "util-o.h"
 
@@ -72,6 +75,9 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	time_t lifedelta;
 	long life;
 	time_t now;
+#ifdef HAVE_UUID
+	unsigned char uuid[16];
+#endif
 
 	util_o_init();
 	ERR_load_crypto_strings();
@@ -123,6 +129,18 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 						serialtmp = seriald;
 						seriali = d2i_ASN1_INTEGER(NULL, &serialtmp, seriall);
 						X509_set_serialNumber(cert, seriali);
+#ifdef HAVE_UUID
+						if (cm_submit_uuid_new(uuid) == 0) {
+							cert->cert_info->subjectUID = M_ASN1_BIT_STRING_new();
+							if (cert->cert_info->subjectUID != NULL) {
+								ASN1_BIT_STRING_set(cert->cert_info->subjectUID, uuid, 16);
+								cert->cert_info->issuerUID = M_ASN1_BIT_STRING_new();
+								if (cert->cert_info->issuerUID != NULL) {
+									ASN1_BIT_STRING_set(cert->cert_info->issuerUID, uuid, 16);
+								}
+							}
+						}
+#endif
 						/* add basic constraints */
 						cert->cert_info->extensions = X509_REQ_get_extensions(req);
 						basicl = strlen(CM_BASIC_CONSTRAINT_NOT_CA) / 2;

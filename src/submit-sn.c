@@ -46,6 +46,7 @@
 #include "store-int.h"
 #include "submit.h"
 #include "submit-int.h"
+#include "submit-u.h"
 #include "subproc.h"
 
 struct cm_submit_state {
@@ -204,6 +205,19 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	ucert->issuer = req->subject;
 	ucert->subject = req->subject;
 	ucert->subjectPublicKeyInfo = req->subjectPublicKeyInfo;
+#ifdef HAVE_UUID
+	ucert->subjectID.data = PORT_ArenaZAlloc(arena, 16);
+	if (ucert->subjectID.data != NULL) {
+		if (cm_submit_uuid_new(ucert->subjectID.data) == 0) {
+			ucert->subjectID.len = 16 * 8;
+		} else {
+			ucert->subjectID.data = NULL;
+		}
+	} else {
+		ucert->subjectID.len = 0;
+	}
+	ucert->issuerID = ucert->subjectID;
+#endif
 	/* Try to copy the extensions from the request into the certificate. */
 	for (i = 0;
 	     (req->attributes != NULL) && (req->attributes[i] != NULL);
