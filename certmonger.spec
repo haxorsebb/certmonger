@@ -1,6 +1,6 @@
 Name:		certmonger
-Version:	0.30
-Release:	4%{?dist}
+Version:	0.31
+Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
 Group:		System Environment/Daemons
@@ -9,9 +9,9 @@ URL:		http://certmonger.fedorahosted.org
 Source0:	http://fedorahosted.org/released/certmonger/certmonger-%{version}.tar.gz
 BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
-BuildRequires:	dbus-devel, nspr-devel, nss-devel, openssl-devel
+BuildRequires:	dbus-devel, nspr-devel, nss-devel, openssl-devel, libuuid-devel
 BuildRequires:	libtalloc-devel, libtevent-devel
-BuildRequires:	libxml2-devel xmlrpc-c-devel
+BuildRequires:	libxml2-devel, xmlrpc-c-devel
 # Required for 'make check':
 #  for diff and cmp
 BuildRequires:	diffutils
@@ -104,6 +104,10 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Tue Oct 12 2010 Nalin Dahyabhai <nalin@redhat.com> 0.31-1
+- start populating the optional unique identifier fields in self-signed
+  certificates
+
 * Thu Sep 30 2010 Nalin Dahyabhai <nalin@redhat.com> 0.30-4
 - explicitly require "dbus" to try to ensure we have a running system bus
   when we get started (#639126)
