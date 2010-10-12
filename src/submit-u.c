@@ -166,6 +166,7 @@ cm_submit_uuid_new(unsigned char uuid[16])
 	 * are clear are unused rather than simply set to zero, so we force the
 	 * least significant bit to 1 to preserve the entire (hopefully still
 	 * unique) UUID. */
+	uid[15] |= 1;
 	memcpy(uuid, res, 16);
 	return 0;
 }
