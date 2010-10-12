@@ -23,13 +23,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <talloc.h>
 #include <unistd.h>
+
+#include <krb5.h>
+
+#include <talloc.h>
 
 #include "../../src/log.h"
 #include "../../src/store-int.h"
 #include "../../src/store.h"
 #include "../../src/submit.h"
+#include "../../src/submit-u.h"
 
 static void
 wait_to_read(int fd)
@@ -52,6 +56,7 @@ main(int argc, char **argv)
 	int fd, ret, i;
 	void *parent;
 	char *p;
+	cm_submit_uuid_fixed_for_testing = 1; /* use fixed UUIDs */
 	cm_log_set_method(cm_log_stderr);
 	cm_log_set_level(1);
 	parent = talloc_new(NULL);
