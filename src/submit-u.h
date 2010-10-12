@@ -23,4 +23,9 @@ char *cm_submit_u_from_file_single(const char *filename);
 char *cm_submit_princ_realm_data(krb5_context ctx, krb5_principal princ);
 int cm_submit_princ_realm_len(krb5_context ctx, krb5_principal princ);
 
+#ifdef HAVE_UUID
+int cm_submit_uuid_new(unsigned char uuid[16]);
+extern int cm_submit_uuid_fixed_for_testing;
+#endif
+
 #endif

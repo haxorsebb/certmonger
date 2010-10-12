@@ -27,6 +27,10 @@
 
 #include <krb5.h>
 
+#ifdef HAVE_UUID
+#include <uuid.h>
+#endif
+
 #include "log.h"
 #include "submit-u.h"
 
@@ -139,3 +143,30 @@ cm_submit_princ_realm_len(krb5_context ctx, krb5_principal princ)
 	return strlen(princ->realm);
 #endif
 }
+
+#ifdef HAVE_UUID
+int cm_submit_uuid_fixed_for_testing = 0;
+int
+cm_submit_uuid_new(unsigned char uuid[16])
+{
+	uuid_t res;
+	uuid_clear(res);
+	if (cm_submit_uuid_fixed_for_testing) {
+		int i;
+		for (i = 0; i < 16; i++) {
+			res[i] = i + 1;
+		}
+	} else {
+		uuid_generate(res);
+	}
+	if (uuid_is_null(res)) {
+		return -1;
+	}
+	/* For whatever reason, NSS assumes that any of the final bits which
+	 * are clear are unused rather than simply set to zero, so we force the
+	 * least significant bit to 1 to preserve the entire (hopefully still
+	 * unique) UUID. */
+	memcpy(uuid, res, 16);
+	return 0;
+}
+#endif
