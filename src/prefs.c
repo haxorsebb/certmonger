@@ -250,6 +250,43 @@ cm_prefs_validity_period(void)
 	return period;
 }
 
+static const char *
+yes_words[] = {"yes", "y", "true", "t", "1"};
+
+static const char *
+no_words[] = {"no", "n", "false", "f", "0"};
+
+int
+cm_prefs_populate_unique_id(void)
+{
+	static int populate = -1;
+	if (populate == -1) {
+		const char *val;
+		val = cm_prefs_config("selfsign", "populate_unique_id");
+		if (val == NULL) {
+			val = CM_DEFAULT_POPULATE_UNIQUE_ID;
+		}
+		if (val != NULL) {
+			unsigned int i;
+			for (i = 0;
+			     i < sizeof(yes_words) / sizeof(yes_words[0]);
+			     i++) {
+				if (strcasecmp(yes_words[i], val) == 0) {
+					populate = 1;
+				}
+			}
+			for (i = 0;
+			     i < sizeof(no_words) / sizeof(no_words[0]);
+			     i++) {
+				if (strcasecmp(no_words[i], val) == 0) {
+					populate = 0;
+				}
+			}
+		}
+	}
+	return populate;
+}
+
 int
 cm_prefs_monitor(void)
 {

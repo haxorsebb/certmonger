@@ -41,7 +41,8 @@ enum cm_notification_method cm_prefs_notification_method(void);
 const char *cm_prefs_notification_destination(void);
 const char *cm_prefs_default_ca(void);
 const char *cm_prefs_validity_period(void);
-int cm_prefs_monitor();
-int cm_prefs_autorenew();
+int cm_prefs_monitor(void);
+int cm_prefs_autorenew(void);
+int cm_prefs_populate_unique_id(void);
 
 #endif

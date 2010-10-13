@@ -1,5 +1,5 @@
 Name:		certmonger
-Version:	0.31
+Version:	0.32
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -104,6 +104,10 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Wed Oct 13 2010 Nalin Dahyabhai <nalin@redhat.com> 0.32-1
+- oops, rfc5280 says we shouldn't be populating unique identifiers, so
+  make it a configuration option and default the behavior to off
+
 * Tue Oct 12 2010 Nalin Dahyabhai <nalin@redhat.com> 0.31-1
 - start populating the optional unique identifier fields in self-signed
   certificates

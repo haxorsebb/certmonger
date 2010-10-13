@@ -1,4 +1,4 @@
-AC_INIT(certmonger,0.31)
+AC_INIT(certmonger,0.32)
 AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_MACRO_DIR(m4)
 AM_MAINTAINER_MODE
@@ -320,8 +320,11 @@ if pkg-config uuid ; then
 fi
 ])
 if test x$uuid = xyes ; then
-	AC_DEFINE(HAVE_UUID,1,[Define to populate subjectUniqueID in self-signed certs.])
+	AC_DEFINE(HAVE_UUID,1,[Define to have the ability to populate subjectUniqueID in self-signed certs.])
 fi
+CM_DEFAULT_POPULATE_UNIQUE_ID=no
+AC_SUBST(CM_DEFAULT_POPULATE_UNIQUE_ID)
+AC_DEFINE_UNQUOTED(CM_DEFAULT_POPULATE_UNIQUE_ID,"$CM_DEFAULT_POPULATE_UNIQUE_ID",[Define to the default for the selfsign/populate_unique_id configuration setting.])
 AM_CONDITIONAL(HAVE_UUID,test x$uuid = xyes)
 AC_SUBST(UUID_CFLAGS)
 AC_SUBST(UUID_LIBS)

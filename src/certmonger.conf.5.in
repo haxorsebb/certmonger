@@ -52,6 +52,12 @@ specified as a combination of years (y), months (M), weeks (w), days (d), hours
 (h), minutes (m), and/or seconds (s).  If no unit of time is specified, seconds
 are assumed.  The default value is \fI@CM_DEFAULT_CERT_LIFETIME@\fR.
 
+.IP populate_unique_id
+This controls whether or not self-signed certificates will have their
+subjectUniqueID and issuerUniqueID fields populated.  While RFC5280 prohibits
+their use, they may be needed and/or used by older applications.  The default
+value is \fI@CM_DEFAULT_POPULATE_UNIQUE_ID@\fR.
+
 .SH BUGS
 Please file tickets for any that you find at https://fedorahosted.org/certmonger/
 

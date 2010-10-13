@@ -130,13 +130,15 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 						seriali = d2i_ASN1_INTEGER(NULL, &serialtmp, seriall);
 						X509_set_serialNumber(cert, seriali);
 #ifdef HAVE_UUID
-						if (cm_submit_uuid_new(uuid) == 0) {
-							cert->cert_info->subjectUID = M_ASN1_BIT_STRING_new();
-							if (cert->cert_info->subjectUID != NULL) {
-								ASN1_BIT_STRING_set(cert->cert_info->subjectUID, uuid, 16);
-								cert->cert_info->issuerUID = M_ASN1_BIT_STRING_new();
-								if (cert->cert_info->issuerUID != NULL) {
-									ASN1_BIT_STRING_set(cert->cert_info->issuerUID, uuid, 16);
+						if (cm_prefs_populate_unique_id()) {
+							if (cm_submit_uuid_new(uuid) == 0) {
+								cert->cert_info->subjectUID = M_ASN1_BIT_STRING_new();
+								if (cert->cert_info->subjectUID != NULL) {
+									ASN1_BIT_STRING_set(cert->cert_info->subjectUID, uuid, 16);
+									cert->cert_info->issuerUID = M_ASN1_BIT_STRING_new();
+									if (cert->cert_info->issuerUID != NULL) {
+										ASN1_BIT_STRING_set(cert->cert_info->issuerUID, uuid, 16);
+									}
 								}
 							}
 						}
