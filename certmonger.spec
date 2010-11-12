@@ -1,6 +1,6 @@
 Name:		certmonger
 Version:	0.32
-Release:	1%{?dist}
+Release:	2%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
 Group:		System Environment/Daemons
@@ -9,7 +9,12 @@ URL:		http://certmonger.fedorahosted.org
 Source0:	http://fedorahosted.org/released/certmonger/certmonger-%{version}.tar.gz
 BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
-BuildRequires:	dbus-devel, nspr-devel, nss-devel, openssl-devel, libuuid-devel
+BuildRequires:	dbus-devel, nspr-devel, nss-devel, openssl-devel
+%if 0%{?fedora} >= 12 || 0%{?rhel} >= 6
+BuildRequires:  libuuid-devel
+%else
+BuildRequires:  e2fsprogs-devel
+%endif
 BuildRequires:	libtalloc-devel, libtevent-devel
 BuildRequires:	libxml2-devel, xmlrpc-c-devel
 # Required for 'make check':
@@ -104,6 +109,10 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Fri Nov 12 2010 Nalin Dahyabhai <nalin@redhat.com> 0.32-2
+- depend on the e2fsprogs libuuid on Fedora and RHEL releases where it's
+  not part of util-linux-ng
+
 * Wed Oct 13 2010 Nalin Dahyabhai <nalin@redhat.com> 0.32-1
 - oops, rfc5280 says we shouldn't be populating unique identifiers, so
   make it a configuration option and default the behavior to off
