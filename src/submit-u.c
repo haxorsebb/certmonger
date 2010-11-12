@@ -28,7 +28,11 @@
 #include <krb5.h>
 
 #ifdef HAVE_UUID
+#if defined(HAVE_UUID_H)
 #include <uuid.h>
+#elif defined(HAVE_UUID_UUID_H)
+#include <uuid/uuid.h>
+#endif
 #endif
 
 #include "log.h"

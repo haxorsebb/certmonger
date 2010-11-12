@@ -319,8 +319,19 @@ if pkg-config uuid ; then
 	uuid=yes
 fi
 ])
+# Older uuid pkgconfig sets us up to need <uuid/uuid.h>.  Newer versions
+# set us up to need <uuid.h>.
+savedCFLAGS="$CFLAGS"
+CFLAGS="$UUID_CFLAGS"
+AC_CHECK_HEADERS(uuid.h uuid/uuid.h)
+CFLAGS="$savedCFLAGS"
 if test x$uuid = xyes ; then
 	AC_DEFINE(HAVE_UUID,1,[Define to have the ability to populate subjectUniqueID in self-signed certs.])
+fi
+if test x$ac_cv_header_uuid_uuid_h = xno ; then
+	if test x$ac_cv_header_uuid_h = xno ; then
+		AC_MSG_ERROR(uuid.h header file not found)
+	fi
 fi
 CM_DEFAULT_POPULATE_UNIQUE_ID=no
 AC_SUBST(CM_DEFAULT_POPULATE_UNIQUE_ID)
