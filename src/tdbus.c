@@ -560,7 +560,8 @@ cm_tdbus_setup_connection(struct tdbus_connection *tdb)
 	    ((i != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER) &&
 	     (i != DBUS_REQUEST_NAME_REPLY_ALREADY_OWNER)) ||
 	    dbus_error_is_set(&err)) {
-		cm_log(1, "Unable to set well-known bus name \"%s\": %s(%d).\n",
+		cm_log(-2,
+		       "Unable to set well-known bus name \"%s\": %s(%d).\n",
 		       CM_DBUS_NAME,
 		       err.message ? err.message : (err.name ? err.name : ""),
 		       i);
@@ -613,6 +614,7 @@ cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type,
 		break;
 	}
 	if (conn == NULL) {
+		cm_log(-2, "Error connecting to %s bus.\n", bus_desc);
 		talloc_free(tdb);
 		return -1;
 	}

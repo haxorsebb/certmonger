@@ -88,6 +88,12 @@ cm_log(int level, const char *fmt, ...)
 		case cm_log_syslog:
 			va_start(args, fmt);
 			switch (level) {
+			case -2:
+				slevel = LOG_CRIT;
+				break;
+			case -1:
+				slevel = LOG_WARNING;
+				break;
 			case 0:
 				slevel = LOG_INFO;
 				break;
