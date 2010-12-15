@@ -726,7 +726,7 @@ cm_store_file_write_str(FILE *fp, enum cm_store_file_field field, const char *s)
 	if ((s == NULL) || (s[0] == '\0')) {
 		return 0;
 	}
-	p = s ?: "";
+	p = s;
 	q = p + strcspn(p, "\r\n");
 	fprintf(fp, "%s=%.*s\n", cm_store_file_line_of_field(field),
 		(int) (q - p), p);
