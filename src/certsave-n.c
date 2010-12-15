@@ -76,7 +76,9 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		if (arena == NULL) {
 			cm_log(1, "Error opening database '%s'.\n",
 			       entry->cm_cert_storage_location);
-			NSS_Shutdown();
+			if (NSS_Shutdown() != SECSuccess) {
+				cm_log(1, "Error shutting down NSS.\n");
+			}
 			_exit(ENOMEM);
 		}
 		certdb = CERT_GetDefaultCertDB();
