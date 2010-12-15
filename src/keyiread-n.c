@@ -122,10 +122,13 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 		token = PK11_GetTokenName(slot);
 		if (token != NULL) {
 			cm_log(3, "Found token '%s'.\n", token);
+		} else {
+			cm_log(3, "Found unnamed token.\n");
 		}
 
 		/* If this is the wrong token, move on. */
-		if ((entry->cm_key_token != NULL) &&
+		if ((token != NULL) &&
+		    (entry->cm_key_token != NULL) &&
 		    (strlen(entry->cm_key_token) > 0) &&
 		    (strcmp(entry->cm_key_token, token) != 0)) {
 			cm_log(1, "Token is named \"%s\", not \"%s\".\n",

@@ -127,10 +127,13 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		token = PK11_GetTokenName(sle->slot);
 		if (token != NULL) {
 			cm_log(3, "Found token '%s'.\n", token);
+		} else {
+			cm_log(3, "Found unnamed token.\n");
 		}
 		if ((entry->cm_key_token == NULL) ||
 		    (strlen(entry->cm_key_token) == 0) ||
-		    (strcmp(entry->cm_key_token, token) == 0)) {
+		    ((token != NULL) &&
+		     (strcmp(entry->cm_key_token, token) == 0))) {
 			slot = sle->slot;
 			break;
 		}
