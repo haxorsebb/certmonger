@@ -311,9 +311,10 @@ free_if_empty_multi(void *parent, char *p)
 {
 	char **s;
 	int i, j, k;
-	if ((p != NULL) && (strlen(p) == 0)) {
-		talloc_free(p);
-		p = NULL;
+	if ((p == NULL) || (strlen(p) == 0)) {
+		if (p != NULL) {
+			talloc_free(p);
+		}
 		return NULL;
 	}
 	s = talloc_zero_array(parent, char *, strlen(p) + 2);
