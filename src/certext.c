@@ -254,9 +254,10 @@ cm_certext_build_ku(struct cm_store_entry *entry, PLArenaPool *arena,
 	SECItem *ret, encoded, *bits;
 	unsigned int i, val, len;
 	if ((ku_value == NULL) || (strlen(ku_value) == 0)) {
+		/* Nothing to encode, so don't include this extension. */
 		return NULL;
 	}
-	len = strlen(ku_value ? ku_value : "") + 1;
+	len = strlen(ku_value) + 1;
 	bits = SECITEM_AllocItem(arena, NULL, len);
 	memset(bits->data, '\0', len);
 	for (i = 0; (ku_value != NULL) && (ku_value[i] != '\0'); i++) {
