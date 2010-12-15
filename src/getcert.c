@@ -108,6 +108,14 @@ ensure_absolute_maybe_nss(void *parent, const char *path, char **nss_scheme)
 	if (strncmp(path, "dbm:", 4) == 0) {
 		*nss_scheme = talloc_strdup(parent, "dbm");
 		path += 4;
+	} else
+	if (strncmp(path, "rdb:", 4) == 0) {
+		*nss_scheme = talloc_strdup(parent, "rdb");
+		path += 4;
+	} else
+	if (strncmp(path, "extern:", 7) == 0) {
+		*nss_scheme = talloc_strdup(parent, "extern");
+		path += 7;
 	}
 	if (path[0] == '/') {
 		return talloc_strdup(parent, path);
