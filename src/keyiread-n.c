@@ -138,7 +138,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 			} else {
 				cm_log(1,
 				       "Token is unnamed, not \"%s\".\n",
-				       token, entry->cm_key_token);
+				       entry->cm_key_token);
 			}
 			goto next_slot;
 		}
