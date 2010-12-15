@@ -218,8 +218,6 @@ cm_subproc_parse_args(void *parent, const char *cmdline, const char **error)
 				sqlevel = 0;
 				p++;
 				break;
-			default:
-				break;
 			}
 			break;
 		case '"':
@@ -236,8 +234,6 @@ cm_subproc_parse_args(void *parent, const char *cmdline, const char **error)
 			case 1:
 				dqlevel = 0;
 				p++;
-				break;
-			default:
 				break;
 			}
 			break;
