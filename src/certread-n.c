@@ -128,7 +128,8 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 		/* If we're looking for a specific slot, and this isn't it,
 		 * keep going. */
-		if ((entry->cm_cert_token != NULL) &&
+		if ((token != NULL) &&
+		    (entry->cm_cert_token != NULL) &&
 		    (strlen(entry->cm_cert_token) != 0) &&
 		    (strcmp(entry->cm_cert_token, token) != 0)) {
 			goto next_slot;
