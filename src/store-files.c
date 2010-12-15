@@ -688,9 +688,9 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 				break;
 			}
 		}
-	}
-	if (ret->cm_ca_internal_serial == NULL) {
-		ret->cm_ca_internal_serial = talloc_strdup(ret, CM_DEFAULT_CERT_SERIAL);
+		if (ret->cm_ca_internal_serial == NULL) {
+			ret->cm_ca_internal_serial = talloc_strdup(ret, CM_DEFAULT_CERT_SERIAL);
+		}
 	}
 	return ret;
 }
