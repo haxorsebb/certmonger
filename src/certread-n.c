@@ -128,10 +128,19 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 		/* If we're looking for a specific slot, and this isn't it,
 		 * keep going. */
-		if ((token != NULL) &&
-		    (entry->cm_cert_token != NULL) &&
+		if ((entry->cm_cert_token != NULL) &&
 		    (strlen(entry->cm_cert_token) != 0) &&
-		    (strcmp(entry->cm_cert_token, token) != 0)) {
+		    ((token == NULL) ||
+		     (strcmp(entry->cm_cert_token, token) != 0))) {
+			if (token != NULL) {
+				cm_log(1,
+				       "Token is named \"%s\", not \"%s\".\n",
+				       token, entry->cm_key_token);
+			} else {
+				cm_log(1,
+				       "Token is unnamed, not \"%s\".\n",
+				       token, entry->cm_key_token);
+			}
 			goto next_slot;
 		}
 		/* If we're supposed to be using a PIN, and we're offered a
