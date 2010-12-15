@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2010 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -202,6 +202,11 @@ cm_netlink_fd_h(struct tevent_context *ec,
 	struct timeval later;
 	struct sockaddr_storage nlsrc;
 	socklen_t nlsrclen;
+
+	/* Shouldn't happen. */
+	if ((ctx == NULL) || (ctx->netlink < 0)) {
+		return;
+	}
 
 	/* Drain the buffer. */
 	cm_log(3, "Got netlink traffic.\n");
