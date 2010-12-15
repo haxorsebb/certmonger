@@ -34,9 +34,8 @@ cm_prefs_read(void)
 	const char *dir, *base = "/" PACKAGE_NAME ".conf";
 	char *path, *ret;
 	ret = NULL;
-	if (getenv(CM_STORE_CONFIG_DIRECTORY_ENV) != NULL) {
-		dir = getenv(CM_STORE_CONFIG_DIRECTORY_ENV);
-	} else {
+	dir = getenv(CM_STORE_CONFIG_DIRECTORY_ENV);
+	if (dir == NULL) {
 		dir = CM_STORE_CONFIG_DIRECTORY;
 	}
 	path = malloc(strlen(dir) + strlen(base) + 1);
