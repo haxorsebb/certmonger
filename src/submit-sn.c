@@ -98,12 +98,14 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	/* Decode the CSR into a signeddata structure. */
 	p = entry->cm_csr;
 	q = NULL;
-	while (strncmp(p, "-----BEGIN ", 11) == 0) {
-		p += strcspn(p, "\r\n");
-		p += strspn(p, "\r\n");
+	if (p != NULL) {
+		while (strncmp(p, "-----BEGIN ", 11) == 0) {
+			p += strcspn(p, "\r\n");
+			p += strspn(p, "\r\n");
+		}
+		q = strstr(p, "-----END");
 	}
-	q = strstr(p, "-----END");
-	if ((p == NULL) || (q == NULL)) {
+	if ((*p == '\0') || (q == NULL)) {
 		cm_log(1, "Unable to parse CSR.\n");
 		_exit(1);
 	}
