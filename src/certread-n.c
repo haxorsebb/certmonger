@@ -139,7 +139,7 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			} else {
 				cm_log(1,
 				       "Token is unnamed, not \"%s\".\n",
-				       token, entry->cm_key_token);
+				       entry->cm_key_token);
 			}
 			goto next_slot;
 		}
