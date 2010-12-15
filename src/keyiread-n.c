@@ -127,12 +127,19 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 		}
 
 		/* If this is the wrong token, move on. */
-		if ((token != NULL) &&
-		    (entry->cm_key_token != NULL) &&
+		if ((entry->cm_key_token != NULL) &&
 		    (strlen(entry->cm_key_token) > 0) &&
-		    (strcmp(entry->cm_key_token, token) != 0)) {
-			cm_log(1, "Token is named \"%s\", not \"%s\".\n",
-			       token, entry->cm_key_token);
+		    ((token == NULL) ||
+		     (strcmp(entry->cm_key_token, token) != 0))) {
+			if (token != NULL) {
+				cm_log(1,
+				       "Token is named \"%s\", not \"%s\".\n",
+				       token, entry->cm_key_token);
+			} else {
+				cm_log(1,
+				       "Token is unnamed, not \"%s\".\n",
+				       token, entry->cm_key_token);
+			}
 			goto next_slot;
 		}
 
