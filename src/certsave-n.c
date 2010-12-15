@@ -86,12 +86,14 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			/* Handle the base64 decode. */
 			p = entry->cm_cert;
 			q = NULL;
-			while (strncmp(p, "-----BEGIN ", 11) == 0) {
-				p += strcspn(p, "\r\n");
-				p += strspn(p, "\r\n");
+			if (p != NULL) {
+				while (strncmp(p, "-----BEGIN ", 11) == 0) {
+					p += strcspn(p, "\r\n");
+					p += strspn(p, "\r\n");
+				}
+				q = strstr(p, "-----END");
 			}
-			q = strstr(p, "-----END");
-			if ((p == NULL) || (q == NULL)) {
+			if ((*p == '\0') || (q == NULL)) {
 				cm_log(1, "Unable to parse certificate.\n");
 				PORT_FreeArena(arena, PR_TRUE);
 				if (NSS_Shutdown() != SECSuccess) {
