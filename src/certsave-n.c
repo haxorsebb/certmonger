@@ -93,7 +93,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				}
 				q = strstr(p, "-----END");
 			}
-			if ((*p == '\0') || (q == NULL)) {
+			if ((q == NULL) || (*p == '\0')) {
 				cm_log(1, "Unable to parse certificate.\n");
 				PORT_FreeArena(arena, PR_TRUE);
 				if (NSS_Shutdown() != SECSuccess) {
