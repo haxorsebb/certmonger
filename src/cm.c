@@ -227,6 +227,9 @@ cm_netlink_fd_h(struct tevent_context *ec,
 		}
 		memset(&nlsrc, 0, sizeof(nlsrc));
 		nlsrclen = 0;
+		if (ctx->netlink == -1) {
+			break;
+		}
 	}
 	/* Queue delayed processing. */
 	if (cm_netlink_pkt_is_route_change(buf, len,
