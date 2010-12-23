@@ -48,10 +48,9 @@ Complete:
       calling out to the python library it supplies.  Ended up reusing
       large chunks of the IPA client code, so it's in C.
   * Handle PIN values for encrypted key storage.
-  * Be able to use hashes other than the current hard-wired SHA256.
+  * Be able to use hashes other than SHA256.
   * Make certmonger a proper daemon.
     * Sort out SELinux policy. (unscoped)
-      MUST
   * Figure out how to let the local deamon's client do key generation.
     It's either that or force them to give the daemon the PIN for
     encrypted storage.  Or don't support encrypted key storage at all,
@@ -75,6 +74,10 @@ To-do:
     to refactor some of the current storage code to to it for "file".
     Not at all sure how to do it for "nssdb".
     COULD
+  * Learn to "handle" keys and certificates stored in PKCS12 bundles.
+    COULD
+  * Learn to handle keys and certificates stored in PKCS11 modules directly.
+    COULD
   * Queue management.
     COULD -> Move entries and CAs from hand-rolled files to simple XML. (2 days)
     COULD -> Move them to an ldb. (3 days)
@@ -90,4 +93,4 @@ To-do:
       (probably libcurl) and a few changes to the internal state machine.
   * Lighten build requirements by crafting and parsing XML-RPC ourselves
     since we're already going to have to deal with non-XML-RPC XML and HTTP
-    when DogTag support goes in.  And we don't have xmlrpc-c on EL5.
+    when DogTag support goes in.

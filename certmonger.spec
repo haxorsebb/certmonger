@@ -1,6 +1,6 @@
 Name:		certmonger
-Version:	0.32
-Release:	2%{?dist}
+Version:	0.33
+Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
 Group:		System Environment/Daemons
@@ -109,6 +109,9 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Thu Dec 23 2010 Nalin Dahyabhai <nalin@redhat.com> 0.33-1
+- roll up assorted fixes for defects
+
 * Fri Nov 12 2010 Nalin Dahyabhai <nalin@redhat.com> 0.32-2
 - depend on the e2fsprogs libuuid on Fedora and RHEL releases where it's
   not part of util-linux-ng
