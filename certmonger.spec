@@ -109,8 +109,20 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Tue Jan 11 2011 Nalin Dahyabhai <nalin@redhat.com> 0.34-1
+- update to 0.34
+  - explicitly note the number of requests we're tracking in the output of
+    "getcert list" (#652049)
+  - updated translations
+    - es
+
 * Thu Dec 23 2010 Nalin Dahyabhai <nalin@redhat.com> 0.33-1
-- roll up assorted fixes for defects
+- update to 0.33
+  - new translations
+    - id by Okta Purnama Rahadian!
+  - updated translations
+    - pl, uk
+  - roll up assorted fixes for defects
 
 * Fri Nov 12 2010 Nalin Dahyabhai <nalin@redhat.com> 0.32-2
 - depend on the e2fsprogs libuuid on Fedora and RHEL releases where it's

@@ -1679,6 +1679,10 @@ list(const char *argv0, int argc, char **argv)
 	requests = query_rep_ap(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
 				"get_requests", globals.tctx);
 	for (i = 0; (requests != NULL) && (requests[i] != NULL); i++) {
+		continue;
+	}
+	printf(_("Number of certificates and requests being tracked: %d.\n"), i);
+	for (i = 0; (requests != NULL) && (requests[i] != NULL); i++) {
 		/* Filter out based on the CA. */
 		ca_name = NULL;
 		rep = query_rep(bus, requests[i],
