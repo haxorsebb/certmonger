@@ -113,6 +113,8 @@ exit 0
 - update to 0.34
   - explicitly note the number of requests we're tracking in the output of
     "getcert list" (#652049)
+  - try to offer some suggestions when we get certain specific errors back
+    in "getcert" (#652047)
   - updated translations
     - es
 

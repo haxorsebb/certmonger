@@ -184,6 +184,24 @@ prep_req(enum cm_tdbus_type which,
 	return msg;
 }
 
+/* Try to offer some advice based on the error. */
+static void
+hint(const char *error)
+{
+	if (strcmp(error, DBUS_ERROR_ACCESS_DENIED) == 0) {
+		printf(_("Insufficient access.  Please retry operation as root.\n"));
+	} else
+	if (strcmp(error, DBUS_ERROR_SERVICE_UNKNOWN) == 0) {
+		printf(_("Please verify that the certmonger service has been started.\n"));
+	} else
+	if (strcmp(error, DBUS_ERROR_NO_REPLY) == 0) {
+		printf(_("Please verify that the certmonger service is still running.\n"));
+	} else
+	if (strcmp(error, DBUS_ERROR_NO_SERVER) == 0) {
+		printf(_("Please verify that the message bus (D-Bus) service is running.\n"));
+	}
+}
+
 /* Send our request and return the response.  If there's an error, exit. */
 static DBusMessage *
 send_req(DBusMessage *req)
@@ -202,6 +220,7 @@ send_req(DBusMessage *req)
 				} else {
 					printf(_("Error %s\n"), err.name);
 				}
+				hint(err.name);
 			} else {
 				if (err.message != NULL) {
 					printf(_("Error: %s\n"), err.message);
