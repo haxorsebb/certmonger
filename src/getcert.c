@@ -191,7 +191,8 @@ hint(const char *error)
 	if (strcmp(error, DBUS_ERROR_ACCESS_DENIED) == 0) {
 		printf(_("Insufficient access.  Please retry operation as root.\n"));
 	} else
-	if (strcmp(error, DBUS_ERROR_SERVICE_UNKNOWN) == 0) {
+	if ((strcmp(error, DBUS_ERROR_NAME_HAS_NO_OWNER) == 0) &&
+	    (strcmp(error, DBUS_ERROR_SERVICE_UNKNOWN) == 0)) {
 		printf(_("Please verify that the certmonger service has been started.\n"));
 	} else
 	if (strcmp(error, DBUS_ERROR_NO_REPLY) == 0) {
