@@ -1,5 +1,5 @@
 Name:		certmonger
-Version:	0.33
+Version:	0.34
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -109,7 +109,7 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
-* Tue Jan 11 2011 Nalin Dahyabhai <nalin@redhat.com> 0.34-1
+* Fri Jan 14 2011 Nalin Dahyabhai <nalin@redhat.com> 0.34-1
 - update to 0.34
   - explicitly note the number of requests we're tracking in the output of
     "getcert list" (#652049)
