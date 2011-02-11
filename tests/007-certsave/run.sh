@@ -42,9 +42,9 @@ cert=$cert
 EOF
 $toolsdir/certsave entry.openssl
 # Compare the three.
-dos2unix cert.original 2>&1
-dos2unix cert.nss 2>&1
-dos2unix cert.openssl 2>&1
+run_dos2unix cert.original
+run_dos2unix cert.nss
+run_dos2unix cert.openssl
 if ! cmp cert.original cert.nss ; then
 	echo Original and NSS disagree.
 	cat cert.original cert.nss
