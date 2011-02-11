@@ -35,9 +35,9 @@ function setupca() {
 
 for size in 512 1024 1536 2048 3072 4096 ; do
 	# Build a self-signed certificate.
-	certutil -d "$tmpdir" -S -g $size -n keyi$size \
+	run_certutil -d "$tmpdir" -S -g $size -n keyi$size \
 		-s "cn=T$size" -c "cn=T$size" \
-		-x -t u < /dev/urandom > /dev/null 2> /dev/null
+		-x -t u
 	# Export the certificate and key.
 	pk12util -d "$tmpdir" -o $size.p12 -W "" -n "keyi$size"
 	openssl pkcs12 -in $size.p12 -passin pass: -out key.$size -nodes 2>&1
