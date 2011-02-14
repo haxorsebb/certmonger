@@ -1,6 +1,6 @@
 Name:		certmonger
-Version:	0.34
-Release:	2%{?dist}
+Version:	0.35
+Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
 Group:		System Environment/Daemons
@@ -109,6 +109,10 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Mon Feb 14 2011 Nalin Dahyabhai <nalin@redhat.com> 0.35-1
+- update to 0.35
+  - self-test fixes to rebuild properly in mock (#670322)
+
 * Tue Feb 08 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.34-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
 
