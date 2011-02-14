@@ -62,6 +62,7 @@ for testid in "$@" $subdirs ; do
 				stat=1
 				echo "FAIL"
 				diff -u expected.out "$tmpfile" | sed s,"^\+\+\+ $tmpfile","+++ actual",g
+				cp $tmpfile actual.out
 			fi
 		else
 			echo "Running test "$testid"."
