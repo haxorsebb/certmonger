@@ -7,6 +7,7 @@ source "$srcdir"/functions
 size=2048
 pin=blahblah
 echo $pin > pin.txt
+echo ""   > empty.txt
 
 clean() {
 	sed 's|'"$tmpdir"'|$tmpdir|g'
@@ -106,10 +107,10 @@ for precreate in false true ; do
 	rm -fr $tmpdir/${scheme}db
 	mkdir -p $tmpdir/${scheme}db
 	if $precreate ; then
-		echo '['Creating database.']'
+		echo '['Creating database, without PIN.']'
 		initnssdb "${scheme:+${scheme}:}$tmpdir/${scheme}db"
 	else
-		echo '['Not Pre-creating database.']'
+		echo '['Not pre-creating database.']'
 	fi
 
 	cat > entry <<- EOF
@@ -120,20 +121,20 @@ for precreate in false true ; do
 
 	echo '['Generating key${scheme:+ \($scheme\)} without PIN.']'
 	$toolsdir/keygen entry | clean
-	$toolsdir/notty certutil -K -d ${scheme:+${scheme}:}$tmpdir/${scheme}db 2>&1 | sed -re 's,rsa .* Test,rsa PRIVATE-KEY Test,g' -e 's,[ \t]+, ,g' -e 's,Services ",Services",g' | clean
+	run_certutil -K -d ${scheme:+${scheme}:}$tmpdir/${scheme}db 2>&1 | sed -re 's,rsa .* Test,rsa PRIVATE-KEY Test,g' -e 's,[ \t]+, ,g' -e 's,Services ",Services",g' | clean
 
 	echo '['Providing Unnecessary PIN.']'
 	echo key_pin_file=$tmpdir/pin.txt >> entry
 
 	echo '['Reading Key Info With Unnecessary PIN.']'
 	$toolsdir/keyiread entry | clean
-	$toolsdir/notty certutil -K -d ${scheme:+${scheme}:}$tmpdir/${scheme}db 2>&1 | sed -re 's,rsa .* Test,rsa PRIVATE-KEY Test,g' -e 's,[ \t]+, ,g' -e 's,Services ",Services",g' | clean
+	run_certutil -K -d ${scheme:+${scheme}:}$tmpdir/${scheme}db -f $tmpdir/pin.txt 2>&1 | sed -re 's,rsa .* Test,rsa PRIVATE-KEY Test,g' -e 's,[ \t]+, ,g' -e 's,Services ",Services",g' | clean
 
 	echo '['Generating CSR With Unnecessary PIN.']'
 	rm -f csr.pem
 	$toolsdir/csrgen entry > csr.pem | clean
 	egrep '(: |REQUEST)' $tmpdir/csr.pem
-	$toolsdir/notty certutil -K -d ${scheme:+${scheme}:}$tmpdir/${scheme}db 2>&1 | sed -re 's,rsa .* Test,rsa PRIVATE-KEY Test,g' -e 's,[ \t]+, ,g' -e 's,Services ",Services",g' | clean
+	run_certutil -K -d ${scheme:+${scheme}:}$tmpdir/${scheme}db -f $tmpdir/pin.txt 2>&1 | sed -re 's,rsa .* Test,rsa PRIVATE-KEY Test,g' -e 's,[ \t]+, ,g' -e 's,Services ",Services",g' | clean
 
 done
 
@@ -142,10 +143,10 @@ for precreate in false true ; do
 	rm -fr $tmpdir/${scheme}db
 	mkdir -p $tmpdir/${scheme}db
 	if $precreate ; then
-		echo '['Creating database.']'
+		echo '['Creating database with PIN.']'
 		initnssdb "${scheme:+${scheme}:}$tmpdir/${scheme}db" $pin
 	else
-		echo '['Not Pre-creating database.']'
+		echo '['Not pre-creating database, with PIN.']'
 	fi
 
 	cat > entry <<- EOF
@@ -157,7 +158,7 @@ for precreate in false true ; do
 
 	echo '['Generating key${scheme:+ \($scheme\)} with PIN.']'
 	$toolsdir/keygen entry | clean
-	$toolsdir/notty certutil -K -f $tmpdir/pin.txt -d ${scheme:+${scheme}:}$tmpdir/${scheme}db 2>&1 | sed -re 's,rsa .* Test,rsa PRIVATE-KEY Test,g' -e 's,[ \t]+, ,g' -e 's,Services ",Services",g' | clean
+	run_certutil -K -f $tmpdir/pin.txt -d ${scheme:+${scheme}:}$tmpdir/${scheme}db 2>&1 | sed -re 's,rsa .* Test,rsa PRIVATE-KEY Test,g' -e 's,[ \t]+, ,g' -e 's,Services ",Services",g' | clean
 
 	echo '['Reading Key Info Without PIN.']'
 	cat > entry <<- EOF
@@ -166,7 +167,7 @@ for precreate in false true ; do
 	key_nickname=Test
 	EOF
 	$toolsdir/keyiread entry | clean
-	$toolsdir/notty certutil -K -d ${scheme:+${scheme}:}$tmpdir/${scheme}db 2>&1 | sed -re 's,rsa .* Test,rsa PRIVATE-KEY Test,g' -e 's,[ \t]+, ,g' -e 's,Services ",Services",g' | clean
+	run_certutil -K -f $tmpdir/empty.txt -d ${scheme:+${scheme}:}$tmpdir/${scheme}db 2>&1 | sed -re 's,rsa .* Test,rsa PRIVATE-KEY Test,g' -e 's,[ \t]+, ,g' -e 's,Services ",Services",g' | clean
 
 	echo '['Reading Key Info With PIN.']'
 	echo key_pin_file=$tmpdir/pin.txt >> entry
