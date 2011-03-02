@@ -1,5 +1,5 @@
 Name:		certmonger
-Version:	0.35
+Version:	0.35.1
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -109,6 +109,10 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Wed Mar  2 2011 Nalin Dahyabhai <nalin@redhat.com> 0.35.1-1
+- fix a self-test that broke because one-year-from-now is now a day's worth
+  of seconds further out than it was a few days ago
+
 * Mon Feb 14 2011 Nalin Dahyabhai <nalin@redhat.com> 0.35-1
 - update to 0.35
   - self-test fixes to rebuild properly in mock (#670322)

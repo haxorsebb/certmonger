@@ -36,6 +36,8 @@ ttls = 1d 14d 7d 28d 1y
 notification_method = mail
 notification_destination = root
 EOF
-$toolsdir/prefs
+# Accept 366*24*60*60 as a valid substitute for 365*24*60*60 when computing
+# seconds-until-it's-one-year-from-now
+$toolsdir/prefs | sed -e 's,31622400$,31536000,g'
 
 echo '['Test complete.']'
