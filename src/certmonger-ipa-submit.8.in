@@ -16,7 +16,7 @@ or fed into \fIipa-submit\fR via stdin.
 
 .SH OPTIONS
 .TP
-\fB\-P\fR principal
+\fB\-P\fR csrPrincipal
 Identifies the principal name of the service for which the certificate is being
 issued.  This setting is required by IPA and must always be specified.
 .TP
@@ -42,7 +42,7 @@ Authenticate to the IPA server using credentials derived from keys stored in
 the named keytab.  The default value can vary, but it is usually
 \fI/etc/krb5.keytab\fR.
 .TP
-\fB\-k\fR capath
+\fB\-k\fR authPrincipal
 Authenticate to the IPA server using credentials derived from keys stored in
 the named keytab for this principal name.  The default value is the \fBhost\fR
 service for the local host in the local realm.
