@@ -56,11 +56,10 @@ Complete:
     encrypted storage.  Or don't support encrypted key storage at all,
     which is probably not going to be a popular limitation to have. (3 days)
     DROPPED in favor of giving the daemon the PIN for encrypted storage.
+  * Offer an API over D-Bus which the client can use instead of
+    mutilating the queue directly (per doc/api.txt).
 
 To-do:
-  * Should offer an API over D-Bus which the client uses instead of
-    mutilating the queue directly (see doc/api.txt):
-      MUST
   * Make certmonger a proper daemon.
     * Sort out logging levels for log messages. (1 day)
       MUST
