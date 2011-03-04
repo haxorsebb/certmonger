@@ -82,6 +82,8 @@ To-do:
     COULD -> Move entries and CAs from hand-rolled files to simple XML. (2 days)
     COULD -> Move them to an ldb. (3 days)
     COULD -> Move them to something that's more end-user-serviceable. (3 days)
+    - IPA mucks with our files directly in their current form, so this is
+      tabled indefinitely.
   * Put NSS into FIPS mode.
   * Offer to read and cache the CA certificate for CAs, just as we do for
     regular requests.
@@ -90,7 +92,8 @@ To-do:
     * Populate/update the known-issuer-names list using the CA certificate.
     * If the CA cert includes a CRL distribution point extension, cache the
       CRL, too.  This'll require a new dependency on a retrieval library
-      (probably libcurl) and a few changes to the internal state machine.
+      (probably libcurl) and changes to the internal state machine to handle
+      CRL retrieval as another type of task.
   * Lighten build requirements by crafting and parsing XML-RPC ourselves
     since we're already going to have to deal with non-XML-RPC XML and HTTP
     when DogTag support goes in.
