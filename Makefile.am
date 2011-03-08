@@ -9,6 +9,7 @@ RELEASE=
 GITTAG=certmonger-$(VERSION)
 
 tag:
+	tx pull
 	git tag $(GITTAG)
 
 force-tag:
@@ -28,6 +29,7 @@ archive:
 		cd $$tmpdir/certmonger;\
 		git checkout $(GITTAG);\
 		./autogen.sh;\
+		tx pull;\
 		make distcheck;\
 		mkdir -p $$tmpdir/rpm-build-top;\
 		rpmbuild \
