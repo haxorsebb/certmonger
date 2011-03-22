@@ -91,6 +91,8 @@ To-do:
     * Default the locations to where we expect other CA clients to be storing
       the certificate.
     * Populate/update the known-issuer-names list using the CA certificate.
+    * Cache the authorityKeyIdentifier and subjectPublicKeyIdentifier from the
+      CA certificate.
     * If the CA cert includes a CRL distribution point extension, cache the
       CRL, too.  This'll require a new dependency on a retrieval library
       (probably libcurl) and changes to the internal state machine to handle
