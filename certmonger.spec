@@ -1,5 +1,5 @@
 Name:		certmonger
-Version:	0.35.1
+Version:	0.36
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -109,6 +109,16 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Tue Mar 22 2011 Nalin Dahyabhai <nalin@redhat.com> 0.36-1
+- update to 0.36
+  - fix some use-after-free bugs in the daemon (#689776)
+  - fix a copy/paste error in certmonger-ipa-submit(8)
+  - getcert now suppresses error details when not given its new -v option
+    (#683926, more of #681641/#652047)
+  - updated translations
+    - es, ru
+    - indonesian translation is now for "id" rather than "in"
+
 * Wed Mar  2 2011 Nalin Dahyabhai <nalin@redhat.com> 0.35.1-1
 - fix a self-test that broke because one-year-from-now is now a day's worth
   of seconds further out than it was a few days ago
