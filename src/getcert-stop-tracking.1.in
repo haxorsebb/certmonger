@@ -40,6 +40,12 @@ The certificate is or was to be stored in this file.
 The private key is or was to be stored in this file.
 Only valid with \fB\-f\fR.
 
+.SH OTHER OPTIONS
+.TP
+\fB\-v\fR
+Be verbose about errors.  Normally, the details of an error received from
+the daemon will be suppressed if the client can make a diagnostic suggestion.
+
 .SH BUGS
 Please file tickets for any that you find at https://fedorahosted.org/certmonger/
 

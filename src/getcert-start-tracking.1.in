@@ -106,6 +106,12 @@ address as its value, to the signing request.
 Add an extensionRequest for a subjectAltName, with the specified DNS name
 as its value, to the signing request.
 
+.SH OTHER OPTIONS
+.TP
+\fB\-v\fR
+Be verbose about errors.  Normally, the details of an error received from
+the daemon will be suppressed if the client can make a diagnostic suggestion.
+
 .SH BUGS
 Please file tickets for any that you find at https://fedorahosted.org/certmonger/
 
