@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -104,7 +104,7 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		pkey = EVP_PKEY_new();
 		if (pkey != NULL) {
 			rsa = PEM_read_RSAPrivateKey(keyfp, NULL, NULL,
-						     cm_pin_read_key(entry));
+						     cm_pin_read_for_key(entry));
 			if (rsa != NULL) {
 				EVP_PKEY_assign_RSA(pkey, rsa); /* pkey owns rsa now */
 				bio = BIO_new_mem_buf(entry->cm_csr,

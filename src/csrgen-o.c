@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -88,7 +88,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		_exit(CM_STATUS_ERROR_INTERNAL);
 	}
 	rsa = PEM_read_RSAPrivateKey(keyfp, NULL,
-				     cm_pin_read_key_ossl_cb, entry);
+				     cm_pin_read_for_key_ossl_cb, entry);
 	if (rsa != NULL) {
 		EVP_PKEY_assign_RSA(pkey, rsa); /* pkey owns rsa now */
 		x = X509_new();

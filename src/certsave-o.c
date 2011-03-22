@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,7 +35,6 @@
 #include "certsave.h"
 #include "certsave-int.h"
 #include "log.h"
-#include "pin.h"
 #include "store.h"
 #include "store-int.h"
 #include "subproc.h"

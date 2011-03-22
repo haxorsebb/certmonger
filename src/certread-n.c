@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,7 +66,6 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	SECStatus error;
 	PK11SlotList *slotlist;
 	PK11SlotListElement *sle;
-	PK11SlotInfo *slot;
 	CERTCertList *certs;
 	CERTCertListNode *node;
 	CERTCertificate *cert;
@@ -112,15 +111,13 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 	/* Walk the list looking for the requested slot, or the first one if
 	 * none was requested. */
-	slot = NULL;
 	cert = NULL;
-	PK11_SetPasswordFunc(&cm_pin_cb_cert);
+	PK11_SetPasswordFunc(&cm_pin_read_for_cert_nss_cb);
 	for (sle = slotlist->head;
 	     ((sle != NULL) && (sle->slot != NULL));
 	     sle = sle->next) {
 		/* Log the slot's name. */
-		slot = sle->slot;
-		token = PK11_GetTokenName(slot);
+		token = PK11_GetTokenName(sle->slot);
 		if (token != NULL) {
 			cm_log(3, "Found token '%s'.\n", token);
 		} else {
@@ -147,17 +144,17 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		 * chance to set one, do it now. */
 		if (readwrite) {
 			if (PK11_NeedUserInit(sle->slot)) {
-				pin = cm_pin_read_cert(entry);
-				PK11_InitPin(slot, NULL, pin);
-				if (PK11_NeedUserInit(slot)) {
-					cm_log(1, "Key storage slot still "
+				pin = cm_pin_read_for_cert(entry);
+				PK11_InitPin(sle->slot, NULL, pin);
+				if (PK11_NeedUserInit(sle->slot)) {
+					cm_log(1, "Cert storage slot still "
 					       "needs user PIN to be set.\n");
 				}
 			}
 		}
 		/* If we need to log in in order to read certificates, do so. */
 		if (!PK11_IsFriendly(sle->slot) && PK11_NeedLogin(sle->slot)) {
-			error = PK11_Authenticate(slot, PR_TRUE, entry);
+			error = PK11_Authenticate(sle->slot, PR_TRUE, entry);
 			if (error != SECSuccess) {
 				cm_log(1, "Error authenticating to cert db.\n");
 				goto next_slot;
@@ -165,7 +162,7 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 		/* Walk the list of certificates in the slot, looking for one
 		 * which matches the specified nickname. */
-		certs = PK11_ListCertsInSlot(slot);
+		certs = PK11_ListCertsInSlot(sle->slot);
 		if (certs != NULL) {
 			for (node = CERT_LIST_HEAD(certs);
 			     !CERT_LIST_EMPTY(certs) &&

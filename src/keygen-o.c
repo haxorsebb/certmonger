@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -103,11 +103,11 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			}
 			_exit(CM_STATUS_ERROR_INITIALIZING);
 		}
-		pin = cm_pin_read_key(entry);
+		pin = cm_pin_read_for_key(entry);
 		if (PEM_write_PKCS8PrivateKey(fp, pkey,
 					      pin ? cm_prefs_ossl_cipher() : NULL,
 					      NULL, 0,
-					      cm_pin_read_key_ossl_cb,
+					      cm_pin_read_for_key_ossl_cb,
 					      entry) == 0) {
 			cm_log(1, "Error storing key.\n");
 			while ((error = ERR_get_error()) != 0) {

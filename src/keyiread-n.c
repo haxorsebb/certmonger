@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,7 +66,6 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	SECStatus error;
 	PK11SlotList *slotlist;
 	PK11SlotListElement *sle;
-	PK11SlotInfo *slot;
 	SECKEYPrivateKeyList *keys;
 	SECKEYPrivateKeyListNode *knode;
 	SECKEYPrivateKey *key;
@@ -110,16 +109,14 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	/* Walk the list looking for the requested token, or look at all of
 	 * them if none specifically was requested. */
 	key = NULL;
-	slot = NULL;
-	PK11_SetPasswordFunc(&cm_pin_cb_key);
+	PK11_SetPasswordFunc(&cm_pin_read_for_cert_nss_cb);
 	n_login_attempts = 0;
 	n_login_success = 0;
 	for (sle = slotlist->head;
 	     ((sle != NULL) && (sle->slot != NULL));
 	     sle = sle->next) {
 		/* Read the token's name. */
-		slot = sle->slot;
-		token = PK11_GetTokenName(slot);
+		token = PK11_GetTokenName(sle->slot);
 		if (token != NULL) {
 			cm_log(3, "Found token '%s'.\n", token);
 		} else {
@@ -146,10 +143,10 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 		/* If we're supposed to be using a PIN, and we're offered a
 		 * chance to set one, do it now. */
 		if (readwrite) {
-			if (PK11_NeedUserInit(slot)) {
-				pin = cm_pin_read_key(entry);
-				PK11_InitPin(slot, NULL, pin);
-				if (PK11_NeedUserInit(slot)) {
+			if (PK11_NeedUserInit(sle->slot)) {
+				pin = cm_pin_read_for_key(entry);
+				PK11_InitPin(sle->slot, NULL, pin);
+				if (PK11_NeedUserInit(sle->slot)) {
 					cm_log(1, "Key storage slot still "
 					       "needs user PIN to be set.\n");
 				}
@@ -157,9 +154,9 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 		}
 
 		/* Now log in, if we have to. */
-		if (PK11_NeedLogin(slot)) {
+		if (PK11_NeedLogin(sle->slot)) {
 			n_login_attempts++;
-			error = PK11_Authenticate(slot, PR_TRUE, entry);
+			error = PK11_Authenticate(sle->slot, PR_TRUE, entry);
 			if (error != SECSuccess) {
 				cm_log(1, "Error authenticating to token "
 				       "\"%s\".\n", token);
@@ -170,7 +167,8 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 
 		/* Walk the list of private keys in the token, looking at each
 		 * one to see if it matches the specified nickname. */
-		keys = PK11_ListPrivKeysInSlot(slot, entry->cm_key_nickname,
+		keys = PK11_ListPrivKeysInSlot(sle->slot,
+					       entry->cm_key_nickname,
 					       NULL);
 		if (keys != NULL) {
 			for (knode = PRIVKEY_LIST_HEAD(keys);
@@ -195,7 +193,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 		 * one to see if it matches the specified nickname and has a
 		 * private key associated with it. */
 		if (key == NULL) {
-			certs = PK11_ListCertsInSlot(slot);
+			certs = PK11_ListCertsInSlot(sle->slot);
 		} else {
 			certs = NULL;
 		}
@@ -211,7 +209,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 					cm_log(3, "Located a certificate with "
 					       "the key's nickname (\"%s\").\n",
 					       nickname);
-					key = PK11_FindPrivateKeyFromCert(slot,
+					key = PK11_FindPrivateKeyFromCert(sle->slot,
 									  cert,
 									  NULL);
 					if (key != NULL) {

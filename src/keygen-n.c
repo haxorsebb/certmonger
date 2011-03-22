@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -177,7 +177,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	 * set one, do it now. */
 	if (readwrite) {
 		if (PK11_NeedUserInit(slot)) {
-			pin = cm_pin_read_key(entry);
+			pin = cm_pin_read_for_key(entry);
 			PK11_InitPin(slot, NULL, pin);
 			if (PK11_NeedUserInit(slot)) {
 				cm_log(1, "Key generation slot still "
@@ -187,7 +187,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 	/* Now log in, if we have to. */
 	if (PK11_NeedLogin(slot)) {
-		PK11_SetPasswordFunc(&cm_pin_cb_key);
+		PK11_SetPasswordFunc(&cm_pin_read_for_key_nss_cb);
 		error = PK11_Authenticate(slot, PR_TRUE, entry);
 		if (error != SECSuccess) {
 			cm_log(1, "Error authenticating to key store.\n");

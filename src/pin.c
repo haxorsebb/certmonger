@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Red Hat, Inc.
+ * Copyright (C) 2010,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,8 +38,8 @@
 #include "store-int.h"
 
 enum cm_pin_type {
-	cm_pin_key,
-	cm_pin_cert,
+	cm_pin_for_key,
+	cm_pin_for_cert,
 };
 
 static char *
@@ -51,11 +51,11 @@ cm_pin_read(struct cm_store_entry *entry, enum cm_pin_type pin_type)
 	int fd, l;
 
 	switch (pin_type) {
-	case cm_pin_key:
+	case cm_pin_for_key:
 		pinfile = entry->cm_key_pin_file;
 		pinvalue = entry->cm_key_pin;
 		break;
-	case cm_pin_cert:
+	case cm_pin_for_cert:
 		pinfile = entry->cm_key_pin_file; /* XXX */
 		pinvalue = entry->cm_key_pin; /* XXX */
 		break;
@@ -81,7 +81,7 @@ cm_pin_read(struct cm_store_entry *entry, enum cm_pin_type pin_type)
 							pin[l] = '\0';
 						}
 					} else {
-						cm_log(1,
+						cm_log(-1,
 						       "Error reading \"%s\": "
 						       "%s.\n",
 						       pinfile,
@@ -91,13 +91,13 @@ cm_pin_read(struct cm_store_entry *entry, enum cm_pin_type pin_type)
 					}
 				}
 			} else {
-				cm_log(1, "Error determining size of \"%s\": "
+				cm_log(-1, "Error determining size of \"%s\": "
 				       "%s.\n",
 				       pinfile, strerror(errno));
 			}
 			close(fd);
 		} else {
-			cm_log(1, "Error reading PIN from \"%s\": %s.\n",
+			cm_log(-1, "Error reading PIN from \"%s\": %s.\n",
 			       pinfile, strerror(errno));
 		}
 	}
@@ -110,14 +110,14 @@ cm_pin_read(struct cm_store_entry *entry, enum cm_pin_type pin_type)
 }
 
 int
-cm_pin_read_key_ossl_cb(char *buf, int size, int rwflag, void *u)
+cm_pin_read_for_key_ossl_cb(char *buf, int size, int rwflag, void *u)
 {
 	struct cm_store_entry *entry;
 	char *pin;
 	int ret;
 	entry = u;
 	memset(buf, '\0', size);
-	pin = cm_pin_read(entry, cm_pin_key);
+	pin = cm_pin_read(entry, cm_pin_for_key);
 	if (pin != NULL) {
 		ret = strlen(pin);
 		if (ret < size) {
@@ -132,9 +132,9 @@ cm_pin_read_key_ossl_cb(char *buf, int size, int rwflag, void *u)
 	return ret;
 }
 
-char *
-cm_pin_cb(PK11SlotInfo *slot, PRBool retry, void *arg,
-	  enum cm_pin_type pin_type)
+static char *
+cm_pin_nss_cb(PK11SlotInfo *slot, PRBool retry, void *arg,
+	      enum cm_pin_type pin_type)
 {
 	struct cm_store_entry *entry;
 	char *pin, *ret;
@@ -158,25 +158,25 @@ cm_pin_cb(PK11SlotInfo *slot, PRBool retry, void *arg,
 }
 
 char *
-cm_pin_read_key(struct cm_store_entry *entry)
+cm_pin_read_for_key(struct cm_store_entry *entry)
 {
-	return cm_pin_read(entry, cm_pin_key);
+	return cm_pin_read(entry, cm_pin_for_key);
 }
 
 char *
-cm_pin_cb_key(PK11SlotInfo *slot, PRBool retry, void *arg)
+cm_pin_read_for_key_nss_cb(PK11SlotInfo *slot, PRBool retry, void *arg)
 {
-	return cm_pin_cb(slot, retry, arg, cm_pin_key);
+	return cm_pin_nss_cb(slot, retry, arg, cm_pin_for_key);
 }
 
 char *
-cm_pin_read_cert(struct cm_store_entry *entry)
+cm_pin_read_for_cert(struct cm_store_entry *entry)
 {
-	return cm_pin_read(entry, cm_pin_cert);
+	return cm_pin_read(entry, cm_pin_for_cert);
 }
 
 char *
-cm_pin_cb_cert(PK11SlotInfo *slot, PRBool retry, void *arg)
+cm_pin_read_for_cert_nss_cb(PK11SlotInfo *slot, PRBool retry, void *arg)
 {
-	return cm_pin_cb(slot, retry, arg, cm_pin_cert);
+	return cm_pin_nss_cb(slot, retry, arg, cm_pin_for_cert);
 }
