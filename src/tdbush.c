@@ -453,6 +453,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		 struct cm_context *ctx)
 {
 	DBusMessage *rep;
+	DBusHandlerResult ret;
 	void *parent;
 	struct cm_tdbusm_dict **d;
 	const struct cm_tdbusm_dict *param;
@@ -489,7 +490,6 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		if (strcasecmp(param->value.s, "NSSDB") == 0) {
 			cert_storage = cm_cert_storage_nssdb;
 		} else {
-			DBusHandlerResult ret;
 			cm_log(1, "Unknown cert storage type \"%s\".\n",
 			       param->value.s);
 			ret = send_internal_base_bad_arg_error(conn, msg,
@@ -514,11 +514,12 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		if (cm_tdbush_check_arg_is_absolute_path(param->value.s) != 0) {
 			cm_log(1, "PIN storage location is not an absolute "
 			       "path.\n");
+			ret = send_internal_base_bad_arg_error(conn, msg,
+							       _("The location \"%s\" must be an absolute path."),
+							       param->value.s,
+							       "KEY_PIN_FILE");
 			talloc_free(parent);
-			return send_internal_base_bad_arg_error(conn, msg,
-								_("The location \"%s\" must be an absolute path."),
-								param->value.s,
-								"KEY_PIN_FILE");
+			return ret;
 		}
 		key_pin_file = param->value.s;
 	}
@@ -538,29 +539,32 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		if (cm_tdbush_check_arg_is_absolute_path(param->value.s) != 0) {
 			cm_log(1, "Cert storage location is not an absolute "
 			       "path.\n");
+			ret = send_internal_base_bad_arg_error(conn, msg,
+							       _("The location \"%s\" must be an absolute path."),
+							       param->value.s,
+							       "CERT_LOCATION");
 			talloc_free(parent);
-			return send_internal_base_bad_arg_error(conn, msg,
-								_("The location \"%s\" must be an absolute path."),
-								param->value.s,
-								"CERT_LOCATION");
+			return ret;
 		}
 		if (cm_tdbush_check_arg_parent_is_directory(param->value.s) != 0) {
 			cm_log(1, "Cert storage location is not inside of "
 			       "a directory.\n");
+			ret = send_internal_base_bad_arg_error(conn, msg,
+							       _("The parent of location \"%s\" must be a valid directory."),
+							       param->value.s,
+							       "CERT_LOCATION");
 			talloc_free(parent);
-			return send_internal_base_bad_arg_error(conn, msg,
-								_("The parent of location \"%s\" must be a valid directory."),
-								param->value.s,
-								"CERT_LOCATION");
+			return ret;
 		}
 		if (cm_tdbush_check_arg_is_reg_or_missing(param->value.s) != 0) {
 			cm_log(1, "Cert storage location is "
 			       "not a regular file.\n");
+			ret = send_internal_base_bad_arg_error(conn, msg,
+							       _("The location \"%s\" must be a file."),
+							       param->value.s,
+							       "CERT_LOCATION");
 			talloc_free(parent);
-			return send_internal_base_bad_arg_error(conn, msg,
-								_("The location \"%s\" must be a file."),
-								param->value.s,
-								"CERT_LOCATION");
+			return ret;
 		}
 		cert_location = param->value.s;
 		cert_nickname = NULL;
@@ -579,20 +583,22 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		if (cm_tdbush_check_arg_is_absolute_nss_path(param->value.s) != 0) {
 			cm_log(1, "Cert storage location is not an absolute "
 			       "path.\n");
+			ret = send_internal_base_bad_arg_error(conn, msg,
+							       _("The location \"%s\" must be an absolute path."),
+							       param->value.s,
+							       "CERT_LOCATION");
 			talloc_free(parent);
-			return send_internal_base_bad_arg_error(conn, msg,
-								_("The location \"%s\" must be an absolute path."),
-								param->value.s,
-								"CERT_LOCATION");
+			return ret;
 		}
 		if (cm_tdbush_check_arg_is_nss_directory(param->value.s) != 0) {
 			cm_log(1, "Cert storage location must be "
 			       "a directory.\n");
+			ret = send_internal_base_bad_arg_error(conn, msg,
+							       _("The location \"%s\" must be a directory."),
+							       param->value.s,
+							       "CERT_LOCATION");
 			talloc_free(parent);
-			return send_internal_base_bad_arg_error(conn, msg,
-								_("The location \"%s\" must be a directory."),
-								param->value.s,
-								"CERT_LOCATION");
+			return ret;
 		}
 		cert_location = cm_store_canonicalize_directory(parent,
 								param->value.s);
@@ -625,7 +631,8 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 				cm_log(1, "There is already a request with "
 				       "the nickname \"%s\".\n", e->cm_id);
 				talloc_free(parent);
-				return send_internal_base_duplicate_error(conn, msg,
+				return send_internal_base_duplicate_error(conn,
+									  msg,
 									  _("There is already a request with the nickname \"%s\"."),
 									  e->cm_id,
 									  "NICKNAME",
@@ -634,10 +641,12 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		}
 		if (cm_tdbush_check_object_path_component(ctx,
 							  param->value.s) != 0) {
-			return send_internal_base_bad_arg_error(conn, msg,
-								_("The nickname \"%s\" is not allowed."),
-								param->value.s,
-								"NICKNAME");
+			ret = send_internal_base_bad_arg_error(conn, msg,
+							       _("The nickname \"%s\" is not allowed."),
+							       param->value.s,
+							       "NICKNAME");
+			talloc_free(parent);
+			return ret;
 		}
 	}
 	/* Check for a duplicate of another entry's certificate storage
@@ -693,7 +702,6 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		if (strcasecmp(param->value.s, "NONE") == 0) {
 			key_storage = cm_key_storage_none;
 		} else {
-			DBusHandlerResult ret;
 			cm_log(1, "Unknown key storage type \"%s\".\n",
 			       param->value.s);
 			ret = send_internal_base_bad_arg_error(conn, msg,
@@ -725,29 +733,32 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 			if (cm_tdbush_check_arg_is_absolute_path(param->value.s) != 0) {
 				cm_log(1, "Key storage location is not an "
 				       "absolute path.\n");
+				ret = send_internal_base_bad_arg_error(conn, msg,
+								       _("The location \"%s\" must be an absolute path."),
+								       param->value.s,
+								       "KEY_LOCATION");
 				talloc_free(parent);
-				return send_internal_base_bad_arg_error(conn, msg,
-									_("The location \"%s\" must be an absolute path."),
-									param->value.s,
-									"KEY_LOCATION");
+				return ret;
 			}
 			if (cm_tdbush_check_arg_parent_is_directory(param->value.s) != 0) {
 				cm_log(1, "Key storage location is not inside "
 				       "of a directory.\n");
+				ret = send_internal_base_bad_arg_error(conn, msg,
+								       _("The parent of location \"%s\" must be a valid directory."),
+								       param->value.s,
+								       "KEY_LOCATION");
 				talloc_free(parent);
-				return send_internal_base_bad_arg_error(conn, msg,
-									_("The parent of location \"%s\" must be a valid directory."),
-									param->value.s,
-									"KEY_LOCATION");
+				return ret;
 			}
 			if (cm_tdbush_check_arg_is_reg_or_missing(param->value.s) != 0) {
 				cm_log(1, "Key storage location is "
 				       "not a regular file.\n");
+				ret = send_internal_base_bad_arg_error(conn, msg,
+								       _("The location \"%s\" must be a file."),
+								       param->value.s,
+								       "KEY_LOCATION");
 				talloc_free(parent);
-				return send_internal_base_bad_arg_error(conn, msg,
-									_("The location \"%s\" must be a file."),
-									param->value.s,
-									"KEY_LOCATION");
+				return ret;
 			}
 			key_location = param->value.s;
 			key_nickname = NULL;
@@ -767,20 +778,22 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 			if (cm_tdbush_check_arg_is_absolute_nss_path(param->value.s) != 0) {
 				cm_log(1, "Key storage location is not an "
 				       "absolute path.\n");
+				ret = send_internal_base_bad_arg_error(conn, msg,
+								       _("The location \"%s\" must be an absolute path."),
+								       param->value.s,
+								       "KEY_LOCATION");
 				talloc_free(parent);
-				return send_internal_base_bad_arg_error(conn, msg,
-									_("The location \"%s\" must be an absolute path."),
-									param->value.s,
-									"KEY_LOCATION");
+				return ret;
 			}
 			if (cm_tdbush_check_arg_is_nss_directory(param->value.s) != 0) {
 				cm_log(1, "Key storage location must be "
 				       "a directory.\n");
+				ret = send_internal_base_bad_arg_error(conn, msg,
+								       _("The location \"%s\" must be a directory."),
+								       param->value.s,
+								       "KEY_LOCATION");
 				talloc_free(parent);
-				return send_internal_base_bad_arg_error(conn, msg,
-									_("The location \"%s\" must be a directory."),
-									param->value.s,
-									"KEY_LOCATION");
+				return ret;
 			}
 			key_location = cm_store_canonicalize_directory(parent,
 								       param->value.s);
@@ -890,11 +903,12 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		} else {
 			cm_log(1, "No CA with path \"%s\" known.\n",
 			       param->value.s);
+			ret = send_internal_base_bad_arg_error(conn, msg,
+							       _("No such CA."),
+							       param->value.s,
+							       "CA");
 			talloc_free(parent);
-			return send_internal_base_bad_arg_error(conn, msg,
-								_("No such CA."),
-								param->value.s,
-								"CA");
+			return ret;
 		}
 	}
 	/* Behavior settings. */
