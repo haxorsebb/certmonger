@@ -525,6 +525,9 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	}
 	/* Check that other required information about the
 	 * certificate's location is provided. */
+	cert_location = NULL;
+	cert_nickname = NULL;
+	cert_token = NULL;
 	switch (cert_storage) {
 	case cm_cert_storage_file:
 		param = cm_tdbusm_find_dict_entry(d, "CERT_LOCATION",
@@ -620,6 +623,13 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 			cert_token = param->value.s;
 		}
 		break;
+	}
+	if (cert_location == NULL) {
+		cm_log(1, "Cert storage location not specified.\n");
+		talloc_free(parent);
+		return send_internal_base_missing_arg_error(conn, msg,
+							    _("Certificate storage location not specified."),
+							    "CERT_LOCATION");
 	}
 	/* Check that the requested nickname will be unique. */
 	param = cm_tdbusm_find_dict_entry(d, "NICKNAME", cm_tdbusm_dict_s);
