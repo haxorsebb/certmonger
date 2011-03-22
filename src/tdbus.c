@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -395,11 +395,11 @@ static void
 cm_tdbus_timeout_toggle(DBusTimeout *timeout, void *data)
 {
 	struct tdbus_connection *conn;
-	struct tdbus_timer *tdb_timer, *prev;
+	struct tdbus_timer *tdb_timer;
 	struct timeval next_time;
 	void *parent;
 	conn = data;
-	for (prev = NULL, tdb_timer = conn->timers;
+	for (tdb_timer = conn->timers;
 	     tdb_timer != NULL;
 	     tdb_timer = tdb_timer->next) {
 		if (tdb_timer->timeout == timeout) {
@@ -419,7 +419,6 @@ cm_tdbus_timeout_toggle(DBusTimeout *timeout, void *data)
 			}
 			break;
 		}
-		prev = tdb_timer;
 	}
 }
 
