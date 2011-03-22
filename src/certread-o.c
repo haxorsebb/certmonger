@@ -58,7 +58,8 @@ cm_certread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	FILE *pem, *fp;
 	X509 *cert;
 	int status, len;
-	char buf[LINE_MAX], *der;
+	char buf[LINE_MAX];
+	unsigned char *der;
 	long error;
 
 	util_o_init();
@@ -90,8 +91,8 @@ cm_certread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 	if (status == 0) {
 		der = NULL;
-		len = i2d_X509(cert, (unsigned char **) &der);
-		cm_certread_n_parse(entry, (unsigned char *) der, len);
+		len = i2d_X509(cert, &der);
+		cm_certread_n_parse(entry, der, len);
 		cm_certread_write_data_to_pipe(entry, fp);
 	} else {
 		while ((error = ERR_get_error()) != 0) {
