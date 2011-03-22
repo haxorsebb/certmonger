@@ -1,5 +1,5 @@
 Name:		certmonger
-Version:	0.36
+Version:	0.37
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -109,6 +109,12 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Tue Mar 22 2011 Nalin Dahyabhai <nalin@redhat.com> 0.37-1
+- update to 0.37
+  - be more careful about checking if we can read a PIN file successfully
+    before we even call an API that might need us to try (#688229)
+  - fix strict aliasing warnings
+
 * Tue Mar 22 2011 Nalin Dahyabhai <nalin@redhat.com> 0.36-1
 - update to 0.36
   - fix some use-after-free bugs in the daemon (#689776)
