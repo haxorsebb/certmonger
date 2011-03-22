@@ -144,7 +144,11 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		 * chance to set one, do it now. */
 		if (readwrite) {
 			if (PK11_NeedUserInit(sle->slot)) {
-				pin = cm_pin_read_for_cert(entry);
+				if (cm_pin_read_for_cert(entry, &pin) != 0) {
+					cm_log(1, "Error reading PIN to assign "
+					       "to storage slot, skipping.\n");
+					goto next_slot;
+				}
 				PK11_InitPin(sle->slot, NULL, pin);
 				if (PK11_NeedUserInit(sle->slot)) {
 					cm_log(1, "Cert storage slot still "
@@ -153,7 +157,12 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			}
 		}
 		/* If we need to log in in order to read certificates, do so. */
-		if (!PK11_IsFriendly(sle->slot) && PK11_NeedLogin(sle->slot)) {
+		if (PK11_NeedLogin(sle->slot)) {
+			if (cm_pin_read_for_cert(entry, &pin) != 0) {
+				cm_log(1, "Error reading PIN for cert db, "
+				       "skipping.\n");
+				goto next_slot;
+			}
 			error = PK11_Authenticate(sle->slot, PR_TRUE, entry);
 			if (error != SECSuccess) {
 				cm_log(1, "Error authenticating to cert db.\n");

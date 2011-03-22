@@ -60,6 +60,7 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	const char *alg;
 	int size;
 	long error;
+	char *pin;
 
 	util_o_init();
 	ERR_load_crypto_strings();
@@ -71,6 +72,10 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 	pem = fopen(entry->cm_key_storage_location, "r");
 	if (pem != NULL) {
+		if (cm_pin_read_for_key(entry, &pin) != 0) {
+			cm_log(1, "Error reading key encryption PIN.\n");
+			_exit(CM_STATUS_ERROR_AUTH);
+		}
 		pkey = PEM_read_PrivateKey(pem, NULL,
 					   cm_pin_read_for_key_ossl_cb, entry);
 		if (pkey != NULL) {

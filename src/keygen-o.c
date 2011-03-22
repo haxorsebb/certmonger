@@ -103,7 +103,10 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			}
 			_exit(CM_STATUS_ERROR_INITIALIZING);
 		}
-		pin = cm_pin_read_for_key(entry);
+		if (cm_pin_read_for_key(entry, &pin) != 0) {
+			cm_log(1, "Error reading key encryption PIN.\n");
+			_exit(CM_STATUS_ERROR_AUTH);
+		}
 		if (PEM_write_PKCS8PrivateKey(fp, pkey,
 					      pin ? cm_prefs_ossl_cipher() : NULL,
 					      NULL, 0,

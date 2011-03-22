@@ -7,6 +7,9 @@ OK (2048).
 [Retry With Unnecessary PIN File.]
 OK (2048).
 [Replacing key with an encrypted one.]
+[Read Key Info With Bogus PIN Location.]
+Failed to read key "$tmpdir/keyfile".
+(Need PIN.)
 [Read Key Info Without PIN.]
 Failed to read key "$tmpdir/keyfile".
 (Need PIN.)
@@ -70,9 +73,13 @@ Failed to read key "sql:$tmpdir/sqldb":"Test".
 certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
 Incorrect password/PIN entered.
 certutil: could not authenticate to token NSS Certificate DB.: The security password entered is incorrect.
+[Reading Key Info With Bogus PIN Location.]
+Failed to read key "sql:$tmpdir/sqldb":"Test".
+(Need PIN.)
 [Reading Key Info With PIN.]
 OK (2048).
 [Generating CSR Without PIN.]
+[Generating CSR With Bogus PIN Location.]
 [Generating CSR With PIN.]
 -----BEGIN NEW CERTIFICATE REQUEST-----
 -----END NEW CERTIFICATE REQUEST-----
@@ -87,9 +94,13 @@ Failed to read key "sql:$tmpdir/sqldb":"Test".
 certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
 Incorrect password/PIN entered.
 certutil: could not authenticate to token NSS Certificate DB.: The security password entered is incorrect.
+[Reading Key Info With Bogus PIN Location.]
+Failed to read key "sql:$tmpdir/sqldb":"Test".
+(Need PIN.)
 [Reading Key Info With PIN.]
 OK (2048).
 [Generating CSR Without PIN.]
+[Generating CSR With Bogus PIN Location.]
 [Generating CSR With PIN.]
 -----BEGIN NEW CERTIFICATE REQUEST-----
 -----END NEW CERTIFICATE REQUEST-----

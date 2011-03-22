@@ -60,7 +60,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	X509_REQ *req;
 	RSA *rsa;
 	EVP_PKEY *pkey;
-	char buf[LINE_MAX], *p, *q, *s, *nickname;
+	char buf[LINE_MAX], *p, *q, *s, *nickname, *pin;
 	unsigned char *extensions, *unickname;
 	const char *default_cn = CM_DEFAULT_CERT_SUBJECT_CN;
 	size_t extensions_len;
@@ -86,6 +86,10 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	if (pkey == NULL) {
 		cm_log(1, "Internal error generating CSR.\n");
 		_exit(CM_STATUS_ERROR_INTERNAL);
+	}
+	if (cm_pin_read_for_key(entry, &pin) != 0) {
+		cm_log(1, "Internal error reading key encryption PIN.\n");
+		_exit(CM_STATUS_ERROR_AUTH);
 	}
 	rsa = PEM_read_RSAPrivateKey(keyfp, NULL,
 				     cm_pin_read_for_key_ossl_cb, entry);

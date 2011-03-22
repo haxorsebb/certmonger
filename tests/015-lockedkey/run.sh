@@ -51,6 +51,14 @@ Hka4FKLjBQo5g0WxKvpRwxHrrQW6JeT9I5+NgNN4sJc=
 -----END RSA PRIVATE KEY-----
 EOF
 
+echo '['Read Key Info With Bogus PIN Location.']'
+cat > entry <<- EOF
+key_storage_type=FILE
+key_storage_location=$tmpdir/keyfile
+key_pin_file=$tmpdir/bogus-pin.txt
+EOF
+$toolsdir/keyiread entry | clean
+
 echo '['Read Key Info Without PIN.']'
 cat > entry <<- EOF
 key_storage_type=FILE
@@ -169,8 +177,17 @@ for precreate in false true ; do
 	$toolsdir/keyiread entry | clean
 	run_certutil -K -f $tmpdir/empty.txt -d ${scheme:+${scheme}:}$tmpdir/${scheme}db 2>&1 | sed -re 's,rsa .* Test,rsa PRIVATE-KEY Test,g' -e 's,[ \t]+, ,g' -e 's,Services ",Services",g' | clean
 
+	echo '['Reading Key Info With Bogus PIN Location.']'
+	echo key_pin_file=$tmpdir/bogus-pin.txt >> entry
+	$toolsdir/keyiread entry | clean
+
 	echo '['Reading Key Info With PIN.']'
-	echo key_pin_file=$tmpdir/pin.txt >> entry
+	cat > entry <<- EOF
+	key_storage_type=NSSDB
+	key_storage_location=${scheme:+${scheme}:}$tmpdir/${scheme}db
+	key_nickname=Test
+	key_pin_file=$tmpdir/pin.txt
+	EOF
 	$toolsdir/keyiread entry | clean
 
 	echo '['Generating CSR Without PIN.']'
@@ -183,8 +200,19 @@ for precreate in false true ; do
 	$toolsdir/csrgen entry > csr.pem | clean
 	egrep '(: |REQUEST)' $tmpdir/csr.pem
 
+	echo '['Generating CSR With Bogus PIN Location.']'
+	echo key_pin_file=$tmpdir/bogus-pin.txt >> entry
+	rm -f csr.pem
+	$toolsdir/csrgen entry > csr.pem | clean
+	egrep '(: |REQUEST)' $tmpdir/csr.pem
+
 	echo '['Generating CSR With PIN.']'
-	echo key_pin_file=$tmpdir/pin.txt >> entry
+	cat > entry <<- EOF
+	key_storage_type=NSSDB
+	key_storage_location=${scheme:+${scheme}:}$tmpdir/${scheme}db
+	key_nickname=Test
+	key_pin_file=$tmpdir/pin.txt
+	EOF
 	rm -f csr.pem
 	$toolsdir/csrgen entry > csr.pem | clean
 	egrep '(: |REQUEST)' $tmpdir/csr.pem

@@ -144,7 +144,11 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 		 * chance to set one, do it now. */
 		if (readwrite) {
 			if (PK11_NeedUserInit(sle->slot)) {
-				pin = cm_pin_read_for_key(entry);
+				if (cm_pin_read_for_key(entry, &pin) != 0) {
+					cm_log(1, "Error reading PIN to assign "
+					       "to storage slot, skipping.\n");
+					goto next_slot;
+				}
 				PK11_InitPin(sle->slot, NULL, pin);
 				if (PK11_NeedUserInit(sle->slot)) {
 					cm_log(1, "Key storage slot still "
@@ -156,6 +160,11 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 		/* Now log in, if we have to. */
 		if (PK11_NeedLogin(sle->slot)) {
 			n_login_attempts++;
+			if (cm_pin_read_for_key(entry, &pin) != 0) {
+				cm_log(1, "Error reading PIN for key storage "
+				       "token \"%s\", skipping.\n", token);
+				goto next_slot;
+			}
 			error = PK11_Authenticate(sle->slot, PR_TRUE, entry);
 			if (error != SECSuccess) {
 				cm_log(1, "Error authenticating to token "

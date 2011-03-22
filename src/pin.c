@@ -42,13 +42,12 @@ enum cm_pin_type {
 	cm_pin_for_cert,
 };
 
-static char *
-cm_pin_read(struct cm_store_entry *entry, enum cm_pin_type pin_type)
+static int
+cm_pin_read(struct cm_store_entry *entry, enum cm_pin_type pin_type, char **pin)
 {
 	const char *pinfile, *pinvalue;
-	char *pin;
 	struct stat st;
-	int fd, l;
+	int fd, l, err;
 
 	switch (pin_type) {
 	case cm_pin_for_key:
@@ -65,48 +64,54 @@ cm_pin_read(struct cm_store_entry *entry, enum cm_pin_type pin_type)
 		break;
 	}
 
-	pin = NULL;
+	if (pin == NULL) {
+		return EINVAL;
+	}
+	*pin = NULL;
+	err = 0;
 	if ((pinfile != NULL) && (strlen(pinfile) > 0)) {
 		fd = open(pinfile, O_RDONLY);
 		if (fd != -1) {
 			if ((fstat(fd, &st) == 0) && (st.st_size > 0)) {
-				pin = talloc_zero_size(entry, st.st_size + 1);
-				if (pin != NULL) {
-					if (read(fd, pin, st.st_size) != -1) {
-						l = strcspn(pin, "\r\n");
+				*pin = talloc_zero_size(entry, st.st_size + 1);
+				if (*pin != NULL) {
+					if (read(fd, *pin, st.st_size) != -1) {
+						l = strcspn(*pin, "\r\n");
 						if (l == 0) {
-							talloc_free(pin);
-							pin = NULL;
+							talloc_free(*pin);
+							*pin = NULL;
 						} else {
-							pin[l] = '\0';
+							(*pin)[l] = '\0';
 						}
 					} else {
+						err = errno;
 						cm_log(-1,
 						       "Error reading \"%s\": "
 						       "%s.\n",
-						       pinfile,
-						       strerror(errno));
-						talloc_free(pin);
-						pin = NULL;
+						       pinfile, strerror(err));
+						talloc_free(*pin);
+						*pin = NULL;
 					}
 				}
 			} else {
+				err = errno;
 				cm_log(-1, "Error determining size of \"%s\": "
 				       "%s.\n",
-				       pinfile, strerror(errno));
+				       pinfile, strerror(err));
 			}
 			close(fd);
 		} else {
+			err = errno;
 			cm_log(-1, "Error reading PIN from \"%s\": %s.\n",
-			       pinfile, strerror(errno));
+			       pinfile, strerror(err));
 		}
 	}
-	if (pin == NULL) {
+	if ((pin != NULL) && (*pin == NULL) && (err == 0)) {
 		if (pinvalue != NULL) {
-			pin = talloc_strdup(entry, pinvalue);
+			*pin = talloc_strdup(entry, pinvalue);
 		}
 	}
-	return pin;
+	return err;
 }
 
 int
@@ -117,15 +122,18 @@ cm_pin_read_for_key_ossl_cb(char *buf, int size, int rwflag, void *u)
 	int ret;
 	entry = u;
 	memset(buf, '\0', size);
-	pin = cm_pin_read(entry, cm_pin_for_key);
-	if (pin != NULL) {
-		ret = strlen(pin);
-		if (ret < size) {
-			strcpy(buf, pin);
+	if (cm_pin_read(entry, cm_pin_for_key, &pin) == 0) {
+		if (pin != NULL) {
+			ret = strlen(pin);
+			if (ret < size) {
+				strcpy(buf, pin);
+			} else {
+				ret = 0;
+			}
+			talloc_free(pin);
 		} else {
 			ret = 0;
 		}
-		talloc_free(pin);
 	} else {
 		ret = 0;
 	}
@@ -143,13 +151,16 @@ cm_pin_nss_cb(PK11SlotInfo *slot, PRBool retry, void *arg,
 		ret = NULL;
 	} else {
 		entry = arg;
-		pin = cm_pin_read(entry, pin_type);
-		if (pin != NULL) {
-			ret = PR_Malloc(strlen(pin) + 1);
-			if (ret != NULL) {
-				strcpy(ret, pin);
+		if (cm_pin_read(entry, pin_type, &pin) == 0) {
+			if (pin != NULL) {
+				ret = PR_Malloc(strlen(pin) + 1);
+				if (ret != NULL) {
+					strcpy(ret, pin);
+				}
+				talloc_free(pin);
+			} else {
+				ret = NULL;
 			}
-			talloc_free(pin);
 		} else {
 			ret = NULL;
 		}
@@ -157,10 +168,10 @@ cm_pin_nss_cb(PK11SlotInfo *slot, PRBool retry, void *arg,
 	return ret;
 }
 
-char *
-cm_pin_read_for_key(struct cm_store_entry *entry)
+int
+cm_pin_read_for_key(struct cm_store_entry *entry, char **pin)
 {
-	return cm_pin_read(entry, cm_pin_for_key);
+	return cm_pin_read(entry, cm_pin_for_key, pin);
 }
 
 char *
@@ -169,10 +180,10 @@ cm_pin_read_for_key_nss_cb(PK11SlotInfo *slot, PRBool retry, void *arg)
 	return cm_pin_nss_cb(slot, retry, arg, cm_pin_for_key);
 }
 
-char *
-cm_pin_read_for_cert(struct cm_store_entry *entry)
+int
+cm_pin_read_for_cert(struct cm_store_entry *entry, char **pin)
 {
-	return cm_pin_read(entry, cm_pin_for_cert);
+	return cm_pin_read(entry, cm_pin_for_cert, pin);
 }
 
 char *

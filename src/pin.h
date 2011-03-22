@@ -25,8 +25,8 @@
 
 struct cm_store_entry;
 int cm_pin_read_for_key_ossl_cb(char *buf, int size, int rwflag, void *u);
-char *cm_pin_read_for_key(struct cm_store_entry *entry);
-char *cm_pin_read_for_cert(struct cm_store_entry *entry);
+int cm_pin_read_for_key(struct cm_store_entry *entry, char **pin);
+int cm_pin_read_for_cert(struct cm_store_entry *entry, char **pin);
 char *cm_pin_read_for_key_nss_cb(PK11SlotInfo *slot, PRBool retry, void *arg);
 char *cm_pin_read_for_cert_nss_cb(PK11SlotInfo *slot, PRBool retry, void *arg);
 
