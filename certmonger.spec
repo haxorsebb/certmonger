@@ -116,7 +116,7 @@ exit 0
   - getcert now suppresses error details when not given its new -v option
     (#683926, more of #681641/#652047)
   - updated translations
-    - es, ru
+    - de, es, pl, ru, uk
     - indonesian translation is now for "id" rather than "in"
 
 * Wed Mar  2 2011 Nalin Dahyabhai <nalin@redhat.com> 0.35.1-1
