@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -182,14 +182,13 @@ cm_subproc_parse_args(void *parent, const char *cmdline, const char **error)
 	const char *p;
 	char *q, *bigbuf;
 	char **argv;
-	int sqlevel, dqlevel, escape, word;
+	int sqlevel, dqlevel, escape;
 	size_t buffersize, words;
 
 	buffersize = strlen(cmdline) * 3;
 	bigbuf = talloc_zero_size(parent, buffersize);
 
 	sqlevel = dqlevel = escape = 0;
-	word = 0;
 	p = cmdline;
 	q = bigbuf;
 	while (*p != '\0') {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1142,7 +1142,6 @@ cm_certext_read_extensions(struct cm_store_entry *entry, PLArenaPool *arena,
 			   CERTCertExtension **extensions)
 {
 	int i;
-	char *ku, *eku, *principal, *hostname, *email;
 	PLArenaPool *local_arena;
 
 	SECOidData *ku_oid, *eku_oid, *san_oid;
@@ -1157,11 +1156,6 @@ cm_certext_read_extensions(struct cm_store_entry *entry, PLArenaPool *arena,
 		local_arena = NULL;
 	}
 
-	ku = NULL;
-	eku = NULL;
-	principal = NULL;
-	hostname = NULL;
-	email = NULL;
 	ku_oid = SECOID_FindOIDByTag(SEC_OID_X509_KEY_USAGE);
 	if (ku_oid == NULL) {
 		cm_log(1, "Internal library error: unable to look up OID for "

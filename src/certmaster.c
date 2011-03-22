@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,7 +49,7 @@
 int
 main(int argc, char **argv)
 {
-	int i, c, ret;
+	int i, c;
 	const char *host = NULL, *port = NULL, *cainfo = NULL, *capath = NULL;
 	char *csr, *p, uri[LINE_MAX], *s1, *s2, *config;
 	struct cm_submit_x_context *ctx;
@@ -82,7 +82,6 @@ main(int argc, char **argv)
 			break;
 		}
 	}
-	ret = CM_STATUS_UNREACHABLE;
 
 	if (host == NULL) {
 		/* Okay, we have to figure out what the master name is. */

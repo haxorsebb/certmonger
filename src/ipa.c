@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@
 int
 main(int argc, char **argv)
 {
-	int i, c, ret, host_is_uri = 0;
+	int i, c, host_is_uri = 0;
 	const char *host = NULL, *cainfo = NULL, *capath = NULL;
 	const char *ktname = NULL, *kpname = NULL, *args[2];
 	char *csr, *p, *q, uri[LINE_MAX], *s, *reqprinc = NULL, *ipaconfig;
@@ -145,7 +145,6 @@ main(int argc, char **argv)
 			argv[0]);
 		return CM_STATUS_UNCONFIGURED;
 	}
-	ret = CM_STATUS_UNREACHABLE;
 
 	/* Read the CSR from the environment, or from the command-line. */
 	csr = getenv(CM_SUBMIT_CSR_ENV);
