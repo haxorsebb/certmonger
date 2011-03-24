@@ -185,7 +185,7 @@ prep_req(enum cm_tdbus_type which,
 }
 
 /* Try to offer some advice based on the error. */
-static const char *
+static enum { hint_unknown, hint_found }
 print_hint(const char *error, const char *message)
 {
 	char *buf = NULL;
@@ -216,7 +216,7 @@ print_hint(const char *error, const char *message)
 		printf("%s", text);
 	}
 	free(buf);
-	return text;
+	return text ? hint_found : hint_unknown;
 }
 
 /* Send our request and return the response.  If there's an error, exit. */
@@ -232,7 +232,7 @@ send_req(DBusMessage *req, int verbose)
 		if (dbus_error_is_set(&err)) {
 			if (err.name != NULL) {
 				if ((print_hint(err.name,
-						err.message) == NULL) ||
+						err.message) == hint_unknown) ||
 				    verbose) {
 					if ((err.message != NULL) && verbose) {
 						printf(_("Error %s: %s\n"),
