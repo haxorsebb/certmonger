@@ -1,5 +1,5 @@
 Name:		certmonger
-Version:	0.38
+Version:	0.39
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -109,6 +109,16 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Fri Mar 25 2011 Nalin Dahyabhai <nalin@redhat.com> 0.39-1
+- update to 0.39
+  - fix use of an uninitialized variable in the xmlrpc-based submission
+    helpers (#690886)
+
+* Thu Mar 24 2011 Nalin Dahyabhai <nalin@redhat.com> 0.38-1
+- update to 0.38
+  - catch cases where we can't read a PIN file, but we never have to log
+    in to the token to access the private key (more of #688229)
+
 * Thu Mar 24 2011 Nalin Dahyabhai <nalin@redhat.com> 0.38-1
 - update to 0.38
   - catch cases where we can't read a PIN file, but we never have to log
