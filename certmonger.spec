@@ -119,11 +119,6 @@ exit 0
   - catch cases where we can't read a PIN file, but we never have to log
     in to the token to access the private key (more of #688229)
 
-* Thu Mar 24 2011 Nalin Dahyabhai <nalin@redhat.com> 0.38-1
-- update to 0.38
-  - catch cases where we can't read a PIN file, but we never have to log
-    in to the token to access the private key (more of #688229)
-
 * Tue Mar 22 2011 Nalin Dahyabhai <nalin@redhat.com> 0.37-1
 - update to 0.37
   - be more careful about checking if we can read a PIN file successfully
