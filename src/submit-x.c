@@ -162,7 +162,7 @@ cm_submit_x_init(void *parent, const char *uri, const char *method,
 	if (ctx == NULL) {
 		return NULL;
 	}
-	memset(&ctx->xenv, 0, sizeof(ctx->xenv));
+	memset(ctx, 0, sizeof(*ctx));
 	xmlrpc_env_init(&ctx->xenv);
 	xmlrpc_client_setup_global_const(&ctx->xenv);
 	ctx->server = xmlrpc_server_info_new(&ctx->xenv, uri);
@@ -312,6 +312,10 @@ cm_submit_x_run(struct cm_submit_x_context *ctx)
 		ctx->fault_code = ctx->xenv.fault_code;
 		ctx->fault_text = talloc_strdup(ctx, ctx->xenv.fault_string);
 		xmlrpc_env_clean(&ctx->xenv);
+	} else {
+		ctx->fault_occurred = FALSE;
+		ctx->fault_code = 0;
+		ctx->fault_text = NULL;
 	}
 }
 
