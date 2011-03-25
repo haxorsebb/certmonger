@@ -335,7 +335,7 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 					break;
 				case -1:
 					/* huh? */
-					cm_log(1, "Unexpected error while "
+					cm_log(-1, "Unexpected error while "
 					       "starting helper \"%s\".",
 					       ca->cm_ca_external_helper);
 					cm_subproc_done(entry, state->subproc);
@@ -343,7 +343,8 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 					state = NULL;
 					break;
 				default:
-					cm_log(1, "Error while starting helper "
+					cm_log(-1,
+					       "Error while starting helper "
 					       "\"%s\": %s.",
 					       ca->cm_ca_external_helper,
 					       strerror(u));
