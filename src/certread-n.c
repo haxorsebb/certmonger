@@ -112,6 +112,10 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	/* Walk the list looking for the requested slot, or the first one if
 	 * none was requested. */
 	cert = NULL;
+	if (cm_pin_read_for_cert(entry, &pin) != 0) {
+		cm_log(1, "Error reading PIN for cert db.\n");
+		_exit(CM_STATUS_ERROR_AUTH);
+	}
 	PK11_SetPasswordFunc(&cm_pin_read_for_cert_nss_cb);
 	for (sle = slotlist->head;
 	     ((sle != NULL) && (sle->slot != NULL));

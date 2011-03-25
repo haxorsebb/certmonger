@@ -185,9 +185,10 @@ prep_req(enum cm_tdbus_type which,
 }
 
 /* Try to offer some advice based on the error. */
-static const char *
-print_hint(const char *error)
+static enum { hint_unknown, hint_found }
+print_hint(const char *error, const char *message)
 {
+	char *buf = NULL;
 	const char *text = NULL;
 	if (strcmp(error, DBUS_ERROR_ACCESS_DENIED) == 0) {
 		text = _("Insufficient access.  Please retry operation as root.\n");
@@ -201,9 +202,21 @@ print_hint(const char *error)
 	} else
 	if (strcmp(error, DBUS_ERROR_NO_SERVER) == 0) {
 		text = _("Please verify that the message bus (D-Bus) service is running.\n");
+	} else
+	if (strncmp(error, CM_DBUS_ERROR_BASE,
+		    strlen(CM_DBUS_ERROR_BASE)) == 0) {
+		text = _(message);
+		buf = malloc(strlen(text) + 2);
+		if (buf != NULL) {
+			sprintf(buf, "%s\n", text);
+			text = buf;
+		}
 	}
-	printf("%s", text);
-	return text;
+	if (text != NULL) {
+		printf("%s", text);
+	}
+	free(buf);
+	return text ? hint_found : hint_unknown;
 }
 
 /* Send our request and return the response.  If there's an error, exit. */
@@ -218,12 +231,16 @@ send_req(DBusMessage *req, int verbose)
 	if (rep == NULL) {
 		if (dbus_error_is_set(&err)) {
 			if (err.name != NULL) {
-				if ((print_hint(err.name) == NULL) || verbose) {
+				if ((print_hint(err.name,
+						err.message) == hint_unknown) ||
+				    verbose) {
 					if ((err.message != NULL) && verbose) {
-						printf(_("Error %s: %s\n"), err.name,
+						printf(_("Error %s: %s\n"),
+						       err.name,
 						       err.message);
 					} else {
-						printf(_("Error %s\n"), err.name);
+						printf(_("Error %s\n"),
+						       err.name);
 					}
 				}
 			} else {

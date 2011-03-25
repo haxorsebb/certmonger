@@ -109,6 +109,10 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	/* Walk the list looking for the requested token, or look at all of
 	 * them if none specifically was requested. */
 	key = NULL;
+	if (cm_pin_read_for_key(entry, &pin) != 0) {
+		cm_log(1, "Error reading PIN for key storage.\n");
+		_exit(CM_STATUS_ERROR_AUTH);
+	}
 	PK11_SetPasswordFunc(&cm_pin_read_for_cert_nss_cb);
 	n_login_attempts = 0;
 	n_login_success = 0;
@@ -144,6 +148,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 		 * chance to set one, do it now. */
 		if (readwrite) {
 			if (PK11_NeedUserInit(sle->slot)) {
+				n_login_attempts++;
 				if (cm_pin_read_for_key(entry, &pin) != 0) {
 					cm_log(1, "Error reading PIN to assign "
 					       "to storage slot, skipping.\n");
@@ -153,7 +158,9 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 				if (PK11_NeedUserInit(sle->slot)) {
 					cm_log(1, "Key storage slot still "
 					       "needs user PIN to be set.\n");
+					goto next_slot;
 				}
+				n_login_success++;
 			}
 		}
 
