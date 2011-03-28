@@ -113,7 +113,7 @@ sbin_PROGRAMS = certmonger
 certmonger_SOURCES = main.c env-system.c
 certmonger_LDADD = libcm.a \
 		   $(OPENSSL_LIBS) $(CERTMONGER_LIBS) $(KRB5_LIBS) $(UUID_LIBS)
-certmonger_session_SOURCES = main.c env-system.c
+certmonger_session_SOURCES = main.c env-session.c
 certmonger_session_LDADD = libcm.a \
 		   $(OPENSSL_LIBS) $(CERTMONGER_LIBS) $(KRB5_LIBS) $(UUID_LIBS)
 noinst_PROGRAMS = tdbusm-check serial-check nl-check submit-x

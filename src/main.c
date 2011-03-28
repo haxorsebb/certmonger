@@ -65,7 +65,7 @@ main(int argc, char **argv)
 	bindtextdomain(PACKAGE, MYLOCALEDIR);
 #endif
 
-	while ((c = getopt(argc, argv, "sSp:d:n")) != -1) {
+	while ((c = getopt(argc, argv, "sSp:d:nf")) != -1) {
 		switch (c) {
 		case 's':
 			bus = cm_tdbus_session;
@@ -79,17 +79,22 @@ main(int argc, char **argv)
 		case 'd':
 			dlevel = atoi(optarg);
 			/* fall through */
+		case 'f':
+			dofork = TRUE;
+			break;
 		case 'n':
 			dofork = FALSE;
 			break;
 		default:
-			printf("Usage: certmonger [-s|-S] [-n] [-d LEVEL] "
+			printf("Usage: %s [-s|-S] [-n|-f] [-d LEVEL] "
 			       "[-p FILE]\n"
 			       "\t-s         use session bus\n"
 			       "\t-S         use system bus\n"
 			       "\t-n         don't become a daemon\n"
+			       "\t-f         do become a daemon\n"
 			       "\t-d LEVEL   set debugging level (implies -n)\n"
-			       "\t-p FILE    write service PID to file\n");
+			       "\t-p FILE    write service PID to file\n",
+			       cm_env_whoami());
 			exit(1);
 			break;
 		}
