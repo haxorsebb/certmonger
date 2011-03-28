@@ -890,6 +890,9 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		new_entry->cm_key_type.cm_key_gen_algorithm = CM_DEFAULT_PUBKEY_TYPE;
 		new_entry->cm_key_type.cm_key_gen_size = CM_DEFAULT_PUBKEY_SIZE;
 	}
+	if (new_entry->cm_key_type.cm_key_gen_size < CM_MINIMUM_PUBKEY_SIZE) {
+		new_entry->cm_key_type.cm_key_gen_size = CM_MINIMUM_PUBKEY_SIZE;
+	}
 	/* Key and certificate storage. */
 	new_entry->cm_key_storage_type = key_storage;
 	new_entry->cm_key_storage_location = maybe_strdup(new_entry,
