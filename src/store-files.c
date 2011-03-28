@@ -33,6 +33,7 @@
 #include <dbus/dbus.h>
 #include <talloc.h>
 
+#include "env.h"
 #include "store.h"
 #include "store-int.h"
 #include "log.h"

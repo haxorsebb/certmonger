@@ -23,6 +23,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <dbus/dbus.h>
+
 #include "env.h"
 #include "prefs.h"
 #include "store-int.h"

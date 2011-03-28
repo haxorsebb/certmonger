@@ -18,10 +18,6 @@
 #ifndef cmenv_h
 #define cmenv_h
 
-#include <dbus/dbus.h>
-
-#include "tdbus.h"
-
 char *cm_env_config_dir(void);
 char *cm_env_request_dir(void);
 char *cm_env_ca_dir(void);
