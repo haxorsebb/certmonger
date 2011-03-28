@@ -18,9 +18,15 @@
 #ifndef cmenv_h
 #define cmenv_h
 
+#include <dbus/dbus.h>
+
+#include "tdbus.h"
+
 char *cm_env_config_dir(void);
 char *cm_env_request_dir(void);
 char *cm_env_ca_dir(void);
 char *cm_env_whoami(void);
+enum cm_tdbus_type cm_env_default_bus(void);
+dbus_bool_t cm_env_default_fork(void);
 
 #endif

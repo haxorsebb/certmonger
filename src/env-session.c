@@ -16,13 +16,21 @@
  */
 
 #include "config.h"
+
 #include <sys/types.h>
 #include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+#include <talloc.h>
+#include <tevent.h>
+
+#include <dbus/dbus.h>
+
 #include "env.h"
+#include "tdbus.h"
 
 static char *
 cm_env_homedir(const char *subdir)
@@ -91,4 +99,16 @@ char *
 cm_env_whoami(void)
 {
 	return "certmonger-session";
+}
+
+enum cm_tdbus_type
+cm_env_default_bus(void)
+{
+	return cm_tdbus_session;
+}
+
+dbus_bool_t
+cm_env_default_fork(void)
+{
+	return FALSE;
 }

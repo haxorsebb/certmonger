@@ -16,8 +16,16 @@
  */
 
 #include "config.h"
+
 #include <stdlib.h>
+
+#include <talloc.h>
+#include <tevent.h>
+
+#include <dbus/dbus.h>
+
 #include "env.h"
+#include "tdbus.h"
 
 char *
 cm_env_config_dir(void)
@@ -56,4 +64,16 @@ char *
 cm_env_whoami(void)
 {
 	return "certmonger";
+}
+
+enum cm_tdbus_type
+cm_env_default_bus(void)
+{
+	return cm_tdbus_system;
+}
+
+dbus_bool_t
+cm_env_default_fork(void)
+{
+	return TRUE;
 }

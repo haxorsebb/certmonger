@@ -388,7 +388,7 @@ int
 main(int argc, char **argv)
 {
 	void *ctx;
-	int c, i, j, pflag, submit, check, retrieve, id, try_xml;
+	int c, i, j, submit, check, retrieve, id, try_xml;
 	const char *method, *ca, *cgi, *file, *profile, *result;
 	const char *name, *email, *tele;
 	char *params, *uri, **var, **vars, *p, *request;
@@ -417,7 +417,6 @@ main(int argc, char **argv)
 				  "/xml/header/certPrettyPrint",
 				  NULL};
 	struct cm_submit_h_context *hctx;
-	pflag = 0;
 	submit = 0;
 	try_xml = 0;
 	check = 0;

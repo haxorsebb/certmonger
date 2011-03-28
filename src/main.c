@@ -35,6 +35,7 @@
 #include <dbus/dbus.h>
 
 #include "cm.h"
+#include "env.h"
 #include "log.h"
 #include "tdbus.h"
 
@@ -50,12 +51,15 @@ main(int argc, char **argv)
 {
 	struct tevent_context *ec;
 	struct cm_context *ctx;
-	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
+	enum cm_tdbus_type bus;
 	int i, c, dlevel = 0, pfd = -1;
 	pid_t pid;
 	FILE *pfp;
 	const char *pidfile = NULL;
-	dbus_bool_t dofork = TRUE;
+	dbus_bool_t dofork;
+	
+	bus = cm_env_default_bus();
+	dofork = cm_env_default_fork();
 
 #ifdef ENABLE_NLS
 	bindtextdomain(PACKAGE, MYLOCALEDIR);
