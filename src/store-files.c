@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -992,10 +992,7 @@ cm_store_entry_save(struct cm_store_entry *entry)
 
 	if (entry->cm_store_private == NULL) {
 		cm_store_timestamp_from_time(time(NULL), timestamp);
-		directory = getenv(CM_STORE_REQUESTS_DIRECTORY_ENV);
-		if ((directory == NULL) || (strlen(directory) == 0)) {
-			directory = CM_STORE_REQUESTS_DIRECTORY;
-		}
+		directory = cm_env_request_dir();
 		snprintf(path, sizeof(path), "%s/%s", directory, timestamp);
 		fd = open(path,
 			  O_WRONLY | O_CREAT | O_EXCL,
@@ -1073,10 +1070,7 @@ cm_store_get_all_entries(void *parent)
 	FILE *fp;
 	glob_t globs;
 
-	directory = getenv(CM_STORE_REQUESTS_DIRECTORY_ENV);
-	if ((directory == NULL) || (strlen(directory) == 0)) {
-		directory = CM_STORE_REQUESTS_DIRECTORY;
-	}
+	directory = cm_env_request_dir();
 	snprintf(path, sizeof(path), "%s/*", directory);
 	memset(&globs, 0, sizeof(globs));
 	ret = NULL;
@@ -1193,10 +1187,7 @@ cm_store_ca_save(struct cm_store_ca *ca)
 
 	if (ca->cm_store_private == NULL) {
 		cm_store_timestamp_from_time(time(NULL), timestamp);
-		directory = getenv(CM_STORE_CAS_DIRECTORY_ENV);
-		if ((directory == NULL) || (strlen(directory) == 0)) {
-			directory = CM_STORE_CAS_DIRECTORY;
-		}
+		directory = cm_env_ca_dir();
 		snprintf(path, sizeof(path), "%s/%s", directory, timestamp);
 		fd = open(path,
 			  O_WRONLY | O_CREAT | O_EXCL,
@@ -1273,10 +1264,7 @@ cm_store_get_all_cas(void *parent)
 	FILE *fp;
 	glob_t globs;
 
-	directory = getenv(CM_STORE_CAS_DIRECTORY_ENV);
-	if ((directory == NULL) || (strlen(directory) == 0)) {
-		directory = CM_STORE_CAS_DIRECTORY;
-	}
+	directory = cm_env_ca_dir();
 	snprintf(path, sizeof(path), "%s/*", directory);
 	memset(&globs, 0, sizeof(globs));
 	ret = NULL;

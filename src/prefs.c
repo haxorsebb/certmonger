@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Red Hat, Inc.
+ * Copyright (C) 2010,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "env.h"
 #include "prefs.h"
 #include "store-int.h"
 #include "submit.h"
@@ -34,10 +35,7 @@ cm_prefs_read(void)
 	const char *dir, *base = "/" PACKAGE_NAME ".conf";
 	char *path, *ret;
 	ret = NULL;
-	dir = getenv(CM_STORE_CONFIG_DIRECTORY_ENV);
-	if (dir == NULL) {
-		dir = CM_STORE_CONFIG_DIRECTORY;
-	}
+	dir = cm_env_config_dir();
 	path = malloc(strlen(dir) + strlen(base) + 1);
 	if (path != NULL) {
 		sprintf(path, "%s%s", dir, base);
