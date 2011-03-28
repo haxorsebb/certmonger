@@ -48,6 +48,7 @@ mylibexecdir="$libexecdir/${PACKAGE_NAME}"
 mylibexecdir=`eval echo $mylibexecdir | sed "s,NONE,$prefix,g"`
 mylibexecdir=`eval echo $mylibexecdir | sed "s,NONE,$ac_default_prefix,g"`
 mylibexecdir=`eval echo $mylibexecdir | sed "s,NONE,,g"`
+AC_SUBST(mylibexecdir)
 AC_ARG_WITH(file-store-dir,
 AS_HELP_STRING([--with-file-store-dir=/var/lib/certmonger],[directory to use for storing data]),
 mylocalstatedir=$withval,
@@ -341,4 +342,4 @@ AC_SUBST(UUID_CFLAGS)
 AC_SUBST(UUID_LIBS)
 
 AC_CONFIG_COMMANDS(src_introspect_sh,[chmod +x src/introspect.sh])
-AC_OUTPUT(Makefile src/Makefile dbus/Makefile tests/Makefile tests/tools/Makefile dbus/certmonger.conf src/certmonger.init src/introspect.sh src/certmonger.8 src/getcert.1 src/getcert-request.1 src/getcert-list.1 src/getcert-list-cas.1 src/getcert-start-tracking.1 src/getcert-stop-tracking.1 src/selfsign-getcert.1 src/ipa-getcert.1 src/getcert-resubmit.1 src/certmonger-certmaster-submit.8 src/certmonger-ipa-submit.8 src/certmaster-getcert.1 src/certmonger.conf.5 po/Makefile.in src/certmonger.conf)
+AC_OUTPUT(Makefile src/Makefile dbus/Makefile tests/Makefile tests/tools/Makefile dbus/certmonger.conf dbus/certmonger.service src/certmonger.init src/certmonger-session src/introspect.sh src/certmonger.8 src/getcert.1 src/getcert-request.1 src/getcert-list.1 src/getcert-list-cas.1 src/getcert-start-tracking.1 src/getcert-stop-tracking.1 src/selfsign-getcert.1 src/ipa-getcert.1 src/getcert-resubmit.1 src/certmonger-certmaster-submit.8 src/certmonger-ipa-submit.8 src/certmaster-getcert.1 src/certmonger.conf.5 po/Makefile.in src/certmonger.conf)

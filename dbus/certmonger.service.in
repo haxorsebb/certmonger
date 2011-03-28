@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=@CM_DBUS_NAME@
+Exec=@mylibexecdir@/certmonger-session

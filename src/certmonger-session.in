@@ -1,0 +1,8 @@
+#!/bin/sh
+CERTMONGER_CONFIG_DIR=$HOME/.config/certmonger
+export CERTMONGER_CONFIG_DIR
+CERTMONGER_REQUESTS_DIR=$HOME/.config/certmonger/requests
+export CERTMONGER_REQUESTS_DIR
+CERTMONGER_CAS_DIR=$HOME/.config/certmonger/cas
+export CERTMONGER_CAS_DIR
+exec @mysbindir@/certmonger -s -n
