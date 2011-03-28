@@ -4,7 +4,7 @@
 certmonger
 
 .SH SYNOPSIS
-certmonger [-s|-S] [-n] [-d LEVEL] [-p FILE]
+certmonger [-s|-S] [-n|-f] [-d LEVEL] [-p FILE]
 
 .SH DESCRIPTION
 The \fIcertmonger\fR daemon monitors certificates for impending
@@ -25,6 +25,9 @@ Listen on the system bus rather than the session bus.  This is the default.
 .TP
 -n
 Don't fork, and log messages to stderr rather than syslog.
+.TP
+-f
+Do fork, and log messages to syslog rather than stderr.
 .TP
 -d LEVEL
 Set debugging level.  Higher values produce more debugging output.
