@@ -1,5 +1,5 @@
 Name:		certmonger
-Version:	0.39
+Version:	0.40
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -110,6 +110,12 @@ exit 0
 %{_localstatedir}/lib/certmonger
 
 %changelog
+* Mon Mar 28 2011 Nalin Dahyabhai <nalin@redhat.com> 0.40-1
+- update to 0.40
+  - fix validation check on EKU OIDs in getcert (#691351)
+  - get session bus mode sorted
+  - add a list of recognized EKU values to the getcert-request man page
+
 * Fri Mar 25 2011 Nalin Dahyabhai <nalin@redhat.com> 0.39-1
 - update to 0.39
   - fix use of an uninitialized variable in the xmlrpc-based submission
