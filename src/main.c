@@ -76,12 +76,12 @@ main(int argc, char **argv)
 		case 'p':
 			pidfile = optarg;
 			break;
-		case 'd':
-			dlevel = atoi(optarg);
-			/* fall through */
 		case 'f':
 			dofork = TRUE;
 			break;
+		case 'd':
+			dlevel = atoi(optarg);
+			/* fall through */
 		case 'n':
 			dofork = FALSE;
 			break;
