@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,6 +64,18 @@ main(int argc, char **argv)
 #ifdef ENABLE_NLS
 	bindtextdomain(PACKAGE, MYLOCALEDIR);
 #endif
+
+	if (cm_env_whoami()) {
+		printf("internal error\n");
+		exit(1);
+	}
+	if ((cm_env_config_dir() == NULL) ||
+	    (cm_env_request_dir() == NULL) ||
+	    (cm_env_ca_dir() == NULL)) {
+		printf("%s: unable to determine storage locations\n",
+		       cm_env_whoami());
+		exit(1);
+	};
 
 	while ((c = getopt(argc, argv, "sSp:d:nf")) != -1) {
 		switch (c) {
