@@ -473,7 +473,8 @@ request(const char *argv0, int argc, char **argv)
 			break;
 		case 'U':
 			oid = cm_oid_from_name(globals.tctx, optarg);
-			if (strspn(oid, "0123456789.") != strlen(oid)) {
+			if ((oid == NULL) ||
+			    (strspn(oid, "0123456789.") != strlen(oid))) {
 				printf(_("Could not evaluate OID \"%s\".\n"),
 				       optarg);
 				return 1;
@@ -1146,7 +1147,8 @@ set_tracking(const char *argv0, const char *category,
 			break;
 		case 'U':
 			oid = cm_oid_from_name(globals.tctx, optarg);
-			if (strspn(oid, "0123456789.") != strlen(oid)) {
+			if ((oid == NULL) ||
+			    (strspn(oid, "0123456789.") != strlen(oid))) {
 				printf(_("Could not evaluate OID \"%s\".\n"),
 				       optarg);
 				return 1;
@@ -1496,7 +1498,8 @@ resubmit(const char *argv0, int argc, char **argv)
 			break;
 		case 'U':
 			oid = cm_oid_from_name(globals.tctx, optarg);
-			if (strspn(oid, "0123456789.") != strlen(oid)) {
+			if ((oid == NULL) ||
+			    (strspn(oid, "0123456789.") != strlen(oid))) {
 				printf(_("Could not evaluate OID \"%s\".\n"),
 				       optarg);
 				return 1;
