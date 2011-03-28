@@ -40,6 +40,8 @@ mysysconfdir=`eval echo $mysysconfdir | sed "s,NONE,$ac_default_prefix,g"`
 mysysconfdir=`eval echo $mysysconfdir | sed "s,NONE,,g"`
 AC_DEFINE_UNQUOTED(CM_STORE_CONFIG_DIRECTORY,"$mysysconfdir",
 		   [Define to the directory which holds configuration files.])
+AC_DEFINE_UNQUOTED(CM_STORE_SESSION_CONFIG_DIRECTORY,".config/" PACKAGE_NAME,
+		   [Define to the directory which holds user configuration files.])
 AC_DEFINE_UNQUOTED(CM_STORE_CONFIG_DIRECTORY_ENV,"${UPCASE_PACKAGE_NAME}_CONFIG_DIR",
 		   [Define to the name of the environment variable which can specify the directory which holds configuration files.])
 CM_STORE_CONFIG_DIRECTORY_ENV="${UPCASE_PACKAGE_NAME}_CONFIG_DIR"
@@ -58,6 +60,8 @@ mylocalstatedir=`eval echo $mylocalstatedir | sed "s,NONE,$ac_default_prefix,g"`
 mylocalstatedir=`eval echo $mylocalstatedir | sed "s,NONE,,g"`
 AC_DEFINE_UNQUOTED(CM_STORE_REQUESTS_DIRECTORY,"$mylocalstatedir/requests",
 		   [Define to the default path for request tracking files.])
+AC_DEFINE_UNQUOTED(CM_STORE_SESSION_REQUESTS_DIRECTORY,".config/" PACKAGE_NAME "/requests",
+		   [Define to the default path for user request tracking files.])
 CM_STORE_REQUESTS_DIRECTORY="$mylocalstatedir/requests"
 AC_SUBST(CM_STORE_REQUESTS_DIRECTORY)
 AC_DEFINE_UNQUOTED(CM_STORE_REQUESTS_DIRECTORY_ENV,"${UPCASE_PACKAGE_NAME}_REQUESTS_DIR",
@@ -71,6 +75,8 @@ AC_DEFINE_UNQUOTED(CM_STORE_REQUEST_DEFAULTS_ENV,"${UPCASE_PACKAGE_NAME}_REQUEST
 		   [Define to the name of the environment variable which can specify the path for the request defaults file.])
 AC_DEFINE_UNQUOTED(CM_STORE_CAS_DIRECTORY,"$mylocalstatedir/cas",
 		   [Define to the default path for CA tracking files.])
+AC_DEFINE_UNQUOTED(CM_STORE_SESSION_CAS_DIRECTORY,".config/" PACKAGE_NAME "/cas",
+		   [Define to the default path for user CA tracking files.])
 UPCASE_PACKAGE_NAME=`echo "${PACKAGE_NAME}" | tr '[a-z]' '[A-Z]'`
 AC_DEFINE_UNQUOTED(CM_STORE_CAS_DIRECTORY_ENV,"${UPCASE_PACKAGE_NAME}_CAS_DIR",
 		   [Define to the name of the environment variable which can specify the directory for tracking CAs.])

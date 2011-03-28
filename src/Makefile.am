@@ -25,6 +25,7 @@ libcm_a_SOURCES = \
 	csrgen.h \
 	csrgen-int.h \
 	csrgen-n.c \
+	env.h \
 	iterate.c \
 	iterate.h \
 	keygen.c \
@@ -91,7 +92,7 @@ endif
 libcm_o_a_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS) $(OPENSSL_CFLAGS)
 libcm_a_LIBADD = $(libcm_o_a_OBJECTS)
 bin_PROGRAMS = getcert
-pkglibexec_PROGRAMS =
+pkglibexec_PROGRAMS = certmonger-session
 pkglibexecdir = $(libexecdir)/$(PACKAGE)
 getcert_SOURCES = getcert.c
 getcert_LDADD = libcm.a $(GETCERT_LIBS) $(KRB5_LIBS)
@@ -109,9 +110,12 @@ bin_PROGRAMS += selfsign-getcert
 selfsign_getcert_SOURCES = selfsign-getcert.c
 selfsign_getcert_LDADD = $(getcert_LDADD)
 sbin_PROGRAMS = certmonger
-certmonger_SOURCES = main.c
-certmonger_LDADD = libcm.a $(OPENSSL_LIBS) $(CERTMONGER_LIBS) $(KRB5_LIBS) \
-			   $(UUID_LIBS)
+certmonger_SOURCES = main.c env-system.c
+certmonger_LDADD = libcm.a \
+		   $(OPENSSL_LIBS) $(CERTMONGER_LIBS) $(KRB5_LIBS) $(UUID_LIBS)
+certmonger_session_SOURCES = main.c env-system.c
+certmonger_session_LDADD = libcm.a \
+		   $(OPENSSL_LIBS) $(CERTMONGER_LIBS) $(KRB5_LIBS) $(UUID_LIBS)
 noinst_PROGRAMS = tdbusm-check serial-check nl-check submit-x
 tdbusm_check_LDADD = libcm.a $(CERTMONGER_LIBS)
 serial_check_LDADD = libcm.a $(CERTMONGER_LIBS)
