@@ -65,7 +65,7 @@ main(int argc, char **argv)
 	bindtextdomain(PACKAGE, MYLOCALEDIR);
 #endif
 
-	if (cm_env_whoami()) {
+	if (cm_env_whoami() == NULL) {
 		printf("internal error\n");
 		exit(1);
 	}
