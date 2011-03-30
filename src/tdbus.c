@@ -519,8 +519,6 @@ cm_tdbus_setup_connection(struct tdbus_connection *tdb)
 	DBusError err;
 	const char *bus_desc;
 	int i;
-	/* Don't exit if we get disconnected. */
-	dbus_connection_set_exit_on_disconnect(tdb->conn, FALSE);
 	/* Set the callback to be called when I/O processing has yielded a
 	 * request that we need to act on. */
 	dbus_connection_set_dispatch_status_function(tdb->conn,
@@ -605,10 +603,14 @@ cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type,
 	switch (bus_type) {
 	case cm_tdbus_system:
 		conn = dbus_bus_get(DBUS_BUS_SYSTEM, NULL);
+		/* Don't exit if we get disconnected. */
+		dbus_connection_set_exit_on_disconnect(conn, FALSE);
 		bus_desc = "system";
 		break;
 	case cm_tdbus_session:
 		conn = dbus_bus_get(DBUS_BUS_SESSION, NULL);
+		/* Exit if we get disconnected. */
+		dbus_connection_set_exit_on_disconnect(conn, TRUE);
 		bus_desc = "session";
 		break;
 	}
