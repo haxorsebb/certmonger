@@ -58,28 +58,29 @@ mylocalstatedir="$localstatedir/lib/${PACKAGE_NAME}")
 mylocalstatedir=`eval echo $mylocalstatedir | sed "s,NONE,$prefix,g"`
 mylocalstatedir=`eval echo $mylocalstatedir | sed "s,NONE,$ac_default_prefix,g"`
 mylocalstatedir=`eval echo $mylocalstatedir | sed "s,NONE,,g"`
-AC_DEFINE_UNQUOTED(CM_STORE_REQUESTS_DIRECTORY,"$mylocalstatedir/requests",
+
+CM_STORE_REQUESTS_DIRECTORY="$mylocalstatedir/requests"
+CM_STORE_REQUESTS_DIRECTORY_ENV="${UPCASE_PACKAGE_NAME}_REQUESTS_DIR"
+AC_SUBST(CM_STORE_REQUESTS_DIRECTORY)
+AC_SUBST(CM_STORE_REQUESTS_DIRECTORY_ENV)
+AC_DEFINE_UNQUOTED(CM_STORE_REQUESTS_DIRECTORY,"${CM_STORE_REQUESTS_DIRECTORY}",
 		   [Define to the default path for request tracking files.])
 AC_DEFINE_UNQUOTED(CM_STORE_SESSION_REQUESTS_DIRECTORY,".config/" PACKAGE_NAME "/requests",
 		   [Define to the default path for user request tracking files.])
-CM_STORE_REQUESTS_DIRECTORY="$mylocalstatedir/requests"
-AC_SUBST(CM_STORE_REQUESTS_DIRECTORY)
-AC_DEFINE_UNQUOTED(CM_STORE_REQUESTS_DIRECTORY_ENV,"${UPCASE_PACKAGE_NAME}_REQUESTS_DIR",
+AC_DEFINE_UNQUOTED(CM_STORE_REQUESTS_DIRECTORY_ENV,"${CM_STORE_REQUESTS_DIRECTORY_ENV}",
 		   [Define to the name of the environment variable which can specify the directory for tracking requests.])
-CM_STORE_REQUESTS_DIRECTORY_ENV="${UPCASE_PACKAGE_NAME}_REQUESTS_DIR"
-AC_SUBST(CM_STORE_REQUESTS_DIRECTORY_ENV)
-AC_DEFINE_UNQUOTED(CM_STORE_REQUEST_DEFAULTS,"$mylocalstatedir/defaults",
-		   [Define to the location of run-time defaults for requests.])
-UPCASE_PACKAGE_NAME=`echo "${PACKAGE_NAME}" | tr '[a-z]' '[A-Z]'`
-AC_DEFINE_UNQUOTED(CM_STORE_REQUEST_DEFAULTS_ENV,"${UPCASE_PACKAGE_NAME}_REQUEST_DEFAULTS_FILE",
-		   [Define to the name of the environment variable which can specify the path for the request defaults file.])
-AC_DEFINE_UNQUOTED(CM_STORE_CAS_DIRECTORY,"$mylocalstatedir/cas",
+
+CM_STORE_CAS_DIRECTORY="$mylocalstatedir/cas"
+CM_STORE_CAS_DIRECTORY_ENV="${UPCASE_PACKAGE_NAME}_CAS_DIR"
+AC_SUBST(CM_STORE_CAS_DIRECTORY)
+AC_SUBST(CM_STORE_CAS_DIRECTORY_ENV)
+AC_DEFINE_UNQUOTED(CM_STORE_CAS_DIRECTORY,"${CM_STORE_CAS_DIRECTORY}",
 		   [Define to the default path for CA tracking files.])
 AC_DEFINE_UNQUOTED(CM_STORE_SESSION_CAS_DIRECTORY,".config/" PACKAGE_NAME "/cas",
 		   [Define to the default path for user CA tracking files.])
-UPCASE_PACKAGE_NAME=`echo "${PACKAGE_NAME}" | tr '[a-z]' '[A-Z]'`
-AC_DEFINE_UNQUOTED(CM_STORE_CAS_DIRECTORY_ENV,"${UPCASE_PACKAGE_NAME}_CAS_DIR",
+AC_DEFINE_UNQUOTED(CM_STORE_CAS_DIRECTORY_ENV,"${CM_STORE_CAS_DIRECTORY_ENV}",
 		   [Define to the name of the environment variable which can specify the directory for tracking CAs.])
+
 mylocaledir="$localedir"
 mylocaledir=`eval echo $mylocaledir | sed "s,NONE,$prefix,g"`
 mylocaledir=`eval echo $mylocaledir | sed "s,NONE,$ac_default_prefix,g"`
