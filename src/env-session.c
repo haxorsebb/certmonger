@@ -18,6 +18,7 @@
 #include "config.h"
 
 #include <sys/types.h>
+#include <paths.h>
 #include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -112,6 +113,20 @@ cm_env_ca_dir(void)
 		if (ret == NULL) {
 			ret = cm_env_homedir(CM_STORE_SESSION_CAS_DIRECTORY,
 					     NULL);
+		}
+	}
+	return ret;
+}
+
+char *
+cm_env_tmp_dir(void)
+{
+	char *ret;
+	ret = getenv(CM_TMPDIR_ENV);
+	if ((ret == NULL) || (strlen(ret) == 0)) {
+		ret = getenv("TMPDIR");
+		if ((ret == NULL) || (strlen(ret) == 0)) {
+			ret = _PATH_VARTMP;
 		}
 	}
 	return ret;

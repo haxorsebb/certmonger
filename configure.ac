@@ -268,6 +268,20 @@ if test x$withnss != xno ; then
 	LDFLAGS="$savedLDFLAGS"
 fi
 
+AC_ARG_WITH(tmpdir,
+AS_HELP_STRING([--with-tmpdir=NONE],[directory to use for temporary storage]),
+mytmpdir=$withval,
+mytmpdir=)
+mytmpdir=`eval echo $mytmpdir | sed "s,NONE,$prefix,g"`
+mytmpdir=`eval echo $mytmpdir | sed "s,NONE,$ac_default_prefix,g"`
+mytmpdir=`eval echo $mytmpdir | sed "s,NONE,,g"`
+CM_TMPDIR="$mytmpdir"
+AC_DEFINE_UNQUOTED(CM_TMPDIR,"$CM_TMPDIR",[Define to the default location to be used for storing temporary files.])
+CM_TMPDIR_ENV="${UPCASE_PACKAGE_NAME}_TMPDIR"
+AC_DEFINE_UNQUOTED(CM_TMPDIR_ENV,"${CM_TMPDIR_ENV}",[Define to the default location to be used for storing temporary files.])
+AC_SUBST(CM_TMPDIR)
+AC_SUBST(CM_TMPDIR_ENV)
+
 AC_DEFINE_UNQUOTED(CM_DEFAULT_KEY_STORAGE_TYPE,cm_key_storage_nssdb,[Define to the default type of storage used for keys.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_KEY_STORAGE_LOCATION,"/etc/pki/nssdb",[Define to the default location of storage used for keys.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_KEY_TOKEN,NULL,[Define to the default token used for holding keys.])

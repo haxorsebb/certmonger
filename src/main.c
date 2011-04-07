@@ -56,6 +56,7 @@ main(int argc, char **argv)
 	pid_t pid;
 	FILE *pfp;
 	const char *pidfile = NULL;
+	char *tmpdir;
 	dbus_bool_t dofork;
 	
 	bus = cm_env_default_bus();
@@ -71,7 +72,8 @@ main(int argc, char **argv)
 	}
 	if ((cm_env_config_dir() == NULL) ||
 	    (cm_env_request_dir() == NULL) ||
-	    (cm_env_ca_dir() == NULL)) {
+	    (cm_env_ca_dir() == NULL) ||
+	    (cm_env_tmp_dir() == NULL)) {
 		printf("%s: unable to determine storage locations\n",
 		       cm_env_whoami());
 		exit(1);
@@ -115,6 +117,17 @@ main(int argc, char **argv)
 	cm_log_set_level(dlevel);
 	cm_log_set_method(dofork ? cm_log_syslog : cm_log_stderr);
 	cm_log(3, "Starting up.\n");
+
+	tmpdir = malloc(8 + strlen(cm_env_tmp_dir()));
+	if (tmpdir == NULL) {
+		fprintf(stderr, "Out of memory.\n");
+		exit(1);
+	}
+	sprintf(tmpdir, "TMPDIR=%s", cm_env_tmp_dir());
+	if (putenv(tmpdir) != 0) {
+		printf("internal error: %s\n", strerror(errno));
+		exit(1);
+	}
 
 	ec = tevent_context_init(NULL);
 	if (ec == NULL) {

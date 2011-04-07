@@ -17,6 +17,7 @@
 
 #include "config.h"
 
+#include <paths.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -57,6 +58,23 @@ cm_env_ca_dir(void)
 	ret = getenv(CM_STORE_CAS_DIRECTORY_ENV);
 	if (ret == NULL) {
 		ret = CM_STORE_CAS_DIRECTORY;
+	}
+	return ret;
+}
+
+char *
+cm_env_tmp_dir(void)
+{
+	char *ret;
+	ret = getenv(CM_TMPDIR_ENV);
+	if ((ret == NULL) || (strlen(ret) == 0)) {
+		ret = CM_TMPDIR;
+		if ((ret == NULL) || (strlen(ret) == 0)) {
+			ret = getenv("TMPDIR");
+			if ((ret == NULL) || (strlen(ret) == 0)) {
+				ret = _PATH_VARTMP;
+			}
+		}
 	}
 	return ret;
 }
