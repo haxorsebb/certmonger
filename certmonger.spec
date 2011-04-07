@@ -47,7 +47,7 @@ system enrolled with a certificate authority (CA) and keeping it enrolled.
 %setup -q
 
 %build
-%configure --with-file-store-dir=%{_localstatedir}/lib/certmonger
+%configure --with-tmpdir=/var/run/certmonger
 # For some reason, Fedora's xmlrpc-c-config just tells us about
 # libxmlrpc_client, but in F13 we need all of them.  Workaround.
 make %{?_smp_mflags} XMLRPC_LIBS="-lxmlrpc_client -lxmlrpc_util -lxmlrpc"
@@ -62,6 +62,11 @@ install -m755 src/certmonger.init $RPM_BUILD_ROOT/%{_initrddir}/certmonger
 %else
 mkdir -p $RPM_BUILD_ROOT/%{_initddir}
 install -m755 src/certmonger.init $RPM_BUILD_ROOT/%{_initddir}/certmonger
+%endif
+install -m755 -d $RPM_BUILD_ROOT/var/run/certmonger
+%if 0{?fedora} > 14
+install -m755 -d $RPM_BUILD_ROOT/etc/tmpfiles.d
+install -m644 certmonger.tmpfiles $RPM_BUILD_ROOT/etc/tmpfiles.d/certmonger.conf
 %endif
 
 %{find_lang} %{name}
@@ -108,8 +113,17 @@ exit 0
 %{_mandir}/man*/*
 %{_libexecdir}/%{name}
 %{_localstatedir}/lib/certmonger
+%if 0{?fedora} > 14
+%attr(0644,root,root) %config(noreplace) /etc/tmpfiles.d/certmonger.conf
+%endif
+%dir /var/run/certmonger
 
 %changelog
+* Thu Apr  7 2011 Nalin Dahyabhai <nalin@redhat.com>
+- configure with --with-tmpdir=/var/run/certmonger
+- own /var/run/certmonger
+- add a systemd tmpfiles.d control file for creating /var/run/certmonger
+
 * Mon Mar 28 2011 Nalin Dahyabhai <nalin@redhat.com> 0.40-1
 - update to 0.40
   - fix validation check on EKU OIDs in getcert (#691351)
