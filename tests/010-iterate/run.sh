@@ -93,7 +93,7 @@ key_storage_location=$tmpdir/keyfile2
 cert_storage_type=FILE
 cert_storage_location=$tmpdir/certfile2
 EOF
-$toolsdir/iterate ca entry NEWLY_ADDED,NEWLY_ADDED_START_READING_KEYI,NEWLY_ADDED_READING_KEYI,NEWLY_ADDED_START_READING_CERT,NEWLY_ADDED_READING_CERT,NEWLY_ADDED_DECIDING
+$toolsdir/iterate ca entry NEWLY_ADDED,NEWLY_ADDED_START_READING_KEYINFO,NEWLY_ADDED_READING_KEYINFO,NEWLY_ADDED_START_READING_CERT,NEWLY_ADDED_READING_CERT,NEWLY_ADDED_DECIDING
 if test "`grep ^state entry`" != state=NEED_KEY_PAIR ; then
 	echo Figuring stuff out failed or did not move to generating a key.
 	grep ^state entry
@@ -110,7 +110,7 @@ key_storage_location=$tmpdir/keyfile
 cert_storage_type=FILE
 cert_storage_location=$tmpdir/certfile2
 EOF
-$toolsdir/iterate ca entry NEWLY_ADDED,NEWLY_ADDED_START_READING_KEYI,NEWLY_ADDED_READING_KEYI,NEWLY_ADDED_START_READING_CERT,NEWLY_ADDED_READING_CERT,NEWLY_ADDED_DECIDING
+$toolsdir/iterate ca entry NEWLY_ADDED,NEWLY_ADDED_START_READING_KEYINFO,NEWLY_ADDED_READING_KEYINFO,NEWLY_ADDED_START_READING_CERT,NEWLY_ADDED_READING_CERT,NEWLY_ADDED_DECIDING
 if test "`grep ^state entry`" != state=NEED_CSR; then
 	echo Figuring stuff out failed or did not move to generating a CSR.
 	grep ^state entry
@@ -127,7 +127,7 @@ key_storage_location=$tmpdir/keyfile
 cert_storage_type=FILE
 cert_storage_location=$tmpdir/certfile
 EOF
-$toolsdir/iterate ca entry NEWLY_ADDED,NEWLY_ADDED_START_READING_KEYI,NEWLY_ADDED_READING_KEYI,NEWLY_ADDED_START_READING_CERT,NEWLY_ADDED_READING_CERT,NEWLY_ADDED_DECIDING
+$toolsdir/iterate ca entry NEWLY_ADDED,NEWLY_ADDED_START_READING_KEYINFO,NEWLY_ADDED_READING_KEYINFO,NEWLY_ADDED_START_READING_CERT,NEWLY_ADDED_READING_CERT,NEWLY_ADDED_DECIDING
 if test "`grep ^state entry`" != state=MONITORING ; then
 	echo Figuring stuff out failed or did not move to monitoring.
 	grep ^state entry
