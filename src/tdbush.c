@@ -2153,7 +2153,11 @@ request_resubmit(DBusConnection *conn, DBusMessage *msg,
 	rep = dbus_message_new_method_return(msg);
 	if (rep != NULL) {
 		if (cm_stop_one(ctx, entry->cm_id)) {
-			entry->cm_state = CM_NEED_CSR;
+			if (entry->cm_key_type.cm_key_size == 0) {
+				entry->cm_state = CM_NEED_KEY_PAIR;
+			} else {
+				entry->cm_state = CM_NEED_CSR;
+			}
 			if (cm_start_one(ctx, entry->cm_id)) {
 				cm_tdbusm_set_b(rep, TRUE);
 			} else {
