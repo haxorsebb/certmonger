@@ -1844,8 +1844,8 @@ request_get_status(DBusConnection *conn, DBusMessage *msg,
 		case CM_NEED_TO_NOTIFY:
 		case CM_NOTIFYING:
 		case CM_NEWLY_ADDED:
-		case CM_NEWLY_ADDED_START_READING_KEYI:
-		case CM_NEWLY_ADDED_READING_KEYI:
+		case CM_NEWLY_ADDED_START_READING_KEYINFO:
+		case CM_NEWLY_ADDED_READING_KEYINFO:
 		case CM_NEWLY_ADDED_START_READING_CERT:
 		case CM_NEWLY_ADDED_READING_CERT:
 		case CM_NEWLY_ADDED_DECIDING:
@@ -1853,7 +1853,7 @@ request_get_status(DBusConnection *conn, DBusMessage *msg,
 			break;
 		case CM_NEED_KEY_GEN_PIN:
 		case CM_NEED_CSR_GEN_PIN:
-		case CM_NEWLY_ADDED_NEED_KEYI_READ_PIN:
+		case CM_NEWLY_ADDED_NEED_KEYINFO_READ_PIN:
 		case CM_NEED_GUIDANCE:
 		case CM_NEED_CA:
 		case CM_CA_REJECTED:

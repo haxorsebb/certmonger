@@ -41,8 +41,8 @@ Now with some arbitrarily-named states for our per-certificate state machine:
 	  States: NEED_GUIDANCE [*]
 	* Getting our bearings
 	  States: NEWLY_ADDED,
-		  NEWLY_ADDED_READING_KEYI [*],
-		  NEWLY_ADDED_NEED_KEYI_READ_PIN,
+		  NEWLY_ADDED_READING_KEYINFO [*],
+		  NEWLY_ADDED_NEED_KEYINFO_READ_PIN,
 		  NEWLY_ADDED_START_READING_CERT,
 		  NEWLY_ADDED_READING_CERT [*],
 		  NEWLY_ADDED_DECIDING [*]
@@ -304,38 +304,38 @@ State logic:
 
 	NEWLY_ADDED:
 		if key-storage-is-known
-			state_next = NEWLY_ADDED_START_READING_KEYI
+			state_next = NEWLY_ADDED_START_READING_KEYINFO
 			state_transition = now
 		else
 			state_next = NEWLY_ADDED_START_READING_CERT
 			state_transition = now
 		break
 
-	NEWLY_ADDED_START_READING_KEYI:
+	NEWLY_ADDED_START_READING_KEYINFO:
 		start-reading-key-information
-		state_next = NEWLY_ADDED_READING_KEYI
+		state_next = NEWLY_ADDED_READING_KEYINFO
 		state_transition = now
 		break
 
-	NEWLY_ADDED_READING_KEYI:
+	NEWLY_ADDED_READING_KEYINFO:
 		if starting-up
-			state_next = NEWLY_ADDED_START_READING_KEYI
+			state_next = NEWLY_ADDED_START_READING_KEYINFO
 			state_transition = now
 		else
 			if finished-reading-key-information
 				state_next = NEWLY_ADDED_START_READING_CERT
 				state_transition = now
 			elseif key-store-needs-pin
-				state_next = NEWLY_ADDED_NEED_KEYI_READ_PIN
+				state_next = NEWLY_ADDED_NEED_KEYINFO_READ_PIN
 				state_transition = now
 			else
 				state_next = NEWLY_ADDED_START_READING_CERT
 				state_transition = now
 		break
 
-	NEWLY_ADDED_NEED_KEYI_READ_PIN:
+	NEWLY_ADDED_NEED_KEYINFO_READ_PIN:
 		if starting-up
-			state_next = NEWLY_ADDED_START_READING_KEYI
+			state_next = NEWLY_ADDED_START_READING_KEYINFO
 			state_transition = now
 		break
 

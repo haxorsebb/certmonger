@@ -121,13 +121,13 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 		break;
 	case CM_NEWLY_ADDED:
 		break;
-	case CM_NEWLY_ADDED_START_READING_KEYI:
+	case CM_NEWLY_ADDED_START_READING_KEYINFO:
 		break;
-	case CM_NEWLY_ADDED_READING_KEYI:
-		entry->cm_state = CM_NEWLY_ADDED_START_READING_KEYI;
+	case CM_NEWLY_ADDED_READING_KEYINFO:
+		entry->cm_state = CM_NEWLY_ADDED_START_READING_KEYINFO;
 		break;
-	case CM_NEWLY_ADDED_NEED_KEYI_READ_PIN:
-		entry->cm_state = CM_NEWLY_ADDED_START_READING_KEYI;
+	case CM_NEWLY_ADDED_NEED_KEYINFO_READ_PIN:
+		entry->cm_state = CM_NEWLY_ADDED_START_READING_KEYINFO;
 		break;
 	case CM_NEWLY_ADDED_START_READING_CERT:
 		break;
@@ -372,12 +372,12 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				entry->cm_state = CM_HAVE_CSR;
 				*when = cm_time_now;
 			} else
-			if (cm_csrgen_need_pin(entry,
+			if (cm_csrgen_need_key(entry,
 					       state->cm_csrgen_state) == 0) {
-				/* Need a PIN; wait for it. */
+				/* Need a key pair. */
 				cm_csrgen_done(entry, state->cm_csrgen_state);
 				state->cm_csrgen_state = NULL;
-				entry->cm_state = CM_NEED_CSR_GEN_PIN;
+				entry->cm_state = CM_NEED_KEY_PAIR;
 				*when = cm_time_now;
 			} else {
 				/* Failed to save CSR; try again. */
@@ -716,7 +716,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		 * do to make things the way the user has specified that they
 		 * should be. */
 		if (entry->cm_key_storage_type != cm_key_storage_none) {
-			entry->cm_state = CM_NEWLY_ADDED_START_READING_KEYI;
+			entry->cm_state = CM_NEWLY_ADDED_START_READING_KEYINFO;
 			*when = cm_time_now;
 		} else {
 			entry->cm_state = CM_NEWLY_ADDED_START_READING_CERT;
@@ -724,11 +724,11 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		}
 		break;
 
-	case CM_NEWLY_ADDED_START_READING_KEYI:
+	case CM_NEWLY_ADDED_START_READING_KEYINFO:
 		/* Try to read information about the key. */
 		state->cm_keyiread_state = cm_keyiread_start(entry);
 		if (state->cm_keyiread_state != NULL) {
-			entry->cm_state = CM_NEWLY_ADDED_READING_KEYI;
+			entry->cm_state = CM_NEWLY_ADDED_READING_KEYINFO;
 			/* Note that we're reading information about
 			 * the key. */
 			*readfd = cm_keyiread_get_fd(entry,
@@ -745,7 +745,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		}
 		break;
 
-	case CM_NEWLY_ADDED_READING_KEYI:
+	case CM_NEWLY_ADDED_READING_KEYINFO:
 		/* If we finished reading info about the key, move on to try
 		 * and read the certificate. */
 		if (cm_keyiread_ready(entry, state->cm_keyiread_state) == 0) {
@@ -757,7 +757,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			if (cm_keyiread_need_pin(entry,
 						 state->cm_keyiread_state) == 0) {
 				/* If we need the PIN, just hang on. */
-				entry->cm_state = CM_NEWLY_ADDED_NEED_KEYI_READ_PIN;
+				entry->cm_state = CM_NEWLY_ADDED_NEED_KEYINFO_READ_PIN;
 				*when = cm_time_now;
 			} else {
 				/* Otherwise try to move on. */
@@ -778,7 +778,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		}
 		break;
 
-	case CM_NEWLY_ADDED_NEED_KEYI_READ_PIN:
+	case CM_NEWLY_ADDED_NEED_KEYINFO_READ_PIN:
 		/* Revisit this later. */
 		*when = cm_time_no_time;
 		break;
