@@ -52,7 +52,7 @@ main(int argc, char **argv)
 	struct tevent_context *ec;
 	struct cm_context *ctx;
 	enum cm_tdbus_type bus;
-	int i, c, dlevel = 0, pfd = -1;
+	int i, c, dlevel = 0, pfd = -1, lfd = -1;
 	pid_t pid;
 	FILE *pfp;
 	const char *pidfile = NULL;
@@ -126,6 +126,28 @@ main(int argc, char **argv)
 	}
 
 	umask(S_IRWXG | S_IRWXO);
+
+	switch (bus) {
+	case cm_tdbus_system:
+		break;
+	case cm_tdbus_session:
+		cm_log(2, "Obtaining session lock.\n");
+		lfd = open(cm_env_lock_file(), O_RDWR | O_CREAT,
+			   S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+		if (lfd == -1) {
+			fprintf(stderr, "Error opening lockfile \"%s\": %s\n",
+				cm_env_lock_file(), strerror(errno));
+			close(lfd);
+			exit(1);
+		}
+		if (lockf(lfd, F_LOCK, 0) != 0) {
+			fprintf(stderr, "Error locking lockfile \"%s\": %s\n",
+				cm_env_lock_file(), strerror(errno));
+			close(lfd);
+			exit(1);
+		}
+		break;
+	}
 
 	ctx = NULL;
 	i = cm_init(ec, &ctx);

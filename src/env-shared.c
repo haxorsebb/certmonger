@@ -20,61 +20,48 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <talloc.h>
-#include <tevent.h>
-
 #include <dbus/dbus.h>
 
 #include "env.h"
-#include "tdbus.h"
 
 char *
-cm_env_config_dir(void)
+cm_env_config(const char *subdir, const char *subfile)
 {
+	const char *config;
 	char *ret;
-	ret = getenv(CM_STORE_CONFIG_DIRECTORY_ENV);
-	if (ret == NULL) {
-		ret = CM_STORE_CONFIG_DIRECTORY;
+	int len;
+	if ((subdir == NULL) && (subfile == NULL)) {
+		return NULL;
+	}
+	config = cm_env_config_dir();
+	if (config != NULL) {
+		len = strlen(config);
+		if (subdir != NULL) {
+			len += (strlen(subdir) + 1);
+		}
+		if (subfile != NULL) {
+			len += (strlen(subfile) + 1);
+		}
+		ret = malloc(len + 1);
+		if (ret != NULL) {
+			strcpy(ret, config);
+			if (subdir != NULL) {
+				strcat(ret, "/");
+				strcat(ret, subdir);
+			}
+			if (subfile != NULL) {
+				strcat(ret, "/");
+				strcat(ret, subfile);
+			}
+		}
+	} else {
+		ret = NULL;
 	}
 	return ret;
 }
 
 char *
-cm_env_request_dir(void)
+cm_env_lock_file(void)
 {
-	char *ret;
-	ret = getenv(CM_STORE_REQUESTS_DIRECTORY_ENV);
-	if (ret == NULL) {
-		ret = CM_STORE_REQUESTS_DIRECTORY;
-	}
-	return ret;
-}
-
-char *
-cm_env_ca_dir(void)
-{
-	char *ret;
-	ret = getenv(CM_STORE_CAS_DIRECTORY_ENV);
-	if (ret == NULL) {
-		ret = CM_STORE_CAS_DIRECTORY;
-	}
-	return ret;
-}
-
-char *
-cm_env_whoami(void)
-{
-	return "certmonger";
-}
-
-enum cm_tdbus_type
-cm_env_default_bus(void)
-{
-	return cm_tdbus_system;
-}
-
-dbus_bool_t
-cm_env_default_fork(void)
-{
-	return TRUE;
+	return cm_env_config(NULL, "lock");
 }

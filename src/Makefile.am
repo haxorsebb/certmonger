@@ -26,6 +26,7 @@ libcm_a_SOURCES = \
 	csrgen-int.h \
 	csrgen-n.c \
 	env.h \
+	env-shared.c \
 	iterate.c \
 	iterate.h \
 	keygen.c \

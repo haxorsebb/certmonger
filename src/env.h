@@ -19,6 +19,8 @@
 #define cmenv_h
 
 char *cm_env_config_dir(void);
+char *cm_env_config(const char *subdir, const char *subfile);
+char *cm_env_lock_file(void);
 char *cm_env_request_dir(void);
 char *cm_env_ca_dir(void);
 char *cm_env_whoami(void);

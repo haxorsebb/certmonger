@@ -33,11 +33,15 @@
 #include "tdbus.h"
 
 static char *
-cm_env_homedir(const char *subdir)
+cm_env_homedir(const char *subdir, const char *subfile)
 {
 	struct passwd *pwd;
 	const char *home;
 	char *ret;
+	int len;
+	if ((subdir == NULL) && (subfile == NULL)) {
+		return NULL;
+	}
 	home = getenv("HOME");
 	if (home == NULL) {
 		pwd = getpwuid(getuid());
@@ -46,9 +50,24 @@ cm_env_homedir(const char *subdir)
 		}
 	}
 	if (home != NULL) {
-		ret = malloc(strlen(home) + 1 + strlen(subdir) + 1);
+		len = strlen(home);
+		if (subdir != NULL) {
+			len += (strlen(subdir) + 1);
+		}
+		if (subfile != NULL) {
+			len += (strlen(subfile) + 1);
+		}
+		ret = malloc(len + 1);
 		if (ret != NULL) {
-			sprintf(ret, "%s/%s", home, subdir);
+			strcpy(ret, home);
+			if (subdir != NULL) {
+				strcat(ret, "/");
+				strcat(ret, subdir);
+			}
+			if (subfile != NULL) {
+				strcat(ret, "/");
+				strcat(ret, subfile);
+			}
 		}
 	} else {
 		ret = NULL;
@@ -63,7 +82,8 @@ cm_env_config_dir(void)
 	if (ret == NULL) {
 		ret = getenv(CM_STORE_CONFIG_DIRECTORY_ENV);
 		if (ret == NULL) {
-			ret = cm_env_homedir(CM_STORE_SESSION_CONFIG_DIRECTORY);
+			ret = cm_env_homedir(CM_STORE_SESSION_CONFIG_DIRECTORY,
+					     NULL);
 		}
 	}
 	return ret;
@@ -76,7 +96,8 @@ cm_env_request_dir(void)
 	if (ret == NULL) {
 		ret = getenv(CM_STORE_REQUESTS_DIRECTORY_ENV);
 		if (ret == NULL) {
-			ret = cm_env_homedir(CM_STORE_SESSION_REQUESTS_DIRECTORY);
+			ret = cm_env_homedir(CM_STORE_SESSION_REQUESTS_DIRECTORY,
+					     NULL);
 		}
 	}
 	return ret;
@@ -89,7 +110,8 @@ cm_env_ca_dir(void)
 	if (ret == NULL) {
 		ret = getenv(CM_STORE_CAS_DIRECTORY_ENV);
 		if (ret == NULL) {
-			ret = cm_env_homedir(CM_STORE_SESSION_CAS_DIRECTORY);
+			ret = cm_env_homedir(CM_STORE_SESSION_CAS_DIRECTORY,
+					     NULL);
 		}
 	}
 	return ret;
