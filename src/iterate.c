@@ -371,14 +371,6 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				state->cm_csrgen_state = NULL;
 				entry->cm_state = CM_HAVE_CSR;
 				*when = cm_time_now;
-			} else
-			if (cm_csrgen_need_key(entry,
-					       state->cm_csrgen_state) == 0) {
-				/* Need a key pair. */
-				cm_csrgen_done(entry, state->cm_csrgen_state);
-				state->cm_csrgen_state = NULL;
-				entry->cm_state = CM_NEED_KEY_PAIR;
-				*when = cm_time_now;
 			} else {
 				/* Failed to save CSR; try again. */
 				cm_csrgen_done(entry, state->cm_csrgen_state);
