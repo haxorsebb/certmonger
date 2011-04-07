@@ -1790,6 +1790,10 @@ list(const char *argv0, int argc, char **argv)
 		case CM_NEED_KEY_GEN_PIN:
 		case CM_GENERATING_KEY_PAIR:
 		case CM_HAVE_KEY_PAIR:
+		case CM_NEED_KEYINFO:
+		case CM_READING_KEYINFO:
+		case CM_NEED_KEYINFO_READ_PIN:
+		case CM_HAVE_KEYINFO:
 		case CM_NEED_CSR:
 		case CM_NEED_CSR_GEN_PIN:
 		case CM_GENERATING_CSR:

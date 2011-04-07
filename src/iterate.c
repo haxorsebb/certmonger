@@ -66,14 +66,24 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 		break;
 	case CM_HAVE_KEY_PAIR:
 		break;
+	case CM_NEED_KEYINFO:
+		break;
+	case CM_READING_KEYINFO:
+		entry->cm_state = CM_NEED_KEYINFO;
+		break;
+	case CM_NEED_KEYINFO_READ_PIN:
+		entry->cm_state = CM_NEED_KEYINFO;
+		break;
+	case CM_HAVE_KEYINFO:
+		break;
 	case CM_NEED_CSR:
-		entry->cm_state = CM_HAVE_KEY_PAIR;
+		entry->cm_state = CM_HAVE_KEYINFO;
 		break;
 	case CM_NEED_CSR_GEN_PIN:
-		entry->cm_state = CM_HAVE_KEY_PAIR;
+		entry->cm_state = CM_HAVE_KEYINFO;
 		break;
 	case CM_GENERATING_CSR:
-		entry->cm_state = CM_HAVE_KEY_PAIR;
+		entry->cm_state = CM_HAVE_KEYINFO;
 		break;
 	case CM_HAVE_CSR:
 		break;
@@ -338,6 +348,70 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		break;
 
 	case CM_HAVE_KEY_PAIR:
+		entry->cm_state = CM_NEED_KEYINFO;
+		*when = cm_time_now;
+		break;
+
+	case CM_NEED_KEYINFO:
+		/* Try to read information about the key. */
+		state->cm_keyiread_state = cm_keyiread_start(entry);
+		if (state->cm_keyiread_state != NULL) {
+			entry->cm_state = CM_READING_KEYINFO;
+			/* Note that we're reading information about
+			 * the key. */
+			*readfd = cm_keyiread_get_fd(entry,
+						     state->cm_keyiread_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
+		} else {
+			/* Failed to start reading info about the key;
+			 * try again soon. */
+			*when = cm_time_soonish;
+		}
+		break;
+
+	case CM_READING_KEYINFO:
+		/* If we finished reading info about the key, move on to
+		 * generating a CSR. */
+		if (cm_keyiread_ready(entry, state->cm_keyiread_state) == 0) {
+			if (cm_keyiread_finished_reading(entry,
+							 state->cm_keyiread_state) == 0) {
+				entry->cm_state = CM_HAVE_KEYINFO;
+				*when = cm_time_now;
+			} else
+			if (cm_keyiread_need_pin(entry,
+						 state->cm_keyiread_state) == 0) {
+				/* If we need the PIN, just hang on. */
+				entry->cm_state = CM_NEED_KEYINFO_READ_PIN;
+				*when = cm_time_now;
+			} else {
+				/* Otherwise try to generate a new key pair. */
+				entry->cm_state = CM_NEED_KEY_PAIR;
+				*when = cm_time_soonish;
+			}
+			cm_keyiread_done(entry, state->cm_keyiread_state);
+			state->cm_keyiread_state = NULL;
+		} else {
+			/* Wait for status update, or poll. */
+			*readfd = cm_keyiread_get_fd(entry,
+						     state->cm_keyiread_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
+		}
+		break;
+
+	case CM_NEED_KEYINFO_READ_PIN:
+		/* Revisit this later. */
+		*when = cm_time_no_time;
+		break;
+
+	case CM_HAVE_KEYINFO:
 		entry->cm_state = CM_NEED_CSR;
 		*when = cm_time_now;
 		break;

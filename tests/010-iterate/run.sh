@@ -47,15 +47,24 @@ EOF
 # to be tried again, so that we don't hit infinite loops.
 echo '[Generating key pair.]'
 $toolsdir/iterate ca entry GENERATING_KEY_PAIR,HAVE_KEY_PAIR
+if test "`grep ^state entry`" != state=NEED_KEYINFO ; then
+	echo Key generation failed or did not move to key info reading.
+	grep ^state entry
+	exit 1
+fi
+
+echo
+echo '[Reading back key info.]'
+$toolsdir/iterate ca entry NEED_KEYINFO,START_READING_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
 if test "`grep ^state entry`" != state=NEED_CSR ; then
-	echo Key generation failed or did not move to CSR generation.
+	echo Key info read failed or did not move to CSR generation.
 	grep ^state entry
 	exit 1
 fi
 
 echo
 echo '[Generating CSR.]'
-$toolsdir/iterate ca entry NEED_CSR,GENERATING_CSR
+$toolsdir/iterate ca entry HAVE_KEYINFO,NEED_CSR,GENERATING_CSR
 if test "`grep ^state entry`" != state=HAVE_CSR ; then
 	echo CSR generation failed or did not move to submission.
 	grep ^state entry
@@ -152,6 +161,7 @@ id=SelfSign
 ca_type=INTERNAL:SELF
 ca_internal_issue_time=0
 EOF
+$toolsdir/iterate ca2 entry2 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
 $toolsdir/iterate ca2 entry2 NEED_CSR,GENERATING_CSR
 $toolsdir/iterate ca2 entry2 NEED_TO_SUBMIT,SUBMITTING
 $toolsdir/iterate ca2 entry2 SAVING_CERT,NEED_TO_READ_CERT,READING_CERT,SAVED_CERT
@@ -189,6 +199,7 @@ id=Meanie
 ca_type=EXTERNAL
 ca_external_helper=$tmpdir/ca-reject
 EOF
+$toolsdir/iterate ca3 entry3 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
 $toolsdir/iterate ca3 entry3 NEED_CSR,GENERATING_CSR
 $toolsdir/iterate ca3 entry3 NEED_TO_SUBMIT,SUBMITTING
 echo
@@ -205,6 +216,7 @@ id=Busy
 ca_type=EXTERNAL
 ca_external_helper=$tmpdir/ca-ask-again
 EOF
+$toolsdir/iterate ca3 entry3 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
 $toolsdir/iterate ca3 entry3 NEED_CSR,GENERATING_CSR
 $toolsdir/iterate ca3 entry3 NEED_TO_SUBMIT,SUBMITTING
 $toolsdir/iterate ca3 entry3 ""
@@ -222,6 +234,7 @@ id=Meanie
 ca_type=EXTERNAL
 ca_external_helper=$tmpdir/ca-reject
 EOF
+$toolsdir/iterate ca3 entry3 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
 $toolsdir/iterate ca3 entry3 NEED_CSR,GENERATING_CSR
 $toolsdir/iterate ca3 entry3 NEED_TO_SUBMIT,SUBMITTING
 $toolsdir/iterate ca3 entry3 ""
@@ -239,6 +252,7 @@ id=Lostie
 ca_type=EXTERNAL
 ca_external_helper=$tmpdir/ca-unreachable
 EOF
+$toolsdir/iterate ca3 entry3 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
 $toolsdir/iterate ca3 entry3 NEED_CSR,GENERATING_CSR
 $toolsdir/iterate ca3 entry3 NEED_TO_SUBMIT,SUBMITTING
 $toolsdir/iterate ca3 entry3 ""
@@ -256,6 +270,7 @@ id=Lostie
 ca_type=EXTERNAL
 ca_external_helper=$tmpdir/ca-unconfigured
 EOF
+$toolsdir/iterate ca3 entry3 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
 $toolsdir/iterate ca3 entry3 NEED_CSR,GENERATING_CSR
 $toolsdir/iterate ca3 entry3 NEED_TO_SUBMIT,SUBMITTING
 $toolsdir/iterate ca3 entry3 ""

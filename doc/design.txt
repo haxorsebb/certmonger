@@ -14,6 +14,9 @@ Now with some arbitrarily-named states for our per-certificate state machine:
 	* Generating a key pair.
 	  States: NEED_KEY_PAIR, GENERATING_KEY_PAIR [*],
 		  NEED_KEY_GEN_PIN, HAVE_KEY_PAIR
+	* Reading info about key pair.
+		  NEED_KEYINFO, READING_KEYINFO [*],
+		  NEED_KEYINFO_READ_PIN, HAVE_KEYINFO
 	* Generating a CSR containing public key.
 	  States: NEED_CSR, GENERATING_CSR [*], NEED_CSR_GEN_PIN, HAVE_CSR
 	* Submitting CSR to a CA.
@@ -83,13 +86,46 @@ State logic:
 		break
 
 	HAVE_KEY_PAIR:
+		state_next = NEED_KEYINFO
+		state_transition = now
+		break
+
+	NEED_KEYINFO:
+		start-reading-key-information
+		state_next = READING_KEYINFO
+		state_transition = now
+		break
+
+	READING_KEYINFO:
+		if starting-up
+			state_next = NEED_KEYINFO
+			state_transition = now
+		else
+			if finished-reading-key-information
+				state_next = HAVE_KEYINFO
+				state_transition = now
+			elseif key-store-needs-pin
+				state_next = NEED_KEYINFO_READ_PIN
+				state_transition = now
+			else
+				state_next = NEED_KEY_PAIR
+				state_transition = now
+		break
+
+	NEED_KEYINFO_READ_PIN:
+		if starting-up
+			state_next = NEED_KEYINFO
+			state_transition = soon
+		break
+
+	HAVE_KEYINFO:
 		state_next = NEED_CSR
 		state_transition = now
 		break
 
 	NEED_CSR:
 		if starting-up
-			state_next = HAVE_KEY_PAIR
+			state_next = HAVE_KEYINFO
 			state_transition = now
 		else
 			if don't-have-a-full-template
@@ -101,7 +137,7 @@ State logic:
 
 	GENERATING_CSR:
 		if starting-up
-			state_next = HAVE_KEY_PAIR
+			state_next = HAVE_KEYINFO
 			state_transition = now
 		else
 			if csrgen-finished
@@ -121,7 +157,7 @@ State logic:
 
 	NEED_CSR_GEN_PIN:
 		if starting-up
-			state_next = HAVE_KEY_PAIR
+			state_next = HAVE_KEYINFO
 			state_transition = now
 		break
 
