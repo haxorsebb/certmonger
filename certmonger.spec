@@ -119,10 +119,20 @@ exit 0
 %dir /var/run/certmonger
 
 %changelog
-* Thu Apr  7 2011 Nalin Dahyabhai <nalin@redhat.com>
-- configure with --with-tmpdir=/var/run/certmonger
-- own /var/run/certmonger
-- add a systemd tmpfiles.d control file for creating /var/run/certmonger
+* Fri Apr  8 2011 Nalin Dahyabhai <nalin@redhat.com>
+- read information about the keys we've just generated before proceeding
+  to generating a CSR
+- when processing a "resubmit" request from getcert, go back to key
+  generation if we don't have keys yet, else go back to CSR generation as
+  before (#694184)
+- configure with --with-tmpdir=/var/run/certmonger and own /var/run/certmonger
+  (#687899), and add a systemd tmpfiles.d control file for creating
+  /var/run/certmonger on Fedora 15 and later
+- let session instances exit when they get disconnected from the bus
+- use a lock file to make sure there's only one session instance messing
+  around with the user's files at a time
+- fix errors saving certificates to NSS databases when there's already a
+  certificate there with the same nickname
 
 * Mon Mar 28 2011 Nalin Dahyabhai <nalin@redhat.com> 0.40-1
 - update to 0.40
