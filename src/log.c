@@ -56,15 +56,20 @@ cm_log_set_method(enum cm_log_method method)
 void
 cm_log(int level, const char *fmt, ...)
 {
+	FILE *stream;
 	va_list args;
 	int slevel;
 	char *p;
 	struct tm lt;
 	time_t now;
 	if (level <= cm_log_level) {
+		stream = stderr;
 		switch (cm_log_method) {
 		case cm_log_none:
 			break;
+		case cm_log_stdout:
+			stream = stdout;
+			/* fall through */
 		case cm_log_stderr:
 			now = time(NULL);
 			localtime_r(&now, &lt);
