@@ -152,7 +152,7 @@ is_request(struct cm_context *ctx, const char *path,
 static char *
 maybe_strdup(void *parent, const char *s)
 {
-	if (s != NULL) {
+	if ((s != NULL) && (strlen(s) > 0)) {
 		return talloc_strdup(parent, s);
 	}
 	return NULL;
@@ -502,13 +502,17 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	}
 	/* Handle parameters for either a PIN or the location of a PIN. */
 	param = cm_tdbusm_find_dict_entry(d, "KEY_PIN", cm_tdbusm_dict_s);
-	if (param == NULL) {
+	if ((param == NULL) ||
+	    (param->value.s == NULL) ||
+	    (strlen(param->value.s) == 0)) {
 		key_pin = NULL;
 	} else {
 		key_pin = param->value.s;
 	}
 	param = cm_tdbusm_find_dict_entry(d, "KEY_PIN_FILE", cm_tdbusm_dict_s);
-	if (param == NULL) {
+	if ((param == NULL) ||
+	    (param->value.s == NULL) ||
+	    (strlen(param->value.s) == 0)) {
 		key_pin_file = NULL;
 	} else {
 		if (cm_tdbush_check_arg_is_absolute_path(param->value.s) != 0) {
@@ -2072,7 +2076,10 @@ request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 			} else
 			if ((param->value_type == cm_tdbusm_dict_s) &&
 			    (strcasecmp(param->key, "KEY_PIN_FILE") == 0)) {
-				if (cm_tdbush_check_arg_is_absolute_path(param->value.s) != 0) {
+				if ((param != NULL) &&
+				    (param->value.s != NULL) &&
+				    (strlen(param->value.s) != 0) &&
+				    (cm_tdbush_check_arg_is_absolute_path(param->value.s) != 0)) {
 					cm_log(1, "PIN storage location is not "
 					       "an absolute path.\n");
 					return send_internal_base_bad_arg_error(conn, msg,
