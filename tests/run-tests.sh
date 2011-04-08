@@ -54,7 +54,7 @@ for testid in "$@" $subdirs ; do
 		rm -fr "$tmpdir"/*
 		if test -r ./expected.out ; then
 			echo -n "Running test "$testid"... "
-			./run.sh "$tmpdir" > "$tmpfile" 2> /dev/null
+			./run.sh "$tmpdir" > "$tmpfile" 2> "$tmpdir"/errors
 			if cmp "$tmpfile" expected.out ; then
 				stat=0
 				echo "OK"
@@ -63,6 +63,7 @@ for testid in "$@" $subdirs ; do
 				echo "FAIL"
 				diff -u expected.out "$tmpfile" | sed s,"^\+\+\+ $tmpfile","+++ actual",g
 				cp $tmpfile actual.out
+				cp "$tmpdir"/errors actual.err
 			fi
 		else
 			echo "Running test "$testid"."
