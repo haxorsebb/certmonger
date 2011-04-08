@@ -50,6 +50,7 @@ main(int argc, char **argv)
 	struct cm_store_entry *entry;
 	int fd, ret;
 	void *parent;
+	const char *ctype;
 	cm_log_set_method(cm_log_stderr);
 	cm_log_set_level(1);
 	parent = talloc_new(NULL);
@@ -80,7 +81,17 @@ main(int argc, char **argv)
 		if (cm_certsave_saved(entry, state) == 0) {
 			ret = 0;
 		} else {
-			printf("Failed to save.\n");
+			ctype = "unknown";
+			switch (entry->cm_cert_storage_type) {
+			case cm_cert_storage_file:
+				ctype = "FILE";
+				break;
+			case cm_cert_storage_nssdb:
+				ctype = "NSS";
+				break;
+			}
+			printf("Failed to save (%s:%s).\n",
+			       ctype, entry->cm_cert_storage_location);
 			ret = 1;
 		}
 		cm_certsave_done(entry, state);

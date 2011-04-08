@@ -15,6 +15,10 @@ EXTRA_DIST = \
 	006-serial/expected.out \
 	007-certsave/run.sh \
 	007-certsave/expected.out \
+	007-certsave-dbm/run.sh \
+	007-certsave-dbm/expected.out \
+	007-certsave-sql/run.sh \
+	007-certsave-sql/expected.out \
 	008-certread/run.sh \
 	008-certread/expected.out \
 	009-oiddict/run.sh \
@@ -70,6 +74,7 @@ subdirs = \
 
 if HAVE_DBM_NSSDB
 subdirs += \
+	007-certsave-dbm \
 	011-dbinit-dbm \
 	012-dbadd-dbm \
 	013-enckey-dbm \
@@ -78,6 +83,7 @@ endif
 
 if HAVE_SQL_NSSDB
 subdirs += \
+	007-certsave-sql \
 	011-dbinit-sql \
 	012-dbadd-sql \
 	013-enckey-sql \
