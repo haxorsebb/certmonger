@@ -112,14 +112,18 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				}
 				_exit(1);
 			}
+#if NSS_FLAGS_DUPLICATES
 			error = CERT_ImportCerts(certdb,
 						 certUsageUserCertImport,
 						 1, &item, NULL, PR_TRUE,
 						 PR_FALSE,
 						 entry->cm_cert_nickname);
 			if (error == SECSuccess) {
+				cm_log(1, "Imported certificate \"%s\" on "
+				       "first try!\n", entry->cm_cert_nickname);
 				status = 0;
 			} else {
+#endif
 				certlist = PK11_FindCertsFromNickname(entry->cm_cert_nickname, NULL);
 				if (certlist != NULL) {
 					/* Delete the existing cert. */
@@ -127,27 +131,36 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					     !CERT_LIST_EMPTY(certlist) &&
 					     !CERT_LIST_END(node, certlist);
 					     node = CERT_LIST_NEXT(node)) {
-						SEC_DeletePermCertificate(node->cert);
+						if (SEC_DeletePermCertificate(node->cert) != SECSuccess) {
+							cm_log(1, "Error removing pre-existing "
+							       "certificate \"%s\".\n",
+							       entry->cm_cert_nickname);
+						}
 					}
 					CERT_DestroyCertList(certlist);
-					/* Try again. */
-					error = CERT_ImportCerts(certdb,
-								 certUsageUserCertImport,
-								 1, &item, NULL,
-								 PR_TRUE,
-								 PR_FALSE,
-								 entry->cm_cert_nickname);
-					if (error == SECSuccess) {
-						status = 0;
-					}
 				}
-				if (error != SECSuccess) {
+				/* Try again. */
+				error = CERT_ImportCerts(certdb,
+							 certUsageUserCertImport,
+							 1, &item, NULL,
+							 PR_TRUE,
+							 PR_FALSE,
+							 entry->cm_cert_nickname);
+				if (error == SECSuccess) {
+					cm_log(1, "Imported certificate"
+					       " \"%s\" on second "
+					       "try!\n",
+					       entry->cm_cert_nickname);
+					status = 0;
+				} else {
 					cm_log(1, "Error importing certificate "
 					       "into NSSDB: %s.\n",
 					       PR_ErrorToString(error,
 								PR_LANGUAGE_I_DEFAULT));
 				}
+#if NSS_FLAGS_DUPLICATES
 			}
+#endif
 		} else {
 			cm_log(1, "Error getting handle to default NSS DB.\n");
 		}
