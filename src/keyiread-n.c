@@ -117,7 +117,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	n_login_attempts = 0;
 	n_login_success = 0;
 	for (sle = slotlist->head;
-	     ((sle != NULL) && (sle->slot != NULL));
+	     (key == NULL) && ((sle != NULL) && (sle->slot != NULL));
 	     sle = sle->next) {
 		/* Read the token's name. */
 		token = PK11_GetTokenName(sle->slot);
