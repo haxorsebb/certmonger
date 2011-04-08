@@ -61,6 +61,7 @@ if test "`grep ^state entry`" != state=NEED_CSR ; then
 	grep ^state entry
 	exit 1
 fi
+grep ^key_size entry
 
 echo
 echo '[Generating CSR.]'
