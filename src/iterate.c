@@ -876,8 +876,15 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		if (cm_certread_ready(entry, state->cm_certread_state) == 0) {
 			cm_certread_done(entry, state->cm_certread_state);
 			state->cm_certread_state = NULL;
-			entry->cm_state = CM_NEWLY_ADDED_DECIDING;
-			*when = cm_time_now;
+			/* If we failed to read the cert, I guess we try again.
+			 */
+			if (entry->cm_cert != NULL) {
+				entry->cm_state = CM_NEWLY_ADDED_DECIDING;
+				*when = cm_time_now;
+			} else {
+				entry->cm_state = CM_NEWLY_ADDED_START_READING_CERT;
+				*when = cm_time_soonish;
+			}
 		} else {
 			/* Wait for status update, or poll. */
 			*readfd = cm_certread_get_fd(entry,
