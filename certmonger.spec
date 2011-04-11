@@ -1,5 +1,5 @@
 Name:		certmonger
-Version:	0.40
+Version:	0.41
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -64,7 +64,7 @@ mkdir -p $RPM_BUILD_ROOT/%{_initddir}
 install -m755 src/certmonger.init $RPM_BUILD_ROOT/%{_initddir}/certmonger
 %endif
 install -m755 -d $RPM_BUILD_ROOT/var/run/certmonger
-%if 0{?fedora} > 14
+%if 0%{?fedora} > 14
 install -m755 -d $RPM_BUILD_ROOT/etc/tmpfiles.d
 install -m644 certmonger.tmpfiles $RPM_BUILD_ROOT/etc/tmpfiles.d/certmonger.conf
 %endif
@@ -113,13 +113,13 @@ exit 0
 %{_mandir}/man*/*
 %{_libexecdir}/%{name}
 %{_localstatedir}/lib/certmonger
-%if 0{?fedora} > 14
+%if 0%{?fedora} > 14
 %attr(0644,root,root) %config(noreplace) /etc/tmpfiles.d/certmonger.conf
 %endif
 %dir /var/run/certmonger
 
 %changelog
-* Fri Apr  8 2011 Nalin Dahyabhai <nalin@redhat.com>
+* Mon Apr 11 2011 Nalin Dahyabhai <nalin@redhat.com> 0.41-1
 - read information about the keys we've just generated before proceeding
   to generating a CSR
 - when processing a "resubmit" request from getcert, go back to key
@@ -133,6 +133,10 @@ exit 0
   around with the user's files at a time
 - fix errors saving certificates to NSS databases when there's already a
   certificate there with the same nickname
+- if we fail to read a certificate when a request is first added, switch
+  to trying again later
+- make key and certificate location output from 'getcert list' more properly
+  translatable (#7)
 
 * Mon Mar 28 2011 Nalin Dahyabhai <nalin@redhat.com> 0.40-1
 - update to 0.40
