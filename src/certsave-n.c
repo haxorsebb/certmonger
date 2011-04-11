@@ -112,7 +112,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				}
 				_exit(1);
 			}
-#if NSS_FLAGS_DUPLICATES
+#ifdef NSS_FLAGS_DUPLICATES
 			error = CERT_ImportCerts(certdb,
 						 certUsageUserCertImport,
 						 1, &item, NULL, PR_TRUE,
@@ -153,12 +153,13 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					       entry->cm_cert_nickname);
 					status = 0;
 				} else {
-					cm_log(1, "Error importing certificate "
-					       "into NSSDB: %s.\n",
+					cm_log(0, "Error importing certificate "
+					       "into NSSDB \"%s\": %s.\n",
+					       entry->cm_cert_storage_location,
 					       PR_ErrorToString(error,
 								PR_LANGUAGE_I_DEFAULT));
 				}
-#if NSS_FLAGS_DUPLICATES
+#ifdef NSS_FLAGS_DUPLICATES
 			}
 #endif
 		} else {
