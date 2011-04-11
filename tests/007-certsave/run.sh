@@ -63,7 +63,14 @@ cert=$cert
 EOF
 $toolsdir/certsave entry.nss
 certutil -d ${scheme:+${scheme}:}$tmpdir -L -n cert -a > cert.nss
-# Save it to a PEM file.
+# Save the wrong certificate to the PEM file.
+cat > entry.openssl << EOF
+cert_storage_type=FILE
+cert_storage_location=$tmpdir/cert.openssl
+cert=$wrongcert
+EOF
+$toolsdir/certsave entry.nss
+# Save the right certificate to the PEM file.
 cat > entry.openssl << EOF
 cert_storage_type=FILE
 cert_storage_location=$tmpdir/cert.openssl
