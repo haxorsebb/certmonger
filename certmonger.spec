@@ -133,8 +133,6 @@ exit 0
   around with the user's files at a time
 - fix errors saving certificates to NSS databases when there's already a
   certificate there with the same nickname
-- if we fail to read a certificate when a request is first added, switch
-  to trying again later
 - make key and certificate location output from 'getcert list' more properly
   translatable (#7)
 
