@@ -84,7 +84,7 @@ cm_log(int level, const char *fmt, ...)
 					    (unsigned long) getpid(), fmt);
 			if (p != NULL) {
 				va_start(args, fmt);
-				vfprintf(stderr, p ?: fmt, args);
+				vfprintf(stream, p ?: fmt, args);
 				va_end(args);
 				talloc_free(p);
 			}
