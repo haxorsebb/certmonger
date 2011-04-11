@@ -1860,13 +1860,23 @@ list(const char *argv0, int argc, char **argv)
 		if ((s6 != NULL) && (strlen(s6) == 0)) {
 			s6 = NULL;
 		}
-		printf(_("\tkey pair storage: %s%s%s%s%s%s%s%s%s%s%s%s%s%s\n"),
-		       strcmp(s1, "NONE") ? _("type=") : "", s1 ? s1 : "",
-		       s2 ? _(",location='") : "", s2 ? s2 : "", s2 ? "'" : "",
-		       s3 ? _(",nickname=") : "", s3 ? s3 : "",
-		       s4 ? _(",token='") : "", s4 ? s4 : "", s4 ? "'" : "",
-		       s5 ? _(",pin=") : "", s5 ? s5 : "",
-		       s6 ? _(",pinfile=") : "", s6 ? s6 : "");
+		printf(_("\tkey pair storage: type=%s"), s1 ? s1 : _("NONE"));
+		if (s2 != NULL) {
+			printf(_(",location='%s'"), s2);
+		}
+		if (s3 != NULL) {
+			printf(_(",nickname='%s'"), s3);
+		}
+		if (s4 != NULL) {
+			printf(_(",token='%s'"), s4);
+		}
+		if (s5 != NULL) {
+			printf(_(",pin='%s'"), s5);
+		}
+		if (s6 != NULL) {
+			printf(_(",pinfile='%s'"), s6);
+		}
+		printf("\n");
 		rep = query_rep(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
 				"get_cert_storage_info", verbose);
 		if (cm_tdbusm_get_ssosos(rep, globals.tctx,
@@ -1875,10 +1885,14 @@ list(const char *argv0, int argc, char **argv)
 			exit(1);
 		}
 		dbus_message_unref(rep);
-		printf(_("\tcertificate: type=%s,location='%s'%s%s%s%s%s\n"),
-		       s1, s2,
-		       s3 ? _(",nickname=") : "", s3 ? s3 : "",
-		       s4 ? _(",token='") : "", s4 ? s4 : "", s4 ? "'" : "");
+		printf(_("\tcertificate: type=%s,location='%s'"), s1, s2);
+		if (s3 != NULL) {
+			printf(_(",nickname='%s'"), s3);
+		}
+		if (s4 != NULL) {
+			printf(_(",token='%s'"), s4);
+		}
+		printf("\n");
 		/* Information from the certificate. */
 		rep = query_rep(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
 				"get_cert_info", verbose);
