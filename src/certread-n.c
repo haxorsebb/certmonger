@@ -383,8 +383,6 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 				    p, nl,
 				    "-----END CERTIFICATE-----\n");
 		entry->cm_cert = p;
-	} else {
-		entry->cm_cert = NULL;
 	}
 	/* Clean up. */
 	CERT_DestroyCertArray(certs, 1);
