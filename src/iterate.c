@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -445,6 +445,14 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				state->cm_csrgen_state = NULL;
 				entry->cm_state = CM_HAVE_CSR;
 				*when = cm_time_now;
+			} else
+			if (cm_csrgen_need_pin(entry,
+					       state->cm_csrgen_state) == 0) {
+				/* Need a PIN; wait for it. */
+				cm_csrgen_done(entry, state->cm_csrgen_state);
+				state->cm_csrgen_state = NULL;
+				entry->cm_state = CM_NEED_CSR_GEN_PIN;
+				*when = cm_time_now;
 			} else {
 				/* Failed to save CSR; try again. */
 				cm_csrgen_done(entry, state->cm_csrgen_state);
@@ -876,15 +884,8 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		if (cm_certread_ready(entry, state->cm_certread_state) == 0) {
 			cm_certread_done(entry, state->cm_certread_state);
 			state->cm_certread_state = NULL;
-			/* If we failed to read the cert, I guess we try again.
-			 */
-			if (entry->cm_cert != NULL) {
-				entry->cm_state = CM_NEWLY_ADDED_DECIDING;
-				*when = cm_time_now;
-			} else {
-				entry->cm_state = CM_NEWLY_ADDED_START_READING_CERT;
-				*when = cm_time_soonish;
-			}
+			entry->cm_state = CM_NEWLY_ADDED_DECIDING;
+			*when = cm_time_now;
 		} else {
 			/* Wait for status update, or poll. */
 			*readfd = cm_certread_get_fd(entry,
