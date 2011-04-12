@@ -121,10 +121,10 @@ exit 0
 %changelog
 * Mon Apr 11 2011 Nalin Dahyabhai <nalin@redhat.com> 0.41-1
 - read information about the keys we've just generated before proceeding
-  to generating a CSR
+  to generating a CSR (part of #694184, part of #695675)
 - when processing a "resubmit" request from getcert, go back to key
   generation if we don't have keys yet, else go back to CSR generation as
-  before (#694184)
+  before (#694184, #695675)
 - configure with --with-tmpdir=/var/run/certmonger and own /var/run/certmonger
   (#687899), and add a systemd tmpfiles.d control file for creating
   /var/run/certmonger on Fedora 15 and later
@@ -132,7 +132,7 @@ exit 0
 - use a lock file to make sure there's only one session instance messing
   around with the user's files at a time
 - fix errors saving certificates to NSS databases when there's already a
-  certificate there with the same nickname
+  certificate there with the same nickname (#695672)
 - make key and certificate location output from 'getcert list' more properly
   translatable (#7)
 
