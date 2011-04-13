@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -185,6 +185,20 @@ cm_store_timestamp_from_time(time_t when, char timestamp[15])
 	struct tm tm;
 	if ((when != 0) && (gmtime_r(&when, &tm) == &tm)) {
 		sprintf(timestamp, "%04d%02d%02d%02d%02d%02d",
+			tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
+			tm.tm_hour, tm.tm_min, tm.tm_sec);
+	} else {
+		strcpy(timestamp, "19700101000000");
+	}
+	return timestamp;
+}
+
+char *
+cm_store_timestamp_from_time_for_display(time_t when, char timestamp[21])
+{
+	struct tm tm;
+	if ((when != 0) && (gmtime_r(&when, &tm) == &tm)) {
+		sprintf(timestamp, "%04d-%02d-%02d %02d:%02d:%02d UTC",
 			tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
 			tm.tm_hour, tm.tm_min, tm.tm_sec);
 	} else {
