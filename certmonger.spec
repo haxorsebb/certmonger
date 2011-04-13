@@ -1,5 +1,5 @@
 Name:		certmonger
-Version:	0.41
+Version:	0.42
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -119,6 +119,10 @@ exit 0
 %dir /var/run/certmonger
 
 %changelog
+* Wed Apr 13 2011 Nalin Dahyabhai <nalin@redhat.com> 0.42-1
+- getcert: fix a buffer overrun preparing a request for the daemon when
+  there are more parameters to encode than space in the array (#696185)
+
 * Mon Apr 11 2011 Nalin Dahyabhai <nalin@redhat.com> 0.41-1
 - read information about the keys we've just generated before proceeding
   to generating a CSR (part of #694184, part of #695675)
