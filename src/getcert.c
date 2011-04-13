@@ -1061,7 +1061,7 @@ set_tracking(const char *argv0, const char *category,
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	DBusMessage *req, *rep;
 	const char *request, *capath;
-	struct cm_tdbusm_dict param[4];
+	struct cm_tdbusm_dict param[10];
 	const struct cm_tdbusm_dict *params[11];
 	char *nss_scheme, *dbdir = NULL, *token = NULL, *nickname = NULL;
 	char *id = NULL, *new_id = NULL, *new_request;
