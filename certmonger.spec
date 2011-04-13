@@ -122,6 +122,7 @@ exit 0
 * Wed Apr 13 2011 Nalin Dahyabhai <nalin@redhat.com> 0.42-1
 - getcert: fix a buffer overrun preparing a request for the daemon when
   there are more parameters to encode than space in the array (#696185)
+- updated translations: de, es, id, pl, ru, uk
 
 * Mon Apr 11 2011 Nalin Dahyabhai <nalin@redhat.com> 0.41-1
 - read information about the keys we've just generated before proceeding

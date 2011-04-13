@@ -2,21 +2,20 @@
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
+# 
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
-"Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
+"Report-Msgid-Bugs-To: http://certmonger.fedorahosted.org/\n"
 "POT-Creation-Date: 2011-04-11 16:53-0400\n"
-"PO-Revision-Date: 2011-03-22 15:22+0000\n"
-"Last-Translator: nalin <nalin@fedoraproject.org>\n"
+"PO-Revision-Date: 2011-04-12 15:08+0000\n"
+"Last-Translator: yurchor <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <trans-uk@lists.fedoraproject.org>\n"
-"Language: uk\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)\n"
+"Language: uk\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)\n"
 
 #: src/certmaster.c:111 src/ipa.c:126
 #, c-format
@@ -147,8 +146,7 @@ msgstr "Одночасно вказано каталог бази даних і 
 
 #: src/getcert.c:546 src/getcert.c:1370 src/getcert.c:1582
 #, c-format
-msgid ""
-"None of database directory and nickname or certificate file specified.\n"
+msgid "None of database directory and nickname or certificate file specified.\n"
 msgstr ""
 "Не вказано ні каталогу бази даних з псевдонімом, ні файла сертифіката.\n"
 
@@ -160,11 +158,11 @@ msgstr "Ключ і сертифікат не можна зберігати у �
 #: src/getcert.c:578
 #, c-format
 msgid ""
-"The IPA backend requires the use of the -K option (principal name) when the -"
-"N option (subject name) is used.\n"
+"The IPA backend requires the use of the -K option (principal name) when the "
+"-N option (subject name) is used.\n"
 msgstr ""
-"Сервер IPA потребує використання параметра -K (назви реєстраційного запису), "
-"якщо використано параметр -N (призначення).\n"
+"Сервер IPA потребує використання параметра -K (назви реєстраційного запису),"
+" якщо використано параметр -N (призначення).\n"
 
 #: src/getcert.c:708 src/getcert.c:1021 src/getcert.c:1312 src/getcert.c:1602
 #, c-format
@@ -203,8 +201,8 @@ msgid ""
 "None of ID or database directory and nickname or certificate file "
 "specified.\n"
 msgstr ""
-"Не вказано ні ідентифікатора, ні каталогу бази даних з псевдонімом, ні файла "
-"сертифіката.\n"
+"Не вказано ні ідентифікатора, ні каталогу бази даних з псевдонімом, ні файла"
+" сертифіката.\n"
 
 #: src/getcert.c:1343
 #, c-format
@@ -284,41 +282,41 @@ msgstr "\tприв’язка: %s\n"
 #: src/getcert.c:1863
 #, c-format
 msgid "\tkey pair storage: type=%s"
-msgstr ""
+msgstr "\tсховище пар ключів: тип=%s"
 
 #: src/getcert.c:1863
 msgid "NONE"
-msgstr ""
+msgstr "Немає"
 
 #: src/getcert.c:1865
-#, fuzzy, c-format
+#, c-format
 msgid ",location='%s'"
-msgstr ",адреса='"
+msgstr ",розташування=«%s»"
 
 #: src/getcert.c:1868 src/getcert.c:1890
-#, fuzzy, c-format
+#, c-format
 msgid ",nickname='%s'"
-msgstr ",псевдонім="
+msgstr ",псевдонім=«%s»"
 
 #: src/getcert.c:1871 src/getcert.c:1893
-#, fuzzy, c-format
+#, c-format
 msgid ",token='%s'"
-msgstr ",ключ='"
+msgstr ",ключ=«%s»"
 
 #: src/getcert.c:1874
-#, fuzzy, c-format
+#, c-format
 msgid ",pin='%s'"
-msgstr ",pin="
+msgstr ",пін-код=«%s»"
 
 #: src/getcert.c:1877
-#, fuzzy, c-format
+#, c-format
 msgid ",pinfile='%s'"
-msgstr ",файл pin="
+msgstr ",пін-файл=«%s»"
 
 #: src/getcert.c:1888
-#, fuzzy, c-format
+#, c-format
 msgid "\tcertificate: type=%s,location='%s'"
-msgstr "\tсертифікат: тип=%s,адреса='%s'%s%s%s%s%s\n"
+msgstr "\tсертифікат: тип=%s,розташування=«%s»"
 
 #: src/getcert.c:1908
 #, c-format
@@ -420,8 +418,8 @@ msgstr "  -d КАТАЛОГ\tБаза даних ключів і сертифі�
 #: src/getcert.c:2045 src/getcert.c:2084 src/getcert.c:2121 src/getcert.c:2143
 msgid "  -n NAME\tnickname for NSS-based storage (only valid with -d)\n"
 msgstr ""
-"  -n НАЗВА\tпсевдонім сховища на основі NSS (працюватиме, лише якщо вказано -"
-"d)\n"
+"  -n НАЗВА\tпсевдонім сховища на основі NSS (працюватиме, лише якщо вказано "
+"-d)\n"
 
 #: src/getcert.c:2046 src/getcert.c:2085 src/getcert.c:2122 src/getcert.c:2144
 msgid ""
@@ -474,8 +472,7 @@ msgstr ""
 "готового, у бітах\n"
 
 #: src/getcert.c:2058 src/getcert.c:2096
-msgid ""
-"  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
+msgid "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
 msgstr ""
 "  -r\t\tСпробувати оновити сертифікат, якщо наближається завершення строку "
 "дії (типова поведінка)\n"
@@ -488,8 +485,7 @@ msgstr ""
 
 #: src/getcert.c:2061 src/getcert.c:2099
 msgid "  -c CA\t\tuse the specified CA rather than the default\n"
-msgstr ""
-"  -c CA\t\tвикористовувати вказану службу сертифікації (CA), а не типову\n"
+msgstr "  -c CA\t\tвикористовувати вказану службу сертифікації (CA), а не типову\n"
 
 #: src/getcert.c:2063
 msgid "* Parameters for the signing request:\n"
@@ -530,18 +526,18 @@ msgstr ""
 #: src/getcert.c:2071 src/getcert.c:2108 src/getcert.c:2130 src/getcert.c:2167
 msgid "  -s\t\tconnect to the certmonger service on the session bus\n"
 msgstr ""
-"  -s\t\tВстановити зв’язок зі службою certmonger за допомогою каналу сеансу\n"
+"  -s\t\tВстановити зв’язок зі службою certmonger за допомогою каналу "
+"сеансу\n"
 
 #: src/getcert.c:2072 src/getcert.c:2109 src/getcert.c:2131 src/getcert.c:2168
 #: src/getcert.c:2185 src/getcert.c:2200
-#, fuzzy
 msgid "* Other options:\n"
-msgstr "* Загальні параметри:\n"
+msgstr "* Інші параметри:\n"
 
 #: src/getcert.c:2073 src/getcert.c:2110 src/getcert.c:2132 src/getcert.c:2169
 #: src/getcert.c:2186 src/getcert.c:2201
 msgid "  -v\treport all details of errors\n"
-msgstr ""
+msgstr "  -v\tповідомляти про всі дані щодо помилок\n"
 
 #: src/getcert.c:2077
 #, c-format
@@ -619,8 +615,7 @@ msgstr ""
 
 #: src/getcert.c:2163
 msgid "  -c CA\t\tuse the specified CA rather than the current one\n"
-msgstr ""
-"  -c CA\t\tВикористовувати вказану службу сертифікації (CA), а не поточну\n"
+msgstr "  -c CA\t\tВикористовувати вказану службу сертифікації (CA), а не поточну\n"
 
 #: src/getcert.c:2173
 #, c-format
@@ -644,7 +639,8 @@ msgstr "  -r\tПоказати лише відомості щодо нетипо
 #: src/getcert.c:2181
 msgid "  -t\tlist only information about tracked certificates\n"
 msgstr ""
-"  -t\tПоказати лише відомості щодо сертифікатів, за якими ведеться стеження\n"
+"  -t\tПоказати лише відомості щодо сертифікатів, за якими ведеться "
+"стеження\n"
 
 #: src/getcert.c:2183 src/getcert.c:2198
 msgid "  -S\tconnect to the certmonger service on the system bus\n"
@@ -686,11 +682,10 @@ msgstr ""
 
 #: src/ipa.c:211
 #, c-format
-msgid ""
-"Error setting up ccache for local \"host\" service using default keytab.\n"
+msgid "Error setting up ccache for local \"host\" service using default keytab.\n"
 msgstr ""
-"Помилка налаштування ccache для локальної служби «host» за допомогою типової "
-"таблиці ключів.\n"
+"Помилка налаштування ccache для локальної служби «host» за допомогою типової"
+" таблиці ключів.\n"
 
 #: src/ipa.c:215
 #, c-format
@@ -700,11 +695,10 @@ msgstr ""
 
 #: src/ipa.c:221
 #, c-format
-msgid ""
-"Error setting up ccache for local \"host\" service using keytab \"%s\".\n"
+msgid "Error setting up ccache for local \"host\" service using keytab \"%s\".\n"
 msgstr ""
-"Помилка налаштування ccache для локальної служби «host» за допомогою таблиці "
-"ключів «%s».\n"
+"Помилка налаштування ccache для локальної служби «host» за допомогою таблиці"
+" ключів «%s».\n"
 
 #: src/ipa.c:225
 #, c-format
@@ -808,9 +802,3 @@ msgstr "Невідома служба сертифікації «%s»."
 #: src/tdbush.c:2136
 msgid "Unrecognized parameter or wrong value type."
 msgstr "Невідомий параметр або помилковий тип значення."
-
-#~ msgid "\tkey pair storage: %s%s%s%s%s%s%s%s%s%s%s%s%s%s\n"
-#~ msgstr "\tсховище пар ключів: %s%s%s%s%s%s%s%s%s%s%s%s%s%s\n"
-
-#~ msgid "type="
-#~ msgstr "тип="

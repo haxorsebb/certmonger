@@ -2,19 +2,19 @@
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
+# 
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
-"Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
+"Report-Msgid-Bugs-To: http://certmonger.fedorahosted.org/\n"
 "POT-Creation-Date: 2011-04-11 16:53-0400\n"
-"PO-Revision-Date: 2011-03-22 15:22+0000\n"
+"PO-Revision-Date: 2011-04-12 00:06+0000\n"
 "Last-Translator: nalin <nalin@fedoraproject.org>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: id\n"
+"Language-Team: Indonesian <trans-id@lists.fedoraproject.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: id\n"
 "Plural-Forms: nplurals=1; plural=0\n"
 
 #: src/certmaster.c:111 src/ipa.c:126
@@ -142,8 +142,7 @@ msgstr "Direktori database dan sertifikat file kedua secara khusus.\n"
 
 #: src/getcert.c:546 src/getcert.c:1370 src/getcert.c:1582
 #, c-format
-msgid ""
-"None of database directory and nickname or certificate file specified.\n"
+msgid "None of database directory and nickname or certificate file specified.\n"
 msgstr ""
 "Tidak ada dari direktori database dan nama panggilan atau sertifikat berkas "
 "khusus.\n"
@@ -157,8 +156,8 @@ msgstr ""
 #: src/getcert.c:578
 #, c-format
 msgid ""
-"The IPA backend requires the use of the -K option (principal name) when the -"
-"N option (subject name) is used.\n"
+"The IPA backend requires the use of the -K option (principal name) when the "
+"-N option (subject name) is used.\n"
 msgstr ""
 "IPA kembali memerlukan kegunaan dari pilihan -K (nama utama) di mana ketika "
 "pilihan -N (nama subjek) telah digunakan.\n"
@@ -288,34 +287,34 @@ msgid "NONE"
 msgstr ""
 
 #: src/getcert.c:1865
-#, fuzzy, c-format
+#, c-format
 msgid ",location='%s'"
-msgstr ",location='"
+msgstr ""
 
 #: src/getcert.c:1868 src/getcert.c:1890
-#, fuzzy, c-format
+#, c-format
 msgid ",nickname='%s'"
-msgstr ",nickname="
+msgstr ""
 
 #: src/getcert.c:1871 src/getcert.c:1893
-#, fuzzy, c-format
+#, c-format
 msgid ",token='%s'"
-msgstr ",token='"
+msgstr ""
 
 #: src/getcert.c:1874
-#, fuzzy, c-format
+#, c-format
 msgid ",pin='%s'"
-msgstr ",pin="
+msgstr ""
 
 #: src/getcert.c:1877
-#, fuzzy, c-format
+#, c-format
 msgid ",pinfile='%s'"
-msgstr ",pinfile="
+msgstr ""
 
 #: src/getcert.c:1888
-#, fuzzy, c-format
+#, c-format
 msgid "\tcertificate: type=%s,location='%s'"
-msgstr "\tcertificate: type=%s,location='%s'%s%s%s%s%s\n"
+msgstr ""
 
 #: src/getcert.c:1908
 #, c-format
@@ -416,15 +415,14 @@ msgstr "-d DIR\tNSS database untuk kunci dan pemastian\n"
 
 #: src/getcert.c:2045 src/getcert.c:2084 src/getcert.c:2121 src/getcert.c:2143
 msgid "  -n NAME\tnickname for NSS-based storage (only valid with -d)\n"
-msgstr ""
-"-n NAME\tnickname untuk dasar penyimpanan NSS (hanya valid dengan -d)\n"
+msgstr "-n NAME\tnickname untuk dasar penyimpanan NSS (hanya valid dengan -d)\n"
 
 #: src/getcert.c:2046 src/getcert.c:2085 src/getcert.c:2122 src/getcert.c:2144
 msgid ""
 "  -t NAME\toptional token name for NSS-based storage (only valid with -d)\n"
 msgstr ""
-"-t NAME\toptional tanda nama untuk dasar penyimpanan NSS (hanya valid dengan "
-"-d)\n"
+"-t NAME\toptional tanda nama untuk dasar penyimpanan NSS (hanya valid dengan"
+" -d)\n"
 
 #: src/getcert.c:2047 src/getcert.c:2086 src/getcert.c:2123 src/getcert.c:2145
 msgid "* If using files for storage:\n"
@@ -470,8 +468,7 @@ msgstr ""
 "berada di dalam tempat\n"
 
 #: src/getcert.c:2058 src/getcert.c:2096
-msgid ""
-"  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
+msgid "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
 msgstr ""
 "-r\t\tattempt untuk memperbarui sertifikat ketika mendekati akhir waktu "
 "(kegagalan)\n"
@@ -479,7 +476,8 @@ msgstr ""
 #: src/getcert.c:2059 src/getcert.c:2097
 msgid "  -R\t\tdon't attempt to renew the certificate when expiration nears\n"
 msgstr ""
-"-R\t\tdon't usaha untuk memperbarui sertifikat ketika mendekati akhir waktu\n"
+"-R\t\tdon't usaha untuk memperbarui sertifikat ketika mendekati akhir "
+"waktu\n"
 
 #: src/getcert.c:2061 src/getcert.c:2099
 msgid "  -c CA\t\tuse the specified CA rather than the default\n"
@@ -524,9 +522,8 @@ msgstr "-s\t\tconnect untuk layanan pemastian pada pembahasan bus\n"
 
 #: src/getcert.c:2072 src/getcert.c:2109 src/getcert.c:2131 src/getcert.c:2168
 #: src/getcert.c:2185 src/getcert.c:2200
-#, fuzzy
 msgid "* Other options:\n"
-msgstr "* Pilihan umum:\n"
+msgstr ""
 
 #: src/getcert.c:2073 src/getcert.c:2110 src/getcert.c:2132 src/getcert.c:2169
 #: src/getcert.c:2186 src/getcert.c:2201
@@ -663,8 +660,7 @@ msgstr "Tidak dapat untuk menentukan nama utama untuk menandai permintaan.\n"
 
 #: src/ipa.c:211
 #, c-format
-msgid ""
-"Error setting up ccache for local \"host\" service using default keytab.\n"
+msgid "Error setting up ccache for local \"host\" service using default keytab.\n"
 msgstr ""
 "Menyembunyikan setting eror untuk lokal \"host\"  layanan menggunakan "
 "default kunci tab.\n"
@@ -672,13 +668,11 @@ msgstr ""
 #: src/ipa.c:215
 #, c-format
 msgid "Error setting up ccache for \"%s\" using default keytab.\n"
-msgstr ""
-"Menyembunyikan setting eror untuk  \"%s\"  menggunakan default kunci tab.\n"
+msgstr "Menyembunyikan setting eror untuk  \"%s\"  menggunakan default kunci tab.\n"
 
 #: src/ipa.c:221
 #, c-format
-msgid ""
-"Error setting up ccache for local \"host\" service using keytab \"%s\".\n"
+msgid "Error setting up ccache for local \"host\" service using keytab \"%s\".\n"
 msgstr ""
 "Menyembunyikan setting eror untuk  lokal \"host\"  menggunakan layanan  "
 "kunci tab\"%s\".\n"
@@ -686,8 +680,7 @@ msgstr ""
 #: src/ipa.c:225
 #, c-format
 msgid "Error setting up ccache for \"%s\" using keytab \"%s\".\n"
-msgstr ""
-"Menyembunyikan setting eror untuk  \"%s\"  menggunakan kunci tab\"%s\".\n"
+msgstr "Menyembunyikan setting eror untuk  \"%s\"  menggunakan kunci tab\"%s\".\n"
 
 #: src/tdbush.c:186 src/tdbush.c:1196 src/tdbush.c:1360
 msgid "An internal error has occurred."
@@ -754,8 +747,8 @@ msgstr "Permintaan telah dilakukan dengan nama panggilan \"%s\"."
 #, c-format
 msgid "Certificate at same location is already used by request \"%s\"."
 msgstr ""
-"sertifikat di lokasi yang sama telah selesai digunakan oleh  permintaan \"%s"
-"\"."
+"sertifikat di lokasi yang sama telah selesai digunakan oleh  permintaan "
+"\"%s\"."
 
 #: src/tdbush.c:722
 #, c-format
@@ -787,9 +780,3 @@ msgstr "Wewenang sertifikat \"%s\" tidak diketahui."
 #: src/tdbush.c:2136
 msgid "Unrecognized parameter or wrong value type."
 msgstr "Tidak mengenal parameter atau salah tipe nilai."
-
-#~ msgid "\tkey pair storage: %s%s%s%s%s%s%s%s%s%s%s%s%s%s\n"
-#~ msgstr "\tkey pair storage: %s%s%s%s%s%s%s%s%s%s%s%s%s%s\n"
-
-#~ msgid "type="
-#~ msgstr "type="

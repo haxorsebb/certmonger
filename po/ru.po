@@ -2,21 +2,20 @@
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
+# 
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
-"Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
+"Report-Msgid-Bugs-To: http://certmonger.fedorahosted.org/\n"
 "POT-Creation-Date: 2011-04-11 16:53-0400\n"
-"PO-Revision-Date: 2011-03-22 23:24+0000\n"
+"PO-Revision-Date: 2011-04-13 14:14+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: Russian <trans-ru@lists.fedoraproject.org>\n"
-"Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)\n"
+"Language: ru\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)\n"
 
 #: src/certmaster.c:111 src/ipa.c:126
 #, c-format
@@ -141,8 +140,7 @@ msgstr ""
 
 #: src/getcert.c:546 src/getcert.c:1370 src/getcert.c:1582
 #, c-format
-msgid ""
-"None of database directory and nickname or certificate file specified.\n"
+msgid "None of database directory and nickname or certificate file specified.\n"
 msgstr ""
 
 #: src/getcert.c:553 src/getcert.c:1231
@@ -153,8 +151,8 @@ msgstr ""
 #: src/getcert.c:578
 #, c-format
 msgid ""
-"The IPA backend requires the use of the -K option (principal name) when the -"
-"N option (subject name) is used.\n"
+"The IPA backend requires the use of the -K option (principal name) when the "
+"-N option (subject name) is used.\n"
 msgstr ""
 
 #: src/getcert.c:708 src/getcert.c:1021 src/getcert.c:1312 src/getcert.c:1602
@@ -457,8 +455,7 @@ msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
 msgstr ""
 
 #: src/getcert.c:2058 src/getcert.c:2096
-msgid ""
-"  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
+msgid "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
 msgstr ""
 
 #: src/getcert.c:2059 src/getcert.c:2097
@@ -646,8 +643,7 @@ msgstr ""
 
 #: src/ipa.c:211
 #, c-format
-msgid ""
-"Error setting up ccache for local \"host\" service using default keytab.\n"
+msgid "Error setting up ccache for local \"host\" service using default keytab.\n"
 msgstr ""
 
 #: src/ipa.c:215
@@ -657,8 +653,7 @@ msgstr ""
 
 #: src/ipa.c:221
 #, c-format
-msgid ""
-"Error setting up ccache for local \"host\" service using keytab \"%s\".\n"
+msgid "Error setting up ccache for local \"host\" service using keytab \"%s\".\n"
 msgstr ""
 
 #: src/ipa.c:225
