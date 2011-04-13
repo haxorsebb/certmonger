@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,6 +38,7 @@ struct cm_store_ca **cm_store_get_all_cas(void *parent);
 /* Utility functions. */
 time_t cm_store_time_from_timestamp(const char *timestamp);
 char *cm_store_timestamp_from_time(time_t when, char timestamp[15]);
+char *cm_store_timestamp_from_time_for_display(time_t when, char timestamp[24]);
 char *cm_store_increment_serial(void *parent, const char *old_serial);
 char *cm_store_serial_from_binary(void *parent,
 				  const unsigned char *serial, int length);

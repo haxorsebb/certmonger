@@ -1721,7 +1721,7 @@ list(const char *argv0, int argc, char **argv)
 	dbus_bool_t b;
 	char *s1, *s2, *s3, *s4, *s5, *s6;
 	long n1, n2;
-	char **as1, **as2, **as3, **as4, t[15];
+	char **as1, **as2, **as3, **as4, t[24];
 	int requests_only = 0, tracking_only = 0, verbose = 0, c, i, j;
 	while ((c = getopt(argc, argv, "rtsSv" GETOPT_CA)) != -1) {
 		switch (c) {
@@ -1910,7 +1910,9 @@ list(const char *argv0, int argc, char **argv)
 		printf(_("\tissuer: %s\n"), s1);
 		printf(_("\tsubject: %s\n"), s3);
 		printf(_("\texpires: %s\n"),
-		       n1 ? cm_store_timestamp_from_time(n1, t) : _("unknown"));
+		       n1 ?
+		       cm_store_timestamp_from_time_for_display(n1, t) :
+		       _("unknown"));
 		for (j = 0; (as1 != NULL) && (as1[j] != NULL); j++) {
 			printf("%s%s%s",
 			       j == 0 ? _("\temail: ") : ",",
