@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,13 +53,14 @@ static int
 cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		   void *userdata)
 {
-	int status = 1, readwrite;
+	int status = 1, readwrite, i;
 	PLArenaPool *arena;
 	SECStatus error;
 	SECItem *item;
 	char *p, *q;
 	CERTCertDBHandle *certdb;
 	CERTCertList *certlist;
+	CERTCertificate **returned;
 	CERTCertListNode *node;
 	struct cm_certsave_n_settings *settings;
 	/* Open the database. */
@@ -113,9 +114,10 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				_exit(1);
 			}
 #ifdef NSS_FLAGS_DUPLICATES
+			returned = NULL;
 			error = CERT_ImportCerts(certdb,
 						 certUsageUserCertImport,
-						 1, &item, NULL, PR_TRUE,
+						 1, &item, &returned, PR_TRUE,
 						 PR_FALSE,
 						 entry->cm_cert_nickname);
 			if (error == SECSuccess) {
@@ -140,9 +142,10 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					CERT_DestroyCertList(certlist);
 				}
 				/* Try again. */
+				returned = NULL;
 				error = CERT_ImportCerts(certdb,
 							 certUsageUserCertImport,
-							 1, &item, NULL,
+							 1, &item, &returned,
 							 PR_TRUE,
 							 PR_FALSE,
 							 entry->cm_cert_nickname);
@@ -162,6 +165,12 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 #ifdef NSS_FLAGS_DUPLICATES
 			}
 #endif
+			if (returned != NULL) {
+				for (i = 0; returned[i] != NULL; i++) {
+					continue;
+				}
+				CERT_DestroyCertArray(returned, i);
+			}
 		} else {
 			cm_log(1, "Error getting handle to default NSS DB.\n");
 		}
