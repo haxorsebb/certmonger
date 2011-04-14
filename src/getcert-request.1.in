@@ -72,6 +72,7 @@ will simply stay expired.
 \fB\-I\fR NAME
 Assign the specified nickname to this task.  If this option is not specified,
 a name will be assigned automatically.
+Valid nicknames contain only characters from the set "[A-Z][a-z][0-9]_".
 
 .SH ENROLLMENT OPTIONS
 .TP
