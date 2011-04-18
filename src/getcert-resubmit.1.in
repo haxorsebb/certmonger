@@ -46,6 +46,7 @@ the CA should correspond to one listed by \fIgetcert list-cas\fR.
 .TP
 \fB\-I\fR NAME
 Assign the specified nickname to this task, replacing the previous nickname.
+Valid nicknames contain only characters from the set "[A-Z][a-z][0-9]_".
 
 .SH SIGNING REQUEST OPTIONS
 .TP
