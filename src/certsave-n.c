@@ -46,7 +46,7 @@ struct cm_certsave_state {
 	struct cm_subproc_state *subproc;
 };
 struct cm_certsave_n_settings {
-	int readwrite:1;
+	unsigned int readwrite:1;
 };
 
 static int
@@ -56,12 +56,19 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	int status = 1, readwrite, i;
 	PLArenaPool *arena;
 	SECStatus error;
-	SECItem *item;
-	char *p, *q;
-	CERTCertDBHandle *certdb;
-	CERTCertList *certlist;
-	CERTCertificate **returned;
-	CERTCertListNode *node;
+	SECItem *item, subject, nickname, newsubj, newnick, label;
+	char *p, *q, *pin;
+	const char *token;
+	PK11SlotList *slotlist;
+	PK11SlotListElement *sle;
+	CK_MECHANISM_TYPE mech;
+	CERTSignedData scert;
+	CERTCertificate cert;
+	PK11GenericObject *obj, *objlist;
+	CK_OBJECT_CLASS objclass;
+	CK_CERTIFICATE_TYPE objtype;
+	CK_BBOOL objtoken;
+	CK_ATTRIBUTE *objtemplate;
 	struct cm_certsave_n_settings *settings;
 	/* Open the database. */
 	settings = userdata;
@@ -82,98 +89,287 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			}
 			_exit(ENOMEM);
 		}
-		certdb = CERT_GetDefaultCertDB();
-		if (certdb != NULL) {
-			/* Handle the base64 decode. */
-			p = entry->cm_cert;
-			q = NULL;
-			if (p != NULL) {
-				while (strncmp(p, "-----BEGIN ", 11) == 0) {
-					p += strcspn(p, "\r\n");
-					p += strspn(p, "\r\n");
-				}
-				q = strstr(p, "-----END");
+		/* Find the tokens that we might use for cert storage. */
+		mech = 0;
+		slotlist = PK11_GetAllTokens(mech, PR_FALSE, PR_FALSE, NULL);
+		if (slotlist == NULL) {
+			cm_log(1, "Error getting list of tokens.\n");
+			PORT_FreeArena(arena, PR_TRUE);
+			if (NSS_Shutdown() != SECSuccess) {
+				cm_log(1, "Error shutting down NSS.\n");
 			}
-			if ((q == NULL) || (*p == '\0')) {
-				cm_log(1, "Unable to parse certificate.\n");
-				PORT_FreeArena(arena, PR_TRUE);
-				if (NSS_Shutdown() != SECSuccess) {
-					cm_log(1, "Error shutting down NSS.\n");
-				}
-				_exit(1);
+			_exit(2);
+		}
+		/* Find the data between the header and footer. */
+		p = entry->cm_cert;
+		q = NULL;
+		if (p != NULL) {
+			while (strncmp(p, "-----BEGIN ", 11) == 0) {
+				p += strcspn(p, "\r\n");
+				p += strspn(p, "\r\n");
 			}
-			/* Handle the base64 decode. */
-			item = NSSBase64_DecodeBuffer(arena, NULL, p, q - p);
-			if (item == NULL) {
-				cm_log(1, "Unable to decode certificate "
-				       "into buffer.\n");
-				PORT_FreeArena(arena, PR_TRUE);
-				if (NSS_Shutdown() != SECSuccess) {
-					cm_log(1, "Error shutting down NSS.\n");
-				}
-				_exit(1);
+			q = strstr(p, "-----END");
+		}
+		if ((q == NULL) || (*p == '\0')) {
+			cm_log(1, "Unable to parse certificate.\n");
+			PK11_FreeSlotList(slotlist);
+			PORT_FreeArena(arena, PR_TRUE);
+			if (NSS_Shutdown() != SECSuccess) {
+				cm_log(1, "Error shutting down NSS.\n");
 			}
-#ifdef NSS_FLAGS_DUPLICATES
-			returned = NULL;
-			error = CERT_ImportCerts(certdb,
-						 certUsageUserCertImport,
-						 1, &item, &returned, PR_TRUE,
-						 PR_FALSE,
-						 entry->cm_cert_nickname);
-			if (error == SECSuccess) {
-				cm_log(1, "Imported certificate \"%s\" on "
-				       "first try!\n", entry->cm_cert_nickname);
-				status = 0;
+			_exit(1);
+		}
+		/* Handle the base64 decode. */
+		item = NSSBase64_DecodeBuffer(arena, NULL, p, q - p);
+		if (item == NULL) {
+			cm_log(1, "Unable to decode certificate "
+			       "into buffer.\n");
+			PK11_FreeSlotList(slotlist);
+			PORT_FreeArena(arena, PR_TRUE);
+			if (NSS_Shutdown() != SECSuccess) {
+				cm_log(1, "Error shutting down NSS.\n");
+			}
+			_exit(1);
+		}
+		/* Parse the certificate. */
+		memset(&scert, 0, sizeof(scert));
+		memset(&cert, 0, sizeof(cert));
+		if (SEC_ASN1DecodeItem(arena, &scert,
+				       CERT_SignedDataTemplate,
+				       item) != SECSuccess) {
+			cm_log(1, "Error decoding certificate (1).\n");
+			goto next_slot;
+		}
+		if (SEC_ASN1DecodeItem(arena, &cert,
+				       CERT_CertificateTemplate,
+				       &scert.data) != SECSuccess) {
+			cm_log(1, "Error decoding certificate (2).\n");
+			goto next_slot;
+		}
+		/* Walk the list looking for the requested slot, or the first
+		 * one if none was requested. */
+		if (cm_pin_read_for_cert(entry, &pin) != 0) {
+			cm_log(1, "Error reading PIN for cert db.\n");
+			PK11_FreeSlotList(slotlist);
+			PORT_FreeArena(arena, PR_TRUE);
+			if (NSS_Shutdown() != SECSuccess) {
+				cm_log(1, "Error shutting down NSS.\n");
+			}
+			_exit(CM_STATUS_ERROR_AUTH);
+		}
+		PK11_SetPasswordFunc(&cm_pin_read_for_cert_nss_cb);
+		for (sle = slotlist->head;
+		     ((sle != NULL) && (sle->slot != NULL));
+		     sle = sle->next) {
+			/* Log the slot's name. */
+			token = PK11_GetTokenName(sle->slot);
+			if (token != NULL) {
+				cm_log(3, "Found token '%s'.\n", token);
 			} else {
-#endif
-				certlist = PK11_FindCertsFromNickname(entry->cm_cert_nickname, NULL);
-				if (certlist != NULL) {
-					/* Delete the existing cert. */
-					for (node = CERT_LIST_HEAD(certlist);
-					     !CERT_LIST_EMPTY(certlist) &&
-					     !CERT_LIST_END(node, certlist);
-					     node = CERT_LIST_NEXT(node)) {
-						if (SEC_DeletePermCertificate(node->cert) != SECSuccess) {
-							cm_log(1, "Error removing pre-existing "
-							       "certificate \"%s\".\n",
-							       entry->cm_cert_nickname);
-						}
-					}
-					CERT_DestroyCertList(certlist);
-				}
-				/* Try again. */
-				returned = NULL;
-				error = CERT_ImportCerts(certdb,
-							 certUsageUserCertImport,
-							 1, &item, &returned,
-							 PR_TRUE,
-							 PR_FALSE,
-							 entry->cm_cert_nickname);
-				if (error == SECSuccess) {
-					cm_log(1, "Imported certificate"
-					       " \"%s\" on second "
-					       "try!\n",
-					       entry->cm_cert_nickname);
-					status = 0;
-				} else {
-					cm_log(0, "Error importing certificate "
-					       "into NSSDB \"%s\": %s.\n",
-					       entry->cm_cert_storage_location,
-					       PR_ErrorToString(error,
-								PR_LANGUAGE_I_DEFAULT));
-				}
-#ifdef NSS_FLAGS_DUPLICATES
+				cm_log(3, "Found unnamed token.\n");
 			}
-#endif
-			if (returned != NULL) {
-				for (i = 0; returned[i] != NULL; i++) {
+			/* If we're looking for a specific slot, and this isn't
+			 * it, keep going. */
+			if ((entry->cm_cert_token != NULL) &&
+			    (strlen(entry->cm_cert_token) != 0) &&
+			    ((token == NULL) ||
+			     (strcmp(entry->cm_cert_token, token) != 0))) {
+				if (token != NULL) {
+					cm_log(1,
+					       "Token is named \"%s\", "
+					       "not \"%s\".\n",
+					       token, entry->cm_key_token);
+				} else {
+					cm_log(1,
+					       "Token is unnamed, "
+					       "not \"%s\".\n",
+					       entry->cm_key_token);
+				}
+				goto next_slot;
+			}
+			/* If we're supposed to be using a PIN, and we're
+			 * offered a chance to set one, do it now. */
+			if (PK11_NeedUserInit(sle->slot)) {
+				if (cm_pin_read_for_cert(entry, &pin) != 0) {
+					cm_log(1, "Error reading PIN to assign "
+					       "to storage slot \"%s\", "
+					       "skipping.\n", token);
+					goto next_slot;
+				}
+				if (pin != NULL) {
+					PK11_InitPin(sle->slot, NULL, pin);
+					if (PK11_NeedUserInit(sle->slot)) {
+						cm_log(1,
+						       "Cert storage slot "
+						       "\"%s\" still needs "
+						       "user PIN to be set.\n",
+						       token);
+					}
+				}
+			}
+			/* If we need to log in in order to use the token, do
+			 * so. */
+			if (PK11_NeedLogin(sle->slot)) {
+				if (cm_pin_read_for_cert(entry, &pin) != 0) {
+					cm_log(1, "Error reading PIN for cert "
+					       "db, skipping.\n");
+					goto next_slot;
+				}
+				error = PK11_Authenticate(sle->slot, PR_TRUE,
+							  entry);
+				if (error != SECSuccess) {
+					cm_log(1, "Error authenticating to "
+					       "cert db.\n");
+					goto next_slot;
+				}
+			}
+			/* Look for potential problems. */
+			newsubj = cert.derSubject;
+			newnick.data = entry->cm_cert_nickname;
+			newnick.len = strlen(entry->cm_cert_nickname);
+			objlist = PK11_FindGenericObjects(sle->slot,
+							  CKO_CERTIFICATE);
+			obj = objlist;
+			while (obj != NULL) {
+				memset(&subject, 0, sizeof(subject));
+				memset(&nickname, 0, sizeof(nickname));
+				if (PK11_ReadRawAttribute(PK11_TypeGeneric,
+							  obj,
+							  CKA_SUBJECT,
+							  &subject) !=
+				    SECSuccess) {
 					continue;
 				}
-				CERT_DestroyCertArray(returned, i);
+				if (PK11_ReadRawAttribute(PK11_TypeGeneric,
+							  obj,
+							  CKA_LABEL,
+							  &nickname) !=
+				    SECSuccess) {
+					SECITEM_FreeItem(&subject, PR_FALSE);
+					continue;
+				}
+				/* We have a potential problem if:
+				 * a) there's a certificate with the same
+				 *    subject but a different nickname */
+				if (SECITEM_ItemsAreEqual(&subject,
+							  &newsubj) &&
+				    !SECITEM_ItemsAreEqual(&nickname,
+							   &newnick)) {
+					cm_log(1,
+					       "Certificate with nickname "
+					       "\"%.*s\" has the same subject "
+					       "as certificate to be nicknamed "
+					       "\"%s\".\n",
+					       nickname.len, nickname.data,
+					       entry->cm_cert_nickname);
+					PK11_DestroyGenericObjects(objlist);
+					goto next_slot;
+				}
+				/* b) there's a certificate with the same
+				 *    nickname */
+				if (SECITEM_ItemsAreEqual(&nickname,
+							  &newnick)) {
+					memset(&label, 0, sizeof(label));
+					label.data = PORT_ArenaZAlloc(arena,
+								      newnick.len + 32);
+					if (label.data == NULL) {
+						cm_log(1, "Out of memory.\n");
+						PK11_DestroyGenericObjects(objlist);
+						goto next_slot;
+					}
+					sprintf(label.data, "%.*s #2",
+						newnick.len,
+						newnick.data);
+					label.len = strlen(label.data);
+					if (PK11_WriteRawAttribute(PK11_TypeGeneric,
+								   obj,
+								   CKA_LABEL,
+								   &label) ==
+					    SECSuccess) {
+						cm_log(1,
+						       "Renamed certificate "
+						       "with nickname "
+						       "\"%.*s\" to \"%.*s\".\n",
+						       nickname.len,
+						       nickname.data,
+						       label.len,
+						       label.data);
+						break;
+					} else {
+						cm_log(1, "Error "
+						       "renaming certificate "
+						       "with nickname "
+						       "\"%.*s\": %s.\n",
+						       nickname.len,
+						       nickname.data,
+						       PR_ErrorToString(PORT_GetError(),
+									PR_LANGUAGE_I_DEFAULT));
+						PK11_DestroyGenericObjects(objlist);
+						goto next_slot;
+					}
+				}
+				SECITEM_FreeItem(&subject, PR_FALSE);
+				SECITEM_FreeItem(&nickname, PR_FALSE);
+				obj = PK11_GetNextGenericObject(obj);
 			}
-		} else {
-			cm_log(1, "Error getting handle to default NSS DB.\n");
+			PK11_DestroyGenericObjects(objlist);
+			/* Add the certificate. */
+			objtemplate = PORT_ArenaZAlloc(arena,
+						       8 * sizeof(*objtemplate));
+			if (objtemplate == NULL) {
+				cm_log(1, "Out of memory.\n");
+				goto next_slot;
+			}
+			objclass = CKO_CERTIFICATE;
+			objtemplate[0].type = CKA_CLASS;
+			objtemplate[0].pValue = &objclass;
+			objtemplate[0].ulValueLen = sizeof(objclass);
+			objtoken = CK_TRUE;
+			objtemplate[1].type = CKA_TOKEN;
+			objtemplate[1].pValue = &objtoken;
+			objtemplate[1].ulValueLen = sizeof(objtoken);
+			objtype = CKC_X_509;
+			objtemplate[2].type = CKA_CERTIFICATE_TYPE;
+			objtemplate[2].pValue = &objtype;
+			objtemplate[2].ulValueLen = sizeof(objtype);
+			objtemplate[3].type = CKA_ISSUER;
+			objtemplate[3].pValue = cert.derIssuer.data,
+			objtemplate[3].ulValueLen = cert.derIssuer.len,
+			objtemplate[4].type = CKA_SERIAL_NUMBER;
+			objtemplate[4].pValue = cert.serialNumber.data,
+			objtemplate[4].ulValueLen = cert.serialNumber.len,
+			objtemplate[5].type = CKA_SUBJECT;
+			objtemplate[5].pValue = cert.derSubject.data;
+			objtemplate[5].ulValueLen = cert.derSubject.len;
+			objtemplate[6].type =  CKA_LABEL;
+			objtemplate[6].pValue = entry->cm_cert_nickname;
+			objtemplate[6].ulValueLen = strlen(entry->cm_cert_nickname);
+			objtemplate[7].type =  CKA_VALUE;
+			objtemplate[7].pValue = item->data;
+			objtemplate[7].ulValueLen = item->len;
+			obj = PK11_CreateGenericObject(sle->slot,
+						       objtemplate,
+						       8,
+						       PR_TRUE);
+			if (obj != NULL) {
+				PK11_DestroyGenericObject(obj);
+				status = 0;
+			} else {
+				cm_log(0, "Error saving certificate \"%s\" "
+				       "to token \"%s\": %s.\n",
+				       entry->cm_cert_nickname,
+				       token,
+				       PR_ErrorToString(PORT_GetError(),
+						        PR_LANGUAGE_I_DEFAULT));
+				goto next_slot;
+			}
+			break;
+next_slot:
+			if (sle == slotlist->tail) {
+				break;
+			}
 		}
+		PK11_FreeSlotList(slotlist);
 		PORT_FreeArena(arena, PR_TRUE);
 		if (NSS_Shutdown() != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
