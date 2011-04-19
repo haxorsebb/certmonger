@@ -24,6 +24,22 @@ List only entries which are either currently being enrolled or refreshed.
 \fB\-t\fR
 List only entries which are not currently being enrolled or refreshed.
 
+.TP
+\fB\-d\fR DIR
+List only entries which use an NSS database in the specified directory for
+storing the certificate.
+.TP
+\fB\-n\fR NAME
+List only tracking requests which use an NSS database and the specified
+nickname for storing the certificate.
+.TP
+\fB\-f\fR FILE
+List only tracking requests which specify that the certificate should be stored
+in file.
+.TP
+\fB\-i\fR FILE
+List only tracking requests which use this request nickname.
+
 .SH BUGS
 Please file tickets for any that you find at https://fedorahosted.org/certmonger/
 

@@ -1718,12 +1718,14 @@ list(const char *argv0, int argc, char **argv)
 	enum cm_state state;
 	DBusMessage *rep;
 	char **requests, *s, *p, *nickname, *only_ca = DEFAULT_CA, *ca_name;
+	char *dbdir = NULL, *dbnickname = NULL, *certfile = NULL, *id = NULL;
+	char *nss_scheme;
 	dbus_bool_t b;
 	char *s1, *s2, *s3, *s4, *s5, *s6;
 	long n1, n2;
 	char **as1, **as2, **as3, **as4, t[24];
 	int requests_only = 0, tracking_only = 0, verbose = 0, c, i, j;
-	while ((c = getopt(argc, argv, "rtsSv" GETOPT_CA)) != -1) {
+	while ((c = getopt(argc, argv, "rtsSvd:n:f:i:" GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'c':
 			only_ca = optarg;
@@ -1740,6 +1742,26 @@ list(const char *argv0, int argc, char **argv)
 		case 'S':
 			bus = cm_tdbus_system;
 			break;
+		case 'd':
+			nss_scheme = NULL;
+			dbdir = ensure_absolute_maybe_nss(globals.tctx, optarg,
+							  &nss_scheme);
+			dbdir = cm_store_canonicalize_directory(globals.tctx,
+								dbdir);
+			if (nss_scheme != NULL) {
+				dbdir = talloc_asprintf(globals.tctx, "%s:%s",
+							nss_scheme, dbdir);
+			}
+			break;
+		case 'n':
+			dbnickname = talloc_strdup(globals.tctx, optarg);
+			break;
+		case 'f':
+			certfile = ensure_absolute(globals.tctx, optarg);
+			break;
+		case 'i':
+			id = talloc_strdup(globals.tctx, optarg);
+			break;
 		case 'v':
 			verbose++;
 			break;
@@ -1753,7 +1775,8 @@ list(const char *argv0, int argc, char **argv)
 	for (i = 0; (requests != NULL) && (requests[i] != NULL); i++) {
 		continue;
 	}
-	printf(_("Number of certificates and requests being tracked: %d.\n"), i);
+	printf(_("Number of certificates and requests being tracked: %d.\n"),
+	       i);
 	for (i = 0; (requests != NULL) && (requests[i] != NULL); i++) {
 		/* Filter out based on the CA. */
 		ca_name = NULL;
@@ -1833,6 +1856,38 @@ list(const char *argv0, int argc, char **argv)
 		/* Basic info. */
 		nickname = find_request_name(globals.tctx, bus, requests[i],
 					     verbose);
+		if ((id != NULL) && (strcmp(nickname, id) != 0)) {
+			continue;
+		}
+		if ((dbdir != NULL) || (dbnickname != NULL) ||
+		    (certfile != NULL)) {
+			rep = query_rep(bus, requests[i],
+					CM_DBUS_REQUEST_INTERFACE,
+					"get_cert_storage_info", verbose);
+			if (cm_tdbusm_get_ssosos(rep, globals.tctx,
+						 &s1, &s2, &s3, &s4) != 0) {
+				printf(_("Error parsing server response.\n"));
+				exit(1);
+			}
+			dbus_message_unref(rep);
+			if ((dbdir != NULL) || (dbnickname != NULL)) {
+				if ((strcmp(s1, "NSSDB") != 0) ||
+				    ((dbdir != NULL) &&
+				     (s2 != NULL) &&
+				     (strcmp(dbdir, s2) != 0)) ||
+				    ((dbnickname != NULL) &&
+				     (s3 != NULL) &&
+				     (strcmp(dbnickname, s3) != 0))) {
+					continue;
+				}
+			}
+			if (certfile != NULL) {
+				if ((strcmp(s1, "FILE") != 0) ||
+				    (strcmp(certfile, s2) != 0)) {
+					continue;
+				}
+			}
+		}
 		printf(_("Request ID '%s':\n"), nickname);
 		printf(_("\tstatus: %s\n"), s);
 		rep = query_rep(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
@@ -2181,6 +2236,13 @@ help(const char *cmd, const char *category)
 #endif
 		N_("  -r	list only information about outstanding requests\n"),
 		N_("  -t	list only information about tracked certificates\n"),
+		N_("* If selecting a specific request:\n"),
+		N_("  -i NAME	nickname for tracking request\n"),
+		N_("* If using an NSS database for storage:\n"),
+		N_("  -d DIR	only list requests and certs which use this NSS database\n"),
+		N_("  -n NAME	only list requests and certs which use this nickname\n"),
+		N_("* If using files for storage:\n"),
+		N_("  -f FILE	only list requests and certs stored in this PEM file\n"),
 		N_("* Bus options:\n"),
 		N_("  -S	connect to the certmonger service on the system bus\n"),
 		N_("  -s	connect to the certmonger service on the session bus\n"),
