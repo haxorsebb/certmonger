@@ -150,7 +150,6 @@ main(int argc, char **argv)
 		if (lfd == -1) {
 			fprintf(stderr, "Error opening lockfile \"%s\": %s\n",
 				cm_env_lock_file(), strerror(errno));
-			close(lfd);
 			exit(1);
 		}
 		if (lockf(lfd, F_LOCK, 0) != 0) {
