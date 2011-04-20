@@ -2076,8 +2076,7 @@ request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 			} else
 			if ((param->value_type == cm_tdbusm_dict_s) &&
 			    (strcasecmp(param->key, "KEY_PIN_FILE") == 0)) {
-				if ((param != NULL) &&
-				    (param->value.s != NULL) &&
+				if ((param->value.s != NULL) &&
 				    (strlen(param->value.s) != 0) &&
 				    (cm_tdbush_check_arg_is_absolute_path(param->value.s) != 0)) {
 					cm_log(1, "PIN storage location is not "
