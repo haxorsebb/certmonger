@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -84,7 +84,7 @@ cm_log(int level, const char *fmt, ...)
 					    (unsigned long) getpid(), fmt);
 			if (p != NULL) {
 				va_start(args, fmt);
-				vfprintf(stream, p ?: fmt, args);
+				vfprintf(stream, p, args);
 				va_end(args);
 				talloc_free(p);
 			}
