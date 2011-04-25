@@ -46,7 +46,15 @@ cert='-----BEGIN CERTIFICATE-----
  -----END CERTIFICATE-----'
 echo "$cert" | sed -e 's,^$,,g' -e 's,^ ,,g' > cert.original
 echo "$wrongcert" | sed -e 's,^$,,g' -e 's,^ ,,g' > cert.wrong
-# Save the wrong certificate to NSS's database and read it back.
+# Save the right certificate to NSS's database with the wrong nickname.
+cat > entry.nss << EOF
+cert_storage_type=NSSDB
+cert_storage_location=${scheme:+${scheme}:}$tmpdir
+cert_nickname=wrongnick
+cert=$cert
+EOF
+$toolsdir/certsave entry.nss
+# Save the wrong certificate to NSS's database with the right nickname.
 cat > entry.nss << EOF
 cert_storage_type=NSSDB
 cert_storage_location=${scheme:+${scheme}:}$tmpdir
@@ -54,7 +62,7 @@ cert_nickname=cert
 cert=$wrongcert
 EOF
 $toolsdir/certsave entry.nss
-# Save it to NSS's database and read it back.
+# Save the right certificate to NSS's database and read it back.
 cat > entry.nss << EOF
 cert_storage_type=NSSDB
 cert_storage_location=${scheme:+${scheme}:}$tmpdir
@@ -62,6 +70,7 @@ cert_nickname=cert
 cert=$cert
 EOF
 $toolsdir/certsave entry.nss
+$toolsdir/listnicks entry.nss
 certutil -d ${scheme:+${scheme}:}$tmpdir -L -n cert -a > cert.nss
 # Save the wrong certificate to the PEM file.
 cat > entry.openssl << EOF
