@@ -316,6 +316,12 @@ cm_tdbush_check_arg_is_nss_directory(const char *path)
 	} else
 	if (strncmp(path, "dbm:", 4) == 0) {
 		path += 4;
+	} else
+	if (strncmp(path, "rdb:", 4) == 0) {
+		path += 4;
+	} else
+	if (strncmp(path, "extern:", 7) == 0) {
+		path += 7;
 	}
 	if (stat(path, &st) == 0) {
 		if (S_ISDIR(st.st_mode)) {
