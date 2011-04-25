@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,7 +52,7 @@ main(int argc, char **argv)
 	void *parent;
 	const char *ctype;
 	cm_log_set_method(cm_log_stderr);
-	cm_log_set_level(1);
+	cm_log_set_level(3);
 	parent = talloc_new(NULL);
 	if (argc > 1) {
 		entry = cm_store_files_entry_read(parent, argv[1]);
