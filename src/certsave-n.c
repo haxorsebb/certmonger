@@ -56,11 +56,12 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	int status = 1, readwrite, i;
 	PLArenaPool *arena;
 	SECStatus error;
-	SECItem *item;
+	SECItem *item, subject;
 	char *p, *q;
 	CERTCertDBHandle *certdb;
 	CERTCertList *certlist;
-	CERTCertificate **returned;
+	CERTCertificate **returned, cert, *conflict;
+	CERTSignedData csdata;
 	CERTCertListNode *node;
 	struct cm_certsave_n_settings *settings;
 	/* Open the database. */
@@ -80,11 +81,11 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			if (NSS_Shutdown() != SECSuccess) {
 				cm_log(1, "Error shutting down NSS.\n");
 			}
-			_exit(ENOMEM);
+			_exit(CM_STATUS_INTERNAL);
 		}
 		certdb = CERT_GetDefaultCertDB();
 		if (certdb != NULL) {
-			/* Handle the base64 decode. */
+			/* Strip the header and footer. */
 			p = entry->cm_cert;
 			q = NULL;
 			if (p != NULL) {
@@ -100,7 +101,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				if (NSS_Shutdown() != SECSuccess) {
 					cm_log(1, "Error shutting down NSS.\n");
 				}
-				_exit(1);
+				_exit(CM_STATUS_INTERNAL);
 			}
 			/* Handle the base64 decode. */
 			item = NSSBase64_DecodeBuffer(arena, NULL, p, q - p);
@@ -111,62 +112,141 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				if (NSS_Shutdown() != SECSuccess) {
 					cm_log(1, "Error shutting down NSS.\n");
 				}
-				_exit(1);
+				_exit(CM_STATUS_INTERNAL);
 			}
-#ifdef NSS_FLAGS_DUPLICATES
-			returned = NULL;
-			error = CERT_ImportCerts(certdb,
-						 certUsageUserCertImport,
-						 1, &item, &returned, PR_TRUE,
-						 PR_FALSE,
-						 entry->cm_cert_nickname);
-			if (error == SECSuccess) {
-				cm_log(1, "Imported certificate \"%s\" on "
-				       "first try!\n", entry->cm_cert_nickname);
-				status = 0;
-			} else {
-#endif
-				certlist = PK11_FindCertsFromNickname(entry->cm_cert_nickname, NULL);
+			/* Do a "shallow" decode to pull out the subject name
+			 * so that we can check for a conflict. */
+			memset(&csdata, 0, sizeof(csdata));
+			if (SEC_ASN1DecodeItem(arena, &csdata,
+					       CERT_SignedDataTemplate,
+					       item) != SECSuccess) {
+				cm_log(1, "Unable to decode certificate "
+				       "signed data into buffer.\n");
+				PORT_FreeArena(arena, PR_TRUE);
+				if (NSS_Shutdown() != SECSuccess) {
+					cm_log(1, "Error shutting down NSS.\n");
+				}
+				_exit(CM_STATUS_INTERNAL);
+			}
+			memset(&cert, 0, sizeof(cert));
+			if (SEC_ASN1DecodeItem(arena, &cert,
+					       CERT_CertificateTemplate,
+					       &csdata.data) != SECSuccess) {
+				cm_log(1, "Unable to decode certificate "
+				       "data into buffer.\n");
+				PORT_FreeArena(arena, PR_TRUE);
+				if (NSS_Shutdown() != SECSuccess) {
+					cm_log(1, "Error shutting down NSS.\n");
+				}
+				_exit(CM_STATUS_INTERNAL);
+			}
+			subject = cert.derSubject;
+			/* Ask NSS if there would be a conflict. */
+			if (SEC_CertNicknameConflict(entry->cm_cert_nickname,
+						     &subject,
+						     certdb)) {
+				/* Delete the certificate that's already there
+				 * with the nickname we want, otherwise our
+				 * cert with a different subject name will be
+				 * discarded. */
+				certlist = PK11_FindCertsFromNickname(entry->cm_cert_nickname,
+								      NULL);
 				if (certlist != NULL) {
-					/* Delete the existing cert. */
+					/* Look for certs with different
+					 * subject names. */
 					for (node = CERT_LIST_HEAD(certlist);
+					     (node != NULL) &&
 					     !CERT_LIST_EMPTY(certlist) &&
 					     !CERT_LIST_END(node, certlist);
 					     node = CERT_LIST_NEXT(node)) {
-						if (SEC_DeletePermCertificate(node->cert) != SECSuccess) {
-							cm_log(1, "Error removing pre-existing "
-							       "certificate \"%s\".\n",
-							       entry->cm_cert_nickname);
+						if (!SECITEM_ItemsAreEqual(&subject,
+									   &node->cert->derSubject)) {
+							cm_log(3, "Found a "
+							       "duplicate "
+							       "certificate "
+							       "with the same "
+							       "nickname but "
+							       "different "
+							       "subject, "
+							       "removing "
+							       "certificate "
+							       "\"%s\" with "
+							       "subject "
+							       "\"%s\".\n",
+							       node->cert->nickname,
+							       node->cert->subjectName ?
+							       node->cert->subjectName :
+							       "");
+							SEC_DeletePermCertificate(node->cert);
 						}
 					}
 					CERT_DestroyCertList(certlist);
 				}
-				/* Try again. */
-				returned = NULL;
-				error = CERT_ImportCerts(certdb,
-							 certUsageUserCertImport,
-							 1, &item, &returned,
-							 PR_TRUE,
-							 PR_FALSE,
-							 entry->cm_cert_nickname);
-				if (error == SECSuccess) {
-					cm_log(1, "Imported certificate"
-					       " \"%s\" on second "
-					       "try!\n",
-					       entry->cm_cert_nickname);
-					status = 0;
-				} else {
-					cm_log(0, "Error importing certificate "
-					       "into NSSDB \"%s\": %s.\n",
-					       entry->cm_cert_storage_location,
-					       PR_ErrorToString(error,
-								PR_LANGUAGE_I_DEFAULT));
-				}
-#ifdef NSS_FLAGS_DUPLICATES
+			} else {
+				cm_log(3, "No duplicate nickname entries.\n");
 			}
-#endif
+			/* This certificate's subject may already be present
+			 * with a different nickname.  Delete those. */
+			certlist = CERT_CreateSubjectCertList(NULL, certdb,
+							      &subject,
+							      PR_FALSE,
+							      PR_FALSE);
+			if (certlist != NULL) {
+				/* Look for certs with different nicknames. */
+				i = 0;
+				for (node = CERT_LIST_HEAD(certlist);
+				     (node != NULL) &&
+				     !CERT_LIST_EMPTY(certlist) &&
+				     !CERT_LIST_END(node, certlist);
+				     node = CERT_LIST_NEXT(node)) {
+					if ((node->cert->nickname != NULL) &&
+					    (strcmp(entry->cm_cert_nickname,
+						    node->cert->nickname) != 0)) {
+						i++;
+						cm_log(3, "Found a duplicate "
+						       "certificate with a "
+						       "different nickname but "
+						       "the same subject, "
+						       "removing certificate "
+						       "\"%s\" with subject "
+						       "\"%s\".\n",
+						       node->cert->nickname,
+						       node->cert->subjectName ?
+						       node->cert->subjectName :
+						       "");
+						SEC_DeletePermCertificate(node->cert);
+					}
+				}
+				if (i == 0) {
+					cm_log(3, "No duplicate subject name entries.\n");
+				}
+				CERT_DestroyCertList(certlist);
+			} else {
+				cm_log(3, "No duplicate subject name entries.\n");
+			}
+			/* Import the certificate. */
+			returned = NULL;
+			error = CERT_ImportCerts(certdb,
+						 certUsageUserCertImport,
+						 1, &item, &returned,
+						 PR_TRUE,
+						 PR_FALSE,
+						 entry->cm_cert_nickname);
+			if (error == SECSuccess) {
+				cm_log(1, "Imported certificate \"%s\", got "
+				       "nickname \"%s\".\n",
+				       entry->cm_cert_nickname,
+				       returned[0]->nickname);
+				status = 0;
+			} else {
+				cm_log(0, "Error importing certificate "
+				       "into NSSDB \"%s\": %s.\n",
+				       entry->cm_cert_storage_location,
+				       PR_ErrorToString(error,
+							PR_LANGUAGE_I_DEFAULT));
+			}
 			if (returned != NULL) {
-				for (i = 0; returned[i] != NULL; i++) {
+				for (i = 0; (returned[i] != NULL); i++) {
 					continue;
 				}
 				CERT_DestroyCertArray(returned, i);
@@ -208,7 +288,35 @@ cm_certsave_n_saved(struct cm_store_entry *entry,
 {
 	int status;
 	status = cm_subproc_get_exitstatus(entry, state->subproc);
-	if (!WIFEXITED(status) || (WEXITSTATUS(status) != 0)) {
+	if (!WIFEXITED(status) || (WEXITSTATUS(status) != CM_STATUS_SAVED)) {
+		return -1;
+	}
+	return 0;
+}
+
+/* Check if we failed because the subject was already there with a different
+ * nickname. */
+static int
+cm_certsave_n_conflict_subject(struct cm_store_entry *entry,
+			       struct cm_certsave_state *state)
+{
+	int status;
+	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	if (!WIFEXITED(status) || (WEXITSTATUS(status) != CM_STATUS_SUBJECT_CONFLICT)) {
+		return -1;
+	}
+	return 0;
+}
+
+/* Check if we failed because the nickname was already taken by a different
+ * subject . */
+static int
+cm_certsave_n_conflict_nickname(struct cm_store_entry *entry,
+			        struct cm_certsave_state *state)
+{
+	int status;
+	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	if (!WIFEXITED(status) || (WEXITSTATUS(status) != CM_STATUS_NICKNAME_CONFLICT)) {
 		return -1;
 	}
 	return 0;
@@ -242,8 +350,10 @@ cm_certsave_n_start(struct cm_store_entry *entry)
 	if (state != NULL) {
 		memset(state, 0, sizeof(*state));
 		state->pvt.ready = cm_certsave_n_ready;
-		state->pvt.get_fd= cm_certsave_n_get_fd;
-		state->pvt.saved= cm_certsave_n_saved;
+		state->pvt.get_fd = cm_certsave_n_get_fd;
+		state->pvt.saved = cm_certsave_n_saved;
+		state->pvt.conflict_subject = cm_certsave_n_conflict_subject;
+		state->pvt.conflict_nickname = cm_certsave_n_conflict_nickname;
 		state->pvt.done= cm_certsave_n_done;
 		state->subproc = cm_subproc_start(cm_certsave_n_main,
 						  NULL, entry, &settings);
