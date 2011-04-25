@@ -58,6 +58,8 @@ for testid in "$@" $subdirs ; do
 			if cmp "$tmpfile" expected.out ; then
 				stat=0
 				echo "OK"
+				cp $tmpfile actual.out
+				cp "$tmpdir"/errors actual.err
 			else
 				stat=1
 				echo "FAIL"
