@@ -18,6 +18,13 @@
 #ifndef cmcertsaveint_h
 #define cmcertsaveint_h
 
+enum cm_certsave_status {
+	CM_STATUS_SAVED = 0,
+	CM_STATUS_SUBJECT_CONFLICT = 1,
+	CM_STATUS_NICKNAME_CONFLICT = 2,
+	CM_STATUS_INTERNAL = 3,
+};
+
 struct cm_certsave_state_pvt {
 	/* Check if something changed, for example we finished saving the cert.
 	 */
@@ -30,6 +37,12 @@ struct cm_certsave_state_pvt {
 	/* Check if we saved the certificate. */
 	int (*saved)(struct cm_store_entry *entry,
 		     struct cm_certsave_state *state);
+	/* Check if we failed because the subject was already being used. */
+	int (*conflict_subject)(struct cm_store_entry *entry,
+				struct cm_certsave_state *state);
+	/* Check if we failed because the nickname was already being used. */
+	int (*conflict_nickname)(struct cm_store_entry *entry,
+				 struct cm_certsave_state *state);
 	/* Clean up after saving the certificate. */
 	void (*done)(struct cm_store_entry *entry,
 		     struct cm_certsave_state *state);

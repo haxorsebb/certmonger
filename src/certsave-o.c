@@ -64,14 +64,21 @@ cm_certsave_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					cm_log(1, "Error saving certificate "
 					       "to '%s'.\n",
 					       entry->cm_cert_storage_location);
+					status = CM_STATUS_INTERNAL;
 				} else {
-					status = 0;
+					status = CM_STATUS_SAVED;
 				}
 				fclose(pem);
+			} else {
+				status = CM_STATUS_INTERNAL;
 			}
 			X509_free(cert);
+		} else {
+			status = CM_STATUS_INTERNAL;
 		}
 		BIO_free(bio);
+	} else {
+		status = CM_STATUS_INTERNAL;
 	}
 	if (status != 0) {
 		_exit(status);
@@ -94,7 +101,35 @@ cm_certsave_o_saved(struct cm_store_entry *entry,
 {
 	int status;
 	status = cm_subproc_get_exitstatus(entry, state->subproc);
-	if (!WIFEXITED(status) || (WEXITSTATUS(status) != 0)) {
+	if (!WIFEXITED(status) || (WEXITSTATUS(status) != CM_STATUS_SAVED)) {
+		return -1;
+	}
+	return 0;
+}
+
+/* Check if we failed because the subject was already there with a different
+ * nickname. */
+static int
+cm_certsave_o_conflict_subject(struct cm_store_entry *entry,
+			       struct cm_certsave_state *state)
+{
+	int status;
+	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	if (!WIFEXITED(status) || (WEXITSTATUS(status) != CM_STATUS_SUBJECT_CONFLICT)) {
+		return -1;
+	}
+	return 0;
+}
+
+/* Check if we failed because the nickname was already taken by a different
+ * subject . */
+static int
+cm_certsave_o_conflict_nickname(struct cm_store_entry *entry,
+			        struct cm_certsave_state *state)
+{
+	int status;
+	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	if (!WIFEXITED(status) || (WEXITSTATUS(status) != CM_STATUS_NICKNAME_CONFLICT)) {
 		return -1;
 	}
 	return 0;
@@ -136,6 +171,8 @@ cm_certsave_o_start(struct cm_store_entry *entry)
 		state->pvt.get_fd= cm_certsave_o_get_fd;
 		state->pvt.saved= cm_certsave_o_saved;
 		state->pvt.done= cm_certsave_o_done;
+		state->pvt.conflict_subject = cm_certsave_o_conflict_subject;
+		state->pvt.conflict_nickname = cm_certsave_o_conflict_nickname;
 		state->subproc = cm_subproc_start(cm_certsave_o_main,
 						  NULL, entry, NULL);
 		if (state->subproc == NULL) {
