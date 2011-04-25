@@ -30,6 +30,7 @@
 #include <certt.h>
 #include <certdb.h>
 #include <cert.h>
+#include <pk11pub.h>
 
 #include "../../src/log.h"
 #include "../../src/store.h"
@@ -39,13 +40,14 @@ int
 main(int argc, char **argv)
 {
 	struct cm_store_entry *entry;
-	int i, what;
+	int i;
 	void *parent;
-	CERTCertNicknames *names;
+	CERTCertList *certlist;
+	CERTCertListNode *node;
 	SECStatus error;
 
 	cm_log_set_method(cm_log_stderr);
-	cm_log_set_level(1);
+	cm_log_set_level(3);
 	parent = talloc_new(NULL);
 	if (argc > 1) {
 		entry = cm_store_files_entry_read(parent, argv[1]);
@@ -69,19 +71,17 @@ main(int argc, char **argv)
 		_exit(1);
 	}
 	/* Walk the list of names, if we got one. */
-	what = (argc > 2) ? atoi(argv[2]) : SEC_CERT_NICKNAMES_ALL;
-	names = CERT_GetCertNicknames(CERT_GetDefaultCertDB(), what, NULL);
-	if (names != NULL) {
-		printf("%d: ", what);
-		for (i = 0; i < names->numnicknames; i++) {
-			printf("\"%s\"", names->nicknames[i]);
-			if (i > 0) {
-				printf(",");
-			}
+	certlist = PK11_ListCerts(PK11CertListAll, NULL);
+	if (certlist != NULL) {
+		/* Delete the existing cert. */
+		i = 0;
+		for (node = CERT_LIST_HEAD(certlist);
+		     !CERT_LIST_EMPTY(certlist) &&
+		     !CERT_LIST_END(node, certlist);
+		     node = CERT_LIST_NEXT(node)) {
+			printf("%d: \"%s\"\n", ++i, node->cert->nickname);
 		}
-		printf("\n");
-		fflush(NULL);
-		CERT_FreeNicknames(names);
+		CERT_DestroyCertList(certlist);
 	}
 	talloc_free(parent);
 	if (NSS_Shutdown() != SECSuccess) {
