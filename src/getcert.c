@@ -839,16 +839,20 @@ find_request_by_storage(void *parent, enum cm_tdbus_type bus,
 			if (dbdir == NULL) {
 				continue;
 			}
-			if (strcmp(dbdir, cert_sloc) != 0) {
+			if ((cert_sloc == NULL) ||
+			    (strcmp(dbdir, cert_sloc) != 0)) {
 				continue;
 			}
 			if (nickname == NULL) {
 				continue;
 			}
-			if (strcmp(nickname, cert_nick) != 0) {
+			if ((cert_nick == NULL) ||
+			    (strcmp(nickname, cert_nick) != 0)) {
 				continue;
 			}
-			if (token && (strcmp(token, cert_tok) != 0)) {
+			if ((token != NULL) &&
+			    ((cert_tok == NULL) ||
+			     (strcmp(token, cert_tok) != 0))) {
 				continue;
 			}
 		} else
