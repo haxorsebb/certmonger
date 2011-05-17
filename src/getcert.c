@@ -145,7 +145,7 @@ add_string(void *parent, char ***dest, const char *value)
 	}
 	tmp = talloc_array_ptrtype(parent, tmp, i + 2);
 	if (tmp == NULL) {
-		printf(_("Error connecting to DBus.\n"));
+		printf(_("Out of memory.\n"));
 		exit(1);
 	}
 	memcpy(tmp, *dest, sizeof(tmp[0]) * i);
@@ -705,8 +705,7 @@ request(const char *argv0, int argc, char **argv)
 	if (ca != NULL) {
 		capath = find_ca_by_name(globals.tctx, bus, ca, verbose);
 		if (capath == NULL) {
-			printf(_("No CA with name \"%s\" found.\n"),
-			       ca);
+			printf(_("No CA with name \"%s\" found.\n"), ca);
 			return 1;
 		}
 		param[i].key = "CA";
@@ -1018,8 +1017,7 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 	if (ca != NULL) {
 		capath = find_ca_by_name(globals.tctx, bus, ca, verbose);
 		if (capath == NULL) {
-			printf(_("No CA with name \"%s\" found.\n"),
-			       ca);
+			printf(_("No CA with name \"%s\" found.\n"), ca);
 			return 1;
 		}
 		param[i].key = "CA";
@@ -1309,8 +1307,8 @@ set_tracking(const char *argv0, const char *category,
 				capath = find_ca_by_name(globals.tctx, bus, ca,
 							 verbose);
 				if (capath == NULL) {
-					printf(_("No CA with name \"%s\" found.\n"),
-					       ca);
+					printf(_("No CA with name \"%s\" "
+					       "found.\n"), ca);
 					return 1;
 				}
 				param[i].key = "CA";
