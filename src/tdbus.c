@@ -591,6 +591,7 @@ cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type,
 	DBusConnection *conn;
 	const char *bus_desc;
 	struct tdbus_connection *tdb;
+	dbus_bool_t exit_on_disconnect;
 	/* Build our own context. */
 	tdb = talloc_ptrtype(ec, tdb);
 	if (tdb == NULL) {
@@ -600,17 +601,18 @@ cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type,
 	/* Connect to the right bus. */
 	bus_desc = NULL;
 	conn = NULL;
+	exit_on_disconnect = TRUE;
 	switch (bus_type) {
 	case cm_tdbus_system:
 		conn = dbus_bus_get(DBUS_BUS_SYSTEM, NULL);
 		/* Don't exit if we get disconnected. */
-		dbus_connection_set_exit_on_disconnect(conn, FALSE);
+		exit_on_disconnect = FALSE;
 		bus_desc = "system";
 		break;
 	case cm_tdbus_session:
 		conn = dbus_bus_get(DBUS_BUS_SESSION, NULL);
 		/* Exit if we get disconnected. */
-		dbus_connection_set_exit_on_disconnect(conn, TRUE);
+		exit_on_disconnect = TRUE;
 		bus_desc = "session";
 		break;
 	}
@@ -619,6 +621,7 @@ cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type,
 		talloc_free(tdb);
 		return -1;
 	}
+	dbus_connection_set_exit_on_disconnect(conn, exit_on_disconnect);
 	tdb->conn = conn;
 	tdb->conn_type = bus_type;
 	tdb->data = data;
