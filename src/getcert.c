@@ -18,7 +18,9 @@
 #include "config.h"
 
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <getopt.h>
 #include <limits.h>
 #include <stdio.h>
@@ -77,7 +79,7 @@ static char *find_request_name(void *parent, enum cm_tdbus_type bus,
 
 /* Ensure that a pathname is an absolute pathname. */
 static char *
-ensure_absolute(void *parent, const char *path)
+ensure_path_is_absolute(void *parent, const char *path)
 {
 	char buf[PATH_MAX + 1], *ret;
 	if (path[0] == '/') {
@@ -85,8 +87,8 @@ ensure_absolute(void *parent, const char *path)
 	} else {
 		if (getcwd(buf, sizeof(buf)) == buf) {
 			ret = talloc_asprintf(parent, "%s/%s", buf, path);
-			printf(_("Path \"%s\" is not absolute, using \"%s\" "
-			         "instead.\n"), path, ret);
+			printf(_("Path \"%s\" is not absolute, attempting to "
+				 "use \"%s\" instead.\n"), path, ret);
 			return ret;
 		} else {
 			printf(_("Path \"%s\" is not absolute, and there "
@@ -96,10 +98,64 @@ ensure_absolute(void *parent, const char *path)
 		}
 	}
 }
-static char *
-ensure_absolute_maybe_nss(void *parent, const char *path, char **nss_scheme)
+
+/* Ensure that a pathname is a directory. */
+static int
+ensure_path_is_directory(char *path)
 {
-	char buf[PATH_MAX + 1], *ret;
+	struct stat st;
+	if (stat(path, &st) == 0) {
+		if (S_ISDIR(st.st_mode)) {
+			return 0;
+		}
+	}
+	printf(_("Path \"%s\" is not a directory.\n"), path);
+	return -1;
+}
+
+/* Ensure that a pathname is at least in a directory which exists. */
+static int
+ensure_parent_is_directory(void *parent, const char *path)
+{
+	char *tmp, *p;
+	tmp = talloc_strdup(parent, path);
+	if (tmp != NULL) {
+		p = strrchr(tmp, '/');
+		if (p != NULL) {
+			if (p > tmp) {
+				*p = '\0';
+			} else {
+				*(p + 1) = '\0';
+			}
+			return ensure_path_is_directory(tmp);
+		}
+	}
+	return -1;
+}
+
+/* Ensure that a pathname is a regular file or missing. */
+static int
+ensure_path_is_regular(void *parent, const char *path)
+{
+	struct stat st;
+	if (stat(path, &st) == 0) {
+		if (S_ISREG(st.st_mode)) {
+			return 0;
+		}
+	} else {
+		if (errno == ENOENT) {
+			return 0;
+		}
+	}
+	printf(_("Path \"%s\" is not a regular file.\n"), path);
+	return -1;
+}
+
+/* Ensure that we have a suitable NSS database location. */
+static char *
+ensure_nss(void *parent, const char *path, char **nss_scheme)
+{
+	char *ret;
 	*nss_scheme = NULL;
 	if (strncmp(path, "sql:", 4) == 0) {
 		*nss_scheme = talloc_strdup(parent, "sql");
@@ -117,21 +173,44 @@ ensure_absolute_maybe_nss(void *parent, const char *path, char **nss_scheme)
 		*nss_scheme = talloc_strdup(parent, "extern");
 		path += 7;
 	}
-	if (path[0] == '/') {
-		return talloc_strdup(parent, path);
-	} else {
-		if (getcwd(buf, sizeof(buf)) == buf) {
-			ret = talloc_asprintf(parent, "%s/%s", buf, path);
-			printf(_("Path \"%s\" is not absolute, using \"%s\" "
-			         "instead.\n"), path, ret);
-			return ret;
-		} else {
-			printf(_("Path \"%s\" is not absolute, and there "
-			         "was an error determining the name of the "
-				 "current directory.\n"), path);
-			exit(1);
+	ret = cm_store_canonicalize_directory(parent, path);
+	if (ret != NULL) {
+		ret = ensure_path_is_absolute(parent, ret);
+	}
+	if (ret != NULL) {
+		if (ensure_path_is_directory(ret) != 0) {
+			ret = NULL;
 		}
 	}
+	if (ret == NULL) {
+		exit(1);
+	}
+	return ret;
+}
+
+/* Ensure that we have a suitable location for a PEM file. */
+static char *
+ensure_pem(void *parent, const char *path)
+{
+	char *ret;
+	ret = cm_store_canonicalize_directory(parent, path);
+	if (ret != NULL) {
+		ret = ensure_path_is_absolute(parent, ret);
+	}
+	if (ret != NULL) {
+		if (ensure_parent_is_directory(parent, ret) != 0) {
+			ret = NULL;
+		}
+	}
+	if (ret != NULL) {
+		if (ensure_path_is_regular(parent, ret) != 0) {
+			ret = NULL;
+		}
+	}
+	if (ret == NULL) {
+		exit(1);
+	}
+	return ret;
 }
 
 /* Add a string to a list. */
@@ -172,6 +251,7 @@ prep_req(enum cm_tdbus_type which,
 		}
 		if (globals.conn == NULL) {
 			printf(_("Error connecting to DBus.\n"));
+			printf(_("Please verify that the message bus (D-Bus) service is running.\n"));
 			exit(1);
 		}
 	}
@@ -432,11 +512,8 @@ request(const char *argv0, int argc, char **argv)
 		switch (c) {
 		case 'd':
 			nss_scheme = NULL;
-			dbdir = ensure_absolute_maybe_nss(globals.tctx, optarg,
-							  &nss_scheme);
-			dbdir = cm_store_canonicalize_directory(globals.tctx,
-								dbdir);
-			if (nss_scheme != NULL) {
+			dbdir = ensure_nss(globals.tctx, optarg, &nss_scheme);
+			if ((nss_scheme != NULL) && (dbdir != NULL)) {
 				dbdir = talloc_asprintf(globals.tctx, "%s:%s",
 							nss_scheme, dbdir);
 			}
@@ -448,10 +525,10 @@ request(const char *argv0, int argc, char **argv)
 			nickname = talloc_strdup(globals.tctx, optarg);
 			break;
 		case 'k':
-			keyfile = ensure_absolute(globals.tctx, optarg);
+			keyfile = ensure_pem(globals.tctx, optarg);
 			break;
 		case 'f':
-			certfile = ensure_absolute(globals.tctx, optarg);
+			certfile = ensure_pem(globals.tctx, optarg);
 			break;
 		case 'g':
 			keysize = atoi(optarg);
@@ -1096,11 +1173,8 @@ set_tracking(const char *argv0, const char *category,
 		switch (c) {
 		case 'd':
 			nss_scheme = NULL;
-			dbdir = ensure_absolute_maybe_nss(globals.tctx, optarg,
-							  &nss_scheme);
-			dbdir = cm_store_canonicalize_directory(globals.tctx,
-								dbdir);
-			if (nss_scheme != NULL) {
+			dbdir = ensure_nss(globals.tctx, optarg, &nss_scheme);
+			if ((nss_scheme != NULL) && (dbdir != NULL)) {
 				dbdir = talloc_asprintf(globals.tctx, "%s:%s",
 							nss_scheme, dbdir);
 			}
@@ -1112,10 +1186,10 @@ set_tracking(const char *argv0, const char *category,
 			nickname = talloc_strdup(globals.tctx, optarg);
 			break;
 		case 'k':
-			keyfile = ensure_absolute(globals.tctx, optarg);
+			keyfile = ensure_pem(globals.tctx, optarg);
 			break;
 		case 'f':
-			certfile = ensure_absolute(globals.tctx, optarg);
+			certfile = ensure_pem(globals.tctx, optarg);
 			break;
 		case 'r':
 			if (track) {
@@ -1468,11 +1542,8 @@ resubmit(const char *argv0, int argc, char **argv)
 		switch (c) {
 		case 'd':
 			nss_scheme = NULL;
-			dbdir = ensure_absolute_maybe_nss(globals.tctx, optarg,
-							  &nss_scheme);
-			dbdir = cm_store_canonicalize_directory(globals.tctx,
-								dbdir);
-			if (nss_scheme != NULL) {
+			dbdir = ensure_nss(globals.tctx, optarg, &nss_scheme);
+			if ((nss_scheme != NULL) && (dbdir != NULL)) {
 				dbdir = talloc_asprintf(globals.tctx, "%s:%s",
 							nss_scheme, dbdir);
 			}
@@ -1484,7 +1555,7 @@ resubmit(const char *argv0, int argc, char **argv)
 			nickname = talloc_strdup(globals.tctx, optarg);
 			break;
 		case 'f':
-			certfile = ensure_absolute(globals.tctx, optarg);
+			certfile = ensure_pem(globals.tctx, optarg);
 			break;
 		case 'c':
 			ca = talloc_strdup(globals.tctx, optarg);
@@ -1746,11 +1817,8 @@ list(const char *argv0, int argc, char **argv)
 			break;
 		case 'd':
 			nss_scheme = NULL;
-			dbdir = ensure_absolute_maybe_nss(globals.tctx, optarg,
-							  &nss_scheme);
-			dbdir = cm_store_canonicalize_directory(globals.tctx,
-								dbdir);
-			if (nss_scheme != NULL) {
+			dbdir = ensure_nss(globals.tctx, optarg, &nss_scheme);
+			if ((nss_scheme != NULL) && (dbdir != NULL)) {
 				dbdir = talloc_asprintf(globals.tctx, "%s:%s",
 							nss_scheme, dbdir);
 			}
@@ -1759,7 +1827,7 @@ list(const char *argv0, int argc, char **argv)
 			dbnickname = talloc_strdup(globals.tctx, optarg);
 			break;
 		case 'f':
-			certfile = ensure_absolute(globals.tctx, optarg);
+			certfile = ensure_pem(globals.tctx, optarg);
 			break;
 		case 'i':
 			id = talloc_strdup(globals.tctx, optarg);

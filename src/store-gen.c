@@ -342,16 +342,21 @@ cm_store_hex_to_bin(const char *serial, unsigned char *buf, int length)
 char *
 cm_store_canonicalize_directory(void *parent, const char *path)
 {
+	char *tmp, *p;
 	int i;
 	i = strlen(path);
 	if (i > 1) {
 		while ((i > 1) && (path[i - 1] == '/')) {
 			i--;
 		}
-		return talloc_strndup(parent, path, i);
+		tmp = talloc_strndup(parent, path, i);
 	} else {
-		return talloc_strdup(parent, path);
+		tmp = talloc_strdup(parent, path);
 	}
+	while ((p = strstr(tmp, "//")) != NULL) {
+		memmove(p, p + 1, strlen(p));
+	}
+	return tmp;
 }
 
 void
