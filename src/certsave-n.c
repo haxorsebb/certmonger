@@ -162,7 +162,6 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 						if (!SECITEM_ItemsAreEqual(&subject,
 									   &node->cert->derSubject)) {
 							cm_log(3, "Found a "
-							       "duplicate "
 							       "certificate "
 							       "with the same "
 							       "nickname but "
@@ -186,7 +185,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				cm_log(3, "No duplicate nickname entries.\n");
 			}
 			/* This certificate's subject may already be present
-			 * with a different nickname.  Delete those. */
+			 * with a different nickname.  Delete those, too. */
 			certlist = CERT_CreateSubjectCertList(NULL, certdb,
 							      &subject,
 							      PR_FALSE,
@@ -203,7 +202,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					    (strcmp(entry->cm_cert_nickname,
 						    node->cert->nickname) != 0)) {
 						i++;
-						cm_log(3, "Found a duplicate "
+						cm_log(3, "Found a "
 						       "certificate with a "
 						       "different nickname but "
 						       "the same subject, "
