@@ -135,7 +135,7 @@ ensure_parent_is_directory(void *parent, const char *path)
 
 /* Ensure that a pathname is a regular file or missing. */
 static int
-ensure_path_is_regular(void *parent, const char *path)
+ensure_path_is_regular(const char *path)
 {
 	struct stat st;
 	if (stat(path, &st) == 0) {
@@ -203,7 +203,7 @@ ensure_pem(void *parent, const char *path)
 		}
 	}
 	if (ret != NULL) {
-		if (ensure_path_is_regular(parent, ret) != 0) {
+		if (ensure_path_is_regular(ret) != 0) {
 			ret = NULL;
 		}
 	}
