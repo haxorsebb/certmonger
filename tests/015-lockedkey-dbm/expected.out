@@ -5,7 +5,8 @@ OK.
 [Try To Read Key Without PIN.]
 OK (2048).
 [Retry With Unnecessary PIN File.]
-OK (2048).
+Failed to read key "$tmpdir/keyfile".
+(Need PIN.)
 [Replacing key with an encrypted one.]
 [Read Key Info With Bogus PIN Location.]
 Failed to read key "$tmpdir/keyfile".

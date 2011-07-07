@@ -55,6 +55,7 @@ static int
 cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		 void *userdata)
 {
+	struct cm_pin_cb_data cb_data;
 	FILE *keyfp, *status;
 	X509 *x;
 	X509_REQ *req;
@@ -91,8 +92,35 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		cm_log(1, "Internal error reading key encryption PIN.\n");
 		_exit(CM_STATUS_ERROR_AUTH);
 	}
+	memset(&cb_data, 0, sizeof(cb_data));
+	cb_data.entry = entry;
+	cb_data.n_attempts = 0;
 	rsa = PEM_read_RSAPrivateKey(keyfp, NULL,
-				     cm_pin_read_for_key_ossl_cb, entry);
+				     cm_pin_read_for_key_ossl_cb, &cb_data);
+	if (rsa == NULL) {
+		error = errno;
+		cm_log(1, "Error reading private key '%s': %s.\n",
+		       entry->cm_key_storage_location, strerror(error));
+		while ((error = ERR_get_error()) != 0) {
+			ERR_error_string_n(error, buf, sizeof(buf));
+			cm_log(1, "%s\n", buf);
+		}
+		_exit(CM_STATUS_ERROR_AUTH); /* XXX */
+	} else {
+		if ((pin != NULL) &&
+		    (strlen(pin) > 0) &&
+		    (cb_data.n_attempts == 0)) {
+			cm_log(1, "PIN was not needed to read private "
+			       "key '%s', though one was provided. "
+			       "Treating this as an error.\n",
+			       entry->cm_key_storage_location);
+			while ((error = ERR_get_error()) != 0) {
+				ERR_error_string_n(error, buf, sizeof(buf));
+				cm_log(1, "%s\n", buf);
+			}
+			_exit(CM_STATUS_ERROR_AUTH); /* XXX */
+		}
+	}
 	if (rsa != NULL) {
 		EVP_PKEY_assign_RSA(pkey, rsa); /* pkey owns rsa now */
 		x = X509_new();
@@ -180,15 +208,6 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			}
 			_exit(CM_STATUS_ERROR_INTERNAL);
 		}
-	} else {
-		error = errno;
-		cm_log(1, "Error reading private key '%s': %s.\n",
-		       entry->cm_key_storage_location, strerror(error));
-		while ((error = ERR_get_error()) != 0) {
-			ERR_error_string_n(error, buf, sizeof(buf));
-			cm_log(1, "%s\n", buf);
-		}
-		_exit(CM_STATUS_ERROR_AUTH); /* XXX */
 	}
 	while ((error = ERR_get_error()) != 0) {
 		ERR_error_string_n(error, buf, sizeof(buf));

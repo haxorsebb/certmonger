@@ -71,6 +71,7 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	CERTCertificate *cert;
 	CK_MECHANISM_TYPE mech;
 	struct cm_certread_n_settings *settings;
+	struct cm_pin_cb_data cb_data;
 	PRTime before_a, after_a, before_b, after_b;
 	FILE *fp;
 	/* Open the status descriptor for stdio. */
@@ -144,6 +145,10 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			}
 			goto next_slot;
 		}
+		/* Be ready to count our uses of a PIN. */
+		memset(&cb_data, 0, sizeof(cb_data));
+		cb_data.entry = entry;
+		cb_data.n_attempts = 0;
 		/* If we're supposed to be using a PIN, and we're offered a
 		 * chance to set one, do it now. */
 		if (readwrite) {
@@ -157,7 +162,11 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				if (PK11_NeedUserInit(sle->slot)) {
 					cm_log(1, "Cert storage slot still "
 					       "needs user PIN to be set.\n");
+					goto next_slot;
 				}
+				/* We're authenticated now, so count this as a
+				 * use of the PIN. */
+				cb_data.n_attempts++;
 			}
 		}
 		/* If we need to log in in order to read certificates, do so. */
@@ -167,9 +176,17 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				       "skipping.\n");
 				goto next_slot;
 			}
-			error = PK11_Authenticate(sle->slot, PR_TRUE, entry);
+			error = PK11_Authenticate(sle->slot, PR_TRUE, &cb_data);
 			if (error != SECSuccess) {
 				cm_log(1, "Error authenticating to cert db.\n");
+				goto next_slot;
+			}
+			if ((pin != NULL) &&
+			    (strlen(pin) > 0) &&
+			    (cb_data.n_attempts == 0)) {
+				cm_log(1, "PIN was not needed to auth to cert "
+				       "db, though one was provided. "
+				       "Treating this as an error.\n");
 				goto next_slot;
 			}
 		}

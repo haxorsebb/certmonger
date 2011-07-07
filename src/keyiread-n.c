@@ -73,6 +73,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	CERTCertList *certs;
 	CERTCertListNode *cnode;
 	CERTCertificate *cert;
+	struct cm_pin_cb_data cb_data;
 	int n_login_attempts, n_login_success;
 
 	/* Open the database. */
@@ -143,6 +144,10 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 			}
 			goto next_slot;
 		}
+		/* Be ready to count our uses of a PIN. */
+		memset(&cb_data, 0, sizeof(cb_data));
+		cb_data.entry = entry;
+		cb_data.n_attempts = 0;
 
 		/* If we're supposed to be using a PIN, and we're offered a
 		 * chance to set one, do it now. */
@@ -161,6 +166,9 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 					goto next_slot;
 				}
 				n_login_success++;
+				/* We're authenticated now, so count this as a
+				 * use of the PIN. */
+				cb_data.n_attempts++;
 			}
 		}
 
@@ -172,10 +180,18 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 				       "token \"%s\", skipping.\n", token);
 				goto next_slot;
 			}
-			error = PK11_Authenticate(sle->slot, PR_TRUE, entry);
+			error = PK11_Authenticate(sle->slot, PR_TRUE, &cb_data);
 			if (error != SECSuccess) {
 				cm_log(1, "Error authenticating to token "
 				       "\"%s\".\n", token);
+				goto next_slot;
+			}
+			if ((pin != NULL) &&
+			    (strlen(pin) > 0) &&
+			    (cb_data.n_attempts == 0)) {
+				cm_log(1, "PIN was not needed to auth to token"
+				       ", though one was provided. "
+				       "Treating this as an error.\n");
 				goto next_slot;
 			}
 			n_login_success++;

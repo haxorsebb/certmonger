@@ -73,6 +73,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	const char *es, *token, *keyname;
 	char *pin;
 	struct cm_keygen_n_settings *settings;
+	struct cm_pin_cb_data cb_data;
 
 	status = fdopen(fd, "w");
 	if (status == NULL) {
@@ -173,6 +174,10 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		params = NULL;
 		break;
 	}
+	/* Be ready to count our uses of a PIN. */
+	memset(&cb_data, 0, sizeof(cb_data));
+	cb_data.entry = entry;
+	cb_data.n_attempts = 0;
 	/* If we're supposed to be using a PIN, and we're offered a chance to
 	 * set one, do it now. */
 	if (readwrite) {
@@ -191,7 +196,16 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			if (PK11_NeedUserInit(slot)) {
 				cm_log(1, "Key generation slot still "
 				       "needs user PIN to be set.\n");
+				PK11_FreeSlotList(slotlist);
+				error = NSS_Shutdown();
+				if (error != SECSuccess) {
+					cm_log(1, "Error shutting down NSS.\n");
+				}
+				_exit(CM_STATUS_ERROR_AUTH);
 			}
+			/* We're authenticated now, so count this as a use of
+			 * the PIN. */
+			cb_data.n_attempts++;
 		}
 	}
 	/* Now log in, if we have to. */
@@ -207,9 +221,22 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			_exit(CM_STATUS_ERROR_AUTH);
 		}
 		PK11_SetPasswordFunc(&cm_pin_read_for_key_nss_cb);
-		error = PK11_Authenticate(slot, PR_TRUE, entry);
+		error = PK11_Authenticate(slot, PR_TRUE, &cb_data);
 		if (error != SECSuccess) {
 			cm_log(1, "Error authenticating to key store.\n");
+			PK11_FreeSlotList(slotlist);
+			error = NSS_Shutdown();
+			if (error != SECSuccess) {
+				cm_log(1, "Error shutting down NSS.\n");
+			}
+			_exit(CM_STATUS_ERROR_AUTH);
+		}
+		if ((pin != NULL) &&
+		    (strlen(pin) > 0) &&
+		    (cb_data.n_attempts == 0)) {
+			cm_log(1, "PIN was not needed to auth to key "
+			       "store, though one was provided. "
+			       "Treating this as an error.\n");
 			PK11_FreeSlotList(slotlist);
 			error = NSS_Shutdown();
 			if (error != SECSuccess) {

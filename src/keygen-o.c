@@ -53,6 +53,7 @@ static int
 cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		 void *userdata)
 {
+	struct cm_pin_cb_data cb_data;
 	FILE *fp, *status;
 	RSA *rsa;
 	EVP_PKEY *pkey;
@@ -107,11 +108,14 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(1, "Error reading key encryption PIN.\n");
 			_exit(CM_STATUS_ERROR_AUTH);
 		}
+		memset(&cb_data, 0, sizeof(cb_data));
+		cb_data.entry = entry;
+		cb_data.n_attempts = 0;
 		if (PEM_write_PKCS8PrivateKey(fp, pkey,
 					      pin ? cm_prefs_ossl_cipher() : NULL,
 					      NULL, 0,
 					      cm_pin_read_for_key_ossl_cb,
-					      entry) == 0) {
+					      &cb_data) == 0) {
 			cm_log(1, "Error storing key.\n");
 			while ((error = ERR_get_error()) != 0) {
 				ERR_error_string_n(error, buf, sizeof(buf));

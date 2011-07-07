@@ -117,12 +117,16 @@ cm_pin_read(struct cm_store_entry *entry, enum cm_pin_type pin_type, char **pin)
 int
 cm_pin_read_for_key_ossl_cb(char *buf, int size, int rwflag, void *u)
 {
-	struct cm_store_entry *entry;
+	struct cm_pin_cb_data *cb_data;
 	char *pin;
 	int ret;
-	entry = u;
+
+	/* Record that we were called, so a PIN was needed. */
+	cb_data = u;
+	cb_data->n_attempts++;
+
 	memset(buf, '\0', size);
-	if (cm_pin_read(entry, cm_pin_for_key, &pin) == 0) {
+	if (cm_pin_read(cb_data->entry, cm_pin_for_key, &pin) == 0) {
 		if (pin != NULL) {
 			ret = strlen(pin);
 			if (ret < size) {
@@ -137,6 +141,7 @@ cm_pin_read_for_key_ossl_cb(char *buf, int size, int rwflag, void *u)
 	} else {
 		ret = 0;
 	}
+
 	return ret;
 }
 
@@ -144,14 +149,18 @@ static char *
 cm_pin_nss_cb(PK11SlotInfo *slot, PRBool retry, void *arg,
 	      enum cm_pin_type pin_type)
 {
-	struct cm_store_entry *entry;
+	struct cm_pin_cb_data *cb_data;
 	char *pin, *ret;
+
+	/* Record that we were called, so a PIN was needed. */
+	cb_data = arg;
+	cb_data->n_attempts++;
+
 	if (retry) {
 		/* We're not going to change what we're suggesting. */
 		ret = NULL;
 	} else {
-		entry = arg;
-		if (cm_pin_read(entry, pin_type, &pin) == 0) {
+		if (cm_pin_read(cb_data->entry, pin_type, &pin) == 0) {
 			if (pin != NULL) {
 				ret = PR_Malloc(strlen(pin) + 1);
 				if (ret != NULL) {
@@ -165,6 +174,7 @@ cm_pin_nss_cb(PK11SlotInfo *slot, PRBool retry, void *arg,
 			ret = NULL;
 		}
 	}
+
 	return ret;
 }
 

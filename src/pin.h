@@ -25,6 +25,10 @@ enum cm_pin_status {
 	CM_STATUS_ERROR_NO_TOKEN = 3,
 	CM_STATUS_ERROR_AUTH = 4,
 };
+struct cm_pin_cb_data {
+	struct cm_store_entry *entry;
+	int n_attempts;
+};
 
 struct cm_store_entry;
 int cm_pin_read_for_key_ossl_cb(char *buf, int size, int rwflag, void *u);

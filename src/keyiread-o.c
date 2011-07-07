@@ -53,6 +53,7 @@ static int
 cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		   void *userdata)
 {
+	struct cm_pin_cb_data cb_data;
 	FILE *pem, *fp;
 	EVP_PKEY *pkey;
 	int status;
@@ -76,14 +77,28 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(1, "Error reading key encryption PIN.\n");
 			_exit(CM_STATUS_ERROR_AUTH);
 		}
+		memset(&cb_data, 0, sizeof(cb_data));
+		cb_data.entry = entry;
+		cb_data.n_attempts = 0;
 		pkey = PEM_read_PrivateKey(pem, NULL,
-					   cm_pin_read_for_key_ossl_cb, entry);
-		if (pkey != NULL) {
-			status = 0;
-		} else {
+					   cm_pin_read_for_key_ossl_cb,
+					   &cb_data);
+		if (pkey == NULL) {
 			cm_log(1, "Internal error reading key from \"%s\".\n",
 			       entry->cm_key_storage_location);
 			status = CM_STATUS_ERROR_AUTH; /* XXX */
+		} else {
+			if ((pin != NULL) &&
+			    (strlen(pin) > 0) &&
+			    (cb_data.n_attempts == 0)) {
+				cm_log(1, "PIN was not needed to read private "
+				       "key '%s', though one was provided. "
+				       "Treating this as an error.\n",
+				       entry->cm_key_storage_location);
+				status = CM_STATUS_ERROR_AUTH; /* XXX */
+			} else {
+				status = 0;
+			}
 		}
 		fclose(pem);
 	} else {
