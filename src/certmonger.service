@@ -1,0 +1,12 @@
+[Unit]
+Description=Certificate monitor and PKI enrollment client
+After=syslog.target network.target dbus.service
+
+[Service]
+Type=forking
+PIDFile=/var/run/certmonger.pid
+EnvironmentFile=-/etc/sysconfig/certmonger
+ExecStart=/usr/sbin/certmonger -S -p /var/run/certmonger.pid $OPTS
+
+[Install]
+WantedBy=multi-user.target
