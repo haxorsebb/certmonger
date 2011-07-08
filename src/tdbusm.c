@@ -27,6 +27,8 @@
 
 #include "tdbusm.h"
 
+#define N_(_text) _text
+
 static char empty_string[] = "";
 static const char *empty_string_array[] = {NULL};
 
@@ -1271,4 +1273,24 @@ cm_tdbusm_find_dict_entry(struct cm_tdbusm_dict **d,
 		}
 	}
 	return ret;
+}
+
+char *
+cm_tdbusm_hint(void *parent, const char *error, const char *message)
+{
+	char *text = NULL;
+	if (strcmp(error, DBUS_ERROR_ACCESS_DENIED) == 0) {
+		text = N_("Insufficient access.  Please retry operation as root.\n");
+	} else
+	if ((strcmp(error, DBUS_ERROR_NAME_HAS_NO_OWNER) == 0) ||
+	    (strcmp(error, DBUS_ERROR_SERVICE_UNKNOWN) == 0)) {
+		text = N_("Please verify that the certmonger service has been started.\n");
+	} else
+	if (strcmp(error, DBUS_ERROR_NO_REPLY) == 0) {
+		text = N_("Please verify that the certmonger service is still running.\n");
+	} else
+	if (strcmp(error, DBUS_ERROR_NO_SERVER) == 0) {
+		text = N_("Please verify that the message bus (D-Bus) service is running.\n");
+	}
+	return text;
 }

@@ -57,7 +57,7 @@ struct tdbus_connection {
 	void *data;
 };
 
-static int cm_tdbus_setup_connection(struct tdbus_connection *tdb);
+static int cm_tdbus_setup_connection(struct tdbus_connection *tdb, DBusError *);
 
 static void
 cm_tdbus_dispatch_status(DBusConnection *conn, DBusDispatchStatus new_status,
@@ -460,7 +460,7 @@ cm_tdbus_reconnect(struct tevent_context *ec, struct tevent_timer *timer,
 		if (dbus_connection_get_is_connected(tdb->conn)) {
 			/* We're reconnected; reset our handlers. */
 			cm_log(1, "Reconnected to %s bus.\n", bus_desc);
-			cm_tdbus_setup_connection(tdb);
+			cm_tdbus_setup_connection(tdb, NULL);
 		} else {
 			/* Try reconnecting again later. */
 			later = tevent_timeval_current_ofs(CM_DBUS_RECONNECT_TIMEOUT, 0),
@@ -514,7 +514,7 @@ cm_tdbus_filter(DBusConnection *conn, DBusMessage *dmessage, void *data)
 }
 
 static int
-cm_tdbus_setup_connection(struct tdbus_connection *tdb)
+cm_tdbus_setup_connection(struct tdbus_connection *tdb, DBusError *error)
 {
 	DBusError err;
 	const char *bus_desc;
@@ -562,6 +562,9 @@ cm_tdbus_setup_connection(struct tdbus_connection *tdb)
 		       CM_DBUS_NAME,
 		       err.message ? err.message : (err.name ? err.name : ""),
 		       i);
+		if (error != NULL) {
+			dbus_move_error(&err, error);
+		}
 		return -1;
 	}
 	/* Handle any messages that are already pending. */
@@ -586,7 +589,7 @@ cm_tdbus_setup_connection(struct tdbus_connection *tdb)
 
 int
 cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type,
-	       void *data)
+	       void *data, DBusError *error)
 {
 	DBusConnection *conn;
 	const char *bus_desc;
@@ -602,15 +605,18 @@ cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type,
 	bus_desc = NULL;
 	conn = NULL;
 	exit_on_disconnect = TRUE;
+	if (error != NULL) {
+		dbus_error_init(error);
+	}
 	switch (bus_type) {
 	case cm_tdbus_system:
-		conn = dbus_bus_get(DBUS_BUS_SYSTEM, NULL);
+		conn = dbus_bus_get(DBUS_BUS_SYSTEM, error);
 		/* Don't exit if we get disconnected. */
 		exit_on_disconnect = FALSE;
 		bus_desc = "system";
 		break;
 	case cm_tdbus_session:
-		conn = dbus_bus_get(DBUS_BUS_SESSION, NULL);
+		conn = dbus_bus_get(DBUS_BUS_SESSION, error);
 		/* Exit if we get disconnected. */
 		exit_on_disconnect = TRUE;
 		bus_desc = "session";
@@ -625,5 +631,5 @@ cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type,
 	tdb->conn = conn;
 	tdb->conn_type = bus_type;
 	tdb->data = data;
-	return cm_tdbus_setup_connection(tdb);
+	return cm_tdbus_setup_connection(tdb, error);
 }

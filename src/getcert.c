@@ -268,34 +268,19 @@ prep_req(enum cm_tdbus_type which,
 static enum { hint_unknown, hint_found }
 print_hint(const char *error, const char *message)
 {
-	char *buf = NULL;
-	const char *text = NULL;
-	if (strcmp(error, DBUS_ERROR_ACCESS_DENIED) == 0) {
-		text = _("Insufficient access.  Please retry operation as root.\n");
-	} else
-	if ((strcmp(error, DBUS_ERROR_NAME_HAS_NO_OWNER) == 0) ||
-	    (strcmp(error, DBUS_ERROR_SERVICE_UNKNOWN) == 0)) {
-		text = _("Please verify that the certmonger service has been started.\n");
-	} else
-	if (strcmp(error, DBUS_ERROR_NO_REPLY) == 0) {
-		text = _("Please verify that the certmonger service is still running.\n");
-	} else
-	if (strcmp(error, DBUS_ERROR_NO_SERVER) == 0) {
-		text = _("Please verify that the message bus (D-Bus) service is running.\n");
-	} else
-	if (strncmp(error, CM_DBUS_ERROR_BASE,
-		    strlen(CM_DBUS_ERROR_BASE)) == 0) {
-		text = _(message);
-		buf = malloc(strlen(text) + 2);
-		if (buf != NULL) {
-			sprintf(buf, "%s\n", text);
-			text = buf;
-		}
+	char *text = NULL;
+	void *ctx;
+	ctx = talloc_new(NULL);
+	text = cm_tdbusm_hint(ctx, error, message);
+	if ((text == NULL) &&
+	    (strncmp(error, CM_DBUS_ERROR_BASE,
+		     strlen(CM_DBUS_ERROR_BASE)) == 0)) {
+		text = talloc_asprintf("%s\n", _(message));
 	}
 	if (text != NULL) {
-		printf("%s", text);
+		printf("%s", _(text));
 	}
-	free(buf);
+	talloc_free(ctx);
 	return text ? hint_found : hint_unknown;
 }
 

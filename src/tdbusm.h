@@ -100,5 +100,6 @@ int cm_tdbusm_set_d(DBusMessage *msg, const struct cm_tdbusm_dict **d);
 struct cm_tdbusm_dict *cm_tdbusm_find_dict_entry(struct cm_tdbusm_dict **d,
 						 const char *key,
 						 enum cm_tdbusm_dict_value_type value_type);
+char *cm_tdbusm_hint(void *parent, const char *error, const char *message);
 
 #endif

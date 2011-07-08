@@ -38,6 +38,7 @@
 #include "env.h"
 #include "log.h"
 #include "tdbus.h"
+#include "tdbusm.h"
 
 #ifdef ENABLE_NLS
 #include <libintl.h>
@@ -56,8 +57,9 @@ main(int argc, char **argv)
 	pid_t pid;
 	FILE *pfp;
 	const char *pidfile = NULL;
-	char *tmpdir;
+	char *tmpdir, *hint;
 	dbus_bool_t dofork;
+	DBusError error;
 	
 	bus = cm_env_default_bus();
 	dofork = cm_env_default_fork();
@@ -169,8 +171,12 @@ main(int argc, char **argv)
 		exit(1);
 	}
 
-	if (cm_tdbus_setup(ec, bus, ctx) != 0) {
+	if (cm_tdbus_setup(ec, bus, ctx, &error) != 0) {
 		fprintf(stderr, "Error connecting to D-Bus.\n");
+		hint = cm_tdbusm_hint(ec, error.name, error.message);
+		if (hint != NULL) {
+			fprintf(stderr, "%s", hint);
+		}
 		talloc_free(ec);
 		exit(1);
 	}
