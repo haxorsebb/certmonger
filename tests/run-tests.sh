@@ -50,6 +50,7 @@ if test $# -eq 0 ; then
 fi
 for testid in "$@" $subdirs ; do
 	if test -x "$srcdir"/"$testid"/run.sh ; then
+		mkdir -p "$builddir"/"$testid"
 		pushd "$srcdir"/"$testid" > /dev/null
 		rm -fr "$tmpdir"/*
 		if test -r ./expected.out ; then
@@ -58,14 +59,14 @@ for testid in "$@" $subdirs ; do
 			if cmp "$tmpfile" expected.out ; then
 				stat=0
 				echo "OK"
-				cp $tmpfile actual.out
-				cp "$tmpdir"/errors actual.err
+				cp $tmpfile "$builddir"/"$testid"/actual.out
+				cp "$tmpdir"/errors "$builddir"/"$testid"/actual.err
 			else
 				stat=1
 				echo "FAIL"
 				diff -u expected.out "$tmpfile" | sed s,"^\+\+\+ $tmpfile","+++ actual",g
-				cp $tmpfile actual.out
-				cp "$tmpdir"/errors actual.err
+				cp $tmpfile "$builddir"/"$testid"/actual.out
+				cp "$tmpdir"/errors "$builddir"/"$testid"/actual.err
 			fi
 		else
 			echo "Running test "$testid"."
