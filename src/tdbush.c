@@ -2586,6 +2586,7 @@ cm_tdbush_handle(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 {
 	const char *path, *interface, *member;
 	unsigned int i;
+	DBusHandlerResult handled;
 	path = dbus_message_get_path(msg);
 	interface = dbus_message_get_interface(msg);
 	member = dbus_message_get_member(msg);
@@ -2607,7 +2608,9 @@ cm_tdbush_handle(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 		if (cm_tdbush_methods[i].handle == NULL) {
 			continue;
 		}
-		return (*(cm_tdbush_methods[i].handle))(conn, msg, ctx);
+		handled = (*(cm_tdbush_methods[i].handle))(conn, msg, ctx);
+		cm_reset_timeout(ctx);
+		return handled;
 	}
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
