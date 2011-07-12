@@ -60,7 +60,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	char *p, *q;
 	CERTCertDBHandle *certdb;
 	CERTCertList *certlist;
-	CERTCertificate **returned, cert, *conflict;
+	CERTCertificate **returned, cert;
 	CERTSignedData csdata;
 	CERTCertListNode *node;
 	struct cm_certsave_n_settings *settings;
