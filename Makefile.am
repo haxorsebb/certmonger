@@ -1,9 +1,10 @@
 ACLOCAL_AMFLAGS = -I m4
 EXTRA_FILES = doc/*.txt
-SUBDIRS = po src dbus tests
+SUBDIRS = po src dbus systemd sysvinit tests
 EXTRA_DIST = config.rpath \
-	     certmonger.spec LICENSE README STATUS doc src/certmonger.conf.in \
-	     certmonger.tmpfiles
+	     certmonger.spec LICENSE README STATUS doc src/certmonger.conf.in
+
+DISTCHECK_CONFIGURE_FLAGS = --enable-systemd --enable-sysvinit --with-tmpdir=/var/run/certmonger
 
 VERSION=$(PACKAGE_VERSION)
 RELEASE=

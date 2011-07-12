@@ -26,6 +26,24 @@ if test x$GCC = xyes ; then
 	CFLAGS="$CFLAGS -Wall -Wextra"
 fi
 
+SYSTEMD=false
+AC_ARG_ENABLE(systemd,
+	      AS_HELP_STRING([--enable-systemd],[install configuration files for systemd]),
+	      SYSTEMD=yes
+	      SYSTEMDSYSTEMUNITDIR=`pkg-config --variable=systemdsystemunitdir systemd 2> /dev/null`,
+	      SYSTEMD=no)
+AC_SUBST(SYSTEMD)
+AM_CONDITIONAL(SYSTEMD,test x$SYSTEMD != xno)
+AC_SUBST(SYSTEMDSYSTEMUNITDIR)
+
+SYSVINIT=false
+AC_ARG_ENABLE(sysvinit,
+	      AS_HELP_STRING([--enable-sysvinit=/etc/init.d],[install sysvinit script in specified location]),
+	      SYSVINIT=$enablearg,
+	      SYSVINIT=no)
+AC_SUBST(SYSVINIT)
+AM_CONDITIONAL(SYSVINIT,test x$SYSVINIT != xno)
+
 mysbindir="$sbindir"
 mysbindir=`eval echo $mysbindir | sed "s,NONE,$prefix,g"`
 mysbindir=`eval echo $mysbindir | sed "s,NONE,$exec_prefix,g"`
@@ -101,6 +119,11 @@ AC_DEFINE_UNQUOTED(CM_DBUS_RECONNECT_TIMEOUT,30,
 PKG_CHECK_MODULES(TALLOC,talloc)
 PKG_CHECK_MODULES(TEVENT,tevent)
 PKG_CHECK_MODULES(DBUS,dbus-1 >= 1.0)
+SESSIONBUSSERVICESDIR=`pkg-config --variable=session_bus_services_dir dbus-1 2> /dev/null`
+AC_SUBST(SESSIONBUSSERVICESDIR)
+SYSTEMBUSSERVICESDIR=`pkg-config --variable=system_bus_services_dir dbus-1 2> /dev/null`
+AC_SUBST(SYSTEMBUSSERVICESDIR)
+
 savedLIBS="$LIBS"
 LIBS="$DBUS_LIBS $LIBS"
 AC_CHECK_FUNCS(dbus_watch_get_unix_fd dbus_watch_get_fd)
@@ -276,6 +299,7 @@ mytmpdir=`eval echo $mytmpdir | sed "s,NONE,$prefix,g"`
 mytmpdir=`eval echo $mytmpdir | sed "s,NONE,$ac_default_prefix,g"`
 mytmpdir=`eval echo $mytmpdir | sed "s,NONE,,g"`
 CM_TMPDIR="$mytmpdir"
+AM_CONDITIONAL(TMPDIR,test x$CM_TMPDIR != x)
 AC_DEFINE_UNQUOTED(CM_TMPDIR,"$CM_TMPDIR",[Define to the default location to be used for storing temporary files.])
 CM_TMPDIR_ENV="${UPCASE_PACKAGE_NAME}_TMPDIR"
 AC_DEFINE_UNQUOTED(CM_TMPDIR_ENV,"${CM_TMPDIR_ENV}",[Define to the default location to be used for storing temporary files.])
@@ -334,6 +358,10 @@ AC_DEFINE_UNQUOTED(CM_CERTMASTER_CA_NAME,"$CM_CERTMASTER_CA_NAME",[Define to the
 AC_DEFINE_UNQUOTED(CM_CERTMASTER_HELPER_PATH,"$mylibexecdir/certmaster-submit",[Define to the path of the CERTMASTER submission helper.])
 AM_CONDITIONAL(WITH_CERTMASTER,true)
 
+CM_DEFAULT_IDLE_TIMEOUT=300
+AC_SUBST(CM_DEFAULT_IDLE_TIMEOUT)
+AC_DEFINE_UNQUOTED(CM_DEFAULT_IDLE_TIMEOUT,$CM_DEFAULT_IDLE_TIMEOUT,[Define to the default idle-timeout when bus-activated.])
+
 AC_ARG_WITH(uuid,
 AS_HELP_STRING([--with-uuid],[populate subjectUniqueID in self-signed certs]),
 [PKG_CHECK_MODULES(UUID,uuid)
@@ -366,4 +394,4 @@ AC_SUBST(UUID_CFLAGS)
 AC_SUBST(UUID_LIBS)
 
 AC_CONFIG_COMMANDS(src_introspect_sh,[chmod +x src/introspect.sh])
-AC_OUTPUT(Makefile src/Makefile dbus/Makefile tests/Makefile tests/tools/Makefile dbus/certmonger.conf dbus/certmonger.service src/certmonger.init src/introspect.sh src/certmonger.8 src/getcert.1 src/getcert-request.1 src/getcert-list.1 src/getcert-list-cas.1 src/getcert-start-tracking.1 src/getcert-stop-tracking.1 src/selfsign-getcert.1 src/ipa-getcert.1 src/getcert-resubmit.1 src/certmonger-certmaster-submit.8 src/certmonger-ipa-submit.8 src/certmaster-getcert.1 src/certmonger.conf.5 po/Makefile.in src/certmonger.conf src/certmonger.service src/certmonger.path)
+AC_OUTPUT(Makefile src/Makefile dbus/Makefile systemd/Makefile sysvinit/Makefile sysvinit/certmonger tests/Makefile tests/tools/Makefile dbus/certmonger.conf dbus/certmonger.service src/introspect.sh src/certmonger.8 src/getcert.1 src/getcert-request.1 src/getcert-list.1 src/getcert-list-cas.1 src/getcert-start-tracking.1 src/getcert-stop-tracking.1 src/selfsign-getcert.1 src/ipa-getcert.1 src/getcert-resubmit.1 src/certmonger-certmaster-submit.8 src/certmonger-ipa-submit.8 src/certmaster-getcert.1 src/certmonger.conf.5 po/Makefile.in src/certmonger.conf systemd/certmonger.service systemd/certmonger.path systemd/certmonger.conf systemd/org.fedorahosted.certmonger.service)

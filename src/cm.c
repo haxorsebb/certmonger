@@ -50,6 +50,8 @@ struct cm_context {
 	struct cm_store_ca **cas;
 	int netlink;
 	void *netlink_tfd, *netlink_delayed_event;
+	int idle_timeout;
+	void *idle_event;
 };
 
 static void *cm_service_one(struct cm_context *context,
@@ -62,9 +64,12 @@ static void cm_break_h(struct tevent_context *ec, struct tevent_signal *se,
 		       int signum, int count, void *siginfo, void *ctx);
 static void cm_netlink_fd_h(struct tevent_context *ec, struct tevent_fd *fde,
 			    uint16_t flags, void *pvt);
+static void cm_timeout_h(struct tevent_context *ec, struct tevent_timer *te,
+		         struct timeval current_time, void *pvt);
 
 int
-cm_init(struct tevent_context *parent, struct cm_context **context)
+cm_init(struct tevent_context *parent, struct cm_context **context,
+	int idle_timeout)
 {
 	struct cm_context *ctx;
 	int i, j;
@@ -96,6 +101,9 @@ cm_init(struct tevent_context *parent, struct cm_context **context)
 	/* Handle things which should get us to quit. */
 	tevent_add_signal(parent, ctx, SIGINT, 0, cm_break_h, ctx);
 	tevent_add_signal(parent, ctx, SIGTERM, 0, cm_break_h, ctx);
+	/* Be ready for an idle timeout. */
+	ctx->idle_timeout = idle_timeout;
+	ctx->idle_event = NULL;
 	/* Initialize state tracking, but don't set things in motion yet. */
 	for (i = 0; i < ctx->n_entries; i++) {
 		memset(&ctx->events[i], 0, sizeof(ctx->events[i]));
@@ -138,6 +146,44 @@ cm_timer_h(struct tevent_context *ec, struct tevent_timer *te,
 	}
 	if (i >= context->n_entries) {
 		cm_log(3, "Bug: unowned timer fired.\n");
+	}
+}
+
+static void
+cm_timeout_h(struct tevent_context *ec, struct tevent_timer *te,
+	     struct timeval current_time, void *pvt)
+{
+	struct cm_context *context = pvt;
+	if (context->idle_event != NULL) {
+		talloc_free(context->idle_event);
+		context->idle_event = NULL;
+	}
+	if (context->n_entries == 0) {
+		cm_log(3, "Hit idle timer (%ds).\n", context->idle_timeout);
+		context->should_quit++;
+	}
+}
+
+void
+cm_reset_timeout(struct cm_context *context)
+{
+	struct timeval now, then;
+	if (context->idle_event != NULL) {
+		cm_log(3, "Clearing prevoiusly-set idle timer.\n");
+		talloc_free(context->idle_event);
+		context->idle_event = NULL;
+	}
+	if ((context->idle_timeout > 0) &&
+	    (context->n_entries == 0)) {
+		now = tevent_timeval_current();
+		then = tevent_timeval_add(&now, context->idle_timeout, 0);
+		cm_log(3, "Setting idle timer (%ds).\n",
+		       context->idle_timeout);
+		context->idle_event = tevent_add_timer(talloc_parent(context),
+						       context,
+						       then,
+						       cm_timeout_h,
+						       context);
 	}
 }
 
@@ -402,6 +448,7 @@ cm_add_entry(struct cm_context *context, struct cm_store_entry *new_entry)
 			entries = NULL;
 		}
 	}
+	cm_reset_timeout(context);
 	if ((entries != NULL) && (events != NULL)) {
 		/* Prepare to set this entry in motion. */
 		i = context->n_entries - 1;
@@ -456,6 +503,7 @@ cm_start_all(struct cm_context *context)
 								       NULL, i);
 		}
 	}
+	cm_reset_timeout(context);
 	return 0;
 }
 
@@ -521,7 +569,7 @@ cm_stop_one(struct cm_context *context, const char *id)
 int
 cm_remove_entry(struct cm_context *context, const char *id)
 {
-	int i;
+	int i, rv = -1;
 	if (cm_stop_one(context, id)) {
 		i = cm_find_entry_by_id(context, id);
 		if (i != -1) {
@@ -539,13 +587,14 @@ cm_remove_entry(struct cm_context *context, const char *id)
 					(context->n_entries - i - 1) *
 					sizeof(context->events[i]));
 				context->n_entries--;
-				return 0;
+				rv = 0;
 			} else {
-				return -1;
+				rv = -1;
 			}
 		}
 	}
-	return -1;
+	cm_reset_timeout(context);
+	return rv;
 }
 
 dbus_bool_t
@@ -686,4 +735,3 @@ cm_remove_ca(struct cm_context *context, const char *id)
 	}
 	return -1;
 }
-

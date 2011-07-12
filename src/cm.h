@@ -22,8 +22,10 @@ struct cm_context;
 struct cm_store_entry;
 struct tevent_context;
 
-int cm_init(struct tevent_context *parent, struct cm_context **context);
+int cm_init(struct tevent_context *parent, struct cm_context **context,
+	    int idle_timeout);
 int cm_start_all(struct cm_context *context);
+void cm_reset_timeout(struct cm_context *context);
 int cm_keep_going(struct cm_context *context);
 void cm_stop_all(struct cm_context *context);
 

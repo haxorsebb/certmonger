@@ -1,0 +1,7 @@
+[Unit]
+Description=Certificate monitoring and PKI enrollment
+After=syslog.target network.target dbus.service
+
+[Service]
+Type=dbus
+BusName=@CM_DBUS_NAME@

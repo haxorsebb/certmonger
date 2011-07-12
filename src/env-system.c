@@ -96,3 +96,9 @@ cm_env_default_fork(void)
 {
 	return TRUE;
 }
+
+int
+cm_env_default_bus_timeout(void)
+{
+	return 0;
+}

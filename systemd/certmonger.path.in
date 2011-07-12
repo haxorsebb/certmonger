@@ -1,0 +1,6 @@
+[Unit]
+Description=Certificate monitoring and PKI enrollment
+After=syslog.target network.target dbus.service
+
+[Path]
+DirectoryNotEmpty=@CM_STORE_REQUESTS_DIRECTORY@

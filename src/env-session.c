@@ -149,3 +149,9 @@ cm_env_default_fork(void)
 {
 	return FALSE;
 }
+
+int
+cm_env_default_bus_timeout(void)
+{
+	return CM_DEFAULT_IDLE_TIMEOUT;
+}

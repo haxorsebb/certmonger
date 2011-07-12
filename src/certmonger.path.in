@@ -1,4 +1,0 @@
-[Unit]
-
-[Path]
-DirectoryNotEmpty=@CM_STORE_REQUESTS_DIRECTORY@

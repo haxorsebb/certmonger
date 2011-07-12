@@ -59,10 +59,12 @@ main(int argc, char **argv)
 	const char *pidfile = NULL;
 	char *tmpdir, *hint;
 	dbus_bool_t dofork;
+	int bustime;
 	DBusError error;
 	
 	bus = cm_env_default_bus();
 	dofork = cm_env_default_fork();
+	bustime = cm_env_default_bus_timeout();
 
 #ifdef ENABLE_NLS
 	bindtextdomain(PACKAGE, MYLOCALEDIR);
@@ -81,7 +83,7 @@ main(int argc, char **argv)
 		exit(1);
 	};
 
-	while ((c = getopt(argc, argv, "sSp:d:nf")) != -1) {
+	while ((c = getopt(argc, argv, "sSp:fb:Bd:n")) != -1) {
 		switch (c) {
 		case 's':
 			bus = cm_tdbus_session;
@@ -94,6 +96,12 @@ main(int argc, char **argv)
 			break;
 		case 'f':
 			dofork = TRUE;
+			break;
+		case 'b':
+			bustime = atoi(optarg);
+			break;
+		case 'B':
+			bustime = 0;
 			break;
 		case 'd':
 			dlevel = atoi(optarg);
@@ -108,6 +116,8 @@ main(int argc, char **argv)
 			       "\t-S         use system bus\n"
 			       "\t-n         don't become a daemon\n"
 			       "\t-f         do become a daemon\n"
+			       "\t-b TIMEOUT bus-activated, idle timeout\n"
+			       "\t-B         don't use an idle timeout\n"
 			       "\t-d LEVEL   set debugging level (implies -n)\n"
 			       "\t-p FILE    write service PID to file\n",
 			       cm_env_whoami());
@@ -164,7 +174,7 @@ main(int argc, char **argv)
 	}
 
 	ctx = NULL;
-	i = cm_init(ec, &ctx);
+	i = cm_init(ec, &ctx, bustime);
 	if (i != 0) {
 		fprintf(stderr, "Error: %s\n", strerror(i));
 		talloc_free(ec);

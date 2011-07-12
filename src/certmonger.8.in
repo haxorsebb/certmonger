@@ -1,10 +1,10 @@
-.TH certmonger 8 "3 November 2009" "certmonger Manual"
+.TH certmonger 8 "12 July 2011" "certmonger Manual"
 
 .SH NAME
 certmonger
 
 .SH SYNOPSIS
-certmonger [-s|-S] [-n|-f] [-d LEVEL] [-p FILE]
+certmonger [-s|-S] [-b TIMEOUT|-B] [-n|-f] [-d LEVEL] [-p FILE]
 
 .SH DESCRIPTION
 The \fIcertmonger\fR daemon monitors certificates for impending
@@ -23,14 +23,21 @@ Listen on the session bus rather than the system bus.
 -S
 Listen on the system bus rather than the session bus.  This is the default.
 .TP
+-b TIMEOUT
+Behave as a bus-activated service: if there are no certificates to be monitored
+or obtained, and no requests received within TIMEOUT seconds, exit.
+.TP
+-B
+Don't behave as a bus-activated service.  This is the default.
+.TP
 -n
 Don't fork, and log messages to stderr rather than syslog.
 .TP
 -f
-Do fork, and log messages to syslog rather than stderr.
+Do fork, and log messages to syslog rather than stderr.  This is the default.
 .TP
 -d LEVEL
-Set debugging level.  Higher values produce more debugging output.
+Set debugging level.  Higher values produce more debugging output.  Implies -n.
 .TP
 -p FILE
 Store the daemon's process ID in the named file.
