@@ -1,3 +1,23 @@
+%if 0%{?fedora} > 15 || 0%{?rhel} > 6
+%global systemd 1
+%global	sysvinit 0
+%else
+%global systemd 0
+%global	sysvinit 1
+%endif
+
+%if 0%{?fedora} > 14 || 0%{?rhel} > 6
+%global tmpfiles 1
+%else
+%global tmpfiles 0
+%endif
+
+%if 0%{?fedora} > 9 || 0%{?rhel} > 5
+%global sysvinitdir %{_initddir}
+%else
+%global sysvinitdir %{_initrddir}
+%endif
+
 Name:		certmonger
 Version:	0.42
 Release:	1%{?dist}
@@ -47,7 +67,17 @@ system enrolled with a certificate authority (CA) and keeping it enrolled.
 %setup -q
 
 %build
-%configure --with-tmpdir=/var/run/certmonger
+%configure \
+%if %{systemd}
+	--enable-systemd \
+%endif
+%if %{sysvinit}
+	--enable-sysvinit=%{sysvinitdir} \
+%endif
+%if %{tmpfiles}
+	--with-tmpdir=/var/run/certmonger \
+%endif
+	--disable-maintainer-mode
 # For some reason, Fedora's xmlrpc-c-config just tells us about
 # libxmlrpc_client, but in F13 we need all of them.  Workaround.
 make %{?_smp_mflags} XMLRPC_LIBS="-lxmlrpc_client -lxmlrpc_util -lxmlrpc"
@@ -56,19 +86,7 @@ make %{?_smp_mflags} XMLRPC_LIBS="-lxmlrpc_client -lxmlrpc_util -lxmlrpc"
 rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT/%{_localstatedir}/lib/certmonger/{cas,requests}
-%if 0%{?fedora} <= 9 || 0%{?rhel} < 6
-mkdir -p $RPM_BUILD_ROOT/%{_initrddir}
-install -m755 src/certmonger.init $RPM_BUILD_ROOT/%{_initrddir}/certmonger
-%else
-mkdir -p $RPM_BUILD_ROOT/%{_initddir}
-install -m755 src/certmonger.init $RPM_BUILD_ROOT/%{_initddir}/certmonger
-%endif
 install -m755 -d $RPM_BUILD_ROOT/var/run/certmonger
-%if 0%{?fedora} > 14
-install -m755 -d $RPM_BUILD_ROOT/etc/tmpfiles.d
-install -m644 certmonger.tmpfiles $RPM_BUILD_ROOT/etc/tmpfiles.d/certmonger.conf
-%endif
-
 %{find_lang} %{name}
 
 %check
@@ -103,22 +121,41 @@ exit 0
 %config(noreplace) %{_datadir}/dbus-1/services/*
 %dir %{_sysconfdir}/certmonger
 %config(noreplace) %{_sysconfdir}/certmonger/certmonger.conf
-%if 0%{?fedora} <= 9 || 0%{?rhel} < 6
-%{_initrddir}/certmonger
-%else
-%{_initddir}/certmonger
-%endif
+%dir /var/run/certmonger
 %{_bindir}/*
 %{_sbindir}/certmonger
 %{_mandir}/man*/*
 %{_libexecdir}/%{name}
 %{_localstatedir}/lib/certmonger
-%if 0%{?fedora} > 14
+%if %{sysvinit}
+%{sysvinitdir}/certmonger
+%endif
+%if %{tmpfiles}
 %attr(0644,root,root) %config(noreplace) /etc/tmpfiles.d/certmonger.conf
 %endif
-%dir /var/run/certmonger
+%if %{systemd}
+%config(noreplace) %{_datadir}/dbus-1/system-services/*
+%config(noreplace) /lib/systemd/system/*
+%endif
 
 %changelog
+* Wed Jul 13 2011 Nalin Dahyabhai <nalin@redhat.com> 0.43-1
+- treat the ability to access keys in an NSS database without using a PIN,
+  when we've been told we need one, as an error (#692766)
+- when handling "getcert resubmit" requests, if we don't have a key yet,
+  make sure we go all the way back to generating one (#694184)
+- getcert: try to clean up tests for NSS and PEM file locations (#699059)
+- don't try to set reconnect-on-exit policy unless we managed to connect
+  to the bus (#712500)
+- handle cases where we specify a token but the storage token isn't
+  known (#699552)
+- getcert: recognize -i and storage options to narrow down which requests
+  the user wants to know about (#698772)
+- output hints when the daemon has startup problems, too (#712075)
+- add flags to specify whether we're bus-activated or not, so that we can
+  exit if we have nothing to do after handling a request received over
+  the bus if some specified amount of time has passed
+
 * Wed Apr 13 2011 Nalin Dahyabhai <nalin@redhat.com> 0.42-1
 - getcert: fix a buffer overrun preparing a request for the daemon when
   there are more parameters to encode than space in the array (#696185)
