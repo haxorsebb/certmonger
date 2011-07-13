@@ -39,7 +39,7 @@ AC_SUBST(SYSTEMDSYSTEMUNITDIR)
 SYSVINIT=false
 AC_ARG_ENABLE(sysvinit,
 	      AS_HELP_STRING([--enable-sysvinit=/etc/init.d],[install sysvinit script in specified location]),
-	      SYSVINIT=$enablearg,
+	      SYSVINIT=$enableval,
 	      SYSVINIT=no)
 AC_SUBST(SYSVINIT)
 AM_CONDITIONAL(SYSVINIT,test x$SYSVINIT != xno)
