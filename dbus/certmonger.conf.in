@@ -5,7 +5,7 @@
 
   <!-- Only root can own and communicate with the service -->
 
-  <policy context=default>
+  <policy context="default">
     <deny own="@CM_DBUS_NAME@"/>
     <deny send_destination="@CM_DBUS_NAME@"/>
   </policy>
