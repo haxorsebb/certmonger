@@ -56,8 +56,10 @@ BuildRequires:	/usr/bin/dos2unix
 # we need a running system bus
 Requires:	dbus
 
+%if %{sysvinit}
 Requires(post):	/sbin/chkconfig, /sbin/service
 Requires(preun):	/sbin/chkconfig, /sbin/service
+%endif
 
 %description
 Certmonger is a service which is primarily concerned with getting your
@@ -99,18 +101,24 @@ rm -rf $RPM_BUILD_ROOT
 if test $1 -eq 1 ; then
 	killall -HUP dbus-daemon 2>&1 > /dev/null
 fi
+%if %{sysvinit}
 /sbin/chkconfig --add certmonger
+%endif
 
 %postun
+%if %{sysvinit}
 if test $1 -gt 0 ; then
 	/sbin/service certmonger condrestart 2>&1 > /dev/null
 fi
+%endif
 exit 0
 
 %preun
 if test $1 -eq 0 ; then
 	/sbin/service certmonger stop 2>&1 > /dev/null
+%if %{sysvinit}
 	/sbin/chkconfig --del certmonger
+%endif
 fi
 exit 0
 
