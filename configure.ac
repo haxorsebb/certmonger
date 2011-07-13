@@ -34,11 +34,11 @@ mysbindir=`eval echo $mysbindir | sed "s,NONE,,g"`
 AC_SUBST(mysbindir)
 
 UPCASE_PACKAGE_NAME=`echo "${PACKAGE_NAME}" | tr '[a-z]' '[A-Z]'`
-mysysconfdir="$sysconfdir/${PACKAGE_NAME}"
+mysysconfdir="$sysconfdir"
 mysysconfdir=`eval echo $mysysconfdir | sed "s,NONE,$prefix,g"`
 mysysconfdir=`eval echo $mysysconfdir | sed "s,NONE,$ac_default_prefix,g"`
 mysysconfdir=`eval echo $mysysconfdir | sed "s,NONE,,g"`
-AC_DEFINE_UNQUOTED(CM_STORE_CONFIG_DIRECTORY,"$mysysconfdir",
+AC_DEFINE_UNQUOTED(CM_STORE_CONFIG_DIRECTORY,"$mysysconfdir/${PACKAGE_NAME}",
 		   [Define to the directory which holds configuration files.])
 AC_DEFINE_UNQUOTED(CM_STORE_SESSION_CONFIG_DIRECTORY,".config/" PACKAGE_NAME,
 		   [Define to the directory which holds user configuration files.])
