@@ -85,9 +85,9 @@ system enrolled with a certificate authority (CA) and keeping it enrolled.
 	--enable-sysvinit=%{sysvinitdir} \
 %endif
 %if %{tmpfiles}
-	--with-tmpdir=/var/run/certmonger \
+	--enable-tmpfiles \
 %endif
-	--disable-maintainer-mode
+	--with-tmpdir=/var/run/certmonger
 # For some reason, Fedora's xmlrpc-c-config just tells us about
 # libxmlrpc_client, but in F13 we need all of them.  Workaround.
 make %{?_smp_mflags} XMLRPC_LIBS="-lxmlrpc_client -lxmlrpc_util -lxmlrpc"

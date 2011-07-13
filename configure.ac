@@ -288,7 +288,7 @@ AC_DEFINE_UNQUOTED(CM_TMPDIR_ENV,"${CM_TMPDIR_ENV}",[Define to the default locat
 AC_SUBST(CM_TMPDIR)
 AC_SUBST(CM_TMPDIR_ENV)
 
-SYSTEMD=false
+SYSTEMD=no
 AC_ARG_ENABLE(systemd,
 	      AS_HELP_STRING([--enable-systemd],[install unit files for systemd]),
 	      SYSTEMD=yes
@@ -299,7 +299,7 @@ AM_CONDITIONAL(SYSTEMD,test x$SYSTEMD != xno)
 AC_SUBST(SYSTEMDSYSTEMUNITDIR)
 AC_MSG_RESULT(will install systemd unit files)
 
-TMPFILES=false
+TMPFILES=no
 AC_ARG_ENABLE(tmpfiles,
 	      AS_HELP_STRING([--enable-tmpfiles],[install systemd tmpfiles.d configuration file for systemd (default: same as --enable-systemd)]),
 	      TMPFILES=$enableval,
@@ -308,7 +308,7 @@ AC_SUBST(TMPFILES)
 AM_CONDITIONAL(TMPFILES,test x$TMPFILES != xno)
 AC_MSG_RESULT(will install systemd tmpfiles.d file to ${mysysconfdir}/tmpfiles.d)
 
-SYSVINIT=false
+SYSVINIT=no
 AC_ARG_ENABLE(sysvinit,
 	      AS_HELP_STRING([--enable-sysvinit=/etc/init.d],[install sysvinit script in specified location]),
 	      SYSVINIT=$enableval,
