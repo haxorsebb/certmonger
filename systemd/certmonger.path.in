@@ -4,3 +4,6 @@ After=syslog.target network.target dbus.service
 
 [Path]
 DirectoryNotEmpty=@CM_STORE_REQUESTS_DIRECTORY@
+
+[Install]
+WantedBy=multi-user.target

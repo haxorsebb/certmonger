@@ -26,24 +26,6 @@ if test x$GCC = xyes ; then
 	CFLAGS="$CFLAGS -Wall -Wextra"
 fi
 
-SYSTEMD=false
-AC_ARG_ENABLE(systemd,
-	      AS_HELP_STRING([--enable-systemd],[install configuration files for systemd]),
-	      SYSTEMD=yes
-	      SYSTEMDSYSTEMUNITDIR=`pkg-config --variable=systemdsystemunitdir systemd 2> /dev/null`,
-	      SYSTEMD=no)
-AC_SUBST(SYSTEMD)
-AM_CONDITIONAL(SYSTEMD,test x$SYSTEMD != xno)
-AC_SUBST(SYSTEMDSYSTEMUNITDIR)
-
-SYSVINIT=false
-AC_ARG_ENABLE(sysvinit,
-	      AS_HELP_STRING([--enable-sysvinit=/etc/init.d],[install sysvinit script in specified location]),
-	      SYSVINIT=$enableval,
-	      SYSVINIT=no)
-AC_SUBST(SYSVINIT)
-AM_CONDITIONAL(SYSVINIT,test x$SYSVINIT != xno)
-
 mysbindir="$sbindir"
 mysbindir=`eval echo $mysbindir | sed "s,NONE,$prefix,g"`
 mysbindir=`eval echo $mysbindir | sed "s,NONE,$exec_prefix,g"`
@@ -305,6 +287,35 @@ CM_TMPDIR_ENV="${UPCASE_PACKAGE_NAME}_TMPDIR"
 AC_DEFINE_UNQUOTED(CM_TMPDIR_ENV,"${CM_TMPDIR_ENV}",[Define to the default location to be used for storing temporary files.])
 AC_SUBST(CM_TMPDIR)
 AC_SUBST(CM_TMPDIR_ENV)
+
+SYSTEMD=false
+AC_ARG_ENABLE(systemd,
+	      AS_HELP_STRING([--enable-systemd],[install unit files for systemd]),
+	      SYSTEMD=yes
+	      SYSTEMDSYSTEMUNITDIR=`pkg-config --variable=systemdsystemunitdir systemd 2> /dev/null`,
+	      SYSTEMD=no)
+AC_SUBST(SYSTEMD)
+AM_CONDITIONAL(SYSTEMD,test x$SYSTEMD != xno)
+AC_SUBST(SYSTEMDSYSTEMUNITDIR)
+AC_MSG_RESULT(will install systemd unit files)
+
+TMPFILES=false
+AC_ARG_ENABLE(tmpfiles,
+	      AS_HELP_STRING([--enable-tmpfiles],[install systemd tmpfiles.d configuration file for systemd (default: same as --enable-systemd)]),
+	      TMPFILES=$enableval,
+	      TMPFILES=$SYSTEMD)
+AC_SUBST(TMPFILES)
+AM_CONDITIONAL(TMPFILES,test x$TMPFILES != xno)
+AC_MSG_RESULT(will install systemd tmpfiles.d file to ${mysysconfdir}/tmpfiles.d)
+
+SYSVINIT=false
+AC_ARG_ENABLE(sysvinit,
+	      AS_HELP_STRING([--enable-sysvinit=/etc/init.d],[install sysvinit script in specified location]),
+	      SYSVINIT=$enableval,
+	      SYSVINIT=no)
+AC_SUBST(SYSVINIT)
+AM_CONDITIONAL(SYSVINIT,test x$SYSVINIT != xno)
+AC_MSG_RESULT(will install sysvinit init script to $SYSVINIT)
 
 AC_DEFINE_UNQUOTED(CM_DEFAULT_KEY_STORAGE_TYPE,cm_key_storage_nssdb,[Define to the default type of storage used for keys.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_KEY_STORAGE_LOCATION,"/etc/pki/nssdb",[Define to the default location of storage used for keys.])
