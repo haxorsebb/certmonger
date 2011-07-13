@@ -4,6 +4,11 @@
 <busconfig>
 
   <!-- Only root can own and communicate with the service -->
+
+  <policy context=default>
+    <deny/>
+  </policy>
+
   <policy user="root">
     <allow own="@CM_DBUS_NAME@"/>
 
