@@ -56,6 +56,14 @@ BuildRequires:	/usr/bin/dos2unix
 # we need a running system bus
 Requires:	dbus
 
+%if %{systemd}
+BuildRequires:	systemd-units
+Requires(post):	systemd-units
+Requires(preun):	systemd-units
+Requires(postun):	systemd-units
+Requires(post):	systemd-sysv
+%endif
+
 %if %{sysvinit}
 Requires(post):	/sbin/chkconfig, /sbin/service
 Requires(preun):	/sbin/chkconfig, /sbin/service
@@ -101,11 +109,22 @@ rm -rf $RPM_BUILD_ROOT
 if test $1 -eq 1 ; then
 	killall -HUP dbus-daemon 2>&1 > /dev/null
 fi
+%if %{systemd}
+if test $1 -eq 1 ; then
+	/bin/systemctl daemon-reload >/dev/null 2>&1 || :
+fi
+%endif
 %if %{sysvinit}
 /sbin/chkconfig --add certmonger
 %endif
 
 %postun
+%if %{systemd}
+/bin/systemctl daemon-reload >/dev/null 2>&1 || :
+if [ $1 -ge 1 ] ; then
+	/bin/systemctl try-restart certmonger.service >/dev/null 2>&1 || :
+fi
+%endif
 %if %{sysvinit}
 if test $1 -gt 0 ; then
 	/sbin/service certmonger condrestart 2>&1 > /dev/null
@@ -114,13 +133,30 @@ fi
 exit 0
 
 %preun
+%if %{systemd}
+	/bin/systemctl --no-reload disable certmonger.service > /dev/null 2>&1 || :
+	/bin/systemctl stop certmonger.service > /dev/null 2>&1 || :
+%endif
+%if %{sysvinit}
 if test $1 -eq 0 ; then
 	/sbin/service certmonger stop 2>&1 > /dev/null
-%if %{sysvinit}
 	/sbin/chkconfig --del certmonger
-%endif
 fi
+%endif
 exit 0
+
+%if %{systemd}
+%triggerun -- certmonger < 0.43
+# Save the current service runlevel info, in case the user wants to apply
+# the enabled status manually later, by running
+#   "systemd-sysv-convert --apply certmonger".
+%{_bindir}/systemd-sysv-convert --save certmonger >/dev/null 2>&1 ||:
+# Do this because the old package's %%postun doesn't know we need to do it.
+/sbin/chkconfig --del certmonger >/dev/null 2>&1 || :
+# Do this because the old package's %%postun wouldn't have tried.
+/bin/systemctl try-restart certmonger.service >/dev/null 2>&1 || :
+exit 0
+%endif
 
 %files -f %{name}.lang
 %defattr(-,root,root,-)
