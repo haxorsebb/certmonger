@@ -219,7 +219,8 @@ main(int argc, char **argv)
 		if (profile == NULL) {
 			profile = "caServerCert";
 		}
-		args = talloc_asprintf("requestor_name=%s&"
+		args = talloc_asprintf(tctx,
+				       "requestor_name=%s&"
 				       "cert_request_type=pkcs10&"
 				       "profileId=%s&"
 				       "cert_request=%s&"
