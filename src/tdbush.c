@@ -256,6 +256,7 @@ send_internal_base_no_such_entry_error(DBusConnection *conn, DBusMessage *req)
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
+/* Check if this string would be valid as a component in a D-Bus object path. */
 static int
 cm_tdbush_check_object_path_component(struct cm_context *ctx, const char *name)
 {
