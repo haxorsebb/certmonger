@@ -275,7 +275,7 @@ print_hint(const char *error, const char *message)
 	if ((text == NULL) &&
 	    (strncmp(error, CM_DBUS_ERROR_BASE,
 		     strlen(CM_DBUS_ERROR_BASE)) == 0)) {
-		text = talloc_asprintf("%s\n", _(message));
+		text = talloc_asprintf(ctx, "%s\n", _(message));
 	}
 	if (text != NULL) {
 		printf("%s", _(text));

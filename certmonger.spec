@@ -200,6 +200,7 @@ exit 0
   the bus if some specified amount of time has passed
 - explicitly disallow non-root access in the D-Bus configuration (#712072)
 - migrate to systemd on releases newer than Fedora 15 or RHEL 6 (#718172)
+- fix a couple of incorrect calls to talloc_asprintf() (#721392)
 
 * Wed Apr 13 2011 Nalin Dahyabhai <nalin@redhat.com> 0.42-1
 - getcert: fix a buffer overrun preparing a request for the daemon when
