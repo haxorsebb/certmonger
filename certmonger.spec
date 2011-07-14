@@ -178,7 +178,6 @@ exit 0
 %attr(0644,root,root) %config(noreplace) /etc/tmpfiles.d/certmonger.conf
 %endif
 %if %{systemd}
-%config(noreplace) %{_datadir}/dbus-1/system-services/*
 %config(noreplace) /lib/systemd/system/*
 %endif
 
