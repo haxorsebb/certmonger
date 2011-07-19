@@ -589,6 +589,11 @@ request(const char *argv0, int argc, char **argv)
 			return 1;
 		}
 	}
+	if (optind < argc) {
+		printf(_("Error: unused extra arguments were supplied.\n"));
+		help(argv0, "request");
+		return 1;
+	}
 	if (((dbdir != NULL) && (nickname == NULL)) ||
 	    ((dbdir == NULL) && (nickname != NULL))) {
 		printf(_("Database location or nickname specified "
@@ -1265,6 +1270,11 @@ set_tracking(const char *argv0, const char *category,
 
 	krb5_free_context(kctx);
 
+	if (optind < argc) {
+		printf(_("Error: unused extra arguments were supplied.\n"));
+		help(argv0, category);
+		return 1;
+	}
 	if (((dbdir != NULL) && (nickname == NULL)) ||
 	    ((dbdir == NULL) && (nickname != NULL))) {
 		printf(_("Database location or nickname specified "
@@ -1610,6 +1620,11 @@ resubmit(const char *argv0, int argc, char **argv)
 			return 1;
 		}
 	}
+	if (optind < argc) {
+		printf(_("Error: unused extra arguments were supplied.\n"));
+		help(argv0, "resubmit");
+		return 1;
+	}
 
 	krb5_free_context(kctx);
 
@@ -1824,6 +1839,11 @@ list(const char *argv0, int argc, char **argv)
 			help(argv0, "list");
 			return 1;
 		}
+	}
+	if (optind < argc) {
+		printf(_("Error: unused extra arguments were supplied.\n"));
+		help(argv0, "list");
+		return 1;
 	}
 	requests = query_rep_ap(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
 				"get_requests", verbose, globals.tctx);
@@ -2081,9 +2101,14 @@ list_cas(const char *argv0, int argc, char **argv)
 			verbose++;
 			break;
 		default:
-			help(argv0, "list");
+			help(argv0, "list-cas");
 			return 1;
 		}
+	}
+	if (optind < argc) {
+		printf(_("Error: unused extra arguments were supplied.\n"));
+		help(argv0, "list-cas");
+		return 1;
 	}
 	cas = query_rep_ap(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
 			   "get_known_cas", verbose, globals.tctx);
