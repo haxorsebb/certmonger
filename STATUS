@@ -62,7 +62,9 @@ Complete:
 To-do:
   * Also generate an SPKAC value when we generate CSRs -- it's just a
     CERTSignedData containing a CERTPublicKeyAndChallenge instead of the
-    usual CERTCertificateRequest.
+    usual CERTCertificateRequest. (1 day)
+  * Add an option to getcert to specify a challenge password and incorporate
+    that value into signing requests, if given.
   * Make certmonger a proper daemon.
     * Sort out logging levels for log messages. (1 day)
       MUST
