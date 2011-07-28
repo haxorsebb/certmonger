@@ -60,7 +60,9 @@ Complete:
     mutilating the queue directly (per doc/api.txt).
 
 To-do:
-  * Also generate an SPKAC value when we generate CSRs.
+  * Also generate an SPKAC value when we generate CSRs -- it's just a
+    CERTSignedData containing a CERTPublicKeyAndChallenge instead of the
+    usual CERTCertificateRequest.
   * Make certmonger a proper daemon.
     * Sort out logging levels for log messages. (1 day)
       MUST
