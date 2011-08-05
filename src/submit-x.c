@@ -155,7 +155,8 @@ struct cm_submit_x_context {
 struct cm_submit_x_context *
 cm_submit_x_init(void *parent, const char *uri, const char *method,
 		 const char *cainfo, const char *capath,
-		 int negotiate)
+		 enum cm_submit_x_opt_negotiate negotiate,
+		 enum cm_submit_x_opt_delegate delegate)
 {
 	struct cm_submit_x_context *ctx;
 	ctx = talloc_ptrtype(parent, ctx);
@@ -176,7 +177,7 @@ cm_submit_x_init(void *parent, const char *uri, const char *method,
 			ctx->xenv.fault_code, ctx->xenv.fault_string);
 		xmlrpc_env_clean(&ctx->xenv);
 	}
-	if (negotiate) {
+	if (negotiate == cm_submit_x_negotiate_on) {
 		xmlrpc_server_info_allow_auth_negotiate(&ctx->xenv,
 							ctx->server);
 		if (ctx->xenv.fault_occurred) {
@@ -199,6 +200,12 @@ cm_submit_x_init(void *parent, const char *uri, const char *method,
 	memset(&ctx->xparams, 0, sizeof(ctx->xparams));
 	ctx->xparams.cainfo = talloc_strdup(ctx, cainfo);
 	ctx->xparams.capath = talloc_strdup(ctx, capath);
+#ifdef HAVE_STRUCT_XMLRPC_CURL_XPORTPARMS_GSSAPI_DELEGATION
+	if ((negotiate == cm_submit_x_negotiate_on) &&
+	    (delegate == cm_submit_x_delegate_on)) {
+		ctx->xparams.gssapi_delegation = TRUE;
+	}
+#endif
 	(*xmlrpc_curl_transport_ops.create)(&ctx->xenv, 0,
 					    PACKAGE_NAME,
 					    PACKAGE_VERSION,
@@ -723,7 +730,12 @@ main(int argc, char **argv)
 
 	/* Initialize for XML-RPC. */
 	ctx = cm_submit_x_init(NULL, uri, method, cainfo, capath,
-			       k5 || (kpname != NULL) || (ktname != NULL));
+			       k5 || (kpname != NULL) || (ktname != NULL) ?
+			       cm_submit_x_negotiate_on :
+			       cm_submit_x_negotiate_off,
+			       k5 || (kpname != NULL) || (ktname != NULL) ?
+			       cm_submit_x_delegate_on :
+			       cm_submit_x_delegate_off);
 	if (ctx == NULL) {
 		fprintf(stderr, "Error setting up for XMLRPC.\n");
 		return CM_STATUS_UNCONFIGURED;

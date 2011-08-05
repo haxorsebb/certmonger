@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,11 +21,20 @@
 int cm_submit_x_make_ccache(const char *ktname, const char *principal);
 
 struct cm_submit_x_context;
+enum cm_submit_x_opt_negotiate {
+	cm_submit_x_negotiate_off,
+	cm_submit_x_negotiate_on
+};
+enum cm_submit_x_opt_delegate {
+	cm_submit_x_delegate_off,
+	cm_submit_x_delegate_on
+};
 struct cm_submit_x_context *cm_submit_x_init(void *parent, const char *uri,
 					     const char *method,
 					     const char *cainfo,
 					     const char *capath,
-					     int negotiate);
+					     enum cm_submit_x_opt_negotiate neg,
+					     enum cm_submit_x_opt_delegate del);
 void cm_submit_x_run(struct cm_submit_x_context *ctx);
 int cm_submit_x_has_results(struct cm_submit_x_context *ctx);
 int cm_submit_x_faulted(struct cm_submit_x_context *ctx);

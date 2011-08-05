@@ -150,7 +150,9 @@ main(int argc, char **argv)
 		 host,
 		 ((port != NULL) && (strlen(port) > 0)) ? ":" : "",
 		 port ? port : "");
-	ctx = cm_submit_x_init(NULL, uri, "wait_for_cert", cainfo, capath, 0);
+	ctx = cm_submit_x_init(NULL, uri, "wait_for_cert", cainfo, capath,
+			       cm_submit_x_negotiate_off,
+			       cm_submit_x_delegate_off);
 	if (ctx == NULL) {
 		fprintf(stderr, "Error setting up for XMLRPC.\n");
 		printf(_("Error setting up for XMLRPC.\n"));

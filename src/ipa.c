@@ -196,7 +196,9 @@ main(int argc, char **argv)
 	} else {
 		snprintf(uri, sizeof(uri), "https://%s/ipa/xml", host);
 	}
-	ctx = cm_submit_x_init(NULL, uri, "cert_request", cainfo, capath, 1);
+	ctx = cm_submit_x_init(NULL, uri, "cert_request", cainfo, capath,
+			       cm_submit_x_negotiate_on,
+			       cm_submit_x_delegate_on);
 	if (ctx == NULL) {
 		fprintf(stderr, "Error setting up for XMLRPC.\n");
 		printf(_("Error setting up for XMLRPC.\n"));

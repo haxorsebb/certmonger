@@ -143,6 +143,12 @@ AC_MSG_CHECKING(for XMLRPC LIBS)
 XMLRPC_LIBS=`${XMLRPC_C_CONFIG} client --libs`
 AC_MSG_RESULT([$XMLRPC_LIBS])
 AC_SUBST(XMLRPC_LIBS)
+CFLAGS="$CFLAGS $XMLRPC_CFLAGS"
+AC_CHECK_MEMBERS(struct xmlrpc_curl_xportparms.gssapi_delegation,,,
+		 [
+		 #include <xmlrpc-c/client.h>
+		 #include <xmlrpc-c/transport.h>
+		 ])
 CFLAGS="$savedCFLAGS"
 
 savedCFLAGS="$CFLAGS"

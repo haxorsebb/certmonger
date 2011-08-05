@@ -182,7 +182,11 @@ exit 0
 %endif
 
 %changelog
-* Wed Jul 13 2011 Nalin Dahyabhai <nalin@redhat.com> 0.43-1
+* Fri Aug  5 2011 Nalin Dahyabhai <nalin@redhat.com> 0.43-1
+- if xmlrpc-c's struct xmlrpc_curl_xportparms has a gss_delegate field, set
+  it to TRUE when we're doing Negotiate auth (#727864, #727863, #727866)
+
+* Wed Jul 13 2011 Nalin Dahyabhai <nalin@redhat.com>
 - treat the ability to access keys in an NSS database without using a PIN,
   when we've been told we need one, as an error (#692766)
 - when handling "getcert resubmit" requests, if we don't have a key yet,
