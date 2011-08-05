@@ -12,7 +12,8 @@ currently of note are named \fIdefaults\fR and \fIselfsign\fR.
 Within the \fIdefaults\fR section, these variables and values are recognized:
 
 .IP ttls
-This is the list of times, before a certificate's not-after validity date
+This is the list of times, given in seconds, before a certificate's not-after
+validity date
 (often referred to as its expiration time) when \fIcertmonger\fR should warn
 that the certificate will soon no longer be valid.  If \fIcertmonger\fR is
 configured to automatically renew the certificate, it will also attempt to do
