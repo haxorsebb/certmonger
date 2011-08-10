@@ -88,8 +88,8 @@ system enrolled with a certificate authority (CA) and keeping it enrolled.
 	--enable-tmpfiles \
 %endif
 	--with-tmpdir=/var/run/certmonger
-# For some reason, Fedora's xmlrpc-c-config just tells us about
-# libxmlrpc_client, but in F13 we need all of them.  Workaround.
+# For some reason, some versions of xmlrpc-c-config in Fedora and RHEL just
+# tell us about libxmlrpc_client, but we need more.  Work around.
 make %{?_smp_mflags} XMLRPC_LIBS="-lxmlrpc_client -lxmlrpc_util -lxmlrpc"
 
 %install
@@ -182,7 +182,11 @@ exit 0
 %endif
 
 %changelog
-* Fri Aug  5 2011 Nalin Dahyabhai <nalin@redhat.com> 0.43-1
+* Wed Aug 10 2011 Nalin Dahyabhai <nalin@redhat.com> 0.43-1
+- add a -K option to ipa-submit, to use the current ccache, which makes
+  it easier to test
+
+* Fri Aug  5 2011 Nalin Dahyabhai <nalin@redhat.com>
 - if xmlrpc-c's struct xmlrpc_curl_xportparms has a gss_delegate field, set
   it to TRUE when we're doing Negotiate auth (#727864, #727863, #727866)
 

@@ -47,7 +47,7 @@
 int
 main(int argc, char **argv)
 {
-	int i, c, host_is_uri = 0;
+	int i, c, host_is_uri = 0, make_ccache = TRUE;
 	const char *host = NULL, *cainfo = NULL, *capath = NULL;
 	const char *ktname = NULL, *kpname = NULL, *args[2];
 	char *csr, *p, *q, uri[LINE_MAX], *s, *reqprinc = NULL, *ipaconfig;
@@ -63,7 +63,7 @@ main(int argc, char **argv)
 		reqprinc[strcspn(reqprinc, "\r\n")] = '\0';
 	}
 
-	while ((c = getopt(argc, argv, "h:H:C:c:t:k:P:")) != -1) {
+	while ((c = getopt(argc, argv, "h:H:C:c:t:Kk:P:")) != -1) {
 		switch (c) {
 		case 'h':
 			host = optarg;
@@ -85,6 +85,9 @@ main(int argc, char **argv)
 		case 'k':
 			kpname = optarg;
 			break;
+		case 'K':
+			make_ccache = FALSE;
+			break;
 		case 'P':
 			reqprinc = optarg;
 			break;
@@ -94,6 +97,7 @@ main(int argc, char **argv)
 				"[-H serverUri] "
 				"[-c cafile] "
 				"[-C capath] "
+				"[-K] "
 				"[-t keytab] "
 				"[-k submitterPrincipal] "
 				"[-P principalOfRequest] "
@@ -136,6 +140,7 @@ main(int argc, char **argv)
 			"[-H serverUri] "
 			"[-c cafile] "
 			"[-C capath] "
+			"[-K] "
 			"[-t keytab] "
 			"[-k submitterPrincipal] "
 			"[-P principalOfRequest] "
@@ -159,6 +164,7 @@ main(int argc, char **argv)
 			"[-H serverUri] "
 			"[-c cafile] "
 			"[-C capath] "
+			"[-K] "
 			"[-t keytab] "
 			"[-k submitterPrincipal] "
 			"[-P principalOfRequest] "
@@ -205,8 +211,9 @@ main(int argc, char **argv)
 		return CM_STATUS_UNCONFIGURED;
 	}
 
-	/* Setup a ccache. */
-	if (cm_submit_x_make_ccache(ktname, kpname) != 0) {
+	/* Setup a ccache unless we're told to use the default one. */
+	if (make_ccache &&
+	    (cm_submit_x_make_ccache(ktname, kpname) != 0)) {
 		fprintf(stderr, "Error setting up ccache.\n");
 		if (ktname == NULL) {
 			if (kpname == NULL) {

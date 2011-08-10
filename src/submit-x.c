@@ -622,7 +622,7 @@ cm_submit_x_get_named_s(struct cm_submit_x_context *ctx,
 int
 main(int argc, char **argv)
 {
-	int i, j, c, ret, k5 = FALSE;
+	int i, j, c, ret, k5 = FALSE, make_ccache = TRUE;
 	int64_t i8;
 	int32_t i32;
 	const char *uri = NULL, *method = NULL, *ktname = NULL, *kpname = NULL;
@@ -633,7 +633,7 @@ main(int argc, char **argv)
 	xmlrpc_bool boo;
 
 	cm_log_set_method(cm_log_stderr);
-	while ((c = getopt(argc, argv, "s:m:kt:p:c:")) != -1) {
+	while ((c = getopt(argc, argv, "s:m:kKt:p:c:")) != -1) {
 		switch (c) {
 		case 's':
 			uri = optarg;
@@ -650,6 +650,9 @@ main(int argc, char **argv)
 		case 'k':
 			k5 = TRUE;
 			break;
+		case 'K':
+			make_ccache = FALSE;
+			break;
 		case 'C':
 			capath = optarg;
 			break;
@@ -659,7 +662,7 @@ main(int argc, char **argv)
 		default:
 			fprintf(stderr,
 				"Usage: %s [-s serverURI] [-m method] "
-				"[-k] [-t keytab] [-p principal] "
+				"[-k [-K]] [-t keytab] [-p principal] "
 				"[-C capath] [-c cainfo]\n"
 				"Examples:\n"
 				"           -s http://localhost:51235/\n"
@@ -675,7 +678,7 @@ main(int argc, char **argv)
 	if ((uri == NULL) || (method == NULL)) {
 		fprintf(stderr,
 			"Usage: %s [-s serverURI] [-m method] "
-			"[-k] [-t keytab] [-p principal] "
+			"[-k [-K]] [-t keytab] [-p principal] "
 			"[-C capath] [-c cainfo]\n"
 			"Examples:\n"
 			"           -s http://localhost:51235/\n"
@@ -746,7 +749,8 @@ main(int argc, char **argv)
 
 	/* Maybe we need a ccache. */
 	if (k5 || (kpname != NULL) || (ktname != NULL)) {
-		if (cm_submit_x_make_ccache(ktname, kpname) == 0) {
+		if (!make_ccache ||
+		    (cm_submit_x_make_ccache(ktname, kpname) == 0)) {
 			k5 = TRUE;
 		}
 	}
