@@ -100,7 +100,7 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		_exit(ENOMEM);
 	}
 	/* Find the tokens that we might use for cert storage. */
-	mech = 0;
+	mech = CKM_RSA_X_509;
 	slotlist = PK11_GetAllTokens(mech, PR_FALSE, PR_FALSE, NULL);
 	if (slotlist == NULL) {
 		cm_log(1, "Error getting list of tokens.\n");
