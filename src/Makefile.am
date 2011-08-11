@@ -119,13 +119,15 @@ certmonger_LDADD = libcm.a \
 certmonger_session_SOURCES = main.c env-session.c
 certmonger_session_LDADD = libcm.a \
 		   $(OPENSSL_LIBS) $(CERTMONGER_LIBS) $(KRB5_LIBS) $(UUID_LIBS)
-noinst_PROGRAMS = tdbusm-check serial-check nl-check submit-x
+noinst_PROGRAMS = tdbusm-check serial-check nl-check submit-x toklist
 tdbusm_check_LDADD = libcm.a $(CERTMONGER_LIBS)
 serial_check_LDADD = libcm.a $(CERTMONGER_LIBS)
 nl_check_LDADD = libcm.a $(CERTMONGER_LIBS)
 submit_x_CFLAGS = $(AM_CFLAGS) -DCM_SUBMIT_X_MAIN
 submit_x_SOURCES = submit-x.c submit-x.h submit-u.c submit-u.h log.c log.h
 submit_x_LDADD = $(XMLRPC_LIBS) $(KRB5_LIBS) $(TALLOC_LIBS) $(UUID_LIBS)
+toklist_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS)
+toklist_LDADD = $(NSS_LIBS)
 if WITH_CERTMASTER
 pkglibexec_PROGRAMS += certmaster-submit
 endif
