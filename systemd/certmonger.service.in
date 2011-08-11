@@ -3,10 +3,10 @@ Description=Certificate monitoring and PKI enrollment
 After=syslog.target network.target dbus.service
 
 [Service]
-Type=forking
+Type=dbus
 PIDFile=/var/run/certmonger.pid
 EnvironmentFile=-/etc/sysconfig/certmonger
-ExecStart=/usr/sbin/certmonger -S -p /var/run/certmonger.pid $OPTS
+ExecStart=/usr/sbin/certmonger -S -p /var/run/certmonger.pid -n $OPTS
 BusName=@CM_DBUS_NAME@
 
 [Install]
