@@ -121,6 +121,9 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	for (sle = slotlist->head;
 	     (key == NULL) && ((sle != NULL) && (sle->slot != NULL));
 	     sle = sle->next) {
+		if (sle->slot == PK11_GetInternalSlot()) {
+			cm_log(3, "Skipping NSS internal slot.\n");
+		}
 		/* Read the token's name. */
 		token = PK11_GetTokenName(sle->slot);
 		if (token != NULL) {
@@ -146,6 +149,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 			goto next_slot;
 		}
 		n_tokens++;
+
 		/* Be ready to count our uses of a PIN. */
 		memset(&cb_data, 0, sizeof(cb_data));
 		cb_data.entry = entry;

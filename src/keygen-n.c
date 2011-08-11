@@ -125,6 +125,9 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	for (sle = slotlist->head;
 	     ((sle != NULL) && (sle->slot != NULL));
 	     sle = sle->next) {
+		if (sle->slot == PK11_GetInternalSlot()) {
+			cm_log(3, "Skipping NSS internal slot.\n");
+		}
 		token = PK11_GetTokenName(sle->slot);
 		if (token != NULL) {
 			cm_log(3, "Found token '%s'.\n", token);
