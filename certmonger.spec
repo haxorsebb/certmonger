@@ -182,7 +182,7 @@ exit 0
 %endif
 
 %changelog
-* Wed Aug 10 2011 Nalin Dahyabhai <nalin@redhat.com> 0.44-1
+* Thu Aug 11 2011 Nalin Dahyabhai <nalin@redhat.com> 0.44-1
 - check specifically for cases where a specified token that we need to
   use just isn't present for whatever reason (#697058)
 
