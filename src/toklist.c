@@ -97,6 +97,12 @@ main(int argc, char **argv)
 		} else {
 			printf("Found unnamed token.\n");
 		}
+		if (sle->slot == PK11_GetInternalSlot()) {
+			printf("\tIs internal slot.\n");
+		}
+		if (sle->slot == PK11_GetInternalKeySlot()) {
+			printf("\tIs internal key slot.\n");
+		}
 		memset(&info, 0, sizeof(info));
 		if (PK11_GetTokenInfo(sle->slot, &info) == SECSuccess) {
 			printf("\tFlags = %08lx\n", info.flags);
