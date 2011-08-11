@@ -97,6 +97,16 @@ cm_keyiread_need_pin(struct cm_store_entry *entry,
 	return pvt->need_pin(entry, state);
 }
 
+/* Check if we need a token to be present in order to access the key info. */
+int
+cm_keyiread_need_token(struct cm_store_entry *entry,
+		       struct cm_keyiread_state *state)
+{
+	struct cm_keyiread_state_pvt *pvt;
+	pvt = (struct cm_keyiread_state_pvt *) state;
+	return pvt->need_token(entry, state);
+}
+
 /* Clean up after reading the key info. */
 void
 cm_keyiread_done(struct cm_store_entry *entry, struct cm_keyiread_state *state)

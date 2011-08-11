@@ -32,6 +32,9 @@ struct cm_keygen_state_pvt {
 	/* Tell us if we need a PIN (or a new PIN) to access the key store. */
 	int (*need_pin)(struct cm_store_entry *entry,
 			struct cm_keygen_state *state);
+	/* Tell us if we need a token to be inserted to access the key store. */
+	int (*need_token)(struct cm_store_entry *entry,
+			  struct cm_keygen_state *state);
 	/* Clean up after key generation. */
 	void (*done)(struct cm_store_entry *entry,
 		     struct cm_keygen_state *state);

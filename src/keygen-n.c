@@ -353,6 +353,20 @@ cm_keygen_n_need_pin(struct cm_store_entry *entry,
 	return -1;
 }
 
+/* Check if we need a token to be inserted to generate the key. */
+static int
+cm_keygen_n_need_token(struct cm_store_entry *entry,
+		       struct cm_keygen_state *state)
+{
+	int status;
+	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	if (WIFEXITED(status) &&
+	    (WEXITSTATUS(status) == CM_STATUS_ERROR_NO_TOKEN)) {
+		return 0;
+	}
+	return -1;
+}
+
 /* Clean up after key generation. */
 static void
 cm_keygen_n_done(struct cm_store_entry *entry, struct cm_keygen_state *state)
@@ -381,6 +395,7 @@ cm_keygen_n_start(struct cm_store_entry *entry)
 		state->pvt.get_fd = cm_keygen_n_get_fd;
 		state->pvt.saved_keypair = cm_keygen_n_saved_keypair;
 		state->pvt.need_pin = cm_keygen_n_need_pin;
+		state->pvt.need_token = cm_keygen_n_need_token;
 		state->pvt.done = cm_keygen_n_done;
 		state->subproc = cm_subproc_start(cm_keygen_n_main,
 						  NULL, entry, &settings);

@@ -415,6 +415,20 @@ cm_csrgen_n_need_pin(struct cm_store_entry *entry,
 	return -1;
 }
 
+/* Check if we need a token to be inserted to access the key information. */
+static int
+cm_csrgen_n_need_token(struct cm_store_entry *entry,
+		       struct cm_csrgen_state *state)
+{
+	int status;
+	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	if (WIFEXITED(status) &&
+	    (WEXITSTATUS(status) == CM_STATUS_ERROR_NO_TOKEN)) {
+		return 0;
+	}
+	return -1;
+}
+
 /* Clean up after CSR generation. */
 static void
 cm_csrgen_n_done(struct cm_store_entry *entry, struct cm_csrgen_state *state)
@@ -437,6 +451,7 @@ cm_csrgen_n_start(struct cm_store_entry *entry)
 		state->pvt.get_fd = &cm_csrgen_n_get_fd;
 		state->pvt.save_csr = &cm_csrgen_n_save_csr;
 		state->pvt.need_pin = &cm_csrgen_n_need_pin;
+		state->pvt.need_token = &cm_csrgen_n_need_token;
 		state->pvt.done = &cm_csrgen_n_done;
 		state->subproc = cm_subproc_start(cm_csrgen_n_main,
 						  NULL, entry, NULL);

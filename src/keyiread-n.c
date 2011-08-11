@@ -74,7 +74,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	CERTCertListNode *cnode;
 	CERTCertificate *cert;
 	struct cm_pin_cb_data cb_data;
-	int n_login_attempts, n_login_success;
+	int n_login_attempts, n_login_success, n_tokens;
 
 	/* Open the database. */
 	error = readwrite ? NSS_InitReadWrite(entry->cm_key_storage_location) :
@@ -117,6 +117,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	PK11_SetPasswordFunc(&cm_pin_read_for_cert_nss_cb);
 	n_login_attempts = 0;
 	n_login_success = 0;
+	n_tokens = 0;
 	for (sle = slotlist->head;
 	     (key == NULL) && ((sle != NULL) && (sle->slot != NULL));
 	     sle = sle->next) {
@@ -144,6 +145,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 			}
 			goto next_slot;
 		}
+		n_tokens++;
 		/* Be ready to count our uses of a PIN. */
 		memset(&cb_data, 0, sizeof(cb_data));
 		cb_data.entry = entry;
@@ -273,6 +275,11 @@ next_slot:
 	if (n_login_success < n_login_attempts) {
 		_exit(CM_STATUS_ERROR_AUTH);
 	}
+	if ((n_tokens == 0) &&
+	    (entry->cm_key_token != NULL) &&
+	    (strlen(entry->cm_key_token) > 0)) {
+		_exit(CM_STATUS_ERROR_NO_TOKEN);
+	}
 
 	return key;
 }
@@ -392,6 +399,20 @@ cm_keyiread_n_need_pin(struct cm_store_entry *entry,
 	return -1;
 }
 
+/* Check if we need a token to be inserted to access the key information. */
+static int
+cm_keyiread_n_need_token(struct cm_store_entry *entry,
+		         struct cm_keyiread_state *state)
+{
+	int status;
+	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	if (WIFEXITED(status) &&
+	    (WEXITSTATUS(status) == CM_STATUS_ERROR_NO_TOKEN)) {
+		return 0;
+	}
+	return -1;
+}
+
 /* Get a selectable-for-read descriptor we can poll for status changes. */
 static int
 cm_keyiread_n_get_fd(struct cm_store_entry *entry,
@@ -433,6 +454,7 @@ cm_keyiread_n_start(struct cm_store_entry *entry)
 		memset(state, 0, sizeof(*state));
 		state->pvt.finished_reading = cm_keyiread_n_finished_reading;
 		state->pvt.need_pin = cm_keyiread_n_need_pin;
+		state->pvt.need_token = cm_keyiread_n_need_token;
 		state->pvt.ready = cm_keyiread_n_ready;
 		state->pvt.get_fd= cm_keyiread_n_get_fd;
 		state->pvt.done= cm_keyiread_n_done;

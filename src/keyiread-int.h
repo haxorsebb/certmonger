@@ -29,6 +29,9 @@ struct cm_keyiread_state_pvt {
 	/* Check if we need a PIN (or a new PIN) to succeed with the task. */
 	int (*need_pin)(struct cm_store_entry *entry,
 		        struct cm_keyiread_state *state);
+	/* Check if we need the token to succeed with the task. */
+	int (*need_token)(struct cm_store_entry *entry,
+			  struct cm_keyiread_state *state);
 	/* Get a selectable-for-read descriptor we can poll for status changes.
 	 * */
 	int (*get_fd)(struct cm_store_entry *entry,

@@ -71,6 +71,14 @@ cm_csrgen_need_pin(struct cm_store_entry *entry, struct cm_csrgen_state *state)
 	return pvt->need_pin(entry, state);
 }
 
+int
+cm_csrgen_need_token(struct cm_store_entry *entry,
+		     struct cm_csrgen_state *state)
+{
+	struct cm_csrgen_state_pvt *pvt = (struct cm_csrgen_state_pvt *) state;
+	return pvt->need_token(entry, state);
+}
+
 void
 cm_csrgen_done(struct cm_store_entry *entry, struct cm_csrgen_state *state)
 {

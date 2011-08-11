@@ -1865,9 +1865,13 @@ request_get_status(DBusConnection *conn, DBusMessage *msg,
 		case CM_NEWLY_ADDED_DECIDING:
 			stuck = FALSE;
 			break;
+		case CM_NEED_KEYINFO_READ_TOKEN:
 		case CM_NEED_KEYINFO_READ_PIN:
+		case CM_NEED_KEY_GEN_TOKEN:
 		case CM_NEED_KEY_GEN_PIN:
+		case CM_NEED_CSR_GEN_TOKEN:
 		case CM_NEED_CSR_GEN_PIN:
+		case CM_NEWLY_ADDED_NEED_KEYINFO_READ_TOKEN:
 		case CM_NEWLY_ADDED_NEED_KEYINFO_READ_PIN:
 		case CM_NEED_GUIDANCE:
 		case CM_NEED_CA:

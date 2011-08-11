@@ -52,7 +52,13 @@ EXTRA_DIST = \
 	015-lockedkey-sql/expected.out \
 	015-lockedkey-sql/run.sh \
 	016-dates/expected.out \
-	016-dates/run.sh
+	016-dates/run.sh \
+	017-notoken/expected.out \
+	017-notoken/run.sh \
+	017-notoken-dbm/expected.out \
+	017-notoken-dbm/run.sh \
+	017-notoken-sql/expected.out \
+	017-notoken-sql/run.sh
 
 subdirs = \
 	001-keyiread \
@@ -70,7 +76,8 @@ subdirs = \
 	013-enckey \
 	014-prefs \
 	015-lockedkey \
-	016-dates
+	016-dates \
+	017-notoken
 
 if HAVE_DBM_NSSDB
 subdirs += \
@@ -78,7 +85,8 @@ subdirs += \
 	011-dbinit-dbm \
 	012-dbadd-dbm \
 	013-enckey-dbm \
-	015-lockedkey-dbm
+	015-lockedkey-dbm \
+	017-notoken-dbm
 endif
 
 if HAVE_SQL_NSSDB
@@ -87,7 +95,8 @@ subdirs += \
 	011-dbinit-sql \
 	012-dbadd-sql \
 	013-enckey-sql \
-	015-lockedkey-sql
+	015-lockedkey-sql \
+	017-notoken-sql
 endif
 
 check: all

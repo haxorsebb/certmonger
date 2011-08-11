@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.43
+Version:	0.44
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -182,6 +182,10 @@ exit 0
 %endif
 
 %changelog
+* Wed Aug 10 2011 Nalin Dahyabhai <nalin@redhat.com> 0.44-1
+- check specifically for cases where a specified token that we need to
+  use just isn't present for whatever reason (#697058)
+
 * Wed Aug 10 2011 Nalin Dahyabhai <nalin@redhat.com> 0.43-1
 - add a -K option to ipa-submit, to use the current ccache, which makes
   it easier to test

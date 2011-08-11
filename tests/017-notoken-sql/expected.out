@@ -1,0 +1,26 @@
+[Creating database.]
+[Generating key (sql) with no token.]
+NEED_KEY_PAIR
+-START-
+GENERATING_KEY_PAIR
+NEED_KEY_GEN_TOKEN
+-STOP-
+state=NEED_KEY_GEN_TOKEN
+[Creating database.]
+[Reading Key Info (sql) with no token.]
+NEED_KEYINFO
+-START-
+READING_KEYINFO
+NEED_KEYINFO_READ_TOKEN
+-STOP-
+state=NEED_KEYINFO_READ_TOKEN
+[Creating database.]
+[Generating CSR (sql) with no token.]
+HAVE_KEYINFO
+-START-
+NEED_CSR
+GENERATING_CSR
+NEED_CSR_GEN_TOKEN
+-STOP-
+state=NEED_CSR_GEN_TOKEN
+[Test complete.]

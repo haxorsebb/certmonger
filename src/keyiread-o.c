@@ -173,6 +173,20 @@ cm_keyiread_o_need_pin(struct cm_store_entry *entry,
 	return -1;
 }
 
+/* Check if we need a token to be inserted to access the key information. */
+static int
+cm_keyiread_o_need_token(struct cm_store_entry *entry,
+		         struct cm_keyiread_state *state)
+{
+	int status;
+	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	if (WIFEXITED(status) &&
+	    (WEXITSTATUS(status) == CM_STATUS_ERROR_NO_TOKEN)) {
+		return 0;
+	}
+	return -1;
+}
+
 /* Check if something changed, for example we finished reading the data we need
  * from the key file. */
 static int
@@ -220,6 +234,7 @@ cm_keyiread_o_start(struct cm_store_entry *entry)
 		memset(state, 0, sizeof(*state));
 		state->pvt.finished_reading = cm_keyiread_o_finished_reading;
 		state->pvt.need_pin = cm_keyiread_o_need_pin;
+		state->pvt.need_token = cm_keyiread_o_need_token;
 		state->pvt.ready = cm_keyiread_o_ready;
 		state->pvt.get_fd= cm_keyiread_o_get_fd;
 		state->pvt.done= cm_keyiread_o_done;

@@ -38,9 +38,9 @@ int cm_keyiread_need_pin(struct cm_store_entry *entry,
 /* Get a selectable-for-read descriptor we can poll for status changes. */
 int cm_keyiread_get_fd(struct cm_store_entry *entry,
 		       struct cm_keyiread_state *state);
-/* Check if we need a PIN (or a new PIN) to read information about the key. */
-int cm_keyiread_need_pin(struct cm_store_entry *entry,
-			 struct cm_keyiread_state *state);
+/* Check if we need the token to be inserted to read information about the key. */
+int cm_keyiread_need_token(struct cm_store_entry *entry,
+			   struct cm_keyiread_state *state);
 /* Clean up after reading the key info. */
 void cm_keyiread_done(struct cm_store_entry *entry,
 		      struct cm_keyiread_state *state);
