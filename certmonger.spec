@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.45
+Version:	0.46
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -182,6 +182,10 @@ exit 0
 %endif
 
 %changelog
+* Mon Aug 15 2011 Nalin Dahyabhai <nalin@redhat.com> 0.46-1
+- treat the ability to access keys in an NSS database without using a PIN,
+  when we've been told we need one, as an error (#692766, really this time)
+
 * Thu Aug 11 2011 Nalin Dahyabhai <nalin@redhat.com> 0.45-1
 - modify the systemd .service file to be a proper 'dbus' service (more
   of #718172)
