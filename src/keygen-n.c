@@ -126,7 +126,9 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	     ((sle != NULL) && (sle->slot != NULL));
 	     sle = sle->next) {
 		if (sle->slot == PK11_GetInternalSlot()) {
-			cm_log(3, "Skipping NSS internal slot.\n");
+			cm_log(3, "Skipping NSS internal slot (%s).\n",
+			       PK11_GetTokenName(sle->slot));
+			goto next_slot;
 		}
 		token = PK11_GetTokenName(sle->slot);
 		if (token != NULL) {
@@ -141,6 +143,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			slot = sle->slot;
 			break;
 		}
+next_slot:
 		if (sle == slotlist->tail) {
 			break;
 		}
@@ -181,6 +184,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	memset(&cb_data, 0, sizeof(cb_data));
 	cb_data.entry = entry;
 	cb_data.n_attempts = 0;
+	pin = NULL;
 	/* If we're supposed to be using a PIN, and we're offered a chance to
 	 * set one, do it now. */
 	if (readwrite) {
@@ -195,7 +199,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				}
 				_exit(CM_STATUS_ERROR_AUTH);
 			}
-			PK11_InitPin(slot, NULL, pin);
+			PK11_InitPin(slot, NULL, pin ? pin : "");
 			if (PK11_NeedUserInit(slot)) {
 				cm_log(1, "Key generation slot still "
 				       "needs user PIN to be set.\n");
@@ -208,45 +212,45 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			}
 			/* We're authenticated now, so count this as a use of
 			 * the PIN. */
-			cb_data.n_attempts++;
+			if ((pin != NULL) && (strlen(pin) > 0)) {
+				cb_data.n_attempts++;
+			}
 		}
 	}
 	/* Now log in, if we have to. */
-	if (PK11_NeedLogin(slot)) {
-		if (cm_pin_read_for_key(entry, &pin) != 0) {
-			cm_log(1, "Error reading PIN for key store, "
-			       "failing to generate CSR.\n");
-			PK11_FreeSlotList(slotlist);
-			error = NSS_Shutdown();
-			if (error != SECSuccess) {
-				cm_log(1, "Error shutting down NSS.\n");
-			}
-			_exit(CM_STATUS_ERROR_AUTH);
-		}
-		PK11_SetPasswordFunc(&cm_pin_read_for_key_nss_cb);
-		error = PK11_Authenticate(slot, PR_TRUE, &cb_data);
+	if (cm_pin_read_for_key(entry, &pin) != 0) {
+		cm_log(1, "Error reading PIN for key store, "
+		       "failing to generate CSR.\n");
+		PK11_FreeSlotList(slotlist);
+		error = NSS_Shutdown();
 		if (error != SECSuccess) {
-			cm_log(1, "Error authenticating to key store.\n");
-			PK11_FreeSlotList(slotlist);
-			error = NSS_Shutdown();
-			if (error != SECSuccess) {
-				cm_log(1, "Error shutting down NSS.\n");
-			}
-			_exit(CM_STATUS_ERROR_AUTH);
+			cm_log(1, "Error shutting down NSS.\n");
 		}
-		if ((pin != NULL) &&
-		    (strlen(pin) > 0) &&
-		    (cb_data.n_attempts == 0)) {
-			cm_log(1, "PIN was not needed to auth to key "
-			       "store, though one was provided. "
-			       "Treating this as an error.\n");
-			PK11_FreeSlotList(slotlist);
-			error = NSS_Shutdown();
-			if (error != SECSuccess) {
-				cm_log(1, "Error shutting down NSS.\n");
-			}
-			_exit(CM_STATUS_ERROR_AUTH);
+		_exit(CM_STATUS_ERROR_AUTH);
+	}
+	PK11_SetPasswordFunc(&cm_pin_read_for_key_nss_cb);
+	error = PK11_Authenticate(slot, PR_TRUE, &cb_data);
+	if (error != SECSuccess) {
+		cm_log(1, "Error authenticating to key store.\n");
+		PK11_FreeSlotList(slotlist);
+		error = NSS_Shutdown();
+		if (error != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
 		}
+		_exit(CM_STATUS_ERROR_AUTH);
+	}
+	if ((pin != NULL) &&
+	    (strlen(pin) > 0) &&
+	    (cb_data.n_attempts == 0)) {
+		cm_log(1, "PIN was not needed to auth to key "
+		       "store, though one was provided. "
+		       "Treating this as an error.\n");
+		PK11_FreeSlotList(slotlist);
+		error = NSS_Shutdown();
+		if (error != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
+		}
+		_exit(CM_STATUS_ERROR_AUTH);
 	}
 	/* Generate the key pair. */
 	pubkey = NULL;

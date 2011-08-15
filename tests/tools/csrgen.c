@@ -94,6 +94,12 @@ main(int argc, char **argv)
 			ret = 0;
 		} else {
 			printf("Failed to save.\n");
+			if (cm_csrgen_need_token(entry, state) == 0) {
+				printf("(Need token.)\n");
+			} else
+			if (cm_csrgen_need_pin(entry, state) == 0) {
+				printf("(Need PIN.)\n");
+			}
 			ret = 1;
 		}
 		cm_csrgen_done(entry, state);

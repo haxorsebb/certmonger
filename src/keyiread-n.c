@@ -74,7 +74,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	CERTCertListNode *cnode;
 	CERTCertificate *cert;
 	struct cm_pin_cb_data cb_data;
-	int n_login_attempts, n_login_success, n_tokens;
+	int n_tokens;
 
 	/* Open the database. */
 	error = readwrite ? NSS_InitReadWrite(entry->cm_key_storage_location) :
@@ -110,19 +110,20 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	/* Walk the list looking for the requested token, or look at all of
 	 * them if none specifically was requested. */
 	key = NULL;
+	pin = NULL;
 	if (cm_pin_read_for_key(entry, &pin) != 0) {
 		cm_log(1, "Error reading PIN for key storage.\n");
 		_exit(CM_STATUS_ERROR_AUTH);
 	}
 	PK11_SetPasswordFunc(&cm_pin_read_for_cert_nss_cb);
-	n_login_attempts = 0;
-	n_login_success = 0;
 	n_tokens = 0;
 	for (sle = slotlist->head;
 	     (key == NULL) && ((sle != NULL) && (sle->slot != NULL));
 	     sle = sle->next) {
 		if (sle->slot == PK11_GetInternalSlot()) {
-			cm_log(3, "Skipping NSS internal slot.\n");
+			cm_log(3, "Skipping NSS internal slot (%s).\n",
+			       PK11_GetTokenName(sle->slot));
+			goto next_slot;
 		}
 		/* Read the token's name. */
 		token = PK11_GetTokenName(sle->slot);
@@ -159,48 +160,59 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 		 * chance to set one, do it now. */
 		if (readwrite) {
 			if (PK11_NeedUserInit(sle->slot)) {
-				n_login_attempts++;
 				if (cm_pin_read_for_key(entry, &pin) != 0) {
 					cm_log(1, "Error reading PIN to assign "
 					       "to storage slot, skipping.\n");
 					goto next_slot;
 				}
-				PK11_InitPin(sle->slot, NULL, pin);
+				PK11_InitPin(sle->slot, NULL, pin ? pin : "");
 				if (PK11_NeedUserInit(sle->slot)) {
 					cm_log(1, "Key storage slot still "
 					       "needs user PIN to be set.\n");
 					goto next_slot;
 				}
-				n_login_success++;
-				/* We're authenticated now, so count this as a
-				 * use of the PIN. */
-				cb_data.n_attempts++;
+				if ((pin != NULL) && (strlen(pin) > 0)) {
+					/* We're authenticated now, so count
+					 * this as a use of the PIN. */
+					cb_data.n_attempts++;
+				}
 			}
 		}
 
 		/* Now log in, if we have to. */
-		if (PK11_NeedLogin(sle->slot)) {
-			n_login_attempts++;
-			if (cm_pin_read_for_key(entry, &pin) != 0) {
-				cm_log(1, "Error reading PIN for key storage "
-				       "token \"%s\", skipping.\n", token);
-				goto next_slot;
-			}
-			error = PK11_Authenticate(sle->slot, PR_TRUE, &cb_data);
+		if (cm_pin_read_for_key(entry, &pin) != 0) {
+			cm_log(1, "Error reading PIN for key storage "
+			       "token \"%s\", skipping.\n", token);
+			PK11_FreeSlotList(slotlist);
+			error = NSS_Shutdown();
 			if (error != SECSuccess) {
-				cm_log(1, "Error authenticating to token "
-				       "\"%s\".\n", token);
-				goto next_slot;
+				cm_log(1, "Error shutting down NSS.\n");
 			}
-			if ((pin != NULL) &&
-			    (strlen(pin) > 0) &&
-			    (cb_data.n_attempts == 0)) {
-				cm_log(1, "PIN was not needed to auth to token"
-				       ", though one was provided. "
-				       "Treating this as an error.\n");
-				goto next_slot;
+			_exit(CM_STATUS_ERROR_AUTH);
+		}
+		error = PK11_Authenticate(sle->slot, PR_TRUE, &cb_data);
+		if (error != SECSuccess) {
+			cm_log(1, "Error authenticating to token "
+			       "\"%s\".\n", token);
+			PK11_FreeSlotList(slotlist);
+			error = NSS_Shutdown();
+			if (error != SECSuccess) {
+				cm_log(1, "Error shutting down NSS.\n");
 			}
-			n_login_success++;
+			_exit(CM_STATUS_ERROR_AUTH);
+		}
+		if ((pin != NULL) &&
+		    (strlen(pin) > 0) &&
+		    (cb_data.n_attempts == 0)) {
+			cm_log(1, "PIN was not needed to auth to token"
+			       ", though one was provided. "
+			       "Treating this as an error.\n");
+			PK11_FreeSlotList(slotlist);
+			error = NSS_Shutdown();
+			if (error != SECSuccess) {
+				cm_log(1, "Error shutting down NSS.\n");
+			}
+			_exit(CM_STATUS_ERROR_AUTH);
 		}
 
 		/* Walk the list of private keys in the token, looking at each
@@ -275,10 +287,6 @@ next_slot:
 
 	PORT_FreeArena(arena, PR_TRUE);
 
-	/* If we tried to log into a token and failed, flag that error. */
-	if (n_login_success < n_login_attempts) {
-		_exit(CM_STATUS_ERROR_AUTH);
-	}
 	if ((n_tokens == 0) &&
 	    (entry->cm_key_token != NULL) &&
 	    (strlen(entry->cm_key_token) > 0)) {
