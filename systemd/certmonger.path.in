@@ -7,3 +7,4 @@ DirectoryNotEmpty=@CM_STORE_REQUESTS_DIRECTORY@
 
 [Install]
 WantedBy=multi-user.target
+Also=certmonger.service

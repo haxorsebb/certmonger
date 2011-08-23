@@ -11,3 +11,4 @@ BusName=@CM_DBUS_NAME@
 
 [Install]
 WantedBy=multi-user.target
+Also=certmonger.path
