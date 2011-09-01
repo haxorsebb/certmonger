@@ -20,7 +20,7 @@
 
 Name:		certmonger
 Version:	0.46
-Release:	1%{?dist}
+Release:	1%{?dist}.1
 Summary:	Certificate status monitor and PKI enrollment client
 
 Group:		System Environment/Daemons
@@ -67,6 +67,11 @@ Requires(post):	systemd-sysv
 %if %{sysvinit}
 Requires(post):	/sbin/chkconfig, /sbin/service
 Requires(preun):	/sbin/chkconfig, /sbin/service
+%endif
+
+%if 0%{?fedora} >= 15
+# Certain versions of libtevent have incorrect internal ABI versions.
+Conflicts: libtevent < 0.9.13
 %endif
 
 %description
@@ -182,6 +187,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Aug 29 2011 Stephen Gallagher <sgallagh@redhat.com> - 0.45-1.1
+- Rebuild against fixed libtevent version
+
 * Mon Aug 15 2011 Nalin Dahyabhai <nalin@redhat.com> 0.46-1
 - treat the ability to access keys in an NSS database without using a PIN,
   when we've been told we need one, as an error (#692766, really this time)
