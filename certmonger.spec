@@ -19,8 +19,8 @@
 %endif
 
 Name:		certmonger
-Version:	0.46
-Release:	1%{?dist}.1
+Version:	0.47
+Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
 Group:		System Environment/Daemons
@@ -187,6 +187,12 @@ exit 0
 %endif
 
 %changelog
+* Tue Sep 27 2011 Nalin Dahyabhai <nalin@redhat.com> 0.47-1
+- getcert: distinguish between {stat() succeeds but isn't a directory} and
+  {stat() failed} when printing an error message (#739903)
+- getcert resubmit/start-tracking: when we're looking for an existing request
+  by ID, and we don't find one, note that specifically (#741262)
+
 * Mon Aug 29 2011 Stephen Gallagher <sgallagh@redhat.com> - 0.46-1.1
 - Rebuild against fixed libtevent version
 
