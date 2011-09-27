@@ -1422,6 +1422,12 @@ set_tracking(const char *argv0, const char *category,
 			}
 		} else {
 			/* Add a new request. */
+			if (id != NULL) {
+				printf(_("No request found with specified "
+					 "nickname.\n"));
+				help(argv0, category);
+				return 1;
+			}
 			if (((dbdir != NULL) && (nickname == NULL)) ||
 			    ((dbdir == NULL) && (nickname != NULL))) {
 				printf(_("Database location or nickname "
@@ -1636,6 +1642,12 @@ resubmit(const char *argv0, int argc, char **argv)
 						  certfile, verbose);
 	}
 	if (request == NULL) {
+		if (id != NULL) {
+			printf(_("No request found with specified "
+				 "nickname.\n"));
+			help(argv0, "resubmit");
+			return 1;
+		}
 		if (((dbdir != NULL) && (nickname == NULL)) ||
 		    ((dbdir == NULL) && (nickname != NULL))) {
 			printf(_("Database location or nickname "
