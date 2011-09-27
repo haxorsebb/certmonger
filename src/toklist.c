@@ -57,6 +57,10 @@ main(int argc, char **argv)
 		case 'm':
 			mech = atol(optarg);
 			break;
+		default:
+			printf("Usage: toklist [-d dbdir] [-m mechnum]\n");
+			return 1;
+			break;
 		}
 	}
 	printf("Mechanism %ld:\n", (long) mech);
