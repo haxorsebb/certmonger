@@ -107,10 +107,14 @@ ensure_path_is_directory(char *path)
 	if (stat(path, &st) == 0) {
 		if (S_ISDIR(st.st_mode)) {
 			return 0;
+		} else {
+			printf(_("Path \"%s\" is not a directory.\n"), path);
+			return -1;
 		}
+	} else {
+		printf(_("Path \"%s\": %s.\n"), path, strerror(errno));
+		return -1;
 	}
-	printf(_("Path \"%s\" is not a directory.\n"), path);
-	return -1;
 }
 
 /* Ensure that a pathname is at least in a directory which exists. */
