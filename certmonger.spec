@@ -27,6 +27,7 @@ Group:		System Environment/Daemons
 License:	GPLv3+
 URL:		http://certmonger.fedorahosted.org
 Source0:	http://fedorahosted.org/released/certmonger/certmonger-%{version}.tar.gz
+Source1:	http://fedorahosted.org/released/certmonger/certmonger-%{version}.tar.gz.sig
 BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 BuildRequires:	dbus-devel, nspr-devel, nss-devel, openssl-devel
