@@ -187,7 +187,7 @@ exit 0
 %endif
 
 %changelog
-* Mon Aug 29 2011 Stephen Gallagher <sgallagh@redhat.com> - 0.45-1.1
+* Mon Aug 29 2011 Stephen Gallagher <sgallagh@redhat.com> - 0.46-1.1
 - Rebuild against fixed libtevent version
 
 * Mon Aug 15 2011 Nalin Dahyabhai <nalin@redhat.com> 0.46-1
