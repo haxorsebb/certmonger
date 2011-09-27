@@ -72,12 +72,10 @@ To-do:
   * Make certmonger a proper daemon.
     * Sort out logging levels for log messages. (1 day)
       MUST
-  * See about learning about PKCS11 modules and PKCS12 bundles as storage
-    types.
   * Local signing should support signing with a key other than the one
     used to generate the CSR. (2 days)
   * Local signing should track a revocation list for each signing key
-    and publish a CRL for it. (3 days)
+    and maintain a CRL for it. (3 days)
     COULD
   * Learn to handle keys and certificates stored in files in virtual
     guests of the current OS instance (using libguestfs).  Would need
