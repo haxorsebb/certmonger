@@ -44,11 +44,16 @@ for email in "" root@localhost root@localhost,root@localhost.localdomain; do
 for principal in "" root@EXAMPLE.COM root@EXAMPLE.COM,root@FOO.EXAMPLE.COM; do
 for ku in "" 1 11 111 ; do
 for eku in "" id-kp-clientAuth id-kp-clientAuth,id-kp-emailProtection ; do
+for challengepassword in "" ChallengePasswordIsEncodedInPlainText ; do
+for certfname in "" CertificateFriendlyName ; do
+	${certnickname:+cert_nickname=$cert_nickname}
 	# Generate a new CSR using the copy of the key in the NSS database.
 	cat > entry.$size <<- EOF
 	key_storage_type=NSSDB
 	key_storage_location=$tmpdir
 	key_nickname=keyi$size
+	${certfname:+cert_nickname=$certfname}
+	${challengepassword:+challenge_password=$challengepassword}
 	${subject:+template_subject=$subject}
 	${hostname:+template_hostname=$hostname}
 	${email:+template_email=$email}
@@ -61,6 +66,8 @@ for eku in "" id-kp-clientAuth id-kp-clientAuth,id-kp-emailProtection ; do
 	cat > entry.$size <<- EOF
 	key_storage_type=FILE
 	key_storage_location=$tmpdir/key.$size
+	${certfname:+cert_nickname=$certfname}
+	${challengepassword:+challenge_password=$challengepassword}
 	${subject:+template_subject=$subject}
 	${hostname:+template_hostname=$hostname}
 	${email:+template_email=$email}
@@ -95,6 +102,8 @@ for eku in "" id-kp-clientAuth id-kp-clientAuth,id-kp-emailProtection ; do
 		exit 1
 	fi
 	iteration=`expr $iteration + 1`
+done
+done
 done
 done
 done
