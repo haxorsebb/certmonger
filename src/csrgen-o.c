@@ -61,8 +61,8 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	X509_REQ *req;
 	RSA *rsa;
 	EVP_PKEY *pkey;
-	char buf[LINE_MAX], *p, *q, *s, *nickname, *pin;
-	unsigned char *extensions, *unickname;
+	char buf[LINE_MAX], *p, *q, *s, *nickname, *pin, *password;
+	unsigned char *extensions, *unickname, *upassword;
 	const char *default_cn = CM_DEFAULT_CERT_SUBJECT_CN;
 	size_t extensions_len;
 	long error;
@@ -186,6 +186,15 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 								  V_ASN1_PRINTABLESTRING,
 								  unickname,
 								  strlen(nickname));
+				}
+				password = entry->cm_challenge_password;
+				upassword = (unsigned char *) password;
+				if (password != NULL) {
+					X509_REQ_add1_attr_by_NID(req,
+								  NID_pkcs9_challengePassword,
+								  V_ASN1_PRINTABLESTRING,
+								  upassword,
+								  strlen(password));
 				}
 				X509_REQ_sign(req, pkey, cm_prefs_ossl_hash());
 				PEM_write_X509_REQ_NEW(status, req);

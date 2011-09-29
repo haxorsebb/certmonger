@@ -87,6 +87,9 @@ struct cm_store_entry {
 	char **cm_template_principal;
 	char *cm_template_ku;
 	char *cm_template_eku;
+	/* A challenge password, which may be included (in cleartext form!) in
+	 * a CSR. */
+	char *cm_challenge_password;
 	/* The CSR, base64-encoded. */
 	char *cm_csr;
 	/* Our idea of the state of the cert. */
