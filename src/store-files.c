@@ -83,6 +83,8 @@ enum cm_store_file_field {
 	cm_store_entry_field_challenge_password,
 
 	cm_store_entry_field_csr,
+	cm_store_entry_field_spkac,
+
 	cm_store_entry_field_state,
 
 	cm_store_entry_field_autorenew,
@@ -154,6 +156,7 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_challenge_password, "challenge_password"},
 
 	{cm_store_entry_field_csr, "csr"},
+	{cm_store_entry_field_spkac, "spkac"},
 	{cm_store_entry_field_state, "state"},
 
 	{cm_store_entry_field_autorenew, "autorenew"},
@@ -550,6 +553,9 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_csr:
 				ret->cm_csr = free_if_empty(p);
 				break;
+			case cm_store_entry_field_spkac:
+				ret->cm_spkac = free_if_empty(p);
+				break;
 			case cm_store_entry_field_state:
 				ret->cm_state = cm_store_state_from_string(p);
 				talloc_free(p);
@@ -653,6 +659,7 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_template_eku:
 			case cm_store_entry_field_challenge_password:
 			case cm_store_entry_field_csr:
+			case cm_store_entry_field_spkac:
 			case cm_store_entry_field_state:
 			case cm_store_entry_field_autorenew:
 			case cm_store_entry_field_monitor:
@@ -918,6 +925,8 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 				entry->cm_challenge_password);
 
 	cm_store_file_write_str(fp, cm_store_entry_field_csr, entry->cm_csr);
+	cm_store_file_write_str(fp, cm_store_entry_field_spkac,
+				entry->cm_spkac);
 
 	cm_store_file_write_str(fp, cm_store_entry_field_state,
 				cm_store_state_as_string(entry->cm_state));

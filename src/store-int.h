@@ -92,6 +92,8 @@ struct cm_store_entry {
 	char *cm_challenge_password;
 	/* The CSR, base64-encoded. */
 	char *cm_csr;
+	/* The SPKAC, base64-encoded. */
+	char *cm_spkac;
 	/* Our idea of the state of the cert. */
 	enum cm_state {
 		CM_INVALID,
