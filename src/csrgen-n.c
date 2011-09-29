@@ -89,6 +89,28 @@ cm_csrgen_n_set_of_cert_tmpattr_template[] = {
 	.size = 0,
 	},
 };
+static const SEC_ASN1Template
+cm_csrgen_n_cert_pkac_template[] = {
+	{
+	.kind = SEC_ASN1_SEQUENCE,
+	.offset = 0,
+	.sub = NULL,
+	.size = sizeof(CERTPublicKeyAndChallenge),
+	},
+	{
+	.kind = SEC_ASN1_ANY,
+	.offset = offsetof(CERTPublicKeyAndChallenge, spki),
+	.sub = NULL,
+	.size = sizeof(SECItem),
+	},
+	{
+	.kind = SEC_ASN1_IA5_STRING,
+	.offset = offsetof(CERTPublicKeyAndChallenge, challenge),
+	.sub = &SEC_IA5StringTemplate,
+	.size = sizeof(SECItem),
+	},
+	{0, 0, NULL, 0},
+};
 static int
 compare_items(const void *a, const void *b)
 {
@@ -200,13 +222,14 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	SECKEYPrivateKey *privkey;
 	SECKEYPublicKey *pubkey;
 	CERTSubjectPublicKeyInfo *spki;
+	CERTPublicKeyAndChallenge pkac;
 	CERTCertificateRequest *req;
-	CERTSignedData sreq;
+	CERTSignedData sreq, spkac;
 	CERTName *name;
 	PLArenaPool *arena;
-	SECItem ereq, esreq, *attrs;
+	SECItem ereq, esreq, epkac, espkac, *attrs;
 	PRErrorCode ec;
-	char *b64, *p, *q;
+	char *b64, *b642, *p, *q;
 	SECOidData *sigoid;
 
 	/* Allocate an arena pool and a place to write status updates. */
@@ -330,6 +353,40 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		fclose(status);
 		_exit(CM_STATUS_ERROR_INTERNAL);
 	}
+	/* Build the PublicKeyAndChallenge. */
+	memset(&pkac, 0, sizeof(pkac));
+	if (SEC_ASN1EncodeItem(arena, &pkac.spki, spki,
+			       CERT_SubjectPublicKeyInfoTemplate) !=
+	    &pkac.spki) {
+		cm_log(1, "Error encoding subject public key info.\n");
+		SECKEY_DestroyPublicKey(pubkey);
+		SECKEY_DestroyPrivateKey(privkey);
+		PORT_FreeArena(arena, PR_TRUE);
+		error = NSS_Shutdown();
+		if (error != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
+		}
+		fclose(status);
+		_exit(CM_STATUS_ERROR_INTERNAL);
+	}
+	pkac.challenge.data = (unsigned char *) entry->cm_challenge_password;
+	pkac.challenge.len = entry->cm_challenge_password ?
+			     strlen(entry->cm_challenge_password) : 0;
+	/* Encode the PublicKeyAndChallenge. */
+	if (SEC_ASN1EncodeItem(arena, &epkac, &pkac,
+			       cm_csrgen_n_cert_pkac_template) !=
+	    &epkac) {
+		cm_log(1, "Error encoding public key and challenge.\n");
+		SECKEY_DestroyPublicKey(pubkey);
+		SECKEY_DestroyPrivateKey(privkey);
+		PORT_FreeArena(arena, PR_TRUE);
+		error = NSS_Shutdown();
+		if (error != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
+		}
+		fclose(status);
+		_exit(CM_STATUS_ERROR_INTERNAL);
+	}
 	/* Sign the request using the private key. */
 	sigoid = SECOID_FindOIDByTag(cm_prefs_nss_sig_alg(pubkey));
 	memset(&sreq, 0, sizeof(sreq));
@@ -362,6 +419,37 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		fclose(status);
 		_exit(CM_STATUS_ERROR_INTERNAL);
 	}
+	/* Sign the PublicKeyAndChallenge using the private key. */
+	memset(&spkac, 0, sizeof(spkac));
+	spkac.data = epkac;
+	if (SECOID_SetAlgorithmID(arena, &spkac.signatureAlgorithm,
+				  sigoid->offset, NULL) != SECSuccess) {
+		cm_log(1, "Error setting up algorithm ID for signing the "
+		       "certificate request.\n");
+		SECKEY_DestroyPublicKey(pubkey);
+		SECKEY_DestroyPrivateKey(privkey);
+		PORT_FreeArena(arena, PR_TRUE);
+		error = NSS_Shutdown();
+		if (error != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
+		}
+		fclose(status);
+		_exit(CM_STATUS_ERROR_INTERNAL);
+	}
+	if (SEC_SignData(&spkac.signature, spkac.data.data, spkac.data.len,
+			 privkey, sigoid->offset) != SECSuccess) {
+		cm_log(1, "Error signing public-key-and-challenge with "
+		       "the client's key.\n");
+		SECKEY_DestroyPublicKey(pubkey);
+		SECKEY_DestroyPrivateKey(privkey);
+		PORT_FreeArena(arena, PR_TRUE);
+		error = NSS_Shutdown();
+		if (error != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
+		}
+		fclose(status);
+		_exit(CM_STATUS_ERROR_INTERNAL);
+	}
 	/* Encode the signed request. */
 	sreq.signature.len *= 8;
 	if (SEC_ASN1EncodeItem(arena, &esreq, &sreq,
@@ -378,9 +466,26 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		fclose(status);
 		_exit(CM_STATUS_ERROR_INTERNAL);
 	}
+	/* Encode the signed public key and challenge. */
+	spkac.signature.len *= 8;
+	if (SEC_ASN1EncodeItem(arena, &espkac, &spkac,
+			       CERT_SignedDataTemplate) !=
+	    &espkac) {
+		cm_log(1, "Error encoding signed public key and challenge.\n");
+		SECKEY_DestroyPublicKey(pubkey);
+		SECKEY_DestroyPrivateKey(privkey);
+		PORT_FreeArena(arena, PR_TRUE);
+		error = NSS_Shutdown();
+		if (error != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
+		}
+		fclose(status);
+		_exit(CM_STATUS_ERROR_INTERNAL);
+	}
 	/* Encode the request into base-64 and pass it to our caller. */
 	b64 = NSSBase64_EncodeItem(arena, NULL, -1, &esreq);
-	if (b64 != NULL) {
+	b642 = NSSBase64_EncodeItem(arena, NULL, -1, &espkac);
+	if ((b64 != NULL) && (b642 != NULL)) {
 		fprintf(status, "-----BEGIN NEW CERTIFICATE REQUEST-----\n");
 		p = b64;
 		while (*p != '\0') {
@@ -389,6 +494,14 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			p = q + strspn(q, "\r\n");
 		}
 		fprintf(status, "-----END NEW CERTIFICATE REQUEST-----\n");
+		p = b642;
+		while (*p != '\0') {
+			q = p + strcspn(p, "\r\n");
+#if 0
+			fprintf(status, "%.*s\n", (int) (q - p), p);
+#endif
+			p = q + strspn(q, "\r\n");
+		}
 		SECKEY_DestroyPublicKey(pubkey);
 		SECKEY_DestroyPrivateKey(privkey);
 		PORT_FreeArena(arena, PR_TRUE);
