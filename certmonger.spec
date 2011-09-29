@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.47
+Version:	0.48
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -188,6 +188,10 @@ exit 0
 %endif
 
 %changelog
+* Thu Sep 29 2011 Nalin Dahyabhai <nalin@redhat.com> 0.48-1
+- don't incorrectly assume that CERT_ImportCerts() returns a NULL-terminated
+  array (#742348)
+
 * Tue Sep 27 2011 Nalin Dahyabhai <nalin@redhat.com> 0.47-1
 - getcert: distinguish between {stat() succeeds but isn't a directory} and
   {stat() failed} when printing an error message (#739903)
