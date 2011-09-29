@@ -1,21 +1,27 @@
 pk12util: PKCS12 EXPORT SUCCESSFUL
 MAC verified OK
 512 OK.
+Signature OK
 pk12util: PKCS12 EXPORT SUCCESSFUL
 MAC verified OK
 1024 OK.
+Signature OK
 pk12util: PKCS12 EXPORT SUCCESSFUL
 MAC verified OK
 1536 OK.
+Signature OK
 pk12util: PKCS12 EXPORT SUCCESSFUL
 MAC verified OK
 2048 OK.
+Signature OK
 pk12util: PKCS12 EXPORT SUCCESSFUL
 MAC verified OK
 3072 OK.
+Signature OK
 pk12util: PKCS12 EXPORT SUCCESSFUL
 MAC verified OK
 4096 OK.
+Signature OK
 The last CSR (the one with everything) was:
     0:d=0  hl=4 l= 779 cons: SEQUENCE          
     4:d=1  hl=4 l= 628 cons: SEQUENCE          

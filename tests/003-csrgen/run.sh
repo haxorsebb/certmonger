@@ -17,6 +17,7 @@ for size in 512 1024 1536 2048 3072 4096 ; do
 	EOF
 	# Generate a new CSR for that certificate's key.
 	$toolsdir/csrgen entry.$size > csr.nss.$size
+	grep ^spkac entry.$size | sed s,spkac,SPKAC, > spkac.nss.$size
 	# Export the certificate and key.
 	pk12util -d "$tmpdir" -o $size.p12 -W "" -n "keyi$size"
 	openssl pkcs12 -in $size.p12 -passin pass: -out key.$size -nodes 2>&1
@@ -26,9 +27,17 @@ for size in 512 1024 1536 2048 3072 4096 ; do
 	key_storage_location=$tmpdir/key.$size
 	EOF
 	$toolsdir/csrgen entry.$size > csr.openssl.$size
+	grep ^spkac entry.$size | sed s,spkac,SPKAC, > spkac.openssl.$size
 	# They'd better be the same!
 	if cmp csr.nss.$size csr.openssl.$size ; then
-		echo $size OK.
+		if cmp spkac.nss.$size spkac.openssl.$size ; then
+			echo $size OK.
+			cat spkac.nss.$size | openssl spkac -verify -noout 2>&1
+		else
+			echo With basic/default settings, SPKACs differ:
+			cat spkac.nss.$size spkac.openssl.$size
+			exit 1
+		fi
 	else
 		echo With basic/default settings, these differ:
 		cat csr.nss.$size csr.openssl.$size
