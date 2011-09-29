@@ -497,9 +497,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		p = b642;
 		while (*p != '\0') {
 			q = p + strcspn(p, "\r\n");
-#if 0
-			fprintf(status, "%.*s\n", (int) (q - p), p);
-#endif
+			fprintf(status, "%.*s", (int) (q - p), p);
 			p = q + strspn(q, "\r\n");
 		}
 		SECKEY_DestroyPublicKey(pubkey);
@@ -544,16 +542,31 @@ cm_csrgen_n_save_csr(struct cm_store_entry *entry,
 		     struct cm_csrgen_state *state)
 {
 	int status;
+	char *p, *q;
 	status = cm_subproc_get_exitstatus(entry, state->subproc);
 	if (!WIFEXITED(status) || (WEXITSTATUS(status) != 0)) {
 		return -1;
 	}
 	talloc_free(entry->cm_csr);
 	entry->cm_csr = talloc_strdup(entry,
-				      cm_subproc_get_msg(entry, state->subproc,
+				      cm_subproc_get_msg(entry,
+				     			 state->subproc,
 							 NULL));
 	if (entry->cm_csr == NULL) {
 		return ENOMEM;
+	}
+	p = strstr(entry->cm_csr, "-----END");
+	if (p != NULL) {
+		p = strstr(p, "REQUEST-----");
+		if (p != NULL) {
+			p += strcspn(p, "\r\n");
+			q = p + strspn(p, "\r\n");
+			entry->cm_spkac = talloc_strdup(entry, q);
+			if (entry->cm_spkac == NULL) {
+				return ENOMEM;
+			}
+			*q = '\0';
+		}
 	}
 	return 0;
 }
