@@ -245,10 +245,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 							PR_LANGUAGE_I_DEFAULT));
 			}
 			if (returned != NULL) {
-				for (i = 0; (returned[i] != NULL); i++) {
-					continue;
-				}
-				CERT_DestroyCertArray(returned, i);
+				CERT_DestroyCertArray(returned, 1);
 			}
 		} else {
 			cm_log(1, "Error getting handle to default NSS DB.\n");
