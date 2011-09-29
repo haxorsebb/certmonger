@@ -67,8 +67,8 @@ To-do:
     if we can do this as easily with PEM keys as OpenSSL doesn't appear to
     offer APIs for it, and I don't want to just break if the PEM module's not
     available. (more research needed)
-  * Add an option to getcert to specify a challenge password and incorporate
-    that value into signing requests, if given.
+  * Add an option to getcert to specify a challenge password and a friendly
+    name to add to a CSR.
   * Make certmonger a proper daemon.
     * Sort out logging levels for log messages. (1 day)
       MUST
