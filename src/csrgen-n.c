@@ -28,6 +28,7 @@
 #include <prerror.h>
 #include <nss.h>
 #include <nssb64.h>
+#include <secder.h>
 #include <pk11pub.h>
 #include <keyhi.h>
 #include <keythi.h>
@@ -72,34 +73,38 @@ cm_csrgen_n_cert_tmpattr_template[] = {
 	.size = sizeof(SECItem),
 	},
 	{
-	.kind = SEC_ASN1_SEQUENCE_OF,
+	.kind = SEC_ASN1_SET_OF,
 	.offset = offsetof(CERTAttribute, attrValue),
 	.sub = &SEC_OctetStringTemplate,
 	.size = 0,
 	},
 	{0, 0, NULL, 0},
 };
-
 static const SEC_ASN1Template
-cm_csrgen_n_sequence_of_cert_tmpattr_template[] = {
+cm_csrgen_n_set_of_cert_tmpattr_template[] = {
 	{
-	.kind = SEC_ASN1_SEQUENCE_OF,
+	.kind = SEC_ASN1_SET_OF,
 	.offset = 0,
 	.sub = cm_csrgen_n_cert_tmpattr_template,
 	.size = 0,
 	},
 };
-
+static int
+compare_items(const void *a, const void *b)
+{
+	return SECITEM_CompareItem(a, b);
+}
 static SECItem *
 cm_csrgen_n_attributes(struct cm_store_entry *entry, PLArenaPool *arena)
 {
 	SECItem encoded_exts, *exts[2];
 	unsigned char *extensions;
 	size_t extensions_length;
-	CERTAttribute attr[3], *attrs[4], **attrs_ptr;
+	CERTAttribute attr[3];
 	SECOidData *oid;
-	SECItem *item, friendly, *friendlies[2], encoded, plain;
-	int i;
+	SECItem *item, friendly, *friendlies[2], encoded, encattr[3], plain;
+	SECItem *encattrs[4], **encattrs_ptr, password, *passwords[2];
+	int i, n_attrs;
 
 	i = 0;
 	/* Build an attribute to hold the friendly name. */
@@ -114,7 +119,6 @@ cm_csrgen_n_attributes(struct cm_store_entry *entry, PLArenaPool *arena)
 				friendlies[1] = NULL;
 				attr[i].attrType = oid->oid;
 				attr[i].attrValue = friendlies;
-				attrs[i] = &attr[i];
 				i++;
 			}
 		}
@@ -132,15 +136,55 @@ cm_csrgen_n_attributes(struct cm_store_entry *entry, PLArenaPool *arena)
 		if (oid != NULL) {
 			attr[i].attrType = oid->oid;
 			attr[i].attrValue = exts;
-			attrs[i] = &attr[i];
 			i++;
 		}
 	}
-	attrs[i] = NULL;
-	attrs_ptr = attrs;
-	if (SEC_ASN1EncodeItem(arena, &encoded, &attrs_ptr,
-			       cm_csrgen_n_sequence_of_cert_tmpattr_template) == &encoded) {
-		item = SECITEM_ArenaDupItem(arena, &encoded);
+	/* Build an attribute to hold the challenge password. */
+	oid = SECOID_FindOIDByTag(SEC_OID_PKCS9_CHALLENGE_PASSWORD);
+	if (oid != NULL) {
+		plain.data = (unsigned char *) entry->cm_challenge_password;
+		if (plain.data != NULL) {
+			plain.len = strlen(entry->cm_challenge_password);
+			if (SEC_ASN1EncodeItem(arena, &password, &plain,
+					       SEC_PrintableStringTemplate) == &password) {
+				passwords[0] = &password;
+				passwords[1] = NULL;
+				attr[i].attrType = oid->oid;
+				attr[i].attrValue = passwords;
+				i++;
+			} else
+			if (SEC_ASN1EncodeItem(arena, &password, &plain,
+					       SEC_UTF8StringTemplate) == &password) {
+				passwords[0] = &password;
+				passwords[1] = NULL;
+				attr[i].attrType = oid->oid;
+				attr[i].attrValue = passwords;
+				i++;
+			}
+		}
+	}
+	n_attrs = i;
+	for (i = 0; i < n_attrs; i++) {
+		memset(&encattr[i], 0, sizeof(encattr[i]));
+		if (SEC_ASN1EncodeItem(arena, &encattr[i], &attr[i],
+				       cm_csrgen_n_cert_tmpattr_template) != &encattr[i]) {
+			break;
+		}
+	}
+	if (i == n_attrs) {
+		qsort(&encattr[0], n_attrs, sizeof(encattr[0]), compare_items);
+		for (i = 0; i < n_attrs; i++) {
+			encattrs[i] = &encattr[i];
+		}
+		encattrs[i] = NULL;
+		encattrs_ptr = &encattrs[0];
+		if (SEC_ASN1EncodeItem(arena, &encoded, &encattrs_ptr,
+				       SEC_SetOfAnyTemplate) == &encoded) {
+			item = SECITEM_ArenaDupItem(arena, &encoded);
+		} else {
+			cm_log(1, "Error encoding set of request attributes.\n");
+			item = NULL;
+		}
 	} else {
 		item = NULL;
 	}
@@ -260,8 +304,8 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	attrs = cm_csrgen_n_attributes(entry, arena);
 	if ((attrs == NULL) ||
 	    (SEC_ASN1DecodeItem(arena, &req->attributes,
-			        cm_csrgen_n_sequence_of_cert_tmpattr_template,
-			        attrs) != SECSuccess)) {
+				cm_csrgen_n_set_of_cert_tmpattr_template,
+				attrs) != SECSuccess)) {
 		req->attributes = NULL;
 	}
 	/* req->arena = arena;
@@ -394,7 +438,7 @@ cm_csrgen_n_save_csr(struct cm_store_entry *entry,
 	talloc_free(entry->cm_csr);
 	entry->cm_csr = talloc_strdup(entry,
 				      cm_subproc_get_msg(entry, state->subproc,
-				      			 NULL));
+							 NULL));
 	if (entry->cm_csr == NULL) {
 		return ENOMEM;
 	}
