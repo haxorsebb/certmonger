@@ -59,6 +59,8 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	FILE *keyfp, *status;
 	X509 *x;
 	X509_REQ *req;
+	NETSCAPE_SPKI spki;
+	NETSCAPE_SPKAC spkac;
 	RSA *rsa;
 	EVP_PKEY *pkey;
 	char buf[LINE_MAX], *p, *q, *s, *nickname, *pin, *password;
@@ -198,6 +200,26 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				}
 				X509_REQ_sign(req, pkey, cm_prefs_ossl_hash());
 				PEM_write_X509_REQ_NEW(status, req);
+				memset(&spkac, 0, sizeof(spkac));
+				spkac.challenge = M_ASN1_IA5STRING_new();
+				if (entry->cm_challenge_password != NULL) {
+					ASN1_STRING_set(spkac.challenge,
+							entry->cm_challenge_password,
+							strlen(entry->cm_challenge_password));
+				} else {
+					ASN1_STRING_set(spkac.challenge,
+							"", 0);
+				}
+				memset(&spki, 0, sizeof(spki));
+				spki.spkac = &spkac;
+				spki.sig_algor = req->sig_alg;
+				spki.signature = M_ASN1_BIT_STRING_new();
+				NETSCAPE_SPKI_set_pubkey(&spki, pkey);
+				NETSCAPE_SPKI_sign(&spki, pkey, cm_prefs_ossl_hash());
+				s = NETSCAPE_SPKI_b64_encode(&spki);
+				if (s != NULL) {
+					fprintf(status, "%s\n", s);
+				}
 			} else {
 				cm_log(1,
 				       "Error converting template certificate "
@@ -247,6 +269,7 @@ cm_csrgen_o_save_csr(struct cm_store_entry *entry,
 		     struct cm_csrgen_state *state)
 {
 	int status;
+	char *p, *q;
 	status = cm_subproc_get_exitstatus(entry, state->subproc);
 	if (!WIFEXITED(status) || (WEXITSTATUS(status) != 0)) {
 		return -1;
@@ -258,6 +281,19 @@ cm_csrgen_o_save_csr(struct cm_store_entry *entry,
 							 NULL));
 	if (entry->cm_csr == NULL) {
 		return ENOMEM;
+	}
+	p = strstr(entry->cm_csr, "-----END");
+	if (p != NULL) {
+		p = strstr(p, "REQUEST-----");
+		if (p != NULL) {
+			p += strcspn(p, "\r\n");
+			q = p + strspn(p, "\r\n");
+			entry->cm_spkac = talloc_strdup(entry, q);
+			if (entry->cm_spkac == NULL) {
+				return ENOMEM;
+			}
+			*q = '\0';
+		}
 	}
 	return 0;
 }
