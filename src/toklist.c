@@ -40,13 +40,13 @@
 int
 main(int argc, char **argv)
 {
+	NSSInitContext *ctx;
 	PLArenaPool *arena;
 	PK11SlotList *slotlist;
 	PK11SlotListElement *sle;
 	CK_MECHANISM_TYPE mech = 0;
 	CK_TOKEN_INFO info;
 	const char *dbdir = "/etc/pki/nssdb", *token;
-	SECStatus error;
 	int c;
 
 	while ((c = getopt(argc, argv, "d:m:")) != -1) {
@@ -66,8 +66,9 @@ main(int argc, char **argv)
 	printf("Mechanism %ld:\n", (long) mech);
 
 	/* Open the database. */
-	error = NSS_Init(dbdir);
-	if (error != SECSuccess) {
+	ctx = NSS_InitContext(dbdir, NULL, NULL, NULL, NULL,
+			      NSS_INIT_NOROOTINIT | NSS_INIT_NOMODDB);
+	if (ctx == NULL) {
 		printf("Unable to open NSS database '%s'.\n", dbdir);
 		_exit(CM_STATUS_ERROR_INITIALIZING);
 	}
@@ -76,7 +77,7 @@ main(int argc, char **argv)
 	arena = PORT_NewArena(sizeof(double));
 	if (arena == NULL) {
 		printf("Out of memory opening database '%s'.\n", dbdir);
-		if (NSS_Shutdown() != SECSuccess) {
+		if (NSS_ShutdownContext(ctx) != SECSuccess) {
 			printf("Error shutting down NSS.\n");
 		}
 		_exit(CM_STATUS_ERROR_INITIALIZING);
@@ -85,7 +86,7 @@ main(int argc, char **argv)
 	/* Find the tokens that we might use for key storage. */
 	slotlist = PK11_GetAllTokens(mech, PR_FALSE, PR_FALSE, NULL);
 	if (slotlist == NULL) {
-		if (NSS_Shutdown() != SECSuccess) {
+		if (NSS_ShutdownContext(ctx) != SECSuccess) {
 			printf("Error shutting down NSS.\n");
 		}
 		_exit(CM_STATUS_ERROR_NO_TOKEN);

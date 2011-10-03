@@ -63,7 +63,7 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	const char *p, *q;
 	SECStatus error;
 	SECItem *esdata = NULL, *ecert = NULL;
-	SECKEYPrivateKey *privkey;
+	struct cm_keyiread_n_ctx_and_key *privkey;
 	SECKEYPublicKey *pubkey;
 	CERTCertificate *ucert = NULL;
 	CERTCertExtension **extensions;
@@ -81,10 +81,6 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	privkey = cm_keyiread_n_get_private_key(entry, 0);
 	if (privkey == NULL) {
 		cm_log(1, "Unable to locate private key for self-signing.\n");
-		error = NSS_Shutdown();
-		if (error != SECSuccess) {
-			cm_log(1, "Error shutting down NSS.\n");
-		}
 		_exit(2);
 	}
 	/* Allocate a memory pool. */
@@ -123,7 +119,7 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	} else {
 		data = &sdata;
 	}
-	pubkey = SECKEY_ConvertToPublicKey(privkey);
+	pubkey = SECKEY_ConvertToPublicKey(privkey->key);
 	if (pubkey == NULL) {
 		cm_log(1, "Unable to convert private key to public key.\n");
 		_exit(1);
@@ -289,7 +285,7 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		_exit(1);
 	}
 	if (SEC_SignData(&scert.signature, ecert->data, ecert->len,
-			 privkey, sigoid->offset) != SECSuccess) {
+			 privkey->key, sigoid->offset) != SECSuccess) {
 		cm_log(1, "Unable to generate signature.\n");
 		_exit(1);
 	}
@@ -325,6 +321,16 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 	fprintf(status, "-----END CERTIFICATE-----\n");
 	fclose(status);
+
+	SECKEY_DestroyPublicKey(pubkey);
+	SECKEY_DestroyPrivateKey(privkey->key);
+	PORT_FreeArena(arena, PR_TRUE);
+	error = NSS_ShutdownContext(privkey->ctx);
+	PORT_FreeArena(privkey->arena, PR_TRUE);
+	if (error != SECSuccess) {
+		cm_log(1, "Error shutting down NSS.\n");
+	}
+
 	return 0;
 }
 

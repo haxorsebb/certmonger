@@ -58,6 +58,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	SECStatus error;
 	SECItem *item, subject;
 	char *p, *q;
+	NSSInitContext *ctx;
 	CERTCertDBHandle *certdb;
 	CERTCertList *certlist;
 	CERTCertificate **returned, cert;
@@ -67,9 +68,12 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	/* Open the database. */
 	settings = userdata;
 	readwrite = settings->readwrite;
-	error = readwrite ? NSS_InitReadWrite(entry->cm_cert_storage_location) :
-			    NSS_Init(entry->cm_cert_storage_location);
-	if (error != SECSuccess) {
+	ctx = NSS_InitContext(entry->cm_cert_storage_location,
+			      NULL, NULL, NULL, NULL,
+			      (readwrite ? 0 : NSS_INIT_READONLY) |
+			      NSS_INIT_NOROOTINIT |
+			      NSS_INIT_NOMODDB);
+	if (ctx == NULL) {
 		cm_log(1, "Unable to open NSS database '%s'.\n",
 		       entry->cm_cert_storage_location);
 	} else {
@@ -78,7 +82,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		if (arena == NULL) {
 			cm_log(1, "Error opening database '%s'.\n",
 			       entry->cm_cert_storage_location);
-			if (NSS_Shutdown() != SECSuccess) {
+			if (NSS_ShutdownContext(ctx) != SECSuccess) {
 				cm_log(1, "Error shutting down NSS.\n");
 			}
 			_exit(CM_STATUS_INTERNAL);
@@ -98,7 +102,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			if ((q == NULL) || (*p == '\0')) {
 				cm_log(1, "Unable to parse certificate.\n");
 				PORT_FreeArena(arena, PR_TRUE);
-				if (NSS_Shutdown() != SECSuccess) {
+				if (NSS_ShutdownContext(ctx) != SECSuccess) {
 					cm_log(1, "Error shutting down NSS.\n");
 				}
 				_exit(CM_STATUS_INTERNAL);
@@ -109,7 +113,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				cm_log(1, "Unable to decode certificate "
 				       "into buffer.\n");
 				PORT_FreeArena(arena, PR_TRUE);
-				if (NSS_Shutdown() != SECSuccess) {
+				if (NSS_ShutdownContext(ctx) != SECSuccess) {
 					cm_log(1, "Error shutting down NSS.\n");
 				}
 				_exit(CM_STATUS_INTERNAL);
@@ -123,7 +127,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				cm_log(1, "Unable to decode certificate "
 				       "signed data into buffer.\n");
 				PORT_FreeArena(arena, PR_TRUE);
-				if (NSS_Shutdown() != SECSuccess) {
+				if (NSS_ShutdownContext(ctx) != SECSuccess) {
 					cm_log(1, "Error shutting down NSS.\n");
 				}
 				_exit(CM_STATUS_INTERNAL);
@@ -135,7 +139,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				cm_log(1, "Unable to decode certificate "
 				       "data into buffer.\n");
 				PORT_FreeArena(arena, PR_TRUE);
-				if (NSS_Shutdown() != SECSuccess) {
+				if (NSS_ShutdownContext(ctx) != SECSuccess) {
 					cm_log(1, "Error shutting down NSS.\n");
 				}
 				_exit(CM_STATUS_INTERNAL);
@@ -251,7 +255,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(1, "Error getting handle to default NSS DB.\n");
 		}
 		PORT_FreeArena(arena, PR_TRUE);
-		if (NSS_Shutdown() != SECSuccess) {
+		if (NSS_ShutdownContext(ctx) != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
 	}

@@ -57,13 +57,15 @@ struct cm_keyiread_n_settings {
 	int readwrite:1;
 };
 
-SECKEYPrivateKey *
+struct cm_keyiread_n_ctx_and_key *
 cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 {
 	const char *token, *nickname;
 	char *pin;
 	PLArenaPool *arena;
 	SECStatus error;
+	NSSInitContext *ctx;
+	PK11SlotInfo *islot;
 	PK11SlotList *slotlist;
 	PK11SlotListElement *sle;
 	SECKEYPrivateKeyList *keys;
@@ -75,11 +77,15 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	CERTCertificate *cert;
 	struct cm_pin_cb_data cb_data;
 	int n_tokens;
+	struct cm_keyiread_n_ctx_and_key *ret;
 
 	/* Open the database. */
-	error = readwrite ? NSS_InitReadWrite(entry->cm_key_storage_location) :
-			    NSS_Init(entry->cm_key_storage_location);
-	if (error != SECSuccess) {
+	ctx = NSS_InitContext(entry->cm_key_storage_location,
+			      NULL, NULL, NULL, NULL,
+			      (readwrite ? 0 : NSS_INIT_READONLY) |
+			      NSS_INIT_NOROOTINIT |
+			      NSS_INIT_NOMODDB);
+	if (ctx == NULL) {
 		cm_log(1, "Unable to open NSS database '%s'.\n",
 		       entry->cm_key_storage_location);
 		_exit(CM_STATUS_ERROR_INITIALIZING);
@@ -90,7 +96,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	if (arena == NULL) {
 		cm_log(1, "Out of memory opening database '%s'.\n",
 		       entry->cm_key_storage_location);
-		if (NSS_Shutdown() != SECSuccess) {
+		if (NSS_ShutdownContext(ctx) != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
 		_exit(CM_STATUS_ERROR_INITIALIZING);
@@ -101,7 +107,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	slotlist = PK11_GetAllTokens(mech, PR_FALSE, PR_FALSE, NULL);
 	if (slotlist == NULL) {
 		cm_log(1, "Error locating token to be used for key storage.\n");
-		if (NSS_Shutdown() != SECSuccess) {
+		if (NSS_ShutdownContext(ctx) != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
 		_exit(CM_STATUS_ERROR_NO_TOKEN);
@@ -117,10 +123,11 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	}
 	PK11_SetPasswordFunc(&cm_pin_read_for_cert_nss_cb);
 	n_tokens = 0;
+	islot = PK11_GetInternalSlot();
 	for (sle = slotlist->head;
 	     (key == NULL) && ((sle != NULL) && (sle->slot != NULL));
 	     sle = sle->next) {
-		if (sle->slot == PK11_GetInternalSlot()) {
+		if (sle->slot == islot) {
 			cm_log(3, "Skipping NSS internal slot (%s).\n",
 			       PK11_GetTokenName(sle->slot));
 			goto next_slot;
@@ -140,11 +147,13 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 		     (strcmp(entry->cm_key_token, token) != 0))) {
 			if (token != NULL) {
 				cm_log(1,
-				       "Token is named \"%s\", not \"%s\".\n",
+				       "Token is named \"%s\", not \"%s\", "
+				       "skipping.\n",
 				       token, entry->cm_key_token);
 			} else {
 				cm_log(1,
-				       "Token is unnamed, not \"%s\".\n",
+				       "Token is unnamed, not \"%s\", "
+				       "skipping.\n",
 				       entry->cm_key_token);
 			}
 			goto next_slot;
@@ -184,7 +193,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 			cm_log(1, "Error reading PIN for key storage "
 			       "token \"%s\", skipping.\n", token);
 			PK11_FreeSlotList(slotlist);
-			error = NSS_Shutdown();
+			error = NSS_ShutdownContext(ctx);
 			if (error != SECSuccess) {
 				cm_log(1, "Error shutting down NSS.\n");
 			}
@@ -195,7 +204,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 			cm_log(1, "Error authenticating to token "
 			       "\"%s\".\n", token);
 			PK11_FreeSlotList(slotlist);
-			error = NSS_Shutdown();
+			error = NSS_ShutdownContext(ctx);
 			if (error != SECSuccess) {
 				cm_log(1, "Error shutting down NSS.\n");
 			}
@@ -208,7 +217,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 			       ", though one was provided. "
 			       "Treating this as an error.\n");
 			PK11_FreeSlotList(slotlist);
-			error = NSS_Shutdown();
+			error = NSS_ShutdownContext(ctx);
 			if (error != SECSuccess) {
 				cm_log(1, "Error shutting down NSS.\n");
 			}
@@ -278,14 +287,33 @@ next_slot:
 			break;
 		}
 	}
+	PK11_FreeSlot(islot);
 
 	PK11_FreeSlotList(slotlist);
 
 	if (key == NULL) {
 		cm_log(1, "Error locating key.\n");
+		error = NSS_ShutdownContext(ctx);
+		if (error != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
+		}
+		PORT_FreeArena(arena, PR_TRUE);
+		ret = NULL;
+	} else {
+		ret = PORT_ArenaZAlloc(arena, sizeof(*ret));
+		if (ret == NULL) {
+			cm_log(1, "Out of memory searching database '%s'.\n",
+			       entry->cm_key_storage_location);
+			if (NSS_ShutdownContext(ctx) != SECSuccess) {
+				cm_log(1, "Error shutting down NSS.\n");
+			}
+			PORT_FreeArena(arena, PR_TRUE);
+			_exit(CM_STATUS_ERROR_INITIALIZING);
+		}
+		ret->arena = arena;
+		ret->ctx = ctx;
+		ret->key = key;
 	}
-
-	PORT_FreeArena(arena, PR_TRUE);
 
 	if ((n_tokens == 0) &&
 	    (entry->cm_key_token != NULL) &&
@@ -293,14 +321,14 @@ next_slot:
 		_exit(CM_STATUS_ERROR_NO_TOKEN);
 	}
 
-	return key;
+	return ret;
 }
 
 static int
 cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		   void *userdata)
 {
-	SECKEYPrivateKey *key;
+	struct cm_keyiread_n_ctx_and_key *key;
 	SECKEYPublicKey *pubkey;
 	PK11SlotInfo *slot;
 	const char *alg, *name;
@@ -322,7 +350,7 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	alg = "";
 	size = 0;
 	if (key != NULL) {
-		switch (SECKEY_GetPrivateKeyType(key)) {
+		switch (SECKEY_GetPrivateKeyType(key->key)) {
 		case rsaKey:
 			cm_log(3, "Key is an RSA key.\n");
 			alg = "RSA";
@@ -336,7 +364,7 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(3, "Key is of an unknown type.\n");
 			break;
 		}
-		slot = PK11_GetSlotFromPrivateKey(key);
+		slot = PK11_GetSlotFromPrivateKey(key->key);
 		if (slot != NULL) {
 			name = PK11_GetTokenName(slot);
 			if ((name != NULL) && (strlen(name) == 0)) {
@@ -349,7 +377,7 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			name = NULL;
 		}
 		if (strlen(alg) > 0) {
-			pubkey = SECKEY_ConvertToPublicKey(key);
+			pubkey = SECKEY_ConvertToPublicKey(key->key);
 			if (pubkey != NULL) {
 				size = SECKEY_PublicKeyStrengthInBits(pubkey);
 				cm_log(3, "Key size is %d.\n", size);
@@ -363,11 +391,14 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				       "to public key.\n");
 			}
 		}
-		SECKEY_DestroyPrivateKey(key);
+		SECKEY_DestroyPrivateKey(key->key);
 	}
 	fclose(fp);
-	if (NSS_Shutdown() != SECSuccess) {
-		cm_log(1, "Error shutting down NSS.\n");
+	if (key != NULL) {
+		if (NSS_ShutdownContext(key->ctx) != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
+		}
+		PORT_FreeArena(key->arena, PR_TRUE);
 	}
 	if (status != 0) {
 		_exit(status);

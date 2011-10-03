@@ -64,6 +64,7 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	char *pin;
 	PLArenaPool *arena;
 	SECStatus error;
+	NSSInitContext *ctx;
 	PK11SlotList *slotlist;
 	PK11SlotListElement *sle;
 	CERTCertList *certs;
@@ -83,9 +84,12 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	/* Open the database. */
 	settings = userdata;
 	readwrite = settings->readwrite;
-	error = readwrite ? NSS_InitReadWrite(entry->cm_cert_storage_location) :
-			    NSS_Init(entry->cm_cert_storage_location);
-	if (error != SECSuccess) {
+	ctx = NSS_InitContext(entry->cm_cert_storage_location,
+			      NULL, NULL, NULL, NULL,
+			      (readwrite ? 0 : NSS_INIT_READONLY) |
+			      NSS_INIT_NOROOTINIT |
+			      NSS_INIT_NOMODDB);
+	if (ctx == NULL) {
 		cm_log(1, "Unable to open NSS database.\n");
 		_exit(1);
 	}
@@ -94,7 +98,7 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	if (arena == NULL) {
 		cm_log(1, "Error opening database '%s'.\n",
 		       entry->cm_cert_storage_location);
-		if (NSS_Shutdown() != SECSuccess) {
+		if (NSS_ShutdownContext(ctx) != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
 		_exit(ENOMEM);
@@ -105,7 +109,7 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	if (slotlist == NULL) {
 		cm_log(1, "Error getting list of tokens.\n");
 		PORT_FreeArena(arena, PR_TRUE);
-		if (NSS_Shutdown() != SECSuccess) {
+		if (NSS_ShutdownContext(ctx) != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
 		_exit(2);
@@ -136,11 +140,13 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		     (strcmp(entry->cm_cert_token, token) != 0))) {
 			if (token != NULL) {
 				cm_log(1,
-				       "Token is named \"%s\", not \"%s\".\n",
+				       "Token is named \"%s\", not \"%s\", "
+				       "skipping.\n",
 				       token, entry->cm_key_token);
 			} else {
 				cm_log(1,
-				       "Token is unnamed, not \"%s\".\n",
+				       "Token is unnamed, not \"%s\", "
+				       "skipping.\n",
 				       entry->cm_key_token);
 			}
 			goto next_slot;
@@ -243,7 +249,7 @@ next_slot:
 		cm_log(1, "Error locating certificate.\n");
 		PK11_FreeSlotList(slotlist);
 		PORT_FreeArena(arena, PR_TRUE);
-		if (NSS_Shutdown() != SECSuccess) {
+		if (NSS_ShutdownContext(ctx) != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
 		_exit(2);
@@ -254,7 +260,7 @@ next_slot:
 	CERT_DestroyCertificate(cert);
 	PK11_FreeSlotList(slotlist);
 	PORT_FreeArena(arena, PR_TRUE);
-	if (NSS_Shutdown() != SECSuccess) {
+	if (NSS_ShutdownContext(ctx) != SECSuccess) {
 		cm_log(1, "Error shutting down NSS.\n");
 	}
 	if (status != 0) {
@@ -270,32 +276,31 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 		    unsigned char *der_cert, unsigned int der_cert_len)
 {
 	PLArenaPool *arena;
-	SECStatus error;
 	SECItem item, *items;
 	CERTCertificate *cert, **certs;
-	PRBool initialize;
+	NSSInitContext *ctx;
 	char *p;
 	const char *nl;
 	unsigned int i;
 
-	initialize = !NSS_IsInitialized();
-	if (initialize) {
-		/* Initialize the library. */
-		error = NSS_NoDB_Init(CM_DEFAULT_KEY_STORAGE_LOCATION);
-		if (error != SECSuccess) {
-			cm_log(1, "Unable to initialize NSS.\n");
-			_exit(1);
-		}
+	/* Initialize the library. */
+	ctx = NSS_InitContext(CM_DEFAULT_CERT_STORAGE_LOCATION,
+			      NULL, NULL, NULL, NULL,
+			      NSS_INIT_NOCERTDB |
+			      NSS_INIT_READONLY |
+			      NSS_INIT_NOROOTINIT |
+			      NSS_INIT_NOMODDB);
+	if (ctx == NULL) {
+		cm_log(1, "Unable to initialize NSS.\n");
+		_exit(1);
 	}
 	/* Allocate a memory pool. */
 	arena = PORT_NewArena(sizeof(double));
 	if (arena == NULL) {
 		cm_log(1, "Error opening database '%s'.\n",
 		       entry->cm_cert_storage_location);
-		if (initialize) {
-			if (NSS_Shutdown() != SECSuccess) {
-				cm_log(1, "Error shutting down NSS.\n");
-			}
+		if (NSS_ShutdownContext(ctx) != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
 		}
 		_exit(ENOMEM);
 	}
@@ -310,10 +315,8 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 	    (certs == NULL)) {
 		cm_log(1, "Error decoding certificate.\n");
 		PORT_FreeArena(arena, PR_TRUE);
-		if (initialize) {
-			if (NSS_Shutdown() != SECSuccess) {
-				cm_log(1, "Error shutting down NSS.\n");
-			}
+		if (NSS_ShutdownContext(ctx) != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
 		}
 		_exit(1);
 	}
@@ -340,10 +343,8 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 		cm_log(1, "Error encoding subjectPublicKeyInfo.\n");
 		CERT_DestroyCertArray(certs, 1);
 		PORT_FreeArena(arena, PR_TRUE);
-		if (initialize) {
-			if (NSS_Shutdown() != SECSuccess) {
-				cm_log(1, "Error shutting down NSS.\n");
-			}
+		if (NSS_ShutdownContext(ctx) != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
 		}
 		_exit(1);
 	}
@@ -404,10 +405,8 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 	/* Clean up. */
 	CERT_DestroyCertArray(certs, 1);
 	PORT_FreeArena(arena, PR_TRUE);
-	if (initialize) {
-		if (NSS_Shutdown() != SECSuccess) {
-			cm_log(1, "Error shutting down NSS.\n");
-		}
+	if (NSS_ShutdownContext(ctx) != SECSuccess) {
+		cm_log(1, "Error shutting down NSS.\n");
 	}
 }
 

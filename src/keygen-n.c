@@ -60,9 +60,10 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	int cm_key_size, cm_requested_key_size, readwrite;
 	CK_MECHANISM_TYPE mech;
 	SECStatus error;
+	NSSInitContext *ctx;
 	PK11SlotList *slotlist;
 	PK11SlotListElement *sle;
-	PK11SlotInfo *slot = NULL;
+	PK11SlotInfo *slot = NULL, *islot;
 	PK11RSAGenParams rsa_params;
 	void *params;
 	SECKEYPrivateKey *privkey, *delkey;
@@ -82,9 +83,12 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	/* Start up NSS and open the database. */
 	settings = userdata;
 	readwrite = settings->readwrite;
-	error = readwrite ? NSS_InitReadWrite(entry->cm_key_storage_location) :
-			    NSS_Init(entry->cm_key_storage_location);
-	if (error != SECSuccess) {
+	ctx = NSS_InitContext(entry->cm_key_storage_location,
+			      NULL, NULL, NULL, NULL,
+			      (readwrite ? 0 : NSS_INIT_READONLY) |
+			      NSS_INIT_NOROOTINIT |
+			      NSS_INIT_NOMODDB);
+	if (ctx == NULL) {
 		fprintf(status, "Error initializing database '%s'.\n",
 			entry->cm_key_storage_location);
 		cm_log(1, "Error initializing database '%s'.\n",
@@ -122,10 +126,11 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	/* Walk the list looking for the requested slot, or the first one if
 	 * none was requested. */
 	slot = NULL;
+	islot = PK11_GetInternalSlot();
 	for (sle = slotlist->head;
 	     ((sle != NULL) && (sle->slot != NULL));
 	     sle = sle->next) {
-		if (sle->slot == PK11_GetInternalSlot()) {
+		if (sle->slot == islot) {
 			cm_log(3, "Skipping NSS internal slot (%s).\n",
 			       PK11_GetTokenName(sle->slot));
 			goto next_slot;
@@ -148,6 +153,7 @@ next_slot:
 			break;
 		}
 	}
+	PK11_FreeSlot(islot);
 	if (slot == NULL) {
 		fprintf(status, "Error locating token for key generation.\n");
 		cm_log(1, "Error locating token for key generation.\n");
@@ -193,7 +199,7 @@ next_slot:
 				cm_log(1, "Error reading PIN to assign "
 				       "to storage slot, skipping.\n");
 				PK11_FreeSlotList(slotlist);
-				error = NSS_Shutdown();
+				error = NSS_ShutdownContext(ctx);
 				if (error != SECSuccess) {
 					cm_log(1, "Error shutting down NSS.\n");
 				}
@@ -204,7 +210,7 @@ next_slot:
 				cm_log(1, "Key generation slot still "
 				       "needs user PIN to be set.\n");
 				PK11_FreeSlotList(slotlist);
-				error = NSS_Shutdown();
+				error = NSS_ShutdownContext(ctx);
 				if (error != SECSuccess) {
 					cm_log(1, "Error shutting down NSS.\n");
 				}
@@ -222,7 +228,7 @@ next_slot:
 		cm_log(1, "Error reading PIN for key store, "
 		       "failing to generate CSR.\n");
 		PK11_FreeSlotList(slotlist);
-		error = NSS_Shutdown();
+		error = NSS_ShutdownContext(ctx);
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
@@ -233,7 +239,7 @@ next_slot:
 	if (error != SECSuccess) {
 		cm_log(1, "Error authenticating to key store.\n");
 		PK11_FreeSlotList(slotlist);
-		error = NSS_Shutdown();
+		error = NSS_ShutdownContext(ctx);
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
@@ -246,7 +252,7 @@ next_slot:
 		       "store, though one was provided. "
 		       "Treating this as an error.\n");
 		PK11_FreeSlotList(slotlist);
-		error = NSS_Shutdown();
+		error = NSS_ShutdownContext(ctx);
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
@@ -311,7 +317,7 @@ next_slot:
 	SECKEY_DestroyPrivateKey(privkey);
 	SECKEY_DestroyPublicKey(pubkey);
 	PK11_FreeSlotList(slotlist);
-	error = NSS_Shutdown();
+	error = NSS_ShutdownContext(ctx);
 	if (error != SECSuccess) {
 		cm_log(1, "Error shutting down NSS.\n");
 	}

@@ -219,7 +219,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 {
 	FILE *status;
 	SECStatus error;
-	SECKEYPrivateKey *privkey;
+	struct cm_keyiread_n_ctx_and_key *privkey;
 	SECKEYPublicKey *pubkey;
 	CERTSubjectPublicKeyInfo *spki;
 	CERTPublicKeyAndChallenge pkac;
@@ -249,10 +249,6 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	if (privkey == NULL) {
 		cm_log(1, "Error finding key pair for \"%s\".\n", entry->cm_id);
 		PORT_FreeArena(arena, PR_TRUE);
-		error = NSS_Shutdown();
-		if (error != SECSuccess) {
-			cm_log(1, "Error shutting down NSS.\n");
-		}
 		_exit(CM_STATUS_ERROR_NO_TOKEN);
 	}
 	/* Select a subject name. */
@@ -263,7 +259,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		name = CERT_AsciiToName("CN=" CM_DEFAULT_CERT_SUBJECT_CN);
 	}
 	/* Find the public key. */
-	pubkey = SECKEY_ConvertToPublicKey(privkey);
+	pubkey = SECKEY_ConvertToPublicKey(privkey->key);
 	if (pubkey == NULL) {
 		ec = PR_GetError();
 		if (ec == 0) {
@@ -273,9 +269,10 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			       PR_ErrorToString(ec, PR_LANGUAGE_I_DEFAULT));
 		}
 		SECKEY_DestroyPublicKey(pubkey);
-		SECKEY_DestroyPrivateKey(privkey);
+		SECKEY_DestroyPrivateKey(privkey->key);
 		PORT_FreeArena(arena, PR_TRUE);
-		error = NSS_Shutdown();
+		error = NSS_ShutdownContext(privkey->ctx);
+		PORT_FreeArena(privkey->arena, PR_TRUE);
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
@@ -293,9 +290,10 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			       PR_ErrorToString(ec, PR_LANGUAGE_I_DEFAULT));
 		}
 		SECKEY_DestroyPublicKey(pubkey);
-		SECKEY_DestroyPrivateKey(privkey);
+		SECKEY_DestroyPrivateKey(privkey->key);
 		PORT_FreeArena(arena, PR_TRUE);
-		error = NSS_Shutdown();
+		error = NSS_ShutdownContext(privkey->ctx);
+		PORT_FreeArena(privkey->arena, PR_TRUE);
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
@@ -313,9 +311,10 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			       PR_ErrorToString(ec, PR_LANGUAGE_I_DEFAULT));
 		}
 		SECKEY_DestroyPublicKey(pubkey);
-		SECKEY_DestroyPrivateKey(privkey);
+		SECKEY_DestroyPrivateKey(privkey->key);
 		PORT_FreeArena(arena, PR_TRUE);
-		error = NSS_Shutdown();
+		error = NSS_ShutdownContext(privkey->ctx);
+		PORT_FreeArena(privkey->arena, PR_TRUE);
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
@@ -344,9 +343,10 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	    &ereq) {
 		cm_log(1, "Error encoding certificate request.\n");
 		SECKEY_DestroyPublicKey(pubkey);
-		SECKEY_DestroyPrivateKey(privkey);
+		SECKEY_DestroyPrivateKey(privkey->key);
 		PORT_FreeArena(arena, PR_TRUE);
-		error = NSS_Shutdown();
+		error = NSS_ShutdownContext(privkey->ctx);
+		PORT_FreeArena(privkey->arena, PR_TRUE);
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
@@ -360,9 +360,10 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	    &pkac.spki) {
 		cm_log(1, "Error encoding subject public key info.\n");
 		SECKEY_DestroyPublicKey(pubkey);
-		SECKEY_DestroyPrivateKey(privkey);
+		SECKEY_DestroyPrivateKey(privkey->key);
 		PORT_FreeArena(arena, PR_TRUE);
-		error = NSS_Shutdown();
+		error = NSS_ShutdownContext(privkey->ctx);
+		PORT_FreeArena(privkey->arena, PR_TRUE);
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
@@ -378,9 +379,10 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	    &epkac) {
 		cm_log(1, "Error encoding public key and challenge.\n");
 		SECKEY_DestroyPublicKey(pubkey);
-		SECKEY_DestroyPrivateKey(privkey);
+		SECKEY_DestroyPrivateKey(privkey->key);
 		PORT_FreeArena(arena, PR_TRUE);
-		error = NSS_Shutdown();
+		error = NSS_ShutdownContext(privkey->ctx);
+		PORT_FreeArena(privkey->arena, PR_TRUE);
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
@@ -396,9 +398,10 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		cm_log(1, "Error setting up algorithm ID for signing the "
 		       "certificate request.\n");
 		SECKEY_DestroyPublicKey(pubkey);
-		SECKEY_DestroyPrivateKey(privkey);
+		SECKEY_DestroyPrivateKey(privkey->key);
 		PORT_FreeArena(arena, PR_TRUE);
-		error = NSS_Shutdown();
+		error = NSS_ShutdownContext(privkey->ctx);
+		PORT_FreeArena(privkey->arena, PR_TRUE);
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
@@ -406,13 +409,14 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		_exit(CM_STATUS_ERROR_INTERNAL);
 	}
 	if (SEC_SignData(&sreq.signature, sreq.data.data, sreq.data.len,
-			 privkey, sigoid->offset) != SECSuccess) {
+			 privkey->key, sigoid->offset) != SECSuccess) {
 		cm_log(1, "Error signing certificate request with the client's "
 		       "key.\n");
 		SECKEY_DestroyPublicKey(pubkey);
-		SECKEY_DestroyPrivateKey(privkey);
+		SECKEY_DestroyPrivateKey(privkey->key);
 		PORT_FreeArena(arena, PR_TRUE);
-		error = NSS_Shutdown();
+		error = NSS_ShutdownContext(privkey->ctx);
+		PORT_FreeArena(privkey->arena, PR_TRUE);
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
@@ -427,9 +431,10 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		cm_log(1, "Error setting up algorithm ID for signing the "
 		       "certificate request.\n");
 		SECKEY_DestroyPublicKey(pubkey);
-		SECKEY_DestroyPrivateKey(privkey);
+		SECKEY_DestroyPrivateKey(privkey->key);
 		PORT_FreeArena(arena, PR_TRUE);
-		error = NSS_Shutdown();
+		error = NSS_ShutdownContext(privkey->ctx);
+		PORT_FreeArena(privkey->arena, PR_TRUE);
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
@@ -437,13 +442,14 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		_exit(CM_STATUS_ERROR_INTERNAL);
 	}
 	if (SEC_SignData(&spkac.signature, spkac.data.data, spkac.data.len,
-			 privkey, sigoid->offset) != SECSuccess) {
+			 privkey->key, sigoid->offset) != SECSuccess) {
 		cm_log(1, "Error signing public-key-and-challenge with "
 		       "the client's key.\n");
 		SECKEY_DestroyPublicKey(pubkey);
-		SECKEY_DestroyPrivateKey(privkey);
+		SECKEY_DestroyPrivateKey(privkey->key);
 		PORT_FreeArena(arena, PR_TRUE);
-		error = NSS_Shutdown();
+		error = NSS_ShutdownContext(privkey->ctx);
+		PORT_FreeArena(privkey->arena, PR_TRUE);
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
@@ -457,9 +463,10 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	    &esreq) {
 		cm_log(1, "Error encoding signed certificate request.\n");
 		SECKEY_DestroyPublicKey(pubkey);
-		SECKEY_DestroyPrivateKey(privkey);
+		SECKEY_DestroyPrivateKey(privkey->key);
 		PORT_FreeArena(arena, PR_TRUE);
-		error = NSS_Shutdown();
+		error = NSS_ShutdownContext(privkey->ctx);
+		PORT_FreeArena(privkey->arena, PR_TRUE);
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
@@ -473,9 +480,10 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	    &espkac) {
 		cm_log(1, "Error encoding signed public key and challenge.\n");
 		SECKEY_DestroyPublicKey(pubkey);
-		SECKEY_DestroyPrivateKey(privkey);
+		SECKEY_DestroyPrivateKey(privkey->key);
 		PORT_FreeArena(arena, PR_TRUE);
-		error = NSS_Shutdown();
+		error = NSS_ShutdownContext(privkey->ctx);
+		PORT_FreeArena(privkey->arena, PR_TRUE);
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
@@ -501,9 +509,10 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			p = q + strspn(q, "\r\n");
 		}
 		SECKEY_DestroyPublicKey(pubkey);
-		SECKEY_DestroyPrivateKey(privkey);
+		SECKEY_DestroyPrivateKey(privkey->key);
 		PORT_FreeArena(arena, PR_TRUE);
-		error = NSS_Shutdown();
+		error = NSS_ShutdownContext(privkey->ctx);
+		PORT_FreeArena(privkey->arena, PR_TRUE);
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
@@ -512,9 +521,10 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 	/* Clean up. */
 	SECKEY_DestroyPublicKey(pubkey);
-	SECKEY_DestroyPrivateKey(privkey);
+	SECKEY_DestroyPrivateKey(privkey->key);
 	PORT_FreeArena(arena, PR_TRUE);
-	error = NSS_Shutdown();
+	error = NSS_ShutdownContext(privkey->ctx);
+	PORT_FreeArena(privkey->arena, PR_TRUE);
 	if (error != SECSuccess) {
 		cm_log(1, "Error shutting down NSS.\n");
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,12 @@
 #ifndef cmkeyireadn_h
 #define cmkeyireadn_h
 
-SECKEYPrivateKey *cm_keyiread_n_get_private_key(struct cm_store_entry *entry,
-						int readwrite);
+struct cm_keyiread_n_ctx_and_key {
+	PLArenaPool *arena; /* owns this structure */
+	NSSInitContext *ctx;
+	SECKEYPrivateKey *key;
+};
+struct cm_keyiread_n_ctx_and_key *cm_keyiread_n_get_private_key(struct cm_store_entry *entry,
+								int readwrite);
 
 #endif
