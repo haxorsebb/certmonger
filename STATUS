@@ -102,6 +102,8 @@ To-do:
       CRL, too.  This'll require a new dependency on a retrieval library
       (probably libcurl) and changes to the internal state machine to handle
       CRL retrieval as another type of task.
+  * Learn about SRV records for locating servers.
+  * Learn to talk to KCAs (per http://datatracker.ietf.org/doc/draft-hotz-kx509)
   * Lighten build requirements by crafting and parsing XML-RPC ourselves
     since we're already going to have to deal with non-XML-RPC XML and HTTP
     when DogTag support goes in.
