@@ -95,6 +95,11 @@ cm_submit_d_xml_value(void *parent, const char *xml, const char *path)
 char *
 cm_submit_d_req_error(void *parent, const char *xml)
 {
+	/* ProfileSubmitServlet.java:
+	 * 1: internal error
+	 * 2: deferred
+	 * 3: rejected
+	 */
 	return cm_submit_d_xml_value(parent, xml, "/xml/output/set/errorCode");
 }
 
@@ -113,6 +118,15 @@ cm_submit_d_req_requestid(void *parent, const char *xml)
 char *
 cm_submit_d_check_status(void *parent, const char *xml)
 {
+	/* RequestStatus.java:
+	 * begin
+	 * pending
+	 * approved
+	 * svc_pending
+	 * canceled
+	 * rejected
+	 * complete
+	 */
 	return cm_submit_d_xml_value(parent, xml, "/xml/header/status");
 }
 
