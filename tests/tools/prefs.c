@@ -68,6 +68,9 @@ main(int argc, char **argv)
 	case cm_notification_unspecified:
 		printf("notification: UNSPECIFIED:%s\n", dest);
 		break;
+	case cm_notification_none:
+		printf("notification: NONE\n");
+		break;
 	case cm_notification_syslog:
 		printf("notification: SYSLOG:%s\n", dest);
 		break;
