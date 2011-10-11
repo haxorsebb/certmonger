@@ -183,7 +183,7 @@ cm_decide_ca_delay(time_t remaining)
 {
 	time_t delay;
 	delay = CM_DELAY_CA_POLL;
-	if ((remaining != (time_t) -1) && (remaining < delay)) {
+	if ((remaining != (time_t) -1) && (remaining < 2 * delay)) {
 		delay = remaining / 2;
 		if (delay < CM_DELAY_CA_POLL_MINIMUM) {
 			delay = CM_DELAY_CA_POLL_MINIMUM;
@@ -198,7 +198,7 @@ cm_decide_monitor_delay(time_t remaining)
 {
 	time_t delay;
 	delay = CM_DELAY_MONITOR_POLL;
-	if ((remaining != (time_t) -1) && (remaining < delay)) {
+	if ((remaining != (time_t) -1) && (remaining < 2 * delay)) {
 		delay = remaining / 2;
 		if (delay < CM_DELAY_MONITOR_POLL_MINIMUM) {
 			delay = CM_DELAY_MONITOR_POLL_MINIMUM;

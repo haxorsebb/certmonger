@@ -285,7 +285,7 @@ $toolsdir/iterate ca3 entry3 NEED_TO_SUBMIT,SUBMITTING
 $toolsdir/iterate ca3 entry3 ""
 
 # Note! The "iterate" harness rounds delay times up to the next multiple of 50.
-for interval in 0 30 1800 3600 7200 86000 86500 604800 1000000 ; do
+for interval in 0 30 1800 3600 7200 86000 86500 604800 1000000 2000000; do
 	for ca in ca-unreachable ca-ask-again ca-unconfigured ; do
 		echo
 		echo '[CA poll timeout remaining='$interval'.]'
