@@ -18,6 +18,7 @@
 #include "../../src/config.h"
 
 #include <sys/types.h>
+#include <sys/param.h>
 #include <sys/select.h>
 #include <errno.h>
 #include <stdio.h>
@@ -128,7 +129,7 @@ main(int argc, char **argv)
 			talloc_free(tmp);
 		}
 		if (when == cm_time_delay) {
-			printf("delay=%ld\n", (long) delay);
+			printf("delay=%ld\n", (long) howmany(delay, 50) * 50);
 		}
 		/* If we didn't find a match, stop here. */
 		if (*p == '\0') {
