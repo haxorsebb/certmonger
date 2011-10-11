@@ -152,6 +152,9 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		dest = cm_prefs_notification_destination();
 	}
 	switch (method) {
+	case cm_notification_none:
+		/* do nothing! */
+		break;
 	case cm_notification_unspecified:
 		abort();
 		break;

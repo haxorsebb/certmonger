@@ -70,6 +70,7 @@ struct cm_store_entry {
 	/* How to notify administrator: syslog(LOG_AUTHPRIV?), mail to root@? */
 	enum cm_notification_method {
 		cm_notification_unspecified,
+		cm_notification_none,
 		cm_notification_syslog,
 		cm_notification_email,
 		cm_notification_stdout,	/* for testing _ONLY_ */

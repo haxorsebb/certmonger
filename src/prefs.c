@@ -197,6 +197,9 @@ cm_prefs_notification_method(void)
 	ret = CM_DEFAULT_NOTIFICATION_METHOD;
 	method = cm_prefs_config(NULL, "notification_method");
 	if (method != NULL) {
+		if (strcasecmp(method, "none") == 0) {
+			ret = cm_notification_none;
+		}
 		if (strcasecmp(method, "syslog") == 0) {
 			ret = cm_notification_syslog;
 		}

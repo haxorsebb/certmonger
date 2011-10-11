@@ -1798,6 +1798,9 @@ request_get_notification_info(DBusConnection *conn, DBusMessage *msg,
 	case cm_notification_unspecified:
 		abort();
 		break;
+	case cm_notification_none:
+		method = "none";
+		break;
 	case cm_notification_stdout:
 		method = "stdout";
 		break;
