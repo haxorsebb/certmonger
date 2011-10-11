@@ -110,6 +110,7 @@ if test "`grep ^state entry`" != state=NEED_KEY_PAIR ; then
 	exit 1
 fi
 
+
 echo
 echo '[Picking up mid-life without a certificate.]'
 cat > entry << EOF
@@ -144,6 +145,7 @@ if test "`grep ^state entry`" != state=MONITORING ; then
 	exit 1
 fi
 
+
 echo
 echo '[Retroactive issuing.]'
 cat > entry2 << EOF
@@ -171,6 +173,7 @@ echo
 echo '[Noticing expiration.]'
 openssl x509 -noout -startdate -enddate -in $tmpdir/certfile2
 $toolsdir/iterate ca  entry2 NEED_TO_NOTIFY,NOTIFYING | sed 's@'"$tmpdir"'@$tmpdir@g'
+
 echo
 echo '[Kicking off autorenew.]'
 cat > entry2 << EOF
@@ -187,6 +190,7 @@ notification_method=STDOUT
 EOF
 openssl x509 -noout -startdate -enddate -in $tmpdir/certfile2
 $toolsdir/iterate ca  entry2 NEED_TO_NOTIFY,NOTIFYING | sed 's@'"$tmpdir"'@$tmpdir@g'
+
 echo
 echo '[Enroll until we notice we have no specified CA.]'
 cat > entry3 << EOF
@@ -203,6 +207,7 @@ EOF
 $toolsdir/iterate ca3 entry3 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
 $toolsdir/iterate ca3 entry3 NEED_CSR,GENERATING_CSR
 $toolsdir/iterate ca3 entry3 NEED_TO_SUBMIT,SUBMITTING
+
 echo
 echo '[Enroll until the CA tells us to come back later.]'
 cat > entry3 << EOF
@@ -221,6 +226,7 @@ $toolsdir/iterate ca3 entry3 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
 $toolsdir/iterate ca3 entry3 NEED_CSR,GENERATING_CSR
 $toolsdir/iterate ca3 entry3 NEED_TO_SUBMIT,SUBMITTING
 $toolsdir/iterate ca3 entry3 ""
+
 echo
 echo '[Enroll until the CA rejects us.]'
 cat > entry3 << EOF
@@ -239,6 +245,7 @@ $toolsdir/iterate ca3 entry3 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
 $toolsdir/iterate ca3 entry3 NEED_CSR,GENERATING_CSR
 $toolsdir/iterate ca3 entry3 NEED_TO_SUBMIT,SUBMITTING
 $toolsdir/iterate ca3 entry3 ""
+
 echo
 echo '[Enroll until the CA turns out to be unreachable.]'
 cat > entry3 << EOF
@@ -257,6 +264,7 @@ $toolsdir/iterate ca3 entry3 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
 $toolsdir/iterate ca3 entry3 NEED_CSR,GENERATING_CSR
 $toolsdir/iterate ca3 entry3 NEED_TO_SUBMIT,SUBMITTING
 $toolsdir/iterate ca3 entry3 ""
+
 echo
 echo '[Enroll until the CA client turns out to be unconfigured.]'
 cat > entry3 << EOF
@@ -275,4 +283,46 @@ $toolsdir/iterate ca3 entry3 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
 $toolsdir/iterate ca3 entry3 NEED_CSR,GENERATING_CSR
 $toolsdir/iterate ca3 entry3 NEED_TO_SUBMIT,SUBMITTING
 $toolsdir/iterate ca3 entry3 ""
+
+for interval in 0 30 1800 3600 7200 86000 86500 604800 1000000 ; do
+	for ca in ca-unreachable ca-ask-again ca-unconfigured ; do
+		echo
+		echo '[CA poll timeout remaining='$interval'.]'
+		now=`date +%s`
+		when=`expr $now + $interval`
+		then=`env TZ=UTC date -d @$when +%Y%m%d%H%M%S`
+		cat > entry4 <<- EOF
+		id=Test
+		ca_name=Lostie
+		state=HAVE_CSR
+		cert_not_after=$then
+		csr=AAAA
+		EOF
+		cat > ca4 <<- EOF
+		id=Lostie
+		ca_type=EXTERNAL
+		ca_external_helper=$tmpdir/$ca
+		EOF
+		$toolsdir/iterate ca4 entry4 NEED_TO_SUBMIT,SUBMITTING
+	done
+	echo
+	echo '[Monitor poll timeout remaining='$interval'.]'
+	now=`date +%s`
+	when=`expr $now + $interval`
+	then=`env TZ=UTC date -d @$when +%Y%m%d%H%M%S`
+	cat > entry4 <<- EOF
+	id=Test
+	ca_name=Lostie
+	state=MONITORING
+	cert_not_after=$then
+	csr=AAAA
+	EOF
+	cat > ca4 <<- EOF
+	id=Lostie
+	ca_type=EXTERNAL
+	ca_external_helper=$tmpdir/$ca
+	EOF
+	$toolsdir/iterate ca4 entry4 ""
+done
+
 echo Test complete.

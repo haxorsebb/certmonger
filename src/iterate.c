@@ -177,6 +177,36 @@ cm_waitfor_readable_fd(int fd, int delay)
 	select(fd + 1, &fds, NULL, &fds, (delay >= 0) ? &tv : NULL);
 }
 
+/* Decide how long to wait before contacting the CA again. */
+static time_t
+cm_decide_ca_delay(time_t remaining)
+{
+	time_t delay;
+	delay = CM_DELAY_CA_POLL;
+	if ((remaining != (time_t) -1) && (remaining < delay)) {
+		delay = remaining / 2;
+		if (delay < CM_DELAY_CA_POLL_MINIMUM) {
+			delay = CM_DELAY_CA_POLL_MINIMUM;
+		}
+	}
+	return delay;
+}
+
+/* Decide how long to wait before looking at a certificate again. */
+static time_t
+cm_decide_monitor_delay(time_t remaining)
+{
+	time_t delay;
+	delay = CM_DELAY_MONITOR_POLL;
+	if ((remaining != (time_t) -1) && (remaining < delay)) {
+		delay = remaining / 2;
+		if (delay < CM_DELAY_MONITOR_POLL_MINIMUM) {
+			delay = CM_DELAY_MONITOR_POLL_MINIMUM;
+		}
+	}
+	return delay;
+}
+
 /* Set up run-time data associated with the entry. */
 int
 cm_iterate_init(struct cm_store_entry *entry, void **cm_iterate_state)
@@ -286,6 +316,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 	   enum cm_time *when, int *delay, int *readfd)
 {
 	int i, j;
+	time_t remaining;
 	struct cm_iterate_state *state;
 	struct cm_store_ca *tmp_ca;
 	enum cm_state old_entry_state;
@@ -295,7 +326,14 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 	*readfd = -1;
 	*when = cm_time_no_time;
 	*delay = 0;
+
 	old_entry_state = entry->cm_state;
+	if (entry->cm_cert_not_after != 0) {
+		remaining = entry->cm_cert_not_after - time(NULL);
+	} else {
+		remaining = -1;
+	}
+
 	switch (entry->cm_state) {
 	case CM_NEED_KEY_PAIR:
 		/* Start a helper. */
@@ -595,8 +633,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 					*when = cm_time_soonish;
 				} else {
 					entry->cm_state = CM_CA_REJECTED;
-					*when = cm_time_delay;
-					*delay = CM_DELAY_CA_POLL;
+					*when = cm_time_now;
 				}
 			} else
 			if (cm_submit_unreachable(entry,
@@ -606,7 +643,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				state->cm_submit_state = NULL;
 				entry->cm_state = CM_CA_UNREACHABLE;
 				*when = cm_time_delay;
-				*delay = CM_DELAY_CA_POLL;
+				*delay = cm_decide_ca_delay(remaining);
 			} else
 			if (cm_submit_save_ca_cookie(entry,
 						     state->cm_submit_state) == 0) {
@@ -615,7 +652,8 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				cm_submit_done(entry, state->cm_submit_state);
 				state->cm_submit_state = NULL;
 				entry->cm_state = CM_CA_WORKING;
-				*when = cm_time_soonish;
+				*when = cm_time_delay;
+				*delay = cm_decide_ca_delay(remaining);
 			} else
 			if (cm_submit_unconfigured(entry,
 						   state->cm_submit_state) == 0) {
@@ -632,7 +670,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				} else {
 					entry->cm_state = CM_CA_UNCONFIGURED;
 					*when = cm_time_delay;
-					*delay = CM_DELAY_CA_POLL;
+					*delay = cm_decide_ca_delay(remaining);
 				}
 			} else {
 				/* Don't know what's going on. HELP! */
@@ -783,8 +821,8 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			*when = cm_time_now;
 		} else {
 			/* Nothing to do here.  Check again tomorrow. */
-			*delay = 24 * 60 * 60;
 			*when = cm_time_delay;
+			*delay = cm_decide_monitor_delay(remaining);
 		}
 		break;
 

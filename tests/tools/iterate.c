@@ -127,6 +127,9 @@ main(int argc, char **argv)
 			}
 			talloc_free(tmp);
 		}
+		if (when == cm_time_delay) {
+			printf("delay=%ld\n", (long) delay);
+		}
 		/* If we didn't find a match, stop here. */
 		if (*p == '\0') {
 			printf("%s\n-STOP-\n",

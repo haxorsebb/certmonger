@@ -167,6 +167,7 @@ HAVE_CSR
 -START-
 NEED_TO_SUBMIT
 SUBMITTING
+delay=604800
 CA_WORKING
 -STOP-
 HAVE_CSR
@@ -217,6 +218,7 @@ HAVE_CSR
 -START-
 NEED_TO_SUBMIT
 SUBMITTING
+delay=604800
 CA_UNREACHABLE
 -STOP-
 HAVE_CSR
@@ -242,10 +244,317 @@ HAVE_CSR
 -START-
 NEED_TO_SUBMIT
 SUBMITTING
+delay=604800
 CA_UNCONFIGURED
 -STOP-
 HAVE_CSR
 -START-
 NEED_TO_SUBMIT
+-STOP-
+
+[CA poll timeout remaining=0.]
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+SUBMITTING
+delay=300
+CA_UNREACHABLE
+-STOP-
+
+[CA poll timeout remaining=0.]
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+SUBMITTING
+delay=300
+CA_WORKING
+-STOP-
+
+[CA poll timeout remaining=0.]
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+SUBMITTING
+delay=300
+CA_UNCONFIGURED
+-STOP-
+
+[Monitor poll timeout remaining=0.]
+MONITORING
+-START-
+delay=1800
+MONITORING
+-STOP-
+
+[CA poll timeout remaining=30.]
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+SUBMITTING
+delay=300
+CA_UNREACHABLE
+-STOP-
+
+[CA poll timeout remaining=30.]
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+SUBMITTING
+delay=300
+CA_WORKING
+-STOP-
+
+[CA poll timeout remaining=30.]
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+SUBMITTING
+delay=300
+CA_UNCONFIGURED
+-STOP-
+
+[Monitor poll timeout remaining=30.]
+MONITORING
+-START-
+delay=1800
+MONITORING
+-STOP-
+
+[CA poll timeout remaining=1800.]
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+SUBMITTING
+delay=900
+CA_UNREACHABLE
+-STOP-
+
+[CA poll timeout remaining=1800.]
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+SUBMITTING
+delay=900
+CA_WORKING
+-STOP-
+
+[CA poll timeout remaining=1800.]
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+SUBMITTING
+delay=900
+CA_UNCONFIGURED
+-STOP-
+
+[Monitor poll timeout remaining=1800.]
+MONITORING
+-START-
+delay=1800
+MONITORING
+-STOP-
+
+[CA poll timeout remaining=3600.]
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+SUBMITTING
+delay=1800
+CA_UNREACHABLE
+-STOP-
+
+[CA poll timeout remaining=3600.]
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+SUBMITTING
+delay=1800
+CA_WORKING
+-STOP-
+
+[CA poll timeout remaining=3600.]
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+SUBMITTING
+delay=1800
+CA_UNCONFIGURED
+-STOP-
+
+[Monitor poll timeout remaining=3600.]
+MONITORING
+-START-
+delay=1800
+MONITORING
+-STOP-
+
+[CA poll timeout remaining=7200.]
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+SUBMITTING
+delay=3600
+CA_UNREACHABLE
+-STOP-
+
+[CA poll timeout remaining=7200.]
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+SUBMITTING
+delay=3600
+CA_WORKING
+-STOP-
+
+[CA poll timeout remaining=7200.]
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+SUBMITTING
+delay=3600
+CA_UNCONFIGURED
+-STOP-
+
+[Monitor poll timeout remaining=7200.]
+MONITORING
+-START-
+delay=3600
+MONITORING
+-STOP-
+
+[CA poll timeout remaining=86000.]
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+SUBMITTING
+delay=43000
+CA_UNREACHABLE
+-STOP-
+
+[CA poll timeout remaining=86000.]
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+SUBMITTING
+delay=43000
+CA_WORKING
+-STOP-
+
+[CA poll timeout remaining=86000.]
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+SUBMITTING
+delay=43000
+CA_UNCONFIGURED
+-STOP-
+
+[Monitor poll timeout remaining=86000.]
+MONITORING
+-START-
+delay=43000
+MONITORING
+-STOP-
+
+[CA poll timeout remaining=86500.]
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+SUBMITTING
+delay=43250
+CA_UNREACHABLE
+-STOP-
+
+[CA poll timeout remaining=86500.]
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+SUBMITTING
+delay=43250
+CA_WORKING
+-STOP-
+
+[CA poll timeout remaining=86500.]
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+SUBMITTING
+delay=43250
+CA_UNCONFIGURED
+-STOP-
+
+[Monitor poll timeout remaining=86500.]
+MONITORING
+-START-
+delay=86400
+MONITORING
+-STOP-
+
+[CA poll timeout remaining=604800.]
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+SUBMITTING
+delay=604800
+CA_UNREACHABLE
+-STOP-
+
+[CA poll timeout remaining=604800.]
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+SUBMITTING
+delay=604800
+CA_WORKING
+-STOP-
+
+[CA poll timeout remaining=604800.]
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+SUBMITTING
+delay=604800
+CA_UNCONFIGURED
+-STOP-
+
+[Monitor poll timeout remaining=604800.]
+MONITORING
+-START-
+delay=86400
+MONITORING
+-STOP-
+
+[CA poll timeout remaining=1000000.]
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+SUBMITTING
+delay=604800
+CA_UNREACHABLE
+-STOP-
+
+[CA poll timeout remaining=1000000.]
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+SUBMITTING
+delay=604800
+CA_WORKING
+-STOP-
+
+[CA poll timeout remaining=1000000.]
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+SUBMITTING
+delay=604800
+CA_UNCONFIGURED
+-STOP-
+
+[Monitor poll timeout remaining=1000000.]
+MONITORING
+-START-
+delay=86400
+MONITORING
 -STOP-
 Test complete.
