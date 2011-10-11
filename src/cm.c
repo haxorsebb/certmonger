@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,6 +38,7 @@
 #include "netlink.h"
 #include "store.h"
 #include "store-int.h"
+#include "tm.h"
 
 struct cm_context {
 	int n_entries, should_quit;
@@ -397,7 +398,7 @@ cm_add_entry(struct cm_context *context, struct cm_store_entry *new_entry)
 	} else {
 		do {
 			/* Try to assign a new ID. */
-			now = time(NULL);
+			now = cm_time(NULL);
 			new_entry->cm_id = cm_store_timestamp_from_time(now,
 									timestamp);
 			/* Check for duplicates. */
@@ -649,7 +650,7 @@ cm_add_ca(struct cm_context *context, struct cm_store_ca *new_ca)
 	} else {
 		do {
 			/* Try to assign a new ID. */
-			now = time(NULL);
+			now = cm_time(NULL);
 			new_ca->cm_id = cm_store_timestamp_from_time(now,
 								     timestamp);
 			/* Check for duplicates. */

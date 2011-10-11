@@ -39,6 +39,7 @@
 #include "store.h"
 #include "store-int.h"
 #include "submit.h"
+#include "tm.h"
 
 struct cm_iterate_state {
 	struct cm_keygen_state *cm_keygen_state;
@@ -259,7 +260,7 @@ cm_check_expiration_is_noteworthy(struct cm_store_entry *entry)
 	unsigned int i, n_ttls;
 	time_t now, ttl, previous_ttl;
 	const time_t *ttls;
-	now = time(NULL);
+	now = cm_time(NULL);
 	/* Do we have validity information? */
 	if (entry->cm_cert_not_after == 0) {
 		return -1;
@@ -329,7 +330,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 
 	old_entry_state = entry->cm_state;
 	if (entry->cm_cert_not_after != 0) {
-		remaining = entry->cm_cert_not_after - time(NULL);
+		remaining = entry->cm_cert_not_after - cm_time(NULL);
 	} else {
 		remaining = -1;
 	}
@@ -610,7 +611,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 
 	case CM_SUBMITTING:
 		if (cm_submit_ready(entry, state->cm_submit_state) == 0) {
-			entry->cm_submitted = time(NULL);
+			entry->cm_submitted = cm_time(NULL);
 			if (cm_submit_issued(entry,
 					     state->cm_submit_state) == 0) {
 				/* We're all done.  Save the certificate to its

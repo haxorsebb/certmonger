@@ -47,6 +47,7 @@
 #include "submit-int.h"
 #include "submit-u.h"
 #include "subproc.h"
+#include "tm.h"
 #include "util-o.h"
 
 struct cm_submit_state {
@@ -86,7 +87,7 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	if (ca->cm_ca_internal_force_issue_time) {
 		now = ca->cm_ca_internal_issue_time;
 	} else {
-		now = time(NULL);
+		now = cm_time(NULL);
 	}
 	keyfp = fopen(entry->cm_key_storage_location, "r");
 	if (cm_submit_delta_from_string(cm_prefs_validity_period(), now,

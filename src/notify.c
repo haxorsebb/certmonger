@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@
 #include "store.h"
 #include "store-int.h"
 #include "subproc.h"
+#include "tm.h"
 
 struct cm_notify_state {
 	struct cm_subproc_state *subproc;
@@ -81,7 +82,7 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		{"debug", LOG_DEBUG},
 	};
 	unsigned int i;
-	if (entry->cm_cert_not_after > time(NULL)) {
+	if (entry->cm_cert_not_after > cm_time(NULL)) {
 		switch (entry->cm_cert_storage_type) {
 		case cm_cert_storage_nssdb:
 			if (entry->cm_cert_token != NULL) {

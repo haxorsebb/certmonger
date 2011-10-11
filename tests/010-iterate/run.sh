@@ -286,17 +286,18 @@ $toolsdir/iterate ca3 entry3 ""
 
 # Note! The "iterate" harness rounds delay times up to the next multiple of 50.
 for interval in 0 30 1800 3600 7200 86000 86500 604800 1000000 2000000; do
+	now=`date +%s`
+	CM_FORCE_TIME=$now ; export CM_FORCE_TIME
+	when=`expr $now + $interval`
+	later=`env TZ=UTC date -d @$when +%Y%m%d%H%M%S`
 	for ca in ca-unreachable ca-ask-again ca-unconfigured ; do
 		echo
 		echo '[CA poll timeout remaining='$interval'.]'
-		now=`date +%s`
-		when=`expr $now + $interval`
-		then=`env TZ=UTC date -d @$when +%Y%m%d%H%M%S`
 		cat > entry4 <<- EOF
 		id=Test
 		ca_name=Lostie
 		state=HAVE_CSR
-		cert_not_after=$then
+		cert_not_after=$later
 		csr=AAAA
 		EOF
 		cat > ca4 <<- EOF
@@ -308,14 +309,11 @@ for interval in 0 30 1800 3600 7200 86000 86500 604800 1000000 2000000; do
 	done
 	echo
 	echo '[Monitor poll timeout remaining='$interval'.]'
-	now=`date +%s`
-	when=`expr $now + $interval`
-	then=`env TZ=UTC date -d @$when +%Y%m%d%H%M%S`
 	cat > entry4 <<- EOF
 	id=Test
 	ca_name=Lostie
 	state=MONITORING
-	cert_not_after=$then
+	cert_not_after=$later
 	csr=AAAA
 	EOF
 	cat > ca4 <<- EOF

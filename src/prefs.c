@@ -30,6 +30,7 @@
 #include "store-int.h"
 #include "submit.h"
 #include "util.h"
+#include "tm.h"
 
 static char *
 cm_prefs_read(void)
@@ -167,7 +168,7 @@ cm_prefs_ttls(const time_t **ttls, unsigned int *n_ttls)
 					q = p + strcspn(p, " \t,");
 					c = *q;
 					*q = '\0';
-					if (cm_submit_delta_from_string(p, time(NULL),
+					if (cm_submit_delta_from_string(p, cm_time(NULL),
 									&config[i]) == 0) {
 						i++;
 					};

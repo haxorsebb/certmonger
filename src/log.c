@@ -31,6 +31,7 @@
 #include <talloc.h>
 
 #include "log.h"
+#include "tm.h"
 
 static int cm_log_level = 0;
 static enum cm_log_method cm_log_method;
@@ -71,9 +72,8 @@ cm_log(int level, const char *fmt, ...)
 			stream = stdout;
 			/* fall through */
 		case cm_log_stderr:
-			now = time(NULL);
+			now = cm_time(NULL);
 			localtime_r(&now, &lt);
-			now = time(NULL);
 			p = talloc_asprintf(NULL,
 					    "%04d-%02d-%02d %02d:%02d:%02d "
 					    "[%lu] %s",

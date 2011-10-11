@@ -37,6 +37,7 @@
 #include "store.h"
 #include "store-int.h"
 #include "log.h"
+#include "tm.h"
 
 enum cm_store_file_field {
 	cm_store_file_field_invalid = 0,
@@ -797,7 +798,7 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 	const char *p;
 
 	if (entry->cm_id == NULL) {
-		p = cm_store_timestamp_from_time(time(NULL), timestamp);
+		p = cm_store_timestamp_from_time(cm_time(NULL), timestamp);
 	} else {
 		p = entry->cm_id;
 	}
@@ -1012,7 +1013,7 @@ cm_store_entry_save(struct cm_store_entry *entry)
 	const char *directory;
 
 	if (entry->cm_store_private == NULL) {
-		cm_store_timestamp_from_time(time(NULL), timestamp);
+		cm_store_timestamp_from_time(cm_time(NULL), timestamp);
 		directory = cm_env_request_dir();
 		snprintf(path, sizeof(path), "%s/%s", directory, timestamp);
 		fd = open(path,
@@ -1140,7 +1141,7 @@ cm_store_ca_write(FILE *fp, struct cm_store_ca *ca)
 	char timestamp[15];
 
 	if (ca->cm_id == NULL) {
-		p = cm_store_timestamp_from_time(time(NULL), timestamp);
+		p = cm_store_timestamp_from_time(cm_time(NULL), timestamp);
 	} else {
 		p = ca->cm_id;
 	}
@@ -1207,7 +1208,7 @@ cm_store_ca_save(struct cm_store_ca *ca)
 	const char *directory;
 
 	if (ca->cm_store_private == NULL) {
-		cm_store_timestamp_from_time(time(NULL), timestamp);
+		cm_store_timestamp_from_time(cm_time(NULL), timestamp);
 		directory = cm_env_ca_dir();
 		snprintf(path, sizeof(path), "%s/%s", directory, timestamp);
 		fd = open(path,
