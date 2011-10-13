@@ -20,7 +20,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "../src/tm.h"
+#include "../../src/tm.h"
 
 time_t
 cm_time(time_t *dest)
