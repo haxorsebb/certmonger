@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.48
+Version:	0.49
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -188,6 +188,17 @@ exit 0
 %endif
 
 %changelog
+* Wed Oct 12 2011 Nalin Dahyabhai <nalin@redhat.com> 0.49-1
+- when using an NSS database, skip loading the module database (#743042)
+- when using an NSS database, skip loading root certs
+- generate SPKAC values when generating CSRs, though we don't do anything
+  with SPKAC values yet
+- internally maintain and use challenge passwords, if we have them
+- behave better when certificates have shorter lifetimes
+- add/recognize/handle notification type "none"
+- getcert: error out when "list -c" finds no matching CA (#743488)
+- getcert: error out when "list -i" finds no matching request (#743485)
+
 * Thu Sep 29 2011 Nalin Dahyabhai <nalin@redhat.com> 0.48-1
 - don't incorrectly assume that CERT_ImportCerts() returns a NULL-terminated
   array (#742348)
