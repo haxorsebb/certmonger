@@ -87,13 +87,15 @@ ensure_path_is_absolute(void *parent, const char *path)
 	} else {
 		if (getcwd(buf, sizeof(buf)) == buf) {
 			ret = talloc_asprintf(parent, "%s/%s", buf, path);
-			printf(_("Path \"%s\" is not absolute, attempting to "
+			printf(_("Path \"%s\" is not absolute, "
+				 "attempting to "
 				 "use \"%s\" instead.\n"), path, ret);
 			return ret;
 		} else {
-			printf(_("Path \"%s\" is not absolute, and there "
-			         "was an error determining the name of the "
-				 "current directory.\n"), path);
+			printf(_("Path \"%s\" is not absolute, and "
+				 "there was an error determining the "
+				 "name of the current directory.\n"),
+			       path);
 			exit(1);
 		}
 	}
@@ -108,7 +110,8 @@ ensure_path_is_directory(char *path)
 		if (S_ISDIR(st.st_mode)) {
 			return 0;
 		} else {
-			printf(_("Path \"%s\" is not a directory.\n"), path);
+			printf(_("Path \"%s\" is not a directory.\n"),
+			       path);
 			return -1;
 		}
 	} else {
@@ -1809,6 +1812,7 @@ list(const char *argv0, int argc, char **argv)
 	char **requests, *s, *p, *nickname, *only_ca = DEFAULT_CA, *ca_name;
 	char *dbdir = NULL, *dbnickname = NULL, *certfile = NULL, *id = NULL;
 	char *nss_scheme;
+	const char *capath, *request;
 	dbus_bool_t b;
 	char *s1, *s2, *s3, *s4, *s5, *s6;
 	long n1, n2;
@@ -1860,6 +1864,33 @@ list(const char *argv0, int argc, char **argv)
 		printf(_("Error: unused extra arguments were supplied.\n"));
 		help(argv0, "list");
 		return 1;
+	}
+	if (only_ca != NULL) {
+		capath = find_ca_by_name(globals.tctx, bus, only_ca, verbose);
+		if (capath == NULL) {
+			printf(_("No CA with name \"%s\" found.\n"), only_ca);
+			return 1;
+		}
+	}
+	if (id != NULL) {
+		request = find_request_by_name(globals.tctx, bus, id, verbose);
+		if (request == NULL) {
+			printf(_("No request found with specified "
+				 "nickname.\n"));
+			return 1;
+		}
+	} else {
+		request = find_request_by_storage(globals.tctx, bus,
+						  dbdir, dbnickname, NULL,
+						  certfile, verbose);
+		if (request == NULL) {
+			if (((dbdir != NULL) && (dbnickname != NULL)) ||
+			    (certfile != NULL)) {
+				printf(_("No request found that matched "
+					 "arguments.\n"));
+				return 1;
+			}
+		}
 	}
 	requests = query_rep_ap(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
 				"get_requests", verbose, globals.tctx);

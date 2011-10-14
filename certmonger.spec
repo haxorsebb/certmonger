@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.49
+Version:	0.50
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -188,6 +188,11 @@ exit 0
 %endif
 
 %changelog
+* Fri Oct 14 2011 Nalin Dahyabhai <nalin@redhat.com> 0.50-1
+- really fix these this time:
+ - getcert: error out when "list -c" finds no matching CA (#743488)
+ - getcert: error out when "list -i" finds no matching request (#743485)
+
 * Wed Oct 12 2011 Nalin Dahyabhai <nalin@redhat.com> 0.49-1
 - when using an NSS database, skip loading the module database (#743042)
 - when using an NSS database, skip loading root certs
