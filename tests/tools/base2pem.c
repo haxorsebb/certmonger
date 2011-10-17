@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Red Hat, Inc.
+ * Copyright (C) 2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,19 +15,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef cmsubmitu_h
-#define cmsubmitu_h
+#include "../../src/config.h"
 
-char *cm_submit_u_from_file(const char *filename);
-char *cm_submit_u_from_file_single(const char *filename);
-char *cm_submit_princ_realm_data(krb5_context ctx, krb5_principal princ);
-int cm_submit_princ_realm_len(krb5_context ctx, krb5_principal princ);
-char *cm_submit_u_base64_from_text(const char *base64_or_pem);
-char *cm_submit_u_pem_from_base64(const char *what, const char *base64);
+#include <sys/types.h>
+#include <limits.h>
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
 
-#ifdef HAVE_UUID
-int cm_submit_uuid_new(unsigned char uuid[16]);
-extern int cm_submit_uuid_fixed_for_testing;
-#endif
+#include <krb5.h>
 
-#endif
+#include <talloc.h>
+
+#include "../../src/submit-u.h"
+
+int
+main(int argc, char **argv)
+{
+	char buf[LINE_MAX], *p = NULL, *q;
+	while (fgets(buf, sizeof(buf), stdin) != NULL) {
+		if (p == NULL) {
+			p = strdup(buf);
+		} else {
+			q = malloc(strlen(p) + strlen(buf) + 1);
+			if (q != NULL) {
+				stpcpy(stpcpy(q, p), buf);
+				free(p);
+				p = q;
+			}
+		}
+	}
+	printf("%s", cm_submit_u_pem_from_base64("CERTIFICATE", p));
+	return 0;
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 #include "config.h"
 
 #include <sys/types.h>
+#include <sys/param.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -37,6 +38,11 @@
 
 #include "log.h"
 #include "submit-u.h"
+
+#define BASE64_ALPHABET "0123456789" \
+			"ABCDEFGHIJKLMNOPQRSTUVWXYZ" \
+			"abcdefghijklmnopqrstuvwxyz" \
+			"/+="
 
 static char *
 my_stpcpy(char *dest, char *src)
@@ -126,6 +132,82 @@ cm_submit_u_from_file_single(const char *filename)
 	q[i] = '\0';
 	free(csr);
 	return q;
+}
+
+/* Return a simple base64 string from a data item in PEM format or already in
+ * simple base64 format. */
+char *
+cm_submit_u_base64_from_text(const char *base64_or_pem)
+{
+	const char *p, *q;
+	char *ret, *s;
+	int i;
+	p = strstr(base64_or_pem, "-----BEGIN");
+	if (p != NULL) {
+		q = p + 10;
+		q += strcspn(q, "-");
+		p = q + strcspn(q, "\r\n");
+		q = strstr(p, "-----END");
+		if (q != NULL) {
+			ret = malloc(q - p + 1);
+			if (ret != NULL) {
+				s = ret;
+				for (i = 0; i < (q - p); i++) {
+					if (strchr(BASE64_ALPHABET, p[i])) {
+						*s++ = p[i];
+					}
+				}
+				*s++ = '\0';
+			}
+		} else {
+			ret = NULL;
+		}
+		return ret;
+	} else {
+		return strdup(base64_or_pem);
+	}
+}
+
+char *
+cm_submit_u_pem_from_base64(const char *what, const char *base64)
+{
+	char *ret, *p;
+	const char *q;
+	int i;
+	i = strlen("-----BEGIN -----\r\n"
+		   "-----END -----\r\n") +
+		   strlen(what) * 2 +
+		   howmany(strlen(base64), 64) * 2;
+	ret = malloc(i + 1);
+	if (ret != NULL) {
+		p = stpcpy(ret, "-----BEGIN ");
+		p = stpcpy(p, what);
+		p = stpcpy(p, "-----\r\n");
+		q = base64;
+		while (strlen(q) > 64) {
+			memcpy(p, q, 64);
+			p += 64;
+			q += 64;
+			p = stpcpy(p, "\r\n");
+		}
+		if (strlen(q) > 0) {
+			p = stpcpy(p, q);
+			p = stpcpy(p, "\r\n");
+		}
+		p = stpcpy(p, "-----END ");
+		p = stpcpy(p, what);
+		p = stpcpy(p, "-----\r\n");
+		while ((p = strstr(ret, "\n\n")) != NULL) {
+			strcpy(p, p + 1);
+		}
+		while ((p = strstr(ret, "\r\n\r\n")) != NULL) {
+			strcpy(p, p + 2);
+		}
+		while ((p = strstr(ret, "\n\r\n")) != NULL) {
+			strcpy(p, p + 1);
+		}
+	}
+	return ret;
 }
 
 char *
