@@ -23,7 +23,7 @@ char *cm_submit_u_from_file_single(const char *filename);
 char *cm_submit_princ_realm_data(krb5_context ctx, krb5_principal princ);
 int cm_submit_princ_realm_len(krb5_context ctx, krb5_principal princ);
 char *cm_submit_u_base64_from_text(const char *base64_or_pem);
-char *cm_submit_u_pem_from_base64(const char *what, const char *base64);
+char *cm_submit_u_pem_from_base64(const char *what, int dos, const char *base64);
 
 #ifdef HAVE_UUID
 int cm_submit_uuid_new(unsigned char uuid[16]);

@@ -180,43 +180,43 @@ cm_submit_u_base64_from_text(const char *base64_or_pem)
 }
 
 char *
-cm_submit_u_pem_from_base64(const char *what, const char *base64)
+cm_submit_u_pem_from_base64(const char *what, int dos, const char *base64)
 {
-	char *ret, *p;
+	char *ret, *tmp, *p;
 	const char *q;
 	int i;
+
+	tmp = strdup(base64);
+	for (p = tmp, q = base64; *q != '\0'; q++) {
+		if (strchr(BASE64_ALPHABET, *q)) {
+			*p++ = *q;
+		}
+	}
+	*p = '\0';
 	i = strlen("-----BEGIN -----\r\n"
 		   "-----END -----\r\n") +
-		   strlen(what) * 2 +
+		   strlen(tmp) * 2 +
+		   strlen(base64) +
 		   howmany(strlen(base64), 64) * 2;
 	ret = malloc(i + 1);
 	if (ret != NULL) {
 		p = stpcpy(ret, "-----BEGIN ");
 		p = stpcpy(p, what);
-		p = stpcpy(p, "-----\r\n");
-		q = base64;
+		p = stpcpy(p, dos ? "-----\r\n" : "-----\n");
+		q = tmp;
 		while (strlen(q) > 64) {
 			memcpy(p, q, 64);
 			p += 64;
 			q += 64;
-			p = stpcpy(p, "\r\n");
+			p = stpcpy(p, dos ? "\r\n" : "\n");
 		}
 		if (strlen(q) > 0) {
 			p = stpcpy(p, q);
-			p = stpcpy(p, "\r\n");
+			p = stpcpy(p, dos ? "\r\n" : "\n");
 		}
 		p = stpcpy(p, "-----END ");
 		p = stpcpy(p, what);
-		p = stpcpy(p, "-----\r\n");
-		while ((p = strstr(ret, "\n\n")) != NULL) {
-			strcpy(p, p + 1);
-		}
-		while ((p = strstr(ret, "\r\n\r\n")) != NULL) {
-			strcpy(p, p + 2);
-		}
-		while ((p = strstr(ret, "\n\r\n")) != NULL) {
-			strcpy(p, p + 1);
-		}
+		p = stpcpy(p, dos ? "-----\r\n" : "-----\n");
 	}
 	return ret;
 }
