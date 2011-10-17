@@ -18,6 +18,7 @@
 #include "../../src/config.h"
 
 #include <sys/types.h>
+#include <getopt.h>
 #include <limits.h>
 #include <stdio.h>
 #include <string.h>
@@ -33,6 +34,18 @@ int
 main(int argc, char **argv)
 {
 	char buf[LINE_MAX], *p = NULL, *q;
+	int dos = 1, c;
+
+	while ((c = getopt(argc, argv, "du")) != -1) {
+		switch (c) {
+		case 'd':
+			dos = 1;
+			break;
+		case 'u':
+			dos = 0;
+			break;
+		}
+	}
 	while (fgets(buf, sizeof(buf), stdin) != NULL) {
 		if (p == NULL) {
 			p = strdup(buf);
@@ -45,6 +58,6 @@ main(int argc, char **argv)
 			}
 		}
 	}
-	printf("%s", cm_submit_u_pem_from_base64("CERTIFICATE", p));
+	printf("%s", cm_submit_u_pem_from_base64("CERTIFICATE", dos, p));
 	return 0;
 }
