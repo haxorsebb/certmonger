@@ -26,10 +26,16 @@ EOF
 echo '['Tests begin.']'
 $toolsdir/pem2base < 1.pem > 2.b
 $toolsdir/base2pem < 1.b > 2.pem
+$toolsdir/pem2base < 2.pem > 3.b
+$toolsdir/base2pem < 2.b > 3.pem
 unix2dos 1.pem > /dev/null 2> /dev/null
 unix2dos 2.pem > /dev/null 2> /dev/null
+unix2dos 3.pem > /dev/null 2> /dev/null
 unix2dos 1.b > /dev/null 2> /dev/null
 unix2dos 2.b > /dev/null 2> /dev/null
+unix2dos 3.b > /dev/null 2> /dev/null
 diff -u 1.pem 2.pem
+diff -u 1.pem 3.pem
 diff -u 1.b 2.b
+diff -u 1.b 3.b
 echo '['Test complete.']'
