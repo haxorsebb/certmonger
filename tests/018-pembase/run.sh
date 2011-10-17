@@ -38,10 +38,18 @@ unix2dos 2.b > /dev/null 2> /dev/null
 unix2dos 3.b > /dev/null 2> /dev/null
 unix2dos 4.b > /dev/null 2> /dev/null
 unix2dos 5.b > /dev/null 2> /dev/null
+$toolsdir/base2pem -u < 4.b > 6.pem
+cp 6.pem 6a.pem
+unix2dos 6a.pem
+$toolsdir/base2pem -d < 4.b > 7.pem
+cp 7.pem 7a.pem
+dos2unix 7.pem
 diff -u 1.pem 2.pem
 diff -u 1.pem 3.pem
 diff -u 1.b 2.b
 diff -u 1.b 3.b
 diff -u 1.b 4.b
 diff -u 1.b 5.b
+diff -u  6.pem  7.pem
+diff -u 6a.pem 7a.pem
 echo '['Test complete.']'
