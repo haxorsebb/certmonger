@@ -50,7 +50,7 @@ main(int argc, char **argv)
 	int i, c, host_is_uri = 0, make_ccache = TRUE;
 	const char *host = NULL, *cainfo = NULL, *capath = NULL;
 	const char *ktname = NULL, *kpname = NULL, *args[2];
-	char *csr, *p, *q, uri[LINE_MAX], *s, *reqprinc = NULL, *ipaconfig;
+	char *csr, *p, uri[LINE_MAX], *s, *reqprinc = NULL, *ipaconfig;
 	struct cm_submit_x_context *ctx;
 
 #ifdef ENABLE_NLS
@@ -283,16 +283,14 @@ main(int argc, char **argv)
 			/* If we got a certificate, we're probably
 			 * okay. */
 			fprintf(stderr, "Certificate: \"%s\"\n", s);
-			printf("-----BEGIN CERTIFICATE-----\n");
-			for (p = s; *p != '\0'; p = q) {
-				if (strlen(p) > 64) {
-					q = p + 64;
-				} else {
-					q = p + strlen(p);
-				}
-				printf("%.*s\n", (int) (q - p), p);
+			s = cm_submit_u_base64_from_text(s);
+			if (s == NULL) {
+				printf("Out of memory parsing server response, "
+				       "will retry.\n");
+				return CM_STATUS_UNREACHABLE;
 			}
-			printf("-----END CERTIFICATE-----\n");
+			s = cm_submit_u_pem_from_base64("CERTIFICATE", s);
+			printf("%s", s);
 			return CM_STATUS_ISSUED;
 		} else {
 			return CM_STATUS_REJECTED;
