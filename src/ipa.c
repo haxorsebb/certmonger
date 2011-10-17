@@ -289,7 +289,8 @@ main(int argc, char **argv)
 				       "will retry.\n");
 				return CM_STATUS_UNREACHABLE;
 			}
-			s = cm_submit_u_pem_from_base64("CERTIFICATE", s);
+			s = cm_submit_u_pem_from_base64("CERTIFICATE",
+							FALSE, s);
 			printf("%s", s);
 			return CM_STATUS_ISSUED;
 		} else {
