@@ -164,7 +164,18 @@ cm_submit_u_base64_from_text(const char *base64_or_pem)
 		}
 		return ret;
 	} else {
-		return strdup(base64_or_pem);
+		p = base64_or_pem;
+		ret = malloc(strlen(p) + 1);
+		if (ret != NULL) {
+			s = ret;
+			for (i = 0; p[i] != '\0'; i++) {
+				if (strchr(BASE64_ALPHABET, p[i])) {
+					*s++ = p[i];
+				}
+			}
+			*s++ = '\0';
+		}
+		return ret;
 	}
 }
 
