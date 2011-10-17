@@ -58,7 +58,9 @@ EXTRA_DIST = \
 	017-notoken-dbm/expected.out \
 	017-notoken-dbm/run.sh \
 	017-notoken-sql/expected.out \
-	017-notoken-sql/run.sh
+	017-notoken-sql/run.sh \
+	018-pembase/expected.out \
+	018-pembase/run.sh
 
 subdirs = \
 	001-keyiread \
@@ -77,7 +79,8 @@ subdirs = \
 	014-prefs \
 	015-lockedkey \
 	016-dates \
-	017-notoken
+	017-notoken \
+	018-pembase
 
 if HAVE_DBM_NSSDB
 subdirs += \
@@ -100,7 +103,7 @@ subdirs += \
 endif
 
 check: all
-	for required in certutil pk12util openssl expect diff cmp mktemp dos2unix dbus-launch ; do \
+	for required in certutil pk12util openssl expect diff cmp mktemp dos2unix unix2dos dbus-launch ; do \
 		which $$required || exit 1; \
 	done
 	env	srcdir=$(srcdir) \
