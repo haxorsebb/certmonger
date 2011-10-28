@@ -60,6 +60,7 @@ read_config_file(const char *filename)
     /* stat() the file so we know the size and can pre-allocate the right
      * amount of memory. */
     if (fstat(fd, &st) == -1) {
+	close(fd);
         cm_log(1, "Cannot stat() configuration file \"%s\": %s.\n", filename,
 	       strerror(errno));
         return NULL;
