@@ -67,6 +67,12 @@ read_config_file(const char *filename)
     }
     left = st.st_size;
     data = malloc(st.st_size + 1);
+    if (data == NULL) {
+	close(fd);
+        cm_log(1, "Out of memory reading configuration file \"%s\".\n",
+	       filename);
+        return NULL;
+    }
     dest = data;
     while (left != 0) {
         ssize_t res;
@@ -85,7 +91,7 @@ read_config_file(const char *filename)
         left -= res;
     }
     close(fd);
-    *dest = 0;
+    *dest = '\0';
     return data;
 }
 
