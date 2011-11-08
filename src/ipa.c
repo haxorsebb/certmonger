@@ -47,7 +47,7 @@
 int
 main(int argc, char **argv)
 {
-	int i, c, host_is_uri = 0, make_ccache = TRUE;
+	int i, c, host_is_uri = 0, make_keytab_ccache = TRUE;
 	const char *host = NULL, *cainfo = NULL, *capath = NULL;
 	const char *ktname = NULL, *kpname = NULL, *args[2];
 	char *csr, *p, uri[LINE_MAX], *s, *reqprinc = NULL, *ipaconfig;
@@ -86,7 +86,7 @@ main(int argc, char **argv)
 			kpname = optarg;
 			break;
 		case 'K':
-			make_ccache = FALSE;
+			make_keytab_ccache = FALSE;
 			break;
 		case 'P':
 			reqprinc = optarg;
@@ -212,7 +212,7 @@ main(int argc, char **argv)
 	}
 
 	/* Setup a ccache unless we're told to use the default one. */
-	if (make_ccache &&
+	if (make_keytab_ccache &&
 	    (cm_submit_x_make_ccache(ktname, kpname) != 0)) {
 		fprintf(stderr, "Error setting up ccache.\n");
 		if (ktname == NULL) {
