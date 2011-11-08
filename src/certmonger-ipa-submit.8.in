@@ -5,7 +5,7 @@ ipa-submit
 
 .SH SYNOPSIS
 ipa-submit [-h serverHost] [-H serverURI] [-c cafile] [-C capath]
-[-t keytab] [-k submitterPrincipal] [-P principalOfRequest] [csrfile]
+[[-K]  | [-t keytab] [-k submitterPrincipal]] [-P principalOfRequest] [csrfile]
 
 .SH DESCRIPTION
 \fIipa-submit\fR is the helper which \fIcertmonger\fR uses to make
@@ -41,11 +41,18 @@ is not expected to be necessary.
 Authenticate to the IPA server using credentials derived from keys stored in
 the named keytab.  The default value can vary, but it is usually
 \fI/etc/krb5.keytab\fR.
+This option conflicts with the \fB-K\fR option.
 .TP
 \fB\-k\fR authPrincipal
 Authenticate to the IPA server using credentials derived from keys stored in
 the named keytab for this principal name.  The default value is the \fBhost\fR
 service for the local host in the local realm.
+This option conflicts with the \fB-K\fR option.
+.TP
+\fB\-K\fR
+Authenticate to the IPA server using credentials derived from the default
+credential cache rather than a keytab.
+This option conflicts with the \fB-k\fR option.
 
 .SH EXIT STATUS
 .TP
