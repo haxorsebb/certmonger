@@ -81,16 +81,32 @@ main(int argc, char **argv)
 			break;
 		case 't':
 			ktname = optarg;
+			if (!make_keytab_ccache) {
+				printf(_("The -t option can not be used with "
+					 "the -K option.\n"));
+				goto help;
+			}
 			break;
 		case 'k':
 			kpname = optarg;
+			if (!make_keytab_ccache) {
+				printf(_("The -k option can not be used with "
+					 "the -K option.\n"));
+				goto help;
+			}
 			break;
 		case 'K':
 			make_keytab_ccache = FALSE;
+			if ((kpname != NULL) || (ktname != NULL)) {
+				printf(_("The -K option can not be used with "
+					 "either the -k or the -t option.\n"));
+				goto help;
+			}
 			break;
 		case 'P':
 			reqprinc = optarg;
 			break;
+		help:
 		default:
 			fprintf(stderr,
 				"Usage: %s [-h serverHost] "
