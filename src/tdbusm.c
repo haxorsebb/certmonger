@@ -1279,6 +1279,9 @@ char *
 cm_tdbusm_hint(void *parent, const char *error, const char *message)
 {
 	char *text = NULL;
+	if (error == NULL) {
+		return NULL;
+	}
 	if (strcmp(error, DBUS_ERROR_ACCESS_DENIED) == 0) {
 		text = N_("Insufficient access.  Please retry operation as root.\n");
 	} else
