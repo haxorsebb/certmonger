@@ -90,9 +90,10 @@ main(int argc, char **argv)
 			       strerror(errno));
 			return 1;
 		}
-		if ((entry->cm_ca_name == NULL) ||
-		    (cm.ca->cm_id == NULL) ||
-		    (strcasecmp(entry->cm_ca_name, cm.ca->cm_id) != 0)) {
+		if ((entry->cm_ca_nickname == NULL) ||
+		    (cm.ca->cm_nickname == NULL) ||
+		    (strcasecmp(entry->cm_ca_nickname,
+				cm.ca->cm_nickname) != 0)) {
 			talloc_free(cm.ca);
 			cm.ca = NULL;
 		}

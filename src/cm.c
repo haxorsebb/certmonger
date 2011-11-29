@@ -226,7 +226,8 @@ cm_netlink_delayed_h(struct tevent_context *ec, struct tevent_timer *te,
 		if (ctx->events[i].next_event != NULL) {
 			switch (ctx->entries[i]->cm_state) {
 			case CM_CA_UNREACHABLE:
-				cm_restart_one(ctx, ctx->entries[i]->cm_id);
+				cm_restart_one(ctx,
+					       ctx->entries[i]->cm_nickname);
 				break;
 			default:
 				break;
@@ -298,7 +299,7 @@ cm_netlink_fd_h(struct tevent_context *ec,
 struct cm_store_ca *
 cm_find_ca_by_entry(struct cm_context *c, struct cm_store_entry *entry)
 {
-	return entry->cm_ca_name ? cm_get_ca_by_id(c, entry->cm_ca_name) : NULL;
+	return entry->cm_ca_nickname ? cm_get_ca_by_nickname(c, entry->cm_ca_nickname) : NULL;
 }
 
 static void *
@@ -328,29 +329,33 @@ cm_service_one(struct cm_context *context, struct timeval *current_time, int i)
 		case cm_time_now:
 			t = tevent_add_timer(talloc_parent(context), context,
 					     now, cm_timer_h, context);
-			cm_log(3, "Will revisit '%s' now.\n",
-			       context->entries[i]->cm_id);
+			cm_log(3, "Will revisit %s('%s') now.\n",
+			       context->entries[i]->cm_busname,
+			       context->entries[i]->cm_nickname);
 			break;
 		case cm_time_soon:
 			then = tevent_timeval_add(&now, CM_DELAY_SOON, 0);
 			t = tevent_add_timer(talloc_parent(context), context,
 					     then, cm_timer_h, context);
-			cm_log(3, "Will revisit '%s' soon.\n",
-			       context->entries[i]->cm_id);
+			cm_log(3, "Will revisit %s('%s') soon.\n",
+			       context->entries[i]->cm_busname,
+			       context->entries[i]->cm_nickname);
 			break;
 		case cm_time_soonish:
 			then = tevent_timeval_add(&now, CM_DELAY_SOONISH, 0);
 			t = tevent_add_timer(talloc_parent(context), context,
 					     then, cm_timer_h, context);
-			cm_log(3, "Will revisit '%s' soonish.\n",
-			       context->entries[i]->cm_id);
+			cm_log(3, "Will revisit %s('%s') soonish.\n",
+			       context->entries[i]->cm_busname,
+			       context->entries[i]->cm_nickname);
 			break;
 		case cm_time_delay:
 			then = tevent_timeval_add(&now, delay, 0);
 			t = tevent_add_timer(talloc_parent(context), context,
 					     then, cm_timer_h, context);
-			cm_log(3, "Will revisit '%s' in %d seconds.\n",
-			       context->entries[i]->cm_id, delay);
+			cm_log(3, "Will revisit %s('%s') in %d seconds.\n",
+			       context->entries[i]->cm_busname,
+			       context->entries[i]->cm_nickname, delay);
 			break;
 		case cm_time_no_time:
 			if (fd != -1) {
@@ -358,12 +363,15 @@ cm_service_one(struct cm_context *context, struct timeval *current_time, int i)
 						  context,
 						  fd, TEVENT_FD_READ,
 						  cm_fd_h, context);
-				cm_log(3, "Will revisit '%s' on "
+				cm_log(3, "Will revisit %s('%s') on "
 				       "traffic from %d.\n",
-				       context->entries[i]->cm_id, fd);
+				       context->entries[i]->cm_busname,
+				       context->entries[i]->cm_nickname, fd);
 			} else {
 				cm_log(3, "Waiting for instructions for "
-				       "'%s'.\n", context->entries[i]->cm_id);
+				       "%s('%s').\n",
+				       context->entries[i]->cm_busname,
+				       context->entries[i]->cm_nickname);
 				t = NULL;
 			}
 			break;
@@ -388,10 +396,10 @@ cm_add_entry(struct cm_context *context, struct cm_store_entry *new_entry)
 	char timestamp[15];
 	/* Check for duplicates and count the number of entries we're already
 	 * managing. */
-	if (new_entry->cm_id != NULL) {
+	if (new_entry->cm_nickname != NULL) {
 		for (i = 0; i < context->n_entries; i++) {
-			if (strcmp(context->entries[i]->cm_id,
-				   new_entry->cm_id) == 0) {
+			if (strcmp(context->entries[i]->cm_nickname,
+				   new_entry->cm_nickname) == 0) {
 				return -1;
 			}
 		}
@@ -399,19 +407,20 @@ cm_add_entry(struct cm_context *context, struct cm_store_entry *new_entry)
 		do {
 			/* Try to assign a new ID. */
 			now = cm_time(NULL);
-			new_entry->cm_id = cm_store_timestamp_from_time(now,
-									timestamp);
+			new_entry->cm_nickname = cm_store_timestamp_from_time(now,
+									      timestamp);
 			/* Check for duplicates. */
 			for (i = 0; i < context->n_entries; i++) {
-				if (strcmp(context->entries[i]->cm_id,
-					   new_entry->cm_id) == 0) {
+				if (strcmp(context->entries[i]->cm_nickname,
+					   new_entry->cm_nickname) == 0) {
 					/* Busy wait 0.1s. Ugh. */
 					usleep(100000);
 					break;
 				}
 			}
 		} while (i < context->n_entries);
-		new_entry->cm_id = talloc_strdup(new_entry, new_entry->cm_id);
+		new_entry->cm_nickname = talloc_strdup(new_entry,
+						       new_entry->cm_nickname);
 	}
 	/* Allocate storage for a new entry array. */
 	events = NULL;
@@ -454,9 +463,10 @@ cm_add_entry(struct cm_context *context, struct cm_store_entry *new_entry)
 		/* Prepare to set this entry in motion. */
 		i = context->n_entries - 1;
 		if (cm_start_one(context,
-				 context->entries[i]->cm_id) == FALSE) {
-			cm_log(3, "Error starting '%s', please retry.\n",
-			       context->entries[i]->cm_id);
+				 context->entries[i]->cm_nickname) == FALSE) {
+			cm_log(3, "Error starting %s('%s'), please retry.\n",
+			       context->entries[i]->cm_busname,
+			       context->entries[i]->cm_nickname);
 		}
 		/* Save this entry to the store, too. */
 		cm_store_entry_save(new_entry);
@@ -466,11 +476,11 @@ cm_add_entry(struct cm_context *context, struct cm_store_entry *new_entry)
 }
 
 static int
-cm_find_entry_by_id(struct cm_context *context, const char *id)
+cm_find_entry_by_nickname(struct cm_context *context, const char *nickname)
 {
 	int i;
 	for (i = 0; i < context->n_entries; i++) {
-		if (strcmp(context->entries[i]->cm_id, id) == 0) {
+		if (strcmp(context->entries[i]->cm_nickname, nickname) == 0) {
 			return i;
 		}
 	}
@@ -478,11 +488,11 @@ cm_find_entry_by_id(struct cm_context *context, const char *id)
 }
 
 static int
-cm_find_ca_by_id(struct cm_context *context, const char *id)
+cm_find_ca_by_nickname(struct cm_context *context, const char *nickname)
 {
 	int i;
 	for (i = 0; i < context->n_cas; i++) {
-		if (strcmp(context->cas[i]->cm_id, id) == 0) {
+		if (strcmp(context->cas[i]->cm_nickname, nickname) == 0) {
 			return i;
 		}
 	}
@@ -497,8 +507,10 @@ cm_start_all(struct cm_context *context)
 		if ((context->events[i].iterate_state == NULL) &&
 		    (cm_iterate_init(context->entries[i],
 				     &context->events[i].iterate_state)) != 0) {
-			cm_log(1, "Error starting \"%s\", please try again.\n",
-			       context->entries[i]->cm_id);
+			cm_log(1, "Error starting %s('%s'), "
+			       "please try again.\n",
+			       context->entries[i]->cm_busname,
+			       context->entries[i]->cm_nickname);
 		} else {
 			context->events[i].next_event = cm_service_one(context,
 								       NULL, i);
@@ -526,32 +538,34 @@ cm_stop_all(struct cm_context *context)
 }
 
 dbus_bool_t
-cm_start_one(struct cm_context *context, const char *id)
+cm_start_one(struct cm_context *context, const char *nickname)
 {
 	int i;
-	i = cm_find_entry_by_id(context, id);
+	i = cm_find_entry_by_nickname(context, nickname);
 	if (i != -1) {
 		if (cm_iterate_init(context->entries[i],
 				    &context->events[i].iterate_state) == 0) {
 			context->events[i].next_event = cm_service_one(context,
 								       NULL, i);
-			cm_log(3, "Started '%s'.\n", id);
+			cm_log(3, "Started '%s(%s)'.\n",
+			       context->entries[i]->cm_busname, nickname);
 			return TRUE;
 		} else {
-			cm_log(3, "Error starting '%s', please retry.\n", id);
+			cm_log(3, "Error starting '%s(%s)', please retry.\n",
+			       context->entries[i]->cm_busname, nickname);
 			return FALSE;
 		}
 	} else {
-		cm_log(3, "No entry matching '%s'.\n", id);
+		cm_log(3, "No entry matching nickname '%s'.\n", nickname);
 		return FALSE;
 	}
 }
 
 dbus_bool_t
-cm_stop_one(struct cm_context *context, const char *id)
+cm_stop_one(struct cm_context *context, const char *nickname)
 {
 	int i;
-	i = cm_find_entry_by_id(context, id);
+	i = cm_find_entry_by_nickname(context, nickname);
 	if (i != -1) {
 		talloc_free(context->events[i].next_event);
 		context->events[i].next_event = NULL;
@@ -559,20 +573,21 @@ cm_stop_one(struct cm_context *context, const char *id)
 				context->events[i].iterate_state);
 		context->events[i].iterate_state = NULL;
 		cm_store_entry_save(context->entries[i]);
-		cm_log(3, "Stopped '%s'.\n", id);
+		cm_log(3, "Stopped '%s(%s)'.\n",
+		       context->entries[i]->cm_busname, nickname);
 		return TRUE;
 	} else {
-		cm_log(3, "No entry matching '%s'.\n", id);
+		cm_log(3, "No entry matching nickname '%s'.\n", nickname);
 		return FALSE;
 	}
 }
 
 int
-cm_remove_entry(struct cm_context *context, const char *id)
+cm_remove_entry(struct cm_context *context, const char *nickname)
 {
 	int i, rv = -1;
-	if (cm_stop_one(context, id)) {
-		i = cm_find_entry_by_id(context, id);
+	if (cm_stop_one(context, nickname)) {
+		i = cm_find_entry_by_nickname(context, nickname);
 		if (i != -1) {
 			if (cm_store_entry_delete(context->entries[i]) == 0) {
 				/* Free the entry. */
@@ -599,17 +614,30 @@ cm_remove_entry(struct cm_context *context, const char *id)
 }
 
 dbus_bool_t
-cm_restart_one(struct cm_context *context, const char *id)
+cm_restart_one(struct cm_context *context, const char *nickname)
 {
-	return cm_stop_one(context, id) && cm_start_one(context, id);
+	return cm_stop_one(context, nickname) &&
+	       cm_start_one(context, nickname);
 }
 
 struct cm_store_entry *
-cm_get_entry_by_id(struct cm_context *context, const char *id)
+cm_get_entry_by_busname(struct cm_context *context, const char *name)
 {
 	int i;
 	for (i = 0; i < context->n_entries; i++) {
-		if (strcmp(context->entries[i]->cm_id, id) == 0) {
+		if (strcmp(context->entries[i]->cm_busname, name) == 0) {
+			return context->entries[i];
+		}
+	}
+	return NULL;
+}
+
+struct cm_store_entry *
+cm_get_entry_by_nickname(struct cm_context *context, const char *nickname)
+{
+	int i;
+	for (i = 0; i < context->n_entries; i++) {
+		if (strcmp(context->entries[i]->cm_nickname, nickname) == 0) {
 			return context->entries[i];
 		}
 	}
@@ -640,30 +668,31 @@ cm_add_ca(struct cm_context *context, struct cm_store_ca *new_ca)
 	char timestamp[15];
 	/* Check for duplicates and count the number of CAs we're already
 	 * managing. */
-	if (new_ca->cm_id != NULL) {
+	if (new_ca->cm_nickname != NULL) {
 		for (i = 0; i < context->n_cas; i++) {
-			if (strcmp(context->cas[i]->cm_id,
-				   new_ca->cm_id) == 0) {
+			if (strcmp(context->cas[i]->cm_nickname,
+				   new_ca->cm_nickname) == 0) {
 				return -1;
 			}
 		}
 	} else {
 		do {
-			/* Try to assign a new ID. */
+			/* Try to assign a new nickname. */
 			now = cm_time(NULL);
-			new_ca->cm_id = cm_store_timestamp_from_time(now,
-								     timestamp);
+			new_ca->cm_nickname = cm_store_timestamp_from_time(now,
+									   timestamp);
 			/* Check for duplicates. */
 			for (i = 0; i < context->n_cas; i++) {
-				if (strcmp(context->cas[i]->cm_id,
-					   new_ca->cm_id) == 0) {
+				if (strcmp(context->cas[i]->cm_nickname,
+					   new_ca->cm_nickname) == 0) {
 					/* Busy wait 0.1s. Ugh. */
 					usleep(100000);
 					break;
 				}
 			}
 		} while (i < context->n_cas);
-		new_ca->cm_id = talloc_strdup(new_ca, new_ca->cm_id);
+		new_ca->cm_nickname = talloc_strdup(new_ca,
+						    new_ca->cm_nickname);
 	}
 	/* Allocate storage for a new CA array. */
 	cas = talloc_array(context, struct cm_store_ca *, context->n_cas + 2);
@@ -687,11 +716,23 @@ cm_add_ca(struct cm_context *context, struct cm_store_ca *new_ca)
 }
 
 struct cm_store_ca *
-cm_get_ca_by_id(struct cm_context *context, const char *id)
+cm_get_ca_by_busname(struct cm_context *context, const char *name)
 {
 	int i;
 	for (i = 0; i < context->n_cas; i++) {
-		if (strcmp(context->cas[i]->cm_id, id) == 0) {
+		if (strcmp(context->cas[i]->cm_busname, name) == 0) {
+			return context->cas[i];
+		}
+	}
+	return NULL;
+}
+
+struct cm_store_ca *
+cm_get_ca_by_nickname(struct cm_context *context, const char *nickname)
+{
+	int i;
+	for (i = 0; i < context->n_cas; i++) {
+		if (strcmp(context->cas[i]->cm_nickname, nickname) == 0) {
 			return context->cas[i];
 		}
 	}
@@ -714,10 +755,10 @@ cm_get_n_cas(struct cm_context *context)
 }
 
 int
-cm_remove_ca(struct cm_context *context, const char *id)
+cm_remove_ca(struct cm_context *context, const char *nickname)
 {
 	int i;
-	i = cm_find_ca_by_id(context, id);
+	i = cm_find_ca_by_nickname(context, nickname);
 	if (i != -1) {
 		if (cm_store_ca_delete(context->cas[i]) == 0) {
 			/* Free the entry. */

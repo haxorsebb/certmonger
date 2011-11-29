@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,8 +26,9 @@ cm_keygen_start(struct cm_store_entry *entry)
 {
 	switch (entry->cm_key_storage_type) {
 	case cm_key_storage_none:
-		cm_log(1, "Can't generate key for \"%s\" without knowing "
-		       "where to store it.\n", entry->cm_id);
+		cm_log(1, "Can't generate key for %s('%s') without knowing "
+		       "where to store it.\n",
+		       entry->cm_busname, entry->cm_nickname);
 		break;
 #ifdef HAVE_OPENSSL
 	case cm_key_storage_file:

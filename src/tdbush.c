@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -104,8 +104,8 @@ get_entry_for_path(struct cm_context *ctx, const char *path)
 		initial = strlen(CM_DBUS_REQUEST_PATH);
 		if (strncmp(path, CM_DBUS_REQUEST_PATH, initial) == 0) {
 			if (path[initial] == '/') {
-				return cm_get_entry_by_id(ctx,
-							  path + initial + 1);
+				return cm_get_entry_by_busname(ctx,
+							       path + initial + 1);
 			}
 		}
 	}
@@ -124,7 +124,8 @@ get_ca_for_path(struct cm_context *ctx, const char *path)
 		initial = strlen(CM_DBUS_CA_PATH);
 		if (strncmp(path, CM_DBUS_CA_PATH, initial) == 0) {
 			if (path[initial] == '/') {
-				return cm_get_ca_by_id(ctx, path + initial + 1);
+				return cm_get_ca_by_busname(ctx,
+							    path + initial + 1);
 			}
 		}
 	}
@@ -256,22 +257,6 @@ send_internal_base_no_such_entry_error(DBusConnection *conn, DBusMessage *req)
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
-/* Check if this string would be valid as a component in a D-Bus object path. */
-static int
-cm_tdbush_check_object_path_component(struct cm_context *ctx, const char *name)
-{
-	if (strlen(name) == 0) {
-		return -1;
-	}
-	if (strspn(name,
-		   "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-		   "abcdefghijklmnopqrstuvwxyz"
-		   "0123456789_") != strlen(name)) {
-		return -1;
-	}
-	return 0;
-}
-
 static int
 cm_tdbush_check_arg_is_absolute_path(const char *path)
 {
@@ -396,21 +381,17 @@ base_add_known_ca(DBusConnection *conn, DBusMessage *msg,
 	n_cas = cm_get_n_cas(ctx);
 	for (i = 0; i < n_cas; i++) {
 		ca = cm_get_ca_by_index(ctx, i);
-		if (strcasecmp(ca->cm_id, ca_name) == 0) {
+		if (strcasecmp(ca->cm_nickname, ca_name) == 0) {
 			cm_log(1, "There is already a CA with "
-			       "the nickname \"%s\".\n", ca->cm_id);
+			       "the nickname \"%s\": %s.\n", ca->cm_nickname,
+			       ca->cm_busname);
 			talloc_free(parent);
 			return send_internal_base_duplicate_error(conn, msg,
 								  _("There is already a CA with the nickname \"%s\"."),
-								  ca->cm_id,
+								  ca->cm_nickname,
 								  NULL,
 								  NULL);
 		}
-	}
-	if (cm_tdbush_check_object_path_component(ctx, ca_name) != 0) {
-		return send_internal_base_bad_arg_error(conn, msg,
-							_("The nickname \"%s\" is not allowed."),
-							ca_name, NULL);
 	}
 	/* Okay, we can go ahead and add the CA. */
 	new_ca = talloc_ptrtype(parent, new_ca);
@@ -420,7 +401,8 @@ base_add_known_ca(DBusConnection *conn, DBusMessage *msg,
 	}
 	memset(new_ca, 0, sizeof(*new_ca));
 	/* Populate it with all of the information we have. */
-	new_ca->cm_id = talloc_strdup(new_ca, ca_name);
+	new_ca->cm_busname = cm_store_ca_next_busname(new_ca);
+	new_ca->cm_nickname = talloc_strdup(new_ca, ca_name);
 	new_ca->cm_ca_known_issuer_names = maybe_strdupv(new_ca,
 							 ca_issuer_names);
 	new_ca->cm_ca_is_default = 0;
@@ -442,7 +424,7 @@ base_add_known_ca(DBusConnection *conn, DBusMessage *msg,
 		if (rep != NULL) {
 			path = talloc_asprintf(parent, "%s/%s",
 					       CM_DBUS_CA_PATH,
-					       new_ca->cm_id);
+					       new_ca->cm_busname);
 			cm_tdbusm_set_bp(rep, TRUE, path);
 			dbus_connection_send(conn, rep, NULL);
 			dbus_message_unref(rep);
@@ -648,26 +630,18 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		n_entries = cm_get_n_entries(ctx);
 		for (i = 0; i < n_entries; i++) {
 			e = cm_get_entry_by_index(ctx, i);
-			if (strcasecmp(e->cm_id, param->value.s) == 0) {
+			if (strcasecmp(e->cm_nickname, param->value.s) == 0) {
 				cm_log(1, "There is already a request with "
-				       "the nickname \"%s\".\n", e->cm_id);
+				       "the nickname \"%s\": %s.\n",
+				       e->cm_nickname, e->cm_busname);
 				talloc_free(parent);
 				return send_internal_base_duplicate_error(conn,
 									  msg,
 									  _("There is already a request with the nickname \"%s\"."),
-									  e->cm_id,
+									  e->cm_nickname,
 									  "NICKNAME",
 									  NULL);
 			}
-		}
-		if (cm_tdbush_check_object_path_component(ctx,
-							  param->value.s) != 0) {
-			ret = send_internal_base_bad_arg_error(conn, msg,
-							       _("The nickname \"%s\" is not allowed."),
-							       param->value.s,
-							       "NICKNAME");
-			talloc_free(parent);
-			return ret;
 		}
 	}
 	/* Check for a duplicate of another entry's certificate storage
@@ -695,11 +669,12 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	if (i < n_entries) {
 		/* We found a match, and that's bad. */
 		cm_log(1, "Cert at same location is already being "
-		       "used for request \"%s\".\n", e->cm_id);
+		       "used for request %s with nickname \"%s\".\n",
+		       e->cm_busname, e->cm_nickname);
 		talloc_free(parent);
 		return send_internal_base_duplicate_error(conn, msg,
-							  _("Certificate at same location is already used by request \"%s\"."),
-							  e->cm_id,
+							  _("Certificate at same location is already used by request with nickname \"%s\"."),
+							  e->cm_nickname,
 							  "CERT_LOCATION",
 							  cert_storage == cm_cert_storage_nssdb ?
 							  "CERT_NICKNAME" : NULL);
@@ -871,11 +846,12 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		if (i < n_entries) {
 			/* We found a match, and that's bad. */
 			cm_log(1, "Key at same location is already being "
-			       "used for request \"%s\".\n", e->cm_id);
+			       "used for request %s with nickname \"%s\".\n",
+			       e->cm_busname, e->cm_nickname);
 			talloc_free(parent);
 			return send_internal_base_duplicate_error(conn, msg,
-								  _("Key at same location is already used by request \"%s\"."),
-								  e->cm_id,
+								  _("Key at same location is already used by request with nickname \"%s\"."),
+								  e->cm_nickname,
 								  "KEY_LOCATION",
 								  key_storage == cm_key_storage_nssdb ?
 								  "KEY_NICKNAME" : NULL);
@@ -889,9 +865,11 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	}
 	memset(new_entry, 0, sizeof(*new_entry));
 	/* Populate it with all of the information we have. */
+	new_entry->cm_busname = cm_store_entry_next_busname(new_entry);
 	param = cm_tdbusm_find_dict_entry(d, "NICKNAME", cm_tdbusm_dict_s);
 	if (param != NULL) {
-		new_entry->cm_id = talloc_strdup(new_entry, param->value.s);
+		new_entry->cm_nickname = talloc_strdup(new_entry,
+						       param->value.s);
 	}
 	param = cm_tdbusm_find_dict_entry(d, "KEY_SIZE", cm_tdbusm_dict_n);
 	if (param != NULL) {
@@ -922,8 +900,8 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	if (param != NULL) {
 		ca = get_ca_for_path(ctx, param->value.s);
 		if (ca != NULL) {
-			new_entry->cm_ca_name = talloc_strdup(new_entry,
-							      ca->cm_id);
+			new_entry->cm_ca_nickname = talloc_strdup(new_entry,
+								  ca->cm_nickname);
 		} else {
 			cm_log(1, "No CA with path \"%s\" known.\n",
 			       param->value.s);
@@ -992,7 +970,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		if (rep != NULL) {
 			path = talloc_asprintf(parent, "%s/%s",
 					       CM_DBUS_REQUEST_PATH,
-					       new_entry->cm_id);
+					       new_entry->cm_busname);
 			cm_tdbusm_set_bp(rep, TRUE, path);
 			dbus_connection_send(conn, rep, NULL);
 			dbus_message_unref(rep);
@@ -1029,7 +1007,8 @@ base_get_known_cas(DBusConnection *conn, DBusMessage *msg,
 				break;
 			}
 			ret[i] = talloc_asprintf(ret, "%s/%s",
-						 CM_DBUS_CA_PATH, ca->cm_id);
+						 CM_DBUS_CA_PATH,
+						 ca->cm_busname);
 		}
 		ret[i] = NULL;
 	}
@@ -1064,7 +1043,7 @@ base_get_requests(DBusConnection *conn, DBusMessage *msg,
 			}
 			ret[i] = talloc_asprintf(ret, "%s/%s",
 						 CM_DBUS_REQUEST_PATH,
-						 entry->cm_id);
+						 entry->cm_busname);
 		}
 		ret[i] = NULL;
 	}
@@ -1140,7 +1119,7 @@ base_remove_known_ca(DBusConnection *conn, DBusMessage *msg,
 		ca = get_ca_for_path(ctx, path);
 		talloc_free(parent);
 		if (ca != NULL) {
-			ret = cm_remove_ca(ctx, ca->cm_id);
+			ret = cm_remove_ca(ctx, ca->cm_nickname);
 			cm_tdbusm_set_b(rep, (ret == 0));
 			dbus_connection_send(conn, rep, NULL);
 			dbus_message_unref(rep);
@@ -1177,7 +1156,7 @@ base_remove_request(DBusConnection *conn, DBusMessage *msg,
 		entry = get_entry_for_path(ctx, path);
 		talloc_free(parent);
 		if (entry != NULL) {
-			ret = cm_remove_entry(ctx, entry->cm_id);
+			ret = cm_remove_entry(ctx, entry->cm_nickname);
 			cm_tdbusm_set_b(rep, (ret == 0));
 			dbus_connection_send(conn, rep, NULL);
 			dbus_message_unref(rep);
@@ -1219,8 +1198,8 @@ ca_get_nickname(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 	}
 	rep = dbus_message_new_method_return(msg);
 	if (rep != NULL) {
-		if (ca->cm_id != NULL) {
-			cm_tdbusm_set_s(rep, ca->cm_id);
+		if (ca->cm_nickname != NULL) {
+			cm_tdbusm_set_s(rep, ca->cm_nickname);
 		}
 		dbus_connection_send(conn, rep, NULL);
 		dbus_message_unref(rep);
@@ -1385,8 +1364,8 @@ request_get_nickname(DBusConnection *conn, DBusMessage *msg,
 	}
 	rep = dbus_message_new_method_return(msg);
 	if (rep != NULL) {
-		if (entry->cm_id != NULL) {
-			cm_tdbusm_set_s(rep, entry->cm_id);
+		if (entry->cm_nickname != NULL) {
+			cm_tdbusm_set_s(rep, entry->cm_nickname);
 		}
 		dbus_connection_send(conn, rep, NULL);
 		dbus_message_unref(rep);
@@ -1899,6 +1878,7 @@ request_get_ca(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 	void *parent;
 	DBusMessage *rep;
 	struct cm_store_entry *entry;
+	struct cm_store_ca *ca;
 	char *path;
 	entry = get_entry_for_request_message(msg, ctx);
 	if (entry == NULL) {
@@ -1907,11 +1887,16 @@ request_get_ca(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 	rep = dbus_message_new_method_return(msg);
 	if (rep != NULL) {
 		parent = talloc_new(NULL);
-		if ((entry->cm_ca_name != NULL) &&
-		    (strlen(entry->cm_ca_name) > 0)) {
-			path = talloc_asprintf(parent, "%s/%s",
-					       CM_DBUS_CA_PATH,
-					       entry->cm_ca_name);
+		if ((entry->cm_ca_nickname != NULL) &&
+		    (strlen(entry->cm_ca_nickname) > 0)) {
+			ca = cm_get_ca_by_nickname(ctx, entry->cm_ca_nickname);
+			if ((ca != NULL) &&
+			    (ca->cm_busname != NULL) &&
+			    (strlen(ca->cm_busname) > 0)) {
+				path = talloc_asprintf(parent, "%s/%s",
+						       CM_DBUS_CA_PATH,
+						       ca->cm_busname);
+			}
 			cm_tdbusm_set_p(rep, path);
 		}
 		dbus_connection_send(conn, rep, NULL);
@@ -2025,18 +2010,12 @@ request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 		param = cm_tdbusm_find_dict_entry(d, "NICKNAME",
 						  cm_tdbusm_dict_s);
 		if (param != NULL) {
-			if (cm_get_entry_by_id(ctx, param->value.s) != NULL) {
+			if (cm_get_entry_by_nickname(ctx, param->value.s) != NULL) {
 				return send_internal_base_duplicate_error(conn, msg,
 									  _("There is already a request with the nickname \"%s\"."),
 									  param->value.s,
 									  "NICKNAME",
 									  NULL);
-			}
-			if (cm_tdbush_check_object_path_component(ctx, param->value.s) != 0) {
-				return send_internal_base_bad_arg_error(conn, msg,
-									_("The nickname \"%s\" is not allowed."),
-									param->value.s,
-									"NICKNAME");
 			}
 		}
 		/* If we're being asked to change the CA, check that the new CA
@@ -2066,15 +2045,15 @@ request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 			if ((param->value_type == cm_tdbusm_dict_s) &&
 			    (strcasecmp(param->key, "CA") == 0)) {
 				ca = get_ca_for_path(ctx, param->value.s);
-				talloc_free(entry->cm_ca_name);
-				entry->cm_ca_name = talloc_strdup(entry,
-								  ca->cm_id);
+				talloc_free(entry->cm_ca_nickname);
+				entry->cm_ca_nickname = talloc_strdup(entry,
+								      ca->cm_nickname);
 			} else
 			if ((param->value_type == cm_tdbusm_dict_s) &&
 			    (strcasecmp(param->key, "NICKNAME") == 0)) {
-				talloc_free(entry->cm_id);
-				entry->cm_id = talloc_strdup(entry,
-							     param->value.s);
+				talloc_free(entry->cm_nickname);
+				entry->cm_nickname = talloc_strdup(entry,
+								   param->value.s);
 			} else
 			if ((param->value_type == cm_tdbusm_dict_s) &&
 			    (strcasecmp(param->key, "SUBJECT") == 0)) {
@@ -2135,8 +2114,10 @@ request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 		if (d[i] == NULL) {
 			new_request_path = talloc_asprintf(parent, "%s/%s",
 							   CM_DBUS_REQUEST_PATH,
-							   entry->cm_id);
-			cm_tdbusm_set_bp(rep, cm_restart_one(ctx, entry->cm_id),
+							   entry->cm_busname);
+			cm_tdbusm_set_bp(rep,
+					 cm_restart_one(ctx,
+					 		entry->cm_nickname),
 					 new_request_path);
 			dbus_connection_send(conn, rep, NULL);
 			dbus_message_unref(rep);
@@ -2172,13 +2153,13 @@ request_resubmit(DBusConnection *conn, DBusMessage *msg,
 	}
 	rep = dbus_message_new_method_return(msg);
 	if (rep != NULL) {
-		if (cm_stop_one(ctx, entry->cm_id)) {
+		if (cm_stop_one(ctx, entry->cm_nickname)) {
 			if (entry->cm_key_type.cm_key_size == 0) {
 				entry->cm_state = CM_NEED_KEY_PAIR;
 			} else {
 				entry->cm_state = CM_NEED_CSR;
 			}
-			if (cm_start_one(ctx, entry->cm_id)) {
+			if (cm_start_one(ctx, entry->cm_nickname)) {
 				cm_tdbusm_set_b(rep, TRUE);
 			} else {
 				cm_tdbusm_set_b(rep, FALSE);
@@ -2421,7 +2402,7 @@ request_group_introspect(struct cm_context *ctx, const char *path)
 		entry = cm_get_entry_by_index(ctx, i);
 		if (entry != NULL) {
 			q = talloc_asprintf(ctx, " <node name=\"%s\"/>\n%s",
-					    entry->cm_id, p ? p : "");
+					    entry->cm_busname, p ? p : "");
 			talloc_free(p);
 			p = q;
 		}
@@ -2441,7 +2422,7 @@ ca_group_introspect(struct cm_context *ctx, const char *path)
 		ca = cm_get_ca_by_index(ctx, i);
 		if (ca != NULL) {
 			q = talloc_asprintf(ctx, " <node name=\"%s\"/>\n%s",
-					    ca->cm_id, p ? p : "");
+					    ca->cm_busname, p ? p : "");
 			talloc_free(p);
 			p = q;
 		}

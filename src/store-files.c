@@ -39,6 +39,8 @@
 #include "log.h"
 #include "tm.h"
 
+static unsigned long long cm_entry_name_last, cm_ca_name_last;
+
 enum cm_store_file_field {
 	cm_store_file_field_invalid = 0,
 	cm_store_file_field_id,
@@ -91,7 +93,7 @@ enum cm_store_file_field {
 	cm_store_entry_field_autorenew,
 	cm_store_entry_field_monitor,
 
-	cm_store_entry_field_ca_name,
+	cm_store_entry_field_ca_nickname,
 
 	cm_store_entry_field_submitted,
 	cm_store_entry_field_ca_cookie,
@@ -163,7 +165,7 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_autorenew, "autorenew"},
 	{cm_store_entry_field_monitor, "monitor"},
 
-	{cm_store_entry_field_ca_name, "ca_name"},
+	{cm_store_entry_field_ca_nickname, "ca_name"},
 
 	{cm_store_entry_field_submitted, "submitted"},
 	{cm_store_entry_field_ca_cookie, "ca_cookie"},
@@ -357,6 +359,12 @@ free_if_empty_multi(void *parent, char *p)
 	return s;
 }
 
+char *
+cm_store_entry_next_busname(void *parent)
+{
+	return talloc_asprintf(parent, "Request%llu", ++cm_entry_name_last);
+}
+
 static struct cm_store_entry *
 cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 {
@@ -368,6 +376,7 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 	if (ret != NULL) {
 		memset(ret, 0, sizeof(*ret));
 		s = cm_store_file_read_lines(ret, fp);
+		ret->cm_busname = cm_store_entry_next_busname(ret);
 		ret->cm_store_private = talloc_strdup(ret, filename);
 		for (i = 0; (s != NULL) && (s[i] != NULL); i++) {
 			p = s[i];
@@ -384,7 +393,7 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_ca_field_external_helper:
 				break;
 			case cm_store_file_field_id:
-				ret->cm_id = free_if_empty(p);
+				ret->cm_nickname = free_if_empty(p);
 				break;
 			case cm_store_entry_field_key_type:
 				if (strcasecmp(s[i], "RSA") == 0) {
@@ -569,8 +578,8 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 				ret->cm_monitor = atoi(p);
 				talloc_free(p);
 				break;
-			case cm_store_entry_field_ca_name:
-				ret->cm_ca_name = free_if_empty(p);
+			case cm_store_entry_field_ca_nickname:
+				ret->cm_ca_nickname = free_if_empty(p);
 				break;
 			case cm_store_entry_field_submitted:
 				ret->cm_submitted =
@@ -607,6 +616,12 @@ cm_store_files_entry_read(void *parent, const char *filename)
 	return ret;
 }
 
+char *
+cm_store_ca_next_busname(void *parent)
+{
+	return talloc_asprintf(parent, "CA%llu", ++cm_ca_name_last);
+}
+
 static struct cm_store_ca *
 cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 {
@@ -618,6 +633,7 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 	if (ret != NULL) {
 		memset(ret, 0, sizeof(*ret));
 		s = cm_store_file_read_lines(ret, fp);
+		ret->cm_busname = cm_store_ca_next_busname(ret);
 		ret->cm_store_private = talloc_strdup(ret, filename);
 		for (i = 0; (s != NULL) && (s[i] != NULL); i++) {
 			p = s[i];
@@ -664,14 +680,14 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_state:
 			case cm_store_entry_field_autorenew:
 			case cm_store_entry_field_monitor:
-			case cm_store_entry_field_ca_name:
+			case cm_store_entry_field_ca_nickname:
 			case cm_store_entry_field_submitted:
 			case cm_store_entry_field_ca_cookie:
 			case cm_store_entry_field_ca_error:
 			case cm_store_entry_field_cert:
 				break;
 			case cm_store_file_field_id:
-				ret->cm_id = free_if_empty(p);
+				ret->cm_nickname = free_if_empty(p);
 				break;
 			case cm_store_ca_field_known_issuer_names:
 				ret->cm_ca_known_issuer_names =
@@ -797,10 +813,10 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 	char timestamp[15];
 	const char *p;
 
-	if (entry->cm_id == NULL) {
+	if (entry->cm_nickname == NULL) {
 		p = cm_store_timestamp_from_time(cm_time(NULL), timestamp);
 	} else {
-		p = entry->cm_id;
+		p = entry->cm_nickname;
 	}
 	cm_store_file_write_str(fp, cm_store_file_field_id, p);
 
@@ -938,8 +954,8 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 	cm_store_file_write_int(fp, cm_store_entry_field_monitor,
 				entry->cm_monitor);
 
-	cm_store_file_write_str(fp, cm_store_entry_field_ca_name,
-				entry->cm_ca_name);
+	cm_store_file_write_str(fp, cm_store_entry_field_ca_nickname,
+				entry->cm_ca_nickname);
 	cm_store_file_write_str(fp, cm_store_entry_field_submitted,
 				cm_store_timestamp_from_time(entry->cm_submitted,
 							      timestamp));
@@ -973,7 +989,7 @@ cm_store_entry_delete(struct cm_store_entry *entry)
 		}
 	} else {
 		cm_log(3, "No file to remove for \"%s\".\n",
-		       entry->cm_id);
+		       entry->cm_nickname);
 		ret = 0;
 	}
 	return 0;
@@ -1112,8 +1128,8 @@ cm_store_get_all_entries(void *parent)
 					if (ret[j] != NULL) {
 						/* Check for duplicate names. */
 						for (k = 0; k < j; k++) {
-							if (strcmp(ret[k]->cm_id,
-								   ret[j]->cm_id) == 0) {
+							if (strcmp(ret[k]->cm_nickname,
+								   ret[j]->cm_nickname) == 0) {
 								cm_store_entry_delete(ret[j]);
 								talloc_free(ret[j]);
 								ret[j] = NULL;
@@ -1140,10 +1156,10 @@ cm_store_ca_write(FILE *fp, struct cm_store_ca *ca)
 	const char *p;
 	char timestamp[15];
 
-	if (ca->cm_id == NULL) {
+	if (ca->cm_nickname == NULL) {
 		p = cm_store_timestamp_from_time(cm_time(NULL), timestamp);
 	} else {
-		p = ca->cm_id;
+		p = ca->cm_nickname;
 	}
 	cm_store_file_write_str(fp, cm_store_file_field_id, p);
 	cm_store_file_write_strs(fp,
@@ -1193,7 +1209,7 @@ cm_store_ca_delete(struct cm_store_ca *ca)
 			       filename, strerror(errno));
 		}
 	} else {
-		cm_log(3, "No file to remove for \"%s\".\n", ca->cm_id);
+		cm_log(3, "No file to remove for \"%s\".\n", ca->cm_nickname);
 		ret = 0;
 	}
 	return 0;
@@ -1308,8 +1324,8 @@ cm_store_get_all_cas(void *parent)
 				if (ret[j] != NULL) {
 					/* Check for duplicate names. */
 					for (k = 0; k < j; k++) {
-						if (strcmp(ret[k]->cm_id,
-							   ret[j]->cm_id) == 0) {
+						if (strcmp(ret[k]->cm_nickname,
+							   ret[j]->cm_nickname) == 0) {
 							cm_store_ca_delete(ret[j]);
 							talloc_free(ret[j]);
 							ret[j] = NULL;
@@ -1331,8 +1347,8 @@ cm_store_get_all_cas(void *parent)
 		}
 		if (k == j) {
 			ret[j] = cm_store_ca_new(ret);
-			ret[j]->cm_id = talloc_strdup(ret[j],
-						      CM_SELF_SIGN_CA_NAME);
+			ret[j]->cm_nickname = talloc_strdup(ret[j],
+							    CM_SELF_SIGN_CA_NAME);
 			ret[j]->cm_ca_type = cm_ca_internal_self;
 			ret[j]->cm_ca_internal_serial = talloc_strdup(ret[j],
 								      CM_DEFAULT_CERT_SERIAL);
@@ -1342,13 +1358,15 @@ cm_store_get_all_cas(void *parent)
 		/* Make sure we get at least one IPA entry. */
 		for (k = 0; k < j; k++) {
 			if ((ret[k]->cm_ca_type == cm_ca_external) &&
-			    (strcmp(ret[k]->cm_id, CM_IPA_CA_NAME) == 0)) {
+			    (strcmp(ret[k]->cm_nickname,
+				    CM_IPA_CA_NAME) == 0)) {
 				break;
 			}
 		}
 		if (k == j) {
 			ret[j] = cm_store_ca_new(ret);
-			ret[j]->cm_id = talloc_strdup(ret[j], CM_IPA_CA_NAME);
+			ret[j]->cm_nickname = talloc_strdup(ret[j],
+							    CM_IPA_CA_NAME);
 			ret[j]->cm_ca_type = cm_ca_external;
 			ret[j]->cm_ca_external_helper = talloc_strdup(ret[j],
 								      CM_IPA_HELPER_PATH);
@@ -1359,13 +1377,15 @@ cm_store_get_all_cas(void *parent)
 		/* Make sure we get at least one certmaster entry. */
 		for (k = 0; k < j; k++) {
 			if ((ret[k]->cm_ca_type == cm_ca_external) &&
-			    (strcmp(ret[k]->cm_id, CM_CERTMASTER_CA_NAME) == 0)) {
+			    (strcmp(ret[k]->cm_nickname,
+				    CM_CERTMASTER_CA_NAME) == 0)) {
 				break;
 			}
 		}
 		if (k == j) {
 			ret[j] = cm_store_ca_new(ret);
-			ret[j]->cm_id = talloc_strdup(ret[j], CM_CERTMASTER_CA_NAME);
+			ret[j]->cm_nickname = talloc_strdup(ret[j],
+							    CM_CERTMASTER_CA_NAME);
 			ret[j]->cm_ca_type = cm_ca_external;
 			ret[j]->cm_ca_external_helper = talloc_strdup(ret[j],
 								      CM_CERTMASTER_HELPER_PATH);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,12 +34,14 @@ cm_submit_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 {
 	if (ca == NULL) {
 		if (entry != NULL) {
-			if (entry->cm_ca_name != NULL) {
-				cm_log(1, "No matching CA \"%s\" for \"%s\".\n",
-				       entry->cm_ca_name, entry->cm_id);
+			if (entry->cm_ca_nickname != NULL) {
+				cm_log(1, "No matching CA \"%s\" for "
+				       "%s('%s').\n",
+				       entry->cm_ca_nickname,
+				       entry->cm_busname, entry->cm_nickname);
 			} else {
-				cm_log(1, "No matching CA for \"%s\".\n",
-				       entry->cm_id);
+				cm_log(1, "No matching CA for %s('%s').\n",
+				       entry->cm_busname, entry->cm_nickname);
 			}
 		} else {
 			cm_log(1, "No matching CA.\n");
@@ -52,8 +54,9 @@ cm_submit_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 	case cm_ca_internal_self:
 		switch (entry->cm_key_storage_type) {
 		case cm_key_storage_none:
-			cm_log(1, "Can't self-sign \"%s\" without access to "
-			       "the private key.\n", entry->cm_id);
+			cm_log(1, "Can't self-sign %s('%s') without access to "
+			       "the private key.\n",
+			       entry->cm_busname, entry->cm_nickname);
 			break;
 #ifdef HAVE_OPENSSL
 		case cm_key_storage_file:
@@ -69,8 +72,8 @@ cm_submit_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 		break;
 	case cm_ca_external:
 		if (ca->cm_ca_external_helper == NULL) {
-			cm_log(1, "No helper defined for CA \"%s\".\n",
-			       entry->cm_id);
+			cm_log(1, "No helper defined for CA %s('%s').\n",
+			       entry->cm_busname, entry->cm_nickname);
 			return NULL;
 		}
 		return cm_submit_e_start(ca, entry);

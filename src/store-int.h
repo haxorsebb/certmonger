@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,11 +21,13 @@
 #include <time.h>
 
 struct cm_store_entry {
+	/* Per-instance unique identifier. */
+	char *cm_busname;
 	/* Store-private data - usually an identifier for the nonvolatile
 	 * saved copy, might be other stuff. */
 	void *cm_store_private;
-	/* A unique identifier. */
-	char *cm_id;
+	/* A persistent unique identifier or nickname. */
+	char *cm_nickname;
 	/* Type of key pair to generate [or use default settings] RSA,2048 */
 	struct cm_key_type {
 		enum cm_key_algorithm {
@@ -127,7 +129,7 @@ struct cm_store_entry {
 	/* Whether to start monitoring at issue */
 	unsigned int cm_monitor:1;
 	/* Type and location of CA [or use default if NULL] */
-	char *cm_ca_name;
+	char *cm_ca_nickname;
 	/* Date of submission for in-progress submissions. */
 	time_t cm_submitted;
 	/* Value of CA cookie for in-progress submissions. */
@@ -139,11 +141,13 @@ struct cm_store_entry {
 };
 
 struct cm_store_ca {
+	/* Per-instance unique identifier. */
+	char *cm_busname;
 	/* Store-private data - usually an identifier for the nonvolatile
 	 * saved copy, might be other stuff. */
 	void *cm_store_private;
-	/* A unique identifier or nickname. */
-	char *cm_id;
+	/* A persistent unique identifier or nickname. */
+	char *cm_nickname;
 	/* A list of issuer names.  If no CA is specified when we create a new
 	 * request, and the certificate already exists and was issued by one of
 	 * these names, we'll use this CA. */
@@ -166,8 +170,10 @@ struct cm_store_ca {
 const char *cm_store_state_as_string(enum cm_state state);
 enum cm_state cm_store_state_from_string(const char *name);
 
+char *cm_store_entry_next_busname(void *parent);
 struct cm_store_entry *cm_store_files_entry_read(void *parent,
 						 const char *filename);
+char *cm_store_ca_next_busname(void *parent);
 struct cm_store_ca *cm_store_files_ca_read(void *parent,
 					   const char *filename);
 #endif

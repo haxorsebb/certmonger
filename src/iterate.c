@@ -248,7 +248,8 @@ cm_iterate_init(struct cm_store_entry *entry, void **cm_iterate_state)
 		state->cm_certread_state = NULL;
 	}
 	cm_store_entry_save(entry);
-	cm_log(3, "'%s' starts in state '%s'\n", entry->cm_id,
+	cm_log(3, "%s('%s') starts in state '%s'\n",
+	       entry->cm_busname, entry->cm_nickname,
 	       cm_store_state_as_string(entry->cm_state));
 	return 0;
 }
@@ -627,9 +628,11 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				cm_submit_done(entry, state->cm_submit_state);
 				state->cm_submit_state = NULL;
 				if (entry->cm_cert != NULL) {
-					cm_log(3, "'%s' already had a "
+					cm_log(3, "%s('%s') already had a "
 					       "certificate, going back to "
-					       "monitoring it\n", entry->cm_id);
+					       "monitoring it\n",
+					       entry->cm_busname,
+					       entry->cm_nickname);
 					entry->cm_state = CM_MONITORING;
 					*when = cm_time_soonish;
 				} else {
@@ -663,9 +666,11 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				cm_submit_done(entry, state->cm_submit_state);
 				state->cm_submit_state = NULL;
 				if (entry->cm_cert != NULL) {
-					cm_log(3, "'%s' already had a "
+					cm_log(3, "%s('%s') already had a "
 					       "certificate, going back to "
-					       "monitoring it\n", entry->cm_id);
+					       "monitoring it\n",
+					       entry->cm_busname,
+					       entry->cm_nickname);
 					entry->cm_state = CM_MONITORING;
 					*when = cm_time_soonish;
 				} else {
@@ -677,7 +682,9 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				/* Don't know what's going on. HELP! */
 				cm_log(1,
 				       "Unable to determine course of action "
-				       "for \"%s\".\n", entry->cm_id);
+				       "for %s('%s').\n",
+				       entry->cm_busname,
+				       entry->cm_nickname);
 				cm_submit_done(entry, state->cm_submit_state);
 				state->cm_submit_state = NULL;
 				entry->cm_state = CM_NEED_GUIDANCE;
@@ -999,7 +1006,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 	case CM_NEWLY_ADDED_DECIDING:
 		/* Decide what to do next.  Assign a CA if it doesn't have one
 		 * assigned to it already. */
-		if ((entry->cm_ca_name == NULL) &&
+		if ((entry->cm_ca_nickname == NULL) &&
 		    (entry->cm_cert_issuer != NULL)) {
 			/* Walk the list of known names of known CAs and try to
 			 * match one with the issuer of the certificate we
@@ -1012,26 +1019,26 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				     j++) {
 					if (strcmp(tmp_ca->cm_ca_known_issuer_names[j],
 						   entry->cm_cert_issuer) == 0) {
-						entry->cm_ca_name = talloc_strdup(entry, tmp_ca->cm_id);
+						entry->cm_ca_nickname = talloc_strdup(entry, tmp_ca->cm_nickname);
 					}
 				}
 			}
 		}
 		/* No match -> assign the default. */
-		if (entry->cm_ca_name == NULL) {
+		if (entry->cm_ca_nickname == NULL) {
 			for (i = 0; i < (*get_n_cas)(context); i++) {
 				tmp_ca = (*get_ca_by_index)(context, i);
 				if (tmp_ca->cm_ca_is_default) {
-					entry->cm_ca_name = talloc_strdup(entry, tmp_ca->cm_id);
+					entry->cm_ca_nickname = talloc_strdup(entry, tmp_ca->cm_nickname);
 				}
 			}
 		}
 		/* No default in our data store -> use the config file's. */
-		if (entry->cm_ca_name == NULL) {
+		if (entry->cm_ca_nickname == NULL) {
 			tmp_ca_name = cm_prefs_default_ca();
 			if (tmp_ca_name != NULL) {
-				entry->cm_ca_name = talloc_strdup(entry,
-								  tmp_ca_name);
+				entry->cm_ca_nickname = talloc_strdup(entry,
+								      tmp_ca_name);
 			}
 		}
 		/* If we have a certificate, we go straight to monitoring it.
@@ -1057,8 +1064,8 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			cm_store_set_if_not_set_s(entry,
 						  &entry->cm_template_eku,
 						  entry->cm_cert_eku);
-			cm_log(3, "'%s' has a certificate, monitoring it\n",
-			       entry->cm_id);
+			cm_log(3, "%s('%s') has a certificate, monitoring it\n",
+			       entry->cm_busname, entry->cm_nickname);
 			entry->cm_state = CM_MONITORING;
 			*when = cm_time_now;
 		} else
@@ -1068,26 +1075,28 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			/* If we don't have a certificate, but we have a key,
 			 * the next step is to generate a CSR. */
 			if (entry->cm_key_type.cm_key_size > 0) {
-				cm_log(3, "'%s' has no certificate, will "
+				cm_log(3, "%s('%s') has no certificate, will "
 				       "attempt enrollment using "
-				       "already-present key\n", entry->cm_id);
+				       "already-present key\n",
+				       entry->cm_busname, entry->cm_nickname);
 				entry->cm_state = CM_NEED_CSR;
 				*when = cm_time_now;
 			} else {
 				/* No certificate, no key, start with
 				 * generating the key. */
-				cm_log(3, "'%s' has no key or certificate, "
+				cm_log(3, "%s('%s') has no key or certificate, "
 				       "will generate keys and attempt "
-				       "enrollment\n", entry->cm_id);
+				       "enrollment\n",
+				       entry->cm_busname, entry->cm_nickname);
 				entry->cm_state = CM_NEED_KEY_PAIR;
 				*when = cm_time_now;
 			}
 		} else {
 			/* And if we don't have a place for the key, we're
 			 * screwed.  Hopefully this didn't happen normally. */
-			cm_log(3, "'%s' has no key or certificate location, "
-			       "don't know what to do about that\n",
-			       entry->cm_id);
+			cm_log(3, "%s('%s') has no key or certificate location,"
+			       " don't know what to do about that\n",
+			       entry->cm_busname, entry->cm_nickname);
 			entry->cm_state = CM_NEED_GUIDANCE;
 			*when = cm_time_now;
 		}
@@ -1099,8 +1108,10 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		break;
 	}
 	if (old_entry_state != entry->cm_state) {
-		cm_log(3, "'%s' moved to state '%s'\n",
-		       entry->cm_id ? entry->cm_id : "(unnamed entry)",
+		cm_log(3, "%s('%s') moved to state '%s'\n",
+		       entry->cm_busname,
+		       entry->cm_nickname ?
+		       entry->cm_nickname : "(unnamed entry)",
 		       cm_store_state_as_string(entry->cm_state));
 		cm_store_entry_save(entry);
 	}
@@ -1137,7 +1148,8 @@ cm_iterate_done(struct cm_store_entry *entry, void *cm_iterate_state)
 		talloc_free(state);
 	}
 	cm_entry_reset_state(entry);
-	cm_log(3, "'%s' ends in state '%s'\n", entry->cm_id,
+	cm_log(3, "%s('%s') ends in state '%s'\n",
+	       entry->cm_busname, entry->cm_nickname,
 	       cm_store_state_as_string(entry->cm_state));
 	return 0;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -247,7 +247,8 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	/* Start up NSS and find the key pair. */
 	privkey = cm_keyiread_n_get_private_key(entry, 0);
 	if (privkey == NULL) {
-		cm_log(1, "Error finding key pair for \"%s\".\n", entry->cm_id);
+		cm_log(1, "Error finding key pair for %s('%s').\n",
+		       entry->cm_busname, entry->cm_nickname);
 		PORT_FreeArena(arena, PR_TRUE);
 		_exit(CM_STATUS_ERROR_NO_TOKEN);
 	}
