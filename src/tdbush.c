@@ -2117,7 +2117,7 @@ request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 							   entry->cm_busname);
 			cm_tdbusm_set_bp(rep,
 					 cm_restart_one(ctx,
-					 		entry->cm_nickname),
+							entry->cm_nickname),
 					 new_request_path);
 			dbus_connection_send(conn, rep, NULL);
 			dbus_message_unref(rep);

@@ -472,7 +472,7 @@ cm_keyiread_n_done(struct cm_store_entry *entry,
 	if (state->subproc != NULL) {
 		cm_keyiread_read_data_from_buffer(entry,
 						  cm_subproc_get_msg(entry,
-						  		     state->subproc,
+								     state->subproc,
 								     NULL));
 		cm_subproc_done(entry, state->subproc);
 	}

@@ -561,7 +561,7 @@ cm_csrgen_n_save_csr(struct cm_store_entry *entry,
 	talloc_free(entry->cm_csr);
 	entry->cm_csr = talloc_strdup(entry,
 				      cm_subproc_get_msg(entry,
-				     			 state->subproc,
+							 state->subproc,
 							 NULL));
 	if (entry->cm_csr == NULL) {
 		return ENOMEM;
