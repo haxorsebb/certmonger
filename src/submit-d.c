@@ -375,7 +375,10 @@ main(int argc, char **argv)
 		ca = talloc_asprintf(ctx, "http://%s", ca);
 	}
 	uri = talloc_asprintf(ctx, "%s/%s", ca, cgi);
-	hctx = cm_submit_h_init(ctx, method, uri, params);
+	hctx = cm_submit_h_init(ctx, method, uri, params,
+				NULL, NULL,
+				cm_submit_h_negotiate_off,
+				cm_submit_h_delegate_off);
 	cm_submit_h_run(hctx);
 	c = cm_submit_h_result_code(hctx);
 	if (c != 0) {

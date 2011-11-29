@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Red Hat, Inc.
+ * Copyright (C) 2010,2011 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,13 +34,18 @@
 
 struct cm_submit_h_context {
 	int ret;
-	char *method, *uri, *args, *result;
+	char *method, *uri, *args, *cainfo, *capath, *result;
+	enum cm_submit_h_opt_negotiate negotiate;
+	enum cm_submit_h_opt_delegate negotiate_delegate;
 	CURL *curl;
 };
 
 struct cm_submit_h_context *
 cm_submit_h_init(void *parent,
-		 const char *method, const char *uri, const char *args)
+		 const char *method, const char *uri, const char *args,
+		 const char *cainfo, const char *capath,
+		 enum cm_submit_h_opt_negotiate neg,
+		 enum cm_submit_h_opt_delegate del)
 {
 	struct cm_submit_h_context *ctx;
 	ctx = talloc_ptrtype(parent, ctx);
@@ -48,9 +53,13 @@ cm_submit_h_init(void *parent,
 		ctx->method = talloc_strdup(ctx, method);
 		ctx->uri = talloc_strdup(ctx, uri);
 		ctx->args = talloc_strdup(ctx, args);
+		ctx->cainfo = cainfo ? talloc_strdup(ctx, cainfo) : NULL;
+		ctx->capath = capath ? talloc_strdup(ctx, capath) : NULL;
 		ctx->curl = NULL;
 		ctx->ret = -1;
 		ctx->result = NULL;
+		ctx->negotiate = neg;
+		ctx->negotiate_delegate = del;
 	}
 	return ctx;
 }
@@ -90,15 +99,57 @@ cm_submit_h_run(struct cm_submit_h_context *ctx)
 			uri = talloc_asprintf(ctx, "%s?%s",
 					      ctx->uri, ctx->args);
 			curl_easy_setopt(ctx->curl, CURLOPT_URL, uri);
+			curl_easy_setopt(ctx->curl, CURLOPT_HTTPGET, 1L);
 		} else {
 			curl_easy_setopt(ctx->curl, CURLOPT_URL, ctx->uri);
+			curl_easy_setopt(ctx->curl, CURLOPT_HTTPGET, 0L);
 			curl_easy_setopt(ctx->curl, CURLOPT_POSTFIELDS,
 					 ctx->args);
 		}
-		talloc_free(ctx->result);
+		if (ctx->negotiate) {
+			curl_easy_setopt(ctx->curl,
+					 CURLOPT_HTTPAUTH,
+					 CURLAUTH_GSSNEGOTIATE);
+			curl_easy_setopt(ctx->curl,
+					 CURLOPT_GSSAPI_DELEGATION,
+					 ctx->negotiate_delegate == cm_submit_h_delegate_on ?
+					 CURLGSSAPI_DELEGATION_FLAG :
+					 CURLGSSAPI_DELEGATION_NONE);
+			if (ctx->negotiate_delegate) {
+				curl_easy_setopt(ctx->curl,
+						 CURLOPT_GSSAPI_DELEGATION,
+						 CURLGSSAPI_DELEGATION_FLAG);
+			}
+		} else {
+			curl_easy_setopt(ctx->curl,
+					 CURLOPT_HTTPAUTH,
+					 CURLAUTH_NONE);
+		}
+		if ((ctx->cainfo != NULL) || (ctx->capath != NULL)) {
+			curl_easy_setopt(ctx->curl,
+					 CURLOPT_SSL_VERIFYPEER,
+					 1L);
+			curl_easy_setopt(ctx->curl,
+					 CURLOPT_SSL_VERIFYHOST,
+					 2L);
+		}
+		if (ctx->cainfo != NULL) {
+			curl_easy_setopt(ctx->curl,
+					 CURLOPT_CAINFO,
+					 ctx->cainfo);
+		}
+		if (ctx->capath != NULL) {
+			curl_easy_setopt(ctx->curl,
+					 CURLOPT_CAPATH,
+					 ctx->capath);
+		}
 		curl_easy_setopt(ctx->curl, CURLOPT_WRITEFUNCTION,
 				 append_result);
 		curl_easy_setopt(ctx->curl, CURLOPT_WRITEDATA, ctx);
+		if (ctx->result != NULL) {
+			talloc_free(ctx->result);
+			ctx->result = NULL;
+		}
 		ctx->ret = curl_easy_perform(ctx->curl);
 	}
 }
@@ -120,12 +171,45 @@ int
 main(int argc, char **argv)
 {
 	struct cm_submit_h_context *ctx;
+	enum cm_submit_h_opt_negotiate negotiate;
+	enum cm_submit_h_opt_delegate negotiate_delegate;
+	int c;
+	char *capath, *cainfo;
+
 	if (argc < 3) {
 		printf("Usage: submit-h METHOD URI [ARGS]\n");
 		return 1;
 	}
+
+	capath = NULL;
+	cainfo = NULL;
+	negotiate = cm_submit_h_negotiate_off;
+	negotiate_delegate = cm_submit_h_delegate_off;
+	while ((c = getopt(argc, argv, "C:c:ND")) != -1) {
+		switch (c) {
+		case 'C':
+			capath = optarg;
+			break;
+		case 'c':
+			cainfo = optarg;
+			break;
+		case 'N':
+			negotiate = cm_submit_h_negotiate_on;
+			break;
+		case 'D':
+			negotiate_delegate = cm_submit_h_delegate_on;
+			break;
+		default:
+			printf("Usage: submit-h METHOD URI [ARGS]\n");
+			return 1;
+			break;
+		}
+	}
+
 	ctx = cm_submit_h_init(NULL, argv[1], argv[2],
-			       (argc > 3) ? argv[3] : "");
+			       (argc > 3) ? argv[3] : "",
+			       cainfo, capath,
+			       negotiate, negotiate_delegate);
 	cm_submit_h_run(ctx);
 	printf("%s", cm_submit_h_results(ctx));
 	return cm_submit_h_result_code(ctx);
