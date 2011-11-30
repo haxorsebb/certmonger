@@ -106,20 +106,26 @@ cm_submit_h_run(struct cm_submit_h_context *ctx)
 			curl_easy_setopt(ctx->curl, CURLOPT_POSTFIELDS,
 					 ctx->args);
 		}
-		if (ctx->negotiate) {
+		if (ctx->negotiate == cm_submit_h_negotiate_on) {
+#if defined(CURLOPT_HTTPAUTH) && defined(CURLAUTH_GSSNEGOTIATE)
 			curl_easy_setopt(ctx->curl,
 					 CURLOPT_HTTPAUTH,
 					 CURLAUTH_GSSNEGOTIATE);
+#else
+			cm_log(-1,
+			       "warning: libcurl doesn't appear to support "
+			       "Negotiate authentication, continuing");
+#endif
+#if defined(CURLOPT_GSSAPI_DELEGATION) && defined(CURLGSSAPI_DELEGATION_FLAG)
+			/* The default before CURLOPT_GSSAPI_DELEGATION existed
+			 * was CURLGSSAPI_DELEGATION_FLAG, so we should be fine
+			 * if it's not defined. */
 			curl_easy_setopt(ctx->curl,
 					 CURLOPT_GSSAPI_DELEGATION,
 					 ctx->negotiate_delegate == cm_submit_h_delegate_on ?
 					 CURLGSSAPI_DELEGATION_FLAG :
 					 CURLGSSAPI_DELEGATION_NONE);
-			if (ctx->negotiate_delegate) {
-				curl_easy_setopt(ctx->curl,
-						 CURLOPT_GSSAPI_DELEGATION,
-						 CURLGSSAPI_DELEGATION_FLAG);
-			}
+#endif
 		} else {
 			curl_easy_setopt(ctx->curl,
 					 CURLOPT_HTTPAUTH,
@@ -197,6 +203,7 @@ main(int argc, char **argv)
 			negotiate = cm_submit_h_negotiate_on;
 			break;
 		case 'D':
+			negotiate = cm_submit_h_negotiate_on;
 			negotiate_delegate = cm_submit_h_delegate_on;
 			break;
 		default:
