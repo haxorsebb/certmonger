@@ -20,6 +20,7 @@
 
 struct cm_context;
 struct cm_store_entry;
+struct cm_store_ca;
 struct tevent_context;
 
 int cm_init(struct tevent_context *parent, struct cm_context **context,
