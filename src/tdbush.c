@@ -984,6 +984,92 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 }
 
 static DBusHandlerResult
+base_find_request(DBusConnection *conn, DBusMessage *msg,
+		  struct cm_context *ctx)
+{
+	struct cm_store_entry *entry;
+	DBusMessage *rep;
+	void *parent;
+	char *arg, *path;
+	int i, n_entries;
+
+	parent = talloc_new(NULL);
+	path = NULL;
+	if (cm_tdbusm_get_s(msg, parent, &arg) != 0) {
+		cm_log(1, "Error parsing arguments.\n");
+		talloc_free(parent);
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	} else {
+		n_entries = cm_get_n_entries(ctx);
+		for (i = 0; i < n_entries; i++) {
+			entry = cm_get_entry_by_index(ctx, i);
+			if (strcmp(arg, entry->cm_nickname) == 0) {
+				path = talloc_asprintf(ctx, "%s/%s",
+						       CM_DBUS_REQUEST_PATH,
+						       entry->cm_busname);
+				break;
+			}
+		}
+	}
+	rep = dbus_message_new_method_return(msg);
+	if (rep != NULL) {
+		if (path != NULL) {
+			cm_tdbusm_set_p(rep, path);
+		}
+		dbus_connection_send(conn, rep, NULL);
+		dbus_message_unref(rep);
+		talloc_free(parent);
+		return DBUS_HANDLER_RESULT_HANDLED;
+	} else {
+		talloc_free(parent);
+		return send_internal_base_error(conn, msg);
+	}
+}
+
+static DBusHandlerResult
+base_find_ca(DBusConnection *conn, DBusMessage *msg,
+	     struct cm_context *ctx)
+{
+	struct cm_store_ca *ca;
+	DBusMessage *rep;
+	void *parent;
+	char *arg, *path;
+	int i, n_cas;
+
+	parent = talloc_new(NULL);
+	path = NULL;
+	if (cm_tdbusm_get_s(msg, parent, &arg) != 0) {
+		cm_log(1, "Error parsing arguments.\n");
+		talloc_free(parent);
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	} else {
+		n_cas = cm_get_n_cas(ctx);
+		for (i = 0; i < n_cas; i++) {
+			ca = cm_get_ca_by_index(ctx, i);
+			if (strcmp(arg, ca->cm_nickname) == 0) {
+				path = talloc_asprintf(ctx, "%s/%s",
+						       CM_DBUS_CA_PATH,
+						       ca->cm_busname);
+				break;
+			}
+		}
+	}
+	rep = dbus_message_new_method_return(msg);
+	if (rep != NULL) {
+		if (path != NULL) {
+			cm_tdbusm_set_p(rep, path);
+		}
+		dbus_connection_send(conn, rep, NULL);
+		dbus_message_unref(rep);
+		talloc_free(parent);
+		return DBUS_HANDLER_RESULT_HANDLED;
+	} else {
+		talloc_free(parent);
+		return send_internal_base_error(conn, msg);
+	}
+}
+
+static DBusHandlerResult
 base_get_defaults(DBusConnection *conn, DBusMessage *msg,
 		  struct cm_context *ctx)
 {
@@ -2362,6 +2448,14 @@ base_introspect(struct cm_context *ctx, const char *path)
 			       "   <arg name=\"defaults\" type=\"o\" direction=\"out\"/>\n"
 			       "  </method>\n"
 #endif
+			       "  <method name=\"find_ca_by_nickname\">\n"
+			       "   <arg name=\"nickname\" type=\"s\" direction=\"in\"/>\n"
+			       "   <arg name=\"request\" type=\"o\" direction=\"out\"/>\n"
+			       "  </method>\n"
+			       "  <method name=\"find_request_by_nickname\">\n"
+			       "   <arg name=\"nickname\" type=\"s\" direction=\"in\"/>\n"
+			       "   <arg name=\"request\" type=\"o\" direction=\"out\"/>\n"
+			       "  </method>\n"
 			       "  <method name=\"get_known_cas\">\n"
 			       "   <arg name=\"ca_list\" type=\"ao\" direction=\"out\"/>\n"
 			       "  </method>\n"
@@ -2501,6 +2595,10 @@ static struct {
 	 base_add_known_ca},
 	{&is_base, CM_DBUS_BASE_INTERFACE, "add_request",
 	 base_add_request},
+	{&is_base, CM_DBUS_BASE_INTERFACE, "find_ca_by_nickname",
+	 base_find_ca},
+	{&is_base, CM_DBUS_BASE_INTERFACE, "find_request_by_nickname",
+	 base_find_request},
 	{&is_base, CM_DBUS_BASE_INTERFACE, "get_defaults",
 	 base_get_defaults},
 	{&is_base, CM_DBUS_BASE_INTERFACE, "get_known_cas",

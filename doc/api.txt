@@ -12,6 +12,9 @@ o service name = org.fedorahosted.certmonger
 o object layout
   /org/fedorahosted/certmonger
   interface=org.fedorahosted.certmonger
+  - find_request_by_nickname
+    arguments: nickname -> string of request's nickname
+    returns: path -> object path for request, if found
   - get_requests
     returns: array of paths -> object paths for requests
   - get_defaults
@@ -51,6 +54,9 @@ o object layout
   - remove_request
     arguments: path -> object path for request
     returns: boolean -> succeeded
+  - find_ca_by_nickname
+    arguments: nickname -> string of ca's nickname
+    returns: path -> object path for ca, if found
   - get_known_cas
     returns: array of path -> object paths for known cas
   - add_known_ca
