@@ -115,7 +115,8 @@ static struct cm_store_file_field_list {
 	enum cm_store_file_field field;
 	const char *name;
 } cm_store_file_field_list[] = {
-	{cm_store_file_field_id, "id"},
+	{cm_store_file_field_id, "id"}, /* ipa-client-install assumes that we'll
+					 * never rename this, so now we can't */
 	{cm_store_entry_field_key_type, "key_type"},
 	{cm_store_entry_field_key_gen_type, "key_gen_type"},
 	{cm_store_entry_field_key_size, "key_size"},
