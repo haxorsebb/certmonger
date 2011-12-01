@@ -1982,8 +1982,8 @@ request_get_ca(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 				path = talloc_asprintf(parent, "%s/%s",
 						       CM_DBUS_CA_PATH,
 						       ca->cm_busname);
+				cm_tdbusm_set_p(rep, path);
 			}
-			cm_tdbusm_set_p(rep, path);
 		}
 		dbus_connection_send(conn, rep, NULL);
 		dbus_message_unref(rep);
