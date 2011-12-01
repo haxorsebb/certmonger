@@ -65,7 +65,6 @@ discoverable, use of this option is not recommended except for testing.
 \fB\-I\fR NAME
 Assign the specified nickname to this task.  If this option is not specified,
 a name will be assigned automatically.
-Valid nicknames contain only characters from the set "[A-Z][a-z][0-9]_".
 .TP
 \fB\-r\fR
 Attempt to obtain a new certificate from the CA when the expiration date of a
