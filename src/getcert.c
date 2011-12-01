@@ -600,6 +600,10 @@ request(const char *argv0, int argc, char **argv)
 		}
 	}
 	if (optind < argc) {
+		for (c = optind; c < argc; c++) {
+			printf(_("Error: unused extra argument \"%s\".\n"),
+			       argv[c]);
+		}
 		printf(_("Error: unused extra arguments were supplied.\n"));
 		help(argv0, "request");
 		return 1;
