@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.50
+Version:	0.51
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -189,6 +189,15 @@ exit 0
 %endif
 
 %changelog
+* Tue Dec  6 2011 Nalin Dahyabhai <nalin@redhat.com> 0.51-1
+- api: lift restrictions on characters used in request and CA nicknames by
+  making their object names not incorporate their nicknames
+- api: add find_request_by_nickname and find_ca_by_nickname
+- certmonger-ipa-submit.8: list -k, -K, -t in the summary, document -K
+- getcert: print "invalid option" error messages ourselves (#756291)
+- ipa-submit: supply a Referer: header when submitting requests to IPA
+  (#750617, needed for #747710)
+
 * Fri Oct 14 2011 Nalin Dahyabhai <nalin@redhat.com> 0.50-1
 - really fix these this time:
  - getcert: error out when "list -c" finds no matching CA (#743488)
