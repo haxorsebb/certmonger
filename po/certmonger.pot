@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: certmonger 0.42\n"
+"Project-Id-Version: certmonger 0.51\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2011-07-19 14:21-0400\n"
+"POT-Creation-Date: 2011-12-06 13:00-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,31 +17,31 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/certmaster.c:111 src/ipa.c:126
+#: src/certmaster.c:111 src/ipa.c:146
 #, c-format
 msgid "Unable to determine hostname of CA.\n"
 msgstr ""
 
-#: src/certmaster.c:128 src/ipa.c:156
+#: src/certmaster.c:128 src/ipa.c:177
 #, c-format
 msgid "Unable to read signing request.\n"
 msgstr ""
 
-#: src/certmaster.c:156 src/ipa.c:202
+#: src/certmaster.c:158 src/ipa.c:226
 #, c-format
 msgid "Error setting up for XMLRPC.\n"
 msgstr ""
 
-#: src/certmaster.c:178 src/getcert.c:352 src/getcert.c:371 src/getcert.c:390
-#: src/getcert.c:409 src/getcert.c:428 src/getcert.c:446 src/getcert.c:828
-#: src/getcert.c:1111 src/getcert.c:1406 src/getcert.c:1479 src/getcert.c:1744
-#: src/getcert.c:1876 src/getcert.c:1944 src/getcert.c:1979 src/getcert.c:2014
-#: src/getcert.c:2033
+#: src/certmaster.c:180 src/getcert.c:359 src/getcert.c:378 src/getcert.c:397
+#: src/getcert.c:416 src/getcert.c:435 src/getcert.c:453 src/getcert.c:842
+#: src/getcert.c:1125 src/getcert.c:1423 src/getcert.c:1502 src/getcert.c:1776
+#: src/getcert.c:1940 src/getcert.c:2012 src/getcert.c:2047 src/getcert.c:2082
+#: src/getcert.c:2101
 #, c-format
 msgid "Error parsing server response.\n"
 msgstr ""
 
-#: src/certmaster.c:182
+#: src/certmaster.c:184
 #, c-format
 msgid "Server error.\n"
 msgstr ""
@@ -51,742 +51,775 @@ msgstr ""
 msgid "Path \"%s\" is not absolute, attempting to use \"%s\" instead.\n"
 msgstr ""
 
-#: src/getcert.c:94
+#: src/getcert.c:95
 #, c-format
 msgid ""
 "Path \"%s\" is not absolute, and there was an error determining the name of "
 "the current directory.\n"
 msgstr ""
 
-#: src/getcert.c:112
+#: src/getcert.c:113
 #, c-format
 msgid "Path \"%s\" is not a directory.\n"
 msgstr ""
 
-#: src/getcert.c:150
+#: src/getcert.c:118
+#, c-format
+msgid "Path \"%s\": %s.\n"
+msgstr ""
+
+#: src/getcert.c:157
 #, c-format
 msgid "Path \"%s\" is not a regular file.\n"
 msgstr ""
 
-#: src/getcert.c:227
+#: src/getcert.c:234
 #, c-format
 msgid "Out of memory.\n"
 msgstr ""
 
-#: src/getcert.c:253
+#: src/getcert.c:260
 #, c-format
 msgid "Error connecting to DBus.\n"
 msgstr ""
 
-#: src/getcert.c:254
+#: src/getcert.c:261
 #, c-format
 msgid "Please verify that the message bus (D-Bus) service is running.\n"
 msgstr ""
 
-#: src/getcert.c:261
+#: src/getcert.c:268
 #, c-format
 msgid "Error creating DBus request message.\n"
 msgstr ""
 
-#: src/getcert.c:303
+#: src/getcert.c:310
 #, c-format
 msgid "Error %s: %s\n"
 msgstr ""
 
-#: src/getcert.c:307
+#: src/getcert.c:314
 #, c-format
 msgid "Error %s\n"
 msgstr ""
 
-#: src/getcert.c:313
+#: src/getcert.c:320
 #, c-format
 msgid "Error: %s\n"
 msgstr ""
 
-#: src/getcert.c:315
+#: src/getcert.c:322
 #, c-format
 msgid "Received error response from local %s service.\n"
 msgstr ""
 
-#: src/getcert.c:321
+#: src/getcert.c:328
 #, c-format
 msgid "No response received from %s service.\n"
 msgstr ""
 
-#: src/getcert.c:485 src/getcert.c:1151 src/getcert.c:1530
+#: src/getcert.c:492 src/getcert.c:1165 src/getcert.c:1553
 #, c-format
 msgid "Error initializing Kerberos library: %s.\n"
 msgstr ""
 
-#: src/getcert.c:540 src/getcert.c:1218 src/getcert.c:1571
+#: src/getcert.c:548 src/getcert.c:1233 src/getcert.c:1595
 #, c-format
 msgid "Could not evaluate OID \"%s\".\n"
 msgstr ""
 
-#: src/getcert.c:550 src/getcert.c:1228 src/getcert.c:1581
+#: src/getcert.c:558 src/getcert.c:1243 src/getcert.c:1605
 #, c-format
 msgid "Error parsing Kerberos principal name \"%s\": %s.\n"
 msgstr ""
 
-#: src/getcert.c:558 src/getcert.c:1236 src/getcert.c:1589
+#: src/getcert.c:566 src/getcert.c:1251 src/getcert.c:1613
 #, c-format
 msgid "Error unparsing Kerberos principal name \"%s\": %s.\n"
 msgstr ""
 
-#: src/getcert.c:593 src/getcert.c:1274 src/getcert.c:1624 src/getcert.c:1844
-#: src/getcert.c:2109
+#: src/getcert.c:596 src/getcert.c:1281 src/getcert.c:1643 src/getcert.c:1874
+#: src/getcert.c:2174
+#, c-format
+msgid "%s: invalid option -- '%c'\n"
+msgstr ""
+
+#: src/getcert.c:604
+#, c-format
+msgid "Error: unused extra argument \"%s\".\n"
+msgstr ""
+
+#: src/getcert.c:607 src/getcert.c:1291 src/getcert.c:1650 src/getcert.c:1881
+#: src/getcert.c:2181
 #, c-format
 msgid "Error: unused extra arguments were supplied.\n"
 msgstr ""
 
-#: src/getcert.c:599 src/getcert.c:1280 src/getcert.c:1427 src/getcert.c:1641
+#: src/getcert.c:613 src/getcert.c:1297 src/getcert.c:1450 src/getcert.c:1673
 #, c-format
 msgid "Database location or nickname specified without the other.\n"
 msgstr ""
 
-#: src/getcert.c:605 src/getcert.c:1286 src/getcert.c:1433 src/getcert.c:1647
+#: src/getcert.c:619 src/getcert.c:1303 src/getcert.c:1456 src/getcert.c:1679
 #, c-format
 msgid "Database directory and certificate file both specified.\n"
 msgstr ""
 
-#: src/getcert.c:613 src/getcert.c:1441 src/getcert.c:1655
+#: src/getcert.c:627 src/getcert.c:1464 src/getcert.c:1687
 #, c-format
 msgid ""
 "None of database directory and nickname or certificate file specified.\n"
 msgstr ""
 
-#: src/getcert.c:620 src/getcert.c:1302
+#: src/getcert.c:634 src/getcert.c:1319
 #, c-format
 msgid "Key and certificate can not both be saved to the same file.\n"
 msgstr ""
 
-#: src/getcert.c:645
+#: src/getcert.c:659
 #, c-format
 msgid ""
 "The IPA backend requires the use of the -K option (principal name) when the -"
 "N option (subject name) is used.\n"
 msgstr ""
 
-#: src/getcert.c:775 src/getcert.c:1091 src/getcert.c:1383 src/getcert.c:1675
+#: src/getcert.c:789 src/getcert.c:1105 src/getcert.c:1400 src/getcert.c:1707
+#: src/getcert.c:1888
 #, c-format
 msgid "No CA with name \"%s\" found.\n"
 msgstr ""
 
-#: src/getcert.c:823 src/getcert.c:1106 src/getcert.c:1400 src/getcert.c:1474
-#: src/getcert.c:1738
+#: src/getcert.c:837 src/getcert.c:1120 src/getcert.c:1417 src/getcert.c:1497
+#: src/getcert.c:1770
 #, c-format
 msgid "Error setting request arguments.\n"
 msgstr ""
 
-#: src/getcert.c:834
+#: src/getcert.c:848
 #, c-format
 msgid "New signing request \"%s\" added.\n"
 msgstr ""
 
-#: src/getcert.c:837
+#: src/getcert.c:851
 #, c-format
 msgid "New signing request could not be added.\n"
 msgstr ""
 
-#: src/getcert.c:1117
+#: src/getcert.c:1131
 #, c-format
 msgid "New tracking request \"%s\" added.\n"
 msgstr ""
 
-#: src/getcert.c:1121
+#: src/getcert.c:1135
 #, c-format
 msgid "New tracking request could not be added.\n"
 msgstr ""
 
-#: src/getcert.c:1295
+#: src/getcert.c:1312
 #, c-format
 msgid ""
 "None of ID or database directory and nickname or certificate file "
 "specified.\n"
 msgstr ""
 
-#: src/getcert.c:1414
+#: src/getcert.c:1431
 #, c-format
 msgid "Request \"%s\" modified.\n"
 msgstr ""
 
-#: src/getcert.c:1418
+#: src/getcert.c:1435
 #, c-format
 msgid "Request \"%s\" could not be modified.\n"
 msgstr ""
 
-#: src/getcert.c:1465 src/getcert.c:1661
+#: src/getcert.c:1443 src/getcert.c:1666 src/getcert.c:1895
+#, c-format
+msgid "No request found with specified nickname.\n"
+msgstr ""
+
+#: src/getcert.c:1488 src/getcert.c:1693 src/getcert.c:1906
 #, c-format
 msgid "No request found that matched arguments.\n"
 msgstr ""
 
-#: src/getcert.c:1484
+#: src/getcert.c:1507
 #, c-format
 msgid "Request \"%s\" removed.\n"
 msgstr ""
 
-#: src/getcert.c:1488
+#: src/getcert.c:1511
 #, c-format
 msgid "Request \"%s\" could not be removed.\n"
 msgstr ""
 
-#: src/getcert.c:1752
+#: src/getcert.c:1784
 #, c-format
 msgid "Error modifying \"%s\".\n"
 msgstr ""
 
-#: src/getcert.c:1768
+#: src/getcert.c:1800
 #, c-format
 msgid "Resubmitting \"%s\" to \"%s\".\n"
 msgstr ""
 
-#: src/getcert.c:1771
+#: src/getcert.c:1803
 #, c-format
 msgid "Resubmitting \"%s\".\n"
 msgstr ""
 
-#: src/getcert.c:1777
+#: src/getcert.c:1809
 #, c-format
 msgid "Error attempting to submit \"%s\" to \"%s\".\n"
 msgstr ""
 
-#: src/getcert.c:1780
+#: src/getcert.c:1812
 #, c-format
 msgid "Error attempting to submit \"%s\".\n"
 msgstr ""
 
-#: src/getcert.c:1853
+#: src/getcert.c:1917
 #, c-format
 msgid "Number of certificates and requests being tracked: %d.\n"
 msgstr ""
 
-#: src/getcert.c:1966
+#: src/getcert.c:2034
 #, c-format
 msgid "Request ID '%s':\n"
 msgstr ""
 
-#: src/getcert.c:1967
+#: src/getcert.c:2035
 #, c-format
 msgid "\tstatus: %s\n"
 msgstr ""
 
-#: src/getcert.c:1971
+#: src/getcert.c:2039
 #, c-format
 msgid "\tca-error: %s\n"
 msgstr ""
 
-#: src/getcert.c:1973
+#: src/getcert.c:2041
 #, c-format
 msgid "\tstuck: %s\n"
 msgstr ""
 
-#: src/getcert.c:1993
+#: src/getcert.c:2061
 #, c-format
 msgid "\tkey pair storage: type=%s"
 msgstr ""
 
-#: src/getcert.c:1993
+#: src/getcert.c:2061
 msgid "NONE"
 msgstr ""
 
-#: src/getcert.c:1995
+#: src/getcert.c:2063
 #, c-format
 msgid ",location='%s'"
 msgstr ""
 
-#: src/getcert.c:1998 src/getcert.c:2020
+#: src/getcert.c:2066 src/getcert.c:2088
 #, c-format
 msgid ",nickname='%s'"
 msgstr ""
 
-#: src/getcert.c:2001 src/getcert.c:2023
+#: src/getcert.c:2069 src/getcert.c:2091
 #, c-format
 msgid ",token='%s'"
 msgstr ""
 
-#: src/getcert.c:2004
+#: src/getcert.c:2072
 #, c-format
 msgid ",pin='%s'"
 msgstr ""
 
-#: src/getcert.c:2007
+#: src/getcert.c:2075
 #, c-format
 msgid ",pinfile='%s'"
 msgstr ""
 
-#: src/getcert.c:2018
+#: src/getcert.c:2086
 #, c-format
 msgid "\tcertificate: type=%s,location='%s'"
 msgstr ""
 
-#: src/getcert.c:2038
+#: src/getcert.c:2106
 #, c-format
 msgid "\tCA: %s\n"
 msgstr ""
 
-#: src/getcert.c:2040
+#: src/getcert.c:2108
 #, c-format
 msgid "\tissuer: %s\n"
 msgstr ""
 
-#: src/getcert.c:2041
+#: src/getcert.c:2109
 #, c-format
 msgid "\tsubject: %s\n"
 msgstr ""
 
-#: src/getcert.c:2042
+#: src/getcert.c:2110
 #, c-format
 msgid "\texpires: %s\n"
 msgstr ""
 
-#: src/getcert.c:2045
+#: src/getcert.c:2113
 msgid "unknown"
 msgstr ""
 
-#: src/getcert.c:2048
+#: src/getcert.c:2116
 msgid "\temail: "
 msgstr ""
 
-#: src/getcert.c:2054
+#: src/getcert.c:2122
 msgid "\tdns: "
 msgstr ""
 
-#: src/getcert.c:2060
+#: src/getcert.c:2128
 msgid "\tprincipal name: "
 msgstr ""
 
-#: src/getcert.c:2066
+#: src/getcert.c:2134
 msgid "\teku: "
 msgstr ""
 
-#: src/getcert.c:2070
+#: src/getcert.c:2138
 #, c-format
 msgid "\ttrack: %s\n"
 msgstr ""
 
-#: src/getcert.c:2074
+#: src/getcert.c:2142
 #, c-format
 msgid "\tauto-renew: %s\n"
 msgstr ""
 
-#: src/getcert.c:2123
+#: src/getcert.c:2195
 #, c-format
 msgid "CA '%s':\n"
 msgstr ""
 
-#: src/getcert.c:2130
+#: src/getcert.c:2202
 #, c-format
 msgid "\tca-type: %s\n"
 msgstr ""
 
-#: src/getcert.c:2132
+#: src/getcert.c:2204
 #, c-format
 msgid "\thelper-location: %s\n"
 msgstr ""
 
-#: src/getcert.c:2137
+#: src/getcert.c:2209
 #, c-format
 msgid "\tnext-serial-number: %s\n"
 msgstr ""
 
-#: src/getcert.c:2147
+#: src/getcert.c:2219
 #, c-format
 msgid "\tknown-issuer-names:\n"
 msgstr ""
 
-#: src/getcert.c:2173
+#: src/getcert.c:2245
 #, c-format
 msgid "%s - client certificate enrollment tool\n"
 msgstr ""
 
-#: src/getcert.c:2177
+#: src/getcert.c:2249
 #, c-format
 msgid "Usage: %s request [options]\n"
 msgstr ""
 
-#: src/getcert.c:2179 src/getcert.c:2216 src/getcert.c:2253 src/getcert.c:2275
+#: src/getcert.c:2251 src/getcert.c:2288 src/getcert.c:2325 src/getcert.c:2347
 msgid "Required arguments:\n"
 msgstr ""
 
-#: src/getcert.c:2180 src/getcert.c:2219 src/getcert.c:2256 src/getcert.c:2278
-#: src/getcert.c:2321
+#: src/getcert.c:2252 src/getcert.c:2291 src/getcert.c:2328 src/getcert.c:2350
+#: src/getcert.c:2393
 msgid "* If using an NSS database for storage:\n"
 msgstr ""
 
-#: src/getcert.c:2181 src/getcert.c:2220 src/getcert.c:2257 src/getcert.c:2279
+#: src/getcert.c:2253 src/getcert.c:2292 src/getcert.c:2329 src/getcert.c:2351
 msgid "  -d DIR\tNSS database for key and cert\n"
 msgstr ""
 
-#: src/getcert.c:2182 src/getcert.c:2221 src/getcert.c:2258 src/getcert.c:2280
+#: src/getcert.c:2254 src/getcert.c:2293 src/getcert.c:2330 src/getcert.c:2352
 msgid "  -n NAME\tnickname for NSS-based storage (only valid with -d)\n"
 msgstr ""
 
-#: src/getcert.c:2183 src/getcert.c:2222 src/getcert.c:2259 src/getcert.c:2281
+#: src/getcert.c:2255 src/getcert.c:2294 src/getcert.c:2331 src/getcert.c:2353
 msgid ""
 "  -t NAME\toptional token name for NSS-based storage (only valid with -d)\n"
 msgstr ""
 
-#: src/getcert.c:2184 src/getcert.c:2223 src/getcert.c:2260 src/getcert.c:2282
-#: src/getcert.c:2324
+#: src/getcert.c:2256 src/getcert.c:2295 src/getcert.c:2332 src/getcert.c:2354
+#: src/getcert.c:2396
 msgid "* If using files for storage:\n"
 msgstr ""
 
-#: src/getcert.c:2185 src/getcert.c:2224 src/getcert.c:2261
+#: src/getcert.c:2257 src/getcert.c:2296 src/getcert.c:2333
 msgid "  -k FILE\tPEM file for private key\n"
 msgstr ""
 
-#: src/getcert.c:2186 src/getcert.c:2225 src/getcert.c:2262
+#: src/getcert.c:2258 src/getcert.c:2297 src/getcert.c:2334
 msgid "  -f FILE\tPEM file for certificate (only valid with -k)\n"
 msgstr ""
 
-#: src/getcert.c:2187
+#: src/getcert.c:2259
 msgid "* If keys are to be encrypted:\n"
 msgstr ""
 
-#: src/getcert.c:2188 src/getcert.c:2227 src/getcert.c:2286
+#: src/getcert.c:2260 src/getcert.c:2299 src/getcert.c:2358
 msgid "  -p FILE\tfile which holds the encryption PIN\n"
 msgstr ""
 
-#: src/getcert.c:2189 src/getcert.c:2228 src/getcert.c:2287
+#: src/getcert.c:2261 src/getcert.c:2300 src/getcert.c:2359
 msgid "  -P PIN\tPIN value\n"
 msgstr ""
 
-#: src/getcert.c:2191 src/getcert.c:2230 src/getcert.c:2264 src/getcert.c:2296
-#: src/getcert.c:2312 src/getcert.c:2336
+#: src/getcert.c:2263 src/getcert.c:2302 src/getcert.c:2336 src/getcert.c:2368
+#: src/getcert.c:2384 src/getcert.c:2408
 msgid "Optional arguments:\n"
 msgstr ""
 
-#: src/getcert.c:2192 src/getcert.c:2231 src/getcert.c:2297
+#: src/getcert.c:2264 src/getcert.c:2303 src/getcert.c:2369
 msgid "* Certificate handling settings:\n"
 msgstr ""
 
-#: src/getcert.c:2193
+#: src/getcert.c:2265
 msgid "  -I NAME\tnickname to assign to the request\n"
 msgstr ""
 
-#: src/getcert.c:2194
+#: src/getcert.c:2266
 msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
 msgstr ""
 
-#: src/getcert.c:2195 src/getcert.c:2233
+#: src/getcert.c:2267 src/getcert.c:2305
 msgid ""
 "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
 msgstr ""
 
-#: src/getcert.c:2196 src/getcert.c:2234
+#: src/getcert.c:2268 src/getcert.c:2306
 msgid "  -R\t\tdon't attempt to renew the certificate when expiration nears\n"
 msgstr ""
 
-#: src/getcert.c:2198 src/getcert.c:2236
+#: src/getcert.c:2270 src/getcert.c:2308
 msgid "  -c CA\t\tuse the specified CA rather than the default\n"
 msgstr ""
 
-#: src/getcert.c:2200
+#: src/getcert.c:2272
 msgid "* Parameters for the signing request:\n"
 msgstr ""
 
-#: src/getcert.c:2201 src/getcert.c:2290
+#: src/getcert.c:2273 src/getcert.c:2362
 msgid "  -N NAME\tset requested subject name (default: CN=<hostname>)\n"
 msgstr ""
 
-#: src/getcert.c:2202 src/getcert.c:2291
+#: src/getcert.c:2274 src/getcert.c:2363
 msgid "  -U EXTUSAGE\tset requested extended key usage OID\n"
 msgstr ""
 
-#: src/getcert.c:2203 src/getcert.c:2292
+#: src/getcert.c:2275 src/getcert.c:2364
 msgid "  -K NAME\tset requested principal name\n"
 msgstr ""
 
-#: src/getcert.c:2204 src/getcert.c:2293
+#: src/getcert.c:2276 src/getcert.c:2365
 msgid "  -D DNSNAME\tset requested DNS name\n"
 msgstr ""
 
-#: src/getcert.c:2205 src/getcert.c:2294
+#: src/getcert.c:2277 src/getcert.c:2366
 msgid "  -E EMAIL\tset requested email address\n"
 msgstr ""
 
-#: src/getcert.c:2206 src/getcert.c:2243 src/getcert.c:2265 src/getcert.c:2302
-#: src/getcert.c:2326 src/getcert.c:2341
+#: src/getcert.c:2278 src/getcert.c:2315 src/getcert.c:2337 src/getcert.c:2374
+#: src/getcert.c:2398 src/getcert.c:2413
 msgid "* Bus options:\n"
 msgstr ""
 
-#: src/getcert.c:2207 src/getcert.c:2244 src/getcert.c:2266 src/getcert.c:2303
+#: src/getcert.c:2279 src/getcert.c:2316 src/getcert.c:2338 src/getcert.c:2375
 msgid "  -S\t\tconnect to the certmonger service on the system bus\n"
 msgstr ""
 
-#: src/getcert.c:2208 src/getcert.c:2245 src/getcert.c:2267 src/getcert.c:2304
+#: src/getcert.c:2280 src/getcert.c:2317 src/getcert.c:2339 src/getcert.c:2376
 msgid "  -s\t\tconnect to the certmonger service on the session bus\n"
 msgstr ""
 
-#: src/getcert.c:2209 src/getcert.c:2246 src/getcert.c:2268 src/getcert.c:2305
-#: src/getcert.c:2329 src/getcert.c:2344
+#: src/getcert.c:2281 src/getcert.c:2318 src/getcert.c:2340 src/getcert.c:2377
+#: src/getcert.c:2401 src/getcert.c:2416
 msgid "* Other options:\n"
 msgstr ""
 
-#: src/getcert.c:2210 src/getcert.c:2247 src/getcert.c:2269 src/getcert.c:2306
-#: src/getcert.c:2330 src/getcert.c:2345
+#: src/getcert.c:2282 src/getcert.c:2319 src/getcert.c:2341 src/getcert.c:2378
+#: src/getcert.c:2402 src/getcert.c:2417
 msgid "  -v\treport all details of errors\n"
 msgstr ""
 
-#: src/getcert.c:2214
+#: src/getcert.c:2286
 #, c-format
 msgid "Usage: %s start-tracking [options]\n"
 msgstr ""
 
-#: src/getcert.c:2217
+#: src/getcert.c:2289
 msgid "* If modifying an existing request:\n"
 msgstr ""
 
-#: src/getcert.c:2218
+#: src/getcert.c:2290
 msgid "  -i NAME\tnickname of an existing tracking request\n"
 msgstr ""
 
-#: src/getcert.c:2226 src/getcert.c:2285
+#: src/getcert.c:2298 src/getcert.c:2357
 msgid "* If keys are encrypted:\n"
 msgstr ""
 
-#: src/getcert.c:2232
+#: src/getcert.c:2304
 msgid "  -I NAME\tnickname to give to tracking request\n"
 msgstr ""
 
-#: src/getcert.c:2238
+#: src/getcert.c:2310
 msgid "* Parameters for the signing request at renewal time:\n"
 msgstr ""
 
-#: src/getcert.c:2239
+#: src/getcert.c:2311
 msgid "  -U EXTUSAGE\toverride requested extended key usage OID\n"
 msgstr ""
 
-#: src/getcert.c:2240
+#: src/getcert.c:2312
 msgid "  -K NAME\toverride requested principal name\n"
 msgstr ""
 
-#: src/getcert.c:2241
+#: src/getcert.c:2313
 msgid "  -D DNSNAME\toverride requested DNS name\n"
 msgstr ""
 
-#: src/getcert.c:2242
+#: src/getcert.c:2314
 msgid "  -E EMAIL\toverride requested email address\n"
 msgstr ""
 
-#: src/getcert.c:2251
+#: src/getcert.c:2323
 #, c-format
 msgid "Usage: %s stop-tracking [options]\n"
 msgstr ""
 
-#: src/getcert.c:2254 src/getcert.c:2276
+#: src/getcert.c:2326 src/getcert.c:2348
 msgid "* By request identifier:\n"
 msgstr ""
 
-#: src/getcert.c:2255 src/getcert.c:2277 src/getcert.c:2320
+#: src/getcert.c:2327 src/getcert.c:2349 src/getcert.c:2392
 msgid "  -i NAME\tnickname for tracking request\n"
 msgstr ""
 
-#: src/getcert.c:2273
+#: src/getcert.c:2345
 #, c-format
 msgid "Usage: %s resubmit [options]\n"
 msgstr ""
 
-#: src/getcert.c:2283
+#: src/getcert.c:2355
 msgid "  -f FILE\tPEM file for certificate\n"
 msgstr ""
 
-#: src/getcert.c:2289
+#: src/getcert.c:2361
 msgid "* New parameter values for the signing request:\n"
 msgstr ""
 
-#: src/getcert.c:2298
+#: src/getcert.c:2370
 msgid "  -I NAME\tnew nickname to give to tracking request\n"
 msgstr ""
 
-#: src/getcert.c:2300
+#: src/getcert.c:2372
 msgid "  -c CA\t\tuse the specified CA rather than the current one\n"
 msgstr ""
 
-#: src/getcert.c:2310
+#: src/getcert.c:2382
 #, c-format
 msgid "Usage: %s list [options]\n"
 msgstr ""
 
-#: src/getcert.c:2313 src/getcert.c:2338
+#: src/getcert.c:2385 src/getcert.c:2410
 msgid "* General options:\n"
 msgstr ""
 
-#: src/getcert.c:2315
+#: src/getcert.c:2387
 msgid "  -c CA\tlist only requests and certs associated with this CA\n"
 msgstr ""
 
-#: src/getcert.c:2317
+#: src/getcert.c:2389
 msgid "  -r\tlist only information about outstanding requests\n"
 msgstr ""
 
-#: src/getcert.c:2318
+#: src/getcert.c:2390
 msgid "  -t\tlist only information about tracked certificates\n"
 msgstr ""
 
-#: src/getcert.c:2319
+#: src/getcert.c:2391
 msgid "* If selecting a specific request:\n"
 msgstr ""
 
-#: src/getcert.c:2322
+#: src/getcert.c:2394
 msgid "  -d DIR\tonly list requests and certs which use this NSS database\n"
 msgstr ""
 
-#: src/getcert.c:2323
+#: src/getcert.c:2395
 msgid "  -n NAME\tonly list requests and certs which use this nickname\n"
 msgstr ""
 
-#: src/getcert.c:2325
+#: src/getcert.c:2397
 msgid "  -f FILE\tonly list requests and certs stored in this PEM file\n"
 msgstr ""
 
-#: src/getcert.c:2327 src/getcert.c:2342
+#: src/getcert.c:2399 src/getcert.c:2414
 msgid "  -S\tconnect to the certmonger service on the system bus\n"
 msgstr ""
 
-#: src/getcert.c:2328 src/getcert.c:2343
+#: src/getcert.c:2400 src/getcert.c:2415
 msgid "  -s\tconnect to the certmonger service on the session bus\n"
 msgstr ""
 
-#: src/getcert.c:2334
+#: src/getcert.c:2406
 #, c-format
 msgid "Usage: %s list-cas [options]\n"
 msgstr ""
 
-#: src/getcert.c:2339
+#: src/getcert.c:2411
 msgid "  -c CA\tlist only information about the CA with this name\n"
 msgstr ""
 
-#: src/getcert.c:2396
+#: src/getcert.c:2468
 #, c-format
 msgid "%s: unrecognized command\n"
 msgstr ""
 
-#: src/ipa.c:123
+#: src/ipa.c:85
+#, c-format
+msgid "The -t option can not be used with the -K option.\n"
+msgstr ""
+
+#: src/ipa.c:93
+#, c-format
+msgid "The -k option can not be used with the -K option.\n"
+msgstr ""
+
+#: src/ipa.c:101
+#, c-format
+msgid "The -K option can not be used with either the -k or the -t option.\n"
+msgstr ""
+
+#: src/ipa.c:143
 #, c-format
 msgid "Unable to determine location of CA's XMLRPC server.\n"
 msgstr ""
 
-#: src/ipa.c:131
+#: src/ipa.c:151
 #, c-format
 msgid "Unable to determine principal name for signing request.\n"
 msgstr ""
 
-#: src/ipa.c:211
+#: src/ipa.c:236
 #, c-format
 msgid ""
 "Error setting up ccache for local \"host\" service using default keytab.\n"
 msgstr ""
 
-#: src/ipa.c:215
+#: src/ipa.c:240
 #, c-format
 msgid "Error setting up ccache for \"%s\" using default keytab.\n"
 msgstr ""
 
-#: src/ipa.c:221
+#: src/ipa.c:246
 #, c-format
 msgid ""
 "Error setting up ccache for local \"host\" service using keytab \"%s\".\n"
 msgstr ""
 
-#: src/ipa.c:225
+#: src/ipa.c:250
 #, c-format
 msgid "Error setting up ccache for \"%s\" using keytab \"%s\".\n"
 msgstr ""
 
-#: src/tdbush.c:186 src/tdbush.c:1203 src/tdbush.c:1367
+#: src/tdbush.c:217 src/tdbush.c:1298 src/tdbush.c:1462
 msgid "An internal error has occurred."
 msgstr ""
 
-#: src/tdbush.c:250
+#: src/tdbush.c:281
 msgid "No matching entry found.\n"
 msgstr ""
 
-#: src/tdbush.c:404
+#: src/tdbush.c:420
 #, c-format
 msgid "There is already a CA with the nickname \"%s\"."
 msgstr ""
 
-#: src/tdbush.c:412 src/tdbush.c:666 src/tdbush.c:2030
-#, c-format
-msgid "The nickname \"%s\" is not allowed."
-msgstr ""
-
-#: src/tdbush.c:490
+#: src/tdbush.c:502
 msgid "Certificate storage type not specified."
 msgstr ""
 
-#: src/tdbush.c:503
+#: src/tdbush.c:515
 #, c-format
 msgid "Certificate storage type \"%s\" not supported."
 msgstr ""
 
-#: src/tdbush.c:529 src/tdbush.c:557 src/tdbush.c:601 src/tdbush.c:758
-#: src/tdbush.c:803 src/tdbush.c:2092
+#: src/tdbush.c:541 src/tdbush.c:569 src/tdbush.c:613 src/tdbush.c:763
+#: src/tdbush.c:808 src/tdbush.c:2194
 #, c-format
 msgid "The location \"%s\" must be an absolute path."
 msgstr ""
 
-#: src/tdbush.c:550 src/tdbush.c:594 src/tdbush.c:642
+#: src/tdbush.c:562 src/tdbush.c:606 src/tdbush.c:654
 msgid "Certificate storage location not specified."
 msgstr ""
 
-#: src/tdbush.c:567 src/tdbush.c:768
+#: src/tdbush.c:579 src/tdbush.c:773
 #, c-format
 msgid "The parent of location \"%s\" must be a valid directory."
 msgstr ""
 
-#: src/tdbush.c:577 src/tdbush.c:778
+#: src/tdbush.c:589 src/tdbush.c:783
 #, c-format
 msgid "The location \"%s\" must be a file."
 msgstr ""
 
-#: src/tdbush.c:611 src/tdbush.c:813
+#: src/tdbush.c:623 src/tdbush.c:818
 #, c-format
 msgid "The location \"%s\" must be a directory."
 msgstr ""
 
-#: src/tdbush.c:625
+#: src/tdbush.c:637
 msgid "Certificate nickname not specified."
 msgstr ""
 
-#: src/tdbush.c:657 src/tdbush.c:2023
+#: src/tdbush.c:670 src/tdbush.c:2131
 #, c-format
 msgid "There is already a request with the nickname \"%s\"."
 msgstr ""
 
-#: src/tdbush.c:701
+#: src/tdbush.c:706
 #, c-format
-msgid "Certificate at same location is already used by request \"%s\"."
+msgid ""
+"Certificate at same location is already used by request with nickname \"%s\"."
 msgstr ""
 
-#: src/tdbush.c:729
+#: src/tdbush.c:734
 #, c-format
 msgid "Key storage type \"%s\" not supported."
 msgstr ""
 
-#: src/tdbush.c:751 src/tdbush.c:796
+#: src/tdbush.c:756 src/tdbush.c:801
 msgid "Key storage location not specified."
 msgstr ""
 
-#: src/tdbush.c:827
+#: src/tdbush.c:832
 msgid "Key nickname not specified."
 msgstr ""
 
-#: src/tdbush.c:877
+#: src/tdbush.c:883
 #, c-format
-msgid "Key at same location is already used by request \"%s\"."
+msgid "Key at same location is already used by request with nickname \"%s\"."
 msgstr ""
 
-#: src/tdbush.c:931
+#: src/tdbush.c:939
 msgid "No such CA."
 msgstr ""
 
-#: src/tdbush.c:2042
+#: src/tdbush.c:2144
 #, c-format
 msgid "Certificate authority \"%s\" not known."
 msgstr ""
 
-#: src/tdbush.c:2142
+#: src/tdbush.c:2246
 msgid "Unrecognized parameter or wrong value type."
 msgstr ""
