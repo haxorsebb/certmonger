@@ -200,6 +200,13 @@ cm_submit_x_init(void *parent, const char *uri, const char *method,
 	memset(&ctx->xparams, 0, sizeof(ctx->xparams));
 	ctx->xparams.cainfo = talloc_strdup(ctx, cainfo);
 	ctx->xparams.capath = talloc_strdup(ctx, capath);
+    
+	/* Use a specially-crafted User-Agent value to pass along a
+	 * Referer header so the request won't be rejected by the remote
+	 * IPA server.
+	 */
+	ctx->xparams.user_agent = talloc_asprintf(ctx, "%s/%s\r\nReferer: %s\r\nX-Original-User-Agent:", PACKAGE_NAME, PACKAGE_VERSION, uri);
+
 #ifdef HAVE_STRUCT_XMLRPC_CURL_XPORTPARMS_GSSAPI_DELEGATION
 	if ((negotiate == cm_submit_x_negotiate_on) &&
 	    (delegate == cm_submit_x_delegate_on)) {
