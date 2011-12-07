@@ -594,6 +594,9 @@ request(const char *argv0, int argc, char **argv)
 			return 1;
 		}
 	}
+
+	krb5_free_context(kctx);
+
 	/* Check for leftover arguments. */
 	if (optind < argc) {
 		for (c = optind; c < argc; c++) {
@@ -621,6 +624,7 @@ request(const char *argv0, int argc, char **argv)
 	if (certfile != NULL) {
 		certfile = ensure_pem(globals.tctx, optarg);
 	}
+	/* Can't specify database or nickname without the other. */
 	if (((dbdir != NULL) && (nickname == NULL)) ||
 	    ((dbdir == NULL) && (nickname != NULL))) {
 		printf(_("Database location or nickname specified "
@@ -628,12 +632,14 @@ request(const char *argv0, int argc, char **argv)
 		help(argv0, "request");
 		return 1;
 	}
+	/* Can't specify database and filename at the same time. */
 	if ((dbdir != NULL) && (certfile != NULL)) {
 		printf(_("Database directory and certificate file "
 		         "both specified.\n"));
 		help(argv0, "request");
 		return 1;
 	}
+	/* Need at least one of database or filename. */
 	if ((dbdir == NULL) &&
 	    (nickname == NULL) &&
 	    (certfile == NULL)) {
@@ -642,6 +648,7 @@ request(const char *argv0, int argc, char **argv)
 		help(argv0, "request");
 		return 1;
 	}
+	/* PEM storage isn't _that_ smart. */
 	if ((certfile != NULL) && (keyfile != NULL) &&
 	    (strcmp(certfile, keyfile) == 0)) {
 		printf(_("Key and certificate can not both be saved to the "
@@ -1190,12 +1197,7 @@ set_tracking(const char *argv0, const char *category,
 			   GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
-			nss_scheme = NULL;
-			dbdir = ensure_nss(globals.tctx, optarg, &nss_scheme);
-			if ((nss_scheme != NULL) && (dbdir != NULL)) {
-				dbdir = talloc_asprintf(globals.tctx, "%s:%s",
-							nss_scheme, dbdir);
-			}
+			dbdir = optarg;
 			break;
 		case 't':
 			token = talloc_strdup(globals.tctx, optarg);
@@ -1204,10 +1206,10 @@ set_tracking(const char *argv0, const char *category,
 			nickname = talloc_strdup(globals.tctx, optarg);
 			break;
 		case 'k':
-			keyfile = ensure_pem(globals.tctx, optarg);
+			keyfile = optarg;
 			break;
 		case 'f':
-			certfile = ensure_pem(globals.tctx, optarg);
+			certfile = optarg;
 			break;
 		case 'r':
 			if (track) {
@@ -1300,11 +1302,30 @@ set_tracking(const char *argv0, const char *category,
 
 	krb5_free_context(kctx);
 
+	/* Check for leftover arguments. */
 	if (optind < argc) {
 		printf(_("Error: unused extra arguments were supplied.\n"));
 		help(argv0, category);
 		return 1;
 	}
+	/* Pull the NSS storage scheme out, if one was given. */
+	if (dbdir != NULL) {
+		nss_scheme = NULL;
+		dbdir = ensure_nss(globals.tctx, optarg, &nss_scheme);
+		if ((nss_scheme != NULL) && (dbdir != NULL)) {
+			dbdir = talloc_asprintf(globals.tctx, "%s:%s",
+						nss_scheme, dbdir);
+		}
+	}
+	/* Make sure the file name is a valid location to store a PEM file. */
+	if (keyfile != NULL) {
+		keyfile = ensure_pem(globals.tctx, keyfile);
+	}
+	/* Make sure the file name is a valid location to store a PEM file. */
+	if (certfile != NULL) {
+		certfile = ensure_pem(globals.tctx, optarg);
+	}
+	/* Can't specify database or nickname without the other. */
 	if (((dbdir != NULL) && (nickname == NULL)) ||
 	    ((dbdir == NULL) && (nickname != NULL))) {
 		printf(_("Database location or nickname specified "
@@ -1312,12 +1333,14 @@ set_tracking(const char *argv0, const char *category,
 		help(argv0, category);
 		return 1;
 	}
+	/* Can't specify database and filename at the same time. */
 	if ((dbdir != NULL) && (certfile != NULL)) {
 		printf(_("Database directory and certificate file "
 		         "both specified.\n"));
 		help(argv0, category);
 		return 1;
 	}
+	/* Need at least one of database or filename. */
 	if ((id == NULL) &&
 	    (dbdir == NULL) &&
 	    (nickname == NULL) &&
@@ -1327,6 +1350,7 @@ set_tracking(const char *argv0, const char *category,
 		help(argv0, category);
 		return 1;
 	}
+	/* PEM storage isn't _that_ smart. */
 	if ((certfile != NULL) && (keyfile != NULL) &&
 	    (strcmp(certfile, keyfile) == 0)) {
 		printf(_("Key and certificate can not both be saved to the "
@@ -1334,6 +1358,7 @@ set_tracking(const char *argv0, const char *category,
 		help(argv0, category);
 		return 1;
 	}
+	/* Try to locate the specified request. */
 	if (id != NULL) {
 		request = find_request_by_name(globals.tctx, bus, id, verbose);
 	} else {
