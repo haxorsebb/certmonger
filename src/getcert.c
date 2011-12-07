@@ -513,10 +513,10 @@ request(const char *argv0, int argc, char **argv)
 			nickname = talloc_strdup(globals.tctx, optarg);
 			break;
 		case 'k':
-			keyfile = ensure_pem(globals.tctx, optarg);
+			keyfile = optarg;
 			break;
 		case 'f':
-			certfile = ensure_pem(globals.tctx, optarg);
+			certfile = optarg;
 			break;
 		case 'g':
 			keysize = atoi(optarg);
@@ -612,6 +612,14 @@ request(const char *argv0, int argc, char **argv)
 			dbdir = talloc_asprintf(globals.tctx, "%s:%s",
 						nss_scheme, dbdir);
 		}
+	}
+	/* Make sure the file name is a valid location to store a PEM file. */
+	if (keyfile != NULL) {
+		keyfile = ensure_pem(globals.tctx, keyfile);
+	}
+	/* Make sure the file name is a valid location to store a PEM file. */
+	if (certfile != NULL) {
+		certfile = ensure_pem(globals.tctx, optarg);
 	}
 	if (((dbdir != NULL) && (nickname == NULL)) ||
 	    ((dbdir == NULL) && (nickname != NULL))) {
