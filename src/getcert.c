@@ -504,12 +504,7 @@ request(const char *argv0, int argc, char **argv)
 			   GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
-			nss_scheme = NULL;
-			dbdir = ensure_nss(globals.tctx, optarg, &nss_scheme);
-			if ((nss_scheme != NULL) && (dbdir != NULL)) {
-				dbdir = talloc_asprintf(globals.tctx, "%s:%s",
-							nss_scheme, dbdir);
-			}
+			dbdir = optarg;
 			break;
 		case 't':
 			token = talloc_strdup(globals.tctx, optarg);
@@ -599,6 +594,7 @@ request(const char *argv0, int argc, char **argv)
 			return 1;
 		}
 	}
+	/* Check for leftover arguments. */
 	if (optind < argc) {
 		for (c = optind; c < argc; c++) {
 			printf(_("Error: unused extra argument \"%s\".\n"),
@@ -607,6 +603,15 @@ request(const char *argv0, int argc, char **argv)
 		printf(_("Error: unused extra arguments were supplied.\n"));
 		help(argv0, "request");
 		return 1;
+	}
+	/* Pull the NSS storage scheme out, if one was given. */
+	if (dbdir != NULL) {
+		nss_scheme = NULL;
+		dbdir = ensure_nss(globals.tctx, optarg, &nss_scheme);
+		if ((nss_scheme != NULL) && (dbdir != NULL)) {
+			dbdir = talloc_asprintf(globals.tctx, "%s:%s",
+						nss_scheme, dbdir);
+		}
 	}
 	if (((dbdir != NULL) && (nickname == NULL)) ||
 	    ((dbdir == NULL) && (nickname != NULL))) {
