@@ -18,6 +18,8 @@
 #include "config.h"
 
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <errno.h>
 #include <paths.h>
 #include <pwd.h>
 #include <stdio.h>
@@ -76,16 +78,37 @@ cm_env_homedir(const char *subdir, const char *subfile)
 	return ret;
 }
 
+static void
+cm_env_ensure_dir(char *path)
+{
+	char *p, *q;
+	struct stat st;
+
+	p = path + strlen(path);
+	for (q = path + 1; q < p; q++) {
+		if (*q == '/') {
+			*q = '\0';
+			if ((stat(path, &st) == -1) &&
+			    (errno == ENOENT)) {
+				mkdir(path, S_IRWXU);
+			}
+			*q = '/';
+		}
+	}
+}
+
 char *
 cm_env_config_dir(void)
 {
 	static char *ret = NULL;
+
 	if (ret == NULL) {
 		ret = getenv(CM_STORE_CONFIG_DIRECTORY_ENV);
 		if (ret == NULL) {
 			ret = cm_env_homedir(CM_STORE_SESSION_CONFIG_DIRECTORY,
 					     NULL);
 		}
+		cm_env_ensure_dir(ret);
 	}
 	return ret;
 }
@@ -100,6 +123,7 @@ cm_env_request_dir(void)
 			ret = cm_env_homedir(CM_STORE_SESSION_REQUESTS_DIRECTORY,
 					     NULL);
 		}
+		cm_env_ensure_dir(ret);
 	}
 	return ret;
 }
@@ -114,6 +138,7 @@ cm_env_ca_dir(void)
 			ret = cm_env_homedir(CM_STORE_SESSION_CAS_DIRECTORY,
 					     NULL);
 		}
+		cm_env_ensure_dir(ret);
 	}
 	return ret;
 }
@@ -128,6 +153,7 @@ cm_env_tmp_dir(void)
 		if ((ret == NULL) || (strlen(ret) == 0)) {
 			ret = _PATH_VARTMP;
 		}
+		cm_env_ensure_dir(ret);
 	}
 	return ret;
 }

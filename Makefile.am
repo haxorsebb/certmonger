@@ -11,7 +11,7 @@ RELEASE=
 GITTAG=certmonger-$(VERSION)
 
 tag:
-	tx pull
+	tx pull -f -a
 	git tag $(GITTAG)
 
 force-tag:
