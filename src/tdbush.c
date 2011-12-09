@@ -20,6 +20,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -42,6 +43,35 @@
 #else
 #define _(_text) (_text)
 #endif
+
+#define INTROSPECT_INTROSPECTABLE \
+	" <interface name=\"" DBUS_INTERFACE_INTROSPECTABLE "\">\n" \
+	"  <method name=\"Introspect\">\n" \
+	"   <arg name=\"xml_data\" type=\"s\" direction=\"out\"/>\n" \
+	"  </method>\n" \
+	" </interface>\n"
+#define INTROSPECT_PROPERTIES \
+	" <interface name=\"" DBUS_INTERFACE_PROPERTIES "\">\n" \
+	"  <method name=\"Get\">\n" \
+	"   <arg name=\"interface_name\" type=\"s\" direction=\"in\"/>\n" \
+	"   <arg name=\"property_name\" type=\"s\" direction=\"in\"/>\n" \
+	"   <arg name=\"value\" type=\"v\" direction=\"out\"/>\n" \
+	"  </method>\n" \
+	"  <method name=\"Set\">\n" \
+	"   <arg name=\"interface_name\" type=\"s\" direction=\"in\"/>\n" \
+	"   <arg name=\"property_name\" type=\"s\" direction=\"in\"/>\n" \
+	"   <arg name=\"value\" type=\"v\" direction=\"in\"/>\n" \
+	"  </method>\n" \
+	"  <method name=\"GetAll\">\n" \
+	"   <arg name=\"interface_name\" type=\"s\" direction=\"in\"/>\n" \
+	"   <arg name=\"props\" type=\"a{sv}\" direction=\"out\"/>\n" \
+	"  </method>\n" \
+	"  <signal name=\"PropertiesChanged\">\n" \
+	"   <arg name=\"interface_name\" type=\"s\" direction=\"in\"/>\n" \
+	"   <arg name=\"changed_properties\" type=\"a{sv}\" direction=\"out\"/>\n" \
+	"   <arg name=\"invalidated_properties\" type=\"as\" direction=\"out\"/>\n" \
+	"  </signal>\n" \
+	" </interface>\n"
 
 /* Functions which tell us if, based on the path alone, there's an object of
  * the specified type with that path. */
@@ -2261,6 +2291,11 @@ request_resubmit(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+static char *properties_introspect_i(struct cm_context *ctx,
+				     void *parent,
+				     const char *path,
+				     const char *interface);
+
 static char *
 ancestor_of_base_introspect(struct cm_context *ctx, const char *path)
 {
@@ -2380,7 +2415,8 @@ request_introspect(struct cm_context *ctx, const char *path)
 			       "  <method name=\"resubmit\">\n"
 			       "   <arg name=\"working\" type=\"b\" direction=\"out\"/>\n"
 			       "  </method>\n"
-			       " </interface>\n");
+			       " </interface>\n"
+			       INTROSPECT_INTROSPECTABLE);
 }
 
 static char *
@@ -2412,7 +2448,8 @@ ca_introspect(struct cm_context *ctx, const char *path)
 			       "  <method name=\"modify\">\n"
 			       "  </method>\n"
 #endif
-			       " </interface>\n");
+			       " </interface>\n"
+			       INTROSPECT_INTROSPECTABLE);
 }
 
 static char *
@@ -2532,7 +2569,8 @@ generic_introspect(DBusConnection *conn, DBusMessage *msg,
 	DBusHandlerResult ret;
 	DBusMessage *rep;
 	const char *path, *interface, *method;
-	char *data = NULL, *xml;
+	char *data = NULL, *properties = NULL, *xml;
+
 	path = dbus_message_get_path(msg);
 	interface = dbus_message_get_interface(msg);
 	method = dbus_message_get_member(msg);
@@ -2563,10 +2601,15 @@ generic_introspect(DBusConnection *conn, DBusMessage *msg,
 	}
 	if (data != NULL) {
 		xml = talloc_asprintf(ctx,
-				      "%s\n<node name=\"%s\">\n%s</node>\n",
+				      "%s\n<node name=\"%s\">\n%s%s%s</node>\n",
 				      DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE,
 				      path,
+				      properties ? INTROSPECT_PROPERTIES : "",
+				      properties ? properties : "",
 				      data);
+		if (properties != NULL) {
+			talloc_free(properties);
+		}
 		if (xml != NULL) {
 			rep = dbus_message_new_method_return(msg);
 			if (rep != NULL) {
@@ -2581,6 +2624,225 @@ generic_introspect(DBusConnection *conn, DBusMessage *msg,
 		talloc_free(data);
 	}
 	return ret;
+}
+
+struct cm_tdbush_property_map {
+	const char *property;
+	const char signature;
+	size_t offset;
+};
+static struct cm_tdbush_property_map cm_tdbush_request_properties[] = {
+	{ "cert_data", DBUS_TYPE_STRING,
+	 offsetof(struct cm_store_entry, cm_cert) }
+};
+
+static struct {
+	dbus_bool_t (*implements)(struct cm_context *ctx, const char *path,
+				  const char *interface, const char *member);
+	const char *interface;
+	struct cm_tdbush_property_map *map;
+} cm_tdbush_properties[] = {
+	{&is_request, CM_DBUS_REQUEST_INTERFACE, cm_tdbush_request_properties},
+};
+
+static char *
+properties_introspect_i(struct cm_context *ctx, void *parent,
+			const char *path, const char *interface)
+{
+	char *s;
+	unsigned int i, j;
+	struct cm_tdbush_property_map *map;
+
+	s = talloc_strdup(parent, "");
+	for (i = 0;
+	     i < sizeof(cm_tdbush_properties) / sizeof(cm_tdbush_properties[0]);
+	     i++) {
+		if ((cm_tdbush_properties[i].implements != NULL) &&
+		    (!(*(cm_tdbush_properties[i].implements))(ctx, path,
+		   					      DBUS_INTERFACE_INTROSPECTABLE,
+							      "Introspect"))) {
+			continue;
+		}
+		for (j = 0;
+		     cm_tdbush_properties[i].map[j].property != NULL;
+		     j++) {
+			map = cm_tdbush_properties[i].map;
+			s = talloc_asprintf_append(s,
+						   "  <property name=\"%s\" "
+						   "type=\"%c\" "
+						   "access=\"read\"/>\n",
+						   map[j].property,
+						   map[j].signature);
+		}
+	}
+	return s;
+}
+
+static void
+generic_property_append(DBusMessage *msg, void *data, int interface, int property)
+{
+	unsigned char *p;
+	p = ((unsigned char *) data) + cm_tdbush_properties[interface].map[property].offset;
+	dbus_message_append_args(msg,
+				 cm_tdbush_properties[interface].map[property].signature,
+				 p,
+				 DBUS_TYPE_INVALID);
+}
+
+static DBusHandlerResult
+generic_property_get(DBusConnection *conn, DBusMessage *msg,
+		     struct cm_context *ctx)
+{
+	const char *path, *interface, *method;
+	void *parent, *item;
+	char *prop_int, *prop_name;
+	unsigned int i, j;
+	DBusMessage *rep;
+	struct cm_tdbush_property_map *map;
+
+	path = dbus_message_get_path(msg);
+	interface = dbus_message_get_interface(msg);
+	method = dbus_message_get_member(msg);
+
+	parent = talloc_new(NULL);
+	if (cm_tdbusm_get_ss(msg, parent, &prop_int, &prop_name) != 0) {
+		cm_log(1, "Error parsing arguments.\n");
+		talloc_free(parent);
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+
+	for (i = 0;
+	     i < sizeof(cm_tdbush_properties) / sizeof(cm_tdbush_properties[0]);
+	     i++) {
+		if ((cm_tdbush_properties[i].implements != NULL) &&
+		    (!(*(cm_tdbush_properties[i].implements))(ctx, path,
+		   					      interface,
+							      method))) {
+			continue;
+		}
+		if ((prop_int == NULL) ||
+		    (strcmp(prop_int, cm_tdbush_properties[i].interface) != 0)) {
+			continue;
+		}
+		map = cm_tdbush_properties[i].map;
+
+		if (is_request(ctx, path, interface, method)) {
+			item = get_entry_for_path(ctx, path);
+		} else
+		if (is_ca(ctx, path, interface, method)) {
+			item = get_ca_for_path(ctx, path);
+		} else {
+			item = NULL;
+		}
+		if (item != NULL) {
+			rep = dbus_message_new_method_return(msg);
+			if (rep != NULL) {
+				for (j = 0; map[j].property != NULL; j++) {
+					if (strcmp(map[j].property, prop_name) == 0) {
+						generic_property_append(rep, item, i, j);
+					}
+				}
+				dbus_connection_send(conn, rep, NULL);
+				dbus_message_unref(rep);
+				talloc_free(parent);
+				return DBUS_HANDLER_RESULT_HANDLED;
+			}
+		}
+		break;
+	}
+	talloc_free(parent);
+	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
+static DBusHandlerResult
+generic_property_get_all(DBusConnection *conn, DBusMessage *msg,
+			 struct cm_context *ctx)
+{
+	const char *path, *interface, *method;
+	char *p, **pp, *prop_int;
+	struct cm_tdbusm_dict **dict;
+	const struct cm_tdbusm_dict **d;
+	DBusMessage *rep;
+	void *parent, *item;
+	unsigned int i, j;
+	struct cm_tdbush_property_map *map;
+
+	path = dbus_message_get_path(msg);
+	interface = dbus_message_get_interface(msg);
+	method = dbus_message_get_member(msg);
+
+	parent = talloc_new(NULL);
+	if (cm_tdbusm_get_s(msg, parent, &prop_int) != 0) {
+		cm_log(1, "Error parsing arguments.\n");
+		talloc_free(parent);
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+
+	dict = NULL;
+
+	for (i = 0, j = 0;
+	     i < sizeof(cm_tdbush_properties) / sizeof(cm_tdbush_properties[0]);
+	     i++) {
+		if ((cm_tdbush_properties[i].implements != NULL) &&
+		    (!(*(cm_tdbush_properties[i].implements))(ctx, path,
+		   					      interface,
+							      method))) {
+			continue;
+		}
+
+		if ((prop_int == NULL) ||
+		    (strcmp(prop_int, cm_tdbush_properties[i].interface) != 0)) {
+			continue;
+		}
+		map = cm_tdbush_properties[i].map;
+
+		if (is_request(ctx, path, interface, method)) {
+			item = get_entry_for_path(ctx, path);
+		} else
+		if (is_ca(ctx, path, interface, method)) {
+			item = get_ca_for_path(ctx, path);
+		} else {
+			item = NULL;
+		}
+		if (item != NULL) {
+			for (j = 0; map[j].property != NULL; j++) {
+				continue;
+			}
+			dict = talloc_array_ptrtype(parent, dict, j + 1);
+			for (j = 0; map[j].property != NULL; j++) {
+				dict[j] = talloc_ptrtype(parent, dict[j]);
+				dict[j]->key = talloc_strdup(parent,
+							     map[i].property);
+				switch (map[j].signature) {
+				case DBUS_TYPE_STRING:
+					dict[j]->value_type = cm_tdbusm_dict_s;
+					p = ((char *) item) + map[j].offset;
+					pp = (char **)p;
+					dict[j]->value.s = *pp;
+					j++;
+					break;
+				default:
+					break;
+				}
+			}
+			dict[j] = NULL;
+		}
+	}
+
+	if ((dict != NULL) && (dict[0] != NULL)) {
+		rep = dbus_message_new_method_return(msg);
+		if (rep != NULL) {
+			d = (const struct cm_tdbusm_dict **) dict;
+			cm_tdbusm_set_d(msg, d);
+			dbus_connection_send(conn, rep, NULL);
+			dbus_message_unref(rep);
+			talloc_free(parent);
+			return DBUS_HANDLER_RESULT_HANDLED;
+		}
+	}
+
+	talloc_free(parent);
+	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
 static struct {
@@ -2666,6 +2928,10 @@ static struct {
 	 request_resubmit},
 	{NULL, DBUS_INTERFACE_INTROSPECTABLE, "Introspect",
 	 generic_introspect},
+	{NULL, DBUS_INTERFACE_PROPERTIES, "Get",
+	 generic_property_get},
+	{NULL, DBUS_INTERFACE_PROPERTIES, "GetAll",
+	 generic_property_get_all},
 };
 
 DBusHandlerResult
@@ -2674,16 +2940,18 @@ cm_tdbush_handle(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 	const char *path, *interface, *member;
 	unsigned int i;
 	DBusHandlerResult handled;
+
 	path = dbus_message_get_path(msg);
 	interface = dbus_message_get_interface(msg);
 	member = dbus_message_get_member(msg);
 	for (i = 0;
-	     i < sizeof(cm_tdbush_methods) / sizeof(cm_tdbush_methods[i]);
+	     i < sizeof(cm_tdbush_methods) / sizeof(cm_tdbush_methods[0]);
 	     i++) {
 		if (strcmp(member, cm_tdbush_methods[i].member) != 0) {
 			continue;
 		}
-		if (strcmp(interface, cm_tdbush_methods[i].interface) != 0) {
+		if ((interface != NULL) &&
+		    (strcmp(interface, cm_tdbush_methods[i].interface) != 0)) {
 			continue;
 		}
 		if ((cm_tdbush_methods[i].implements != NULL) &&
