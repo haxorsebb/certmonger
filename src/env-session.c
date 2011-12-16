@@ -81,19 +81,23 @@ cm_env_homedir(const char *subdir, const char *subfile)
 static void
 cm_env_ensure_dir(char *path)
 {
-	char *p, *q;
+	char *p, *q, *tmp;
 	struct stat st;
 
-	p = path + strlen(path);
-	for (q = path + 1; q < p; q++) {
-		if (*q == '/') {
-			*q = '\0';
-			if ((stat(path, &st) == -1) &&
-			    (errno == ENOENT)) {
-				mkdir(path, S_IRWXU);
+	tmp = strdup(path);
+	if (tmp != NULL) {
+		p = tmp + strlen(tmp);
+		for (q = tmp + 1; q < p; q++) {
+			if (*q == '/') {
+				*q = '\0';
+				if ((stat(tmp, &st) == -1) &&
+				    (errno == ENOENT)) {
+					mkdir(tmp, S_IRWXU);
+				}
+				*q = '/';
 			}
-			*q = '/';
 		}
+		free(tmp);
 	}
 }
 
