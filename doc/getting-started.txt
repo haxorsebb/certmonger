@@ -83,6 +83,22 @@ What certmonger did was to check if there was already a key there, and since
 there wasn't, to go ahead and generate one.  That done, it created a CSR and
 then used the same key to produce a signed certificate.
 
+The daemon usually runs with sufficient privileges to be able to read and
+write to most locations that we might tell it to use for storing the
+certificate and key.  However, as an added precaution, on systems where a
+mandatory access control system is in use, the daemon will typically be
+permitted to read and write only to a narrowly-defined set of locations.
+
+For example, on systems using SELinux, certmonger will often not be allowed
+to use /tmp because the directory is marked with the label "tmp_t".  We
+would first need to create an alternate location with the label "cert_t" for
+certmonger's use:
+
+   mkdir -p /tmp/certs
+   chcon -t cert_t /tmp/certs
+   cd /tmp/certs
+   selfsign-getcert request -f ./server.crt -k ./server.key
+
 The example above used plain files for holding the key and the certificate,
 but we could have specified storage using an NSS database by passing the
 database's location and a nickname to give to the certificate, like so:
