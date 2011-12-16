@@ -1348,6 +1348,7 @@ cm_store_get_all_cas(void *parent)
 		}
 		if (k == j) {
 			ret[j] = cm_store_ca_new(ret);
+			ret[j]->cm_busname = cm_store_ca_next_busname(ret[j]);
 			ret[j]->cm_nickname = talloc_strdup(ret[j],
 							    CM_SELF_SIGN_CA_NAME);
 			ret[j]->cm_ca_type = cm_ca_internal_self;
@@ -1366,6 +1367,7 @@ cm_store_get_all_cas(void *parent)
 		}
 		if (k == j) {
 			ret[j] = cm_store_ca_new(ret);
+			ret[j]->cm_busname = cm_store_ca_next_busname(ret[j]);
 			ret[j]->cm_nickname = talloc_strdup(ret[j],
 							    CM_IPA_CA_NAME);
 			ret[j]->cm_ca_type = cm_ca_external;
@@ -1385,6 +1387,7 @@ cm_store_get_all_cas(void *parent)
 		}
 		if (k == j) {
 			ret[j] = cm_store_ca_new(ret);
+			ret[j]->cm_busname = cm_store_ca_next_busname(ret[j]);
 			ret[j]->cm_nickname = talloc_strdup(ret[j],
 							    CM_CERTMASTER_CA_NAME);
 			ret[j]->cm_ca_type = cm_ca_external;
