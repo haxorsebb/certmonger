@@ -192,6 +192,10 @@ exit 0
 * Fri Dec 16 2011 Nalin Dahyabhai <nalin@redhat.com> 0.52-1
 - note that SELinux usually confines us to writing only to cert_t in
   doc/getting-started.txt (#765599)
+- fix crashes when we add a request during our first run when we're
+  populating the hard-coded CA list
+- properly deal with cases where a path is passed to us is "./XXX"
+- in session mode, create our data directories as we go
 
 * Tue Dec  6 2011 Nalin Dahyabhai <nalin@redhat.com> 0.51-1
 - api: lift restrictions on characters used in request and CA nicknames by
