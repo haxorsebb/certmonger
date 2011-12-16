@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.51
+Version:	0.52
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -189,6 +189,10 @@ exit 0
 %endif
 
 %changelog
+* Fri Dec 16 2011 Nalin Dahyabhai <nalin@redhat.com> 0.52-1
+- note that SELinux usually confines us to writing only to cert_t in
+  doc/getting-started.txt (#765599)
+
 * Tue Dec  6 2011 Nalin Dahyabhai <nalin@redhat.com> 0.51-1
 - api: lift restrictions on characters used in request and CA nicknames by
   making their object names not incorporate their nicknames
