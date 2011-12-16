@@ -13,7 +13,7 @@ GITTAG=certmonger-$(VERSION)
 all-gmo:
 	tx pull -f -a
 	cd po ; for po in *.po ; do make `basename $$po .po`.gmo ; done
-	$(MAKE) -c po update-po
+	$(MAKE) -C po update-po
 
 tag: all-gmo
 	git tag $(GITTAG)
