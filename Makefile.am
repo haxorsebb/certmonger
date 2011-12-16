@@ -48,5 +48,6 @@ archive:
 			--define "_rpmdir $$tmpdir/rpm-build-top" \
 			-tb $(distdir).tar.gz;\
 		cp -v $(distdir).tar.gz $(ARCHIVEOUTDIR)/;\
+		chmod -R u+rw $$tmpdir;\
 		rm -fr $$tmpdir;\
 	fi
