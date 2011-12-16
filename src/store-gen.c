@@ -357,6 +357,9 @@ cm_store_canonicalize_directory(void *parent, const char *path)
 	} else {
 		tmp = talloc_strdup(parent, path);
 	}
+	while ((p = strstr(tmp, "/./")) != NULL) {
+		memmove(p, p + 2, strlen(p) - 1);
+	}
 	while ((p = strstr(tmp, "//")) != NULL) {
 		memmove(p, p + 1, strlen(p));
 	}

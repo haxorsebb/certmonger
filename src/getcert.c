@@ -180,9 +180,9 @@ ensure_nss(void *parent, const char *path, char **nss_scheme)
 		*nss_scheme = talloc_strdup(parent, "extern");
 		path += 7;
 	}
-	ret = cm_store_canonicalize_directory(parent, path);
+	ret = ensure_path_is_absolute(parent, path);
 	if (ret != NULL) {
-		ret = ensure_path_is_absolute(parent, ret);
+		ret = cm_store_canonicalize_directory(parent, ret);
 	}
 	if (ret != NULL) {
 		if (ensure_path_is_directory(ret) != 0) {
@@ -200,9 +200,9 @@ static char *
 ensure_pem(void *parent, const char *path)
 {
 	char *ret;
-	ret = cm_store_canonicalize_directory(parent, path);
+	ret = ensure_path_is_absolute(parent, path);
 	if (ret != NULL) {
-		ret = ensure_path_is_absolute(parent, ret);
+		ret = cm_store_canonicalize_directory(parent, ret);
 	}
 	if (ret != NULL) {
 		if (ensure_parent_is_directory(parent, ret) != 0) {
