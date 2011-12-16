@@ -1,23 +1,24 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Nalin Dahyabhai <nalin@fedoraproject.org>, 2011.
 # Piotr Drąg <piotrdrag@gmail.com>, 2011.
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
-"Report-Msgid-Bugs-To: http://certmonger.fedorahosted.org/\n"
-"POT-Creation-Date: 2011-12-08 14:54-0500\n"
+"Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
+"POT-Creation-Date: 2011-12-16 10:49-0500\n"
 "PO-Revision-Date: 2011-12-08 09:55+0000\n"
-"Last-Translator: raven <piotrdrag@gmail.com>\n"
+"Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Polish (http://www.transifex.net/projects/p/fedora/team/pl/)\n"
+"Language: pl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: pl\n"
-"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
+"|| n%100>=20) ? 1 : 2)\n"
 
 #: src/certmaster.c:111 src/ipa.c:146
 #, c-format
@@ -51,7 +52,8 @@ msgstr "Błąd serwera.\n"
 #: src/getcert.c:90
 #, c-format
 msgid "Path \"%s\" is not absolute, attempting to use \"%s\" instead.\n"
-msgstr "Ścieżka \"%s\" nie jest bezwzględna, próbowanie użycia \"%s\" zamiast niej.\n"
+msgstr ""
+"Ścieżka \"%s\" nie jest bezwzględna, próbowanie użycia \"%s\" zamiast niej.\n"
 
 #: src/getcert.c:95
 #, c-format
@@ -59,8 +61,8 @@ msgid ""
 "Path \"%s\" is not absolute, and there was an error determining the name of "
 "the current directory.\n"
 msgstr ""
-"Ścieżka \"%s\" nie jest bezwzględna i wystąpił błąd podczas określania nazwy"
-" bieżącego katalogu.\n"
+"Ścieżka \"%s\" nie jest bezwzględna i wystąpił błąd podczas określania nazwy "
+"bieżącego katalogu.\n"
 
 #: src/getcert.c:113
 #, c-format
@@ -175,7 +177,8 @@ msgstr "Określono zarówno katalog bazy danych, jak i plik certyfikatu.\n"
 
 #: src/getcert.c:627 src/getcert.c:1464 src/getcert.c:1687
 #, c-format
-msgid "None of database directory and nickname or certificate file specified.\n"
+msgid ""
+"None of database directory and nickname or certificate file specified.\n"
 msgstr "Nie podano katalogu bazy danych i pseudonimu lub pliku certyfikatu.\n"
 
 #: src/getcert.c:634 src/getcert.c:1319
@@ -186,8 +189,8 @@ msgstr "Nie można zapisać klucza i certyfikatu do tego samego pliku.\n"
 #: src/getcert.c:659
 #, c-format
 msgid ""
-"The IPA backend requires the use of the -K option (principal name) when the "
-"-N option (subject name) is used.\n"
+"The IPA backend requires the use of the -K option (principal name) when the -"
+"N option (subject name) is used.\n"
 msgstr ""
 "Zaplecze IPA wymaga użycia opcji -K (nazwy naczelnika), kiedy używana jest "
 "opcja -N (nazwa tematu).\n"
@@ -507,14 +510,16 @@ msgstr ""
 "  -g ROZMIAR\trozmiar klucza do utworzenia, jeśli jeszcze nie ma żadnego\n"
 
 #: src/getcert.c:2267 src/getcert.c:2305
-msgid "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
+msgid ""
+"  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
 msgstr ""
 "  -r\t\tpróbuje odnowić certyfikat, kiedy zbliża się jego wygaszenie "
 "(domyślnie)\n"
 
 #: src/getcert.c:2268 src/getcert.c:2306
 msgid "  -R\t\tdon't attempt to renew the certificate when expiration nears\n"
-msgstr "  -R\t\tnie próbuje odnowić certyfikatu, kiedy zbliża się jego wygaszenie\n"
+msgstr ""
+"  -R\t\tnie próbuje odnowić certyfikatu, kiedy zbliża się jego wygaszenie\n"
 
 #: src/getcert.c:2270 src/getcert.c:2308
 msgid "  -c CA\t\tuse the specified CA rather than the default\n"
@@ -531,7 +536,8 @@ msgstr ""
 
 #: src/getcert.c:2274 src/getcert.c:2363
 msgid "  -U EXTUSAGE\tset requested extended key usage OID\n"
-msgstr "  -U UŻYCIE_ZEWNĘTRZNE\tustawia żądany OID użycia rozszerzonego klucza\n"
+msgstr ""
+"  -U UŻYCIE_ZEWNĘTRZNE\tustawia żądany OID użycia rozszerzonego klucza\n"
 
 #: src/getcert.c:2275 src/getcert.c:2364
 msgid "  -K NAME\tset requested principal name\n"
@@ -736,7 +742,8 @@ msgstr "Nie można określić nazwy naczelnika dla żądania podpisania.\n"
 
 #: src/ipa.c:236
 #, c-format
-msgid "Error setting up ccache for local \"host\" service using default keytab.\n"
+msgid ""
+"Error setting up ccache for local \"host\" service using default keytab.\n"
 msgstr ""
 "Błąd podczas ustawiania ccache dla lokalnej usługi \"gospodarza\" używając "
 "domyślnej tablicy kluczy.\n"
@@ -750,7 +757,8 @@ msgstr ""
 
 #: src/ipa.c:246
 #, c-format
-msgid "Error setting up ccache for local \"host\" service using keytab \"%s\".\n"
+msgid ""
+"Error setting up ccache for local \"host\" service using keytab \"%s\".\n"
 msgstr ""
 "Błąd podczas ustawiania ccache dla lokalnej usługi \"gospodarza\" używając "
 "tablicy kluczy \"%s\".\n"
@@ -758,7 +766,8 @@ msgstr ""
 #: src/ipa.c:250
 #, c-format
 msgid "Error setting up ccache for \"%s\" using keytab \"%s\".\n"
-msgstr "Błąd podczas ustawiania ccache dla \"%s\" używając tabeli kluczy \"%s\".\n"
+msgstr ""
+"Błąd podczas ustawiania ccache dla \"%s\" używając tabeli kluczy \"%s\".\n"
 
 #: src/tdbush.c:187 src/tdbush.c:1268 src/tdbush.c:1432
 msgid "An internal error has occurred."
@@ -819,8 +828,7 @@ msgstr "Istnieje już żądanie o pseudonimie \"%s\"."
 #: src/tdbush.c:676
 #, c-format
 msgid ""
-"Certificate at same location is already used by request with nickname "
-"\"%s\"."
+"Certificate at same location is already used by request with nickname \"%s\"."
 msgstr ""
 "Certyfikat w tym samym położeniu jest już używany przez żądanie o "
 "pseudonimie \"%s\"."
@@ -842,8 +850,8 @@ msgstr "Nie podano pseudonimu klucza."
 #, c-format
 msgid "Key at same location is already used by request with nickname \"%s\"."
 msgstr ""
-"Klucz w tym samym położeniu jest już używany przez żądanie o pseudonimie "
-"\"%s\"."
+"Klucz w tym samym położeniu jest już używany przez żądanie o pseudonimie \"%s"
+"\"."
 
 #: src/tdbush.c:909
 msgid "No such CA."
@@ -857,5 +865,3 @@ msgstr "Nieznane CA \"%s\""
 #: src/tdbush.c:2216
 msgid "Unrecognized parameter or wrong value type."
 msgstr "Nierozpoznany parametr lub błędny typ wartości."
-
-

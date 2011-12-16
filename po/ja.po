@@ -10,9 +10,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2011-12-08 14:54-0500\n"
-"PO-Revision-Date: 2011-12-08 03:15+0000\n"
-"Last-Translator: katomo <tomo@dream.daynight.jp>\n"
+"POT-Creation-Date: 2011-12-16 10:49-0500\n"
+"PO-Revision-Date: 2011-12-11 12:43+0000\n"
+"Last-Translator: Tomoyuki KATO <tomo@dream.daynight.jp>\n"
 "Language-Team: Japanese <trans-ja@lists.fedoraproject.org>\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
@@ -72,7 +72,7 @@ msgstr "パス \"%s\" はディレクトリーではありません。\n"
 #: src/getcert.c:118
 #, c-format
 msgid "Path \"%s\": %s.\n"
-msgstr ""
+msgstr "パス \"%s\": %s.\n"
 
 #: src/getcert.c:157
 #, c-format
@@ -152,12 +152,12 @@ msgstr "Kerberos のプリンシパル名 \"%s\" をアンパース中にエラ�
 #: src/getcert.c:2174
 #, c-format
 msgid "%s: invalid option -- '%c'\n"
-msgstr ""
+msgstr "%s: 無効なオプション -- '%c'\n"
 
 #: src/getcert.c:604
 #, c-format
 msgid "Error: unused extra argument \"%s\".\n"
-msgstr ""
+msgstr "エラー: 使用されない余計な引数 \"%s\"。\n"
 
 #: src/getcert.c:607 src/getcert.c:1291 src/getcert.c:1650 src/getcert.c:1881
 #: src/getcert.c:2181
@@ -254,7 +254,7 @@ msgstr "リクエスト \"%s\" は変更できません。\n"
 #: src/getcert.c:1443 src/getcert.c:1666 src/getcert.c:1895
 #, c-format
 msgid "No request found with specified nickname.\n"
-msgstr ""
+msgstr "指定されたニックネームを持つリクエストが見つかりませんでした。\n"
 
 #: src/getcert.c:1488 src/getcert.c:1693 src/getcert.c:1906
 #, c-format
@@ -723,17 +723,17 @@ msgstr "%s: 認識できないコマンド\n"
 #: src/ipa.c:85
 #, c-format
 msgid "The -t option can not be used with the -K option.\n"
-msgstr ""
+msgstr "-t オプションは -K オプションと同時に使用できません。\n"
 
 #: src/ipa.c:93
 #, c-format
 msgid "The -k option can not be used with the -K option.\n"
-msgstr ""
+msgstr "-k オプションは -K オプションと同時に使用できません。\n"
 
 #: src/ipa.c:101
 #, c-format
 msgid "The -K option can not be used with either the -k or the -t option.\n"
-msgstr ""
+msgstr "-K オプションは -k または -t オプションと同時に使用できません。\n"
 
 #: src/ipa.c:143
 #, c-format
@@ -837,6 +837,8 @@ msgstr "ニックネーム \"%s\" のリクエストは、すでにあります�
 msgid ""
 "Certificate at same location is already used by request with nickname \"%s\"."
 msgstr ""
+"同じ場所にある証明書は、すでにニックネーム \"%s\" を持つリクエストで使用され"
+"ています。"
 
 #: src/tdbush.c:704
 #, c-format
@@ -855,6 +857,8 @@ msgstr "キーのニックネームが指定されていません。"
 #, c-format
 msgid "Key at same location is already used by request with nickname \"%s\"."
 msgstr ""
+"同じ場所にあるキーは、すでにニックネーム \"%s\" を持つリクエストで使用されて"
+"います。"
 
 #: src/tdbush.c:909
 msgid "No such CA."

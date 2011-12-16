@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # alanzheng <machinecat1666@gmail.com>, 2011.
 # Huan Chen <chenhuan126@126.com>, 2011.
@@ -10,15 +10,16 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
-"Report-Msgid-Bugs-To: http://certmonger.fedorahosted.org/\n"
-"POT-Creation-Date: 2011-12-08 14:54-0500\n"
+"Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
+"POT-Creation-Date: 2011-12-16 10:49-0500\n"
 "PO-Revision-Date: 2011-12-08 03:15+0000\n"
 "Last-Translator: lovenemesis <lovenemesis@gmail.com>\n"
-"Language-Team: Chinese (China) (http://www.transifex.net/projects/p/fedora/team/zh_CN/)\n"
+"Language-Team: Chinese (China) (http://www.transifex.net/projects/p/fedora/"
+"team/zh_CN/)\n"
+"Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: zh_CN\n"
 "Plural-Forms: nplurals=1; plural=0\n"
 
 #: src/certmaster.c:111 src/ipa.c:146
@@ -171,7 +172,8 @@ msgstr "数据库目录和证书文件都已指定。\n"
 
 #: src/getcert.c:627 src/getcert.c:1464 src/getcert.c:1687
 #, c-format
-msgid "None of database directory and nickname or certificate file specified.\n"
+msgid ""
+"None of database directory and nickname or certificate file specified.\n"
 msgstr "没有指定数据库目录和别名，或证书文件。\n"
 
 #: src/getcert.c:634 src/getcert.c:1319
@@ -182,8 +184,8 @@ msgstr "密钥和证书不能保存到同一个文件。\n"
 #: src/getcert.c:659
 #, c-format
 msgid ""
-"The IPA backend requires the use of the -K option (principal name) when the "
-"-N option (subject name) is used.\n"
+"The IPA backend requires the use of the -K option (principal name) when the -"
+"N option (subject name) is used.\n"
 msgstr "当使用 -N 选项（主题名）时，IPA 后端要求使用 -K 选项（实体名）。\n"
 
 #: src/getcert.c:789 src/getcert.c:1105 src/getcert.c:1400 src/getcert.c:1707
@@ -496,7 +498,8 @@ msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
 msgstr "  -g SIZE    要生成的密钥大小，如果密钥不存在\n"
 
 #: src/getcert.c:2267 src/getcert.c:2305
-msgid "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
+msgid ""
+"  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
 msgstr "  -r     在临近到期时试图更新证书（默认）\n"
 
 #: src/getcert.c:2268 src/getcert.c:2306
@@ -657,18 +660,20 @@ msgstr "* 如果选择一个特定的需求：\n"
 #: src/getcert.c:2394
 msgid "  -d DIR\tonly list requests and certs which use this NSS database\n"
 msgstr ""
-"  -d 目录<span class=\"whitespace other\" title=\"Tab\">»</span>仅列出使用该 NSS "
-"数据库的请求和认证\n"
+"  -d 目录<span class=\"whitespace other\" title=\"Tab\">»</span>仅列出使用该 "
+"NSS 数据库的请求和认证\n"
 
 #: src/getcert.c:2395
 msgid "  -n NAME\tonly list requests and certs which use this nickname\n"
-msgstr "  -n 名称<span class=\"whitespace other\" title=\"Tab\">»</span>仅显示使用该名称的请求和认证\n"
+msgstr ""
+"  -n 名称<span class=\"whitespace other\" title=\"Tab\">»</span>仅显示使用该"
+"名称的请求和认证\n"
 
 #: src/getcert.c:2397
 msgid "  -f FILE\tonly list requests and certs stored in this PEM file\n"
 msgstr ""
-"  -f 文件<span class=\"whitespace other\" title=\"Tab\">»</span>仅列出保存在此 PEM "
-"文件中的请求和认证\n"
+"  -f 文件<span class=\"whitespace other\" title=\"Tab\">»</span>仅列出保存在"
+"此 PEM 文件中的请求和认证\n"
 
 #: src/getcert.c:2399 src/getcert.c:2414
 msgid "  -S\tconnect to the certmonger service on the system bus\n"
@@ -719,7 +724,8 @@ msgstr "无法确定签名请求的实体名。\n"
 
 #: src/ipa.c:236
 #, c-format
-msgid "Error setting up ccache for local \"host\" service using default keytab.\n"
+msgid ""
+"Error setting up ccache for local \"host\" service using default keytab.\n"
 msgstr "在为使用默认 keytab 的本地“主机”服务设置 ccache 时出错。\n"
 
 #: src/ipa.c:240
@@ -729,7 +735,8 @@ msgstr "在为使用默认 keytab 的“%s”设置 ccache时出错。\n"
 
 #: src/ipa.c:246
 #, c-format
-msgid "Error setting up ccache for local \"host\" service using keytab \"%s\".\n"
+msgid ""
+"Error setting up ccache for local \"host\" service using keytab \"%s\".\n"
 msgstr "在为使用 keytab“%s”的本地“主机”服务设置 ccache 时出错。\n"
 
 #: src/ipa.c:250
@@ -796,8 +803,7 @@ msgstr "具有别名“%s”的请求已经存在。"
 #: src/tdbush.c:676
 #, c-format
 msgid ""
-"Certificate at same location is already used by request with nickname "
-"\"%s\"."
+"Certificate at same location is already used by request with nickname \"%s\"."
 msgstr ""
 
 #: src/tdbush.c:704
@@ -830,5 +836,3 @@ msgstr "证书认证中心“%s”未知。"
 #: src/tdbush.c:2216
 msgid "Unrecognized parameter or wrong value type."
 msgstr "未识别的参数或错误的值类型。"
-
-

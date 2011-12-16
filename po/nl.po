@@ -1,21 +1,21 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Geert Warrink <geert.warrink@onsnet.nu>, 2011.
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
-"Report-Msgid-Bugs-To: http://certmonger.fedorahosted.org/\n"
-"POT-Creation-Date: 2011-12-08 14:54-0500\n"
-"PO-Revision-Date: 2011-12-08 03:15+0000\n"
-"Last-Translator: warrink <geert.warrink@onsnet.nu>\n"
+"Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
+"POT-Creation-Date: 2011-12-16 10:49-0500\n"
+"PO-Revision-Date: 2011-12-09 14:24+0000\n"
+"Last-Translator: Geert Warrink <geert.warrink@onsnet.nu>\n"
 "Language-Team: Dutch (http://www.transifex.net/projects/p/fedora/team/nl/)\n"
+"Language: nl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: nl\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
 #: src/certmaster.c:111 src/ipa.c:146
@@ -51,8 +51,8 @@ msgstr "Serverfout.\n"
 #, c-format
 msgid "Path \"%s\" is not absolute, attempting to use \"%s\" instead.\n"
 msgstr ""
-"Pad \"%s\" is niet absoluut, in plaats daarvan wordt geprobeerd om \"%s\" te"
-" gebruiken.\n"
+"Pad \"%s\" is niet absoluut, in plaats daarvan wordt geprobeerd om \"%s\" te "
+"gebruiken.\n"
 
 #: src/getcert.c:95
 #, c-format
@@ -71,7 +71,7 @@ msgstr "Pad \"%s\" is geen map.\n"
 #: src/getcert.c:118
 #, c-format
 msgid "Path \"%s\": %s.\n"
-msgstr ""
+msgstr "Pad \"%s\": %s.\n"
 
 #: src/getcert.c:157
 #, c-format
@@ -147,12 +147,12 @@ msgstr "Fout bij unparsing van Kerberos principal naam \"%s\": %s.\n"
 #: src/getcert.c:2174
 #, c-format
 msgid "%s: invalid option -- '%c'\n"
-msgstr ""
+msgstr "%s: ongeldige optie -- '%c'\n"
 
 #: src/getcert.c:604
 #, c-format
 msgid "Error: unused extra argument \"%s\".\n"
-msgstr ""
+msgstr "Fout: niet gebruikt extra argument \"%s\".\n"
 
 #: src/getcert.c:607 src/getcert.c:1291 src/getcert.c:1650 src/getcert.c:1881
 #: src/getcert.c:2181
@@ -174,7 +174,8 @@ msgstr "Database map en certificaatbestand beide gespecificeerd.\n"
 
 #: src/getcert.c:627 src/getcert.c:1464 src/getcert.c:1687
 #, c-format
-msgid "None of database directory and nickname or certificate file specified.\n"
+msgid ""
+"None of database directory and nickname or certificate file specified.\n"
 msgstr "Zowel database map als bijnaam of certificaat niet opgegeven.\n"
 
 #: src/getcert.c:634 src/getcert.c:1319
@@ -187,11 +188,11 @@ msgstr ""
 #: src/getcert.c:659
 #, c-format
 msgid ""
-"The IPA backend requires the use of the -K option (principal name) when the "
-"-N option (subject name) is used.\n"
+"The IPA backend requires the use of the -K option (principal name) when the -"
+"N option (subject name) is used.\n"
 msgstr ""
-"De IPA backend vereist het gebruik van de -K optie (principal naam) als de "
-"-N optie (onderwerpnaam) gebruikt wordt.\n"
+"De IPA backend vereist het gebruik van de -K optie (principal naam) als de -"
+"N optie (onderwerpnaam) gebruikt wordt.\n"
 
 #: src/getcert.c:789 src/getcert.c:1105 src/getcert.c:1400 src/getcert.c:1707
 #: src/getcert.c:1888
@@ -245,7 +246,7 @@ msgstr "Verzoek \"%s\" kan niet gewijzigd worden.\n"
 #: src/getcert.c:1443 src/getcert.c:1666 src/getcert.c:1895
 #, c-format
 msgid "No request found with specified nickname.\n"
-msgstr ""
+msgstr "Geen aanvraag gevonden met de gespecificeerde bijnaam.\n"
 
 #: src/getcert.c:1488 src/getcert.c:1693 src/getcert.c:1906
 #, c-format
@@ -506,7 +507,8 @@ msgstr ""
 "is\n"
 
 #: src/getcert.c:2267 src/getcert.c:2305
-msgid "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
+msgid ""
+"  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
 msgstr ""
 "  -r»»probeer het certificaat te vernieuwen als de verloopdatum nadert "
 "(standaard)\n"
@@ -514,8 +516,7 @@ msgstr ""
 #: src/getcert.c:2268 src/getcert.c:2306
 msgid "  -R\t\tdon't attempt to renew the certificate when expiration nears\n"
 msgstr ""
-"  -R»»probeer het certificaat niet te vernieuwen als de verloopdatum "
-"nadert\n"
+"  -R»»probeer het certificaat niet te vernieuwen als de verloopdatum nadert\n"
 
 #: src/getcert.c:2270 src/getcert.c:2308
 msgid "  -c CA\t\tuse the specified CA rather than the default\n"
@@ -678,8 +679,7 @@ msgstr ""
 #: src/getcert.c:2395
 msgid "  -n NAME\tonly list requests and certs which use this nickname\n"
 msgstr ""
-"  -n NAAM» toon alleen verzoeken en certificaten die deze bijnaam "
-"gebruiken\n"
+"  -n NAAM» toon alleen verzoeken en certificaten die deze bijnaam gebruiken\n"
 
 #: src/getcert.c:2397
 msgid "  -f FILE\tonly list requests and certs stored in this PEM file\n"
@@ -712,17 +712,17 @@ msgstr "%s: onbekend commando\n"
 #: src/ipa.c:85
 #, c-format
 msgid "The -t option can not be used with the -K option.\n"
-msgstr ""
+msgstr "De -t optie kan niet met de -K optie gebruikt worden.\n"
 
 #: src/ipa.c:93
 #, c-format
 msgid "The -k option can not be used with the -K option.\n"
-msgstr ""
+msgstr "De -k optie kan niet met de -K optie gebruikt worden.\n"
 
 #: src/ipa.c:101
 #, c-format
 msgid "The -K option can not be used with either the -k or the -t option.\n"
-msgstr ""
+msgstr "De -K optie niet met de -k of the -t optie gebruikt worden.\n"
 
 #: src/ipa.c:143
 #, c-format
@@ -736,7 +736,8 @@ msgstr "Kan principal naam voor de aanvraag ondertekening niet bepalen.\n"
 
 #: src/ipa.c:236
 #, c-format
-msgid "Error setting up ccache for local \"host\" service using default keytab.\n"
+msgid ""
+"Error setting up ccache for local \"host\" service using default keytab.\n"
 msgstr ""
 "Fout bij het opzetten van ccache voor lokale \"host\" service met standaard "
 "keytab.\n"
@@ -748,10 +749,11 @@ msgstr "Fout bij het opzetten van ccache voor \"%s\" met standaard keytab.\n"
 
 #: src/ipa.c:246
 #, c-format
-msgid "Error setting up ccache for local \"host\" service using keytab \"%s\".\n"
+msgid ""
+"Error setting up ccache for local \"host\" service using keytab \"%s\".\n"
 msgstr ""
-"Fout bij het opzetten van ccache voor lokale \"host\" service met keytab "
-"\"%s\".\n"
+"Fout bij het opzetten van ccache voor lokale \"host\" service met keytab \"%s"
+"\".\n"
 
 #: src/ipa.c:250
 #, c-format
@@ -817,9 +819,10 @@ msgstr "Er is al een verzoek met de bijnaam \"%s\"."
 #: src/tdbush.c:676
 #, c-format
 msgid ""
-"Certificate at same location is already used by request with nickname "
-"\"%s\"."
+"Certificate at same location is already used by request with nickname \"%s\"."
 msgstr ""
+"Een certificaat op dezelfde locatie wordt al gebruik door een aanvraag met "
+"bijnaam \"%s\"."
 
 #: src/tdbush.c:704
 #, c-format
@@ -838,6 +841,8 @@ msgstr "Sleutel bijnaam niet opgegeven."
 #, c-format
 msgid "Key at same location is already used by request with nickname \"%s\"."
 msgstr ""
+"Een sleutel op dezelfde locatie wordt al gebruik door een aanvraag met "
+"bijnaam \"%s\"."
 
 #: src/tdbush.c:909
 msgid "No such CA."
@@ -851,5 +856,3 @@ msgstr "Certificaat autoriteit \"%s\" is niet bekend."
 #: src/tdbush.c:2216
 msgid "Unrecognized parameter or wrong value type."
 msgstr "Onbekende parameter of verkeerde type waarde."
-
-

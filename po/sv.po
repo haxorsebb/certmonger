@@ -1,21 +1,22 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Göran Uddeborg <goeran@uddeborg.se>, 2011.
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
-"Report-Msgid-Bugs-To: http://certmonger.fedorahosted.org/\n"
-"POT-Creation-Date: 2011-12-08 14:54-0500\n"
+"Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
+"POT-Creation-Date: 2011-12-16 10:49-0500\n"
 "PO-Revision-Date: 2011-12-08 03:15+0000\n"
-"Last-Translator: goeran <goeran@uddeborg.se>\n"
-"Language-Team: Swedish (http://www.transifex.net/projects/p/fedora/team/sv/)\n"
+"Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
+"Language-Team: Swedish (http://www.transifex.net/projects/p/fedora/team/"
+"sv/)\n"
+"Language: sv\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: sv\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
 #: src/certmaster.c:111 src/ipa.c:146
@@ -172,7 +173,8 @@ msgstr "Databaskatalog och certifikatfil båda angivna.\n"
 
 #: src/getcert.c:627 src/getcert.c:1464 src/getcert.c:1687
 #, c-format
-msgid "None of database directory and nickname or certificate file specified.\n"
+msgid ""
+"None of database directory and nickname or certificate file specified.\n"
 msgstr "Ingen av databaskatalog och smeknamn eller certifikatfil angiven.\n"
 
 #: src/getcert.c:634 src/getcert.c:1319
@@ -183,8 +185,8 @@ msgstr "Nyckeln och certifikatet kan inte båda sparas i samma fil.\n"
 #: src/getcert.c:659
 #, c-format
 msgid ""
-"The IPA backend requires the use of the -K option (principal name) when the "
-"-N option (subject name) is used.\n"
+"The IPA backend requires the use of the -K option (principal name) when the -"
+"N option (subject name) is used.\n"
 msgstr ""
 "IPA-backänden kräver användning av -K-flaggan (huvudnamn) när -N-flaggan "
 "(ämnesnamn) används.\n"
@@ -455,8 +457,8 @@ msgstr "  -n NAMN\tsmeknamn för NSS-baserad lagring (endast giltigt med -d)\n"
 msgid ""
 "  -t NAME\toptional token name for NSS-based storage (only valid with -d)\n"
 msgstr ""
-"  -t NAMN\tfrivilligt symbolnamn för NSS-baserad lagring (endast giltig med "
-"-d)\n"
+"  -t NAMN\tfrivilligt symbolnamn för NSS-baserad lagring (endast giltig med -"
+"d)\n"
 
 #: src/getcert.c:2256 src/getcert.c:2295 src/getcert.c:2332 src/getcert.c:2354
 #: src/getcert.c:2396
@@ -503,14 +505,16 @@ msgstr ""
 "en\n"
 
 #: src/getcert.c:2267 src/getcert.c:2305
-msgid "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
+msgid ""
+"  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
 msgstr ""
 "  -r\t\tförsök att förnya certifikatet när utgångsdatumet närmar sig "
 "(standard)\n"
 
 #: src/getcert.c:2268 src/getcert.c:2306
 msgid "  -R\t\tdon't attempt to renew the certificate when expiration nears\n"
-msgstr "  -R\t\tförsök inte förnya certifikatet när utgångsdatumet närmar sig\n"
+msgstr ""
+"  -R\t\tförsök inte förnya certifikatet när utgångsdatumet närmar sig\n"
 
 #: src/getcert.c:2270 src/getcert.c:2308
 msgid "  -c CA\t\tuse the specified CA rather than the default\n"
@@ -649,7 +653,8 @@ msgstr "* Allmänna flaggor:\n"
 
 #: src/getcert.c:2387
 msgid "  -c CA\tlist only requests and certs associated with this CA\n"
-msgstr "  -c CA\tlista endast begäran och certifikat associerade med denna CA\n"
+msgstr ""
+"  -c CA\tlista endast begäran och certifikat associerade med denna CA\n"
 
 #: src/getcert.c:2389
 msgid "  -r\tlist only information about outstanding requests\n"
@@ -676,7 +681,8 @@ msgstr ""
 
 #: src/getcert.c:2397
 msgid "  -f FILE\tonly list requests and certs stored in this PEM file\n"
-msgstr "  -f FIL\tlista endast begäran och certifikat lagrade i denna PEM-fil\n"
+msgstr ""
+"  -f FIL\tlista endast begäran och certifikat lagrade i denna PEM-fil\n"
 
 #: src/getcert.c:2399 src/getcert.c:2414
 msgid "  -S\tconnect to the certmonger service on the system bus\n"
@@ -727,7 +733,8 @@ msgstr "Det går inte att avgöra huvudnamn för signeringsbegäran.\n"
 
 #: src/ipa.c:236
 #, c-format
-msgid "Error setting up ccache for local \"host\" service using default keytab.\n"
+msgid ""
+"Error setting up ccache for local \"host\" service using default keytab.\n"
 msgstr ""
 "Fel vid inställning av ccache för lokal ”värd”-tjänst med "
 "standardnyckeltabell.\n"
@@ -739,7 +746,8 @@ msgstr "Fel vid inställning av ccache för ”%s” med standard-keytab.\n"
 
 #: src/ipa.c:246
 #, c-format
-msgid "Error setting up ccache for local \"host\" service using keytab \"%s\".\n"
+msgid ""
+"Error setting up ccache for local \"host\" service using keytab \"%s\".\n"
 msgstr ""
 "Fel vid inställning av ccache för lokala ”värd”-tjänst med keytab ”%s”.\n"
 
@@ -807,8 +815,7 @@ msgstr "Det finns redan en begäran med smeknamnet ”%s”."
 #: src/tdbush.c:676
 #, c-format
 msgid ""
-"Certificate at same location is already used by request with nickname "
-"\"%s\"."
+"Certificate at same location is already used by request with nickname \"%s\"."
 msgstr ""
 
 #: src/tdbush.c:704
@@ -841,5 +848,3 @@ msgstr "Certifikatmyndighet ”%s” inte känd."
 #: src/tdbush.c:2216
 msgid "Unrecognized parameter or wrong value type."
 msgstr "Okända parameter eller fel värdetyp."
-
-

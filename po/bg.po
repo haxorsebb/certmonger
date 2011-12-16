@@ -1,21 +1,21 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Valentin Laskov <laskov@festa.bg>, 2011.
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
-"Report-Msgid-Bugs-To: http://certmonger.fedorahosted.org/\n"
-"POT-Creation-Date: 2011-12-08 14:54-0500\n"
+"Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
+"POT-Creation-Date: 2011-12-16 10:49-0500\n"
 "PO-Revision-Date: 2011-12-08 03:15+0000\n"
-"Last-Translator: laskov <laskov@festa.bg>\n"
+"Last-Translator: Valentin Laskov <laskov@festa.bg>\n"
 "Language-Team: Bulgarian <trans-bg@lists.fedoraproject.org>\n"
+"Language: bg\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: bg\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
 #: src/certmaster.c:111 src/ipa.c:146
@@ -171,7 +171,8 @@ msgstr "Определени са и директория на базата да
 
 #: src/getcert.c:627 src/getcert.c:1464 src/getcert.c:1687
 #, c-format
-msgid "None of database directory and nickname or certificate file specified.\n"
+msgid ""
+"None of database directory and nickname or certificate file specified.\n"
 msgstr ""
 "Никое от директория на базата данни и псевдоним, или файл със сертификат не "
 "е определено.\n"
@@ -185,8 +186,8 @@ msgstr ""
 #: src/getcert.c:659
 #, c-format
 msgid ""
-"The IPA backend requires the use of the -K option (principal name) when the "
-"-N option (subject name) is used.\n"
+"The IPA backend requires the use of the -K option (principal name) when the -"
+"N option (subject name) is used.\n"
 msgstr ""
 
 #: src/getcert.c:789 src/getcert.c:1105 src/getcert.c:1400 src/getcert.c:1707
@@ -502,7 +503,8 @@ msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
 msgstr ""
 
 #: src/getcert.c:2267 src/getcert.c:2305
-msgid "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
+msgid ""
+"  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
 msgstr ""
 "  -r             опит за подновяване на сертификата, когато изтичането му "
 "наближава (по подразбиране)\n"
@@ -510,8 +512,8 @@ msgstr ""
 #: src/getcert.c:2268 src/getcert.c:2306
 msgid "  -R\t\tdon't attempt to renew the certificate when expiration nears\n"
 msgstr ""
-"  -R             не опитвай подновяване на сертификата, когато изтичането му"
-" наближава\n"
+"  -R             не опитвай подновяване на сертификата, когато изтичането му "
+"наближава\n"
 
 #: src/getcert.c:2270 src/getcert.c:2308
 msgid "  -c CA\t\tuse the specified CA rather than the default\n"
@@ -524,8 +526,8 @@ msgstr "* Параметри за подписване на заявките:\n"
 #: src/getcert.c:2273 src/getcert.c:2362
 msgid "  -N NAME\tset requested subject name (default: CN=<hostname>)\n"
 msgstr ""
-"  -N NAME        задава заявеното име на обекта (по подразбиране: CN=<име на"
-" хост>)\n"
+"  -N NAME        задава заявеното име на обекта (по подразбиране: CN=<име на "
+"хост>)\n"
 
 #: src/getcert.c:2274 src/getcert.c:2363
 msgid "  -U EXTUSAGE\tset requested extended key usage OID\n"
@@ -741,7 +743,8 @@ msgstr ""
 
 #: src/ipa.c:236
 #, c-format
-msgid "Error setting up ccache for local \"host\" service using default keytab.\n"
+msgid ""
+"Error setting up ccache for local \"host\" service using default keytab.\n"
 msgstr ""
 "Грешка при задаването на ccache за локалната \"host\" услуга, използвайки "
 "подразбиращия се keytab.\n"
@@ -755,7 +758,8 @@ msgstr ""
 
 #: src/ipa.c:246
 #, c-format
-msgid "Error setting up ccache for local \"host\" service using keytab \"%s\".\n"
+msgid ""
+"Error setting up ccache for local \"host\" service using keytab \"%s\".\n"
 msgstr ""
 "Грешка при задаването на ccache за локалната \"host\" услуга, използвайки "
 "подразбиращия се keytab \"%s\".\n"
@@ -763,7 +767,8 @@ msgstr ""
 #: src/ipa.c:250
 #, c-format
 msgid "Error setting up ccache for \"%s\" using keytab \"%s\".\n"
-msgstr "Грешка при задаването на ccache за \"%s\", използвайки keytab \"%s\".\n"
+msgstr ""
+"Грешка при задаването на ccache за \"%s\", използвайки keytab \"%s\".\n"
 
 #: src/tdbush.c:187 src/tdbush.c:1268 src/tdbush.c:1432
 msgid "An internal error has occurred."
@@ -824,8 +829,7 @@ msgstr "Вече има заявка с псевдонима \"%s\"."
 #: src/tdbush.c:676
 #, c-format
 msgid ""
-"Certificate at same location is already used by request with nickname "
-"\"%s\"."
+"Certificate at same location is already used by request with nickname \"%s\"."
 msgstr ""
 
 #: src/tdbush.c:704
@@ -858,5 +862,3 @@ msgstr "Сертифициращият орган \"%s\" е непознат."
 #: src/tdbush.c:2216
 msgid "Unrecognized parameter or wrong value type."
 msgstr "Неразпознат параметър или грешен тип на стойност."
-
-

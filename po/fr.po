@@ -1,21 +1,21 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Joël Beaudoin <fedora.qc@hotmail.fr>, 2011.
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
-"Report-Msgid-Bugs-To: http://certmonger.fedorahosted.org/\n"
-"POT-Creation-Date: 2011-12-08 14:54-0500\n"
+"Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
+"POT-Creation-Date: 2011-12-16 10:49-0500\n"
 "PO-Revision-Date: 2011-12-08 03:15+0000\n"
-"Last-Translator: dominique <chepioq@gmail.com>\n"
+"Last-Translator: dominique bribanick <chepioq@gmail.com>\n"
 "Language-Team: French <trans-fr@lists.fedoraproject.org>\n"
+"Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: fr\n"
 "Plural-Forms: nplurals=2; plural=(n > 1)\n"
 
 #: src/certmaster.c:111 src/ipa.c:146
@@ -144,7 +144,8 @@ msgstr "Erreur lors de l'analyse du nom principal Kerberos « %s » : %s.\n"
 #: src/getcert.c:566 src/getcert.c:1251 src/getcert.c:1613
 #, c-format
 msgid "Error unparsing Kerberos principal name \"%s\": %s.\n"
-msgstr "Erreur lors de la récupération du nom principal Kerberos « %s » : %s.\n"
+msgstr ""
+"Erreur lors de la récupération du nom principal Kerberos « %s » : %s.\n"
 
 #: src/getcert.c:596 src/getcert.c:1281 src/getcert.c:1643 src/getcert.c:1874
 #: src/getcert.c:2174
@@ -178,7 +179,8 @@ msgstr ""
 
 #: src/getcert.c:627 src/getcert.c:1464 src/getcert.c:1687
 #, c-format
-msgid "None of database directory and nickname or certificate file specified.\n"
+msgid ""
+"None of database directory and nickname or certificate file specified.\n"
 msgstr ""
 "Aucun répertoire de base de données, nom ou fichier de certificat n'ont été "
 "spécifiés.\n"
@@ -193,8 +195,8 @@ msgstr ""
 #: src/getcert.c:659
 #, c-format
 msgid ""
-"The IPA backend requires the use of the -K option (principal name) when the "
-"-N option (subject name) is used.\n"
+"The IPA backend requires the use of the -K option (principal name) when the -"
+"N option (subject name) is used.\n"
 msgstr ""
 "Le backend IPA requiert l'utilisation de l'option -K (nom principal) si "
 "l'option -N (nom d'objet) est utilisée.\n"
@@ -237,8 +239,8 @@ msgid ""
 "None of ID or database directory and nickname or certificate file "
 "specified.\n"
 msgstr ""
-"Aucun ID ou répertoire de base de données ni de nom ou fichier de certificat"
-" spécifié.\n"
+"Aucun ID ou répertoire de base de données ni de nom ou fichier de certificat "
+"spécifié.\n"
 
 #: src/getcert.c:1431
 #, c-format
@@ -459,14 +461,15 @@ msgstr "  -d RÉPERTOIRES\tNSS base de données pour les clés et certificats\n"
 
 #: src/getcert.c:2254 src/getcert.c:2293 src/getcert.c:2330 src/getcert.c:2352
 msgid "  -n NAME\tnickname for NSS-based storage (only valid with -d)\n"
-msgstr "  -n NOM\tsurnom pour le stockage NSS-base (valide uniquement avec -d)\n"
+msgstr ""
+"  -n NOM\tsurnom pour le stockage NSS-base (valide uniquement avec -d)\n"
 
 #: src/getcert.c:2255 src/getcert.c:2294 src/getcert.c:2331 src/getcert.c:2353
 msgid ""
 "  -t NAME\toptional token name for NSS-based storage (only valid with -d)\n"
 msgstr ""
-"  -t NOM\tnom de jeton optionel pour le stockage NSS-base (valide uniquement"
-" avec -d)\n"
+"  -t NOM\tnom de jeton optionel pour le stockage NSS-base (valide uniquement "
+"avec -d)\n"
 
 #: src/getcert.c:2256 src/getcert.c:2295 src/getcert.c:2332 src/getcert.c:2354
 #: src/getcert.c:2396
@@ -508,13 +511,15 @@ msgstr "  -I NOM\tnom à attribuer à la demande\n"
 
 #: src/getcert.c:2266
 msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
-msgstr "  -g TAILLE\ttaille de la clé à générer si elle n'est pas déjà en place\n"
+msgstr ""
+"  -g TAILLE\ttaille de la clé à générer si elle n'est pas déjà en place\n"
 
 #: src/getcert.c:2267 src/getcert.c:2305
-msgid "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
+msgid ""
+"  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
 msgstr ""
-"  -r\t\ttente de renouveler le certificat lorsque l'expiration approche (par"
-" défaut)\n"
+"  -r\t\ttente de renouveler le certificat lorsque l'expiration approche (par "
+"défaut)\n"
 
 #: src/getcert.c:2268 src/getcert.c:2306
 msgid "  -R\t\tdon't attempt to renew the certificate when expiration nears\n"
@@ -534,11 +539,13 @@ msgstr "* Paramètres de la requête de signature :\n"
 
 #: src/getcert.c:2273 src/getcert.c:2362
 msgid "  -N NAME\tset requested subject name (default: CN=<hostname>)\n"
-msgstr "  -N NOM\tdéfinit le nom du sujet demandé (par défaut: CN=<nom d'hôte>)\n"
+msgstr ""
+"  -N NOM\tdéfinit le nom du sujet demandé (par défaut: CN=<nom d'hôte>)\n"
 
 #: src/getcert.c:2274 src/getcert.c:2363
 msgid "  -U EXTUSAGE\tset requested extended key usage OID\n"
-msgstr "  -U EXTUSAGE\tdéfinit l'étendu de l'utilisation d'une clé OID demandé\n"
+msgstr ""
+"  -U EXTUSAGE\tdéfinit l'étendu de l'utilisation d'une clé OID demandé\n"
 
 #: src/getcert.c:2275 src/getcert.c:2364
 msgid "  -K NAME\tset requested principal name\n"
@@ -598,7 +605,8 @@ msgstr "  -I NOM\tnom à donner à la demande de suivi\n"
 
 #: src/getcert.c:2310
 msgid "* Parameters for the signing request at renewal time:\n"
-msgstr "* Paramètres de la requête de signature au moment du renouvellement :\n"
+msgstr ""
+"* Paramètres de la requête de signature au moment du renouvellement :\n"
 
 #: src/getcert.c:2311
 msgid "  -U EXTUSAGE\toverride requested extended key usage OID\n"
@@ -650,8 +658,7 @@ msgstr "  -I NOM\tnouveau nom à donner à la demande de suivi\n"
 #: src/getcert.c:2372
 msgid "  -c CA\t\tuse the specified CA rather than the current one\n"
 msgstr ""
-"  -c AC\t\tutilise l'autorité de certification spécifié plutôt que "
-"l'actuel\n"
+"  -c AC\t\tutilise l'autorité de certification spécifié plutôt que l'actuel\n"
 
 #: src/getcert.c:2382
 #, c-format
@@ -683,8 +690,8 @@ msgstr "* Si vous sélectionnez une requête spécifique : \n"
 #: src/getcert.c:2394
 msgid "  -d DIR\tonly list requests and certs which use this NSS database\n"
 msgstr ""
-"  -d DIR\tn'afficher que les requêtes et certificats utilisant cette base de"
-" données NSS\n"
+"  -d DIR\tn'afficher que les requêtes et certificats utilisant cette base de "
+"données NSS\n"
 
 #: src/getcert.c:2395
 msgid "  -n NAME\tonly list requests and certs which use this nickname\n"
@@ -746,11 +753,13 @@ msgstr ""
 #: src/ipa.c:151
 #, c-format
 msgid "Unable to determine principal name for signing request.\n"
-msgstr "Impossible de déterminer le nom principal pour la signature démandée.\n"
+msgstr ""
+"Impossible de déterminer le nom principal pour la signature démandée.\n"
 
 #: src/ipa.c:236
 #, c-format
-msgid "Error setting up ccache for local \"host\" service using default keytab.\n"
+msgid ""
+"Error setting up ccache for local \"host\" service using default keytab.\n"
 msgstr ""
 "Erreur de mise en place ccache pour le service local « hôte » en utilisant "
 "keytab par défaut.\n"
@@ -763,7 +772,8 @@ msgstr ""
 
 #: src/ipa.c:246
 #, c-format
-msgid "Error setting up ccache for local \"host\" service using keytab \"%s\".\n"
+msgid ""
+"Error setting up ccache for local \"host\" service using keytab \"%s\".\n"
 msgstr ""
 "Erreur de mise en place ccache pour le service local « hôte » en utilisant "
 "keytab « %s ».\n"
@@ -833,8 +843,7 @@ msgstr "Il existe déjà une demande avec le nom « %s »."
 #: src/tdbush.c:676
 #, c-format
 msgid ""
-"Certificate at same location is already used by request with nickname "
-"\"%s\"."
+"Certificate at same location is already used by request with nickname \"%s\"."
 msgstr ""
 
 #: src/tdbush.c:704
@@ -867,5 +876,3 @@ msgstr "L'autorité de certification « %s » non connue."
 #: src/tdbush.c:2216
 msgid "Unrecognized parameter or wrong value type."
 msgstr "Paramètre inconnu ou type de valeur incorrecte."
-
-

@@ -1,22 +1,22 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # nmartins <nmartins10@gmail.com>, 2011.
 # Rui Gouveia <rui.gouveia@gmail.com>, 2011.
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
-"Report-Msgid-Bugs-To: http://certmonger.fedorahosted.org/\n"
-"POT-Creation-Date: 2011-12-08 14:54-0500\n"
+"Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
+"POT-Creation-Date: 2011-12-16 10:49-0500\n"
 "PO-Revision-Date: 2011-12-08 03:15+0000\n"
-"Last-Translator: ruigo <rui.gouveia@gmail.com>\n"
+"Last-Translator: Rui Gouveia <rui.gouveia@gmail.com>\n"
 "Language-Team: Portuguese <trans-pt@lists.fedoraproject.org>\n"
+"Language: pt\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: pt\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
 #: src/certmaster.c:111 src/ipa.c:146
@@ -51,7 +51,8 @@ msgstr "Erro do servidor.\n"
 #: src/getcert.c:90
 #, c-format
 msgid "Path \"%s\" is not absolute, attempting to use \"%s\" instead.\n"
-msgstr "O caminho \"%s\" não é absoluto, a tentar utilizar \"%s\" em alternativa.\n"
+msgstr ""
+"O caminho \"%s\" não é absoluto, a tentar utilizar \"%s\" em alternativa.\n"
 
 #: src/getcert.c:95
 #, c-format
@@ -173,7 +174,8 @@ msgstr ""
 
 #: src/getcert.c:627 src/getcert.c:1464 src/getcert.c:1687
 #, c-format
-msgid "None of database directory and nickname or certificate file specified.\n"
+msgid ""
+"None of database directory and nickname or certificate file specified.\n"
 msgstr ""
 "Não foi especificada uma directoria de base de dados e nome ou um ficheiro "
 "de certificado.\n"
@@ -186,11 +188,11 @@ msgstr "Não é possível gravar a chave e o certicifado no mesmo ficheiro.\n"
 #: src/getcert.c:659
 #, c-format
 msgid ""
-"The IPA backend requires the use of the -K option (principal name) when the "
-"-N option (subject name) is used.\n"
+"The IPA backend requires the use of the -K option (principal name) when the -"
+"N option (subject name) is used.\n"
 msgstr ""
-"O IPA backend necessita o uso da opção -K (nome principal) quando a opção -N"
-" (nome do assunto) é usada.\n"
+"O IPA backend necessita o uso da opção -K (nome principal) quando a opção -N "
+"(nome do assunto) é usada.\n"
 
 #: src/getcert.c:789 src/getcert.c:1105 src/getcert.c:1400 src/getcert.c:1707
 #: src/getcert.c:1888
@@ -452,7 +454,8 @@ msgstr "  -d DIR\tBase de dados NSS para a chave e certificado\n"
 
 #: src/getcert.c:2254 src/getcert.c:2293 src/getcert.c:2330 src/getcert.c:2352
 msgid "  -n NAME\tnickname for NSS-based storage (only valid with -d)\n"
-msgstr "  -n NAME\tnome para o armazenamento NSS (apenas válido com a opção -d)\n"
+msgstr ""
+"  -n NAME\tnome para o armazenamento NSS (apenas válido com a opção -d)\n"
 
 #: src/getcert.c:2255 src/getcert.c:2294 src/getcert.c:2331 src/getcert.c:2353
 msgid ""
@@ -502,17 +505,20 @@ msgstr "  -I NAME\tnome a atribuir ao pedido\n"
 
 #: src/getcert.c:2266
 msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
-msgstr "  -g SIZE\ttamanho da chave a ser gerada se uma já não estiver em uso\n"
+msgstr ""
+"  -g SIZE\ttamanho da chave a ser gerada se uma já não estiver em uso\n"
 
 #: src/getcert.c:2267 src/getcert.c:2305
-msgid "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
+msgid ""
+"  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
 msgstr ""
-"  -r\t\ttentativa de renovação do certificado quando a expiração se aproxima"
-" (por defeito)\n"
+"  -r\t\ttentativa de renovação do certificado quando a expiração se aproxima "
+"(por defeito)\n"
 
 #: src/getcert.c:2268 src/getcert.c:2306
 msgid "  -R\t\tdon't attempt to renew the certificate when expiration nears\n"
-msgstr "  -R\t\tnão tentar renovar o certificado quando a expiração se aproxima\n"
+msgstr ""
+"  -R\t\tnão tentar renovar o certificado quando a expiração se aproxima\n"
 
 #: src/getcert.c:2270 src/getcert.c:2308
 msgid "  -c CA\t\tuse the specified CA rather than the default\n"
@@ -524,7 +530,8 @@ msgstr "* Parâmetros para o pedido de assinatura:\n"
 
 #: src/getcert.c:2273 src/getcert.c:2362
 msgid "  -N NAME\tset requested subject name (default: CN=<hostname>)\n"
-msgstr "  -N NAME\tdefine o nome do assunto pretendido (omissão: CN=<hostname>)\n"
+msgstr ""
+"  -N NAME\tdefine o nome do assunto pretendido (omissão: CN=<hostname>)\n"
 
 #: src/getcert.c:2274 src/getcert.c:2363
 msgid "  -U EXTUSAGE\tset requested extended key usage OID\n"
@@ -592,7 +599,8 @@ msgstr "* Parâmetros para o pedido de assinatura no tempo de renovação:\n"
 
 #: src/getcert.c:2311
 msgid "  -U EXTUSAGE\toverride requested extended key usage OID\n"
-msgstr "  -U EXTUSAGE\tsobrescreve a utilização de chave estendida OID pedida\n"
+msgstr ""
+"  -U EXTUSAGE\tsobrescreve a utilização de chave estendida OID pedida\n"
 
 #: src/getcert.c:2312
 msgid "  -K NAME\toverride requested principal name\n"
@@ -731,7 +739,8 @@ msgstr "Incapaz de determinar o nome principal para o pedido de assinatura.\n"
 
 #: src/ipa.c:236
 #, c-format
-msgid "Error setting up ccache for local \"host\" service using default keytab.\n"
+msgid ""
+"Error setting up ccache for local \"host\" service using default keytab.\n"
 msgstr ""
 "Erro ao preparar ccache para serviço \"host\" local utilizando keytab pré-"
 "definida.\n"
@@ -743,8 +752,11 @@ msgstr "Erro ao preparar ccache para \"%s\" utilizando keytab pré-definida.\n"
 
 #: src/ipa.c:246
 #, c-format
-msgid "Error setting up ccache for local \"host\" service using keytab \"%s\".\n"
-msgstr "Erro ao preparar ccache para serviço \"host\" local utilizando keytab \"%s\".\n"
+msgid ""
+"Error setting up ccache for local \"host\" service using keytab \"%s\".\n"
+msgstr ""
+"Erro ao preparar ccache para serviço \"host\" local utilizando keytab \"%s"
+"\".\n"
 
 #: src/ipa.c:250
 #, c-format
@@ -810,8 +822,7 @@ msgstr "Já existe um pedido com o nome \"%s\"."
 #: src/tdbush.c:676
 #, c-format
 msgid ""
-"Certificate at same location is already used by request with nickname "
-"\"%s\"."
+"Certificate at same location is already used by request with nickname \"%s\"."
 msgstr ""
 
 #: src/tdbush.c:704
@@ -844,5 +855,3 @@ msgstr "Autoridade de certificação \"%s\" desconhecida."
 #: src/tdbush.c:2216
 msgid "Unrecognized parameter or wrong value type."
 msgstr "Parâmetro desconhecido ou tipo de valor incorrecto."
-
-

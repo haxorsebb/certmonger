@@ -1,21 +1,21 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Nalin Dahyabhai <nalin@fedoraproject.org>, 2011.
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
-"Report-Msgid-Bugs-To: http://certmonger.fedorahosted.org/\n"
-"POT-Creation-Date: 2011-12-08 14:54-0500\n"
+"Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
+"POT-Creation-Date: 2011-12-16 10:49-0500\n"
 "PO-Revision-Date: 2011-12-08 03:15+0000\n"
-"Last-Translator: nalin <nalin@fedoraproject.org>\n"
+"Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
 "Language-Team: Indonesian <trans-id@lists.fedoraproject.org>\n"
+"Language: id\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: id\n"
 "Plural-Forms: nplurals=1; plural=0\n"
 
 #: src/certmaster.c:111 src/ipa.c:146
@@ -170,7 +170,8 @@ msgstr "Direktori database dan sertifikat file kedua secara khusus.\n"
 
 #: src/getcert.c:627 src/getcert.c:1464 src/getcert.c:1687
 #, c-format
-msgid "None of database directory and nickname or certificate file specified.\n"
+msgid ""
+"None of database directory and nickname or certificate file specified.\n"
 msgstr ""
 "Tidak ada dari direktori database dan nama panggilan atau sertifikat berkas "
 "khusus.\n"
@@ -184,8 +185,8 @@ msgstr ""
 #: src/getcert.c:659
 #, c-format
 msgid ""
-"The IPA backend requires the use of the -K option (principal name) when the "
-"-N option (subject name) is used.\n"
+"The IPA backend requires the use of the -K option (principal name) when the -"
+"N option (subject name) is used.\n"
 msgstr ""
 "IPA kembali memerlukan kegunaan dari pilihan -K (nama utama) di mana ketika "
 "pilihan -N (nama subjek) telah digunakan.\n"
@@ -450,14 +451,15 @@ msgstr "-d DIR\tNSS database untuk kunci dan pemastian\n"
 
 #: src/getcert.c:2254 src/getcert.c:2293 src/getcert.c:2330 src/getcert.c:2352
 msgid "  -n NAME\tnickname for NSS-based storage (only valid with -d)\n"
-msgstr "-n NAME\tnickname untuk dasar penyimpanan NSS (hanya valid dengan -d)\n"
+msgstr ""
+"-n NAME\tnickname untuk dasar penyimpanan NSS (hanya valid dengan -d)\n"
 
 #: src/getcert.c:2255 src/getcert.c:2294 src/getcert.c:2331 src/getcert.c:2353
 msgid ""
 "  -t NAME\toptional token name for NSS-based storage (only valid with -d)\n"
 msgstr ""
-"-t NAME\toptional tanda nama untuk dasar penyimpanan NSS (hanya valid dengan"
-" -d)\n"
+"-t NAME\toptional tanda nama untuk dasar penyimpanan NSS (hanya valid dengan "
+"-d)\n"
 
 #: src/getcert.c:2256 src/getcert.c:2295 src/getcert.c:2332 src/getcert.c:2354
 #: src/getcert.c:2396
@@ -504,7 +506,8 @@ msgstr ""
 "berada di dalam tempat\n"
 
 #: src/getcert.c:2267 src/getcert.c:2305
-msgid "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
+msgid ""
+"  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
 msgstr ""
 "-r\t\tattempt untuk memperbarui sertifikat ketika mendekati akhir waktu "
 "(kegagalan)\n"
@@ -512,8 +515,7 @@ msgstr ""
 #: src/getcert.c:2268 src/getcert.c:2306
 msgid "  -R\t\tdon't attempt to renew the certificate when expiration nears\n"
 msgstr ""
-"-R\t\tdon't usaha untuk memperbarui sertifikat ketika mendekati akhir "
-"waktu\n"
+"-R\t\tdon't usaha untuk memperbarui sertifikat ketika mendekati akhir waktu\n"
 
 #: src/getcert.c:2270 src/getcert.c:2308
 msgid "  -c CA\t\tuse the specified CA rather than the default\n"
@@ -727,7 +729,8 @@ msgstr "Tidak dapat untuk menentukan nama utama untuk menandai permintaan.\n"
 
 #: src/ipa.c:236
 #, c-format
-msgid "Error setting up ccache for local \"host\" service using default keytab.\n"
+msgid ""
+"Error setting up ccache for local \"host\" service using default keytab.\n"
 msgstr ""
 "Menyembunyikan setting eror untuk lokal \"host\"  layanan menggunakan "
 "default kunci tab.\n"
@@ -735,11 +738,13 @@ msgstr ""
 #: src/ipa.c:240
 #, c-format
 msgid "Error setting up ccache for \"%s\" using default keytab.\n"
-msgstr "Menyembunyikan setting eror untuk  \"%s\"  menggunakan default kunci tab.\n"
+msgstr ""
+"Menyembunyikan setting eror untuk  \"%s\"  menggunakan default kunci tab.\n"
 
 #: src/ipa.c:246
 #, c-format
-msgid "Error setting up ccache for local \"host\" service using keytab \"%s\".\n"
+msgid ""
+"Error setting up ccache for local \"host\" service using keytab \"%s\".\n"
 msgstr ""
 "Menyembunyikan setting eror untuk  lokal \"host\"  menggunakan layanan  "
 "kunci tab\"%s\".\n"
@@ -747,7 +752,8 @@ msgstr ""
 #: src/ipa.c:250
 #, c-format
 msgid "Error setting up ccache for \"%s\" using keytab \"%s\".\n"
-msgstr "Menyembunyikan setting eror untuk  \"%s\"  menggunakan kunci tab\"%s\".\n"
+msgstr ""
+"Menyembunyikan setting eror untuk  \"%s\"  menggunakan kunci tab\"%s\".\n"
 
 #: src/tdbush.c:187 src/tdbush.c:1268 src/tdbush.c:1432
 msgid "An internal error has occurred."
@@ -808,8 +814,7 @@ msgstr "Permintaan telah dilakukan dengan nama panggilan \"%s\"."
 #: src/tdbush.c:676
 #, c-format
 msgid ""
-"Certificate at same location is already used by request with nickname "
-"\"%s\"."
+"Certificate at same location is already used by request with nickname \"%s\"."
 msgstr ""
 
 #: src/tdbush.c:704
@@ -842,5 +847,3 @@ msgstr "Wewenang sertifikat \"%s\" tidak diketahui."
 #: src/tdbush.c:2216
 msgid "Unrecognized parameter or wrong value type."
 msgstr "Tidak mengenal parameter atau salah tipe nilai."
-
-

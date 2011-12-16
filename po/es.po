@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Claudio Rodrigo Pereyra Diaz <elsupergomez@gmail.com>, 2011.
 #   <domingobecker@gmail.com>, 2011.
@@ -10,15 +10,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
-"Report-Msgid-Bugs-To: http://certmonger.fedorahosted.org/\n"
-"POT-Creation-Date: 2011-12-08 14:54-0500\n"
+"Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
+"POT-Creation-Date: 2011-12-16 10:49-0500\n"
 "PO-Revision-Date: 2011-12-08 03:15+0000\n"
 "Last-Translator: beckerde <domingobecker@gmail.com>\n"
 "Language-Team: Spanish (Castilian) <trans-es@lists.fedoraproject.org>\n"
+"Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: es\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
 #: src/certmaster.c:111 src/ipa.c:146
@@ -53,7 +53,8 @@ msgstr "Error de servidor.\n"
 #: src/getcert.c:90
 #, c-format
 msgid "Path \"%s\" is not absolute, attempting to use \"%s\" instead.\n"
-msgstr "La dirección \"%s\" no es absoluta, intentando usar \"%s\" en su lugar.\n"
+msgstr ""
+"La dirección \"%s\" no es absoluta, intentando usar \"%s\" en su lugar.\n"
 
 #: src/getcert.c:95
 #, c-format
@@ -180,7 +181,8 @@ msgstr ""
 
 #: src/getcert.c:627 src/getcert.c:1464 src/getcert.c:1687
 #, c-format
-msgid "None of database directory and nickname or certificate file specified.\n"
+msgid ""
+"None of database directory and nickname or certificate file specified.\n"
 msgstr ""
 "No han sido especificados ni el directorio de la base de datos, ni el apodo "
 "del archivo de certificado.\n"
@@ -195,8 +197,8 @@ msgstr ""
 #: src/getcert.c:659
 #, c-format
 msgid ""
-"The IPA backend requires the use of the -K option (principal name) when the "
-"-N option (subject name) is used.\n"
+"The IPA backend requires the use of the -K option (principal name) when the -"
+"N option (subject name) is used.\n"
 msgstr ""
 "El motor de IPA necesita la utilización de la opción -K (el nombre del "
 "principal) cuando se esté utilizando la opción -N (el nombre del asunto).\n"
@@ -300,7 +302,8 @@ msgstr "Error intentando enviar \"%s\".\n"
 #: src/getcert.c:1917
 #, c-format
 msgid "Number of certificates and requests being tracked: %d.\n"
-msgstr "Cantidad de peticiones y certificados que están siendo rastrados: %d.\n"
+msgstr ""
+"Cantidad de peticiones y certificados que están siendo rastrados: %d.\n"
 
 #: src/getcert.c:2034
 #, c-format
@@ -362,8 +365,8 @@ msgstr ",archivopin='%s'"
 #, c-format
 msgid "\tcertificate: type=%s,location='%s'"
 msgstr ""
-"<span class=\"whitespace other\" title=\"Tab\">»</span>certificado: "
-"tipo=%s,ubicación='%s'"
+"<span class=\"whitespace other\" title=\"Tab\">»</span>certificado: tipo=%s,"
+"ubicación='%s'"
 
 #: src/getcert.c:2106
 #, c-format
@@ -457,7 +460,8 @@ msgstr "Argumentos requeridos:\n"
 #: src/getcert.c:2252 src/getcert.c:2291 src/getcert.c:2328 src/getcert.c:2350
 #: src/getcert.c:2393
 msgid "* If using an NSS database for storage:\n"
-msgstr "* si se está utilizando para el almacenamiento una base de datos NSS:\n"
+msgstr ""
+"* si se está utilizando para el almacenamiento una base de datos NSS:\n"
 
 #: src/getcert.c:2253 src/getcert.c:2292 src/getcert.c:2329 src/getcert.c:2351
 msgid "  -d DIR\tNSS database for key and cert\n"
@@ -515,10 +519,12 @@ msgstr "  -I NAME\tapodo a ser asignado a la petición\n"
 
 #: src/getcert.c:2266
 msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
-msgstr "  -g SIZE\ttamaño de la llave a ser generada si aún no existe ninguna\n"
+msgstr ""
+"  -g SIZE\ttamaño de la llave a ser generada si aún no existe ninguna\n"
 
 #: src/getcert.c:2267 src/getcert.c:2305
-msgid "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
+msgid ""
+"  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
 msgstr ""
 "  -r\t\tintento de renovación del certificado cuando el momento de "
 "expiración esté próximo (predeterminado)\n"
@@ -675,8 +681,7 @@ msgstr "* Opciones generales:\n"
 #: src/getcert.c:2387
 msgid "  -c CA\tlist only requests and certs associated with this CA\n"
 msgstr ""
-"  -c CA\tlista sólo las peticiones y los certificados asociados con este "
-"CA\n"
+"  -c CA\tlista sólo las peticiones y los certificados asociados con este CA\n"
 
 #: src/getcert.c:2389
 msgid "  -r\tlist only information about outstanding requests\n"
@@ -699,8 +704,8 @@ msgstr ""
 #: src/getcert.c:2395
 msgid "  -n NAME\tonly list requests and certs which use this nickname\n"
 msgstr ""
-"  -n NOMBRE<span class=\"whitespace other\" title=\"Tab\">»</span>sólo lista"
-" los pedidos y certificados que usan este apodo\n"
+"  -n NOMBRE<span class=\"whitespace other\" title=\"Tab\">»</span>sólo lista "
+"los pedidos y certificados que usan este apodo\n"
 
 #: src/getcert.c:2397
 msgid "  -f FILE\tonly list requests and certs stored in this PEM file\n"
@@ -723,7 +728,8 @@ msgstr "Utilización: %s list-cas [opciones]\n"
 
 #: src/getcert.c:2411
 msgid "  -c CA\tlist only information about the CA with this name\n"
-msgstr "  -c CA\tlista sólo la información de este nombre relacionada con el CA\n"
+msgstr ""
+"  -c CA\tlista sólo la información de este nombre relacionada con el CA\n"
 
 #: src/getcert.c:2468
 #, c-format
@@ -759,7 +765,8 @@ msgstr ""
 
 #: src/ipa.c:236
 #, c-format
-msgid "Error setting up ccache for local \"host\" service using default keytab.\n"
+msgid ""
+"Error setting up ccache for local \"host\" service using default keytab.\n"
 msgstr ""
 "Error al definir el caché para el servicio del equipo \"local\" utilizando "
 "el keytab predeterminado.\n"
@@ -767,11 +774,13 @@ msgstr ""
 #: src/ipa.c:240
 #, c-format
 msgid "Error setting up ccache for \"%s\" using default keytab.\n"
-msgstr "Error al definir el ccache de \"%s\" utilizando el keytab predeterminado.\n"
+msgstr ""
+"Error al definir el ccache de \"%s\" utilizando el keytab predeterminado.\n"
 
 #: src/ipa.c:246
 #, c-format
-msgid "Error setting up ccache for local \"host\" service using keytab \"%s\".\n"
+msgid ""
+"Error setting up ccache for local \"host\" service using keytab \"%s\".\n"
 msgstr ""
 "Error al definir el ccache del servicio del equipo \"local\" utilizando el "
 "keytab \"%s\".\n"
@@ -801,7 +810,8 @@ msgstr "No ha sido especificado el tipo de certificado de almacenamiento."
 #: src/tdbush.c:485
 #, c-format
 msgid "Certificate storage type \"%s\" not supported."
-msgstr "No existe soporte para el tipo \"%s\" de certificado de almacenamiento."
+msgstr ""
+"No existe soporte para el tipo \"%s\" de certificado de almacenamiento."
 
 #: src/tdbush.c:511 src/tdbush.c:539 src/tdbush.c:583 src/tdbush.c:733
 #: src/tdbush.c:778 src/tdbush.c:2164
@@ -840,8 +850,7 @@ msgstr "Ya existe una petición con el apodo \"%s\"."
 #: src/tdbush.c:676
 #, c-format
 msgid ""
-"Certificate at same location is already used by request with nickname "
-"\"%s\"."
+"Certificate at same location is already used by request with nickname \"%s\"."
 msgstr ""
 
 #: src/tdbush.c:704
@@ -874,5 +883,3 @@ msgstr "No se conoce la autoridad \"%s\" del certifiicado. "
 #: src/tdbush.c:2216
 msgid "Unrecognized parameter or wrong value type."
 msgstr "Parámetro irreconocible o tipo de valor erróneo."
-
-

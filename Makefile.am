@@ -10,11 +10,15 @@ VERSION=$(PACKAGE_VERSION)
 RELEASE=
 GITTAG=certmonger-$(VERSION)
 
-tag:
+all-gmo:
 	tx pull -f -a
+	cd po ; for po in *.po ; do make `basename $$po .po`.gmo ; done
+	$(MAKE) -c po update-po
+
+tag: all-gmo
 	git tag $(GITTAG)
 
-force-tag:
+force-tag: all-gmo
 	git tag -f $(GITTAG)
 
 ORIGIN=$(shell git config remote.origin.url 2> /dev/null || /bin/pwd)
@@ -31,7 +35,6 @@ archive:
 		cd $$tmpdir/certmonger;\
 		git checkout $(GITTAG);\
 		./autogen.sh;\
-		tx pull;\
 		make distcheck;\
 		mkdir -p $$tmpdir/rpm-build-top;\
 		rpmbuild \
