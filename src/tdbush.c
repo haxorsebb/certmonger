@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2009,2010,2011 Red Hat, Inc.
- * 
+ * Copyright (C) 2009,2010,2011,2012 Red Hat, Inc.
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -2696,6 +2696,578 @@ cm_tdbush_handle(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 			continue;
 		}
 		handled = (*(cm_tdbush_methods[i].handle))(conn, msg, ctx);
+		cm_reset_timeout(ctx);
+		return handled;
+	}
+	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
+enum cm_tdbush_type {
+	cm_tdbush_type_none,
+	cm_tdbush_type_parent_of_base,
+	cm_tdbush_type_base,
+	cm_tdbush_type_parent_of_cas,
+	cm_tdbush_type_group_of_cas,
+	cm_tdbush_type_ca,
+	cm_tdbush_type_parent_of_requests,
+	cm_tdbush_type_group_of_requests,
+	cm_tdbush_type_request
+};
+
+struct cm_tdbush_method {
+	const char *cm_name;
+	struct cm_tdbush_method_arg {
+		const char *cm_name;
+		const char *cm_bus_type;
+		enum cm_tdbush_method_arg_direction {
+			cm_tdbush_method_arg_in,
+			cm_tdbush_method_arg_out,
+		} cm_direction;
+		struct cm_tdbush_method_arg *cm_next;
+	} *cm_args;
+	struct cm_tdbush_method_annotation {
+		const char *cm_name;
+		const char *cm_value;
+		struct cm_tdbush_method_annotation *cm_next;
+	} *cm_annotations;
+	DBusHandlerResult (*cm_fn)(DBusConnection *conn,
+				   DBusMessage *msg,
+				   struct cm_context *ctx);
+};
+
+struct cm_tdbush_signal {
+	const char *cm_name;
+	struct cm_tdbush_signal_arg {
+		const char *cm_name;
+		const char *cm_bus_type;
+		struct cm_tdbush_signal_arg *cm_next;
+	} *cm_args;
+};
+
+struct cm_tdbush_property {
+	const char *cm_name;
+	enum cm_tdbush_property_bus_type {
+		cm_tdbush_property_string,
+		cm_tdbush_property_boolean,
+		cm_tdbush_property_number
+	} cm_bus_type;
+	enum cm_tdbush_property_access {
+		cm_tdbush_property_read,
+		cm_tdbush_property_write,
+		cm_tdbush_property_readwrite
+	} cm_access;
+};
+
+struct cm_tdbush_interface {
+	const char *cm_name;
+	struct cm_tdbush_interface_item {
+		enum cm_tdbush_interface_member_type {
+			cm_tdbush_interface_method,
+			cm_tdbush_interface_signal,
+			cm_tdbush_interface_property,
+		} cm_member_type;
+		struct cm_tdbush_method *cm_method;
+		struct cm_tdbush_signal *cm_signal;
+		struct cm_tdbush_property *cm_property;
+		struct cm_tdbush_interface_item *cm_next;
+	} *cm_items;
+};
+
+struct cm_tdbush_interface_map {
+	enum cm_tdbush_type cm_type;
+	struct cm_tdbush_interface * (*cm_interface)(void);
+};
+static enum cm_tdbush_type cm_tdbush_classify_path(struct cm_context *ctx,
+						   const char *path);
+static struct cm_tdbush_interface_map *cm_tdbush_type_map_get_n(unsigned int i);
+
+static struct cm_tdbush_method_arg *
+make_method_arg(const char *name,
+	        const char *bus_type,
+		enum cm_tdbush_method_arg_direction direction,
+		struct cm_tdbush_method_arg *next)
+{
+	struct cm_tdbush_method_arg *ret;
+	ret = malloc(sizeof(*ret));
+	if (ret == NULL) {
+		return NULL;
+	}
+	ret->cm_name = name;
+	ret->cm_bus_type = bus_type;
+	ret->cm_direction = direction;
+	ret->cm_next = next;
+	return ret;
+}
+
+static struct cm_tdbush_method_annotation *
+make_method_annotation(const char *name,
+		       const char *value,
+		       struct cm_tdbush_method_annotation *next)
+{
+	struct cm_tdbush_method_annotation *ret;
+	ret = malloc(sizeof(*ret));
+	if (ret == NULL) {
+		return NULL;
+	}
+	ret->cm_name = name;
+	ret->cm_value = value;
+	ret->cm_next = next;
+	return ret;
+}
+
+static struct cm_tdbush_method *
+make_method(const char *name,
+            DBusHandlerResult (*fn)(DBusConnection *conn,
+			            DBusMessage *msg,
+			            struct cm_context *ctx),
+            struct cm_tdbush_method_arg *args,
+            struct cm_tdbush_method_annotation *annotations)
+{
+	struct cm_tdbush_method *ret;
+	ret = malloc(sizeof(*ret));
+	if (ret == NULL) {
+		return NULL;
+	}
+	ret->cm_name = name;
+	ret->cm_fn = fn;
+	ret->cm_args = args;
+	ret->cm_annotations = annotations;
+	return ret;
+}
+
+static struct cm_tdbush_signal_arg *
+make_signal_arg(const char *name,
+	        const char *bus_type,
+	        struct cm_tdbush_signal_arg *next)
+{
+	struct cm_tdbush_signal_arg *ret;
+	ret = malloc(sizeof(*ret));
+	if (ret == NULL) {
+		return NULL;
+	}
+	ret->cm_name = name;
+	ret->cm_bus_type = bus_type;
+	ret->cm_next = next;
+	return ret;
+}
+
+static struct cm_tdbush_signal *
+make_signal(const char *name, struct cm_tdbush_signal_arg *args)
+{
+	struct cm_tdbush_signal *ret;
+	ret = malloc(sizeof(*ret));
+	if (ret == NULL) {
+		return NULL;
+	}
+	ret->cm_name = name;
+	ret->cm_args = args;
+	return ret;
+}
+
+static struct cm_tdbush_property *
+make_property(const char *name,
+	      enum cm_tdbush_property_bus_type bus_type,
+	      enum cm_tdbush_property_access acces)
+{
+	struct cm_tdbush_property *ret;
+	ret = malloc(sizeof(*ret));
+	if (ret == NULL) {
+		return NULL;
+	}
+	ret->cm_name = name;
+	ret->cm_bus_type = bus_type;
+	ret->cm_access = acces;
+	return ret;
+}
+
+static struct cm_tdbush_interface_item *
+make_interface_item(enum cm_tdbush_interface_member_type member_type,
+		    void *ptr,
+		    struct cm_tdbush_interface_item *next)
+{
+	struct cm_tdbush_interface_item *ret;
+	ret = malloc(sizeof(*ret));
+	if (ret == NULL) {
+		return NULL;
+	}
+	ret->cm_member_type = member_type;
+	switch (ret->cm_member_type) {
+	case cm_tdbush_interface_method:
+		ret->cm_method = ptr;
+		break;
+	case cm_tdbush_interface_signal:
+		ret->cm_signal = ptr;
+		break;
+	case cm_tdbush_interface_property:
+		ret->cm_property = ptr;
+		break;
+	}
+	ret->cm_next = next;
+	return ret;
+}
+
+static struct cm_tdbush_interface *
+make_interface(const char *name,
+	       struct cm_tdbush_interface_item *items)
+{
+	struct cm_tdbush_interface *ret;
+	ret = malloc(sizeof(*ret));
+	if (ret == NULL) {
+		return NULL;
+	}
+	ret->cm_name = name;
+	ret->cm_items = items;
+	return ret;
+}
+
+static char *
+cm_tdbush_introspect_method(void *parent,
+			    struct cm_tdbush_method *method)
+{
+	char *ret = NULL;
+	const char *direction;
+	struct cm_tdbush_method_arg *arg;
+	struct cm_tdbush_method_annotation *annotation;
+
+	ret = talloc_asprintf(parent, "  <method name=\"%s\">",
+			      method->cm_name);
+	arg = method->cm_args;
+	while (arg != NULL) {
+		direction = "unknown";
+		switch (arg->cm_direction) {
+		case cm_tdbush_method_arg_in:
+			direction = "in";
+			break;
+		case cm_tdbush_method_arg_out:
+			direction = "out";
+			break;
+		}
+		ret = talloc_asprintf(parent,
+				      "%s\n   <arg name=\"%s\" type=\"%s\" "
+				      "direction=\"%s\"/>",
+				      ret,
+				      arg->cm_name, arg->cm_bus_type,
+				      direction);
+		arg = arg->cm_next;
+	}
+	annotation = method->cm_annotations;
+	while (annotation != NULL) {
+		ret = talloc_asprintf(parent,
+				      "%s\n   <annotation name=\"%s\" "
+				      "value=\"%s\"/>",
+				      ret,
+				      annotation->cm_name,
+				      annotation->cm_value);
+		annotation = annotation->cm_next;
+	}
+	ret = talloc_asprintf(parent, "%s\n  </method>", ret);
+	return ret;
+}
+
+static char *
+cm_tdbush_introspect_signal(void *parent,
+			    struct cm_tdbush_signal *sig)
+{
+	char *ret = NULL;
+	struct cm_tdbush_signal_arg *arg;
+
+	ret = talloc_asprintf(parent, "  <signal name=\"%s\">",
+			      sig->cm_name);
+	arg = sig->cm_args;
+	while (arg != NULL) {
+		ret = talloc_asprintf(parent,
+				      "%s\n   <arg name=\"%s\" type=\"%s\"/>",
+				      ret, arg->cm_name, arg->cm_bus_type);
+		arg = arg->cm_next;
+	}
+	ret = talloc_asprintf(parent, "%s\n  </signal>", ret);
+	return ret;
+}
+
+static DBusHandlerResult
+cm_tdbush_introspect(DBusConnection *conn,
+		     DBusMessage *msg,
+		     struct cm_context *ctx)
+{
+	const char *path;
+	void *parent;
+	char *xml, *member;
+	static struct cm_tdbush_interface_map *map;
+	struct cm_tdbush_interface *iface;
+	struct cm_tdbush_interface_item *item;
+	enum cm_tdbush_type type;
+	unsigned int i;
+	DBusMessage *rep;
+
+	path = dbus_message_get_path(msg);
+	type = cm_tdbush_classify_path(ctx, path);
+	parent = talloc_new(NULL);
+	xml = talloc_asprintf(parent, "%s\n<node name=\"%s\">",
+			      DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE,
+			      path);
+	for (i = 0; (map = cm_tdbush_type_map_get_n(i)) != NULL; i++) {
+		if (map->cm_type != type) {
+			continue;
+		}
+		iface = (*(map->cm_interface))();
+		xml = talloc_asprintf(parent, "%s\n <interface name=\"%s\">",
+				      xml, iface->cm_name);
+		for (item = iface->cm_items;
+		     item != NULL;
+		     item = item->cm_next) {
+			member = NULL;
+			switch (item->cm_member_type) {
+			case cm_tdbush_interface_method:
+				member = cm_tdbush_introspect_method(parent,
+								     item->cm_method);
+				if (member != NULL) {
+					xml = talloc_asprintf(parent, "%s\n%s",
+							      xml, member);
+				}
+				break;
+			case cm_tdbush_interface_signal:
+				member = cm_tdbush_introspect_signal(parent,
+								     item->cm_signal);
+				if (member != NULL) {
+					xml = talloc_asprintf(parent, "%s\n%s",
+							      xml, member);
+				}
+				break;
+			case cm_tdbush_interface_property:
+				/* XXX */
+				break;
+			}
+		}
+		xml = talloc_asprintf(parent, "%s\n </interface>", xml);
+	}
+	xml = talloc_asprintf(parent, "%s\n</node>", xml);
+	rep = dbus_message_new_method_return(msg);
+	if (rep != NULL) {
+		cm_tdbusm_set_s(rep, xml);
+		dbus_connection_send(conn, rep, NULL);
+		dbus_message_unref(rep);
+	}
+	talloc_free(parent);
+	return DBUS_HANDLER_RESULT_HANDLED;
+
+}
+
+static DBusHandlerResult
+cm_tdbush_property_get(DBusConnection *conn,
+		       DBusMessage *msg,
+		       struct cm_context *ctx)
+{
+	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
+static DBusHandlerResult
+cm_tdbush_property_set(DBusConnection *conn,
+		       DBusMessage *msg,
+		       struct cm_context *ctx)
+{
+	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
+static DBusHandlerResult
+cm_tdbush_property_get_all(DBusConnection *conn,
+			   DBusMessage *msg,
+			   struct cm_context *ctx)
+{
+	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
+static struct cm_tdbush_interface *
+cm_tdbush_iface_introspection(void)
+{
+	static struct cm_tdbush_interface *ret;
+	if (ret == NULL) {
+		ret = make_interface(DBUS_INTERFACE_INTROSPECTABLE,
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("Introspect",
+							             cm_tdbush_introspect,
+								     make_method_arg("xml_data",
+										     "s",
+										     cm_tdbush_method_arg_out,
+										     NULL),
+								     NULL),
+							 NULL));
+	}
+	return ret;
+}
+
+static struct cm_tdbush_interface *
+cm_tdbush_iface_properties(void)
+{
+	static struct cm_tdbush_interface *ret;
+	if (ret == NULL) {
+		ret = make_interface(DBUS_INTERFACE_PROPERTIES,
+			             make_interface_item(cm_tdbush_interface_method,
+							 make_method("Get",
+								     cm_tdbush_property_get,
+								     make_method_arg("interface_name",
+										     "s",
+										     cm_tdbush_method_arg_in,
+								     make_method_arg("property_name",
+										     "s",
+										     cm_tdbush_method_arg_in,
+								     make_method_arg("value",
+										     "v",
+										     cm_tdbush_method_arg_out,
+										     NULL))),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("Set",
+								     cm_tdbush_property_set,
+								     make_method_arg("interface_name",
+										     "s",
+										     cm_tdbush_method_arg_in,
+								     make_method_arg("property_name",
+										     "s",
+										     cm_tdbush_method_arg_in,
+								     make_method_arg("value",
+										     "v",
+										     cm_tdbush_method_arg_in,
+										     NULL))),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("GetAll",
+								     cm_tdbush_property_get_all,
+								     make_method_arg("interface_name",
+										     "s",
+										     cm_tdbush_method_arg_in,
+								     make_method_arg("props",
+										     "a{sv}",
+										     cm_tdbush_method_arg_out,
+										     NULL)),
+								     NULL),
+							 NULL))));
+	}
+	return ret;
+}
+
+struct cm_tdbush_interface_map
+cm_tdbush_type_map[] = {
+	{cm_tdbush_type_parent_of_base, &cm_tdbush_iface_introspection},
+	{cm_tdbush_type_base, &cm_tdbush_iface_introspection},
+	{cm_tdbush_type_parent_of_cas, &cm_tdbush_iface_introspection},
+	{cm_tdbush_type_group_of_cas, &cm_tdbush_iface_introspection},
+	{cm_tdbush_type_ca, &cm_tdbush_iface_introspection},
+	{cm_tdbush_type_ca, &cm_tdbush_iface_properties},
+	{cm_tdbush_type_parent_of_requests, &cm_tdbush_iface_introspection},
+	{cm_tdbush_type_group_of_requests, &cm_tdbush_iface_introspection},
+	{cm_tdbush_type_request, &cm_tdbush_iface_introspection},
+	{cm_tdbush_type_request, &cm_tdbush_iface_properties},
+};
+static struct cm_tdbush_interface_map *
+cm_tdbush_type_map_get_n(unsigned int i)
+{
+	if (i < sizeof(cm_tdbush_type_map) / sizeof(cm_tdbush_type_map[0])) {
+		return cm_tdbush_type_map + i;
+	} else {
+		return NULL;
+	}
+}
+
+static enum cm_tdbush_type
+cm_tdbush_classify_path(struct cm_context *ctx, const char *path)
+{
+	int basepathlen = strlen(CM_DBUS_BASE_PATH);
+	int capathlen = strlen(CM_DBUS_CA_PATH);
+	int reqpathlen = strlen(CM_DBUS_REQUEST_PATH);
+	int pathlen = strlen(path);
+
+	/* Base is just a name, so check for it first. */
+	if (strcmp(path, CM_DBUS_BASE_PATH) == 0) {
+		return cm_tdbush_type_base;
+	}
+	/* The group of requests is just a name, so check for it. */
+	if (strcmp(path, CM_DBUS_REQUEST_PATH) == 0) {
+		return cm_tdbush_type_group_of_requests;
+	}
+	/* The group of CAs is just a name, so check for it. */
+	if (strcmp(path, CM_DBUS_CA_PATH) == 0) {
+		return cm_tdbush_type_group_of_cas;
+	}
+	/* Check for things above the base node. */
+	if ((strcmp(path, "/") == 0) ||
+	    ((pathlen < basepathlen) &&
+	     (strncmp(path, CM_DBUS_BASE_PATH, pathlen) == 0) &&
+	     (CM_DBUS_BASE_PATH[pathlen] == '/'))) {
+		return cm_tdbush_type_parent_of_base;
+	}
+	/* Check for things above the request group node. */
+	if (((pathlen < reqpathlen) &&
+	     (strncmp(path, CM_DBUS_REQUEST_PATH, pathlen) == 0) &&
+	     (CM_DBUS_REQUEST_PATH[pathlen] == '/'))) {
+		return cm_tdbush_type_parent_of_requests;
+	}
+	/* Check for things above the CA group node. */
+	if (((pathlen < capathlen) &&
+	     (strncmp(path, CM_DBUS_CA_PATH, pathlen) == 0) &&
+	     (CM_DBUS_CA_PATH[pathlen] == '/'))) {
+		return cm_tdbush_type_parent_of_cas;
+	}
+	/* Check if it names a request. */
+	if ((pathlen > reqpathlen) &&
+	    (strncmp(path, CM_DBUS_REQUEST_PATH, reqpathlen) == 0) &&
+	    (path[reqpathlen] == '/') &&
+	    (cm_get_entry_by_busname(ctx, path + reqpathlen + 1) != NULL)) {
+		return cm_tdbush_type_request;
+	}
+	/* Check if it names a CA. */
+	if ((pathlen > capathlen) &&
+	    (strncmp(path, CM_DBUS_CA_PATH, capathlen) == 0) &&
+	    (path[capathlen] == '/') &&
+	    (cm_get_ca_by_busname(ctx, path + capathlen + 1) != NULL)) {
+		return cm_tdbush_type_ca;
+	}
+	/* It's not classifiable. */
+	return cm_tdbush_type_none;
+}
+
+DBusHandlerResult
+cm_tdbush_handle_method_call(DBusConnection *conn, DBusMessage *msg,
+			     struct cm_context *ctx)
+{
+	const char *path, *interface, *member;
+	struct cm_tdbush_interface *iface;
+	struct cm_tdbush_interface_item *item;
+	struct cm_tdbush_method *meth;
+	enum cm_tdbush_type type;
+	unsigned int i;
+	DBusHandlerResult handled;
+
+	path = dbus_message_get_path(msg);
+	interface = dbus_message_get_interface(msg);
+	member = dbus_message_get_member(msg);
+	type = cm_tdbush_classify_path(ctx, path);
+	for (i = 0;
+	     i < sizeof(cm_tdbush_type_map) / sizeof(cm_tdbush_type_map[i]);
+	     i++) {
+		if (cm_tdbush_type_map[i].cm_type != type) {
+			continue;
+		}
+		iface = (*((cm_tdbush_type_map[i]).cm_interface))();
+		if ((interface != NULL) &&
+		    (strcmp(iface->cm_name, interface) != 0)) {
+			continue;
+		}
+		for (item = iface->cm_items;
+		     item != NULL;
+		     item = item->cm_next) {
+			if (item->cm_member_type != cm_tdbush_interface_method) {
+				continue;
+			}
+			meth = item->cm_method;
+			if (strcmp(meth->cm_name, member) != 0) {
+				continue;
+			}
+			handled = (*(meth->cm_fn))(conn, msg, ctx);
+			break;
+		}
+		if (item == NULL) {
+			continue;
+		}
 		cm_reset_timeout(ctx);
 		return handled;
 	}

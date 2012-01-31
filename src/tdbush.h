@@ -21,6 +21,10 @@
 struct cm_context;
 DBusHandlerResult cm_tdbush_handle(DBusConnection *conn, DBusMessage *msg,
 				   struct cm_context *ctx);
+struct cm_context;
+DBusHandlerResult cm_tdbush_handle_method_call(DBusConnection *conn,
+					       DBusMessage *msg,
+					       struct cm_context *ctx);
 char *cm_tdbush_canonicalize_directory(void *parent, const char *path);
 
 #endif

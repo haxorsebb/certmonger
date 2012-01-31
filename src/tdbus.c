@@ -510,7 +510,14 @@ cm_tdbus_filter(DBusConnection *conn, DBusMessage *dmessage, void *data)
 		break;
 	}
 	/* Okay, the message is one we need to worry about. */
-	return cm_tdbush_handle(conn, dmessage, tdb->data);
+	switch (dbus_message_get_type(dmessage)) {
+	case DBUS_MESSAGE_TYPE_METHOD_CALL:
+		return cm_tdbush_handle_method_call(conn, dmessage, tdb->data);
+		break;
+	case DBUS_MESSAGE_TYPE_METHOD_RETURN:
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		break;
+	}
 }
 
 static int
