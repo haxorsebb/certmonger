@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Red Hat, Inc.
+ * Copyright (C) 2011,2012 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -84,20 +84,22 @@ cm_env_ensure_dir(char *path)
 	char *p, *q, *tmp;
 	struct stat st;
 
-	tmp = strdup(path);
-	if (tmp != NULL) {
-		p = tmp + strlen(tmp);
-		for (q = tmp + 1; q < p; q++) {
-			if (*q == '/') {
-				*q = '\0';
-				if ((stat(tmp, &st) == -1) &&
-				    (errno == ENOENT)) {
-					mkdir(tmp, S_IRWXU);
+	if (path != NULL) {
+		tmp = strdup(path);
+		if (tmp != NULL) {
+			p = tmp + strlen(tmp);
+			for (q = tmp + 1; q < p; q++) {
+				if (*q == '/') {
+					*q = '\0';
+					if ((stat(tmp, &st) == -1) &&
+					    (errno == ENOENT)) {
+						mkdir(tmp, S_IRWXU);
+					}
+					*q = '/';
 				}
-				*q = '/';
 			}
+			free(tmp);
 		}
-		free(tmp);
 	}
 }
 
