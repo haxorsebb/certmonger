@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2011 Red Hat, Inc.
+ * Copyright (C) 2009,2011,2012 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,8 +56,8 @@ main(int argc, char **argv)
 	int i, c, dlevel = 0, pfd = -1, lfd = -1;
 	pid_t pid;
 	FILE *pfp;
-	const char *pidfile = NULL;
-	char *tmpdir, *hint;
+	const char *pidfile = NULL, *tmpdir;
+	char *env_tmpdir, *hint;
 	dbus_bool_t dofork;
 	int bustime;
 	DBusError error;
@@ -130,15 +130,18 @@ main(int argc, char **argv)
 	cm_log_set_method(dofork ? cm_log_syslog : cm_log_stderr);
 	cm_log(3, "Starting up.\n");
 
-	tmpdir = malloc(8 + strlen(cm_env_tmp_dir()));
-	if (tmpdir == NULL) {
-		fprintf(stderr, "Out of memory.\n");
-		exit(1);
-	}
-	sprintf(tmpdir, "TMPDIR=%s", cm_env_tmp_dir());
-	if (putenv(tmpdir) != 0) {
-		printf("internal error: %s\n", strerror(errno));
-		exit(1);
+	tmpdir = cm_env_tmp_dir();
+	if (tmpdir != NULL) {
+		env_tmpdir = malloc(8 + tmpdir);
+		if (env_tmpdir == NULL) {
+			fprintf(stderr, "Out of memory.\n");
+			exit(1);
+		}
+		sprintf(env_tmpdir, "TMPDIR=%s", tmpdir);
+		if (putenv(env_tmpdir) != 0) {
+			printf("internal error: %s\n", strerror(errno));
+			exit(1);
+		}
 	}
 
 	ec = tevent_context_init(NULL);
