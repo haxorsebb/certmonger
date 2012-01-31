@@ -114,7 +114,9 @@ cm_env_config_dir(void)
 			ret = cm_env_homedir(CM_STORE_SESSION_CONFIG_DIRECTORY,
 					     NULL);
 		}
-		cm_env_ensure_dir(ret);
+		if (ret != NULL) {
+			cm_env_ensure_dir(ret);
+		}
 	}
 	return ret;
 }
@@ -129,7 +131,9 @@ cm_env_request_dir(void)
 			ret = cm_env_homedir(CM_STORE_SESSION_REQUESTS_DIRECTORY,
 					     NULL);
 		}
-		cm_env_ensure_dir(ret);
+		if (ret != NULL) {
+			cm_env_ensure_dir(ret);
+		}
 	}
 	return ret;
 }
@@ -144,7 +148,9 @@ cm_env_ca_dir(void)
 			ret = cm_env_homedir(CM_STORE_SESSION_CAS_DIRECTORY,
 					     NULL);
 		}
-		cm_env_ensure_dir(ret);
+		if (ret != NULL) {
+			cm_env_ensure_dir(ret);
+		}
 	}
 	return ret;
 }
