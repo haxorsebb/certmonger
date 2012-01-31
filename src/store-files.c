@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1000,19 +1000,19 @@ static void
 cm_store_create_containing_dir(const char *path, int mode)
 {
 	char dir[PATH_MAX];
-	struct stat st;
 	int i;
 	if (strlen(path) >= sizeof(dir)) {
 		return;
 	}
 	for (i = 0, dir[0] = '\0'; path[i] != '\0'; i++) {
-		if ((i > 0) && (path[i] == '/')) { /* XXX */
-			if ((stat(dir, &st) == -1) && (errno == ENOENT)) {
-				if (mkdir(dir, mode) == -1) {
+		if ((i > 0) && (path[i] == '/')) {
+			if (mkdir(dir, mode) == -1) {
+				if (errno != EEXIST) {
 					cm_log(1, "Failed to create \"%s\": "
 					       "%s.\n", dir, strerror(errno));
 					break;
 				}
+			} else {
 				cm_log(2, "Created \"%s\".\n", dir);
 			}
 		}
