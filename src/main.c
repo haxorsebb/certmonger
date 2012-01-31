@@ -132,7 +132,7 @@ main(int argc, char **argv)
 
 	tmpdir = cm_env_tmp_dir();
 	if (tmpdir != NULL) {
-		env_tmpdir = malloc(8 + tmpdir);
+		env_tmpdir = malloc(8 + strlen(tmpdir));
 		if (env_tmpdir == NULL) {
 			fprintf(stderr, "Out of memory.\n");
 			exit(1);
