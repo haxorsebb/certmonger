@@ -1034,21 +1034,24 @@ cm_store_entry_save(struct cm_store_entry *entry)
 {
 	FILE *fp;
 	char timestamp[15], path[PATH_MAX];
-	int i, fd, give_up;
+	int i, fd = -1, give_up;
 	const char *directory;
 
 	if (entry->cm_store_private == NULL) {
 		cm_store_timestamp_from_time(cm_time(NULL), timestamp);
 		directory = cm_env_request_dir();
-		snprintf(path, sizeof(path), "%s/%s", directory, timestamp);
-		fd = open(path,
-			  O_WRONLY | O_CREAT | O_EXCL,
-			  S_IRUSR | S_IWUSR);
-		if ((fd == -1) && (errno == ENOENT)) {
-			cm_store_create_containing_dir(path, S_IRWXU);
+		if (directory != NULL) {
+			snprintf(path, sizeof(path), "%s/%s",
+				 directory, timestamp);
 			fd = open(path,
 				  O_WRONLY | O_CREAT | O_EXCL,
 				  S_IRUSR | S_IWUSR);
+			if ((fd == -1) && (errno == ENOENT)) {
+				cm_store_create_containing_dir(path, S_IRWXU);
+				fd = open(path,
+					  O_WRONLY | O_CREAT | O_EXCL,
+					  S_IRUSR | S_IWUSR);
+			}
 		}
 		if (fd == -1) {
 			switch (errno) {
@@ -1229,49 +1232,51 @@ cm_store_ca_save(struct cm_store_ca *ca)
 {
 	FILE *fp;
 	char timestamp[15], path[PATH_MAX];
-	int i, fd, give_up;
+	int i, fd = -1, give_up;
 	const char *directory;
 
 	if (ca->cm_store_private == NULL) {
 		cm_store_timestamp_from_time(cm_time(NULL), timestamp);
 		directory = cm_env_ca_dir();
-		snprintf(path, sizeof(path), "%s/%s", directory, timestamp);
-		fd = open(path,
-			  O_WRONLY | O_CREAT | O_EXCL,
-			  S_IRUSR | S_IWUSR);
-		if ((fd == -1) && (errno == ENOENT)) {
-			cm_store_create_containing_dir(path, S_IRWXU);
+		if (directory != NULL) {
+			snprintf(path, sizeof(path), "%s/%s", directory, timestamp);
 			fd = open(path,
 				  O_WRONLY | O_CREAT | O_EXCL,
 				  S_IRUSR | S_IWUSR);
-		}
-		if (fd == -1) {
-			switch (errno) {
-			case ENOENT:
-			case EPERM:
-			case EACCES:
-				break;
-			default:
-				for (give_up = 0, i = 1;
-				     !give_up && (i < 1024);
-				     i++) {
-					snprintf(path, sizeof(path), "%s/%s-%d",
-						 directory, timestamp, i);
-					fd = open(path,
-						  O_WRONLY | O_CREAT | O_EXCL,
-						  S_IRUSR | S_IWUSR);
-					if (fd != -1) {
-						break;
+			if ((fd == -1) && (errno == ENOENT)) {
+				cm_store_create_containing_dir(path, S_IRWXU);
+				fd = open(path,
+					  O_WRONLY | O_CREAT | O_EXCL,
+					  S_IRUSR | S_IWUSR);
+			}
+			if (fd == -1) {
+				switch (errno) {
+				case ENOENT:
+				case EPERM:
+				case EACCES:
+					break;
+				default:
+					for (give_up = 0, i = 1;
+					     !give_up && (i < 1024);
+					     i++) {
+						snprintf(path, sizeof(path), "%s/%s-%d",
+							 directory, timestamp, i);
+						fd = open(path,
+							  O_WRONLY | O_CREAT | O_EXCL,
+							  S_IRUSR | S_IWUSR);
+						if (fd != -1) {
+							break;
+						}
+						switch (errno) {
+						case ENOENT:
+						case EPERM:
+						case EACCES:
+							give_up++;
+							break;
+						}
 					}
-					switch (errno) {
-					case ENOENT:
-					case EPERM:
-					case EACCES:
-						give_up++;
-						break;
-					}
+					break;
 				}
-				break;
 			}
 		}
 		if (fd == -1) {
