@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010,2011 Red Hat, Inc.
+ * Copyright (C) 2010,2011,2012 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,11 +39,13 @@ cm_prefs_read(void)
 	char *path, *ret;
 	ret = NULL;
 	dir = cm_env_config_dir();
-	path = malloc(strlen(dir) + strlen(base) + 1);
-	if (path != NULL) {
-		sprintf(path, "%s%s", dir, base);
-		ret = read_config_file(path);
-		free(path);
+	if (dir != NULL) {
+		path = malloc(strlen(dir) + strlen(base) + 1);
+		if (path != NULL) {
+			sprintf(path, "%s%s", dir, base);
+			ret = read_config_file(path);
+			free(path);
+		}
 	}
 	return ret;
 }
