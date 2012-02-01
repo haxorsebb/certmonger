@@ -86,8 +86,6 @@ get_ca_for_request_message(DBusMessage *msg, struct cm_context *ctx)
 {
 	return msg ? get_ca_for_path(ctx, dbus_message_get_path(msg)) : NULL;
 }
-
-/* Functions implemented for the base object. */
 static char *
 maybe_strdup(void *parent, const char *s)
 {
@@ -2755,7 +2753,7 @@ cm_tdbush_property_get(DBusConnection *conn,
 	case cm_tdbush_object_type_request:
 		entry = get_entry_for_path(ctx, path);
 		if (entry == NULL) {
-			cm_log(1, "No such entry (%s).\n", path);
+			cm_log(1, "No such request (%s).\n", path);
 			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 		}
 		record = (char *) entry;
@@ -2792,6 +2790,15 @@ cm_tdbush_property_get(DBusConnection *conn,
 			if ((property != NULL) &&
 			    (strcmp(property, prop->cm_name) != 0)) {
 				continue;
+			}
+			switch (prop->cm_access) {
+			case cm_tdbush_property_read:
+			case cm_tdbush_property_readwrite:
+				break;
+			case cm_tdbush_property_write:
+				/* nope! */
+				continue;
+				break;
 			}
 			break;
 		}
@@ -2860,7 +2867,197 @@ cm_tdbush_property_set(DBusConnection *conn,
 		       DBusMessage *msg,
 		       struct cm_context *ctx)
 {
-	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	const char *path;
+	char *interface, *property;
+	void *parent;
+	static struct cm_tdbush_interface_map *map;
+	struct cm_tdbush_interface *iface;
+	struct cm_tdbush_interface_item *item;
+	struct cm_tdbush_property *prop;
+	enum cm_tdbush_object_type type;
+	unsigned int i;
+	struct cm_store_entry *entry;
+	struct cm_store_ca *ca;
+	char *record, *wp, **wpp, ***wppp;
+	time_t *tp;
+	dbus_bool_t b;
+	long l;
+	DBusMessage *rep;
+
+	path = dbus_message_get_path(msg);
+	type = cm_tdbush_classify_path(ctx, path);
+
+	/* Get a pointer to the record. */
+	switch (type) {
+	case cm_tdbush_object_type_none:
+	case cm_tdbush_object_type_parent_of_base:
+	case cm_tdbush_object_type_parent_of_requests:
+	case cm_tdbush_object_type_parent_of_cas:
+	case cm_tdbush_object_type_group_of_requests:
+	case cm_tdbush_object_type_group_of_cas:
+		cm_log(1, "No properties on (%s).\n", path);
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		break;
+	case cm_tdbush_object_type_base:
+		record = NULL;
+		break;
+	case cm_tdbush_object_type_ca:
+		ca = get_ca_for_path(ctx, path);
+		if (ca == NULL) {
+			cm_log(1, "No such CA (%s).\n", path);
+			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		}
+		record = (char *) ca;
+		break;
+	case cm_tdbush_object_type_request:
+		entry = get_entry_for_path(ctx, path);
+		if (entry == NULL) {
+			cm_log(1, "No such request (%s).\n", path);
+			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		}
+		record = (char *) entry;
+		break;
+	}
+
+	parent = talloc_new(NULL);
+	if (cm_tdbusm_get_ss(msg, parent, &interface, &property) != 0) {
+		cm_log(1, "Error parsing arguments.\n");
+		talloc_free(parent);
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+
+	/* Locate the property. */
+	item = NULL;
+	for (i = 0; (map = cm_tdbush_object_type_map_get_n(i)) != NULL; i++) {
+		if (map->cm_type != type) {
+			continue;
+		}
+		iface = (*(map->cm_interface))();
+		if ((interface != NULL) &&
+		    (strlen(interface) > 0) &&
+		    (strcmp(interface, iface->cm_name) != 0)) {
+			continue;
+		}
+		for (item = iface->cm_items;
+		     item != NULL;
+		     item = item->cm_next) {
+			if (item->cm_member_type !=
+			    cm_tdbush_interface_property) {
+				continue;
+			}
+			prop = item->cm_property;
+			if ((property != NULL) &&
+			    (strcmp(property, prop->cm_name) != 0)) {
+				continue;
+			}
+			switch (prop->cm_access) {
+			case cm_tdbush_property_read:
+				/* nope! */
+				continue;
+				break;
+			case cm_tdbush_property_readwrite:
+			case cm_tdbush_property_write:
+				break;
+			}
+			break;
+		}
+		if (item != NULL) {
+			break;
+		}
+	}
+	if (item == NULL) {
+		talloc_free(parent);
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+
+	prop = item->cm_property;
+
+	rep = dbus_message_new_method_return(msg);
+	if (rep == NULL) {
+		talloc_free(parent);
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+
+	/* Read the argument and set the data. */
+	switch (prop->cm_local_type) {
+	case cm_tdbush_property_char_p:
+		if (cm_tdbusm_get_sss(msg, parent, &interface, &property,
+				      &wp) != 0) {
+			cm_log(1, "Error parsing arguments.\n");
+			dbus_message_unref(rep);
+			talloc_free(parent);
+			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		}
+		record += prop->cm_offset;
+		wpp = (char **) record;
+		*wpp = maybe_strdup(record, wp);
+		break;
+	case cm_tdbush_property_char_pp:
+		if (cm_tdbusm_get_ssas(msg, parent, &interface, &property,
+				       &wpp) != 0) {
+			cm_log(1, "Error parsing arguments.\n");
+			dbus_message_unref(rep);
+			talloc_free(parent);
+			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		}
+		record += prop->cm_offset;
+		wppp = (char ***) record;
+		*wppp = maybe_strdupv(record, wpp);
+		break;
+	case cm_tdbush_property_time_t:
+		if (cm_tdbusm_get_ssn(msg, parent, &interface, &property,
+				      &l) != 0) {
+			cm_log(1, "Error parsing arguments.\n");
+			dbus_message_unref(rep);
+			talloc_free(parent);
+			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		}
+		record += prop->cm_offset;
+		tp = (time_t *) record;
+		*tp = l;
+		break;
+	case cm_tdbush_property_special:
+		switch (prop->cm_bus_type) {
+		case cm_tdbush_property_string:
+			if (cm_tdbusm_get_sss(msg, parent, &interface,
+					      &property, &wp) != 0) {
+				cm_log(1, "Error parsing arguments.\n");
+				dbus_message_unref(rep);
+				talloc_free(parent);
+				return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+			}
+			(*(prop->cm_write_string))(record, property, wp);
+			break;
+		case cm_tdbush_property_boolean:
+			if (cm_tdbusm_get_ssb(msg, parent, &interface,
+					      &property, &b) != 0) {
+				cm_log(1, "Error parsing arguments.\n");
+				dbus_message_unref(rep);
+				talloc_free(parent);
+				return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+			}
+			(*(prop->cm_write_boolean))(record, property, b);
+			break;
+		case cm_tdbush_property_number:
+			if (cm_tdbusm_get_ssn(msg, parent, &interface,
+					      &property, &l) != 0) {
+				cm_log(1, "Error parsing arguments.\n");
+				dbus_message_unref(rep);
+				talloc_free(parent);
+				return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+			}
+			(*(prop->cm_write_number))(record, property, l);
+			break;
+		}
+		break;
+	}
+	if (rep != NULL) {
+		dbus_connection_send(conn, rep, NULL);
+		dbus_message_unref(rep);
+	}
+	talloc_free(parent);
+
+	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
 static DBusHandlerResult
