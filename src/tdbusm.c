@@ -321,6 +321,65 @@ cm_tdbusm_get_sss(DBusMessage *msg, void *parent, char **s1, char **s2,
 }
 
 int
+cm_tdbusm_get_ssb(DBusMessage *msg, void *parent, char **s1, char **s2,
+		  dbus_bool_t *b)
+{
+	DBusError err;
+	*s1 = NULL;
+	*s2 = NULL;
+	memset(&err, 0, sizeof(err));
+	if (dbus_message_get_args(msg, &err,
+				  DBUS_TYPE_STRING, s1,
+				  DBUS_TYPE_STRING, s2,
+				  DBUS_TYPE_BOOLEAN, b,
+				  DBUS_TYPE_INVALID)) {
+		*s1 = *s1 ? talloc_strdup(parent, *s1) : NULL;
+		*s2 = *s2 ? talloc_strdup(parent, *s2) : NULL;
+		return 0;
+	} else {
+		return -1;
+	}
+}
+
+int
+cm_tdbusm_get_ssn(DBusMessage *msg, void *parent, char **s1, char **s2, long *l)
+{
+	DBusError err;
+	int64_t i64;
+	int32_t i32;
+	int16_t i16;
+	*s1 = NULL;
+	*s2 = NULL;
+
+	memset(&err, 0, sizeof(err));
+	if (!dbus_message_get_args(msg, &err,
+				   DBUS_TYPE_STRING, s1,
+				   DBUS_TYPE_STRING, s2,
+				   DBUS_TYPE_INT64, &i64,
+				   DBUS_TYPE_INVALID)) {
+		if (!dbus_message_get_args(msg, &err,
+					   DBUS_TYPE_STRING, s1,
+					   DBUS_TYPE_STRING, s2,
+					   DBUS_TYPE_INT32, &i32,
+					   DBUS_TYPE_INVALID)) {
+			if (!dbus_message_get_args(msg, &err,
+						   DBUS_TYPE_STRING, s1,
+						   DBUS_TYPE_STRING, s2,
+						   DBUS_TYPE_INT16, &i16,
+						   DBUS_TYPE_INVALID)) {
+				return -1;
+			}
+			i32 = i16;
+		}
+		i64 = i32;
+	}
+	*l = i64;
+	*s1 = *s1 ? talloc_strdup(parent, *s1) : NULL;
+	*s2 = *s2 ? talloc_strdup(parent, *s2) : NULL;
+	return 0;
+}
+
+int
 cm_tdbusm_get_ssss(DBusMessage *msg, void *parent, char **s1, char **s2,
 		   char **s3, char **s4)
 {
@@ -950,6 +1009,49 @@ cm_tdbusm_set_ss(DBusMessage *msg, const char *s1, const char *s2)
 }
 
 int
+cm_tdbusm_set_ssb(DBusMessage *msg, const char *s1, const char *s2,
+		  dbus_bool_t b)
+{
+	if (s1 == NULL) {
+		s1 = empty_string;
+	}
+	if (s2 == NULL) {
+		s2 = empty_string;
+	}
+	if (dbus_message_append_args(msg,
+				     DBUS_TYPE_STRING, &s1,
+				     DBUS_TYPE_STRING, &s2,
+				     DBUS_TYPE_BOOLEAN, &b,
+				     DBUS_TYPE_INVALID)) {
+		return 0;
+	} else {
+		return -1;
+	}
+}
+
+int
+cm_tdbusm_set_ssn(DBusMessage *msg, const char *s1, const char *s2,
+		  long n)
+{
+	int64_t i = n;
+	if (s1 == NULL) {
+		s1 = empty_string;
+	}
+	if (s2 == NULL) {
+		s2 = empty_string;
+	}
+	if (dbus_message_append_args(msg,
+				     DBUS_TYPE_STRING, &s1,
+				     DBUS_TYPE_STRING, &s2,
+				     DBUS_TYPE_INT64, &i,
+				     DBUS_TYPE_INVALID)) {
+		return 0;
+	} else {
+		return -1;
+	}
+}
+
+int
 cm_tdbusm_set_ap(DBusMessage *msg, const char **ap)
 {
 	if (dbus_message_append_args(msg,
@@ -1029,6 +1131,32 @@ cm_tdbusm_set_ssss(DBusMessage *msg, const char *s1, const char *s2,
 		return -1;
 	}
 }
+
+int
+cm_tdbusm_set_ssas(DBusMessage *msg,
+		   const char *s1, const char *s2, const char **as)
+{
+	if (s1 == NULL) {
+		s1 = empty_string;
+	}
+	if (s2 == NULL) {
+		s2 = empty_string;
+	}
+	if (as == NULL) {
+		as = empty_string_array;
+	}
+	if (dbus_message_append_args(msg,
+				     DBUS_TYPE_STRING, &s1,
+				     DBUS_TYPE_STRING, &s2,
+				     DBUS_TYPE_ARRAY, DBUS_TYPE_STRING,
+				     &as, cm_tdbusm_array_length(as),
+				     DBUS_TYPE_INVALID)) {
+		return 0;
+	} else {
+		return -1;
+	}
+}
+
 
 int
 cm_tdbusm_set_ssoas(DBusMessage *msg,

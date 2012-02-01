@@ -31,6 +31,12 @@ int cm_tdbusm_get_ap(DBusMessage *msg, void *parent, char ***ap);
 int cm_tdbusm_get_as(DBusMessage *msg, void *parent, char ***as);
 int cm_tdbusm_get_sss(DBusMessage *msg, void *parent,
 		      char **s1, char **s2, char **s3);
+int cm_tdbusm_get_ssb(DBusMessage *msg, void *parent,
+		      char **s1, char **s2, dbus_bool_t *b);
+int cm_tdbusm_get_ssn(DBusMessage *msg, void *parent,
+		      char **s1, char **s2, long *n);
+int cm_tdbusm_get_ssas(DBusMessage *msg, void *parent,
+		       char **s1, char **s2, char ***as);
 int cm_tdbusm_get_ssss(DBusMessage *msg, void *parent,
 		       char **s1, char **s2, char **s3, char **s4);
 int cm_tdbusm_get_ssosos(DBusMessage *msg, void *parent,
@@ -79,6 +85,12 @@ int cm_tdbusm_set_ap(DBusMessage *msg, const char **p);
 int cm_tdbusm_set_as(DBusMessage *msg, const char **s);
 int cm_tdbusm_set_sss(DBusMessage *msg,
 		      const char *s1, const char *s2, const char *s3);
+int cm_tdbusm_set_ssb(DBusMessage *msg,
+		      const char *s1, const char *s2, dbus_bool_t b);
+int cm_tdbusm_set_ssn(DBusMessage *msg,
+		      const char *s1, const char *s2, long n);
+int cm_tdbusm_set_ssas(DBusMessage *msg,
+		       const char *s1, const char *s2, const char **as);
 int cm_tdbusm_set_ssss(DBusMessage *msg,
 		       const char *s1, const char *s2,
 		       const char *s3, const char *s4);
