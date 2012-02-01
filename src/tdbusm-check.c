@@ -116,6 +116,16 @@ set_ss(DBusMessage *msg)
 	return cm_tdbusm_set_ss(msg, s1, s2);
 }
 static int
+set_ssb(DBusMessage *msg)
+{
+	return cm_tdbusm_set_ssb(msg, s1, s2, b);
+}
+static int
+set_ssn(DBusMessage *msg)
+{
+	return cm_tdbusm_set_ssn(msg, s1, s2, n);
+}
+static int
 set_ap(DBusMessage *msg)
 {
 	return cm_tdbusm_set_ap(msg, ap);
@@ -129,6 +139,11 @@ static int
 set_sss(DBusMessage *msg)
 {
 	return cm_tdbusm_set_sss(msg, s1, s2, s3);
+}
+static int
+set_ssas(DBusMessage *msg)
+{
+	return cm_tdbusm_set_ssas(msg, s1, s2, as);
 }
 static int
 set_ssss(DBusMessage *msg)
@@ -306,6 +321,47 @@ get_sss(DBusMessage *rep, int msgid)
 	if (ret == 0) {
 		printf("Message %d - s:%s,s:%ss:%s\n", msgid,
 		       s1, s2, s3);
+	}
+	return ret;
+}
+static int
+get_ssb(DBusMessage *rep, int msgid)
+{
+	int ret;
+	char *s1, *s2;
+	dbus_bool_t b;
+	ret = cm_tdbusm_get_ssb(rep, NULL, &s1, &s2, &b);
+	if (ret == 0) {
+		printf("Message %d - s:%s,s:%sb:%s\n", msgid,
+		       s1, s2, b ? "TRUE" : "FALSE");
+	}
+	return ret;
+}
+static int
+get_ssn(DBusMessage *rep, int msgid)
+{
+	int ret;
+	char *s1, *s2;
+	long n;
+	ret = cm_tdbusm_get_ssn(rep, NULL, &s1, &s2, &n);
+	if (ret == 0) {
+		printf("Message %d - s:%s,s:%sn:%ld\n", msgid,
+		       s1, s2, n);
+	}
+	return ret;
+}
+static int
+get_ssas(DBusMessage *rep, int msgid)
+{
+	int ret, i;
+	char *s1, *s2, **as;
+	ret = cm_tdbusm_get_ssas(rep, NULL, &s1, &s2, &as);
+	if (ret == 0) {
+		printf("Message %d - s:%s,s:%s,as:[", msgid, s1, s2);
+		for (i = 0; (as != NULL) && (as[i] != NULL); i++) {
+			printf("%ss:%s", i > 0 ? "," : "", as[i]);
+		}
+		printf("]\n");
 	}
 	return ret;
 }
@@ -501,6 +557,9 @@ main(int argc, char **argv)
 		{&set_ap, &get_ap},
 		{&set_as, &get_as},
 		{&set_sss, &get_sss},
+		{&set_ssn, &get_ssn},
+		{&set_ssb, &get_ssb},
+		{&set_ssas, &get_ssas},
 		{&set_ssss, &get_ssss},
 		{&set_ss, &get_ssosos},
 		{&set_sss, &get_ssosos},
