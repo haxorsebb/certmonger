@@ -43,59 +43,6 @@
 #define _(_text) (_text)
 #endif
 
-/* Functions which tell us if, based on the path alone, there's an object of
- * the specified type with that path. */
-static dbus_bool_t
-is_ancestor_of_base(struct cm_context *ctx, const char *path,
-		    const char *interface, const char *member)
-{
-	int basepathlen = strlen(CM_DBUS_BASE_PATH);
-	int pathlen = strlen(path);
-	return (strcmp(path, "/") == 0) ||
-	       ((pathlen < basepathlen) &&
-		(strncmp(path, CM_DBUS_BASE_PATH, pathlen) == 0) &&
-		(CM_DBUS_BASE_PATH[pathlen] == '/'));
-}
-static dbus_bool_t
-is_ancestor_of_cas(struct cm_context *ctx, const char *path,
-		   const char *interface, const char *member)
-{
-	int capathlen = strlen(CM_DBUS_CA_PATH);
-	int pathlen = strlen(path);
-	return (strcmp(path, "/") == 0) ||
-	       ((pathlen < capathlen) &&
-		(strncmp(path, CM_DBUS_CA_PATH, pathlen) == 0) &&
-		(CM_DBUS_CA_PATH[pathlen] == '/'));
-}
-static dbus_bool_t
-is_ancestor_of_requests(struct cm_context *ctx, const char *path,
-		        const char *interface, const char *member)
-{
-	int reqpathlen = strlen(CM_DBUS_REQUEST_PATH);
-	int pathlen = strlen(path);
-	return (strcmp(path, "/") == 0) ||
-	       ((pathlen < reqpathlen) &&
-		(strncmp(path, CM_DBUS_REQUEST_PATH, pathlen) == 0) &&
-		(CM_DBUS_REQUEST_PATH[pathlen] == '/'));
-}
-static dbus_bool_t
-is_base(struct cm_context *ctx, const char *path,
-	const char *interface, const char *member)
-{
-	return (strcmp(path, CM_DBUS_BASE_PATH) == 0);
-}
-static dbus_bool_t
-is_ca_group(struct cm_context *ctx, const char *path,
-	    const char *interface, const char *member)
-{
-	return (strcmp(path, CM_DBUS_CA_PATH) == 0);
-}
-static dbus_bool_t
-is_request_group(struct cm_context *ctx, const char *path,
-		 const char *interface, const char *member)
-{
-	return (strcmp(path, CM_DBUS_REQUEST_PATH) == 0);
-}
 static struct cm_store_entry *
 get_entry_for_path(struct cm_context *ctx, const char *path)
 {
@@ -135,18 +82,6 @@ static struct cm_store_ca *
 get_ca_for_request_message(DBusMessage *msg, struct cm_context *ctx)
 {
 	return msg ? get_ca_for_path(ctx, dbus_message_get_path(msg)) : NULL;
-}
-static dbus_bool_t
-is_ca(struct cm_context *ctx, const char *path,
-      const char *interface, const char *member)
-{
-	return get_ca_for_path(ctx, path) != NULL;
-}
-static dbus_bool_t
-is_request(struct cm_context *ctx, const char *path,
-	   const char *interface, const char *member)
-{
-	return get_entry_for_path(ctx, path) != NULL;
 }
 
 /* Functions implemented for the base object. */
@@ -984,8 +919,8 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 }
 
 static DBusHandlerResult
-base_find_request(DBusConnection *conn, DBusMessage *msg,
-		  struct cm_context *ctx)
+base_find_request_by_nickname(DBusConnection *conn, DBusMessage *msg,
+			      struct cm_context *ctx)
 {
 	struct cm_store_entry *entry;
 	DBusMessage *rep;
@@ -1027,8 +962,8 @@ base_find_request(DBusConnection *conn, DBusMessage *msg,
 }
 
 static DBusHandlerResult
-base_find_ca(DBusConnection *conn, DBusMessage *msg,
-	     struct cm_context *ctx)
+base_find_ca_by_nickname(DBusConnection *conn, DBusMessage *msg,
+			 struct cm_context *ctx)
 {
 	struct cm_store_ca *ca;
 	DBusMessage *rep;
@@ -1067,13 +1002,6 @@ base_find_ca(DBusConnection *conn, DBusMessage *msg,
 		talloc_free(parent);
 		return send_internal_base_error(conn, msg);
 	}
-}
-
-static DBusHandlerResult
-base_get_defaults(DBusConnection *conn, DBusMessage *msg,
-		  struct cm_context *ctx)
-{
-	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
 static DBusHandlerResult
@@ -1183,6 +1111,20 @@ base_get_supported_key_and_cert_storage(DBusConnection *conn, DBusMessage *msg,
 	} else {
 		return send_internal_base_error(conn, msg);
 	}
+}
+
+static DBusHandlerResult
+base_get_supported_key_storage(DBusConnection *conn, DBusMessage *msg,
+			       struct cm_context *ctx)
+{
+	return base_get_supported_key_and_cert_storage(conn, msg, ctx);
+}
+
+static DBusHandlerResult
+base_get_supported_cert_storage(DBusConnection *conn, DBusMessage *msg,
+				struct cm_context *ctx)
+{
+	return base_get_supported_key_and_cert_storage(conn, msg, ctx);
 }
 
 static DBusHandlerResult
@@ -2261,447 +2203,6 @@ request_resubmit(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
-static char *
-ancestor_of_base_introspect(struct cm_context *ctx, const char *path)
-{
-	const char *p;
-	int i;
-	p = CM_DBUS_BASE_PATH + strlen(path);
-	p += strspn(p, "/");
-	i = strcspn(p, "/");
-	return talloc_asprintf(ctx, " <node name=\"%.*s\"/>\n", i, p);
-}
-
-static char *
-ancestor_of_ca_introspect(struct cm_context *ctx, const char *path)
-{
-	const char *p;
-	int i;
-	p = CM_DBUS_CA_PATH + strlen(path);
-	p += strspn(p, "/");
-	i = strcspn(p, "/");
-	return talloc_asprintf(ctx, " <node name=\"%.*s\"/>\n", i, p);
-}
-
-static char *
-ancestor_of_request_introspect(struct cm_context *ctx, const char *path)
-{
-	const char *p;
-	int i;
-	p = CM_DBUS_REQUEST_PATH + strlen(path);
-	p += strspn(p, "/");
-	i = strcspn(p, "/");
-	return talloc_asprintf(ctx, " <node name=\"%.*s\"/>\n", i, p);
-}
-
-static char *
-request_introspect(struct cm_context *ctx, const char *path)
-{
-	return talloc_asprintf(ctx, "%s",
-			       " <interface name=\""
-			       CM_DBUS_REQUEST_INTERFACE
-			       "\">\n"
-			       "  <method name=\"get_nickname\">\n"
-			       "   <arg name=\"name\" type=\"s\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"get_autorenew\">\n"
-			       "   <arg name=\"enabled\" type=\"b\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"get_cert_data\">\n"
-			       "   <arg name=\"pem\" type=\"s\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"get_cert_info\">\n"
-			       "   <arg name=\"issuer\" type=\"s\" direction=\"out\"/>\n"
-			       "   <arg name=\"serial\" type=\"s\" direction=\"out\"/>\n"
-			       "   <arg name=\"subject\" type=\"s\" direction=\"out\"/>\n"
-			       "   <arg name=\"not_after\" type=\"x\" direction=\"out\"/>\n"
-			       "   <arg name=\"email\" type=\"as\" direction=\"out\"/>\n"
-			       "   <arg name=\"dns\" type=\"as\" direction=\"out\"/>\n"
-			       "   <arg name=\"principal_names\" type=\"as\" direction=\"out\"/>\n"
-			       "   <arg name=\"key_usage\" type=\"x\" direction=\"out\"/>\n"
-			       "   <arg name=\"extended_key_usage\" type=\"as\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"get_cert_last_checked\">\n"
-			       "   <arg name=\"date\" type=\"x\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"get_cert_storage_info\">\n"
-			       "   <arg name=\"type\" type=\"s\" direction=\"out\"/>\n"
-			       "   <arg name=\"location_or_nickname\" type=\"s\" direction=\"out\"/>\n"
-			       "   <arg name=\"nss_token\" type=\"s\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"get_csr_data\">\n"
-			       "   <arg name=\"pem\" type=\"s\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"get_csr_info\">\n"
-			       "   <arg name=\"subject\" type=\"s\" direction=\"out\"/>\n"
-			       "   <arg name=\"email\" type=\"as\" direction=\"out\"/>\n"
-			       "   <arg name=\"dns\" type=\"as\" direction=\"out\"/>\n"
-			       "   <arg name=\"principal_names\" type=\"as\" direction=\"out\"/>\n"
-			       "   <arg name=\"key_usage\" type=\"x\" direction=\"out\"/>\n"
-			       "   <arg name=\"extended_key_usage\" type=\"as\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"get_key_storage_info\">\n"
-			       "   <arg name=\"type\" type=\"s\" direction=\"out\"/>\n"
-			       "   <arg name=\"location_or_nickname\" type=\"s\" direction=\"out\"/>\n"
-			       "   <arg name=\"nss_token\" type=\"s\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"get_key_type_and_size\">\n"
-			       "   <arg name=\"type\" type=\"s\" direction=\"out\"/>\n"
-			       "   <arg name=\"size\" type=\"x\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"get_monitoring\">\n"
-			       "   <arg name=\"enabled\" type=\"b\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"get_notification_info\">\n"
-			       "   <arg name=\"method\" type=\"s\" direction=\"out\"/>\n"
-			       "   <arg name=\"destination\" type=\"s\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"get_status\">\n"
-			       "   <arg name=\"state\" type=\"s\" direction=\"out\"/>\n"
-			       "   <arg name=\"blocked\" type=\"b\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"get_ca\">\n"
-			       "   <arg name=\"name\" type=\"s\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"get_submitted_cookie\">\n"
-			       "   <arg name=\"cookie\" type=\"s\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"get_ca_error\">\n"
-			       "   <arg name=\"text\" type=\"s\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"get_submitted_date\">\n"
-			       "   <arg name=\"date\" type=\"x\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"modify\">\n"
-			       "   <arg name=\"updates\" type=\"a{sv}\" direction=\"in\"/>\n"
-			       "   <arg name=\"status\" type=\"b\" direction=\"out\"/>\n"
-			       "   <arg name=\"path\" type=\"o\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"resubmit\">\n"
-			       "   <arg name=\"working\" type=\"b\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       " </interface>\n");
-}
-
-static char *
-ca_introspect(struct cm_context *ctx, const char *path)
-{
-	return talloc_asprintf(ctx, "%s",
-			       " <interface name=\""
-			       CM_DBUS_CA_INTERFACE
-			       "\">\n"
-			       "  <method name=\"get_nickname\">\n"
-			       "   <arg name=\"name\" type=\"s\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"get_is_default\">\n"
-			       "   <arg name=\"is\" type=\"b\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"get_type\">\n"
-			       "   <arg name=\"type\" type=\"s\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"get_serial\">\n"
-			       "   <arg name=\"serial\" type=\"s\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"get_location\">\n"
-			       "   <arg name=\"path\" type=\"s\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"get_issuer_names\">\n"
-			       "   <arg name=\"names\" type=\"as\" direction=\"out\"/>\n"
-			       "  </method>\n"
-#if 0
-			       "  <method name=\"modify\">\n"
-			       "  </method>\n"
-#endif
-			       " </interface>\n");
-}
-
-static char *
-base_introspect(struct cm_context *ctx, const char *path)
-{
-	char *reqs, *cas, *ret;
-	reqs = is_ancestor_of_requests(ctx, path,
-				       DBUS_INTERFACE_INTROSPECTABLE,
-				       "Introspect") ?
-	       ancestor_of_request_introspect(ctx, path) : NULL;
-	cas = is_ancestor_of_cas(ctx, path,
-				 DBUS_INTERFACE_INTROSPECTABLE,
-				 "Introspect") ?
-	      ancestor_of_ca_introspect(ctx, path) : NULL;
-	ret = talloc_asprintf(ctx, "%s%s%s", reqs ? reqs : "", cas ? cas : "",
-			       " <interface name=\""
-			       CM_DBUS_BASE_INTERFACE
-			       "\">\n"
-			       "  <method name=\"add_known_ca\">\n"
-			       "   <arg name=\"nickname\" type=\"s\" direction=\"in\"/>\n"
-			       "   <arg name=\"command\" type=\"s\" direction=\"in\"/>\n"
-			       "   <arg name=\"known_names\" type=\"as\" direction=\"in\"/>\n"
-			       "   <arg name=\"status\" type=\"b\" direction=\"out\"/>\n"
-			       "   <arg name=\"name\" type=\"o\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"add_request\">\n"
-			       "   <arg name=\"template\" type=\"a{sv}\" direction=\"in\"/>\n"
-			       "   <arg name=\"status\" type=\"b\" direction=\"out\"/>\n"
-			       "   <arg name=\"name\" type=\"o\" direction=\"out\"/>\n"
-			       "  </method>\n"
-#if 0
-			       "  <method name=\"get_defaults\">\n"
-			       "   <arg name=\"defaults\" type=\"o\" direction=\"out\"/>\n"
-			       "  </method>\n"
-#endif
-			       "  <method name=\"find_ca_by_nickname\">\n"
-			       "   <arg name=\"nickname\" type=\"s\" direction=\"in\"/>\n"
-			       "   <arg name=\"request\" type=\"o\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"find_request_by_nickname\">\n"
-			       "   <arg name=\"nickname\" type=\"s\" direction=\"in\"/>\n"
-			       "   <arg name=\"request\" type=\"o\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"get_known_cas\">\n"
-			       "   <arg name=\"ca_list\" type=\"ao\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"get_requests\">\n"
-			       "   <arg name=\"req_list\" type=\"ao\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"get_supported_key_types\">\n"
-			       "   <arg name=\"key_type_list\" type=\"as\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"get_supported_key_storage\">\n"
-			       "   <arg name=\"key_storage_list\" type=\"as\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"get_supported_cert_storage\">\n"
-			       "   <arg name=\"cert_storage_list\" type=\"as\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"remove_known_ca\">\n"
-			       "   <arg name=\"ca\" type=\"o\" direction=\"in\"/>\n"
-			       "   <arg name=\"status\" type=\"b\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       "  <method name=\"remove_request\">\n"
-			       "   <arg name=\"request_id\" type=\"o\" direction=\"in\"/>\n"
-			       "   <arg name=\"status\" type=\"b\" direction=\"out\"/>\n"
-			       "  </method>\n"
-			       " </interface>\n");
-	talloc_free(reqs);
-	talloc_free(cas);
-	return ret;
-}
-
-static char *
-request_group_introspect(struct cm_context *ctx, const char *path)
-{
-	int i;
-	char *p = NULL, *q;
-	struct cm_store_entry *entry;
-	i = cm_get_n_entries(ctx) - 1;
-	while (i >= 0) {
-		entry = cm_get_entry_by_index(ctx, i);
-		if (entry != NULL) {
-			q = talloc_asprintf(ctx, " <node name=\"%s\"/>\n%s",
-					    entry->cm_busname, p ? p : "");
-			talloc_free(p);
-			p = q;
-		}
-		i--;
-	}
-	return p ? p : talloc_strdup(ctx, "");
-}
-
-static char *
-ca_group_introspect(struct cm_context *ctx, const char *path)
-{
-	int i;
-	char *p = NULL, *q;
-	struct cm_store_ca *ca;
-	i = cm_get_n_cas(ctx) - 1;
-	while (i >= 0) {
-		ca = cm_get_ca_by_index(ctx, i);
-		if (ca != NULL) {
-			q = talloc_asprintf(ctx, " <node name=\"%s\"/>\n%s",
-					    ca->cm_busname, p ? p : "");
-			talloc_free(p);
-			p = q;
-		}
-		i--;
-	}
-	return p ? p : talloc_strdup(ctx, "");
-}
-
-static DBusHandlerResult
-generic_introspect(DBusConnection *conn, DBusMessage *msg,
-		   struct cm_context *ctx)
-{
-	DBusHandlerResult ret;
-	DBusMessage *rep;
-	const char *path, *interface, *method;
-	char *data = NULL, *xml;
-	path = dbus_message_get_path(msg);
-	interface = dbus_message_get_interface(msg);
-	method = dbus_message_get_member(msg);
-	ret = DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-	if (is_base(ctx, path, interface, method)) {
-		data = base_introspect(ctx, path);
-	} else
-	if (is_ca_group(ctx, path, interface, method)) {
-		data = ca_group_introspect(ctx, path);
-	} else
-	if (is_ca(ctx, path, interface, method)) {
-		data = ca_introspect(ctx, path);
-	} else
-	if (is_request_group(ctx, path, interface, method)) {
-		data = request_group_introspect(ctx, path);
-	} else
-	if (is_request(ctx, path, interface, method)) {
-		data = request_introspect(ctx, path);
-	} else
-	if (is_ancestor_of_base(ctx, path, interface, method)) {
-		data = ancestor_of_base_introspect(ctx, path);
-	} else
-	if (is_ancestor_of_cas(ctx, path, interface, method)) {
-		data = ancestor_of_ca_introspect(ctx, path);
-	} else
-	if (is_ancestor_of_requests(ctx, path, interface, method)) {
-		data = ancestor_of_request_introspect(ctx, path);
-	}
-	if (data != NULL) {
-		xml = talloc_asprintf(ctx,
-				      "%s\n<node name=\"%s\">\n%s</node>\n",
-				      DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE,
-				      path,
-				      data);
-		if (xml != NULL) {
-			rep = dbus_message_new_method_return(msg);
-			if (rep != NULL) {
-				if (cm_tdbusm_set_s(rep, xml) == 0) {
-					dbus_connection_send(conn, rep, NULL);
-					ret = DBUS_HANDLER_RESULT_HANDLED;
-				}
-				dbus_message_unref(rep);
-			}
-			talloc_free(xml);
-		}
-		talloc_free(data);
-	}
-	return ret;
-}
-
-static struct {
-	dbus_bool_t (*implements)(struct cm_context *ctx, const char *path,
-				  const char *interface, const char *member);
-	const char *interface;
-	const char *member;
-	DBusHandlerResult (*handle)(DBusConnection *conn, DBusMessage *msg,
-			   struct cm_context *ctx);
-} cm_tdbush_methods[] = {
-	{&is_base, CM_DBUS_BASE_INTERFACE, "add_known_ca",
-	 base_add_known_ca},
-	{&is_base, CM_DBUS_BASE_INTERFACE, "add_request",
-	 base_add_request},
-	{&is_base, CM_DBUS_BASE_INTERFACE, "find_ca_by_nickname",
-	 base_find_ca},
-	{&is_base, CM_DBUS_BASE_INTERFACE, "find_request_by_nickname",
-	 base_find_request},
-	{&is_base, CM_DBUS_BASE_INTERFACE, "get_defaults",
-	 base_get_defaults},
-	{&is_base, CM_DBUS_BASE_INTERFACE, "get_known_cas",
-	 base_get_known_cas},
-	{&is_base, CM_DBUS_BASE_INTERFACE, "get_requests",
-	 base_get_requests},
-	{&is_base, CM_DBUS_BASE_INTERFACE, "get_supported_key_types",
-	 base_get_supported_key_types},
-	{&is_base, CM_DBUS_BASE_INTERFACE, "get_supported_key_storage",
-	 base_get_supported_key_and_cert_storage},
-	{&is_base, CM_DBUS_BASE_INTERFACE, "get_supported_cert_storage",
-	 base_get_supported_key_and_cert_storage},
-	{&is_base, CM_DBUS_BASE_INTERFACE, "remove_known_ca",
-	 base_remove_known_ca},
-	{&is_base, CM_DBUS_BASE_INTERFACE, "remove_request",
-	 base_remove_request},
-	{&is_ca, CM_DBUS_CA_INTERFACE, "get_nickname", ca_get_nickname},
-	{&is_ca, CM_DBUS_CA_INTERFACE, "get_is_default", ca_get_is_default},
-	{&is_ca, CM_DBUS_CA_INTERFACE, "get_type", ca_get_type},
-	{&is_ca, CM_DBUS_CA_INTERFACE, "get_serial", ca_get_serial},
-	{&is_ca, CM_DBUS_CA_INTERFACE, "get_location", ca_get_location},
-	{&is_ca, CM_DBUS_CA_INTERFACE, "get_issuer_names", ca_get_issuer_names},
-	{&is_ca, CM_DBUS_CA_INTERFACE, "modify", ca_modify},
-	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_nickname",
-	 request_get_nickname},
-	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_autorenew",
-	 request_get_autorenew},
-	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_key_pin",
-	 request_get_key_pin},
-	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_key_pin_file",
-	 request_get_key_pin_file},
-	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_cert_data",
-	 request_get_cert_data},
-	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_cert_info",
-	 request_get_cert_info},
-	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_cert_last_checked",
-	 request_get_cert_last_checked},
-	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_cert_storage_info",
-	 request_get_cert_storage_info},
-	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_csr_data",
-	 request_get_csr_data},
-	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_csr_info",
-	 request_get_csr_info},
-	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_key_storage_info",
-	 request_get_key_storage_info},
-	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_key_type_and_size",
-	 request_get_key_type_and_size},
-	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_monitoring",
-	 request_get_monitoring},
-	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_notification_info",
-	 request_get_notification_info},
-	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_status",
-	 request_get_status},
-	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_ca",
-	 request_get_ca},
-	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_ca_error",
-	 request_get_ca_error},
-	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_submitted_cookie",
-	 request_get_submitted_cookie},
-	{&is_request, CM_DBUS_REQUEST_INTERFACE, "get_submitted_date",
-	 request_get_submitted_date},
-	{&is_request, CM_DBUS_REQUEST_INTERFACE, "modify",
-	 request_modify},
-	{&is_request, CM_DBUS_REQUEST_INTERFACE, "resubmit",
-	 request_resubmit},
-	{NULL, DBUS_INTERFACE_INTROSPECTABLE, "Introspect",
-	 generic_introspect},
-};
-
-DBusHandlerResult
-cm_tdbush_handle(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
-{
-	const char *path, *interface, *member;
-	unsigned int i;
-	DBusHandlerResult handled;
-	path = dbus_message_get_path(msg);
-	interface = dbus_message_get_interface(msg);
-	member = dbus_message_get_member(msg);
-	for (i = 0;
-	     i < sizeof(cm_tdbush_methods) / sizeof(cm_tdbush_methods[i]);
-	     i++) {
-		if (strcmp(member, cm_tdbush_methods[i].member) != 0) {
-			continue;
-		}
-		if (strcmp(interface, cm_tdbush_methods[i].interface) != 0) {
-			continue;
-		}
-		if ((cm_tdbush_methods[i].implements != NULL) &&
-		    (!(*(cm_tdbush_methods[i].implements))(ctx, path,
-							   interface,
-							   member))) {
-			continue;
-		}
-		if (cm_tdbush_methods[i].handle == NULL) {
-			continue;
-		}
-		handled = (*(cm_tdbush_methods[i].handle))(conn, msg, ctx);
-		cm_reset_timeout(ctx);
-		return handled;
-	}
-	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-}
-
 enum cm_tdbush_type {
 	cm_tdbush_type_none,
 	cm_tdbush_type_parent_of_base,
@@ -2999,7 +2500,7 @@ cm_tdbush_introspect_property(void *parent,
 		bus_type = "b";
 		break;
 	case cm_tdbush_property_number:
-		bus_type = "i";
+		bus_type = "x";
 		break;
 	}
 	switch (prop->cm_access) {
@@ -3264,19 +2765,442 @@ cm_tdbush_iface_properties(void)
 	return ret;
 }
 
+
+static struct cm_tdbush_interface *
+cm_tdbush_iface_request(void)
+{
+	static struct cm_tdbush_interface *ret;
+	if (ret == NULL) {
+		ret = make_interface(CM_DBUS_REQUEST_INTERFACE,
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_nickname",
+							             request_get_nickname,
+								     make_method_arg("nickname",
+										     "s",
+										     cm_tdbush_method_arg_out,
+										     NULL),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_autorenew",
+							             request_get_autorenew,
+								     make_method_arg("enabled",
+										     "b",
+										     cm_tdbush_method_arg_out,
+										     NULL),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_cert_data",
+							             request_get_cert_data,
+								     make_method_arg("pem",
+										     "s",
+										     cm_tdbush_method_arg_out,
+										     NULL),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_cert_info",
+							             request_get_cert_info,
+								     make_method_arg("issuer",
+										     "s",
+										     cm_tdbush_method_arg_out,
+								     make_method_arg("serial_hex",
+										     "s",
+										     cm_tdbush_method_arg_out,
+								     make_method_arg("subject",
+										     "s",
+										     cm_tdbush_method_arg_out,
+								     make_method_arg("not_after",
+										     "x",
+										     cm_tdbush_method_arg_out,
+								     make_method_arg("email",
+										     "as",
+										     cm_tdbush_method_arg_out,
+								     make_method_arg("dns",
+										     "as",
+										     cm_tdbush_method_arg_out,
+								     make_method_arg("principal_names",
+										     "as",
+										     cm_tdbush_method_arg_out,
+								     make_method_arg("key_usage",
+										     "x",
+										     cm_tdbush_method_arg_out,
+								     make_method_arg("extended_key_usage",
+										     "as",
+										     cm_tdbush_method_arg_out,
+										     NULL))))))))),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_cert_last_checked",
+							             request_get_cert_last_checked,
+								     make_method_arg("date",
+										     "x",
+										     cm_tdbush_method_arg_out,
+										     NULL),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_cert_storage_info",
+							             request_get_cert_storage_info,
+								     make_method_arg("type",
+										     "s",
+										     cm_tdbush_method_arg_out,
+								     make_method_arg("location_or_nickname",
+										     "s",
+										     cm_tdbush_method_arg_out,
+								     make_method_arg("nss_token",
+										     "s",
+										     cm_tdbush_method_arg_out,
+										     NULL))),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_csr_data",
+							             request_get_csr_data,
+								     make_method_arg("pem",
+										     "s",
+										     cm_tdbush_method_arg_out,
+										     NULL),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_csr_info",
+							             request_get_csr_info,
+								     make_method_arg("subject",
+										     "s",
+										     cm_tdbush_method_arg_out,
+								     make_method_arg("email",
+										     "as",
+										     cm_tdbush_method_arg_out,
+								     make_method_arg("dns",
+										     "as",
+										     cm_tdbush_method_arg_out,
+								     make_method_arg("principal_names",
+										     "as",
+										     cm_tdbush_method_arg_out,
+								     make_method_arg("key_usage",
+										     "x",
+										     cm_tdbush_method_arg_out,
+								     make_method_arg("extended_key_usage",
+										     "as",
+										     cm_tdbush_method_arg_out,
+										     NULL)))))),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_key_storage_info",
+							             request_get_key_storage_info,
+								     make_method_arg("type",
+										     "s",
+										     cm_tdbush_method_arg_out,
+								     make_method_arg("location_or_nickname",
+										     "s",
+										     cm_tdbush_method_arg_out,
+								     make_method_arg("nss_token",
+										     "s",
+										     cm_tdbush_method_arg_out,
+										     NULL))),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_key_type_and_size",
+							             request_get_key_type_and_size,
+								     make_method_arg("type",
+										     "s",
+										     cm_tdbush_method_arg_out,
+								     make_method_arg("size",
+										     "x",
+										     cm_tdbush_method_arg_out,
+										     NULL)),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_monitoring",
+							             request_get_monitoring,
+								     make_method_arg("enabled",
+										     "b",
+										     cm_tdbush_method_arg_out,
+										     NULL),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_notification_info",
+							             request_get_notification_info,
+								     make_method_arg("method",
+										     "s",
+										     cm_tdbush_method_arg_out,
+								     make_method_arg("destination",
+										     "s",
+										     cm_tdbush_method_arg_out,
+										     NULL)),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_status",
+							             request_get_status,
+								     make_method_arg("state",
+										     "s",
+										     cm_tdbush_method_arg_out,
+								     make_method_arg("blocked",
+										     "b",
+										     cm_tdbush_method_arg_out,
+										     NULL)),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_ca",
+							             request_get_ca,
+								     make_method_arg("name",
+										     "o",
+										     cm_tdbush_method_arg_out,
+										     NULL),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_submitted_cookie",
+							             request_get_submitted_cookie,
+								     make_method_arg("cookie",
+										     "s",
+										     cm_tdbush_method_arg_out,
+										     NULL),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_ca_error",
+							             request_get_ca_error,
+								     make_method_arg("text",
+										     "s",
+										     cm_tdbush_method_arg_out,
+										     NULL),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_submitted_date",
+							             request_get_submitted_date,
+								     make_method_arg("date",
+										     "x",
+										     cm_tdbush_method_arg_out,
+										     NULL),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("modify",
+							             request_modify,
+								     make_method_arg("updates",
+										     "a{sv}",
+										     cm_tdbush_method_arg_in,
+								     make_method_arg("status",
+										     "b",
+										     cm_tdbush_method_arg_out,
+								     make_method_arg("path",
+										     "o",
+										     cm_tdbush_method_arg_out,
+										     NULL))),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("resubmit",
+							             request_resubmit,
+								     make_method_arg("status",
+										     "b",
+										     cm_tdbush_method_arg_out,
+										     NULL),
+								     NULL),
+							 NULL))))))))))))))))))));
+	}
+	return ret;
+}
+
+static struct cm_tdbush_interface *
+cm_tdbush_iface_ca(void)
+{
+	static struct cm_tdbush_interface *ret;
+	if (ret == NULL) {
+		ret = make_interface(CM_DBUS_CA_INTERFACE,
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_nickname",
+							             ca_get_nickname,
+								     make_method_arg("nickname",
+										     "s",
+										     cm_tdbush_method_arg_out,
+										     NULL),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_is_default",
+							             ca_get_is_default,
+								     make_method_arg("default",
+										     "b",
+										     cm_tdbush_method_arg_out,
+										     NULL),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_type",
+							             ca_get_type,
+								     make_method_arg("type",
+										     "s",
+										     cm_tdbush_method_arg_out,
+										     NULL),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_serial",
+							             ca_get_serial,
+								     make_method_arg("serial_hex",
+										     "s",
+										     cm_tdbush_method_arg_out,
+										     NULL),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_location",
+							             ca_get_location,
+								     make_method_arg("location",
+										     "s",
+										     cm_tdbush_method_arg_out,
+										     NULL),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_location",
+							             ca_get_issuer_names,
+								     make_method_arg("names",
+										     "as",
+										     cm_tdbush_method_arg_out,
+										     NULL),
+								     NULL),
+				     NULL)))))));
+	}
+	return ret;
+}
+
+static struct cm_tdbush_interface *
+cm_tdbush_iface_base(void)
+{
+	static struct cm_tdbush_interface *ret;
+	if (ret == NULL) {
+		ret = make_interface(CM_DBUS_CA_INTERFACE,
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("add_known_ca",
+							             base_add_known_ca,
+								     make_method_arg("nickname",
+										     "s",
+										     cm_tdbush_method_arg_in,
+								     make_method_arg("command",
+										     "s",
+										     cm_tdbush_method_arg_in,
+								     make_method_arg("known_names",
+										     "as",
+										     cm_tdbush_method_arg_in,
+								     make_method_arg("status",
+										     "b",
+										     cm_tdbush_method_arg_out,
+								     make_method_arg("name",
+										     "o",
+										     cm_tdbush_method_arg_out,
+										     NULL))))),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("add_request",
+							             base_add_request,
+								     make_method_arg("template",
+										     "a{sv}",
+										     cm_tdbush_method_arg_in,
+								     make_method_arg("status",
+										     "b",
+										     cm_tdbush_method_arg_out,
+								     make_method_arg("name",
+										     "o",
+										     cm_tdbush_method_arg_out,
+										     NULL))),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("find_ca_by_nickname",
+							             base_find_ca_by_nickname,
+								     make_method_arg("nickname",
+										     "s",
+										     cm_tdbush_method_arg_in,
+								     make_method_arg("ca",
+										     "o",
+										     cm_tdbush_method_arg_out,
+										     NULL)),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("find_request_by_nickname",
+							             base_find_request_by_nickname,
+								     make_method_arg("nickname",
+										     "s",
+										     cm_tdbush_method_arg_in,
+								     make_method_arg("request",
+										     "o",
+										     cm_tdbush_method_arg_out,
+										     NULL)),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_known_cas",
+							             base_get_known_cas,
+								     make_method_arg("cas",
+										     "ao",
+										     cm_tdbush_method_arg_out,
+										     NULL),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_requests",
+							             base_get_requests,
+								     make_method_arg("cas",
+										     "ao",
+										     cm_tdbush_method_arg_out,
+										     NULL),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_supported_key_types",
+							             base_get_supported_key_types,
+								     make_method_arg("key_type_list",
+										     "as",
+										     cm_tdbush_method_arg_out,
+										     NULL),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_supported_key_storage",
+							             base_get_supported_key_storage,
+								     make_method_arg("storage_type_list",
+										     "as",
+										     cm_tdbush_method_arg_out,
+										     NULL),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_supported_cert_storage",
+							             base_get_supported_cert_storage,
+								     make_method_arg("storage_type_list",
+										     "as",
+										     cm_tdbush_method_arg_out,
+										     NULL),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("remove_known_ca",
+							             base_remove_known_ca,
+								     make_method_arg("ca",
+										     "o",
+										     cm_tdbush_method_arg_in,
+								     make_method_arg("status",
+										     "b",
+										     cm_tdbush_method_arg_out,
+										     NULL)),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("remove_request",
+							             base_remove_request,
+								     make_method_arg("request",
+										     "o",
+										     cm_tdbush_method_arg_in,
+								     make_method_arg("status",
+										     "b",
+										     cm_tdbush_method_arg_out,
+										     NULL)),
+								     NULL),
+				     NULL))))))))))));
+	}
+	return ret;
+}
+
 struct cm_tdbush_interface_map
 cm_tdbush_type_map[] = {
 	{cm_tdbush_type_parent_of_base, &cm_tdbush_iface_introspection},
 	{cm_tdbush_type_base, &cm_tdbush_iface_introspection},
+	{cm_tdbush_type_base, &cm_tdbush_iface_properties},
+	{cm_tdbush_type_base, &cm_tdbush_iface_base},
 	{cm_tdbush_type_parent_of_cas, &cm_tdbush_iface_introspection},
 	{cm_tdbush_type_group_of_cas, &cm_tdbush_iface_introspection},
 	{cm_tdbush_type_ca, &cm_tdbush_iface_introspection},
 	{cm_tdbush_type_ca, &cm_tdbush_iface_properties},
+	{cm_tdbush_type_ca, &cm_tdbush_iface_ca},
 	{cm_tdbush_type_parent_of_requests, &cm_tdbush_iface_introspection},
 	{cm_tdbush_type_group_of_requests, &cm_tdbush_iface_introspection},
 	{cm_tdbush_type_request, &cm_tdbush_iface_introspection},
 	{cm_tdbush_type_request, &cm_tdbush_iface_properties},
+	{cm_tdbush_type_request, &cm_tdbush_iface_request},
 };
+
 static struct cm_tdbush_interface_map *
 cm_tdbush_type_map_get_n(unsigned int i)
 {
