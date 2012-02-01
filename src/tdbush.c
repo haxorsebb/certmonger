@@ -2253,6 +2253,21 @@ struct cm_tdbush_property {
 		cm_tdbush_property_write,
 		cm_tdbush_property_readwrite
 	} cm_access;
+	enum cm_tdbush_property_local_type {
+		cm_tdbush_property_special,
+		cm_tdbush_property_charp,
+		cm_tdbush_property_charpp,
+		cm_tdbush_property_time_t,
+	} cm_local_type;
+	const char (*cm_read_string)(void *structure, const char *name);
+	dbus_bool_t (*cm_read_boolean)(void *structure, const char *name);
+	long (*cm_read_number)(void *structure, const char *name);
+	void (*cm_write_string)(void *structure, const char *name,
+			     const char *new_value);
+	void (*cm_write_boolean)(void *structure, const char *name,
+				 dbus_bool_t new_value);
+	void (*cm_write_number)(void *structure, const char *name,
+				long new_value);
 };
 
 struct cm_tdbush_interface {
@@ -2280,7 +2295,7 @@ static struct cm_tdbush_interface_map *cm_tdbush_object_type_map_get_n(unsigned 
 
 static struct cm_tdbush_method_arg *
 make_method_arg(const char *name,
-	        const char *bus_type,
+		const char *bus_type,
 		enum cm_tdbush_method_arg_direction direction,
 		struct cm_tdbush_method_arg *next)
 {
@@ -2314,11 +2329,11 @@ make_method_annotation(const char *name,
 
 static struct cm_tdbush_method *
 make_method(const char *name,
-            DBusHandlerResult (*fn)(DBusConnection *conn,
-			            DBusMessage *msg,
-			            struct cm_context *ctx),
-            struct cm_tdbush_method_arg *args,
-            struct cm_tdbush_method_annotation *annotations)
+	    DBusHandlerResult (*fn)(DBusConnection *conn,
+				    DBusMessage *msg,
+				    struct cm_context *ctx),
+	    struct cm_tdbush_method_arg *args,
+	    struct cm_tdbush_method_annotation *annotations)
 {
 	struct cm_tdbush_method *ret;
 	ret = malloc(sizeof(*ret));
@@ -2334,8 +2349,8 @@ make_method(const char *name,
 
 static struct cm_tdbush_signal_arg *
 make_signal_arg(const char *name,
-	        const char *bus_type,
-	        struct cm_tdbush_signal_arg *next)
+		const char *bus_type,
+		struct cm_tdbush_signal_arg *next)
 {
 	struct cm_tdbush_signal_arg *ret;
 	ret = malloc(sizeof(*ret));
@@ -2364,7 +2379,17 @@ make_signal(const char *name, struct cm_tdbush_signal_arg *args)
 static struct cm_tdbush_property *
 make_property(const char *name,
 	      enum cm_tdbush_property_bus_type bus_type,
-	      enum cm_tdbush_property_access acces)
+	      enum cm_tdbush_property_access acces,
+	      enum cm_tdbush_property_local_type local_type,
+	      const char (*read_string)(void *structure, const char *name),
+	      dbus_bool_t (*read_boolean)(void *structure, const char *name),
+	      long (*read_number)(void *structure, const char *name),
+	      void (*write_string)(void *structure, const char *name,
+				   const char *new_value),
+	      void (*write_boolean)(void *structure, const char *name,
+				    dbus_bool_t),
+	      void (*write_number)(void *structure, const char *name,
+				   long new_value))
 {
 	struct cm_tdbush_property *ret;
 	ret = malloc(sizeof(*ret));
@@ -2374,6 +2399,13 @@ make_property(const char *name,
 	ret->cm_name = name;
 	ret->cm_bus_type = bus_type;
 	ret->cm_access = acces;
+	ret->cm_local_type = local_type;
+	ret->cm_read_string = read_string;
+	ret->cm_read_number = read_number;
+	ret->cm_read_boolean = read_boolean;
+	ret->cm_write_string = write_string;
+	ret->cm_write_number = write_number;
+	ret->cm_write_boolean = write_boolean;
 	return ret;
 }
 
@@ -2701,7 +2733,7 @@ cm_tdbush_iface_introspection(void)
 		ret = make_interface(DBUS_INTERFACE_INTROSPECTABLE,
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("Introspect",
-							             cm_tdbush_introspect,
+								     cm_tdbush_introspect,
 								     make_method_arg("xml_data",
 										     "s",
 										     cm_tdbush_method_arg_out,
@@ -2718,7 +2750,7 @@ cm_tdbush_iface_properties(void)
 	static struct cm_tdbush_interface *ret;
 	if (ret == NULL) {
 		ret = make_interface(DBUS_INTERFACE_PROPERTIES,
-			             make_interface_item(cm_tdbush_interface_method,
+				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("Get",
 								     cm_tdbush_property_get,
 								     make_method_arg("interface_name",
@@ -2771,7 +2803,7 @@ cm_tdbush_iface_request(void)
 		ret = make_interface(CM_DBUS_REQUEST_INTERFACE,
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_nickname",
-							             request_get_nickname,
+								     request_get_nickname,
 								     make_method_arg("nickname",
 										     "s",
 										     cm_tdbush_method_arg_out,
@@ -2779,7 +2811,7 @@ cm_tdbush_iface_request(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_autorenew",
-							             request_get_autorenew,
+								     request_get_autorenew,
 								     make_method_arg("enabled",
 										     "b",
 										     cm_tdbush_method_arg_out,
@@ -2787,7 +2819,7 @@ cm_tdbush_iface_request(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_cert_data",
-							             request_get_cert_data,
+								     request_get_cert_data,
 								     make_method_arg("pem",
 										     "s",
 										     cm_tdbush_method_arg_out,
@@ -2795,7 +2827,7 @@ cm_tdbush_iface_request(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_cert_info",
-							             request_get_cert_info,
+								     request_get_cert_info,
 								     make_method_arg("issuer",
 										     "s",
 										     cm_tdbush_method_arg_out,
@@ -2827,7 +2859,7 @@ cm_tdbush_iface_request(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_cert_last_checked",
-							             request_get_cert_last_checked,
+								     request_get_cert_last_checked,
 								     make_method_arg("date",
 										     "x",
 										     cm_tdbush_method_arg_out,
@@ -2835,7 +2867,7 @@ cm_tdbush_iface_request(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_cert_storage_info",
-							             request_get_cert_storage_info,
+								     request_get_cert_storage_info,
 								     make_method_arg("type",
 										     "s",
 										     cm_tdbush_method_arg_out,
@@ -2849,7 +2881,7 @@ cm_tdbush_iface_request(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_csr_data",
-							             request_get_csr_data,
+								     request_get_csr_data,
 								     make_method_arg("pem",
 										     "s",
 										     cm_tdbush_method_arg_out,
@@ -2857,7 +2889,7 @@ cm_tdbush_iface_request(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_csr_info",
-							             request_get_csr_info,
+								     request_get_csr_info,
 								     make_method_arg("subject",
 										     "s",
 										     cm_tdbush_method_arg_out,
@@ -2880,7 +2912,7 @@ cm_tdbush_iface_request(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_key_storage_info",
-							             request_get_key_storage_info,
+								     request_get_key_storage_info,
 								     make_method_arg("type",
 										     "s",
 										     cm_tdbush_method_arg_out,
@@ -2894,7 +2926,7 @@ cm_tdbush_iface_request(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_key_type_and_size",
-							             request_get_key_type_and_size,
+								     request_get_key_type_and_size,
 								     make_method_arg("type",
 										     "s",
 										     cm_tdbush_method_arg_out,
@@ -2905,7 +2937,7 @@ cm_tdbush_iface_request(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_monitoring",
-							             request_get_monitoring,
+								     request_get_monitoring,
 								     make_method_arg("enabled",
 										     "b",
 										     cm_tdbush_method_arg_out,
@@ -2913,7 +2945,7 @@ cm_tdbush_iface_request(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_notification_info",
-							             request_get_notification_info,
+								     request_get_notification_info,
 								     make_method_arg("method",
 										     "s",
 										     cm_tdbush_method_arg_out,
@@ -2924,7 +2956,7 @@ cm_tdbush_iface_request(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_status",
-							             request_get_status,
+								     request_get_status,
 								     make_method_arg("state",
 										     "s",
 										     cm_tdbush_method_arg_out,
@@ -2935,7 +2967,7 @@ cm_tdbush_iface_request(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_ca",
-							             request_get_ca,
+								     request_get_ca,
 								     make_method_arg("name",
 										     "o",
 										     cm_tdbush_method_arg_out,
@@ -2943,7 +2975,7 @@ cm_tdbush_iface_request(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_submitted_cookie",
-							             request_get_submitted_cookie,
+								     request_get_submitted_cookie,
 								     make_method_arg("cookie",
 										     "s",
 										     cm_tdbush_method_arg_out,
@@ -2951,7 +2983,7 @@ cm_tdbush_iface_request(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_ca_error",
-							             request_get_ca_error,
+								     request_get_ca_error,
 								     make_method_arg("text",
 										     "s",
 										     cm_tdbush_method_arg_out,
@@ -2959,7 +2991,7 @@ cm_tdbush_iface_request(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_submitted_date",
-							             request_get_submitted_date,
+								     request_get_submitted_date,
 								     make_method_arg("date",
 										     "x",
 										     cm_tdbush_method_arg_out,
@@ -2967,7 +2999,7 @@ cm_tdbush_iface_request(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("modify",
-							             request_modify,
+								     request_modify,
 								     make_method_arg("updates",
 										     "a{sv}",
 										     cm_tdbush_method_arg_in,
@@ -2981,7 +3013,7 @@ cm_tdbush_iface_request(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("resubmit",
-							             request_resubmit,
+								     request_resubmit,
 								     make_method_arg("status",
 										     "b",
 										     cm_tdbush_method_arg_out,
@@ -3000,7 +3032,7 @@ cm_tdbush_iface_ca(void)
 		ret = make_interface(CM_DBUS_CA_INTERFACE,
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_nickname",
-							             ca_get_nickname,
+								     ca_get_nickname,
 								     make_method_arg("nickname",
 										     "s",
 										     cm_tdbush_method_arg_out,
@@ -3008,7 +3040,7 @@ cm_tdbush_iface_ca(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_is_default",
-							             ca_get_is_default,
+								     ca_get_is_default,
 								     make_method_arg("default",
 										     "b",
 										     cm_tdbush_method_arg_out,
@@ -3016,7 +3048,7 @@ cm_tdbush_iface_ca(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_type",
-							             ca_get_type,
+								     ca_get_type,
 								     make_method_arg("type",
 										     "s",
 										     cm_tdbush_method_arg_out,
@@ -3024,7 +3056,7 @@ cm_tdbush_iface_ca(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_serial",
-							             ca_get_serial,
+								     ca_get_serial,
 								     make_method_arg("serial_hex",
 										     "s",
 										     cm_tdbush_method_arg_out,
@@ -3032,7 +3064,7 @@ cm_tdbush_iface_ca(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_location",
-							             ca_get_location,
+								     ca_get_location,
 								     make_method_arg("location",
 										     "s",
 										     cm_tdbush_method_arg_out,
@@ -3040,7 +3072,7 @@ cm_tdbush_iface_ca(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_location",
-							             ca_get_issuer_names,
+								     ca_get_issuer_names,
 								     make_method_arg("names",
 										     "as",
 										     cm_tdbush_method_arg_out,
@@ -3059,7 +3091,7 @@ cm_tdbush_iface_base(void)
 		ret = make_interface(CM_DBUS_CA_INTERFACE,
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("add_known_ca",
-							             base_add_known_ca,
+								     base_add_known_ca,
 								     make_method_arg("nickname",
 										     "s",
 										     cm_tdbush_method_arg_in,
@@ -3079,7 +3111,7 @@ cm_tdbush_iface_base(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("add_request",
-							             base_add_request,
+								     base_add_request,
 								     make_method_arg("template",
 										     "a{sv}",
 										     cm_tdbush_method_arg_in,
@@ -3093,7 +3125,7 @@ cm_tdbush_iface_base(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("find_ca_by_nickname",
-							             base_find_ca_by_nickname,
+								     base_find_ca_by_nickname,
 								     make_method_arg("nickname",
 										     "s",
 										     cm_tdbush_method_arg_in,
@@ -3104,7 +3136,7 @@ cm_tdbush_iface_base(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("find_request_by_nickname",
-							             base_find_request_by_nickname,
+								     base_find_request_by_nickname,
 								     make_method_arg("nickname",
 										     "s",
 										     cm_tdbush_method_arg_in,
@@ -3115,7 +3147,7 @@ cm_tdbush_iface_base(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_known_cas",
-							             base_get_known_cas,
+								     base_get_known_cas,
 								     make_method_arg("cas",
 										     "ao",
 										     cm_tdbush_method_arg_out,
@@ -3123,7 +3155,7 @@ cm_tdbush_iface_base(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_requests",
-							             base_get_requests,
+								     base_get_requests,
 								     make_method_arg("cas",
 										     "ao",
 										     cm_tdbush_method_arg_out,
@@ -3131,7 +3163,7 @@ cm_tdbush_iface_base(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_supported_key_types",
-							             base_get_supported_key_types,
+								     base_get_supported_key_types,
 								     make_method_arg("key_type_list",
 										     "as",
 										     cm_tdbush_method_arg_out,
@@ -3139,7 +3171,7 @@ cm_tdbush_iface_base(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_supported_key_storage",
-							             base_get_supported_key_storage,
+								     base_get_supported_key_storage,
 								     make_method_arg("storage_type_list",
 										     "as",
 										     cm_tdbush_method_arg_out,
@@ -3147,7 +3179,7 @@ cm_tdbush_iface_base(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_supported_cert_storage",
-							             base_get_supported_cert_storage,
+								     base_get_supported_cert_storage,
 								     make_method_arg("storage_type_list",
 										     "as",
 										     cm_tdbush_method_arg_out,
@@ -3155,7 +3187,7 @@ cm_tdbush_iface_base(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("remove_known_ca",
-							             base_remove_known_ca,
+								     base_remove_known_ca,
 								     make_method_arg("ca",
 										     "o",
 										     cm_tdbush_method_arg_in,
@@ -3166,7 +3198,7 @@ cm_tdbush_iface_base(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("remove_request",
-							             base_remove_request,
+								     base_remove_request,
 								     make_method_arg("request",
 										     "o",
 										     cm_tdbush_method_arg_in,
