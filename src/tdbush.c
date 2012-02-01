@@ -2259,7 +2259,7 @@ struct cm_tdbush_property {
 		cm_tdbush_property_charpp,
 		cm_tdbush_property_time_t,
 	} cm_local_type;
-	const char (*cm_read_string)(void *structure, const char *name);
+	const char * (*cm_read_string)(void *structure, const char *name);
 	dbus_bool_t (*cm_read_boolean)(void *structure, const char *name);
 	long (*cm_read_number)(void *structure, const char *name);
 	void (*cm_write_string)(void *structure, const char *name,
@@ -2381,7 +2381,7 @@ make_property(const char *name,
 	      enum cm_tdbush_property_bus_type bus_type,
 	      enum cm_tdbush_property_access acces,
 	      enum cm_tdbush_property_local_type local_type,
-	      const char (*read_string)(void *structure, const char *name),
+	      const char * (*read_string)(void *structure, const char *name),
 	      dbus_bool_t (*read_boolean)(void *structure, const char *name),
 	      long (*read_number)(void *structure, const char *name),
 	      void (*write_string)(void *structure, const char *name,
@@ -2911,6 +2911,22 @@ cm_tdbush_iface_request(void)
 										     NULL)))))),
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_key_pin",
+								     request_get_key_pin,
+								     make_method_arg("pin",
+										     "s",
+										     cm_tdbush_method_arg_out,
+										     NULL),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_key_pin_file",
+								     request_get_key_pin_file,
+								     make_method_arg("pin_file",
+										     "s",
+										     cm_tdbush_method_arg_out,
+										     NULL),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_key_storage_info",
 								     request_get_key_storage_info,
 								     make_method_arg("type",
@@ -3019,7 +3035,7 @@ cm_tdbush_iface_request(void)
 										     cm_tdbush_method_arg_out,
 										     NULL),
 								     NULL),
-							 NULL))))))))))))))))))));
+							 NULL))))))))))))))))))))));
 	}
 	return ret;
 }
