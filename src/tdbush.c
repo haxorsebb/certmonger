@@ -43,6 +43,7 @@
 #define _(_text) (_text)
 #endif
 
+/* Convenience functions. */
 static struct cm_store_entry *
 get_entry_for_path(struct cm_context *ctx, const char *path)
 {
@@ -52,7 +53,9 @@ get_entry_for_path(struct cm_context *ctx, const char *path)
 		if (strncmp(path, CM_DBUS_REQUEST_PATH, initial) == 0) {
 			if (path[initial] == '/') {
 				return cm_get_entry_by_busname(ctx,
-							       path + initial + 1);
+							       path +
+							       initial +
+							       1);
 			}
 		}
 	}
@@ -93,7 +96,6 @@ maybe_strdup(void *parent, const char *s)
 	}
 	return NULL;
 }
-
 static char **
 maybe_strdupv(void *parent, char **s)
 {
@@ -193,13 +195,13 @@ send_internal_base_no_such_entry_error(DBusConnection *conn, DBusMessage *req)
 }
 
 static int
-cm_tdbush_check_arg_is_absolute_path(const char *path)
+check_arg_is_absolute_path(const char *path)
 {
 	return (path[0] == '/') ? 0 : -1;
 }
 
 static int
-cm_tdbush_check_arg_is_absolute_nss_path(const char *path)
+check_arg_is_absolute_nss_path(const char *path)
 {
 	if (strncmp(path, "sql:", 4) == 0) {
 		path += 4;
@@ -217,7 +219,7 @@ cm_tdbush_check_arg_is_absolute_nss_path(const char *path)
 }
 
 static int
-cm_tdbush_check_arg_is_directory(const char *path)
+check_arg_is_directory(const char *path)
 {
 	struct stat st;
 	if (stat(path, &st) == 0) {
@@ -229,7 +231,7 @@ cm_tdbush_check_arg_is_directory(const char *path)
 }
 
 static int
-cm_tdbush_check_arg_is_nss_directory(const char *path)
+check_arg_is_nss_directory(const char *path)
 {
 	struct stat st;
 	if (strncmp(path, "sql:", 4) == 0) {
@@ -253,7 +255,7 @@ cm_tdbush_check_arg_is_nss_directory(const char *path)
 }
 
 static int
-cm_tdbush_check_arg_is_reg_or_missing(const char *path)
+check_arg_is_reg_or_missing(const char *path)
 {
 	struct stat st;
 	if (stat(path, &st) == 0) {
@@ -269,11 +271,11 @@ cm_tdbush_check_arg_is_reg_or_missing(const char *path)
 }
 
 static int
-cm_tdbush_check_arg_parent_is_directory(const char *path)
+check_arg_parent_is_directory(const char *path)
 {
 	char *tmp, *p;
 	int ret;
-	if (cm_tdbush_check_arg_is_absolute_path(path) != 0) {
+	if (check_arg_is_absolute_path(path) != 0) {
 		return -1;
 	}
 	tmp = strdup(path);
@@ -285,7 +287,7 @@ cm_tdbush_check_arg_parent_is_directory(const char *path)
 			} else {
 				*(p + 1) = '\0';
 			}
-			ret = cm_tdbush_check_arg_is_directory(tmp);
+			ret = check_arg_is_directory(tmp);
 			free(tmp);
 			return ret;
 		}
@@ -439,7 +441,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	    (strlen(param->value.s) == 0)) {
 		key_pin_file = NULL;
 	} else {
-		if (cm_tdbush_check_arg_is_absolute_path(param->value.s) != 0) {
+		if (check_arg_is_absolute_path(param->value.s) != 0) {
 			cm_log(1, "PIN storage location is not an absolute "
 			       "path.\n");
 			ret = send_internal_base_bad_arg_error(conn, msg,
@@ -467,7 +469,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 								    _("Certificate storage location not specified."),
 								    "CERT_LOCATION");
 		}
-		if (cm_tdbush_check_arg_is_absolute_path(param->value.s) != 0) {
+		if (check_arg_is_absolute_path(param->value.s) != 0) {
 			cm_log(1, "Cert storage location is not an absolute "
 			       "path.\n");
 			ret = send_internal_base_bad_arg_error(conn, msg,
@@ -477,7 +479,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 			talloc_free(parent);
 			return ret;
 		}
-		if (cm_tdbush_check_arg_parent_is_directory(param->value.s) != 0) {
+		if (check_arg_parent_is_directory(param->value.s) != 0) {
 			cm_log(1, "Cert storage location is not inside of "
 			       "a directory.\n");
 			ret = send_internal_base_bad_arg_error(conn, msg,
@@ -487,7 +489,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 			talloc_free(parent);
 			return ret;
 		}
-		if (cm_tdbush_check_arg_is_reg_or_missing(param->value.s) != 0) {
+		if (check_arg_is_reg_or_missing(param->value.s) != 0) {
 			cm_log(1, "Cert storage location is "
 			       "not a regular file.\n");
 			ret = send_internal_base_bad_arg_error(conn, msg,
@@ -511,7 +513,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 								    _("Certificate storage location not specified."),
 								    "CERT_LOCATION");
 		}
-		if (cm_tdbush_check_arg_is_absolute_nss_path(param->value.s) != 0) {
+		if (check_arg_is_absolute_nss_path(param->value.s) != 0) {
 			cm_log(1, "Cert storage location is not an absolute "
 			       "path.\n");
 			ret = send_internal_base_bad_arg_error(conn, msg,
@@ -521,7 +523,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 			talloc_free(parent);
 			return ret;
 		}
-		if (cm_tdbush_check_arg_is_nss_directory(param->value.s) != 0) {
+		if (check_arg_is_nss_directory(param->value.s) != 0) {
 			cm_log(1, "Cert storage location must be "
 			       "a directory.\n");
 			ret = send_internal_base_bad_arg_error(conn, msg,
@@ -661,7 +663,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 									    _("Key storage location not specified."),
 									    "KEY_LOCATION");
 			}
-			if (cm_tdbush_check_arg_is_absolute_path(param->value.s) != 0) {
+			if (check_arg_is_absolute_path(param->value.s) != 0) {
 				cm_log(1, "Key storage location is not an "
 				       "absolute path.\n");
 				ret = send_internal_base_bad_arg_error(conn, msg,
@@ -671,7 +673,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 				talloc_free(parent);
 				return ret;
 			}
-			if (cm_tdbush_check_arg_parent_is_directory(param->value.s) != 0) {
+			if (check_arg_parent_is_directory(param->value.s) != 0) {
 				cm_log(1, "Key storage location is not inside "
 				       "of a directory.\n");
 				ret = send_internal_base_bad_arg_error(conn, msg,
@@ -681,7 +683,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 				talloc_free(parent);
 				return ret;
 			}
-			if (cm_tdbush_check_arg_is_reg_or_missing(param->value.s) != 0) {
+			if (check_arg_is_reg_or_missing(param->value.s) != 0) {
 				cm_log(1, "Key storage location is "
 				       "not a regular file.\n");
 				ret = send_internal_base_bad_arg_error(conn, msg,
@@ -706,7 +708,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 									    _("Key storage location not specified."),
 									    "KEY_LOCATION");
 			}
-			if (cm_tdbush_check_arg_is_absolute_nss_path(param->value.s) != 0) {
+			if (check_arg_is_absolute_nss_path(param->value.s) != 0) {
 				cm_log(1, "Key storage location is not an "
 				       "absolute path.\n");
 				ret = send_internal_base_bad_arg_error(conn, msg,
@@ -716,7 +718,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 				talloc_free(parent);
 				return ret;
 			}
-			if (cm_tdbush_check_arg_is_nss_directory(param->value.s) != 0) {
+			if (check_arg_is_nss_directory(param->value.s) != 0) {
 				cm_log(1, "Key storage location must be "
 				       "a directory.\n");
 				ret = send_internal_base_bad_arg_error(conn, msg,
@@ -1357,12 +1359,6 @@ ca_get_serial(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 	} else {
 		return send_internal_ca_error(conn, msg);
 	}
-}
-
-static DBusHandlerResult
-ca_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
-{
-	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
 /* Functions implemented for request objects. */
@@ -2099,7 +2095,7 @@ request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 			    (strcasecmp(param->key, "KEY_PIN_FILE") == 0)) {
 				if ((param->value.s != NULL) &&
 				    (strlen(param->value.s) != 0) &&
-				    (cm_tdbush_check_arg_is_absolute_path(param->value.s) != 0)) {
+				    (check_arg_is_absolute_path(param->value.s) != 0)) {
 					cm_log(1, "PIN storage location is not "
 					       "an absolute path.\n");
 					return send_internal_base_bad_arg_error(conn, msg,
@@ -2203,16 +2199,16 @@ request_resubmit(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
-enum cm_tdbush_type {
-	cm_tdbush_type_none,
-	cm_tdbush_type_parent_of_base,
-	cm_tdbush_type_base,
-	cm_tdbush_type_parent_of_cas,
-	cm_tdbush_type_group_of_cas,
-	cm_tdbush_type_ca,
-	cm_tdbush_type_parent_of_requests,
-	cm_tdbush_type_group_of_requests,
-	cm_tdbush_type_request
+enum cm_tdbush_object_type {
+	cm_tdbush_object_type_none,
+	cm_tdbush_object_type_parent_of_base,
+	cm_tdbush_object_type_base,
+	cm_tdbush_object_type_parent_of_cas,
+	cm_tdbush_object_type_group_of_cas,
+	cm_tdbush_object_type_ca,
+	cm_tdbush_object_type_parent_of_requests,
+	cm_tdbush_object_type_group_of_requests,
+	cm_tdbush_object_type_request
 };
 
 struct cm_tdbush_method {
@@ -2275,12 +2271,12 @@ struct cm_tdbush_interface {
 };
 
 struct cm_tdbush_interface_map {
-	enum cm_tdbush_type cm_type;
+	enum cm_tdbush_object_type cm_type;
 	struct cm_tdbush_interface * (*cm_interface)(void);
 };
-static enum cm_tdbush_type cm_tdbush_classify_path(struct cm_context *ctx,
-						   const char *path);
-static struct cm_tdbush_interface_map *cm_tdbush_type_map_get_n(unsigned int i);
+static enum cm_tdbush_object_type cm_tdbush_classify_path(struct cm_context *ctx,
+							  const char *path);
+static struct cm_tdbush_interface_map *cm_tdbush_object_type_map_get_n(unsigned int i);
 
 static struct cm_tdbush_method_arg *
 make_method_arg(const char *name,
@@ -2522,7 +2518,8 @@ cm_tdbush_introspect_property(void *parent,
 
 static char *
 cm_tdbush_introspect_childlist(struct cm_context *ctx, void *parent,
-			       const char *path, enum cm_tdbush_type type)
+			       const char *path,
+			       enum cm_tdbush_object_type type)
 {
 	struct cm_store_entry *entry;
 	struct cm_store_ca *ca;
@@ -2531,18 +2528,18 @@ cm_tdbush_introspect_childlist(struct cm_context *ctx, void *parent,
 	int i;
 
 	switch (type) {
-	case cm_tdbush_type_none:
-	case cm_tdbush_type_request:
-	case cm_tdbush_type_ca:
-		/* no child nodes */
+	case cm_tdbush_object_type_none:
+	case cm_tdbush_object_type_request:
+	case cm_tdbush_object_type_ca:
+		/* these have no child nodes */
 		break;
-	case cm_tdbush_type_parent_of_base:
+	case cm_tdbush_object_type_parent_of_base:
 		p = CM_DBUS_BASE_PATH + strlen(path);
 		p += strspn(p, "/");
 		i = strcspn(p, "/");
 		ret = talloc_asprintf(parent, "\n <node name=\"%.*s\"/>", i, p);
 		break;
-	case cm_tdbush_type_base:
+	case cm_tdbush_object_type_base:
 		p = CM_DBUS_REQUEST_PATH + strlen(path);
 		p += strspn(p, "/");
 		i = strcspn(p, "/");
@@ -2553,13 +2550,13 @@ cm_tdbush_introspect_childlist(struct cm_context *ctx, void *parent,
 		ret = talloc_asprintf(parent, "%s\n <node name=\"%.*s\"/>",
 				      ret, i, p);
 		break;
-	case cm_tdbush_type_parent_of_cas:
+	case cm_tdbush_object_type_parent_of_cas:
 		p = CM_DBUS_CA_PATH + strlen(path);
 		p += strspn(p, "/");
 		i = strcspn(p, "/");
 		ret = talloc_asprintf(parent, "\n <node name=\"%.*s\"/>", i, p);
 		break;
-	case cm_tdbush_type_group_of_cas:
+	case cm_tdbush_object_type_group_of_cas:
 		i = cm_get_n_cas(ctx) - 1;
 		while (i >= 0) {
 			ca = cm_get_ca_by_index(ctx, i);
@@ -2572,13 +2569,13 @@ cm_tdbush_introspect_childlist(struct cm_context *ctx, void *parent,
 			i--;
 		}
 		break;
-	case cm_tdbush_type_parent_of_requests:
+	case cm_tdbush_object_type_parent_of_requests:
 		p = CM_DBUS_REQUEST_PATH + strlen(path);
 		p += strspn(p, "/");
 		i = strcspn(p, "/");
 		ret = talloc_asprintf(parent, "\n <node name=\"%.*s\"/>", i, p);
 		break;
-	case cm_tdbush_type_group_of_requests:
+	case cm_tdbush_object_type_group_of_requests:
 		i = cm_get_n_entries(ctx) - 1;
 		while (i >= 0) {
 			entry = cm_get_entry_by_index(ctx, i);
@@ -2606,7 +2603,7 @@ cm_tdbush_introspect(DBusConnection *conn,
 	static struct cm_tdbush_interface_map *map;
 	struct cm_tdbush_interface *iface;
 	struct cm_tdbush_interface_item *item;
-	enum cm_tdbush_type type;
+	enum cm_tdbush_object_type type;
 	unsigned int i;
 	DBusMessage *rep;
 
@@ -2616,7 +2613,7 @@ cm_tdbush_introspect(DBusConnection *conn,
 	xml = talloc_asprintf(parent, "%s\n<node name=\"%s\">",
 			      DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE,
 			      path);
-	for (i = 0; (map = cm_tdbush_type_map_get_n(i)) != NULL; i++) {
+	for (i = 0; (map = cm_tdbush_object_type_map_get_n(i)) != NULL; i++) {
 		if (map->cm_type != type) {
 			continue;
 		}
@@ -3184,34 +3181,35 @@ cm_tdbush_iface_base(void)
 }
 
 struct cm_tdbush_interface_map
-cm_tdbush_type_map[] = {
-	{cm_tdbush_type_parent_of_base, &cm_tdbush_iface_introspection},
-	{cm_tdbush_type_base, &cm_tdbush_iface_introspection},
-	{cm_tdbush_type_base, &cm_tdbush_iface_properties},
-	{cm_tdbush_type_base, &cm_tdbush_iface_base},
-	{cm_tdbush_type_parent_of_cas, &cm_tdbush_iface_introspection},
-	{cm_tdbush_type_group_of_cas, &cm_tdbush_iface_introspection},
-	{cm_tdbush_type_ca, &cm_tdbush_iface_introspection},
-	{cm_tdbush_type_ca, &cm_tdbush_iface_properties},
-	{cm_tdbush_type_ca, &cm_tdbush_iface_ca},
-	{cm_tdbush_type_parent_of_requests, &cm_tdbush_iface_introspection},
-	{cm_tdbush_type_group_of_requests, &cm_tdbush_iface_introspection},
-	{cm_tdbush_type_request, &cm_tdbush_iface_introspection},
-	{cm_tdbush_type_request, &cm_tdbush_iface_properties},
-	{cm_tdbush_type_request, &cm_tdbush_iface_request},
+cm_tdbush_object_type_map[] = {
+	{cm_tdbush_object_type_parent_of_base, &cm_tdbush_iface_introspection},
+	{cm_tdbush_object_type_base, &cm_tdbush_iface_introspection},
+	{cm_tdbush_object_type_base, &cm_tdbush_iface_properties},
+	{cm_tdbush_object_type_base, &cm_tdbush_iface_base},
+	{cm_tdbush_object_type_parent_of_cas, &cm_tdbush_iface_introspection},
+	{cm_tdbush_object_type_group_of_cas, &cm_tdbush_iface_introspection},
+	{cm_tdbush_object_type_ca, &cm_tdbush_iface_introspection},
+	{cm_tdbush_object_type_ca, &cm_tdbush_iface_properties},
+	{cm_tdbush_object_type_ca, &cm_tdbush_iface_ca},
+	{cm_tdbush_object_type_parent_of_requests, &cm_tdbush_iface_introspection},
+	{cm_tdbush_object_type_group_of_requests, &cm_tdbush_iface_introspection},
+	{cm_tdbush_object_type_request, &cm_tdbush_iface_introspection},
+	{cm_tdbush_object_type_request, &cm_tdbush_iface_properties},
+	{cm_tdbush_object_type_request, &cm_tdbush_iface_request},
 };
 
 static struct cm_tdbush_interface_map *
-cm_tdbush_type_map_get_n(unsigned int i)
+cm_tdbush_object_type_map_get_n(unsigned int i)
 {
-	if (i < sizeof(cm_tdbush_type_map) / sizeof(cm_tdbush_type_map[0])) {
-		return cm_tdbush_type_map + i;
+	if (i < (sizeof(cm_tdbush_object_type_map) /
+		 sizeof(cm_tdbush_object_type_map[0]))) {
+		return cm_tdbush_object_type_map + i;
 	} else {
 		return NULL;
 	}
 }
 
-static enum cm_tdbush_type
+static enum cm_tdbush_object_type
 cm_tdbush_classify_path(struct cm_context *ctx, const char *path)
 {
 	int basepathlen = strlen(CM_DBUS_BASE_PATH);
@@ -3221,51 +3219,51 @@ cm_tdbush_classify_path(struct cm_context *ctx, const char *path)
 
 	/* Base is just a name, so check for it first. */
 	if (strcmp(path, CM_DBUS_BASE_PATH) == 0) {
-		return cm_tdbush_type_base;
+		return cm_tdbush_object_type_base;
 	}
 	/* The group of requests is just a name, so check for it. */
 	if (strcmp(path, CM_DBUS_REQUEST_PATH) == 0) {
-		return cm_tdbush_type_group_of_requests;
+		return cm_tdbush_object_type_group_of_requests;
 	}
 	/* The group of CAs is just a name, so check for it. */
 	if (strcmp(path, CM_DBUS_CA_PATH) == 0) {
-		return cm_tdbush_type_group_of_cas;
+		return cm_tdbush_object_type_group_of_cas;
 	}
 	/* Check for things above the base node. */
 	if ((strcmp(path, "/") == 0) ||
 	    ((pathlen < basepathlen) &&
 	     (strncmp(path, CM_DBUS_BASE_PATH, pathlen) == 0) &&
 	     (CM_DBUS_BASE_PATH[pathlen] == '/'))) {
-		return cm_tdbush_type_parent_of_base;
+		return cm_tdbush_object_type_parent_of_base;
 	}
 	/* Check for things above the request group node. */
 	if (((pathlen < reqpathlen) &&
 	     (strncmp(path, CM_DBUS_REQUEST_PATH, pathlen) == 0) &&
 	     (CM_DBUS_REQUEST_PATH[pathlen] == '/'))) {
-		return cm_tdbush_type_parent_of_requests;
+		return cm_tdbush_object_type_parent_of_requests;
 	}
 	/* Check for things above the CA group node. */
 	if (((pathlen < capathlen) &&
 	     (strncmp(path, CM_DBUS_CA_PATH, pathlen) == 0) &&
 	     (CM_DBUS_CA_PATH[pathlen] == '/'))) {
-		return cm_tdbush_type_parent_of_cas;
+		return cm_tdbush_object_type_parent_of_cas;
 	}
 	/* Check if it names a request. */
 	if ((pathlen > reqpathlen) &&
 	    (strncmp(path, CM_DBUS_REQUEST_PATH, reqpathlen) == 0) &&
 	    (path[reqpathlen] == '/') &&
 	    (cm_get_entry_by_busname(ctx, path + reqpathlen + 1) != NULL)) {
-		return cm_tdbush_type_request;
+		return cm_tdbush_object_type_request;
 	}
 	/* Check if it names a CA. */
 	if ((pathlen > capathlen) &&
 	    (strncmp(path, CM_DBUS_CA_PATH, capathlen) == 0) &&
 	    (path[capathlen] == '/') &&
 	    (cm_get_ca_by_busname(ctx, path + capathlen + 1) != NULL)) {
-		return cm_tdbush_type_ca;
+		return cm_tdbush_object_type_ca;
 	}
 	/* It's not classifiable. */
-	return cm_tdbush_type_none;
+	return cm_tdbush_object_type_none;
 }
 
 DBusHandlerResult
@@ -3276,7 +3274,7 @@ cm_tdbush_handle_method_call(DBusConnection *conn, DBusMessage *msg,
 	struct cm_tdbush_interface *iface;
 	struct cm_tdbush_interface_item *item;
 	struct cm_tdbush_method *meth;
-	enum cm_tdbush_type type;
+	enum cm_tdbush_object_type type;
 	unsigned int i;
 	DBusHandlerResult handled;
 
@@ -3285,12 +3283,12 @@ cm_tdbush_handle_method_call(DBusConnection *conn, DBusMessage *msg,
 	member = dbus_message_get_member(msg);
 	type = cm_tdbush_classify_path(ctx, path);
 	for (i = 0;
-	     i < sizeof(cm_tdbush_type_map) / sizeof(cm_tdbush_type_map[i]);
+	     i < sizeof(cm_tdbush_object_type_map) / sizeof(cm_tdbush_object_type_map[i]);
 	     i++) {
-		if (cm_tdbush_type_map[i].cm_type != type) {
+		if (cm_tdbush_object_type_map[i].cm_type != type) {
 			continue;
 		}
-		iface = (*((cm_tdbush_type_map[i]).cm_interface))();
+		iface = (*((cm_tdbush_object_type_map[i]).cm_interface))();
 		if ((interface != NULL) &&
 		    (strcmp(iface->cm_name, interface) != 0)) {
 			continue;
