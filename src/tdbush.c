@@ -3019,6 +3019,81 @@ cm_tdbush_introspect_property(void *parent,
 	return ret;
 }
 
+static char *
+cm_tdbush_introspect_childlist(struct cm_context *ctx, void *parent,
+			       const char *path, enum cm_tdbush_type type)
+{
+	struct cm_store_entry *entry;
+	struct cm_store_ca *ca;
+	char *ret = NULL;
+	const char *p;
+	int i;
+
+	switch (type) {
+	case cm_tdbush_type_none:
+	case cm_tdbush_type_request:
+	case cm_tdbush_type_ca:
+		/* no child nodes */
+		break;
+	case cm_tdbush_type_parent_of_base:
+		p = CM_DBUS_BASE_PATH + strlen(path);
+		p += strspn(p, "/");
+		i = strcspn(p, "/");
+		ret = talloc_asprintf(parent, "\n <node name=\"%.*s\"/>", i, p);
+		break;
+	case cm_tdbush_type_base:
+		p = CM_DBUS_REQUEST_PATH + strlen(path);
+		p += strspn(p, "/");
+		i = strcspn(p, "/");
+		ret = talloc_asprintf(parent, "\n <node name=\"%.*s\"/>", i, p);
+		p = CM_DBUS_CA_PATH + strlen(path);
+		p += strspn(p, "/");
+		i = strcspn(p, "/");
+		ret = talloc_asprintf(parent, "%s\n <node name=\"%.*s\"/>",
+				      ret, i, p);
+		break;
+	case cm_tdbush_type_parent_of_cas:
+		p = CM_DBUS_CA_PATH + strlen(path);
+		p += strspn(p, "/");
+		i = strcspn(p, "/");
+		ret = talloc_asprintf(parent, "\n <node name=\"%.*s\"/>", i, p);
+		break;
+	case cm_tdbush_type_group_of_cas:
+		i = cm_get_n_cas(ctx) - 1;
+		while (i >= 0) {
+			ca = cm_get_ca_by_index(ctx, i);
+			if (ca != NULL) {
+				ret = talloc_asprintf(parent,
+						      "\n <node name=\"%s\"/>%s",
+						      ca->cm_busname,
+						      ret ? ret : "");
+			}
+			i--;
+		}
+		break;
+	case cm_tdbush_type_parent_of_requests:
+		p = CM_DBUS_REQUEST_PATH + strlen(path);
+		p += strspn(p, "/");
+		i = strcspn(p, "/");
+		ret = talloc_asprintf(parent, "\n <node name=\"%.*s\"/>", i, p);
+		break;
+	case cm_tdbush_type_group_of_requests:
+		i = cm_get_n_entries(ctx) - 1;
+		while (i >= 0) {
+			entry = cm_get_entry_by_index(ctx, i);
+			if (entry != NULL) {
+				ret = talloc_asprintf(parent,
+						      "\n <node name=\"%s\"/>%s",
+						      entry->cm_busname,
+						      ret ? ret : "");
+			}
+			i--;
+		}
+		break;
+	}
+	return ret;
+}
+
 static DBusHandlerResult
 cm_tdbush_introspect(DBusConnection *conn,
 		     DBusMessage *msg,
@@ -3079,6 +3154,10 @@ cm_tdbush_introspect(DBusConnection *conn,
 			}
 		}
 		xml = talloc_asprintf(parent, "%s\n </interface>", xml);
+	}
+	member = cm_tdbush_introspect_childlist(ctx, parent, path, type);
+	if (member != NULL) {
+		xml = talloc_asprintf(parent, "%s%s", xml, member);
 	}
 	xml = talloc_asprintf(parent, "%s\n</node>", xml);
 	rep = dbus_message_new_method_return(msg);
