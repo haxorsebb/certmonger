@@ -2255,10 +2255,11 @@ struct cm_tdbush_property {
 	} cm_access;
 	enum cm_tdbush_property_local_type {
 		cm_tdbush_property_special,
-		cm_tdbush_property_charp,
-		cm_tdbush_property_charpp,
+		cm_tdbush_property_char_p,
+		cm_tdbush_property_char_pp,
 		cm_tdbush_property_time_t,
 	} cm_local_type;
+	ptrdiff_t cm_offset;
 	const char * (*cm_read_string)(void *structure, const char *name);
 	dbus_bool_t (*cm_read_boolean)(void *structure, const char *name);
 	long (*cm_read_number)(void *structure, const char *name);
@@ -2381,6 +2382,7 @@ make_property(const char *name,
 	      enum cm_tdbush_property_bus_type bus_type,
 	      enum cm_tdbush_property_access acces,
 	      enum cm_tdbush_property_local_type local_type,
+	      ptrdiff_t offset,
 	      const char * (*read_string)(void *structure, const char *name),
 	      dbus_bool_t (*read_boolean)(void *structure, const char *name),
 	      long (*read_number)(void *structure, const char *name),
@@ -2400,6 +2402,7 @@ make_property(const char *name,
 	ret->cm_bus_type = bus_type;
 	ret->cm_access = acces;
 	ret->cm_local_type = local_type;
+	ret->cm_offset = offset;
 	ret->cm_read_string = read_string;
 	ret->cm_read_number = read_number;
 	ret->cm_read_boolean = read_boolean;
@@ -2706,7 +2709,150 @@ cm_tdbush_property_get(DBusConnection *conn,
 		       DBusMessage *msg,
 		       struct cm_context *ctx)
 {
-	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	const char *path;
+	char *interface, *property;
+	void *parent;
+	static struct cm_tdbush_interface_map *map;
+	struct cm_tdbush_interface *iface;
+	struct cm_tdbush_interface_item *item;
+	struct cm_tdbush_property *prop;
+	enum cm_tdbush_object_type type;
+	unsigned int i;
+	struct cm_store_entry *entry;
+	struct cm_store_ca *ca;
+	char *record;
+	const char *p, **pp, ***ppp;
+	time_t *tp;
+	dbus_bool_t b;
+	long l;
+	DBusMessage *rep;
+
+	path = dbus_message_get_path(msg);
+	type = cm_tdbush_classify_path(ctx, path);
+
+	/* Get a pointer to the record. */
+	switch (type) {
+	case cm_tdbush_object_type_none:
+	case cm_tdbush_object_type_parent_of_base:
+	case cm_tdbush_object_type_parent_of_requests:
+	case cm_tdbush_object_type_parent_of_cas:
+	case cm_tdbush_object_type_group_of_requests:
+	case cm_tdbush_object_type_group_of_cas:
+		cm_log(1, "No properties on (%s).\n", path);
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		break;
+	case cm_tdbush_object_type_base:
+		record = NULL;
+		break;
+	case cm_tdbush_object_type_ca:
+		ca = get_ca_for_path(ctx, path);
+		if (ca == NULL) {
+			cm_log(1, "No such CA (%s).\n", path);
+			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		}
+		record = (char *) ca;
+		break;
+	case cm_tdbush_object_type_request:
+		entry = get_entry_for_path(ctx, path);
+		if (entry == NULL) {
+			cm_log(1, "No such entry (%s).\n", path);
+			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		}
+		record = (char *) entry;
+		break;
+	}
+
+	parent = talloc_new(NULL);
+	if (cm_tdbusm_get_ss(msg, parent, &interface, &property) != 0) {
+		cm_log(1, "Error parsing arguments.\n");
+		talloc_free(parent);
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+
+	/* Locate the property. */
+	item = NULL;
+	for (i = 0; (map = cm_tdbush_object_type_map_get_n(i)) != NULL; i++) {
+		if (map->cm_type != type) {
+			continue;
+		}
+		iface = (*(map->cm_interface))();
+		if ((interface != NULL) &&
+		    (strlen(interface) > 0) &&
+		    (strcmp(interface, iface->cm_name) != 0)) {
+			continue;
+		}
+		for (item = iface->cm_items;
+		     item != NULL;
+		     item = item->cm_next) {
+			if (item->cm_member_type !=
+			    cm_tdbush_interface_property) {
+				continue;
+			}
+			prop = item->cm_property;
+			if ((property != NULL) &&
+			    (strcmp(property, prop->cm_name) != 0)) {
+				continue;
+			}
+			break;
+		}
+		if (item != NULL) {
+			break;
+		}
+	}
+	if (item == NULL) {
+		talloc_free(parent);
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+
+	prop = item->cm_property;
+
+	rep = dbus_message_new_method_return(msg);
+	if (rep == NULL) {
+		talloc_free(parent);
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+
+	/* Read the property data and set it as an argument. */
+	switch (prop->cm_local_type) {
+	case cm_tdbush_property_char_p:
+		record += prop->cm_offset;
+		pp = (const char **) record;
+		cm_tdbusm_set_s(msg, *pp);
+		break;
+	case cm_tdbush_property_char_pp:
+		record += prop->cm_offset;
+		ppp = (const char ***) record;
+		cm_tdbusm_set_as(msg, *ppp);
+		break;
+	case cm_tdbush_property_time_t:
+		record += prop->cm_offset;
+		tp = (time_t *) record;
+		cm_tdbusm_set_n(msg, (long) *tp);
+		break;
+	case cm_tdbush_property_special:
+		switch (prop->cm_bus_type) {
+		case cm_tdbush_property_string:
+			p = (*(prop->cm_read_string))(record, property);
+			cm_tdbusm_set_s(msg, p);
+			break;
+		case cm_tdbush_property_boolean:
+			b = (*(prop->cm_read_boolean))(record, property);
+			cm_tdbusm_set_b(msg, b);
+			break;
+		case cm_tdbush_property_number:
+			l = (*(prop->cm_read_number))(record, property);
+			cm_tdbusm_set_n(msg, l);
+			break;
+		}
+		break;
+	}
+	if (rep != NULL) {
+		dbus_connection_send(conn, rep, NULL);
+		dbus_message_unref(rep);
+	}
+	talloc_free(parent);
+
+	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
 static DBusHandlerResult
