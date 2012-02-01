@@ -2984,6 +2984,41 @@ cm_tdbush_introspect_signal(void *parent,
 	return ret;
 }
 
+static char *
+cm_tdbush_introspect_property(void *parent,
+			      struct cm_tdbush_property *prop)
+{
+	char *ret = NULL;
+	const char *bus_type = "unknown", *access_type = "unknown";
+
+	switch (prop->cm_bus_type) {
+	case cm_tdbush_property_string:
+		bus_type = "s";
+		break;
+	case cm_tdbush_property_boolean:
+		bus_type = "b";
+		break;
+	case cm_tdbush_property_number:
+		bus_type = "i";
+		break;
+	}
+	switch (prop->cm_access) {
+	case cm_tdbush_property_read:
+		access_type = "r";
+		break;
+	case cm_tdbush_property_write:
+		access_type = "w";
+		break;
+	case cm_tdbush_property_readwrite:
+		access_type = "rw";
+		break;
+	}
+	ret = talloc_asprintf(parent,
+			      "  <property name=\"%s\" type=\"%s\" access=\"%s\"/>",
+			      prop->cm_name, bus_type, access_type);
+	return ret;
+}
+
 static DBusHandlerResult
 cm_tdbush_introspect(DBusConnection *conn,
 		     DBusMessage *msg,
@@ -3034,7 +3069,12 @@ cm_tdbush_introspect(DBusConnection *conn,
 				}
 				break;
 			case cm_tdbush_interface_property:
-				/* XXX */
+				member = cm_tdbush_introspect_property(parent,
+								       item->cm_property);
+				if (member != NULL) {
+					xml = talloc_asprintf(parent, "%s\n%s",
+							      xml, member);
+				}
 				break;
 			}
 		}
