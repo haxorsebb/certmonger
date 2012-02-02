@@ -2729,6 +2729,7 @@ cm_tdbush_property_get(DBusConnection *conn,
 	type = cm_tdbush_classify_path(ctx, path);
 
 	/* Get a pointer to the record. */
+	record = NULL;
 	switch (type) {
 	case cm_tdbush_object_type_none:
 	case cm_tdbush_object_type_parent_of_base:
@@ -2740,6 +2741,7 @@ cm_tdbush_property_get(DBusConnection *conn,
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 		break;
 	case cm_tdbush_object_type_base:
+		/* no object */
 		record = NULL;
 		break;
 	case cm_tdbush_object_type_ca:
@@ -2758,6 +2760,10 @@ cm_tdbush_property_get(DBusConnection *conn,
 		}
 		record = (char *) entry;
 		break;
+	}
+	if ((record == NULL) && (type != cm_tdbush_object_type_base)) {
+		cm_log(1, "No properties on (%s).\n", path);
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
 
 	parent = talloc_new(NULL);
@@ -2824,31 +2830,31 @@ cm_tdbush_property_get(DBusConnection *conn,
 	case cm_tdbush_property_char_p:
 		record += prop->cm_offset;
 		pp = (const char **) record;
-		cm_tdbusm_set_s(msg, *pp);
+		cm_tdbusm_set_s(rep, *pp);
 		break;
 	case cm_tdbush_property_char_pp:
 		record += prop->cm_offset;
 		ppp = (const char ***) record;
-		cm_tdbusm_set_as(msg, *ppp);
+		cm_tdbusm_set_as(rep, *ppp);
 		break;
 	case cm_tdbush_property_time_t:
 		record += prop->cm_offset;
 		tp = (time_t *) record;
-		cm_tdbusm_set_n(msg, (long) *tp);
+		cm_tdbusm_set_n(rep, (long) *tp);
 		break;
 	case cm_tdbush_property_special:
 		switch (prop->cm_bus_type) {
 		case cm_tdbush_property_string:
 			p = (*(prop->cm_read_string))(record, property);
-			cm_tdbusm_set_s(msg, p);
+			cm_tdbusm_set_s(rep, p);
 			break;
 		case cm_tdbush_property_boolean:
 			b = (*(prop->cm_read_boolean))(record, property);
-			cm_tdbusm_set_b(msg, b);
+			cm_tdbusm_set_b(rep, b);
 			break;
 		case cm_tdbush_property_number:
 			l = (*(prop->cm_read_number))(record, property);
-			cm_tdbusm_set_n(msg, l);
+			cm_tdbusm_set_n(rep, l);
 			break;
 		}
 		break;
@@ -2888,6 +2894,7 @@ cm_tdbush_property_set(DBusConnection *conn,
 	type = cm_tdbush_classify_path(ctx, path);
 
 	/* Get a pointer to the record. */
+	record = NULL;
 	switch (type) {
 	case cm_tdbush_object_type_none:
 	case cm_tdbush_object_type_parent_of_base:
@@ -2899,6 +2906,7 @@ cm_tdbush_property_set(DBusConnection *conn,
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 		break;
 	case cm_tdbush_object_type_base:
+		/* no object */
 		record = NULL;
 		break;
 	case cm_tdbush_object_type_ca:
@@ -2917,6 +2925,10 @@ cm_tdbush_property_set(DBusConnection *conn,
 		}
 		record = (char *) entry;
 		break;
+	}
+	if ((record == NULL) && (type != cm_tdbush_object_type_base)) {
+		cm_log(1, "No properties on (%s).\n", path);
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
 
 	parent = talloc_new(NULL);
@@ -3065,7 +3077,194 @@ cm_tdbush_property_get_all(DBusConnection *conn,
 			   DBusMessage *msg,
 			   struct cm_context *ctx)
 {
-	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	const char *path;
+	char *interface;
+	void *parent;
+	static struct cm_tdbush_interface_map *map;
+	struct cm_tdbush_interface *iface;
+	struct cm_tdbush_interface_item *item;
+	struct cm_tdbush_property *prop;
+	enum cm_tdbush_object_type type;
+	unsigned int i;
+	struct cm_store_entry *entry;
+	struct cm_store_ca *ca;
+	char *record;
+	const char *p, **pp, ***ppp;
+	time_t *tp;
+	dbus_bool_t b;
+	long l;
+	DBusMessage *rep;
+	const struct cm_tdbusm_dict **d;
+	struct cm_tdbusm_dict *dict, **dtmp;
+	int n, n_dictvals = 0;
+
+	path = dbus_message_get_path(msg);
+	type = cm_tdbush_classify_path(ctx, path);
+
+	/* Get a pointer to the record. */
+	record = NULL;
+	switch (type) {
+	case cm_tdbush_object_type_none:
+	case cm_tdbush_object_type_parent_of_base:
+	case cm_tdbush_object_type_parent_of_requests:
+	case cm_tdbush_object_type_parent_of_cas:
+	case cm_tdbush_object_type_group_of_requests:
+	case cm_tdbush_object_type_group_of_cas:
+		cm_log(1, "No properties on (%s).\n", path);
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		break;
+	case cm_tdbush_object_type_base:
+		/* no object */
+		record = NULL;
+		break;
+	case cm_tdbush_object_type_ca:
+		ca = get_ca_for_path(ctx, path);
+		if (ca == NULL) {
+			cm_log(1, "No such CA (%s).\n", path);
+			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		}
+		record = (char *) ca;
+		break;
+	case cm_tdbush_object_type_request:
+		entry = get_entry_for_path(ctx, path);
+		if (entry == NULL) {
+			cm_log(1, "No such request (%s).\n", path);
+			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		}
+		record = (char *) entry;
+		break;
+	}
+	if ((record == NULL) && (type != cm_tdbush_object_type_base)) {
+		cm_log(1, "No properties on (%s).\n", path);
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+
+	parent = talloc_new(NULL);
+	if (cm_tdbusm_get_s(msg, parent, &interface) != 0) {
+		cm_log(1, "Error parsing arguments.\n");
+		talloc_free(parent);
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+
+	rep = dbus_message_new_method_return(msg);
+	if (rep == NULL) {
+		talloc_free(parent);
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+
+	/* Examine all properties. */
+	item = NULL;
+	n_dictvals = 0;
+	dict = NULL;
+	d = NULL;
+	for (i = 0, n = 0;
+	     (map = cm_tdbush_object_type_map_get_n(i)) != NULL;
+	     i++) {
+		if (map->cm_type != type) {
+			continue;
+		}
+		iface = (*(map->cm_interface))();
+		if ((interface != NULL) &&
+		    (strlen(interface) > 0) &&
+		    (strcmp(interface, iface->cm_name) != 0)) {
+			continue;
+		}
+		for (item = iface->cm_items;
+		     item != NULL;
+		     item = item->cm_next) {
+			if (item->cm_member_type !=
+			    cm_tdbush_interface_property) {
+				continue;
+			}
+			prop = item->cm_property;
+			switch (prop->cm_access) {
+			case cm_tdbush_property_read:
+			case cm_tdbush_property_readwrite:
+				break;
+			case cm_tdbush_property_write:
+				/* nope! */
+				continue;
+				break;
+			}
+			if (n >= n_dictvals) {
+				dict = talloc_realloc(parent, dict, struct cm_tdbusm_dict, n_dictvals + 32);
+				if (dict == NULL) {
+					cm_log(1, "Out of memory.\n");
+					talloc_free(parent);
+					return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+				}
+				dtmp = talloc_realloc(parent, d, struct cm_tdbusm_dict *, n_dictvals + 33);
+				d = (const struct cm_tdbusm_dict **) dtmp;
+				if (d == NULL) {
+					cm_log(1, "Out of memory.\n");
+					talloc_free(parent);
+					return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+				}
+				n_dictvals += 32;
+			}
+			/* Read the property data and add it to the dict. */
+			dict[n].key = talloc_strdup(parent, prop->cm_name);
+			switch (prop->cm_bus_type) {
+			case cm_tdbush_property_string:
+				dict[n].value_type = cm_tdbusm_dict_s;
+				break;
+			case cm_tdbush_property_boolean:
+				dict[n].value_type = cm_tdbusm_dict_b;
+				break;
+			case cm_tdbush_property_number:
+				dict[n].value_type = cm_tdbusm_dict_n;
+				break;
+			}
+			switch (prop->cm_local_type) {
+			case cm_tdbush_property_char_p:
+				record += prop->cm_offset;
+				pp = (const char **) record;
+				dict[n].value.s = talloc_strdup(parent, *pp);
+				break;
+			case cm_tdbush_property_char_pp:
+				record += prop->cm_offset;
+				ppp = (const char ***) record;
+				dict[n].value.as = (char **) *ppp;
+				break;
+			case cm_tdbush_property_time_t:
+				record += prop->cm_offset;
+				tp = (time_t *) record;
+				dict[n].value.n = *tp;
+				break;
+			case cm_tdbush_property_special:
+				switch (prop->cm_bus_type) {
+				case cm_tdbush_property_string:
+					p = (*(prop->cm_read_string))(record,
+								      prop->cm_name);
+					dict[n].value.s = talloc_strdup(parent, p);
+					break;
+				case cm_tdbush_property_boolean:
+					b = (*(prop->cm_read_boolean))(record,
+								       prop->cm_name);
+					dict[n].value.b = b;
+					break;
+				case cm_tdbush_property_number:
+					l = (*(prop->cm_read_number))(record,
+								      prop->cm_name);
+					dict[n].value.n = l;
+					break;
+				}
+				break;
+			}
+			d[n] = &dict[n];
+			n++;
+		}
+	}
+	d[n] = NULL;
+	cm_tdbusm_set_d(rep, d);
+
+	if (rep != NULL) {
+		dbus_connection_send(conn, rep, NULL);
+		dbus_message_unref(rep);
+	}
+	talloc_free(parent);
+
+	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
 static struct cm_tdbush_interface *
