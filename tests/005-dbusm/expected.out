@@ -9,18 +9,21 @@ Message 7 - s:This is a string.,n:12345
 Message 8 - s:This is a first string.,s:This is a second string.
 Message 9 - [p:/this,p:/is,p:/a,p:/path,p:/array]
 Message 10 - [s:This,s:is,s:a,s:string,s:array.]
-Message 11 - s:This is a first string.,s:This is a second string.s:This is a third string.
-Message 12 - s:This is a first string.,s:This is a second string.s:This is a third string.,s:This is a fourth string.
-Message 13 - s:This is a first string.,s:This is a second string.s:(NULL)s:(NULL)
-Message 14 - s:This is a first string.,s:This is a second string.s:This is a third string.s:(NULL)
-Message 15 - s:This is a first string.,s:This is a second string.s:This is a third string.s:This is a fourth string.
-Message 16 - s:This is a string.,s:(NULL)s:(NULL),s:(NULL)
-Message 17 - s:This is a first string.,s:This is a second string.s:(NULL),s:(NULL)
-Message 18 - s:This is a first string.,s:This is a second string.s:This is a third string.,s:(NULL)
-Message 19 - s:This is a first string.,s:This is a second string.s:This is a third string.,s:This is a fourth string.
-Message 20 - s:This is a first string.,s:This is a second string.,[s:This,s:is,s:a,s:string,s:array.]
-Message 21 - s:This is a first string.,s:This is a second string.,s:This is a third string.,[s:This,s:is,s:a,s:string,s:array.]
-Message 22 - s:This is a first string.,s:This is a second string.,s:This is a third string.,n:23456,[s:This,s:is,s:a,s:first,s:string,s:array.],[s:This,s:is,s:a,s:second,s:string,s:array.],[s:This,s:is,s:a,s:third,s:string,s:array.],n:34567,[s:This,s:is,s:a,s:fourth,s:string,s:array.]
-Message 23 - s:This is a string.,[s:This,s:is,s:a,s:first,s:string,s:array.],[s:This,s:is,s:a,s:second,s:string,s:array.],[s:This,s:is,s:a,s:third,s:string,s:array.],n:12345,[s:This,s:is,s:a,s:fourth,s:string,s:array.]
-Message 24 - [{key 0=b:TRUE},{key 1=n:12345},{key 2=s:this is a string value},{key 3=as:[This,is,a,string,array.]]
+Message 11 - s:This is a first string.,s:This is a second string.,s:This is a third string.
+Message 12 - s:This is a first string.,s:This is a second string.,n:12345
+Message 13 - s:This is a first string.,s:This is a second string.,b:TRUE
+Message 14 - s:This is a first string.,s:This is a second string.,as:[s:This,s:is,s:a,s:string,s:array.]
+Message 15 - s:This is a first string.,s:This is a second string.s:This is a third string.,s:This is a fourth string.
+Message 16 - s:This is a first string.,s:This is a second string.s:(NULL)s:(NULL)
+Message 17 - s:This is a first string.,s:This is a second string.s:This is a third string.s:(NULL)
+Message 18 - s:This is a first string.,s:This is a second string.s:This is a third string.s:This is a fourth string.
+Message 19 - s:This is a string.,s:(NULL)s:(NULL),s:(NULL)
+Message 20 - s:This is a first string.,s:This is a second string.s:(NULL),s:(NULL)
+Message 21 - s:This is a first string.,s:This is a second string.s:This is a third string.,s:(NULL)
+Message 22 - s:This is a first string.,s:This is a second string.s:This is a third string.,s:This is a fourth string.
+Message 23 - s:This is a first string.,s:This is a second string.,[s:This,s:is,s:a,s:string,s:array.]
+Message 24 - s:This is a first string.,s:This is a second string.,s:This is a third string.,[s:This,s:is,s:a,s:string,s:array.]
+Message 25 - s:This is a first string.,s:This is a second string.,s:This is a third string.,n:23456,[s:This,s:is,s:a,s:first,s:string,s:array.],[s:This,s:is,s:a,s:second,s:string,s:array.],[s:This,s:is,s:a,s:third,s:string,s:array.],n:34567,[s:This,s:is,s:a,s:fourth,s:string,s:array.]
+Message 26 - s:This is a string.,[s:This,s:is,s:a,s:first,s:string,s:array.],[s:This,s:is,s:a,s:second,s:string,s:array.],[s:This,s:is,s:a,s:third,s:string,s:array.],n:12345,[s:This,s:is,s:a,s:fourth,s:string,s:array.]
+Message 27 - [{key 0=b:TRUE},{key 1=n:12345},{key 2=s:this is a string value},{key 3=as:[This,is,a,string,array.]]
 Test complete.

@@ -319,7 +319,7 @@ get_sss(DBusMessage *rep, int msgid)
 	char *s1, *s2, *s3;
 	ret = cm_tdbusm_get_sss(rep, NULL, &s1, &s2, &s3);
 	if (ret == 0) {
-		printf("Message %d - s:%s,s:%ss:%s\n", msgid,
+		printf("Message %d - s:%s,s:%s,s:%s\n", msgid,
 		       s1, s2, s3);
 	}
 	return ret;
@@ -332,7 +332,7 @@ get_ssb(DBusMessage *rep, int msgid)
 	dbus_bool_t b;
 	ret = cm_tdbusm_get_ssb(rep, NULL, &s1, &s2, &b);
 	if (ret == 0) {
-		printf("Message %d - s:%s,s:%sb:%s\n", msgid,
+		printf("Message %d - s:%s,s:%s,b:%s\n", msgid,
 		       s1, s2, b ? "TRUE" : "FALSE");
 	}
 	return ret;
@@ -345,7 +345,7 @@ get_ssn(DBusMessage *rep, int msgid)
 	long n;
 	ret = cm_tdbusm_get_ssn(rep, NULL, &s1, &s2, &n);
 	if (ret == 0) {
-		printf("Message %d - s:%s,s:%sn:%ld\n", msgid,
+		printf("Message %d - s:%s,s:%s,n:%ld\n", msgid,
 		       s1, s2, n);
 	}
 	return ret;
