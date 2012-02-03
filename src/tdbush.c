@@ -2880,6 +2880,7 @@ cm_tdbush_introspect_property(void *parent,
 {
 	char *ret = NULL;
 	const char *bus_type = "unknown", *access_type = "unknown";
+	struct cm_tdbush_member_annotation *annotation;
 
 	switch (prop->cm_bus_type) {
 	case cm_tdbush_property_path:
@@ -2909,9 +2910,28 @@ cm_tdbush_introspect_property(void *parent,
 		access_type = "readwrite";
 		break;
 	}
-	ret = talloc_asprintf(parent,
-			      "  <property name=\"%s\" type=\"%s\" access=\"%s\"/>",
-			      prop->cm_name, bus_type, access_type);
+	annotation = prop->cm_annotations;
+	if (annotation == NULL) {
+		ret = talloc_asprintf(parent,
+				      "  <property name=\"%s\" "
+				      "type=\"%s\" access=\"%s\"/>",
+				      prop->cm_name, bus_type, access_type);
+	} else {
+		ret = talloc_asprintf(parent,
+				      "  <property name=\"%s\" "
+				      "type=\"%s\" access=\"%s\">",
+				      prop->cm_name, bus_type, access_type);
+		while (annotation != NULL) {
+			ret = talloc_asprintf(parent,
+					      "%s\n   <annotation name=\"%s\" "
+					      "value=\"%s\"/>",
+					      ret,
+					      annotation->cm_name,
+					      annotation->cm_value);
+			annotation = annotation->cm_next;
+		}
+		ret = talloc_asprintf(parent, "%s\n  </property>", ret);
+	}
 	return ret;
 }
 
