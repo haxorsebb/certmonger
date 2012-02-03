@@ -113,23 +113,6 @@ maybe_strdupv(void *parent, char **s)
 	}
 	return ret;
 }
-static char **
-always_strdupv(void *parent, const char **s)
-{
-	int i;
-	char **ret = NULL;
-	for (i = 0; (s != NULL) && (s[i] != NULL); i++) {
-		continue;
-	}
-	ret = talloc_array_ptrtype(parent, ret, i + 1);
-	if (ret != NULL) {
-		for (i = 0; (s != NULL) && (s[i] != NULL); i++) {
-			ret[i] = talloc_strdup(ret, s[i]);
-		}
-		ret[i] = NULL;
-	}
-	return ret;
-}
 
 static DBusHandlerResult
 send_internal_base_error(DBusConnection *conn, DBusMessage *req)
@@ -3521,7 +3504,7 @@ cm_tdbush_property_get_all(DBusConnection *conn,
 	unsigned int i;
 	struct cm_store_entry *entry;
 	struct cm_store_ca *ca;
-	char *record;
+	char *record, *rec;
 	const char *p, **pp, ***ppp;
 	time_t *tp;
 	dbus_bool_t b;
@@ -3654,19 +3637,29 @@ cm_tdbush_property_get_all(DBusConnection *conn,
 			}
 			switch (prop->cm_local_type) {
 			case cm_tdbush_property_char_p:
-				record += prop->cm_offset;
-				pp = (const char **) record;
-				dict[n].value.s = talloc_strdup(parent, *pp);
+				rec = record + prop->cm_offset;
+				pp = (const char **) rec;
+				if ((pp != NULL) && (*pp != NULL)) {
+					dict[n].value.s = (char *) *pp;
+					d[n] = &dict[n];
+					n++;
+				}
 				break;
 			case cm_tdbush_property_char_pp:
-				record += prop->cm_offset;
-				ppp = (const char ***) record;
-				dict[n].value.as = (char **) *ppp;
+				rec = record + prop->cm_offset;
+				ppp = (const char ***) rec;
+				if ((ppp != NULL) && (*ppp != NULL)) {
+					dict[n].value.as = (char **) *ppp;
+					d[n] = &dict[n];
+					n++;
+				}
 				break;
 			case cm_tdbush_property_time_t:
-				record += prop->cm_offset;
-				tp = (time_t *) record;
+				rec = record + prop->cm_offset;
+				tp = (time_t *) rec;
 				dict[n].value.n = *tp;
+				d[n] = &dict[n];
+				n++;
 				break;
 			case cm_tdbush_property_special:
 				switch (prop->cm_bus_type) {
@@ -3675,34 +3668,46 @@ cm_tdbush_property_get_all(DBusConnection *conn,
 					p = (*(prop->cm_read_string))(ctx, parent,
 								      record,
 								      prop->cm_name);
-					dict[n].value.s = talloc_strdup(parent, p);
+					if ((p != NULL) && (strlen(p) > 0)) {
+						dict[n].value.s = (char *) p;
+						d[n] = &dict[n];
+						n++;
+					}
 					break;
 				case cm_tdbush_property_strings:
 					pp = (*(prop->cm_read_strings))(ctx, parent,
 								        record,
 									prop->cm_name);
-					dict[n].value.as = always_strdupv(parent, pp);
+					if ((pp != NULL) && (*pp != NULL)) {
+						dict[n].value.as = (char **) pp;
+						d[n] = &dict[n];
+						n++;
+					}
 					break;
 				case cm_tdbush_property_boolean:
 					b = (*(prop->cm_read_boolean))(ctx, parent,
 								       record,
 								       prop->cm_name);
 					dict[n].value.b = b;
+					d[n] = &dict[n];
+					n++;
 					break;
 				case cm_tdbush_property_number:
 					l = (*(prop->cm_read_number))(ctx, parent,
 								      record,
 								      prop->cm_name);
 					dict[n].value.n = l;
+					d[n] = &dict[n];
+					n++;
 					break;
 				}
 				break;
 			}
-			d[n] = &dict[n];
-			n++;
 		}
 	}
-	d[n] = NULL;
+	if (d != NULL) {
+		d[n] = NULL;
+	}
 	cm_tdbusm_set_d(rep, d);
 
 	if (rep != NULL) {
