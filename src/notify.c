@@ -171,7 +171,7 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		facility = LOG_USER;
 		level = LOG_NOTICE;
 		for (p = dest; *p != '\0'; p = q) {
-			q = p + strcspn(p, ".,:/");
+			q = p + strcspn(p, ".,:/|");
 			tok = talloc_strndup(entry, p, q - p);
 			if (tok == NULL) {
 				continue;
@@ -190,7 +190,7 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					level = levels[i].value;
 				}
 			}
-			q += strspn(q, ".,:/");
+			q += strspn(q, ".,:/|");
 		}
 		cm_log(4, "0x%02x %s\n", facility | level, message);
 		syslog(facility | level, "%s", message);
