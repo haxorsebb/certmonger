@@ -2518,10 +2518,16 @@ request_prop_get_ca(struct cm_context *ctx, void *parent,
 		    void *record, const char *name)
 {
 	struct cm_store_entry *entry = record;
-	struct cm_store_ca *ca = cm_get_ca_by_nickname(ctx,
-						       entry->cm_ca_nickname);
-	return talloc_asprintf(parent, "%s/%s",
-			       CM_DBUS_REQUEST_PATH, ca->cm_busname);
+	struct cm_store_ca *ca;
+	if (entry->cm_ca_nickname != NULL) {
+		ca = cm_get_ca_by_nickname(ctx, entry->cm_ca_nickname);
+		if (ca != NULL) {
+			return talloc_asprintf(parent, "%s/%s",
+					       CM_DBUS_REQUEST_PATH,
+					       ca->cm_busname);
+		}
+	}
+	return "";
 }
 
 enum cm_tdbush_object_type {
@@ -3216,10 +3222,14 @@ cm_tdbush_property_get(DBusConnection *conn,
 	case cm_tdbush_property_char_p:
 		record += prop->cm_offset;
 		pp = (const char **) record;
-		if (prop->cm_bus_type == cm_tdbush_property_path) {
-			cm_tdbusm_set_p(rep, *pp);
-		} else {
-			cm_tdbusm_set_s(rep, *pp);
+		if (*pp != NULL) {
+			if (prop->cm_bus_type == cm_tdbush_property_path) {
+				if (strlen(*pp) > 0) {
+					cm_tdbusm_set_p(rep, *pp);
+				}
+			} else {
+				cm_tdbusm_set_s(rep, *pp);
+			}
 		}
 		break;
 	case cm_tdbush_property_char_pp:
@@ -3237,12 +3247,16 @@ cm_tdbush_property_get(DBusConnection *conn,
 		case cm_tdbush_property_path:
 			p = (*(prop->cm_read_string))(ctx, parent,
 						      record, property);
-			cm_tdbusm_set_p(rep, p);
+			if ((p != NULL) && (strlen(p) > 0)) {
+				cm_tdbusm_set_p(rep, p);
+			}
 			break;
 		case cm_tdbush_property_string:
 			p = (*(prop->cm_read_string))(ctx, parent,
 						      record, property);
-			cm_tdbusm_set_s(rep, p);
+			if ((p != NULL) && (strlen(p) > 0)) {
+				cm_tdbusm_set_s(rep, p);
+			}
 			break;
 		case cm_tdbush_property_strings:
 			pp = (*(prop->cm_read_strings))(ctx, parent,
