@@ -518,6 +518,7 @@ cm_tdbus_filter(DBusConnection *conn, DBusMessage *dmessage, void *data)
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 		break;
 	}
+	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
 static int
