@@ -1506,13 +1506,13 @@ ku_from_string(const char *ku)
 }
 
 static char **
-eku_splitv(const char *eku)
+eku_splitv(void *parent, const char *eku)
 {
 	char **ret = NULL;
 	const char *p, *q;
 	int i;
 	if ((eku != NULL) && (strlen(eku) > 0)) {
-		ret = talloc_array_ptrtype(NULL, ret, strlen(eku) + 1);
+		ret = talloc_array_ptrtype(parent, ret, strlen(eku) + 1);
 		p = eku;
 		i = 0;
 		while (*p != '\0') {
@@ -1544,7 +1544,7 @@ request_get_cert_info(DBusConnection *conn, DBusMessage *msg,
 	}
 	rep = dbus_message_new_method_return(msg);
 	if (rep != NULL) {
-		eku = eku_splitv(entry->cm_cert_eku);
+		eku = eku_splitv(entry, entry->cm_cert_eku);
 		cm_tdbusm_set_sssnasasasnas(rep,
 					    entry->cm_cert_issuer,
 					    entry->cm_cert_serial,
@@ -1669,7 +1669,7 @@ request_get_csr_info(DBusConnection *conn, DBusMessage *msg,
 	rep = dbus_message_new_method_return(msg);
 	if (rep != NULL) {
 		if (entry->cm_csr != NULL) {
-			eku = eku_splitv(entry->cm_template_eku);
+			eku = eku_splitv(entry, entry->cm_template_eku);
 			cm_tdbusm_set_sasasasnas(rep,
 						 entry->cm_template_subject,
 						 (const char **) entry->cm_template_email,
@@ -1999,6 +1999,11 @@ request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 		 * those outright if the new value's already being used. */
 		param = cm_tdbusm_find_dict_entry(d, "NICKNAME",
 						  cm_tdbusm_dict_s);
+		if (param == NULL) {
+			param = cm_tdbusm_find_dict_entry(d,
+							  CM_DBUS_PROP_NICKNAME,
+							  cm_tdbusm_dict_s);
+		}
 		if (param != NULL) {
 			if (cm_get_entry_by_nickname(ctx, param->value.s) != NULL) {
 				return send_internal_base_duplicate_error(conn, msg,
@@ -2011,6 +2016,11 @@ request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 		/* If we're being asked to change the CA, check that the new CA
 		 * exists. */
 		param = cm_tdbusm_find_dict_entry(d, "CA", cm_tdbusm_dict_s);
+		if (param == NULL) {
+			param = cm_tdbusm_find_dict_entry(d,
+							  CM_DBUS_PROP_CA,
+							  cm_tdbusm_dict_s);
+		}
 		if (param != NULL) {
 			ca = get_ca_for_path(ctx, param->value.s);
 			if (ca == NULL) {
@@ -2025,40 +2035,47 @@ request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 		for (i = 0; (d != NULL) && (d[i] != NULL); i++) {
 			param = d[i];
 			if ((param->value_type == cm_tdbusm_dict_b) &&
-			    (strcasecmp(param->key, "RENEW") == 0)) {
+			    ((strcasecmp(param->key, "RENEW") == 0) ||
+			     (strcasecmp(param->key, CM_DBUS_PROP_AUTORENEW) == 0))) {
 				entry->cm_autorenew = param->value.b;
 			} else
 			if ((param->value_type == cm_tdbusm_dict_b) &&
-			    (strcasecmp(param->key, "TRACK") == 0)) {
+			    ((strcasecmp(param->key, "TRACK") == 0) ||
+			     (strcasecmp(param->key, CM_DBUS_PROP_MONITORING) == 0))) {
 				entry->cm_monitor = param->value.b;
 			} else
 			if ((param->value_type == cm_tdbusm_dict_s) &&
-			    (strcasecmp(param->key, "CA") == 0)) {
+			    ((strcasecmp(param->key, "CA") == 0) ||
+			     (strcasecmp(param->key, CM_DBUS_PROP_CA) == 0))) {
 				ca = get_ca_for_path(ctx, param->value.s);
 				talloc_free(entry->cm_ca_nickname);
 				entry->cm_ca_nickname = talloc_strdup(entry,
 								      ca->cm_nickname);
 			} else
 			if ((param->value_type == cm_tdbusm_dict_s) &&
-			    (strcasecmp(param->key, "NICKNAME") == 0)) {
+			    ((strcasecmp(param->key, "NICKNAME") == 0) ||
+			     (strcasecmp(param->key, CM_DBUS_PROP_NICKNAME) == 0))) {
 				talloc_free(entry->cm_nickname);
 				entry->cm_nickname = talloc_strdup(entry,
 								   param->value.s);
 			} else
 			if ((param->value_type == cm_tdbusm_dict_s) &&
-			    (strcasecmp(param->key, "SUBJECT") == 0)) {
+			    ((strcasecmp(param->key, "SUBJECT") == 0) ||
+			     (strcasecmp(param->key, CM_DBUS_PROP_TEMPLATE_SUBJECT) == 0))) {
 				talloc_free(entry->cm_template_subject);
 				entry->cm_template_subject = maybe_strdup(entry,
 									  param->value.s);
 			} else
 			if ((param->value_type == cm_tdbusm_dict_s) &&
-			    (strcasecmp(param->key, "KEY_PIN") == 0)) {
+			    ((strcasecmp(param->key, "KEY_PIN") == 0) ||
+			     (strcasecmp(param->key, CM_DBUS_PROP_KEY_PIN) == 0))) {
 				talloc_free(entry->cm_key_pin);
 				entry->cm_key_pin = maybe_strdup(entry,
 								 param->value.s);
 			} else
 			if ((param->value_type == cm_tdbusm_dict_s) &&
-			    (strcasecmp(param->key, "KEY_PIN_FILE") == 0)) {
+			    ((strcasecmp(param->key, "KEY_PIN_FILE") == 0) ||
+			     (strcasecmp(param->key, CM_DBUS_PROP_KEY_PIN_FILE) == 0))) {
 				if ((param->value.s != NULL) &&
 				    (strlen(param->value.s) != 0) &&
 				    (check_arg_is_absolute_path(param->value.s) != 0)) {
@@ -2074,26 +2091,30 @@ request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 								      param->value.s);
 			} else
 			if ((param->value_type == cm_tdbusm_dict_as) &&
-			    (strcasecmp(param->key, "EKU") == 0)) {
+			    ((strcasecmp(param->key, "EKU") == 0) ||
+			     (strcasecmp(param->key, CM_DBUS_PROP_TEMPLATE_EKU) == 0))) {
 				talloc_free(entry->cm_template_eku);
 				entry->cm_template_eku = cm_submit_maybe_joinv(entry,
 									       ",",
 									       param->value.as);
 			} else
 			if ((param->value_type == cm_tdbusm_dict_as) &&
-			    (strcasecmp(param->key, "PRINCIPAL") == 0)) {
+			    ((strcasecmp(param->key, "PRINCIPAL") == 0) ||
+			     (strcasecmp(param->key, CM_DBUS_PROP_TEMPLATE_PRINCIPAL) == 0))) {
 				talloc_free(entry->cm_template_principal);
 				entry->cm_template_principal = maybe_strdupv(entry,
 									     param->value.as);
 			} else
 			if ((param->value_type == cm_tdbusm_dict_as) &&
-			    (strcasecmp(param->key, "DNS") == 0)) {
+			    ((strcasecmp(param->key, "DNS") == 0) ||
+			     (strcasecmp(param->key, CM_DBUS_PROP_TEMPLATE_HOSTNAME) == 0))) {
 				talloc_free(entry->cm_template_hostname);
 				entry->cm_template_hostname = maybe_strdupv(entry,
 									    param->value.as);
 			} else
 			if ((param->value_type == cm_tdbusm_dict_as) &&
-			    (strcasecmp(param->key, "EMAIL") == 0)) {
+			    ((strcasecmp(param->key, "EMAIL") == 0) ||
+			     (strcasecmp(param->key, CM_DBUS_PROP_TEMPLATE_EMAIL) == 0))) {
 				talloc_free(entry->cm_template_email);
 				entry->cm_template_email = maybe_strdupv(entry,
 									 param->value.as);
@@ -2576,6 +2597,7 @@ struct cm_tdbush_property {
 		cm_tdbush_property_char_p,
 		cm_tdbush_property_char_pp,
 		cm_tdbush_property_time_t,
+		cm_tdbush_property_comma_list,
 	} cm_local_type;
 	ptrdiff_t cm_offset;
 	const char * (*cm_read_string)(struct cm_context *ctx, void *parent,
@@ -3093,7 +3115,7 @@ cm_tdbush_property_get(DBusConnection *conn,
 	unsigned int i;
 	struct cm_store_entry *entry;
 	struct cm_store_ca *ca;
-	char *record;
+	char *record, **wpp;
 	const char *p, **pp, ***ppp;
 	time_t *tp;
 	dbus_bool_t b;
@@ -3225,6 +3247,15 @@ cm_tdbush_property_get(DBusConnection *conn,
 		tp = (time_t *) record;
 		cm_tdbusm_set_n(rep, (long) *tp);
 		break;
+	case cm_tdbush_property_comma_list:
+		record += prop->cm_offset;
+		pp = (const char **) record;
+		wpp = eku_splitv(record - prop->cm_offset, *pp);
+		pp = (const char **) wpp;
+		if (wpp != NULL) {
+			cm_tdbusm_set_as(rep, pp);
+		}
+		break;
 	case cm_tdbush_property_special:
 		switch (prop->cm_bus_type) {
 		case cm_tdbush_property_path:
@@ -3243,7 +3274,7 @@ cm_tdbush_property_get(DBusConnection *conn,
 			break;
 		case cm_tdbush_property_strings:
 			pp = (*(prop->cm_read_strings))(ctx, parent,
-						        record, property);
+							record, property);
 			cm_tdbusm_set_as(rep, pp);
 			break;
 		case cm_tdbush_property_boolean:
@@ -3428,6 +3459,19 @@ cm_tdbush_property_set(DBusConnection *conn,
 		tp = (time_t *) record;
 		*tp = l;
 		break;
+	case cm_tdbush_property_comma_list:
+		if (cm_tdbusm_get_ssas(msg, parent, &interface, &property,
+				       &wpp) != 0) {
+			cm_log(1, "Error parsing arguments.\n");
+			dbus_message_unref(rep);
+			talloc_free(parent);
+			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		}
+		wp = cm_submit_maybe_joinv(record, ",", wpp);
+		record += prop->cm_offset;
+		wpp = (char **) record;
+		*wpp = maybe_strdup(record - prop->cm_offset, wp);
+		break;
 	case cm_tdbush_property_special:
 		switch (prop->cm_bus_type) {
 		case cm_tdbush_property_path:
@@ -3504,7 +3548,7 @@ cm_tdbush_property_get_all(DBusConnection *conn,
 	unsigned int i;
 	struct cm_store_entry *entry;
 	struct cm_store_ca *ca;
-	char *record, *rec;
+	char *record, *rec, *wp, ***wppp;
 	const char *p, **pp, ***ppp;
 	time_t *tp;
 	dbus_bool_t b;
@@ -3650,6 +3694,16 @@ cm_tdbush_property_get_all(DBusConnection *conn,
 				ppp = (const char ***) rec;
 				if ((ppp != NULL) && (*ppp != NULL)) {
 					dict[n].value.as = (char **) *ppp;
+					d[n] = &dict[n];
+					n++;
+				}
+				break;
+			case cm_tdbush_property_comma_list:
+				rec = record + prop->cm_offset;
+				wppp = (char ***) rec;
+				wp = cm_submit_maybe_joinv(record, ",", *wppp);
+				if (wp != NULL) {
+					dict[n].value.s = wp;
 					d[n] = &dict[n];
 					n++;
 				}
@@ -3908,6 +3962,14 @@ cm_tdbush_iface_request(void)
 								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_CERT_EKU,
+								       cm_tdbush_property_strings,
+								       cm_tdbush_property_read,
+								       cm_tdbush_property_comma_list,
+								       offsetof(struct cm_store_entry, cm_cert_eku),
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_CERT_HOSTNAME,
 								       cm_tdbush_property_strings,
 								       cm_tdbush_property_read,
@@ -4038,6 +4100,22 @@ cm_tdbush_iface_request(void)
 										     NULL)))))),
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_KEY_PIN,
+								       cm_tdbush_property_strings,
+								       cm_tdbush_property_write,
+								       cm_tdbush_property_char_p,
+								       offsetof(struct cm_store_entry, cm_key_pin),
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_KEY_PIN_FILE,
+								       cm_tdbush_property_string,
+								       cm_tdbush_property_write,
+								       cm_tdbush_property_char_p,
+								       offsetof(struct cm_store_entry, cm_key_pin_file),
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_TEMPLATE_SUBJECT,
 								       cm_tdbush_property_string,
 								       cm_tdbush_property_read,
@@ -4051,6 +4129,14 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_pp,
 								       offsetof(struct cm_store_entry, cm_template_email),
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_TEMPLATE_EKU,
+								       cm_tdbush_property_strings,
+								       cm_tdbush_property_read,
+								       cm_tdbush_property_comma_list,
+								       offsetof(struct cm_store_entry, cm_template_eku),
 								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
@@ -4330,7 +4416,7 @@ cm_tdbush_iface_request(void)
 										     cm_tdbush_method_arg_out,
 										     NULL),
 								     NULL),
-							 NULL)))))))))))))))))))))))))))))))))))))))))))))))))))))))));
+							 NULL)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
 	}
 	return ret;
 }
