@@ -26,6 +26,7 @@
 
 #include <dbus/dbus.h>
 
+#include "cm.h"
 #include "log.h"
 #include "tdbus.h"
 #include "tdbush.h"
@@ -449,11 +450,13 @@ cm_tdbus_reconnect(struct tevent_context *ec, struct tevent_timer *timer,
 		case cm_tdbus_system:
 			cm_log(1, "Attempting to reconnect to system bus.\n");
 			tdb->conn = dbus_bus_get(DBUS_BUS_SYSTEM, NULL);
+			cm_set_conn_ptr(tdb->data, tdb->conn);
 			bus_desc = "system";
 			break;
 		case cm_tdbus_session:
 			cm_log(1, "Attempting to reconnect to session bus.\n");
 			tdb->conn = dbus_bus_get(DBUS_BUS_SESSION, NULL);
+			cm_set_conn_ptr(tdb->data, tdb->conn);
 			bus_desc = "session";
 			break;
 		}
@@ -619,12 +622,14 @@ cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type,
 	switch (bus_type) {
 	case cm_tdbus_system:
 		conn = dbus_bus_get(DBUS_BUS_SYSTEM, error);
+		cm_set_conn_ptr(data, conn);
 		/* Don't exit if we get disconnected. */
 		exit_on_disconnect = FALSE;
 		bus_desc = "system";
 		break;
 	case cm_tdbus_session:
 		conn = dbus_bus_get(DBUS_BUS_SESSION, error);
+		cm_set_conn_ptr(data, conn);
 		/* Exit if we get disconnected. */
 		exit_on_disconnect = TRUE;
 		bus_desc = "session";

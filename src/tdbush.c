@@ -3491,22 +3491,23 @@ cm_tdbush_property_set(DBusConnection *conn,
 }
 
 static DBusHandlerResult
-cm_tdbush_property_get_all(DBusConnection *conn,
-			   DBusMessage *msg,
-			   struct cm_context *ctx)
+cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
+				      DBusConnection *conn,
+				      DBusMessage *req,
+				      const char *path,
+				      const char *interface,
+				      const char **properties)
 {
-	const char *path;
-	char *interface;
 	void *parent;
 	static struct cm_tdbush_interface_map *map;
 	struct cm_tdbush_interface *iface;
 	struct cm_tdbush_interface_item *item;
 	struct cm_tdbush_property *prop;
 	enum cm_tdbush_object_type type;
-	unsigned int i;
+	unsigned int i, j;
 	struct cm_store_entry *entry;
 	struct cm_store_ca *ca;
-	char *record, *rec, *wp, ***wppp;
+	char *record, *rec, *wp, ***wppp, *ifacetmp;
 	const char *p, **pp, ***ppp;
 	time_t *tp;
 	dbus_bool_t b;
@@ -3516,7 +3517,28 @@ cm_tdbush_property_get_all(DBusConnection *conn,
 	struct cm_tdbusm_dict *dict, **dtmp;
 	int n, n_dictvals = 0;
 
-	path = dbus_message_get_path(msg);
+	/* If we have a method call, pull the path and interface from it.
+	 * Either way, we need to be sure we have them. */
+	parent = talloc_new(NULL);
+	if (req != NULL) {
+		path = dbus_message_get_path(req);
+		if (cm_tdbusm_get_s(req, parent, &ifacetmp) != 0) {
+			cm_log(1, "Error parsing arguments.\n");
+			talloc_free(parent);
+			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		}
+		interface = ifacetmp;
+	}
+	if (path == NULL) {
+		cm_log(1, "Error parsing arguments.\n");
+		talloc_free(parent);
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+	if (interface == NULL) {
+		cm_log(1, "Error parsing arguments.\n");
+		talloc_free(parent);
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
 	type = cm_tdbush_classify_path(ctx, path);
 
 	/* Get a pointer to the record. */
@@ -3529,6 +3551,7 @@ cm_tdbush_property_get_all(DBusConnection *conn,
 	case cm_tdbush_object_type_group_of_requests:
 	case cm_tdbush_object_type_group_of_cas:
 		cm_log(1, "No properties on (%s).\n", path);
+		talloc_free(parent);
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 		break;
 	case cm_tdbush_object_type_base:
@@ -3539,6 +3562,7 @@ cm_tdbush_property_get_all(DBusConnection *conn,
 		ca = get_ca_for_path(ctx, path);
 		if (ca == NULL) {
 			cm_log(1, "No such CA (%s).\n", path);
+			talloc_free(parent);
 			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 		}
 		record = (char *) ca;
@@ -3547,6 +3571,7 @@ cm_tdbush_property_get_all(DBusConnection *conn,
 		entry = get_entry_for_path(ctx, path);
 		if (entry == NULL) {
 			cm_log(1, "No such request (%s).\n", path);
+			talloc_free(parent);
 			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 		}
 		record = (char *) entry;
@@ -3554,20 +3579,25 @@ cm_tdbush_property_get_all(DBusConnection *conn,
 	}
 	if ((record == NULL) && (type != cm_tdbush_object_type_base)) {
 		cm_log(1, "No properties on (%s).\n", path);
-		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-	}
-
-	parent = talloc_new(NULL);
-	if (cm_tdbusm_get_s(msg, parent, &interface) != 0) {
-		cm_log(1, "Error parsing arguments.\n");
 		talloc_free(parent);
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
 
-	rep = dbus_message_new_method_return(msg);
-	if (rep == NULL) {
-		talloc_free(parent);
-		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	/* Create the message we're sending. */
+	if (req != NULL) {
+		rep = dbus_message_new_method_return(req);
+		if (rep == NULL) {
+			talloc_free(parent);
+			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		}
+	} else {
+		rep = dbus_message_new_signal(path,
+					      DBUS_INTERFACE_PROPERTIES,
+					      "PropertiesChanged");
+		if (rep == NULL) {
+			talloc_free(parent);
+			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		}
 	}
 
 	/* Examine all properties. */
@@ -3603,6 +3633,19 @@ cm_tdbush_property_get_all(DBusConnection *conn,
 				/* nope! */
 				continue;
 				break;
+			}
+			if (properties != NULL) {
+				/* skip the property if we have a list of
+				 * properties to list */
+				for (j = 0; properties[j] != NULL; j++) {
+					if (strcmp(properties[j],
+						   prop->cm_name) == 0) {
+						break;
+					}
+					if (properties[j] == NULL) {
+						continue;
+					}
+				}
 			}
 			if (n >= n_dictvals) {
 				dict = talloc_realloc(parent, dict, struct cm_tdbusm_dict, n_dictvals + 32);
@@ -3720,7 +3763,12 @@ cm_tdbush_property_get_all(DBusConnection *conn,
 	if (d != NULL) {
 		d[n] = NULL;
 	}
-	cm_tdbusm_set_d(rep, d);
+
+	if (req != NULL) {
+		cm_tdbusm_set_d(rep, d);
+	} else {
+		cm_tdbusm_set_sd(rep, interface, d);
+	}
 
 	if (rep != NULL) {
 		dbus_connection_send(conn, rep, NULL);
@@ -3729,6 +3777,27 @@ cm_tdbush_property_get_all(DBusConnection *conn,
 	talloc_free(parent);
 
 	return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+static DBusHandlerResult
+cm_tdbush_property_get_all(DBusConnection *conn,
+			   DBusMessage *msg,
+			   struct cm_context *ctx)
+{
+	return cm_tdbush_property_get_all_or_changed(ctx, conn, msg,
+						     NULL, NULL, NULL);
+}
+
+DBusHandlerResult
+cm_tdbush_property_emit_changed(struct cm_context *ctx,
+				const char *path,
+				const char *interface,
+				const char **properties)
+{
+	return cm_tdbush_property_get_all_or_changed(ctx, cm_get_conn_ptr(ctx),
+						     NULL,
+						     path, interface,
+						     properties);
 }
 
 static struct cm_tdbush_interface *
@@ -3798,7 +3867,7 @@ cm_tdbush_iface_properties(void)
 				     make_interface_item(cm_tdbush_interface_signal,
 							 make_signal("PropertiesChanged",
 								     make_signal_arg("interface_name",
-								    		     "s",
+										     "s",
 								     make_signal_arg("changed_properties",
 										     "a{sv}",
 								     make_signal_arg("invalidated_properties",

@@ -52,7 +52,7 @@ struct cm_context {
 	int netlink;
 	void *netlink_tfd, *netlink_delayed_event;
 	int idle_timeout;
-	void *idle_event;
+	void *idle_event, *conn_ptr;
 };
 
 static void *cm_service_one(struct cm_context *context,
@@ -127,6 +127,8 @@ cm_init(struct tevent_context *parent, struct cm_context **context,
 						 TEVENT_FD_READ,
 						 cm_netlink_fd_h, ctx);
 	}
+	/* Start out without a DBus connection. */
+	ctx->conn_ptr = NULL;
 	*context = ctx;
 	return 0;
 }
@@ -776,4 +778,16 @@ cm_remove_ca(struct cm_context *context, const char *nickname)
 		}
 	}
 	return -1;
+}
+
+void *
+cm_get_conn_ptr(struct cm_context *context)
+{
+	return context->conn_ptr;
+}
+
+void
+cm_set_conn_ptr(struct cm_context *context, void *ptr)
+{
+	context->conn_ptr = ptr;
 }

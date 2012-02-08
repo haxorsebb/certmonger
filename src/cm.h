@@ -50,4 +50,7 @@ dbus_bool_t cm_restart_one(struct cm_context *c, const char *nickname);
 dbus_bool_t cm_stop_one(struct cm_context *c, const char *nickname);
 dbus_bool_t cm_start_one(struct cm_context *c, const char *nickname);
 
+void *cm_get_conn_ptr(struct cm_context *context);
+void cm_set_conn_ptr(struct cm_context *context, void *ptr);
+
 #endif
