@@ -1409,48 +1409,6 @@ request_get_nickname(DBusConnection *conn, DBusMessage *msg,
 }
 
 static DBusHandlerResult
-request_get_key_pin(DBusConnection *conn, DBusMessage *msg,
-		    struct cm_context *ctx)
-{
-	DBusMessage *rep;
-	struct cm_store_entry *entry;
-	entry = get_entry_for_request_message(msg, ctx);
-	if (entry == NULL) {
-		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-	}
-	rep = dbus_message_new_method_return(msg);
-	if (rep != NULL) {
-		cm_tdbusm_set_s(rep, entry->cm_key_pin);
-		dbus_connection_send(conn, rep, NULL);
-		dbus_message_unref(rep);
-		return DBUS_HANDLER_RESULT_HANDLED;
-	} else {
-		return send_internal_request_error(conn, msg);
-	}
-}
-
-static DBusHandlerResult
-request_get_key_pin_file(DBusConnection *conn, DBusMessage *msg,
-			 struct cm_context *ctx)
-{
-	DBusMessage *rep;
-	struct cm_store_entry *entry;
-	entry = get_entry_for_request_message(msg, ctx);
-	if (entry == NULL) {
-		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-	}
-	rep = dbus_message_new_method_return(msg);
-	if (rep != NULL) {
-		cm_tdbusm_set_s(rep, entry->cm_key_pin_file);
-		dbus_connection_send(conn, rep, NULL);
-		dbus_message_unref(rep);
-		return DBUS_HANDLER_RESULT_HANDLED;
-	} else {
-		return send_internal_request_error(conn, msg);
-	}
-}
-
-static DBusHandlerResult
 request_get_autorenew(DBusConnection *conn, DBusMessage *msg,
 		      struct cm_context *ctx)
 {
@@ -2738,24 +2696,24 @@ make_property(const char *name,
 	      const char * (*read_string)(struct cm_context *ctx, void *parent,
 					  void *structure, const char *name),
 	      const char ** (*read_strings)(struct cm_context *ctx,
-	      				    void *parent,
+					    void *parent,
 					    void *structure,
 					    const char *name),
 	      dbus_bool_t (*read_boolean)(struct cm_context *ctx, void *parent,
-	      				  void *structure, const char *name),
+					  void *structure, const char *name),
 	      long (*read_number)(struct cm_context *ctx, void *parent,
-	      			  void *structure, const char *name),
+				  void *structure, const char *name),
 	      void (*write_string)(struct cm_context *ctx, void *parent,
-	      			   void *structure, const char *name,
+				   void *structure, const char *name,
 				   const char *new_value),
 	      void (*write_strings)(struct cm_context *ctx, void *parent,
-	      			    void *structure, const char *name,
+				    void *structure, const char *name,
 				    const char **new_values),
 	      void (*write_boolean)(struct cm_context *ctx, void *parent,
-	      			    void *structure, const char *name,
+				    void *structure, const char *name,
 				    dbus_bool_t),
 	      void (*write_number)(struct cm_context *ctx, void *parent,
-	      			   void *structure, const char *name,
+				   void *structure, const char *name,
 				   long new_value),
 	      struct cm_tdbush_member_annotation *annotations)
 {
@@ -3837,7 +3795,16 @@ cm_tdbush_iface_properties(void)
 										     cm_tdbush_method_arg_out,
 										     NULL)),
 								     NULL),
-							 NULL))));
+				     make_interface_item(cm_tdbush_interface_signal,
+							 make_signal("PropertiesChanged",
+								     make_signal_arg("interface_name",
+								    		     "s",
+								     make_signal_arg("changed_properties",
+										     "a{sv}",
+								     make_signal_arg("invalidated_properties",
+										     "as",
+										     NULL)))),
+							 NULL)))));
 	}
 	return ret;
 }
@@ -3896,7 +3863,9 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_char_p,
 								       offsetof(struct cm_store_entry, cm_cert),
 								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-								       NULL),
+								       make_member_annotation("org.freedesktop.DBus.Property.EmitsChangedSignal",
+											      "true",
+											      NULL)),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_cert_info",
 								     request_get_cert_info,
