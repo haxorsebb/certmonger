@@ -3794,10 +3794,16 @@ cm_tdbush_property_emit_changed(struct cm_context *ctx,
 				const char *interface,
 				const char **properties)
 {
-	return cm_tdbush_property_get_all_or_changed(ctx, cm_get_conn_ptr(ctx),
-						     NULL,
-						     path, interface,
-						     properties);
+	if (cm_get_conn_ptr(ctx) == NULL) {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	} else {
+		return cm_tdbush_property_get_all_or_changed(ctx,
+							     cm_get_conn_ptr(ctx),
+							     NULL,
+							     path,
+							     interface,
+							     properties);
+	}
 }
 
 static struct cm_tdbush_interface *
