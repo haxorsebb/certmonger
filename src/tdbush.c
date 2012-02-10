@@ -34,6 +34,7 @@
 #include "store-int.h"
 #include "submit-int.h"
 #include "tdbus.h"
+#include "tdbush.h"
 #include "tdbusm.h"
 
 #ifdef ENABLE_NLS
@@ -89,29 +90,12 @@ get_ca_for_request_message(DBusMessage *msg, struct cm_context *ctx)
 static char *
 maybe_strdup(void *parent, const char *s)
 {
-	if ((s != NULL) && (strlen(s) > 0)) {
-		return talloc_strdup(parent, s);
-	}
-	return NULL;
+	return cm_store_maybe_strdup(parent, s);
 }
 static char **
 maybe_strdupv(void *parent, char **s)
 {
-	int i;
-	char **ret = NULL;
-	for (i = 0; (s != NULL) && (s[i] != NULL); i++) {
-		continue;
-	}
-	if (i > 0) {
-		ret = talloc_array_ptrtype(parent, ret, i + 1);
-		if (ret != NULL) {
-			for (i = 0; (s != NULL) && (s[i] != NULL); i++) {
-				ret[i] = talloc_strdup(ret, s[i]);
-			}
-			ret[i] = NULL;
-		}
-	}
-	return ret;
+	return cm_store_maybe_strdupv(parent, s);
 }
 
 static DBusHandlerResult
@@ -1370,6 +1354,46 @@ ca_prop_get_is_default(struct cm_context *ctx, void *parent,
 	return FALSE;
 }
 
+static void
+ca_prop_set_is_default(struct cm_context *ctx, void *parent,
+		       void *record, const char *name,
+		       dbus_bool_t new_value)
+{
+	const char *propname[2], *path;
+	struct cm_store_ca *ca = record, *other;
+	int i;
+
+	if (strcmp(name, CM_DBUS_PROP_IS_DEFAULT) == 0) {
+		propname[0] = CM_DBUS_PROP_IS_DEFAULT;
+		propname[1] = NULL;
+		if (new_value) {
+			i = 0;
+			while ((other = cm_get_ca_by_index(ctx, i++)) != NULL) {
+				if ((other != ca) &&
+				    (other->cm_ca_is_default)) {
+					other->cm_ca_is_default = FALSE;
+					path = talloc_asprintf(parent, "%s/%s",
+							       CM_DBUS_CA_PATH,
+							       other->cm_busname);
+					cm_tdbush_property_emit_changed(ctx, path,
+									CM_DBUS_CA_INTERFACE,
+									propname);
+				}
+			}
+		}
+		if ((!ca->cm_ca_is_default && new_value) ||
+		    (ca->cm_ca_is_default && !new_value)) {
+			ca->cm_ca_is_default = new_value;
+			path = talloc_asprintf(parent, "%s/%s",
+					       CM_DBUS_CA_PATH,
+					       other->cm_busname);
+			cm_tdbush_property_emit_changed(ctx, path,
+							CM_DBUS_CA_INTERFACE,
+							propname);
+		}
+	}
+}
+
 /* Functions implemented for request objects. */
 static DBusHandlerResult
 send_internal_request_error(DBusConnection *conn, DBusMessage *req)
@@ -1400,6 +1424,48 @@ request_get_nickname(DBusConnection *conn, DBusMessage *msg,
 		if (entry->cm_nickname != NULL) {
 			cm_tdbusm_set_s(rep, entry->cm_nickname);
 		}
+		dbus_connection_send(conn, rep, NULL);
+		dbus_message_unref(rep);
+		return DBUS_HANDLER_RESULT_HANDLED;
+	} else {
+		return send_internal_request_error(conn, msg);
+	}
+}
+
+static DBusHandlerResult
+request_get_key_pin(DBusConnection *conn, DBusMessage *msg,
+		    struct cm_context *ctx)
+{
+	DBusMessage *rep;
+	struct cm_store_entry *entry;
+	entry = get_entry_for_request_message(msg, ctx);
+	if (entry == NULL) {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+	rep = dbus_message_new_method_return(msg);
+	if (rep != NULL) {
+		cm_tdbusm_set_s(rep, entry->cm_key_pin);
+		dbus_connection_send(conn, rep, NULL);
+		dbus_message_unref(rep);
+		return DBUS_HANDLER_RESULT_HANDLED;
+	} else {
+		return send_internal_request_error(conn, msg);
+	}
+}
+
+static DBusHandlerResult
+request_get_key_pin_file(DBusConnection *conn, DBusMessage *msg,
+			 struct cm_context *ctx)
+{
+	DBusMessage *rep;
+	struct cm_store_entry *entry;
+	entry = get_entry_for_request_message(msg, ctx);
+	if (entry == NULL) {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+	rep = dbus_message_new_method_return(msg);
+	if (rep != NULL) {
+		cm_tdbusm_set_s(rep, entry->cm_key_pin_file);
 		dbus_connection_send(conn, rep, NULL);
 		dbus_message_unref(rep);
 		return DBUS_HANDLER_RESULT_HANDLED;
@@ -2116,6 +2182,9 @@ request_resubmit(DBusConnection *conn, DBusMessage *msg,
 {
 	DBusMessage *rep;
 	struct cm_store_entry *entry;
+	const char *propname[2];
+	char *path;
+
 	entry = get_entry_for_request_message(msg, ctx);
 	if (entry == NULL) {
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
@@ -2128,6 +2197,15 @@ request_resubmit(DBusConnection *conn, DBusMessage *msg,
 			} else {
 				entry->cm_state = CM_NEED_CSR;
 			}
+			propname[0] = CM_DBUS_PROP_IS_DEFAULT;
+			propname[1] = NULL;
+			path = talloc_asprintf(entry, "%s/%s",
+					       CM_DBUS_REQUEST_PATH,
+					       entry->cm_busname);
+			cm_tdbush_property_emit_changed(ctx, path,
+							CM_DBUS_REQUEST_INTERFACE,
+							propname);
+			talloc_free(path);
 			if (cm_start_one(ctx, entry->cm_nickname)) {
 				cm_tdbusm_set_b(rep, TRUE);
 			} else {
@@ -3278,6 +3356,7 @@ cm_tdbush_property_set(DBusConnection *conn,
 	dbus_bool_t b;
 	long l;
 	DBusMessage *rep;
+	const char *properties[2];
 
 	path = dbus_message_get_path(msg);
 	type = cm_tdbush_classify_path(ctx, path);
@@ -3487,7 +3566,46 @@ cm_tdbush_property_set(DBusConnection *conn,
 	}
 	talloc_free(parent);
 
+	properties[0] = prop->cm_name;
+	properties[1] = NULL;
+	cm_tdbush_property_emit_changed(ctx, path, interface, properties);
+
 	return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+static int
+compare_strv(const char **a, const char **b)
+{
+	int m, n, i, j;
+	if ((a == NULL) && (b == NULL)) {
+		return 0;
+	}
+	if ((a != NULL) && (b == NULL)) {
+		return -1;
+	}
+	if ((a == NULL) && (b != NULL)) {
+		return -1;
+	}
+	for (m = 0; a[m] != NULL; m++) {
+		continue;
+	}
+	for (n = 0; b[n] != NULL; n++) {
+		continue;
+	}
+	if (m != n) {
+		return -1;
+	}
+	for (i = 0; i < m; i++) {
+		for (j = 0; j < n; j++) {
+			if (strcmp(a[i], b[j]) == 0) {
+				break;
+			}
+		}
+		if (b[j] == NULL) {
+			return -1;
+		}
+	}
+	return 0;
 }
 
 static DBusHandlerResult
@@ -3496,6 +3614,7 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 				      DBusMessage *req,
 				      const char *path,
 				      const char *interface,
+				      char *old_record,
 				      const char **properties)
 {
 	void *parent;
@@ -3507,11 +3626,11 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 	unsigned int i, j;
 	struct cm_store_entry *entry;
 	struct cm_store_ca *ca;
-	char *record, *rec, *wp, ***wppp, *ifacetmp;
-	const char *p, **pp, ***ppp;
-	time_t *tp;
-	dbus_bool_t b;
-	long l;
+	char *record, *rec, *old_rec, **wpp, *ifacetmp;
+	const char *p, **pp, ***ppp, **old_pp, *old_p, ***old_ppp;
+	time_t *tp, *old_tp;
+	dbus_bool_t b, old_b;
+	long l, old_l;
 	DBusMessage *rep;
 	const struct cm_tdbusm_dict **d;
 	struct cm_tdbusm_dict *dict, **dtmp;
@@ -3684,6 +3803,19 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 			case cm_tdbush_property_char_p:
 				rec = record + prop->cm_offset;
 				pp = (const char **) rec;
+				if (old_record != NULL) {
+					old_rec = old_record + prop->cm_offset;
+					old_pp = (const char **) old_rec;
+					if ((*pp == NULL) &&
+					    (*old_pp == NULL)) {
+						continue;
+					}
+					if ((*pp != NULL) &&
+					    (*old_pp != NULL) &&
+					    (strcmp(*pp, *old_pp) == 0)) {
+						continue;
+					}
+				}
 				if ((pp != NULL) && (*pp != NULL)) {
 					dict[n].value.s = (char *) *pp;
 					d[n] = &dict[n];
@@ -3693,6 +3825,13 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 			case cm_tdbush_property_char_pp:
 				rec = record + prop->cm_offset;
 				ppp = (const char ***) rec;
+				if (old_record != NULL) {
+					old_rec = old_record + prop->cm_offset;
+					old_ppp = (const char ***) old_rec;
+					if (compare_strv(*old_ppp, *ppp) == 0) {
+						continue;
+					}
+				}
 				if ((ppp != NULL) && (*ppp != NULL)) {
 					dict[n].value.as = (char **) *ppp;
 					d[n] = &dict[n];
@@ -3701,10 +3840,23 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 				break;
 			case cm_tdbush_property_comma_list:
 				rec = record + prop->cm_offset;
-				wppp = (char ***) rec;
-				wp = cm_submit_maybe_joinv(record, ",", *wppp);
-				if (wp != NULL) {
-					dict[n].value.s = wp;
+				wpp = (char **) rec;
+				if (old_record != NULL) {
+					old_rec = old_record + prop->cm_offset;
+					old_pp = (const char **) old_rec;
+					if ((*wpp == NULL) &&
+					    (*old_pp == NULL)) {
+						continue;
+					}
+					if ((*wpp != NULL) &&
+					    (*old_pp != NULL) &&
+					    (strcmp(*wpp, *old_pp) == 0)) {
+						continue;
+					}
+				}
+				wpp = eku_splitv(record, *wpp);
+				if (wpp != NULL) {
+					dict[n].value.as = wpp;
 					d[n] = &dict[n];
 					n++;
 				}
@@ -3713,6 +3865,13 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 				rec = record + prop->cm_offset;
 				tp = (time_t *) rec;
 				dict[n].value.n = *tp;
+				if (old_record != NULL) {
+					old_rec = old_record + prop->cm_offset;
+					old_tp = (time_t *) old_rec;
+					if (*tp == *old_tp) {
+						continue;
+					}
+				}
 				d[n] = &dict[n];
 				n++;
 				break;
@@ -3723,6 +3882,20 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 					p = (*(prop->cm_read_string))(ctx, parent,
 								      record,
 								      prop->cm_name);
+					if (old_record != NULL) {
+						old_p = (*(prop->cm_read_string))(ctx, parent,
+										  old_record,
+										  prop->cm_name);
+						if ((p == NULL) &&
+						    (old_p == NULL)) {
+							continue;
+						}
+						if ((p != NULL) &&
+						    (old_p != NULL) &&
+						    (strcmp(p, old_p) == 0)) {
+							continue;
+						}
+					}
 					if ((p != NULL) && (strlen(p) > 0)) {
 						dict[n].value.s = (char *) p;
 						d[n] = &dict[n];
@@ -3733,6 +3906,14 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 					pp = (*(prop->cm_read_strings))(ctx, parent,
 								        record,
 									prop->cm_name);
+					if (old_record != NULL) {
+						old_pp = (*(prop->cm_read_strings))(ctx, parent,
+										    old_record,
+										    prop->cm_name);
+						if (compare_strv(old_pp, pp) == 0) {
+							continue;
+						}
+					}
 					if ((pp != NULL) && (*pp != NULL)) {
 						dict[n].value.as = (char **) pp;
 						d[n] = &dict[n];
@@ -3743,6 +3924,14 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 					b = (*(prop->cm_read_boolean))(ctx, parent,
 								       record,
 								       prop->cm_name);
+					if (old_record != NULL) {
+						old_b = (*(prop->cm_read_boolean))(ctx, parent,
+										   old_record,
+										   prop->cm_name);
+						if (b == old_b) {
+							continue;
+						}
+					}
 					dict[n].value.b = b;
 					d[n] = &dict[n];
 					n++;
@@ -3751,6 +3940,14 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 					l = (*(prop->cm_read_number))(ctx, parent,
 								      record,
 								      prop->cm_name);
+					if (old_record != NULL) {
+						old_l = (*(prop->cm_read_number))(ctx, parent,
+										  old_record,
+										  prop->cm_name);
+						if (l == old_l) {
+							continue;
+						}
+					}
 					dict[n].value.n = l;
 					d[n] = &dict[n];
 					n++;
@@ -3785,7 +3982,7 @@ cm_tdbush_property_get_all(DBusConnection *conn,
 			   struct cm_context *ctx)
 {
 	return cm_tdbush_property_get_all_or_changed(ctx, conn, msg,
-						     NULL, NULL, NULL);
+						     NULL, NULL, NULL, NULL);
 }
 
 DBusHandlerResult
@@ -3802,7 +3999,29 @@ cm_tdbush_property_emit_changed(struct cm_context *ctx,
 							     NULL,
 							     path,
 							     interface,
+							     NULL,
 							     properties);
+	}
+}
+
+void
+cm_tdbush_property_emit_entry_changes(struct cm_context *ctx,
+				      struct cm_store_entry *old_entry,
+				      struct cm_store_entry *new_entry)
+{
+	char *path;
+	if (cm_get_conn_ptr(ctx) != NULL) {
+		path = talloc_asprintf(old_entry, "%s/%s",
+				       CM_DBUS_REQUEST_PATH,
+				       old_entry->cm_busname);
+		cm_tdbush_property_get_all_or_changed(ctx,
+						      cm_get_conn_ptr(ctx),
+						      NULL,
+						      path,
+						      CM_DBUS_REQUEST_INTERFACE,
+						      (char *) old_entry,
+						      NULL);
+		talloc_free(path);
 	}
 }
 
@@ -4200,6 +4419,22 @@ cm_tdbush_iface_request(void)
 								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_key_pin",
+								     request_get_key_pin,
+								     make_method_arg("pin",
+										     "s",
+										     cm_tdbush_method_arg_out,
+										     NULL),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_key_pin_file",
+								     request_get_key_pin_file,
+								     make_method_arg("pin_file",
+										     "s",
+										     cm_tdbush_method_arg_out,
+										     NULL),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_key_storage_info",
 								     request_get_key_storage_info,
 								     make_method_arg("type",
@@ -4460,7 +4695,7 @@ cm_tdbush_iface_request(void)
 										     cm_tdbush_method_arg_out,
 										     NULL),
 								     NULL),
-							 NULL)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
+							 NULL)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
 	}
 	return ret;
 }
@@ -4498,11 +4733,11 @@ cm_tdbush_iface_ca(void)
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_IS_DEFAULT,
 								       cm_tdbush_property_boolean,
-								       cm_tdbush_property_read,
+								       cm_tdbush_property_readwrite,
 								       cm_tdbush_property_special,
 								       0,
 								       NULL, NULL, ca_prop_get_is_default, NULL,
-								       NULL, NULL, NULL, NULL,
+								       NULL, NULL, ca_prop_set_is_default, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_type",

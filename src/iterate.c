@@ -321,7 +321,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 	time_t remaining;
 	struct cm_iterate_state *state;
 	struct cm_store_ca *tmp_ca;
-	enum cm_state old_entry_state;
+	struct cm_store_entry *old_entry;
 	char *serial;
 	const char *tmp_ca_name;
 	state = cm_iterate_state;
@@ -329,7 +329,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 	*when = cm_time_no_time;
 	*delay = 0;
 
-	old_entry_state = entry->cm_state;
+	old_entry = cm_store_entry_dup(entry, entry);
 	if (entry->cm_cert_not_after != 0) {
 		remaining = entry->cm_cert_not_after - cm_time(NULL);
 	} else {
@@ -1107,7 +1107,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		abort();
 		break;
 	}
-	if (old_entry_state != entry->cm_state) {
+	if (old_entry->cm_state != entry->cm_state) {
 		cm_log(3, "%s('%s') moved to state '%s'\n",
 		       entry->cm_busname,
 		       entry->cm_nickname ?
@@ -1115,6 +1115,8 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		       cm_store_state_as_string(entry->cm_state));
 		cm_store_entry_save(entry);
 	}
+	cm_tdbush_property_emit_entry_changes(context, old_entry, entry);
+	talloc_free(old_entry);
 	return 0;
 }
 

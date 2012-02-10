@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2011 Red Hat, Inc.
+ * Copyright (C) 2009,2011,2012 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,10 @@ struct cm_store_ca;
 /* Generic routines. */
 struct cm_store_entry *cm_store_entry_new(void *parent);
 struct cm_store_ca *cm_store_ca_new(void *parent);
+struct cm_store_entry *cm_store_entry_dup(void *parent,
+					  struct cm_store_entry *entry);
+struct cm_store_ca *cm_store_ca_dup(void *parent,
+				    struct cm_store_ca *ca);
 
 /* Store-specific entry storage. */
 int cm_store_entry_save(struct cm_store_entry *entry);
@@ -47,6 +51,8 @@ char *cm_store_serial_to_binary(void *parent,
 char *cm_store_serial_to_der(void *parent, const char *serial);
 void cm_store_hex_to_bin(const char *serial, unsigned char *buf, int length);
 char *cm_store_canonicalize_directory(void *parent, const char *path);
+char *cm_store_maybe_strdup(void *parent, const char *s);
+char **cm_store_maybe_strdupv(void *parent, char **s);
 
 void cm_store_set_if_not_set_s(void *parent, char **dest, char *src);
 void cm_store_set_if_not_set_as(void *parent, char ***dest, char **src);

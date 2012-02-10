@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2011 Red Hat, Inc.
+ * Copyright (C) 2009,2011,2012 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -78,6 +78,35 @@ static struct {
 	{"NEWLY_ADDED_READING_KEYI", CM_NEWLY_ADDED_READING_KEYINFO},
 	{"NEWLY_ADDED_NEED_KEYI_READ_PIN", CM_NEWLY_ADDED_NEED_KEYINFO_READ_PIN},
 };
+
+char *
+cm_store_maybe_strdup(void *parent, const char *s)
+{
+	if ((s != NULL) && (strlen(s) > 0)) {
+		return talloc_strdup(parent, s);
+	}
+	return NULL;
+}
+
+char **
+cm_store_maybe_strdupv(void *parent, char **s)
+{
+	int i;
+	char **ret = NULL;
+	for (i = 0; (s != NULL) && (s[i] != NULL); i++) {
+		continue;
+	}
+	if (i > 0) {
+		ret = talloc_array_ptrtype(parent, ret, i + 1);
+		if (ret != NULL) {
+			for (i = 0; (s != NULL) && (s[i] != NULL); i++) {
+				ret[i] = talloc_strdup(ret, s[i]);
+			}
+			ret[i] = NULL;
+		}
+	}
+	return ret;
+}
 
 const char *
 cm_store_state_as_string(enum cm_state state)

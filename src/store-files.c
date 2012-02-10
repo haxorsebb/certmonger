@@ -1416,3 +1416,90 @@ cm_store_get_all_cas(void *parent)
 	}
 	return ret;
 }
+
+struct cm_store_entry *
+cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
+{
+	struct cm_store_entry *ret;
+
+	ret = talloc_ptrtype(parent, ret);
+
+	ret->cm_busname = cm_store_maybe_strdup(ret, entry->cm_busname);
+	ret->cm_store_private =
+		cm_store_maybe_strdup(ret, entry->cm_store_private);
+	ret->cm_nickname = cm_store_maybe_strdup(ret, entry->cm_nickname);
+
+	ret->cm_key_type = entry->cm_key_type;
+	ret->cm_key_storage_type = entry->cm_key_storage_type;
+	ret->cm_key_storage_location = cm_store_maybe_strdup(ret, entry->cm_key_storage_location);
+	ret->cm_key_token = cm_store_maybe_strdup(ret, entry->cm_key_token);
+	ret->cm_key_nickname = cm_store_maybe_strdup(ret, entry->cm_key_nickname);
+	ret->cm_key_pin = cm_store_maybe_strdup(ret, entry->cm_key_pin);
+	ret->cm_key_pin_file = cm_store_maybe_strdup(ret, entry->cm_key_pin_file);
+
+	ret->cm_cert_storage_type = entry->cm_cert_storage_type;
+	ret->cm_cert_storage_location = cm_store_maybe_strdup(ret, entry->cm_cert_storage_location);
+	ret->cm_cert_token = cm_store_maybe_strdup(ret, entry->cm_cert_token);
+	ret->cm_cert_nickname = cm_store_maybe_strdup(ret, entry->cm_cert_nickname);
+
+	ret->cm_cert_issuer = cm_store_maybe_strdup(ret, entry->cm_cert_issuer);
+	ret->cm_cert_serial = cm_store_maybe_strdup(ret, entry->cm_cert_serial);
+	ret->cm_cert_subject = cm_store_maybe_strdup(ret, entry->cm_cert_subject);
+	ret->cm_cert_spki = cm_store_maybe_strdup(ret, entry->cm_cert_spki);
+	ret->cm_cert_not_before = entry->cm_cert_not_before;
+	ret->cm_cert_not_after = entry->cm_cert_not_after;
+	ret->cm_cert_hostname = cm_store_maybe_strdupv(ret, entry->cm_cert_hostname);
+	ret->cm_cert_email = cm_store_maybe_strdupv(ret, entry->cm_cert_email);
+	ret->cm_cert_principal = cm_store_maybe_strdupv(ret, entry->cm_cert_principal);
+	ret->cm_cert_ku = cm_store_maybe_strdup(ret, entry->cm_cert_ku);
+	ret->cm_cert_eku = cm_store_maybe_strdup(ret, entry->cm_cert_eku);
+
+	ret->cm_last_expiration_check = entry->cm_last_expiration_check;
+	ret->cm_notification_method = entry->cm_notification_method;
+	ret->cm_notification_destination = cm_store_maybe_strdup(ret, entry->cm_notification_destination);
+
+	ret->cm_template_subject = cm_store_maybe_strdup(ret, entry->cm_template_subject);
+	ret->cm_template_hostname = cm_store_maybe_strdupv(ret, entry->cm_template_hostname);
+	ret->cm_template_email = cm_store_maybe_strdupv(ret, entry->cm_template_email);
+	ret->cm_template_principal = cm_store_maybe_strdupv(ret, entry->cm_template_principal);
+	ret->cm_template_ku = cm_store_maybe_strdup(ret, entry->cm_template_ku);
+	ret->cm_template_eku = cm_store_maybe_strdup(ret, entry->cm_template_eku);
+
+	ret->cm_challenge_password = cm_store_maybe_strdup(ret, entry->cm_challenge_password);
+	ret->cm_csr = cm_store_maybe_strdup(ret, entry->cm_csr);
+	ret->cm_spkac = cm_store_maybe_strdup(ret, entry->cm_spkac);
+	ret->cm_state = entry->cm_state;
+	ret->cm_autorenew = entry->cm_autorenew;
+	ret->cm_monitor = entry->cm_monitor;
+	ret->cm_ca_nickname = cm_store_maybe_strdup(ret, entry->cm_ca_nickname);
+	ret->cm_submitted = entry->cm_submitted;
+	ret->cm_ca_cookie = cm_store_maybe_strdup(ret, entry->cm_ca_cookie);
+	ret->cm_ca_error = cm_store_maybe_strdup(ret, entry->cm_ca_error);
+	ret->cm_cert = cm_store_maybe_strdup(ret, entry->cm_cert);
+
+	return ret;
+}
+
+struct cm_store_ca *
+cm_store_ca_dup(void *parent, struct cm_store_ca *ca)
+{
+	struct cm_store_ca *ret;
+
+	ret = talloc_ptrtype(parent, ret);
+	ret->cm_busname = cm_store_maybe_strdup(ret, ca->cm_busname);
+	ret->cm_store_private =
+		cm_store_maybe_strdup(ret, ca->cm_store_private);
+	ret->cm_nickname = cm_store_maybe_strdup(ret, ca->cm_nickname);
+	ret->cm_ca_known_issuer_names =
+		cm_store_maybe_strdupv(ret, ca->cm_ca_known_issuer_names);
+	ret->cm_ca_is_default = ca->cm_ca_is_default;
+	ret->cm_ca_type = ca->cm_ca_type;
+	ret->cm_ca_internal_serial =
+		cm_store_maybe_strdup(ret, ca->cm_ca_internal_serial);
+	ret->cm_ca_internal_force_issue_time =
+		ca->cm_ca_internal_force_issue_time;
+	ret->cm_ca_internal_issue_time = ca->cm_ca_internal_issue_time;
+	ret->cm_ca_external_helper =
+		cm_store_maybe_strdup(ret, ca->cm_ca_external_helper);
+	return ret;
+}
