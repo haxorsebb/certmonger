@@ -32,6 +32,8 @@ DBusHandlerResult cm_tdbush_property_emit_changed(struct cm_context *ctx,
 						  const char *path,
 						  const char *interface,
 						  const char **properties);
+void cm_tdbush_property_emit_entry_saved_cert(struct cm_context *ctx,
+					      struct cm_store_entry *entry);
 char *cm_tdbush_canonicalize_directory(void *parent, const char *path);
 
 #endif

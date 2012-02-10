@@ -39,6 +39,7 @@
 #include "store.h"
 #include "store-int.h"
 #include "submit.h"
+#include "tdbush.h"
 #include "tm.h"
 
 struct cm_iterate_state {
@@ -778,6 +779,8 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			state->cm_certread_state = NULL;
 			entry->cm_state = CM_SAVED_CERT;
 			*when = cm_time_now;
+			cm_tdbush_property_emit_entry_saved_cert(context,
+								 entry);
 		} else {
 			/* Wait for status update, or poll. */
 			*readfd = cm_certread_get_fd(entry,

@@ -79,6 +79,7 @@
 #define CM_DBUS_PROP_SUBMITTED_DATE "submitted-date"
 #define CM_DBUS_PROP_IS_DEFAULT "is-default"
 #define CM_DBUS_PROP_ISSUER_NAMES "issuer-names"
+#define CM_DBUS_SIGNAL_REQUEST_CERT_SAVED "SavedCertificate"
 
 enum cm_tdbus_type { cm_tdbus_system, cm_tdbus_session };
 int cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type,
