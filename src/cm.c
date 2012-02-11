@@ -38,6 +38,7 @@
 #include "netlink.h"
 #include "store.h"
 #include "store-int.h"
+#include "tdbush.h"
 #include "tm.h"
 
 struct cm_context {
@@ -323,6 +324,8 @@ cm_service_one(struct cm_context *context, struct timeval *current_time, int i)
 			 context,
 			 &cm_get_ca_by_index,
 			 &cm_get_n_cas,
+			 &cm_tdbush_property_emit_entry_saved_cert,
+			 &cm_tdbush_property_emit_entry_changes,
 			 context->events[i].iterate_state,
 			 &when, &delay, &fd);
 	t = NULL;

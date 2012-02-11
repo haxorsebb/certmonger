@@ -113,7 +113,7 @@ main(int argc, char **argv)
 	fflush(NULL);
 	p = states;
 	while (cm_iterate(entry, cm.ca, &cm, get_ca_by_index, get_n_cas,
-			  istate, &when, &delay, &readfd) == 0) {
+			  NULL, NULL, istate, &when, &delay, &readfd) == 0) {
 		/* Check if this state is in our continue-states list. */
 		for (p = states; *p != '\0'; p = q + strspn(q, ",")) {
 			q = p + strcspn(p, ",");
