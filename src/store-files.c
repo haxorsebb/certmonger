@@ -459,9 +459,15 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 				break;
 			case cm_store_entry_field_key_pin:
 				ret->cm_key_pin = free_if_empty(p);
+				if (ret->cm_key_pin_file != NULL) {
+					ret->cm_key_pin = NULL;
+				}
 				break;
 			case cm_store_entry_field_key_pin_file:
 				ret->cm_key_pin_file = free_if_empty(p);
+				if (ret->cm_key_pin_file != NULL) {
+					ret->cm_key_pin = NULL;
+				}
 				break;
 			case cm_store_entry_field_cert_storage_type:
 				if (strcasecmp(p, "FILE") == 0) {
@@ -877,8 +883,10 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 				entry->cm_key_token);
 	cm_store_file_write_str(fp, cm_store_entry_field_key_nickname,
 				entry->cm_key_nickname);
-	cm_store_file_write_str(fp, cm_store_entry_field_key_pin,
-				entry->cm_key_pin);
+	if (entry->cm_key_pin_file == NULL) {
+		cm_store_file_write_str(fp, cm_store_entry_field_key_pin,
+					entry->cm_key_pin);
+	}
 	cm_store_file_write_str(fp, cm_store_entry_field_key_pin_file,
 				entry->cm_key_pin_file);
 
@@ -1436,6 +1444,9 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	ret->cm_key_nickname = cm_store_maybe_strdup(ret, entry->cm_key_nickname);
 	ret->cm_key_pin = cm_store_maybe_strdup(ret, entry->cm_key_pin);
 	ret->cm_key_pin_file = cm_store_maybe_strdup(ret, entry->cm_key_pin_file);
+	if (ret->cm_key_pin_file != NULL) {
+		ret->cm_key_pin = NULL;
+	}
 
 	ret->cm_cert_storage_type = entry->cm_cert_storage_type;
 	ret->cm_cert_storage_location = cm_store_maybe_strdup(ret, entry->cm_cert_storage_location);
