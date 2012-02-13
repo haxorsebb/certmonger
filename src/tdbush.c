@@ -416,6 +416,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		key_pin = NULL;
 	} else {
 		key_pin = param->value.s;
+		key_pin_file = NULL;
 	}
 	param = cm_tdbusm_find_dict_entry(d, "KEY_PIN_FILE", cm_tdbusm_dict_s);
 	if ((param == NULL) ||
@@ -434,6 +435,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 			return ret;
 		}
 		key_pin_file = param->value.s;
+		key_pin = NULL;
 	}
 	/* Check that other required information about the
 	 * certificate's location is provided. */
@@ -2096,6 +2098,9 @@ request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 				talloc_free(entry->cm_key_pin);
 				entry->cm_key_pin = maybe_strdup(entry,
 								 param->value.s);
+				if (entry->cm_key_pin != NULL) {
+					entry->cm_key_pin_file = NULL;
+				}
 			} else
 			if ((param->value_type == cm_tdbusm_dict_s) &&
 			    ((strcasecmp(param->key, "KEY_PIN_FILE") == 0) ||
@@ -2113,6 +2118,9 @@ request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 				talloc_free(entry->cm_key_pin_file);
 				entry->cm_key_pin_file = maybe_strdup(entry,
 								      param->value.s);
+				if (entry->cm_key_pin_file != NULL) {
+					entry->cm_key_pin = NULL;
+				}
 			} else
 			if ((param->value_type == cm_tdbusm_dict_as) &&
 			    ((strcasecmp(param->key, "EKU") == 0) ||
@@ -2488,6 +2496,44 @@ request_prop_get_notification_email(struct cm_context *ctx, void *parent,
 		break;
 	}
 	return "";
+}
+
+static const char *
+request_prop_get_key_pin(struct cm_context *ctx, void *parent,
+			 void *record, const char *name)
+{
+	struct cm_store_entry *entry = record;
+	return entry->cm_key_pin ? entry->cm_key_pin : "";
+}
+
+static void
+request_prop_set_key_pin(struct cm_context *ctx, void *parent,
+			 void *record, const char *name, const char *value)
+{
+	struct cm_store_entry *entry = record;
+	entry->cm_key_pin = maybe_strdup(entry, value);
+	if (entry->cm_key_pin != NULL) {
+		entry->cm_key_pin_file = NULL;
+	}
+}
+
+static const char *
+request_prop_get_key_pin_file(struct cm_context *ctx, void *parent,
+			      void *record, const char *name)
+{
+	struct cm_store_entry *entry = record;
+	return entry->cm_key_pin_file ? entry->cm_key_pin_file : "";
+}
+
+static void
+request_prop_set_key_pin_file(struct cm_context *ctx, void *parent,
+			      void *record, const char *name, const char *value)
+{
+	struct cm_store_entry *entry = record;
+	entry->cm_key_pin_file = maybe_strdup(entry, value);
+	if (entry->cm_key_pin_file != NULL) {
+		entry->cm_key_pin = NULL;
+	}
 }
 
 static const char *
@@ -4414,19 +4460,21 @@ cm_tdbush_iface_request(void)
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_KEY_PIN,
-								       cm_tdbush_property_strings,
-								       cm_tdbush_property_write,
-								       cm_tdbush_property_char_p,
+								       cm_tdbush_property_string,
+								       cm_tdbush_property_readwrite,
+								       cm_tdbush_property_special,
 								       offsetof(struct cm_store_entry, cm_key_pin),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       request_prop_get_key_pin, NULL, NULL, NULL,
+								       request_prop_set_key_pin, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_KEY_PIN_FILE,
 								       cm_tdbush_property_string,
-								       cm_tdbush_property_write,
-								       cm_tdbush_property_char_p,
+								       cm_tdbush_property_readwrite,
+								       cm_tdbush_property_special,
 								       offsetof(struct cm_store_entry, cm_key_pin_file),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       request_prop_get_key_pin_file, NULL, NULL, NULL,
+								       request_prop_set_key_pin_file, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_TEMPLATE_SUBJECT,
