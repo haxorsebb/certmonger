@@ -5329,6 +5329,7 @@ cm_tdbush_handle_method_call(DBusConnection *conn, DBusMessage *msg,
 	pending.cm_interface = dbus_message_get_interface(pending.cm_msg);
 	pending.cm_method = dbus_message_get_member(pending.cm_msg);
 	pending.cm_type = cm_tdbush_classify_path(ctx, pending.cm_path);
+	pending.cm_know_uid = FALSE;
 	for (i = 0;
 	     i < sizeof(cm_tdbush_object_type_map) / sizeof(cm_tdbush_object_type_map[i]);
 	     i++) {
@@ -5401,29 +5402,37 @@ cm_tdbush_handle_method_return(DBusConnection *conn, DBusMessage *msg,
 	for (p = &cm_pending_calls;
 	     (p != NULL) && (*p != NULL);
 	     p = &((*p)->cm_next)) {
-		if ((*p)->cm_pending_uid == serial) {
+		call = *p;
+		next = call->cm_next;
+		if (call->cm_pending_uid == serial) {
+			if (cm_tdbusm_get_n(msg, call, &uid) != 0) {
+				cm_log(1, "Result error from GetConnectionUnixUser().\n");
+				dbus_message_unref(call->cm_msg);
+				talloc_free(call);
+				*p = next;
+				return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+			}
+			call->cm_uid = uid;
+			call->cm_know_uid = TRUE;
 			break;
 		}
 	}
 	if ((p == NULL) || (*p == NULL)) {
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
-	call = *p;
-	next = call->cm_next;
-	if (cm_tdbusm_get_n(msg, call, &uid) != 0) {
-		cm_log(1, "Result error from GetConnectionUnixUser().\n");
-		dbus_message_unref(call->cm_msg);
-		talloc_free(call);
-		*p = next;
-		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	if (!call->cm_know_uid) {
+		return DBUS_HANDLER_RESULT_HANDLED;
 	}
-	call->cm_uid = uid;
+
 	cm_log(4, "User ID %lu called %s:%s.%s.\n",
 	       uid, call->cm_path, call->cm_interface, call->cm_method);
+
 	client_info.uid = call->cm_uid;
 	(*call->cm_fn)(conn, call->cm_msg, &client_info, ctx);
+
 	dbus_message_unref(call->cm_msg);
 	talloc_free(call);
 	*p = next;
+
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
