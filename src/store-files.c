@@ -1504,6 +1504,8 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	ret->cm_ca_cookie = cm_store_maybe_strdup(ret, entry->cm_ca_cookie);
 	ret->cm_ca_error = cm_store_maybe_strdup(ret, entry->cm_ca_error);
 	ret->cm_cert = cm_store_maybe_strdup(ret, entry->cm_cert);
+	ret->cm_post_certsave_command = cm_store_maybe_strdup(ret, entry->cm_post_certsave_command);
+	ret->cm_post_certsave_uid = cm_store_maybe_strdup(ret, entry->cm_post_certsave_uid);
 
 	return ret;
 }
