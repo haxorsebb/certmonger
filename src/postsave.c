@@ -70,7 +70,9 @@ cm_postsave_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		       pwd->pw_name,
 		       (unsigned long) state->uid,
 		       strerror(errno));
-		return -1;
+		if (getuid() == 0) {
+			return -1;
+		}
 	}
 	if (setreuid(pwd->pw_uid, pwd->pw_uid) == -1) {
 		cm_log(1, "Error on setreuid(%lu,%lu,%lu): %s.\n",
@@ -108,7 +110,7 @@ cm_postsave_start(struct cm_store_entry *entry)
 	if (state != NULL) {
 		state->uid = l;
 		state->subproc = cm_subproc_start(cm_postsave_main,
-						  NULL, entry, NULL);
+						  NULL, entry, state);
 		if (state->subproc == NULL) {
 			talloc_free(state);
 			state = NULL;
