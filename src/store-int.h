@@ -141,7 +141,7 @@ struct cm_store_entry {
 	/* A command to run after we save the certificate. */
 	char *cm_post_certsave_command;
 	/* The UID of the user as whom we run the above command. */
-	char *cm_post_certsave_user;
+	char *cm_post_certsave_uid;
 };
 
 struct cm_store_ca {

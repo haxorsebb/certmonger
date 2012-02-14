@@ -4811,10 +4811,28 @@ cm_tdbush_iface_request(void)
 										     cm_tdbush_method_arg_out,
 										     NULL),
 								     NULL),
+				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_CERT_POSTSAVE_COMMAND,
+								       cm_tdbush_property_string,
+								       cm_tdbush_property_read,
+								       cm_tdbush_property_char_p,
+								       offsetof(struct cm_store_entry, cm_post_certsave_command),
+								       NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL,
+								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_CERT_POSTSAVE_UID,
+								       cm_tdbush_property_string,
+								       cm_tdbush_property_read,
+								       cm_tdbush_property_char_p,
+								       offsetof(struct cm_store_entry, cm_post_certsave_uid),
+								       NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL,
+								       NULL),
 				     make_interface_item(cm_tdbush_interface_signal,
 							 make_signal(CM_DBUS_SIGNAL_REQUEST_CERT_SAVED,
 								     NULL),
-							 NULL))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
+							 NULL))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
 	}
 	return ret;
 }

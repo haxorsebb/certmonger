@@ -102,7 +102,7 @@ enum cm_store_file_field {
 	cm_store_entry_field_cert,
 
 	cm_store_entry_field_post_certsave_command,
-	cm_store_entry_field_post_certsave_user,
+	cm_store_entry_field_post_certsave_uid,
 
 	cm_store_ca_field_known_issuer_names,
 	cm_store_ca_field_is_default,
@@ -177,7 +177,7 @@ static struct cm_store_file_field_list {
 
 	{cm_store_entry_field_cert, "cert"},
 	{cm_store_entry_field_post_certsave_command, "post_certsave_command"},
-	{cm_store_entry_field_post_certsave_user, "post_certsave_uid"},
+	{cm_store_entry_field_post_certsave_uid, "post_certsave_uid"},
 
 	{cm_store_ca_field_known_issuer_names, "ca_issuer_names"},
 	{cm_store_ca_field_is_default, "ca_is_default"},
@@ -610,8 +610,8 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_post_certsave_command:
 				ret->cm_post_certsave_command  = free_if_empty(p);
 				break;
-			case cm_store_entry_field_post_certsave_user:
-				ret->cm_post_certsave_user  = free_if_empty(p);
+			case cm_store_entry_field_post_certsave_uid:
+				ret->cm_post_certsave_uid = free_if_empty(p);
 				break;
 			}
 		}
@@ -708,7 +708,7 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_ca_error:
 			case cm_store_entry_field_cert:
 			case cm_store_entry_field_post_certsave_command:
-			case cm_store_entry_field_post_certsave_user:
+			case cm_store_entry_field_post_certsave_uid:
 				break;
 			case cm_store_file_field_id:
 				ret->cm_nickname = free_if_empty(p);
@@ -996,8 +996,8 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 	cm_store_file_write_str(fp, cm_store_entry_field_cert, entry->cm_cert);
 	cm_store_file_write_str(fp, cm_store_entry_field_post_certsave_command,
 				entry->cm_post_certsave_command);
-	cm_store_file_write_str(fp, cm_store_entry_field_post_certsave_user,
-				entry->cm_post_certsave_user);
+	cm_store_file_write_str(fp, cm_store_entry_field_post_certsave_uid,
+				entry->cm_post_certsave_uid);
 	if (ferror(fp)) {
 		return -1;
 	}

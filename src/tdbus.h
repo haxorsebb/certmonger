@@ -39,6 +39,8 @@
 #define CM_DBUS_PROP_NICKNAME "nickname"
 #define CM_DBUS_PROP_AUTORENEW "autorenew"
 #define CM_DBUS_PROP_CERT "cert"
+#define CM_DBUS_PROP_CERT_POSTSAVE_COMMAND "cert-postsave-command"
+#define CM_DBUS_PROP_CERT_POSTSAVE_UID "cert-postsave-uid"
 #define CM_DBUS_PROP_CERT_ISSUER "issuer"
 #define CM_DBUS_PROP_CERT_SERIAL "serial"
 #define CM_DBUS_PROP_CERT_SUBJECT "subject"
