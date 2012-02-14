@@ -19,6 +19,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -2875,6 +2876,53 @@ make_property(const char *name,
 	ret->cm_write_number = write_number;
 	ret->cm_write_boolean = write_boolean;
 	ret->cm_annotations = annotations;
+	switch (ret->cm_local_type) {
+	case cm_tdbush_property_char_p:
+	case cm_tdbush_property_char_pp:
+	case cm_tdbush_property_time_t:
+	case cm_tdbush_property_comma_list:
+		assert(ret->cm_offset != 0);
+		break;
+	case cm_tdbush_property_special:
+		assert(ret->cm_offset == 0);
+		if ((ret->cm_access == cm_tdbush_property_read) ||
+		    (ret->cm_access == cm_tdbush_property_readwrite)) {
+			switch (ret->cm_bus_type) {
+			case cm_tdbush_property_path:
+			case cm_tdbush_property_string:
+				assert(ret->cm_read_string != NULL);
+				break;
+			case cm_tdbush_property_strings:
+				assert(ret->cm_read_strings != NULL);
+				break;
+			case cm_tdbush_property_boolean:
+				assert(ret->cm_read_boolean != NULL);
+				break;
+			case cm_tdbush_property_number:
+				assert(ret->cm_read_number != NULL);
+				break;
+			}
+		}
+		if ((ret->cm_access == cm_tdbush_property_readwrite) ||
+		    (ret->cm_access == cm_tdbush_property_write)) {
+			switch (ret->cm_bus_type) {
+			case cm_tdbush_property_path:
+			case cm_tdbush_property_string:
+				assert(ret->cm_write_string != NULL);
+				break;
+			case cm_tdbush_property_strings:
+				assert(ret->cm_write_strings != NULL);
+				break;
+			case cm_tdbush_property_boolean:
+				assert(ret->cm_write_boolean != NULL);
+				break;
+			case cm_tdbush_property_number:
+				assert(ret->cm_write_number != NULL);
+				break;
+			}
+		}
+		break;
+	}
 	return ret;
 }
 
@@ -4254,7 +4302,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_boolean,
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_special,
-								       offsetof(struct cm_store_entry, cm_cert),
+								       0,
 								       NULL, NULL, request_prop_get_autorenew, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
@@ -4451,7 +4499,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_string,
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_p,
-								       offsetof(struct cm_store_entry, cm_cert),
+								       offsetof(struct cm_store_entry, cm_csr),
 								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
@@ -4482,7 +4530,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_string,
 								       cm_tdbush_property_readwrite,
 								       cm_tdbush_property_special,
-								       offsetof(struct cm_store_entry, cm_key_pin),
+								       0,
 								       request_prop_get_key_pin, NULL, NULL, NULL,
 								       request_prop_set_key_pin, NULL, NULL, NULL,
 								       NULL),
@@ -4491,7 +4539,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_string,
 								       cm_tdbush_property_readwrite,
 								       cm_tdbush_property_special,
-								       offsetof(struct cm_store_entry, cm_key_pin_file),
+								       0,
 								       request_prop_get_key_pin_file, NULL, NULL, NULL,
 								       request_prop_set_key_pin_file, NULL, NULL, NULL,
 								       NULL),
@@ -4652,7 +4700,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_boolean,
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_special,
-								       offsetof(struct cm_store_entry, cm_cert),
+								       0,
 								       NULL, NULL, request_prop_get_monitoring, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
@@ -4753,8 +4801,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_p,
 								       offsetof(struct cm_store_entry, cm_ca_cookie),
-								       NULL, NULL, NULL, NULL,
-								       NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_ca_error",
