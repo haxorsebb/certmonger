@@ -18,6 +18,7 @@
 #include "config.h"
 
 #include <sys/types.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -89,6 +90,7 @@ cm_tdbusm_get_n(DBusMessage *msg, void *parent, long *n)
 	DBusError err;
 	int64_t i64;
 	int32_t i32;
+	uint32_t u32;
 	int16_t i16;
 	memset(&err, 0, sizeof(err));
 	if (dbus_message_get_args(msg, &err,
@@ -106,12 +108,20 @@ cm_tdbusm_get_n(DBusMessage *msg, void *parent, long *n)
 		} else {
 			memset(&err, 0, sizeof(err));
 			if (dbus_message_get_args(msg, &err,
-						  DBUS_TYPE_INT16, &i16,
+						  DBUS_TYPE_UINT32, &u32,
 						  DBUS_TYPE_INVALID)) {
-				*n = i16;
+				*n = u32;
 				return 0;
 			} else {
-				return -1;
+				memset(&err, 0, sizeof(err));
+				if (dbus_message_get_args(msg, &err,
+							  DBUS_TYPE_INT16, &i16,
+							  DBUS_TYPE_INVALID)) {
+					*n = i16;
+					return 0;
+				} else {
+					return -1;
+				}
 			}
 		}
 	}
