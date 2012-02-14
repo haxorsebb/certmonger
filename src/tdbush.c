@@ -5163,8 +5163,6 @@ cm_tdbush_handle_method_call(DBusConnection *conn, DBusMessage *msg,
 
 	memset(&pending, 0, sizeof(pending));
 	pending.cm_msg = dbus_message_ref(msg);
-	dbus_message_set_serial(pending.cm_msg,
-				dbus_message_get_serial(msg));
 	pending.cm_path = dbus_message_get_path(pending.cm_msg);
 	pending.cm_interface = dbus_message_get_interface(pending.cm_msg);
 	pending.cm_method = dbus_message_get_member(pending.cm_msg);
