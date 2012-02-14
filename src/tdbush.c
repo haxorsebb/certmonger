@@ -44,6 +44,11 @@
 #define _(_text) (_text)
 #endif
 
+/* Things we know about the calling client. */
+struct cm_client_info {
+	uid_t uid;
+};
+
 /* Convenience functions. */
 static struct cm_store_entry *
 get_entry_for_path(struct cm_context *ctx, const char *path)
@@ -280,7 +285,7 @@ check_arg_parent_is_directory(const char *path)
 
 static DBusHandlerResult
 base_add_known_ca(DBusConnection *conn, DBusMessage *msg,
-		  struct cm_context *ctx)
+		  struct cm_client_info *ci, struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	void *parent;
@@ -358,7 +363,7 @@ base_add_known_ca(DBusConnection *conn, DBusMessage *msg,
 
 static DBusHandlerResult
 base_add_request(DBusConnection *conn, DBusMessage *msg,
-		 struct cm_context *ctx)
+		 struct cm_client_info *ci, struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	DBusHandlerResult ret;
@@ -906,7 +911,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 
 static DBusHandlerResult
 base_find_request_by_nickname(DBusConnection *conn, DBusMessage *msg,
-			      struct cm_context *ctx)
+			      struct cm_client_info *ci, struct cm_context *ctx)
 {
 	struct cm_store_entry *entry;
 	DBusMessage *rep;
@@ -949,7 +954,7 @@ base_find_request_by_nickname(DBusConnection *conn, DBusMessage *msg,
 
 static DBusHandlerResult
 base_find_ca_by_nickname(DBusConnection *conn, DBusMessage *msg,
-			 struct cm_context *ctx)
+			 struct cm_client_info *ci, struct cm_context *ctx)
 {
 	struct cm_store_ca *ca;
 	DBusMessage *rep;
@@ -992,7 +997,7 @@ base_find_ca_by_nickname(DBusConnection *conn, DBusMessage *msg,
 
 static DBusHandlerResult
 base_get_known_cas(DBusConnection *conn, DBusMessage *msg,
-		   struct cm_context *ctx)
+		   struct cm_client_info *ci, struct cm_context *ctx)
 {
 	int i, n_cas;
 	struct cm_store_ca *ca;
@@ -1027,7 +1032,7 @@ base_get_known_cas(DBusConnection *conn, DBusMessage *msg,
 
 static DBusHandlerResult
 base_get_requests(DBusConnection *conn, DBusMessage *msg,
-		  struct cm_context *ctx)
+		  struct cm_client_info *ci, struct cm_context *ctx)
 {
 	int i, n_entries;
 	struct cm_store_entry *entry;
@@ -1062,7 +1067,7 @@ base_get_requests(DBusConnection *conn, DBusMessage *msg,
 
 static DBusHandlerResult
 base_get_supported_key_types(DBusConnection *conn, DBusMessage *msg,
-			     struct cm_context *ctx)
+			     struct cm_client_info *ci, struct cm_context *ctx)
 {
 	const char *key_types[] = {"RSA", NULL};
 	DBusMessage *rep;
@@ -1079,7 +1084,7 @@ base_get_supported_key_types(DBusConnection *conn, DBusMessage *msg,
 
 static DBusHandlerResult
 base_get_supported_key_and_cert_storage(DBusConnection *conn, DBusMessage *msg,
-					struct cm_context *ctx)
+					struct cm_client_info *ci, struct cm_context *ctx)
 {
 #ifdef HAVE_OPENSSL
 	const char *maybe_file = "FILE";
@@ -1101,21 +1106,21 @@ base_get_supported_key_and_cert_storage(DBusConnection *conn, DBusMessage *msg,
 
 static DBusHandlerResult
 base_get_supported_key_storage(DBusConnection *conn, DBusMessage *msg,
-			       struct cm_context *ctx)
+			       struct cm_client_info *ci, struct cm_context *ctx)
 {
-	return base_get_supported_key_and_cert_storage(conn, msg, ctx);
+	return base_get_supported_key_and_cert_storage(conn, msg, ci, ctx);
 }
 
 static DBusHandlerResult
 base_get_supported_cert_storage(DBusConnection *conn, DBusMessage *msg,
-				struct cm_context *ctx)
+				struct cm_client_info *ci, struct cm_context *ctx)
 {
-	return base_get_supported_key_and_cert_storage(conn, msg, ctx);
+	return base_get_supported_key_and_cert_storage(conn, msg, ci, ctx);
 }
 
 static DBusHandlerResult
 base_remove_known_ca(DBusConnection *conn, DBusMessage *msg,
-		     struct cm_context *ctx)
+		     struct cm_client_info *ci, struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	struct cm_store_ca *ca;
@@ -1152,7 +1157,7 @@ base_remove_known_ca(DBusConnection *conn, DBusMessage *msg,
 
 static DBusHandlerResult
 base_remove_request(DBusConnection *conn, DBusMessage *msg,
-		    struct cm_context *ctx)
+		    struct cm_client_info *ci, struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	struct cm_store_entry *entry;
@@ -1202,10 +1207,12 @@ send_internal_ca_error(DBusConnection *conn, DBusMessage *req)
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 static DBusHandlerResult
-ca_get_nickname(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
+ca_get_nickname(DBusConnection *conn, DBusMessage *msg,
+		struct cm_client_info *ci, struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	struct cm_store_ca *ca;
+
 	ca = get_ca_for_request_message(msg, ctx);
 	if (ca == NULL) {
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
@@ -1225,7 +1232,7 @@ ca_get_nickname(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 
 static DBusHandlerResult
 ca_get_is_default(DBusConnection *conn, DBusMessage *msg,
-		  struct cm_context *ctx)
+		  struct cm_client_info *ci, struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	struct cm_store_ca *ca;
@@ -1246,7 +1253,7 @@ ca_get_is_default(DBusConnection *conn, DBusMessage *msg,
 
 static DBusHandlerResult
 ca_get_issuer_names(DBusConnection *conn, DBusMessage *msg,
-		    struct cm_context *ctx)
+		    struct cm_client_info *ci, struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	struct cm_store_ca *ca;
@@ -1268,7 +1275,8 @@ ca_get_issuer_names(DBusConnection *conn, DBusMessage *msg,
 }
 
 static DBusHandlerResult
-ca_get_location(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
+ca_get_location(DBusConnection *conn, DBusMessage *msg,
+		struct cm_client_info *ci, struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	struct cm_store_ca *ca;
@@ -1288,7 +1296,8 @@ ca_get_location(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 }
 
 static DBusHandlerResult
-ca_get_type(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
+ca_get_type(DBusConnection *conn, DBusMessage *msg,
+	    struct cm_client_info *ci, struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	struct cm_store_ca *ca;
@@ -1318,7 +1327,8 @@ ca_get_type(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 }
 
 static DBusHandlerResult
-ca_get_serial(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
+ca_get_serial(DBusConnection *conn, DBusMessage *msg,
+	      struct cm_client_info *ci, struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	struct cm_store_ca *ca;
@@ -1413,7 +1423,7 @@ send_internal_request_error(DBusConnection *conn, DBusMessage *req)
 
 static DBusHandlerResult
 request_get_nickname(DBusConnection *conn, DBusMessage *msg,
-		     struct cm_context *ctx)
+		     struct cm_client_info *ci, struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	struct cm_store_entry *entry;
@@ -1436,7 +1446,7 @@ request_get_nickname(DBusConnection *conn, DBusMessage *msg,
 
 static DBusHandlerResult
 request_get_key_pin(DBusConnection *conn, DBusMessage *msg,
-		    struct cm_context *ctx)
+		    struct cm_client_info *ci, struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	struct cm_store_entry *entry;
@@ -1457,7 +1467,7 @@ request_get_key_pin(DBusConnection *conn, DBusMessage *msg,
 
 static DBusHandlerResult
 request_get_key_pin_file(DBusConnection *conn, DBusMessage *msg,
-			 struct cm_context *ctx)
+			 struct cm_client_info *ci, struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	struct cm_store_entry *entry;
@@ -1478,7 +1488,7 @@ request_get_key_pin_file(DBusConnection *conn, DBusMessage *msg,
 
 static DBusHandlerResult
 request_get_autorenew(DBusConnection *conn, DBusMessage *msg,
-		      struct cm_context *ctx)
+		      struct cm_client_info *ci, struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	struct cm_store_entry *entry;
@@ -1499,7 +1509,7 @@ request_get_autorenew(DBusConnection *conn, DBusMessage *msg,
 
 static DBusHandlerResult
 request_get_cert_data(DBusConnection *conn, DBusMessage *msg,
-		      struct cm_context *ctx)
+		      struct cm_client_info *ci, struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	struct cm_store_entry *entry;
@@ -1559,7 +1569,7 @@ eku_splitv(void *parent, const char *eku)
 
 static DBusHandlerResult
 request_get_cert_info(DBusConnection *conn, DBusMessage *msg,
-		      struct cm_context *ctx)
+		      struct cm_client_info *ci, struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	struct cm_store_entry *entry;
@@ -1592,7 +1602,7 @@ request_get_cert_info(DBusConnection *conn, DBusMessage *msg,
 
 static DBusHandlerResult
 request_get_cert_last_checked(DBusConnection *conn, DBusMessage *msg,
-			      struct cm_context *ctx)
+			      struct cm_client_info *ci, struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	struct cm_store_entry *entry;
@@ -1615,7 +1625,7 @@ request_get_cert_last_checked(DBusConnection *conn, DBusMessage *msg,
 
 static DBusHandlerResult
 request_get_cert_storage_info(DBusConnection *conn, DBusMessage *msg,
-			      struct cm_context *ctx)
+			      struct cm_client_info *ci, struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	struct cm_store_entry *entry;
@@ -1660,7 +1670,7 @@ request_get_cert_storage_info(DBusConnection *conn, DBusMessage *msg,
 
 static DBusHandlerResult
 request_get_csr_data(DBusConnection *conn, DBusMessage *msg,
-		     struct cm_context *ctx)
+		     struct cm_client_info *ci, struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	struct cm_store_entry *entry;
@@ -1683,7 +1693,7 @@ request_get_csr_data(DBusConnection *conn, DBusMessage *msg,
 
 static DBusHandlerResult
 request_get_csr_info(DBusConnection *conn, DBusMessage *msg,
-		     struct cm_context *ctx)
+		     struct cm_client_info *ci, struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	struct cm_store_entry *entry;
@@ -1715,7 +1725,7 @@ request_get_csr_info(DBusConnection *conn, DBusMessage *msg,
 
 static DBusHandlerResult
 request_get_key_storage_info(DBusConnection *conn, DBusMessage *msg,
-			     struct cm_context *ctx)
+			     struct cm_client_info *ci, struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	struct cm_store_entry *entry;
@@ -1765,7 +1775,7 @@ request_get_key_storage_info(DBusConnection *conn, DBusMessage *msg,
 
 static DBusHandlerResult
 request_get_key_type_and_size(DBusConnection *conn, DBusMessage *msg,
-			      struct cm_context *ctx)
+			      struct cm_client_info *ci, struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	struct cm_store_entry *entry;
@@ -1798,7 +1808,7 @@ request_get_key_type_and_size(DBusConnection *conn, DBusMessage *msg,
 
 static DBusHandlerResult
 request_get_monitoring(DBusConnection *conn, DBusMessage *msg,
-		       struct cm_context *ctx)
+		       struct cm_client_info *ci, struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	struct cm_store_entry *entry;
@@ -1819,7 +1829,7 @@ request_get_monitoring(DBusConnection *conn, DBusMessage *msg,
 
 static DBusHandlerResult
 request_get_notification_info(DBusConnection *conn, DBusMessage *msg,
-			      struct cm_context *ctx)
+			      struct cm_client_info *ci, struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	struct cm_store_entry *entry;
@@ -1865,7 +1875,7 @@ static dbus_bool_t request_prop_get_stuck(struct cm_context *ctx, void *parent,
 
 static DBusHandlerResult
 request_get_status(DBusConnection *conn, DBusMessage *msg,
-		   struct cm_context *ctx)
+		   struct cm_client_info *ci, struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	struct cm_store_entry *entry;
@@ -1889,7 +1899,8 @@ request_get_status(DBusConnection *conn, DBusMessage *msg,
 }
 
 static DBusHandlerResult
-request_get_ca(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
+request_get_ca(DBusConnection *conn, DBusMessage *msg,
+	       struct cm_client_info *ci, struct cm_context *ctx)
 {
 	void *parent;
 	DBusMessage *rep;
@@ -1926,7 +1937,7 @@ request_get_ca(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 
 static DBusHandlerResult
 request_get_ca_error(DBusConnection *conn, DBusMessage *msg,
-		     struct cm_context *ctx)
+		     struct cm_client_info *ci, struct cm_context *ctx)
 {
 	void *parent;
 	DBusMessage *rep;
@@ -1953,7 +1964,7 @@ request_get_ca_error(DBusConnection *conn, DBusMessage *msg,
 
 static DBusHandlerResult
 request_get_submitted_cookie(DBusConnection *conn, DBusMessage *msg,
-			     struct cm_context *ctx)
+			     struct cm_client_info *ci, struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	struct cm_store_entry *entry;
@@ -1976,7 +1987,7 @@ request_get_submitted_cookie(DBusConnection *conn, DBusMessage *msg,
 
 static DBusHandlerResult
 request_get_submitted_date(DBusConnection *conn, DBusMessage *msg,
-			   struct cm_context *ctx)
+			   struct cm_client_info *ci, struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	struct cm_store_entry *entry;
@@ -1998,7 +2009,8 @@ request_get_submitted_date(DBusConnection *conn, DBusMessage *msg,
 }
 
 static DBusHandlerResult
-request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
+request_modify(DBusConnection *conn, DBusMessage *msg,
+	       struct cm_client_info *ci, struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	struct cm_store_entry *entry;
@@ -2186,7 +2198,7 @@ request_modify(DBusConnection *conn, DBusMessage *msg, struct cm_context *ctx)
 
 static DBusHandlerResult
 request_resubmit(DBusConnection *conn, DBusMessage *msg,
-		 struct cm_context *ctx)
+		 struct cm_client_info *ci, struct cm_context *ctx)
 {
 	DBusMessage *rep;
 	struct cm_store_entry *entry;
@@ -2648,6 +2660,7 @@ struct cm_tdbush_method {
 	struct cm_tdbush_member_annotation *cm_annotations;
 	DBusHandlerResult (*cm_fn)(DBusConnection *conn,
 				   DBusMessage *msg,
+				   struct cm_client_info *ci,
 				   struct cm_context *ctx);
 };
 
@@ -2766,6 +2779,7 @@ static struct cm_tdbush_method *
 make_method(const char *name,
 	    DBusHandlerResult (*fn)(DBusConnection *conn,
 				    DBusMessage *msg,
+				    struct cm_client_info *ci,
 				    struct cm_context *ctx),
 	    struct cm_tdbush_method_arg *args,
 	    struct cm_tdbush_member_annotation *annotations)
@@ -3107,6 +3121,7 @@ cm_tdbush_introspect_childlist(struct cm_context *ctx, void *parent,
 static DBusHandlerResult
 cm_tdbush_introspect(DBusConnection *conn,
 		     DBusMessage *msg,
+		     struct cm_client_info *ci,
 		     struct cm_context *ctx)
 {
 	const char *path;
@@ -3184,6 +3199,7 @@ cm_tdbush_introspect(DBusConnection *conn,
 static DBusHandlerResult
 cm_tdbush_property_get(DBusConnection *conn,
 		       DBusMessage *msg,
+		       struct cm_client_info *ci,
 		       struct cm_context *ctx)
 {
 	const char *path;
@@ -3384,6 +3400,7 @@ cm_tdbush_property_get(DBusConnection *conn,
 static DBusHandlerResult
 cm_tdbush_property_set(DBusConnection *conn,
 		       DBusMessage *msg,
+		       struct cm_client_info *ci,
 		       struct cm_context *ctx)
 {
 	const char *path;
@@ -4025,6 +4042,7 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 static DBusHandlerResult
 cm_tdbush_property_get_all(DBusConnection *conn,
 			   DBusMessage *msg,
+			   struct cm_client_info *ci,
 			   struct cm_context *ctx)
 {
 	return cm_tdbush_property_get_all_or_changed(ctx, conn, msg,
@@ -5100,31 +5118,47 @@ cm_tdbush_classify_path(struct cm_context *ctx, const char *path)
 	return cm_tdbush_object_type_none;
 }
 
+struct cm_tdbush_pending_call {
+	DBusMessage *cm_msg;
+	const char *cm_path, *cm_interface, *cm_method;
+	enum cm_tdbush_object_type cm_type;
+	DBusHandlerResult (*cm_fn)(DBusConnection *conn,
+				   DBusMessage *msg,
+				   struct cm_client_info *ci,
+				   struct cm_context *ctx);
+	dbus_bool_t cm_know_uid;
+	dbus_uint32_t cm_pending_uid;
+	uid_t cm_uid;
+	struct cm_tdbush_pending_call *cm_next;
+} *cm_pending_calls;
+
 DBusHandlerResult
 cm_tdbush_handle_method_call(DBusConnection *conn, DBusMessage *msg,
 			     struct cm_context *ctx)
 {
-	const char *path, *interface, *member;
+	struct cm_tdbush_pending_call pending, *tmp;
 	struct cm_tdbush_interface *iface;
 	struct cm_tdbush_interface_item *item;
 	struct cm_tdbush_method *meth;
-	enum cm_tdbush_object_type type;
 	unsigned int i;
-	DBusHandlerResult handled;
 
-	path = dbus_message_get_path(msg);
-	interface = dbus_message_get_interface(msg);
-	member = dbus_message_get_member(msg);
-	type = cm_tdbush_classify_path(ctx, path);
+	memset(&pending, 0, sizeof(pending));
+	pending.cm_msg = dbus_message_ref(msg);
+	dbus_message_set_serial(pending.cm_msg,
+				dbus_message_get_serial(msg));
+	pending.cm_path = dbus_message_get_path(pending.cm_msg);
+	pending.cm_interface = dbus_message_get_interface(pending.cm_msg);
+	pending.cm_method = dbus_message_get_member(pending.cm_msg);
+	pending.cm_type = cm_tdbush_classify_path(ctx, pending.cm_path);
 	for (i = 0;
 	     i < sizeof(cm_tdbush_object_type_map) / sizeof(cm_tdbush_object_type_map[i]);
 	     i++) {
-		if (cm_tdbush_object_type_map[i].cm_type != type) {
+		if (cm_tdbush_object_type_map[i].cm_type != pending.cm_type) {
 			continue;
 		}
 		iface = (*((cm_tdbush_object_type_map[i]).cm_interface))();
-		if ((interface != NULL) &&
-		    (strcmp(iface->cm_name, interface) != 0)) {
+		if ((pending.cm_interface != NULL) &&
+		    (strcmp(iface->cm_name, pending.cm_interface) != 0)) {
 			continue;
 		}
 		for (item = iface->cm_items;
@@ -5134,17 +5168,83 @@ cm_tdbush_handle_method_call(DBusConnection *conn, DBusMessage *msg,
 				continue;
 			}
 			meth = item->cm_method;
-			if (strcmp(meth->cm_name, member) != 0) {
+			if (strcmp(meth->cm_name, pending.cm_method) != 0) {
 				continue;
 			}
-			handled = (*(meth->cm_fn))(conn, msg, ctx);
-			break;
+			/* found it */
+			pending.cm_fn = meth->cm_fn;
+			tmp = talloc_ptrtype(NULL, tmp);
+			if (tmp != NULL) {
+				/* we need to know who this is */
+				msg = dbus_message_new_method_call(DBUS_SERVICE_DBUS,
+								   DBUS_PATH_DBUS,
+								   DBUS_INTERFACE_DBUS,
+								   "GetConnectionUnixUser");
+				if (msg != NULL) {
+					cm_tdbusm_set_s(msg, dbus_message_get_sender(pending.cm_msg));
+					if (dbus_connection_send(conn, msg,
+								 &pending.cm_pending_uid)) {
+						*tmp = pending;
+						tmp->cm_next = cm_pending_calls;
+						cm_pending_calls = tmp;
+						cm_reset_timeout(ctx);
+						cm_log(4, "Pending GetConnectionUnixUser serial %lu\n",
+						       (unsigned long) pending.cm_pending_uid);
+						dbus_message_unref(msg);
+						return DBUS_HANDLER_RESULT_HANDLED;
+					}
+					dbus_message_unref(msg);
+				}
+				talloc_free(tmp);
+			}
+			dbus_message_unref(pending.cm_msg);
+			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 		}
 		if (item == NULL) {
 			continue;
 		}
 		cm_reset_timeout(ctx);
-		return handled;
 	}
+	dbus_message_unref(pending.cm_msg);
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
+DBusHandlerResult
+cm_tdbush_handle_method_return(DBusConnection *conn, DBusMessage *msg,
+			       struct cm_context *ctx)
+{
+	struct cm_tdbush_pending_call **p, *call, *next;
+	dbus_uint32_t serial;
+	struct cm_client_info client_info;
+	long uid;
+	
+	serial = dbus_message_get_reply_serial(msg);
+	for (p = &cm_pending_calls;
+	     (p != NULL) && (*p != NULL);
+	     p = &((*p)->cm_next)) {
+		if ((*p)->cm_pending_uid == serial) {
+			break;
+		}
+	}
+	if ((p == NULL) || (*p == NULL)) {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+	call = *p;
+	next = call->cm_next;
+	if (cm_tdbusm_get_n(msg, call, &uid) != 0) {
+		cm_log(1, "Result error from GetConnectionUnixUser().\n");
+		dbus_message_unref(call->cm_msg);
+		talloc_free(call);
+		*p = next;
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+	call->cm_uid = uid;
+	cm_log(4, "User ID %lu called %s:%s.%s.\n",
+	       uid, call->cm_path, call->cm_interface, call->cm_method);
+	client_info.uid = call->cm_uid;
+	(*call->cm_fn)(conn, call->cm_msg, &client_info, ctx);
+	dbus_message_unref(call->cm_msg);
+	talloc_free(call);
+	*p = next;
+	return DBUS_HANDLER_RESULT_HANDLED;
 }
