@@ -50,6 +50,8 @@ libcm_a_SOURCES = \
 	oiddict.h \
 	pin.c \
 	pin.h \
+	postsave.c \
+	postsave.h \
 	prefs.c \
 	prefs.h \
 	prefs-n.c \

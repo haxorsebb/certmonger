@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012 Red Hat, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1968,6 +1968,7 @@ list(const char *argv0, int argc, char **argv)
 		case CM_NEED_TO_SAVE_CERT:
 		case CM_SAVING_CERT:
 		case CM_SAVED_CERT:
+		case CM_POST_SAVED_CERT:
 		case CM_NEED_TO_READ_CERT:
 		case CM_READING_CERT:
 		case CM_CA_WORKING:
