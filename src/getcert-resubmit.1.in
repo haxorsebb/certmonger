@@ -71,6 +71,10 @@ extensionRequest attribute in the signing request.
 
 .SH OTHER OPTIONS
 .TP
+\fB\-C\fR command
+When ever the certificate is saved to the specified location, run the
+specified command as the client user.
+.TP
 \fB\-v\fR
 Be verbose about errors.  Normally, the details of an error received from
 the daemon will be suppressed if the client can make a diagnostic suggestion.

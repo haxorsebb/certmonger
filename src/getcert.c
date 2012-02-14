@@ -456,6 +456,91 @@ query_rep_sososos(enum cm_tdbus_type which,
 	dbus_message_unref(rep);
 }
 
+/* Send a query for the value of the specified property to the named object and
+ * return the reply message. */
+static DBusMessage *
+query_prop(enum cm_tdbus_type which,
+	   const char *path, const char *interface, const char *prop,
+	   int verbose)
+{
+	DBusMessage *req;
+	req = prep_req(which, path, DBUS_INTERFACE_PROPERTIES, "Get");
+	cm_tdbusm_set_ss(req, interface, prop);
+	return send_req(req, verbose);
+}
+
+/* Read a boolean property. */
+static dbus_bool_t
+query_prop_b(enum cm_tdbus_type which,
+	     const char *path, const char *interface, const char *prop,
+	     int verbose,
+	     void *parent)
+{
+	DBusMessage *rep;
+	dbus_bool_t b;
+	rep = query_prop(which, path, interface, prop, verbose);
+	if (cm_tdbusm_get_b(rep, parent, &b) != 0) {
+		printf(_("Error parsing server response.\n"));
+		exit(1);
+	}
+	dbus_message_unref(rep);
+	return b;
+}
+
+/* Read a string property. */
+static char *
+query_prop_s(enum cm_tdbus_type which,
+	     const char *path, const char *interface, const char *prop,
+	     int verbose,
+	     void *parent)
+{
+	DBusMessage *rep;
+	char *s;
+	rep = query_prop(which, path, interface, prop, verbose);
+	if (cm_tdbusm_get_s(rep, parent, &s) != 0) {
+		printf(_("Error parsing server response.\n"));
+		exit(1);
+	}
+	dbus_message_unref(rep);
+	return s;
+}
+
+/* Read a path property. */
+static char *
+query_prop_p(enum cm_tdbus_type which,
+	     const char *path, const char *interface, const char *prop,
+	     int verbose,
+	     void *parent)
+{
+	DBusMessage *rep;
+	char *p;
+	rep = query_prop(which, path, interface, prop, verbose);
+	if (cm_tdbusm_get_p(rep, parent, &p) != 0) {
+		printf(_("Error parsing server response.\n"));
+		exit(1);
+	}
+	dbus_message_unref(rep);
+	return p;
+}
+
+/* Read an array-of-strings property. */
+static char **
+query_prop_as(enum cm_tdbus_type which,
+	      const char *path, const char *interface, const char *prop,
+	      int verbose,
+	      void *parent)
+{
+	DBusMessage *rep;
+	char **as;
+	rep = query_prop(which, path, interface, prop, verbose);
+	if (cm_tdbusm_get_as(rep, parent, &as) != 0) {
+		printf(_("Error parsing server response.\n"));
+		exit(1);
+	}
+	dbus_message_unref(rep);
+	return as;
+}
+
 /* Add a new request. */
 static int
 request(const char *argv0, int argc, char **argv)
@@ -468,15 +553,15 @@ request(const char *argv0, int argc, char **argv)
 	int keysize = 0, auto_renew = 1, verbose = 0, c, i;
 	char *ca = DEFAULT_CA, *subject = NULL, **eku = NULL, *oid, *id = NULL;
 	char **principal = NULL, **dns = NULL, **email = NULL;
-	struct cm_tdbusm_dict param[32];
-	const struct cm_tdbusm_dict *params[32];
+	struct cm_tdbusm_dict param[33];
+	const struct cm_tdbusm_dict *params[34];
 	DBusMessage *req, *rep;
 	dbus_bool_t b;
 	char *p;
 	krb5_context kctx;
 	krb5_error_code kret;
 	krb5_principal kprincipal;
-	char *krealm, *kuprincipal;
+	char *krealm, *kuprincipal, *command = NULL;
 
 	memset(subject_default, '\0', sizeof(subject_default));
 	strcpy(subject_default, "CN=");
@@ -500,7 +585,7 @@ request(const char *argv0, int argc, char **argv)
 
 	opterr = 0;
 	while ((c = getopt(argc, argv,
-			   "d:n:t:k:f:I:g:rRN:U:K:D:E:sSp:P:v"
+			   "d:n:t:k:f:I:g:rRN:U:K:D:E:sSp:P:vC:"
 			   GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
@@ -588,6 +673,9 @@ request(const char *argv0, int argc, char **argv)
 			break;
 		case 'P':
 			pin = optarg;
+			break;
+		case 'C':
+			command = optarg;
 			break;
 		case 'v':
 			verbose++;
@@ -830,6 +918,13 @@ request(const char *argv0, int argc, char **argv)
 		params[i] = &param[i];
 		i++;
 	}
+	if (command != NULL) {
+		param[i].key = CM_DBUS_PROP_CERT_POSTSAVE_COMMAND;
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = command;
+		params[i] = &param[i];
+		i++;
+	}
 	params[i] = NULL;
 	req = prep_req(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
 		       "add_request");
@@ -987,13 +1082,13 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 		  char *dbdir, char *nickname, char *token,
 		  char *keyfile, char *certfile,
 		  char *pin, char *pinfile,
-		  char *ca, dbus_bool_t auto_renew_stop,
+		  char *ca, char *command, dbus_bool_t auto_renew_stop,
 		  int verbose)
 {
 	DBusMessage *req, *rep;
 	int i;
-	struct cm_tdbusm_dict param[19];
-	const struct cm_tdbusm_dict *params[20];
+	struct cm_tdbusm_dict param[20];
+	const struct cm_tdbusm_dict *params[21];
 	dbus_bool_t b;
 	const char *capath;
 	char *p;
@@ -1099,6 +1194,13 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 	param[i].value.b = !auto_renew_stop;
 	params[i] = &param[i];
 	i++;
+	if (command != NULL) {
+		param[i].key = CM_DBUS_PROP_CERT_POSTSAVE_COMMAND;
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = command;
+		params[i] = &param[i];
+		i++;
+	}
 	if (ca != NULL) {
 		capath = find_ca_by_name(globals.tctx, bus, ca, verbose);
 		if (capath == NULL) {
@@ -1144,8 +1246,8 @@ set_tracking(const char *argv0, const char *category,
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	DBusMessage *req, *rep;
 	const char *request, *capath;
-	struct cm_tdbusm_dict param[10];
-	const struct cm_tdbusm_dict *params[11];
+	struct cm_tdbusm_dict param[11];
+	const struct cm_tdbusm_dict *params[12];
 	char *nss_scheme, *dbdir = NULL, *token = NULL, *nickname = NULL;
 	char *id = NULL, *new_id = NULL, *new_request;
 	char *keyfile = NULL, *certfile = NULL, *ca = DEFAULT_CA;
@@ -1158,6 +1260,7 @@ set_tracking(const char *argv0, const char *category,
 	krb5_error_code kret;
 	krb5_principal kprincipal;
 	char *krealm, *kuprincipal;
+	char *command = NULL;
 
 	kctx = NULL;
 	if ((kret = krb5_init_context(&kctx)) != 0) {
@@ -1173,7 +1276,7 @@ set_tracking(const char *argv0, const char *category,
 
 	opterr = 0;
 	while ((c = getopt(argc, argv,
-			   "d:n:t:k:f:g:p:P:rRi:I:U:K:D:E:sSv"
+			   "d:n:t:k:f:g:p:P:rRi:I:U:K:D:E:sSvC:"
 			   GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
@@ -1273,6 +1376,9 @@ set_tracking(const char *argv0, const char *category,
 			break;
 		case 'P':
 			pin = optarg;
+			break;
+		case 'C':
+			command = optarg;
 			break;
 		case 'v':
 			verbose++;
@@ -1410,6 +1516,13 @@ set_tracking(const char *argv0, const char *category,
 			} else {
 				capath = NULL;
 			}
+			if (command != NULL) {
+				param[i].key = CM_DBUS_PROP_CERT_POSTSAVE_COMMAND;
+				param[i].value_type = cm_tdbusm_dict_s;
+				param[i].value.s = command;
+				params[i] = &param[i];
+				i++;
+			}
 			params[i] = NULL;
 			req = prep_req(bus, request, CM_DBUS_REQUEST_INTERFACE,
 				       "modify");
@@ -1471,7 +1584,7 @@ set_tracking(const char *argv0, const char *category,
 						 dbdir, nickname, token,
 						 keyfile, certfile,
 						 pin, pinfile,
-						 ca, (auto_renew_stop > 0),
+						 ca, command, (auto_renew_stop > 0),
 						 verbose);
 		}
 	} else {
@@ -1533,8 +1646,8 @@ resubmit(const char *argv0, int argc, char **argv)
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	DBusMessage *req, *rep;
 	const char *request, *capath;
-	struct cm_tdbusm_dict param[15];
-	const struct cm_tdbusm_dict *params[16];
+	struct cm_tdbusm_dict param[16];
+	const struct cm_tdbusm_dict *params[17];
 	char *dbdir = NULL, *token = NULL, *nickname = NULL, *certfile = NULL;
 	char *pin = NULL, *pinfile = NULL;
 	char *id = NULL, *new_id = NULL, *ca = NULL, *new_request, *nss_scheme;
@@ -1545,7 +1658,7 @@ resubmit(const char *argv0, int argc, char **argv)
 	krb5_context kctx;
 	krb5_error_code kret;
 	krb5_principal kprincipal;
-	char *kuprincipal;
+	char *kuprincipal, *command = NULL;
 
 	kctx = NULL;
 	if ((kret = krb5_init_context(&kctx)) != 0) {
@@ -1557,7 +1670,7 @@ resubmit(const char *argv0, int argc, char **argv)
 
 	opterr = 0;
 	while ((c = getopt(argc, argv,
-			   "d:n:N:t:U:K:E:D:f:i:I:sSp:P:v" GETOPT_CA)) != -1) {
+			   "d:n:N:t:U:K:E:D:f:i:I:sSp:P:vC:" GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
 			nss_scheme = NULL;
@@ -1635,6 +1748,9 @@ resubmit(const char *argv0, int argc, char **argv)
 			break;
 		case 'P':
 			pin = optarg;
+			break;
+		case 'C':
+			command = optarg;
 			break;
 		case 'v':
 			verbose++;
@@ -1759,6 +1875,13 @@ resubmit(const char *argv0, int argc, char **argv)
 		param[i].key = "KEY_PIN_FILE";
 		param[i].value_type = cm_tdbusm_dict_s;
 		param[i].value.s = pinfile;
+		params[i] = &param[i];
+		i++;
+	}
+	if (command != NULL) {
+		param[i].key = CM_DBUS_PROP_CERT_POSTSAVE_COMMAND;
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = command;
 		params[i] = &param[i];
 		i++;
 	}
@@ -2136,6 +2259,9 @@ list(const char *argv0, int argc, char **argv)
 			       cm_oid_to_name(NULL, as4[j]),
 			       as4[j + 1] ? "" : "\n");
 		}
+		printf(_("\tcommand: %s\n"),
+		       query_prop_s(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
+				    CM_DBUS_PROP_CERT_POSTSAVE_COMMAND, verbose, globals.tctx));
 		printf(_("\ttrack: %s\n"),
 		       query_rep_b(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
 				   "get_monitoring", verbose, globals.tctx) ?
