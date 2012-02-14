@@ -25,28 +25,28 @@ o object layout
   - get_supported_cert_storage
     returns: array of string -> "NSSDB", "FILE"
   - add_request
-    arguments: [dict{string,variant{string/array-of-string/number/boolean}}]
-               {"NICKNAME",string}
-               {"KEY_TYPE","RSA"}
-               {"KEY_SIZE",integer}
-               {"KEY_STORAGE","NSSDB"/"FILE"/"NONE"}*
-               {"KEY_LOCATION",string}*
-               {"KEY_NICKNAME",string}
-               {"KEY_TOKEN",string}
-               {"KEY_PIN",string}
-               {"KEY_PIN_FILE",string}
-               {"CERT_STORAGE","NSSDB"/"FILE"}*
-               {"CERT_LOCATION",string}*
-               {"CERT_NICKNAME",string}
-               {"CERT_TOKEN",string}
-	       {"TRACK",boolean}
-	       {"RENEW",boolean}
-	       {"SUBJECT",string}
-	       {"EKU",array-of-string (oids)}
-	       {"PRINCIPAL",array-of-string (principal names)}
-	       {"DNS",array-of-string (dns names)}
-	       {"EMAIL",array-of-string (email addresses)}
-	       {"CA",string (name of configured CA to use)}
+    arguments: [dict{string,variant{string/path/array-of-string/number/boolean}}]
+               {"NICKNAME"("nickname"),string}
+               {"KEY_TYPE"("key-type"),"RSA"}
+               {"KEY_SIZE"("key-size"),integer}
+               {"KEY_STORAGE"("key-storage"),"NSSDB"/"FILE"/"NONE"}*
+               {"KEY_LOCATION"("key-file"/"key-database"),string}*
+               {"KEY_NICKNAME"("key-nickname"),string}
+               {"KEY_TOKEN"("key-token"),string}
+               {"KEY_PIN"("key-pin"),string}
+               {"KEY_PIN_FILE"("key-pin-file"),string}
+               {"CERT_STORAGE"("cert-storage"),"NSSDB"/"FILE"}*
+               {"CERT_LOCATION"("cert-file"/"cert-database"),string}*
+               {"CERT_NICKNAME"("cert-nickname"),string}
+               {"CERT_TOKEN"("cert-token"),string}
+	       {"TRACK"("monitoring"),boolean}
+	       {"RENEW"("autorenew"),boolean}
+	       {"SUBJECT"("template-subject"),string}
+	       {"EKU"("template-eku"),array-of-string (oids)}
+	       {"PRINCIPAL"("template-principal"),array-of-string (principal names)}
+	       {"DNS"("template-hostname"),array-of-string (dns names)}
+	       {"EMAIL"("template-email"),array-of-string (email addresses)}
+	       {"CA"("ca"),path (known CA to use)}
 	       * = required values
     returns: boolean -> succeeded
              path (optional) -> object path for new request

@@ -390,6 +390,11 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	/* Certificate storage. */
 	param = cm_tdbusm_find_dict_entry(d, "CERT_STORAGE", cm_tdbusm_dict_s);
 	if (param == NULL) {
+		param = cm_tdbusm_find_dict_entry(d,
+						  CM_DBUS_PROP_CERT_LOCATION_TYPE,
+						  cm_tdbusm_dict_s);
+	}
+	if (param == NULL) {
 		/* This is a required parameter. */
 		cm_log(1, "Cert storage type not specified.\n");
 		talloc_free(parent);
@@ -416,6 +421,11 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	}
 	/* Handle parameters for either a PIN or the location of a PIN. */
 	param = cm_tdbusm_find_dict_entry(d, "KEY_PIN", cm_tdbusm_dict_s);
+	if (param == NULL) {
+		param = cm_tdbusm_find_dict_entry(d,
+						  CM_DBUS_PROP_KEY_PIN,
+						  cm_tdbusm_dict_s);
+	}
 	if ((param == NULL) ||
 	    (param->value.s == NULL) ||
 	    (strlen(param->value.s) == 0)) {
@@ -425,6 +435,11 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		key_pin_file = NULL;
 	}
 	param = cm_tdbusm_find_dict_entry(d, "KEY_PIN_FILE", cm_tdbusm_dict_s);
+	if (param == NULL) {
+		param = cm_tdbusm_find_dict_entry(d,
+						  CM_DBUS_PROP_KEY_PIN_FILE,
+						  cm_tdbusm_dict_s);
+	}
 	if ((param == NULL) ||
 	    (param->value.s == NULL) ||
 	    (strlen(param->value.s) == 0)) {
@@ -452,6 +467,11 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	case cm_cert_storage_file:
 		param = cm_tdbusm_find_dict_entry(d, "CERT_LOCATION",
 						  cm_tdbusm_dict_s);
+		if (param == NULL) {
+			param = cm_tdbusm_find_dict_entry(d,
+							  CM_DBUS_PROP_CERT_LOCATION_FILE,
+							  cm_tdbusm_dict_s);
+		}
 		if (param == NULL) {
 			cm_log(1, "Cert storage location not specified.\n");
 			talloc_free(parent);
@@ -497,6 +517,11 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		param = cm_tdbusm_find_dict_entry(d, "CERT_LOCATION",
 						  cm_tdbusm_dict_s);
 		if (param == NULL) {
+			param = cm_tdbusm_find_dict_entry(d,
+							  CM_DBUS_PROP_CERT_LOCATION_DATABASE,
+							  cm_tdbusm_dict_s);
+		}
+		if (param == NULL) {
 			cm_log(1, "Cert storage location not specified.\n");
 			talloc_free(parent);
 			return send_internal_base_missing_arg_error(conn, msg,
@@ -528,6 +553,11 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		param = cm_tdbusm_find_dict_entry(d, "CERT_NICKNAME",
 						  cm_tdbusm_dict_s);
 		if (param == NULL) {
+			param = cm_tdbusm_find_dict_entry(d,
+							  CM_DBUS_PROP_CERT_LOCATION_NICKNAME,
+							  cm_tdbusm_dict_s);
+		}
+		if (param == NULL) {
 			cm_log(1, "Cert nickname not specified.\n");
 			talloc_free(parent);
 			return send_internal_base_missing_arg_error(conn, msg,
@@ -537,6 +567,11 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		cert_nickname = param->value.s;
 		param = cm_tdbusm_find_dict_entry(d, "CERT_TOKEN",
 						  cm_tdbusm_dict_s);
+		if (param == NULL) {
+			param = cm_tdbusm_find_dict_entry(d,
+							  CM_DBUS_PROP_CERT_LOCATION_TOKEN,
+							  cm_tdbusm_dict_s);
+		}
 		if (param == NULL) {
 			cert_token = NULL;
 		} else {
@@ -553,6 +588,11 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	}
 	/* Check that the requested nickname will be unique. */
 	param = cm_tdbusm_find_dict_entry(d, "NICKNAME", cm_tdbusm_dict_s);
+	if (param == NULL) {
+		param = cm_tdbusm_find_dict_entry(d,
+						  CM_DBUS_PROP_NICKNAME,
+						  cm_tdbusm_dict_s);
+	}
 	if (param != NULL) {
 		n_entries = cm_get_n_entries(ctx);
 		for (i = 0; i < n_entries; i++) {
@@ -610,6 +650,11 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	 * we don't require that we know anything about the key. */
 	param = cm_tdbusm_find_dict_entry(d, "KEY_STORAGE", cm_tdbusm_dict_s);
 	if (param == NULL) {
+		param = cm_tdbusm_find_dict_entry(d,
+						  CM_DBUS_PROP_KEY_LOCATION_TYPE,
+						  cm_tdbusm_dict_s);
+	}
+	if (param == NULL) {
 		key_storage = cm_key_storage_none;
 		key_location = NULL;
 		key_token = NULL;
@@ -645,6 +690,11 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		case cm_key_storage_file:
 			param = cm_tdbusm_find_dict_entry(d, "KEY_LOCATION",
 							  cm_tdbusm_dict_s);
+			if (param == NULL) {
+				param = cm_tdbusm_find_dict_entry(d,
+								  CM_DBUS_PROP_KEY_LOCATION_FILE,
+								  cm_tdbusm_dict_s);
+			}
 			if (param == NULL) {
 				cm_log(1,
 				       "Key storage location not specified.\n");
@@ -691,6 +741,11 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 			param = cm_tdbusm_find_dict_entry(d, "KEY_LOCATION",
 							  cm_tdbusm_dict_s);
 			if (param == NULL) {
+				param = cm_tdbusm_find_dict_entry(d,
+								  CM_DBUS_PROP_KEY_LOCATION_DATABASE,
+								  cm_tdbusm_dict_s);
+			}
+			if (param == NULL) {
 				cm_log(1,
 				       "Key storage location not specified.\n");
 				talloc_free(parent);
@@ -723,6 +778,11 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 			param = cm_tdbusm_find_dict_entry(d, "KEY_NICKNAME",
 							  cm_tdbusm_dict_s);
 			if (param == NULL) {
+				param = cm_tdbusm_find_dict_entry(d,
+								  CM_DBUS_PROP_KEY_LOCATION_NICKNAME,
+								  cm_tdbusm_dict_s);
+			}
+			if (param == NULL) {
 				cm_log(1, "Key nickname not specified.\n");
 				talloc_free(parent);
 				return send_internal_base_missing_arg_error(conn, msg,
@@ -732,6 +792,11 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 			key_nickname = param->value.s;
 			param = cm_tdbusm_find_dict_entry(d, "KEY_TOKEN",
 							  cm_tdbusm_dict_s);
+			if (param == NULL) {
+				param = cm_tdbusm_find_dict_entry(d,
+								  CM_DBUS_PROP_KEY_LOCATION_TOKEN,
+								  cm_tdbusm_dict_s);
+			}
 			if (param == NULL) {
 				key_token = NULL;
 			} else {
@@ -794,11 +859,21 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	/* Populate it with all of the information we have. */
 	new_entry->cm_busname = cm_store_entry_next_busname(new_entry);
 	param = cm_tdbusm_find_dict_entry(d, "NICKNAME", cm_tdbusm_dict_s);
+	if (param == NULL) {
+		param = cm_tdbusm_find_dict_entry(d,
+						  CM_DBUS_PROP_NICKNAME,
+						  cm_tdbusm_dict_s);
+	}
 	if (param != NULL) {
 		new_entry->cm_nickname = talloc_strdup(new_entry,
 						       param->value.s);
 	}
 	param = cm_tdbusm_find_dict_entry(d, "KEY_SIZE", cm_tdbusm_dict_n);
+	if (param == NULL) {
+		param = cm_tdbusm_find_dict_entry(d,
+						  CM_DBUS_PROP_KEY_SIZE,
+						  cm_tdbusm_dict_n);
+	}
 	if (param != NULL) {
 		new_entry->cm_key_type.cm_key_gen_algorithm = CM_DEFAULT_PUBKEY_TYPE;
 		new_entry->cm_key_type.cm_key_gen_size = param->value.n;
@@ -824,6 +899,11 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	new_entry->cm_cert_token = maybe_strdup(new_entry, cert_token);
 	/* Which CA to use. */
 	param = cm_tdbusm_find_dict_entry(d, "CA", cm_tdbusm_dict_s);
+	if (param == NULL) {
+		param = cm_tdbusm_find_dict_entry(d,
+						  CM_DBUS_PROP_CA,
+						  cm_tdbusm_dict_s);
+	}
 	if (param != NULL) {
 		ca = get_ca_for_path(ctx, param->value.s);
 		if (ca != NULL) {
@@ -842,12 +922,22 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	}
 	/* Behavior settings. */
 	param = cm_tdbusm_find_dict_entry(d, "TRACK", cm_tdbusm_dict_b);
+	if (param == NULL) {
+		param = cm_tdbusm_find_dict_entry(d,
+						  CM_DBUS_PROP_MONITORING,
+						  cm_tdbusm_dict_b);
+	}
 	if (param != NULL) {
 		new_entry->cm_monitor = param->value.b;
 	} else {
 		new_entry->cm_monitor = cm_prefs_monitor();
 	}
 	param = cm_tdbusm_find_dict_entry(d, "RENEW", cm_tdbusm_dict_b);
+	if (param == NULL) {
+		param = cm_tdbusm_find_dict_entry(d,
+						  CM_DBUS_PROP_AUTORENEW,
+						  cm_tdbusm_dict_b);
+	}
 	if (param != NULL) {
 		new_entry->cm_autorenew = param->value.b;
 	} else {
@@ -855,27 +945,52 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	}
 	/* Template information. */
 	param = cm_tdbusm_find_dict_entry(d, "SUBJECT", cm_tdbusm_dict_s);
+	if (param == NULL) {
+		param = cm_tdbusm_find_dict_entry(d,
+						  CM_DBUS_PROP_TEMPLATE_SUBJECT,
+						  cm_tdbusm_dict_s);
+	}
 	if (param != NULL) {
 		new_entry->cm_template_subject = maybe_strdup(new_entry,
 							      param->value.s);
 	}
 	param = cm_tdbusm_find_dict_entry(d, "EKU", cm_tdbusm_dict_as);
+	if (param == NULL) {
+		param = cm_tdbusm_find_dict_entry(d,
+						  CM_DBUS_PROP_TEMPLATE_EKU,
+						  cm_tdbusm_dict_as);
+	}
 	if (param != NULL) {
 		new_entry->cm_template_eku = cm_submit_maybe_joinv(new_entry,
 								   ",",
 								   param->value.as);
 	}
 	param = cm_tdbusm_find_dict_entry(d, "PRINCIPAL", cm_tdbusm_dict_as);
+	if (param == NULL) {
+		param = cm_tdbusm_find_dict_entry(d,
+						  CM_DBUS_PROP_TEMPLATE_PRINCIPAL,
+						  cm_tdbusm_dict_as);
+	}
 	if (param != NULL) {
 		new_entry->cm_template_principal = maybe_strdupv(new_entry,
 								 param->value.as);
 	}
 	param = cm_tdbusm_find_dict_entry(d, "DNS", cm_tdbusm_dict_as);
+	if (param == NULL) {
+		param = cm_tdbusm_find_dict_entry(d,
+						  CM_DBUS_PROP_TEMPLATE_HOSTNAME,
+						  cm_tdbusm_dict_as);
+	}
 	if (param != NULL) {
 		new_entry->cm_template_hostname = maybe_strdupv(new_entry,
 								param->value.as);
 	}
 	param = cm_tdbusm_find_dict_entry(d, "EMAIL", cm_tdbusm_dict_as);
+	if (param == NULL) {
+		param = cm_tdbusm_find_dict_entry(d,
+						  CM_DBUS_PROP_TEMPLATE_EMAIL,
+						  cm_tdbusm_dict_as);
+	}
 	if (param != NULL) {
 		new_entry->cm_template_email = maybe_strdupv(new_entry,
 							     param->value.as);
