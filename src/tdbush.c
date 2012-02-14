@@ -2342,7 +2342,7 @@ request_prop_get_key_location_type(struct cm_context *ctx, void *parent,
 	struct cm_store_entry *entry = record;
 	switch (entry->cm_key_storage_type) {
 	case cm_key_storage_none:
-		return "";
+		return "NONE";
 		break;
 	case cm_key_storage_file:
 		return "FILE";
