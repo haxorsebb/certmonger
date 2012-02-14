@@ -378,7 +378,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	char *key_location, *key_nickname, *key_token, *key_pin, *key_pin_file;
 	enum cm_cert_storage_type cert_storage;
 	char *cert_location, *cert_nickname, *cert_token;
-	char *path;
+	char *path, *post_command, *post_uid;
 
 	parent = talloc_new(NULL);
 	if (cm_tdbusm_get_d(msg, parent, &d) != 0) {
@@ -849,6 +849,15 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 								  "KEY_NICKNAME" : NULL);
 		}
 	}
+	/* What to run after we save the certificate. */
+	param = cm_tdbusm_find_dict_entry(d,
+					  CM_DBUS_PROP_CERT_POSTSAVE_COMMAND,
+					  cm_tdbusm_dict_s);
+	if (param != NULL) {
+		post_command = param->value.s;
+	} else {
+		post_command = NULL;
+	}
 	/* Okay, we can go ahead and add the entry. */
 	new_entry = talloc_ptrtype(parent, new_entry);
 	if (new_entry == NULL) {
@@ -942,6 +951,15 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		new_entry->cm_autorenew = param->value.b;
 	} else {
 		new_entry->cm_autorenew = cm_prefs_autorenew();
+	}
+	if (post_command != NULL) {
+		new_entry->cm_post_certsave_uid = talloc_asprintf(new_entry,
+								  "%lu",
+								  (unsigned long) ci->uid);
+		if (new_entry->cm_post_certsave_uid != NULL) {
+			new_entry->cm_post_certsave_command = maybe_strdup(new_entry,
+									   post_command);
+		}
 	}
 	/* Template information. */
 	param = cm_tdbusm_find_dict_entry(d, "SUBJECT", cm_tdbusm_dict_s);
@@ -2135,7 +2153,9 @@ request_modify(DBusConnection *conn, DBusMessage *msg,
 	const struct cm_tdbusm_dict *param;
 	char *new_request_path;
 	void *parent;
+	const char *propname[sizeof(*entry)];
 	int i;
+	size_t n_propname = 0;
 
 	entry = get_entry_for_request_message(msg, ctx);
 	if (entry == NULL) {
@@ -2192,11 +2212,17 @@ request_modify(DBusConnection *conn, DBusMessage *msg,
 			    ((strcasecmp(param->key, "RENEW") == 0) ||
 			     (strcasecmp(param->key, CM_DBUS_PROP_AUTORENEW) == 0))) {
 				entry->cm_autorenew = param->value.b;
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_AUTORENEW;
+				}
 			} else
 			if ((param->value_type == cm_tdbusm_dict_b) &&
 			    ((strcasecmp(param->key, "TRACK") == 0) ||
 			     (strcasecmp(param->key, CM_DBUS_PROP_MONITORING) == 0))) {
 				entry->cm_monitor = param->value.b;
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_MONITORING;
+				}
 			} else
 			if ((param->value_type == cm_tdbusm_dict_s) &&
 			    ((strcasecmp(param->key, "CA") == 0) ||
@@ -2205,6 +2231,9 @@ request_modify(DBusConnection *conn, DBusMessage *msg,
 				talloc_free(entry->cm_ca_nickname);
 				entry->cm_ca_nickname = talloc_strdup(entry,
 								      ca->cm_nickname);
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_CA;
+				}
 			} else
 			if ((param->value_type == cm_tdbusm_dict_s) &&
 			    ((strcasecmp(param->key, "NICKNAME") == 0) ||
@@ -2212,6 +2241,9 @@ request_modify(DBusConnection *conn, DBusMessage *msg,
 				talloc_free(entry->cm_nickname);
 				entry->cm_nickname = talloc_strdup(entry,
 								   param->value.s);
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_NICKNAME;
+				}
 			} else
 			if ((param->value_type == cm_tdbusm_dict_s) &&
 			    ((strcasecmp(param->key, "SUBJECT") == 0) ||
@@ -2219,6 +2251,9 @@ request_modify(DBusConnection *conn, DBusMessage *msg,
 				talloc_free(entry->cm_template_subject);
 				entry->cm_template_subject = maybe_strdup(entry,
 									  param->value.s);
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_TEMPLATE_SUBJECT;
+				}
 			} else
 			if ((param->value_type == cm_tdbusm_dict_s) &&
 			    ((strcasecmp(param->key, "KEY_PIN") == 0) ||
@@ -2228,6 +2263,9 @@ request_modify(DBusConnection *conn, DBusMessage *msg,
 								 param->value.s);
 				if (entry->cm_key_pin != NULL) {
 					entry->cm_key_pin_file = NULL;
+				}
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_KEY_PIN;
 				}
 			} else
 			if ((param->value_type == cm_tdbusm_dict_s) &&
@@ -2249,6 +2287,9 @@ request_modify(DBusConnection *conn, DBusMessage *msg,
 				if (entry->cm_key_pin_file != NULL) {
 					entry->cm_key_pin = NULL;
 				}
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_KEY_PIN_FILE;
+				}
 			} else
 			if ((param->value_type == cm_tdbusm_dict_as) &&
 			    ((strcasecmp(param->key, "EKU") == 0) ||
@@ -2257,6 +2298,9 @@ request_modify(DBusConnection *conn, DBusMessage *msg,
 				entry->cm_template_eku = cm_submit_maybe_joinv(entry,
 									       ",",
 									       param->value.as);
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_TEMPLATE_EKU;
+				}
 			} else
 			if ((param->value_type == cm_tdbusm_dict_as) &&
 			    ((strcasecmp(param->key, "PRINCIPAL") == 0) ||
@@ -2264,6 +2308,9 @@ request_modify(DBusConnection *conn, DBusMessage *msg,
 				talloc_free(entry->cm_template_principal);
 				entry->cm_template_principal = maybe_strdupv(entry,
 									     param->value.as);
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_TEMPLATE_PRINCIPAL;
+				}
 			} else
 			if ((param->value_type == cm_tdbusm_dict_as) &&
 			    ((strcasecmp(param->key, "DNS") == 0) ||
@@ -2271,6 +2318,9 @@ request_modify(DBusConnection *conn, DBusMessage *msg,
 				talloc_free(entry->cm_template_hostname);
 				entry->cm_template_hostname = maybe_strdupv(entry,
 									    param->value.as);
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_TEMPLATE_HOSTNAME;
+				}
 			} else
 			if ((param->value_type == cm_tdbusm_dict_as) &&
 			    ((strcasecmp(param->key, "EMAIL") == 0) ||
@@ -2278,6 +2328,30 @@ request_modify(DBusConnection *conn, DBusMessage *msg,
 				talloc_free(entry->cm_template_email);
 				entry->cm_template_email = maybe_strdupv(entry,
 									 param->value.as);
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_TEMPLATE_EMAIL;
+				}
+			} else
+			if ((param->value_type == cm_tdbusm_dict_s) &&
+			    (strcasecmp(param->key, CM_DBUS_PROP_CERT_POSTSAVE_COMMAND) == 0)) {
+				talloc_free(entry->cm_post_certsave_command);
+				entry->cm_post_certsave_command = maybe_strdup(entry,
+									       param->value.s);
+				talloc_free(entry->cm_post_certsave_uid);
+				if (entry->cm_post_certsave_command != NULL) {
+					entry->cm_post_certsave_uid = talloc_asprintf(entry, "%lu",
+										      (unsigned long) ci->uid);
+					if (entry->cm_post_certsave_uid == NULL) {
+						talloc_free(entry->cm_post_certsave_command);
+						entry->cm_post_certsave_command = NULL;
+					}
+				} else {
+					entry->cm_post_certsave_uid = NULL;
+				}
+				if (n_propname + 3 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_CERT_POSTSAVE_COMMAND;
+					propname[n_propname++] = CM_DBUS_PROP_CERT_POSTSAVE_UID;
+				}
 			} else {
 				break;
 			}
@@ -2286,6 +2360,13 @@ request_modify(DBusConnection *conn, DBusMessage *msg,
 			new_request_path = talloc_asprintf(parent, "%s/%s",
 							   CM_DBUS_REQUEST_PATH,
 							   entry->cm_busname);
+			if ((n_propname > 0) &&
+			    (n_propname + 1 < sizeof(propname) / sizeof(propname[0]))) {
+				propname[n_propname] = NULL;
+				cm_tdbush_property_emit_changed(ctx, new_request_path,
+								CM_DBUS_REQUEST_INTERFACE,
+								propname);
+			}
 			cm_tdbusm_set_bp(rep,
 					 cm_restart_one(ctx,
 							entry->cm_nickname),
@@ -2333,7 +2414,7 @@ request_resubmit(DBusConnection *conn, DBusMessage *msg,
 			} else {
 				entry->cm_state = CM_NEED_CSR;
 			}
-			propname[0] = CM_DBUS_PROP_IS_DEFAULT;
+			propname[0] = CM_DBUS_PROP_STATUS;
 			propname[1] = NULL;
 			path = talloc_asprintf(entry, "%s/%s",
 					       CM_DBUS_REQUEST_PATH,

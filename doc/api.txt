@@ -47,6 +47,7 @@ o object layout
 	       {"DNS"("template-hostname"),array-of-string (dns names)}
 	       {"EMAIL"("template-email"),array-of-string (email addresses)}
 	       {"CA"("ca"),path (known CA to use)}
+	       {("cert-postsave-command"),string}
 	       * = required values
     returns: boolean -> succeeded
              path (optional) -> object path for new request
