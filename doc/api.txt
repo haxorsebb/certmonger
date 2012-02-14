@@ -10,6 +10,7 @@ patch to do so.  Eventually we'll get it all.
 The D-Bus API:
 o service name = org.fedorahosted.certmonger
 o object layout
+
   /org/fedorahosted/certmonger
   interface=org.fedorahosted.certmonger
   - find_request_by_nickname
@@ -17,8 +18,6 @@ o object layout
     returns: path -> object path for request, if found
   - get_requests
     returns: array of paths -> object paths for requests
-  - get_defaults
-    returns: path -> object path for defaults object
   - get_supported_key_types
     returns: array of string -> "RSA"
   - get_supported_key_storage
@@ -67,29 +66,30 @@ o object layout
   - remove_known_ca
     arguments: path -> object path for ca
     returns: boolean -> succeeded
+
   (objects whose names are returned by "get-requests" or "get-defaults")
   interface=org.fedorahosted.certmonger.request
-  - get_nickname
+  - get_nickname ("nickname" property)
     returns: string
-  - get_status
+  - get_status ("status"/"stuck" property pair)
     returns: string -> state name
              boolean -> i-am-stuck
-  - get_key_type_and_size
+  - get_key_type_and_size ("key-type"/"key-size" property pair)
     returns: string -> key algorithm
              number -> key size
-  - get_key_storage_info
+  - get_key_storage_info ("key-storage"/"key-file"/"key-database"/"key-nickname"/"key-token" property set)
     returns: string -> "file", "nssdb"
              string(required for "nssdb" or "file") -> filename (for "file"), or directory (for "nssdb")
              string(required for "nssdb") -> nssdb nickname
              string(optional) -> nssdb token name
-  - get_cert_storage_info
+  - get_cert_storage_info ("key-storage"/"key-file"/"key-database"/"key-nickname"/"key-token" property set)
     returns: string -> "file", "nssdb"
              string -> filename (for "file"), or directory (for "nssdb")
              string(required for "nssdb") -> nssdb nickname
              string(optional) -> nssdb token name
-  - get_cert_data
+  - get_cert_data ("cert" property)
     returns: string -> certificate in PEM format
-  - get_cert_info
+  - get_cert_info ("issuer"/"serial"/"subject"/"email"/"hostname"/"principal"/"eku" property set)
     returns: string -> issuer
              string -> serial number
              string -> subject
@@ -99,35 +99,35 @@ o object layout
              array of string -> principal names
              number -> key usage as bitfield based on RFC5280's values
              array of string -> oid values
-  - get_monitoring
+  - get_monitoring ("monitoring" property)
     returns: boolean -> enabled?
-  - get_cert_last_checked
+  - get_cert_last_checked ("last-checked" property)
     returns: number -> time of last check for expiration (unix time)
-  - get_notification_info
+  - get_notification_info ("notification-type"/"notification-syslog-priority"/"notification-email" property set)
     returns: string -> method ("syslog", "email")
              string -> destination (log level or recipient)
-  - get_autorenew
+  - get_autorenew ("autorenew" property)
     returns: boolean -> enabled?
-  - get_csr_info
+  - get_csr_info ("template-subject"/"template-email"/"template-hostname"/"template-principal"/"template-eku" property set)
     returns: string -> subject
              array of string -> email addresses
              array of string -> dns names
              array of string -> principal names
              number -> key usage as bitfield based on RFC5280's values
              array of string -> oid values
-  - get_key_pin
+  - get_key_pin ("key-pin" property)
     returns: string -> key storage PIN
-  - get_key_pin_file
+  - get_key_pin_file ("key-pin-file" property)
     returns: string -> path of file containing key storage PIN
-  - get_csr_data
+  - get_csr_data ("csr" property)
     returns: string -> signing request in PEM format
-  - get_ca
+  - get_ca ("ca" property)
     returns: path(optional) -> path to CA object
-  - get_submitted_date
+  - get_submitted_date ("submitted-date" property)
     returns: number(optional) -> time of last submission to a CA (as time_t)
-  - get_submitted_cookie
+  - get_submitted_cookie ("ca-cookie" property)
     returns: string(optional) -> CA-specific value
-  - get_ca_error
+  - get_ca_error ("ca-error" property)
     returns: text(optional) -> error text sent by the CA
   - modify
     - nickname for request
@@ -154,19 +154,20 @@ o object layout
              path    -> object path, in case it changed
   - resubmit (for requests that have been denied, generates a new csr)
     returns: boolean -> working-on-it
+
   (objects whose names are returned by "get-known-cas")
   interface=org.fedorahosted.certmonger.ca
-  - get_nickname
+  - get_nickname ("nickname" property)
     returns: string
-  - get_is_default
+  - get_is_default ("is-default" property)
     returns: boolean -> is-the-default-ca
   - get_type
     returns: string -> "EXTERNAL" if this is implemented by an external helper
-  - get_helper-location
+  - get_location
     returns: string -> path to external helper
   - get_serial
     returns: string -> hex value (optional)
-  - get_issuer-names
+  - get_issuer_names ("issuer-names" property)
     returns: array of string (optional) -> set of known issuer names
   - modify
     - nickname
