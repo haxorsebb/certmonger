@@ -487,38 +487,37 @@ cm_tdbus_filter(DBusConnection *conn, DBusMessage *dmessage, void *data)
 				 tdb);
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
-	/* Catch weird-looking messages. */
-	destination = dbus_message_get_destination(dmessage);
-	path = dbus_message_get_path(dmessage);
-	interface = dbus_message_get_interface(dmessage);
-	member = dbus_message_get_member(dmessage);
-	if ((destination == NULL) || (path == NULL) || (member == NULL)) {
-		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-	}
-	/* Make sure it's a message we care about. */
-	cm_log(4, "message %p(%s)->%s:%s:%s.%s\n", tdb,
-	       dbus_message_type_to_string(dbus_message_get_type(dmessage)),
-	       destination, path, interface ? interface : "", member);
 	switch (dbus_message_get_type(dmessage)) {
 	case DBUS_MESSAGE_TYPE_METHOD_CALL:
+		/* Make sure it's a message we care about. */
+		destination = dbus_message_get_destination(dmessage);
+		path = dbus_message_get_path(dmessage);
+		interface = dbus_message_get_interface(dmessage);
+		member = dbus_message_get_member(dmessage);
+		/* Catch weird-looking messages. */
+		if ((destination == NULL) || (path == NULL) || (member == NULL)) {
+			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		}
+		cm_log(4, "message %p(%s)->%s:%s:%s.%s\n", tdb,
+		       dbus_message_type_to_string(dbus_message_get_type(dmessage)),
+		       destination, path, interface ? interface : "", member);
+		return cm_tdbush_handle_method_call(conn, dmessage, tdb->data);
+		break;
 	case DBUS_MESSAGE_TYPE_METHOD_RETURN:
 		/* Check that the call or return is directed to us. */
+		destination = dbus_message_get_destination(dmessage);
 		if ((strcmp(destination, CM_DBUS_NAME) != 0) &&
 		    (((unique_name = dbus_bus_get_unique_name(conn)) == NULL) ||
 		      (strcmp(destination, unique_name) != 0))) {
 			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 		}
+		cm_log(4, "message %p(%s)->%lu->%lu\n", tdb,
+		       dbus_message_type_to_string(dbus_message_get_type(dmessage)),
+		       (unsigned long) dbus_message_get_reply_serial(dmessage),
+		       (unsigned long) dbus_message_get_serial(dmessage));
+		return cm_tdbush_handle_method_return(conn, dmessage, tdb->data);
 		break;
 	default:
-		break;
-	}
-	/* Okay, the message is one we need to worry about. */
-	switch (dbus_message_get_type(dmessage)) {
-	case DBUS_MESSAGE_TYPE_METHOD_CALL:
-		return cm_tdbush_handle_method_call(conn, dmessage, tdb->data);
-		break;
-	case DBUS_MESSAGE_TYPE_METHOD_RETURN:
-		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 		break;
 	}
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
