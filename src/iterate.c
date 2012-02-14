@@ -819,7 +819,8 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				}
 			} else {
 				/* Failed to start the post-save; skip it. */
-				*when = cm_time_soonish;
+				entry->cm_state = CM_MONITORING;
+				*when = cm_time_soon;
 			}
 		} else {
 			entry->cm_state = CM_MONITORING;
