@@ -5478,7 +5478,7 @@ cm_tdbush_handle_method_return(DBusConnection *conn, DBusMessage *msg,
 	dbus_uint32_t serial;
 	struct cm_client_info client_info;
 	long uid;
-	
+
 	serial = dbus_message_get_reply_serial(msg);
 	for (p = &cm_pending_calls;
 	     (p != NULL) && (*p != NULL);

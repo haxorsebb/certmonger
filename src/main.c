@@ -61,7 +61,7 @@ main(int argc, char **argv)
 	dbus_bool_t dofork;
 	int bustime;
 	DBusError error;
-	
+
 	bus = cm_env_default_bus();
 	dofork = cm_env_default_fork();
 	bustime = cm_env_default_bus_timeout();

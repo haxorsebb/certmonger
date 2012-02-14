@@ -817,7 +817,7 @@ main(int argc, char **argv)
 				case XMLRPC_TYPE_STRUCT:
 					for (j = 0;
 					     j < xmlrpc_struct_size(&ctx->xenv,
-					    			    arg);
+								    arg);
 					     j++) {
 						xmlrpc_struct_read_member(&ctx->xenv, arg, j,
 									  &key, &val);

@@ -39,16 +39,16 @@ o object layout
                {"CERT_LOCATION"("cert-file"/"cert-database"),string}*
                {"CERT_NICKNAME"("cert-nickname"),string}
                {"CERT_TOKEN"("cert-token"),string}
-	       {"TRACK"("monitoring"),boolean}
-	       {"RENEW"("autorenew"),boolean}
-	       {"SUBJECT"("template-subject"),string}
-	       {"EKU"("template-eku"),array-of-string (oids)}
-	       {"PRINCIPAL"("template-principal"),array-of-string (principal names)}
-	       {"DNS"("template-hostname"),array-of-string (dns names)}
-	       {"EMAIL"("template-email"),array-of-string (email addresses)}
-	       {"CA"("ca"),path (known CA to use)}
-	       {("cert-postsave-command"),string}
-	       * = required values
+               {"TRACK"("monitoring"),boolean}
+               {"RENEW"("autorenew"),boolean}
+               {"SUBJECT"("template-subject"),string}
+               {"EKU"("template-eku"),array-of-string (oids)}
+               {"PRINCIPAL"("template-principal"),array-of-string (principal names)}
+               {"DNS"("template-hostname"),array-of-string (dns names)}
+               {"EMAIL"("template-email"),array-of-string (email addresses)}
+               {"CA"("ca"),path (known CA to use)}
+               {("cert-postsave-command"),string}
+               * = required values
     returns: boolean -> succeeded
              path (optional) -> object path for new request
   - remove_request
