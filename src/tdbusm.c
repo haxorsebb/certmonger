@@ -821,6 +821,12 @@ cm_tdbusm_get_d_item(DBusMessageIter *item, void *parent)
 			dict->value_type = cm_tdbusm_dict_b;
 			dbus_message_iter_get_basic(&value, &dict->value.b);
 			break;
+		/* It can be a path. */
+		case DBUS_TYPE_OBJECT_PATH:
+			dict->value_type = cm_tdbusm_dict_p;
+			dbus_message_iter_get_basic(&value, &s);
+			dict->value.s = talloc_strdup(dict, s);
+			break;
 		/* It can be a string. */
 		case DBUS_TYPE_STRING:
 			dict->value_type = cm_tdbusm_dict_s;
@@ -1538,6 +1544,16 @@ cm_tdbusm_set_osd(DBusMessage *msg,
 						       &l);
 			dbus_message_iter_close_container(&entry, &val);
 			break;
+		case cm_tdbusm_dict_p:
+			dbus_message_iter_open_container(&entry,
+							 DBUS_TYPE_VARIANT,
+							 DBUS_TYPE_OBJECT_PATH_AS_STRING,
+							 &val);
+			dbus_message_iter_append_basic(&val,
+						       DBUS_TYPE_OBJECT_PATH,
+						       &d[i]->value.s);
+			dbus_message_iter_close_container(&entry, &val);
+			break;
 		case cm_tdbusm_dict_s:
 			dbus_message_iter_open_container(&entry,
 							 DBUS_TYPE_VARIANT,
@@ -1603,6 +1619,16 @@ cm_tdbusm_find_dict_entry(struct cm_tdbusm_dict **d,
 	ret = NULL;
 	for (i = 0; (d != NULL) && (d[i] != NULL); i++) {
 		if ((value_type == d[i]->value_type) &&
+		    (strcasecmp(key, d[i]->key) == 0)) {
+			ret = d[i];
+		}
+		if ((value_type == cm_tdbusm_dict_p) &&
+		    (d[i]->value_type == cm_tdbusm_dict_s) &&
+		    (strcasecmp(key, d[i]->key) == 0)) {
+			ret = d[i];
+		}
+		if ((value_type == cm_tdbusm_dict_s) &&
+		    (d[i]->value_type == cm_tdbusm_dict_p) &&
 		    (strcasecmp(key, d[i]->key) == 0)) {
 			ret = d[i];
 		}

@@ -907,11 +907,11 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	new_entry->cm_cert_nickname = maybe_strdup(new_entry, cert_nickname);
 	new_entry->cm_cert_token = maybe_strdup(new_entry, cert_token);
 	/* Which CA to use. */
-	param = cm_tdbusm_find_dict_entry(d, "CA", cm_tdbusm_dict_s);
+	param = cm_tdbusm_find_dict_entry(d, "CA", cm_tdbusm_dict_p);
 	if (param == NULL) {
 		param = cm_tdbusm_find_dict_entry(d,
 						  CM_DBUS_PROP_CA,
-						  cm_tdbusm_dict_s);
+						  cm_tdbusm_dict_p);
 	}
 	if (param != NULL) {
 		ca = get_ca_for_path(ctx, param->value.s);
@@ -2189,11 +2189,11 @@ request_modify(DBusConnection *conn, DBusMessage *msg,
 		}
 		/* If we're being asked to change the CA, check that the new CA
 		 * exists. */
-		param = cm_tdbusm_find_dict_entry(d, "CA", cm_tdbusm_dict_s);
+		param = cm_tdbusm_find_dict_entry(d, "CA", cm_tdbusm_dict_p);
 		if (param == NULL) {
 			param = cm_tdbusm_find_dict_entry(d,
 							  CM_DBUS_PROP_CA,
-							  cm_tdbusm_dict_s);
+							  cm_tdbusm_dict_p);
 		}
 		if (param != NULL) {
 			ca = get_ca_for_path(ctx, param->value.s);
@@ -2224,7 +2224,8 @@ request_modify(DBusConnection *conn, DBusMessage *msg,
 					propname[n_propname++] = CM_DBUS_PROP_MONITORING;
 				}
 			} else
-			if ((param->value_type == cm_tdbusm_dict_s) &&
+			if (((param->value_type == cm_tdbusm_dict_s) ||
+			     (param->value_type == cm_tdbusm_dict_p)) &&
 			    ((strcasecmp(param->key, "CA") == 0) ||
 			     (strcasecmp(param->key, CM_DBUS_PROP_CA) == 0))) {
 				ca = get_ca_for_path(ctx, param->value.s);
@@ -3236,19 +3237,20 @@ cm_tdbush_introspect_property(void *parent,
 
 	switch (prop->cm_bus_type) {
 	case cm_tdbush_property_path:
-		bus_type = "o";
+		bus_type = DBUS_TYPE_OBJECT_PATH_AS_STRING;
 		break;
 	case cm_tdbush_property_string:
-		bus_type = "s";
+		bus_type = DBUS_TYPE_STRING_AS_STRING;
 		break;
 	case cm_tdbush_property_strings:
-		bus_type = "as";
+		bus_type = DBUS_TYPE_ARRAY_AS_STRING
+			   DBUS_TYPE_STRING_AS_STRING;
 		break;
 	case cm_tdbush_property_boolean:
-		bus_type = "b";
+		bus_type = DBUS_TYPE_BOOLEAN_AS_STRING;
 		break;
 	case cm_tdbush_property_number:
-		bus_type = "x";
+		bus_type = DBUS_TYPE_INT64_AS_STRING;
 		break;
 	}
 	switch (prop->cm_access) {
@@ -4094,6 +4096,8 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 			dict[n].key = talloc_strdup(parent, prop->cm_name);
 			switch (prop->cm_bus_type) {
 			case cm_tdbush_property_path:
+				dict[n].value_type = cm_tdbusm_dict_p;
+				break;
 			case cm_tdbush_property_string:
 				dict[n].value_type = cm_tdbusm_dict_s;
 				break;

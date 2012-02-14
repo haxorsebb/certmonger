@@ -59,6 +59,7 @@ struct cm_tdbusm_dict {
 	char *key;
 	enum cm_tdbusm_dict_value_type {
 		cm_tdbusm_dict_s,
+		cm_tdbusm_dict_p,
 		cm_tdbusm_dict_as,
 		cm_tdbusm_dict_n,
 		cm_tdbusm_dict_b,

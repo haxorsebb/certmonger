@@ -875,7 +875,7 @@ request(const char *argv0, int argc, char **argv)
 			return 1;
 		}
 		param[i].key = "CA";
-		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value_type = cm_tdbusm_dict_p;
 		param[i].value.s = capath;
 		params[i] = &param[i];
 		i++;
@@ -1205,7 +1205,7 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 			return 1;
 		}
 		param[i].key = "CA";
-		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value_type = cm_tdbusm_dict_p;
 		param[i].value.s = talloc_strdup(globals.tctx, capath);
 		params[i] = &param[i];
 		i++;
@@ -1505,7 +1505,7 @@ set_tracking(const char *argv0, const char *category,
 					return 1;
 				}
 				param[i].key = "CA";
-				param[i].value_type = cm_tdbusm_dict_s;
+				param[i].value_type = cm_tdbusm_dict_p;
 				param[i].value.s = talloc_strdup(globals.tctx,
 								 capath);
 				params[i] = &param[i];
@@ -1822,7 +1822,7 @@ resubmit(const char *argv0, int argc, char **argv)
 			exit(1);
 		}
 		param[i].key = "CA";
-		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value_type = cm_tdbusm_dict_p;
 		param[i].value.s = talloc_strdup(globals.tctx, capath);
 		params[i] = &param[i];
 		i++;
@@ -2404,6 +2404,7 @@ help(const char *cmd, const char *category)
 		N_("  -S		connect to the certmonger service on the system bus\n"),
 		N_("  -s		connect to the certmonger service on the session bus\n"),
 		N_("* Other options:\n"),
+		N_("  -C	command to run when saving the certificate\n"),
 		N_("  -v	report all details of errors\n"),
 		NULL,
 	};
@@ -2441,6 +2442,7 @@ help(const char *cmd, const char *category)
 		N_("  -S		connect to the certmonger service on the system bus\n"),
 		N_("  -s		connect to the certmonger service on the session bus\n"),
 		N_("* Other options:\n"),
+		N_("  -C	command to run when saving the certificate\n"),
 		N_("  -v	report all details of errors\n"),
 		NULL,
 	};
@@ -2500,6 +2502,7 @@ help(const char *cmd, const char *category)
 		N_("  -S		connect to the certmonger service on the system bus\n"),
 		N_("  -s		connect to the certmonger service on the session bus\n"),
 		N_("* Other options:\n"),
+		N_("  -C	command to run when saving the certificate\n"),
 		N_("  -v	report all details of errors\n"),
 		NULL,
 	};
