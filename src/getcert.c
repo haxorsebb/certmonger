@@ -498,8 +498,7 @@ query_prop_s(enum cm_tdbus_type which,
 	char *s;
 	rep = query_prop(which, path, interface, prop, verbose);
 	if (cm_tdbusm_get_s(rep, parent, &s) != 0) {
-		printf(_("Error parsing server response.\n"));
-		exit(1);
+		s = "";
 	}
 	dbus_message_unref(rep);
 	return s;
@@ -516,8 +515,7 @@ query_prop_p(enum cm_tdbus_type which,
 	char *p;
 	rep = query_prop(which, path, interface, prop, verbose);
 	if (cm_tdbusm_get_p(rep, parent, &p) != 0) {
-		printf(_("Error parsing server response.\n"));
-		exit(1);
+		p = "";
 	}
 	dbus_message_unref(rep);
 	return p;
@@ -534,8 +532,7 @@ query_prop_as(enum cm_tdbus_type which,
 	char **as;
 	rep = query_prop(which, path, interface, prop, verbose);
 	if (cm_tdbusm_get_as(rep, parent, &as) != 0) {
-		printf(_("Error parsing server response.\n"));
-		exit(1);
+		as = NULL;
 	}
 	dbus_message_unref(rep);
 	return as;
@@ -1645,7 +1642,8 @@ resubmit(const char *argv0, int argc, char **argv)
 {
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	DBusMessage *req, *rep;
-	const char *request, *capath;
+	const char *request;
+	char *capath;
 	struct cm_tdbusm_dict param[16];
 	const struct cm_tdbusm_dict *params[17];
 	char *dbdir = NULL, *token = NULL, *nickname = NULL, *certfile = NULL;
@@ -1909,9 +1907,9 @@ resubmit(const char *argv0, int argc, char **argv)
 			exit(1);
 		}
 	}
-	capath = query_rep_p(bus, request, CM_DBUS_REQUEST_INTERFACE,
-			     "get_ca", verbose, globals.tctx);
-	if (capath != NULL) {
+	rep = query_rep(bus, request,
+			CM_DBUS_REQUEST_INTERFACE, "get_ca", verbose);
+	if (cm_tdbusm_get_p(rep, globals.tctx, &capath) == 0) {
 		ca = find_ca_name(globals.tctx, bus, capath, verbose);
 	} else {
 		ca = NULL;
