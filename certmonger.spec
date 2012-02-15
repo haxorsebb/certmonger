@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.54
+Version:	0.55
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -194,6 +194,10 @@ exit 0
 %endif
 
 %changelog
+* Wed Feb 16 2012 Nalin Dahyabhai <nalin@redhat.com> 0.55-1
+- allow root to use our implementation of org.freedesktop.DBus.Properties
+- take more care to not emit useless PropertiesChanged signals
+
 * Wed Feb 16 2012 Nalin Dahyabhai <nalin@redhat.com> 0.54-1
 - fix setting the group ID when spawning the post-save command
 
