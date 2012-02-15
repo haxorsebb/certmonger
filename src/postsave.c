@@ -54,40 +54,52 @@ cm_postsave_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 
 	argv = cm_subproc_parse_args(entry, entry->cm_post_certsave_command, &error);
 	if (error != NULL) {
-		cm_log(1, "Error parsing \"%s\": %s.\n",
+		cm_log(-2, "Error parsing \"%s\": %s; not running it.\n",
 		       entry->cm_post_certsave_command, error);
 		return -1;
 	}
 	pwd = getpwuid(state->uid);
 	if (pwd == NULL) {
-		cm_log(1, "Error on getpwuid(%lu): %s.\n",
+		cm_log(-2, "Error on getpwuid(%lu): %s, not running \"%s\".\n",
 		       (unsigned long) state->uid,
-		       strerror(errno));
+		       strerror(errno),
+		       entry->cm_post_certsave_command);
 		return -1;
 	}
 	if (initgroups(pwd->pw_name, pwd->pw_gid) == -1) {
-		cm_log(1, "Error on initgroups(%s,%lu): %s.\n",
-		       pwd->pw_name,
-		       (unsigned long) state->uid,
-		       strerror(errno));
-		if (getuid() == 0) {
+		if (getuid() != 0) {
+			cm_log(0, "Error on initgroups(%s,%lu): %s.\n",
+			       pwd->pw_name,
+			       (unsigned long) state->uid,
+			       strerror(errno));
+		} else {
+			cm_log(-2, "Error on initgroups(%s,%lu): %s, "
+			       "not running \"%s\".\n",
+			       pwd->pw_name,
+			       (unsigned long) state->uid,
+			       strerror(errno),
+			       entry->cm_post_certsave_command);
 			return -1;
 		}
 	}
 	if (setregid(pwd->pw_gid, pwd->pw_gid) == -1) {
-		cm_log(1, "Error on setregid(%lu,%lu,%lu): %s.\n",
+		cm_log(-2, "Error on setregid(%lu,%lu,%lu): %s, "
+		       "not running \"%s\".\n",
 		       (unsigned long) pwd->pw_gid,
 		       (unsigned long) pwd->pw_gid,
 		       (unsigned long) pwd->pw_gid,
-		       strerror(errno));
+		       strerror(errno),
+		       entry->cm_post_certsave_command);
 		return -1;
 	}
 	if (setreuid(pwd->pw_uid, pwd->pw_uid) == -1) {
-		cm_log(1, "Error on setreuid(%lu,%lu,%lu): %s.\n",
+		cm_log(0, "Error on setreuid(%lu,%lu,%lu): %s, "
+		       "not running \"%s\".\n",
 		       (unsigned long) pwd->pw_uid,
 		       (unsigned long) pwd->pw_uid,
 		       (unsigned long) pwd->pw_uid,
-		       strerror(errno));
+		       strerror(errno),
+		       entry->cm_post_certsave_command);
 		return -1;
 	}
 	execvp(argv[0], argv);
