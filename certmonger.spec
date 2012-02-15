@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.52
+Version:	0.53
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -82,6 +82,11 @@ system enrolled with a certificate authority (CA) and keeping it enrolled.
 
 %prep
 %setup -q
+%if 0%{?rhel} > 0
+# Enabled by default for RHEL for bug #765600, still disabled by default for
+# Fedora pending a similar bug report there.
+sed -i 's,^# chkconfig: - ,# chkconfig: 345 ,g' sysvinit/certmonger.in
+%endif
 
 %build
 %configure \
@@ -189,6 +194,15 @@ exit 0
 %endif
 
 %changelog
+* Tue Feb 15 2012 Nalin Dahyabhai <nalin@redhat.com> 0.53-1
+- large changes to the D-Bus glue, exposing a lot of data which we were
+  providing via D-Bus getter methods as properties, and providing more
+  accurate introspection data
+- emit a signal when the daemon saves a certificate to the destination
+  location, and provide an option to have the daemon spawn an arbitrary
+  command at that point, too (#766167)
+- enable starting the service by default on RHEL (#765600)
+
 * Fri Dec 16 2011 Nalin Dahyabhai <nalin@redhat.com> 0.52-1
 - note that SELinux usually confines us to writing only to cert_t in
   doc/getting-started.txt (#765599)
