@@ -74,6 +74,14 @@ cm_postsave_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			return -1;
 		}
 	}
+	if (setregid(pwd->pw_gid, pwd->pw_gid) == -1) {
+		cm_log(1, "Error on setregid(%lu,%lu,%lu): %s.\n",
+		       (unsigned long) pwd->pw_gid,
+		       (unsigned long) pwd->pw_gid,
+		       (unsigned long) pwd->pw_gid,
+		       strerror(errno));
+		return -1;
+	}
 	if (setreuid(pwd->pw_uid, pwd->pw_uid) == -1) {
 		cm_log(1, "Error on setreuid(%lu,%lu,%lu): %s.\n",
 		       (unsigned long) pwd->pw_uid,
