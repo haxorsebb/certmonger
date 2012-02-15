@@ -3923,16 +3923,10 @@ compare_strv(const char **a, const char **b)
 	if ((a == NULL) && (b == NULL)) {
 		return 0;
 	}
-	if ((a != NULL) && (b == NULL)) {
-		return -1;
-	}
-	if ((a == NULL) && (b != NULL)) {
-		return -1;
-	}
-	for (m = 0; a[m] != NULL; m++) {
+	for (m = 0; (a != NULL) && (a[m] != NULL); m++) {
 		continue;
 	}
-	for (n = 0; b[n] != NULL; n++) {
+	for (n = 0; (b != NULL) && (b[n] != NULL); n++) {
 		continue;
 	}
 	if (m != n) {
@@ -4332,7 +4326,9 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 	}
 
 	if (rep != NULL) {
-		dbus_connection_send(conn, rep, NULL);
+		if ((old_record == NULL) || ((d != NULL) && (d[0] != NULL))) {
+			dbus_connection_send(conn, rep, NULL);
+		}
 		dbus_message_unref(rep);
 	}
 	talloc_free(parent);
