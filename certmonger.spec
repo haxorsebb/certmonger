@@ -206,6 +206,9 @@ exit 0
   command at that point, too (#766167)
 - enable starting the service by default on RHEL (#765600)
 
+* Thu Jan 12 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.52-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
+
 * Fri Dec 16 2011 Nalin Dahyabhai <nalin@redhat.com> 0.52-1
 - note that SELinux usually confines us to writing only to cert_t in
   doc/getting-started.txt (#765599)
