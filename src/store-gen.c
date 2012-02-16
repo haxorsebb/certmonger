@@ -306,8 +306,7 @@ cm_store_increment_serial(void *parent, const char *old_serial)
 
 /* Produce a hex representation of the binary data. */
 char *
-cm_store_serial_from_binary(void *parent,
-			    const unsigned char *serial, int length)
+cm_store_hex_from_bin(void *parent, const unsigned char *serial, int length)
 {
 	const char *hexchars = "0123456789ABCDEF";
 	char *ret;
@@ -322,7 +321,7 @@ cm_store_serial_from_binary(void *parent,
 }
 
 /* Produce a hex representation of the hex serial number encoded as a DER
- * integer. */
+ * integer. XXX has an upper limit on the length. */
 char *
 cm_store_serial_to_der(void *parent, const char *serial)
 {
