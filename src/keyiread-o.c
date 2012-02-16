@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -59,9 +59,10 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	int status;
 	char buf[LINE_MAX];
 	const char *alg;
-	int size;
+	int bits, length;
 	long error;
-	char *pin;
+	char *pin, *pubkey;
+	unsigned char *tmp;
 
 	util_o_init();
 	ERR_load_crypto_strings();
@@ -112,7 +113,8 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 	if (status == 0) {
 		alg = "";
-		size = 0;
+		bits = 0;
+		pubkey = "";
 		if (pkey != NULL) {
 			switch (EVP_PKEY_type(pkey->type)) {
 			case EVP_PKEY_RSA:
@@ -128,10 +130,15 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				alg = "";
 				break;
 			}
-			size = EVP_PKEY_bits(pkey);
-			cm_log(3, "Key size is %d.\n", size);
+			bits = EVP_PKEY_bits(pkey);
+			cm_log(3, "Key size is %d.\n", bits);
+			tmp = NULL;
+			length = i2d_PublicKey(pkey, (unsigned char **) &tmp);
+			if (length > 0) {
+				pubkey = cm_store_hex_from_bin(NULL, tmp, length);
+			}
 		}
-		fprintf(fp, "%s/%d\n", alg, size);
+		fprintf(fp, "%s/%d/%s\n", alg, bits, pubkey);
 		status = 0;
 	} else {
 		while ((error = ERR_get_error()) != 0) {

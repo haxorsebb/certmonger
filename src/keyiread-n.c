@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -332,9 +332,12 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	SECKEYPublicKey *pubkey;
 	PK11SlotInfo *slot;
 	const char *alg, *name;
+	SECItem pubdata;
+	char *pubhex;
 	int status = 1, size, readwrite;
 	FILE *fp;
 	struct cm_keyiread_n_settings *settings;
+	const SEC_ASN1Template *template;
 
 	/* Open the status descriptor for stdio. */
 	fp = fdopen(fd, "w");
@@ -354,14 +357,17 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		case rsaKey:
 			cm_log(3, "Key is an RSA key.\n");
 			alg = "RSA";
+			template = SECKEY_RSAPublicKeyTemplate;
 			break;
 		case dsaKey:
 			cm_log(3, "Key is a DSA key.\n");
 			alg = "DSA";
+			template = SECKEY_DSAPublicKeyTemplate;
 			break;
 		case nullKey:
 		default:
 			cm_log(3, "Key is of an unknown type.\n");
+			template = NULL;
 			break;
 		}
 		slot = PK11_GetSlotFromPrivateKey(key->key);
@@ -381,7 +387,16 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			if (pubkey != NULL) {
 				size = SECKEY_PublicKeyStrengthInBits(pubkey);
 				cm_log(3, "Key size is %d.\n", size);
-				fprintf(fp, "%s/%d%s%s\n", alg, size,
+				pubhex = "";
+				memset(&pubdata, 0, sizeof(pubdata));
+				if (SEC_ASN1EncodeItem(NULL, &pubdata, pubkey,
+						       template) == &pubdata) {
+					pubhex = cm_store_hex_from_bin(NULL,
+								       pubdata.data,
+								       pubdata.len);
+				}
+				fprintf(fp, "%s/%d/%s%s%s\n", alg, size,
+					pubhex,
 					(name != NULL ? "/" : ""),
 					(name != NULL ? name : ""));
 				status = 0;
