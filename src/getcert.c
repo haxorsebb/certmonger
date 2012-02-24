@@ -582,7 +582,7 @@ request(const char *argv0, int argc, char **argv)
 
 	opterr = 0;
 	while ((c = getopt(argc, argv,
-			   "d:n:t:k:f:I:g:rRN:U:K:D:E:sSp:P:vC:"
+			   ":d:n:t:k:f:I:g:rRN:U:K:D:E:sSp:P:vC:"
 			   GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
@@ -678,8 +678,15 @@ request(const char *argv0, int argc, char **argv)
 			verbose++;
 			break;
 		default:
-			fprintf(stderr, _("%s: invalid option -- '%c'\n"),
-				"request", optopt);
+			if (c == ':') {
+				fprintf(stderr,
+					_("%s: option requires an argument -- '%c'\n"),
+					"request", optopt);
+			} else {
+				fprintf(stderr,
+					_("%s: invalid option -- '%c'\n"),
+					"request", optopt);
+			}
 			help(argv0, "request");
 			return 1;
 		}
@@ -1273,7 +1280,7 @@ set_tracking(const char *argv0, const char *category,
 
 	opterr = 0;
 	while ((c = getopt(argc, argv,
-			   "d:n:t:k:f:g:p:P:rRi:I:U:K:D:E:sSvC:"
+			   ":d:n:t:k:f:g:p:P:rRi:I:U:K:D:E:sSvC:"
 			   GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
@@ -1381,8 +1388,14 @@ set_tracking(const char *argv0, const char *category,
 			verbose++;
 			break;
 		default:
-			fprintf(stderr, _("%s: invalid option -- '%c'\n"),
-				category, optopt);
+			if (c == ':') {
+				fprintf(stderr,
+					_("%s: option requires an argument -- '%c'\n"),
+					category, optopt);
+			} else {
+				fprintf(stderr, _("%s: invalid option -- '%c'\n"),
+					category, optopt);
+			}
 			help(argv0, category);
 			return 1;
 		}
@@ -1668,7 +1681,7 @@ resubmit(const char *argv0, int argc, char **argv)
 
 	opterr = 0;
 	while ((c = getopt(argc, argv,
-			   "d:n:N:t:U:K:E:D:f:i:I:sSp:P:vC:" GETOPT_CA)) != -1) {
+			   ":d:n:N:t:U:K:E:D:f:i:I:sSp:P:vC:" GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
 			nss_scheme = NULL;
@@ -1754,8 +1767,14 @@ resubmit(const char *argv0, int argc, char **argv)
 			verbose++;
 			break;
 		default:
-			fprintf(stderr, _("%s: invalid option -- '%c'\n"),
-				"resubmit", optopt);
+			if (c == ':') {
+				fprintf(stderr,
+					_("%s: option requires an argument -- '%c'\n"),
+					"resubmit", optopt);
+			} else {
+				fprintf(stderr, _("%s: invalid option -- '%c'\n"),
+					"resubmit", optopt);
+			}
 			help(argv0, "resubmit");
 			return 1;
 		}
@@ -1954,7 +1973,7 @@ list(const char *argv0, int argc, char **argv)
 	int requests_only = 0, tracking_only = 0, verbose = 0, c, i, j;
 
 	opterr = 0;
-	while ((c = getopt(argc, argv, "rtsSvd:n:f:i:" GETOPT_CA)) != -1) {
+	while ((c = getopt(argc, argv, ":rtsSvd:n:f:i:" GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'c':
 			only_ca = optarg;
@@ -1992,8 +2011,14 @@ list(const char *argv0, int argc, char **argv)
 			verbose++;
 			break;
 		default:
-			fprintf(stderr, _("%s: invalid option -- '%c'\n"),
-				"list", optopt);
+			if (c == ':') {
+				fprintf(stderr,
+					_("%s: option requires an argument -- '%c'\n"),
+					"list", optopt);
+			} else {
+				fprintf(stderr, _("%s: invalid option -- '%c'\n"),
+					"list", optopt);
+			}
 			help(argv0, "list");
 			return 1;
 		}
@@ -2281,7 +2306,7 @@ list_cas(const char *argv0, int argc, char **argv)
 	int c, i, j, verbose = 0;
 
 	opterr = 0;
-	while ((c = getopt(argc, argv, "sSv" GETOPT_CA)) != -1) {
+	while ((c = getopt(argc, argv, ":sSv" GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'c':
 			only_ca = optarg;
@@ -2296,8 +2321,14 @@ list_cas(const char *argv0, int argc, char **argv)
 			verbose++;
 			break;
 		default:
-			fprintf(stderr, _("%s: invalid option -- '%c'\n"),
-				"list-cas", optopt);
+			if (c == ':') {
+				fprintf(stderr,
+					_("%s: option requires an argument -- '%c'\n"),
+					"list-cas", optopt);
+			} else {
+				fprintf(stderr, _("%s: invalid option -- '%c'\n"),
+					"list-cas", optopt);
+			}
 			help(argv0, "list-cas");
 			return 1;
 		}
