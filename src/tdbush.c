@@ -5504,6 +5504,7 @@ cm_tdbush_handle_method_call(DBusConnection *conn, DBusMessage *msg,
 						cm_log(4, "Pending GetConnectionUnixUser serial %lu\n",
 						       (unsigned long) pending.cm_pending_uid);
 						dbus_message_unref(msg);
+						cm_reset_timeout(ctx);
 						return DBUS_HANDLER_RESULT_HANDLED;
 					}
 					dbus_message_unref(msg);
@@ -5511,14 +5512,15 @@ cm_tdbush_handle_method_call(DBusConnection *conn, DBusMessage *msg,
 				talloc_free(tmp);
 			}
 			dbus_message_unref(pending.cm_msg);
+			cm_reset_timeout(ctx);
 			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 		}
 		if (item == NULL) {
 			continue;
 		}
-		cm_reset_timeout(ctx);
 	}
 	dbus_message_unref(pending.cm_msg);
+	cm_reset_timeout(ctx);
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
@@ -5566,6 +5568,7 @@ cm_tdbush_handle_method_return(DBusConnection *conn, DBusMessage *msg,
 	dbus_message_unref(call->cm_msg);
 	talloc_free(call);
 	*p = next;
+	cm_reset_timeout(ctx);
 
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
