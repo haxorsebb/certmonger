@@ -5556,7 +5556,8 @@ cm_tdbush_classify_path(struct cm_context *ctx, const char *path)
 }
 
 /* the list of method calls that we've made that we haven't yet received
- * responses for */
+ * responses for, and the methods to invoke once we've gotten responses for our
+ * outstanding requests  */
 struct cm_tdbush_pending_call {
 	DBusMessage *cm_msg;
 	const char *cm_path, *cm_interface, *cm_method;
@@ -5565,8 +5566,8 @@ struct cm_tdbush_pending_call {
 				   DBusMessage *msg,
 				   struct cm_client_info *ci,
 				   struct cm_context *ctx);
-	dbus_bool_t cm_know_uid;
-	dbus_uint32_t cm_pending_uid;
+	dbus_bool_t cm_know_uid; /* GetConnectionUnixUser replied? */
+	dbus_uint32_t cm_pending_uid; /* pending GetConnectionUnixUser call */
 	uid_t cm_uid;
 	struct cm_tdbush_pending_call *cm_next;
 } *cm_pending_calls;
@@ -5695,6 +5696,7 @@ cm_tdbush_handle_method_return(DBusConnection *conn, DBusMessage *msg,
 	client_info.uid = call->cm_uid;
 	(*call->cm_fn)(conn, call->cm_msg, &client_info, ctx);
 
+	/* remove the pending call record */
 	dbus_message_unref(call->cm_msg);
 	talloc_free(call);
 	*p = next;
