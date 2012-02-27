@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2011 Red Hat, Inc.
+ * Copyright (C) 2009,2011,2012 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1055,13 +1055,34 @@ cm_certext_build_san(struct cm_store_entry *entry, PLArenaPool *arena,
 	return item;
 }
 
+/* Build a basicConstraints extension value. */
+static SECItem *
+cm_certext_build_basic(struct cm_store_entry *entry, PLArenaPool *arena,
+		       int is_ca)
+{
+	CERTBasicConstraints value;
+	SECItem encoded, *item;
+
+	memset(&value, 0, sizeof(value));
+	value.isCA = (is_ca != 0);
+	value.pathLenConstraint = -1;
+	memset(&encoded, 0, sizeof(encoded));
+	if (CERT_EncodeBasicConstraintValue(arena, &value,
+					    &encoded) == SECSuccess) {
+		item = SECITEM_ArenaDupItem(arena, &encoded);
+	} else {
+		item = NULL;
+	}
+	return item;
+}
+
 /* Build a requestedExtensions attribute. */
 void
 cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 				unsigned char **extensions, size_t *length)
 {
 	PLArenaPool *arena;
-	CERTCertExtension ext[3], *exts[4], **exts_ptr;
+	CERTCertExtension ext[4], *exts[5], **exts_ptr;
 	SECOidData *oid;
 	SECItem *item, encoded;
 	SECItem der_false = {
@@ -1117,6 +1138,19 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 			i++;
 		}
 	}
+#if 0
+	item = cm_certext_build_basic(entry, arena, entry->cm_template_is_ca);
+	if (item != NULL) {
+		oid = SECOID_FindOIDByTag(SEC_OID_X509_BASIC_CONSTRAINTS);
+		if (oid != NULL) {
+			ext[i].id = oid->oid;
+			ext[i].critical = der_false;
+			ext[i].value = *item;
+			exts[i] = &ext[i];
+			i++;
+		}
+	}
+#endif
 	exts[i++] = NULL;
 	exts_ptr = exts;
 	/* Encode the sequence. */
