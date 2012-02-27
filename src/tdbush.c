@@ -1545,7 +1545,7 @@ ca_prop_set_is_default(struct cm_context *ctx, void *parent,
 			ca->cm_ca_is_default = new_value;
 			path = talloc_asprintf(parent, "%s/%s",
 					       CM_DBUS_CA_PATH,
-					       other->cm_busname);
+					       ca->cm_busname);
 			cm_tdbush_property_emit_changed(ctx, path,
 							CM_DBUS_CA_INTERFACE,
 							propname);
