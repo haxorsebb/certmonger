@@ -93,6 +93,9 @@ get_ca_for_request_message(DBusMessage *msg, struct cm_context *ctx)
 {
 	return msg ? get_ca_for_path(ctx, dbus_message_get_path(msg)) : NULL;
 }
+
+/* These used to be local functions, but we ended up using them elsewhere.
+ * Should probably just be reworked where we use them. */
 static char *
 maybe_strdup(void *parent, const char *s)
 {
@@ -104,6 +107,7 @@ maybe_strdupv(void *parent, char **s)
 	return cm_store_maybe_strdupv(parent, s);
 }
 
+/* Convenience functions for returning errors to callers. */
 static DBusHandlerResult
 send_internal_base_error(DBusConnection *conn, DBusMessage *req)
 {
@@ -182,6 +186,7 @@ send_internal_base_no_such_entry_error(DBusConnection *conn, DBusMessage *req)
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
+/* Some validity-testing we do for caller-supplied arguments. */
 static int
 check_arg_is_absolute_path(const char *path)
 {
@@ -284,6 +289,7 @@ check_arg_parent_is_directory(const char *path)
 	return -1;
 }
 
+/* org.fedorahosted.certmonger.add_known_ca */
 static DBusHandlerResult
 base_add_known_ca(DBusConnection *conn, DBusMessage *msg,
 		  struct cm_client_info *ci, struct cm_context *ctx)
@@ -362,6 +368,7 @@ base_add_known_ca(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certmonger.add_request */
 static DBusHandlerResult
 base_add_request(DBusConnection *conn, DBusMessage *msg,
 		 struct cm_client_info *ci, struct cm_context *ctx)
@@ -1043,6 +1050,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certmonger.find_request_by_nickname */
 static DBusHandlerResult
 base_find_request_by_nickname(DBusConnection *conn, DBusMessage *msg,
 			      struct cm_client_info *ci, struct cm_context *ctx)
@@ -1086,6 +1094,7 @@ base_find_request_by_nickname(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certmonger.find_ca_by_nickname */
 static DBusHandlerResult
 base_find_ca_by_nickname(DBusConnection *conn, DBusMessage *msg,
 			 struct cm_client_info *ci, struct cm_context *ctx)
@@ -1129,6 +1138,7 @@ base_find_ca_by_nickname(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certmonger.get_known_cas */
 static DBusHandlerResult
 base_get_known_cas(DBusConnection *conn, DBusMessage *msg,
 		   struct cm_client_info *ci, struct cm_context *ctx)
@@ -1164,6 +1174,7 @@ base_get_known_cas(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certmonger.get_requests */
 static DBusHandlerResult
 base_get_requests(DBusConnection *conn, DBusMessage *msg,
 		  struct cm_client_info *ci, struct cm_context *ctx)
@@ -1199,6 +1210,7 @@ base_get_requests(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certmonger.get_supported_key_types */
 static DBusHandlerResult
 base_get_supported_key_types(DBusConnection *conn, DBusMessage *msg,
 			     struct cm_client_info *ci, struct cm_context *ctx)
@@ -1489,6 +1501,7 @@ ca_get_serial(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* Custom property get/set logic for CA structures. */
 static dbus_bool_t
 ca_prop_get_is_default(struct cm_context *ctx, void *parent,
 		       void *record, const char *name)
@@ -1540,7 +1553,8 @@ ca_prop_set_is_default(struct cm_context *ctx, void *parent,
 	}
 }
 
-/* Functions implemented for request objects. */
+/* Functions implemented for request objects.  Most of the "get_XXX" functions
+ * predate the properties interface being added, so they're redundant now. */
 static DBusHandlerResult
 send_internal_request_error(DBusConnection *conn, DBusMessage *req)
 {
@@ -1555,6 +1569,7 @@ send_internal_request_error(DBusConnection *conn, DBusMessage *req)
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
+/* org.fedorahosted.certmonger.request.get_nickname */
 static DBusHandlerResult
 request_get_nickname(DBusConnection *conn, DBusMessage *msg,
 		     struct cm_client_info *ci, struct cm_context *ctx)
@@ -1578,6 +1593,7 @@ request_get_nickname(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certmonger.request.get_key_pin */
 static DBusHandlerResult
 request_get_key_pin(DBusConnection *conn, DBusMessage *msg,
 		    struct cm_client_info *ci, struct cm_context *ctx)
@@ -1599,6 +1615,7 @@ request_get_key_pin(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certmonger.request.get_key_pin_file */
 static DBusHandlerResult
 request_get_key_pin_file(DBusConnection *conn, DBusMessage *msg,
 			 struct cm_client_info *ci, struct cm_context *ctx)
@@ -1620,6 +1637,7 @@ request_get_key_pin_file(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certmonger.request.get_autorenew */
 static DBusHandlerResult
 request_get_autorenew(DBusConnection *conn, DBusMessage *msg,
 		      struct cm_client_info *ci, struct cm_context *ctx)
@@ -1641,6 +1659,7 @@ request_get_autorenew(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certmonger.request.get_cert_data */
 static DBusHandlerResult
 request_get_cert_data(DBusConnection *conn, DBusMessage *msg,
 		      struct cm_client_info *ci, struct cm_context *ctx)
@@ -1664,6 +1683,7 @@ request_get_cert_data(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* convert our text bit string into a number */
 static long
 ku_from_string(const char *ku)
 {
@@ -1675,6 +1695,7 @@ ku_from_string(const char *ku)
 	return i;
 }
 
+/* split the comma-separated list into an array */
 static char **
 eku_splitv(void *parent, const char *eku)
 {
@@ -1701,6 +1722,7 @@ eku_splitv(void *parent, const char *eku)
 	return ret;
 }
 
+/* org.fedorahosted.certmonger.request.get_cert_info */
 static DBusHandlerResult
 request_get_cert_info(DBusConnection *conn, DBusMessage *msg,
 		      struct cm_client_info *ci, struct cm_context *ctx)
@@ -1734,6 +1756,7 @@ request_get_cert_info(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certmonger.request.get_cert_last_checked */
 static DBusHandlerResult
 request_get_cert_last_checked(DBusConnection *conn, DBusMessage *msg,
 			      struct cm_client_info *ci, struct cm_context *ctx)
@@ -1757,6 +1780,7 @@ request_get_cert_last_checked(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certmonger.request.get_cert_storage_info */
 static DBusHandlerResult
 request_get_cert_storage_info(DBusConnection *conn, DBusMessage *msg,
 			      struct cm_client_info *ci, struct cm_context *ctx)
@@ -1802,6 +1826,7 @@ request_get_cert_storage_info(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certmonger.request.get_csr_data */
 static DBusHandlerResult
 request_get_csr_data(DBusConnection *conn, DBusMessage *msg,
 		     struct cm_client_info *ci, struct cm_context *ctx)
@@ -1825,6 +1850,7 @@ request_get_csr_data(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certmonger.request.get_csr_info */
 static DBusHandlerResult
 request_get_csr_info(DBusConnection *conn, DBusMessage *msg,
 		     struct cm_client_info *ci, struct cm_context *ctx)
@@ -1857,6 +1883,7 @@ request_get_csr_info(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certmonger.request.get_key_storage_info */
 static DBusHandlerResult
 request_get_key_storage_info(DBusConnection *conn, DBusMessage *msg,
 			     struct cm_client_info *ci, struct cm_context *ctx)
@@ -1907,6 +1934,7 @@ request_get_key_storage_info(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certmonger.request.get_key_type_and_size */
 static DBusHandlerResult
 request_get_key_type_and_size(DBusConnection *conn, DBusMessage *msg,
 			      struct cm_client_info *ci, struct cm_context *ctx)
@@ -1940,6 +1968,7 @@ request_get_key_type_and_size(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certmonger.request.get_monitoring */
 static DBusHandlerResult
 request_get_monitoring(DBusConnection *conn, DBusMessage *msg,
 		       struct cm_client_info *ci, struct cm_context *ctx)
@@ -1961,6 +1990,7 @@ request_get_monitoring(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certmonger.request.get_notification_info */
 static DBusHandlerResult
 request_get_notification_info(DBusConnection *conn, DBusMessage *msg,
 			      struct cm_client_info *ci, struct cm_context *ctx)
@@ -2007,6 +2037,7 @@ request_get_notification_info(DBusConnection *conn, DBusMessage *msg,
 static dbus_bool_t request_prop_get_stuck(struct cm_context *ctx, void *parent,
 					  void *record, const char *name);
 
+/* org.fedorahosted.certmonger.request.get_status */
 static DBusHandlerResult
 request_get_status(DBusConnection *conn, DBusMessage *msg,
 		   struct cm_client_info *ci, struct cm_context *ctx)
@@ -2032,6 +2063,7 @@ request_get_status(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certmonger.request.get_ca */
 static DBusHandlerResult
 request_get_ca(DBusConnection *conn, DBusMessage *msg,
 	       struct cm_client_info *ci, struct cm_context *ctx)
@@ -2069,6 +2101,7 @@ request_get_ca(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certmonger.request.get_ca_error */
 static DBusHandlerResult
 request_get_ca_error(DBusConnection *conn, DBusMessage *msg,
 		     struct cm_client_info *ci, struct cm_context *ctx)
@@ -2096,6 +2129,7 @@ request_get_ca_error(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certmonger.request.get_submitted_cookie */
 static DBusHandlerResult
 request_get_submitted_cookie(DBusConnection *conn, DBusMessage *msg,
 			     struct cm_client_info *ci, struct cm_context *ctx)
@@ -2119,6 +2153,7 @@ request_get_submitted_cookie(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certmonger.request.get_submitted_date */
 static DBusHandlerResult
 request_get_submitted_date(DBusConnection *conn, DBusMessage *msg,
 			   struct cm_client_info *ci, struct cm_context *ctx)
@@ -2142,6 +2177,7 @@ request_get_submitted_date(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certmonger.request.modify */
 static DBusHandlerResult
 request_modify(DBusConnection *conn, DBusMessage *msg,
 	       struct cm_client_info *ci, struct cm_context *ctx)
@@ -2394,6 +2430,7 @@ request_modify(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certmonger.request.resubmit */
 static DBusHandlerResult
 request_resubmit(DBusConnection *conn, DBusMessage *msg,
 		 struct cm_client_info *ci, struct cm_context *ctx)
@@ -2410,11 +2447,15 @@ request_resubmit(DBusConnection *conn, DBusMessage *msg,
 	rep = dbus_message_new_method_return(msg);
 	if (rep != NULL) {
 		if (cm_stop_one(ctx, entry->cm_nickname)) {
+			/* if we have a key, the thing to do now is to generate
+			 * a new CSR, otherwise we have to generate a key first
+			 * */
 			if (entry->cm_key_type.cm_key_size == 0) {
 				entry->cm_state = CM_NEED_KEY_PAIR;
 			} else {
 				entry->cm_state = CM_NEED_CSR;
 			}
+			/* emit a properties-changed signal for the state */
 			propname[0] = CM_DBUS_PROP_STATUS;
 			propname[1] = NULL;
 			path = talloc_asprintf(entry, "%s/%s",
@@ -2440,6 +2481,7 @@ request_resubmit(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* Custom property get/set logic for request structures. */
 static dbus_bool_t
 request_prop_get_autorenew(struct cm_context *ctx, void *parent,
 			   void *record, const char *name)
@@ -2849,6 +2891,7 @@ request_prop_get_ca(struct cm_context *ctx, void *parent,
 	return "";
 }
 
+/* the types of objects we have in our D-Bus object tree */
 enum cm_tdbush_object_type {
 	cm_tdbush_object_type_none,
 	cm_tdbush_object_type_parent_of_base,
@@ -2861,12 +2904,14 @@ enum cm_tdbush_object_type {
 	cm_tdbush_object_type_request
 };
 
+/* an annotation attached to a method or data field */
 struct cm_tdbush_member_annotation {
 	const char *cm_name;
 	const char *cm_value;
 	struct cm_tdbush_member_annotation *cm_next;
 };
 
+/* a callable method on an object */
 struct cm_tdbush_method {
 	const char *cm_name;
 	struct cm_tdbush_method_arg {
@@ -2885,6 +2930,7 @@ struct cm_tdbush_method {
 				   struct cm_context *ctx);
 };
 
+/* a signal emitted by an object */
 struct cm_tdbush_signal {
 	const char *cm_name;
 	struct cm_tdbush_signal_arg {
@@ -2894,8 +2940,10 @@ struct cm_tdbush_signal {
 	} *cm_args;
 };
 
+/* a data property of an object */
 struct cm_tdbush_property {
 	const char *cm_name;
+	/* what it looks like on the bus */
 	enum cm_tdbush_property_bus_type {
 		cm_tdbush_property_path,
 		cm_tdbush_property_string,
@@ -2908,6 +2956,7 @@ struct cm_tdbush_property {
 		cm_tdbush_property_write,
 		cm_tdbush_property_readwrite
 	} cm_access;
+	/* how we represent it internally */
 	enum cm_tdbush_property_local_type {
 		cm_tdbush_property_special,
 		cm_tdbush_property_char_p,
@@ -2915,7 +2964,9 @@ struct cm_tdbush_property {
 		cm_tdbush_property_time_t,
 		cm_tdbush_property_comma_list,
 	} cm_local_type;
+	/* for char_p, char_pp, time_t, comma_list members */
 	ptrdiff_t cm_offset;
+	/* for "special" members */
 	const char * (*cm_read_string)(struct cm_context *ctx, void *parent,
 				       void *structure, const char *name);
 	const char ** (*cm_read_strings)(struct cm_context *ctx, void *parent,
@@ -2939,6 +2990,7 @@ struct cm_tdbush_property {
 	struct cm_tdbush_member_annotation *cm_annotations;
 };
 
+/* methods, signals, and members are grouped by interface name */
 struct cm_tdbush_interface {
 	const char *cm_name;
 	struct cm_tdbush_interface_item {
@@ -2954,6 +3006,7 @@ struct cm_tdbush_interface {
 	} *cm_items;
 };
 
+/* a mapping from an object type to an interface that applies to it */
 struct cm_tdbush_interface_map {
 	enum cm_tdbush_object_type cm_type;
 	struct cm_tdbush_interface * (*cm_interface)(void);
@@ -3185,6 +3238,7 @@ make_interface(const char *name,
 	return ret;
 }
 
+/* introspection callbacks for specific parts of an interface */
 static char *
 cm_tdbush_introspect_method(void *parent,
 			    struct cm_tdbush_method *method)
@@ -3311,6 +3365,8 @@ cm_tdbush_introspect_property(void *parent,
 	return ret;
 }
 
+/* when we're introspecting a node, we need to return a list of its direct
+ * children as part of that node's data */
 static char *
 cm_tdbush_introspect_childlist(struct cm_context *ctx, void *parent,
 			       const char *path,
@@ -3329,12 +3385,15 @@ cm_tdbush_introspect_childlist(struct cm_context *ctx, void *parent,
 		/* these have no child nodes */
 		break;
 	case cm_tdbush_object_type_parent_of_base:
+		/* the next intermediate node in the base object's path */
 		p = CM_DBUS_BASE_PATH + strlen(path);
 		p += strspn(p, "/");
 		i = strcspn(p, "/");
 		ret = talloc_asprintf(parent, "\n <node name=\"%.*s\"/>", i, p);
 		break;
 	case cm_tdbush_object_type_base:
+		/* the base itself is a parent of the groups of other objects,
+		 * so include the next nodes in those paths */
 		p = CM_DBUS_REQUEST_PATH + strlen(path);
 		p += strspn(p, "/");
 		i = strcspn(p, "/");
@@ -3346,12 +3405,16 @@ cm_tdbush_introspect_childlist(struct cm_context *ctx, void *parent,
 				      ret, i, p);
 		break;
 	case cm_tdbush_object_type_parent_of_cas:
+		/* a child of the base node that is not the immediate parent of
+		 * the CAs */
 		p = CM_DBUS_CA_PATH + strlen(path);
 		p += strspn(p, "/");
 		i = strcspn(p, "/");
 		ret = talloc_asprintf(parent, "\n <node name=\"%.*s\"/>", i, p);
 		break;
 	case cm_tdbush_object_type_group_of_cas:
+		/* a child of the base node that is the immediate parent of the
+		 * CAs */
 		i = cm_get_n_cas(ctx) - 1;
 		while (i >= 0) {
 			ca = cm_get_ca_by_index(ctx, i);
@@ -3365,12 +3428,16 @@ cm_tdbush_introspect_childlist(struct cm_context *ctx, void *parent,
 		}
 		break;
 	case cm_tdbush_object_type_parent_of_requests:
+		/* a child of the base node that is not the immediate parent of
+		 * the requests */
 		p = CM_DBUS_REQUEST_PATH + strlen(path);
 		p += strspn(p, "/");
 		i = strcspn(p, "/");
 		ret = talloc_asprintf(parent, "\n <node name=\"%.*s\"/>", i, p);
 		break;
 	case cm_tdbush_object_type_group_of_requests:
+		/* a child of the base node that is the immediate parent of the
+		 * requests */
 		i = cm_get_n_entries(ctx) - 1;
 		while (i >= 0) {
 			entry = cm_get_entry_by_index(ctx, i);
@@ -3387,6 +3454,7 @@ cm_tdbush_introspect_childlist(struct cm_context *ctx, void *parent,
 	return ret;
 }
 
+/* org.freedesktop.DBus.Introspectable.Introspect */
 static DBusHandlerResult
 cm_tdbush_introspect(DBusConnection *conn,
 		     DBusMessage *msg,
@@ -3465,6 +3533,7 @@ cm_tdbush_introspect(DBusConnection *conn,
 
 }
 
+/* org.freedesktop.DBus.Properties.Get */
 static DBusHandlerResult
 cm_tdbush_property_get(DBusConnection *conn,
 		       DBusMessage *msg,
@@ -3566,7 +3635,7 @@ cm_tdbush_property_get(DBusConnection *conn,
 			case cm_tdbush_property_readwrite:
 				break;
 			case cm_tdbush_property_write:
-				/* nope! */
+				/* not allowed! should we return an error? */
 				continue;
 				break;
 			}
@@ -3638,6 +3707,7 @@ cm_tdbush_property_get(DBusConnection *conn,
 		case cm_tdbush_property_path:
 			p = (*(prop->cm_read_string))(ctx, parent,
 						      record, property);
+			/* libdbus won't allow us to set NULL or empty paths */
 			if ((p != NULL) && (strlen(p) > 0)) {
 				cm_tdbusm_set_p(rep, p);
 			}
@@ -3645,6 +3715,7 @@ cm_tdbush_property_get(DBusConnection *conn,
 		case cm_tdbush_property_string:
 			p = (*(prop->cm_read_string))(ctx, parent,
 						      record, property);
+			/* libdbus won't allow us to set NULL strings */
 			if (p == NULL) {
 				p = "";
 			}
@@ -3677,6 +3748,7 @@ cm_tdbush_property_get(DBusConnection *conn,
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
+/* org.freedesktop.DBus.Properties.Set */
 static DBusHandlerResult
 cm_tdbush_property_set(DBusConnection *conn,
 		       DBusMessage *msg,
@@ -3775,7 +3847,7 @@ cm_tdbush_property_set(DBusConnection *conn,
 			}
 			switch (prop->cm_access) {
 			case cm_tdbush_property_read:
-				/* nope! */
+				/* not allowed! should we return an error? */
 				continue;
 				break;
 			case cm_tdbush_property_readwrite:
@@ -3916,6 +3988,7 @@ cm_tdbush_property_set(DBusConnection *conn,
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
+/* compare arrays of strings for having the same set of unique members */
 static int
 compare_strv(const char **a, const char **b)
 {
@@ -3945,6 +4018,9 @@ compare_strv(const char **a, const char **b)
 	return 0;
 }
 
+/* do the heavy lifting for two cases:
+ * org.freedesktop.DBus.Properties.GetAll method (old_record is NULL)
+ * org.freedesktop.DBus.Properties.PropertiesChanged signal (old_record is not NULL) */
 static DBusHandlerResult
 cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 				      DBusConnection *conn,
@@ -3973,7 +4049,7 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 	struct cm_tdbusm_dict *dict, **dtmp;
 	int n, m, n_dictvals = 0;
 
-	/* If we have a method call, pull the path and interface from it.
+	/* If this is the method call, pull the path and interface from it.
 	 * Either way, we need to be sure we have them. */
 	parent = talloc_new(NULL);
 	if (req != NULL) {
@@ -4041,12 +4117,14 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 
 	/* Create the message we're sending. */
 	if (req != NULL) {
+		/* GetAll method reply. */
 		rep = dbus_message_new_method_return(req);
 		if (rep == NULL) {
 			talloc_free(parent);
 			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 		}
 	} else {
+		/* PropertiesChanged signal. */
 		rep = dbus_message_new_signal(path,
 					      DBUS_INTERFACE_PROPERTIES,
 					      "PropertiesChanged");
@@ -4091,8 +4169,9 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 				break;
 			}
 			if (properties != NULL) {
-				/* skip the property if we have a list of
-				 * properties to list */
+				/* skip this property if we have a list of
+				 * properties to list and this one's not
+				 * included */
 				for (j = 0; properties[j] != NULL; j++) {
 					if (strcmp(properties[j],
 						   prop->cm_name) == 0) {
@@ -4103,6 +4182,7 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 					continue;
 				}
 			}
+			/* Resize the result dictionary if we need to. */
 			if (n + 1 >= n_dictvals) {
 				dict = talloc_realloc(parent, dict, struct cm_tdbusm_dict, n_dictvals + 32);
 				if (dict == NULL) {
@@ -4147,6 +4227,9 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 				rec = record + prop->cm_offset;
 				pp = (const char **) rec;
 				if (old_record != NULL) {
+					/* if we have an old record, compare
+					 * its value to the current one, and
+					 * skip this if they're "the same" */
 					old_rec = old_record + prop->cm_offset;
 					old_pp = (const char **) old_rec;
 					if ((*pp == NULL) &&
@@ -4178,6 +4261,9 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 				rec = record + prop->cm_offset;
 				ppp = (const char ***) rec;
 				if (old_record != NULL) {
+					/* if we have an old record, compare
+					 * its value to the current one, and
+					 * skip this if they're "the same" */
 					old_rec = old_record + prop->cm_offset;
 					old_ppp = (const char ***) old_rec;
 					if (compare_strv(*old_ppp, *ppp) == 0) {
@@ -4194,6 +4280,9 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 				rec = record + prop->cm_offset;
 				wpp = (char **) rec;
 				if (old_record != NULL) {
+					/* if we have an old record, compare
+					 * its value to the current one, and
+					 * skip this if they're "the same" */
 					old_rec = old_record + prop->cm_offset;
 					old_pp = (const char **) old_rec;
 					if ((*wpp == NULL) &&
@@ -4218,6 +4307,9 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 				tp = (time_t *) rec;
 				dict[n].value.n = *tp;
 				if (old_record != NULL) {
+					/* if we have an old record, compare
+					 * its value to the current one, and
+					 * skip this if they're "the same" */
 					old_rec = old_record + prop->cm_offset;
 					old_tp = (time_t *) old_rec;
 					if (*tp == *old_tp) {
@@ -4235,6 +4327,10 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 								      record,
 								      prop->cm_name);
 					if (old_record != NULL) {
+						/* if we have an old record,
+						 * compare its value to the
+						 * current one, and skip this
+						 * if they're "the same" */
 						old_p = (*(prop->cm_read_string))(ctx, parent,
 										  old_record,
 										  prop->cm_name);
@@ -4265,6 +4361,10 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 									record,
 									prop->cm_name);
 					if (old_record != NULL) {
+						/* if we have an old record,
+						 * compare its value to the
+						 * current one, and skip this
+						 * if they're "the same" */
 						old_pp = (*(prop->cm_read_strings))(ctx, parent,
 										    old_record,
 										    prop->cm_name);
@@ -4283,6 +4383,10 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 								       record,
 								       prop->cm_name);
 					if (old_record != NULL) {
+						/* if we have an old record,
+						 * compare its value to the
+						 * current one, and skip this
+						 * if they're "the same" */
 						old_b = (*(prop->cm_read_boolean))(ctx, parent,
 										   old_record,
 										   prop->cm_name);
@@ -4299,6 +4403,10 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 								      record,
 								      prop->cm_name);
 					if (old_record != NULL) {
+						/* if we have an old record,
+						 * compare its value to the
+						 * current one, and skip this
+						 * if they're "the same" */
 						old_l = (*(prop->cm_read_number))(ctx, parent,
 										  old_record,
 										  prop->cm_name);
@@ -4336,6 +4444,7 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
+/* org.freedesktop.DBus.Properties.GetAll */
 static DBusHandlerResult
 cm_tdbush_property_get_all(DBusConnection *conn,
 			   DBusMessage *msg,
@@ -4346,6 +4455,8 @@ cm_tdbush_property_get_all(DBusConnection *conn,
 						     NULL, NULL, NULL, NULL);
 }
 
+/* emit org.freedesktop.DBus.Properties.PropertiesChanged for a specific set of
+ * properties */
 DBusHandlerResult
 cm_tdbush_property_emit_changed(struct cm_context *ctx,
 				const char *path,
@@ -4365,6 +4476,8 @@ cm_tdbush_property_emit_changed(struct cm_context *ctx,
 	}
 }
 
+/* emit org.freedesktop.DBus.Properties.PropertiesChanged for the properties
+ * which differ between the old and new entries */
 void
 cm_tdbush_property_emit_entry_changes(struct cm_context *ctx,
 				      struct cm_store_entry *old_entry,
@@ -4388,6 +4501,8 @@ cm_tdbush_property_emit_entry_changes(struct cm_context *ctx,
 	}
 }
 
+/* emit org.fedorahosted.certmonger.request.SavedCertificate, for clients whom
+ * filtering on PropertiesChanged isn't enough */
 void
 cm_tdbush_property_emit_entry_saved_cert(struct cm_context *ctx,
 					 struct cm_store_entry *entry)
@@ -4413,6 +4528,8 @@ cm_tdbush_property_emit_entry_saved_cert(struct cm_context *ctx,
 	}
 }
 
+/* emit org.freedesktop.DBus.Properties.PropertiesChanged for the properties
+ * which differ between the old and new CAs */
 void
 cm_tdbush_property_emit_ca_changes(struct cm_context *ctx,
 				   struct cm_store_ca *old_ca,
@@ -4436,6 +4553,7 @@ cm_tdbush_property_emit_ca_changes(struct cm_context *ctx,
 	}
 }
 
+/* interface for org.freedesktop.DBus.Introspectable */
 static struct cm_tdbush_interface *
 cm_tdbush_iface_introspection(void)
 {
@@ -4455,6 +4573,7 @@ cm_tdbush_iface_introspection(void)
 	return ret;
 }
 
+/* interface for org.freedesktop.DBus.Properties */
 static struct cm_tdbush_interface *
 cm_tdbush_iface_properties(void)
 {
@@ -4515,6 +4634,7 @@ cm_tdbush_iface_properties(void)
 }
 
 
+/* interface for org.freedesktop.certmonger.request */
 static struct cm_tdbush_interface *
 cm_tdbush_iface_request(void)
 {
@@ -5133,6 +5253,7 @@ cm_tdbush_iface_request(void)
 	return ret;
 }
 
+/* interface for org.freedesktop.certmonger.ca */
 static struct cm_tdbush_interface *
 cm_tdbush_iface_ca(void)
 {
@@ -5217,6 +5338,7 @@ cm_tdbush_iface_ca(void)
 	return ret;
 }
 
+/* interface for org.freedesktop.certmonger */
 static struct cm_tdbush_interface *
 cm_tdbush_iface_base(void)
 {
@@ -5346,6 +5468,7 @@ cm_tdbush_iface_base(void)
 	return ret;
 }
 
+/* map object types to an get-interface functions */
 struct cm_tdbush_interface_map
 cm_tdbush_object_type_map[] = {
 	{cm_tdbush_object_type_parent_of_base, &cm_tdbush_iface_introspection},
@@ -5432,6 +5555,8 @@ cm_tdbush_classify_path(struct cm_context *ctx, const char *path)
 	return cm_tdbush_object_type_none;
 }
 
+/* the list of method calls that we've made that we haven't yet received
+ * responses for */
 struct cm_tdbush_pending_call {
 	DBusMessage *cm_msg;
 	const char *cm_path, *cm_interface, *cm_method;
@@ -5446,6 +5571,8 @@ struct cm_tdbush_pending_call {
 	struct cm_tdbush_pending_call *cm_next;
 } *cm_pending_calls;
 
+/* handle a method call by either asserting that we don't support a method, or
+ * by asking for information about the caller */
 DBusHandlerResult
 cm_tdbush_handle_method_call(DBusConnection *conn, DBusMessage *msg,
 			     struct cm_context *ctx)
@@ -5534,6 +5661,7 @@ cm_tdbush_handle_method_return(DBusConnection *conn, DBusMessage *msg,
 	long uid;
 
 	serial = dbus_message_get_reply_serial(msg);
+	/* figure out which of our pending calls this goes with */
 	for (p = &cm_pending_calls;
 	     (p != NULL) && (*p != NULL);
 	     p = &((*p)->cm_next)) {
@@ -5555,10 +5683,12 @@ cm_tdbush_handle_method_return(DBusConnection *conn, DBusMessage *msg,
 	if ((p == NULL) || (*p == NULL)) {
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
+	/* do we know enough now? if not, we're done here */
 	if (!call->cm_know_uid) {
 		return DBUS_HANDLER_RESULT_HANDLED;
 	}
 
+	/* actually run the method */
 	cm_log(4, "User ID %lu called %s:%s.%s.\n",
 	       uid, call->cm_path, call->cm_interface, call->cm_method);
 
