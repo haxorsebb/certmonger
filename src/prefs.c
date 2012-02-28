@@ -42,7 +42,8 @@ cm_prefs_read(void)
 	if (dir != NULL) {
 		path = malloc(strlen(dir) + strlen(base) + 1);
 		if (path != NULL) {
-			sprintf(path, "%s%s", dir, base);
+			snprintf(path, strlen(dir) + strlen(base) + 1,
+				 "%s%s", dir, base);
 			ret = read_config_file(path);
 			free(path);
 		}

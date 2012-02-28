@@ -137,7 +137,7 @@ main(int argc, char **argv)
 			fprintf(stderr, "Out of memory.\n");
 			exit(1);
 		}
-		sprintf(env_tmpdir, "TMPDIR=%s", tmpdir);
+		snprintf(env_tmpdir, 8 + strlen(tmpdir), "TMPDIR=%s", tmpdir);
 		if (putenv(env_tmpdir) != 0) {
 			printf("internal error: %s\n", strerror(errno));
 			exit(1);
