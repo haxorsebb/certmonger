@@ -107,7 +107,7 @@ maybe_strdupv(void *parent, char **s)
 	return cm_store_maybe_strdupv(parent, s);
 }
 
-/* Convenience functions for returning errors to callers. */
+/* Convenience functions for returning errors from the base object to callers. */
 static DBusHandlerResult
 send_internal_base_error(DBusConnection *conn, DBusMessage *req)
 {
@@ -1250,6 +1250,7 @@ base_get_supported_key_and_cert_storage(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certmonger.get_supported_key_storage */
 static DBusHandlerResult
 base_get_supported_key_storage(DBusConnection *conn, DBusMessage *msg,
 			       struct cm_client_info *ci, struct cm_context *ctx)
@@ -1257,6 +1258,7 @@ base_get_supported_key_storage(DBusConnection *conn, DBusMessage *msg,
 	return base_get_supported_key_and_cert_storage(conn, msg, ci, ctx);
 }
 
+/* org.fedorahosted.certmonger.get_supported_cert_storage */
 static DBusHandlerResult
 base_get_supported_cert_storage(DBusConnection *conn, DBusMessage *msg,
 				struct cm_client_info *ci, struct cm_context *ctx)
@@ -1264,6 +1266,7 @@ base_get_supported_cert_storage(DBusConnection *conn, DBusMessage *msg,
 	return base_get_supported_key_and_cert_storage(conn, msg, ci, ctx);
 }
 
+/* org.fedorahosted.certmonger.remove_known_ca */
 static DBusHandlerResult
 base_remove_known_ca(DBusConnection *conn, DBusMessage *msg,
 		     struct cm_client_info *ci, struct cm_context *ctx)
@@ -1301,6 +1304,7 @@ base_remove_known_ca(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certmonger.remove_request */
 static DBusHandlerResult
 base_remove_request(DBusConnection *conn, DBusMessage *msg,
 		    struct cm_client_info *ci, struct cm_context *ctx)
@@ -1338,7 +1342,7 @@ base_remove_request(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
-/* Functions implemented for known CAs. */
+/* Convenience functions for returning errors from a CA object to callers. */
 static DBusHandlerResult
 send_internal_ca_error(DBusConnection *conn, DBusMessage *req)
 {
@@ -1352,6 +1356,11 @@ send_internal_ca_error(DBusConnection *conn, DBusMessage *req)
 	}
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
+
+/* Functions implemented for CA objects.  Most of the "get_XXX" functions
+ * predate the properties interface being added, so they're redundant now. */
+
+/* org.fedorahosted.certonger.ca.get_nickname */
 static DBusHandlerResult
 ca_get_nickname(DBusConnection *conn, DBusMessage *msg,
 		struct cm_client_info *ci, struct cm_context *ctx)
@@ -1376,6 +1385,7 @@ ca_get_nickname(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certonger.ca.get_is_default */
 static DBusHandlerResult
 ca_get_is_default(DBusConnection *conn, DBusMessage *msg,
 		  struct cm_client_info *ci, struct cm_context *ctx)
@@ -1397,6 +1407,7 @@ ca_get_is_default(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certonger.ca.get_issuer_names */
 static DBusHandlerResult
 ca_get_issuer_names(DBusConnection *conn, DBusMessage *msg,
 		    struct cm_client_info *ci, struct cm_context *ctx)
@@ -1420,6 +1431,7 @@ ca_get_issuer_names(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certonger.ca.get_location */
 static DBusHandlerResult
 ca_get_location(DBusConnection *conn, DBusMessage *msg,
 		struct cm_client_info *ci, struct cm_context *ctx)
@@ -1441,6 +1453,7 @@ ca_get_location(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certonger.ca.get_type */
 static DBusHandlerResult
 ca_get_type(DBusConnection *conn, DBusMessage *msg,
 	    struct cm_client_info *ci, struct cm_context *ctx)
@@ -1472,6 +1485,7 @@ ca_get_type(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certonger.ca.get_serial */
 static DBusHandlerResult
 ca_get_serial(DBusConnection *conn, DBusMessage *msg,
 	      struct cm_client_info *ci, struct cm_context *ctx)
@@ -1553,8 +1567,7 @@ ca_prop_set_is_default(struct cm_context *ctx, void *parent,
 	}
 }
 
-/* Functions implemented for request objects.  Most of the "get_XXX" functions
- * predate the properties interface being added, so they're redundant now. */
+/* Convenience functions for returning errors from a request object to callers. */
 static DBusHandlerResult
 send_internal_request_error(DBusConnection *conn, DBusMessage *req)
 {
@@ -1568,6 +1581,9 @@ send_internal_request_error(DBusConnection *conn, DBusMessage *req)
 	}
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
+
+/* Functions implemented for request objects.  Most of the "get_XXX" functions
+ * predate the properties interface being added, so they're redundant now. */
 
 /* org.fedorahosted.certmonger.request.get_nickname */
 static DBusHandlerResult
