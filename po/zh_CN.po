@@ -11,9 +11,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2012-02-24 14:26-0500\n"
-"PO-Revision-Date: 2012-02-15 08:23+0000\n"
-"Last-Translator: lovenemesis <lovenemesis@gmail.com>\n"
+"POT-Creation-Date: 2012-03-03 00:33-0500\n"
+"PO-Revision-Date: 2012-02-28 00:56+0000\n"
+"Last-Translator: Tommy He <lovenemesis@gmail.com>\n"
 "Language-Team: Chinese (China) (http://www.transifex.net/projects/p/fedora/"
 "language/zh_CN/)\n"
 "Language: zh_CN\n"
@@ -147,7 +147,7 @@ msgstr "反解析 Kerberos 主机名 “%s”时出错：%s。\n"
 #: src/getcert.c:2326
 #, c-format
 msgid "%s: option requires an argument -- '%c'\n"
-msgstr ""
+msgstr "%s: 操作需要一个参数 -- '%c'\n"
 
 #: src/getcert.c:687 src/getcert.c:1396 src/getcert.c:1775 src/getcert.c:2019
 #: src/getcert.c:2329
@@ -395,7 +395,7 @@ msgstr "    EKU："
 #: src/getcert.c:2285
 #, c-format
 msgid "\tcommand: %s\n"
-msgstr ""
+msgstr "\t命令： %s\n"
 
 #: src/getcert.c:2288
 #, c-format
@@ -565,7 +565,7 @@ msgstr "* 其他选项：\n"
 
 #: src/getcert.c:2438 src/getcert.c:2476 src/getcert.c:2536
 msgid "  -C\tcommand to run when saving the certificate\n"
-msgstr ""
+msgstr "  -C\t当保存认证时运行的命令\n"
 
 #: src/getcert.c:2439 src/getcert.c:2477 src/getcert.c:2499 src/getcert.c:2537
 #: src/getcert.c:2561 src/getcert.c:2576
@@ -761,95 +761,95 @@ msgstr "在为使用 keytab“%s”的本地“主机”服务设置 ccache 时�
 msgid "Error setting up ccache for \"%s\" using keytab \"%s\".\n"
 msgstr "在为“%s\"（使用 keytab“%s”的）设置 ccache 出错。\n"
 
-#: src/tdbush.c:112 src/tdbush.c:1335 src/tdbush.c:1549
+#: src/tdbush.c:116 src/tdbush.c:1351 src/tdbush.c:1576
 msgid "An internal error has occurred."
 msgstr "发生一个内部错误。"
 
-#: src/tdbush.c:176
+#: src/tdbush.c:180
 msgid "No matching entry found.\n"
 msgstr "没有找到匹配的条目。\n"
 
-#: src/tdbush.c:315
+#: src/tdbush.c:321
 #, c-format
 msgid "There is already a CA with the nickname \"%s\"."
 msgstr "具有别名“%s”的 CA 已经存在。"
 
-#: src/tdbush.c:402
+#: src/tdbush.c:409
 msgid "Certificate storage type not specified."
 msgstr "证书存储类型没有指定。"
 
-#: src/tdbush.c:415
+#: src/tdbush.c:422
 #, c-format
 msgid "Certificate storage type \"%s\" not supported."
 msgstr "证书存储类型“%s”不支持。"
 
-#: src/tdbush.c:452 src/tdbush.c:486 src/tdbush.c:535 src/tdbush.c:710
-#: src/tdbush.c:760 src/tdbush.c:2281
+#: src/tdbush.c:459 src/tdbush.c:493 src/tdbush.c:542 src/tdbush.c:717
+#: src/tdbush.c:767 src/tdbush.c:2333
 #, c-format
 msgid "The location \"%s\" must be an absolute path."
 msgstr "位置“%s”必须是绝对路径。"
 
-#: src/tdbush.c:479 src/tdbush.c:528 src/tdbush.c:586
+#: src/tdbush.c:486 src/tdbush.c:535 src/tdbush.c:593
 msgid "Certificate storage location not specified."
 msgstr "证书存储位置没有指定。"
 
-#: src/tdbush.c:496 src/tdbush.c:720
+#: src/tdbush.c:503 src/tdbush.c:727
 #, c-format
 msgid "The parent of location \"%s\" must be a valid directory."
 msgstr "位置“%s”的上一层必须是有效目录。"
 
-#: src/tdbush.c:506 src/tdbush.c:730
+#: src/tdbush.c:513 src/tdbush.c:737
 #, c-format
 msgid "The location \"%s\" must be a file."
 msgstr "位置“%s”必须是文件。"
 
-#: src/tdbush.c:545 src/tdbush.c:770
+#: src/tdbush.c:552 src/tdbush.c:777
 #, c-format
 msgid "The location \"%s\" must be a directory."
 msgstr "位置“%s”必须是目录。"
 
-#: src/tdbush.c:564
+#: src/tdbush.c:571
 msgid "Certificate nickname not specified."
 msgstr "证书别名没有指定。"
 
-#: src/tdbush.c:607 src/tdbush.c:2184
+#: src/tdbush.c:614 src/tdbush.c:2236
 #, c-format
 msgid "There is already a request with the nickname \"%s\"."
 msgstr "具有别名“%s”的请求已经存在。"
 
-#: src/tdbush.c:643
+#: src/tdbush.c:650
 #, c-format
 msgid ""
 "Certificate at same location is already used by request with nickname \"%s\"."
 msgstr "在相同位置的认证已经被包含昵称 \"%s\" 的请求使用。"
 
-#: src/tdbush.c:676
+#: src/tdbush.c:683
 #, c-format
 msgid "Key storage type \"%s\" not supported."
 msgstr "密钥存储类型“%s”不支持。"
 
-#: src/tdbush.c:703 src/tdbush.c:753
+#: src/tdbush.c:710 src/tdbush.c:760
 msgid "Key storage location not specified."
 msgstr "密钥存储位置没有指定。"
 
-#: src/tdbush.c:789
+#: src/tdbush.c:796
 msgid "Key nickname not specified."
 msgstr "密钥别名没有指定。"
 
-#: src/tdbush.c:845
+#: src/tdbush.c:852
 #, c-format
 msgid "Key at same location is already used by request with nickname \"%s\"."
 msgstr "在相同位置的键已经被包含昵称 \"%s\" 的请求使用。"
 
-#: src/tdbush.c:925
+#: src/tdbush.c:932
 msgid "No such CA."
 msgstr "没有该 CA。"
 
-#: src/tdbush.c:2202
+#: src/tdbush.c:2254
 #, c-format
 msgid "Certificate authority \"%s\" not known."
 msgstr "证书认证中心“%s”未知。"
 
-#: src/tdbush.c:2383
+#: src/tdbush.c:2435
 msgid "Unrecognized parameter or wrong value type."
 msgstr "未识别的参数或错误的值类型。"

@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2012-02-24 14:26-0500\n"
-"PO-Revision-Date: 2012-02-15 09:36+0000\n"
+"POT-Creation-Date: 2012-03-03 00:33-0500\n"
+"PO-Revision-Date: 2012-02-24 19:43+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <trans-uk@lists.fedoraproject.org>\n"
 "Language: uk\n"
@@ -148,7 +148,7 @@ msgstr "Помилка під час пакування реєстраційно
 #: src/getcert.c:2326
 #, c-format
 msgid "%s: option requires an argument -- '%c'\n"
-msgstr ""
+msgstr "%s: разом з параметром слід вказати аргумент -- «%c»\n"
 
 #: src/getcert.c:687 src/getcert.c:1396 src/getcert.c:1775 src/getcert.c:2019
 #: src/getcert.c:2329
@@ -799,97 +799,97 @@ msgid "Error setting up ccache for \"%s\" using keytab \"%s\".\n"
 msgstr ""
 "Помилка налаштування ccache для «%s» за допомогою таблиці ключів «%s».\n"
 
-#: src/tdbush.c:112 src/tdbush.c:1335 src/tdbush.c:1549
+#: src/tdbush.c:116 src/tdbush.c:1351 src/tdbush.c:1576
 msgid "An internal error has occurred."
 msgstr "Сталася внутрішня помилка."
 
-#: src/tdbush.c:176
+#: src/tdbush.c:180
 msgid "No matching entry found.\n"
 msgstr "Відповідного запису не знайдено.\n"
 
-#: src/tdbush.c:315
+#: src/tdbush.c:321
 #, c-format
 msgid "There is already a CA with the nickname \"%s\"."
 msgstr "Служба сертифікації (CA) з псевдонімом «%s» вже існує."
 
-#: src/tdbush.c:402
+#: src/tdbush.c:409
 msgid "Certificate storage type not specified."
 msgstr "Тип сховища сертифікатів не вказано."
 
-#: src/tdbush.c:415
+#: src/tdbush.c:422
 #, c-format
 msgid "Certificate storage type \"%s\" not supported."
 msgstr "Підтримки типу сховищ сертифікатів «%s» не передбачено."
 
-#: src/tdbush.c:452 src/tdbush.c:486 src/tdbush.c:535 src/tdbush.c:710
-#: src/tdbush.c:760 src/tdbush.c:2281
+#: src/tdbush.c:459 src/tdbush.c:493 src/tdbush.c:542 src/tdbush.c:717
+#: src/tdbush.c:767 src/tdbush.c:2333
 #, c-format
 msgid "The location \"%s\" must be an absolute path."
 msgstr "Адресою «%s» має бути абсолютний шлях."
 
-#: src/tdbush.c:479 src/tdbush.c:528 src/tdbush.c:586
+#: src/tdbush.c:486 src/tdbush.c:535 src/tdbush.c:593
 msgid "Certificate storage location not specified."
 msgstr "Адресу сховища сертифікатів не вказано."
 
-#: src/tdbush.c:496 src/tdbush.c:720
+#: src/tdbush.c:503 src/tdbush.c:727
 #, c-format
 msgid "The parent of location \"%s\" must be a valid directory."
 msgstr "Батьківським каталогом адреси «%s» має бути коректний каталог."
 
-#: src/tdbush.c:506 src/tdbush.c:730
+#: src/tdbush.c:513 src/tdbush.c:737
 #, c-format
 msgid "The location \"%s\" must be a file."
 msgstr "Адресою «%s» має бути файл."
 
-#: src/tdbush.c:545 src/tdbush.c:770
+#: src/tdbush.c:552 src/tdbush.c:777
 #, c-format
 msgid "The location \"%s\" must be a directory."
 msgstr "Адресою «%s» має бути каталог."
 
-#: src/tdbush.c:564
+#: src/tdbush.c:571
 msgid "Certificate nickname not specified."
 msgstr "Псевдонім сертифіката не вказано."
 
-#: src/tdbush.c:607 src/tdbush.c:2184
+#: src/tdbush.c:614 src/tdbush.c:2236
 #, c-format
 msgid "There is already a request with the nickname \"%s\"."
 msgstr "Запит з псевдонімом «%s» вже існує."
 
-#: src/tdbush.c:643
+#: src/tdbush.c:650
 #, c-format
 msgid ""
 "Certificate at same location is already used by request with nickname \"%s\"."
 msgstr ""
 "Сертифікат з цією адресою вже використовується за запитом з псевдонімом «%s»."
 
-#: src/tdbush.c:676
+#: src/tdbush.c:683
 #, c-format
 msgid "Key storage type \"%s\" not supported."
 msgstr "Підтримки типу сховищ ключів «%s» не передбачено."
 
-#: src/tdbush.c:703 src/tdbush.c:753
+#: src/tdbush.c:710 src/tdbush.c:760
 msgid "Key storage location not specified."
 msgstr "Адресу сховища ключів не вказано."
 
-#: src/tdbush.c:789
+#: src/tdbush.c:796
 msgid "Key nickname not specified."
 msgstr "Псевдонім ключа не вказано."
 
-#: src/tdbush.c:845
+#: src/tdbush.c:852
 #, c-format
 msgid "Key at same location is already used by request with nickname \"%s\"."
 msgstr ""
 "Ключ з цією адресою вже використовується за запитом з псевдонімом «%s»."
 
-#: src/tdbush.c:925
+#: src/tdbush.c:932
 msgid "No such CA."
 msgstr "Такої служби сертифікації (CA) не виявлено."
 
-#: src/tdbush.c:2202
+#: src/tdbush.c:2254
 #, c-format
 msgid "Certificate authority \"%s\" not known."
 msgstr "Невідома служба сертифікації «%s»."
 
-#: src/tdbush.c:2383
+#: src/tdbush.c:2435
 msgid "Unrecognized parameter or wrong value type."
 msgstr "Невідомий параметр або помилковий тип значення."

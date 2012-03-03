@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.55
+Version:	0.56
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -194,6 +194,17 @@ exit 0
 %endif
 
 %changelog
+* Sat Mar  3 2012 Nalin Dahyabhai <nalin@redhat.com> 0.56-1
+- when a caller sets the is-default flag on a CA, and another CA is no longer
+  the default, emit the PropertiesChanged signal on the CA which is not the
+  default, instead on the new default a second time
+- drop some dead code from the D-Bus message handlers (static analysis,
+  #796813)
+- cache public keys when we read private keys
+- go back to printing an error indicating that we're missing a required
+  argument when we're missing a required argument, not that the option is
+  invalid (broken since 0.51, #796542)
+
 * Wed Feb 16 2012 Nalin Dahyabhai <nalin@redhat.com> 0.55-1
 - allow root to use our implementation of org.freedesktop.DBus.Properties
 - take more care to not emit useless PropertiesChanged signals
