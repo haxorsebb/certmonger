@@ -2,4 +2,5 @@
 src/certmaster.c
 src/getcert.c
 src/ipa.c
+src/main.c
 src/tdbush.c

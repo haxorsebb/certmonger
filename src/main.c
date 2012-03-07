@@ -110,16 +110,17 @@ main(int argc, char **argv)
 			dofork = FALSE;
 			break;
 		default:
-			printf("Usage: %s [-s|-S] [-n|-f] [-d LEVEL] "
-			       "[-p FILE]\n"
-			       "\t-s         use session bus\n"
-			       "\t-S         use system bus\n"
-			       "\t-n         don't become a daemon\n"
-			       "\t-f         do become a daemon\n"
-			       "\t-b TIMEOUT bus-activated, idle timeout\n"
-			       "\t-B         don't use an idle timeout\n"
-			       "\t-d LEVEL   set debugging level (implies -n)\n"
-			       "\t-p FILE    write service PID to file\n",
+			printf("%s%s%s%s%s%s%s%s%s",
+			       _("Usage: %s [-s|-S] [-n|-f] [-d LEVEL] "
+			         "[-p FILE]\n"),
+			       _("\t-s         use session bus\n"),
+			       _("\t-S         use system bus\n"),
+			       _("\t-n         don't become a daemon\n"),
+			       _("\t-f         do become a daemon\n"),
+			       _("\t-b TIMEOUT bus-activated, idle timeout\n"),
+			       _("\t-B         don't use an idle timeout\n"),
+			       _("\t-d LEVEL   set debugging level (implies -n)\n"),
+			       _("\t-p FILE    write service PID to file\n"),
 			       cm_env_whoami());
 			exit(1);
 			break;

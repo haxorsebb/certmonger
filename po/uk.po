@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2012-03-03 00:33-0500\n"
+"POT-Creation-Date: 2012-03-07 15:25-0500\n"
 "PO-Revision-Date: 2012-02-24 19:43+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <trans-uk@lists.fedoraproject.org>\n"
@@ -798,6 +798,43 @@ msgstr ""
 msgid "Error setting up ccache for \"%s\" using keytab \"%s\".\n"
 msgstr ""
 "Помилка налаштування ccache для «%s» за допомогою таблиці ключів «%s».\n"
+
+#: src/main.c:114
+#, c-format
+msgid "Usage: %s [-s|-S] [-n|-f] [-d LEVEL] [-p FILE]\n"
+msgstr ""
+
+#: src/main.c:116
+msgid "\t-s         use session bus\n"
+msgstr ""
+
+#: src/main.c:117
+msgid "\t-S         use system bus\n"
+msgstr ""
+
+#: src/main.c:118
+msgid "\t-n         don't become a daemon\n"
+msgstr ""
+
+#: src/main.c:119
+msgid "\t-f         do become a daemon\n"
+msgstr ""
+
+#: src/main.c:120
+msgid "\t-b TIMEOUT bus-activated, idle timeout\n"
+msgstr ""
+
+#: src/main.c:121
+msgid "\t-B         don't use an idle timeout\n"
+msgstr ""
+
+#: src/main.c:122
+msgid "\t-d LEVEL   set debugging level (implies -n)\n"
+msgstr ""
+
+#: src/main.c:123
+msgid "\t-p FILE    write service PID to file\n"
+msgstr ""
 
 #: src/tdbush.c:116 src/tdbush.c:1351 src/tdbush.c:1576
 msgid "An internal error has occurred."
