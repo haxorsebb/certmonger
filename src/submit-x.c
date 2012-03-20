@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2012 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,22 @@
 #include "submit-u.h"
 #include "submit-x.h"
 
-int
+static char *
+get_error_message(krb5_context ctx, krb5_error_code kcode)
+{
+	const char *ret;
+#ifdef HAVE_KRB5_GET_ERROR_MESSAGE
+	ret = ctx ? krb5_get_error_message(ctx, kcode) : NULL;
+	if (ret == NULL) {
+		ret = error_message(kcode);
+	}
+#else
+	ret = error_message(kcode);
+#endif
+	return strdup(ret);
+}
+
+char *
 cm_submit_x_make_ccache(const char *ktname, const char *principal)
 {
 	krb5_context ctx;
@@ -48,13 +63,13 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal)
 	krb5_principal princ;
 	krb5_error_code kret;
 	krb5_get_init_creds_opt gicopts, *gicoptsp;
-	char tgs[LINE_MAX];
+	char tgs[LINE_MAX], *ret;
 
 	kret = krb5_init_context(&ctx);
 	if (kret != 0) {
 		fprintf(stderr, "Error initializing Kerberos: %s.\n",
-			error_message(kret));
-		return kret;
+			ret = get_error_message(ctx, kret));
+		return ret;
 	}
 	if (ktname != NULL) {
 		kret = krb5_kt_resolve(ctx, ktname, &keytab);
@@ -63,24 +78,24 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal)
 	}
 	if (kret != 0) {
 		fprintf(stderr, "Error resolving keytab: %s.\n",
-			error_message(kret));
-		return kret;
+			ret = get_error_message(ctx, kret));
+		return ret;
 	}
 	princ = NULL;
 	if (principal != NULL) {
 		kret = krb5_parse_name(ctx, principal, &princ);
 		if (kret != 0) {
-			fprintf(stderr, "Error parsing \"%s\": %s.\n", principal,
-				error_message(kret));
-			return kret;
+			fprintf(stderr, "Error parsing \"%s\": %s.\n",
+				principal, ret = get_error_message(ctx, kret));
+			return ret;
 		}
 	} else {
 		kret = krb5_sname_to_principal(ctx, NULL, NULL,
 					       KRB5_NT_SRV_HST, &princ);
 		if (kret != 0) {
 			fprintf(stderr, "Error building client name: %s.\n",
-				error_message(kret));
-			return kret;
+				ret = get_error_message(ctx, kret));
+			return ret;
 		}
 	}
 	strcpy(tgs, KRB5_TGS_NAME);
@@ -96,8 +111,9 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal)
 	gicoptsp = NULL;
 	kret = krb5_get_init_creds_opt_alloc(ctx, &gicoptsp);
 	if (kret != 0) {
-		fprintf(stderr, "Internal error: %s.\n", error_message(kret));
-		return kret;
+		fprintf(stderr, "Internal error: %s.\n",
+			ret = get_error_message(ctx, kret));
+		return ret;
 	}
 #else
 	krb5_get_init_creds_opt_init(&gicopts);
@@ -111,8 +127,8 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal)
 #endif
 	if (kret != 0) {
 		fprintf(stderr, "Error obtaining initial credentials: %s.\n",
-			error_message(kret));
-		return kret;
+			ret = get_error_message(ctx, kret));
+		return ret;
 	}
 	ccache = NULL;
 	kret = krb5_cc_resolve(ctx, "MEMORY:" PACKAGE_NAME "_submit",
@@ -122,21 +138,22 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal)
 	}
 	if (kret != 0) {
 		fprintf(stderr, "Error initializing credential cache: %s.\n",
-			error_message(kret));
-		return kret;
+			ret = get_error_message(ctx, kret));
+		return ret;
 	}
 	kret = krb5_cc_store_cred(ctx, ccache, &creds);
 	if (kret != 0) {
-		fprintf(stderr, "Error storing creds in credential cache: %s.\n",
-			error_message(kret));
-		return kret;
+		fprintf(stderr,
+			"Error storing creds in credential cache: %s.\n",
+			ret = get_error_message(ctx, kret));
+		return ret;
 	}
 	krb5_cc_close(ctx, ccache);
 	krb5_kt_close(ctx, keytab);
 	krb5_free_principal(ctx, princ);
 	krb5_free_context(ctx);
 	putenv("KRB5CCNAME=MEMORY:" PACKAGE_NAME "_submit");
-	return 0;
+	return NULL;
 }
 
 struct cm_submit_x_context {

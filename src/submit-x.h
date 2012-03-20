@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2011 Red Hat, Inc.
+ * Copyright (C) 2009,2011,2012 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 #ifndef cmsubmitx_h
 #define cmsubmitx_h
 
-int cm_submit_x_make_ccache(const char *ktname, const char *principal);
+char *cm_submit_x_make_ccache(const char *ktname, const char *principal);
 
 struct cm_submit_x_context;
 enum cm_submit_x_opt_negotiate {

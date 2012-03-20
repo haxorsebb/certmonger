@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,7 +50,7 @@ main(int argc, char **argv)
 	int i, c, host_is_uri = 0, make_keytab_ccache = TRUE;
 	const char *host = NULL, *cainfo = NULL, *capath = NULL;
 	const char *ktname = NULL, *kpname = NULL, *args[2];
-	char *csr, *p, uri[LINE_MAX], *s, *reqprinc = NULL, *ipaconfig;
+	char *csr, *p, uri[LINE_MAX], *s, *reqprinc = NULL, *ipaconfig, *kerr;
 	struct cm_submit_x_context *ctx;
 
 #ifdef ENABLE_NLS
@@ -229,27 +229,27 @@ main(int argc, char **argv)
 
 	/* Setup a ccache unless we're told to use the default one. */
 	if (make_keytab_ccache &&
-	    (cm_submit_x_make_ccache(ktname, kpname) != 0)) {
-		fprintf(stderr, "Error setting up ccache.\n");
+	    ((kerr = cm_submit_x_make_ccache(ktname, kpname)) != NULL)) {
+		fprintf(stderr, "Error setting up ccache: %s.\n", kerr);
 		if (ktname == NULL) {
 			if (kpname == NULL) {
 				printf(_("Error setting up ccache for local "
 					 "\"host\" service using "
-					 "default keytab.\n"));
+					 "default keytab: %s.\n"), kerr);
 			} else {
 				printf(_("Error setting up ccache for "
-					 "\"%s\" using default keytab.\n"),
-					 kpname);
+					 "\"%s\" using default keytab: %s.\n"),
+					 kpname, kerr);
 			}
 		} else {
 			if (kpname == NULL) {
 				printf(_("Error setting up ccache for local "
 					 "\"host\" service using "
-					 "keytab \"%s\".\n"), ktname);
+					 "keytab \"%s\": %s.\n"), ktname, kerr);
 			} else {
 				printf(_("Error setting up ccache for "
-					 "\"%s\" using keytab \"%s\".\n"),
-					 kpname, ktname);
+					 "\"%s\" using keytab \"%s\": %s.\n"),
+					 kpname, ktname, kerr);
 			}
 		}
 		return CM_STATUS_UNCONFIGURED;

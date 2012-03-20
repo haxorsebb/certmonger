@@ -173,6 +173,7 @@ CPPFLAGS="$CPPFLAGS $KRB5_CFLAGS"
 LDFLAGS="$LDFLAGS $KRB5_LIBS"
 AC_CHECK_DECLS([krb5_princ_component,krb5_princ_name,krb5_princ_set_realm_length,krb5_princ_size,krb5_princ_type],,,[#include <krb5.h>])
 AC_CHECK_FUNCS(krb5_free_unparsed_name krb5_get_init_creds_opt_alloc)
+AC_CHECK_FUNCS(krb5_get_error_message)
 CFLAGS="$savedCFLAGS"
 CPPFLAGS="$savedCPPFLAGS"
 LDFLAGS="$savedLDFLAGS"
