@@ -47,7 +47,7 @@ cm_netlink_socket(void)
 		close(fd);
 		return -1;
 	};
-	if (fcntl(fd, F_SETFD, (long) 1) == -1) {
+	if (fcntl(fd, F_SETFD, (long) FD_CLOEXEC) == -1) {
 		close(fd);
 		return -1;
 	};
