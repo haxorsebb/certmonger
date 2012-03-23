@@ -54,6 +54,7 @@ main(int argc, char **argv)
 	struct cm_context *ctx;
 	enum cm_tdbus_type bus;
 	int i, c, dlevel = 0, pfd = -1, lfd = -1;
+	long l;
 	pid_t pid;
 	FILE *pfp;
 	const char *pidfile = NULL, *tmpdir;
@@ -174,6 +175,10 @@ main(int argc, char **argv)
 			close(lfd);
 			exit(1);
 		}
+		l = fcntl(lfd, F_GETFD);
+		if (l != -1) {
+			fcntl(lfd, F_SETFD, l | FD_CLOEXEC);
+		}
 		break;
 	}
 
@@ -214,6 +219,10 @@ main(int argc, char **argv)
 				pidfile, strerror(errno));
 			close(pfd);
 			exit(1);
+		}
+		l = fcntl(pfd, F_GETFD);
+		if (l != -1) {
+			fcntl(pfd, F_SETFD, l | FD_CLOEXEC);
 		}
 		pfp = fdopen(pfd, "w");
 		if (pfp == NULL) {
