@@ -263,15 +263,19 @@ cm_submit_e_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 	i = open("/dev/null", O_RDONLY);
 	if (i != -1) {
-		dup2(i, STDIN_FILENO);
-		close(i);
+		if (i != STDIN_FILENO) {
+			dup2(i, STDIN_FILENO);
+			close(i);
+		}
 	} else {
 		close(STDIN_FILENO);
 	}
 	i = open("/dev/null", O_WRONLY);
 	if (i != -1) {
-		dup2(i, STDERR_FILENO);
-		close(i);
+		if (i != STDERR_FILENO) {
+			dup2(i, STDERR_FILENO);
+			close(i);
+		}
 	} else {
 		close(STDERR_FILENO);
 	}
