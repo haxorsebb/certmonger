@@ -52,7 +52,8 @@ cm_postsave_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	struct passwd *pwd;
 	struct cm_postsave_state *state = userdata;
 
-	argv = cm_subproc_parse_args(entry, entry->cm_post_certsave_command, &error);
+	argv = cm_subproc_parse_args(entry, entry->cm_post_certsave_command,
+				     &error);
 	if (error != NULL) {
 		cm_log(-2, "Error parsing \"%s\": %s; not running it.\n",
 		       entry->cm_post_certsave_command, error);
@@ -102,7 +103,12 @@ cm_postsave_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		       entry->cm_post_certsave_command);
 		return -1;
 	}
-	execvp(argv[0], argv);
+	if (execvp(argv[0], argv) == -1) {
+		cm_log(0, "Error execvp()ing command \"%s\" (\"%s\"): %s.\n",
+		       argv[0], entry->cm_post_certsave_command,
+		       strerror(errno));
+		return -1;
+	}
 	return -1;
 }
 
