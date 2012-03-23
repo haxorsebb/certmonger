@@ -53,6 +53,7 @@ cm_postsave_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	struct passwd *pwd;
 	struct cm_postsave_state *state = userdata;
 	int i;
+	long l;
 
 	argv = cm_subproc_parse_args(entry, entry->cm_post_certsave_command,
 				     &error);
@@ -113,6 +114,30 @@ cm_postsave_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 	} else {
 		close(STDIN_FILENO);
+	}
+	i = open("/dev/null", O_WRONLY);
+	if (i != -1) {
+		if (i != STDOUT_FILENO) {
+			dup2(i, STDOUT_FILENO);
+			close(i);
+		}
+	} else {
+		close(STDOUT_FILENO);
+	}
+	i = open("/dev/null", O_WRONLY);
+	if (i != -1) {
+		if (i != STDERR_FILENO) {
+			dup2(i, STDERR_FILENO);
+			close(i);
+		}
+	} else {
+		close(STDERR_FILENO);
+	}
+	for (i = getdtablesize() - 1; i >= 3; i--) {
+		l = fcntl(i, F_GETFD);
+		if (l != -1) {
+			fcntl(i, F_SETFD, l | FD_CLOEXEC);
+		}
 	}
 	if (execvp(argv[0], argv) == -1) {
 		cm_log(0, "Error execvp()ing command \"%s\" (\"%s\"): %s.\n",
