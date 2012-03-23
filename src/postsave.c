@@ -20,6 +20,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <grp.h>
 #include <pwd.h>
 #include <stdlib.h>
@@ -51,6 +52,7 @@ cm_postsave_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	const char *error;
 	struct passwd *pwd;
 	struct cm_postsave_state *state = userdata;
+	int i;
 
 	argv = cm_subproc_parse_args(entry, entry->cm_post_certsave_command,
 				     &error);
@@ -102,6 +104,15 @@ cm_postsave_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		       strerror(errno),
 		       entry->cm_post_certsave_command);
 		return -1;
+	}
+	i = open("/dev/null", O_RDONLY);
+	if (i != -1) {
+		if (i != STDIN_FILENO) {
+			dup2(i, STDIN_FILENO);
+			close(i);
+		}
+	} else {
+		close(STDIN_FILENO);
 	}
 	if (execvp(argv[0], argv) == -1) {
 		cm_log(0, "Error execvp()ing command \"%s\" (\"%s\"): %s.\n",
