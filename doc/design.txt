@@ -378,7 +378,7 @@ State logic:
 					state_transition = now
 				else
 					state_next = MONITORING
-					state_transition = now
+					state_transition = timeout
 		break
 
 	NEWLY_ADDED:

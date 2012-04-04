@@ -916,7 +916,8 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				*when = cm_time_now;
 			} else {
 				entry->cm_state = CM_MONITORING;
-				*when = cm_time_now;
+				*when = cm_time_delay;
+				*delay = cm_decide_monitor_delay(-1);
 			}
 		} else {
 			/* Wait for status update, or poll. */
