@@ -115,6 +115,7 @@ MONITORING
 NEED_TO_NOTIFY
 NOTIFYING
 Certificate in file "$tmpdir/certfile2" is no longer valid.
+delay=86400
 MONITORING
 -STOP-
 
