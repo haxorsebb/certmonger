@@ -653,26 +653,37 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			if (cm_submit_unreachable(entry,
 						  state->cm_submit_state) == 0) {
 				/* Let's try again later. */
+				*delay = cm_submit_specified_delay(entry,
+								   state->cm_submit_state);
 				cm_submit_done(entry, state->cm_submit_state);
 				state->cm_submit_state = NULL;
 				entry->cm_state = CM_CA_UNREACHABLE;
 				*when = cm_time_delay;
-				*delay = cm_decide_ca_delay(remaining);
+				if (*delay < 0) {
+					*delay = cm_decide_ca_delay(remaining);
+				}
 			} else
 			if (cm_submit_save_ca_cookie(entry,
 						     state->cm_submit_state) == 0) {
 				/* Saved CA's identifier for our request; give
-				 * it a little time and then ask. */
+				 * it the specified time, or a little time, and
+				 * then ask for a progress update. */
+				*delay = cm_submit_specified_delay(entry,
+								   state->cm_submit_state);
 				cm_submit_done(entry, state->cm_submit_state);
 				state->cm_submit_state = NULL;
 				entry->cm_state = CM_CA_WORKING;
 				*when = cm_time_delay;
-				*delay = cm_decide_ca_delay(remaining);
+				if (*delay < 0) {
+					*delay = cm_decide_ca_delay(remaining);
+				}
 			} else
 			if (cm_submit_unconfigured(entry,
 						   state->cm_submit_state) == 0) {
 				/* Saved CA's identifier for our request; give
 				 * it a little time and then ask. */
+				*delay = cm_submit_specified_delay(entry,
+								   state->cm_submit_state);
 				cm_submit_done(entry, state->cm_submit_state);
 				state->cm_submit_state = NULL;
 				if (entry->cm_cert != NULL) {
@@ -686,7 +697,9 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				} else {
 					entry->cm_state = CM_CA_UNCONFIGURED;
 					*when = cm_time_delay;
-					*delay = cm_decide_ca_delay(remaining);
+					if (*delay < 0) {
+						*delay = cm_decide_ca_delay(remaining);
+					}
 				}
 			} else {
 				/* Don't know what's going on. HELP! */

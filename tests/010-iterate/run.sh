@@ -6,7 +6,7 @@ source "$srcdir"/functions
 
 cat > ca-ask-again << EOF
 #!/bin/sh
-echo iLoveCookies
+echo iLoveCookiesSome
 exit 1
 EOF
 chmod u+x ca-ask-again
@@ -28,6 +28,13 @@ echo Something is wrong with my brain.
 exit 4
 EOF
 chmod u+x ca-unconfigured
+cat > ca-ask-again-5 << EOF
+#!/bin/sh
+echo 13
+echo iLoveCookiesMore
+exit 5
+EOF
+chmod u+x ca-ask-again-5
 
 cat > ca << EOF
 id=SelfSign
@@ -210,79 +217,100 @@ $toolsdir/iterate ca3 entry3 NEED_TO_SUBMIT,SUBMITTING
 
 echo
 echo '[Enroll until the CA tells us to come back later.]'
-cat > entry3 << EOF
+cat > entry4 << EOF
 id=Test
 ca_name=Busy
 state=HAVE_KEY_PAIR
 key_storage_type=FILE
 key_storage_location=$tmpdir/keyfile
 EOF
-cat > ca3 << EOF
+cat > ca4 << EOF
 id=Busy
 ca_type=EXTERNAL
 ca_external_helper=$tmpdir/ca-ask-again
 EOF
-$toolsdir/iterate ca3 entry3 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
-$toolsdir/iterate ca3 entry3 NEED_CSR,GENERATING_CSR
-$toolsdir/iterate ca3 entry3 NEED_TO_SUBMIT,SUBMITTING
-$toolsdir/iterate ca3 entry3 ""
+$toolsdir/iterate ca4 entry4 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
+$toolsdir/iterate ca4 entry4 NEED_CSR,GENERATING_CSR
+$toolsdir/iterate ca4 entry4 NEED_TO_SUBMIT,SUBMITTING
+grep ca_cookie entry4
+$toolsdir/iterate ca4 entry4 ""
 
 echo
 echo '[Enroll until the CA rejects us.]'
-cat > entry3 << EOF
+cat > entry5 << EOF
 id=Test
 ca_name=Meanie
 state=HAVE_KEY_PAIR
 key_storage_type=FILE
 key_storage_location=$tmpdir/keyfile
 EOF
-cat > ca3 << EOF
+cat > ca5 << EOF
 id=Meanie
 ca_type=EXTERNAL
 ca_external_helper=$tmpdir/ca-reject
 EOF
-$toolsdir/iterate ca3 entry3 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
-$toolsdir/iterate ca3 entry3 NEED_CSR,GENERATING_CSR
-$toolsdir/iterate ca3 entry3 NEED_TO_SUBMIT,SUBMITTING
-$toolsdir/iterate ca3 entry3 ""
+$toolsdir/iterate ca5 entry5 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
+$toolsdir/iterate ca5 entry5 NEED_CSR,GENERATING_CSR
+$toolsdir/iterate ca5 entry5 NEED_TO_SUBMIT,SUBMITTING
+$toolsdir/iterate ca5 entry5 ""
 
 echo
 echo '[Enroll until the CA turns out to be unreachable.]'
-cat > entry3 << EOF
+cat > entry6 << EOF
 id=Test
 ca_name=Lostie
 state=HAVE_KEY_PAIR
 key_storage_type=FILE
 key_storage_location=$tmpdir/keyfile
 EOF
-cat > ca3 << EOF
+cat > ca6 << EOF
 id=Lostie
 ca_type=EXTERNAL
 ca_external_helper=$tmpdir/ca-unreachable
 EOF
-$toolsdir/iterate ca3 entry3 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
-$toolsdir/iterate ca3 entry3 NEED_CSR,GENERATING_CSR
-$toolsdir/iterate ca3 entry3 NEED_TO_SUBMIT,SUBMITTING
-$toolsdir/iterate ca3 entry3 ""
+$toolsdir/iterate ca6 entry6 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
+$toolsdir/iterate ca6 entry6 NEED_CSR,GENERATING_CSR
+$toolsdir/iterate ca6 entry6 NEED_TO_SUBMIT,SUBMITTING
+$toolsdir/iterate ca6 entry6 ""
 
 echo
 echo '[Enroll until the CA client turns out to be unconfigured.]'
-cat > entry3 << EOF
+cat > entry7 << EOF
 id=Test
 ca_name=Lostie
 state=HAVE_KEY_PAIR
 key_storage_type=FILE
 key_storage_location=$tmpdir/keyfile
 EOF
-cat > ca3 << EOF
+cat > ca7 << EOF
 id=Lostie
 ca_type=EXTERNAL
 ca_external_helper=$tmpdir/ca-unconfigured
 EOF
-$toolsdir/iterate ca3 entry3 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
-$toolsdir/iterate ca3 entry3 NEED_CSR,GENERATING_CSR
-$toolsdir/iterate ca3 entry3 NEED_TO_SUBMIT,SUBMITTING
-$toolsdir/iterate ca3 entry3 ""
+$toolsdir/iterate ca7 entry7 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
+$toolsdir/iterate ca7 entry7 NEED_CSR,GENERATING_CSR
+$toolsdir/iterate ca7 entry7 NEED_TO_SUBMIT,SUBMITTING
+$toolsdir/iterate ca7 entry7 ""
+
+echo
+echo '[Enroll until the CA tells us to come back later.]'
+cat > entry8 << EOF
+id=Test
+ca_name=Busy
+state=HAVE_KEY_PAIR
+key_storage_type=FILE
+key_storage_location=$tmpdir/keyfile
+EOF
+cat > ca8 << EOF
+id=Busy
+ca_type=EXTERNAL
+ca_external_helper=$tmpdir/ca-ask-again-5
+EOF
+$toolsdir/iterate ca8 entry8 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
+$toolsdir/iterate ca8 entry8 NEED_CSR,GENERATING_CSR
+$toolsdir/iterate ca8 entry8 NEED_TO_SUBMIT,SUBMITTING
+grep ca_cookie entry8
+$toolsdir/iterate ca8 entry8 ""
 
 # Note! The "iterate" harness rounds delay times up to the next multiple of 50.
 for interval in 0 30 1800 3600 7200 86000 86500 604800 1000000 2000000; do
@@ -293,35 +321,35 @@ for interval in 0 30 1800 3600 7200 86000 86500 604800 1000000 2000000; do
 	for ca in ca-unreachable ca-ask-again ca-unconfigured ; do
 		echo
 		echo '[CA poll timeout remaining='$interval'.]'
-		cat > entry4 <<- EOF
+		cat > entry9 <<- EOF
 		id=Test
 		ca_name=Lostie
 		state=HAVE_CSR
 		cert_not_after=$later
 		csr=AAAA
 		EOF
-		cat > ca4 <<- EOF
+		cat > ca9 <<- EOF
 		id=Lostie
 		ca_type=EXTERNAL
 		ca_external_helper=$tmpdir/$ca
 		EOF
-		$toolsdir/iterate ca4 entry4 NEED_TO_SUBMIT,SUBMITTING
+		$toolsdir/iterate ca9 entry9 NEED_TO_SUBMIT,SUBMITTING
 	done
 	echo
 	echo '[Monitor poll timeout remaining='$interval'.]'
-	cat > entry4 <<- EOF
+	cat > entry9 <<- EOF
 	id=Test
 	ca_name=Lostie
 	state=MONITORING
 	cert_not_after=$later
 	csr=AAAA
 	EOF
-	cat > ca4 <<- EOF
+	cat > ca9 <<- EOF
 	id=Lostie
 	ca_type=EXTERNAL
 	ca_external_helper=$tmpdir/$ca
 	EOF
-	$toolsdir/iterate ca4 entry4 ""
+	$toolsdir/iterate ca9 entry9 ""
 done
 
 echo Test complete.

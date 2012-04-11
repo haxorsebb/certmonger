@@ -39,13 +39,18 @@ An external helper has a few jobs, then:
     * Rejected       -> output error message on stdout, exit with status 2.
     * Connect error  -> output error message on stdout, exit with status 3.
     * Underconfigured-> output error message on stdout, exit with status 4.
-* If in "poll" mode, $CERTMONGER_COOKIE has as its value a CA cookie value.
+    * Wait a bit more-> output recommended delay (seconds) and CA cookie value
+                        on stdout, separated by newline, and exit with status 5.
+* If in "poll" mode, $CERTMONGER_COOKIE has as its value a CA cookie value
+  in addition to the PEM-formatted CSR in $CERTMONGER_CSR.
   * Poll CA for result of previously-started enrollment operation.
     * Issued         -> output PEM-formatted cert on stdout, exit with status 0.
     * Wait some more -> output CA cookie value on stdout, exit with status 1.
     * Rejected       -> output error message on stdout, exit with status 2.
     * Connect error  -> output error message on stdout, exit with status 3.
     * Underconfigured-> output error message on stdout, exit with status 4.
+    * Wait some more -> output recommended delay (seconds) and CA cookie value
+                        on stdout, separated by newline, and exit with status 5.
 
 For testing purposes, a helper can be added by creating a file in the CAs
 directory (usually /var/lib/certmonger/cas) with these contents:

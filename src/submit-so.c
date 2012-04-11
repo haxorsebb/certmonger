@@ -302,6 +302,7 @@ cm_submit_so_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 		state->pvt.unreachable = cm_submit_so_unreachable;
 		state->pvt.unconfigured = cm_submit_so_unconfigured;
 		state->pvt.done = cm_submit_so_done;
+		state->pvt.delay = -1;
 		state->subproc = cm_subproc_start(cm_submit_so_main,
 						  ca, entry, NULL);
 		if (state->subproc == NULL) {

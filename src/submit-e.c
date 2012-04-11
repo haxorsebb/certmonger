@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2011,2012 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,14 +55,28 @@ cm_submit_e_save_ca_cookie(struct cm_store_entry *entry,
 			   struct cm_submit_state *state)
 {
 	int status;
+	long delay;
 	const char *msg;
+	char *p;
 	talloc_free(entry->cm_ca_cookie);
 	entry->cm_ca_cookie = NULL;
 	status = cm_subproc_get_exitstatus(entry, state->subproc);
 	if (WIFEXITED(status) &&
-	    (WEXITSTATUS(status) == CM_STATUS_WAIT)) {
+	    ((WEXITSTATUS(status) == CM_STATUS_WAIT) ||
+	     (WEXITSTATUS(status) == CM_STATUS_WAIT_WITH_DELAY))) {
 		msg = cm_subproc_get_msg(entry, state->subproc, NULL);
 		if ((msg != NULL) && (strlen(msg) > 0)) {
+			if (WEXITSTATUS(status) == CM_STATUS_WAIT_WITH_DELAY) {
+				delay = strtol(msg, &p, 10);
+				if ((p == NULL) ||
+				    (strchr("\r\n", *p) == NULL)) {
+					cm_log(1, "Error parsing result: %s.\n",
+					       msg);
+					return -1;
+				}
+				state->pvt.delay = delay;
+				msg = p + strspn(p, "\r\n");
+			}
 			entry->cm_ca_cookie = talloc_strdup(entry, msg);
 			if (entry->cm_ca_cookie == NULL) {
 				cm_log(1, "Out of memory.\n");
@@ -101,7 +115,8 @@ cm_submit_e_ready(struct cm_store_entry *entry, struct cm_submit_state *state)
 				}
 				/* If it was an error, save it. */
 				if ((WEXITSTATUS(status) != CM_STATUS_ISSUED) &&
-				    (WEXITSTATUS(status) != CM_STATUS_WAIT)) {
+				    (WEXITSTATUS(status) != CM_STATUS_WAIT) &&
+				    (WEXITSTATUS(status) != CM_STATUS_WAIT_WITH_DELAY)) {
 					talloc_free(entry->cm_ca_error);
 					entry->cm_ca_error =
 						talloc_strndup(entry, msg,
@@ -319,6 +334,7 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 		state->pvt.unreachable = cm_submit_e_unreachable;
 		state->pvt.unconfigured = cm_submit_e_unconfigured;
 		state->pvt.done = cm_submit_e_done;
+		state->pvt.delay = -1;
 		if (pipe(errorfds) != -1) {
 			fcntl(errorfds[1], F_SETFD, 1L);
 			args.error_fd = errorfds[1];

@@ -149,6 +149,15 @@ cm_submit_done(struct cm_store_entry *entry, struct cm_submit_state *state)
 	pvt->done(entry, state);
 }
 
+/* How long should we wait before talking to the CA again? */
+int
+cm_submit_specified_delay(struct cm_store_entry *entry,
+			  struct cm_submit_state *state)
+{
+	struct cm_submit_state_pvt *pvt = (struct cm_submit_state_pvt *) state;
+	return pvt->delay;
+}
+
 /* Concatenate some strings. */
 char *
 cm_submit_maybe_joinv(void *parent, const char *sep, char **s)

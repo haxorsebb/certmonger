@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2012 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ enum cm_external_status {
 	CM_STATUS_REJECTED = 2,
 	CM_STATUS_UNREACHABLE = 3,
 	CM_STATUS_UNCONFIGURED = 4,
+	CM_STATUS_WAIT_WITH_DELAY = 5,
 };
 
 #define CM_SUBMIT_REQ_SUBJECT_ENV "CERTMONGER_REQ_SUBJECT"

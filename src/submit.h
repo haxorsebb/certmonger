@@ -40,6 +40,10 @@ int cm_submit_ready(struct cm_store_entry *entry,
 int cm_submit_save_ca_cookie(struct cm_store_entry *entry,
 			     struct cm_submit_state *state);
 
+/* If we need to poll again, any non-negative value is the polling interval. */
+int cm_submit_specified_delay(struct cm_store_entry *entry,
+			      struct cm_submit_state *state);
+
 /* Check if the certificate was issued. */
 int cm_submit_issued(struct cm_store_entry *entry,
 		     struct cm_submit_state *state);

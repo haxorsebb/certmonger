@@ -47,6 +47,8 @@ struct cm_submit_state_pvt {
 	/* Done talking to the CA. */
 	void (*done)(struct cm_store_entry *entry,
 		     struct cm_submit_state *state);
+	/* Recommended delay before the next connection to the CA. */
+	int delay;
 };
 
 struct cm_submit_state *cm_submit_e_start(struct cm_store_ca *ca,
