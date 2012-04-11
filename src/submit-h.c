@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010,2011 Red Hat, Inc.
+ * Copyright (C) 2010,2011,2012 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,9 @@
 #include "config.h"
 
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -35,8 +37,10 @@
 struct cm_submit_h_context {
 	int ret;
 	char *method, *uri, *args, *cainfo, *capath, *result;
+	char *sslcert, *sslkey, *sslpass;
 	enum cm_submit_h_opt_negotiate negotiate;
 	enum cm_submit_h_opt_delegate negotiate_delegate;
+	enum cm_submit_h_opt_clientauth client_auth;
 	CURL *curl;
 };
 
@@ -44,8 +48,10 @@ struct cm_submit_h_context *
 cm_submit_h_init(void *parent,
 		 const char *method, const char *uri, const char *args,
 		 const char *cainfo, const char *capath,
+		 const char *sslcert, const char *sslkey, const char *sslpass,
 		 enum cm_submit_h_opt_negotiate neg,
-		 enum cm_submit_h_opt_delegate del)
+		 enum cm_submit_h_opt_delegate del,
+		 enum cm_submit_h_opt_clientauth cli)
 {
 	struct cm_submit_h_context *ctx;
 	ctx = talloc_ptrtype(parent, ctx);
@@ -55,11 +61,15 @@ cm_submit_h_init(void *parent,
 		ctx->args = talloc_strdup(ctx, args);
 		ctx->cainfo = cainfo ? talloc_strdup(ctx, cainfo) : NULL;
 		ctx->capath = capath ? talloc_strdup(ctx, capath) : NULL;
+		ctx->sslcert = sslcert ? talloc_strdup(ctx, sslcert) : NULL;
+		ctx->sslkey = sslkey ? talloc_strdup(ctx, sslkey) : NULL;
+		ctx->sslpass = sslpass ? talloc_strdup(ctx, sslpass) : NULL;
 		ctx->curl = NULL;
 		ctx->ret = -1;
 		ctx->result = NULL;
 		ctx->negotiate = neg;
 		ctx->negotiate_delegate = del;
+		ctx->client_auth = cli;
 	}
 	return ctx;
 }
@@ -126,6 +136,26 @@ cm_submit_h_run(struct cm_submit_h_context *ctx)
 					 CURLGSSAPI_DELEGATION_FLAG :
 					 CURLGSSAPI_DELEGATION_NONE);
 #endif
+		} else
+		if (ctx->client_auth == cm_submit_h_clientauth_on) {
+			curl_easy_setopt(ctx->curl,
+					 CURLOPT_HTTPAUTH,
+					 CURLAUTH_NONE);
+			if (ctx->sslcert != NULL) {
+				curl_easy_setopt(ctx->curl,
+						 CURLOPT_SSLCERT,
+						 ctx->sslcert);
+			}
+			if (ctx->sslkey != NULL) {
+				curl_easy_setopt(ctx->curl,
+						 CURLOPT_SSLKEY,
+						 ctx->sslkey);
+			}
+			if (ctx->sslpass != NULL) {
+				curl_easy_setopt(ctx->curl,
+						 CURLOPT_SSLKEYPASSWD,
+						 ctx->sslpass);
+			}
 		} else {
 			curl_easy_setopt(ctx->curl,
 					 CURLOPT_HTTPAUTH,
@@ -177,21 +207,22 @@ int
 main(int argc, char **argv)
 {
 	struct cm_submit_h_context *ctx;
+	struct stat st;
 	enum cm_submit_h_opt_negotiate negotiate;
 	enum cm_submit_h_opt_delegate negotiate_delegate;
-	int c;
-	char *capath, *cainfo;
-
-	if (argc < 3) {
-		printf("Usage: submit-h METHOD URI [ARGS]\n");
-		return 1;
-	}
+	enum cm_submit_h_opt_clientauth clientauth;
+	int c, fd, l;
+	char *capath, *cainfo, *sslcert, *sslkey, *sslpass;
 
 	capath = NULL;
 	cainfo = NULL;
+	sslcert = NULL;
+	sslkey = NULL;
+	sslpass = NULL;
 	negotiate = cm_submit_h_negotiate_off;
 	negotiate_delegate = cm_submit_h_delegate_off;
-	while ((c = getopt(argc, argv, "C:c:ND")) != -1) {
+	clientauth = cm_submit_h_clientauth_off;
+	while ((c = getopt(argc, argv, "C:c:NDk:K:p:P:")) != -1) {
 		switch (c) {
 		case 'C':
 			capath = optarg;
@@ -206,17 +237,78 @@ main(int argc, char **argv)
 			negotiate = cm_submit_h_negotiate_on;
 			negotiate_delegate = cm_submit_h_delegate_on;
 			break;
+		case 'k':
+			sslcert = optarg;
+			clientauth = cm_submit_h_clientauth_on;
+			break;
+		case 'K':
+			sslkey = optarg;
+			clientauth = cm_submit_h_clientauth_on;
+			break;
+		case 'p':
+			if ((optarg != NULL) && (strlen(optarg) > 0)) {
+				fd = open(optarg, O_RDONLY);
+				if (fd != -1) {
+					if ((fstat(fd, &st) == 0) && (st.st_size > 0)) {
+						sslpass = malloc(st.st_size + 1);
+						if (sslpass != NULL) {
+							if (read(fd, sslpass, st.st_size) != -1) {
+								sslpass[st.st_size] = '\0';
+								l = strcspn(sslpass, "\r\n");
+								if (l != 0) {
+									sslpass[l] = '\0';
+								}
+							} else {
+								fprintf(stderr, "Error reading \"%s\": %s.\n", optarg, strerror(errno));
+								exit(1);
+							}
+						}
+					} else {
+						fprintf(stderr, "Error determining size of \"%s\": %s.\n", optarg, strerror(errno));
+						exit(1);
+					}
+					close(fd);
+				} else {
+					fprintf(stderr, "Error reading PIN from \"%s\": %s.\n", optarg, strerror(errno));
+					exit(1);
+				}
+			}
+			break;
+		case 'P':
+			sslpass = optarg;
+			break;
 		default:
 			printf("Usage: submit-h METHOD URI [ARGS]\n");
+			printf("  -C CAPATH\troot certificate directory\n");
+			printf("  -c CAFILE\troot certificate file\n");
+			printf("  -N\t\tuse Negotiate\n");
+			printf("  -D\t\tuse Negotiate with delegation enabled\n");
+			printf("  -k CERT\tuse client authentication with cert\n");
+			printf("  -K KEY\tuse client authentication with key\n");
+			printf("  -p FILE\tclient authentication key pinfile\n");
+			printf("  -P PIN\tclient authentication key pin\n");
 			return 1;
 			break;
 		}
 	}
+	if (argc - optind < 3) {
+		printf("Usage: submit-h METHOD URI [ARGS]\n");
+		printf("  -C CAPATH\troot certificate directory\n");
+		printf("  -c CAFILE\troot certificate file\n");
+		printf("  -N\t\tuse Negotiate\n");
+		printf("  -D\t\tuse Negotiate with delegation enabled\n");
+		printf("  -k CERT\tuse client authentication with cert\n");
+		printf("  -K KEY\tuse client authentication with key\n");
+		printf("  -p FILE\tclient authentication key pinfile\n");
+		printf("  -P PIN\tclient authentication key pin\n");
+		return 1;
+	}
 
-	ctx = cm_submit_h_init(NULL, argv[1], argv[2],
-			       (argc > 3) ? argv[3] : "",
-			       cainfo, capath,
-			       negotiate, negotiate_delegate);
+
+	ctx = cm_submit_h_init(NULL, argv[optind], argv[optind + 1],
+			       (argc > optind + 2) ? argv[optind + 2] : "",
+			       cainfo, capath, sslcert, sslkey, sslpass,
+			       negotiate, negotiate_delegate, clientauth);
 	cm_submit_h_run(ctx);
 	printf("%s", cm_submit_h_results(ctx));
 	return cm_submit_h_result_code(ctx);

@@ -376,9 +376,10 @@ main(int argc, char **argv)
 	}
 	uri = talloc_asprintf(ctx, "%s/%s", ca, cgi);
 	hctx = cm_submit_h_init(ctx, method, uri, params,
-				NULL, NULL,
+				NULL, NULL, NULL, NULL, NULL,
 				cm_submit_h_negotiate_off,
-				cm_submit_h_delegate_off);
+				cm_submit_h_delegate_off,
+				cm_submit_h_clientauth_off);
 	cm_submit_h_run(hctx);
 	c = cm_submit_h_result_code(hctx);
 	if (c != 0) {
