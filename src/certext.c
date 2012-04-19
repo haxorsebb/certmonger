@@ -1055,6 +1055,7 @@ cm_certext_build_san(struct cm_store_entry *entry, PLArenaPool *arena,
 	return item;
 }
 
+#ifdef GENERATE_BASIC_CONSTRAINTS
 /* Build a basicConstraints extension value. */
 static SECItem *
 cm_certext_build_basic(struct cm_store_entry *entry, PLArenaPool *arena,
@@ -1075,6 +1076,7 @@ cm_certext_build_basic(struct cm_store_entry *entry, PLArenaPool *arena,
 	}
 	return item;
 }
+#endif
 
 /* Build a requestedExtensions attribute. */
 void
@@ -1138,7 +1140,7 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 			i++;
 		}
 	}
-#if 0
+#ifdef GENERATE_BASIC_CONSTRAINTS
 	item = cm_certext_build_basic(entry, arena, entry->cm_template_is_ca);
 	if (item != NULL) {
 		oid = SECOID_FindOIDByTag(SEC_OID_X509_BASIC_CONSTRAINTS);
