@@ -512,6 +512,9 @@ get_d(DBusMessage *rep, int msgid)
 			case cm_tdbusm_dict_s:
 				printf("s:%s}", d[i]->value.s);
 				break;
+			case cm_tdbusm_dict_p:
+				printf("p:%s}", d[i]->value.s);
+				break;
 			case cm_tdbusm_dict_as:
 				printf("as:[");
 				for (k = 0;
@@ -550,6 +553,9 @@ get_sd(DBusMessage *rep, int msgid)
 			switch (d[i]->value_type) {
 			case cm_tdbusm_dict_s:
 				printf("s:%s}", d[i]->value.s);
+				break;
+			case cm_tdbusm_dict_p:
+				printf("p:%s}", d[i]->value.s);
 				break;
 			case cm_tdbusm_dict_as:
 				printf("as:[");
