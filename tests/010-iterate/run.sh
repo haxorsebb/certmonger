@@ -438,6 +438,12 @@ $toolsdir/iterate ca10 entry10 NEED_TO_NOTIFY,NOTIFYING | sed 's@'"$tmpdir"'@$tm
 
 echo
 echo '[Kicking off notify-then-submit.]'
+: > $tmpdir/notification.txt
+cat > $tmpdir/notify.sh << EOF
+#!/bin/sh
+echo 'The sky is falling.' > $tmpdir/notification.txt
+EOF
+chmod u+x $tmpdir/notify.sh
 cp $tmpdir/certfile10.bak $tmpdir/certfile10
 cat > entry10 << EOF
 id=Test
@@ -461,9 +467,13 @@ cat > certmonger.conf << EOF
 [defaults]
 notify_ttls = 30s
 enroll_ttls = 30s
+notification_method=command
+notification_destination=$tmpdir/notify.sh
 EOF
 $toolsdir/iterate ca10 entry10 NEED_TO_NOTIFY,NOTIFYING,NEED_CSR,GENERATING_CSR,HAVE_CSR,NEED_TO_SUBMIT,SUBMITTING,NEED_TO_SAVE_CERT,SAVING_CERT,SAVED_CERT,NEED_TO_READ_CERT,READING_CERT | sed 's@'"$tmpdir"'@$tmpdir@g'
+cat $tmpdir/notification.txt
 
 CERTMONGER_CONFIG_DIR="$SAVED_CONFIG_DIR"
 
+echo
 echo Test complete.

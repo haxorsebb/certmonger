@@ -222,7 +222,6 @@ cm_submit_e_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	struct cm_submit_e_args *args = userdata;
 	char **argv;
 	const char *error;
-	int i;
 	unsigned char u;
 	if (entry->cm_template_subject != NULL) {
 		setenv(CM_SUBMIT_REQ_SUBJECT_ENV,
@@ -257,7 +256,8 @@ cm_submit_e_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 	if (dup2(fd, STDOUT_FILENO) == -1) {
 		u = errno;
-		cm_log(1, "Error redirecting standard out for helper: %s.\n",
+		cm_log(1, "Error redirecting standard out for "
+		       "enrollment helper: %s.\n",
 		       strerror(errno));
 		if (write(args->error_fd, &u, 1) != 1) {
 			cm_log(1, "Error sending error result to parent.\n");
@@ -276,33 +276,8 @@ cm_submit_e_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 		return -1;
 	}
-	i = open("/dev/null", O_RDONLY);
-	if (i != -1) {
-		if (i != STDIN_FILENO) {
-			dup2(i, STDIN_FILENO);
-			close(i);
-		}
-	} else {
-		close(STDIN_FILENO);
-	}
-	i = open("/dev/null", O_WRONLY);
-	if (i != -1) {
-		if (i != STDERR_FILENO) {
-			dup2(i, STDERR_FILENO);
-			close(i);
-		}
-	} else {
-		close(STDERR_FILENO);
-	}
-	cm_log(1, "Running helper \"%s\".\n", argv[0]);
-	for (i = sysconf(_SC_OPEN_MAX) - 1; i >= 0; i--) {
-		if ((i != STDIN_FILENO) &&
-		    (i != STDOUT_FILENO) &&
-		    (i != STDERR_FILENO) &&
-		    (i != args->error_fd)) {
-			close(i);
-		}
-	}
+	cm_subproc_mark_most_cloexec(entry, STDOUT_FILENO);
+	cm_log(1, "Running enrollment helper \"%s\".\n", argv[0]);
 	execvp(argv[0], argv);
 	u = errno;
 	if (write(args->error_fd, &u, 1) != 1) {

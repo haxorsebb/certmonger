@@ -30,12 +30,12 @@ of the \fIttls\fR setting.  The default list of values is "@CM_DEFAULT_TTL_LIST@
 .IP notification_method
 This is the method by which \fIcertmonger\fP will notify the system
 administrator that a certificate will soon become invalid.  The recognized
-values are \fIsyslog\fP and \fImail\fP.  The default is \fIsyslog\fP.
+values are \fIsyslog\fP, \fImail\fP, and \fIcommand\fP.  The default is \fIsyslog\fP.
 
 .IP notification_destination
 This is the destination to which \fIcertmonger\fP will send notifications.  It
-can be a syslog priority and/or facility, separated by a period, or it can be
-an email address.  The default value is
+can be a syslog priority and/or facility, separated by a period, it can be
+an email address, or it can be a command to run.  The default value is
 \fI@CM_DEFAULT_NOTIFICATION_SYSLOG_PRIORITY@\fP.
 
 .IP symmetric_cipher

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2011 Red Hat, Inc.
+ * Copyright (C) 2009,2011,2012 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@
 
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
 #include <syslog.h>
@@ -44,8 +46,8 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	       void *userdata)
 {
 	enum cm_notification_method method;
-	const char *dest, *p, *q, *message = NULL;
-	char *tok, t[15];
+	const char *dest, *p, *q, *message = NULL, *error;
+	char *tok, t[15], **argv;
 	int facility, level;
 	struct {
 		const char *name;
@@ -198,6 +200,25 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	case cm_notification_email:
 		execlp("mail", "mail", "-s", message, dest, NULL);
 		break;
+	case cm_notification_command:
+		argv = cm_subproc_parse_args(entry, dest, &error);
+		if (argv == NULL) {
+			if (error != NULL) {
+				cm_log(0, "Error parsing \"%s\": %s.\n",
+				       dest, error);
+			} else {
+				cm_log(0, "Error parsing \"%s\".\n", dest);
+			}
+			return -1;
+		}
+		cm_log(1, "Running notification helper \"%s\".\n", argv[0]);
+		cm_subproc_mark_most_cloexec(entry, -1);
+		if (execvp(argv[0], argv) == -1) {
+			cm_log(0, "Error execvp()ing command \"%s\" (\"%s\"): %s.\n",
+			       argv[0], entry->cm_post_certsave_command,
+			       strerror(errno));
+			return -1;
+		}
 	}
 	return 0;
 }
