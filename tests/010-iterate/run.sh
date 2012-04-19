@@ -441,7 +441,8 @@ echo '[Kicking off notify-then-submit.]'
 : > $tmpdir/notification.txt
 cat > $tmpdir/notify.sh << EOF
 #!/bin/sh
-echo 'The sky is falling.' > $tmpdir/notification.txt
+touch $tmpdir/notification.txt
+echo 'The sky is falling.' >> $tmpdir/notification.txt
 EOF
 chmod u+x $tmpdir/notify.sh
 cp $tmpdir/certfile10.bak $tmpdir/certfile10
