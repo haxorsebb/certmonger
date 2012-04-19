@@ -196,7 +196,7 @@ autorenew=1
 notification_method=STDOUT
 EOF
 openssl x509 -noout -startdate -enddate -in $tmpdir/certfile2
-$toolsdir/iterate ca  entry2 NEED_TO_NOTIFY,NOTIFYING | sed 's@'"$tmpdir"'@$tmpdir@g'
+$toolsdir/iterate ca  entry2 MONITORING,NEED_TO_NOTIFY,NOTIFYING | sed 's@'"$tmpdir"'@$tmpdir@g'
 
 echo
 echo '[Enroll until we notice we have no specified CA.]'
@@ -351,5 +351,119 @@ for interval in 0 30 1800 3600 7200 86000 86500 604800 1000000 2000000; do
 	EOF
 	$toolsdir/iterate ca9 entry9 ""
 done
+
+SAVED_CONFIG_DIR="$CERTMONGER_CONFIG_DIR"
+CERTMONGER_CONFIG_DIR=`pwd`
+echo
+echo '[Kicking off split monitor/enroll TTL tests.]'
+cat > entry10 << EOF
+id=Test
+ca_name=SelfSign
+state=NEWLY_ADDED
+key_storage_type=FILE
+key_storage_location=$tmpdir/keyfile10
+cert_storage_type=FILE
+cert_storage_location=$tmpdir/certfile10
+monitor=1
+autorenew=1
+notification_method=STDOUT
+EOF
+cat > ca10 << EOF
+id=SelfSign
+ca_type=INTERNAL:SELF
+ca_internal_issue_time=0
+EOF
+$toolsdir/iterate ca10 entry10 NEWLY_ADDED_START_READING_KEYINFO,NEWLY_ADDED_READING_KEYINFO,NEWLY_ADDED_START_READING_CERT,NEWLY_ADDED_READING_CERT,NEWLY_ADDED_DECIDING
+$toolsdir/iterate ca10 entry10 NEED_KEY_PAIR,GENERATING_KEY_PAIR,HAVE_KEY_PAIR,NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
+$toolsdir/iterate ca10 entry10 NEED_CSR,GENERATING_CSR
+$toolsdir/iterate ca10 entry10 NEED_TO_SUBMIT,SUBMITTING
+$toolsdir/iterate ca10 entry10 SAVING_CERT,NEED_TO_READ_CERT,READING_CERT,SAVED_CERT
+cp $tmpdir/certfile10 $tmpdir/certfile10.bak
+
+echo
+echo '[Kicking off enroll only.]'
+cp $tmpdir/certfile10.bak $tmpdir/certfile10
+cat > entry10 << EOF
+id=Test
+ca_name=SelfSign
+state=MONITORING
+key_storage_type=FILE
+key_storage_location=$tmpdir/keyfile10
+cert_storage_type=FILE
+cert_storage_location=$tmpdir/certfile10
+monitor=1
+autorenew=1
+notification_method=STDOUT
+EOF
+cat > ca10 << EOF
+id=SelfSign
+ca_type=INTERNAL:SELF
+ca_internal_issue_time=0
+EOF
+openssl x509 -noout -startdate -enddate -in $tmpdir/certfile10
+cat > certmonger.conf << EOF
+[defaults]
+enroll_ttls = 30s
+notify_ttls = N
+EOF
+$toolsdir/iterate ca10 entry10 NEED_CSR,GENERATING_CSR,HAVE_CSR,NEED_TO_SUBMIT,SUBMITTING,NEED_TO_SAVE_CERT,SAVING_CERT,SAVED_CERT,NEED_TO_READ_CERT,READING_CERT | sed 's@'"$tmpdir"'@$tmpdir@g'
+
+echo
+echo '[Kicking off notify only.]'
+cp $tmpdir/certfile10.bak $tmpdir/certfile10
+cat > entry10 << EOF
+id=Test
+ca_name=SelfSign
+state=MONITORING
+key_storage_type=FILE
+key_storage_location=$tmpdir/keyfile10
+cert_storage_type=FILE
+cert_storage_location=$tmpdir/certfile10
+monitor=1
+autorenew=1
+notification_method=STDOUT
+EOF
+cat > ca10 << EOF
+id=SelfSign
+ca_type=INTERNAL:SELF
+ca_internal_issue_time=0
+EOF
+openssl x509 -noout -startdate -enddate -in $tmpdir/certfile10
+cat > certmonger.conf << EOF
+[defaults]
+notify_ttls = 30s
+enroll_ttls = N
+EOF
+$toolsdir/iterate ca10 entry10 NEED_TO_NOTIFY,NOTIFYING | sed 's@'"$tmpdir"'@$tmpdir@g'
+
+echo
+echo '[Kicking off notify-then-submit.]'
+cp $tmpdir/certfile10.bak $tmpdir/certfile10
+cat > entry10 << EOF
+id=Test
+ca_name=SelfSign
+state=MONITORING
+key_storage_type=FILE
+key_storage_location=$tmpdir/keyfile10
+cert_storage_type=FILE
+cert_storage_location=$tmpdir/certfile10
+monitor=1
+autorenew=1
+notification_method=STDOUT
+EOF
+cat > ca10 << EOF
+id=SelfSign
+ca_type=INTERNAL:SELF
+ca_internal_issue_time=0
+EOF
+openssl x509 -noout -startdate -enddate -in $tmpdir/certfile10
+cat > certmonger.conf << EOF
+[defaults]
+notify_ttls = 30s
+enroll_ttls = 30s
+EOF
+$toolsdir/iterate ca10 entry10 NEED_TO_NOTIFY,NOTIFYING,NEED_CSR,GENERATING_CSR,HAVE_CSR,NEED_TO_SUBMIT,SUBMITTING,NEED_TO_SAVE_CERT,SAVING_CERT,SAVED_CERT,NEED_TO_READ_CERT,READING_CERT | sed 's@'"$tmpdir"'@$tmpdir@g'
+
+CERTMONGER_CONFIG_DIR="$SAVED_CONFIG_DIR"
 
 echo Test complete.

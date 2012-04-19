@@ -40,4 +40,14 @@ EOF
 # seconds-until-it's-one-year-from-now
 $toolsdir/prefs | sed -e 's,31622400$,31536000,g'
 
+echo '['TTL settings compatibility and notification commands.']'
+cat > certmonger.conf << EOF
+[defaults]
+enroll_ttls = 1d 14d 7d 28d
+notify_ttls = 1d 14d 7d
+notification_method = command
+notification_destination = logger "The sky is falling!"
+EOF
+$toolsdir/prefs
+
 echo '['Test complete.']'

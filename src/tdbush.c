@@ -2038,6 +2038,9 @@ request_get_notification_info(DBusConnection *conn, DBusMessage *msg,
 	case cm_notification_email:
 		method = "email";
 		break;
+	case cm_notification_command:
+		method = "command";
+		break;
 	}
 	rep = dbus_message_new_method_return(msg);
 	if (rep != NULL) {
@@ -2724,6 +2727,9 @@ request_prop_get_notification_type(struct cm_context *ctx, void *parent,
 	case cm_notification_stdout:
 		return "STDOUT";
 		break;
+	case cm_notification_command:
+		return "COMMAND";
+		break;
 	}
 	return "";
 }
@@ -2738,6 +2744,7 @@ request_prop_get_notification_syslog(struct cm_context *ctx, void *parent,
 	case cm_notification_none:
 	case cm_notification_email:
 	case cm_notification_stdout:
+	case cm_notification_command:
 		return "";
 		break;
 	case cm_notification_syslog:
@@ -2757,9 +2764,30 @@ request_prop_get_notification_email(struct cm_context *ctx, void *parent,
 	case cm_notification_none:
 	case cm_notification_syslog:
 	case cm_notification_stdout:
+	case cm_notification_command:
 		return "";
 		break;
 	case cm_notification_email:
+		return entry->cm_notification_destination;
+		break;
+	}
+	return "";
+}
+
+static const char *
+request_prop_get_notification_command(struct cm_context *ctx, void *parent,
+				      void *record, const char *name)
+{
+	struct cm_store_entry *entry = record;
+	switch (entry->cm_notification_method) {
+	case cm_notification_unspecified:
+	case cm_notification_none:
+	case cm_notification_email:
+	case cm_notification_stdout:
+	case cm_notification_syslog:
+		return "";
+		break;
+	case cm_notification_command:
 		return entry->cm_notification_destination;
 		break;
 	}
@@ -4808,7 +4836,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_number,
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_time_t,
-								       offsetof(struct cm_store_entry, cm_last_expiration_check),
+								       offsetof(struct cm_store_entry, cm_last_need_notify_check),
 								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
@@ -5125,6 +5153,15 @@ cm_tdbush_iface_request(void)
 								       request_prop_get_notification_email, NULL, NULL, NULL,
 								       NULL, NULL, NULL, NULL,
 								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_NOTIFICATION_COMMAND,
+								       cm_tdbush_property_string,
+								       cm_tdbush_property_read,
+								       cm_tdbush_property_special,
+								       0,
+								       request_prop_get_notification_command, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL,
+								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_status",
 								     request_get_status,
@@ -5264,7 +5301,7 @@ cm_tdbush_iface_request(void)
 				     make_interface_item(cm_tdbush_interface_signal,
 							 make_signal(CM_DBUS_SIGNAL_REQUEST_CERT_SAVED,
 								     NULL),
-							 NULL))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
+							 NULL)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
 	}
 	return ret;
 }

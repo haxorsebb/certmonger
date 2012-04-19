@@ -71,6 +71,7 @@
 #define CM_DBUS_PROP_NOTIFICATION_TYPE "notification-type"
 #define CM_DBUS_PROP_NOTIFICATION_SYSLOG_PRIORITY "notification-syslog-priority"
 #define CM_DBUS_PROP_NOTIFICATION_EMAIL "notification-email"
+#define CM_DBUS_PROP_NOTIFICATION_COMMAND "notification-command"
 #define CM_DBUS_PROP_KEY_PIN_FILE "key-pin-file"
 #define CM_DBUS_PROP_KEY_PIN "key-pin"
 #define CM_DBUS_PROP_STATUS "status"

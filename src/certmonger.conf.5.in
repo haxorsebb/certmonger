@@ -1,4 +1,4 @@
-.TH certmonger.conf 5 "23 March 2010" "certmonger Manual"
+.TH certmonger.conf 5 "19 April 2012" "certmonger Manual"
 
 .SH NAME
 certmonger.conf - configuration file for certmonger
@@ -11,13 +11,21 @@ currently of note are named \fIdefaults\fR and \fIselfsign\fR.
 .SH DEFAULTS
 Within the \fIdefaults\fR section, these variables and values are recognized:
 
-.IP ttls
+.IP notify_ttls
 This is the list of times, given in seconds, before a certificate's not-after
 validity date
 (often referred to as its expiration time) when \fIcertmonger\fR should warn
-that the certificate will soon no longer be valid.  If \fIcertmonger\fR is
-configured to automatically renew the certificate, it will also attempt to do
-so at these times.  The default list of values is "@CM_DEFAULT_TTL_LIST@".
+that the certificate will soon no longer be valid.
+If this value is not specified, \fIcertmonger\fR will attempt to use the value
+of the \fIttls\fR setting.  The default list of values is "@CM_DEFAULT_TTL_LIST@".
+
+.IP enroll_ttls
+This is the list of times, given in seconds, before a certificate's not-after
+validity date
+(often referred to as its expiration time) when \fIcertmonger\fR should attempt
+to automatically renew the certificate, if it is configured to do so.
+If this value is not specified, \fIcertmonger\fR will attempt to use the value
+of the \fIttls\fR setting.  The default list of values is "@CM_DEFAULT_TTL_LIST@".
 
 .IP notification_method
 This is the method by which \fIcertmonger\fP will notify the system

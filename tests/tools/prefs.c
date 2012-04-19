@@ -54,8 +54,16 @@ main(int argc, char **argv)
 		break;
 	}
 
-	if (cm_prefs_ttls(&ttls, &n_ttls) == 0) {
-		printf("ttls: ");
+	if (cm_prefs_notify_ttls(&ttls, &n_ttls) == 0) {
+		printf("notify_ttls: ");
+		for (i = 0; i < n_ttls; i++) {
+			printf("%s%llu", ((i > 0) ? ", " : ""),
+			       (unsigned long long) ttls[i]);
+		}
+		printf("\n");
+	}
+	if (cm_prefs_enroll_ttls(&ttls, &n_ttls) == 0) {
+		printf("enroll_ttls: ");
 		for (i = 0; i < n_ttls; i++) {
 			printf("%s%llu", ((i > 0) ? ", " : ""),
 			       (unsigned long long) ttls[i]);
@@ -79,6 +87,9 @@ main(int argc, char **argv)
 		break;
 	case cm_notification_stdout:
 		printf("notification: STDOUT\n");
+		break;
+	case cm_notification_command:
+		printf("notification: COMMAND:%s\n", dest);
 		break;
 	}
 

@@ -76,6 +76,8 @@ enum cm_store_file_field {
 	cm_store_entry_field_cert_eku,
 
 	cm_store_entry_field_last_expiration_check,
+	cm_store_entry_field_last_need_notify_check,
+	cm_store_entry_field_last_need_enroll_check,
 
 	cm_store_entry_field_template_subject,
 	cm_store_entry_field_template_hostname,
@@ -154,6 +156,8 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_cert_eku, "cert_eku"},
 
 	{cm_store_entry_field_last_expiration_check, "last_expiration_check"},
+	{cm_store_entry_field_last_need_notify_check, "last_need_notify_check"},
+	{cm_store_entry_field_last_need_enroll_check, "last_need_enroll_check"},
 
 	{cm_store_entry_field_template_subject, "template_subject"},
 	{cm_store_entry_field_template_hostname, "template_hostname"},
@@ -549,7 +553,21 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 				ret->cm_cert_eku = free_if_empty(p);
 				break;
 			case cm_store_entry_field_last_expiration_check:
-				ret->cm_last_expiration_check =
+				/* backward compatibility before we split them
+				 * into two settings */
+				ret->cm_last_need_notify_check =
+					cm_store_time_from_timestamp(p);
+				ret->cm_last_need_enroll_check =
+					cm_store_time_from_timestamp(p);
+				talloc_free(p);
+				break;
+			case cm_store_entry_field_last_need_notify_check:
+				ret->cm_last_need_notify_check =
+					cm_store_time_from_timestamp(p);
+				talloc_free(p);
+				break;
+			case cm_store_entry_field_last_need_enroll_check:
+				ret->cm_last_need_enroll_check =
 					cm_store_time_from_timestamp(p);
 				talloc_free(p);
 				break;
@@ -696,6 +714,8 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_cert_ku:
 			case cm_store_entry_field_cert_eku:
 			case cm_store_entry_field_last_expiration_check:
+			case cm_store_entry_field_last_need_notify_check:
+			case cm_store_entry_field_last_need_enroll_check:
 			case cm_store_entry_field_template_subject:
 			case cm_store_entry_field_template_hostname:
 			case cm_store_entry_field_template_email:
@@ -959,10 +979,12 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 	cm_store_file_write_str(fp, cm_store_entry_field_cert_eku,
 				entry->cm_cert_eku);
 
-	cm_store_file_write_str(fp, cm_store_entry_field_last_expiration_check,
-				cm_store_timestamp_from_time(entry->cm_last_expiration_check,
+	cm_store_file_write_str(fp, cm_store_entry_field_last_need_notify_check,
+				cm_store_timestamp_from_time(entry->cm_last_need_notify_check,
 							     timestamp));
-
+	cm_store_file_write_str(fp, cm_store_entry_field_last_need_enroll_check,
+				cm_store_timestamp_from_time(entry->cm_last_need_enroll_check,
+							     timestamp));
 	cm_store_file_write_str(fp, cm_store_entry_field_template_subject,
 				entry->cm_template_subject);
 	cm_store_file_write_strs(fp, cm_store_entry_field_template_hostname,
@@ -1491,7 +1513,8 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	ret->cm_cert_ku = cm_store_maybe_strdup(ret, entry->cm_cert_ku);
 	ret->cm_cert_eku = cm_store_maybe_strdup(ret, entry->cm_cert_eku);
 
-	ret->cm_last_expiration_check = entry->cm_last_expiration_check;
+	ret->cm_last_need_notify_check = entry->cm_last_need_notify_check;
+	ret->cm_last_need_enroll_check = entry->cm_last_need_enroll_check;
 	ret->cm_notification_method = entry->cm_notification_method;
 	ret->cm_notification_destination = cm_store_maybe_strdup(ret, entry->cm_notification_destination);
 

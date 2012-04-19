@@ -261,7 +261,10 @@ cm_iterate_init(struct cm_store_entry *entry, void **cm_iterate_state)
 
 /* Check if the entry's expiration has crossed an interesting threshold. */
 static int
-cm_check_expiration_is_noteworthy(struct cm_store_entry *entry)
+cm_check_expiration_is_noteworthy(struct cm_store_entry *entry,
+				  int (*get_ttls)(const time_t **,
+						  unsigned int *),
+				  time_t *last_check)
 {
 	unsigned int i, n_ttls;
 	time_t now, ttl, previous_ttl;
@@ -282,18 +285,17 @@ cm_check_expiration_is_noteworthy(struct cm_store_entry *entry)
 		ttl = entry->cm_cert_not_after - now;
 	}
 	/* How much time was left, last time we checked? */
-	if (entry->cm_cert_not_after < entry->cm_last_expiration_check) {
+	if (entry->cm_cert_not_after < *last_check) {
 		previous_ttl = 0;
 	} else {
-		previous_ttl = entry->cm_cert_not_after -
-			       entry->cm_last_expiration_check;
+		previous_ttl = entry->cm_cert_not_after - *last_check;
 	}
 	/* Note that we're checking now. */
-	entry->cm_last_expiration_check = now;
+	*last_check = now;
 	/* Which list of interesting values are we consulting? */
 	ttls = NULL;
 	n_ttls = 0;
-	if ((cm_prefs_ttls(&ttls, &n_ttls) != 0) || (n_ttls == 0)) {
+	if (((*get_ttls)(&ttls, &n_ttls) != 0) || (n_ttls == 0)) {
 		return -1;
 	}
 	/* Check for crosses. */
@@ -887,12 +889,25 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 
 	case CM_MONITORING:
 		if (entry->cm_monitor &&
-		    (cm_check_expiration_is_noteworthy(entry) == 0)) {
+		    (cm_check_expiration_is_noteworthy(entry,
+						       &cm_prefs_notify_ttls,
+						       &entry->cm_last_need_notify_check) == 0)) {
 			/* Kick off a notification. */
 			entry->cm_state = CM_NEED_TO_NOTIFY;
 			*when = cm_time_now;
+		} else
+		if (entry->cm_autorenew &&
+		    (cm_check_expiration_is_noteworthy(entry,
+						       &cm_prefs_enroll_ttls,
+						       &entry->cm_last_need_enroll_check) == 0)) {
+			/* Kick off an enrollment attempt.  We need to go all
+			 * the way back to generating the CSR because the user
+			 * may have asked us to request with parameters that
+			 * have changed since we last generated a CSR. */
+			entry->cm_state = CM_NEED_CSR;
+			*when = cm_time_now;
 		} else {
-			/* Nothing to do here.  Check again tomorrow. */
+			/* Nothing to do here.  Check again at an appropriate time. */
 			*when = cm_time_delay;
 			*delay = cm_decide_monitor_delay(remaining);
 		}
@@ -920,11 +935,14 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		if (cm_notify_ready(entry, state->cm_notify_state) == 0) {
 			cm_notify_done(entry, state->cm_notify_state);
 			state->cm_notify_state = NULL;
-			if (entry->cm_autorenew) {
-				/* We need to go all the way back to generating
-				 * the CSR because the user may have asked us
-				 * to request with parameters that have changed
-				 * since we last generated a CSR. */
+			if (entry->cm_autorenew &&
+			    (cm_check_expiration_is_noteworthy(entry,
+							       &cm_prefs_enroll_ttls,
+							       &entry->cm_last_need_enroll_check) == 0)) {
+				/* Kick off an enrollment attempt.  We need to go all
+				 * the way back to generating the CSR because the user
+				 * may have asked us to request with parameters that
+				 * have changed since we last generated a CSR. */
 				entry->cm_state = CM_NEED_CSR;
 				*when = cm_time_now;
 			} else {

@@ -153,7 +153,7 @@ cm_submit_h_run(struct cm_submit_h_context *ctx)
 			}
 			if (ctx->sslpass != NULL) {
 				curl_easy_setopt(ctx->curl,
-						 CURLOPT_SSLKEYPASSWD,
+						 CURLOPT_KEYPASSWD,
 						 ctx->sslpass);
 			}
 		} else {
@@ -194,6 +194,11 @@ int
 cm_submit_h_result_code(struct cm_submit_h_context *ctx)
 {
 	return ctx->ret;
+}
+const char *
+cm_submit_h_result_code_text(struct cm_submit_h_context *ctx)
+{
+	return curl_easy_strerror(ctx->ret);
 }
 
 const char *
@@ -280,7 +285,7 @@ main(int argc, char **argv)
 		default:
 			printf("Usage: submit-h METHOD URI [ARGS]\n");
 			printf("  -C CAPATH\troot certificate directory\n");
-			printf("  -c CAFILE\troot certificate file\n");
+			printf("  -c CAINFO\troot certificate info\n");
 			printf("  -N\t\tuse Negotiate\n");
 			printf("  -D\t\tuse Negotiate with delegation enabled\n");
 			printf("  -k CERT\tuse client authentication with cert\n");
@@ -292,9 +297,10 @@ main(int argc, char **argv)
 		}
 	}
 	if (argc - optind < 3) {
+		printf("Missing a required argument.\n");
 		printf("Usage: submit-h METHOD URI [ARGS]\n");
 		printf("  -C CAPATH\troot certificate directory\n");
-		printf("  -c CAFILE\troot certificate file\n");
+		printf("  -c CAINFO\troot certificate info\n");
 		printf("  -N\t\tuse Negotiate\n");
 		printf("  -D\t\tuse Negotiate with delegation enabled\n");
 		printf("  -k CERT\tuse client authentication with cert\n");
@@ -304,13 +310,20 @@ main(int argc, char **argv)
 		return 1;
 	}
 
-
 	ctx = cm_submit_h_init(NULL, argv[optind], argv[optind + 1],
 			       (argc > optind + 2) ? argv[optind + 2] : "",
 			       cainfo, capath, sslcert, sslkey, sslpass,
 			       negotiate, negotiate_delegate, clientauth);
 	cm_submit_h_run(ctx);
-	printf("%s", cm_submit_h_results(ctx));
+	if (cm_submit_h_results(ctx) != NULL) {
+		printf("%s", cm_submit_h_results(ctx));
+	}
+	if (cm_submit_h_result_code(ctx) != 0) {
+		fflush(stdout);
+		fprintf(stderr, "libcurl error %d:%s\n",
+			cm_submit_h_result_code(ctx),
+			cm_submit_h_result_code_text(ctx));
+	}
 	return cm_submit_h_result_code(ctx);
 }
 #endif

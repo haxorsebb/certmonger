@@ -70,13 +70,15 @@ struct cm_store_entry {
 	char **cm_cert_principal;
 	char *cm_cert_ku;
 	char *cm_cert_eku;
-	time_t cm_last_expiration_check;
+	time_t cm_last_need_notify_check;
+	time_t cm_last_need_enroll_check;
 	/* How to notify administrator: syslog(LOG_AUTHPRIV?), mail to root@? */
 	enum cm_notification_method {
 		cm_notification_unspecified,
 		cm_notification_none,
 		cm_notification_syslog,
 		cm_notification_email,
+		cm_notification_command,
 		cm_notification_stdout,	/* for testing _ONLY_ */
 	} cm_notification_method;
 	char *cm_notification_destination;

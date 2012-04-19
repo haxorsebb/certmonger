@@ -146,25 +146,28 @@ cm_prefs_compare_ttl_values(const void *a, const void *b)
 	return *(time_t *)a - *(time_t *) b;
 }
 
-int
-cm_prefs_ttls(const time_t **ttls, unsigned int *n_ttls)
+static int
+cm_prefs_ttls(time_t **config, const time_t **ttls, unsigned int *n_ttls,
+	      const char *preferred, const char *fallback)
 {
 	static time_t default_ttls[] = {CM_DEFAULT_TTL_LIST};
-	static time_t *config = NULL;
 	static unsigned int n_config = 0;
 	char *confttls, *p, *q, c;
 	int i;
-	if (config == NULL) {
-		confttls = cm_prefs_config(NULL, "ttls");
+	if (*config == NULL) {
+		confttls = cm_prefs_config(NULL, preferred);
 		if (confttls == NULL) {
-			config = default_ttls;
+			confttls = cm_prefs_config(NULL, fallback);
+		}
+		if (confttls == NULL) {
+			*config = default_ttls;
 			n_config = sizeof(default_ttls) /
 				   sizeof(default_ttls[0]);
-			qsort(config, n_config, sizeof(config[0]),
+			qsort(*config, n_config, sizeof((*config)[0]),
 			      &cm_prefs_compare_ttl_values);
 		} else {
-			config = malloc(strlen(confttls) * sizeof(config[0]));
-			if (config != NULL) {
+			*config = malloc(strlen(confttls) * sizeof((*config)[0]));
+			if (*config != NULL) {
 				i = 0;
 				p = confttls;
 				while (strcspn(p, " \t,") > 0) {
@@ -172,25 +175,39 @@ cm_prefs_ttls(const time_t **ttls, unsigned int *n_ttls)
 					c = *q;
 					*q = '\0';
 					if (cm_submit_delta_from_string(p, cm_time(NULL),
-									&config[i]) == 0) {
+									&(*config)[i]) == 0) {
 						i++;
 					};
 					*q = c;
 					p = q + strspn(q, " \t,");
 				}
 				n_config = i;
-				qsort(config, n_config, sizeof(config[0]),
+				qsort(*config, n_config, sizeof((*config)[0]),
 				      &cm_prefs_compare_ttl_values);
 			}
 			free(confttls);
 		}
 	}
-	if (config != NULL) {
-		*ttls = config;
+	if (*config != NULL) {
+		*ttls = *config;
 		*n_ttls = n_config;
 		return 0;
 	}
 	return -1;
+}
+
+int
+cm_prefs_enroll_ttls(const time_t **ttls, unsigned int *n_ttls)
+{
+	static time_t *config = NULL;
+	return cm_prefs_ttls(&config, ttls, n_ttls, "enroll_ttls", "ttls");
+}
+
+int
+cm_prefs_notify_ttls(const time_t **ttls, unsigned int *n_ttls)
+{
+	static time_t *config = NULL;
+	return cm_prefs_ttls(&config, ttls, n_ttls, "notify_ttls", "ttls");
 }
 
 enum cm_notification_method
@@ -214,6 +231,9 @@ cm_prefs_notification_method(void)
 		}
 		if (strcasecmp(method, "stdout") == 0) {
 			ret = cm_notification_stdout;
+		}
+		if (strcasecmp(method, "command") == 0) {
+			ret = cm_notification_command;
 		}
 		free(method);
 	}

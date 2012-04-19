@@ -347,10 +347,15 @@ State logic:
 
 	MONITORING:
 		if certificate-is-expired or
-		   (expiration-time-is-below-renewal-threshold-value and
-		    expiration-time-was-above-renewal-threshold-value)
+		   (expiration-time-is-below-notify-threshold-value and
+		    expiration-time-was-above-notify-threshold-value)
 			update-template-values-based-on-cert
 			state_next = NEED_TO_NOTIFY
+			state_transition = now
+		else
+		if (expiration-time-is-below-renewal-threshold-value and
+		    expiration-time-was-above-renewal-threshold-value)
+			state_next = NEED_CSR
 			state_transition = now
 		else
 			state_next = MONITORING
@@ -373,7 +378,9 @@ State logic:
 			state_transition = now
 		else
 			if notification-completed
-				if this-cert-gets-autorenew
+				if this-cert-gets-autorenew and
+				   (expiration-time-is-below-renewal-threshold-value and
+				    expiration-time-was-above-renewal-threshold-value)
 					state_next = NEED_CSR
 					state_transition = now
 				else
