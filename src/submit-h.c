@@ -34,12 +34,13 @@
 #include "submit-e.h"
 #include "submit-h.h"
 
-#if !defined(CURLOPT_KEYPASSWD)
-#if defined(CURLOPT_SSLKEYPASSWD)
-#define CURLOPT_KEYPASSWD CURLOPT_SSLKEYPASSWD
+#ifdef HAVE_DECL_CURLOPT_KEYPASSWD
+#define CM_CURLOPT_PKI_PASSWD CURLOPT_KEYPASSWD
+#ifdef HAVE_DECL_CURLOPT_SSLKEYPASSWD
+#define CM_CURLOPT_PKI_PASSWD CURLOPT_SSLKEYPASSWD
 #else
-#if defined(CURLOPT_SSLCERTPASSWD)
-#define CURLOPT_KEYPASSWD CURLOPT_SSLCERTPASSWD
+#ifdef HAVE_DECL_CURLOPT_SSLCERTPASSWD
+#define CM_CURLOPT_PKI_PASSWD CURLOPT_SSLCERTPASSWD
 #endif
 #endif
 #endif
@@ -163,7 +164,7 @@ cm_submit_h_run(struct cm_submit_h_context *ctx)
 			}
 			if (ctx->sslpass != NULL) {
 				curl_easy_setopt(ctx->curl,
-						 CURLOPT_KEYPASSWD,
+						 CM_CURLOPT_PKI_PASSWD,
 						 ctx->sslpass);
 			}
 		} else {
