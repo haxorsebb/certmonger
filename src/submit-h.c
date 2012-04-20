@@ -34,6 +34,16 @@
 #include "submit-e.h"
 #include "submit-h.h"
 
+#if !defined(CURLOPT_KEYPASSWD)
+#if defined(CURLOPT_SSLKEYPASSWD)
+#define CURLOPT_KEYPASSWD CURLOPT_SSLKEYPASSWD
+#else
+#if defined(CURLOPT_SSLCERTPASSWD)
+#define CURLOPT_KEYPASSWD CURLOPT_SSLCERTPASSWD
+#endif
+#endif
+#endif
+
 struct cm_submit_h_context {
 	int ret;
 	char *method, *uri, *args, *cainfo, *capath, *result;
