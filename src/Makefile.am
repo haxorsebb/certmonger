@@ -121,7 +121,7 @@ certmonger_LDADD = libcm.a \
 certmonger_session_SOURCES = main.c env-session.c tm.c tm.h
 certmonger_session_LDADD = libcm.a \
 		   $(OPENSSL_LIBS) $(CERTMONGER_LIBS) $(KRB5_LIBS) $(UUID_LIBS)
-noinst_PROGRAMS = tdbusm-check serial-check nl-check submit-x toklist
+noinst_PROGRAMS = tdbusm-check serial-check nl-check submit-x toklist tlslayer
 tdbusm_check_LDADD = libcm.a $(CERTMONGER_LIBS)
 serial_check_LDADD = libcm.a $(CERTMONGER_LIBS)
 nl_check_LDADD = libcm.a $(CERTMONGER_LIBS)
@@ -161,3 +161,8 @@ submit_d_LDADD = $(CURL_LIBS) $(XML_LIBS) $(TALLOC_LIBS) $(UUID_LIBS)
 submit_h_CFLAGS = $(AM_CFLAGS) $(CURL_CFLAGS) $(XML_CFLAGS) -DCM_SUBMIT_H_MAIN
 submit_h_SOURCES = submit-h.c submit-h.h log.c log.h tm.c tm.h
 submit_h_LDADD = $(CURL_LIBS) $(XML_LIBS) $(TALLOC_LIBS)
+tlslayer_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS) $(OPENSSL_SSL_CFLAGS) \
+	-DCM_TLSLAYER_MAIN
+tlslayer_SOURCES = tlslayer.c tlslayer-n.c tlslayer-o.c \
+	tlslayer.h tlslayer-int.h
+tlslayer_LDADD = $(NSS_LIBS) $(OPENSSL_SSL_LIBS) $(TALLOC_LIBS)
