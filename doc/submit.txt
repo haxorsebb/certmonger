@@ -32,6 +32,7 @@ An external helper has a few jobs, then:
   * $CERTMONGER_REQ_EMAIL     -> email address subjectAltName values
   * $CERTMONGER_REQ_HOSTNAME  -> DNS name subjectAltName values
   * $CERTMONGER_REQ_PRINCIPAL -> Kerberos principal name subjectAltName values
+  * $CERTMONGER_CA_PROFILE    -> requested enrollment profile/template/certtype
 * If in "submit" mode, $CERTMONGER_CSR has as its value a PEM-formatted CSR.
   * Submit request to CA.
     * Issued         -> output PEM-formatted cert on stdout, exit with status 0.
@@ -51,6 +52,7 @@ An external helper has a few jobs, then:
     * Underconfigured-> output error message on stdout, exit with status 4.
     * Wait some more -> output recommended delay (seconds) and CA cookie value
                         on stdout, separated by newline, and exit with status 5.
+* Other operations may be defined later.
 
 For testing purposes, a helper can be added by creating a file in the CAs
 directory (usually /var/lib/certmonger/cas) with these contents:

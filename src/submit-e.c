@@ -254,6 +254,10 @@ cm_submit_e_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	if ((args->cookie != NULL) && (strlen(args->cookie) > 0)) {
 		setenv(CM_SUBMIT_COOKIE_ENV, args->cookie, 1);
 	}
+	if ((entry->cm_ca_profile != NULL) &&
+	    (strlen(entry->cm_ca_profile) > 0)) {
+		setenv(CM_SUBMIT_PROFILE_ENV, entry->cm_ca_profile, 1);
+	}
 	if (dup2(fd, STDOUT_FILENO) == -1) {
 		u = errno;
 		cm_log(1, "Error redirecting standard out for "
