@@ -2112,6 +2112,8 @@ list(const char *argv0, int argc, char **argv)
 		case CM_NEED_TO_SUBMIT:
 		case CM_SUBMITTING:
 		case CM_NEED_TO_SAVE_CERT:
+		case CM_PRE_SAVE_CERT:
+		case CM_START_SAVING_CERT:
 		case CM_SAVING_CERT:
 		case CM_SAVED_CERT:
 		case CM_POST_SAVED_CERT:

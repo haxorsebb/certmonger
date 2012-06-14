@@ -2883,6 +2883,8 @@ request_prop_get_stuck(struct cm_context *ctx, void *parent,
 	case CM_SUBMITTING:
 	case CM_CA_WORKING:
 	case CM_NEED_TO_SAVE_CERT:
+	case CM_PRE_SAVE_CERT:
+	case CM_START_SAVING_CERT:
 	case CM_SAVING_CERT:
 	case CM_NEED_TO_READ_CERT:
 	case CM_READING_CERT:

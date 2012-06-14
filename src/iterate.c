@@ -107,6 +107,12 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 		break;
 	case CM_NEED_TO_SAVE_CERT:
 		break;
+	case CM_START_SAVING_CERT:
+		entry->cm_state = CM_NEED_TO_SAVE_CERT;
+		break;
+	case CM_PRE_SAVE_CERT:
+		entry->cm_state = CM_NEED_TO_SAVE_CERT;
+		break;
 	case CM_SAVING_CERT:
 		entry->cm_state = CM_NEED_TO_SAVE_CERT;
 		break;
@@ -728,6 +734,49 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		break;
 
 	case CM_NEED_TO_SAVE_CERT:
+		if (entry->cm_pre_certsave_command != NULL) {
+			state->cm_hook_state = cm_hook_start_presave(entry);
+			if (state->cm_hook_state != NULL) {
+				/* Note that we're doing the pre-save. */
+				entry->cm_state = CM_PRE_SAVE_CERT;
+				/* Wait for status update, or poll. */
+				*readfd = cm_hook_get_fd(entry,
+							 state->cm_hook_state);
+				if (*readfd == -1) {
+					*when = cm_time_soon;
+				} else {
+					*when = cm_time_no_time;
+				}
+			} else {
+				/* Failed to start the pre-save; skip it. */
+				entry->cm_state = CM_START_SAVING_CERT;
+				*when = cm_time_now;
+			}
+		} else {
+			entry->cm_state = CM_START_SAVING_CERT;
+			*when = cm_time_now;
+		}
+		break;
+
+	case CM_PRE_SAVE_CERT:
+		if (cm_hook_ready(entry, state->cm_hook_state) == 0) {
+			cm_hook_done(entry, state->cm_hook_state);
+			state->cm_hook_state = NULL;
+			entry->cm_state = CM_START_SAVING_CERT;
+			*when = cm_time_now;
+		} else {
+			/* Wait for status update, or poll. */
+			*readfd = cm_hook_get_fd(entry,
+						 state->cm_hook_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
+		}
+		break;
+
+	case CM_START_SAVING_CERT:
 		state->cm_certsave_state = cm_certsave_start(entry);
 		if (state->cm_certsave_state != NULL) {
 			/* Note that we're saving the cert. */
