@@ -79,6 +79,7 @@
 #define CM_DBUS_PROP_STATUS "status"
 #define CM_DBUS_PROP_STUCK "stuck"
 #define CM_DBUS_PROP_CA "ca"
+#define CM_DBUS_PROP_CA_PROFILE "ca-profile"
 #define CM_DBUS_PROP_CA_COOKIE "ca-cookie"
 #define CM_DBUS_PROP_CA_ERROR "ca-error"
 #define CM_DBUS_PROP_SUBMITTED_DATE "submitted-date"
