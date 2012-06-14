@@ -97,6 +97,7 @@ enum cm_store_file_field {
 	cm_store_entry_field_monitor,
 
 	cm_store_entry_field_ca_nickname,
+	cm_store_entry_field_ca_profile,
 
 	cm_store_entry_field_submitted,
 	cm_store_entry_field_ca_cookie,
@@ -178,6 +179,7 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_monitor, "monitor"},
 
 	{cm_store_entry_field_ca_nickname, "ca_name"},
+	{cm_store_entry_field_ca_profile, "ca_profile"},
 
 	{cm_store_entry_field_submitted, "submitted"},
 	{cm_store_entry_field_ca_cookie, "ca_cookie"},
@@ -620,6 +622,9 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_ca_nickname:
 				ret->cm_ca_nickname = free_if_empty(p);
 				break;
+			case cm_store_entry_field_ca_profile:
+				ret->cm_ca_profile = free_if_empty(p);
+				break;
 			case cm_store_entry_field_submitted:
 				ret->cm_submitted =
 					cm_store_time_from_timestamp(p);
@@ -739,6 +744,7 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_autorenew:
 			case cm_store_entry_field_monitor:
 			case cm_store_entry_field_ca_nickname:
+			case cm_store_entry_field_ca_profile:
 			case cm_store_entry_field_submitted:
 			case cm_store_entry_field_ca_cookie:
 			case cm_store_entry_field_ca_error:
@@ -1028,6 +1034,8 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 
 	cm_store_file_write_str(fp, cm_store_entry_field_ca_nickname,
 				entry->cm_ca_nickname);
+	cm_store_file_write_str(fp, cm_store_entry_field_ca_profile,
+				entry->cm_ca_profile);
 	cm_store_file_write_str(fp, cm_store_entry_field_submitted,
 				cm_store_timestamp_from_time(entry->cm_submitted,
 							      timestamp));
@@ -1548,6 +1556,7 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	ret->cm_autorenew = entry->cm_autorenew;
 	ret->cm_monitor = entry->cm_monitor;
 	ret->cm_ca_nickname = cm_store_maybe_strdup(ret, entry->cm_ca_nickname);
+	ret->cm_ca_profile = cm_store_maybe_strdup(ret, entry->cm_ca_profile);
 	ret->cm_submitted = entry->cm_submitted;
 	ret->cm_ca_cookie = cm_store_maybe_strdup(ret, entry->cm_ca_cookie);
 	ret->cm_ca_error = cm_store_maybe_strdup(ret, entry->cm_ca_error);

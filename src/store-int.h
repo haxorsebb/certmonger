@@ -135,6 +135,9 @@ struct cm_store_entry {
 	unsigned int cm_monitor:1;
 	/* Type and location of CA [or use default if NULL] */
 	char *cm_ca_nickname;
+	/* Name of the profile/template/whatever that we use to inform the CA
+	 * of the type of certificate that we want. */
+	char *cm_ca_profile;
 	/* Date of submission for in-progress submissions. */
 	time_t cm_submitted;
 	/* Value of CA cookie for in-progress submissions. */
