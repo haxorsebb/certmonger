@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.56
+Version:	0.57
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -194,6 +194,10 @@ exit 0
 %endif
 
 %changelog
+* Thu Jun 12 2012 Nalin Dahyabhai <nalin@redhat.com> 0.57-1
+- clarify that the command passed to getcert -C is a "post"-save command
+- add a "pre"-save command option to getcert, specified with the -B flag (#9)
+
 * Sat Mar  3 2012 Nalin Dahyabhai <nalin@redhat.com> 0.56-1
 - when a caller sets the is-default flag on a CA, and another CA is no longer
   the default, emit the PropertiesChanged signal on the CA which is not the
