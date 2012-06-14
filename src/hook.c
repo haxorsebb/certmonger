@@ -31,33 +31,33 @@
 #include <talloc.h>
 
 #include "log.h"
-#include "postsave.h"
+#include "hook.h"
 #include "prefs.h"
 #include "store.h"
 #include "store-int.h"
 #include "subproc.h"
 #include "tm.h"
 
-struct cm_postsave_state {
+struct cm_hook_state {
 	struct cm_subproc_state *subproc;
+	const char *command;
 	uid_t uid;
 };
 
 /* Fire off a subprocess. */
 static int
-cm_postsave_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
-		 void *userdata)
+cm_hook_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
+	     void *userdata)
 {
 	char **argv;
 	const char *error;
 	struct passwd *pwd;
-	struct cm_postsave_state *state = userdata;
+	struct cm_hook_state *state = userdata;
 
-	argv = cm_subproc_parse_args(entry, entry->cm_post_certsave_command,
-				     &error);
+	argv = cm_subproc_parse_args(entry, state->command, &error);
 	if (error != NULL) {
 		cm_log(-2, "Error parsing \"%s\": %s; not running it.\n",
-		       entry->cm_post_certsave_command, error);
+		       state->command, error);
 		return -1;
 	}
 	pwd = getpwuid(state->uid);
@@ -65,22 +65,24 @@ cm_postsave_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		cm_log(-2, "Error on getpwuid(%lu): %s, not running \"%s\".\n",
 		       (unsigned long) state->uid,
 		       strerror(errno),
-		       entry->cm_post_certsave_command);
+		       state->command);
 		return -1;
 	}
 	if (initgroups(pwd->pw_name, pwd->pw_gid) == -1) {
 		if (getuid() != 0) {
-			cm_log(0, "Error on initgroups(%s,%lu): %s.\n",
+			cm_log(0, "Error on initgroups(%s,%lu): %s, "
+			       "continuing and running \"%s\" anyway.\n",
 			       pwd->pw_name,
 			       (unsigned long) state->uid,
-			       strerror(errno));
+			       strerror(errno),
+			       state->command);
 		} else {
 			cm_log(-2, "Error on initgroups(%s,%lu): %s, "
 			       "not running \"%s\".\n",
 			       pwd->pw_name,
 			       (unsigned long) state->uid,
 			       strerror(errno),
-			       entry->cm_post_certsave_command);
+			       state->command);
 			return -1;
 		}
 	}
@@ -91,7 +93,7 @@ cm_postsave_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		       (unsigned long) pwd->pw_gid,
 		       (unsigned long) pwd->pw_gid,
 		       strerror(errno),
-		       entry->cm_post_certsave_command);
+		       state->command);
 		return -1;
 	}
 	if (setreuid(pwd->pw_uid, pwd->pw_uid) == -1) {
@@ -101,44 +103,46 @@ cm_postsave_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		       (unsigned long) pwd->pw_uid,
 		       (unsigned long) pwd->pw_uid,
 		       strerror(errno),
-		       entry->cm_post_certsave_command);
+		       state->command);
 		return -1;
 	}
 	cm_subproc_mark_most_cloexec(entry, -1);
 	if (execvp(argv[0], argv) == -1) {
 		cm_log(0, "Error execvp()ing command \"%s\" (\"%s\"): %s.\n",
-		       argv[0], entry->cm_post_certsave_command,
+		       argv[0], state->command,
 		       strerror(errno));
 		return -1;
 	}
 	return -1;
 }
 
-/* Start the postsave command. */
-struct cm_postsave_state *
-cm_postsave_start(struct cm_store_entry *entry)
+/* Start a hook command. */
+static struct cm_hook_state *
+cm_hook_start(struct cm_store_entry *entry, const char *hook_type,
+	      const char *hook_command, const char *hook_uid)
 {
-	struct cm_postsave_state *state;
+	struct cm_hook_state *state;
 	long l;
 	char *p;
 
-	if (entry->cm_post_certsave_uid == NULL) {
-		cm_log(1, "No UID set for post-save command.\n");
+	if (hook_uid == NULL) {
+		cm_log(1, "No UID set for %s command.\n", hook_type);
 		return NULL;
 	}
 	p = NULL;
-	l = strtol(entry->cm_post_certsave_uid, &p, 10);
+	l = strtol(hook_uid, &p, 10);
 	if ((p == NULL) || (*p != '\0')) {
-		cm_log(1, "Error parsing \"%s\" as a numeric UID.\n",
-		       entry->cm_post_certsave_uid);
+		cm_log(1, "Error parsing \"%s\" as a numeric UID.\n", hook_uid);
 		return NULL;
 	}
 
 	state = talloc_ptrtype(entry, state);
 	if (state != NULL) {
 		state->uid = l;
-		state->subproc = cm_subproc_start(cm_postsave_main,
-						  NULL, entry, state);
+		state->command = hook_command;
+		state->subproc = cm_subproc_start(cm_hook_main,
+						  NULL, entry,
+						  state);
 		if (state->subproc == NULL) {
 			talloc_free(state);
 			state = NULL;
@@ -147,23 +151,32 @@ cm_postsave_start(struct cm_store_entry *entry)
 	return state;
 }
 
+/* Star the post-save hook. */
+struct cm_hook_state *
+cm_hook_start_postsave(struct cm_store_entry *entry)
+{
+	return cm_hook_start(entry, "post-save",
+			     entry->cm_post_certsave_command,
+			     entry->cm_post_certsave_uid);
+}
+
 /* Get a selectable-for-read descriptor we can poll for status changes. */
 int
-cm_postsave_get_fd(struct cm_store_entry *entry, struct cm_postsave_state *state)
+cm_hook_get_fd(struct cm_store_entry *entry, struct cm_hook_state *state)
 {
 	return cm_subproc_get_fd(entry, state->subproc);
 }
 
 /* Check if our child process has exited. */
 int
-cm_postsave_ready(struct cm_store_entry *entry, struct cm_postsave_state *state)
+cm_hook_ready(struct cm_store_entry *entry, struct cm_hook_state *state)
 {
 	return cm_subproc_ready(entry, state->subproc);
 }
 
 /* Clean up after... well, we don't really know. */
 void
-cm_postsave_done(struct cm_store_entry *entry, struct cm_postsave_state *state)
+cm_hook_done(struct cm_store_entry *entry, struct cm_hook_state *state)
 {
 	if (state->subproc != NULL) {
 		cm_subproc_done(entry, state->subproc);

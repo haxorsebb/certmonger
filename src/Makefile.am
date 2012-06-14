@@ -29,6 +29,8 @@ libcm_a_SOURCES = \
 	csrgen-n.c \
 	env.h \
 	env-shared.c \
+	hook.c \
+	hook.h \
 	iterate.c \
 	iterate.h \
 	keygen.c \
@@ -50,8 +52,6 @@ libcm_a_SOURCES = \
 	oiddict.h \
 	pin.c \
 	pin.h \
-	postsave.c \
-	postsave.h \
 	prefs.c \
 	prefs.h \
 	prefs-n.c \

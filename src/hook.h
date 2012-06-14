@@ -15,27 +15,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef cmpostsave_h
-#define cmpostsave_h
+#ifndef cmhook_h
+#define cmhook_h
 
-struct cm_postsave_state;
+struct cm_hook_state;
 struct cm_store_entry;
+
+/* Start doing whatever we need to before saving the certificate to the
+ * configured location. */
+struct cm_hook_state *cm_hook_start_presave(struct cm_store_entry *entry);
 
 /* Start doing whatever we need to after saving the certificate to the
  * configured location. */
-struct cm_postsave_state *cm_postsave_start(struct cm_store_entry *entry);
+struct cm_hook_state *cm_hook_start_postsave(struct cm_store_entry *entry);
 
 /* Check if something changed, for example we finished doing whatever it is
  * that we're doing. */
-int cm_postsave_ready(struct cm_store_entry *entry,
-		      struct cm_postsave_state *state);
+int cm_hook_ready(struct cm_store_entry *entry,
+		  struct cm_hook_state *state);
 
 /* Get a selectable-for-read descriptor we can poll for status changes. */
-int cm_postsave_get_fd(struct cm_store_entry *entry,
-		       struct cm_postsave_state *state);
+int cm_hook_get_fd(struct cm_store_entry *entry,
+		   struct cm_hook_state *state);
 
 /* Clean up after ourselves. */
-void cm_postsave_done(struct cm_store_entry *entry,
-		      struct cm_postsave_state *state);
+void cm_hook_done(struct cm_store_entry *entry,
+		  struct cm_hook_state *state);
 
 #endif

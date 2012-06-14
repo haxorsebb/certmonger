@@ -30,12 +30,12 @@
 #include "certsave.h"
 #include "cm.h"
 #include "csrgen.h"
+#include "hook.h"
 #include "iterate.h"
 #include "keygen.h"
 #include "keyiread.h"
 #include "log.h"
 #include "notify.h"
-#include "postsave.h"
 #include "prefs.h"
 #include "store.h"
 #include "store-int.h"
@@ -48,7 +48,7 @@ struct cm_iterate_state {
 	struct cm_csrgen_state *cm_csrgen_state;
 	struct cm_submit_state *cm_submit_state;
 	struct cm_certsave_state *cm_certsave_state;
-	struct cm_postsave_state *cm_postsave_state;
+	struct cm_hook_state *cm_hook_state;
 	struct cm_certread_state *cm_certread_state;
 	struct cm_notify_state *cm_notify_state;
 };
@@ -820,13 +820,13 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 
 	case CM_SAVED_CERT:
 		if (entry->cm_post_certsave_command != NULL) {
-			state->cm_postsave_state = cm_postsave_start(entry);
-			if (state->cm_postsave_state != NULL) {
+			state->cm_hook_state = cm_hook_start_postsave(entry);
+			if (state->cm_hook_state != NULL) {
 				/* Note that we're doing the post-save. */
 				entry->cm_state = CM_POST_SAVED_CERT;
 				/* Wait for status update, or poll. */
-				*readfd = cm_postsave_get_fd(entry,
-							     state->cm_postsave_state);
+				*readfd = cm_hook_get_fd(entry,
+							 state->cm_hook_state);
 				if (*readfd == -1) {
 					*when = cm_time_soon;
 				} else {
@@ -844,15 +844,15 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		break;
 
 	case CM_POST_SAVED_CERT:
-		if (cm_postsave_ready(entry, state->cm_postsave_state) == 0) {
-			cm_postsave_done(entry, state->cm_postsave_state);
-			state->cm_postsave_state = NULL;
+		if (cm_hook_ready(entry, state->cm_hook_state) == 0) {
+			cm_hook_done(entry, state->cm_hook_state);
+			state->cm_hook_state = NULL;
 			entry->cm_state = CM_MONITORING;
 			*when = cm_time_now;
 		} else {
 			/* Wait for status update, or poll. */
-			*readfd = cm_postsave_get_fd(entry,
-						     state->cm_postsave_state);
+			*readfd = cm_hook_get_fd(entry,
+						 state->cm_hook_state);
 			if (*readfd == -1) {
 				*when = cm_time_soon;
 			} else {
