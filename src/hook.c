@@ -151,6 +151,15 @@ cm_hook_start(struct cm_store_entry *entry, const char *hook_type,
 	return state;
 }
 
+/* Star the pre-save hook. */
+struct cm_hook_state *
+cm_hook_start_presave(struct cm_store_entry *entry)
+{
+	return cm_hook_start(entry, "pre-save",
+			     entry->cm_pre_certsave_command,
+			     entry->cm_pre_certsave_uid);
+}
+
 /* Star the post-save hook. */
 struct cm_hook_state *
 cm_hook_start_postsave(struct cm_store_entry *entry)
