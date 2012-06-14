@@ -90,7 +90,7 @@ fi
 
 echo
 echo '[Saving certificate.]'
-$toolsdir/iterate ca entry SAVING_CERT,NEED_TO_READ_CERT,READING_CERT,SAVED_CERT
+$toolsdir/iterate ca entry START_SAVING_CERT,SAVING_CERT,NEED_TO_READ_CERT,READING_CERT,SAVED_CERT
 if test "`grep ^state entry`" != state=MONITORING ; then
 	echo Saving failed or did not move to monitoring.
 	grep ^state entry
@@ -174,7 +174,7 @@ EOF
 $toolsdir/iterate ca2 entry2 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
 $toolsdir/iterate ca2 entry2 NEED_CSR,GENERATING_CSR
 $toolsdir/iterate ca2 entry2 NEED_TO_SUBMIT,SUBMITTING
-$toolsdir/iterate ca2 entry2 SAVING_CERT,NEED_TO_READ_CERT,READING_CERT,SAVED_CERT
+$toolsdir/iterate ca2 entry2 START_SAVING_CERT,SAVING_CERT,NEED_TO_READ_CERT,READING_CERT,SAVED_CERT
 openssl x509 -noout -startdate -enddate -in $tmpdir/certfile2
 echo
 echo '[Noticing expiration.]'
@@ -377,7 +377,7 @@ $toolsdir/iterate ca10 entry10 NEWLY_ADDED_START_READING_KEYINFO,NEWLY_ADDED_REA
 $toolsdir/iterate ca10 entry10 NEED_KEY_PAIR,GENERATING_KEY_PAIR,HAVE_KEY_PAIR,NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
 $toolsdir/iterate ca10 entry10 NEED_CSR,GENERATING_CSR
 $toolsdir/iterate ca10 entry10 NEED_TO_SUBMIT,SUBMITTING
-$toolsdir/iterate ca10 entry10 SAVING_CERT,NEED_TO_READ_CERT,READING_CERT,SAVED_CERT
+$toolsdir/iterate ca10 entry10 START_SAVING_CERT,SAVING_CERT,NEED_TO_READ_CERT,READING_CERT,SAVED_CERT
 cp $tmpdir/certfile10 $tmpdir/certfile10.bak
 
 echo
@@ -406,7 +406,7 @@ cat > certmonger.conf << EOF
 enroll_ttls = 30s
 notify_ttls = N
 EOF
-$toolsdir/iterate ca10 entry10 NEED_CSR,GENERATING_CSR,HAVE_CSR,NEED_TO_SUBMIT,SUBMITTING,NEED_TO_SAVE_CERT,SAVING_CERT,SAVED_CERT,NEED_TO_READ_CERT,READING_CERT | sed 's@'"$tmpdir"'@$tmpdir@g'
+$toolsdir/iterate ca10 entry10 NEED_CSR,GENERATING_CSR,HAVE_CSR,NEED_TO_SUBMIT,SUBMITTING,NEED_TO_SAVE_CERT,START_SAVING_CERT,SAVING_CERT,SAVED_CERT,NEED_TO_READ_CERT,READING_CERT | sed 's@'"$tmpdir"'@$tmpdir@g'
 
 echo
 echo '[Kicking off notify only.]'
@@ -471,7 +471,7 @@ enroll_ttls = 30s
 notification_method=command
 notification_destination=$tmpdir/notify.sh
 EOF
-$toolsdir/iterate ca10 entry10 NEED_TO_NOTIFY,NOTIFYING,NEED_CSR,GENERATING_CSR,HAVE_CSR,NEED_TO_SUBMIT,SUBMITTING,NEED_TO_SAVE_CERT,SAVING_CERT,SAVED_CERT,NEED_TO_READ_CERT,READING_CERT | sed 's@'"$tmpdir"'@$tmpdir@g'
+$toolsdir/iterate ca10 entry10 NEED_TO_NOTIFY,NOTIFYING,NEED_CSR,GENERATING_CSR,HAVE_CSR,NEED_TO_SUBMIT,SUBMITTING,NEED_TO_SAVE_CERT,START_SAVING_CERT,SAVING_CERT,SAVED_CERT,NEED_TO_READ_CERT,READING_CERT | sed 's@'"$tmpdir"'@$tmpdir@g'
 cat $tmpdir/notification.txt
 
 CERTMONGER_CONFIG_DIR="$SAVED_CONFIG_DIR"
