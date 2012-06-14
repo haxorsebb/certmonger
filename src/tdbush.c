@@ -385,7 +385,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	char *key_location, *key_nickname, *key_token, *key_pin, *key_pin_file;
 	enum cm_cert_storage_type cert_storage;
 	char *cert_location, *cert_nickname, *cert_token;
-	char *path, *post_command;
+	char *path, *pre_command, *post_command;
 
 	parent = talloc_new(NULL);
 	if (cm_tdbusm_get_d(msg, parent, &d) != 0) {
@@ -856,6 +856,15 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 								  "KEY_NICKNAME" : NULL);
 		}
 	}
+	/* What to run before we save the certificate. */
+	param = cm_tdbusm_find_dict_entry(d,
+					  CM_DBUS_PROP_CERT_PRESAVE_COMMAND,
+					  cm_tdbusm_dict_s);
+	if (param != NULL) {
+		pre_command = param->value.s;
+	} else {
+		pre_command = NULL;
+	}
 	/* What to run after we save the certificate. */
 	param = cm_tdbusm_find_dict_entry(d,
 					  CM_DBUS_PROP_CERT_POSTSAVE_COMMAND,
@@ -958,6 +967,15 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		new_entry->cm_autorenew = param->value.b;
 	} else {
 		new_entry->cm_autorenew = cm_prefs_autorenew();
+	}
+	if (pre_command != NULL) {
+		new_entry->cm_pre_certsave_uid = talloc_asprintf(new_entry,
+								 "%lu",
+								 (unsigned long) ci->uid);
+		if (new_entry->cm_pre_certsave_uid != NULL) {
+			new_entry->cm_pre_certsave_command = maybe_strdup(new_entry,
+									  pre_command);
+		}
 	}
 	if (post_command != NULL) {
 		new_entry->cm_post_certsave_uid = talloc_asprintf(new_entry,
@@ -2386,6 +2404,27 @@ request_modify(DBusConnection *conn, DBusMessage *msg,
 									 param->value.as);
 				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
 					propname[n_propname++] = CM_DBUS_PROP_TEMPLATE_EMAIL;
+				}
+			} else
+			if ((param->value_type == cm_tdbusm_dict_s) &&
+			    (strcasecmp(param->key, CM_DBUS_PROP_CERT_PRESAVE_COMMAND) == 0)) {
+				talloc_free(entry->cm_pre_certsave_command);
+				entry->cm_pre_certsave_command = maybe_strdup(entry,
+									      param->value.s);
+				talloc_free(entry->cm_pre_certsave_uid);
+				if (entry->cm_pre_certsave_command != NULL) {
+					entry->cm_pre_certsave_uid = talloc_asprintf(entry, "%lu",
+										     (unsigned long) ci->uid);
+					if (entry->cm_pre_certsave_uid == NULL) {
+						talloc_free(entry->cm_pre_certsave_command);
+						entry->cm_pre_certsave_command = NULL;
+					}
+				} else {
+					entry->cm_pre_certsave_uid = NULL;
+				}
+				if (n_propname + 3 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_CERT_PRESAVE_COMMAND;
+					propname[n_propname++] = CM_DBUS_PROP_CERT_PRESAVE_UID;
 				}
 			} else
 			if ((param->value_type == cm_tdbusm_dict_s) &&
@@ -5283,6 +5322,24 @@ cm_tdbush_iface_request(void)
 										     NULL),
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_CERT_PRESAVE_COMMAND,
+								       cm_tdbush_property_string,
+								       cm_tdbush_property_read,
+								       cm_tdbush_property_char_p,
+								       offsetof(struct cm_store_entry, cm_pre_certsave_command),
+								       NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL,
+								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_CERT_PRESAVE_UID,
+								       cm_tdbush_property_string,
+								       cm_tdbush_property_read,
+								       cm_tdbush_property_char_p,
+								       offsetof(struct cm_store_entry, cm_pre_certsave_uid),
+								       NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL,
+								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_CERT_POSTSAVE_COMMAND,
 								       cm_tdbush_property_string,
 								       cm_tdbush_property_read,
@@ -5303,7 +5360,7 @@ cm_tdbush_iface_request(void)
 				     make_interface_item(cm_tdbush_interface_signal,
 							 make_signal(CM_DBUS_SIGNAL_REQUEST_CERT_SAVED,
 								     NULL),
-							 NULL)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
+							 NULL)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
 	}
 	return ret;
 }

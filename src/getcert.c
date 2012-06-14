@@ -550,15 +550,15 @@ request(const char *argv0, int argc, char **argv)
 	int keysize = 0, auto_renew = 1, verbose = 0, c, i;
 	char *ca = DEFAULT_CA, *subject = NULL, **eku = NULL, *oid, *id = NULL;
 	char **principal = NULL, **dns = NULL, **email = NULL;
-	struct cm_tdbusm_dict param[33];
-	const struct cm_tdbusm_dict *params[34];
+	struct cm_tdbusm_dict param[34];
+	const struct cm_tdbusm_dict *params[35];
 	DBusMessage *req, *rep;
 	dbus_bool_t b;
 	char *p;
 	krb5_context kctx;
 	krb5_error_code kret;
 	krb5_principal kprincipal;
-	char *krealm, *kuprincipal, *command = NULL;
+	char *krealm, *kuprincipal, *precommand = NULL, *postcommand = NULL;
 
 	memset(subject_default, '\0', sizeof(subject_default));
 	strcpy(subject_default, "CN=");
@@ -582,7 +582,7 @@ request(const char *argv0, int argc, char **argv)
 
 	opterr = 0;
 	while ((c = getopt(argc, argv,
-			   ":d:n:t:k:f:I:g:rRN:U:K:D:E:sSp:P:vC:"
+			   ":d:n:t:k:f:I:g:rRN:U:K:D:E:sSp:P:vB:C:"
 			   GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
@@ -671,8 +671,11 @@ request(const char *argv0, int argc, char **argv)
 		case 'P':
 			pin = optarg;
 			break;
+		case 'B':
+			precommand = optarg;
+			break;
 		case 'C':
-			command = optarg;
+			postcommand = optarg;
 			break;
 		case 'v':
 			verbose++;
@@ -922,10 +925,17 @@ request(const char *argv0, int argc, char **argv)
 		params[i] = &param[i];
 		i++;
 	}
-	if (command != NULL) {
+	if (precommand != NULL) {
+		param[i].key = CM_DBUS_PROP_CERT_PRESAVE_COMMAND;
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = precommand;
+		params[i] = &param[i];
+		i++;
+	}
+	if (postcommand != NULL) {
 		param[i].key = CM_DBUS_PROP_CERT_POSTSAVE_COMMAND;
 		param[i].value_type = cm_tdbusm_dict_s;
-		param[i].value.s = command;
+		param[i].value.s = postcommand;
 		params[i] = &param[i];
 		i++;
 	}
@@ -1086,13 +1096,13 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 		  char *dbdir, char *nickname, char *token,
 		  char *keyfile, char *certfile,
 		  char *pin, char *pinfile,
-		  char *ca, char *command, dbus_bool_t auto_renew_stop,
-		  int verbose)
+		  char *ca, char *precommand, char *postcommand,
+		  dbus_bool_t auto_renew_stop, int verbose)
 {
 	DBusMessage *req, *rep;
 	int i;
-	struct cm_tdbusm_dict param[20];
-	const struct cm_tdbusm_dict *params[21];
+	struct cm_tdbusm_dict param[21];
+	const struct cm_tdbusm_dict *params[22];
 	dbus_bool_t b;
 	const char *capath;
 	char *p;
@@ -1198,10 +1208,17 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 	param[i].value.b = !auto_renew_stop;
 	params[i] = &param[i];
 	i++;
-	if (command != NULL) {
+	if (precommand != NULL) {
+		param[i].key = CM_DBUS_PROP_CERT_PRESAVE_COMMAND;
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = precommand;
+		params[i] = &param[i];
+		i++;
+	}
+	if (postcommand != NULL) {
 		param[i].key = CM_DBUS_PROP_CERT_POSTSAVE_COMMAND;
 		param[i].value_type = cm_tdbusm_dict_s;
-		param[i].value.s = command;
+		param[i].value.s = postcommand;
 		params[i] = &param[i];
 		i++;
 	}
@@ -1250,8 +1267,8 @@ set_tracking(const char *argv0, const char *category,
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	DBusMessage *req, *rep;
 	const char *request, *capath;
-	struct cm_tdbusm_dict param[11];
-	const struct cm_tdbusm_dict *params[12];
+	struct cm_tdbusm_dict param[12];
+	const struct cm_tdbusm_dict *params[13];
 	char *nss_scheme, *dbdir = NULL, *token = NULL, *nickname = NULL;
 	char *id = NULL, *new_id = NULL, *new_request;
 	char *keyfile = NULL, *certfile = NULL, *ca = DEFAULT_CA;
@@ -1264,7 +1281,7 @@ set_tracking(const char *argv0, const char *category,
 	krb5_error_code kret;
 	krb5_principal kprincipal;
 	char *krealm, *kuprincipal;
-	char *command = NULL;
+	char *precommand = NULL, *postcommand = NULL;
 
 	kctx = NULL;
 	if ((kret = krb5_init_context(&kctx)) != 0) {
@@ -1280,7 +1297,7 @@ set_tracking(const char *argv0, const char *category,
 
 	opterr = 0;
 	while ((c = getopt(argc, argv,
-			   ":d:n:t:k:f:g:p:P:rRi:I:U:K:D:E:sSvC:"
+			   ":d:n:t:k:f:g:p:P:rRi:I:U:K:D:E:sSvB:C:"
 			   GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
@@ -1381,8 +1398,11 @@ set_tracking(const char *argv0, const char *category,
 		case 'P':
 			pin = optarg;
 			break;
+		case 'B':
+			precommand = optarg;
+			break;
 		case 'C':
-			command = optarg;
+			postcommand = optarg;
 			break;
 		case 'v':
 			verbose++;
@@ -1526,10 +1546,17 @@ set_tracking(const char *argv0, const char *category,
 			} else {
 				capath = NULL;
 			}
-			if (command != NULL) {
+			if (precommand != NULL) {
+				param[i].key = CM_DBUS_PROP_CERT_PRESAVE_COMMAND;
+				param[i].value_type = cm_tdbusm_dict_s;
+				param[i].value.s = precommand;
+				params[i] = &param[i];
+				i++;
+			}
+			if (postcommand != NULL) {
 				param[i].key = CM_DBUS_PROP_CERT_POSTSAVE_COMMAND;
 				param[i].value_type = cm_tdbusm_dict_s;
-				param[i].value.s = command;
+				param[i].value.s = postcommand;
 				params[i] = &param[i];
 				i++;
 			}
@@ -1594,7 +1621,9 @@ set_tracking(const char *argv0, const char *category,
 						 dbdir, nickname, token,
 						 keyfile, certfile,
 						 pin, pinfile,
-						 ca, command, (auto_renew_stop > 0),
+						 ca,
+						 precommand, postcommand,
+						 (auto_renew_stop > 0),
 						 verbose);
 		}
 	} else {
@@ -1657,8 +1686,8 @@ resubmit(const char *argv0, int argc, char **argv)
 	DBusMessage *req, *rep;
 	const char *request;
 	char *capath;
-	struct cm_tdbusm_dict param[16];
-	const struct cm_tdbusm_dict *params[17];
+	struct cm_tdbusm_dict param[17];
+	const struct cm_tdbusm_dict *params[18];
 	char *dbdir = NULL, *token = NULL, *nickname = NULL, *certfile = NULL;
 	char *pin = NULL, *pinfile = NULL;
 	char *id = NULL, *new_id = NULL, *ca = NULL, *new_request, *nss_scheme;
@@ -1669,7 +1698,7 @@ resubmit(const char *argv0, int argc, char **argv)
 	krb5_context kctx;
 	krb5_error_code kret;
 	krb5_principal kprincipal;
-	char *kuprincipal, *command = NULL;
+	char *kuprincipal, *precommand = NULL, *postcommand = NULL;
 
 	kctx = NULL;
 	if ((kret = krb5_init_context(&kctx)) != 0) {
@@ -1681,7 +1710,7 @@ resubmit(const char *argv0, int argc, char **argv)
 
 	opterr = 0;
 	while ((c = getopt(argc, argv,
-			   ":d:n:N:t:U:K:E:D:f:i:I:sSp:P:vC:" GETOPT_CA)) != -1) {
+			   ":d:n:N:t:U:K:E:D:f:i:I:sSp:P:vB:C:" GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
 			nss_scheme = NULL;
@@ -1760,8 +1789,11 @@ resubmit(const char *argv0, int argc, char **argv)
 		case 'P':
 			pin = optarg;
 			break;
+		case 'B':
+			precommand = optarg;
+			break;
 		case 'C':
-			command = optarg;
+			postcommand = optarg;
 			break;
 		case 'v':
 			verbose++;
@@ -1895,10 +1927,17 @@ resubmit(const char *argv0, int argc, char **argv)
 		params[i] = &param[i];
 		i++;
 	}
-	if (command != NULL) {
+	if (precommand != NULL) {
+		param[i].key = CM_DBUS_PROP_CERT_PRESAVE_COMMAND;
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = precommand;
+		params[i] = &param[i];
+		i++;
+	}
+	if (postcommand != NULL) {
 		param[i].key = CM_DBUS_PROP_CERT_POSTSAVE_COMMAND;
 		param[i].value_type = cm_tdbusm_dict_s;
-		param[i].value.s = command;
+		param[i].value.s = postcommand;
 		params[i] = &param[i];
 		i++;
 	}
@@ -2284,7 +2323,10 @@ list(const char *argv0, int argc, char **argv)
 			       cm_oid_to_name(NULL, as4[j]),
 			       as4[j + 1] ? "" : "\n");
 		}
-		printf(_("\tcommand: %s\n"),
+		printf(_("\tpre-save command: %s\n"),
+		       query_prop_s(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
+				    CM_DBUS_PROP_CERT_PRESAVE_COMMAND, verbose, globals.tctx));
+		printf(_("\tpost-save command: %s\n"),
 		       query_prop_s(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
 				    CM_DBUS_PROP_CERT_POSTSAVE_COMMAND, verbose, globals.tctx));
 		printf(_("\ttrack: %s\n"),
@@ -2437,7 +2479,8 @@ help(const char *cmd, const char *category)
 		N_("  -S		connect to the certmonger service on the system bus\n"),
 		N_("  -s		connect to the certmonger service on the session bus\n"),
 		N_("* Other options:\n"),
-		N_("  -C	command to run when saving the certificate\n"),
+		N_("  -B	command to run before saving the certificate\n"),
+		N_("  -C	command to run after saving the certificate\n"),
 		N_("  -v	report all details of errors\n"),
 		NULL,
 	};
@@ -2475,7 +2518,8 @@ help(const char *cmd, const char *category)
 		N_("  -S		connect to the certmonger service on the system bus\n"),
 		N_("  -s		connect to the certmonger service on the session bus\n"),
 		N_("* Other options:\n"),
-		N_("  -C	command to run when saving the certificate\n"),
+		N_("  -B	command to run before saving the certificate\n"),
+		N_("  -C	command to run after saving the certificate\n"),
 		N_("  -v	report all details of errors\n"),
 		NULL,
 	};
@@ -2535,7 +2579,8 @@ help(const char *cmd, const char *category)
 		N_("  -S		connect to the certmonger service on the system bus\n"),
 		N_("  -s		connect to the certmonger service on the session bus\n"),
 		N_("* Other options:\n"),
-		N_("  -C	command to run when saving the certificate\n"),
+		N_("  -B	command to run before saving the certificate\n"),
+		N_("  -C	command to run after saving the certificate\n"),
 		N_("  -v	report all details of errors\n"),
 		NULL,
 	};

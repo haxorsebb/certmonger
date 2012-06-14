@@ -1,4 +1,4 @@
-.TH certmonger 1 "12 August 2010" "certmonger Manual"
+.TH certmonger 1 "14 June 2012" "certmonger Manual"
 
 .SH NAME
 getcert
@@ -108,9 +108,13 @@ as its value, to the signing request.
 
 .SH OTHER OPTIONS
 .TP
+\fB\-B\fR command
+When ever the certificate is saved to the specified location, run the
+specified command as the client user before saving the certificate.
+.TP
 \fB\-C\fR command
 When ever the certificate is saved to the specified location, run the
-specified command as the client user.
+specified command as the client user after saving the certificate.
 .TP
 \fB\-v\fR
 Be verbose about errors.  Normally, the details of an error received from
