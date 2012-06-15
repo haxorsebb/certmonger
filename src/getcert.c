@@ -549,9 +549,10 @@ request(const char *argv0, int argc, char **argv)
 	char *pin = NULL, *pinfile = NULL;
 	int keysize = 0, auto_renew = 1, verbose = 0, c, i;
 	char *ca = DEFAULT_CA, *subject = NULL, **eku = NULL, *oid, *id = NULL;
+	char *profile = NULL;
 	char **principal = NULL, **dns = NULL, **email = NULL;
-	struct cm_tdbusm_dict param[34];
-	const struct cm_tdbusm_dict *params[35];
+	struct cm_tdbusm_dict param[35];
+	const struct cm_tdbusm_dict *params[36];
 	DBusMessage *req, *rep;
 	dbus_bool_t b;
 	char *p;
@@ -582,7 +583,7 @@ request(const char *argv0, int argc, char **argv)
 
 	opterr = 0;
 	while ((c = getopt(argc, argv,
-			   ":d:n:t:k:f:I:g:rRN:U:K:D:E:sSp:P:vB:C:"
+			   ":d:n:t:k:f:I:g:rRN:U:K:D:E:sSp:P:vB:C:T:"
 			   GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
@@ -619,6 +620,9 @@ request(const char *argv0, int argc, char **argv)
 			break;
 		case 'c':
 			ca = talloc_strdup(globals.tctx, optarg);
+			break;
+		case 'T':
+			profile = talloc_strdup(globals.tctx, optarg);
 			break;
 		case 'N':
 			subject = talloc_strdup(globals.tctx, optarg);
@@ -925,6 +929,13 @@ request(const char *argv0, int argc, char **argv)
 		params[i] = &param[i];
 		i++;
 	}
+	if (profile != NULL) {
+		param[i].key = CM_DBUS_PROP_CA_PROFILE;
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = profile;
+		params[i] = &param[i];
+		i++;
+	}
 	if (precommand != NULL) {
 		param[i].key = CM_DBUS_PROP_CERT_PRESAVE_COMMAND;
 		param[i].value_type = cm_tdbusm_dict_s;
@@ -1096,13 +1107,14 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 		  char *dbdir, char *nickname, char *token,
 		  char *keyfile, char *certfile,
 		  char *pin, char *pinfile,
-		  char *ca, char *precommand, char *postcommand,
+		  char *ca, char *profile,
+		  char *precommand, char *postcommand,
 		  dbus_bool_t auto_renew_stop, int verbose)
 {
 	DBusMessage *req, *rep;
 	int i;
-	struct cm_tdbusm_dict param[21];
-	const struct cm_tdbusm_dict *params[22];
+	struct cm_tdbusm_dict param[22];
+	const struct cm_tdbusm_dict *params[23];
 	dbus_bool_t b;
 	const char *capath;
 	char *p;
@@ -1208,6 +1220,13 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 	param[i].value.b = !auto_renew_stop;
 	params[i] = &param[i];
 	i++;
+	if (profile != NULL) {
+		param[i].key = CM_DBUS_PROP_CA_PROFILE;
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = profile;
+		params[i] = &param[i];
+		i++;
+	}
 	if (precommand != NULL) {
 		param[i].key = CM_DBUS_PROP_CERT_PRESAVE_COMMAND;
 		param[i].value_type = cm_tdbusm_dict_s;
@@ -1267,11 +1286,12 @@ set_tracking(const char *argv0, const char *category,
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	DBusMessage *req, *rep;
 	const char *request, *capath;
-	struct cm_tdbusm_dict param[12];
-	const struct cm_tdbusm_dict *params[13];
+	struct cm_tdbusm_dict param[13];
+	const struct cm_tdbusm_dict *params[14];
 	char *nss_scheme, *dbdir = NULL, *token = NULL, *nickname = NULL;
 	char *id = NULL, *new_id = NULL, *new_request;
 	char *keyfile = NULL, *certfile = NULL, *ca = DEFAULT_CA;
+	char *profile = NULL;
 	char *pin = NULL, *pinfile = NULL;
 	dbus_bool_t b;
 	int c, auto_renew_start = 0, auto_renew_stop = 0, verbose = 0, i;
@@ -1297,7 +1317,7 @@ set_tracking(const char *argv0, const char *category,
 
 	opterr = 0;
 	while ((c = getopt(argc, argv,
-			   ":d:n:t:k:f:g:p:P:rRi:I:U:K:D:E:sSvB:C:"
+			   ":d:n:t:k:f:g:p:P:rRi:I:U:K:D:E:sSvB:C:T:"
 			   GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
@@ -1343,6 +1363,9 @@ set_tracking(const char *argv0, const char *category,
 				help(argv0, category);
 				return 1;
 			}
+			break;
+		case 'T':
+			profile = talloc_strdup(globals.tctx, optarg);
 			break;
 		case 'i':
 			id = talloc_strdup(globals.tctx, optarg);
@@ -1546,6 +1569,13 @@ set_tracking(const char *argv0, const char *category,
 			} else {
 				capath = NULL;
 			}
+			if (profile != NULL) {
+				param[i].key = CM_DBUS_PROP_CA_PROFILE;
+				param[i].value_type = cm_tdbusm_dict_s;
+				param[i].value.s = profile;
+				params[i] = &param[i];
+				i++;
+			}
 			if (precommand != NULL) {
 				param[i].key = CM_DBUS_PROP_CERT_PRESAVE_COMMAND;
 				param[i].value_type = cm_tdbusm_dict_s;
@@ -1621,7 +1651,7 @@ set_tracking(const char *argv0, const char *category,
 						 dbdir, nickname, token,
 						 keyfile, certfile,
 						 pin, pinfile,
-						 ca,
+						 ca, profile,
 						 precommand, postcommand,
 						 (auto_renew_stop > 0),
 						 verbose);
@@ -1686,13 +1716,14 @@ resubmit(const char *argv0, int argc, char **argv)
 	DBusMessage *req, *rep;
 	const char *request;
 	char *capath;
-	struct cm_tdbusm_dict param[17];
-	const struct cm_tdbusm_dict *params[18];
+	struct cm_tdbusm_dict param[18];
+	const struct cm_tdbusm_dict *params[19];
 	char *dbdir = NULL, *token = NULL, *nickname = NULL, *certfile = NULL;
 	char *pin = NULL, *pinfile = NULL;
 	char *id = NULL, *new_id = NULL, *ca = NULL, *new_request, *nss_scheme;
 	char *subject = NULL, **eku = NULL, *oid = NULL;
 	char **principal = NULL, **dns = NULL, **email = NULL;
+	char *profile = NULL;
 	dbus_bool_t b;
 	int verbose = 0, c, i;
 	krb5_context kctx;
@@ -1710,7 +1741,8 @@ resubmit(const char *argv0, int argc, char **argv)
 
 	opterr = 0;
 	while ((c = getopt(argc, argv,
-			   ":d:n:N:t:U:K:E:D:f:i:I:sSp:P:vB:C:" GETOPT_CA)) != -1) {
+			   ":d:n:N:t:U:K:E:D:f:i:I:sSp:P:vB:C:T:"
+			   GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
 			nss_scheme = NULL;
@@ -1731,6 +1763,9 @@ resubmit(const char *argv0, int argc, char **argv)
 			break;
 		case 'c':
 			ca = talloc_strdup(globals.tctx, optarg);
+			break;
+		case 'T':
+			profile = talloc_strdup(globals.tctx, optarg);
 			break;
 		case 'i':
 			id = talloc_strdup(globals.tctx, optarg);
@@ -1924,6 +1959,13 @@ resubmit(const char *argv0, int argc, char **argv)
 		param[i].key = "KEY_PIN_FILE";
 		param[i].value_type = cm_tdbusm_dict_s;
 		param[i].value.s = pinfile;
+		params[i] = &param[i];
+		i++;
+	}
+	if (profile != NULL) {
+		param[i].key = CM_DBUS_PROP_CA_PROFILE;
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = profile;
 		params[i] = &param[i];
 		i++;
 	}
@@ -2469,6 +2511,7 @@ help(const char *cmd, const char *category)
 #ifndef FORCE_CA
 		N_("  -c CA		use the specified CA rather than the default\n"),
 #endif
+		N_("  -T PROFILE	ask the CA to process the request using the named profile or template\n"),
 		N_("* Parameters for the signing request:\n"),
 		N_("  -N NAME	set requested subject name (default: CN=<hostname>)\n"),
 		N_("  -U EXTUSAGE	set requested extended key usage OID\n"),
@@ -2509,6 +2552,7 @@ help(const char *cmd, const char *category)
 #ifndef FORCE_CA
 		N_("  -c CA		use the specified CA rather than the default\n"),
 #endif
+		N_("  -T PROFILE	ask the CA to process the request using the named profile or template\n"),
 		N_("* Parameters for the signing request at renewal time:\n"),
 		N_("  -U EXTUSAGE	override requested extended key usage OID\n"),
 		N_("  -K NAME	override requested principal name\n"),
@@ -2575,6 +2619,7 @@ help(const char *cmd, const char *category)
 #ifndef FORCE_CA
 		N_("  -c CA		use the specified CA rather than the current one\n"),
 #endif
+		N_("  -T PROFILE	ask the CA to process the request using the named profile or template\n"),
 		N_("* Bus options:\n"),
 		N_("  -S		connect to the certmonger service on the system bus\n"),
 		N_("  -s		connect to the certmonger service on the session bus\n"),

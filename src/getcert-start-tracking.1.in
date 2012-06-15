@@ -81,6 +81,10 @@ will simply stay expired.
 Enroll with the specified CA rather than a possible default.  The name of
 the CA should correspond to one listed by \fIgetcert list-cas\fR.  Only
 useful in combination with \fB\-r\fR.
+.TP
+\fB\-T\fR NAME
+Request a certificate using the named profile, template, or certtype,
+from the specified CA.
 
 .SH SIGNING REQUEST OPTIONS
 If and when \fIcertmonger\fR attempts to obtain a new certificate to replace

@@ -194,6 +194,10 @@ exit 0
 %endif
 
 %changelog
+* Fri Jun 12 2012 Nalin Dahyabhai <nalin@redhat.com>
+- add a command option (-T) to getcert for specifying which enrollment
+  profile to tell a CA that we're using, in case it cares (#10)
+
 * Thu Jun 12 2012 Nalin Dahyabhai <nalin@redhat.com> 0.57-1
 - clarify that the command passed to getcert -C is a "post"-save command
 - add a "pre"-save command option to getcert, specified with the -B flag (#9)
