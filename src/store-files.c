@@ -74,6 +74,7 @@ enum cm_store_file_field {
 	cm_store_entry_field_cert_principal,
 	cm_store_entry_field_cert_ku,
 	cm_store_entry_field_cert_eku,
+	cm_store_entry_field_cert_profile,
 
 	cm_store_entry_field_last_expiration_check,
 	cm_store_entry_field_last_need_notify_check,
@@ -157,6 +158,7 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_cert_principal, "cert_principal"},
 	{cm_store_entry_field_cert_ku, "cert_ku"},
 	{cm_store_entry_field_cert_eku, "cert_eku"},
+	{cm_store_entry_field_cert_profile, "cert_profile"},
 
 	{cm_store_entry_field_last_expiration_check, "last_expiration_check"},
 	{cm_store_entry_field_last_need_notify_check, "last_need_notify_check"},
@@ -558,6 +560,9 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_cert_eku:
 				ret->cm_cert_eku = free_if_empty(p);
 				break;
+			case cm_store_entry_field_cert_profile:
+				ret->cm_cert_profile = free_if_empty(p);
+				break;
 			case cm_store_entry_field_last_expiration_check:
 				/* backward compatibility before we split them
 				 * into two settings */
@@ -728,6 +733,7 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_cert_principal:
 			case cm_store_entry_field_cert_ku:
 			case cm_store_entry_field_cert_eku:
+			case cm_store_entry_field_cert_profile:
 			case cm_store_entry_field_last_expiration_check:
 			case cm_store_entry_field_last_need_notify_check:
 			case cm_store_entry_field_last_need_enroll_check:
@@ -996,6 +1002,8 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 				entry->cm_cert_ku);
 	cm_store_file_write_str(fp, cm_store_entry_field_cert_eku,
 				entry->cm_cert_eku);
+	cm_store_file_write_str(fp, cm_store_entry_field_cert_profile,
+				entry->cm_cert_profile);
 
 	cm_store_file_write_str(fp, cm_store_entry_field_last_need_notify_check,
 				cm_store_timestamp_from_time(entry->cm_last_need_notify_check,
@@ -1536,6 +1544,8 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	ret->cm_cert_principal = cm_store_maybe_strdupv(ret, entry->cm_cert_principal);
 	ret->cm_cert_ku = cm_store_maybe_strdup(ret, entry->cm_cert_ku);
 	ret->cm_cert_eku = cm_store_maybe_strdup(ret, entry->cm_cert_eku);
+	ret->cm_cert_profile = cm_store_maybe_strdup(ret,
+						     entry->cm_cert_profile);
 
 	ret->cm_last_need_notify_check = entry->cm_last_need_notify_check;
 	ret->cm_last_need_enroll_check = entry->cm_last_need_enroll_check;

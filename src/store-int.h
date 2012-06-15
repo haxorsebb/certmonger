@@ -70,6 +70,7 @@ struct cm_store_entry {
 	char **cm_cert_principal;
 	char *cm_cert_ku;
 	char *cm_cert_eku;
+	char *cm_cert_profile;
 	time_t cm_last_need_notify_check;
 	time_t cm_last_need_enroll_check;
 	/* How to notify administrator: syslog(LOG_AUTHPRIV?), mail to root@? */
