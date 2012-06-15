@@ -53,6 +53,7 @@ struct cm_submit_h_context {
 	enum cm_submit_h_opt_negotiate negotiate;
 	enum cm_submit_h_opt_delegate negotiate_delegate;
 	enum cm_submit_h_opt_clientauth client_auth;
+	enum cm_submit_h_opt_env_modify modify_env;
 	CURL *curl;
 };
 
@@ -63,7 +64,8 @@ cm_submit_h_init(void *parent,
 		 const char *sslcert, const char *sslkey, const char *sslpass,
 		 enum cm_submit_h_opt_negotiate neg,
 		 enum cm_submit_h_opt_delegate del,
-		 enum cm_submit_h_opt_clientauth cli)
+		 enum cm_submit_h_opt_clientauth cli,
+		 enum cm_submit_h_opt_env_modify env)
 {
 	struct cm_submit_h_context *ctx;
 	ctx = talloc_ptrtype(parent, ctx);
@@ -82,6 +84,7 @@ cm_submit_h_init(void *parent,
 		ctx->negotiate = neg;
 		ctx->negotiate_delegate = del;
 		ctx->client_auth = cli;
+		ctx->modify_env = env;
 	}
 	return ctx;
 }
@@ -185,6 +188,9 @@ cm_submit_h_run(struct cm_submit_h_context *ctx)
 			curl_easy_setopt(ctx->curl,
 					 CURLOPT_CAINFO,
 					 ctx->cainfo);
+			if (ctx->modify_env == cm_submit_h_env_modify_on) {
+				setenv("SSL_DIR", ctx->cainfo, 1);
+			}
 		}
 		if (ctx->capath != NULL) {
 			curl_easy_setopt(ctx->curl,
@@ -325,7 +331,8 @@ main(int argc, char **argv)
 	ctx = cm_submit_h_init(NULL, argv[optind], argv[optind + 1],
 			       (argc > optind + 2) ? argv[optind + 2] : "",
 			       cainfo, capath, sslcert, sslkey, sslpass,
-			       negotiate, negotiate_delegate, clientauth);
+			       negotiate, negotiate_delegate,
+			       clientauth, cm_submit_h_env_modify_on);
 	cm_submit_h_run(ctx);
 	if (cm_submit_h_results(ctx) != NULL) {
 		printf("%s", cm_submit_h_results(ctx));

@@ -273,7 +273,7 @@ main(int argc, char **argv)
 	email = NULL;
 	tele = NULL;
 	profile = "caServerCert";
-	while ((c = getopt(argc, argv, "C:n:e:t:p:s:c:r:x")) != -1) {
+	while ((c = getopt(argc, argv, "C:n:e:t:T:p:s:c:r:x")) != -1) {
 		switch (c) {
 		case 'C':
 			ca = optarg;
@@ -300,6 +300,9 @@ main(int argc, char **argv)
 			break;
 		case 'v':
 			verbose++;
+			break;
+		case 'T':
+			profile = optarg;
 			break;
 		default:
 			usage();
@@ -379,7 +382,8 @@ main(int argc, char **argv)
 				NULL, NULL, NULL, NULL, NULL,
 				cm_submit_h_negotiate_off,
 				cm_submit_h_delegate_off,
-				cm_submit_h_clientauth_off);
+				cm_submit_h_clientauth_off,
+				cm_submit_h_env_modify_on);
 	cm_submit_h_run(hctx);
 	c = cm_submit_h_result_code(hctx);
 	if (c != 0) {
