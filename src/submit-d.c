@@ -236,22 +236,33 @@ cm_submit_d_check_bundle(void *parent, const char *xml)
 static void
 usage(void)
 {
-	printf("usage: submit-d -C CA-EE-URL [-s csrfile OPTIONS] "
-	       "[-c requestid]\n");
+	printf("usage: submit-d -U CA-URL "
+	       "[-s: csrfile] "
+	       "[-c: requestid]\n");
 	printf("Options:\n"
-	       "\t-p profile_name\n"
-	       "\t-n requestor_name\n"
-	       "\t-e requestor_email\n"
-	       "\t-t requestor_telephone\n");
+	       "\t-A  use agent interface\n"
+	       "\t-a  use client auth\n"
+	       "\t-P: ca_path\n"
+	       "\t-I: ca_info\n"
+	       "\t-K: ssl_key\n"
+	       "\t-C: ssl_cert\n"
+	       "\t-p: ssl_pin\n"
+	       "\t-T: profile_name\n"
+	       "\t-n: requestor_name\n"
+	       "\t-e: requestor_email\n"
+	       "\t-t: requestor_telephone\n"
+	       "\t-v  verbose\n");
 }
 
 int
 main(int argc, char **argv)
 {
 	void *ctx;
-	int c, i, j, submit, check, id, verbose;
-	const char *method, *ca, *cgi, *file, *profile, *result;
+	enum { op_none, op_submit, op_check } op;
+	int c, i, j, id, clientauth, agent, verbose;
+	const char *method, *url, *cgi, *file, *profile, *result;
 	const char *name, *email, *tele;
+	const char *capath, *cainfo, *sslkey, *sslcert, *sslpin;
 	char *params, *uri, **var, **vars, *p, *request;
 	char *submit_x_vars[] = {"/xml/output/set/requestList/list/requestList/set/requestId",
 				 "/xml/output/set/errorCode",
@@ -263,20 +274,26 @@ main(int argc, char **argv)
 				"/xml/header/pkcs7ChainBase64",
 				NULL};
 	struct cm_submit_h_context *hctx;
-	submit = 0;
-	check = 0;
+	op = op_none;
 	id = 0;
 	verbose = 0;
-	ca = NULL;
+	clientauth = 0;
+	agent = 0;
+	url = NULL;
 	file = NULL;
 	name = NULL;
 	email = NULL;
 	tele = NULL;
+	capath = NULL;
+	cainfo = NULL;
+	sslkey = NULL;
+	sslcert = NULL;
+	sslpin = NULL;
 	profile = "caServerCert";
-	while ((c = getopt(argc, argv, "C:n:e:t:T:p:s:c:r:x")) != -1) {
+	while ((c = getopt(argc, argv, "U:n:e:t:T:s:c:r:vaAP:I:K:C:p:")) != -1) {
 		switch (c) {
-		case 'C':
-			ca = optarg;
+		case 'U':
+			url = optarg;
 			break;
 		case 'n':
 			name = optarg;
@@ -287,22 +304,40 @@ main(int argc, char **argv)
 		case 't':
 			tele = optarg;
 			break;
-		case 'p':
+		case 'T':
 			profile = optarg;
 			break;
 		case 's':
-			submit++;
+			op = op_submit;
 			file = optarg;
 			break;
 		case 'c':
-			check++;
+			op = op_check;
 			id = strtol(optarg, NULL, 0);
 			break;
 		case 'v':
 			verbose++;
 			break;
-		case 'T':
-			profile = optarg;
+		case 'a':
+			clientauth++;
+			break;
+		case 'A':
+			agent++;
+			break;
+		case 'P':
+			capath = optarg;
+			break;
+		case 'I':
+			cainfo = optarg;
+			break;
+		case 'K':
+			sslkey = optarg;
+			break;
+		case 'C':
+			sslcert = optarg;
+			break;
+		case 'p':
+			sslpin = optarg;
 			break;
 		default:
 			usage();
@@ -311,7 +346,8 @@ main(int argc, char **argv)
 		}
 	}
 	ctx = talloc_new(NULL);
-	if (submit) {
+	switch (op) {
+	case op_submit:
 		method = "POST";
 		cgi = "profileSubmit";
 		p = cm_submit_u_from_file_single(file);
@@ -352,36 +388,43 @@ main(int argc, char **argv)
 						 params, tele);
 		}
 		vars = submit_x_vars;
-	} else
-	if (check) {
+		break;
+	case op_check:
 		method = "GET";
 		cgi = "checkRequest";
 		params = talloc_asprintf(ctx, "requestId=%d&importCert=true&xml=true", id);
 		vars = check_x_vars;
-	} else {
+		break;
+	case op_none:
 		printf("Error: no specific request given.\n");
 		usage();
 		return 1;
 	}
-	if (ca == NULL) {
+	if (url == NULL) {
 		printf("Error: CA URI not given.\n");
 		usage();
 		return 1;
 	}
-	if (strstr(ca, "/") == NULL) {
+	if (strstr(url, "/") == NULL) {
 		/* Append a location on the server. */
-		ca = talloc_asprintf(ctx, "%s/ca/ee/ca", ca);
+		if (agent) {
+			url = talloc_asprintf(ctx, "%s/ca/agent/ca", url);
+		} else {
+			url = talloc_asprintf(ctx, "%s/ca/ee/ca", url);
+		}
 	}
-	if ((strstr(ca, "http://") == NULL) &&
-	    (strstr(ca, "https://") == NULL)) {
+	if ((strstr(url, "http://") == NULL) &&
+	    (strstr(url, "https://") == NULL)) {
 		/* Guess HTTP. */
-		ca = talloc_asprintf(ctx, "http://%s", ca);
+		url = talloc_asprintf(ctx, "http://%s", url);
 	}
-	uri = talloc_asprintf(ctx, "%s/%s", ca, cgi);
+	uri = talloc_asprintf(ctx, "%s/%s", url, cgi);
 	hctx = cm_submit_h_init(ctx, method, uri, params,
-				NULL, NULL, NULL, NULL, NULL,
+				cainfo, capath, sslcert, sslkey, sslpin,
 				cm_submit_h_negotiate_off,
 				cm_submit_h_delegate_off,
+				clientauth ?
+				cm_submit_h_clientauth_on :
 				cm_submit_h_clientauth_off,
 				cm_submit_h_env_modify_on);
 	cm_submit_h_run(hctx);
@@ -391,7 +434,8 @@ main(int argc, char **argv)
 		return 1;
 	}
 	result = cm_submit_h_results(hctx);
-	if (submit) {
+	switch (op) {
+	case op_submit:
 		printf("%s:%s\n",
 		       cm_submit_d_req_error(hctx, result),
 		       cm_submit_d_req_status(hctx, result));
@@ -399,13 +443,17 @@ main(int argc, char **argv)
 		if (p != NULL) {
 			printf("%s\n", p);
 		}
-	}
-	if (check) {
+		break;
+	case op_check:
 		printf("%s\n", cm_submit_d_check_status(hctx, result));
 		p = cm_submit_d_check_bundle(hctx, result);
 		if (p != NULL) {
 			printf("%s\n", p);
 		}
+		break;
+	case op_none:
+		/* never reached */
+		break;
 	}
 	if (verbose) {
 		for (var = vars; (var != NULL) && (*var != NULL); var++) {
