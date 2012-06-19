@@ -427,31 +427,32 @@ main(int argc, char **argv)
 		return 1;
 	}
 	if (agent) {
-		if (uri == agenturl) {
+		if (agenturl == NULL) {
 			printf("Error: CA AGENT-URL not given.\n");
+			usage();
+			return 1;
 		}
-		usage();
-		return 1;
+		if (strstr(agenturl, "/") == NULL) {
+			agenturl = talloc_asprintf(ctx, "%s/ca/agent/ca",
+						   agenturl);
+		}
+		if ((strstr(agenturl, "http://") == NULL) &&
+		    (strstr(agenturl, "https://") == NULL)) {
+			agenturl = talloc_asprintf(ctx, "https://%s", agenturl);
+		}
 	} else {
-		if (uri == eeurl) {
+		if (eeurl == NULL) {
 			printf("Error: CA EE-URL not given.\n");
+			usage();
+			return 1;
 		}
-		usage();
-		return 1;
-	}
-	if (strstr(eeurl, "/") == NULL) {
-		eeurl = talloc_asprintf(ctx, "%s/ca/ee/ca", eeurl);
-	}
-	if ((strstr(eeurl, "http://") == NULL) &&
-	    (strstr(eeurl, "https://") == NULL)) {
-		eeurl = talloc_asprintf(ctx, "https://%s", eeurl);
-	}
-	if (strstr(agenturl, "/") == NULL) {
-		agenturl = talloc_asprintf(ctx, "%s/ca/agent/ca", agenturl);
-	}
-	if ((strstr(agenturl, "http://") == NULL) &&
-	    (strstr(agenturl, "https://") == NULL)) {
-		agenturl = talloc_asprintf(ctx, "https://%s", agenturl);
+		if (strstr(eeurl, "/") == NULL) {
+			eeurl = talloc_asprintf(ctx, "%s/ca/ee/ca", eeurl);
+		}
+		if ((strstr(eeurl, "http://") == NULL) &&
+		    (strstr(eeurl, "https://") == NULL)) {
+			eeurl = talloc_asprintf(ctx, "http://%s", eeurl);
+		}
 	}
 	uri = talloc_asprintf(ctx, "%s/%s", agent ? agenturl : eeurl, cgi);
 	if (verbose > 1) {
