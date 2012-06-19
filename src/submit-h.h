@@ -35,6 +35,10 @@ enum cm_submit_h_opt_clientauth {
 	cm_submit_h_clientauth_off,
 	cm_submit_h_clientauth_on
 };
+enum cm_submit_h_opt_curl_verbose {
+	cm_submit_h_curl_verbose_off,
+	cm_submit_h_curl_verbose_on
+};
 struct cm_submit_h_context *cm_submit_h_init(void *parent,
 					     const char *method,
 					     const char *uri,
@@ -47,7 +51,8 @@ struct cm_submit_h_context *cm_submit_h_init(void *parent,
 					     enum cm_submit_h_opt_negotiate neg,
 					     enum cm_submit_h_opt_delegate del,
 					     enum cm_submit_h_opt_clientauth cli,
-					     enum cm_submit_h_opt_env_modify env);
+					     enum cm_submit_h_opt_env_modify env,
+					     enum cm_submit_h_opt_curl_verbose verbose);
 void cm_submit_h_run(struct cm_submit_h_context *ctx);
 int cm_submit_h_result_code(struct cm_submit_h_context *ctx);
 const char *cm_submit_h_result_code_text(struct cm_submit_h_context *ctx);

@@ -54,6 +54,7 @@ struct cm_submit_h_context {
 	enum cm_submit_h_opt_delegate negotiate_delegate;
 	enum cm_submit_h_opt_clientauth client_auth;
 	enum cm_submit_h_opt_env_modify modify_env;
+	enum cm_submit_h_opt_curl_verbose verbose;
 	CURL *curl;
 };
 
@@ -65,7 +66,8 @@ cm_submit_h_init(void *parent,
 		 enum cm_submit_h_opt_negotiate neg,
 		 enum cm_submit_h_opt_delegate del,
 		 enum cm_submit_h_opt_clientauth cli,
-		 enum cm_submit_h_opt_env_modify env)
+		 enum cm_submit_h_opt_env_modify env,
+		 enum cm_submit_h_opt_curl_verbose verbose)
 {
 	struct cm_submit_h_context *ctx;
 	ctx = talloc_ptrtype(parent, ctx);
@@ -85,6 +87,7 @@ cm_submit_h_init(void *parent,
 		ctx->negotiate_delegate = del;
 		ctx->client_auth = cli;
 		ctx->modify_env = env;
+		ctx->verbose = verbose;
 	}
 	return ctx;
 }
@@ -124,6 +127,11 @@ cm_submit_h_run(struct cm_submit_h_context *ctx)
 	}
 	ctx->curl = curl_easy_init();
 	if (ctx->curl != NULL) {
+		if (ctx->verbose) {
+			curl_easy_setopt(ctx->curl,
+					 CURLOPT_VERBOSE,
+					 1L);
+		}
 		if ((ctx->cainfo != NULL) || (ctx->capath != NULL)) {
 			curl_easy_setopt(ctx->curl,
 					 CURLOPT_SSL_VERIFYPEER,
@@ -333,7 +341,8 @@ main(int argc, char **argv)
 			       (argc > optind + 2) ? argv[optind + 2] : "",
 			       cainfo, capath, sslcert, sslkey, sslpass,
 			       negotiate, negotiate_delegate,
-			       clientauth, cm_submit_h_env_modify_on);
+			       clientauth, cm_submit_h_env_modify_on,
+			       cm_submit_h_curl_verbose_off);
 	cm_submit_h_run(ctx);
 	if (cm_submit_h_results(ctx) != NULL) {
 		printf("%s", cm_submit_h_results(ctx));

@@ -276,6 +276,7 @@ usage(void)
 	printf("Options:\n"
 	       "\t-A  use agent interface\n"
 	       "\t-a  use client auth\n"
+	       "\t-d: NSS db\n"
 	       "\t-P: ca_path\n"
 	       "\t-I: ca_info\n"
 	       "\t-K: ssl_key\n"
@@ -303,7 +304,7 @@ main(int argc, char **argv)
 	int c, i, j, id, clientauth, agent, verbose;
 	const char *method, *url, *cgi, *file, *serial, *profile, *result;
 	const char *name, *email, *tele;
-	const char *capath, *cainfo, *sslkey, *sslcert, *sslpin;
+	const char *nssdb, *capath, *cainfo, *sslkey, *sslcert, *sslpin;
 	char *params, *uri, **var, **vars, *p, *request;
 	char *submit_x_vars[] = {"/xml/output/set/requestList/list/requestList/set/requestId",
 				 "/xml/output/set/errorCode",
@@ -337,13 +338,14 @@ main(int argc, char **argv)
 	name = NULL;
 	email = NULL;
 	tele = NULL;
+	nssdb = NULL;
 	capath = NULL;
 	cainfo = NULL;
 	sslkey = NULL;
 	sslcert = NULL;
 	sslpin = NULL;
 	profile = "caServerCert";
-	while ((c = getopt(argc, argv, "U:n:e:t:T:s:S:c:f:R:vaAP:I:K:C:p:")) != -1) {
+	while ((c = getopt(argc, argv, "U:n:e:t:T:s:S:c:f:R:vaAP:I:K:C:d:p:")) != -1) {
 		switch (c) {
 		case 'U':
 			url = optarg;
@@ -389,6 +391,9 @@ main(int argc, char **argv)
 		case 'A':
 			agent++;
 			break;
+		case 'd':
+			nssdb = optarg;
+			break;
 		case 'P':
 			capath = optarg;
 			break;
@@ -409,6 +414,9 @@ main(int argc, char **argv)
 			return 1;
 			break;
 		}
+	}
+	if (nssdb != NULL) {
+		setenv("SSL_DIR", nssdb, 1);
 	}
 	ctx = talloc_new(NULL);
 	switch (op) {
@@ -539,7 +547,10 @@ main(int argc, char **argv)
 				clientauth ?
 				cm_submit_h_clientauth_on :
 				cm_submit_h_clientauth_off,
-				cm_submit_h_env_modify_on);
+				cm_submit_h_env_modify_off,
+				verbose > 2 ?
+				cm_submit_h_curl_verbose_on :
+				cm_submit_h_curl_verbose_off);
 	cm_submit_h_run(hctx);
 	c = cm_submit_h_result_code(hctx);
 	if (c != 0) {
