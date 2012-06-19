@@ -16,6 +16,7 @@
  */
 
 #include "config.h"
+#include <openssl/bn.h>
 #include <openssl/pem.h>
 #include "util-o.h"
 
@@ -29,4 +30,18 @@ util_o_init(void)
 #else
 	SSL_library_init();
 #endif
+}
+
+char *
+util_o_dec_from_hex(const char *hex)
+{
+	BIGNUM *bn = NULL;
+	char *ret;
+
+	if (BN_hex2bn(&bn, hex) == 0) {
+		return NULL;
+	}
+	ret = BN_bn2dec(bn);
+	BN_free(bn);
+	return ret;
 }
