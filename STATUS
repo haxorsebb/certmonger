@@ -97,13 +97,16 @@ To-do:
       the certificate.
     * Populate/update the known-issuer-names list using the CA certificate.
     * Cache the authorityKeyIdentifier and subjectPublicKeyIdentifier from the
-      CA certificate.
+      CA certificate, and use that to match up certificates that need to be
+      renewed with their CAs.
     * If the CA cert includes a CRL distribution point extension, cache the
       CRL, too.  This'll require a new dependency on a retrieval library
       (probably libcurl) and changes to the internal state machine to handle
-      CRL retrieval as another type of task.
+      CRL retrieval as another type of task.  The local signer's CRL would be
+      regenerated before being "retrieved".
   * Learn about SRV records for locating servers.
   * Learn to talk to KCAs (per http://datatracker.ietf.org/doc/draft-hotz-kx509)
+  * Learn to talk to puppet CAs
   * Lighten build requirements by crafting and parsing XML-RPC ourselves
     since we're already going to have to deal with non-XML-RPC XML and HTTP
     when DogTag support goes in.
