@@ -162,119 +162,17 @@ cm_submit_d_fetch_bundle(void *parent, const char *xml)
 }
 
 #ifdef CM_SUBMIT_D_MAIN
-/* 
- * profileSubmit:
-	HTTP/1.1 200 OK
-	Server: Apache-Coyote/1.1
-	Content-Type: text/xml
-	Content-Length: 248
-	Date: Tue, 04 Oct 2011 08:08:41 GMT
-
-	<?xml version="1.0"?>
-	<xml>
-	  <output>
-	    <set>
-	      <errorReason>
-		Request Deferred - defer request
-		</errorReason>
-	      <requestList>
-		<list>
-		  <requestList>
-		    <set>
-		      <requestId>
-		50
-		</requestId>
-		    </set>
-		  </requestList>
-		</list>
-	      </requestList>
-	      <errorCode>
-		2
-		</errorCode>
-	    </set>
-	  </output>
-	</xml>
-
- * checkRequest:
-	HTTP/1.1 200 OK
-	Server: Apache-Coyote/1.1
-	Content-Type: text/xml
-	Content-Length: 204
-	Date: Tue, 04 Oct 2011 08:11:58 GMT
-
-	<?xml version="1.0"?>
-	<xml>
-	  <header>
-	    <status>
-	pending
-	</status>
-	    <updatedOn>
-	1317715721
-	</updatedOn>
-	    <requestId>
-	50
-	</requestId>
-	    <authority>
-	ca
-	</authority>
-	    <createdOn>
-	1317715721
-	</createdOn>
-	  </header>
-	  <fixed>
-	</fixed>
-	</xml>
-
- * checkRequest:
-	HTTP/1.1 200 OK
-	Server: Apache-Coyote/1.1
-	Content-Type: text/xml
-	Content-Length: 3011
-	Date: Tue, 04 Oct 2011 08:29:56 GMT
-
-	<?xml version="1.0"?>
-	<xml>
-	  <header>
-	    <status>
-	complete
-	</status>
-	    <pkcs7ChainBase64>
-	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
-	</pkcs7ChainBase64>
-	    <updatedOn>
-	1317716551
-	</updatedOn>
-	    <requestId>
-	53
-	</requestId>
-	    <authority>
-	ca
-	</authority>
-	    <createdOn>
-	1317716542
-	</createdOn>
-	  </header>
-	  <fixed>
-	</fixed>
-	</xml>
- */
 static void
 usage(void)
 {
-	printf("usage: submit-d -U CA-URL "
-	       "[-S: serialhex] "
-	       "[-s: csrfile] "
-	       "[-c: requestid] "
-	       "[-R: requestid] "
-	       "[-f: requestid]\n");
+	printf("usage: submit-d [-u EE-URL | -U AGENT-URL] MODE OPTIONS\n");
 	printf("Modes:\n"
-	       "\t-S: submit-renewal-by-serial\n"
-	       "\t-s: submit-request-using-CSR\n"
-	       "\t-c: check-request-progress\n"
-	       "\t-f: fetch-requested-certificate\n"
-	       "\t-R: review-profile-request\n");
+	       "\t-S serialhex: submit-renewal-by-serial\n"
+	       "\t-s csrfile:   submit-request-using-CSR\n"
+	       "\t-c requestid: check-request-progress\n"
+	       "\t-f requestid: fetch-requested-certificate\n"
+	       "\t-R requestid: review-profile-request\n");
 	printf("Options:\n"
-	       "\t-A  use agent interface\n"
 	       "\t-a  use client auth\n"
 	       "\t-d: NSS db\n"
 	       "\t-P: ca_path\n"
@@ -301,10 +199,11 @@ main(int argc, char **argv)
 		op_review,
 		op_fetch
 	} op;
-	int c, i, j, id, clientauth, agent, verbose;
-	const char *method, *url, *cgi, *file, *serial, *profile, *result;
+	int c, i, j, id, agent, clientauth, verbose;
+	const char *method, *eeurl, *agenturl, *cgi, *file, *serial, *profile;
 	const char *name, *email, *tele;
 	const char *nssdb, *capath, *cainfo, *sslkey, *sslcert, *sslpin;
+	const char *result;
 	char *params, *uri, **var, **vars, *p, *request;
 	char *submit_x_vars[] = {"/xml/output/set/requestList/list/requestList/set/requestId",
 				 "/xml/output/set/errorCode",
@@ -330,9 +229,11 @@ main(int argc, char **argv)
 	op = op_none;
 	id = 0;
 	verbose = 0;
-	clientauth = 0;
 	agent = 0;
-	url = NULL;
+	clientauth = 0;
+	eeurl = NULL;
+	agenturl = NULL;
+	uri = NULL;
 	file = NULL;
 	serial = NULL;
 	name = NULL;
@@ -345,10 +246,13 @@ main(int argc, char **argv)
 	sslcert = NULL;
 	sslpin = NULL;
 	profile = "caServerCert";
-	while ((c = getopt(argc, argv, "U:n:e:t:T:s:S:c:f:R:vaAP:I:K:C:d:p:")) != -1) {
+	while ((c = getopt(argc, argv, "u:U:n:e:t:T:s:S:c:f:R:vaP:I:K:C:d:p:")) != -1) {
 		switch (c) {
+		case 'u':
+			eeurl = optarg;
+			break;
 		case 'U':
-			url = optarg;
+			agenturl = optarg;
 			break;
 		case 'n':
 			name = optarg;
@@ -364,22 +268,27 @@ main(int argc, char **argv)
 			break;
 		case 's':
 			op = op_submit_csr;
+			agent = 0;
 			file = optarg;
 			break;
 		case 'S':
 			op = op_submit_serial;
+			agent = 0;
 			serial = optarg;
 			break;
 		case 'c':
 			op = op_check;
+			agent = 0;
 			id = strtol(optarg, NULL, 0);
 			break;
 		case 'R':
 			op = op_review;
+			agent = 1;
 			id = strtol(optarg, NULL, 0);
 			break;
 		case 'f':
 			op = op_fetch;
+			agent = 0;
 			id = strtol(optarg, NULL, 0);
 			break;
 		case 'v':
@@ -387,9 +296,6 @@ main(int argc, char **argv)
 			break;
 		case 'a':
 			clientauth++;
-			break;
-		case 'A':
-			agent++;
 			break;
 		case 'd':
 			nssdb = optarg;
@@ -489,20 +395,30 @@ main(int argc, char **argv)
 	case op_review:
 		method = "GET";
 		cgi = "profileReview";
-		params = talloc_asprintf(ctx, "requestId=%d&xml=true", id);
+		params = talloc_asprintf(ctx,
+					 "requestId=%d&"
+					 "xml=true",
+					 id);
 		vars = review_x_vars;
-		agent++;
 		break;
 	case op_check:
 		method = "GET";
 		cgi = "checkRequest";
-		params = talloc_asprintf(ctx, "requestId=%d&importCert=true&xml=true", id);
+		params = talloc_asprintf(ctx,
+					 "requestId=%d&"
+					 "importCert=true&"
+					 "xml=true",
+					 id);
 		vars = check_x_vars;
 		break;
 	case op_fetch:
 		method = "GET";
 		cgi = "displayCertFromRequest";
-		params = talloc_asprintf(ctx, "requestId=%d&importCert=true&xml=true", id);
+		params = talloc_asprintf(ctx,
+					 "requestId=%d&"
+					 "importCert=true&"
+					 "xml=true",
+					 id);
 		vars = fetch_x_vars;
 		break;
 	case op_none:
@@ -510,30 +426,34 @@ main(int argc, char **argv)
 		usage();
 		return 1;
 	}
-	if (url == NULL) {
-		printf("Error: CA URI not given.\n");
+	if (agent) {
+		if (uri == agenturl) {
+			printf("Error: CA AGENT-URL not given.\n");
+		}
+		usage();
+		return 1;
+	} else {
+		if (uri == eeurl) {
+			printf("Error: CA EE-URL not given.\n");
+		}
 		usage();
 		return 1;
 	}
-	if (strstr(url, "/") == NULL) {
-		/* Append a location on the server. */
-		if (agent) {
-			url = talloc_asprintf(ctx, "%s/ca/agent/ca", url);
-		} else {
-			url = talloc_asprintf(ctx, "%s/ca/ee/ca", url);
-		}
+	if (strstr(eeurl, "/") == NULL) {
+		eeurl = talloc_asprintf(ctx, "%s/ca/ee/ca", eeurl);
 	}
-	if ((strstr(url, "http://") == NULL) &&
-	    (strstr(url, "https://") == NULL)) {
-		if (agent) {
-			/* Guess HTTPS. */
-			url = talloc_asprintf(ctx, "https://%s", url);
-		} else {
-			/* Guess HTTP. */
-			url = talloc_asprintf(ctx, "http://%s", url);
-		}
+	if ((strstr(eeurl, "http://") == NULL) &&
+	    (strstr(eeurl, "https://") == NULL)) {
+		eeurl = talloc_asprintf(ctx, "https://%s", eeurl);
 	}
-	uri = talloc_asprintf(ctx, "%s/%s", url, cgi);
+	if (strstr(agenturl, "/") == NULL) {
+		agenturl = talloc_asprintf(ctx, "%s/ca/agent/ca", agenturl);
+	}
+	if ((strstr(agenturl, "http://") == NULL) &&
+	    (strstr(agenturl, "https://") == NULL)) {
+		agenturl = talloc_asprintf(ctx, "https://%s", agenturl);
+	}
+	uri = talloc_asprintf(ctx, "%s/%s", agent ? agenturl : eeurl, cgi);
 	if (verbose > 1) {
 		printf("url = \"%s\"\n", uri);
 		if (verbose > 2) {
