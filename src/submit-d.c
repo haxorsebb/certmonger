@@ -36,6 +36,177 @@
 #include "submit-u.h"
 #include "util-o.h"
 
+struct dogtag_default {
+	enum {
+		dogtag_none,
+		dogtag_boolean,
+		dogtag_int,
+		dogtag_choice,
+		dogtag_string,
+		dogtag_string_ist
+	} syntax;
+	char *name;
+	char *value;
+};
+
+#define DOGTAG_DEFAULTS_SET_PATH \
+	"/xml/output/set/record/list/record/set/defList/list/defList/set"
+#define DOGTAG_DEFAULTS_SET_MEMBER_NAME "defId"
+#define DOGTAG_DEFAULTS_SET_MEMBER_VALUE "defVal"
+#define DOGTAG_DEFAULTS_SET_MEMBER_CONSTRAINT "defConstraint"
+#define DOGTAG_DEFAULTS_SET_MEMBER_SYNTAX "defSyntax"
+
+static char *
+cm_submit_d_xml_node_text(void *parent, xmlNodePtr node, const char *subname)
+{
+	xmlNodePtr subnode;
+	char *ret;
+	const char *content;
+	int i;
+
+	subnode = NULL;
+	if (subname != NULL) {
+		subnode = node->children;
+		node = NULL;
+		while (subnode != NULL) {
+			if ((subnode->type == XML_ELEMENT_NODE) &&
+			    (strcmp((const char *) subnode->name,
+				    subname) == 0)) {
+				node = subnode;
+				break;
+			}
+			subnode = subnode->next;
+		}
+	}
+	if ((subnode = node->children) != NULL) {
+		while (subnode != NULL) {
+			if (subnode->type == XML_TEXT_NODE) {
+				break;
+			}
+			subnode = subnode->next;
+		}
+	}
+	ret = NULL;
+	if (subnode != NULL) {
+		content = (const char *) subnode->content;
+		content += strspn(content, "\r\n");
+		i = strlen(content);
+		while ((i > 0) && (strchr("\r\n", content[i - 1]) != NULL)) {
+			i--;
+		}
+		ret = talloc_strndup(parent, content, i);
+	}
+	return ret;
+}
+
+static struct dogtag_default *
+cm_submit_d_xml_default(void *parent, xmlNodePtr node)
+{
+	char *name, *value, *constraint, *syntax;
+	const char *subname;
+	struct dogtag_default *ret;
+
+	subname = DOGTAG_DEFAULTS_SET_MEMBER_NAME;
+	name = cm_submit_d_xml_node_text(parent, node, subname);
+	subname = DOGTAG_DEFAULTS_SET_MEMBER_VALUE;
+	value = cm_submit_d_xml_node_text(parent, node, subname);
+	subname = DOGTAG_DEFAULTS_SET_MEMBER_CONSTRAINT;
+	constraint = cm_submit_d_xml_node_text(parent, node, subname);
+	subname = DOGTAG_DEFAULTS_SET_MEMBER_SYNTAX;
+	syntax = cm_submit_d_xml_node_text(parent, node, subname);
+	if ((value == NULL) && (strcmp(syntax, "choice") == 0)) {
+		value = talloc_strdup(parent, constraint);
+		if (value != NULL) {
+			value[strcspn(value, ",")] = '\0';
+		}
+	}
+	if ((name == NULL) ||
+	    (value == NULL) ||
+	    (constraint == NULL) ||
+	    (syntax == NULL)) {
+		return NULL;
+	}
+	if (strcmp(constraint, "readonly") == 0) {
+		return NULL;
+	}
+	ret = talloc_ptrtype(parent, ret);
+	if (ret != NULL) {
+		memset(ret, 0, sizeof(*ret));
+		ret->name = name;
+		ret->value = value;
+		if (strcmp(syntax, "int") == 0) {
+			ret->syntax = dogtag_int;
+		} else
+		if (strcmp(syntax, "string") == 0) {
+			ret->syntax = dogtag_string;
+		} else
+		if (strcmp(syntax, "boolean") == 0) {
+			ret->syntax = dogtag_boolean;
+		} else
+		if (strcmp(syntax, "choice") == 0) {
+			ret->syntax = dogtag_choice;
+		} else
+		if (strcmp(syntax, "string_list") == 0) {
+			ret->syntax = dogtag_string_ist;
+		} else
+			printf("syntax %s\n", syntax);
+	}
+
+	return ret;
+}
+
+static struct dogtag_default **
+cm_submit_d_xml_defaults(void *parent, const char *xml)
+{
+	/* "xpath" -> content */
+	struct dogtag_default **ret;
+	xmlXPathContextPtr xpctx;
+	xmlXPathObjectPtr obj;
+	xmlDocPtr doc;
+	xmlNodePtr node;
+	xmlChar *xpath;
+	int i, j;
+
+	ret = NULL;
+	doc = xmlParseMemory(xml, strlen(xml));
+	if (doc != NULL) {
+		xpctx = xmlXPathNewContext(doc);
+		if (xpctx != NULL) {
+			xpath = xmlCharStrdup(DOGTAG_DEFAULTS_SET_PATH);
+			obj = NULL;
+			if (xpath != NULL) {
+				obj = xmlXPathEval(xpath, xpctx);
+				xmlFree(xpath);
+			}
+			node = NULL;
+			if ((obj != NULL) &&
+			    (obj->nodesetval != NULL) &&
+			    (obj->nodesetval->nodeNr > 0)) {
+				ret = malloc(sizeof(*ret) *
+					     (obj->nodesetval->nodeNr + 1));
+				if (ret != NULL) {
+					memset(ret, 0,
+					       sizeof(*ret) *
+					       (obj->nodesetval->nodeNr + 1));
+				}
+				for (i = 0, j = 0;
+				     (i < obj->nodesetval->nodeNr);
+				     i++) {
+					node = obj->nodesetval->nodeTab[i];
+					ret[j] = cm_submit_d_xml_default(parent, node);
+					if (ret[j] != NULL) {
+						j++;
+					}
+				}
+				ret[j] = NULL;
+			}
+			xmlXPathFreeContext(xpctx);
+		}
+		xmlFreeDoc(doc);
+	}
+	return ret;
+}
+
 static char *
 cm_submit_d_xml_value(void *parent, const char *xml, const char *path)
 {
@@ -94,29 +265,26 @@ cm_submit_d_xml_value(void *parent, const char *xml, const char *path)
 }
 
 char *
-cm_submit_d_req_error(void *parent, const char *xml)
+cm_submit_d_submit_status(void *parent, const char *xml)
 {
 	/* ProfileSubmitServlet.java:
 	 * 1: internal error
 	 * 2: deferred
 	 * 3: rejected
 	 */
-	return cm_submit_d_xml_value(parent, xml, "/xml/output/set/errorCode") ?:
-	       cm_submit_d_xml_value(parent, xml, "/XMLResponse/Status");
+	return cm_submit_d_xml_value(parent, xml, "/XMLResponse/Status");
 }
 
 char *
-cm_submit_d_req_status(void *parent, const char *xml)
+cm_submit_d_submit_error(void *parent, const char *xml)
 {
-	return cm_submit_d_xml_value(parent, xml, "/xml/output/set/errorReason") ?:
-	       cm_submit_d_xml_value(parent, xml, "/XMLResponse/Error");
+	return cm_submit_d_xml_value(parent, xml, "/XMLResponse/Error");
 }
 
 char *
-cm_submit_d_req_requestid(void *parent, const char *xml)
+cm_submit_d_submit_requestid(void *parent, const char *xml)
 {
-	return cm_submit_d_xml_value(parent, xml, "/xml/output/set/requestList/list/requestList/set/requestId") ?:
-	       cm_submit_d_xml_value(parent, xml, "/XMLResponse/RequestId");
+	return cm_submit_d_xml_value(parent, xml, "/XMLResponse/RequestId");
 }
 
 char *
@@ -135,9 +303,9 @@ cm_submit_d_check_status(void *parent, const char *xml)
 }
 
 char *
-cm_submit_d_check_bundle(void *parent, const char *xml)
+cm_submit_d_approve_status(void *parent, const char *xml)
 {
-	return cm_submit_d_xml_value(parent, xml, "/xml/header/pkcs7ChainBase64");
+	return cm_submit_d_xml_value(parent, xml, "/xml/output/set/requestStatus");
 }
 
 char *
@@ -156,9 +324,9 @@ cm_submit_d_fetch_status(void *parent, const char *xml)
 }
 
 char *
-cm_submit_d_fetch_bundle(void *parent, const char *xml)
+cm_submit_d_fetch_cert(void *parent, const char *xml)
 {
-	return cm_submit_d_xml_value(parent, xml, "/xml/header/pkcs7ChainBase64");
+	return cm_submit_d_xml_value(parent, xml, "/xml/records/record/base64Cert");
 }
 
 #ifdef CM_SUBMIT_D_MAIN
@@ -171,7 +339,8 @@ usage(void)
 	       "\t-s csrfile:   submit-request-using-CSR\n"
 	       "\t-c requestid: check-request-progress\n"
 	       "\t-f requestid: fetch-requested-certificate\n"
-	       "\t-R requestid: review-profile-request\n");
+	       "\t-R requestid: review-profile-based-request\n"
+	       "\t-A requestid: approve-profile-based-request\n");
 	printf("Options:\n"
 	       "\t-a  use client auth\n"
 	       "\t-d: NSS db\n"
@@ -197,14 +366,17 @@ main(int argc, char **argv)
 		op_submit_serial,
 		op_check,
 		op_review,
+		op_approve,
 		op_fetch
 	} op;
-	int c, id, agent, clientauth, verbose;
+	int c, i, id, agent, clientauth, verbose;
 	const char *method, *eeurl, *agenturl, *cgi, *file, *serial, *profile;
 	const char *name, *email, *tele;
 	const char *nssdb, *capath, *cainfo, *sslkey, *sslcert, *sslpin;
 	const char *result;
+	struct dogtag_default **defaults, *nodefault[] = { NULL };
 	char *params, *uri, **var, **vars, *p, *request;
+	char *no_x_vars[] = { NULL };
 	char *submit_x_vars[] = {"/xml/output/set/requestList/list/requestList/set/requestId",
 				 "/xml/output/set/errorCode",
 				 "/xml/output/set/errorReason",
@@ -216,10 +388,15 @@ main(int argc, char **argv)
 				"/xml/header/requestId",
 				"/xml/fixed/unexpectedError",
 				NULL};
-	char *review_x_vars[] = {"/xml/header/status",
-				 "/xml/header/requestId",
-				 "/xml/fixed/unexpectedError",
-				 NULL};
+	char *review_x_vars[] = { NULL };
+	char *approve_x_vars[] = {"/xml/header/status",
+				  "/xml/header/requestId",
+				  "/xml/fixed/unexpectedError",
+				  "/xml/output/set/record/list/record/set/defList/list/defList/set",
+				  "/xml/output/set/errorCode",
+				  "/xml/output/set/errorReason",
+				  "/xml/output/set/requestStatus",
+				  NULL};
 	char *fetch_x_vars[] = {"/xml/header/status",
 				"/xml/header/requestId",
 				"/xml/fixed/unexpectedError",
@@ -245,8 +422,9 @@ main(int argc, char **argv)
 	sslkey = NULL;
 	sslcert = NULL;
 	sslpin = NULL;
+	defaults = NULL;
 	profile = "caServerCert";
-	while ((c = getopt(argc, argv, "u:U:n:e:t:T:s:S:c:f:R:vaP:I:K:C:d:p:")) != -1) {
+	while ((c = getopt(argc, argv, "u:U:n:e:t:T:s:S:c:f:R:A:vaP:I:K:C:d:p:")) != -1) {
 		switch (c) {
 		case 'u':
 			eeurl = optarg;
@@ -283,6 +461,11 @@ main(int argc, char **argv)
 			break;
 		case 'R':
 			op = op_review;
+			agent = 1;
+			id = strtol(optarg, NULL, 0);
+			break;
+		case 'A':
+			op = op_approve;
 			agent = 1;
 			id = strtol(optarg, NULL, 0);
 			break;
@@ -324,6 +507,7 @@ main(int argc, char **argv)
 	if (nssdb != NULL) {
 		setenv("SSL_DIR", nssdb, 1);
 	}
+restart:
 	ctx = talloc_new(NULL);
 	switch (op) {
 	case op_submit_csr:
@@ -388,6 +572,33 @@ main(int argc, char **argv)
 					 "xml=true",
 					 id);
 		vars = review_x_vars;
+		break;
+	case op_approve:
+		if (defaults == NULL) {
+			method = "GET";
+			cgi = "profileReview";
+			params = talloc_asprintf(ctx,
+						 "requestId=%d&"
+						 "xml=true",
+						 id);
+			vars = no_x_vars;
+		} else {
+			method = "GET";
+			cgi = "profileProcess";
+			params = talloc_asprintf(ctx,
+						 "requestId=%d&"
+						 "op=approve&"
+						 "xml=true",
+						 id);
+			for (i = 0; defaults[i] != NULL; i++) {
+				params = talloc_asprintf(ctx,
+							 "%s&%s=%s",
+							 params,
+							 cm_submit_u_url_encode(defaults[i]->name),
+							 cm_submit_u_url_encode(defaults[i]->value));
+			}
+			vars = approve_x_vars;
+		}
 		break;
 	case op_check:
 		method = "GET";
@@ -474,30 +685,41 @@ main(int argc, char **argv)
 	case op_submit_csr:
 	case op_submit_serial:
 		printf("%s:%s\n",
-		       cm_submit_d_req_error(hctx, result),
-		       cm_submit_d_req_status(hctx, result));
-		p = cm_submit_d_req_requestid(hctx, result);
+		       cm_submit_d_submit_status(hctx, result),
+		       cm_submit_d_submit_error(hctx, result));
+		p = cm_submit_d_submit_requestid(hctx, result);
 		if (p != NULL) {
-			printf("%s\n", p);
+			printf("Request ID = %s\n", p);
 		}
 		break;
 	case op_review:
-		printf("%s\n", cm_submit_d_check_status(hctx, result) ?: "(unknown)");
-		p = cm_submit_d_check_bundle(hctx, result);
-		if (p != NULL) {
-			printf("%s\n", p);
+		if (verbose > 0) {
+			defaults = cm_submit_d_xml_defaults(hctx, result);
+			for (i = 0;
+			     (defaults != NULL) && (defaults[i] != NULL);
+			     i++) {
+				printf("default: %s=%s\n",
+				       cm_submit_u_url_encode(defaults[i]->name),
+				       cm_submit_u_url_encode(defaults[i]->value));
+			}
+		}
+		break;
+	case op_approve:
+		if (defaults == NULL) {
+			defaults = cm_submit_d_xml_defaults(hctx, result);
+			if (defaults == NULL) {
+				defaults = nodefault;
+			}
+			goto restart;
+		} else {
+			printf("%s\n", cm_submit_d_approve_status(hctx, result) ?: "(unknown)");
 		}
 		break;
 	case op_check:
 		printf("%s\n", cm_submit_d_check_status(hctx, result) ?: "(unknown)");
-		p = cm_submit_d_check_bundle(hctx, result);
-		if (p != NULL) {
-			printf("%s\n", p);
-		}
 		break;
 	case op_fetch:
-		printf("%s\n", cm_submit_d_fetch_status(hctx, result) ?: "(unknown)");
-		p = cm_submit_d_fetch_bundle(hctx, result);
+		p = cm_submit_d_fetch_cert(hctx, result);
 		if (p != NULL) {
 			printf("%s\n", p);
 		}
