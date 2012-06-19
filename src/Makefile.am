@@ -157,7 +157,7 @@ dogtag_submit_LDADD = $(CURL_LIBS) $(XML_LIBS) $(TALLOC_LIBS) $(UUID_LIBS)
 submit_d_CFLAGS = $(AM_CFLAGS) $(CURL_CFLAGS) $(XML_CFLAGS) -DCM_SUBMIT_D_MAIN
 submit_d_SOURCES = submit-d.c submit-d.h submit-h.c submit-h.h \
 		   submit-u.c submit-u.h log.c log.h tm.c tm.h
-submit_d_LDADD = $(CURL_LIBS) $(XML_LIBS) $(TALLOC_LIBS) $(UUID_LIBS)
+submit_d_LDADD = libcm-o.a $(CURL_LIBS) $(OPENSSL_LIBS) $(XML_LIBS) $(TALLOC_LIBS) $(UUID_LIBS)
 submit_h_CFLAGS = $(AM_CFLAGS) $(CURL_CFLAGS) $(XML_CFLAGS) -DCM_SUBMIT_H_MAIN
 submit_h_SOURCES = submit-h.c submit-h.h log.c log.h tm.c tm.h
 submit_h_LDADD = $(CURL_LIBS) $(XML_LIBS) $(TALLOC_LIBS)

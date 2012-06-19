@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010,2011 Red Hat, Inc.
+ * Copyright (C) 2010,2011,2012 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@
 #include "submit-d.h"
 #include "submit-h.h"
 #include "submit-u.h"
+#include "util-o.h"
 
 static char *
 cm_submit_d_xml_value(void *parent, const char *xml, const char *path)
@@ -100,19 +101,22 @@ cm_submit_d_req_error(void *parent, const char *xml)
 	 * 2: deferred
 	 * 3: rejected
 	 */
-	return cm_submit_d_xml_value(parent, xml, "/xml/output/set/errorCode");
+	return cm_submit_d_xml_value(parent, xml, "/xml/output/set/errorCode") ?:
+	       cm_submit_d_xml_value(parent, xml, "/XMLResponse/Status");
 }
 
 char *
 cm_submit_d_req_status(void *parent, const char *xml)
 {
-	return cm_submit_d_xml_value(parent, xml, "/xml/output/set/errorReason");
+	return cm_submit_d_xml_value(parent, xml, "/xml/output/set/errorReason") ?:
+	       cm_submit_d_xml_value(parent, xml, "/XMLResponse/Error");
 }
 
 char *
 cm_submit_d_req_requestid(void *parent, const char *xml)
 {
-	return cm_submit_d_xml_value(parent, xml, "/xml/output/set/requestList/list/requestList/set/requestId");
+	return cm_submit_d_xml_value(parent, xml, "/xml/output/set/requestList/list/requestList/set/requestId") ?:
+	       cm_submit_d_xml_value(parent, xml, "/XMLResponse/RequestId");
 }
 
 char *
@@ -132,6 +136,27 @@ cm_submit_d_check_status(void *parent, const char *xml)
 
 char *
 cm_submit_d_check_bundle(void *parent, const char *xml)
+{
+	return cm_submit_d_xml_value(parent, xml, "/xml/header/pkcs7ChainBase64");
+}
+
+char *
+cm_submit_d_fetch_status(void *parent, const char *xml)
+{
+	/* RequestStatus.java:
+	 * begin
+	 * pending
+	 * approved
+	 * svc_pending
+	 * canceled
+	 * rejected
+	 * complete
+	 */
+	return cm_submit_d_xml_value(parent, xml, "/xml/header/status");
+}
+
+char *
+cm_submit_d_fetch_bundle(void *parent, const char *xml)
 {
 	return cm_submit_d_xml_value(parent, xml, "/xml/header/pkcs7ChainBase64");
 }
@@ -237,8 +262,17 @@ static void
 usage(void)
 {
 	printf("usage: submit-d -U CA-URL "
+	       "[-S: serialhex] "
 	       "[-s: csrfile] "
-	       "[-c: requestid]\n");
+	       "[-c: requestid] "
+	       "[-R: requestid] "
+	       "[-f: requestid]\n");
+	printf("Modes:\n"
+	       "\t-S: submit-renewal-by-serial\n"
+	       "\t-s: submit-request-using-CSR\n"
+	       "\t-c: check-request-progress\n"
+	       "\t-f: fetch-requested-certificate\n"
+	       "\t-R: review-profile-request\n");
 	printf("Options:\n"
 	       "\t-A  use agent interface\n"
 	       "\t-a  use client auth\n"
@@ -251,27 +285,45 @@ usage(void)
 	       "\t-n: requestor_name\n"
 	       "\t-e: requestor_email\n"
 	       "\t-t: requestor_telephone\n"
-	       "\t-v  verbose\n");
+	       "\t-v  verbose (repeat for more)\n");
 }
 
 int
 main(int argc, char **argv)
 {
 	void *ctx;
-	enum { op_none, op_submit, op_check } op;
+	enum {
+		op_none,
+		op_submit_csr,
+		op_submit_serial,
+		op_check,
+		op_review,
+		op_fetch
+	} op;
 	int c, i, j, id, clientauth, agent, verbose;
-	const char *method, *url, *cgi, *file, *profile, *result;
+	const char *method, *url, *cgi, *file, *serial, *profile, *result;
 	const char *name, *email, *tele;
 	const char *capath, *cainfo, *sslkey, *sslcert, *sslpin;
 	char *params, *uri, **var, **vars, *p, *request;
 	char *submit_x_vars[] = {"/xml/output/set/requestList/list/requestList/set/requestId",
 				 "/xml/output/set/errorCode",
 				 "/xml/output/set/errorReason",
+				 "/XMLResponse/Status",
+				 "/XMLResponse/Error",
+				 "/XMLResponse/RequestId",
 				 NULL};
 	char *check_x_vars[] = {"/xml/header/status",
 				"/xml/header/requestId",
 				"/xml/fixed/unexpectedError",
-				"/xml/header/pkcs7ChainBase64",
+				NULL};
+	char *review_x_vars[] = {"/xml/header/status",
+				 "/xml/header/requestId",
+				 "/xml/fixed/unexpectedError",
+				 NULL};
+	char *fetch_x_vars[] = {"/xml/header/status",
+				"/xml/header/requestId",
+				"/xml/fixed/unexpectedError",
+				"/xml/records/record/base64Cert",
 				NULL};
 	struct cm_submit_h_context *hctx;
 	op = op_none;
@@ -281,6 +333,7 @@ main(int argc, char **argv)
 	agent = 0;
 	url = NULL;
 	file = NULL;
+	serial = NULL;
 	name = NULL;
 	email = NULL;
 	tele = NULL;
@@ -290,7 +343,7 @@ main(int argc, char **argv)
 	sslcert = NULL;
 	sslpin = NULL;
 	profile = "caServerCert";
-	while ((c = getopt(argc, argv, "U:n:e:t:T:s:c:r:vaAP:I:K:C:p:")) != -1) {
+	while ((c = getopt(argc, argv, "U:n:e:t:T:s:S:c:f:R:vaAP:I:K:C:p:")) != -1) {
 		switch (c) {
 		case 'U':
 			url = optarg;
@@ -308,11 +361,23 @@ main(int argc, char **argv)
 			profile = optarg;
 			break;
 		case 's':
-			op = op_submit;
+			op = op_submit_csr;
 			file = optarg;
+			break;
+		case 'S':
+			op = op_submit_serial;
+			serial = optarg;
 			break;
 		case 'c':
 			op = op_check;
+			id = strtol(optarg, NULL, 0);
+			break;
+		case 'R':
+			op = op_review;
+			id = strtol(optarg, NULL, 0);
+			break;
+		case 'f':
+			op = op_fetch;
 			id = strtol(optarg, NULL, 0);
 			break;
 		case 'v':
@@ -347,7 +412,7 @@ main(int argc, char **argv)
 	}
 	ctx = talloc_new(NULL);
 	switch (op) {
-	case op_submit:
+	case op_submit_csr:
 		method = "POST";
 		cgi = "profileSubmit";
 		p = cm_submit_u_from_file_single(file);
@@ -389,11 +454,48 @@ main(int argc, char **argv)
 		}
 		vars = submit_x_vars;
 		break;
+	case op_submit_serial:
+		method = "POST";
+		cgi = "profileSubmit";
+		params = talloc_asprintf(ctx,
+					 "profileId=%s&"
+					 "serial_num=%s&"
+					 "renewal=true&"
+					 "xml=true",
+					 profile,
+					 util_o_dec_from_hex(serial));
+		if (name != NULL) {
+			params = talloc_asprintf(ctx, "%s&requestor_name=%s",
+						 params, name);
+		}
+		if (email != NULL) {
+			params = talloc_asprintf(ctx, "%s&requestor_email=%s",
+						 params, email);
+		}
+		if (tele != NULL) {
+			params = talloc_asprintf(ctx, "%s&requestor_phone=%s",
+						 params, tele);
+		}
+		vars = submit_x_vars;
+		break;
+	case op_review:
+		method = "GET";
+		cgi = "profileReview";
+		params = talloc_asprintf(ctx, "requestId=%d&xml=true", id);
+		vars = review_x_vars;
+		agent++;
+		break;
 	case op_check:
 		method = "GET";
 		cgi = "checkRequest";
 		params = talloc_asprintf(ctx, "requestId=%d&importCert=true&xml=true", id);
 		vars = check_x_vars;
+		break;
+	case op_fetch:
+		method = "GET";
+		cgi = "displayCertFromRequest";
+		params = talloc_asprintf(ctx, "requestId=%d&importCert=true&xml=true", id);
+		vars = fetch_x_vars;
 		break;
 	case op_none:
 		printf("Error: no specific request given.\n");
@@ -415,10 +517,21 @@ main(int argc, char **argv)
 	}
 	if ((strstr(url, "http://") == NULL) &&
 	    (strstr(url, "https://") == NULL)) {
-		/* Guess HTTP. */
-		url = talloc_asprintf(ctx, "http://%s", url);
+		if (agent) {
+			/* Guess HTTPS. */
+			url = talloc_asprintf(ctx, "https://%s", url);
+		} else {
+			/* Guess HTTP. */
+			url = talloc_asprintf(ctx, "http://%s", url);
+		}
 	}
 	uri = talloc_asprintf(ctx, "%s/%s", url, cgi);
+	if (verbose > 1) {
+		printf("url = \"%s\"\n", uri);
+		if (verbose > 2) {
+			printf("params = \"%s\"\n", params);
+		}
+	}
 	hctx = cm_submit_h_init(ctx, method, uri, params,
 				cainfo, capath, sslcert, sslkey, sslpin,
 				cm_submit_h_negotiate_off,
@@ -431,11 +544,15 @@ main(int argc, char **argv)
 	c = cm_submit_h_result_code(hctx);
 	if (c != 0) {
 		printf("Error %d.\n", c);
+		if ((result = cm_submit_h_result_code_text(hctx)) != NULL) {
+			printf("%s\n", result);
+		}
 		return 1;
 	}
-	result = cm_submit_h_results(hctx);
+	result = cm_submit_h_results(hctx) ?: "";
 	switch (op) {
-	case op_submit:
+	case op_submit_csr:
+	case op_submit_serial:
 		printf("%s:%s\n",
 		       cm_submit_d_req_error(hctx, result),
 		       cm_submit_d_req_status(hctx, result));
@@ -444,9 +561,23 @@ main(int argc, char **argv)
 			printf("%s\n", p);
 		}
 		break;
-	case op_check:
-		printf("%s\n", cm_submit_d_check_status(hctx, result));
+	case op_review:
+		printf("%s\n", cm_submit_d_check_status(hctx, result) ?: "(unknown)");
 		p = cm_submit_d_check_bundle(hctx, result);
+		if (p != NULL) {
+			printf("%s\n", p);
+		}
+		break;
+	case op_check:
+		printf("%s\n", cm_submit_d_check_status(hctx, result) ?: "(unknown)");
+		p = cm_submit_d_check_bundle(hctx, result);
+		if (p != NULL) {
+			printf("%s\n", p);
+		}
+		break;
+	case op_fetch:
+		printf("%s\n", cm_submit_d_fetch_status(hctx, result) ?: "(unknown)");
+		p = cm_submit_d_fetch_bundle(hctx, result);
 		if (p != NULL) {
 			printf("%s\n", p);
 		}
@@ -455,12 +586,15 @@ main(int argc, char **argv)
 		/* never reached */
 		break;
 	}
-	if (verbose) {
+	if (verbose > 0) {
 		for (var = vars; (var != NULL) && (*var != NULL); var++) {
 			p = cm_submit_d_xml_value(hctx, result, *var);
 			if (p != NULL) {
 				printf("%s = \"%s\"\n", *var, p);
 			}
+		}
+		if (verbose > 1) {
+			printf("result = \"%s\"\n", result);
 		}
 	}
 	return 0;

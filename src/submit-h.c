@@ -118,8 +118,30 @@ cm_submit_h_run(struct cm_submit_h_context *ctx)
 	if (ctx->curl != NULL) {
 		curl_easy_cleanup(ctx->curl);
 	}
+	if ((ctx->modify_env == cm_submit_h_env_modify_on) &
+	    (ctx->cainfo != NULL)) {
+		setenv("SSL_DIR", ctx->cainfo, 1);
+	}
 	ctx->curl = curl_easy_init();
 	if (ctx->curl != NULL) {
+		if ((ctx->cainfo != NULL) || (ctx->capath != NULL)) {
+			curl_easy_setopt(ctx->curl,
+					 CURLOPT_SSL_VERIFYPEER,
+					 1L);
+			curl_easy_setopt(ctx->curl,
+					 CURLOPT_SSL_VERIFYHOST,
+					 2L);
+		}
+		if (ctx->cainfo != NULL) {
+			curl_easy_setopt(ctx->curl,
+					 CURLOPT_CAINFO,
+					 ctx->cainfo);
+		}
+		if (ctx->capath != NULL) {
+			curl_easy_setopt(ctx->curl,
+					 CURLOPT_CAPATH,
+					 ctx->capath);
+		}
 		if (strcasecmp(ctx->method, "GET") == 0) {
 			uri = talloc_asprintf(ctx, "%s?%s",
 					      ctx->uri, ctx->args);
@@ -175,27 +197,6 @@ cm_submit_h_run(struct cm_submit_h_context *ctx)
 			curl_easy_setopt(ctx->curl,
 					 CURLOPT_HTTPAUTH,
 					 CURLAUTH_NONE);
-		}
-		if ((ctx->cainfo != NULL) || (ctx->capath != NULL)) {
-			curl_easy_setopt(ctx->curl,
-					 CURLOPT_SSL_VERIFYPEER,
-					 1L);
-			curl_easy_setopt(ctx->curl,
-					 CURLOPT_SSL_VERIFYHOST,
-					 2L);
-		}
-		if (ctx->cainfo != NULL) {
-			curl_easy_setopt(ctx->curl,
-					 CURLOPT_CAINFO,
-					 ctx->cainfo);
-			if (ctx->modify_env == cm_submit_h_env_modify_on) {
-				setenv("SSL_DIR", ctx->cainfo, 1);
-			}
-		}
-		if (ctx->capath != NULL) {
-			curl_easy_setopt(ctx->curl,
-					 CURLOPT_CAPATH,
-					 ctx->capath);
 		}
 		curl_easy_setopt(ctx->curl, CURLOPT_WRITEFUNCTION,
 				 append_result);
