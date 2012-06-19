@@ -377,10 +377,7 @@ main(int argc, char **argv)
 	struct dogtag_default **defaults, *nodefault[] = { NULL };
 	char *params, *uri, **var, **vars, *p, *request;
 	char *no_x_vars[] = { NULL };
-	char *submit_x_vars[] = {"/xml/output/set/requestList/list/requestList/set/requestId",
-				 "/xml/output/set/errorCode",
-				 "/xml/output/set/errorReason",
-				 "/XMLResponse/Status",
+	char *submit_x_vars[] = {"/XMLResponse/Status",
 				 "/XMLResponse/Error",
 				 "/XMLResponse/RequestId",
 				 NULL};
@@ -389,11 +386,7 @@ main(int argc, char **argv)
 				"/xml/fixed/unexpectedError",
 				NULL};
 	char *review_x_vars[] = { NULL };
-	char *approve_x_vars[] = {"/xml/header/status",
-				  "/xml/header/requestId",
-				  "/xml/fixed/unexpectedError",
-				  "/xml/output/set/record/list/record/set/defList/list/defList/set",
-				  "/xml/output/set/errorCode",
+	char *approve_x_vars[] = {"/xml/output/set/errorCode",
 				  "/xml/output/set/errorReason",
 				  "/xml/output/set/requestStatus",
 				  NULL};
