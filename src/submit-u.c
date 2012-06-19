@@ -241,6 +241,30 @@ cm_submit_princ_realm_len(krb5_context ctx, krb5_principal princ)
 #endif
 }
 
+char *
+cm_submit_u_url_encode(const char *plain)
+{
+	const char *hexchars = "0123456789ABCDEF";
+	char *ret = malloc(strlen(plain) * 3 + 1);
+	int i, j;
+	unsigned int c;
+
+	if (ret != NULL) {
+		for (i = 0, j = 0; plain[i] != '\0'; i++) {
+			c = ((unsigned char) plain[i]) & 0xff;
+			if ((c < 33) || (c > 122)) {
+				ret[j++] = '%';
+				ret[j++] = hexchars[(c & 0xf0) >> 4];
+				ret[j++] = hexchars[(c & 0x0f)];
+			} else {
+				ret[j++] = plain[i];
+			}
+		}
+		ret[j] = '\0';
+	}
+	return ret;
+}
+
 #ifdef HAVE_UUID
 int cm_submit_uuid_fixed_for_testing = 0;
 int
