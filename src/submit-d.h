@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Red Hat, Inc.
+ * Copyright (C) 2010,2012 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,11 +18,13 @@
 #ifndef cmsubmitd_h
 #define cmsubmitd_h
 
-char *cm_submit_d_req_status(void *parent, const char *xml);
-char *cm_submit_d_req_requestid(void *parent, const char *xml);
+char *cm_submit_d_submit_status(void *parent, const char *xml);
+char *cm_submit_d_submit_error(void *parent, const char *xml);
+char *cm_submit_d_submit_requestid(void *parent, const char *xml);
 char *cm_submit_d_check_status(void *parent, const char *xml);
-char *cm_submit_d_check_cert(void *parent, const char *xml);
-char *cm_submit_d_retr_status(void *parent, const char *xml);
-char *cm_submit_d_retr_cert(void *parent, const char *xml);
+char *cm_submit_d_approve_status(void *parent, const char *xml);
+char *cm_submit_d_fetch_status(void *parent, const char *xml);
+char *cm_submit_d_fetch_cert(void *parent, const char *xml);
+
 
 #endif
