@@ -199,7 +199,7 @@ main(int argc, char **argv)
 		op_review,
 		op_fetch
 	} op;
-	int c, i, j, id, agent, clientauth, verbose;
+	int c, id, agent, clientauth, verbose;
 	const char *method, *eeurl, *agenturl, *cgi, *file, *serial, *profile;
 	const char *name, *email, *tele;
 	const char *nssdb, *capath, *cainfo, *sslkey, *sslcert, *sslpin;
@@ -334,19 +334,7 @@ main(int argc, char **argv)
 			printf("Error reading CSR from \"%s\".\n", file);
 			return 1;
 		}
-		request = talloc_size(ctx, strlen(p) * 3 + 1);
-		for (i = 0, j = 0; p[i] != '\0'; i++) {
-			switch (p[i]) {
-			case '+':
-				strcpy(request + j, "%2B");
-				j += 3;
-				break;
-			default:
-				request[j++] = p[i];
-				break;
-			}
-		}
-		request[j] = '\0';
+		request = cm_submit_u_url_encode(p);
 		params = talloc_asprintf(ctx,
 					 "profileId=%s&"
 					 "cert_request_type=pkcs10&"
