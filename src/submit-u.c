@@ -245,6 +245,9 @@ char *
 cm_submit_u_url_encode(const char *plain)
 {
 	const char *hexchars = "0123456789ABCDEF";
+	const char *unreserved = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+				 "abcdefghijklmnopqrstuvwxyz"
+				 "0123456789-_.~";
 	char *ret = malloc(strlen(plain) * 3 + 1);
 	int i, j;
 	unsigned int c;
@@ -252,12 +255,16 @@ cm_submit_u_url_encode(const char *plain)
 	if (ret != NULL) {
 		for (i = 0, j = 0; plain[i] != '\0'; i++) {
 			c = ((unsigned char) plain[i]) & 0xff;
-			if ((c < 33) || (c > 122)) {
-				ret[j++] = '%';
-				ret[j++] = hexchars[(c & 0xf0) >> 4];
-				ret[j++] = hexchars[(c & 0x0f)];
-			} else {
+			if (strchr(unreserved, c) != NULL) {
 				ret[j++] = plain[i];
+			} else {
+				if (c == 32) {
+					ret[j++] = '+';
+				} else {
+					ret[j++] = '%';
+					ret[j++] = hexchars[(c & 0xf0) >> 4];
+					ret[j++] = hexchars[(c & 0x0f)];
+				}
 			}
 		}
 		ret[j] = '\0';
