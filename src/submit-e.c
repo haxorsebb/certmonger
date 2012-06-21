@@ -258,6 +258,9 @@ cm_submit_e_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	    (strlen(entry->cm_ca_profile) > 0)) {
 		setenv(CM_SUBMIT_PROFILE_ENV, entry->cm_ca_profile, 1);
 	}
+	if ((entry->cm_cert != NULL) && (strlen(entry->cm_cert) > 0)) {
+		setenv(CM_SUBMIT_CERTIFICATE_ENV, entry->cm_cert, 1);
+	}
 	if (dup2(fd, STDOUT_FILENO) == -1) {
 		u = errno;
 		cm_log(1, "Error redirecting standard out for "

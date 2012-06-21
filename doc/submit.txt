@@ -33,6 +33,7 @@ An external helper has a few jobs, then:
   * $CERTMONGER_REQ_HOSTNAME  -> DNS name subjectAltName values
   * $CERTMONGER_REQ_PRINCIPAL -> Kerberos principal name subjectAltName values
   * $CERTMONGER_CA_PROFILE    -> requested enrollment profile/template/certtype
+  * $CERTMONGER_CERTIFICATE   -> previously-issued certificate, if there is one
 * If in "submit" mode, $CERTMONGER_CSR has as its value a PEM-formatted CSR.
   * Submit request to CA.
     * Issued         -> output PEM-formatted cert on stdout, exit with status 0.
