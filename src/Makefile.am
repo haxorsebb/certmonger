@@ -138,7 +138,7 @@ if WITH_IPA
 pkglibexec_PROGRAMS += ipa-submit
 endif
 if WITH_CURL_AND_XML
-EXTRA_PROGRAMS += dogtag-submit
+pkglibexec_PROGRAMS += dogtag-submit
 noinst_PROGRAMS += submit-h submit-d
 endif
 ipa_submit_SOURCES = ipa.c submit-x.c submit-x.h submit-u.c submit-u.h \
