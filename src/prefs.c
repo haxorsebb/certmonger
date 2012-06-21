@@ -23,12 +23,15 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <krb5.h>
+
 #include <dbus/dbus.h>
 
 #include "env.h"
 #include "prefs.h"
 #include "store-int.h"
 #include "submit.h"
+#include "submit-u.h"
 #include "util.h"
 #include "tm.h"
 
@@ -174,8 +177,8 @@ cm_prefs_ttls(time_t **config, const time_t **ttls, unsigned int *n_ttls,
 					q = p + strcspn(p, " \t,");
 					c = *q;
 					*q = '\0';
-					if (cm_submit_delta_from_string(p, cm_time(NULL),
-									&(*config)[i]) == 0) {
+					if (cm_submit_u_delta_from_string(p, cm_time(NULL),
+									  &(*config)[i]) == 0) {
 						i++;
 					};
 					*q = c;
@@ -282,6 +285,29 @@ yes_words[] = {"yes", "y", "true", "t", "1"};
 static const char *
 no_words[] = {"no", "n", "false", "f", "0"};
 
+static int
+cm_prefs_yesno(const char *val)
+{
+	unsigned int i;
+	if (val != NULL) {
+		for (i = 0;
+		     i < sizeof(yes_words) / sizeof(yes_words[0]);
+		     i++) {
+			if (strcasecmp(yes_words[i], val) == 0) {
+				return 1;
+			}
+		}
+		for (i = 0;
+		     i < sizeof(no_words) / sizeof(no_words[0]);
+		     i++) {
+			if (strcasecmp(no_words[i], val) == 0) {
+				return 0;
+			}
+		}
+	}
+	return -1;
+}
+
 int
 cm_prefs_populate_unique_id(void)
 {
@@ -293,24 +319,10 @@ cm_prefs_populate_unique_id(void)
 			val = CM_DEFAULT_POPULATE_UNIQUE_ID;
 		}
 		if (val != NULL) {
-			unsigned int i;
-			for (i = 0;
-			     i < sizeof(yes_words) / sizeof(yes_words[0]);
-			     i++) {
-				if (strcasecmp(yes_words[i], val) == 0) {
-					populate = 1;
-				}
-			}
-			for (i = 0;
-			     i < sizeof(no_words) / sizeof(no_words[0]);
-			     i++) {
-				if (strcasecmp(no_words[i], val) == 0) {
-					populate = 0;
-				}
-			}
+			populate = cm_prefs_yesno(val);
 		}
 	}
-	return populate;
+	return populate != -1 ? populate : 0;
 }
 
 int
@@ -325,4 +337,108 @@ cm_prefs_autorenew(void)
 {
 	/* The documented hard-coded default is to try. */
 	return 1;
+}
+
+const char *
+cm_prefs_dogtag_ee_url(void)
+{
+	static const char *url;
+	if (url == NULL) {
+		url = cm_prefs_config("dogtag", "ee_url");
+	}
+	return url;
+}
+
+const char *
+cm_prefs_dogtag_agent_url(void)
+{
+	static const char *url;
+	if (url == NULL) {
+		url = cm_prefs_config("dogtag", "agent_url");
+	}
+	return url;
+}
+
+const char *
+cm_prefs_dogtag_profile(void)
+{
+	static const char *profile;
+	if (profile == NULL) {
+		profile = cm_prefs_config("dogtag", "profile");
+	}
+	return profile;
+}
+
+int
+cm_prefs_dogtag_renew(void)
+{
+	static int prefer = -1;
+	if (prefer == -1) {
+		prefer = cm_prefs_yesno(cm_prefs_config("dogtag",
+							"prefer_renewal"));
+	}
+	return (prefer != -1) ? (prefer != 0) : TRUE;
+}
+
+const char *
+cm_prefs_dogtag_ca_info(void)
+{
+	static const char *info;
+	if (info == NULL) {
+		info = cm_prefs_config("dogtag", "ca_info");
+	}
+	return info;
+}
+
+const char *
+cm_prefs_dogtag_ca_path(void)
+{
+	static const char *path;
+	if (path == NULL) {
+		path = cm_prefs_config("dogtag", "ca_path");
+	}
+	return path;
+}
+
+const char *
+cm_prefs_dogtag_ssldir(void)
+{
+	static const char *dbdir;
+	if (dbdir == NULL) {
+		dbdir = cm_prefs_config("dogtag", "nss_dbdir");
+	}
+	return dbdir;
+}
+
+const char *
+cm_prefs_dogtag_sslcert(void)
+{
+	static const char *cert;
+	if (cert == NULL) {
+		cert = cm_prefs_config("dogtag", "ssl_certificate");
+		if (cert == NULL) {
+			cert = cm_prefs_config("dogtag", "nss_nickname");
+		}
+	}
+	return cert;
+}
+
+const char *
+cm_prefs_dogtag_sslkey(void)
+{
+	static const char *key;
+	if (key == NULL) {
+		key = cm_prefs_config("dogtag", "ssl_key");
+	}
+	return key;
+}
+
+const char *
+cm_prefs_dogtag_sslpinfile(void)
+{
+	static const char *pinfile;
+	if (pinfile == NULL) {
+		pinfile = cm_prefs_config("dogtag", "ssl_pinfile");
+	}
+	return pinfile;
 }

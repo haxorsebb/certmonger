@@ -46,4 +46,15 @@ int cm_prefs_monitor(void);
 int cm_prefs_autorenew(void);
 int cm_prefs_populate_unique_id(void);
 
+const char *cm_prefs_dogtag_ee_url(void);
+const char *cm_prefs_dogtag_agent_url(void);
+const char *cm_prefs_dogtag_profile(void);
+int cm_prefs_dogtag_renew(void);
+const char *cm_prefs_dogtag_ca_info(void);
+const char *cm_prefs_dogtag_ca_path(void);
+const char *cm_prefs_dogtag_ssldir(void);
+const char *cm_prefs_dogtag_sslcert(void);
+const char *cm_prefs_dogtag_sslkey(void);
+const char *cm_prefs_dogtag_sslpinfile(void);
+
 #endif
