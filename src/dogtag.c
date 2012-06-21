@@ -452,10 +452,11 @@ main(int argc, char **argv)
 		return CM_STATUS_UNCONFIGURED;
 		break;
 	case op_submit:
-		if ((cm_submit_d_submit_error(ctx, results) == NULL) &&
-		    ((p = cm_submit_d_submit_requestid(ctx, results)) != NULL)) {
+		if (((p = cm_submit_d_submit_status(ctx, results)) != NULL) &&
+		    (strcmp(p, "2") == 0) &&
+		    ((q = cm_submit_d_submit_requestid(ctx, results)) != NULL)) {
 			printf("0\nstate=approve&requestId=%s\n",
-			       cm_submit_u_url_encode(p));
+			       cm_submit_u_url_encode(q));
 			return CM_STATUS_WAIT_WITH_DELAY;
 		} else {
 			p = cm_submit_d_submit_error(ctx, results);
