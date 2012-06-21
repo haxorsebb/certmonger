@@ -153,14 +153,14 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	} else {
 		now = PR_Now();
 	}
-	if (cm_submit_delta_from_string(cm_prefs_validity_period(),
-					now / 1000000,
-					&lifedelta) == 0) {
+	if (cm_submit_u_delta_from_string(cm_prefs_validity_period(),
+					  now / 1000000,
+					  &lifedelta) == 0) {
 		life = lifedelta;
 	} else {
-		if (cm_submit_delta_from_string(CM_DEFAULT_CERT_LIFETIME,
-						now / 1000000,
-						&lifedelta) == 0) {
+		if (cm_submit_u_delta_from_string(CM_DEFAULT_CERT_LIFETIME,
+						  now / 1000000,
+						  &lifedelta) == 0) {
 			life = lifedelta;
 		} else {
 			life = 365 * 24 * 60 * 60;

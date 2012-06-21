@@ -64,7 +64,4 @@ int cm_submit_unconfigured(struct cm_store_entry *entry,
 void cm_submit_done(struct cm_store_entry *entry,
 		    struct cm_submit_state *state);
 
-/* Convert a delta in string form to a time_t. */
-int cm_submit_delta_from_string(const char *deltas, time_t now, time_t *delta);
-
 #endif
