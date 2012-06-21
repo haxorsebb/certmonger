@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,11 +25,15 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <krb5.h>
+
+#include <dbus/dbus.h>
+
 #include <talloc.h>
 
+#include "submit-d.h"
 #include "submit-e.h"
 #include "submit-h.h"
-#include "submit-x.h"
 #include "submit-u.h"
 #include "util.h"
 
@@ -40,239 +44,370 @@
 #define _(_text) (_text)
 #endif
 
+#define IPACONFIG "/etc/ipa/default.conf"
+#define IPASECTION "dogtag"
+
+static void
+help(const char *cmd)
+{
+	fprintf(stderr,
+		"Usage: %s -E EE-URL -A AGENT-URL [options]\n"
+		"Options:\n"
+		"\t[-d dbdir]\n"
+		"\t[-n nickname]\n"
+		"\t[-i cainfo]\n"
+		"\t[-C capath]\n"
+		"\t[-c certfile]\n"
+		"\t[-k keyfile]\n"
+		"\t[-p pinfile]\n"
+		"\t[-P pin]\n"
+		"\t[-s serial (hex)]\n"
+		"\t[-S state]\n"
+		"\t[-T profile]\n"
+		"\t[csrfile]\n",
+		strchr(cmd, '/') ?  strrchr(cmd, '/') + 1 : cmd);
+}
+
+static char *
+statevar(const char *state, const char *what)
+{
+	const char *p;
+	char *q;
+	int len;
+
+	p = state;
+	len = strlen(what);
+	while ((p != NULL) && (*p != '\0')) {
+		if ((strncmp(p, what, len) == 0) && (p[len] == '=')) {
+			p += (len + 1);
+			len = strcspn(p, "&");
+			q = malloc(len + 1);
+			if (q != NULL) {
+				memcpy(q, p, len);
+				q[len] = '\0';
+			}
+			return q;
+		}
+		p += strcspn(p, "&");
+		while (*p == '&') {
+			p++;
+		}
+	}
+	return NULL;
+}
+
 int
 main(int argc, char **argv)
 {
-	int i, c, ret;
-	void *tctx;
-	char *csr, *p, *dogtagconfig, hostname[LINE_MAX];
-	const char *config, *conftag, *host, *host_uri, *submit_uri, *poll_uri;
-	const char *op, *method, *uri, *identifier, *args, *cookie;
-	struct cm_submit_h_context *ctx;
+	const char *eeurl = NULL, *agenturl = NULL, *url = NULL, *url2 = NULL;
+	const char *ssldir = NULL, *cainfo = NULL, *capath = NULL;
+	const char *sslcert = NULL, *sslkey = NULL;
+	const char *sslpin = NULL, *sslpinfile = NULL;
+	const char *csr = NULL, *serial = NULL, *template = NULL;
+	char *ipaconfig = NULL, *savedstate = NULL;
+	char *p, *q, *params = NULL, *params2 = NULL;
+	const char *results = NULL;
+	struct cm_submit_h_context *hctx;
+	void *ctx;
+	int c, verbose = 0, i;
+	enum { op_none, op_submit, op_approve, op_retrieve } op = op_none;
+	dbus_bool_t agent, error = FALSE;
+	struct dogtag_default **defaults;
 
 #ifdef ENABLE_NLS
 	bindtextdomain(PACKAGE, MYLOCALEDIR);
 #endif
-	tctx = talloc_init(NULL);
+	savedstate = getenv(CM_SUBMIT_COOKIE_ENV);
 
-	config = NULL;
-	conftag = NULL;
-	host = NULL;
-	host_uri = NULL;
-	submit_uri = NULL;
-	poll_uri = NULL;
-	identifier = NULL;
-	while ((c = getopt(argc, argv, "c:C:h:H:i:S:P:")) != -1) {
+	while ((c = getopt(argc, argv, "E:A:d:n:i:C:c:k:p:P:s:S:T:v")) != -1) {
 		switch (c) {
-		case 'c':
-			config = optarg;
+		case 'E':
+			eeurl = optarg;
 			break;
-		case 'C':
-			conftag = optarg;
+		case 'A':
+			agenturl = optarg;
 			break;
-		case 'h':
-			host = optarg;
-			break;
-		case 'H':
-			host_uri = optarg;
+		case 'd':
+			ssldir = optarg;
 			break;
 		case 'i':
-			identifier = optarg;
+			cainfo = optarg;
 			break;
-		case 'S':
-			submit_uri = optarg;
+		case 'C':
+			capath = optarg;
+			break;
+		case 'c':
+		case 'n':
+			sslcert = optarg;
+			break;
+		case 'k':
+			sslkey = optarg;
+			break;
+		case 'p':
+			sslpinfile = optarg;
 			break;
 		case 'P':
-			poll_uri = optarg;
+			sslpin = optarg;
+			break;
+		case 's':
+			serial = optarg;
+			break;
+		case 'S':
+			savedstate = optarg;
+			break;
+		case 'T':
+			template = optarg;
+			break;
+		case 'v':
+			verbose++;
 			break;
 		default:
-			fprintf(stderr,
-				"Usage: %s [-c configFile] "
-				"[-C configSection] "
-				"[-h serverHost] "
-				"[-H serverBaseUri] "
-				"[-S profileSubmitUri] "
-				"[-P checkRequestUri] "
-				"[csrfile]\n",
-				strchr(argv[0], '/') ?
-				strrchr(argv[0], '/') + 1 :
-				argv[0]);
+			help(argv[0]);
 			return CM_STATUS_UNCONFIGURED;
 			break;
 		}
 	}
 
-	/* Try to read our configuration. */
-	if (config != NULL) {
-		dogtagconfig = read_config_file(config);
+	ipaconfig = read_config_file(IPACONFIG);
+	if (ipaconfig == NULL) {
+		printf(_("Unable to read configuration file \"%s\".\n"),
+		       IPACONFIG);
 	} else {
-		dogtagconfig = NULL;
-	}
-	if (conftag == NULL) {
-		conftag = "dogtag";
-	}
-	if (host == NULL) {
-		if (dogtagconfig != NULL) {
-			host = get_config_entry(dogtagconfig,
-						conftag, "server");
+		if (eeurl == NULL) {
+			eeurl = get_config_entry(ipaconfig, IPASECTION,
+						 "default_ee_url");
+			if (eeurl == NULL) {
+				eeurl = "https://%s:9180/ca/ee/ca";
+			}
+		}
+		if (agenturl == NULL) {
+			agenturl = get_config_entry(ipaconfig, IPASECTION,
+						    "default_agent_url");
+			if (agenturl == NULL) {
+				agenturl = "https://%s:9443/ca/agent/ca";
+			}
+		}
+		if (template == NULL) {
+			template = get_config_entry(ipaconfig, IPASECTION,
+						    "default_profile");
+			if (template == NULL) {
+				template = "caServerCert";
+			}
+		}
+		if (cainfo == NULL) {
+			cainfo = get_config_entry(ipaconfig, IPASECTION,
+						  "default_cainfo");
+			if (cainfo == NULL) {
+				cainfo = "/etc/ipa/ca.crt";
+			}
+		}
+		if (ssldir == NULL) {
+			ssldir = get_config_entry(ipaconfig, IPASECTION,
+						  "default_agent_dir");
+			if (ssldir == NULL) {
+				ssldir = "/etc/httpd/alias";
+			}
+		}
+		if (sslcert == NULL) {
+			sslcert = get_config_entry(ipaconfig, IPASECTION,
+						   "default_agent_nickname");
+			if (sslcert == NULL) {
+				sslcert = "ipa-ca-agent";
+			}
+		}
+		if ((sslpinfile == NULL) && (sslpin == NULL)) {
+			sslpinfile = get_config_entry(ipaconfig, IPASECTION,
+						      "default_agent_pinfile");
+			if (sslpinfile == NULL) {
+				sslpinfile = "/etc/httpd/alias/pwdfile.txt";
+			}
 		}
 	}
-	if (identifier == NULL) {
-		if (dogtagconfig != NULL) {
-			identifier = get_config_entry(dogtagconfig,
-						      conftag, "contact");
-		}
-		if (gethostname(hostname, sizeof(hostname) - 1) != 0) {
-			strcpy(hostname, "localhost");
-		}
-		identifier = talloc_asprintf(tctx, "%s(%s)",
-					     PACKAGE_NAME, hostname);
-	}
-	ret = CM_STATUS_UNREACHABLE;
 
-	/* Derive what we weren't explicitly given. */
-	if (host_uri == NULL) {
-		if (host == NULL) {
-			printf(_("No host or host URI specified or configured.\n"));
-			return CM_STATUS_UNCONFIGURED;
-		}
-		host_uri = talloc_asprintf(tctx, "http://%s/ca/ee/ca", host);
+	if (eeurl == NULL) {
+		printf(_("No end-entity URL (-E) given.\n"));
+		error = TRUE;
 	}
-	if (submit_uri == NULL) {
-		if (host_uri == NULL) {
-			printf(_("Unable to derive URI for profileSubmit.\n"));
-			return CM_STATUS_UNCONFIGURED;
-		}
-		submit_uri = talloc_asprintf(tctx, "%s/profileSubmit",
-					     host_uri);
+	if (agenturl == NULL) {
+		printf(_("No agent URL (-A) given.\n"));
+		error = TRUE;
 	}
-	if (poll_uri == NULL) {
-		if (host_uri == NULL) {
-			printf(_("Unable to derive URI for checkRequest.\n"));
-			return CM_STATUS_UNCONFIGURED;
-		}
-		poll_uri = talloc_asprintf(tctx, "%s/checkRequest", host_uri);
+	if (template == NULL) {
+		printf(_("No profile/template (-T) given.\n"));
+		error = TRUE;
 	}
-
-	/* Read the CSR from the environment, or from the command-line. */
-	csr = getenv(CM_SUBMIT_CSR_ENV);
-	if (csr == NULL) {
-		csr = cm_submit_u_from_file((optind < argc) ?
-					    argv[optind++] : NULL);
-	}
-	if ((csr == NULL) || (strlen(csr) == 0)) {
-		printf(_("Unable to read signing request.\n"));
-		fprintf(stderr,
-			"Usage: %s [-c configFile] "
-			"[-C configSection] "
-			"[-h serverHost] "
-			"[-H serverBaseUri] "
-			"[-S profileSubmitUri] "
-			"[-P checkRequestUri] "
-			"[csrfile]\n",
-			strchr(argv[0], '/') ?
-			strrchr(argv[0], '/') + 1 :
-			argv[0]);
+	if (error) {
+		help(argv[0]);
 		return CM_STATUS_UNCONFIGURED;
 	}
 
-	/* Change the CSR from the format we get it in to the one the server
-	 * expects.  Dogtag just wants base64-encoded binary data, no
-	 * whitepace. */
-	p = strstr(csr, "-----BEGIN");
-	if (p != NULL) {
-		p += strcspn(p, "\n");
-		if (*p == '\n') {
-			p++;
+	if (serial == NULL) {
+		/* Read the CSR from the environment, or from the command-line,
+		 * that we're going to submit for signing. */
+		csr = getenv(CM_SUBMIT_CSR_ENV);
+		if (csr == NULL) {
+			csr = cm_submit_u_from_file((optind < argc) ?
+						    argv[optind++] : NULL);
 		}
-		memmove(csr, p, strlen(p) + 1);
-	}
-	p = strstr(csr, "\n-----END");
-	if (p != NULL) {
-		*p = '\0';
-	}
-	while ((p = strchr(csr, '\r')) != NULL) {
-		memmove(p, p + 1, strlen(p));
-	}
-	while ((p = strchr(csr, '\n')) != NULL) {
-		memmove(p, p + 1, strlen(p));
-	}
-
-	/* Initialize for HTTP. */
-	op = getenv(CM_SUBMIT_OPERATION_ENV);
-	if (op == NULL) {
-		printf(_("%s is not set in environment.\n"),
-		       CM_SUBMIT_OPERATION_ENV);
-		return CM_STATUS_UNCONFIGURED;
-	}
-
-	method = NULL;
-	uri = NULL;
-	args = NULL;
-	if (strcmp(op, "SUBMIT") == 0) {
-		const char *profile;
-		uri = submit_uri;
-		if (dogtagconfig != NULL) {
-			profile = get_config_entry(dogtagconfig,
-						   conftag, "profile");
-		}
-		if (profile == NULL) {
-			profile = "caServerCert";
-		}
-		args = talloc_asprintf(tctx,
-				       "requestor_name=%s&"
-				       "cert_request_type=pkcs10&"
-				       "profileId=%s&"
-				       "cert_request=%s&"
-				       "xmlOutput=true",
-				       identifier,
-				       profile,
-				       csr);
-		method = "POST";
-	} else
-	if (strcmp(op, "POLL") == 0) {
-		uri = poll_uri;
-		cookie = getenv(CM_SUBMIT_COOKIE_ENV);
-		if (cookie == NULL) {
-			printf(_("%s is not set in environment.\n"),
-			       CM_SUBMIT_COOKIE_ENV);
+		if ((csr == NULL) || (strlen(csr) == 0)) {
+			printf(_("Unable to read signing request.\n"));
+			help(argv[0]);
 			return CM_STATUS_UNCONFIGURED;
 		}
-		args = talloc_strdup("requestId=%s&xml=true", cookie);
-		method = "GET";
 	} else {
-		printf(_("%s is not set to a recognized value.\n"),
-		       CM_SUBMIT_OPERATION_ENV);
-		return CM_STATUS_UNCONFIGURED;
+		/* We're renewing using a serial number, so no CSR. */
+		csr = NULL;
 	}
 
-	/* Get ready to submit the request. */
-	ctx = cm_submit_h_init(tctx, method, uri, args);
-	if (ctx == NULL) {
-		fprintf(stderr, "Error setting up for contacting server.\n");
-		printf(_("Error setting up for contacting server.\n"));
-		return CM_STATUS_UNCONFIGURED;
-	}
+	ctx = talloc_new(NULL);
 
-	/* ...and stop. XXX rewrite the rest of this */
-	return CM_STATUS_UNREACHABLE;
-
-	/* Submit the request. */
-	fprintf(stderr, "Submitting request to \"%s\".\n", uri);
-	cm_submit_h_run(ctx);
-
-	/* Check the results. */
-	i = cm_submit_h_result_code(ctx);
-	if ((i != -1) && (i != 200)) {
-		/* XXX - Do we need to interpret the actual result? */
-		return CM_STATUS_UNREACHABLE;
-	} else
-	if (cm_submit_h_results(ctx) != NULL) {
-		/* XXX - Actually parse the results. */
-		printf("Results:%s\n", cm_submit_h_results(ctx));
-		return CM_STATUS_REJECTED;
+	/* Figure out where we are in the multi-step process. */
+	op = op_none;
+	if (savedstate != NULL) {
+		p = statevar(savedstate, "state");
+		if (strcmp(p, "approve") == 0) {
+			op = op_approve;
+		}
+		if (strcmp(p, "retrieve") == 0) {
+			op = op_retrieve;
+		}
+		p = statevar(savedstate, "requestId");
+		params = talloc_asprintf(ctx, "requestId=%s", p);
 	} else {
-		/* No useful response.  Try again, from scratch, later. */
-		return CM_STATUS_UNREACHABLE;
+		op = op_submit;
+		params = "";
 	}
+
+	/* Figure out which form and arguments to use. */
+	switch (op) {
+	case op_none:
+		printf(_("Internal error: unknown state.\n"));
+		return CM_STATUS_UNCONFIGURED;
+		break;
+	case op_submit:
+		url = talloc_asprintf(ctx, "%s/profileSubmit", eeurl);
+		template = cm_submit_u_url_encode(template);
+		if (serial != NULL) {
+			serial = cm_submit_u_url_encode(serial);
+			params = talloc_asprintf(ctx,
+						 "profileId=%s&"
+						 "serial_num=%s&"
+						 "renewal=true&"
+						 "xml=true",
+						 template,
+						 serial);
+		} else {
+			csr = cm_submit_u_url_encode(csr);
+			params = talloc_asprintf(ctx,
+						 "profileId=%s&"
+						 "cert_request_type=pkcs10&"
+						 "cert_request=%s&"
+						 "xml=true",
+						 template,
+						 csr);
+		}
+		agent = FALSE;
+		break;
+	case op_approve:
+		url = talloc_asprintf(ctx, "%s/profileReview", agenturl);
+		url2 = talloc_asprintf(ctx, "%s/profileProcess", agenturl);
+		params = talloc_asprintf(ctx,
+					 "%s&"
+					 "xml=true",
+					 params);
+		params2 = talloc_asprintf(ctx,
+					  "%s&"
+					  "op=approve",
+					  params);
+		agent = TRUE;
+		break;
+	case op_retrieve:
+		url = talloc_asprintf(ctx, "%s/displayCertFromRequest", eeurl);
+		params = talloc_asprintf(ctx,
+					 "%s&"
+					 "importCert=true&"
+					 "xml=true",
+					 params);
+		agent = FALSE;
+		break;
+	}
+
+	/* Read the PIN, if we need to. */
+	if ((sslpinfile != NULL) && (sslpin == NULL)) {
+		sslpin = cm_submit_u_from_file(sslpinfile);
+		if (sslpin != NULL) {
+			sslpin = talloc_strndup(ctx, sslpin,
+						strcspn(sslpin, "\r\n"));
+		}
+	}
+	if (ssldir != NULL) {
+		setenv("SSL_DIR", ssldir, 1);
+	}
+
+	/* Submit the form(s). */
+	while (url != NULL) {
+		hctx = cm_submit_h_init(ctx, "GET", url, params,
+					cainfo, capath, sslcert, sslkey, sslpin,
+					cm_submit_h_negotiate_off,
+					cm_submit_h_delegate_off,
+					agent ?
+					cm_submit_h_clientauth_on :
+					cm_submit_h_clientauth_off,
+					cm_submit_h_env_modify_off,
+					verbose > 2 ?
+					cm_submit_h_curl_verbose_on :
+					cm_submit_h_curl_verbose_off);
+		cm_submit_h_run(hctx);
+		printf("%s %s?%s\n", "GET", url, params);
+		printf("code = %d\n", cm_submit_h_result_code(hctx));
+		printf("code_text = %s\n", cm_submit_h_result_code_text(hctx));
+		results = cm_submit_h_results(hctx);
+		printf("results = %s\n", results);
+		/* If there's a next form, get ready to submit it. */
+		switch (op) {
+		case op_approve:
+			/* We just reviewed the request.  Read the defaults and
+			 * add them to the next set of parameters. */
+			if (results != NULL) {
+				defaults = cm_submit_d_xml_defaults(ctx,
+								    results);
+			} else {
+				defaults = NULL;
+			}
+			for (i = 0;
+			     (defaults != NULL) && (defaults[i] != NULL);
+			     i++) {
+				p = cm_submit_u_url_encode(defaults[i]->name);
+				q = cm_submit_u_url_encode(defaults[i]->value);
+				params2 = talloc_asprintf(ctx,
+							  "%s&%s=%s",
+							  params2, p, q);
+			};
+			break;
+		case op_none:
+		case op_submit:
+		case op_retrieve:
+			/* No second step for these. */
+			break;
+		}
+		url = url2;
+		url2 = NULL;
+		params = params2;
+		params2 = NULL;
+	}
+
+	/* Figure out what to output. */
+	switch (op) {
+	case op_none:
+		printf(_("Internal error: unknown state.\n"));
+		return CM_STATUS_UNCONFIGURED;
+		break;
+	case op_submit:
+		break;
+	case op_approve:
+		break;
+	case op_retrieve:
+		break;
+	}
+	return 0;
 }
