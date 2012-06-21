@@ -452,20 +452,52 @@ main(int argc, char **argv)
 		return CM_STATUS_UNCONFIGURED;
 		break;
 	case op_submit:
-		printf("status = %s\n", cm_submit_d_submit_status(ctx, results));
-		printf("error = %s\n", cm_submit_d_submit_error(ctx, results));
-		printf("requestId = %s\n", cm_submit_d_submit_requestid(ctx, results));
+		if ((cm_submit_d_submit_error(ctx, results) == NULL) &&
+		    ((p = cm_submit_d_submit_requestid(ctx, results)) != NULL)) {
+			printf("0\nstate=approve&requestId=%s\n",
+			       cm_submit_u_url_encode(p));
+			return CM_STATUS_WAIT_WITH_DELAY;
+		} else {
+			p = cm_submit_d_submit_error(ctx, results);
+			if (p == NULL) {
+				p = cm_submit_d_submit_status(ctx, results);
+				if (p != NULL) {
+					printf("Unknown error: %s.\n", p);
+				} else {
+					printf("Unknown error.\n");
+				}
+				return CM_STATUS_UNREACHABLE;
+			} else {
+				printf("Error: %s\n", p);
+				return CM_STATUS_REJECTED;
+			}
+		}
 		break;
 	case op_approve:
-		printf("error code = %s\n", cm_submit_d_approve_error_code(ctx, results));
-		printf("error reason = %s\n", cm_submit_d_approve_error_reason(ctx, results));
-		printf("status = %s\n", cm_submit_d_approve_status(ctx, results));
+		if ((cm_submit_d_approve_error_reason(ctx, results) == NULL) &&
+		    ((p = cm_submit_d_approve_status(ctx, results)) != NULL) &&
+		    (strcmp(p, "complete") == 0)) {
+			printf("0\nstate=retrieve&requestId=%s\n",
+			       statevar(savedstate, "requestId"));
+			return CM_STATUS_WAIT_WITH_DELAY;
+		} else {
+			printf("%s: %s\n",
+			       cm_submit_d_approve_error_code(ctx, results) ?: "(unknown)",
+			       cm_submit_d_approve_error_reason(ctx, results) ?: "(unknown)");
+			return CM_STATUS_REJECTED;
+		}
 		break;
 	case op_retrieve:
-		printf("status = %s\n", cm_submit_d_fetch_status(ctx, results));
-		printf("error = %s\n", cm_submit_d_fetch_error(ctx, results));
-		printf("cert = %s\n", cm_submit_d_fetch_cert(ctx, results));
+		if ((p = cm_submit_d_fetch_cert(ctx, results)) != NULL) {
+			printf("%s\n", p);
+			return CM_STATUS_ISSUED;
+		} else {
+			printf("status = %s\n", cm_submit_d_fetch_status(ctx, results));
+			printf("error = %s\n", cm_submit_d_fetch_error(ctx, results));
+			printf("cert = %s\n", cm_submit_d_fetch_cert(ctx, results));
+			return CM_STATUS_REJECTED;
+		}
 		break;
 	}
-	return 0;
+	return CM_STATUS_UNCONFIGURED;
 }

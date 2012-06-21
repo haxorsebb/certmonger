@@ -49,8 +49,15 @@ trim(void *parent, const char *value)
 	int l;
 	if (value != NULL) {
 		value += strspn(value, " \t\r\n");
-		l = strcspn(value, " \t\r\n");
-		return talloc_strndup(parent, value, l);
+		l = strlen(value);
+		while ((l > 0) && (strchr(" \t\r\n", value[l - 1]) != NULL)) {
+			l--;
+		}
+		if (l > 0) {
+			return talloc_strndup(parent, value, l);
+		} else {
+			return NULL;
+		}
 	}
 	return NULL;
 }
@@ -277,7 +284,8 @@ cm_submit_d_submit_status(void *parent, const char *xml)
 char *
 cm_submit_d_submit_error(void *parent, const char *xml)
 {
-	return cm_submit_d_xml_value(parent, xml, "/XMLResponse/Error");
+	return cm_submit_d_xml_value(parent, xml, "/XMLResponse/Error") ?:
+	       cm_submit_d_xml_value(parent, xml, "/xml/output/set/errorReason");
 }
 
 char *
@@ -313,13 +321,19 @@ cm_submit_d_approve_error_code(void *parent, const char *xml)
 char *
 cm_submit_d_approve_error_reason(void *parent, const char *xml)
 {
-	return cm_submit_d_xml_value(parent, xml, "/xml/output/set/errorReason");
+	return trim(parent,
+		    cm_submit_d_xml_value(parent,
+					  xml,
+					  "/xml/output/set/errorReason"));
 }
 
 char *
 cm_submit_d_approve_status(void *parent, const char *xml)
 {
-	return cm_submit_d_xml_value(parent, xml, "/xml/output/set/requestStatus");
+	return trim(parent,
+		    cm_submit_d_xml_value(parent,
+					  xml,
+					  "/xml/output/set/requestStatus"));
 }
 
 char *
