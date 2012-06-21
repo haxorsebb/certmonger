@@ -211,7 +211,7 @@ main(int argc, char **argv)
 		eeurl = cm_prefs_dogtag_ee_url();
 		if ((eeurl == NULL) && (host != NULL)) {
 			eeurl = talloc_asprintf(ctx,
-						"http://%s:9180/ca/agent/ca",
+						"http://%s:9180/ca/ee/ca",
 						host);
 		}
 	}
