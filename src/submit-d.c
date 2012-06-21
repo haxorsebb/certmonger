@@ -44,6 +44,18 @@
 #define DOGTAG_DEFAULTS_SET_MEMBER_SYNTAX "defSyntax"
 
 static char *
+trim(void *parent, const char *value)
+{
+	int l;
+	if (value != NULL) {
+		value += strspn(value, " \t\r\n");
+		l = strcspn(value, " \t\r\n");
+		return talloc_strndup(parent, value, l);
+	}
+	return NULL;
+}
+
+static char *
 cm_submit_d_xml_node_text(void *parent, xmlNodePtr node, const char *subname)
 {
 	xmlNodePtr subnode;
@@ -271,7 +283,10 @@ cm_submit_d_submit_error(void *parent, const char *xml)
 char *
 cm_submit_d_submit_requestid(void *parent, const char *xml)
 {
-	return cm_submit_d_xml_value(parent, xml, "/XMLResponse/RequestId");
+	return trim(parent,
+		    cm_submit_d_xml_value(parent,
+					  xml,
+					  "/XMLResponse/RequestId"));
 }
 
 char *
@@ -290,30 +305,39 @@ cm_submit_d_check_status(void *parent, const char *xml)
 }
 
 char *
+cm_submit_d_approve_error_code(void *parent, const char *xml)
+{
+	return cm_submit_d_xml_value(parent, xml, "/xml/output/set/errorCode");
+}
+
+char *
+cm_submit_d_approve_error_reason(void *parent, const char *xml)
+{
+	return cm_submit_d_xml_value(parent, xml, "/xml/output/set/errorReason");
+}
+
+char *
 cm_submit_d_approve_status(void *parent, const char *xml)
 {
 	return cm_submit_d_xml_value(parent, xml, "/xml/output/set/requestStatus");
 }
 
 char *
-cm_submit_d_fetch_status(void *parent, const char *xml)
-{
-	/* RequestStatus.java:
-	 * begin
-	 * pending
-	 * approved
-	 * svc_pending
-	 * canceled
-	 * rejected
-	 * complete
-	 */
-	return cm_submit_d_xml_value(parent, xml, "/xml/header/status");
-}
-
-char *
 cm_submit_d_fetch_cert(void *parent, const char *xml)
 {
 	return cm_submit_d_xml_value(parent, xml, "/xml/records/record/base64Cert");
+}
+
+char *
+cm_submit_d_fetch_status(void *parent, const char *xml)
+{
+	return cm_submit_d_xml_value(parent, xml, "/xml/fixed/requestStatus");
+}
+
+char *
+cm_submit_d_fetch_error(void *parent, const char *xml)
+{
+	return cm_submit_d_xml_value(parent, xml, "/xml/fixed/unexpectedError");
 }
 
 #ifdef CM_SUBMIT_D_MAIN

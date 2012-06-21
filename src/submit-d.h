@@ -22,7 +22,10 @@ char *cm_submit_d_submit_status(void *parent, const char *xml);
 char *cm_submit_d_submit_error(void *parent, const char *xml);
 char *cm_submit_d_submit_requestid(void *parent, const char *xml);
 char *cm_submit_d_check_status(void *parent, const char *xml);
+char *cm_submit_d_approve_error_code(void *parent, const char *xml);
+char *cm_submit_d_approve_error_reason(void *parent, const char *xml);
 char *cm_submit_d_approve_status(void *parent, const char *xml);
+char *cm_submit_d_fetch_error(void *parent, const char *xml);
 char *cm_submit_d_fetch_status(void *parent, const char *xml);
 char *cm_submit_d_fetch_cert(void *parent, const char *xml);
 
