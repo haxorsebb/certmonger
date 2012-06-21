@@ -26,5 +26,21 @@ char *cm_submit_d_approve_status(void *parent, const char *xml);
 char *cm_submit_d_fetch_status(void *parent, const char *xml);
 char *cm_submit_d_fetch_cert(void *parent, const char *xml);
 
+struct dogtag_default {
+	enum {
+		dogtag_none,
+		dogtag_boolean,
+		dogtag_int,
+		dogtag_choice,
+		dogtag_string,
+		dogtag_string_list,
+		dogtag_unknown
+	} syntax;
+	char *name;
+	char *value;
+};
+struct dogtag_default **cm_submit_d_xml_defaults(void *parent,
+						 const char *xml);
+
 
 #endif

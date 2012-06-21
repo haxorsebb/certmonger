@@ -36,19 +36,6 @@
 #include "submit-u.h"
 #include "util-o.h"
 
-struct dogtag_default {
-	enum {
-		dogtag_none,
-		dogtag_boolean,
-		dogtag_int,
-		dogtag_choice,
-		dogtag_string,
-		dogtag_string_ist
-	} syntax;
-	char *name;
-	char *value;
-};
-
 #define DOGTAG_DEFAULTS_SET_PATH \
 	"/xml/output/set/record/list/record/set/defList/list/defList/set"
 #define DOGTAG_DEFAULTS_SET_MEMBER_NAME "defId"
@@ -147,15 +134,15 @@ cm_submit_d_xml_default(void *parent, xmlNodePtr node)
 			ret->syntax = dogtag_choice;
 		} else
 		if (strcmp(syntax, "string_list") == 0) {
-			ret->syntax = dogtag_string_ist;
+			ret->syntax = dogtag_string_list;
 		} else
-			printf("syntax %s\n", syntax);
+			ret->syntax = dogtag_unknown;
 	}
 
 	return ret;
 }
 
-static struct dogtag_default **
+struct dogtag_default **
 cm_submit_d_xml_defaults(void *parent, const char *xml)
 {
 	/* "xpath" -> content */
