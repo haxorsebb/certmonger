@@ -152,8 +152,8 @@ certmaster_submit_LDADD = $(XMLRPC_LIBS) $(KRB5_LIBS) $(TALLOC_LIBS) \
 dogtag_submit_CFLAGS = $(AM_CFLAGS) $(XML_CFLAGS) $(CURL_LIBS)
 dogtag_submit_SOURCES = dogtag.c submit-d.c submit-d.h submit-h.c submit-h.h \
 		submit-u.c submit-u.h submit-e.h util.c util.h log.c log.h \
-		tm.c tm.h
-dogtag_submit_LDADD = $(CURL_LIBS) $(XML_LIBS) $(TALLOC_LIBS) $(UUID_LIBS)
+		tm.c tm.h prefs.c prefs.h env.h env-system.c
+dogtag_submit_LDADD = $(CURL_LIBS) $(XML_LIBS) $(OPENSSL_LIBS) $(TALLOC_LIBS) $(UUID_LIBS)
 submit_d_CFLAGS = $(AM_CFLAGS) $(CURL_CFLAGS) $(XML_CFLAGS) -DCM_SUBMIT_D_MAIN
 submit_d_SOURCES = submit-d.c submit-d.h submit-h.c submit-h.h \
 		   submit-u.c submit-u.h log.c log.h tm.c tm.h

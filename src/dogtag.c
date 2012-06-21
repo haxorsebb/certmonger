@@ -27,10 +27,14 @@
 
 #include <krb5.h>
 
+#include <openssl/x509.h>
+#include <openssl/bn.h>
+
 #include <dbus/dbus.h>
 
 #include <talloc.h>
 
+#include "prefs.h"
 #include "submit-d.h"
 #include "submit-e.h"
 #include "submit-h.h"
@@ -96,6 +100,31 @@ statevar(const char *state, const char *what)
 	return NULL;
 }
 
+static char *
+serial_from_cert(const char *cert)
+{
+	BIO *mem;
+	X509 *c;
+	BIGNUM *bn;
+	char *tmp;
+
+	if ((cert != NULL) && (strlen(cert) > 0)) {
+		tmp = strdup(cert);
+		if (tmp != NULL) {
+			mem = BIO_new_mem_buf(tmp, strlen(tmp));
+			c = d2i_X509_bio(mem, NULL);
+			if (c != NULL) {
+				bn = ASN1_INTEGER_to_BN(X509_get_serialNumber(c),
+							NULL);
+				if (bn != NULL) {
+					return BN_bn2hex(bn);
+				}
+			}
+		}
+	}
+	return NULL;
+}
+
 int
 main(int argc, char **argv)
 {
@@ -103,10 +132,10 @@ main(int argc, char **argv)
 	const char *ssldir = NULL, *cainfo = NULL, *capath = NULL;
 	const char *sslcert = NULL, *sslkey = NULL;
 	const char *sslpin = NULL, *sslpinfile = NULL;
-	const char *csr = NULL, *serial = NULL, *template = NULL;
+	const char *host = NULL, *csr = NULL, *serial = NULL, *template = NULL;
 	char *ipaconfig = NULL, *savedstate = NULL;
 	char *p, *q, *params = NULL, *params2 = NULL;
-	const char *results = NULL;
+	const char *tmp = NULL, *results = NULL;
 	struct cm_submit_h_context *hctx;
 	void *ctx;
 	int c, verbose = 0, i;
@@ -168,72 +197,89 @@ main(int argc, char **argv)
 		}
 	}
 
+	ctx = talloc_new(NULL);
+
 	ipaconfig = read_config_file(IPACONFIG);
-	if (ipaconfig == NULL) {
-		printf(_("Unable to read configuration file \"%s\".\n"),
-		       IPACONFIG);
+	if (ipaconfig != NULL) {
+		host = get_config_entry(ipaconfig,
+					"global",
+					"host");
 	} else {
-		if (eeurl == NULL) {
-			eeurl = get_config_entry(ipaconfig, IPASECTION,
-						 "default_ee_url");
-			if (eeurl == NULL) {
-				eeurl = "https://%s:9180/ca/ee/ca";
-			}
+		host = NULL;
+	}
+	if (eeurl == NULL) {
+		eeurl = cm_prefs_dogtag_ee_url();
+		if ((eeurl == NULL) && (host != NULL)) {
+			eeurl = talloc_asprintf(ctx,
+						"http://%s:9180/ca/agent/ca",
+						host);
 		}
-		if (agenturl == NULL) {
-			agenturl = get_config_entry(ipaconfig, IPASECTION,
-						    "default_agent_url");
-			if (agenturl == NULL) {
-				agenturl = "https://%s:9443/ca/agent/ca";
-			}
+	}
+	if (agenturl == NULL) {
+		agenturl = cm_prefs_dogtag_agent_url();
+		if ((agenturl == NULL) && (host != NULL)) {
+			agenturl = talloc_asprintf(ctx,
+						   "https://%s:9443/ca/agent/ca",
+						   host);
 		}
+	}
+	if (template == NULL) {
+		template = cm_prefs_dogtag_profile();
 		if (template == NULL) {
-			template = get_config_entry(ipaconfig, IPASECTION,
-						    "default_profile");
-			if (template == NULL) {
-				template = "caServerCert";
-			}
+			/* Maybe we should ask the servers for which profiles
+			 * it supports, but for now we just assume that this
+			 * one hasn't been removed. */
+			template = "caServerCert";
 		}
-		if (cainfo == NULL) {
-			cainfo = get_config_entry(ipaconfig, IPASECTION,
-						  "default_cainfo");
-			if (cainfo == NULL) {
-				cainfo = "/etc/ipa/ca.crt";
-			}
-		}
-		if (ssldir == NULL) {
-			ssldir = get_config_entry(ipaconfig, IPASECTION,
-						  "default_agent_dir");
-			if (ssldir == NULL) {
-				ssldir = "/etc/httpd/alias";
-			}
-		}
-		if (sslcert == NULL) {
-			sslcert = get_config_entry(ipaconfig, IPASECTION,
-						   "default_agent_nickname");
-			if (sslcert == NULL) {
-				sslcert = "ipa-ca-agent";
-			}
-		}
-		if ((sslpinfile == NULL) && (sslpin == NULL)) {
-			sslpinfile = get_config_entry(ipaconfig, IPASECTION,
-						      "default_agent_pinfile");
-			if (sslpinfile == NULL) {
-				sslpinfile = "/etc/httpd/alias/pwdfile.txt";
+	}
+	if (serial == NULL) {
+		tmp = getenv(CM_SUBMIT_CERTIFICATE_ENV);
+		if (tmp != NULL) {;
+			if (cm_prefs_dogtag_renew()) {
+				serial = serial_from_cert(tmp);
 			}
 		}
 	}
-
+	if (cainfo == NULL) {
+		cainfo = cm_prefs_dogtag_ca_info();
+	}
+	if (capath == NULL) {
+		capath = cm_prefs_dogtag_ca_path();
+	}
+	if (ssldir == NULL) {
+		ssldir = cm_prefs_dogtag_ssldir();
+	}
+	if (sslcert == NULL) {
+		sslcert = cm_prefs_dogtag_sslcert();
+	}
+	if (sslkey == NULL) {
+		sslkey = cm_prefs_dogtag_sslkey();
+	}
+	if ((sslpinfile == NULL) && (sslpin == NULL)) {
+		sslpinfile = cm_prefs_dogtag_sslpinfile();
+	}
+	if ((cainfo == NULL) &&
+	    (capath == NULL) &&
+	    (ssldir == NULL) &&
+	    (sslcert == NULL) &&
+	    (sslkey == NULL) &&
+	    (sslpin == NULL) &&
+	    (sslpinfile == NULL)) {
+		cainfo = "/etc/ipa/ca.crt";
+		ssldir = "/etc/httpd/alias";
+		sslcert = "ipaCert";
+		sslpinfile = "/etc/httpd/alias/pwdfile.txt";
+	}
 	if (eeurl == NULL) {
-		printf(_("No end-entity URL (-E) given.\n"));
+		printf(_("No end-entity URL (-E) given, and no default known.\n"));
 		error = TRUE;
 	}
 	if (agenturl == NULL) {
-		printf(_("No agent URL (-A) given.\n"));
+		printf(_("No agent URL (-A) given, and no default known.\n"));
 		error = TRUE;
 	}
 	if (template == NULL) {
-		printf(_("No profile/template (-T) given.\n"));
+		printf(_("No profile/template (-T) given, and no default known.\n"));
 		error = TRUE;
 	}
 	if (error) {
@@ -241,38 +287,18 @@ main(int argc, char **argv)
 		return CM_STATUS_UNCONFIGURED;
 	}
 
-	if (serial == NULL) {
-		/* Read the CSR from the environment, or from the command-line,
-		 * that we're going to submit for signing. */
-		csr = getenv(CM_SUBMIT_CSR_ENV);
-		if (csr == NULL) {
-			csr = cm_submit_u_from_file((optind < argc) ?
-						    argv[optind++] : NULL);
-		}
-		if ((csr == NULL) || (strlen(csr) == 0)) {
-			printf(_("Unable to read signing request.\n"));
-			help(argv[0]);
-			return CM_STATUS_UNCONFIGURED;
-		}
-	} else {
-		/* We're renewing using a serial number, so no CSR. */
-		csr = NULL;
-	}
-
-	ctx = talloc_new(NULL);
-
 	/* Figure out where we are in the multi-step process. */
 	op = op_none;
-	if (savedstate != NULL) {
-		p = statevar(savedstate, "state");
+	if ((savedstate != NULL) &&
+	    ((p = statevar(savedstate, "state")) != NULL) &&
+	    ((q = statevar(savedstate, "requestId")) != NULL)) {
 		if (strcmp(p, "approve") == 0) {
 			op = op_approve;
 		}
 		if (strcmp(p, "retrieve") == 0) {
 			op = op_retrieve;
 		}
-		p = statevar(savedstate, "requestId");
-		params = talloc_asprintf(ctx, "requestId=%s", p);
+		params = talloc_asprintf(ctx, "requestId=%s", q);
 	} else {
 		op = op_submit;
 		params = "";
@@ -288,6 +314,7 @@ main(int argc, char **argv)
 		url = talloc_asprintf(ctx, "%s/profileSubmit", eeurl);
 		template = cm_submit_u_url_encode(template);
 		if (serial != NULL) {
+			/* Renew-by-serial. */
 			serial = cm_submit_u_url_encode(serial);
 			params = talloc_asprintf(ctx,
 						 "profileId=%s&"
@@ -297,6 +324,20 @@ main(int argc, char **argv)
 						 template,
 						 serial);
 		} else {
+			/* Fresh enrollment.  Read the CSR from the
+			 * environment, or from the command-line, that we're
+			 * going to submit for signing. */
+			csr = getenv(CM_SUBMIT_CSR_ENV);
+			if (csr == NULL) {
+				csr = cm_submit_u_from_file((optind < argc) ?
+							    argv[optind++] :
+							    NULL);
+			}
+			if ((csr == NULL) || (strlen(csr) == 0)) {
+				printf(_("Unable to read signing request.\n"));
+				help(argv[0]);
+				return CM_STATUS_UNCONFIGURED;
+			}
 			csr = cm_submit_u_url_encode(csr);
 			params = talloc_asprintf(ctx,
 						 "profileId=%s&"
@@ -309,6 +350,8 @@ main(int argc, char **argv)
 		agent = FALSE;
 		break;
 	case op_approve:
+		/* Reading profile defaults for this certificate, then applying
+		 * them and issuing a new certificate. */
 		url = talloc_asprintf(ctx, "%s/profileReview", agenturl);
 		url2 = talloc_asprintf(ctx, "%s/profileProcess", agenturl);
 		params = talloc_asprintf(ctx,
@@ -322,6 +365,7 @@ main(int argc, char **argv)
 		agent = TRUE;
 		break;
 	case op_retrieve:
+		/* Retrieving the new certificate. */
 		url = talloc_asprintf(ctx, "%s/displayCertFromRequest", eeurl);
 		params = talloc_asprintf(ctx,
 					 "%s&"
@@ -358,16 +402,21 @@ main(int argc, char **argv)
 					cm_submit_h_curl_verbose_on :
 					cm_submit_h_curl_verbose_off);
 		cm_submit_h_run(hctx);
-		printf("%s %s?%s\n", "GET", url, params);
-		printf("code = %d\n", cm_submit_h_result_code(hctx));
-		printf("code_text = %s\n", cm_submit_h_result_code_text(hctx));
+		if (verbose > 1) {
+			printf("%s %s?%s\n", "GET", url, params);
+			printf("code = %d\n", cm_submit_h_result_code(hctx));
+			printf("code_text = %s\n", cm_submit_h_result_code_text(hctx));
+		}
 		results = cm_submit_h_results(hctx);
-		printf("results = %s\n", results);
+		if (verbose > 1) {
+			printf("results = %s\n", results);
+		}
 		/* If there's a next form, get ready to submit it. */
 		switch (op) {
 		case op_approve:
 			/* We just reviewed the request.  Read the defaults and
-			 * add them to the next set of parameters. */
+			 * add them to the set of parameters for our next form
+			 * submission. */
 			if (results != NULL) {
 				defaults = cm_submit_d_xml_defaults(ctx,
 								    results);
@@ -387,7 +436,7 @@ main(int argc, char **argv)
 		case op_none:
 		case op_submit:
 		case op_retrieve:
-			/* No second step for these. */
+			/* No second form for these. */
 			break;
 		}
 		url = url2;
@@ -403,10 +452,19 @@ main(int argc, char **argv)
 		return CM_STATUS_UNCONFIGURED;
 		break;
 	case op_submit:
+		printf("status = %s\n", cm_submit_d_submit_status(ctx, results));
+		printf("error = %s\n", cm_submit_d_submit_error(ctx, results));
+		printf("requestId = %s\n", cm_submit_d_submit_requestid(ctx, results));
 		break;
 	case op_approve:
+		printf("error code = %s\n", cm_submit_d_approve_error_code(ctx, results));
+		printf("error reason = %s\n", cm_submit_d_approve_error_reason(ctx, results));
+		printf("status = %s\n", cm_submit_d_approve_status(ctx, results));
 		break;
 	case op_retrieve:
+		printf("status = %s\n", cm_submit_d_fetch_status(ctx, results));
+		printf("error = %s\n", cm_submit_d_fetch_error(ctx, results));
+		printf("cert = %s\n", cm_submit_d_fetch_cert(ctx, results));
 		break;
 	}
 	return 0;
