@@ -22,7 +22,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+
+#include <krb5.h>
+
 #include "../../src/submit.h"
+#include "../../src/submit-u.h"
 
 int cm_submit_delta_from_string(const char *deltas, time_t now, time_t *delta);
 int
@@ -37,9 +41,9 @@ main(int argc, char **argv)
 			when.tm_mday = 1;
 			when.tm_mon = 0;
 			when.tm_year = atoi(argv[1]) - 1900;
-			if (cm_submit_delta_from_string(argv[i],
-							now = mktime(&when),
-							&delta) != 0) {
+			if (cm_submit_u_delta_from_string(argv[i],
+							  now = mktime(&when),
+							  &delta) != 0) {
 				printf("Error at \"%s\".\n", argv[i]);
 				delta = 0;
 			}
