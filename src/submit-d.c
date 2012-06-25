@@ -366,6 +366,7 @@ usage(void)
 	       "\t-c requestid: check-request-progress\n"
 	       "\t-f requestid: fetch-requested-certificate\n"
 	       "\t-R requestid: review-profile-based-request\n"
+	       "\t-J requestid: reject-profile-based-request\n"
 	       "\t-A requestid: approve-profile-based-request\n");
 	printf("Options:\n"
 	       "\t-a  use client auth\n"
@@ -393,6 +394,7 @@ main(int argc, char **argv)
 		op_submit_serial,
 		op_check,
 		op_review,
+		op_reject,
 		op_approve,
 		op_fetch
 	} op;
@@ -445,7 +447,7 @@ main(int argc, char **argv)
 	defaults = NULL;
 	default_values = NULL;
 	profile = "caServerCert";
-	while ((c = getopt(argc, argv, "u:U:n:e:t:T:s:S:D:c:f:R:A:vaP:I:K:C:d:p:V:")) != -1) {
+	while ((c = getopt(argc, argv, "u:U:n:e:t:T:s:S:D:c:f:R:J:A:vaP:I:K:C:d:p:V:")) != -1) {
 		switch (c) {
 		case 'u':
 			eeurl = optarg;
@@ -492,6 +494,11 @@ main(int argc, char **argv)
 			break;
 		case 'A':
 			op = op_approve;
+			agent = 1;
+			id = strtol(optarg, NULL, 0);
+			break;
+		case 'J':
+			op = op_reject;
 			agent = 1;
 			id = strtol(optarg, NULL, 0);
 			break;
@@ -601,6 +608,16 @@ restart:
 					 "xml=true",
 					 id);
 		vars = review_x_vars;
+		break;
+	case op_reject:
+		method = "GET";
+		cgi = "profileProcess";
+		params = talloc_asprintf(ctx,
+					 "requestId=%d&"
+					 "op=reject&"
+					 "xml=true",
+					 id);
+		vars = no_x_vars;
 		break;
 	case op_approve:
 		if ((defaults == NULL) && (default_values == NULL)) {
@@ -745,6 +762,9 @@ restart:
 				       cm_submit_u_url_encode(defaults[i]->value));
 			}
 		}
+		break;
+	case op_reject:
+		printf("%s\n", cm_submit_d_check_status(hctx, result) ?: "(unknown)");
 		break;
 	case op_approve:
 		if ((defaults == NULL) && (default_values == NULL)) {
