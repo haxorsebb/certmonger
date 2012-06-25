@@ -36,6 +36,7 @@
 #include "env.h"
 #include "store.h"
 #include "store-int.h"
+#include "submit-e.h"
 #include "log.h"
 #include "tm.h"
 
@@ -1410,7 +1411,7 @@ cm_store_get_all_cas(void *parent)
 	if (glob(path, 0, NULL, &globs) != 0) {
 		globs.gl_pathc = 0;
 	}
-	ret = talloc_array_ptrtype(parent, ret, globs.gl_pathc + 4);
+	ret = talloc_array_ptrtype(parent, ret, globs.gl_pathc + 5);
 	if (ret != NULL) {
 		for (i = 0, j = 0; i < globs.gl_pathc; i++) {
 			p = globs.gl_pathv[i];
@@ -1496,6 +1497,24 @@ cm_store_get_all_cas(void *parent)
 			j++;
 		}
 #endif
+		/* Make sure we get at least one dogtag entry. */
+		for (k = 0; k < j; k++) {
+			if ((ret[k]->cm_ca_type == cm_ca_external) &&
+			    (strcmp(ret[k]->cm_nickname,
+				    CM_DOGTAG_IPA_RENEW_AGENT_CA_NAME) == 0)) {
+				break;
+			}
+		}
+		if (k == j) {
+			ret[j] = cm_store_ca_new(ret);
+			ret[j]->cm_busname = cm_store_ca_next_busname(ret[j]);
+			ret[j]->cm_nickname = talloc_strdup(ret[j],
+							    CM_DOGTAG_IPA_RENEW_AGENT_CA_NAME);
+			ret[j]->cm_ca_type = cm_ca_external;
+			ret[j]->cm_ca_external_helper = talloc_strdup(ret[j],
+								      CM_DOGTAG_IPA_RENEW_AGENT_HELPER_PATH);
+			j++;
+		}
 		ret[j] = NULL;
 	}
 	if (globs.gl_pathc > 0) {

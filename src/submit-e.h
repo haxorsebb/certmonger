@@ -18,6 +18,10 @@
 #ifndef cmsubmite_h
 #define cmsubmite_h
 
+#define CM_DOGTAG_IPA_RENEW_AGENT_CA_NAME "dogtag-ipa-renew-agent"
+#define CM_DOGTAG_IPA_RENEW_AGENT_HELPER_PATH \
+	CM_DEFAULT_HELPER_PATH "/dogtag-ipa-renew-agent-submit"
+
 enum cm_external_status {
 	CM_STATUS_ISSUED = 0,
 	CM_STATUS_WAIT = 1,

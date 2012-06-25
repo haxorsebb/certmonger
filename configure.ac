@@ -113,17 +113,12 @@ LIBS="$savedLIBS"
 PKG_CHECK_MODULES(CERTMONGER,dbus-1 talloc tevent nss)
 PKG_CHECK_MODULES(GETCERT,dbus-1 talloc)
 
+PKG_CHECK_MODULES(XML,libxml-2.0)
 have_libxml=true
-if pkg-config libxml-2.0 ; then
-	PKG_CHECK_MODULES(XML,libxml-2.0)
-	have_libxml=true
-fi
 
-have_libcurl=false
-if pkg-config libcurl ; then
-	PKG_CHECK_MODULES(CURL,libcurl)
-	have_libcurl=true
-fi
+PKG_CHECK_MODULES(CURL,libcurl)
+have_libcurl=true
+
 savedCFLAGS="$CFLAGS"
 savedCPPFLAGS="$CPPFLAGS"
 savedLDFLAGS="$LDFLAGS"
@@ -376,6 +371,8 @@ AC_DEFINE(CM_DELAY_NETLINK,(60),[Define to the time to wait after a netlink rout
 CM_SELF_SIGN_CA_NAME=SelfSign
 AC_SUBST(CM_SELF_SIGN_CA_NAME)
 AC_DEFINE_UNQUOTED(CM_SELF_SIGN_CA_NAME,"$CM_SELF_SIGN_CA_NAME",[Define to the name that the internal self-signing not-really-a-CA will be known by.])
+
+AC_DEFINE_UNQUOTED(CM_DEFAULT_HELPER_PATH,"$mylibexecdir",[Define to the default path of submission helpers.])
 
 AC_DEFINE(WITH_IPA,1,[Define to ensure that there's always an IPA CA defined.])
 CM_IPA_CA_NAME=IPA

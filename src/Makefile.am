@@ -138,7 +138,7 @@ if WITH_IPA
 pkglibexec_PROGRAMS += ipa-submit
 endif
 if WITH_CURL_AND_XML
-pkglibexec_PROGRAMS += dogtag-submit
+pkglibexec_PROGRAMS += dogtag-ipa-renew-agent-submit
 noinst_PROGRAMS += submit-h submit-d
 endif
 ipa_submit_SOURCES = ipa.c submit-x.c submit-x.h submit-u.c submit-u.h \
@@ -149,11 +149,11 @@ certmaster_submit_SOURCES = certmaster.c submit-x.c submit-x.h \
 		tm.c tm.h
 certmaster_submit_LDADD = $(XMLRPC_LIBS) $(KRB5_LIBS) $(TALLOC_LIBS) \
 			  $(UUID_LIBS)
-dogtag_submit_CFLAGS = $(AM_CFLAGS) $(XML_CFLAGS) $(CURL_LIBS)
-dogtag_submit_SOURCES = dogtag.c submit-d.c submit-d.h submit-h.c submit-h.h \
+dogtag_ipa_renew_agent_submit_CFLAGS = $(AM_CFLAGS) $(XML_CFLAGS) $(CURL_LIBS)
+dogtag_ipa_renew_agent_submit_SOURCES = dogtag.c submit-d.c submit-d.h submit-h.c submit-h.h \
 		submit-u.c submit-u.h submit-e.h util.c util.h log.c log.h \
 		tm.c tm.h prefs.c prefs.h env.h env-system.c
-dogtag_submit_LDADD = $(CURL_LIBS) $(XML_LIBS) $(OPENSSL_LIBS) $(TALLOC_LIBS) $(UUID_LIBS)
+dogtag_ipa_renew_agent_submit_LDADD = $(CURL_LIBS) $(XML_LIBS) $(OPENSSL_LIBS) $(TALLOC_LIBS) $(UUID_LIBS)
 submit_d_CFLAGS = $(AM_CFLAGS) $(CURL_CFLAGS) $(XML_CFLAGS) -DCM_SUBMIT_D_MAIN
 submit_d_SOURCES = submit-d.c submit-d.h submit-h.c submit-h.h \
 		   submit-u.c submit-u.h log.c log.h tm.c tm.h
