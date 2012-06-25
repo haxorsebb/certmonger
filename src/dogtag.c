@@ -103,7 +103,7 @@ statevar(const char *state, const char *what)
 }
 
 static char *
-serial_from_cert(const char *cert)
+serial_hex_from_cert(const char *cert)
 {
 	X509 *c;
 	BIGNUM *bn;
@@ -121,6 +121,16 @@ serial_from_cert(const char *cert)
 				}
 			}
 		}
+	}
+	return NULL;
+}
+
+static char *
+serial_dec_from_hex(const char *serial)
+{
+	BIGNUM *bn = NULL;
+	if (BN_hex2bn(&bn, serial) != 0) {
+		return BN_bn2dec(bn);
 	}
 	return NULL;
 }
@@ -237,9 +247,12 @@ main(int argc, char **argv)
 		tmp = getenv(CM_SUBMIT_CERTIFICATE_ENV);
 		if (tmp != NULL) {
 			if (cm_prefs_dogtag_renew()) {
-				serial = serial_from_cert(tmp);
+				serial = serial_hex_from_cert(tmp);
 			}
 		}
+	}
+	if (serial != NULL) {
+		serial = serial_dec_from_hex(serial);
 	}
 	if (cainfo == NULL) {
 		cainfo = cm_prefs_dogtag_ca_info();
