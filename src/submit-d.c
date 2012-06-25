@@ -361,6 +361,7 @@ usage(void)
 	printf("usage: submit-d [-u EE-URL | -U AGENT-URL] MODE OPTIONS\n");
 	printf("Modes:\n"
 	       "\t-S serialhex: submit-renewal-by-serial\n"
+	       "\t-D serialdec: submit-renewal-by-serial\n"
 	       "\t-s csrfile:   submit-request-using-CSR\n"
 	       "\t-c requestid: check-request-progress\n"
 	       "\t-f requestid: fetch-requested-certificate\n"
@@ -378,6 +379,7 @@ usage(void)
 	       "\t-n: requestor_name\n"
 	       "\t-e: requestor_email\n"
 	       "\t-t: requestor_telephone\n"
+	       "\t-V: approval_params\n"
 	       "\t-v  verbose (repeat for more)\n");
 }
 
@@ -398,7 +400,7 @@ main(int argc, char **argv)
 	const char *method, *eeurl, *agenturl, *cgi, *file, *serial, *profile;
 	const char *name, *email, *tele;
 	const char *nssdb, *capath, *cainfo, *sslkey, *sslcert, *sslpin;
-	const char *result;
+	const char *result, *default_values;
 	struct dogtag_default **defaults, *nodefault[] = { NULL };
 	char *params, *uri, **var, **vars, *p, *request;
 	char *no_x_vars[] = { NULL };
@@ -441,8 +443,9 @@ main(int argc, char **argv)
 	sslcert = NULL;
 	sslpin = NULL;
 	defaults = NULL;
+	default_values = NULL;
 	profile = "caServerCert";
-	while ((c = getopt(argc, argv, "u:U:n:e:t:T:s:S:c:f:R:A:vaP:I:K:C:d:p:")) != -1) {
+	while ((c = getopt(argc, argv, "u:U:n:e:t:T:s:S:D:c:f:R:A:vaP:I:K:C:d:p:V:")) != -1) {
 		switch (c) {
 		case 'u':
 			eeurl = optarg;
@@ -468,6 +471,11 @@ main(int argc, char **argv)
 			file = optarg;
 			break;
 		case 'S':
+			op = op_submit_serial;
+			agent = 0;
+			serial = util_o_dec_from_hex(optarg);
+			break;
+		case 'D':
 			op = op_submit_serial;
 			agent = 0;
 			serial = optarg;
@@ -515,6 +523,9 @@ main(int argc, char **argv)
 			break;
 		case 'p':
 			sslpin = optarg;
+			break;
+		case 'V':
+			default_values = optarg;
 			break;
 		default:
 			usage();
@@ -567,7 +578,7 @@ restart:
 					 "renewal=true&"
 					 "xml=true",
 					 profile,
-					 util_o_dec_from_hex(serial));
+					 serial);
 		if (name != NULL) {
 			params = talloc_asprintf(ctx, "%s&requestor_name=%s",
 						 params, name);
@@ -592,7 +603,8 @@ restart:
 		vars = review_x_vars;
 		break;
 	case op_approve:
-		if (defaults == NULL) {
+		if ((defaults == NULL) && (default_values == NULL)) {
+			/* ask for defaults */
 			method = "GET";
 			cgi = "profileReview";
 			params = talloc_asprintf(ctx,
@@ -600,7 +612,19 @@ restart:
 						 "xml=true",
 						 id);
 			vars = no_x_vars;
+		} else
+		if (default_values != NULL) {
+			/* use supplied defaults */
+			method = "GET";
+			cgi = "profileProcess";
+			params = talloc_asprintf(ctx,
+						 "requestId=%d&"
+						 "op=approve&"
+						 "xml=true&%s",
+						 id, default_values);
+			vars = approve_x_vars;
 		} else {
+			/* use asked-for efaults */
 			method = "GET";
 			cgi = "profileProcess";
 			params = talloc_asprintf(ctx,
@@ -723,7 +747,8 @@ restart:
 		}
 		break;
 	case op_approve:
-		if (defaults == NULL) {
+		if ((defaults == NULL) && (default_values == NULL)) {
+			/* ask for defaults */
 			defaults = cm_submit_d_xml_defaults(hctx, result);
 			if (defaults == NULL) {
 				defaults = nodefault;
