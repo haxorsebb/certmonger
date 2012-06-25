@@ -23,12 +23,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <syslog.h>
 #include <unistd.h>
 
 #include <krb5.h>
 
-#include <openssl/x509.h>
 #include <openssl/bn.h>
+#include <openssl/pem.h>
+#include <openssl/x509.h>
 
 #include <dbus/dbus.h>
 
@@ -84,7 +86,7 @@ statevar(const char *state, const char *what)
 	while ((p != NULL) && (*p != '\0')) {
 		if ((strncmp(p, what, len) == 0) && (p[len] == '=')) {
 			p += (len + 1);
-			len = strcspn(p, "&");
+			len = strcspn(p, "&\r\n");
 			q = malloc(len + 1);
 			if (q != NULL) {
 				memcpy(q, p, len);
@@ -103,16 +105,14 @@ statevar(const char *state, const char *what)
 static char *
 serial_from_cert(const char *cert)
 {
-	BIO *mem;
 	X509 *c;
 	BIGNUM *bn;
-	char *tmp;
+	BIO *mem;
 
 	if ((cert != NULL) && (strlen(cert) > 0)) {
-		tmp = strdup(cert);
-		if (tmp != NULL) {
-			mem = BIO_new_mem_buf(tmp, strlen(tmp));
-			c = d2i_X509_bio(mem, NULL);
+		mem = BIO_new_mem_buf((void *) cert, -1);
+		if (mem != NULL) {
+			c = PEM_read_bio_X509(mem, NULL, NULL, NULL);
 			if (c != NULL) {
 				bn = ASN1_INTEGER_to_BN(X509_get_serialNumber(c),
 							NULL);
@@ -136,6 +136,7 @@ main(int argc, char **argv)
 	char *ipaconfig = NULL, *savedstate = NULL;
 	char *p, *q, *params = NULL, *params2 = NULL;
 	const char *tmp = NULL, *results = NULL;
+	const char *lasturl = NULL, *lastparams = NULL;
 	struct cm_submit_h_context *hctx;
 	void *ctx;
 	int c, verbose = 0, i;
@@ -234,7 +235,7 @@ main(int argc, char **argv)
 	}
 	if (serial == NULL) {
 		tmp = getenv(CM_SUBMIT_CERTIFICATE_ENV);
-		if (tmp != NULL) {;
+		if (tmp != NULL) {
 			if (cm_prefs_dogtag_renew()) {
 				serial = serial_from_cert(tmp);
 			}
@@ -406,10 +407,12 @@ main(int argc, char **argv)
 			printf("%s %s?%s\n", "GET", url, params);
 			printf("code = %d\n", cm_submit_h_result_code(hctx));
 			printf("code_text = %s\n", cm_submit_h_result_code_text(hctx));
+			syslog(LOG_DEBUG, "%s %s?%s\n", "GET", url, params);
 		}
 		results = cm_submit_h_results(hctx);
 		if (verbose > 1) {
 			printf("results = %s\n", results);
+			syslog(LOG_DEBUG, "%s", results);
 		}
 		/* If there's a next form, get ready to submit it. */
 		switch (op) {
@@ -439,13 +442,20 @@ main(int argc, char **argv)
 			/* No second form for these. */
 			break;
 		}
+		lasturl = url;
 		url = url2;
 		url2 = NULL;
+		lastparams = params;
 		params = params2;
 		params2 = NULL;
 	}
 
 	/* Figure out what to output. */
+	if (results == NULL) {
+		printf(_("Internal error: no response to \"%s?%s\".\n"),
+		       lasturl, lastparams);
+		return CM_STATUS_REJECTED;
+	}
 	switch (op) {
 	case op_none:
 		printf(_("Internal error: unknown state.\n"));
