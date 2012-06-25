@@ -635,6 +635,8 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 					     state->cm_submit_state) == 0) {
 				/* We're all done.  Save the certificate to its
 				 * real home. */
+				cm_submit_clear_ca_cookie(entry,
+							  state->cm_submit_state);
 				cm_submit_done(entry, state->cm_submit_state);
 				state->cm_submit_state = NULL;
 				entry->cm_state = CM_NEED_TO_SAVE_CERT;
@@ -643,6 +645,8 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			if (cm_submit_rejected(entry,
 					       state->cm_submit_state) == 0) {
 				/* The request was flat-out rejected. */
+				cm_submit_clear_ca_cookie(entry,
+							  state->cm_submit_state);
 				cm_submit_done(entry, state->cm_submit_state);
 				state->cm_submit_state = NULL;
 				if (entry->cm_cert != NULL) {

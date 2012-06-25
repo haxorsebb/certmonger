@@ -107,6 +107,16 @@ cm_submit_save_ca_cookie(struct cm_store_entry *entry,
 	return pvt->save_ca_cookie(entry, state);
 }
 
+/* Clear CA-specific identifier for our submitted request. */
+int
+cm_submit_clear_ca_cookie(struct cm_store_entry *entry,
+			  struct cm_submit_state *state)
+{
+	struct cm_submit_state_pvt *pvt = (struct cm_submit_state_pvt *) state;
+	talloc_free(entry->cm_ca_cookie);
+	entry->cm_ca_cookie = NULL;
+}
+
 /* Check if the certificate was issued. */
 int
 cm_submit_issued(struct cm_store_entry *entry, struct cm_submit_state *state)
