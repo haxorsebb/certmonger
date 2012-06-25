@@ -42,6 +42,7 @@
 #include "submit-h.h"
 #include "submit-u.h"
 #include "util.h"
+#include "util-o.h"
 
 #ifdef ENABLE_NLS
 #include <libintl.h>
@@ -121,16 +122,6 @@ serial_hex_from_cert(const char *cert)
 				}
 			}
 		}
-	}
-	return NULL;
-}
-
-static char *
-serial_dec_from_hex(const char *serial)
-{
-	BIGNUM *bn = NULL;
-	if (BN_hex2bn(&bn, serial) != 0) {
-		return BN_bn2dec(bn);
 	}
 	return NULL;
 }
@@ -252,7 +243,7 @@ main(int argc, char **argv)
 		}
 	}
 	if (serial != NULL) {
-		serial = serial_dec_from_hex(serial);
+		serial = util_o_dec_from_hex(serial);
 	}
 	if (cainfo == NULL) {
 		cainfo = cm_prefs_dogtag_ca_info();
