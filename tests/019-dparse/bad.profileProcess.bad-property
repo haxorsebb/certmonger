@@ -1,0 +1,27 @@
+<xml>
+<output>
+<set>
+<errorReason>
+Property Error - Invalid Property notBefore
+</errorReason>
+<requestType>
+renewal
+</requestType>
+<profileId>
+caServerCert
+</profileId>
+<requestId>
+17
+</requestId>
+<errorCode>
+1
+</errorCode>
+<requestStatus>
+pending
+</requestStatus>
+<op>
+approve
+</op>
+</set>
+</output>
+</xml>

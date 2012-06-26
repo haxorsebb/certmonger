@@ -60,7 +60,11 @@ EXTRA_DIST = \
 	017-notoken-sql/expected.out \
 	017-notoken-sql/run.sh \
 	018-pembase/expected.out \
-	018-pembase/run.sh
+	018-pembase/run.sh \
+	019-dparse/expected.out \
+	019-dparse/run.sh \
+	019-dparse/good.* \
+	019-dparse/bad.*
 
 subdirs = \
 	001-keyiread \
@@ -80,7 +84,8 @@ subdirs = \
 	015-lockedkey \
 	016-dates \
 	017-notoken \
-	018-pembase
+	018-pembase \
+	019-dparse
 
 if HAVE_DBM_NSSDB
 subdirs += \

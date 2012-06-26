@@ -1,0 +1,60 @@
+[submit(good.profileSubmit.serial.in-range) = WAIT_WITH_DELAY]
+0
+state=approve&requestId=12
+
+[review(good.profileReview) = REJECTED]
+
+[fetch(good.displayCertFromRequest) = ISSUED]
+-----BEGIN CERTIFICATE-----
+MIIDEDCCAfigAwIBAgIBCzANBgkqhkiG9w0BAQsFADA5MRcwFQYDVQQKEw5CT1Mu
+UkVESEFULkNPTTEeMBwGA1UEAxMVQ2VydGlmaWNhdGUgQXV0aG9yaXR5MB4XDTEy
+MDYyNTIxMDcxMloXDTE2MDYyNTIxMDcxMlowNzEXMBUGA1UEChMOQk9TLlJFREhB
+VC5DT00xHDAaBgNVBAMTE09iamVjdCBTaWduaW5nIENlcnQwggEiMA0GCSqGSIb3
+DQEBAQUAA4IBDwAwggEKAoIBAQCmZoqUb8hHS6E/MmrlimQlhLHlPdxlJZn3de0K
+8vHWCuyBqM9tmISsoSYHOdCm/c6vrVwwSMkn5HMjjWsJGKNdZouBmlA1WuiMDjWF
+r7WexGUd34lUlliG6VQdIdkQMn9rjG+W8wTEOPCxlUBUwUBzIyZ3XDe0eCIN7NBL
+wh7efZZjRgln8mH7aEGaUug2tOqj2niudXZZLLMthU/f74pdBTD+EXiAkEjN8j12
+ba2Zv5mDyDqan5WDMf9a9EbDwMnFKU7/SEDCvra2jrQNPKu/dRsBvGdzqgEJDuNa
+Wrn/kSz2worbW2c7V9jLgsYSjTLeYIAulCifIzBG9bisAT8DAgMBAAGjJTAjMA4G
+A1UdDwEB/wQEAwIChDARBglghkgBhvhCAQEEBAMCBBAwDQYJKoZIhvcNAQELBQAD
+ggEBAJzERxUVdka5UF98Ks9Lj4Y69yoiIFRYswLsCYZoP8rwZlW4aprtE/caz3nb
+mFKSG1oS84DZ/d3wnvSBhdbfBLh59YH9eJnRZPS8Q+jIRkg9VSnleQTJg+kIngUZ
+eWBSUUSfAI6BrgdaFB4us7i0yWJTorRh/Te69M3UKNVfx8LJsPt/nG2nQW/X0ydJ
+LCT7m5N535pDf4tELcXRQAUv/xTp7F5O84pp8Bez14iVTtKazqseq5K7EKCsRXfW
+4zj1FewSYaEaTHyBrcwwArEyBbdkC5cdwfJUVvNFWXrfYiCy6yBmTCQbrucmqC0M
+FxfR4qHzwpD9Q7rvTzFP2/J/Cr8=
+-----END CERTIFICATE-----
+
+[submit(bad.profileSubmit.csr.empty) = REJECTED]
+
+[submit(bad.profileSubmit.csr.subject-mismatch) = REJECTED]
+
+[submit(bad.profileSubmit.serial.empty) = REJECTED]
+
+[submit(bad.profileSubmit.serial.invalid) = REJECTED]
+
+[submit(bad.profileSubmit.serial.out-of-range) = REJECTED]
+
+[review(bad.profileReview.no-such-request) = REJECTED]
+
+[review(bad.profileReview.unauthorized-cert) = REJECTED]
+
+[review(bad.profileReview.wrong-nssdb) = REJECTED]
+
+[approve(bad.profileProcess.bad-property) = REJECTED]
+
+[approve(bad.profileProcess.no-agent-cert) = REJECTED]
+
+[approve(bad.profileProcess.no-ca-cert) = REJECTED]
+
+[approve(bad.profileProcess.no-property) = REJECTED]
+
+[approve(bad.profileProcess.not-pending) = REJECTED]
+
+[fetch(bad.displayCertFromRequest.incomplete) = REJECTED]
+
+[fetch(bad.displayCertFromRequest.no-such-request) = REJECTED]
+
+[fetch(bad.displayCertFromRequest.rejected) = REJECTED]
+
+19 samples.

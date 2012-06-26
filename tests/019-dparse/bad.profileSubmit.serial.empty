@@ -1,0 +1,11 @@
+<HTML>
+<BODY BGCOLOR=white>
+<P>
+The Certificate System has encountered an unrecoverable error.
+<P>
+Error Message:<BR>
+<I>java.lang.NumberFormatException: Zero length BigInteger</I>
+<P>
+Please contact your local administrator for assistance.
+</BODY>
+</HTML>

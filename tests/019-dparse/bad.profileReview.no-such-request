@@ -1,0 +1,12 @@
+<xml>
+<output>
+<set>
+<errorReason>
+Request 0 Not Found
+</errorReason>
+<errorCode>
+1
+</errorCode>
+</set>
+</output>
+</xml>

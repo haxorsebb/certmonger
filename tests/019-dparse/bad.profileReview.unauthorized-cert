@@ -1,0 +1,12 @@
+<xml>
+<output>
+<set>
+<errorReason>
+Authentication Error
+</errorReason>
+<errorCode>
+1
+</errorCode>
+</set>
+</output>
+</xml>
