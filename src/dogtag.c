@@ -138,14 +138,13 @@ main(int argc, char **argv)
 	char *p, *q, *params = NULL, *params2 = NULL;
 	const char *lasturl = NULL, *lastparams = NULL;
 	const char *tmp = NULL, *results = NULL;
-	char *error = NULL, *error_code = NULL, *error_reason = NULL;
-	char *status = NULL, *requestId = NULL, *cert = NULL;
 	struct cm_submit_h_context *hctx;
 	void *ctx;
 	int c, verbose = 0, i;
 	enum { op_none, op_submit, op_approve, op_retrieve } op = op_none;
 	dbus_bool_t agent, missing_args = FALSE;
 	struct dogtag_default **defaults;
+	enum cm_external_status ret;
 
 #ifdef ENABLE_NLS
 	bindtextdomain(PACKAGE, MYLOCALEDIR);
@@ -482,79 +481,45 @@ main(int argc, char **argv)
 		return CM_STATUS_UNCONFIGURED;
 		break;
 	case op_submit:
-		cm_submit_d_submit_result(ctx, results,
-					  &error_code, &error_reason,
-					  &error, &status, &requestId);
-		if ((status != NULL) && (strcmp(status, "2") == 0) &&
-		    (requestId != NULL)) {
-			printf("0\nstate=approve&requestId=%s\n",
-			       cm_submit_u_url_encode(requestId));
-			return CM_STATUS_WAIT_WITH_DELAY;
-		} else {
-			if (error_code != NULL) {
-				printf("error code: %s\n", error_code);
-			}
-			if (error_reason != NULL) {
-				printf("error reason: %s\n", error_reason);
-			}
-			if (error != NULL) {
-				printf("error: %s\n", error);
-			}
-			if (status != NULL) {
-				printf("status: %s\n", status);
-			}
-			return CM_STATUS_REJECTED;
+		ret = cm_submit_d_submit_eval(ctx, results, &p, &q);
+		if (p != NULL) {
+			fprintf(stdout, "%s", p);
 		}
+		if (q != NULL) {
+			fprintf(stderr, "%s", q);
+		}
+		return ret;
 		break;
 	case op_approve:
-		cm_submit_d_approve_result(ctx, results,
-					   &error_code, &error_reason,
-					   &error, &status, &requestId);
-		if ((status != NULL) && (strcmp(status, "complete") == 0)) {
-			printf("0\nstate=retrieve&requestId=%s\n",
-			       statevar(savedstate, "requestId"));
-			return CM_STATUS_WAIT_WITH_DELAY;
+		if (url2 == NULL) {
+			ret = cm_submit_d_approve_eval(ctx, results, &p, &q);
+			if (p != NULL) {
+				fprintf(stdout, "%s", p);
+			}
+			if (q != NULL) {
+				fprintf(stderr, "%s", q);
+			}
+			return ret;
 		} else {
-			if (error_code != NULL) {
-				printf("error code: %s\n", error_code);
+			ret = cm_submit_d_review_eval(ctx, results, &p, &q);
+			if (p != NULL) {
+				fprintf(stdout, "%s", p);
 			}
-			if (error_reason != NULL) {
-				printf("error reason: %s\n", error_reason);
+			if (q != NULL) {
+				fprintf(stderr, "%s", q);
 			}
-			if (error != NULL) {
-				printf("error: %s\n", error);
-			}
-			if (status != NULL) {
-				printf("status: %s\n", status);
-			}
-			return CM_STATUS_REJECTED;
+			return ret;
 		}
 		break;
 	case op_retrieve:
-		cm_submit_d_fetch_result(ctx, results,
-					 &error_code, &error_reason,
-					 &error, &status, &requestId, &cert);
-		if (cert != NULL) {
-			printf("%s\n", cert);
-			return CM_STATUS_ISSUED;
-		} else {
-			if (error_code != NULL) {
-				printf("error code: %s\n", error_code);
-			}
-			if (error_reason != NULL) {
-				printf("error reason: %s\n", error_reason);
-			}
-			if (error != NULL) {
-				printf("error: %s\n", error);
-			}
-			if (status != NULL) {
-				printf("status: %s\n", status);
-			}
-			if (requestId != NULL) {
-				printf("requestId: %s\n", requestId);
-			}
-			return CM_STATUS_REJECTED;
+		ret = cm_submit_d_fetch_eval(ctx, results, &p, &q);
+		if (p != NULL) {
+			fprintf(stdout, "%s", p);
 		}
+		if (q != NULL) {
+			fprintf(stderr, "%s", q);
+		}
+		return ret;
 		break;
 	}
 	return CM_STATUS_UNCONFIGURED;

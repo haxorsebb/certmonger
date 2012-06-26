@@ -26,6 +26,14 @@ int cm_submit_d_check_result(void *parent, const char *xml,
 			     char **error_code, char **error_reason,
 			     char **error, char **status,
 			     char **requestId);
+int cm_submit_d_reject_result(void *parent, const char *xml,
+			      char **error_code, char **error_reason,
+			      char **error, char **status,
+			      char **requestId);
+int cm_submit_d_review_result(void *parent, const char *xml,
+			      char **error_code, char **error_reason,
+			      char **error, char **status,
+			      char **requestId);
 int cm_submit_d_approve_result(void *parent, const char *xml,
 			       char **error_code, char **error_reason,
 			       char **error, char **status,
@@ -34,6 +42,18 @@ int cm_submit_d_fetch_result(void *parent, const char *xml,
 			     char **error_code, char **error_reason,
 			     char **error, char **status,
 			     char **requestId, char **cert);
+enum cm_external_status cm_submit_d_submit_eval(void *parent, const char *xml,
+						char **out, char **err);
+enum cm_external_status cm_submit_d_check_eval(void *parent, const char *xml,
+					       char **out, char **err);
+enum cm_external_status cm_submit_d_reject_eval(void *parent, const char *xml,
+						char **out, char **err);
+enum cm_external_status cm_submit_d_review_eval(void *parent, const char *xml,
+						char **out, char **err);
+enum cm_external_status cm_submit_d_approve_eval(void *parent, const char *xml,
+						 char **out, char **err);
+enum cm_external_status cm_submit_d_fetch_eval(void *parent, const char *xml,
+					       char **out, char **err);
 
 struct dogtag_default {
 	enum {

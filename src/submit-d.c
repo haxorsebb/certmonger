@@ -32,6 +32,7 @@
 #include <libxml/xpath.h>
 
 #include "submit-d.h"
+#include "submit-e.h"
 #include "submit-h.h"
 #include "submit-u.h"
 #include "util-o.h"
@@ -335,6 +336,25 @@ cm_submit_d_reject_result(void *parent, const char *xml,
 }
 
 int
+cm_submit_d_review_result(void *parent, const char *xml,
+			  char **error_code, char **error_reason,
+			  char **error, char **status, char **requestId)
+{
+	*error_code = trim(parent,
+			   cm_submit_d_xml_value(parent, xml,
+						 "/xml/output/set/errorCode"));
+	*error_reason = trim(parent,
+			     cm_submit_d_xml_value(parent,
+						   xml,
+						   "/xml/output/set/errorReason"));
+	*status = trim(parent,
+		       cm_submit_d_xml_value(parent,
+					     xml,
+					     "/xml/output/set/requestStatus"));
+	return 0;
+}
+
+int
 cm_submit_d_approve_result(void *parent, const char *xml,
 			   char **error_code, char **error_reason,
 			   char **error, char **status, char **requestId)
@@ -346,6 +366,10 @@ cm_submit_d_approve_result(void *parent, const char *xml,
 			     cm_submit_d_xml_value(parent,
 						   xml,
 						   "/xml/output/set/errorReason"));
+	*requestId = trim(parent,
+			  cm_submit_d_xml_value(parent,
+			 			xml,
+						"/xml/output/set/requestId"));
 	*status = trim(parent,
 		       cm_submit_d_xml_value(parent,
 					     xml,
@@ -368,6 +392,108 @@ cm_submit_d_fetch_result(void *parent, const char *xml,
 	*cert = cm_submit_d_xml_value(parent, xml,
 				      "/xml/records/record/base64Cert");
 	return 0;
+}
+
+enum cm_external_status
+cm_submit_d_submit_eval(void *parent, const char *xml,
+			char **out, char **err)
+{
+	char *error = NULL, *error_code = NULL, *error_reason = NULL;
+	char *status = NULL, *requestId = NULL;
+	*out = NULL;
+	*err = NULL;
+	cm_submit_d_submit_result(parent, xml,
+				  &error, &error_code, &error_reason,
+				  &status, &requestId);
+	if ((status != NULL) && (strcmp(status, "2") == 0) &&
+	    (requestId != NULL)) {
+		*out = talloc_asprintf(parent,
+				       "0\nstate=approve&requestId=%s\n",
+				       cm_submit_u_url_encode(requestId));
+		return CM_STATUS_WAIT_WITH_DELAY;
+	}
+	return CM_STATUS_REJECTED;
+}
+
+enum cm_external_status
+cm_submit_d_check_eval(void *parent, const char *xml,
+		       char **out, char **err)
+{
+	char *error = NULL, *error_code = NULL, *error_reason = NULL;
+	char *status = NULL, *requestId = NULL;
+	*out = NULL;
+	*err = NULL;
+	cm_submit_d_check_result(parent, xml,
+				 &error, &error_code, &error_reason,
+				 &status, &requestId);
+	return CM_STATUS_REJECTED;
+}
+
+enum cm_external_status
+cm_submit_d_reject_eval(void *parent, const char *xml,
+			char **out, char **err)
+{
+	char *error = NULL, *error_code = NULL, *error_reason = NULL;
+	char *status = NULL, *requestId = NULL;
+	*out = NULL;
+	*err = NULL;
+	cm_submit_d_reject_result(parent, xml,
+				  &error, &error_code, &error_reason,
+				  &status, &requestId);
+	return CM_STATUS_REJECTED;
+}
+
+enum cm_external_status
+cm_submit_d_review_eval(void *parent, const char *xml,
+			char **out, char **err)
+{
+	char *error = NULL, *error_code = NULL, *error_reason = NULL;
+	char *status = NULL, *requestId = NULL;
+	*out = NULL;
+	*err = NULL;
+	cm_submit_d_review_result(parent, xml,
+				  &error, &error_code, &error_reason,
+				  &status, &requestId);
+	return CM_STATUS_REJECTED;
+}
+
+enum cm_external_status
+cm_submit_d_approve_eval(void *parent, const char *xml,
+			 char **out, char **err)
+{
+	char *error = NULL, *error_code = NULL, *error_reason = NULL;
+	char *status = NULL, *requestId = NULL;
+	*out = NULL;
+	*err = NULL;
+	cm_submit_d_approve_result(parent, xml,
+				   &error, &error_code, &error_reason,
+				   &status, &requestId);
+	if ((status != NULL) && (strcmp(status, "complete") == 0) &&
+	    (requestId != NULL)) {
+		*out = talloc_asprintf(parent,
+				       "0\nstate=retrieve&requestId=%s\n",
+				       cm_submit_u_url_encode(requestId));
+		return CM_STATUS_WAIT_WITH_DELAY;
+	}
+	return CM_STATUS_REJECTED;
+}
+
+enum cm_external_status
+cm_submit_d_fetch_eval(void *parent, const char *xml,
+		       char **out, char **err)
+{
+	char *error = NULL, *error_code = NULL, *error_reason = NULL;
+	char *status = NULL, *requestId = NULL, *cert = NULL;
+	*out = NULL;
+	*err = NULL;
+	cm_submit_d_fetch_result(parent, xml,
+				 &error, &error_code, &error_reason,
+				 &status, &requestId, &cert);
+	if (cert != NULL) {
+		*out = talloc_asprintf(parent, "%s\n", trim(parent, cert));
+		return CM_STATUS_ISSUED;
+	}
+	return CM_STATUS_REJECTED;
 }
 
 #ifdef CM_SUBMIT_D_MAIN
