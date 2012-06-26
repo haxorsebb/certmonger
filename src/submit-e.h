@@ -30,6 +30,7 @@ enum cm_external_status {
 	CM_STATUS_UNCONFIGURED = 4,
 	CM_STATUS_WAIT_WITH_DELAY = 5,
 };
+const char *cm_submit_e_status_text(enum cm_external_status status);
 
 #define CM_SUBMIT_REQ_SUBJECT_ENV "CERTMONGER_REQ_SUBJECT"
 #define CM_SUBMIT_REQ_HOSTNAME_ENV "CERTMONGER_REQ_HOSTNAME"

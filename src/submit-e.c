@@ -376,3 +376,17 @@ cm_submit_e_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 						   "SUBMIT");
 	}
 }
+
+const char *
+cm_submit_e_status_text(enum cm_external_status status)
+{
+	switch (status) {
+	case CM_STATUS_ISSUED: return "ISSUED";
+	case CM_STATUS_WAIT: return "WAIT";
+	case CM_STATUS_REJECTED: return "REJECTED";
+	case CM_STATUS_UNREACHABLE: return "UNREACHABLE";
+	case CM_STATUS_UNCONFIGURED: return "UNCONFIGURED";
+	case CM_STATUS_WAIT_WITH_DELAY: return "WAIT_WITH_DELAY";
+	}
+	return "(unknown)";
+}
