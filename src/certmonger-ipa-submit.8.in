@@ -4,7 +4,7 @@
 ipa-submit
 
 .SH SYNOPSIS
-ipa-submit [-h serverHost] [-H serverURI] [-c cafile] [-C capath]
+ipa-submit [-h serverHost] [-H serverURL] [-c cafile] [-C capath]
 [[-K]  | [-t keytab] [-k submitterPrincipal]] [-P principalOfRequest] [csrfile]
 
 .SH DESCRIPTION
@@ -24,7 +24,7 @@ issued.  This setting is required by IPA and must always be specified.
 Submit the request to the IPA server running on the named host.  The default is
 to read the location of the host from \fB/etc/ipa/default.conf\fR.
 .TP
-\fB\-H\fR serverURI
+\fB\-H\fR serverURL
 Submit the request to the IPA server at the specified location.  The default is
 to read the location of the host from \fB/etc/ipa/default.conf\fR.
 .TP
@@ -75,7 +75,7 @@ if critical configuration information is missing.  An error message may be print
 .TP
 .I /etc/ipa/default.conf
 is the IPA client configuration file.  This file is consulted to determine
-the URI for the IPA server's XML-RPC interface.
+the URL for the IPA server's XML-RPC interface.
 
 .SH BUGS
 Please file tickets for any that you find at https://fedorahosted.org/certmonger/
@@ -88,4 +88,5 @@ Please file tickets for any that you find at https://fedorahosted.org/certmonger
 \fBgetcert-resubmit\fR(1)
 \fBgetcert-start-tracking\fR(1)
 \fBgetcert-stop-tracking\fR(1)
+\fBcertmonger-dogtag-ipa-renew-agent-submit\fR(8)
 \fBcertmonger-certmaster-submit\fR(8)
