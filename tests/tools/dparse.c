@@ -34,8 +34,10 @@ int
 main(int argc, char **argv)
 {
 	const char *mode, *filename;
+	char *error = NULL, *error_code = NULL, *error_reason = NULL;
+	char *status = NULL, *requestId = NULL, *cert = NULL;
 	char *xml, *out = NULL, *err = NULL;
-	int i;
+	int i, vars;
 
 	if (argc < 3) {
 		printf("usage: dparse "
@@ -53,21 +55,39 @@ main(int argc, char **argv)
 	}
 
 	if (strcmp(mode, "submit") == 0) {
+		cm_submit_d_submit_result(NULL, xml,
+					  &error, &error_code, &error_reason,
+					  &status, &requestId);
 		i = cm_submit_d_submit_eval(NULL, xml, &out, &err);
 	} else
 	if (strcmp(mode, "check") == 0) {
+		cm_submit_d_check_result(NULL, xml,
+					 &error, &error_code, &error_reason,
+					 &status, &requestId);
 		i = cm_submit_d_check_eval(NULL, xml, &out, &err);
 	} else
 	if (strcmp(mode, "reject") == 0) {
+		cm_submit_d_reject_result(NULL, xml,
+					  &error, &error_code, &error_reason,
+					  &status, &requestId);
 		i = cm_submit_d_reject_eval(NULL, xml, &out, &err);
 	} else
 	if (strcmp(mode, "review") == 0) {
+		cm_submit_d_review_result(NULL, xml,
+					  &error, &error_code, &error_reason,
+					  &status, &requestId);
 		i = cm_submit_d_review_eval(NULL, xml, &out, &err);
 	} else
 	if (strcmp(mode, "approve") == 0) {
+		cm_submit_d_approve_result(NULL, xml,
+					   &error, &error_code, &error_reason,
+					   &status, &requestId);
 		i = cm_submit_d_approve_eval(NULL, xml, &out, &err);
 	} else
 	if (strcmp(mode, "fetch") == 0) {
+		cm_submit_d_fetch_result(NULL, xml,
+					 &error, &error_code, &error_reason,
+					 &status, &requestId, &cert);
 		i = cm_submit_d_fetch_eval(NULL, xml, &out, &err);
 	} else {
 		fprintf(stderr, "unknown mode \"%s\"\n", mode);
@@ -76,6 +96,49 @@ main(int argc, char **argv)
 
 	printf("[%s(%s) = %s]\n", mode, filename,
 	       cm_submit_e_status_text(i));
+	vars = 0;
+	if (error != NULL) {
+		printf("error=\"%s\"", error);
+		vars++;
+	}
+	if (error_code != NULL) {
+		if (vars > 0) {
+			printf(",");
+		}
+		printf("error_code=\"%s\"", error_code);
+		vars++;
+	}
+	if (error_reason != NULL) {
+		if (vars > 0) {
+			printf(",");
+		}
+		printf("error_reason=\"%s\"", error_reason);
+		vars++;
+	}
+	if (status != NULL) {
+		if (vars > 0) {
+			printf(",");
+		}
+		printf("status=\"%s\"", status);
+		vars++;
+	}
+	if (requestId != NULL) {
+		if (vars > 0) {
+			printf(",");
+		}
+		printf("requestId=\"%s\"", requestId);
+		vars++;
+	}
+	if (cert != NULL) {
+		if (vars > 0) {
+			printf(",");
+		}
+		printf("cert=\"%.*s\"", (int) strcspn(cert, "\r\n"), cert);
+		vars++;
+	}
+	if (vars > 0) {
+		printf("\n");
+	}
 	while ((out != NULL) && (*out != '\0')) {
 		if (strchr("\r", *out) == NULL) {
 			putchar((unsigned char) *out);

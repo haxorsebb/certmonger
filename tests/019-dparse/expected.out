@@ -1,20 +1,25 @@
 [submit(good.profileSubmit.serial.in-range) = WAIT_WITH_DELAY]
+error_reason="Request Deferred - defer request",status="2",requestId="12"
 0
 state=approve&requestId=12
 
 [review(good.profileReview) = WAIT_WITH_DELAY]
+error="0",status="pending",requestId="17"
 0
 state=approve&requestId=17
 
 [check(good.checkRequest.complete) = WAIT_WITH_DELAY]
+status="complete",requestId="23"
 0
 state=approve&requestId=23
 
 [check(good.checkRequest.pending) = WAIT_WITH_DELAY]
+status="pending",requestId="22"
 0
 state=approve&requestId=22
 
 [fetch(good.displayCertFromRequest) = ISSUED]
+requestId="11",cert="-----BEGIN CERTIFICATE-----"
 -----BEGIN CERTIFICATE-----
 MIIDEDCCAfigAwIBAgIBCzANBgkqhkiG9w0BAQsFADA5MRcwFQYDVQQKEw5CT1Mu
 UkVESEFULkNPTTEeMBwGA1UEAxMVQ2VydGlmaWNhdGUgQXV0aG9yaXR5MB4XDTEy
@@ -36,37 +41,49 @@ FxfR4qHzwpD9Q7rvTzFP2/J/Cr8=
 -----END CERTIFICATE-----
 
 [submit(bad.profileSubmit.csr.empty) = REJECTED]
-
+error_reason="Invalid Request",status="1"
+Invalid Request
 [submit(bad.profileSubmit.csr.subject-mismatch) = REJECTED]
-
+error_reason="Request Rejected - Subject Name Not Matched O=Default Company Ltd,L=Default City,C=XX",status="3",requestId="13"
+Request Rejected - Subject Name Not Matched O=Default Company Ltd,L=Default City,C=XX
 [submit(bad.profileSubmit.serial.empty) = REJECTED]
 
 [submit(bad.profileSubmit.serial.invalid) = REJECTED]
 
 [submit(bad.profileSubmit.serial.out-of-range) = REJECTED]
-
+error="1",error_code="Server Internal Error"
+1: Server Internal Error
 [review(bad.profileReview.no-such-request) = REJECTED]
-
+error="1",error_code="Request 0 Not Found"
+1: Request 0 Not Found
 [review(bad.profileReview.unauthorized-cert) = REJECTED]
-
+error="1",error_code="Authentication Error"
+1: Authentication Error
 [review(bad.profileReview.wrong-nssdb) = REJECTED]
 
 [approve(bad.profileProcess.bad-property) = REJECTED]
-
+error="1",error_code="Property Error - Invalid Property notBefore",status="pending",requestId="17"
+1: Property Error - Invalid Property notBefore
 [approve(bad.profileProcess.no-agent-cert) = REJECTED]
 
 [approve(bad.profileProcess.no-ca-cert) = REJECTED]
 
 [approve(bad.profileProcess.no-property) = REJECTED]
-
+error="1",error_code="Property Error - Invalid Property notBefore",status="pending",requestId="17"
+1: Property Error - Invalid Property notBefore
 [approve(bad.profileProcess.not-pending) = REJECTED]
-
+error="1",error_code="Request Not In Pending State",requestId="17"
+1: Request Not In Pending State
 [check(bad.checkRequest.nosuch) = REJECTED]
-
+error_reason="Request ID 29 was not found in the request queue."
+Request ID 29 was not found in the request queue.
 [fetch(bad.displayCertFromRequest.incomplete) = REJECTED]
-
+error_reason="Request ID 14 was not completed.",status="7"
+Request ID 14 was not completed.
 [fetch(bad.displayCertFromRequest.no-such-request) = REJECTED]
-
+error_reason="Request ID 19 was not found in the request queue.",status="7"
+Request ID 19 was not found in the request queue.
 [fetch(bad.displayCertFromRequest.rejected) = REJECTED]
-
+error_reason="Request ID 17 was not completed.",status="7"
+Request ID 17 was not completed.
 22 samples.

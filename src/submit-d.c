@@ -416,6 +416,30 @@ cm_submit_d_submit_eval(void *parent, const char *xml,
 				       cm_submit_u_url_encode(requestId));
 		return CM_STATUS_WAIT_WITH_DELAY;
 	}
+	if ((error != NULL) || (error_code != NULL) || (error_reason != NULL)) {
+		*out = talloc_strdup(parent, "");
+		if (error != NULL) {
+			*out = talloc_asprintf_append(*out, "%s", error);
+		}
+		if (error_code != NULL) {
+			if (strlen(*out) > 0) {
+				*out = talloc_asprintf_append(*out, ": %s",
+							      error_code);
+			} else {
+				*out = talloc_asprintf_append(*out, "%s",
+							      error_code);
+			}
+		}
+		if (error_reason != NULL) {
+			if (strlen(*out) > 0) {
+				*out = talloc_asprintf_append(*out, ": %s",
+							      error_reason);
+			} else {
+				*out = talloc_asprintf_append(*out, "%s",
+							      error_reason);
+			}
+		}
+	}
 	return CM_STATUS_REJECTED;
 }
 
@@ -439,6 +463,30 @@ cm_submit_d_check_eval(void *parent, const char *xml,
 				       cm_submit_u_url_encode(requestId));
 		return CM_STATUS_WAIT_WITH_DELAY;
 	}
+	if ((error != NULL) || (error_code != NULL) || (error_reason != NULL)) {
+		*out = talloc_strdup(parent, "");
+		if (error != NULL) {
+			*out = talloc_asprintf_append(*out, "%s", error);
+		}
+		if (error_code != NULL) {
+			if (strlen(*out) > 0) {
+				*out = talloc_asprintf_append(*out, ": %s",
+							      error_code);
+			} else {
+				*out = talloc_asprintf_append(*out, "%s",
+							      error_code);
+			}
+		}
+		if (error_reason != NULL) {
+			if (strlen(*out) > 0) {
+				*out = talloc_asprintf_append(*out, ": %s",
+							      error_reason);
+			} else {
+				*out = talloc_asprintf_append(*out, "%s",
+							      error_reason);
+			}
+		}
+	}
 	return CM_STATUS_REJECTED;
 }
 
@@ -453,6 +501,30 @@ cm_submit_d_reject_eval(void *parent, const char *xml,
 	cm_submit_d_reject_result(parent, xml,
 				  &error, &error_code, &error_reason,
 				  &status, &requestId);
+	if ((error != NULL) || (error_code != NULL) || (error_reason != NULL)) {
+		*out = talloc_strdup(parent, "");
+		if (error != NULL) {
+			*out = talloc_asprintf_append(*out, "%s", error);
+		}
+		if (error_code != NULL) {
+			if (strlen(*out) > 0) {
+				*out = talloc_asprintf_append(*out, ": %s",
+							      error_code);
+			} else {
+				*out = talloc_asprintf_append(*out, "%s",
+							      error_code);
+			}
+		}
+		if (error_reason != NULL) {
+			if (strlen(*out) > 0) {
+				*out = talloc_asprintf_append(*out, ": %s",
+							      error_reason);
+			} else {
+				*out = talloc_asprintf_append(*out, "%s",
+							      error_reason);
+			}
+		}
+	}
 	return CM_STATUS_REJECTED;
 }
 
@@ -476,6 +548,30 @@ cm_submit_d_review_eval(void *parent, const char *xml,
 				       cm_submit_u_url_encode(requestId));
 		return CM_STATUS_WAIT_WITH_DELAY;
 	}
+	if ((error != NULL) || (error_code != NULL) || (error_reason != NULL)) {
+		*out = talloc_strdup(parent, "");
+		if (error != NULL) {
+			*out = talloc_asprintf_append(*out, "%s", error);
+		}
+		if (error_code != NULL) {
+			if (strlen(*out) > 0) {
+				*out = talloc_asprintf_append(*out, ": %s",
+							      error_code);
+			} else {
+				*out = talloc_asprintf_append(*out, "%s",
+							      error_code);
+			}
+		}
+		if (error_reason != NULL) {
+			if (strlen(*out) > 0) {
+				*out = talloc_asprintf_append(*out, ": %s",
+							      error_reason);
+			} else {
+				*out = talloc_asprintf_append(*out, "%s",
+							      error_reason);
+			}
+		}
+	}
 	return CM_STATUS_REJECTED;
 }
 
@@ -497,6 +593,30 @@ cm_submit_d_approve_eval(void *parent, const char *xml,
 				       cm_submit_u_url_encode(requestId));
 		return CM_STATUS_WAIT_WITH_DELAY;
 	}
+	if ((error != NULL) || (error_code != NULL) || (error_reason != NULL)) {
+		*out = talloc_strdup(parent, "");
+		if (error != NULL) {
+			*out = talloc_asprintf_append(*out, "%s", error);
+		}
+		if (error_code != NULL) {
+			if (strlen(*out) > 0) {
+				*out = talloc_asprintf_append(*out, ": %s",
+							      error_code);
+			} else {
+				*out = talloc_asprintf_append(*out, "%s",
+							      error_code);
+			}
+		}
+		if (error_reason != NULL) {
+			if (strlen(*out) > 0) {
+				*out = talloc_asprintf_append(*out, ": %s",
+							      error_reason);
+			} else {
+				*out = talloc_asprintf_append(*out, "%s",
+							      error_reason);
+			}
+		}
+	}
 	return CM_STATUS_REJECTED;
 }
 
@@ -514,6 +634,30 @@ cm_submit_d_fetch_eval(void *parent, const char *xml,
 	if (cert != NULL) {
 		*out = talloc_asprintf(parent, "%s\n", trim(parent, cert));
 		return CM_STATUS_ISSUED;
+	}
+	if ((error != NULL) || (error_code != NULL) || (error_reason != NULL)) {
+		*out = talloc_strdup(parent, "");
+		if (error != NULL) {
+			*out = talloc_asprintf_append(*out, "%s", error);
+		}
+		if (error_code != NULL) {
+			if (strlen(*out) > 0) {
+				*out = talloc_asprintf_append(*out, ": %s",
+							      error_code);
+			} else {
+				*out = talloc_asprintf_append(*out, "%s",
+							      error_code);
+			}
+		}
+		if (error_reason != NULL) {
+			if (strlen(*out) > 0) {
+				*out = talloc_asprintf_append(*out, ": %s",
+							      error_reason);
+			} else {
+				*out = talloc_asprintf_append(*out, "%s",
+							      error_reason);
+			}
+		}
 	}
 	return CM_STATUS_REJECTED;
 }
