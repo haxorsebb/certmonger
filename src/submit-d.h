@@ -18,16 +18,22 @@
 #ifndef cmsubmitd_h
 #define cmsubmitd_h
 
-char *cm_submit_d_submit_status(void *parent, const char *xml);
-char *cm_submit_d_submit_error(void *parent, const char *xml);
-char *cm_submit_d_submit_requestid(void *parent, const char *xml);
-char *cm_submit_d_check_status(void *parent, const char *xml);
-char *cm_submit_d_approve_error_code(void *parent, const char *xml);
-char *cm_submit_d_approve_error_reason(void *parent, const char *xml);
-char *cm_submit_d_approve_status(void *parent, const char *xml);
-char *cm_submit_d_fetch_error(void *parent, const char *xml);
-char *cm_submit_d_fetch_status(void *parent, const char *xml);
-char *cm_submit_d_fetch_cert(void *parent, const char *xml);
+int cm_submit_d_submit_result(void *parent, const char *xml,
+			      char **error_code, char **error_reason,
+			      char **error, char **status,
+			      char **requestId);
+int cm_submit_d_check_result(void *parent, const char *xml,
+			     char **error_code, char **error_reason,
+			     char **error, char **status,
+			     char **requestId);
+int cm_submit_d_approve_result(void *parent, const char *xml,
+			       char **error_code, char **error_reason,
+			       char **error, char **status,
+			       char **requestId);
+int cm_submit_d_fetch_result(void *parent, const char *xml,
+			     char **error_code, char **error_reason,
+			     char **error, char **status,
+			     char **requestId, char **cert);
 
 struct dogtag_default {
 	enum {
@@ -42,8 +48,6 @@ struct dogtag_default {
 	char *name;
 	char *value;
 };
-struct dogtag_default **cm_submit_d_xml_defaults(void *parent,
-						 const char *xml);
-
+struct dogtag_default **cm_submit_d_xml_defaults(void *parent, const char *xml);
 
 #endif

@@ -136,13 +136,15 @@ main(int argc, char **argv)
 	const char *host = NULL, *csr = NULL, *serial = NULL, *template = NULL;
 	char *ipaconfig = NULL, *savedstate = NULL;
 	char *p, *q, *params = NULL, *params2 = NULL;
-	const char *tmp = NULL, *results = NULL;
 	const char *lasturl = NULL, *lastparams = NULL;
+	const char *tmp = NULL, *results = NULL;
+	char *error = NULL, *error_code = NULL, *error_reason = NULL;
+	char *status = NULL, *requestId = NULL, *cert = NULL;
 	struct cm_submit_h_context *hctx;
 	void *ctx;
 	int c, verbose = 0, i;
 	enum { op_none, op_submit, op_approve, op_retrieve } op = op_none;
-	dbus_bool_t agent, error = FALSE;
+	dbus_bool_t agent, missing_args = FALSE;
 	struct dogtag_default **defaults;
 
 #ifdef ENABLE_NLS
@@ -277,17 +279,17 @@ main(int argc, char **argv)
 	}
 	if (eeurl == NULL) {
 		printf(_("No end-entity URL (-E) given, and no default known.\n"));
-		error = TRUE;
+		missing_args = TRUE;
 	}
 	if (agenturl == NULL) {
 		printf(_("No agent URL (-A) given, and no default known.\n"));
-		error = TRUE;
+		missing_args = TRUE;
 	}
 	if (template == NULL) {
 		printf(_("No profile/template (-T) given, and no default known.\n"));
-		error = TRUE;
+		missing_args = TRUE;
 	}
-	if (error) {
+	if (missing_args) {
 		help(argv[0]);
 		return CM_STATUS_UNCONFIGURED;
 	}
@@ -403,20 +405,23 @@ main(int argc, char **argv)
 					cm_submit_h_clientauth_on :
 					cm_submit_h_clientauth_off,
 					cm_submit_h_env_modify_off,
-					verbose > 2 ?
+					verbose > 1 ?
 					cm_submit_h_curl_verbose_on :
 					cm_submit_h_curl_verbose_off);
 		cm_submit_h_run(hctx);
-		if (verbose > 1) {
-			printf("%s %s?%s\n", "GET", url, params);
+		if (verbose > 0) {
+			printf("%s \"%s?%s\"\n", "GET", url, params);
 			printf("code = %d\n", cm_submit_h_result_code(hctx));
-			printf("code_text = %s\n", cm_submit_h_result_code_text(hctx));
+			printf("code_text = \"%s\"\n", cm_submit_h_result_code_text(hctx));
 			syslog(LOG_DEBUG, "%s %s?%s\n", "GET", url, params);
 		}
 		results = cm_submit_h_results(hctx);
-		if (verbose > 1) {
-			printf("results = %s\n", results);
+		if (verbose > 0) {
+			printf("results = \"%s\"\n", results);
 			syslog(LOG_DEBUG, "%s", results);
+		}
+		if (cm_submit_h_result_code(hctx) != 0) {
+			break;
 		}
 		/* If there's a next form, get ready to submit it. */
 		switch (op) {
@@ -455,6 +460,17 @@ main(int argc, char **argv)
 	}
 
 	/* Figure out what to output. */
+	if (cm_submit_h_result_code(hctx) != 0) {
+		if (cm_submit_h_result_code_text(hctx) != NULL) {
+			printf(_("Error %d: %s.\n"),
+			       cm_submit_h_result_code(hctx),
+			       cm_submit_h_result_code_text(hctx));
+		} else {
+			printf(_("Error %d.\n"),
+			       cm_submit_h_result_code(hctx));
+		}
+		return CM_STATUS_UNREACHABLE;
+	}
 	if (results == NULL) {
 		printf(_("Internal error: no response to \"%s?%s\".\n"),
 		       lasturl, lastparams);
@@ -466,50 +482,77 @@ main(int argc, char **argv)
 		return CM_STATUS_UNCONFIGURED;
 		break;
 	case op_submit:
-		if (((p = cm_submit_d_submit_status(ctx, results)) != NULL) &&
-		    (strcmp(p, "2") == 0) &&
-		    ((q = cm_submit_d_submit_requestid(ctx, results)) != NULL)) {
+		cm_submit_d_submit_result(ctx, results,
+					  &error_code, &error_reason,
+					  &error, &status, &requestId);
+		if ((status != NULL) && (strcmp(status, "2") == 0) &&
+		    (requestId != NULL)) {
 			printf("0\nstate=approve&requestId=%s\n",
-			       cm_submit_u_url_encode(q));
+			       cm_submit_u_url_encode(requestId));
 			return CM_STATUS_WAIT_WITH_DELAY;
 		} else {
-			p = cm_submit_d_submit_error(ctx, results);
-			if (p == NULL) {
-				p = cm_submit_d_submit_status(ctx, results);
-				if (p != NULL) {
-					printf("Unknown error: %s.\n", p);
-				} else {
-					printf("Unknown error.\n");
-				}
-				return CM_STATUS_UNREACHABLE;
-			} else {
-				printf("Error: %s\n", p);
-				return CM_STATUS_REJECTED;
+			if (error_code != NULL) {
+				printf("error code: %s\n", error_code);
 			}
+			if (error_reason != NULL) {
+				printf("error reason: %s\n", error_reason);
+			}
+			if (error != NULL) {
+				printf("error: %s\n", error);
+			}
+			if (status != NULL) {
+				printf("status: %s\n", status);
+			}
+			return CM_STATUS_REJECTED;
 		}
 		break;
 	case op_approve:
-		if ((cm_submit_d_approve_error_reason(ctx, results) == NULL) &&
-		    ((p = cm_submit_d_approve_status(ctx, results)) != NULL) &&
-		    (strcmp(p, "complete") == 0)) {
+		cm_submit_d_approve_result(ctx, results,
+					   &error_code, &error_reason,
+					   &error, &status, &requestId);
+		if ((status != NULL) && (strcmp(status, "complete") == 0)) {
 			printf("0\nstate=retrieve&requestId=%s\n",
 			       statevar(savedstate, "requestId"));
 			return CM_STATUS_WAIT_WITH_DELAY;
 		} else {
-			printf("%s: %s\n",
-			       cm_submit_d_approve_error_code(ctx, results) ?: "(unknown)",
-			       cm_submit_d_approve_error_reason(ctx, results) ?: "(unknown)");
+			if (error_code != NULL) {
+				printf("error code: %s\n", error_code);
+			}
+			if (error_reason != NULL) {
+				printf("error reason: %s\n", error_reason);
+			}
+			if (error != NULL) {
+				printf("error: %s\n", error);
+			}
+			if (status != NULL) {
+				printf("status: %s\n", status);
+			}
 			return CM_STATUS_REJECTED;
 		}
 		break;
 	case op_retrieve:
-		if ((p = cm_submit_d_fetch_cert(ctx, results)) != NULL) {
-			printf("%s\n", p);
+		cm_submit_d_fetch_result(ctx, results,
+					 &error_code, &error_reason,
+					 &error, &status, &requestId, &cert);
+		if (cert != NULL) {
+			printf("%s\n", cert);
 			return CM_STATUS_ISSUED;
 		} else {
-			printf("status = %s\n", cm_submit_d_fetch_status(ctx, results));
-			printf("error = %s\n", cm_submit_d_fetch_error(ctx, results));
-			printf("cert = %s\n", cm_submit_d_fetch_cert(ctx, results));
+			if (error_code != NULL) {
+				printf("error code: %s\n", error_code);
+			}
+			if (error_reason != NULL) {
+				printf("error reason: %s\n", error_reason);
+			}
+			if (error != NULL) {
+				printf("error: %s\n", error);
+			}
+			if (status != NULL) {
+				printf("status: %s\n", status);
+			}
+			if (requestId != NULL) {
+				printf("requestId: %s\n", requestId);
+			}
 			return CM_STATUS_REJECTED;
 		}
 		break;

@@ -270,35 +270,33 @@ cm_submit_d_xml_value(void *parent, const char *xml, const char *path)
 	return ret;
 }
 
-char *
-cm_submit_d_submit_status(void *parent, const char *xml)
+int
+cm_submit_d_submit_result(void *parent, const char *xml,
+			  char **error_code, char **error_reason,
+			  char **error, char **status, char **requestId)
 {
 	/* ProfileSubmitServlet.java:
 	 * 1: internal error
 	 * 2: deferred
 	 * 3: rejected
 	 */
-	return cm_submit_d_xml_value(parent, xml, "/XMLResponse/Status");
+	*error_code = cm_submit_d_xml_value(parent, xml,
+					    "/xml/output/set/errorCode");
+	*error_reason = cm_submit_d_xml_value(parent, xml,
+					      "/xml/output/set/errorReason");
+	*error = cm_submit_d_xml_value(parent, xml, "/XMLResponse/Error");
+	*status = cm_submit_d_xml_value(parent, xml, "/XMLResponse/Status");
+	*requestId = trim(parent,
+			  cm_submit_d_xml_value(parent,
+						xml,
+						"/XMLResponse/RequestId"));
+	return 0;
 }
 
-char *
-cm_submit_d_submit_error(void *parent, const char *xml)
-{
-	return cm_submit_d_xml_value(parent, xml, "/XMLResponse/Error") ?:
-	       cm_submit_d_xml_value(parent, xml, "/xml/output/set/errorReason");
-}
-
-char *
-cm_submit_d_submit_requestid(void *parent, const char *xml)
-{
-	return trim(parent,
-		    cm_submit_d_xml_value(parent,
-					  xml,
-					  "/XMLResponse/RequestId"));
-}
-
-char *
-cm_submit_d_check_status(void *parent, const char *xml)
+int
+cm_submit_d_check_result(void *parent, const char *xml,
+			 char **error_code, char **error_reason,
+			 char **error, char **status, char **requestId)
 {
 	/* RequestStatus.java:
 	 * begin
@@ -309,49 +307,67 @@ cm_submit_d_check_status(void *parent, const char *xml)
 	 * rejected
 	 * complete
 	 */
-	return cm_submit_d_xml_value(parent, xml, "/xml/header/status");
+	*error = cm_submit_d_xml_value(parent, xml, "/xml/fixed/unexpectedError");
+	*status = cm_submit_d_xml_value(parent, xml, "/xml/header/status");
+	*requestId = cm_submit_d_xml_value(parent, xml, "/xml/header/requestId");
+	return 0;
 }
 
-char *
-cm_submit_d_approve_error_code(void *parent, const char *xml)
+int
+cm_submit_d_reject_result(void *parent, const char *xml,
+			  char **error_code, char **error_reason,
+			  char **error, char **status, char **requestId)
 {
-	return cm_submit_d_xml_value(parent, xml, "/xml/output/set/errorCode");
+	/* ProfileSubmitServlet.java:
+	 * 1: internal error
+	 * 2: deferred
+	 * 3: rejected
+	 */
+	*error = cm_submit_d_xml_value(parent, xml,
+				       "/xml/output/set/errorReason") ?:
+		 cm_submit_d_xml_value(parent, xml, "/XMLResponse/Error");
+	*status = cm_submit_d_xml_value(parent, xml, "/XMLResponse/Status");
+	*requestId = trim(parent,
+			  cm_submit_d_xml_value(parent,
+						xml,
+						"/XMLResponse/RequestId"));
+	return 0;
 }
 
-char *
-cm_submit_d_approve_error_reason(void *parent, const char *xml)
+int
+cm_submit_d_approve_result(void *parent, const char *xml,
+			   char **error_code, char **error_reason,
+			   char **error, char **status, char **requestId)
 {
-	return trim(parent,
-		    cm_submit_d_xml_value(parent,
-					  xml,
-					  "/xml/output/set/errorReason"));
+	*error_code = trim(parent,
+			   cm_submit_d_xml_value(parent, xml,
+						 "/xml/output/set/errorCode"));
+	*error_reason = trim(parent,
+			     cm_submit_d_xml_value(parent,
+						   xml,
+						   "/xml/output/set/errorReason"));
+	*status = trim(parent,
+		       cm_submit_d_xml_value(parent,
+					     xml,
+					     "/xml/output/set/requestStatus"));
+	return 0;
 }
 
-char *
-cm_submit_d_approve_status(void *parent, const char *xml)
+int
+cm_submit_d_fetch_result(void *parent, const char *xml,
+			 char **error_code, char **error_reason,
+			 char **error, char **status,
+			 char **requestId, char **cert)
 {
-	return trim(parent,
-		    cm_submit_d_xml_value(parent,
-					  xml,
-					  "/xml/output/set/requestStatus"));
-}
-
-char *
-cm_submit_d_fetch_cert(void *parent, const char *xml)
-{
-	return cm_submit_d_xml_value(parent, xml, "/xml/records/record/base64Cert");
-}
-
-char *
-cm_submit_d_fetch_status(void *parent, const char *xml)
-{
-	return cm_submit_d_xml_value(parent, xml, "/xml/fixed/requestStatus");
-}
-
-char *
-cm_submit_d_fetch_error(void *parent, const char *xml)
-{
-	return cm_submit_d_xml_value(parent, xml, "/xml/fixed/unexpectedError");
+	*error = cm_submit_d_xml_value(parent, xml,
+				       "/xml/fixed/unexpectedError");
+	*status = cm_submit_d_xml_value(parent, xml,
+					"/xml/fixed/requestStatus");
+	*requestId = cm_submit_d_xml_value(parent, xml,
+					   "/xml/header/requestId");
+	*cert = cm_submit_d_xml_value(parent, xml,
+				      "/xml/records/record/base64Cert");
+	return 0;
 }
 
 #ifdef CM_SUBMIT_D_MAIN
@@ -404,26 +420,9 @@ main(int argc, char **argv)
 	const char *nssdb, *capath, *cainfo, *sslkey, *sslcert, *sslpin;
 	const char *result, *default_values;
 	struct dogtag_default **defaults, *nodefault[] = { NULL };
-	char *params, *uri, **var, **vars, *p, *request;
-	char *no_x_vars[] = { NULL };
-	char *submit_x_vars[] = {"/XMLResponse/Status",
-				 "/XMLResponse/Error",
-				 "/XMLResponse/RequestId",
-				 NULL};
-	char *check_x_vars[] = {"/xml/header/status",
-				"/xml/header/requestId",
-				"/xml/fixed/unexpectedError",
-				NULL};
-	char *review_x_vars[] = { NULL };
-	char *approve_x_vars[] = {"/xml/output/set/errorCode",
-				  "/xml/output/set/errorReason",
-				  "/xml/output/set/requestStatus",
-				  NULL};
-	char *fetch_x_vars[] = {"/xml/header/status",
-				"/xml/header/requestId",
-				"/xml/fixed/unexpectedError",
-				"/xml/records/record/base64Cert",
-				NULL};
+	char *params, *uri, *p, *request;
+	char *error = NULL, *error_code = NULL, *error_reason = NULL;
+	char *status = NULL, *requestId = NULL, *cert = NULL;
 	struct cm_submit_h_context *hctx;
 	op = op_none;
 	id = 0;
@@ -574,7 +573,6 @@ restart:
 			params = talloc_asprintf(ctx, "%s&requestor_phone=%s",
 						 params, tele);
 		}
-		vars = submit_x_vars;
 		break;
 	case op_submit_serial:
 		method = "POST";
@@ -598,7 +596,6 @@ restart:
 			params = talloc_asprintf(ctx, "%s&requestor_phone=%s",
 						 params, tele);
 		}
-		vars = submit_x_vars;
 		break;
 	case op_review:
 		method = "GET";
@@ -607,7 +604,6 @@ restart:
 					 "requestId=%d&"
 					 "xml=true",
 					 id);
-		vars = review_x_vars;
 		break;
 	case op_reject:
 		method = "GET";
@@ -617,7 +613,6 @@ restart:
 					 "op=reject&"
 					 "xml=true",
 					 id);
-		vars = no_x_vars;
 		break;
 	case op_approve:
 		if ((defaults == NULL) && (default_values == NULL)) {
@@ -628,7 +623,6 @@ restart:
 						 "requestId=%d&"
 						 "xml=true",
 						 id);
-			vars = no_x_vars;
 		} else
 		if (default_values != NULL) {
 			/* use supplied defaults */
@@ -639,7 +633,6 @@ restart:
 						 "op=approve&"
 						 "xml=true&%s",
 						 id, default_values);
-			vars = approve_x_vars;
 		} else {
 			/* use asked-for efaults */
 			method = "GET";
@@ -656,7 +649,6 @@ restart:
 							 cm_submit_u_url_encode(defaults[i]->name),
 							 cm_submit_u_url_encode(defaults[i]->value));
 			}
-			vars = approve_x_vars;
 		}
 		break;
 	case op_check:
@@ -667,7 +659,6 @@ restart:
 					 "importCert=true&"
 					 "xml=true",
 					 id);
-		vars = check_x_vars;
 		break;
 	case op_fetch:
 		method = "GET";
@@ -677,7 +668,6 @@ restart:
 					 "importCert=true&"
 					 "xml=true",
 					 id);
-		vars = fetch_x_vars;
 		break;
 	case op_none:
 		printf("Error: no specific request given.\n");
@@ -713,11 +703,9 @@ restart:
 		}
 	}
 	uri = talloc_asprintf(ctx, "%s/%s", agent ? agenturl : eeurl, cgi);
-	if (verbose > 1) {
-		printf("url = \"%s\"\n", uri);
-		if (verbose > 2) {
-			printf("params = \"%s\"\n", params);
-		}
+	if (verbose > 0) {
+		printf("url = \"%s%s%s\"\n", uri,
+		       params ? "?" : "", params ? params : "");
 	}
 	hctx = cm_submit_h_init(ctx, method, uri, params,
 				cainfo, capath, sslcert, sslkey, sslpin,
@@ -727,44 +715,92 @@ restart:
 				cm_submit_h_clientauth_on :
 				cm_submit_h_clientauth_off,
 				cm_submit_h_env_modify_off,
-				verbose > 2 ?
+				verbose > 1 ?
 				cm_submit_h_curl_verbose_on :
 				cm_submit_h_curl_verbose_off);
 	cm_submit_h_run(hctx);
 	c = cm_submit_h_result_code(hctx);
 	if (c != 0) {
-		printf("Error %d.\n", c);
 		if ((result = cm_submit_h_result_code_text(hctx)) != NULL) {
-			printf("%s\n", result);
+			printf("Error %d: %s\n", c, result);
+		} else {
+			printf("Error %d.\n", c);
 		}
 		return 1;
 	}
 	result = cm_submit_h_results(hctx) ?: "";
+	if (verbose > 0) {
+		printf("result = \"%s\"\n", result);
+	}
 	switch (op) {
 	case op_submit_csr:
 	case op_submit_serial:
-		printf("%s:%s\n",
-		       cm_submit_d_submit_status(hctx, result),
-		       cm_submit_d_submit_error(hctx, result));
-		p = cm_submit_d_submit_requestid(hctx, result);
-		if (p != NULL) {
-			printf("Request ID = %s\n", p);
+		cm_submit_d_submit_result(hctx, result,
+					  &error_code, &error_reason,
+					  &error, &status, &requestId);
+		if (error_code != NULL) {
+			printf("error code: %s\n", error_code);
 		}
-		break;
-	case op_review:
-		if (verbose > 0) {
-			defaults = cm_submit_d_xml_defaults(hctx, result);
-			for (i = 0;
-			     (defaults != NULL) && (defaults[i] != NULL);
-			     i++) {
-				printf("default: %s=%s\n",
-				       cm_submit_u_url_encode(defaults[i]->name),
-				       cm_submit_u_url_encode(defaults[i]->value));
-			}
+		if (error_reason != NULL) {
+			printf("error reason: %s\n", error_reason);
+		}
+		if (error != NULL) {
+			printf("error: %s\n", error);
+		}
+		if (status != NULL) {
+			printf("status: %s\n", status);
+		}
+		if (requestId != NULL) {
+			printf("requestId: %s\n", requestId);
 		}
 		break;
 	case op_reject:
-		printf("%s\n", cm_submit_d_check_status(hctx, result) ?: "(unknown)");
+		cm_submit_d_reject_result(hctx, result,
+					  &error_code, &error_reason,
+					  &error, &status, &requestId);
+		if (error_code != NULL) {
+			printf("error code: %s\n", error_code);
+		}
+		if (error_reason != NULL) {
+			printf("error reason: %s\n", error_reason);
+		}
+		if (error != NULL) {
+			printf("error: %s\n", error);
+		}
+		if (status != NULL) {
+			printf("status: %s\n", status);
+		}
+		if (requestId != NULL) {
+			printf("requestId: %s\n", requestId);
+		}
+		break;
+	case op_review:
+		defaults = cm_submit_d_xml_defaults(hctx, result);
+		for (i = 0;
+		     (defaults != NULL) && (defaults[i] != NULL);
+		     i++) {
+			printf("default: %s=%s\n",
+			       cm_submit_u_url_encode(defaults[i]->name),
+			       cm_submit_u_url_encode(defaults[i]->value));
+		}
+		cm_submit_d_approve_result(hctx, result,
+					   &error_code, &error_reason,
+					   &error, &status, &requestId);
+		if (error_code != NULL) {
+			printf("error code: %s\n", error_code);
+		}
+		if (error_reason != NULL) {
+			printf("error reason: %s\n", error_reason);
+		}
+		if (error != NULL) {
+			printf("error: %s\n", error);
+		}
+		if (status != NULL) {
+			printf("status: %s\n", status);
+		}
+		if (requestId != NULL) {
+			printf("requestId: %s\n", requestId);
+		}
 		break;
 	case op_approve:
 		if ((defaults == NULL) && (default_values == NULL)) {
@@ -775,32 +811,72 @@ restart:
 			}
 			goto restart;
 		} else {
-			printf("%s\n", cm_submit_d_approve_status(hctx, result) ?: "(unknown)");
+			cm_submit_d_approve_result(hctx, result,
+						   &error_code, &error_reason,
+						   &error, &status, &requestId);
+			if (error_code != NULL) {
+				printf("error code: %s\n", error_code);
+			}
+			if (error_reason != NULL) {
+				printf("error reason: %s\n", error_reason);
+			}
+			if (error != NULL) {
+				printf("error: %s\n", error);
+			}
+			if (status != NULL) {
+				printf("status: %s\n", status);
+			}
+			if (requestId != NULL) {
+				printf("requestId: %s\n", requestId);
+			}
 		}
 		break;
 	case op_check:
-		printf("%s\n", cm_submit_d_check_status(hctx, result) ?: "(unknown)");
+		cm_submit_d_check_result(hctx, result,
+					 &error_code, &error_reason,
+					 &error, &status, &requestId);
+		if (error_code != NULL) {
+			printf("error code: %s\n", error_code);
+		}
+		if (error_reason != NULL) {
+			printf("error reason: %s\n", error_reason);
+		}
+		if (error != NULL) {
+			printf("error: %s\n", error);
+		}
+		if (status != NULL) {
+			printf("status: %s\n", status);
+		}
+		if (requestId != NULL) {
+			printf("requestId: %s\n", requestId);
+		}
 		break;
 	case op_fetch:
-		p = cm_submit_d_fetch_cert(hctx, result);
-		if (p != NULL) {
-			printf("%s\n", p);
+		cm_submit_d_fetch_result(hctx, result,
+					 &error_code, &error_reason,
+					 &error, &status, &requestId, &cert);
+		if (error_code != NULL) {
+			printf("error code: %s\n", error_code);
+		}
+		if (error_reason != NULL) {
+			printf("error reason: %s\n", error_reason);
+		}
+		if (error != NULL) {
+			printf("error: %s\n", error);
+		}
+		if (status != NULL) {
+			printf("status: %s\n", status);
+		}
+		if (requestId != NULL) {
+			printf("requestId: %s\n", requestId);
+		}
+		if (cert != NULL) {
+			printf("cert: %s\n", cert);
 		}
 		break;
 	case op_none:
 		/* never reached */
 		break;
-	}
-	if (verbose > 0) {
-		for (var = vars; (var != NULL) && (*var != NULL); var++) {
-			p = cm_submit_d_xml_value(hctx, result, *var);
-			if (p != NULL) {
-				printf("%s = \"%s\"\n", *var, p);
-			}
-		}
-		if (verbose > 1) {
-			printf("result = \"%s\"\n", result);
-		}
 	}
 	return 0;
 }
