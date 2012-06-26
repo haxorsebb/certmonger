@@ -407,6 +407,8 @@ main(int argc, char **argv)
 					verbose > 1 ?
 					cm_submit_h_curl_verbose_on :
 					cm_submit_h_curl_verbose_off);
+		lasturl = url;
+		lastparams = params;
 		cm_submit_h_run(hctx);
 		if (verbose > 0) {
 			printf("%s \"%s?%s\"\n", "GET", url, params);
@@ -450,10 +452,8 @@ main(int argc, char **argv)
 			/* No second form for these. */
 			break;
 		}
-		lasturl = url;
 		url = url2;
 		url2 = NULL;
-		lastparams = params;
 		params = params2;
 		params2 = NULL;
 	}
@@ -461,12 +461,14 @@ main(int argc, char **argv)
 	/* Figure out what to output. */
 	if (cm_submit_h_result_code(hctx) != 0) {
 		if (cm_submit_h_result_code_text(hctx) != NULL) {
-			printf(_("Error %d: %s.\n"),
+			printf(_("Error %d connecting to %s: %s.\n"),
 			       cm_submit_h_result_code(hctx),
+			       lasturl,
 			       cm_submit_h_result_code_text(hctx));
 		} else {
-			printf(_("Error %d.\n"),
-			       cm_submit_h_result_code(hctx));
+			printf(_("Error %d connecting to %s.\n"),
+			       cm_submit_h_result_code(hctx),
+			       lasturl);
 		}
 		return CM_STATUS_UNREACHABLE;
 	}
