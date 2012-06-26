@@ -278,7 +278,7 @@ cm_submit_d_submit_result(void *parent, const char *xml,
 {
 	/* ProfileSubmitServlet.java:
 	 * 1: internal error
-	 * 2: deferred
+	 * 2: deferred (or "pending")
 	 * 3: rejected
 	 */
 	*error_code = cm_submit_d_xml_value(parent, xml,
@@ -319,11 +319,6 @@ cm_submit_d_reject_result(void *parent, const char *xml,
 			  char **error_code, char **error_reason,
 			  char **error, char **status, char **requestId)
 {
-	/* ProfileSubmitServlet.java:
-	 * 1: internal error
-	 * 2: deferred
-	 * 3: rejected
-	 */
 	*error = cm_submit_d_xml_value(parent, xml,
 				       "/xml/output/set/errorReason") ?:
 		 cm_submit_d_xml_value(parent, xml, "/XMLResponse/Error");
@@ -417,27 +412,17 @@ cm_submit_d_submit_eval(void *parent, const char *xml,
 		return CM_STATUS_WAIT_WITH_DELAY;
 	}
 	if ((error != NULL) || (error_code != NULL) || (error_reason != NULL)) {
-		*out = talloc_strdup(parent, "");
+		*out = talloc_strdup(parent, "Server replied");
 		if (error != NULL) {
-			*out = talloc_asprintf_append(*out, "%s", error);
+			*out = talloc_asprintf_append(*out, ": %s", error);
 		}
 		if (error_code != NULL) {
-			if (strlen(*out) > 0) {
-				*out = talloc_asprintf_append(*out, ": %s",
-							      error_code);
-			} else {
-				*out = talloc_asprintf_append(*out, "%s",
-							      error_code);
-			}
+			*out = talloc_asprintf_append(*out, ": %s",
+						      error_code);
 		}
 		if (error_reason != NULL) {
-			if (strlen(*out) > 0) {
-				*out = talloc_asprintf_append(*out, ": %s",
-							      error_reason);
-			} else {
-				*out = talloc_asprintf_append(*out, "%s",
-							      error_reason);
-			}
+			*out = talloc_asprintf_append(*out, ": %s",
+						      error_reason);
 		}
 	}
 	return CM_STATUS_REJECTED;
@@ -464,27 +449,17 @@ cm_submit_d_check_eval(void *parent, const char *xml,
 		return CM_STATUS_WAIT_WITH_DELAY;
 	}
 	if ((error != NULL) || (error_code != NULL) || (error_reason != NULL)) {
-		*out = talloc_strdup(parent, "");
+		*out = talloc_strdup(parent, "Server replied");
 		if (error != NULL) {
-			*out = talloc_asprintf_append(*out, "%s", error);
+			*out = talloc_asprintf_append(*out, ": %s", error);
 		}
 		if (error_code != NULL) {
-			if (strlen(*out) > 0) {
-				*out = talloc_asprintf_append(*out, ": %s",
-							      error_code);
-			} else {
-				*out = talloc_asprintf_append(*out, "%s",
-							      error_code);
-			}
+			*out = talloc_asprintf_append(*out, ": %s",
+						      error_code);
 		}
 		if (error_reason != NULL) {
-			if (strlen(*out) > 0) {
-				*out = talloc_asprintf_append(*out, ": %s",
-							      error_reason);
-			} else {
-				*out = talloc_asprintf_append(*out, "%s",
-							      error_reason);
-			}
+			*out = talloc_asprintf_append(*out, ": %s",
+						      error_reason);
 		}
 	}
 	return CM_STATUS_REJECTED;
@@ -502,27 +477,17 @@ cm_submit_d_reject_eval(void *parent, const char *xml,
 				  &error, &error_code, &error_reason,
 				  &status, &requestId);
 	if ((error != NULL) || (error_code != NULL) || (error_reason != NULL)) {
-		*out = talloc_strdup(parent, "");
+		*out = talloc_strdup(parent, "Server replied");
 		if (error != NULL) {
-			*out = talloc_asprintf_append(*out, "%s", error);
+			*out = talloc_asprintf_append(*out, ": %s", error);
 		}
 		if (error_code != NULL) {
-			if (strlen(*out) > 0) {
-				*out = talloc_asprintf_append(*out, ": %s",
-							      error_code);
-			} else {
-				*out = talloc_asprintf_append(*out, "%s",
-							      error_code);
-			}
+			*out = talloc_asprintf_append(*out, ": %s",
+						      error_code);
 		}
 		if (error_reason != NULL) {
-			if (strlen(*out) > 0) {
-				*out = talloc_asprintf_append(*out, ": %s",
-							      error_reason);
-			} else {
-				*out = talloc_asprintf_append(*out, "%s",
-							      error_reason);
-			}
+			*out = talloc_asprintf_append(*out, ": %s",
+						      error_reason);
 		}
 	}
 	return CM_STATUS_REJECTED;
@@ -549,27 +514,17 @@ cm_submit_d_review_eval(void *parent, const char *xml,
 		return CM_STATUS_WAIT_WITH_DELAY;
 	}
 	if ((error != NULL) || (error_code != NULL) || (error_reason != NULL)) {
-		*out = talloc_strdup(parent, "");
+		*out = talloc_strdup(parent, "Server replied");
 		if (error != NULL) {
-			*out = talloc_asprintf_append(*out, "%s", error);
+			*out = talloc_asprintf_append(*out, ": %s", error);
 		}
 		if (error_code != NULL) {
-			if (strlen(*out) > 0) {
-				*out = talloc_asprintf_append(*out, ": %s",
-							      error_code);
-			} else {
-				*out = talloc_asprintf_append(*out, "%s",
-							      error_code);
-			}
+			*out = talloc_asprintf_append(*out, ": %s",
+						      error_code);
 		}
 		if (error_reason != NULL) {
-			if (strlen(*out) > 0) {
-				*out = talloc_asprintf_append(*out, ": %s",
-							      error_reason);
-			} else {
-				*out = talloc_asprintf_append(*out, "%s",
-							      error_reason);
-			}
+			*out = talloc_asprintf_append(*out, ": %s",
+						      error_reason);
 		}
 	}
 	return CM_STATUS_REJECTED;
@@ -594,27 +549,17 @@ cm_submit_d_approve_eval(void *parent, const char *xml,
 		return CM_STATUS_WAIT_WITH_DELAY;
 	}
 	if ((error != NULL) || (error_code != NULL) || (error_reason != NULL)) {
-		*out = talloc_strdup(parent, "");
+		*out = talloc_strdup(parent, "Server replied");
 		if (error != NULL) {
-			*out = talloc_asprintf_append(*out, "%s", error);
+			*out = talloc_asprintf_append(*out, ": %s", error);
 		}
 		if (error_code != NULL) {
-			if (strlen(*out) > 0) {
-				*out = talloc_asprintf_append(*out, ": %s",
-							      error_code);
-			} else {
-				*out = talloc_asprintf_append(*out, "%s",
-							      error_code);
-			}
+			*out = talloc_asprintf_append(*out, ": %s",
+						      error_code);
 		}
 		if (error_reason != NULL) {
-			if (strlen(*out) > 0) {
-				*out = talloc_asprintf_append(*out, ": %s",
-							      error_reason);
-			} else {
-				*out = talloc_asprintf_append(*out, "%s",
-							      error_reason);
-			}
+			*out = talloc_asprintf_append(*out, ": %s",
+						      error_reason);
 		}
 	}
 	return CM_STATUS_REJECTED;
@@ -636,27 +581,17 @@ cm_submit_d_fetch_eval(void *parent, const char *xml,
 		return CM_STATUS_ISSUED;
 	}
 	if ((error != NULL) || (error_code != NULL) || (error_reason != NULL)) {
-		*out = talloc_strdup(parent, "");
+		*out = talloc_strdup(parent, "Server replied");
 		if (error != NULL) {
-			*out = talloc_asprintf_append(*out, "%s", error);
+			*out = talloc_asprintf_append(*out, ": %s", error);
 		}
 		if (error_code != NULL) {
-			if (strlen(*out) > 0) {
-				*out = talloc_asprintf_append(*out, ": %s",
-							      error_code);
-			} else {
-				*out = talloc_asprintf_append(*out, "%s",
-							      error_code);
-			}
+			*out = talloc_asprintf_append(*out, ": %s",
+						      error_code);
 		}
 		if (error_reason != NULL) {
-			if (strlen(*out) > 0) {
-				*out = talloc_asprintf_append(*out, ": %s",
-							      error_reason);
-			} else {
-				*out = talloc_asprintf_append(*out, "%s",
-							      error_reason);
-			}
+			*out = talloc_asprintf_append(*out, ": %s",
+						      error_reason);
 		}
 	}
 	return CM_STATUS_REJECTED;
