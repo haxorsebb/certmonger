@@ -2,7 +2,9 @@
 0
 state=approve&requestId=12
 
-[review(good.profileReview) = REJECTED]
+[review(good.profileReview) = WAIT_WITH_DELAY]
+0
+state=approve&requestId=17
 
 [fetch(good.displayCertFromRequest) = ISSUED]
 -----BEGIN CERTIFICATE-----

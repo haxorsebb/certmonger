@@ -347,6 +347,10 @@ cm_submit_d_review_result(void *parent, const char *xml,
 			     cm_submit_d_xml_value(parent,
 						   xml,
 						   "/xml/output/set/errorReason"));
+	*requestId = trim(parent,
+			  cm_submit_d_xml_value(parent,
+			 			xml,
+						"/xml/output/set/requestId"));
 	*status = trim(parent,
 		       cm_submit_d_xml_value(parent,
 					     xml,
@@ -454,6 +458,15 @@ cm_submit_d_review_eval(void *parent, const char *xml,
 	cm_submit_d_review_result(parent, xml,
 				  &error, &error_code, &error_reason,
 				  &status, &requestId);
+	if ((status != NULL) &&
+	    ((strcmp(status, "pending") == 0) ||
+	     (strcmp(status, "complete") == 0)) &&
+	    (requestId != NULL)) {
+		*out = talloc_asprintf(parent,
+				       "0\nstate=approve&requestId=%s\n",
+				       cm_submit_u_url_encode(requestId));
+		return CM_STATUS_WAIT_WITH_DELAY;
+	}
 	return CM_STATUS_REJECTED;
 }
 
