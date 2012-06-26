@@ -137,10 +137,8 @@ endif
 if WITH_IPA
 pkglibexec_PROGRAMS += ipa-submit
 endif
-if WITH_CURL_AND_XML
 pkglibexec_PROGRAMS += dogtag-ipa-renew-agent-submit
 noinst_PROGRAMS += submit-h submit-d
-endif
 ipa_submit_SOURCES = ipa.c submit-x.c submit-x.h submit-u.c submit-u.h \
 		submit-e.h util.c util.h log.c log.h tm.c tm.h
 ipa_submit_LDADD = $(XMLRPC_LIBS) $(KRB5_LIBS) $(TALLOC_LIBS) $(UUID_LIBS)

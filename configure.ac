@@ -130,8 +130,6 @@ CFLAGS="$savedCFLAGS"
 CPPFLAGS="$savedCPPFLAGS"
 LDFLAGS="$savedLDFLAGS"
 
-AM_CONDITIONAL(WITH_CURL_AND_XML,$have_libcurl && $have_libxml)
-
 dnl PKG_CHECK_MODULES(XMLRPC,xmlrpc_client) # Not provided in upstream versions.
 savedCFLAGS="$CFLAGS"
 CFLAGS=
