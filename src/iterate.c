@@ -664,7 +664,8 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			} else
 			if (cm_submit_unreachable(entry,
 						  state->cm_submit_state) == 0) {
-				/* Let's try again later. */
+				/* Let's try again later.  The cookie is left
+				 * unmodified. */
 				*delay = cm_submit_specified_delay(entry,
 								   state->cm_submit_state);
 				cm_submit_done(entry, state->cm_submit_state);
