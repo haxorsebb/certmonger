@@ -430,6 +430,15 @@ cm_submit_d_check_eval(void *parent, const char *xml,
 	cm_submit_d_check_result(parent, xml,
 				 &error, &error_code, &error_reason,
 				 &status, &requestId);
+	if ((status != NULL) &&
+	    ((strcmp(status, "pending") == 0) ||
+	     (strcmp(status, "complete") == 0)) &&
+	    (requestId != NULL)) {
+		*out = talloc_asprintf(parent,
+				       "0\nstate=approve&requestId=%s\n",
+				       cm_submit_u_url_encode(requestId));
+		return CM_STATUS_WAIT_WITH_DELAY;
+	}
 	return CM_STATUS_REJECTED;
 }
 

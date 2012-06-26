@@ -6,6 +6,14 @@ state=approve&requestId=12
 0
 state=approve&requestId=17
 
+[check(good.checkRequest.complete) = WAIT_WITH_DELAY]
+0
+state=approve&requestId=23
+
+[check(good.checkRequest.pending) = WAIT_WITH_DELAY]
+0
+state=approve&requestId=22
+
 [fetch(good.displayCertFromRequest) = ISSUED]
 -----BEGIN CERTIFICATE-----
 MIIDEDCCAfigAwIBAgIBCzANBgkqhkiG9w0BAQsFADA5MRcwFQYDVQQKEw5CT1Mu
@@ -53,10 +61,12 @@ FxfR4qHzwpD9Q7rvTzFP2/J/Cr8=
 
 [approve(bad.profileProcess.not-pending) = REJECTED]
 
+[check(bad.checkRequest.nosuch) = REJECTED]
+
 [fetch(bad.displayCertFromRequest.incomplete) = REJECTED]
 
 [fetch(bad.displayCertFromRequest.no-such-request) = REJECTED]
 
 [fetch(bad.displayCertFromRequest.rejected) = REJECTED]
 
-19 samples.
+22 samples.
