@@ -394,7 +394,7 @@ cm_submit_d_fetch_result(void *parent, const char *xml,
 }
 
 enum cm_external_status
-cm_submit_d_submit_eval(void *parent, const char *xml,
+cm_submit_d_submit_eval(void *parent, const char *xml, const char *url,
 			char **out, char **err)
 {
 	char *error = NULL, *error_code = NULL, *error_reason = NULL;
@@ -412,7 +412,7 @@ cm_submit_d_submit_eval(void *parent, const char *xml,
 		return CM_STATUS_WAIT_WITH_DELAY;
 	}
 	if ((error != NULL) || (error_code != NULL) || (error_reason != NULL)) {
-		*out = talloc_strdup(parent, "Server replied");
+		*out = talloc_asprintf(parent, "Server at \"%s\" replied", url);
 		if (error != NULL) {
 			*out = talloc_asprintf_append(*out, ": %s", error);
 		}
@@ -429,7 +429,7 @@ cm_submit_d_submit_eval(void *parent, const char *xml,
 }
 
 enum cm_external_status
-cm_submit_d_check_eval(void *parent, const char *xml,
+cm_submit_d_check_eval(void *parent, const char *xml, const char *url,
 		       char **out, char **err)
 {
 	char *error = NULL, *error_code = NULL, *error_reason = NULL;
@@ -449,7 +449,7 @@ cm_submit_d_check_eval(void *parent, const char *xml,
 		return CM_STATUS_WAIT_WITH_DELAY;
 	}
 	if ((error != NULL) || (error_code != NULL) || (error_reason != NULL)) {
-		*out = talloc_strdup(parent, "Server replied");
+		*out = talloc_asprintf(parent, "Server at \"%s\" replied", url);
 		if (error != NULL) {
 			*out = talloc_asprintf_append(*out, ": %s", error);
 		}
@@ -466,7 +466,7 @@ cm_submit_d_check_eval(void *parent, const char *xml,
 }
 
 enum cm_external_status
-cm_submit_d_reject_eval(void *parent, const char *xml,
+cm_submit_d_reject_eval(void *parent, const char *xml, const char *url,
 			char **out, char **err)
 {
 	char *error = NULL, *error_code = NULL, *error_reason = NULL;
@@ -477,7 +477,7 @@ cm_submit_d_reject_eval(void *parent, const char *xml,
 				  &error, &error_code, &error_reason,
 				  &status, &requestId);
 	if ((error != NULL) || (error_code != NULL) || (error_reason != NULL)) {
-		*out = talloc_strdup(parent, "Server replied");
+		*out = talloc_asprintf(parent, "Server at \"%s\" replied", url);
 		if (error != NULL) {
 			*out = talloc_asprintf_append(*out, ": %s", error);
 		}
@@ -494,7 +494,7 @@ cm_submit_d_reject_eval(void *parent, const char *xml,
 }
 
 enum cm_external_status
-cm_submit_d_review_eval(void *parent, const char *xml,
+cm_submit_d_review_eval(void *parent, const char *xml, const char *url,
 			char **out, char **err)
 {
 	char *error = NULL, *error_code = NULL, *error_reason = NULL;
@@ -514,7 +514,7 @@ cm_submit_d_review_eval(void *parent, const char *xml,
 		return CM_STATUS_WAIT_WITH_DELAY;
 	}
 	if ((error != NULL) || (error_code != NULL) || (error_reason != NULL)) {
-		*out = talloc_strdup(parent, "Server replied");
+		*out = talloc_asprintf(parent, "Server at \"%s\" replied", url);
 		if (error != NULL) {
 			*out = talloc_asprintf_append(*out, ": %s", error);
 		}
@@ -531,7 +531,7 @@ cm_submit_d_review_eval(void *parent, const char *xml,
 }
 
 enum cm_external_status
-cm_submit_d_approve_eval(void *parent, const char *xml,
+cm_submit_d_approve_eval(void *parent, const char *xml, const char *url,
 			 char **out, char **err)
 {
 	char *error = NULL, *error_code = NULL, *error_reason = NULL;
@@ -549,7 +549,7 @@ cm_submit_d_approve_eval(void *parent, const char *xml,
 		return CM_STATUS_WAIT_WITH_DELAY;
 	}
 	if ((error != NULL) || (error_code != NULL) || (error_reason != NULL)) {
-		*out = talloc_strdup(parent, "Server replied");
+		*out = talloc_asprintf(parent, "Server at \"%s\" replied", url);
 		if (error != NULL) {
 			*out = talloc_asprintf_append(*out, ": %s", error);
 		}
@@ -566,7 +566,7 @@ cm_submit_d_approve_eval(void *parent, const char *xml,
 }
 
 enum cm_external_status
-cm_submit_d_fetch_eval(void *parent, const char *xml,
+cm_submit_d_fetch_eval(void *parent, const char *xml, const char *url,
 		       char **out, char **err)
 {
 	char *error = NULL, *error_code = NULL, *error_reason = NULL;
@@ -581,7 +581,7 @@ cm_submit_d_fetch_eval(void *parent, const char *xml,
 		return CM_STATUS_ISSUED;
 	}
 	if ((error != NULL) || (error_code != NULL) || (error_reason != NULL)) {
-		*out = talloc_strdup(parent, "Server replied");
+		*out = talloc_asprintf(parent, "Server at \"%s\" replied", url);
 		if (error != NULL) {
 			*out = talloc_asprintf_append(*out, ": %s", error);
 		}

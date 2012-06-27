@@ -488,7 +488,7 @@ main(int argc, char **argv)
 		return CM_STATUS_UNCONFIGURED;
 		break;
 	case op_submit:
-		ret = cm_submit_d_submit_eval(ctx, results, &p, &q);
+		ret = cm_submit_d_submit_eval(ctx, results, lasturl, &p, &q);
 		if (p != NULL) {
 			fprintf(stdout, "%s", p);
 		}
@@ -499,7 +499,8 @@ main(int argc, char **argv)
 		break;
 	case op_approve:
 		if (url2 == NULL) {
-			ret = cm_submit_d_approve_eval(ctx, results, &p, &q);
+			ret = cm_submit_d_approve_eval(ctx, results, lasturl,
+						       &p, &q);
 			if (p != NULL) {
 				fprintf(stdout, "%s", p);
 			}
@@ -508,7 +509,8 @@ main(int argc, char **argv)
 			}
 			return ret;
 		} else {
-			ret = cm_submit_d_review_eval(ctx, results, &p, &q);
+			ret = cm_submit_d_review_eval(ctx, results, lasturl,
+						      &p, &q);
 			if (p != NULL) {
 				fprintf(stdout, "%s", p);
 			}
@@ -519,7 +521,7 @@ main(int argc, char **argv)
 		}
 		break;
 	case op_retrieve:
-		ret = cm_submit_d_fetch_eval(ctx, results, &p, &q);
+		ret = cm_submit_d_fetch_eval(ctx, results, lasturl, &p, &q);
 		if (p != NULL) {
 			fprintf(stdout, "%s", p);
 		}

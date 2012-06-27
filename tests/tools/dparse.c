@@ -58,37 +58,37 @@ main(int argc, char **argv)
 		cm_submit_d_submit_result(NULL, xml,
 					  &error, &error_code, &error_reason,
 					  &status, &requestId);
-		i = cm_submit_d_submit_eval(NULL, xml, &out, &err);
+		i = cm_submit_d_submit_eval(NULL, xml, "SUBMIT", &out, &err);
 	} else
 	if (strcmp(mode, "check") == 0) {
 		cm_submit_d_check_result(NULL, xml,
 					 &error, &error_code, &error_reason,
 					 &status, &requestId);
-		i = cm_submit_d_check_eval(NULL, xml, &out, &err);
+		i = cm_submit_d_check_eval(NULL, xml, "CHECK", &out, &err);
 	} else
 	if (strcmp(mode, "reject") == 0) {
 		cm_submit_d_reject_result(NULL, xml,
 					  &error, &error_code, &error_reason,
 					  &status, &requestId);
-		i = cm_submit_d_reject_eval(NULL, xml, &out, &err);
+		i = cm_submit_d_reject_eval(NULL, xml, "REJECT", &out, &err);
 	} else
 	if (strcmp(mode, "review") == 0) {
 		cm_submit_d_review_result(NULL, xml,
 					  &error, &error_code, &error_reason,
 					  &status, &requestId);
-		i = cm_submit_d_review_eval(NULL, xml, &out, &err);
+		i = cm_submit_d_review_eval(NULL, xml, "REVIEW", &out, &err);
 	} else
 	if (strcmp(mode, "approve") == 0) {
 		cm_submit_d_approve_result(NULL, xml,
 					   &error, &error_code, &error_reason,
 					   &status, &requestId);
-		i = cm_submit_d_approve_eval(NULL, xml, &out, &err);
+		i = cm_submit_d_approve_eval(NULL, xml, "APPROVE", &out, &err);
 	} else
 	if (strcmp(mode, "fetch") == 0) {
 		cm_submit_d_fetch_result(NULL, xml,
 					 &error, &error_code, &error_reason,
 					 &status, &requestId, &cert);
-		i = cm_submit_d_fetch_eval(NULL, xml, &out, &err);
+		i = cm_submit_d_fetch_eval(NULL, xml, "FETCH", &out, &err);
 	} else {
 		fprintf(stderr, "unknown mode \"%s\"\n", mode);
 		return -1;
