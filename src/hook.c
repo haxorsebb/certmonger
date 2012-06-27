@@ -106,7 +106,7 @@ cm_hook_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		       state->command);
 		return -1;
 	}
-	cm_subproc_mark_most_cloexec(entry, -1);
+	cm_subproc_mark_most_cloexec(entry, fd);
 	if (execvp(argv[0], argv) == -1) {
 		cm_log(0, "Error execvp()ing command \"%s\" (\"%s\"): %s.\n",
 		       argv[0], state->command,
