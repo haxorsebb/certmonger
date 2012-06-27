@@ -14,6 +14,7 @@ dogtag-ipa-renew-agent-submit -E EE-URL -A AGENT-URL
 [-p pinfile]
 [-P pin]
 [-s serial (hex)]
+[-D serial (decimal)]
 [-S state]
 [-T profile]
 [csrfile]
@@ -27,9 +28,9 @@ troubleshooting purposes.
 The preferred option is to request a renewal of an already-issued certificate,
 using its serial number, which can be read from a PEM-formatted certificate
 provided in the \fICERTMONGER_CERTIFICATE\fR environment variable, or via the
-\fB-s\fR option on the command line.  If no serial number is provided, then
-the client will attempt to obtain a new certificate by submitting a signing
-request to the CA.
+\fB-s\fR or \fB-D\fR option on the command line.  If no serial number is
+provided, then the client will attempt to obtain a new certificate by
+submitting a signing request to the CA.
 
 The signing request which is to be submitted should either be in a file whose
 name is given as an argument, or fed into \fIdogtag-ipa-renew-agent-submit\fR
@@ -90,8 +91,13 @@ of defaults is used:
 .TP
 \fB-s\fR serial
 The serial number of an already-issued certificate for which the client should
-attempt to obtain a new certificate, if one can not be read from the
-\fICERTMONGER_CERTIFICATE\fR environment variable.
+attempt to obtain a new certificate, in hexadecimal form, if one can not be
+read from the \fICERTMONGER_CERTIFICATE\fR environment variable.
+.TP
+\fB-D\fR serial
+The serial number of an already-issued certificate for which the client should
+attempt to obtain a new certificate, in decimal form, if one can not be
+read from the \fICERTMONGER_CERTIFICATE\fR environment variable.
 .TP
 \fB-T\fR profile/template
 The name of the type of certificate which the client should request from the CA
