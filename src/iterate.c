@@ -219,6 +219,37 @@ cm_decide_monitor_delay(time_t remaining)
 	return delay;
 }
 
+/* Manage a "lock" that we use to serialize access to THE REST OF THE WORLD. */
+static struct cm_store_entry *saving_lock;
+static dbus_bool_t
+cm_saving_lock(struct cm_store_entry *entry)
+{
+	if ((saving_lock == entry) || (saving_lock == NULL)) {
+		if (saving_lock == NULL) {
+			cm_log(3, "%s('%s') taking saving lock\n",
+			       entry->cm_busname, entry->cm_nickname);
+			saving_lock = entry;
+		}
+		return TRUE;
+	} else {
+		return FALSE;
+	}
+}
+static dbus_bool_t
+cm_saving_unlock(struct cm_store_entry *entry)
+{
+	if ((saving_lock == entry) || (saving_lock == NULL)) {
+		if (saving_lock == entry) {
+			cm_log(3, "%s('%s') releasing saving lock\n",
+			       entry->cm_busname, entry->cm_nickname);
+			saving_lock = NULL;
+		}
+		return TRUE;
+	} else {
+		return FALSE;
+	}
+}
+
 /* Set up run-time data associated with the entry. */
 int
 cm_iterate_init(struct cm_store_entry *entry, void **cm_iterate_state)
@@ -232,6 +263,7 @@ cm_iterate_init(struct cm_store_entry *entry, void **cm_iterate_state)
 	memset(state, 0, sizeof(*state));
 	*cm_iterate_state = state;
 	cm_entry_reset_state(entry);
+	cm_saving_unlock(entry);
 	state->cm_keyiread_state = cm_keyiread_start(entry);
 	if (state->cm_keyiread_state != NULL) {
 		while (cm_keyiread_ready(entry,
@@ -739,6 +771,14 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		break;
 
 	case CM_NEED_TO_SAVE_CERT:
+		if (!cm_saving_lock(entry)) {
+			/* Just hang out in this state while we're messing
+			 * around with the outside world for another entry. */
+			cm_log(3, "%s('%s') waiting for saving lock\n",
+			       entry->cm_busname, entry->cm_nickname);
+			*when = cm_time_soon;
+			break;
+		}
 		if (entry->cm_pre_certsave_command != NULL) {
 			state->cm_hook_state = cm_hook_start_presave(entry);
 			if (state->cm_hook_state != NULL) {
@@ -831,6 +871,15 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		break;
 
 	case CM_NEED_TO_READ_CERT:
+		if (!cm_saving_unlock(entry)) {
+			/* If for some reason we fail to release the lock that
+			 * we have, try to release it again soon. */
+			*when = cm_time_soon;
+			cm_log(1, "%s('%s') failed to release a lock, "
+			       "probably a bug\n",
+			       entry->cm_busname, entry->cm_nickname);
+			break;
+		}
 		state->cm_certread_state = cm_certread_start(entry);
 		if (state->cm_certread_state != NULL) {
 			/* Note that we're reading the cert. */
@@ -1292,5 +1341,6 @@ cm_iterate_done(struct cm_store_entry *entry, void *cm_iterate_state)
 	cm_log(3, "%s('%s') ends in state '%s'\n",
 	       entry->cm_busname, entry->cm_nickname,
 	       cm_store_state_as_string(entry->cm_state));
+	cm_saving_unlock(entry);
 	return 0;
 }
