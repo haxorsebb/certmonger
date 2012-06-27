@@ -69,6 +69,7 @@ help(const char *cmd)
 		"\t[-p pinfile]\n"
 		"\t[-P pin]\n"
 		"\t[-s serial (hex)]\n"
+		"\t[-D serial (decimal)]\n"
 		"\t[-S state]\n"
 		"\t[-T profile]\n"
 		"\t[csrfile]\n",
@@ -151,7 +152,7 @@ main(int argc, char **argv)
 #endif
 	savedstate = getenv(CM_SUBMIT_COOKIE_ENV);
 
-	while ((c = getopt(argc, argv, "E:A:d:n:i:C:c:k:p:P:s:S:T:v")) != -1) {
+	while ((c = getopt(argc, argv, "E:A:d:n:i:C:c:k:p:P:s:D:S:T:v")) != -1) {
 		switch (c) {
 		case 'E':
 			eeurl = optarg;
@@ -181,8 +182,11 @@ main(int argc, char **argv)
 		case 'P':
 			sslpin = optarg;
 			break;
-		case 's':
+		case 'D':
 			serial = optarg;
+			break;
+		case 's':
+			serial = util_o_dec_from_hex(optarg);
 			break;
 		case 'S':
 			savedstate = optarg;
@@ -229,7 +233,7 @@ main(int argc, char **argv)
 	if (template == NULL) {
 		template = cm_prefs_dogtag_profile();
 		if (template == NULL) {
-			/* Maybe we should ask the servers for which profiles
+			/* Maybe we should ask the server for which profiles
 			 * it supports, but for now we just assume that this
 			 * one hasn't been removed. */
 			template = "caServerCert";
@@ -240,11 +244,11 @@ main(int argc, char **argv)
 		if (tmp != NULL) {
 			if (cm_prefs_dogtag_renew()) {
 				serial = serial_hex_from_cert(tmp);
+				if (serial != NULL) {
+					serial = util_o_dec_from_hex(serial);
+				}
 			}
 		}
-	}
-	if (serial != NULL) {
-		serial = util_o_dec_from_hex(serial);
 	}
 	if (cainfo == NULL) {
 		cainfo = cm_prefs_dogtag_ca_info();
@@ -395,6 +399,7 @@ main(int argc, char **argv)
 	}
 
 	/* Submit the form(s). */
+	hctx = NULL;
 	while (url != NULL) {
 		hctx = cm_submit_h_init(ctx, "GET", url, params,
 					cainfo, capath, sslcert, sslkey, sslpin,
