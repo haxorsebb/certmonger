@@ -67,6 +67,7 @@ cm_subproc_start(int (*cb)(int fd,
 				state = NULL;
 				break;
 			case 0:
+				state->fd = fds[1];
 				close(fds[0]);
 				exit((*cb)(fds[1], ca, entry, data));
 				break;
