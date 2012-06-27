@@ -173,7 +173,7 @@ cm_reset_timeout(struct cm_context *context)
 {
 	struct timeval now, then;
 	if (context->idle_event != NULL) {
-		cm_log(3, "Clearing prevoiusly-set idle timer.\n");
+		cm_log(3, "Clearing previously-set idle timer.\n");
 		talloc_free(context->idle_event);
 		context->idle_event = NULL;
 	}
