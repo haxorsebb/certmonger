@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>\r\n
+<methodCall>\r\n
+<methodName>cert_request</methodName>\r\n
+<params>\r\n
+<param><value><array><data>\r\n
+<value><string>MIICpzCCAY8CAQAwYjELMAkGA1UEBhMCWFgxFTATBgNVBAcMDERlZmF1bHQgQ2l0eTEcMBoGA1UECgwTRGVmYXVsdCBDb21wYW55IEx0ZDEeMBwGA1UEAwwVcmFwaWVyLmJvcy5yZWRoYXQuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxRkeqEsUtUI6A9PA0gShdUOTa43TthEHiziSdgQHrRPx5lGdqqeWBfbDSc4lpZHJjKFNVqg1wMB8H1pJOVB0rNpuWhwAsLKHCSZ5B9rKvbrAG4YuDmz/2KO6nK3IaYcXK4x7zppzud4OU83PXmC+RWooKHShAiaGi5mw3maPY16X2PnOL/Y934J0IsnejmZ03ORpDx0ELD9ej7427dXr4mQd9oXh1Gbd+ggqi1oeO9Ba3XUoRrJS3Us5SL8pmSpPDiEPE8plsjm/tUs8c8SSrHl2NSTSd/f4ZpiBxvNrFF36tFQ1d5PYrtv6cTSkg2RwhgATBI6lWGWnkxqwzpldmQIDAQABoAAwDQYJKoZIhvcNAQEFBQADggEBAAMr/GTVLiEYH3zfCZ0X9b7L9uVdHL5ko2clWNL66d47wa+eGLI/b4l0KXyywBzY+X/KvkEMno0W6xLxbP8t8qZqUAfHOmgMF41NWJce4KLPvjBjMQqE562qcYpRQe0+w7tDPxOpZNreVT+9I2PxQM2aK3AerGkJO+tPD09bOM1u3VXxE4BX1OOzSFrDT0kl9c2S+q1b9CXydLhtbKwpU74NpLfERZfQhVq4sOY6ZCuf2TLTSM5lz1LGF/EFgrbSrJkaiSXE+myTrySSZOnYPQ/VaiCVO3PRZCpGY3OvnbIcke5Wl9ckTktLLv7CIqLftHbQ2zBwgCakhHvCnq1XZAc=</string></value>\r\n
+</data></array></value></param>\r\n
+<param><value><struct>\r\n
+<member><name>principal</name>\r\n
+<value><string>imap/rapier.bos.redhat.com@BOS.REDHAT.COM</string></value></member>\r\n
+<member><name>add</name>\r\n
+<value><boolean>1</boolean></value></member>\r\n
+</struct></value></param>\r\n
+</params>\r\n
+</methodCall>\r\n

@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8'?>\n
+<methodResponse>\n
+<params>\n
+<param>\n
+<value><struct>\n
+<member>\n
+<name>result</name>\n
+<value><struct>\n
+<member>\n
+<name>certificate</name>\n
+<value><string>MIIDpTCCAo2gAwIBAgIBEzANBgkqhkiG9w0BAQsFADA5MRcwFQYDVQQKEw5CT1MuUkVESEFULkNPTTEeMBwGA1UEAxMVQ2VydGlmaWNhdGUgQXV0aG9yaXR5MB4XDTEyMDYyODIwMzQxMloXDTE0MDYyOTIwMzQxMlowOTEXMBUGA1UEChMOQk9TLlJFREhBVC5DT00xHjAcBgNVBAMTFXJhcGllci5ib3MucmVkaGF0LmNvbTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMUZHqhLFLVCOgPTwNIEoXVDk2uN07YRB4s4knYEB60T8eZRnaqnlgX2w0nOJaWRyYyhTVaoNcDAfB9aSTlQdKzablocALCyhwkmeQfayr26wBuGLg5s/9ijupytyGmHFyuMe86ac7neDlPNz15gvkVqKCh0oQImhouZsN5mj2Nel9j5zi/2Pd+CdCLJ3o5mdNzkaQ8dBCw/Xo++Nu3V6+JkHfaF4dRm3foIKotaHjvQWt11KEayUt1LOUi/KZkqTw4hDxPKZbI5v7VLPHPEkqx5djUk0nf3+GaYgcbzaxRd+rRUNXeT2K7b+nE0pINkcIYAEwSOpVhlp5MasM6ZXZkCAwEAAaOBtzCBtDAfBgNVHSMEGDAWgBT5QugkOI4hLnyQxmRSgyB6JXCJmDBDBggrBgEFBQcBAQQ3MDUwMwYIKwYBBQUHMAGGJ2h0dHA6Ly9yYXBpZXIuYm9zLnJlZGhhdC5jb206ODAvY2Evb2NzcDAOBgNVHQ8BAf8EBAMCBPAwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMB0GA1UdDgQWBBTEBGvtAjA6AT5ijY5bl23eIbgKBDANBgkqhkiG9w0BAQsFAAOCAQEAoD4Ec81UTuajxXd9TvC9wIGsugkuzuUFxZuFjOkFJslCbTZOIQrr646ulmzY1ysFNxLBulfRQYwQEyoROCZG259QVUgqI0h7lcvmboscaNG4aFGi4gUxRa0IzHfEswskZr+FXSw2KUkNCUJzfP/9pC2r4hvMoxu6bKRbqPtY5woI/zG7WfB8U5Nk8cnCoGLWdRh3fVItPAVOy3GC3L/1WiQdVeHrT19ee4oYpRMMEIgocwakIdvJF0OXJ/239QuxtQrhlKdDpq0Ad9Yd9lnmOEFYanEE+36L3VjtXaB9giPx5uUcR733+bTy8cBvj8s5/EDo20u8YYhpM5gSBwBbzw==</string></value>\n
+</member>\n
+<member>\n
+<name>issuer</name>\n
+<value><string>CN=Certificate Authority,O=BOS.REDHAT.COM</string></value>\n
+</member>\n
+<member>\n
+<name>valid_not_before</name>\n
+<value><string>Thu Jun 28 20:34:12 2012 UTC</string></value>\n
+</member>\n
+<member>\n
+<name>valid_not_after</name>\n
+<value><string>Sun Jun 29 20:34:12 2014 UTC</string></value>\n
+</member>\n
+<member>\n
+<name>request_id</name>\n
+<value><string>30</string></value>\n
+</member>\n
+<member>\n
+<name>serial_number</name>\n
+<value><string>19</string></value>\n
+</member>\n
+<member>\n
+<name>md5_fingerprint</name>\n
+<value><string>95:2a:e3:78:75:40:aa:0a:8f:21:1b:76:0e:91:a3:f4</string></value>\n
+</member>\n
+<member>\n
+<name>serial_number_hex</name>\n
+<value><string>0x13</string></value>\n
+</member>\n
+<member>\n
+<name>sha1_fingerprint</name>\n
+<value><string>f0:1e:8e:df:8e:39:dd:67:77:98:53:98:95:8f:4b:27:2d:01:4d:11</string></value>\n
+</member>\n
+<member>\n
+<name>subject</name>\n
+<value><string>CN=rapier.bos.redhat.com,O=BOS.REDHAT.COM</string></value>\n
+</member>\n
+</struct></value>\n
+</member>\n
+</struct></value>\n
+</param>\n
+</params>\n
+</methodResponse>\n

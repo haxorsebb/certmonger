@@ -64,7 +64,8 @@ EXTRA_DIST = \
 	019-dparse/expected.out \
 	019-dparse/run.sh \
 	019-dparse/good.* \
-	019-dparse/bad.*
+	019-dparse/bad.* \
+	020-xparse/*.xml
 
 subdirs = \
 	001-keyiread \

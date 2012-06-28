@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>\r\n
+<methodCall>\r\n
+<methodName>wait_for_cert</methodName>\r\n
+<params>\r\n
+<param><value><string>-----BEGIN CERTIFICATE REQUEST-----\n
+MIICmTCCAYECAQAwVDELMAkGA1UEBhMCWFgxFTATBgNVBAcMDERlZmF1bHQgQ2l0\n
+eTEcMBoGA1UECgwTRGVmYXVsdCBDb21wYW55IEx0ZDEQMA4GA1UEAwwHcGlsbGJv\n
+eDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBANYPXyUy/pnengaPFx4L\n
+kI7BgFVM8e6mMfRXkmoduOTDJrHli7TwlK3azrsp5Ydxo7M/NP9Uf/tT3rtDBex+\n
+2Tw1YkANR8owsFcxhYxmUac7cQNQWZoeTlF6F/Im/5CXo0s/PQo2DrHTRzBSWzTR\n
+7fnoQ1aXSXXlSL30Bz3trFl9kp9Dvw6FyQTot3qc9gWPzb+THw5tlG+7bbd6gZn8\n
+AwWhBc11kragvjcLaOC94YeW//rcgJq/c1180z4TQCqx+nCZWr8tsfPyliU2Wcns\n
+eJ58O3Sq3SdI2j5Ol1427bf6UpTMgbieAQD1EcvcRzZ+n/fGFSKqoa/Z8mpOnIac\n
+YhsCAwEAAaAAMA0GCSqGSIb3DQEBBQUAA4IBAQBbhv9TESHRQNF/JIMTzjvtaQb5\n
+yh/Vy0+uLY2OcvD05+vAYYfbHYXQbqC30MbsHTRMJtR5TyF9Ow+1CTHpEgUmuSQN\n
+iiGMGH1D1tYmCxZU3vdtpxtyg7DhB7dYmbco0VCkcG3od36NyWobwTUOycW6/ffY\n
+JoLvI/pWB4+G8Fi9CiSXPv8nVO4Gy/7GSglo95wt2YD05QdzgbFTphvw74FvY3YC\n
+//TmUBtMV9QNGIJOEWeGFo6rSp009VCqJvqjn8484Tp0is1KOKSD6rN/qDFhZjqR\n
+T2Hb1euQWUtde1987Yx9c2gK8LgQAdp68yzt+hTc45/IAtTlJbFiGj25O2+B\n
+-----END CERTIFICATE REQUEST-----\n
+</string></value></param>\r\n
+</params>\r\n
+</methodCall>\r\n

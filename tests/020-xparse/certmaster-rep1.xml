@@ -1,0 +1,12 @@
+<?xml version='1.0'?>\n
+<methodResponse>\n
+<params>\n
+<param>\n
+<value><array><data>\n
+<value><boolean>0</boolean></value>\n
+<value><string></string></value>\n
+<value><string></string></value>\n
+</data></array></value>\n
+</param>\n
+</params>\n
+</methodResponse>\n
