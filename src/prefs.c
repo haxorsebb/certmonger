@@ -343,9 +343,11 @@ const char *
 cm_prefs_dogtag_ee_url(void)
 {
 	static const char *url;
+#if 0
 	if (url == NULL) {
 		url = cm_prefs_config("dogtag", "ee_url");
 	}
+#endif
 	return url;
 }
 
@@ -353,9 +355,11 @@ const char *
 cm_prefs_dogtag_agent_url(void)
 {
 	static const char *url;
+#if 0
 	if (url == NULL) {
 		url = cm_prefs_config("dogtag", "agent_url");
 	}
+#endif
 	return url;
 }
 
@@ -363,9 +367,11 @@ const char *
 cm_prefs_dogtag_profile(void)
 {
 	static const char *profile;
+#if 0
 	if (profile == NULL) {
 		profile = cm_prefs_config("dogtag", "profile");
 	}
+#endif
 	return profile;
 }
 
@@ -373,10 +379,12 @@ int
 cm_prefs_dogtag_renew(void)
 {
 	static int prefer = -1;
+#if 0
 	if (prefer == -1) {
 		prefer = cm_prefs_yesno(cm_prefs_config("dogtag",
 							"prefer_renewal"));
 	}
+#endif
 	return (prefer != -1) ? (prefer != 0) : TRUE;
 }
 
@@ -384,9 +392,11 @@ const char *
 cm_prefs_dogtag_ca_info(void)
 {
 	static const char *info;
+#if 0
 	if (info == NULL) {
 		info = cm_prefs_config("dogtag", "ca_info");
 	}
+#endif
 	return info;
 }
 
@@ -394,9 +404,11 @@ const char *
 cm_prefs_dogtag_ca_path(void)
 {
 	static const char *path;
+#if 0
 	if (path == NULL) {
 		path = cm_prefs_config("dogtag", "ca_path");
 	}
+#endif
 	return path;
 }
 
@@ -404,9 +416,11 @@ const char *
 cm_prefs_dogtag_ssldir(void)
 {
 	static const char *dbdir;
+#if 0
 	if (dbdir == NULL) {
 		dbdir = cm_prefs_config("dogtag", "nss_dbdir");
 	}
+#endif
 	return dbdir;
 }
 
@@ -414,12 +428,14 @@ const char *
 cm_prefs_dogtag_sslcert(void)
 {
 	static const char *cert;
+#if 0
 	if (cert == NULL) {
 		cert = cm_prefs_config("dogtag", "ssl_certificate");
 		if (cert == NULL) {
 			cert = cm_prefs_config("dogtag", "nss_nickname");
 		}
 	}
+#endif
 	return cert;
 }
 
@@ -427,9 +443,11 @@ const char *
 cm_prefs_dogtag_sslkey(void)
 {
 	static const char *key;
+#if 0
 	if (key == NULL) {
 		key = cm_prefs_config("dogtag", "ssl_key");
 	}
+#endif
 	return key;
 }
 
@@ -437,8 +455,10 @@ const char *
 cm_prefs_dogtag_sslpinfile(void)
 {
 	static const char *pinfile;
+#if 0
 	if (pinfile == NULL) {
 		pinfile = cm_prefs_config("dogtag", "ssl_pinfile");
 	}
+#endif
 	return pinfile;
 }
