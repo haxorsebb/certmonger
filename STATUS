@@ -108,5 +108,4 @@ To-do:
   * Learn to talk to KCAs (per http://datatracker.ietf.org/doc/draft-hotz-kx509)
   * Learn to talk to puppet CAs
   * Lighten build requirements by crafting and parsing XML-RPC ourselves
-    since we're already going to have to deal with non-XML-RPC XML and HTTP
-    when DogTag support goes in.
+    since we already have to deal with non-XML-RPC XML and HTTP for Dogtag.

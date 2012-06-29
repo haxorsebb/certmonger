@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.57
+Version:	0.58
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -37,7 +37,7 @@ BuildRequires:  libuuid-devel
 BuildRequires:  e2fsprogs-devel
 %endif
 BuildRequires:	libtalloc-devel, libtevent-devel
-BuildRequires:	libxml2-devel, xmlrpc-c-devel
+BuildRequires:	libcurl-devel, libxml2-devel, xmlrpc-c-devel
 # Required for 'make check':
 #  for diff and cmp
 BuildRequires:	diffutils
@@ -194,6 +194,15 @@ exit 0
 %endif
 
 %changelog
+* Fri Jun 29 2012 Nalin Dahyabhai <nalin@redhat.com> 0.58-1
+- add a "dogtag-ipa-renew-agent" CA so that we can renew certificates using
+  an IPA server's internal Dogtag instance
+- export the requested profile and old certificate to enrollment helpers
+- make libxml and libcurl into hard build-time requirements
+- serialize all pre/save/post sequences to make sure that stop/save/start
+  doesn't become stop1/save1/stop2/start1/save2/start2 when we're stopping
+  a service while we muck with more than one of its certificates
+
 * Fri Jun 12 2012 Nalin Dahyabhai <nalin@redhat.com>
 - add a command option (-T) to getcert for specifying which enrollment
   profile to tell a CA that we're using, in case it cares (#10)
