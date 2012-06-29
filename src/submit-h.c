@@ -48,7 +48,7 @@
 
 struct cm_submit_h_context {
 	int ret;
-	char *method, *uri, *args, *cainfo, *capath, *result;
+	char *method, *uri, *args, *accept, *ctype, *cainfo, *capath, *result;
 	char *sslcert, *sslkey, *sslpass;
 	enum cm_submit_h_opt_negotiate negotiate;
 	enum cm_submit_h_opt_delegate negotiate_delegate;
@@ -61,6 +61,7 @@ struct cm_submit_h_context {
 struct cm_submit_h_context *
 cm_submit_h_init(void *parent,
 		 const char *method, const char *uri, const char *args,
+		 const char *content_type, const char *accept,
 		 const char *cainfo, const char *capath,
 		 const char *sslcert, const char *sslkey, const char *sslpass,
 		 enum cm_submit_h_opt_negotiate neg,
@@ -74,7 +75,11 @@ cm_submit_h_init(void *parent,
 	if (ctx != NULL) {
 		ctx->method = talloc_strdup(ctx, method);
 		ctx->uri = talloc_strdup(ctx, uri);
-		ctx->args = talloc_strdup(ctx, args);
+		ctx->args = args ? talloc_strdup(ctx, args) : NULL;
+		ctx->ctype = content_type ?
+			     talloc_strdup(ctx, content_type) :
+			     NULL;
+		ctx->accept = accept ? talloc_strdup(ctx, accept) : NULL;
 		ctx->cainfo = cainfo ? talloc_strdup(ctx, cainfo) : NULL;
 		ctx->capath = capath ? talloc_strdup(ctx, capath) : NULL;
 		ctx->sslcert = sslcert ? talloc_strdup(ctx, sslcert) : NULL;
@@ -117,7 +122,8 @@ append_result(char *in, uint size, uint nmemb, struct cm_submit_h_context *ctx)
 void
 cm_submit_h_run(struct cm_submit_h_context *ctx)
 {
-	char *uri;
+	struct curl_slist *headers = NULL;
+	char *uri, *header;
 	if (ctx->curl != NULL) {
 		curl_easy_cleanup(ctx->curl);
 	}
@@ -151,15 +157,19 @@ cm_submit_h_run(struct cm_submit_h_context *ctx)
 					 ctx->capath);
 		}
 		if (strcasecmp(ctx->method, "GET") == 0) {
-			uri = talloc_asprintf(ctx, "%s?%s",
-					      ctx->uri, ctx->args);
+			uri = talloc_asprintf(ctx, "%s%s%s",
+					      ctx->uri,
+					      ctx->args ? "?" : "",
+					      ctx->args ? ctx->args : "");
 			curl_easy_setopt(ctx->curl, CURLOPT_URL, uri);
 			curl_easy_setopt(ctx->curl, CURLOPT_HTTPGET, 1L);
 		} else {
 			curl_easy_setopt(ctx->curl, CURLOPT_URL, ctx->uri);
 			curl_easy_setopt(ctx->curl, CURLOPT_HTTPGET, 0L);
-			curl_easy_setopt(ctx->curl, CURLOPT_POSTFIELDS,
-					 ctx->args);
+			if ((ctx->args != NULL) && (strlen(ctx->args) > 0)) {
+				curl_easy_setopt(ctx->curl, CURLOPT_POSTFIELDS,
+						 ctx->args);
+			}
 		}
 		if (ctx->negotiate == cm_submit_h_negotiate_on) {
 #if defined(CURLOPT_HTTPAUTH) && defined(CURLAUTH_GSSNEGOTIATE)
@@ -206,6 +216,23 @@ cm_submit_h_run(struct cm_submit_h_context *ctx)
 					 CURLOPT_HTTPAUTH,
 					 CURLAUTH_NONE);
 		}
+		if (ctx->accept != NULL) {
+			header = talloc_asprintf(ctx, "Accept: %s",
+						 ctx->accept);
+			if (header != NULL) {
+				headers = curl_slist_append(headers,
+							    header);
+			}
+		}
+		if (ctx->ctype != NULL) {
+			header = talloc_asprintf(ctx, "Content-Type: %s",
+						 ctx->ctype);
+			if (header != NULL) {
+				headers = curl_slist_append(headers,
+							    header);
+			}
+		}
+		curl_easy_setopt(ctx->curl, CURLOPT_HTTPHEADER, headers);
 		curl_easy_setopt(ctx->curl, CURLOPT_WRITEFUNCTION,
 				 append_result);
 		curl_easy_setopt(ctx->curl, CURLOPT_WRITEDATA, ctx);
@@ -214,6 +241,9 @@ cm_submit_h_run(struct cm_submit_h_context *ctx)
 			ctx->result = NULL;
 		}
 		ctx->ret = curl_easy_perform(ctx->curl);
+		if (headers != NULL) {
+			curl_slist_free_all(headers);
+		}
 	}
 }
 
@@ -243,9 +273,11 @@ main(int argc, char **argv)
 	enum cm_submit_h_opt_negotiate negotiate;
 	enum cm_submit_h_opt_delegate negotiate_delegate;
 	enum cm_submit_h_opt_clientauth clientauth;
-	int c, fd, l;
-	char *capath, *cainfo, *sslcert, *sslkey, *sslpass;
+	int c, fd, l, verbose = 0;
+	char *ctype, *accept, *capath, *cainfo, *sslcert, *sslkey, *sslpass;
 
+	ctype = NULL;
+	accept = NULL;
 	capath = NULL;
 	cainfo = NULL;
 	sslcert = NULL;
@@ -254,8 +286,11 @@ main(int argc, char **argv)
 	negotiate = cm_submit_h_negotiate_off;
 	negotiate_delegate = cm_submit_h_delegate_off;
 	clientauth = cm_submit_h_clientauth_off;
-	while ((c = getopt(argc, argv, "C:c:NDk:K:p:P:")) != -1) {
+	while ((c = getopt(argc, argv, "a:C:c:NDk:K:p:P:t:v")) != -1) {
 		switch (c) {
+		case 'a':
+			accept = optarg;
+			break;
 		case 'C':
 			capath = optarg;
 			break;
@@ -309,8 +344,15 @@ main(int argc, char **argv)
 		case 'P':
 			sslpass = optarg;
 			break;
+		case 't':
+			ctype = optarg;
+			break;
+		case 'v':
+			verbose++;
+			break;
 		default:
 			printf("Usage: submit-h METHOD URI [ARGS]\n");
+			printf("  -a TYPE\tacceptable response content-type\n");
 			printf("  -C CAPATH\troot certificate directory\n");
 			printf("  -c CAINFO\troot certificate info\n");
 			printf("  -N\t\tuse Negotiate\n");
@@ -319,6 +361,8 @@ main(int argc, char **argv)
 			printf("  -K KEY\tuse client authentication with key\n");
 			printf("  -p FILE\tclient authentication key pinfile\n");
 			printf("  -P PIN\tclient authentication key pin\n");
+			printf("  -t TYPE\tclient data content-type\n");
+			printf("  -v\t\tverbose\n");
 			return 1;
 			break;
 		}
@@ -326,6 +370,7 @@ main(int argc, char **argv)
 	if (argc - optind < 3) {
 		printf("Missing a required argument.\n");
 		printf("Usage: submit-h METHOD URI [ARGS]\n");
+		printf("  -a TYPE\tacceptable response content-type\n");
 		printf("  -C CAPATH\troot certificate directory\n");
 		printf("  -c CAINFO\troot certificate info\n");
 		printf("  -N\t\tuse Negotiate\n");
@@ -334,14 +379,19 @@ main(int argc, char **argv)
 		printf("  -K KEY\tuse client authentication with key\n");
 		printf("  -p FILE\tclient authentication key pinfile\n");
 		printf("  -P PIN\tclient authentication key pin\n");
+		printf("  -t TYPE\tclient data content-type\n");
+		printf("  -v\t\tverbose\n");
 		return 1;
 	}
 
 	ctx = cm_submit_h_init(NULL, argv[optind], argv[optind + 1],
-			       (argc > optind + 2) ? argv[optind + 2] : "",
+			       (argc > optind + 2) ? argv[optind + 2] : NULL,
+			       ctype, accept,
 			       cainfo, capath, sslcert, sslkey, sslpass,
 			       negotiate, negotiate_delegate,
 			       clientauth, cm_submit_h_env_modify_on,
+			       verbose ?
+			       cm_submit_h_curl_verbose_on :
 			       cm_submit_h_curl_verbose_off);
 	cm_submit_h_run(ctx);
 	if (cm_submit_h_results(ctx) != NULL) {

@@ -934,7 +934,7 @@ restart:
 		printf("url = \"%s%s%s\"\n", uri,
 		       params ? "?" : "", params ? params : "");
 	}
-	hctx = cm_submit_h_init(ctx, method, uri, params,
+	hctx = cm_submit_h_init(ctx, method, uri, params, NULL, NULL,
 				cainfo, capath, sslcert, sslkey, sslpin,
 				cm_submit_h_negotiate_off,
 				cm_submit_h_delegate_off,
