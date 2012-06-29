@@ -264,6 +264,19 @@ cm_submit_h_results(struct cm_submit_h_context *ctx)
 	return ctx->result;
 }
 
+const char *
+cm_submit_h_result_type(struct cm_submit_h_context *ctx)
+{
+	char *ret = NULL;
+	if (ctx->curl != NULL) {
+		if (curl_easy_getinfo(ctx->curl, CURLINFO_CONTENT_TYPE,
+				      &ret) != CURLE_OK) {
+			ret = NULL;
+		}
+	}
+	return ret;
+}
+
 #ifdef CM_SUBMIT_H_MAIN
 int
 main(int argc, char **argv)
