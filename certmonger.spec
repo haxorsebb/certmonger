@@ -37,7 +37,12 @@ BuildRequires:  libuuid-devel
 BuildRequires:  e2fsprogs-devel
 %endif
 BuildRequires:	libtalloc-devel, libtevent-devel
-BuildRequires:	libcurl-devel, libxml2-devel, xmlrpc-c-devel
+%if 0%{?rhel} >= 6 || 0%{?fedora} >= 9
+BuildRequires:	libcurl-devel
+%else
+BuildRequires:	curl-devel
+%endif
+BuildRequires:	libxml2-devel, xmlrpc-c-devel
 # Required for 'make check':
 #  for diff and cmp
 BuildRequires:	diffutils
