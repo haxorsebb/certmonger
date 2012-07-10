@@ -196,11 +196,12 @@ cm_submit_d_xml_defaults(void *parent, const char *xml)
 			    (obj->nodesetval->nodeNr > 0)) {
 				ret = malloc(sizeof(*ret) *
 					     (obj->nodesetval->nodeNr + 1));
-				if (ret != NULL) {
-					memset(ret, 0,
-					       sizeof(*ret) *
-					       (obj->nodesetval->nodeNr + 1));
+				if (ret == NULL) {
+					return NULL;
 				}
+				memset(ret, 0,
+				       sizeof(*ret) *
+				       (obj->nodesetval->nodeNr + 1));
 				for (i = 0, j = 0;
 				     (i < obj->nodesetval->nodeNr);
 				     i++) {
