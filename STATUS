@@ -91,21 +91,31 @@ To-do:
     - IPA mucks with our files directly in their current form, so this is
       tabled indefinitely.
   * Put NSS into FIPS mode.
-  * Offer to read and cache the CA certificate for CAs, just as we do for
-    regular requests.
-    * Default the locations to where we expect other CA clients to be storing
-      the certificate.
-    * Populate/update the known-issuer-names list using the CA certificate.
-    * Cache the authorityKeyIdentifier and subjectPublicKeyIdentifier from the
-      CA certificate, and use that to match up certificates that need to be
+  * Lighten build requirements by crafting and parsing XML-RPC ourselves
+    since we already have to deal with non-XML-RPC XML and HTTP for Dogtag.
+  * Add GET_ROOT and GET_CHAIN operations to helpers, so that we can cache
+    root and intermediate chain certificates from CAs which provide a way
+    for clients to retrieve them via an integrity-checked path.
+    * Populate/update the known-issuer-names list for the CA using these.
+    * Cache the authorityKeyIdentifier and/or subjectPublicKeyIdentifier from
+      the CA certificate, and use that to match up certificates that need to be
       renewed with their CAs.
     * If the CA cert includes a CRL distribution point extension, cache the
       CRL, too.  This'll require a new dependency on a retrieval library
-      (probably libcurl) and changes to the internal state machine to handle
-      CRL retrieval as another type of task.  The local signer's CRL would be
-      regenerated before being "retrieved".
-  * Learn about SRV records for locating servers.
+      (probably libcurl again) and changes to the internal state machine to
+      handle CRL retrieval as another type of task.  The local signer's CRL
+      would be regenerated before being "retrieved".
+  * Add a GET_NAME operation to helpers so that they can output their
+    preferred/default name, possibly allowing us to just iterate over them
+    at startup if we haven't dealt with them before.
+  * Add a GET_REQUIRED_PROPERTIES operation to helpers so that they can list
+    properties which the daemon should supply for them for it to note, so that
+    if they're not specified by a client, we can intelligently decide whether
+    or not they're actually required to be specified for a given CA, rather
+    than sloppily hard-coding it as we do now.
+  * Offer to store certificates for CAs and their intermediates, potentially in
+    multiple certificate databases and PEM files.
+  * Learn about using SRV records for locating servers.
   * Learn to talk to KCAs (per http://datatracker.ietf.org/doc/draft-hotz-kx509)
-  * Learn to talk to puppet CAs
-  * Lighten build requirements by crafting and parsing XML-RPC ourselves
-    since we already have to deal with non-XML-RPC XML and HTTP for Dogtag.
+  * Learn to speak CMP.
+  * Learn to talk to puppet CAs.
