@@ -115,6 +115,9 @@ cm_submit_u_from_file_single(const char *filename)
 		"-----END NEW CERTIFICATE REQUEST-----",
 	};
 	csr = cm_submit_u_from_file(filename);
+	if (csr == NULL) {
+		return NULL;
+	}
 	p = csr;
 	for (i = 0; i < sizeof(strip) / sizeof(strip[0]); i++) {
 		while ((p = strstr(csr, strip[i])) != NULL) {
