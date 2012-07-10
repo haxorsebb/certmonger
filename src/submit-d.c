@@ -73,6 +73,7 @@ cm_submit_d_xml_node_text(void *parent, xmlNodePtr node, const char *subname)
 
 	subnode = NULL;
 	if (subname != NULL) {
+		/* point "node" at a child with the given name */
 		subnode = node->children;
 		node = NULL;
 		while (subnode != NULL) {
@@ -85,17 +86,21 @@ cm_submit_d_xml_node_text(void *parent, xmlNodePtr node, const char *subname)
 			subnode = subnode->next;
 		}
 	}
-	if ((subnode = node->children) != NULL) {
+	if (node != NULL) {
+		/* point "node" at its first text child, if it has one */
+		subnode = node->children;
+		node = NULL;
 		while (subnode != NULL) {
 			if (subnode->type == XML_TEXT_NODE) {
+				node = subnode;
 				break;
 			}
 			subnode = subnode->next;
 		}
 	}
 	ret = NULL;
-	if (subnode != NULL) {
-		content = (const char *) subnode->content;
+	if (node != NULL) {
+		content = (const char *) node->content;
 		content += strspn(content, "\r\n");
 		i = strlen(content);
 		while ((i > 0) && (strchr("\r\n", content[i - 1]) != NULL)) {
