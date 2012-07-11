@@ -35,6 +35,12 @@ echo iLoveCookiesMore
 exit 5
 EOF
 chmod u+x ca-ask-again-5
+cat > ca-what-what-6 << EOF
+#!/bin/sh
+echo What do you want?
+exit 6
+EOF
+chmod u+x ca-what-what-6
 
 cat > ca << EOF
 id=SelfSign
@@ -311,6 +317,24 @@ $toolsdir/iterate ca8 entry8 NEED_CSR,GENERATING_CSR
 $toolsdir/iterate ca8 entry8 NEED_TO_SUBMIT,SUBMITTING
 grep ca_cookie entry8
 $toolsdir/iterate ca8 entry8 ""
+
+echo
+echo "[Enroll until we realize our enrollment helper doesn't support enrollment.]"
+cat > entry9 << EOF
+id=Test
+ca_name=Confused
+state=HAVE_KEY_PAIR
+key_storage_type=FILE
+key_storage_location=$tmpdir/keyfile
+EOF
+cat > ca9 << EOF
+id=Confused
+ca_type=EXTERNAL
+ca_external_helper=$tmpdir/ca-what-what-6
+EOF
+$toolsdir/iterate ca9 entry9 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
+$toolsdir/iterate ca9 entry9 NEED_CSR,GENERATING_CSR
+$toolsdir/iterate ca9 entry9 NEED_TO_SUBMIT,SUBMITTING
 
 # Note! The "iterate" harness rounds delay times up to the next multiple of 50.
 for interval in 0 30 1800 3600 7200 86000 86500 604800 1000000 2000000; do
