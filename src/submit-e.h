@@ -29,6 +29,7 @@ enum cm_external_status {
 	CM_STATUS_UNREACHABLE = 3,
 	CM_STATUS_UNCONFIGURED = 4,
 	CM_STATUS_WAIT_WITH_DELAY = 5,
+	CM_STATUS_OPERATION_NOT_SUPPORTED = 6,
 };
 const char *cm_submit_e_status_text(enum cm_external_status status);
 

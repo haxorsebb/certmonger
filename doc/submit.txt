@@ -33,6 +33,7 @@ An external CA helper has a few jobs:
     * Wait some more -> output recommended delay (seconds) and CA cookie value
                         on stdout, separated by newline, and exit with status 5.
 * Other operations may be defined later.
+    * Operation not supported by this helper -> exit with status 6.
 
 For testing purposes, a helper can be added by creating a file in the CAs
 directory (usually /var/lib/certmonger/cas) with these contents:
