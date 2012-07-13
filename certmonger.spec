@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.58
+Version:	0.59
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -199,6 +199,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Jun 29 2012 Nalin Dahyabhai <nalin@redhat.com> 0.59-1
+- mostly documentation updates
+
 * Fri Jun 29 2012 Nalin Dahyabhai <nalin@redhat.com> 0.58-1
 - add a "dogtag-ipa-renew-agent" CA so that we can renew certificates using
   an IPA server's internal Dogtag instance
