@@ -4,7 +4,7 @@ most CAs is done through external helpers.
 
 An external CA helper has a few jobs:
 * Invoked either with "SUBMIT" or "POLL" as the value of the
-  $CERTMONGER_OPERATION environment value, with command-line arguments as
+  $CERTMONGER_OPERATION environment variable, with command-line arguments as
   specified in certmaster's configuration.  Some of the data from the request
   is also provided in the environment.
   * $CERTMONGER_REQ_SUBJECT   -> requested subject name
@@ -34,6 +34,30 @@ An external CA helper has a few jobs:
                         on stdout, separated by newline, and exit with status 5.
 * Other operations may be defined later.
     * Operation not supported by this helper -> exit with status 6.
+
+Operations to be added:
+  * Invoked with "IDENTIFY" as the value of the $CERTMONGER_OPERATION
+    environment variable:
+    * Output suggested nickname (ID) for CA, suggested nickname for CA
+      certificate when stored in an NSS database (a.k.a FriendlyName),
+      and root certificate in PEM format, exit with status 0.
+    * This will let us add the root certificate to the same database
+      as the requested certificate.  We can expose it in a file of our
+      own in case we're storing the certificate in PEM form.
+  * Invoked with "GET-NEW-REQUEST-REQUIREMENTS" as the value of the
+    $CERTMONGER_OPERATION environment variable:
+    * Output list of environment variable names which are expected to
+      have non-empty values when the helper is run in SUBMIT or POLL
+      mode, without $s, separated by newlines, exit with status 0.
+    * This will let us push lack-of-required-input all the way back
+      from the CA helper to the getcert client.
+  * Invoked with "GET-RENEW-REQUEST-REQUIREMENTS" as the value of the
+    $CERTMONGER_OPERATION environment variable:
+    * Output list of environment variable names which are expected to
+      have non-empty values when the helper is run in SUBMIT or POLL
+      mode, without $s, separated by newlines, exit with status 0.
+    * This will let us push lack-of-required-input all the way back
+      from the CA helper to the getcert client.
 
 For testing purposes, a helper can be added by creating a file in the CAs
 directory (usually /var/lib/certmonger/cas) with these contents:
