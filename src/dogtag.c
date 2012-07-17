@@ -366,7 +366,7 @@ main(int argc, char **argv)
 		break;
 	case op_check:
 		/* Check if the certificate has been issued or rejected. */
-		url = talloc_asprintf(ctx, "%s/checkRequest", agenturl);
+		url = talloc_asprintf(ctx, "%s/checkRequest", eeurl);
 		params = talloc_asprintf(ctx,
 					 "%s&"
 					 "xml=true",
@@ -467,6 +467,7 @@ main(int argc, char **argv)
 			break;
 		case op_none:
 		case op_submit:
+		case op_check:
 		case op_retrieve:
 			/* No second form for these. */
 			break;
@@ -503,7 +504,7 @@ main(int argc, char **argv)
 		break;
 	case op_submit:
 		ret = cm_submit_d_submit_eval(ctx, results, lasturl,
-					      agent, &p, &q);
+					      TRUE, &p, &q);
 		if (p != NULL) {
 			fprintf(stdout, "%s", p);
 		}
@@ -514,7 +515,7 @@ main(int argc, char **argv)
 		break;
 	case op_check:
 		ret = cm_submit_d_check_eval(ctx, results, lasturl,
-					     agent, &p, &q);
+					     TRUE, &p, &q);
 		if (p != NULL) {
 			fprintf(stdout, "%s", p);
 		}
@@ -526,7 +527,7 @@ main(int argc, char **argv)
 	case op_approve:
 		if (url2 == NULL) {
 			ret = cm_submit_d_approve_eval(ctx, results, lasturl,
-						       agent, &p, &q);
+						       TRUE, &p, &q);
 			if (p != NULL) {
 				fprintf(stdout, "%s", p);
 			}
@@ -536,7 +537,7 @@ main(int argc, char **argv)
 			return ret;
 		} else {
 			ret = cm_submit_d_review_eval(ctx, results, lasturl,
-						      agent, &p, &q);
+						      TRUE, &p, &q);
 			if (p != NULL) {
 				fprintf(stdout, "%s", p);
 			}
@@ -548,7 +549,7 @@ main(int argc, char **argv)
 		break;
 	case op_retrieve:
 		ret = cm_submit_d_fetch_eval(ctx, results, lasturl,
-					     agent, &p, &q);
+					     TRUE, &p, &q);
 		if (p != NULL) {
 			fprintf(stdout, "%s", p);
 		}
