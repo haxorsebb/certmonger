@@ -11,7 +11,7 @@ state=approve&requestId=17
 [check(good.checkRequest.complete) = WAIT_WITH_DELAY]
 status="complete",requestId="23"
 0
-state=approve&requestId=23
+state=retrieve&requestId=23
 
 [check(good.checkRequest.pending) = WAIT_WITH_DELAY]
 status="pending",requestId="22"

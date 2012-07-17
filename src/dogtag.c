@@ -142,7 +142,7 @@ main(int argc, char **argv)
 	struct cm_submit_h_context *hctx;
 	void *ctx;
 	int c, verbose = 0, i;
-	enum { op_none, op_submit, op_approve, op_retrieve } op = op_none;
+	enum { op_none, op_submit, op_check, op_approve, op_retrieve } op = op_none;
 	dbus_bool_t agent, missing_args = FALSE;
 	struct dogtag_default **defaults;
 	enum cm_external_status ret;
@@ -302,10 +302,15 @@ main(int argc, char **argv)
 	if ((savedstate != NULL) &&
 	    ((p = statevar(savedstate, "state")) != NULL) &&
 	    ((q = statevar(savedstate, "requestId")) != NULL)) {
-		if (strcmp(p, "approve") == 0) {
+		if (strcmp(p, "check") == 0) {
+			op = op_check;
+		}
+		if ((strcmp(p, "review") == 0) ||
+		    (strcmp(p, "approve") == 0)) {
 			op = op_approve;
 		}
-		if (strcmp(p, "retrieve") == 0) {
+		if ((strcmp(p, "fetch") == 0) ||
+		    (strcmp(p, "retrieve") == 0)) {
 			op = op_retrieve;
 		}
 		params = talloc_asprintf(ctx, "requestId=%s", q);
@@ -357,6 +362,15 @@ main(int argc, char **argv)
 						 template,
 						 csr);
 		}
+		agent = FALSE;
+		break;
+	case op_check:
+		/* Check if the certificate has been issued or rejected. */
+		url = talloc_asprintf(ctx, "%s/checkRequest", agenturl);
+		params = talloc_asprintf(ctx,
+					 "%s&"
+					 "xml=true",
+					 params);
 		agent = FALSE;
 		break;
 	case op_approve:
@@ -488,7 +502,19 @@ main(int argc, char **argv)
 		return CM_STATUS_UNCONFIGURED;
 		break;
 	case op_submit:
-		ret = cm_submit_d_submit_eval(ctx, results, lasturl, &p, &q);
+		ret = cm_submit_d_submit_eval(ctx, results, lasturl,
+					      agent, &p, &q);
+		if (p != NULL) {
+			fprintf(stdout, "%s", p);
+		}
+		if (q != NULL) {
+			fprintf(stderr, "%s", q);
+		}
+		return ret;
+		break;
+	case op_check:
+		ret = cm_submit_d_check_eval(ctx, results, lasturl,
+					     agent, &p, &q);
 		if (p != NULL) {
 			fprintf(stdout, "%s", p);
 		}
@@ -500,7 +526,7 @@ main(int argc, char **argv)
 	case op_approve:
 		if (url2 == NULL) {
 			ret = cm_submit_d_approve_eval(ctx, results, lasturl,
-						       &p, &q);
+						       agent, &p, &q);
 			if (p != NULL) {
 				fprintf(stdout, "%s", p);
 			}
@@ -510,7 +536,7 @@ main(int argc, char **argv)
 			return ret;
 		} else {
 			ret = cm_submit_d_review_eval(ctx, results, lasturl,
-						      &p, &q);
+						      agent, &p, &q);
 			if (p != NULL) {
 				fprintf(stdout, "%s", p);
 			}
@@ -521,7 +547,8 @@ main(int argc, char **argv)
 		}
 		break;
 	case op_retrieve:
-		ret = cm_submit_d_fetch_eval(ctx, results, lasturl, &p, &q);
+		ret = cm_submit_d_fetch_eval(ctx, results, lasturl,
+					     agent, &p, &q);
 		if (p != NULL) {
 			fprintf(stdout, "%s", p);
 		}
