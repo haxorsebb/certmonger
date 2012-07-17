@@ -143,7 +143,7 @@ main(int argc, char **argv)
 	void *ctx;
 	int c, verbose = 0, i;
 	enum { op_none, op_submit, op_check, op_approve, op_retrieve } op = op_none;
-	dbus_bool_t agent, missing_args = FALSE;
+	dbus_bool_t can_agent, use_agent, missing_args = FALSE;
 	struct dogtag_default **defaults;
 	enum cm_external_status ret;
 
@@ -280,6 +280,11 @@ main(int argc, char **argv)
 		sslcert = "ipaCert";
 		sslpinfile = "/etc/httpd/alias/pwdfile.txt";
 	}
+	if ((sslcert != NULL) && (strlen(sslcert) > 0)) {
+		can_agent = TRUE;
+	} else {
+		can_agent = FALSE;
+	}
 	if (eeurl == NULL) {
 		printf(_("No end-entity URL (-E) given, and no default known.\n"));
 		missing_args = TRUE;
@@ -362,7 +367,7 @@ main(int argc, char **argv)
 						 template,
 						 csr);
 		}
-		agent = FALSE;
+		use_agent = FALSE;
 		break;
 	case op_check:
 		/* Check if the certificate has been issued or rejected. */
@@ -371,7 +376,7 @@ main(int argc, char **argv)
 					 "%s&"
 					 "xml=true",
 					 params);
-		agent = FALSE;
+		use_agent = FALSE;
 		break;
 	case op_approve:
 		/* Reading profile defaults for this certificate, then applying
@@ -386,7 +391,7 @@ main(int argc, char **argv)
 					  "%s&"
 					  "op=approve",
 					  params);
-		agent = TRUE;
+		use_agent = TRUE;
 		break;
 	case op_retrieve:
 		/* Retrieving the new certificate. */
@@ -396,7 +401,7 @@ main(int argc, char **argv)
 					 "importCert=true&"
 					 "xml=true",
 					 params);
-		agent = FALSE;
+		use_agent = FALSE;
 		break;
 	}
 
@@ -419,7 +424,7 @@ main(int argc, char **argv)
 					cainfo, capath, sslcert, sslkey, sslpin,
 					cm_submit_h_negotiate_off,
 					cm_submit_h_delegate_off,
-					agent ?
+					use_agent ?
 					cm_submit_h_clientauth_on :
 					cm_submit_h_clientauth_off,
 					cm_submit_h_env_modify_off,
@@ -504,7 +509,7 @@ main(int argc, char **argv)
 		break;
 	case op_submit:
 		ret = cm_submit_d_submit_eval(ctx, results, lasturl,
-					      TRUE, &p, &q);
+					      can_agent, &p, &q);
 		if (p != NULL) {
 			fprintf(stdout, "%s", p);
 		}
@@ -515,7 +520,7 @@ main(int argc, char **argv)
 		break;
 	case op_check:
 		ret = cm_submit_d_check_eval(ctx, results, lasturl,
-					     TRUE, &p, &q);
+					     can_agent, &p, &q);
 		if (p != NULL) {
 			fprintf(stdout, "%s", p);
 		}
@@ -527,7 +532,7 @@ main(int argc, char **argv)
 	case op_approve:
 		if (url2 == NULL) {
 			ret = cm_submit_d_approve_eval(ctx, results, lasturl,
-						       TRUE, &p, &q);
+						       can_agent, &p, &q);
 			if (p != NULL) {
 				fprintf(stdout, "%s", p);
 			}
@@ -537,7 +542,7 @@ main(int argc, char **argv)
 			return ret;
 		} else {
 			ret = cm_submit_d_review_eval(ctx, results, lasturl,
-						      TRUE, &p, &q);
+						      can_agent, &p, &q);
 			if (p != NULL) {
 				fprintf(stdout, "%s", p);
 			}
@@ -549,7 +554,7 @@ main(int argc, char **argv)
 		break;
 	case op_retrieve:
 		ret = cm_submit_d_fetch_eval(ctx, results, lasturl,
-					     TRUE, &p, &q);
+					     can_agent, &p, &q);
 		if (p != NULL) {
 			fprintf(stdout, "%s", p);
 		}

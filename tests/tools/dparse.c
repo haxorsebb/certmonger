@@ -35,20 +35,24 @@
 int
 main(int argc, char **argv)
 {
-	const char *mode, *filename;
+	const char *mode, *role, *filename;
 	char *error = NULL, *error_code = NULL, *error_reason = NULL;
 	char *status = NULL, *requestId = NULL, *cert = NULL;
 	char *xml, *out = NULL, *err = NULL;
+	dbus_bool_t can_agent;
 	int i, vars;
 
-	if (argc < 3) {
+	if (argc < 4) {
 		printf("usage: dparse "
-		       "[submit|check|review|reject|approve|fetch] "
+		       "{submit|check|review|reject|approve|fetch} "
+		       "{agent|ee} "
 		       "reply.xml\n");
 		return 0;
 	}
 	mode = argv[1];
-	filename = argv[2];
+	role = argv[2];
+	filename = argv[3];
+	can_agent = (strcasecmp(role, "agent") == 0);
 
 	xml = cm_submit_u_from_file(filename);
 	if (xml == NULL) {
@@ -61,48 +65,51 @@ main(int argc, char **argv)
 					  &error, &error_code, &error_reason,
 					  &status, &requestId);
 		i = cm_submit_d_submit_eval(NULL, xml, "SUBMIT",
-					    TRUE, &out, &err);
+					    can_agent, &out, &err);
 	} else
 	if (strcmp(mode, "check") == 0) {
 		cm_submit_d_check_result(NULL, xml,
 					 &error, &error_code, &error_reason,
 					 &status, &requestId);
 		i = cm_submit_d_check_eval(NULL, xml, "CHECK",
-					   TRUE, &out, &err);
+					   can_agent, &out, &err);
 	} else
 	if (strcmp(mode, "reject") == 0) {
 		cm_submit_d_reject_result(NULL, xml,
 					  &error, &error_code, &error_reason,
 					  &status, &requestId);
 		i = cm_submit_d_reject_eval(NULL, xml, "REJECT",
-					    TRUE, &out, &err);
+					    can_agent, &out, &err);
 	} else
 	if (strcmp(mode, "review") == 0) {
 		cm_submit_d_review_result(NULL, xml,
 					  &error, &error_code, &error_reason,
 					  &status, &requestId);
 		i = cm_submit_d_review_eval(NULL, xml, "REVIEW",
-					    TRUE, &out, &err);
+					    can_agent, &out, &err);
 	} else
 	if (strcmp(mode, "approve") == 0) {
 		cm_submit_d_approve_result(NULL, xml,
 					   &error, &error_code, &error_reason,
 					   &status, &requestId);
 		i = cm_submit_d_approve_eval(NULL, xml, "APPROVE",
-					     TRUE, &out, &err);
+					     can_agent, &out, &err);
 	} else
 	if (strcmp(mode, "fetch") == 0) {
 		cm_submit_d_fetch_result(NULL, xml,
 					 &error, &error_code, &error_reason,
 					 &status, &requestId, &cert);
 		i = cm_submit_d_fetch_eval(NULL, xml, "FETCH",
-					   TRUE, &out, &err);
+					   can_agent, &out, &err);
 	} else {
 		fprintf(stderr, "unknown mode \"%s\"\n", mode);
 		return -1;
 	}
 
-	printf("[%s(%s) = %s]\n", mode, filename,
+	printf("[%s-as-%s(%s) = %s]\n",
+	       mode,
+	       can_agent ? "agent" : "end-entity",
+	       filename,
 	       cm_submit_e_status_text(i));
 	vars = 0;
 	if (error != NULL) {

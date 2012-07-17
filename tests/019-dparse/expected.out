@@ -1,24 +1,24 @@
-[submit(good.profileSubmit.serial.in-range) = WAIT_WITH_DELAY]
+[submit-as-agent(good.profileSubmit.serial.in-range) = WAIT_WITH_DELAY]
 error_reason="Request Deferred - defer request",status="2",requestId="12"
 0
 state=approve&requestId=12
 
-[review(good.profileReview) = WAIT_WITH_DELAY]
+[review-as-agent(good.profileReview) = WAIT_WITH_DELAY]
 error="0",status="pending",requestId="17"
 0
 state=approve&requestId=17
 
-[check(good.checkRequest.complete) = WAIT_WITH_DELAY]
+[check-as-agent(good.checkRequest.complete) = WAIT_WITH_DELAY]
 status="complete",requestId="23"
 0
 state=retrieve&requestId=23
 
-[check(good.checkRequest.pending) = WAIT_WITH_DELAY]
+[check-as-agent(good.checkRequest.pending) = WAIT_WITH_DELAY]
 status="pending",requestId="22"
 0
 state=approve&requestId=22
 
-[fetch(good.displayCertFromRequest) = ISSUED]
+[fetch-as-agent(good.displayCertFromRequest) = ISSUED]
 requestId="11",cert="-----BEGIN CERTIFICATE-----"
 -----BEGIN CERTIFICATE-----
 MIIDEDCCAfigAwIBAgIBCzANBgkqhkiG9w0BAQsFADA5MRcwFQYDVQQKEw5CT1Mu
@@ -40,50 +40,136 @@ LCT7m5N535pDf4tELcXRQAUv/xTp7F5O84pp8Bez14iVTtKazqseq5K7EKCsRXfW
 FxfR4qHzwpD9Q7rvTzFP2/J/Cr8=
 -----END CERTIFICATE-----
 
-[submit(bad.profileSubmit.csr.empty) = REJECTED]
+[submit-as-agent(bad.profileSubmit.csr.empty) = REJECTED]
 error_reason="Invalid Request",status="1"
 Server at "SUBMIT" replied: Invalid Request
-[submit(bad.profileSubmit.csr.subject-mismatch) = REJECTED]
+[submit-as-agent(bad.profileSubmit.csr.subject-mismatch) = REJECTED]
 error_reason="Request Rejected - Subject Name Not Matched O=Default Company Ltd,L=Default City,C=XX",status="3",requestId="13"
 Server at "SUBMIT" replied: Request Rejected - Subject Name Not Matched O=Default Company Ltd,L=Default City,C=XX
-[submit(bad.profileSubmit.serial.empty) = REJECTED]
+[submit-as-agent(bad.profileSubmit.serial.empty) = REJECTED]
 
-[submit(bad.profileSubmit.serial.invalid) = REJECTED]
+[submit-as-agent(bad.profileSubmit.serial.invalid) = REJECTED]
 
-[submit(bad.profileSubmit.serial.out-of-range) = REJECTED]
+[submit-as-agent(bad.profileSubmit.serial.out-of-range) = REJECTED]
 error="1",error_code="Server Internal Error"
 Server at "SUBMIT" replied: 1: Server Internal Error
-[review(bad.profileReview.no-such-request) = REJECTED]
+[review-as-agent(bad.profileReview.no-such-request) = REJECTED]
 error="1",error_code="Request 0 Not Found"
 Server at "REVIEW" replied: 1: Request 0 Not Found
-[review(bad.profileReview.unauthorized-cert) = REJECTED]
+[review-as-agent(bad.profileReview.unauthorized-cert) = REJECTED]
 error="1",error_code="Authentication Error"
 Server at "REVIEW" replied: 1: Authentication Error
-[review(bad.profileReview.wrong-nssdb) = REJECTED]
+[review-as-agent(bad.profileReview.wrong-nssdb) = REJECTED]
 
-[approve(bad.profileProcess.bad-property) = REJECTED]
+[approve-as-agent(bad.profileProcess.bad-property) = REJECTED]
 error="1",error_code="Property Error - Invalid Property notBefore",status="pending",requestId="17"
 Server at "APPROVE" replied: 1: Property Error - Invalid Property notBefore
-[approve(bad.profileProcess.no-agent-cert) = REJECTED]
+[approve-as-agent(bad.profileProcess.no-agent-cert) = REJECTED]
 
-[approve(bad.profileProcess.no-ca-cert) = REJECTED]
+[approve-as-agent(bad.profileProcess.no-ca-cert) = REJECTED]
 
-[approve(bad.profileProcess.no-property) = REJECTED]
+[approve-as-agent(bad.profileProcess.no-property) = REJECTED]
 error="1",error_code="Property Error - Invalid Property notBefore",status="pending",requestId="17"
 Server at "APPROVE" replied: 1: Property Error - Invalid Property notBefore
-[approve(bad.profileProcess.not-pending) = REJECTED]
+[approve-as-agent(bad.profileProcess.not-pending) = REJECTED]
 error="1",error_code="Request Not In Pending State",requestId="17"
 Server at "APPROVE" replied: 1: Request Not In Pending State
-[check(bad.checkRequest.nosuch) = REJECTED]
+[check-as-agent(bad.checkRequest.nosuch) = REJECTED]
 error_reason="Request ID 29 was not found in the request queue."
 Server at "CHECK" replied: Request ID 29 was not found in the request queue.
-[fetch(bad.displayCertFromRequest.incomplete) = REJECTED]
+[fetch-as-agent(bad.displayCertFromRequest.incomplete) = REJECTED]
 error_reason="Request ID 14 was not completed.",status="7"
 Server at "FETCH" replied: Request ID 14 was not completed.
-[fetch(bad.displayCertFromRequest.no-such-request) = REJECTED]
+[fetch-as-agent(bad.displayCertFromRequest.no-such-request) = REJECTED]
 error_reason="Request ID 19 was not found in the request queue.",status="7"
 Server at "FETCH" replied: Request ID 19 was not found in the request queue.
-[fetch(bad.displayCertFromRequest.rejected) = REJECTED]
+[fetch-as-agent(bad.displayCertFromRequest.rejected) = REJECTED]
 error_reason="Request ID 17 was not completed.",status="7"
 Server at "FETCH" replied: Request ID 17 was not completed.
-22 samples.
+[submit-as-end-entity(good.profileSubmit.serial.in-range) = WAIT]
+error_reason="Request Deferred - defer request",status="2",requestId="12"
+state=check&requestId=12
+
+[review-as-end-entity(good.profileReview) = WAIT_WITH_DELAY]
+error="0",status="pending",requestId="17"
+0
+state=approve&requestId=17
+
+[check-as-end-entity(good.checkRequest.complete) = WAIT_WITH_DELAY]
+status="complete",requestId="23"
+0
+state=retrieve&requestId=23
+
+[check-as-end-entity(good.checkRequest.pending) = WAIT]
+status="pending",requestId="22"
+state=check&requestId=22
+
+[fetch-as-end-entity(good.displayCertFromRequest) = ISSUED]
+requestId="11",cert="-----BEGIN CERTIFICATE-----"
+-----BEGIN CERTIFICATE-----
+MIIDEDCCAfigAwIBAgIBCzANBgkqhkiG9w0BAQsFADA5MRcwFQYDVQQKEw5CT1Mu
+UkVESEFULkNPTTEeMBwGA1UEAxMVQ2VydGlmaWNhdGUgQXV0aG9yaXR5MB4XDTEy
+MDYyNTIxMDcxMloXDTE2MDYyNTIxMDcxMlowNzEXMBUGA1UEChMOQk9TLlJFREhB
+VC5DT00xHDAaBgNVBAMTE09iamVjdCBTaWduaW5nIENlcnQwggEiMA0GCSqGSIb3
+DQEBAQUAA4IBDwAwggEKAoIBAQCmZoqUb8hHS6E/MmrlimQlhLHlPdxlJZn3de0K
+8vHWCuyBqM9tmISsoSYHOdCm/c6vrVwwSMkn5HMjjWsJGKNdZouBmlA1WuiMDjWF
+r7WexGUd34lUlliG6VQdIdkQMn9rjG+W8wTEOPCxlUBUwUBzIyZ3XDe0eCIN7NBL
+wh7efZZjRgln8mH7aEGaUug2tOqj2niudXZZLLMthU/f74pdBTD+EXiAkEjN8j12
+ba2Zv5mDyDqan5WDMf9a9EbDwMnFKU7/SEDCvra2jrQNPKu/dRsBvGdzqgEJDuNa
+Wrn/kSz2worbW2c7V9jLgsYSjTLeYIAulCifIzBG9bisAT8DAgMBAAGjJTAjMA4G
+A1UdDwEB/wQEAwIChDARBglghkgBhvhCAQEEBAMCBBAwDQYJKoZIhvcNAQELBQAD
+ggEBAJzERxUVdka5UF98Ks9Lj4Y69yoiIFRYswLsCYZoP8rwZlW4aprtE/caz3nb
+mFKSG1oS84DZ/d3wnvSBhdbfBLh59YH9eJnRZPS8Q+jIRkg9VSnleQTJg+kIngUZ
+eWBSUUSfAI6BrgdaFB4us7i0yWJTorRh/Te69M3UKNVfx8LJsPt/nG2nQW/X0ydJ
+LCT7m5N535pDf4tELcXRQAUv/xTp7F5O84pp8Bez14iVTtKazqseq5K7EKCsRXfW
+4zj1FewSYaEaTHyBrcwwArEyBbdkC5cdwfJUVvNFWXrfYiCy6yBmTCQbrucmqC0M
+FxfR4qHzwpD9Q7rvTzFP2/J/Cr8=
+-----END CERTIFICATE-----
+
+[submit-as-end-entity(bad.profileSubmit.csr.empty) = REJECTED]
+error_reason="Invalid Request",status="1"
+Server at "SUBMIT" replied: Invalid Request
+[submit-as-end-entity(bad.profileSubmit.csr.subject-mismatch) = REJECTED]
+error_reason="Request Rejected - Subject Name Not Matched O=Default Company Ltd,L=Default City,C=XX",status="3",requestId="13"
+Server at "SUBMIT" replied: Request Rejected - Subject Name Not Matched O=Default Company Ltd,L=Default City,C=XX
+[submit-as-end-entity(bad.profileSubmit.serial.empty) = REJECTED]
+
+[submit-as-end-entity(bad.profileSubmit.serial.invalid) = REJECTED]
+
+[submit-as-end-entity(bad.profileSubmit.serial.out-of-range) = REJECTED]
+error="1",error_code="Server Internal Error"
+Server at "SUBMIT" replied: 1: Server Internal Error
+[review-as-end-entity(bad.profileReview.no-such-request) = REJECTED]
+error="1",error_code="Request 0 Not Found"
+Server at "REVIEW" replied: 1: Request 0 Not Found
+[review-as-end-entity(bad.profileReview.unauthorized-cert) = REJECTED]
+error="1",error_code="Authentication Error"
+Server at "REVIEW" replied: 1: Authentication Error
+[review-as-end-entity(bad.profileReview.wrong-nssdb) = REJECTED]
+
+[approve-as-end-entity(bad.profileProcess.bad-property) = REJECTED]
+error="1",error_code="Property Error - Invalid Property notBefore",status="pending",requestId="17"
+Server at "APPROVE" replied: 1: Property Error - Invalid Property notBefore
+[approve-as-end-entity(bad.profileProcess.no-agent-cert) = REJECTED]
+
+[approve-as-end-entity(bad.profileProcess.no-ca-cert) = REJECTED]
+
+[approve-as-end-entity(bad.profileProcess.no-property) = REJECTED]
+error="1",error_code="Property Error - Invalid Property notBefore",status="pending",requestId="17"
+Server at "APPROVE" replied: 1: Property Error - Invalid Property notBefore
+[approve-as-end-entity(bad.profileProcess.not-pending) = REJECTED]
+error="1",error_code="Request Not In Pending State",requestId="17"
+Server at "APPROVE" replied: 1: Request Not In Pending State
+[check-as-end-entity(bad.checkRequest.nosuch) = REJECTED]
+error_reason="Request ID 29 was not found in the request queue."
+Server at "CHECK" replied: Request ID 29 was not found in the request queue.
+[fetch-as-end-entity(bad.displayCertFromRequest.incomplete) = REJECTED]
+error_reason="Request ID 14 was not completed.",status="7"
+Server at "FETCH" replied: Request ID 14 was not completed.
+[fetch-as-end-entity(bad.displayCertFromRequest.no-such-request) = REJECTED]
+error_reason="Request ID 19 was not found in the request queue.",status="7"
+Server at "FETCH" replied: Request ID 19 was not found in the request queue.
+[fetch-as-end-entity(bad.displayCertFromRequest.rejected) = REJECTED]
+error_reason="Request ID 17 was not completed.",status="7"
+Server at "FETCH" replied: Request ID 17 was not completed.
+44 samples.

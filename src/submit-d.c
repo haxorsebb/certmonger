@@ -403,7 +403,7 @@ cm_submit_d_fetch_result(void *parent, const char *xml,
 
 enum cm_external_status
 cm_submit_d_submit_eval(void *parent, const char *xml, const char *url,
-			dbus_bool_t agent, char **out, char **err)
+			dbus_bool_t can_agent, char **out, char **err)
 {
 	char *error = NULL, *error_code = NULL, *error_reason = NULL;
 	char *status = NULL, *requestId = NULL;
@@ -414,16 +414,17 @@ cm_submit_d_submit_eval(void *parent, const char *xml, const char *url,
 				  &status, &requestId);
 	if ((status != NULL) && (strcmp(status, "2") == 0) &&
 	    (requestId != NULL)) {
-		if (agent) {
+		if (can_agent) {
 			*out = talloc_asprintf(parent,
 					       "0\nstate=approve&requestId=%s\n",
 					       cm_submit_u_url_encode(requestId));
+			return CM_STATUS_WAIT_WITH_DELAY;
 		} else {
 			*out = talloc_asprintf(parent,
-					       "0\nstate=check&requestId=%s\n",
+					       "state=check&requestId=%s\n",
 					       cm_submit_u_url_encode(requestId));
+			return CM_STATUS_WAIT;
 		}
-		return CM_STATUS_WAIT_WITH_DELAY;
 	}
 	if ((error != NULL) || (error_code != NULL) || (error_reason != NULL)) {
 		*out = talloc_asprintf(parent, "Server at \"%s\" replied", url);
@@ -444,7 +445,7 @@ cm_submit_d_submit_eval(void *parent, const char *xml, const char *url,
 
 enum cm_external_status
 cm_submit_d_check_eval(void *parent, const char *xml, const char *url,
-		       dbus_bool_t agent, char **out, char **err)
+		       dbus_bool_t can_agent, char **out, char **err)
 {
 	char *error = NULL, *error_code = NULL, *error_reason = NULL;
 	char *status = NULL, *requestId = NULL;
@@ -464,7 +465,7 @@ cm_submit_d_check_eval(void *parent, const char *xml, const char *url,
 	if ((status != NULL) &&
 	    (strcmp(status, "pending") == 0) &&
 	    (requestId != NULL)) {
-		if (agent) {
+		if (can_agent) {
 			*out = talloc_asprintf(parent,
 					       "0\nstate=approve&requestId=%s\n",
 					       cm_submit_u_url_encode(requestId));
@@ -495,7 +496,7 @@ cm_submit_d_check_eval(void *parent, const char *xml, const char *url,
 
 enum cm_external_status
 cm_submit_d_reject_eval(void *parent, const char *xml, const char *url,
-			dbus_bool_t agent, char **out, char **err)
+			dbus_bool_t can_agent, char **out, char **err)
 {
 	char *error = NULL, *error_code = NULL, *error_reason = NULL;
 	char *status = NULL, *requestId = NULL;
@@ -523,7 +524,7 @@ cm_submit_d_reject_eval(void *parent, const char *xml, const char *url,
 
 enum cm_external_status
 cm_submit_d_review_eval(void *parent, const char *xml, const char *url,
-			dbus_bool_t agent, char **out, char **err)
+			dbus_bool_t can_agent, char **out, char **err)
 {
 	char *error = NULL, *error_code = NULL, *error_reason = NULL;
 	char *status = NULL, *requestId = NULL;
@@ -567,7 +568,7 @@ cm_submit_d_review_eval(void *parent, const char *xml, const char *url,
 
 enum cm_external_status
 cm_submit_d_approve_eval(void *parent, const char *xml, const char *url,
-			 dbus_bool_t agent, char **out, char **err)
+			 dbus_bool_t can_agent, char **out, char **err)
 {
 	char *error = NULL, *error_code = NULL, *error_reason = NULL;
 	char *status = NULL, *requestId = NULL;
@@ -602,7 +603,7 @@ cm_submit_d_approve_eval(void *parent, const char *xml, const char *url,
 
 enum cm_external_status
 cm_submit_d_fetch_eval(void *parent, const char *xml, const char *url,
-		       dbus_bool_t agent, char **out, char **err)
+		       dbus_bool_t can_agent, char **out, char **err)
 {
 	char *error = NULL, *error_code = NULL, *error_reason = NULL;
 	char *status = NULL, *requestId = NULL, *cert = NULL;
