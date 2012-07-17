@@ -93,9 +93,10 @@ To-do:
   * Put NSS into FIPS mode.
   * Lighten build requirements by crafting and parsing XML-RPC ourselves
     since we already have to deal with non-XML-RPC XML and HTTP for Dogtag.
-  * Add GET_ROOT and GET_CHAIN operations to helpers, so that we can cache
-    root and intermediate chain certificates from CAs which provide a way
-    for clients to retrieve them via an integrity-checked path.
+  * Add IDENTIFY operations to helpers, so they can output their
+    preferred/default name, and we can cache root and intermediate chain
+    certificates from CAs which provide a way for clients to retrieve them via
+    an integrity-checked path.
     * Populate/update the known-issuer-names list for the CA using these.
     * Cache the authorityKeyIdentifier and/or subjectPublicKeyIdentifier from
       the CA certificate, and use that to match up certificates that need to be
@@ -105,14 +106,11 @@ To-do:
       (probably libcurl again) and changes to the internal state machine to
       handle CRL retrieval as another type of task.  The local signer's CRL
       would be regenerated before being "retrieved".
-  * Add a GET_NAME operation to helpers so that they can output their
-    preferred/default name, possibly allowing us to just iterate over them
-    at startup if we haven't dealt with them before.
-  * Add a GET_REQUIRED_PROPERTIES operation to helpers so that they can list
-    properties which the daemon should supply for them for it to note, so that
-    if they're not specified by a client, we can intelligently decide whether
-    or not they're actually required to be specified for a given CA, rather
-    than sloppily hard-coding it as we do now.
+  * Add a GET_NEW_REQUEST_REQUIREMENTS operation to helpers so that they can
+    list variables which the daemon should supply for them for it to note, so
+    that if they're not specified by a client, we can intelligently decide
+    whether or not they're actually required to be specified for a given CA,
+    rather than sloppily hard-coding it as we do now.
   * Offer to store certificates for CAs and their intermediates, potentially in
     multiple certificate databases and PEM files.
   * Learn about using SRV records for locating servers.
