@@ -20,7 +20,7 @@
 
 Name:		certmonger
 Version:	0.59
-Release:	1%{?dist}
+Release:	2%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
 Group:		System Environment/Daemons
@@ -151,8 +151,10 @@ exit 0
 
 %preun
 %if %{systemd}
+if test $1 -eq 0 ; then
 	/bin/systemctl --no-reload disable certmonger.service > /dev/null 2>&1 || :
 	/bin/systemctl stop certmonger.service > /dev/null 2>&1 || :
+fi
 %endif
 %if %{sysvinit}
 if test $1 -eq 0 ; then
@@ -199,6 +201,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Jul 30 2012 Nalin Dahyabhai <nalin@redhat.com> 0.59-2
+- fix a bad %%preun scriptlet
+
 * Fri Jun 29 2012 Nalin Dahyabhai <nalin@redhat.com> 0.59-1
 - mostly documentation updates
 
