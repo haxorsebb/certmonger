@@ -126,8 +126,8 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 							  "in token \"%s\" "
 							  "in database \"%s\" "
 							  "is no longer valid.",
-							  entry->cm_cert_token,
 							  entry->cm_cert_nickname,
+							  entry->cm_cert_token,
 							  entry->cm_cert_storage_location);
 			} else {
 				message = talloc_asprintf(entry, "Certificate "
