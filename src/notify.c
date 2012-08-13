@@ -94,8 +94,8 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 							  "in database \"%s\" "
 							  "will not be valid "
 							  "after %s.\n",
-							  entry->cm_cert_token,
 							  entry->cm_cert_nickname,
+							  entry->cm_cert_token,
 							  entry->cm_cert_storage_location,
 							  cm_store_timestamp_from_time(entry->cm_cert_not_after, t));
 			} else {
