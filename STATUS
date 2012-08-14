@@ -113,7 +113,14 @@ To-do:
     rather than sloppily hard-coding it as we do now.
   * Offer to store certificates for CAs and their intermediates, potentially in
     multiple certificate databases and PEM files.
-  * Learn about using SRV records for locating servers.
+  * Learn about using SRV records for locating servers, particularly KCA servers.
   * Learn to talk to KCAs (per http://datatracker.ietf.org/doc/draft-hotz-kx509)
   * Learn to speak CMP.
   * Learn to talk to puppet CAs.
+  * Switch to SSL access methods when submitting end-entity requests to Dogtag
+    CAs (profileSubmit, checkRequest, displayCertFromRequest).
+  * Be able to fill requester contact info when submitting end-entity
+    enrollment requests, particularly for cases when we don't have agent
+    credentials, and make that a client-suppliable value.
+  * Stamp "approved by certmonger $version", or something, on certificates,
+    to help identify certificates that we approve with agent credentials.
