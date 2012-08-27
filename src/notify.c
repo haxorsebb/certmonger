@@ -110,7 +110,7 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 								  "in token \"%s\" "
 								  "in database \"%s\" "
 								  "will not be valid "
-								  "after %s.\n",
+								  "after %s.",
 								  entry->cm_cert_nickname,
 								  entry->cm_cert_token,
 								  entry->cm_cert_storage_location,
@@ -120,7 +120,7 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 								  "named \"%s\" "
 								  "in database \"%s\" "
 								  "will expire at "
-								  "%s.\n",
+								  "%s.",
 								  entry->cm_cert_nickname,
 								  entry->cm_cert_storage_location,
 								  cm_store_timestamp_from_time(entry->cm_cert_not_after, t));
@@ -129,7 +129,7 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			case cm_cert_storage_file:
 				message = talloc_asprintf(entry, "Certificate "
 							  "in file \"%s\" will not be "
-							  "valid after %s.\n",
+							  "valid after %s.",
 							  entry->cm_cert_storage_location,
 							  cm_store_timestamp_from_time(entry->cm_cert_not_after, t));
 				break;
@@ -162,6 +162,94 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 							  entry->cm_cert_storage_location);
 				break;
 			}
+		}
+		break;
+	case cm_notify_event_rejected:
+		switch (entry->cm_cert_storage_type) {
+		case cm_cert_storage_nssdb:
+			if (entry->cm_cert_token != NULL) {
+				message = talloc_asprintf(entry, "Request for "
+							  "certificate to be "
+							  "named \"%s\" "
+							  "in token \"%s\" "
+							  "in database \"%s\" "
+							  "rejected by CA.",
+							  entry->cm_cert_nickname,
+							  entry->cm_cert_token,
+							  entry->cm_cert_storage_location);
+			} else {
+				message = talloc_asprintf(entry, "Request for "
+							  "certificate to be "
+							  "named \"%s\" "
+							  "in database \"%s\" "
+							  "rejected by CA.",
+							  entry->cm_cert_nickname,
+							  entry->cm_cert_storage_location);
+			}
+			break;
+		case cm_cert_storage_file:
+			message = talloc_asprintf(entry, "Request for certificate to be "
+						  "stored in file \"%s\" rejected by CA.",
+						  entry->cm_cert_storage_location);
+			break;
+		}
+		break;
+	case cm_notify_event_issued_not_saved:
+		switch (entry->cm_cert_storage_type) {
+		case cm_cert_storage_nssdb:
+			if (entry->cm_cert_token != NULL) {
+				message = talloc_asprintf(entry, "Certificate "
+							  "named \"%s\" "
+							  "in token \"%s\" "
+							  "in database \"%s\" "
+							  "issued by CA but not saved.",
+							  entry->cm_cert_nickname,
+							  entry->cm_cert_token,
+							  entry->cm_cert_storage_location);
+			} else {
+				message = talloc_asprintf(entry, "Certificate "
+							  "named \"%s\" "
+							  "in database \"%s\" "
+							  "issued by CA but not saved.",
+							  entry->cm_cert_nickname,
+							  entry->cm_cert_storage_location);
+			}
+			break;
+		case cm_cert_storage_file:
+			message = talloc_asprintf(entry, "Certificate "
+						  "in file \"%s\" "
+						  "issued by CA but not saved.",
+						  entry->cm_cert_storage_location);
+			break;
+		}
+		break;
+	case cm_notify_event_issued_and_saved:
+		switch (entry->cm_cert_storage_type) {
+		case cm_cert_storage_nssdb:
+			if (entry->cm_cert_token != NULL) {
+				message = talloc_asprintf(entry, "Certificate "
+							  "named \"%s\" "
+							  "in token \"%s\" "
+							  "in database \"%s\" "
+							  "issued by CA and saved.",
+							  entry->cm_cert_nickname,
+							  entry->cm_cert_token,
+							  entry->cm_cert_storage_location);
+			} else {
+				message = talloc_asprintf(entry, "Certificate "
+							  "named \"%s\" "
+							  "in database \"%s\" "
+							  "issued by CA and saved.",
+							  entry->cm_cert_nickname,
+							  entry->cm_cert_storage_location);
+			}
+			break;
+		case cm_cert_storage_file:
+			message = talloc_asprintf(entry, "Certificate "
+						  "in file \"%s\" "
+						  "issued by CA and saved.",
+						  entry->cm_cert_storage_location);
+			break;
 		}
 		break;
 	}
@@ -232,6 +320,7 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 		cm_log(1, "Running notification helper \"%s\".\n", argv[0]);
 		cm_subproc_mark_most_cloexec(entry, -1);
+		setenv(CM_NOTIFICATION_ENV, message, 1);
 		if (execvp(argv[0], argv) == -1) {
 			cm_log(0, "Error execvp()ing command \"%s\" (\"%s\"): %s.\n",
 			       argv[0], entry->cm_post_certsave_command,

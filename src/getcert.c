@@ -2221,6 +2221,12 @@ list(const char *argv0, int argc, char **argv)
 		case CM_MONITORING:
 		case CM_NEED_TO_NOTIFY_VALIDITY:
 		case CM_NOTIFYING_VALIDITY:
+		case CM_NEED_TO_NOTIFY_REJECTION:
+		case CM_NOTIFYING_REJECTION:
+		case CM_NEED_TO_NOTIFY_ISSUED_FAILED:
+		case CM_NOTIFYING_ISSUED_FAILED:
+		case CM_NEED_TO_NOTIFY_ISSUED_SAVED:
+		case CM_NOTIFYING_ISSUED_SAVED:
 			if (requests_only) {
 				continue;
 			}

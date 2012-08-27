@@ -55,6 +55,7 @@ key_storage_type=FILE
 key_storage_location=$tmpdir/keyfile
 cert_storage_type=FILE
 cert_storage_location=$tmpdir/certfile
+notification_method=STDOUT
 EOF
 # These cover parts of the process, forcing it to stop if any phase needs
 # to be tried again, so that we don't hit infinite loops.
@@ -96,7 +97,7 @@ fi
 
 echo
 echo '[Saving certificate.]'
-$toolsdir/iterate ca entry START_SAVING_CERT,SAVING_CERT,NEED_TO_READ_CERT,READING_CERT,SAVED_CERT
+$toolsdir/iterate ca entry START_SAVING_CERT,SAVING_CERT,NEED_TO_READ_CERT,READING_CERT,NEED_TO_NOTIFY_ISSUED_SAVED,NOTIFYING_ISSUED_SAVED,SAVED_CERT | sed 's@'"$tmpdir"'@$tmpdir@g'
 if test "`grep ^state entry`" != state=MONITORING ; then
 	echo Saving failed or did not move to monitoring.
 	grep ^state entry
@@ -115,6 +116,7 @@ key_storage_type=FILE
 key_storage_location=$tmpdir/keyfile2
 cert_storage_type=FILE
 cert_storage_location=$tmpdir/certfile2
+notification_method=STDOUT
 EOF
 $toolsdir/iterate ca entry NEWLY_ADDED,NEWLY_ADDED_START_READING_KEYINFO,NEWLY_ADDED_READING_KEYINFO,NEWLY_ADDED_START_READING_CERT,NEWLY_ADDED_READING_CERT,NEWLY_ADDED_DECIDING
 if test "`grep ^state entry`" != state=NEED_KEY_PAIR ; then
@@ -133,6 +135,7 @@ key_storage_type=FILE
 key_storage_location=$tmpdir/keyfile
 cert_storage_type=FILE
 cert_storage_location=$tmpdir/certfile2
+notification_method=STDOUT
 EOF
 $toolsdir/iterate ca entry NEWLY_ADDED,NEWLY_ADDED_START_READING_KEYINFO,NEWLY_ADDED_READING_KEYINFO,NEWLY_ADDED_START_READING_CERT,NEWLY_ADDED_READING_CERT,NEWLY_ADDED_DECIDING
 if test "`grep ^state entry`" != state=NEED_CSR; then
@@ -150,6 +153,7 @@ key_storage_type=FILE
 key_storage_location=$tmpdir/keyfile
 cert_storage_type=FILE
 cert_storage_location=$tmpdir/certfile
+notification_method=STDOUT
 EOF
 $toolsdir/iterate ca entry NEWLY_ADDED,NEWLY_ADDED_START_READING_KEYINFO,NEWLY_ADDED_READING_KEYINFO,NEWLY_ADDED_START_READING_CERT,NEWLY_ADDED_READING_CERT,NEWLY_ADDED_DECIDING
 if test "`grep ^state entry`" != state=MONITORING ; then
@@ -180,12 +184,12 @@ EOF
 $toolsdir/iterate ca2 entry2 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
 $toolsdir/iterate ca2 entry2 NEED_CSR,GENERATING_CSR
 $toolsdir/iterate ca2 entry2 NEED_TO_SUBMIT,SUBMITTING
-$toolsdir/iterate ca2 entry2 START_SAVING_CERT,SAVING_CERT,NEED_TO_READ_CERT,READING_CERT,SAVED_CERT
+$toolsdir/iterate ca2 entry2 START_SAVING_CERT,SAVING_CERT,NEED_TO_READ_CERT,READING_CERT,NEED_TO_NOTIFY_ISSUED_SAVED,NOTIFYING_ISSUED_SAVED,SAVED_CERT | sed 's@'"$tmpdir"'@$tmpdir@g'
 openssl x509 -noout -startdate -enddate -in $tmpdir/certfile2
 echo
 echo '[Noticing expiration.]'
 openssl x509 -noout -startdate -enddate -in $tmpdir/certfile2
-$toolsdir/iterate ca  entry2 NEED_TO_NOTIFY,NOTIFYING | sed 's@'"$tmpdir"'@$tmpdir@g'
+$toolsdir/iterate ca  entry2 NEED_TO_NOTIFY_VALIDITY,NOTIFYING_VALIDITY | sed 's@'"$tmpdir"'@$tmpdir@g'
 
 echo
 echo '[Kicking off autorenew.]'
@@ -202,7 +206,7 @@ autorenew=1
 notification_method=STDOUT
 EOF
 openssl x509 -noout -startdate -enddate -in $tmpdir/certfile2
-$toolsdir/iterate ca  entry2 MONITORING,NEED_TO_NOTIFY,NOTIFYING | sed 's@'"$tmpdir"'@$tmpdir@g'
+$toolsdir/iterate ca  entry2 MONITORING,NEED_TO_NOTIFY_VALIDITY,NOTIFYING_VALIDITY | sed 's@'"$tmpdir"'@$tmpdir@g'
 
 echo
 echo '[Enroll until we notice we have no specified CA.]'
@@ -211,6 +215,7 @@ id=Test
 state=HAVE_KEY_PAIR
 key_storage_type=FILE
 key_storage_location=$tmpdir/keyfile
+notification_method=STDOUT
 EOF
 cat > ca3 << EOF
 id=Meanie
@@ -229,6 +234,7 @@ ca_name=Busy
 state=HAVE_KEY_PAIR
 key_storage_type=FILE
 key_storage_location=$tmpdir/keyfile
+notification_method=STDOUT
 EOF
 cat > ca4 << EOF
 id=Busy
@@ -249,6 +255,9 @@ ca_name=Meanie
 state=HAVE_KEY_PAIR
 key_storage_type=FILE
 key_storage_location=$tmpdir/keyfile
+cert_storage_type=FILE
+cert_storage_location=$tmpdir/certfile3
+notification_method=STDOUT
 EOF
 cat > ca5 << EOF
 id=Meanie
@@ -258,7 +267,8 @@ EOF
 $toolsdir/iterate ca5 entry5 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
 $toolsdir/iterate ca5 entry5 NEED_CSR,GENERATING_CSR
 $toolsdir/iterate ca5 entry5 NEED_TO_SUBMIT,SUBMITTING
-$toolsdir/iterate ca5 entry5 ""
+$toolsdir/iterate ca5 entry5 NEED_TO_NOTIFY_REJECTION,NOTIFYING_REJECTION | sed 's@'"$tmpdir"'@$tmpdir@g'
+$toolsdir/iterate ca5 entry5 "" | sed 's@'"$tmpdir"'@$tmpdir@g'
 
 echo
 echo '[Enroll until the CA turns out to be unreachable.]'
@@ -268,6 +278,7 @@ ca_name=Lostie
 state=HAVE_KEY_PAIR
 key_storage_type=FILE
 key_storage_location=$tmpdir/keyfile
+notification_method=STDOUT
 EOF
 cat > ca6 << EOF
 id=Lostie
@@ -287,6 +298,7 @@ ca_name=Lostie
 state=HAVE_KEY_PAIR
 key_storage_type=FILE
 key_storage_location=$tmpdir/keyfile
+notification_method=STDOUT
 EOF
 cat > ca7 << EOF
 id=Lostie
@@ -306,6 +318,7 @@ ca_name=Busy
 state=HAVE_KEY_PAIR
 key_storage_type=FILE
 key_storage_location=$tmpdir/keyfile
+notification_method=STDOUT
 EOF
 cat > ca8 << EOF
 id=Busy
@@ -326,6 +339,7 @@ ca_name=Confused
 state=HAVE_KEY_PAIR
 key_storage_type=FILE
 key_storage_location=$tmpdir/keyfile
+notification_method=STDOUT
 EOF
 cat > ca9 << EOF
 id=Confused
@@ -351,6 +365,7 @@ for interval in 0 30 1800 3600 7200 86000 86500 604800 1000000 2000000; do
 		state=HAVE_CSR
 		cert_not_after=$later
 		csr=AAAA
+		notification_method=STDOUT
 		EOF
 		cat > ca9 <<- EOF
 		id=Lostie
@@ -367,6 +382,7 @@ for interval in 0 30 1800 3600 7200 86000 86500 604800 1000000 2000000; do
 	state=MONITORING
 	cert_not_after=$later
 	csr=AAAA
+	notification_method=STDOUT
 	EOF
 	cat > ca9 <<- EOF
 	id=Lostie
@@ -401,7 +417,7 @@ $toolsdir/iterate ca10 entry10 NEWLY_ADDED_START_READING_KEYINFO,NEWLY_ADDED_REA
 $toolsdir/iterate ca10 entry10 NEED_KEY_PAIR,GENERATING_KEY_PAIR,HAVE_KEY_PAIR,NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
 $toolsdir/iterate ca10 entry10 NEED_CSR,GENERATING_CSR
 $toolsdir/iterate ca10 entry10 NEED_TO_SUBMIT,SUBMITTING
-$toolsdir/iterate ca10 entry10 START_SAVING_CERT,SAVING_CERT,NEED_TO_READ_CERT,READING_CERT,SAVED_CERT
+$toolsdir/iterate ca10 entry10 START_SAVING_CERT,SAVING_CERT,NEED_TO_READ_CERT,READING_CERT,NEED_TO_NOTIFY_ISSUED_SAVED,NOTIFYING_ISSUED_SAVED,SAVED_CERT | sed 's@'"$tmpdir"'@$tmpdir@g'
 cp $tmpdir/certfile10 $tmpdir/certfile10.bak
 
 echo
@@ -430,7 +446,7 @@ cat > certmonger.conf << EOF
 enroll_ttls = 30s
 notify_ttls = N
 EOF
-$toolsdir/iterate ca10 entry10 NEED_CSR,GENERATING_CSR,HAVE_CSR,NEED_TO_SUBMIT,SUBMITTING,NEED_TO_SAVE_CERT,START_SAVING_CERT,SAVING_CERT,SAVED_CERT,NEED_TO_READ_CERT,READING_CERT | sed 's@'"$tmpdir"'@$tmpdir@g'
+$toolsdir/iterate ca10 entry10 NEED_CSR,GENERATING_CSR,HAVE_CSR,NEED_TO_SUBMIT,SUBMITTING,NEED_TO_SAVE_CERT,START_SAVING_CERT,SAVING_CERT,NEED_TO_NOTIFY_ISSUED_SAVED,NOTIFYING_ISSUED_SAVED,SAVED_CERT,NEED_TO_READ_CERT,READING_CERT | sed 's@'"$tmpdir"'@$tmpdir@g'
 
 echo
 echo '[Kicking off notify only.]'
@@ -458,7 +474,7 @@ cat > certmonger.conf << EOF
 notify_ttls = 30s
 enroll_ttls = N
 EOF
-$toolsdir/iterate ca10 entry10 NEED_TO_NOTIFY,NOTIFYING | sed 's@'"$tmpdir"'@$tmpdir@g'
+$toolsdir/iterate ca10 entry10 NEED_TO_NOTIFY_VALIDITY,NOTIFYING_VALIDITY | sed 's@'"$tmpdir"'@$tmpdir@g'
 
 echo
 echo '[Kicking off notify-then-submit.]'
@@ -466,7 +482,7 @@ echo '[Kicking off notify-then-submit.]'
 cat > $tmpdir/notify.sh << EOF
 #!/bin/sh
 touch $tmpdir/notification.txt
-echo 'The sky is falling.' >> $tmpdir/notification.txt
+echo The sky is falling: \$CERTMONGER_NOTIFICATION >> $tmpdir/notification.txt
 EOF
 chmod u+x $tmpdir/notify.sh
 cp $tmpdir/certfile10.bak $tmpdir/certfile10
@@ -495,8 +511,8 @@ enroll_ttls = 30s
 notification_method=command
 notification_destination=$tmpdir/notify.sh
 EOF
-$toolsdir/iterate ca10 entry10 NEED_TO_NOTIFY,NOTIFYING,NEED_CSR,GENERATING_CSR,HAVE_CSR,NEED_TO_SUBMIT,SUBMITTING,NEED_TO_SAVE_CERT,START_SAVING_CERT,SAVING_CERT,SAVED_CERT,NEED_TO_READ_CERT,READING_CERT | sed 's@'"$tmpdir"'@$tmpdir@g'
-cat $tmpdir/notification.txt
+$toolsdir/iterate ca10 entry10 NEED_TO_NOTIFY_VALIDITY,NOTIFYING_VALIDITY,NEED_CSR,GENERATING_CSR,HAVE_CSR,NEED_TO_SUBMIT,SUBMITTING,NEED_TO_SAVE_CERT,START_SAVING_CERT,SAVING_CERT,NEED_TO_NOTIFY_ISSUED_SAVED,NOTIFYING_ISSUED_SAVED,SAVED_CERT,NEED_TO_READ_CERT,READING_CERT | sed 's@'"$tmpdir"'@$tmpdir@g'
+cat $tmpdir/notification.txt | sed 's@'"$tmpdir"'@$tmpdir@g'
 
 CERTMONGER_CONFIG_DIR="$SAVED_CONFIG_DIR"
 

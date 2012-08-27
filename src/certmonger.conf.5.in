@@ -31,6 +31,9 @@ of the \fIttls\fR setting.  The default list of values is "@CM_DEFAULT_TTL_LIST@
 This is the method by which \fIcertmonger\fP will notify the system
 administrator that a certificate will soon become invalid.  The recognized
 values are \fIsyslog\fP, \fImail\fP, and \fIcommand\fP.  The default is \fIsyslog\fP.
+When sending mail, the notification message will be the mail message subject.
+When invoking a command, the notification message will be available in the
+"@CM_NOTIFICATION_ENV@" environment variable.
 
 .IP notification_destination
 This is the destination to which \fIcertmonger\fP will send notifications.  It

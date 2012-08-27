@@ -42,6 +42,12 @@ Now with some arbitrarily-named states for our per-certificate state machine:
 	  States: MONITORING
 	* Notifying the admin of impending/passed expiration.
 	  States: NEED_TO_NOTIFY_VALIDITY, NOTIFYING_VALIDITY [*]
+	* Notifying the admin of CA rejection.
+	  States: NEED_TO_NOTIFY_REJECTION, NOTIFYING_REJECTION [*]
+	* Notifying the admin of CA issued cert, but not saved.
+	  States: NEED_TO_NOTIFY_ISSUED_FAILED, NOTIFYING_ISSUED_FAILED [*]
+	* Notifying the admin of CA issued cert, and saved.
+	  States: NEED_TO_NOTIFY_ISSUED_SAVED, NOTIFYING_ISSUED_SAVED [*]
 	* Waiting for user input
 	  States: NEED_GUIDANCE [*]
 	* Getting our bearings
@@ -225,7 +231,7 @@ State logic:
 						state_next = MONITORING
 						state_transition = now
 					else
-						state_next = CA_REJECTED
+						state_next = CA_NEED_TO_NOTIFY_REJECTION
 						state_transition = later
 				elseif ca-is-unreachable
 					store-ca-cookie
@@ -285,6 +291,9 @@ State logic:
 			if cert-save-completed
 				state_next = NEED_TO_READ_CERT
 				state_transition = now
+			else
+				state_next = NEED_TO_NOTIFY_ISSUED_FAILED
+				state_transition = now
 		break
 
 	NEED_TO_READ_CERT:
@@ -309,7 +318,7 @@ State logic:
 			state_next = POST_SAVED_CERT
 			state_transition = now
 		else
-			state_next = MONITORING
+			state_next = NEED_TO_NOTIFY_ISSUED_SAVED
 			state_transition = now
 		break
 
@@ -319,8 +328,56 @@ State logic:
 			state_transition = now
 		else
 			if post-save-completed
-				state_next = MONITORING
+				state_next = NEED_TO_NOTIFY_ISSUED_SAVED
 				state_transition = now
+
+	NEED_TO_NOTIFY_REJECTION:
+		start-notifying
+		state_next = NOTIFYING_REJECTION
+		state_transition = now
+		break
+
+	NOTIFYING_REJECTION:
+		if starting-up
+			state_next = NEED_TO_NOTIFY_REJECTION
+			state_transition = now
+		else
+			if notification-completed
+				state_next = CA_REJECTED
+				state_transition = now
+		break
+
+	NEED_TO_NOTIFY_ISSUED_FAILED:
+		start-notifying
+		state_next = NOTIFYING_ISSUED_FAILED
+		state_transition = now
+		break
+
+	NOTIFYING_ISSUED_FAILED:
+		if starting-up
+			state_next = NEED_TO_NOTIFY_ISSUED_FAILED
+			state_transition = now
+		else
+			if notification-completed
+				state_next = NEED_TO_SAVE_CERT
+				state_transition = soonish
+		break
+
+	NEED_TO_NOTIFY_ISSUED_SAVED:
+		start-notifying
+		state_next = NOTIFYING_ISSUED_SAVED:
+		state_transition = now
+		break
+
+	NOTIFYING_ISSUED_SAVED:
+		if starting-up
+			state_next = NEED_TO_NOTIFY_ISSUED_SAVED:
+			state_transition = now
+		else
+			if notification-completed
+				state_next = CA_MONITORING
+				state_transition = now
+		break
 
 	CA_REJECTED:
 		state_transition = soon

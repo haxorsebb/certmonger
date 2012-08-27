@@ -300,6 +300,10 @@ AC_DEFINE_UNQUOTED(CM_TMPDIR_ENV,"${CM_TMPDIR_ENV}",[Define to the default locat
 AC_SUBST(CM_TMPDIR)
 AC_SUBST(CM_TMPDIR_ENV)
 
+CM_NOTIFICATION_ENV="${UPCASE_PACKAGE_NAME}_NOTIFICATION"
+AC_DEFINE_UNQUOTED(CM_NOTIFICATION_ENV,"${CM_NOTIFICATION_ENV}",[Define to the variable name to be used to hold a notification message.])
+AC_SUBST(CM_NOTIFICATION_ENV)
+
 SYSTEMD=no
 AC_ARG_ENABLE(systemd,
 	      AS_HELP_STRING([--enable-systemd],[install unit files for systemd]),

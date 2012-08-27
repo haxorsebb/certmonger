@@ -23,7 +23,10 @@ struct cm_notify_state;
 
 enum cm_notify_event {
 	cm_notify_event_unknown = 0,
-	cm_notify_event_validity_ending
+	cm_notify_event_validity_ending,
+	cm_notify_event_rejected,
+	cm_notify_event_issued_not_saved,
+	cm_notify_event_issued_and_saved
 };
 
 /* Start to notify the administrator or user that expiration is imminent. */

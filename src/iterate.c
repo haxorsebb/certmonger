@@ -124,7 +124,7 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 	case CM_SAVED_CERT:
 		break;
 	case CM_POST_SAVED_CERT:
-		entry->cm_state = CM_POST_SAVED_CERT;
+		entry->cm_state = CM_SAVED_CERT;
 		break;
 	case CM_CA_REJECTED:
 		break;
@@ -149,6 +149,21 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 		break;
 	case CM_NOTIFYING_VALIDITY:
 		entry->cm_state = CM_NEED_TO_NOTIFY_VALIDITY;
+		break;
+	case CM_NEED_TO_NOTIFY_REJECTION:
+		break;
+	case CM_NOTIFYING_REJECTION:
+		entry->cm_state = CM_NEED_TO_NOTIFY_REJECTION;
+		break;
+	case CM_NEED_TO_NOTIFY_ISSUED_FAILED:
+		break;
+	case CM_NOTIFYING_ISSUED_FAILED:
+		entry->cm_state = CM_NEED_TO_NOTIFY_ISSUED_FAILED;
+		break;
+	case CM_NEED_TO_NOTIFY_ISSUED_SAVED:
+		break;
+	case CM_NOTIFYING_ISSUED_SAVED:
+		entry->cm_state = CM_NEED_TO_NOTIFY_ISSUED_SAVED;
 		break;
 	case CM_NEWLY_ADDED:
 		break;
@@ -690,7 +705,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 					entry->cm_state = CM_MONITORING;
 					*when = cm_time_soonish;
 				} else {
-					entry->cm_state = CM_CA_REJECTED;
+					entry->cm_state = CM_NEED_TO_NOTIFY_REJECTION;
 					*when = cm_time_now;
 				}
 			} else
@@ -851,11 +866,12 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				entry->cm_state = CM_NEED_TO_READ_CERT;
 				*when = cm_time_now;
 			} else {
-				/* Failed to save cert; try again in a bit. */
+				/* Failed to save cert; make a note and try
+				 * again in a bit. */
 				cm_certsave_done(entry,
 						 state->cm_certsave_state);
 				state->cm_certsave_state = NULL;
-				entry->cm_state = CM_NEED_TO_SAVE_CERT;
+				entry->cm_state = CM_NEED_TO_NOTIFY_ISSUED_FAILED;
 				*when = cm_time_soonish;
 			}
 		} else {
@@ -937,11 +953,11 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				}
 			} else {
 				/* Failed to start the post-save; skip it. */
-				entry->cm_state = CM_MONITORING;
+				entry->cm_state = CM_NEED_TO_NOTIFY_ISSUED_SAVED;
 				*when = cm_time_soon;
 			}
 		} else {
-			entry->cm_state = CM_MONITORING;
+			entry->cm_state = CM_NEED_TO_NOTIFY_ISSUED_SAVED;
 			*when = cm_time_now;
 		}
 		break;
@@ -950,7 +966,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		if (cm_hook_ready(entry, state->cm_hook_state) == 0) {
 			cm_hook_done(entry, state->cm_hook_state);
 			state->cm_hook_state = NULL;
-			entry->cm_state = CM_MONITORING;
+			entry->cm_state = CM_NEED_TO_NOTIFY_ISSUED_SAVED;
 			*when = cm_time_now;
 		} else {
 			/* Wait for status update, or poll. */
@@ -1065,6 +1081,118 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			}
 		}
 		break;
+
+	case CM_NEED_TO_NOTIFY_REJECTION:
+		state->cm_notify_state = cm_notify_start(entry,
+							 cm_notify_event_rejected);
+		if (state->cm_notify_state != NULL) {
+			entry->cm_state = CM_NOTIFYING_REJECTION;
+			/* Wait for status update, or poll. */
+			*readfd = cm_notify_get_fd(entry,
+						   state->cm_notify_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
+		} else {
+			/* Failed to start notifying; try again. */
+			*when = cm_time_soonish;
+		}
+		break;
+
+	case CM_NOTIFYING_REJECTION:
+		if (cm_notify_ready(entry, state->cm_notify_state) == 0) {
+			cm_notify_done(entry, state->cm_notify_state);
+			state->cm_notify_state = NULL;
+			entry->cm_state = CM_CA_REJECTED;
+			*when = cm_time_soon;
+		} else {
+			/* Wait for status update, or poll. */
+			*readfd = cm_notify_get_fd(entry,
+						   state->cm_notify_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
+		}
+		break;
+
+	case CM_NEED_TO_NOTIFY_ISSUED_FAILED:
+		state->cm_notify_state = cm_notify_start(entry,
+							 cm_notify_event_issued_not_saved);
+		if (state->cm_notify_state != NULL) {
+			entry->cm_state = CM_NOTIFYING_ISSUED_FAILED;
+			/* Wait for status update, or poll. */
+			*readfd = cm_notify_get_fd(entry,
+						   state->cm_notify_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
+		} else {
+			/* Failed to start notifying; try again. */
+			*when = cm_time_soonish;
+		}
+		break;
+
+	case CM_NOTIFYING_ISSUED_FAILED:
+		if (cm_notify_ready(entry, state->cm_notify_state) == 0) {
+			cm_notify_done(entry, state->cm_notify_state);
+			state->cm_notify_state = NULL;
+			entry->cm_state = CM_NEED_TO_SAVE_CERT;
+			*when = cm_time_soonish;
+		} else {
+			/* Wait for status update, or poll. */
+			*readfd = cm_notify_get_fd(entry,
+						   state->cm_notify_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
+		}
+		break;
+
+	case CM_NEED_TO_NOTIFY_ISSUED_SAVED:
+		state->cm_notify_state = cm_notify_start(entry,
+							 cm_notify_event_issued_and_saved);
+		if (state->cm_notify_state != NULL) {
+			entry->cm_state = CM_NOTIFYING_ISSUED_SAVED;
+			/* Wait for status update, or poll. */
+			*readfd = cm_notify_get_fd(entry,
+						   state->cm_notify_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
+		} else {
+			/* Failed to start notifying; try again. */
+			*when = cm_time_soonish;
+		}
+		break;
+
+	case CM_NOTIFYING_ISSUED_SAVED:
+		if (cm_notify_ready(entry, state->cm_notify_state) == 0) {
+			cm_notify_done(entry, state->cm_notify_state);
+			state->cm_notify_state = NULL;
+			entry->cm_state = CM_MONITORING;
+			*when = cm_time_soon;
+		} else {
+			/* Wait for status update, or poll. */
+			*readfd = cm_notify_get_fd(entry,
+						   state->cm_notify_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
+		}
+		break;
+
 
 	case CM_NEWLY_ADDED:
 		/* We need to do some recon, and then decide what we need to
