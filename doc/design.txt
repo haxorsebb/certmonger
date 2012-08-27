@@ -41,7 +41,7 @@ Now with some arbitrarily-named states for our per-certificate state machine:
 	* Waiting for certificate to near expiration.
 	  States: MONITORING
 	* Notifying the admin of impending/passed expiration.
-	  States: NEED_TO_NOTIFY, NOTIFYING [*]
+	  States: NEED_TO_NOTIFY_VALIDITY, NOTIFYING_VALIDITY [*]
 	* Waiting for user input
 	  States: NEED_GUIDANCE [*]
 	* Getting our bearings
@@ -371,7 +371,7 @@ State logic:
 		   (expiration-time-is-below-notify-threshold-value and
 		    expiration-time-was-above-notify-threshold-value)
 			update-template-values-based-on-cert
-			state_next = NEED_TO_NOTIFY
+			state_next = NEED_TO_NOTIFY_VALIDITY
 			state_transition = now
 		else
 		if (expiration-time-is-below-renewal-threshold-value and
@@ -383,19 +383,19 @@ State logic:
 			state_transition = timeout
 		break
 
-	NEED_TO_NOTIFY:
+	NEED_TO_NOTIFY_VALIDITY:
 		if starting-up
 			state_next = MONITORING
 			state_transition = now
 		else
 			start-notifying
-			state_next = NOTIFYING
+			state_next = NOTIFYING_VALIDITY
 			state_transition = now
 		break
 
-	NOTIFYING:
+	NOTIFYING_VALIDITY:
 		if starting-up
-			state_next = NEED_TO_NOTIFY
+			state_next = NEED_TO_NOTIFY_VALIDITY
 			state_transition = now
 		else
 			if notification-completed

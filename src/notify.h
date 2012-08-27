@@ -21,8 +21,14 @@
 struct cm_store_entry;
 struct cm_notify_state;
 
+enum cm_notify_event {
+	cm_notify_event_unknown = 0,
+	cm_notify_event_validity_ending
+};
+
 /* Start to notify the administrator or user that expiration is imminent. */
-struct cm_notify_state *cm_notify_start(struct cm_store_entry *entry);
+struct cm_notify_state *cm_notify_start(struct cm_store_entry *entry,
+					enum cm_notify_event event);
 /* Get a selectable-for-read descriptor we can poll for status changes when
  * we're finished sending the notification. */
 int cm_notify_get_fd(struct cm_store_entry *entry,

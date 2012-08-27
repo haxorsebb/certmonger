@@ -40,11 +40,16 @@ struct cm_notify_state {
 	struct cm_subproc_state *subproc;
 };
 
+struct cm_notify_details {
+	enum cm_notify_event event;
+};
+
 /* Fire off the proper notification. */
 static int
 cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	       void *userdata)
 {
+	struct cm_notify_details *details = userdata;
 	enum cm_notification_method method;
 	const char *dest, *p, *q, *message = NULL, *error;
 	char *tok, t[15], **argv;
@@ -84,67 +89,81 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		{"debug", LOG_DEBUG},
 	};
 	unsigned int i;
-	if (entry->cm_cert_not_after > cm_time(NULL)) {
-		switch (entry->cm_cert_storage_type) {
-		case cm_cert_storage_nssdb:
-			if (entry->cm_cert_token != NULL) {
+	switch (details->event) {
+	case cm_notify_event_unknown:
+		message = talloc_asprintf(entry, "Something "
+					  "happened with certiifcate "
+					  "named \"%s\" "
+					  "in token \"%s\" "
+					  "in database \"%s\".",
+					  entry->cm_cert_nickname,
+					  entry->cm_cert_token,
+					  entry->cm_cert_storage_location);
+		break;
+	case cm_notify_event_validity_ending:
+		if (entry->cm_cert_not_after > cm_time(NULL)) {
+			switch (entry->cm_cert_storage_type) {
+			case cm_cert_storage_nssdb:
+				if (entry->cm_cert_token != NULL) {
+					message = talloc_asprintf(entry, "Certificate "
+								  "named \"%s\" "
+								  "in token \"%s\" "
+								  "in database \"%s\" "
+								  "will not be valid "
+								  "after %s.\n",
+								  entry->cm_cert_nickname,
+								  entry->cm_cert_token,
+								  entry->cm_cert_storage_location,
+								  cm_store_timestamp_from_time(entry->cm_cert_not_after, t));
+				} else {
+					message = talloc_asprintf(entry, "Certificate "
+								  "named \"%s\" "
+								  "in database \"%s\" "
+								  "will expire at "
+								  "%s.\n",
+								  entry->cm_cert_nickname,
+								  entry->cm_cert_storage_location,
+								  cm_store_timestamp_from_time(entry->cm_cert_not_after, t));
+				}
+				break;
+			case cm_cert_storage_file:
 				message = talloc_asprintf(entry, "Certificate "
-							  "named \"%s\" "
-							  "in token \"%s\" "
-							  "in database \"%s\" "
-							  "will not be valid "
-							  "after %s.\n",
-							  entry->cm_cert_nickname,
-							  entry->cm_cert_token,
+							  "in file \"%s\" will not be "
+							  "valid after %s.\n",
 							  entry->cm_cert_storage_location,
 							  cm_store_timestamp_from_time(entry->cm_cert_not_after, t));
-			} else {
-				message = talloc_asprintf(entry, "Certificate "
-							  "named \"%s\" "
-							  "in database \"%s\" "
-							  "will expire at "
-							  "%s.\n",
-							  entry->cm_cert_nickname,
-							  entry->cm_cert_storage_location,
-							  cm_store_timestamp_from_time(entry->cm_cert_not_after, t));
+				break;
 			}
-			break;
-		case cm_cert_storage_file:
-			message = talloc_asprintf(entry, "Certificate "
-						  "in file \"%s\" will not be "
-						  "valid after %s.\n",
-						  entry->cm_cert_storage_location,
-						  cm_store_timestamp_from_time(entry->cm_cert_not_after, t));
-			break;
-		}
-	} else {
-		switch (entry->cm_cert_storage_type) {
-		case cm_cert_storage_nssdb:
-			if (entry->cm_cert_token != NULL) {
+		} else {
+			switch (entry->cm_cert_storage_type) {
+			case cm_cert_storage_nssdb:
+				if (entry->cm_cert_token != NULL) {
+					message = talloc_asprintf(entry, "Certificate "
+								  "named \"%s\" "
+								  "in token \"%s\" "
+								  "in database \"%s\" "
+								  "is no longer valid.",
+								  entry->cm_cert_nickname,
+								  entry->cm_cert_token,
+								  entry->cm_cert_storage_location);
+				} else {
+					message = talloc_asprintf(entry, "Certificate "
+								  "named \"%s\" "
+								  "in database \"%s\" "
+								  "is no longer valid.",
+								  entry->cm_cert_nickname,
+								  entry->cm_cert_storage_location);
+				}
+				break;
+			case cm_cert_storage_file:
 				message = talloc_asprintf(entry, "Certificate "
-							  "named \"%s\" "
-							  "in token \"%s\" "
-							  "in database \"%s\" "
-							  "is no longer valid.",
-							  entry->cm_cert_nickname,
-							  entry->cm_cert_token,
+							  "in file \"%s\" is no longer "
+							  "valid.",
 							  entry->cm_cert_storage_location);
-			} else {
-				message = talloc_asprintf(entry, "Certificate "
-							  "named \"%s\" "
-							  "in database \"%s\" "
-							  "is no longer valid.",
-							  entry->cm_cert_nickname,
-							  entry->cm_cert_storage_location);
+				break;
 			}
-			break;
-		case cm_cert_storage_file:
-			message = talloc_asprintf(entry, "Certificate "
-						  "in file \"%s\" is no longer "
-						  "valid.",
-						  entry->cm_cert_storage_location);
-			break;
 		}
+		break;
 	}
 	method = entry->cm_notification_method;
 	if (method == cm_notification_unspecified) {
@@ -225,13 +244,16 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 
 /* Start notifying the user that the certificate will expire soon. */
 struct cm_notify_state *
-cm_notify_start(struct cm_store_entry *entry)
+cm_notify_start(struct cm_store_entry *entry, enum cm_notify_event event)
 {
 	struct cm_notify_state *state;
+	struct cm_notify_details details;
 	state = talloc_ptrtype(entry, state);
 	if (state != NULL) {
+		memset(&details, 0, sizeof(details));
+		details.event = event;
 		state->subproc = cm_subproc_start(cm_notify_main,
-						  NULL, entry, NULL);
+						  NULL, entry, &details);
 		if (state->subproc == NULL) {
 			talloc_free(state);
 			state = NULL;

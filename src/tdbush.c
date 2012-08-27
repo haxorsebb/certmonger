@@ -2945,8 +2945,8 @@ request_prop_get_stuck(struct cm_context *ctx, void *parent,
 	case CM_SAVED_CERT:
 	case CM_POST_SAVED_CERT:
 	case CM_MONITORING:
-	case CM_NEED_TO_NOTIFY:
-	case CM_NOTIFYING:
+	case CM_NEED_TO_NOTIFY_VALIDITY:
+	case CM_NOTIFYING_VALIDITY:
 	case CM_NEWLY_ADDED:
 	case CM_NEWLY_ADDED_START_READING_KEYINFO:
 	case CM_NEWLY_ADDED_READING_KEYINFO:

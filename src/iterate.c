@@ -144,11 +144,11 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 		break;
 	case CM_MONITORING:
 		break;
-	case CM_NEED_TO_NOTIFY:
+	case CM_NEED_TO_NOTIFY_VALIDITY:
 		entry->cm_state = CM_MONITORING;
 		break;
-	case CM_NOTIFYING:
-		entry->cm_state = CM_NEED_TO_NOTIFY;
+	case CM_NOTIFYING_VALIDITY:
+		entry->cm_state = CM_NEED_TO_NOTIFY_VALIDITY;
 		break;
 	case CM_NEWLY_ADDED:
 		break;
@@ -996,7 +996,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 						       &cm_prefs_notify_ttls,
 						       &entry->cm_last_need_notify_check) == 0)) {
 			/* Kick off a notification. */
-			entry->cm_state = CM_NEED_TO_NOTIFY;
+			entry->cm_state = CM_NEED_TO_NOTIFY_VALIDITY;
 			*when = cm_time_now;
 		} else
 		if (entry->cm_autorenew &&
@@ -1016,10 +1016,11 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		}
 		break;
 
-	case CM_NEED_TO_NOTIFY:
-		state->cm_notify_state = cm_notify_start(entry);
+	case CM_NEED_TO_NOTIFY_VALIDITY:
+		state->cm_notify_state = cm_notify_start(entry,
+							 cm_notify_event_validity_ending);
 		if (state->cm_notify_state != NULL) {
-			entry->cm_state = CM_NOTIFYING;
+			entry->cm_state = CM_NOTIFYING_VALIDITY;
 			/* Wait for status update, or poll. */
 			*readfd = cm_notify_get_fd(entry,
 						   state->cm_notify_state);
@@ -1034,7 +1035,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		}
 		break;
 
-	case CM_NOTIFYING:
+	case CM_NOTIFYING_VALIDITY:
 		if (cm_notify_ready(entry, state->cm_notify_state) == 0) {
 			cm_notify_done(entry, state->cm_notify_state);
 			state->cm_notify_state = NULL;
