@@ -275,6 +275,9 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 						cm_log(3, "Located its private "
 						       "key.\n");
 						break;
+					} else {
+						cm_log(3, "But we didn't find "
+						       "its private key.\n");
 					}
 				}
 			}
