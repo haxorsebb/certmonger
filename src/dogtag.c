@@ -135,6 +135,7 @@ main(int argc, char **argv)
 	const char *sslcert = NULL, *sslkey = NULL;
 	const char *sslpin = NULL, *sslpinfile = NULL;
 	const char *host = NULL, *csr = NULL, *serial = NULL, *template = NULL;
+	const char *dogtag_version = NULL;
 	char *ipaconfig = NULL, *savedstate = NULL;
 	char *p, *q, *params = NULL, *params2 = NULL;
 	const char *lasturl = NULL, *lastparams = NULL;
@@ -142,6 +143,7 @@ main(int argc, char **argv)
 	struct cm_submit_h_context *hctx;
 	void *ctx;
 	int c, verbose = 0, i;
+	int eeport = 9180, agentport = 9443;
 	enum { op_none, op_submit, op_check, op_approve, op_retrieve } op = op_none;
 	dbus_bool_t can_agent, use_agent, missing_args = FALSE;
 	struct dogtag_default **defaults;
@@ -211,23 +213,35 @@ main(int argc, char **argv)
 		host = get_config_entry(ipaconfig,
 					"global",
 					"host");
+		dogtag_version = get_config_entry(ipaconfig,
+						  "global",
+						  "dogtag_version");
 	} else {
 		host = NULL;
+		dogtag_version = NULL;
 	}
+
+	if (dogtag_version != NULL) {
+		if (atof(dogtag_version) >= 10) {
+			eeport = 8080;
+			agentport = 8443;
+		}
+	}
+
 	if (eeurl == NULL) {
 		eeurl = cm_prefs_dogtag_ee_url();
 		if ((eeurl == NULL) && (host != NULL)) {
 			eeurl = talloc_asprintf(ctx,
-						"http://%s:9180/ca/ee/ca",
-						host);
+						"http://%s:%d/ca/ee/ca",
+						host, eeport);
 		}
 	}
 	if (agenturl == NULL) {
 		agenturl = cm_prefs_dogtag_agent_url();
 		if ((agenturl == NULL) && (host != NULL)) {
 			agenturl = talloc_asprintf(ctx,
-						   "https://%s:9443/ca/agent/ca",
-						   host);
+						   "https://%s:%d/ca/agent/ca",
+						   host, agentport);
 		}
 	}
 	if (template == NULL) {
