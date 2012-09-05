@@ -40,15 +40,27 @@ via stdin.
 .TP
 \fB\-E\fR EE-URL
 The top-level URL for the end-entity interface provided by the CA.  In IPA
-installations, this is typically \fIhttp://SERVER:9180/ca/ee/ca\fR.  If not
-specified, the \fIhost\fR named in the \fI[global]\fR section in
-the \fI/etc/ipa/default.conf\fR file is used to construct a default.
+installations, this is typically
+\fIhttp://\fBSERVER\fP:\fBEEPORT\fP/ca/ee/ca\fR.
+If no URL is specified, the \fIhost\fR named in the \fI[global]\fR section in
+the \fI/etc/ipa/default.conf\fR file is used as the value of \fBSERVER\fR,
+and the value of \fBEEPORT\fR will be inferred based on the value of the
+\fIdogtag_version\fR in the \fI[global]\fR section in the
+\fI/etc/ipa/default.conf\fR file:
+if \fIdogtag_version\fR is set to \fI10\fR or more, \fBEEPORT\fR will
+be set to 8080.  Otherwise it will be 9180.
 .TP
 \fB\-A\fR AGENT-URL
 The top-level URL for the agent interface provided by the CA.  In IPA
-installations, this is typically \fIhttps://SERVER:9443/ca/agent/ca\fR.  If not
-specified, the \fIhost\fR named in the \fI[global]\fR section in
-the \fI/etc/ipa/default.conf\fR file is used to construct a default.
+installations, this is typically
+\fIhttps://\fBSERVER\fP:\fBAGENTPORT\fP/ca/agent/ca\fR.
+If no URL is specified, the \fIhost\fR named in the \fI[global]\fR section in
+the \fI/etc/ipa/default.conf\fR file is used as the value of \fBSERVER\fR,
+and the value of \fBAGENTPORT\fR will be inferred based on the value of the
+\fIdogtag_version\fR in the \fI[global]\fR section in the
+\fI/etc/ipa/default.conf\fR file:
+if \fIdogtag_version\fR is set to \fI10\fR or more, \fBAGENTPORT\fR will
+be set to 8443.  Otherwise it will be 9443.
 .TP
 \fB\-d\fR dbdir \fB\-n\fR nickname \fB\-c\fR certfile \fB\-k\fR keyfile
 The location of the key and certificate which the client should use to
