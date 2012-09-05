@@ -19,8 +19,8 @@
 %endif
 
 Name:		certmonger
-Version:	0.59
-Release:	2%{?dist}
+Version:	0.60
+Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
 Group:		System Environment/Daemons
@@ -201,6 +201,15 @@ exit 0
 %endif
 
 %changelog
+* Wed Sep  5 2012 Nalin Dahyabhai <nalin@redhat.com> 0.60-1
+- adjust internals of logic for talking to dogtag to at least have a
+  concept of non-agent cases
+- when talking to an IPA server's internal Dogtag instance, infer which
+  ports the CA is listening on from the "dogtag_version" setting in the
+  IPA configuration (Ade Lee)
+- send a notification (or log a message, whatever) when we save a new
+  certificate (#766167)
+
 * Mon Jul 30 2012 Nalin Dahyabhai <nalin@redhat.com> 0.59-2
 - fix a bad %%preun scriptlet
 
