@@ -3,17 +3,17 @@
 # This file is distributed under the same license as the PACKAGE package.
 #
 # Translators:
-# Hajime Taira <htaira@redhat.com>, 2011, 2012.
+# Hajime Taira <htaira@redhat.com>, 2011-2012.
 #   <noriko@fedoraproject.org>, 2012.
-# Tomoyuki KATO <tomo@dream.daynight.jp>, 2011, 2012.
+# Tomoyuki KATO <tomo@dream.daynight.jp>, 2011-2012.
 #   <www.carrotsoft@gmail.com>, 2011.
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2012-09-05 18:59-0400\n"
-"PO-Revision-Date: 2012-08-27 22:27+0000\n"
-"Last-Translator: Tomoyuki KATO <tomo@dream.daynight.jp>\n"
+"PO-Revision-Date: 2012-09-05 23:08+0000\n"
+"Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
 "Language-Team: Japanese <trans-ja@lists.fedoraproject.org>\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
@@ -784,8 +784,8 @@ msgid ""
 "Error setting up ccache for local \"host\" service using default keytab: "
 "%s.\n"
 msgstr ""
-"ローカルホストのサービス (デフォルトのキーテーブル \"host\" を使用) のためのク"
-"レデンシャル・キャッシュをセットアップ中にエラー : %s。\n"
+"ローカルホストのサービス (デフォルトのキーテーブル \"host\" を使用) のための"
+"クレデンシャル・キャッシュをセットアップ中にエラー : %s。\n"
 
 #: src/ipa.c:240
 #, c-format
