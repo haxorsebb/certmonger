@@ -210,8 +210,11 @@ exit 0
 - send a notification (or log a message, whatever) when we save a new
   certificate (#766167)
 
-* Mon Jul 30 2012 Nalin Dahyabhai <nalin@redhat.com> 0.59-2
+* Mon Jul 30 2012 Nalin Dahyabhai <nalin@redhat.com>
 - fix a bad %%preun scriptlet
+
+* Wed Jul 18 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.59-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
 * Fri Jun 29 2012 Nalin Dahyabhai <nalin@redhat.com> 0.59-1
 - mostly documentation updates
