@@ -352,7 +352,7 @@ cm_submit_d_review_result(void *parent, const char *xml,
 						   "/xml/output/set/errorReason"));
 	*requestId = trim(parent,
 			  cm_submit_d_xml_value(parent,
-			 			xml,
+						xml,
 						"/xml/output/set/requestId"));
 	*status = trim(parent,
 		       cm_submit_d_xml_value(parent,
@@ -375,7 +375,7 @@ cm_submit_d_approve_result(void *parent, const char *xml,
 						   "/xml/output/set/errorReason"));
 	*requestId = trim(parent,
 			  cm_submit_d_xml_value(parent,
-			 			xml,
+						xml,
 						"/xml/output/set/requestId"));
 	*status = trim(parent,
 		       cm_submit_d_xml_value(parent,
