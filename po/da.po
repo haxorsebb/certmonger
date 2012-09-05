@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2012-07-13 17:35-0400\n"
+"POT-Creation-Date: 2012-09-05 18:59-0400\n"
 "PO-Revision-Date: 2012-06-29 15:24+0000\n"
 "Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: src/certmaster.c:111 src/ipa.c:146
 #, c-format
@@ -36,8 +36,8 @@ msgstr "Fejl under opsætning af XMLRPC.\n"
 #: src/certmaster.c:180 src/getcert.c:359 src/getcert.c:378 src/getcert.c:397
 #: src/getcert.c:416 src/getcert.c:435 src/getcert.c:453 src/getcert.c:483
 #: src/getcert.c:962 src/getcert.c:1267 src/getcert.c:1603 src/getcert.c:1684
-#: src/getcert.c:1997 src/getcert.c:2167 src/getcert.c:2242 src/getcert.c:2277
-#: src/getcert.c:2312 src/getcert.c:2331
+#: src/getcert.c:1997 src/getcert.c:2167 src/getcert.c:2248 src/getcert.c:2283
+#: src/getcert.c:2318 src/getcert.c:2337
 #, c-format
 msgid "Error parsing server response.\n"
 msgstr "Fejl under fortolkning af serversvar.\n"
@@ -142,13 +142,13 @@ msgid "Error unparsing Kerberos principal name \"%s\": %s.\n"
 msgstr "Kunne ikke aftolke hovednavn for Kerberos \"%s\": %s.\n"
 
 #: src/getcert.c:690 src/getcert.c:1436 src/getcert.c:1839 src/getcert.c:2097
-#: src/getcert.c:2412
+#: src/getcert.c:2418
 #, c-format
 msgid "%s: option requires an argument -- '%c'\n"
 msgstr ""
 
 #: src/getcert.c:694 src/getcert.c:1439 src/getcert.c:1842 src/getcert.c:2100
-#: src/getcert.c:2415
+#: src/getcert.c:2421
 #, c-format
 msgid "%s: invalid option -- '%c'\n"
 msgstr ""
@@ -159,7 +159,7 @@ msgid "Error: unused extra argument \"%s\".\n"
 msgstr ""
 
 #: src/getcert.c:706 src/getcert.c:1450 src/getcert.c:1850 src/getcert.c:2108
-#: src/getcert.c:2423
+#: src/getcert.c:2429
 #, c-format
 msgid "Error: unused extra arguments were supplied.\n"
 msgstr "Fejl: ubrugte ekstra-argumenter blev angivet.\n"
@@ -294,445 +294,445 @@ msgstr "Fejl under forsøg på sending \"%s\".\n"
 msgid "Number of certificates and requests being tracked: %d.\n"
 msgstr "Antallet af certifikater og forespørgsler som spores: %d.\n"
 
-#: src/getcert.c:2264
+#: src/getcert.c:2270
 #, c-format
 msgid "Request ID '%s':\n"
 msgstr "Forespørgsels-id \"%s\":\n"
 
-#: src/getcert.c:2265
+#: src/getcert.c:2271
 #, c-format
 msgid "\tstatus: %s\n"
 msgstr "\tstatus: %s\n"
 
-#: src/getcert.c:2269
+#: src/getcert.c:2275
 #, c-format
 msgid "\tca-error: %s\n"
 msgstr "\tca-fejl: %s\n"
 
-#: src/getcert.c:2271
+#: src/getcert.c:2277
 #, c-format
 msgid "\tstuck: %s\n"
 msgstr "\tsat fast: %s\n"
 
-#: src/getcert.c:2291
+#: src/getcert.c:2297
 #, c-format
 msgid "\tkey pair storage: type=%s"
 msgstr ""
 "<span class=\"whitespace other\" title=\"Tab\">»</span>lagring for nøglepar: "
 "type=%s"
 
-#: src/getcert.c:2291
+#: src/getcert.c:2297
 msgid "NONE"
 msgstr "INGEN"
 
-#: src/getcert.c:2293
+#: src/getcert.c:2299
 #, c-format
 msgid ",location='%s'"
 msgstr ",placering='%s'"
 
-#: src/getcert.c:2296 src/getcert.c:2318
+#: src/getcert.c:2302 src/getcert.c:2324
 #, c-format
 msgid ",nickname='%s'"
 msgstr ",kaldenavn='%s'"
 
-#: src/getcert.c:2299 src/getcert.c:2321
+#: src/getcert.c:2305 src/getcert.c:2327
 #, c-format
 msgid ",token='%s'"
 msgstr ",symbol='%s'"
 
-#: src/getcert.c:2302
+#: src/getcert.c:2308
 #, c-format
 msgid ",pin='%s'"
 msgstr ",pin='%s'"
 
-#: src/getcert.c:2305
+#: src/getcert.c:2311
 #, c-format
 msgid ",pinfile='%s'"
 msgstr ",pinfil='%s'"
 
-#: src/getcert.c:2316
+#: src/getcert.c:2322
 #, c-format
 msgid "\tcertificate: type=%s,location='%s'"
 msgstr ""
 "<span class=\"whitespace other\" title=\"Tab\">»</span>certifikat: type=%s,"
 "placering='%s'"
 
-#: src/getcert.c:2336
+#: src/getcert.c:2342
 #, c-format
 msgid "\tCA: %s\n"
 msgstr "\tCA: %s\n"
 
-#: src/getcert.c:2338
+#: src/getcert.c:2344
 #, c-format
 msgid "\tissuer: %s\n"
 msgstr "\tudsteder: %s\n"
 
-#: src/getcert.c:2339
+#: src/getcert.c:2345
 #, c-format
 msgid "\tsubject: %s\n"
 msgstr "\temne: %s\n"
 
-#: src/getcert.c:2340
+#: src/getcert.c:2346
 #, c-format
 msgid "\texpires: %s\n"
 msgstr "\tudløber: %s\n"
 
-#: src/getcert.c:2343
+#: src/getcert.c:2349
 msgid "unknown"
 msgstr "ukendt"
 
-#: src/getcert.c:2346
+#: src/getcert.c:2352
 msgid "\temail: "
 msgstr "\te-post: "
 
-#: src/getcert.c:2352
+#: src/getcert.c:2358
 msgid "\tdns: "
 msgstr "\tdns: "
 
-#: src/getcert.c:2358
+#: src/getcert.c:2364
 msgid "\tprincipal name: "
 msgstr "\thovednavn: "
 
-#: src/getcert.c:2364
+#: src/getcert.c:2370
 msgid "\teku: "
 msgstr "\teku: "
 
-#: src/getcert.c:2368
+#: src/getcert.c:2374
 #, c-format
 msgid "\tpre-save command: %s\n"
 msgstr ""
 
-#: src/getcert.c:2371
+#: src/getcert.c:2377
 #, c-format
 msgid "\tpost-save command: %s\n"
 msgstr ""
 
-#: src/getcert.c:2374
+#: src/getcert.c:2380
 #, c-format
 msgid "\ttrack: %s\n"
 msgstr "\tspor: %s\n"
 
-#: src/getcert.c:2378
+#: src/getcert.c:2384
 #, c-format
 msgid "\tauto-renew: %s\n"
 msgstr "\tauto-forny: %s\n"
 
-#: src/getcert.c:2437
+#: src/getcert.c:2443
 #, c-format
 msgid "CA '%s':\n"
 msgstr "CA \"%s\":\n"
 
-#: src/getcert.c:2444
+#: src/getcert.c:2450
 #, c-format
 msgid "\tca-type: %s\n"
 msgstr "\tca-type: %s\n"
 
-#: src/getcert.c:2446
+#: src/getcert.c:2452
 #, c-format
 msgid "\thelper-location: %s\n"
 msgstr "\thjælperplacering: %s\n"
 
-#: src/getcert.c:2451
+#: src/getcert.c:2457
 #, c-format
 msgid "\tnext-serial-number: %s\n"
 msgstr "\tnæste serienummer: %s\n"
 
-#: src/getcert.c:2461
+#: src/getcert.c:2467
 #, c-format
 msgid "\tknown-issuer-names:\n"
 msgstr "\tkendte udstedernavne:\n"
 
-#: src/getcert.c:2487
+#: src/getcert.c:2493
 #, c-format
 msgid "%s - client certificate enrollment tool\n"
 msgstr "%s - udrulningsværktøj for klientcertifikat\n"
 
-#: src/getcert.c:2491
+#: src/getcert.c:2497
 #, c-format
 msgid "Usage: %s request [options]\n"
 msgstr "Brug: %s forespørgsel [tilvalg]\n"
 
-#: src/getcert.c:2493 src/getcert.c:2533 src/getcert.c:2573 src/getcert.c:2595
+#: src/getcert.c:2499 src/getcert.c:2539 src/getcert.c:2579 src/getcert.c:2601
 msgid "Required arguments:\n"
 msgstr "Påkrævede argumenter:\n"
 
-#: src/getcert.c:2494 src/getcert.c:2536 src/getcert.c:2576 src/getcert.c:2598
-#: src/getcert.c:2644
+#: src/getcert.c:2500 src/getcert.c:2542 src/getcert.c:2582 src/getcert.c:2604
+#: src/getcert.c:2650
 msgid "* If using an NSS database for storage:\n"
 msgstr "* Hvis der bruges en NSS-database til lagring:\n"
 
-#: src/getcert.c:2495 src/getcert.c:2537 src/getcert.c:2577 src/getcert.c:2599
+#: src/getcert.c:2501 src/getcert.c:2543 src/getcert.c:2583 src/getcert.c:2605
 msgid "  -d DIR\tNSS database for key and cert\n"
 msgstr "  -d MAPPE\tNSS-database for nøgle og certifikat\n"
 
-#: src/getcert.c:2496 src/getcert.c:2538 src/getcert.c:2578 src/getcert.c:2600
+#: src/getcert.c:2502 src/getcert.c:2544 src/getcert.c:2584 src/getcert.c:2606
 msgid "  -n NAME\tnickname for NSS-based storage (only valid with -d)\n"
 msgstr "  -n NAVN\tkaldenavn for NSS-baseret lagring (kun gyldig med -d)\n"
 
-#: src/getcert.c:2497 src/getcert.c:2539 src/getcert.c:2579 src/getcert.c:2601
+#: src/getcert.c:2503 src/getcert.c:2545 src/getcert.c:2585 src/getcert.c:2607
 msgid ""
 "  -t NAME\toptional token name for NSS-based storage (only valid with -d)\n"
 msgstr ""
 "  -t NAVN\tvalgfri symbolnavn til NSS-baseret lagring (kun gyldig med -d)\n"
 
-#: src/getcert.c:2498 src/getcert.c:2540 src/getcert.c:2580 src/getcert.c:2602
-#: src/getcert.c:2647
+#: src/getcert.c:2504 src/getcert.c:2546 src/getcert.c:2586 src/getcert.c:2608
+#: src/getcert.c:2653
 msgid "* If using files for storage:\n"
 msgstr "* Hvis filer bruges til lagring:\n"
 
-#: src/getcert.c:2499 src/getcert.c:2541 src/getcert.c:2581
+#: src/getcert.c:2505 src/getcert.c:2547 src/getcert.c:2587
 msgid "  -k FILE\tPEM file for private key\n"
 msgstr "  -k FIL\tPEM-fil til privat nøgle\n"
 
-#: src/getcert.c:2500 src/getcert.c:2542 src/getcert.c:2582
+#: src/getcert.c:2506 src/getcert.c:2548 src/getcert.c:2588
 msgid "  -f FILE\tPEM file for certificate (only valid with -k)\n"
 msgstr "  -f FIL\tPEM-fil til certifikat (kun gyldig med -k)\n"
 
-#: src/getcert.c:2501
+#: src/getcert.c:2507
 msgid "* If keys are to be encrypted:\n"
 msgstr "* Hvis nøgler skal krypteres:\n"
 
-#: src/getcert.c:2502 src/getcert.c:2544 src/getcert.c:2606
+#: src/getcert.c:2508 src/getcert.c:2550 src/getcert.c:2612
 msgid "  -p FILE\tfile which holds the encryption PIN\n"
 msgstr "  -p FIL\tfilen som indeholder krypterings-PIN\n"
 
-#: src/getcert.c:2503 src/getcert.c:2545 src/getcert.c:2607
+#: src/getcert.c:2509 src/getcert.c:2551 src/getcert.c:2613
 msgid "  -P PIN\tPIN value\n"
 msgstr "  -P PIN\tPIN-værdi\n"
 
-#: src/getcert.c:2505 src/getcert.c:2547 src/getcert.c:2584 src/getcert.c:2616
-#: src/getcert.c:2635 src/getcert.c:2659
+#: src/getcert.c:2511 src/getcert.c:2553 src/getcert.c:2590 src/getcert.c:2622
+#: src/getcert.c:2641 src/getcert.c:2665
 msgid "Optional arguments:\n"
 msgstr "Valgfri argumenter:\n"
 
-#: src/getcert.c:2506 src/getcert.c:2548 src/getcert.c:2617
+#: src/getcert.c:2512 src/getcert.c:2554 src/getcert.c:2623
 msgid "* Certificate handling settings:\n"
 msgstr "* Indstillinger for certifikathåndtering:\n"
 
-#: src/getcert.c:2507
+#: src/getcert.c:2513
 msgid "  -I NAME\tnickname to assign to the request\n"
 msgstr "  -I NAVN\tkaldenavn at tillægge forespørgslen\n"
 
-#: src/getcert.c:2508
+#: src/getcert.c:2514
 msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
 msgstr ""
 "  -g STØRRELSE\tstørrelsen på nøglen som skal genereres hvis der ikke "
 "allerede findes en\n"
 
-#: src/getcert.c:2509 src/getcert.c:2550
+#: src/getcert.c:2515 src/getcert.c:2556
 msgid ""
 "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
 msgstr ""
 "  -r\t\tforsøg at forny certifikatet når udløbsdatoen er nær (standard)\n"
 
-#: src/getcert.c:2510 src/getcert.c:2551
+#: src/getcert.c:2516 src/getcert.c:2557
 msgid "  -R\t\tdon't attempt to renew the certificate when expiration nears\n"
 msgstr "  -R\t\tforsøg ikke at forny certifikatet når udløbsdatoen er nær\n"
 
-#: src/getcert.c:2512 src/getcert.c:2553
+#: src/getcert.c:2518 src/getcert.c:2559
 msgid "  -c CA\t\tuse the specified CA rather than the default\n"
 msgstr "  -c CA\t\tbrug den angivne CA i stedet for standarden\n"
 
-#: src/getcert.c:2514 src/getcert.c:2555 src/getcert.c:2622
+#: src/getcert.c:2520 src/getcert.c:2561 src/getcert.c:2628
 msgid ""
 "  -T PROFILE\task the CA to process the request using the named profile or "
 "template\n"
 msgstr ""
 
-#: src/getcert.c:2515
+#: src/getcert.c:2521
 msgid "* Parameters for the signing request:\n"
 msgstr "* Parametre til signeringsforespørgsel:\n"
 
-#: src/getcert.c:2516 src/getcert.c:2610
+#: src/getcert.c:2522 src/getcert.c:2616
 msgid "  -N NAME\tset requested subject name (default: CN=<hostname>)\n"
 msgstr "  -N NAVN\tangiv forespurgt emnenavn (standard: CN=<værtsnavn>)\n"
 
-#: src/getcert.c:2517 src/getcert.c:2611
+#: src/getcert.c:2523 src/getcert.c:2617
 msgid "  -U EXTUSAGE\tset requested extended key usage OID\n"
 msgstr "  -U EXTBRUG\tangiv forespurgt udvidet nøglebrug OID\n"
 
-#: src/getcert.c:2518 src/getcert.c:2612
+#: src/getcert.c:2524 src/getcert.c:2618
 msgid "  -K NAME\tset requested principal name\n"
 msgstr "  -K NAVN\tangiv forespurgt hovednavn\n"
 
-#: src/getcert.c:2519 src/getcert.c:2613
+#: src/getcert.c:2525 src/getcert.c:2619
 msgid "  -D DNSNAME\tset requested DNS name\n"
 msgstr "  -D DNSNAVN\tangiv forespurgt DNS-navn\n"
 
-#: src/getcert.c:2520 src/getcert.c:2614
+#: src/getcert.c:2526 src/getcert.c:2620
 msgid "  -E EMAIL\tset requested email address\n"
 msgstr "  -E E-POST\tangiv forespurgt e-post-adresse\n"
 
-#: src/getcert.c:2521 src/getcert.c:2561 src/getcert.c:2585 src/getcert.c:2623
-#: src/getcert.c:2649 src/getcert.c:2664
+#: src/getcert.c:2527 src/getcert.c:2567 src/getcert.c:2591 src/getcert.c:2629
+#: src/getcert.c:2655 src/getcert.c:2670
 msgid "* Bus options:\n"
 msgstr "* Busindstillinger:\n"
 
-#: src/getcert.c:2522 src/getcert.c:2562 src/getcert.c:2586 src/getcert.c:2624
+#: src/getcert.c:2528 src/getcert.c:2568 src/getcert.c:2592 src/getcert.c:2630
 msgid "  -S\t\tconnect to the certmonger service on the system bus\n"
 msgstr "  -S\t\tforbind til certmonger-tjenesten i systembussen\n"
 
-#: src/getcert.c:2523 src/getcert.c:2563 src/getcert.c:2587 src/getcert.c:2625
+#: src/getcert.c:2529 src/getcert.c:2569 src/getcert.c:2593 src/getcert.c:2631
 msgid "  -s\t\tconnect to the certmonger service on the session bus\n"
 msgstr "  -s\t\tforbind til certmonger-tjenesten i sessionsbussen\n"
 
-#: src/getcert.c:2524 src/getcert.c:2564 src/getcert.c:2588 src/getcert.c:2626
-#: src/getcert.c:2652 src/getcert.c:2667
+#: src/getcert.c:2530 src/getcert.c:2570 src/getcert.c:2594 src/getcert.c:2632
+#: src/getcert.c:2658 src/getcert.c:2673
 msgid "* Other options:\n"
 msgstr "* Andre tilvalg:\n"
 
-#: src/getcert.c:2525 src/getcert.c:2565 src/getcert.c:2627
+#: src/getcert.c:2531 src/getcert.c:2571 src/getcert.c:2633
 msgid "  -B\tcommand to run before saving the certificate\n"
 msgstr ""
 
-#: src/getcert.c:2526 src/getcert.c:2566 src/getcert.c:2628
+#: src/getcert.c:2532 src/getcert.c:2572 src/getcert.c:2634
 msgid "  -C\tcommand to run after saving the certificate\n"
 msgstr ""
 
-#: src/getcert.c:2527 src/getcert.c:2567 src/getcert.c:2589 src/getcert.c:2629
-#: src/getcert.c:2653 src/getcert.c:2668
+#: src/getcert.c:2533 src/getcert.c:2573 src/getcert.c:2595 src/getcert.c:2635
+#: src/getcert.c:2659 src/getcert.c:2674
 msgid "  -v\treport all details of errors\n"
 msgstr ""
 "  -v<span class=\"whitespace other\" title=\"Tab\">»</span>rapportér alle "
 "deltaljer om fejl\n"
 
-#: src/getcert.c:2531
+#: src/getcert.c:2537
 #, c-format
 msgid "Usage: %s start-tracking [options]\n"
 msgstr "Brug: %s start-sporing [tilvalg]\n"
 
-#: src/getcert.c:2534
+#: src/getcert.c:2540
 msgid "* If modifying an existing request:\n"
 msgstr "* Hvis en eksisterende forespørgsel redigeres:\n"
 
-#: src/getcert.c:2535
+#: src/getcert.c:2541
 msgid "  -i NAME\tnickname of an existing tracking request\n"
 msgstr "  -i NAVN\tkaldenavn for eksisterende fulgt forespørgsel\n"
 
-#: src/getcert.c:2543 src/getcert.c:2605
+#: src/getcert.c:2549 src/getcert.c:2611
 msgid "* If keys are encrypted:\n"
 msgstr "* Hvis nøgler er krypteret:\n"
 
-#: src/getcert.c:2549
+#: src/getcert.c:2555
 msgid "  -I NAME\tnickname to give to tracking request\n"
 msgstr "  -I NAVN\tkaldenavn at give til fulgt forespørgsel\n"
 
-#: src/getcert.c:2556
+#: src/getcert.c:2562
 msgid "* Parameters for the signing request at renewal time:\n"
 msgstr "* Parametre til signeringsforespørgsel ved fornyelsestidspunkt:\n"
 
-#: src/getcert.c:2557
+#: src/getcert.c:2563
 msgid "  -U EXTUSAGE\toverride requested extended key usage OID\n"
 msgstr "  -U EXTBRUG\toverskriv forespurgt udvidet nøglebrug OID\n"
 
-#: src/getcert.c:2558
+#: src/getcert.c:2564
 msgid "  -K NAME\toverride requested principal name\n"
 msgstr "  -K NAVN\toverskriv forespurgt hovednavn\n"
 
-#: src/getcert.c:2559
+#: src/getcert.c:2565
 msgid "  -D DNSNAME\toverride requested DNS name\n"
 msgstr "  -D DNSNAVN\toverskriv forespurgt DNS-navn\n"
 
-#: src/getcert.c:2560
+#: src/getcert.c:2566
 msgid "  -E EMAIL\toverride requested email address\n"
 msgstr "  -E E-POST\toverskriv forespurgt e-post-adresse\n"
 
-#: src/getcert.c:2571
+#: src/getcert.c:2577
 #, c-format
 msgid "Usage: %s stop-tracking [options]\n"
 msgstr "Brug: %s stop-sporing [tilvalg]\n"
 
-#: src/getcert.c:2574 src/getcert.c:2596
+#: src/getcert.c:2580 src/getcert.c:2602
 msgid "* By request identifier:\n"
 msgstr "* Efter forespørgselsidentifikator:\n"
 
-#: src/getcert.c:2575 src/getcert.c:2597 src/getcert.c:2643
+#: src/getcert.c:2581 src/getcert.c:2603 src/getcert.c:2649
 msgid "  -i NAME\tnickname for tracking request\n"
 msgstr "  -i NAVN\tkaldenavn for fulgt forespørgsel\n"
 
-#: src/getcert.c:2593
+#: src/getcert.c:2599
 #, c-format
 msgid "Usage: %s resubmit [options]\n"
 msgstr "Brug: %s resubmit [tilvalg]\n"
 
-#: src/getcert.c:2603
+#: src/getcert.c:2609
 msgid "  -f FILE\tPEM file for certificate\n"
 msgstr "  -f FIL\tPEM-fil til certifikat\n"
 
-#: src/getcert.c:2609
+#: src/getcert.c:2615
 msgid "* New parameter values for the signing request:\n"
 msgstr "* Nye parameterværdier til signering af forespørgsel:\n"
 
-#: src/getcert.c:2618
+#: src/getcert.c:2624
 msgid "  -I NAME\tnew nickname to give to tracking request\n"
 msgstr "  -I NAVN\tnyt kaldenavn at give til fulgt forespørgsel\n"
 
-#: src/getcert.c:2620
+#: src/getcert.c:2626
 msgid "  -c CA\t\tuse the specified CA rather than the current one\n"
 msgstr "  -c CA\t\tbrug den angivne CA i stedet for den nuværende\n"
 
-#: src/getcert.c:2633
+#: src/getcert.c:2639
 #, c-format
 msgid "Usage: %s list [options]\n"
 msgstr "Brug %s list [tilvalg]\n"
 
-#: src/getcert.c:2636 src/getcert.c:2661
+#: src/getcert.c:2642 src/getcert.c:2667
 msgid "* General options:\n"
 msgstr "* Generelle tilvalg:\n"
 
-#: src/getcert.c:2638
+#: src/getcert.c:2644
 msgid "  -c CA\tlist only requests and certs associated with this CA\n"
 msgstr ""
 "  -c CA\tvis kun forespørgsler og certifikater forbundet med denne CA\n"
 
-#: src/getcert.c:2640
+#: src/getcert.c:2646
 msgid "  -r\tlist only information about outstanding requests\n"
 msgstr "  -r\tvis kun information om specielle forespørgsler\n"
 
-#: src/getcert.c:2641
+#: src/getcert.c:2647
 msgid "  -t\tlist only information about tracked certificates\n"
 msgstr "  -t\tvis kun information om fulgte certifikater\n"
 
-#: src/getcert.c:2642
+#: src/getcert.c:2648
 msgid "* If selecting a specific request:\n"
 msgstr "* Hvis en specifik forespørgsel vælges:\n"
 
-#: src/getcert.c:2645
+#: src/getcert.c:2651
 msgid "  -d DIR\tonly list requests and certs which use this NSS database\n"
 msgstr ""
 "  -d MAPPE<span class=\"whitespace other\" title=\"Tab\">»</span>oplister "
 "kun forespørgsler og certs som bruger denne NSS-database\n"
 
-#: src/getcert.c:2646
+#: src/getcert.c:2652
 msgid "  -n NAME\tonly list requests and certs which use this nickname\n"
 msgstr ""
 "  -n NAVN<span class=\"whitespace other\" title=\"Tab\">»</span>oplister kun "
 "forespørgsler og certs som bruger dette kaldenavn\n"
 
-#: src/getcert.c:2648
+#: src/getcert.c:2654
 msgid "  -f FILE\tonly list requests and certs stored in this PEM file\n"
 msgstr ""
 "  -f FIL<span class=\"whitespace other\" title=\"Tab\">»</span>oplister kun "
 "forespørgsler og certs, som er gemt i denne PEM-fil\n"
 
-#: src/getcert.c:2650 src/getcert.c:2665
+#: src/getcert.c:2656 src/getcert.c:2671
 msgid "  -S\tconnect to the certmonger service on the system bus\n"
 msgstr "  -S\tforbind til tjenesten certmonger i systembussen\n"
 
-#: src/getcert.c:2651 src/getcert.c:2666
+#: src/getcert.c:2657 src/getcert.c:2672
 msgid "  -s\tconnect to the certmonger service on the session bus\n"
 msgstr "  -s\tforbind til tjenesten certmonger i sessionsbussen\n"
 
-#: src/getcert.c:2657
+#: src/getcert.c:2663
 #, c-format
 msgid "Usage: %s list-cas [options]\n"
 msgstr "Brug: %s vis-cas [tilvalg]\n"
 
-#: src/getcert.c:2662
+#: src/getcert.c:2668
 msgid "  -c CA\tlist only information about the CA with this name\n"
 msgstr "  -c CA\tvis kun information om CA'et med dette navn\n"
 
-#: src/getcert.c:2719
+#: src/getcert.c:2725
 #, c-format
 msgid "%s: unrecognized command\n"
 msgstr "%s: ukendt kommando\n"
