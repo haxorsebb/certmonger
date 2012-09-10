@@ -17,6 +17,7 @@ dogtag-ipa-renew-agent-submit -E EE-URL -A AGENT-URL
 [-D serial (decimal)]
 [-S state]
 [-T profile]
+[-v]
 [csrfile]
 
 .SH DESCRIPTION
@@ -111,10 +112,19 @@ The serial number of an already-issued certificate for which the client should
 attempt to obtain a new certificate, in decimal form, if one can not be
 read from the \fICERTMONGER_CERTIFICATE\fR environment variable.
 .TP
+\fB-S\fR state
+A cookie value provided by a previous instance of this helper, if the helper
+is being asked to continue a multi-step enrollment process.  If the
+\fICERTMONGER_COOKIE\fR environment variable is set, its value is used.
+.TP
 \fB-T\fR profile/template
 The name of the type of certificate which the client should request from the CA
 if it is not renewing a certificate (per the \fB-s\fR option above).  The
 default value is \fBcaServerCert\fP.
+.TP
+\fB-v\fR
+Increases the logging level.  Use twice for more logging.  This option is mainly
+useful for troubleshooting.
 
 .SH EXIT STATUS
 .TP

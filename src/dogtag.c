@@ -72,6 +72,7 @@ help(const char *cmd)
 		"\t[-D serial (decimal)]\n"
 		"\t[-S state]\n"
 		"\t[-T profile]\n"
+		"\t[-v]\n"
 		"\t[csrfile]\n",
 		strchr(cmd, '/') ?  strrchr(cmd, '/') + 1 : cmd);
 }
