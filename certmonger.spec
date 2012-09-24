@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.60
+Version:	0.61
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -201,6 +201,10 @@ exit 0
 %endif
 
 %changelog
+* Mon Sep 24 2012 Nalin Dahyabhai <nalin@redhat.com> 0.61-1
+- fix a regression in reading old request tracking files where the
+  request was in state NEED_TO_NOTIFY or NOTIFYING
+
 * Wed Sep  5 2012 Nalin Dahyabhai <nalin@redhat.com> 0.60-1
 - adjust internals of logic for talking to dogtag to at least have a
   concept of non-agent cases
