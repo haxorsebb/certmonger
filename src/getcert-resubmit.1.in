@@ -56,6 +56,28 @@ Assign the specified nickname to this task, replacing the previous nickname.
 \fB\-N\fR NAME
 Change the subject name to include in the signing request.
 .TP
+\fB\-u\fR keyUsage
+Add an extensionRequest for the specified keyUsage to the
+signing request.  The keyUsage value is expected to be one of these names:
+
+digitalSignature
+
+nonRepudiation
+
+keyEncipherment
+
+dataEncipherment
+
+keyAgreement
+
+keyCertSign
+
+cRLSign
+
+encipherOnly
+
+decipherOnly
+.TP
 \fB\-U\fR EKU
 Change the extendedKeyUsage value specified in an extendedKeyUsage
 extension part of the extensionRequest attribute in the signing

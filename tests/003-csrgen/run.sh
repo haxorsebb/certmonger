@@ -51,7 +51,7 @@ for subject in CN=localhost CN=somehost "CN=Babs Jensen" ; do
 for hostname in "" localhost localhost,localhost.localdomain; do
 for email in "" root@localhost root@localhost,root@localhost.localdomain; do
 for principal in "" root@EXAMPLE.COM root@EXAMPLE.COM,root@FOO.EXAMPLE.COM; do
-for ku in "" 1 11 111 ; do
+for ku in "" 1 110 111 ; do
 for eku in "" id-kp-clientAuth id-kp-clientAuth,id-kp-emailProtection ; do
 for challengepassword in "" ChallengePasswordIsEncodedInPlainText ; do
 for certfname in "" CertificateFriendlyName ; do

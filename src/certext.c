@@ -252,7 +252,7 @@ cm_certext_build_ku(struct cm_store_entry *entry, PLArenaPool *arena,
 		    const char *ku_value)
 {
 	SECItem *ret, encoded, *bits;
-	unsigned int i, val, len;
+	unsigned int i, used, val, len;
 	if ((ku_value == NULL) || (strlen(ku_value) == 0)) {
 		/* Nothing to encode, so don't include this extension. */
 		return NULL;
@@ -260,13 +260,18 @@ cm_certext_build_ku(struct cm_store_entry *entry, PLArenaPool *arena,
 	len = strlen(ku_value) + 1;
 	bits = SECITEM_AllocItem(arena, NULL, len);
 	memset(bits->data, '\0', len);
-	for (i = 0; (ku_value != NULL) && (ku_value[i] != '\0'); i++) {
+	for (i = 0, used = 0;
+	     (ku_value != NULL) && (ku_value[i] != '\0');
+	     i++) {
 		val = ((ku_value[i] == '1') ? 0x80 : 0x00) >> (i % 8);
 		bits->data[i / 8] |= val;
+		if (val != 0) {
+			used = i + 1;
+		}
 	}
 	/* A bitString encodes with length == number of bits, not bytes, but
 	 * luckily we have that information. */
-	bits->len = i;
+	bits->len = used;
 	memset(&encoded, 0, sizeof(encoded));
 	if (SEC_ASN1EncodeItem(arena, &encoded, bits,
 			       SEC_BitStringTemplate) != &encoded) {

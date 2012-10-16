@@ -42,6 +42,8 @@ libcm_a_SOURCES = \
 	keyiread-int.h \
 	keyiread-n.c \
 	keyiread-n.h \
+	kudict.c \
+	kudict.h \
 	log.c \
 	log.h \
 	netlink.c \

@@ -42,6 +42,7 @@ o object layout
                {"TRACK"("monitoring"),boolean}
                {"RENEW"("autorenew"),boolean}
                {"SUBJECT"("template-subject"),string}
+               {"KU"("template-ku"),string (bit field)}
                {"EKU"("template-eku"),array-of-string (oids)}
                {"PRINCIPAL"("template-principal"),array-of-string (principal names)}
                {"DNS"("template-hostname"),array-of-string (dns names)}

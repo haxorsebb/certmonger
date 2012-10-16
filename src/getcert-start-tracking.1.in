@@ -90,8 +90,30 @@ from the specified CA.
 If and when \fIcertmonger\fR attempts to obtain a new certificate to replace
 the one being monitored, the values to be added to the signing request will be
 taken from the current certificate, unless preferred values are set using one
-or more of \fB\-U\fR, \fB\-K\fR, \fB\-E\fR, and \fB\-D\fR.
+or more of \fB-u\R, \fB\-U\fR, \fB\-K\fR, \fB\-E\fR, and \fB\-D\fR.
 
+.TP
+\fB\-u\fR keyUsage
+Add an extensionRequest for the specified keyUsage to the
+signing request.  The keyUsage value is expected to be one of these names:
+
+digitalSignature
+
+nonRepudiation
+
+keyEncipherment
+
+dataEncipherment
+
+keyAgreement
+
+keyCertSign
+
+cRLSign
+
+encipherOnly
+
+decipherOnly
 .TP
 \fB\-U\fR EKU
 Add an extensionRequest for the specified extendedKeyUsage to the

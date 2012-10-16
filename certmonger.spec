@@ -200,6 +200,8 @@ exit 0
 %config(noreplace) %{_unitdir}/*
 %endif
 
+#- add a -u flag to getcert to enable requesting a keyUsage extension value
+
 %changelog
 * Mon Sep 24 2012 Nalin Dahyabhai <nalin@redhat.com> 0.61-1
 - fix a regression in reading old request tracking files where the

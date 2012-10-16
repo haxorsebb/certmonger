@@ -1003,6 +1003,16 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		new_entry->cm_template_subject = maybe_strdup(new_entry,
 							      param->value.s);
 	}
+	param = cm_tdbusm_find_dict_entry(d, "KU", cm_tdbusm_dict_s);
+	if (param == NULL) {
+		param = cm_tdbusm_find_dict_entry(d,
+						  CM_DBUS_PROP_TEMPLATE_KU,
+						  cm_tdbusm_dict_s);
+	}
+	if (param != NULL) {
+		new_entry->cm_template_ku = maybe_strdup(new_entry,
+							 param->value.s);
+	}
 	param = cm_tdbusm_find_dict_entry(d, "EKU", cm_tdbusm_dict_as);
 	if (param == NULL) {
 		param = cm_tdbusm_find_dict_entry(d,
@@ -1727,13 +1737,44 @@ request_get_cert_data(DBusConnection *conn, DBusMessage *msg,
 static long
 ku_from_string(const char *ku)
 {
-	long i = 0;
-	while ((ku != NULL) && (*ku++ != '\0')) {
-		i <<= 1;
-		i |= 1;
+	long i = 0, mask = 1;
+	while ((ku != NULL) && (*ku != '\0')) {
+		switch (*ku++) {
+		case '1':
+			i |= mask;
+			break;
+		case '0':
+		default:
+			break;
+		}
+		mask <<= 1;
 	}
 	return i;
 }
+
+#if 0
+/* convert our number into a text bit string */
+static const char *
+ku_to_string(unsigned long ku, char *output, ssize_t len)
+{
+	static char local_output[33];
+	char *p;
+	if (output == NULL) {
+		output = local_output;
+		len = sizeof(local_output);
+	}
+	p = output;
+	while (((p - output) < len) && (ku != 0)) {
+		*p++ = (ku & 1) ? '1' : '0';
+		ku >>= 1;
+	}
+	if (p - output == len) {
+		return NULL;
+	}
+	*p++ = '\0';
+	return output;
+}
+#endif
 
 /* split the comma-separated list into an array */
 static char **
@@ -2378,6 +2419,16 @@ request_modify(DBusConnection *conn, DBusMessage *msg,
 				}
 				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
 					propname[n_propname++] = CM_DBUS_PROP_KEY_PIN_FILE;
+				}
+			} else
+			if ((param->value_type == cm_tdbusm_dict_s) &&
+			    ((strcasecmp(param->key, "KU") == 0) ||
+			     (strcasecmp(param->key, CM_DBUS_PROP_TEMPLATE_KU) == 0))) {
+				talloc_free(entry->cm_template_ku);
+				entry->cm_template_ku = maybe_strdup(entry,
+								     param->value.s);
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_TEMPLATE_KU;
 				}
 			} else
 			if ((param->value_type == cm_tdbusm_dict_as) &&
@@ -4862,6 +4913,14 @@ cm_tdbush_iface_request(void)
 								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_CERT_KU,
+								       cm_tdbush_property_string,
+								       cm_tdbush_property_read,
+								       cm_tdbush_property_char_p,
+								       offsetof(struct cm_store_entry, cm_cert_ku),
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_CERT_EKU,
 								       cm_tdbush_property_strings,
 								       cm_tdbush_property_read,
@@ -5031,6 +5090,14 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_pp,
 								       offsetof(struct cm_store_entry, cm_template_email),
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_TEMPLATE_KU,
+								       cm_tdbush_property_string,
+								       cm_tdbush_property_read,
+								       cm_tdbush_property_char_p,
+								       offsetof(struct cm_store_entry, cm_template_ku),
 								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
@@ -5389,7 +5456,7 @@ cm_tdbush_iface_request(void)
 				     make_interface_item(cm_tdbush_interface_signal,
 							 make_signal(CM_DBUS_SIGNAL_REQUEST_CERT_SAVED,
 								     NULL),
-							 NULL))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
+							 NULL))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
 	}
 	return ret;
 }

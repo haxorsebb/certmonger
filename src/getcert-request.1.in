@@ -1,4 +1,4 @@
-.TH certmonger 1 "14 June 2012" "certmonger Manual"
+.TH certmonger 1 "9 October 2012" "certmonger Manual"
 
 .SH NAME
 getcert
@@ -94,6 +94,28 @@ service as an additional name.
 \fB\-N\fR NAME
 Set the subject name to include in the signing request.  The default
 used is CN=\fIhostname\fR, where \fIhostname\fR is the local hostname.
+.TP
+\fB\-u\fR keyUsage
+Add an extensionRequest for the specified keyUsage to the
+signing request.  The keyUsage value is expected to be one of these names:
+
+digitalSignature
+
+nonRepudiation
+
+keyEncipherment
+
+dataEncipherment
+
+keyAgreement
+
+keyCertSign
+
+cRLSign
+
+encipherOnly
+
+decipherOnly
 .TP
 \fB\-U\fR EKU
 Add an extensionRequest for the specified extendedKeyUsage to the
