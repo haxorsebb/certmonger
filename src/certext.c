@@ -1151,7 +1151,7 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 		oid = SECOID_FindOIDByTag(SEC_OID_X509_BASIC_CONSTRAINTS);
 		if (oid != NULL) {
 			ext[i].id = oid->oid;
-			ext[i].critical = der_false;
+			ext[i].critical = der_true;
 			ext[i].value = *item;
 			exts[i] = &ext[i];
 			i++;
