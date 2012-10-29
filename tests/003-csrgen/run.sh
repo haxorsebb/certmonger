@@ -61,6 +61,7 @@ for certfname in "" CertificateFriendlyName ; do
 	key_storage_type=NSSDB
 	key_storage_location=$tmpdir
 	key_nickname=keyi$size
+	key_pubkey=616263
 	${certfname:+cert_nickname=$certfname}
 	${challengepassword:+challenge_password=$challengepassword}
 	${subject:+template_subject=$subject}
@@ -75,6 +76,7 @@ for certfname in "" CertificateFriendlyName ; do
 	cat > entry.$size <<- EOF
 	key_storage_type=FILE
 	key_storage_location=$tmpdir/key.$size
+	key_pubkey=616263
 	${certfname:+cert_nickname=$certfname}
 	${challengepassword:+challenge_password=$challengepassword}
 	${subject:+template_subject=$subject}

@@ -30,6 +30,7 @@
 #include <nss.h>
 #include <certt.h>
 #include <cert.h>
+#include <pk11pub.h>
 #include <secoid.h>
 #include <secoidt.h>
 #include <secasn1.h>
@@ -1083,13 +1084,48 @@ cm_certext_build_basic(struct cm_store_entry *entry, PLArenaPool *arena,
 }
 #endif
 
+/* Build a subjectKeyIdentifier extension value. */
+static SECItem *
+cm_certext_build_skid(struct cm_store_entry *entry, PLArenaPool *arena)
+{
+	SECItem pubkey, value, encoded, *item;
+	unsigned char digest[CM_DIGEST_MAX];
+
+	if (entry->cm_key_pubkey != NULL) {
+		memset(&pubkey, 0, sizeof(pubkey));
+		pubkey.len = strlen(entry->cm_key_pubkey) / 2;
+		pubkey.data = PORT_ArenaZAlloc(arena, pubkey.len);
+		if (pubkey.data == NULL) {
+			return NULL;
+		}
+		cm_store_hex_to_bin(entry->cm_key_pubkey,
+				    pubkey.data, pubkey.len);
+		if (PK11_HashBuf(SEC_OID_SHA1, digest,
+				 pubkey.data, pubkey.len) != SECSuccess) {
+			return NULL;
+		}
+		memset(&value, 0, sizeof(value));
+		value.data = digest;
+		value.len = 20;
+		memset(&encoded, 0, sizeof(encoded));
+		if (CERT_EncodeSubjectKeyID(arena, &value,
+					    &encoded) == SECSuccess) {
+			item = SECITEM_ArenaDupItem(arena, &encoded);
+		} else {
+			item = NULL;
+		}
+		return item;
+	}
+	return NULL;
+}
+
 /* Build a requestedExtensions attribute. */
 void
 cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 				unsigned char **extensions, size_t *length)
 {
 	PLArenaPool *arena;
-	CERTCertExtension ext[4], *exts[5], **exts_ptr;
+	CERTCertExtension ext[5], *exts[6], **exts_ptr;
 	SECOidData *oid;
 	SECItem *item, encoded;
 	SECItem der_false = {
@@ -1097,6 +1133,7 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 		.data = (unsigned char *) "\000",
 	};
 	int i;
+	NSSInitContext *ctx;
 
 	*extensions = NULL;
 	*length = 0;
@@ -1106,6 +1143,12 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 	}
 	memset(&ext, 0, sizeof(ext));
 	memset(&exts, 0, sizeof(exts));
+
+	ctx = NSS_InitContext(entry->cm_key_storage_location,
+			      NULL, NULL, NULL, NULL,
+			      NSS_INIT_READONLY |
+			      NSS_INIT_NOCERTDB |
+			      NSS_INIT_NOROOTINIT);
 
 	/* Build the extensions. */
 	i = 0;
@@ -1158,6 +1201,17 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 		}
 	}
 #endif
+	item = cm_certext_build_skid(entry, arena);
+	if (item != NULL) {
+		oid = SECOID_FindOIDByTag(SEC_OID_X509_SUBJECT_KEY_ID);
+		if (oid != NULL) {
+			ext[i].id = oid->oid;
+			ext[i].critical = der_false;
+			ext[i].value = *item;
+			exts[i] = &ext[i];
+			i++;
+		}
+	}
 	exts[i++] = NULL;
 	exts_ptr = exts;
 	/* Encode the sequence. */
@@ -1174,6 +1228,11 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 		*extensions = NULL;
 		*length = 0;
 	}
+
+	if (NSS_ShutdownContext(ctx) != SECSuccess) {
+		cm_log(1, "Error shutting down NSS.\n");
+	}
+
 	PORT_FreeArena(arena, PR_TRUE);
 }
 
