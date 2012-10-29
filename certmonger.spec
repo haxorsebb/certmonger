@@ -201,6 +201,8 @@ exit 0
 %endif
 
 #- add a -u flag to getcert to enable requesting a keyUsage extension value
+#- request subjectKeyIdentifier extensions from CAs, and include them in
+#  self-signed certificates
 
 %changelog
 * Mon Sep 24 2012 Nalin Dahyabhai <nalin@redhat.com> 0.61-1
