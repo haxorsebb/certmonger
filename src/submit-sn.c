@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2012 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -76,6 +76,7 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	SECOidData *sigoid, *extoid, *basicoid;
 	int i, serial_length, basic_length;
 	unsigned char btrue = 0xff;
+	PRBool found_basic;
 
 	/* Start up NSS and open the database. */
 	privkey = cm_keyiread_n_get_private_key(entry, 0);
@@ -242,12 +243,17 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		cm_log(1, "Unable to get basic constraints OID.\n");
 		_exit(1);
 	}
-	/* Count the number of extensions. */
+	/* Count the number of extensions and whether or not we requested a
+	 * basicConstraints extension. */
+	found_basic = PR_FALSE;
 	if (ucert->extensions == NULL) {
 		i = 0;
 	} else {
 		for (i = 0; ucert->extensions[i] != NULL; i++) {
-			continue;
+			if (SECITEM_ItemsAreEqual(&ucert->extensions[i]->id,
+						  &basicoid->oid)) {
+				found_basic = PR_TRUE;
+			}
 		}
 	}
 	/* Allocate space for one more. */
@@ -260,7 +266,7 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		ucert->extensions = extensions;
 	}
 	/* Add basic constraints. */
-	if ((extensions != NULL) && (extensions[i] != NULL)) {
+	if ((extensions != NULL) && (extensions[i] != NULL) && !found_basic) {
 		extensions[i]->id = basicoid->oid;
 		extensions[i]->critical.data = &btrue;
 		extensions[i]->critical.len = 1;

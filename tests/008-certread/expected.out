@@ -1,4 +1,6 @@
+cert_ca_path_length=-1
 cert_email=babs@example.com
+cert_is_ca=0
 cert_issuer=CN=Babs Jensen
 cert_not_after=20091211214654
 cert_not_before=20091111214654

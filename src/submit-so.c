@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -144,14 +144,16 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 								}
 							}
 #endif
-							/* add basic constraints */
+							/* add basic constraints if needed */
 							cert->cert_info->extensions = X509_REQ_get_extensions(req);
-							basicl = strlen(CM_BASIC_CONSTRAINT_NOT_CA) / 2;
-							basicd = talloc_size(ca, basicl);
-							cm_store_hex_to_bin(CM_BASIC_CONSTRAINT_NOT_CA, basicd, basicl);
-							basictmp = basicd;
-							basic = d2i_BASIC_CONSTRAINTS(NULL, &basictmp, basicl);
-							X509_add1_ext_i2d(cert, NID_basic_constraints, basic, 1, 0);
+							if (X509_get_ext_by_NID(cert, NID_basic_constraints, -1) == -1) {
+								basicl = strlen(CM_BASIC_CONSTRAINT_NOT_CA) / 2;
+								basicd = talloc_size(ca, basicl);
+								cm_store_hex_to_bin(CM_BASIC_CONSTRAINT_NOT_CA, basicd, basicl);
+								basictmp = basicd;
+								basic = d2i_BASIC_CONSTRAINTS(NULL, &basictmp, basicl);
+								X509_add1_ext_i2d(cert, NID_basic_constraints, basic, 1, 0);
+							}
 							/* finish up */
 							X509_sign(cert, pkey,
 								  cm_prefs_ossl_hash());
