@@ -70,6 +70,11 @@ struct cm_store_entry {
 	char **cm_cert_principal;
 	char *cm_cert_ku;
 	char *cm_cert_eku;
+	int cm_cert_is_ca: 1;
+	int cm_cert_ca_path_length;
+	char **cm_cert_crl_distribution_point;
+	char **cm_cert_ocsp_location;
+	char *cm_cert_ns_comment;
 	char *cm_cert_profile;
 	time_t cm_last_need_notify_check;
 	time_t cm_last_need_enroll_check;

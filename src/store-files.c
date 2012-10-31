@@ -75,6 +75,11 @@ enum cm_store_file_field {
 	cm_store_entry_field_cert_principal,
 	cm_store_entry_field_cert_ku,
 	cm_store_entry_field_cert_eku,
+	cm_store_entry_field_cert_is_ca,
+	cm_store_entry_field_cert_ca_path_length,
+	cm_store_entry_field_cert_crl_distribution_point,
+	cm_store_entry_field_cert_ocsp_location,
+	cm_store_entry_field_cert_ns_comment,
 	cm_store_entry_field_cert_profile,
 
 	cm_store_entry_field_last_expiration_check,
@@ -164,6 +169,11 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_cert_principal, "cert_principal"},
 	{cm_store_entry_field_cert_ku, "cert_ku"},
 	{cm_store_entry_field_cert_eku, "cert_eku"},
+	{cm_store_entry_field_cert_is_ca, "cert_is_ca"},
+	{cm_store_entry_field_cert_ca_path_length, "cert_ca_path_length"},
+	{cm_store_entry_field_cert_crl_distribution_point, "cert_crldp"},
+	{cm_store_entry_field_cert_ocsp_location, "cert_ocsp"},
+	{cm_store_entry_field_cert_ns_comment, "cert_ns_comment"},
 	{cm_store_entry_field_cert_profile, "cert_profile"},
 
 	{cm_store_entry_field_last_expiration_check, "last_expiration_check"},
@@ -572,6 +582,25 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_cert_eku:
 				ret->cm_cert_eku = free_if_empty(p);
 				break;
+			case cm_store_entry_field_cert_is_ca:
+				ret->cm_cert_is_ca = atoi(p);
+				talloc_free(p);
+				break;
+			case cm_store_entry_field_cert_ca_path_length:
+				ret->cm_cert_ca_path_length = atoi(p);
+				talloc_free(p);
+				break;
+			case cm_store_entry_field_cert_crl_distribution_point:
+				ret->cm_cert_crl_distribution_point =
+					free_if_empty_multi(ret, p);
+				break;
+			case cm_store_entry_field_cert_ocsp_location:
+				ret->cm_cert_ocsp_location =
+					free_if_empty_multi(ret, p);
+				break;
+			case cm_store_entry_field_cert_ns_comment:
+				ret->cm_cert_ns_comment = free_if_empty(p);
+				break;
 			case cm_store_entry_field_cert_profile:
 				ret->cm_cert_profile = free_if_empty(p);
 				break;
@@ -764,6 +793,11 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_cert_principal:
 			case cm_store_entry_field_cert_ku:
 			case cm_store_entry_field_cert_eku:
+			case cm_store_entry_field_cert_is_ca:
+			case cm_store_entry_field_cert_ca_path_length:
+			case cm_store_entry_field_cert_crl_distribution_point:
+			case cm_store_entry_field_cert_ocsp_location:
+			case cm_store_entry_field_cert_ns_comment:
 			case cm_store_entry_field_cert_profile:
 			case cm_store_entry_field_last_expiration_check:
 			case cm_store_entry_field_last_need_notify_check:
@@ -1038,6 +1072,16 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 				entry->cm_cert_ku);
 	cm_store_file_write_str(fp, cm_store_entry_field_cert_eku,
 				entry->cm_cert_eku);
+	cm_store_file_write_int(fp, cm_store_entry_field_cert_is_ca,
+				entry->cm_cert_is_ca);
+	cm_store_file_write_int(fp, cm_store_entry_field_cert_ca_path_length,
+				entry->cm_cert_ca_path_length);
+	cm_store_file_write_strs(fp, cm_store_entry_field_cert_crl_distribution_point,
+				 entry->cm_cert_crl_distribution_point);
+	cm_store_file_write_strs(fp, cm_store_entry_field_cert_ocsp_location,
+				 entry->cm_cert_ocsp_location);
+	cm_store_file_write_str(fp, cm_store_entry_field_cert_ns_comment,
+				entry->cm_cert_ns_comment);
 	cm_store_file_write_str(fp, cm_store_entry_field_cert_profile,
 				entry->cm_cert_profile);
 
@@ -1609,6 +1653,11 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	ret->cm_cert_principal = cm_store_maybe_strdupv(ret, entry->cm_cert_principal);
 	ret->cm_cert_ku = cm_store_maybe_strdup(ret, entry->cm_cert_ku);
 	ret->cm_cert_eku = cm_store_maybe_strdup(ret, entry->cm_cert_eku);
+	ret->cm_cert_is_ca = entry->cm_cert_is_ca;
+	ret->cm_cert_ca_path_length = entry->cm_cert_ca_path_length;
+	ret->cm_cert_crl_distribution_point = cm_store_maybe_strdupv(ret, entry->cm_cert_crl_distribution_point);
+	ret->cm_cert_ocsp_location = cm_store_maybe_strdupv(ret, entry->cm_cert_ocsp_location);
+	ret->cm_cert_ns_comment = cm_store_maybe_strdup(ret, entry->cm_cert_ns_comment);
 	ret->cm_cert_profile = cm_store_maybe_strdup(ret,
 						     entry->cm_cert_profile);
 
