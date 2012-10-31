@@ -86,15 +86,24 @@ struct cm_store_entry {
 	/* CSR template information [or imported from existing certificate]
 	   * subject (cn=host name)
 	   * subjectaltname
+	   *  hostname
 	   *  email
 	   *  principal name
-	   * ku, eku */
+	   * ku, eku
+	   * is_ca, ca_path_length
+	   * crl_distribution_points
+	   * aia_ocsp_locations
+	   */
 	char *cm_template_subject;
 	char **cm_template_hostname;
 	char **cm_template_email;
 	char **cm_template_principal;
 	char *cm_template_ku;
 	char *cm_template_eku;
+	int cm_template_is_ca: 1;
+	int cm_template_ca_path_length;
+	char **cm_template_crl_distribution_point;
+	char **cm_template_ocsp_location;
 	/* A challenge password, which may be included (in cleartext form!) in
 	 * a CSR. */
 	char *cm_challenge_password;

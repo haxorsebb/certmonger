@@ -87,6 +87,10 @@ enum cm_store_file_field {
 	cm_store_entry_field_template_principal,
 	cm_store_entry_field_template_ku,
 	cm_store_entry_field_template_eku,
+	cm_store_entry_field_template_is_ca,
+	cm_store_entry_field_template_ca_path_length,
+	cm_store_entry_field_template_crl_distribution_point,
+	cm_store_entry_field_template_ocsp_location,
 
 	cm_store_entry_field_challenge_password,
 
@@ -171,6 +175,10 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_template_principal, "template_principal"},
 	{cm_store_entry_field_template_ku, "template_ku"},
 	{cm_store_entry_field_template_eku, "template_eku"},
+	{cm_store_entry_field_template_is_ca, "template_is_ca"},
+	{cm_store_entry_field_template_ca_path_length, "template_ca_path_length"},
+	{cm_store_entry_field_template_crl_distribution_point, "template_crldp"},
+	{cm_store_entry_field_template_ocsp_location, "template_ocsp"},
 
 	{cm_store_entry_field_challenge_password, "challenge_password"},
 
@@ -399,6 +407,7 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 		s = cm_store_file_read_lines(ret, fp);
 		ret->cm_busname = cm_store_entry_next_busname(ret);
 		ret->cm_store_private = talloc_strdup(ret, filename);
+		ret->cm_template_ca_path_length = -1;
 		for (i = 0; (s != NULL) && (s[i] != NULL); i++) {
 			p = s[i];
 			field = cm_store_file_field_of_line(p);
@@ -604,6 +613,22 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_template_eku:
 				ret->cm_template_eku = free_if_empty(p);
 				break;
+			case cm_store_entry_field_template_is_ca:
+				ret->cm_template_is_ca = atoi(p);
+				talloc_free(p);
+				break;
+			case cm_store_entry_field_template_ca_path_length:
+				ret->cm_template_ca_path_length = atoi(p);
+				talloc_free(p);
+				break;
+			case cm_store_entry_field_template_crl_distribution_point:
+				ret->cm_template_crl_distribution_point =
+					free_if_empty_multi(ret, p);
+				break;
+			case cm_store_entry_field_template_ocsp_location:
+				ret->cm_template_ocsp_location =
+					free_if_empty_multi(ret, p);
+				break;
 			case cm_store_entry_field_challenge_password:
 				ret->cm_challenge_password = free_if_empty(p);
 				break;
@@ -744,6 +769,10 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_template_principal:
 			case cm_store_entry_field_template_ku:
 			case cm_store_entry_field_template_eku:
+			case cm_store_entry_field_template_is_ca:
+			case cm_store_entry_field_template_ca_path_length:
+			case cm_store_entry_field_template_crl_distribution_point:
+			case cm_store_entry_field_template_ocsp_location:
 			case cm_store_entry_field_challenge_password:
 			case cm_store_entry_field_csr:
 			case cm_store_entry_field_spkac:
@@ -1024,6 +1053,15 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 				entry->cm_template_ku);
 	cm_store_file_write_str(fp, cm_store_entry_field_template_eku,
 				entry->cm_template_eku);
+	cm_store_file_write_int(fp, cm_store_entry_field_template_is_ca,
+				entry->cm_template_is_ca);
+	cm_store_file_write_int(fp, cm_store_entry_field_template_ca_path_length,
+				entry->cm_template_ca_path_length);
+	cm_store_file_write_strs(fp, cm_store_entry_field_template_crl_distribution_point,
+				 entry->cm_template_crl_distribution_point);
+	cm_store_file_write_strs(fp,
+				 cm_store_entry_field_template_ocsp_location,
+				 entry->cm_template_ocsp_location);
 
 	cm_store_file_write_str(fp, cm_store_entry_field_challenge_password,
 				entry->cm_challenge_password);
@@ -1577,6 +1615,10 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	ret->cm_template_principal = cm_store_maybe_strdupv(ret, entry->cm_template_principal);
 	ret->cm_template_ku = cm_store_maybe_strdup(ret, entry->cm_template_ku);
 	ret->cm_template_eku = cm_store_maybe_strdup(ret, entry->cm_template_eku);
+	ret->cm_template_is_ca = entry->cm_template_is_ca;
+	ret->cm_template_ca_path_length = entry->cm_template_ca_path_length;
+	ret->cm_template_crl_distribution_point = cm_store_maybe_strdupv(ret, entry->cm_template_crl_distribution_point);
+	ret->cm_template_ocsp_location = cm_store_maybe_strdupv(ret, entry->cm_template_ocsp_location);
 
 	ret->cm_challenge_password = cm_store_maybe_strdup(ret, entry->cm_challenge_password);
 	ret->cm_csr = cm_store_maybe_strdup(ret, entry->cm_csr);
