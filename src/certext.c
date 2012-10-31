@@ -1061,18 +1061,17 @@ cm_certext_build_san(struct cm_store_entry *entry, PLArenaPool *arena,
 	return item;
 }
 
-#ifdef GENERATE_BASIC_CONSTRAINTS
 /* Build a basicConstraints extension value. */
 static SECItem *
 cm_certext_build_basic(struct cm_store_entry *entry, PLArenaPool *arena,
-		       int is_ca)
+		       int is_ca, int path_length)
 {
 	CERTBasicConstraints value;
 	SECItem encoded, *item;
 
 	memset(&value, 0, sizeof(value));
 	value.isCA = (is_ca != 0);
-	value.pathLenConstraint = -1;
+	value.pathLenConstraint = value.isCA ? path_length : -1;
 	memset(&encoded, 0, sizeof(encoded));
 	if (CERT_EncodeBasicConstraintValue(arena, &value,
 					    &encoded) == SECSuccess) {
@@ -1082,7 +1081,6 @@ cm_certext_build_basic(struct cm_store_entry *entry, PLArenaPool *arena,
 	}
 	return item;
 }
-#endif
 
 /* Build a subjectKeyIdentifier extension value. */
 static SECItem *
@@ -1119,20 +1117,154 @@ cm_certext_build_skid(struct cm_store_entry *entry, PLArenaPool *arena)
 	return NULL;
 }
 
+/* Build an authorityInformationAccess extension value. */
+static SECItem *
+cm_certext_build_aia(struct cm_store_entry *entry, PLArenaPool *arena,
+		     char **ocsp_location)
+{
+	CERTAuthInfoAccess *value, **values;
+	CERTGeneralName *location;
+	SECItem encoded, *item;
+	SECOidData *oid;
+	unsigned char *tmp;
+	unsigned int i, n;
+
+	oid = SECOID_FindOIDByTag(SEC_OID_PKIX_OCSP);
+	if (oid == NULL) {
+		return NULL;
+	}
+	for (n = 0;
+	     (ocsp_location != NULL) && (ocsp_location[n] != NULL);
+	     n++) {
+		continue;
+	}
+	if (n == 0) {
+		return NULL;
+	}
+	location = PORT_ArenaZAlloc(arena, sizeof(*location) * n);
+	if (location == NULL) {
+		return NULL;
+	}
+	value = PORT_ArenaZAlloc(arena, sizeof(*value) * n);
+	if (value == NULL) {
+		return NULL;
+	}
+	values = PORT_ArenaZAlloc(arena, sizeof(*values) * (n + 1));
+	if (values == NULL) {
+		return NULL;
+	}
+	for (i = 0; i < n; i++) {
+		location[i].type = certURI;
+		tmp = (unsigned char *) ocsp_location[i];
+		location[i].name.other.data = tmp;
+		location[i].name.other.len = strlen(ocsp_location[i]);
+		value[i].method = oid->oid;
+		value[i].location = &location[i];
+		values[i] = &value[i];
+	}
+	memset(&encoded, 0, sizeof(encoded));
+	if (CERT_EncodeInfoAccessExtension(arena, values,
+					   &encoded) == SECSuccess) {
+		item = SECITEM_ArenaDupItem(arena, &encoded);
+	} else {
+		item = NULL;
+	}
+	return item;
+}
+
+/* Build a CRL distribution points extension value. */
+static SECItem *
+cm_certext_build_crldp(struct cm_store_entry *entry, PLArenaPool *arena,
+		       char **crldp)
+{
+	CERTCrlDistributionPoints decoded;
+	CRLDistributionPoint *value, **values;
+	CERTGeneralName *location;
+	SECItem encoded, *item;
+	SECOidData *oid;
+	unsigned int i, n;
+
+	oid = SECOID_FindOIDByTag(SEC_OID_PKIX_OCSP);
+	if (oid == NULL) {
+		return NULL;
+	}
+	for (n = 0; (crldp != NULL) && (crldp[n] != NULL); n++) {
+		continue;
+	}
+	if (n == 0) {
+		return NULL;
+	}
+	location = PORT_ArenaZAlloc(arena, sizeof(*location) * n);
+	if (location == NULL) {
+		return NULL;
+	}
+	value = PORT_ArenaZAlloc(arena, sizeof(*value) * n);
+	if (value == NULL) {
+		return NULL;
+	}
+	values = PORT_ArenaZAlloc(arena, sizeof(*values) * (n + 1));
+	if (values == NULL) {
+		return NULL;
+	}
+	for (i = 0; i < n; i++) {
+		location[i].type = certURI;
+		location[i].name.other.data = (unsigned char *) crldp[i];
+		location[i].name.other.len = strlen(crldp[i]);
+		location[i].l.next = &location[i].l;
+		value[i].distPointType = generalName;
+		value[i].distPoint.fullName = &location[i];
+		values[i] = &value[i];
+	}
+	decoded.distPoints = values;
+	memset(&encoded, 0, sizeof(encoded));
+	if (CERT_EncodeCRLDistributionPoints(arena, &decoded,
+					     &encoded) == SECSuccess) {
+		item = SECITEM_ArenaDupItem(arena, &encoded);
+	} else {
+		item = NULL;
+	}
+	return item;
+}
+
+/* Build a Netscape comment extension value. */
+static SECItem *
+cm_certext_build_ns_comment(struct cm_store_entry *entry, PLArenaPool *arena,
+			    char *comment)
+{
+	SECItem value, encoded, *item;
+
+	memset(&value, 0, sizeof(value));
+	value.data = (unsigned char *) comment;
+	value.len = strlen(comment);
+	memset(&encoded, 0, sizeof(encoded));
+	if (SEC_ASN1EncodeItem(arena, &encoded, &value,
+			       SEC_IA5StringTemplate) == &encoded) {
+		item = SECITEM_ArenaDupItem(arena, &encoded);
+	} else {
+		item = NULL;
+	}
+	return item;
+}
+
 /* Build a requestedExtensions attribute. */
 void
 cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 				unsigned char **extensions, size_t *length)
 {
 	PLArenaPool *arena;
-	CERTCertExtension ext[5], *exts[6], **exts_ptr;
+	CERTCertExtension ext[8], *exts[9], **exts_ptr;
 	SECOidData *oid;
 	SECItem *item, encoded;
 	SECItem der_false = {
 		.len = 1,
 		.data = (unsigned char *) "\000",
 	};
+	SECItem der_true = {
+		.len = 1,
+		.data = (unsigned char *) "\377",
+	};
 	int i;
+	char **tmp;
 	NSSInitContext *ctx;
 
 	*extensions = NULL;
@@ -1188,8 +1320,9 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 			i++;
 		}
 	}
-#ifdef GENERATE_BASIC_CONSTRAINTS
-	item = cm_certext_build_basic(entry, arena, entry->cm_template_is_ca);
+	item = cm_certext_build_basic(entry, arena,
+				      entry->cm_template_is_ca,
+				      entry->cm_template_ca_path_length);
 	if (item != NULL) {
 		oid = SECOID_FindOIDByTag(SEC_OID_X509_BASIC_CONSTRAINTS);
 		if (oid != NULL) {
@@ -1200,11 +1333,46 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 			i++;
 		}
 	}
-#endif
 	item = cm_certext_build_skid(entry, arena);
 	if (item != NULL) {
 		oid = SECOID_FindOIDByTag(SEC_OID_X509_SUBJECT_KEY_ID);
 		if (oid != NULL) {
+			ext[i].id = oid->oid;
+			ext[i].critical = der_false;
+			ext[i].value = *item;
+			exts[i] = &ext[i];
+			i++;
+		}
+	}
+	if (entry->cm_template_ocsp_location != NULL) {
+		oid = SECOID_FindOIDByTag(SEC_OID_X509_AUTH_INFO_ACCESS);
+		item = cm_certext_build_aia(entry, arena,
+					    entry->cm_template_ocsp_location);
+		if ((item != NULL) && (oid != NULL)) {
+			ext[i].id = oid->oid;
+			ext[i].critical = der_false;
+			ext[i].value = *item;
+			exts[i] = &ext[i];
+			i++;
+		}
+	}
+	if (entry->cm_template_crl_distribution_point != NULL) {
+		oid = SECOID_FindOIDByTag(SEC_OID_X509_CRL_DIST_POINTS);
+		tmp = entry->cm_template_crl_distribution_point;
+		item = cm_certext_build_crldp(entry, arena, tmp);
+		if ((item != NULL) && (oid != NULL)) {
+			ext[i].id = oid->oid;
+			ext[i].critical = der_false;
+			ext[i].value = *item;
+			exts[i] = &ext[i];
+			i++;
+		}
+	}
+	if (entry->cm_template_ns_comment != NULL) {
+		oid = SECOID_FindOIDByTag(SEC_OID_NS_CERT_EXT_COMMENT);
+		item = cm_certext_build_ns_comment(entry, arena,
+						   entry->cm_template_ns_comment);
+		if ((item != NULL) && (oid != NULL)) {
 			ext[i].id = oid->oid;
 			ext[i].critical = der_false;
 			ext[i].value = *item;
