@@ -46,15 +46,20 @@ for size in 512 1024 1536 2048 3072 4096 ; do
 done
 
 iteration=1
-for size in 1024 ; do
-for subject in CN=localhost CN=somehost "CN=Babs Jensen" ; do
-for hostname in "" localhost localhost,localhost.localdomain; do
-for email in "" root@localhost root@localhost,root@localhost.localdomain; do
-for principal in "" root@EXAMPLE.COM root@EXAMPLE.COM,root@FOO.EXAMPLE.COM; do
-for ku in "" 1 110 111 ; do
-for eku in "" id-kp-clientAuth id-kp-clientAuth,id-kp-emailProtection ; do
+for size in 512 ; do
+for subject in CN=somehost "CN=Babs Jensen" ; do
+for hostname in "" localhost,localhost.localdomain; do
+for email in "" root@localhost,root@localhost.localdomain; do
+for principal in "" root@EXAMPLE.COM,root@FOO.EXAMPLE.COM; do
+for ku in "" 1 10 111 ; do
+for eku in "" id-kp-clientAuth,id-kp-emailProtection ; do
 for challengepassword in "" ChallengePasswordIsEncodedInPlainText ; do
 for certfname in "" CertificateFriendlyName ; do
+for ca in "" 0 1 ; do
+for capathlen in -1 3 ; do
+for crldp in "" http://crl-1.example.com:12345/get,http://crl-2.example.com:12345/get ; do
+for ocsp in "" http://ocsp-1.example.com:12345,http://ocsp-2.example.com:12345 ; do
+for nscomment in "" "certmonger generated this request" ; do
 	${certnickname:+cert_nickname=$cert_nickname}
 	# Generate a new CSR using the copy of the key in the NSS database.
 	cat > entry.$size <<- EOF
@@ -70,6 +75,11 @@ for certfname in "" CertificateFriendlyName ; do
 	${principal:+template_principal=$principal}
 	${ku:+template_ku=$ku}
 	${eku:+template_eku=$eku}
+	${ca:+template_is_ca=$ca}
+	${capathlen:+template_ca_path_length=$capathlen}
+	${crldp:+template_crldp=$crldp}
+	${ocsp:+template_ocsp=$ocsp}
+	${nscomment:+template_ns_comment=$nscomment}
 	EOF
 	$toolsdir/csrgen entry.$size > csr.nss.$size
 	# Generate a new CSR using the copy of the key that's in a file.
@@ -85,6 +95,11 @@ for certfname in "" CertificateFriendlyName ; do
 	${principal:+template_principal=$principal}
 	${ku:+template_ku=$ku}
 	${eku:+template_eku=$eku}
+	${ca:+template_is_ca=$ca}
+	${capathlen:+template_ca_path_length=$capathlen}
+	${crldp:+template_crldp=$crldp}
+	${ocsp:+template_ocsp=$ocsp}
+	${nscomment:+template_ns_comment=$nscomment}
 	EOF
 	$toolsdir/csrgen entry.$size > csr.openssl.$size
 	# Both should verify.
@@ -122,6 +137,11 @@ done
 done
 done
 done
+done
+done
+done
+done
+done
 echo "The last CSR (the one with everything) was:"
 openssl req -in csr.nss.$size -outform der | openssl asn1parse -inform der
-echo Test complete.
+echo Test complete "($iteration combinations)".
