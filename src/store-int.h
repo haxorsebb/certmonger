@@ -104,6 +104,7 @@ struct cm_store_entry {
 	int cm_template_ca_path_length;
 	char **cm_template_crl_distribution_point;
 	char **cm_template_ocsp_location;
+	char *cm_template_ns_comment;
 	/* A challenge password, which may be included (in cleartext form!) in
 	 * a CSR. */
 	char *cm_challenge_password;
