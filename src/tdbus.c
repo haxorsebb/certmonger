@@ -349,10 +349,10 @@ cm_tdbus_timeout_add(DBusTimeout *timeout, void *data)
 		if (tdb_timer->active) {
 			next_time = tevent_timeval_current_ofs(tdb_timer->d_interval, 0);
 			tdb_timer->tt = tevent_add_timer(talloc_parent(conn),
-						         tdb_timer,
+							 tdb_timer,
 							 next_time,
-						         cm_tdbus_handle_timer,
-						         tdb_timer);
+							 cm_tdbus_handle_timer,
+							 tdb_timer);
 			if (tdb_timer->tt != NULL) {
 				tdb_timer->next = conn->timers;
 				conn->timers = tdb_timer;
