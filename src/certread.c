@@ -123,6 +123,26 @@ cm_certread_write_data_to_pipe(struct cm_store_entry *entry, FILE *fp)
 	fprintf(fp, " %s\n", entry->cm_cert_ku ?: "");
 	fprintf(fp, " %s\n", entry->cm_cert_eku ?: "");
 	fprintf(fp, " %s\n", entry->cm_cert_token ?: "");
+	fprintf(fp, " %d\n", entry->cm_cert_is_ca ? 1 : 0);
+	fprintf(fp, " %d\n", entry->cm_cert_is_ca ?
+		entry->cm_cert_ca_path_length : -1);
+	for (i = 0;
+	     (entry->cm_cert_ocsp_location != NULL) &&
+	     (entry->cm_cert_ocsp_location[i] != NULL);
+	     i++) {
+		fprintf(fp, "%s%s", (i > 0) ? "," : " ",
+			entry->cm_cert_ocsp_location[i]);
+	}
+	fprintf(fp, "%s\n", i > 0 ? "" : " ");
+	for (i = 0;
+	     (entry->cm_cert_crl_distribution_point != NULL) &&
+	     (entry->cm_cert_crl_distribution_point[i] != NULL);
+	     i++) {
+		fprintf(fp, "%s%s", (i > 0) ? "," : " ",
+			entry->cm_cert_crl_distribution_point[i]);
+	}
+	fprintf(fp, "%s\n", i > 0 ? "" : " ");
+	fprintf(fp, " %s\n", entry->cm_cert_ns_comment ?: "");
 	fprintf(fp, " %s\n", entry->cm_cert ?: "");
 }
 
@@ -247,6 +267,56 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 			}
 			break;
 		case 12:
+			entry->cm_cert_is_ca = (p != q) ? (atoi(p) != 0) : 0;
+			break;
+		case 13:
+			entry->cm_cert_ca_path_length = (p != q) ? atoi(p) : -1;
+			break;
+		case 14:
+			talloc_free(entry->cm_cert_ocsp_location);
+			entry->cm_cert_ocsp_location = talloc_zero_array(entry,
+									 char *,
+									 q - p + 2);
+			vals = entry->cm_cert_ocsp_location;
+			u = p;
+			j = 0;
+			while ((*u != '\0') && (u < q)) {
+				v = u + strcspn(u, ",\r\n");
+				if (v > u) {
+					entry->cm_cert_ocsp_location[j] = talloc_strndup(vals,
+											 u,
+											 v - u);
+					j++;
+				}
+				u = v + strspn(u, ",\r\n");
+			}
+			break;
+		case 15:
+			talloc_free(entry->cm_cert_crl_distribution_point);
+			entry->cm_cert_crl_distribution_point = talloc_zero_array(entry,
+										  char *,
+										  q - p + 2);
+			vals = entry->cm_cert_crl_distribution_point;
+			u = p;
+			j = 0;
+			while ((*u != '\0') && (u < q)) {
+				v = u + strcspn(u, ",\r\n");
+				if (v > u) {
+					entry->cm_cert_crl_distribution_point[j] = talloc_strndup(vals,
+												  u,
+												  v - u);
+					j++;
+				}
+				u = v + strspn(u, ",\r\n");
+			}
+			break;
+		case 16:
+			talloc_free(entry->cm_cert_ns_comment);
+			entry->cm_cert_ns_comment = (p == q) ? NULL :
+						    talloc_strndup(entry, p,
+								   q - p);
+			break;
+		case 17:
 			talloc_free(entry->cm_cert);
 			entry->cm_cert = (p[strspn(p, " \r\n")] == '\0') ?
 					 NULL :

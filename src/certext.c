@@ -1404,6 +1404,137 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 	PORT_FreeArena(arena, PR_TRUE);
 }
 
+static void
+cm_certext_read_basic(struct cm_store_entry *entry, PLArenaPool *arena,
+		      CERTCertExtension *ext)
+{
+	CERTBasicConstraints basic;
+
+	if (CERT_DecodeBasicConstraintValue(&basic,
+					    &ext->value) != SECSuccess) {
+		return;
+	}
+	entry->cm_cert_is_ca = (basic.isCA != PR_FALSE);
+	if (entry->cm_cert_is_ca) {
+		entry->cm_cert_ca_path_length = basic.pathLenConstraint;
+	} else {
+		entry->cm_cert_ca_path_length = -1;
+	}
+}
+
+static void
+cm_certext_read_nsc(struct cm_store_entry *entry, PLArenaPool *arena,
+		    CERTCertExtension *ext)
+{
+	SECItem comment;
+	char *tmp;
+
+	if (SEC_ASN1DecodeItem(arena, &comment,
+			       SEC_IA5StringTemplate,
+			       &ext->value) != SECSuccess) {
+		return;
+	}
+	talloc_free(entry->cm_cert_ns_comment);
+	if (comment.len > 0) {
+		tmp = (char *) comment.data;
+		entry->cm_cert_ns_comment = talloc_strndup(entry, tmp,
+							   comment.len);
+	} else {
+		entry->cm_cert_ns_comment = NULL;
+	}
+}
+
+static void
+cm_certext_read_aia(struct cm_store_entry *entry, PLArenaPool *arena,
+		    CERTCertExtension *ext)
+{
+	CERTAuthInfoAccess **aia;
+	SECOidData *oid;
+	SECItem uri;
+	char *tmp;
+	unsigned i, n;
+
+	aia = CERT_DecodeAuthInfoAccessExtension(arena, &ext->value);
+	if ((aia == NULL) || (aia[0] == NULL)) {
+		return;
+	}
+	oid = SECOID_FindOIDByTag(SEC_OID_PKIX_OCSP);
+	if (oid == NULL) {
+		return;
+	}
+	for (i = 0, n = 0; aia[i] != NULL; i++) {
+		if (SECITEM_ItemsAreEqual(&aia[i]->method, &oid->oid) &&
+		    (aia[i]->location != NULL) &&
+		    (aia[i]->location->type == certURI) &&
+		    (aia[i]->location->name.other.len > 0)) {
+			n++;
+		}
+	}
+	talloc_free(entry->cm_cert_ocsp_location);
+	entry->cm_cert_ocsp_location = talloc_zero_array(entry, char *, n + 1);
+	if (entry->cm_cert_ocsp_location == NULL) {
+		return;
+	}
+	for (i = 0, n = 0; aia[i] != NULL; i++) {
+		if (SECITEM_ItemsAreEqual(&aia[i]->method, &oid->oid) &&
+		    (aia[i]->location != NULL) &&
+		    (aia[i]->location->type == certURI) &&
+		    (aia[i]->location->name.other.len > 0)) {
+			uri = aia[i]->location->name.other;
+			tmp = talloc_strndup(entry->cm_cert_ocsp_location,
+					     (char *) uri.data, uri.len);
+			entry->cm_cert_ocsp_location[n++] = tmp;
+		}
+	}
+}
+
+static void
+cm_certext_read_crldp(struct cm_store_entry *entry, PLArenaPool *arena,
+		      CERTCertExtension *ext)
+{
+	CERTCrlDistributionPoints *crldp;
+	CERTGeneralName *name;
+	SECItem uri;
+	void *parent;
+	char *tmp;
+	unsigned i, n;
+
+	crldp = CERT_DecodeCRLDistributionPoints(arena, &ext->value);
+	if ((crldp == NULL) || (crldp->distPoints == NULL)) {
+		return;
+	}
+	for (i = 0, n = 0; crldp->distPoints[i] != NULL; i++) {
+		if ((crldp->distPoints[i]->distPointType == generalName) &&
+		    (crldp->distPoints[i]->distPoint.fullName != NULL)) {
+			name = crldp->distPoints[i]->distPoint.fullName;
+			if (name->type == certURI) {
+				n++;
+			}
+		}
+	}
+	talloc_free(entry->cm_cert_crl_distribution_point);
+	entry->cm_cert_crl_distribution_point = talloc_zero_array(entry,
+								  char *,
+								  n + 1);
+	if (entry->cm_cert_crl_distribution_point == NULL) {
+		return;
+	}
+	for (i = 0, n = 0; crldp->distPoints[i] != NULL; i++) {
+		if ((crldp->distPoints[i]->distPointType == generalName) &&
+		    (crldp->distPoints[i]->distPoint.fullName != NULL)) {
+			name = crldp->distPoints[i]->distPoint.fullName;
+			if (name->type == certURI) {
+				uri = name->name.other;
+				parent = entry->cm_cert_crl_distribution_point;
+				tmp = talloc_strndup(parent,
+						     (char *) uri.data,
+						     uri.len);
+				entry->cm_cert_crl_distribution_point[n++] = tmp;
+			}
+		}
+	}
+}
+
 /* Read the extensions from a certificate. */
 void
 cm_certext_read_extensions(struct cm_store_entry *entry, PLArenaPool *arena,
@@ -1413,6 +1544,7 @@ cm_certext_read_extensions(struct cm_store_entry *entry, PLArenaPool *arena,
 	PLArenaPool *local_arena;
 
 	SECOidData *ku_oid, *eku_oid, *san_oid;
+	SECOidData *basic_oid, *nsc_oid, *aia_oid, *crldp_oid;
 	if (extensions == NULL) {
 		return;
 	}
@@ -1442,6 +1574,31 @@ cm_certext_read_extensions(struct cm_store_entry *entry, PLArenaPool *arena,
 		       "certificate subject alternative name extension.\n");
 		return;
 	}
+	basic_oid = SECOID_FindOIDByTag(SEC_OID_X509_BASIC_CONSTRAINTS);
+	if (basic_oid == NULL) {
+		cm_log(1, "Internal library error: unable to look up OID for "
+		       "certificate basic constraints extension.\n");
+		return;
+	}
+	nsc_oid = SECOID_FindOIDByTag(SEC_OID_NS_CERT_EXT_COMMENT);
+	if (nsc_oid == NULL) {
+		cm_log(1, "Internal library error: unable to look up OID for "
+		       "certificate netscape comment extension.\n");
+		return;
+	}
+	aia_oid = SECOID_FindOIDByTag(SEC_OID_X509_AUTH_INFO_ACCESS);
+	if (aia_oid == NULL) {
+		cm_log(1, "Internal library error: unable to look up OID for "
+		       "certificate authority information access extension.\n");
+		return;
+	}
+	crldp_oid = SECOID_FindOIDByTag(SEC_OID_X509_CRL_DIST_POINTS);
+	if (crldp_oid == NULL) {
+		cm_log(1, "Internal library error: unable to look up OID for "
+		       "certificate revocation list distribution points "
+		       "extension.\n");
+		return;
+	}
 	for (i = 0; extensions[i] != NULL; i++) {
 		if (SECITEM_ItemsAreEqual(&ku_oid->oid, &extensions[i]->id)) {
 			cm_certext_read_ku(entry, arena, extensions[i]);
@@ -1451,6 +1608,18 @@ cm_certext_read_extensions(struct cm_store_entry *entry, PLArenaPool *arena,
 		}
 		if (SECITEM_ItemsAreEqual(&san_oid->oid, &extensions[i]->id)) {
 			cm_certext_read_san(entry, arena, extensions[i]);
+		}
+		if (SECITEM_ItemsAreEqual(&basic_oid->oid, &extensions[i]->id)) {
+			cm_certext_read_basic(entry, arena, extensions[i]);
+		}
+		if (SECITEM_ItemsAreEqual(&nsc_oid->oid, &extensions[i]->id)) {
+			cm_certext_read_nsc(entry, arena, extensions[i]);
+		}
+		if (SECITEM_ItemsAreEqual(&aia_oid->oid, &extensions[i]->id)) {
+			cm_certext_read_aia(entry, arena, extensions[i]);
+		}
+		if (SECITEM_ItemsAreEqual(&crldp_oid->oid, &extensions[i]->id)) {
+			cm_certext_read_crldp(entry, arena, extensions[i]);
 		}
 	}
 	if (arena == local_arena) {

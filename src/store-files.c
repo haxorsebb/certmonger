@@ -1073,7 +1073,7 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 	cm_store_file_write_str(fp, cm_store_entry_field_cert_eku,
 				entry->cm_cert_eku);
 	cm_store_file_write_int(fp, cm_store_entry_field_cert_is_ca,
-				entry->cm_cert_is_ca);
+				entry->cm_cert_is_ca ? 1 : 0);
 	cm_store_file_write_int(fp, cm_store_entry_field_cert_ca_path_length,
 				entry->cm_cert_ca_path_length);
 	cm_store_file_write_strs(fp, cm_store_entry_field_cert_crl_distribution_point,
@@ -1104,7 +1104,7 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 	cm_store_file_write_str(fp, cm_store_entry_field_template_eku,
 				entry->cm_template_eku);
 	cm_store_file_write_int(fp, cm_store_entry_field_template_is_ca,
-				entry->cm_template_is_ca);
+				entry->cm_template_is_ca ? 1 : 0);
 	cm_store_file_write_int(fp, cm_store_entry_field_template_ca_path_length,
 				entry->cm_template_ca_path_length);
 	cm_store_file_write_strs(fp, cm_store_entry_field_template_crl_distribution_point,
