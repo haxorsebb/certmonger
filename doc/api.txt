@@ -48,6 +48,11 @@ o object layout
                {"DNS"("template-hostname"),array-of-string (dns names)}
                {"EMAIL"("template-email"),array-of-string (email addresses)}
                {"CA"("ca"),path (known CA to use)}
+               {("template-is-ca"),boolean}
+               {("template-ca-path-length"),integer}
+               {("template-ocsp"),array-of-string (ocsp responder URIs)}
+               {("template-crldp"),array-of-string (CRL distribution point URIs)}
+               {("template-ns-comment"),string (Netscape comment)}
                {("cert-postsave-command"),string}
                * = required values
     returns: boolean -> succeeded

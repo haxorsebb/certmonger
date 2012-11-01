@@ -1054,6 +1054,39 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		new_entry->cm_template_email = maybe_strdupv(new_entry,
 							     param->value.as);
 	}
+	param = cm_tdbusm_find_dict_entry(d,
+					  CM_DBUS_PROP_TEMPLATE_IS_CA,
+					  cm_tdbusm_dict_b);
+	if (param != NULL) {
+		new_entry->cm_template_is_ca = param->value.b;
+	}
+	param = cm_tdbusm_find_dict_entry(d,
+					  CM_DBUS_PROP_TEMPLATE_CA_PATH_LENGTH,
+					  cm_tdbusm_dict_n);
+	if (param != NULL) {
+		new_entry->cm_template_ca_path_length = param->value.n;
+	}
+	param = cm_tdbusm_find_dict_entry(d,
+					  CM_DBUS_PROP_TEMPLATE_OCSP,
+					  cm_tdbusm_dict_as);
+	if (param != NULL) {
+		new_entry->cm_template_ocsp_location = maybe_strdupv(new_entry,
+								     param->value.as);
+	}
+	param = cm_tdbusm_find_dict_entry(d,
+					  CM_DBUS_PROP_TEMPLATE_CRL_DP,
+					  cm_tdbusm_dict_as);
+	if (param != NULL) {
+		new_entry->cm_template_crl_distribution_point = maybe_strdupv(new_entry,
+									      param->value.as);
+	}
+	param = cm_tdbusm_find_dict_entry(d,
+					  CM_DBUS_PROP_TEMPLATE_NS_COMMENT,
+					  cm_tdbusm_dict_s);
+	if (param != NULL) {
+		new_entry->cm_template_ns_comment = maybe_strdup(new_entry,
+								 param->value.s);
+	}
 	/* Hand it off to the main loop. */
 	new_entry->cm_state = CM_NEWLY_ADDED;
 	if (cm_add_entry(ctx, new_entry) != 0) {
@@ -2472,6 +2505,47 @@ request_modify(DBusConnection *conn, DBusMessage *msg,
 					propname[n_propname++] = CM_DBUS_PROP_TEMPLATE_EMAIL;
 				}
 			} else
+			if ((param->value_type == cm_tdbusm_dict_b) &&
+			    (strcasecmp(param->key, CM_DBUS_PROP_TEMPLATE_IS_CA) == 0)) {
+				entry->cm_template_is_ca = param->value.b;
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_TEMPLATE_IS_CA;
+				}
+			} else
+			if ((param->value_type == cm_tdbusm_dict_n) &&
+			    (strcasecmp(param->key, CM_DBUS_PROP_TEMPLATE_CA_PATH_LENGTH) == 0)) {
+				entry->cm_template_ca_path_length = param->value.n;
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_TEMPLATE_CA_PATH_LENGTH;
+				}
+			} else
+			if ((param->value_type == cm_tdbusm_dict_as) &&
+			    (strcasecmp(param->key, CM_DBUS_PROP_TEMPLATE_OCSP) == 0)) {
+				talloc_free(entry->cm_template_ocsp_location);
+				entry->cm_template_ocsp_location = maybe_strdupv(entry,
+										 param->value.as);
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_TEMPLATE_OCSP;
+				}
+			} else
+			if ((param->value_type == cm_tdbusm_dict_as) &&
+			    (strcasecmp(param->key, CM_DBUS_PROP_TEMPLATE_CRL_DP) == 0)) {
+				talloc_free(entry->cm_template_crl_distribution_point);
+				entry->cm_template_crl_distribution_point = maybe_strdupv(entry,
+											  param->value.as);
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_TEMPLATE_CRL_DP;
+				}
+			} else
+			if ((param->value_type == cm_tdbusm_dict_s) &&
+			    (strcasecmp(param->key, CM_DBUS_PROP_TEMPLATE_NS_COMMENT) == 0)) {
+				talloc_free(entry->cm_template_ns_comment);
+				entry->cm_template_ns_comment = maybe_strdup(entry,
+									     param->value.s);
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_TEMPLATE_NS_COMMENT;
+				}
+			} else
 			if ((param->value_type == cm_tdbusm_dict_s) &&
 			    (strcasecmp(param->key, CM_DBUS_PROP_CERT_PRESAVE_COMMAND) == 0)) {
 				talloc_free(entry->cm_pre_certsave_command);
@@ -3046,6 +3120,24 @@ request_prop_get_ca(struct cm_context *ctx, void *parent,
 		}
 	}
 	return "";
+}
+
+static dbus_bool_t
+request_prop_get_template_is_ca(struct cm_context *ctx, void *parent,
+				void *record, const char *name)
+{
+	struct cm_store_entry *entry = record;
+	return entry->cm_template_is_ca != 0;
+}
+
+static long
+request_prop_get_template_ca_path_length(struct cm_context *ctx, void *parent,
+					 void *record, const char *name)
+{
+	struct cm_store_entry *entry = record;
+	return entry->cm_template_is_ca != 0 ?
+	       entry->cm_template_ca_path_length :
+	       -1;
 }
 
 /* the types of objects we have in our D-Bus object tree */
@@ -5124,6 +5216,48 @@ cm_tdbush_iface_request(void)
 								       offsetof(struct cm_store_entry, cm_template_principal),
 								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_TEMPLATE_IS_CA,
+								       cm_tdbush_property_boolean,
+								       cm_tdbush_property_read,
+								       cm_tdbush_property_special,
+								       0,
+								       NULL, NULL, request_prop_get_template_is_ca, NULL,
+								       NULL, NULL, NULL, NULL,
+								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_TEMPLATE_CA_PATH_LENGTH,
+								       cm_tdbush_property_number,
+								       cm_tdbush_property_read,
+								       cm_tdbush_property_special,
+								       0,
+								       NULL, NULL, NULL, request_prop_get_template_ca_path_length,
+								       NULL, NULL, NULL, NULL,
+								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_TEMPLATE_OCSP,
+								       cm_tdbush_property_strings,
+								       cm_tdbush_property_read,
+								       cm_tdbush_property_char_pp,
+								       offsetof(struct cm_store_entry, cm_template_ocsp_location),
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_TEMPLATE_CRL_DP,
+								       cm_tdbush_property_strings,
+								       cm_tdbush_property_read,
+								       cm_tdbush_property_char_pp,
+								       offsetof(struct cm_store_entry, cm_template_crl_distribution_point),
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_TEMPLATE_NS_COMMENT,
+								       cm_tdbush_property_string,
+								       cm_tdbush_property_read,
+								       cm_tdbush_property_char_p,
+								       offsetof(struct cm_store_entry, cm_template_ns_comment),
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_key_pin",
 								     request_get_key_pin,
@@ -5456,7 +5590,7 @@ cm_tdbush_iface_request(void)
 				     make_interface_item(cm_tdbush_interface_signal,
 							 make_signal(CM_DBUS_SIGNAL_REQUEST_CERT_SAVED,
 								     NULL),
-							 NULL))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
+							 NULL)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
 	}
 	return ret;
 }
