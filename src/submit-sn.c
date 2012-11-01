@@ -261,7 +261,11 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	if (extensions != NULL) {
 		memcpy(extensions, ucert->extensions,
 		       i * sizeof(extensions[0]));
-		extensions[i] = PORT_ArenaZAlloc(arena, sizeof(*(extensions[i])));
+		if (found_basic) {
+			extensions[i] = NULL;
+		} else {
+			extensions[i] = PORT_ArenaZAlloc(arena, sizeof(*(extensions[i])));
+		}
 		extensions[i + 1] = NULL;
 		ucert->extensions = extensions;
 	}
