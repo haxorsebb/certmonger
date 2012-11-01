@@ -1082,6 +1082,42 @@ cm_certext_build_basic(struct cm_store_entry *entry, PLArenaPool *arena,
 	return item;
 }
 
+/* Build an authorityKeyIdentifier extension value that points to our key. */
+static SECItem *
+cm_certext_build_self_akid(struct cm_store_entry *entry, PLArenaPool *arena)
+{
+	CERTAuthKeyID value;
+	SECItem pubkey, encoded, *item;
+	unsigned char digest[CM_DIGEST_MAX];
+
+	if (entry->cm_key_pubkey != NULL) {
+		memset(&pubkey, 0, sizeof(pubkey));
+		pubkey.len = strlen(entry->cm_key_pubkey) / 2;
+		pubkey.data = PORT_ArenaZAlloc(arena, pubkey.len);
+		if (pubkey.data == NULL) {
+			return NULL;
+		}
+		cm_store_hex_to_bin(entry->cm_key_pubkey,
+				    pubkey.data, pubkey.len);
+		if (PK11_HashBuf(SEC_OID_SHA1, digest,
+				 pubkey.data, pubkey.len) != SECSuccess) {
+			return NULL;
+		}
+		memset(&value, 0, sizeof(value));
+		value.keyID.data = digest;
+		value.keyID.len = 20;
+		memset(&encoded, 0, sizeof(encoded));
+		if (CERT_EncodeAuthKeyID(arena, &value,
+					 &encoded) == SECSuccess) {
+			item = SECITEM_ArenaDupItem(arena, &encoded);
+		} else {
+			item = NULL;
+		}
+		return item;
+	}
+	return NULL;
+}
+
 /* Build a subjectKeyIdentifier extension value. */
 static SECItem *
 cm_certext_build_skid(struct cm_store_entry *entry, PLArenaPool *arena)
@@ -1252,7 +1288,7 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 				unsigned char **extensions, size_t *length)
 {
 	PLArenaPool *arena;
-	CERTCertExtension ext[8], *exts[9], **exts_ptr;
+	CERTCertExtension ext[9], *exts[10], **exts_ptr;
 	SECOidData *oid;
 	SECItem *item, encoded;
 	SECItem der_false = {
@@ -1328,6 +1364,17 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 		if (oid != NULL) {
 			ext[i].id = oid->oid;
 			ext[i].critical = der_true;
+			ext[i].value = *item;
+			exts[i] = &ext[i];
+			i++;
+		}
+	}
+	if (entry->cm_template_is_ca) {
+		oid = SECOID_FindOIDByTag(SEC_OID_X509_AUTH_KEY_ID);
+		item = cm_certext_build_self_akid(entry, arena);
+		if ((item != NULL) && (oid != NULL)) {
+			ext[i].id = oid->oid;
+			ext[i].critical = der_false;
 			ext[i].value = *item;
 			exts[i] = &ext[i];
 			i++;
