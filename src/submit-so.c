@@ -163,6 +163,7 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 								cm_log(1, "Error building "
 								       "certificate from "
 								       "signing request.\n");
+								status = 2;
 							}
 						} else {
 							cm_log(1, "Error reading "
@@ -260,7 +261,12 @@ static int
 cm_submit_so_rejected(struct cm_store_entry *entry,
 		      struct cm_submit_state *state)
 {
-	return -1; /* it never gets rejected */
+	int status;
+	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	if (!WIFEXITED(status) || (WEXITSTATUS(status) != 2)) {
+		return -1; /* it should never get rejected */
+	}
+	return 0;
 }
 
 /* Check if the CA was unreachable. */
