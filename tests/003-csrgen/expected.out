@@ -89,4 +89,4 @@ The last CSR (the one with everything) was:
   920:d=2  hl=2 l=   9 prim: OBJECT            :sha256WithRSAEncryption
   931:d=2  hl=2 l=   0 prim: NULL              
   933:d=1  hl=2 l=  65 prim: BIT STRING        
-Test complete (24577 combinations).
+Test complete (32 combinations).

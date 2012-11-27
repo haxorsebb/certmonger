@@ -131,35 +131,91 @@ iterate() {
 }
 
 iteration=1
-for size in 512 ; do
+
+for size in 1024 ; do
+	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment"
+done
+
 for subject in CN=somehost "CN=Babs Jensen" ; do
+	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment"
+done
+subject=
+
 for hostname in "" localhost,localhost.localdomain; do
+	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment"
+done
+hostname=
+
 for email in "" root@localhost,root@localhost.localdomain; do
+	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment"
+done
+email=
+
 for principal in "" root@EXAMPLE.COM,root@FOO.EXAMPLE.COM; do
+	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment"
+done
+principal=
+
 for ku in "" 1 10 111 ; do
+	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment"
+done
+ku=
+
 for eku in "" id-kp-clientAuth,id-kp-emailProtection ; do
+	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment"
+done
+eku=
+
 for challengepassword in "" ChallengePasswordIsEncodedInPlainText ; do
+	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment"
+done
+challengepassword=
+
 for certfname in "" CertificateFriendlyName ; do
+	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment"
+done
+certfname=
+
 for ca in "" 0 1 ; do
+	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment"
+done
+ca=
+
 for capathlen in -1 3 ; do
+	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment"
+done
+capathlen=
+
 for crldp in "" http://crl-1.example.com:12345/get,http://crl-2.example.com:12345/get ; do
+	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment"
+done
+crldp=
+
 for ocsp in "" http://ocsp-1.example.com:12345,http://ocsp-2.example.com:12345 ; do
+	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment"
+done
+ocsp=
+
 for nscomment in "" "certmonger generated this request" ; do
 	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment"
 done
-done
-done
-done
-done
-done
-done
-done
-done
-done
-done
-done
-done
-done
+nscomment=
+
+size=512
+subject="CN=Babs Jensen"
+hostname=localhost,localhost.localdomain
+email=root@localhost,root@localhost.localdomain
+principal=root@EXAMPLE.COM,root@FOO.EXAMPLE.COM
+ku=111
+eku=id-kp-clientAuth,id-kp-emailProtection
+challengepassword=ChallengePasswordIsEncodedInPlainText
+certfname=CertificateFriendlyName
+ca=1
+capathlen=3
+crldp=http://crl-1.example.com:12345/get,http://crl-2.example.com:12345/get
+ocsp=http://ocsp-1.example.com:12345,http://ocsp-2.example.com:12345
+nscomment="certmonger generated this request"
+iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment"
 echo "The last CSR (the one with everything) was:"
 openssl req -in csr.nss.$size -outform der | openssl asn1parse -inform der
 echo Test complete "($iteration combinations)".
