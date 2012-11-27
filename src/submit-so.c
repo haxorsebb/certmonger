@@ -117,47 +117,53 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 							cert = X509_REQ_to_X509(req,
 										0,
 										pkey);
-							ASN1_TIME_set(cert->cert_info->validity->notBefore, now);
-							ASN1_TIME_set(cert->cert_info->validity->notAfter, now + life);
-							X509_set_version(cert, 2);
-							/* set the serial number */
-							cm_log(3, "Setting certificate serial number \"%s\".\n",
-							       ca->cm_ca_internal_serial);
-							serial = cm_store_serial_to_der(ca, ca->cm_ca_internal_serial);
-							seriall = strlen(serial) / 2;
-							seriald = talloc_size(ca, seriall);
-							cm_store_hex_to_bin(serial, seriald, seriall);
-							serialtmp = seriald;
-							seriali = d2i_ASN1_INTEGER(NULL, &serialtmp, seriall);
-							X509_set_serialNumber(cert, seriali);
+							if (cert != NULL) {
+								ASN1_TIME_set(cert->cert_info->validity->notBefore, now);
+								ASN1_TIME_set(cert->cert_info->validity->notAfter, now + life);
+								X509_set_version(cert, 2);
+								/* set the serial number */
+								cm_log(3, "Setting certificate serial number \"%s\".\n",
+								       ca->cm_ca_internal_serial);
+								serial = cm_store_serial_to_der(ca, ca->cm_ca_internal_serial);
+								seriall = strlen(serial) / 2;
+								seriald = talloc_size(ca, seriall);
+								cm_store_hex_to_bin(serial, seriald, seriall);
+								serialtmp = seriald;
+								seriali = d2i_ASN1_INTEGER(NULL, &serialtmp, seriall);
+								X509_set_serialNumber(cert, seriali);
 #ifdef HAVE_UUID
-							if (cm_prefs_populate_unique_id()) {
-								if (cm_submit_uuid_new(uuid) == 0) {
-									cert->cert_info->subjectUID = M_ASN1_BIT_STRING_new();
-									if (cert->cert_info->subjectUID != NULL) {
-										ASN1_BIT_STRING_set(cert->cert_info->subjectUID, uuid, 16);
-										cert->cert_info->issuerUID = M_ASN1_BIT_STRING_new();
-										if (cert->cert_info->issuerUID != NULL) {
-											ASN1_BIT_STRING_set(cert->cert_info->issuerUID, uuid, 16);
+								if (cm_prefs_populate_unique_id()) {
+									if (cm_submit_uuid_new(uuid) == 0) {
+										cert->cert_info->subjectUID = M_ASN1_BIT_STRING_new();
+										if (cert->cert_info->subjectUID != NULL) {
+											ASN1_BIT_STRING_set(cert->cert_info->subjectUID, uuid, 16);
+											cert->cert_info->issuerUID = M_ASN1_BIT_STRING_new();
+											if (cert->cert_info->issuerUID != NULL) {
+												ASN1_BIT_STRING_set(cert->cert_info->issuerUID, uuid, 16);
+											}
 										}
 									}
 								}
-							}
 #endif
-							/* add basic constraints if needed */
-							cert->cert_info->extensions = X509_REQ_get_extensions(req);
-							if (X509_get_ext_by_NID(cert, NID_basic_constraints, -1) == -1) {
-								basicl = strlen(CM_BASIC_CONSTRAINT_NOT_CA) / 2;
-								basicd = talloc_size(ca, basicl);
-								cm_store_hex_to_bin(CM_BASIC_CONSTRAINT_NOT_CA, basicd, basicl);
-								basictmp = basicd;
-								basic = d2i_BASIC_CONSTRAINTS(NULL, &basictmp, basicl);
-								X509_add1_ext_i2d(cert, NID_basic_constraints, basic, 1, 0);
+								/* add basic constraints if needed */
+								cert->cert_info->extensions = X509_REQ_get_extensions(req);
+								if (X509_get_ext_by_NID(cert, NID_basic_constraints, -1) == -1) {
+									basicl = strlen(CM_BASIC_CONSTRAINT_NOT_CA) / 2;
+									basicd = talloc_size(ca, basicl);
+									cm_store_hex_to_bin(CM_BASIC_CONSTRAINT_NOT_CA, basicd, basicl);
+									basictmp = basicd;
+									basic = d2i_BASIC_CONSTRAINTS(NULL, &basictmp, basicl);
+									X509_add1_ext_i2d(cert, NID_basic_constraints, basic, 1, 0);
+								}
+								/* finish up */
+								X509_sign(cert, pkey,
+									  cm_prefs_ossl_hash());
+								status = 0;
+							} else {
+								cm_log(1, "Error building "
+								       "certificate from "
+								       "signing request.\n");
 							}
-							/* finish up */
-							X509_sign(cert, pkey,
-								  cm_prefs_ossl_hash());
-							status = 0;
 						} else {
 							cm_log(1, "Error reading "
 							       "signing request.\n");
