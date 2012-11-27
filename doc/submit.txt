@@ -35,20 +35,36 @@ An external CA helper has a few jobs:
 * Other operations may be defined later.
     * Operation not supported by this helper -> exit with status 6.
 
-Operations to be added:
+Operations to be added (tentative):
   * Invoked with "IDENTIFY" as the value of the $CERTMONGER_OPERATION
     environment variable:
-    * Output suggested nickname (ID) for CA, suggested nickname for CA
-      certificate when stored in an NSS database (a.k.a FriendlyName),
-      and root certificate in PEM format, exit with status 0.
+    * Output suggested ID for CA, exit with status 0.
+    * Poll for this at startup.
+  * Invoked with "FETCH-ROOTS" as the value of the $CERTMONGER_OPERATION
+    environment variable:
+    * Output suggested nickname for CA certificate when stored in an NSS
+      database (a.k.a FriendlyName), root certificate in PEM format,
+      blank line, set of other trusted roots with nicknames (no
+      separators between them, nicknames first to match the presentation
+      of the root), another blank line, set of "other" known (chain)
+      certificates with nicknames (no separators between them, nicknames
+      first to match the presentation of the root), exit with status 0.
+    * Poll for this every time we talk to the CA, and save the suggested
+      root certificate, trusted certificate list, and "other"
+      certificate list in the CA entry, exposed as lists-of-string-pairs
+      properties.
+    * Add a "refresh-ca" command to force polling for this information.
     * This will let us add the root certificate to the same database
-      as the requested certificate.  We can expose it in a file of our
+      as the requested certificate.  We can expose them in files of our
       own in case we're storing the certificate in PEM form.
   * Invoked with "GET-NEW-REQUEST-REQUIREMENTS" as the value of the
     $CERTMONGER_OPERATION environment variable:
     * Output list of environment variable names which are expected to
       have non-empty values when the helper is run in SUBMIT or POLL
       mode, without $s, separated by newlines, exit with status 0.
+    * Poll for this at startup, translate the result back into an
+      attribute list, and store it in the CA entry, exposed as
+      a list property.
     * This will let us push lack-of-required-input all the way back
       from the CA helper to the getcert client.
   * Invoked with "GET-RENEW-REQUEST-REQUIREMENTS" as the value of the
@@ -56,6 +72,9 @@ Operations to be added:
     * Output list of environment variable names which are expected to
       have non-empty values when the helper is run in SUBMIT or POLL
       mode, without $s, separated by newlines, exit with status 0.
+    * Poll for this at startup, translate the result back into an
+      attribute list, and store it in the CA entry, exposed as a list
+      property.
     * This will let us push lack-of-required-input all the way back
       from the CA helper to the getcert client.
 
