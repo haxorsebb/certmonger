@@ -45,21 +45,21 @@ for size in 512 1024 1536 2048 3072 4096 ; do
 	fi
 done
 
-iteration=1
-for size in 512 ; do
-for subject in CN=somehost "CN=Babs Jensen" ; do
-for hostname in "" localhost,localhost.localdomain; do
-for email in "" root@localhost,root@localhost.localdomain; do
-for principal in "" root@EXAMPLE.COM,root@FOO.EXAMPLE.COM; do
-for ku in "" 1 10 111 ; do
-for eku in "" id-kp-clientAuth,id-kp-emailProtection ; do
-for challengepassword in "" ChallengePasswordIsEncodedInPlainText ; do
-for certfname in "" CertificateFriendlyName ; do
-for ca in "" 0 1 ; do
-for capathlen in -1 3 ; do
-for crldp in "" http://crl-1.example.com:12345/get,http://crl-2.example.com:12345/get ; do
-for ocsp in "" http://ocsp-1.example.com:12345,http://ocsp-2.example.com:12345 ; do
-for nscomment in "" "certmonger generated this request" ; do
+iterate() {
+	size=${1}
+	subject=${2}
+	hostname=${3}
+	email=${4}
+	principal=${5}
+	ku=${6}
+	eku=${7}
+	challengepassword=${8}
+	certfname=${9}
+	ca=${10}
+	capathlen=${11}
+	crldp=${12}
+	ocsp=${13}
+	nscomment=${14}
 	${certnickname:+cert_nickname=$cert_nickname}
 	# Generate a new CSR using the copy of the key in the NSS database.
 	cat > entry.$size <<- EOF
@@ -128,6 +128,24 @@ for nscomment in "" "certmonger generated this request" ; do
 		exit 1
 	fi
 	iteration=`expr $iteration + 1`
+}
+
+iteration=1
+for size in 512 ; do
+for subject in CN=somehost "CN=Babs Jensen" ; do
+for hostname in "" localhost,localhost.localdomain; do
+for email in "" root@localhost,root@localhost.localdomain; do
+for principal in "" root@EXAMPLE.COM,root@FOO.EXAMPLE.COM; do
+for ku in "" 1 10 111 ; do
+for eku in "" id-kp-clientAuth,id-kp-emailProtection ; do
+for challengepassword in "" ChallengePasswordIsEncodedInPlainText ; do
+for certfname in "" CertificateFriendlyName ; do
+for ca in "" 0 1 ; do
+for capathlen in -1 3 ; do
+for crldp in "" http://crl-1.example.com:12345/get,http://crl-2.example.com:12345/get ; do
+for ocsp in "" http://ocsp-1.example.com:12345,http://ocsp-2.example.com:12345 ; do
+for nscomment in "" "certmonger generated this request" ; do
+	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment"
 done
 done
 done
