@@ -256,7 +256,7 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			}
 		}
 	}
-	/* Allocate space for one more. */
+	/* Allocate space for one more extension. */
 	extensions = PORT_ArenaZAlloc(arena, (i + 2) * sizeof(extensions[0]));
 	if (extensions != NULL) {
 		memcpy(extensions, ucert->extensions,
@@ -279,14 +279,14 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		extensions[i]->value.len = basic_length;
 		cm_store_hex_to_bin(CM_BASIC_CONSTRAINT_NOT_CA, extensions[i]->value.data, extensions[i]->value.len);
 	}
-	/* Encode the certificate. */
+	/* Encode the certificate into a tbsCertificate. */
 	ecert = SEC_ASN1EncodeItem(arena, NULL, ucert,
 				   CERT_CertificateTemplate);
 	if (ecert == NULL) {
 		cm_log(1, "Error encoding certificate structure.\n");
 		_exit(1);
 	}
-	/* Create a signed certificate. */
+	/* Create a signature. */
 	memset(&scert, 0, sizeof(scert));
 	scert.data = *ecert;
 	if (SECOID_SetAlgorithmID(arena, &scert.signatureAlgorithm,
@@ -310,7 +310,7 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		cm_log(1, "Unable to encode signed certificate.\n");
 		_exit(1);
 	}
-	/* Encode the certificate. */
+	/* Encode the certificate as base64. */
 	b64 = NSSBase64_EncodeItem(arena, NULL, -1, ecert);
 	if (b64 == NULL) {
 		cm_log(1, "Unable to b64-encode certificate.\n");
