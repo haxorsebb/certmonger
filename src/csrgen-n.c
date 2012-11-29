@@ -117,7 +117,8 @@ compare_items(const void *a, const void *b)
 	return SECITEM_CompareItem(a, b);
 }
 static SECItem *
-cm_csrgen_n_attributes(struct cm_store_entry *entry, PLArenaPool *arena)
+cm_csrgen_n_attributes(struct cm_store_entry *entry, NSSInitContext *ctx,
+		       PLArenaPool *arena)
 {
 	SECItem encoded_exts, *exts[2];
 	unsigned char *extensions;
@@ -147,7 +148,8 @@ cm_csrgen_n_attributes(struct cm_store_entry *entry, PLArenaPool *arena)
 	}
 	/* Build the extension list. */
 	extensions = NULL;
-	cm_certext_build_csr_extensions(entry, &extensions, &extensions_length);
+	cm_certext_build_csr_extensions(entry, ctx, &extensions,
+					&extensions_length);
 	/* Build an attribute to hold the extensions. */
 	if ((extensions != NULL) && (extensions_length > 0)) {
 		encoded_exts.data = extensions;
@@ -324,7 +326,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 	/* Generate requested values for various extensions and a friendly
 	 * name. */
-	attrs = cm_csrgen_n_attributes(entry, arena);
+	attrs = cm_csrgen_n_attributes(entry, privkey->ctx, arena);
 	if ((attrs == NULL) ||
 	    (SEC_ASN1DecodeItem(arena, &req->attributes,
 				cm_csrgen_n_set_of_cert_tmpattr_template,
@@ -446,7 +448,8 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	if (SEC_SignData(&spkac.signature, spkac.data.data, spkac.data.len,
 			 privkey->key, sigoid->offset) != SECSuccess) {
 		cm_log(1, "Error signing public-key-and-challenge with "
-		       "the client's key.\n");
+		       "the client's key using \"%s\": %s.\n",
+		       sigoid->desc, PR_ErrorToName(PORT_GetError()));
 		SECKEY_DestroyPublicKey(pubkey);
 		SECKEY_DestroyPrivateKey(privkey->key);
 		PORT_FreeArena(arena, PR_TRUE);

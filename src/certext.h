@@ -18,8 +18,11 @@
 #ifndef cmcertext_h
 #define cmcertext_h
 
+struct NSSInitContextStr;
+
 struct cm_store_entry;
 void cm_certext_build_csr_extensions(struct cm_store_entry *entry,
+				     struct NSSInitContextStr *ctx,
 				     unsigned char **encoded, size_t *length);
 
 #endif

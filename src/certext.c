@@ -1286,6 +1286,7 @@ cm_certext_build_ns_comment(struct cm_store_entry *entry, PLArenaPool *arena,
 /* Build a requestedExtensions attribute. */
 void
 cm_certext_build_csr_extensions(struct cm_store_entry *entry,
+				NSSInitContext *ctx,
 				unsigned char **extensions, size_t *length)
 {
 	PLArenaPool *arena;
@@ -1303,7 +1304,7 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 	int i;
 	char **tmp;
 	const char *reason;
-	NSSInitContext *ctx;
+	NSSInitContext *local_ctx;
 
 	*extensions = NULL;
 	*length = 0;
@@ -1314,15 +1315,21 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 	memset(&ext, 0, sizeof(ext));
 	memset(&exts, 0, sizeof(exts));
 
-	ctx = NSS_InitContext(entry->cm_key_storage_location,
-			      NULL, NULL, NULL, NULL,
-			      NSS_INIT_READONLY |
-			      NSS_INIT_NOCERTDB |
-			      NSS_INIT_NOROOTINIT);
-	reason = util_n_fips_hook();
-	if (reason != NULL) {
-		cm_log(1, "Error putting NSS into FIPS mode: %s\n", reason);
-		return;
+	if (ctx == NULL) {
+		local_ctx = NSS_InitContext(entry->cm_key_storage_location,
+					    NULL, NULL, NULL, NULL,
+					    NSS_INIT_READONLY |
+					    NSS_INIT_NOCERTDB |
+					    NSS_INIT_NOROOTINIT);
+		if (local_ctx == NULL) {
+			cm_log(1, "Error initializing NSS.\n");
+			return;
+		}
+		reason = util_n_fips_hook();
+		if (reason != NULL) {
+			cm_log(1, "Error putting NSS into FIPS mode: %s\n", reason);
+			return;
+		}
 	}
 
 	/* Build the extensions. */
@@ -1451,8 +1458,10 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 		*length = 0;
 	}
 
-	if (NSS_ShutdownContext(ctx) != SECSuccess) {
-		cm_log(1, "Error shutting down NSS.\n");
+	if (ctx == NULL) {
+		if (NSS_ShutdownContext(local_ctx) != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
+		}
 	}
 
 	PORT_FreeArena(arena, PR_TRUE);

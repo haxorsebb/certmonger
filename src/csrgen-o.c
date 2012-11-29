@@ -164,7 +164,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			if (req != NULL) {
 				/* Add attributes. */
 				extensions = NULL;
-				cm_certext_build_csr_extensions(entry,
+				cm_certext_build_csr_extensions(entry, NULL,
 								&extensions,
 								&extensions_len);
 				if ((extensions != NULL) &&
