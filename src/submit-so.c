@@ -114,10 +114,11 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 						req = PEM_read_bio_X509_REQ(bio, NULL,
 									    NULL, NULL);
 						if (req != NULL) {
-							cert = X509_REQ_to_X509(req,
-										0,
-										pkey);
+							cert = X509_new();
 							if (cert != NULL) {
+								X509_set_subject_name(cert, X509_REQ_get_subject_name(req));
+								X509_set_issuer_name(cert, X509_REQ_get_subject_name(req));
+								X509_set_pubkey(cert, pkey);
 								ASN1_TIME_set(cert->cert_info->validity->notBefore, now);
 								ASN1_TIME_set(cert->cert_info->validity->notAfter, now + life);
 								X509_set_version(cert, 2);
@@ -161,8 +162,7 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 								status = 0;
 							} else {
 								cm_log(1, "Error building "
-								       "certificate from "
-								       "signing request.\n");
+								       "template certificate.\n");
 								status = 2;
 							}
 						} else {
