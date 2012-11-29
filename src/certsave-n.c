@@ -80,12 +80,9 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		cm_log(1, "Unable to open NSS database '%s'.\n",
 		       entry->cm_cert_storage_location);
 	} else {
-		reason = util_n_fips_hook();
-		if (reason != NULL) {
-			cm_log(1, "Error putting NSS into FIPS mode: %s\n",
-			       reason);
-			_exit(CM_STATUS_INTERNAL);
-		}
+		/* We don't try to force FIPS mode here, as it seems to get in
+		 * the way of saving the certificate. */
+
 		/* Allocate a memory pool. */
 		arena = PORT_NewArena(sizeof(double));
 		if (arena == NULL) {
