@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.61
+Version:	0.62
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -200,13 +200,23 @@ exit 0
 %config(noreplace) %{_unitdir}/*
 %endif
 
-#- add a -u flag to getcert to enable requesting a keyUsage extension value
-#- request subjectKeyIdentifier extensions from CAs, and include them in
-#  self-signed certificates
-#- request basicConstraints from CAs, defaulting to requests for end-entity
-#  certificates
-
 %changelog
+* Thu Nov 29 2012 Nalin Dahyabhai <nalin@redhat.com> 0.62-1
+- add a -u flag to getcert to enable requesting a keyUsage extension value
+- request subjectKeyIdentifier extensions from CAs, and include them in
+  self-signed certificates
+- request basicConstraints from CAs, defaulting to requests for end-entity
+  certificates
+- when requesting CA certificates, also request authorityKeyIdentifier
+- add support for requesting CRL distribution point and authorityInfoAccess
+  extensions that specify OCSP responder locations
+- don't crash when OpenSSL can't build a template certificate from a request
+  when we're in FIPS mode
+- put NSS in FIPS mode, when the system booted that way, except when we're
+  trying to write certificates to a database
+- fix CSR generation and self-signing in FIPS mode with NSS
+- fix self-signing in FIPS mode with OpenSSL
+
 * Mon Sep 24 2012 Nalin Dahyabhai <nalin@redhat.com> 0.61-1
 - fix a regression in reading old request tracking files where the
   request was in state NEED_TO_NOTIFY or NOTIFYING
