@@ -64,7 +64,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	NSSInitContext *ctx;
 	PK11SlotList *slotlist;
 	PK11SlotListElement *sle;
-	PK11SlotInfo *slot = NULL, *islot;
+	PK11SlotInfo *slot = NULL;
 	PK11RSAGenParams rsa_params;
 	void *params;
 	SECKEYPrivateKey *privkey, *delkey;
@@ -132,14 +132,11 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	/* Walk the list looking for the requested slot, or the first one if
 	 * none was requested. */
 	slot = NULL;
-	/* In practice, the internal slot is either a non-storage slot (in
-	 * non-FIPS mode) or the database slot (in FIPS mode), and we only want
-	 * to skip over the one that can't be used to store things. */
-	islot = PK11_IsFIPS() ? NULL : PK11_GetInternalSlot();
 	for (sle = slotlist->head;
 	     ((sle != NULL) && (sle->slot != NULL));
 	     sle = sle->next) {
-		if (sle->slot == islot) {
+		if (PK11_IsInternal(sle->slot) &&
+		    !PK11_IsInternalKeySlot(sle->slot)) {
 			cm_log(3, "Skipping NSS internal slot (%s).\n",
 			       PK11_GetTokenName(sle->slot));
 			goto next_slot;
@@ -161,9 +158,6 @@ next_slot:
 		if (sle == slotlist->tail) {
 			break;
 		}
-	}
-	if (islot != NULL) {
-		PK11_FreeSlot(islot);
 	}
 	if (slot == NULL) {
 		fprintf(status, "Error locating token for key generation.\n");

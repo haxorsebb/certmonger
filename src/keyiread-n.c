@@ -66,7 +66,6 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	PLArenaPool *arena;
 	SECStatus error;
 	NSSInitContext *ctx;
-	PK11SlotInfo *islot;
 	PK11SlotList *slotlist;
 	PK11SlotListElement *sle;
 	SECKEYPrivateKeyList *keys;
@@ -132,11 +131,11 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	/* In practice, the internal slot is either a non-storage slot (in
 	 * non-FIPS mode) or the database slot (in FIPS mode), and we only want
 	 * to skip over the one that can't be used to store things. */
-	islot = PK11_IsFIPS() ? NULL : PK11_GetInternalSlot();
 	for (sle = slotlist->head;
 	     (key == NULL) && ((sle != NULL) && (sle->slot != NULL));
 	     sle = sle->next) {
-		if (sle->slot == islot) {
+		if (PK11_IsInternal(sle->slot) &&
+		    !PK11_IsInternalKeySlot(sle->slot)) {
 			cm_log(3, "Skipping NSS internal slot (%s).\n",
 			       PK11_GetTokenName(sle->slot));
 			goto next_slot;
@@ -298,9 +297,6 @@ next_slot:
 		if (sle == slotlist->tail) {
 			break;
 		}
-	}
-	if (islot != NULL) {
-		PK11_FreeSlot(islot);
 	}
 
 	PK11_FreeSlotList(slotlist);
