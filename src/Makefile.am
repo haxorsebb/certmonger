@@ -81,7 +81,9 @@ libcm_a_SOURCES = \
 	tdbusm.c \
 	tdbusm.h \
 	util.c \
-	util.h
+	util.h \
+	util-n.c \
+	util-n.h
 libcm_o_a_SOURCES =
 if HAVE_OPENSSL
 libcm_o_a_SOURCES += \
