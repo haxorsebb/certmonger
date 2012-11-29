@@ -59,6 +59,7 @@ Complete:
   * Offer an API over D-Bus which the client can use instead of
     mutilating the queue directly (per doc/api.txt).
   * Generate an SPKAC value when generating PKCS#10 CSRs.
+  * Put NSS into FIPS mode.
 
 To-do:
   * Also generate a CRMF request (RFC 4211) when we generate CSRs.  Not sure
@@ -90,7 +91,6 @@ To-do:
     COULD -> Move them to something that's more end-user-serviceable. (3 days)
     - IPA mucks with our files directly in their current form, so this is
       tabled indefinitely.
-  * Put NSS into FIPS mode.
   * Lighten build requirements by crafting and parsing XML-RPC ourselves
     since we already have to deal with non-XML-RPC XML and HTTP for Dogtag.
   * Add IDENTIFY operations to helpers, so they can output their
@@ -106,6 +106,7 @@ To-do:
       (probably libcurl again) and changes to the internal state machine to
       handle CRL retrieval as another type of task.  The local signer's CRL
       would be regenerated before being "retrieved".
+    * More on this in "doc/submit.txt".
   * Add a GET_NEW_REQUEST_REQUIREMENTS operation to helpers so that they can
     list variables which the daemon should supply for them for it to note, so
     that if they're not specified by a client, we can intelligently decide
