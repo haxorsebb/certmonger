@@ -30,6 +30,7 @@
 #include "../../src/log.h"
 #include "../../src/store.h"
 #include "../../src/store-int.h"
+#include "tools.h"
 
 static void
 wait_to_read(int fd)
@@ -53,6 +54,7 @@ main(int argc, char **argv)
 	const char *ctype;
 	cm_log_set_method(cm_log_stderr);
 	cm_log_set_level(3);
+	cm_set_fips_from_env();
 	parent = talloc_new(NULL);
 	if (argc > 1) {
 		entry = cm_store_files_entry_read(parent, argv[1]);

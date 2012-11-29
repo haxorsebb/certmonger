@@ -34,6 +34,7 @@
 #include "../../src/store.h"
 #include "../../src/submit.h"
 #include "../../src/submit-u.h"
+#include "tools.h"
 
 static void
 wait_to_read(int fd)
@@ -59,6 +60,7 @@ main(int argc, char **argv)
 	cm_submit_uuid_fixed_for_testing = 1; /* use fixed UUIDs */
 	cm_log_set_method(cm_log_stderr);
 	cm_log_set_level(3);
+	cm_set_fips_from_env();
 	parent = talloc_new(NULL);
 	if (argc > 2) {
 		ca = cm_store_files_ca_read(parent, argv[1]);
