@@ -39,6 +39,7 @@
 #include "log.h"
 #include "tdbus.h"
 #include "tdbusm.h"
+#include "util-n.h"
 
 #ifdef ENABLE_NLS
 #include <libintl.h>
@@ -60,12 +61,14 @@ main(int argc, char **argv)
 	const char *pidfile = NULL, *tmpdir;
 	char *env_tmpdir, *hint;
 	dbus_bool_t dofork;
+	enum force_fips_mode forcefips;
 	int bustime;
 	DBusError error;
 
 	bus = cm_env_default_bus();
 	dofork = cm_env_default_fork();
 	bustime = cm_env_default_bus_timeout();
+	forcefips = do_not_force_fips;
 
 #ifdef ENABLE_NLS
 	bindtextdomain(PACKAGE, MYLOCALEDIR);
@@ -84,7 +87,7 @@ main(int argc, char **argv)
 		exit(1);
 	};
 
-	while ((c = getopt(argc, argv, "sSp:fb:Bd:n")) != -1) {
+	while ((c = getopt(argc, argv, "sSp:fb:Bd:nF")) != -1) {
 		switch (c) {
 		case 's':
 			bus = cm_tdbus_session;
@@ -110,11 +113,14 @@ main(int argc, char **argv)
 		case 'n':
 			dofork = FALSE;
 			break;
+		case 'F':
+			forcefips = do_force_fips;
+			break;
 		default:
 			printf(_("Usage: %s [-s|-S] [-n|-f] [-d LEVEL] "
-			         "[-p FILE]\n"),
+			         "[-p FILE] [-F]\n"),
 			       cm_env_whoami());
-			printf("%s%s%s%s%s%s%s%s",
+			printf("%s%s%s%s%s%s%s%s%s",
 			       _("\t-s         use session bus\n"),
 			       _("\t-S         use system bus\n"),
 			       _("\t-n         don't become a daemon\n"),
@@ -122,7 +128,8 @@ main(int argc, char **argv)
 			       _("\t-b TIMEOUT bus-activated, idle timeout\n"),
 			       _("\t-B         don't use an idle timeout\n"),
 			       _("\t-d LEVEL   set debugging level (implies -n)\n"),
-			       _("\t-p FILE    write service PID to file\n"));
+			       _("\t-p FILE    write service PID to file\n"),
+			       _("\t-F         force NSS into FIPS mode\n"));
 			exit(1);
 			break;
 		}
@@ -130,6 +137,7 @@ main(int argc, char **argv)
 
 	cm_log_set_level(dlevel);
 	cm_log_set_method(dofork ? cm_log_syslog : cm_log_stderr);
+	util_n_set_fips(forcefips);
 	cm_log(3, "Starting up.\n");
 
 	tmpdir = cm_env_tmp_dir();

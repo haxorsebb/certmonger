@@ -1,10 +1,10 @@
-.TH certmonger 8 "12 July 2011" "certmonger Manual"
+.TH certmonger 8 "28 November 2012" "certmonger Manual"
 
 .SH NAME
 certmonger
 
 .SH SYNOPSIS
-certmonger [-s|-S] [-b TIMEOUT|-B] [-n|-f] [-d LEVEL] [-p FILE]
+certmonger [-s|-S] [-b TIMEOUT|-B] [-n|-f] [-d LEVEL] [-p FILE] [-F]
 
 .SH DESCRIPTION
 The \fIcertmonger\fR daemon monitors certificates for impending
@@ -41,6 +41,10 @@ Set debugging level.  Higher values produce more debugging output.  Implies -n.
 .TP
 -p FILE
 Store the daemon's process ID in the named file.
+.TP
+-F
+Force NSS to be initialized in FIPS mode.  The default behavior is to heed
+the setting stored in \fI/proc/sys/crypto/fips_enabled\fR.
 
 .SH FILES
 The set of certificates being monitored or signed is tracked using files stored
