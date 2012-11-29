@@ -387,6 +387,7 @@ cm_submit_e_status_text(enum cm_external_status status)
 	case CM_STATUS_UNREACHABLE: return "UNREACHABLE";
 	case CM_STATUS_UNCONFIGURED: return "UNCONFIGURED";
 	case CM_STATUS_WAIT_WITH_DELAY: return "WAIT_WITH_DELAY";
+	case CM_STATUS_OPERATION_NOT_SUPPORTED: return "OPERATION_NOT_SUPPORTED_BY_HELPER";
 	}
 	return "(unknown)";
 }
