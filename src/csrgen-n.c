@@ -269,7 +269,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(1, "Error retrieving public key.\n");
 		} else {
 			cm_log(1, "Error retrieving public key: %s.\n",
-			       PR_ErrorToString(ec, PR_LANGUAGE_I_DEFAULT));
+			       PR_ErrorToName(ec));
 		}
 		SECKEY_DestroyPublicKey(pubkey);
 		SECKEY_DestroyPrivateKey(privkey->key);
@@ -290,7 +290,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(1, "Error building spki value.\n");
 		} else {
 			cm_log(1, "Error building spki value: %s.\n",
-			       PR_ErrorToString(ec, PR_LANGUAGE_I_DEFAULT));
+			       PR_ErrorToName(ec));
 		}
 		SECKEY_DestroyPublicKey(pubkey);
 		SECKEY_DestroyPrivateKey(privkey->key);
@@ -311,7 +311,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(1, "Error building certificate request.\n");
 		} else {
 			cm_log(1, "Error building certificate request: %s.\n",
-			       PR_ErrorToString(ec, PR_LANGUAGE_I_DEFAULT));
+			       PR_ErrorToName(ec));
 		}
 		SECKEY_DestroyPublicKey(pubkey);
 		SECKEY_DestroyPrivateKey(privkey->key);

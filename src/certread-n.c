@@ -236,7 +236,7 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 								error = SEC_DeletePermCertificate(cert);
 								if (error != SECSuccess) {
 									cm_log(3, "Error deleting old certificate: %s.\n",
-									       PR_ErrorToString(error, PR_LANGUAGE_I_DEFAULT));
+									       PR_ErrorToName(error));
 								}
 							}
 							CERT_DestroyCertificate(cert);

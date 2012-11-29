@@ -270,7 +270,7 @@ next_slot:
 	if (privkey == NULL) {
 		ec = PR_GetError();
 		if (ec != 0) {
-			es = PR_ErrorToString(ec, PR_LANGUAGE_I_DEFAULT);
+			es = PR_ErrorToName(ec);
 		} else {
 			es = NULL;
 		}
