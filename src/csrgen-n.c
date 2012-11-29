@@ -412,7 +412,8 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	if (SEC_SignData(&sreq.signature, sreq.data.data, sreq.data.len,
 			 privkey->key, sigoid->offset) != SECSuccess) {
 		cm_log(1, "Error signing certificate request with the client's "
-		       "key.\n");
+		       "key (%p) using \"%s\": %s.\n", privkey->key,
+		       sigoid->desc, PR_ErrorToName(PORT_GetError()));
 		SECKEY_DestroyPublicKey(pubkey);
 		SECKEY_DestroyPrivateKey(privkey->key);
 		PORT_FreeArena(arena, PR_TRUE);

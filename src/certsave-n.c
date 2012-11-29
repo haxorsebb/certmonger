@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,6 +40,7 @@
 #include "store.h"
 #include "store-int.h"
 #include "subproc.h"
+#include "util-n.h"
 
 struct cm_certsave_state {
 	struct cm_certsave_state_pvt pvt;
@@ -65,6 +66,8 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	CERTSignedData csdata;
 	CERTCertListNode *node;
 	struct cm_certsave_n_settings *settings;
+	const char *reason;
+
 	/* Open the database. */
 	settings = userdata;
 	readwrite = settings->readwrite;
@@ -77,6 +80,12 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		cm_log(1, "Unable to open NSS database '%s'.\n",
 		       entry->cm_cert_storage_location);
 	} else {
+		reason = util_n_fips_hook();
+		if (reason != NULL) {
+			cm_log(1, "Error putting NSS into FIPS mode: %s\n",
+			       reason);
+			_exit(CM_STATUS_INTERNAL);
+		}
 		/* Allocate a memory pool. */
 		arena = PORT_NewArena(sizeof(double));
 		if (arena == NULL) {

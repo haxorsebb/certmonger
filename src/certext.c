@@ -45,6 +45,7 @@
 #include "oiddict.h"
 #include "store.h"
 #include "store-int.h"
+#include "util-n.h"
 
 /* Structures and templates for parsing principal name otherName values. */
 struct realm {
@@ -1301,6 +1302,7 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 	};
 	int i;
 	char **tmp;
+	const char *reason;
 	NSSInitContext *ctx;
 
 	*extensions = NULL;
@@ -1317,6 +1319,11 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 			      NSS_INIT_READONLY |
 			      NSS_INIT_NOCERTDB |
 			      NSS_INIT_NOROOTINIT);
+	reason = util_n_fips_hook();
+	if (reason != NULL) {
+		cm_log(1, "Error putting NSS into FIPS mode: %s\n", reason);
+		return;
+	}
 
 	/* Build the extensions. */
 	i = 0;

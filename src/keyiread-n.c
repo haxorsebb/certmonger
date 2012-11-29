@@ -44,6 +44,7 @@
 #include "store.h"
 #include "store-int.h"
 #include "subproc.h"
+#include "util-n.h"
 
 #ifndef PRIVKEY_LIST_EMPTY
 #define PRIVKEY_LIST_EMPTY(l) PRIVKEY_LIST_END(PRIVKEY_LIST_HEAD(l), l)
@@ -60,7 +61,7 @@ struct cm_keyiread_n_settings {
 struct cm_keyiread_n_ctx_and_key *
 cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 {
-	const char *token, *nickname;
+	const char *token, *nickname, *reason;
 	char *pin;
 	PLArenaPool *arena;
 	SECStatus error;
@@ -88,6 +89,11 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	if (ctx == NULL) {
 		cm_log(1, "Unable to open NSS database '%s'.\n",
 		       entry->cm_key_storage_location);
+		_exit(CM_STATUS_ERROR_INITIALIZING);
+	}
+	reason = util_n_fips_hook();
+	if (reason != NULL) {
+		cm_log(1, "Error putting NSS into FIPS mode: %s\n", reason);
 		_exit(CM_STATUS_ERROR_INITIALIZING);
 	}
 
@@ -123,7 +129,10 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	}
 	PK11_SetPasswordFunc(&cm_pin_read_for_cert_nss_cb);
 	n_tokens = 0;
-	islot = PK11_GetInternalSlot();
+	/* In practice, the internal slot is either a non-storage slot (in
+	 * non-FIPS mode) or the database slot (in FIPS mode), and we only want
+	 * to skip over the one that can't be used to store things. */
+	islot = PK11_IsFIPS() ? NULL : PK11_GetInternalSlot();
 	for (sle = slotlist->head;
 	     (key == NULL) && ((sle != NULL) && (sle->slot != NULL));
 	     sle = sle->next) {
@@ -290,7 +299,9 @@ next_slot:
 			break;
 		}
 	}
-	PK11_FreeSlot(islot);
+	if (islot != NULL) {
+		PK11_FreeSlot(islot);
+	}
 
 	PK11_FreeSlotList(slotlist);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,6 +46,7 @@
 #include "store.h"
 #include "store-int.h"
 #include "subproc.h"
+#include "util-n.h"
 
 struct cm_certread_state {
 	struct cm_certread_state_pvt pvt;
@@ -75,6 +76,8 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	struct cm_pin_cb_data cb_data;
 	PRTime before_a, after_a, before_b, after_b;
 	FILE *fp;
+	const char *reason;
+
 	/* Open the status descriptor for stdio. */
 	fp = fdopen(fd, "w");
 	if (fp == NULL) {
@@ -91,6 +94,11 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			      NSS_INIT_NOMODDB);
 	if (ctx == NULL) {
 		cm_log(1, "Unable to open NSS database.\n");
+		_exit(1);
+	}
+	reason = util_n_fips_hook();
+	if (reason != NULL) {
+		cm_log(1, "Error putting NSS into FIPS mode: %s\n", reason);
 		_exit(1);
 	}
 	/* Allocate a memory pool. */
@@ -280,7 +288,7 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 	CERTCertificate *cert, **certs;
 	NSSInitContext *ctx;
 	char *p;
-	const char *nl;
+	const char *nl, *reason;
 	unsigned int i;
 
 	/* Initialize the library. */
@@ -292,6 +300,11 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 			      NSS_INIT_NOMODDB);
 	if (ctx == NULL) {
 		cm_log(1, "Unable to initialize NSS.\n");
+		_exit(1);
+	}
+	reason = util_n_fips_hook();
+	if (reason != NULL) {
+		cm_log(1, "Error putting NSS into FIPS mode: %s\n", reason);
 		_exit(1);
 	}
 	/* Allocate a memory pool. */

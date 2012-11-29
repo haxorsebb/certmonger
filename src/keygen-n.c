@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,6 +40,7 @@
 #include "store.h"
 #include "store-int.h"
 #include "subproc.h"
+#include "util-n.h"
 
 #define PRIVKEY_LIST_EMPTY(l) PRIVKEY_LIST_END(PRIVKEY_LIST_HEAD(l), l)
 
@@ -71,7 +72,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	SECKEYPrivateKeyListNode *node;
 	SECKEYPublicKey *pubkey;
 	PRErrorCode ec;
-	const char *es, *token, *keyname;
+	const char *es, *token, *keyname, *reason;
 	char *pin;
 	struct cm_keygen_n_settings *settings;
 	struct cm_pin_cb_data cb_data;
@@ -93,6 +94,11 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			entry->cm_key_storage_location);
 		cm_log(1, "Error initializing database '%s'.\n",
 		       entry->cm_key_storage_location);
+		_exit(CM_STATUS_ERROR_INITIALIZING);
+	}
+	reason = util_n_fips_hook();
+	if (reason != NULL) {
+		cm_log(1, "Error putting NSS into FIPS mode: %s\n", reason);
 		_exit(CM_STATUS_ERROR_INITIALIZING);
 	}
 	/* Handle the key size. */
@@ -126,7 +132,10 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	/* Walk the list looking for the requested slot, or the first one if
 	 * none was requested. */
 	slot = NULL;
-	islot = PK11_GetInternalSlot();
+	/* In practice, the internal slot is either a non-storage slot (in
+	 * non-FIPS mode) or the database slot (in FIPS mode), and we only want
+	 * to skip over the one that can't be used to store things. */
+	islot = PK11_IsFIPS() ? NULL : PK11_GetInternalSlot();
 	for (sle = slotlist->head;
 	     ((sle != NULL) && (sle->slot != NULL));
 	     sle = sle->next) {
@@ -153,7 +162,9 @@ next_slot:
 			break;
 		}
 	}
-	PK11_FreeSlot(islot);
+	if (islot != NULL) {
+		PK11_FreeSlot(islot);
+	}
 	if (slot == NULL) {
 		fprintf(status, "Error locating token for key generation.\n");
 		cm_log(1, "Error locating token for key generation.\n");
