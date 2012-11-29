@@ -14,12 +14,12 @@ EOF
 
 function append() {
 	cat >> $1 <<- EOF
-	subject=CN=Babs Jensen
-	hostname=localhost,localhost.localdomain
-	email=root@localhost,root@localhost.localdomain
-	principal=root@EXAMPLE.COM,root@FOO.EXAMPLE.COM
-	ku=111
-	eku=id-kp-clientAuth,id-kp-emailProtection
+	template_subject=CN=Babs Jensen
+	template_hostname=localhost,localhost.localdomain
+	template_email=root@localhost,root@localhost.localdomain
+	template_principal=root@EXAMPLE.COM,root@FOO.EXAMPLE.COM
+	template_ku=111
+	template_eku=id-kp-clientAuth,id-kp-emailProtection
 	EOF
 }
 
