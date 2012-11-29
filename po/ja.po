@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2012-09-24 16:23-0400\n"
+"POT-Creation-Date: 2012-11-29 00:36-0500\n"
 "PO-Revision-Date: 2012-09-05 23:08+0000\n"
 "Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
 "Language-Team: Japanese <trans-ja@lists.fedoraproject.org>\n"
@@ -36,11 +36,11 @@ msgstr "署名リクエストを読むことができません。\n"
 msgid "Error setting up for XMLRPC.\n"
 msgstr "XMLRPC の設定中にエラーが発生しました。\n"
 
-#: src/certmaster.c:180 src/getcert.c:359 src/getcert.c:378 src/getcert.c:397
-#: src/getcert.c:416 src/getcert.c:435 src/getcert.c:453 src/getcert.c:483
-#: src/getcert.c:962 src/getcert.c:1267 src/getcert.c:1603 src/getcert.c:1684
-#: src/getcert.c:1997 src/getcert.c:2167 src/getcert.c:2248 src/getcert.c:2283
-#: src/getcert.c:2318 src/getcert.c:2337
+#: src/certmaster.c:180 src/getcert.c:360 src/getcert.c:379 src/getcert.c:398
+#: src/getcert.c:417 src/getcert.c:436 src/getcert.c:454 src/getcert.c:484
+#: src/getcert.c:983 src/getcert.c:1288 src/getcert.c:1646 src/getcert.c:1727
+#: src/getcert.c:2061 src/getcert.c:2233 src/getcert.c:2314 src/getcert.c:2349
+#: src/getcert.c:2384 src/getcert.c:2403
 #, c-format
 msgid "Error parsing server response.\n"
 msgstr "サーバーの応答を解析中にエラーが発生しました。\n"
@@ -50,13 +50,13 @@ msgstr "サーバーの応答を解析中にエラーが発生しました。\n"
 msgid "Server error.\n"
 msgstr "サーバーエラーです。\n"
 
-#: src/getcert.c:90
+#: src/getcert.c:91
 #, c-format
 msgid "Path \"%s\" is not absolute, attempting to use \"%s\" instead.\n"
 msgstr ""
 "パス \"%s\" が絶対パスではありません。代わりに \"%s\" で試行しています。\n"
 
-#: src/getcert.c:95
+#: src/getcert.c:96
 #, c-format
 msgid ""
 "Path \"%s\" is not absolute, and there was an error determining the name of "
@@ -65,125 +65,130 @@ msgstr ""
 "パス  \"%s\" が絶対パスではありません。また、カレントディレクトリーの名前を判"
 "断する際にエラーが発生しました。\n"
 
-#: src/getcert.c:113
+#: src/getcert.c:114
 #, c-format
 msgid "Path \"%s\" is not a directory.\n"
 msgstr "パス \"%s\" はディレクトリーではありません。\n"
 
-#: src/getcert.c:118
+#: src/getcert.c:119
 #, c-format
 msgid "Path \"%s\": %s.\n"
 msgstr "パス \"%s\": %s.\n"
 
-#: src/getcert.c:157
+#: src/getcert.c:158
 #, c-format
 msgid "Path \"%s\" is not a regular file.\n"
 msgstr "パス \"%s\" は一般ファイルではありません。\n"
 
-#: src/getcert.c:234
+#: src/getcert.c:235
 #, c-format
 msgid "Out of memory.\n"
 msgstr "メモリーが不足\n"
 
-#: src/getcert.c:260
+#: src/getcert.c:261
 #, c-format
 msgid "Error connecting to DBus.\n"
 msgstr ""
 "D-Bus へ接続中にエラーが発生しました。\n"
 "\n"
 
-#: src/getcert.c:261
+#: src/getcert.c:262
 #, c-format
 msgid "Please verify that the message bus (D-Bus) service is running.\n"
 msgstr "message bus (D-Bus) サービスが稼働中であることを確認してください。\n"
 
-#: src/getcert.c:268
+#: src/getcert.c:269
 #, c-format
 msgid "Error creating DBus request message.\n"
 msgstr ""
 "D-Bus 要求メッセージを作成中にエラーが発生しました。\n"
 "\n"
 
-#: src/getcert.c:310
+#: src/getcert.c:311
 #, c-format
 msgid "Error %s: %s\n"
 msgstr "エラー %s: %s\n"
 
-#: src/getcert.c:314
+#: src/getcert.c:315
 #, c-format
 msgid "Error %s\n"
 msgstr "エラー %s\n"
 
-#: src/getcert.c:320
+#: src/getcert.c:321
 #, c-format
 msgid "Error: %s\n"
 msgstr "エラー: %s\n"
 
-#: src/getcert.c:322
+#: src/getcert.c:323
 #, c-format
 msgid "Received error response from local %s service.\n"
 msgstr "ローカルの %s サービスからエラー応答を受け取りました。\n"
 
-#: src/getcert.c:328
+#: src/getcert.c:329
 #, c-format
 msgid "No response received from %s service.\n"
 msgstr "%s サービスから応答が受け取れません。\n"
 
-#: src/getcert.c:575 src/getcert.c:1309 src/getcert.c:1737
+#: src/getcert.c:576 src/getcert.c:1331 src/getcert.c:1780
 #, c-format
 msgid "Error initializing Kerberos library: %s.\n"
 msgstr "Kerberos ライブラリーを初期化中にエラーが発生しました: %s.\n"
 
-#: src/getcert.c:634 src/getcert.c:1380 src/getcert.c:1783
+#: src/getcert.c:634 src/getcert.c:1401 src/getcert.c:1825
+#, c-format
+msgid "Unrecognized keyUsage \"%s\".\n"
+msgstr ""
+
+#: src/getcert.c:644 src/getcert.c:1411 src/getcert.c:1835
 #, c-format
 msgid "Could not evaluate OID \"%s\".\n"
 msgstr "OID \"%s\" を評価することができません。\n"
 
-#: src/getcert.c:644 src/getcert.c:1390 src/getcert.c:1793
+#: src/getcert.c:654 src/getcert.c:1421 src/getcert.c:1845
 #, c-format
 msgid "Error parsing Kerberos principal name \"%s\": %s.\n"
 msgstr "Kerberos のプリンシパル名 \"%s\" をパース中にエラー: %s.\n"
 
-#: src/getcert.c:652 src/getcert.c:1398 src/getcert.c:1801
+#: src/getcert.c:662 src/getcert.c:1429 src/getcert.c:1853
 #, c-format
 msgid "Error unparsing Kerberos principal name \"%s\": %s.\n"
 msgstr "Kerberos のプリンシパル名 \"%s\" をアンパース中にエラー: %s\n"
 
-#: src/getcert.c:690 src/getcert.c:1436 src/getcert.c:1839 src/getcert.c:2097
-#: src/getcert.c:2418
+#: src/getcert.c:700 src/getcert.c:1467 src/getcert.c:1891 src/getcert.c:2163
+#: src/getcert.c:2501
 #, c-format
 msgid "%s: option requires an argument -- '%c'\n"
 msgstr "%s: オプションには引数が必要です。-- '%c'\n"
 
-#: src/getcert.c:694 src/getcert.c:1439 src/getcert.c:1842 src/getcert.c:2100
-#: src/getcert.c:2421
+#: src/getcert.c:704 src/getcert.c:1470 src/getcert.c:1894 src/getcert.c:2166
+#: src/getcert.c:2504
 #, c-format
 msgid "%s: invalid option -- '%c'\n"
 msgstr "%s: 無効なオプション -- '%c'\n"
 
-#: src/getcert.c:703
+#: src/getcert.c:713
 #, c-format
 msgid "Error: unused extra argument \"%s\".\n"
 msgstr "エラー: 使用されない余計な引数 \"%s\"。\n"
 
-#: src/getcert.c:706 src/getcert.c:1450 src/getcert.c:1850 src/getcert.c:2108
-#: src/getcert.c:2429
+#: src/getcert.c:716 src/getcert.c:1481 src/getcert.c:1902 src/getcert.c:2174
+#: src/getcert.c:2512
 #, c-format
 msgid "Error: unused extra arguments were supplied.\n"
 msgstr "エラー:余分なパラメーターが指定されました。\n"
 
-#: src/getcert.c:712 src/getcert.c:1456 src/getcert.c:1630 src/getcert.c:1873
+#: src/getcert.c:722 src/getcert.c:1487 src/getcert.c:1673 src/getcert.c:1925
 #, c-format
 msgid "Database location or nickname specified without the other.\n"
 msgstr ""
 "データベースの場所もしくはニックネームのどちらかが指定されていません。\n"
 
-#: src/getcert.c:718 src/getcert.c:1462 src/getcert.c:1636 src/getcert.c:1879
+#: src/getcert.c:728 src/getcert.c:1493 src/getcert.c:1679 src/getcert.c:1931
 #, c-format
 msgid "Database directory and certificate file both specified.\n"
 msgstr "データベースディレクトリーと証明書ファイルの両方が指定されています。\n"
 
-#: src/getcert.c:726 src/getcert.c:1644 src/getcert.c:1887
+#: src/getcert.c:736 src/getcert.c:1687 src/getcert.c:1939
 #, c-format
 msgid ""
 "None of database directory and nickname or certificate file specified.\n"
@@ -191,12 +196,12 @@ msgstr ""
 "データベースディレクトリーとニックネーム、もしくは証明書ファイルの指定されて"
 "いません。\n"
 
-#: src/getcert.c:733 src/getcert.c:1478
+#: src/getcert.c:743 src/getcert.c:1509
 #, c-format
 msgid "Key and certificate can not both be saved to the same file.\n"
 msgstr "キーと証明書の両方を同じファイルに保存することができません。\n"
 
-#: src/getcert.c:758
+#: src/getcert.c:768
 #, c-format
 msgid ""
 "The IPA backend requires the use of the -K option (principal name) when the -"
@@ -205,41 +210,41 @@ msgstr ""
 "IPA バックエンドは -N オプション(サブジェクト名) を使用した場合、-K オプショ"
 "ン(プリンシパル名)を必要とします。\n"
 
-#: src/getcert.c:888 src/getcert.c:1247 src/getcert.c:1559 src/getcert.c:1907
-#: src/getcert.c:2115
+#: src/getcert.c:898 src/getcert.c:1268 src/getcert.c:1602 src/getcert.c:1959
+#: src/getcert.c:2181
 #, c-format
 msgid "No CA with name \"%s\" found.\n"
 msgstr "\"%s\" という名前の CA が見つかりません。\n"
 
-#: src/getcert.c:957 src/getcert.c:1262 src/getcert.c:1597 src/getcert.c:1679
-#: src/getcert.c:1991
+#: src/getcert.c:978 src/getcert.c:1283 src/getcert.c:1640 src/getcert.c:1722
+#: src/getcert.c:2055
 #, c-format
 msgid "Error setting request arguments.\n"
 msgstr ""
 "リクエストの引数を設定中にエラーが発生しました。\n"
 "\n"
 
-#: src/getcert.c:968
+#: src/getcert.c:989
 #, c-format
 msgid "New signing request \"%s\" added.\n"
 msgstr "新しい署名リクエスト \"%s\" が追加されました。\n"
 
-#: src/getcert.c:971
+#: src/getcert.c:992
 #, c-format
 msgid "New signing request could not be added.\n"
 msgstr "新しい署名リクエストの追加ができません。\n"
 
-#: src/getcert.c:1273
+#: src/getcert.c:1294
 #, c-format
 msgid "New tracking request \"%s\" added.\n"
 msgstr "新しい追跡リクエスト \"%s\" が追加されました。\n"
 
-#: src/getcert.c:1277
+#: src/getcert.c:1298
 #, c-format
 msgid "New tracking request could not be added.\n"
 msgstr "新しい追跡リクエストの追加ができません。\n"
 
-#: src/getcert.c:1471
+#: src/getcert.c:1502
 #, c-format
 msgid ""
 "None of ID or database directory and nickname or certificate file "
@@ -248,308 +253,313 @@ msgstr ""
 "IDまたはデータベースディレクトリー、もしくはニックネーム、証明書ファイルの指"
 "定されていません。\n"
 
-#: src/getcert.c:1611
+#: src/getcert.c:1654
 #, c-format
 msgid "Request \"%s\" modified.\n"
 msgstr "リクエスト \"%s\" は変更されました。\n"
 
-#: src/getcert.c:1615
+#: src/getcert.c:1658
 #, c-format
 msgid "Request \"%s\" could not be modified.\n"
 msgstr "リクエスト \"%s\" は変更できません。\n"
 
-#: src/getcert.c:1623 src/getcert.c:1866 src/getcert.c:2122
+#: src/getcert.c:1666 src/getcert.c:1918 src/getcert.c:2188
 #, c-format
 msgid "No request found with specified nickname.\n"
 msgstr "指定されたニックネームを持つリクエストが見つかりませんでした。\n"
 
-#: src/getcert.c:1670 src/getcert.c:1893 src/getcert.c:2133
+#: src/getcert.c:1713 src/getcert.c:1945 src/getcert.c:2199
 #, c-format
 msgid "No request found that matched arguments.\n"
 msgstr "引数に該当したリクエストが見つかりません。\n"
 
-#: src/getcert.c:1689
+#: src/getcert.c:1732
 #, c-format
 msgid "Request \"%s\" removed.\n"
 msgstr "リクエスト \"%s\" は削除されました。\n"
 
-#: src/getcert.c:1693
+#: src/getcert.c:1736
 #, c-format
 msgid "Request \"%s\" could not be removed.\n"
 msgstr "リクエスト \"%s\" は削除できません。\n"
 
-#: src/getcert.c:2005
+#: src/getcert.c:2069
 #, c-format
 msgid "Error modifying \"%s\".\n"
 msgstr ""
 "\"%s\" を変更中にエラーが発生しました。\n"
 "\n"
 
-#: src/getcert.c:2021
+#: src/getcert.c:2085
 #, c-format
 msgid "Resubmitting \"%s\" to \"%s\".\n"
 msgstr "\"%s\" を \"%s\" へ再送中です。\n"
 
-#: src/getcert.c:2024
+#: src/getcert.c:2088
 #, c-format
 msgid "Resubmitting \"%s\".\n"
 msgstr "\"%s\" を再送中です。\n"
 
-#: src/getcert.c:2030
+#: src/getcert.c:2094
 #, c-format
 msgid "Error attempting to submit \"%s\" to \"%s\".\n"
 msgstr ""
 "\"%s\" を \"%s\" へ送信中にエラーが発生しました。\n"
 "\n"
 
-#: src/getcert.c:2033
+#: src/getcert.c:2097
 #, c-format
 msgid "Error attempting to submit \"%s\".\n"
 msgstr ""
 "\"%s\" を送信中にエラーが発生しました。\n"
 "\n"
 
-#: src/getcert.c:2144
+#: src/getcert.c:2210
 #, c-format
 msgid "Number of certificates and requests being tracked: %d.\n"
 msgstr "追跡されている証明書とリクエストの数：%d\n"
 
-#: src/getcert.c:2270
+#: src/getcert.c:2336
 #, c-format
 msgid "Request ID '%s':\n"
 msgstr "リクエスト ID '%s':\n"
 
-#: src/getcert.c:2271
+#: src/getcert.c:2337
 #, c-format
 msgid "\tstatus: %s\n"
 msgstr "\t状態: %s\n"
 
-#: src/getcert.c:2275
+#: src/getcert.c:2341
 #, c-format
 msgid "\tca-error: %s\n"
 msgstr "\tCAエラー: %s\n"
 
-#: src/getcert.c:2277
+#: src/getcert.c:2343
 #, c-format
 msgid "\tstuck: %s\n"
 msgstr "\tスタック: %s\n"
 
-#: src/getcert.c:2297
+#: src/getcert.c:2363
 #, c-format
 msgid "\tkey pair storage: type=%s"
 msgstr "\tキーペアストレージ: type=%s"
 
-#: src/getcert.c:2297
+#: src/getcert.c:2363
 msgid "NONE"
 msgstr "なし"
 
-#: src/getcert.c:2299
+#: src/getcert.c:2365
 #, c-format
 msgid ",location='%s'"
 msgstr ",location='%s'"
 
-#: src/getcert.c:2302 src/getcert.c:2324
+#: src/getcert.c:2368 src/getcert.c:2390
 #, c-format
 msgid ",nickname='%s'"
 msgstr ",nickname='%s'"
 
-#: src/getcert.c:2305 src/getcert.c:2327
+#: src/getcert.c:2371 src/getcert.c:2393
 #, c-format
 msgid ",token='%s'"
 msgstr ",token='%s'"
 
-#: src/getcert.c:2308
+#: src/getcert.c:2374
 #, c-format
 msgid ",pin='%s'"
 msgstr ",pin='%s'"
 
-#: src/getcert.c:2311
+#: src/getcert.c:2377
 #, c-format
 msgid ",pinfile='%s'"
 msgstr ",pinfile='%s'"
 
-#: src/getcert.c:2322
+#: src/getcert.c:2388
 #, c-format
 msgid "\tcertificate: type=%s,location='%s'"
 msgstr "\t証明書: type=%s,location='%s'"
 
-#: src/getcert.c:2342
+#: src/getcert.c:2408
 #, c-format
 msgid "\tCA: %s\n"
 msgstr "\tCA: %s\n"
 
-#: src/getcert.c:2344
+#: src/getcert.c:2410
 #, c-format
 msgid "\tissuer: %s\n"
 msgstr "\t発行者: %s\n"
 
-#: src/getcert.c:2345
+#: src/getcert.c:2411
 #, c-format
 msgid "\tsubject: %s\n"
 msgstr "\tサブジェクト: %s\n"
 
-#: src/getcert.c:2346
+#: src/getcert.c:2412
 #, c-format
 msgid "\texpires: %s\n"
 msgstr "\t有効期限: %s\n"
 
-#: src/getcert.c:2349
+#: src/getcert.c:2415
 msgid "unknown"
 msgstr "不明"
 
-#: src/getcert.c:2352
+#: src/getcert.c:2418
 msgid "\temail: "
 msgstr "\tEメール: "
 
-#: src/getcert.c:2358
+#: src/getcert.c:2424
 msgid "\tdns: "
 msgstr "\tDNS: "
 
-#: src/getcert.c:2364
+#: src/getcert.c:2430
 msgid "\tprincipal name: "
 msgstr "\tプリンシパル名: "
 
-#: src/getcert.c:2370
+#: src/getcert.c:2449
+#, fuzzy, c-format
+msgid "\tkey usage: %s\n"
+msgstr "\tキーペアストレージ: type=%s"
+
+#: src/getcert.c:2453
 msgid "\teku: "
 msgstr "\t拡張キー使用法: "
 
-#: src/getcert.c:2374
+#: src/getcert.c:2457
 #, c-format
 msgid "\tpre-save command: %s\n"
 msgstr "\t保存前コマンド: %s\n"
 
-#: src/getcert.c:2377
+#: src/getcert.c:2460
 #, c-format
 msgid "\tpost-save command: %s\n"
 msgstr "\t保存後コマンド: %s\n"
 
-#: src/getcert.c:2380
+#: src/getcert.c:2463
 #, c-format
 msgid "\ttrack: %s\n"
 msgstr "\t追跡: %s\n"
 
-#: src/getcert.c:2384
+#: src/getcert.c:2467
 #, c-format
 msgid "\tauto-renew: %s\n"
 msgstr "\t自動更新: %s\n"
 
-#: src/getcert.c:2443
+#: src/getcert.c:2526
 #, c-format
 msgid "CA '%s':\n"
 msgstr "CA '%s':\n"
 
-#: src/getcert.c:2450
+#: src/getcert.c:2533
 #, c-format
 msgid "\tca-type: %s\n"
 msgstr "\tCAの種類: %s\n"
 
-#: src/getcert.c:2452
+#: src/getcert.c:2535
 #, c-format
 msgid "\thelper-location: %s\n"
 msgstr "\tヘルパーの場所: %s\n"
 
-#: src/getcert.c:2457
+#: src/getcert.c:2540
 #, c-format
 msgid "\tnext-serial-number: %s\n"
 msgstr "\t次のシリアル番号: %s\n"
 
-#: src/getcert.c:2467
+#: src/getcert.c:2550
 #, c-format
 msgid "\tknown-issuer-names:\n"
 msgstr "\t発行者名:\n"
 
-#: src/getcert.c:2493
+#: src/getcert.c:2576
 #, c-format
 msgid "%s - client certificate enrollment tool\n"
 msgstr "%s - クライアント証明書登録ツール\n"
 
-#: src/getcert.c:2497
+#: src/getcert.c:2580
 #, c-format
 msgid "Usage: %s request [options]\n"
 msgstr "使い方: %s request [オプション]\n"
 
-#: src/getcert.c:2499 src/getcert.c:2539 src/getcert.c:2579 src/getcert.c:2601
+#: src/getcert.c:2582 src/getcert.c:2623 src/getcert.c:2664 src/getcert.c:2686
 msgid "Required arguments:\n"
 msgstr "必須の引数:\n"
 
-#: src/getcert.c:2500 src/getcert.c:2542 src/getcert.c:2582 src/getcert.c:2604
-#: src/getcert.c:2650
+#: src/getcert.c:2583 src/getcert.c:2626 src/getcert.c:2667 src/getcert.c:2689
+#: src/getcert.c:2736
 msgid "* If using an NSS database for storage:\n"
 msgstr "* もしストレージに NSS データベースを使う場合:\n"
 
-#: src/getcert.c:2501 src/getcert.c:2543 src/getcert.c:2583 src/getcert.c:2605
+#: src/getcert.c:2584 src/getcert.c:2627 src/getcert.c:2668 src/getcert.c:2690
 msgid "  -d DIR\tNSS database for key and cert\n"
 msgstr "  -d DIR\tキーと証明書のための NSS データベース\n"
 
-#: src/getcert.c:2502 src/getcert.c:2544 src/getcert.c:2584 src/getcert.c:2606
+#: src/getcert.c:2585 src/getcert.c:2628 src/getcert.c:2669 src/getcert.c:2691
 msgid "  -n NAME\tnickname for NSS-based storage (only valid with -d)\n"
 msgstr ""
 "  -n NAME\tNSS ベースストレージのためのニックネーム(-d オプションを指定した時"
 "のみ有効)\n"
 
-#: src/getcert.c:2503 src/getcert.c:2545 src/getcert.c:2585 src/getcert.c:2607
+#: src/getcert.c:2586 src/getcert.c:2629 src/getcert.c:2670 src/getcert.c:2692
 msgid ""
 "  -t NAME\toptional token name for NSS-based storage (only valid with -d)\n"
 msgstr ""
 "  -t 名前\tNSS ベースの記憶領域のためのオプションのトークン名(-d オプションを"
 "指定した時のみ有効)\n"
 
-#: src/getcert.c:2504 src/getcert.c:2546 src/getcert.c:2586 src/getcert.c:2608
-#: src/getcert.c:2653
+#: src/getcert.c:2587 src/getcert.c:2630 src/getcert.c:2671 src/getcert.c:2693
+#: src/getcert.c:2739
 msgid "* If using files for storage:\n"
 msgstr "* もしストレージのためにファイルを使う時:\n"
 
-#: src/getcert.c:2505 src/getcert.c:2547 src/getcert.c:2587
+#: src/getcert.c:2588 src/getcert.c:2631 src/getcert.c:2672
 msgid "  -k FILE\tPEM file for private key\n"
 msgstr "  -k FILE\tプライベートキーのための PEM ファイル\n"
 
-#: src/getcert.c:2506 src/getcert.c:2548 src/getcert.c:2588
+#: src/getcert.c:2589 src/getcert.c:2632 src/getcert.c:2673
 msgid "  -f FILE\tPEM file for certificate (only valid with -k)\n"
 msgstr "  -f FILE\t証明書のための PEM ファイル (-k を指定した場合のみ有効)\n"
 
-#: src/getcert.c:2507
+#: src/getcert.c:2590
 msgid "* If keys are to be encrypted:\n"
 msgstr "* もしキーが暗号化されていた場合:\n"
 
-#: src/getcert.c:2508 src/getcert.c:2550 src/getcert.c:2612
+#: src/getcert.c:2591 src/getcert.c:2634 src/getcert.c:2697
 msgid "  -p FILE\tfile which holds the encryption PIN\n"
 msgstr "  -p FILE\t暗号化されたPIN コードが含まれるファイル\n"
 
-#: src/getcert.c:2509 src/getcert.c:2551 src/getcert.c:2613
+#: src/getcert.c:2592 src/getcert.c:2635 src/getcert.c:2698
 msgid "  -P PIN\tPIN value\n"
 msgstr "  -P PIN\tPIN コードの値\n"
 
-#: src/getcert.c:2511 src/getcert.c:2553 src/getcert.c:2590 src/getcert.c:2622
-#: src/getcert.c:2641 src/getcert.c:2665
+#: src/getcert.c:2594 src/getcert.c:2637 src/getcert.c:2675 src/getcert.c:2708
+#: src/getcert.c:2727 src/getcert.c:2751
 msgid "Optional arguments:\n"
 msgstr "任意の引数:\n"
 
-#: src/getcert.c:2512 src/getcert.c:2554 src/getcert.c:2623
+#: src/getcert.c:2595 src/getcert.c:2638 src/getcert.c:2709
 msgid "* Certificate handling settings:\n"
 msgstr "* 証明書の処理方法の設定:\n"
 
-#: src/getcert.c:2513
+#: src/getcert.c:2596
 msgid "  -I NAME\tnickname to assign to the request\n"
 msgstr "  -I NAME\tリクエストに割り当てるニックネーム\n"
 
-#: src/getcert.c:2514
+#: src/getcert.c:2597
 msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
 msgstr "  -g SIZE\tキーが存在しない場合に生成されるキーのビット長\n"
 
-#: src/getcert.c:2515 src/getcert.c:2556
+#: src/getcert.c:2598 src/getcert.c:2640
 msgid ""
 "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
 msgstr "  -r\t\t有効期限が近づいている時に証明書を更新する(デフォルト)\n"
 
-#: src/getcert.c:2516 src/getcert.c:2557
+#: src/getcert.c:2599 src/getcert.c:2641
 msgid "  -R\t\tdon't attempt to renew the certificate when expiration nears\n"
 msgstr "  -R\t\t有効期限が近づいても証明書を更新しない\n"
 
-#: src/getcert.c:2518 src/getcert.c:2559
+#: src/getcert.c:2601 src/getcert.c:2643
 msgid "  -c CA\t\tuse the specified CA rather than the default\n"
 msgstr "  -c CA\t\t指定されたCAではなく、デフォルトを使用\n"
 
-#: src/getcert.c:2520 src/getcert.c:2561 src/getcert.c:2628
+#: src/getcert.c:2603 src/getcert.c:2645 src/getcert.c:2714
 msgid ""
 "  -T PROFILE\task the CA to process the request using the named profile or "
 "template\n"
@@ -557,198 +567,203 @@ msgstr ""
 "  -T PROFILE\t名前つきプロファイルまたはテンプレートを使用して、CA がリクエス"
 "トを処理するか確認します\n"
 
-#: src/getcert.c:2521
+#: src/getcert.c:2604
 msgid "* Parameters for the signing request:\n"
 msgstr "* 署名中リクエストのパラメーター:\n"
 
-#: src/getcert.c:2522 src/getcert.c:2616
+#: src/getcert.c:2605 src/getcert.c:2701
 msgid "  -N NAME\tset requested subject name (default: CN=<hostname>)\n"
 msgstr ""
 "  -N NAME\t要求されたサブジェクト名を設定 (デフォルト: CN=<ホスト名>)\n"
 
-#: src/getcert.c:2523 src/getcert.c:2617
+#: src/getcert.c:2606 src/getcert.c:2702
 msgid "  -U EXTUSAGE\tset requested extended key usage OID\n"
 msgstr "  -U EXTUSAGE\t 拡張キー使用法(EKU)のOIDを設定\n"
 
-#: src/getcert.c:2524 src/getcert.c:2618
+#: src/getcert.c:2607 src/getcert.c:2648 src/getcert.c:2703
+#, fuzzy
+msgid "  -u KEYUSAGE\tset requested key usage value\n"
+msgstr "  -U EXTUSAGE\t 拡張キー使用法(EKU)のOIDを設定\n"
+
+#: src/getcert.c:2608 src/getcert.c:2704
 msgid "  -K NAME\tset requested principal name\n"
 msgstr "  -K NAME\t要求されたプリンシパル名を設定\n"
 
-#: src/getcert.c:2525 src/getcert.c:2619
+#: src/getcert.c:2609 src/getcert.c:2705
 msgid "  -D DNSNAME\tset requested DNS name\n"
 msgstr "  -D DNSNAME\t設定するDNS名\n"
 
-#: src/getcert.c:2526 src/getcert.c:2620
+#: src/getcert.c:2610 src/getcert.c:2706
 msgid "  -E EMAIL\tset requested email address\n"
 msgstr "  -E EMAIL\t要求したEメールアドレスを設定\n"
 
-#: src/getcert.c:2527 src/getcert.c:2567 src/getcert.c:2591 src/getcert.c:2629
-#: src/getcert.c:2655 src/getcert.c:2670
+#: src/getcert.c:2611 src/getcert.c:2652 src/getcert.c:2676 src/getcert.c:2715
+#: src/getcert.c:2741 src/getcert.c:2756
 msgid "* Bus options:\n"
 msgstr "* バスのオプション:\n"
 
-#: src/getcert.c:2528 src/getcert.c:2568 src/getcert.c:2592 src/getcert.c:2630
+#: src/getcert.c:2612 src/getcert.c:2653 src/getcert.c:2677 src/getcert.c:2716
 msgid "  -S\t\tconnect to the certmonger service on the system bus\n"
 msgstr "  -S\t\tシステムバス上の certmonger サービスに接続\n"
 
-#: src/getcert.c:2529 src/getcert.c:2569 src/getcert.c:2593 src/getcert.c:2631
+#: src/getcert.c:2613 src/getcert.c:2654 src/getcert.c:2678 src/getcert.c:2717
 msgid "  -s\t\tconnect to the certmonger service on the session bus\n"
 msgstr "  -s\t\tセッションバス上の certmonger サービスに接続\n"
 
-#: src/getcert.c:2530 src/getcert.c:2570 src/getcert.c:2594 src/getcert.c:2632
-#: src/getcert.c:2658 src/getcert.c:2673
+#: src/getcert.c:2614 src/getcert.c:2655 src/getcert.c:2679 src/getcert.c:2718
+#: src/getcert.c:2744 src/getcert.c:2759
 msgid "* Other options:\n"
 msgstr "* その他のオプション:\n"
 
-#: src/getcert.c:2531 src/getcert.c:2571 src/getcert.c:2633
+#: src/getcert.c:2615 src/getcert.c:2656 src/getcert.c:2719
 msgid "  -B\tcommand to run before saving the certificate\n"
 msgstr "  -B\t証明書を保存する前に実行するコマンド\n"
 
-#: src/getcert.c:2532 src/getcert.c:2572 src/getcert.c:2634
+#: src/getcert.c:2616 src/getcert.c:2657 src/getcert.c:2720
 msgid "  -C\tcommand to run after saving the certificate\n"
 msgstr "  -C\t証明書を保存した後に実行するコマンド\n"
 
-#: src/getcert.c:2533 src/getcert.c:2573 src/getcert.c:2595 src/getcert.c:2635
-#: src/getcert.c:2659 src/getcert.c:2674
+#: src/getcert.c:2617 src/getcert.c:2658 src/getcert.c:2680 src/getcert.c:2721
+#: src/getcert.c:2745 src/getcert.c:2760
 msgid "  -v\treport all details of errors\n"
 msgstr "  -v\t詳細なすべてのエラーを報告\n"
 
-#: src/getcert.c:2537
+#: src/getcert.c:2621
 #, c-format
 msgid "Usage: %s start-tracking [options]\n"
 msgstr "使い方: %s start-tracking [オプション]\n"
 
-#: src/getcert.c:2540
+#: src/getcert.c:2624
 msgid "* If modifying an existing request:\n"
 msgstr "* もし既存のリクエストを変更する時:\n"
 
-#: src/getcert.c:2541
+#: src/getcert.c:2625
 msgid "  -i NAME\tnickname of an existing tracking request\n"
 msgstr "  -i NAME\t既存の追跡リクエストのニックネーム\n"
 
-#: src/getcert.c:2549 src/getcert.c:2611
+#: src/getcert.c:2633 src/getcert.c:2696
 msgid "* If keys are encrypted:\n"
 msgstr "* もしキーが暗号化されていた時:\n"
 
-#: src/getcert.c:2555
+#: src/getcert.c:2639
 msgid "  -I NAME\tnickname to give to tracking request\n"
 msgstr "  -I NAME\t追跡リクエストに与えるニックネーム\n"
 
-#: src/getcert.c:2562
+#: src/getcert.c:2646
 msgid "* Parameters for the signing request at renewal time:\n"
 msgstr "* 更新時に署名リクエストのためのパラメーター:\n"
 
-#: src/getcert.c:2563
+#: src/getcert.c:2647
 msgid "  -U EXTUSAGE\toverride requested extended key usage OID\n"
 msgstr "  -U EXTUSAGE\t指定されたキーのOIDで拡張キー使用法(EKU)を上書き\n"
 
-#: src/getcert.c:2564
+#: src/getcert.c:2649
 msgid "  -K NAME\toverride requested principal name\n"
 msgstr "  -K NAME\t要求されたプリンシパル名を上書き\n"
 
-#: src/getcert.c:2565
+#: src/getcert.c:2650
 msgid "  -D DNSNAME\toverride requested DNS name\n"
 msgstr "  -D DNSNAME\t要求された DNS 名を上書き\n"
 
-#: src/getcert.c:2566
+#: src/getcert.c:2651
 msgid "  -E EMAIL\toverride requested email address\n"
 msgstr "  -E EMAIL\t要求されたEメールアドレスを上書き\n"
 
-#: src/getcert.c:2577
+#: src/getcert.c:2662
 #, c-format
 msgid "Usage: %s stop-tracking [options]\n"
 msgstr "使い方: %s stop-tracking [オプション]\n"
 
-#: src/getcert.c:2580 src/getcert.c:2602
+#: src/getcert.c:2665 src/getcert.c:2687
 msgid "* By request identifier:\n"
 msgstr "* リクエストの識別子:\n"
 
-#: src/getcert.c:2581 src/getcert.c:2603 src/getcert.c:2649
+#: src/getcert.c:2666 src/getcert.c:2688 src/getcert.c:2735
 msgid "  -i NAME\tnickname for tracking request\n"
 msgstr "  -i NAME\t追跡リクエストのためのニックネーム\n"
 
-#: src/getcert.c:2599
+#: src/getcert.c:2684
 #, c-format
 msgid "Usage: %s resubmit [options]\n"
 msgstr "使い方: %s resubmit [オプション]\n"
 
-#: src/getcert.c:2609
+#: src/getcert.c:2694
 msgid "  -f FILE\tPEM file for certificate\n"
 msgstr "  -f FILE\t証明書のための PEM ファイル\n"
 
-#: src/getcert.c:2615
+#: src/getcert.c:2700
 msgid "* New parameter values for the signing request:\n"
 msgstr "* 署名リクエストのための新しいパラメーター値:\n"
 
-#: src/getcert.c:2624
+#: src/getcert.c:2710
 msgid "  -I NAME\tnew nickname to give to tracking request\n"
 msgstr "  -I NAME\t追跡リクエストに新しいニックネームを付与\n"
 
-#: src/getcert.c:2626
+#: src/getcert.c:2712
 msgid "  -c CA\t\tuse the specified CA rather than the current one\n"
 msgstr "  -c CA\t\t指定されたCAではなく、現在のいずれかを使用\n"
 
-#: src/getcert.c:2639
+#: src/getcert.c:2725
 #, c-format
 msgid "Usage: %s list [options]\n"
 msgstr "使い方: %s list [オプション]\n"
 
-#: src/getcert.c:2642 src/getcert.c:2667
+#: src/getcert.c:2728 src/getcert.c:2753
 msgid "* General options:\n"
 msgstr "* 一般的なオプション:\n"
 
-#: src/getcert.c:2644
+#: src/getcert.c:2730
 msgid "  -c CA\tlist only requests and certs associated with this CA\n"
 msgstr "  -c CA\tこの CA に関連付けられているリクエストと証明書の一覧のみ\n"
 
-#: src/getcert.c:2646
+#: src/getcert.c:2732
 msgid "  -r\tlist only information about outstanding requests\n"
 msgstr " -r\t未処理の要求についての情報の一覧のみ\n"
 
-#: src/getcert.c:2647
+#: src/getcert.c:2733
 msgid "  -t\tlist only information about tracked certificates\n"
 msgstr " -t\t追跡済み証明書についての情報の一覧のみ\n"
 
-#: src/getcert.c:2648
+#: src/getcert.c:2734
 msgid "* If selecting a specific request:\n"
 msgstr "* もしも特定のリクエストが選択された場合:\n"
 
-#: src/getcert.c:2651
+#: src/getcert.c:2737
 msgid "  -d DIR\tonly list requests and certs which use this NSS database\n"
 msgstr ""
 "  -d DIR<span class=\"whitespace other\" title=\"Tab\">»</span>この NSS デー"
 "タベースを使用するリクエストと証明書のみを表示\n"
 
-#: src/getcert.c:2652
+#: src/getcert.c:2738
 msgid "  -n NAME\tonly list requests and certs which use this nickname\n"
 msgstr ""
 "  -n NAME<span class=\"whitespace other\" title=\"Tab\">»</span>このニック"
 "ネームを使用するリクエストと証明書のみを表示\n"
 
-#: src/getcert.c:2654
+#: src/getcert.c:2740
 msgid "  -f FILE\tonly list requests and certs stored in this PEM file\n"
 msgstr ""
 "  -f FILE<span class=\"whitespace other\" title=\"Tab\">»</span>この PEM ファ"
 "イルに保存されているリクエストと証明書のみを表示\n"
 
-#: src/getcert.c:2656 src/getcert.c:2671
+#: src/getcert.c:2742 src/getcert.c:2757
 msgid "  -S\tconnect to the certmonger service on the system bus\n"
 msgstr "  -S\tシステムバス上の certmonger サービスに接続\n"
 
-#: src/getcert.c:2657 src/getcert.c:2672
+#: src/getcert.c:2743 src/getcert.c:2758
 msgid "  -s\tconnect to the certmonger service on the session bus\n"
 msgstr "  -s\tセッションバス上の certmonger サービスに接続\n"
 
-#: src/getcert.c:2663
+#: src/getcert.c:2749
 #, c-format
 msgid "Usage: %s list-cas [options]\n"
 msgstr "使い方: %s list-cas [オプション]\n"
 
-#: src/getcert.c:2668
+#: src/getcert.c:2754
 msgid "  -c CA\tlist only information about the CA with this name\n"
 msgstr "  -c CA\t指定された名前の CA についての情報一覧のみ表示\n"
 
-#: src/getcert.c:2725
+#: src/getcert.c:2811
 #, c-format
 msgid "%s: unrecognized command\n"
 msgstr "%s: 認識できないコマンド\n"
@@ -809,44 +824,48 @@ msgstr ""
 "\"%s\" (キーテーブル \"%s\" を使用) のためのクレデンシャル・キャッシュをセッ"
 "トアップ中にエラー : %s。\n"
 
-#: src/main.c:114
-#, c-format
-msgid "Usage: %s [-s|-S] [-n|-f] [-d LEVEL] [-p FILE]\n"
+#: src/main.c:120
+#, fuzzy, c-format
+msgid "Usage: %s [-s|-S] [-n|-f] [-d LEVEL] [-p FILE] [-F]\n"
 msgstr "使い方: %s [-s|-S] [-n|-f] [-d LEVEL] [-p FILE]\n"
 
-#: src/main.c:118
+#: src/main.c:124
 msgid "\t-s         use session bus\n"
 msgstr "\t-s         セッションバスを使用\n"
 
-#: src/main.c:119
+#: src/main.c:125
 msgid "\t-S         use system bus\n"
 msgstr "\t-S         システムバスを使用\n"
 
-#: src/main.c:120
+#: src/main.c:126
 msgid "\t-n         don't become a daemon\n"
 msgstr "\t-n         デーモンにならない\n"
 
-#: src/main.c:121
+#: src/main.c:127
 msgid "\t-f         do become a daemon\n"
 msgstr "\t-f         デーモンになる\n"
 
-#: src/main.c:122
+#: src/main.c:128
 msgid "\t-b TIMEOUT bus-activated, idle timeout\n"
 msgstr "\t-b TIMEOUT バス有効化、未使用でタイムアウト\n"
 
-#: src/main.c:123
+#: src/main.c:129
 msgid "\t-B         don't use an idle timeout\n"
 msgstr "\t-B         アイドルタイムアウトを使用しない\n"
 
-#: src/main.c:124
+#: src/main.c:130
 msgid "\t-d LEVEL   set debugging level (implies -n)\n"
 msgstr "\t-d LEVEL   デバッグレベルを設定 (-n を含む)\n"
 
-#: src/main.c:125
+#: src/main.c:131
 msgid "\t-p FILE    write service PID to file\n"
 msgstr "\t-p FILE    サービスの PID をファイルに書き込む\n"
 
-#: src/tdbush.c:116 src/tdbush.c:1375 src/tdbush.c:1600
+#: src/main.c:132
+msgid "\t-F         force NSS into FIPS mode\n"
+msgstr ""
+
+#: src/tdbush.c:116 src/tdbush.c:1418 src/tdbush.c:1643
 msgid "An internal error has occurred."
 msgstr "内部エラーが発生しました。"
 
@@ -869,7 +888,7 @@ msgid "Certificate storage type \"%s\" not supported."
 msgstr "証明書ストレージの種類 \"%s\" はサポートされていません。"
 
 #: src/tdbush.c:459 src/tdbush.c:493 src/tdbush.c:542 src/tdbush.c:717
-#: src/tdbush.c:767 src/tdbush.c:2369
+#: src/tdbush.c:767 src/tdbush.c:2443
 #, c-format
 msgid "The location \"%s\" must be an absolute path."
 msgstr "場所 \"%s\" は絶対パスでなければなりません。"
@@ -898,7 +917,7 @@ msgstr "場所 \"%s\" はディレクトリーでなければなりません。"
 msgid "Certificate nickname not specified."
 msgstr "証明書のニックネームが指定されていません。"
 
-#: src/tdbush.c:614 src/tdbush.c:2263
+#: src/tdbush.c:614 src/tdbush.c:2337
 #, c-format
 msgid "There is already a request with the nickname \"%s\"."
 msgstr "ニックネーム \"%s\" のリクエストは、すでにあります。"
@@ -935,11 +954,11 @@ msgstr ""
 msgid "No such CA."
 msgstr "そのような証明局はありません。"
 
-#: src/tdbush.c:2281
+#: src/tdbush.c:2355
 #, c-format
 msgid "Certificate authority \"%s\" not known."
 msgstr "認証局 \"%s\" は認知されていない証明局です。"
 
-#: src/tdbush.c:2492
+#: src/tdbush.c:2617
 msgid "Unrecognized parameter or wrong value type."
 msgstr "認識されていないパラメーターか、もしくは不適切なデータ型です。"

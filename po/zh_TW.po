@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2012-09-24 16:23-0400\n"
+"POT-Creation-Date: 2012-11-29 00:36-0500\n"
 "PO-Revision-Date: 2012-06-29 15:24+0000\n"
 "Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
 "Language-Team: Chinese (Taiwan) <trans-zh_TW@lists.fedoraproject.org>\n"
@@ -34,11 +34,11 @@ msgstr "無法讀取簽署請求。\n"
 msgid "Error setting up for XMLRPC.\n"
 msgstr "設置 XMLRPC 時發生錯誤。\n"
 
-#: src/certmaster.c:180 src/getcert.c:359 src/getcert.c:378 src/getcert.c:397
-#: src/getcert.c:416 src/getcert.c:435 src/getcert.c:453 src/getcert.c:483
-#: src/getcert.c:962 src/getcert.c:1267 src/getcert.c:1603 src/getcert.c:1684
-#: src/getcert.c:1997 src/getcert.c:2167 src/getcert.c:2248 src/getcert.c:2283
-#: src/getcert.c:2318 src/getcert.c:2337
+#: src/certmaster.c:180 src/getcert.c:360 src/getcert.c:379 src/getcert.c:398
+#: src/getcert.c:417 src/getcert.c:436 src/getcert.c:454 src/getcert.c:484
+#: src/getcert.c:983 src/getcert.c:1288 src/getcert.c:1646 src/getcert.c:1727
+#: src/getcert.c:2061 src/getcert.c:2233 src/getcert.c:2314 src/getcert.c:2349
+#: src/getcert.c:2384 src/getcert.c:2403
 #, c-format
 msgid "Error parsing server response.\n"
 msgstr "解析伺服器回應時發生錯誤。\n"
@@ -48,674 +48,688 @@ msgstr "解析伺服器回應時發生錯誤。\n"
 msgid "Server error.\n"
 msgstr "伺服器錯誤。\n"
 
-#: src/getcert.c:90
+#: src/getcert.c:91
 #, c-format
 msgid "Path \"%s\" is not absolute, attempting to use \"%s\" instead.\n"
 msgstr "\"%s\" 並非絕對路徑，改為使用 \"%s\"。\n"
 
-#: src/getcert.c:95
+#: src/getcert.c:96
 #, c-format
 msgid ""
 "Path \"%s\" is not absolute, and there was an error determining the name of "
 "the current directory.\n"
 msgstr "路徑「%s」非絕對路徑，並且在判斷目前目錄的名稱時發生錯誤。\n"
 
-#: src/getcert.c:113
+#: src/getcert.c:114
 #, c-format
 msgid "Path \"%s\" is not a directory.\n"
 msgstr "\"%s\" 路徑並非目錄。\n"
 
-#: src/getcert.c:118
+#: src/getcert.c:119
 #, c-format
 msgid "Path \"%s\": %s.\n"
 msgstr "路徑 \"%s\"：%s。\n"
 
-#: src/getcert.c:157
+#: src/getcert.c:158
 #, c-format
 msgid "Path \"%s\" is not a regular file.\n"
 msgstr "\"%s\" 路徑並非普通檔案。\n"
 
-#: src/getcert.c:234
+#: src/getcert.c:235
 #, c-format
 msgid "Out of memory.\n"
 msgstr ""
 "記憶體不足。\n"
 "\n"
 
-#: src/getcert.c:260
+#: src/getcert.c:261
 #, c-format
 msgid "Error connecting to DBus.\n"
 msgstr "連接至 DBus 時發生錯誤。\n"
 
-#: src/getcert.c:261
+#: src/getcert.c:262
 #, c-format
 msgid "Please verify that the message bus (D-Bus) service is running.\n"
 msgstr "請驗證訊息匯流排 (D-Bus) 服務是否正在執行。\n"
 
-#: src/getcert.c:268
+#: src/getcert.c:269
 #, c-format
 msgid "Error creating DBus request message.\n"
 msgstr "建立 DBus 請求訊息時發生錯誤。\n"
 
-#: src/getcert.c:310
+#: src/getcert.c:311
 #, c-format
 msgid "Error %s: %s\n"
 msgstr "錯誤 %s：%s\n"
 
-#: src/getcert.c:314
+#: src/getcert.c:315
 #, c-format
 msgid "Error %s\n"
 msgstr "錯誤 %s\n"
 
-#: src/getcert.c:320
+#: src/getcert.c:321
 #, c-format
 msgid "Error: %s\n"
 msgstr "錯誤：%s\n"
 
-#: src/getcert.c:322
+#: src/getcert.c:323
 #, c-format
 msgid "Received error response from local %s service.\n"
 msgstr "從本地 %s 服務接收到錯誤回應。\n"
 
-#: src/getcert.c:328
+#: src/getcert.c:329
 #, c-format
 msgid "No response received from %s service.\n"
 msgstr "沒有從 %s 服務接收到回應。\n"
 
-#: src/getcert.c:575 src/getcert.c:1309 src/getcert.c:1737
+#: src/getcert.c:576 src/getcert.c:1331 src/getcert.c:1780
 #, c-format
 msgid "Error initializing Kerberos library: %s.\n"
 msgstr "初始化 Kerberos 函式庫時發生錯誤：%s。\n"
 
-#: src/getcert.c:634 src/getcert.c:1380 src/getcert.c:1783
+#: src/getcert.c:634 src/getcert.c:1401 src/getcert.c:1825
+#, c-format
+msgid "Unrecognized keyUsage \"%s\".\n"
+msgstr ""
+
+#: src/getcert.c:644 src/getcert.c:1411 src/getcert.c:1835
 #, c-format
 msgid "Could not evaluate OID \"%s\".\n"
 msgstr "無法評估 OID 「%s」。\n"
 
-#: src/getcert.c:644 src/getcert.c:1390 src/getcert.c:1793
+#: src/getcert.c:654 src/getcert.c:1421 src/getcert.c:1845
 #, c-format
 msgid "Error parsing Kerberos principal name \"%s\": %s.\n"
 msgstr ""
 
-#: src/getcert.c:652 src/getcert.c:1398 src/getcert.c:1801
+#: src/getcert.c:662 src/getcert.c:1429 src/getcert.c:1853
 #, c-format
 msgid "Error unparsing Kerberos principal name \"%s\": %s.\n"
 msgstr ""
 
-#: src/getcert.c:690 src/getcert.c:1436 src/getcert.c:1839 src/getcert.c:2097
-#: src/getcert.c:2418
+#: src/getcert.c:700 src/getcert.c:1467 src/getcert.c:1891 src/getcert.c:2163
+#: src/getcert.c:2501
 #, c-format
 msgid "%s: option requires an argument -- '%c'\n"
 msgstr "%s：選項必需引數 -- '%c'\n"
 
-#: src/getcert.c:694 src/getcert.c:1439 src/getcert.c:1842 src/getcert.c:2100
-#: src/getcert.c:2421
+#: src/getcert.c:704 src/getcert.c:1470 src/getcert.c:1894 src/getcert.c:2166
+#: src/getcert.c:2504
 #, c-format
 msgid "%s: invalid option -- '%c'\n"
 msgstr "%s：選項無效 -- '%c'\n"
 
-#: src/getcert.c:703
+#: src/getcert.c:713
 #, c-format
 msgid "Error: unused extra argument \"%s\".\n"
 msgstr ""
 
-#: src/getcert.c:706 src/getcert.c:1450 src/getcert.c:1850 src/getcert.c:2108
-#: src/getcert.c:2429
+#: src/getcert.c:716 src/getcert.c:1481 src/getcert.c:1902 src/getcert.c:2174
+#: src/getcert.c:2512
 #, c-format
 msgid "Error: unused extra arguments were supplied.\n"
 msgstr ""
 
-#: src/getcert.c:712 src/getcert.c:1456 src/getcert.c:1630 src/getcert.c:1873
+#: src/getcert.c:722 src/getcert.c:1487 src/getcert.c:1673 src/getcert.c:1925
 #, c-format
 msgid "Database location or nickname specified without the other.\n"
 msgstr ""
 
-#: src/getcert.c:718 src/getcert.c:1462 src/getcert.c:1636 src/getcert.c:1879
+#: src/getcert.c:728 src/getcert.c:1493 src/getcert.c:1679 src/getcert.c:1931
 #, c-format
 msgid "Database directory and certificate file both specified.\n"
 msgstr ""
 
-#: src/getcert.c:726 src/getcert.c:1644 src/getcert.c:1887
+#: src/getcert.c:736 src/getcert.c:1687 src/getcert.c:1939
 #, c-format
 msgid ""
 "None of database directory and nickname or certificate file specified.\n"
 msgstr ""
 
-#: src/getcert.c:733 src/getcert.c:1478
+#: src/getcert.c:743 src/getcert.c:1509
 #, c-format
 msgid "Key and certificate can not both be saved to the same file.\n"
 msgstr ""
 
-#: src/getcert.c:758
+#: src/getcert.c:768
 #, c-format
 msgid ""
 "The IPA backend requires the use of the -K option (principal name) when the -"
 "N option (subject name) is used.\n"
 msgstr ""
 
-#: src/getcert.c:888 src/getcert.c:1247 src/getcert.c:1559 src/getcert.c:1907
-#: src/getcert.c:2115
+#: src/getcert.c:898 src/getcert.c:1268 src/getcert.c:1602 src/getcert.c:1959
+#: src/getcert.c:2181
 #, c-format
 msgid "No CA with name \"%s\" found.\n"
 msgstr "找不到名稱為「%s」的 CA。\n"
 
-#: src/getcert.c:957 src/getcert.c:1262 src/getcert.c:1597 src/getcert.c:1679
-#: src/getcert.c:1991
+#: src/getcert.c:978 src/getcert.c:1283 src/getcert.c:1640 src/getcert.c:1722
+#: src/getcert.c:2055
 #, c-format
 msgid "Error setting request arguments.\n"
 msgstr "設定請求參數時發生錯誤。\n"
 
-#: src/getcert.c:968
+#: src/getcert.c:989
 #, c-format
 msgid "New signing request \"%s\" added.\n"
 msgstr "已加入新增的簽署請求「%s」。\n"
 
-#: src/getcert.c:971
+#: src/getcert.c:992
 #, c-format
 msgid "New signing request could not be added.\n"
 msgstr "無法加入新增的簽署請求。\n"
 
-#: src/getcert.c:1273
+#: src/getcert.c:1294
 #, c-format
 msgid "New tracking request \"%s\" added.\n"
 msgstr "已加入新增的追蹤請求「%s」。\n"
 
-#: src/getcert.c:1277
+#: src/getcert.c:1298
 #, c-format
 msgid "New tracking request could not be added.\n"
 msgstr "無法加入新增的追蹤請求。\n"
 
-#: src/getcert.c:1471
+#: src/getcert.c:1502
 #, c-format
 msgid ""
 "None of ID or database directory and nickname or certificate file "
 "specified.\n"
 msgstr ""
 
-#: src/getcert.c:1611
+#: src/getcert.c:1654
 #, c-format
 msgid "Request \"%s\" modified.\n"
 msgstr ""
 
-#: src/getcert.c:1615
+#: src/getcert.c:1658
 #, c-format
 msgid "Request \"%s\" could not be modified.\n"
 msgstr ""
 
-#: src/getcert.c:1623 src/getcert.c:1866 src/getcert.c:2122
+#: src/getcert.c:1666 src/getcert.c:1918 src/getcert.c:2188
 #, c-format
 msgid "No request found with specified nickname.\n"
 msgstr "找不到指定暱稱的請求。\n"
 
-#: src/getcert.c:1670 src/getcert.c:1893 src/getcert.c:2133
+#: src/getcert.c:1713 src/getcert.c:1945 src/getcert.c:2199
 #, c-format
 msgid "No request found that matched arguments.\n"
 msgstr ""
 
-#: src/getcert.c:1689
+#: src/getcert.c:1732
 #, c-format
 msgid "Request \"%s\" removed.\n"
 msgstr ""
 
-#: src/getcert.c:1693
+#: src/getcert.c:1736
 #, c-format
 msgid "Request \"%s\" could not be removed.\n"
 msgstr ""
 
-#: src/getcert.c:2005
+#: src/getcert.c:2069
 #, c-format
 msgid "Error modifying \"%s\".\n"
 msgstr ""
 
-#: src/getcert.c:2021
+#: src/getcert.c:2085
 #, c-format
 msgid "Resubmitting \"%s\" to \"%s\".\n"
 msgstr ""
 
-#: src/getcert.c:2024
+#: src/getcert.c:2088
 #, c-format
 msgid "Resubmitting \"%s\".\n"
 msgstr ""
 
-#: src/getcert.c:2030
+#: src/getcert.c:2094
 #, c-format
 msgid "Error attempting to submit \"%s\" to \"%s\".\n"
 msgstr ""
 
-#: src/getcert.c:2033
+#: src/getcert.c:2097
 #, c-format
 msgid "Error attempting to submit \"%s\".\n"
 msgstr ""
 
-#: src/getcert.c:2144
+#: src/getcert.c:2210
 #, c-format
 msgid "Number of certificates and requests being tracked: %d.\n"
 msgstr ""
 
-#: src/getcert.c:2270
+#: src/getcert.c:2336
 #, c-format
 msgid "Request ID '%s':\n"
 msgstr "請求 ID「%s」：\n"
 
-#: src/getcert.c:2271
+#: src/getcert.c:2337
 #, c-format
 msgid "\tstatus: %s\n"
 msgstr "\t狀態：%s\n"
 
-#: src/getcert.c:2275
+#: src/getcert.c:2341
 #, c-format
 msgid "\tca-error: %s\n"
 msgstr "\tca-錯誤：%s\n"
 
-#: src/getcert.c:2277
+#: src/getcert.c:2343
 #, c-format
 msgid "\tstuck: %s\n"
 msgstr ""
 
-#: src/getcert.c:2297
+#: src/getcert.c:2363
 #, c-format
 msgid "\tkey pair storage: type=%s"
 msgstr ""
 
-#: src/getcert.c:2297
+#: src/getcert.c:2363
 msgid "NONE"
 msgstr "無"
 
-#: src/getcert.c:2299
+#: src/getcert.c:2365
 #, c-format
 msgid ",location='%s'"
 msgstr "、位置='%s'"
 
-#: src/getcert.c:2302 src/getcert.c:2324
+#: src/getcert.c:2368 src/getcert.c:2390
 #, c-format
 msgid ",nickname='%s'"
 msgstr "、暱稱='%s'"
 
-#: src/getcert.c:2305 src/getcert.c:2327
+#: src/getcert.c:2371 src/getcert.c:2393
 #, c-format
 msgid ",token='%s'"
 msgstr "、token='%s'"
 
-#: src/getcert.c:2308
+#: src/getcert.c:2374
 #, c-format
 msgid ",pin='%s'"
 msgstr "、pin='%s'"
 
-#: src/getcert.c:2311
+#: src/getcert.c:2377
 #, c-format
 msgid ",pinfile='%s'"
 msgstr "、pin檔案='%s'"
 
-#: src/getcert.c:2322
+#: src/getcert.c:2388
 #, c-format
 msgid "\tcertificate: type=%s,location='%s'"
 msgstr "\t憑證：類型=%s、位置='%s'"
 
-#: src/getcert.c:2342
+#: src/getcert.c:2408
 #, c-format
 msgid "\tCA: %s\n"
 msgstr "\tCA：%s\n"
 
-#: src/getcert.c:2344
+#: src/getcert.c:2410
 #, c-format
 msgid "\tissuer: %s\n"
 msgstr ""
 
-#: src/getcert.c:2345
+#: src/getcert.c:2411
 #, c-format
 msgid "\tsubject: %s\n"
 msgstr ""
 
-#: src/getcert.c:2346
+#: src/getcert.c:2412
 #, c-format
 msgid "\texpires: %s\n"
 msgstr "\t失效日期：%s\n"
 
-#: src/getcert.c:2349
+#: src/getcert.c:2415
 msgid "unknown"
 msgstr "未知"
 
-#: src/getcert.c:2352
+#: src/getcert.c:2418
 msgid "\temail: "
 msgstr "\t電郵："
 
-#: src/getcert.c:2358
+#: src/getcert.c:2424
 msgid "\tdns: "
 msgstr "\tdns："
 
-#: src/getcert.c:2364
+#: src/getcert.c:2430
 msgid "\tprincipal name: "
 msgstr "\tprincipal 名稱："
 
-#: src/getcert.c:2370
+#: src/getcert.c:2449
+#, c-format
+msgid "\tkey usage: %s\n"
+msgstr ""
+
+#: src/getcert.c:2453
 msgid "\teku: "
 msgstr "\teku："
 
-#: src/getcert.c:2374
+#: src/getcert.c:2457
 #, c-format
 msgid "\tpre-save command: %s\n"
 msgstr ""
 
-#: src/getcert.c:2377
+#: src/getcert.c:2460
 #, c-format
 msgid "\tpost-save command: %s\n"
 msgstr ""
 
-#: src/getcert.c:2380
+#: src/getcert.c:2463
 #, c-format
 msgid "\ttrack: %s\n"
 msgstr "\ttrack：%s\n"
 
-#: src/getcert.c:2384
+#: src/getcert.c:2467
 #, c-format
 msgid "\tauto-renew: %s\n"
 msgstr "\t自動更新：%s\n"
 
-#: src/getcert.c:2443
+#: src/getcert.c:2526
 #, c-format
 msgid "CA '%s':\n"
 msgstr "CA「%s」：\n"
 
-#: src/getcert.c:2450
+#: src/getcert.c:2533
 #, c-format
 msgid "\tca-type: %s\n"
 msgstr "\tca-類型：%s\n"
 
-#: src/getcert.c:2452
+#: src/getcert.c:2535
 #, c-format
 msgid "\thelper-location: %s\n"
 msgstr "\thelper-位置：%s\n"
 
-#: src/getcert.c:2457
+#: src/getcert.c:2540
 #, c-format
 msgid "\tnext-serial-number: %s\n"
 msgstr "\t下個序號：%s\n"
 
-#: src/getcert.c:2467
+#: src/getcert.c:2550
 #, c-format
 msgid "\tknown-issuer-names:\n"
 msgstr "\tknown-issuer-names：\n"
 
-#: src/getcert.c:2493
+#: src/getcert.c:2576
 #, c-format
 msgid "%s - client certificate enrollment tool\n"
 msgstr "%s - 客戶端憑證註冊工具\n"
 
-#: src/getcert.c:2497
+#: src/getcert.c:2580
 #, c-format
 msgid "Usage: %s request [options]\n"
 msgstr "用法：%s 請求 [選項]\n"
 
-#: src/getcert.c:2499 src/getcert.c:2539 src/getcert.c:2579 src/getcert.c:2601
+#: src/getcert.c:2582 src/getcert.c:2623 src/getcert.c:2664 src/getcert.c:2686
 msgid "Required arguments:\n"
 msgstr "請求的參數：\n"
 
-#: src/getcert.c:2500 src/getcert.c:2542 src/getcert.c:2582 src/getcert.c:2604
-#: src/getcert.c:2650
+#: src/getcert.c:2583 src/getcert.c:2626 src/getcert.c:2667 src/getcert.c:2689
+#: src/getcert.c:2736
 msgid "* If using an NSS database for storage:\n"
 msgstr "* 如以 NSS 資料庫作為儲存：\n"
 
-#: src/getcert.c:2501 src/getcert.c:2543 src/getcert.c:2583 src/getcert.c:2605
+#: src/getcert.c:2584 src/getcert.c:2627 src/getcert.c:2668 src/getcert.c:2690
 msgid "  -d DIR\tNSS database for key and cert\n"
 msgstr "  -d 目錄\t金鑰及憑證的 NSS 資料庫\n"
 
-#: src/getcert.c:2502 src/getcert.c:2544 src/getcert.c:2584 src/getcert.c:2606
+#: src/getcert.c:2585 src/getcert.c:2628 src/getcert.c:2669 src/getcert.c:2691
 msgid "  -n NAME\tnickname for NSS-based storage (only valid with -d)\n"
 msgstr "  -n 名稱\t基於 NSS 的儲存裝置的暱稱 (只有與 -d 一起用才有效)\n"
 
-#: src/getcert.c:2503 src/getcert.c:2545 src/getcert.c:2585 src/getcert.c:2607
+#: src/getcert.c:2586 src/getcert.c:2629 src/getcert.c:2670 src/getcert.c:2692
 msgid ""
 "  -t NAME\toptional token name for NSS-based storage (only valid with -d)\n"
 msgstr ""
 "  -t 名稱\t基於 NSS 的儲存裝置的 token 名稱 (可有可無；只有與 -d 一起用才有"
 "效)\n"
 
-#: src/getcert.c:2504 src/getcert.c:2546 src/getcert.c:2586 src/getcert.c:2608
-#: src/getcert.c:2653
+#: src/getcert.c:2587 src/getcert.c:2630 src/getcert.c:2671 src/getcert.c:2693
+#: src/getcert.c:2739
 msgid "* If using files for storage:\n"
 msgstr "* 如以檔案作為儲存：\n"
 
-#: src/getcert.c:2505 src/getcert.c:2547 src/getcert.c:2587
+#: src/getcert.c:2588 src/getcert.c:2631 src/getcert.c:2672
 msgid "  -k FILE\tPEM file for private key\n"
 msgstr "  -k 檔案\t私鑰的 PEM 檔案\n"
 
-#: src/getcert.c:2506 src/getcert.c:2548 src/getcert.c:2588
+#: src/getcert.c:2589 src/getcert.c:2632 src/getcert.c:2673
 msgid "  -f FILE\tPEM file for certificate (only valid with -k)\n"
 msgstr "  -f 檔案\t憑證的 PEM 檔案 (只有與 -k 一起用才有效)\n"
 
-#: src/getcert.c:2507
+#: src/getcert.c:2590
 msgid "* If keys are to be encrypted:\n"
 msgstr "* 如金鑰要加密：\n"
 
-#: src/getcert.c:2508 src/getcert.c:2550 src/getcert.c:2612
+#: src/getcert.c:2591 src/getcert.c:2634 src/getcert.c:2697
 msgid "  -p FILE\tfile which holds the encryption PIN\n"
 msgstr "  -p 檔案\t儲存加密 PIN 的檔案\n"
 
-#: src/getcert.c:2509 src/getcert.c:2551 src/getcert.c:2613
+#: src/getcert.c:2592 src/getcert.c:2635 src/getcert.c:2698
 msgid "  -P PIN\tPIN value\n"
 msgstr "  -P PIN\tPIN 值\n"
 
-#: src/getcert.c:2511 src/getcert.c:2553 src/getcert.c:2590 src/getcert.c:2622
-#: src/getcert.c:2641 src/getcert.c:2665
+#: src/getcert.c:2594 src/getcert.c:2637 src/getcert.c:2675 src/getcert.c:2708
+#: src/getcert.c:2727 src/getcert.c:2751
 msgid "Optional arguments:\n"
 msgstr "可有可無的引數：\n"
 
-#: src/getcert.c:2512 src/getcert.c:2554 src/getcert.c:2623
+#: src/getcert.c:2595 src/getcert.c:2638 src/getcert.c:2709
 msgid "* Certificate handling settings:\n"
 msgstr "* 憑證處理設定：\n"
 
-#: src/getcert.c:2513
+#: src/getcert.c:2596
 msgid "  -I NAME\tnickname to assign to the request\n"
 msgstr ""
 
-#: src/getcert.c:2514
+#: src/getcert.c:2597
 msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
 msgstr ""
 
-#: src/getcert.c:2515 src/getcert.c:2556
+#: src/getcert.c:2598 src/getcert.c:2640
 msgid ""
 "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
 msgstr ""
 
-#: src/getcert.c:2516 src/getcert.c:2557
+#: src/getcert.c:2599 src/getcert.c:2641
 msgid "  -R\t\tdon't attempt to renew the certificate when expiration nears\n"
 msgstr ""
 
-#: src/getcert.c:2518 src/getcert.c:2559
+#: src/getcert.c:2601 src/getcert.c:2643
 msgid "  -c CA\t\tuse the specified CA rather than the default\n"
 msgstr ""
 
-#: src/getcert.c:2520 src/getcert.c:2561 src/getcert.c:2628
+#: src/getcert.c:2603 src/getcert.c:2645 src/getcert.c:2714
 msgid ""
 "  -T PROFILE\task the CA to process the request using the named profile or "
 "template\n"
 msgstr ""
 
-#: src/getcert.c:2521
+#: src/getcert.c:2604
 msgid "* Parameters for the signing request:\n"
 msgstr ""
 
-#: src/getcert.c:2522 src/getcert.c:2616
+#: src/getcert.c:2605 src/getcert.c:2701
 msgid "  -N NAME\tset requested subject name (default: CN=<hostname>)\n"
 msgstr ""
 
-#: src/getcert.c:2523 src/getcert.c:2617
+#: src/getcert.c:2606 src/getcert.c:2702
 msgid "  -U EXTUSAGE\tset requested extended key usage OID\n"
 msgstr ""
 
-#: src/getcert.c:2524 src/getcert.c:2618
+#: src/getcert.c:2607 src/getcert.c:2648 src/getcert.c:2703
+msgid "  -u KEYUSAGE\tset requested key usage value\n"
+msgstr ""
+
+#: src/getcert.c:2608 src/getcert.c:2704
 msgid "  -K NAME\tset requested principal name\n"
 msgstr ""
 
-#: src/getcert.c:2525 src/getcert.c:2619
+#: src/getcert.c:2609 src/getcert.c:2705
 msgid "  -D DNSNAME\tset requested DNS name\n"
 msgstr ""
 
-#: src/getcert.c:2526 src/getcert.c:2620
+#: src/getcert.c:2610 src/getcert.c:2706
 msgid "  -E EMAIL\tset requested email address\n"
 msgstr ""
 
-#: src/getcert.c:2527 src/getcert.c:2567 src/getcert.c:2591 src/getcert.c:2629
-#: src/getcert.c:2655 src/getcert.c:2670
+#: src/getcert.c:2611 src/getcert.c:2652 src/getcert.c:2676 src/getcert.c:2715
+#: src/getcert.c:2741 src/getcert.c:2756
 msgid "* Bus options:\n"
 msgstr "* 匯流排選項：\n"
 
-#: src/getcert.c:2528 src/getcert.c:2568 src/getcert.c:2592 src/getcert.c:2630
+#: src/getcert.c:2612 src/getcert.c:2653 src/getcert.c:2677 src/getcert.c:2716
 msgid "  -S\t\tconnect to the certmonger service on the system bus\n"
 msgstr ""
 
-#: src/getcert.c:2529 src/getcert.c:2569 src/getcert.c:2593 src/getcert.c:2631
+#: src/getcert.c:2613 src/getcert.c:2654 src/getcert.c:2678 src/getcert.c:2717
 msgid "  -s\t\tconnect to the certmonger service on the session bus\n"
 msgstr ""
 
-#: src/getcert.c:2530 src/getcert.c:2570 src/getcert.c:2594 src/getcert.c:2632
-#: src/getcert.c:2658 src/getcert.c:2673
+#: src/getcert.c:2614 src/getcert.c:2655 src/getcert.c:2679 src/getcert.c:2718
+#: src/getcert.c:2744 src/getcert.c:2759
 msgid "* Other options:\n"
 msgstr "* 其他選項：\n"
 
-#: src/getcert.c:2531 src/getcert.c:2571 src/getcert.c:2633
+#: src/getcert.c:2615 src/getcert.c:2656 src/getcert.c:2719
 msgid "  -B\tcommand to run before saving the certificate\n"
 msgstr ""
 
-#: src/getcert.c:2532 src/getcert.c:2572 src/getcert.c:2634
+#: src/getcert.c:2616 src/getcert.c:2657 src/getcert.c:2720
 msgid "  -C\tcommand to run after saving the certificate\n"
 msgstr ""
 
-#: src/getcert.c:2533 src/getcert.c:2573 src/getcert.c:2595 src/getcert.c:2635
-#: src/getcert.c:2659 src/getcert.c:2674
+#: src/getcert.c:2617 src/getcert.c:2658 src/getcert.c:2680 src/getcert.c:2721
+#: src/getcert.c:2745 src/getcert.c:2760
 msgid "  -v\treport all details of errors\n"
 msgstr "  -v\t報告錯誤的所有詳情\n"
 
-#: src/getcert.c:2537
+#: src/getcert.c:2621
 #, c-format
 msgid "Usage: %s start-tracking [options]\n"
 msgstr "用法：%s start-tracking [選項]\n"
 
-#: src/getcert.c:2540
+#: src/getcert.c:2624
 msgid "* If modifying an existing request:\n"
 msgstr ""
 
-#: src/getcert.c:2541
+#: src/getcert.c:2625
 msgid "  -i NAME\tnickname of an existing tracking request\n"
 msgstr ""
 
-#: src/getcert.c:2549 src/getcert.c:2611
+#: src/getcert.c:2633 src/getcert.c:2696
 msgid "* If keys are encrypted:\n"
 msgstr "* 如金鑰已加密：\n"
 
-#: src/getcert.c:2555
+#: src/getcert.c:2639
 msgid "  -I NAME\tnickname to give to tracking request\n"
 msgstr ""
 
-#: src/getcert.c:2562
+#: src/getcert.c:2646
 msgid "* Parameters for the signing request at renewal time:\n"
 msgstr ""
 
-#: src/getcert.c:2563
+#: src/getcert.c:2647
 msgid "  -U EXTUSAGE\toverride requested extended key usage OID\n"
 msgstr ""
 
-#: src/getcert.c:2564
+#: src/getcert.c:2649
 msgid "  -K NAME\toverride requested principal name\n"
 msgstr ""
 
-#: src/getcert.c:2565
+#: src/getcert.c:2650
 msgid "  -D DNSNAME\toverride requested DNS name\n"
 msgstr ""
 
-#: src/getcert.c:2566
+#: src/getcert.c:2651
 msgid "  -E EMAIL\toverride requested email address\n"
 msgstr ""
 
-#: src/getcert.c:2577
+#: src/getcert.c:2662
 #, c-format
 msgid "Usage: %s stop-tracking [options]\n"
 msgstr "用法：%s stop-tracking [選項]\n"
 
-#: src/getcert.c:2580 src/getcert.c:2602
+#: src/getcert.c:2665 src/getcert.c:2687
 msgid "* By request identifier:\n"
 msgstr ""
 
-#: src/getcert.c:2581 src/getcert.c:2603 src/getcert.c:2649
+#: src/getcert.c:2666 src/getcert.c:2688 src/getcert.c:2735
 msgid "  -i NAME\tnickname for tracking request\n"
 msgstr ""
 
-#: src/getcert.c:2599
+#: src/getcert.c:2684
 #, c-format
 msgid "Usage: %s resubmit [options]\n"
 msgstr "用法：%s resubmit [選項]\n"
 
-#: src/getcert.c:2609
+#: src/getcert.c:2694
 msgid "  -f FILE\tPEM file for certificate\n"
 msgstr "  -f 檔案\t憑證的 PEM 檔案\n"
 
-#: src/getcert.c:2615
+#: src/getcert.c:2700
 msgid "* New parameter values for the signing request:\n"
 msgstr ""
 
-#: src/getcert.c:2624
+#: src/getcert.c:2710
 msgid "  -I NAME\tnew nickname to give to tracking request\n"
 msgstr ""
 
-#: src/getcert.c:2626
+#: src/getcert.c:2712
 msgid "  -c CA\t\tuse the specified CA rather than the current one\n"
 msgstr ""
 
-#: src/getcert.c:2639
+#: src/getcert.c:2725
 #, c-format
 msgid "Usage: %s list [options]\n"
 msgstr "用法：%s list [選項]\n"
 
-#: src/getcert.c:2642 src/getcert.c:2667
+#: src/getcert.c:2728 src/getcert.c:2753
 msgid "* General options:\n"
 msgstr "* 一般選項：\n"
 
-#: src/getcert.c:2644
+#: src/getcert.c:2730
 msgid "  -c CA\tlist only requests and certs associated with this CA\n"
 msgstr "  -c CA\t只列出與此 CA 有關的請求與憑證\n"
 
-#: src/getcert.c:2646
+#: src/getcert.c:2732
 msgid "  -r\tlist only information about outstanding requests\n"
 msgstr ""
 
-#: src/getcert.c:2647
+#: src/getcert.c:2733
 msgid "  -t\tlist only information about tracked certificates\n"
 msgstr ""
 
-#: src/getcert.c:2648
+#: src/getcert.c:2734
 msgid "* If selecting a specific request:\n"
 msgstr ""
 
-#: src/getcert.c:2651
+#: src/getcert.c:2737
 msgid "  -d DIR\tonly list requests and certs which use this NSS database\n"
 msgstr "  -d 目錄\t只列出使用此 NSS 資料庫的請求及憑證\n"
 
-#: src/getcert.c:2652
+#: src/getcert.c:2738
 msgid "  -n NAME\tonly list requests and certs which use this nickname\n"
 msgstr "  -n 名稱\t只列出使用此暱稱的請求及憑證\n"
 
-#: src/getcert.c:2654
+#: src/getcert.c:2740
 msgid "  -f FILE\tonly list requests and certs stored in this PEM file\n"
 msgstr "  -f 檔案\t只列出儲存於此 PEM 檔案的請求及憑證\n"
 
-#: src/getcert.c:2656 src/getcert.c:2671
+#: src/getcert.c:2742 src/getcert.c:2757
 msgid "  -S\tconnect to the certmonger service on the system bus\n"
 msgstr ""
 
-#: src/getcert.c:2657 src/getcert.c:2672
+#: src/getcert.c:2743 src/getcert.c:2758
 msgid "  -s\tconnect to the certmonger service on the session bus\n"
 msgstr ""
 
-#: src/getcert.c:2663
+#: src/getcert.c:2749
 #, c-format
 msgid "Usage: %s list-cas [options]\n"
 msgstr "用法：%s list-cas [選項]\n"
 
-#: src/getcert.c:2668
+#: src/getcert.c:2754
 msgid "  -c CA\tlist only information about the CA with this name\n"
 msgstr ""
 
-#: src/getcert.c:2725
+#: src/getcert.c:2811
 #, c-format
 msgid "%s: unrecognized command\n"
 msgstr "%s：指令無法辨識\n"
@@ -768,44 +782,48 @@ msgstr ""
 msgid "Error setting up ccache for \"%s\" using keytab \"%s\": %s.\n"
 msgstr ""
 
-#: src/main.c:114
-#, c-format
-msgid "Usage: %s [-s|-S] [-n|-f] [-d LEVEL] [-p FILE]\n"
+#: src/main.c:120
+#, fuzzy, c-format
+msgid "Usage: %s [-s|-S] [-n|-f] [-d LEVEL] [-p FILE] [-F]\n"
 msgstr "用法：%s [-s|-S] [-n|-f] [-d 等級] [-p 檔案]\n"
 
-#: src/main.c:118
+#: src/main.c:124
 msgid "\t-s         use session bus\n"
 msgstr ""
 
-#: src/main.c:119
+#: src/main.c:125
 msgid "\t-S         use system bus\n"
 msgstr "\t-S         使用系統匯流排\n"
 
-#: src/main.c:120
+#: src/main.c:126
 msgid "\t-n         don't become a daemon\n"
 msgstr ""
 
-#: src/main.c:121
+#: src/main.c:127
 msgid "\t-f         do become a daemon\n"
 msgstr ""
 
-#: src/main.c:122
+#: src/main.c:128
 msgid "\t-b TIMEOUT bus-activated, idle timeout\n"
 msgstr ""
 
-#: src/main.c:123
+#: src/main.c:129
 msgid "\t-B         don't use an idle timeout\n"
 msgstr ""
 
-#: src/main.c:124
+#: src/main.c:130
 msgid "\t-d LEVEL   set debugging level (implies -n)\n"
 msgstr "\t-d 等級   設定除錯等級 (等於同時指定 -n)\n"
 
-#: src/main.c:125
+#: src/main.c:131
 msgid "\t-p FILE    write service PID to file\n"
 msgstr ""
 
-#: src/tdbush.c:116 src/tdbush.c:1375 src/tdbush.c:1600
+#: src/main.c:132
+msgid "\t-F         force NSS into FIPS mode\n"
+msgstr ""
+
+#: src/tdbush.c:116 src/tdbush.c:1418 src/tdbush.c:1643
 msgid "An internal error has occurred."
 msgstr "發生內部錯誤。"
 
@@ -828,7 +846,7 @@ msgid "Certificate storage type \"%s\" not supported."
 msgstr "不支援憑證儲存類型 \"%s\"。"
 
 #: src/tdbush.c:459 src/tdbush.c:493 src/tdbush.c:542 src/tdbush.c:717
-#: src/tdbush.c:767 src/tdbush.c:2369
+#: src/tdbush.c:767 src/tdbush.c:2443
 #, c-format
 msgid "The location \"%s\" must be an absolute path."
 msgstr "\"%s\" 位置須為絕對路徑。"
@@ -856,7 +874,7 @@ msgstr "\"%s\" 位置須為目錄。"
 msgid "Certificate nickname not specified."
 msgstr "未指定憑證暱稱。"
 
-#: src/tdbush.c:614 src/tdbush.c:2263
+#: src/tdbush.c:614 src/tdbush.c:2337
 #, c-format
 msgid "There is already a request with the nickname \"%s\"."
 msgstr "已有暱稱為 \"%s\" 的請求。"
@@ -889,11 +907,11 @@ msgstr ""
 msgid "No such CA."
 msgstr "沒有這樣的 CA。"
 
-#: src/tdbush.c:2281
+#: src/tdbush.c:2355
 #, c-format
 msgid "Certificate authority \"%s\" not known."
 msgstr "未知的憑證授權機構「%s」。"
 
-#: src/tdbush.c:2492
+#: src/tdbush.c:2617
 msgid "Unrecognized parameter or wrong value type."
 msgstr "無法辨識的參數或錯誤的值類型。"

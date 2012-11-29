@@ -216,6 +216,7 @@ exit 0
   trying to write certificates to a database
 - fix CSR generation and self-signing in FIPS mode with NSS
 - fix self-signing in FIPS mode with OpenSSL
+- new languages from the translation team: mai, ml, nn, ga
 
 * Mon Sep 24 2012 Nalin Dahyabhai <nalin@redhat.com> 0.61-1
 - fix a regression in reading old request tracking files where the
