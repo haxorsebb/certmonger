@@ -235,15 +235,22 @@ cm_decide_monitor_delay(time_t remaining)
 }
 
 /* Manage a "lock" that we use to serialize access to THE REST OF THE WORLD. */
-static struct cm_store_entry *saving_lock;
+static struct cm_store_entry *writing_lock;
 static dbus_bool_t
-cm_saving_lock(struct cm_store_entry *entry)
+cm_writing_has_lock(struct cm_store_entry *entry)
 {
-	if ((saving_lock == entry) || (saving_lock == NULL)) {
-		if (saving_lock == NULL) {
-			cm_log(3, "%s('%s') taking saving lock\n",
+	return (writing_lock == entry);
+}
+static dbus_bool_t
+cm_writing_lock(struct cm_store_entry *entry)
+{
+	if ((writing_lock == entry) || (writing_lock == NULL)) {
+		if (writing_lock == NULL) {
+			cm_log(3, "%s('%s') taking writing lock\n",
 			       entry->cm_busname, entry->cm_nickname);
-			saving_lock = entry;
+			writing_lock = entry;
+		} else {
+			abort();
 		}
 		return TRUE;
 	} else {
@@ -251,13 +258,15 @@ cm_saving_lock(struct cm_store_entry *entry)
 	}
 }
 static dbus_bool_t
-cm_saving_unlock(struct cm_store_entry *entry)
+cm_writing_unlock(struct cm_store_entry *entry)
 {
-	if ((saving_lock == entry) || (saving_lock == NULL)) {
-		if (saving_lock == entry) {
-			cm_log(3, "%s('%s') releasing saving lock\n",
+	if ((writing_lock == entry) || (writing_lock == NULL)) {
+		if (writing_lock == entry) {
+			cm_log(3, "%s('%s') releasing writing lock\n",
 			       entry->cm_busname, entry->cm_nickname);
-			saving_lock = NULL;
+			writing_lock = NULL;
+		} else {
+			abort();
 		}
 		return TRUE;
 	} else {
@@ -278,7 +287,9 @@ cm_iterate_init(struct cm_store_entry *entry, void **cm_iterate_state)
 	memset(state, 0, sizeof(*state));
 	*cm_iterate_state = state;
 	cm_entry_reset_state(entry);
-	cm_saving_unlock(entry);
+	if (cm_writing_has_lock(entry)) {
+		cm_writing_unlock(entry);
+	}
 	state->cm_keyiread_state = cm_keyiread_start(entry);
 	if (state->cm_keyiread_state != NULL) {
 		while (cm_keyiread_ready(entry,
@@ -403,6 +414,14 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 
 	switch (entry->cm_state) {
 	case CM_NEED_KEY_PAIR:
+		if (!cm_writing_lock(entry)) {
+			/* Just hang out in this state while we're messing
+			 * around with the outside world for another entry. */
+			cm_log(3, "%s('%s') waiting for saving lock\n",
+			       entry->cm_busname, entry->cm_nickname);
+			*when = cm_time_soon;
+			break;
+		}
 		/* Start a helper. */
 		state->cm_keygen_state = cm_keygen_start(entry);
 		if (state->cm_keygen_state != NULL) {
@@ -424,6 +443,16 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 
 	case CM_GENERATING_KEY_PAIR:
 		if (cm_keygen_ready(entry, state->cm_keygen_state) == 0) {
+			if (!cm_writing_unlock(entry)) {
+				/* If for some reason we fail to release the
+				 * lock that we have, try to release it again
+				 * soon. */
+				*when = cm_time_soon;
+				cm_log(1, "%s('%s') failed to release saving "
+				       "lock, probably a bug\n",
+				       entry->cm_busname, entry->cm_nickname);
+				break;
+			}
 			if (cm_keygen_saved_keypair(entry,
 						    state->cm_keygen_state) == 0) {
 				/* Saved key pair; move on. */
@@ -786,7 +815,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		break;
 
 	case CM_NEED_TO_SAVE_CERT:
-		if (!cm_saving_lock(entry)) {
+		if (!cm_writing_lock(entry)) {
 			/* Just hang out in this state while we're messing
 			 * around with the outside world for another entry. */
 			cm_log(3, "%s('%s') waiting for saving lock\n",
@@ -887,15 +916,6 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		break;
 
 	case CM_NEED_TO_READ_CERT:
-		if (!cm_saving_unlock(entry)) {
-			/* If for some reason we fail to release the lock that
-			 * we have, try to release it again soon. */
-			*when = cm_time_soon;
-			cm_log(1, "%s('%s') failed to release a lock, "
-			       "probably a bug\n",
-			       entry->cm_busname, entry->cm_nickname);
-			break;
-		}
 		state->cm_certread_state = cm_certread_start(entry);
 		if (state->cm_certread_state != NULL) {
 			/* Note that we're reading the cert. */
@@ -1157,6 +1177,15 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		break;
 
 	case CM_NEED_TO_NOTIFY_ISSUED_SAVED:
+		if (!cm_writing_unlock(entry)) {
+			/* If for some reason we fail to release the lock that
+			 * we have, try to release it again soon. */
+			*when = cm_time_soon;
+			cm_log(1, "%s('%s') failed to release saving "
+			       "lock, probably a bug\n",
+			       entry->cm_busname, entry->cm_nickname);
+			break;
+		}
 		state->cm_notify_state = cm_notify_start(entry,
 							 cm_notify_event_issued_and_saved);
 		if (state->cm_notify_state != NULL) {
@@ -1195,6 +1224,16 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 
 
 	case CM_NEWLY_ADDED:
+		/* Take the lock here because the database is opened read-write
+		 * in case we need to set a password on it. */
+		if (!cm_writing_lock(entry)) {
+			/* Just hang out in this state while we're messing
+			 * around with the outside world for another entry. */
+			cm_log(3, "%s('%s') waiting for reading lock\n",
+			       entry->cm_busname, entry->cm_nickname);
+			*when = cm_time_soon;
+			break;
+		}
 		/* We need to do some recon, and then decide what we need to
 		 * do to make things the way the user has specified that they
 		 * should be. */
@@ -1239,12 +1278,34 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			} else
 			if (cm_keyiread_need_token(entry,
 						   state->cm_keyiread_state) == 0) {
+				if (!cm_writing_unlock(entry)) {
+					/* If for some reason we fail to
+					 * release the lock that we have, try
+					 * to release it again soon. */
+					*when = cm_time_soon;
+					cm_log(1, "%s('%s') failed to release "
+					       "reading lock, probably a bug\n",
+					       entry->cm_busname,
+					       entry->cm_nickname);
+					break;
+				}
 				/* If we need the token, just hang on. */
 				entry->cm_state = CM_NEWLY_ADDED_NEED_KEYINFO_READ_TOKEN;
 				*when = cm_time_now;
 			} else
 			if (cm_keyiread_need_pin(entry,
 						 state->cm_keyiread_state) == 0) {
+				if (!cm_writing_unlock(entry)) {
+					/* If for some reason we fail to
+					 * release the lock that we have, try
+					 * to release it again soon. */
+					*when = cm_time_soon;
+					cm_log(1, "%s('%s') failed to release "
+					       "reading lock, probably a bug\n",
+					       entry->cm_busname,
+					       entry->cm_nickname);
+					break;
+				}
 				/* If we need the PIN, just hang on. */
 				entry->cm_state = CM_NEWLY_ADDED_NEED_KEYINFO_READ_PIN;
 				*when = cm_time_now;
@@ -1319,6 +1380,15 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		break;
 
 	case CM_NEWLY_ADDED_DECIDING:
+		if (!cm_writing_unlock(entry)) {
+			/* If for some reason we fail to release the lock that
+			 * we have, try to release it again soon. */
+			*when = cm_time_soon;
+			cm_log(1, "%s('%s') failed to release reading lock, "
+			       "probably a bug\n",
+			       entry->cm_busname, entry->cm_nickname);
+			break;
+		}
 		/* Decide what to do next.  Assign a CA if it doesn't have one
 		 * assigned to it already. */
 		if ((entry->cm_ca_nickname == NULL) &&
@@ -1470,6 +1540,8 @@ cm_iterate_done(struct cm_store_entry *entry, void *cm_iterate_state)
 	cm_log(3, "%s('%s') ends in state '%s'\n",
 	       entry->cm_busname, entry->cm_nickname,
 	       cm_store_state_as_string(entry->cm_state));
-	cm_saving_unlock(entry);
+	if (cm_writing_has_lock(entry)) {
+		cm_writing_unlock(entry);
+	}
 	return 0;
 }
