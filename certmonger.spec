@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.62
+Version:	0.63
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -201,6 +201,10 @@ exit 0
 %endif
 
 %changelog
+* Tue Dec 19 2012 Nalin Dahyabhai <nalin@redhat.com> 0.63-1
+- serialize access to NSS databases and the running of pre- and post-save
+  commands which might also access them (possibly fixing part of #883484)
+
 * Thu Nov 29 2012 Nalin Dahyabhai <nalin@redhat.com> 0.62-1
 - add a -u flag to getcert to enable requesting a keyUsage extension value
 - request subjectKeyIdentifier extensions from CAs, and include them in
@@ -217,6 +221,11 @@ exit 0
 - fix CSR generation and self-signing in FIPS mode with NSS
 - fix self-signing in FIPS mode with OpenSSL
 - new languages from the translation team: mai, ml, nn, ga
+
+* Tue Nov 27 2012 Nalin Dahyabhai <nalin@redhat.com> 0.61-3
+- backport change from git to not choke if X509_REQ_to_X509() fails when we're
+  self-signing using OpenSSL
+- backport another change from git to represent this as a CA-rejected error
 
 * Mon Sep 24 2012 Nalin Dahyabhai <nalin@redhat.com> 0.61-1
 - fix a regression in reading old request tracking files where the
