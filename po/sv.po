@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2012-11-29 00:36-0500\n"
-"PO-Revision-Date: 2012-09-09 10:47+0000\n"
+"POT-Creation-Date: 2012-12-19 11:49-0500\n"
+"PO-Revision-Date: 2012-11-29 08:33+0000\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish (http://www.transifex.com/projects/p/fedora/language/"
 "sv/)\n"
@@ -399,9 +399,9 @@ msgid "\tprincipal name: "
 msgstr "\thuvudnamn: "
 
 #: src/getcert.c:2449
-#, fuzzy, c-format
+#, c-format
 msgid "\tkey usage: %s\n"
-msgstr "\tnyckelparslagring: typ=%s"
+msgstr ""
 
 #: src/getcert.c:2453
 msgid "\teku: "
@@ -567,9 +567,8 @@ msgid "  -U EXTUSAGE\tset requested extended key usage OID\n"
 msgstr "  -U EXTANV\tställ in begärd förlängd nyckelanvändning-OID\n"
 
 #: src/getcert.c:2607 src/getcert.c:2648 src/getcert.c:2703
-#, fuzzy
 msgid "  -u KEYUSAGE\tset requested key usage value\n"
-msgstr "  -U EXTANV\tställ in begärd förlängd nyckelanvändning-OID\n"
+msgstr ""
 
 #: src/getcert.c:2608 src/getcert.c:2704
 msgid "  -K NAME\tset requested principal name\n"
@@ -805,9 +804,9 @@ msgid "Error setting up ccache for \"%s\" using keytab \"%s\": %s.\n"
 msgstr "Fel vid inställning av ccache för ”%s” med keytab ”%s”: %s.\n"
 
 #: src/main.c:120
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s [-s|-S] [-n|-f] [-d LEVEL] [-p FILE] [-F]\n"
-msgstr "Användning: %s [-s|-S] [-n|-f] [-d NIVÅ] [-p FIL]\n"
+msgstr ""
 
 #: src/main.c:124
 msgid "\t-s         use session bus\n"

@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2012-11-29 00:36-0500\n"
-"PO-Revision-Date: 2012-06-29 15:24+0000\n"
+"POT-Creation-Date: 2012-12-19 11:49-0500\n"
+"PO-Revision-Date: 2012-11-29 08:33+0000\n"
 "Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
 "Language-Team: Chinese (Taiwan) <trans-zh_TW@lists.fedoraproject.org>\n"
 "Language: zh_TW\n"
@@ -783,9 +783,9 @@ msgid "Error setting up ccache for \"%s\" using keytab \"%s\": %s.\n"
 msgstr ""
 
 #: src/main.c:120
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s [-s|-S] [-n|-f] [-d LEVEL] [-p FILE] [-F]\n"
-msgstr "用法：%s [-s|-S] [-n|-f] [-d 等級] [-p 檔案]\n"
+msgstr ""
 
 #: src/main.c:124
 msgid "\t-s         use session bus\n"

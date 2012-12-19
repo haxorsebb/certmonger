@@ -13,8 +13,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2012-11-29 00:36-0500\n"
-"PO-Revision-Date: 2012-07-16 15:55+0000\n"
+"POT-Creation-Date: 2012-12-19 11:49-0500\n"
+"PO-Revision-Date: 2012-11-29 08:33+0000\n"
 "Last-Translator: Daniel Cabrera <logan@fedoraproject.org>\n"
 "Language-Team: Spanish <trans-es@lists.fedoraproject.org>\n"
 "Language: es\n"
@@ -418,11 +418,9 @@ msgid "\tprincipal name: "
 msgstr "\tnombre del principal: "
 
 #: src/getcert.c:2449
-#, fuzzy, c-format
+#, c-format
 msgid "\tkey usage: %s\n"
 msgstr ""
-"<span class=\"whitespace other\" title=\"Tab\">»</span>par de clave "
-"almacenada: tipo=%s"
 
 #: src/getcert.c:2453
 msgid "\teku: "
@@ -594,11 +592,8 @@ msgstr ""
 "solicitada\n"
 
 #: src/getcert.c:2607 src/getcert.c:2648 src/getcert.c:2703
-#, fuzzy
 msgid "  -u KEYUSAGE\tset requested key usage value\n"
 msgstr ""
-"  -U EXTUSAGE\tdefine  la utilización OID de la extensión de la llave "
-"solicitada\n"
 
 #: src/getcert.c:2608 src/getcert.c:2704
 msgid "  -K NAME\tset requested principal name\n"
@@ -848,9 +843,9 @@ msgid "Error setting up ccache for \"%s\" using keytab \"%s\": %s.\n"
 msgstr "Error definiendo ccache para \"%s\" utilizando el keytab \"%s\": %s.\n"
 
 #: src/main.c:120
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s [-s|-S] [-n|-f] [-d LEVEL] [-p FILE] [-F]\n"
-msgstr "Uso: %s [-s|-S] [-n|-f] [-d NIVEL] [-p ARCHIVO]\n"
+msgstr ""
 
 #: src/main.c:124
 msgid "\t-s         use session bus\n"

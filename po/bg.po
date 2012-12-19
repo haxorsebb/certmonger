@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2012-11-29 00:36-0500\n"
-"PO-Revision-Date: 2012-10-03 10:46+0000\n"
+"POT-Creation-Date: 2012-12-19 11:49-0500\n"
+"PO-Revision-Date: 2012-11-29 08:33+0000\n"
 "Last-Translator: Valentin Laskov <laskov@festa.bg>\n"
 "Language-Team: Bulgarian <trans-bg@lists.fedoraproject.org>\n"
 "Language: bg\n"
@@ -403,9 +403,9 @@ msgid "\tprincipal name: "
 msgstr "»главно име: "
 
 #: src/getcert.c:2449
-#, fuzzy, c-format
+#, c-format
 msgid "\tkey usage: %s\n"
-msgstr "        хранилище на ключови двойки: тип=%s"
+msgstr ""
 
 #: src/getcert.c:2453
 msgid "\teku: "
@@ -575,9 +575,8 @@ msgid "  -U EXTUSAGE\tset requested extended key usage OID\n"
 msgstr "  -U EXTUSAGE\tзадава искан разширен OID ключ за употреба\n"
 
 #: src/getcert.c:2607 src/getcert.c:2648 src/getcert.c:2703
-#, fuzzy
 msgid "  -u KEYUSAGE\tset requested key usage value\n"
-msgstr "  -U EXTUSAGE\tзадава искан разширен OID ключ за употреба\n"
+msgstr ""
 
 #: src/getcert.c:2608 src/getcert.c:2704
 msgid "  -K NAME\tset requested principal name\n"
@@ -819,9 +818,9 @@ msgid "Error setting up ccache for \"%s\" using keytab \"%s\": %s.\n"
 msgstr ""
 
 #: src/main.c:120
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s [-s|-S] [-n|-f] [-d LEVEL] [-p FILE] [-F]\n"
-msgstr "Употреба: %s [-s|-S] [-n|-f] [-d LEVEL] [-p FILE]\n"
+msgstr ""
 
 #: src/main.c:124
 msgid "\t-s         use session bus\n"
