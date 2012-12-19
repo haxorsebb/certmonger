@@ -55,7 +55,7 @@ struct cm_keyiread_state {
 	struct cm_subproc_state *subproc;
 };
 struct cm_keyiread_n_settings {
-	int readwrite:1;
+	unsigned int readwrite:1;
 };
 
 struct cm_keyiread_n_ctx_and_key *

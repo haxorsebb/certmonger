@@ -53,7 +53,7 @@ struct cm_certread_state {
 	struct cm_subproc_state *subproc;
 };
 struct cm_certread_n_settings {
-	int readwrite:1;
+	unsigned int readwrite:1;
 };
 
 static int

@@ -165,7 +165,8 @@ struct cm_submit_x_context {
 	xmlrpc_client *client;
 	const char *method;
 	xmlrpc_value *params, *namedarg, *results;
-	int fault_occurred:1, fault_code;
+	unsigned int fault_occurred:1;
+	int fault_code;
 	const char *fault_text;
 };
 
