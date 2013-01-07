@@ -1304,7 +1304,7 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 	int i;
 	char **tmp;
 	const char *reason;
-	NSSInitContext *local_ctx;
+	NSSInitContext *local_ctx = NULL;
 
 	*extensions = NULL;
 	*length = 0;
