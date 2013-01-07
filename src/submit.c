@@ -112,7 +112,6 @@ int
 cm_submit_clear_ca_cookie(struct cm_store_entry *entry,
 			  struct cm_submit_state *state)
 {
-	struct cm_submit_state_pvt *pvt = (struct cm_submit_state_pvt *) state;
 	talloc_free(entry->cm_ca_cookie);
 	entry->cm_ca_cookie = NULL;
 	return 0;

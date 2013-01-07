@@ -48,7 +48,6 @@ util_n_fips_hook(void)
 	SECMODModule *module;
 	PRBool fips_detected;
 	const char *name;
-	int module_type;
 	FILE *fp;
 	char buf[LINE_MAX];
 
