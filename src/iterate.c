@@ -920,6 +920,17 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		break;
 
 	case CM_NEED_TO_READ_CERT:
+		/* We should already have the lock here.  In cases where we're
+		 * resuming things at startup, try to acquire it if we don't
+		 * have it. */
+		if (!cm_writing_has_lock(entry) && !cm_writing_lock(entry)) {
+			/* Just hang out in this state while we're messing
+			 * around with the outside world for another entry. */
+			cm_log(3, "%s('%s') waiting for saving lock\n",
+			       entry->cm_busname, entry->cm_nickname);
+			*when = cm_time_soon;
+			break;
+		}
 		state->cm_certread_state = cm_certread_start(entry);
 		if (state->cm_certread_state != NULL) {
 			/* Note that we're reading the cert. */
@@ -962,6 +973,17 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		break;
 
 	case CM_SAVED_CERT:
+		/* We should already have the lock here.  In cases where we're
+		 * resuming things at startup, try to acquire it if we don't
+		 * have it. */
+		if (!cm_writing_has_lock(entry) && !cm_writing_lock(entry)) {
+			/* Just hang out in this state while we're messing
+			 * around with the outside world for another entry. */
+			cm_log(3, "%s('%s') waiting for saving lock\n",
+			       entry->cm_busname, entry->cm_nickname);
+			*when = cm_time_soon;
+			break;
+		}
 		if (entry->cm_post_certsave_command != NULL) {
 			state->cm_hook_state = cm_hook_start_postsave(entry);
 			if (state->cm_hook_state != NULL) {
@@ -1181,6 +1203,17 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		break;
 
 	case CM_NEED_TO_NOTIFY_ISSUED_SAVED:
+		/* We should already have the lock here.  In cases where we're
+		 * resuming things at startup, try to acquire it if we don't
+		 * have it. */
+		if (!cm_writing_has_lock(entry) && !cm_writing_lock(entry)) {
+			/* Just hang out in this state while we're messing
+			 * around with the outside world for another entry. */
+			cm_log(3, "%s('%s') waiting for saving lock\n",
+			       entry->cm_busname, entry->cm_nickname);
+			*when = cm_time_soon;
+			break;
+		}
 		if (!cm_writing_unlock(entry)) {
 			/* If for some reason we fail to release the lock that
 			 * we have, try to release it again soon. */
