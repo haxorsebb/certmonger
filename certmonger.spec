@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.63
+Version:	0.64
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -201,6 +201,11 @@ exit 0
 %endif
 
 %changelog
+* Tue Jan  8 2013 Nalin Dahyabhai <nalin@redhat.com> 0.64-1
+- at startup, if we resume the state machine for a given certificate to a state
+  which expects to have the newly-added lock already acquired, acquire it
+  before moving on with the certificate's work (still aimed at fixing #883484)
+
 * Tue Dec 19 2012 Nalin Dahyabhai <nalin@redhat.com> 0.63-1
 - serialize access to NSS databases and the running of pre- and post-save
   commands which might also access them (possibly fixing part of #883484)
