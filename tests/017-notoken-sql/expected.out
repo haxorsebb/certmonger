@@ -16,6 +16,8 @@ NEED_KEYINFO_READ_TOKEN
 state=NEED_KEYINFO_READ_TOKEN
 [Creating database.]
 [Generating CSR (sql) with no token.]
+NEED_CSR
+-(RESET)-
 HAVE_KEYINFO
 -START-
 NEED_CSR
