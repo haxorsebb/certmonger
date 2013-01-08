@@ -65,7 +65,9 @@ EXTRA_DIST = \
 	019-dparse/run.sh \
 	019-dparse/good.* \
 	019-dparse/bad.* \
-	020-xparse/*.xml
+	020-xparse/*.xml \
+	021-resume/expected.out \
+	021-resume/run.sh
 
 subdirs = \
 	001-keyiread \
@@ -86,7 +88,8 @@ subdirs = \
 	016-dates \
 	017-notoken \
 	018-pembase \
-	019-dparse
+	019-dparse \
+	021-resume
 
 if HAVE_DBM_NSSDB
 subdirs += \

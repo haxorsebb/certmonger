@@ -1,0 +1,152 @@
+#!/bin/sh -e
+
+cd "$tmpdir"
+
+source "$srcdir"/functions
+
+SAVED_CONFIG_DIR="$CERTMONGER_CONFIG_DIR"
+CERTMONGER_CONFIG_DIR=`pwd`
+
+cat > $tmpdir/notify.sh << EOF
+#!/bin/sh
+echo \$CERTMONGER_NOTIFICATION | sed s@"$tmpdir"@'\$tmpdir'@g
+EOF
+chmod u+x $tmpdir/notify.sh
+cat > certmonger.conf << EOF
+[defaults]
+notify_ttls = 30s
+enroll_ttls = 30s
+notification_method=command
+notification_destination=$tmpdir/notify.sh
+[selfsign]
+validity_period = 10y
+EOF
+
+cat > ca << EOF
+id=SelfSign
+ca_type=INTERNAL:SELF
+EOF
+
+# Run NEWLY_ADDED first, to get a certificate and key in place.  We need to
+# check resumption from ALL known last-state values.
+for state in \
+	NEWLY_ADDED \
+	\
+	CA_REJECTED \
+	CA_UNCONFIGURED \
+	CA_UNREACHABLE \
+	CA_WORKING \
+	GENERATING_CSR \
+	GENERATING_KEY_PAIR \
+	HAVE_CSR \
+	HAVE_KEYINFO \
+	HAVE_KEY_PAIR \
+	MONITORING \
+	NEED_CA \
+	NEED_CSR \
+	NEED_CSR_GEN_PIN \
+	NEED_CSR_GEN_TOKEN \
+	NEED_GUIDANCE \
+	NEED_KEY_GEN_PIN \
+	NEED_KEY_GEN_TOKEN \
+	NEED_KEYINFO \
+	NEED_KEYINFO_READ_PIN \
+	NEED_KEYINFO_READ_TOKEN \
+	NEED_KEY_PAIR \
+	NEED_TO_NOTIFY_ISSUED_FAILED \
+	NEED_TO_NOTIFY_ISSUED_SAVED \
+	NEED_TO_NOTIFY_REJECTION \
+	NEED_TO_NOTIFY_VALIDITY \
+	NEED_TO_READ_CERT \
+	NEED_TO_SAVE_CERT \
+	NEED_TO_SUBMIT \
+	NEWLY_ADDED \
+	NEWLY_ADDED_DECIDING \
+	NEWLY_ADDED_NEED_KEYINFO_READ_PIN \
+	NEWLY_ADDED_NEED_KEYINFO_READ_TOKEN \
+	NEWLY_ADDED_READING_CERT \
+	NEWLY_ADDED_READING_KEYINFO \
+	NEWLY_ADDED_START_READING_CERT \
+	NEWLY_ADDED_START_READING_KEYINFO \
+	NOTIFYING_ISSUED_FAILED \
+	NOTIFYING_ISSUED_SAVED \
+	NOTIFYING_REJECTION \
+	NOTIFYING_VALIDITY \
+	POST_SAVED_CERT \
+	PRE_SAVE_CERT \
+	READING_CERT \
+	READING_KEYINFO \
+	SAVED_CERT \
+	SAVING_CERT \
+	START_SAVING_CERT \
+	SUBMITTING \
+	; do
+cat > entry << EOF
+id=Test
+ca_name=SelfSign
+state=$state
+key_storage_type=FILE
+key_storage_location=$tmpdir/keyfile
+cert_storage_type=FILE
+cert_storage_location=$tmpdir/certfile
+post_certsave_command=sleep 0
+post_certsave_uid=$UID
+pre_certsave_command=sleep 0
+pre_certsave_uid=$UID
+csr=-----BEGIN CERTIFICATE REQUEST-----
+ MIIChzCCAW8CAQAwQjELMAkGA1UEBhMCWFgxFTATBgNVBAcMDERlZmF1bHQgQ2l0
+ eTEcMBoGA1UECgwTRGVmYXVsdCBDb21wYW55IEx0ZDCCASIwDQYJKoZIhvcNAQEB
+ BQADggEPADCCAQoCggEBAOh7lm16/Pu9naEhm1bn5qI7w+sBtZp8oY8EC4NHZheL
+ H4vpsC72WZK+kJPM5wnIU8P2q8i5PQHcAOcxPyrz4DQOTXUNMAoA8cR44tZ53NlQ
+ oFFx9boRYNYL7N7TZCO8ID+aQwLxgml9NTocdsKrdttXMeAXUB7qm+07IuwgjA+Z
+ eOkJoetenmO4YPLgrw2lmaTh8zCayR+xhsBYpoMstFHR1SUKYRIkpIU2A1LQXivO
+ +/UYy5Qj/4An6sO2owPfhjwYRPO14ORUozgsnfh5cz3be8zDPXVn/eOkrkvV8ySV
+ ySHFkfR/jJIR4GrOKi23L7a6qHgoGsq/bwAxIDI5CZECAwEAAaAAMA0GCSqGSIb3
+ DQEBBQUAA4IBAQAL2wJHstZFF4p8L19Zxo3KUHdmqIQSyo1C4ZoI0WICIS2+htgQ
+ 8b5DCwwD/Sv/rx/NZtrIVfQIlGxENo7lS/OyvtZSd19wmbrWA0ZTtlcf8K2PMaWN
+ lqhXNtqPI5lEMlcYfbV9wycAfVasJdKGLYkemX2Hl+aeWZ4+3bx3LM+67PE4er5O
+ 06Ag3gFY29pybQCdFQ4eE5inQ6UH6vZavUDNypaakRfLZBxNBvArHSfSlQjyWT/T
+ lQl3PmmpFKLkwakTI1czUsezQCAkAU22VGWmy1iq4EpDXN9nzrtF0Ol9sZcUMIWd
+ K+MWdtm/7jrBfPolQwYYTwXpDXIfFyKOuomW
+ -----END CERTIFICATE REQUEST-----
+EOF
+cat > $tmpdir/keyfile << EOF
+-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDoe5Ztevz7vZ2h
+IZtW5+aiO8PrAbWafKGPBAuDR2YXix+L6bAu9lmSvpCTzOcJyFPD9qvIuT0B3ADn
+MT8q8+A0Dk11DTAKAPHEeOLWedzZUKBRcfW6EWDWC+ze02QjvCA/mkMC8YJpfTU6
+HHbCq3bbVzHgF1Ae6pvtOyLsIIwPmXjpCaHrXp5juGDy4K8NpZmk4fMwmskfsYbA
+WKaDLLRR0dUlCmESJKSFNgNS0F4rzvv1GMuUI/+AJ+rDtqMD34Y8GETzteDkVKM4
+LJ34eXM923vMwz11Z/3jpK5L1fMklckhxZH0f4ySEeBqziotty+2uqh4KBrKv28A
+MSAyOQmRAgMBAAECggEAPZQWuTL9dXS5Huf27GMKfOhVsZbHUn82j9ojbodn7E6G
+cZnZd+b6vNrLEssQW0/7mAlrYQRnu2lZt+McdzUXqtIrBBkVI2EyqLbYZrTqoYkw
+ncIQs1NNEgUgnbjianC3HgGvREVSJLzsb1MAxfmCxwBmjpO+PiIoYQLr8h2A29Rq
+oHC6eTnQFveqcPT68t7Zx/i8ckQ8VAzx3RNC7/6I/o+0wqw+4/HPREl1dopr/e9c
+Z+kir+wTMs35B6hx0eBmq2A7D2FTnryaPmOcrPMhQM1LM1gEw9Dt88h6dPTDZuVC
+/YRNJFa7c264vvIix5xBC3Hwb17zVtRk9DHfK2fvXQKBgQD6nL8YGas4JC6GqwlG
+3z5UL4CYI8XA85QbxxdAZfFVRK4f9VMTci1oy6OFlP2iTccm2mWwVqo2QhbtUW7i
+9HUuDyDM6OLfXi+UFASiHNh3X0w+op8s1VdW4dnDHU+dbldcjiccsFof4Qw2zXZc
+fbnA2zSqgPqNCOITrjsT5rh7hwKBgQDtexCNiUHiUj3lxj/3pWcwHyUIXIghV4b3
+WpJY3gSC20hwU0HU+UA60umMeWHZdcasZcGBe6O2DtAte+7NOZMvySwrb3CkDdjU
+hT2LJmpuJd6u31L5jEsVv9nHz6MDYdl3FH39RZ9u0AxPnb4vFT69VTRSoDEvlWuC
+kawkui4IJwKBgHIM3YZZQCt3g9jzg3BGbnYffBVAymFKOI//pdw/yHl2nQucOKdz
+4ah8bDmBmX/Ah65t27NJbYLtxsNPuPf+KknAxruaDI18rohkJ8ui9vw0WV1z4p6j
+pHC8rb5222GY8pcDdlc/BnTVlRpnnMLw0JUs7SXfNqbycPhl5SrkZ/aHAoGAFMGM
+0NIOUBmgD1UkgiCSxEH0mqZ7v25G/ZeM8vd0rXs8+ZRNTK/8TSfiAcUaKEeC9c5u
++0IzLNZem5sZZBaEJskOcz1qOux65xg+KMtSwg3NSLt8JRN9/IioIC6lsMX8m8vO
+tzQ+mxDUAqFm3fadZS7tQ8t8gQwuOVtCEHO1UkECgYEAo9/E3SYRxEZVh6uVqlH1
+LE6J0LZP6srcjAhBO1trEvb4+d5y4CE8G7Hd3HwdbfOt5xQtul+NCdIw3gozCjYh
+p5GMs+J0kQYUN5eg5FJob/NO5KkhwCKL1qi81MNrpNy6c12yqXJmEtpI2Ztdh20B
+R+ZCDmP9ibR2p8qmiVGnTDg=
+-----END PRIVATE KEY-----
+EOF
+
+echo "["$state"]"
+$toolsdir/iterate ca entry "" MONITORING
+echo ""
+
+done
+
+CERTMONGER_CONFIG_DIR="$SAVED_CONFIG_DIR"
+
+echo Test complete.
