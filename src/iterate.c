@@ -168,22 +168,25 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 	case CM_NEWLY_ADDED:
 		break;
 	case CM_NEWLY_ADDED_START_READING_KEYINFO:
+		entry->cm_state = CM_NEWLY_ADDED;
 		break;
 	case CM_NEWLY_ADDED_READING_KEYINFO:
-		entry->cm_state = CM_NEWLY_ADDED_START_READING_KEYINFO;
+		entry->cm_state = CM_NEWLY_ADDED;
 		break;
 	case CM_NEWLY_ADDED_NEED_KEYINFO_READ_TOKEN:
-		entry->cm_state = CM_NEWLY_ADDED_START_READING_KEYINFO;
+		entry->cm_state = CM_NEWLY_ADDED;
 		break;
 	case CM_NEWLY_ADDED_NEED_KEYINFO_READ_PIN:
-		entry->cm_state = CM_NEWLY_ADDED_START_READING_KEYINFO;
+		entry->cm_state = CM_NEWLY_ADDED;
 		break;
 	case CM_NEWLY_ADDED_START_READING_CERT:
+		entry->cm_state = CM_NEWLY_ADDED;
 		break;
 	case CM_NEWLY_ADDED_READING_CERT:
-		entry->cm_state = CM_NEWLY_ADDED_START_READING_CERT;
+		entry->cm_state = CM_NEWLY_ADDED;
 		break;
 	case CM_NEWLY_ADDED_DECIDING:
+		entry->cm_state = CM_NEWLY_ADDED;
 		break;
 	case CM_INVALID:
 		/* not reached */
