@@ -1,6 +1,8 @@
 # List of source files which contain translatable strings.
 src/certmaster.c
+src/dogtag.c
 src/getcert.c
 src/ipa.c
 src/main.c
 src/tdbush.c
+src/tdbusm.c
