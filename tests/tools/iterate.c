@@ -38,11 +38,16 @@ wait_to_read(int fd)
 {
 	fd_set rfds;
 	struct timeval tv;
-	FD_ZERO(&rfds);
-	FD_SET(fd, &rfds);
-	tv.tv_sec = 1;
-	tv.tv_usec = 0;
-	select(fd + 1, &rfds, NULL, NULL, &tv);
+
+	if (fd >= 0) {
+		FD_ZERO(&rfds);
+		FD_SET(fd, &rfds);
+		tv.tv_sec = 1;
+		tv.tv_usec = 0;
+		select(fd + 1, &rfds, NULL, NULL, &tv);
+	} else {
+		sleep(1);
+	}
 }
 
 struct cm_context {
