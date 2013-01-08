@@ -437,6 +437,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			}
 		} else {
 			/* Failed to start generating a key; try again. */
+			cm_writing_unlock(entry);
 			*when = cm_time_soonish;
 		}
 		break;
