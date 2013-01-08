@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.64
+Version:	0.65
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -201,6 +201,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Jan  8 2013 Nalin Dahyabhai <nalin@redhat.com> 0.65-1
+- fix a crash in the self-tests
+
 * Tue Jan  8 2013 Nalin Dahyabhai <nalin@redhat.com> 0.64-1
 - at startup, if we resume the state machine for a given certificate to a state
   which expects to have the newly-added lock already acquired, acquire it
