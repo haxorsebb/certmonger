@@ -1,4 +1,4 @@
-AC_INIT(certmonger,0.65)
+AC_INIT(certmonger,0.66)
 AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_MACRO_DIR(m4)
 AM_MAINTAINER_MODE([enable])
@@ -336,6 +336,28 @@ AC_ARG_ENABLE(sysvinit,
 AC_SUBST(SYSVINIT)
 AM_CONDITIONAL(SYSVINIT,test x$SYSVINIT != xno)
 AC_MSG_RESULT(will install sysvinit init script to $SYSVINIT)
+
+AC_ARG_ENABLE(pie,
+AS_HELP_STRING(--enable-pie,[Build position-independent executables.]),
+pie=$enableval,
+pie=no)
+if test x$pie = xyes ; then
+	AC_MSG_RESULT(building position-independent executables)
+else
+	AC_MSG_RESULT(NOT building position-independent executables)
+fi
+AM_CONDITIONAL(PIE,[test x$pie = xyes])
+
+AC_ARG_ENABLE(now,
+AS_HELP_STRING(--enable-now,[Mark binaries with bind-now flag.]),
+now=$enableval,
+now=no)
+if test x$pie = xyes ; then
+	AC_MSG_RESULT(building bind-now executables)
+else
+	AC_MSG_RESULT(NOT building bind-now executables)
+fi
+AM_CONDITIONAL(NOW,[test x$now = xyes])
 
 AC_DEFINE_UNQUOTED(CM_DEFAULT_KEY_STORAGE_TYPE,cm_key_storage_nssdb,[Define to the default type of storage used for keys.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_KEY_STORAGE_LOCATION,"/etc/pki/nssdb",[Define to the default location of storage used for keys.])

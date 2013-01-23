@@ -1,4 +1,12 @@
 AM_CFLAGS = $(TALLOC_CFLAGS) $(TEVENT_CFLAGS) $(DBUS_CFLAGS) $(KRB5_CFLAGS) $(XMLRPC_CFLAGS) $(UUID_CFLAGS)
+LDFLAGS =
+if PIE
+CFLAGS += -fPIC
+LDFLAGS += -fPIC -pie
+endif
+if NOW
+LDFLAGS += -Wl,-z,relro,-z,now
+endif
 man_MANS = certmonger.8 getcert.1 getcert-request.1 getcert-list.1 getcert-list-cas.1 getcert-start-tracking.1 getcert-stop-tracking.1 selfsign-getcert.1 ipa-getcert.1 certmaster-getcert.1 getcert-resubmit.1 certmonger-ipa-submit.8 certmonger-certmaster-submit.8 certmonger-dogtag-ipa-renew-agent-submit.8 certmonger.conf.5
 pkgsysconfdir = $(sysconfdir)/$(PACKAGE)
 pkgsysconf_DATA = certmonger.conf

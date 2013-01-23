@@ -19,8 +19,8 @@
 %endif
 
 Name:		certmonger
-Version:	0.65
-Release:	2%{?dist}
+Version:	0.66
+Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
 Group:		System Environment/Daemons
@@ -104,7 +104,7 @@ sed -i 's,^# chkconfig: - ,# chkconfig: 345 ,g' sysvinit/certmonger.in
 %if %{tmpfiles}
 	--enable-tmpfiles \
 %endif
-	--with-tmpdir=/var/run/certmonger
+	--with-tmpdir=/var/run/certmonger --enable-pie --enable-now
 # For some reason, some versions of xmlrpc-c-config in Fedora and RHEL just
 # tell us about libxmlrpc_client, but we need more.  Work around.
 make %{?_smp_mflags} XMLRPC_LIBS="-lxmlrpc_client -lxmlrpc_util -lxmlrpc"
@@ -201,6 +201,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Jan 23 2013 Nalin Dahyabhai <nalin@redhat.com> 0.66-1
+- build as position-independent executables with early binding (#883966)
+
 * Wed Jan 23 2013 Nalin Dahyabhai <nalin@redhat.com> 0.65-2
 - don't tag the D-Bus session .service file as a configuration file (internal
   tooling)
