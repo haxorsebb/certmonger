@@ -1587,7 +1587,8 @@ cm_store_get_all_cas(void *parent)
 			j++;
 		}
 #endif
-		/* Make sure we get at least one dogtag entry. */
+#ifdef WITH_IPA
+		/* Make sure we get at least 1 dogtag-ipa-renew-agent entry. */
 		for (k = 0; k < j; k++) {
 			if ((ret[k]->cm_ca_type == cm_ca_external) &&
 			    (strcmp(ret[k]->cm_nickname,
@@ -1605,6 +1606,7 @@ cm_store_get_all_cas(void *parent)
 								      CM_DOGTAG_IPA_RENEW_AGENT_HELPER_PATH);
 			j++;
 		}
+#endif
 		ret[j] = NULL;
 	}
 	if (globs.gl_pathc > 0) {
