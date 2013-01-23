@@ -20,7 +20,7 @@
 
 Name:		certmonger
 Version:	0.65
-Release:	1%{?dist}
+Release:	2%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
 Group:		System Environment/Daemons
@@ -181,7 +181,7 @@ exit 0
 %defattr(-,root,root,-)
 %doc README LICENSE STATUS doc/*.txt
 %config(noreplace) %{_sysconfdir}/dbus-1/system.d/*
-%config(noreplace) %{_datadir}/dbus-1/services/*
+%{_datadir}/dbus-1/services/*
 %dir %{_sysconfdir}/certmonger
 %config(noreplace) %{_sysconfdir}/certmonger/certmonger.conf
 %dir /var/run/certmonger
@@ -201,6 +201,10 @@ exit 0
 %endif
 
 %changelog
+* Wed Jan 23 2013 Nalin Dahyabhai <nalin@redhat.com> 0.65-2
+- don't tag the D-Bus session .service file as a configuration file (internal
+  tooling)
+
 * Tue Jan  8 2013 Nalin Dahyabhai <nalin@redhat.com> 0.65-1
 - fix a crash in the self-tests
 
