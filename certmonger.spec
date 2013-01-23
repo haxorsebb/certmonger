@@ -197,12 +197,13 @@ exit 0
 %attr(0644,root,root) %config(noreplace) /etc/tmpfiles.d/certmonger.conf
 %endif
 %if %{systemd}
-%config(noreplace) %{_unitdir}/*
+%{_unitdir}/*
 %endif
 
 %changelog
 * Wed Jan 23 2013 Nalin Dahyabhai <nalin@redhat.com> 0.66-1
 - build as position-independent executables with early binding (#883966)
+- also don't tag the unit file as a configuration file (internal tooling)
 
 * Wed Jan 23 2013 Nalin Dahyabhai <nalin@redhat.com> 0.65-2
 - don't tag the D-Bus session .service file as a configuration file (internal
