@@ -1,7 +1,7 @@
 AC_INIT(certmonger,0.65)
 AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_MACRO_DIR(m4)
-AM_MAINTAINER_MODE
+AM_MAINTAINER_MODE([enable])
 AC_PROG_CC
 AC_PROG_RANLIB
 AM_GNU_GETTEXT([external])
@@ -307,13 +307,15 @@ AC_SUBST(CM_NOTIFICATION_ENV)
 SYSTEMD=no
 AC_ARG_ENABLE(systemd,
 	      AS_HELP_STRING([--enable-systemd],[install unit files for systemd]),
-	      SYSTEMD=yes
-	      SYSTEMDSYSTEMUNITDIR=`pkg-config --variable=systemdsystemunitdir systemd 2> /dev/null`,
+	      SYSTEMD=$enableval,
 	      SYSTEMD=no)
 AC_SUBST(SYSTEMD)
 AM_CONDITIONAL(SYSTEMD,test x$SYSTEMD != xno)
 AC_SUBST(SYSTEMDSYSTEMUNITDIR)
-AC_MSG_RESULT(will install systemd unit files)
+if test x$SYSTEMD = xyes ; then
+	SYSTEMDSYSTEMUNITDIR=`pkg-config --variable=systemdsystemunitdir systemd 2> /dev/null`
+	AC_MSG_RESULT(will install systemd unit files)
+fi
 
 TMPFILES=no
 AC_ARG_ENABLE(tmpfiles,
@@ -322,7 +324,9 @@ AC_ARG_ENABLE(tmpfiles,
 	      TMPFILES=$SYSTEMD)
 AC_SUBST(TMPFILES)
 AM_CONDITIONAL(TMPFILES,test x$TMPFILES != xno)
-AC_MSG_RESULT(will install systemd tmpfiles.d file to ${mysysconfdir}/tmpfiles.d)
+if test x$TMPFILES = xyes ; then
+	AC_MSG_RESULT(will install systemd tmpfiles.d file to ${mysysconfdir}/tmpfiles.d)
+fi
 
 SYSVINIT=no
 AC_ARG_ENABLE(sysvinit,
