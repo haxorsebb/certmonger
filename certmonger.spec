@@ -20,7 +20,7 @@
 
 Name:		certmonger
 Version:	0.66
-Release:	1%{?dist}
+Release:	2%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
 Group:		System Environment/Daemons
@@ -201,6 +201,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Feb 13 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.65-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
+
 * Wed Jan 23 2013 Nalin Dahyabhai <nalin@redhat.com> 0.66-1
 - build as position-independent executables with early binding (#883966)
 - also don't tag the unit file as a configuration file (internal tooling)
@@ -217,7 +220,7 @@ exit 0
   which expects to have the newly-added lock already acquired, acquire it
   before moving on with the certificate's work (still aimed at fixing #883484)
 
-* Tue Dec 19 2012 Nalin Dahyabhai <nalin@redhat.com> 0.63-1
+* Tue Dec 18 2012 Nalin Dahyabhai <nalin@redhat.com> 0.63-1
 - serialize access to NSS databases and the running of pre- and post-save
   commands which might also access them (possibly fixing part of #883484)
 
@@ -274,11 +277,11 @@ exit 0
   doesn't become stop1/save1/stop2/start1/save2/start2 when we're stopping
   a service while we muck with more than one of its certificates
 
-* Fri Jun 12 2012 Nalin Dahyabhai <nalin@redhat.com>
+* Fri Jun 15 2012 Nalin Dahyabhai <nalin@redhat.com>
 - add a command option (-T) to getcert for specifying which enrollment
   profile to tell a CA that we're using, in case it cares (#10)
 
-* Thu Jun 12 2012 Nalin Dahyabhai <nalin@redhat.com> 0.57-1
+* Thu Jun 14 2012 Nalin Dahyabhai <nalin@redhat.com> 0.57-1
 - clarify that the command passed to getcert -C is a "post"-save command
 - add a "pre"-save command option to getcert, specified with the -B flag (#9)
 - after we notify of an impending not-valid-after approaching, don't do it
@@ -295,14 +298,14 @@ exit 0
   argument when we're missing a required argument, not that the option is
   invalid (broken since 0.51, #796542)
 
-* Wed Feb 16 2012 Nalin Dahyabhai <nalin@redhat.com> 0.55-1
+* Wed Feb 15 2012 Nalin Dahyabhai <nalin@redhat.com> 0.55-1
 - allow root to use our implementation of org.freedesktop.DBus.Properties
 - take more care to not emit useless PropertiesChanged signals
 
-* Wed Feb 16 2012 Nalin Dahyabhai <nalin@redhat.com> 0.54-1
+* Wed Feb 15 2012 Nalin Dahyabhai <nalin@redhat.com> 0.54-1
 - fix setting the group ID when spawning the post-save command
 
-* Tue Feb 15 2012 Nalin Dahyabhai <nalin@redhat.com> 0.53-1
+* Tue Feb 14 2012 Nalin Dahyabhai <nalin@redhat.com> 0.53-1
 - large changes to the D-Bus glue, exposing a lot of data which we were
   providing via D-Bus getter methods as properties, and providing more
   accurate introspection data
@@ -651,7 +654,7 @@ exit 0
   - fix handling of the pid file when we write one (by actually giving it
     contents)
 
-* Wed Nov 24 2009 Nalin Dahyabhai <nalin@redhat.com> 0.14-1
+* Wed Nov 25 2009 Nalin Dahyabhai <nalin@redhat.com> 0.14-1
 - update to 0.14
   - check key and certificate location at add-time to make sure they're
     absolute paths to files or directories, as appropriate
