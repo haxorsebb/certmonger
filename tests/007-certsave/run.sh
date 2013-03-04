@@ -78,7 +78,7 @@ cert_storage_type=FILE
 cert_storage_location=$tmpdir/cert.openssl
 cert=$wrongcert
 EOF
-$toolsdir/certsave entry.nss
+$toolsdir/certsave entry.openssl
 # Save the right certificate to the PEM file.
 cat > entry.openssl << EOF
 cert_storage_type=FILE
@@ -105,5 +105,69 @@ if ! cmp cert.nss cert.openssl ; then
 	cat cert.nss cert.openssl
 	exit 1
 fi
+
+# Now tweak the trust settings on the NSS certificate.  The "u" flag seems to
+# be tied to whether or not we have a matching private key, so we can't mess
+# with it.
+for trust in ,, P,, ,P, CT,C, C,c,p ; do
+	echo Testing setting trust to "$trust":
+	# Save the right certificate to NSS's database and read it back.
+	initnssdb ${scheme:+${scheme}:}$tmpdir
+	cat > entry.nss <<- EOF
+	cert_storage_type=NSSDB
+	cert_storage_location=${scheme:+${scheme}:}$tmpdir
+	cert_nickname=cert
+	cert=$cert
+	EOF
+	$toolsdir/certsave entry.nss
+	certutil -d ${scheme:+${scheme}:}$tmpdir -M -n cert -t $trust
+	echo -n " baseline: "
+	certutil -d ${scheme:+${scheme}:}$tmpdir -L | grep cert | sed -r 's,[ \t]+, ,g'
+	$toolsdir/certsave entry.nss
+	echo -n " right nickname, right subject: "
+	certutil -d ${scheme:+${scheme}:}$tmpdir -L | grep cert | sed -r 's,[ \t]+, ,g'
+	# Save the right certificate to NSS's database with the wrong nickname.
+	initnssdb ${scheme:+${scheme}:}$tmpdir
+	$toolsdir/certsave entry.nss
+	cat > entry.nss <<- EOF
+	cert_storage_type=NSSDB
+	cert_storage_location=${scheme:+${scheme}:}$tmpdir
+	cert_nickname=wrongnick
+	cert=$cert
+	EOF
+	$toolsdir/certsave entry.nss
+	certutil -d ${scheme:+${scheme}:}$tmpdir -M -n wrongnick -t $trust
+	# Save the right certificate to NSS's database and read it back.
+	cat > entry.nss <<- EOF
+	cert_storage_type=NSSDB
+	cert_storage_location=${scheme:+${scheme}:}$tmpdir
+	cert_nickname=cert
+	cert=$cert
+	EOF
+	$toolsdir/certsave entry.nss
+	echo -n " wrong nickname, right subject: "
+	certutil -d ${scheme:+${scheme}:}$tmpdir -L | grep cert | sed -r 's,[ \t]+, ,g'
+	# Save the wrong certificate to NSS's database with the right nickname.
+	initnssdb ${scheme:+${scheme}:}$tmpdir
+	$toolsdir/certsave entry.nss
+	cat > entry.nss <<- EOF
+	cert_storage_type=NSSDB
+	cert_storage_location=${scheme:+${scheme}:}$tmpdir
+	cert_nickname=cert
+	cert=$wrongcert
+	EOF
+	$toolsdir/certsave entry.nss
+	certutil -d ${scheme:+${scheme}:}$tmpdir -M -n cert -t $trust
+	# Save the right certificate to NSS's database and read it back.
+	cat > entry.nss <<- EOF
+	cert_storage_type=NSSDB
+	cert_storage_location=${scheme:+${scheme}:}$tmpdir
+	cert_nickname=cert
+	cert=$cert
+	EOF
+	$toolsdir/certsave entry.nss
+	echo -n " wrong subject, right nickname: "
+	certutil -d ${scheme:+${scheme}:}$tmpdir -L | grep cert | sed -r 's,[ \t]+, ,g'
+done
 
 echo Test complete.

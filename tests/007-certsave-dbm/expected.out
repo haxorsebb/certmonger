@@ -2,4 +2,29 @@
 dos2unix: converting file cert.original to unix format ...
 dos2unix: converting file cert.nss to unix format ...
 dos2unix: converting file cert.openssl to unix format ...
+Testing setting trust to ,,:
+ baseline: cert ,, 
+ right nickname, right subject: cert ,, 
+ wrong nickname, right subject: cert ,, 
+ wrong subject, right nickname: cert ,, 
+Testing setting trust to P,,:
+ baseline: cert P,, 
+ right nickname, right subject: cert P,, 
+ wrong nickname, right subject: cert ,, 
+ wrong subject, right nickname: cert ,, 
+Testing setting trust to ,P,:
+ baseline: cert ,P, 
+ right nickname, right subject: cert ,P, 
+ wrong nickname, right subject: cert ,, 
+ wrong subject, right nickname: cert ,, 
+Testing setting trust to CT,C,:
+ baseline: cert CT,C,
+ right nickname, right subject: cert CT,C,
+ wrong nickname, right subject: cert ,, 
+ wrong subject, right nickname: cert ,, 
+Testing setting trust to C,c,p:
+ baseline: cert C,c,p
+ right nickname, right subject: cert C,c,p
+ wrong nickname, right subject: cert ,, 
+ wrong subject, right nickname: cert ,, 
 Test complete.

@@ -55,6 +55,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		   void *userdata)
 {
 	int status = 1, readwrite, i;
+	PRBool have_trust;
 	PLArenaPool *arena;
 	SECStatus error;
 	SECItem *item, subject;
@@ -63,6 +64,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	CERTCertDBHandle *certdb;
 	CERTCertList *certlist;
 	CERTCertificate **returned, cert;
+	CERTCertTrust trust;
 	CERTSignedData csdata;
 	CERTCertListNode *node;
 	struct cm_certsave_n_settings *settings;
@@ -151,6 +153,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			}
 			subject = cert.derSubject;
 			/* Ask NSS if there would be a conflict. */
+			have_trust = PR_FALSE;
 			if (SEC_CertNicknameConflict(entry->cm_cert_nickname,
 						     &subject,
 						     certdb)) {
@@ -223,6 +226,14 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 						       node->cert->subjectName :
 						       "");
 						SEC_DeletePermCertificate(node->cert);
+					} else {
+						/* Same nickname.  Save its trust. */
+						if (!have_trust) {
+							if (CERT_GetCertTrust(node->cert,
+									      &trust) == SECSuccess) {
+								have_trust = PR_TRUE;
+							}
+						}
 					}
 				}
 				if (i == 0) {
@@ -250,10 +261,27 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				cm_log(0, "Error importing certificate "
 				       "into NSSDB \"%s\": %s.\n",
 				       entry->cm_cert_storage_location,
-				       PR_ErrorToString(error,
+				       PR_ErrorToString(PORT_GetError(),
 							PR_LANGUAGE_I_DEFAULT));
 			}
 			if (returned != NULL) {
+				if (!have_trust) {
+					memset(&trust, 0, sizeof(trust));
+					trust.sslFlags = CERTDB_USER;
+					trust.emailFlags = CERTDB_USER;
+					trust.objectSigningFlags = CERTDB_USER;
+				}
+				error = CERT_ChangeCertTrust(certdb,
+							     returned[0],
+							     &trust);
+				if (error != SECSuccess) {
+					cm_log(0, "Error setting trust "
+					       "on certificate \"%s\": "
+					       "%s.\n",
+					       entry->cm_cert_nickname,
+					       PR_ErrorToString(PORT_GetError(),
+								PR_LANGUAGE_I_DEFAULT));
+				}
 				CERT_DestroyCertArray(returned, 1);
 			}
 		} else {
