@@ -63,7 +63,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	NSSInitContext *ctx;
 	CERTCertDBHandle *certdb;
 	CERTCertList *certlist;
-	CERTCertificate **returned, cert;
+	CERTCertificate **returned, *oldcert, cert;
 	CERTCertTrust trust;
 	CERTSignedData csdata;
 	CERTCertListNode *node;
@@ -227,7 +227,10 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 						       "");
 						SEC_DeletePermCertificate(node->cert);
 					} else {
-						/* Same nickname.  Save its trust. */
+						/* Same nickname, and we
+						 * already know it has the same
+						 * subject name.  Save its
+						 * trust. */
 						if (!have_trust) {
 							if (CERT_GetCertTrust(node->cert,
 									      &trust) == SECSuccess) {
@@ -243,6 +246,18 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			} else {
 				cm_log(3, "No duplicate subject name entries.\n");
 			}
+			/* Make one more attempt at finding an existing trust
+			 * value. */
+			if (!have_trust) {
+				oldcert = PK11_FindCertFromNickname(entry->cm_cert_nickname, NULL);
+				if (oldcert != NULL) {
+					if (CERT_GetCertTrust(oldcert,
+							      &trust) == SECSuccess) {
+						have_trust = PR_TRUE;
+					}
+					CERT_DestroyCertificate(oldcert);
+				}
+			}
 			/* Import the certificate. */
 			returned = NULL;
 			error = CERT_ImportCerts(certdb,
@@ -257,14 +272,10 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				       entry->cm_cert_nickname,
 				       returned[0]->nickname);
 				status = 0;
-			} else {
-				cm_log(0, "Error importing certificate "
-				       "into NSSDB \"%s\": %s.\n",
-				       entry->cm_cert_storage_location,
-				       PR_ErrorToString(PORT_GetError(),
-							PR_LANGUAGE_I_DEFAULT));
-			}
-			if (returned != NULL) {
+				/* Set the trust on the new certificate,
+				 * perhaps matching the trust on an
+				 * already-present certificate with the same
+				 * nickname. */
 				if (!have_trust) {
 					memset(&trust, 0, sizeof(trust));
 					trust.sslFlags = CERTDB_USER;
@@ -282,6 +293,45 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					       PR_ErrorToString(PORT_GetError(),
 								PR_LANGUAGE_I_DEFAULT));
 				}
+				/* Delete any other certificates that are there
+				 * with the same nickname.  While NSS's
+				 * database allows duplicates so long as they
+				 * have the same subject name and nickname,
+				 * several APIs and many applications can't
+				 * dependably find the right one among more
+				 * than one.  So bye-bye, old certificates. */
+				certlist = PK11_FindCertsFromNickname(entry->cm_cert_nickname,
+								      NULL);
+				if (certlist != NULL) {
+					/* Look for certs with contents. */
+					for (node = CERT_LIST_HEAD(certlist);
+					     (node != NULL) &&
+					     !CERT_LIST_EMPTY(certlist) &&
+					     !CERT_LIST_END(node, certlist);
+					     node = CERT_LIST_NEXT(node)) {
+						if (!SECITEM_ItemsAreEqual(item,
+									   &node->cert->derCert)) {
+							cm_log(3, "Found a "
+							       "certificate "
+							       "with the same "
+							       "nickname and "
+							       "subject, but "
+							       "different "
+							       "contents, "
+							       "removing it.\n");
+							SEC_DeletePermCertificate(node->cert);
+						}
+					}
+					CERT_DestroyCertList(certlist);
+				}
+			} else {
+				cm_log(0, "Error importing certificate "
+				       "into NSSDB \"%s\": %s.\n",
+				       entry->cm_cert_storage_location,
+				       PR_ErrorToString(PORT_GetError(),
+							PR_LANGUAGE_I_DEFAULT));
+			}
+			if (returned != NULL) {
 				CERT_DestroyCertArray(returned, 1);
 			}
 		} else {
