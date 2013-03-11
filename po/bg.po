@@ -1,22 +1,22 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-#
+# 
 # Translators:
 # Boris Yakimov <borisyakimov@ymail.com>, 2012.
 # Valentin Laskov <laskov@festa.bg>, 2011-2012.
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
-"Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2012-12-19 11:49-0500\n"
-"PO-Revision-Date: 2012-11-29 08:33+0000\n"
-"Last-Translator: Valentin Laskov <laskov@festa.bg>\n"
+"Report-Msgid-Bugs-To: http://certmonger.fedorahosted.org/\n"
+"POT-Creation-Date: 2013-01-08 18:02-0500\n"
+"PO-Revision-Date: 2013-01-08 23:03+0000\n"
+"Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
 "Language-Team: Bulgarian <trans-bg@lists.fedoraproject.org>\n"
-"Language: bg\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: bg\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: src/certmaster.c:111 src/ipa.c:146
@@ -24,7 +24,7 @@ msgstr ""
 msgid "Unable to determine hostname of CA.\n"
 msgstr "Не може да се определи името на CA хоста.\n"
 
-#: src/certmaster.c:128 src/ipa.c:177
+#: src/certmaster.c:128 src/dogtag.c:372 src/ipa.c:177
 #, c-format
 msgid "Unable to read signing request.\n"
 msgstr "Не може да се прочете заявката за подписване.\n"
@@ -48,6 +48,41 @@ msgstr "Грешка при анализ отговора от сървъра.\n
 msgid "Server error.\n"
 msgstr "Сървърна грешка.\n"
 
+#: src/dogtag.c:304
+#, c-format
+msgid "No end-entity URL (-E) given, and no default known.\n"
+msgstr ""
+
+#: src/dogtag.c:308
+#, c-format
+msgid "No agent URL (-A) given, and no default known.\n"
+msgstr ""
+
+#: src/dogtag.c:312
+#, c-format
+msgid "No profile/template (-T) given, and no default known.\n"
+msgstr ""
+
+#: src/dogtag.c:345 src/dogtag.c:522
+#, c-format
+msgid "Internal error: unknown state.\n"
+msgstr ""
+
+#: src/dogtag.c:504
+#, c-format
+msgid "Error %d connecting to %s: %s.\n"
+msgstr ""
+
+#: src/dogtag.c:509
+#, c-format
+msgid "Error %d connecting to %s.\n"
+msgstr ""
+
+#: src/dogtag.c:516
+#, c-format
+msgid "Internal error: no response to \"%s?%s\".\n"
+msgstr ""
+
 #: src/getcert.c:91
 #, c-format
 msgid "Path \"%s\" is not absolute, attempting to use \"%s\" instead.\n"
@@ -58,9 +93,7 @@ msgstr "Пътят \"%s\" не е абсолютен, вместо него, п�
 msgid ""
 "Path \"%s\" is not absolute, and there was an error determining the name of "
 "the current directory.\n"
-msgstr ""
-"Пътят \"%s\" не е абсолютен и се получи грешка при определяне името на "
-"текущата директория.\n"
+msgstr "Пътят \"%s\" не е абсолютен и се получи грешка при определяне името на текущата директория.\n"
 
 #: src/getcert.c:114
 #, c-format
@@ -87,7 +120,7 @@ msgstr "Недостиг на памет.\n"
 msgid "Error connecting to DBus.\n"
 msgstr "Грешка при свързване към DBus.\n"
 
-#: src/getcert.c:262
+#: src/getcert.c:262 src/tdbusm.c:1657
 #, c-format
 msgid "Please verify that the message bus (D-Bus) service is running.\n"
 msgstr "Моля, проверете дали услугата за съобщения (D-Bus) работи.\n"
@@ -162,9 +195,7 @@ msgstr "%s: грешна опция -- '%c'⏎\n"
 #: src/getcert.c:713
 #, c-format
 msgid "Error: unused extra argument \"%s\".\n"
-msgstr ""
-"Грешка: неизползван допълнителен аргумент \"%s\".⏎\n"
-"\n"
+msgstr "Грешка: неизползван допълнителен аргумент \"%s\".⏎\n\n"
 
 #: src/getcert.c:716 src/getcert.c:1481 src/getcert.c:1902 src/getcert.c:2174
 #: src/getcert.c:2512
@@ -175,8 +206,7 @@ msgstr "Грешка: бяха предоставени неизползвани
 #: src/getcert.c:722 src/getcert.c:1487 src/getcert.c:1673 src/getcert.c:1925
 #, c-format
 msgid "Database location or nickname specified without the other.\n"
-msgstr ""
-"Местоположение на базата данни или псевдоним е определено без другото.\n"
+msgstr "Местоположение на базата данни или псевдоним е определено без другото.\n"
 
 #: src/getcert.c:728 src/getcert.c:1493 src/getcert.c:1679 src/getcert.c:1931
 #, c-format
@@ -185,26 +215,20 @@ msgstr "Определени са и директория на базата да
 
 #: src/getcert.c:736 src/getcert.c:1687 src/getcert.c:1939
 #, c-format
-msgid ""
-"None of database directory and nickname or certificate file specified.\n"
-msgstr ""
-"Никое от директория на базата данни и псевдоним, или файл със сертификат не "
-"е определено.\n"
+msgid "None of database directory and nickname or certificate file specified.\n"
+msgstr "Никое от директория на базата данни и псевдоним, или файл със сертификат не е определено.\n"
 
 #: src/getcert.c:743 src/getcert.c:1509
 #, c-format
 msgid "Key and certificate can not both be saved to the same file.\n"
-msgstr ""
-"Не може и ключът, и сертификатът, да бъдат записани в един и същ файл.\n"
+msgstr "Не може и ключът, и сертификатът, да бъдат записани в един и същ файл.\n"
 
 #: src/getcert.c:768
 #, c-format
 msgid ""
-"The IPA backend requires the use of the -K option (principal name) when the -"
-"N option (subject name) is used.\n"
-msgstr ""
-"Задният слой на IPA изисква използването на -K опция (главно име), когато -N "
-"опцията (име на обекта) се използва.⏎\n"
+"The IPA backend requires the use of the -K option (principal name) when the "
+"-N option (subject name) is used.\n"
+msgstr "Задният слой на IPA изисква използването на -K опция (главно име), когато -N опцията (име на обекта) се използва.⏎\n"
 
 #: src/getcert.c:898 src/getcert.c:1268 src/getcert.c:1602 src/getcert.c:1959
 #: src/getcert.c:2181
@@ -243,9 +267,7 @@ msgstr "Не може да бъде добавена нова проследяв
 msgid ""
 "None of ID or database directory and nickname or certificate file "
 "specified.\n"
-msgstr ""
-"Никое от ID, или директория на базата данни и псевдоним, или файл със "
-"сертификат не е определено.\n"
+msgstr "Никое от ID, или директория на базата данни и псевдоним, или файл със сертификат не е определено.\n"
 
 #: src/getcert.c:1654
 #, c-format
@@ -481,15 +503,12 @@ msgstr "  -d DIR         NSS база данни за ключ и сертифи
 
 #: src/getcert.c:2585 src/getcert.c:2628 src/getcert.c:2669 src/getcert.c:2691
 msgid "  -n NAME\tnickname for NSS-based storage (only valid with -d)\n"
-msgstr ""
-"  -n NAME        псевдоним за NSS-базирано хранилище (валидно само с -d)\n"
+msgstr "  -n NAME        псевдоним за NSS-базирано хранилище (валидно само с -d)\n"
 
 #: src/getcert.c:2586 src/getcert.c:2629 src/getcert.c:2670 src/getcert.c:2692
 msgid ""
 "  -t NAME\toptional token name for NSS-based storage (only valid with -d)\n"
-msgstr ""
-"  -t NAME        незадължително token name за NSS-базирано хранилище "
-"(валидно само с -d)\n"
+msgstr "  -t NAME        незадължително token name за NSS-базирано хранилище (валидно само с -d)\n"
 
 #: src/getcert.c:2587 src/getcert.c:2630 src/getcert.c:2671 src/getcert.c:2693
 #: src/getcert.c:2739
@@ -531,22 +550,15 @@ msgstr "  -I NAME        псевдоним, който да бъде присв
 
 #: src/getcert.c:2597
 msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
-msgstr ""
-"  -g SIZE»големина на ключ, който да бъде генериран ако няма вече създаден "
-"такъв⏎\n"
+msgstr "  -g SIZE»големина на ключ, който да бъде генериран ако няма вече създаден такъв⏎\n"
 
 #: src/getcert.c:2598 src/getcert.c:2640
-msgid ""
-"  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
-msgstr ""
-"  -r             опит за подновяване на сертификата, когато изтичането му "
-"наближава (по подразбиране)\n"
+msgid "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
+msgstr "  -r             опит за подновяване на сертификата, когато изтичането му наближава (по подразбиране)\n"
 
 #: src/getcert.c:2599 src/getcert.c:2641
 msgid "  -R\t\tdon't attempt to renew the certificate when expiration nears\n"
-msgstr ""
-"  -R             не опитвай подновяване на сертификата, когато изтичането му "
-"наближава\n"
+msgstr "  -R             не опитвай подновяване на сертификата, когато изтичането му наближава\n"
 
 #: src/getcert.c:2601 src/getcert.c:2643
 msgid "  -c CA\t\tuse the specified CA rather than the default\n"
@@ -556,9 +568,7 @@ msgstr "  -c CA          използвай зададения CA вместо �
 msgid ""
 "  -T PROFILE\task the CA to process the request using the named profile or "
 "template\n"
-msgstr ""
-"  -T PROFILE\tиска CA да обработи заявката, използвайки профил или шаблон с "
-"това име\n"
+msgstr "  -T PROFILE\tиска CA да обработи заявката, използвайки профил или шаблон с това име\n"
 
 #: src/getcert.c:2604
 msgid "* Parameters for the signing request:\n"
@@ -566,9 +576,7 @@ msgstr "* Параметри за подписване на заявките:\n"
 
 #: src/getcert.c:2605 src/getcert.c:2701
 msgid "  -N NAME\tset requested subject name (default: CN=<hostname>)\n"
-msgstr ""
-"  -N NAME        задава заявеното име на обекта (по подразбиране: CN=<име на "
-"хост>)\n"
+msgstr "  -N NAME        задава заявеното име на обекта (по подразбиране: CN=<име на хост>)\n"
 
 #: src/getcert.c:2606 src/getcert.c:2702
 msgid "  -U EXTUSAGE\tset requested extended key usage OID\n"
@@ -597,13 +605,11 @@ msgstr "* Опции на шината:\n"
 
 #: src/getcert.c:2612 src/getcert.c:2653 src/getcert.c:2677 src/getcert.c:2716
 msgid "  -S\t\tconnect to the certmonger service on the system bus\n"
-msgstr ""
-"  -S                свържи се с услугата certmonger през системната шина\n"
+msgstr "  -S                свържи се с услугата certmonger през системната шина\n"
 
 #: src/getcert.c:2613 src/getcert.c:2654 src/getcert.c:2678 src/getcert.c:2717
 msgid "  -s\t\tconnect to the certmonger service on the session bus\n"
-msgstr ""
-"  -s                свържи се с услугата certmonger през сесийната шина\n"
+msgstr "  -s                свържи се с услугата certmonger през сесийната шина\n"
 
 #: src/getcert.c:2614 src/getcert.c:2655 src/getcert.c:2679 src/getcert.c:2718
 #: src/getcert.c:2744 src/getcert.c:2759
@@ -642,8 +648,7 @@ msgstr "* Ако ключовете са криптирани:\n"
 
 #: src/getcert.c:2639
 msgid "  -I NAME\tnickname to give to tracking request\n"
-msgstr ""
-"  -I NAME        псевдоним, който да бъде даден към проследяваната заявка\n"
+msgstr "  -I NAME        псевдоним, който да бъде даден към проследяваната заявка\n"
 
 #: src/getcert.c:2646
 msgid "* Parameters for the signing request at renewal time:\n"
@@ -693,9 +698,7 @@ msgstr "* Нови стойности на параметри за подпис�
 
 #: src/getcert.c:2710
 msgid "  -I NAME\tnew nickname to give to tracking request\n"
-msgstr ""
-"  -I NAME        нов псевдоним, който да бъде даден към проследяваната "
-"заявка\n"
+msgstr "  -I NAME        нов псевдоним, който да бъде даден към проследяваната заявка\n"
 
 #: src/getcert.c:2712
 msgid "  -c CA\t\tuse the specified CA rather than the current one\n"
@@ -712,9 +715,7 @@ msgstr "* Основни опции:\n"
 
 #: src/getcert.c:2730
 msgid "  -c CA\tlist only requests and certs associated with this CA\n"
-msgstr ""
-"  -c CA          само показва заявките и сертификатите, асоциирани с това "
-"CA\n"
+msgstr "  -c CA          само показва заявките и сертификатите, асоциирани с това CA\n"
 
 #: src/getcert.c:2732
 msgid "  -r\tlist only information about outstanding requests\n"
@@ -722,8 +723,7 @@ msgstr "  -r              само показва информация за не
 
 #: src/getcert.c:2733
 msgid "  -t\tlist only information about tracked certificates\n"
-msgstr ""
-"  -t              само показва информация за проследяваните сертификати\n"
+msgstr "  -t              само показва информация за проследяваните сертификати\n"
 
 #: src/getcert.c:2734
 msgid "* If selecting a specific request:\n"
@@ -731,21 +731,15 @@ msgstr "* Ако изберете специфична заявка:\n"
 
 #: src/getcert.c:2737
 msgid "  -d DIR\tonly list requests and certs which use this NSS database\n"
-msgstr ""
-"  -d DIR        само показва списък на заявките и сертификатите, използващи "
-"тази NSS база данни\n"
+msgstr "  -d DIR        само показва списък на заявките и сертификатите, използващи тази NSS база данни\n"
 
 #: src/getcert.c:2738
 msgid "  -n NAME\tonly list requests and certs which use this nickname\n"
-msgstr ""
-"  -n NAME       само показва списък на заявките и сертификатите, използващи "
-"този псевдоним\n"
+msgstr "  -n NAME       само показва списък на заявките и сертификатите, използващи този псевдоним\n"
 
 #: src/getcert.c:2740
 msgid "  -f FILE\tonly list requests and certs stored in this PEM file\n"
-msgstr ""
-"  -f FILE       само показва списък на заявките и сертификатите, записани в "
-"този PEM файл\n"
+msgstr "  -f FILE       само показва списък на заявките и сертификатите, записани в този PEM файл\n"
 
 #: src/getcert.c:2742 src/getcert.c:2757
 msgid "  -S\tconnect to the certmonger service on the system bus\n"
@@ -808,8 +802,7 @@ msgstr ""
 
 #: src/ipa.c:246
 #, c-format
-msgid ""
-"Error setting up ccache for local \"host\" service using keytab \"%s\": %s.\n"
+msgid "Error setting up ccache for local \"host\" service using keytab \"%s\": %s.\n"
 msgstr ""
 
 #: src/ipa.c:250
@@ -917,9 +910,9 @@ msgstr "Вече има заявка с псевдонима \"%s\"."
 #: src/tdbush.c:650
 #, c-format
 msgid ""
-"Certificate at same location is already used by request with nickname \"%s\"."
-msgstr ""
-"Сертификатът на зададеното място вече се използва  от друг псевдоним \"%s\"."
+"Certificate at same location is already used by request with nickname "
+"\"%s\"."
+msgstr "Сертификатът на зададеното място вече се използва  от друг псевдоним \"%s\"."
 
 #: src/tdbush.c:683
 #, c-format
@@ -951,3 +944,15 @@ msgstr "Сертифициращият орган \"%s\" е непознат."
 #: src/tdbush.c:2617
 msgid "Unrecognized parameter or wrong value type."
 msgstr "Неразпознат параметър или грешен тип на стойност."
+
+#: src/tdbusm.c:1647
+msgid "Insufficient access.  Please retry operation as root.\n"
+msgstr ""
+
+#: src/tdbusm.c:1651
+msgid "Please verify that the certmonger service has been started.\n"
+msgstr ""
+
+#: src/tdbusm.c:1654
+msgid "Please verify that the certmonger service is still running.\n"
+msgstr ""
