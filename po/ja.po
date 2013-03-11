@@ -73,12 +73,12 @@ msgstr "内部エラー: 未知の状態。\n"
 #: src/dogtag.c:504
 #, c-format
 msgid "Error %d connecting to %s: %s.\n"
-msgstr "%s: %s に接続中にエラー %d が発生しました。\n"
+msgstr ""
 
 #: src/dogtag.c:509
 #, c-format
 msgid "Error %d connecting to %s.\n"
-msgstr "%s に接続中にエラー %d が発生しました。\n"
+msgstr ""
 
 #: src/dogtag.c:516
 #, c-format
