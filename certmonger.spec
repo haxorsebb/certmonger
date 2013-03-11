@@ -19,8 +19,8 @@
 %endif
 
 Name:		certmonger
-Version:	0.66
-Release:	2%{?dist}
+Version:	0.67
+Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
 Group:		System Environment/Daemons
@@ -201,6 +201,15 @@ exit 0
 %endif
 
 %changelog
+* Mon Mar 11 2013 Nalin Dahyabhai <nalin@redhat.com> 0.67-1
+- when saving certificates to NSS databases, try to preserve the trust
+  value assigned to a previously-present certificate with the same nickname
+  and subject, if one is found
+- when saving certificates to NSS databases, also prune certificates from
+  the database which have both the same nickname and subject as the one
+  we're adding, to avoid tripping up tools that only fetch one certificate
+  by nickname
+
 * Wed Feb 13 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.65-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
 
