@@ -1171,7 +1171,7 @@ cm_store_entry_delete(struct cm_store_entry *entry)
 			talloc_free(entry->cm_store_private);
 			entry->cm_store_private = NULL;
 		} else {
-			cm_log(1, "Failed to remove file \"%s\": %s.\n",
+			cm_log(0, "Failed to remove file \"%s\": %s.\n",
 			       filename, strerror(errno));
 		}
 	} else {
