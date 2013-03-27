@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -162,6 +162,10 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			X509_set_pubkey(x, pkey);
 			req = X509_to_X509_REQ(x, pkey, cm_prefs_ossl_hash());
 			if (req != NULL) {
+				/* Set the version, just in case
+				 * X509_to_X509_REQ() stopped doing it for
+				 * us. */
+				X509_REQ_set_version(x, SEC_CERTIFICATE_REQUEST_VERSION);
 				/* Add attributes. */
 				extensions = NULL;
 				cm_certext_build_csr_extensions(entry, NULL,
