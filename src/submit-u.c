@@ -86,6 +86,7 @@ cm_submit_u_from_file(const char *filename)
 				if (fp != stdin) {
 					fclose(fp);
 				}
+				free(csr);
 				return NULL;
 			}
 			memcpy(my_stpcpy(p, csr), buf, sizeof(buf));
