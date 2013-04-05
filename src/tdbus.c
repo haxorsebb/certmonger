@@ -440,6 +440,8 @@ cm_tdbus_reconnect(struct tevent_context *ec, struct tevent_timer *timer,
 	const char *bus_desc;
 	struct tdbus_connection *tdb;
 	struct timeval later;
+	dbus_bool_t exit_on_disconnect;
+
 	tdb = pvt;
 	talloc_free(timer);
 	if (!dbus_connection_get_is_connected(tdb->conn)) {
@@ -451,18 +453,24 @@ cm_tdbus_reconnect(struct tevent_context *ec, struct tevent_timer *timer,
 			cm_log(1, "Attempting to reconnect to system bus.\n");
 			tdb->conn = dbus_bus_get(DBUS_BUS_SYSTEM, NULL);
 			cm_set_conn_ptr(tdb->data, tdb->conn);
+			/* Don't exit if we get disconnected. */
+			exit_on_disconnect = FALSE;
 			bus_desc = "system";
 			break;
 		case cm_tdbus_session:
 			cm_log(1, "Attempting to reconnect to session bus.\n");
 			tdb->conn = dbus_bus_get(DBUS_BUS_SESSION, NULL);
 			cm_set_conn_ptr(tdb->data, tdb->conn);
+			/* Exit if we get disconnected. */
+			exit_on_disconnect = TRUE;
 			bus_desc = "session";
 			break;
 		}
 		if (dbus_connection_get_is_connected(tdb->conn)) {
 			/* We're reconnected; reset our handlers. */
 			cm_log(1, "Reconnected to %s bus.\n", bus_desc);
+			dbus_connection_set_exit_on_disconnect(tdb->conn,
+							       exit_on_disconnect);
 			cm_tdbus_setup_connection(tdb, NULL);
 		} else {
 			/* Try reconnecting again later. */
@@ -605,6 +613,7 @@ cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type,
 	const char *bus_desc;
 	struct tdbus_connection *tdb;
 	dbus_bool_t exit_on_disconnect;
+
 	/* Build our own context. */
 	tdb = talloc_ptrtype(ec, tdb);
 	if (tdb == NULL) {
