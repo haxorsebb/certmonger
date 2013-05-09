@@ -2114,7 +2114,7 @@ list(const char *argv0, int argc, char **argv)
 	dbus_bool_t b;
 	char *s1, *s2, *s3, *s4, *s5, *s6;
 	long n1, n2;
-	char **as1, **as2, **as3, **as4, t[24];
+	char **as1, **as2, **as3, **as4, t[25];
 	int requests_only = 0, tracking_only = 0, verbose = 0, c, i, j;
 	unsigned int k;
 	char key_usages[LINE_MAX];

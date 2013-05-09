@@ -237,7 +237,7 @@ cm_store_timestamp_from_time(time_t when, char timestamp[15])
 }
 
 char *
-cm_store_timestamp_from_time_for_display(time_t when, char timestamp[21])
+cm_store_timestamp_from_time_for_display(time_t when, char timestamp[25])
 {
 	struct tm tm;
 	if ((when != 0) && (gmtime_r(&when, &tm) == &tm)) {
@@ -245,7 +245,7 @@ cm_store_timestamp_from_time_for_display(time_t when, char timestamp[21])
 			tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
 			tm.tm_hour, tm.tm_min, tm.tm_sec);
 	} else {
-		strcpy(timestamp, "19700101000000");
+		strcpy(timestamp, "1970-01-01 00:00:00 UTC");
 	}
 	return timestamp;
 }
