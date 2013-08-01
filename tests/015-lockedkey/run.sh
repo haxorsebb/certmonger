@@ -10,7 +10,8 @@ echo $pin > pin.txt
 echo ""   > empty.txt
 
 clean() {
-	sed 's|'"$tmpdir"'|$tmpdir|g'
+	sed -r -e 's|'"$tmpdir"'|$tmpdir|g' -e 's,: SEC_ERROR_[^:]+: ,: ,g' |\
+	grep -vF 'certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"'
 }
 
 echo '['Generate Key Without PIN.']'

@@ -36,40 +36,32 @@ OK (2048).
 [Not pre-creating database.]
 [Generating key (dbm) without PIN.]
 OK.
-certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
 < 0> rsa PRIVATE-KEY Test
 [Providing Unnecessary PIN.]
 [Reading Key Info With Unnecessary PIN.]
 Failed to read key "dbm:$tmpdir/dbmdb":"Test".
 (Need PIN.)
-certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
 < 0> rsa PRIVATE-KEY Test
 [Generating CSR With Unnecessary PIN.]
-certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
 < 0> rsa PRIVATE-KEY Test
 [Creating database, without PIN.]
 [Generating key (dbm) without PIN.]
 OK.
-certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
 < 0> rsa PRIVATE-KEY Test
 [Providing Unnecessary PIN.]
 [Reading Key Info With Unnecessary PIN.]
 Failed to read key "dbm:$tmpdir/dbmdb":"Test".
 (Need PIN.)
-certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
 < 0> rsa PRIVATE-KEY Test
 [Generating CSR With Unnecessary PIN.]
-certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
 < 0> rsa PRIVATE-KEY Test
 [Not pre-creating database, with PIN.]
 [Generating key (dbm) with PIN.]
 OK.
-certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
 < 0> rsa PRIVATE-KEY Test
 [Reading Key Info Without PIN.]
 Failed to read key "dbm:$tmpdir/dbmdb":"Test".
 (Need PIN.)
-certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
 Incorrect password/PIN entered.
 certutil: could not authenticate to token NSS Certificate DB.: The security password entered is incorrect.
 [Reading Key Info With Bogus PIN Location.]
@@ -85,12 +77,10 @@ OK (2048).
 [Creating database with PIN.]
 [Generating key (dbm) with PIN.]
 OK.
-certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
 < 0> rsa PRIVATE-KEY Test
 [Reading Key Info Without PIN.]
 Failed to read key "dbm:$tmpdir/dbmdb":"Test".
 (Need PIN.)
-certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
 Incorrect password/PIN entered.
 certutil: could not authenticate to token NSS Certificate DB.: The security password entered is incorrect.
 [Reading Key Info With Bogus PIN Location.]
