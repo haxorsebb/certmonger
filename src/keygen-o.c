@@ -30,6 +30,7 @@
 
 #include <openssl/err.h>
 #include <openssl/pem.h>
+#include <openssl/rand.h>
 #include <openssl/rsa.h>
 
 #include <talloc.h>
@@ -78,6 +79,10 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	case cm_key_rsa:
 		util_o_init();
 		ERR_load_crypto_strings();
+		if (RAND_status() != 1) {
+			cm_log(1, "PRNG not seeded for generating key.\n");
+			_exit(CM_STATUS_ERROR_INTERNAL);
+		}
 		pkey = EVP_PKEY_new();
 		if (pkey == NULL) {
 			cm_log(1, "Internal error generating key.\n");
