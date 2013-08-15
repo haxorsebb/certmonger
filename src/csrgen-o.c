@@ -78,8 +78,9 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	if (keyfp == NULL) {
 		if (errno != ENOENT) {
 			cm_log(1, "Error opening key file \"%s\" "
-			       "for reading.\n",
-			       entry->cm_key_storage_location);
+			       "for reading: %s.\n",
+			       entry->cm_key_storage_location,
+			       strerror(errno));
 		}
 		_exit(CM_STATUS_ERROR_INTERNAL);
 	}

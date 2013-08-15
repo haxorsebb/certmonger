@@ -70,6 +70,10 @@ cm_certsave_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				}
 				fclose(pem);
 			} else {
+				cm_log(1, "Error saving certificate "
+				       "to '%s': %s.\n",
+				       entry->cm_cert_storage_location,
+				       strerror(errno));
 				status = CM_STATUS_INTERNAL;
 			}
 			X509_free(cert);
