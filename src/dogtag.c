@@ -74,7 +74,7 @@ help(const char *cmd)
 		"\t[-T profile]\n"
 		"\t[-v]\n"
 		"\t[csrfile]\n",
-		strchr(cmd, '/') ?  strrchr(cmd, '/') + 1 : cmd);
+		strchr(cmd, '/') ? strrchr(cmd, '/') + 1 : cmd);
 }
 
 static char *
