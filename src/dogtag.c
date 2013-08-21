@@ -246,12 +246,15 @@ main(int argc, char **argv)
 		}
 	}
 	if (template == NULL) {
-		template = cm_prefs_dogtag_profile();
+		template = getenv(CM_SUBMIT_PROFILE_ENV);
 		if (template == NULL) {
-			/* Maybe we should ask the server for which profiles
-			 * it supports, but for now we just assume that this
-			 * one hasn't been removed. */
-			template = "caServerCert";
+			template = cm_prefs_dogtag_profile();
+			if (template == NULL) {
+				/* Maybe we should ask the server for which
+				 * profiles it supports, but for now we just
+				 * assume that this one hasn't been removed. */
+				template = "caServerCert";
+			}
 		}
 	}
 	if (serial == NULL) {
