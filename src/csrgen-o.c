@@ -166,7 +166,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				/* Set the version, just in case
 				 * X509_to_X509_REQ() stopped doing it for
 				 * us. */
-				X509_REQ_set_version(x, SEC_CERTIFICATE_REQUEST_VERSION);
+				X509_REQ_set_version(req, SEC_CERTIFICATE_REQUEST_VERSION);
 				/* Add attributes. */
 				extensions = NULL;
 				cm_certext_build_csr_extensions(entry, NULL,
