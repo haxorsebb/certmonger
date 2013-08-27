@@ -14,13 +14,16 @@ if test -z "$tmpdir" ; then
 else
 	trap 'rm -f "$tmpfile"; rm -fr "$tmpdir"' EXIT
 fi
+mkdir -m 500 "$tmpdir"/rosubdir
+mkdir -m 700 "$tmpdir"/rwsubdir
+trap 'rm -f "$tmpfile"; chmod u+w "$tmpdir"/* ; rm -fr "$tmpdir"' EXIT
 unset DBUS_SESSION_BUS_ADDRESS
 eval `dbus-launch --sh-syntax`
 if test -z "$DBUS_SESSION_BUS_ADDRESS" ; then
 	echo Error launching session bus.
 	exit 1
 else
-	trap 'rm -f "$tmpfile"; rm -fr "$tmpdir"; kill "$DBUS_SESSION_BUS_PID"' EXIT
+	trap 'rm -f "$tmpfile"; chmod u+w "$tmpdir"/* ; rm -fr "$tmpdir"; kill "$DBUS_SESSION_BUS_PID"' EXIT
 fi
 
 srcdir=${srcdir:-`pwd`}
@@ -53,6 +56,8 @@ for testid in "$@" $subdirs ; do
 		mkdir -p "$builddir"/"$testid"
 		pushd "$srcdir"/"$testid" > /dev/null
 		rm -fr "$tmpdir"/*
+		mkdir -m 500 "$tmpdir"/rosubdir
+		mkdir -m 700 "$tmpdir"/rwsubdir
 		if test -r ./expected.out ; then
 			echo -n "Running test "$testid"... "
 			./run.sh "$tmpdir" > "$tmpfile" 2> "$tmpdir"/errors
