@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -202,7 +202,7 @@ main(int argc, char **argv)
 			break;
 		default:
 			help(argv[0]);
-			return CM_STATUS_UNCONFIGURED;
+			return CM_SUBMIT_STATUS_UNCONFIGURED;
 			break;
 		}
 	}
@@ -317,7 +317,7 @@ main(int argc, char **argv)
 	}
 	if (missing_args) {
 		help(argv[0]);
-		return CM_STATUS_UNCONFIGURED;
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
 
 	/* Figure out where we are in the multi-step process. */
@@ -346,7 +346,7 @@ main(int argc, char **argv)
 	switch (op) {
 	case op_none:
 		printf(_("Internal error: unknown state.\n"));
-		return CM_STATUS_UNCONFIGURED;
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
 		break;
 	case op_submit:
 		url = talloc_asprintf(ctx, "%s/profileSubmit", eeurl);
@@ -374,7 +374,7 @@ main(int argc, char **argv)
 			if ((csr == NULL) || (strlen(csr) == 0)) {
 				printf(_("Unable to read signing request.\n"));
 				help(argv[0]);
-				return CM_STATUS_UNCONFIGURED;
+				return CM_SUBMIT_STATUS_UNCONFIGURED;
 			}
 			csr = cm_submit_u_url_encode(csr);
 			params = talloc_asprintf(ctx,
@@ -513,17 +513,17 @@ main(int argc, char **argv)
 			       cm_submit_h_result_code(hctx),
 			       lasturl);
 		}
-		return CM_STATUS_UNREACHABLE;
+		return CM_SUBMIT_STATUS_UNREACHABLE;
 	}
 	if (results == NULL) {
 		printf(_("Internal error: no response to \"%s?%s\".\n"),
 		       lasturl, lastparams);
-		return CM_STATUS_REJECTED;
+		return CM_SUBMIT_STATUS_REJECTED;
 	}
 	switch (op) {
 	case op_none:
 		printf(_("Internal error: unknown state.\n"));
-		return CM_STATUS_UNCONFIGURED;
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
 		break;
 	case op_submit:
 		ret = cm_submit_d_submit_eval(ctx, results, lasturl,
@@ -582,5 +582,5 @@ main(int argc, char **argv)
 		return ret;
 		break;
 	}
-	return CM_STATUS_UNCONFIGURED;
+	return CM_SUBMIT_STATUS_UNCONFIGURED;
 }

@@ -72,7 +72,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 
 	status = fdopen(fd, "w");
 	if (status == NULL) {
-		_exit(CM_STATUS_ERROR_INTERNAL);
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	keyfp = fopen(entry->cm_key_storage_location, "r");
 	if (keyfp == NULL) {
@@ -82,18 +82,18 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			       entry->cm_key_storage_location,
 			       strerror(errno));
 		}
-		_exit(CM_STATUS_ERROR_INTERNAL);
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	util_o_init();
 	ERR_load_crypto_strings();
 	pkey = EVP_PKEY_new();
 	if (pkey == NULL) {
 		cm_log(1, "Internal error generating CSR.\n");
-		_exit(CM_STATUS_ERROR_INTERNAL);
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	if (cm_pin_read_for_key(entry, &pin) != 0) {
 		cm_log(1, "Internal error reading key encryption PIN.\n");
-		_exit(CM_STATUS_ERROR_AUTH);
+		_exit(CM_SUB_STATUS_ERROR_AUTH);
 	}
 	memset(&cb_data, 0, sizeof(cb_data));
 	cb_data.entry = entry;
@@ -108,7 +108,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			ERR_error_string_n(error, buf, sizeof(buf));
 			cm_log(1, "%s\n", buf);
 		}
-		_exit(CM_STATUS_ERROR_AUTH); /* XXX */
+		_exit(CM_SUB_STATUS_ERROR_AUTH); /* XXX */
 	} else {
 		if ((pin != NULL) &&
 		    (strlen(pin) > 0) &&
@@ -121,7 +121,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				ERR_error_string_n(error, buf, sizeof(buf));
 				cm_log(1, "%s\n", buf);
 			}
-			_exit(CM_STATUS_ERROR_AUTH); /* XXX */
+			_exit(CM_SUB_STATUS_ERROR_AUTH); /* XXX */
 		}
 	}
 	if (rsa != NULL) {
@@ -234,7 +234,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 							   sizeof(buf));
 					cm_log(1, "%s\n", buf);
 				}
-				_exit(CM_STATUS_ERROR_INTERNAL);
+				_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 			}
 		} else {
 			cm_log(1, "Error creating template certificate.\n");
@@ -242,7 +242,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				ERR_error_string_n(error, buf, sizeof(buf));
 				cm_log(1, "%s\n", buf);
 			}
-			_exit(CM_STATUS_ERROR_INTERNAL);
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
 	}
 	while ((error = ERR_get_error()) != 0) {
@@ -311,7 +311,7 @@ cm_csrgen_o_need_pin(struct cm_store_entry *entry,
 	int status;
 	status = cm_subproc_get_exitstatus(entry, state->subproc);
 	if (WIFEXITED(status) &&
-	    (WEXITSTATUS(status) == CM_STATUS_ERROR_AUTH)) {
+	    (WEXITSTATUS(status) == CM_SUB_STATUS_ERROR_AUTH)) {
 		return 0;
 	}
 	return -1;
@@ -325,7 +325,7 @@ cm_csrgen_o_need_token(struct cm_store_entry *entry,
 	int status;
 	status = cm_subproc_get_exitstatus(entry, state->subproc);
 	if (WIFEXITED(status) &&
-	    (WEXITSTATUS(status) == CM_STATUS_ERROR_NO_TOKEN)) {
+	    (WEXITSTATUS(status) == CM_SUB_STATUS_ERROR_NO_TOKEN)) {
 		return 0;
 	}
 	return -1;

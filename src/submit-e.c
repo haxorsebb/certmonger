@@ -62,11 +62,12 @@ cm_submit_e_save_ca_cookie(struct cm_store_entry *entry,
 	entry->cm_ca_cookie = NULL;
 	status = cm_subproc_get_exitstatus(entry, state->subproc);
 	if (WIFEXITED(status) &&
-	    ((WEXITSTATUS(status) == CM_STATUS_WAIT) ||
-	     (WEXITSTATUS(status) == CM_STATUS_WAIT_WITH_DELAY))) {
+	    ((WEXITSTATUS(status) == CM_SUBMIT_STATUS_WAIT) ||
+	     (WEXITSTATUS(status) == CM_SUBMIT_STATUS_WAIT_WITH_DELAY))) {
 		msg = cm_subproc_get_msg(entry, state->subproc, NULL);
 		if ((msg != NULL) && (strlen(msg) > 0)) {
-			if (WEXITSTATUS(status) == CM_STATUS_WAIT_WITH_DELAY) {
+			if (WEXITSTATUS(status) ==
+			    CM_SUBMIT_STATUS_WAIT_WITH_DELAY) {
 				delay = strtol(msg, &p, 10);
 				if ((p == NULL) ||
 				    (strchr("\r\n", *p) == NULL)) {
@@ -114,9 +115,12 @@ cm_submit_e_ready(struct cm_store_entry *entry, struct cm_submit_state *state)
 					cm_log(0, "%s", msg);
 				}
 				/* If it was an error, save it. */
-				if ((WEXITSTATUS(status) != CM_STATUS_ISSUED) &&
-				    (WEXITSTATUS(status) != CM_STATUS_WAIT) &&
-				    (WEXITSTATUS(status) != CM_STATUS_WAIT_WITH_DELAY)) {
+				if ((WEXITSTATUS(status) !=
+				     CM_SUBMIT_STATUS_ISSUED) &&
+				    (WEXITSTATUS(status) !=
+				     CM_SUBMIT_STATUS_WAIT) &&
+				    (WEXITSTATUS(status) !=
+				     CM_SUBMIT_STATUS_WAIT_WITH_DELAY)) {
 					talloc_free(entry->cm_ca_error);
 					entry->cm_ca_error =
 						talloc_strndup(entry, msg,
@@ -164,7 +168,7 @@ cm_submit_e_unconfigured(struct cm_store_entry *entry,
 	int status;
 	status = cm_subproc_get_exitstatus(entry, state->subproc);
 	if (WIFEXITED(status) &&
-	    (WEXITSTATUS(status) == CM_STATUS_UNCONFIGURED)) {
+	    (WEXITSTATUS(status) == CM_SUBMIT_STATUS_UNCONFIGURED)) {
 		return 0;
 	}
 	return -1;
@@ -178,7 +182,8 @@ cm_submit_e_rejected(struct cm_store_entry *entry,
 {
 	int status;
 	status = cm_subproc_get_exitstatus(entry, state->subproc);
-	if (WIFEXITED(status) && (WEXITSTATUS(status) == CM_STATUS_REJECTED)) {
+	if (WIFEXITED(status) &&
+	    (WEXITSTATUS(status) == CM_SUBMIT_STATUS_REJECTED)) {
 		return 0;
 	}
 	return -1;
@@ -193,7 +198,7 @@ cm_submit_e_unreachable(struct cm_store_entry *entry,
 	int status;
 	status = cm_subproc_get_exitstatus(entry, state->subproc);
 	if (WIFEXITED(status) &&
-	    (WEXITSTATUS(status) == CM_STATUS_UNREACHABLE)) {
+	    (WEXITSTATUS(status) == CM_SUBMIT_STATUS_UNREACHABLE)) {
 		return 0;
 	}
 	return -1;
@@ -381,13 +386,20 @@ const char *
 cm_submit_e_status_text(enum cm_external_status status)
 {
 	switch (status) {
-	case CM_STATUS_ISSUED: return "ISSUED";
-	case CM_STATUS_WAIT: return "WAIT";
-	case CM_STATUS_REJECTED: return "REJECTED";
-	case CM_STATUS_UNREACHABLE: return "UNREACHABLE";
-	case CM_STATUS_UNCONFIGURED: return "UNCONFIGURED";
-	case CM_STATUS_WAIT_WITH_DELAY: return "WAIT_WITH_DELAY";
-	case CM_STATUS_OPERATION_NOT_SUPPORTED: return "OPERATION_NOT_SUPPORTED_BY_HELPER";
+	case CM_SUBMIT_STATUS_ISSUED:
+		return "ISSUED";
+	case CM_SUBMIT_STATUS_WAIT:
+		return "WAIT";
+	case CM_SUBMIT_STATUS_REJECTED:
+		return "REJECTED";
+	case CM_SUBMIT_STATUS_UNREACHABLE:
+		return "UNREACHABLE";
+	case CM_SUBMIT_STATUS_UNCONFIGURED:
+		return "UNCONFIGURED";
+	case CM_SUBMIT_STATUS_WAIT_WITH_DELAY:
+		return "WAIT_WITH_DELAY";
+	case CM_SUBMIT_STATUS_OPERATION_NOT_SUPPORTED:
+		return "OPERATION_NOT_SUPPORTED_BY_HELPER";
 	}
 	return "(unknown)";
 }

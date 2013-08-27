@@ -238,12 +238,12 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	arena = PORT_NewArena(sizeof(double));
 	if (arena == NULL) {
 		cm_log(1, "Out of memory?.\n");
-		_exit(CM_STATUS_ERROR_INTERNAL);
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	status = fdopen(fd, "w");
 	if (status == NULL) {
 		cm_log(1, "Internal error: %s.\n", strerror(errno));
-		_exit(CM_STATUS_ERROR_INTERNAL);
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 
 	/* Start up NSS and find the key pair. */
@@ -252,7 +252,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		cm_log(1, "Error finding key pair for %s('%s').\n",
 		       entry->cm_busname, entry->cm_nickname);
 		PORT_FreeArena(arena, PR_TRUE);
-		_exit(CM_STATUS_ERROR_NO_TOKEN);
+		_exit(CM_SUB_STATUS_ERROR_NO_TOKEN);
 	}
 	/* Select a subject name. */
 	if ((entry->cm_template_subject != NULL) &&
@@ -280,7 +280,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(1, "Error shutting down NSS.\n");
 		}
 		fclose(status);
-		_exit(CM_STATUS_ERROR_INTERNAL);
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	/* Generate a subjectPublicKeyInfo. */
 	spki = SECKEY_CreateSubjectPublicKeyInfo(pubkey);
@@ -301,7 +301,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(1, "Error shutting down NSS.\n");
 		}
 		fclose(status);
-		_exit(CM_STATUS_ERROR_INTERNAL);
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	/* Build the request. */
 	req = CERT_CreateCertificateRequest(name, spki, NULL);
@@ -322,7 +322,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(1, "Error shutting down NSS.\n");
 		}
 		fclose(status);
-		_exit(CM_STATUS_ERROR_INTERNAL);
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	/* Generate requested values for various extensions and a friendly
 	 * name. */
@@ -354,7 +354,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(1, "Error shutting down NSS.\n");
 		}
 		fclose(status);
-		_exit(CM_STATUS_ERROR_INTERNAL);
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	/* Build the PublicKeyAndChallenge. */
 	memset(&pkac, 0, sizeof(pkac));
@@ -371,7 +371,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(1, "Error shutting down NSS.\n");
 		}
 		fclose(status);
-		_exit(CM_STATUS_ERROR_INTERNAL);
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	pkac.challenge.data = (unsigned char *) entry->cm_challenge_password;
 	pkac.challenge.len = entry->cm_challenge_password ?
@@ -390,7 +390,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(1, "Error shutting down NSS.\n");
 		}
 		fclose(status);
-		_exit(CM_STATUS_ERROR_INTERNAL);
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	/* Sign the request using the private key. */
 	sigoid = SECOID_FindOIDByTag(cm_prefs_nss_sig_alg(pubkey));
@@ -409,7 +409,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(1, "Error shutting down NSS.\n");
 		}
 		fclose(status);
-		_exit(CM_STATUS_ERROR_INTERNAL);
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	if (SEC_SignData(&sreq.signature, sreq.data.data, sreq.data.len,
 			 privkey->key, sigoid->offset) != SECSuccess) {
@@ -425,7 +425,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(1, "Error shutting down NSS.\n");
 		}
 		fclose(status);
-		_exit(CM_STATUS_ERROR_INTERNAL);
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	/* Sign the PublicKeyAndChallenge using the private key. */
 	memset(&spkac, 0, sizeof(spkac));
@@ -443,7 +443,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(1, "Error shutting down NSS.\n");
 		}
 		fclose(status);
-		_exit(CM_STATUS_ERROR_INTERNAL);
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	if (SEC_SignData(&spkac.signature, spkac.data.data, spkac.data.len,
 			 privkey->key, sigoid->offset) != SECSuccess) {
@@ -459,7 +459,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(1, "Error shutting down NSS.\n");
 		}
 		fclose(status);
-		_exit(CM_STATUS_ERROR_INTERNAL);
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	/* Encode the signed request. */
 	sreq.signature.len *= 8;
@@ -476,7 +476,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(1, "Error shutting down NSS.\n");
 		}
 		fclose(status);
-		_exit(CM_STATUS_ERROR_INTERNAL);
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	/* Encode the signed public key and challenge. */
 	spkac.signature.len *= 8;
@@ -493,7 +493,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(1, "Error shutting down NSS.\n");
 		}
 		fclose(status);
-		_exit(CM_STATUS_ERROR_INTERNAL);
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	/* Encode the request into base-64 and pass it to our caller. */
 	b64 = NSSBase64_EncodeItem(arena, NULL, -1, &esreq);
@@ -534,7 +534,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		cm_log(1, "Error shutting down NSS.\n");
 	}
 	fclose(status);
-	_exit(CM_STATUS_ERROR_INTERNAL);
+	_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 }
 
 /* Check if a CSR is ready. */
@@ -594,7 +594,7 @@ cm_csrgen_n_need_pin(struct cm_store_entry *entry,
 	int status;
 	status = cm_subproc_get_exitstatus(entry, state->subproc);
 	if (WIFEXITED(status) &&
-	    (WEXITSTATUS(status) == CM_STATUS_ERROR_AUTH)) {
+	    (WEXITSTATUS(status) == CM_SUB_STATUS_ERROR_AUTH)) {
 		return 0;
 	}
 	return -1;
@@ -608,7 +608,7 @@ cm_csrgen_n_need_token(struct cm_store_entry *entry,
 	int status;
 	status = cm_subproc_get_exitstatus(entry, state->subproc);
 	if (WIFEXITED(status) &&
-	    (WEXITSTATUS(status) == CM_STATUS_ERROR_NO_TOKEN)) {
+	    (WEXITSTATUS(status) == CM_SUB_STATUS_ERROR_NO_TOKEN)) {
 		return 0;
 	}
 	return -1;

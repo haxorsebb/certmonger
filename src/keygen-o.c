@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2013 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -65,7 +65,7 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 
 	status = fdopen(fd, "w");
 	if (status == NULL) {
-		_exit(CM_STATUS_ERROR_INTERNAL);
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	cm_key_algorithm = entry->cm_key_type.cm_key_gen_algorithm;
 	if (cm_key_algorithm == cm_key_unspecified) {
@@ -81,12 +81,12 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		ERR_load_crypto_strings();
 		if (RAND_status() != 1) {
 			cm_log(1, "PRNG not seeded for generating key.\n");
-			_exit(CM_STATUS_ERROR_INTERNAL);
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
 		pkey = EVP_PKEY_new();
 		if (pkey == NULL) {
 			cm_log(1, "Internal error generating key.\n");
-			_exit(CM_STATUS_ERROR_INTERNAL);
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
 		rsa = RSA_generate_key(cm_key_size, CM_DEFAULT_RSA_MODULUS,
 				       NULL, NULL);
@@ -96,7 +96,7 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				ERR_error_string_n(error, buf, sizeof(buf));
 				cm_log(1, "%s\n", buf);
 			}
-			_exit(CM_STATUS_ERROR_INTERNAL);
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
 		EVP_PKEY_assign_RSA(pkey, rsa);
 		fp = fopen(entry->cm_key_storage_location, "w");
@@ -108,11 +108,11 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				       entry->cm_key_storage_location,
 				       strerror(errno));
 			}
-			_exit(CM_STATUS_ERROR_INITIALIZING);
+			_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
 		}
 		if (cm_pin_read_for_key(entry, &pin) != 0) {
 			cm_log(1, "Error reading key encryption PIN.\n");
-			_exit(CM_STATUS_ERROR_AUTH);
+			_exit(CM_SUB_STATUS_ERROR_AUTH);
 		}
 		memset(&cb_data, 0, sizeof(cb_data));
 		cb_data.entry = entry;
@@ -127,13 +127,13 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				ERR_error_string_n(error, buf, sizeof(buf));
 				cm_log(1, "%s\n", buf);
 			}
-			_exit(CM_STATUS_ERROR_INITIALIZING);
+			_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
 		}
 		fclose(fp);
 		break;
 	default:
 		cm_log(1, "Unknown or unsupported key type.\n");
-		_exit(CM_STATUS_ERROR_INTERNAL);
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		break;
 	}
 	fclose(status);
@@ -175,7 +175,7 @@ cm_keygen_o_need_pin(struct cm_store_entry *entry,
 	int status;
 	status = cm_subproc_get_exitstatus(entry, state->subproc);
 	if (WIFEXITED(status) &&
-	    (WEXITSTATUS(status) == CM_STATUS_ERROR_AUTH)) {
+	    (WEXITSTATUS(status) == CM_SUB_STATUS_ERROR_AUTH)) {
 		return 0;
 	}
 	return -1;
@@ -189,7 +189,7 @@ cm_keygen_o_need_token(struct cm_store_entry *entry,
 	int status;
 	status = cm_subproc_get_exitstatus(entry, state->subproc);
 	if (WIFEXITED(status) &&
-	    (WEXITSTATUS(status) == CM_STATUS_ERROR_NO_TOKEN)) {
+	    (WEXITSTATUS(status) == CM_SUB_STATUS_ERROR_NO_TOKEN)) {
 		return 0;
 	}
 	return -1;

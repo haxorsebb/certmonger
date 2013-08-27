@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010,2011,2012 Red Hat, Inc.
+ * Copyright (C) 2010,2011,2012,2013 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -418,12 +418,12 @@ cm_submit_d_submit_eval(void *parent, const char *xml, const char *url,
 			*out = talloc_asprintf(parent,
 					       "0\nstate=approve&requestId=%s\n",
 					       cm_submit_u_url_encode(requestId));
-			return CM_STATUS_WAIT_WITH_DELAY;
+			return CM_SUBMIT_STATUS_WAIT_WITH_DELAY;
 		} else {
 			*out = talloc_asprintf(parent,
 					       "state=check&requestId=%s\n",
 					       cm_submit_u_url_encode(requestId));
-			return CM_STATUS_WAIT;
+			return CM_SUBMIT_STATUS_WAIT;
 		}
 	}
 	if ((error != NULL) || (error_code != NULL) || (error_reason != NULL)) {
@@ -440,7 +440,7 @@ cm_submit_d_submit_eval(void *parent, const char *xml, const char *url,
 						      error_reason);
 		}
 	}
-	return CM_STATUS_REJECTED;
+	return CM_SUBMIT_STATUS_REJECTED;
 }
 
 enum cm_external_status
@@ -460,7 +460,7 @@ cm_submit_d_check_eval(void *parent, const char *xml, const char *url,
 		*out = talloc_asprintf(parent,
 				       "0\nstate=retrieve&requestId=%s\n",
 				       cm_submit_u_url_encode(requestId));
-		return CM_STATUS_WAIT_WITH_DELAY;
+		return CM_SUBMIT_STATUS_WAIT_WITH_DELAY;
 	}
 	if ((status != NULL) &&
 	    (strcmp(status, "pending") == 0) &&
@@ -469,12 +469,12 @@ cm_submit_d_check_eval(void *parent, const char *xml, const char *url,
 			*out = talloc_asprintf(parent,
 					       "0\nstate=approve&requestId=%s\n",
 					       cm_submit_u_url_encode(requestId));
-			return CM_STATUS_WAIT_WITH_DELAY;
+			return CM_SUBMIT_STATUS_WAIT_WITH_DELAY;
 		} else {
 			*out = talloc_asprintf(parent,
 					       "state=check&requestId=%s\n",
 					       cm_submit_u_url_encode(requestId));
-			return CM_STATUS_WAIT;
+			return CM_SUBMIT_STATUS_WAIT;
 		}
 	}
 	if ((error != NULL) || (error_code != NULL) || (error_reason != NULL)) {
@@ -491,7 +491,7 @@ cm_submit_d_check_eval(void *parent, const char *xml, const char *url,
 						      error_reason);
 		}
 	}
-	return CM_STATUS_REJECTED;
+	return CM_SUBMIT_STATUS_REJECTED;
 }
 
 enum cm_external_status
@@ -519,7 +519,7 @@ cm_submit_d_reject_eval(void *parent, const char *xml, const char *url,
 						      error_reason);
 		}
 	}
-	return CM_STATUS_REJECTED;
+	return CM_SUBMIT_STATUS_REJECTED;
 }
 
 enum cm_external_status
@@ -539,7 +539,7 @@ cm_submit_d_review_eval(void *parent, const char *xml, const char *url,
 		*out = talloc_asprintf(parent,
 				       "0\nstate=approve&requestId=%s\n",
 				       cm_submit_u_url_encode(requestId));
-		return CM_STATUS_WAIT_WITH_DELAY;
+		return CM_SUBMIT_STATUS_WAIT_WITH_DELAY;
 	}
 	if ((status != NULL) &&
 	    (strcmp(status, "complete") == 0) &&
@@ -547,7 +547,7 @@ cm_submit_d_review_eval(void *parent, const char *xml, const char *url,
 		*out = talloc_asprintf(parent,
 				       "0\nstate=retrieve&requestId=%s\n",
 				       cm_submit_u_url_encode(requestId));
-		return CM_STATUS_WAIT_WITH_DELAY;
+		return CM_SUBMIT_STATUS_WAIT_WITH_DELAY;
 	}
 	if ((error != NULL) || (error_code != NULL) || (error_reason != NULL)) {
 		*out = talloc_asprintf(parent, "Server at \"%s\" replied", url);
@@ -563,7 +563,7 @@ cm_submit_d_review_eval(void *parent, const char *xml, const char *url,
 						      error_reason);
 		}
 	}
-	return CM_STATUS_REJECTED;
+	return CM_SUBMIT_STATUS_REJECTED;
 }
 
 enum cm_external_status
@@ -582,7 +582,7 @@ cm_submit_d_approve_eval(void *parent, const char *xml, const char *url,
 		*out = talloc_asprintf(parent,
 				       "0\nstate=retrieve&requestId=%s\n",
 				       cm_submit_u_url_encode(requestId));
-		return CM_STATUS_WAIT_WITH_DELAY;
+		return CM_SUBMIT_STATUS_WAIT_WITH_DELAY;
 	}
 	if ((error != NULL) || (error_code != NULL) || (error_reason != NULL)) {
 		*out = talloc_asprintf(parent, "Server at \"%s\" replied", url);
@@ -598,7 +598,7 @@ cm_submit_d_approve_eval(void *parent, const char *xml, const char *url,
 						      error_reason);
 		}
 	}
-	return CM_STATUS_REJECTED;
+	return CM_SUBMIT_STATUS_REJECTED;
 }
 
 enum cm_external_status
@@ -614,7 +614,7 @@ cm_submit_d_fetch_eval(void *parent, const char *xml, const char *url,
 				 &status, &requestId, &cert);
 	if (cert != NULL) {
 		*out = talloc_asprintf(parent, "%s\n", trim(parent, cert));
-		return CM_STATUS_ISSUED;
+		return CM_SUBMIT_STATUS_ISSUED;
 	}
 	if ((error != NULL) || (error_code != NULL) || (error_reason != NULL)) {
 		*out = talloc_asprintf(parent, "Server at \"%s\" replied", url);
@@ -630,7 +630,7 @@ cm_submit_d_fetch_eval(void *parent, const char *xml, const char *url,
 						      error_reason);
 		}
 	}
-	return CM_STATUS_REJECTED;
+	return CM_SUBMIT_STATUS_REJECTED;
 }
 
 #ifdef CM_SUBMIT_D_MAIN

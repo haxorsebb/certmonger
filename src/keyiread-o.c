@@ -66,17 +66,17 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 
 	util_o_init();
 	ERR_load_crypto_strings();
-	status = CM_STATUS_ERROR_INTERNAL;
+	status = CM_SUB_STATUS_INTERNAL_ERROR;
 	fp = fdopen(fd, "w");
 	if (fp == NULL) {
 		cm_log(1, "Unable to initialize I/O.\n");
-		_exit(CM_STATUS_ERROR_INTERNAL);
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	pem = fopen(entry->cm_key_storage_location, "r");
 	if (pem != NULL) {
 		if (cm_pin_read_for_key(entry, &pin) != 0) {
 			cm_log(1, "Error reading key encryption PIN.\n");
-			_exit(CM_STATUS_ERROR_AUTH);
+			_exit(CM_SUB_STATUS_ERROR_AUTH);
 		}
 		memset(&cb_data, 0, sizeof(cb_data));
 		cb_data.entry = entry;
@@ -87,7 +87,7 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		if (pkey == NULL) {
 			cm_log(1, "Internal error reading key from \"%s\".\n",
 			       entry->cm_key_storage_location);
-			status = CM_STATUS_ERROR_AUTH; /* XXX */
+			status = CM_SUB_STATUS_ERROR_AUTH; /* XXX */
 		} else {
 			if ((pin != NULL) &&
 			    (strlen(pin) > 0) &&
@@ -96,7 +96,7 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				       "key '%s', though one was provided. "
 				       "Treating this as an error.\n",
 				       entry->cm_key_storage_location);
-				status = CM_STATUS_ERROR_AUTH; /* XXX */
+				status = CM_SUB_STATUS_ERROR_AUTH; /* XXX */
 			} else {
 				status = 0;
 			}
@@ -174,7 +174,7 @@ cm_keyiread_o_need_pin(struct cm_store_entry *entry,
 	int status;
 	status = cm_subproc_get_exitstatus(entry, state->subproc);
 	if (WIFEXITED(status) &&
-	    (WEXITSTATUS(status) == CM_STATUS_ERROR_AUTH)) {
+	    (WEXITSTATUS(status) == CM_SUB_STATUS_ERROR_AUTH)) {
 		return 0;
 	}
 	return -1;
@@ -188,7 +188,7 @@ cm_keyiread_o_need_token(struct cm_store_entry *entry,
 	int status;
 	status = cm_subproc_get_exitstatus(entry, state->subproc);
 	if (WIFEXITED(status) &&
-	    (WEXITSTATUS(status) == CM_STATUS_ERROR_NO_TOKEN)) {
+	    (WEXITSTATUS(status) == CM_SUB_STATUS_ERROR_NO_TOKEN)) {
 		return 0;
 	}
 	return -1;

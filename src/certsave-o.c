@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2013 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,9 +64,9 @@ cm_certsave_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					cm_log(1, "Error saving certificate "
 					       "to '%s'.\n",
 					       entry->cm_cert_storage_location);
-					status = CM_STATUS_INTERNAL;
+					status = CM_CERTSAVE_STATUS_INTERNAL_ERROR;
 				} else {
-					status = CM_STATUS_SAVED;
+					status = CM_CERTSAVE_STATUS_SAVED;
 				}
 				fclose(pem);
 			} else {
@@ -74,15 +74,15 @@ cm_certsave_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				       "to '%s': %s.\n",
 				       entry->cm_cert_storage_location,
 				       strerror(errno));
-				status = CM_STATUS_INTERNAL;
+				status = CM_CERTSAVE_STATUS_INTERNAL_ERROR;
 			}
 			X509_free(cert);
 		} else {
-			status = CM_STATUS_INTERNAL;
+			status = CM_CERTSAVE_STATUS_INTERNAL_ERROR;
 		}
 		BIO_free(bio);
 	} else {
-		status = CM_STATUS_INTERNAL;
+		status = CM_CERTSAVE_STATUS_INTERNAL_ERROR;
 	}
 	if (status != 0) {
 		_exit(status);
@@ -105,7 +105,7 @@ cm_certsave_o_saved(struct cm_store_entry *entry,
 {
 	int status;
 	status = cm_subproc_get_exitstatus(entry, state->subproc);
-	if (!WIFEXITED(status) || (WEXITSTATUS(status) != CM_STATUS_SAVED)) {
+	if (!WIFEXITED(status) || (WEXITSTATUS(status) != CM_CERTSAVE_STATUS_SAVED)) {
 		return -1;
 	}
 	return 0;
@@ -119,7 +119,7 @@ cm_certsave_o_conflict_subject(struct cm_store_entry *entry,
 {
 	int status;
 	status = cm_subproc_get_exitstatus(entry, state->subproc);
-	if (!WIFEXITED(status) || (WEXITSTATUS(status) != CM_STATUS_SUBJECT_CONFLICT)) {
+	if (!WIFEXITED(status) || (WEXITSTATUS(status) != CM_CERTSAVE_STATUS_SUBJECT_CONFLICT)) {
 		return -1;
 	}
 	return 0;
@@ -133,7 +133,7 @@ cm_certsave_o_conflict_nickname(struct cm_store_entry *entry,
 {
 	int status;
 	status = cm_subproc_get_exitstatus(entry, state->subproc);
-	if (!WIFEXITED(status) || (WEXITSTATUS(status) != CM_STATUS_NICKNAME_CONFLICT)) {
+	if (!WIFEXITED(status) || (WEXITSTATUS(status) != CM_CERTSAVE_STATUS_NICKNAME_CONFLICT)) {
 		return -1;
 	}
 	return 0;

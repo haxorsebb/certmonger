@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,7 +54,7 @@ static int
 cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		   void *userdata)
 {
-	int status = 1, readwrite, i;
+	int status = CM_CERTSAVE_STATUS_INTERNAL_ERROR, readwrite, i, ec;
 	PRBool have_trust;
 	PLArenaPool *arena;
 	SECStatus error;
@@ -92,7 +92,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			if (NSS_ShutdownContext(ctx) != SECSuccess) {
 				cm_log(1, "Error shutting down NSS.\n");
 			}
-			_exit(CM_STATUS_INTERNAL);
+			_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
 		}
 		certdb = CERT_GetDefaultCertDB();
 		if (certdb != NULL) {
@@ -112,7 +112,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				if (NSS_ShutdownContext(ctx) != SECSuccess) {
 					cm_log(1, "Error shutting down NSS.\n");
 				}
-				_exit(CM_STATUS_INTERNAL);
+				_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
 			}
 			/* Handle the base64 decode. */
 			item = NSSBase64_DecodeBuffer(arena, NULL, p, q - p);
@@ -123,7 +123,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				if (NSS_ShutdownContext(ctx) != SECSuccess) {
 					cm_log(1, "Error shutting down NSS.\n");
 				}
-				_exit(CM_STATUS_INTERNAL);
+				_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
 			}
 			/* Do a "shallow" decode to pull out the subject name
 			 * so that we can check for a conflict. */
@@ -137,7 +137,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				if (NSS_ShutdownContext(ctx) != SECSuccess) {
 					cm_log(1, "Error shutting down NSS.\n");
 				}
-				_exit(CM_STATUS_INTERNAL);
+				_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
 			}
 			memset(&cert, 0, sizeof(cert));
 			if (SEC_ASN1DecodeItem(arena, &cert,
@@ -149,7 +149,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				if (NSS_ShutdownContext(ctx) != SECSuccess) {
 					cm_log(1, "Error shutting down NSS.\n");
 				}
-				_exit(CM_STATUS_INTERNAL);
+				_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
 			}
 			subject = cert.derSubject;
 			/* Ask NSS if there would be a conflict. */
@@ -371,7 +371,7 @@ cm_certsave_n_saved(struct cm_store_entry *entry,
 {
 	int status;
 	status = cm_subproc_get_exitstatus(entry, state->subproc);
-	if (!WIFEXITED(status) || (WEXITSTATUS(status) != CM_STATUS_SAVED)) {
+	if (!WIFEXITED(status) || (WEXITSTATUS(status) != CM_CERTSAVE_STATUS_SAVED)) {
 		return -1;
 	}
 	return 0;
@@ -385,7 +385,7 @@ cm_certsave_n_conflict_subject(struct cm_store_entry *entry,
 {
 	int status;
 	status = cm_subproc_get_exitstatus(entry, state->subproc);
-	if (!WIFEXITED(status) || (WEXITSTATUS(status) != CM_STATUS_SUBJECT_CONFLICT)) {
+	if (!WIFEXITED(status) || (WEXITSTATUS(status) != CM_CERTSAVE_STATUS_SUBJECT_CONFLICT)) {
 		return -1;
 	}
 	return 0;
@@ -399,7 +399,7 @@ cm_certsave_n_conflict_nickname(struct cm_store_entry *entry,
 {
 	int status;
 	status = cm_subproc_get_exitstatus(entry, state->subproc);
-	if (!WIFEXITED(status) || (WEXITSTATUS(status) != CM_STATUS_NICKNAME_CONFLICT)) {
+	if (!WIFEXITED(status) || (WEXITSTATUS(status) != CM_CERTSAVE_STATUS_NICKNAME_CONFLICT)) {
 		return -1;
 	}
 	return 0;

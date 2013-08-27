@@ -88,12 +88,12 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	if (ctx == NULL) {
 		cm_log(1, "Unable to open NSS database '%s'.\n",
 		       entry->cm_key_storage_location);
-		_exit(CM_STATUS_ERROR_INITIALIZING);
+		_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
 	}
 	reason = util_n_fips_hook();
 	if (reason != NULL) {
 		cm_log(1, "Error putting NSS into FIPS mode: %s\n", reason);
-		_exit(CM_STATUS_ERROR_INITIALIZING);
+		_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
 	}
 
 	/* Allocate a memory pool. */
@@ -104,7 +104,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 		if (NSS_ShutdownContext(ctx) != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
-		_exit(CM_STATUS_ERROR_INITIALIZING);
+		_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
 	}
 
 	/* Find the tokens that we might use for key storage. */
@@ -115,7 +115,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 		if (NSS_ShutdownContext(ctx) != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
-		_exit(CM_STATUS_ERROR_NO_TOKEN);
+		_exit(CM_SUB_STATUS_ERROR_NO_TOKEN);
 	}
 
 	/* Walk the list looking for the requested token, or look at all of
@@ -124,7 +124,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	pin = NULL;
 	if (cm_pin_read_for_key(entry, &pin) != 0) {
 		cm_log(1, "Error reading PIN for key storage.\n");
-		_exit(CM_STATUS_ERROR_AUTH);
+		_exit(CM_SUB_STATUS_ERROR_AUTH);
 	}
 	PK11_SetPasswordFunc(&cm_pin_read_for_cert_nss_cb);
 	n_tokens = 0;
@@ -205,7 +205,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 			if (error != SECSuccess) {
 				cm_log(1, "Error shutting down NSS.\n");
 			}
-			_exit(CM_STATUS_ERROR_AUTH);
+			_exit(CM_SUB_STATUS_ERROR_AUTH);
 		}
 		error = PK11_Authenticate(sle->slot, PR_TRUE, &cb_data);
 		if (error != SECSuccess) {
@@ -216,7 +216,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 			if (error != SECSuccess) {
 				cm_log(1, "Error shutting down NSS.\n");
 			}
-			_exit(CM_STATUS_ERROR_AUTH);
+			_exit(CM_SUB_STATUS_ERROR_AUTH);
 		}
 		if ((pin != NULL) &&
 		    (strlen(pin) > 0) &&
@@ -229,7 +229,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 			if (error != SECSuccess) {
 				cm_log(1, "Error shutting down NSS.\n");
 			}
-			_exit(CM_STATUS_ERROR_AUTH);
+			_exit(CM_SUB_STATUS_ERROR_AUTH);
 		}
 
 		/* Walk the list of private keys in the token, looking at each
@@ -318,7 +318,7 @@ next_slot:
 				cm_log(1, "Error shutting down NSS.\n");
 			}
 			PORT_FreeArena(arena, PR_TRUE);
-			_exit(CM_STATUS_ERROR_INITIALIZING);
+			_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
 		}
 		ret->arena = arena;
 		ret->ctx = ctx;
@@ -328,7 +328,7 @@ next_slot:
 	if ((n_tokens == 0) &&
 	    (entry->cm_key_token != NULL) &&
 	    (strlen(entry->cm_key_token) > 0)) {
-		_exit(CM_STATUS_ERROR_NO_TOKEN);
+		_exit(CM_SUB_STATUS_ERROR_NO_TOKEN);
 	}
 
 	return ret;
@@ -353,7 +353,7 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	fp = fdopen(fd, "w");
 	if (fp == NULL) {
 		cm_log(1, "Unable to initialize I/O.\n");
-		_exit(CM_STATUS_ERROR_INTERNAL);
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 
 	/* Read the key. */
@@ -461,7 +461,7 @@ cm_keyiread_n_need_pin(struct cm_store_entry *entry,
 	int status;
 	status = cm_subproc_get_exitstatus(entry, state->subproc);
 	if (WIFEXITED(status) &&
-	    (WEXITSTATUS(status) == CM_STATUS_ERROR_AUTH)) {
+	    (WEXITSTATUS(status) == CM_SUB_STATUS_ERROR_AUTH)) {
 		return 0;
 	}
 	return -1;
@@ -475,7 +475,7 @@ cm_keyiread_n_need_token(struct cm_store_entry *entry,
 	int status;
 	status = cm_subproc_get_exitstatus(entry, state->subproc);
 	if (WIFEXITED(status) &&
-	    (WEXITSTATUS(status) == CM_STATUS_ERROR_NO_TOKEN)) {
+	    (WEXITSTATUS(status) == CM_SUB_STATUS_ERROR_NO_TOKEN)) {
 		return 0;
 	}
 	return -1;

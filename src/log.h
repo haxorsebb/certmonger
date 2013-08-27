@@ -18,6 +18,15 @@
 #ifndef cmlog_h
 #define cmlog_h
 
+enum cm_sub_status {
+	CM_SUB_STATUS_OK = 0,
+	CM_SUB_STATUS_ERROR_INITIALIZING = 1,
+	CM_SUB_STATUS_INTERNAL_ERROR = 2,
+	CM_SUB_STATUS_ERROR_NO_TOKEN = 3,
+	CM_SUB_STATUS_ERROR_AUTH = 4,
+	CM_SUB_STATUS_ERROR_PERMS = 5,
+};
+
 enum cm_log_method {
 	cm_log_none = 0,
 	cm_log_syslog,

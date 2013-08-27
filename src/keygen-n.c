@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -79,7 +79,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 
 	status = fdopen(fd, "w");
 	if (status == NULL) {
-		_exit(CM_STATUS_ERROR_INTERNAL);
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	/* Start up NSS and open the database. */
 	settings = userdata;
@@ -94,12 +94,12 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			entry->cm_key_storage_location);
 		cm_log(1, "Error initializing database '%s'.\n",
 		       entry->cm_key_storage_location);
-		_exit(CM_STATUS_ERROR_INITIALIZING);
+		_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
 	}
 	reason = util_n_fips_hook();
 	if (reason != NULL) {
 		cm_log(1, "Error putting NSS into FIPS mode: %s\n", reason);
-		_exit(CM_STATUS_ERROR_INITIALIZING);
+		_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
 	}
 	/* Handle the key size. */
 	cm_key_algorithm = entry->cm_key_type.cm_key_gen_algorithm;
@@ -119,7 +119,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	default:
 		fprintf(status, "Unknown or unsupported key type.\n");
 		cm_log(1, "Unknown or unsupported key type.\n");
-		_exit(CM_STATUS_ERROR_INTERNAL);
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		break;
 	}
 	/* Find the tokens that we might use for key generation. */
@@ -127,7 +127,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	if (slotlist == NULL) {
 		fprintf(status, "Error locating token for key generation.\n");
 		cm_log(1, "Error locating token for key generation.\n");
-		_exit(CM_STATUS_ERROR_NO_TOKEN);
+		_exit(CM_SUB_STATUS_ERROR_NO_TOKEN);
 	}
 	/* Walk the list looking for the requested slot, or the first one if
 	 * none was requested. */
@@ -162,7 +162,7 @@ next_slot:
 	if (slot == NULL) {
 		fprintf(status, "Error locating token for key generation.\n");
 		cm_log(1, "Error locating token for key generation.\n");
-		_exit(CM_STATUS_ERROR_NO_TOKEN);
+		_exit(CM_SUB_STATUS_ERROR_NO_TOKEN);
 	}
 	/* Select the optimum key size. */
 	cm_key_size = PK11_GetBestKeyLength(slot, mech);
@@ -208,7 +208,7 @@ next_slot:
 				if (error != SECSuccess) {
 					cm_log(1, "Error shutting down NSS.\n");
 				}
-				_exit(CM_STATUS_ERROR_AUTH);
+				_exit(CM_SUB_STATUS_ERROR_AUTH);
 			}
 			PK11_InitPin(slot, NULL, pin ? pin : "");
 			if (PK11_NeedUserInit(slot)) {
@@ -219,7 +219,7 @@ next_slot:
 				if (error != SECSuccess) {
 					cm_log(1, "Error shutting down NSS.\n");
 				}
-				_exit(CM_STATUS_ERROR_AUTH);
+				_exit(CM_SUB_STATUS_ERROR_AUTH);
 			}
 			/* We're authenticated now, so count this as a use of
 			 * the PIN. */
@@ -237,7 +237,7 @@ next_slot:
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
-		_exit(CM_STATUS_ERROR_AUTH);
+		_exit(CM_SUB_STATUS_ERROR_AUTH);
 	}
 	PK11_SetPasswordFunc(&cm_pin_read_for_key_nss_cb);
 	error = PK11_Authenticate(slot, PR_TRUE, &cb_data);
@@ -248,7 +248,7 @@ next_slot:
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
-		_exit(CM_STATUS_ERROR_AUTH);
+		_exit(CM_SUB_STATUS_ERROR_AUTH);
 	}
 	if ((pin != NULL) &&
 	    (strlen(pin) > 0) &&
@@ -261,7 +261,7 @@ next_slot:
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
-		_exit(CM_STATUS_ERROR_AUTH);
+		_exit(CM_SUB_STATUS_ERROR_AUTH);
 	}
 	/* Generate the key pair. */
 	pubkey = NULL;
@@ -279,7 +279,7 @@ next_slot:
 		} else {
 			cm_log(1, "Error generating key pair.\n");
 		}
-		_exit(CM_STATUS_ERROR_INTERNAL);
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	/* Try to remove any keys with conflicting names. */
 	privkeys = PK11_ListPrivKeysInSlot(slot, entry->cm_key_nickname, NULL);
@@ -365,7 +365,7 @@ cm_keygen_n_need_pin(struct cm_store_entry *entry,
 	int status;
 	status = cm_subproc_get_exitstatus(entry, state->subproc);
 	if (WIFEXITED(status) &&
-	    (WEXITSTATUS(status) == CM_STATUS_ERROR_AUTH)) {
+	    (WEXITSTATUS(status) == CM_SUB_STATUS_ERROR_AUTH)) {
 		return 0;
 	}
 	return -1;
@@ -379,7 +379,7 @@ cm_keygen_n_need_token(struct cm_store_entry *entry,
 	int status;
 	status = cm_subproc_get_exitstatus(entry, state->subproc);
 	if (WIFEXITED(status) &&
-	    (WEXITSTATUS(status) == CM_STATUS_ERROR_NO_TOKEN)) {
+	    (WEXITSTATUS(status) == CM_SUB_STATUS_ERROR_NO_TOKEN)) {
 		return 0;
 	}
 	return -1;

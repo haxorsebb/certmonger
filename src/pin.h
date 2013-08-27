@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010,2011 Red Hat, Inc.
+ * Copyright (C) 2010,2011,2013 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,13 +18,6 @@
 #ifndef cmpin_h
 #define cmpin_h
 
-enum cm_pin_status {
-	CM_STATUS_ISSUED = 0,
-	CM_STATUS_ERROR_INITIALIZING = 1,
-	CM_STATUS_ERROR_INTERNAL = 2,
-	CM_STATUS_ERROR_NO_TOKEN = 3,
-	CM_STATUS_ERROR_AUTH = 4,
-};
 struct cm_pin_cb_data {
 	struct cm_store_entry *entry;
 	int n_attempts;

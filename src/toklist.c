@@ -35,7 +35,7 @@
 #include <pk11pub.h>
 #include <prerror.h>
 
-#include "pin.h"
+#include "log.h"
 
 int
 main(int argc, char **argv)
@@ -70,7 +70,7 @@ main(int argc, char **argv)
 			      NSS_INIT_NOROOTINIT | NSS_INIT_NOMODDB);
 	if (ctx == NULL) {
 		printf("Unable to open NSS database '%s'.\n", dbdir);
-		_exit(CM_STATUS_ERROR_INITIALIZING);
+		_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
 	}
 
 	/* Allocate a memory pool. */
@@ -80,7 +80,7 @@ main(int argc, char **argv)
 		if (NSS_ShutdownContext(ctx) != SECSuccess) {
 			printf("Error shutting down NSS.\n");
 		}
-		_exit(CM_STATUS_ERROR_INITIALIZING);
+		_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
 	}
 
 	/* Find the tokens that we might use for key storage. */
@@ -89,7 +89,7 @@ main(int argc, char **argv)
 		if (NSS_ShutdownContext(ctx) != SECSuccess) {
 			printf("Error shutting down NSS.\n");
 		}
-		_exit(CM_STATUS_ERROR_NO_TOKEN);
+		_exit(CM_SUB_STATUS_ERROR_NO_TOKEN);
 	}
 
 	for (sle = slotlist->head;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2013 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -78,7 +78,7 @@ main(int argc, char **argv)
 				strchr(argv[0], '/') ?
 				strrchr(argv[0], '/') + 1 :
 				argv[0]);
-			return CM_STATUS_UNCONFIGURED;
+			return CM_SUBMIT_STATUS_UNCONFIGURED;
 			break;
 		}
 	}
@@ -115,7 +115,7 @@ main(int argc, char **argv)
 			strchr(argv[0], '/') ?
 			strrchr(argv[0], '/') + 1 :
 			argv[0]);
-		return CM_STATUS_UNCONFIGURED;
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
 
 	/* Read the CSR from the environment, or from the command-line. */
@@ -132,7 +132,7 @@ main(int argc, char **argv)
 			strchr(argv[0], '/') ?
 			strrchr(argv[0], '/') + 1 :
 			argv[0]);
-		return CM_STATUS_UNCONFIGURED;
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
 
 	/* Clean up the CSR -- make sure it's not a "NEW" request.  certmaster
@@ -156,7 +156,7 @@ main(int argc, char **argv)
 	if (ctx == NULL) {
 		fprintf(stderr, "Error setting up for XMLRPC.\n");
 		printf(_("Error setting up for XMLRPC.\n"));
-		return CM_STATUS_UNCONFIGURED;
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
 
 	/* Add the CSR as the sole argument. */
@@ -171,17 +171,17 @@ main(int argc, char **argv)
 		if (cm_submit_x_get_bss(ctx, &i, &s1, &s2) == 0) {
 			if (i) {
 				printf("%s", s1);
-				return CM_STATUS_ISSUED;
+				return CM_SUBMIT_STATUS_ISSUED;
 			} else {
 				printf("SUBMITTED COOKIE\n");
-				return CM_STATUS_WAIT;
+				return CM_SUBMIT_STATUS_WAIT;
 			}
 		} else {
 			printf(_("Error parsing server response.\n"));
-			return CM_STATUS_UNREACHABLE;
+			return CM_SUBMIT_STATUS_UNREACHABLE;
 		}
 	} else {
 		printf(_("Server error.\n"));
-		return CM_STATUS_UNREACHABLE;
+		return CM_SUBMIT_STATUS_UNREACHABLE;
 	}
 }

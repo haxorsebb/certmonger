@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2012 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2012,2013 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -696,7 +696,7 @@ main(int argc, char **argv)
 				strchr(argv[0], '/') ?
 				strrchr(argv[0], '/') + 1 :
 				argv[0]);
-			return CM_STATUS_UNCONFIGURED;
+			return CM_SUBMIT_STATUS_UNCONFIGURED;
 			break;
 		}
 	}
@@ -712,9 +712,9 @@ main(int argc, char **argv)
 			strchr(argv[0], '/') ?
 			strrchr(argv[0], '/') + 1 :
 			argv[0]);
-		return CM_STATUS_UNCONFIGURED;
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
-	ret = CM_STATUS_UNREACHABLE;
+	ret = CM_SUBMIT_STATUS_UNREACHABLE;
 
 	/* Read the CSR from the environment, or from the command-line. */
 	csr = getenv(CM_SUBMIT_CSR_ENV);
@@ -766,7 +766,7 @@ main(int argc, char **argv)
 			       cm_submit_x_delegate_off);
 	if (ctx == NULL) {
 		fprintf(stderr, "Error setting up for XMLRPC.\n");
-		return CM_STATUS_UNCONFIGURED;
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
 
 	/* Both servers take the CSR, in their preferred format, first. */

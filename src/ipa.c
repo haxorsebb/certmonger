@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -121,7 +121,7 @@ main(int argc, char **argv)
 				strchr(argv[0], '/') ?
 				strrchr(argv[0], '/') + 1 :
 				argv[0]);
-			return CM_STATUS_UNCONFIGURED;
+			return CM_SUBMIT_STATUS_UNCONFIGURED;
 			break;
 		}
 	}
@@ -164,7 +164,7 @@ main(int argc, char **argv)
 			strchr(argv[0], '/') ?
 			strrchr(argv[0], '/') + 1 :
 			argv[0]);
-		return CM_STATUS_UNCONFIGURED;
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
 
 	/* Read the CSR from the environment, or from the command-line. */
@@ -188,7 +188,7 @@ main(int argc, char **argv)
 			strchr(argv[0], '/') ?
 			strrchr(argv[0], '/') + 1 :
 			argv[0]);
-		return CM_STATUS_UNCONFIGURED;
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
 
 	/* Change the CSR from the format we get it in to the one the server
@@ -224,7 +224,7 @@ main(int argc, char **argv)
 	if (ctx == NULL) {
 		fprintf(stderr, "Error setting up for XMLRPC.\n");
 		printf(_("Error setting up for XMLRPC.\n"));
-		return CM_STATUS_UNCONFIGURED;
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
 
 	/* Setup a ccache unless we're told to use the default one. */
@@ -252,7 +252,7 @@ main(int argc, char **argv)
 					 kpname, ktname, kerr);
 			}
 		}
-		return CM_STATUS_UNCONFIGURED;
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
 
 	/* Add the CSR as the sole unnamed argument. */
@@ -280,7 +280,7 @@ main(int argc, char **argv)
 			printf("Server denied our request, giving up: "
 			       "%d (%s).\n", i,
 			       cm_submit_x_fault_text(ctx));
-			return CM_STATUS_REJECTED;
+			return CM_SUBMIT_STATUS_REJECTED;
 			break;
 		case 1: /* authentication error - transient? */
 		case 4: /* execution error - transient? */
@@ -289,7 +289,7 @@ main(int argc, char **argv)
 			printf("Server failed request, will retry: "
 			       "%d (%s).\n", i,
 			       cm_submit_x_fault_text(ctx));
-			return CM_STATUS_UNREACHABLE;
+			return CM_SUBMIT_STATUS_UNREACHABLE;
 			break;
 		}
 	} else
@@ -303,18 +303,18 @@ main(int argc, char **argv)
 			if (s == NULL) {
 				printf("Out of memory parsing server response, "
 				       "will retry.\n");
-				return CM_STATUS_UNREACHABLE;
+				return CM_SUBMIT_STATUS_UNREACHABLE;
 			}
 			s = cm_submit_u_pem_from_base64("CERTIFICATE",
 							FALSE, s);
 			printf("%s", s);
-			return CM_STATUS_ISSUED;
+			return CM_SUBMIT_STATUS_ISSUED;
 		} else {
-			return CM_STATUS_REJECTED;
+			return CM_SUBMIT_STATUS_REJECTED;
 		}
 	} else {
 		/* No useful response, no fault.  Try again, from scratch,
 		 * later. */
-		return CM_STATUS_UNREACHABLE;
+		return CM_SUBMIT_STATUS_UNREACHABLE;
 	}
 }
