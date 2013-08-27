@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <syslog.h>
 #include <unistd.h>
 
 #include <talloc.h>
@@ -61,6 +62,8 @@ cm_subproc_start(int (*cb)(int fd,
 			state->pid = fork();
 			switch (state->pid) {
 			case -1:
+				syslog(LOG_DEBUG, "fork() error: %s",
+				       strerror(errno));
 				close(fds[0]);
 				close(fds[1]);
 				talloc_free(state);
@@ -76,6 +79,7 @@ cm_subproc_start(int (*cb)(int fd,
 				flags = fcntl(state->fd, F_GETFL);
 				fcntl(state->fd, F_SETFL, flags | O_NONBLOCK);
 				close(fds[1]);
+				fds[1] = -1;
 				break;
 			}
 		}

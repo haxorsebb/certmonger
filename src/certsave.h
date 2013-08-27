@@ -38,6 +38,18 @@ int cm_certsave_get_fd(struct cm_store_entry *entry,
 int cm_certsave_saved(struct cm_store_entry *entry,
 		      struct cm_certsave_state *state);
 
+/* Check if we failed due to a subject name conflict. */
+int cm_certsave_conflict_subject(struct cm_store_entry *entry,
+				 struct cm_certsave_state *state);
+
+/* Check if we failed due to a nickname conflict. */
+int cm_certsave_conflict_nickname(struct cm_store_entry *entry,
+				  struct cm_certsave_state *state);
+
+/* Check if we failed due to a permissions error. */
+int cm_certsave_permissions_error(struct cm_store_entry *entry,
+				  struct cm_certsave_state *state);
+
 /* Clean up after saving the certificate. */
 void cm_certsave_done(struct cm_store_entry *entry,
 		      struct cm_certsave_state *state);

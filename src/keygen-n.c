@@ -58,7 +58,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 {
 	FILE *status;
 	enum cm_key_algorithm cm_key_algorithm;
-	int cm_key_size, cm_requested_key_size, readwrite;
+	int cm_key_size, cm_requested_key_size, readwrite, ec;
 	CK_MECHANISM_TYPE mech;
 	SECStatus error;
 	NSSInitContext *ctx;
@@ -71,7 +71,6 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	SECKEYPrivateKeyList *privkeys;
 	SECKEYPrivateKeyListNode *node;
 	SECKEYPublicKey *pubkey;
-	PRErrorCode ec;
 	const char *es, *token, *keyname, *reason;
 	char *pin;
 	struct cm_keygen_n_settings *settings;
@@ -89,12 +88,20 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			      (readwrite ? 0 : NSS_INIT_READONLY) |
 			      NSS_INIT_NOROOTINIT |
 			      NSS_INIT_NOMODDB);
+	ec = PORT_GetError();
 	if (ctx == NULL) {
 		fprintf(status, "Error initializing database '%s'.\n",
 			entry->cm_key_storage_location);
 		cm_log(1, "Error initializing database '%s'.\n",
 		       entry->cm_key_storage_location);
-		_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
+		switch (ec) {
+		case PR_NO_ACCESS_RIGHTS_ERROR: /* EACCES or EPERM */
+			_exit(CM_SUB_STATUS_ERROR_PERMS);
+			break;
+		default:
+			_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
+			break;
+		}
 	}
 	reason = util_n_fips_hook();
 	if (reason != NULL) {
@@ -211,6 +218,7 @@ next_slot:
 				_exit(CM_SUB_STATUS_ERROR_AUTH);
 			}
 			PK11_InitPin(slot, NULL, pin ? pin : "");
+			ec = PORT_GetError();
 			if (PK11_NeedUserInit(slot)) {
 				cm_log(1, "Key generation slot still "
 				       "needs user PIN to be set.\n");
@@ -219,7 +227,14 @@ next_slot:
 				if (error != SECSuccess) {
 					cm_log(1, "Error shutting down NSS.\n");
 				}
-				_exit(CM_SUB_STATUS_ERROR_AUTH);
+				switch (ec) {
+				case PR_NO_ACCESS_RIGHTS_ERROR: /* EACCES or EPERM */
+					_exit(CM_SUB_STATUS_ERROR_PERMS);
+					break;
+				default:
+					_exit(CM_SUB_STATUS_ERROR_AUTH);
+					break;
+				}
 			}
 			/* We're authenticated now, so count this as a use of
 			 * the PIN. */
@@ -267,8 +282,8 @@ next_slot:
 	pubkey = NULL;
 	privkey = PK11_GenerateKeyPair(slot, mech, params, &pubkey,
 				       PR_TRUE, PR_TRUE, NULL);
+	ec = PORT_GetError();
 	if (privkey == NULL) {
-		ec = PR_GetError();
 		if (ec != 0) {
 			es = PR_ErrorToName(ec);
 		} else {
@@ -279,7 +294,14 @@ next_slot:
 		} else {
 			cm_log(1, "Error generating key pair.\n");
 		}
-		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		switch (ec) {
+		case PR_NO_ACCESS_RIGHTS_ERROR: /* EACCES or EPERM */
+			_exit(CM_SUB_STATUS_ERROR_PERMS);
+			break;
+		default:
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+			break;
+		}
 	}
 	/* Try to remove any keys with conflicting names. */
 	privkeys = PK11_ListPrivKeysInSlot(slot, entry->cm_key_nickname, NULL);
@@ -312,12 +334,50 @@ next_slot:
 	}
 	/* Attach the specified nickname to the key. */
 	error = PK11_SetPrivateKeyNickname(privkey, entry->cm_key_nickname);
+	ec = PORT_GetError();
 	if (error != SECSuccess) {
-		cm_log(1, "Error setting nickname on private key.\n");
+		if (ec != 0) {
+			es = PR_ErrorToName(ec);
+		} else {
+			es = NULL;
+		}
+		if (es != NULL) {
+			cm_log(1, "Error setting nickname on private key: "
+			       "%s.\n", es);
+		} else {
+			cm_log(1, "Error setting nickname on private key.\n");
+		}
+		switch (ec) {
+		case PR_NO_ACCESS_RIGHTS_ERROR: /* EACCES or EPERM */
+			_exit(CM_SUB_STATUS_ERROR_PERMS);
+			break;
+		default:
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+			break;
+		}
 	}
 	error = PK11_SetPublicKeyNickname(pubkey, entry->cm_key_nickname);
+	ec = PORT_GetError();
 	if (error != SECSuccess) {
-		cm_log(1, "Error setting nickname on public key.\n");
+		if (ec != 0) {
+			es = PR_ErrorToName(ec);
+		} else {
+			es = NULL;
+		}
+		if (es != NULL) {
+			cm_log(1, "Error setting nickname on public key: "
+			       "%s.\n", es);
+		} else {
+			cm_log(1, "Error setting nickname on public key.\n");
+		}
+		switch (ec) {
+		case PR_NO_ACCESS_RIGHTS_ERROR: /* EACCES or EPERM */
+			_exit(CM_SUB_STATUS_ERROR_PERMS);
+			break;
+		default:
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+			break;
+		}
 	}
 	SECKEY_DestroyPrivateKey(privkey);
 	SECKEY_DestroyPublicKey(pubkey);
@@ -352,6 +412,20 @@ cm_keygen_n_saved_keypair(struct cm_store_entry *entry,
 	int status;
 	status = cm_subproc_get_exitstatus(entry, state->subproc);
 	if (WIFEXITED(status) && (WEXITSTATUS(status) == 0)) {
+		return 0;
+	}
+	return -1;
+}
+
+/* Tell us if we don't have permissions. */
+static int
+cm_keygen_n_need_perms(struct cm_store_entry *entry,
+		       struct cm_keygen_state *state)
+{
+	int status;
+	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	if (WIFEXITED(status) &&
+	    (WEXITSTATUS(status) == CM_SUB_STATUS_ERROR_PERMS)) {
 		return 0;
 	}
 	return -1;
@@ -412,6 +486,7 @@ cm_keygen_n_start(struct cm_store_entry *entry)
 		state->pvt.ready = cm_keygen_n_ready;
 		state->pvt.get_fd = cm_keygen_n_get_fd;
 		state->pvt.saved_keypair = cm_keygen_n_saved_keypair;
+		state->pvt.need_perms = cm_keygen_n_need_perms;
 		state->pvt.need_pin = cm_keygen_n_need_pin;
 		state->pvt.need_token = cm_keygen_n_need_token;
 		state->pvt.done = cm_keygen_n_done;

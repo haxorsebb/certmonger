@@ -46,6 +46,10 @@ int cm_keygen_need_token(struct cm_store_entry *entry,
 int cm_keygen_saved_keypair(struct cm_store_entry *entry,
 			    struct cm_keygen_state *state);
 
+/* Tell us if we need filesystem permissions to write the key. */
+int cm_keygen_need_perms(struct cm_store_entry *entry,
+			 struct cm_keygen_state *state);
+
 /* Clean up after key generation. */
 void cm_keygen_done(struct cm_store_entry *entry,
 		    struct cm_keygen_state *state);

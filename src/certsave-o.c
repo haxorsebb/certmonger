@@ -61,20 +61,37 @@ cm_certsave_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			pem = fopen(entry->cm_cert_storage_location, "w");
 			if (pem != NULL) {
 				if (PEM_write_X509(pem, cert) == 0) {
+					switch (errno) {
+					case EACCES:
+					case EPERM:
+						status = CM_CERTSAVE_STATUS_PERMS;
+						break;
+					default:
+						status = CM_CERTSAVE_STATUS_INTERNAL_ERROR;
+						break;
+					}
 					cm_log(1, "Error saving certificate "
-					       "to '%s'.\n",
-					       entry->cm_cert_storage_location);
-					status = CM_CERTSAVE_STATUS_INTERNAL_ERROR;
+					       "to '%s': %s.\n",
+					       entry->cm_cert_storage_location,
+					       strerror(errno));
 				} else {
 					status = CM_CERTSAVE_STATUS_SAVED;
 				}
 				fclose(pem);
 			} else {
+				switch (errno) {
+				case EACCES:
+				case EPERM:
+					status = CM_CERTSAVE_STATUS_PERMS;
+					break;
+				default:
+					status = CM_CERTSAVE_STATUS_INTERNAL_ERROR;
+					break;
+				}
 				cm_log(1, "Error saving certificate "
 				       "to '%s': %s.\n",
 				       entry->cm_cert_storage_location,
 				       strerror(errno));
-				status = CM_CERTSAVE_STATUS_INTERNAL_ERROR;
 			}
 			X509_free(cert);
 		} else {
@@ -139,6 +156,20 @@ cm_certsave_o_conflict_nickname(struct cm_store_entry *entry,
 	return 0;
 }
 
+/* Check if we failed because we couldn't read or write to the storage
+ * location. */
+static int
+cm_certsave_o_permissions_error(struct cm_store_entry *entry,
+			        struct cm_certsave_state *state)
+{
+	int status;
+	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	if (!WIFEXITED(status) || (WEXITSTATUS(status) != CM_CERTSAVE_STATUS_PERMS)) {
+		return -1;
+	}
+	return 0;
+}
+
 /* Get a selectable-for-read descriptor we can poll for status changes. */
 static int
 cm_certsave_o_get_fd(struct cm_store_entry *entry,
@@ -177,6 +208,7 @@ cm_certsave_o_start(struct cm_store_entry *entry)
 		state->pvt.done= cm_certsave_o_done;
 		state->pvt.conflict_subject = cm_certsave_o_conflict_subject;
 		state->pvt.conflict_nickname = cm_certsave_o_conflict_nickname;
+		state->pvt.permissions_error = cm_certsave_o_permissions_error;
 		state->subproc = cm_subproc_start(cm_certsave_o_main,
 						  NULL, entry, NULL);
 		if (state->subproc == NULL) {

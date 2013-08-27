@@ -102,11 +102,20 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		fp = fopen(entry->cm_key_storage_location, "w");
 		if (fp == NULL) {
 			if (errno != ENOENT) {
+				error = errno;
 				cm_log(1,
 				       "Error opening key file \"%s\" "
 				       "for writing: %s.\n",
 				       entry->cm_key_storage_location,
 				       strerror(errno));
+				switch (error) {
+				case EACCES:
+				case EPERM:
+					_exit(CM_SUB_STATUS_ERROR_PERMS);
+					break;
+				default:
+					break;
+				}
 			}
 			_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
 		}
@@ -122,10 +131,19 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					      NULL, 0,
 					      cm_pin_read_for_key_ossl_cb,
 					      &cb_data) == 0) {
+			error = errno;
 			cm_log(1, "Error storing key.\n");
 			while ((error = ERR_get_error()) != 0) {
 				ERR_error_string_n(error, buf, sizeof(buf));
 				cm_log(1, "%s\n", buf);
+			}
+			switch (error) {
+			case EACCES:
+			case EPERM:
+				_exit(CM_SUB_STATUS_ERROR_PERMS);
+				break;
+			default:
+				break;
 			}
 			_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
 		}
@@ -162,6 +180,20 @@ cm_keygen_o_saved_keypair(struct cm_store_entry *entry,
 	int status;
 	status = cm_subproc_get_exitstatus(entry, state->subproc);
 	if (WIFEXITED(status) && (WEXITSTATUS(status) == 0)) {
+		return 0;
+	}
+	return -1;
+}
+
+/* Tell us if we don't have permissions. */
+static int
+cm_keygen_o_need_perms(struct cm_store_entry *entry,
+		       struct cm_keygen_state *state)
+{
+	int status;
+	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	if (WIFEXITED(status) &&
+	    (WEXITSTATUS(status) == CM_SUB_STATUS_ERROR_PERMS)) {
 		return 0;
 	}
 	return -1;
@@ -219,6 +251,7 @@ cm_keygen_o_start(struct cm_store_entry *entry)
 		state->pvt.ready = cm_keygen_o_ready;
 		state->pvt.get_fd = cm_keygen_o_get_fd;
 		state->pvt.saved_keypair = cm_keygen_o_saved_keypair;
+		state->pvt.need_perms = cm_keygen_o_need_perms;
 		state->pvt.need_pin = cm_keygen_o_need_pin;
 		state->pvt.need_token = cm_keygen_o_need_token;
 		state->pvt.done = cm_keygen_o_done;

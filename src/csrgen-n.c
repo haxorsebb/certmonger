@@ -230,7 +230,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	CERTName *name;
 	PLArenaPool *arena;
 	SECItem ereq, esreq, epkac, espkac, *attrs;
-	PRErrorCode ec;
+	int ec;
 	char *b64, *b642, *p, *q;
 	SECOidData *sigoid;
 
@@ -264,7 +264,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	/* Find the public key. */
 	pubkey = SECKEY_ConvertToPublicKey(privkey->key);
 	if (pubkey == NULL) {
-		ec = PR_GetError();
+		ec = PORT_GetError();
 		if (ec == 0) {
 			cm_log(1, "Error retrieving public key.\n");
 		} else {
@@ -285,7 +285,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	/* Generate a subjectPublicKeyInfo. */
 	spki = SECKEY_CreateSubjectPublicKeyInfo(pubkey);
 	if (spki == NULL) {
-		ec = PR_GetError();
+		ec = PORT_GetError();
 		if (ec == 0) {
 			cm_log(1, "Error building spki value.\n");
 		} else {
@@ -306,7 +306,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	/* Build the request. */
 	req = CERT_CreateCertificateRequest(name, spki, NULL);
 	if (req == NULL) {
-		ec = PR_GetError();
+		ec = PORT_GetError();
 		if (ec == 0) {
 			cm_log(1, "Error building certificate request.\n");
 		} else {

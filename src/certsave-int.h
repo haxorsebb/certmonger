@@ -39,6 +39,9 @@ struct cm_certsave_state_pvt {
 	/* Check if we saved the certificate. */
 	int (*saved)(struct cm_store_entry *entry,
 		     struct cm_certsave_state *state);
+	/* Check if we failed due to filesystem permissions. */
+	int (*permissions_error)(struct cm_store_entry *entry,
+				 struct cm_certsave_state *state);
 	/* Check if we failed because the subject was already being used. */
 	int (*conflict_subject)(struct cm_store_entry *entry,
 				struct cm_certsave_state *state);

@@ -2242,6 +2242,7 @@ list(const char *argv0, int argc, char **argv)
 			continue;
 			break;
 		case CM_NEED_KEY_PAIR:
+		case CM_NEED_KEY_GEN_PERMS:
 		case CM_NEED_KEY_GEN_PIN:
 		case CM_NEED_KEY_GEN_TOKEN:
 		case CM_GENERATING_KEY_PAIR:
@@ -2262,6 +2263,7 @@ list(const char *argv0, int argc, char **argv)
 		case CM_PRE_SAVE_CERT:
 		case CM_START_SAVING_CERT:
 		case CM_SAVING_CERT:
+		case CM_NEED_CERTSAVE_PERMS:
 		case CM_SAVED_CERT:
 		case CM_POST_SAVED_CERT:
 		case CM_NEED_TO_READ_CERT:

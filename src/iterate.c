@@ -70,6 +70,9 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 	case CM_NEED_KEY_GEN_PIN:
 		entry->cm_state = CM_NEED_KEY_PAIR;
 		break;
+	case CM_NEED_KEY_GEN_PERMS:
+		entry->cm_state = CM_NEED_KEY_PAIR;
+		break;
 	case CM_HAVE_KEY_PAIR:
 		break;
 	case CM_NEED_KEYINFO:
@@ -114,6 +117,9 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 		entry->cm_state = CM_NEED_TO_SAVE_CERT;
 		break;
 	case CM_SAVING_CERT:
+		entry->cm_state = CM_NEED_TO_SAVE_CERT;
+		break;
+	case CM_NEED_CERTSAVE_PERMS:
 		entry->cm_state = CM_NEED_TO_SAVE_CERT;
 		break;
 	case CM_NEED_TO_READ_CERT:
@@ -465,6 +471,14 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				entry->cm_state = CM_HAVE_KEY_PAIR;
 				*when = cm_time_now;
 			} else
+			if (cm_keygen_need_perms(entry,
+					         state->cm_keygen_state) == 0) {
+				/* Whoops, we need help. */
+				cm_keygen_done(entry, state->cm_keygen_state);
+				state->cm_keygen_state = NULL;
+				entry->cm_state = CM_NEED_KEY_GEN_PERMS;
+				*when = cm_time_now;
+			} else
 			if (cm_keygen_need_token(entry,
 					         state->cm_keygen_state) == 0) {
 				/* Whoops, we need help. */
@@ -498,6 +512,11 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				*when = cm_time_no_time;
 			}
 		}
+		break;
+
+	case CM_NEED_KEY_GEN_PERMS:
+		/* Revisit this later. */
+		*when = cm_time_no_time;
 		break;
 
 	case CM_NEED_KEY_GEN_TOKEN:
@@ -898,6 +917,15 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				state->cm_certsave_state = NULL;
 				entry->cm_state = CM_NEED_TO_READ_CERT;
 				*when = cm_time_now;
+			} else
+			if (cm_certsave_permissions_error(entry,
+							  state->cm_certsave_state) == 0) {
+				/* Whoops, we need help. */
+				cm_certsave_done(entry,
+						 state->cm_certsave_state);
+				state->cm_certsave_state = NULL;
+				entry->cm_state = CM_NEED_CERTSAVE_PERMS;
+				*when = cm_time_now;
 			} else {
 				/* Failed to save cert; make a note and try
 				 * again in a bit. */
@@ -917,6 +945,11 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				*when = cm_time_no_time;
 			}
 		}
+		break;
+
+	case CM_NEED_CERTSAVE_PERMS:
+		/* Revisit this later. */
+		*when = cm_time_no_time;
 		break;
 
 	case CM_NEED_TO_READ_CERT:

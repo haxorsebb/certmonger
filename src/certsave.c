@@ -67,6 +67,36 @@ cm_certsave_saved(struct cm_store_entry *entry, struct cm_certsave_state *state)
 	return pvt->saved(entry, state);
 }
 
+/* Check if we failed due to a subject conflict. */
+int
+cm_certsave_conflict_subject(struct cm_store_entry *entry,
+			     struct cm_certsave_state *state)
+{
+	struct cm_certsave_state_pvt *pvt;
+	pvt = (struct cm_certsave_state_pvt *) state;
+	return pvt->conflict_subject(entry, state);
+}
+
+/* Check if we failed due to a nickname conflict. */
+int
+cm_certsave_conflict_nickname(struct cm_store_entry *entry,
+			      struct cm_certsave_state *state)
+{
+	struct cm_certsave_state_pvt *pvt;
+	pvt = (struct cm_certsave_state_pvt *) state;
+	return pvt->conflict_nickname(entry, state);
+}
+
+/* Check if we failed due to a permissions error. */
+int
+cm_certsave_permissions_error(struct cm_store_entry *entry,
+			      struct cm_certsave_state *state)
+{
+	struct cm_certsave_state_pvt *pvt;
+	pvt = (struct cm_certsave_state_pvt *) state;
+	return pvt->permissions_error(entry, state);
+}
+
 /* Clean up after saving the certificate. */
 void
 cm_certsave_done(struct cm_store_entry *entry, struct cm_certsave_state *state)

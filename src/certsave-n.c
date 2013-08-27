@@ -290,8 +290,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					       "on certificate \"%s\": "
 					       "%s.\n",
 					       entry->cm_cert_nickname,
-					       PR_ErrorToString(PORT_GetError(),
-								PR_LANGUAGE_I_DEFAULT));
+					       PR_ErrorToName(PORT_GetError()));
 				}
 				/* Delete any other certificates that are there
 				 * with the same nickname.  While NSS's
@@ -325,11 +324,19 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					CERT_DestroyCertList(certlist);
 				}
 			} else {
+				ec = PORT_GetError();
 				cm_log(0, "Error importing certificate "
 				       "into NSSDB \"%s\": %s.\n",
 				       entry->cm_cert_storage_location,
-				       PR_ErrorToString(PORT_GetError(),
-							PR_LANGUAGE_I_DEFAULT));
+				       PR_ErrorToName(ec));
+				switch (ec) {
+				case PR_NO_ACCESS_RIGHTS_ERROR: /* ACCES/PERM */
+					status = CM_CERTSAVE_STATUS_PERMS;
+					break;
+				default:
+					status = CM_CERTSAVE_STATUS_INTERNAL_ERROR;
+					break;
+				}
 			}
 			if (returned != NULL) {
 				CERT_DestroyCertArray(returned, 1);
@@ -405,6 +412,20 @@ cm_certsave_n_conflict_nickname(struct cm_store_entry *entry,
 	return 0;
 }
 
+/* Check if we failed because we couldn't read or write to the storage
+ * location. */
+static int
+cm_certsave_n_permissions_error(struct cm_store_entry *entry,
+			        struct cm_certsave_state *state)
+{
+	int status;
+	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	if (!WIFEXITED(status) || (WEXITSTATUS(status) != CM_CERTSAVE_STATUS_PERMS)) {
+		return -1;
+	}
+	return 0;
+}
+
 /* Clean up after saving the certificate. */
 static void
 cm_certsave_n_done(struct cm_store_entry *entry,
@@ -437,6 +458,7 @@ cm_certsave_n_start(struct cm_store_entry *entry)
 		state->pvt.saved = cm_certsave_n_saved;
 		state->pvt.conflict_subject = cm_certsave_n_conflict_subject;
 		state->pvt.conflict_nickname = cm_certsave_n_conflict_nickname;
+		state->pvt.permissions_error = cm_certsave_n_permissions_error;
 		state->pvt.done= cm_certsave_n_done;
 		state->subproc = cm_subproc_start(cm_certsave_n_main,
 						  NULL, entry, &settings);

@@ -12,7 +12,7 @@ We model that life cycle as a state machine.
 
 Now with some arbitrarily-named states for our per-certificate state machine:
 	* Generating a key pair.
-	  States: NEED_KEY_PAIR, GENERATING_KEY_PAIR [*],
+	  States: NEED_KEY_PAIR, GENERATING_KEY_PAIR [*], NEED_KEY_GEN_PERMS,
 		  NEED_KEY_GEN_TOKEN, NEED_KEY_GEN_PIN, HAVE_KEY_PAIR
 	* Reading info about key pair.
 		  NEED_KEYINFO, READING_KEYINFO [*],
@@ -35,7 +35,7 @@ Now with some arbitrarily-named states for our per-certificate state machine:
 	* Saving certificate to the desired location and parsing it for the
 	  information we think is interesting.
 	  States: NEED_TO_SAVE_CERT, PRE_SAVE_CERT[*],
-		  START_SAVING_CERT, SAVING_CERT [*],
+		  START_SAVING_CERT, SAVING_CERT [*], NEED_CERTSAVE_PERMS,
 		  NEED_TO_READ_CERT, READING_CERT [*],
 		  SAVED_CERT, POST_SAVED_CERT[*]
 	* Waiting for certificate to near expiration.
@@ -83,12 +83,21 @@ State logic:
 				elseif key-store-needs-pin
 					state_next = NEED_KEY_GEN_PIN
 					state_transition = now
+				elseif key-store-needs-perms
+					state_next = NEED_KEY_GEN_PERMS
+					state_transition = now
 				else
 					state_next = NEED_KEY_PAIR
 					state_transition = now
 			else
 				state_next = GENERATING_KEY_PAIR
 				state_transition = when-notified
+		break
+
+	NEED_KEY_GEN_PERMS:
+		if starting-up
+			state_next = NEED_KEY_PAIR
+			state_transition = now
 		break
 
 	NEED_KEY_GEN_TOKEN:
@@ -292,8 +301,18 @@ State logic:
 				state_next = NEED_TO_READ_CERT
 				state_transition = now
 			else
-				state_next = NEED_TO_NOTIFY_ISSUED_FAILED
-				state_transition = now
+				if cert-save-needs-perms
+					state_next = NEED_CERTSAVE_PERMS
+					state_transition = now
+				else
+					state_next = NEED_TO_NOTIFY_ISSUED_FAILED
+					state_transition = now
+		break
+
+	NEED_CERTSAVE_PERMS:
+		if starting-up
+			state_next = NEED_TO_SAVE_CERT
+			state_transition = now
 		break
 
 	NEED_TO_READ_CERT:
