@@ -80,8 +80,17 @@ main(int argc, char **argv)
 		if (cm_keygen_saved_keypair(entry, state) == 0) {
 			printf("OK.\n");
 			ret = 0;
+		} else if (cm_keygen_need_pin(entry, state) == 0) {
+			printf("Failed to save: need PIN.\n");
+			ret = 1;
+		} else if (cm_keygen_need_token(entry, state) == 0) {
+			printf("Failed to save: token not present.\n");
+			ret = 1;
+		} else if (cm_keygen_need_perms(entry, state) == 0) {
+			printf("Failed to save: need fs permissions.\n");
+			ret = 1;
 		} else {
-			printf("Failed to save.\n");
+			printf("Failed to save, don't know why.\n");
 			ret = 1;
 		}
 		cm_keygen_done(entry, state);
