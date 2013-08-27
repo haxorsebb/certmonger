@@ -139,17 +139,47 @@ main(int argc, char **argv)
 		state = cm_store_state_as_string(entry->cm_state);
 		switch (when) {
 		case cm_time_now:
+			if (entry->cm_state != old_state) {
+				printf("%s\n", state);
+			} else {
+				printf("%s (now)\n", state);
+			}
+			break;
 		case cm_time_soon:
+			if (entry->cm_state != old_state) {
+				printf("%s\n", state);
+			} else {
+				printf("%s (soon)\n", state);
+			}
+			break;
 		case cm_time_soonish:
-			printf("%s\n", state);
+			if (entry->cm_state != old_state) {
+				printf("%s\n", state);
+			} else {
+				printf("%s (soonish)\n", state);
+			}
 			break;
 		case cm_time_delay:
-			printf("delay=%ld\n%s\n", (long) delay, state);
+			if (entry->cm_state != old_state) {
+				printf("delay=%ld\n%s\n", (long) delay,
+				       state);
+			} else {
+				printf("delay=%ld (again)\n%s (again)\n",
+				       (long) delay, state);
+			}
 			break;
 		case cm_time_no_time:
 			if (entry->cm_state != old_state) {
 				printf("%s\n", state);
 			}
+			break;
+		}
+		if ((entry->cm_state == old_state) &&
+		    ((when != cm_time_no_time) || (readfd == -1))) {
+			/* If we didn't change state, stop. */
+			printf("-STUCK- (%d:%ld)\n", when, (long) delay);
+			fflush(NULL);
+			state = NULL;
 			break;
 		}
 		if (stop_states != NULL) {
@@ -170,14 +200,6 @@ main(int argc, char **argv)
 			if (*p != '\0') {
 				/* We found a match.  Stop here. */
 				printf("-STOP-\n");
-				fflush(NULL);
-				state = NULL;
-				break;
-			}
-			if ((entry->cm_state == old_state) &&
-			    ((when != cm_time_no_time) || (readfd == -1))) {
-				/* If we didn't change state, stop. */
-				printf("-STUCK- (%d:%ld)\n", when, (long) delay);
 				fflush(NULL);
 				state = NULL;
 				break;
