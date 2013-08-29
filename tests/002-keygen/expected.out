@@ -17,9 +17,9 @@ OK (3072).
 OK.
 OK (4096).
 [nss:rosubdir]
-Failed to save: need fs permissions.
+Failed to save NSS:${tmpdir}/rosubdir: need fs permissions.
 [nss:rwsubdir]
-Failed to save: need fs permissions.
+Failed to save NSS:${tmpdir}/rwsubdir: need fs permissions.
 [openssl:512]
 OK.
 OK (512).
@@ -39,5 +39,7 @@ OK (3072).
 OK.
 OK (4096).
 [openssl:rosubdir]
-Failed to save: need fs permissions.
+Failed to save FILE:${tmpdir}/rosubdir/sample.4096: need fs permissions.
+[openssl:rwsubdir]
+Failed to save FILE:${tmpdir}/rwsubdir/sample.4096: need fs permissions.
 Test complete.

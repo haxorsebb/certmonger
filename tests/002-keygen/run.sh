@@ -60,4 +60,14 @@ key_gen_size=$size
 EOF
 $toolsdir/keygen entry.$size || true
 
+echo "[openssl:rwsubdir]"
+cat > entry.$size <<- EOF
+key_storage_type=FILE
+key_storage_location=$tmpdir/rwsubdir/sample.$size
+key_gen_size=$size
+EOF
+touch $tmpdir/rwsubdir/sample.$size
+chmod u-w $tmpdir/rwsubdir/sample.$size
+$toolsdir/keygen entry.$size || true
+
 echo Test complete.
