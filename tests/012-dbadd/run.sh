@@ -7,7 +7,7 @@ source "$srcdir"/functions
 	echo '['Generating key${scheme:+ \($scheme\)}.']'
 	rm -fr $tmpdir/${scheme}db
 	mkdir -p $tmpdir/${scheme}db
-	initnssdb $tmpdir/${scheme}db
+	initnssdb ${scheme:+${scheme}:}$tmpdir/${scheme}db
 	cat > entry.key${scheme:+.$scheme} <<- EOF
 	state=NEED_KEY_PAIR
 	key_storage_type=NSSDB
@@ -20,7 +20,7 @@ source "$srcdir"/functions
 	echo '['Saving certificate${scheme:+ \($scheme\)}.']'
 	rm -fr $tmpdir/${scheme}db
 	mkdir -p $tmpdir/${scheme}db
-	initnssdb $tmpdir/${scheme}db
+	initnssdb ${scheme:+${scheme}:}$tmpdir/${scheme}db
 	cat > entry.cert${scheme:+.$scheme} <<- EOF
 	state=NEED_TO_SAVE_CERT
 	cert_storage_type=NSSDB
