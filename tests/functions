@@ -5,7 +5,7 @@ function initnssdb() {
 		mkdir -m 500 "$dir"/rosubdir
 	fi
 	if test -d "$dir"/rwsubdir ; then
-		chmod u+w "$dir"/rwsubdir/*
+		chmod u+w "$dir"/rwsubdir/* || true
 		rm -f "$dir"/rwsubdir/*
 	else
 		mkdir -m 700 "$dir"/rwsubdir
