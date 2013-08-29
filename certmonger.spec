@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.67
+Version:	0.68
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -201,6 +201,18 @@ exit 0
 %endif
 
 %changelog
+* Thu Aug 29 2013 Nalin Dahyabhai <nalin@redhat.com> 0.68-1
+- notice when the OpenSSL RNG isn't seeded
+- notice when saving certificates or keys fails due to filesystem-related
+  permission denial (#996581)
+
+* Tue Aug  6 2013 Nalin Dahyabhai <nalin@redhat.com> 0.67-3
+- pull up a patch from master to adapt self-tests to certutil's diagnostic
+  output having changed (#992050)
+
+* Sat Aug 03 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.67-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_20_Mass_Rebuild
+
 * Mon Mar 11 2013 Nalin Dahyabhai <nalin@redhat.com> 0.67-1
 - when saving certificates to NSS databases, try to preserve the trust
   value assigned to a previously-present certificate with the same nickname
