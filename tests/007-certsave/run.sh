@@ -195,7 +195,7 @@ for trust in ,, P,, ,P, CT,C, C,c,p ; do
 	certutil -d ${scheme:+${scheme}:}$tmpdir -L | grep cert | sed -r 's,[ \t]+, ,g'
 done
 
-if test $scheme = sql ; then
+if test "$scheme" = sql ; then
 	echo Skipping rosubdir test.
 else
 	# Try to save the certificate to the read-only directory.
@@ -209,7 +209,7 @@ else
 	$toolsdir/certsave entry.nss || true
 fi
 
-if test $scheme = sql ; then
+if test "$scheme" = sql ; then
 	echo Skipping rwsubdir test.
 else
 	# Try to save the certificate to the read-write directory, read-only file.
