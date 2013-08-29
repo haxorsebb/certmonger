@@ -61,6 +61,7 @@ for testid in "$@" $subdirs ; do
 		if test -r ./expected.out ; then
 			echo -n "Running test "$testid"... "
 			./run.sh "$tmpdir" > "$tmpfile" 2> "$tmpdir"/errors
+			sed -i "s|${TMPDIR:-/tmp}/runtests....../|\${tmpdir}/|g" "$tmpfile" "$tmpdir/errors"
 			if cmp "$tmpfile" expected.out ; then
 				stat=0
 				echo "OK"

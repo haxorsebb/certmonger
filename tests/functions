@@ -10,10 +10,11 @@ function initnssdb() {
 	certutil -d "$1" -W -f "$dir"/oldpin -@ "$dir"/oldpin2 > /dev/null
 	certutil -d "$1" -W -f "$dir"/oldpin -@ "$dir"/newpin2 > /dev/null
 	certutil -d "$1" -W -f "$dir"/newpin -@ "$dir"/newpin2 > /dev/null
-	certutil -d "$1/rwsubdir" -W -f "$dir"/oldpin -@ "$dir"/oldpin2 > /dev/null
-	certutil -d "$1/rwsubdir" -W -f "$dir"/oldpin -@ "$dir"/newpin2 > /dev/null
-	certutil -d "$1/rwsubdir" -W -f "$dir"/newpin -@ "$dir"/newpin2 > /dev/null
-	chmod u-w "$dir/rwsubdir"/*
+	chmod u+w "$dir"/rwsubdir/* || true
+	certutil -d "$1"/rwsubdir -W -f "$dir"/oldpin -@ "$dir"/oldpin2 > /dev/null
+	certutil -d "$1"/rwsubdir -W -f "$dir"/oldpin -@ "$dir"/newpin2 > /dev/null
+	certutil -d "$1"/rwsubdir -W -f "$dir"/newpin -@ "$dir"/newpin2 > /dev/null
+	chmod u-w "$dir"/rwsubdir/*
 }
 function run_certutil() {
 	dd if=/dev/urandom of="$dir"/noise bs=1024 count=1 > /dev/null 2> /dev/null
