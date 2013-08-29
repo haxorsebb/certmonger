@@ -30,6 +30,7 @@
 #include <certdb.h>
 #include <pk11pub.h>
 #include <prerror.h>
+#include <secerr.h>
 
 #include <talloc.h>
 
@@ -60,6 +61,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	SECStatus error;
 	SECItem *item, subject;
 	char *p, *q;
+	const char *es;
 	NSSInitContext *ctx;
 	CERTCertDBHandle *certdb;
 	CERTCertList *certlist;
@@ -72,14 +74,57 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	/* Open the database. */
 	settings = userdata;
 	readwrite = settings->readwrite;
+	errno = 0;
 	ctx = NSS_InitContext(entry->cm_cert_storage_location,
 			      NULL, NULL, NULL, NULL,
 			      (readwrite ? 0 : NSS_INIT_READONLY) |
 			      NSS_INIT_NOROOTINIT |
 			      NSS_INIT_NOMODDB);
+	ec = PORT_GetError();
 	if (ctx == NULL) {
-		cm_log(1, "Unable to open NSS database '%s'.\n",
-		       entry->cm_cert_storage_location);
+		if ((ec == SEC_ERROR_BAD_DATABASE) && readwrite) {
+			switch (errno) {
+			case EACCES:
+			case EPERM:
+				ec = PR_NO_ACCESS_RIGHTS_ERROR;
+				break;
+			default:
+				/* Sigh.  Not a lot of detail.  Check if we
+				 * succeed in read-only mode, which we'll
+				 * interpret as lack of write permissions. */
+				ctx = NSS_InitContext(entry->cm_key_storage_location,
+						      NULL, NULL, NULL, NULL,
+						      NSS_INIT_READONLY |
+						      NSS_INIT_NOROOTINIT |
+						      NSS_INIT_NOMODDB);
+				if (ctx != NULL) {
+					NSS_ShutdownContext(ctx);
+					ctx = NULL;
+					ec = PR_NO_ACCESS_RIGHTS_ERROR;
+				}
+				break;
+			}
+		}
+		if (ec != 0) {
+			es = PR_ErrorToName(ec);
+		} else {
+			es = NULL;
+		}
+		if (es != NULL) {
+			cm_log(1, "Unable to open NSS database '%s': %s.\n",
+			       entry->cm_cert_storage_location, es);
+		} else {
+			cm_log(1, "Unable to open NSS database '%s'.\n",
+			       entry->cm_cert_storage_location);
+		}
+		switch (ec) {
+		case PR_NO_ACCESS_RIGHTS_ERROR: /* EACCES or EPERM */
+			status = CM_SUB_STATUS_ERROR_PERMS;
+			break;
+		default:
+			status = CM_SUB_STATUS_ERROR_INITIALIZING;
+			break;
+		}
 	} else {
 		/* We don't try to force FIPS mode here, as it seems to get in
 		 * the way of saving the certificate. */
@@ -266,6 +311,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 						 PR_TRUE,
 						 PR_FALSE,
 						 entry->cm_cert_nickname);
+			ec = PORT_GetError();
 			if (error == SECSuccess) {
 				cm_log(1, "Imported certificate \"%s\", got "
 				       "nickname \"%s\".\n",
@@ -285,12 +331,23 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				error = CERT_ChangeCertTrust(certdb,
 							     returned[0],
 							     &trust);
+				ec = PORT_GetError();
 				if (error != SECSuccess) {
-					cm_log(0, "Error setting trust "
-					       "on certificate \"%s\": "
-					       "%s.\n",
-					       entry->cm_cert_nickname,
-					       PR_ErrorToName(PORT_GetError()));
+					if (ec != 0) {
+						es = PR_ErrorToName(ec);
+					} else {
+						es = NULL;
+					}
+					if (es != NULL) {
+						cm_log(0, "Error setting trust "
+						       "on certificate \"%s\": "
+						       "%s.\n",
+						       entry->cm_cert_nickname, es);
+					} else {
+						cm_log(0, "Error setting trust "
+						       "on certificate \"%s\".\n",
+						       entry->cm_cert_nickname);
+					}
 				}
 				/* Delete any other certificates that are there
 				 * with the same nickname.  While NSS's
@@ -324,11 +381,21 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					CERT_DestroyCertList(certlist);
 				}
 			} else {
-				ec = PORT_GetError();
-				cm_log(0, "Error importing certificate "
-				       "into NSSDB \"%s\": %s.\n",
-				       entry->cm_cert_storage_location,
-				       PR_ErrorToName(ec));
+				if (ec != 0) {
+					es = PR_ErrorToName(ec);
+				} else {
+					es = NULL;
+				}
+				if (es != NULL) {
+					cm_log(0, "Error importing certificate "
+					       "into NSSDB \"%s\": %s.\n",
+					       entry->cm_cert_storage_location,
+					       es);
+				} else {
+					cm_log(0, "Error importing certificate "
+					       "into NSSDB \"%s\".\n",
+					       entry->cm_cert_storage_location);
+				}
 				switch (ec) {
 				case PR_NO_ACCESS_RIGHTS_ERROR: /* ACCES/PERM */
 					status = CM_CERTSAVE_STATUS_PERMS;

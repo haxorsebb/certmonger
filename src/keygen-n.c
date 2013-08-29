@@ -30,6 +30,7 @@
 #include <pk11pub.h>
 #include <keyhi.h>
 #include <prerror.h>
+#include <secerr.h>
 
 #include <talloc.h>
 
@@ -83,6 +84,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	/* Start up NSS and open the database. */
 	settings = userdata;
 	readwrite = settings->readwrite;
+	errno = 0;
 	ctx = NSS_InitContext(entry->cm_key_storage_location,
 			      NULL, NULL, NULL, NULL,
 			      (readwrite ? 0 : NSS_INIT_READONLY) |
@@ -90,10 +92,46 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			      NSS_INIT_NOMODDB);
 	ec = PORT_GetError();
 	if (ctx == NULL) {
-		fprintf(status, "Error initializing database '%s'.\n",
-			entry->cm_key_storage_location);
-		cm_log(1, "Error initializing database '%s'.\n",
-		       entry->cm_key_storage_location);
+		if ((ec == SEC_ERROR_BAD_DATABASE) && readwrite) {
+			switch (errno) {
+			case EACCES:
+			case EPERM:
+				ec = PR_NO_ACCESS_RIGHTS_ERROR;
+				break;
+			default:
+				/* Sigh.  Not a lot of detail.  Check if we
+				 * succeed in read-only mode, which we'll
+				 * interpret as lack of write permissions. */
+				ctx = NSS_InitContext(entry->cm_key_storage_location,
+						      NULL, NULL, NULL, NULL,
+						      NSS_INIT_READONLY |
+						      NSS_INIT_NOROOTINIT |
+						      NSS_INIT_NOMODDB);
+				if (ctx != NULL) {
+					NSS_ShutdownContext(ctx);
+					ctx = NULL;
+					ec = PR_NO_ACCESS_RIGHTS_ERROR;
+				}
+				break;
+			}
+		}
+		if (ec != 0) {
+			es = PR_ErrorToName(ec);
+		} else {
+			es = NULL;
+		}
+		if (es != NULL) {
+			fprintf(status, "Error initializing database "
+			        "'%s': %s.\n",
+				entry->cm_key_storage_location, es);
+			cm_log(1, "Error initializing database '%s': %s.\n",
+			       entry->cm_key_storage_location, es);
+		} else {
+			fprintf(status, "Error initializing database '%s'.\n",
+				entry->cm_key_storage_location);
+			cm_log(1, "Error initializing database '%s'.\n",
+			       entry->cm_key_storage_location);
+		}
 		switch (ec) {
 		case PR_NO_ACCESS_RIGHTS_ERROR: /* EACCES or EPERM */
 			_exit(CM_SUB_STATUS_ERROR_PERMS);
@@ -256,8 +294,19 @@ next_slot:
 	}
 	PK11_SetPasswordFunc(&cm_pin_read_for_key_nss_cb);
 	error = PK11_Authenticate(slot, PR_TRUE, &cb_data);
+	ec = PORT_GetError();
 	if (error != SECSuccess) {
-		cm_log(1, "Error authenticating to key store.\n");
+		if (ec != 0) {
+			es = PR_ErrorToName(ec);
+		} else {
+			es = NULL;
+		}
+		if (es != NULL) {
+			cm_log(1, "Error authenticating to key store: %s.\n",
+			       es);
+		} else {
+			cm_log(1, "Error authenticating to key store.\n");
+		}
 		PK11_FreeSlotList(slotlist);
 		error = NSS_ShutdownContext(ctx);
 		if (error != SECSuccess) {
