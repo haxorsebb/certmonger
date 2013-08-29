@@ -47,6 +47,7 @@ cert='-----BEGIN CERTIFICATE-----
 echo "$cert" | sed -e 's,^$,,g' -e 's,^ ,,g' > cert.original
 echo "$wrongcert" | sed -e 's,^$,,g' -e 's,^ ,,g' > cert.wrong
 # Save the right certificate to NSS's database with the wrong nickname.
+echo "[nss:wrongnick]"
 cat > entry.nss << EOF
 cert_storage_type=NSSDB
 cert_storage_location=${scheme:+${scheme}:}$tmpdir
@@ -55,6 +56,7 @@ cert=$cert
 EOF
 $toolsdir/certsave entry.nss
 # Save the wrong certificate to NSS's database with the right nickname.
+echo "[nss:wrongcert]"
 cat > entry.nss << EOF
 cert_storage_type=NSSDB
 cert_storage_location=${scheme:+${scheme}:}$tmpdir
@@ -63,6 +65,7 @@ cert=$wrongcert
 EOF
 $toolsdir/certsave entry.nss
 # Save the right certificate to NSS's database and read it back.
+echo "[nss:right]"
 cat > entry.nss << EOF
 cert_storage_type=NSSDB
 cert_storage_location=${scheme:+${scheme}:}$tmpdir
@@ -73,6 +76,7 @@ $toolsdir/certsave entry.nss
 $toolsdir/listnicks entry.nss
 certutil -d ${scheme:+${scheme}:}$tmpdir -L -n cert -a > cert.nss
 # Save the wrong certificate to the PEM file.
+echo "[openssl:wrong]"
 cat > entry.openssl << EOF
 cert_storage_type=FILE
 cert_storage_location=$tmpdir/cert.openssl
@@ -80,6 +84,7 @@ cert=$wrongcert
 EOF
 $toolsdir/certsave entry.openssl
 # Save the right certificate to the PEM file.
+echo "[openssl:right]"
 cat > entry.openssl << EOF
 cert_storage_type=FILE
 cert_storage_location=$tmpdir/cert.openssl
@@ -105,6 +110,26 @@ if ! cmp cert.nss cert.openssl ; then
 	cat cert.nss cert.openssl
 	exit 1
 fi
+
+# Try to save the certificate to the read-only directory.
+echo "[openssl:rosubdir]"
+cat > entry.openssl << EOF
+cert_storage_type=FILE
+cert_storage_location=$tmpdir/rosubdir/cert.openssl
+cert=$cert
+EOF
+$toolsdir/certsave entry.openssl || true
+
+# Try to save the certificate to the read-write directory, read-only file.
+echo "[openssl:rwsubdir]"
+touch $tmpdir/rwsubdir/cert.openssl
+chmod u-w $tmpdir/rwsubdir/cert.openssl
+cat > entry.openssl << EOF
+cert_storage_type=FILE
+cert_storage_location=$tmpdir/rwsubdir/cert.openssl
+cert=$cert
+EOF
+$toolsdir/certsave entry.openssl || true
 
 # Now tweak the trust settings on the NSS certificate.  The "u" flag seems to
 # be tied to whether or not we have a matching private key, so we can't mess
@@ -169,5 +194,33 @@ for trust in ,, P,, ,P, CT,C, C,c,p ; do
 	echo -n " wrong subject, right nickname: "
 	certutil -d ${scheme:+${scheme}:}$tmpdir -L | grep cert | sed -r 's,[ \t]+, ,g'
 done
+
+if test $scheme = sql ; then
+	echo Skipping rosubdir test.
+else
+	# Try to save the certificate to the read-only directory.
+	echo "[nss:rosubdir]"
+	cat > entry.nss <<- EOF
+	cert_storage_type=NSSDB
+	cert_storage_location=$tmpdir/rosubdir
+	cert_nickname=cert
+	cert=$cert
+	EOF
+	$toolsdir/certsave entry.nss || true
+fi
+
+if test $scheme = sql ; then
+	echo Skipping rwsubdir test.
+else
+	# Try to save the certificate to the read-write directory, read-only file.
+	echo "[nss:rwsubdir]"
+	cat > entry.nss <<- EOF
+	cert_storage_type=NSSDB
+	cert_storage_location=$tmpdir/rwsubdir
+	cert_nickname=cert
+	cert=$cert
+	EOF
+	$toolsdir/certsave entry.nss || true
+fi
 
 echo Test complete.

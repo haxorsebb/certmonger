@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2011 Red Hat, Inc.
+ * Copyright (C) 2009,2011,2013 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -92,8 +92,25 @@ main(int argc, char **argv)
 				ctype = "NSS";
 				break;
 			}
-			printf("Failed to save (%s:%s).\n",
-			       ctype, entry->cm_cert_storage_location);
+			if (cm_certsave_conflict_subject(entry, state) == 0) {
+				printf("Failed to save (%s:%s), "
+				       "subject name conflict.\n",
+				       ctype, entry->cm_cert_storage_location);
+			} else
+			if (cm_certsave_conflict_nickname(entry, state) == 0) {
+				printf("Failed to save (%s:%s), "
+				       "certificate nickname conflict.\n",
+				       ctype, entry->cm_cert_storage_location);
+			} else
+			if (cm_certsave_permissions_error(entry, state) == 0) {
+				printf("Failed to save (%s:%s), "
+				       "filesystem permissions error.\n",
+				       ctype, entry->cm_cert_storage_location);
+			} else {
+				printf("Failed to save (%s:%s), "
+				       "don't know why.\n",
+				       ctype, entry->cm_cert_storage_location);
+			}
 			ret = 1;
 		}
 		cm_certsave_done(entry, state);

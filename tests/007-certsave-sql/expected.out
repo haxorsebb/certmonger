@@ -1,7 +1,16 @@
+[nss:wrongnick]
+[nss:wrongcert]
+[nss:right]
 1: "cert"
+[openssl:wrong]
+[openssl:right]
 dos2unix: converting file cert.original to unix format ...
 dos2unix: converting file cert.nss to unix format ...
 dos2unix: converting file cert.openssl to unix format ...
+[openssl:rosubdir]
+Failed to save (FILE:${tmpdir}/rosubdir/cert.openssl), filesystem permissions error.
+[openssl:rwsubdir]
+Failed to save (FILE:${tmpdir}/rwsubdir/cert.openssl), filesystem permissions error.
 Testing setting trust to ,,:
  baseline: cert ,, 
  right nickname, right subject: cert ,, 
@@ -27,4 +36,6 @@ Testing setting trust to C,c,p:
  right nickname, right subject: cert C,c,p
  wrong nickname, right subject: cert ,, 
  wrong subject, right nickname: cert ,, 
+Skipping rosubdir test.
+Skipping rwsubdir test.
 Test complete.
