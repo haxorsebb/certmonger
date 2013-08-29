@@ -32,6 +32,7 @@
 #include <certdb.h>
 #include <pk11pub.h>
 #include <prerror.h>
+#include <secerr.h>
 
 #include <krb5.h>
 
@@ -60,7 +61,7 @@ static int
 cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		   void *userdata)
 {
-	int status = 1, readwrite;
+	int status = 1, readwrite, ec;
 	const char *token;
 	char *pin;
 	PLArenaPool *arena;
@@ -76,7 +77,7 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	struct cm_pin_cb_data cb_data;
 	PRTime before_a, after_a, before_b, after_b;
 	FILE *fp;
-	const char *reason;
+	const char *es;
 
 	/* Open the status descriptor for stdio. */
 	fp = fdopen(fd, "w");
@@ -92,13 +93,57 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			      (readwrite ? 0 : NSS_INIT_READONLY) |
 			      NSS_INIT_NOROOTINIT |
 			      NSS_INIT_NOMODDB);
+	ec = PORT_GetError();
 	if (ctx == NULL) {
+		if ((ec == SEC_ERROR_BAD_DATABASE) && readwrite) {
+			switch (errno) {
+			case EACCES:
+			case EPERM:
+				ec = PR_NO_ACCESS_RIGHTS_ERROR;
+				break;
+			default:
+				/* Sigh.  Not a lot of detail.  Check if we
+				 * succeed in read-only mode, which we'll
+				 * interpret as lack of write permissions. */
+				ctx = NSS_InitContext(entry->cm_key_storage_location,
+						      NULL, NULL, NULL, NULL,
+						      NSS_INIT_READONLY |
+						      NSS_INIT_NOROOTINIT |
+						      NSS_INIT_NOMODDB);
+				if (ctx != NULL) {
+					NSS_ShutdownContext(ctx);
+					ctx = NULL;
+					ec = PR_NO_ACCESS_RIGHTS_ERROR;
+				}
+				break;
+			}
+		}
+		if (ec != 0) {
+			es = PR_ErrorToName(ec);
+		} else {
+			es = NULL;
+		}
+		if (es != NULL) {
+			cm_log(1, "Unable to open NSS database '%s': %s.\n",
+			       entry->cm_cert_storage_location, es);
+		} else {
+			cm_log(1, "Unable to open NSS database '%s'.\n",
+			       entry->cm_cert_storage_location);
+		}
+		switch (ec) {
+		case PR_NO_ACCESS_RIGHTS_ERROR: /* EACCES or EPERM */
+			status = CM_SUB_STATUS_ERROR_PERMS;
+			break;
+		default:
+			status = CM_SUB_STATUS_ERROR_INITIALIZING;
+			break;
+		}
 		cm_log(1, "Unable to open NSS database.\n");
 		_exit(1);
 	}
-	reason = util_n_fips_hook();
-	if (reason != NULL) {
-		cm_log(1, "Error putting NSS into FIPS mode: %s\n", reason);
+	es = util_n_fips_hook();
+	if (es != NULL) {
+		cm_log(1, "Error putting NSS into FIPS mode: %s\n", es);
 		_exit(1);
 	}
 	/* Allocate a memory pool. */
@@ -288,7 +333,7 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 	CERTCertificate *cert, **certs;
 	NSSInitContext *ctx;
 	char *p;
-	const char *nl, *reason;
+	const char *nl, *es;
 	unsigned int i;
 
 	/* Initialize the library. */
@@ -302,9 +347,9 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 		cm_log(1, "Unable to initialize NSS.\n");
 		_exit(1);
 	}
-	reason = util_n_fips_hook();
-	if (reason != NULL) {
-		cm_log(1, "Error putting NSS into FIPS mode: %s\n", reason);
+	es = util_n_fips_hook();
+	if (es != NULL) {
+		cm_log(1, "Error putting NSS into FIPS mode: %s\n", es);
 		_exit(1);
 	}
 	/* Allocate a memory pool. */
