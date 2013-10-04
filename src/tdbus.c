@@ -440,7 +440,7 @@ cm_tdbus_reconnect(struct tevent_context *ec, struct tevent_timer *timer,
 	const char *bus_desc;
 	struct tdbus_connection *tdb;
 	struct timeval later;
-	dbus_bool_t exit_on_disconnect;
+	dbus_bool_t exit_on_disconnect = TRUE;
 
 	tdb = pvt;
 	talloc_free(timer);
