@@ -222,33 +222,36 @@ main(int argc, char **argv)
 			       cm_submit_x_negotiate_on,
 			       cm_submit_x_delegate_on);
 	if (ctx == NULL) {
-		fprintf(stderr, "Error setting up for XMLRPC.\n");
-		printf(_("Error setting up for XMLRPC.\n"));
+		fprintf(stderr, "Error setting up for XMLRPC on the client.\n");
+		printf(_("Error setting up for XMLRPC on the client.\n"));
 		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
 
 	/* Setup a ccache unless we're told to use the default one. */
 	if (make_keytab_ccache &&
 	    ((kerr = cm_submit_x_make_ccache(ktname, kpname)) != NULL)) {
-		fprintf(stderr, "Error setting up ccache: %s.\n", kerr);
+		fprintf(stderr, "Error setting up ccache at the client: %s.\n",
+			kerr);
 		if (ktname == NULL) {
 			if (kpname == NULL) {
-				printf(_("Error setting up ccache for local "
-					 "\"host\" service using "
+				printf(_("Error setting up ccache for "
+					 "\"host\" service on client using "
 					 "default keytab: %s.\n"), kerr);
 			} else {
 				printf(_("Error setting up ccache for "
-					 "\"%s\" using default keytab: %s.\n"),
+					 "\"%s\" on client using "
+					 "default keytab: %s.\n"),
 					 kpname, kerr);
 			}
 		} else {
 			if (kpname == NULL) {
-				printf(_("Error setting up ccache for local "
-					 "\"host\" service using "
+				printf(_("Error setting up ccache for "
+					 "\"host\" service on client using "
 					 "keytab \"%s\": %s.\n"), ktname, kerr);
 			} else {
 				printf(_("Error setting up ccache for "
-					 "\"%s\" using keytab \"%s\": %s.\n"),
+					 "\"%s\" on client using keytab "
+					 "\"%s\": %s.\n"),
 					 kpname, ktname, kerr);
 			}
 		}
