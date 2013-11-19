@@ -33,6 +33,7 @@
 #include <dbus/dbus.h>
 
 #include "env.h"
+#include "log.h"
 #include "tdbus.h"
 
 static char *
@@ -83,6 +84,7 @@ cm_env_ensure_dir(char *path)
 {
 	char *p, *q, *tmp;
 	struct stat st;
+	int i;
 
 	if (path != NULL) {
 		tmp = strdup(path);
@@ -93,7 +95,17 @@ cm_env_ensure_dir(char *path)
 					*q = '\0';
 					if ((stat(tmp, &st) == -1) &&
 					    (errno == ENOENT)) {
-						mkdir(tmp, S_IRWXU);
+						i = mkdir(tmp, S_IRWXU);
+						if ((i != 0) && 
+						    (errno != EEXIST)) {
+							cm_log(0, "Error "
+							       "ensuring that "
+							       "directory '%s' "
+							       "exists: %s.\n",
+							       tmp,
+							       strerror(errno));
+							_exit(0);
+						}
 					}
 					*q = '/';
 				}
