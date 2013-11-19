@@ -314,7 +314,8 @@ cm_subproc_parse_args(void *parent, const char *cmdline, const char **error)
 	return argv;
 }
 
-/* Check if we're done (return 0), or need to be called again (-1). */
+/* Redirect stdio to /dev/null, and mark everything else as close-on-exec,
+ * except for perhaps one of them that is passed in by number. */
 void
 cm_subproc_mark_most_cloexec(struct cm_store_entry *entry, int fd)
 {
@@ -359,7 +360,9 @@ cm_subproc_mark_most_cloexec(struct cm_store_entry *entry, int fd)
 		}
 		l = fcntl(i, F_GETFD);
 		if (l != -1) {
-			fcntl(i, F_SETFD, l | FD_CLOEXEC);
+			if (fcntl(i, F_SETFD, l | FD_CLOEXEC) != 0) {
+				cm_log(0, "Potentially leaking FD %d.\n", i);
+			}
 		}
 	}
 }
