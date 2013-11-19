@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2011,2012 Red Hat, Inc.
+ * Copyright (C) 2009,2011,2012,2013 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -115,12 +115,15 @@ cm_submit_e_ready(struct cm_store_entry *entry, struct cm_submit_state *state)
 					cm_log(0, "%s", msg);
 				}
 				/* If it was an error, save it. */
-				if ((WEXITSTATUS(status) !=
-				     CM_SUBMIT_STATUS_ISSUED) &&
-				    (WEXITSTATUS(status) !=
-				     CM_SUBMIT_STATUS_WAIT) &&
-				    (WEXITSTATUS(status) !=
+				if ((WEXITSTATUS(status) ==
+				     CM_SUBMIT_STATUS_ISSUED) ||
+				    (WEXITSTATUS(status) ==
+				     CM_SUBMIT_STATUS_WAIT) ||
+				    (WEXITSTATUS(status) ==
 				     CM_SUBMIT_STATUS_WAIT_WITH_DELAY)) {
+					talloc_free(entry->cm_ca_error);
+					entry->cm_ca_error = NULL;
+				} else {
 					talloc_free(entry->cm_ca_error);
 					entry->cm_ca_error =
 						talloc_strndup(entry, msg,
