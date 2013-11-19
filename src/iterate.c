@@ -210,7 +210,13 @@ cm_waitfor_readable_fd(int fd, int delay)
 	tv.tv_sec = delay;
 	FD_ZERO(&fds);
 	FD_SET(fd, &fds);
-	select(fd + 1, &fds, NULL, &fds, (delay >= 0) ? &tv : NULL);
+	if (select(fd + 1, &fds, NULL, &fds, (delay >= 0) ? &tv : NULL) < 0) {
+		if (delay < 0) {
+			/* No defined delay, but an error. */
+			cm_log(3, "indefinite select() on %d returned error: "
+			       "%s\n", fd, strerror(errno));
+		}
+	}
 }
 
 /* Decide how long to wait before contacting the CA again. */
