@@ -185,7 +185,15 @@ main(int argc, char **argv)
 		}
 		l = fcntl(lfd, F_GETFD);
 		if (l != -1) {
-			fcntl(lfd, F_SETFD, l | FD_CLOEXEC);
+			l = fcntl(lfd, F_SETFD, l | FD_CLOEXEC);
+			if (l == -1) {
+				fprintf(stderr,
+					"Error setting close-on-exec flag on "
+					"\"%s\": %s\n",
+					cm_env_lock_file(), strerror(errno));
+				close(lfd);
+				exit(1);
+			}
 		}
 		break;
 	}
