@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011,2012 Red Hat, Inc.
+ * Copyright (C) 2011,2012,2013 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,9 +40,11 @@ static char *
 cm_env_homedir(const char *subdir, const char *subfile)
 {
 	struct passwd *pwd;
-	const char *home;
+	char *home;
 	char *ret;
 	int len;
+	dbus_bool_t free_home;
+
 	if ((subdir == NULL) && (subfile == NULL)) {
 		return NULL;
 	}
@@ -52,6 +54,11 @@ cm_env_homedir(const char *subdir, const char *subfile)
 		if (pwd != NULL) {
 			home = pwd->pw_name;
 		}
+	}
+	free_home = FALSE;
+	if (home != NULL) {
+		home = realpath(home, NULL);
+		free_home = (home != NULL);
 	}
 	if (home != NULL) {
 		len = strlen(home);
@@ -75,6 +82,9 @@ cm_env_homedir(const char *subdir, const char *subfile)
 		}
 	} else {
 		ret = NULL;
+	}
+	if (free_home) {
+		free(home);
 	}
 	return ret;
 }
