@@ -108,7 +108,11 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 						      NSS_INIT_NOROOTINIT |
 						      NSS_INIT_NOMODDB);
 				if (ctx != NULL) {
-					NSS_ShutdownContext(ctx);
+					error = NSS_ShutdownContext(ctx);
+					if (error != SECSuccess) {
+						cm_log(1, "Error shutting down "
+						       "NSS.\n");
+					}
 					ctx = NULL;
 					ec = PR_NO_ACCESS_RIGHTS_ERROR;
 				}
