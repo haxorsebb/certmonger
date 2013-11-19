@@ -77,7 +77,13 @@ cm_subproc_start(int (*cb)(int fd,
 			default:
 				state->fd = fds[0];
 				flags = fcntl(state->fd, F_GETFL);
-				fcntl(state->fd, F_SETFL, flags | O_NONBLOCK);
+				if (fcntl(state->fd, F_SETFL,
+					  flags | O_NONBLOCK) != 0) {
+					syslog(LOG_DEBUG,
+					       "error marking output for "
+					       "subprocess non-blocking: %s",
+					       strerror(errno));
+				}
 				close(fds[1]);
 				fds[1] = -1;
 				break;
