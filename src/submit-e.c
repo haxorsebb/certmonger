@@ -323,45 +323,60 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 		state->pvt.done = cm_submit_e_done;
 		state->pvt.delay = -1;
 		if (pipe(errorfds) != -1) {
-			fcntl(errorfds[1], F_SETFD, 1L);
-			args.error_fd = errorfds[1];
-			args.csr = csr;
-			args.cookie = cookie;
-			args.operation = operation;
-			state->subproc = cm_subproc_start(cm_submit_e_main,
-							  ca, entry, &args);
-			close(errorfds[1]);
-			if (state->subproc == NULL) {
+			if (fcntl(errorfds[1], F_SETFD, 1L) == -1) {
+				close(errorfds[0]);
+				close(errorfds[1]);
+				cm_log(-1, "Unexpected error while "
+				       "starting helper \"%s\".",
+				       ca->cm_ca_external_helper);
+				cm_subproc_done(entry, state->subproc);
 				talloc_free(state);
 				state = NULL;
 			} else {
-				switch (read(errorfds[0], &u, 1)) {
-				case 0:
-					/* no data = kernel closed-on-exec, so
-					 * the helper started */
-					break;
-				case -1:
-					/* huh? */
-					cm_log(-1, "Unexpected error while "
-					       "starting helper \"%s\".",
-					       ca->cm_ca_external_helper);
-					cm_subproc_done(entry, state->subproc);
+				args.error_fd = errorfds[1];
+				args.csr = csr;
+				args.cookie = cookie;
+				args.operation = operation;
+				state->subproc = cm_subproc_start(cm_submit_e_main,
+								  ca, entry,
+								  &args);
+				close(errorfds[1]);
+				if (state->subproc == NULL) {
 					talloc_free(state);
 					state = NULL;
-					break;
-				default:
-					cm_log(-1,
-					       "Error while starting helper "
-					       "\"%s\": %s.",
-					       ca->cm_ca_external_helper,
-					       strerror(u));
-					cm_subproc_done(entry, state->subproc);
-					talloc_free(state);
-					state = NULL;
-					break;
+				} else {
+					switch (read(errorfds[0], &u, 1)) {
+					case 0:
+						/* no data = kernel
+						 * closed-on-exec, so the
+						 * helper started */
+						break;
+					case -1:
+						/* huh? */
+						cm_log(-1, "Unexpected error "
+						       "while starting helper "
+						       "\"%s\".",
+						       ca->cm_ca_external_helper);
+						cm_subproc_done(entry,
+								state->subproc);
+						talloc_free(state);
+						state = NULL;
+						break;
+					default:
+						cm_log(-1,
+						       "Error while starting "
+						       "helper \"%s\": %s.",
+						       ca->cm_ca_external_helper,
+						       strerror(u));
+						cm_subproc_done(entry,
+								state->subproc);
+						talloc_free(state);
+						state = NULL;
+						break;
+					}
 				}
+				close(errorfds[0]);
 			}
-			close(errorfds[0]);
 		}
 	}
 	return state;
