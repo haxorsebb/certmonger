@@ -362,6 +362,7 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 						talloc_free(state);
 						state = NULL;
 						break;
+					case 1:
 					default:
 						cm_log(-1,
 						       "Error while starting "
