@@ -1213,7 +1213,7 @@ cm_store_entry_save(struct cm_store_entry *entry)
 	FILE *fp;
 	char timestamp[15], path[PATH_MAX];
 	int i, fd = -1, give_up;
-	const char *directory;
+	const char *directory, *dest;
 
 	if (entry->cm_store_private == NULL) {
 		cm_store_timestamp_from_time(cm_time(NULL), timestamp);
@@ -1273,11 +1273,19 @@ cm_store_entry_save(struct cm_store_entry *entry)
 	if (fp != NULL) {
 		if (cm_store_entry_write(fp, entry) == 0) {
 			fclose(fp);
-			rename(path, (const char *) entry->cm_store_private);
+			dest = (const char *) entry->cm_store_private;
+			if (rename(path, dest) != 0) {
+				cm_log(0, "Error renaming \"%s\" to \"%s\": "
+				       "%s.\n", path, dest, strerror(errno));
+				return -1;
+			}
 			return 0;
 		} else {
 			fclose(fp);
-			remove(path);
+			if (remove(path) != 0) {
+				cm_log(0, "Error removing \"%s\": %s.\n", path,
+				       strerror(errno));
+			}
 			return -1;
 		}
 	} else {
@@ -1411,7 +1419,7 @@ cm_store_ca_save(struct cm_store_ca *ca)
 	FILE *fp;
 	char timestamp[15], path[PATH_MAX];
 	int i, fd = -1, give_up;
-	const char *directory;
+	const char *directory, *dest;
 
 	if (ca->cm_store_private == NULL) {
 		cm_store_timestamp_from_time(cm_time(NULL), timestamp);
@@ -1470,12 +1478,21 @@ cm_store_ca_save(struct cm_store_ca *ca)
 	if (fp != NULL) {
 		if (cm_store_ca_write(fp, ca) == 0) {
 			fclose(fp);
-			rename(path, (const char *) ca->cm_store_private);
+			dest = (const char *) ca->cm_store_private;
+			if (rename(path, dest) != 0) {
+				cm_log(0, "Error renaming \"%s\" to \"%s\": "
+				       "%s.\n", path, dest, strerror(errno));
+				return -1;
+			}
+			return 0;
 		} else {
 			fclose(fp);
-			remove(path);
+			if (remove(path) != 0) {
+				cm_log(0, "Error removing \"%s\": %s.\n", path,
+				       strerror(errno));
+			}
+			return -1;
 		}
-		return 0;
 	} else {
 		cm_log(1, "Error opening \"%s\" for writing: %s.\n", path,
 		       strerror(errno));
