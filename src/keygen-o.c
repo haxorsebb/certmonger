@@ -59,7 +59,7 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	RSA *rsa;
 	EVP_PKEY *pkey;
 	char buf[LINE_MAX], *pin;
-	long error;
+	long error, errno_save;
 	enum cm_key_algorithm cm_key_algorithm;
 	int cm_key_size;
 
@@ -131,13 +131,13 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					      NULL, 0,
 					      cm_pin_read_for_key_ossl_cb,
 					      &cb_data) == 0) {
-			error = errno;
+			errno_save = errno;
 			cm_log(1, "Error storing key.\n");
 			while ((error = ERR_get_error()) != 0) {
 				ERR_error_string_n(error, buf, sizeof(buf));
 				cm_log(1, "%s\n", buf);
 			}
-			switch (error) {
+			switch (errno_save) {
 			case EACCES:
 			case EPERM:
 				_exit(CM_SUB_STATUS_ERROR_PERMS);
