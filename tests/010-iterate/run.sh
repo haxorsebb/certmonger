@@ -4,6 +4,65 @@ cd "$tmpdir"
 
 source "$srcdir"/functions
 
+cert="-----BEGIN CERTIFICATE-----
+MIIEDjCCAvagAwIBAgIOAQAAAAABPWT1Paf0wU4wDQYJKoZIhvcNAQEFBQAwRjEX
+MBUGA1UEChMOQ3liZXJ0cnVzdCBJbmMxKzApBgNVBAMTIkN5YmVydHJ1c3QgUHVi
+bGljIFN1cmVTZXJ2ZXIgU1YgQ0EwHhcNMTMwMzEzMTc0ODQ3WhcNMTQwMzEzMTc0
+ODQ3WjBuMQswCQYDVQQGEwJVUzEXMBUGA1UECBMOTk9SVEggQ0FST0xJTkExEDAO
+BgNVBAcTB1JhbGVpZ2gxEDAOBgNVBAoTB1JlZCBIYXQxCzAJBgNVBAsTAklUMRUw
+EwYDVQQDFAwqLnJlZGhhdC5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK
+AoIBAQC8NmWLQuAdaMTQ2Ae8AVPUKDEdCNtGBE4It5hb4xL9cHSzQeBaMDm9UR5X
+w5DLR93TQFL+Rc9mLbrBhIz9eacrs5qpUp4i5XhgnvEN7vBsUyFjZqQ+W5Zqs5Cv
+yMVv+rkRRa22hYPqFNM0R0lBPLltZO6+58VA53ttr87JOdPZsdomJtzruXz9ceLg
+ZnDULmIfZFhw7bz0Y9qAURSsULpIjLwWsGjOlNpPSTisCNwNWrmT4KerD8RnCXy+
+keWZPSw9RgMBbyYD6am0nj2/JPmkv390F6HYi6f/0OyefKqZEaPgwDmhEiW6K2Ps
+qodUKMcfBFJNgPs6ZuqOLnGILVyrAgMBAAGjgdEwgc4wHwYDVR0jBBgwFoAUBJhg
+34AblkldZVYtpSwJJArs3LkwPwYDVR0fBDgwNjA0oDKgMIYuaHR0cDovL2NybC5v
+bW5pcm9vdC5jb20vUHVibGljU3VyZVNlcnZlclNWLmNybDAdBgNVHQ4EFgQUC5p5
+rlungiFqeTNw0HOISTrudr8wCQYDVR0TBAIwADAOBgNVHQ8BAf8EBAMCBaAwHQYD
+VR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMBEGCWCGSAGG+EIBAQQEAwIGwDAN
+BgkqhkiG9w0BAQUFAAOCAQEAJC1PfXXjM3Y2ifPlzauQgLHiizx3XeIB86AXJHL2
+N77UMfkSYmUJraWZX3Ye7icDbRwNHLIDJMfpjgcwnC+ZB+byyvmtjGjcTuqVZpXS
+2JU8kgGxNlEjCd4NsumpzollG1W1iDorBCt9bHp8b4isLD+jSnqbWKnvuEUle0ad
+Pi7xjf9BidMvYUEBpJsd9rA1LQtp/ZfxxA6RtgCeXjQPexjsvf6SLKyrmacHZcMJ
+b6JbhXMTzB7QZjR3IooqzXS8T/2zBxDUSH4fJ4o0KSkY8cjNCCxdnkXL96PC9KQ5
+kV1Ad3iHw/TnJjzrJJs3o92pRR/JtF0Jw6dszNP1Sn68uA==
+-----END CERTIFICATE-----"
+
+cat > ca-issued << EOF
+#!/bin/sh
+echo "$cert"
+exit 0
+EOF
+chmod u+x ca-issued
+cat > ca-issued-with-no-newline << EOF
+#!/bin/sh
+echo -n "$cert"
+exit 0
+EOF
+chmod u+x ca-issued-with-no-newline
+cat > ca-issued-with-noise-before << EOF
+#!/bin/sh
+echo iLoveCookies
+echo "$cert"
+exit 0
+EOF
+chmod u+x ca-issued-with-noise-before
+cat > ca-issued-with-noise-after << EOF
+#!/bin/sh
+echo "$cert"
+echo iLoveCookies
+exit 0
+EOF
+chmod u+x ca-issued-with-noise-after
+cat > ca-issued-with-noise-both << EOF
+#!/bin/sh
+echo iLoveCookies
+echo "$cert"
+echo Also Monkeys
+exit 0
+EOF
+chmod u+x ca-issued-with-noise-both
 cat > ca-ask-again << EOF
 #!/bin/sh
 echo iLoveCookiesSome
@@ -207,6 +266,121 @@ notification_method=STDOUT
 EOF
 openssl x509 -noout -startdate -enddate -in $tmpdir/certfile2
 $toolsdir/iterate ca  entry2 MONITORING,NEED_TO_NOTIFY_VALIDITY,NOTIFYING_VALIDITY | sed 's@'"$tmpdir"'@$tmpdir@g'
+
+echo
+echo '[Enroll.]'
+cat > entry3 << EOF
+id=Test
+ca_name=Friendly
+state=HAVE_KEY_PAIR
+key_storage_type=FILE
+key_storage_location=$tmpdir/keyfile
+cert_storage_type=FILE
+cert_storage_location=$tmpdir/certfile4
+notification_method=STDOUT
+EOF
+cat > ca3 << EOF
+id=Friendly
+ca_type=EXTERNAL
+ca_external_helper=$tmpdir/ca-issued
+EOF
+: > $tmpdir/certfile4
+$toolsdir/iterate ca3 entry3 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
+$toolsdir/iterate ca3 entry3 NEED_CSR,GENERATING_CSR
+$toolsdir/iterate ca3 entry3 NEED_TO_SUBMIT,SUBMITTING
+$toolsdir/iterate ca3 entry3 NEED_TO_SAVE_CERT,SAVING_CERT,START_SAVING_CERT
+
+echo
+echo '[Enroll, helper produces noise before.]'
+cat > entry3 << EOF
+id=Test
+ca_name=Friendly
+state=HAVE_KEY_PAIR
+key_storage_type=FILE
+key_storage_location=$tmpdir/keyfile
+cert_storage_type=FILE
+cert_storage_location=$tmpdir/certfile4
+notification_method=STDOUT
+EOF
+cat > ca3 << EOF
+id=Friendly
+ca_type=EXTERNAL
+ca_external_helper=$tmpdir/ca-issued-with-noise-before
+EOF
+: > $tmpdir/certfile4
+$toolsdir/iterate ca3 entry3 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
+$toolsdir/iterate ca3 entry3 NEED_CSR,GENERATING_CSR
+$toolsdir/iterate ca3 entry3 NEED_TO_SUBMIT,SUBMITTING
+$toolsdir/iterate ca3 entry3 NEED_TO_SAVE_CERT,SAVING_CERT,START_SAVING_CERT
+
+echo
+echo '[Enroll, helper produces noise after]'
+cat > entry3 << EOF
+id=Test
+ca_name=Friendly
+state=HAVE_KEY_PAIR
+key_storage_type=FILE
+key_storage_location=$tmpdir/keyfile
+cert_storage_type=FILE
+cert_storage_location=$tmpdir/certfile4
+notification_method=STDOUT
+EOF
+cat > ca3 << EOF
+id=Friendly
+ca_type=EXTERNAL
+ca_external_helper=$tmpdir/ca-issued-with-noise-after
+EOF
+: > $tmpdir/certfile4
+$toolsdir/iterate ca3 entry3 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
+$toolsdir/iterate ca3 entry3 NEED_CSR,GENERATING_CSR
+$toolsdir/iterate ca3 entry3 NEED_TO_SUBMIT,SUBMITTING
+$toolsdir/iterate ca3 entry3 NEED_TO_SAVE_CERT,SAVING_CERT,START_SAVING_CERT
+
+echo
+echo '[Enroll, helper produces noise before and after.]'
+cat > entry3 << EOF
+id=Test
+ca_name=Friendly
+state=HAVE_KEY_PAIR
+key_storage_type=FILE
+key_storage_location=$tmpdir/keyfile
+cert_storage_type=FILE
+cert_storage_location=$tmpdir/certfile4
+notification_method=STDOUT
+EOF
+cat > ca3 << EOF
+id=Friendly
+ca_type=EXTERNAL
+ca_external_helper=$tmpdir/ca-issued-with-noise-both
+EOF
+: > $tmpdir/certfile4
+$toolsdir/iterate ca3 entry3 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
+$toolsdir/iterate ca3 entry3 NEED_CSR,GENERATING_CSR
+$toolsdir/iterate ca3 entry3 NEED_TO_SUBMIT,SUBMITTING
+$toolsdir/iterate ca3 entry3 NEED_TO_SAVE_CERT,SAVING_CERT,START_SAVING_CERT
+
+echo
+echo '[Enroll, helper omits newline at end of certificate.]'
+cat > entry3 << EOF
+id=Test
+ca_name=Friendly
+state=HAVE_KEY_PAIR
+key_storage_type=FILE
+key_storage_location=$tmpdir/keyfile
+cert_storage_type=FILE
+cert_storage_location=$tmpdir/certfile4
+notification_method=STDOUT
+EOF
+cat > ca3 << EOF
+id=Friendly
+ca_type=EXTERNAL
+ca_external_helper=$tmpdir/ca-issued-with-no-newline
+EOF
+: > $tmpdir/certfile4
+$toolsdir/iterate ca3 entry3 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
+$toolsdir/iterate ca3 entry3 NEED_CSR,GENERATING_CSR
+$toolsdir/iterate ca3 entry3 NEED_TO_SUBMIT,SUBMITTING
+$toolsdir/iterate ca3 entry3 NEED_TO_SAVE_CERT,SAVING_CERT,START_SAVING_CERT
 
 echo
 echo '[Enroll until we notice we have no specified CA.]'
