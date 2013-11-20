@@ -149,12 +149,20 @@ cm_submit_e_ready(struct cm_store_entry *entry, struct cm_submit_state *state)
 static int
 cm_submit_e_issued(struct cm_store_entry *entry, struct cm_submit_state *state)
 {
-	const char *msg;
+	const char *msg, *p, *q;
+
 	msg = cm_subproc_get_msg(entry, state->subproc, NULL);
-	if ((strstr(msg, "-----BEGIN CERTIFICATE-----") != NULL) &&
-	    (strstr(msg, "-----END CERTIFICATE-----") != NULL)) {
+	if (((p = strstr(msg, "-----BEGIN CERTIFICATE-----")) != NULL) &&
+	    ((q = strstr(p, "-----END CERTIFICATE-----")) != NULL)) {
 		talloc_free(entry->cm_cert);
-		entry->cm_cert = talloc_strdup(entry, msg);
+		q += strcspn(q, "\r\n");
+		if (strspn(q, "\r\n") == 0) {
+			p = talloc_asprintf(entry, "%s\n", p);
+			q = p + strlen(p);
+		} else {
+			q += strspn(q, "\r\n");
+		}
+		entry->cm_cert = talloc_strndup(entry, p, q - p);
 		cm_log(1, "Certificate issued.\n");
 		return 0;
 	} else {
