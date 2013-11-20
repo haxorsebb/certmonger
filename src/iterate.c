@@ -1205,6 +1205,26 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		break;
 
 	case CM_NEED_TO_NOTIFY_ISSUED_FAILED:
+		/* We should already have the lock here.  In cases where we're
+		 * resuming things at startup, try to acquire it if we don't
+		 * have it. */
+		if (!cm_writing_has_lock(entry) && !cm_writing_lock(entry)) {
+			/* Just hang out in this state while we're messing
+			 * around with the outside world for another entry. */
+			cm_log(3, "%s('%s') waiting for saving lock\n",
+			       entry->cm_busname, entry->cm_nickname);
+			*when = cm_time_soon;
+			break;
+		}
+		if (!cm_writing_unlock(entry)) {
+			/* If for some reason we fail to release the lock that
+			 * we have, try to release it again soon. */
+			*when = cm_time_soon;
+			cm_log(1, "%s('%s') failed to release saving "
+			       "lock, probably a bug\n",
+			       entry->cm_busname, entry->cm_nickname);
+			break;
+		}
 		state->cm_notify_state = cm_notify_start(entry,
 							 cm_notify_event_issued_not_saved);
 		if (state->cm_notify_state != NULL) {
