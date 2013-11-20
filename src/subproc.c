@@ -21,6 +21,7 @@
 #include <sys/wait.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <paths.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -52,6 +53,8 @@ cm_subproc_start(int (*cb)(int fd,
 	struct cm_subproc_state *state;
 	int fds[2];
 	long flags;
+	char *configdir, *tmp;
+
 	state = talloc_ptrtype(entry, state);
 	if (state != NULL) {
 		memset(state, 0, sizeof(*state));
@@ -72,6 +75,19 @@ cm_subproc_start(int (*cb)(int fd,
 			case 0:
 				state->fd = fds[1];
 				close(fds[0]);
+
+				tmp = getenv(CM_STORE_CONFIG_DIRECTORY_ENV);
+				configdir = (tmp != NULL) ? strdup(tmp) : NULL;
+				clearenv();
+				setenv("HOME", "/", 1);
+				setenv("PATH", _PATH_STDPATH, 1);
+				setenv("SHELL", _PATH_BSHELL, 1);
+				setenv("TERM", "dumb", 1);
+				if (configdir != NULL) {
+					setenv(CM_STORE_CONFIG_DIRECTORY_ENV,
+					       configdir, 1);
+				}
+
 				exit((*cb)(fds[1], ca, entry, data));
 				break;
 			default:
