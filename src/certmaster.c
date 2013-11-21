@@ -84,26 +84,26 @@ main(int argc, char **argv)
 	}
 
 	if (host == NULL) {
-		/* Okay, we have to figure out what the master name is. */
-		if (stat("/var/run/certmaster.pid", &st) == 0) {
-			/* Guess that it's us if we have the service running. */
-			config = read_config_file("/etc/certmaster/"
-						  "certmaster.conf");
-			host = "localhost";
-			if (config != NULL) {
-				port = get_config_entry(config,
-							"main", "listen_port");
-			}
+		/* Okay, we have to figure out what the master name is.  Hope
+		 * the minion is configured. */
+		config = read_config_file("/etc/certmaster/"
+					  "minion.conf");
+		if (config != NULL) {
+			host = get_config_entry(config, "main", "certmaster");
+			port = get_config_entry(config, "main",
+						"certmaster_port");
 		} else {
-			/* Hope the minion is configured. */
-			config = read_config_file("/etc/certmaster/"
-						  "minion.conf");
-			if (config != NULL) {
-				host = get_config_entry(config,
-							"main", "certmaster");
-				port = get_config_entry(config,
-							"main",
-							"certmaster_port");
+			if (stat("/var/run/certmaster.pid", &st) == 0) {
+				/* Guess that it's us if we have the service
+				 * running. */
+				config = read_config_file("/etc/certmaster/"
+							  "certmaster.conf");
+				host = "localhost";
+				if (config != NULL) {
+					port = get_config_entry(config,
+								"main",
+								"listen_port");
+				}
 			}
 		}
 	}
