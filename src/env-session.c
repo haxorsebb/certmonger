@@ -114,8 +114,17 @@ cm_env_ensure_dir(char *path)
 							       "exists: %s.\n",
 							       tmp,
 							       strerror(errno));
-							_exit(0);
+							_exit(1);
 						}
+					}
+					if (stat(tmp, &st) == -1) {
+						cm_log(0, "Error "
+						       "ensuring that "
+						       "directory '%s' "
+						       "exists: %s.\n",
+						       tmp,
+						       strerror(errno));
+						_exit(1);
 					}
 					*q = '/';
 				}
