@@ -317,10 +317,11 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 			    const char *cookie,
 			    const char *operation)
 {
-	int errorfds[2];
+	int errorfds[2], nread;
 	unsigned char u;
 	struct cm_submit_state *state;
 	struct cm_submit_e_args args;
+
 	state = talloc_ptrtype(entry, state);
 	if (state != NULL) {
 		memset(state, 0, sizeof(*state));
@@ -356,7 +357,8 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 					talloc_free(state);
 					state = NULL;
 				} else {
-					switch (read(errorfds[0], &u, 1)) {
+					nread = read(errorfds[0], &u, 1);
+					switch (nread) {
 					case 0:
 						/* no data = kernel
 						 * closed-on-exec, so the
