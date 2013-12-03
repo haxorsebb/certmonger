@@ -103,26 +103,12 @@ cm_env_ensure_dir(char *path)
 			for (q = tmp + 1; q < p; q++) {
 				if (*q == '/') {
 					*q = '\0';
-					if ((stat(tmp, &st) == -1) &&
-					    (errno == ENOENT)) {
-						i = mkdir(tmp, S_IRWXU);
-						if ((i != 0) && 
-						    (errno != EEXIST)) {
-							cm_log(0, "Error "
-							       "ensuring that "
-							       "directory '%s' "
-							       "exists: %s.\n",
-							       tmp,
-							       strerror(errno));
-							_exit(1);
-						}
-					}
-					if (stat(tmp, &st) == -1) {
-						cm_log(0, "Error "
-						       "ensuring that "
-						       "directory '%s' "
-						       "exists: %s.\n",
-						       tmp,
+					i = mkdir(tmp, S_IRWXU);
+					if ((i != 0) && 
+					    (errno != EEXIST)) {
+						cm_log(0, "Error ensuring "
+						       "that directory '%s' "
+						       "exists: %s.\n", tmp,
 						       strerror(errno));
 						_exit(1);
 					}
