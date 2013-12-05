@@ -53,7 +53,7 @@ cm_subproc_start(int (*cb)(int fd,
 	struct cm_subproc_state *state;
 	int fds[2];
 	long flags;
-	char *configdir, *tmp;
+	char *configdir, *tmpdir, *tmp;
 
 	state = talloc_ptrtype(entry, state);
 	if (state != NULL) {
@@ -78,6 +78,8 @@ cm_subproc_start(int (*cb)(int fd,
 
 				tmp = getenv(CM_STORE_CONFIG_DIRECTORY_ENV);
 				configdir = (tmp != NULL) ? strdup(tmp) : NULL;
+				tmp = getenv("TMPDIR");
+				tmpdir = (tmp != NULL) ? strdup(tmp) : NULL;
 				clearenv();
 				setenv("HOME", "/", 1);
 				setenv("PATH", _PATH_STDPATH, 1);
@@ -86,6 +88,9 @@ cm_subproc_start(int (*cb)(int fd,
 				if (configdir != NULL) {
 					setenv(CM_STORE_CONFIG_DIRECTORY_ENV,
 					       configdir, 1);
+				}
+				if (tmpdir != NULL) {
+					setenv("TMPDIR", tmpdir, 1);
 				}
 
 				exit((*cb)(fds[1], ca, entry, data));
