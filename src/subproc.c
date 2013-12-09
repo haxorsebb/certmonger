@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2011 Red Hat, Inc.
+ * Copyright (C) 2009,2011,2013 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,6 +62,7 @@ cm_subproc_start(int (*cb)(int fd,
 		state->msg = NULL;
 		state->status = -1;
 		if (pipe(fds) != -1) {
+			fflush(NULL);
 			state->pid = fork();
 			switch (state->pid) {
 			case -1:
