@@ -4,15 +4,16 @@
 #
 # Translators:
 # Boris Yakimov <borisyakimov@ymail.com>, 2012
-# Valentin Laskov <laskov@festa.bg>, 2011-2012
+# Valentin Laskov <laskov@festa.bg>, 2011-2013
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2013-08-29 15:18-0400\n"
-"PO-Revision-Date: 2013-01-08 23:03+0000\n"
-"Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
-"Language-Team: Bulgarian <trans-bg@lists.fedoraproject.org>\n"
+"POT-Creation-Date: 2013-12-09 19:19-0500\n"
+"PO-Revision-Date: 2013-12-09 10:57+0000\n"
+"Last-Translator: Valentin Laskov <laskov@festa.bg>\n"
+"Language-Team: Bulgarian (http://www.transifex.com/projects/p/fedora/"
+"language/bg/)\n"
 "Language: bg\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -29,7 +30,7 @@ msgstr "Не може да се определи името на CA хоста.\
 msgid "Unable to read signing request.\n"
 msgstr "Не може да се прочете заявката за подписване.\n"
 
-#: src/certmaster.c:158 src/ipa.c:226
+#: src/certmaster.c:158
 #, c-format
 msgid "Error setting up for XMLRPC.\n"
 msgstr "Грешка при подготовка за XMLRPC.\n"
@@ -51,37 +52,37 @@ msgstr "Сървърна грешка.\n"
 #: src/dogtag.c:307
 #, c-format
 msgid "No end-entity URL (-E) given, and no default known.\n"
-msgstr ""
+msgstr "Няма зададен end-entity URL (-E), а няма и такъв по подразбиране.\n"
 
 #: src/dogtag.c:311
 #, c-format
 msgid "No agent URL (-A) given, and no default known.\n"
-msgstr ""
+msgstr "Няма зададен agent URL (-A), а няма и такъв по подразбиране.\n"
 
 #: src/dogtag.c:315
 #, c-format
 msgid "No profile/template (-T) given, and no default known.\n"
-msgstr ""
+msgstr "Няма зададен profile/template (-T), а няма и такъв по подразбиране.\n"
 
 #: src/dogtag.c:348 src/dogtag.c:525
 #, c-format
 msgid "Internal error: unknown state.\n"
-msgstr ""
+msgstr "Вътрешна грешка: непознато състояние.\n"
 
 #: src/dogtag.c:507
 #, c-format
 msgid "Error %d connecting to %s: %s.\n"
-msgstr ""
+msgstr "Грешка %d при свързване към %s: %s.\n"
 
 #: src/dogtag.c:512
 #, c-format
 msgid "Error %d connecting to %s.\n"
-msgstr ""
+msgstr "Грешка %d при свързване към %s.\n"
 
 #: src/dogtag.c:519
 #, c-format
 msgid "Internal error: no response to \"%s?%s\".\n"
-msgstr ""
+msgstr "Вътрешна грешка: няма отговор до \"%s?%s\".\n"
 
 #: src/getcert.c:91
 #, c-format
@@ -165,7 +166,7 @@ msgstr "Грешка при инициализиране на Kerberos библ�
 #: src/getcert.c:634 src/getcert.c:1401 src/getcert.c:1825
 #, c-format
 msgid "Unrecognized keyUsage \"%s\".\n"
-msgstr ""
+msgstr "Неразпознат keyUsage \"%s\".\n"
 
 #: src/getcert.c:644 src/getcert.c:1411 src/getcert.c:1835
 #, c-format
@@ -440,7 +441,7 @@ msgstr "»главно име: "
 #: src/getcert.c:2451
 #, c-format
 msgid "\tkey usage: %s\n"
-msgstr ""
+msgstr "\tkey usage: %s\n"
 
 #: src/getcert.c:2455
 msgid "\teku: "
@@ -611,7 +612,7 @@ msgstr "  -U EXTUSAGE\tзадава искан разширен OID ключ з�
 
 #: src/getcert.c:2609 src/getcert.c:2650 src/getcert.c:2705
 msgid "  -u KEYUSAGE\tset requested key usage value\n"
-msgstr ""
+msgstr "  -u KEYUSAGE\tзадава исканата key usage стойност\n"
 
 #: src/getcert.c:2610 src/getcert.c:2706
 msgid "  -K NAME\tset requested principal name\n"
@@ -829,33 +830,47 @@ msgstr "Не мога да определя местоположението н�
 msgid "Unable to determine principal name for signing request.\n"
 msgstr "Не може да бъде установено главно име за заявката за подписване.\n"
 
-#: src/ipa.c:236
-#, c-format
+#: src/ipa.c:226
+#, fuzzy, c-format
+msgid "Error setting up for XMLRPC on the client.\n"
+msgstr "Грешка при подготовка за XMLRPC.\n"
+
+#: src/ipa.c:237
+#, fuzzy, c-format
 msgid ""
-"Error setting up ccache for local \"host\" service using default keytab: "
+"Error setting up ccache for \"host\" service on client using default keytab: "
 "%s.\n"
 msgstr ""
+"Грешка при задаването на ccache за локалната \"host\" услуга, използвайки "
+"подразбиращия се keytab: %s.\n"
 
-#: src/ipa.c:240
-#, c-format
-msgid "Error setting up ccache for \"%s\" using default keytab: %s.\n"
-msgstr ""
-
-#: src/ipa.c:246
-#, c-format
+#: src/ipa.c:241
+#, fuzzy, c-format
 msgid ""
-"Error setting up ccache for local \"host\" service using keytab \"%s\": %s.\n"
+"Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
 msgstr ""
+"Грешка при задаването на ccache за \"%s\", използвайки подразбиращия се "
+"keytab: %s.\n"
 
-#: src/ipa.c:250
-#, c-format
-msgid "Error setting up ccache for \"%s\" using keytab \"%s\": %s.\n"
+#: src/ipa.c:248
+#, fuzzy, c-format
+msgid ""
+"Error setting up ccache for \"host\" service on client using keytab \"%s\": "
+"%s.\n"
 msgstr ""
+"Грешка при задаването на ccache за локалната \"host\" услуга, използвайки "
+"keytab \"%s\": %s.\n"
+
+#: src/ipa.c:252
+#, fuzzy, c-format
+msgid "Error setting up ccache for \"%s\" on client using keytab \"%s\": %s.\n"
+msgstr ""
+"Грешка при задаването на ccache за \"%s\", използвайки keytab \"%s\": %s.\n"
 
 #: src/main.c:120
 #, c-format
 msgid "Usage: %s [-s|-S] [-n|-f] [-d LEVEL] [-p FILE] [-F]\n"
-msgstr ""
+msgstr "Употреба: %s [-s|-S] [-n|-f] [-d LEVEL] [-p FILE] [-F]\n"
 
 #: src/main.c:124
 msgid "\t-s         use session bus\n"
@@ -989,12 +1004,12 @@ msgstr "Неразпознат параметър или грешен тип н�
 
 #: src/tdbusm.c:1647
 msgid "Insufficient access.  Please retry operation as root.\n"
-msgstr ""
+msgstr "Непозволен достъп.  Моля, опитайте операцията отново, като root.\n"
 
 #: src/tdbusm.c:1651
 msgid "Please verify that the certmonger service has been started.\n"
-msgstr ""
+msgstr "Моля, проверете дали услугата certmonger е стартирала.\n"
 
 #: src/tdbusm.c:1654
 msgid "Please verify that the certmonger service is still running.\n"
-msgstr ""
+msgstr "Моля, проверете дали услугата certmonger все още работи.\n"

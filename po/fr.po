@@ -11,10 +11,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2013-08-29 15:18-0400\n"
-"PO-Revision-Date: 2013-01-12 18:07+0000\n"
+"POT-Creation-Date: 2013-12-09 19:19-0500\n"
+"PO-Revision-Date: 2013-11-20 09:29+0000\n"
 "Last-Translator: Jérôme Fenal <jfenal@gmail.com>\n"
-"Language-Team: French <trans-fr@lists.fedoraproject.org>\n"
+"Language-Team: French (http://www.transifex.com/projects/p/fedora/language/"
+"fr/)\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -32,7 +33,7 @@ msgstr ""
 msgid "Unable to read signing request.\n"
 msgstr "Impossible de lire la signature de la demande.\n"
 
-#: src/certmaster.c:158 src/ipa.c:226
+#: src/certmaster.c:158
 #, c-format
 msgid "Error setting up for XMLRPC.\n"
 msgstr "Erreur lors de la configuration de XMLRPC.\n"
@@ -844,33 +845,40 @@ msgid "Unable to determine principal name for signing request.\n"
 msgstr ""
 "Impossible de déterminer le nom principal pour la signature demandée.\n"
 
-#: src/ipa.c:236
-#, c-format
+#: src/ipa.c:226
+#, fuzzy, c-format
+msgid "Error setting up for XMLRPC on the client.\n"
+msgstr "Erreur lors de la configuration de XMLRPC.\n"
+
+#: src/ipa.c:237
+#, fuzzy, c-format
 msgid ""
-"Error setting up ccache for local \"host\" service using default keytab: "
+"Error setting up ccache for \"host\" service on client using default keytab: "
 "%s.\n"
 msgstr ""
 "Erreur de mise en place du ccache pour le service « hôte » local utilisant "
 "les clés par défaut : %s.\n"
 
-#: src/ipa.c:240
-#, c-format
-msgid "Error setting up ccache for \"%s\" using default keytab: %s.\n"
+#: src/ipa.c:241
+#, fuzzy, c-format
+msgid ""
+"Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
 msgstr ""
 "Erreur de mise en place du ccache pour « %s » utilisant les clés par "
 "défaut : %s.\n"
 
-#: src/ipa.c:246
-#, c-format
+#: src/ipa.c:248
+#, fuzzy, c-format
 msgid ""
-"Error setting up ccache for local \"host\" service using keytab \"%s\": %s.\n"
+"Error setting up ccache for \"host\" service on client using keytab \"%s\": "
+"%s.\n"
 msgstr ""
 "Erreur de mise en place du ccache pour le service « hôte » local utilisant "
 "les clés « %s » : %s.\n"
 
-#: src/ipa.c:250
-#, c-format
-msgid "Error setting up ccache for \"%s\" using keytab \"%s\": %s.\n"
+#: src/ipa.c:252
+#, fuzzy, c-format
+msgid "Error setting up ccache for \"%s\" on client using keytab \"%s\": %s.\n"
 msgstr ""
 "Erreur de mise en place du ccache pour « %s » utilisant les clés « %s » : "
 "%s.\n"

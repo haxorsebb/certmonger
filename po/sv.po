@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2013-08-29 15:18-0400\n"
-"PO-Revision-Date: 2013-05-01 09:18+0000\n"
+"POT-Creation-Date: 2013-12-09 19:19-0500\n"
+"PO-Revision-Date: 2013-11-20 09:29+0000\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish (http://www.transifex.com/projects/p/fedora/language/"
 "sv/)\n"
@@ -29,7 +29,7 @@ msgstr "Det går inte att avgöra värdnamnet för CA:n.\n"
 msgid "Unable to read signing request.\n"
 msgstr "Kan inte läsa signeringsbegäran.\n"
 
-#: src/certmaster.c:158 src/ipa.c:226
+#: src/certmaster.c:158
 #, c-format
 msgid "Error setting up for XMLRPC.\n"
 msgstr "Fel vid inställning av XMLRPC.\n"
@@ -812,30 +812,37 @@ msgstr "Det går inte att bestämma plats för CA:ns XMLRPC-server.\n"
 msgid "Unable to determine principal name for signing request.\n"
 msgstr "Det går inte att avgöra huvudnamn för signeringsbegäran.\n"
 
-#: src/ipa.c:236
-#, c-format
+#: src/ipa.c:226
+#, fuzzy, c-format
+msgid "Error setting up for XMLRPC on the client.\n"
+msgstr "Fel vid inställning av XMLRPC.\n"
+
+#: src/ipa.c:237
+#, fuzzy, c-format
 msgid ""
-"Error setting up ccache for local \"host\" service using default keytab: "
+"Error setting up ccache for \"host\" service on client using default keytab: "
 "%s.\n"
 msgstr ""
 "Fel vid inställning av ccache för lokal ”värd”-tjänst med "
 "standardnyckeltabell: %s.\n"
 
-#: src/ipa.c:240
-#, c-format
-msgid "Error setting up ccache for \"%s\" using default keytab: %s.\n"
+#: src/ipa.c:241
+#, fuzzy, c-format
+msgid ""
+"Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
 msgstr "Fel vid inställning av ccache för ”%s” med standard-keytab: %s.\n"
 
-#: src/ipa.c:246
-#, c-format
+#: src/ipa.c:248
+#, fuzzy, c-format
 msgid ""
-"Error setting up ccache for local \"host\" service using keytab \"%s\": %s.\n"
+"Error setting up ccache for \"host\" service on client using keytab \"%s\": "
+"%s.\n"
 msgstr ""
 "Fel vid inställning av ccache för lokala ”värd”-tjänst med keytab ”%s”: %s.\n"
 
-#: src/ipa.c:250
-#, c-format
-msgid "Error setting up ccache for \"%s\" using keytab \"%s\": %s.\n"
+#: src/ipa.c:252
+#, fuzzy, c-format
+msgid "Error setting up ccache for \"%s\" on client using keytab \"%s\": %s.\n"
 msgstr "Fel vid inställning av ccache för ”%s” med keytab ”%s”: %s.\n"
 
 #: src/main.c:120
