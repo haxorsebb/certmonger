@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.68
+Version:	0.69
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -201,6 +201,25 @@ exit 0
 %endif
 
 %changelog
+* Mon Dec  9 2013 Nalin Dahyabhai <nalin@redhat.com> 0.69-1
+- tweak how we decide whether we're on the master or a minion when we're
+  told to use certmaster as a CA
+- clean up one of the tests so that it doesn't have to work around internal
+  logging producing duplicate messages
+- when logging errors while setting up to contact xmlrpc servers, explicitly
+  note that the error is client-side
+- don't abort() due to incorrect locking when an attempt to save an issued
+  certificate to the designated location fails (part of #1032760/#1033333,
+  ticket #22)
+- when reading an issued certificate from an enrollment helper, ignore
+  noise before or after the certificate itself (more of #1032760/1033333,
+  ticket #22)
+- run subprocesses in a cleaned-up environment (more of #1032760/1033333,
+  ticket #22)
+- clear the ca-error that we saved when we had an error talking to the CA if we
+  subsequently succeed in talking to the CA
+- various other static-analysis fixes
+
 * Thu Aug 29 2013 Nalin Dahyabhai <nalin@redhat.com> 0.68-1
 - notice when the OpenSSL RNG isn't seeded
 - notice when saving certificates or keys fails due to filesystem-related
