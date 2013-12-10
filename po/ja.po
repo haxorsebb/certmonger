@@ -5,7 +5,9 @@
 # Translators:
 # Hajime Taira <htaira@redhat.com>, 2011-2012
 # noriko <noriko@fedoraproject.org>, 2012
+# noriko <noriko@fedoraproject.org>, 2012
 # Tomoyuki KATO <tomo@dream.daynight.jp>, 2011-2013
+# 高一人参 @欠陥遺伝子 <www.carrotsoft@gmail.com>, 2011
 # 高一人参 @欠陥遺伝子 <www.carrotsoft@gmail.com>, 2011
 msgid ""
 msgstr ""
