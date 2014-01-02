@@ -8,14 +8,15 @@
 # Tommy He <lovenemesis@gmail.com>, 2011, 2012
 # Mike Manilone <zhtx10@gmail.com>, 2011
 # Tiansworld <tiansworld@fedoraproject.org>, 2013
+# Tommy He <lovenemesis@gmail.com>, 2013
 # Wei Liu <LLIU@REDHAT.COM>, 2012
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2013-12-09 19:19-0500\n"
-"PO-Revision-Date: 2013-11-26 03:18+0000\n"
-"Last-Translator: Tiansworld <tiansworld@fedoraproject.org>\n"
+"POT-Creation-Date: 2014-01-02 12:46-0500\n"
+"PO-Revision-Date: 2013-12-17 08:42+0000\n"
+"Last-Translator: Tommy He <lovenemesis@gmail.com>\n"
 "Language-Team: Chinese (China) (http://www.transifex.com/projects/p/fedora/"
 "language/zh_CN/)\n"
 "Language: zh_CN\n"
@@ -56,37 +57,37 @@ msgstr "服务器出错。\n"
 #: src/dogtag.c:307
 #, c-format
 msgid "No end-entity URL (-E) given, and no default known.\n"
-msgstr ""
+msgstr "未指定结尾条目 URL (-E)，且无已知默认值。\n"
 
 #: src/dogtag.c:311
 #, c-format
 msgid "No agent URL (-A) given, and no default known.\n"
-msgstr ""
+msgstr "未指定中间代理 URL (-A)，且无已知默认值。\n"
 
 #: src/dogtag.c:315
 #, c-format
 msgid "No profile/template (-T) given, and no default known.\n"
-msgstr ""
+msgstr "未指定预置文件/模板 (-T)，且无已知默认值。\n"
 
 #: src/dogtag.c:348 src/dogtag.c:525
 #, c-format
 msgid "Internal error: unknown state.\n"
-msgstr ""
+msgstr "内部错误: 未知的状态。\n"
 
 #: src/dogtag.c:507
 #, c-format
 msgid "Error %d connecting to %s: %s.\n"
-msgstr ""
+msgstr "错误 %d 连接至 %s: %s。\n"
 
 #: src/dogtag.c:512
 #, c-format
 msgid "Error %d connecting to %s.\n"
-msgstr ""
+msgstr "错误 %d 连接至 %s。\n"
 
 #: src/dogtag.c:519
 #, c-format
 msgid "Internal error: no response to \"%s?%s\".\n"
-msgstr ""
+msgstr "内部错误:  \"%s?%s\" 没有响应。\n"
 
 #: src/getcert.c:91
 #, c-format
@@ -168,7 +169,7 @@ msgstr "初始化 Kerberos 库时出错：%s\n"
 #: src/getcert.c:634 src/getcert.c:1401 src/getcert.c:1825
 #, c-format
 msgid "Unrecognized keyUsage \"%s\".\n"
-msgstr ""
+msgstr "未识别的 keyUsage \"%s\"。\n"
 
 #: src/getcert.c:644 src/getcert.c:1411 src/getcert.c:1835
 #, c-format
@@ -433,7 +434,7 @@ msgstr "    实体名： "
 #: src/getcert.c:2451
 #, c-format
 msgid "\tkey usage: %s\n"
-msgstr ""
+msgstr "\t密钥用法: %s\n"
 
 #: src/getcert.c:2455
 msgid "\teku: "
@@ -442,12 +443,12 @@ msgstr "    EKU："
 #: src/getcert.c:2459
 #, c-format
 msgid "\tpre-save command: %s\n"
-msgstr ""
+msgstr "\t保存前命令: %s\n"
 
 #: src/getcert.c:2462
 #, c-format
 msgid "\tpost-save command: %s\n"
-msgstr ""
+msgstr "\t保存后命令: %s\n"
 
 #: src/getcert.c:2465
 #, c-format
@@ -577,7 +578,7 @@ msgstr "  -c CA    使用指定的 CA 而不是默认 CA\n"
 msgid ""
 "  -T PROFILE\task the CA to process the request using the named profile or "
 "template\n"
-msgstr ""
+msgstr "  -T 预置文件\t要求 CA 使用指名的预置文件或模板处理请求\n"
 
 #: src/getcert.c:2606
 msgid "* Parameters for the signing request:\n"
@@ -593,7 +594,7 @@ msgstr "  -U EXTUSAGE    设定所需的扩展密钥使用 OID\n"
 
 #: src/getcert.c:2609 src/getcert.c:2650 src/getcert.c:2705
 msgid "  -u KEYUSAGE\tset requested key usage value\n"
-msgstr ""
+msgstr "  -u KEYUSAGE\t设定请求的密钥用法值\n"
 
 #: src/getcert.c:2610 src/getcert.c:2706
 msgid "  -K NAME\tset requested principal name\n"
@@ -821,24 +822,30 @@ msgstr "在为使用 keytab “%s” 的本地“主机”服务设置 ccache �
 #, fuzzy, c-format
 msgid ""
 "Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
-msgstr "在为使用 keytab “%s” 的本地“主机”服务设置 ccache 时出错。\n"
+msgstr ""
+"在为使用默认 keytab 的“%s”设置 ccache时出错: %s。\n"
+"\n"
 
 #: src/ipa.c:248
 #, fuzzy, c-format
 msgid ""
 "Error setting up ccache for \"host\" service on client using keytab \"%s\": "
 "%s.\n"
-msgstr "在为使用 keytab “%s” 的本地“主机”服务设置 ccache 时出错。\n"
+msgstr ""
+"在为使用 keytab“%s”的本地“主机”服务设置 ccache 时出错: %s。\n"
+"\n"
 
 #: src/ipa.c:252
 #, fuzzy, c-format
 msgid "Error setting up ccache for \"%s\" on client using keytab \"%s\": %s.\n"
-msgstr "在为使用 keytab “%s” 的本地“主机”服务设置 ccache 时出错。\n"
+msgstr ""
+"在为使用 keytab“%s”的本地“主机”服务设置 ccache 时出错: %s。\n"
+"\n"
 
 #: src/main.c:120
 #, c-format
 msgid "Usage: %s [-s|-S] [-n|-f] [-d LEVEL] [-p FILE] [-F]\n"
-msgstr ""
+msgstr "用法: %s [-s|-S] [-n|-f] [-d 级别] [-p 文件] [-F]\n"
 
 #: src/main.c:124
 msgid "\t-s         use session bus\n"
@@ -876,7 +883,7 @@ msgstr ""
 
 #: src/main.c:132
 msgid "\t-F         force NSS into FIPS mode\n"
-msgstr ""
+msgstr "\t-F         强制 NSS 进入 FIPS 模式\n"
 
 #: src/tdbush.c:116 src/tdbush.c:1418 src/tdbush.c:1643
 msgid "An internal error has occurred."
@@ -973,12 +980,12 @@ msgstr "未识别的参数或错误的值类型。"
 
 #: src/tdbusm.c:1647
 msgid "Insufficient access.  Please retry operation as root.\n"
-msgstr ""
+msgstr "访问权限不足。请以根用户重试操作。\n"
 
 #: src/tdbusm.c:1651
 msgid "Please verify that the certmonger service has been started.\n"
-msgstr ""
+msgstr "请检验 certmonger 服务是否已启动。\n"
 
 #: src/tdbusm.c:1654
 msgid "Please verify that the certmonger service is still running.\n"
-msgstr ""
+msgstr "请检验 certmonger 服务是否仍在运行。\n"
