@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.69
+Version:	0.70
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -202,6 +202,15 @@ exit 0
 %endif
 
 %changelog
+* Thu Jan  2 2014 Nalin Dahyabhai <nalin@redhat.com> 0.70-1
+- add a --with-homedir option to configure, and use it, since subprocesses
+  which we run and which use NSS may attempt to write to $HOME/.pki, and
+  0.69's strategy of setting that to "/" was rightly hitting SELinux policy
+  denials (#1047798)
+
+* Fri Dec 27 2013 Daniel Mach <dmach@redhat.com> - 0.69-2
+- Mass rebuild 2013-12-27
+
 * Mon Dec  9 2013 Nalin Dahyabhai <nalin@redhat.com> 0.69-1
 - tweak how we decide whether we're on the master or a minion when we're
   told to use certmaster as a CA
