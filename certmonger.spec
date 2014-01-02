@@ -104,6 +104,7 @@ sed -i 's,^# chkconfig: - ,# chkconfig: 345 ,g' sysvinit/certmonger.in
 %if %{tmpfiles}
 	--enable-tmpfiles \
 %endif
+	--with-homedir=/var/run/certmonger \
 	--with-tmpdir=/var/run/certmonger --enable-pie --enable-now
 # For some reason, some versions of xmlrpc-c-config in Fedora and RHEL just
 # tell us about libxmlrpc_client, but we need more.  Work around.

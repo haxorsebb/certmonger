@@ -285,6 +285,18 @@ if test x$withnss != xno ; then
 	LDFLAGS="$savedLDFLAGS"
 fi
 
+AC_ARG_WITH(homedir,
+AS_HELP_STRING([--with-homedir=/],[directory to set as $HOME when running subprocesses as root]),
+myhomedir=$withval,
+myhomedir=/)
+myhomedir=`eval echo $myhomedir | sed "s,NONE,$prefix,g"`
+myhomedir=`eval echo $myhomedir | sed "s,NONE,$ac_default_prefix,g"`
+myhomedir=`eval echo $myhomedir | sed "s,NONE,,g"`
+CM_HOMEDIR="$myhomedir"
+AM_CONDITIONAL(HOMEDIR,test x$CM_HOMEDIR != x)
+AC_DEFINE_UNQUOTED(CM_HOMEDIR,"$CM_HOMEDIR",[Define to the default location to be used for storing temporary files.])
+AC_SUBST(CM_HOMEDIR)
+
 AC_ARG_WITH(tmpdir,
 AS_HELP_STRING([--with-tmpdir=NONE],[directory to use for temporary storage]),
 mytmpdir=$withval,

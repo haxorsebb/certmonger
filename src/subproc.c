@@ -82,7 +82,7 @@ cm_subproc_start(int (*cb)(int fd,
 				tmp = getenv("TMPDIR");
 				tmpdir = (tmp != NULL) ? strdup(tmp) : NULL;
 				clearenv();
-				setenv("HOME", "/", 1);
+				setenv("HOME", CM_HOMEDIR, 1);
 				setenv("PATH", _PATH_STDPATH, 1);
 				setenv("SHELL", _PATH_BSHELL, 1);
 				setenv("TERM", "dumb", 1);
