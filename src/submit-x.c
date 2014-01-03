@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2012,2013 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2012,2013,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -721,6 +721,11 @@ main(int argc, char **argv)
 	if (csr == NULL) {
 		csr = cm_submit_u_from_file((optind < argc) ?
 					    argv[optind++] : NULL);
+		if (csr == NULL) {
+			fprintf(stderr,
+				"Error reading certificate signing request.\n");
+			return CM_SUBMIT_STATUS_UNCONFIGURED;
+		}
 	}
 
 	/* Clean up the CSR. */
