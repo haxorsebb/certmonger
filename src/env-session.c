@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011,2012,2013 Red Hat, Inc.
+ * Copyright (C) 2011,2012,2013,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -93,7 +93,6 @@ static void
 cm_env_ensure_dir(char *path)
 {
 	char *p, *q, *tmp;
-	struct stat st;
 	int i;
 
 	if (path != NULL) {
