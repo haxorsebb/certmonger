@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012,2013 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -222,7 +222,9 @@ main(int argc, char **argv)
 			       cm_submit_x_negotiate_on,
 			       cm_submit_x_delegate_on);
 	if (ctx == NULL) {
-		fprintf(stderr, "Error setting up for XMLRPC on the client.\n");
+		fprintf(stderr,
+			"Error setting up for XMLRPC to %s on the client.\n",
+			uri);
 		printf(_("Error setting up for XMLRPC on the client.\n"));
 		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
@@ -280,8 +282,8 @@ main(int argc, char **argv)
 		switch (i / 1000) {
 		case 2: /* authorization error - permanent */
 		case 3: /* invocation error - permanent */
-			printf("Server denied our request, giving up: "
-			       "%d (%s).\n", i,
+			printf("Server at %s denied our request, giving up: "
+			       "%d (%s).\n", uri, i,
 			       cm_submit_x_fault_text(ctx));
 			return CM_SUBMIT_STATUS_REJECTED;
 			break;
@@ -289,8 +291,8 @@ main(int argc, char **argv)
 		case 4: /* execution error - transient? */
 		case 5: /* generic error - transient? */
 		default:
-			printf("Server failed request, will retry: "
-			       "%d (%s).\n", i,
+			printf("Server at %s failed request, will retry: "
+			       "%d (%s).\n", uri, i,
 			       cm_submit_x_fault_text(ctx));
 			return CM_SUBMIT_STATUS_UNREACHABLE;
 			break;
