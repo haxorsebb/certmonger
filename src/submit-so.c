@@ -60,7 +60,6 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		  void *userdata)
 {
 	FILE *keyfp, *pem;
-	RSA *rsa;
 	EVP_PKEY *pkey;
 	X509_REQ *req;
 	X509 *cert;
@@ -105,9 +104,8 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		pkey = EVP_PKEY_new();
 		if (pkey != NULL) {
 			if (cm_pin_read_for_key(entry, &pin) == 0) {
-				rsa = PEM_read_RSAPrivateKey(keyfp, NULL, NULL, pin);
-				if (rsa != NULL) {
-					EVP_PKEY_assign_RSA(pkey, rsa); /* pkey owns rsa now */
+				pkey = PEM_read_PrivateKey(keyfp, NULL, NULL, pin);
+				if (pkey != NULL) {
 					bio = BIO_new_mem_buf(entry->cm_csr,
 							      strlen(entry->cm_csr));
 					if (bio != NULL) {

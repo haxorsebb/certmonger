@@ -61,7 +61,6 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	X509_REQ *req;
 	NETSCAPE_SPKI spki;
 	NETSCAPE_SPKAC spkac;
-	RSA *rsa;
 	EVP_PKEY *pkey;
 	char buf[LINE_MAX], *p, *q, *s, *nickname, *pin, *password;
 	unsigned char *extensions, *unickname, *upassword;
@@ -98,9 +97,9 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	memset(&cb_data, 0, sizeof(cb_data));
 	cb_data.entry = entry;
 	cb_data.n_attempts = 0;
-	rsa = PEM_read_RSAPrivateKey(keyfp, NULL,
-				     cm_pin_read_for_key_ossl_cb, &cb_data);
-	if (rsa == NULL) {
+	pkey = PEM_read_PrivateKey(keyfp, NULL,
+				   cm_pin_read_for_key_ossl_cb, &cb_data);
+	if (pkey == NULL) {
 		error = errno;
 		cm_log(1, "Error reading private key '%s': %s.\n",
 		       entry->cm_key_storage_location, strerror(error));
@@ -124,8 +123,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			_exit(CM_SUB_STATUS_ERROR_AUTH); /* XXX */
 		}
 	}
-	if (rsa != NULL) {
-		EVP_PKEY_assign_RSA(pkey, rsa); /* pkey owns rsa now */
+	if (pkey != NULL) {
 		x = X509_new();
 		if (x != NULL) {
 			if (entry->cm_template_subject != NULL) {
