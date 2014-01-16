@@ -46,7 +46,6 @@ cm_prefs_nss_sig_alg(SECKEYPublicKey *pkey)
 		}
 		return SEC_OID_SHA256;
 		break;
-		break;
 	case rsaKey:
 		switch (cm_prefs_preferred_digest()) {
 		case cm_prefs_sha1:
