@@ -232,6 +232,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	SECItem ereq, esreq, epkac, espkac, *attrs;
 	int ec;
 	char *b64, *b642, *p, *q;
+	const char *es;
 	SECOidData *sigoid;
 
 	/* Allocate an arena pool and a place to write status updates. */
@@ -265,11 +266,15 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	pubkey = SECKEY_ConvertToPublicKey(privkey->key);
 	if (pubkey == NULL) {
 		ec = PORT_GetError();
-		if (ec == 0) {
-			cm_log(1, "Error retrieving public key.\n");
+		if (ec != 0) {
+			es = PR_ErrorToName(ec);
 		} else {
-			cm_log(1, "Error retrieving public key: %s.\n",
-			       PR_ErrorToName(ec));
+			es = NULL;
+		}
+		if (es != NULL) {
+			cm_log(1, "Error retrieving public key: %s.\n", es);
+		} else {
+			cm_log(1, "Error retrieving public key: %d.\n", ec);
 		}
 		SECKEY_DestroyPublicKey(pubkey);
 		SECKEY_DestroyPrivateKey(privkey->key);
