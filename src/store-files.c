@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -58,6 +58,8 @@ enum cm_store_file_field {
 	cm_store_entry_field_key_pin,
 	cm_store_entry_field_key_pin_file,
 	cm_store_entry_field_key_pubkey,
+	cm_store_entry_field_key_pubkey_params,
+	cm_store_entry_field_key_pubkey_info,
 
 	cm_store_entry_field_cert_storage_type,
 	cm_store_entry_field_cert_storage_location,
@@ -150,6 +152,8 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_key_pin, "key_pin"},
 	{cm_store_entry_field_key_pin_file, "key_pin_file"},
 	{cm_store_entry_field_key_pubkey, "key_pubkey"},
+	{cm_store_entry_field_key_pubkey_params, "key_pubkey_params"},
+	{cm_store_entry_field_key_pubkey_info, "key_pubkey_info"},
 
 	{cm_store_entry_field_cert_storage_type, "cert_storage_type"},
 	{cm_store_entry_field_cert_storage_location, "cert_storage_location"},
@@ -513,6 +517,12 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_key_pubkey:
 				ret->cm_key_pubkey = free_if_empty(p);
 				break;
+			case cm_store_entry_field_key_pubkey_params:
+				ret->cm_key_pubkey_params = free_if_empty(p);
+				break;
+			case cm_store_entry_field_key_pubkey_info:
+				ret->cm_key_pubkey_info = free_if_empty(p);
+				break;
 			case cm_store_entry_field_cert_storage_type:
 				if (strcasecmp(p, "FILE") == 0) {
 					ret->cm_cert_storage_type =
@@ -778,6 +788,8 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_key_pin:
 			case cm_store_entry_field_key_pin_file:
 			case cm_store_entry_field_key_pubkey:
+			case cm_store_entry_field_key_pubkey_params:
+			case cm_store_entry_field_key_pubkey_info:
 			case cm_store_entry_field_cert_storage_type:
 			case cm_store_entry_field_cert_storage_location:
 			case cm_store_entry_field_cert_token:
@@ -1024,6 +1036,10 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 				entry->cm_key_pin_file);
 	cm_store_file_write_str(fp, cm_store_entry_field_key_pubkey,
 				entry->cm_key_pubkey);
+	cm_store_file_write_str(fp, cm_store_entry_field_key_pubkey_params,
+				entry->cm_key_pubkey_params);
+	cm_store_file_write_str(fp, cm_store_entry_field_key_pubkey_info,
+				entry->cm_key_pubkey_info);
 
 	switch (entry->cm_cert_storage_type) {
 	case cm_cert_storage_file:
@@ -1663,6 +1679,8 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 		ret->cm_key_pin = NULL;
 	}
 	ret->cm_key_pubkey = cm_store_maybe_strdup(ret, entry->cm_key_pubkey);
+	ret->cm_key_pubkey_params = cm_store_maybe_strdup(ret, entry->cm_key_pubkey_params);
+	ret->cm_key_pubkey_info = cm_store_maybe_strdup(ret, entry->cm_key_pubkey_info);
 
 	ret->cm_cert_storage_type = entry->cm_cert_storage_type;
 	ret->cm_cert_storage_location = cm_store_maybe_strdup(ret, entry->cm_cert_storage_location);
