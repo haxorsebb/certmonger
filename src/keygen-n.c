@@ -233,7 +233,7 @@ next_slot:
 	case cm_key_rsa:
 		memset(&rsa_params, 0, sizeof(rsa_params));
 		rsa_params.keySizeInBits = cm_key_size;
-		rsa_params.pe = CM_DEFAULT_RSA_MODULUS;
+		rsa_params.pe = CM_DEFAULT_RSA_EXPONENT;
 		params = &rsa_params;
 		break;
 	default:
