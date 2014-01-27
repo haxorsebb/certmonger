@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.70
+Version:	0.71
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -202,6 +202,16 @@ exit 0
 %endif
 
 %changelog
+* Mon Jan 27 2014 Nalin Dahyabhai <nalin@redhat.com> 0.71-1
+- check for cases where we fail to allocate memory while reading a request
+  or CA entry from disk (John Haxby)
+- only handle one watch at a time, which should avoid abort() during
+  attempts to reconnect to the message bus after losing our connection
+  to it (#1055521)
+
+* Fri Jan 24 2014 Daniel Mach <dmach@redhat.com> - 0.70-2
+- Mass rebuild 2014-01-24
+
 * Thu Jan  2 2014 Nalin Dahyabhai <nalin@redhat.com> 0.70-1
 - add a --with-homedir option to configure, and use it, since subprocesses
   which we run and which use NSS may attempt to write to $HOME/.pki, and
