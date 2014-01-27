@@ -1339,7 +1339,8 @@ cm_store_get_all_entries(void *parent)
 					ret[j] = cm_store_entry_read(ret,
 								     globs.gl_pathv[i],
 								     fp);
-					if (ret[j]->cm_nickname == NULL) {
+					if ((ret[j] != NULL) &&
+					    (ret[j]->cm_nickname == NULL)) {
 						talloc_free(ret[j]);
 						ret[j] = NULL;
 					}
@@ -1550,7 +1551,8 @@ cm_store_get_all_cas(void *parent)
 				ret[j] = cm_store_ca_read(ret,
 							  globs.gl_pathv[i],
 							  fp);
-				if (ret[j]->cm_nickname == NULL) {
+				if ((ret[j] != NULL) &&
+				    (ret[j]->cm_nickname == NULL)) {
 					talloc_free(ret[j]);
 					ret[j] = NULL;
 				}
