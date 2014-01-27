@@ -139,6 +139,7 @@ cm_tdbus_queue_fd(struct tevent_context *ec, struct tdbus_watch *watch,
 		watch->tfd = tevent_add_fd(ec, watch, watch->fd, newtflags,
 					   handler, watch);
 	} else {
+		cm_log(5, "Not queuing FD %d.\n", watch->fd);
 		watch->tfd = NULL;
 	}
 }
@@ -161,6 +162,7 @@ cm_tdbus_handle_fd(struct tevent_context *ec, struct tevent_fd *tfd,
 			if ((dflags & dwatch->dflags) != 0) {
 				dbus_watch_handle(dwatch->watch,
 						  dflags & dwatch->dflags);
+				break;
 			}
 		}
 		dwatch = dwatch->next;
@@ -444,9 +446,12 @@ cm_tdbus_reconnect(struct tevent_context *ec, struct tevent_timer *timer,
 
 	tdb = pvt;
 	talloc_free(timer);
-	if (!dbus_connection_get_is_connected(tdb->conn)) {
+	if ((tdb->conn == NULL) ||
+	    !dbus_connection_get_is_connected(tdb->conn)) {
 		/* Close the current connection and open a new one. */
-		dbus_connection_unref(tdb->conn);
+		if (tdb->conn != NULL) {
+			dbus_connection_unref(tdb->conn);
+		}
 		bus_desc = NULL;
 		switch (tdb->conn_type) {
 		case cm_tdbus_system:
@@ -466,7 +471,8 @@ cm_tdbus_reconnect(struct tevent_context *ec, struct tevent_timer *timer,
 			bus_desc = "session";
 			break;
 		}
-		if (dbus_connection_get_is_connected(tdb->conn)) {
+		if ((tdb->conn != NULL) &&
+		    dbus_connection_get_is_connected(tdb->conn)) {
 			/* We're reconnected; reset our handlers. */
 			cm_log(1, "Reconnected to %s bus.\n", bus_desc);
 			dbus_connection_set_exit_on_disconnect(tdb->conn,
