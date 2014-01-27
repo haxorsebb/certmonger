@@ -88,7 +88,7 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(1, "Internal error generating key.\n");
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
-		rsa = RSA_generate_key(cm_key_size, CM_DEFAULT_RSA_MODULUS,
+		rsa = RSA_generate_key(cm_key_size, CM_DEFAULT_RSA_EXPONENT,
 				       NULL, NULL);
 		if (rsa == NULL) {
 			cm_log(1, "Error generating key.\n");
