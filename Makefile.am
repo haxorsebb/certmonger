@@ -34,7 +34,7 @@ archive:
 		git clone $(ORIGIN) $$tmpdir/certmonger;\
 		cd $$tmpdir/certmonger;\
 		git checkout $(GITTAG);\
-		./autogen.sh;\
+		./autogen.sh --disable-systemd --disable-sysvinit ;\
 		make distcheck;\
 		mkdir -p $$tmpdir/rpm-build-top;\
 		rpmbuild \
