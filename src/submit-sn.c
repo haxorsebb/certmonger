@@ -62,7 +62,7 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	char *b64, *serial;
 	const char *p, *q;
 	SECStatus error;
-	SECItem *esdata = NULL, *ecert = NULL;
+	SECItem *esdata = NULL, *ecert = NULL, item;
 	struct cm_keyiread_n_ctx_and_key *privkey;
 	SECKEYPublicKey *pubkey;
 	CERTCertificate *ucert = NULL;
@@ -77,6 +77,8 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	int i, serial_length, basic_length;
 	unsigned char btrue = 0xff;
 	PRBool found_basic;
+	CERTSubjectPublicKeyInfo *spki;
+	char *pubhex;
 
 	/* Start up NSS and open the database. */
 	privkey = cm_keyiread_n_get_private_key(entry, 0);
@@ -121,6 +123,23 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		data = &sdata;
 	}
 	pubkey = SECKEY_ConvertToPublicKey(privkey->key);
+	if ((pubkey == NULL) &&
+	    (entry->cm_key_pubkey_info != NULL)) {
+		memset(&item, 0, sizeof(item));
+		pubhex = entry->cm_key_pubkey_info;
+		item.len = strlen(pubhex) / 2;
+		item.data = malloc(item.len);
+		if (item.data != NULL) {
+			cm_store_hex_to_bin(pubhex,
+					    item.data,
+					    item.len);
+			spki = SECKEY_DecodeDERSubjectPublicKeyInfo(&item);
+			if (spki != NULL) {
+				pubkey = SECKEY_ExtractPublicKey(spki);
+				SECKEY_DestroySubjectPublicKeyInfo(spki);
+			}
+		}
+	}
 	if (pubkey == NULL) {
 		cm_log(1, "Unable to convert private key to public key.\n");
 		_exit(1);

@@ -232,9 +232,9 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	CERTSignedData sreq, spkac;
 	CERTName *name;
 	PLArenaPool *arena;
-	SECItem ereq, esreq, epkac, espkac, *attrs;
+	SECItem ereq, esreq, epkac, espkac, *attrs, item;
 	int ec;
-	char *b64, *b642, *p, *q;
+	char *b64, *b642, *p, *q, *pubhex;
 	const char *es;
 	SECOidData *sigoid;
 
@@ -267,6 +267,23 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 	/* Find the public key. */
 	pubkey = SECKEY_ConvertToPublicKey(privkey->key);
+	if ((pubkey == NULL) &&
+	    (entry->cm_key_pubkey_info != NULL)) {
+		memset(&item, 0, sizeof(item));
+		pubhex = entry->cm_key_pubkey_info;
+		item.len = strlen(pubhex) / 2;
+		item.data = malloc(item.len);
+		if (item.data != NULL) {
+			cm_store_hex_to_bin(pubhex,
+					    item.data,
+					    item.len);
+			spki = SECKEY_DecodeDERSubjectPublicKeyInfo(&item);
+			if (spki != NULL) {
+				pubkey = SECKEY_ExtractPublicKey(spki);
+				SECKEY_DestroySubjectPublicKeyInfo(spki);
+			}
+		}
+	}
 	if (pubkey == NULL) {
 		ec = PORT_GetError();
 		if (ec != 0) {
