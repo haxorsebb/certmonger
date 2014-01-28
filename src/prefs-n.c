@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Red Hat, Inc.
+ * Copyright (C) 2010,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,6 +62,37 @@ cm_prefs_nss_sig_alg(SECKEYPublicKey *pkey)
 			break;
 		}
 		return SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION;
+		break;
+	case dsaKey:
+		switch (cm_prefs_preferred_digest()) {
+		case cm_prefs_sha1:
+			return SEC_OID_ANSIX9_DSA_SIGNATURE_WITH_SHA1_DIGEST;
+			break;
+		case cm_prefs_sha256:
+			return SEC_OID_NIST_DSA_SIGNATURE_WITH_SHA256_DIGEST;
+			break;
+		case cm_prefs_sha384:
+		case cm_prefs_sha512:
+			break;
+		}
+		return SEC_OID_NIST_DSA_SIGNATURE_WITH_SHA256_DIGEST;
+		break;
+	case ecKey:
+		switch (cm_prefs_preferred_digest()) {
+		case cm_prefs_sha1:
+			return SEC_OID_ANSIX962_ECDSA_SHA224_SIGNATURE;
+			break;
+		case cm_prefs_sha256:
+			return SEC_OID_ANSIX962_ECDSA_SHA256_SIGNATURE;
+			break;
+		case cm_prefs_sha384:
+			return SEC_OID_ANSIX962_ECDSA_SHA384_SIGNATURE;
+			break;
+		case cm_prefs_sha512:
+			return SEC_OID_ANSIX962_ECDSA_SHA512_SIGNATURE;
+			break;
+		}
+		return SEC_OID_ANSIX962_ECDSA_SHA256_SIGNATURE;
 		break;
 	default:
 		return SEC_OID_UNKNOWN;

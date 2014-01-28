@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -392,6 +392,11 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			alg = "DSA";
 			template = SECKEY_DSAPublicKeyTemplate;
 			break;
+		case ecKey:
+			cm_log(3, "Key is an EC key.\n");
+			alg = "EC";
+			template = NULL;
+			break;
 		case nullKey:
 		default:
 			cm_log(3, "Key is of an unknown type.\n");
@@ -417,11 +422,17 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				cm_log(3, "Key size is %d.\n", size);
 				pubhex = "";
 				memset(&pubdata, 0, sizeof(pubdata));
-				if (SEC_ASN1EncodeItem(NULL, &pubdata, pubkey,
-						       template) == &pubdata) {
-					pubhex = cm_store_hex_from_bin(NULL,
-								       pubdata.data,
-								       pubdata.len);
+				if (template != NULL) {
+					if (SEC_ASN1EncodeItem(NULL,
+							       &pubdata,
+							       pubkey,
+							       template) == &pubdata) {
+						pubhex = cm_store_hex_from_bin(NULL,
+									       pubdata.data,
+									       pubdata.len);
+					}
+				} else {
+					pubhex = "";
 				}
 				fprintf(fp, "%s/%d/%s%s%s\n", alg, size,
 					pubhex,
