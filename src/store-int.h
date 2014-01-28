@@ -49,10 +49,6 @@ struct cm_store_entry {
 	char *cm_key_nickname;
 	char *cm_key_pin;
 	char *cm_key_pin_file;
-	/* Cached public key */
-	char *cm_key_pubkey;
-	/* Cached public key parameters */
-	char *cm_key_pubkey_params;
 	/* Cached public key info (parameters + key) */
 	char *cm_key_pubkey_info;
 	/* Location of certificate [use-once default]
