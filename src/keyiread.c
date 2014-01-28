@@ -126,8 +126,12 @@ cm_keyiread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 
 	/* Break out the algorithm. */
 	q = p + strcspn(p, "/\r\n");
-	if (((q - p) == strlen("RSA")) &&
-	    (strncasecmp(p, "RSA", 3) == 0)) {
+	if ((((q - p) == strlen("RSA")) &&
+	     (strncasecmp(p, "RSA", 3) == 0)) ||
+	    (((q - p) == strlen("DSA")) &&
+	     (strncasecmp(p, "DSA", 3) == 0)) ||
+	    (((q - p) == strlen("EC")) &&
+	     (strncasecmp(p, "EC", 2) == 0))) {
 		alg = cm_key_rsa;
 		p = q + strspn(q, "/\r\n");
 		q = p + strcspn(p, "/\r\n");
@@ -140,9 +144,9 @@ cm_keyiread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 			p = q + strspn(q, "/\r\n");
 			q = p + strcspn(p, "/\r\n");
 			if (p != q) {
-				talloc_free(entry->cm_key_pubkey);
-				entry->cm_key_pubkey = talloc_strndup(entry,
-								      p, q - p);
+				talloc_free(entry->cm_key_pubkey_info);
+				entry->cm_key_pubkey_info = talloc_strndup(entry,
+									   p, q - p);
 				p = q + strspn(q, "/\r\n");
 				q = p + strcspn(p, "/\r\n");
 				if (p != q) {

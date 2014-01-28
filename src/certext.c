@@ -30,6 +30,7 @@
 #include <nss.h>
 #include <certt.h>
 #include <cert.h>
+#include <keyhi.h>
 #include <pk11pub.h>
 #include <secoid.h>
 #include <secoidt.h>
@@ -1088,20 +1089,27 @@ static SECItem *
 cm_certext_build_self_akid(struct cm_store_entry *entry, PLArenaPool *arena)
 {
 	CERTAuthKeyID value;
-	SECItem pubkey, encoded, *item;
+	CERTSubjectPublicKeyInfo pubkey;
+	SECItem pubkeyinfo, encoded, *item;
 	unsigned char digest[CM_DIGEST_MAX];
 
-	if (entry->cm_key_pubkey != NULL) {
+	if (entry->cm_key_pubkey_info != NULL) {
 		memset(&pubkey, 0, sizeof(pubkey));
-		pubkey.len = strlen(entry->cm_key_pubkey) / 2;
-		pubkey.data = PORT_ArenaZAlloc(arena, pubkey.len);
-		if (pubkey.data == NULL) {
+		pubkeyinfo.len = strlen(entry->cm_key_pubkey_info) / 2;
+		pubkeyinfo.data = PORT_ArenaZAlloc(arena, pubkeyinfo.len);
+		if (pubkeyinfo.data == NULL) {
 			return NULL;
 		}
-		cm_store_hex_to_bin(entry->cm_key_pubkey,
-				    pubkey.data, pubkey.len);
+		cm_store_hex_to_bin(entry->cm_key_pubkey_info,
+				    pubkeyinfo.data, pubkeyinfo.len);
+		if (SEC_ASN1DecodeItem(NULL, &pubkey,
+				       CERT_SubjectPublicKeyInfoTemplate,
+				       &pubkeyinfo) != SECSuccess) {
+			return NULL;
+		}
 		if (PK11_HashBuf(SEC_OID_SHA1, digest,
-				 pubkey.data, pubkey.len) != SECSuccess) {
+				 pubkey.subjectPublicKey.data,
+				 pubkey.subjectPublicKey.len) != SECSuccess) {
 			return NULL;
 		}
 		memset(&value, 0, sizeof(value));
@@ -1123,20 +1131,24 @@ cm_certext_build_self_akid(struct cm_store_entry *entry, PLArenaPool *arena)
 static SECItem *
 cm_certext_build_skid(struct cm_store_entry *entry, PLArenaPool *arena)
 {
-	SECItem pubkey, value, encoded, *item;
+	CERTSubjectPublicKeyInfo *spki;
+	SECItem pubkeyinfo, value, encoded, *item;
 	unsigned char digest[CM_DIGEST_MAX];
 
-	if (entry->cm_key_pubkey != NULL) {
-		memset(&pubkey, 0, sizeof(pubkey));
-		pubkey.len = strlen(entry->cm_key_pubkey) / 2;
-		pubkey.data = PORT_ArenaZAlloc(arena, pubkey.len);
-		if (pubkey.data == NULL) {
+	if (entry->cm_key_pubkey_info != NULL) {
+		memset(&pubkeyinfo, 0, sizeof(pubkeyinfo));
+		pubkeyinfo.len = strlen(entry->cm_key_pubkey_info) / 2;
+		pubkeyinfo.data = PORT_ArenaZAlloc(arena, pubkeyinfo.len);
+		if (pubkeyinfo.data == NULL) {
 			return NULL;
 		}
-		cm_store_hex_to_bin(entry->cm_key_pubkey,
-				    pubkey.data, pubkey.len);
+		cm_store_hex_to_bin(entry->cm_key_pubkey_info,
+				    pubkeyinfo.data, pubkeyinfo.len);
+		spki = SECKEY_DecodeDERSubjectPublicKeyInfo(&pubkeyinfo);
 		if (PK11_HashBuf(SEC_OID_SHA1, digest,
-				 pubkey.data, pubkey.len) != SECSuccess) {
+				 spki->subjectPublicKey.data,
+				 spki->subjectPublicKey.len) != SECSuccess) {
+			SECKEY_DestroySubjectPublicKeyInfo(spki);
 			return NULL;
 		}
 		memset(&value, 0, sizeof(value));
