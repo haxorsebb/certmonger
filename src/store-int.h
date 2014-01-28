@@ -33,6 +33,8 @@ struct cm_store_entry {
 		enum cm_key_algorithm {
 			cm_key_unspecified = 0,
 			cm_key_rsa = 1,
+			cm_key_dsa,
+			cm_key_ecdsa,
 		} cm_key_algorithm, cm_key_gen_algorithm;
 		int cm_key_size, cm_key_gen_size;
 	} cm_key_type;

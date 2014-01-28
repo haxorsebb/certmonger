@@ -2119,6 +2119,12 @@ request_get_key_type_and_size(DBusConnection *conn, DBusMessage *msg,
 	case cm_key_rsa:
 		type = "RSA";
 		break;
+	case cm_key_dsa:
+		type = "DSA";
+		break;
+	case cm_key_ecdsa:
+		type = "EC";
+		break;
 	}
 	if (rep != NULL) {
 		size = entry->cm_key_type.cm_key_size;
@@ -2916,6 +2922,12 @@ request_prop_get_key_type(struct cm_context *ctx, void *parent,
 	case cm_key_rsa:
 		return "RSA";
 		break;
+	case cm_key_dsa:
+		return "DSA";
+		break;
+	case cm_key_ecdsa:
+		return "EC";
+		break;
 	}
 	return "";
 }
@@ -2930,6 +2942,12 @@ request_prop_get_key_size(struct cm_context *ctx, void *parent,
 		return 0;
 		break;
 	case cm_key_rsa:
+		return entry->cm_key_type.cm_key_size;
+		break;
+	case cm_key_dsa:
+		return entry->cm_key_type.cm_key_size;
+		break;
+	case cm_key_ecdsa:
 		return entry->cm_key_type.cm_key_size;
 		break;
 	}

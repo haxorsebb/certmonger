@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012,2013 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
 
 #include "config.h"
 
+#include <sys/param.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <errno.h>
@@ -27,8 +28,10 @@
 #include <unistd.h>
 
 #include <nss.h>
+#include <pk11pqg.h>
 #include <pk11pub.h>
 #include <keyhi.h>
+#include <keythi.h>
 #include <prerror.h>
 #include <secerr.h>
 
@@ -54,6 +57,24 @@ struct cm_keygen_n_settings {
 };
 
 static int
+pqg_size(int key_size)
+{
+	if (key_size < 512) {
+		key_size = 512;
+	}
+	if (key_size < 1024) {
+		key_size = howmany(key_size, 64) * 64;
+	}
+	if (key_size > 1024) {
+		key_size = howmany(key_size, 1024) * 1024;
+	}
+	if (key_size > 3072) {
+		key_size = 3072;
+	}
+	return key_size;
+}
+
+static int
 cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		 void *userdata)
 {
@@ -67,7 +88,13 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	PK11SlotListElement *sle;
 	PK11SlotInfo *slot = NULL;
 	PK11RSAGenParams rsa_params;
+	PQGParams *pqg_params = NULL;
+	PQGVerify *pqg_verify;
+	SECStatus pqg_ok;
+	SECKEYPQGParams dsa_params;
+	SECItem ec_params;
 	void *params;
+	SECOidData *curve;
 	SECKEYPrivateKey *privkey, *delkey;
 	SECKEYPrivateKeyList *privkeys;
 	SECKEYPrivateKeyListNode *node;
@@ -76,6 +103,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	char *pin;
 	struct cm_keygen_n_settings *settings;
 	struct cm_pin_cb_data cb_data;
+	int retry;
 
 	status = fdopen(fd, "w");
 	if (status == NULL) {
@@ -165,6 +193,13 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	case cm_key_rsa:
 		mech = CKM_RSA_PKCS_KEY_PAIR_GEN;
 		break;
+	case cm_key_dsa:
+		cm_requested_key_size = pqg_size(cm_requested_key_size);
+		mech = CKM_DSA_KEY_PAIR_GEN;
+		break;
+	case cm_key_ecdsa:
+		mech = CKM_EC_KEY_PAIR_GEN;
+		break;
 	default:
 		fprintf(status, "Unknown or unsupported key type.\n");
 		cm_log(1, "Unknown or unsupported key type.\n");
@@ -212,33 +247,6 @@ next_slot:
 		fprintf(status, "Error locating token for key generation.\n");
 		cm_log(1, "Error locating token for key generation.\n");
 		_exit(CM_SUB_STATUS_ERROR_NO_TOKEN);
-	}
-	/* Select the optimum key size. */
-	cm_key_size = PK11_GetBestKeyLength(slot, mech);
-	if (cm_key_size > 0) {
-		if (cm_key_size != cm_requested_key_size) {
-			cm_log(1,
-			       "Overriding requested key size of %d with %d.\n",
-			       cm_requested_key_size, cm_key_size);
-		}
-	} else {
-		if (cm_requested_key_size > 0) {
-			cm_key_size = cm_requested_key_size;
-		} else {
-			cm_key_size = CM_DEFAULT_PUBKEY_SIZE;
-		}
-	}
-	/* Initialize the key generation parameters. */
-	switch (cm_key_algorithm) {
-	case cm_key_rsa:
-		memset(&rsa_params, 0, sizeof(rsa_params));
-		rsa_params.keySizeInBits = cm_key_size;
-		rsa_params.pe = CM_DEFAULT_RSA_EXPONENT;
-		params = &rsa_params;
-		break;
-	default:
-		params = NULL;
-		break;
 	}
 	/* Be ready to count our uses of a PIN. */
 	memset(&cb_data, 0, sizeof(cb_data));
@@ -331,7 +339,133 @@ next_slot:
 		}
 		_exit(CM_SUB_STATUS_ERROR_AUTH);
 	}
+	/* Select the optimum key size. */
+	cm_key_size = PK11_GetBestKeyLength(slot, mech);
+	if (cm_key_size > 0) {
+		if (cm_key_size != cm_requested_key_size) {
+			cm_log(1,
+			       "Overriding requested key size of %d with %d.\n",
+			       cm_requested_key_size, cm_key_size);
+		}
+	} else {
+		if (cm_requested_key_size > 0) {
+			cm_key_size = cm_requested_key_size;
+		} else {
+			cm_key_size = CM_DEFAULT_PUBKEY_SIZE;
+		}
+	}
+	/* Initialize the parameters. */
+	switch (cm_key_algorithm) {
+	case cm_key_rsa:
+		/* no parameters */
+		break;
+	case cm_key_dsa:
+		cm_log(1, "Generating domain parameters.\n");
+		pqg_ok = SECFailure;
+		cm_key_size = pqg_size(cm_key_size);
+		retry = 0;
+		while (pqg_ok == SECFailure) {
+			pqg_params = NULL;
+			pqg_verify = NULL;
+			while (PK11_PQG_ParamGenV2(cm_key_size,
+						   0,
+						   64,
+						   &pqg_params,
+						   &pqg_verify) != SECSuccess) {
+				ec = PORT_GetError();
+				if (ec != 0) {
+					es = PR_ErrorToName(ec);
+				} else {
+					es = NULL;
+				}
+				if (es != NULL) {
+					cm_log(1,
+					       "Error generating params: %s.\n",
+					       es);
+				} else {
+					cm_log(1, "Error generating params.\n");
+				}
+				if ((ec != SEC_ERROR_BAD_DATA) || (++retry > 10)) {
+					PK11_FreeSlotList(slotlist);
+					error = NSS_ShutdownContext(ctx);
+					if (error != SECSuccess) {
+						cm_log(1, "Error shutting down NSS.\n");
+					}
+					_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+				}
+				cm_log(1, "Trying again.\n");
+				pqg_params = NULL;
+				pqg_verify = NULL;
+			}
+			if (PK11_PQG_VerifyParams(pqg_params, pqg_verify,
+						  &pqg_ok) != SECSuccess) {
+				ec = PORT_GetError();
+				if (ec != 0) {
+					es = PR_ErrorToName(ec);
+				} else {
+					es = NULL;
+				}
+				if (es != NULL) {
+					cm_log(1,
+					       "Error verifying params: %s.\n",
+					       es);
+				} else {
+					cm_log(1, "Error verifying params.\n");
+				}
+				if (++retry > 10) {
+					PK11_FreeSlotList(slotlist);
+					error = NSS_ShutdownContext(ctx);
+					if (error != SECSuccess) {
+						cm_log(1, "Error shutting down NSS.\n");
+					}
+					_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+				}
+			}
+			if (pqg_ok == SECFailure) {
+				cm_log(1, "Params are bad.  Retrying.\n");
+			}
+		}
+		break;
+	case cm_key_ecdsa:
+		/* no parameters to generate */
+		break;
+	default:
+		params = NULL;
+		break;
+	}
+	/* Initialize the key generation parameters. */
+	switch (cm_key_algorithm) {
+	case cm_key_rsa:
+		memset(&rsa_params, 0, sizeof(rsa_params));
+		rsa_params.keySizeInBits = cm_key_size;
+		rsa_params.pe = CM_DEFAULT_RSA_EXPONENT;
+		params = &rsa_params;
+		break;
+	case cm_key_dsa:
+		memset(&dsa_params, 0, sizeof(dsa_params));
+		PK11_PQG_GetPrimeFromParams(pqg_params, &dsa_params.prime);
+		PK11_PQG_GetSubPrimeFromParams(pqg_params, &dsa_params.subPrime);
+		PK11_PQG_GetBaseFromParams(pqg_params, &dsa_params.base);
+		params = &dsa_params;
+		break;
+	case cm_key_ecdsa:
+		memset(&ec_params, 0, sizeof(ec_params));
+		if (cm_key_size <= 256)
+			curve = SECOID_FindOIDByTag(SEC_OID_SECG_EC_SECP256R1);
+		if (cm_key_size <= 384)
+			curve = SECOID_FindOIDByTag(SEC_OID_SECG_EC_SECP384R1);
+		else
+			curve = SECOID_FindOIDByTag(SEC_OID_SECG_EC_SECP521R1);
+		SEC_ASN1EncodeItem(NULL, &ec_params,
+				   &curve->oid, SEC_ObjectIDTemplate);
+		params = &ec_params;
+		break;
+	default:
+		params = NULL;
+		break;
+	}
 	/* Generate the key pair. */
+	cm_log(1, "Generating key pair.\n");
 	pubkey = NULL;
 	privkey = PK11_GenerateKeyPair(slot, mech, params, &pubkey,
 				       PR_TRUE, PR_TRUE, NULL);
@@ -409,6 +543,7 @@ next_slot:
 			break;
 		}
 	}
+	/* Attach the specified nickname to the public key. */
 	error = PK11_SetPublicKeyNickname(pubkey, entry->cm_key_nickname);
 	ec = PORT_GetError();
 	if (error != SECSuccess) {

@@ -450,6 +450,15 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 				if (strcasecmp(s[i], "RSA") == 0) {
 					ret->cm_key_type.cm_key_algorithm =
 						cm_key_rsa;
+				} else
+				if (strcasecmp(s[i], "DSA") == 0) {
+					ret->cm_key_type.cm_key_algorithm =
+						cm_key_dsa;
+				} else
+				if ((strcasecmp(s[i], "ECDSA") == 0) ||
+				    (strcasecmp(s[i], "EC") == 0)) {
+					ret->cm_key_type.cm_key_algorithm =
+						cm_key_ecdsa;
 				} else {
 					ret->cm_key_type.cm_key_algorithm =
 						cm_key_unspecified;
@@ -460,6 +469,15 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 				if (strcasecmp(s[i], "RSA") == 0) {
 					ret->cm_key_type.cm_key_gen_algorithm =
 						cm_key_rsa;
+				} else
+				if (strcasecmp(s[i], "DSA") == 0) {
+					ret->cm_key_type.cm_key_gen_algorithm =
+						cm_key_dsa;
+				} else
+				if ((strcasecmp(s[i], "ECDSA") == 0) ||
+				    (strcasecmp(s[i], "EC") == 0)) {
+					ret->cm_key_type.cm_key_gen_algorithm =
+						cm_key_ecdsa;
 				} else {
 					ret->cm_key_type.cm_key_gen_algorithm =
 						cm_key_unspecified;
@@ -994,6 +1012,14 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 		cm_store_file_write_str(fp, cm_store_entry_field_key_type,
 					"RSA");
 		break;
+	case cm_key_dsa:
+		cm_store_file_write_str(fp, cm_store_entry_field_key_type,
+					"DSA");
+		break;
+	case cm_key_ecdsa:
+		cm_store_file_write_str(fp, cm_store_entry_field_key_type,
+					"EC");
+		break;
 	}
 	switch (entry->cm_key_type.cm_key_gen_algorithm) {
 	case cm_key_unspecified:
@@ -1003,6 +1029,14 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 	case cm_key_rsa:
 		cm_store_file_write_str(fp, cm_store_entry_field_key_gen_type,
 					"RSA");
+		break;
+	case cm_key_dsa:
+		cm_store_file_write_str(fp, cm_store_entry_field_key_gen_type,
+					"DSA");
+		break;
+	case cm_key_ecdsa:
+		cm_store_file_write_str(fp, cm_store_entry_field_key_gen_type,
+					"EC");
 		break;
 	}
 	cm_store_file_write_int(fp, cm_store_entry_field_key_size,

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2013 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2013,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,12 +56,14 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 {
 	struct cm_pin_cb_data cb_data;
 	FILE *fp, *status;
-	RSA *rsa;
-	EVP_PKEY *pkey;
+	EVP_PKEY_CTX *ctx;
+	EVP_PKEY *pkey, *params;
 	char buf[LINE_MAX], *pin;
 	long error, errno_save;
 	enum cm_key_algorithm cm_key_algorithm;
 	int cm_key_size;
+	int alg, curve;
+	unsigned int need_params;
 
 	status = fdopen(fd, "w");
 	if (status == NULL) {
@@ -75,69 +77,149 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	if (cm_key_size <= 0) {
 		cm_key_size = CM_DEFAULT_PUBKEY_SIZE;
 	}
+
+	util_o_init();
+	ERR_load_crypto_strings();
+	if (RAND_status() != 1) {
+		cm_log(1, "PRNG not seeded for generating key.\n");
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+	}
+
 	switch (cm_key_algorithm) {
 	case cm_key_rsa:
-		util_o_init();
-		ERR_load_crypto_strings();
-		if (RAND_status() != 1) {
-			cm_log(1, "PRNG not seeded for generating key.\n");
-			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-		}
-		pkey = EVP_PKEY_new();
-		if (pkey == NULL) {
-			cm_log(1, "Internal error generating key.\n");
-			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-		}
-		rsa = RSA_generate_key(cm_key_size, CM_DEFAULT_RSA_EXPONENT,
-				       NULL, NULL);
-		if (rsa == NULL) {
-			cm_log(1, "Error generating key.\n");
+		alg = EVP_PKEY_RSA;
+		need_params = 0;
+		break;
+	case cm_key_dsa:
+		alg = EVP_PKEY_DSA;
+		need_params = 1;
+		break;
+	case cm_key_ecdsa:
+		alg = EVP_PKEY_EC;
+		need_params = 1;
+		break;
+	case cm_key_unspecified:
+	default:
+		cm_log(1, "Unknown or unsupported key type.\n");
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		break;
+	}
+
+	ctx = EVP_PKEY_CTX_new_id(alg, NULL);
+	if (ctx == NULL) {
+		cm_log(1, "Error setting up key generation context.\n");
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+	}
+
+	if (need_params) {
+		if (EVP_PKEY_paramgen_init(ctx) <= 0) {
+			cm_log(1, "Error preparing for key parameter "
+			       "generation.\n");
 			while ((error = ERR_get_error()) != 0) {
 				ERR_error_string_n(error, buf, sizeof(buf));
 				cm_log(1, "%s\n", buf);
 			}
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
-		EVP_PKEY_assign_RSA(pkey, rsa);
-		fp = fopen(entry->cm_key_storage_location, "w");
-		if (fp == NULL) {
-			if (errno != ENOENT) {
-				error = errno;
-				cm_log(1,
-				       "Error opening key file \"%s\" "
-				       "for writing: %s.\n",
-				       entry->cm_key_storage_location,
-				       strerror(errno));
-				switch (error) {
-				case EACCES:
-				case EPERM:
-					_exit(CM_SUB_STATUS_ERROR_PERMS);
-					break;
-				default:
-					break;
-				}
-			}
-			_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
+	}
+
+	switch (cm_key_algorithm) {
+	case cm_key_rsa:
+		break;
+	case cm_key_dsa:
+		if (EVP_PKEY_CTX_set_dsa_paramgen_bits(ctx,
+						       cm_key_size) <= 0) {
+			cm_log(1, "Error setting key parameter generation "
+			       "parameters.\n");
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
-		if (cm_pin_read_for_key(entry, &pin) != 0) {
-			cm_log(1, "Error reading key encryption PIN.\n");
-			_exit(CM_SUB_STATUS_ERROR_AUTH);
+		break;
+	case cm_key_ecdsa:
+		if (cm_key_size <= 256)
+			curve = NID_secp256k1;
+		if (cm_key_size <= 384)
+			curve = NID_secp384r1;
+		else
+			curve = NID_secp521r1;
+		if (EVP_PKEY_CTX_set_ec_paramgen_curve_nid(ctx, curve) <= 0) {
+			cm_log(1, "Error setting key parameter generation "
+			       "parameters.\n");
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
-		memset(&cb_data, 0, sizeof(cb_data));
-		cb_data.entry = entry;
-		cb_data.n_attempts = 0;
-		if (PEM_write_PKCS8PrivateKey(fp, pkey,
-					      pin ? cm_prefs_ossl_cipher() : NULL,
-					      NULL, 0,
-					      cm_pin_read_for_key_ossl_cb,
-					      &cb_data) == 0) {
-			errno_save = errno;
-			cm_log(1, "Error storing key.\n");
+		break;
+	default:
+		cm_log(1, "Unknown or unsupported key type.\n");
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		break;
+	}
+
+	params = NULL;
+	if (need_params) {
+		if ((EVP_PKEY_paramgen(ctx, &params) <= 0) ||
+		    (params == NULL)) {
 			while ((error = ERR_get_error()) != 0) {
 				ERR_error_string_n(error, buf, sizeof(buf));
 				cm_log(1, "%s\n", buf);
 			}
-			switch (errno_save) {
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		}
+		ctx = EVP_PKEY_CTX_new(params, NULL);
+		if (ctx == NULL) {
+			cm_log(1, "Error setting up key generation context.\n");
+			while ((error = ERR_get_error()) != 0) {
+				ERR_error_string_n(error, buf, sizeof(buf));
+				cm_log(1, "%s\n", buf);
+			}
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		}
+	}
+
+	if (EVP_PKEY_keygen_init(ctx) <= 0) {
+		cm_log(1, "Error preparing for key generation.\n");
+		while ((error = ERR_get_error()) != 0) {
+			ERR_error_string_n(error, buf, sizeof(buf));
+			cm_log(1, "%s\n", buf);
+		}
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+	}
+
+	switch (cm_key_algorithm) {
+	case cm_key_rsa:
+		if (EVP_PKEY_CTX_set_rsa_keygen_bits(ctx, cm_key_size) <= 0) {
+			cm_log(1, "Error setting key generation parameters.\n");
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		}
+		break;
+	case cm_key_dsa:
+		break;
+	case cm_key_ecdsa:
+		break;
+	default:
+		cm_log(1, "Unknown or unsupported key type.\n");
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		break;
+	}
+
+	pkey = NULL;
+	if ((EVP_PKEY_keygen(ctx, &pkey) <= 0) || (pkey == NULL)) {
+		cm_log(1, "Error generating key.\n");
+		while ((error = ERR_get_error()) != 0) {
+			ERR_error_string_n(error, buf, sizeof(buf));
+			cm_log(1, "%s\n", buf);
+		}
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+	}
+
+	fp = fopen(entry->cm_key_storage_location, "w");
+	if (fp == NULL) {
+		if (errno != ENOENT) {
+			error = errno;
+			cm_log(1,
+			       "Error opening key file \"%s\" "
+			       "for writing: %s.\n",
+			       entry->cm_key_storage_location,
+			       strerror(errno));
+			switch (error) {
 			case EACCES:
 			case EPERM:
 				_exit(CM_SUB_STATUS_ERROR_PERMS);
@@ -145,16 +227,42 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			default:
 				break;
 			}
-			_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
 		}
-		fclose(fp);
-		break;
-	default:
-		cm_log(1, "Unknown or unsupported key type.\n");
-		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-		break;
+		_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
 	}
+
+	if (cm_pin_read_for_key(entry, &pin) != 0) {
+		cm_log(1, "Error reading key encryption PIN.\n");
+		_exit(CM_SUB_STATUS_ERROR_AUTH);
+	}
+
+	memset(&cb_data, 0, sizeof(cb_data));
+	cb_data.entry = entry;
+	cb_data.n_attempts = 0;
+	if (PEM_write_PKCS8PrivateKey(fp, pkey,
+				      pin ? cm_prefs_ossl_cipher() : NULL,
+				      NULL, 0,
+				      cm_pin_read_for_key_ossl_cb,
+				      &cb_data) == 0) {
+		errno_save = errno;
+		cm_log(1, "Error storing key.\n");
+		while ((error = ERR_get_error()) != 0) {
+			ERR_error_string_n(error, buf, sizeof(buf));
+			cm_log(1, "%s\n", buf);
+		}
+		switch (errno_save) {
+		case EACCES:
+		case EPERM:
+			_exit(CM_SUB_STATUS_ERROR_PERMS);
+			break;
+		default:
+			break;
+		}
+		_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
+	}
+	fclose(fp);
 	fclose(status);
+
 	return 0;
 }
 
