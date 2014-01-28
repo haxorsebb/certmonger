@@ -92,7 +92,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	PQGVerify *pqg_verify;
 	SECStatus pqg_ok;
 	SECKEYPQGParams dsa_params;
-	SECItem ec_params;
+	SECItem ec_params, *spki;
 	void *params;
 	SECOidData *curve;
 	SECKEYPrivateKey *privkey, *delkey;
@@ -100,7 +100,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	SECKEYPrivateKeyListNode *node;
 	SECKEYPublicKey *pubkey;
 	const char *es, *token, *keyname, *reason;
-	char *pin;
+	char *pin, *pubhex;
 	struct cm_keygen_n_settings *settings;
 	struct cm_pin_cb_data cb_data;
 	int retry;
@@ -543,30 +543,16 @@ next_slot:
 			break;
 		}
 	}
-	/* Attach the specified nickname to the public key. */
-	error = PK11_SetPublicKeyNickname(pubkey, entry->cm_key_nickname);
-	ec = PORT_GetError();
-	if (error != SECSuccess) {
-		if (ec != 0) {
-			es = PR_ErrorToName(ec);
-		} else {
-			es = NULL;
-		}
-		if (es != NULL) {
-			cm_log(1, "Error setting nickname on public key: "
-			       "%s.\n", es);
-		} else {
-			cm_log(1, "Error setting nickname on public key.\n");
-		}
-		switch (ec) {
-		case PR_NO_ACCESS_RIGHTS_ERROR: /* EACCES or EPERM */
-			_exit(CM_SUB_STATUS_ERROR_PERMS);
-			break;
-		default:
-			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-			break;
-		}
+	/* Encode the public key to hex, and print it. */
+	spki = SECKEY_EncodeDERSubjectPublicKeyInfo(pubkey);
+	if (spki != NULL) {
+		pubhex = cm_store_hex_from_bin(NULL, spki->data,
+					       spki->len);
+		SECITEM_FreeItem(spki, PR_TRUE);
+	} else {
+		pubhex = "";
 	}
+	fprintf(status, "%s\n", pubhex);
 	SECKEY_DestroyPrivateKey(privkey);
 	SECKEY_DestroyPublicKey(pubkey);
 	PK11_FreeSlotList(slotlist);
@@ -651,7 +637,19 @@ cm_keygen_n_need_token(struct cm_store_entry *entry,
 static void
 cm_keygen_n_done(struct cm_store_entry *entry, struct cm_keygen_state *state)
 {
+	const char *pubkey_info;
+	int len;
+
 	if (state->subproc != NULL) {
+		pubkey_info = cm_subproc_get_msg(entry, state->subproc, NULL);
+		if (pubkey_info != NULL) {
+			len = strcspn(pubkey_info, "\r\n");
+			entry->cm_key_pubkey_info = talloc_strndup(entry,
+								   pubkey_info,
+								   len);
+		} else {
+			entry->cm_key_pubkey_info = NULL;
+		}
 		cm_subproc_done(entry, state->subproc);
 	}
 	talloc_free(state);

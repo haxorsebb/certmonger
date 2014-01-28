@@ -58,11 +58,12 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	FILE *fp, *status;
 	EVP_PKEY_CTX *ctx;
 	EVP_PKEY *pkey, *params;
-	char buf[LINE_MAX], *pin;
+	char buf[LINE_MAX], *pin, *pubhex;
+	unsigned char *p, *q;
 	long error, errno_save;
 	enum cm_key_algorithm cm_key_algorithm;
 	int cm_key_size;
-	int alg, curve;
+	int alg, curve, len;
 	unsigned int need_params;
 
 	status = fdopen(fd, "w");
@@ -260,6 +261,18 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 		_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
 	}
+	pubhex = "";
+	len = i2d_PUBKEY(pkey, NULL);
+	if (len > 0) {
+		p = malloc(len);
+		if (p != NULL) {
+			q = p;
+			if (i2d_PUBKEY(pkey, &q) == len) {
+				pubhex = cm_store_hex_from_bin(NULL, p, q - p);
+			}
+		}
+	}
+	fprintf(status, "%s\n", pubhex);
 	fclose(fp);
 	fclose(status);
 
@@ -339,7 +352,19 @@ cm_keygen_o_need_token(struct cm_store_entry *entry,
 static void
 cm_keygen_o_done(struct cm_store_entry *entry, struct cm_keygen_state *state)
 {
+	const char *pubkey_info;
+	int len;
+
 	if (state->subproc != NULL) {
+		pubkey_info = cm_subproc_get_msg(entry, state->subproc, NULL);
+		if (pubkey_info != NULL) {
+			len = strcspn(pubkey_info, "\r\n");
+			entry->cm_key_pubkey_info = talloc_strndup(entry,
+								   pubkey_info,
+								   len);
+		} else {
+			entry->cm_key_pubkey_info = NULL;
+		}
 		cm_subproc_done(entry, state->subproc);
 	}
 	talloc_free(state);
