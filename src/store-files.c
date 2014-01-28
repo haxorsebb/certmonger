@@ -288,13 +288,17 @@ cm_store_should_ignore_file(const char *filename)
 static char **
 cm_store_file_read_lines(void *parent, FILE *fp)
 {
-	char buf[LINE_MAX], *s, *t, **lines, **tlines;
+	char *buf, *s, *t, **lines, **tlines;
 	int n_lines, trim, offset;
+	size_t buflen;
+
 	s = NULL;
 	lines = NULL;
 	n_lines = 0;
 	trim = 1;
-	while (fgets(buf, sizeof(buf), fp) == buf) {
+	buf = NULL;
+	buflen = 0;
+	while (getline(&buf, &buflen, fp) > 0) {
 		offset = 0;
 		switch (buf[0]) {
 		case '=':
@@ -336,6 +340,7 @@ cm_store_file_read_lines(void *parent, FILE *fp)
 			break;
 		}
 	}
+	free(buf);
 	/* If we were reading a line, append it to the list. */
 	if (s != NULL) {
 		tlines = talloc_realloc(parent, lines, char *, n_lines + 2);
