@@ -133,7 +133,7 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			bits = EVP_PKEY_bits(pkey);
 			cm_log(3, "Key size is %d.\n", bits);
 			tmp = NULL;
-			length = i2d_PublicKey(pkey, (unsigned char **) &tmp);
+			length = i2d_PUBKEY(pkey, (unsigned char **) &tmp);
 			if (length > 0) {
 				pubkey = cm_store_hex_from_bin(NULL, tmp, length);
 			}
