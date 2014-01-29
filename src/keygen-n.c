@@ -92,9 +92,12 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	PQGVerify *pqg_verify;
 	SECStatus pqg_ok;
 	SECKEYPQGParams dsa_params;
-	SECItem ec_params, *spki;
+	SECItem *spki;
 	void *params;
-	SECOidData *curve;
+#ifdef CM_ENABLE_EC
+	SECOidData *ecurve;
+	SECItem ec_params;
+#endif
 	SECKEYPrivateKey *privkey, *delkey;
 	SECKEYPrivateKeyList *privkeys;
 	SECKEYPrivateKeyListNode *node;
@@ -197,9 +200,11 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		cm_requested_key_size = pqg_size(cm_requested_key_size);
 		mech = CKM_DSA_KEY_PAIR_GEN;
 		break;
+#ifdef CM_ENABLE_EC
 	case cm_key_ecdsa:
 		mech = CKM_EC_KEY_PAIR_GEN;
 		break;
+#endif
 	default:
 		fprintf(status, "Unknown or unsupported key type.\n");
 		cm_log(1, "Unknown or unsupported key type.\n");
@@ -426,9 +431,11 @@ next_slot:
 			}
 		}
 		break;
+#ifdef CM_ENABLE_EC
 	case cm_key_ecdsa:
 		/* no parameters to generate */
 		break;
+#endif
 	default:
 		params = NULL;
 		break;
@@ -448,18 +455,20 @@ next_slot:
 		PK11_PQG_GetBaseFromParams(pqg_params, &dsa_params.base);
 		params = &dsa_params;
 		break;
+#ifdef CM_ENABLE_EC
 	case cm_key_ecdsa:
 		memset(&ec_params, 0, sizeof(ec_params));
 		if (cm_key_size <= 256)
-			curve = SECOID_FindOIDByTag(SEC_OID_SECG_EC_SECP256R1);
+			ecurve = SECOID_FindOIDByTag(SEC_OID_SECG_EC_SECP256R1);
 		if (cm_key_size <= 384)
-			curve = SECOID_FindOIDByTag(SEC_OID_SECG_EC_SECP384R1);
+			ecurve = SECOID_FindOIDByTag(SEC_OID_SECG_EC_SECP384R1);
 		else
-			curve = SECOID_FindOIDByTag(SEC_OID_SECG_EC_SECP521R1);
+			ecurve = SECOID_FindOIDByTag(SEC_OID_SECG_EC_SECP521R1);
 		SEC_ASN1EncodeItem(NULL, &ec_params,
-				   &curve->oid, SEC_ObjectIDTemplate);
+				   &ecurve->oid, SEC_ObjectIDTemplate);
 		params = &ec_params;
 		break;
+#endif
 	default:
 		params = NULL;
 		break;

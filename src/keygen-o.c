@@ -63,7 +63,10 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	long error, errno_save;
 	enum cm_key_algorithm cm_key_algorithm;
 	int cm_key_size;
-	int alg, curve, len;
+	int alg, len;
+#ifdef CM_ENABLE_EC
+	int ecurve;
+#endif
 	unsigned int need_params;
 
 	status = fdopen(fd, "w");
@@ -95,10 +98,12 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		alg = EVP_PKEY_DSA;
 		need_params = 1;
 		break;
+#ifdef CM_ENABLE_EC
 	case cm_key_ecdsa:
 		alg = EVP_PKEY_EC;
 		need_params = 1;
 		break;
+#endif
 	case cm_key_unspecified:
 	default:
 		cm_log(1, "Unknown or unsupported key type.\n");
@@ -135,19 +140,21 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
 		break;
+#ifdef CM_ENABLE_EC
 	case cm_key_ecdsa:
 		if (cm_key_size <= 256)
-			curve = NID_secp256k1;
+			ecurve = NID_secp256k1;
 		if (cm_key_size <= 384)
-			curve = NID_secp384r1;
+			ecurve = NID_secp384r1;
 		else
-			curve = NID_secp521r1;
-		if (EVP_PKEY_CTX_set_ec_paramgen_curve_nid(ctx, curve) <= 0) {
+			ecurve = NID_secp521r1;
+		if (EVP_PKEY_CTX_set_ec_paramgen_curve_nid(ctx, ecurve) <= 0) {
 			cm_log(1, "Error setting key parameter generation "
 			       "parameters.\n");
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
 		break;
+#endif
 	default:
 		cm_log(1, "Unknown or unsupported key type.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
@@ -193,8 +200,10 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		break;
 	case cm_key_dsa:
 		break;
+#ifdef CM_ENABLE_EC
 	case cm_key_ecdsa:
 		break;
+#endif
 	default:
 		cm_log(1, "Unknown or unsupported key type.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,7 +34,9 @@ struct cm_store_entry {
 			cm_key_unspecified = 0,
 			cm_key_rsa = 1,
 			cm_key_dsa,
+#ifdef CM_ENABLE_EC
 			cm_key_ecdsa,
+#endif
 		} cm_key_algorithm, cm_key_gen_algorithm;
 		int cm_key_size, cm_key_gen_size;
 	} cm_key_type;

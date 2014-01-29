@@ -1331,7 +1331,14 @@ static DBusHandlerResult
 base_get_supported_key_types(DBusConnection *conn, DBusMessage *msg,
 			     struct cm_client_info *ci, struct cm_context *ctx)
 {
-	const char *key_types[] = {"RSA", NULL};
+	const char *key_types[] = {
+		"RSA",
+		"DSA",
+#ifdef CM_ENABLE_EC
+		"EC",
+#endif
+		NULL
+	};
 	DBusMessage *rep;
 	rep = dbus_message_new_method_return(msg);
 	if (rep != NULL) {
@@ -2122,9 +2129,11 @@ request_get_key_type_and_size(DBusConnection *conn, DBusMessage *msg,
 	case cm_key_dsa:
 		type = "DSA";
 		break;
+#ifdef CM_ENABLE_EC
 	case cm_key_ecdsa:
 		type = "EC";
 		break;
+#endif
 	}
 	if (rep != NULL) {
 		size = entry->cm_key_type.cm_key_size;
@@ -2925,9 +2934,11 @@ request_prop_get_key_type(struct cm_context *ctx, void *parent,
 	case cm_key_dsa:
 		return "DSA";
 		break;
+#ifdef CM_ENABLE_EC
 	case cm_key_ecdsa:
 		return "EC";
 		break;
+#endif
 	}
 	return "";
 }
@@ -2942,12 +2953,12 @@ request_prop_get_key_size(struct cm_context *ctx, void *parent,
 		return 0;
 		break;
 	case cm_key_rsa:
-		return entry->cm_key_type.cm_key_size;
-		break;
+		/* fall through */
 	case cm_key_dsa:
-		return entry->cm_key_type.cm_key_size;
-		break;
+		/* fall through */
+#ifdef CM_ENABLE_EC
 	case cm_key_ecdsa:
+#endif
 		return entry->cm_key_type.cm_key_size;
 		break;
 	}
