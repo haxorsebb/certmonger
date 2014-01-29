@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013,2014 Red Hat, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <talloc.h>
 
@@ -190,7 +191,12 @@ send_internal_base_no_such_entry_error(DBusConnection *conn, DBusMessage *req)
 static int
 check_arg_is_absolute_path(const char *path)
 {
-	return (path[0] == '/') ? 0 : -1;
+	if (path[0] == '/') {
+		return 0;
+	} else {
+		errno = EINVAL;
+		return -1;
+	}
 }
 
 static int
@@ -208,7 +214,12 @@ check_arg_is_absolute_nss_path(const char *path)
 	if (strncmp(path, "extern:", 7) == 0) {
 		path += 7;
 	}
-	return (path[0] == '/') ? 0 : -1;
+	if (path[0] == '/') {
+		return 0;
+	} else {
+		errno = EINVAL;
+		return -1;
+	}
 }
 
 static int
@@ -217,7 +228,9 @@ check_arg_is_directory(const char *path)
 	struct stat st;
 	if (stat(path, &st) == 0) {
 		if (S_ISDIR(st.st_mode)) {
-			return 0;
+			if (access(path, R_OK | W_OK) == 0) {
+				return 0;
+			}
 		}
 	}
 	return -1;
@@ -241,7 +254,9 @@ check_arg_is_nss_directory(const char *path)
 	}
 	if (stat(path, &st) == 0) {
 		if (S_ISDIR(st.st_mode)) {
-			return 0;
+			if (access(path, R_OK | W_OK) == 0) {
+				return 0;
+			}
 		}
 	}
 	return -1;
@@ -267,7 +282,8 @@ static int
 check_arg_parent_is_directory(const char *path)
 {
 	char *tmp, *p;
-	int ret;
+	int ret, err;
+
 	if (check_arg_is_absolute_path(path) != 0) {
 		return -1;
 	}
@@ -281,11 +297,17 @@ check_arg_parent_is_directory(const char *path)
 				*(p + 1) = '\0';
 			}
 			ret = check_arg_is_directory(tmp);
+			err = errno;
 			free(tmp);
+			errno = err;
 			return ret;
+		} else {
+			free(tmp);
+			errno = EINVAL;
+			return -1;
 		}
-		free(tmp);
 	}
+	errno = ENOMEM;
 	return -1;
 }
 
@@ -403,7 +425,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	}
 	if (param == NULL) {
 		/* This is a required parameter. */
-		cm_log(1, "Cert storage type not specified.\n");
+		cm_log(1, "Certificate storage type not specified.\n");
 		talloc_free(parent);
 		return send_internal_base_missing_arg_error(conn, msg,
 							    _("Certificate storage type not specified."),
@@ -480,15 +502,14 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 							  cm_tdbusm_dict_s);
 		}
 		if (param == NULL) {
-			cm_log(1, "Cert storage location not specified.\n");
+			cm_log(1, "Certificate storage location not specified.\n");
 			talloc_free(parent);
 			return send_internal_base_missing_arg_error(conn, msg,
 								    _("Certificate storage location not specified."),
 								    "CERT_LOCATION");
 		}
 		if (check_arg_is_absolute_path(param->value.s) != 0) {
-			cm_log(1, "Cert storage location is not an absolute "
-			       "path.\n");
+			cm_log(1, "Certificate storage location is not an absolute path.\n");
 			ret = send_internal_base_bad_arg_error(conn, msg,
 							       _("The location \"%s\" must be an absolute path."),
 							       param->value.s,
@@ -497,18 +518,29 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 			return ret;
 		}
 		if (check_arg_parent_is_directory(param->value.s) != 0) {
-			cm_log(1, "Cert storage location is not inside of "
-			       "a directory.\n");
-			ret = send_internal_base_bad_arg_error(conn, msg,
-							       _("The parent of location \"%s\" must be a valid directory."),
-							       param->value.s,
-							       "CERT_LOCATION");
+			switch (errno) {
+			case EACCES:
+			case EPERM:
+				cm_log(1, "Not allowed to access certificate storage location.\n");
+				ret = send_internal_base_bad_arg_error(conn, msg,
+								       _("The parent of location \"%s\" could not be accessed due "
+								         "to insufficient permissions."),
+								       param->value.s,
+								       "CERT_LOCATION");
+				break;
+			default:
+				cm_log(1, "Certificate storage location is not inside of a directory.\n");
+				ret = send_internal_base_bad_arg_error(conn, msg,
+								       _("The parent of location \"%s\" must be a valid directory."),
+								       param->value.s,
+								       "CERT_LOCATION");
+				break;
+			}
 			talloc_free(parent);
 			return ret;
 		}
 		if (check_arg_is_reg_or_missing(param->value.s) != 0) {
-			cm_log(1, "Cert storage location is "
-			       "not a regular file.\n");
+			cm_log(1, "Certificate storage location is not a regular file.\n");
 			ret = send_internal_base_bad_arg_error(conn, msg,
 							       _("The location \"%s\" must be a file."),
 							       param->value.s,
@@ -529,15 +561,14 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 							  cm_tdbusm_dict_s);
 		}
 		if (param == NULL) {
-			cm_log(1, "Cert storage location not specified.\n");
+			cm_log(1, "Certificate storage location not specified.\n");
 			talloc_free(parent);
 			return send_internal_base_missing_arg_error(conn, msg,
 								    _("Certificate storage location not specified."),
 								    "CERT_LOCATION");
 		}
 		if (check_arg_is_absolute_nss_path(param->value.s) != 0) {
-			cm_log(1, "Cert storage location is not an absolute "
-			       "path.\n");
+			cm_log(1, "Certificate storage location is not an absolute path.\n");
 			ret = send_internal_base_bad_arg_error(conn, msg,
 							       _("The location \"%s\" must be an absolute path."),
 							       param->value.s,
@@ -546,12 +577,24 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 			return ret;
 		}
 		if (check_arg_is_nss_directory(param->value.s) != 0) {
-			cm_log(1, "Cert storage location must be "
-			       "a directory.\n");
-			ret = send_internal_base_bad_arg_error(conn, msg,
-							       _("The location \"%s\" must be a directory."),
-							       param->value.s,
-							       "CERT_LOCATION");
+			switch (errno) {
+			case EACCES:
+			case EPERM:
+				cm_log(1, "Not allowed to access certificate storage location.\n");
+				ret = send_internal_base_bad_arg_error(conn, msg,
+								       _("The location \"%s\" could not be accessed due "
+								         "to insufficient permissions."),
+								       param->value.s,
+								       "CERT_LOCATION");
+				break;
+			default:
+				cm_log(1, "Certificate storage location must be a directory.\n");
+				ret = send_internal_base_bad_arg_error(conn, msg,
+								       _("The location \"%s\" must be a directory."),
+								       param->value.s,
+								       "CERT_LOCATION");
+				break;
+			}
 			talloc_free(parent);
 			return ret;
 		}
@@ -565,7 +608,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 							  cm_tdbusm_dict_s);
 		}
 		if (param == NULL) {
-			cm_log(1, "Cert nickname not specified.\n");
+			cm_log(1, "Certificate nickname not specified.\n");
 			talloc_free(parent);
 			return send_internal_base_missing_arg_error(conn, msg,
 								    _("Certificate nickname not specified."),
@@ -587,7 +630,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		break;
 	}
 	if (cert_location == NULL) {
-		cm_log(1, "Cert storage location not specified.\n");
+		cm_log(1, "Certificate storage location not specified.\n");
 		talloc_free(parent);
 		return send_internal_base_missing_arg_error(conn, msg,
 							    _("Certificate storage location not specified."),
@@ -642,7 +685,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	}
 	if (i < n_entries) {
 		/* We found a match, and that's bad. */
-		cm_log(1, "Cert at same location is already being "
+		cm_log(1, "Certificate at same location is already being "
 		       "used for request %s with nickname \"%s\".\n",
 		       e->cm_busname, e->cm_nickname);
 		talloc_free(parent);
@@ -703,16 +746,14 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 								  cm_tdbusm_dict_s);
 			}
 			if (param == NULL) {
-				cm_log(1,
-				       "Key storage location not specified.\n");
+				cm_log(1, "Key storage location not specified.\n");
 				talloc_free(parent);
 				return send_internal_base_missing_arg_error(conn, msg,
 									    _("Key storage location not specified."),
 									    "KEY_LOCATION");
 			}
 			if (check_arg_is_absolute_path(param->value.s) != 0) {
-				cm_log(1, "Key storage location is not an "
-				       "absolute path.\n");
+				cm_log(1, "Key storage location is not an absolute path.\n");
 				ret = send_internal_base_bad_arg_error(conn, msg,
 								       _("The location \"%s\" must be an absolute path."),
 								       param->value.s,
@@ -721,18 +762,29 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 				return ret;
 			}
 			if (check_arg_parent_is_directory(param->value.s) != 0) {
-				cm_log(1, "Key storage location is not inside "
-				       "of a directory.\n");
-				ret = send_internal_base_bad_arg_error(conn, msg,
-								       _("The parent of location \"%s\" must be a valid directory."),
-								       param->value.s,
-								       "KEY_LOCATION");
+				switch (errno) {
+				case EACCES:
+				case EPERM:
+					cm_log(1, "Not allowed to access key storage location.\n");
+					ret = send_internal_base_bad_arg_error(conn, msg,
+									       _("The parent of location \"%s\" could not be accessed due "
+										 "to insufficient permissions."),
+									       param->value.s,
+									       "KEY_LOCATION");
+					break;
+				default:
+					cm_log(1, "Key storage location is not inside of a directory.\n");
+					ret = send_internal_base_bad_arg_error(conn, msg,
+									       _("The parent of location \"%s\" must be a valid directory."),
+									       param->value.s,
+									       "KEY_LOCATION");
+					break;
+				}
 				talloc_free(parent);
 				return ret;
 			}
 			if (check_arg_is_reg_or_missing(param->value.s) != 0) {
-				cm_log(1, "Key storage location is "
-				       "not a regular file.\n");
+				cm_log(1, "Key storage location is not a regular file.\n");
 				ret = send_internal_base_bad_arg_error(conn, msg,
 								       _("The location \"%s\" must be a file."),
 								       param->value.s,
@@ -753,16 +805,14 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 								  cm_tdbusm_dict_s);
 			}
 			if (param == NULL) {
-				cm_log(1,
-				       "Key storage location not specified.\n");
+				cm_log(1, "Key storage location not specified.\n");
 				talloc_free(parent);
 				return send_internal_base_missing_arg_error(conn, msg,
 									    _("Key storage location not specified."),
 									    "KEY_LOCATION");
 			}
 			if (check_arg_is_absolute_nss_path(param->value.s) != 0) {
-				cm_log(1, "Key storage location is not an "
-				       "absolute path.\n");
+				cm_log(1, "Key storage location is not an absolute path.\n");
 				ret = send_internal_base_bad_arg_error(conn, msg,
 								       _("The location \"%s\" must be an absolute path."),
 								       param->value.s,
@@ -771,8 +821,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 				return ret;
 			}
 			if (check_arg_is_nss_directory(param->value.s) != 0) {
-				cm_log(1, "Key storage location must be "
-				       "a directory.\n");
+				cm_log(1, "Key storage location must be a directory.\n");
 				ret = send_internal_base_bad_arg_error(conn, msg,
 								       _("The location \"%s\" must be a directory."),
 								       param->value.s,

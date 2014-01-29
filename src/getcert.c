@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013,2014 Red Hat, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -107,16 +107,28 @@ static int
 ensure_path_is_directory(char *path)
 {
 	struct stat st;
+	int err;
+
 	if (stat(path, &st) == 0) {
 		if (S_ISDIR(st.st_mode)) {
-			return 0;
+			if (access(path, R_OK | W_OK) == 0) {
+				return 0;
+			} else {
+				err = errno;
+				printf(_("Path \"%s\": insufficient "
+					 "permissions.\n"));
+				errno = err;
+				return -1;
+			}
 		} else {
 			printf(_("Path \"%s\" is not a directory.\n"),
 			       path);
 			return -1;
 		}
 	} else {
+		err = errno;
 		printf(_("Path \"%s\": %s.\n"), path, strerror(errno));
+		errno = err;
 		return -1;
 	}
 }

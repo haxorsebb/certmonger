@@ -61,7 +61,7 @@ struct cm_keyiread_n_settings {
 struct cm_keyiread_n_ctx_and_key *
 cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 {
-	const char *token, *nickname, *reason;
+	const char *token, *nickname, *reason, *es;
 	char *pin;
 	PLArenaPool *arena;
 	SECStatus error;
@@ -76,7 +76,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	CERTCertListNode *cnode;
 	CERTCertificate *cert;
 	struct cm_pin_cb_data cb_data;
-	int n_tokens;
+	int n_tokens, ec;
 	struct cm_keyiread_n_ctx_and_key *ret;
 
 	/* Open the database. */
@@ -86,9 +86,26 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 			      NSS_INIT_NOROOTINIT |
 			      NSS_INIT_NOMODDB);
 	if (ctx == NULL) {
-		cm_log(1, "Unable to open NSS database '%s'.\n",
-		       entry->cm_key_storage_location);
-		_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
+		if (ec != 0) {
+			es = PR_ErrorToName(ec);
+		} else {
+			es = NULL;
+		}
+		if (es != NULL) {
+			cm_log(1, "Unable to open NSS database '%s': %s.\n",
+			       entry->cm_key_storage_location, es);
+		} else {
+			cm_log(1, "Unable to open NSS database '%s'.\n",
+			       entry->cm_key_storage_location);
+		}
+		switch (PORT_GetError()) {
+		case PR_NO_ACCESS_RIGHTS_ERROR:
+			_exit(CM_SUB_STATUS_ERROR_PERMS);
+			break;
+		default:
+			_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
+			break;
+		}
 	}
 	reason = util_n_fips_hook();
 	if (reason != NULL) {
