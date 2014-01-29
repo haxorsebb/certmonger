@@ -116,7 +116,7 @@ ensure_path_is_directory(char *path)
 			} else {
 				err = errno;
 				printf(_("Path \"%s\": insufficient "
-					 "permissions.\n"));
+					 "permissions.\n"), path);
 				errno = err;
 				return -1;
 			}

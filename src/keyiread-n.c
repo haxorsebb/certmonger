@@ -86,6 +86,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 			      NSS_INIT_NOROOTINIT |
 			      NSS_INIT_NOMODDB);
 	if (ctx == NULL) {
+		ec = PORT_GetError();
 		if (ec != 0) {
 			es = PR_ErrorToName(ec);
 		} else {
