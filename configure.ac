@@ -371,6 +371,47 @@ else
 fi
 AM_CONDITIONAL(NOW,[test x$now = xyes])
 
+AC_ARG_ENABLE(ec,
+AS_HELP_STRING(--disable-ec,[Disable EC key support, even if available.]),
+ec=$enableval,
+ec=maybe)
+if test x$ec != xno ; then
+	CFLAGSsave="$CFLAGS"
+	LIBSsave="$LIBS"
+	CFLAGS="$OPENSSL_CFLAGS $LIBS"
+	LIBS="$OPENSSL_LIBS $LIBS"
+	AC_CHECK_LIB(crypto,EC_KEY_new_by_curve_name)
+	CFLAGS="$NSS_CFLAGS $LIBS"
+	LIBS="$NSS_LIBS $LIBS"
+	AC_CHECK_FUNCS(SECKEY_CreateECPrivateKey)
+	CFLAGS="$CFLAGSsave"
+	LIBS="$LIBSsave"
+	can_ac=true
+	if test x$ac_cv_lib_crypto_EC_KEY_new_by_curve_name = xno ; then
+		can_ac=false
+	fi
+	if test x$ac_cv_func_CreateECPrivateKey = xno ; then
+		can_ac=false
+	fi
+	AC_MSG_CHECKING([for EC support])
+	if $can_ac ; then
+		AC_MSG_RESULT(enabling EC support)
+		AC_DEFINE_UNQUOTED(CM_ENABLE_EC,1,[Define to enable EC support.])
+		ec=yes
+	else
+		if test x$ec != xyes ; then
+			AC_MSG_WARN([unavailable, disabling])
+			ec=no
+		else
+			AC_MSG_ERROR([unavailable])
+		fi
+	fi
+else
+	AC_MSG_RESULT(NOT enabling EC support)
+	ec=no
+fi
+AM_CONDITIONAL(HAVE_EC,[test x$ec = xyes])
+
 AC_DEFINE_UNQUOTED(CM_DEFAULT_KEY_STORAGE_TYPE,cm_key_storage_nssdb,[Define to the default type of storage used for keys.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_KEY_STORAGE_LOCATION,"/etc/pki/nssdb",[Define to the default location of storage used for keys.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_KEY_TOKEN,NULL,[Define to the default token used for holding keys.])
