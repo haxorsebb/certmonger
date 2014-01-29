@@ -57,4 +57,7 @@ char **cm_store_maybe_strdupv(void *parent, char **s);
 void cm_store_set_if_not_set_s(void *parent, char **dest, char *src);
 void cm_store_set_if_not_set_as(void *parent, char ***dest, char **src);
 
+int cm_store_utf8_to_bmp_string(char *s,
+				unsigned char **bmp, unsigned int *len);
+
 #endif

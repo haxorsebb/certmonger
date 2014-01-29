@@ -126,24 +126,27 @@ cm_csrgen_n_attributes(struct cm_store_entry *entry, NSSInitContext *ctx,
 	CERTAttribute attr[3];
 	SECOidData *oid;
 	SECItem *item, friendly, *friendlies[2], encoded, encattr[3], plain;
-	SECItem *encattrs[4], **encattrs_ptr, password, *passwords[2];
+	SECItem *encattrs[4], **encattrs_ptr, password, *passwords[2], bmp;
 	int i, n_attrs;
 
 	i = 0;
 	/* Build an attribute to hold the friendly name. */
 	oid = SECOID_FindOIDByTag(SEC_OID_PKCS9_FRIENDLY_NAME);
 	if (oid != NULL) {
-		plain.data = (unsigned char *) entry->cm_cert_nickname;
-		if (plain.data != NULL) {
-			plain.len = strlen(entry->cm_cert_nickname);
-			if (SEC_ASN1EncodeItem(arena, &friendly, &plain,
-					       SEC_PrintableStringTemplate) == &friendly) {
+		if (entry->cm_cert_nickname != NULL) {
+			memset(&bmp, 0, sizeof(bmp));
+			if ((cm_store_utf8_to_bmp_string(entry->cm_cert_nickname,
+							 &bmp.data,
+							 &bmp.len) == 0) &&
+			    (SEC_ASN1EncodeItem(arena, &friendly, &bmp,
+					        SEC_BMPStringTemplate) == &friendly)) {
 				friendlies[0] = &friendly;
 				friendlies[1] = NULL;
 				attr[i].attrType = oid->oid;
 				attr[i].attrValue = friendlies;
 				i++;
 			}
+			free(bmp.data);
 		}
 	}
 	/* Build the extension list. */

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2011,2012 Red Hat, Inc.
+ * Copyright (C) 2009,2011,2012,2013,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,9 @@
 #include "config.h"
 
 #include <sys/types.h>
+#include <arpa/inet.h>
 #include <ctype.h>
+#include <iconv.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -443,4 +445,56 @@ cm_store_set_if_not_set_as(void *parent, char ***dest, char **src)
 			*dest = ret;
 		}
 	}
+}
+
+int
+cm_store_utf8_to_bmp_string(char *s,
+			    unsigned char **bmp,
+			    unsigned int *len)
+{
+	iconv_t conv;
+	unsigned int i;
+	const unsigned char *u;
+	uint16_t *u16;
+	char *inbuf, *outbuf;
+	size_t inleft, outleft, res, space;
+
+	*bmp = NULL;
+	conv = iconv_open("UTF16BE", "UTF8");
+	if (conv != NULL) {
+		inbuf = s;
+		space = strlen(s) * 4;
+		*bmp = malloc(space);
+		outbuf = (char *) *bmp;
+		if (outbuf == NULL) {
+			return -1;
+		}
+		memset(*bmp, 0, space);
+		inleft = strlen(s);
+		outleft = space;
+		res = iconv(conv, &inbuf, &inleft, &outbuf, &outleft);
+		iconv_close(conv);
+		switch (res) {
+		case (size_t) -1:
+			return -1;
+			break;
+		default:
+			*len = space - outleft;
+			return 0;
+			break;
+		}
+	} else {
+		/* Impressively wrong. */
+		u16 = malloc((strlen(s) + 1) * 2);
+		if (u16 == NULL) {
+			return -1;
+		}
+		u = (const unsigned char *) s;
+		for (i = 0; u[i] != '\0'; i++) {
+			u16[i] = htons(u[i]);
+		}
+		*bmp = (unsigned char *) u16;
+		*len = i * 2;
+	}
+	return 0;
 }

@@ -63,9 +63,10 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	NETSCAPE_SPKAC spkac;
 	EVP_PKEY *pkey;
 	char buf[LINE_MAX], *p, *q, *s, *nickname, *pin, *password;
-	unsigned char *extensions, *unickname, *upassword;
+	unsigned char *extensions, *upassword, *bmp;
 	const char *default_cn = CM_DEFAULT_CERT_SUBJECT_CN;
 	size_t extensions_len;
+	unsigned int bmpcount;
 	long error;
 	int i;
 
@@ -184,13 +185,15 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				} else {
 					nickname = entry->cm_nickname;
 				}
-				unickname = (unsigned char *) nickname;
-				if (nickname != NULL) {
+				if ((nickname != NULL) &&
+				    (cm_store_utf8_to_bmp_string(nickname, &bmp,
+								 &bmpcount) == 0)) {
 					X509_REQ_add1_attr_by_NID(req,
 								  NID_friendlyName,
-								  V_ASN1_PRINTABLESTRING,
-								  unickname,
-								  strlen(nickname));
+								  V_ASN1_BMPSTRING,
+								  bmp,
+								  bmpcount);
+					free(bmp);
 				}
 				password = entry->cm_challenge_password;
 				upassword = (unsigned char *) password;
