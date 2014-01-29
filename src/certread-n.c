@@ -390,11 +390,8 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 	/* Serial number */
 	talloc_free(entry->cm_cert_serial);
 	item = cert->serialNumber;
-	entry->cm_cert_serial = talloc_zero_size(entry, item.len * 2 + 1);
-	for (i = 0; i < item.len; i++) {
-		sprintf(entry->cm_cert_serial + i * 2, "%02x",
-			item.data[i] & 0xff);
-	}
+	entry->cm_cert_serial = cm_store_hex_from_bin(NULL, item.data,
+						      item.len);
 	/* Subject name */
 	talloc_free(entry->cm_cert_subject);
 	entry->cm_cert_subject = talloc_strdup(entry, cert->subjectName);
@@ -410,11 +407,8 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 		}
 		_exit(1);
 	}
-	entry->cm_cert_spki = talloc_zero_size(entry, items->len * 2 + 1);
-	for (i = 0; i < items->len; i++) {
-		sprintf(entry->cm_cert_spki + i * 2, "%02x",
-			items->data[i] & 0xff);
-	}
+	entry->cm_cert_spki = cm_store_hex_from_bin(NULL, items->data,
+						    items->len);
 	/* Not-before date. */
 	p = talloc_strndup(entry, (char *) cert->validity.notBefore.data,
 			   cert->validity.notBefore.len);
