@@ -157,13 +157,20 @@ cm_keyiread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 				talloc_free(entry->cm_key_pubkey_info);
 				entry->cm_key_pubkey_info = talloc_strndup(entry,
 									   p, q - p);
-				p = q + strspn(q, "/\r\n");
-				q = p + strcspn(p, "/\r\n");
-				if (p != q) {
-					talloc_free(entry->cm_key_token);
-					entry->cm_key_token = talloc_strndup(entry,
-									     p, q - p);
-				}
+			}
+			p = q + strspn(q, "/\r\n");
+			q = p + strcspn(p, "/\r\n");
+			if (p != q) {
+				talloc_free(entry->cm_key_pubkey);
+				entry->cm_key_pubkey = talloc_strndup(entry,
+								      p, q - p);
+			}
+			p = q + strspn(q, "/\r\n");
+			q = p + strcspn(p, "/\r\n");
+			if (p != q) {
+				talloc_free(entry->cm_key_token);
+				entry->cm_key_token = talloc_strndup(entry,
+								     p, q - p);
 			}
 		}
 	}

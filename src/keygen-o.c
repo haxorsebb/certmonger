@@ -58,7 +58,7 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	FILE *fp, *status;
 	EVP_PKEY_CTX *ctx;
 	EVP_PKEY *pkey, *params;
-	char buf[LINE_MAX], *pin, *pubhex;
+	char buf[LINE_MAX], *pin, *pubhex, *pubihex;
 	unsigned char *p, *q;
 	long error, errno_save;
 	enum cm_key_algorithm cm_key_algorithm;
@@ -270,18 +270,31 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 		_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
 	}
-	pubhex = "";
+	pubihex = "";
 	len = i2d_PUBKEY(pkey, NULL);
 	if (len > 0) {
 		p = malloc(len);
 		if (p != NULL) {
 			q = p;
 			if (i2d_PUBKEY(pkey, &q) == len) {
-				pubhex = cm_store_hex_from_bin(NULL, p, q - p);
+				pubihex = cm_store_hex_from_bin(NULL, p, q - p);
 			}
+			free(p);
 		}
 	}
-	fprintf(status, "%s\n", pubhex);
+	pubhex = "";
+	len = i2d_PublicKey(pkey, NULL);
+	if (len > 0) {
+		p = malloc(len);
+		if (p != NULL) {
+			q = p;
+			if (i2d_PublicKey(pkey, &q) == len) {
+				pubhex = cm_store_hex_from_bin(NULL, p, q - p);
+			}
+			free(p);
+		}
+	}
+	fprintf(status, "%s\n%s\n", pubihex, pubhex);
 	fclose(fp);
 	fclose(status);
 
@@ -361,7 +374,7 @@ cm_keygen_o_need_token(struct cm_store_entry *entry,
 static void
 cm_keygen_o_done(struct cm_store_entry *entry, struct cm_keygen_state *state)
 {
-	const char *pubkey_info;
+	const char *pubkey_info, *p;
 	int len;
 
 	if (state->subproc != NULL) {
@@ -371,8 +384,14 @@ cm_keygen_o_done(struct cm_store_entry *entry, struct cm_keygen_state *state)
 			entry->cm_key_pubkey_info = talloc_strndup(entry,
 								   pubkey_info,
 								   len);
+			p = pubkey_info + len;
+			p += strspn(p, "\r\n");
+			len = strcspn(p, "\r\n");
+			entry->cm_key_pubkey = talloc_strndup(entry,
+							      p, len);
 		} else {
 			entry->cm_key_pubkey_info = NULL;
+			entry->cm_key_pubkey = NULL;
 		}
 		cm_subproc_done(entry, state->subproc);
 	}

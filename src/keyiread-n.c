@@ -362,7 +362,7 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	PK11SlotInfo *slot;
 	const char *alg, *name;
 	SECItem *info, item;
-	char *pubhex;
+	char *pubhex, *pubihex;
 	int status = 1, size, readwrite;
 	FILE *fp;
 	struct cm_keyiread_n_settings *settings;
@@ -434,10 +434,15 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				size = SECKEY_PublicKeyStrengthInBits(pubkey);
 				cm_log(3, "Key size is %d.\n", size);
 				info = SECKEY_EncodeDERSubjectPublicKeyInfo(pubkey);
+				pubihex = cm_store_hex_from_bin(NULL,
+							        info->data,
+							        info->len);
+				spki = SECKEY_DecodeDERSubjectPublicKeyInfo(info);
 				pubhex = cm_store_hex_from_bin(NULL,
-							       info->data,
-							       info->len);
-				fprintf(fp, "%s/%d/%s%s%s\n", alg, size,
+							       spki->subjectPublicKey.data,
+							       spki->subjectPublicKey.len / 8);
+				fprintf(fp, "%s/%d/%s/%s%s%s\n", alg, size,
+					pubihex,
 					pubhex,
 					(name != NULL ? "/" : ""),
 					(name != NULL ? name : ""));

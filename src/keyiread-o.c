@@ -61,7 +61,7 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	const char *alg;
 	int bits, length;
 	long error;
-	char *pin, *pubkey;
+	char *pin, *pubkey, *pubikey;
 	unsigned char *tmp;
 
 	util_o_init();
@@ -139,10 +139,15 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			tmp = NULL;
 			length = i2d_PUBKEY(pkey, (unsigned char **) &tmp);
 			if (length > 0) {
+				pubikey = cm_store_hex_from_bin(NULL, tmp, length);
+			}
+			tmp = NULL;
+			length = i2d_PublicKey(pkey, (unsigned char **) &tmp);
+			if (length > 0) {
 				pubkey = cm_store_hex_from_bin(NULL, tmp, length);
 			}
 		}
-		fprintf(fp, "%s/%d/%s\n", alg, bits, pubkey);
+		fprintf(fp, "%s/%d/%s/%s\n", alg, bits, pubikey, pubkey);
 		status = 0;
 	} else {
 		while ((error = ERR_get_error()) != 0) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -277,9 +277,13 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	/* Find the public key. */
 	pubkey = SECKEY_ConvertToPublicKey(privkey->key);
 	if ((pubkey == NULL) &&
-	    (entry->cm_key_pubkey_info != NULL)) {
+	    ((entry->cm_key_pubkey_info != NULL) ||
+	     (entry->cm_cert_spki != NULL))) {
 		memset(&item, 0, sizeof(item));
 		pubhex = entry->cm_key_pubkey_info;
+		if (pubhex == NULL) {
+			pubhex = entry->cm_cert_spki;
+		}
 		item.len = strlen(pubhex) / 2;
 		item.data = malloc(item.len);
 		if (item.data != NULL) {

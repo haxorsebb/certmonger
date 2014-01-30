@@ -93,6 +93,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	SECStatus pqg_ok;
 	SECKEYPQGParams dsa_params;
 	SECItem *spki;
+	CERTSubjectPublicKeyInfo *pubkeyinfo;
 	void *params;
 #ifdef CM_ENABLE_EC
 	SECOidData *ecurve;
@@ -103,7 +104,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	SECKEYPrivateKeyListNode *node;
 	SECKEYPublicKey *pubkey;
 	const char *es, *token, *keyname, *reason;
-	char *pin, *pubhex;
+	char *pin, *pubhex, *pubihex;
 	struct cm_keygen_n_settings *settings;
 	struct cm_pin_cb_data cb_data;
 	int retry;
@@ -555,13 +556,22 @@ next_slot:
 	/* Encode the public key to hex, and print it. */
 	spki = SECKEY_EncodeDERSubjectPublicKeyInfo(pubkey);
 	if (spki != NULL) {
-		pubhex = cm_store_hex_from_bin(NULL, spki->data,
-					       spki->len);
+		pubihex = cm_store_hex_from_bin(NULL, spki->data,
+					        spki->len);
 		SECITEM_FreeItem(spki, PR_TRUE);
+	} else {
+		pubihex = "";
+	}
+	pubkeyinfo = SECKEY_CreateSubjectPublicKeyInfo(pubkey);
+	if (pubkeyinfo != NULL) {
+		pubhex = cm_store_hex_from_bin(NULL,
+					       pubkeyinfo->subjectPublicKey.data,
+					       pubkeyinfo->subjectPublicKey.len / 8);
+		SECKEY_DestroySubjectPublicKeyInfo(pubkeyinfo);
 	} else {
 		pubhex = "";
 	}
-	fprintf(status, "%s\n", pubhex);
+	fprintf(status, "%s\n%s\n", pubihex, pubhex);
 	SECKEY_DestroyPrivateKey(privkey);
 	SECKEY_DestroyPublicKey(pubkey);
 	PK11_FreeSlotList(slotlist);
@@ -646,7 +656,7 @@ cm_keygen_n_need_token(struct cm_store_entry *entry,
 static void
 cm_keygen_n_done(struct cm_store_entry *entry, struct cm_keygen_state *state)
 {
-	const char *pubkey_info;
+	const char *pubkey_info, *p;
 	int len;
 
 	if (state->subproc != NULL) {
@@ -656,8 +666,14 @@ cm_keygen_n_done(struct cm_store_entry *entry, struct cm_keygen_state *state)
 			entry->cm_key_pubkey_info = talloc_strndup(entry,
 								   pubkey_info,
 								   len);
+			p = pubkey_info + len;
+			p += strspn(p, "\r\n");
+			len = strcspn(p, "\r\n");
+			entry->cm_key_pubkey = talloc_strndup(entry,
+							      p, len);
 		} else {
 			entry->cm_key_pubkey_info = NULL;
+			entry->cm_key_pubkey = NULL;
 		}
 		cm_subproc_done(entry, state->subproc);
 	}

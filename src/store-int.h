@@ -51,7 +51,9 @@ struct cm_store_entry {
 	char *cm_key_nickname;
 	char *cm_key_pin;
 	char *cm_key_pin_file;
-	/* Cached public key info (parameters + key) */
+	/* Cached plain public key (used for subject and authority key IDs) */
+	char *cm_key_pubkey;
+	/* Cached public key info (used in signing requests when using NSS) */
 	char *cm_key_pubkey_info;
 	/* Location of certificate [use-once default]
 	 * NSS,/etc/pki/nssdb,Server-Cert-default */

@@ -1089,27 +1089,55 @@ static SECItem *
 cm_certext_build_self_akid(struct cm_store_entry *entry, PLArenaPool *arena)
 {
 	CERTAuthKeyID value;
-	CERTSubjectPublicKeyInfo pubkey;
-	SECItem pubkeyinfo, encoded, *item;
+	CERTSubjectPublicKeyInfo *spki;
+	SECItem pubkeyinfo, pubkey, encoded, *item;
 	unsigned char digest[CM_DIGEST_MAX];
+	const char *pubkey_info;
 
-	if (entry->cm_key_pubkey_info != NULL) {
-		memset(&pubkey, 0, sizeof(pubkey));
-		pubkeyinfo.len = strlen(entry->cm_key_pubkey_info) / 2;
-		pubkeyinfo.data = PORT_ArenaZAlloc(arena, pubkeyinfo.len);
-		if (pubkeyinfo.data == NULL) {
-			return NULL;
+	memset(&pubkey, 0, sizeof(pubkey));
+	if (entry->cm_key_pubkey != NULL) {
+		pubkey.len = strlen(entry->cm_key_pubkey) / 2;
+		pubkey.data = PORT_ArenaZAlloc(arena, pubkey.len);
+		if (pubkey.data != NULL) {
+			cm_store_hex_to_bin(entry->cm_key_pubkey,
+					    pubkey.data, pubkey.len);
 		}
-		cm_store_hex_to_bin(entry->cm_key_pubkey_info,
-				    pubkeyinfo.data, pubkeyinfo.len);
-		if (SEC_ASN1DecodeItem(NULL, &pubkey,
-				       CERT_SubjectPublicKeyInfoTemplate,
-				       &pubkeyinfo) != SECSuccess) {
-			return NULL;
+	}
+	if (pubkey.data == NULL) {
+		if (entry->cm_key_pubkey_info != NULL) {
+			pubkey_info = entry->cm_key_pubkey_info;
+		} else {
+			pubkey_info = entry->cm_cert_spki;
 		}
+		if (pubkey_info != NULL) {
+			memset(&pubkeyinfo, 0, sizeof(pubkeyinfo));
+			pubkeyinfo.len = strlen(pubkey_info) / 2;
+			pubkeyinfo.data = PORT_ArenaZAlloc(arena,
+							   pubkeyinfo.len);
+			spki = NULL;
+			if (pubkeyinfo.data != NULL) {
+				cm_store_hex_to_bin(pubkey_info,
+						    pubkeyinfo.data,
+						    pubkeyinfo.len);
+				spki = SECKEY_DecodeDERSubjectPublicKeyInfo(&pubkeyinfo);
+			}
+			if (spki != NULL) {
+				pubkey.len = spki->subjectPublicKey.len / 8;
+				pubkey.data = PORT_ArenaZAlloc(arena,
+							       pubkey.len);
+				if (pubkey.data != NULL) {
+					memcpy(pubkey.data,
+					       spki->subjectPublicKey.data,
+					       pubkey.len);
+				}
+				SECKEY_DestroySubjectPublicKeyInfo(spki);
+			}
+		}
+	}
+	if (pubkey.data != NULL) {
 		if (PK11_HashBuf(SEC_OID_SHA1, digest,
-				 pubkey.subjectPublicKey.data,
-				 pubkey.subjectPublicKey.len) != SECSuccess) {
+				 pubkey.data,
+				 pubkey.len) != SECSuccess) {
 			return NULL;
 		}
 		memset(&value, 0, sizeof(value));
@@ -1132,23 +1160,54 @@ static SECItem *
 cm_certext_build_skid(struct cm_store_entry *entry, PLArenaPool *arena)
 {
 	CERTSubjectPublicKeyInfo *spki;
-	SECItem pubkeyinfo, value, encoded, *item;
+	SECItem pubkeyinfo, pubkey, value, encoded, *item;
 	unsigned char digest[CM_DIGEST_MAX];
+	const char *pubkey_info;
 
-	if (entry->cm_key_pubkey_info != NULL) {
-		memset(&pubkeyinfo, 0, sizeof(pubkeyinfo));
-		pubkeyinfo.len = strlen(entry->cm_key_pubkey_info) / 2;
-		pubkeyinfo.data = PORT_ArenaZAlloc(arena, pubkeyinfo.len);
-		if (pubkeyinfo.data == NULL) {
-			return NULL;
+	memset(&pubkey, 0, sizeof(pubkey));
+	if (entry->cm_key_pubkey != NULL) {
+		pubkey.len = strlen(entry->cm_key_pubkey) / 2;
+		pubkey.data = PORT_ArenaZAlloc(arena, pubkey.len);
+		if (pubkey.data != NULL) {
+			cm_store_hex_to_bin(entry->cm_key_pubkey,
+					    pubkey.data, pubkey.len);
 		}
-		cm_store_hex_to_bin(entry->cm_key_pubkey_info,
-				    pubkeyinfo.data, pubkeyinfo.len);
-		spki = SECKEY_DecodeDERSubjectPublicKeyInfo(&pubkeyinfo);
+	}
+	if (pubkey.data == NULL) {
+		if (entry->cm_key_pubkey_info != NULL) {
+			pubkey_info = entry->cm_key_pubkey_info;
+		} else {
+			pubkey_info = entry->cm_cert_spki;
+		}
+		if (pubkey_info != NULL) {
+			memset(&pubkeyinfo, 0, sizeof(pubkeyinfo));
+			pubkeyinfo.len = strlen(pubkey_info) / 2;
+			pubkeyinfo.data = PORT_ArenaZAlloc(arena,
+							   pubkeyinfo.len);
+			spki = NULL;
+			if (pubkeyinfo.data != NULL) {
+				cm_store_hex_to_bin(pubkey_info,
+						    pubkeyinfo.data,
+						    pubkeyinfo.len);
+				spki = SECKEY_DecodeDERSubjectPublicKeyInfo(&pubkeyinfo);
+			}
+			if (spki != NULL) {
+				pubkey.len = spki->subjectPublicKey.len / 8;
+				pubkey.data = PORT_ArenaZAlloc(arena,
+							       pubkey.len);
+				if (pubkey.data != NULL) {
+					memcpy(pubkey.data,
+					       spki->subjectPublicKey.data,
+					       pubkey.len);
+				}
+				SECKEY_DestroySubjectPublicKeyInfo(spki);
+			}
+		}
+	}
+	if (pubkey.data != NULL) {
 		if (PK11_HashBuf(SEC_OID_SHA1, digest,
-				 spki->subjectPublicKey.data,
-				 spki->subjectPublicKey.len) != SECSuccess) {
-			SECKEY_DestroySubjectPublicKeyInfo(spki);
+				 pubkey.data,
+				 pubkey.len) != SECSuccess) {
 			return NULL;
 		}
 		memset(&value, 0, sizeof(value));

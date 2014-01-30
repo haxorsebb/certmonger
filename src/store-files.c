@@ -57,6 +57,7 @@ enum cm_store_file_field {
 	cm_store_entry_field_key_nickname,
 	cm_store_entry_field_key_pin,
 	cm_store_entry_field_key_pin_file,
+	cm_store_entry_field_key_pubkey,
 	cm_store_entry_field_key_pubkey_info,
 
 	cm_store_entry_field_cert_storage_type,
@@ -149,6 +150,7 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_key_nickname, "key_nickname"},
 	{cm_store_entry_field_key_pin, "key_pin"},
 	{cm_store_entry_field_key_pin_file, "key_pin_file"},
+	{cm_store_entry_field_key_pubkey, "key_pubkey"},
 	{cm_store_entry_field_key_pubkey_info, "key_pubkey_info"},
 
 	{cm_store_entry_field_cert_storage_type, "cert_storage_type"},
@@ -537,6 +539,9 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 					ret->cm_key_pin = NULL;
 				}
 				break;
+			case cm_store_entry_field_key_pubkey:
+				ret->cm_key_pubkey = free_if_empty(p);
+				break;
 			case cm_store_entry_field_key_pubkey_info:
 				ret->cm_key_pubkey_info = free_if_empty(p);
 				break;
@@ -804,6 +809,7 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_key_nickname:
 			case cm_store_entry_field_key_pin:
 			case cm_store_entry_field_key_pin_file:
+			case cm_store_entry_field_key_pubkey:
 			case cm_store_entry_field_key_pubkey_info:
 			case cm_store_entry_field_cert_storage_type:
 			case cm_store_entry_field_cert_storage_location:
@@ -1069,6 +1075,8 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 	}
 	cm_store_file_write_str(fp, cm_store_entry_field_key_pin_file,
 				entry->cm_key_pin_file);
+	cm_store_file_write_str(fp, cm_store_entry_field_key_pubkey,
+				entry->cm_key_pubkey);
 	cm_store_file_write_str(fp, cm_store_entry_field_key_pubkey_info,
 				entry->cm_key_pubkey_info);
 
@@ -1711,6 +1719,7 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	if (ret->cm_key_pin_file != NULL) {
 		ret->cm_key_pin = NULL;
 	}
+	ret->cm_key_pubkey = cm_store_maybe_strdup(ret, entry->cm_key_pubkey);
 	ret->cm_key_pubkey_info = cm_store_maybe_strdup(ret, entry->cm_key_pubkey_info);
 
 	ret->cm_cert_storage_type = entry->cm_cert_storage_type;
