@@ -182,6 +182,9 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				}
 				if (entry->cm_cert_nickname != NULL) {
 					nickname = entry->cm_cert_nickname;
+				} else
+				if (entry->cm_key_nickname != NULL) {
+					nickname = entry->cm_key_nickname;
 				} else {
 					nickname = entry->cm_nickname;
 				}

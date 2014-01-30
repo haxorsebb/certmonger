@@ -122,6 +122,7 @@ cm_csrgen_n_attributes(struct cm_store_entry *entry, NSSInitContext *ctx,
 {
 	SECItem encoded_exts, *exts[2];
 	unsigned char *extensions;
+	char *nickname;
 	size_t extensions_length;
 	CERTAttribute attr[3];
 	SECOidData *oid;
@@ -134,8 +135,16 @@ cm_csrgen_n_attributes(struct cm_store_entry *entry, NSSInitContext *ctx,
 	oid = SECOID_FindOIDByTag(SEC_OID_PKCS9_FRIENDLY_NAME);
 	if (oid != NULL) {
 		if (entry->cm_cert_nickname != NULL) {
+			nickname = entry->cm_cert_nickname;
+		} else
+		if (entry->cm_key_nickname != NULL) {
+			nickname = entry->cm_key_nickname;
+		} else {
+			nickname = entry->cm_nickname;
+		}
+		if (nickname != NULL) {
 			memset(&bmp, 0, sizeof(bmp));
-			if ((cm_store_utf8_to_bmp_string(entry->cm_cert_nickname,
+			if ((cm_store_utf8_to_bmp_string(nickname,
 							 &bmp.data,
 							 &bmp.len) == 0) &&
 			    (SEC_ASN1EncodeItem(arena, &friendly, &bmp,
