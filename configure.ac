@@ -397,6 +397,8 @@ if test x$ec != xno ; then
 	if $can_ac ; then
 		AC_MSG_RESULT(enabling EC support)
 		AC_DEFINE_UNQUOTED(CM_ENABLE_EC,1,[Define to enable EC support.])
+		MAN_EC=""
+		NO_MAN_EC=".\\\" "
 		ec=yes
 	else
 		if test x$ec != xyes ; then
@@ -405,12 +407,18 @@ if test x$ec != xno ; then
 		else
 			AC_MSG_ERROR([unavailable])
 		fi
+		MAN_EC=".\\\" "
+		NO_MAN_EC=""
 	fi
 else
 	AC_MSG_RESULT(NOT enabling EC support)
+	MAN_EC=".\\\" "
+	NO_MAN_EC=""
 	ec=no
 fi
 AM_CONDITIONAL(HAVE_EC,[test x$ec = xyes])
+AC_SUBST(MAN_EC)
+AC_SUBST(NO_MAN_EC)
 
 AC_DEFINE_UNQUOTED(CM_DEFAULT_KEY_STORAGE_TYPE,cm_key_storage_nssdb,[Define to the default type of storage used for keys.])
 AC_DEFINE_UNQUOTED(CM_DEFAULT_KEY_STORAGE_LOCATION,"/etc/pki/nssdb",[Define to the default location of storage used for keys.])

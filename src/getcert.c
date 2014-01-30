@@ -558,13 +558,13 @@ request(const char *argv0, int argc, char **argv)
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	char subject_default[LINE_MAX];
 	char *nss_scheme, *dbdir = NULL, *token = NULL, *nickname = NULL;
-	char *keyfile = NULL, *certfile = NULL, *capath;
+	char *keytype = NULL, *keyfile = NULL, *certfile = NULL, *capath;
 	char *pin = NULL, *pinfile = NULL;
 	int keysize = 0, auto_renew = 1, verbose = 0, ku = 0, kubit, c, i, j;
 	char *ca = DEFAULT_CA, *subject = NULL, **eku = NULL, *oid, *id = NULL;
 	char *profile = NULL, kustring[16];
 	char **principal = NULL, **dns = NULL, **email = NULL;
-	struct cm_tdbusm_dict param[36];
+	struct cm_tdbusm_dict param[38];
 	const struct cm_tdbusm_dict *params[37];
 	DBusMessage *req, *rep;
 	dbus_bool_t b;
@@ -596,7 +596,7 @@ request(const char *argv0, int argc, char **argv)
 
 	opterr = 0;
 	while ((c = getopt(argc, argv,
-			   ":d:n:t:k:f:I:g:rRN:u:U:K:D:E:sSp:P:vB:C:T:"
+			   ":d:n:t:k:f:I:g:rRN:u:U:K:D:E:sSp:P:vB:C:T:G:"
 			   GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
@@ -618,6 +618,28 @@ request(const char *argv0, int argc, char **argv)
 			break;
 		case 'f':
 			certfile = ensure_pem(globals.tctx, optarg);
+			break;
+		case 'G':
+			if ((strcasecmp(optarg, "RSA") == 0) ||
+#ifdef CM_ENABLE_EC
+			    (strcasecmp(optarg, "ECDSA") == 0) ||
+			    (strcasecmp(optarg, "EC") == 0) ||
+#endif
+			    (strcasecmp(optarg, "DSA") == 0)) {
+				keytype = talloc_strdup(globals.tctx, optarg);
+			} else {
+				printf(_("No support for generating \"%s\" keys.\n"),
+				       optarg);
+				printf(_("Known key types include:"));
+				printf(" RSA");
+				printf(" DSA");
+#ifdef CM_ENABLE_EC
+				printf(" EC");
+#endif
+				printf("\n");
+				return 1;
+			}
+			keytype = talloc_strdup(globals.tctx, optarg);
 			break;
 		case 'g':
 			keysize = atoi(optarg);
@@ -885,12 +907,14 @@ request(const char *argv0, int argc, char **argv)
 	param[i].value.b = auto_renew > 0;
 	params[i] = &param[i];
 	i++;
-	if (keysize > 0) {
+	if (keytype != NULL) {
 		param[i].key = "KEY_TYPE";
 		param[i].value_type = cm_tdbusm_dict_s;
-		param[i].value.s = "RSA";
+		param[i].value.s = keytype;
 		params[i] = &param[i];
 		i++;
+	}
+	if (keysize > 0) {
 		param[i].key = "KEY_SIZE";
 		param[i].value_type = cm_tdbusm_dict_n;
 		param[i].value.n = keysize;
@@ -2608,6 +2632,7 @@ help(const char *cmd, const char *category)
 		N_("Optional arguments:\n"),
 		N_("* Certificate handling settings:\n"),
 		N_("  -I NAME	nickname to assign to the request\n"),
+		N_("  -G TYPE	type of key to be generated if one is not already in place\n"),
 		N_("  -g SIZE	size of key to be generated if one is not already in place\n"),
 		N_("  -r		attempt to renew the certificate when expiration nears (default)\n"),
 		N_("  -R		don't attempt to renew the certificate when expiration nears\n"),

@@ -41,6 +41,13 @@ can be a syslog priority and/or facility, separated by a period, it can be
 an email address, or it can be a command to run.  The default value is
 \fI@CM_DEFAULT_NOTIFICATION_SYSLOG_PRIORITY@\fP.
 
+.IP key_type
+This is the type of key pair which will be generated, used in certificate
+signing requests, and used when self-signing certificates.
+\fIRSA\fR and \fIDSA\fR are supported.
+@MAN_EC@\fIEC\fR (also known as \fIECDSA\fR) is also supported.
+The default is \fIRSA\fP.
+
 .IP symmetric_cipher
 This is the symmetric cipher which will be used to encrypt private keys stored
 in OpenSSL's PEM format.  Recognized values include \fIaes128\fP and

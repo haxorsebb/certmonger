@@ -1,4 +1,4 @@
-.TH certmonger 1 "9 October 2012" "certmonger Manual"
+.TH certmonger 1 "30 January 2014" "certmonger Manual"
 
 .SH NAME
 getcert
@@ -52,6 +52,11 @@ trivially discoverable, use of this option is not recommended except
 for testing.
 
 .SH KEY GENERATION OPTIONS
+.TP
+\fB\-G\fR TYPE
+In case a new key pair needs to be generated, this option specifies the
+type of the keys to be generated.  If not specified, a reasonable default
+(currently \fIRSA\fR) will be used.
 .TP
 \fB\-g\fR BITS
 In case a new key pair needs to be generated, this option specifies the

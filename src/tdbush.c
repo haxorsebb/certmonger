@@ -942,6 +942,40 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		new_entry->cm_nickname = talloc_strdup(new_entry,
 						       param->value.s);
 	}
+	param = cm_tdbusm_find_dict_entry(d, "KEY_TYPE", cm_tdbusm_dict_s);
+	if (param == NULL) {
+		param = cm_tdbusm_find_dict_entry(d,
+						  CM_DBUS_PROP_KEY_TYPE,
+						  cm_tdbusm_dict_s);
+	}
+	if (param != NULL) {
+		if (strcasecmp(param->value.s, "RSA") == 0) {
+			new_entry->cm_key_type.cm_key_gen_algorithm =
+				cm_key_rsa;
+		} else
+		if (strcasecmp(param->value.s, "DSA") == 0) {
+			new_entry->cm_key_type.cm_key_gen_algorithm =
+				cm_key_dsa;
+#ifdef CM_ENABLE_EC
+		} else
+		if ((strcasecmp(param->value.s, "ECDSA") == 0) ||
+		    (strcasecmp(param->value.s, "EC") == 0)) {
+			new_entry->cm_key_type.cm_key_gen_algorithm =
+				cm_key_ecdsa;
+#endif
+		} else {
+			cm_log(1, "No support for generating \"%s\" keys.\n",
+			       param->value.s);
+			ret = send_internal_base_bad_arg_error(conn, msg,
+							       _("No support for key type \"%s\"."),
+							       param->value.s,
+							       "KEY_TYPE");
+			talloc_free(parent);
+			return ret;
+		}
+	} else {
+		new_entry->cm_key_type.cm_key_gen_algorithm = cm_prefs_preferred_key_algorithm();
+	}
 	param = cm_tdbusm_find_dict_entry(d, "KEY_SIZE", cm_tdbusm_dict_n);
 	if (param == NULL) {
 		param = cm_tdbusm_find_dict_entry(d,
@@ -949,10 +983,8 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 						  cm_tdbusm_dict_n);
 	}
 	if (param != NULL) {
-		new_entry->cm_key_type.cm_key_gen_algorithm = CM_DEFAULT_PUBKEY_TYPE;
 		new_entry->cm_key_type.cm_key_gen_size = param->value.n;
 	} else {
-		new_entry->cm_key_type.cm_key_gen_algorithm = CM_DEFAULT_PUBKEY_TYPE;
 		new_entry->cm_key_type.cm_key_gen_size = CM_DEFAULT_PUBKEY_SIZE;
 	}
 	if (new_entry->cm_key_type.cm_key_gen_size < CM_MINIMUM_PUBKEY_SIZE) {
