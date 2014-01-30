@@ -3,7 +3,7 @@ OK.
 -----BEGIN PRIVATE KEY-----
 -----END PRIVATE KEY-----
 [Try To Read Key Without PIN.]
-OK (2048).
+OK (RSA:2048).
 [Retry With Unnecessary PIN File.]
 Failed to read key "$tmpdir/keyfile".
 (Need PIN.)
@@ -15,12 +15,12 @@ Failed to read key "$tmpdir/keyfile".
 Failed to read key "$tmpdir/keyfile".
 (Need PIN.)
 [Retrying With PIN.]
-OK (512).
+OK (RSA:512).
 [Read Key Info Without PIN File.]
 Failed to read key "$tmpdir/keyfile".
 (Need PIN.)
 [Retry With PIN File.]
-OK (512).
+OK (RSA:512).
 [Generate Key With PIN.]
 OK.
 -----BEGIN ENCRYPTED PRIVATE KEY-----
@@ -29,7 +29,7 @@ OK.
 Failed to read key "$tmpdir/keyfile".
 (Need PIN.)
 [Retry With PIN File.]
-OK (2048).
+OK (RSA:2048).
 [Generate CSR With PIN.]
 -----BEGIN NEW CERTIFICATE REQUEST-----
 -----END NEW CERTIFICATE REQUEST-----
@@ -68,7 +68,7 @@ certutil: could not authenticate to token NSS Certificate DB.: The security pass
 Failed to read key "$tmpdir/db":"Test".
 (Need PIN.)
 [Reading Key Info With PIN.]
-OK (2048).
+OK (RSA:2048).
 [Generating CSR Without PIN.]
 [Generating CSR With Bogus PIN Location.]
 [Generating CSR With PIN.]
@@ -87,7 +87,7 @@ certutil: could not authenticate to token NSS Certificate DB.: The security pass
 Failed to read key "$tmpdir/db":"Test".
 (Need PIN.)
 [Reading Key Info With PIN.]
-OK (2048).
+OK (RSA:2048).
 [Generating CSR Without PIN.]
 [Generating CSR With Bogus PIN Location.]
 [Generating CSR With PIN.]

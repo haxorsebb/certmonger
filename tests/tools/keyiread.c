@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2011 Red Hat, Inc.
+ * Copyright (C) 2009,2011,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 
 #include <sys/types.h>
 #include <sys/select.h>
+#include <assert.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,6 +43,28 @@ wait_to_read(int fd)
 	tv.tv_sec = 1;
 	tv.tv_usec = 0;
 	select(fd + 1, &rfds, NULL, NULL, &tv);
+}
+
+static const char *
+type_name(enum cm_key_algorithm alg)
+{
+	switch (alg) {
+	case cm_key_rsa:
+		return "RSA";
+		break;
+	case cm_key_dsa:
+		return "DSA";
+		break;
+#ifdef CM_ENABLE_EC
+	case cm_key_ecdsa:
+		return "EC";
+		break;
+#endif
+	default:
+		assert(0);
+		break;
+	}
+	return NULL;
 }
 
 int
@@ -83,7 +106,9 @@ main(int argc, char **argv)
 		need_pin = cm_keyiread_need_pin(entry, state);
 		cm_keyiread_done(entry, state);
 		if (entry->cm_key_type.cm_key_size != 0) {
-			printf("OK (%d).\n", entry->cm_key_type.cm_key_size);
+			printf("OK (%s:%d).\n",
+			       type_name(entry->cm_key_type.cm_key_algorithm),
+			       entry->cm_key_type.cm_key_size);
 			ret = 0;
 		} else {
 			switch (entry->cm_key_storage_type) {
