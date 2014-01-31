@@ -81,7 +81,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	FILE *status;
 	enum cm_key_algorithm cm_key_algorithm;
 	int cm_key_size, cm_requested_key_size, readwrite, ec;
-	CK_MECHANISM_TYPE mech;
+	CK_MECHANISM_TYPE mech, pmech;
 	SECStatus error;
 	NSSInitContext *ctx;
 	PK11SlotList *slotlist;
@@ -196,14 +196,17 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	switch (cm_key_algorithm) {
 	case cm_key_rsa:
 		mech = CKM_RSA_PKCS_KEY_PAIR_GEN;
+		pmech = CKM_RSA_PKCS_KEY_PAIR_GEN;
 		break;
 	case cm_key_dsa:
 		cm_requested_key_size = pqg_size(cm_requested_key_size);
 		mech = CKM_DSA_KEY_PAIR_GEN;
+		pmech = CKM_DSA_PARAMETER_GEN;
 		break;
 #ifdef CM_ENABLE_EC
 	case cm_key_ecdsa:
 		mech = CKM_EC_KEY_PAIR_GEN;
+		pmech = CKM_EC_KEY_PAIR_GEN;
 		break;
 #endif
 	default:
@@ -345,21 +348,12 @@ next_slot:
 		}
 		_exit(CM_SUB_STATUS_ERROR_AUTH);
 	}
-	/* Select the optimum key size. */
-	cm_key_size = PK11_GetBestKeyLength(slot, mech);
-	if (cm_key_size > 0) {
-		if (cm_key_size != cm_requested_key_size) {
-			cm_log(1,
-			       "Overriding requested key size of %d with %d.\n",
-			       cm_requested_key_size, cm_key_size);
-		}
-	} else {
-		if (cm_requested_key_size > 0) {
-			cm_key_size = cm_requested_key_size;
-		} else {
-			cm_key_size = CM_DEFAULT_PUBKEY_SIZE;
-		}
+	/* Select an initial key size. */
+	if (cm_requested_key_size == 0) {
+		cm_requested_key_size = CM_DEFAULT_PUBKEY_SIZE;
 	}
+	cm_key_size = cm_requested_key_size;
+retry_gen:
 	/* Initialize the parameters. */
 	switch (cm_key_algorithm) {
 	case cm_key_rsa:
@@ -479,8 +473,24 @@ next_slot:
 	pubkey = NULL;
 	privkey = PK11_GenerateKeyPair(slot, mech, params, &pubkey,
 				       PR_TRUE, PR_TRUE, NULL);
-	ec = PORT_GetError();
+	/* If we're just a bit(s?) short (as opposed to cut off at an arbitrary
+	 * limit that's less than 90% of what we asked for), try again. */
+	if ((SECKEY_PublicKeyStrengthInBits(pubkey) < cm_key_size) &&
+	    (SECKEY_PublicKeyStrengthInBits(pubkey) > (cm_key_size * 9 / 10))) {
+		cm_log(1, "Ended up with %d instead of %d.  Retrying.\n",
+		       SECKEY_PublicKeyStrengthInBits(pubkey), cm_key_size);
+		goto retry_gen;
+	}
+	/* Retry with the optimum key size. */
 	if (privkey == NULL) {
+		cm_key_size = PK11_GetBestKeyLength(slot, pmech);
+		if (cm_key_size != cm_requested_key_size) {
+			cm_log(1,
+			       "Overriding requested key size of %d with %d.\n",
+			       cm_requested_key_size, cm_key_size);
+			goto retry_gen;
+		}
+		ec = PORT_GetError();
 		if (ec != 0) {
 			es = PR_ErrorToName(ec);
 		} else {
@@ -531,8 +541,8 @@ next_slot:
 	}
 	/* Attach the specified nickname to the key. */
 	error = PK11_SetPrivateKeyNickname(privkey, entry->cm_key_nickname);
-	ec = PORT_GetError();
 	if (error != SECSuccess) {
+		ec = PORT_GetError();
 		if (ec != 0) {
 			es = PR_ErrorToName(ec);
 		} else {
