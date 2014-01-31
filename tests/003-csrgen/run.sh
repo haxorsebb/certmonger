@@ -10,24 +10,32 @@ for size in 512 1024 1536 2048 3072 4096 ; do
 	run_certutil -d "$tmpdir" -S -g $size -n keyi$size \
 		-s "cn=T$size" -c "cn=T$size" \
 		-x -t u
-	cat > entry.$size <<- EOF
+	# Export the key.
+	pk12util -d "$tmpdir" -o $size.p12 -W "" -n "keyi$size"
+	openssl pkcs12 -in $size.p12 -out key.$size -passin pass: -nodes -nocerts 2>&1
+	# Read the public key and cache it.
+	cat > entry.openssl.$size <<- EOF
+	key_storage_type=FILE
+	key_storage_location=$tmpdir/key.$size
+	key_nickname=keyi$size
+	id=keyi$size
+	EOF
+	$toolsdir/keyiread entry.openssl.$size > /dev/null 2>&1
+	# Add the cached value to the prepping for the NSS copy.
+	cat > entry.nss.$size <<- EOF
 	key_storage_type=NSSDB
 	key_storage_location=$tmpdir
 	key_nickname=keyi$size
+	id=keyi$size
 	EOF
+	grep ^key_pubkey_info= entry.openssl.$size >> entry.nss.$size
+	grep ^key_pubkey= entry.openssl.$size >> entry.nss.$size
 	# Generate a new CSR for that certificate's key.
-	$toolsdir/csrgen entry.$size > csr.nss.$size
-	grep ^spkac entry.$size | sed s,spkac,SPKAC, > spkac.nss.$size
-	# Export the certificate and key.
-	pk12util -d "$tmpdir" -o $size.p12 -W "" -n "keyi$size"
-	openssl pkcs12 -in $size.p12 -passin pass: -out key.$size -nodes 2>&1
+	$toolsdir/csrgen entry.nss.$size > csr.nss.$size
+	grep ^spkac entry.nss.$size | sed s,spkac,SPKAC, > spkac.nss.$size
 	# Generate a new CSR using the extracted key.
-	cat > entry.$size <<- EOF
-	key_storage_type=FILE
-	key_storage_location=$tmpdir/key.$size
-	EOF
-	$toolsdir/csrgen entry.$size > csr.openssl.$size
-	grep ^spkac entry.$size | sed s,spkac,SPKAC, > spkac.openssl.$size
+	$toolsdir/csrgen entry.openssl.$size > csr.openssl.$size
+	grep ^spkac entry.openssl.$size | sed s,spkac,SPKAC, > spkac.openssl.$size
 	# They'd better be the same!
 	if cmp csr.nss.$size csr.openssl.$size ; then
 		if cmp spkac.nss.$size spkac.openssl.$size ; then
@@ -61,12 +69,37 @@ iterate() {
 	ocsp=${13}
 	nscomment=${14}
 	${certnickname:+cert_nickname=$cert_nickname}
+	# Generate a new CSR using the copy of the key that's in a file.
+	cat > entry.openssl.$size <<- EOF
+	key_storage_type=FILE
+	key_storage_location=$tmpdir/key.$size
+	key_nickname=keyi$size
+	key_pubkey=616263
+	id=keyi$size
+	${certfname:+cert_nickname=$certfname}
+	${challengepassword:+challenge_password=$challengepassword}
+	${subject:+template_subject=$subject}
+	${hostname:+template_hostname=$hostname}
+	${email:+template_email=$email}
+	${principal:+template_principal=$principal}
+	${ku:+template_ku=$ku}
+	${eku:+template_eku=$eku}
+	${ca:+template_is_ca=$ca}
+	${capathlen:+template_ca_path_length=$capathlen}
+	${crldp:+template_crldp=$crldp}
+	${ocsp:+template_ocsp=$ocsp}
+	${nscomment:+template_ns_comment=$nscomment}
+	EOF
+	$toolsdir/keyiread entry.openssl.$size > /dev/null 2>&1
+	echo key_pubkey=616263 >> entry.openssl.$size
+	$toolsdir/csrgen entry.openssl.$size > csr.openssl.$size
 	# Generate a new CSR using the copy of the key in the NSS database.
-	cat > entry.$size <<- EOF
+	cat > entry.nss.$size <<- EOF
 	key_storage_type=NSSDB
 	key_storage_location=$tmpdir
 	key_nickname=keyi$size
 	key_pubkey=616263
+	id=keyi$size
 	${certfname:+cert_nickname=$certfname}
 	${challengepassword:+challenge_password=$challengepassword}
 	${subject:+template_subject=$subject}
@@ -81,27 +114,9 @@ iterate() {
 	${ocsp:+template_ocsp=$ocsp}
 	${nscomment:+template_ns_comment=$nscomment}
 	EOF
-	$toolsdir/csrgen entry.$size > csr.nss.$size
-	# Generate a new CSR using the copy of the key that's in a file.
-	cat > entry.$size <<- EOF
-	key_storage_type=FILE
-	key_storage_location=$tmpdir/key.$size
-	key_pubkey=616263
-	${certfname:+cert_nickname=$certfname}
-	${challengepassword:+challenge_password=$challengepassword}
-	${subject:+template_subject=$subject}
-	${hostname:+template_hostname=$hostname}
-	${email:+template_email=$email}
-	${principal:+template_principal=$principal}
-	${ku:+template_ku=$ku}
-	${eku:+template_eku=$eku}
-	${ca:+template_is_ca=$ca}
-	${capathlen:+template_ca_path_length=$capathlen}
-	${crldp:+template_crldp=$crldp}
-	${ocsp:+template_ocsp=$ocsp}
-	${nscomment:+template_ns_comment=$nscomment}
-	EOF
-	$toolsdir/csrgen entry.$size > csr.openssl.$size
+	grep ^key_pubkey_info= entry.openssl.$size >> entry.nss.$size
+	echo key_pubkey=616263 >> entry.openssl.$size
+	$toolsdir/csrgen entry.nss.$size > csr.nss.$size
 	# Both should verify.
 	if test "`openssl req -verify -key key.$size -in csr.openssl.$size -noout 2>&1`" != "verify OK" ; then
 		echo Signature failed for OpenSSL:
@@ -120,7 +135,7 @@ iterate() {
 	# They'd better be the same!
 	if ! cmp csr.nss.$size csr.openssl.$size ; then
 		echo With these settings:
-		tail -n +3 entry.$size | sed 's,^$,,g'
+		tail -n +3 entry.nss.$size | sed 's,^$,,g'
 		echo These differ:
 		cat csr.nss.$size csr.openssl.$size
 		echo Private key:

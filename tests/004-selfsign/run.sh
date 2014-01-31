@@ -39,8 +39,16 @@ for size in 512 1024 1536 2048 3072 4096 ; do
 		-s "cn=T$size" -c "cn=T$size" \
 		-x -t u
 	# Export the certificate and key.
-	pk12util -d "$tmpdir" -o $size.p12 -W "" -n "keyi$size"
-	openssl pkcs12 -in $size.p12 -passin pass: -out key.$size -nodes 2>&1
+	pk12util -d "$tmpdir" -o $size.p12 -W "" -n "keyi$size" > /dev/null 2>&1
+	openssl pkcs12 -in $size.p12 -passin pass: -out key.$size -nodes > /dev/null 2>&1
+	# Read that OpenSSL key.
+	cat > entry.$size <<- EOF
+	key_storage_type=FILE
+	key_storage_location=$tmpdir/key.$size
+	EOF
+	$toolsdir/keyiread entry.$size > /dev/null 2>&1
+	grep ^key_pubkey_info= entry.$size > pubkey.$size
+	grep ^key_pubkey= entry.$size >> pubkey.$size
 	# Use that NSS key.
 	cat > entry.$size <<- EOF
 	key_storage_type=NSSDB
@@ -48,6 +56,7 @@ for size in 512 1024 1536 2048 3072 4096 ; do
 	key_nickname=keyi$size
 	EOF
 	append entry.$size
+	cat pubkey.$size >> entry.$size
 	$toolsdir/csrgen entry.$size > csr.nss.$size
 	setupca
 	$toolsdir/submit ca.self entry.$size > cert.nss.$size
@@ -57,6 +66,7 @@ for size in 512 1024 1536 2048 3072 4096 ; do
 	key_storage_location=$tmpdir/key.$size
 	EOF
 	append entry.$size
+	cat pubkey.$size >> entry.$size
 	$toolsdir/csrgen entry.$size > csr.openssl.$size
 	setupca
 	$toolsdir/submit ca.self entry.$size > cert.openssl.$size
