@@ -28,6 +28,10 @@
 #include <nss.h>
 #include <pk11pub.h>
 
+#include <openssl/dsa.h>
+#ifdef CM_ENABLE_EC
+#include <openssl/ec.h>
+#endif
 #include <openssl/err.h>
 #include <openssl/pem.h>
 #include <openssl/rand.h>
@@ -56,18 +60,20 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 {
 	struct cm_pin_cb_data cb_data;
 	FILE *fp, *status;
-	EVP_PKEY_CTX *ctx;
-	EVP_PKEY *pkey, *params;
+	EVP_PKEY *pkey;
 	char buf[LINE_MAX], *pin, *pubhex, *pubihex;
 	unsigned char *p, *q;
 	long error, errno_save;
 	enum cm_key_algorithm cm_key_algorithm;
 	int cm_key_size;
-	int alg, len;
+	int len;
+	BIGNUM *exponent;
+	RSA *rsa;
+	DSA *dsa;
 #ifdef CM_ENABLE_EC
+	EC_KEY *ec;
 	int ecurve;
 #endif
-	unsigned int need_params;
 
 	status = fdopen(fd, "w");
 	if (status == NULL) {
@@ -90,56 +96,51 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 
 retry_gen:
-	switch (cm_key_algorithm) {
-	case cm_key_rsa:
-		alg = EVP_PKEY_RSA;
-		need_params = 0;
-		break;
-	case cm_key_dsa:
-		alg = EVP_PKEY_DSA;
-		need_params = 1;
-		break;
-#ifdef CM_ENABLE_EC
-	case cm_key_ecdsa:
-		alg = EVP_PKEY_EC;
-		need_params = 1;
-		break;
-#endif
-	case cm_key_unspecified:
-	default:
-		cm_log(1, "Unknown or unsupported key type.\n");
-		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-		break;
-	}
-
-	ctx = EVP_PKEY_CTX_new_id(alg, NULL);
-	if (ctx == NULL) {
-		cm_log(1, "Error setting up key generation context.\n");
+	pkey = EVP_PKEY_new();
+	if (pkey == NULL) {
+		cm_log(1, "Error allocating new key.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
-
-	if (need_params) {
-		if (EVP_PKEY_paramgen_init(ctx) <= 0) {
-			cm_log(1, "Error preparing for key parameter "
-			       "generation.\n");
-			while ((error = ERR_get_error()) != 0) {
-				ERR_error_string_n(error, buf, sizeof(buf));
-				cm_log(1, "%s\n", buf);
-			}
-			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-		}
-	}
-
 	switch (cm_key_algorithm) {
 	case cm_key_rsa:
-		break;
-	case cm_key_dsa:
-		if (EVP_PKEY_CTX_set_dsa_paramgen_bits(ctx,
-						       cm_key_size) <= 0) {
-			cm_log(1, "Error setting key parameter generation "
-			       "parameters.\n");
+		exponent = BN_new();
+		if (exponent == NULL) {
+			cm_log(1, "Error setting up exponent.\n");
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
+		BN_set_word(exponent, CM_DEFAULT_RSA_EXPONENT);
+		rsa = RSA_new();
+		if (rsa == NULL) {
+			cm_log(1, "Error allocating new RSA key.\n");
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		}
+		if (RSA_generate_key_ex(rsa, cm_key_size, exponent, NULL) != 1) {
+			cm_log(1, "Error generating key.\n");
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		}
+		if (RSA_check_key(rsa) != 1) {
+			cm_log(1, "Key fails checks.  Retrying.\n");
+			goto retry_gen;
+		}
+		EVP_PKEY_set1_RSA(pkey, rsa);
+		break;
+	case cm_key_dsa:
+		dsa = DSA_new();
+		if (dsa == NULL) {
+			cm_log(1, "Error allocating new DSA key.\n");
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		}
+		if (DSA_generate_parameters_ex(dsa, cm_key_size,
+					       NULL, 0,
+					       NULL, NULL, NULL) != 1) {
+			cm_log(1, "Error generating parameters.\n");
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		}
+		if (DSA_generate_key(dsa) != 1) {
+			cm_log(1, "Error generating key.\n");
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		}
+		EVP_PKEY_set1_DSA(pkey, dsa);
 		break;
 #ifdef CM_ENABLE_EC
 	case cm_key_ecdsa:
@@ -149,89 +150,16 @@ retry_gen:
 			ecurve = NID_secp384r1;
 		else
 			ecurve = NID_secp521r1;
-		if (EVP_PKEY_CTX_set_ec_paramgen_curve_nid(ctx, ecurve) <= 0) {
-			cm_log(1, "Error setting key parameter generation "
-			       "parameters.\n");
+		ec = EC_KEY_new_by_curve_name(ecurve);
+		if (ec == NULL) {
+			cm_log(1, "Error allocating new EC key.\n");
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
-		break;
-#endif
-	default:
-		cm_log(1, "Unknown or unsupported key type.\n");
-		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-		break;
-	}
-
-	params = NULL;
-	if (need_params) {
-		if ((EVP_PKEY_paramgen(ctx, &params) <= 0) ||
-		    (params == NULL)) {
-			while ((error = ERR_get_error()) != 0) {
-				ERR_error_string_n(error, buf, sizeof(buf));
-				cm_log(1, "%s\n", buf);
-			}
+		if (EC_KEY_generate_key(ec) != 1) {
+			cm_log(1, "Error generating key.\n");
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
-		ctx = EVP_PKEY_CTX_new(params, NULL);
-		if (ctx == NULL) {
-			cm_log(1, "Error setting up key generation context.\n");
-			while ((error = ERR_get_error()) != 0) {
-				ERR_error_string_n(error, buf, sizeof(buf));
-				cm_log(1, "%s\n", buf);
-			}
-			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-		}
-	}
-
-	if (EVP_PKEY_keygen_init(ctx) <= 0) {
-		cm_log(1, "Error preparing for key generation.\n");
-		while ((error = ERR_get_error()) != 0) {
-			ERR_error_string_n(error, buf, sizeof(buf));
-			cm_log(1, "%s\n", buf);
-		}
-		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-	}
-
-	switch (cm_key_algorithm) {
-	case cm_key_rsa:
-		if (EVP_PKEY_CTX_set_rsa_keygen_bits(ctx, cm_key_size) <= 0) {
-			cm_log(1, "Error setting key generation parameters.\n");
-			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-		}
-		break;
-	case cm_key_dsa:
-		break;
-#ifdef CM_ENABLE_EC
-	case cm_key_ecdsa:
-		break;
-#endif
-	default:
-		cm_log(1, "Unknown or unsupported key type.\n");
-		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-		break;
-	}
-
-	pkey = NULL;
-	if ((EVP_PKEY_keygen(ctx, &pkey) <= 0) || (pkey == NULL)) {
-		cm_log(1, "Error generating key.\n");
-		while ((error = ERR_get_error()) != 0) {
-			ERR_error_string_n(error, buf, sizeof(buf));
-			cm_log(1, "%s\n", buf);
-		}
-		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-	}
-
-	switch (cm_key_algorithm) {
-	case cm_key_rsa:
-		if (RSA_check_key(EVP_PKEY_get1_RSA(pkey)) != 1) {
-			cm_log(1, "Key fails checks.  Retrying.\n");
-			goto retry_gen;
-		}
-		break;
-	case cm_key_dsa:
-		break;
-#ifdef CM_ENABLE_EC
-	case cm_key_ecdsa:
+		EVP_PKEY_set1_EC_KEY(pkey, ec);
 		break;
 #endif
 	default:
