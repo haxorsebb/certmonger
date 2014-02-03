@@ -57,7 +57,6 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 {
 	struct cm_pin_cb_data cb_data;
 	FILE *keyfp, *status;
-	X509 *x;
 	X509_REQ *req;
 	NETSCAPE_SPKI spki;
 	NETSCAPE_SPKAC spkac;
@@ -125,8 +124,8 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 	}
 	if (pkey != NULL) {
-		x = X509_new();
-		if (x != NULL) {
+		req = X509_REQ_new();
+		if (req != NULL) {
 			if (entry->cm_template_subject != NULL) {
 				/* This isn't really correct, but it will
 				 * probably do for now. */
@@ -138,13 +137,13 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 						for (i = 0; p[i] != '\0'; i++) {
 							p[i] = toupper(p[i]);
 						}
-						X509_NAME_add_entry_by_txt(x->cert_info->subject,
+						X509_NAME_add_entry_by_txt(req->req_info->subject,
 									   p, MBSTRING_UTF8,
 									   (unsigned char *) (s + 1), q - s - 1,
 									   -1, 0);
 						*s = '=';
 					} else {
-						X509_NAME_add_entry_by_txt(x->cert_info->subject,
+						X509_NAME_add_entry_by_txt(req->req_info->subject,
 									   "CN", MBSTRING_UTF8,
 									   (unsigned char *) p, q - p,
 									   -1, 0);
@@ -153,92 +152,76 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					q = p + strcspn(p, ",");
 				}
 			} else {
-				X509_NAME_add_entry_by_txt(x->cert_info->subject,
+				X509_NAME_add_entry_by_txt(req->req_info->subject,
 							   "CN", MBSTRING_UTF8,
 							   (const unsigned char *) default_cn,
 							   strlen(default_cn),
 							   -1, 0);
 			}
-			X509_set_pubkey(x, pkey);
-			req = X509_to_X509_REQ(x, pkey, cm_prefs_ossl_hash());
-			if (req != NULL) {
-				/* Set the version, just in case
-				 * X509_to_X509_REQ() stopped doing it for
-				 * us. */
-				X509_REQ_set_version(req, SEC_CERTIFICATE_REQUEST_VERSION);
-				/* Add attributes. */
-				extensions = NULL;
-				cm_certext_build_csr_extensions(entry, NULL,
-								&extensions,
-								&extensions_len);
-				if ((extensions != NULL) &&
-				    (extensions_len> 0)) {
-					X509_REQ_add1_attr_by_NID(req,
-								  NID_ext_req,
-								  V_ASN1_SEQUENCE,
-								  extensions,
-								  extensions_len);
-					talloc_free(extensions);
-				}
-				if (entry->cm_cert_nickname != NULL) {
-					nickname = entry->cm_cert_nickname;
-				} else
-				if (entry->cm_key_nickname != NULL) {
-					nickname = entry->cm_key_nickname;
-				} else {
-					nickname = entry->cm_nickname;
-				}
-				if ((nickname != NULL) &&
-				    (cm_store_utf8_to_bmp_string(nickname, &bmp,
-								 &bmpcount) == 0)) {
-					X509_REQ_add1_attr_by_NID(req,
-								  NID_friendlyName,
-								  V_ASN1_BMPSTRING,
-								  bmp,
-								  bmpcount);
-					free(bmp);
-				}
-				password = entry->cm_challenge_password;
-				upassword = (unsigned char *) password;
-				if (password != NULL) {
-					X509_REQ_add1_attr_by_NID(req,
-								  NID_pkcs9_challengePassword,
-								  V_ASN1_PRINTABLESTRING,
-								  upassword,
-								  strlen(password));
-				}
-				X509_REQ_sign(req, pkey, cm_prefs_ossl_hash());
-				PEM_write_X509_REQ_NEW(status, req);
-				memset(&spkac, 0, sizeof(spkac));
-				spkac.challenge = M_ASN1_IA5STRING_new();
-				if (entry->cm_challenge_password != NULL) {
-					ASN1_STRING_set(spkac.challenge,
-							entry->cm_challenge_password,
-							strlen(entry->cm_challenge_password));
-				} else {
-					ASN1_STRING_set(spkac.challenge,
-							"", 0);
-				}
-				memset(&spki, 0, sizeof(spki));
-				spki.spkac = &spkac;
-				spki.sig_algor = req->sig_alg;
-				spki.signature = M_ASN1_BIT_STRING_new();
-				NETSCAPE_SPKI_set_pubkey(&spki, pkey);
-				NETSCAPE_SPKI_sign(&spki, pkey, cm_prefs_ossl_hash());
-				s = NETSCAPE_SPKI_b64_encode(&spki);
-				if (s != NULL) {
-					fprintf(status, "%s\n", s);
-				}
+			X509_REQ_set_pubkey(req, pkey);
+			X509_REQ_set_version(req, SEC_CERTIFICATE_REQUEST_VERSION);
+			/* Add attributes. */
+			extensions = NULL;
+			cm_certext_build_csr_extensions(entry, NULL,
+							&extensions,
+							&extensions_len);
+			if ((extensions != NULL) &&
+			    (extensions_len> 0)) {
+				X509_REQ_add1_attr_by_NID(req,
+							  NID_ext_req,
+							  V_ASN1_SEQUENCE,
+							  extensions,
+							  extensions_len);
+				talloc_free(extensions);
+			}
+			if (entry->cm_cert_nickname != NULL) {
+				nickname = entry->cm_cert_nickname;
+			} else
+			if (entry->cm_key_nickname != NULL) {
+				nickname = entry->cm_key_nickname;
 			} else {
-				cm_log(1,
-				       "Error converting template certificate "
-				       "into a CSR.\n");
-				while ((error = ERR_get_error()) != 0) {
-					ERR_error_string_n(error, buf,
-							   sizeof(buf));
-					cm_log(1, "%s\n", buf);
-				}
-				_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+				nickname = entry->cm_nickname;
+			}
+			if ((nickname != NULL) &&
+			    (cm_store_utf8_to_bmp_string(nickname, &bmp,
+							 &bmpcount) == 0)) {
+				X509_REQ_add1_attr_by_NID(req,
+							  NID_friendlyName,
+							  V_ASN1_BMPSTRING,
+							  bmp,
+							  bmpcount);
+				free(bmp);
+			}
+			password = entry->cm_challenge_password;
+			upassword = (unsigned char *) password;
+			if (password != NULL) {
+				X509_REQ_add1_attr_by_NID(req,
+							  NID_pkcs9_challengePassword,
+							  V_ASN1_PRINTABLESTRING,
+							  upassword,
+							  strlen(password));
+			}
+			X509_REQ_sign(req, pkey, cm_prefs_ossl_hash());
+			PEM_write_X509_REQ_NEW(status, req);
+			memset(&spkac, 0, sizeof(spkac));
+			spkac.challenge = M_ASN1_IA5STRING_new();
+			if (entry->cm_challenge_password != NULL) {
+				ASN1_STRING_set(spkac.challenge,
+						entry->cm_challenge_password,
+						strlen(entry->cm_challenge_password));
+			} else {
+				ASN1_STRING_set(spkac.challenge,
+						"", 0);
+			}
+			memset(&spki, 0, sizeof(spki));
+			spki.spkac = &spkac;
+			spki.sig_algor = req->sig_alg;
+			spki.signature = M_ASN1_BIT_STRING_new();
+			NETSCAPE_SPKI_set_pubkey(&spki, pkey);
+			NETSCAPE_SPKI_sign(&spki, pkey, cm_prefs_ossl_hash());
+			s = NETSCAPE_SPKI_b64_encode(&spki);
+			if (s != NULL) {
+				fprintf(status, "%s\n", s);
 			}
 		} else {
 			cm_log(1, "Error creating template certificate.\n");
