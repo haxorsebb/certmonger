@@ -393,6 +393,7 @@ if test x$dsa != xno ; then
 	LIBS="$LIBSsave"
 	can_dsa=true
 	if ! pkg-config --atleast-version=1.0 openssl ; then
+		# CSR signing appears to be broken in 0.9.8e, so reject < 1.0
 		can_dsa=false
 	fi
 	if test x$ac_cv_lib_crypto_DSA_new = xno ; then
