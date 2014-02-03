@@ -121,14 +121,18 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				cm_log(3, "Key is an RSA key.\n");
 				alg = "RSA";
 				break;
+#ifdef CM_ENABLE_DSA
 			case EVP_PKEY_DSA:
 				cm_log(3, "Key is a DSA key.\n");
 				alg = "DSA";
 				break;
+#endif
+#ifdef CM_ENABLE_EC
 			case EVP_PKEY_EC:
 				cm_log(3, "Key is an EC key.\n");
 				alg = "EC";
 				break;
+#endif
 			default:
 				cm_log(3, "Key is for an unknown algorithm.\n");
 				alg = "";
