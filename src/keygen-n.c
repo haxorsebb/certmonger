@@ -454,8 +454,8 @@ retry_gen:
 	case cm_key_ecdsa:
 		memset(&ec_params, 0, sizeof(ec_params));
 		if (cm_key_size <= 256)
-			ecurve = SECOID_FindOIDByTag(SEC_OID_SECG_EC_SECP256R1);
-		if (cm_key_size <= 384)
+			ecurve = SECOID_FindOIDByTag(SEC_OID_ANSIX962_EC_PRIME256V1);
+		else if (cm_key_size <= 384)
 			ecurve = SECOID_FindOIDByTag(SEC_OID_SECG_EC_SECP384R1);
 		else
 			ecurve = SECOID_FindOIDByTag(SEC_OID_SECG_EC_SECP521R1);

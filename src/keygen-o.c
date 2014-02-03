@@ -89,6 +89,7 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 
+retry_gen:
 	switch (cm_key_algorithm) {
 	case cm_key_rsa:
 		alg = EVP_PKEY_RSA;
@@ -143,8 +144,8 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 #ifdef CM_ENABLE_EC
 	case cm_key_ecdsa:
 		if (cm_key_size <= 256)
-			ecurve = NID_secp256k1;
-		if (cm_key_size <= 384)
+			ecurve = NID_X9_62_prime256v1;
+		else if (cm_key_size <= 384)
 			ecurve = NID_secp384r1;
 		else
 			ecurve = NID_secp521r1;
@@ -218,6 +219,25 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(1, "%s\n", buf);
 		}
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+	}
+
+	switch (cm_key_algorithm) {
+	case cm_key_rsa:
+		if (RSA_check_key(EVP_PKEY_get1_RSA(pkey)) != 1) {
+			cm_log(1, "Key fails checks.  Retrying.\n");
+			goto retry_gen;
+		}
+		break;
+	case cm_key_dsa:
+		break;
+#ifdef CM_ENABLE_EC
+	case cm_key_ecdsa:
+		break;
+#endif
+	default:
+		cm_log(1, "Unknown or unsupported key type.\n");
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		break;
 	}
 
 	fp = fopen(entry->cm_key_storage_location, "w");
