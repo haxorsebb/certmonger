@@ -467,6 +467,7 @@ cm_store_utf8_to_bmp_string(char *s,
 		*bmp = malloc(space);
 		outbuf = (char *) *bmp;
 		if (outbuf == NULL) {
+			iconv_close(conv);
 			return -1;
 		}
 		memset(*bmp, 0, space);
