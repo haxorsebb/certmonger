@@ -3,12 +3,36 @@ EXTRA_DIST = \
 	run-tests.sh functions certmonger.conf \
 	001-keyiread/run.sh \
 	001-keyiread/expected.out \
+	001-keyiread-rsa/run.sh \
+	001-keyiread-rsa/expected.out \
+	001-keyiread-dsa/run.sh \
+	001-keyiread-dsa/expected.out \
+	001-keyiread-ec/run.sh \
+	001-keyiread-ec/expected.out \
 	002-keygen/run.sh \
 	002-keygen/expected.out \
+	002-keygen-rsa/run.sh \
+	002-keygen-rsa/expected.out \
+	002-keygen-dsa/run.sh \
+	002-keygen-dsa/expected.out \
+	002-keygen-ec/run.sh \
+	002-keygen-ec/expected.out \
 	003-csrgen/run.sh \
 	003-csrgen/expected.out \
+	003-csrgen-rsa/run.sh \
+	003-csrgen-rsa/expected.out \
+	003-csrgen-dsa/run.sh \
+	003-csrgen-dsa/expected.out \
+	003-csrgen-ec/run.sh \
+	003-csrgen-ec/expected.out \
 	004-selfsign/run.sh \
 	004-selfsign/expected.out \
+	004-selfsign-rsa/run.sh \
+	004-selfsign-rsa/expected.out \
+	004-selfsign-dsa/run.sh \
+	004-selfsign-dsa/expected.out \
+	004-selfsign-ec/run.sh \
+	004-selfsign-ec/expected.out \
 	005-dbusm/run.sh \
 	005-dbusm/expected.out \
 	006-serial/run.sh \
@@ -71,9 +95,17 @@ EXTRA_DIST = \
 
 subdirs = \
 	001-keyiread \
+	001-keyiread-rsa \
+	001-keyiread-dsa \
 	002-keygen \
+	002-keygen-rsa \
+	002-keygen-dsa \
 	003-csrgen \
+	003-csrgen-rsa \
+	003-csrgen-dsa \
 	004-selfsign \
+	004-selfsign-rsa \
+	004-selfsign-dsa \
 	005-dbusm \
 	006-serial \
 	007-certsave \
@@ -109,6 +141,14 @@ subdirs += \
 	013-enckey-sql \
 	015-lockedkey-sql \
 	017-notoken-sql
+endif
+
+if HAVE_EC
+subdirs += \
+	001-keyiread-ec \
+	002-keygen-ec \
+	003-csrgen-ec \
+	004-selfsign-ec
 endif
 
 check: all

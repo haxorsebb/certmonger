@@ -1,0 +1,32 @@
+#!/bin/sh -e
+
+cd "$tmpdir"
+
+source "$srcdir"/functions
+initnssdb "$tmpdir"
+
+for size in nistp256 nistp384 nistp521 ; do
+	# Generate a self-signed cert.
+	run_certutil -d "$tmpdir" -S -n keyi$size \
+		-s "cn=T$size" -c "cn=T$size" \
+		-x -t u -k ec -q $size
+	# Export the key.
+	pk12util -d "$tmpdir" -o $size.p12 -W "" -n "keyi$size" > /dev/null 2>&1
+	openssl pkcs12 -in $size.p12 -out key.$size -passin pass: -nodes -nocerts > /dev/null 2>&1
+	cat > entry.openssl.$size <<- EOF
+	key_storage_type=FILE
+	key_storage_location=$tmpdir/key.$size
+	key_nickname=keyi$size
+	EOF
+	$toolsdir/keyiread entry.openssl.$size
+	# Check the size of the key.
+	cat > entry.nss.$size <<- EOF
+	key_storage_type=NSSDB
+	key_storage_location=$tmpdir
+	key_nickname=keyi$size
+	EOF
+	grep ^key_pubkey_info= entry.openssl.$size >> entry.nss.$size
+	grep ^key_pubkey= entry.openssl.$size >> entry.nss.$size
+	$toolsdir/keyiread entry.nss.$size
+done
+echo Test complete.
