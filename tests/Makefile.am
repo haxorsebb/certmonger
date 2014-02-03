@@ -152,7 +152,7 @@ subdirs += \
 endif
 
 check: all
-	for required in certutil pk12util openssl expect diff cmp mktemp dos2unix unix2dos dbus-launch ; do \
+	for required in certutil pk12util openssl diff cmp mktemp dos2unix unix2dos dbus-launch ; do \
 		which $$required || exit 1; \
 	done
 	env	srcdir=$(srcdir) \
