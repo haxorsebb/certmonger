@@ -33,7 +33,9 @@ struct cm_store_entry {
 		enum cm_key_algorithm {
 			cm_key_unspecified = 0,
 			cm_key_rsa = 1,
+#ifdef CM_ENABLE_DSA
 			cm_key_dsa,
+#endif
 #ifdef CM_ENABLE_EC
 			cm_key_ecdsa,
 #endif

@@ -96,16 +96,12 @@ EXTRA_DIST = \
 subdirs = \
 	001-keyiread \
 	001-keyiread-rsa \
-	001-keyiread-dsa \
 	002-keygen \
 	002-keygen-rsa \
-	002-keygen-dsa \
 	003-csrgen \
 	003-csrgen-rsa \
-	003-csrgen-dsa \
 	004-selfsign \
 	004-selfsign-rsa \
-	004-selfsign-dsa \
 	005-dbusm \
 	006-serial \
 	007-certsave \
@@ -141,6 +137,14 @@ subdirs += \
 	013-enckey-sql \
 	015-lockedkey-sql \
 	017-notoken-sql
+endif
+
+if HAVE_DSA
+subdirs += \
+	001-keyiread-dsa \
+	002-keygen-dsa \
+	003-csrgen-dsa \
+	004-selfsign-dsa
 endif
 
 if HAVE_EC

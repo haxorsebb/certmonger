@@ -448,10 +448,12 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 				if (strcasecmp(s[i], "RSA") == 0) {
 					ret->cm_key_type.cm_key_algorithm =
 						cm_key_rsa;
+#ifdef CM_ENABLE_DSA
 				} else
 				if (strcasecmp(s[i], "DSA") == 0) {
 					ret->cm_key_type.cm_key_algorithm =
 						cm_key_dsa;
+#endif
 #ifdef CM_ENABLE_EC
 				} else
 				if ((strcasecmp(s[i], "ECDSA") == 0) ||
@@ -469,10 +471,12 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 				if (strcasecmp(s[i], "RSA") == 0) {
 					ret->cm_key_type.cm_key_gen_algorithm =
 						cm_key_rsa;
+#ifdef CM_ENABLE_DSA
 				} else
 				if (strcasecmp(s[i], "DSA") == 0) {
 					ret->cm_key_type.cm_key_gen_algorithm =
 						cm_key_dsa;
+#endif
 #ifdef CM_ENABLE_EC
 				} else
 				if ((strcasecmp(s[i], "ECDSA") == 0) ||
@@ -1010,10 +1014,12 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 		cm_store_file_write_str(fp, cm_store_entry_field_key_type,
 					"RSA");
 		break;
+#ifdef CM_ENABLE_DSA
 	case cm_key_dsa:
 		cm_store_file_write_str(fp, cm_store_entry_field_key_type,
 					"DSA");
 		break;
+#endif
 #ifdef CM_ENABLE_EC
 	case cm_key_ecdsa:
 		cm_store_file_write_str(fp, cm_store_entry_field_key_type,
@@ -1030,10 +1036,12 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 		cm_store_file_write_str(fp, cm_store_entry_field_key_gen_type,
 					"RSA");
 		break;
+#ifdef CM_ENABLE_DSA
 	case cm_key_dsa:
 		cm_store_file_write_str(fp, cm_store_entry_field_key_gen_type,
 					"DSA");
 		break;
+#endif
 #ifdef CM_ENABLE_EC
 	case cm_key_ecdsa:
 		cm_store_file_write_str(fp, cm_store_entry_field_key_gen_type,

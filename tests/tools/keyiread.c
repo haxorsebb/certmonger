@@ -52,9 +52,11 @@ type_name(enum cm_key_algorithm alg)
 	case cm_key_rsa:
 		return "RSA";
 		break;
+#ifdef CM_ENABLE_DSA
 	case cm_key_dsa:
 		return "DSA";
 		break;
+#endif
 #ifdef CM_ENABLE_EC
 	case cm_key_ecdsa:
 		return "EC";

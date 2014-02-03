@@ -129,10 +129,12 @@ cm_keyiread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 	if (((q - p) == strlen("RSA")) &&
 	     (strncasecmp(p, "RSA", 3) == 0)) {
 		alg = cm_key_rsa;
+#ifdef CM_ENABLE_DSA
 	} else
 	if (((q - p) == strlen("DSA")) &&
 	    (strncasecmp(p, "DSA", 3) == 0)) {
 		alg = cm_key_dsa;
+#endif
 #ifdef CM_ENABLE_EC
 	} else
 	if (((q - p) == strlen("EC")) &&

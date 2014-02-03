@@ -472,18 +472,20 @@ cm_prefs_preferred_key_algorithm(void)
 		if (strcasecmp(keytype, "RSA") == 0) {
 			free(keytype);
 			return cm_key_rsa;
-		} else
-#ifdef CM_ENABLE_EC
-		if ((strcasecmp(keytype, "ECDSA") == 0) ||
-		    (strcasecmp(keytype, "EC") == 0)) {
-			free(keytype);
-			return cm_key_rsa;
-		} else
-#endif
-		if (strcasecmp(keytype, "DSA") == 0) {
+		}
+#ifdef CM_ENABLE_DSA
+		else if (strcasecmp(keytype, "DSA") == 0) {
 			free(keytype);
 			return cm_key_dsa;
 		}
+#endif
+#ifdef CM_ENABLE_EC
+		else if ((strcasecmp(keytype, "ECDSA") == 0) ||
+			 (strcasecmp(keytype, "EC") == 0)) {
+			free(keytype);
+			return cm_key_rsa;
+		}
+#endif
 	}
 	return CM_DEFAULT_PUBKEY_TYPE;
 }

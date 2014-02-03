@@ -28,7 +28,9 @@
 #include <nss.h>
 #include <pk11pub.h>
 
+#ifdef CM_ENABLE_DSA
 #include <openssl/dsa.h>
+#endif
 #ifdef CM_ENABLE_EC
 #include <openssl/ec.h>
 #endif
@@ -69,7 +71,9 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	int len;
 	BIGNUM *exponent;
 	RSA *rsa;
+#ifdef CM_ENABLE_DSA
 	DSA *dsa;
+#endif
 #ifdef CM_ENABLE_EC
 	EC_KEY *ec;
 	int ecurve;
@@ -124,6 +128,7 @@ retry_gen:
 		}
 		EVP_PKEY_set1_RSA(pkey, rsa);
 		break;
+#ifdef CM_ENABLE_DSA
 	case cm_key_dsa:
 		dsa = DSA_new();
 		if (dsa == NULL) {
@@ -142,6 +147,7 @@ retry_gen:
 		}
 		EVP_PKEY_set1_DSA(pkey, dsa);
 		break;
+#endif
 #ifdef CM_ENABLE_EC
 	case cm_key_ecdsa:
 		if (cm_key_size <= 256)

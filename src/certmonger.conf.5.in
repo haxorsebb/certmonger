@@ -44,7 +44,8 @@ an email address, or it can be a command to run.  The default value is
 .IP key_type
 This is the type of key pair which will be generated, used in certificate
 signing requests, and used when self-signing certificates.
-\fIRSA\fR and \fIDSA\fR are supported.
+@NO_MAN_DSA@\fIRSA\fR is supported.
+@MAN_DSA@\fIRSA\fR and \fIDSA\fR are supported.
 @MAN_EC@\fIEC\fR (also known as \fIECDSA\fR) is also supported.
 The default is \fIRSA\fP.
 

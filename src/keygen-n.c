@@ -88,10 +88,12 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	PK11SlotListElement *sle;
 	PK11SlotInfo *slot = NULL;
 	PK11RSAGenParams rsa_params;
+#ifdef CM_ENABLE_DSA
 	PQGParams *pqg_params = NULL;
 	PQGVerify *pqg_verify;
 	SECStatus pqg_ok;
 	SECKEYPQGParams dsa_params;
+#endif
 	SECItem *spki;
 	CERTSubjectPublicKeyInfo *pubkeyinfo;
 	void *params;
@@ -198,11 +200,13 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		mech = CKM_RSA_PKCS_KEY_PAIR_GEN;
 		pmech = CKM_RSA_PKCS_KEY_PAIR_GEN;
 		break;
+#ifdef CM_ENABLE_DSA
 	case cm_key_dsa:
 		cm_requested_key_size = pqg_size(cm_requested_key_size);
 		mech = CKM_DSA_KEY_PAIR_GEN;
 		pmech = CKM_DSA_PARAMETER_GEN;
 		break;
+#endif
 #ifdef CM_ENABLE_EC
 	case cm_key_ecdsa:
 		mech = CKM_EC_KEY_PAIR_GEN;
@@ -359,6 +363,7 @@ retry_gen:
 	case cm_key_rsa:
 		/* no parameters */
 		break;
+#ifdef CM_ENABLE_DSA
 	case cm_key_dsa:
 		cm_log(1, "Generating domain parameters.\n");
 		pqg_ok = SECFailure;
@@ -426,6 +431,7 @@ retry_gen:
 			}
 		}
 		break;
+#endif
 #ifdef CM_ENABLE_EC
 	case cm_key_ecdsa:
 		/* no parameters to generate */
@@ -443,6 +449,7 @@ retry_gen:
 		rsa_params.pe = CM_DEFAULT_RSA_EXPONENT;
 		params = &rsa_params;
 		break;
+#ifdef CM_ENABLE_DSA
 	case cm_key_dsa:
 		memset(&dsa_params, 0, sizeof(dsa_params));
 		PK11_PQG_GetPrimeFromParams(pqg_params, &dsa_params.prime);
@@ -450,6 +457,7 @@ retry_gen:
 		PK11_PQG_GetBaseFromParams(pqg_params, &dsa_params.base);
 		params = &dsa_params;
 		break;
+#endif
 #ifdef CM_ENABLE_EC
 	case cm_key_ecdsa:
 		memset(&ec_params, 0, sizeof(ec_params));

@@ -372,6 +372,62 @@ else
 fi
 AM_CONDITIONAL(NOW,[test x$now = xyes])
 
+AC_ARG_ENABLE(dsa,
+AS_HELP_STRING(--disable-dsa,[Disable DSA key support, even if available.]),
+dsa=$enableval,
+dsa=maybe)
+if test x$dsa != xno ; then
+	CFLAGSsave="$CFLAGS"
+	LIBSsave="$LIBS"
+	CFLAGS="$OPENSSL_CFLAGS $LIBS"
+	LIBS="$OPENSSL_LIBS $LIBS"
+	AC_CHECK_LIB(crypto,DSA_new)
+	CFLAGS="$NSS_CFLAGS $LIBS"
+	LIBS="$NSS_LIBS $LIBS"
+	AC_CHECK_TYPE(SECKEYDSAPublicKey,,,
+		      [
+		      AC_INCLUDES_DEFAULT
+		      #include <nss3/keythi.h>
+		      ])
+	CFLAGS="$CFLAGSsave"
+	LIBS="$LIBSsave"
+	can_dsa=true
+	if ! pkg-config --atleast-version=1.0 openssl ; then
+		can_dsa=false
+	fi
+	if test x$ac_cv_lib_crypto_DSA_new = xno ; then
+		can_dsa=false
+	fi
+	if test x$ac_cv_type_SECKEYDSAPublicKey = xno ; then
+		can_dsa=false
+	fi
+	AC_MSG_CHECKING([for DSA support])
+	if $can_dsa ; then
+		AC_MSG_RESULT(enabling DSA support)
+		AC_DEFINE_UNQUOTED(CM_ENABLE_DSA,1,[Define to enable DSA support.])
+		MAN_DSA=""
+		NO_MAN_DSA=".\\\" "
+		dsa=yes
+	else
+		if test x$dsa != xyes ; then
+			AC_MSG_WARN([unavailable, disabling])
+			dsa=no
+		else
+			AC_MSG_ERROR([unavailable])
+		fi
+		MAN_DSA=".\\\" "
+		NO_MAN_DSA=""
+	fi
+else
+	AC_MSG_RESULT(NOT enabling DSA support)
+	MAN_DSA=".\\\" "
+	NO_MAN_DSA=""
+	dsa=no
+fi
+AM_CONDITIONAL(HAVE_DSA,[test x$dsa = xyes])
+AC_SUBST(MAN_DSA)
+AC_SUBST(NO_MAN_DSA)
+
 AC_ARG_ENABLE(ec,
 AS_HELP_STRING(--disable-ec,[Disable EC key support, even if available.]),
 ec=$enableval,
@@ -387,15 +443,15 @@ if test x$ec != xno ; then
 	AC_CHECK_FUNCS(SECKEY_CreateECPrivateKey)
 	CFLAGS="$CFLAGSsave"
 	LIBS="$LIBSsave"
-	can_ac=true
+	can_ec=true
 	if test x$ac_cv_lib_crypto_EC_KEY_new_by_curve_name = xno ; then
-		can_ac=false
+		can_ec=false
 	fi
 	if test x$ac_cv_func_CreateECPrivateKey = xno ; then
-		can_ac=false
+		can_ec=false
 	fi
 	AC_MSG_CHECKING([for EC support])
-	if $can_ac ; then
+	if $can_ec ; then
 		AC_MSG_RESULT(enabling EC support)
 		AC_DEFINE_UNQUOTED(CM_ENABLE_EC,1,[Define to enable EC support.])
 		MAN_EC=""

@@ -952,10 +952,12 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		if (strcasecmp(param->value.s, "RSA") == 0) {
 			new_entry->cm_key_type.cm_key_gen_algorithm =
 				cm_key_rsa;
+#ifdef CM_ENABLE_DSA
 		} else
 		if (strcasecmp(param->value.s, "DSA") == 0) {
 			new_entry->cm_key_type.cm_key_gen_algorithm =
 				cm_key_dsa;
+#endif
 #ifdef CM_ENABLE_EC
 		} else
 		if ((strcasecmp(param->value.s, "ECDSA") == 0) ||
@@ -1365,7 +1367,9 @@ base_get_supported_key_types(DBusConnection *conn, DBusMessage *msg,
 {
 	const char *key_types[] = {
 		"RSA",
+#ifdef CM_ENABLE_DSA
 		"DSA",
+#endif
 #ifdef CM_ENABLE_EC
 		"EC",
 #endif
@@ -2158,9 +2162,11 @@ request_get_key_type_and_size(DBusConnection *conn, DBusMessage *msg,
 	case cm_key_rsa:
 		type = "RSA";
 		break;
+#ifdef CM_ENABLE_DSA
 	case cm_key_dsa:
 		type = "DSA";
 		break;
+#endif
 #ifdef CM_ENABLE_EC
 	case cm_key_ecdsa:
 		type = "EC";
@@ -2963,9 +2969,11 @@ request_prop_get_key_type(struct cm_context *ctx, void *parent,
 	case cm_key_rsa:
 		return "RSA";
 		break;
+#ifdef CM_ENABLE_DSA
 	case cm_key_dsa:
 		return "DSA";
 		break;
+#endif
 #ifdef CM_ENABLE_EC
 	case cm_key_ecdsa:
 		return "EC";
@@ -2986,8 +2994,10 @@ request_prop_get_key_size(struct cm_context *ctx, void *parent,
 		break;
 	case cm_key_rsa:
 		/* fall through */
+#ifdef CM_ENABLE_DSA
 	case cm_key_dsa:
 		/* fall through */
+#endif
 #ifdef CM_ENABLE_EC
 	case cm_key_ecdsa:
 #endif
