@@ -180,6 +180,7 @@ retry_gen:
 			cm_log(1, "Error generating key.\n");
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
+		EC_KEY_set_asn1_flag(ec, OPENSSL_EC_NAMED_CURVE);
 		EVP_PKEY_set1_EC_KEY(pkey, ec);
 		break;
 #endif
