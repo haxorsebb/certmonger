@@ -115,6 +115,7 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		alg = "";
 		bits = 0;
 		pubkey = "";
+		pubikey = "";
 		if (pkey != NULL) {
 			switch (EVP_PKEY_type(pkey->type)) {
 			case EVP_PKEY_RSA:
