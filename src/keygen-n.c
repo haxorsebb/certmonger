@@ -109,7 +109,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	char *pin, *pubhex, *pubihex;
 	struct cm_keygen_n_settings *settings;
 	struct cm_pin_cb_data cb_data;
-	int retry;
+	int retry, generated_size;
 
 	status = fdopen(fd, "w");
 	if (status == NULL) {
@@ -483,8 +483,9 @@ retry_gen:
 				       PR_TRUE, PR_TRUE, NULL);
 	/* If we're just a bit(s?) short (as opposed to cut off at an arbitrary
 	 * limit that's less than 90% of what we asked for), try again. */
-	if ((SECKEY_PublicKeyStrengthInBits(pubkey) < cm_key_size) &&
-	    (SECKEY_PublicKeyStrengthInBits(pubkey) > (cm_key_size * 9 / 10))) {
+	generated_size = SECKEY_PublicKeyStrengthInBits(pubkey);
+	if ((generated_size < cm_key_size) &&
+	    (generated_size > (cm_key_size * 9 / 10))) {
 		cm_log(1, "Ended up with %d instead of %d.  Retrying.\n",
 		       SECKEY_PublicKeyStrengthInBits(pubkey), cm_key_size);
 		goto retry_gen;

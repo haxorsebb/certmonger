@@ -68,7 +68,7 @@ main(int argc, char **argv)
 	if (decode) {
 		j = 3 * howmany(length, 4);
 		q = malloc(j);
-		i = cm_store_base64_to_bin(p, q, j);
+		i = cm_store_base64_to_bin((const char *) p, q, j);
 		if (hex) {
 			s = cm_store_hex_from_bin(NULL, q, i);
 			printf("%s\n", s);
