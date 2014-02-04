@@ -62,7 +62,7 @@ for testid in "$@" $subdirs ; do
 			echo -n "Running test "$testid"... "
 			./run.sh "$tmpdir" > "$tmpfile" 2> "$tmpdir"/errors
 			sed -i "s|${TMPDIR:-/tmp}/runtests....../|\${tmpdir}/|g" "$tmpfile" "$tmpdir/errors"
-			if cmp "$tmpfile" expected.out ; then
+			if cmp -s "$tmpfile" expected.out 2> /dev/null ; then
 				stat=0
 				echo "OK"
 				cp $tmpfile "$builddir"/"$testid"/actual.out
@@ -73,7 +73,7 @@ for testid in "$@" $subdirs ; do
 					if ! test -s expected.out.$i; then
 						break
 					fi
-					if cmp "$tmpfile" expected.out.$i 2> /dev/null ; then
+					if cmp -s "$tmpfile" expected.out.$i 2> /dev/null ; then
 						stat=0
 						echo "OK"
 						cp $tmpfile "$builddir"/"$testid"/actual.out
