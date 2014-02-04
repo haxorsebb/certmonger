@@ -415,9 +415,12 @@ struct cm_submit_state *
 cm_submit_e_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 {
 	struct cm_submit_state *ret;
-	char *spki;
+	char *spki = NULL;
 
-	spki = cm_store_base64_from_hex(NULL, entry->cm_key_pubkey_info);
+	if (entry->cm_key_pubkey_info != NULL) {
+		spki = cm_store_base64_from_hex(NULL,
+						entry->cm_key_pubkey_info);
+	}
 	if ((entry->cm_ca_cookie != NULL) &&
 	    (strlen(entry->cm_ca_cookie) > 0)) {
 		ret = cm_submit_e_start_or_resume(ca, entry, entry->cm_csr,
