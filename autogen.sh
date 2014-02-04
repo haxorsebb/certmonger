@@ -1,4 +1,4 @@
-CFLAGS=`rpm --eval '%{optflags} -Wall -Wextra -Wno-unused-parameter -g3 -O0'`
+CFLAGS=`rpm --eval '%{optflags} -Wall -Wextra -Wno-unused-parameter -g3 -O0'`"${CFLAGS:+ $CFLAGS}"
 export CFLAGS
 set -x
 autoreconf -i -f
