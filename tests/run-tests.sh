@@ -63,11 +63,11 @@ for testid in "$@" $subdirs ; do
 			./run.sh "$tmpdir" > "$tmpfile" 2> "$tmpdir"/errors
 			sed -i "s|${TMPDIR:-/tmp}/runtests....../|\${tmpdir}/|g" "$tmpfile" "$tmpdir/errors"
 			stat=1
-			for i in "" `seq 2 16`; do
-				if ! test -s expected.out${i:+.$i}; then
+			for i in expected.out* ; do
+				if ! test -s "$i" ; then
 					break
 				fi
-				if cmp -s "$tmpfile" expected.out${i:+.$i} 2> /dev/null ; then
+				if cmp -s "$tmpfile" "$i" 2> /dev/null ; then
 					stat=0
 					echo "OK"
 					cp $tmpfile "$builddir"/"$testid"/actual.out

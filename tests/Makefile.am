@@ -9,6 +9,9 @@ EXTRA_DIST = \
 	001-keyiread-dsa/expected.out \
 	001-keyiread-ec/run.sh \
 	001-keyiread-ec/expected.out \
+	001-keyiread-ec/expected.out.2 \
+	001-keyiread-ec/expected.out.3 \
+	001-keyiread-ec/expected.out.4 \
 	002-keygen/run.sh \
 	002-keygen/expected.out \
 	002-keygen-rsa/run.sh \
@@ -17,6 +20,9 @@ EXTRA_DIST = \
 	002-keygen-dsa/expected.out \
 	002-keygen-ec/run.sh \
 	002-keygen-ec/expected.out \
+	002-keygen-ec/expected.out.2 \
+	002-keygen-ec/expected.out.3 \
+	002-keygen-ec/expected.out.4 \
 	003-csrgen/run.sh \
 	003-csrgen/expected.out \
 	003-csrgen-rsa/run.sh \
