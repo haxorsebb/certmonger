@@ -10,7 +10,7 @@ size=521
 # Build a self-signed certificate.
 run_certutil -d "$tmpdir" -S -g $size -n keyi$size \
 	-s "cn=T$size" -c "cn=T$size" \
-	-x -t u -k ec -q secp521r1
+	-x -t u -k ec -q secp256r1
 # Export the key.
 pk12util -d "$tmpdir" -o $size.p12 -W "" -n "keyi$size" > /dev/null 2>&1
 openssl pkcs12 -in $size.p12 -out key.$size -passin pass: -nodes -nocerts > /dev/null 2>&1

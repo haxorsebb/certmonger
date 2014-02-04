@@ -33,7 +33,7 @@ function setupca() {
 	EOF
 }
 
-size=secp384r1
+size=secp256r1
 # Build a self-signed certificate.
 run_certutil -d "$tmpdir" -S -n keyi$size \
 	-s "cn=T$size" -c "cn=T$size" \
