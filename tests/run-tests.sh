@@ -86,6 +86,11 @@ for testid in "$@" $subdirs ; do
 			./run.sh "$tmpdir"
 			stat=$?
 		fi
+		for i in "$tmpdir"/core* ; do
+			if test -s "$i"; then
+				cp "$i" .
+			fi
+		done
 		popd > /dev/null
 		if test $stat -ne 0 ; then
 			break
