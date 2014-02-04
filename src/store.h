@@ -49,7 +49,11 @@ char *cm_store_serial_to_binary(void *parent,
 char *cm_store_serial_to_der(void *parent, const char *serial);
 char *cm_store_hex_from_bin(void *parent,
 			    const unsigned char *serial, int length);
-void cm_store_hex_to_bin(const char *serial, unsigned char *buf, int length);
+int cm_store_hex_to_bin(const char *serial, unsigned char *buf, int length);
+char *cm_store_base64_from_bin(void *parent,
+			       unsigned char *buf, int length);
+int cm_store_base64_to_bin(const char *serial, unsigned char *buf, int length);
+char *cm_store_base64_from_hex(void *parent, const char *hex);
 char *cm_store_canonicalize_directory(void *parent, const char *path);
 char *cm_store_maybe_strdup(void *parent, const char *s);
 char **cm_store_maybe_strdupv(void *parent, char **s);

@@ -97,7 +97,9 @@ EXTRA_DIST = \
 	019-dparse/bad.* \
 	020-xparse/*.xml \
 	021-resume/expected.out \
-	021-resume/run.sh
+	021-resume/run.sh \
+	022-base64/expected.out \
+	022-base64/run.sh
 
 subdirs = \
 	001-keyiread \
@@ -123,7 +125,8 @@ subdirs = \
 	017-notoken \
 	018-pembase \
 	019-dparse \
-	021-resume
+	021-resume \
+	022-base64
 
 if HAVE_DBM_NSSDB
 subdirs += \

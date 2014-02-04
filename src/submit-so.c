@@ -126,7 +126,7 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 								serial = cm_store_serial_to_der(ca, ca->cm_ca_internal_serial);
 								seriall = strlen(serial) / 2;
 								seriald = talloc_size(ca, seriall);
-								cm_store_hex_to_bin(serial, seriald, seriall);
+								seriall = cm_store_hex_to_bin(serial, seriald, seriall);
 								serialtmp = seriald;
 								seriali = d2i_ASN1_INTEGER(NULL, &serialtmp, seriall);
 								X509_set_serialNumber(cert, seriali);
@@ -149,7 +149,8 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 								if (X509_get_ext_by_NID(cert, NID_basic_constraints, -1) == -1) {
 									basicl = strlen(CM_BASIC_CONSTRAINT_NOT_CA) / 2;
 									basicd = talloc_size(ca, basicl);
-									cm_store_hex_to_bin(CM_BASIC_CONSTRAINT_NOT_CA, basicd, basicl);
+									basicl = cm_store_hex_to_bin(CM_BASIC_CONSTRAINT_NOT_CA,
+												     basicd, basicl);
 									basictmp = basicd;
 									basic = d2i_BASIC_CONSTRAINTS(NULL, &basictmp, basicl);
 									X509_add1_ext_i2d(cert, NID_basic_constraints, basic, 1, 0);

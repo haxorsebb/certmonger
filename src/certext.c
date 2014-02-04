@@ -1099,8 +1099,9 @@ cm_certext_build_self_akid(struct cm_store_entry *entry, PLArenaPool *arena)
 		pubkey.len = strlen(entry->cm_key_pubkey) / 2;
 		pubkey.data = PORT_ArenaZAlloc(arena, pubkey.len);
 		if (pubkey.data != NULL) {
-			cm_store_hex_to_bin(entry->cm_key_pubkey,
-					    pubkey.data, pubkey.len);
+			pubkey.len = cm_store_hex_to_bin(entry->cm_key_pubkey,
+							 pubkey.data,
+							 pubkey.len);
 		}
 	}
 	if (pubkey.data == NULL) {
@@ -1116,9 +1117,9 @@ cm_certext_build_self_akid(struct cm_store_entry *entry, PLArenaPool *arena)
 							   pubkeyinfo.len);
 			spki = NULL;
 			if (pubkeyinfo.data != NULL) {
-				cm_store_hex_to_bin(pubkey_info,
-						    pubkeyinfo.data,
-						    pubkeyinfo.len);
+				pubkeyinfo.len = cm_store_hex_to_bin(pubkey_info,
+								     pubkeyinfo.data,
+								     pubkeyinfo.len);
 				spki = SECKEY_DecodeDERSubjectPublicKeyInfo(&pubkeyinfo);
 			}
 			if (spki != NULL) {
@@ -1169,8 +1170,8 @@ cm_certext_build_skid(struct cm_store_entry *entry, PLArenaPool *arena)
 		pubkey.len = strlen(entry->cm_key_pubkey) / 2;
 		pubkey.data = PORT_ArenaZAlloc(arena, pubkey.len);
 		if (pubkey.data != NULL) {
-			cm_store_hex_to_bin(entry->cm_key_pubkey,
-					    pubkey.data, pubkey.len);
+			pubkey.len = cm_store_hex_to_bin(entry->cm_key_pubkey,
+							 pubkey.data, pubkey.len);
 		}
 	}
 	if (pubkey.data == NULL) {
@@ -1186,9 +1187,9 @@ cm_certext_build_skid(struct cm_store_entry *entry, PLArenaPool *arena)
 							   pubkeyinfo.len);
 			spki = NULL;
 			if (pubkeyinfo.data != NULL) {
-				cm_store_hex_to_bin(pubkey_info,
-						    pubkeyinfo.data,
-						    pubkeyinfo.len);
+				pubkeyinfo.len = cm_store_hex_to_bin(pubkey_info,
+								     pubkeyinfo.data,
+								     pubkeyinfo.len);
 				spki = SECKEY_DecodeDERSubjectPublicKeyInfo(&pubkeyinfo);
 			}
 			if (spki != NULL) {

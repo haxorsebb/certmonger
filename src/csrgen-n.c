@@ -287,9 +287,9 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		item.len = strlen(pubhex) / 2;
 		item.data = malloc(item.len);
 		if (item.data != NULL) {
-			cm_store_hex_to_bin(pubhex,
-					    item.data,
-					    item.len);
+			item.len = cm_store_hex_to_bin(pubhex,
+						       item.data,
+						       item.len);
 			spki = SECKEY_DecodeDERSubjectPublicKeyInfo(&item);
 			if (spki != NULL) {
 				pubkey = SECKEY_ExtractPublicKey(spki);

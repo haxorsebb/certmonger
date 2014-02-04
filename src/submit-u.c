@@ -39,10 +39,10 @@
 #include "log.h"
 #include "submit-u.h"
 
-#define BASE64_ALPHABET "0123456789" \
-			"ABCDEFGHIJKLMNOPQRSTUVWXYZ" \
+#define BASE64_ALPHABET "ABCDEFGHIJKLMNOPQRSTUVWXYZ" \
 			"abcdefghijklmnopqrstuvwxyz" \
-			"/+="
+			"0123456789" \
+			"+/="
 
 static char *
 my_stpcpy(char *dest, char *src)

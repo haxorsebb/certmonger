@@ -130,9 +130,9 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		item.len = strlen(pubhex) / 2;
 		item.data = malloc(item.len);
 		if (item.data != NULL) {
-			cm_store_hex_to_bin(pubhex,
-					    item.data,
-					    item.len);
+			item.len = cm_store_hex_to_bin(pubhex,
+						       item.data,
+						       item.len);
 			spki = SECKEY_DecodeDERSubjectPublicKeyInfo(&item);
 			if (spki != NULL) {
 				pubkey = SECKEY_ExtractPublicKey(spki);
@@ -208,9 +208,10 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		serial_length = strlen(serial) / 2;
 		ucert->serialNumber.data = PORT_ArenaZAlloc(arena,
 							    serial_length);
+		serial_length = cm_store_hex_to_bin(serial,
+						    ucert->serialNumber.data,
+						    serial_length);
 		ucert->serialNumber.len = serial_length;
-		cm_store_hex_to_bin(serial,
-				    ucert->serialNumber.data, serial_length);
 	} else {
 		cm_log(1, "Unable to set certificate serial number.\n");
 		_exit(1);
@@ -296,7 +297,10 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		basic_length = strlen(CM_BASIC_CONSTRAINT_NOT_CA) / 2;
 		extensions[i]->value.data = PORT_ArenaZAlloc(arena, basic_length);
 		extensions[i]->value.len = basic_length;
-		cm_store_hex_to_bin(CM_BASIC_CONSTRAINT_NOT_CA, extensions[i]->value.data, extensions[i]->value.len);
+		basic_length = cm_store_hex_to_bin(CM_BASIC_CONSTRAINT_NOT_CA,
+						   extensions[i]->value.data,
+						   extensions[i]->value.len);
+		extensions[i]->value.len = basic_length;
 	}
 	/* Encode the certificate into a tbsCertificate. */
 	ecert = SEC_ASN1EncodeItem(arena, NULL, ucert,

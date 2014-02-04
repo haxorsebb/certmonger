@@ -18,6 +18,7 @@
 #include "config.h"
 
 #include <sys/types.h>
+#include <sys/param.h>
 #include <arpa/inet.h>
 #include <ctype.h>
 #include <iconv.h>
@@ -29,6 +30,11 @@
 
 #include "store.h"
 #include "store-int.h"
+
+#define BASE64_ALPHABET "ABCDEFGHIJKLMNOPQRSTUVWXYZ" \
+			"abcdefghijklmnopqrstuvwxyz" \
+			"0123456789" \
+			"+/="
 
 static struct {
 	const char *name;
@@ -354,11 +360,12 @@ cm_store_serial_to_der(void *parent, const char *serial)
 /* Convert hex chars to fill a buffer.  Input characters which don't belong are
  * treated as zeros.  We stop when we run out of input characters or run out of
  * space in the output buffer. */
-void
+int
 cm_store_hex_to_bin(const char *serial, unsigned char *buf, int length)
 {
 	const char *p, *q, *chars = "0123456789abcdef";
 	unsigned char *b, u;
+
 	p = serial;
 	b = buf;
 	u = 0;
@@ -383,6 +390,7 @@ cm_store_hex_to_bin(const char *serial, unsigned char *buf, int length)
 			break;
 		}
 	}
+	return b - buf;
 }
 
 char *
@@ -498,4 +506,131 @@ cm_store_utf8_to_bmp_string(char *s,
 		*len = i * 2;
 	}
 	return 0;
+}
+
+char *
+cm_store_base64_from_bin(void *parent, unsigned char *buf, int length)
+{
+	char *p, *ret;
+	int max, i, j;
+	uint32_t acc;
+
+	max = 4 * howmany(length, 3) + 1;
+	p = malloc(max);
+	if (p == NULL) {
+		return NULL;
+	}
+
+	for (i = 0, j = 0, acc = 0; i < length; i++) {
+		acc = (acc << 8) | buf[i];
+		if ((i % 3) == 2) {
+			p[j++] = BASE64_ALPHABET[(acc >> 18) & 0x3f];
+			p[j++] = BASE64_ALPHABET[(acc >> 12) & 0x3f];
+			p[j++] = BASE64_ALPHABET[(acc >>  6) & 0x3f];
+			p[j++] = BASE64_ALPHABET[(acc >>  0) & 0x3f];
+			acc = 0;
+		}
+	}
+	switch (i % 3) {
+	case 0:
+		break;
+	case 1:
+		acc = (acc << 8) | 0;
+		acc = (acc << 8) | 0;
+		p[j++] = BASE64_ALPHABET[(acc >> 18) & 0x3f];
+		p[j++] = BASE64_ALPHABET[(acc >> 12) & 0x3f];
+		p[j++] = '=';
+		p[j++] = '=';
+		break;
+	case 2:
+		acc = (acc << 8) | 0;
+		p[j++] = BASE64_ALPHABET[(acc >> 18) & 0x3f];
+		p[j++] = BASE64_ALPHABET[(acc >> 12) & 0x3f];
+		p[j++] = BASE64_ALPHABET[(acc >>  6) & 0x3f];
+		p[j++] = '=';
+		break;
+	}
+	p[j++] = '\0';
+
+	ret = talloc_strdup(parent, p);
+	free(p);
+	return ret;
+}
+
+int
+cm_store_base64_to_bin(const char *serial, unsigned char *buf, int length)
+{
+	const char *p, *q, *chars = BASE64_ALPHABET;
+	unsigned char *b;
+	uint32_t u, count;
+
+	p = serial;
+	b = buf;
+	u = 0;
+	count = 0;
+	for (p = serial, b = buf;
+	     ((*p != '\0') && (*p != '=') && ((b - buf) < length));
+	     p++) {
+		q = strchr(chars, *p);
+		if (q != NULL) {
+			switch (count % 4) {
+			case 0:
+				u = q ? q - chars : 0;
+				break;
+			case 1:
+				u = (u << 6) | (q - chars);
+				break;
+			case 2:
+				u = (u << 6) | (q - chars);
+				break;
+			case 3:
+				u = (u << 6) | (q - chars);
+				*b++ = (u >> 16) & 0xff;
+				if (b - buf >= length) {
+					break;
+				}
+				*b++ = (u >>  8) & 0xff;
+				if (b - buf >= length) {
+					break;
+				}
+				*b++ = (u >>  0) & 0xff;
+				u = 0;
+				break;
+			}
+			count++;
+		}
+	}
+	switch (count % 4) {
+	case 0:
+	case 1:
+		break;
+	case 2:
+		u = (u << 12);
+		*b++ = (u >> 16) & 0xff;
+		break;
+	case 3:
+		u = (u <<  6);
+		*b++ = (u >> 16) & 0xff;
+		*b++ = (u >>  8) & 0xff;
+		break;
+	}
+	return b - buf;
+}
+
+char *
+cm_store_base64_from_hex(void *parent, const char *s)
+{
+	unsigned char *buf;
+	char *ret;
+	unsigned int length;
+
+	length = strlen(s) / 2;
+	buf = malloc(length);
+	if (buf == NULL) {
+		return NULL;
+	}
+	length = cm_store_hex_to_bin(s, buf, length);
+	ret = cm_store_base64_from_bin(parent, buf, length);
+	free(buf);
+	return ret;
 }
