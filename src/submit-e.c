@@ -228,7 +228,7 @@ cm_submit_e_done(struct cm_store_entry *entry, struct cm_submit_state *state)
 /* Attempt to exec the helper. */
 struct cm_submit_e_args {
 	int error_fd;
-	const char *csr, *cookie, *operation;
+	const char *csr, *spkac, *cookie, *operation;
 };
 
 static int
@@ -267,8 +267,15 @@ cm_submit_e_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	if ((args->csr != NULL) && (strlen(args->csr) > 0)) {
 		setenv(CM_SUBMIT_CSR_ENV, args->csr, 1);
 	}
+	if ((args->spkac != NULL) && (strlen(args->spkac) > 0)) {
+		setenv(CM_SUBMIT_SPKAC_ENV, args->spkac, 1);
+	}
 	if ((args->cookie != NULL) && (strlen(args->cookie) > 0)) {
 		setenv(CM_SUBMIT_COOKIE_ENV, args->cookie, 1);
+	}
+	if ((entry->cm_ca_nickname != NULL) &&
+	    (strlen(entry->cm_ca_nickname) > 0)) {
+		setenv(CM_SUBMIT_CA_NICKNAME_ENV, entry->cm_ca_nickname, 1);
 	}
 	if ((entry->cm_ca_profile != NULL) &&
 	    (strlen(entry->cm_ca_profile) > 0)) {
@@ -314,6 +321,7 @@ struct cm_submit_state *
 cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 			    struct cm_store_entry *entry,
 			    const char *csr,
+			    const char *spkac,
 			    const char *cookie,
 			    const char *operation)
 {
@@ -347,6 +355,7 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 			} else {
 				args.error_fd = errorfds[1];
 				args.csr = csr;
+				args.spkac = spkac;
 				args.cookie = cookie;
 				args.operation = operation;
 				state->subproc = cm_subproc_start(cm_submit_e_main,
@@ -403,9 +412,12 @@ cm_submit_e_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 	if ((entry->cm_ca_cookie != NULL) &&
 	    (strlen(entry->cm_ca_cookie) > 0)) {
 		return cm_submit_e_start_or_resume(ca, entry, entry->cm_csr,
-						   entry->cm_ca_cookie, "POLL");
+						   entry->cm_spkac,
+						   entry->cm_ca_cookie,
+						   "POLL");
 	} else {
 		return cm_submit_e_start_or_resume(ca, entry, entry->cm_csr,
+						   entry->cm_spkac,
 						   entry->cm_ca_cookie,
 						   "SUBMIT");
 	}
