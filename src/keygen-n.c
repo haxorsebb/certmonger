@@ -56,6 +56,7 @@ struct cm_keygen_n_settings {
 	unsigned int readwrite:1;
 };
 
+#ifdef CM_ENABLE_DSA
 static int
 pqg_size(int key_size)
 {
@@ -73,6 +74,7 @@ pqg_size(int key_size)
 	}
 	return key_size;
 }
+#endif
 
 static int
 cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
