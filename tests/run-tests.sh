@@ -69,7 +69,10 @@ for testid in "$@" $subdirs ; do
 				cp "$tmpdir"/errors "$builddir"/"$testid"/actual.err
 			else
 				stat=1
-				for i in `seq 2 4`; do
+				for i in `seq 2 16`; do
+					if ! test -s expected.out.$i; then
+						break
+					fi
 					if cmp "$tmpfile" expected.out.$i 2> /dev/null ; then
 						stat=0
 						echo "OK"
