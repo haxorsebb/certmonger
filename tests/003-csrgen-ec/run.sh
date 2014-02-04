@@ -8,7 +8,7 @@ initnssdb "$tmpdir"
 size=secp256r1
 
 # Build a self-signed certificate.
-run_certutil -d "$tmpdir" -S -g $size -n keyi$size \
+run_certutil -d "$tmpdir" -S -n keyi$size \
 	-s "cn=T$size" -c "cn=T$size" \
 	-x -t u -k ec -q $size
 # Export the key.
