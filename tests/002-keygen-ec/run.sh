@@ -41,7 +41,7 @@ key_gen_type=EC
 EOF
 $toolsdir/keygen entry.$size || true
 
-for size in 256 384 521 ; do
+for size in 256 384 ; do
 	echo "[openssl:$size]"
 	# Generate a key.
 	cat > entry.$size <<- EOF
