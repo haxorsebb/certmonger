@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.71.2
+Version:	0.72
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -202,6 +202,20 @@ exit 0
 %endif
 
 %changelog
+* Mon Feb  3 2014 Nalin Dahyabhai <nalin@redhat.com> 0.72-1
+- update to 0.72
+  - support generating DSA parameters and keys on sufficiently-new OpenSSL
+    and NSS
+  - support generating EC keys when OpenSSL and NSS support it, using key
+    size to select the curve to use from among secp256r1, secp384r1,
+    secp521r1 (which are the ones that are usually available, though
+    secp521r1 isn't always, even if the other two are)
+  - stop trying to cache public key parameters at all and instead cache public
+    key info properly
+  - encode the friendlyName attribute in signing requests as a BMPString,
+    not as a PrintableString
+  - catch more filesystem permissions problems earlier (more of #996581)
+
 * Mon Jan 27 2014 Nalin Dahyabhai <nalin@redhat.com> 0.71-1
 - check for cases where we fail to allocate memory while reading a request
   or CA entry from disk (John Haxby)
