@@ -611,6 +611,9 @@ cm_store_base64_to_bin(const char *serial, unsigned char *buf, int length)
 	case 3:
 		u = (u <<  6);
 		*b++ = (u >> 16) & 0xff;
+		if (b - buf >= length) {
+			break;
+		}
 		*b++ = (u >>  8) & 0xff;
 		break;
 	}
