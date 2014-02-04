@@ -122,7 +122,7 @@ retry_gen:
 			cm_log(1, "Error generating key.\n");
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
-		if (RSA_check_key(rsa) != 1) {
+		if (RSA_check_key(rsa) != 1) { /* should be unnecessary */
 			cm_log(1, "Key fails checks.  Retrying.\n");
 			goto retry_gen;
 		}
