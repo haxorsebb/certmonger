@@ -228,7 +228,7 @@ cm_submit_e_done(struct cm_store_entry *entry, struct cm_submit_state *state)
 /* Attempt to exec the helper. */
 struct cm_submit_e_args {
 	int error_fd;
-	const char *csr, *spkac, *cookie, *operation;
+	const char *csr, *spkac, *spki, *cookie, *operation;
 };
 
 static int
@@ -269,6 +269,9 @@ cm_submit_e_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 	if ((args->spkac != NULL) && (strlen(args->spkac) > 0)) {
 		setenv(CM_SUBMIT_SPKAC_ENV, args->spkac, 1);
+	}
+	if ((args->spki != NULL) && (strlen(args->spki) > 0)) {
+		setenv(CM_SUBMIT_SPKI_ENV, args->spki, 1);
 	}
 	if ((args->cookie != NULL) && (strlen(args->cookie) > 0)) {
 		setenv(CM_SUBMIT_COOKIE_ENV, args->cookie, 1);
@@ -322,6 +325,7 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 			    struct cm_store_entry *entry,
 			    const char *csr,
 			    const char *spkac,
+			    const char *spki,
 			    const char *cookie,
 			    const char *operation)
 {
@@ -356,6 +360,7 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 				args.error_fd = errorfds[1];
 				args.csr = csr;
 				args.spkac = spkac;
+				args.spki = spki;
 				args.cookie = cookie;
 				args.operation = operation;
 				state->subproc = cm_subproc_start(cm_submit_e_main,
@@ -409,18 +414,28 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 struct cm_submit_state *
 cm_submit_e_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 {
+	struct cm_submit_state *ret;
+	char *spki;
+
+	spki = cm_store_base64_from_hex(NULL, entry->cm_key_pubkey_info);
 	if ((entry->cm_ca_cookie != NULL) &&
 	    (strlen(entry->cm_ca_cookie) > 0)) {
-		return cm_submit_e_start_or_resume(ca, entry, entry->cm_csr,
-						   entry->cm_spkac,
-						   entry->cm_ca_cookie,
-						   "POLL");
+		ret = cm_submit_e_start_or_resume(ca, entry, entry->cm_csr,
+						  entry->cm_spkac,
+						  spki,
+						  entry->cm_ca_cookie,
+						  "POLL");
 	} else {
-		return cm_submit_e_start_or_resume(ca, entry, entry->cm_csr,
-						   entry->cm_spkac,
-						   entry->cm_ca_cookie,
-						   "SUBMIT");
+		ret = cm_submit_e_start_or_resume(ca, entry, entry->cm_csr,
+						  entry->cm_spkac,
+						  spki,
+						  entry->cm_ca_cookie,
+						  "SUBMIT");
 	}
+	if (spki != NULL) {
+		talloc_free(spki);
+	}
+	return ret;
 }
 
 const char *
