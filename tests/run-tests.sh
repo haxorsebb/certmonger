@@ -62,31 +62,24 @@ for testid in "$@" $subdirs ; do
 			echo -n "Running test "$testid"... "
 			./run.sh "$tmpdir" > "$tmpfile" 2> "$tmpdir"/errors
 			sed -i "s|${TMPDIR:-/tmp}/runtests....../|\${tmpdir}/|g" "$tmpfile" "$tmpdir/errors"
-			if cmp -s "$tmpfile" expected.out 2> /dev/null ; then
-				stat=0
-				echo "OK"
-				cp $tmpfile "$builddir"/"$testid"/actual.out
-				cp "$tmpdir"/errors "$builddir"/"$testid"/actual.err
-			else
-				stat=1
-				for i in `seq 2 16`; do
-					if ! test -s expected.out.$i; then
-						break
-					fi
-					if cmp -s "$tmpfile" expected.out.$i 2> /dev/null ; then
-						stat=0
-						echo "OK"
-						cp $tmpfile "$builddir"/"$testid"/actual.out
-						cp "$tmpdir"/errors "$builddir"/"$testid"/actual.err
-						break
-					fi
-				done
-				if test $stat -eq 1 ; then
-					echo "FAIL"
-					diff -u expected.out "$tmpfile" | sed s,"^\+\+\+ $tmpfile","+++ actual",g
+			stat=1
+			for i in "" `seq 1 16`; do
+				if ! test -s expected.out${i:+.$i}; then
+					break
+				fi
+				if cmp -s "$tmpfile" expected.out${i:+.$i} 2> /dev/null ; then
+					stat=0
+					echo "OK"
 					cp $tmpfile "$builddir"/"$testid"/actual.out
 					cp "$tmpdir"/errors "$builddir"/"$testid"/actual.err
+					break
 				fi
+			done
+			if test $stat -eq 1 ; then
+				echo "FAIL"
+				diff -u expected.out "$tmpfile" | sed s,"^\+\+\+ $tmpfile","+++ actual",g
+				cp $tmpfile "$builddir"/"$testid"/actual.out
+				cp "$tmpdir"/errors "$builddir"/"$testid"/actual.err
 			fi
 		else
 			echo "Running test "$testid"."
