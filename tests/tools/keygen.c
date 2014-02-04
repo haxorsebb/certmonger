@@ -50,7 +50,7 @@ main(int argc, char **argv)
 	struct cm_store_entry *entry;
 	int fd, ret;
 	void *parent;
-	const char *ktype;
+	const char *ktype = "UNKNOWN";
 
 	cm_log_set_method(cm_log_stderr);
 	cm_log_set_level(3);
