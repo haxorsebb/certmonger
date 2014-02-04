@@ -157,6 +157,21 @@ retry_gen:
 		else
 			ecurve = NID_secp521r1;
 		ec = EC_KEY_new_by_curve_name(ecurve);
+		while ((ec == NULL) && (ecurve != NID_X9_62_prime256v1)) {
+			cm_log(1, "Error allocating new EC key.");
+			switch (ecurve) {
+			case NID_secp521r1:
+				cm_log(1, "Trying with a smaller key.");
+				ecurve = NID_secp384r1;
+				ec = EC_KEY_new_by_curve_name(ecurve);
+				break;
+			case NID_secp384r1:
+				cm_log(1, "Trying with a smaller key.");
+				ecurve = NID_X9_62_prime256v1;
+				ec = EC_KEY_new_by_curve_name(ecurve);
+				break;
+			}
+		}
 		if (ec == NULL) {
 			cm_log(1, "Error allocating new EC key.\n");
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
