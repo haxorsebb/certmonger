@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-#
+# 
 # Translators:
 # Nalin Dahyabhai <nalin@fedoraproject.org>, 2011
 # Piotr Drąg <piotrdrag@gmail.com>, 2011-2013
@@ -10,16 +10,14 @@ msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2014-02-03 17:50-0500\n"
-"PO-Revision-Date: 2013-11-20 09:29+0000\n"
-"Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
-"Language-Team: Polish (http://www.transifex.com/projects/p/fedora/language/"
-"pl/)\n"
-"Language: pl\n"
+"PO-Revision-Date: 2014-02-04 16:08+0000\n"
+"Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
+"Language-Team: Polish (http://www.transifex.com/projects/p/fedora/language/pl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
-"|| n%100>=20) ? 1 : 2);\n"
+"Language: pl\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #: src/certmaster.c:111 src/ipa.c:146
 #, c-format
@@ -53,8 +51,7 @@ msgstr "Błąd serwera.\n"
 #: src/dogtag.c:307
 #, c-format
 msgid "No end-entity URL (-E) given, and no default known.\n"
-msgstr ""
-"Nie podano adresu URL końcowej jednostki (-E), a nie ma wartości domyślnej.\n"
+msgstr "Nie podano adresu URL końcowej jednostki (-E), a nie ma wartości domyślnej.\n"
 
 #: src/dogtag.c:311
 #, c-format
@@ -89,17 +86,14 @@ msgstr "Wewnętrzny błąd: brak odpowiedzi na \"%s?%s\".\n"
 #: src/getcert.c:91
 #, c-format
 msgid "Path \"%s\" is not absolute, attempting to use \"%s\" instead.\n"
-msgstr ""
-"Ścieżka \"%s\" nie jest bezwzględna, próbowanie użycia \"%s\" zamiast niej.\n"
+msgstr "Ścieżka \"%s\" nie jest bezwzględna, próbowanie użycia \"%s\" zamiast niej.\n"
 
 #: src/getcert.c:96
 #, c-format
 msgid ""
 "Path \"%s\" is not absolute, and there was an error determining the name of "
 "the current directory.\n"
-msgstr ""
-"Ścieżka \"%s\" nie jest bezwzględna i wystąpił błąd podczas określania nazwy "
-"bieżącego katalogu.\n"
+msgstr "Ścieżka \"%s\" nie jest bezwzględna i wystąpił błąd podczas określania nazwy bieżącego katalogu.\n"
 
 #: src/getcert.c:118
 #, c-format
@@ -134,9 +128,7 @@ msgstr "Błąd podczas łączenia z D-Bus.\n"
 #: src/getcert.c:274 src/tdbusm.c:1657
 #, c-format
 msgid "Please verify that the message bus (D-Bus) service is running.\n"
-msgstr ""
-"Proszę sprawdzić, czy usługa magistrali komunikatów (D-Bus) jest "
-"uruchomiona.\n"
+msgstr "Proszę sprawdzić, czy usługa magistrali komunikatów (D-Bus) jest uruchomiona.\n"
 
 #: src/getcert.c:281
 #, c-format
@@ -201,9 +193,7 @@ msgstr "Błąd podczas przetwarzania nazwy naczelnika Kerberosa \"%s\": %s.\n"
 #: src/getcert.c:701 src/getcert.c:1470 src/getcert.c:1894
 #, c-format
 msgid "Error unparsing Kerberos principal name \"%s\": %s.\n"
-msgstr ""
-"Błąd podczas odwracania przetworzenia nazwy naczelnika Kerberosa \"%s\": "
-"%s.\n"
+msgstr "Błąd podczas odwracania przetworzenia nazwy naczelnika Kerberosa \"%s\": %s.\n"
 
 #: src/getcert.c:739 src/getcert.c:1508 src/getcert.c:1932 src/getcert.c:2204
 #: src/getcert.c:2544
@@ -240,8 +230,7 @@ msgstr "Określono zarówno katalog bazy danych, jak i plik certyfikatu.\n"
 
 #: src/getcert.c:775 src/getcert.c:1728 src/getcert.c:1980
 #, c-format
-msgid ""
-"None of database directory and nickname or certificate file specified.\n"
+msgid "None of database directory and nickname or certificate file specified.\n"
 msgstr "Nie podano katalogu bazy danych i pseudonimu lub pliku certyfikatu.\n"
 
 #: src/getcert.c:782 src/getcert.c:1550
@@ -252,11 +241,9 @@ msgstr "Nie można zapisać klucza i certyfikatu do tego samego pliku.\n"
 #: src/getcert.c:807
 #, c-format
 msgid ""
-"The IPA backend requires the use of the -K option (principal name) when the -"
-"N option (subject name) is used.\n"
-msgstr ""
-"Zaplecze IPA wymaga użycia opcji -K (nazwy naczelnika), kiedy używana jest "
-"opcja -N (nazwa tematu).\n"
+"The IPA backend requires the use of the -K option (principal name) when the "
+"-N option (subject name) is used.\n"
+msgstr "Zaplecze IPA wymaga użycia opcji -K (nazwy naczelnika), kiedy używana jest opcja -N (nazwa tematu).\n"
 
 #: src/getcert.c:939 src/getcert.c:1309 src/getcert.c:1643 src/getcert.c:2000
 #: src/getcert.c:2222
@@ -295,9 +282,7 @@ msgstr "Nie można dodać nowego żądania śledzenia.\n"
 msgid ""
 "None of ID or database directory and nickname or certificate file "
 "specified.\n"
-msgstr ""
-"Nie podano identyfikatora, albo katalogu bazy danych i pseudonimu, albo "
-"pliku certyfikatu.\n"
+msgstr "Nie podano identyfikatora, albo katalogu bazy danych i pseudonimu, albo pliku certyfikatu.\n"
 
 #: src/getcert.c:1695
 #, c-format
@@ -533,16 +518,12 @@ msgstr "  -d KAT\tbaza danych NSS dla klucza i certyfikatu\n"
 
 #: src/getcert.c:2628 src/getcert.c:2672 src/getcert.c:2713 src/getcert.c:2735
 msgid "  -n NAME\tnickname for NSS-based storage (only valid with -d)\n"
-msgstr ""
-"  -n NAZWA\tpseudonim dla przechowywania danych opartego na NSS (prawidłowe "
-"tylko z opcją -d)\n"
+msgstr "  -n NAZWA\tpseudonim dla przechowywania danych opartego na NSS (prawidłowe tylko z opcją -d)\n"
 
 #: src/getcert.c:2629 src/getcert.c:2673 src/getcert.c:2714 src/getcert.c:2736
 msgid ""
 "  -t NAME\toptional token name for NSS-based storage (only valid with -d)\n"
-msgstr ""
-"  -t NAZWA\topcjonalna nazwa tokenu dla przechowywania opartego na NSS "
-"(prawidłowe tylko z opcją -d)\n"
+msgstr "  -t NAZWA\topcjonalna nazwa tokenu dla przechowywania opartego na NSS (prawidłowe tylko z opcją -d)\n"
 
 #: src/getcert.c:2630 src/getcert.c:2674 src/getcert.c:2715 src/getcert.c:2737
 #: src/getcert.c:2783
@@ -583,27 +564,20 @@ msgid "  -I NAME\tnickname to assign to the request\n"
 msgstr "  -I NAZWA\tpseudonim do przydzielenia żądaniu\n"
 
 #: src/getcert.c:2640
-#, fuzzy
 msgid "  -G TYPE\ttype of key to be generated if one is not already in place\n"
 msgstr ""
-"  -g ROZMIAR\trozmiar klucza do utworzenia, jeśli jeszcze nie ma żadnego\n"
 
 #: src/getcert.c:2641
 msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
-msgstr ""
-"  -g ROZMIAR\trozmiar klucza do utworzenia, jeśli jeszcze nie ma żadnego\n"
+msgstr "  -g ROZMIAR\trozmiar klucza do utworzenia, jeśli jeszcze nie ma żadnego\n"
 
 #: src/getcert.c:2642 src/getcert.c:2684
-msgid ""
-"  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
-msgstr ""
-"  -r\t\tpróbuje odnowić certyfikat, kiedy zbliża się jego wygaszenie "
-"(domyślnie)\n"
+msgid "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
+msgstr "  -r\t\tpróbuje odnowić certyfikat, kiedy zbliża się jego wygaszenie (domyślnie)\n"
 
 #: src/getcert.c:2643 src/getcert.c:2685
 msgid "  -R\t\tdon't attempt to renew the certificate when expiration nears\n"
-msgstr ""
-"  -R\t\tnie próbuje odnowić certyfikatu, kiedy zbliża się jego wygaszenie\n"
+msgstr "  -R\t\tnie próbuje odnowić certyfikatu, kiedy zbliża się jego wygaszenie\n"
 
 #: src/getcert.c:2645 src/getcert.c:2687
 msgid "  -c CA\t\tuse the specified CA rather than the default\n"
@@ -613,9 +587,7 @@ msgstr "  -c CA\t\tużywa podanego CA zamiast domyślnego\n"
 msgid ""
 "  -T PROFILE\task the CA to process the request using the named profile or "
 "template\n"
-msgstr ""
-"  -T PROFIL\t\tprosi CAo przetworzenie żądania używając nazwanego profilu "
-"lub szablonu\n"
+msgstr "  -T PROFIL\t\tprosi CAo przetworzenie żądania używając nazwanego profilu lub szablonu\n"
 
 #: src/getcert.c:2648
 msgid "* Parameters for the signing request:\n"
@@ -623,13 +595,11 @@ msgstr "* Parametry do żądania podpisania:\n"
 
 #: src/getcert.c:2649 src/getcert.c:2745
 msgid "  -N NAME\tset requested subject name (default: CN=<hostname>)\n"
-msgstr ""
-"  -N NAZWA\tustawia żądaną nazwę tematu (domyślnie: CN=<nazwa_komputera>)\n"
+msgstr "  -N NAZWA\tustawia żądaną nazwę tematu (domyślnie: CN=<nazwa_komputera>)\n"
 
 #: src/getcert.c:2650 src/getcert.c:2746
 msgid "  -U EXTUSAGE\tset requested extended key usage OID\n"
-msgstr ""
-"  -U UŻYCIE_ZEWNĘTRZNE\tustawia żądany OID użycia rozszerzonego klucza\n"
+msgstr "  -U UŻYCIE_ZEWNĘTRZNE\tustawia żądany OID użycia rozszerzonego klucza\n"
 
 #: src/getcert.c:2651 src/getcert.c:2692 src/getcert.c:2747
 msgid "  -u KEYUSAGE\tset requested key usage value\n"
@@ -705,8 +675,7 @@ msgstr "* Parametry do żądania podpisania w czasie odnowienia:\n"
 
 #: src/getcert.c:2691
 msgid "  -U EXTUSAGE\toverride requested extended key usage OID\n"
-msgstr ""
-"  -U UŻYCIE_ZEWNĘTRZNE\tzastępuje żądany OID użycia rozszerzonego klucza\n"
+msgstr "  -U UŻYCIE_ZEWNĘTRZNE\tzastępuje żądany OID użycia rozszerzonego klucza\n"
 
 #: src/getcert.c:2693
 msgid "  -K NAME\toverride requested principal name\n"
@@ -781,21 +750,15 @@ msgstr "* Jeśli wybrano konkretne żądanie:\n"
 
 #: src/getcert.c:2781
 msgid "  -d DIR\tonly list requests and certs which use this NSS database\n"
-msgstr ""
-"  -d KATALOG\twyświetla tylko żądania i certyfikaty, które używają tej bazy "
-"danych NSS\n"
+msgstr "  -d KATALOG\twyświetla tylko żądania i certyfikaty, które używają tej bazy danych NSS\n"
 
 #: src/getcert.c:2782
 msgid "  -n NAME\tonly list requests and certs which use this nickname\n"
-msgstr ""
-"  -n NAZWA\twyświetla tylko żądania i certyfikaty, które używają tego "
-"pseudonimu\n"
+msgstr "  -n NAZWA\twyświetla tylko żądania i certyfikaty, które używają tego pseudonimu\n"
 
 #: src/getcert.c:2784
 msgid "  -f FILE\tonly list requests and certs stored in this PEM file\n"
-msgstr ""
-"  -f PLIK\twyświetla tylko żądania i certyfikaty przechowywane w tym pliku "
-"PEM\n"
+msgstr "  -f PLIK\twyświetla tylko żądania i certyfikaty przechowywane w tym pliku PEM\n"
 
 #: src/getcert.c:2786 src/getcert.c:2801
 msgid "  -S\tconnect to the certmonger service on the system bus\n"
@@ -845,42 +808,33 @@ msgid "Unable to determine principal name for signing request.\n"
 msgstr "Nie można określić nazwy naczelnika dla żądania podpisania.\n"
 
 #: src/ipa.c:228
-#, fuzzy, c-format
+#, c-format
 msgid "Error setting up for XMLRPC on the client.\n"
-msgstr "Błąd podczas ustawiania dla XML-RPC.\n"
+msgstr ""
 
 #: src/ipa.c:239
-#, fuzzy, c-format
+#, c-format
 msgid ""
-"Error setting up ccache for \"host\" service on client using default keytab: "
-"%s.\n"
+"Error setting up ccache for \"host\" service on client using default keytab:"
+" %s.\n"
 msgstr ""
-"Błąd podczas ustawiania ccache dla lokalnej usługi \"gospodarza\" używając "
-"domyślnej tablicy kluczy: %s.\n"
 
 #: src/ipa.c:243
-#, fuzzy, c-format
-msgid ""
-"Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
+#, c-format
+msgid "Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
 msgstr ""
-"Błąd podczas ustawiania ccache dla \"%s\" używając domyślnej tablicy kluczy: "
-"%s.\n"
 
 #: src/ipa.c:250
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Error setting up ccache for \"host\" service on client using keytab \"%s\": "
 "%s.\n"
 msgstr ""
-"Błąd podczas ustawiania ccache dla lokalnej usługi \"gospodarza\" używając "
-"domyślnej tablicy kluczy \"%s\": %s.\n"
 
 #: src/ipa.c:254
-#, fuzzy, c-format
+#, c-format
 msgid "Error setting up ccache for \"%s\" on client using keytab \"%s\": %s.\n"
 msgstr ""
-"Błąd podczas ustawiania ccache dla \"%s\" używając domyślnej tablicy kluczy "
-"\"%s\": %s.\n"
 
 #: src/main.c:120
 #, c-format
@@ -905,8 +859,7 @@ msgstr "\t-f         zmiana na demona\n"
 
 #: src/main.c:128
 msgid "\t-b TIMEOUT bus-activated, idle timeout\n"
-msgstr ""
-"\t-b CZAS    aktywacja przez magistralę, czas oczekiwania na bezczynność\n"
+msgstr "\t-b CZAS    aktywacja przez magistralę, czas oczekiwania na bezczynność\n"
 
 #: src/main.c:129
 msgid "\t-B         don't use an idle timeout\n"
@@ -957,11 +910,11 @@ msgid "Certificate storage location not specified."
 msgstr "Nie podano położenia przechowywania certyfikatu."
 
 #: src/tdbush.c:526 src/tdbush.c:770
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "The parent of location \"%s\" could not be accessed due to insufficient "
 "permissions."
-msgstr "Nadrzędne położenie \"%s\" musi być prawidłowym katalogiem."
+msgstr ""
 
 #: src/tdbush.c:534 src/tdbush.c:778
 #, c-format
@@ -975,8 +928,7 @@ msgstr "Położenie \"%s\" musi być plikiem."
 
 #: src/tdbush.c:585
 #, c-format
-msgid ""
-"The location \"%s\" could not be accessed due to insufficient permissions."
+msgid "The location \"%s\" could not be accessed due to insufficient permissions."
 msgstr ""
 
 #: src/tdbush.c:593 src/tdbush.c:826
@@ -996,10 +948,9 @@ msgstr "Istnieje już żądanie o pseudonimie \"%s\"."
 #: src/tdbush.c:693
 #, c-format
 msgid ""
-"Certificate at same location is already used by request with nickname \"%s\"."
-msgstr ""
-"Certyfikat w tym samym położeniu jest już używany przez żądanie o "
-"pseudonimie \"%s\"."
+"Certificate at same location is already used by request with nickname "
+"\"%s\"."
+msgstr "Certyfikat w tym samym położeniu jest już używany przez żądanie o pseudonimie \"%s\"."
 
 #: src/tdbush.c:726
 #, c-format
@@ -1017,9 +968,7 @@ msgstr "Nie podano pseudonimu klucza."
 #: src/tdbush.c:901
 #, c-format
 msgid "Key at same location is already used by request with nickname \"%s\"."
-msgstr ""
-"Klucz w tym samym położeniu jest już używany przez żądanie o pseudonimie \"%s"
-"\"."
+msgstr "Klucz w tym samym położeniu jest już używany przez żądanie o pseudonimie \"%s\"."
 
 #: src/tdbush.c:972
 #, c-format
