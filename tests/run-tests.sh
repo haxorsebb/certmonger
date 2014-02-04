@@ -63,7 +63,7 @@ for testid in "$@" $subdirs ; do
 			./run.sh "$tmpdir" > "$tmpfile" 2> "$tmpdir"/errors
 			sed -i "s|${TMPDIR:-/tmp}/runtests....../|\${tmpdir}/|g" "$tmpfile" "$tmpdir/errors"
 			stat=1
-			for i in "" `seq 1 16`; do
+			for i in "" `seq 2 16`; do
 				if ! test -s expected.out${i:+.$i}; then
 					break
 				fi
