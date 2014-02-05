@@ -330,6 +330,10 @@ cm_store_hex_from_bin(void *parent, const unsigned char *serial, int length)
 	const char *hexchars = "0123456789ABCDEF";
 	char *ret;
 	int i;
+
+	if (length < 0) {
+		length = strlen((const char *) serial);
+	}
 	ret = talloc_zero_size(parent, length * 2 + 1);
 	for (i = 0; i < length; i++) {
 		ret[i * 2] = hexchars[(serial[i] >> 4) & 0x0f];
@@ -514,6 +518,10 @@ cm_store_base64_from_bin(void *parent, unsigned char *buf, int length)
 	char *p, *ret;
 	int max, i, j;
 	uint32_t acc;
+
+	if (length < 0) {
+		length = strlen((const char *) buf);
+	}
 
 	max = 4 * howmany(length, 3) + 1;
 	p = malloc(max);
