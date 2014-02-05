@@ -241,7 +241,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	CERTSignedData sreq, spkac;
 	CERTName *name;
 	PLArenaPool *arena;
-	SECItem ereq, esreq, epkac, espkac, *attrs, item;
+	SECItem ereq, esreq, epkac, espkac, *attrs, item, utf8;
 	int ec;
 	char *b64, *b642, *p, *q, *pubhex;
 	const char *es;
@@ -271,8 +271,41 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	if ((entry->cm_template_subject != NULL) &&
 	    (strlen(entry->cm_template_subject) != 0)) {
 		name = CERT_AsciiToName(entry->cm_template_subject);
+		if (name == NULL) {
+			/* Force it. */
+			memset(&item, 0, sizeof(item));
+			item.data = (unsigned char *) entry->cm_template_subject;
+			item.len = strlen(entry->cm_template_subject);
+			memset(&utf8, 0, sizeof(utf8));
+			if (SEC_ASN1EncodeItem(arena, &utf8, &item,
+					       SEC_UTF8StringTemplate) == &utf8) {
+				q = cm_store_hex_from_bin(NULL,
+							  utf8.data,
+							  utf8.len);
+				if (q != NULL) {
+					p = talloc_asprintf(q, "CN=#%s", q);
+					if (p != NULL) {
+						name = CERT_AsciiToName(p);
+					}
+					talloc_free(q);
+				}
+			}
+		}
 	} else {
 		name = CERT_AsciiToName("CN=" CM_DEFAULT_CERT_SUBJECT_CN);
+	}
+	if (name == NULL) {
+		cm_log(1, "Error parsing requested subject name \"%s\".\n",
+		       entry->cm_template_subject);
+		SECKEY_DestroyPrivateKey(privkey->key);
+		PORT_FreeArena(arena, PR_TRUE);
+		error = NSS_ShutdownContext(privkey->ctx);
+		PORT_FreeArena(privkey->arena, PR_TRUE);
+		if (error != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
+		}
+		fclose(status);
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	/* Find the public key. */
 	pubkey = SECKEY_ConvertToPublicKey(privkey->key);
