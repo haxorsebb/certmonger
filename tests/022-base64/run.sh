@@ -4,7 +4,7 @@ cd "$tmpdir"
 middle=40
 top=200
 for length in `seq $top` ; do
-	dd if=/dev/urandom bs=1 count=$length status=none of=raw.$length
+	dd if=/dev/urandom bs=1 count=$length of=raw.$length
 	base64    < raw.$length > encoded1.$length
 	base64 -d < encoded1.$length > decoded1.$length
 	$toolsdir/base64 -e < raw.$length > encoded2.$length
