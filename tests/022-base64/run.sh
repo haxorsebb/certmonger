@@ -6,7 +6,7 @@ top=200
 for length in `seq $top` ; do
 	dd if=/dev/urandom bs=1 count=$length of=raw.$length
 	base64    < raw.$length > encoded1.$length
-	base64 -d < encoded1.$length > decoded1.$length
+	base64 -d -i < encoded1.$length > decoded1.$length
 	$toolsdir/base64 -e < raw.$length > encoded2.$length
 	$toolsdir/base64 -d < encoded2.$length > decoded2.$length
 	$toolsdir/base64 -d < encoded1.$length > decoded3.$length
