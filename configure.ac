@@ -338,7 +338,7 @@ AC_ARG_ENABLE(tmpfiles,
 AC_SUBST(TMPFILES)
 AM_CONDITIONAL(TMPFILES,test x$TMPFILES != xno)
 if test x$TMPFILES = xyes ; then
-	AC_MSG_RESULT(will install systemd tmpfiles.d file to ${mysysconfdir}/tmpfiles.d)
+	AC_MSG_RESULT(will install systemd tmpfiles.d file to ${prefix}/lib/tmpfiles.d)
 fi
 
 SYSVINIT=no

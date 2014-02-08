@@ -195,7 +195,7 @@ exit 0
 %{sysvinitdir}/certmonger
 %endif
 %if %{tmpfiles}
-%attr(0644,root,root) %config(noreplace) /etc/tmpfiles.d/certmonger.conf
+%attr(0644,root,root) %config(noreplace) %{_tmpfilesdir}/certmonger.conf
 %endif
 %if %{systemd}
 %{_unitdir}/*
