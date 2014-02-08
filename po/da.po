@@ -1,21 +1,22 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Kris Thomsen <lakristho@gmail.com>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2014-02-03 17:50-0500\n"
+"POT-Creation-Date: 2014-02-07 19:51-0500\n"
 "PO-Revision-Date: 2014-02-04 16:08+0000\n"
 "Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
-"Language-Team: Danish (http://www.transifex.com/projects/p/fedora/language/da/)\n"
+"Language-Team: Danish (http://www.transifex.com/projects/p/fedora/language/"
+"da/)\n"
+"Language: da\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: da\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: src/certmaster.c:111 src/ipa.c:146
@@ -92,7 +93,9 @@ msgstr "Stien \"%s\" er ikke absolut, forsøger at bruge \"%s\" istedet.\n"
 msgid ""
 "Path \"%s\" is not absolute, and there was an error determining the name of "
 "the current directory.\n"
-msgstr "Stien \"%s\" er ikke absolut, og der opstod en fejl under bestemmelse af navnet på den nuværende mappe.\n"
+msgstr ""
+"Stien \"%s\" er ikke absolut, og der opstod en fejl under bestemmelse af "
+"navnet på den nuværende mappe.\n"
 
 #: src/getcert.c:118
 #, c-format
@@ -229,7 +232,8 @@ msgstr "Databasemappe og certifikatfil er begge angivet.\n"
 
 #: src/getcert.c:775 src/getcert.c:1728 src/getcert.c:1980
 #, c-format
-msgid "None of database directory and nickname or certificate file specified.\n"
+msgid ""
+"None of database directory and nickname or certificate file specified.\n"
 msgstr "Ingen databasemappe og kaldenavn eller certifikat-fil angivet.\n"
 
 #: src/getcert.c:782 src/getcert.c:1550
@@ -240,9 +244,11 @@ msgstr "Nøgle og certifikat kan ikke blive gemt i den samme fil.\n"
 #: src/getcert.c:807
 #, c-format
 msgid ""
-"The IPA backend requires the use of the -K option (principal name) when the "
-"-N option (subject name) is used.\n"
-msgstr "IPA-motoren kræver brug af tilvalget -K (hovednavn), når tilvalget -N (emnenavn) er brugt.\n"
+"The IPA backend requires the use of the -K option (principal name) when the -"
+"N option (subject name) is used.\n"
+msgstr ""
+"IPA-motoren kræver brug af tilvalget -K (hovednavn), når tilvalget -N "
+"(emnenavn) er brugt.\n"
 
 #: src/getcert.c:939 src/getcert.c:1309 src/getcert.c:1643 src/getcert.c:2000
 #: src/getcert.c:2222
@@ -281,7 +287,8 @@ msgstr "Ny sporingsforespørgsel kunne ikke tilføjes.\n"
 msgid ""
 "None of ID or database directory and nickname or certificate file "
 "specified.\n"
-msgstr "Intet ID eller databasemappe og -kaldenavn eller certifikatfil angivet.\n"
+msgstr ""
+"Intet ID eller databasemappe og -kaldenavn eller certifikatfil angivet.\n"
 
 #: src/getcert.c:1695
 #, c-format
@@ -366,7 +373,9 @@ msgstr "\tsat fast: %s\n"
 #: src/getcert.c:2406
 #, c-format
 msgid "\tkey pair storage: type=%s"
-msgstr "<span class=\"whitespace other\" title=\"Tab\">»</span>lagring for nøglepar: type=%s"
+msgstr ""
+"<span class=\"whitespace other\" title=\"Tab\">»</span>lagring for nøglepar: "
+"type=%s"
 
 #: src/getcert.c:2406
 msgid "NONE"
@@ -400,7 +409,9 @@ msgstr ",pinfil='%s'"
 #: src/getcert.c:2431
 #, c-format
 msgid "\tcertificate: type=%s,location='%s'"
-msgstr "<span class=\"whitespace other\" title=\"Tab\">»</span>certifikat: type=%s,placering='%s'"
+msgstr ""
+"<span class=\"whitespace other\" title=\"Tab\">»</span>certifikat: type=%s,"
+"placering='%s'"
 
 #: src/getcert.c:2451
 #, c-format
@@ -522,7 +533,8 @@ msgstr "  -n NAVN\tkaldenavn for NSS-baseret lagring (kun gyldig med -d)\n"
 #: src/getcert.c:2629 src/getcert.c:2673 src/getcert.c:2714 src/getcert.c:2736
 msgid ""
 "  -t NAME\toptional token name for NSS-based storage (only valid with -d)\n"
-msgstr "  -t NAVN\tvalgfri symbolnavn til NSS-baseret lagring (kun gyldig med -d)\n"
+msgstr ""
+"  -t NAVN\tvalgfri symbolnavn til NSS-baseret lagring (kun gyldig med -d)\n"
 
 #: src/getcert.c:2630 src/getcert.c:2674 src/getcert.c:2715 src/getcert.c:2737
 #: src/getcert.c:2783
@@ -568,11 +580,15 @@ msgstr ""
 
 #: src/getcert.c:2641
 msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
-msgstr "  -g STØRRELSE\tstørrelsen på nøglen som skal genereres hvis der ikke allerede findes en\n"
+msgstr ""
+"  -g STØRRELSE\tstørrelsen på nøglen som skal genereres hvis der ikke "
+"allerede findes en\n"
 
 #: src/getcert.c:2642 src/getcert.c:2684
-msgid "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
-msgstr "  -r\t\tforsøg at forny certifikatet når udløbsdatoen er nær (standard)\n"
+msgid ""
+"  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
+msgstr ""
+"  -r\t\tforsøg at forny certifikatet når udløbsdatoen er nær (standard)\n"
 
 #: src/getcert.c:2643 src/getcert.c:2685
 msgid "  -R\t\tdon't attempt to renew the certificate when expiration nears\n"
@@ -645,7 +661,9 @@ msgstr ""
 #: src/getcert.c:2661 src/getcert.c:2702 src/getcert.c:2724 src/getcert.c:2765
 #: src/getcert.c:2789 src/getcert.c:2804
 msgid "  -v\treport all details of errors\n"
-msgstr "  -v<span class=\"whitespace other\" title=\"Tab\">»</span>rapportér alle deltaljer om fejl\n"
+msgstr ""
+"  -v<span class=\"whitespace other\" title=\"Tab\">»</span>rapportér alle "
+"deltaljer om fejl\n"
 
 #: src/getcert.c:2665
 #, c-format
@@ -733,7 +751,8 @@ msgstr "* Generelle tilvalg:\n"
 
 #: src/getcert.c:2774
 msgid "  -c CA\tlist only requests and certs associated with this CA\n"
-msgstr "  -c CA\tvis kun forespørgsler og certifikater forbundet med denne CA\n"
+msgstr ""
+"  -c CA\tvis kun forespørgsler og certifikater forbundet med denne CA\n"
 
 #: src/getcert.c:2776
 msgid "  -r\tlist only information about outstanding requests\n"
@@ -749,15 +768,21 @@ msgstr "* Hvis en specifik forespørgsel vælges:\n"
 
 #: src/getcert.c:2781
 msgid "  -d DIR\tonly list requests and certs which use this NSS database\n"
-msgstr "  -d MAPPE<span class=\"whitespace other\" title=\"Tab\">»</span>oplister kun forespørgsler og certs som bruger denne NSS-database\n"
+msgstr ""
+"  -d MAPPE<span class=\"whitespace other\" title=\"Tab\">»</span>oplister "
+"kun forespørgsler og certs som bruger denne NSS-database\n"
 
 #: src/getcert.c:2782
 msgid "  -n NAME\tonly list requests and certs which use this nickname\n"
-msgstr "  -n NAVN<span class=\"whitespace other\" title=\"Tab\">»</span>oplister kun forespørgsler og certs som bruger dette kaldenavn\n"
+msgstr ""
+"  -n NAVN<span class=\"whitespace other\" title=\"Tab\">»</span>oplister kun "
+"forespørgsler og certs som bruger dette kaldenavn\n"
 
 #: src/getcert.c:2784
 msgid "  -f FILE\tonly list requests and certs stored in this PEM file\n"
-msgstr "  -f FIL<span class=\"whitespace other\" title=\"Tab\">»</span>oplister kun forespørgsler og certs, som er gemt i denne PEM-fil\n"
+msgstr ""
+"  -f FIL<span class=\"whitespace other\" title=\"Tab\">»</span>oplister kun "
+"forespørgsler og certs, som er gemt i denne PEM-fil\n"
 
 #: src/getcert.c:2786 src/getcert.c:2801
 msgid "  -S\tconnect to the certmonger service on the system bus\n"
@@ -814,13 +839,14 @@ msgstr ""
 #: src/ipa.c:239
 #, c-format
 msgid ""
-"Error setting up ccache for \"host\" service on client using default keytab:"
-" %s.\n"
+"Error setting up ccache for \"host\" service on client using default keytab: "
+"%s.\n"
 msgstr ""
 
 #: src/ipa.c:243
 #, c-format
-msgid "Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
+msgid ""
+"Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
 msgstr ""
 
 #: src/ipa.c:250
@@ -927,7 +953,8 @@ msgstr "Placeringen \"%s\" skal være en fil."
 
 #: src/tdbush.c:585
 #, c-format
-msgid "The location \"%s\" could not be accessed due to insufficient permissions."
+msgid ""
+"The location \"%s\" could not be accessed due to insufficient permissions."
 msgstr ""
 
 #: src/tdbush.c:593 src/tdbush.c:826
@@ -947,8 +974,7 @@ msgstr "Der er allerede en forespørgsel med kaldenavnet \"%s\"."
 #: src/tdbush.c:693
 #, c-format
 msgid ""
-"Certificate at same location is already used by request with nickname "
-"\"%s\"."
+"Certificate at same location is already used by request with nickname \"%s\"."
 msgstr ""
 
 #: src/tdbush.c:726

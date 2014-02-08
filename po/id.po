@@ -1,21 +1,22 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Nalin Dahyabhai <nalin@fedoraproject.org>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2014-02-03 17:50-0500\n"
+"POT-Creation-Date: 2014-02-07 19:51-0500\n"
 "PO-Revision-Date: 2014-02-04 16:08+0000\n"
 "Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
-"Language-Team: Indonesian (http://www.transifex.com/projects/p/fedora/language/id/)\n"
+"Language-Team: Indonesian (http://www.transifex.com/projects/p/fedora/"
+"language/id/)\n"
+"Language: id\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: id\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
 #: src/certmaster.c:111 src/ipa.c:146
@@ -92,7 +93,9 @@ msgstr ""
 msgid ""
 "Path \"%s\" is not absolute, and there was an error determining the name of "
 "the current directory.\n"
-msgstr "Path \"%s\"tidak mutlak, dan ada eror yang menentukan nama dari sebuah direktori.\n"
+msgstr ""
+"Path \"%s\"tidak mutlak, dan ada eror yang menentukan nama dari sebuah "
+"direktori.\n"
 
 #: src/getcert.c:118
 #, c-format
@@ -229,20 +232,26 @@ msgstr "Direktori database dan sertifikat file kedua secara khusus.\n"
 
 #: src/getcert.c:775 src/getcert.c:1728 src/getcert.c:1980
 #, c-format
-msgid "None of database directory and nickname or certificate file specified.\n"
-msgstr "Tidak ada dari direktori database dan nama panggilan atau sertifikat berkas khusus.\n"
+msgid ""
+"None of database directory and nickname or certificate file specified.\n"
+msgstr ""
+"Tidak ada dari direktori database dan nama panggilan atau sertifikat berkas "
+"khusus.\n"
 
 #: src/getcert.c:782 src/getcert.c:1550
 #, c-format
 msgid "Key and certificate can not both be saved to the same file.\n"
-msgstr "Kunci dan sertifikat tidak dapat di simpan seluruhnya pada file yang sama.\n"
+msgstr ""
+"Kunci dan sertifikat tidak dapat di simpan seluruhnya pada file yang sama.\n"
 
 #: src/getcert.c:807
 #, c-format
 msgid ""
-"The IPA backend requires the use of the -K option (principal name) when the "
-"-N option (subject name) is used.\n"
-msgstr "IPA kembali memerlukan kegunaan dari pilihan -K (nama utama) di mana ketika pilihan -N (nama subjek) telah digunakan.\n"
+"The IPA backend requires the use of the -K option (principal name) when the -"
+"N option (subject name) is used.\n"
+msgstr ""
+"IPA kembali memerlukan kegunaan dari pilihan -K (nama utama) di mana ketika "
+"pilihan -N (nama subjek) telah digunakan.\n"
 
 #: src/getcert.c:939 src/getcert.c:1309 src/getcert.c:1643 src/getcert.c:2000
 #: src/getcert.c:2222
@@ -281,7 +290,9 @@ msgstr "Permintaan pelacakan tidak dapat di tambahkan.\n"
 msgid ""
 "None of ID or database directory and nickname or certificate file "
 "specified.\n"
-msgstr "ID kosong atau direktori database dan nama panggilan atau sertifikat berkas khusus.\n"
+msgstr ""
+"ID kosong atau direktori database dan nama panggilan atau sertifikat berkas "
+"khusus.\n"
 
 #: src/getcert.c:1695
 #, c-format
@@ -517,12 +528,15 @@ msgstr "-d DIR\tNSS database untuk kunci dan pemastian\n"
 
 #: src/getcert.c:2628 src/getcert.c:2672 src/getcert.c:2713 src/getcert.c:2735
 msgid "  -n NAME\tnickname for NSS-based storage (only valid with -d)\n"
-msgstr "-n NAME\tnickname untuk dasar penyimpanan NSS (hanya valid dengan -d)\n"
+msgstr ""
+"-n NAME\tnickname untuk dasar penyimpanan NSS (hanya valid dengan -d)\n"
 
 #: src/getcert.c:2629 src/getcert.c:2673 src/getcert.c:2714 src/getcert.c:2736
 msgid ""
 "  -t NAME\toptional token name for NSS-based storage (only valid with -d)\n"
-msgstr "-t NAME\toptional tanda nama untuk dasar penyimpanan NSS (hanya valid dengan -d)\n"
+msgstr ""
+"-t NAME\toptional tanda nama untuk dasar penyimpanan NSS (hanya valid dengan "
+"-d)\n"
 
 #: src/getcert.c:2630 src/getcert.c:2674 src/getcert.c:2715 src/getcert.c:2737
 #: src/getcert.c:2783
@@ -568,15 +582,21 @@ msgstr ""
 
 #: src/getcert.c:2641
 msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
-msgstr "-g SIZE\tsize  sebuah kunci untuk menghasilkan jika salah satu telah tidak berada di dalam tempat\n"
+msgstr ""
+"-g SIZE\tsize  sebuah kunci untuk menghasilkan jika salah satu telah tidak "
+"berada di dalam tempat\n"
 
 #: src/getcert.c:2642 src/getcert.c:2684
-msgid "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
-msgstr "-r\t\tattempt untuk memperbarui sertifikat ketika mendekati akhir waktu (kegagalan)\n"
+msgid ""
+"  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
+msgstr ""
+"-r\t\tattempt untuk memperbarui sertifikat ketika mendekati akhir waktu "
+"(kegagalan)\n"
 
 #: src/getcert.c:2643 src/getcert.c:2685
 msgid "  -R\t\tdon't attempt to renew the certificate when expiration nears\n"
-msgstr "-R\t\tdon't usaha untuk memperbarui sertifikat ketika mendekati akhir waktu\n"
+msgstr ""
+"-R\t\tdon't usaha untuk memperbarui sertifikat ketika mendekati akhir waktu\n"
 
 #: src/getcert.c:2645 src/getcert.c:2687
 msgid "  -c CA\t\tuse the specified CA rather than the default\n"
@@ -814,13 +834,14 @@ msgstr ""
 #: src/ipa.c:239
 #, c-format
 msgid ""
-"Error setting up ccache for \"host\" service on client using default keytab:"
-" %s.\n"
+"Error setting up ccache for \"host\" service on client using default keytab: "
+"%s.\n"
 msgstr ""
 
 #: src/ipa.c:243
 #, c-format
-msgid "Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
+msgid ""
+"Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
 msgstr ""
 
 #: src/ipa.c:250
@@ -927,7 +948,8 @@ msgstr "Lokasi \"%s\" harus berupa berkas."
 
 #: src/tdbush.c:585
 #, c-format
-msgid "The location \"%s\" could not be accessed due to insufficient permissions."
+msgid ""
+"The location \"%s\" could not be accessed due to insufficient permissions."
 msgstr ""
 
 #: src/tdbush.c:593 src/tdbush.c:826
@@ -947,8 +969,7 @@ msgstr "Permintaan telah dilakukan dengan nama panggilan \"%s\"."
 #: src/tdbush.c:693
 #, c-format
 msgid ""
-"Certificate at same location is already used by request with nickname "
-"\"%s\"."
+"Certificate at same location is already used by request with nickname \"%s\"."
 msgstr ""
 
 #: src/tdbush.c:726

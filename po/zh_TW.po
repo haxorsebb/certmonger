@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Cheng-Chia Tseng <pswo10680@gmail.com>, 2011
 # Walter Cheuk <wwycheuk@gmail.com>, 2012
@@ -9,14 +9,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2014-02-03 17:50-0500\n"
+"POT-Creation-Date: 2014-02-07 19:51-0500\n"
 "PO-Revision-Date: 2014-02-04 16:08+0000\n"
 "Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
-"Language-Team: Chinese (Taiwan) (http://www.transifex.com/projects/p/fedora/language/zh_TW/)\n"
+"Language-Team: Chinese (Taiwan) (http://www.transifex.com/projects/p/fedora/"
+"language/zh_TW/)\n"
+"Language: zh_TW\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: zh_TW\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
 #: src/certmaster.c:111 src/ipa.c:146
@@ -118,7 +119,9 @@ msgstr "\"%s\" 路徑並非普通檔案。\n"
 #: src/getcert.c:247
 #, c-format
 msgid "Out of memory.\n"
-msgstr "記憶體不足。\n\n"
+msgstr ""
+"記憶體不足。\n"
+"\n"
 
 #: src/getcert.c:273
 #, c-format
@@ -230,7 +233,8 @@ msgstr ""
 
 #: src/getcert.c:775 src/getcert.c:1728 src/getcert.c:1980
 #, c-format
-msgid "None of database directory and nickname or certificate file specified.\n"
+msgid ""
+"None of database directory and nickname or certificate file specified.\n"
 msgstr ""
 
 #: src/getcert.c:782 src/getcert.c:1550
@@ -241,8 +245,8 @@ msgstr ""
 #: src/getcert.c:807
 #, c-format
 msgid ""
-"The IPA backend requires the use of the -K option (principal name) when the "
-"-N option (subject name) is used.\n"
+"The IPA backend requires the use of the -K option (principal name) when the -"
+"N option (subject name) is used.\n"
 msgstr ""
 
 #: src/getcert.c:939 src/getcert.c:1309 src/getcert.c:1643 src/getcert.c:2000
@@ -523,7 +527,9 @@ msgstr "  -n 名稱\t基於 NSS 的儲存裝置的暱稱 (只有與 -d 一起用
 #: src/getcert.c:2629 src/getcert.c:2673 src/getcert.c:2714 src/getcert.c:2736
 msgid ""
 "  -t NAME\toptional token name for NSS-based storage (only valid with -d)\n"
-msgstr "  -t 名稱\t基於 NSS 的儲存裝置的 token 名稱 (可有可無；只有與 -d 一起用才有效)\n"
+msgstr ""
+"  -t 名稱\t基於 NSS 的儲存裝置的 token 名稱 (可有可無；只有與 -d 一起用才有"
+"效)\n"
 
 #: src/getcert.c:2630 src/getcert.c:2674 src/getcert.c:2715 src/getcert.c:2737
 #: src/getcert.c:2783
@@ -572,7 +578,8 @@ msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
 msgstr ""
 
 #: src/getcert.c:2642 src/getcert.c:2684
-msgid "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
+msgid ""
+"  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
 msgstr ""
 
 #: src/getcert.c:2643 src/getcert.c:2685
@@ -815,13 +822,14 @@ msgstr ""
 #: src/ipa.c:239
 #, c-format
 msgid ""
-"Error setting up ccache for \"host\" service on client using default keytab:"
-" %s.\n"
+"Error setting up ccache for \"host\" service on client using default keytab: "
+"%s.\n"
 msgstr ""
 
 #: src/ipa.c:243
 #, c-format
-msgid "Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
+msgid ""
+"Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
 msgstr ""
 
 #: src/ipa.c:250
@@ -928,7 +936,8 @@ msgstr "\"%s\" 位置須為檔案。"
 
 #: src/tdbush.c:585
 #, c-format
-msgid "The location \"%s\" could not be accessed due to insufficient permissions."
+msgid ""
+"The location \"%s\" could not be accessed due to insufficient permissions."
 msgstr ""
 
 #: src/tdbush.c:593 src/tdbush.c:826
@@ -948,8 +957,7 @@ msgstr "已有暱稱為 \"%s\" 的請求。"
 #: src/tdbush.c:693
 #, c-format
 msgid ""
-"Certificate at same location is already used by request with nickname "
-"\"%s\"."
+"Certificate at same location is already used by request with nickname \"%s\"."
 msgstr ""
 
 #: src/tdbush.c:726
