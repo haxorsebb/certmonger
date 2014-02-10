@@ -583,7 +583,7 @@ cm_store_base64_to_bin(const char *serial, unsigned char *buf, int length)
 		if (q != NULL) {
 			switch (count % 4) {
 			case 0:
-				u = q ? q - chars : 0;
+				u = q - chars;
 				break;
 			case 1:
 				u = (u << 6) | (q - chars);
