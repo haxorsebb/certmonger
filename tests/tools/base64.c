@@ -36,7 +36,7 @@ main(int argc, char **argv)
 	unsigned char buf[LINE_MAX], *p = NULL, *q;
 	unsigned int length, decode = 0, encode = 0, hex = 0, i, j;
 	const char *s;
-	int c;
+	int c, l;
 
 	while ((c = getopt(argc, argv, "deh")) != -1) {
 		switch (c) {
@@ -54,16 +54,16 @@ main(int argc, char **argv)
 		}
 	}
 	length = 0;
-	while ((i = read(STDIN_FILENO, buf, sizeof(buf))) > 0) {
-		q = realloc(p, length + i + 1);
+	while ((l = read(STDIN_FILENO, buf, sizeof(buf))) > 0) {
+		q = realloc(p, length + l + 1);
 		if (q == NULL) {
 			perror("realloc");
 			return 1;
 		}
-		memcpy(q + length, buf, i);
-		q[length + i] = '\0';
+		memcpy(q + length, buf, l);
+		q[length + l] = '\0';
 		p = q;
-		length += i;
+		length += l;
 	}
 	if (decode) {
 		j = 3 * howmany(length, 4);
