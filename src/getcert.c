@@ -620,17 +620,15 @@ request(const char *argv0, int argc, char **argv)
 			certfile = ensure_pem(globals.tctx, optarg);
 			break;
 		case 'G':
-			if ((strcasecmp(optarg, "RSA") == 0)
+			if ((strcasecmp(optarg, "RSA") != 0)
 #ifdef CM_ENABLE_DSA
-			    || (strcasecmp(optarg, "DSA") == 0)
+			    && (strcasecmp(optarg, "DSA") != 0)
 #endif
 #ifdef CM_ENABLE_EC
-			    || (strcasecmp(optarg, "ECDSA") == 0)
-			    || (strcasecmp(optarg, "EC") == 0)
+			    && (strcasecmp(optarg, "ECDSA") != 0)
+			    && (strcasecmp(optarg, "EC") != 0)
 #endif
 			    ) {
-				keytype = talloc_strdup(globals.tctx, optarg);
-			} else {
 				printf(_("No support for generating \"%s\" keys.\n"),
 				       optarg);
 				printf(_("Known key types include:"));
