@@ -94,6 +94,13 @@ echo iLoveCookiesMore
 exit 5
 EOF
 chmod u+x ca-ask-again-5
+cat > ca-ask-again-broken-5 << EOF
+#!/bin/sh
+echo "?1034h13"
+echo iLoveCookiesMore
+exit 5
+EOF
+chmod u+x ca-ask-again-broken-5
 cat > ca-what-what-6 << EOF
 #!/bin/sh
 echo What do you want?
@@ -503,6 +510,27 @@ $toolsdir/iterate ca8 entry8 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
 $toolsdir/iterate ca8 entry8 NEED_CSR,GENERATING_CSR
 $toolsdir/iterate ca8 entry8 NEED_TO_SUBMIT,SUBMITTING
 grep ca_cookie entry8
+$toolsdir/iterate ca8 entry8 ""
+
+echo
+echo '[Enroll until the CA tells us to come back later, but with a broken date.]'
+cat > entry8 << EOF
+id=Test
+ca_name=Busy
+state=HAVE_KEY_PAIR
+key_storage_type=FILE
+key_storage_location=$tmpdir/keyfile
+notification_method=STDOUT
+EOF
+cat > ca8 << EOF
+id=Busy
+ca_type=EXTERNAL
+ca_external_helper=$tmpdir/ca-ask-again-broken-5
+EOF
+$toolsdir/iterate ca8 entry8 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
+$toolsdir/iterate ca8 entry8 NEED_CSR,GENERATING_CSR
+$toolsdir/iterate ca8 entry8 NEED_TO_SUBMIT,SUBMITTING
+grep ca_cookie entry8 || echo NO COOKIE FOR YOU
 $toolsdir/iterate ca8 entry8 ""
 
 echo

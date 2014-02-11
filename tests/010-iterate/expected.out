@@ -464,6 +464,34 @@ HAVE_CSR
 NEED_TO_SUBMIT
 -STOP-
 
+[Enroll until the CA tells us to come back later, but with a broken date.]
+HAVE_KEY_PAIR
+-START-
+NEED_KEYINFO
+READING_KEYINFO
+HAVE_KEYINFO
+NEED_CSR
+-STOP-
+NEED_CSR
+-(RESET)-
+HAVE_KEYINFO
+-START-
+NEED_CSR
+GENERATING_CSR
+HAVE_CSR
+-STOP-
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+SUBMITTING
+NEED_GUIDANCE
+-STOP-
+NO COOKIE FOR YOU
+NEED_GUIDANCE
+-START-
+NEED_GUIDANCE
+-STOP-
+
 [Enroll until we realize our enrollment helper doesn't support enrollment.]
 HAVE_KEY_PAIR
 -START-
