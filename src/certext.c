@@ -893,6 +893,7 @@ cm_certext_build_upn(struct cm_store_entry *entry, PLArenaPool *arena,
 		return NULL;
 	}
 	memset(&upn, 0, sizeof(upn));
+	memset(&princ, 0, sizeof(princ));
 	princ.len = strlen(principal);
 	princ.data = (unsigned char *) principal;
 	if (SEC_ASN1EncodeItem(arena, &upn, &princ,

@@ -178,6 +178,7 @@ cm_csrgen_n_attributes(struct cm_store_entry *entry, NSSInitContext *ctx,
 	/* Build an attribute to hold the challenge password. */
 	oid = SECOID_FindOIDByTag(SEC_OID_PKCS9_CHALLENGE_PASSWORD);
 	if (oid != NULL) {
+		memset(&plain, 0, sizeof(plain));
 		plain.data = (unsigned char *) entry->cm_challenge_password;
 		if (plain.data != NULL) {
 			plain.len = strlen(entry->cm_challenge_password);
