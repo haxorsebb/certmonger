@@ -237,8 +237,9 @@ cm_submit_e_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 {
 	struct cm_submit_e_args *args = userdata;
 	char **argv;
-	const char *error;
+	const char *error, *key_type;
 	unsigned char u;
+
 	if (entry->cm_template_subject != NULL) {
 		setenv(CM_SUBMIT_REQ_SUBJECT_ENV,
 		       entry->cm_template_subject, 1);
@@ -272,6 +273,28 @@ cm_submit_e_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 	if ((args->spki != NULL) && (strlen(args->spki) > 0)) {
 		setenv(CM_SUBMIT_SPKI_ENV, args->spki, 1);
+	}
+	key_type = NULL;
+	switch (entry->cm_key_type.cm_key_algorithm) {
+	case cm_key_rsa:
+		key_type = "RSA";
+		break;
+#ifdef CM_ENABLE_DSA
+	case cm_key_dsa:
+		key_type = "DSA";
+		break;
+#endif
+#ifdef CM_ENABLE_EC
+	case cm_key_ecdsa:
+		key_type = "EC";
+		break;
+#endif
+	case cm_key_unspecified:
+		key_type = NULL;
+		break;
+	}
+	if (key_type != NULL) {
+		setenv(CM_SUBMIT_KEY_TYPE_ENV, key_type, 1);
 	}
 	if ((args->cookie != NULL) && (strlen(args->cookie) > 0)) {
 		setenv(CM_SUBMIT_COOKIE_ENV, args->cookie, 1);
