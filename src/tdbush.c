@@ -3181,6 +3181,7 @@ request_prop_get_stuck(struct cm_context *ctx, void *parent,
 	case CM_NEED_TO_SUBMIT:
 	case CM_SUBMITTING:
 	case CM_CA_WORKING:
+	case CM_CA_UNREACHABLE:
 	case CM_NEED_TO_SAVE_CERT:
 	case CM_PRE_SAVE_CERT:
 	case CM_START_SAVING_CERT:
@@ -3219,7 +3220,6 @@ request_prop_get_stuck(struct cm_context *ctx, void *parent,
 	case CM_NEED_GUIDANCE:
 	case CM_NEED_CA:
 	case CM_CA_REJECTED:
-	case CM_CA_UNREACHABLE:
 	case CM_CA_UNCONFIGURED:
 		stuck = TRUE;
 		break;
