@@ -513,6 +513,41 @@ cm_store_utf8_to_bmp_string(char *s,
 }
 
 char *
+cm_store_utf8_from_bmp_string(unsigned char *bmp, unsigned int len)
+{
+	iconv_t conv;
+	char *inbuf, *outbuf, *s;
+	size_t inleft, outleft, res, space;
+
+	conv = iconv_open("UTF8", "UTF16BE");
+	if (conv != NULL) {
+		inbuf = (char *) bmp;
+		space = len * 3;
+		s = malloc(space);
+		outbuf = s;
+		if (outbuf == NULL) {
+			iconv_close(conv);
+			return NULL;
+		}
+		memset(s, '\0', space);
+		inleft = len;
+		outleft = space;
+		res = iconv(conv, &inbuf, &inleft, &outbuf, &outleft);
+		iconv_close(conv);
+		switch (res) {
+		case (size_t) -1:
+			free(s);
+			return NULL;
+			break;
+		default:
+			return s;
+			break;
+		}
+	}
+	return NULL;
+}
+
+char *
 cm_store_base64_from_bin(void *parent, unsigned char *buf, int length)
 {
 	char *p, *ret;
