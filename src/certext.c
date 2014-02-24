@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2011,2012 Red Hat, Inc.
+ * Copyright (C) 2009,2011,2012,2013,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -222,6 +222,19 @@ static const SECOidData oid_pkinit_san = {
 	},
 	.offset = 0,
 	.desc = "PKINIT Subject Alternate Name",
+	.mechanism = 0,
+	.supportedExtension = UNSUPPORTED_CERT_EXTENSION,
+};
+
+/* XCN_OID_ENROLL_CERTTYPE_EXTENSION 1.3.6.1.4.1.311.20.2 */
+static unsigned char oid_microsoft_certtype_bytes[] = {0x2b, 0x06, 0x01, 0x04, 0x01, 0x82, 0x37, 0x14, 0x02};
+static const SECOidData oid_microsoft_certtype = {
+	.oid = {
+		.data = oid_microsoft_certtype_bytes,
+		.len = 9,
+	},
+	.offset = 0,
+	.desc = "Microsoft TemplateName",
 	.mechanism = 0,
 	.supportedExtension = UNSUPPORTED_CERT_EXTENSION,
 };
@@ -1671,6 +1684,30 @@ cm_certext_read_crldp(struct cm_store_entry *entry, PLArenaPool *arena,
 	}
 }
 
+static void
+cm_certext_read_profile(struct cm_store_entry *entry, PLArenaPool *arena,
+			CERTCertExtension *ext)
+{
+	SECItem profile;
+	char *tmp;
+
+	memset(&profile, 0, sizeof(profile));
+	if (SEC_ASN1DecodeItem(arena, &profile,
+			       SEC_BMPStringTemplate,
+			       &ext->value) != SECSuccess) {
+		return;
+	}
+	talloc_free(entry->cm_cert_profile);
+	entry->cm_cert_profile = NULL;
+	if (profile.len > 0) {
+		tmp = cm_store_utf8_from_bmp_string(profile.data, profile.len);
+		if (tmp != NULL) {
+			entry->cm_cert_profile = talloc_strdup(entry, tmp);
+			free(tmp);
+		}
+	}
+}
+
 /* Read the extensions from a certificate. */
 void
 cm_certext_read_extensions(struct cm_store_entry *entry, PLArenaPool *arena,
@@ -1678,9 +1715,9 @@ cm_certext_read_extensions(struct cm_store_entry *entry, PLArenaPool *arena,
 {
 	int i;
 	PLArenaPool *local_arena;
-
 	SECOidData *ku_oid, *eku_oid, *san_oid;
-	SECOidData *basic_oid, *nsc_oid, *aia_oid, *crldp_oid;
+	SECOidData *basic_oid, *nsc_oid, *aia_oid, *crldp_oid, *profile_oid;
+
 	if (extensions == NULL) {
 		return;
 	}
@@ -1735,6 +1772,7 @@ cm_certext_read_extensions(struct cm_store_entry *entry, PLArenaPool *arena,
 		       "extension.\n");
 		return;
 	}
+	profile_oid = (SECOidData *) &oid_microsoft_certtype;
 	for (i = 0; extensions[i] != NULL; i++) {
 		if (SECITEM_ItemsAreEqual(&ku_oid->oid, &extensions[i]->id)) {
 			cm_certext_read_ku(entry, arena, extensions[i]);
@@ -1756,6 +1794,9 @@ cm_certext_read_extensions(struct cm_store_entry *entry, PLArenaPool *arena,
 		}
 		if (SECITEM_ItemsAreEqual(&crldp_oid->oid, &extensions[i]->id)) {
 			cm_certext_read_crldp(entry, arena, extensions[i]);
+		}
+		if (SECITEM_ItemsAreEqual(&profile_oid->oid, &extensions[i]->id)) {
+			cm_certext_read_profile(entry, arena, extensions[i]);
 		}
 	}
 	if (arena == local_arena) {
