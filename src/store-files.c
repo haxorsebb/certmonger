@@ -98,6 +98,7 @@ enum cm_store_file_field {
 	cm_store_entry_field_template_crl_distribution_point,
 	cm_store_entry_field_template_ocsp_location,
 	cm_store_entry_field_template_ns_comment,
+	cm_store_entry_field_template_profile,
 
 	cm_store_entry_field_challenge_password,
 
@@ -110,7 +111,6 @@ enum cm_store_file_field {
 	cm_store_entry_field_monitor,
 
 	cm_store_entry_field_ca_nickname,
-	cm_store_entry_field_ca_profile,
 
 	cm_store_entry_field_submitted,
 	cm_store_entry_field_ca_cookie,
@@ -193,6 +193,8 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_template_crl_distribution_point, "template_crldp"},
 	{cm_store_entry_field_template_ocsp_location, "template_ocsp"},
 	{cm_store_entry_field_template_ns_comment, "template_ns_comment"},
+	{cm_store_entry_field_template_profile, "template_profile"}, /* right */
+	{cm_store_entry_field_template_profile, "ca_profile"}, /* wrong */
 
 	{cm_store_entry_field_challenge_password, "challenge_password"},
 
@@ -204,7 +206,6 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_monitor, "monitor"},
 
 	{cm_store_entry_field_ca_nickname, "ca_name"},
-	{cm_store_entry_field_ca_profile, "ca_profile"},
 
 	{cm_store_entry_field_submitted, "submitted"},
 	{cm_store_entry_field_ca_cookie, "ca_cookie"},
@@ -699,6 +700,9 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_template_ns_comment:
 				ret->cm_template_ns_comment = free_if_empty(p);
 				break;
+			case cm_store_entry_field_template_profile:
+				ret->cm_template_profile = free_if_empty(p);
+				break;
 			case cm_store_entry_field_challenge_password:
 				ret->cm_challenge_password = free_if_empty(p);
 				break;
@@ -722,9 +726,6 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 				break;
 			case cm_store_entry_field_ca_nickname:
 				ret->cm_ca_nickname = free_if_empty(p);
-				break;
-			case cm_store_entry_field_ca_profile:
-				ret->cm_ca_profile = free_if_empty(p);
 				break;
 			case cm_store_entry_field_submitted:
 				ret->cm_submitted =
@@ -850,6 +851,7 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_template_crl_distribution_point:
 			case cm_store_entry_field_template_ocsp_location:
 			case cm_store_entry_field_template_ns_comment:
+			case cm_store_entry_field_template_profile:
 			case cm_store_entry_field_challenge_password:
 			case cm_store_entry_field_csr:
 			case cm_store_entry_field_spkac:
@@ -857,7 +859,6 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_autorenew:
 			case cm_store_entry_field_monitor:
 			case cm_store_entry_field_ca_nickname:
-			case cm_store_entry_field_ca_profile:
 			case cm_store_entry_field_submitted:
 			case cm_store_entry_field_ca_cookie:
 			case cm_store_entry_field_ca_error:
@@ -1177,6 +1178,8 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 				 entry->cm_template_ocsp_location);
 	cm_store_file_write_str(fp, cm_store_entry_field_template_ns_comment,
 				entry->cm_template_ns_comment);
+	cm_store_file_write_str(fp, cm_store_entry_field_template_profile,
+				entry->cm_template_profile);
 
 	cm_store_file_write_str(fp, cm_store_entry_field_challenge_password,
 				entry->cm_challenge_password);
@@ -1196,8 +1199,6 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 
 	cm_store_file_write_str(fp, cm_store_entry_field_ca_nickname,
 				entry->cm_ca_nickname);
-	cm_store_file_write_str(fp, cm_store_entry_field_ca_profile,
-				entry->cm_ca_profile);
 	cm_store_file_write_str(fp, cm_store_entry_field_submitted,
 				cm_store_timestamp_from_time(entry->cm_submitted,
 							      timestamp));
@@ -1770,6 +1771,7 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	ret->cm_template_crl_distribution_point = cm_store_maybe_strdupv(ret, entry->cm_template_crl_distribution_point);
 	ret->cm_template_ocsp_location = cm_store_maybe_strdupv(ret, entry->cm_template_ocsp_location);
 	ret->cm_template_ns_comment = cm_store_maybe_strdup(ret, entry->cm_template_ns_comment);
+	ret->cm_template_profile = cm_store_maybe_strdup(ret, entry->cm_template_profile);
 
 	ret->cm_challenge_password = cm_store_maybe_strdup(ret, entry->cm_challenge_password);
 	ret->cm_csr = cm_store_maybe_strdup(ret, entry->cm_csr);
@@ -1778,7 +1780,6 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	ret->cm_autorenew = entry->cm_autorenew;
 	ret->cm_monitor = entry->cm_monitor;
 	ret->cm_ca_nickname = cm_store_maybe_strdup(ret, entry->cm_ca_nickname);
-	ret->cm_ca_profile = cm_store_maybe_strdup(ret, entry->cm_ca_profile);
 	ret->cm_submitted = entry->cm_submitted;
 	ret->cm_ca_cookie = cm_store_maybe_strdup(ret, entry->cm_ca_cookie);
 	ret->cm_ca_error = cm_store_maybe_strdup(ret, entry->cm_ca_error);

@@ -1545,6 +1545,12 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			cm_store_set_if_not_set_s(entry,
 						  &entry->cm_template_eku,
 						  entry->cm_cert_eku);
+			cm_store_set_if_not_set_s(entry,
+						  &entry->cm_template_ns_comment,
+						  entry->cm_cert_ns_comment);
+			cm_store_set_if_not_set_s(entry,
+						  &entry->cm_template_profile,
+						  entry->cm_cert_profile);
 			cm_log(3, "%s('%s') has a certificate, monitoring it\n",
 			       entry->cm_busname, entry->cm_nickname);
 			entry->cm_state = CM_MONITORING;

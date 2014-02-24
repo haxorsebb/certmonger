@@ -118,6 +118,7 @@ struct cm_store_entry {
 	char **cm_template_crl_distribution_point;
 	char **cm_template_ocsp_location;
 	char *cm_template_ns_comment;
+	char *cm_template_profile;
 	/* A challenge password, which may be included (in cleartext form!) in
 	 * a CSR. */
 	char *cm_challenge_password;
@@ -165,9 +166,6 @@ struct cm_store_entry {
 	unsigned int cm_monitor:1;
 	/* Type and location of CA [or use default if NULL] */
 	char *cm_ca_nickname;
-	/* Name of the profile/template/certtype that we use to inform the CA
-	 * of the type of certificate that we want. */
-	char *cm_ca_profile;
 	/* Date of submission for in-progress submissions. */
 	time_t cm_submitted;
 	/* Value of CA cookie for in-progress submissions. */

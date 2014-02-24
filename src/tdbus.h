@@ -92,6 +92,7 @@
 #define CM_DBUS_PROP_TEMPLATE_OCSP "template-ocsp"
 #define CM_DBUS_PROP_TEMPLATE_CRL_DP "template-crldp"
 #define CM_DBUS_PROP_TEMPLATE_NS_COMMENT "template-ns-comment"
+#define CM_DBUS_PROP_TEMPLATE_PROFILE "template-profile"
 #define CM_DBUS_SIGNAL_REQUEST_CERT_SAVED "SavedCertificate"
 
 enum cm_tdbus_type { cm_tdbus_system, cm_tdbus_session };

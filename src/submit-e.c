@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2011,2012,2013 Red Hat, Inc.
+ * Copyright (C) 2009,2011,2012,2013,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -303,9 +303,9 @@ cm_submit_e_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	    (strlen(entry->cm_ca_nickname) > 0)) {
 		setenv(CM_SUBMIT_CA_NICKNAME_ENV, entry->cm_ca_nickname, 1);
 	}
-	if ((entry->cm_ca_profile != NULL) &&
-	    (strlen(entry->cm_ca_profile) > 0)) {
-		setenv(CM_SUBMIT_PROFILE_ENV, entry->cm_ca_profile, 1);
+	if ((entry->cm_template_profile != NULL) &&
+	    (strlen(entry->cm_template_profile) > 0)) {
+		setenv(CM_SUBMIT_PROFILE_ENV, entry->cm_template_profile, 1);
 	}
 	if ((entry->cm_cert != NULL) && (strlen(entry->cm_cert) > 0)) {
 		setenv(CM_SUBMIT_CERTIFICATE_ENV, entry->cm_cert, 1);

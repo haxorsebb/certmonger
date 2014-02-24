@@ -990,7 +990,7 @@ request(const char *argv0, int argc, char **argv)
 		i++;
 	}
 	if (profile != NULL) {
-		param[i].key = CM_DBUS_PROP_CA_PROFILE;
+		param[i].key = CM_DBUS_PROP_TEMPLATE_PROFILE;
 		param[i].value_type = cm_tdbusm_dict_s;
 		param[i].value.s = profile;
 		params[i] = &param[i];
@@ -1281,7 +1281,7 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 	params[i] = &param[i];
 	i++;
 	if (profile != NULL) {
-		param[i].key = CM_DBUS_PROP_CA_PROFILE;
+		param[i].key = CM_DBUS_PROP_TEMPLATE_PROFILE;
 		param[i].value_type = cm_tdbusm_dict_s;
 		param[i].value.s = profile;
 		params[i] = &param[i];
@@ -1652,7 +1652,7 @@ set_tracking(const char *argv0, const char *category,
 				capath = NULL;
 			}
 			if (profile != NULL) {
-				param[i].key = CM_DBUS_PROP_CA_PROFILE;
+				param[i].key = CM_DBUS_PROP_TEMPLATE_PROFILE;
 				param[i].value_type = cm_tdbusm_dict_s;
 				param[i].value.s = profile;
 				params[i] = &param[i];
@@ -2066,7 +2066,7 @@ resubmit(const char *argv0, int argc, char **argv)
 		i++;
 	}
 	if (profile != NULL) {
-		param[i].key = CM_DBUS_PROP_CA_PROFILE;
+		param[i].key = CM_DBUS_PROP_TEMPLATE_PROFILE;
 		param[i].value_type = cm_tdbusm_dict_s;
 		param[i].value.s = profile;
 		params[i] = &param[i];
