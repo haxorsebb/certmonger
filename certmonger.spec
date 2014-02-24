@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.72
+Version:	0.73
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -202,6 +202,35 @@ exit 0
 %endif
 
 %changelog
+* Thu Feb 20 2014 Nalin Dahyabhai <nalin@redhat.com> 0.73-1
+- updates to 0.73
+  - getcert no longer claims to be stuck when a CA is unreachable,
+    because the daemon isn't actually stuck
+
+* Mon Feb 17 2014 Nalin Dahyabhai <nalin@redhat.com>
+- updates to 0.73
+  - also pass the key type to enrollment helpers in the environment as
+    a the value of "CERTMONGER_KEY_TYPE"
+
+* Mon Feb 10 2014 Nalin Dahyabhai <nalin@redhat.com>
+- move the tmpfiles.d file from /etc/tmpfiles.d to %%{_tmpfilesdir},
+  where it belongs
+
+* Mon Feb 10 2014 Nalin Dahyabhai <nalin@redhat.com>
+- updates for 0.73
+  - set the flag to encode EC public key parameters using named curves
+    instead of the default of all-the-details when using OpenSSL
+  - don't break when NSS supports secp521r1 but OpenSSL doesn't
+  - also pass the CA nickname to enrollment helpers in the environment as
+    a text value in "CERTMONGER_CA_NICKNAME", so they can use that value
+    when reading configuration settings
+  - also pass the SPKAC value to enrollment helpers in the environment as
+    a base64 value in "CERTMONGER_SPKAC"
+  - also pass the request's SubjectPublicKeyInfo value to enrollment helpers
+    in the environment as a base64 value in "CERTMONGER_SPKI"
+  - when generating signing requests using NSS, be more accommodating of
+    requested subject names that don't parse properly
+
 * Mon Feb  3 2014 Nalin Dahyabhai <nalin@redhat.com> 0.72-1
 - update to 0.72
   - support generating DSA parameters and keys on sufficiently-new OpenSSL
