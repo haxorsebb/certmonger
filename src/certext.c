@@ -60,6 +60,11 @@ struct kerberos_principal_name {
 	struct realm realm;
 	struct principal_name principal_name;
 };
+struct ms_template {
+	SECItem id;
+	SECItem major;
+	SECItem *minor;
+};
 
 /* KerberosString: RFC 4120, 5.2.1 */
 static const SEC_ASN1Template
@@ -149,6 +154,7 @@ cm_kerberos_principal_name_template[] = {
 	{0, 0, NULL, 0},
 };
 
+/* V1 templates, identified by name. */
 static SEC_ASN1Template
 cm_ms_upn_name_template[] = {
 	{
@@ -159,6 +165,36 @@ cm_ms_upn_name_template[] = {
 	.sub = SEC_UTF8StringTemplate,
 	.size = sizeof(SECItem),
 	},
+};
+
+/* A guess at what V2 template identifiers look like. */
+const SEC_ASN1Template
+cm_ms_template_template[] = {
+	{
+	.kind = SEC_ASN1_SEQUENCE,
+	.offset = 0,
+	.sub = NULL,
+	.size = sizeof(struct kerberos_principal_name),
+	},
+	{
+	.kind = SEC_ASN1_OBJECT_ID,
+	.offset = offsetof(struct ms_template, id),
+	.sub = SEC_ObjectIDTemplate,
+	.size = sizeof(SECItem),
+	},
+	{
+	.kind = SEC_ASN1_INTEGER,
+	.offset = offsetof(struct ms_template, major),
+	.sub = SEC_IntegerTemplate,
+	.size = sizeof(SECItem),
+	},
+	{
+	.kind = SEC_ASN1_INTEGER | SEC_ASN1_OPTIONAL,
+	.offset = offsetof(struct ms_template, minor),
+	.sub = SEC_IntegerTemplate,
+	.size = sizeof(SECItem),
+	},
+	{0, 0, NULL, 0},
 };
 
 /* RFC 5280, 4.1 */
@@ -234,7 +270,20 @@ static const SECOidData oid_microsoft_certtype = {
 		.len = 9,
 	},
 	.offset = 0,
-	.desc = "Microsoft TemplateName",
+	.desc = "Microsoft Certificate Template Name",
+	.mechanism = 0,
+	.supportedExtension = UNSUPPORTED_CERT_EXTENSION,
+};
+
+/* XCN_OID_CERTIFICATE_TEMPLATE 1.3.6.1.4.1.311.21.7 */
+static unsigned char oid_microsoft_certificate_template_bytes[] = {0x2b, 0x06, 0x01, 0x04, 0x01, 0x82, 0x37, 0x15, 0x07};
+static const SECOidData oid_microsoft_certificate_template = {
+	.oid = {
+		.data = oid_microsoft_certificate_template_bytes,
+		.len = 9,
+	},
+	.offset = 0,
+	.desc = "Microsoft Certificate Template",
 	.mechanism = 0,
 	.supportedExtension = UNSUPPORTED_CERT_EXTENSION,
 };
