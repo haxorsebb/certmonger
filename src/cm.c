@@ -101,6 +101,7 @@ cm_init(struct tevent_context *parent, struct cm_context **context,
 	}
 	ctx->n_cas = i;
 	/* Handle things which should get us to quit. */
+	tevent_add_signal(parent, ctx, SIGHUP, 0, cm_break_h, ctx);
 	tevent_add_signal(parent, ctx, SIGINT, 0, cm_break_h, ctx);
 	tevent_add_signal(parent, ctx, SIGTERM, 0, cm_break_h, ctx);
 	/* Be ready for an idle timeout. */
