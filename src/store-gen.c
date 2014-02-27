@@ -601,7 +601,8 @@ cm_store_base64_from_bin(void *parent, unsigned char *buf, int length)
 }
 
 int
-cm_store_base64_to_bin(const char *serial, unsigned char *buf, int length)
+cm_store_base64_to_bin(const char *serial, int insize,
+		       unsigned char *buf, int length)
 {
 	const char *p, *q, *chars = BASE64_ALPHABET;
 	unsigned char *b;
@@ -611,8 +612,12 @@ cm_store_base64_to_bin(const char *serial, unsigned char *buf, int length)
 	b = buf;
 	u = 0;
 	count = 0;
+	if (insize < 0) {
+		insize = strlen(serial);
+	}
 	for (p = serial, b = buf;
-	     ((*p != '\0') && (*p != '=') && ((b - buf) < length));
+	     (((p - serial) < insize) && (*p != '\0') && (*p != '=') &&
+	      ((b - buf) < length));
 	     p++) {
 		q = strchr(chars, *p);
 		if (q != NULL) {
@@ -661,6 +666,27 @@ cm_store_base64_to_bin(const char *serial, unsigned char *buf, int length)
 		break;
 	}
 	return b - buf;
+}
+
+char *
+cm_store_base64_as_bin(void *parent, const char *serial, int size, int *length)
+{
+	unsigned char *buf;
+	ssize_t l;
+
+	if (size < 0) {
+		size = strlen(serial);
+	}
+	l = howmany(size, 4) * 3 + 1;
+	buf = talloc_size(parent, l);
+	if (buf != NULL) {
+		l = cm_store_base64_to_bin(serial, size, buf, l - 1);
+		buf[l] = '\0';
+		if (length != NULL) {
+			*length = l;
+		}
+	}
+	return (char *) buf;
 }
 
 char *
