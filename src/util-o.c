@@ -16,6 +16,7 @@
  */
 
 #include "config.h"
+#include <string.h>
 #include <openssl/bn.h>
 #include <openssl/pem.h>
 #include "util-o.h"
@@ -36,12 +37,20 @@ char *
 util_o_dec_from_hex(const char *hex)
 {
 	BIGNUM *bn = NULL;
-	char *ret;
+	char *tmp, *ret = NULL;
 
-	if (BN_hex2bn(&bn, hex) == 0) {
-		return NULL;
+	if (strlen(hex) > 0) {
+		if (BN_hex2bn(&bn, hex) == 0) {
+			return NULL;
+		}
+		tmp = BN_bn2dec(bn);
+		BN_free(bn);
+		if (tmp != NULL) {
+			ret = strdup(tmp);
+			OPENSSL_free(tmp);
+		}
+	} else {
+		ret = strdup("");
 	}
-	ret = BN_bn2dec(bn);
-	BN_free(bn);
 	return ret;
 }
