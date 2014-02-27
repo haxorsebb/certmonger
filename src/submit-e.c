@@ -144,6 +144,21 @@ cm_submit_e_ready(struct cm_store_entry *entry, struct cm_submit_state *state)
 	}
 }
 
+/* Convert any CR/LF pairs to just LF characters, in case we're getting a
+ * certificate as a snippet of a document that uses the web conventions.  */
+static char *
+crlf_to_lf(char *s)
+{
+	size_t length;
+	char *p;
+
+	length = strlen(s);
+	while ((p = strstr(s, "\r\n")) != NULL) {
+		memmove(p, p + 1, length-- - (p - s));
+	}
+	return s;
+}
+
 /* Check if the certificate was issued.  If the exit status was 0, it was
  * issued. */
 static int
@@ -162,7 +177,7 @@ cm_submit_e_issued(struct cm_store_entry *entry, struct cm_submit_state *state)
 		} else {
 			q += strspn(q, "\r\n");
 		}
-		entry->cm_cert = talloc_strndup(entry, p, q - p);
+		entry->cm_cert = crlf_to_lf(talloc_strndup(entry, p, q - p));
 		cm_log(1, "Certificate issued.\n");
 		return 0;
 	} else {
