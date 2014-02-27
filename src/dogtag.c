@@ -351,7 +351,7 @@ main(int argc, char **argv)
 	case op_submit:
 		url = talloc_asprintf(ctx, "%s/profileSubmit", eeurl);
 		template = cm_submit_u_url_encode(template);
-		if (serial != NULL) {
+		if ((serial != NULL) && (strlen(serial) > 0)) {
 			/* Renew-by-serial. */
 			serial = cm_submit_u_url_encode(serial);
 			params = talloc_asprintf(ctx,
