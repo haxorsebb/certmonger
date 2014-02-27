@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2013 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2013,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -95,10 +95,12 @@ cm_certsave_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			}
 			X509_free(cert);
 		} else {
+			cm_log(1, "Error parsing certificate for saving.\n");
 			status = CM_CERTSAVE_STATUS_INTERNAL_ERROR;
 		}
 		BIO_free(bio);
 	} else {
+		cm_log(1, "Error setting up to parse certificate.\n");
 		status = CM_CERTSAVE_STATUS_INTERNAL_ERROR;
 	}
 	if (status != 0) {
