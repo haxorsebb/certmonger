@@ -73,6 +73,7 @@ help(const char *cmd)
 		"\t[-S state]\n"
 		"\t[-T profile]\n"
 		"\t[-v]\n"
+		"\t[-N]\n"
 		"\t[-V dogtag_version]\n"
 		"\t[csrfile]\n",
 		strchr(cmd, '/') ? strrchr(cmd, '/') + 1 : cmd);
@@ -144,7 +145,7 @@ main(int argc, char **argv)
 	const char *tmp = NULL, *results = NULL;
 	struct cm_submit_h_context *hctx;
 	void *ctx;
-	int c, verbose = 0, i;
+	int c, verbose = 0, force_new = 0, i;
 	int eeport, agentport;
 	enum { op_none, op_submit, op_check, op_approve, op_retrieve } op = op_none;
 	dbus_bool_t can_agent, use_agent, missing_args = FALSE;
@@ -156,7 +157,7 @@ main(int argc, char **argv)
 #endif
 	savedstate = getenv(CM_SUBMIT_COOKIE_ENV);
 
-	while ((c = getopt(argc, argv, "E:A:d:n:i:C:c:k:p:P:s:D:S:T:vV:")) != -1) {
+	while ((c = getopt(argc, argv, "E:A:d:n:i:C:c:k:p:P:s:D:S:T:vV:N")) != -1) {
 		switch (c) {
 		case 'E':
 			eeurl = optarg;
@@ -203,6 +204,9 @@ main(int argc, char **argv)
 			break;
 		case 'V':
 			dogtag_version = optarg;
+			break;
+		case 'N':
+			force_new++;
 			break;
 		default:
 			help(argv[0]);
@@ -358,7 +362,7 @@ main(int argc, char **argv)
 	case op_submit:
 		url = talloc_asprintf(ctx, "%s/profileSubmit", eeurl);
 		template = cm_submit_u_url_encode(template);
-		if ((serial != NULL) && (strlen(serial) > 0)) {
+		if ((serial != NULL) && (strlen(serial) > 0) && !force_new) {
 			/* Renew-by-serial. */
 			serial = cm_submit_u_url_encode(serial);
 			params = talloc_asprintf(ctx,
