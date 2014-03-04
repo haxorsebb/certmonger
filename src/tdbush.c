@@ -989,8 +989,29 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	} else {
 		new_entry->cm_key_type.cm_key_gen_size = CM_DEFAULT_PUBKEY_SIZE;
 	}
-	if (new_entry->cm_key_type.cm_key_gen_size < CM_MINIMUM_PUBKEY_SIZE) {
-		new_entry->cm_key_type.cm_key_gen_size = CM_MINIMUM_PUBKEY_SIZE;
+	switch (new_entry->cm_key_type.cm_key_gen_algorithm) {
+	case cm_key_rsa:
+		if (new_entry->cm_key_type.cm_key_gen_size < CM_MINIMUM_RSA_KEY_SIZE) {
+			new_entry->cm_key_type.cm_key_gen_size = CM_MINIMUM_RSA_KEY_SIZE;
+		}
+		break;
+#ifdef CM_ENABLE_DSA
+	case cm_key_dsa:
+		if (new_entry->cm_key_type.cm_key_gen_size < CM_MINIMUM_DSA_KEY_SIZE) {
+			new_entry->cm_key_type.cm_key_gen_size = CM_MINIMUM_DSA_KEY_SIZE;
+		}
+		break;
+#endif
+#ifdef CM_ENABLE_EC
+	case cm_key_ecdsa:
+		if (new_entry->cm_key_type.cm_key_gen_size < CM_MINIMUM_EC_KEY_SIZE) {
+			new_entry->cm_key_type.cm_key_gen_size = CM_MINIMUM_EC_KEY_SIZE;
+		}
+		break;
+#endif
+	case cm_key_unspecified:
+	default:
+		break;
 	}
 	/* Key and certificate storage. */
 	new_entry->cm_key_storage_type = key_storage;

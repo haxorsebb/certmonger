@@ -492,9 +492,15 @@ AC_DEFINE_UNQUOTED(CM_DIGEST_MAX,(512/8),[Define to the maximum size (in bytes) 
 CM_DEFAULT_PUBKEY_SIZE=2048
 AC_DEFINE_UNQUOTED(CM_DEFAULT_PUBKEY_SIZE,$CM_DEFAULT_PUBKEY_SIZE,[Define to the default public key size.])
 AC_SUBST(CM_DEFAULT_PUBKEY_SIZE)
-CM_MINIMUM_PUBKEY_SIZE=512
-AC_DEFINE_UNQUOTED(CM_MINIMUM_PUBKEY_SIZE,$CM_DEFAULT_PUBKEY_SIZE,[Define to the minimum public key size.  Requests to generate smaller keys will be forced to this key size.])
-AC_SUBST(CM_MINIMUM_PUBKEY_SIZE)
+CM_MINIMUM_RSA_KEY_SIZE=512
+CM_MINIMUM_DSA_KEY_SIZE=512
+CM_MINIMUM_EC_KEY_SIZE=256
+AC_DEFINE_UNQUOTED(CM_MINIMUM_RSA_KEY_SIZE,$CM_MINIMUM_RSA_KEY_SIZE,[Define to the minimum key size when generating RSA keys.  Requests to generate smaller keys will be forced to this key size.])
+AC_DEFINE_UNQUOTED(CM_MINIMUM_DSA_KEY_SIZE,$CM_MINIMUM_DSA_KEY_SIZE,[Define to the minimum key size when generating DSA parameters and keys.  Requests to generate smaller keys will be forced to this key size.])
+AC_DEFINE_UNQUOTED(CM_MINIMUM_EC_KEY_SIZE,$CM_MINIMUM_EC_KEY_SIZE,[Define to the minimum key size when selecting elliptic curve parameters.  Requests to generate smaller keys will be forced to this key size.])
+AC_SUBST(CM_MINIMUM_RSA_KEY_SIZE)
+AC_SUBST(CM_MINIMUM_DSA_KEY_SIZE)
+AC_SUBST(CM_MINIMUM_EC_KEY_SIZE)
 CM_DEFAULT_TTL_LIST="2419200, 604800, 259200, 172800, 86400"
 AC_DEFINE_UNQUOTED(CM_DEFAULT_TTL_LIST,[$CM_DEFAULT_TTL_LIST],[Define to the list of default time-left thresholds at which we need to warn the user.])
 AC_SUBST(CM_DEFAULT_TTL_LIST)
