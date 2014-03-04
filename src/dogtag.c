@@ -145,7 +145,7 @@ main(int argc, char **argv)
 	const char *tmp = NULL, *results = NULL;
 	struct cm_submit_h_context *hctx;
 	void *ctx;
-	int c, verbose = 0, force_new = 0, i;
+	int c, verbose = 0, force_new = 0, force_renew = 0, i;
 	int eeport, agentport;
 	enum { op_none, op_submit, op_check, op_approve, op_retrieve } op = op_none;
 	dbus_bool_t can_agent, use_agent, missing_args = FALSE;
@@ -157,7 +157,7 @@ main(int argc, char **argv)
 #endif
 	savedstate = getenv(CM_SUBMIT_COOKIE_ENV);
 
-	while ((c = getopt(argc, argv, "E:A:d:n:i:C:c:k:p:P:s:D:S:T:vV:N")) != -1) {
+	while ((c = getopt(argc, argv, "E:A:d:n:i:C:c:k:p:P:s:D:S:T:vV:NR")) != -1) {
 		switch (c) {
 		case 'E':
 			eeurl = optarg;
@@ -207,6 +207,11 @@ main(int argc, char **argv)
 			break;
 		case 'N':
 			force_new++;
+			force_renew = 0;
+			break;
+		case 'R':
+			force_renew++;
+			force_new = 0;
 			break;
 		default:
 			help(argv[0]);
@@ -313,6 +318,10 @@ main(int argc, char **argv)
 		can_agent = TRUE;
 	} else {
 		can_agent = FALSE;
+	}
+	if (force_renew && (serial == NULL)) {
+		printf(_("Requested renewal, but no serial number provided.\n"));
+		missing_args = TRUE;
 	}
 	if (eeurl == NULL) {
 		printf(_("No end-entity URL (-E) given, and no default known.\n"));
