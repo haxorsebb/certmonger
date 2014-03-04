@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012,2013 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -73,6 +73,7 @@ help(const char *cmd)
 		"\t[-S state]\n"
 		"\t[-T profile]\n"
 		"\t[-v]\n"
+		"\t[-V dogtag_version]\n"
 		"\t[csrfile]\n",
 		strchr(cmd, '/') ? strrchr(cmd, '/') + 1 : cmd);
 }
@@ -144,7 +145,7 @@ main(int argc, char **argv)
 	struct cm_submit_h_context *hctx;
 	void *ctx;
 	int c, verbose = 0, i;
-	int eeport = 9180, agentport = 9443;
+	int eeport, agentport;
 	enum { op_none, op_submit, op_check, op_approve, op_retrieve } op = op_none;
 	dbus_bool_t can_agent, use_agent, missing_args = FALSE;
 	struct dogtag_default **defaults;
@@ -155,7 +156,7 @@ main(int argc, char **argv)
 #endif
 	savedstate = getenv(CM_SUBMIT_COOKIE_ENV);
 
-	while ((c = getopt(argc, argv, "E:A:d:n:i:C:c:k:p:P:s:D:S:T:v")) != -1) {
+	while ((c = getopt(argc, argv, "E:A:d:n:i:C:c:k:p:P:s:D:S:T:vV:")) != -1) {
 		switch (c) {
 		case 'E':
 			eeurl = optarg;
@@ -200,6 +201,9 @@ main(int argc, char **argv)
 		case 'v':
 			verbose++;
 			break;
+		case 'V':
+			dogtag_version = optarg;
+			break;
 		default:
 			help(argv[0]);
 			return CM_SUBMIT_STATUS_UNCONFIGURED;
@@ -214,19 +218,22 @@ main(int argc, char **argv)
 		host = get_config_entry(ipaconfig,
 					"global",
 					"host");
-		dogtag_version = get_config_entry(ipaconfig,
-						  "global",
-						  "dogtag_version");
+		if (dogtag_version == NULL) {
+			dogtag_version = get_config_entry(ipaconfig,
+							  "global",
+							  "dogtag_version");
+		}
 	} else {
 		host = NULL;
 		dogtag_version = NULL;
 	}
 
-	if (dogtag_version != NULL) {
-		if (atof(dogtag_version) >= 10) {
-			eeport = 8080;
-			agentport = 8443;
-		}
+	if ((dogtag_version != NULL) && (atof(dogtag_version) >= 10)) {
+		eeport = 8080;
+		agentport = 8443;
+	} else {
+		eeport = 9180;
+		agentport = 9443;
 	}
 
 	if (eeurl == NULL) {
