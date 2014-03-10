@@ -385,6 +385,16 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 	cert = certs[0];
 	/* Pick out the interesting bits. */
 	/* Issuer name */
+	talloc_free(entry->cm_cert_issuer_der);
+	memset(&item, 0, sizeof(item));
+	if (SEC_ASN1EncodeItem(arena, &item, &cert->issuer,
+			       CERT_NameTemplate) == &item) {
+		entry->cm_cert_issuer_der = cm_store_hex_from_bin(NULL,
+								  item.data,
+								  item.len);
+	} else {
+		entry->cm_cert_issuer_der = NULL;
+	}
 	talloc_free(entry->cm_cert_issuer);
 	entry->cm_cert_issuer = talloc_strdup(entry, cert->issuerName);
 	/* Serial number */
@@ -393,6 +403,16 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 	entry->cm_cert_serial = cm_store_hex_from_bin(NULL, item.data,
 						      item.len);
 	/* Subject name */
+	talloc_free(entry->cm_cert_subject_der);
+	memset(&item, 0, sizeof(item));
+	if (SEC_ASN1EncodeItem(arena, &item, &cert->subject,
+			       CERT_NameTemplate) == &item) {
+		entry->cm_cert_subject_der = cm_store_hex_from_bin(NULL,
+								   item.data,
+								   item.len);
+	} else {
+		entry->cm_cert_subject_der = NULL;
+	}
 	talloc_free(entry->cm_cert_subject);
 	entry->cm_cert_subject = talloc_strdup(entry, cert->subjectName);
 	/* Subject Public Key Info, encoded into a blob. */

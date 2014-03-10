@@ -269,8 +269,25 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		_exit(CM_SUB_STATUS_ERROR_NO_TOKEN);
 	}
 	/* Select a subject name. */
-	if ((entry->cm_template_subject != NULL) &&
-	    (strlen(entry->cm_template_subject) != 0)) {
+	if ((entry->cm_template_subject_der != NULL) &&
+	    (strlen(entry->cm_template_subject_der) != 0)) {
+		memset(&item, 0, sizeof(item));
+		item.len = strlen(entry->cm_template_subject_der) / 2;
+		item.data = malloc(item.len);
+		if (item.data != NULL) {
+			item.len = cm_store_hex_to_bin(entry->cm_template_subject_der,
+						       item.data, item.len);
+			name = PORT_ArenaZNew(arena, CERTName);
+			if (name != NULL) {
+				if (SEC_ASN1DecodeItem(arena, name,
+						       CERT_NameTemplate,
+						       &item) != SECSuccess) {
+					name = NULL;
+				}
+			}
+		}
+	} else if ((entry->cm_template_subject != NULL) &&
+		   (strlen(entry->cm_template_subject) != 0)) {
 		name = CERT_AsciiToName(entry->cm_template_subject);
 		if (name == NULL) {
 			/* Force it. */

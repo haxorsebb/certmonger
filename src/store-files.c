@@ -65,8 +65,10 @@ enum cm_store_file_field {
 	cm_store_entry_field_cert_token,
 	cm_store_entry_field_cert_nickname,
 
+	cm_store_entry_field_cert_issuer_der,
 	cm_store_entry_field_cert_issuer,
 	cm_store_entry_field_cert_serial,
+	cm_store_entry_field_cert_subject_der,
 	cm_store_entry_field_cert_subject,
 	cm_store_entry_field_cert_spki,
 	cm_store_entry_field_cert_not_before,
@@ -87,6 +89,7 @@ enum cm_store_file_field {
 	cm_store_entry_field_last_need_notify_check,
 	cm_store_entry_field_last_need_enroll_check,
 
+	cm_store_entry_field_template_subject_der,
 	cm_store_entry_field_template_subject,
 	cm_store_entry_field_template_hostname,
 	cm_store_entry_field_template_email,
@@ -158,8 +161,10 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_cert_token, "cert_token"},
 	{cm_store_entry_field_cert_nickname, "cert_nickname"},
 
+	{cm_store_entry_field_cert_issuer_der, "cert_issuer_der"},
 	{cm_store_entry_field_cert_issuer, "cert_issuer"},
 	{cm_store_entry_field_cert_serial, "cert_serial"},
+	{cm_store_entry_field_cert_subject_der, "cert_subject_der"},
 	{cm_store_entry_field_cert_subject, "cert_subject"},
 	{cm_store_entry_field_cert_spki, "cert_spki"},
 	{cm_store_entry_field_cert_not_before, "cert_not_before"}, /* right */
@@ -182,6 +187,7 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_last_need_notify_check, "last_need_notify_check"},
 	{cm_store_entry_field_last_need_enroll_check, "last_need_enroll_check"},
 
+	{cm_store_entry_field_template_subject_der, "template_subject_der"},
 	{cm_store_entry_field_template_subject, "template_subject"},
 	{cm_store_entry_field_template_hostname, "template_hostname"},
 	{cm_store_entry_field_template_email, "template_email"},
@@ -579,11 +585,17 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_cert_nickname:
 				ret->cm_cert_nickname = free_if_empty(p);
 				break;
+			case cm_store_entry_field_cert_issuer_der:
+				ret->cm_cert_issuer_der = free_if_empty(p);
+				break;
 			case cm_store_entry_field_cert_issuer:
 				ret->cm_cert_issuer = free_if_empty(p);
 				break;
 			case cm_store_entry_field_cert_serial:
 				ret->cm_cert_serial = free_if_empty(p);
+				break;
+			case cm_store_entry_field_cert_subject_der:
+				ret->cm_cert_subject_der = free_if_empty(p);
 				break;
 			case cm_store_entry_field_cert_subject:
 				ret->cm_cert_subject = free_if_empty(p);
@@ -659,6 +671,9 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 				ret->cm_last_need_enroll_check =
 					cm_store_time_from_timestamp(p);
 				talloc_free(p);
+				break;
+			case cm_store_entry_field_template_subject_der:
+				ret->cm_template_subject_der = free_if_empty(p);
 				break;
 			case cm_store_entry_field_template_subject:
 				ret->cm_template_subject = free_if_empty(p);
@@ -820,8 +835,10 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_cert_storage_location:
 			case cm_store_entry_field_cert_token:
 			case cm_store_entry_field_cert_nickname:
+			case cm_store_entry_field_cert_issuer_der:
 			case cm_store_entry_field_cert_issuer:
 			case cm_store_entry_field_cert_serial:
+			case cm_store_entry_field_cert_subject_der:
 			case cm_store_entry_field_cert_subject:
 			case cm_store_entry_field_cert_spki:
 			case cm_store_entry_field_cert_not_before:
@@ -840,6 +857,7 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_last_expiration_check:
 			case cm_store_entry_field_last_need_notify_check:
 			case cm_store_entry_field_last_need_enroll_check:
+			case cm_store_entry_field_template_subject_der:
 			case cm_store_entry_field_template_subject:
 			case cm_store_entry_field_template_hostname:
 			case cm_store_entry_field_template_email:
@@ -1108,10 +1126,14 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 	cm_store_file_write_str(fp, cm_store_entry_field_cert_nickname,
 				entry->cm_cert_nickname);
 
+	cm_store_file_write_str(fp, cm_store_entry_field_cert_issuer_der,
+				entry->cm_cert_issuer_der);
 	cm_store_file_write_str(fp, cm_store_entry_field_cert_issuer,
 				entry->cm_cert_issuer);
 	cm_store_file_write_str(fp, cm_store_entry_field_cert_serial,
 				entry->cm_cert_serial);
+	cm_store_file_write_str(fp, cm_store_entry_field_cert_subject_der,
+				entry->cm_cert_subject_der);
 	cm_store_file_write_str(fp, cm_store_entry_field_cert_subject,
 				entry->cm_cert_subject);
 	cm_store_file_write_str(fp, cm_store_entry_field_cert_spki,
@@ -1155,6 +1177,8 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 	cm_store_file_write_str(fp, cm_store_entry_field_last_need_enroll_check,
 				cm_store_timestamp_from_time(entry->cm_last_need_enroll_check,
 							     timestamp));
+	cm_store_file_write_str(fp, cm_store_entry_field_template_subject_der,
+				entry->cm_template_subject_der);
 	cm_store_file_write_str(fp, cm_store_entry_field_template_subject,
 				entry->cm_template_subject);
 	cm_store_file_write_strs(fp, cm_store_entry_field_template_hostname,
@@ -1736,8 +1760,10 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	ret->cm_cert_token = cm_store_maybe_strdup(ret, entry->cm_cert_token);
 	ret->cm_cert_nickname = cm_store_maybe_strdup(ret, entry->cm_cert_nickname);
 
+	ret->cm_cert_issuer_der = cm_store_maybe_strdup(ret, entry->cm_cert_issuer_der);
 	ret->cm_cert_issuer = cm_store_maybe_strdup(ret, entry->cm_cert_issuer);
 	ret->cm_cert_serial = cm_store_maybe_strdup(ret, entry->cm_cert_serial);
+	ret->cm_cert_subject_der = cm_store_maybe_strdup(ret, entry->cm_cert_subject_der);
 	ret->cm_cert_subject = cm_store_maybe_strdup(ret, entry->cm_cert_subject);
 	ret->cm_cert_spki = cm_store_maybe_strdup(ret, entry->cm_cert_spki);
 	ret->cm_cert_not_before = entry->cm_cert_not_before;
@@ -1760,6 +1786,7 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	ret->cm_notification_method = entry->cm_notification_method;
 	ret->cm_notification_destination = cm_store_maybe_strdup(ret, entry->cm_notification_destination);
 
+	ret->cm_template_subject_der = cm_store_maybe_strdup(ret, entry->cm_template_subject_der);
 	ret->cm_template_subject = cm_store_maybe_strdup(ret, entry->cm_template_subject);
 	ret->cm_template_hostname = cm_store_maybe_strdupv(ret, entry->cm_template_hostname);
 	ret->cm_template_email = cm_store_maybe_strdupv(ret, entry->cm_template_email);

@@ -1528,6 +1528,9 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		 * too. */
 		if (entry->cm_cert != NULL) {
 			cm_store_set_if_not_set_s(entry,
+						  &entry->cm_template_subject_der,
+						  entry->cm_cert_subject_der);
+			cm_store_set_if_not_set_s(entry,
 						  &entry->cm_template_subject,
 						  entry->cm_cert_subject);
 			cm_store_set_if_not_set_as(entry,

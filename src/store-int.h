@@ -67,8 +67,10 @@ struct cm_store_entry {
 	char *cm_cert_token;
 	char *cm_cert_nickname;
 	/* Cached certificate issuer/serial/subject/spki/expiration */
+	char *cm_cert_issuer_der;
 	char *cm_cert_issuer;
 	char *cm_cert_serial;
+	char *cm_cert_subject_der;
 	char *cm_cert_subject;
 	char *cm_cert_spki;
 	time_t cm_cert_not_before;
@@ -107,6 +109,7 @@ struct cm_store_entry {
 	   * crl_distribution_points
 	   * aia_ocsp_locations
 	   */
+	char *cm_template_subject_der;
 	char *cm_template_subject;
 	char **cm_template_hostname;
 	char **cm_template_email;
