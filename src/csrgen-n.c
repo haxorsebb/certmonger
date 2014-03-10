@@ -269,6 +269,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		_exit(CM_SUB_STATUS_ERROR_NO_TOKEN);
 	}
 	/* Select a subject name. */
+	name = NULL;
 	if ((entry->cm_template_subject_der != NULL) &&
 	    (strlen(entry->cm_template_subject_der) != 0)) {
 		memset(&item, 0, sizeof(item));
