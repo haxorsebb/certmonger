@@ -58,12 +58,14 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	struct cm_pin_cb_data cb_data;
 	FILE *keyfp, *status;
 	X509_REQ *req;
+	X509_NAME *subject;
 	NETSCAPE_SPKI spki;
 	NETSCAPE_SPKAC spkac;
 	EVP_PKEY *pkey;
 	char buf[LINE_MAX], *p, *q, *s, *nickname, *pin, *password;
-	unsigned char *extensions, *upassword, *bmp;
+	unsigned char *extensions, *upassword, *bmp, *name;
 	const char *default_cn = CM_DEFAULT_CERT_SUBJECT_CN;
+	const unsigned char *nametmp;
 	size_t extensions_len;
 	unsigned int bmpcount;
 	long error;
@@ -126,37 +128,60 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	if (pkey != NULL) {
 		req = X509_REQ_new();
 		if (req != NULL) {
-			if (entry->cm_template_subject != NULL) {
+			subject = NULL;
+			if ((entry->cm_template_subject_der != NULL) &&
+			    (strlen(entry->cm_template_subject_der) != 0)) {
+				i = strlen(entry->cm_template_subject_der);
+				name = malloc(i);
+				if (name != NULL) {
+					i = cm_store_hex_to_bin(entry->cm_template_subject_der,
+								name, i);
+					nametmp = name;
+					subject = d2i_X509_NAME(NULL, &nametmp, i);
+				}
+			}
+			if ((subject == NULL) &&
+			    (entry->cm_template_subject != NULL) &&
+			    (strlen(entry->cm_template_subject) != 0)) {
 				/* This isn't really correct, but it will
 				 * probably do for now. */
 				p = entry->cm_template_subject;
 				q = p + strcspn(p, ",");
-				while (*p != '\0') {
-					if ((s = memchr(p, '=', q - p)) != NULL) {
-						*s = '\0';
-						for (i = 0; p[i] != '\0'; i++) {
-							p[i] = toupper(p[i]);
+				subject = X509_NAME_new();
+				if (subject != NULL) {
+					while (*p != '\0') {
+						if ((s = memchr(p, '=', q - p)) != NULL) {
+							*s = '\0';
+							for (i = 0; p[i] != '\0'; i++) {
+								p[i] = toupper(p[i]);
+							}
+							X509_NAME_add_entry_by_txt(subject,
+										   p, MBSTRING_UTF8,
+										   (unsigned char *) (s + 1), q - s - 1,
+										   -1, 0);
+							*s = '=';
+						} else {
+							X509_NAME_add_entry_by_txt(subject,
+										   "CN", MBSTRING_UTF8,
+										   (unsigned char *) p, q - p,
+										   -1, 0);
 						}
-						X509_NAME_add_entry_by_txt(req->req_info->subject,
-									   p, MBSTRING_UTF8,
-									   (unsigned char *) (s + 1), q - s - 1,
-									   -1, 0);
-						*s = '=';
-					} else {
-						X509_NAME_add_entry_by_txt(req->req_info->subject,
-									   "CN", MBSTRING_UTF8,
-									   (unsigned char *) p, q - p,
-									   -1, 0);
+						p = q + strspn(q, ",");
+						q = p + strcspn(p, ",");
 					}
-					p = q + strspn(q, ",");
-					q = p + strcspn(p, ",");
 				}
-			} else {
-				X509_NAME_add_entry_by_txt(req->req_info->subject,
-							   "CN", MBSTRING_UTF8,
-							   (const unsigned char *) default_cn,
-							   strlen(default_cn),
-							   -1, 0);
+			}
+			if (subject == NULL) {
+				subject = X509_NAME_new();
+				if (subject != NULL) {
+					X509_NAME_add_entry_by_txt(subject,
+								   "CN", MBSTRING_UTF8,
+								   (const unsigned char *) default_cn,
+								   -1, -1, 0);
+				}
+			}
+			if (subject != NULL) {
+				X509_NAME_set(&req->req_info->subject, subject);
 			}
 			X509_REQ_set_pubkey(req, pkey);
 			X509_REQ_set_version(req, SEC_CERTIFICATE_REQUEST_VERSION);

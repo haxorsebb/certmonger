@@ -286,8 +286,14 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				}
 			}
 		}
-	} else if ((entry->cm_template_subject != NULL) &&
-		   (strlen(entry->cm_template_subject) != 0)) {
+		if (name == NULL) {
+			cm_log(1, "Error parsing requested subject \"%s\".\n",
+			       entry->cm_template_subject_der);
+		}
+	}
+	if ((name == NULL) &&
+	    (entry->cm_template_subject != NULL) &&
+	    (strlen(entry->cm_template_subject) != 0)) {
 		name = CERT_AsciiToName(entry->cm_template_subject);
 		if (name == NULL) {
 			/* Force it. */
@@ -309,12 +315,19 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				}
 			}
 		}
-	} else {
-		name = CERT_AsciiToName("CN=" CM_DEFAULT_CERT_SUBJECT_CN);
+		if (name == NULL) {
+			cm_log(1, "Error parsing requested subject name \"%s\".\n",
+			       entry->cm_template_subject);
+		}
 	}
 	if (name == NULL) {
-		cm_log(1, "Error parsing requested subject name \"%s\".\n",
-		       entry->cm_template_subject);
+		name = CERT_AsciiToName("CN=" CM_DEFAULT_CERT_SUBJECT_CN);
+		if (name == NULL) {
+			cm_log(1, "Error parsing requested subject name \"%s\".\n",
+			       "CN=" CM_DEFAULT_CERT_SUBJECT_CN);
+		}
+	}
+	if (name == NULL) {
 		SECKEY_DestroyPrivateKey(privkey->key);
 		PORT_FreeArena(arena, PR_TRUE);
 		error = NSS_ShutdownContext(privkey->ctx);
