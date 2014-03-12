@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2011,2012 Red Hat, Inc.
+ * Copyright (C) 2009,2011,2012,2013,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -167,8 +167,17 @@ main(int argc, char **argv)
 
 	switch (bus) {
 	case cm_tdbus_system:
+		if (chdir("/") != 0) {
+			cm_log(0, "Error in chdir(\"/\"): %s.\n",
+			       strerror(errno));
+		}
 		break;
 	case cm_tdbus_session:
+		cm_log(2, "Changing to config directory.\n");
+		if (chdir(cm_env_config_dir()) != 0) {
+			cm_log(2, "Error in chdir(\"%s\"): %s.\n",
+			       cm_env_config_dir(), strerror(errno));
+		}
 		cm_log(2, "Obtaining session lock.\n");
 		lfd = open(cm_env_lock_file(), O_RDWR | O_CREAT,
 			   S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
