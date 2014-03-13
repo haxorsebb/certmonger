@@ -191,6 +191,9 @@ cm_submit_u_pem_from_base64(const char *what, int dos, const char *base64)
 	int i;
 
 	tmp = strdup(base64);
+	if (tmp == NULL) {
+		return NULL;
+	}
 	for (p = tmp, q = base64; *q != '\0'; q++) {
 		if (strchr(BASE64_ALPHABET, *q)) {
 			*p++ = *q;

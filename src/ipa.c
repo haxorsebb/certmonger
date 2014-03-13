@@ -312,7 +312,9 @@ main(int argc, char **argv)
 			}
 			s = cm_submit_u_pem_from_base64("CERTIFICATE",
 							FALSE, s);
-			printf("%s", s);
+			if (s != NULL) {
+				printf("%s", s);
+			}
 			return CM_SUBMIT_STATUS_ISSUED;
 		} else {
 			return CM_SUBMIT_STATUS_REJECTED;
