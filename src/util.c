@@ -166,6 +166,7 @@ get_config_entry(char * in_data, const char *section, const char *key)
             }
         }
     }
+    free(data);
     return NULL;
 }
 

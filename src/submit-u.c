@@ -225,6 +225,7 @@ cm_submit_u_pem_from_base64(const char *what, int dos, const char *base64)
 		p = stpcpy(p, what);
 		strcpy(p, dos ? "-----\r\n" : "-----\n");
 	}
+	free(tmp);
 	return ret;
 }
 
