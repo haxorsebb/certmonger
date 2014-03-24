@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2012 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2012,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,9 +62,8 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	char *b64, *serial;
 	const char *p, *q;
 	SECStatus error;
-	SECItem *esdata = NULL, *ecert = NULL, item;
-	struct cm_keyiread_n_ctx_and_key *privkey;
-	SECKEYPublicKey *pubkey;
+	SECItem *esdata = NULL, *ecert = NULL;
+	struct cm_keyiread_n_ctx_and_keys *keys;
 	CERTCertificate *ucert = NULL;
 	CERTCertExtension **extensions;
 	CERTCertificateRequest *req = NULL, sreq;
@@ -77,12 +76,10 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	int i, serial_length, basic_length;
 	unsigned char btrue = 0xff;
 	PRBool found_basic;
-	CERTSubjectPublicKeyInfo *spki;
-	char *pubhex;
 
 	/* Start up NSS and open the database. */
-	privkey = cm_keyiread_n_get_private_key(entry, 0);
-	if (privkey == NULL) {
+	keys = cm_keyiread_n_get_keys(entry, 0);
+	if (keys == NULL) {
 		cm_log(1, "Unable to locate private key for self-signing.\n");
 		_exit(2);
 	}
@@ -122,29 +119,7 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	} else {
 		data = &sdata;
 	}
-	pubkey = SECKEY_ConvertToPublicKey(privkey->key);
-	if ((pubkey == NULL) &&
-	    (entry->cm_key_pubkey_info != NULL)) {
-		memset(&item, 0, sizeof(item));
-		pubhex = entry->cm_key_pubkey_info;
-		item.len = strlen(pubhex) / 2;
-		item.data = malloc(item.len);
-		if (item.data != NULL) {
-			item.len = cm_store_hex_to_bin(pubhex,
-						       item.data,
-						       item.len);
-			spki = SECKEY_DecodeDERSubjectPublicKeyInfo(&item);
-			if (spki != NULL) {
-				pubkey = SECKEY_ExtractPublicKey(spki);
-				SECKEY_DestroySubjectPublicKeyInfo(spki);
-			}
-		}
-	}
-	if (pubkey == NULL) {
-		cm_log(1, "Unable to convert private key to public key.\n");
-		_exit(1);
-	}
-	sigoid = SECOID_FindOIDByTag(cm_prefs_nss_sig_alg(pubkey));
+	sigoid = SECOID_FindOIDByTag(cm_prefs_nss_sig_alg(keys->pubkey));
 	if (sigoid == NULL) {
 		cm_log(1, "Internal error resolving signature OID.\n");
 		_exit(1);
@@ -318,7 +293,7 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		_exit(1);
 	}
 	if (SEC_SignData(&scert.signature, ecert->data, ecert->len,
-			 privkey->key, sigoid->offset) != SECSuccess) {
+			 keys->privkey, sigoid->offset) != SECSuccess) {
 		cm_log(1, "Unable to generate signature.\n");
 		_exit(1);
 	}
@@ -355,11 +330,13 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	fprintf(status, "-----END CERTIFICATE-----\n");
 	fclose(status);
 
-	SECKEY_DestroyPublicKey(pubkey);
-	SECKEY_DestroyPrivateKey(privkey->key);
+	if (keys->pubkey != NULL) {
+		SECKEY_DestroyPublicKey(keys->pubkey);
+	}
+	SECKEY_DestroyPrivateKey(keys->privkey);
 	PORT_FreeArena(arena, PR_TRUE);
-	error = NSS_ShutdownContext(privkey->ctx);
-	PORT_FreeArena(privkey->arena, PR_TRUE);
+	error = NSS_ShutdownContext(keys->ctx);
+	PORT_FreeArena(keys->arena, PR_TRUE);
 	if (error != SECSuccess) {
 		cm_log(1, "Error shutting down NSS.\n");
 	}

@@ -19,7 +19,7 @@ for size in 512 1024 1536 2048 3072 4096 ; do
 	key_nickname=keyi$size
 	EOF
 	$toolsdir/keyiread entry.openssl.$size
-	# Check the size of the key.
+	# Check the size of the key (with cache).
 	cat > entry.nss.$size <<- EOF
 	key_storage_type=NSSDB
 	key_storage_location=$tmpdir
@@ -27,6 +27,13 @@ for size in 512 1024 1536 2048 3072 4096 ; do
 	EOF
 	grep ^key_pubkey_info= entry.openssl.$size >> entry.nss.$size
 	grep ^key_pubkey= entry.openssl.$size >> entry.nss.$size
+	$toolsdir/keyiread entry.nss.$size
+	# Check the size of the key (without cache).
+	cat > entry.nss.$size <<- EOF
+	key_storage_type=NSSDB
+	key_storage_location=$tmpdir
+	key_nickname=keyi$size
+	EOF
 	$toolsdir/keyiread entry.nss.$size
 done
 echo Test complete.

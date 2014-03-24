@@ -28,8 +28,6 @@ key_storage_location=$tmpdir
 key_nickname=keyi$size
 id=keyi$size
 EOF
-grep ^key_pubkey_info= entry.openssl.$size >> entry.nss.$size
-grep ^key_pubkey= entry.openssl.$size >> entry.nss.$size
 # Generate a new CSR for that certificate's key.
 $toolsdir/csrgen entry.nss.$size > csr.nss.$size
 grep ^spkac= entry.nss.$size | sed s,spkac,SPKAC, > spkac.nss.$size

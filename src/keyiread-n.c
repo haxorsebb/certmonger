@@ -58,26 +58,30 @@ struct cm_keyiread_n_settings {
 	unsigned int readwrite:1;
 };
 
-struct cm_keyiread_n_ctx_and_key *
-cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
+struct cm_keyiread_n_ctx_and_keys *
+cm_keyiread_n_get_keys(struct cm_store_entry *entry, int readwrite)
 {
 	const char *token, *nickname, *reason, *es;
-	char *pin;
+	char *pin, *pubhex;
 	PLArenaPool *arena;
 	SECStatus error;
 	NSSInitContext *ctx;
+	PK11SlotInfo *slot;
 	PK11SlotList *slotlist;
 	PK11SlotListElement *sle;
 	SECKEYPrivateKeyList *keys;
 	SECKEYPrivateKeyListNode *knode;
-	SECKEYPrivateKey *key;
+	SECKEYPrivateKey *key, *ckey;
+	SECKEYPublicKey *pubkey;
 	CK_MECHANISM_TYPE mech;
 	CERTCertList *certs;
 	CERTCertListNode *cnode;
 	CERTCertificate *cert;
+	CERTSubjectPublicKeyInfo *spki;
+	SECItem item;
 	struct cm_pin_cb_data cb_data;
 	int n_tokens, ec;
-	struct cm_keyiread_n_ctx_and_key *ret;
+	struct cm_keyiread_n_ctx_and_keys *ret;
 
 	/* Open the database. */
 	ctx = NSS_InitContext(entry->cm_key_storage_location,
@@ -146,20 +150,22 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 	}
 	PK11_SetPasswordFunc(&cm_pin_read_for_cert_nss_cb);
 	n_tokens = 0;
+	pubkey = NULL;
 	/* In practice, the internal slot is either a non-storage slot (in
 	 * non-FIPS mode) or the database slot (in FIPS mode), and we only want
 	 * to skip over the one that can't be used to store things. */
 	for (sle = slotlist->head;
 	     (key == NULL) && ((sle != NULL) && (sle->slot != NULL));
 	     sle = sle->next) {
-		if (PK11_IsInternal(sle->slot) &&
-		    !PK11_IsInternalKeySlot(sle->slot)) {
+		slot = sle->slot;
+		if (PK11_IsInternal(slot) &&
+		    !PK11_IsInternalKeySlot(slot)) {
 			cm_log(3, "Skipping NSS internal slot (%s).\n",
-			       PK11_GetTokenName(sle->slot));
+			       PK11_GetTokenName(slot));
 			goto next_slot;
 		}
 		/* Read the token's name. */
-		token = PK11_GetTokenName(sle->slot);
+		token = PK11_GetTokenName(slot);
 		if (token != NULL) {
 			cm_log(3, "Found token '%s'.\n", token);
 		} else {
@@ -194,14 +200,14 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 		/* If we're supposed to be using a PIN, and we're offered a
 		 * chance to set one, do it now. */
 		if (readwrite) {
-			if (PK11_NeedUserInit(sle->slot)) {
+			if (PK11_NeedUserInit(slot)) {
 				if (cm_pin_read_for_key(entry, &pin) != 0) {
 					cm_log(1, "Error reading PIN to assign "
 					       "to storage slot, skipping.\n");
 					goto next_slot;
 				}
-				PK11_InitPin(sle->slot, NULL, pin ? pin : "");
-				if (PK11_NeedUserInit(sle->slot)) {
+				PK11_InitPin(slot, NULL, pin ? pin : "");
+				if (PK11_NeedUserInit(slot)) {
 					cm_log(1, "Key storage slot still "
 					       "needs user PIN to be set.\n");
 					goto next_slot;
@@ -225,7 +231,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 			}
 			_exit(CM_SUB_STATUS_ERROR_AUTH);
 		}
-		error = PK11_Authenticate(sle->slot, PR_TRUE, &cb_data);
+		error = PK11_Authenticate(slot, PR_TRUE, &cb_data);
 		if (error != SECSuccess) {
 			cm_log(1, "Error authenticating to token "
 			       "\"%s\".\n", token);
@@ -252,7 +258,7 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 
 		/* Walk the list of private keys in the token, looking at each
 		 * one to see if it matches the specified nickname. */
-		keys = PK11_ListPrivKeysInSlot(sle->slot,
+		keys = PK11_ListPrivKeysInSlot(slot,
 					       entry->cm_key_nickname,
 					       NULL);
 		if (keys != NULL) {
@@ -274,15 +280,23 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 			SECKEY_DestroyPrivateKeyList(keys);
 		}
 
+		/* Try to recover a public key. */
+		pubkey = key ? SECKEY_ConvertToPublicKey(key) : NULL;
+		if (pubkey != NULL) {
+			cm_log(3, "Converted private key '%s' to public key.\n",
+			       nickname);
+		}
+
 		/* Walk the list of certificates in the token, looking at each
 		 * one to see if it matches the specified nickname and has a
 		 * private key associated with it. */
-		if (key == NULL) {
-			certs = PK11_ListCertsInSlot(sle->slot);
+		if ((key == NULL) || (pubkey == NULL)) {
+			certs = PK11_ListCertsInSlot(slot);
 		} else {
 			certs = NULL;
 		}
 		if (certs != NULL) {
+			cert = NULL;
 			for (cnode = CERT_LIST_HEAD(certs);
 			     !CERT_LIST_EMPTY(certs) &&
 			     !CERT_LIST_END(cnode, certs);
@@ -294,20 +308,77 @@ cm_keyiread_n_get_private_key(struct cm_store_entry *entry, int readwrite)
 					cm_log(3, "Located a certificate with "
 					       "the key's nickname (\"%s\").\n",
 					       nickname);
-					key = PK11_FindPrivateKeyFromCert(sle->slot,
-									  cert,
-									  NULL);
-					if (key != NULL) {
-						cm_log(3, "Located its private "
-						       "key.\n");
-						break;
-					} else {
-						cm_log(3, "But we didn't find "
-						       "its private key.\n");
+					ckey = PK11_FindPrivateKeyFromCert(slot,
+									   cert,
+									   NULL);
+					if (ckey != NULL) {
+						if (key == NULL) {
+							cm_log(3, "Located "
+							       "its private "
+							       "key.\n");
+							key = ckey;
+							break;
+						} else {
+							if ((key->pkcs11Slot == ckey->pkcs11Slot) &&
+							    (key->pkcs11ID == ckey->pkcs11ID)) {
+								cm_log(3,
+								       "Located its "
+								       "private key.\n");
+								SECKEY_DestroyPrivateKey(ckey);
+								break;
+							}
+						}
+					}
+					cm_log(3, "But we didn't find "
+					       "its private key.\n");
+				}
+				cert = NULL;
+			}
+			/* If we don't have the public key, try to extract it
+			 * from the private key. */
+			if ((pubkey == NULL) && (key != NULL)) {
+				pubkey = SECKEY_ConvertToPublicKey(key);
+				if (pubkey != NULL) {
+					cm_log(3, "Recovered public key "
+					       "from private key.\n");
+				}
+			}
+			/* If we don't have the public key, try to extract it
+			 * from the certificate. */
+			if ((pubkey == NULL) && (cert != NULL)) {
+				spki = SECKEY_DecodeDERSubjectPublicKeyInfo(&cert->derPublicKey);
+				if (spki != NULL) {
+					pubkey = SECKEY_ExtractPublicKey(spki);
+					SECKEY_DestroySubjectPublicKeyInfo(spki);
+					if (pubkey != NULL) {
+						cm_log(3,
+						       "Recovered public key "
+						       "from certificate.\n");
 					}
 				}
 			}
 			CERT_DestroyCertList(certs);
+		}
+		/* If we don't have the public key, try to use a cached copy of
+		 * it. */
+		if ((pubkey == NULL) && (entry->cm_key_pubkey_info != NULL)) {
+			memset(&item, 0, sizeof(item));
+			pubhex = entry->cm_key_pubkey_info;
+			item.len = strlen(pubhex) / 2;
+			item.data = malloc(item.len);
+			if (item.data != NULL) {
+				item.len = cm_store_hex_to_bin(pubhex,
+							       item.data,
+							       item.len);
+				spki = SECKEY_DecodeDERSubjectPublicKeyInfo(&item);
+				if (spki != NULL) {
+					pubkey = SECKEY_ExtractPublicKey(spki);
+					SECKEY_DestroySubjectPublicKeyInfo(spki);
+				}
+			}
+			if (pubkey != NULL) {
+				cm_log(3, "Using cached public key.\n");
+			}
 		}
 
 next_slot:
@@ -340,7 +411,8 @@ next_slot:
 		}
 		ret->arena = arena;
 		ret->ctx = ctx;
-		ret->key = key;
+		ret->privkey = key;
+		ret->pubkey = pubkey;
 	}
 
 	if ((n_tokens == 0) &&
@@ -356,12 +428,11 @@ static int
 cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		   void *userdata)
 {
-	struct cm_keyiread_n_ctx_and_key *key;
+	struct cm_keyiread_n_ctx_and_keys *keys;
 	CERTSubjectPublicKeyInfo *spki;
-	SECKEYPublicKey *pubkey;
 	PK11SlotInfo *slot;
 	const char *alg, *name;
-	SECItem *info, item;
+	SECItem *info;
 	char *pubhex, *pubihex;
 	int status = 1, size, readwrite;
 	FILE *fp;
@@ -377,11 +448,11 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	/* Read the key. */
 	settings = userdata;
 	readwrite = settings->readwrite;
-	key = cm_keyiread_n_get_private_key(entry, readwrite);
+	keys = cm_keyiread_n_get_keys(entry, readwrite);
 	alg = "";
 	size = 0;
-	if (key != NULL) {
-		switch (SECKEY_GetPrivateKeyType(key->key)) {
+	if (keys != NULL) {
+		switch (SECKEY_GetPrivateKeyType(keys->privkey)) {
 		case rsaKey:
 			cm_log(3, "Key is an RSA key.\n");
 			alg = "RSA";
@@ -399,7 +470,7 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(3, "Key is of an unknown type.\n");
 			break;
 		}
-		slot = PK11_GetSlotFromPrivateKey(key->key);
+		slot = PK11_GetSlotFromPrivateKey(keys->privkey);
 		if (slot != NULL) {
 			name = PK11_GetTokenName(slot);
 			if ((name != NULL) && (strlen(name) == 0)) {
@@ -412,28 +483,10 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			name = NULL;
 		}
 		if (strlen(alg) > 0) {
-			pubkey = SECKEY_ConvertToPublicKey(key->key);
-			if ((pubkey == NULL) &&
-			    (entry->cm_key_pubkey_info != NULL)) {
-				memset(&item, 0, sizeof(item));
-				pubhex = entry->cm_key_pubkey_info;
-				item.len = strlen(pubhex) / 2;
-				item.data = malloc(item.len);
-				if (item.data != NULL) {
-					item.len = cm_store_hex_to_bin(pubhex,
-								       item.data,
-								       item.len);
-					spki = SECKEY_DecodeDERSubjectPublicKeyInfo(&item);
-					if (spki != NULL) {
-						pubkey = SECKEY_ExtractPublicKey(spki);
-						SECKEY_DestroySubjectPublicKeyInfo(spki);
-					}
-				}
-			}
-			if (pubkey != NULL) {
-				size = SECKEY_PublicKeyStrengthInBits(pubkey);
+			if (keys->pubkey != NULL) {
+				size = SECKEY_PublicKeyStrengthInBits(keys->pubkey);
 				cm_log(3, "Key size is %d.\n", size);
-				info = SECKEY_EncodeDERSubjectPublicKeyInfo(pubkey);
+				info = SECKEY_EncodeDERSubjectPublicKeyInfo(keys->pubkey);
 				pubihex = cm_store_hex_from_bin(NULL,
 							        info->data,
 							        info->len);
@@ -447,20 +500,21 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					(name != NULL ? "/" : ""),
 					(name != NULL ? name : ""));
 				status = 0;
-				SECKEY_DestroyPublicKey(pubkey);
 			} else {
-				cm_log(1, "Error converting private key "
-				       "to public key.\n");
+				cm_log(1, "Error reading public key.\n");
 			}
 		}
-		SECKEY_DestroyPrivateKey(key->key);
+		if (keys->pubkey != NULL) {
+			SECKEY_DestroyPublicKey(keys->pubkey);
+		}
+		SECKEY_DestroyPrivateKey(keys->privkey);
 	}
 	fclose(fp);
-	if (key != NULL) {
-		if (NSS_ShutdownContext(key->ctx) != SECSuccess) {
+	if (keys != NULL) {
+		if (NSS_ShutdownContext(keys->ctx) != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
-		PORT_FreeArena(key->arena, PR_TRUE);
+		PORT_FreeArena(keys->arena, PR_TRUE);
 	}
 	if (status != 0) {
 		_exit(status);
