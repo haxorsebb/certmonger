@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2014-02-24 09:25-0500\n"
+"POT-Creation-Date: 2014-03-24 11:26-0400\n"
 "PO-Revision-Date: 2014-02-04 16:29+0000\n"
 "Last-Translator: Geert Warrink <geert.warrink@onsnet.nu>\n"
 "Language-Team: Dutch (http://www.transifex.com/projects/p/fedora/language/"
@@ -24,7 +24,7 @@ msgstr ""
 msgid "Unable to determine hostname of CA.\n"
 msgstr "Kan de hostnaam van CA niet bepalen.\n"
 
-#: src/certmaster.c:128 src/dogtag.c:375 src/ipa.c:177
+#: src/certmaster.c:128 src/dogtag.c:395 src/ipa.c:177
 #, c-format
 msgid "Unable to read signing request.\n"
 msgstr "Kan ondetekeningverzoek niet lezen.\n"
@@ -48,37 +48,42 @@ msgstr "Fout bij het ontleden van antwoord van de server.\n"
 msgid "Server error.\n"
 msgstr "Serverfout.\n"
 
-#: src/dogtag.c:307
+#: src/dogtag.c:323
+#, c-format
+msgid "Requested renewal, but no serial number provided.\n"
+msgstr ""
+
+#: src/dogtag.c:327
 #, c-format
 msgid "No end-entity URL (-E) given, and no default known.\n"
 msgstr "Geen eind-entity URL (-E) opgegeven en er is geen standaard bekend.\n"
 
-#: src/dogtag.c:311
+#: src/dogtag.c:331
 #, c-format
 msgid "No agent URL (-A) given, and no default known.\n"
 msgstr "Geen agent URL (-A) gegeven en er is geen standaard bekend.\n"
 
-#: src/dogtag.c:315
+#: src/dogtag.c:335
 #, c-format
 msgid "No profile/template (-T) given, and no default known.\n"
 msgstr "Geen profiel/template (-T) gegeven en er is geen standaard bekend.\n"
 
-#: src/dogtag.c:348 src/dogtag.c:525
+#: src/dogtag.c:368 src/dogtag.c:545
 #, c-format
 msgid "Internal error: unknown state.\n"
 msgstr "Interne fout: onbekende toestand.\n"
 
-#: src/dogtag.c:507
+#: src/dogtag.c:527
 #, c-format
 msgid "Error %d connecting to %s: %s.\n"
 msgstr "Fout %d bij het verbinden met %s: %s.\n"
 
-#: src/dogtag.c:512
+#: src/dogtag.c:532
 #, c-format
 msgid "Error %d connecting to %s.\n"
 msgstr "Fout %d bij het verbinden met %s.\n"
 
-#: src/dogtag.c:519
+#: src/dogtag.c:539
 #, c-format
 msgid "Internal error: no response to \"%s?%s\".\n"
 msgstr "Interne fout: geen antwoord op \"%s?%s\".\n"
@@ -915,7 +920,7 @@ msgstr "\t-p BESTAND schrijf een service PID naar bestand\n"
 msgid "\t-F         force NSS into FIPS mode\n"
 msgstr "\t-F         forceer NSS naar de FIPS modus\n"
 
-#: src/tdbush.c:117 src/tdbush.c:1510 src/tdbush.c:1735
+#: src/tdbush.c:117 src/tdbush.c:1538 src/tdbush.c:1763
 msgid "An internal error has occurred."
 msgstr "Er is een interne fout opgetreden."
 
@@ -938,7 +943,7 @@ msgid "Certificate storage type \"%s\" not supported."
 msgstr "Certificaat opslag type \"%s\" niet ondersteund."
 
 #: src/tdbush.c:481 src/tdbush.c:514 src/tdbush.c:573 src/tdbush.c:758
-#: src/tdbush.c:817 src/tdbush.c:2545
+#: src/tdbush.c:817 src/tdbush.c:2573
 #, c-format
 msgid "The location \"%s\" must be an absolute path."
 msgstr "De locatie \"%s\" moet een absoluut pad zijn."
@@ -981,7 +986,7 @@ msgstr "De locatie \"%s\" moet een map zijn."
 msgid "Certificate nickname not specified."
 msgstr "Certificaat bijnaam niet opgegeven."
 
-#: src/tdbush.c:657 src/tdbush.c:2439
+#: src/tdbush.c:657 src/tdbush.c:2467
 #, c-format
 msgid "There is already a request with the nickname \"%s\"."
 msgstr "Er is al een verzoek met de bijnaam \"%s\"."
@@ -1019,16 +1024,16 @@ msgstr ""
 msgid "No support for key type \"%s\"."
 msgstr "Er is geen ondersteuning voor sleuteltype \"%s\"."
 
-#: src/tdbush.c:1024
+#: src/tdbush.c:1045
 msgid "No such CA."
 msgstr "Onbekende CA."
 
-#: src/tdbush.c:2457
+#: src/tdbush.c:2485
 #, c-format
 msgid "Certificate authority \"%s\" not known."
 msgstr "Certificaat autoriteit \"%s\" is niet bekend."
 
-#: src/tdbush.c:2719
+#: src/tdbush.c:2756
 msgid "Unrecognized parameter or wrong value type."
 msgstr "Onbekende parameter of verkeerde type waarde."
 
