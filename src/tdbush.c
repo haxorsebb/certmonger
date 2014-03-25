@@ -2547,6 +2547,9 @@ request_modify(DBusConnection *conn, DBusMessage *msg,
 				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
 					propname[n_propname++] = CM_DBUS_PROP_TEMPLATE_SUBJECT;
 				}
+				/* Clear the would-be-preferred DER version. */
+				talloc_free(entry->cm_template_subject_der);
+				entry->cm_template_subject_der = NULL;
 			} else
 			if ((param->value_type == cm_tdbusm_dict_s) &&
 			    ((strcasecmp(param->key, "KEY_PIN") == 0) ||
