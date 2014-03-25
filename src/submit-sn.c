@@ -119,7 +119,7 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	} else {
 		data = &sdata;
 	}
-	sigoid = SECOID_FindOIDByTag(cm_prefs_nss_sig_alg(keys->pubkey));
+	sigoid = SECOID_FindOIDByTag(cm_prefs_nss_sig_alg(keys->privkey));
 	if (sigoid == NULL) {
 		cm_log(1, "Internal error resolving signature OID.\n");
 		_exit(1);

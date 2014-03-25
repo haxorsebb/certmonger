@@ -26,7 +26,7 @@
 #include "prefs-n.h"
 
 unsigned int
-cm_prefs_nss_sig_alg(SECKEYPublicKey *pkey)
+cm_prefs_nss_sig_alg(SECKEYPrivateKey *pkey)
 {
 	switch (pkey->keyType) {
 	case nullKey:
@@ -62,6 +62,9 @@ cm_prefs_nss_sig_alg(SECKEYPublicKey *pkey)
 			break;
 		}
 		return SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION;
+		break;
+	case rsaPssKey:
+		return SEC_OID_PKCS1_RSA_PSS_SIGNATURE;
 		break;
 	case dsaKey:
 		switch (cm_prefs_preferred_digest()) {
@@ -99,4 +102,3 @@ cm_prefs_nss_sig_alg(SECKEYPublicKey *pkey)
 		break;
 	}
 }
-
