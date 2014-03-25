@@ -49,6 +49,7 @@
 /* Things we know about the calling client. */
 struct cm_client_info {
 	uid_t uid;
+	pid_t pid;
 };
 
 /* Convenience functions. */
@@ -6080,7 +6081,10 @@ struct cm_tdbush_pending_call {
 				   struct cm_context *ctx);
 	dbus_bool_t cm_know_uid; /* GetConnectionUnixUser replied? */
 	dbus_uint32_t cm_pending_uid; /* pending GetConnectionUnixUser call */
+	dbus_bool_t cm_know_pid; /* GetConnectionUnixProcessID replied? */
+	dbus_uint32_t cm_pending_pid; /* pending GetConnectionUnixProcessID call */
 	uid_t cm_uid;
+	pid_t cm_pid;
 	struct cm_tdbush_pending_call *cm_next;
 } *cm_pending_calls;
 
@@ -6103,6 +6107,9 @@ cm_tdbush_handle_method_call(DBusConnection *conn, DBusMessage *msg,
 	pending.cm_method = dbus_message_get_member(pending.cm_msg);
 	pending.cm_type = cm_tdbush_classify_path(ctx, pending.cm_path);
 	pending.cm_know_uid = FALSE;
+	pending.cm_uid = (uid_t) -1;
+	pending.cm_know_pid = FALSE;
+	pending.cm_pid = (pid_t) -1;
 	for (i = 0;
 	     i < sizeof(cm_tdbush_object_type_map) / sizeof(cm_tdbush_object_type_map[i]);
 	     i++) {
@@ -6135,21 +6142,39 @@ cm_tdbush_handle_method_call(DBusConnection *conn, DBusMessage *msg,
 								   "GetConnectionUnixUser");
 				if (msg != NULL) {
 					cm_tdbusm_set_s(msg, dbus_message_get_sender(pending.cm_msg));
-					if (dbus_connection_send(conn, msg,
-								 &pending.cm_pending_uid)) {
-						*tmp = pending;
-						tmp->cm_next = cm_pending_calls;
-						cm_pending_calls = tmp;
-						cm_reset_timeout(ctx);
-						cm_log(4, "Pending GetConnectionUnixUser serial %lu\n",
-						       (unsigned long) pending.cm_pending_uid);
-						dbus_message_unref(msg);
-						cm_reset_timeout(ctx);
-						return DBUS_HANDLER_RESULT_HANDLED;
+					if (!dbus_connection_send(conn, msg,
+								  &pending.cm_pending_uid)) {
+						cm_log(4, "Error calling GetConnectionUnixUser\n");
+						talloc_free(tmp);
+						tmp = NULL;
 					}
 					dbus_message_unref(msg);
 				}
-				talloc_free(tmp);
+				msg = dbus_message_new_method_call(DBUS_SERVICE_DBUS,
+								   DBUS_PATH_DBUS,
+								   DBUS_INTERFACE_DBUS,
+								   "GetConnectionUnixProcessID");
+				if (msg != NULL) {
+					cm_tdbusm_set_s(msg, dbus_message_get_sender(pending.cm_msg));
+					if (!dbus_connection_send(conn, msg,
+								  &pending.cm_pending_pid)) {
+						cm_log(4, "Error calling GetConnectionUnixProcessID\n");
+						talloc_free(tmp);
+						tmp = NULL;
+					}
+					dbus_message_unref(msg);
+				}
+				if (tmp != NULL) {
+					*tmp = pending;
+					tmp->cm_next = cm_pending_calls;
+					cm_pending_calls = tmp;
+					cm_log(4, "Pending GetConnectionUnixUser serial %lu\n",
+					       (unsigned long) pending.cm_pending_uid);
+					cm_log(4, "Pending GetConnectionUnixProcessID serial %lu\n",
+					       (unsigned long) pending.cm_pending_pid);
+					cm_reset_timeout(ctx);
+					return DBUS_HANDLER_RESULT_HANDLED;
+				}
 			}
 			dbus_message_unref(pending.cm_msg);
 			cm_reset_timeout(ctx);
@@ -6171,7 +6196,7 @@ cm_tdbush_handle_method_return(DBusConnection *conn, DBusMessage *msg,
 	struct cm_tdbush_pending_call **p, *call, *next;
 	dbus_uint32_t serial;
 	struct cm_client_info client_info;
-	long uid;
+	long uid, pid;
 
 	serial = dbus_message_get_reply_serial(msg);
 	/* figure out which of our pending calls this goes with */
@@ -6192,20 +6217,34 @@ cm_tdbush_handle_method_return(DBusConnection *conn, DBusMessage *msg,
 			call->cm_know_uid = TRUE;
 			break;
 		}
+		if (call->cm_pending_pid == serial) {
+			if (cm_tdbusm_get_n(msg, call, &pid) != 0) {
+				cm_log(1, "Result error from GetConnectionUnixProcessID().\n");
+				dbus_message_unref(call->cm_msg);
+				talloc_free(call);
+				*p = next;
+				return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+			}
+			call->cm_pid = pid;
+			call->cm_know_pid = TRUE;
+			break;
+		}
 	}
 	if ((p == NULL) || (*p == NULL)) {
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
 	/* do we know enough now? if not, we're done here */
-	if (!call->cm_know_uid) {
+	if (!call->cm_know_uid || !call->cm_know_pid) {
 		return DBUS_HANDLER_RESULT_HANDLED;
 	}
 
 	/* actually run the method */
-	cm_log(4, "User ID %lu called %s:%s.%s.\n",
-	       uid, call->cm_path, call->cm_interface, call->cm_method);
+	cm_log(4, "User ID %lu PID %lu called %s:%s.%s.\n",
+	       (unsigned long) call->cm_uid, (unsigned long) call->cm_pid,
+	       call->cm_path, call->cm_interface, call->cm_method);
 
 	client_info.uid = call->cm_uid;
+	client_info.pid = call->cm_pid;
 	(*call->cm_fn)(conn, call->cm_msg, &client_info, ctx);
 
 	/* remove the pending call record */
