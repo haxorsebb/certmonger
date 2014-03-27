@@ -59,6 +59,8 @@ BuildRequires:	/usr/bin/dbus-launch
 #  for dos2unix
 BuildRequires:	/usr/bin/dos2unix
 BuildRequires:	/usr/bin/unix2dos
+#  for which
+BuildRequires:	/usr/bin/which
 
 # we need a running system bus
 Requires:	dbus
