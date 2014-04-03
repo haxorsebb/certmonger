@@ -6,15 +6,15 @@
 # Hajime Taira <htaira@redhat.com>, 2011-2012
 # noriko <noriko@fedoraproject.org>, 2012
 # noriko <noriko@fedoraproject.org>, 2012
-# Tomoyuki KATO <tomo@dream.daynight.jp>, 2011-2013
+# Tomoyuki KATO <tomo@dream.daynight.jp>, 2011-2014
 # 高一人参 @欠陥遺伝子 <www.carrotsoft@gmail.com>, 2011
 # 高一人参 @欠陥遺伝子 <www.carrotsoft@gmail.com>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2014-03-24 11:26-0400\n"
-"PO-Revision-Date: 2014-02-04 16:08+0000\n"
+"POT-Creation-Date: 2014-04-03 09:57-0400\n"
+"PO-Revision-Date: 2014-03-24 16:29+0000\n"
 "Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
 "Language-Team: Japanese (http://www.transifex.com/projects/p/fedora/language/"
 "ja/)\n"
@@ -116,7 +116,7 @@ msgstr ""
 #: src/getcert.c:118
 #, c-format
 msgid "Path \"%s\": insufficient permissions.\n"
-msgstr ""
+msgstr "パス \"%s\": 権限がありません。\n"
 
 #: src/getcert.c:124
 #, c-format
@@ -190,12 +190,12 @@ msgstr "Kerberos ライブラリーを初期化中にエラーが発生しまし
 #: src/getcert.c:632
 #, c-format
 msgid "No support for generating \"%s\" keys.\n"
-msgstr ""
+msgstr "\"%s\" キーの生成はサポートされません。\n"
 
 #: src/getcert.c:634
 #, c-format
 msgid "Known key types include:"
-msgstr ""
+msgstr "利用できるキー形式は以下のとおりです:"
 
 #: src/getcert.c:671 src/getcert.c:1440 src/getcert.c:1864
 #, c-format
@@ -607,7 +607,7 @@ msgstr "  -I NAME\tリクエストに割り当てるニックネーム\n"
 
 #: src/getcert.c:2638
 msgid "  -G TYPE\ttype of key to be generated if one is not already in place\n"
-msgstr ""
+msgstr "  -G TYPE\tキーが存在しない場合に生成されるキーの形式\n"
 
 #: src/getcert.c:2639
 msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
@@ -862,7 +862,7 @@ msgstr "署名リクエストのためのプリンシパル名を解釈できま
 #: src/ipa.c:228
 #, c-format
 msgid "Error setting up for XMLRPC on the client.\n"
-msgstr ""
+msgstr "クライアントで XMLRPC の設定中にエラーが発生しました。\n"
 
 #: src/ipa.c:239
 #, c-format
@@ -870,12 +870,16 @@ msgid ""
 "Error setting up ccache for \"host\" service on client using default keytab: "
 "%s.\n"
 msgstr ""
+"デフォルトのキーテーブルを使用するクライアントで \"host\" サービスの ccache "
+"セットアップ中にエラーが発生しました: %s。\n"
 
 #: src/ipa.c:243
 #, c-format
 msgid ""
 "Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
 msgstr ""
+"デフォルトのキーテーブルを使用するクライアントで \"%s\" の ccache セットアッ"
+"プ中にエラーが発生しました: %s。\n"
 
 #: src/ipa.c:250
 #, c-format
@@ -883,11 +887,15 @@ msgid ""
 "Error setting up ccache for \"host\" service on client using keytab \"%s\": "
 "%s.\n"
 msgstr ""
+"デフォルトのキーテーブル \"%s\" を使用するクライアントで \"host\" サービスの "
+"ccache セットアップ中にエラーが発生しました: %s。\n"
 
 #: src/ipa.c:254
 #, c-format
 msgid "Error setting up ccache for \"%s\" on client using keytab \"%s\": %s.\n"
 msgstr ""
+" \"%s\" の ccache をデフォルトのキーテーブル \"%s\" を使用するクライアントで"
+"セットアップ中にエラーが発生しました: %s。\n"
 
 #: src/main.c:120
 #, c-format
@@ -930,77 +938,77 @@ msgstr "\t-p FILE    サービスの PID をファイルに書き込む\n"
 msgid "\t-F         force NSS into FIPS mode\n"
 msgstr "\t-F         強制的に NSS を FIPS モードにする\n"
 
-#: src/tdbush.c:117 src/tdbush.c:1538 src/tdbush.c:1763
+#: src/tdbush.c:118 src/tdbush.c:1539 src/tdbush.c:1764
 msgid "An internal error has occurred."
 msgstr "内部エラーが発生しました。"
 
-#: src/tdbush.c:181
+#: src/tdbush.c:182
 msgid "No matching entry found.\n"
 msgstr "該当するエントリーが見つかりません。\n"
 
-#: src/tdbush.c:343
+#: src/tdbush.c:344
 #, c-format
 msgid "There is already a CA with the nickname \"%s\"."
 msgstr "ニックネーム \"%s\" は、すでに CA で使われています。"
 
-#: src/tdbush.c:431
+#: src/tdbush.c:432
 msgid "Certificate storage type not specified."
 msgstr "証明書ストレージの種類が指定されていません。"
 
-#: src/tdbush.c:444
+#: src/tdbush.c:445
 #, c-format
 msgid "Certificate storage type \"%s\" not supported."
 msgstr "証明書ストレージの種類 \"%s\" はサポートされていません。"
 
-#: src/tdbush.c:481 src/tdbush.c:514 src/tdbush.c:573 src/tdbush.c:758
-#: src/tdbush.c:817 src/tdbush.c:2573
+#: src/tdbush.c:482 src/tdbush.c:515 src/tdbush.c:574 src/tdbush.c:759
+#: src/tdbush.c:818 src/tdbush.c:2577
 #, c-format
 msgid "The location \"%s\" must be an absolute path."
 msgstr "場所 \"%s\" は絶対パスでなければなりません。"
 
-#: src/tdbush.c:508 src/tdbush.c:567 src/tdbush.c:636
+#: src/tdbush.c:509 src/tdbush.c:568 src/tdbush.c:637
 msgid "Certificate storage location not specified."
 msgstr "証明書ストレージの場所が指定されていません。"
 
-#: src/tdbush.c:526 src/tdbush.c:770
+#: src/tdbush.c:527 src/tdbush.c:771
 #, c-format
 msgid ""
 "The parent of location \"%s\" could not be accessed due to insufficient "
 "permissions."
-msgstr ""
+msgstr "権限が無いため \"%s\" の親ディレクトリにアクセスできませんでした。"
 
-#: src/tdbush.c:534 src/tdbush.c:778
+#: src/tdbush.c:535 src/tdbush.c:779
 #, c-format
 msgid "The parent of location \"%s\" must be a valid directory."
 msgstr ""
 "場所 \"%s\" の親ディレクトリーは有効なディレクトリーでなければなりません。"
 
-#: src/tdbush.c:545 src/tdbush.c:789
+#: src/tdbush.c:546 src/tdbush.c:790
 #, c-format
 msgid "The location \"%s\" must be a file."
 msgstr "場所 \"%s\" はファイルでなければなりません。"
 
-#: src/tdbush.c:585
+#: src/tdbush.c:586
 #, c-format
 msgid ""
 "The location \"%s\" could not be accessed due to insufficient permissions."
-msgstr ""
+msgstr "権限が無いため \"%s\" にアクセスできませんでした。"
 
-#: src/tdbush.c:593 src/tdbush.c:826
+#: src/tdbush.c:594 src/tdbush.c:827
 #, c-format
 msgid "The location \"%s\" must be a directory."
 msgstr "場所 \"%s\" はディレクトリーでなければなりません。"
 
-#: src/tdbush.c:614
+#: src/tdbush.c:615
 msgid "Certificate nickname not specified."
 msgstr "証明書のニックネームが指定されていません。"
 
-#: src/tdbush.c:657 src/tdbush.c:2467
+#: src/tdbush.c:658 src/tdbush.c:2468
 #, c-format
 msgid "There is already a request with the nickname \"%s\"."
 msgstr "ニックネーム \"%s\" のリクエストは、すでにあります。"
 
-#: src/tdbush.c:693
+#: src/tdbush.c:694
 #, c-format
 msgid ""
 "Certificate at same location is already used by request with nickname \"%s\"."
@@ -1008,41 +1016,41 @@ msgstr ""
 "同じ場所にある証明書は、すでにニックネーム \"%s\" を持つリクエストで使用され"
 "ています。"
 
-#: src/tdbush.c:726
+#: src/tdbush.c:727
 #, c-format
 msgid "Key storage type \"%s\" not supported."
 msgstr "キー・ストレージの種類 \"%s\" はサポートしていません。"
 
-#: src/tdbush.c:752 src/tdbush.c:811
+#: src/tdbush.c:753 src/tdbush.c:812
 msgid "Key storage location not specified."
 msgstr "キー・ストレージの場所が指定されていません。"
 
-#: src/tdbush.c:845
+#: src/tdbush.c:846
 msgid "Key nickname not specified."
 msgstr "キーのニックネームが指定されていません。"
 
-#: src/tdbush.c:901
+#: src/tdbush.c:902
 #, c-format
 msgid "Key at same location is already used by request with nickname \"%s\"."
 msgstr ""
 "同じ場所にあるキーは、すでにニックネーム \"%s\" を持つリクエストで使用されて"
 "います。"
 
-#: src/tdbush.c:972
+#: src/tdbush.c:973
 #, c-format
 msgid "No support for key type \"%s\"."
-msgstr ""
+msgstr "キー形式 \"%s\" はサポートされません。"
 
-#: src/tdbush.c:1045
+#: src/tdbush.c:1046
 msgid "No such CA."
 msgstr "そのような証明局はありません。"
 
-#: src/tdbush.c:2485
+#: src/tdbush.c:2486
 #, c-format
 msgid "Certificate authority \"%s\" not known."
 msgstr "認証局 \"%s\" は認知されていない証明局です。"
 
-#: src/tdbush.c:2756
+#: src/tdbush.c:2760
 msgid "Unrecognized parameter or wrong value type."
 msgstr "認識されていないパラメーターか、もしくは不適切なデータ型です。"
 

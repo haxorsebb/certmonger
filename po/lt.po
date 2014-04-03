@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2014-03-24 11:26-0400\n"
-"PO-Revision-Date: 2014-02-04 16:08+0000\n"
+"POT-Creation-Date: 2014-04-03 09:57-0400\n"
+"PO-Revision-Date: 2014-03-24 16:29+0000\n"
 "Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
 "Language-Team: Lithuanian (http://www.transifex.com/projects/p/fedora/"
 "language/lt/)\n"
@@ -907,116 +907,116 @@ msgstr "\t-p FAILAS   įrašyti tarnybos PID failą\n"
 msgid "\t-F         force NSS into FIPS mode\n"
 msgstr "\t-F         priverstinė NSS į FIPS veikseną\n"
 
-#: src/tdbush.c:117 src/tdbush.c:1538 src/tdbush.c:1763
+#: src/tdbush.c:118 src/tdbush.c:1539 src/tdbush.c:1764
 msgid "An internal error has occurred."
 msgstr "Kilo vidinė klaida."
 
-#: src/tdbush.c:181
+#: src/tdbush.c:182
 msgid "No matching entry found.\n"
 msgstr "Nerastas atitinkamas įrašas.\n"
 
-#: src/tdbush.c:343
+#: src/tdbush.c:344
 #, c-format
 msgid "There is already a CA with the nickname \"%s\"."
 msgstr "Jau yra LĮ slapyvardžiu „%s“."
 
-#: src/tdbush.c:431
+#: src/tdbush.c:432
 msgid "Certificate storage type not specified."
 msgstr "Nenurodytas liudijimo saugyklos tipas."
 
-#: src/tdbush.c:444
+#: src/tdbush.c:445
 #, c-format
 msgid "Certificate storage type \"%s\" not supported."
 msgstr "Liudijimo saugyklos tipas „%s“ nepalaikomas."
 
-#: src/tdbush.c:481 src/tdbush.c:514 src/tdbush.c:573 src/tdbush.c:758
-#: src/tdbush.c:817 src/tdbush.c:2573
+#: src/tdbush.c:482 src/tdbush.c:515 src/tdbush.c:574 src/tdbush.c:759
+#: src/tdbush.c:818 src/tdbush.c:2577
 #, c-format
 msgid "The location \"%s\" must be an absolute path."
 msgstr "Vieta „%s“ turi būti absoliučiu kelius."
 
-#: src/tdbush.c:508 src/tdbush.c:567 src/tdbush.c:636
+#: src/tdbush.c:509 src/tdbush.c:568 src/tdbush.c:637
 msgid "Certificate storage location not specified."
 msgstr "Nenurodyta liudijimo saugojimo vieta."
 
-#: src/tdbush.c:526 src/tdbush.c:770
+#: src/tdbush.c:527 src/tdbush.c:771
 #, c-format
 msgid ""
 "The parent of location \"%s\" could not be accessed due to insufficient "
 "permissions."
 msgstr ""
 
-#: src/tdbush.c:534 src/tdbush.c:778
+#: src/tdbush.c:535 src/tdbush.c:779
 #, c-format
 msgid "The parent of location \"%s\" must be a valid directory."
 msgstr "Vietos „%s“ tėvas turi būti katalogas."
 
-#: src/tdbush.c:545 src/tdbush.c:789
+#: src/tdbush.c:546 src/tdbush.c:790
 #, c-format
 msgid "The location \"%s\" must be a file."
 msgstr "Vieta „%s“ turi būti failas."
 
-#: src/tdbush.c:585
+#: src/tdbush.c:586
 #, c-format
 msgid ""
 "The location \"%s\" could not be accessed due to insufficient permissions."
 msgstr ""
 
-#: src/tdbush.c:593 src/tdbush.c:826
+#: src/tdbush.c:594 src/tdbush.c:827
 #, c-format
 msgid "The location \"%s\" must be a directory."
 msgstr "Vieta „%s“ turi būti katalogas."
 
-#: src/tdbush.c:614
+#: src/tdbush.c:615
 msgid "Certificate nickname not specified."
 msgstr "Nenurodytas liudijimo slapyvardis."
 
-#: src/tdbush.c:657 src/tdbush.c:2467
+#: src/tdbush.c:658 src/tdbush.c:2468
 #, c-format
 msgid "There is already a request with the nickname \"%s\"."
 msgstr "Jau yra užklausa slapyvardžiu „%s“."
 
-#: src/tdbush.c:693
+#: src/tdbush.c:694
 #, c-format
 msgid ""
 "Certificate at same location is already used by request with nickname \"%s\"."
 msgstr ""
 "Liudijimas toje pačioje vietoje jau naudojamas užklausos slapyvardžiu „%s“."
 
-#: src/tdbush.c:726
+#: src/tdbush.c:727
 #, c-format
 msgid "Key storage type \"%s\" not supported."
 msgstr "Rakto saugyklos tipas „%s“ nepalaikomas."
 
-#: src/tdbush.c:752 src/tdbush.c:811
+#: src/tdbush.c:753 src/tdbush.c:812
 msgid "Key storage location not specified."
 msgstr "Nenurodyta rakto saugyklos vieta."
 
-#: src/tdbush.c:845
+#: src/tdbush.c:846
 msgid "Key nickname not specified."
 msgstr "Nenurodyta rakto slapyvardis."
 
-#: src/tdbush.c:901
+#: src/tdbush.c:902
 #, c-format
 msgid "Key at same location is already used by request with nickname \"%s\"."
 msgstr ""
 "Raktas toje pačioje vietoje jau naudojamas užklausos slapyvardžiu „%s“."
 
-#: src/tdbush.c:972
+#: src/tdbush.c:973
 #, c-format
 msgid "No support for key type \"%s\"."
 msgstr ""
 
-#: src/tdbush.c:1045
+#: src/tdbush.c:1046
 msgid "No such CA."
 msgstr "Nėra tokios LĮ."
 
-#: src/tdbush.c:2485
+#: src/tdbush.c:2486
 #, c-format
 msgid "Certificate authority \"%s\" not known."
 msgstr "Liudijimų įstaiga „%s“ nežinoma."
 
-#: src/tdbush.c:2756
+#: src/tdbush.c:2760
 msgid "Unrecognized parameter or wrong value type."
 msgstr "Neatpažintas parametras arba blogas vertės tipas."
 

@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2014-03-24 11:26-0400\n"
-"PO-Revision-Date: 2014-02-04 16:08+0000\n"
+"POT-Creation-Date: 2014-04-03 09:57-0400\n"
+"PO-Revision-Date: 2014-03-24 16:29+0000\n"
 "Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
 "Language-Team: Chinese (Taiwan) (http://www.transifex.com/projects/p/fedora/"
 "language/zh_TW/)\n"
@@ -890,114 +890,114 @@ msgstr ""
 msgid "\t-F         force NSS into FIPS mode\n"
 msgstr ""
 
-#: src/tdbush.c:117 src/tdbush.c:1538 src/tdbush.c:1763
+#: src/tdbush.c:118 src/tdbush.c:1539 src/tdbush.c:1764
 msgid "An internal error has occurred."
 msgstr "發生內部錯誤。"
 
-#: src/tdbush.c:181
+#: src/tdbush.c:182
 msgid "No matching entry found.\n"
 msgstr ""
 
-#: src/tdbush.c:343
+#: src/tdbush.c:344
 #, c-format
 msgid "There is already a CA with the nickname \"%s\"."
 msgstr "已有暱稱為 \"%s\" 的 CA。"
 
-#: src/tdbush.c:431
+#: src/tdbush.c:432
 msgid "Certificate storage type not specified."
 msgstr "未指定憑證儲存類型。"
 
-#: src/tdbush.c:444
+#: src/tdbush.c:445
 #, c-format
 msgid "Certificate storage type \"%s\" not supported."
 msgstr "不支援憑證儲存類型 \"%s\"。"
 
-#: src/tdbush.c:481 src/tdbush.c:514 src/tdbush.c:573 src/tdbush.c:758
-#: src/tdbush.c:817 src/tdbush.c:2573
+#: src/tdbush.c:482 src/tdbush.c:515 src/tdbush.c:574 src/tdbush.c:759
+#: src/tdbush.c:818 src/tdbush.c:2577
 #, c-format
 msgid "The location \"%s\" must be an absolute path."
 msgstr "\"%s\" 位置須為絕對路徑。"
 
-#: src/tdbush.c:508 src/tdbush.c:567 src/tdbush.c:636
+#: src/tdbush.c:509 src/tdbush.c:568 src/tdbush.c:637
 msgid "Certificate storage location not specified."
 msgstr "未指定憑證儲存位置。"
 
-#: src/tdbush.c:526 src/tdbush.c:770
+#: src/tdbush.c:527 src/tdbush.c:771
 #, c-format
 msgid ""
 "The parent of location \"%s\" could not be accessed due to insufficient "
 "permissions."
 msgstr ""
 
-#: src/tdbush.c:534 src/tdbush.c:778
+#: src/tdbush.c:535 src/tdbush.c:779
 #, c-format
 msgid "The parent of location \"%s\" must be a valid directory."
 msgstr "\"%s\" 的上層須為有效目錄。"
 
-#: src/tdbush.c:545 src/tdbush.c:789
+#: src/tdbush.c:546 src/tdbush.c:790
 #, c-format
 msgid "The location \"%s\" must be a file."
 msgstr "\"%s\" 位置須為檔案。"
 
-#: src/tdbush.c:585
+#: src/tdbush.c:586
 #, c-format
 msgid ""
 "The location \"%s\" could not be accessed due to insufficient permissions."
 msgstr ""
 
-#: src/tdbush.c:593 src/tdbush.c:826
+#: src/tdbush.c:594 src/tdbush.c:827
 #, c-format
 msgid "The location \"%s\" must be a directory."
 msgstr "\"%s\" 位置須為目錄。"
 
-#: src/tdbush.c:614
+#: src/tdbush.c:615
 msgid "Certificate nickname not specified."
 msgstr "未指定憑證暱稱。"
 
-#: src/tdbush.c:657 src/tdbush.c:2467
+#: src/tdbush.c:658 src/tdbush.c:2468
 #, c-format
 msgid "There is already a request with the nickname \"%s\"."
 msgstr "已有暱稱為 \"%s\" 的請求。"
 
-#: src/tdbush.c:693
+#: src/tdbush.c:694
 #, c-format
 msgid ""
 "Certificate at same location is already used by request with nickname \"%s\"."
 msgstr ""
 
-#: src/tdbush.c:726
+#: src/tdbush.c:727
 #, c-format
 msgid "Key storage type \"%s\" not supported."
 msgstr "不支援金鑰儲存類型 \"%s\"。"
 
-#: src/tdbush.c:752 src/tdbush.c:811
+#: src/tdbush.c:753 src/tdbush.c:812
 msgid "Key storage location not specified."
 msgstr "未指定金鑰儲存位置。"
 
-#: src/tdbush.c:845
+#: src/tdbush.c:846
 msgid "Key nickname not specified."
 msgstr "未指定金鑰暱稱。"
 
-#: src/tdbush.c:901
+#: src/tdbush.c:902
 #, c-format
 msgid "Key at same location is already used by request with nickname \"%s\"."
 msgstr ""
 
-#: src/tdbush.c:972
+#: src/tdbush.c:973
 #, c-format
 msgid "No support for key type \"%s\"."
 msgstr ""
 
-#: src/tdbush.c:1045
+#: src/tdbush.c:1046
 msgid "No such CA."
 msgstr "沒有這樣的 CA。"
 
-#: src/tdbush.c:2485
+#: src/tdbush.c:2486
 #, c-format
 msgid "Certificate authority \"%s\" not known."
 msgstr "未知的憑證授權機構「%s」。"
 
-#: src/tdbush.c:2756
+#: src/tdbush.c:2760
 msgid "Unrecognized parameter or wrong value type."
 msgstr "無法辨識的參數或錯誤的值類型。"
 

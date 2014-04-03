@@ -11,8 +11,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2014-03-24 11:26-0400\n"
-"PO-Revision-Date: 2014-02-08 00:01+0000\n"
+"POT-Creation-Date: 2014-04-03 09:57-0400\n"
+"PO-Revision-Date: 2014-03-24 16:53+0000\n"
 "Last-Translator: Jérôme Fenal <jfenal@gmail.com>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/fedora/language/"
 "fr/)\n"
@@ -55,7 +55,7 @@ msgstr "Erreur du serveur.\n"
 #: src/dogtag.c:323
 #, c-format
 msgid "Requested renewal, but no serial number provided.\n"
-msgstr ""
+msgstr "Renouvellement demandé, mais numéro de série manquant.\n"
 
 #: src/dogtag.c:327
 #, c-format
@@ -888,6 +888,8 @@ msgstr ""
 msgid ""
 "Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
 msgstr ""
+"Erreur de mise en place du ccache pour « %s » sur le client en utilisant le "
+"jeu de clés par défaut : %s.\n"
 
 #: src/ipa.c:250
 #, c-format
@@ -895,11 +897,15 @@ msgid ""
 "Error setting up ccache for \"host\" service on client using keytab \"%s\": "
 "%s.\n"
 msgstr ""
+"Erreur de mise en place du ccache pour le service « hôte » en utilisant le "
+"jeu de clés « %s » : %s.\n"
 
 #: src/ipa.c:254
 #, c-format
 msgid "Error setting up ccache for \"%s\" on client using keytab \"%s\": %s.\n"
 msgstr ""
+"Erreur de mise en place du ccache pour « %s » sur le client en utilisant le "
+"jeu de  clés « %s » : %s.\n"
 
 #: src/main.c:120
 #, c-format
@@ -942,114 +948,118 @@ msgstr "\t-p FICHIER     écrire le PID du service dans un fichier\n"
 msgid "\t-F         force NSS into FIPS mode\n"
 msgstr "\t-F         impose le mode FIPS à NSS\n"
 
-#: src/tdbush.c:117 src/tdbush.c:1538 src/tdbush.c:1763
+#: src/tdbush.c:118 src/tdbush.c:1539 src/tdbush.c:1764
 msgid "An internal error has occurred."
 msgstr "Une erreur interne s'est produite."
 
-#: src/tdbush.c:181
+#: src/tdbush.c:182
 msgid "No matching entry found.\n"
 msgstr "Aucune correspondance trouvées.\n"
 
-#: src/tdbush.c:343
+#: src/tdbush.c:344
 #, c-format
 msgid "There is already a CA with the nickname \"%s\"."
 msgstr "Il existe déjà une autorité de certification avec le nom « %s »."
 
-#: src/tdbush.c:431
+#: src/tdbush.c:432
 msgid "Certificate storage type not specified."
 msgstr "Type de stockage de certificat non spécifié."
 
-#: src/tdbush.c:444
+#: src/tdbush.c:445
 #, c-format
 msgid "Certificate storage type \"%s\" not supported."
 msgstr "Le type de certificat « %s » n'est pas pris en charge."
 
-#: src/tdbush.c:481 src/tdbush.c:514 src/tdbush.c:573 src/tdbush.c:758
-#: src/tdbush.c:817 src/tdbush.c:2573
+#: src/tdbush.c:482 src/tdbush.c:515 src/tdbush.c:574 src/tdbush.c:759
+#: src/tdbush.c:818 src/tdbush.c:2577
 #, c-format
 msgid "The location \"%s\" must be an absolute path."
 msgstr "L'emplacement « %s » doit être un chemin absolu."
 
-#: src/tdbush.c:508 src/tdbush.c:567 src/tdbush.c:636
+#: src/tdbush.c:509 src/tdbush.c:568 src/tdbush.c:637
 msgid "Certificate storage location not specified."
 msgstr "Emplacement de stockage de certificat non spécifié."
 
-#: src/tdbush.c:526 src/tdbush.c:770
+#: src/tdbush.c:527 src/tdbush.c:771
 #, c-format
 msgid ""
 "The parent of location \"%s\" could not be accessed due to insufficient "
 "permissions."
 msgstr ""
+"L'emplacement parent de « %s » n'est pas accessible du fait de permissions "
+"insuffisantes."
 
-#: src/tdbush.c:534 src/tdbush.c:778
+#: src/tdbush.c:535 src/tdbush.c:779
 #, c-format
 msgid "The parent of location \"%s\" must be a valid directory."
 msgstr "L'emplacement principal « %s » doit être un répertoire valide."
 
-#: src/tdbush.c:545 src/tdbush.c:789
+#: src/tdbush.c:546 src/tdbush.c:790
 #, c-format
 msgid "The location \"%s\" must be a file."
 msgstr "L'emplacement « %s » doit être un fichier."
 
-#: src/tdbush.c:585
+#: src/tdbush.c:586
 #, c-format
 msgid ""
 "The location \"%s\" could not be accessed due to insufficient permissions."
 msgstr ""
+"L'emplacement « %s » n'est pas accessible du fait de permissions "
+"insuffisantes."
 
-#: src/tdbush.c:593 src/tdbush.c:826
+#: src/tdbush.c:594 src/tdbush.c:827
 #, c-format
 msgid "The location \"%s\" must be a directory."
 msgstr "L'emplacement « %s » doit être un répertoire."
 
-#: src/tdbush.c:614
+#: src/tdbush.c:615
 msgid "Certificate nickname not specified."
 msgstr "Nom du certificat non spécifié."
 
-#: src/tdbush.c:657 src/tdbush.c:2467
+#: src/tdbush.c:658 src/tdbush.c:2468
 #, c-format
 msgid "There is already a request with the nickname \"%s\"."
 msgstr "Il existe déjà une demande avec le nom « %s »."
 
-#: src/tdbush.c:693
+#: src/tdbush.c:694
 #, c-format
 msgid ""
 "Certificate at same location is already used by request with nickname \"%s\"."
 msgstr "Le certificat est déjà utilisé par une requête avec le nom « %s »."
 
-#: src/tdbush.c:726
+#: src/tdbush.c:727
 #, c-format
 msgid "Key storage type \"%s\" not supported."
 msgstr "Stockage de clés de type « %s » n'est pas pris en charge."
 
-#: src/tdbush.c:752 src/tdbush.c:811
+#: src/tdbush.c:753 src/tdbush.c:812
 msgid "Key storage location not specified."
 msgstr "Emplacement de stockage de clé non spécifié."
 
-#: src/tdbush.c:845
+#: src/tdbush.c:846
 msgid "Key nickname not specified."
 msgstr "Nom de la clé non spécifié."
 
-#: src/tdbush.c:901
+#: src/tdbush.c:902
 #, c-format
 msgid "Key at same location is already used by request with nickname \"%s\"."
 msgstr "La clé est déjà utilisé par une requête avec le nom « %s »."
 
-#: src/tdbush.c:972
+#: src/tdbush.c:973
 #, c-format
 msgid "No support for key type \"%s\"."
 msgstr "Absence de prise en charge des clés de type « %s »."
 
-#: src/tdbush.c:1045
+#: src/tdbush.c:1046
 msgid "No such CA."
 msgstr "Aucune autorité de certification."
 
-#: src/tdbush.c:2485
+#: src/tdbush.c:2486
 #, c-format
 msgid "Certificate authority \"%s\" not known."
 msgstr "L'autorité de certification « %s » non connue."
 
-#: src/tdbush.c:2756
+#: src/tdbush.c:2760
 msgid "Unrecognized parameter or wrong value type."
 msgstr "Paramètre inconnu ou type de valeur incorrecte."
 
