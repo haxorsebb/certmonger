@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
+#include <arpa/inet.h>
 
 #include <nss.h>
 #include <certt.h>
@@ -871,7 +872,8 @@ cm_certext_read_san(struct cm_store_entry *entry, PLArenaPool *arena,
 {
 	CERTGeneralName *name, *san;
 	unsigned int i, j;
-	char **s;
+	char **s, abuf[64];
+
 	name = CERT_DecodeAltNameExtension(arena, &san_ext->value);
 	san = name;
 	i = 0;
@@ -903,7 +905,29 @@ cm_certext_read_san(struct cm_store_entry *entry, PLArenaPool *arena,
 			cm_certext_remove_duplicates(entry->cm_cert_hostname);
 			break;
 		case certIPAddress:
-			/* binary data - see rfc5280 - XXX */
+			/* An IPv4 or IPv6 address. */
+			if (!((san->name.other.len == 16) &&
+			      (inet_ntop(AF_INET6, san->name.other.data,
+				         abuf, sizeof(abuf)) != NULL)) &&
+			    !((san->name.other.len == 4) &&
+			      (inet_ntop(AF_INET, san->name.other.data,
+				         abuf, sizeof(abuf)) != NULL))) {
+				continue;
+			}
+			for (j = 0;
+			     (entry->cm_cert_ipaddress != NULL) &&
+			     (entry->cm_cert_ipaddress[j] != NULL);
+			     j++) {
+				continue;
+			}
+			s = talloc_zero_array(entry, char *, j + 2);
+			if (j > 0) {
+				memcpy(s, entry->cm_cert_ipaddress,
+				       sizeof(char *) * j);
+			}
+			s[j] = talloc_strdup(entry, abuf);
+			entry->cm_cert_ipaddress = s;
+			cm_certext_remove_duplicates(entry->cm_cert_ipaddress);
 			break;
 		case certRFC822Name:
 			/* An email address is just a string. */

@@ -442,6 +442,9 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 	/* Principal name from subjectAltName extension. */
 	talloc_free(entry->cm_cert_principal);
 	entry->cm_cert_principal = NULL;
+	/* IP address from subjectAltName extension. */
+	talloc_free(entry->cm_cert_ipaddress);
+	entry->cm_cert_ipaddress = NULL;
 	/* Key usage from keyUsage extension. */
 	talloc_free(entry->cm_cert_ku);
 	entry->cm_cert_ku = NULL;

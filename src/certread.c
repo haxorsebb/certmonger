@@ -139,6 +139,14 @@ cm_certread_write_data_to_pipe(struct cm_store_entry *entry, FILE *fp)
 						 -1));
 	}
 	fprintf(fp, "%s\n", i > 0 ? "" : " ");
+	for (i = 0;
+	     (entry->cm_cert_ipaddress != NULL) &&
+	     (entry->cm_cert_ipaddress[i] != NULL);
+	     i++) {
+		fprintf(fp, "%s%s", (i > 0) ? "," : " ",
+			entry->cm_cert_ipaddress[i]);
+	}
+	fprintf(fp, "%s\n", i > 0 ? "" : " ");
 	fprintf(fp, " %s\n", entry->cm_cert_ku ?: "");
 	fprintf(fp, " %s\n", entry->cm_cert_eku ?: "");
 	fprintf(fp, " %s\n",
@@ -309,16 +317,33 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 			}
 			break;
 		case 11:
+			talloc_free(entry->cm_cert_ipaddress);
+			entry->cm_cert_ipaddress = talloc_zero_array(entry,
+								     char *,
+								     q - p + 2);
+			vals = entry->cm_cert_ipaddress;
+			u = p;
+			j = 0;
+			while ((*u != '\0') && (u < q)) {
+				v = u + strcspn(u, ",\r\n");
+				if (v > u) {
+					entry->cm_cert_ipaddress[j] = talloc_strndup(vals, u, v - u);
+					j++;
+				}
+				u = v + strspn(u, ",\r\n");
+			}
+			break;
+		case 12:
 			talloc_free(entry->cm_cert_ku);
 			entry->cm_cert_ku = (p == q) ? NULL :
 					    talloc_strndup(entry, p, q - p);
 			break;
-		case 12:
+		case 13:
 			talloc_free(entry->cm_cert_eku);
 			entry->cm_cert_eku = (p == q) ? NULL :
 					     talloc_strndup(entry, p, q - p);
 			break;
-		case 13:
+		case 14:
 			if (p != q) {
 				talloc_free(entry->cm_cert_token);
 				entry->cm_cert_token = cm_store_base64_as_bin(entry,
@@ -327,13 +352,13 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 									      NULL);
 			}
 			break;
-		case 14:
+		case 15:
 			entry->cm_cert_is_ca = (p != q) ? (atoi(p) != 0) : 0;
 			break;
-		case 15:
+		case 16:
 			entry->cm_cert_ca_path_length = (p != q) ? atoi(p) : -1;
 			break;
-		case 16:
+		case 17:
 			talloc_free(entry->cm_cert_ocsp_location);
 			entry->cm_cert_ocsp_location = talloc_zero_array(entry,
 									 char *,
@@ -353,7 +378,7 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 				u = v + strspn(u, ",\r\n");
 			}
 			break;
-		case 17:
+		case 18:
 			talloc_free(entry->cm_cert_crl_distribution_point);
 			entry->cm_cert_crl_distribution_point = talloc_zero_array(entry,
 										  char *,
@@ -373,7 +398,7 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 				u = v + strspn(u, ",\r\n");
 			}
 			break;
-		case 18:
+		case 19:
 			talloc_free(entry->cm_cert_ns_comment);
 			entry->cm_cert_ns_comment = (p == q) ? NULL :
 						    cm_store_base64_as_bin(entry,
@@ -381,7 +406,7 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 								           q - p,
 								           NULL);
 			break;
-		case 19:
+		case 20:
 			talloc_free(entry->cm_cert_profile);
 			entry->cm_cert_profile = (p == q) ? NULL :
 						 cm_store_base64_as_bin(entry,
@@ -389,7 +414,7 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 								        q - p,
 								        NULL);
 			break;
-		case 20:
+		case 21:
 			talloc_free(entry->cm_cert);
 			entry->cm_cert = (p[strspn(p, " \r\n")] == '\0') ?
 					 NULL :
