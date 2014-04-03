@@ -1542,6 +1542,9 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			cm_store_set_if_not_set_as(entry,
 						   &entry->cm_template_principal,
 						   entry->cm_cert_principal);
+			cm_store_set_if_not_set_as(entry,
+						   &entry->cm_template_ipaddress,
+						   entry->cm_cert_ipaddress);
 			cm_store_set_if_not_set_s(entry,
 						  &entry->cm_template_ku,
 						  entry->cm_cert_ku);

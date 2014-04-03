@@ -1055,13 +1055,18 @@ cm_certext_build_principal(struct cm_store_entry *entry, PLArenaPool *arena,
 /* Build up a subjectAltName extension value using information for the entry. */
 static SECItem *
 cm_certext_build_san(struct cm_store_entry *entry, PLArenaPool *arena,
-		     char **hostname, char **email, char **principal)
+		     char **hostname, char **email, char **principal,
+		     char **ipaddress)
 {
 	CERTGeneralName *name, *next;
 	SECItem encoded, *item;
 	int i, j;
+	struct in_addr ip;
+	struct in6_addr ip6;
+
 	/* Anything to do? */
-	if ((hostname == NULL) && (email == NULL) && (principal == NULL)) {
+	if ((hostname == NULL) && (email == NULL) && (principal == NULL) &&
+	    (ipaddress == NULL)) {
 		return NULL;
 	}
 	name = NULL;
@@ -1135,6 +1140,34 @@ cm_certext_build_san(struct cm_store_entry *entry, PLArenaPool *arena,
 				} else {
 					PR_APPEND_LINK(&next->l, &name->l);
 				}
+			}
+		}
+	}
+	/* Build a list of IP address values. */
+	for (i = 0; (ipaddress != NULL) && (ipaddress[i] != NULL); i++) {
+		next = PORT_ArenaZAlloc(arena, sizeof(*next));
+		if (next != NULL) {
+			next->type = certIPAddress;
+			memset(&encoded, 0, sizeof(encoded));
+			if (inet_pton(AF_INET6, ipaddress[i], &ip6) == 1) {
+				encoded.len = 16;
+				encoded.data = (unsigned char *) &ip6;
+			} else if (inet_pton(AF_INET, ipaddress[i], &ip) == 1) {
+				encoded.len = 4;
+				encoded.data = (unsigned char *) &ip;
+			} else {
+				continue;
+			}
+			item = SECITEM_ArenaDupItem(arena, &encoded);
+			if (item == NULL) {
+				continue;
+			}
+			next->name.other = *item;
+			if (name == NULL) {
+				name = next;
+				PR_INIT_CLIST(&name->l);
+			} else {
+				PR_APPEND_LINK(&next->l, &name->l);
 			}
 		}
 	}
@@ -1507,7 +1540,8 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 	item = cm_certext_build_san(entry, arena,
 				    entry->cm_template_hostname,
 				    entry->cm_template_email,
-				    entry->cm_template_principal);
+				    entry->cm_template_principal,
+				    entry->cm_template_ipaddress);
 	if (item != NULL) {
 		oid = SECOID_FindOIDByTag(SEC_OID_X509_SUBJECT_ALT_NAME);
 		if (oid != NULL) {
