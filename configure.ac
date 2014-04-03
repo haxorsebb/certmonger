@@ -1,4 +1,4 @@
-AC_INIT(certmonger,0.73)
+AC_INIT(certmonger,0.74)
 AM_INIT_AUTOMAKE([foreign subdir-objects])
 AC_CONFIG_MACRO_DIR(m4)
 AM_MAINTAINER_MODE([enable])
@@ -22,6 +22,7 @@ AC_CHECK_HEADERS(sys/types.h sys/socket.h linux/types.h linux/netlink.h linux/rt
 	#include <linux/netlink.h>
 	#endif
 ])
+AC_CHECK_HEADERS(systemd/sd-login.h)
 AC_CONFIG_HEADER(src/config.h)
 if test x$GCC = xyes ; then
 	CFLAGS="$CFLAGS -Wall -Wextra"

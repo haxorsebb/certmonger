@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.73
+Version:	0.74
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -204,6 +204,26 @@ exit 0
 %endif
 
 %changelog
+* Thu Apr  3 2014 Nalin Dahyabhai <nalin@redhat.com> 0.74-1
+- also save state when we exit due to SIGHUP
+- don't get tripped up when enrollment helpers hand us certificates which
+  include CRLF line terminators (ticket #25)
+- be tolerant of certificate issuer names, subject names, DNS, email, and
+  Kerberos principal namem subjectAltNames, and crl distribution point URLs
+  that contain newlines
+- read and cache the certificate template extension in certificates
+- enforce different minimum key sizes depending on the type of key we're
+  trying to generate
+- store DER versions of subject, issuer and template subject, if we have
+  them (Jan Cholasta, ticket #26)
+- when generating signing requests with subject names that don't quite parse
+  as subject names, encode what we're given as PrintableString rather than
+  as a UTF8String
+- always chdir() to a known location at startup, even if we're not becoming
+  a daemon
+- fix a couple of memory leaks (static analysis)
+- add missing buildrequires: on which
+
 * Thu Feb 20 2014 Nalin Dahyabhai <nalin@redhat.com> 0.73-1
 - updates to 0.73
   - getcert no longer claims to be stuck when a CA is unreachable,
