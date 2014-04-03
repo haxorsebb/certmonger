@@ -76,6 +76,7 @@ enum cm_store_file_field {
 	cm_store_entry_field_cert_hostname,
 	cm_store_entry_field_cert_email,
 	cm_store_entry_field_cert_principal,
+	cm_store_entry_field_cert_ipaddress,
 	cm_store_entry_field_cert_ku,
 	cm_store_entry_field_cert_eku,
 	cm_store_entry_field_cert_is_ca,
@@ -94,6 +95,7 @@ enum cm_store_file_field {
 	cm_store_entry_field_template_hostname,
 	cm_store_entry_field_template_email,
 	cm_store_entry_field_template_principal,
+	cm_store_entry_field_template_ipaddress,
 	cm_store_entry_field_template_ku,
 	cm_store_entry_field_template_eku,
 	cm_store_entry_field_template_is_ca,
@@ -174,6 +176,7 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_cert_hostname, "cert_hostname"},
 	{cm_store_entry_field_cert_email, "cert_email"},
 	{cm_store_entry_field_cert_principal, "cert_principal"},
+	{cm_store_entry_field_cert_ipaddress, "cert_ipaddress"},
 	{cm_store_entry_field_cert_ku, "cert_ku"},
 	{cm_store_entry_field_cert_eku, "cert_eku"},
 	{cm_store_entry_field_cert_is_ca, "cert_is_ca"},
@@ -192,6 +195,7 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_template_hostname, "template_hostname"},
 	{cm_store_entry_field_template_email, "template_email"},
 	{cm_store_entry_field_template_principal, "template_principal"},
+	{cm_store_entry_field_template_ipaddress, "template_ipaddress"},
 	{cm_store_entry_field_template_ku, "template_ku"},
 	{cm_store_entry_field_template_eku, "template_eku"},
 	{cm_store_entry_field_template_is_ca, "template_is_ca"},
@@ -625,6 +629,10 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 				ret->cm_cert_principal =
 					free_if_empty_multi(ret, p);
 				break;
+			case cm_store_entry_field_cert_ipaddress:
+				ret->cm_cert_ipaddress =
+					free_if_empty_multi(ret, p);
+				break;
 			case cm_store_entry_field_cert_ku:
 				ret->cm_cert_ku = free_if_empty(p);
 				break;
@@ -688,6 +696,10 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 				break;
 			case cm_store_entry_field_template_principal:
 				ret->cm_template_principal =
+					free_if_empty_multi(ret, p);
+				break;
+			case cm_store_entry_field_template_ipaddress:
+				ret->cm_template_ipaddress =
 					free_if_empty_multi(ret, p);
 				break;
 			case cm_store_entry_field_template_ku:
@@ -846,6 +858,7 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_cert_hostname:
 			case cm_store_entry_field_cert_email:
 			case cm_store_entry_field_cert_principal:
+			case cm_store_entry_field_cert_ipaddress:
 			case cm_store_entry_field_cert_ku:
 			case cm_store_entry_field_cert_eku:
 			case cm_store_entry_field_cert_is_ca:
@@ -862,6 +875,7 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_template_hostname:
 			case cm_store_entry_field_template_email:
 			case cm_store_entry_field_template_principal:
+			case cm_store_entry_field_template_ipaddress:
 			case cm_store_entry_field_template_ku:
 			case cm_store_entry_field_template_eku:
 			case cm_store_entry_field_template_is_ca:
@@ -1154,6 +1168,8 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 				 entry->cm_cert_email);
 	cm_store_file_write_strs(fp, cm_store_entry_field_cert_principal,
 				 entry->cm_cert_principal);
+	cm_store_file_write_strs(fp, cm_store_entry_field_cert_ipaddress,
+				 entry->cm_cert_ipaddress);
 	cm_store_file_write_str(fp, cm_store_entry_field_cert_ku,
 				entry->cm_cert_ku);
 	cm_store_file_write_str(fp, cm_store_entry_field_cert_eku,
@@ -1187,6 +1203,8 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 				 entry->cm_template_email);
 	cm_store_file_write_strs(fp, cm_store_entry_field_template_principal,
 				 entry->cm_template_principal);
+	cm_store_file_write_strs(fp, cm_store_entry_field_template_ipaddress,
+				 entry->cm_template_ipaddress);
 	cm_store_file_write_str(fp, cm_store_entry_field_template_ku,
 				entry->cm_template_ku);
 	cm_store_file_write_str(fp, cm_store_entry_field_template_eku,
@@ -1771,6 +1789,7 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	ret->cm_cert_hostname = cm_store_maybe_strdupv(ret, entry->cm_cert_hostname);
 	ret->cm_cert_email = cm_store_maybe_strdupv(ret, entry->cm_cert_email);
 	ret->cm_cert_principal = cm_store_maybe_strdupv(ret, entry->cm_cert_principal);
+	ret->cm_cert_ipaddress = cm_store_maybe_strdupv(ret, entry->cm_cert_ipaddress);
 	ret->cm_cert_ku = cm_store_maybe_strdup(ret, entry->cm_cert_ku);
 	ret->cm_cert_eku = cm_store_maybe_strdup(ret, entry->cm_cert_eku);
 	ret->cm_cert_is_ca = entry->cm_cert_is_ca;
@@ -1791,6 +1810,7 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	ret->cm_template_hostname = cm_store_maybe_strdupv(ret, entry->cm_template_hostname);
 	ret->cm_template_email = cm_store_maybe_strdupv(ret, entry->cm_template_email);
 	ret->cm_template_principal = cm_store_maybe_strdupv(ret, entry->cm_template_principal);
+	ret->cm_template_ipaddress = cm_store_maybe_strdupv(ret, entry->cm_template_ipaddress);
 	ret->cm_template_ku = cm_store_maybe_strdup(ret, entry->cm_template_ku);
 	ret->cm_template_eku = cm_store_maybe_strdup(ret, entry->cm_template_eku);
 	ret->cm_template_is_ca = entry->cm_template_is_ca;

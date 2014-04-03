@@ -78,6 +78,7 @@ struct cm_store_entry {
 	char **cm_cert_hostname;
 	char **cm_cert_email;
 	char **cm_cert_principal;
+	char **cm_cert_ipaddress;
 	char *cm_cert_ku;
 	char *cm_cert_eku;
 	int cm_cert_is_ca: 1;
@@ -104,6 +105,7 @@ struct cm_store_entry {
 	   *  hostname
 	   *  email
 	   *  principal name
+	   *  IP address
 	   * ku, eku
 	   * is_ca, ca_path_length
 	   * crl_distribution_points
@@ -114,6 +116,7 @@ struct cm_store_entry {
 	char **cm_template_hostname;
 	char **cm_template_email;
 	char **cm_template_principal;
+	char **cm_template_ipaddress;
 	char *cm_template_ku;
 	char *cm_template_eku;
 	int cm_template_is_ca: 1;
