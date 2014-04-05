@@ -23,6 +23,7 @@
 #include <fcntl.h>
 #include <limits.h>
 #include <stdlib.h>
+#include <time.h>
 #include <unistd.h>
 
 #include <nss.h>
