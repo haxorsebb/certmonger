@@ -28,6 +28,10 @@ id-pkinit-KPKdc
 id-pkix
 id-pkix.1
 id-pkix.3
+id-pe.1
+id-ce.35
+id-ce.14
+id-qt.2
 '
 oids='
 1.3.6.1.5

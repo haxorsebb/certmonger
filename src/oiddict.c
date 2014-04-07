@@ -33,6 +33,7 @@ static const struct {
 	{"id-mod", "id-pkix.0"},
 	{"id-pe", "id-pkix.1"},
 	{"id-pe-authorityInfoAccess", "id-pe.1"},
+	{"id-pe-nsa", "id-pe.23"},
 	{"id-qt", "id-pkix.2"},
 	{"id-qt-cps", "id-qt.1"},
 	{"id-qt-unotice", "id-qt.2"},
