@@ -1156,6 +1156,9 @@ cm_certext_build_san(struct cm_store_entry *entry, PLArenaPool *arena,
 				encoded.len = 4;
 				encoded.data = (unsigned char *) &ip;
 			} else {
+				cm_log(1, "Internal error: unable to parse "
+				       "\"%s\" as an IP address, ignoring.\n",
+				       ipaddress[i]);
 				continue;
 			}
 			item = SECITEM_ArenaDupItem(arena, &encoded);
