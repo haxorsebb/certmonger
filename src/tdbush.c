@@ -4029,6 +4029,16 @@ cm_tdbush_property_get(DBusConnection *conn,
 	parent = talloc_new(NULL);
 	if (cm_tdbusm_get_ss(msg, parent, &interface, &property) != 0) {
 		cm_log(1, "Error parsing arguments.\n");
+		rep = dbus_message_new_error(msg,
+					     CM_DBUS_ERROR_REQUEST_BAD_ARG,
+					     _("Error parsing arguments."));
+		if (rep != NULL) {
+			cm_tdbusm_set_s(rep, property);
+			dbus_connection_send(conn, rep, NULL);
+			dbus_message_unref(rep);
+			talloc_free(parent);
+			return DBUS_HANDLER_RESULT_HANDLED;
+		}
 		talloc_free(parent);
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
@@ -4073,6 +4083,16 @@ cm_tdbush_property_get(DBusConnection *conn,
 		}
 	}
 	if (item == NULL) {
+		rep = dbus_message_new_error(msg,
+					     CM_DBUS_ERROR_REQUEST_BAD_ARG,
+					     _("Unrecognized property name."));
+		if (rep != NULL) {
+			cm_tdbusm_set_s(rep, property);
+			dbus_connection_send(conn, rep, NULL);
+			dbus_message_unref(rep);
+			talloc_free(parent);
+			return DBUS_HANDLER_RESULT_HANDLED;
+		}
 		talloc_free(parent);
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
