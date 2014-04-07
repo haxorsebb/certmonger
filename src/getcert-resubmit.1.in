@@ -1,4 +1,4 @@
-.TH certmonger 1 "14 June 2012" "certmonger Manual"
+.TH certmonger 1 "7 April 2014" "certmonger Manual"
 
 .SH NAME
 getcert
@@ -94,6 +94,10 @@ extension part of the extensionRequest attribute in the signing request.
 \fB\-D\fR DNSNAME
 Change the DNS name specified as part of a subjectAltName extension part of the
 extensionRequest attribute in the signing request.
+.TP
+\fB\-A\fR ADDRESS
+Change the IP address specified as part of a subjectAltName extension part of
+the extensionRequest attribute in the signing request.
 
 .SH OTHER OPTIONS
 .TP

@@ -563,9 +563,9 @@ request(const char *argv0, int argc, char **argv)
 	int keysize = 0, auto_renew = 1, verbose = 0, ku = 0, kubit, c, i, j;
 	char *ca = DEFAULT_CA, *subject = NULL, **eku = NULL, *oid, *id = NULL;
 	char *profile = NULL, kustring[16];
-	char **principal = NULL, **dns = NULL, **email = NULL;
-	struct cm_tdbusm_dict param[38];
-	const struct cm_tdbusm_dict *params[37];
+	char **principal = NULL, **dns = NULL, **email = NULL, **ipaddr = NULL;
+	struct cm_tdbusm_dict param[39];
+	const struct cm_tdbusm_dict *params[38];
 	DBusMessage *req, *rep;
 	dbus_bool_t b;
 	char *p;
@@ -596,7 +596,7 @@ request(const char *argv0, int argc, char **argv)
 
 	opterr = 0;
 	while ((c = getopt(argc, argv,
-			   ":d:n:t:k:f:I:g:rRN:u:U:K:D:E:sSp:P:vB:C:T:G:"
+			   ":d:n:t:k:f:I:g:rRN:u:U:K:D:E:sSp:P:vB:C:T:G:A:"
 			   GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
@@ -710,6 +710,9 @@ request(const char *argv0, int argc, char **argv)
 		case 'E':
 			add_string(globals.tctx, &email, optarg);
 			break;
+		case 'A':
+			add_string(globals.tctx, &ipaddr, optarg);
+			break;
 		case 's':
 			bus = cm_tdbus_session;
 			break;
@@ -789,7 +792,8 @@ request(const char *argv0, int argc, char **argv)
 	    (eku == NULL) &&
 	    (principal == NULL) &&
 	    (dns == NULL) &&
-	    (email == NULL)) {
+	    (email == NULL) &&
+	    (ipaddr == NULL)) {
 		add_string(globals.tctx, &eku, "id-kp-serverAuth");
 		if (krealm != NULL) {
 			add_string(globals.tctx, &principal,
@@ -968,6 +972,13 @@ request(const char *argv0, int argc, char **argv)
 		param[i].key = "EMAIL";
 		param[i].value_type = cm_tdbusm_dict_as;
 		param[i].value.as = email;
+		params[i] = &param[i];
+		i++;
+	}
+	if (ipaddr != NULL) {
+		param[i].key = CM_DBUS_PROP_TEMPLATE_IP_ADDRESS;
+		param[i].value_type = cm_tdbusm_dict_as;
+		param[i].value.as = ipaddr;
 		params[i] = &param[i];
 		i++;
 	}
@@ -1346,8 +1357,8 @@ set_tracking(const char *argv0, const char *category,
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	DBusMessage *req, *rep;
 	const char *request, *capath;
-	struct cm_tdbusm_dict param[14];
-	const struct cm_tdbusm_dict *params[15];
+	struct cm_tdbusm_dict param[15];
+	const struct cm_tdbusm_dict *params[16];
 	char *nss_scheme, *dbdir = NULL, *token = NULL, *nickname = NULL;
 	char *id = NULL, *new_id = NULL, *new_request;
 	char *keyfile = NULL, *certfile = NULL, *ca = DEFAULT_CA;
@@ -1357,7 +1368,7 @@ set_tracking(const char *argv0, const char *category,
 	int c, auto_renew_start = 0, auto_renew_stop = 0, verbose = 0, i, j;
 	int ku = 0, kubit;
 	char **eku = NULL, *oid, kustring[16];
-	char **principal = NULL, **dns = NULL, **email = NULL;
+	char **principal = NULL, **dns = NULL, **email = NULL, **ipaddr = NULL;
 	krb5_context kctx;
 	krb5_error_code kret;
 	krb5_principal kprincipal;
@@ -1378,7 +1389,7 @@ set_tracking(const char *argv0, const char *category,
 
 	opterr = 0;
 	while ((c = getopt(argc, argv,
-			   ":d:n:t:k:f:g:p:P:rRi:I:u:U:K:D:E:sSvB:C:T:"
+			   ":d:n:t:k:f:g:p:P:rRi:I:u:U:K:D:E:sSvB:C:T:A:"
 			   GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
@@ -1478,6 +1489,9 @@ set_tracking(const char *argv0, const char *category,
 			break;
 		case 'E':
 			add_string(globals.tctx, &email, optarg);
+			break;
+		case 'A':
+			add_string(globals.tctx, &ipaddr, optarg);
 			break;
 		case 's':
 			bus = cm_tdbus_session;
@@ -1591,6 +1605,13 @@ set_tracking(const char *argv0, const char *category,
 				param[i].key = "EMAIL";
 				param[i].value_type = cm_tdbusm_dict_as;
 				param[i].value.as = email;
+				params[i] = &param[i];
+				i++;
+			}
+			if (ipaddr != NULL) {
+				param[i].key = CM_DBUS_PROP_TEMPLATE_IP_ADDRESS;
+				param[i].value_type = cm_tdbusm_dict_as;
+				param[i].value.as = ipaddr;
 				params[i] = &param[i];
 				i++;
 			}
@@ -1798,13 +1819,13 @@ resubmit(const char *argv0, int argc, char **argv)
 	DBusMessage *req, *rep;
 	const char *request;
 	char *capath;
-	struct cm_tdbusm_dict param[18];
-	const struct cm_tdbusm_dict *params[19];
+	struct cm_tdbusm_dict param[19];
+	const struct cm_tdbusm_dict *params[20];
 	char *dbdir = NULL, *token = NULL, *nickname = NULL, *certfile = NULL;
 	char *pin = NULL, *pinfile = NULL;
 	char *id = NULL, *new_id = NULL, *ca = NULL, *new_request, *nss_scheme;
 	char *subject = NULL, **eku = NULL, *oid = NULL;
-	char **principal = NULL, **dns = NULL, **email = NULL;
+	char **principal = NULL, **dns = NULL, **email = NULL, **ipaddr = NULL;
 	char *profile = NULL, kustring[16];
 	dbus_bool_t b;
 	int verbose = 0, ku = 0, kubit, c, i, j;
@@ -1823,7 +1844,7 @@ resubmit(const char *argv0, int argc, char **argv)
 
 	opterr = 0;
 	while ((c = getopt(argc, argv,
-			   ":d:n:N:t:u:U:K:E:D:f:i:I:sSp:P:vB:C:T:"
+			   ":d:n:N:t:u:U:K:E:D:f:i:I:sSp:P:vB:C:T:A:"
 			   GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
@@ -1902,6 +1923,9 @@ resubmit(const char *argv0, int argc, char **argv)
 			break;
 		case 'E':
 			add_string(globals.tctx, &email, optarg);
+			break;
+		case 'A':
+			add_string(globals.tctx, &ipaddr, optarg);
 			break;
 		case 's':
 			bus = cm_tdbus_session;
@@ -2032,6 +2056,13 @@ resubmit(const char *argv0, int argc, char **argv)
 		params[i] = &param[i];
 		i++;
 	}
+	if (ipaddr != NULL) {
+		param[i].key = CM_DBUS_PROP_TEMPLATE_IP_ADDRESS;
+		param[i].value_type = cm_tdbusm_dict_as;
+		param[i].value.as = ipaddr;
+		params[i] = &param[i];
+		i++;
+	}
 	if (ku != 0) {
 		for (j = 0; (ku >> j) != 0; j++) {
 			kustring[j] = ((ku >> j) & 1) ?
@@ -2153,7 +2184,7 @@ list(const char *argv0, int argc, char **argv)
 	dbus_bool_t b;
 	char *s1, *s2, *s3, *s4, *s5, *s6;
 	long n1, n2;
-	char **as1, **as2, **as3, **as4, t[25];
+	char **as1, **as2, **as3, **as4, **as5, t[25];
 	int requests_only = 0, tracking_only = 0, verbose = 0, c, i, j;
 	unsigned int k;
 	char key_usages[LINE_MAX];
@@ -2472,6 +2503,14 @@ list(const char *argv0, int argc, char **argv)
 			       as3[j],
 			       as3[j + 1] ? "" : "\n");
 		}
+		as5 = query_prop_as(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
+				    CM_DBUS_PROP_TEMPLATE_IP_ADDRESS, verbose, globals.tctx);
+		for (j = 0; (as5 != NULL) && (as5[j] != NULL); j++) {
+			printf("%s%s%s",
+			       j == 0 ? _("\tIP address: ") : ",",
+			       as5[j],
+			       as5[j + 1] ? "" : "\n");
+		}
 		if (n2 != 0) {
 			const char *ku;
 			memset(key_usages, '\0', sizeof(key_usages));
@@ -2650,6 +2689,7 @@ help(const char *cmd, const char *category)
 		N_("  -K NAME	set requested principal name\n"),
 		N_("  -D DNSNAME	set requested DNS name\n"),
 		N_("  -E EMAIL	set requested email address\n"),
+		N_("  -A ADDRESS	set requested IP address\n"),
 		N_("* Bus options:\n"),
 		N_("  -S		connect to the certmonger service on the system bus\n"),
 		N_("  -s		connect to the certmonger service on the session bus\n"),
@@ -2691,6 +2731,7 @@ help(const char *cmd, const char *category)
 		N_("  -K NAME	override requested principal name\n"),
 		N_("  -D DNSNAME	override requested DNS name\n"),
 		N_("  -E EMAIL	override requested email address\n"),
+		N_("  -A ADDRESS	override requested IP address\n"),
 		N_("* Bus options:\n"),
 		N_("  -S		connect to the certmonger service on the system bus\n"),
 		N_("  -s		connect to the certmonger service on the session bus\n"),
@@ -2746,6 +2787,7 @@ help(const char *cmd, const char *category)
 		N_("  -K NAME	set requested principal name\n"),
 		N_("  -D DNSNAME	set requested DNS name\n"),
 		N_("  -E EMAIL	set requested email address\n"),
+		N_("  -A ADDRESS	set requested IP address\n"),
 		"\n",
 		N_("Optional arguments:\n"),
 		N_("* Certificate handling settings:\n"),
