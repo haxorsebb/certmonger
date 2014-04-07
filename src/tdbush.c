@@ -1160,6 +1160,13 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 							     param->value.as);
 	}
 	param = cm_tdbusm_find_dict_entry(d,
+					  CM_DBUS_PROP_TEMPLATE_IP_ADDRESS,
+					  cm_tdbusm_dict_as);
+	if (param != NULL) {
+		new_entry->cm_template_ipaddress = maybe_strdupv(new_entry,
+								 param->value.as);
+	}
+	param = cm_tdbusm_find_dict_entry(d,
 					  CM_DBUS_PROP_TEMPLATE_IS_CA,
 					  cm_tdbusm_dict_b);
 	if (param != NULL) {
@@ -2637,6 +2644,14 @@ request_modify(DBusConnection *conn, DBusMessage *msg,
 									 param->value.as);
 				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
 					propname[n_propname++] = CM_DBUS_PROP_TEMPLATE_EMAIL;
+				}
+			} else
+			if ((param->value_type == cm_tdbusm_dict_as) &&
+			    (strcasecmp(param->key, CM_DBUS_PROP_TEMPLATE_IP_ADDRESS) == 0)) {
+				entry->cm_template_ipaddress = maybe_strdupv(entry,
+									     param->value.as);
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_TEMPLATE_IP_ADDRESS;
 				}
 			} else
 			if ((param->value_type == cm_tdbusm_dict_b) &&
@@ -5380,6 +5395,14 @@ cm_tdbush_iface_request(void)
 								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_TEMPLATE_IP_ADDRESS,
+								       cm_tdbush_property_strings,
+								       cm_tdbush_property_read,
+								       cm_tdbush_property_char_pp,
+								       offsetof(struct cm_store_entry, cm_template_ipaddress),
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_TEMPLATE_IS_CA,
 								       cm_tdbush_property_boolean,
 								       cm_tdbush_property_read,
@@ -5761,7 +5784,7 @@ cm_tdbush_iface_request(void)
 				     make_interface_item(cm_tdbush_interface_signal,
 							 make_signal(CM_DBUS_SIGNAL_REQUEST_CERT_SAVED,
 								     NULL),
-							 NULL))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
+							 NULL)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
 	}
 	return ret;
 }

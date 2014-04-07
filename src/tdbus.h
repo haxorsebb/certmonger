@@ -87,6 +87,7 @@
 #define CM_DBUS_PROP_SUBMITTED_DATE "submitted-date"
 #define CM_DBUS_PROP_IS_DEFAULT "is-default"
 #define CM_DBUS_PROP_ISSUER_NAMES "issuer-names"
+#define CM_DBUS_PROP_TEMPLATE_IP_ADDRESS "template-ip-address"
 #define CM_DBUS_PROP_TEMPLATE_IS_CA "template-is-ca"
 #define CM_DBUS_PROP_TEMPLATE_CA_PATH_LENGTH "template-ca-path-length"
 #define CM_DBUS_PROP_TEMPLATE_OCSP "template-ocsp"
