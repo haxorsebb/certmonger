@@ -547,6 +547,19 @@ CM_DEFAULT_IDLE_TIMEOUT=300
 AC_SUBST(CM_DEFAULT_IDLE_TIMEOUT)
 AC_DEFINE_UNQUOTED(CM_DEFAULT_IDLE_TIMEOUT,$CM_DEFAULT_IDLE_TIMEOUT,[Define to the default idle-timeout when bus-activated.])
 
+AC_ARG_WITH(idn,
+AS_HELP_STRING([--without-idn],[do not handle international dnsName subjectAltNames]),
+if test x$with_idn = xno ; then
+	idn=false
+else
+	idn=true
+fi,
+idn=true)
+if $idn ; then
+	PKG_CHECK_MODULES(IDN,libidn)
+	AC_DEFINE(CM_USE_IDN,1,[Define if dnsName subjectAltNames should be encoded properly.])
+fi
+
 AC_ARG_WITH(uuid,
 AS_HELP_STRING([--with-uuid],[populate subjectUniqueID in self-signed certs]),
 [PKG_CHECK_MODULES(UUID,uuid)

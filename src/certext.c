@@ -41,6 +41,10 @@
 
 #include <krb5.h>
 
+#ifdef CM_USE_IDN
+#include <idna.h>
+#endif
+
 #include "certext.h"
 #include "certext-n.h"
 #include "log.h"
@@ -1063,6 +1067,7 @@ cm_certext_build_san(struct cm_store_entry *entry, PLArenaPool *arena,
 	int i, j;
 	struct in_addr ip;
 	struct in6_addr ip6;
+	char *p;
 
 	/* Anything to do? */
 	if ((hostname == NULL) && (email == NULL) && (principal == NULL) &&
@@ -1075,8 +1080,20 @@ cm_certext_build_san(struct cm_store_entry *entry, PLArenaPool *arena,
 		next = PORT_ArenaZAlloc(arena, sizeof(*next));
 		if (next != NULL) {
 			next->type = certDNSName;
-			next->name.other.len = strlen(hostname[i]);
-			next->name.other.data = (unsigned char *) hostname[i];
+			p = hostname[i];
+#ifdef CM_USE_IDN
+			if (idna_to_ascii_lz(p, &p, 0) != IDNA_SUCCESS) {
+				cm_log(1, "Unable to convert hostname \"%s\" "
+				       "to an ASCII-compatible name.\n",
+				       hostname[i]);
+				continue;
+			}
+#endif
+			next->name.other.data = (unsigned char *) PORT_ArenaStrdup(arena, p);
+			next->name.other.len = strlen(p);
+			if (p != hostname[i]) {
+				free(p);
+			}
 			if (name == NULL) {
 				name = next;
 				PR_INIT_CLIST(&name->l);

@@ -1,4 +1,4 @@
-AM_CFLAGS = $(TALLOC_CFLAGS) $(TEVENT_CFLAGS) $(DBUS_CFLAGS) $(KRB5_CFLAGS) $(XMLRPC_CFLAGS) $(UUID_CFLAGS)
+AM_CFLAGS = $(TALLOC_CFLAGS) $(TEVENT_CFLAGS) $(DBUS_CFLAGS) $(KRB5_CFLAGS) $(XMLRPC_CFLAGS) $(IDN_CFLAGS) $(UUID_CFLAGS)
 LDFLAGS =
 if PIE
 CFLAGS += -fPIC
@@ -129,10 +129,10 @@ selfsign_getcert_LDADD = $(getcert_LDADD)
 sbin_PROGRAMS = certmonger
 certmonger_SOURCES = main.c env-system.c tm.c tm.h
 certmonger_LDADD = libcm.a \
-		   $(OPENSSL_LIBS) $(CERTMONGER_LIBS) $(KRB5_LIBS) $(UUID_LIBS)
+		   $(OPENSSL_LIBS) $(CERTMONGER_LIBS) $(KRB5_LIBS) $(IDN_LIBS) $(UUID_LIBS)
 certmonger_session_SOURCES = main.c env-session.c tm.c tm.h
 certmonger_session_LDADD = libcm.a \
-		   $(OPENSSL_LIBS) $(CERTMONGER_LIBS) $(KRB5_LIBS) $(UUID_LIBS)
+		   $(OPENSSL_LIBS) $(CERTMONGER_LIBS) $(KRB5_LIBS) $(IDN_LIBS) $(UUID_LIBS)
 noinst_PROGRAMS = tdbusm-check serial-check nl-check submit-x toklist tlslayer
 tdbusm_check_LDADD = libcm.a $(CERTMONGER_LIBS)
 serial_check_LDADD = libcm.a $(CERTMONGER_LIBS)
