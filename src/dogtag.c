@@ -357,6 +357,10 @@ main(int argc, char **argv)
 		help(argv[0]);
 		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
+	if (NSS_ShutdownContext(nctx) != SECSuccess) {
+		printf(_("Error shutting down NSS.\n"));
+		return CM_SUBMIT_STATUS_UNREACHABLE;
+	}
 
 	/* Figure out where we are in the multi-step process. */
 	op = op_none;
