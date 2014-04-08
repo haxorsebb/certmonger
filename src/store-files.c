@@ -640,7 +640,7 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 				ret->cm_cert_eku = free_if_empty(p);
 				break;
 			case cm_store_entry_field_cert_is_ca:
-				ret->cm_cert_is_ca = atoi(p);
+				ret->cm_cert_is_ca = atoi(p) != 0;
 				talloc_free(p);
 				break;
 			case cm_store_entry_field_cert_ca_path_length:
@@ -709,7 +709,7 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 				ret->cm_template_eku = free_if_empty(p);
 				break;
 			case cm_store_entry_field_template_is_ca:
-				ret->cm_template_is_ca = atoi(p);
+				ret->cm_template_is_ca = atoi(p) != 0;
 				talloc_free(p);
 				break;
 			case cm_store_entry_field_template_ca_path_length:

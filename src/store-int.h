@@ -81,7 +81,7 @@ struct cm_store_entry {
 	char **cm_cert_ipaddress;
 	char *cm_cert_ku;
 	char *cm_cert_eku;
-	int cm_cert_is_ca: 1;
+	unsigned int cm_cert_is_ca: 1;
 	int cm_cert_ca_path_length;
 	char **cm_cert_crl_distribution_point;
 	char **cm_cert_ocsp_location;
@@ -119,7 +119,7 @@ struct cm_store_entry {
 	char **cm_template_ipaddress;
 	char *cm_template_ku;
 	char *cm_template_eku;
-	int cm_template_is_ca: 1;
+	unsigned int cm_template_is_ca: 1;
 	int cm_template_ca_path_length;
 	char **cm_template_crl_distribution_point;
 	char **cm_template_ocsp_location;
