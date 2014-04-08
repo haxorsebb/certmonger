@@ -28,21 +28,23 @@
 
 #include <krb5.h>
 
-#include <openssl/bn.h>
-#include <openssl/pem.h>
-#include <openssl/x509.h>
+#include <nss.h>
+#include <cert.h>
 
 #include <dbus/dbus.h>
 
 #include <talloc.h>
 
+#include "log.h"
 #include "prefs.h"
+#include "store.h"
 #include "submit-d.h"
 #include "submit-e.h"
 #include "submit-h.h"
 #include "submit-u.h"
 #include "util.h"
 #include "util-m.h"
+#include "util-n.h"
 
 #ifdef ENABLE_NLS
 #include <libintl.h>
@@ -110,24 +112,22 @@ statevar(const char *state, const char *what)
 static char *
 serial_hex_from_cert(const char *cert)
 {
-	X509 *c;
-	BIGNUM *bn;
-	BIO *mem;
+	CERTCertificate *c;
+	char *ret = NULL, *pem;
 
 	if ((cert != NULL) && (strlen(cert) > 0)) {
-		mem = BIO_new_mem_buf((void *) cert, -1);
-		if (mem != NULL) {
-			c = PEM_read_bio_X509(mem, NULL, NULL, NULL);
+		pem = talloc_strdup(NULL, cert);
+		if (pem != NULL) {
+			c = CERT_DecodeCertFromPackage(pem, strlen(pem));
 			if (c != NULL) {
-				bn = ASN1_INTEGER_to_BN(X509_get_serialNumber(c),
-							NULL);
-				if (bn != NULL) {
-					return BN_bn2hex(bn);
-				}
+				ret = cm_store_hex_from_bin(NULL,
+							    c->serialNumber.data,
+							    c->serialNumber.len);
+				CERT_DestroyCertificate(c);
 			}
 		}
 	}
-	return NULL;
+	return ret;
 }
 
 int
@@ -151,6 +151,8 @@ main(int argc, char **argv)
 	dbus_bool_t can_agent, use_agent, missing_args = FALSE;
 	struct dogtag_default **defaults;
 	enum cm_external_status ret;
+	NSSInitContext *nctx;
+	const char *es;
 
 #ifdef ENABLE_NLS
 	bindtextdomain(PACKAGE, MYLOCALEDIR);
@@ -218,6 +220,22 @@ main(int argc, char **argv)
 			return CM_SUBMIT_STATUS_UNCONFIGURED;
 			break;
 		}
+	}
+
+	nctx = NSS_InitContext(CM_DEFAULT_CERT_STORAGE_LOCATION,
+			       NULL, NULL, NULL, NULL,
+			       NSS_INIT_NOCERTDB |
+			       NSS_INIT_READONLY |
+			       NSS_INIT_NOROOTINIT |
+			       NSS_INIT_NOMODDB);
+	if (nctx == NULL) {
+		cm_log(1, "Unable to initialize NSS.\n");
+		_exit(1);
+	}
+	es = util_n_fips_hook();
+	if (es != NULL) {
+		cm_log(1, "Error putting NSS into FIPS mode: %s\n", es);
+		_exit(1);
 	}
 
 	ctx = talloc_new(NULL);
