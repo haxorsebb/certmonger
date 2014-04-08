@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Red Hat, Inc.
+ * Copyright (C) 2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,20 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
-#include <string.h>
-#include <openssl/bn.h>
-#include <openssl/ssl.h>
-#include "util-o.h"
+#ifndef utilo_h
+#define utilo_h
 
-void
-util_o_init(void)
-{
-#if defined(HAVE_DECL_OPENSSL_ADD_ALL_ALGORITHMS)
-	OpenSSL_add_all_algorithms();
-#elif defined(HAVE_DECL_OPENSSL_ADD_SSL_ALGORITHMS)
-	OpenSSL_add_ssl_algorithms();
-#else
-	SSL_library_init();
+char *util_dec_from_hex(const char *hex);
+
 #endif
-}

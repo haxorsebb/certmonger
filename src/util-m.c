@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2010 Red Hat, Inc.
- * 
+ * Copyright (C) 2014 Red Hat, Inc.
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -16,19 +16,53 @@
  */
 
 #include "config.h"
-#include <string.h>
-#include <openssl/bn.h>
-#include <openssl/ssl.h>
-#include "util-o.h"
 
-void
-util_o_init(void)
-{
-#if defined(HAVE_DECL_OPENSSL_ADD_ALL_ALGORITHMS)
-	OpenSSL_add_all_algorithms();
-#elif defined(HAVE_DECL_OPENSSL_ADD_SSL_ALGORITHMS)
-	OpenSSL_add_ssl_algorithms();
-#else
-	SSL_library_init();
+#include <stdlib.h>
+
+#ifdef HAVE_GMP_H
+#include <gmp.h>
 #endif
+#ifdef HAVE_OPENSSL
+#include <openssl/bn.h>
+#endif
+
+#ifdef HAVE_GMP
+char *
+util_dec_from_hex(const char *hex)
+{
+	mpz_t m;
+	char *ret;
+
+	mpz_init(m);
+	if (mpz_set_str(m, hex, 16) != 0) {
+		return NULL;
+	}
+	ret = mpz_get_str(NULL, 10, m);
+	mpz_clear(m);
+	return ret;
 }
+#else
+#ifdef HAVE_OPENSSL
+char *
+util_dec_from_hex(const char *hex)
+{
+	BIGNUM *bn = NULL;
+	char *tmp, *ret = NULL;
+
+	if (strlen(hex) > 0) {
+		if (BN_hex2bn(&bn, hex) == 0) {
+			return NULL;
+		}
+		tmp = BN_bn2dec(bn);
+		BN_free(bn);
+		if (tmp != NULL) {
+			ret = strdup(tmp);
+			OPENSSL_free(tmp);
+		}
+	} else {
+		ret = strdup("");
+	}
+	return ret;
+}
+#endif
+#endif

@@ -37,7 +37,7 @@
 #include "submit-e.h"
 #include "submit-h.h"
 #include "submit-u.h"
-#include "util-o.h"
+#include "util-m.h"
 
 #define DOGTAG_DEFAULTS_SET_PATH \
 	"/xml/output/set/record/list/record/set/defList/list/defList/set"
@@ -737,7 +737,7 @@ main(int argc, char **argv)
 		case 'S':
 			op = op_submit_serial;
 			agent = 0;
-			serial = util_o_dec_from_hex(optarg);
+			serial = util_dec_from_hex(optarg);
 			break;
 		case 'D':
 			op = op_submit_serial;

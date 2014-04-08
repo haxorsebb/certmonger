@@ -288,6 +288,47 @@ if test x$withnss != xno ; then
 	LDFLAGS="$savedLDFLAGS"
 fi
 
+AC_ARG_WITH(gmp,
+	    AS_HELP_STRING(--with-gmp,
+			   [use gmp for converting hex serial numbers to decimal]),
+	    withgmp=$withval,
+	    withgmp=no)
+if test $withgmp != no ; then
+	CFLAGSsave="$CFLAGS"
+	LIBSsave="$LIBS"
+	if test $withgmp != yes ; then
+		GMP_CFLAGS="-I$withgmp/include"
+		GMP_LIBS="-L$withgmp/lib"
+	else
+		GMP_CFLAGS=
+		GMP_LIBS=
+	fi
+	CFLAGS="$GMP_CFLAGS $CFLAGS"
+	LIBS="$GMP_LIBS $LIBS"
+	AC_CHECK_HEADERS(gmp.h)
+	AC_CHECK_FUNC(mpz_set_str,,
+	              LIBS="-lgmp $LIBS"
+	              AC_LINK_IFELSE(AC_LANG_PROGRAM([
+			#include <stdlib.h>
+			#include <gmp.h>
+		      ],[mpz_get_str(NULL,10,NULL);]),GMP_LIBS="$GMP_LIBS -lgmp"))
+	AC_MSG_CHECKING([for GMP])
+	if test $ac_cv_header_gmp_h = yes ; then
+		AC_MSG_RESULT(found)
+		AC_DEFINE(HAVE_GMP,1,[Define if you have GMP for hex-to-decimal conversions.])
+	else
+		AC_MSG_ERROR(not found)
+	fi
+	CFLAGS="$CFLAGSsave"
+	LIBS="$LIBSsave"
+fi
+AC_SUBST(GMP_CFLAGS)
+AC_SUBST(GMP_LIBS)
+AM_CONDITIONAL(USE_GMP,test $withgmp != no)
+if test $withgmp = no && test $withopenssl = no ; then
+	AC_MSG_ERROR([Need at least one of OpenSSL or GMP for big number operations.])
+fi
+
 AC_ARG_WITH(homedir,
 AS_HELP_STRING([--with-homedir=/],[directory to set as $HOME when running subprocesses as root]),
 myhomedir=$withval,

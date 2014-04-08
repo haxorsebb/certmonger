@@ -42,7 +42,7 @@
 #include "submit-h.h"
 #include "submit-u.h"
 #include "util.h"
-#include "util-o.h"
+#include "util-m.h"
 
 #ifdef ENABLE_NLS
 #include <libintl.h>
@@ -191,7 +191,7 @@ main(int argc, char **argv)
 			serial = optarg;
 			break;
 		case 's':
-			serial = util_o_dec_from_hex(optarg);
+			serial = util_dec_from_hex(optarg);
 			break;
 		case 'S':
 			savedstate = optarg;
@@ -279,7 +279,7 @@ main(int argc, char **argv)
 			if (cm_prefs_dogtag_renew()) {
 				serial = serial_hex_from_cert(tmp);
 				if (serial != NULL) {
-					serial = util_o_dec_from_hex(serial);
+					serial = util_dec_from_hex(serial);
 				}
 			}
 		}

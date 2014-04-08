@@ -144,6 +144,7 @@ cm_tls_connect(const char *hostport,
 				trusted_ca_db,
 				client_db,
 				client_nickname);
+#ifdef HAVE_OPENSSL
 	} else
 	if (!trusted_ca_db && !client_db && !client_nickname) {
 		fprintf(stderr, "OpenSSL!\n");
@@ -152,6 +153,7 @@ cm_tls_connect(const char *hostport,
 				trusted_ca_dir,
 				client_cert_file,
 				client_key_file);
+#endif
 	} else {
 		return NULL;
 	}

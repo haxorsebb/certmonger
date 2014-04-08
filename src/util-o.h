@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010,2012 Red Hat, Inc.
+ * Copyright (C) 2010,2012,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,5 @@
 #define utilo_h
 
 void util_o_init(void);
-char *util_o_dec_from_hex(const char *hex);
-
 
 #endif

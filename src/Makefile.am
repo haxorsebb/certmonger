@@ -90,6 +90,8 @@ libcm_a_SOURCES = \
 	tdbusm.h \
 	util.c \
 	util.h \
+	util-m.c \
+	util-m.h \
 	util-n.c \
 	util-n.h
 libcm_o_a_SOURCES =
@@ -130,11 +132,11 @@ sbin_PROGRAMS = certmonger
 certmonger_SOURCES = main.c env-system.c tm.c tm.h
 certmonger_LDADD = libcm.a \
 		   $(OPENSSL_LIBS) $(CERTMONGER_LIBS) $(KRB5_LIBS) $(IDN_LIBS) \
-		   $(UUID_LIBS) $(LTLIBICONV)
+		   $(GMP_LIBS) $(UUID_LIBS) $(LTLIBICONV)
 certmonger_session_SOURCES = main.c env-session.c tm.c tm.h
 certmonger_session_LDADD = libcm.a \
 		   $(OPENSSL_LIBS) $(CERTMONGER_LIBS) $(KRB5_LIBS) $(IDN_LIBS) \
-		   $(UUID_LIBS) $(LTLIBICONV)
+		   $(GMP_LIBS) $(UUID_LIBS) $(LTLIBICONV)
 noinst_PROGRAMS = tdbusm-check serial-check nl-check submit-x tlslayer toklist
 tdbusm_check_LDADD = libcm.a $(CERTMONGER_LIBS)
 serial_check_LDADD = libcm.a $(CERTMONGER_LIBS) $(LTLIBICONV)
@@ -143,7 +145,7 @@ submit_x_CFLAGS = $(AM_CFLAGS) -DCM_SUBMIT_X_MAIN
 submit_x_SOURCES = submit-x.c submit-x.h submit-u.c submit-u.h log.c log.h \
 	tm.c tm.h
 submit_x_LDADD = $(XMLRPC_LIBS) $(KRB5_LIBS) $(TALLOC_LIBS) \
-		  $(UUID_LIBS)
+		 $(GMP_LIBS) $(UUID_LIBS)
 toklist_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS)
 toklist_LDADD = $(NSS_LIBS)
 if WITH_CERTMASTER
@@ -156,30 +158,34 @@ pkglibexec_PROGRAMS += dogtag-ipa-renew-agent-submit
 noinst_PROGRAMS += submit-h submit-d
 ipa_submit_SOURCES = ipa.c submit-x.c submit-x.h submit-u.c submit-u.h \
 		submit-e.h util.c util.h log.c log.h tm.c tm.h
-ipa_submit_LDADD = $(XMLRPC_LIBS) $(KRB5_LIBS) $(TALLOC_LIBS) $(UUID_LIBS) \
-		    $(LTLIBICONV)
+ipa_submit_LDADD = $(XMLRPC_LIBS) $(KRB5_LIBS) $(TALLOC_LIBS) $(GMP_LIBS) \
+		   $(UUID_LIBS) $(LTLIBICONV)
 certmaster_submit_SOURCES = certmaster.c submit-x.c submit-x.h \
 		submit-e.h submit-u.c submit-u.h util.c util.h log.c log.h \
 		tm.c tm.h
 certmaster_submit_LDADD = $(XMLRPC_LIBS) $(KRB5_LIBS) $(TALLOC_LIBS) \
-			  $(UUID_LIBS) $(LTLIBICONV)
+			  $(GMP_LIBS) $(UUID_LIBS) $(LTLIBICONV)
 dogtag_ipa_renew_agent_submit_CFLAGS = $(AM_CFLAGS) $(XML_CFLAGS) $(CURL_LIBS)
 dogtag_ipa_renew_agent_submit_SOURCES = dogtag.c submit-d.c submit-d.h \
 		submit-h.c submit-h.h util-m.c util-m.h \
 		submit-u.c submit-u.h submit-e.h util.c util.h log.c log.h \
 		tm.c tm.h prefs.c prefs.h env.h env-system.c
 dogtag_ipa_renew_agent_submit_LDADD = $(CURL_LIBS) $(XML_LIBS) $(OPENSSL_LIBS) \
-				      $(TALLOC_LIBS) $(UUID_LIBS) $(LTLIBICONV)
+				      $(TALLOC_LIBS) $(GMP_LIBS) $(UUID_LIBS) \
+				      $(LTLIBICONV)
 submit_d_CFLAGS = $(AM_CFLAGS) $(CURL_CFLAGS) $(XML_CFLAGS) -DCM_SUBMIT_D_MAIN
 submit_d_SOURCES = submit-d.c submit-d.h submit-h.c submit-h.h \
 		   submit-u.c submit-u.h log.c log.h tm.c tm.h util-m.c util-m.h
 submit_d_LDADD = libcm-o.a $(CURL_LIBS) $(OPENSSL_LIBS) $(XML_LIBS) \
-		 $(TALLOC_LIBS) $(UUID_LIBS) $(LTLIBICONV)
+		 $(TALLOC_LIBS) $(GMP_LIBS) $(UUID_LIBS) $(LTLIBICONV)
 submit_h_CFLAGS = $(AM_CFLAGS) $(CURL_CFLAGS) $(XML_CFLAGS) -DCM_SUBMIT_H_MAIN
 submit_h_SOURCES = submit-h.c submit-h.h log.c log.h tm.c tm.h
 submit_h_LDADD = $(CURL_LIBS) $(XML_LIBS) $(TALLOC_LIBS) $(LTLIBICONV)
 tlslayer_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS) $(OPENSSL_SSL_CFLAGS) \
 	-DCM_TLSLAYER_MAIN
-tlslayer_SOURCES = tlslayer.c tlslayer-n.c tlslayer-o.c \
+tlslayer_SOURCES = tlslayer.c tlslayer-n.c \
 	tlslayer.h tlslayer-int.h
+if HAVE_OPENSSL
+tlslayer_SOURCES += tlslayer-o.c
+endif
 tlslayer_LDADD = $(NSS_LIBS) $(OPENSSL_SSL_LIBS) $(TALLOC_LIBS)
