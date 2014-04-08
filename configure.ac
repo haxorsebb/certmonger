@@ -201,7 +201,7 @@ if test x$withopenssl != xno ; then
 	AC_DEFINE(HAVE_OPENSSL,1,[Define if you have OpenSSL.])
 	CFLAGSsave="$CFLAGS"
 	LIBSsave="$LIBS"
-	CFLAGS="$OPENSSL_CFLAGS $LIBS"
+	CFLAGS="$OPENSSL_CFLAGS $CFLAGS"
 	LIBS="$OPENSSL_LIBS $LIBS"
 	AC_CHECK_DECLS([OpenSSL_add_all_algorithms,OpenSSL_add_ssl_algorithms],,,[#include <openssl/ssl.h>])
 	CFLAGS="$CFLAGSsave"
@@ -380,10 +380,10 @@ dsa=maybe)
 if test x$dsa != xno ; then
 	CFLAGSsave="$CFLAGS"
 	LIBSsave="$LIBS"
-	CFLAGS="$OPENSSL_CFLAGS $LIBS"
+	CFLAGS="$OPENSSL_CFLAGS $CFLAGS"
 	LIBS="$OPENSSL_LIBS $LIBS"
 	AC_CHECK_LIB(crypto,DSA_new)
-	CFLAGS="$NSS_CFLAGS $LIBS"
+	CFLAGS="$NSS_CFLAGS $CFLAGS"
 	LIBS="$NSS_LIBS $LIBS"
 	AC_CHECK_TYPE(SECKEYDSAPublicKey,,,
 		      [
@@ -437,10 +437,10 @@ ec=maybe)
 if test x$ec != xno ; then
 	CFLAGSsave="$CFLAGS"
 	LIBSsave="$LIBS"
-	CFLAGS="$OPENSSL_CFLAGS $LIBS"
+	CFLAGS="$OPENSSL_CFLAGS $CFLAGS"
 	LIBS="$OPENSSL_LIBS $LIBS"
 	AC_CHECK_LIB(crypto,EC_KEY_new_by_curve_name)
-	CFLAGS="$NSS_CFLAGS $LIBS"
+	CFLAGS="$NSS_CFLAGS $CFLAGS"
 	LIBS="$NSS_LIBS $LIBS"
 	AC_CHECK_FUNCS(SECKEY_CreateECPrivateKey)
 	CFLAGS="$CFLAGSsave"
