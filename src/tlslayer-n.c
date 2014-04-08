@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Red Hat, Inc.
+ * Copyright (C) 2012,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,10 +23,10 @@
 #include <stdlib.h>
 #include <talloc.h>
 
-#include <nspr4/nspr.h>
-#include <nspr4/prnetdb.h>
-#include <nss3/nss.h>
-#include <nss3/ssl.h>
+#include <nspr.h>
+#include <prnetdb.h>
+#include <nss.h>
+#include <ssl.h>
 
 #include "tlslayer.h"
 #include "tlslayer-int.h"
