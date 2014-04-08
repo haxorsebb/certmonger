@@ -110,6 +110,8 @@ struct cm_store_entry {
 	   * is_ca, ca_path_length
 	   * crl_distribution_points
 	   * aia_ocsp_locations
+	   * nscomment
+	   * template
 	   */
 	char *cm_template_subject_der;
 	char *cm_template_subject;
