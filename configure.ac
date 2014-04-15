@@ -109,6 +109,8 @@ AC_SUBST(SESSIONBUSSERVICESDIR)
 SYSTEMBUSSERVICESDIR=`pkg-config --variable=system_bus_services_dir dbus-1 2> /dev/null`
 AC_SUBST(SYSTEMBUSSERVICESDIR)
 
+AC_CHECK_FUNCS(clearenv)
+
 savedLIBS="$LIBS"
 LIBS="$DBUS_LIBS $LIBS"
 AC_CHECK_FUNCS(dbus_watch_get_unix_fd dbus_watch_get_fd)

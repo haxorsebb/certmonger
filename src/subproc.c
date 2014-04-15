@@ -33,6 +33,21 @@
 #include "log.h"
 #include "subproc.h"
 
+#ifndef HAVE_CLEARENV
+extern char **environ;
+static void
+clear_environment(void)
+{
+	environ = NULL;
+}
+#else
+static void
+clear_environment(void)
+{
+	clearenv();
+}
+#endif
+
 #define GROW_SIZE 0x2000
 
 struct cm_subproc_state {
@@ -81,7 +96,7 @@ cm_subproc_start(int (*cb)(int fd,
 				configdir = (tmp != NULL) ? strdup(tmp) : NULL;
 				tmp = getenv("TMPDIR");
 				tmpdir = (tmp != NULL) ? strdup(tmp) : NULL;
-				clearenv();
+				clear_environment();
 				setenv("HOME", CM_HOMEDIR, 1);
 				setenv("PATH", _PATH_STDPATH, 1);
 				setenv("SHELL", _PATH_BSHELL, 1);
