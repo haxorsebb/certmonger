@@ -24,6 +24,7 @@
 #endif
 #ifdef HAVE_OPENSSL
 #include <openssl/bn.h>
+#include <openssl/crypto.h>
 #endif
 
 #ifdef HAVE_GMP
@@ -43,6 +44,19 @@ util_dec_from_hex(const char *hex)
 }
 #else
 #ifdef HAVE_OPENSSL
+#if defined(HAVE_DECL_OPENSSL_FREE) && HAVE_DECL_OPENSSL_FREE
+static void
+free_bn_bn2dec_result(void *p)
+{
+	OPENSSL_free(p);
+}
+#else
+static void
+free_bn_bn2dec_result(void *p)
+{
+	free(p);
+}
+#endif
 char *
 util_dec_from_hex(const char *hex)
 {
@@ -57,7 +71,7 @@ util_dec_from_hex(const char *hex)
 		BN_free(bn);
 		if (tmp != NULL) {
 			ret = strdup(tmp);
-			OPENSSL_free(tmp);
+			free_bn_bn2dec_result(tmp);
 		}
 	} else {
 		ret = strdup("");

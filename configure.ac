@@ -205,6 +205,7 @@ if test x$withopenssl != xno ; then
 	CFLAGS="$OPENSSL_CFLAGS $CFLAGS"
 	LIBS="$OPENSSL_LIBS $LIBS"
 	AC_CHECK_DECLS([OpenSSL_add_all_algorithms,OpenSSL_add_ssl_algorithms],,,[#include <openssl/ssl.h>])
+	AC_CHECK_DECLS(OPENSSL_free,,,[#include <openssl/crypto.h>])
 	CFLAGS="$CFLAGSsave"
 	LIBS="$LIBSsave"
 fi

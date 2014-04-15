@@ -24,9 +24,9 @@
 void
 util_o_init(void)
 {
-#if defined(HAVE_DECL_OPENSSL_ADD_ALL_ALGORITHMS)
+#if defined(HAVE_DECL_OPENSSL_ADD_ALL_ALGORITHMS) && HAVE_DECL_OPENSSL_ADD_ALL_ALGORITHMS
 	OpenSSL_add_all_algorithms();
-#elif defined(HAVE_DECL_OPENSSL_ADD_SSL_ALGORITHMS)
+#elif defined(HAVE_DECL_OPENSSL_ADD_SSL_ALGORITHMS) && HAVE_DECL_OPENSSL_ADD_SSL_ALGORITHMS
 	OpenSSL_add_ssl_algorithms();
 #else
 	SSL_library_init();
