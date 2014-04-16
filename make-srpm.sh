@@ -22,16 +22,16 @@ RELEASE=${FORCE_RELEASE:-`qs --qf '%{release}'`}
 sed -e "s|^Version:.*|Version: $VERSION|g" \
     -e "s|^Release:.*|Release: $RELEASE|g" \
 	"$tmpdir"/cm/certmonger.spec > "$tmpdir"/certmonger.spec
-make dist VERSION="$VERSION" PACKAGE_VERSION="$VERSION"
-autoreconf -i -f
+autoreconf -i -f && \
 configure_dist_target_only=true \
 ./configure --disable-maintainer-mode --disable-systemd --disable-sysvinit \
 	--without-idn --without-openssl --without-gmp \
 	--disable-ec --disable-dsa \
-	"$@"
+	"$@" && \
+make dist VERSION="$VERSION" PACKAGE_VERSION="$VERSION" && \
 rpmbuild --define "_topdir $tmpdir"/cm \
 	 --define "_srcrpmdir $tmpdir"/cm \
 	 --define "_sourcedir $tmpdir"/cm \
-	-bs "$tmpdir"/certmonger.spec
+	-bs "$tmpdir"/certmonger.spec && \
 cp -v *.src.rpm $CHECKOUTDIR
 popd > /dev/null
