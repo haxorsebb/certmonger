@@ -57,7 +57,10 @@ main(int argc, char **argv)
 	int fd, ret, i;
 	void *parent;
 	char *p;
+
+#ifdef HAVE_UUID
 	cm_submit_uuid_fixed_for_testing = 1; /* use fixed UUIDs */
+#endif
 	cm_log_set_method(cm_log_stderr);
 	cm_log_set_level(3);
 	cm_set_fips_from_env();

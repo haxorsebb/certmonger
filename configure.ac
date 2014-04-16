@@ -609,27 +609,31 @@ if ! ${configure_dist_target_only:-false} ; then
 
 	AC_ARG_WITH(uuid,
 	AS_HELP_STRING([--with-uuid],[populate subjectUniqueID in self-signed certs]),
-	[PKG_CHECK_MODULES(UUID,uuid)
-	uuid=yes],
-	[uuid=no
-	if pkg-config uuid ; then
+	[uuid=$with_uuid],
+	[uuid=no])
+	if test x$with_uuid = xyes ; then
 		PKG_CHECK_MODULES(UUID,uuid)
-		uuid=yes
-	fi
-	])
-# Older uuid pkgconfig sets us up to need <uuid/uuid.h>.  Newer versions
-# set us up to need <uuid.h>.
-	savedCFLAGS="$CFLAGS"
-	CFLAGS="$UUID_CFLAGS"
-	AC_CHECK_HEADERS(uuid.h uuid/uuid.h)
-	CFLAGS="$savedCFLAGS"
-	if test x$uuid = xyes ; then
-		AC_DEFINE(HAVE_UUID,1,[Define to have the ability to populate subjectUniqueID in self-signed certs.])
-	fi
-	if test x$ac_cv_header_uuid_uuid_h = xno ; then
-		if test x$ac_cv_header_uuid_h = xno ; then
-			AC_MSG_ERROR(uuid.h header file not found)
+	else
+		if test x$with_uuid != xno ; then
+			if pkg-config uuid ; then
+				PKG_CHECK_MODULES(UUID,uuid)
+				uuid=yes
+			fi
 		fi
+	fi
+	# Older uuid pkgconfig sets us up to need <uuid/uuid.h>.  Newer
+	# versions set us up to need <uuid.h>.
+	if test x$uuid = xyes ; then
+		savedCFLAGS="$CFLAGS"
+		CFLAGS="$UUID_CFLAGS"
+		AC_CHECK_HEADERS(uuid.h uuid/uuid.h)
+		CFLAGS="$savedCFLAGS"
+		if test x$ac_cv_header_uuid_uuid_h = xno ; then
+			if test x$ac_cv_header_uuid_h = xno ; then
+				AC_MSG_ERROR(uuid.h header file not found)
+			fi
+		fi
+		AC_DEFINE(HAVE_UUID,1,[Define to have the ability to populate subjectUniqueID in self-signed certs.])
 	fi
 	CM_DEFAULT_POPULATE_UNIQUE_ID=no
 	AC_SUBST(CM_DEFAULT_POPULATE_UNIQUE_ID)
