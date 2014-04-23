@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 tmpfile=`mktemp ${TMPDIR:-/tmp}/runtestsXXXXXX`
 if test -z "$tmpfile" ; then

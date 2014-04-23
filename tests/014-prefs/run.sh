@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/bash -e
 
 cd "$tmpdir"
 CERTMONGER_CONFIG_DIR=$tmpdir; export CERTMONGER_CONFIG_DIR

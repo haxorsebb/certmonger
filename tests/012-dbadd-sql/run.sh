@@ -1,2 +1,2 @@
-#!/bin/sh -e
+#!/bin/bash -e
 exec env scheme=sql ../012-dbadd/run.sh

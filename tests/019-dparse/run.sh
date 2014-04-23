@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/bash -e
 count=0
 for role in agent end-user ; do
 for good in good.profileSubmit* ; do

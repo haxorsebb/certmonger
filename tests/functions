@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 function initnssdb() {
 	dir=`echo "$1" | cut -f2- -d:`
 	if ! test -d "$dir"/rosubdir ; then
