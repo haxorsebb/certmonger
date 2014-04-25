@@ -18,6 +18,7 @@
 #include "config.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 #ifdef HAVE_GMP_H
 #include <gmp.h>
