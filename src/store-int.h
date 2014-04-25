@@ -84,6 +84,7 @@ struct cm_store_entry {
 	unsigned int cm_cert_is_ca: 1;
 	int cm_cert_ca_path_length;
 	char **cm_cert_crl_distribution_point;
+	char **cm_cert_freshest_crl;
 	char **cm_cert_ocsp_location;
 	char *cm_cert_ns_comment;
 	char *cm_cert_profile;
@@ -109,6 +110,7 @@ struct cm_store_entry {
 	   * ku, eku
 	   * is_ca, ca_path_length
 	   * crl_distribution_points
+	   * freshest_crl
 	   * aia_ocsp_locations
 	   * nscomment
 	   * template
@@ -124,6 +126,7 @@ struct cm_store_entry {
 	unsigned int cm_template_is_ca: 1;
 	int cm_template_ca_path_length;
 	char **cm_template_crl_distribution_point;
+	char **cm_template_freshest_crl;
 	char **cm_template_ocsp_location;
 	char *cm_template_ns_comment;
 	char *cm_template_profile;

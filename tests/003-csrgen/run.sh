@@ -70,6 +70,7 @@ iterate() {
 	nscomment=${14}
 	subjectder=${15}
 	ipaddress=${16}
+	freshestcrl=${17}
 	${certnickname:+cert_nickname=$cert_nickname}
 	# Generate a new CSR using the copy of the key that's in a file.
 	cat > entry.openssl.$size <<- EOF
@@ -93,6 +94,7 @@ iterate() {
 	${ocsp:+template_ocsp=$ocsp}
 	${nscomment:+template_ns_comment=$nscomment}
 	${ipaddress:+template_ipaddress=$ipaddress}
+	${freshestcrl:+template_freshest_crl=$freshestcrl}
 	EOF
 	$toolsdir/keyiread entry.openssl.$size > /dev/null 2>&1
 	echo key_pubkey=616263 >> entry.openssl.$size
@@ -119,6 +121,7 @@ iterate() {
 	${ocsp:+template_ocsp=$ocsp}
 	${nscomment:+template_ns_comment=$nscomment}
 	${ipaddress:+template_ipaddress=$ipaddress}
+	${freshestcrl:+template_freshest_crl=$freshestcrl}
 	EOF
 	grep ^key_pubkey_info= entry.openssl.$size >> entry.nss.$size
 	echo key_pubkey=616263 >> entry.openssl.$size
@@ -154,83 +157,88 @@ iterate() {
 iteration=1
 
 for size in 1024 ; do
-	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress"
+	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress" "$freshestcrl"
 done
 
 for subject in "" "Babs Jensen" CN=somehost "CN=Babs Jensen" ; do
-	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress"
+	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress" "$freshestcrl"
 done
 subject=
 
 for subjectder in "" 30223120301E060355040313177361 30223120301E0603550403131773616265722E626F73746F6E2E7265646861742E636F6D ; do
-	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress"
+	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress" "$freshestcrl"
 done
 subjectder=
 
 for hostname in "" localhost,localhost.localdomain; do
-	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress"
+	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress" "$freshestcrl"
 done
 hostname=
 
 for email in "" root@localhost,root@localhost.localdomain; do
-	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress"
+	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress" "$freshestcrl"
 done
 email=
 
 for principal in "" root@EXAMPLE.COM,root@FOO.EXAMPLE.COM; do
-	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress"
+	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress" "$freshestcrl"
 done
 principal=
 
 for ku in "" 1 10 111 ; do
-	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress"
+	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress" "$freshestcrl"
 done
 ku=
 
 for eku in "" id-kp-clientAuth,id-kp-emailProtection ; do
-	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress"
+	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress" "$freshestcrl"
 done
 eku=
 
 for challengepassword in "" ChallengePasswordIsEncodedInPlainText ; do
-	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress"
+	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress" "$freshestcrl"
 done
 challengepassword=
 
 for certfname in "" CertificateFriendlyName ; do
-	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress"
+	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress" "$freshestcrl"
 done
 certfname=
 
 for ca in "" 0 1 ; do
-	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress"
+	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress" "$freshestcrl"
 done
 ca=
 
 for capathlen in -1 3 ; do
-	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress"
+	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress" "$freshestcrl"
 done
 capathlen=
 
 for crldp in "" http://crl-1.example.com:12345/get,http://crl-2.example.com:12345/get ; do
-	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress"
+	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress" "$freshestcrl"
 done
 crldp=
 
 for ocsp in "" http://ocsp-1.example.com:12345,http://ocsp-2.example.com:12345 ; do
-	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress"
+	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress" "$freshestcrl"
 done
 ocsp=
 
 for nscomment in "" "certmonger generated this request" ; do
-	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress"
+	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress" "$freshestcrl"
 done
 nscomment=
 
 for ipaddress in "" "127.0.0.1" "::1" "blargh" "this request" "1.2.3.4,fe80::" ; do
-	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress"
+	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress" "$freshestcrl"
 done
-nscomment=
+ipaddress=
+
+for freshestcrl in "" http://crl-1.example.com:12345/getdelta,http://crl-2.example.com:12345/getdelta ; do
+	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress" "$freshestcrl"
+done
+freshestcrl=
 
 size=512
 subject="CN=Babs Jensen"
@@ -246,8 +254,12 @@ capathlen=3
 crldp=http://crl-1.example.com:12345/get,http://crl-2.example.com:12345/get
 ocsp=http://ocsp-1.example.com:12345,http://ocsp-2.example.com:12345
 nscomment="certmonger generated this request"
+subjectder=
 ipaddress="127.0.0.1,::1"
-iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$ipaddress"
+freshestcrl=http://crl-1.example.com:12345/getdelta,http://crl-2.example.com:12345/getdelta
+iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress" "$freshestcrl"
 echo "The last CSR (the one with everything) was:"
 openssl req -in csr.nss.$size -outform der | openssl asn1parse -inform der
+cat $tmpdir/key.$size csr.nss.$size 1>&2
+
 echo Test complete "($iteration combinations)".

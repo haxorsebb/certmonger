@@ -20,6 +20,13 @@ function append() {
 	template_principal=root@EXAMPLE.COM,root@FOO.EXAMPLE.COM
 	template_ku=111
 	template_eku=id-kp-clientAuth,id-kp-emailProtection
+	template_challengepassword=ChallengePasswordIsEncodedInPlainText
+	template_certfname=CertificateFriendlyName
+	template_crldp=http://crl-1.example.com:12345/get,http://crl-2.example.com:12345/get
+	template_ocsp=http://ocsp-1.example.com:12345,http://ocsp-2.example.com:12345
+	template_nscomment=certmonger generated this request
+	template_ipaddress=127.0.0.1,::1
+	template_freshest_crl=http://dcrl-1.example.com:12345/get,http://dcrl-2.example.com:12345/get
 	EOF
 }
 
@@ -79,4 +86,5 @@ for size in 512 1024 1536 2048 3072 4096 ; do
 		echo $size OK.
 	fi
 done
+cat cert.nss.$size 1>&2
 echo Test complete.

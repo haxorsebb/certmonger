@@ -1502,7 +1502,7 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 				unsigned char **extensions, size_t *length)
 {
 	PLArenaPool *arena;
-	CERTCertExtension ext[9], *exts[10], **exts_ptr;
+	CERTCertExtension ext[10], *exts[11], **exts_ptr;
 	SECOidData *oid;
 	SECItem *item, encoded;
 	SECItem der_false = {
@@ -1642,6 +1642,18 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 			i++;
 		}
 	}
+	if (entry->cm_template_freshest_crl != NULL) {
+		oid = SECOID_FindOIDByTag(SEC_OID_X509_FRESHEST_CRL);
+		tmp = entry->cm_template_freshest_crl;
+		item = cm_certext_build_crldp(entry, arena, tmp);
+		if ((item != NULL) && (oid != NULL)) {
+			ext[i].id = oid->oid;
+			ext[i].critical = der_false;
+			ext[i].value = *item;
+			exts[i] = &ext[i];
+			i++;
+		}
+	}
 	if (entry->cm_template_ns_comment != NULL) {
 		oid = SECOID_FindOIDByTag(SEC_OID_NS_CERT_EXT_COMMENT);
 		item = cm_certext_build_ns_comment(entry, arena,
@@ -1765,14 +1777,14 @@ cm_certext_read_aia(struct cm_store_entry *entry, PLArenaPool *arena,
 }
 
 static void
-cm_certext_read_crldp(struct cm_store_entry *entry, PLArenaPool *arena,
-		      CERTCertExtension *ext)
+cm_certext_read_crlext(struct cm_store_entry *entry, PLArenaPool *arena,
+		       CERTCertExtension *ext, char ***dest)
 {
 	CERTCrlDistributionPoints *crldp;
 	CERTGeneralName *name;
 	SECItem uri;
 	void *parent;
-	char *tmp;
+	char *tmp, **list = *dest;
 	unsigned i, n;
 
 	crldp = CERT_DecodeCRLDistributionPoints(arena, &ext->value);
@@ -1788,11 +1800,10 @@ cm_certext_read_crldp(struct cm_store_entry *entry, PLArenaPool *arena,
 			}
 		}
 	}
-	talloc_free(entry->cm_cert_crl_distribution_point);
-	entry->cm_cert_crl_distribution_point = talloc_zero_array(entry,
-								  char *,
-								  n + 1);
-	if (entry->cm_cert_crl_distribution_point == NULL) {
+	talloc_free(list);
+	list = talloc_zero_array(entry, char *, n + 1);
+	if (list == NULL) {
+		*dest = list;
 		return;
 	}
 	for (i = 0, n = 0; crldp->distPoints[i] != NULL; i++) {
@@ -1801,14 +1812,30 @@ cm_certext_read_crldp(struct cm_store_entry *entry, PLArenaPool *arena,
 			name = crldp->distPoints[i]->distPoint.fullName;
 			if (name->type == certURI) {
 				uri = name->name.other;
-				parent = entry->cm_cert_crl_distribution_point;
+				parent = list;
 				tmp = talloc_strndup(parent,
 						     (char *) uri.data,
 						     uri.len);
-				entry->cm_cert_crl_distribution_point[n++] = tmp;
+				list[n++] = tmp;
 			}
 		}
 	}
+	*dest = list;
+}
+
+static void
+cm_certext_read_crldp(struct cm_store_entry *entry, PLArenaPool *arena,
+		      CERTCertExtension *ext)
+{
+	cm_certext_read_crlext(entry, arena, ext,
+			       &entry->cm_cert_crl_distribution_point);
+}
+
+static void
+cm_certext_read_freshest_crl(struct cm_store_entry *entry, PLArenaPool *arena,
+			     CERTCertExtension *ext)
+{
+	cm_certext_read_crlext(entry, arena, ext, &entry->cm_cert_freshest_crl);
 }
 
 static void
@@ -1842,7 +1869,7 @@ cm_certext_read_extensions(struct cm_store_entry *entry, PLArenaPool *arena,
 {
 	int i;
 	PLArenaPool *local_arena;
-	SECOidData *ku_oid, *eku_oid, *san_oid;
+	SECOidData *ku_oid, *eku_oid, *san_oid, *freshest_crl_oid;
 	SECOidData *basic_oid, *nsc_oid, *aia_oid, *crldp_oid, *profile_oid;
 
 	if (extensions == NULL) {
@@ -1899,6 +1926,12 @@ cm_certext_read_extensions(struct cm_store_entry *entry, PLArenaPool *arena,
 		       "extension.\n");
 		return;
 	}
+	freshest_crl_oid = SECOID_FindOIDByTag(SEC_OID_X509_FRESHEST_CRL);
+	if (freshest_crl_oid == NULL) {
+		cm_log(1, "Internal library error: unable to look up OID for "
+		       "freshest certificate revocation list extension.\n");
+		return;
+	}
 	profile_oid = (SECOidData *) &oid_microsoft_certtype;
 	for (i = 0; extensions[i] != NULL; i++) {
 		if (SECITEM_ItemsAreEqual(&ku_oid->oid, &extensions[i]->id)) {
@@ -1910,7 +1943,8 @@ cm_certext_read_extensions(struct cm_store_entry *entry, PLArenaPool *arena,
 		if (SECITEM_ItemsAreEqual(&san_oid->oid, &extensions[i]->id)) {
 			cm_certext_read_san(entry, arena, extensions[i]);
 		}
-		if (SECITEM_ItemsAreEqual(&basic_oid->oid, &extensions[i]->id)) {
+		if (SECITEM_ItemsAreEqual(&basic_oid->oid,
+					  &extensions[i]->id)) {
 			cm_certext_read_basic(entry, arena, extensions[i]);
 		}
 		if (SECITEM_ItemsAreEqual(&nsc_oid->oid, &extensions[i]->id)) {
@@ -1919,10 +1953,16 @@ cm_certext_read_extensions(struct cm_store_entry *entry, PLArenaPool *arena,
 		if (SECITEM_ItemsAreEqual(&aia_oid->oid, &extensions[i]->id)) {
 			cm_certext_read_aia(entry, arena, extensions[i]);
 		}
-		if (SECITEM_ItemsAreEqual(&crldp_oid->oid, &extensions[i]->id)) {
+		if (SECITEM_ItemsAreEqual(&crldp_oid->oid,
+					  &extensions[i]->id)) {
 			cm_certext_read_crldp(entry, arena, extensions[i]);
 		}
-		if (SECITEM_ItemsAreEqual(&profile_oid->oid, &extensions[i]->id)) {
+		if (SECITEM_ItemsAreEqual(&freshest_crl_oid->oid,
+					  &extensions[i]->id)) {
+			cm_certext_read_freshest_crl(entry, arena, extensions[i]);
+		}
+		if (SECITEM_ItemsAreEqual(&profile_oid->oid,
+					  &extensions[i]->id)) {
 			cm_certext_read_profile(entry, arena, extensions[i]);
 		}
 	}

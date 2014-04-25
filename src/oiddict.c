@@ -61,8 +61,9 @@ static const struct {
 	{"id-ce-issuerAltName", "id-ce.18"},
 	{"id-ce-basicConstraints", "id-ce.19"},
 	{"id-ce-cRLNumber", "id-ce.20"},
-	{"id-ce-extKeyUsage", "id-ce.37"},
 	{"id-ce-cRLDistributionPoints", "id-ce.31"},
+	{"id-ce-extKeyUsage", "id-ce.37"},
+	{"id-ce-freshestCRL", "id-ce.46"},
 };
 
 static int

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2012,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -176,6 +176,16 @@ cm_certread_write_data_to_pipe(struct cm_store_entry *entry, FILE *fp)
 		fprintf(fp, "%s%s", (i > 0) ? "," : " ",
 			cm_store_base64_from_bin(NULL,
 						 (unsigned char *) entry->cm_cert_crl_distribution_point[i],
+						 -1));
+	}
+	fprintf(fp, "%s\n", i > 0 ? "" : " ");
+	for (i = 0;
+	     (entry->cm_cert_freshest_crl != NULL) &&
+	     (entry->cm_cert_freshest_crl[i] != NULL);
+	     i++) {
+		fprintf(fp, "%s%s", (i > 0) ? "," : " ",
+			cm_store_base64_from_bin(NULL,
+						 (unsigned char *) entry->cm_cert_freshest_crl[i],
 						 -1));
 	}
 	fprintf(fp, "%s\n", i > 0 ? "" : " ");
@@ -400,6 +410,26 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 			}
 			break;
 		case 19:
+			talloc_free(entry->cm_cert_freshest_crl);
+			entry->cm_cert_freshest_crl = talloc_zero_array(entry,
+									char *,
+									q - p + 2);
+			vals = entry->cm_cert_freshest_crl;
+			u = p;
+			j = 0;
+			while ((*u != '\0') && (u < q)) {
+				v = u + strcspn(u, ",\r\n");
+				if (v > u) {
+					entry->cm_cert_freshest_crl[j] = cm_store_base64_as_bin(vals,
+												u,
+												v - u,
+												NULL);
+					j++;
+				}
+				u = v + strspn(u, ",\r\n");
+			}
+			break;
+		case 20:
 			talloc_free(entry->cm_cert_ns_comment);
 			entry->cm_cert_ns_comment = (p == q) ? NULL :
 						    cm_store_base64_as_bin(entry,
@@ -407,7 +437,7 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 								           q - p,
 								           NULL);
 			break;
-		case 20:
+		case 21:
 			talloc_free(entry->cm_cert_profile);
 			entry->cm_cert_profile = (p == q) ? NULL :
 						 cm_store_base64_as_bin(entry,
@@ -415,7 +445,7 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 								        q - p,
 								        NULL);
 			break;
-		case 21:
+		case 22:
 			talloc_free(entry->cm_cert);
 			entry->cm_cert = (p[strspn(p, " \r\n")] == '\0') ?
 					 NULL :

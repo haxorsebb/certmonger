@@ -82,6 +82,7 @@ enum cm_store_file_field {
 	cm_store_entry_field_cert_is_ca,
 	cm_store_entry_field_cert_ca_path_length,
 	cm_store_entry_field_cert_crl_distribution_point,
+	cm_store_entry_field_cert_freshest_crl,
 	cm_store_entry_field_cert_ocsp_location,
 	cm_store_entry_field_cert_ns_comment,
 	cm_store_entry_field_cert_profile,
@@ -101,6 +102,7 @@ enum cm_store_file_field {
 	cm_store_entry_field_template_is_ca,
 	cm_store_entry_field_template_ca_path_length,
 	cm_store_entry_field_template_crl_distribution_point,
+	cm_store_entry_field_template_freshest_crl,
 	cm_store_entry_field_template_ocsp_location,
 	cm_store_entry_field_template_ns_comment,
 	cm_store_entry_field_template_profile,
@@ -182,6 +184,7 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_cert_is_ca, "cert_is_ca"},
 	{cm_store_entry_field_cert_ca_path_length, "cert_ca_path_length"},
 	{cm_store_entry_field_cert_crl_distribution_point, "cert_crldp"},
+	{cm_store_entry_field_cert_freshest_crl, "cert_freshest_crl"},
 	{cm_store_entry_field_cert_ocsp_location, "cert_ocsp"},
 	{cm_store_entry_field_cert_ns_comment, "cert_ns_comment"},
 	{cm_store_entry_field_cert_profile, "cert_profile"},
@@ -201,6 +204,7 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_template_is_ca, "template_is_ca"},
 	{cm_store_entry_field_template_ca_path_length, "template_ca_path_length"},
 	{cm_store_entry_field_template_crl_distribution_point, "template_crldp"},
+	{cm_store_entry_field_template_freshest_crl, "template_freshest_crl"},
 	{cm_store_entry_field_template_ocsp_location, "template_ocsp"},
 	{cm_store_entry_field_template_ns_comment, "template_ns_comment"},
 	{cm_store_entry_field_template_profile, "template_profile"}, /* right */
@@ -651,6 +655,10 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 				ret->cm_cert_crl_distribution_point =
 					free_if_empty_multi(ret, p);
 				break;
+			case cm_store_entry_field_cert_freshest_crl:
+				ret->cm_cert_freshest_crl =
+					free_if_empty_multi(ret, p);
+				break;
 			case cm_store_entry_field_cert_ocsp_location:
 				ret->cm_cert_ocsp_location =
 					free_if_empty_multi(ret, p);
@@ -718,6 +726,10 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 				break;
 			case cm_store_entry_field_template_crl_distribution_point:
 				ret->cm_template_crl_distribution_point =
+					free_if_empty_multi(ret, p);
+				break;
+			case cm_store_entry_field_template_freshest_crl:
+				ret->cm_template_freshest_crl =
 					free_if_empty_multi(ret, p);
 				break;
 			case cm_store_entry_field_template_ocsp_location:
@@ -864,6 +876,7 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_cert_is_ca:
 			case cm_store_entry_field_cert_ca_path_length:
 			case cm_store_entry_field_cert_crl_distribution_point:
+			case cm_store_entry_field_cert_freshest_crl:
 			case cm_store_entry_field_cert_ocsp_location:
 			case cm_store_entry_field_cert_ns_comment:
 			case cm_store_entry_field_cert_profile:
@@ -881,6 +894,7 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_template_is_ca:
 			case cm_store_entry_field_template_ca_path_length:
 			case cm_store_entry_field_template_crl_distribution_point:
+			case cm_store_entry_field_template_freshest_crl:
 			case cm_store_entry_field_template_ocsp_location:
 			case cm_store_entry_field_template_ns_comment:
 			case cm_store_entry_field_template_profile:
@@ -1180,6 +1194,8 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 				entry->cm_cert_ca_path_length);
 	cm_store_file_write_strs(fp, cm_store_entry_field_cert_crl_distribution_point,
 				 entry->cm_cert_crl_distribution_point);
+	cm_store_file_write_strs(fp, cm_store_entry_field_cert_freshest_crl,
+				 entry->cm_cert_freshest_crl);
 	cm_store_file_write_strs(fp, cm_store_entry_field_cert_ocsp_location,
 				 entry->cm_cert_ocsp_location);
 	cm_store_file_write_str(fp, cm_store_entry_field_cert_ns_comment,
@@ -1215,6 +1231,8 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 				entry->cm_template_ca_path_length);
 	cm_store_file_write_strs(fp, cm_store_entry_field_template_crl_distribution_point,
 				 entry->cm_template_crl_distribution_point);
+	cm_store_file_write_strs(fp, cm_store_entry_field_template_freshest_crl,
+				 entry->cm_template_freshest_crl);
 	cm_store_file_write_strs(fp,
 				 cm_store_entry_field_template_ocsp_location,
 				 entry->cm_template_ocsp_location);
@@ -1795,6 +1813,7 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	ret->cm_cert_is_ca = entry->cm_cert_is_ca;
 	ret->cm_cert_ca_path_length = entry->cm_cert_ca_path_length;
 	ret->cm_cert_crl_distribution_point = cm_store_maybe_strdupv(ret, entry->cm_cert_crl_distribution_point);
+	ret->cm_cert_freshest_crl = cm_store_maybe_strdupv(ret, entry->cm_cert_freshest_crl);
 	ret->cm_cert_ocsp_location = cm_store_maybe_strdupv(ret, entry->cm_cert_ocsp_location);
 	ret->cm_cert_ns_comment = cm_store_maybe_strdup(ret, entry->cm_cert_ns_comment);
 	ret->cm_cert_profile = cm_store_maybe_strdup(ret,
@@ -1816,6 +1835,7 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	ret->cm_template_is_ca = entry->cm_template_is_ca;
 	ret->cm_template_ca_path_length = entry->cm_template_ca_path_length;
 	ret->cm_template_crl_distribution_point = cm_store_maybe_strdupv(ret, entry->cm_template_crl_distribution_point);
+	ret->cm_template_freshest_crl = cm_store_maybe_strdupv(ret, entry->cm_template_freshest_crl);
 	ret->cm_template_ocsp_location = cm_store_maybe_strdupv(ret, entry->cm_template_ocsp_location);
 	ret->cm_template_ns_comment = cm_store_maybe_strdup(ret, entry->cm_template_ns_comment);
 	ret->cm_template_profile = cm_store_maybe_strdup(ret, entry->cm_template_profile);
