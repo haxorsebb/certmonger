@@ -124,6 +124,7 @@ enum cm_store_file_field {
 	cm_store_entry_field_ca_error,
 
 	cm_store_entry_field_cert,
+	cm_store_entry_field_cert_chain,
 
 	cm_store_entry_field_pre_certsave_command,
 	cm_store_entry_field_pre_certsave_uid,
@@ -137,6 +138,10 @@ enum cm_store_file_field {
 	cm_store_ca_field_internal_serial,
 	cm_store_ca_field_internal_issue_time,
 	cm_store_ca_field_external_helper,
+
+	cm_store_ca_field_root_certs,
+	cm_store_ca_field_other_root_certs,
+	cm_store_ca_field_other_certs,
 
 	cm_store_file_field_invalid_high,
 };
@@ -226,6 +231,8 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_ca_error, "ca_error"},
 
 	{cm_store_entry_field_cert, "cert"},
+	{cm_store_entry_field_cert_chain, "cert_chain"},
+
 	{cm_store_entry_field_pre_certsave_command, "pre_certsave_command"},
 	{cm_store_entry_field_pre_certsave_uid, "pre_certsave_uid"},
 	{cm_store_entry_field_post_certsave_command, "post_certsave_command"},
@@ -238,6 +245,10 @@ static struct cm_store_file_field_list {
 	{cm_store_ca_field_internal_serial, "ca_internal_serial"},
 	{cm_store_ca_field_internal_issue_time, "ca_internal_issue_time"},
 	{cm_store_ca_field_external_helper, "ca_external_helper"},
+
+	{cm_store_ca_field_root_certs, "ca_root_certs"},
+	{cm_store_ca_field_other_root_certs, "ca_other_root_certs"},
+	{cm_store_ca_field_other_certs, "ca_other_certs"},
 };
 
 static enum cm_store_file_field
@@ -422,6 +433,59 @@ free_if_empty_multi(void *parent, char *p)
 	return s;
 }
 
+static struct cm_nickcert **
+parse_nickcert_list(void *parent, const char *s)
+{
+	struct cm_nickcert **ret = NULL, **tmp, *nc;
+	const char *p, *q;
+	int i = 0, j;
+
+	p = s;
+	while (*p != '\0') {
+		nc = talloc_ptrtype(parent, nc);
+		if (nc == NULL) {
+			return NULL;
+		}
+		q = p + strcspn(p, "\r\n");
+		nc->cm_nickname = talloc_strndup(nc, p, q - p);
+		if (nc->cm_nickname == NULL) {
+			talloc_free(ret);
+			return NULL;
+		}
+		for (j = 0; nc->cm_nickname[j] != '\0'; j++) {
+			if (nc->cm_nickname[j] == '\\') {
+				memmove(nc->cm_nickname + j,
+					nc->cm_nickname + j + 1,
+					strlen(nc->cm_nickname + j));
+			}
+		}
+		p = q + strspn(q, "\r\n");
+		q = strstr(p, "-----END");
+		if (q == NULL) {
+			talloc_free(ret);
+			return NULL;
+		}
+		q += strcspn(q, "\r\n");
+		q += strspn(q, "\r\n");
+		nc->cm_cert = talloc_strndup(nc, p, q - p);
+		if (nc->cm_cert == NULL) {
+			talloc_free(ret);
+			return NULL;
+		}
+		tmp = talloc_realloc(parent, ret, struct cm_nickcert *, i + 2);
+		if (tmp == NULL) {
+			talloc_free(ret);
+			return NULL;
+		}
+		ret = tmp;
+		talloc_steal(ret, nc);
+		ret[i++] = nc;
+		ret[i] = NULL;
+		p = q;
+	}
+	return ret;
+}
+
 char *
 cm_store_entry_next_busname(void *parent)
 {
@@ -435,6 +499,7 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 	char **s, *p;
 	int i;
 	enum cm_store_file_field field;
+
 	ret = talloc_ptrtype(parent, ret);
 	if (ret != NULL) {
 		memset(ret, 0, sizeof(*ret));
@@ -455,6 +520,9 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_ca_field_internal_serial:
 			case cm_store_ca_field_internal_issue_time:
 			case cm_store_ca_field_external_helper:
+			case cm_store_ca_field_root_certs:
+			case cm_store_ca_field_other_root_certs:
+			case cm_store_ca_field_other_certs:
 				break;
 			case cm_store_file_field_id:
 				ret->cm_nickname = free_if_empty(p);
@@ -780,6 +848,11 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_cert:
 				ret->cm_cert = free_if_empty(p);
 				break;
+			case cm_store_entry_field_cert_chain:
+				ret->cm_cert_chain =
+					parse_nickcert_list(ret, p);
+				talloc_free(p);
+				break;
 			case cm_store_entry_field_pre_certsave_command:
 				ret->cm_pre_certsave_command  = free_if_empty(p);
 				break;
@@ -909,6 +982,7 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_ca_cookie:
 			case cm_store_entry_field_ca_error:
 			case cm_store_entry_field_cert:
+			case cm_store_entry_field_cert_chain:
 			case cm_store_entry_field_pre_certsave_command:
 			case cm_store_entry_field_pre_certsave_uid:
 			case cm_store_entry_field_post_certsave_command:
@@ -946,6 +1020,21 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 				break;
 			case cm_store_ca_field_external_helper:
 				ret->cm_ca_external_helper = free_if_empty(p);
+				break;
+			case cm_store_ca_field_root_certs:
+				ret->cm_ca_root_certs =
+					parse_nickcert_list(ret, p);
+				talloc_free(p);
+				break;
+			case cm_store_ca_field_other_root_certs:
+				ret->cm_ca_other_root_certs =
+					parse_nickcert_list(ret, p);
+				talloc_free(p);
+				break;
+			case cm_store_ca_field_other_certs:
+				ret->cm_ca_other_certs =
+					parse_nickcert_list(ret, p);
+				talloc_free(p);
 				break;
 			}
 		}
@@ -1036,6 +1125,49 @@ cm_store_file_write_strs(FILE *fp, enum cm_store_file_field field, char **s)
 		}
 	}
 	fprintf(fp, "\n");
+	return 0;
+}
+
+static int
+cm_store_file_write_nickcert_list(FILE *fp, enum cm_store_file_field field,
+				  struct cm_nickcert **nc)
+{
+	const char *p, *q;
+	int i, j;
+
+	if ((nc == NULL) || (nc[0] == NULL)) {
+		return 0;
+	}
+	fprintf(fp, "%s=", cm_store_file_line_of_field(field));
+	for (i = 0; nc[i] != NULL; i++) {
+		if (i > 0) {
+			fputc(' ', fp);
+		}
+		for (j = 0; nc[i]->cm_nickname[j] != '\0'; j++) {
+			switch (nc[i]->cm_nickname[j]) {
+			case '\\':
+			case ',':
+				fputc('\\', fp);
+				/* fall through */
+			default:
+				fputc(nc[i]->cm_nickname[j], fp);
+				break;
+			}
+		}
+		if (ferror(fp)) {
+			return -1;
+		}
+		fprintf(fp, "\n");
+		p = nc[i]->cm_cert;
+		while (*p != '\0') {
+			q = p + strcspn(p, "\r\n");
+			fprintf(fp, " %.*s\n", (int) (q - p), p);
+			p = q + strspn(q, "\r\n");
+		}
+		if (ferror(fp)) {
+			return -1;
+		}
+	}
 	return 0;
 }
 
@@ -1267,6 +1399,8 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 	cm_store_file_write_str(fp, cm_store_entry_field_ca_error,
 				entry->cm_ca_error);
 	cm_store_file_write_str(fp, cm_store_entry_field_cert, entry->cm_cert);
+	cm_store_file_write_nickcert_list(fp, cm_store_entry_field_cert_chain,
+					  entry->cm_cert_chain);
 	cm_store_file_write_str(fp, cm_store_entry_field_pre_certsave_command,
 				entry->cm_pre_certsave_command);
 	cm_store_file_write_str(fp, cm_store_entry_field_pre_certsave_uid,
@@ -1512,6 +1646,12 @@ cm_store_ca_write(FILE *fp, struct cm_store_ca *ca)
 					ca->cm_ca_external_helper);
 		break;
 	}
+	cm_store_file_write_nickcert_list(fp, cm_store_ca_field_root_certs,
+					  ca->cm_ca_root_certs);
+	cm_store_file_write_nickcert_list(fp, cm_store_ca_field_other_root_certs,
+					  ca->cm_ca_other_root_certs);
+	cm_store_file_write_nickcert_list(fp, cm_store_ca_field_other_certs,
+					  ca->cm_ca_other_certs);
 	if (ferror(fp)) {
 		return -1;
 	}
@@ -1766,6 +1906,40 @@ cm_store_get_all_cas(void *parent)
 	return ret;
 }
 
+static struct cm_nickcert **
+cm_store_maybe_dup_nickcert_list(void *parent, struct cm_nickcert **certs)
+{
+	struct cm_nickcert **ret = NULL, *nc;
+	int i;
+
+	if (certs == NULL) {
+		return NULL;
+	}
+	for (i = 0; certs[i] != NULL; i++) {
+		continue;
+	}
+	ret = talloc_realloc(parent, NULL, struct cm_nickcert *, i + 1);
+	if (ret == NULL) {
+		return NULL;
+	}
+	for (i = 0; certs[i] != NULL; i++) {
+		nc = talloc_ptrtype(parent, nc);
+		if (nc == NULL) {
+			talloc_free(ret);
+			return NULL;
+		}
+		nc->cm_nickname = talloc_strdup(nc, certs[i]->cm_nickname);
+		nc->cm_cert = talloc_strdup(nc, certs[i]->cm_cert);
+		if ((nc->cm_nickname == NULL) || (nc->cm_cert == NULL)) {
+			talloc_free(ret);
+			return NULL;
+		}
+		ret[i] = nc;
+	}
+	ret[i] = NULL;
+	return ret;
+}
+
 struct cm_store_entry *
 cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 {
@@ -1851,6 +2025,7 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	ret->cm_ca_cookie = cm_store_maybe_strdup(ret, entry->cm_ca_cookie);
 	ret->cm_ca_error = cm_store_maybe_strdup(ret, entry->cm_ca_error);
 	ret->cm_cert = cm_store_maybe_strdup(ret, entry->cm_cert);
+	ret->cm_cert_chain = cm_store_maybe_dup_nickcert_list(ret, entry->cm_cert_chain);
 	ret->cm_pre_certsave_command = cm_store_maybe_strdup(ret, entry->cm_pre_certsave_command);
 	ret->cm_pre_certsave_uid = cm_store_maybe_strdup(ret, entry->cm_pre_certsave_uid);
 	ret->cm_post_certsave_command = cm_store_maybe_strdup(ret, entry->cm_post_certsave_command);
@@ -1880,5 +2055,11 @@ cm_store_ca_dup(void *parent, struct cm_store_ca *ca)
 	ret->cm_ca_internal_issue_time = ca->cm_ca_internal_issue_time;
 	ret->cm_ca_external_helper =
 		cm_store_maybe_strdup(ret, ca->cm_ca_external_helper);
+	ret->cm_ca_root_certs =
+		cm_store_maybe_dup_nickcert_list(ret, ca->cm_ca_root_certs);
+	ret->cm_ca_other_root_certs =
+		cm_store_maybe_dup_nickcert_list(ret, ca->cm_ca_other_root_certs);
+	ret->cm_ca_other_certs =
+		cm_store_maybe_dup_nickcert_list(ret, ca->cm_ca_other_certs);
 	return ret;
 }

@@ -153,6 +153,7 @@ main(int argc, char **argv)
 		ret = -1;
 	}
 	cm_store_entry_save(entry);
+	cm_store_ca_save(ca);
 	talloc_free(parent);
 	return ret;
 }

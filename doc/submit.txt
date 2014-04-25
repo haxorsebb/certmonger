@@ -46,7 +46,7 @@ Operations to be added (tentative):
     * Poll for this at startup.
   * Invoked with "FETCH-ROOTS" as the value of the $CERTMONGER_OPERATION
     environment variable:
-    * Output suggested nickname for CA certificate when stored in an NSS
+    * Output suggested nickname for root certificate when stored in an NSS
       database (a.k.a FriendlyName), root certificate in PEM format,
       blank line, set of other trusted roots with nicknames (no
       separators between them, nicknames first to match the presentation

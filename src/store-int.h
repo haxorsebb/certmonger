@@ -185,6 +185,11 @@ struct cm_store_entry {
 	char *cm_ca_error;
 	/* The certificate, if we have one. */
 	char *cm_cert;
+	/* Certificates between ours and the CA's root, if there are any. */
+	struct cm_nickcert {
+		char *cm_nickname;	/* Suggested nickname. */
+		char *cm_cert;		/* PEM-format certificate. */
+	} **cm_cert_chain;
 	/* A command to run before we save the certificate. */
 	char *cm_pre_certsave_command;
 	/* The UID of the user as whom we run the above command. */
@@ -220,6 +225,14 @@ struct cm_store_ca {
 	int cm_ca_internal_force_issue_time:1;
 	time_t cm_ca_internal_issue_time;
 	char *cm_ca_external_helper;
+	/* "The" root, at the top of the chain of trust. */
+	struct cm_nickcert **cm_ca_root_certs;
+	/* A possibly-empty list of other trusted roots, for whatever reason. */
+	struct cm_nickcert **cm_ca_other_root_certs;
+	/* A possibly-empty list of other certificates which we might need when
+	 * constructing chains.  If our issuer isn't self-signed, then it
+	 * should show up in this list. */
+	struct cm_nickcert **cm_ca_other_certs;
 };
 
 const char *cm_store_state_as_string(enum cm_state state);
