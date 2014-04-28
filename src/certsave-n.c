@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012,2013 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -71,6 +71,17 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	CERTSignedData csdata;
 	CERTCertListNode *node;
 	struct cm_certsave_n_settings *settings;
+
+	if (entry->cm_cert_storage_location == NULL) {
+		cm_log(1, "Error saving certificate: no location "
+		       "specified.\n");
+		_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
+	}
+	if (entry->cm_cert_nickname == NULL) {
+		cm_log(1, "Error saving certificate: no nickname "
+		       "specified.\n");
+		_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
+	}
 
 	/* Open the database. */
 	settings = userdata;

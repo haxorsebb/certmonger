@@ -54,6 +54,13 @@ cm_certsave_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	BIO *bio;
 	FILE *pem;
 	X509 *cert;
+
+	if (entry->cm_cert_storage_location == NULL) {
+		cm_log(1, "Error saving certificate: no location "
+		       "specified.\n");
+		_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
+	}
+
 	util_o_init();
 	bio = BIO_new_mem_buf(entry->cm_cert, strlen(entry->cm_cert));
 	if (bio != NULL) {

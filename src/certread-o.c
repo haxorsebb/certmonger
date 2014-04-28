@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -61,6 +61,12 @@ cm_certread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	char buf[LINE_MAX];
 	unsigned char *der;
 	long error;
+
+	if (entry->cm_cert_storage_location == NULL) {
+		cm_log(1, "Error reading certificate: no location "
+		       "specified.\n");
+		_exit(1);
+	}
 
 	util_o_init();
 	ERR_load_crypto_strings();

@@ -79,6 +79,17 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	FILE *fp;
 	const char *es;
 
+	if (entry->cm_cert_storage_location == NULL) {
+		cm_log(1, "Error reading certificate: no location "
+		       "specified.\n");
+		_exit(1);
+	}
+	if (entry->cm_cert_nickname == NULL) {
+		cm_log(1, "Error reading certificate: no nickname "
+		       "specified.\n");
+		_exit(1);
+	}
+
 	/* Open the status descriptor for stdio. */
 	fp = fdopen(fd, "w");
 	if (fp == NULL) {
