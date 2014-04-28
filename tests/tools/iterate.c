@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -123,7 +123,7 @@ main(int argc, char **argv)
 	}
 	old_state = entry->cm_state;
 	state = cm_store_state_as_string(entry->cm_state);
-	if (cm_iterate_init(entry, &istate) != 0) {
+	if (cm_iterate_entry_init(entry, &istate) != 0) {
 		printf("Error initializing.\n");
 		return 1;
 	}
@@ -134,8 +134,9 @@ main(int argc, char **argv)
 	state = cm_store_state_as_string(entry->cm_state);
 	printf("%s\n-START-\n", state);
 	fflush(NULL);
-	while (cm_iterate(entry, cm.ca, &cm, get_ca_by_index, get_n_cas,
-			  NULL, NULL, istate, &when, &delay, &readfd) == 0) {
+	while (cm_iterate_entry(entry, cm.ca, &cm, get_ca_by_index, get_n_cas,
+				NULL, NULL, istate, &when, &delay,
+				&readfd) == 0) {
 		state = cm_store_state_as_string(entry->cm_state);
 		switch (when) {
 		case cm_time_now:
@@ -252,7 +253,7 @@ main(int argc, char **argv)
 		printf("-ERROR-\n");
 		fflush(NULL);
 	}
-	cm_iterate_done(entry, istate);
+	cm_iterate_entry_done(entry, istate);
 	talloc_free(parent);
 	return 0;
 }

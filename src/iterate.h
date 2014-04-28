@@ -23,9 +23,12 @@ struct cm_store_ca;
 struct cm_context;
 
 /* Start tracking a working state for this entry. */
-int cm_iterate_init(struct cm_store_entry *entry, void **cm_iterate_state);
+int cm_iterate_entry_init(struct cm_store_entry *entry, void **cm_iterate_state);
 
-/* Figure out what to do next about this specific entry. */
+/* Start tracking a working state for a CA's maintenance tasks. */
+int cm_iterate_ca_init(struct cm_store_ca *ca, void **cm_iterate_state);
+
+/* Figure out what to do next about this specific entry or CA. */
 enum cm_time {
 	cm_time_now,	/* Poke again without delay. */
 	cm_time_soon,	/* Soon - small delays ok. */
@@ -33,22 +36,32 @@ enum cm_time {
 	cm_time_delay,	/* At specified delay. */
 	cm_time_no_time	/* Wait for data on specified descriptor. */
 };
-int cm_iterate(struct cm_store_entry *entry,
-	       struct cm_store_ca *ca,
-	       struct cm_context *context,
-	       struct cm_store_ca *(*get_ca_by_index)(struct cm_context *, int),
-	       int (*get_n_cas)(struct cm_context *),
-	       void (*emit_entry_saved_cert)(struct cm_context *,
-					     struct cm_store_entry *),
-	       void (*emit_entry_changes)(struct cm_context *,
-					  struct cm_store_entry *,
-					  struct cm_store_entry *),
-	       void *cm_iterate_state,
-	       enum cm_time *when,
-	       int *delay,
-	       int *readfd);
+int cm_iterate_entry(struct cm_store_entry *entry,
+		     struct cm_store_ca *ca,
+		     struct cm_context *context,
+		     struct cm_store_ca *(*get_ca_by_index)(struct cm_context *, int),
+		     int (*get_n_cas)(struct cm_context *),
+		     void (*emit_entry_saved_cert)(struct cm_context *,
+						   struct cm_store_entry *),
+		     void (*emit_entry_changes)(struct cm_context *,
+						struct cm_store_entry *,
+						struct cm_store_entry *),
+		     void *cm_iterate_state,
+		     enum cm_time *when,
+		     int *delay,
+		     int *readfd);
+int cm_iterate_ca(struct cm_store_ca *ca,
+		  struct cm_context *context,
+		  void (*emit_ca_changes)(struct cm_context *,
+					  struct cm_store_ca *,
+					  struct cm_store_ca *),
+		  void *cm_iterate_state,
+		  enum cm_time *when,
+		  int *delay,
+		  int *readfd);
 
 /* We're shutting down. */
-int cm_iterate_done(struct cm_store_entry *entry, void *cm_iterate_state);
+int cm_iterate_entry_done(struct cm_store_entry *entry, void *cm_iterate_state);
+int cm_iterate_ca_done(struct cm_store_ca *ca, void *cm_iterate_state);
 
 #endif

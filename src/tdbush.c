@@ -2762,8 +2762,8 @@ request_modify(DBusConnection *conn, DBusMessage *msg,
 								propname);
 			}
 			cm_tdbusm_set_bp(rep,
-					 cm_restart_one(ctx,
-							entry->cm_nickname),
+					 cm_restart_entry(ctx,
+							  entry->cm_nickname),
 					 new_request_path);
 			dbus_connection_send(conn, rep, NULL);
 			dbus_message_unref(rep);
@@ -2803,7 +2803,7 @@ request_resubmit(DBusConnection *conn, DBusMessage *msg,
 	}
 	rep = dbus_message_new_method_return(msg);
 	if (rep != NULL) {
-		if (cm_stop_one(ctx, entry->cm_nickname)) {
+		if (cm_stop_entry(ctx, entry->cm_nickname)) {
 			/* if we have a key, the thing to do now is to generate
 			 * a new CSR, otherwise we have to generate a key first
 			 * */
@@ -2822,7 +2822,7 @@ request_resubmit(DBusConnection *conn, DBusMessage *msg,
 							CM_DBUS_REQUEST_INTERFACE,
 							propname);
 			talloc_free(path);
-			if (cm_start_one(ctx, entry->cm_nickname)) {
+			if (cm_start_entry(ctx, entry->cm_nickname)) {
 				cm_tdbusm_set_b(rep, TRUE);
 			} else {
 				cm_tdbusm_set_b(rep, FALSE);

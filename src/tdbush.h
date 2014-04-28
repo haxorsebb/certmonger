@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2012,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,9 @@ DBusHandlerResult cm_tdbush_handle_method_return(DBusConnection *conn,
 void cm_tdbush_property_emit_entry_changes(struct cm_context *ctx,
 					   struct cm_store_entry *old_entry,
 					   struct cm_store_entry *new_entry);
+void cm_tdbush_property_emit_ca_changes(struct cm_context *ctx,
+					struct cm_store_ca *old_ca,
+					struct cm_store_ca *new_ca);
 DBusHandlerResult cm_tdbush_property_emit_changed(struct cm_context *ctx,
 						  const char *path,
 						  const char *interface,

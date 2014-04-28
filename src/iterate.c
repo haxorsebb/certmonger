@@ -42,7 +42,7 @@
 #include "submit.h"
 #include "tm.h"
 
-struct cm_iterate_state {
+struct cm_entry_state {
 	struct cm_keygen_state *cm_keygen_state;
 	struct cm_keyiread_state *cm_keyiread_state;
 	struct cm_csrgen_state *cm_csrgen_state;
@@ -51,6 +51,8 @@ struct cm_iterate_state {
 	struct cm_hook_state *cm_hook_state;
 	struct cm_certread_state *cm_certread_state;
 	struct cm_notify_state *cm_notify_state;
+};
+struct cm_ca_state {
 };
 
 /* Helper routine to replace in-progress states with the previous "stable"
@@ -250,14 +252,14 @@ cm_decide_monitor_delay(time_t remaining)
 }
 
 /* Manage a "lock" that we use to serialize access to THE REST OF THE WORLD. */
-static struct cm_store_entry *writing_lock;
+static void *writing_lock;
 static dbus_bool_t
-cm_writing_has_lock(struct cm_store_entry *entry)
+cm_writing_has_lock(void *holder)
 {
-	return (writing_lock == entry);
+	return (writing_lock == holder);
 }
 static dbus_bool_t
-cm_writing_lock(struct cm_store_entry *entry)
+cm_writing_lock_by_entry(struct cm_store_entry *entry)
 {
 	if ((writing_lock == entry) || (writing_lock == NULL)) {
 		if (writing_lock == NULL) {
@@ -273,7 +275,7 @@ cm_writing_lock(struct cm_store_entry *entry)
 	}
 }
 static dbus_bool_t
-cm_writing_unlock(struct cm_store_entry *entry)
+cm_writing_unlock_by_entry(struct cm_store_entry *entry)
 {
 	if ((writing_lock == entry) || (writing_lock == NULL)) {
 		if (writing_lock == entry) {
@@ -288,12 +290,28 @@ cm_writing_unlock(struct cm_store_entry *entry)
 		return FALSE;
 	}
 }
+static dbus_bool_t
+cm_writing_unlock_by_ca(struct cm_store_ca *ca)
+{
+	if ((writing_lock == ca) || (writing_lock == NULL)) {
+		if (writing_lock == ca) {
+			cm_log(3, "%s('%s') releasing writing lock\n",
+			       ca->cm_busname, ca->cm_nickname);
+			writing_lock = NULL;
+		} else {
+			abort();
+		}
+		return TRUE;
+	} else {
+		return FALSE;
+	}
+}
 
 /* Set up run-time data associated with the entry. */
 int
-cm_iterate_init(struct cm_store_entry *entry, void **cm_iterate_state)
+cm_iterate_entry_init(struct cm_store_entry *entry, void **cm_iterate_state)
 {
-	struct cm_iterate_state *state;
+	struct cm_entry_state *state;
 	int fd;
 	state = talloc_ptrtype(entry, state);
 	if (state == NULL) {
@@ -303,7 +321,7 @@ cm_iterate_init(struct cm_store_entry *entry, void **cm_iterate_state)
 	*cm_iterate_state = state;
 	cm_entry_reset_state(entry);
 	if (cm_writing_has_lock(entry)) {
-		cm_writing_unlock(entry);
+		cm_writing_unlock_by_entry(entry);
 	}
 	state->cm_keyiread_state = cm_keyiread_start(entry);
 	if (state->cm_keyiread_state != NULL) {
@@ -396,25 +414,26 @@ cm_check_expiration_is_noteworthy(struct cm_store_entry *entry,
 }
 
 int
-cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
-	   struct cm_context *context,
-	   struct cm_store_ca *(*get_ca_by_index)(struct cm_context *, int),
-	   int (*get_n_cas)(struct cm_context *),
-	   void (*emit_entry_saved_cert)(struct cm_context *,
-					 struct cm_store_entry *),
-	   void (*emit_entry_changes)(struct cm_context *,
-				      struct cm_store_entry *,
-				      struct cm_store_entry *),
-	   void *cm_iterate_state,
-	   enum cm_time *when, int *delay, int *readfd)
+cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
+		 struct cm_context *context,
+		 struct cm_store_ca *(*get_ca_by_index)(struct cm_context *, int),
+		 int (*get_n_cas)(struct cm_context *),
+		 void (*emit_entry_saved_cert)(struct cm_context *,
+					       struct cm_store_entry *),
+		 void (*emit_entry_changes)(struct cm_context *,
+					    struct cm_store_entry *,
+					    struct cm_store_entry *),
+		 void *cm_iterate_state,
+		 enum cm_time *when, int *delay, int *readfd)
 {
 	int i, j;
 	time_t remaining;
-	struct cm_iterate_state *state;
+	struct cm_entry_state *state;
 	struct cm_store_ca *tmp_ca;
 	struct cm_store_entry *old_entry;
 	char *serial;
 	const char *tmp_ca_name;
+
 	state = cm_iterate_state;
 	*readfd = -1;
 	*when = cm_time_no_time;
@@ -429,7 +448,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 
 	switch (entry->cm_state) {
 	case CM_NEED_KEY_PAIR:
-		if (!cm_writing_lock(entry)) {
+		if (!cm_writing_lock_by_entry(entry)) {
 			/* Just hang out in this state while we're messing
 			 * around with the outside world for another entry. */
 			cm_log(3, "%s('%s') waiting for saving lock\n",
@@ -452,14 +471,14 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			}
 		} else {
 			/* Failed to start generating a key; try again. */
-			cm_writing_unlock(entry);
+			cm_writing_unlock_by_entry(entry);
 			*when = cm_time_soonish;
 		}
 		break;
 
 	case CM_GENERATING_KEY_PAIR:
 		if (cm_keygen_ready(entry, state->cm_keygen_state) == 0) {
-			if (!cm_writing_unlock(entry)) {
+			if (!cm_writing_unlock_by_entry(entry)) {
 				/* If for some reason we fail to release the
 				 * lock that we have, try to release it again
 				 * soon. */
@@ -844,7 +863,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		break;
 
 	case CM_NEED_TO_SAVE_CERT:
-		if (!cm_writing_lock(entry)) {
+		if (!cm_writing_lock_by_entry(entry)) {
 			/* Just hang out in this state while we're messing
 			 * around with the outside world for another entry. */
 			cm_log(3, "%s('%s') waiting for saving lock\n",
@@ -962,7 +981,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		/* We should already have the lock here.  In cases where we're
 		 * resuming things at startup, try to acquire it if we don't
 		 * have it. */
-		if (!cm_writing_has_lock(entry) && !cm_writing_lock(entry)) {
+		if (!cm_writing_has_lock(entry) && !cm_writing_lock_by_entry(entry)) {
 			/* Just hang out in this state while we're messing
 			 * around with the outside world for another entry. */
 			cm_log(3, "%s('%s') waiting for saving lock\n",
@@ -1015,7 +1034,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		/* We should already have the lock here.  In cases where we're
 		 * resuming things at startup, try to acquire it if we don't
 		 * have it. */
-		if (!cm_writing_has_lock(entry) && !cm_writing_lock(entry)) {
+		if (!cm_writing_has_lock(entry) && !cm_writing_lock_by_entry(entry)) {
 			/* Just hang out in this state while we're messing
 			 * around with the outside world for another entry. */
 			cm_log(3, "%s('%s') waiting for saving lock\n",
@@ -1208,7 +1227,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		/* We should already have the lock here.  In cases where we're
 		 * resuming things at startup, try to acquire it if we don't
 		 * have it. */
-		if (!cm_writing_has_lock(entry) && !cm_writing_lock(entry)) {
+		if (!cm_writing_has_lock(entry) && !cm_writing_lock_by_entry(entry)) {
 			/* Just hang out in this state while we're messing
 			 * around with the outside world for another entry. */
 			cm_log(3, "%s('%s') waiting for saving lock\n",
@@ -1216,7 +1235,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			*when = cm_time_soon;
 			break;
 		}
-		if (!cm_writing_unlock(entry)) {
+		if (!cm_writing_unlock_by_entry(entry)) {
 			/* If for some reason we fail to release the lock that
 			 * we have, try to release it again soon. */
 			*when = cm_time_soon;
@@ -1265,7 +1284,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		/* We should already have the lock here.  In cases where we're
 		 * resuming things at startup, try to acquire it if we don't
 		 * have it. */
-		if (!cm_writing_has_lock(entry) && !cm_writing_lock(entry)) {
+		if (!cm_writing_has_lock(entry) && !cm_writing_lock_by_entry(entry)) {
 			/* Just hang out in this state while we're messing
 			 * around with the outside world for another entry. */
 			cm_log(3, "%s('%s') waiting for saving lock\n",
@@ -1273,7 +1292,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			*when = cm_time_soon;
 			break;
 		}
-		if (!cm_writing_unlock(entry)) {
+		if (!cm_writing_unlock_by_entry(entry)) {
 			/* If for some reason we fail to release the lock that
 			 * we have, try to release it again soon. */
 			*when = cm_time_soon;
@@ -1322,7 +1341,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 	case CM_NEWLY_ADDED:
 		/* Take the lock here because the database is opened read-write
 		 * in case we need to set a password on it. */
-		if (!cm_writing_lock(entry)) {
+		if (!cm_writing_lock_by_entry(entry)) {
 			/* Just hang out in this state while we're messing
 			 * around with the outside world for another entry. */
 			cm_log(3, "%s('%s') waiting for reading lock\n",
@@ -1374,7 +1393,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			} else
 			if (cm_keyiread_need_token(entry,
 						   state->cm_keyiread_state) == 0) {
-				if (!cm_writing_unlock(entry)) {
+				if (!cm_writing_unlock_by_entry(entry)) {
 					/* If for some reason we fail to
 					 * release the lock that we have, try
 					 * to release it again soon. */
@@ -1391,7 +1410,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			} else
 			if (cm_keyiread_need_pin(entry,
 						 state->cm_keyiread_state) == 0) {
-				if (!cm_writing_unlock(entry)) {
+				if (!cm_writing_unlock_by_entry(entry)) {
 					/* If for some reason we fail to
 					 * release the lock that we have, try
 					 * to release it again soon. */
@@ -1476,7 +1495,7 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		break;
 
 	case CM_NEWLY_ADDED_DECIDING:
-		if (!cm_writing_unlock(entry)) {
+		if (!cm_writing_unlock_by_entry(entry)) {
 			/* If for some reason we fail to release the lock that
 			 * we have, try to release it again soon. */
 			*when = cm_time_soon;
@@ -1617,9 +1636,10 @@ cm_iterate(struct cm_store_entry *entry, struct cm_store_ca *ca,
 
 /* Cancel and clean up any in-progress work and then free the working state. */
 int
-cm_iterate_done(struct cm_store_entry *entry, void *cm_iterate_state)
+cm_iterate_entry_done(struct cm_store_entry *entry, void *cm_iterate_state)
 {
-	struct cm_iterate_state *state;
+	struct cm_entry_state *state;
+
 	state = cm_iterate_state;
 	if (state != NULL) {
 		if (state->cm_submit_state != NULL) {
@@ -1649,7 +1669,63 @@ cm_iterate_done(struct cm_store_entry *entry, void *cm_iterate_state)
 	       entry->cm_busname, entry->cm_nickname,
 	       cm_store_state_as_string(entry->cm_state));
 	if (cm_writing_has_lock(entry)) {
-		cm_writing_unlock(entry);
+		cm_writing_unlock_by_entry(entry);
+	}
+	return 0;
+}
+
+/* Set up run-time data associated with the CA. */
+int
+cm_iterate_ca_init(struct cm_store_ca *ca, void **cm_iterate_state)
+{
+	struct cm_ca_state *state;
+
+	state = talloc_ptrtype(ca, state);
+	if (state == NULL) {
+		return ENOMEM;
+	}
+	memset(state, 0, sizeof(*state));
+	*cm_iterate_state = state;
+
+	if (cm_writing_has_lock(ca)) {
+		cm_writing_unlock_by_ca(ca);
+	}
+	cm_store_ca_save(ca);
+
+	cm_log(3, "%s('%s') starts\n",
+	       ca->cm_busname, ca->cm_nickname);
+	return 0;
+}
+
+int
+cm_iterate_ca(struct cm_store_ca *ca,
+	      struct cm_context *context,
+	      void (*emit_ca_changes)(struct cm_context *,
+				      struct cm_store_ca *,
+				      struct cm_store_ca *),
+	      void *cm_iterate_state,
+	      enum cm_time *when,
+	      int *delay,
+	      int *readfd)
+{
+	*when = cm_time_no_time;
+	*readfd = -1;
+	return 0;
+}
+
+/* Cancel and clean up any in-progress work and then free the working state. */
+int
+cm_iterate_ca_done(struct cm_store_ca *ca, void *cm_iterate_state)
+{
+	struct cm_ca_state *state;
+
+	state = cm_iterate_state;
+	cm_log(3, "%s('%s') ends\n",
+	       ca->cm_busname, ca->cm_nickname);
+	talloc_free(state);
+
+	if (cm_writing_has_lock(ca)) {
+		cm_writing_unlock_by_ca(ca);
 	}
 	return 0;
 }
