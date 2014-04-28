@@ -29,8 +29,8 @@ function run_certutil() {
 	certutil "$@" -z "$dir"/noise
 }
 function run_dos2unix() {
-	dos2unix "$@" 2>&1 | sed -e s,Unix,unix,g -e s,UNIX,unix,g
+	dos2unix "$@" 2>&1 | sed -e s,Unix,unix,g -e s,UNIX,unix,g -e s,'format \.\.\.','format...',g
 }
 function run_unix2dos() {
-	unix2dos "$@" 2>&1 | sed -e s,Unix,unix,g -e s,UNIX,unix,g
+	unix2dos "$@" 2>&1 | sed -e s,Unix,unix,g -e s,UNIX,unix,g -e s,'format \.\.\.','format...',g
 }
