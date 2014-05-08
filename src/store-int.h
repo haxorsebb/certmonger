@@ -208,6 +208,8 @@ struct cm_store_ca {
 	void *cm_store_private;
 	/* A persistent unique identifier or nickname. */
 	char *cm_nickname;
+	/* What the helper suggests it be called. */
+	char *cm_ca_aka;
 	/* A list of issuer names.  If no CA is specified when we create a new
 	 * request, and the certificate already exists and was issued by one of
 	 * these names, we'll use this CA. */
@@ -233,6 +235,22 @@ struct cm_store_ca {
 	 * constructing chains.  If our issuer isn't self-signed, then it
 	 * should show up in this list. */
 	struct cm_nickcert **cm_ca_other_certs;
+	/* A list of attributes which the CA requires us to supply with
+	 * requests for new certificates, which we should in turn require of
+	 * our clients. */
+	char **cm_ca_required_enroll_attributes;
+	char **cm_ca_required_renewal_attributes;
+	/* A list of enrollment profiles which are supported, and a default. */
+	char **cm_ca_profiles;
+	char *cm_ca_default_profile;
+	/* A command to run before we save data to wherever it goes. */
+	char *cm_ca_pre_save_command;
+	/* The UID of the user as whom we run the above command. */
+	char *cm_ca_pre_save_uid;
+	/* A command to run after we save data to wherever it goes. */
+	char *cm_ca_post_save_command;
+	/* The UID of the user as whom we run the above command. */
+	char *cm_ca_post_save_uid;
 };
 
 const char *cm_store_state_as_string(enum cm_state state);

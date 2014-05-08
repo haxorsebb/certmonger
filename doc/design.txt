@@ -619,3 +619,20 @@ Data we need to track for each certificate/task/dbentry:
 	* Type and location of CA [or use default settings]
 	* Value of CA cookie for in-progress submissions.
 	* Date of submission for in-progress submissions.
+
+When we interact with CAs, there are things that we "know" about them, or would
+like to know:
+	* A nickname by which we refer to the CA.
+	* The certificate which the CA uses as the issuer of certificates for
+	  end entities.
+	* The root of the chain of trust, if it's not the CA's issuer
+	  certificate, and any other certificates in the chain between them.
+	* A set of mandatory-to-supply pieces of information when we're
+	  requesting a new or renewed certificate from the CA.  For IPA, for
+	  example, during requests for a new certificate (it doesn't
+	  distinguish between "new" and "renew" cases), this is the Kerberos
+	  principal name of the subject for whom we're requesting the
+	  certificate.
+	* If it supports different types of enrollment (known as profiles in
+	  Dogtag, or as templates in ADCS), what the options are, and if
+	  there's a recommended default.

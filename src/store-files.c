@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009,2010,2011,2012,2013,2014 Red Hat, Inc.
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -131,6 +131,7 @@ enum cm_store_file_field {
 	cm_store_entry_field_post_certsave_command,
 	cm_store_entry_field_post_certsave_uid,
 
+	cm_store_ca_field_aka,
 	cm_store_ca_field_known_issuer_names,
 	cm_store_ca_field_is_default,
 
@@ -142,6 +143,16 @@ enum cm_store_file_field {
 	cm_store_ca_field_root_certs,
 	cm_store_ca_field_other_root_certs,
 	cm_store_ca_field_other_certs,
+
+	cm_store_ca_field_required_enroll_attributes,
+	cm_store_ca_field_required_renewal_attributes,
+	cm_store_ca_field_profiles,
+	cm_store_ca_field_default_profile,
+
+	cm_store_ca_field_pre_save_command,
+	cm_store_ca_field_pre_save_uid,
+	cm_store_ca_field_post_save_command,
+	cm_store_ca_field_post_save_uid,
 
 	cm_store_file_field_invalid_high,
 };
@@ -238,6 +249,7 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_post_certsave_command, "post_certsave_command"},
 	{cm_store_entry_field_post_certsave_uid, "post_certsave_uid"},
 
+	{cm_store_ca_field_aka, "ca_aka"},
 	{cm_store_ca_field_known_issuer_names, "ca_issuer_names"},
 	{cm_store_ca_field_is_default, "ca_is_default"},
 
@@ -249,6 +261,18 @@ static struct cm_store_file_field_list {
 	{cm_store_ca_field_root_certs, "ca_root_certs"},
 	{cm_store_ca_field_other_root_certs, "ca_other_root_certs"},
 	{cm_store_ca_field_other_certs, "ca_other_certs"},
+
+	{cm_store_ca_field_required_enroll_attributes,
+	 "ca_required_enroll_attributes"},
+	{cm_store_ca_field_required_renewal_attributes,
+	 "ca_required_renewal_attributes"},
+	{cm_store_ca_field_profiles, "ca_profiles"},
+	{cm_store_ca_field_default_profile, "ca_default_profile"},
+
+	{cm_store_ca_field_pre_save_command, "ca_pre_save_command"},
+	{cm_store_ca_field_pre_save_uid, "ca_pre_save_uid"},
+	{cm_store_ca_field_post_save_command, "ca_post_save_command"},
+	{cm_store_ca_field_post_save_uid, "ca_post_save_uid"},
 };
 
 static enum cm_store_file_field
@@ -514,6 +538,7 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_file_field_invalid:
 			case cm_store_file_field_invalid_high:
 				break;
+			case cm_store_ca_field_aka:
 			case cm_store_ca_field_known_issuer_names:
 			case cm_store_ca_field_is_default:
 			case cm_store_ca_field_type:
@@ -523,6 +548,14 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_ca_field_root_certs:
 			case cm_store_ca_field_other_root_certs:
 			case cm_store_ca_field_other_certs:
+			case cm_store_ca_field_required_enroll_attributes:
+			case cm_store_ca_field_required_renewal_attributes:
+			case cm_store_ca_field_profiles:
+			case cm_store_ca_field_default_profile:
+			case cm_store_ca_field_pre_save_command:
+			case cm_store_ca_field_pre_save_uid:
+			case cm_store_ca_field_post_save_command:
+			case cm_store_ca_field_post_save_uid:
 				break;
 			case cm_store_file_field_id:
 				ret->cm_nickname = free_if_empty(p);
@@ -991,6 +1024,9 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_file_field_id:
 				ret->cm_nickname = free_if_empty(p);
 				break;
+			case cm_store_ca_field_aka:
+				ret->cm_ca_aka = free_if_empty(p);
+				break;
 			case cm_store_ca_field_known_issuer_names:
 				ret->cm_ca_known_issuer_names =
 					free_if_empty_multi(ret, p);
@@ -1035,6 +1071,33 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 				ret->cm_ca_other_certs =
 					parse_nickcert_list(ret, p);
 				talloc_free(p);
+				break;
+			case cm_store_ca_field_required_enroll_attributes:
+				ret->cm_ca_required_enroll_attributes =
+					free_if_empty_multi(ret, p);
+				break;
+			case cm_store_ca_field_required_renewal_attributes:
+				ret->cm_ca_required_renewal_attributes =
+					free_if_empty_multi(ret, p);
+				break;
+			case cm_store_ca_field_profiles:
+				ret->cm_ca_profiles =
+					free_if_empty_multi(ret, p);
+				break;
+			case cm_store_ca_field_default_profile:
+				ret->cm_ca_default_profile = free_if_empty(p);
+				break;
+			case cm_store_ca_field_pre_save_command:
+				ret->cm_ca_pre_save_command = free_if_empty(p);
+				break;
+			case cm_store_ca_field_pre_save_uid:
+				ret->cm_ca_pre_save_uid = free_if_empty(p);
+				break;
+			case cm_store_ca_field_post_save_command:
+				ret->cm_ca_post_save_command = free_if_empty(p);
+				break;
+			case cm_store_ca_field_post_save_uid:
+				ret->cm_ca_post_save_uid = free_if_empty(p);
 				break;
 			}
 		}
@@ -1623,6 +1686,7 @@ cm_store_ca_write(FILE *fp, struct cm_store_ca *ca)
 		p = ca->cm_nickname;
 	}
 	cm_store_file_write_str(fp, cm_store_file_field_id, p);
+	cm_store_file_write_str(fp, cm_store_ca_field_aka, ca->cm_ca_aka);
 	cm_store_file_write_strs(fp,
 				 cm_store_ca_field_known_issuer_names,
 				 ca->cm_ca_known_issuer_names);
@@ -1652,6 +1716,24 @@ cm_store_ca_write(FILE *fp, struct cm_store_ca *ca)
 					  ca->cm_ca_other_root_certs);
 	cm_store_file_write_nickcert_list(fp, cm_store_ca_field_other_certs,
 					  ca->cm_ca_other_certs);
+	cm_store_file_write_strs(fp,
+				 cm_store_ca_field_required_enroll_attributes,
+				 ca->cm_ca_required_enroll_attributes);
+	cm_store_file_write_strs(fp,
+				 cm_store_ca_field_required_renewal_attributes,
+				 ca->cm_ca_required_renewal_attributes);
+	cm_store_file_write_strs(fp, cm_store_ca_field_profiles,
+				 ca->cm_ca_profiles);
+	cm_store_file_write_str(fp, cm_store_ca_field_default_profile,
+				ca->cm_ca_default_profile);
+	cm_store_file_write_str(fp, cm_store_ca_field_pre_save_command,
+				ca->cm_ca_pre_save_command);
+	cm_store_file_write_str(fp, cm_store_ca_field_pre_save_uid,
+				ca->cm_ca_pre_save_uid);
+	cm_store_file_write_str(fp, cm_store_ca_field_post_save_command,
+				ca->cm_ca_post_save_command);
+	cm_store_file_write_str(fp, cm_store_ca_field_post_save_uid,
+				ca->cm_ca_post_save_uid);
 	if (ferror(fp)) {
 		return -1;
 	}
@@ -2044,6 +2126,7 @@ cm_store_ca_dup(void *parent, struct cm_store_ca *ca)
 	ret->cm_store_private =
 		cm_store_maybe_strdup(ret, ca->cm_store_private);
 	ret->cm_nickname = cm_store_maybe_strdup(ret, ca->cm_nickname);
+	ret->cm_ca_aka = cm_store_maybe_strdup(ret, ca->cm_ca_aka);
 	ret->cm_ca_known_issuer_names =
 		cm_store_maybe_strdupv(ret, ca->cm_ca_known_issuer_names);
 	ret->cm_ca_is_default = ca->cm_ca_is_default;
@@ -2058,8 +2141,28 @@ cm_store_ca_dup(void *parent, struct cm_store_ca *ca)
 	ret->cm_ca_root_certs =
 		cm_store_maybe_dup_nickcert_list(ret, ca->cm_ca_root_certs);
 	ret->cm_ca_other_root_certs =
-		cm_store_maybe_dup_nickcert_list(ret, ca->cm_ca_other_root_certs);
+		cm_store_maybe_dup_nickcert_list(ret,
+						 ca->cm_ca_other_root_certs);
 	ret->cm_ca_other_certs =
 		cm_store_maybe_dup_nickcert_list(ret, ca->cm_ca_other_certs);
+	ret->cm_ca_required_enroll_attributes =
+		cm_store_maybe_strdupv(ret,
+				       ca->cm_ca_required_enroll_attributes);
+	ret->cm_ca_required_renewal_attributes =
+		cm_store_maybe_strdupv(ret,
+				       ca->cm_ca_required_renewal_attributes);
+	ret->cm_ca_profiles = cm_store_maybe_strdupv(ret, ca->cm_ca_profiles);
+	ret->cm_ca_default_profile =
+		cm_store_maybe_strdup(ret, ca->cm_ca_default_profile);
+
+	ret->cm_ca_pre_save_command =
+		cm_store_maybe_strdup(ret, ca->cm_ca_pre_save_command);
+	ret->cm_ca_pre_save_uid =
+		cm_store_maybe_strdup(ret, ca->cm_ca_pre_save_uid);
+	ret->cm_ca_post_save_command =
+		cm_store_maybe_strdup(ret, ca->cm_ca_post_save_command);
+	ret->cm_ca_post_save_uid =
+		cm_store_maybe_strdup(ret, ca->cm_ca_post_save_uid);
+
 	return ret;
 }
