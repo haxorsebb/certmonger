@@ -1824,10 +1824,12 @@ cm_ca_needs_retry(struct cm_store_ca *ca, void *cm_iterate_state)
 
 	for (i = 0;
 	     i < sizeof(state->cm_phase_needs_retry) /
-	         sizeof(state->cm_phase_needs_retry[0]);
+		 sizeof(state->cm_phase_needs_retry[0]);
 	     i++) {
-		ret = TRUE;
-		break;
+		if (state->cm_phase_needs_retry[i]) {
+			ret = TRUE;
+			break;
+		}
 	}
 	return ret;
 }
