@@ -77,6 +77,7 @@ struct cm_ca_state {
 		CM_CA_SAVED_DATA,
 	} cm_state;
 	struct cm_cadata_state *cm_task_state;
+	struct cm_hook_state *cm_hook_state;
 };
 
 static struct {
@@ -356,6 +357,22 @@ cm_writing_unlock_by_entry(struct cm_store_entry *entry)
 			cm_log(3, "%s('%s') releasing writing lock\n",
 			       entry->cm_busname, entry->cm_nickname);
 			writing_lock = NULL;
+		} else {
+			abort();
+		}
+		return TRUE;
+	} else {
+		return FALSE;
+	}
+}
+static dbus_bool_t
+cm_writing_lock_by_ca(struct cm_store_ca *ca)
+{
+	if ((writing_lock == ca) || (writing_lock == NULL)) {
+		if (writing_lock == NULL) {
+			cm_log(3, "%s('%s') taking writing lock\n",
+			       ca->cm_busname, ca->cm_nickname);
+			writing_lock = ca;
 		} else {
 			abort();
 		}
@@ -1926,26 +1943,107 @@ cm_iterate_ca(struct cm_store_ca *ca,
 		}
 		break;
 	case CM_CA_NEED_TO_SAVE_DATA:
-		state->cm_state = CM_CA_PRE_SAVE_DATA;
-		*when = cm_time_now;
+		if (!cm_writing_lock_by_ca(ca)) {
+			/* Just hang out in this state while we're messing
+			 * around with the outside world for another CA. */
+			cm_log(3, "%s('%s') waiting for saving lock\n",
+			       ca->cm_busname, ca->cm_nickname);
+			*when = cm_time_soon;
+			break;
+		}
+		if (ca->cm_ca_pre_save_command != NULL) {
+			state->cm_hook_state = cm_ca_hook_start_presave(ca);
+			if (state->cm_hook_state != NULL) {
+				/* Note that we're doing the pre-save. */
+				state->cm_state = CM_CA_PRE_SAVE_DATA;
+				/* Wait for status update, or poll. */
+				*readfd = cm_ca_hook_get_fd(ca,
+							    state->cm_hook_state);
+				if (*readfd == -1) {
+					*when = cm_time_soon;
+				} else {
+					*when = cm_time_no_time;
+				}
+			} else {
+				/* Failed to start the pre-save; skip it. */
+				state->cm_state = CM_CA_START_SAVING_DATA;
+				*when = cm_time_now;
+			}
+		} else {
+			state->cm_state = CM_CA_START_SAVING_DATA;
+			*when = cm_time_now;
+		}
 		break;
 	case CM_CA_PRE_SAVE_DATA:
-		state->cm_state = CM_CA_START_SAVING_DATA;
-		*when = cm_time_now;
+		if (cm_ca_hook_ready(ca, state->cm_hook_state) == 0) {
+			cm_ca_hook_done(ca, state->cm_hook_state);
+			state->cm_hook_state = NULL;
+			state->cm_state = CM_CA_START_SAVING_DATA;
+			*when = cm_time_now;
+		} else {
+			/* Wait for status update, or poll. */
+			*readfd = cm_ca_hook_get_fd(ca, state->cm_hook_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
+		}
 		break;
 	case CM_CA_START_SAVING_DATA:
 		state->cm_state = CM_CA_SAVING_DATA;
 		*when = cm_time_now;
 		break;
 	case CM_CA_SAVING_DATA:
-		state->cm_state = CM_CA_POST_SAVE_DATA;
-		*when = cm_time_now;
+		if (ca->cm_ca_post_save_command != NULL) {
+			state->cm_hook_state = cm_ca_hook_start_postsave(ca);
+			if (state->cm_hook_state != NULL) {
+				/* Note that we're doing the post-save. */
+				state->cm_state = CM_CA_POST_SAVE_DATA;
+				/* Wait for status update, or poll. */
+				*readfd = cm_ca_hook_get_fd(ca,
+							    state->cm_hook_state);
+				if (*readfd == -1) {
+					*when = cm_time_soon;
+				} else {
+					*when = cm_time_no_time;
+				}
+			} else {
+				/* Failed to start the post-save; skip it. */
+				state->cm_state = CM_CA_SAVED_DATA;
+				*when = cm_time_soon;
+			}
+		} else {
+			state->cm_state = CM_CA_SAVED_DATA;
+			*when = cm_time_now;
+		}
 		break;
 	case CM_CA_POST_SAVE_DATA:
-		state->cm_state = CM_CA_SAVED_DATA;
-		*when = cm_time_now;
+		if (cm_ca_hook_ready(ca, state->cm_hook_state) == 0) {
+			cm_ca_hook_done(ca, state->cm_hook_state);
+			state->cm_hook_state = NULL;
+			state->cm_state = CM_CA_SAVED_DATA;
+			*when = cm_time_now;
+		} else {
+			/* Wait for status update, or poll. */
+			*readfd = cm_ca_hook_get_fd(ca, state->cm_hook_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
+		}
 		break;
 	case CM_CA_SAVED_DATA:
+		if (!cm_writing_unlock_by_ca(ca)) {
+			/* If for some reason we fail to release the lock that
+			 * we have, try to release it again soon. */
+			*when = cm_time_soon;
+			cm_log(1, "%s('%s') failed to release saving "
+			       "lock, probably a bug\n",
+			       ca->cm_busname, ca->cm_nickname);
+			break;
+		}
 		cm_ca_next_phase(ca, state);
 		*when = cm_time_now;
 		break;
