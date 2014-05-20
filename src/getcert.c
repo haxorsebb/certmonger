@@ -949,27 +949,27 @@ request(const char *argv0, int argc, char **argv)
 	} else {
 		capath = NULL;
 	}
-	param[i].key = "SUBJECT";
+	param[i].key = CM_DBUS_PROP_TEMPLATE_SUBJECT;
 	param[i].value_type = cm_tdbusm_dict_s;
 	param[i].value.s = subject;
 	params[i] = &param[i];
 	i++;
 	if (principal != NULL) {
-		param[i].key = "PRINCIPAL";
+		param[i].key = CM_DBUS_PROP_TEMPLATE_PRINCIPAL;
 		param[i].value_type = cm_tdbusm_dict_as;
 		param[i].value.as = principal;
 		params[i] = &param[i];
 		i++;
 	}
 	if (dns != NULL) {
-		param[i].key = "DNS";
+		param[i].key = CM_DBUS_PROP_TEMPLATE_HOSTNAME;
 		param[i].value_type = cm_tdbusm_dict_as;
 		param[i].value.as = dns;
 		params[i] = &param[i];
 		i++;
 	}
 	if (email != NULL) {
-		param[i].key = "EMAIL";
+		param[i].key = CM_DBUS_PROP_TEMPLATE_EMAIL;
 		param[i].value_type = cm_tdbusm_dict_as;
 		param[i].value.as = email;
 		params[i] = &param[i];
@@ -987,14 +987,14 @@ request(const char *argv0, int argc, char **argv)
 			kustring[j] = ((ku >> j) & 1) ? '1' : '0';
 		}
 		kustring[j] = '\0';
-		param[i].key = "KU";
+		param[i].key = CM_DBUS_PROP_TEMPLATE_KU;
 		param[i].value_type = cm_tdbusm_dict_s;
 		param[i].value.s = kustring;
 		params[i] = &param[i];
 		i++;
 	}
 	if (eku != NULL) {
-		param[i].key = "EKU";
+		param[i].key = CM_DBUS_PROP_TEMPLATE_EKU;
 		param[i].value_type = cm_tdbusm_dict_as;
 		param[i].value.as = eku;
 		params[i] = &param[i];
@@ -1588,21 +1588,21 @@ set_tracking(const char *argv0, const char *category,
 				i++;
 			}
 			if (principal != NULL) {
-				param[i].key = "PRINCIPAL";
+				param[i].key = CM_DBUS_PROP_TEMPLATE_PRINCIPAL;
 				param[i].value_type = cm_tdbusm_dict_as;
 				param[i].value.as = principal;
 				params[i] = &param[i];
 				i++;
 			}
 			if (dns != NULL) {
-				param[i].key = "DNS";
+				param[i].key = CM_DBUS_PROP_TEMPLATE_HOSTNAME;
 				param[i].value_type = cm_tdbusm_dict_as;
 				param[i].value.as = dns;
 				params[i] = &param[i];
 				i++;
 			}
 			if (email != NULL) {
-				param[i].key = "EMAIL";
+				param[i].key = CM_DBUS_PROP_TEMPLATE_EMAIL;
 				param[i].value_type = cm_tdbusm_dict_as;
 				param[i].value.as = email;
 				params[i] = &param[i];
@@ -1621,14 +1621,14 @@ set_tracking(const char *argv0, const char *category,
 						      '1' : '0';
 				}
 				kustring[j] = '\0';
-				param[i].key = "KU";
+				param[i].key = CM_DBUS_PROP_TEMPLATE_KU;
 				param[i].value_type = cm_tdbusm_dict_s;
 				param[i].value.s = kustring;
 				params[i] = &param[i];
 				i++;
 			}
 			if (eku != NULL) {
-				param[i].key = "EKU";
+				param[i].key = CM_DBUS_PROP_TEMPLATE_EKU;
 				param[i].value_type = cm_tdbusm_dict_as;
 				param[i].value.as = eku;
 				params[i] = &param[i];
@@ -2029,28 +2029,28 @@ resubmit(const char *argv0, int argc, char **argv)
 		i++;
 	}
 	if (subject != NULL) {
-		param[i].key = "SUBJECT";
+		param[i].key = CM_DBUS_PROP_TEMPLATE_SUBJECT;
 		param[i].value_type = cm_tdbusm_dict_s;
 		param[i].value.s = subject;
 		params[i] = &param[i];
 		i++;
 	}
 	if (principal != NULL) {
-		param[i].key = "PRINCIPAL";
+		param[i].key = CM_DBUS_PROP_TEMPLATE_PRINCIPAL;
 		param[i].value_type = cm_tdbusm_dict_as;
 		param[i].value.as = principal;
 		params[i] = &param[i];
 		i++;
 	}
 	if (dns != NULL) {
-		param[i].key = "DNS";
+		param[i].key = CM_DBUS_PROP_TEMPLATE_HOSTNAME;
 		param[i].value_type = cm_tdbusm_dict_as;
 		param[i].value.as = dns;
 		params[i] = &param[i];
 		i++;
 	}
 	if (email != NULL) {
-		param[i].key = "EMAIL";
+		param[i].key = CM_DBUS_PROP_TEMPLATE_EMAIL;
 		param[i].value_type = cm_tdbusm_dict_as;
 		param[i].value.as = email;
 		params[i] = &param[i];
@@ -2069,14 +2069,14 @@ resubmit(const char *argv0, int argc, char **argv)
 				      '1' : '0';
 		}
 		kustring[j] = '\0';
-		param[i].key = "KU";
+		param[i].key = CM_DBUS_PROP_TEMPLATE_KU;
 		param[i].value_type = cm_tdbusm_dict_s;
 		param[i].value.s = kustring;
 		params[i] = &param[i];
 		i++;
 	}
 	if (eku != NULL) {
-		param[i].key = "EKU";
+		param[i].key = CM_DBUS_PROP_TEMPLATE_EKU;
 		param[i].value_type = cm_tdbusm_dict_as;
 		param[i].value.as = eku;
 		params[i] = &param[i];
