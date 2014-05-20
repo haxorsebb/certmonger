@@ -1917,26 +1917,55 @@ cm_iterate_ca(struct cm_store_ca *ca,
 	case CM_CA_REFRESHING:
 		state->cm_phase_needs_retry[state->cm_phase] = FALSE;
 		if (cm_cadata_ready(ca, state->cm_task_state) == 0) {
-			if (cm_cadata_retrieved(ca,
-						state->cm_task_state) == 0) {
+			if (cm_cadata_modified(ca, state->cm_task_state) == 0) {
+				cm_log(3, "%s('%s') %s data updated\n",
+				       ca->cm_busname, ca->cm_nickname,
+				       cm_ca_phase_as_string(state->cm_phase));
 				cm_cadata_done(ca, state->cm_task_state);
 				state->cm_task_state = NULL;
-				state->cm_state = CM_CA_NEED_TO_SAVE_DATA;
+				switch (state->cm_phase) {
+				case cm_ca_phase_certs:
+					state->cm_state = CM_CA_NEED_TO_SAVE_DATA;
+					break;
+				case cm_ca_phase_identify:
+				case cm_ca_phase_profiles:
+				case cm_ca_phase_default_profile:
+				case cm_ca_phase_enroll_reqs:
+				case cm_ca_phase_renew_reqs:
+					cm_ca_next_phase(ca, state);
+					break;
+				}
 				*when = cm_time_now;
 			} else
 			if (cm_cadata_unreachable(ca,
 						  state->cm_task_state) == 0) {
 				cm_cadata_done(ca, state->cm_task_state);
+				cm_log(3, "%s('%s') %s server unreachable\n",
+				       ca->cm_busname, ca->cm_nickname,
+				       cm_ca_phase_as_string(state->cm_phase));
 				state->cm_task_state = NULL;
 				state->cm_phase_needs_retry[state->cm_phase] =
 					TRUE;
 				cm_ca_next_phase(ca, state);
 				*when = cm_time_now;
-			} else {
+			} else
+			if (cm_cadata_unsupported(ca,
+						  state->cm_task_state) == 0) {
 				cm_cadata_done(ca, state->cm_task_state);
+				cm_log(3, "%s('%s') %s retrieval unsupported\n",
+				       ca->cm_busname, ca->cm_nickname,
+				       cm_ca_phase_as_string(state->cm_phase));
 				state->cm_task_state = NULL;
 				state->cm_phase_enabled[state->cm_phase] =
 					FALSE;
+				cm_ca_next_phase(ca, state);
+				*when = cm_time_now;
+			} else {
+				cm_log(3, "%s('%s') %s unchanged\n",
+				       ca->cm_busname, ca->cm_nickname,
+				       cm_ca_phase_as_string(state->cm_phase));
+				cm_cadata_done(ca, state->cm_task_state);
+				state->cm_task_state = NULL;
 				cm_ca_next_phase(ca, state);
 				*when = cm_time_now;
 			}

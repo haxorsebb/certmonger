@@ -46,9 +46,11 @@ const char *attribute_map[] = {
 
 struct cm_cadata_state {
 	struct cm_subproc_state *subproc;
-	void (*parse)(struct cm_store_ca *ca, const char *msg);
+	void (*parse)(struct cm_store_ca *ca, struct cm_cadata_state *state,
+		      const char *msg);
 	const char *op;
 	int error_fd;
+	unsigned int modified: 1;
 };
 
 static int
@@ -97,11 +99,13 @@ fetch(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry, void *data)
 }
 
 static void
-parse_identification(struct cm_store_ca *ca, const char *msg)
+parse_identification(struct cm_store_ca *ca, struct cm_cadata_state *state,
+		     const char *msg)
 {
 	const char *p, *q;
+	char *old_aka;
 
-	talloc_free(ca->cm_ca_aka);
+	old_aka = ca->cm_ca_aka;
 	p = msg;
 	q = p + strcspn(p, "\r\n");
 	if (p != q) {
@@ -109,11 +113,71 @@ parse_identification(struct cm_store_ca *ca, const char *msg)
 	} else {
 		ca->cm_ca_aka = NULL;
 	}
+
+	if (state != NULL) {
+		if ((old_aka == NULL) && (ca->cm_ca_aka == NULL)) {
+			state->modified = 0;
+		} else
+		if ((old_aka == NULL) && (ca->cm_ca_aka != NULL)) {
+			state->modified = 1;
+		} else
+		if ((old_aka != NULL) && (ca->cm_ca_aka == NULL)) {
+			state->modified = 1;
+		} else {
+			state->modified = (strcmp(old_aka, ca->cm_ca_aka) != 0);
+		}
+	}
+
+	talloc_free(old_aka);
+}
+
+static int
+nickcertlistcmp(struct cm_nickcert **a, struct cm_nickcert **b)
+{
+	int i, j;
+
+	if ((a == NULL) && (b == NULL)) {
+		return 0;
+	} else
+	if ((a == NULL) && (b != NULL)) {
+		return 1;
+	} else
+	if ((a != NULL) && (b == NULL)) {
+		return 1;
+	} else {
+		for (i = 0; a[i] != NULL; i++) {
+			for (j = 0; b[j] != NULL; j++) {
+				if ((strcmp(a[i]->cm_nickname,
+					    b[j]->cm_nickname) == 0) &&
+				    (strcmp(a[i]->cm_cert,
+					    b[j]->cm_cert) == 0)) {
+					break;
+				}
+			}
+			if (b[j] == NULL) {
+				return 1;
+			}
+		}
+		for (i = 0; b[i] != NULL; i++) {
+			for (j = 0; a[j] != NULL; j++) {
+				if ((strcmp(b[i]->cm_nickname,
+					    a[j]->cm_nickname) == 0) &&
+				    (strcmp(b[i]->cm_cert,
+					    a[j]->cm_cert) == 0)) {
+					break;
+				}
+			}
+			if (a[j] == NULL) {
+				return 1;
+			}
+		}
+		return 0;
+	}
 }
 
 static const char *
-parse_cert_list(struct cm_store_ca *ca, const char *msg,
-		struct cm_nickcert ***list)
+parse_cert_list(struct cm_store_ca *ca, struct cm_cadata_state *state,
+		const char *msg, struct cm_nickcert ***list)
 {
 	struct cm_nickcert **certs = NULL, **tmp, *nc;
 	const char *p, *q;
@@ -159,6 +223,10 @@ parse_cert_list(struct cm_store_ca *ca, const char *msg,
 		}
 		if ((strncmp(q, "\n\n", 2) == 0) ||
 		    (strncmp(q, "\r\n\r\n", 4) == 0)) {
+			if ((state != NULL) &&
+			    (nickcertlistcmp(*list, certs) != 0)) {
+				state->modified = 1;
+			}
 			*list = certs;
 			return q + strspn(q, "\r\n");
 		} else {
@@ -166,21 +234,28 @@ parse_cert_list(struct cm_store_ca *ca, const char *msg,
 			q = p + strcspn(p, "\r\n");
 		}
 	}
+	if ((state != NULL) && (nickcertlistcmp(*list, certs) != 0)) {
+		state->modified = 1;
+	}
 	*list = certs;
 	return p;
 }
 
 static void
-parse_certs(struct cm_store_ca *ca, const char *msg)
+parse_certs(struct cm_store_ca *ca, struct cm_cadata_state *state,
+	    const char *msg)
 {
 	struct cm_nickcert **roots, **other_roots, **others;
 	const char *p;
 
-	p = parse_cert_list(ca, msg, &roots);
+	if (state != NULL) {
+		state->modified = 0;
+	}
+	p = parse_cert_list(ca, state, msg, &roots);
 	if (p != NULL) {
-		p = parse_cert_list(ca, p, &other_roots);
+		p = parse_cert_list(ca, state, p, &other_roots);
 		if (p != NULL) {
-			p = parse_cert_list(ca, p, &others);
+			p = parse_cert_list(ca, state, p, &others);
 			if (p != NULL) {
 				talloc_free(ca->cm_ca_root_certs);
 				talloc_free(ca->cm_ca_other_root_certs);
@@ -197,8 +272,8 @@ parse_certs(struct cm_store_ca *ca, const char *msg)
 }
 
 static void
-parse_list(struct cm_store_ca *ca, const char *msg, const char **dict,
-	   char ***list)
+parse_list(struct cm_store_ca *ca, struct cm_cadata_state *state,
+	   const char *msg, const char **dict, char ***list)
 {
 	const char *p, *q;
 	char **reqs = NULL, **tmp;
@@ -231,22 +306,61 @@ parse_list(struct cm_store_ca *ca, const char *msg, const char **dict,
 		q = p + strcspn(p, ",\r\n");
 	}
 
+	if (state != NULL) {
+		if ((*list == NULL) && (reqs == NULL)) {
+			state->modified = 0;
+		} else
+		if ((*list == NULL) && (reqs != NULL)) {
+			state->modified = 1;
+		} else
+		if ((*list != NULL) && (reqs == NULL)) {
+			state->modified = 1;
+		} else {
+			state->modified = 0;
+			for (i = 0; (*list)[i] != NULL; i++) {
+				for (j = 0; reqs[j] != NULL; j++) {
+					if (strcmp((*list)[i], reqs[j]) == 0) {
+						break;
+					}
+				}
+				if (reqs[j] == NULL) {
+					state->modified = 1;
+					break;
+				}
+			}
+			for (i = 0; reqs[i] != NULL; i++) {
+				for (j = 0; (*list)[j] != NULL; j++) {
+					if (strcmp(reqs[i], (*list)[j]) == 0) {
+						break;
+					}
+				}
+				if ((*list)[j] == NULL) {
+					state->modified = 1;
+					break;
+				}
+			}
+		}
+	}
+
 	talloc_free(*list);
 	*list = reqs;
 }
 
 static void
-parse_profiles(struct cm_store_ca *ca, const char *msg)
+parse_profiles(struct cm_store_ca *ca, struct cm_cadata_state *state,
+	       const char *msg)
 {
-	parse_list(ca, msg, NULL, &ca->cm_ca_profiles);
+	parse_list(ca, state, msg, NULL, &ca->cm_ca_profiles);
 }
 
 static void
-parse_default_profile(struct cm_store_ca *ca, const char *msg)
+parse_default_profile(struct cm_store_ca *ca, struct cm_cadata_state *state,
+		      const char *msg)
 {
 	const char *p, *q;
+	char *old_dp;
 
-	talloc_free(ca->cm_ca_default_profile);
+	old_dp = ca->cm_ca_default_profile;
 	p = msg;
 	q = p + strcspn(p, "\r\n");
 	if (p != q) {
@@ -254,25 +368,46 @@ parse_default_profile(struct cm_store_ca *ca, const char *msg)
 	} else {
 		ca->cm_ca_default_profile = NULL;
 	}
+
+	if (state != NULL) {
+		if ((old_dp == NULL) && (ca->cm_ca_default_profile == NULL)) {
+			state->modified = 0;
+		} else
+		if ((old_dp == NULL) && (ca->cm_ca_default_profile != NULL)) {
+			state->modified = 1;
+		} else
+		if ((old_dp != NULL) && (ca->cm_ca_default_profile == NULL)) {
+			state->modified = 1;
+		} else {
+			state->modified =
+				(strcmp(old_dp,
+					ca->cm_ca_default_profile) != 0);
+		}
+	}
+
+	talloc_free(old_dp);
 }
 
 static void
-parse_enroll_reqs(struct cm_store_ca *ca, const char *msg)
+parse_enroll_reqs(struct cm_store_ca *ca, struct cm_cadata_state *state,
+		  const char *msg)
 {
-	parse_list(ca, msg, attribute_map,
+	parse_list(ca, state, msg, attribute_map,
 		   &ca->cm_ca_required_enroll_attributes);
 }
 
 static void
-parse_renew_reqs(struct cm_store_ca *ca, const char *msg)
+parse_renew_reqs(struct cm_store_ca *ca, struct cm_cadata_state *state,
+		 const char *msg)
 {
-	parse_list(ca, msg, attribute_map,
+	parse_list(ca, state, msg, attribute_map,
 		   &ca->cm_ca_required_renewal_attributes);
 }
 
 static struct cm_cadata_state *
 cm_cadata_start_generic(struct cm_store_ca *ca, const char *op,
-			void (*parse)(struct cm_store_ca *, const char *))
+			void (*parse)(struct cm_store_ca *,
+				      struct cm_cadata_state *, const char *))
 {
 	struct cm_cadata_state *ret;
 	int error_fd[2];
@@ -293,13 +428,13 @@ cm_cadata_start_generic(struct cm_store_ca *ca, const char *op,
 		if (strcasecmp(op, CM_OP_FETCH_DEFAULT_PROFILE) == 0) {
 		} else
 		if (strcasecmp(op, CM_OP_FETCH_ENROLL_REQUIREMENTS) == 0) {
-			parse_list(ca,
+			parse_list(ca, NULL,
 				   CM_SUBMIT_REQ_SUBJECT_ENV,
 				   attribute_map,
 				   &ca->cm_ca_required_enroll_attributes);
 		} else
 		if (strcasecmp(op, CM_OP_FETCH_RENEWAL_REQUIREMENTS) == 0) {
-			parse_list(ca,
+			parse_list(ca, NULL,
 				   CM_SUBMIT_REQ_SUBJECT_ENV,
 				   attribute_map,
 				   &ca->cm_ca_required_renewal_attributes);
@@ -322,6 +457,7 @@ cm_cadata_start_generic(struct cm_store_ca *ca, const char *op,
 	}
 	ret->error_fd = error_fd[1];
 	ret->op = op;
+	ret->modified = 0;
 	ret->subproc = cm_subproc_start(fetch, ca, NULL, ret);
 	if (ret->subproc == NULL) {
 		close(error_fd[0]);
@@ -392,8 +528,9 @@ cm_cadata_ready(struct cm_store_ca *ca, struct cm_cadata_state *state)
 	ready = cm_subproc_ready(NULL, state->subproc);
 	if ((ready == 0) &&
 	    (cm_subproc_get_exitstatus(NULL, state->subproc) == 0)) {
-		(*(state->parse))(ca, cm_subproc_get_msg(NULL, state->subproc,
-							 &length));
+		(*(state->parse))(ca, state,
+				  cm_subproc_get_msg(NULL, state->subproc,
+						     &length));
 	}
 	return ready;
 }
@@ -405,16 +542,9 @@ cm_cadata_get_fd(struct cm_store_ca *ca, struct cm_cadata_state *state)
 }
 
 int
-cm_cadata_retrieved(struct cm_store_ca *ca, struct cm_cadata_state *state)
+cm_cadata_modified(struct cm_store_ca *ca, struct cm_cadata_state *state)
 {
-        int status;
-
-	status = cm_subproc_get_exitstatus(NULL, state->subproc);
-	if (WIFEXITED(status) &&
-            (WEXITSTATUS(status) == CM_SUBMIT_STATUS_ISSUED)) {
-                return 0;
-        }
-        return -1;
+	return state->modified ? 0 : -1;
 }
 
 int

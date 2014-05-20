@@ -37,9 +37,9 @@ int cm_cadata_ready(struct cm_store_ca *ca,
 int cm_cadata_get_fd(struct cm_store_ca *ca,
 		     struct cm_cadata_state *state);
 
-/* Check if the CA data was retrieved. */
-int cm_cadata_retrieved(struct cm_store_ca *ca,
-                        struct cm_cadata_state *state);
+/* Check if the CA data was modified. */
+int cm_cadata_modified(struct cm_store_ca *ca,
+                       struct cm_cadata_state *state);
 
 /* Check if the CA was unreachable. */
 int cm_cadata_unreachable(struct cm_store_ca *ca,
