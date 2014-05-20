@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2011,2012 Red Hat, Inc.
+ * Copyright (C) 2009,2011,2012,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,7 +55,7 @@ cm_hook_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	struct passwd *pwd;
 	struct cm_hook_state *state = userdata;
 
-	argv = cm_subproc_parse_args(entry, state->command, &error);
+	argv = cm_subproc_parse_args(userdata, state->command, &error);
 	if (error != NULL) {
 		cm_log(-2, "Error parsing \"%s\": %s; not running it.\n",
 		       state->command, error);
@@ -119,7 +119,8 @@ cm_hook_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 
 /* Start a hook command. */
 static struct cm_hook_state *
-cm_hook_start(struct cm_store_entry *entry, const char *hook_type,
+cm_hook_start(struct cm_store_ca *ca, struct cm_store_entry *entry,
+	      void *parent, const char *hook_type,
 	      const char *hook_command, const char *hook_uid)
 {
 	struct cm_hook_state *state;
@@ -137,13 +138,12 @@ cm_hook_start(struct cm_store_entry *entry, const char *hook_type,
 		return NULL;
 	}
 
-	state = talloc_ptrtype(entry, state);
+	state = talloc_ptrtype(parent, state);
 	if (state != NULL) {
 		state->uid = l;
 		state->command = hook_command;
 		state->subproc = cm_subproc_start(cm_hook_main,
-						  NULL, entry,
-						  state);
+						  ca, entry, state);
 		if (state->subproc == NULL) {
 			talloc_free(state);
 			state = NULL;
@@ -152,20 +152,20 @@ cm_hook_start(struct cm_store_entry *entry, const char *hook_type,
 	return state;
 }
 
-/* Star the pre-save hook. */
+/* Start the pre-save hook. */
 struct cm_hook_state *
 cm_hook_start_presave(struct cm_store_entry *entry)
 {
-	return cm_hook_start(entry, "pre-save",
+	return cm_hook_start(NULL, entry, entry, "pre-save",
 			     entry->cm_pre_certsave_command,
 			     entry->cm_pre_certsave_uid);
 }
 
-/* Star the post-save hook. */
+/* Start the post-save hook. */
 struct cm_hook_state *
 cm_hook_start_postsave(struct cm_store_entry *entry)
 {
-	return cm_hook_start(entry, "post-save",
+	return cm_hook_start(NULL, entry, entry, "post-save",
 			     entry->cm_post_certsave_command,
 			     entry->cm_post_certsave_uid);
 }
@@ -190,6 +190,48 @@ cm_hook_done(struct cm_store_entry *entry, struct cm_hook_state *state)
 {
 	if (state->subproc != NULL) {
 		cm_subproc_done(entry, state->subproc);
+	}
+	talloc_free(state);
+}
+
+/* Start the pre-save hook. */
+struct cm_hook_state *
+cm_ca_hook_start_presave(struct cm_store_ca *ca)
+{
+	return cm_hook_start(ca, NULL, ca, "pre-save",
+			     ca->cm_ca_pre_save_command,
+			     ca->cm_ca_pre_save_uid);
+}
+
+/* Start the post-save hook. */
+struct cm_hook_state *
+cm_ca_hook_start_postsave(struct cm_store_ca *ca)
+{
+	return cm_hook_start(ca, NULL, ca, "post-save",
+			     ca->cm_ca_post_save_command,
+			     ca->cm_ca_post_save_uid);
+}
+
+/* Get a selectable-for-read descriptor we can poll for status changes. */
+int
+cm_ca_hook_get_fd(struct cm_store_ca *ca, struct cm_hook_state *state)
+{
+	return cm_subproc_get_fd(NULL, state->subproc);
+}
+
+/* Check if our child process has exited. */
+int
+cm_ca_hook_ready(struct cm_store_ca *ca, struct cm_hook_state *state)
+{
+	return cm_subproc_ready(NULL, state->subproc);
+}
+
+/* Clean up after... well, we don't really know. */
+void
+cm_ca_hook_done(struct cm_store_ca *ca, struct cm_hook_state *state)
+{
+	if (state->subproc != NULL) {
+		cm_subproc_done(NULL, state->subproc);
 	}
 	talloc_free(state);
 }

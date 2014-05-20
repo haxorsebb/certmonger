@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Red Hat, Inc.
+ * Copyright (C) 2012,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,26 +20,35 @@
 
 struct cm_hook_state;
 struct cm_store_entry;
+struct cm_store_ca;
 
 /* Start doing whatever we need to before saving the certificate to the
  * configured location. */
 struct cm_hook_state *cm_hook_start_presave(struct cm_store_entry *entry);
+struct cm_hook_state *cm_ca_hook_start_presave(struct cm_store_ca *ca);
 
 /* Start doing whatever we need to after saving the certificate to the
  * configured location. */
 struct cm_hook_state *cm_hook_start_postsave(struct cm_store_entry *entry);
+struct cm_hook_state *cm_ca_hook_start_postsave(struct cm_store_ca *ca);
 
 /* Check if something changed, for example we finished doing whatever it is
  * that we're doing. */
 int cm_hook_ready(struct cm_store_entry *entry,
 		  struct cm_hook_state *state);
+int cm_ca_hook_ready(struct cm_store_ca *ca,
+		     struct cm_hook_state *state);
 
 /* Get a selectable-for-read descriptor we can poll for status changes. */
 int cm_hook_get_fd(struct cm_store_entry *entry,
 		   struct cm_hook_state *state);
+int cm_ca_hook_get_fd(struct cm_store_ca *ca,
+		      struct cm_hook_state *state);
 
 /* Clean up after ourselves. */
 void cm_hook_done(struct cm_store_entry *entry,
 		  struct cm_hook_state *state);
+void cm_ca_hook_done(struct cm_store_ca *ca,
+		     struct cm_hook_state *state);
 
 #endif
