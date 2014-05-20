@@ -1,0 +1,97 @@
+[missing]
+Failed to start.
+Error 255
+[i]
+id=CADataRetrievalTest
+ca_aka=Best. CA. Ever.
+ca_is_default=0
+ca_type=EXTERNAL
+ca_external_helper=${tmpdir}/helper.sh
+[r]
+id=CADataRetrievalTest
+ca_is_default=0
+ca_type=EXTERNAL
+ca_external_helper=${tmpdir}/helper.sh
+ca_required_renewal_attributes=CERTMONGER_REQ_PRINCIPAL
+[e]
+id=CADataRetrievalTest
+ca_is_default=0
+ca_type=EXTERNAL
+ca_external_helper=${tmpdir}/helper.sh
+ca_required_enroll_attributes=CERTMONGER_CA_PROFILE,CERTMONGER_REQ_PRINCIPAL,CERTMONGER_SPKI
+[d]
+id=CADataRetrievalTest
+ca_is_default=0
+ca_type=EXTERNAL
+ca_external_helper=${tmpdir}/helper.sh
+ca_default_profile=DefaultTemplate
+[p]
+id=CADataRetrievalTest
+ca_is_default=0
+ca_type=EXTERNAL
+ca_external_helper=${tmpdir}/helper.sh
+ca_profiles=DefaultTemplate,OtherTemplate,ThirdTemplate
+[c]
+id=CADataRetrievalTest
+ca_is_default=0
+ca_type=EXTERNAL
+ca_external_helper=${tmpdir}/helper.sh
+ca_root_certs=Root 1
+ -----BEGIN CERTIFICATE-----
+ This is a certificate. Not a real one.
+ -----END CERTIFICATE-----
+ Root 2
+ -----BEGIN CERTIFICATE-----
+ This is a second certificate. Not a real one.
+ -----END CERTIFICATE-----
+ca_other_root_certs=Other Root 1
+ -----BEGIN CERTIFICATE-----
+ This is a third certificate. Not a real one.
+ -----END CERTIFICATE-----
+ Other Root 2
+ -----BEGIN CERTIFICATE-----
+ This is a fourth certificate. Not a real one.
+ -----END CERTIFICATE-----
+ca_other_certs=Other Random Certificate 1
+ -----BEGIN CERTIFICATE-----
+ This is a fifth certificate. Not a real one.
+ -----END CERTIFICATE-----
+ Other Random Certificate 2
+ -----BEGIN CERTIFICATE-----
+ This is a sixth certificate. Not a real one.
+ -----END CERTIFICATE-----
+[all]
+id=CADataRetrievalTest
+ca_aka=Best. CA. Ever.
+ca_is_default=0
+ca_type=EXTERNAL
+ca_external_helper=${tmpdir}/helper.sh
+ca_root_certs=Root 1
+ -----BEGIN CERTIFICATE-----
+ This is a certificate. Not a real one.
+ -----END CERTIFICATE-----
+ Root 2
+ -----BEGIN CERTIFICATE-----
+ This is a second certificate. Not a real one.
+ -----END CERTIFICATE-----
+ca_other_root_certs=Other Root 1
+ -----BEGIN CERTIFICATE-----
+ This is a third certificate. Not a real one.
+ -----END CERTIFICATE-----
+ Other Root 2
+ -----BEGIN CERTIFICATE-----
+ This is a fourth certificate. Not a real one.
+ -----END CERTIFICATE-----
+ca_other_certs=Other Random Certificate 1
+ -----BEGIN CERTIFICATE-----
+ This is a fifth certificate. Not a real one.
+ -----END CERTIFICATE-----
+ Other Random Certificate 2
+ -----BEGIN CERTIFICATE-----
+ This is a sixth certificate. Not a real one.
+ -----END CERTIFICATE-----
+ca_required_enroll_attributes=CERTMONGER_CA_PROFILE,CERTMONGER_REQ_PRINCIPAL,CERTMONGER_SPKI
+ca_required_renewal_attributes=CERTMONGER_REQ_PRINCIPAL
+ca_profiles=DefaultTemplate,OtherTemplate,ThirdTemplate
+ca_default_profile=DefaultTemplate
+OK.

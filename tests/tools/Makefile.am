@@ -4,7 +4,7 @@ LDADD = libtools.a ../../src/libcm.a $(srcdir)/../../src/env-system.c \
 	libtools.a $(OPENSSL_LIBS) $(CERTMONGER_LIBS) $(KRB5_LIBS) $(IDN_LIBS) \
 	$(GMP_LIBS) $(UUID_LIBS) $(LTLIBICONV)
 
-noinst_PROGRAMS = keyiread keygen csrgen submit certread certsave oid2name name2oid iterate prefs dates listnicks pem2base base2pem dparse payload checksig base64
+noinst_PROGRAMS = keyiread keygen csrgen submit certread certsave oid2name name2oid iterate prefs dates listnicks pem2base base2pem dparse payload checksig base64 cadata
 noinst_LIBRARIES = libtools.a
 
 libtools_a_SOURCES = ../../src/tm.h tm.c tools.h tools.c

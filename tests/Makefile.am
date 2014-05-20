@@ -99,7 +99,9 @@ EXTRA_DIST = \
 	021-resume/expected.out \
 	021-resume/run.sh \
 	022-base64/expected.out \
-	022-base64/run.sh
+	022-base64/run.sh \
+	023-fetch/expected.out \
+	023-fetch/run.sh
 
 subdirs = \
 	001-keyiread \
@@ -126,7 +128,8 @@ subdirs = \
 	018-pembase \
 	019-dparse \
 	021-resume \
-	022-base64
+	022-base64 \
+	023-fetch
 
 if HAVE_DBM_NSSDB
 subdirs += \
