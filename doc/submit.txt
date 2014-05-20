@@ -84,7 +84,7 @@ Operations to be added (tentative):
   * Invoked with "GET-SUPPORTED-TEMPLATES" as the value of the
     $CERTMONGER_OPERATION environment variable:
     * Output list of templates/profiles/certtypes which the server claims
-      to be able to issue.
+      to be able to issue, exit with status 0.
     * Poll for this at startup, translate the result back into an
       attribute list, and store it in the CA entry, exposed as a list
       property.
@@ -95,7 +95,7 @@ Operations to be added (tentative):
     * Output a single template/profile/certtype which the server claims
       to be able to issue, which we'll assign to new requests if there's
       no value to be recovered from an already-issued certificate and
-      none is specified on the command line.
+      none is specified on the command line, exit with status 0.
     * Poll for this at startup, store it in the CA entry, exposed as a
       string property.
     * This will let us avoid breaking scripts that don't expect us

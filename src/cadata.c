@@ -47,18 +47,19 @@ const char *attribute_map[] = {
 struct cm_cadata_state {
 	struct cm_subproc_state *subproc;
 	void (*parse)(struct cm_store_ca *ca, const char *msg);
+	const char *op;
 	int error_fd;
 };
 
 static int
-fetch(int fd, struct cm_store_ca *ca, const char *mode, void *data)
+fetch(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry, void *data)
 {
 	struct cm_cadata_state *state = data;
 	char **argv;
 	const char *error;
 	unsigned char u;
 
-	setenv(CM_SUBMIT_OPERATION_ENV, mode, 1);
+	setenv(CM_SUBMIT_OPERATION_ENV, state->op, 1);
 	if ((ca->cm_nickname != NULL) &&
 	    (strlen(ca->cm_nickname) > 0)) {
 		setenv(CM_SUBMIT_CA_NICKNAME_ENV, ca->cm_nickname, 1);
@@ -93,48 +94,6 @@ fetch(int fd, struct cm_store_ca *ca, const char *mode, void *data)
 		cm_log(1, "Error sending error result to parent.\n");
 	}
 	return u;
-}
-
-static int
-fetch_identification(int fd, struct cm_store_ca *ca,
-		     struct cm_store_entry *entry, void *data)
-{
-	return fetch(fd, ca, CM_OP_IDENTIFY, data);
-}
-
-static int
-fetch_certs(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
-	    void *data)
-{
-	return fetch(fd, ca, CM_OP_FETCH_ROOTS, data);
-}
-
-static int
-fetch_profiles(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
-	       void *data)
-{
-	return fetch(fd, ca, CM_OP_FETCH_PROFILES, data);
-}
-
-static int
-fetch_default_profile(int fd, struct cm_store_ca *ca,
-		      struct cm_store_entry *entry, void *data)
-{
-	return fetch(fd, ca, CM_OP_FETCH_DEFAULT_PROFILE, data);
-}
-
-static int
-fetch_enroll_reqs(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
-		  void *data)
-{
-	return fetch(fd, ca, CM_OP_FETCH_ENROLL_REQUIREMENTS, data);
-}
-
-static int
-fetch_renew_reqs(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
-		 void *data)
-{
-	return fetch(fd, ca, CM_OP_FETCH_RENEWAL_REQUIREMENTS, data);
 }
 
 static void
@@ -312,9 +271,7 @@ parse_renew_reqs(struct cm_store_ca *ca, const char *msg)
 }
 
 static struct cm_cadata_state *
-cm_cadata_start_generic(struct cm_store_ca *ca,
-			int (*fetch)(int, struct cm_store_ca *,
-				     struct cm_store_entry *, void *),
+cm_cadata_start_generic(struct cm_store_ca *ca, const char *op,
 			void (*parse)(struct cm_store_ca *, const char *))
 {
 	struct cm_cadata_state *ret;
@@ -323,6 +280,30 @@ cm_cadata_start_generic(struct cm_store_ca *ca,
 
         switch (ca->cm_ca_type) {
 	case cm_ca_internal_self:
+		if (strcasecmp(op, CM_OP_IDENTIFY) == 0) {
+			ca->cm_ca_aka = talloc_asprintf(ca,
+							"SelfSign (%s %s)\n",
+						        PACKAGE_NAME,
+						        PACKAGE_VERSION);
+		} else
+		if (strcasecmp(op, CM_OP_FETCH_ROOTS) == 0) {
+		} else
+		if (strcasecmp(op, CM_OP_FETCH_PROFILES) == 0) {
+		} else
+		if (strcasecmp(op, CM_OP_FETCH_DEFAULT_PROFILE) == 0) {
+		} else
+		if (strcasecmp(op, CM_OP_FETCH_ENROLL_REQUIREMENTS) == 0) {
+			parse_list(ca,
+				   CM_SUBMIT_REQ_SUBJECT_ENV,
+				   attribute_map,
+				   &ca->cm_ca_required_enroll_attributes);
+		} else
+		if (strcasecmp(op, CM_OP_FETCH_RENEWAL_REQUIREMENTS) == 0) {
+			parse_list(ca,
+				   CM_SUBMIT_REQ_SUBJECT_ENV,
+				   attribute_map,
+				   &ca->cm_ca_required_renewal_attributes);
+		}
 		return NULL;
 		break;
 	case cm_ca_external:
@@ -340,6 +321,7 @@ cm_cadata_start_generic(struct cm_store_ca *ca,
 		return NULL;
 	}
 	ret->error_fd = error_fd[1];
+	ret->op = op;
 	ret->subproc = cm_subproc_start(fetch, ca, NULL, ret);
 	if (ret->subproc == NULL) {
 		close(error_fd[0]);
@@ -363,40 +345,43 @@ cm_cadata_start_generic(struct cm_store_ca *ca,
 struct cm_cadata_state *
 cm_cadata_start_identify(struct cm_store_ca *ca)
 {
-	return cm_cadata_start_generic(ca, fetch_identification,
+	return cm_cadata_start_generic(ca, CM_OP_IDENTIFY,
 				       parse_identification);
 }
 
 struct cm_cadata_state *
 cm_cadata_start_certs(struct cm_store_ca *ca)
 {
-	return cm_cadata_start_generic(ca, fetch_certs, parse_certs);
+	return cm_cadata_start_generic(ca, CM_OP_FETCH_ROOTS,
+				       parse_certs);
 }
 
 struct cm_cadata_state *
 cm_cadata_start_profiles(struct cm_store_ca *ca)
 {
-	return cm_cadata_start_generic(ca, fetch_profiles, parse_profiles);
+	return cm_cadata_start_generic(ca, CM_OP_FETCH_PROFILES,
+				       parse_profiles);
 }
 
 struct cm_cadata_state *
 cm_cadata_start_default_profile(struct cm_store_ca *ca)
 {
-	return cm_cadata_start_generic(ca, fetch_default_profile,
+	return cm_cadata_start_generic(ca, CM_OP_FETCH_DEFAULT_PROFILE,
 				       parse_default_profile);
 }
 
 struct cm_cadata_state *
 cm_cadata_start_enroll_reqs(struct cm_store_ca *ca)
 {
-	return cm_cadata_start_generic(ca, fetch_enroll_reqs,
+	return cm_cadata_start_generic(ca, CM_OP_FETCH_ENROLL_REQUIREMENTS,
 				       parse_enroll_reqs);
 }
 
 struct cm_cadata_state *
 cm_cadata_start_renew_reqs(struct cm_store_ca *ca)
 {
-	return cm_cadata_start_generic(ca, fetch_renew_reqs, parse_renew_reqs);
+	return cm_cadata_start_generic(ca, CM_OP_FETCH_RENEWAL_REQUIREMENTS,
+				       parse_renew_reqs);
 }
 
 int
