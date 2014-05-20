@@ -133,6 +133,19 @@ cm_init(struct tevent_context *parent, struct cm_context **context,
 			return ENOMEM;
 		}
 	}
+	for (i = 0; i < ctx->n_cas; i++) {
+		memset(&ctx->ca_events[i], 0, sizeof(ctx->ca_events[i]));
+		if (cm_iterate_ca_init(ctx->cas[i],
+				       &ctx->ca_events[i].iterate_state) != 0) {
+			for (j = 0; j < i; j++) {
+				cm_iterate_ca_done(ctx->cas[j],
+						   ctx->ca_events[j].iterate_state);
+				ctx->ca_events[j].iterate_state = NULL;
+			}
+			talloc_free(ctx);
+			return ENOMEM;
+		}
+	}
 	/* Start draining the netlink socket so that it doesn't get backed up
 	 * waiting for us to read notifications. */
 	ctx->netlink = cm_netlink_socket();

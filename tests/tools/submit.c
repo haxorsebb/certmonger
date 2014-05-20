@@ -33,6 +33,7 @@
 #include "../../src/store-int.h"
 #include "../../src/store.h"
 #include "../../src/submit.h"
+#include "../../src/submit-e.h"
 #include "../../src/submit-u.h"
 #include "tools.h"
 
@@ -109,11 +110,11 @@ main(int argc, char **argv)
 			talloc_free(entry->cm_cert);
 			entry->cm_cert = p;
 			printf("%s", entry->cm_cert);
-			ret = 0;
+			ret = CM_SUBMIT_STATUS_ISSUED;
 		} else
 		if (cm_submit_save_ca_cookie(entry, state) == 0) {
 			printf("Certificate not issued, saved a cookie.\n");
-			ret = 1;
+			ret = CM_SUBMIT_STATUS_WAIT;
 		} else
 		if (cm_submit_rejected(entry, state) == 0) {
 			if (entry->cm_ca_error != NULL) {
@@ -122,7 +123,7 @@ main(int argc, char **argv)
 			} else {
 				printf("Request rejected.\n");
 			}
-			ret = 2;
+			ret = CM_SUBMIT_STATUS_REJECTED;
 		} else
 		if (cm_submit_unreachable(entry, state) == 0) {
 			if (entry->cm_ca_error != NULL) {
@@ -131,7 +132,7 @@ main(int argc, char **argv)
 			} else {
 				printf("CA was unreachable.\n");
 			}
-			ret = 3;
+			ret = CM_SUBMIT_STATUS_UNREACHABLE;
 		} else
 		if (cm_submit_unconfigured(entry, state) == 0) {
 			if (entry->cm_ca_error != NULL) {
@@ -142,7 +143,7 @@ main(int argc, char **argv)
 				printf("CA helper was un- or "
 				       "under-configured.\n");
 			}
-			ret = 4;
+			ret = CM_SUBMIT_STATUS_UNCONFIGURED;
 		} else {
 			printf("Can't explain what happened.\n");
 			ret = -1;

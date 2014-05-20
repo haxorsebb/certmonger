@@ -636,3 +636,86 @@ like to know:
 	* If it supports different types of enrollment (known as profiles in
 	  Dogtag, or as templates in ADCS), what the options are, and if
 	  there's a recommended default.
+
+Each of these pieces of information which we might obtain from the CA is
+essentially either missing, current, in the process of being fetched, or in the
+process of being disseminated out to the rest of the local system.  We can
+model the states for each of these using roughly the same set of states:
+
+	* Pulling data from the CA:
+	  States: NEED_TO_REFRESH,REFRESHING
+
+	* Saving the data obtained from the CA to places where it's expected:
+	  States: NEED_TO_SAVE_DATA,PRE_SAVE_DATA,START_SAVING_DATA,
+		  SAVING_DATA,POST_SAVE_DATA,SAVED_DATA
+
+And this state machine:
+
+	NEED_TO_REFRESH:
+		start-refresh-submission
+		if refresh-submission-started
+			state_next = REFRESHING
+			state_transition = now
+		else
+			state_transition = later
+		break
+
+	REFRESHING:
+		if refresh-submission-attempt-completed
+			if ca-gave-us-data
+				state_next = NEED_TO_SAVE_DATA
+				state_transition = now
+			elseif ca-is-unreachable
+				state_next = NEED_TO_REFRESH
+				state_transition = later
+			else
+				state_next = DISABLED
+				state_transition = now
+		else
+			state_next = REFRESHING
+			state_transition = when-notified
+		break
+
+	NEED_TO_SAVE_DATA:
+		if pre-save-command-configured
+			start-configured-pre-save-command
+			state_next = PRE_SAVE_DATA
+			state_transition = now
+		else
+			state_next = START_SAVING_DATA
+			state_transition = now
+		break
+
+	PRE_SAVE_DATA:
+		if pre-save-completed
+			state_next = START_SAVING_DATA
+			state_transition = now
+		break
+
+	START_SAVING_DATA:
+		start-saving-data
+		if saving-data-started
+			state_next = SAVING_DATA
+			state_transition = now
+		break
+
+	SAVING_DATA:
+		if done-saving-data
+			if post-save-command-configured
+				start-configured-post-save-command
+				state_next = POST_SAVE_DATA
+				state_transition = now
+			else
+				state_next = SAVED_DATA
+				state_transition = now
+		break
+
+	POST_SAVE_DATA:
+		if post-save-completed
+			state_next = SAVED_DATA
+			state_transition = now
+		break
+
+	SAVED_DATA:
+		state_next = NEED_TO_REFRESH
+		state_transition = timeout

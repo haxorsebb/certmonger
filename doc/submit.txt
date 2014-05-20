@@ -90,7 +90,7 @@ Operations to be added (tentative):
       property.
     * This will let us push lack-of-required-input all the way back
       from the CA helper to the getcert client.
-  * Invoked with "GET-DEFAULT-TEMPLATES" as the value of the
+  * Invoked with "GET-DEFAULT-TEMPLATE" as the value of the
     $CERTMONGER_OPERATION environment variable:
     * Output a single template/profile/certtype which the server claims
       to be able to issue, which we'll assign to new requests if there's

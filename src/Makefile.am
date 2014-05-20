@@ -18,6 +18,8 @@ install-data-hook::
 noinst_LIBRARIES = libcm.a libcm-o.a
 libcm_a_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS)
 libcm_a_SOURCES = \
+	cadata.c \
+	cadata.h \
 	certext.c \
 	certext.h \
 	certext-n.h \
