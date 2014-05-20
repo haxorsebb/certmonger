@@ -67,6 +67,7 @@ main(int argc, char **argv)
 	} else
 	if (strcasecmp(mode, CM_OP_FETCH_ENROLL_REQUIREMENTS) == 0) {
 		printf("%s\n", CM_SUBMIT_REQ_PRINCIPAL_ENV);
+		printf("%s\n", CM_SUBMIT_REQ_SUBJECT_ENV);
 		return 0;
 	} else {
 		/* unsupported request */
