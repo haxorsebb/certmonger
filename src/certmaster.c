@@ -54,6 +54,22 @@ main(int argc, char **argv)
 	char *csr, *p, uri[LINE_MAX], *s1, *s2, *config;
 	struct cm_submit_x_context *ctx;
 	struct stat st;
+	const char *mode = CM_OP_SUBMIT;
+
+	if (getenv(CM_SUBMIT_OPERATION_ENV) != NULL) {
+		mode = getenv(CM_SUBMIT_OPERATION_ENV);
+	}
+	if ((strcasecmp(mode, CM_OP_SUBMIT) == 0) ||
+	    (strcasecmp(mode, CM_OP_POLL) == 0)) {
+		/* fall through */
+	} else
+	if (strcasecmp(mode, CM_OP_IDENTIFY) == 0) {
+		printf("certmaster (%s %s)\n", PACKAGE_NAME, PACKAGE_VERSION);
+		return 0;
+	} else {
+		/* unsupported request */
+		return CM_SUBMIT_STATUS_OPERATION_NOT_SUPPORTED;
+	}
 
 #ifdef ENABLE_NLS
 	bindtextdomain(PACKAGE, MYLOCALEDIR);

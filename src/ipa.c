@@ -52,6 +52,26 @@ main(int argc, char **argv)
 	const char *ktname = NULL, *kpname = NULL, *args[2];
 	char *csr, *p, uri[LINE_MAX], *s, *reqprinc = NULL, *ipaconfig, *kerr;
 	struct cm_submit_x_context *ctx;
+	const char *mode = CM_OP_SUBMIT;
+
+	if (getenv(CM_SUBMIT_OPERATION_ENV) != NULL) {
+		mode = getenv(CM_SUBMIT_OPERATION_ENV);
+	}
+	if ((strcasecmp(mode, CM_OP_SUBMIT) == 0) ||
+	    (strcasecmp(mode, CM_OP_POLL) == 0)) {
+		/* fall through */
+	} else
+	if (strcasecmp(mode, CM_OP_IDENTIFY) == 0) {
+		printf("IPA (%s %s)\n", PACKAGE_NAME, PACKAGE_VERSION);
+		return 0;
+	} else
+	if (strcasecmp(mode, CM_OP_FETCH_ENROLL_REQUIREMENTS) == 0) {
+		printf("%s\n", CM_SUBMIT_REQ_PRINCIPAL_ENV);
+		return 0;
+	} else {
+		/* unsupported request */
+		return CM_SUBMIT_STATUS_OPERATION_NOT_SUPPORTED;
+	}
 
 #ifdef ENABLE_NLS
 	bindtextdomain(PACKAGE, MYLOCALEDIR);

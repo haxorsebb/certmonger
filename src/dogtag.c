@@ -153,10 +153,27 @@ main(int argc, char **argv)
 	enum cm_external_status ret;
 	NSSInitContext *nctx;
 	const char *es;
+	const char *mode = CM_OP_SUBMIT;
+
+	if (getenv(CM_SUBMIT_OPERATION_ENV) != NULL) {
+		mode = getenv(CM_SUBMIT_OPERATION_ENV);
+	}
+	if ((strcasecmp(mode, CM_OP_SUBMIT) == 0) ||
+	    (strcasecmp(mode, CM_OP_POLL) == 0)) {
+		/* fall through */
+	} else
+	if (strcasecmp(mode, CM_OP_IDENTIFY) == 0) {
+		printf("Dogtag (%s %s)\n", PACKAGE_NAME, PACKAGE_VERSION);
+		return 0;
+	} else {
+		/* unsupported request */
+		return CM_SUBMIT_STATUS_OPERATION_NOT_SUPPORTED;
+	}
 
 #ifdef ENABLE_NLS
 	bindtextdomain(PACKAGE, MYLOCALEDIR);
 #endif
+
 	savedstate = getenv(CM_SUBMIT_COOKIE_ENV);
 
 	while ((c = getopt(argc, argv, "E:A:d:n:i:C:c:k:p:P:s:D:S:T:vV:NR")) != -1) {
