@@ -27,6 +27,8 @@
 #include <talloc.h>
 #include <unistd.h>
 
+#include <dbus/dbus.h>
+
 #include "../../src/iterate.h"
 #include "../../src/log.h"
 #include "../../src/store.h"

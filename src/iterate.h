@@ -59,6 +59,7 @@ int cm_iterate_ca(struct cm_store_ca *ca,
 		  enum cm_time *when,
 		  int *delay,
 		  int *readfd);
+dbus_bool_t cm_ca_needs_retry(struct cm_store_ca *ca, void *cm_iterate_state);
 
 /* We're shutting down. */
 int cm_iterate_entry_done(struct cm_store_entry *entry, void *cm_iterate_state);

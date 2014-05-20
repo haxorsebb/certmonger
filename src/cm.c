@@ -284,6 +284,12 @@ cm_netlink_delayed_h(struct tevent_context *ec, struct tevent_timer *te,
 			}
 		}
 	}
+	for (i = 0; i < ctx->n_cas; i++) {
+		if (cm_ca_needs_retry(ctx->cas[i],
+				      ctx->ca_events[i].iterate_state)) {
+			cm_restart_ca(ctx, ctx->cas[i]->cm_nickname);
+		}
+	}
 	if (te == ctx->netlink_delayed_event) {
 		talloc_free(ctx->netlink_delayed_event);
 		ctx->netlink_delayed_event = NULL;
