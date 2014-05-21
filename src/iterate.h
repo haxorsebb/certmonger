@@ -21,12 +21,14 @@
 struct cm_store_entry;
 struct cm_store_ca;
 struct cm_context;
+enum cm_ca_phase;
 
 /* Start tracking a working state for this entry. */
 int cm_iterate_entry_init(struct cm_store_entry *entry, void **cm_iterate_state);
 
 /* Start tracking a working state for a CA's maintenance tasks. */
-int cm_iterate_ca_init(struct cm_store_ca *ca, void **cm_iterate_state);
+int cm_iterate_ca_init(struct cm_store_ca *ca, enum cm_ca_phase phase,
+		       void **cm_iterate_state);
 
 /* Figure out what to do next about this specific entry or CA. */
 enum cm_time {
@@ -59,7 +61,6 @@ int cm_iterate_ca(struct cm_store_ca *ca,
 		  enum cm_time *when,
 		  int *delay,
 		  int *readfd);
-dbus_bool_t cm_ca_needs_retry(struct cm_store_ca *ca, void *cm_iterate_state);
 
 /* We're shutting down. */
 int cm_iterate_entry_done(struct cm_store_entry *entry, void *cm_iterate_state);

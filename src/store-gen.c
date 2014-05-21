@@ -99,6 +99,60 @@ static struct {
 	{"NEWLY_ADDED_NEED_KEYI_READ_PIN", CM_NEWLY_ADDED_NEED_KEYINFO_READ_PIN},
 };
 
+static struct {
+	const char *name;
+	enum cm_ca_phase_state state;
+} cm_ca_state_names[] = {
+	{"IDLE", CM_CA_IDLE},
+	{"NEED_TO_REFRESH", CM_CA_NEED_TO_REFRESH},
+	{"REFRESHING", CM_CA_REFRESHING},
+	{"UNREACHABLE", CM_CA_DATA_UNREACHABLE},
+	{"NEED_TO_SAVE_DATA", CM_CA_NEED_TO_SAVE_DATA},
+	{"PRE_SAVE_DATA", CM_CA_PRE_SAVE_DATA},
+	{"START_SAVING_DATA", CM_CA_START_SAVING_DATA},
+	{"SAVING_DATA", CM_CA_SAVING_DATA,},
+	{"POST_SAVE_DATA", CM_CA_POST_SAVE_DATA},
+	{"SAVED_DATA", CM_CA_SAVED_DATA},
+	{"DISABLED", CM_CA_DISABLED},
+};
+
+const char *
+cm_store_ca_state_as_string(enum cm_ca_phase_state state)
+{
+	unsigned int i;
+
+	for (i = 0;
+	     i < sizeof(cm_ca_state_names) / sizeof(cm_ca_state_names[0]);
+	     i++) {
+		if (cm_ca_state_names[i].state == state) {
+			return cm_ca_state_names[i].name;
+		}
+	}
+	return "UNKNOWN";
+}
+
+const char *
+cm_store_ca_phase_as_string(enum cm_ca_phase phase)
+{
+	switch (phase) {
+	case cm_ca_phase_identify:
+		return "identify";
+	case cm_ca_phase_certs:
+		return "certs";
+	case cm_ca_phase_profiles:
+		return "profiles";
+	case cm_ca_phase_default_profile:
+		return "default_profile";
+	case cm_ca_phase_enroll_reqs:
+		return "enrollment_reqs";
+	case cm_ca_phase_renew_reqs:
+		return "renewal_reqs";
+	case cm_ca_phase_invalid:
+		return "invalid";
+	}
+	return "unknown";
+}
+
 char *
 cm_store_maybe_strdup(void *parent, const char *s)
 {

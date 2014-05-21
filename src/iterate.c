@@ -55,80 +55,10 @@ struct cm_entry_state {
 };
 
 struct cm_ca_state {
-	enum ca_ca_phase {
-		cm_ca_phase_identify = 0,
-		cm_ca_phase_certs,
-		cm_ca_phase_profiles,
-		cm_ca_phase_default_profile,
-		cm_ca_phase_enroll_reqs,
-		cm_ca_phase_renew_reqs,
-	} cm_phase;
-	dbus_bool_t cm_phase_enabled[6];
-	dbus_bool_t cm_phase_needs_retry[6];
-	enum cm_ca_data_state {
-		CM_CA_IDLE = 0,
-		CM_CA_NEED_TO_REFRESH,
-		CM_CA_REFRESHING,
-		CM_CA_NEED_TO_SAVE_DATA,
-		CM_CA_PRE_SAVE_DATA,
-		CM_CA_START_SAVING_DATA,
-		CM_CA_SAVING_DATA,
-		CM_CA_POST_SAVE_DATA,
-		CM_CA_SAVED_DATA,
-	} cm_state;
+	enum cm_ca_phase cm_phase;
 	struct cm_cadata_state *cm_task_state;
 	struct cm_hook_state *cm_hook_state;
 };
-
-static struct {
-	const char *name;
-	enum cm_ca_data_state state;
-} cm_ca_data_state_names[] = {
-	{"IDLE", CM_CA_IDLE},
-	{"NEED_TO_REFRESH", CM_CA_NEED_TO_REFRESH},
-	{"REFRESHING", CM_CA_REFRESHING},
-	{"NEED_TO_SAVE_DATA", CM_CA_NEED_TO_SAVE_DATA},
-	{"PRE_SAVE_DATA", CM_CA_PRE_SAVE_DATA},
-	{"START_SAVING_DATA", CM_CA_START_SAVING_DATA},
-	{"SAVING_DATA", CM_CA_SAVING_DATA,},
-	{"POST_SAVE_DATA", CM_CA_POST_SAVE_DATA},
-	{"SAVED_DATA", CM_CA_SAVED_DATA},
-};
-
-static const char *
-cm_ca_data_state_as_string(enum cm_ca_data_state state)
-{
-	unsigned int i;
-
-	for (i = 0;
-	     i < sizeof(cm_ca_data_state_names) / sizeof(cm_ca_data_state_names[0]);
-	     i++) {
-		if (cm_ca_data_state_names[i].state == state) {
-			return cm_ca_data_state_names[i].name;
-		}
-	}
-	return "UNKNOWN";
-}
-
-static const char *
-cm_ca_phase_as_string(enum ca_ca_phase phase)
-{
-	switch (phase) {
-	case cm_ca_phase_identify:
-		return "identify";
-	case cm_ca_phase_certs:
-		return "certs";
-	case cm_ca_phase_profiles:
-		return "profiles";
-	case cm_ca_phase_default_profile:
-		return "default_profile";
-	case cm_ca_phase_enroll_reqs:
-		return "enrollment_reqs";
-	case cm_ca_phase_renew_reqs:
-		return "renewal_reqs";
-	}
-	return "unknown";
-}
 
 /* Helper routine to replace in-progress states with the previous "stable"
  * state. */
@@ -1767,10 +1697,10 @@ cm_iterate_entry_done(struct cm_store_entry *entry, void *cm_iterate_state)
 
 /* Set up run-time data associated with the CA. */
 int
-cm_iterate_ca_init(struct cm_store_ca *ca, void **cm_iterate_state)
+cm_iterate_ca_init(struct cm_store_ca *ca, enum cm_ca_phase phase,
+		   void **cm_iterate_state)
 {
 	struct cm_ca_state *state;
-	unsigned int i;
 
 	state = talloc_ptrtype(ca, state);
 	if (state == NULL) {
@@ -1778,14 +1708,8 @@ cm_iterate_ca_init(struct cm_store_ca *ca, void **cm_iterate_state)
 	}
 	memset(state, 0, sizeof(*state));
 
-	state->cm_phase = cm_ca_phase_identify;
-	for (i = 0;
-	     i < sizeof(state->cm_phase_enabled) / sizeof(state->cm_phase_enabled[0]);
-	     i++) {
-		state->cm_phase_enabled[i] = TRUE;
-		state->cm_phase_needs_retry[i] = FALSE;
-	}
-	state->cm_state = CM_CA_NEED_TO_REFRESH;
+	state->cm_phase = phase;
+	ca->cm_ca_state[phase] = CM_CA_NEED_TO_REFRESH;
 	*cm_iterate_state = state;
 
 	if (cm_writing_has_lock(ca)) {
@@ -1796,59 +1720,9 @@ cm_iterate_ca_init(struct cm_store_ca *ca, void **cm_iterate_state)
 
 	cm_log(3, "%s('%s') starts (%s/%s)\n",
 	       ca->cm_busname, ca->cm_nickname,
-	       cm_ca_phase_as_string(state->cm_phase),
-	       cm_ca_data_state_as_string(state->cm_state));
+	       cm_store_ca_phase_as_string(state->cm_phase),
+	       cm_store_ca_state_as_string(ca->cm_ca_state[phase]));
 	return 0;
-}
-
-static void
-cm_ca_next_phase(struct cm_store_ca *ca, struct cm_ca_state *state)
-{
-	switch (state->cm_phase) {
-	case cm_ca_phase_identify:
-		state->cm_phase = cm_ca_phase_certs;
-		state->cm_state = CM_CA_NEED_TO_REFRESH;
-		break;
-	case cm_ca_phase_certs:
-		state->cm_phase = cm_ca_phase_profiles;
-		state->cm_state = CM_CA_NEED_TO_REFRESH;
-		break;
-	case cm_ca_phase_profiles:
-		state->cm_phase = cm_ca_phase_default_profile;
-		state->cm_state = CM_CA_NEED_TO_REFRESH;
-		break;
-	case cm_ca_phase_default_profile:
-		state->cm_phase = cm_ca_phase_enroll_reqs;
-		state->cm_state = CM_CA_NEED_TO_REFRESH;
-		break;
-	case cm_ca_phase_enroll_reqs:
-		state->cm_phase = cm_ca_phase_renew_reqs;
-		state->cm_state = CM_CA_NEED_TO_REFRESH;
-		break;
-	case cm_ca_phase_renew_reqs:
-		state->cm_phase = cm_ca_phase_identify;
-		state->cm_state = CM_CA_IDLE;
-		break;
-	}
-}
-
-dbus_bool_t
-cm_ca_needs_retry(struct cm_store_ca *ca, void *cm_iterate_state)
-{
-	struct cm_ca_state *state = cm_iterate_state;
-	dbus_bool_t ret = FALSE;
-	unsigned int i;
-
-	for (i = 0;
-	     i < sizeof(state->cm_phase_needs_retry) /
-		 sizeof(state->cm_phase_needs_retry[0]);
-	     i++) {
-		if (state->cm_phase_needs_retry[i]) {
-			ret = TRUE;
-			break;
-		}
-	}
-	return ret;
 }
 
 int
@@ -1862,77 +1736,73 @@ cm_iterate_ca(struct cm_store_ca *ca,
 	      int *delay,
 	      int *readfd)
 {
-	struct cm_ca_state *state = cm_iterate_state, old_state = *state;
+	struct cm_store_ca old_ca = *ca;
+	struct cm_ca_state *state = cm_iterate_state;
 
 	*readfd = -1;
 
-	switch (state->cm_state) {
+	switch (ca->cm_ca_state[state->cm_phase]) {
 	case CM_CA_NEED_TO_REFRESH:
-		if (state->cm_phase_enabled[state->cm_phase]) {
-			switch (state->cm_phase) {
-			case cm_ca_phase_identify:
-				state->cm_task_state =
-					cm_cadata_start_identify(ca);
-				break;
-			case cm_ca_phase_certs:
-				state->cm_task_state =
-					cm_cadata_start_certs(ca);
-				break;
-			case cm_ca_phase_profiles:
-				state->cm_task_state =
-					cm_cadata_start_profiles(ca);
-				break;
-			case cm_ca_phase_default_profile:
-				state->cm_task_state =
-					cm_cadata_start_default_profile(ca);
-				break;
-			case cm_ca_phase_enroll_reqs:
-				state->cm_task_state =
-					cm_cadata_start_enroll_reqs(ca);
-				break;
-			case cm_ca_phase_renew_reqs:
-				state->cm_task_state =
-					cm_cadata_start_renew_reqs(ca);
-				break;
-			}
+		switch (state->cm_phase) {
+		case cm_ca_phase_identify:
+			state->cm_task_state = cm_cadata_start_identify(ca);
+			break;
+		case cm_ca_phase_certs:
+			state->cm_task_state = cm_cadata_start_certs(ca);
+			break;
+		case cm_ca_phase_profiles:
+			state->cm_task_state = cm_cadata_start_profiles(ca);
+			break;
+		case cm_ca_phase_default_profile:
+			state->cm_task_state =
+				cm_cadata_start_default_profile(ca);
+			break;
+		case cm_ca_phase_enroll_reqs:
+			state->cm_task_state = cm_cadata_start_enroll_reqs(ca);
+			break;
+		case cm_ca_phase_renew_reqs:
+			state->cm_task_state = cm_cadata_start_renew_reqs(ca);
+			break;
+		case cm_ca_phase_invalid:
+			abort();
+			break;
 		}
 		if (state->cm_task_state == NULL) {
-			state->cm_phase_enabled[state->cm_phase] = FALSE;
-			cm_ca_next_phase(ca, state);
+			ca->cm_ca_state[state->cm_phase] = CM_CA_DISABLED;
 			*when = cm_time_now;
 		} else {
 			*readfd = cm_cadata_get_fd(ca, state->cm_task_state);
 			if (*readfd == -1) {
 				cm_cadata_done(ca, state->cm_task_state);
-				state->cm_task_state = NULL;
-				state->cm_phase_enabled[state->cm_phase] = FALSE;
-				cm_ca_next_phase(ca, state);
-				*when = cm_time_now;
+				ca->cm_ca_state[state->cm_phase] = CM_CA_REFRESHING;
+				*when = cm_time_soon;
 			} else {
-				state->cm_state = CM_CA_REFRESHING;
+				ca->cm_ca_state[state->cm_phase] = CM_CA_REFRESHING;
 				*when = cm_time_no_time;
 			}
 		}
 		break;
 	case CM_CA_REFRESHING:
-		state->cm_phase_needs_retry[state->cm_phase] = FALSE;
 		if (cm_cadata_ready(ca, state->cm_task_state) == 0) {
 			if (cm_cadata_modified(ca, state->cm_task_state) == 0) {
 				cm_log(3, "%s('%s') %s data updated\n",
 				       ca->cm_busname, ca->cm_nickname,
-				       cm_ca_phase_as_string(state->cm_phase));
+				       cm_store_ca_phase_as_string(state->cm_phase));
 				cm_cadata_done(ca, state->cm_task_state);
 				state->cm_task_state = NULL;
 				switch (state->cm_phase) {
 				case cm_ca_phase_certs:
-					state->cm_state = CM_CA_NEED_TO_SAVE_DATA;
+					ca->cm_ca_state[state->cm_phase] = CM_CA_NEED_TO_SAVE_DATA;
 					break;
 				case cm_ca_phase_identify:
 				case cm_ca_phase_profiles:
 				case cm_ca_phase_default_profile:
 				case cm_ca_phase_enroll_reqs:
 				case cm_ca_phase_renew_reqs:
-					cm_ca_next_phase(ca, state);
+					ca->cm_ca_state[state->cm_phase] = CM_CA_IDLE;
+					break;
+				case cm_ca_phase_invalid:
+					abort();
 					break;
 				}
 				*when = cm_time_now;
@@ -1940,34 +1810,30 @@ cm_iterate_ca(struct cm_store_ca *ca,
 			if (cm_cadata_unreachable(ca,
 						  state->cm_task_state) == 0) {
 				cm_cadata_done(ca, state->cm_task_state);
+				state->cm_task_state = NULL;
 				cm_log(3, "%s('%s') %s server unreachable\n",
 				       ca->cm_busname, ca->cm_nickname,
-				       cm_ca_phase_as_string(state->cm_phase));
-				state->cm_task_state = NULL;
-				state->cm_phase_needs_retry[state->cm_phase] =
-					TRUE;
-				cm_ca_next_phase(ca, state);
+				       cm_store_ca_phase_as_string(state->cm_phase));
+				ca->cm_ca_state[state->cm_phase] = CM_CA_DATA_UNREACHABLE;
 				*when = cm_time_now;
 			} else
 			if (cm_cadata_unsupported(ca,
 						  state->cm_task_state) == 0) {
 				cm_cadata_done(ca, state->cm_task_state);
+				state->cm_task_state = NULL;
 				cm_log(3, "%s('%s') %s retrieval unsupported\n",
 				       ca->cm_busname, ca->cm_nickname,
-				       cm_ca_phase_as_string(state->cm_phase));
-				state->cm_task_state = NULL;
-				state->cm_phase_enabled[state->cm_phase] =
-					FALSE;
-				cm_ca_next_phase(ca, state);
+				       cm_store_ca_phase_as_string(state->cm_phase));
+				ca->cm_ca_state[state->cm_phase] = CM_CA_DISABLED;
 				*when = cm_time_now;
 			} else {
-				cm_log(3, "%s('%s') %s unchanged\n",
-				       ca->cm_busname, ca->cm_nickname,
-				       cm_ca_phase_as_string(state->cm_phase));
 				cm_cadata_done(ca, state->cm_task_state);
 				state->cm_task_state = NULL;
-				cm_ca_next_phase(ca, state);
-				*when = cm_time_now;
+				cm_log(3, "%s('%s') %s unchanged\n",
+				       ca->cm_busname, ca->cm_nickname,
+				       cm_store_ca_phase_as_string(state->cm_phase));
+				ca->cm_ca_state[state->cm_phase] = CM_CA_IDLE;
+				*when = cm_time_no_time;
 			}
 		}
 		break;
@@ -1984,7 +1850,7 @@ cm_iterate_ca(struct cm_store_ca *ca,
 			state->cm_hook_state = cm_ca_hook_start_presave(ca);
 			if (state->cm_hook_state != NULL) {
 				/* Note that we're doing the pre-save. */
-				state->cm_state = CM_CA_PRE_SAVE_DATA;
+				ca->cm_ca_state[state->cm_phase] = CM_CA_PRE_SAVE_DATA;
 				/* Wait for status update, or poll. */
 				*readfd = cm_ca_hook_get_fd(ca,
 							    state->cm_hook_state);
@@ -1995,11 +1861,11 @@ cm_iterate_ca(struct cm_store_ca *ca,
 				}
 			} else {
 				/* Failed to start the pre-save; skip it. */
-				state->cm_state = CM_CA_START_SAVING_DATA;
+				ca->cm_ca_state[state->cm_phase] = CM_CA_START_SAVING_DATA;
 				*when = cm_time_now;
 			}
 		} else {
-			state->cm_state = CM_CA_START_SAVING_DATA;
+			ca->cm_ca_state[state->cm_phase] = CM_CA_START_SAVING_DATA;
 			*when = cm_time_now;
 		}
 		break;
@@ -2007,7 +1873,7 @@ cm_iterate_ca(struct cm_store_ca *ca,
 		if (cm_ca_hook_ready(ca, state->cm_hook_state) == 0) {
 			cm_ca_hook_done(ca, state->cm_hook_state);
 			state->cm_hook_state = NULL;
-			state->cm_state = CM_CA_START_SAVING_DATA;
+			ca->cm_ca_state[state->cm_phase] = CM_CA_START_SAVING_DATA;
 			*when = cm_time_now;
 		} else {
 			/* Wait for status update, or poll. */
@@ -2020,7 +1886,7 @@ cm_iterate_ca(struct cm_store_ca *ca,
 		}
 		break;
 	case CM_CA_START_SAVING_DATA:
-		state->cm_state = CM_CA_SAVING_DATA;
+		ca->cm_ca_state[state->cm_phase] = CM_CA_SAVING_DATA;
 		*when = cm_time_now;
 		break;
 	case CM_CA_SAVING_DATA:
@@ -2028,7 +1894,7 @@ cm_iterate_ca(struct cm_store_ca *ca,
 			state->cm_hook_state = cm_ca_hook_start_postsave(ca);
 			if (state->cm_hook_state != NULL) {
 				/* Note that we're doing the post-save. */
-				state->cm_state = CM_CA_POST_SAVE_DATA;
+				ca->cm_ca_state[state->cm_phase] = CM_CA_POST_SAVE_DATA;
 				/* Wait for status update, or poll. */
 				*readfd = cm_ca_hook_get_fd(ca,
 							    state->cm_hook_state);
@@ -2039,11 +1905,11 @@ cm_iterate_ca(struct cm_store_ca *ca,
 				}
 			} else {
 				/* Failed to start the post-save; skip it. */
-				state->cm_state = CM_CA_SAVED_DATA;
+				ca->cm_ca_state[state->cm_phase] = CM_CA_SAVED_DATA;
 				*when = cm_time_soon;
 			}
 		} else {
-			state->cm_state = CM_CA_SAVED_DATA;
+			ca->cm_ca_state[state->cm_phase] = CM_CA_SAVED_DATA;
 			*when = cm_time_now;
 		}
 		break;
@@ -2051,7 +1917,7 @@ cm_iterate_ca(struct cm_store_ca *ca,
 		if (cm_ca_hook_ready(ca, state->cm_hook_state) == 0) {
 			cm_ca_hook_done(ca, state->cm_hook_state);
 			state->cm_hook_state = NULL;
-			state->cm_state = CM_CA_SAVED_DATA;
+			ca->cm_ca_state[state->cm_phase] = CM_CA_SAVED_DATA;
 			*when = cm_time_now;
 		} else {
 			/* Wait for status update, or poll. */
@@ -2073,20 +1939,20 @@ cm_iterate_ca(struct cm_store_ca *ca,
 			       ca->cm_busname, ca->cm_nickname);
 			break;
 		}
-		cm_ca_next_phase(ca, state);
+		ca->cm_ca_state[state->cm_phase] = CM_CA_IDLE;
 		*when = cm_time_now;
 		break;
+	case CM_CA_DATA_UNREACHABLE:
 	case CM_CA_IDLE:
+	case CM_CA_DISABLED:
 		*when = cm_time_no_time;
 		break;
 	}
-	if ((old_state.cm_state != state->cm_state) ||
-	    (old_state.cm_phase != state->cm_phase)) {
-		cm_log(3, "%s('%s') moved to state '%s%c/%s'\n",
+	if (ca->cm_ca_state[state->cm_phase] != old_ca.cm_ca_state[state->cm_phase]) {
+		cm_log(3, "%s('%s')-%s moved to state '%s'\n",
 		       ca->cm_busname, ca->cm_nickname,
-		       cm_ca_phase_as_string(state->cm_phase),
-		       state->cm_phase_enabled[state->cm_phase] ? '+' : '-',
-		       cm_ca_data_state_as_string(state->cm_state));
+		       cm_store_ca_phase_as_string(state->cm_phase),
+		       cm_store_ca_state_as_string(ca->cm_ca_state[state->cm_phase]));
 		cm_store_ca_save(ca);
 	}
 	return 0;
@@ -2097,23 +1963,12 @@ int
 cm_iterate_ca_done(struct cm_store_ca *ca, void *cm_iterate_state)
 {
 	struct cm_ca_state *state;
-	unsigned int i;
 
 	state = cm_iterate_state;
 	cm_log(3, "%s('%s') ends (%s/%s)\n",
 	       ca->cm_busname, ca->cm_nickname,
-	       cm_ca_phase_as_string(state->cm_phase),
-	       cm_ca_data_state_as_string(state->cm_state));
-	for (i = 0;
-	     i < sizeof(state->cm_phase_enabled) /
-	         sizeof(state->cm_phase_enabled[0]);
-	     i++) {
-		cm_log(3, "%s('%s') task '%s': enabled%c, needs_retry%c\n",
-		       ca->cm_busname, ca->cm_nickname,
-		       cm_ca_phase_as_string(i),
-		       state->cm_phase_enabled[i] ? '+' : '-',
-		       state->cm_phase_needs_retry[i] ? '+' : '-');
-	}
+	       cm_store_ca_phase_as_string(state->cm_phase),
+	       cm_store_ca_state_as_string(ca->cm_ca_state[state->cm_phase]));
 	talloc_free(state);
 
 	if (cm_writing_has_lock(ca)) {

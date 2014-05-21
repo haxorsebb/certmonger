@@ -643,11 +643,14 @@ process of being disseminated out to the rest of the local system.  We can
 model the states for each of these using roughly the same set of states:
 
 	* Pulling data from the CA:
-	  States: NEED_TO_REFRESH,REFRESHING
+	  States: NEED_TO_REFRESH,REFRESHING,UNREACHABLE
 
 	* Saving the data obtained from the CA to places where it's expected:
 	  States: NEED_TO_SAVE_DATA,PRE_SAVE_DATA,START_SAVING_DATA,
 		  SAVING_DATA,POST_SAVE_DATA,SAVED_DATA
+
+	* Waiting until we need to re-fetch data:
+	  States: IDLE
 
 And this state machine:
 
@@ -666,7 +669,7 @@ And this state machine:
 				state_next = NEED_TO_SAVE_DATA
 				state_transition = now
 			elseif ca-is-unreachable
-				state_next = NEED_TO_REFRESH
+				state_next = UNREACHABLE
 				state_transition = later
 			else
 				state_next = DISABLED
@@ -717,5 +720,5 @@ And this state machine:
 		break
 
 	SAVED_DATA:
-		state_next = NEED_TO_REFRESH
+		state_next = IDLE
 		state_transition = timeout

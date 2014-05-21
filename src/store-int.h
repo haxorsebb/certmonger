@@ -218,6 +218,30 @@ struct cm_store_ca {
 	char *cm_nickname;
 	/* What the helper suggests it be called. */
 	char *cm_ca_aka;
+	/* We have multiple state machines. */
+	enum cm_ca_phase {
+		cm_ca_phase_identify = 0,
+		cm_ca_phase_certs,
+		cm_ca_phase_profiles,
+		cm_ca_phase_default_profile,
+		cm_ca_phase_enroll_reqs,
+		cm_ca_phase_renew_reqs,
+		cm_ca_phase_invalid,
+	} cm_ca_phase;
+	/* Data refresh state. */
+	enum cm_ca_phase_state {
+		CM_CA_IDLE = 0,
+		CM_CA_NEED_TO_REFRESH,
+		CM_CA_REFRESHING,
+		CM_CA_DATA_UNREACHABLE,
+		CM_CA_NEED_TO_SAVE_DATA,
+		CM_CA_PRE_SAVE_DATA,
+		CM_CA_START_SAVING_DATA,
+		CM_CA_SAVING_DATA,
+		CM_CA_POST_SAVE_DATA,
+		CM_CA_SAVED_DATA,
+		CM_CA_DISABLED,
+	} cm_ca_state[cm_ca_phase_invalid];
 	/* A list of issuer names.  If no CA is specified when we create a new
 	 * request, and the certificate already exists and was issued by one of
 	 * these names, we'll use this CA. */
@@ -271,6 +295,8 @@ struct cm_store_ca {
 
 const char *cm_store_state_as_string(enum cm_state state);
 enum cm_state cm_store_state_from_string(const char *name);
+const char *cm_store_ca_state_as_string(enum cm_ca_phase_state state);
+const char *cm_store_ca_phase_as_string(enum cm_ca_phase phase);
 
 char *cm_store_entry_next_busname(void *parent);
 struct cm_store_entry *cm_store_files_entry_read(void *parent,

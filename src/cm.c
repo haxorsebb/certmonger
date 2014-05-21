@@ -50,7 +50,11 @@ struct cm_context {
 	struct cm_event {
 		void *iterate_state;
 		void *next_event;
-	} *entry_events, *ca_events;
+	} *entry_events;
+	struct cm_ca_event {
+		void *iterate_state[cm_ca_phase_invalid];
+		void *next_event[cm_ca_phase_invalid];
+	} *ca_events;
 	int netlink;
 	void *netlink_tfd, *netlink_delayed_event;
 	int idle_timeout;
@@ -60,7 +64,8 @@ struct cm_context {
 static void *cm_service_entry(struct cm_context *context,
 			      struct timeval *now, int i);
 static void *cm_service_ca(struct cm_context *context,
-			   struct timeval *now, int i);
+			   struct timeval *now, int i,
+			   enum cm_ca_phase phase);
 static void cm_fd_h(struct tevent_context *ec, struct tevent_fd *fde,
 		    uint16_t flags, void *pvt);
 static void cm_timer_h(struct tevent_context *ec, struct tevent_timer *te,
@@ -78,6 +83,8 @@ cm_init(struct tevent_context *parent, struct cm_context **context,
 {
 	struct cm_context *ctx;
 	int i, j;
+	enum cm_ca_phase phase;
+
 	*context = NULL;
 	ctx = talloc_ptrtype(parent, ctx);
 	if (ctx == NULL) {
@@ -135,15 +142,27 @@ cm_init(struct tevent_context *parent, struct cm_context **context,
 	}
 	for (i = 0; i < ctx->n_cas; i++) {
 		memset(&ctx->ca_events[i], 0, sizeof(ctx->ca_events[i]));
-		if (cm_iterate_ca_init(ctx->cas[i],
-				       &ctx->ca_events[i].iterate_state) != 0) {
-			for (j = 0; j < i; j++) {
-				cm_iterate_ca_done(ctx->cas[j],
-						   ctx->ca_events[j].iterate_state);
-				ctx->ca_events[j].iterate_state = NULL;
+		for (phase = 0; phase < cm_ca_phase_invalid; phase++) {
+			if (cm_iterate_ca_init(ctx->cas[i], phase,
+					       &ctx->ca_events[i].iterate_state[phase]) != 0) {
+				do {
+					phase--;
+					cm_iterate_ca_done(ctx->cas[i],
+							   ctx->ca_events[i].iterate_state[phase]);
+					ctx->ca_events[i].iterate_state[phase] = NULL;
+				} while (phase > 0);
+				for (j = 0; j < i; j++) {
+					phase = cm_ca_phase_invalid;
+					do {
+						phase--;
+						cm_iterate_ca_done(ctx->cas[j],
+								   ctx->ca_events[j].iterate_state[phase]);
+						ctx->ca_events[j].iterate_state[phase] = NULL;
+					} while (phase > 0);
+				}
+				talloc_free(ctx);
+				return ENOMEM;
 			}
-			talloc_free(ctx);
-			return ENOMEM;
 		}
 	}
 	/* Start draining the netlink socket so that it doesn't get backed up
@@ -166,6 +185,7 @@ cm_timer_h(struct tevent_context *ec, struct tevent_timer *te,
 {
 	struct cm_context *context = pvt;
 	int i, j;
+	enum cm_ca_phase phase;
 
 	for (i = 0; i < context->n_entries; i++) {
 		if (context->entry_events[i].next_event == te) {
@@ -176,10 +196,15 @@ cm_timer_h(struct tevent_context *ec, struct tevent_timer *te,
 		}
 	}
 	for (j = 0; j < context->n_cas; j++) {
-		if (context->ca_events[j].next_event == te) {
-			talloc_free(te);
-			context->ca_events[j].next_event =
-				cm_service_ca(context, NULL, j);
+		for (phase = 0; phase < cm_ca_phase_invalid; phase++) {
+			if (context->ca_events[j].next_event[phase] == te) {
+				talloc_free(te);
+				context->ca_events[j].next_event[phase] =
+					cm_service_ca(context, NULL, j, phase);
+				break;
+			}
+		}
+		if (phase < cm_ca_phase_invalid) {
 			break;
 		}
 	}
@@ -234,6 +259,7 @@ cm_fd_h(struct tevent_context *ec,
 {
 	struct cm_context *context = pvt;
 	int i, j;
+	enum cm_ca_phase phase;
 
 	for (i = 0; i < context->n_entries; i++) {
 		if (context->entry_events[i].next_event == fde) {
@@ -244,10 +270,15 @@ cm_fd_h(struct tevent_context *ec,
 		}
 	}
 	for (j = 0; j < context->n_cas; j++) {
-		if (context->ca_events[j].next_event == fde) {
-			talloc_free(fde);
-			context->ca_events[j].next_event =
-				cm_service_ca(context, NULL, j);
+		for (phase = 0; phase < cm_ca_phase_invalid; phase++) {
+			if (context->ca_events[j].next_event[phase] == fde) {
+				talloc_free(fde);
+				context->ca_events[j].next_event[phase] =
+					cm_service_ca(context, NULL, j, phase);
+				break;
+			}
+		}
+		if (phase < cm_ca_phase_invalid) {
 			break;
 		}
 	}
@@ -271,6 +302,7 @@ cm_netlink_delayed_h(struct tevent_context *ec, struct tevent_timer *te,
 {
 	struct cm_context *ctx = pvt;
 	int i;
+	enum cm_ca_phase phase;
 
 	for (i = 0; i < ctx->n_entries; i++) {
 		if (ctx->entry_events[i].next_event != NULL) {
@@ -285,10 +317,17 @@ cm_netlink_delayed_h(struct tevent_context *ec, struct tevent_timer *te,
 		}
 	}
 	for (i = 0; i < ctx->n_cas; i++) {
-		if (ctx->ca_events[i].iterate_state != NULL) {
-			if (cm_ca_needs_retry(ctx->cas[i],
-					      ctx->ca_events[i].iterate_state)) {
-				cm_restart_ca(ctx, ctx->cas[i]->cm_nickname);
+		for (phase = 0; phase < cm_ca_phase_invalid; phase++) {
+			if (ctx->ca_events[i].iterate_state[phase] != NULL) {
+				switch (ctx->cas[i]->cm_ca_state[phase]) {
+				case CM_CA_DATA_UNREACHABLE:
+					cm_restart_ca(ctx,
+						      ctx->cas[i]->cm_nickname,
+						      phase);
+					break;
+				default:
+					break;
+				}
 			}
 		}
 	}
@@ -441,7 +480,8 @@ cm_service_entry(struct cm_context *context, struct timeval *current_time, int i
 }
 
 static void *
-cm_service_ca(struct cm_context *context, struct timeval *current_time, int i)
+cm_service_ca(struct cm_context *context, struct timeval *current_time, int i,
+	      enum cm_ca_phase phase)
 {
 	int ret, delay, fd;
 	struct timeval now, then;
@@ -457,7 +497,7 @@ cm_service_ca(struct cm_context *context, struct timeval *current_time, int i)
 	ret = cm_iterate_ca(context->cas[i],
 			    context,
 			    &cm_tdbush_property_emit_ca_changes,
-			    context->ca_events[i].iterate_state,
+			    context->ca_events[i].iterate_state[phase],
 			    &when, &delay, &fd);
 	t = NULL;
 	if (ret == 0) {
@@ -620,6 +660,7 @@ static int
 cm_find_ca_by_nickname(struct cm_context *context, const char *nickname)
 {
 	int i;
+
 	for (i = 0; i < context->n_cas; i++) {
 		if (strcmp(context->cas[i]->cm_nickname, nickname) == 0) {
 			return i;
@@ -632,6 +673,7 @@ int
 cm_start_all(struct cm_context *context)
 {
 	int i;
+	enum cm_ca_phase phase;
 
 	for (i = 0; i < context->n_entries; i++) {
 		if ((context->entry_events[i].iterate_state == NULL) &&
@@ -647,8 +689,19 @@ cm_start_all(struct cm_context *context)
 		}
 	}
 	for (i = 0; i < context->n_cas; i++) {
-		context->ca_events[i].next_event =
-			cm_service_ca(context, NULL, i);
+		for (phase = 0; phase < cm_ca_phase_invalid; phase++) {
+			if ((context->ca_events[i].iterate_state[phase] == NULL) &&
+			    (cm_iterate_ca_init(context->cas[i], phase,
+						&context->ca_events[i].iterate_state[phase])) != 0) {
+				cm_log(1, "Error starting %s('%s'), "
+				       "please try again.\n",
+				       context->cas[i]->cm_busname,
+				       context->cas[i]->cm_nickname);
+			} else {
+				context->ca_events[i].next_event[phase] =
+					cm_service_ca(context, NULL, i, phase);
+			}
+		}
 	}
 	cm_reset_timeout(context);
 	return 0;
@@ -658,6 +711,8 @@ void
 cm_stop_all(struct cm_context *context)
 {
 	int i;
+	enum cm_ca_phase phase;
+
 	for (i = 0; i < context->n_entries; i++) {
 		talloc_free(context->entry_events[i].next_event);
 		context->entry_events[i].next_event = NULL;
@@ -667,11 +722,13 @@ cm_stop_all(struct cm_context *context)
 		cm_store_entry_save(context->entries[i]);
 	}
 	for (i = 0; i < context->n_cas; i++) {
-		talloc_free(context->ca_events[i].next_event);
-		context->ca_events[i].next_event = NULL;
-		cm_iterate_ca_done(context->cas[i],
-				   context->ca_events[i].iterate_state);
-		context->ca_events[i].iterate_state = NULL;
+		for (phase = 0; phase < cm_ca_phase_invalid; phase++) {
+			talloc_free(context->ca_events[i].next_event[phase]);
+			context->ca_events[i].next_event[phase] = NULL;
+			cm_iterate_ca_done(context->cas[i],
+					   context->ca_events[i].iterate_state[phase]);
+			context->ca_events[i].iterate_state[phase] = NULL;
+		}
 		cm_store_ca_save(context->cas[i]);
 	}
 }
@@ -852,22 +909,25 @@ cm_add_ca(struct cm_context *context, struct cm_store_ca *new_ca)
 }
 
 dbus_bool_t
-cm_start_ca(struct cm_context *context, const char *nickname)
+cm_start_ca(struct cm_context *context, const char *nickname,
+	    enum cm_ca_phase phase)
 {
 	int i;
 
 	i = cm_find_ca_by_nickname(context, nickname);
 	if (i != -1) {
-		if (cm_iterate_ca_init(context->cas[i],
-				       &context->ca_events[i].iterate_state) == 0) {
-			context->ca_events[i].next_event =
-				cm_service_ca(context, NULL, i);
-			cm_log(3, "Started CA %s('%s').\n",
-			       context->cas[i]->cm_busname, nickname);
+		if (cm_iterate_ca_init(context->cas[i], phase,
+				       &context->ca_events[i].iterate_state[phase]) == 0) {
+			context->ca_events[i].next_event[phase] =
+				cm_service_ca(context, NULL, i, phase);
+			cm_log(3, "Started CA %s('%s')-%s.\n",
+			       context->cas[i]->cm_busname, nickname,
+			       cm_store_ca_phase_as_string(phase));
 			return TRUE;
 		} else {
-			cm_log(3, "Error starting CA %s('%s'), please retry.\n",
-			       context->cas[i]->cm_busname, nickname);
+			cm_log(3, "Error starting CA %s('%s')-%s, please retry.\n",
+			       context->cas[i]->cm_busname, nickname,
+			       cm_store_ca_phase_as_string(phase));
 			return FALSE;
 		}
 	} else {
@@ -877,20 +937,22 @@ cm_start_ca(struct cm_context *context, const char *nickname)
 }
 
 dbus_bool_t
-cm_stop_ca(struct cm_context *context, const char *nickname)
+cm_stop_ca(struct cm_context *context, const char *nickname,
+	   enum cm_ca_phase phase)
 {
 	int i;
 
 	i = cm_find_ca_by_nickname(context, nickname);
 	if (i != -1) {
-		talloc_free(context->ca_events[i].next_event);
-		context->ca_events[i].next_event = NULL;
+		talloc_free(context->ca_events[i].next_event[phase]);
+		context->ca_events[i].next_event[phase] = NULL;
 		cm_iterate_ca_done(context->cas[i],
-				   context->ca_events[i].iterate_state);
-		context->ca_events[i].iterate_state = NULL;
+				   context->ca_events[i].iterate_state[phase]);
+		context->ca_events[i].iterate_state[phase] = NULL;
 		cm_store_ca_save(context->cas[i]);
-		cm_log(3, "Stopped CA %s('%s').\n",
-		       context->cas[i]->cm_busname, nickname);
+		cm_log(3, "Stopped CA %s('%s')-%s.\n",
+		       context->cas[i]->cm_busname, nickname,
+		       cm_store_ca_phase_as_string(phase));
 		return TRUE;
 	} else {
 		cm_log(3, "No CA matching nickname '%s'.\n", nickname);
@@ -899,10 +961,11 @@ cm_stop_ca(struct cm_context *context, const char *nickname)
 }
 
 dbus_bool_t
-cm_restart_ca(struct cm_context *context, const char *nickname)
+cm_restart_ca(struct cm_context *context, const char *nickname,
+	      enum cm_ca_phase phase)
 {
-	return cm_stop_ca(context, nickname) &&
-	       cm_start_ca(context, nickname);
+	return cm_stop_ca(context, nickname, phase) &&
+	       cm_start_ca(context, nickname, phase);
 }
 
 struct cm_store_ca *

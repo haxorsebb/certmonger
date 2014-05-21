@@ -22,6 +22,7 @@ struct cm_context;
 struct cm_store_entry;
 struct cm_store_ca;
 struct tevent_context;
+enum cm_ca_phase;
 
 int cm_init(struct tevent_context *parent, struct cm_context **context,
 	    int idle_timeout);
@@ -49,9 +50,12 @@ int cm_remove_ca(struct cm_context *context, const char *nickname);
 dbus_bool_t cm_restart_entry(struct cm_context *c, const char *nickname);
 dbus_bool_t cm_stop_entry(struct cm_context *c, const char *nickname);
 dbus_bool_t cm_start_entry(struct cm_context *c, const char *nickname);
-dbus_bool_t cm_restart_ca(struct cm_context *c, const char *nickname);
-dbus_bool_t cm_stop_ca(struct cm_context *c, const char *nickname);
-dbus_bool_t cm_start_ca(struct cm_context *c, const char *nickname);
+dbus_bool_t cm_restart_ca(struct cm_context *c, const char *nickname,
+		          enum cm_ca_phase);
+dbus_bool_t cm_stop_ca(struct cm_context *c, const char *nickname,
+		       enum cm_ca_phase);
+dbus_bool_t cm_start_ca(struct cm_context *c, const char *nickname,
+		        enum cm_ca_phase);
 
 void *cm_get_conn_ptr(struct cm_context *context);
 void cm_set_conn_ptr(struct cm_context *context, void *ptr);
