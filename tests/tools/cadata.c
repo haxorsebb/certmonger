@@ -124,9 +124,6 @@ main(int argc, char **argv)
 					break;
 				}
 			}
-			if (cm_cadata_retrieved(ca, state) == 0) {
-				ret = CM_SUBMIT_STATUS_ISSUED;
-			} else
 			if (cm_cadata_unsupported(ca, state) == 0) {
 				printf("Helper doesn't implement.\n");
 				ret = CM_SUBMIT_STATUS_OPERATION_NOT_SUPPORTED;
@@ -139,8 +136,11 @@ main(int argc, char **argv)
 				printf("CA helper was un- or "
 				       "under-configured.\n");
 				ret = CM_SUBMIT_STATUS_UNCONFIGURED;
+			} else
+			if (cm_cadata_modified(ca, state) == 0) {
+				ret = CM_SUBMIT_STATUS_ISSUED;
 			} else {
-				printf("Can't explain what happened.\n");
+				printf("CA helper provided data.\n");
 				ret = -1;
 			}
 			cm_cadata_done(ca, state);

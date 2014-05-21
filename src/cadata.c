@@ -251,10 +251,13 @@ parse_certs(struct cm_store_ca *ca, struct cm_cadata_state *state,
 	if (state != NULL) {
 		state->modified = 0;
 	}
+	roots = ca->cm_ca_root_certs;
 	p = parse_cert_list(ca, state, msg, &roots);
 	if (p != NULL) {
+		other_roots = ca->cm_ca_other_root_certs;
 		p = parse_cert_list(ca, state, p, &other_roots);
 		if (p != NULL) {
+			others = ca->cm_ca_other_certs;
 			p = parse_cert_list(ca, state, p, &others);
 			if (p != NULL) {
 				talloc_free(ca->cm_ca_root_certs);
