@@ -131,6 +131,13 @@ enum cm_store_file_field {
 	cm_store_entry_field_post_certsave_command,
 	cm_store_entry_field_post_certsave_uid,
 
+	cm_store_entry_field_root_cert_files,
+	cm_store_entry_field_other_root_cert_files,
+	cm_store_entry_field_other_cert_files,
+	cm_store_entry_field_root_cert_nssdbs,
+	cm_store_entry_field_other_root_cert_nssdbs,
+	cm_store_entry_field_other_cert_nssdbs,
+
 	cm_store_ca_field_aka,
 	cm_store_ca_field_known_issuer_names,
 	cm_store_ca_field_is_default,
@@ -153,6 +160,13 @@ enum cm_store_file_field {
 	cm_store_ca_field_pre_save_uid,
 	cm_store_ca_field_post_save_command,
 	cm_store_ca_field_post_save_uid,
+
+	cm_store_ca_field_root_cert_files,
+	cm_store_ca_field_other_root_cert_files,
+	cm_store_ca_field_other_cert_files,
+	cm_store_ca_field_root_cert_nssdbs,
+	cm_store_ca_field_other_root_cert_nssdbs,
+	cm_store_ca_field_other_cert_nssdbs,
 
 	cm_store_file_field_invalid_high,
 };
@@ -249,6 +263,13 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_post_certsave_command, "post_certsave_command"},
 	{cm_store_entry_field_post_certsave_uid, "post_certsave_uid"},
 
+	{cm_store_entry_field_root_cert_files, "root_cert_files"},
+	{cm_store_entry_field_other_root_cert_files, "other_root_cert_files"},
+	{cm_store_entry_field_other_cert_files, "other_cert_files"},
+	{cm_store_entry_field_root_cert_nssdbs, "root_cert_dbs"},
+	{cm_store_entry_field_other_root_cert_nssdbs, "other_root_cert_dbs"},
+	{cm_store_entry_field_other_cert_nssdbs, "other_cert_dbs"},
+
 	{cm_store_ca_field_aka, "ca_aka"},
 	{cm_store_ca_field_known_issuer_names, "ca_issuer_names"},
 	{cm_store_ca_field_is_default, "ca_is_default"},
@@ -273,6 +294,13 @@ static struct cm_store_file_field_list {
 	{cm_store_ca_field_pre_save_uid, "ca_pre_save_uid"},
 	{cm_store_ca_field_post_save_command, "ca_post_save_command"},
 	{cm_store_ca_field_post_save_uid, "ca_post_save_uid"},
+
+	{cm_store_ca_field_root_cert_files, "ca_root_cert_files"},
+	{cm_store_ca_field_other_root_cert_files, "ca_other_root_cert_files"},
+	{cm_store_ca_field_other_cert_files, "ca_other_cert_files"},
+	{cm_store_ca_field_root_cert_nssdbs, "ca_root_cert_dbs"},
+	{cm_store_ca_field_other_root_cert_nssdbs, "ca_other_root_cert_dbs"},
+	{cm_store_ca_field_other_cert_nssdbs, "ca_other_cert_dbs"},
 };
 
 static enum cm_store_file_field
@@ -556,6 +584,12 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_ca_field_pre_save_uid:
 			case cm_store_ca_field_post_save_command:
 			case cm_store_ca_field_post_save_uid:
+			case cm_store_ca_field_root_cert_files:
+			case cm_store_ca_field_other_root_cert_files:
+			case cm_store_ca_field_other_cert_files:
+			case cm_store_ca_field_root_cert_nssdbs:
+			case cm_store_ca_field_other_root_cert_nssdbs:
+			case cm_store_ca_field_other_cert_nssdbs:
 				break;
 			case cm_store_file_field_id:
 				ret->cm_nickname = free_if_empty(p);
@@ -898,6 +932,30 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_post_certsave_uid:
 				ret->cm_post_certsave_uid = free_if_empty(p);
 				break;
+			case cm_store_entry_field_root_cert_files:
+				ret->cm_root_cert_store_files =
+					free_if_empty_multi(ret, p);
+				break;
+			case cm_store_entry_field_other_root_cert_files:
+				ret->cm_other_root_cert_store_files =
+					free_if_empty_multi(ret, p);
+				break;
+			case cm_store_entry_field_other_cert_files:
+				ret->cm_other_cert_store_files =
+					free_if_empty_multi(ret, p);
+				break;
+			case cm_store_entry_field_root_cert_nssdbs:
+				ret->cm_root_cert_store_nssdbs =
+					free_if_empty_multi(ret, p);
+				break;
+			case cm_store_entry_field_other_root_cert_nssdbs:
+				ret->cm_other_root_cert_store_nssdbs =
+					free_if_empty_multi(ret, p);
+				break;
+			case cm_store_entry_field_other_cert_nssdbs:
+				ret->cm_other_cert_store_nssdbs =
+					free_if_empty_multi(ret, p);
+				break;
 			}
 		}
 	}
@@ -1020,6 +1078,12 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_pre_certsave_uid:
 			case cm_store_entry_field_post_certsave_command:
 			case cm_store_entry_field_post_certsave_uid:
+			case cm_store_entry_field_root_cert_files:
+			case cm_store_entry_field_other_root_cert_files:
+			case cm_store_entry_field_other_cert_files:
+			case cm_store_entry_field_root_cert_nssdbs:
+			case cm_store_entry_field_other_root_cert_nssdbs:
+			case cm_store_entry_field_other_cert_nssdbs:
 				break;
 			case cm_store_file_field_id:
 				ret->cm_nickname = free_if_empty(p);
@@ -1098,6 +1162,30 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 				break;
 			case cm_store_ca_field_post_save_uid:
 				ret->cm_ca_post_save_uid = free_if_empty(p);
+				break;
+			case cm_store_ca_field_root_cert_files:
+				ret->cm_ca_root_cert_store_files =
+					free_if_empty_multi(ret, p);
+				break;
+			case cm_store_ca_field_other_root_cert_files:
+				ret->cm_ca_other_root_cert_store_files =
+					free_if_empty_multi(ret, p);
+				break;
+			case cm_store_ca_field_other_cert_files:
+				ret->cm_ca_other_cert_store_files =
+					free_if_empty_multi(ret, p);
+				break;
+			case cm_store_ca_field_root_cert_nssdbs:
+				ret->cm_ca_root_cert_store_nssdbs =
+					free_if_empty_multi(ret, p);
+				break;
+			case cm_store_ca_field_other_root_cert_nssdbs:
+				ret->cm_ca_other_root_cert_store_nssdbs =
+					free_if_empty_multi(ret, p);
+				break;
+			case cm_store_ca_field_other_cert_nssdbs:
+				ret->cm_ca_other_cert_store_nssdbs =
+					free_if_empty_multi(ret, p);
 				break;
 			}
 		}
@@ -1472,6 +1560,20 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 				entry->cm_post_certsave_command);
 	cm_store_file_write_str(fp, cm_store_entry_field_post_certsave_uid,
 				entry->cm_post_certsave_uid);
+
+	cm_store_file_write_strs(fp, cm_store_entry_field_root_cert_files,
+				 entry->cm_root_cert_store_files);
+	cm_store_file_write_strs(fp, cm_store_entry_field_other_root_cert_files,
+				 entry->cm_other_root_cert_store_files);
+	cm_store_file_write_strs(fp, cm_store_entry_field_other_cert_files,
+				 entry->cm_other_cert_store_files);
+	cm_store_file_write_strs(fp, cm_store_entry_field_root_cert_nssdbs,
+				 entry->cm_root_cert_store_nssdbs);
+	cm_store_file_write_strs(fp, cm_store_entry_field_other_root_cert_nssdbs,
+				 entry->cm_other_root_cert_store_nssdbs);
+	cm_store_file_write_strs(fp, cm_store_entry_field_other_cert_nssdbs,
+				 entry->cm_other_cert_store_nssdbs);
+
 	if (ferror(fp)) {
 		return -1;
 	}
@@ -1734,6 +1836,18 @@ cm_store_ca_write(FILE *fp, struct cm_store_ca *ca)
 				ca->cm_ca_post_save_command);
 	cm_store_file_write_str(fp, cm_store_ca_field_post_save_uid,
 				ca->cm_ca_post_save_uid);
+	cm_store_file_write_strs(fp, cm_store_ca_field_root_cert_files,
+				 ca->cm_ca_root_cert_store_files);
+	cm_store_file_write_strs(fp, cm_store_ca_field_other_root_cert_files,
+				 ca->cm_ca_other_root_cert_store_files);
+	cm_store_file_write_strs(fp, cm_store_ca_field_other_cert_files,
+				 ca->cm_ca_other_cert_store_files);
+	cm_store_file_write_strs(fp, cm_store_ca_field_root_cert_nssdbs,
+				 ca->cm_ca_root_cert_store_nssdbs);
+	cm_store_file_write_strs(fp, cm_store_ca_field_other_root_cert_nssdbs,
+				 ca->cm_ca_other_root_cert_store_nssdbs);
+	cm_store_file_write_strs(fp, cm_store_ca_field_other_cert_nssdbs,
+				 ca->cm_ca_other_cert_store_nssdbs);
 	if (ferror(fp)) {
 		return -1;
 	}
@@ -2000,7 +2114,7 @@ cm_store_maybe_dup_nickcert_list(void *parent, struct cm_nickcert **certs)
 	for (i = 0; certs[i] != NULL; i++) {
 		continue;
 	}
-	ret = talloc_realloc(parent, NULL, struct cm_nickcert *, i + 1);
+	ret = talloc_array_ptrtype(parent, ret, i + 1);
 	if (ret == NULL) {
 		return NULL;
 	}
@@ -2112,6 +2226,12 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	ret->cm_pre_certsave_uid = cm_store_maybe_strdup(ret, entry->cm_pre_certsave_uid);
 	ret->cm_post_certsave_command = cm_store_maybe_strdup(ret, entry->cm_post_certsave_command);
 	ret->cm_post_certsave_uid = cm_store_maybe_strdup(ret, entry->cm_post_certsave_uid);
+	ret->cm_root_cert_store_files = cm_store_maybe_strdupv(ret, entry->cm_root_cert_store_files);
+	ret->cm_other_root_cert_store_files = cm_store_maybe_strdupv(ret, entry->cm_other_root_cert_store_files);
+	ret->cm_other_cert_store_files = cm_store_maybe_strdupv(ret, entry->cm_other_cert_store_files);
+	ret->cm_root_cert_store_nssdbs = cm_store_maybe_strdupv(ret, entry->cm_other_cert_store_nssdbs);
+	ret->cm_other_root_cert_store_nssdbs = cm_store_maybe_strdupv(ret, entry->cm_other_cert_store_nssdbs);
+	ret->cm_other_cert_store_nssdbs = cm_store_maybe_strdupv(ret, entry->cm_other_cert_store_nssdbs);
 
 	return ret;
 }
@@ -2163,6 +2283,19 @@ cm_store_ca_dup(void *parent, struct cm_store_ca *ca)
 		cm_store_maybe_strdup(ret, ca->cm_ca_post_save_command);
 	ret->cm_ca_post_save_uid =
 		cm_store_maybe_strdup(ret, ca->cm_ca_post_save_uid);
+
+	ret->cm_ca_root_cert_store_files =
+		cm_store_maybe_strdupv(ret, ca->cm_ca_root_cert_store_files);
+	ret->cm_ca_other_root_cert_store_files =
+		cm_store_maybe_strdupv(ret, ca->cm_ca_other_root_cert_store_files);
+	ret->cm_ca_other_cert_store_files =
+		cm_store_maybe_strdupv(ret, ca->cm_ca_other_cert_store_files);
+	ret->cm_ca_root_cert_store_nssdbs =
+		cm_store_maybe_strdupv(ret, ca->cm_ca_other_cert_store_nssdbs);
+	ret->cm_ca_other_root_cert_store_nssdbs =
+		cm_store_maybe_strdupv(ret, ca->cm_ca_other_cert_store_nssdbs);
+	ret->cm_ca_other_cert_store_nssdbs =
+		cm_store_maybe_strdupv(ret, ca->cm_ca_other_cert_store_nssdbs);
 
 	return ret;
 }

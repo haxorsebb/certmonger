@@ -198,6 +198,14 @@ struct cm_store_entry {
 	char *cm_post_certsave_command;
 	/* The UID of the user as whom we run the above command. */
 	char *cm_post_certsave_uid;
+	/* Initially-empty lists of places where we the CA's roots, the CA's
+	 * other roots, and the CA's other certs and our chain. */
+	char **cm_root_cert_store_files;
+	char **cm_other_root_cert_store_files;
+	char **cm_other_cert_store_files;
+	char **cm_root_cert_store_nssdbs;
+	char **cm_other_root_cert_store_nssdbs;
+	char **cm_other_cert_store_nssdbs;
 };
 
 struct cm_store_ca {
@@ -251,6 +259,14 @@ struct cm_store_ca {
 	char *cm_ca_post_save_command;
 	/* The UID of the user as whom we run the above command. */
 	char *cm_ca_post_save_uid;
+	/* Initially-empty lists of places where we store our roots, other
+	 * roots, and other certs. */
+	char **cm_ca_root_cert_store_files;
+	char **cm_ca_other_root_cert_store_files;
+	char **cm_ca_other_cert_store_files;
+	char **cm_ca_root_cert_store_nssdbs;
+	char **cm_ca_other_root_cert_store_nssdbs;
+	char **cm_ca_other_cert_store_nssdbs;
 };
 
 const char *cm_store_state_as_string(enum cm_state state);
