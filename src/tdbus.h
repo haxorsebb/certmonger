@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2011,2012,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -92,9 +92,25 @@
 #define CM_DBUS_PROP_TEMPLATE_CA_PATH_LENGTH "template-ca-path-length"
 #define CM_DBUS_PROP_TEMPLATE_OCSP "template-ocsp"
 #define CM_DBUS_PROP_TEMPLATE_CRL_DP "template-crldp"
+#define CM_DBUS_PROP_TEMPLATE_FRESHEST_CRL "template-freshest-crl"
 #define CM_DBUS_PROP_TEMPLATE_NS_COMMENT "template-ns-comment"
 #define CM_DBUS_PROP_TEMPLATE_PROFILE "template-profile"
 #define CM_DBUS_SIGNAL_REQUEST_CERT_SAVED "SavedCertificate"
+#define CM_DBUS_PROP_CA_PRESAVE_COMMAND "ca-presave-command"
+#define CM_DBUS_PROP_CA_PRESAVE_UID "ca-presave-uid"
+#define CM_DBUS_PROP_CA_POSTSAVE_COMMAND "ca-postsave-command"
+#define CM_DBUS_PROP_CA_POSTSAVE_UID "ca-postsave-uid"
+#define CM_DBUS_PROP_ROOT_CERT_FILES "root-cert-files"
+#define CM_DBUS_PROP_OTHER_ROOT_CERT_FILES "root-other-cert-files"
+#define CM_DBUS_PROP_OTHER_CERT_FILES "other-cert-files"
+#define CM_DBUS_PROP_ROOT_CERT_NSSDBS "root-cert-nssdbs"
+#define CM_DBUS_PROP_OTHER_ROOT_CERT_NSSDBS "root-other-cert-nssdbs"
+#define CM_DBUS_PROP_OTHER_CERT_NSSDBS "other-cert-nssdbs"
+#define CM_DBUS_PROP_SUPPORTED_PROFILES "supported-profiles"
+#define CM_DBUS_PROP_DEFAULT_PROFILE "default-profile"
+#define CM_DBUS_PROP_REQUIRED_ENROLL_ATTRIBUTES "required-enroll-attributes"
+#define CM_DBUS_PROP_REQUIRED_RENEW_ATTRIBUTES "required-renew-attributes"
+#define CM_DBUS_PROP_AKA "aka"
 
 enum cm_tdbus_type { cm_tdbus_system, cm_tdbus_session };
 int cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type,
