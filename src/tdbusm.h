@@ -29,6 +29,7 @@ int cm_tdbusm_get_sn(DBusMessage *msg, void *parent, char **s, long *n);
 int cm_tdbusm_get_ss(DBusMessage *msg, void *parent, char **s1, char **s2);
 int cm_tdbusm_get_ap(DBusMessage *msg, void *parent, char ***ap);
 int cm_tdbusm_get_as(DBusMessage *msg, void *parent, char ***as);
+int cm_tdbusm_get_ass(DBusMessage *msg, void *parent, char ***ass);
 int cm_tdbusm_get_sss(DBusMessage *msg, void *parent,
 		      char **s1, char **s2, char **s3);
 int cm_tdbusm_get_ssb(DBusMessage *msg, void *parent,
@@ -61,12 +62,14 @@ struct cm_tdbusm_dict {
 		cm_tdbusm_dict_s,
 		cm_tdbusm_dict_p,
 		cm_tdbusm_dict_as,
+		cm_tdbusm_dict_ass,
 		cm_tdbusm_dict_n,
 		cm_tdbusm_dict_b,
 	} value_type;
 	union {
 		char *s;
 		char **as;
+		char **ass;
 		long n;
 		dbus_bool_t b;
 	} value;
@@ -86,6 +89,7 @@ int cm_tdbusm_set_sn(DBusMessage *msg, const char *s, long n);
 int cm_tdbusm_set_ss(DBusMessage *msg, const char *s1, const char *s2);
 int cm_tdbusm_set_ap(DBusMessage *msg, const char **p);
 int cm_tdbusm_set_as(DBusMessage *msg, const char **s);
+int cm_tdbusm_set_ass(DBusMessage *msg, const char **ss);
 int cm_tdbusm_set_sss(DBusMessage *msg,
 		      const char *s1, const char *s2, const char *s3);
 int cm_tdbusm_set_ssb(DBusMessage *msg,

@@ -48,6 +48,7 @@ static const char *as3[] = {"This", "is", "a", "third", "string", "array.",
 			    NULL};
 static const char *as4[] = {"This", "is", "a", "fourth", "string", "array.",
 			    NULL};
+static const char *ass[] = {"This", "is", "a", "string", "array.", NULL};
 static struct cm_tdbusm_dict d0 = {
 	.key = "key 0",
 	.value_type = cm_tdbusm_dict_b,
@@ -68,7 +69,12 @@ static struct cm_tdbusm_dict d3 = {
 	.value_type = cm_tdbusm_dict_as,
 	.value.as = (char **) as,
 };
-static const struct cm_tdbusm_dict *d[] = {&d0, &d1, &d2, &d3, NULL};
+static struct cm_tdbusm_dict d4 = {
+	.key = "key 4",
+	.value_type = cm_tdbusm_dict_ass,
+	.value.as = (char **) ass,
+};
+static const struct cm_tdbusm_dict *d[] = {&d0, &d1, &d2, &d3, &d4, NULL};
 
 static int
 set_b(DBusMessage *msg)
@@ -134,6 +140,11 @@ static int
 set_as(DBusMessage *msg)
 {
 	return cm_tdbusm_set_as(msg, as);
+}
+static int
+set_ass(DBusMessage *msg)
+{
+	return cm_tdbusm_set_ass(msg, ass);
 }
 static int
 set_sss(DBusMessage *msg)
@@ -307,6 +318,7 @@ get_as(DBusMessage *rep, int msgid)
 {
 	int ret, i;
 	char **as;
+
 	ret = cm_tdbusm_get_as(rep, NULL, &as);
 	if (ret == 0) {
 		printf("Message %d - [", msgid);
@@ -318,10 +330,30 @@ get_as(DBusMessage *rep, int msgid)
 	return ret;
 }
 static int
+get_ass(DBusMessage *rep, int msgid)
+{
+	int ret, i;
+	char **ass = NULL;
+
+	ret = cm_tdbusm_get_ass(rep, NULL, &ass);
+	if (ret == 0) {
+		printf("Message %d - [", msgid);
+		for (i = 0;
+		     (ass != NULL) && (ass[i] != NULL) && (ass[i + 1] != NULL);
+		     i += 2) {
+			printf("%s(%s,%s)", i > 0 ? "," : "", ass[i],
+			       ass[i + 1]);
+		}
+		printf("]\n");
+	}
+	return ret;
+}
+static int
 get_sss(DBusMessage *rep, int msgid)
 {
 	int ret;
 	char *s1, *s2, *s3;
+
 	ret = cm_tdbusm_get_sss(rep, NULL, &s1, &s2, &s3);
 	if (ret == 0) {
 		printf("Message %d - s:%s,s:%s,s:%s\n", msgid,
@@ -375,6 +407,7 @@ get_ssss(DBusMessage *rep, int msgid)
 {
 	int ret;
 	char *s1, *s2, *s3, *s4;
+
 	ret = cm_tdbusm_get_ssss(rep, NULL, &s1, &s2, &s3, &s4);
 	if (ret == 0) {
 		printf("Message %d - s:%s,s:%ss:%s,s:%s\n", msgid,
@@ -427,6 +460,7 @@ get_sssas(DBusMessage *rep, int msgid)
 {
 	int ret, i;
 	char *s1, *s2, *s3, **as;
+
 	ret = cm_tdbusm_get_sssas(rep, NULL, &s1, &s2, &s3, &as);
 	if (ret == 0) {
 		printf("Message %d - s:%s,s:%s,s:%s,[", msgid, s1, s2, s3);
@@ -443,6 +477,7 @@ get_sssnasasasnas(DBusMessage *rep, int msgid)
 	int ret, i;
 	long n1, n2;
 	char *s1, *s2, *s3, **as1, **as2, **as3, **as4;
+
 	ret = cm_tdbusm_get_sssnasasasnas(rep, NULL,
 					  &s1, &s2, &s3, &n1,
 					  &as1, &as2, &as3, &n2, &as4);
@@ -526,6 +561,19 @@ get_d(DBusMessage *rep, int msgid)
 				}
 				printf("]");
 				break;
+			case cm_tdbusm_dict_ass:
+				printf("ass:[");
+				for (k = 0;
+				     (d[i]->value.ass != NULL) &&
+				     (d[i]->value.ass[k] != NULL) &&
+				     (d[i]->value.ass[k + 1] != NULL);
+				     k += 2) {
+					printf("%s(%s,%s)", k > 0 ? "," : "",
+					       d[i]->value.ass[k],
+					       d[i]->value.ass[k + 1]);
+				}
+				printf("]");
+				break;
 			case cm_tdbusm_dict_n:
 				printf("n:%ld}", d[i]->value.n);
 				break;
@@ -565,6 +613,19 @@ get_sd(DBusMessage *rep, int msgid)
 				     k++) {
 					printf("%s%s", k > 0 ? "," : "",
 					       d[i]->value.as[k]);
+				}
+				printf("]");
+				break;
+			case cm_tdbusm_dict_ass:
+				printf("ass:[");
+				for (k = 0;
+				     (d[i]->value.ass != NULL) &&
+				     (d[i]->value.ass[k] != NULL) &&
+				     (d[i]->value.ass[k + 1] != NULL);
+				     k += 2) {
+					printf("%s(%s,%s)", k > 0 ? "," : "",
+					       d[i]->value.ass[k],
+					       d[i]->value.ass[k + 1]);
 				}
 				printf("]");
 				break;
@@ -622,6 +683,7 @@ main(int argc, char **argv)
 		{&set_sssas, &get_sssas},
 		{&set_sssnasasasnas, &get_sssnasasasnas},
 		{&set_sasasasnas, &get_sasasasnas},
+		{&set_ass, &get_ass},
 		{&set_d, &get_d},
 		{&set_sd, &get_sd},
 	};

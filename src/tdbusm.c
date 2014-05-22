@@ -327,6 +327,7 @@ cm_tdbusm_get_ap(DBusMessage *msg, void *parent, char ***ap)
 	DBusError err;
 	char **tmp;
 	int i;
+
 	*ap = NULL;
 	dbus_error_init(&err);
 	if (dbus_message_get_args(msg, &err,
@@ -342,6 +343,69 @@ cm_tdbusm_get_ap(DBusMessage *msg, void *parent, char ***ap)
 		}
 		return -1;
 	}
+}
+
+int
+cm_tdbusm_get_ass(DBusMessage *msg, void *parent, char ***ass)
+{
+	DBusMessageIter args, array, element;
+	const char *p, *q;
+	char **ret, **tmp;
+	int i = 0;
+
+	ret = NULL;
+	if (!dbus_message_iter_init(msg, &args)) {
+		talloc_free(ret);
+		return -1;
+	}
+
+	if (dbus_message_iter_get_arg_type(&args) != DBUS_TYPE_ARRAY) {
+		talloc_free(ret);
+		return -1;
+	}
+	memset(&array, 0, sizeof(array));
+	dbus_message_iter_recurse(&args, &array);
+
+	for (;;) {
+		if (dbus_message_iter_get_arg_type(&array) != DBUS_TYPE_STRUCT) {
+			talloc_free(ret);
+			return -1;
+		}
+		dbus_message_iter_recurse(&array, &element);
+
+		if (dbus_message_iter_get_arg_type(&element) != DBUS_TYPE_STRING) {
+			talloc_free(ret);
+			return -1;
+		}
+		p = NULL;
+		dbus_message_iter_get_basic(&element, &p);
+		if (!dbus_message_iter_has_next(&element) ||
+		    !dbus_message_iter_next(&element) ||
+		    (dbus_message_iter_get_arg_type(&element) != DBUS_TYPE_STRING)) {
+			talloc_free(ret);
+			return -1;
+		}
+		q = NULL;
+		dbus_message_iter_get_basic(&element, &q);
+		tmp = talloc_realloc(parent, ret, char *, i + 3);
+		if (tmp == NULL) {
+			talloc_free(ret);
+			return -1;
+		}
+		ret = tmp;
+		ret[i++] = talloc_strdup(ret, p);
+		ret[i++] = talloc_strdup(ret, q);
+		ret[i] = NULL;
+		if (!dbus_message_iter_has_next(&array)) {
+			break;
+		}
+		if (!dbus_message_iter_next(&array)) {
+			talloc_free(ret);
+			return -1;
+		}
+	}
+	*ass = ret;
+	return 0;
 }
 
 int
@@ -787,12 +851,13 @@ static struct cm_tdbusm_dict *
 cm_tdbusm_get_d_item(DBusMessageIter *item, void *parent)
 {
 	struct cm_tdbusm_dict *dict;
-	char *s, **as;
+	char *s, **as, **ass;
 	int64_t i64;
 	int32_t i32;
 	int16_t i16;
 	int n_values;
-	DBusMessageIter value, sval;
+	DBusMessageIter value, sval, fields;
+
 	dict = talloc_ptrtype(parent, dict);
 	/* Pull out a string. */
 	switch (dbus_message_iter_get_arg_type(item)) {
@@ -851,24 +916,59 @@ cm_tdbusm_get_d_item(DBusMessageIter *item, void *parent)
 			break;
 		/* It can be an array of strings. */
 		case DBUS_TYPE_ARRAY:
-			dict->value_type = cm_tdbusm_dict_as;
 			memset(&sval, 0, sizeof(sval));
 			dbus_message_iter_recurse(&value, &sval);
 			as = NULL;
+			ass = NULL;
 			n_values = 0;
 			for (;;) {
-				/* This had better be a string. */
+				/* This had better be a string or a struct
+				 * containing two strings. */
 				switch (dbus_message_iter_get_arg_type(&sval)) {
 				case DBUS_TYPE_STRING:
+					dict->value_type = cm_tdbusm_dict_as;
 					dbus_message_iter_get_basic(&sval, &s);
 					as = talloc_realloc(dict, as, char *,
 							    n_values + 2);
-					if (as != NULL) {
-						as[n_values] = talloc_strdup(as,
-									     s);
-						n_values++;
-						as[n_values] = NULL;
+					if (as == NULL) {
+						talloc_free(dict);
+						return NULL;
 					}
+					as[n_values] = talloc_strdup(as, s);
+					if (as[n_values] == NULL) {
+						talloc_free(dict);
+						return NULL;
+					}
+					n_values++;
+					as[n_values] = NULL;
+					dict->value.as = as;
+					break;
+				case DBUS_TYPE_STRUCT:
+					dict->value_type = cm_tdbusm_dict_ass;
+					dbus_message_iter_recurse(&sval, &fields);
+					if (dbus_message_iter_get_arg_type(&fields) != DBUS_TYPE_STRING) {
+						talloc_free(dict);
+						return NULL;
+					}
+					ass = talloc_realloc(dict, ass, char *,
+							     n_values + 3);
+					if (ass == NULL) {
+						talloc_free(dict);
+						return NULL;
+					}
+					dbus_message_iter_get_basic(&fields, &s);
+					ass[n_values] = talloc_strdup(as, s);
+					if (!dbus_message_iter_has_next(&fields) ||
+					    (dbus_message_iter_get_arg_type(&fields) != DBUS_TYPE_STRING) ||
+					    !dbus_message_iter_next(&fields)) {
+						talloc_free(dict);
+						return NULL;
+					}
+					dbus_message_iter_get_basic(&fields, &s);
+					ass[n_values + 1] = talloc_strdup(as, s);
+					n_values += 2;
+					ass[n_values] = NULL;
+					dict->value.ass = ass;
 					break;
 				default:
 					talloc_free(dict);
@@ -886,7 +986,6 @@ cm_tdbusm_get_d_item(DBusMessageIter *item, void *parent)
 					break;
 				}
 			}
-			dict->value.as = as;
 			break;
 		default:
 			/* It had better not be something else. */
@@ -908,6 +1007,7 @@ cm_tdbusm_get_d_array(DBusMessageIter *array, void *parent)
 	struct cm_tdbusm_dict *ditem, **dict, **tmp;
 	int n_items;
 	DBusMessageIter item;
+
 	dict = NULL;
 	n_items = 0;
 	for (;;) {
@@ -918,16 +1018,18 @@ cm_tdbusm_get_d_array(DBusMessageIter *array, void *parent)
 			memset(&item, 0, sizeof(item));
 			dbus_message_iter_recurse(array, &item);
 			ditem = cm_tdbusm_get_d_item(&item, parent);
-			if (ditem != NULL) {
-				tmp = talloc_realloc(parent, dict,
-						     struct cm_tdbusm_dict *,
-						     n_items + 2);
-				if (tmp != NULL) {
-					tmp[n_items] = ditem;
-					n_items++;
-					tmp[n_items] = NULL;
-					dict = tmp;
-				}
+			if (ditem == NULL) {
+				talloc_free(dict);
+				return NULL;
+			}
+			tmp = talloc_realloc(parent, dict,
+					     struct cm_tdbusm_dict *,
+					     n_items + 2);
+			if (tmp != NULL) {
+				tmp[n_items] = ditem;
+				n_items++;
+				tmp[n_items] = NULL;
+				dict = tmp;
 			}
 			break;
 		default:
@@ -954,6 +1056,7 @@ cm_tdbusm_get_d(DBusMessage *msg, void *parent, struct cm_tdbusm_dict ***d)
 	struct cm_tdbusm_dict **tdicts, **dicts, **tmp;
 	DBusMessageIter args, array;
 	int i, n_dicts;
+
 	*d = NULL;
 	dicts = NULL;
 	n_dicts = 0;
@@ -965,25 +1068,27 @@ cm_tdbusm_get_d(DBusMessage *msg, void *parent, struct cm_tdbusm_dict ***d)
 				memset(&array, 0, sizeof(array));
 				dbus_message_iter_recurse(&args, &array);
 				tdicts = cm_tdbusm_get_d_array(&array, parent);
-				if (tdicts != NULL) {
-					for (i = 0; tdicts[i] != NULL; i++) {
-						continue;
-					}
-					tmp = talloc_realloc(parent, dicts,
-							     struct cm_tdbusm_dict *,
-							     n_dicts + i + 1);
-					if (tmp != NULL) {
-						memcpy(tmp + n_dicts,
-						       tdicts,
-						       i * sizeof(tdicts[0]));
-						n_dicts += i;
-						tmp[n_dicts] = NULL;
-						dicts = tmp;
-					} else {
-						talloc_free(tdicts);
-						talloc_free(dicts);
-						return -1;
-					}
+				if (tdicts == NULL) {
+					talloc_free(dicts);
+					return NULL;
+				}
+				for (i = 0; tdicts[i] != NULL; i++) {
+					continue;
+				}
+				tmp = talloc_realloc(parent, dicts,
+						     struct cm_tdbusm_dict *,
+						     n_dicts + i + 1);
+				if (tmp != NULL) {
+					memcpy(tmp + n_dicts,
+					       tdicts,
+					       i * sizeof(tdicts[0]));
+					n_dicts += i;
+					tmp[n_dicts] = NULL;
+					dicts = tmp;
+				} else {
+					talloc_free(tdicts);
+					talloc_free(dicts);
+					return -1;
 				}
 				break;
 			default:
@@ -1274,6 +1379,39 @@ cm_tdbusm_set_as(DBusMessage *msg, const char **as)
 }
 
 int
+cm_tdbusm_set_ass(DBusMessage *msg, const char **ss)
+{
+	DBusMessageIter args, array, entry;
+	const char *p;
+	int i;
+
+	memset(&args, 0, sizeof(args));
+	dbus_message_iter_init_append(msg, &args);
+	memset(&array, 0, sizeof(array));
+	dbus_message_iter_open_container(&args,
+					 DBUS_TYPE_ARRAY,
+					 DBUS_STRUCT_BEGIN_CHAR_AS_STRING
+					 DBUS_TYPE_STRING_AS_STRING
+					 DBUS_TYPE_STRING_AS_STRING
+					 DBUS_STRUCT_END_CHAR_AS_STRING,
+					 &array);
+	for (i = 0;
+	     (ss != NULL) && (ss[i] != NULL) && (ss[i + 1] != NULL);
+	     i += 2) {
+		memset(&entry, 0, sizeof(entry));
+		dbus_message_iter_open_container(&array, DBUS_TYPE_STRUCT,
+						 NULL, &entry);
+		p = ss[i];
+		dbus_message_iter_append_basic(&entry, DBUS_TYPE_STRING, &p);
+		p = ss[i + 1];
+		dbus_message_iter_append_basic(&entry, DBUS_TYPE_STRING, &p);
+		dbus_message_iter_close_container(&array, &entry);
+	}
+	dbus_message_iter_close_container(&args, &array);
+	return (i > 0) ? 0 : -1;
+}
+
+int
 cm_tdbusm_set_sss(DBusMessage *msg, const char *s1, const char *s2,
 		  const char *s3)
 {
@@ -1498,7 +1636,7 @@ static int
 cm_tdbusm_set_osd(DBusMessage *msg,
 		  const char *s, const struct cm_tdbusm_dict **d)
 {
-	DBusMessageIter args, array, entry, val, elt;
+	DBusMessageIter args, array, entry, val, elt, fields;
 	int i;
 	int64_t l;
 	memset(&args, 0, sizeof(args));
@@ -1582,6 +1720,43 @@ cm_tdbusm_set_osd(DBusMessage *msg,
 				dbus_message_iter_append_basic(&elt,
 							       DBUS_TYPE_STRING,
 							       &d[i]->value.as[l]);
+			}
+			dbus_message_iter_close_container(&val, &elt);
+			dbus_message_iter_close_container(&entry, &val);
+			break;
+		case cm_tdbusm_dict_ass:
+			dbus_message_iter_open_container(&entry,
+							 DBUS_TYPE_VARIANT,
+							 DBUS_TYPE_ARRAY_AS_STRING
+							 DBUS_STRUCT_BEGIN_CHAR_AS_STRING
+							 DBUS_TYPE_STRING_AS_STRING
+							 DBUS_TYPE_STRING_AS_STRING
+							 DBUS_STRUCT_END_CHAR_AS_STRING,
+							 &val);
+			memset(&elt, 0, sizeof(elt));
+			dbus_message_iter_open_container(&val,
+							 DBUS_TYPE_ARRAY,
+							 DBUS_STRUCT_BEGIN_CHAR_AS_STRING
+							 DBUS_TYPE_STRING_AS_STRING
+							 DBUS_TYPE_STRING_AS_STRING
+							 DBUS_STRUCT_END_CHAR_AS_STRING,
+							 &elt);
+			for (l = 0;
+			     (d[i]->value.ass != NULL) &&
+			     (d[i]->value.ass[l] != NULL) &&
+			     (d[i]->value.ass[l + 1] != NULL);
+			     l += 2) {
+				dbus_message_iter_open_container(&elt,
+								 DBUS_TYPE_STRUCT,
+								 NULL,
+								 &fields);
+				dbus_message_iter_append_basic(&fields,
+							       DBUS_TYPE_STRING,
+							       &d[i]->value.ass[l]);
+				dbus_message_iter_append_basic(&fields,
+							       DBUS_TYPE_STRING,
+							       &d[i]->value.ass[l + 1]);
+				dbus_message_iter_close_container(&elt, &fields);
 			}
 			dbus_message_iter_close_container(&val, &elt);
 			dbus_message_iter_close_container(&entry, &val);

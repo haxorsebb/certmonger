@@ -25,6 +25,7 @@ Message 23 - s:This is a first string.,s:This is a second string.,[s:This,s:is,s
 Message 24 - s:This is a first string.,s:This is a second string.,s:This is a third string.,[s:This,s:is,s:a,s:string,s:array.]
 Message 25 - s:This is a first string.,s:This is a second string.,s:This is a third string.,n:23456,[s:This,s:is,s:a,s:first,s:string,s:array.],[s:This,s:is,s:a,s:second,s:string,s:array.],[s:This,s:is,s:a,s:third,s:string,s:array.],n:34567,[s:This,s:is,s:a,s:fourth,s:string,s:array.]
 Message 26 - s:This is a string.,[s:This,s:is,s:a,s:first,s:string,s:array.],[s:This,s:is,s:a,s:second,s:string,s:array.],[s:This,s:is,s:a,s:third,s:string,s:array.],n:12345,[s:This,s:is,s:a,s:fourth,s:string,s:array.]
-Message 27 - [{key 0=b:TRUE},{key 1=n:12345},{key 2=s:this is a string value},{key 3=as:[This,is,a,string,array.]]
-Message 28 - s:This is a string.,[{key 0=b:TRUE},{key 1=n:12345},{key 2=s:this is a string value},{key 3=as:[This,is,a,string,array.]]
+Message 27 - [(This,is),(a,string)]
+Message 28 - [{key 0=b:TRUE},{key 1=n:12345},{key 2=s:this is a string value},{key 3=as:[This,is,a,string,array.],{key 4=ass:[(This,is),(a,string)]]
+Message 29 - s:This is a string.,[{key 0=b:TRUE},{key 1=n:12345},{key 2=s:this is a string value},{key 3=as:[This,is,a,string,array.],{key 4=ass:[(This,is),(a,string)]]
 Test complete.
