@@ -18,7 +18,6 @@
 #include "config.h"
 
 #include <sys/types.h>
-#include <ctype.h>
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
@@ -600,5 +599,6 @@ cm_cadata_unconfigured(struct cm_store_ca *ca, struct cm_cadata_state *state)
 void
 cm_cadata_done(struct cm_store_ca *ca, struct cm_cadata_state *state)
 {
+	cm_subproc_done(NULL, state->subproc);
 	talloc_free(state);
 }

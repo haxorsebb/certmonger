@@ -649,6 +649,9 @@ model the states for each of these using roughly the same set of states:
 	  States: NEED_TO_SAVE_DATA,PRE_SAVE_DATA,START_SAVING_DATA,
 		  SAVING_DATA,POST_SAVE_DATA,SAVED_DATA
 
+	* Figuring out when we'll need to re-fetch data:
+	  NEED_TO_ANALYZE, ANALYZING
+
 	* Waiting until we need to re-fetch data:
 	  States: IDLE
 
@@ -720,5 +723,23 @@ And this state machine:
 		break
 
 	SAVED_DATA:
-		state_next = IDLE
-		state_transition = timeout
+		state_next = NEED_TO_ANALYZE
+		state_transition = now
+
+	NEED_TO_ANALYZE:
+		start-analysis
+		if analysis-started
+			state_next = ANALYZING
+			state_transition = now
+		else
+			state_next = IDLE
+			state_transition = now
+		break
+
+	ANALYZING:
+		if fetched-data-will-need-to-be-refreshed:
+			state_next = NEED_TO_REFRESH
+			state_transition = timeout
+		else:
+			state_next = IDLE
+			state_transition = now

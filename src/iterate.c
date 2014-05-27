@@ -27,6 +27,7 @@
 #include <talloc.h>
 
 #include "cadata.h"
+#include "canalyze.h"
 #include "certread.h"
 #include "certsave.h"
 #include "cm.h"
@@ -56,6 +57,8 @@ struct cm_entry_state {
 
 struct cm_ca_state {
 	enum cm_ca_phase cm_phase;
+	struct cm_ca_analyze_state *cm_ca_analyze_state;
+	time_t cm_refresh_delay;
 	struct cm_cadata_state *cm_task_state;
 	struct cm_hook_state *cm_hook_state;
 };
@@ -1799,7 +1802,7 @@ cm_iterate_ca(struct cm_store_ca *ca,
 				case cm_ca_phase_default_profile:
 				case cm_ca_phase_enroll_reqs:
 				case cm_ca_phase_renew_reqs:
-					ca->cm_ca_state[state->cm_phase] = CM_CA_IDLE;
+					ca->cm_ca_state[state->cm_phase] = CM_CA_NEED_TO_ANALYZE;
 					break;
 				case cm_ca_phase_invalid:
 					abort();
@@ -1832,8 +1835,8 @@ cm_iterate_ca(struct cm_store_ca *ca,
 				cm_log(3, "%s('%s') %s unchanged\n",
 				       ca->cm_busname, ca->cm_nickname,
 				       cm_store_ca_phase_as_string(state->cm_phase));
-				ca->cm_ca_state[state->cm_phase] = CM_CA_IDLE;
-				*when = cm_time_no_time;
+				ca->cm_ca_state[state->cm_phase] = CM_CA_NEED_TO_ANALYZE;
+				*when = cm_time_now;
 			}
 		}
 		break;
@@ -1939,8 +1942,66 @@ cm_iterate_ca(struct cm_store_ca *ca,
 			       ca->cm_busname, ca->cm_nickname);
 			break;
 		}
-		ca->cm_ca_state[state->cm_phase] = CM_CA_IDLE;
+		ca->cm_ca_state[state->cm_phase] = CM_CA_NEED_TO_ANALYZE;
 		*when = cm_time_now;
+		break;
+	case CM_CA_NEED_TO_ANALYZE:
+		switch (state->cm_phase) {
+		case cm_ca_phase_certs:
+			state->cm_ca_analyze_state = cm_ca_analyze_start_certs(ca);
+			if (state->cm_ca_analyze_state == NULL) {
+				ca->cm_ca_state[state->cm_phase] = CM_CA_DISABLED;
+				*when = cm_time_now;
+			} else {
+				*readfd = cm_ca_analyze_get_fd(ca, state->cm_ca_analyze_state);
+				if (*readfd == -1) {
+					cm_ca_analyze_done(ca, state->cm_ca_analyze_state);
+					ca->cm_ca_state[state->cm_phase] = CM_CA_DISABLED;
+				} else {
+					ca->cm_ca_state[state->cm_phase] = CM_CA_ANALYZING;
+					*when = cm_time_no_time;
+				}
+			}
+			break;
+		case cm_ca_phase_identify:
+		case cm_ca_phase_profiles:
+		case cm_ca_phase_default_profile:
+		case cm_ca_phase_enroll_reqs:
+		case cm_ca_phase_renew_reqs:
+			ca->cm_ca_state[state->cm_phase] = CM_CA_IDLE;
+			*when = cm_time_now;
+			break;
+		case cm_ca_phase_invalid:
+			abort();
+			break;
+		}
+		break;
+	case CM_CA_ANALYZING:
+		if (cm_ca_analyze_ready(ca, state->cm_ca_analyze_state) == 0) {
+			state->cm_refresh_delay = cm_ca_analyze_get_delay(ca, state->cm_ca_analyze_state);
+			cm_ca_analyze_done(ca, state->cm_ca_analyze_state);
+			state->cm_ca_analyze_state = NULL;
+			if (state->cm_refresh_delay != 0) {
+				ca->cm_ca_state[state->cm_phase] = CM_CA_NEED_TO_REFRESH;
+				*delay = state->cm_refresh_delay;
+				if (*delay < CM_DELAY_CA_POLL_MINIMUM) {
+					*delay = CM_DELAY_CA_POLL_MINIMUM;
+				}
+				*when = cm_time_delay;
+			} else {
+				ca->cm_ca_state[state->cm_phase] = CM_CA_IDLE;
+				*when = cm_time_now;
+			}
+		} else {
+			/* Wait for status update, or poll. */
+			*readfd = cm_ca_analyze_get_fd(ca, state->cm_ca_analyze_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
+		}
+		break;
 		break;
 	case CM_CA_DATA_UNREACHABLE:
 	case CM_CA_IDLE:

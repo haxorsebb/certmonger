@@ -240,6 +240,8 @@ struct cm_store_ca {
 		CM_CA_SAVING_DATA,
 		CM_CA_POST_SAVE_DATA,
 		CM_CA_SAVED_DATA,
+		CM_CA_NEED_TO_ANALYZE,
+		CM_CA_ANALYZING,
 		CM_CA_DISABLED,
 	} cm_ca_state[cm_ca_phase_invalid];
 	/* A list of issuer names.  If no CA is specified when we create a new

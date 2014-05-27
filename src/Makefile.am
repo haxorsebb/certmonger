@@ -20,6 +20,8 @@ libcm_a_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS)
 libcm_a_SOURCES = \
 	cadata.c \
 	cadata.h \
+	canalyze.c \
+	canalyze.h \
 	certext.c \
 	certext.h \
 	certext-n.h \
