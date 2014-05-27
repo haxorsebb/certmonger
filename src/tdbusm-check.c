@@ -193,6 +193,11 @@ set_sd(DBusMessage *msg)
 	return cm_tdbusm_set_sd(msg, s, d);
 }
 static int
+set_ssass(DBusMessage *msg)
+{
+	return cm_tdbusm_set_ssass(msg, s1, s2, ass);
+}
+static int
 get_b(DBusMessage *rep, int msgid)
 {
 	int ret;
@@ -642,6 +647,24 @@ get_sd(DBusMessage *rep, int msgid)
 	}
 	return ret;
 }
+static int
+get_ssass(DBusMessage *rep, int msgid)
+{
+	int ret, i;
+	char *s1, *s2, **ass;
+
+	ret = cm_tdbusm_get_ssass(rep, NULL, &s1, &s2, &ass);
+	if (ret == 0) {
+		printf("Message %d - s:%s,s:%s,", msgid, s1, s2);
+		printf("ass:[");
+		for (i = 0; (ass[i] != NULL) && (ass[i + 1] != NULL); i += 2) {
+			printf("%s(%s,%s)", i > 0 ? "," : "",
+			       ass[i], ass[i + 1]);
+		}
+		printf("]\n");
+	}
+	return ret;
+}
 
 int
 main(int argc, char **argv)
@@ -686,6 +709,7 @@ main(int argc, char **argv)
 		{&set_ass, &get_ass},
 		{&set_d, &get_d},
 		{&set_sd, &get_sd},
+		{&set_ssass, &get_ssass},
 	};
 	memset(&err, 0, sizeof(err));
 	while ((c = getopt(argc, argv, "sS")) != -1) {

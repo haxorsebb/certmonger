@@ -1763,6 +1763,53 @@ ca_prop_set_is_default(struct cm_context *ctx, void *parent,
 	}
 }
 
+static const char **
+ca_prop_read_nickcerts(struct cm_context *ctx, void *parent,
+		       struct cm_nickcert **nickcerts)
+{
+	char **ret = NULL, **tmp;
+	int i;
+
+	for (i = 0; (nickcerts != NULL) && (nickcerts[i] != NULL); i++) {
+		tmp = talloc_realloc(parent, ret, char *, i * 2 + 3);
+		if (tmp == NULL) {
+			talloc_free(ret);
+			return NULL;
+		}
+		tmp[i * 2] = talloc_strdup(tmp, nickcerts[i]->cm_nickname);
+		tmp[i * 2 + 1] = talloc_strdup(tmp, nickcerts[i]->cm_cert);
+		tmp[i * 2 + 2] = NULL;
+		ret = tmp;
+	}
+	return (const char **) ret;
+}
+
+static const char **
+ca_prop_get_nickcerts(struct cm_context *ctx, void *parent,
+		      void *record, const char *name)
+{
+	struct cm_store_entry *entry = record;
+	struct cm_store_ca *ca = record;
+
+	if (strcmp(name, CM_DBUS_PROP_CERT_CHAIN) == 0) {
+		return ca_prop_read_nickcerts(ctx, parent,
+					      entry->cm_cert_chain);
+	} else
+	if (strcmp(name, CM_DBUS_PROP_ROOT_CERTS) == 0) {
+		return ca_prop_read_nickcerts(ctx, parent,
+					      ca->cm_ca_root_certs);
+	} else
+	if (strcmp(name, CM_DBUS_PROP_OTHER_ROOT_CERTS) == 0) {
+		return ca_prop_read_nickcerts(ctx, parent,
+					      ca->cm_ca_other_root_certs);
+	} else
+	if (strcmp(name, CM_DBUS_PROP_OTHER_CERTS) == 0) {
+		return ca_prop_read_nickcerts(ctx, parent,
+					      ca->cm_ca_other_certs);
+	}
+	return NULL;
+}
+
 /* Convenience functions for returning errors from a request object to callers. */
 static DBusHandlerResult
 send_internal_request_error(DBusConnection *conn, DBusMessage *req)
@@ -3376,6 +3423,7 @@ struct cm_tdbush_property {
 		cm_tdbush_property_path,
 		cm_tdbush_property_string,
 		cm_tdbush_property_strings,
+		cm_tdbush_property_string_pairs,
 		cm_tdbush_property_boolean,
 		cm_tdbush_property_number
 	} cm_bus_type;
@@ -3399,6 +3447,9 @@ struct cm_tdbush_property {
 				       void *structure, const char *name);
 	const char ** (*cm_read_strings)(struct cm_context *ctx, void *parent,
 					 void *structure, const char *name);
+	const char ** (*cm_read_string_pairs)(struct cm_context *ctx,
+					      void *parent, void *structure,
+					      const char *name);
 	dbus_bool_t (*cm_read_boolean)(struct cm_context *ctx, void *parent,
 				       void *structure, const char *name);
 	long (*cm_read_number)(struct cm_context *ctx, void *parent,
@@ -3409,6 +3460,9 @@ struct cm_tdbush_property {
 	void (*cm_write_strings)(struct cm_context *ctx, void *parent,
 				 void *structure, const char *name,
 				 const char **new_value);
+	void (*cm_write_string_pairs)(struct cm_context *ctx, void *parent,
+				      void *structure, const char *name,
+				      const char **new_value);
 	void (*cm_write_boolean)(struct cm_context *ctx, void *parent,
 				 void *structure, const char *name,
 				 dbus_bool_t new_value);
@@ -3539,6 +3593,10 @@ make_property(const char *name,
 					    void *parent,
 					    void *structure,
 					    const char *name),
+	      const char ** (*read_string_pairs)(struct cm_context *ctx,
+						 void *parent,
+						 void *structure,
+						 const char *name),
 	      dbus_bool_t (*read_boolean)(struct cm_context *ctx, void *parent,
 					  void *structure, const char *name),
 	      long (*read_number)(struct cm_context *ctx, void *parent,
@@ -3549,6 +3607,9 @@ make_property(const char *name,
 	      void (*write_strings)(struct cm_context *ctx, void *parent,
 				    void *structure, const char *name,
 				    const char **new_values),
+	      void (*write_string_pairs)(struct cm_context *ctx, void *parent,
+					 void *structure, const char *name,
+					 const char **new_values),
 	      void (*write_boolean)(struct cm_context *ctx, void *parent,
 				    void *structure, const char *name,
 				    dbus_bool_t),
@@ -3569,10 +3630,12 @@ make_property(const char *name,
 	ret->cm_offset = offset;
 	ret->cm_read_string = read_string;
 	ret->cm_read_strings = read_strings;
+	ret->cm_read_string_pairs = read_string_pairs;
 	ret->cm_read_number = read_number;
 	ret->cm_read_boolean = read_boolean;
 	ret->cm_write_string = write_string;
 	ret->cm_write_strings = write_strings;
+	ret->cm_write_string_pairs = write_string_pairs;
 	ret->cm_write_number = write_number;
 	ret->cm_write_boolean = write_boolean;
 	ret->cm_annotations = annotations;
@@ -3595,6 +3658,9 @@ make_property(const char *name,
 			case cm_tdbush_property_strings:
 				assert(ret->cm_read_strings != NULL);
 				break;
+			case cm_tdbush_property_string_pairs:
+				assert(ret->cm_read_string_pairs != NULL);
+				break;
 			case cm_tdbush_property_boolean:
 				assert(ret->cm_read_boolean != NULL);
 				break;
@@ -3612,6 +3678,9 @@ make_property(const char *name,
 				break;
 			case cm_tdbush_property_strings:
 				assert(ret->cm_write_strings != NULL);
+				break;
+			case cm_tdbush_property_string_pairs:
+				assert(ret->cm_write_string_pairs != NULL);
 				break;
 			case cm_tdbush_property_boolean:
 				assert(ret->cm_write_boolean != NULL);
@@ -3749,6 +3818,13 @@ cm_tdbush_introspect_property(void *parent,
 	case cm_tdbush_property_strings:
 		bus_type = DBUS_TYPE_ARRAY_AS_STRING
 			   DBUS_TYPE_STRING_AS_STRING;
+		break;
+	case cm_tdbush_property_string_pairs:
+		bus_type = DBUS_TYPE_ARRAY_AS_STRING
+			   DBUS_STRUCT_BEGIN_CHAR_AS_STRING
+			   DBUS_TYPE_STRING_AS_STRING
+			   DBUS_TYPE_STRING_AS_STRING
+			   DBUS_STRUCT_END_CHAR_AS_STRING;
 		break;
 	case cm_tdbush_property_boolean:
 		bus_type = DBUS_TYPE_BOOLEAN_AS_STRING;
@@ -4174,6 +4250,11 @@ cm_tdbush_property_get(DBusConnection *conn,
 							record, property);
 			cm_tdbusm_set_as(rep, pp);
 			break;
+		case cm_tdbush_property_string_pairs:
+			pp = (*(prop->cm_read_string_pairs))(ctx, parent,
+							     record, property);
+			cm_tdbusm_set_ass(rep, pp);
+			break;
 		case cm_tdbush_property_boolean:
 			b = (*(prop->cm_read_boolean))(ctx, parent,
 						       record, property);
@@ -4397,6 +4478,18 @@ cm_tdbush_property_set(DBusConnection *conn,
 			(*(prop->cm_write_strings))(ctx, parent,
 						    record, property,
 						    (const char **) wpp);
+			break;
+		case cm_tdbush_property_string_pairs:
+			if (cm_tdbusm_get_ssass(msg, parent, &interface,
+					        &property, &wpp) != 0) {
+				cm_log(1, "Error parsing arguments.\n");
+				dbus_message_unref(rep);
+				talloc_free(parent);
+				return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+			}
+			(*(prop->cm_write_string_pairs))(ctx, parent,
+							 record, property,
+							 (const char **) wpp);
 			break;
 		case cm_tdbush_property_boolean:
 			if (cm_tdbusm_get_ssb(msg, parent, &interface,
@@ -4663,6 +4756,9 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 			case cm_tdbush_property_strings:
 				dict[n].value_type = cm_tdbusm_dict_as;
 				break;
+			case cm_tdbush_property_string_pairs:
+				dict[n].value_type = cm_tdbusm_dict_ass;
+				break;
 			case cm_tdbush_property_boolean:
 				dict[n].value_type = cm_tdbusm_dict_b;
 				break;
@@ -4720,6 +4816,7 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 				}
 				if ((ppp != NULL) && (*ppp != NULL)) {
 					dict[n].value.as = (char **) *ppp;
+					dict[n].value.ass = (char **) *ppp;
 					d[n] = &dict[n];
 					n++;
 				}
@@ -4822,6 +4919,28 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 					}
 					if ((pp != NULL) && (*pp != NULL)) {
 						dict[n].value.as = (char **) pp;
+						d[n] = &dict[n];
+						n++;
+					}
+					break;
+				case cm_tdbush_property_string_pairs:
+					pp = (*(prop->cm_read_string_pairs))(ctx, parent,
+									     record,
+									     prop->cm_name);
+					if (old_record != NULL) {
+						/* if we have an old record,
+						 * compare its value to the
+						 * current one, and skip this
+						 * if they're "the same" */
+						old_pp = (*(prop->cm_read_string_pairs))(ctx, parent,
+											 old_record,
+											 prop->cm_name);
+						if (compare_strv(old_pp, pp) == 0) {
+							continue;
+						}
+					}
+					if ((pp != NULL) && (*pp != NULL)) {
+						dict[n].value.ass = (char **) pp;
 						d[n] = &dict[n];
 						n++;
 					}
@@ -5103,7 +5222,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_p,
 								       offsetof(struct cm_store_entry, cm_nickname),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_autorenew",
@@ -5119,7 +5238,8 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_special,
 								       0,
-								       NULL, NULL, request_prop_get_autorenew, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, request_prop_get_autorenew, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_cert_data",
@@ -5135,10 +5255,19 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_p,
 								       offsetof(struct cm_store_entry, cm_cert),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       make_member_annotation("org.freedesktop.DBus.Property.EmitsChangedSignal",
 											      "true",
 											      NULL)),
+				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_CERT_CHAIN,
+								       cm_tdbush_property_string_pairs,
+								       cm_tdbush_property_read,
+								       cm_tdbush_property_special,
+								       0,
+								       NULL, NULL, ca_prop_get_nickcerts, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
+								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_cert_info",
 								     request_get_cert_info,
@@ -5177,7 +5306,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_p,
 								       offsetof(struct cm_store_entry, cm_cert_issuer),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_CERT_SERIAL,
@@ -5185,7 +5314,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_p,
 								       offsetof(struct cm_store_entry, cm_cert_serial),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_CERT_SUBJECT,
@@ -5193,7 +5322,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_p,
 								       offsetof(struct cm_store_entry, cm_cert_subject),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_CERT_EMAIL,
@@ -5201,7 +5330,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_pp,
 								       offsetof(struct cm_store_entry, cm_cert_email),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_CERT_KU,
@@ -5209,7 +5338,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_p,
 								       offsetof(struct cm_store_entry, cm_cert_ku),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_CERT_EKU,
@@ -5217,7 +5346,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_comma_list,
 								       offsetof(struct cm_store_entry, cm_cert_eku),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_CERT_HOSTNAME,
@@ -5225,7 +5354,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_pp,
 								       offsetof(struct cm_store_entry, cm_cert_hostname),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_CERT_PRINCIPAL,
@@ -5233,7 +5362,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_pp,
 								       offsetof(struct cm_store_entry, cm_cert_principal),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_cert_last_checked",
@@ -5249,7 +5378,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_time_t,
 								       offsetof(struct cm_store_entry, cm_last_need_notify_check),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_cert_storage_info",
@@ -5271,8 +5400,8 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_special,
 								       0,
-								       request_prop_get_cert_location_type, NULL, NULL, NULL,
-								       NULL, NULL, NULL, NULL,
+								       request_prop_get_cert_location_type, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_CERT_LOCATION_FILE,
@@ -5280,8 +5409,8 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_special,
 								       0,
-								       request_prop_get_cert_location_file, NULL, NULL, NULL,
-								       NULL, NULL, NULL, NULL,
+								       request_prop_get_cert_location_file, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_CERT_LOCATION_DATABASE,
@@ -5289,8 +5418,8 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_special,
 								       0,
-								       request_prop_get_cert_location_database, NULL, NULL, NULL,
-								       NULL, NULL, NULL, NULL,
+								       request_prop_get_cert_location_database, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_CERT_LOCATION_NICKNAME,
@@ -5298,8 +5427,8 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_special,
 								       0,
-								       request_prop_get_cert_location_nickname, NULL, NULL, NULL,
-								       NULL, NULL, NULL, NULL,
+								       request_prop_get_cert_location_nickname, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_CERT_LOCATION_TOKEN,
@@ -5307,8 +5436,8 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_special,
 								       0,
-								       request_prop_get_cert_location_token, NULL, NULL, NULL,
-								       NULL, NULL, NULL, NULL,
+								       request_prop_get_cert_location_token, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_csr_data",
@@ -5324,7 +5453,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_p,
 								       offsetof(struct cm_store_entry, cm_csr),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_csr_info",
@@ -5355,8 +5484,8 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_readwrite,
 								       cm_tdbush_property_special,
 								       0,
-								       request_prop_get_key_pin, NULL, NULL, NULL,
-								       request_prop_set_key_pin, NULL, NULL, NULL,
+								       request_prop_get_key_pin, NULL, NULL, NULL, NULL,
+								       request_prop_set_key_pin, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_KEY_PIN_FILE,
@@ -5364,8 +5493,8 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_readwrite,
 								       cm_tdbush_property_special,
 								       0,
-								       request_prop_get_key_pin_file, NULL, NULL, NULL,
-								       request_prop_set_key_pin_file, NULL, NULL, NULL,
+								       request_prop_get_key_pin_file, NULL, NULL, NULL, NULL,
+								       request_prop_set_key_pin_file, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_TEMPLATE_SUBJECT,
@@ -5373,7 +5502,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_p,
 								       offsetof(struct cm_store_entry, cm_template_subject),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_TEMPLATE_EMAIL,
@@ -5381,7 +5510,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_pp,
 								       offsetof(struct cm_store_entry, cm_template_email),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_TEMPLATE_KU,
@@ -5389,7 +5518,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_p,
 								       offsetof(struct cm_store_entry, cm_template_ku),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_TEMPLATE_EKU,
@@ -5397,7 +5526,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_comma_list,
 								       offsetof(struct cm_store_entry, cm_template_eku),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_TEMPLATE_HOSTNAME,
@@ -5405,7 +5534,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_pp,
 								       offsetof(struct cm_store_entry, cm_template_hostname),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_TEMPLATE_PRINCIPAL,
@@ -5413,7 +5542,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_pp,
 								       offsetof(struct cm_store_entry, cm_template_principal),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_TEMPLATE_IP_ADDRESS,
@@ -5421,7 +5550,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_pp,
 								       offsetof(struct cm_store_entry, cm_template_ipaddress),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_TEMPLATE_IS_CA,
@@ -5429,8 +5558,8 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_special,
 								       0,
-								       NULL, NULL, request_prop_get_template_is_ca, NULL,
-								       NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, request_prop_get_template_is_ca, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_TEMPLATE_CA_PATH_LENGTH,
@@ -5438,8 +5567,8 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_special,
 								       0,
-								       NULL, NULL, NULL, request_prop_get_template_ca_path_length,
-								       NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, request_prop_get_template_ca_path_length,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_TEMPLATE_OCSP,
@@ -5447,7 +5576,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_pp,
 								       offsetof(struct cm_store_entry, cm_template_ocsp_location),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_TEMPLATE_CRL_DP,
@@ -5455,7 +5584,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_pp,
 								       offsetof(struct cm_store_entry, cm_template_crl_distribution_point),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_TEMPLATE_FRESHEST_CRL,
@@ -5463,7 +5592,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_pp,
 								       offsetof(struct cm_store_entry, cm_template_freshest_crl),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_TEMPLATE_NS_COMMENT,
@@ -5471,7 +5600,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_p,
 								       offsetof(struct cm_store_entry, cm_template_ns_comment),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_TEMPLATE_PROFILE,
@@ -5479,7 +5608,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_p,
 								       offsetof(struct cm_store_entry, cm_template_profile),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_key_pin",
@@ -5517,8 +5646,8 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_special,
 								       0,
-								       request_prop_get_key_location_type, NULL, NULL, NULL,
-								       NULL, NULL, NULL, NULL,
+								       request_prop_get_key_location_type, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_KEY_LOCATION_FILE,
@@ -5526,8 +5655,8 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_special,
 								       0,
-								       request_prop_get_key_location_file, NULL, NULL, NULL,
-								       NULL, NULL, NULL, NULL,
+								       request_prop_get_key_location_file, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_KEY_LOCATION_DATABASE,
@@ -5535,8 +5664,8 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_special,
 								       0,
-								       request_prop_get_key_location_database, NULL, NULL, NULL,
-								       NULL, NULL, NULL, NULL,
+								       request_prop_get_key_location_database, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_KEY_LOCATION_NICKNAME,
@@ -5544,8 +5673,8 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_special,
 								       0,
-								       request_prop_get_key_location_nickname, NULL, NULL, NULL,
-								       NULL, NULL, NULL, NULL,
+								       request_prop_get_key_location_nickname, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_KEY_LOCATION_TOKEN,
@@ -5553,8 +5682,8 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_special,
 								       0,
-								       request_prop_get_key_location_token, NULL, NULL, NULL,
-								       NULL, NULL, NULL, NULL,
+								       request_prop_get_key_location_token, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_key_type_and_size",
@@ -5573,8 +5702,8 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_special,
 								       0,
-								       request_prop_get_key_type, NULL, NULL, NULL,
-								       NULL, NULL, NULL, NULL,
+								       request_prop_get_key_type, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_KEY_SIZE,
@@ -5582,8 +5711,8 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_special,
 								       0,
-								       NULL, NULL, NULL, request_prop_get_key_size,
-								       NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, request_prop_get_key_size,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_monitoring",
@@ -5599,7 +5728,8 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_special,
 								       0,
-								       NULL, NULL, request_prop_get_monitoring, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, request_prop_get_monitoring, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_notification_info",
@@ -5618,8 +5748,8 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_special,
 								       0,
-								       request_prop_get_notification_type, NULL, NULL, NULL,
-								       NULL, NULL, NULL, NULL,
+								       request_prop_get_notification_type, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_NOTIFICATION_SYSLOG_PRIORITY,
@@ -5627,8 +5757,8 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_special,
 								       0,
-								       request_prop_get_notification_syslog, NULL, NULL, NULL,
-								       NULL, NULL, NULL, NULL,
+								       request_prop_get_notification_syslog, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_NOTIFICATION_EMAIL,
@@ -5636,8 +5766,8 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_special,
 								       0,
-								       request_prop_get_notification_email, NULL, NULL, NULL,
-								       NULL, NULL, NULL, NULL,
+								       request_prop_get_notification_email, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_NOTIFICATION_COMMAND,
@@ -5645,8 +5775,8 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_special,
 								       0,
-								       request_prop_get_notification_command, NULL, NULL, NULL,
-								       NULL, NULL, NULL, NULL,
+								       request_prop_get_notification_command, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_status",
@@ -5665,8 +5795,8 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_special,
 								       0,
-								       request_prop_get_status, NULL, NULL, NULL,
-								       NULL, NULL, NULL, NULL,
+								       request_prop_get_status, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_STUCK,
@@ -5674,8 +5804,8 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_special,
 								       0,
-								       NULL, NULL, request_prop_get_stuck, NULL,
-								       NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, request_prop_get_stuck, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_ca",
@@ -5691,8 +5821,8 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_special,
 								       0,
-								       request_prop_get_ca, NULL, NULL, NULL,
-								       NULL, NULL, NULL, NULL,
+								       request_prop_get_ca, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_CA_PROFILE,
@@ -5700,7 +5830,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_p,
 								       offsetof(struct cm_store_entry, cm_template_profile),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_ROOT_CERT_FILES,
@@ -5708,7 +5838,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_pp,
 								       offsetof(struct cm_store_entry, cm_root_cert_store_files),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_OTHER_ROOT_CERT_FILES,
@@ -5716,7 +5846,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_pp,
 								       offsetof(struct cm_store_entry, cm_other_root_cert_store_files),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_OTHER_CERT_FILES,
@@ -5724,7 +5854,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_pp,
 								       offsetof(struct cm_store_entry, cm_other_cert_store_files),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_ROOT_CERT_NSSDBS,
@@ -5732,7 +5862,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_pp,
 								       offsetof(struct cm_store_entry, cm_root_cert_store_nssdbs),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_OTHER_ROOT_CERT_NSSDBS,
@@ -5740,7 +5870,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_pp,
 								       offsetof(struct cm_store_entry, cm_other_root_cert_store_nssdbs),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_OTHER_CERT_NSSDBS,
@@ -5748,7 +5878,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_pp,
 								       offsetof(struct cm_store_entry, cm_other_cert_store_nssdbs),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_submitted_cookie",
@@ -5764,7 +5894,7 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_p,
 								       offsetof(struct cm_store_entry, cm_ca_cookie),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_ca_error",
@@ -5780,8 +5910,8 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_p,
 								       offsetof(struct cm_store_entry, cm_ca_error),
-								       NULL, NULL, NULL, NULL,
-								       NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_submitted_date",
@@ -5797,8 +5927,8 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_time_t,
 								       offsetof(struct cm_store_entry, cm_submitted),
-								       NULL, NULL, NULL, NULL,
-								       NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("modify",
@@ -5828,8 +5958,8 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_p,
 								       offsetof(struct cm_store_entry, cm_pre_certsave_command),
-								       NULL, NULL, NULL, NULL,
-								       NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_CERT_PRESAVE_UID,
@@ -5837,8 +5967,8 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_p,
 								       offsetof(struct cm_store_entry, cm_pre_certsave_uid),
-								       NULL, NULL, NULL, NULL,
-								       NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_CERT_POSTSAVE_COMMAND,
@@ -5846,8 +5976,8 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_p,
 								       offsetof(struct cm_store_entry, cm_post_certsave_command),
-								       NULL, NULL, NULL, NULL,
-								       NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_CERT_POSTSAVE_UID,
@@ -5855,13 +5985,13 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_p,
 								       offsetof(struct cm_store_entry, cm_post_certsave_uid),
-								       NULL, NULL, NULL, NULL,
-								       NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_signal,
 							 make_signal(CM_DBUS_SIGNAL_REQUEST_CERT_SAVED,
 								     NULL),
-							 NULL))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
+							 NULL)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
 	}
 	return ret;
 }
@@ -5887,7 +6017,7 @@ cm_tdbush_iface_ca(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_p,
 								       offsetof(struct cm_store_ca, cm_nickname),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_AKA,
@@ -5895,7 +6025,7 @@ cm_tdbush_iface_ca(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_p,
 								       offsetof(struct cm_store_ca, cm_ca_aka),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_is_default",
@@ -5911,8 +6041,8 @@ cm_tdbush_iface_ca(void)
 								       cm_tdbush_property_readwrite,
 								       cm_tdbush_property_special,
 								       0,
-								       NULL, NULL, ca_prop_get_is_default, NULL,
-								       NULL, NULL, ca_prop_set_is_default, NULL,
+								       NULL, NULL, NULL, ca_prop_get_is_default, NULL,
+								       NULL, NULL, NULL, ca_prop_set_is_default, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_type",
@@ -5952,7 +6082,34 @@ cm_tdbush_iface_ca(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_pp,
 								       offsetof(struct cm_store_ca, cm_ca_known_issuer_names),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_ROOT_CERTS,
+								       cm_tdbush_property_string_pairs,
+								       cm_tdbush_property_read,
+								       cm_tdbush_property_special,
+								       0,
+								       NULL, NULL, ca_prop_get_nickcerts, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
+								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_OTHER_ROOT_CERTS,
+								       cm_tdbush_property_string_pairs,
+								       cm_tdbush_property_read,
+								       cm_tdbush_property_special,
+								       0,
+								       NULL, NULL, ca_prop_get_nickcerts, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
+								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_OTHER_CERTS,
+								       cm_tdbush_property_string_pairs,
+								       cm_tdbush_property_read,
+								       cm_tdbush_property_special,
+								       0,
+								       NULL, NULL, ca_prop_get_nickcerts, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_REQUIRED_ENROLL_ATTRIBUTES,
@@ -5960,7 +6117,7 @@ cm_tdbush_iface_ca(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_pp,
 								       offsetof(struct cm_store_ca, cm_ca_required_enroll_attributes),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_REQUIRED_RENEW_ATTRIBUTES,
@@ -5968,7 +6125,7 @@ cm_tdbush_iface_ca(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_pp,
 								       offsetof(struct cm_store_ca, cm_ca_required_renewal_attributes),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_SUPPORTED_PROFILES,
@@ -5976,7 +6133,7 @@ cm_tdbush_iface_ca(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_pp,
 								       offsetof(struct cm_store_ca, cm_ca_profiles),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_DEFAULT_PROFILE,
@@ -5984,7 +6141,7 @@ cm_tdbush_iface_ca(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_p,
 								       offsetof(struct cm_store_ca, cm_ca_default_profile),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_ROOT_CERT_FILES,
@@ -5992,7 +6149,7 @@ cm_tdbush_iface_ca(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_pp,
 								       offsetof(struct cm_store_ca, cm_ca_root_cert_store_files),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_OTHER_ROOT_CERT_FILES,
@@ -6000,7 +6157,7 @@ cm_tdbush_iface_ca(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_pp,
 								       offsetof(struct cm_store_ca, cm_ca_other_root_cert_store_files),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_OTHER_CERT_FILES,
@@ -6008,7 +6165,7 @@ cm_tdbush_iface_ca(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_pp,
 								       offsetof(struct cm_store_ca, cm_ca_other_cert_store_files),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_ROOT_CERT_NSSDBS,
@@ -6016,7 +6173,7 @@ cm_tdbush_iface_ca(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_pp,
 								       offsetof(struct cm_store_ca, cm_ca_root_cert_store_nssdbs),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_OTHER_ROOT_CERT_NSSDBS,
@@ -6024,7 +6181,7 @@ cm_tdbush_iface_ca(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_pp,
 								       offsetof(struct cm_store_ca, cm_ca_other_root_cert_store_nssdbs),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_OTHER_CERT_NSSDBS,
@@ -6032,7 +6189,7 @@ cm_tdbush_iface_ca(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_pp,
 								       offsetof(struct cm_store_ca, cm_ca_other_cert_store_nssdbs),
-								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_CA_PRESAVE_COMMAND,
@@ -6040,8 +6197,8 @@ cm_tdbush_iface_ca(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_p,
 								       offsetof(struct cm_store_ca, cm_ca_pre_save_command),
-								       NULL, NULL, NULL, NULL,
-								       NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_CA_PRESAVE_UID,
@@ -6049,8 +6206,8 @@ cm_tdbush_iface_ca(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_p,
 								       offsetof(struct cm_store_ca, cm_ca_pre_save_uid),
-								       NULL, NULL, NULL, NULL,
-								       NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_CA_POSTSAVE_COMMAND,
@@ -6058,8 +6215,8 @@ cm_tdbush_iface_ca(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_p,
 								       offsetof(struct cm_store_ca, cm_ca_post_save_command),
-								       NULL, NULL, NULL, NULL,
-								       NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_CA_POSTSAVE_UID,
@@ -6067,10 +6224,10 @@ cm_tdbush_iface_ca(void)
 								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_p,
 								       offsetof(struct cm_store_ca, cm_ca_post_save_uid),
-								       NULL, NULL, NULL, NULL,
-								       NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
-				     NULL)))))))))))))))))))))))));
+				     NULL))))))))))))))))))))))))))));
 	}
 	return ret;
 }
