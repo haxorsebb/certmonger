@@ -569,8 +569,16 @@ cm_cadata_unreachable(struct cm_store_ca *ca, struct cm_cadata_state *state)
         int status;
 
 	status = cm_subproc_get_exitstatus(NULL, state->subproc);
+	/* Go ahead and treat "try later" as an "unreachable" error, even
+	 * though helpers aren't supposed to ever return either of these values
+	 * for these cases, so that we don't permanently disable the helper
+	 * when it's just telling us to try again, even though it's doing it
+	 * wrong.  We leave out "rejected" errors, because that's not something
+	 * we'd retry even if the result made sense for these cases. */
 	if (WIFEXITED(status) &&
-            (WEXITSTATUS(status) == CM_SUBMIT_STATUS_UNREACHABLE)) {
+            ((WEXITSTATUS(status) == CM_SUBMIT_STATUS_UNREACHABLE) ||
+             (WEXITSTATUS(status) == CM_SUBMIT_STATUS_WAIT) ||
+             (WEXITSTATUS(status) == CM_SUBMIT_STATUS_WAIT_WITH_DELAY))) {
                 return 0;
         }
         return -1;
