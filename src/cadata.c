@@ -18,6 +18,7 @@
 #include "config.h"
 
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
@@ -88,7 +89,7 @@ fetch(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry, void *data)
 		return -1;
 	}
 	cm_subproc_mark_most_cloexec(NULL, STDOUT_FILENO);
-	cm_log(1, "Running enrollment helper \"%s\".\n", argv[0]);
+	cm_log(1, "Running enrollment/cadata helper \"%s\".\n", argv[0]);
 	execvp(argv[0], argv);
 	u = errno;
 	if (write(state->error_fd, &u, 1) != 1) {
