@@ -737,13 +737,13 @@ main(int argc, char **argv)
 		}
 		ret = (*(tests[i].set))(msg);
 		if (ret != 0) {
-			printf("Error encoding parameters for message %d.\n",
+			printf("Error encoding parameters for message %u.\n",
 			       i);
 			continue;
 		}
 		ret = (*(tests[i].get))(msg, i);
 		if (ret != 0) {
-			printf("Error parsing parameters in message %d.\n", i);
+			printf("Error parsing parameters in message %u.\n", i);
 		}
 	}
 	return 0;

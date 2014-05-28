@@ -310,7 +310,7 @@ cm_certext_read_ku(struct cm_store_entry *entry, PLArenaPool *arena,
 		entry->cm_cert_ku = talloc_zero_size(entry, item.len + 1);
 		for (i = 0; i < item.len; i++) {
 			bit = (item.data[i / 8] & (0x80 >> (i % 8))) ? 1 : 0;
-			sprintf(entry->cm_cert_ku + i, "%.*d", 1, bit);
+			sprintf(entry->cm_cert_ku + i, "%.*u", 1, bit);
 		}
 	}
 }
