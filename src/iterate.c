@@ -1776,7 +1776,6 @@ cm_iterate_ca(struct cm_store_ca *ca,
 		} else {
 			*readfd = cm_cadata_get_fd(ca, state->cm_task_state);
 			if (*readfd == -1) {
-				cm_cadata_done(ca, state->cm_task_state);
 				ca->cm_ca_state[state->cm_phase] = CM_CA_REFRESHING;
 				*when = cm_time_soon;
 			} else {
@@ -2026,11 +2025,27 @@ cm_iterate_ca_done(struct cm_store_ca *ca, void *cm_iterate_state)
 	struct cm_ca_state *state;
 
 	state = cm_iterate_state;
+
 	cm_log(3, "%s('%s') ends (%s/%s)\n",
 	       ca->cm_busname, ca->cm_nickname,
 	       cm_store_ca_phase_as_string(state->cm_phase),
 	       cm_store_ca_state_as_string(ca->cm_ca_state[state->cm_phase]));
-	talloc_free(state);
+
+	if (state != NULL) {
+		if (state->cm_ca_analyze_state != NULL) {
+			cm_ca_analyze_done(ca, state->cm_ca_analyze_state);
+			state->cm_ca_analyze_state = NULL;
+		}
+		if (state->cm_task_state != NULL) {
+			cm_cadata_done(ca, state->cm_task_state);
+			state->cm_task_state = NULL;
+		}
+		if (state->cm_hook_state != NULL) {
+			cm_ca_hook_done(ca, state->cm_hook_state);
+			state->cm_hook_state = NULL;
+		}
+		talloc_free(state);
+	}
 
 	if (cm_writing_has_lock(ca)) {
 		cm_writing_unlock_by_ca(ca);
