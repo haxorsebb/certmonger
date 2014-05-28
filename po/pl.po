@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Nalin Dahyabhai <nalin@fedoraproject.org>, 2011
 # Piotr Drąg <piotrdrag@gmail.com>, 2011-2014
@@ -9,32 +9,34 @@ msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2014-04-08 16:10-0400\n"
+"POT-Creation-Date: 2014-05-28 14:22-0400\n"
 "PO-Revision-Date: 2014-04-09 16:03+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
-"Language-Team: Polish (http://www.transifex.com/projects/p/fedora/language/pl/)\n"
+"Language-Team: Polish (http://www.transifex.com/projects/p/fedora/language/"
+"pl/)\n"
+"Language: pl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: pl\n"
-"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
+"|| n%100>=20) ? 1 : 2);\n"
 
-#: src/certmaster.c:111 src/ipa.c:146
+#: src/certmaster.c:127 src/ipa.c:237
 #, c-format
 msgid "Unable to determine hostname of CA.\n"
 msgstr "Nie można określić nazwy komputera CA.\n"
 
-#: src/certmaster.c:128 src/dogtag.c:413 src/ipa.c:177
+#: src/certmaster.c:144 src/dogtag.c:434 src/ipa.c:256
 #, c-format
 msgid "Unable to read signing request.\n"
 msgstr "Nie można odczytać żądania podpisania.\n"
 
-#: src/certmaster.c:158
+#: src/certmaster.c:174
 #, c-format
 msgid "Error setting up for XMLRPC.\n"
 msgstr "Błąd podczas ustawiania dla XML-RPC.\n"
 
-#: src/certmaster.c:180 src/getcert.c:372 src/getcert.c:391 src/getcert.c:410
+#: src/certmaster.c:196 src/getcert.c:372 src/getcert.c:391 src/getcert.c:410
 #: src/getcert.c:429 src/getcert.c:448 src/getcert.c:466 src/getcert.c:496
 #: src/getcert.c:1033 src/getcert.c:1338 src/getcert.c:1706 src/getcert.c:1787
 #: src/getcert.c:2131 src/getcert.c:2303 src/getcert.c:2386 src/getcert.c:2421
@@ -43,47 +45,53 @@ msgstr "Błąd podczas ustawiania dla XML-RPC.\n"
 msgid "Error parsing server response.\n"
 msgstr "Błąd podczas przetwarzania odpowiedzi serwera.\n"
 
-#: src/certmaster.c:184
+#: src/certmaster.c:200
 #, c-format
 msgid "Server error.\n"
 msgstr "Błąd serwera.\n"
 
-#: src/dogtag.c:341
+#: src/dogtag.c:358
 #, c-format
 msgid "Requested renewal, but no serial number provided.\n"
 msgstr "Zażądano odnowienia, ale nie podano numeru seryjnego.\n"
 
-#: src/dogtag.c:345
+#: src/dogtag.c:362
 #, c-format
 msgid "No end-entity URL (-E) given, and no default known.\n"
-msgstr "Nie podano adresu URL końcowej jednostki (-E), a nie ma wartości domyślnej.\n"
+msgstr ""
+"Nie podano adresu URL końcowej jednostki (-E), a nie ma wartości domyślnej.\n"
 
-#: src/dogtag.c:349
+#: src/dogtag.c:366
 #, c-format
 msgid "No agent URL (-A) given, and no default known.\n"
 msgstr "Nie podano adresu URL agenta (-A), a nie ma wartości domyślnej.\n"
 
-#: src/dogtag.c:353
+#: src/dogtag.c:370
 #, c-format
 msgid "No profile/template (-T) given, and no default known.\n"
 msgstr "Nie podano profilu/szablonu (-T), a nie ma wartości domyślnej.\n"
 
-#: src/dogtag.c:386 src/dogtag.c:563
+#: src/dogtag.c:378
+#, fuzzy, c-format
+msgid "Error shutting down NSS.\n"
+msgstr "Błąd podczas ustawiania dla XML-RPC.\n"
+
+#: src/dogtag.c:407 src/dogtag.c:584
 #, c-format
 msgid "Internal error: unknown state.\n"
 msgstr "Wewnętrzny błąd: nieznany stan.\n"
 
-#: src/dogtag.c:545
+#: src/dogtag.c:566
 #, c-format
 msgid "Error %d connecting to %s: %s.\n"
 msgstr "Błąd %d podczas łączenia z %s: %s.\n"
 
-#: src/dogtag.c:550
+#: src/dogtag.c:571
 #, c-format
 msgid "Error %d connecting to %s.\n"
 msgstr "Błąd %d podczas łączenia z %s.\n"
 
-#: src/dogtag.c:557
+#: src/dogtag.c:578
 #, c-format
 msgid "Internal error: no response to \"%s?%s\".\n"
 msgstr "Wewnętrzny błąd: brak odpowiedzi na \"%s?%s\".\n"
@@ -91,14 +99,17 @@ msgstr "Wewnętrzny błąd: brak odpowiedzi na \"%s?%s\".\n"
 #: src/getcert.c:91
 #, c-format
 msgid "Path \"%s\" is not absolute, attempting to use \"%s\" instead.\n"
-msgstr "Ścieżka \"%s\" nie jest bezwzględna, próbowanie użycia \"%s\" zamiast niej.\n"
+msgstr ""
+"Ścieżka \"%s\" nie jest bezwzględna, próbowanie użycia \"%s\" zamiast niej.\n"
 
 #: src/getcert.c:96
 #, c-format
 msgid ""
 "Path \"%s\" is not absolute, and there was an error determining the name of "
 "the current directory.\n"
-msgstr "Ścieżka \"%s\" nie jest bezwzględna i wystąpił błąd podczas określania nazwy bieżącego katalogu.\n"
+msgstr ""
+"Ścieżka \"%s\" nie jest bezwzględna i wystąpił błąd podczas określania nazwy "
+"bieżącego katalogu.\n"
 
 #: src/getcert.c:118
 #, c-format
@@ -130,10 +141,12 @@ msgstr "Brak pamięci.\n"
 msgid "Error connecting to DBus.\n"
 msgstr "Błąd podczas łączenia z D-Bus.\n"
 
-#: src/getcert.c:274 src/tdbusm.c:1657
+#: src/getcert.c:274 src/tdbusm.c:1958
 #, c-format
 msgid "Please verify that the message bus (D-Bus) service is running.\n"
-msgstr "Proszę sprawdzić, czy usługa magistrali komunikatów (D-Bus) jest uruchomiona.\n"
+msgstr ""
+"Proszę sprawdzić, czy usługa magistrali komunikatów (D-Bus) jest "
+"uruchomiona.\n"
 
 #: src/getcert.c:281
 #, c-format
@@ -198,7 +211,9 @@ msgstr "Błąd podczas przetwarzania nazwy naczelnika Kerberosa \"%s\": %s.\n"
 #: src/getcert.c:699 src/getcert.c:1479 src/getcert.c:1913
 #, c-format
 msgid "Error unparsing Kerberos principal name \"%s\": %s.\n"
-msgstr "Błąd podczas odwracania przetworzenia nazwy naczelnika Kerberosa \"%s\": %s.\n"
+msgstr ""
+"Błąd podczas odwracania przetworzenia nazwy naczelnika Kerberosa \"%s\": "
+"%s.\n"
 
 #: src/getcert.c:740 src/getcert.c:1520 src/getcert.c:1954 src/getcert.c:2233
 #: src/getcert.c:2581
@@ -235,7 +250,8 @@ msgstr "Określono zarówno katalog bazy danych, jak i plik certyfikatu.\n"
 
 #: src/getcert.c:776 src/getcert.c:1747 src/getcert.c:2002
 #, c-format
-msgid "None of database directory and nickname or certificate file specified.\n"
+msgid ""
+"None of database directory and nickname or certificate file specified.\n"
 msgstr "Nie podano katalogu bazy danych i pseudonimu lub pliku certyfikatu.\n"
 
 #: src/getcert.c:783 src/getcert.c:1562
@@ -246,9 +262,11 @@ msgstr "Nie można zapisać klucza i certyfikatu do tego samego pliku.\n"
 #: src/getcert.c:809
 #, c-format
 msgid ""
-"The IPA backend requires the use of the -K option (principal name) when the "
-"-N option (subject name) is used.\n"
-msgstr "Zaplecze IPA wymaga użycia opcji -K (nazwy naczelnika), kiedy używana jest opcja -N (nazwa tematu).\n"
+"The IPA backend requires the use of the -K option (principal name) when the -"
+"N option (subject name) is used.\n"
+msgstr ""
+"Zaplecze IPA wymaga użycia opcji -K (nazwy naczelnika), kiedy używana jest "
+"opcja -N (nazwa tematu).\n"
 
 #: src/getcert.c:941 src/getcert.c:1318 src/getcert.c:1662 src/getcert.c:2022
 #: src/getcert.c:2251
@@ -287,7 +305,9 @@ msgstr "Nie można dodać nowego żądania śledzenia.\n"
 msgid ""
 "None of ID or database directory and nickname or certificate file "
 "specified.\n"
-msgstr "Nie podano identyfikatora, albo katalogu bazy danych i pseudonimu, albo pliku certyfikatu.\n"
+msgstr ""
+"Nie podano identyfikatora, albo katalogu bazy danych i pseudonimu, albo "
+"pliku certyfikatu.\n"
 
 #: src/getcert.c:1714
 #, c-format
@@ -527,12 +547,16 @@ msgstr "  -d KAT\tbaza danych NSS dla klucza i certyfikatu\n"
 
 #: src/getcert.c:2665 src/getcert.c:2710 src/getcert.c:2752 src/getcert.c:2774
 msgid "  -n NAME\tnickname for NSS-based storage (only valid with -d)\n"
-msgstr "  -n NAZWA\tpseudonim dla przechowywania danych opartego na NSS (prawidłowe tylko z opcją -d)\n"
+msgstr ""
+"  -n NAZWA\tpseudonim dla przechowywania danych opartego na NSS (prawidłowe "
+"tylko z opcją -d)\n"
 
 #: src/getcert.c:2666 src/getcert.c:2711 src/getcert.c:2753 src/getcert.c:2775
 msgid ""
 "  -t NAME\toptional token name for NSS-based storage (only valid with -d)\n"
-msgstr "  -t NAZWA\topcjonalna nazwa tokenu dla przechowywania opartego na NSS (prawidłowe tylko z opcją -d)\n"
+msgstr ""
+"  -t NAZWA\topcjonalna nazwa tokenu dla przechowywania opartego na NSS "
+"(prawidłowe tylko z opcją -d)\n"
 
 #: src/getcert.c:2667 src/getcert.c:2712 src/getcert.c:2754 src/getcert.c:2776
 #: src/getcert.c:2823
@@ -578,15 +602,20 @@ msgstr "  -G TYP\ttyp klucza do utworzenia, jeśli jeszcze nie ma żadnego\n"
 
 #: src/getcert.c:2678
 msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
-msgstr "  -g ROZMIAR\trozmiar klucza do utworzenia, jeśli jeszcze nie ma żadnego\n"
+msgstr ""
+"  -g ROZMIAR\trozmiar klucza do utworzenia, jeśli jeszcze nie ma żadnego\n"
 
 #: src/getcert.c:2679 src/getcert.c:2722
-msgid "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
-msgstr "  -r\t\tpróbuje odnowić certyfikat, kiedy zbliża się jego wygaszenie (domyślnie)\n"
+msgid ""
+"  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
+msgstr ""
+"  -r\t\tpróbuje odnowić certyfikat, kiedy zbliża się jego wygaszenie "
+"(domyślnie)\n"
 
 #: src/getcert.c:2680 src/getcert.c:2723
 msgid "  -R\t\tdon't attempt to renew the certificate when expiration nears\n"
-msgstr "  -R\t\tnie próbuje odnowić certyfikatu, kiedy zbliża się jego wygaszenie\n"
+msgstr ""
+"  -R\t\tnie próbuje odnowić certyfikatu, kiedy zbliża się jego wygaszenie\n"
 
 #: src/getcert.c:2682 src/getcert.c:2725
 msgid "  -c CA\t\tuse the specified CA rather than the default\n"
@@ -596,7 +625,9 @@ msgstr "  -c CA\t\tużywa podanego CA zamiast domyślnego\n"
 msgid ""
 "  -T PROFILE\task the CA to process the request using the named profile or "
 "template\n"
-msgstr "  -T PROFIL\t\tprosi CAo przetworzenie żądania używając nazwanego profilu lub szablonu\n"
+msgstr ""
+"  -T PROFIL\t\tprosi CAo przetworzenie żądania używając nazwanego profilu "
+"lub szablonu\n"
 
 #: src/getcert.c:2685
 msgid "* Parameters for the signing request:\n"
@@ -604,11 +635,13 @@ msgstr "* Parametry do żądania podpisania:\n"
 
 #: src/getcert.c:2686 src/getcert.c:2784
 msgid "  -N NAME\tset requested subject name (default: CN=<hostname>)\n"
-msgstr "  -N NAZWA\tustawia żądaną nazwę tematu (domyślnie: CN=<nazwa_komputera>)\n"
+msgstr ""
+"  -N NAZWA\tustawia żądaną nazwę tematu (domyślnie: CN=<nazwa_komputera>)\n"
 
 #: src/getcert.c:2687 src/getcert.c:2785
 msgid "  -U EXTUSAGE\tset requested extended key usage OID\n"
-msgstr "  -U UŻYCIE_ZEWNĘTRZNE\tustawia żądany OID użycia rozszerzonego klucza\n"
+msgstr ""
+"  -U UŻYCIE_ZEWNĘTRZNE\tustawia żądany OID użycia rozszerzonego klucza\n"
 
 #: src/getcert.c:2688 src/getcert.c:2730 src/getcert.c:2786
 msgid "  -u KEYUSAGE\tset requested key usage value\n"
@@ -688,7 +721,8 @@ msgstr "* Parametry do żądania podpisania w czasie odnowienia:\n"
 
 #: src/getcert.c:2729
 msgid "  -U EXTUSAGE\toverride requested extended key usage OID\n"
-msgstr "  -U UŻYCIE_ZEWNĘTRZNE\tzastępuje żądany OID użycia rozszerzonego klucza\n"
+msgstr ""
+"  -U UŻYCIE_ZEWNĘTRZNE\tzastępuje żądany OID użycia rozszerzonego klucza\n"
 
 #: src/getcert.c:2731
 msgid "  -K NAME\toverride requested principal name\n"
@@ -767,15 +801,21 @@ msgstr "* Jeśli wybrano konkretne żądanie:\n"
 
 #: src/getcert.c:2821
 msgid "  -d DIR\tonly list requests and certs which use this NSS database\n"
-msgstr "  -d KATALOG\twyświetla tylko żądania i certyfikaty, które używają tej bazy danych NSS\n"
+msgstr ""
+"  -d KATALOG\twyświetla tylko żądania i certyfikaty, które używają tej bazy "
+"danych NSS\n"
 
 #: src/getcert.c:2822
 msgid "  -n NAME\tonly list requests and certs which use this nickname\n"
-msgstr "  -n NAZWA\twyświetla tylko żądania i certyfikaty, które używają tego pseudonimu\n"
+msgstr ""
+"  -n NAZWA\twyświetla tylko żądania i certyfikaty, które używają tego "
+"pseudonimu\n"
 
 #: src/getcert.c:2824
 msgid "  -f FILE\tonly list requests and certs stored in this PEM file\n"
-msgstr "  -f PLIK\twyświetla tylko żądania i certyfikaty przechowywane w tym pliku PEM\n"
+msgstr ""
+"  -f PLIK\twyświetla tylko żądania i certyfikaty przechowywane w tym pliku "
+"PEM\n"
 
 #: src/getcert.c:2826 src/getcert.c:2841
 msgid "  -S\tconnect to the certmonger service on the system bus\n"
@@ -799,59 +839,78 @@ msgstr "  -c CA\twyświetla informacje tylko o CA o tej nazwie\n"
 msgid "%s: unrecognized command\n"
 msgstr "%s: nierozpoznane polecenie\n"
 
-#: src/ipa.c:85
+#: src/ipa.c:144
 #, c-format
 msgid "The -t option can not be used with the -K option.\n"
 msgstr "Opcja -t nie może być używana z opcją -K.\n"
 
-#: src/ipa.c:93
+#: src/ipa.c:152
 #, c-format
 msgid "The -k option can not be used with the -K option.\n"
 msgstr "Opcja -k nie może być używana z opcją -K.\n"
 
-#: src/ipa.c:101
+#: src/ipa.c:160
 #, c-format
 msgid "The -K option can not be used with either the -k or the -t option.\n"
 msgstr "Opcja -K nie może być używana z opcją -k lub -t.\n"
 
-#: src/ipa.c:143
-#, c-format
-msgid "Unable to determine location of CA's XMLRPC server.\n"
-msgstr "Nie można określić położenia serwera XML-RPC CA.\n"
-
-#: src/ipa.c:151
+#: src/ipa.c:223
 #, c-format
 msgid "Unable to determine principal name for signing request.\n"
 msgstr "Nie można określić nazwy naczelnika dla żądania podpisania.\n"
 
-#: src/ipa.c:228
+#: src/ipa.c:240
 #, c-format
-msgid "Error setting up for XMLRPC on the client.\n"
-msgstr "Błąd podczas ustawiania dla XML-RPC na kliencie.\n"
+msgid "Unable to determine location of CA's XMLRPC server.\n"
+msgstr "Nie można określić położenia serwera XML-RPC CA.\n"
 
-#: src/ipa.c:239
+#: src/ipa.c:291
 #, c-format
 msgid ""
-"Error setting up ccache for \"host\" service on client using default keytab:"
-" %s.\n"
-msgstr "Błąd podczas ustawiania ccache dla usługi \"gospodarza\" na kliencie używając domyślnej tablicy kluczy: %s.\n"
+"Error setting up ccache for \"host\" service on client using default keytab: "
+"%s.\n"
+msgstr ""
+"Błąd podczas ustawiania ccache dla usługi \"gospodarza\" na kliencie "
+"używając domyślnej tablicy kluczy: %s.\n"
 
-#: src/ipa.c:243
+#: src/ipa.c:295
 #, c-format
-msgid "Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
-msgstr "Błąd podczas ustawiania ccache dla \"%s\" na kliencie używając domyślnej tablicy kluczy: %s.\n"
+msgid ""
+"Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
+msgstr ""
+"Błąd podczas ustawiania ccache dla \"%s\" na kliencie używając domyślnej "
+"tablicy kluczy: %s.\n"
 
-#: src/ipa.c:250
+#: src/ipa.c:302
 #, c-format
 msgid ""
 "Error setting up ccache for \"host\" service on client using keytab \"%s\": "
 "%s.\n"
-msgstr "Błąd podczas ustawiania ccache dla usługi \"gospodarza\" na kliencie używając domyślnej tablicy kluczy \"%s\": %s.\n"
+msgstr ""
+"Błąd podczas ustawiania ccache dla usługi \"gospodarza\" na kliencie "
+"używając domyślnej tablicy kluczy \"%s\": %s.\n"
 
-#: src/ipa.c:254
+#: src/ipa.c:306
 #, c-format
 msgid "Error setting up ccache for \"%s\" on client using keytab \"%s\": %s.\n"
-msgstr "Błąd podczas ustawiania ccache dla \"%s\" na kliencie używając domyślnej tablicy kluczy \"%s\": %s.\n"
+msgstr ""
+"Błąd podczas ustawiania ccache dla \"%s\" na kliencie używając domyślnej "
+"tablicy kluczy \"%s\": %s.\n"
+
+#: src/ipa.c:325
+#, c-format
+msgid "Error setting up for XMLRPC on the client.\n"
+msgstr "Błąd podczas ustawiania dla XML-RPC na kliencie.\n"
+
+#: src/ipa.c:403
+#, fuzzy, c-format
+msgid "Unable to determine location of IPA LDAP server.\n"
+msgstr "Nie można określić położenia serwera XML-RPC CA.\n"
+
+#: src/ipa.c:465
+#, fuzzy, c-format
+msgid "Unable to determine base DN of domain information on IPA server.\n"
+msgstr "Nie można określić położenia serwera XML-RPC CA.\n"
 
 #: src/main.c:120
 #, c-format
@@ -876,7 +935,8 @@ msgstr "\t-f         zmiana na demona\n"
 
 #: src/main.c:128
 msgid "\t-b TIMEOUT bus-activated, idle timeout\n"
-msgstr "\t-b CZAS    aktywacja przez magistralę, czas oczekiwania na bezczynność\n"
+msgstr ""
+"\t-b CZAS    aktywacja przez magistralę, czas oczekiwania na bezczynność\n"
 
 #: src/main.c:129
 msgid "\t-B         don't use an idle timeout\n"
@@ -894,7 +954,7 @@ msgstr "\t-p PLIK    zapisuje PID usługi do pliku\n"
 msgid "\t-F         force NSS into FIPS mode\n"
 msgstr "\t-F         wymusza przejście NSS do trybu FIPS\n"
 
-#: src/tdbush.c:119 src/tdbush.c:1547 src/tdbush.c:1772
+#: src/tdbush.c:119 src/tdbush.c:1547 src/tdbush.c:1819
 msgid "An internal error has occurred."
 msgstr "Wystąpił wewnętrzny błąd."
 
@@ -917,7 +977,7 @@ msgid "Certificate storage type \"%s\" not supported."
 msgstr "Typ przechowywania certyfikatu \"%s\" nie jest obsługiwany."
 
 #: src/tdbush.c:483 src/tdbush.c:516 src/tdbush.c:575 src/tdbush.c:760
-#: src/tdbush.c:819 src/tdbush.c:2585
+#: src/tdbush.c:819 src/tdbush.c:2632
 #, c-format
 msgid "The location \"%s\" must be an absolute path."
 msgstr "Położenie \"%s\" musi być ścieżką bezwzględną."
@@ -931,7 +991,9 @@ msgstr "Nie podano położenia przechowywania certyfikatu."
 msgid ""
 "The parent of location \"%s\" could not be accessed due to insufficient "
 "permissions."
-msgstr "Nie można uzyskać dostępu do położenia nadrzędnego dla \"%s\" z powodu niewystarczających uprawnień."
+msgstr ""
+"Nie można uzyskać dostępu do położenia nadrzędnego dla \"%s\" z powodu "
+"niewystarczających uprawnień."
 
 #: src/tdbush.c:536 src/tdbush.c:780
 #, c-format
@@ -945,8 +1007,11 @@ msgstr "Położenie \"%s\" musi być plikiem."
 
 #: src/tdbush.c:587
 #, c-format
-msgid "The location \"%s\" could not be accessed due to insufficient permissions."
-msgstr "Nie można uzyskać dostępu do położenia \"%s\" z powodu niewystarczających uprawnień."
+msgid ""
+"The location \"%s\" could not be accessed due to insufficient permissions."
+msgstr ""
+"Nie można uzyskać dostępu do położenia \"%s\" z powodu niewystarczających "
+"uprawnień."
 
 #: src/tdbush.c:595 src/tdbush.c:828
 #, c-format
@@ -957,7 +1022,7 @@ msgstr "Położenie \"%s\" musi być katalogiem."
 msgid "Certificate nickname not specified."
 msgstr "Nie podano pseudonimu certyfikatu."
 
-#: src/tdbush.c:659 src/tdbush.c:2476
+#: src/tdbush.c:659 src/tdbush.c:2523
 #, c-format
 msgid "There is already a request with the nickname \"%s\"."
 msgstr "Istnieje już żądanie o pseudonimie \"%s\"."
@@ -965,9 +1030,10 @@ msgstr "Istnieje już żądanie o pseudonimie \"%s\"."
 #: src/tdbush.c:695
 #, c-format
 msgid ""
-"Certificate at same location is already used by request with nickname "
-"\"%s\"."
-msgstr "Certyfikat w tym samym położeniu jest już używany przez żądanie o pseudonimie \"%s\"."
+"Certificate at same location is already used by request with nickname \"%s\"."
+msgstr ""
+"Certyfikat w tym samym położeniu jest już używany przez żądanie o "
+"pseudonimie \"%s\"."
 
 #: src/tdbush.c:728
 #, c-format
@@ -985,7 +1051,9 @@ msgstr "Nie podano pseudonimu klucza."
 #: src/tdbush.c:903
 #, c-format
 msgid "Key at same location is already used by request with nickname \"%s\"."
-msgstr "Klucz w tym samym położeniu jest już używany przez żądanie o pseudonimie \"%s\"."
+msgstr ""
+"Klucz w tym samym położeniu jest już używany przez żądanie o pseudonimie \"%s"
+"\"."
 
 #: src/tdbush.c:974
 #, c-format
@@ -996,31 +1064,31 @@ msgstr "Brak obsługi dla typu klucza \"%s\"."
 msgid "No such CA."
 msgstr "Nie ma takiego CA."
 
-#: src/tdbush.c:2494
+#: src/tdbush.c:2541
 #, c-format
 msgid "Certificate authority \"%s\" not known."
 msgstr "Nieznane CA \"%s\""
 
-#: src/tdbush.c:2776
+#: src/tdbush.c:2823
 msgid "Unrecognized parameter or wrong value type."
 msgstr "Nierozpoznany parametr lub błędny typ wartości."
 
-#: src/tdbush.c:4035
+#: src/tdbush.c:4111
 msgid "Error parsing arguments."
 msgstr "Błąd podczas przetwarzania parametrów."
 
-#: src/tdbush.c:4089
+#: src/tdbush.c:4165
 msgid "Unrecognized property name."
 msgstr "Nierozpoznana nazwa właściwości."
 
-#: src/tdbusm.c:1647
+#: src/tdbusm.c:1948
 msgid "Insufficient access.  Please retry operation as root.\n"
 msgstr "Niewystarczający dostęp. Proszę ponowić działanie jako root.\n"
 
-#: src/tdbusm.c:1651
+#: src/tdbusm.c:1952
 msgid "Please verify that the certmonger service has been started.\n"
 msgstr "Proszę sprawdzić, czy usługa certmonger została uruchomiona.\n"
 
-#: src/tdbusm.c:1654
+#: src/tdbusm.c:1955
 msgid "Please verify that the certmonger service is still running.\n"
 msgstr "Proszę sprawdzić, czy usługa certmonger jest ciągle uruchomiona.\n"

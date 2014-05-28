@@ -1,39 +1,40 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Göran Uddeborg <goeran@uddeborg.se>, 2011-2013
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2014-04-08 16:10-0400\n"
+"POT-Creation-Date: 2014-05-28 14:22-0400\n"
 "PO-Revision-Date: 2014-04-08 20:37+0000\n"
 "Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
-"Language-Team: Swedish (http://www.transifex.com/projects/p/fedora/language/sv/)\n"
+"Language-Team: Swedish (http://www.transifex.com/projects/p/fedora/language/"
+"sv/)\n"
+"Language: sv\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: sv\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: src/certmaster.c:111 src/ipa.c:146
+#: src/certmaster.c:127 src/ipa.c:237
 #, c-format
 msgid "Unable to determine hostname of CA.\n"
 msgstr "Det går inte att avgöra värdnamnet för CA:n.\n"
 
-#: src/certmaster.c:128 src/dogtag.c:413 src/ipa.c:177
+#: src/certmaster.c:144 src/dogtag.c:434 src/ipa.c:256
 #, c-format
 msgid "Unable to read signing request.\n"
 msgstr "Kan inte läsa signeringsbegäran.\n"
 
-#: src/certmaster.c:158
+#: src/certmaster.c:174
 #, c-format
 msgid "Error setting up for XMLRPC.\n"
 msgstr "Fel vid inställning av XMLRPC.\n"
 
-#: src/certmaster.c:180 src/getcert.c:372 src/getcert.c:391 src/getcert.c:410
+#: src/certmaster.c:196 src/getcert.c:372 src/getcert.c:391 src/getcert.c:410
 #: src/getcert.c:429 src/getcert.c:448 src/getcert.c:466 src/getcert.c:496
 #: src/getcert.c:1033 src/getcert.c:1338 src/getcert.c:1706 src/getcert.c:1787
 #: src/getcert.c:2131 src/getcert.c:2303 src/getcert.c:2386 src/getcert.c:2421
@@ -42,47 +43,52 @@ msgstr "Fel vid inställning av XMLRPC.\n"
 msgid "Error parsing server response.\n"
 msgstr "Fel vid tolkning av svar från servern.\n"
 
-#: src/certmaster.c:184
+#: src/certmaster.c:200
 #, c-format
 msgid "Server error.\n"
 msgstr "Serverfel.\n"
 
-#: src/dogtag.c:341
+#: src/dogtag.c:358
 #, c-format
 msgid "Requested renewal, but no serial number provided.\n"
 msgstr ""
 
-#: src/dogtag.c:345
+#: src/dogtag.c:362
 #, c-format
 msgid "No end-entity URL (-E) given, and no default known.\n"
 msgstr "Ingen slutposts-URL (-E) angiven, och inget standardvärde är känt.\n"
 
-#: src/dogtag.c:349
+#: src/dogtag.c:366
 #, c-format
 msgid "No agent URL (-A) given, and no default known.\n"
 msgstr "Ingen agent-URL (-A) angiven, och inget standardvärde är känt.\n"
 
-#: src/dogtag.c:353
+#: src/dogtag.c:370
 #, c-format
 msgid "No profile/template (-T) given, and no default known.\n"
 msgstr "Ingen profil/mall (-T) angiven, och inget standardvärde är känt.\n"
 
-#: src/dogtag.c:386 src/dogtag.c:563
+#: src/dogtag.c:378
+#, fuzzy, c-format
+msgid "Error shutting down NSS.\n"
+msgstr "Fel vid inställning av XMLRPC.\n"
+
+#: src/dogtag.c:407 src/dogtag.c:584
 #, c-format
 msgid "Internal error: unknown state.\n"
 msgstr "Internt fel: okänt tillstånd.\n"
 
-#: src/dogtag.c:545
+#: src/dogtag.c:566
 #, c-format
 msgid "Error %d connecting to %s: %s.\n"
 msgstr "Fel %d vid anslutning till %s: %s.\n"
 
-#: src/dogtag.c:550
+#: src/dogtag.c:571
 #, c-format
 msgid "Error %d connecting to %s.\n"
 msgstr "Fel %d vid anslutning till %s.\n"
 
-#: src/dogtag.c:557
+#: src/dogtag.c:578
 #, c-format
 msgid "Internal error: no response to \"%s?%s\".\n"
 msgstr "Internt fel: inget svar på ”%s?%s”.\n"
@@ -97,7 +103,9 @@ msgstr "Sökvägen ”%s” är inte absolut, försöker använda ”%s” istä
 msgid ""
 "Path \"%s\" is not absolute, and there was an error determining the name of "
 "the current directory.\n"
-msgstr "Sökvägen ”%s” är inte absolut, och det uppstod ett fel när namnet på den aktuella katalogen skulle bestämmas.\n"
+msgstr ""
+"Sökvägen ”%s” är inte absolut, och det uppstod ett fel när namnet på den "
+"aktuella katalogen skulle bestämmas.\n"
 
 #: src/getcert.c:118
 #, c-format
@@ -117,7 +125,9 @@ msgstr "Sökväg ”%s”: %s.\n"
 #: src/getcert.c:170
 #, c-format
 msgid "Path \"%s\" is not a regular file.\n"
-msgstr "Sökvägen ”%s” är inte normal fil.\n\n"
+msgstr ""
+"Sökvägen ”%s” är inte normal fil.\n"
+"\n"
 
 #: src/getcert.c:247
 #, c-format
@@ -129,7 +139,7 @@ msgstr "Slut på minne.\n"
 msgid "Error connecting to DBus.\n"
 msgstr "Fel vid anslutning till DBus.\n"
 
-#: src/getcert.c:274 src/tdbusm.c:1657
+#: src/getcert.c:274 src/tdbusm.c:1958
 #, c-format
 msgid "Please verify that the message bus (D-Bus) service is running.\n"
 msgstr "Kontrollera att tjänsten meddelandebuss (D-Bus) kör.\n"
@@ -234,7 +244,8 @@ msgstr "Databaskatalog och certifikatfil båda angivna.\n"
 
 #: src/getcert.c:776 src/getcert.c:1747 src/getcert.c:2002
 #, c-format
-msgid "None of database directory and nickname or certificate file specified.\n"
+msgid ""
+"None of database directory and nickname or certificate file specified.\n"
 msgstr "Ingen av databaskatalog och smeknamn eller certifikatfil angiven.\n"
 
 #: src/getcert.c:783 src/getcert.c:1562
@@ -245,9 +256,11 @@ msgstr "Nyckeln och certifikatet kan inte båda sparas i samma fil.\n"
 #: src/getcert.c:809
 #, c-format
 msgid ""
-"The IPA backend requires the use of the -K option (principal name) when the "
-"-N option (subject name) is used.\n"
-msgstr "IPA-backänden kräver användning av -K-flaggan (huvudnamn) när -N-flaggan (ämnesnamn) används.\n"
+"The IPA backend requires the use of the -K option (principal name) when the -"
+"N option (subject name) is used.\n"
+msgstr ""
+"IPA-backänden kräver användning av -K-flaggan (huvudnamn) när -N-flaggan "
+"(ämnesnamn) används.\n"
 
 #: src/getcert.c:941 src/getcert.c:1318 src/getcert.c:1662 src/getcert.c:2022
 #: src/getcert.c:2251
@@ -286,7 +299,9 @@ msgstr "Nya spårningsbegäran kunde inte läggas till.\n"
 msgid ""
 "None of ID or database directory and nickname or certificate file "
 "specified.\n"
-msgstr "Ingen av ID eller databaskatalog och smeknamn eller certifikatfil filen angiven.\n"
+msgstr ""
+"Ingen av ID eller databaskatalog och smeknamn eller certifikatfil filen "
+"angiven.\n"
 
 #: src/getcert.c:1714
 #, c-format
@@ -531,7 +546,9 @@ msgstr "  -n NAMN\tsmeknamn för NSS-baserad lagring (endast giltigt med -d)\n"
 #: src/getcert.c:2666 src/getcert.c:2711 src/getcert.c:2753 src/getcert.c:2775
 msgid ""
 "  -t NAME\toptional token name for NSS-based storage (only valid with -d)\n"
-msgstr "  -t NAMN\tfrivilligt symbolnamn för NSS-baserad lagring (endast giltig med -d)\n"
+msgstr ""
+"  -t NAMN\tfrivilligt symbolnamn för NSS-baserad lagring (endast giltig med -"
+"d)\n"
 
 #: src/getcert.c:2667 src/getcert.c:2712 src/getcert.c:2754 src/getcert.c:2776
 #: src/getcert.c:2823
@@ -577,15 +594,21 @@ msgstr ""
 
 #: src/getcert.c:2678
 msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
-msgstr "  -g STORLEK\tstorlek på nyckel som skall genereras om det inte redan finns en\n"
+msgstr ""
+"  -g STORLEK\tstorlek på nyckel som skall genereras om det inte redan finns "
+"en\n"
 
 #: src/getcert.c:2679 src/getcert.c:2722
-msgid "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
-msgstr "  -r\t\tförsök att förnya certifikatet när utgångsdatumet närmar sig (standard)\n"
+msgid ""
+"  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
+msgstr ""
+"  -r\t\tförsök att förnya certifikatet när utgångsdatumet närmar sig "
+"(standard)\n"
 
 #: src/getcert.c:2680 src/getcert.c:2723
 msgid "  -R\t\tdon't attempt to renew the certificate when expiration nears\n"
-msgstr "  -R\t\tförsök inte förnya certifikatet när utgångsdatumet närmar sig\n"
+msgstr ""
+"  -R\t\tförsök inte förnya certifikatet när utgångsdatumet närmar sig\n"
 
 #: src/getcert.c:2682 src/getcert.c:2725
 msgid "  -c CA\t\tuse the specified CA rather than the default\n"
@@ -595,7 +618,9 @@ msgstr "  -c CA\t\tanvänd angiven CA istället för standard\n"
 msgid ""
 "  -T PROFILE\task the CA to process the request using the named profile or "
 "template\n"
-msgstr "  -T PROFIL\tbe CA:n att bearbeta begäran med användning av den angivna profilen eller mallen\n"
+msgstr ""
+"  -T PROFIL\tbe CA:n att bearbeta begäran med användning av den angivna "
+"profilen eller mallen\n"
 
 #: src/getcert.c:2685
 msgid "* Parameters for the signing request:\n"
@@ -750,7 +775,8 @@ msgstr "* Allmänna flaggor:\n"
 
 #: src/getcert.c:2814
 msgid "  -c CA\tlist only requests and certs associated with this CA\n"
-msgstr "  -c CA\tlista endast begäran och certifikat associerade med denna CA\n"
+msgstr ""
+"  -c CA\tlista endast begäran och certifikat associerade med denna CA\n"
 
 #: src/getcert.c:2816
 msgid "  -r\tlist only information about outstanding requests\n"
@@ -766,15 +792,19 @@ msgstr "* Om du väljer en viss begäran:\n"
 
 #: src/getcert.c:2821
 msgid "  -d DIR\tonly list requests and certs which use this NSS database\n"
-msgstr "  -d KAT\tlista endast begäran och certifikat som använder denna NSS-databas\n"
+msgstr ""
+"  -d KAT\tlista endast begäran och certifikat som använder denna NSS-"
+"databas\n"
 
 #: src/getcert.c:2822
 msgid "  -n NAME\tonly list requests and certs which use this nickname\n"
-msgstr "  -n NAMN\tlista endast begäran och certifikat som använder detta smeknamn\n"
+msgstr ""
+"  -n NAMN\tlista endast begäran och certifikat som använder detta smeknamn\n"
 
 #: src/getcert.c:2824
 msgid "  -f FILE\tonly list requests and certs stored in this PEM file\n"
-msgstr "  -f FIL\tlista endast begäran och certifikat lagrade i denna PEM-fil\n"
+msgstr ""
+"  -f FIL\tlista endast begäran och certifikat lagrade i denna PEM-fil\n"
 
 #: src/getcert.c:2826 src/getcert.c:2841
 msgid "  -S\tconnect to the certmonger service on the system bus\n"
@@ -798,59 +828,70 @@ msgstr "  -c CA\tlista endast information om CA:n med detta namn\n"
 msgid "%s: unrecognized command\n"
 msgstr "%s: okänt kommando\n"
 
-#: src/ipa.c:85
+#: src/ipa.c:144
 #, c-format
 msgid "The -t option can not be used with the -K option.\n"
 msgstr "Flaggan -t kan inte användas med flaggan -K.\n"
 
-#: src/ipa.c:93
+#: src/ipa.c:152
 #, c-format
 msgid "The -k option can not be used with the -K option.\n"
 msgstr "Flaggan -k kan inte användas med flaggan -K.\n"
 
-#: src/ipa.c:101
+#: src/ipa.c:160
 #, c-format
 msgid "The -K option can not be used with either the -k or the -t option.\n"
 msgstr "Flaggan -K kan inte användas med vare sig flaggan -k eller -t.\n"
 
-#: src/ipa.c:143
-#, c-format
-msgid "Unable to determine location of CA's XMLRPC server.\n"
-msgstr "Det går inte att bestämma plats för CA:ns XMLRPC-server.\n"
-
-#: src/ipa.c:151
+#: src/ipa.c:223
 #, c-format
 msgid "Unable to determine principal name for signing request.\n"
 msgstr "Det går inte att avgöra huvudnamn för signeringsbegäran.\n"
 
-#: src/ipa.c:228
+#: src/ipa.c:240
 #, c-format
-msgid "Error setting up for XMLRPC on the client.\n"
-msgstr ""
+msgid "Unable to determine location of CA's XMLRPC server.\n"
+msgstr "Det går inte att bestämma plats för CA:ns XMLRPC-server.\n"
 
-#: src/ipa.c:239
+#: src/ipa.c:291
 #, c-format
 msgid ""
-"Error setting up ccache for \"host\" service on client using default keytab:"
-" %s.\n"
+"Error setting up ccache for \"host\" service on client using default keytab: "
+"%s.\n"
 msgstr ""
 
-#: src/ipa.c:243
+#: src/ipa.c:295
 #, c-format
-msgid "Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
+msgid ""
+"Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
 msgstr ""
 
-#: src/ipa.c:250
+#: src/ipa.c:302
 #, c-format
 msgid ""
 "Error setting up ccache for \"host\" service on client using keytab \"%s\": "
 "%s.\n"
 msgstr ""
 
-#: src/ipa.c:254
+#: src/ipa.c:306
 #, c-format
 msgid "Error setting up ccache for \"%s\" on client using keytab \"%s\": %s.\n"
 msgstr ""
+
+#: src/ipa.c:325
+#, c-format
+msgid "Error setting up for XMLRPC on the client.\n"
+msgstr ""
+
+#: src/ipa.c:403
+#, fuzzy, c-format
+msgid "Unable to determine location of IPA LDAP server.\n"
+msgstr "Det går inte att bestämma plats för CA:ns XMLRPC-server.\n"
+
+#: src/ipa.c:465
+#, fuzzy, c-format
+msgid "Unable to determine base DN of domain information on IPA server.\n"
+msgstr "Det går inte att bestämma plats för CA:ns XMLRPC-server.\n"
 
 #: src/main.c:120
 #, c-format
@@ -893,7 +934,7 @@ msgstr "\t-p FIL     skriv tjänstens PID till filen\n"
 msgid "\t-F         force NSS into FIPS mode\n"
 msgstr "\t-F         tvinga in NSS i FIPS-läge\n"
 
-#: src/tdbush.c:119 src/tdbush.c:1547 src/tdbush.c:1772
+#: src/tdbush.c:119 src/tdbush.c:1547 src/tdbush.c:1819
 msgid "An internal error has occurred."
 msgstr "Ett internt fel har uppstått."
 
@@ -916,7 +957,7 @@ msgid "Certificate storage type \"%s\" not supported."
 msgstr "Lagringstyp ”%s” för certifikat stödjs inte."
 
 #: src/tdbush.c:483 src/tdbush.c:516 src/tdbush.c:575 src/tdbush.c:760
-#: src/tdbush.c:819 src/tdbush.c:2585
+#: src/tdbush.c:819 src/tdbush.c:2632
 #, c-format
 msgid "The location \"%s\" must be an absolute path."
 msgstr "Platsen ”%s” måste vara en absolut sökväg."
@@ -944,7 +985,8 @@ msgstr "Platsen ”%s” måste vara en fil."
 
 #: src/tdbush.c:587
 #, c-format
-msgid "The location \"%s\" could not be accessed due to insufficient permissions."
+msgid ""
+"The location \"%s\" could not be accessed due to insufficient permissions."
 msgstr ""
 
 #: src/tdbush.c:595 src/tdbush.c:828
@@ -956,7 +998,7 @@ msgstr "Platsen ”%s” måste vara en katalog."
 msgid "Certificate nickname not specified."
 msgstr "Certifikatsmeknamn inte angivet."
 
-#: src/tdbush.c:659 src/tdbush.c:2476
+#: src/tdbush.c:659 src/tdbush.c:2523
 #, c-format
 msgid "There is already a request with the nickname \"%s\"."
 msgstr "Det finns redan en begäran med smeknamnet ”%s”."
@@ -964,9 +1006,9 @@ msgstr "Det finns redan en begäran med smeknamnet ”%s”."
 #: src/tdbush.c:695
 #, c-format
 msgid ""
-"Certificate at same location is already used by request with nickname "
-"\"%s\"."
-msgstr "Certifikat på samma plats används redan av av begäran med smeknamnet ”%s”."
+"Certificate at same location is already used by request with nickname \"%s\"."
+msgstr ""
+"Certifikat på samma plats används redan av av begäran med smeknamnet ”%s”."
 
 #: src/tdbush.c:728
 #, c-format
@@ -995,31 +1037,31 @@ msgstr ""
 msgid "No such CA."
 msgstr "Ingen sådan CA."
 
-#: src/tdbush.c:2494
+#: src/tdbush.c:2541
 #, c-format
 msgid "Certificate authority \"%s\" not known."
 msgstr "Certifikatmyndighet ”%s” inte känd."
 
-#: src/tdbush.c:2776
+#: src/tdbush.c:2823
 msgid "Unrecognized parameter or wrong value type."
 msgstr "Okända parameter eller fel värdetyp."
 
-#: src/tdbush.c:4035
+#: src/tdbush.c:4111
 msgid "Error parsing arguments."
 msgstr ""
 
-#: src/tdbush.c:4089
+#: src/tdbush.c:4165
 msgid "Unrecognized property name."
 msgstr ""
 
-#: src/tdbusm.c:1647
+#: src/tdbusm.c:1948
 msgid "Insufficient access.  Please retry operation as root.\n"
 msgstr "Otillräckliga rättigheter.  Försök åtgärden igen som root.\n"
 
-#: src/tdbusm.c:1651
+#: src/tdbusm.c:1952
 msgid "Please verify that the certmonger service has been started.\n"
 msgstr "Kontrollera att tjänsten certmonger har startats.\n"
 
-#: src/tdbusm.c:1654
+#: src/tdbusm.c:1955
 msgid "Please verify that the certmonger service is still running.\n"
 msgstr "Kontrollera att tjänsten certmonger fortfarande kör.\n"

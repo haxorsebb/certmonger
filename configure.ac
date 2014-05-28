@@ -1,4 +1,4 @@
-AC_INIT(certmonger,0.74)
+AC_INIT(certmonger,0.74.90)
 AM_INIT_AUTOMAKE([foreign subdir-objects])
 AC_CONFIG_MACRO_DIR(m4)
 AM_MAINTAINER_MODE([enable])
@@ -596,7 +596,7 @@ if ! ${configure_dist_target_only:-false} ; then
 
 	CFLAGSsave="$CFLAGS"
 	LIBSsave="$LIBS"
-	AC_CHECK_HEADERS(ldap.h)
+	AC_CHECK_HEADER(ldap.h,,AC_MSG_ERROR(ldap.h not found))
 	AC_CHECK_FUNC(ldap_initialize,,AC_CHECK_LIB(ldap,ldap_initialize))
 	AC_CHECK_FUNC(ldap_sasl_interactive_bind_s,,AC_CHECK_LIB(ldap,ldap_sasl_interactive_bind_s))
 	LDAP_CFLAGS="$CFLAGS"

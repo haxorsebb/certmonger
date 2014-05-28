@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.74
+Version:	0.74.90
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -30,6 +30,7 @@ Source0:	http://fedorahosted.org/released/certmonger/certmonger-%{version}.tar.g
 #Source1:	http://fedorahosted.org/released/certmonger/certmonger-%{version}.tar.gz.sig
 BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
+BuildRequires:	openldap-devel
 BuildRequires:	dbus-devel, nspr-devel, nss-devel, openssl-devel, libidn-devel
 %if 0%{?fedora} >= 12 || 0%{?rhel} >= 6
 BuildRequires:  libuuid-devel

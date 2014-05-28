@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Cleiton cleitonlima <cleitoncfl@yahoo.com.br>, 2011
 # fabioolive <fabio.olive@gmail.com>, 2013
@@ -10,32 +10,33 @@ msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2014-04-08 16:10-0400\n"
+"POT-Creation-Date: 2014-05-28 14:22-0400\n"
 "PO-Revision-Date: 2014-04-08 20:37+0000\n"
 "Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
-"Language-Team: Portuguese (Brazil) (http://www.transifex.com/projects/p/fedora/language/pt_BR/)\n"
+"Language-Team: Portuguese (Brazil) (http://www.transifex.com/projects/p/"
+"fedora/language/pt_BR/)\n"
+"Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: pt_BR\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: src/certmaster.c:111 src/ipa.c:146
+#: src/certmaster.c:127 src/ipa.c:237
 #, c-format
 msgid "Unable to determine hostname of CA.\n"
 msgstr "Não foi possível determinar nome da máquina do CA.\n"
 
-#: src/certmaster.c:128 src/dogtag.c:413 src/ipa.c:177
+#: src/certmaster.c:144 src/dogtag.c:434 src/ipa.c:256
 #, c-format
 msgid "Unable to read signing request.\n"
 msgstr "Não foi possível ler pedido de assinatura.\n"
 
-#: src/certmaster.c:158
+#: src/certmaster.c:174
 #, c-format
 msgid "Error setting up for XMLRPC.\n"
 msgstr "Erro de criação para XMLRPC.\n"
 
-#: src/certmaster.c:180 src/getcert.c:372 src/getcert.c:391 src/getcert.c:410
+#: src/certmaster.c:196 src/getcert.c:372 src/getcert.c:391 src/getcert.c:410
 #: src/getcert.c:429 src/getcert.c:448 src/getcert.c:466 src/getcert.c:496
 #: src/getcert.c:1033 src/getcert.c:1338 src/getcert.c:1706 src/getcert.c:1787
 #: src/getcert.c:2131 src/getcert.c:2303 src/getcert.c:2386 src/getcert.c:2421
@@ -44,47 +45,52 @@ msgstr "Erro de criação para XMLRPC.\n"
 msgid "Error parsing server response.\n"
 msgstr "Erro ao analisar resposta do servidor.\n"
 
-#: src/certmaster.c:184
+#: src/certmaster.c:200
 #, c-format
 msgid "Server error.\n"
 msgstr "Erro no Servidor.\n"
 
-#: src/dogtag.c:341
+#: src/dogtag.c:358
 #, c-format
 msgid "Requested renewal, but no serial number provided.\n"
 msgstr ""
 
-#: src/dogtag.c:345
+#: src/dogtag.c:362
 #, c-format
 msgid "No end-entity URL (-E) given, and no default known.\n"
 msgstr ""
 
-#: src/dogtag.c:349
+#: src/dogtag.c:366
 #, c-format
 msgid "No agent URL (-A) given, and no default known.\n"
 msgstr ""
 
-#: src/dogtag.c:353
+#: src/dogtag.c:370
 #, c-format
 msgid "No profile/template (-T) given, and no default known.\n"
 msgstr ""
 
-#: src/dogtag.c:386 src/dogtag.c:563
+#: src/dogtag.c:378
+#, fuzzy, c-format
+msgid "Error shutting down NSS.\n"
+msgstr "Erro de criação para XMLRPC.\n"
+
+#: src/dogtag.c:407 src/dogtag.c:584
 #, c-format
 msgid "Internal error: unknown state.\n"
 msgstr "Erro interno: estado desconhecido.\n"
 
-#: src/dogtag.c:545
+#: src/dogtag.c:566
 #, c-format
 msgid "Error %d connecting to %s: %s.\n"
 msgstr "Erro %d ao conectar em %s: %s.\n"
 
-#: src/dogtag.c:550
+#: src/dogtag.c:571
 #, c-format
 msgid "Error %d connecting to %s.\n"
 msgstr "Erro %d ao conectar em %s.\n"
 
-#: src/dogtag.c:557
+#: src/dogtag.c:578
 #, c-format
 msgid "Internal error: no response to \"%s?%s\".\n"
 msgstr "Erro interno: nenhuma resposta para \"%s?%s\".\n"
@@ -99,7 +105,9 @@ msgstr ""
 msgid ""
 "Path \"%s\" is not absolute, and there was an error determining the name of "
 "the current directory.\n"
-msgstr "Caminho \"%s\" não é absoluto, e houve um erro ao determinar o nome do diretório atual.\n"
+msgstr ""
+"Caminho \"%s\" não é absoluto, e houve um erro ao determinar o nome do "
+"diretório atual.\n"
 
 #: src/getcert.c:118
 #, c-format
@@ -131,10 +139,12 @@ msgstr ""
 msgid "Error connecting to DBus.\n"
 msgstr "Erro ao conectar-se ao DBus.\n"
 
-#: src/getcert.c:274 src/tdbusm.c:1657
+#: src/getcert.c:274 src/tdbusm.c:1958
 #, c-format
 msgid "Please verify that the message bus (D-Bus) service is running.\n"
-msgstr "Por favor verifique se o serviço de barramento de mensagens (D-Bus) está em execução.\n"
+msgstr ""
+"Por favor verifique se o serviço de barramento de mensagens (D-Bus) está em "
+"execução.\n"
 
 #: src/getcert.c:281
 #, c-format
@@ -149,7 +159,9 @@ msgstr "Erro %s: %s\n"
 #: src/getcert.c:327
 #, c-format
 msgid "Error %s\n"
-msgstr "Erro %s\n\n"
+msgstr ""
+"Erro %s\n"
+"\n"
 
 #: src/getcert.c:333
 #, c-format
@@ -232,12 +244,16 @@ msgstr "Localização do banco de dados ou login especificado sem o outro\n"
 #: src/getcert.c:768 src/getcert.c:1546 src/getcert.c:1739 src/getcert.c:1994
 #, c-format
 msgid "Database directory and certificate file both specified.\n"
-msgstr "Diretório do banco de dados e arquivo de certificado, ambos especificados\n"
+msgstr ""
+"Diretório do banco de dados e arquivo de certificado, ambos especificados\n"
 
 #: src/getcert.c:776 src/getcert.c:1747 src/getcert.c:2002
 #, c-format
-msgid "None of database directory and nickname or certificate file specified.\n"
-msgstr "Nenhum diretório e login de banco de dados ou arquivo de certificado especificado.\n"
+msgid ""
+"None of database directory and nickname or certificate file specified.\n"
+msgstr ""
+"Nenhum diretório e login de banco de dados ou arquivo de certificado "
+"especificado.\n"
 
 #: src/getcert.c:783 src/getcert.c:1562
 #, c-format
@@ -247,9 +263,11 @@ msgstr "A chave e o certificado não podem ser salvos no mesmo arquivo.\n"
 #: src/getcert.c:809
 #, c-format
 msgid ""
-"The IPA backend requires the use of the -K option (principal name) when the "
-"-N option (subject name) is used.\n"
-msgstr "O backend IPA requer o uso da opção -K (nome do principal) quando a opção -N (nome do subject) é usada.\n"
+"The IPA backend requires the use of the -K option (principal name) when the -"
+"N option (subject name) is used.\n"
+msgstr ""
+"O backend IPA requer o uso da opção -K (nome do principal) quando a opção -N "
+"(nome do subject) é usada.\n"
 
 #: src/getcert.c:941 src/getcert.c:1318 src/getcert.c:1662 src/getcert.c:2022
 #: src/getcert.c:2251
@@ -281,14 +299,18 @@ msgstr "Nova requisição de rastreamento \"%s\" adicionada.\n"
 #: src/getcert.c:1348
 #, c-format
 msgid "New tracking request could not be added.\n"
-msgstr "Nova requisição de rastreamento não foi adicionada.\n\n"
+msgstr ""
+"Nova requisição de rastreamento não foi adicionada.\n"
+"\n"
 
 #: src/getcert.c:1555
 #, c-format
 msgid ""
 "None of ID or database directory and nickname or certificate file "
 "specified.\n"
-msgstr "Nenhum ID, diretório da base de dados e nome de usuário ou arquivo de certificados especificados.\n"
+msgstr ""
+"Nenhum ID, diretório da base de dados e nome de usuário ou arquivo de "
+"certificados especificados.\n"
 
 #: src/getcert.c:1714
 #, c-format
@@ -582,7 +604,8 @@ msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
 msgstr ""
 
 #: src/getcert.c:2679 src/getcert.c:2722
-msgid "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
+msgid ""
+"  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
 msgstr ""
 
 #: src/getcert.c:2680 src/getcert.c:2723
@@ -800,59 +823,70 @@ msgstr ""
 msgid "%s: unrecognized command\n"
 msgstr "%s: comando não reconhecido\n"
 
-#: src/ipa.c:85
+#: src/ipa.c:144
 #, c-format
 msgid "The -t option can not be used with the -K option.\n"
 msgstr ""
 
-#: src/ipa.c:93
+#: src/ipa.c:152
 #, c-format
 msgid "The -k option can not be used with the -K option.\n"
 msgstr ""
 
-#: src/ipa.c:101
+#: src/ipa.c:160
 #, c-format
 msgid "The -K option can not be used with either the -k or the -t option.\n"
 msgstr ""
 
-#: src/ipa.c:143
-#, c-format
-msgid "Unable to determine location of CA's XMLRPC server.\n"
-msgstr "Não foi possível determinar a localização do servidor XMLRPC do CA.\n"
-
-#: src/ipa.c:151
+#: src/ipa.c:223
 #, c-format
 msgid "Unable to determine principal name for signing request.\n"
 msgstr ""
 
-#: src/ipa.c:228
+#: src/ipa.c:240
 #, c-format
-msgid "Error setting up for XMLRPC on the client.\n"
-msgstr ""
+msgid "Unable to determine location of CA's XMLRPC server.\n"
+msgstr "Não foi possível determinar a localização do servidor XMLRPC do CA.\n"
 
-#: src/ipa.c:239
+#: src/ipa.c:291
 #, c-format
 msgid ""
-"Error setting up ccache for \"host\" service on client using default keytab:"
-" %s.\n"
+"Error setting up ccache for \"host\" service on client using default keytab: "
+"%s.\n"
 msgstr ""
 
-#: src/ipa.c:243
+#: src/ipa.c:295
 #, c-format
-msgid "Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
+msgid ""
+"Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
 msgstr ""
 
-#: src/ipa.c:250
+#: src/ipa.c:302
 #, c-format
 msgid ""
 "Error setting up ccache for \"host\" service on client using keytab \"%s\": "
 "%s.\n"
 msgstr ""
 
-#: src/ipa.c:254
+#: src/ipa.c:306
 #, c-format
 msgid "Error setting up ccache for \"%s\" on client using keytab \"%s\": %s.\n"
 msgstr ""
+
+#: src/ipa.c:325
+#, c-format
+msgid "Error setting up for XMLRPC on the client.\n"
+msgstr ""
+
+#: src/ipa.c:403
+#, fuzzy, c-format
+msgid "Unable to determine location of IPA LDAP server.\n"
+msgstr "Não foi possível determinar a localização do servidor XMLRPC do CA.\n"
+
+#: src/ipa.c:465
+#, fuzzy, c-format
+msgid "Unable to determine base DN of domain information on IPA server.\n"
+msgstr "Não foi possível determinar a localização do servidor XMLRPC do CA.\n"
 
 #: src/main.c:120
 #, c-format
@@ -895,7 +929,7 @@ msgstr ""
 msgid "\t-F         force NSS into FIPS mode\n"
 msgstr ""
 
-#: src/tdbush.c:119 src/tdbush.c:1547 src/tdbush.c:1772
+#: src/tdbush.c:119 src/tdbush.c:1547 src/tdbush.c:1819
 msgid "An internal error has occurred."
 msgstr "Um erro interno ocorreu."
 
@@ -918,7 +952,7 @@ msgid "Certificate storage type \"%s\" not supported."
 msgstr ""
 
 #: src/tdbush.c:483 src/tdbush.c:516 src/tdbush.c:575 src/tdbush.c:760
-#: src/tdbush.c:819 src/tdbush.c:2585
+#: src/tdbush.c:819 src/tdbush.c:2632
 #, c-format
 msgid "The location \"%s\" must be an absolute path."
 msgstr ""
@@ -946,7 +980,8 @@ msgstr "A localização \"%s\" deve ser um arquivo."
 
 #: src/tdbush.c:587
 #, c-format
-msgid "The location \"%s\" could not be accessed due to insufficient permissions."
+msgid ""
+"The location \"%s\" could not be accessed due to insufficient permissions."
 msgstr ""
 
 #: src/tdbush.c:595 src/tdbush.c:828
@@ -958,7 +993,7 @@ msgstr "A localização \"%s\" deve ser um diretório."
 msgid "Certificate nickname not specified."
 msgstr "Nome de usuário do certificado não especificado."
 
-#: src/tdbush.c:659 src/tdbush.c:2476
+#: src/tdbush.c:659 src/tdbush.c:2523
 #, c-format
 msgid "There is already a request with the nickname \"%s\"."
 msgstr "Já existe um pedido com o nome de usuário \"%s\"."
@@ -966,8 +1001,7 @@ msgstr "Já existe um pedido com o nome de usuário \"%s\"."
 #: src/tdbush.c:695
 #, c-format
 msgid ""
-"Certificate at same location is already used by request with nickname "
-"\"%s\"."
+"Certificate at same location is already used by request with nickname \"%s\"."
 msgstr ""
 
 #: src/tdbush.c:728
@@ -997,31 +1031,31 @@ msgstr ""
 msgid "No such CA."
 msgstr ""
 
-#: src/tdbush.c:2494
+#: src/tdbush.c:2541
 #, c-format
 msgid "Certificate authority \"%s\" not known."
 msgstr "Autoridade do certificado \"%s\" não conhecida."
 
-#: src/tdbush.c:2776
+#: src/tdbush.c:2823
 msgid "Unrecognized parameter or wrong value type."
 msgstr "Parâmetro não reconhecido ou tipo de valor errado."
 
-#: src/tdbush.c:4035
+#: src/tdbush.c:4111
 msgid "Error parsing arguments."
 msgstr ""
 
-#: src/tdbush.c:4089
+#: src/tdbush.c:4165
 msgid "Unrecognized property name."
 msgstr ""
 
-#: src/tdbusm.c:1647
+#: src/tdbusm.c:1948
 msgid "Insufficient access.  Please retry operation as root.\n"
 msgstr "Permissões insuficientes. Por favor tente novamente como root.\n"
 
-#: src/tdbusm.c:1651
+#: src/tdbusm.c:1952
 msgid "Please verify that the certmonger service has been started.\n"
 msgstr "Por favor verifique se o serviço certmonger foi iniciado.\n"
 
-#: src/tdbusm.c:1654
+#: src/tdbusm.c:1955
 msgid "Please verify that the certmonger service is still running.\n"
 msgstr "Por favor verifique se o serviço certmonger ainda está rodando.\n"
