@@ -594,6 +594,18 @@ if ! ${configure_dist_target_only:-false} ; then
 	AC_SUBST(CM_DEFAULT_IDLE_TIMEOUT)
 	AC_DEFINE_UNQUOTED(CM_DEFAULT_IDLE_TIMEOUT,$CM_DEFAULT_IDLE_TIMEOUT,[Define to the default idle-timeout when bus-activated.])
 
+	CFLAGSsave="$CFLAGS"
+	LIBSsave="$LIBS"
+	AC_CHECK_HEADERS(ldap.h)
+	AC_CHECK_FUNC(ldap_initialize,,AC_CHECK_LIB(ldap,ldap_initialize))
+	AC_CHECK_FUNC(ldap_sasl_interactive_bind_s,,AC_CHECK_LIB(ldap,ldap_sasl_interactive_bind_s))
+	LDAP_CFLAGS="$CFLAGS"
+	LDAP_LIBS="$LIBS"
+	CFLAGS="$CFLAGSsave"
+	LIBS="$LIBSsave"
+	AC_SUBST(LDAP_CFLAGS)
+	AC_SUBST(LDAP_LIBS)
+
 	AC_ARG_WITH(idn,
 	AS_HELP_STRING([--without-idn],[do not handle international dnsName subjectAltNames]),
 	if test x$with_idn = xno ; then
