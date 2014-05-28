@@ -204,6 +204,7 @@ main(int argc, char **argv)
 			}
 		}
 	}
+	csr = NULL;
 	memset(uri, '\0', sizeof(uri));
 	memset(ldn, '\0', sizeof(ldn));
 

@@ -42,7 +42,7 @@ main(int argc, char **argv)
 {
 	int i;
 	unsigned int len;
-	unsigned char *p, buf[LINE_MAX];
+	unsigned char *p, *q, buf[LINE_MAX];
 	SECItem encoded;
 	CERTSignedData signed_data;
 
@@ -51,11 +51,12 @@ main(int argc, char **argv)
 	p = NULL;
 	len = 0;
 	while ((i = read(STDIN_FILENO, buf, sizeof(buf))) > 0) {
-		p = realloc(p, len + i);
-		if (p == NULL) {
+		q = realloc(p, len + i);
+		if (q == NULL) {
 			perror("malloc");
 			return 1;
 		}
+		p = q;
 		memcpy(p + len, buf, i);
 		len += i;
 	}
