@@ -259,7 +259,7 @@ ipaddress="127.0.0.1,::1"
 freshestcrl=http://crl-1.example.com:12345/getdelta,http://crl-2.example.com:12345/getdelta
 iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress" "$freshestcrl"
 echo "The last CSR (the one with everything) was:"
-openssl req -in csr.nss.$size -outform der | openssl asn1parse -inform der
+openssl req -in csr.nss.$size -outform der | openssl asn1parse -inform der | sed 's,2.5.29.46,X509v3 Freshest CRL,g'
 cat $tmpdir/key.$size csr.nss.$size 1>&2
 
 echo Test complete "($iteration combinations)".
