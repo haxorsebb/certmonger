@@ -18,7 +18,9 @@
 #ifndef cmsubmitx_h
 #define cmsubmitx_h
 
-char *cm_submit_x_make_ccache(const char *ktname, const char *principal);
+krb5_error_code cm_submit_x_make_ccache(const char *ktname,
+					const char *principal,
+					char **error_msg);
 
 struct cm_submit_x_context;
 enum cm_submit_x_opt_negotiate {

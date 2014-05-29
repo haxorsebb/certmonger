@@ -53,8 +53,8 @@ get_error_message(krb5_context ctx, krb5_error_code kcode)
 	return strdup(ret);
 }
 
-char *
-cm_submit_x_make_ccache(const char *ktname, const char *principal)
+krb5_error_code
+cm_submit_x_make_ccache(const char *ktname, const char *principal, char **msg)
 {
 	krb5_context ctx;
 	krb5_keytab keytab;
@@ -65,11 +65,16 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal)
 	krb5_get_init_creds_opt gicopts, *gicoptsp;
 	char tgs[LINE_MAX], *ret;
 
+	*msg = NULL;
+
 	kret = krb5_init_context(&ctx);
 	if (kret != 0) {
 		fprintf(stderr, "Error initializing Kerberos: %s.\n",
 			ret = get_error_message(ctx, kret));
-		return ret;
+		if (msg != NULL) {
+			*msg = ret;
+		}
+		return kret;
 	}
 	if (ktname != NULL) {
 		kret = krb5_kt_resolve(ctx, ktname, &keytab);
@@ -79,7 +84,10 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal)
 	if (kret != 0) {
 		fprintf(stderr, "Error resolving keytab: %s.\n",
 			ret = get_error_message(ctx, kret));
-		return ret;
+		if (msg != NULL) {
+			*msg = ret;
+		}
+		return kret;
 	}
 	princ = NULL;
 	if (principal != NULL) {
@@ -87,7 +95,10 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal)
 		if (kret != 0) {
 			fprintf(stderr, "Error parsing \"%s\": %s.\n",
 				principal, ret = get_error_message(ctx, kret));
-			return ret;
+			if (msg != NULL) {
+				*msg = ret;
+			}
+			return kret;
 		}
 	} else {
 		kret = krb5_sname_to_principal(ctx, NULL, NULL,
@@ -95,7 +106,10 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal)
 		if (kret != 0) {
 			fprintf(stderr, "Error building client name: %s.\n",
 				ret = get_error_message(ctx, kret));
-			return ret;
+			if (msg != NULL) {
+				*msg = ret;
+			}
+			return kret;
 		}
 	}
 	strcpy(tgs, KRB5_TGS_NAME);
@@ -113,7 +127,10 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal)
 	if (kret != 0) {
 		fprintf(stderr, "Internal error: %s.\n",
 			ret = get_error_message(ctx, kret));
-		return ret;
+		if (msg != NULL) {
+			*msg = ret;
+		}
+		return kret;
 	}
 #else
 	krb5_get_init_creds_opt_init(&gicopts);
@@ -128,7 +145,10 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal)
 	if (kret != 0) {
 		fprintf(stderr, "Error obtaining initial credentials: %s.\n",
 			ret = get_error_message(ctx, kret));
-		return ret;
+		if (msg != NULL) {
+			*msg = ret;
+		}
+		return kret;
 	}
 	ccache = NULL;
 	kret = krb5_cc_resolve(ctx, "MEMORY:" PACKAGE_NAME "_submit",
@@ -139,21 +159,27 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal)
 	if (kret != 0) {
 		fprintf(stderr, "Error initializing credential cache: %s.\n",
 			ret = get_error_message(ctx, kret));
-		return ret;
+		if (msg != NULL) {
+			*msg = ret;
+		}
+		return kret;
 	}
 	kret = krb5_cc_store_cred(ctx, ccache, &creds);
 	if (kret != 0) {
 		fprintf(stderr,
 			"Error storing creds in credential cache: %s.\n",
 			ret = get_error_message(ctx, kret));
-		return ret;
+		if (msg != NULL) {
+			*msg = ret;
+		}
+		return kret;
 	}
 	krb5_cc_close(ctx, ccache);
 	krb5_kt_close(ctx, keytab);
 	krb5_free_principal(ctx, princ);
 	krb5_free_context(ctx);
 	putenv("KRB5CCNAME=MEMORY:" PACKAGE_NAME "_submit");
-	return NULL;
+	return 0;
 }
 
 struct cm_submit_x_context {
@@ -780,7 +806,7 @@ main(int argc, char **argv)
 	/* Maybe we need a ccache. */
 	if (k5 || (kpname != NULL) || (ktname != NULL)) {
 		if (!make_ccache ||
-		    (cm_submit_x_make_ccache(ktname, kpname) == 0)) {
+		    (cm_submit_x_make_ccache(ktname, kpname, NULL) == 0)) {
 			k5 = TRUE;
 		}
 	}

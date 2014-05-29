@@ -92,6 +92,7 @@ main(int argc, char **argv)
 	struct berval **lbvalues, *lbv;
 	unsigned char *bv_val;
 	const char *lb64, *pem;
+	krb5_error_code kret;
 
 #ifdef ENABLE_NLS
 	bindtextdomain(PACKAGE, MYLOCALEDIR);
@@ -284,7 +285,7 @@ main(int argc, char **argv)
 
 	/* Setup a ccache unless we're told to use the default one. */
 	if (make_keytab_ccache &&
-	    ((kerr = cm_submit_x_make_ccache(ktname, kpname)) != NULL)) {
+	    ((kret = cm_submit_x_make_ccache(ktname, kpname, &kerr)) != 0)) {
 		fprintf(stderr, "Error setting up ccache at the client: %s.\n",
 			kerr);
 		if (ktname == NULL) {
@@ -310,7 +311,15 @@ main(int argc, char **argv)
 					 kpname, ktname, kerr);
 			}
 		}
-		return CM_SUBMIT_STATUS_UNCONFIGURED;
+		switch (kret) {
+		case KRB5_KDC_UNREACH:
+		case KRB5_REALM_CANT_RESOLVE:
+			return CM_SUBMIT_STATUS_UNREACHABLE;
+			break;
+		default:
+			return CM_SUBMIT_STATUS_UNCONFIGURED;
+			break;
+		}
 	}
 
 	if ((strcasecmp(mode, CM_OP_SUBMIT) == 0) ||
