@@ -1,18 +1,19 @@
-.TH certmonger 1 "3 November 2009" "certmonger Manual"
+.TH certmonger 1 "29 May 2014" "certmonger Manual"
 
 .SH NAME
 getcert
 
 .SH SYNOPSIS
-getcert list-cas [options]
+getcert refresh-ca [options]
 
 .SH DESCRIPTION
-Queries \fIcertmonger\fR for a list of known CAs.
+Forces \fIcertmonger\fR to refresh information specific to a CA, such as
+locally-stored copies of its certificates.
 
 .SH OPTIONS
 .TP
 \fB\-c\fR NAME
-List only information about the CA which has the specified nickname.
+Refresh information about the CA which has the specified nickname.
 
 .SH BUGS
 Please file tickets for any that you find at https://fedorahosted.org/certmonger/
@@ -21,7 +22,7 @@ Please file tickets for any that you find at https://fedorahosted.org/certmonger
 \fBcertmonger\fR(8)
 \fBgetcert\fR(1)
 \fBgetcert-list\fR(1)
-\fBgetcert-refresh-ca\fR(1)
+\fBgetcert-list-cas\fR(1)
 \fBgetcert-request\fR(1)
 \fBgetcert-resubmit\fR(1)
 \fBgetcert-start-tracking\fR(1)

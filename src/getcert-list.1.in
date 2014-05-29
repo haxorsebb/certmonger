@@ -47,6 +47,7 @@ Please file tickets for any that you find at https://fedorahosted.org/certmonger
 \fBcertmonger\fR(8)
 \fBgetcert\fR(1)
 \fBgetcert-list-cas\fR(1)
+\fBgetcert-refresh-ca\fR(1)
 \fBgetcert-request\fR(1)
 \fBgetcert-resubmit\fR(1)
 \fBgetcert-start-tracking\fR(1)

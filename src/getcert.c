@@ -2636,6 +2636,68 @@ list_cas(const char *argv0, int argc, char **argv)
 	return 0;
 }
 
+static int
+refresh_ca(const char *argv0, int argc, char **argv)
+{
+	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
+	char **cas, *s, *only_ca = DEFAULT_CA;
+	int c, i, verbose = 0;
+	dbus_bool_t b;
+
+	opterr = 0;
+	while ((c = getopt(argc, argv, ":sSv" GETOPT_CA)) != -1) {
+		switch (c) {
+		case 'c':
+			only_ca = optarg;
+			break;
+		case 's':
+			bus = cm_tdbus_session;
+			break;
+		case 'S':
+			bus = cm_tdbus_system;
+			break;
+		case 'v':
+			verbose++;
+			break;
+		default:
+			if (c == ':') {
+				fprintf(stderr,
+					_("%s: option requires an argument -- '%c'\n"),
+					"refresh-ca", optopt);
+			} else {
+				fprintf(stderr, _("%s: invalid option -- '%c'\n"),
+					"refresh-ca", optopt);
+			}
+			help(argv0, "refresh-ca");
+			return 1;
+		}
+	}
+	if (optind < argc) {
+		printf(_("Error: unused extra arguments were supplied.\n"));
+		help(argv0, "refresh-ca");
+		return 1;
+	}
+	cas = query_rep_ap(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
+			   "get_known_cas", verbose, globals.tctx);
+	for (i = 0; (cas != NULL) && (cas[i] != NULL); i++) {
+		/* Filter out based on the CA. */
+		s = find_ca_name(globals.tctx, bus, cas[i], verbose);
+		if (s != NULL) {
+			if ((only_ca != NULL) && (strcmp(s, only_ca) != 0)) {
+				continue;
+			}
+		}
+		b = query_rep_b(bus, cas[i],
+				CM_DBUS_CA_INTERFACE, "refresh",
+				verbose,
+				globals.tctx);
+		if (!b) {
+			printf(_("\terror refreshing CA data\n"));
+		}
+	}
+	return 0;
+}
+
 static struct {
 	const char *verb;
 	int (*fn)(const char *, int, char **);
@@ -2646,6 +2708,7 @@ static struct {
 	{"resubmit", resubmit},
 	{"list", list},
 	{"list-cas", list_cas},
+	{"refresh-ca", refresh_ca},
 };
 
 static void
@@ -2844,6 +2907,21 @@ help(const char *cmd, const char *category)
 		N_("  -v	report all details of errors\n"),
 		NULL,
 	};
+	const char *refresh_ca_help[] = {
+		N_("Usage: %s refresh-ca [options]\n"),
+		"\n",
+		N_("Optional arguments:\n"),
+#ifndef FORCE_CA
+		N_("* General options:\n"),
+		N_("  -c CA	refresh information about the CA with this name\n"),
+#endif
+		N_("* Bus options:\n"),
+		N_("  -S	connect to the certmonger service on the system bus\n"),
+		N_("  -s	connect to the certmonger service on the session bus\n"),
+		N_("* Other options:\n"),
+		N_("  -v	report all details of errors\n"),
+		NULL,
+	};
 	struct {
 		const char *category;
 		const char **msgs;
@@ -2855,6 +2933,7 @@ help(const char *cmd, const char *category)
 		{"resubmit", resubmit_help},
 		{"list", list_help},
 		{"list-cas", list_cas_help},
+		{"refresh-ca", refresh_ca_help},
 	};
 	for (i = 0; i < sizeof(msgs) / sizeof(msgs[0]); i++) {
 		if ((category != NULL) && (msgs[i].category != NULL) &&

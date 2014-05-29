@@ -1711,6 +1711,36 @@ ca_get_serial(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certonger.ca.refresh */
+static DBusHandlerResult
+ca_refresh(DBusConnection *conn, DBusMessage *msg,
+	   struct cm_client_info *ci, struct cm_context *ctx)
+{
+	DBusMessage *rep;
+	struct cm_store_ca *ca;
+	enum cm_ca_phase phase;
+	dbus_bool_t result = TRUE;
+
+	ca = get_ca_for_request_message(msg, ctx);
+	if (ca == NULL) {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+	for (phase = 0; phase < cm_ca_phase_invalid; phase++) {
+		if (!cm_restart_ca(ctx, ca->cm_nickname, phase)) {
+			result = FALSE;
+		}
+	}
+	rep = dbus_message_new_method_return(msg);
+	if (rep != NULL) {
+		cm_tdbusm_set_b(rep, result);
+		dbus_connection_send(conn, rep, NULL);
+		dbus_message_unref(rep);
+		return DBUS_HANDLER_RESULT_HANDLED;
+	} else {
+		return send_internal_ca_error(conn, msg);
+	}
+}
+
 /* Custom property get/set logic for CA structures. */
 static dbus_bool_t
 ca_prop_get_is_default(struct cm_context *ctx, void *parent,
@@ -6076,6 +6106,14 @@ cm_tdbush_iface_ca(void)
 										     cm_tdbush_method_arg_out,
 										     NULL),
 								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("refresh",
+								     ca_refresh,
+								     make_method_arg("status",
+										     "b",
+										     cm_tdbush_method_arg_out,
+										     NULL),
+								     NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_ISSUER_NAMES,
 								       cm_tdbush_property_strings,
@@ -6227,7 +6265,7 @@ cm_tdbush_iface_ca(void)
 								       NULL, NULL, NULL, NULL, NULL,
 								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
-				     NULL))))))))))))))))))))))))))));
+				     NULL)))))))))))))))))))))))))))));
 	}
 	return ret;
 }
