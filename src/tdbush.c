@@ -4323,8 +4323,8 @@ cm_tdbush_property_set(DBusConnection *conn,
 	struct cm_tdbush_property *prop;
 	enum cm_tdbush_object_type type;
 	unsigned int i;
-	struct cm_store_entry *entry;
-	struct cm_store_ca *ca;
+	struct cm_store_entry *entry = NULL;
+	struct cm_store_ca *ca = NULL;
 	char *record, *wp, **wpp, ***wppp;
 	time_t *tp;
 	dbus_bool_t b;
@@ -4551,6 +4551,23 @@ cm_tdbush_property_set(DBusConnection *conn,
 		dbus_message_unref(rep);
 	}
 	talloc_free(parent);
+
+	switch (type) {
+	case cm_tdbush_object_type_none:
+	case cm_tdbush_object_type_parent_of_base:
+	case cm_tdbush_object_type_parent_of_requests:
+	case cm_tdbush_object_type_parent_of_cas:
+	case cm_tdbush_object_type_group_of_requests:
+	case cm_tdbush_object_type_group_of_cas:
+	case cm_tdbush_object_type_base:
+		break;
+	case cm_tdbush_object_type_ca:
+		cm_store_ca_save(ca);
+		break;
+	case cm_tdbush_object_type_request:
+		cm_store_entry_save(entry);
+		break;
+	}
 
 	properties[0] = prop->cm_name;
 	properties[1] = NULL;
