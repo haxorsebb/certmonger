@@ -420,7 +420,7 @@ cm_cadata_start_generic(struct cm_store_ca *ca, const char *op,
 	case cm_ca_internal_self:
 		if (strcasecmp(op, CM_OP_IDENTIFY) == 0) {
 			ca->cm_ca_aka = talloc_asprintf(ca,
-							"SelfSign (%s %s)\n",
+							"SelfSign (%s %s)",
 						        PACKAGE_NAME,
 						        PACKAGE_VERSION);
 		} else
