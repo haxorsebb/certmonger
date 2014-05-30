@@ -410,6 +410,9 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	enum cm_cert_storage_type cert_storage;
 	char *cert_location, *cert_nickname, *cert_token;
 	char *path, *pre_command, *post_command;
+	char **root_cert_nssdbs, **root_cert_files;
+	char **other_root_cert_nssdbs, **other_root_cert_files;
+	char **other_cert_nssdbs, **other_cert_files;
 
 	parent = talloc_new(NULL);
 	if (cm_tdbusm_get_d(msg, parent, &d) != 0) {
@@ -907,6 +910,306 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 								  "KEY_NICKNAME" : NULL);
 		}
 	}
+	/* Find out where to save the root certificates. */
+	param = cm_tdbusm_find_dict_entry(d,
+					  CM_DBUS_PROP_ROOT_CERT_NSSDBS,
+					  cm_tdbusm_dict_as);
+	for (i = 0;
+	     (param != NULL) &&
+	     (param->value.as != NULL) &&
+	     (param->value.as[i] != NULL);
+	     i++) {
+		if (check_arg_is_absolute_nss_path(param->value.as[i]) != 0) {
+			cm_log(1, "Root certificate storage location is not an absolute path.\n");
+			ret = send_internal_base_bad_arg_error(conn, msg,
+							       _("The location \"%s\" must be an absolute path."),
+							       param->value.as[i],
+							       CM_DBUS_PROP_ROOT_CERT_NSSDBS);
+			talloc_free(parent);
+			return ret;
+		}
+		if (check_arg_is_nss_directory(param->value.as[i]) != 0) {
+			switch (errno) {
+			case EACCES:
+			case EPERM:
+				cm_log(1, "Not allowed to access root certificate storage location.\n");
+				ret = send_internal_base_bad_arg_error(conn, msg,
+								       _("The location \"%s\" could not be accessed due "
+									 "to insufficient permissions."),
+								       param->value.s,
+								       CM_DBUS_PROP_ROOT_CERT_NSSDBS);
+				break;
+			default:
+				cm_log(1, "Certificate storage location must be a directory.\n");
+				ret = send_internal_base_bad_arg_error(conn, msg,
+								       _("The location \"%s\" must be a directory."),
+								       param->value.s,
+								       CM_DBUS_PROP_ROOT_CERT_NSSDBS);
+				break;
+			}
+			talloc_free(parent);
+			return ret;
+		}
+	}
+	if (param != NULL) {
+		root_cert_nssdbs = param->value.as;
+	} else {
+		root_cert_nssdbs = NULL;
+	}
+	param = cm_tdbusm_find_dict_entry(d,
+					  CM_DBUS_PROP_ROOT_CERT_FILES,
+					  cm_tdbusm_dict_as);
+	for (i = 0;
+	     (param != NULL) &&
+	     (param->value.as != NULL) &&
+	     (param->value.as[i] != NULL);
+	     i++) {
+		if (check_arg_is_absolute_path(param->value.as[i]) != 0) {
+			cm_log(1, "Root certificate storage location is not an absolute path.\n");
+			ret = send_internal_base_bad_arg_error(conn, msg,
+							       _("The location \"%s\" must be an absolute path."),
+							       param->value.as[i],
+							       CM_DBUS_PROP_ROOT_CERT_FILES);
+			talloc_free(parent);
+			return ret;
+		}
+		if (check_arg_parent_is_directory(param->value.as[i]) != 0) {
+			switch (errno) {
+			case EACCES:
+			case EPERM:
+				cm_log(1, "Not allowed to access root certificate storage location.\n");
+				ret = send_internal_base_bad_arg_error(conn, msg,
+								       _("The parent of location \"%s\" could not be accessed due "
+									 "to insufficient permissions."),
+								       param->value.as[i],
+								       CM_DBUS_PROP_ROOT_CERT_FILES);
+				break;
+			default:
+				cm_log(1, "Root certificate storage location is not inside of a directory.\n");
+				ret = send_internal_base_bad_arg_error(conn, msg,
+								       _("The parent of location \"%s\" must be a valid directory."),
+								       param->value.as[i],
+								       CM_DBUS_PROP_ROOT_CERT_FILES);
+				break;
+			}
+			talloc_free(parent);
+			return ret;
+		}
+		if (check_arg_is_reg_or_missing(param->value.as[i]) != 0) {
+			cm_log(1, "Root certificate storage location is not a regular file.\n");
+			ret = send_internal_base_bad_arg_error(conn, msg,
+							       _("The location \"%s\" must be a file."),
+							       param->value.as[i],
+							       CM_DBUS_PROP_ROOT_CERT_FILES);
+			talloc_free(parent);
+			return ret;
+		}
+	}
+	if (param != NULL) {
+		root_cert_files = param->value.as;
+	} else {
+		root_cert_files = NULL;
+	}
+	/* Find out where to save the other root certificates. */
+	param = cm_tdbusm_find_dict_entry(d,
+					  CM_DBUS_PROP_OTHER_ROOT_CERT_NSSDBS,
+					  cm_tdbusm_dict_as);
+	for (i = 0;
+	     (param != NULL) &&
+	     (param->value.as != NULL) &&
+	     (param->value.as[i] != NULL);
+	     i++) {
+		if (check_arg_is_absolute_nss_path(param->value.as[i]) != 0) {
+			cm_log(1, "Other root certificate storage location is not an absolute path.\n");
+			ret = send_internal_base_bad_arg_error(conn, msg,
+							       _("The location \"%s\" must be an absolute path."),
+							       param->value.as[i],
+							       CM_DBUS_PROP_OTHER_ROOT_CERT_NSSDBS);
+			talloc_free(parent);
+			return ret;
+		}
+		if (check_arg_is_nss_directory(param->value.as[i]) != 0) {
+			switch (errno) {
+			case EACCES:
+			case EPERM:
+				cm_log(1, "Not allowed to access root certificate storage location.\n");
+				ret = send_internal_base_bad_arg_error(conn, msg,
+								       _("The location \"%s\" could not be accessed due "
+									 "to insufficient permissions."),
+								       param->value.s,
+								       CM_DBUS_PROP_OTHER_ROOT_CERT_NSSDBS);
+				break;
+			default:
+				cm_log(1, "Certificate storage location must be a directory.\n");
+				ret = send_internal_base_bad_arg_error(conn, msg,
+								       _("The location \"%s\" must be a directory."),
+								       param->value.s,
+								       CM_DBUS_PROP_OTHER_ROOT_CERT_NSSDBS);
+				break;
+			}
+			talloc_free(parent);
+			return ret;
+		}
+	}
+	if (param != NULL) {
+		other_root_cert_nssdbs = param->value.as;
+	} else {
+		other_root_cert_nssdbs = NULL;
+	}
+	param = cm_tdbusm_find_dict_entry(d,
+					  CM_DBUS_PROP_OTHER_ROOT_CERT_FILES,
+					  cm_tdbusm_dict_as);
+	for (i = 0;
+	     (param != NULL) &&
+	     (param->value.as != NULL) &&
+	     (param->value.as[i] != NULL);
+	     i++) {
+		if (check_arg_is_absolute_path(param->value.as[i]) != 0) {
+			cm_log(1, "Other root certificate storage location is not an absolute path.\n");
+			ret = send_internal_base_bad_arg_error(conn, msg,
+							       _("The location \"%s\" must be an absolute path."),
+							       param->value.as[i],
+							       CM_DBUS_PROP_OTHER_ROOT_CERT_FILES);
+			talloc_free(parent);
+			return ret;
+		}
+		if (check_arg_parent_is_directory(param->value.as[i]) != 0) {
+			switch (errno) {
+			case EACCES:
+			case EPERM:
+				cm_log(1, "Not allowed to access other root certificate storage location.\n");
+				ret = send_internal_base_bad_arg_error(conn, msg,
+								       _("The parent of location \"%s\" could not be accessed due "
+									 "to insufficient permissions."),
+								       param->value.as[i],
+								       CM_DBUS_PROP_OTHER_ROOT_CERT_FILES);
+				break;
+			default:
+				cm_log(1, "Other root certificate storage location is not inside of a directory.\n");
+				ret = send_internal_base_bad_arg_error(conn, msg,
+								       _("The parent of location \"%s\" must be a valid directory."),
+								       param->value.as[i],
+								       CM_DBUS_PROP_OTHER_ROOT_CERT_FILES);
+				break;
+			}
+			talloc_free(parent);
+			return ret;
+		}
+		if (check_arg_is_reg_or_missing(param->value.as[i]) != 0) {
+			cm_log(1, "Other root certificate storage location is not a regular file.\n");
+			ret = send_internal_base_bad_arg_error(conn, msg,
+							       _("The location \"%s\" must be a file."),
+							       param->value.as[i],
+							       CM_DBUS_PROP_OTHER_ROOT_CERT_FILES);
+			talloc_free(parent);
+			return ret;
+		}
+	}
+	if (param != NULL) {
+		other_root_cert_files = param->value.as;
+	} else {
+		other_root_cert_files = NULL;
+	}
+	/* Find out where to save the other certificates supplied by the CA. */
+	param = cm_tdbusm_find_dict_entry(d,
+					  CM_DBUS_PROP_OTHER_CERT_NSSDBS,
+					  cm_tdbusm_dict_as);
+	for (i = 0;
+	     (param != NULL) &&
+	     (param->value.as != NULL) &&
+	     (param->value.as[i] != NULL);
+	     i++) {
+		if (check_arg_is_absolute_nss_path(param->value.as[i]) != 0) {
+			cm_log(1, "Other certificate storage location is not an absolute path.\n");
+			ret = send_internal_base_bad_arg_error(conn, msg,
+							       _("The location \"%s\" must be an absolute path."),
+							       param->value.as[i],
+							       CM_DBUS_PROP_OTHER_CERT_NSSDBS);
+			talloc_free(parent);
+			return ret;
+		}
+		if (check_arg_is_nss_directory(param->value.as[i]) != 0) {
+			switch (errno) {
+			case EACCES:
+			case EPERM:
+				cm_log(1, "Not allowed to access other certificate storage location.\n");
+				ret = send_internal_base_bad_arg_error(conn, msg,
+								       _("The location \"%s\" could not be accessed due "
+									 "to insufficient permissions."),
+								       param->value.s,
+								       CM_DBUS_PROP_OTHER_CERT_NSSDBS);
+				break;
+			default:
+				cm_log(1, "Other certificate storage location must be a directory.\n");
+				ret = send_internal_base_bad_arg_error(conn, msg,
+								       _("The location \"%s\" must be a directory."),
+								       param->value.s,
+								       CM_DBUS_PROP_OTHER_CERT_NSSDBS);
+				break;
+			}
+			talloc_free(parent);
+			return ret;
+		}
+	}
+	if (param != NULL) {
+		other_cert_nssdbs = param->value.as;
+	} else {
+		other_cert_nssdbs = NULL;
+	}
+	param = cm_tdbusm_find_dict_entry(d,
+					  CM_DBUS_PROP_OTHER_CERT_FILES,
+					  cm_tdbusm_dict_as);
+	for (i = 0;
+	     (param != NULL) &&
+	     (param->value.as != NULL) &&
+	     (param->value.as[i] != NULL);
+	     i++) {
+		if (check_arg_is_absolute_path(param->value.as[i]) != 0) {
+			cm_log(1, "Other root certificate storage location is not an absolute path.\n");
+			ret = send_internal_base_bad_arg_error(conn, msg,
+							       _("The location \"%s\" must be an absolute path."),
+							       param->value.as[i],
+							       CM_DBUS_PROP_OTHER_CERT_FILES);
+			talloc_free(parent);
+			return ret;
+		}
+		if (check_arg_parent_is_directory(param->value.as[i]) != 0) {
+			switch (errno) {
+			case EACCES:
+			case EPERM:
+				cm_log(1, "Not allowed to access other root certificate storage location.\n");
+				ret = send_internal_base_bad_arg_error(conn, msg,
+								       _("The parent of location \"%s\" could not be accessed due "
+									 "to insufficient permissions."),
+								       param->value.as[i],
+								       CM_DBUS_PROP_OTHER_CERT_FILES);
+				break;
+			default:
+				cm_log(1, "Other root certificate storage location is not inside of a directory.\n");
+				ret = send_internal_base_bad_arg_error(conn, msg,
+								       _("The parent of location \"%s\" must be a valid directory."),
+								       param->value.as[i],
+								       CM_DBUS_PROP_OTHER_CERT_FILES);
+				break;
+			}
+			talloc_free(parent);
+			return ret;
+		}
+		if (check_arg_is_reg_or_missing(param->value.as[i]) != 0) {
+			cm_log(1, "Other root certificate storage location is not a regular file.\n");
+			ret = send_internal_base_bad_arg_error(conn, msg,
+							       _("The location \"%s\" must be a file."),
+							       param->value.as[i],
+							       CM_DBUS_PROP_OTHER_CERT_FILES);
+			talloc_free(parent);
+			return ret;
+		}
+	}
+	if (param != NULL) {
+		other_cert_files = param->value.as;
+	} else {
+		other_cert_files = NULL;
+	}
 	/* What to run before we save the certificate. */
 	param = cm_tdbusm_find_dict_entry(d,
 					  CM_DBUS_PROP_CERT_PRESAVE_COMMAND,
@@ -1028,6 +1331,14 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 							   cert_location);
 	new_entry->cm_cert_nickname = maybe_strdup(new_entry, cert_nickname);
 	new_entry->cm_cert_token = maybe_strdup(new_entry, cert_token);
+
+	new_entry->cm_root_cert_store_nssdbs = maybe_strdupv(new_entry, root_cert_nssdbs);
+	new_entry->cm_root_cert_store_files = maybe_strdupv(new_entry, root_cert_files);
+	new_entry->cm_other_root_cert_store_nssdbs = maybe_strdupv(new_entry, other_root_cert_nssdbs);
+	new_entry->cm_other_root_cert_store_files = maybe_strdupv(new_entry, other_root_cert_files);
+	new_entry->cm_other_cert_store_nssdbs = maybe_strdupv(new_entry, other_cert_nssdbs);
+	new_entry->cm_other_cert_store_files = maybe_strdupv(new_entry, other_cert_files);
+
 	/* Which CA to use. */
 	param = cm_tdbusm_find_dict_entry(d, "CA", cm_tdbusm_dict_p);
 	if (param == NULL) {
@@ -1051,6 +1362,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 			return ret;
 		}
 	}
+
 	/* What to tell the CA we want. */
 	param = cm_tdbusm_find_dict_entry(d, CM_DBUS_PROP_CA_PROFILE, cm_tdbusm_dict_s);
 	if (param != NULL) {
@@ -2822,6 +3134,60 @@ request_modify(DBusConnection *conn, DBusMessage *msg,
 				if (n_propname + 3 < sizeof(propname) / sizeof(propname[0])) {
 					propname[n_propname++] = CM_DBUS_PROP_CERT_POSTSAVE_COMMAND;
 					propname[n_propname++] = CM_DBUS_PROP_CERT_POSTSAVE_UID;
+				}
+			} else
+			if ((param->value_type == cm_tdbusm_dict_as) &&
+			    (strcasecmp(param->key, CM_DBUS_PROP_ROOT_CERT_FILES) == 0)) {
+				talloc_free(entry->cm_root_cert_store_files);
+				entry->cm_root_cert_store_files = maybe_strdupv(entry,
+										param->value.as);
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_ROOT_CERT_FILES;
+				}
+			} else
+			if ((param->value_type == cm_tdbusm_dict_as) &&
+			    (strcasecmp(param->key, CM_DBUS_PROP_OTHER_ROOT_CERT_FILES) == 0)) {
+				talloc_free(entry->cm_other_root_cert_store_files);
+				entry->cm_other_root_cert_store_files = maybe_strdupv(entry,
+										      param->value.as);
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_OTHER_ROOT_CERT_FILES;
+				}
+			} else
+			if ((param->value_type == cm_tdbusm_dict_as) &&
+			    (strcasecmp(param->key, CM_DBUS_PROP_OTHER_CERT_FILES) == 0)) {
+				talloc_free(entry->cm_other_cert_store_nssdbs);
+				entry->cm_other_cert_store_nssdbs = maybe_strdupv(entry,
+										 param->value.as);
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_OTHER_CERT_FILES;
+				}
+			} else
+			if ((param->value_type == cm_tdbusm_dict_as) &&
+			    (strcasecmp(param->key, CM_DBUS_PROP_ROOT_CERT_NSSDBS) == 0)) {
+				talloc_free(entry->cm_root_cert_store_nssdbs);
+				entry->cm_root_cert_store_nssdbs = maybe_strdupv(entry,
+										param->value.as);
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_ROOT_CERT_NSSDBS;
+				}
+			} else
+			if ((param->value_type == cm_tdbusm_dict_as) &&
+			    (strcasecmp(param->key, CM_DBUS_PROP_OTHER_ROOT_CERT_NSSDBS) == 0)) {
+				talloc_free(entry->cm_other_root_cert_store_nssdbs);
+				entry->cm_other_root_cert_store_nssdbs = maybe_strdupv(entry,
+										      param->value.as);
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_OTHER_ROOT_CERT_NSSDBS;
+				}
+			} else
+			if ((param->value_type == cm_tdbusm_dict_as) &&
+			    (strcasecmp(param->key, CM_DBUS_PROP_OTHER_CERT_NSSDBS) == 0)) {
+				talloc_free(entry->cm_other_cert_store_nssdbs);
+				entry->cm_other_cert_store_nssdbs = maybe_strdupv(entry,
+										 param->value.as);
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_OTHER_CERT_NSSDBS;
 				}
 			} else {
 				break;
