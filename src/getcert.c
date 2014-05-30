@@ -559,13 +559,14 @@ request(const char *argv0, int argc, char **argv)
 	char subject_default[LINE_MAX];
 	char *nss_scheme, *dbdir = NULL, *token = NULL, *nickname = NULL;
 	char *keytype = NULL, *keyfile = NULL, *certfile = NULL, *capath;
+	char **anchor_dbs = NULL, **anchor_files = NULL;
 	char *pin = NULL, *pinfile = NULL;
 	int keysize = 0, auto_renew = 1, verbose = 0, ku = 0, kubit, c, i, j;
 	char *ca = DEFAULT_CA, *subject = NULL, **eku = NULL, *oid, *id = NULL;
 	char *profile = NULL, kustring[16];
 	char **principal = NULL, **dns = NULL, **email = NULL, **ipaddr = NULL;
-	struct cm_tdbusm_dict param[39];
-	const struct cm_tdbusm_dict *params[38];
+	struct cm_tdbusm_dict param[43];
+	const struct cm_tdbusm_dict *params[42];
 	DBusMessage *req, *rep;
 	dbus_bool_t b;
 	char *p;
@@ -596,7 +597,7 @@ request(const char *argv0, int argc, char **argv)
 
 	opterr = 0;
 	while ((c = getopt(argc, argv,
-			   ":d:n:t:k:f:I:g:rRN:u:U:K:D:E:sSp:P:vB:C:T:G:A:"
+			   ":d:n:t:k:f:I:g:rRN:u:U:K:D:E:sSp:P:vB:C:T:G:A:a:F:"
 			   GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
@@ -730,6 +731,12 @@ request(const char *argv0, int argc, char **argv)
 			break;
 		case 'C':
 			postcommand = optarg;
+			break;
+		case 'a':
+			add_string(globals.tctx, &anchor_dbs, optarg);
+			break;
+		case 'F':
+			add_string(globals.tctx, &anchor_files, optarg);
 			break;
 		case 'v':
 			verbose++;
@@ -1021,6 +1028,30 @@ request(const char *argv0, int argc, char **argv)
 		params[i] = &param[i];
 		i++;
 	}
+	if (anchor_files != NULL) {
+		param[i].key = CM_DBUS_PROP_ROOT_CERT_FILES;
+		param[i].value_type = cm_tdbusm_dict_as;
+		param[i].value.as = anchor_files;
+		params[i] = &param[i];
+		i++;
+		param[i].key = CM_DBUS_PROP_OTHER_ROOT_CERT_FILES;
+		param[i].value_type = cm_tdbusm_dict_as;
+		param[i].value.as = anchor_files;
+		params[i] = &param[i];
+		i++;
+	}
+	if (anchor_dbs != NULL) {
+		param[i].key = CM_DBUS_PROP_ROOT_CERT_NSSDBS;
+		param[i].value_type = cm_tdbusm_dict_as;
+		param[i].value.as = anchor_dbs;
+		params[i] = &param[i];
+		i++;
+		param[i].key = CM_DBUS_PROP_OTHER_ROOT_CERT_NSSDBS;
+		param[i].value_type = cm_tdbusm_dict_as;
+		param[i].value.as = anchor_dbs;
+		params[i] = &param[i];
+		i++;
+	}
 	params[i] = NULL;
 	req = prep_req(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
 		       "add_request");
@@ -1180,6 +1211,7 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 		  char *pin, char *pinfile,
 		  char *ca, char *profile,
 		  char *precommand, char *postcommand,
+		  char **anchor_dbs, char **anchor_files,
 		  dbus_bool_t auto_renew_stop, int verbose)
 {
 	DBusMessage *req, *rep;
@@ -1326,6 +1358,30 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 	} else {
 		capath = NULL;
 	}
+	if (anchor_files != NULL) {
+		param[i].key = CM_DBUS_PROP_ROOT_CERT_FILES;
+		param[i].value_type = cm_tdbusm_dict_as;
+		param[i].value.as = anchor_files;
+		params[i] = &param[i];
+		i++;
+		param[i].key = CM_DBUS_PROP_OTHER_ROOT_CERT_FILES;
+		param[i].value_type = cm_tdbusm_dict_as;
+		param[i].value.as = anchor_files;
+		params[i] = &param[i];
+		i++;
+	}
+	if (anchor_dbs != NULL) {
+		param[i].key = CM_DBUS_PROP_ROOT_CERT_NSSDBS;
+		param[i].value_type = cm_tdbusm_dict_as;
+		param[i].value.as = anchor_dbs;
+		params[i] = &param[i];
+		i++;
+		param[i].key = CM_DBUS_PROP_OTHER_ROOT_CERT_NSSDBS;
+		param[i].value_type = cm_tdbusm_dict_as;
+		param[i].value.as = anchor_dbs;
+		params[i] = &param[i];
+		i++;
+	}
 	params[i] = NULL;
 	req = prep_req(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
 		       "add_request");
@@ -1357,9 +1413,10 @@ set_tracking(const char *argv0, const char *category,
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	DBusMessage *req, *rep;
 	const char *request, *capath;
-	struct cm_tdbusm_dict param[15];
-	const struct cm_tdbusm_dict *params[16];
+	struct cm_tdbusm_dict param[19];
+	const struct cm_tdbusm_dict *params[20];
 	char *nss_scheme, *dbdir = NULL, *token = NULL, *nickname = NULL;
+	char **anchor_dbs = NULL, **anchor_files = NULL;
 	char *id = NULL, *new_id = NULL, *new_request;
 	char *keyfile = NULL, *certfile = NULL, *ca = DEFAULT_CA;
 	char *profile = NULL;
@@ -1389,7 +1446,7 @@ set_tracking(const char *argv0, const char *category,
 
 	opterr = 0;
 	while ((c = getopt(argc, argv,
-			   ":d:n:t:k:f:g:p:P:rRi:I:u:U:K:D:E:sSvB:C:T:A:"
+			   ":d:n:t:k:f:g:p:P:rRi:I:u:U:K:D:E:sSvB:C:T:A:a:F:"
 			   GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
@@ -1510,6 +1567,12 @@ set_tracking(const char *argv0, const char *category,
 			break;
 		case 'C':
 			postcommand = optarg;
+			break;
+		case 'a':
+			add_string(globals.tctx, &anchor_dbs, optarg);
+			break;
+		case 'F':
+			add_string(globals.tctx, &anchor_files, optarg);
 			break;
 		case 'v':
 			verbose++;
@@ -1693,6 +1756,30 @@ set_tracking(const char *argv0, const char *category,
 				params[i] = &param[i];
 				i++;
 			}
+			if (anchor_files != NULL) {
+				param[i].key = CM_DBUS_PROP_ROOT_CERT_FILES;
+				param[i].value_type = cm_tdbusm_dict_as;
+				param[i].value.as = anchor_files;
+				params[i] = &param[i];
+				i++;
+				param[i].key = CM_DBUS_PROP_OTHER_ROOT_CERT_FILES;
+				param[i].value_type = cm_tdbusm_dict_as;
+				param[i].value.as = anchor_files;
+				params[i] = &param[i];
+				i++;
+			}
+			if (anchor_dbs != NULL) {
+				param[i].key = CM_DBUS_PROP_ROOT_CERT_NSSDBS;
+				param[i].value_type = cm_tdbusm_dict_as;
+				param[i].value.as = anchor_dbs;
+				params[i] = &param[i];
+				i++;
+				param[i].key = CM_DBUS_PROP_OTHER_ROOT_CERT_NSSDBS;
+				param[i].value_type = cm_tdbusm_dict_as;
+				param[i].value.as = anchor_dbs;
+				params[i] = &param[i];
+				i++;
+			}
 			params[i] = NULL;
 			req = prep_req(bus, request, CM_DBUS_REQUEST_INTERFACE,
 				       "modify");
@@ -1756,6 +1843,7 @@ set_tracking(const char *argv0, const char *category,
 						 pin, pinfile,
 						 ca, profile,
 						 precommand, postcommand,
+						 anchor_dbs, anchor_files,
 						 (auto_renew_stop > 0),
 						 verbose);
 		}
@@ -1819,9 +1907,10 @@ resubmit(const char *argv0, int argc, char **argv)
 	DBusMessage *req, *rep;
 	const char *request;
 	char *capath;
-	struct cm_tdbusm_dict param[19];
-	const struct cm_tdbusm_dict *params[20];
+	struct cm_tdbusm_dict param[23];
+	const struct cm_tdbusm_dict *params[24];
 	char *dbdir = NULL, *token = NULL, *nickname = NULL, *certfile = NULL;
+	char **anchor_dbs = NULL, **anchor_files = NULL;
 	char *pin = NULL, *pinfile = NULL;
 	char *id = NULL, *new_id = NULL, *ca = NULL, *new_request, *nss_scheme;
 	char *subject = NULL, **eku = NULL, *oid = NULL;
@@ -1844,7 +1933,7 @@ resubmit(const char *argv0, int argc, char **argv)
 
 	opterr = 0;
 	while ((c = getopt(argc, argv,
-			   ":d:n:N:t:u:U:K:E:D:f:i:I:sSp:P:vB:C:T:A:"
+			   ":d:n:N:t:u:U:K:E:D:f:i:I:sSp:P:vB:C:T:A:a:F:"
 			   GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
@@ -1944,6 +2033,12 @@ resubmit(const char *argv0, int argc, char **argv)
 			break;
 		case 'C':
 			postcommand = optarg;
+			break;
+		case 'a':
+			add_string(globals.tctx, &anchor_dbs, optarg);
+			break;
+		case 'F':
+			add_string(globals.tctx, &anchor_files, optarg);
 			break;
 		case 'v':
 			verbose++;
@@ -2117,6 +2212,30 @@ resubmit(const char *argv0, int argc, char **argv)
 		params[i] = &param[i];
 		i++;
 	}
+	if (anchor_files != NULL) {
+		param[i].key = CM_DBUS_PROP_ROOT_CERT_FILES;
+		param[i].value_type = cm_tdbusm_dict_as;
+		param[i].value.as = anchor_files;
+		params[i] = &param[i];
+		i++;
+		param[i].key = CM_DBUS_PROP_OTHER_ROOT_CERT_FILES;
+		param[i].value_type = cm_tdbusm_dict_as;
+		param[i].value.as = anchor_files;
+		params[i] = &param[i];
+		i++;
+	}
+	if (anchor_dbs != NULL) {
+		param[i].key = CM_DBUS_PROP_ROOT_CERT_NSSDBS;
+		param[i].value_type = cm_tdbusm_dict_as;
+		param[i].value.as = anchor_dbs;
+		params[i] = &param[i];
+		i++;
+		param[i].key = CM_DBUS_PROP_OTHER_ROOT_CERT_NSSDBS;
+		param[i].value_type = cm_tdbusm_dict_as;
+		param[i].value.as = anchor_dbs;
+		params[i] = &param[i];
+		i++;
+	}
 	params[i] = NULL;
 	if (i > 0) {
 		req = prep_req(bus, request, CM_DBUS_REQUEST_INTERFACE,
@@ -2184,7 +2303,7 @@ list(const char *argv0, int argc, char **argv)
 	dbus_bool_t b;
 	char *s1, *s2, *s3, *s4, *s5, *s6;
 	long n1, n2;
-	char **as1, **as2, **as3, **as4, **as5, t[25];
+	char **as, **as1, **as2, **as3, **as4, **as5, t[25];
 	int requests_only = 0, tracking_only = 0, verbose = 0, c, i, j;
 	unsigned int k;
 	char key_usages[LINE_MAX];
@@ -2534,6 +2653,60 @@ list(const char *argv0, int argc, char **argv)
 			       cm_oid_to_name(NULL, as4[j]),
 			       as4[j + 1] ? "" : "\n");
 		}
+		as = query_prop_as(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
+				   CM_DBUS_PROP_ROOT_CERT_FILES,
+				   verbose, globals.tctx);
+		if (as != NULL) {
+			printf(_("\troot certificates saved to files:\n"));
+			for (j = 0; as[j] != NULL; j++) {
+				printf("\t\t%s\n", as[j]);
+			}
+		}
+		as = query_prop_as(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
+				   CM_DBUS_PROP_OTHER_ROOT_CERT_FILES,
+				   verbose, globals.tctx);
+		if (as != NULL) {
+			printf(_("\tother root certificates saved to files:\n"));
+			for (j = 0; as[j] != NULL; j++) {
+				printf("\t\t%s\n", as[j]);
+			}
+		}
+		as = query_prop_as(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
+				   CM_DBUS_PROP_OTHER_CERT_FILES,
+				   verbose, globals.tctx);
+		if (as != NULL) {
+			printf(_("\tother certificates saved to files:\n"));
+			for (j = 0; as[j] != NULL; j++) {
+				printf("\t\t%s\n", as[j]);
+			}
+		}
+		as = query_prop_as(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
+				   CM_DBUS_PROP_ROOT_CERT_NSSDBS,
+				   verbose, globals.tctx);
+		if (as != NULL) {
+			printf(_("\troot certificates saved to databases:\n"));
+			for (j = 0; as[j] != NULL; j++) {
+				printf("\t\t%s\n", as[j]);
+			}
+		}
+		as = query_prop_as(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
+				   CM_DBUS_PROP_OTHER_ROOT_CERT_NSSDBS,
+				   verbose, globals.tctx);
+		if (as != NULL) {
+			printf(_("\tother root certificates saved to databases:\n"));
+			for (j = 0; as[j] != NULL; j++) {
+				printf("\t\t%s\n", as[j]);
+			}
+		}
+		as = query_prop_as(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
+				   CM_DBUS_PROP_OTHER_CERT_NSSDBS,
+				   verbose, globals.tctx);
+		if (as != NULL) {
+			printf(_("\tother certificates saved to databases:\n"));
+			for (j = 0; as[j] != NULL; j++) {
+				printf("\t\t%s\n", as[j]);
+			}
+		}
 		printf(_("\tpre-save command: %s\n"),
 		       query_prop_s(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
 				    CM_DBUS_PROP_CERT_PRESAVE_COMMAND, verbose, globals.tctx));
@@ -2604,6 +2777,14 @@ list_cas(const char *argv0, int argc, char **argv)
 			}
 		}
 		printf(_("CA '%s':\n"), s);
+		if (verbose > 0) {
+			s = query_prop_s(bus, cas[i], CM_DBUS_CA_INTERFACE,
+					 CM_DBUS_PROP_AKA,
+					 verbose, globals.tctx);
+			if ((s != NULL) && (strlen(s) > 0)) {
+				printf(_("\tself-identifies as: %s\n"), s);
+			}
+		}
 		printf("\tis-default: %s\n",
 		       query_rep_b(bus, cas[i], CM_DBUS_CA_INTERFACE,
 				   "get_is_default", verbose, globals.tctx) ?
@@ -2631,6 +2812,88 @@ list_cas(const char *argv0, int argc, char **argv)
 			for (j = 0; as[j] != NULL; j++) {
 				printf("\t\t%s\n", as[j]);
 			}
+		}
+		as = query_prop_as(bus, cas[i], CM_DBUS_CA_INTERFACE,
+				   CM_DBUS_PROP_DEFAULT_PROFILE,
+				   verbose, globals.tctx);
+		if (as != NULL) {
+			printf(_("\tknown profiles/templates/certtypes:\n"));
+			for (j = 0; as[j] != NULL; j++) {
+				printf("\t\t%s\n", as[j]);
+			}
+		}
+		as = query_prop_as(bus, cas[i], CM_DBUS_CA_INTERFACE,
+				   CM_DBUS_PROP_ROOT_CERT_FILES,
+				   verbose, globals.tctx);
+		if (as != NULL) {
+			printf(_("\troot certificates saved to files:\n"));
+			for (j = 0; as[j] != NULL; j++) {
+				printf("\t\t%s\n", as[j]);
+			}
+		}
+		as = query_prop_as(bus, cas[i], CM_DBUS_CA_INTERFACE,
+				   CM_DBUS_PROP_OTHER_ROOT_CERT_FILES,
+				   verbose, globals.tctx);
+		if (as != NULL) {
+			printf(_("\tother root certificates saved to files:\n"));
+			for (j = 0; as[j] != NULL; j++) {
+				printf("\t\t%s\n", as[j]);
+			}
+		}
+		as = query_prop_as(bus, cas[i], CM_DBUS_CA_INTERFACE,
+				   CM_DBUS_PROP_OTHER_CERT_FILES,
+				   verbose, globals.tctx);
+		if (as != NULL) {
+			printf(_("\tother certificates saved to files:\n"));
+			for (j = 0; as[j] != NULL; j++) {
+				printf("\t\t%s\n", as[j]);
+			}
+		}
+		as = query_prop_as(bus, cas[i], CM_DBUS_CA_INTERFACE,
+				   CM_DBUS_PROP_ROOT_CERT_NSSDBS,
+				   verbose, globals.tctx);
+		if (as != NULL) {
+			printf(_("\troot certificates saved to databases:\n"));
+			for (j = 0; as[j] != NULL; j++) {
+				printf("\t\t%s\n", as[j]);
+			}
+		}
+		as = query_prop_as(bus, cas[i], CM_DBUS_CA_INTERFACE,
+				   CM_DBUS_PROP_OTHER_ROOT_CERT_NSSDBS,
+				   verbose, globals.tctx);
+		if (as != NULL) {
+			printf(_("\tother root certificates saved to databases:\n"));
+			for (j = 0; as[j] != NULL; j++) {
+				printf("\t\t%s\n", as[j]);
+			}
+		}
+		as = query_prop_as(bus, cas[i], CM_DBUS_CA_INTERFACE,
+				   CM_DBUS_PROP_OTHER_CERT_NSSDBS,
+				   verbose, globals.tctx);
+		if (as != NULL) {
+			printf(_("\tother certificates saved to databases:\n"));
+			for (j = 0; as[j] != NULL; j++) {
+				printf("\t\t%s\n", as[j]);
+			}
+		}
+		s = query_prop_s(bus, cas[i], CM_DBUS_CA_INTERFACE,
+				 CM_DBUS_PROP_DEFAULT_PROFILE,
+				 verbose, globals.tctx);
+		if ((s != NULL) && (strlen(s) > 0)) {
+			printf(_("\tdefault profile/template/certtype: %s\n"),
+			       s);
+		}
+		s = query_prop_s(bus, cas[i], CM_DBUS_CA_INTERFACE,
+				 CM_DBUS_PROP_CA_PRESAVE_COMMAND,
+				 verbose, globals.tctx);
+		if ((s != NULL) && (strlen(s) > 0)) {
+			printf(_("\tpre-save command: %s\n"), s);
+		}
+		s = query_prop_s(bus, cas[i], CM_DBUS_CA_INTERFACE,
+				 CM_DBUS_PROP_CA_POSTSAVE_COMMAND,
+				 verbose, globals.tctx);
+		if ((s != NULL) && (strlen(s) > 0)) {
+			printf(_("\tpost-save command: %s\n"), s);
 		}
 	}
 	return 0;
@@ -2759,6 +3022,8 @@ help(const char *cmd, const char *category)
 		N_("* Other options:\n"),
 		N_("  -B	command to run before saving the certificate\n"),
 		N_("  -C	command to run after saving the certificate\n"),
+		N_("  -F	file in which to store the CA's certificates\n"),
+		N_("  -a	NSS database in which to store the CA's certificates\n"),
 		N_("  -v	report all details of errors\n"),
 		NULL,
 	};
@@ -2801,6 +3066,8 @@ help(const char *cmd, const char *category)
 		N_("* Other options:\n"),
 		N_("  -B	command to run before saving the certificate\n"),
 		N_("  -C	command to run after saving the certificate\n"),
+		N_("  -F	file in which to store the CA's certificates\n"),
+		N_("  -a	NSS database in which to store the CA's certificates\n"),
 		N_("  -v	report all details of errors\n"),
 		NULL,
 	};
@@ -2865,6 +3132,8 @@ help(const char *cmd, const char *category)
 		N_("* Other options:\n"),
 		N_("  -B	command to run before saving the certificate\n"),
 		N_("  -C	command to run after saving the certificate\n"),
+		N_("  -F	file in which to store the CA's certificates\n"),
+		N_("  -a	NSS database in which to store the CA's certificates\n"),
 		N_("  -v	report all details of errors\n"),
 		NULL,
 	};

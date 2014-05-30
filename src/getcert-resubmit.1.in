@@ -1,4 +1,4 @@
-.TH certmonger 1 "7 April 2014" "certmonger Manual"
+.TH certmonger 1 "30 May 2014" "certmonger Manual"
 
 .SH NAME
 getcert
@@ -101,13 +101,21 @@ the extensionRequest attribute in the signing request.
 
 .SH OTHER OPTIONS
 .TP
-\fB\-B\fR command
+\fB\-B\fR COMMAND
 When ever the certificate is saved to the specified location, run the
 specified command as the client user before saving the certificate.
 .TP
-\fB\-C\fR command
+\fB\-C\fR COMMAND
 When ever the certificate is saved to the specified location, run the
 specified command as the client user after saving the certificate.
+.TP
+\fB\-a\fR DIR
+When ever the certificate is saved to the specified location, if root
+certificates for the CA are available, save them to the specified NSS database.
+.TP
+\fB\-F\fR FILE
+When ever the certificate is saved to the specified location, if root
+certificates for the CA are available, save them to the specified file.
 .TP
 \fB\-v\fR
 Be verbose about errors.  Normally, the details of an error received from
