@@ -420,6 +420,7 @@ cm_service_entry(struct cm_context *context, struct timeval *current_time, int i
 			       &cm_get_n_cas,
 			       &cm_tdbush_property_emit_entry_saved_cert,
 			       &cm_tdbush_property_emit_entry_changes,
+			       &cm_restart_ca,
 			       context->entry_events[i].iterate_state,
 			       &when, &delay, &fd);
 	t = NULL;

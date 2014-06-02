@@ -459,6 +459,9 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		 void (*emit_entry_changes)(struct cm_context *,
 					    struct cm_store_entry *,
 					    struct cm_store_entry *),
+		 dbus_bool_t (*restart_ca)(struct cm_context *,
+					   const char *,
+					   enum cm_ca_phase),
 		 void *cm_iterate_state,
 		 enum cm_time *when, int *delay, int *readfd)
 {
@@ -1317,6 +1320,11 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		break;
 
 	case CM_NEED_TO_SAVE_CA_CERTS:
+		/* Try to save the CA's certificates. */
+		if ((ca != NULL) && (restart_ca != NULL)) {
+			(*restart_ca)(context, ca->cm_nickname,
+				      cm_ca_phase_save_certs);
+		}
 		entry->cm_state = CM_NEED_TO_NOTIFY_ISSUED_SAVED;
 		*when = cm_time_now;
 		break;

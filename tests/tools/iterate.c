@@ -137,7 +137,7 @@ main(int argc, char **argv)
 	printf("%s\n-START-\n", state);
 	fflush(NULL);
 	while (cm_iterate_entry(entry, cm.ca, &cm, get_ca_by_index, get_n_cas,
-				NULL, NULL, istate, &when, &delay,
+				NULL, NULL, NULL, istate, &when, &delay,
 				&readfd) == 0) {
 		state = cm_store_state_as_string(entry->cm_state);
 		switch (when) {
