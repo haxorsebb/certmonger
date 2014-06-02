@@ -263,10 +263,13 @@ cm_decide_monitor_delay(time_t remaining)
 
 /* Manage a "lock" that we use to serialize access to THE REST OF THE WORLD. */
 static void *writing_lock;
+static enum cm_ca_phase writing_lock_ca_phase = cm_ca_phase_invalid;
 static dbus_bool_t
-cm_writing_has_lock(void *holder)
+cm_writing_has_lock(void *holder, enum cm_ca_phase phase)
 {
-	return (writing_lock == holder);
+	return (writing_lock == holder) &&
+	       ((writing_lock_ca_phase == cm_ca_phase_invalid) ||
+	        (writing_lock_ca_phase == phase));
 }
 static dbus_bool_t
 cm_writing_lock_by_entry(struct cm_store_entry *entry)
@@ -301,13 +304,18 @@ cm_writing_unlock_by_entry(struct cm_store_entry *entry)
 	}
 }
 static dbus_bool_t
-cm_writing_lock_by_ca(struct cm_store_ca *ca)
+cm_writing_lock_by_ca(struct cm_store_ca *ca, enum cm_ca_phase phase)
 {
-	if ((writing_lock == ca) || (writing_lock == NULL)) {
+	if (((writing_lock == ca) && (writing_lock_ca_phase == phase)) ||
+	    (writing_lock == NULL)) {
 		if (writing_lock == NULL) {
 			cm_log(3, "%s('%s') taking writing lock\n",
 			       ca->cm_busname, ca->cm_nickname);
 			writing_lock = ca;
+			if (phase == cm_ca_phase_invalid) {
+				abort();
+			}
+			writing_lock_ca_phase = phase;
 		} else {
 			abort();
 		}
@@ -317,13 +325,15 @@ cm_writing_lock_by_ca(struct cm_store_ca *ca)
 	}
 }
 static dbus_bool_t
-cm_writing_unlock_by_ca(struct cm_store_ca *ca)
+cm_writing_unlock_by_ca(struct cm_store_ca *ca, enum cm_ca_phase phase)
 {
-	if ((writing_lock == ca) || (writing_lock == NULL)) {
+	if (((writing_lock == ca) && (writing_lock_ca_phase == phase)) ||
+	    (writing_lock == NULL)) {
 		if (writing_lock == ca) {
 			cm_log(3, "%s('%s') releasing writing lock\n",
 			       ca->cm_busname, ca->cm_nickname);
 			writing_lock = NULL;
+			writing_lock_ca_phase = cm_ca_phase_invalid;
 		} else {
 			abort();
 		}
@@ -346,7 +356,7 @@ cm_iterate_entry_init(struct cm_store_entry *entry, void **cm_iterate_state)
 	memset(state, 0, sizeof(*state));
 	*cm_iterate_state = state;
 	cm_entry_reset_state(entry);
-	if (cm_writing_has_lock(entry)) {
+	if (cm_writing_has_lock(entry, cm_ca_phase_invalid)) {
 		cm_writing_unlock_by_entry(entry);
 	}
 	state->cm_keyiread_state = cm_keyiread_start(entry);
@@ -1007,7 +1017,7 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		/* We should already have the lock here.  In cases where we're
 		 * resuming things at startup, try to acquire it if we don't
 		 * have it. */
-		if (!cm_writing_has_lock(entry) && !cm_writing_lock_by_entry(entry)) {
+		if (!cm_writing_has_lock(entry, cm_ca_phase_invalid) && !cm_writing_lock_by_entry(entry)) {
 			/* Just hang out in this state while we're messing
 			 * around with the outside world for another entry. */
 			cm_log(3, "%s('%s') waiting for saving lock\n",
@@ -1060,7 +1070,7 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		/* We should already have the lock here.  In cases where we're
 		 * resuming things at startup, try to acquire it if we don't
 		 * have it. */
-		if (!cm_writing_has_lock(entry) && !cm_writing_lock_by_entry(entry)) {
+		if (!cm_writing_has_lock(entry, cm_ca_phase_invalid) && !cm_writing_lock_by_entry(entry)) {
 			/* Just hang out in this state while we're messing
 			 * around with the outside world for another entry. */
 			cm_log(3, "%s('%s') waiting for saving lock\n",
@@ -1315,7 +1325,7 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		/* We should already have the lock here.  In cases where we're
 		 * resuming things at startup, try to acquire it if we don't
 		 * have it. */
-		if (!cm_writing_has_lock(entry) && !cm_writing_lock_by_entry(entry)) {
+		if (!cm_writing_has_lock(entry, cm_ca_phase_invalid) && !cm_writing_lock_by_entry(entry)) {
 			/* Just hang out in this state while we're messing
 			 * around with the outside world for another entry. */
 			cm_log(3, "%s('%s') waiting for saving lock\n",
@@ -1699,7 +1709,7 @@ cm_iterate_entry_done(struct cm_store_entry *entry, void *cm_iterate_state)
 	cm_log(3, "%s('%s') ends in state '%s'\n",
 	       entry->cm_busname, entry->cm_nickname,
 	       cm_store_state_as_string(entry->cm_state));
-	if (cm_writing_has_lock(entry)) {
+	if (cm_writing_has_lock(entry, cm_ca_phase_invalid)) {
 		cm_writing_unlock_by_entry(entry);
 	}
 	return 0;
@@ -1722,8 +1732,8 @@ cm_iterate_ca_init(struct cm_store_ca *ca, enum cm_ca_phase phase,
 	ca->cm_ca_state[phase] = CM_CA_NEED_TO_REFRESH;
 	*cm_iterate_state = state;
 
-	if (cm_writing_has_lock(ca)) {
-		cm_writing_unlock_by_ca(ca);
+	if (cm_writing_has_lock(ca, phase)) {
+		cm_writing_unlock_by_ca(ca, phase);
 	}
 
 	cm_store_ca_save(ca);
@@ -1777,17 +1787,19 @@ cm_iterate_ca(struct cm_store_ca *ca,
 			abort();
 			break;
 		}
-		if (state->cm_task_state == NULL) {
-			ca->cm_ca_state[state->cm_phase] = CM_CA_DISABLED;
-			*when = cm_time_now;
-		} else {
-			*readfd = cm_cadata_get_fd(ca, state->cm_task_state);
-			if (*readfd == -1) {
-				ca->cm_ca_state[state->cm_phase] = CM_CA_REFRESHING;
-				*when = cm_time_soon;
+		if (!noop) {
+			if (state->cm_task_state == NULL) {
+				ca->cm_ca_state[state->cm_phase] = CM_CA_DISABLED;
+				*when = cm_time_now;
 			} else {
-				ca->cm_ca_state[state->cm_phase] = CM_CA_REFRESHING;
-				*when = cm_time_no_time;
+				*readfd = cm_cadata_get_fd(ca, state->cm_task_state);
+				if (*readfd == -1) {
+					ca->cm_ca_state[state->cm_phase] = CM_CA_REFRESHING;
+					*when = cm_time_soon;
+				} else {
+					ca->cm_ca_state[state->cm_phase] = CM_CA_REFRESHING;
+					*when = cm_time_no_time;
+				}
 			}
 		}
 		break;
@@ -1847,7 +1859,7 @@ cm_iterate_ca(struct cm_store_ca *ca,
 		}
 		break;
 	case CM_CA_NEED_TO_SAVE_DATA:
-		if (!cm_writing_lock_by_ca(ca)) {
+		if (!cm_writing_lock_by_ca(ca, state->cm_phase)) {
 			/* Just hang out in this state while we're messing
 			 * around with the outside world for another CA. */
 			cm_log(3, "%s('%s') waiting for saving lock\n",
@@ -1939,7 +1951,7 @@ cm_iterate_ca(struct cm_store_ca *ca,
 		}
 		break;
 	case CM_CA_SAVED_DATA:
-		if (!cm_writing_unlock_by_ca(ca)) {
+		if (!cm_writing_unlock_by_ca(ca, state->cm_phase)) {
 			/* If for some reason we fail to release the lock that
 			 * we have, try to release it again soon. */
 			*when = cm_time_soon;
@@ -2060,8 +2072,8 @@ cm_iterate_ca_done(struct cm_store_ca *ca, void *cm_iterate_state)
 	cm_log(3, "%s('%s') ends (%s/%s)\n",
 	       ca->cm_busname, ca->cm_nickname, phases, states);
 
-	if (cm_writing_has_lock(ca)) {
-		cm_writing_unlock_by_ca(ca);
+	if (cm_writing_has_lock(ca, phase)) {
+		cm_writing_unlock_by_ca(ca, phase);
 	}
 	return 0;
 }
