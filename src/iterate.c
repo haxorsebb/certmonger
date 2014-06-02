@@ -176,6 +176,8 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 	case CM_NOTIFYING_ISSUED_FAILED:
 		entry->cm_state = CM_NEED_TO_NOTIFY_ISSUED_FAILED;
 		break;
+	case CM_NEED_TO_SAVE_CA_CERTS:
+		break;
 	case CM_NEED_TO_NOTIFY_ISSUED_SAVED:
 		break;
 	case CM_NOTIFYING_ISSUED_SAVED:
@@ -1081,11 +1083,11 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				}
 			} else {
 				/* Failed to start the post-save; skip it. */
-				entry->cm_state = CM_NEED_TO_NOTIFY_ISSUED_SAVED;
+				entry->cm_state = CM_NEED_TO_SAVE_CA_CERTS;
 				*when = cm_time_soon;
 			}
 		} else {
-			entry->cm_state = CM_NEED_TO_NOTIFY_ISSUED_SAVED;
+			entry->cm_state = CM_NEED_TO_SAVE_CA_CERTS;
 			*when = cm_time_now;
 		}
 		break;
@@ -1094,7 +1096,7 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		if (cm_hook_ready(entry, state->cm_hook_state) == 0) {
 			cm_hook_done(entry, state->cm_hook_state);
 			state->cm_hook_state = NULL;
-			entry->cm_state = CM_NEED_TO_NOTIFY_ISSUED_SAVED;
+			entry->cm_state = CM_NEED_TO_SAVE_CA_CERTS;
 			*when = cm_time_now;
 		} else {
 			/* Wait for status update, or poll. */
@@ -1251,7 +1253,7 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		/* We should already have the lock here.  In cases where we're
 		 * resuming things at startup, try to acquire it if we don't
 		 * have it. */
-		if (!cm_writing_has_lock(entry) && !cm_writing_lock_by_entry(entry)) {
+		if (!cm_writing_has_lock(entry, cm_ca_phase_invalid) && !cm_writing_lock_by_entry(entry)) {
 			/* Just hang out in this state while we're messing
 			 * around with the outside world for another entry. */
 			cm_log(3, "%s('%s') waiting for saving lock\n",
@@ -1302,6 +1304,11 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				*when = cm_time_no_time;
 			}
 		}
+		break;
+
+	case CM_NEED_TO_SAVE_CA_CERTS:
+		entry->cm_state = CM_NEED_TO_NOTIFY_ISSUED_SAVED;
+		*when = cm_time_now;
 		break;
 
 	case CM_NEED_TO_NOTIFY_ISSUED_SAVED:
