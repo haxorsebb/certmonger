@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.74.90
+Version:	0.74.91
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
