@@ -261,6 +261,8 @@ struct cm_store_ca {
 	int cm_ca_internal_force_issue_time:1;
 	time_t cm_ca_internal_issue_time;
 	char *cm_ca_external_helper;
+	/* An error message from the CA, hopefully a useful one. */
+	char *cm_ca_error;
 	/* "The" root, at the top of the chain of trust. */
 	struct cm_nickcert **cm_ca_root_certs;
 	/* A possibly-empty list of other trusted roots, for whatever reason. */

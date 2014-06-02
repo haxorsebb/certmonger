@@ -2247,6 +2247,7 @@ cm_store_ca_dup(void *parent, struct cm_store_ca *ca)
 		cm_store_maybe_strdup(ret, ca->cm_store_private);
 	ret->cm_nickname = cm_store_maybe_strdup(ret, ca->cm_nickname);
 	ret->cm_ca_aka = cm_store_maybe_strdup(ret, ca->cm_ca_aka);
+	ret->cm_ca_error = cm_store_maybe_strdup(ret, ca->cm_ca_error);
 	ret->cm_ca_known_issuer_names =
 		cm_store_maybe_strdupv(ret, ca->cm_ca_known_issuer_names);
 	ret->cm_ca_is_default = ca->cm_ca_is_default;

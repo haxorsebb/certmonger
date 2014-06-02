@@ -6498,6 +6498,15 @@ cm_tdbush_iface_ca(void)
 										     NULL),
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_CA_ERROR,
+								       cm_tdbush_property_string,
+								       cm_tdbush_property_read,
+								       cm_tdbush_property_char_p,
+								       offsetof(struct cm_store_ca, cm_ca_error),
+								       NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
+								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_ISSUER_NAMES,
 								       cm_tdbush_property_strings,
 								       cm_tdbush_property_read,
@@ -6648,7 +6657,7 @@ cm_tdbush_iface_ca(void)
 								       NULL, NULL, NULL, NULL, NULL,
 								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
-				     NULL)))))))))))))))))))))))))))));
+				     NULL))))))))))))))))))))))))))))));
 	}
 	return ret;
 }
