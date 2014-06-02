@@ -1758,6 +1758,7 @@ cm_iterate_ca(struct cm_store_ca *ca,
 {
 	struct cm_store_ca old_ca = *ca;
 	struct cm_ca_state *state = cm_iterate_state;
+	dbus_bool_t noop = FALSE;
 
 	*readfd = -1;
 
@@ -1769,6 +1770,29 @@ cm_iterate_ca(struct cm_store_ca *ca,
 			break;
 		case cm_ca_phase_certs:
 			state->cm_task_state = cm_cadata_start_certs(ca);
+			break;
+		case cm_ca_phase_save_certs:
+			state->cm_task_state = NULL;
+			switch (ca->cm_ca_state[cm_ca_phase_certs]) {
+			case CM_CA_NEED_TO_REFRESH:
+			case CM_CA_REFRESHING:
+			case CM_CA_DATA_UNREACHABLE:
+			case CM_CA_NEED_TO_ANALYZE:
+			case CM_CA_ANALYZING:
+				ca->cm_ca_state[state->cm_phase] = CM_CA_NEED_TO_SAVE_DATA;
+				break;
+			case CM_CA_NEED_TO_SAVE_DATA:
+			case CM_CA_PRE_SAVE_DATA:
+			case CM_CA_START_SAVING_DATA:
+			case CM_CA_SAVING_DATA:
+			case CM_CA_POST_SAVE_DATA:
+			case CM_CA_SAVED_DATA:
+			case CM_CA_DISABLED:
+			case CM_CA_IDLE:
+				ca->cm_ca_state[state->cm_phase] = CM_CA_IDLE;
+				break;
+			}
+			noop = TRUE;
 			break;
 		case cm_ca_phase_profiles:
 			state->cm_task_state = cm_cadata_start_profiles(ca);
@@ -1822,6 +1846,7 @@ cm_iterate_ca(struct cm_store_ca *ca,
 				case cm_ca_phase_renew_reqs:
 					ca->cm_ca_state[state->cm_phase] = CM_CA_NEED_TO_ANALYZE;
 					break;
+				case cm_ca_phase_save_certs:
 				case cm_ca_phase_invalid:
 					abort();
 					break;
@@ -1981,6 +2006,7 @@ cm_iterate_ca(struct cm_store_ca *ca,
 				}
 			}
 			break;
+		case cm_ca_phase_save_certs:
 		case cm_ca_phase_identify:
 		case cm_ca_phase_profiles:
 		case cm_ca_phase_default_profile:

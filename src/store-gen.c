@@ -142,6 +142,8 @@ cm_store_ca_phase_as_string(enum cm_ca_phase phase)
 		return "identify";
 	case cm_ca_phase_certs:
 		return "certs";
+	case cm_ca_phase_save_certs:
+		return "save-certs";
 	case cm_ca_phase_profiles:
 		return "profiles";
 	case cm_ca_phase_default_profile:

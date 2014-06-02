@@ -223,6 +223,7 @@ struct cm_store_ca {
 	enum cm_ca_phase {
 		cm_ca_phase_identify = 0,
 		cm_ca_phase_certs,
+		cm_ca_phase_save_certs,
 		cm_ca_phase_profiles,
 		cm_ca_phase_default_profile,
 		cm_ca_phase_enroll_reqs,
