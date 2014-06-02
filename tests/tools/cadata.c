@@ -54,7 +54,7 @@ main(int argc, char **argv)
 {
 	struct cm_cadata_state *state;
 	struct cm_store_ca *ca;
-	int c, fd, ret;
+	int c, fd, ret = CM_SUBMIT_STATUS_REJECTED;
 	int iflag = 0, cflag = 0, pflag = 0, dflag = 0, eflag = 0, rflag = 0;
 	unsigned i;
 	void *parent;

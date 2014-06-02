@@ -58,8 +58,8 @@ not_valid_after(PLArenaPool *arena, struct cm_nickcert *nc)
 	char *pem;
 	int length;
 
-	if (strstr(nc->cm_cert, "-----BEGIN") != NULL) {
-		p = strstr(nc->cm_cert, "-----BEGIN");
+	p = strstr(nc->cm_cert, "-----BEGIN");
+	if (p != NULL) {
 		p += strcspn(p, "\r\n");
 		p += strspn(p, "\r\n");
 		q = strstr(p, "-----END");

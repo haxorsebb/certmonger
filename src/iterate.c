@@ -2023,15 +2023,18 @@ int
 cm_iterate_ca_done(struct cm_store_ca *ca, void *cm_iterate_state)
 {
 	struct cm_ca_state *state;
+	enum cm_ca_phase phase = cm_ca_phase_invalid;
+	const char *phases, *states;
 
 	state = cm_iterate_state;
 
-	cm_log(3, "%s('%s') ends (%s/%s)\n",
-	       ca->cm_busname, ca->cm_nickname,
-	       cm_store_ca_phase_as_string(state->cm_phase),
-	       cm_store_ca_state_as_string(ca->cm_ca_state[state->cm_phase]));
+	phases = cm_store_ca_phase_as_string(phase);
+	states = cm_store_ca_state_as_string(CM_CA_DISABLED);
 
 	if (state != NULL) {
+	       phase = state->cm_phase,
+	       phases = cm_store_ca_phase_as_string(phase),
+	       states = cm_store_ca_state_as_string(ca->cm_ca_state[phase]);
 		if (state->cm_ca_analyze_state != NULL) {
 			cm_ca_analyze_done(ca, state->cm_ca_analyze_state);
 			state->cm_ca_analyze_state = NULL;
@@ -2046,6 +2049,9 @@ cm_iterate_ca_done(struct cm_store_ca *ca, void *cm_iterate_state)
 		}
 		talloc_free(state);
 	}
+
+	cm_log(3, "%s('%s') ends (%s/%s)\n",
+	       ca->cm_busname, ca->cm_nickname, phases, states);
 
 	if (cm_writing_has_lock(ca)) {
 		cm_writing_unlock_by_ca(ca);
