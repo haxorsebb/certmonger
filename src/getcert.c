@@ -733,10 +733,19 @@ request(const char *argv0, int argc, char **argv)
 			postcommand = optarg;
 			break;
 		case 'a':
-			add_string(globals.tctx, &anchor_dbs, optarg);
+			p = ensure_nss(globals.tctx, optarg, &nss_scheme);
+			if ((nss_scheme != NULL) && (p != NULL)) {
+				p = talloc_asprintf(globals.tctx, "%s:%s",
+						    nss_scheme, p);
+				if (p != NULL) {
+					add_string(globals.tctx, &anchor_dbs,
+						   p);
+				}
+			}
 			break;
 		case 'F':
-			add_string(globals.tctx, &anchor_files, optarg);
+			add_string(globals.tctx, &anchor_files,
+				   ensure_pem(globals.tctx, optarg));
 			break;
 		case 'v':
 			verbose++;
@@ -1422,6 +1431,7 @@ set_tracking(const char *argv0, const char *category,
 	char *profile = NULL;
 	char *pin = NULL, *pinfile = NULL;
 	dbus_bool_t b;
+	char *p;
 	int c, auto_renew_start = 0, auto_renew_stop = 0, verbose = 0, i, j;
 	int ku = 0, kubit;
 	char **eku = NULL, *oid, kustring[16];
@@ -1569,10 +1579,19 @@ set_tracking(const char *argv0, const char *category,
 			postcommand = optarg;
 			break;
 		case 'a':
-			add_string(globals.tctx, &anchor_dbs, optarg);
+			p = ensure_nss(globals.tctx, optarg, &nss_scheme);
+			if ((nss_scheme != NULL) && (p != NULL)) {
+				p = talloc_asprintf(globals.tctx, "%s:%s",
+						    nss_scheme, p);
+				if (p != NULL) {
+					add_string(globals.tctx, &anchor_dbs,
+						   p);
+				}
+			}
 			break;
 		case 'F':
-			add_string(globals.tctx, &anchor_files, optarg);
+			add_string(globals.tctx, &anchor_files,
+				   ensure_pem(globals.tctx, optarg));
 			break;
 		case 'v':
 			verbose++;
@@ -1917,6 +1936,7 @@ resubmit(const char *argv0, int argc, char **argv)
 	char **principal = NULL, **dns = NULL, **email = NULL, **ipaddr = NULL;
 	char *profile = NULL, kustring[16];
 	dbus_bool_t b;
+	char *p;
 	int verbose = 0, ku = 0, kubit, c, i, j;
 	krb5_context kctx;
 	krb5_error_code kret;
@@ -2035,10 +2055,19 @@ resubmit(const char *argv0, int argc, char **argv)
 			postcommand = optarg;
 			break;
 		case 'a':
-			add_string(globals.tctx, &anchor_dbs, optarg);
+			p = ensure_nss(globals.tctx, optarg, &nss_scheme);
+			if ((nss_scheme != NULL) && (p != NULL)) {
+				p = talloc_asprintf(globals.tctx, "%s:%s",
+						    nss_scheme, p);
+				if (p != NULL) {
+					add_string(globals.tctx, &anchor_dbs,
+						   p);
+				}
+			}
 			break;
 		case 'F':
-			add_string(globals.tctx, &anchor_files, optarg);
+			add_string(globals.tctx, &anchor_files,
+				   ensure_pem(globals.tctx, optarg));
 			break;
 		case 'v':
 			verbose++;
