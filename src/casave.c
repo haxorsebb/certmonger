@@ -228,6 +228,8 @@ cm_casave_main_o(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 		}
 		for (i = 0; state->certs[i] != NULL; i++) {
 			fprintf(bundle, "%s", state->certs[i]->cert);
+			cm_log(3, "Write '%s' to '%s'.\n",
+			       state->certs[i]->nickname, state->file);
 		}
 		fclose(bundle);
 	}
