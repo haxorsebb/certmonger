@@ -102,6 +102,7 @@ void
 cm_certsave_done(struct cm_store_entry *entry, struct cm_certsave_state *state)
 {
 	struct cm_certsave_state_pvt *pvt;
+
 	pvt = (struct cm_certsave_state_pvt *) state;
 	pvt->done(entry, state);
 }

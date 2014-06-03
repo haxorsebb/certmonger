@@ -156,6 +156,7 @@ void
 cm_submit_done(struct cm_store_entry *entry, struct cm_submit_state *state)
 {
 	struct cm_submit_state_pvt *pvt = (struct cm_submit_state_pvt *) state;
+
 	pvt->done(entry, state);
 }
 

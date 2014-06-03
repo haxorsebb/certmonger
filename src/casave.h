@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2014 Red Hat, Inc.
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -18,8 +18,9 @@
 #ifndef cmcasave_h
 #define cmcasave_h
 
-struct cm_casave_state;
 struct cm_store_entry;
+struct cm_store_ca;
+struct cm_casave_state;
 
 /* Start saving the certificates of the entry's CA. */
 struct cm_casave_state *cm_casave_start(struct cm_store_entry *entry,

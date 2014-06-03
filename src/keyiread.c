@@ -112,6 +112,7 @@ void
 cm_keyiread_done(struct cm_store_entry *entry, struct cm_keyiread_state *state)
 {
 	struct cm_keyiread_state_pvt *pvt;
+
 	pvt = (struct cm_keyiread_state_pvt *) state;
 	pvt->done(entry, state);
 }

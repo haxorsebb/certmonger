@@ -101,5 +101,6 @@ void
 cm_keygen_done(struct cm_store_entry *entry, struct cm_keygen_state *state)
 {
 	struct cm_keygen_state_pvt *pvt = (struct cm_keygen_state_pvt *) state;
+
 	pvt->done(entry, state);
 }

@@ -83,6 +83,7 @@ void
 cm_certread_done(struct cm_store_entry *entry, struct cm_certread_state *state)
 {
 	struct cm_certread_state_pvt *pvt;
+
 	pvt = (struct cm_certread_state_pvt *) state;
 	pvt->done(entry, state);
 }

@@ -471,9 +471,6 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		 void (*emit_entry_changes)(struct cm_context *,
 					    struct cm_store_entry *,
 					    struct cm_store_entry *),
-		 dbus_bool_t (*restart_ca)(struct cm_context *,
-					   const char *,
-					   enum cm_ca_phase),
 		 void *cm_iterate_state,
 		 enum cm_time *when, int *delay, int *readfd)
 {
@@ -1339,7 +1336,7 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 	case CM_START_SAVING_CA_CERTS:
 		state->cm_casave_state = cm_casave_start(entry, ca);
 		if (state->cm_casave_state != NULL) {
-			entry->cm_state = CM_NOTIFYING_ISSUED_FAILED;
+			entry->cm_state = CM_SAVING_CA_CERTS;
 			/* Wait for status update, or poll. */
 			*readfd = cm_casave_get_fd(entry, NULL,
 						   state->cm_casave_state);
