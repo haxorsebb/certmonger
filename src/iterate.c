@@ -2005,8 +2005,8 @@ cm_iterate_ca(struct cm_store_ca *ca,
 		if (state->cm_casave_state != NULL) {
 			ca->cm_ca_state[state->cm_phase] = CM_CA_SAVING_DATA;
 			/* Wait for status update, or poll. */
-			*readfd = cm_ca_hook_get_fd(ca,
-						    state->cm_hook_state);
+			*readfd = cm_casave_get_fd(NULL, ca,
+						   state->cm_casave_state);
 			if (*readfd == -1) {
 				*when = cm_time_soon;
 			} else {

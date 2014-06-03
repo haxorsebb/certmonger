@@ -185,10 +185,12 @@ cm_casave_main_n(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 						}
 						break;
 					}
+				} else{
+					cm_log(2, "Certificate '%s' already in database '%s'.\n",
+					       p, state->nssdb);
 				}
 			} else{
-				cm_log(3, "Certificate '%s' already in database '%s'.\n",
-				       p, state->nssdb);
+				cm_log(3, "Error decoding certificate '%s'.\n", p);
 			}
 		}
 		error = NSS_ShutdownContext(ctx);
