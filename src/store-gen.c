@@ -669,8 +669,6 @@ cm_store_base64_to_bin(const char *serial, int insize,
 	unsigned char *b;
 	uint32_t u, count;
 
-	p = serial;
-	b = buf;
 	u = 0;
 	count = 0;
 	if (insize < 0) {

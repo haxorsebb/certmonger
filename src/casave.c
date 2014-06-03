@@ -320,7 +320,9 @@ add_cert(void *parent, struct cm_savecert ***dest, enum cert_level level,
 		printf(_("Out of memory.\n"));
 		exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
 	}
-	memcpy(tmp, *dest, sizeof(tmp[0]) * i);
+	if (i > 0) {
+		memcpy(tmp, *dest, sizeof(tmp[0]) * i);
+	}
 	for (j = 0; j < i; j++) {
 		if ((strcmp((*dest)[j]->nickname, nickname) == 0) &&
 		    (strcmp((*dest)[j]->cert, cert) == 0)) {
@@ -469,53 +471,54 @@ build_locations_lists(void *parent, struct cm_casave_state *state,
 		ca2 = ca_for_entry(e, state);
 	}
 	if ((ca2 != NULL) && (ca2 != ca)) {
-		/* Collect the list of applicable locations from the entry's CA. */
-		if (ca->cm_ca_root_cert_store_files != NULL) {
+		/* Collect the list of applicable locations from the entry's
+		 * CA. */
+		if (ca2->cm_ca_root_cert_store_files != NULL) {
 			for (i = 0;
-			     ca->cm_ca_root_cert_store_files[i] != NULL;
+			     ca2->cm_ca_root_cert_store_files[i] != NULL;
 			     i++) {
 				add_string(state, files,
-					   ca->cm_ca_root_cert_store_files[i]);
+					   ca2->cm_ca_root_cert_store_files[i]);
 			}
 		}
-		if (ca->cm_ca_other_root_cert_store_files != NULL) {
+		if (ca2->cm_ca_other_root_cert_store_files != NULL) {
 			for (i = 0;
-			     ca->cm_ca_other_root_cert_store_files[i] != NULL;
+			     ca2->cm_ca_other_root_cert_store_files[i] != NULL;
 			     i++) {
 				add_string(state, files,
-					   ca->cm_ca_other_root_cert_store_files[i]);
+					   ca2->cm_ca_other_root_cert_store_files[i]);
 			}
 		}
-		if (ca->cm_ca_other_cert_store_files != NULL) {
+		if (ca2->cm_ca_other_cert_store_files != NULL) {
 			for (i = 0;
-			     ca->cm_ca_other_cert_store_files[i] != NULL;
+			     ca2->cm_ca_other_cert_store_files[i] != NULL;
 			     i++) {
 				add_string(state, files,
-					   ca->cm_ca_other_cert_store_files[i]);
+					   ca2->cm_ca_other_cert_store_files[i]);
 			}
 		}
-		if (ca->cm_ca_root_cert_store_nssdbs != NULL) {
+		if (ca2->cm_ca_root_cert_store_nssdbs != NULL) {
 			for (i = 0;
-			     ca->cm_ca_root_cert_store_nssdbs[i] != NULL;
+			     ca2->cm_ca_root_cert_store_nssdbs[i] != NULL;
 			     i++) {
 				add_string(state, dbs,
-					   ca->cm_ca_root_cert_store_nssdbs[i]);
+					   ca2->cm_ca_root_cert_store_nssdbs[i]);
 			}
 		}
-		if (ca->cm_ca_other_root_cert_store_nssdbs != NULL) {
+		if (ca2->cm_ca_other_root_cert_store_nssdbs != NULL) {
 			for (i = 0;
-			     ca->cm_ca_other_root_cert_store_nssdbs[i] != NULL;
+			     ca2->cm_ca_other_root_cert_store_nssdbs[i] != NULL;
 			     i++) {
 				add_string(state, dbs,
-					   ca->cm_ca_other_root_cert_store_nssdbs[i]);
+					   ca2->cm_ca_other_root_cert_store_nssdbs[i]);
 			}
 		}
-		if (ca->cm_ca_other_cert_store_nssdbs != NULL) {
+		if (ca2->cm_ca_other_cert_store_nssdbs != NULL) {
 			for (i = 0;
-			     ca->cm_ca_other_cert_store_nssdbs[i] != NULL;
+			     ca2->cm_ca_other_cert_store_nssdbs[i] != NULL;
 			     i++) {
 				add_string(state, dbs,
-					   ca->cm_ca_other_cert_store_nssdbs[i]);
+					   ca2->cm_ca_other_cert_store_nssdbs[i]);
 			}
 		}
 	}

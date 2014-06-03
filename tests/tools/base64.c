@@ -58,6 +58,7 @@ main(int argc, char **argv)
 		q = realloc(p, length + l + 1);
 		if (q == NULL) {
 			perror("realloc");
+			free(p);
 			return 1;
 		}
 		memcpy(q + length, buf, l);
@@ -66,7 +67,7 @@ main(int argc, char **argv)
 		length += l;
 	}
 	if (decode) {
-		j = 3 * howmany(length, 4);
+		j = 3 * howmany(length, 4) + 1;
 		q = malloc(j);
 		i = cm_store_base64_to_bin((const char *) p, -1, q, j);
 		if (hex) {
@@ -94,5 +95,6 @@ main(int argc, char **argv)
 			}
 		}
 	}
+	free(p);
 	return 0;
 }

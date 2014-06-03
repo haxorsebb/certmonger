@@ -67,6 +67,7 @@ main(int argc, char **argv)
 		q = realloc(p, len + i);
 		if (q == NULL) {
 			perror("malloc");
+			free(p);
 			return 1;
 		}
 		p = q;

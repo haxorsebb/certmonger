@@ -154,12 +154,12 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			break;
 		}
 		cm_log(1, "Unable to open NSS database.\n");
-		_exit(1);
+		_exit(status);
 	}
 	es = util_n_fips_hook();
 	if (es != NULL) {
 		cm_log(1, "Error putting NSS into FIPS mode: %s\n", es);
-		_exit(1);
+		_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
 	}
 	/* Allocate a memory pool. */
 	arena = PORT_NewArena(sizeof(double));

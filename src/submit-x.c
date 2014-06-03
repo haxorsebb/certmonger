@@ -65,7 +65,9 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal, char **msg)
 	krb5_get_init_creds_opt gicopts, *gicoptsp;
 	char tgs[LINE_MAX], *ret;
 
-	*msg = NULL;
+	if (msg != NULL) {
+		*msg = NULL;
+	}
 
 	kret = krb5_init_context(&ctx);
 	if (kret != 0) {
