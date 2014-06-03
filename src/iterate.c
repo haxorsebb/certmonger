@@ -1896,7 +1896,7 @@ cm_iterate_ca(struct cm_store_ca *ca,
 	case CM_CA_REFRESHING:
 		if (cm_cadata_ready(ca, state->cm_task_state) == 0) {
 			if (cm_cadata_modified(ca, state->cm_task_state) == 0) {
-				cm_log(3, "%s('%s') %s data updated\n",
+				cm_log(3, "%s('%s')-%s data updated\n",
 				       ca->cm_busname, ca->cm_nickname,
 				       cm_store_ca_phase_as_string(state->cm_phase));
 				cm_cadata_done(ca, state->cm_task_state);
@@ -1922,7 +1922,7 @@ cm_iterate_ca(struct cm_store_ca *ca,
 						  state->cm_task_state) == 0) {
 				cm_cadata_done(ca, state->cm_task_state);
 				state->cm_task_state = NULL;
-				cm_log(3, "%s('%s') %s server unreachable\n",
+				cm_log(3, "%s('%s')-%s server unreachable\n",
 				       ca->cm_busname, ca->cm_nickname,
 				       cm_store_ca_phase_as_string(state->cm_phase));
 				ca->cm_ca_state[state->cm_phase] = CM_CA_DATA_UNREACHABLE;
@@ -1932,7 +1932,7 @@ cm_iterate_ca(struct cm_store_ca *ca,
 						  state->cm_task_state) == 0) {
 				cm_cadata_done(ca, state->cm_task_state);
 				state->cm_task_state = NULL;
-				cm_log(3, "%s('%s') %s retrieval unsupported\n",
+				cm_log(3, "%s('%s')-%s retrieval unsupported\n",
 				       ca->cm_busname, ca->cm_nickname,
 				       cm_store_ca_phase_as_string(state->cm_phase));
 				ca->cm_ca_state[state->cm_phase] = CM_CA_DISABLED;
@@ -1940,7 +1940,7 @@ cm_iterate_ca(struct cm_store_ca *ca,
 			} else {
 				cm_cadata_done(ca, state->cm_task_state);
 				state->cm_task_state = NULL;
-				cm_log(3, "%s('%s') %s unchanged\n",
+				cm_log(3, "%s('%s')-%s unchanged\n",
 				       ca->cm_busname, ca->cm_nickname,
 				       cm_store_ca_phase_as_string(state->cm_phase));
 				ca->cm_ca_state[state->cm_phase] = CM_CA_NEED_TO_ANALYZE;
@@ -1952,8 +1952,9 @@ cm_iterate_ca(struct cm_store_ca *ca,
 		if (!cm_writing_lock_by_ca(ca, state->cm_phase)) {
 			/* Just hang out in this state while we're messing
 			 * around with the outside world for another CA. */
-			cm_log(3, "%s('%s') waiting for saving lock\n",
-			       ca->cm_busname, ca->cm_nickname);
+			cm_log(3, "%s('%s')-%s waiting for saving lock\n",
+			       ca->cm_busname, ca->cm_nickname,
+			       cm_store_ca_phase_as_string(state->cm_phase));
 			*when = cm_time_soon;
 			break;
 		}
@@ -2096,9 +2097,10 @@ cm_iterate_ca(struct cm_store_ca *ca,
 			/* If for some reason we fail to release the lock that
 			 * we have, try to release it again soon. */
 			*when = cm_time_soon;
-			cm_log(1, "%s('%s') failed to release saving "
+			cm_log(1, "%s('%s')-%s failed to release saving "
 			       "lock, probably a bug\n",
-			       ca->cm_busname, ca->cm_nickname);
+			       ca->cm_busname, ca->cm_nickname,
+			       cm_store_ca_phase_as_string(state->cm_phase));
 			break;
 		}
 		ca->cm_ca_state[state->cm_phase] = CM_CA_NEED_TO_ANALYZE;
