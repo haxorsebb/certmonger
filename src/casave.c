@@ -154,12 +154,12 @@ cm_casave_main_n(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 			if (decoded != NULL) {
 				found = CERT_FindCertByDERCert(CERT_GetDefaultCertDB(),
 							       &decoded->derCert);
-				if (found == NULL) {
+				if (found != NULL) {
 					memset(&trust, 0, sizeof(trust));
 					switch (state->certs[i]->level) {
 					case root:
 					case other_root:
-						CERT_DecodeTrustString(&trust, "CT,,");
+						CERT_DecodeTrustString(&trust, "CT,C,C");
 						break;
 					case other:
 						CERT_DecodeTrustString(&trust, ",,");
@@ -185,12 +185,14 @@ cm_casave_main_n(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 						}
 						break;
 					} else {
+						CERT_ChangeCertTrust(CERT_GetDefaultCertDB(),
+								     imported[0], &trust);
 						CERT_DestroyCertificate(imported[0]);
 					}
-				} else{
-					cm_log(2, "Certificate '%s' already in database '%s'.\n",
-					       p, state->nssdb);
 					CERT_DestroyCertificate(found);
+				} else{
+					cm_log(2, "Temporary certificate '%s' not found in '%s'.\n",
+					       p, state->nssdb);
 				}
 				CERT_DestroyCertificate(decoded);
 			} else{
