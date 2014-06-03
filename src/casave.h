@@ -18,13 +18,19 @@
 #ifndef cmcasave_h
 #define cmcasave_h
 
+struct cm_context;
 struct cm_store_entry;
 struct cm_store_ca;
 struct cm_casave_state;
 
 /* Start saving the certificates of the entry's CA. */
 struct cm_casave_state *cm_casave_start(struct cm_store_entry *entry,
-					struct cm_store_ca *ca);
+					struct cm_store_ca *ca,
+					struct cm_context *cm,
+					struct cm_store_ca *(*get_ca_by_index)(struct cm_context *, int),
+					int (*get_n_cas)(struct cm_context *),
+					struct cm_store_entry *(*get_entry_by_index)(struct cm_context *, int),
+					int (*get_n_entries)(struct cm_context *));
 
 /* Check if something changed, for example we finished saving certs. */
 int cm_casave_ready(struct cm_store_entry *entry, struct cm_store_ca *ca,

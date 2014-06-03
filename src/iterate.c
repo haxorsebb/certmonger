@@ -470,6 +470,8 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		 struct cm_context *context,
 		 struct cm_store_ca *(*get_ca_by_index)(struct cm_context *, int),
 		 int (*get_n_cas)(struct cm_context *),
+		 struct cm_store_entry *(*get_entry_by_index)(struct cm_context *, int),
+		 int (*get_n_entries)(struct cm_context *),
 		 void (*emit_entry_saved_cert)(struct cm_context *,
 					       struct cm_store_entry *),
 		 void (*emit_entry_changes)(struct cm_context *,
@@ -1338,7 +1340,11 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		break;
 
 	case CM_START_SAVING_CA_CERTS:
-		state->cm_casave_state = cm_casave_start(entry, ca);
+		state->cm_casave_state = cm_casave_start(entry, ca, context,
+							 get_ca_by_index,
+							 get_n_cas,
+							 get_entry_by_index,
+							 get_n_entries);
 		if (state->cm_casave_state != NULL) {
 			entry->cm_state = CM_SAVING_CA_CERTS;
 			/* Wait for status update, or poll. */
@@ -1830,6 +1836,10 @@ cm_iterate_ca_init(struct cm_store_ca *ca, enum cm_ca_phase phase,
 int
 cm_iterate_ca(struct cm_store_ca *ca,
 	      struct cm_context *context,
+	      struct cm_store_ca *(*get_ca_by_index)(struct cm_context *, int),
+	      int (*get_n_cas)(struct cm_context *),
+	      struct cm_store_entry *(*get_entry_by_index)(struct cm_context *, int),
+	      int (*get_n_entries)(struct cm_context *),
 	      void (*emit_ca_changes)(struct cm_context *,
 				      struct cm_store_ca *,
 				      struct cm_store_ca *),
@@ -1987,7 +1997,11 @@ cm_iterate_ca(struct cm_store_ca *ca,
 		}
 		break;
 	case CM_CA_START_SAVING_DATA:
-		state->cm_casave_state = cm_casave_start(NULL, ca);
+		state->cm_casave_state = cm_casave_start(NULL, ca, context,
+							 get_ca_by_index,
+							 get_n_cas,
+							 get_entry_by_index,
+							 get_n_entries);
 		if (state->cm_casave_state != NULL) {
 			ca->cm_ca_state[state->cm_phase] = CM_CA_SAVING_DATA;
 			/* Wait for status update, or poll. */
