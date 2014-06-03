@@ -1043,19 +1043,9 @@ request(const char *argv0, int argc, char **argv)
 		param[i].value.as = anchor_files;
 		params[i] = &param[i];
 		i++;
-		param[i].key = CM_DBUS_PROP_OTHER_ROOT_CERT_FILES;
-		param[i].value_type = cm_tdbusm_dict_as;
-		param[i].value.as = anchor_files;
-		params[i] = &param[i];
-		i++;
 	}
 	if (anchor_dbs != NULL) {
 		param[i].key = CM_DBUS_PROP_ROOT_CERT_NSSDBS;
-		param[i].value_type = cm_tdbusm_dict_as;
-		param[i].value.as = anchor_dbs;
-		params[i] = &param[i];
-		i++;
-		param[i].key = CM_DBUS_PROP_OTHER_ROOT_CERT_NSSDBS;
 		param[i].value_type = cm_tdbusm_dict_as;
 		param[i].value.as = anchor_dbs;
 		params[i] = &param[i];
@@ -1373,19 +1363,9 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 		param[i].value.as = anchor_files;
 		params[i] = &param[i];
 		i++;
-		param[i].key = CM_DBUS_PROP_OTHER_ROOT_CERT_FILES;
-		param[i].value_type = cm_tdbusm_dict_as;
-		param[i].value.as = anchor_files;
-		params[i] = &param[i];
-		i++;
 	}
 	if (anchor_dbs != NULL) {
 		param[i].key = CM_DBUS_PROP_ROOT_CERT_NSSDBS;
-		param[i].value_type = cm_tdbusm_dict_as;
-		param[i].value.as = anchor_dbs;
-		params[i] = &param[i];
-		i++;
-		param[i].key = CM_DBUS_PROP_OTHER_ROOT_CERT_NSSDBS;
 		param[i].value_type = cm_tdbusm_dict_as;
 		param[i].value.as = anchor_dbs;
 		params[i] = &param[i];
@@ -1781,19 +1761,9 @@ set_tracking(const char *argv0, const char *category,
 				param[i].value.as = anchor_files;
 				params[i] = &param[i];
 				i++;
-				param[i].key = CM_DBUS_PROP_OTHER_ROOT_CERT_FILES;
-				param[i].value_type = cm_tdbusm_dict_as;
-				param[i].value.as = anchor_files;
-				params[i] = &param[i];
-				i++;
 			}
 			if (anchor_dbs != NULL) {
 				param[i].key = CM_DBUS_PROP_ROOT_CERT_NSSDBS;
-				param[i].value_type = cm_tdbusm_dict_as;
-				param[i].value.as = anchor_dbs;
-				params[i] = &param[i];
-				i++;
-				param[i].key = CM_DBUS_PROP_OTHER_ROOT_CERT_NSSDBS;
 				param[i].value_type = cm_tdbusm_dict_as;
 				param[i].value.as = anchor_dbs;
 				params[i] = &param[i];
@@ -2247,19 +2217,9 @@ resubmit(const char *argv0, int argc, char **argv)
 		param[i].value.as = anchor_files;
 		params[i] = &param[i];
 		i++;
-		param[i].key = CM_DBUS_PROP_OTHER_ROOT_CERT_FILES;
-		param[i].value_type = cm_tdbusm_dict_as;
-		param[i].value.as = anchor_files;
-		params[i] = &param[i];
-		i++;
 	}
 	if (anchor_dbs != NULL) {
 		param[i].key = CM_DBUS_PROP_ROOT_CERT_NSSDBS;
-		param[i].value_type = cm_tdbusm_dict_as;
-		param[i].value.as = anchor_dbs;
-		params[i] = &param[i];
-		i++;
-		param[i].key = CM_DBUS_PROP_OTHER_ROOT_CERT_NSSDBS;
 		param[i].value_type = cm_tdbusm_dict_as;
 		param[i].value.as = anchor_dbs;
 		params[i] = &param[i];
