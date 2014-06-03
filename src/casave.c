@@ -84,7 +84,7 @@ cm_casave_main_n(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 	FILE *fp;
 	NSSInitContext *ctx;
 	SECStatus error;
-	CERTCertificate *c, **imported = NULL;
+	CERTCertificate *decoded, *found, **imported = NULL;
 	CERTCertTrust trust;
 	SECItem *items[2];
 	const char *es;
@@ -149,12 +149,12 @@ cm_casave_main_n(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 		}
 		for (i = 0; state->certs[i] != NULL; i++) {
 			package = state->certs[i]->cert;
-			c = CERT_DecodeCertFromPackage(package, strlen(package));
+			decoded = CERT_DecodeCertFromPackage(package, strlen(package));
 			p = state->certs[i]->nickname;
-			if (c != NULL) {
-				c = CERT_FindCertByDERCert(CERT_GetDefaultCertDB(),
-							   &c->derCert);
-				if (c == NULL) {
+			if (decoded != NULL) {
+				found = CERT_FindCertByDERCert(CERT_GetDefaultCertDB(),
+							       &decoded->derCert);
+				if (found == NULL) {
 					memset(&trust, 0, sizeof(trust));
 					switch (state->certs[i]->level) {
 					case root:
@@ -165,7 +165,7 @@ cm_casave_main_n(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 						CERT_DecodeTrustString(&trust, ",,");
 						break;
 					}
-					items[0] = &c->derCert;
+					items[0] = &found->derCert;
 					items[1] = NULL;
 					if (CERT_ImportCerts(CERT_GetDefaultCertDB(),
 							     certUsageSSLCA,
@@ -184,11 +184,15 @@ cm_casave_main_n(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 							cm_log(1, "Error importing '%s'.\n", p);
 						}
 						break;
+					} else {
+						CERT_DestroyCertificate(imported[0]);
 					}
 				} else{
 					cm_log(2, "Certificate '%s' already in database '%s'.\n",
 					       p, state->nssdb);
+					CERT_DestroyCertificate(found);
 				}
+				CERT_DestroyCertificate(decoded);
 			} else{
 				cm_log(3, "Error decoding certificate '%s'.\n", p);
 			}
