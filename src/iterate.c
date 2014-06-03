@@ -1885,12 +1885,11 @@ cm_iterate_ca(struct cm_store_ca *ca,
 			ca->cm_ca_state[state->cm_phase] = CM_CA_DISABLED;
 			*when = cm_time_now;
 		} else {
+			ca->cm_ca_state[state->cm_phase] = CM_CA_REFRESHING;
 			*readfd = cm_cadata_get_fd(ca, state->cm_task_state);
 			if (*readfd == -1) {
-				ca->cm_ca_state[state->cm_phase] = CM_CA_REFRESHING;
 				*when = cm_time_soon;
 			} else {
-				ca->cm_ca_state[state->cm_phase] = CM_CA_REFRESHING;
 				*when = cm_time_no_time;
 			}
 		}
@@ -1947,6 +1946,14 @@ cm_iterate_ca(struct cm_store_ca *ca,
 				       cm_store_ca_phase_as_string(state->cm_phase));
 				ca->cm_ca_state[state->cm_phase] = CM_CA_NEED_TO_ANALYZE;
 				*when = cm_time_now;
+			}
+		} else {
+			/* Wait for status update, or poll. */
+			*readfd = cm_cadata_get_fd(ca, state->cm_task_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
 			}
 		}
 		break;

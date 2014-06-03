@@ -123,6 +123,19 @@ static struct {
 	{"DISABLED", CM_CA_DISABLED},
 };
 
+static struct {
+	const char *name;
+	enum cm_ca_phase phase;
+} cm_ca_phase_names[] = {
+	{"identify", cm_ca_phase_identify},
+	{"certs", cm_ca_phase_certs},
+	{"profiles", cm_ca_phase_profiles},
+	{"default_profile", cm_ca_phase_default_profile},
+	{"enrollment_reqs", cm_ca_phase_enroll_reqs},
+	{"renewal_reqs", cm_ca_phase_renew_reqs},
+	{"invalid", cm_ca_phase_invalid},
+};
+
 const char *
 cm_store_ca_state_as_string(enum cm_ca_phase_state state)
 {
@@ -141,23 +154,75 @@ cm_store_ca_state_as_string(enum cm_ca_phase_state state)
 const char *
 cm_store_ca_phase_as_string(enum cm_ca_phase phase)
 {
-	switch (phase) {
-	case cm_ca_phase_identify:
-		return "identify";
-	case cm_ca_phase_certs:
-		return "certs";
-	case cm_ca_phase_profiles:
-		return "profiles";
-	case cm_ca_phase_default_profile:
-		return "default_profile";
-	case cm_ca_phase_enroll_reqs:
-		return "enrollment_reqs";
-	case cm_ca_phase_renew_reqs:
-		return "renewal_reqs";
-	case cm_ca_phase_invalid:
-		return "invalid";
+	unsigned int i;
+
+	for (i = 0;
+	     i < sizeof(cm_ca_phase_names) / sizeof(cm_ca_phase_names[0]);
+	     i++) {
+		if (cm_ca_phase_names[i].phase == phase) {
+			return cm_ca_phase_names[i].name;
+		}
 	}
-	return "unknown";
+	return "invalid";
+}
+
+const char *
+cm_store_state_as_string(enum cm_state state)
+{
+	unsigned int i;
+	for (i = 0;
+	     i < sizeof(cm_state_names) / sizeof(cm_state_names[0]);
+	     i++) {
+		if (cm_state_names[i].state == state) {
+			return cm_state_names[i].name;
+		}
+	}
+	return "UNKNOWN";
+}
+
+enum cm_ca_phase_state
+cm_store_ca_state_from_string(const char *name)
+{
+	unsigned i;
+
+	for (i = 0;
+	     i < sizeof(cm_ca_state_names) / sizeof(cm_ca_state_names[0]);
+	     i++) {
+		if (strcasecmp(cm_ca_state_names[i].name, name) == 0) {
+			return cm_ca_state_names[i].state;
+		}
+	}
+	return CM_CA_DISABLED;
+}
+
+enum cm_ca_phase
+cm_store_ca_phase_from_string(const char *name)
+{
+	unsigned int i;
+
+	for (i = 0;
+	     i < sizeof(cm_ca_phase_names) / sizeof(cm_ca_phase_names[0]);
+	     i++) {
+		if (strcasecmp(cm_ca_phase_names[i].name, name) == 0) {
+			return cm_ca_phase_names[i].phase;
+		}
+	}
+	return cm_ca_phase_invalid;
+}
+
+enum cm_state
+cm_store_state_from_string(const char *name)
+{
+	unsigned int i;
+
+	for (i = 0;
+	     i < sizeof(cm_state_names) / sizeof(cm_state_names[0]);
+	     i++) {
+		if (strcasecmp(cm_state_names[i].name, name) == 0) {
+			return cm_state_names[i].state;
+		}
+	}
+	return CM_INVALID;
 }
 
 char *
@@ -187,34 +252,6 @@ cm_store_maybe_strdupv(void *parent, char **s)
 		}
 	}
 	return ret;
-}
-
-const char *
-cm_store_state_as_string(enum cm_state state)
-{
-	unsigned int i;
-	for (i = 0;
-	     i < sizeof(cm_state_names) / sizeof(cm_state_names[0]);
-	     i++) {
-		if (cm_state_names[i].state == state) {
-			return cm_state_names[i].name;
-		}
-	}
-	return "UNKNOWN";
-}
-
-enum cm_state
-cm_store_state_from_string(const char *name)
-{
-	unsigned int i;
-	for (i = 0;
-	     i < sizeof(cm_state_names) / sizeof(cm_state_names[0]);
-	     i++) {
-		if (strcasecmp(cm_state_names[i].name, name) == 0) {
-			return cm_state_names[i].state;
-		}
-	}
-	return CM_INVALID;
 }
 
 /* Generic routines. */

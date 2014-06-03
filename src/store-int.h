@@ -304,7 +304,9 @@ struct cm_store_ca {
 const char *cm_store_state_as_string(enum cm_state state);
 enum cm_state cm_store_state_from_string(const char *name);
 const char *cm_store_ca_state_as_string(enum cm_ca_phase_state state);
+enum cm_ca_phase_state cm_store_ca_state_from_string(const char *name);
 const char *cm_store_ca_phase_as_string(enum cm_ca_phase phase);
+enum cm_ca_phase cm_store_ca_phase_from_string(const char *name);
 
 char *cm_store_entry_next_busname(void *parent);
 struct cm_store_entry *cm_store_files_entry_read(void *parent,

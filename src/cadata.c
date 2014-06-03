@@ -300,13 +300,17 @@ parse_list(struct cm_store_ca *ca, struct cm_cadata_state *state,
 				    (strncasecmp(dict[j], p, len) == 0)) {
 					reqs[i++] = talloc_strdup(reqs,
 								  dict[j + 1]);
-					reqs[i] = NULL;
 					break;
 				}
 			}
+			reqs[i] = NULL;
 		}
 		p = q + strspn(q, ",\r\n");
 		q = p + strcspn(p, ",\r\n");
+	}
+	if (i == 0) {
+		talloc_free(reqs);
+		reqs = NULL;
 	}
 
 	if (state != NULL) {
