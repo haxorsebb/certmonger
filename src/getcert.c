@@ -2500,6 +2500,10 @@ list(const char *argv0, int argc, char **argv)
 		case CM_NEWLY_ADDED_START_READING_CERT:
 		case CM_NEWLY_ADDED_READING_CERT:
 		case CM_NEWLY_ADDED_DECIDING:
+		case CM_NEED_TO_SAVE_CA_CERTS:
+		case CM_START_SAVING_CA_CERTS:
+		case CM_SAVING_CA_CERTS:
+		case CM_NEED_CA_CERT_SAVE_PERMS:
 			if (tracking_only) {
 				continue;
 			}

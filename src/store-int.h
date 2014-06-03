@@ -139,7 +139,6 @@ struct cm_store_entry {
 	char *cm_spkac;
 	/* Our idea of the state of the cert. */
 	enum cm_state {
-		CM_INVALID,
 		CM_NEED_KEY_PAIR, CM_GENERATING_KEY_PAIR,
 		CM_NEED_KEY_GEN_PERMS,
 		CM_NEED_KEY_GEN_PIN, CM_NEED_KEY_GEN_TOKEN, CM_HAVE_KEY_PAIR,
@@ -154,13 +153,15 @@ struct cm_store_entry {
 		CM_NEED_TO_SAVE_CERT, CM_PRE_SAVE_CERT,
 		CM_START_SAVING_CERT, CM_SAVING_CERT,
 		CM_NEED_CERTSAVE_PERMS,
+		CM_NEED_TO_SAVE_CA_CERTS,
+		CM_START_SAVING_CA_CERTS, CM_SAVING_CA_CERTS,
+		CM_NEED_CA_CERT_SAVE_PERMS,
 		CM_NEED_TO_READ_CERT, CM_READING_CERT,
 		CM_SAVED_CERT, CM_POST_SAVED_CERT,
 		CM_MONITORING,
 		CM_NEED_TO_NOTIFY_VALIDITY, CM_NOTIFYING_VALIDITY,
 		CM_NEED_TO_NOTIFY_REJECTION, CM_NOTIFYING_REJECTION,
 		CM_NEED_TO_NOTIFY_ISSUED_FAILED, CM_NOTIFYING_ISSUED_FAILED,
-		CM_NEED_TO_SAVE_CA_CERTS,
 		CM_NEED_TO_NOTIFY_ISSUED_SAVED, CM_NOTIFYING_ISSUED_SAVED,
 		CM_NEED_GUIDANCE,
 		CM_NEWLY_ADDED,
@@ -171,6 +172,7 @@ struct cm_store_entry {
 		CM_NEWLY_ADDED_START_READING_CERT,
 		CM_NEWLY_ADDED_READING_CERT,
 		CM_NEWLY_ADDED_DECIDING,
+		CM_INVALID,
 	} cm_state;
 	/* Whether to autorenew-at-expiration */
 	unsigned int cm_autorenew:1;
@@ -223,7 +225,6 @@ struct cm_store_ca {
 	enum cm_ca_phase {
 		cm_ca_phase_identify = 0,
 		cm_ca_phase_certs,
-		cm_ca_phase_save_certs,
 		cm_ca_phase_profiles,
 		cm_ca_phase_default_profile,
 		cm_ca_phase_enroll_reqs,
@@ -240,6 +241,7 @@ struct cm_store_ca {
 		CM_CA_PRE_SAVE_DATA,
 		CM_CA_START_SAVING_DATA,
 		CM_CA_SAVING_DATA,
+		CM_CA_NEED_POST_SAVE_DATA,
 		CM_CA_POST_SAVE_DATA,
 		CM_CA_SAVED_DATA,
 		CM_CA_NEED_TO_ANALYZE,

@@ -28,6 +28,7 @@
 
 #include "cadata.h"
 #include "canalyze.h"
+#include "casave.h"
 #include "certread.h"
 #include "certsave.h"
 #include "cm.h"
@@ -53,6 +54,7 @@ struct cm_entry_state {
 	struct cm_hook_state *cm_hook_state;
 	struct cm_certread_state *cm_certread_state;
 	struct cm_notify_state *cm_notify_state;
+	struct cm_casave_state *cm_casave_state;
 };
 
 struct cm_ca_state {
@@ -61,6 +63,7 @@ struct cm_ca_state {
 	time_t cm_refresh_delay;
 	struct cm_cadata_state *cm_task_state;
 	struct cm_hook_state *cm_hook_state;
+	struct cm_casave_state *cm_casave_state;
 };
 
 /* Helper routine to replace in-progress states with the previous "stable"
@@ -132,6 +135,17 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 	case CM_NEED_CERTSAVE_PERMS:
 		entry->cm_state = CM_NEED_TO_SAVE_CERT;
 		break;
+	case CM_NEED_TO_SAVE_CA_CERTS:
+		break;
+	case CM_START_SAVING_CA_CERTS:
+		entry->cm_state = CM_NEED_TO_SAVE_CA_CERTS;
+		break;
+	case CM_SAVING_CA_CERTS:
+		entry->cm_state = CM_NEED_TO_SAVE_CA_CERTS;
+		break;
+	case CM_NEED_CA_CERT_SAVE_PERMS:
+		entry->cm_state = CM_NEED_TO_SAVE_CA_CERTS;
+		break;
 	case CM_NEED_TO_READ_CERT:
 		break;
 	case CM_READING_CERT:
@@ -175,8 +189,6 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 		break;
 	case CM_NOTIFYING_ISSUED_FAILED:
 		entry->cm_state = CM_NEED_TO_NOTIFY_ISSUED_FAILED;
-		break;
-	case CM_NEED_TO_SAVE_CA_CERTS:
 		break;
 	case CM_NEED_TO_NOTIFY_ISSUED_SAVED:
 		break;
@@ -1320,13 +1332,70 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		break;
 
 	case CM_NEED_TO_SAVE_CA_CERTS:
-		/* Try to save the CA's certificates. */
-		if ((ca != NULL) && (restart_ca != NULL)) {
-			(*restart_ca)(context, ca->cm_nickname,
-				      cm_ca_phase_save_certs);
-		}
-		entry->cm_state = CM_NEED_TO_NOTIFY_ISSUED_SAVED;
+		entry->cm_state = CM_START_SAVING_CA_CERTS;
 		*when = cm_time_now;
+		break;
+
+	case CM_START_SAVING_CA_CERTS:
+		state->cm_casave_state = cm_casave_start(entry, ca);
+		if (state->cm_casave_state != NULL) {
+			entry->cm_state = CM_NOTIFYING_ISSUED_FAILED;
+			/* Wait for status update, or poll. */
+			*readfd = cm_casave_get_fd(entry, NULL,
+						   state->cm_casave_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
+		} else {
+			/* Failed to start saving CA certs; try again. */
+			*when = cm_time_soonish;
+		}
+		break;
+
+	case CM_SAVING_CA_CERTS:
+		if (cm_casave_ready(entry, NULL, state->cm_casave_state) == 0) {
+			if (cm_casave_saved(entry, NULL,
+					    state->cm_casave_state) == 0) {
+				/* Saved certificates. */
+				cm_casave_done(entry, NULL,
+					       state->cm_casave_state);
+				state->cm_casave_state = NULL;
+				entry->cm_state = CM_NEED_TO_NOTIFY_ISSUED_SAVED;
+				*when = cm_time_now;
+			} else
+			if (cm_casave_permissions_error(entry, NULL,
+							state->cm_casave_state) == 0) {
+				/* Whoops, we need help. */
+				cm_casave_done(entry, NULL,
+					       state->cm_casave_state);
+				state->cm_casave_state = NULL;
+				entry->cm_state = CM_NEED_CA_CERT_SAVE_PERMS;
+				*when = cm_time_now;
+			} else {
+				/* Failed to save certs. */
+				cm_casave_done(entry, NULL,
+					       state->cm_casave_state);
+				state->cm_casave_state = NULL;
+				entry->cm_state = CM_NEED_TO_NOTIFY_ISSUED_FAILED;
+				*when = cm_time_soonish;
+			}
+		} else {
+			/* Wait for status update, or poll. */
+			*readfd = cm_casave_get_fd(entry, NULL,
+						   state->cm_casave_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
+		}
+		break;
+
+	case CM_NEED_CA_CERT_SAVE_PERMS:
+		/* Revisit this later. */
+		*when = cm_time_no_time;
 		break;
 
 	case CM_NEED_TO_NOTIFY_ISSUED_SAVED:
@@ -1711,6 +1780,10 @@ cm_iterate_entry_done(struct cm_store_entry *entry, void *cm_iterate_state)
 			cm_notify_done(entry, state->cm_notify_state);
 			state->cm_notify_state = NULL;
 		}
+		if (state->cm_casave_state != NULL) {
+			cm_casave_done(entry, NULL, state->cm_casave_state);
+			state->cm_casave_state = NULL;
+		}
 		talloc_free(state);
 	}
 	cm_entry_reset_state(entry);
@@ -1766,7 +1839,6 @@ cm_iterate_ca(struct cm_store_ca *ca,
 {
 	struct cm_store_ca old_ca = *ca;
 	struct cm_ca_state *state = cm_iterate_state;
-	dbus_bool_t noop = FALSE;
 
 	*readfd = -1;
 
@@ -1778,29 +1850,6 @@ cm_iterate_ca(struct cm_store_ca *ca,
 			break;
 		case cm_ca_phase_certs:
 			state->cm_task_state = cm_cadata_start_certs(ca);
-			break;
-		case cm_ca_phase_save_certs:
-			state->cm_task_state = NULL;
-			switch (ca->cm_ca_state[cm_ca_phase_certs]) {
-			case CM_CA_NEED_TO_REFRESH:
-			case CM_CA_REFRESHING:
-			case CM_CA_DATA_UNREACHABLE:
-			case CM_CA_NEED_TO_ANALYZE:
-			case CM_CA_ANALYZING:
-				ca->cm_ca_state[state->cm_phase] = CM_CA_NEED_TO_SAVE_DATA;
-				break;
-			case CM_CA_NEED_TO_SAVE_DATA:
-			case CM_CA_PRE_SAVE_DATA:
-			case CM_CA_START_SAVING_DATA:
-			case CM_CA_SAVING_DATA:
-			case CM_CA_POST_SAVE_DATA:
-			case CM_CA_SAVED_DATA:
-			case CM_CA_DISABLED:
-			case CM_CA_IDLE:
-				ca->cm_ca_state[state->cm_phase] = CM_CA_IDLE;
-				break;
-			}
-			noop = TRUE;
 			break;
 		case cm_ca_phase_profiles:
 			state->cm_task_state = cm_cadata_start_profiles(ca);
@@ -1819,19 +1868,17 @@ cm_iterate_ca(struct cm_store_ca *ca,
 			abort();
 			break;
 		}
-		if (!noop) {
-			if (state->cm_task_state == NULL) {
-				ca->cm_ca_state[state->cm_phase] = CM_CA_DISABLED;
-				*when = cm_time_now;
+		if (state->cm_task_state == NULL) {
+			ca->cm_ca_state[state->cm_phase] = CM_CA_DISABLED;
+			*when = cm_time_now;
+		} else {
+			*readfd = cm_cadata_get_fd(ca, state->cm_task_state);
+			if (*readfd == -1) {
+				ca->cm_ca_state[state->cm_phase] = CM_CA_REFRESHING;
+				*when = cm_time_soon;
 			} else {
-				*readfd = cm_cadata_get_fd(ca, state->cm_task_state);
-				if (*readfd == -1) {
-					ca->cm_ca_state[state->cm_phase] = CM_CA_REFRESHING;
-					*when = cm_time_soon;
-				} else {
-					ca->cm_ca_state[state->cm_phase] = CM_CA_REFRESHING;
-					*when = cm_time_no_time;
-				}
+				ca->cm_ca_state[state->cm_phase] = CM_CA_REFRESHING;
+				*when = cm_time_no_time;
 			}
 		}
 		break;
@@ -1854,7 +1901,6 @@ cm_iterate_ca(struct cm_store_ca *ca,
 				case cm_ca_phase_renew_reqs:
 					ca->cm_ca_state[state->cm_phase] = CM_CA_NEED_TO_ANALYZE;
 					break;
-				case cm_ca_phase_save_certs:
 				case cm_ca_phase_invalid:
 					abort();
 					break;
@@ -1940,10 +1986,57 @@ cm_iterate_ca(struct cm_store_ca *ca,
 		}
 		break;
 	case CM_CA_START_SAVING_DATA:
-		ca->cm_ca_state[state->cm_phase] = CM_CA_SAVING_DATA;
-		*when = cm_time_now;
+		state->cm_casave_state = cm_casave_start(NULL, ca);
+		if (state->cm_casave_state != NULL) {
+			ca->cm_ca_state[state->cm_phase] = CM_CA_SAVING_DATA;
+			/* Wait for status update, or poll. */
+			*readfd = cm_ca_hook_get_fd(ca,
+						    state->cm_hook_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
+		}
 		break;
 	case CM_CA_SAVING_DATA:
+		if (cm_casave_ready(NULL, ca, state->cm_casave_state) == 0) {
+			if (cm_casave_saved(NULL, ca,
+					    state->cm_casave_state) == 0) {
+				/* Saved certificates. */
+				cm_casave_done(NULL, ca,
+					       state->cm_casave_state);
+				state->cm_casave_state = NULL;
+				ca->cm_ca_state[state->cm_phase] = CM_CA_NEED_POST_SAVE_DATA;
+				*when = cm_time_now;
+			} else
+			if (cm_casave_permissions_error(NULL, ca,
+							state->cm_casave_state) == 0) {
+				/* Whoops, we need help. */
+				cm_casave_done(NULL, ca,
+					       state->cm_casave_state);
+				state->cm_casave_state = NULL;
+				ca->cm_ca_state[state->cm_phase] = CM_CA_NEED_POST_SAVE_DATA;
+				*when = cm_time_now;
+			} else {
+				/* Failed to save certs. */
+				cm_casave_done(NULL, ca,
+					       state->cm_casave_state);
+				state->cm_casave_state = NULL;
+				ca->cm_ca_state[state->cm_phase] = CM_CA_NEED_POST_SAVE_DATA;
+				*when = cm_time_soonish;
+			}
+		} else {
+			/* Wait for status update, or poll. */
+			*readfd = cm_casave_get_fd(NULL, ca, state->cm_casave_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
+		}
+		break;
+	case CM_CA_NEED_POST_SAVE_DATA:
 		if (ca->cm_ca_post_save_command != NULL) {
 			state->cm_hook_state = cm_ca_hook_start_postsave(ca);
 			if (state->cm_hook_state != NULL) {
@@ -2014,7 +2107,6 @@ cm_iterate_ca(struct cm_store_ca *ca,
 				}
 			}
 			break;
-		case cm_ca_phase_save_certs:
 		case cm_ca_phase_identify:
 		case cm_ca_phase_profiles:
 		case cm_ca_phase_default_profile:
@@ -2099,6 +2191,10 @@ cm_iterate_ca_done(struct cm_store_ca *ca, void *cm_iterate_state)
 		if (state->cm_hook_state != NULL) {
 			cm_ca_hook_done(ca, state->cm_hook_state);
 			state->cm_hook_state = NULL;
+		}
+		if (state->cm_casave_state != NULL) {
+			cm_casave_done(NULL, ca, state->cm_casave_state);
+			state->cm_casave_state = NULL;
 		}
 		talloc_free(state);
 	}

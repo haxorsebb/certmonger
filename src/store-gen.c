@@ -40,7 +40,6 @@ static struct {
 	const char *name;
 	enum cm_state state;
 } cm_state_names[] = {
-	{"INVALID", CM_INVALID},
 	{"NEED_KEY_PAIR", CM_NEED_KEY_PAIR},
 	{"GENERATING_KEY_PAIR", CM_GENERATING_KEY_PAIR},
 	{"NEED_KEY_GEN_PERMS", CM_NEED_KEY_GEN_PERMS},
@@ -92,6 +91,10 @@ static struct {
 	{"NEWLY_ADDED_START_READING_CERT", CM_NEWLY_ADDED_START_READING_CERT},
 	{"NEWLY_ADDED_READING_CERT", CM_NEWLY_ADDED_READING_CERT},
 	{"NEWLY_ADDED_DECIDING", CM_NEWLY_ADDED_DECIDING},
+	{"START_SAVING_CA_CERTS", CM_START_SAVING_CA_CERTS},
+	{"SAVING_CA_CERTS", CM_SAVING_CA_CERTS},
+	{"NEED_CA_CERT_SAVE_PERMS", CM_NEED_CA_CERT_SAVE_PERMS},
+	{"INVALID", CM_INVALID},
 	/* old names */
 	{"NEED_TO_NOTIFY", CM_NEED_TO_NOTIFY_VALIDITY},
 	{"NOTIFYING", CM_NOTIFYING_VALIDITY},
@@ -112,6 +115,7 @@ static struct {
 	{"PRE_SAVE_DATA", CM_CA_PRE_SAVE_DATA},
 	{"START_SAVING_DATA", CM_CA_START_SAVING_DATA},
 	{"SAVING_DATA", CM_CA_SAVING_DATA,},
+	{"NEED_POST_SAVE_DATA", CM_CA_NEED_POST_SAVE_DATA},
 	{"POST_SAVE_DATA", CM_CA_POST_SAVE_DATA},
 	{"SAVED_DATA", CM_CA_SAVED_DATA},
 	{"NEED_TO_ANALYZE", CM_CA_NEED_TO_ANALYZE},
@@ -142,8 +146,6 @@ cm_store_ca_phase_as_string(enum cm_ca_phase phase)
 		return "identify";
 	case cm_ca_phase_certs:
 		return "certs";
-	case cm_ca_phase_save_certs:
-		return "save-certs";
 	case cm_ca_phase_profiles:
 		return "profiles";
 	case cm_ca_phase_default_profile:

@@ -3705,6 +3705,9 @@ request_prop_get_stuck(struct cm_context *ctx, void *parent,
 	case CM_NEWLY_ADDED_START_READING_CERT:
 	case CM_NEWLY_ADDED_READING_CERT:
 	case CM_NEWLY_ADDED_DECIDING:
+	case CM_NEED_TO_SAVE_CA_CERTS:
+	case CM_START_SAVING_CA_CERTS:
+	case CM_SAVING_CA_CERTS:
 		stuck = FALSE;
 		break;
 	case CM_NEED_KEYINFO_READ_TOKEN:
@@ -3716,6 +3719,7 @@ request_prop_get_stuck(struct cm_context *ctx, void *parent,
 	case CM_NEED_CSR_GEN_PIN:
 	case CM_NEWLY_ADDED_NEED_KEYINFO_READ_TOKEN:
 	case CM_NEWLY_ADDED_NEED_KEYINFO_READ_PIN:
+	case CM_NEED_CA_CERT_SAVE_PERMS:
 	case CM_NEED_CERTSAVE_PERMS:
 	case CM_NEED_GUIDANCE:
 	case CM_NEED_CA:
