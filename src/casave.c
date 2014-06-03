@@ -317,10 +317,14 @@ add_cert(void *parent, struct cm_savecert ***dest, enum cert_level level,
 		}
 	}
 	if (j == i) {
-		tmp[i]->level = level;
-		tmp[i]->nickname = talloc_strdup(tmp, nickname);
-		tmp[i]->cert = talloc_strdup(tmp, cert);
-		i++;
+		tmp[i] = talloc_ptrtype(tmp, tmp[i]);
+		if (tmp[i] != NULL) {
+			memset(tmp[i], 0, sizeof(*(tmp[i])));
+			tmp[i]->level = level;
+			tmp[i]->nickname = talloc_strdup(tmp, nickname);
+			tmp[i]->cert = talloc_strdup(tmp, cert);
+			i++;
+		}
 	}
 	tmp[i] = NULL;
 	*dest = tmp;
