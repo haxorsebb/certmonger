@@ -66,4 +66,7 @@ int cm_iterate_ca(struct cm_store_ca *ca,
 int cm_iterate_entry_done(struct cm_store_entry *entry, void *cm_iterate_state);
 int cm_iterate_ca_done(struct cm_store_ca *ca, void *cm_iterate_state);
 
+/* Wait for the descriptor to become readable. */
+void cm_waitfor_readable_fd(int fd, int delay);
+
 #endif

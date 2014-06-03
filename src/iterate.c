@@ -225,16 +225,20 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 	}
 }
 
-static void
+void
 cm_waitfor_readable_fd(int fd, int delay)
 {
-	fd_set fds;
+	fd_set fds, *fdset = NULL;
 	struct timeval tv;
+
 	memset(&tv, 0, sizeof(tv));
 	tv.tv_sec = delay;
 	FD_ZERO(&fds);
-	FD_SET(fd, &fds);
-	if (select(fd + 1, &fds, NULL, &fds, (delay >= 0) ? &tv : NULL) < 0) {
+	if (fd != -1) {
+		fdset = &fds;
+		FD_SET(fd, fdset);
+	}
+	if (select(fd + 1, fdset, NULL, fdset, (delay >= 0) ? &tv : NULL) < 0) {
 		if (delay < 0) {
 			/* No defined delay, but an error. */
 			cm_log(3, "indefinite select() on %d returned error: "
