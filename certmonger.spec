@@ -205,6 +205,24 @@ exit 0
 %endif
 
 %changelog
+* Tue Jun  3 2014 Nalin Dahyabhai <nalin@redhat.com> 0.74.92-1
+- retrieve CA information from CAs, if the helpers can do so, and
+  add a command to explicitly refresh that data: "getcert refresh-ca"
+- offer to save CA certificates to files and databases, when specified with
+  new -a and -F flags to getcert request/resubmit/start-tracking (#1098208,
+  trac #31)
+- add IP address subject alternate names when getcert request/resubmit
+  is passed the -A option (trac #35)
+- read and cache the freshestCRL extension in certificates
+- properly interpret KDC-unreachable errors encountered in the IPA
+  submission error as a server-unreachable error that we will retry,
+  rather than a misconfiguration error which we won't
+- don't let tests get tripped up by new formatting used in dos2unix status
+  messages (#1099080)
+- updated translations
+- be explicit that we are going to use bashisms in test scripts by calling
+  the shell interpreter as 'bash' rather than 'sh' (trac #27)
+
 * Thu Apr  3 2014 Nalin Dahyabhai <nalin@redhat.com> 0.74-1
 - also save state when we exit due to SIGHUP
 - don't get tripped up when enrollment helpers hand us certificates which

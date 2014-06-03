@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-#
+# 
 # Translators:
 # Hajime Taira <htaira@redhat.com>, 2011-2012
 # noriko <noriko@fedoraproject.org>, 2012
@@ -13,15 +13,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2014-05-28 14:22-0400\n"
-"PO-Revision-Date: 2014-03-24 16:29+0000\n"
+"POT-Creation-Date: 2014-05-28 14:20-0400\n"
+"PO-Revision-Date: 2014-05-28 18:21+0000\n"
 "Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
-"Language-Team: Japanese (http://www.transifex.com/projects/p/fedora/language/"
-"ja/)\n"
-"Language: ja\n"
+"Language-Team: Japanese (http://www.transifex.com/projects/p/certmonger/language/ja/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: ja\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
 #: src/certmaster.c:127 src/ipa.c:237
@@ -61,27 +60,22 @@ msgstr ""
 #: src/dogtag.c:362
 #, c-format
 msgid "No end-entity URL (-E) given, and no default known.\n"
-msgstr ""
-"エンド・エンティティ URL (-E) が指定されていません。また、デフォルトが不明で"
-"す。\n"
+msgstr "エンド・エンティティ URL (-E) が指定されていません。また、デフォルトが不明です。\n"
 
 #: src/dogtag.c:366
 #, c-format
 msgid "No agent URL (-A) given, and no default known.\n"
-msgstr ""
-"エージェント URL (-A) が指定されていません。また、デフォルトが不明です。\n"
+msgstr "エージェント URL (-A) が指定されていません。また、デフォルトが不明です。\n"
 
 #: src/dogtag.c:370
 #, c-format
 msgid "No profile/template (-T) given, and no default known.\n"
-msgstr ""
-"プロファイル/テンプレート (-T) が指定されていません。また、デフォルトが不明で"
-"す。\n"
+msgstr "プロファイル/テンプレート (-T) が指定されていません。また、デフォルトが不明です。\n"
 
 #: src/dogtag.c:378
-#, fuzzy, c-format
+#, c-format
 msgid "Error shutting down NSS.\n"
-msgstr "XMLRPC の設定中にエラーが発生しました。\n"
+msgstr ""
 
 #: src/dogtag.c:407 src/dogtag.c:584
 #, c-format
@@ -106,17 +100,14 @@ msgstr "内部エラー: \"%s?%s\" への応答がありません。\n"
 #: src/getcert.c:91
 #, c-format
 msgid "Path \"%s\" is not absolute, attempting to use \"%s\" instead.\n"
-msgstr ""
-"パス \"%s\" が絶対パスではありません。代わりに \"%s\" で試行しています。\n"
+msgstr "パス \"%s\" が絶対パスではありません。代わりに \"%s\" で試行しています。\n"
 
 #: src/getcert.c:96
 #, c-format
 msgid ""
 "Path \"%s\" is not absolute, and there was an error determining the name of "
 "the current directory.\n"
-msgstr ""
-"パス  \"%s\" が絶対パスではありません。また、カレントディレクトリーの名前を判"
-"断する際にエラーが発生しました。\n"
+msgstr "パス  \"%s\" が絶対パスではありません。また、カレントディレクトリーの名前を判断する際にエラーが発生しました。\n"
 
 #: src/getcert.c:118
 #, c-format
@@ -146,9 +137,7 @@ msgstr "メモリーが不足\n"
 #: src/getcert.c:273
 #, c-format
 msgid "Error connecting to DBus.\n"
-msgstr ""
-"D-Bus へ接続中にエラーが発生しました。\n"
-"\n"
+msgstr "D-Bus へ接続中にエラーが発生しました。\n\n"
 
 #: src/getcert.c:274 src/tdbusm.c:1958
 #, c-format
@@ -158,9 +147,7 @@ msgstr "message bus (D-Bus) サービスが稼働中であることを確認し�
 #: src/getcert.c:281
 #, c-format
 msgid "Error creating DBus request message.\n"
-msgstr ""
-"D-Bus 要求メッセージを作成中にエラーが発生しました。\n"
-"\n"
+msgstr "D-Bus 要求メッセージを作成中にエラーが発生しました。\n\n"
 
 #: src/getcert.c:323
 #, c-format
@@ -248,8 +235,7 @@ msgstr "エラー:余分なパラメーターが指定されました。\n"
 #: src/getcert.c:762 src/getcert.c:1540 src/getcert.c:1733 src/getcert.c:1988
 #, c-format
 msgid "Database location or nickname specified without the other.\n"
-msgstr ""
-"データベースの場所もしくはニックネームのどちらかが指定されていません。\n"
+msgstr "データベースの場所もしくはニックネームのどちらかが指定されていません。\n"
 
 #: src/getcert.c:768 src/getcert.c:1546 src/getcert.c:1739 src/getcert.c:1994
 #, c-format
@@ -258,11 +244,8 @@ msgstr "データベースディレクトリーと証明書ファイルの両方
 
 #: src/getcert.c:776 src/getcert.c:1747 src/getcert.c:2002
 #, c-format
-msgid ""
-"None of database directory and nickname or certificate file specified.\n"
-msgstr ""
-"データベースディレクトリーとニックネーム、もしくは証明書ファイルの指定されて"
-"いません。\n"
+msgid "None of database directory and nickname or certificate file specified.\n"
+msgstr "データベースディレクトリーとニックネーム、もしくは証明書ファイルの指定されていません。\n"
 
 #: src/getcert.c:783 src/getcert.c:1562
 #, c-format
@@ -272,11 +255,9 @@ msgstr "キーと証明書の両方を同じファイルに保存することが
 #: src/getcert.c:809
 #, c-format
 msgid ""
-"The IPA backend requires the use of the -K option (principal name) when the -"
-"N option (subject name) is used.\n"
-msgstr ""
-"IPA バックエンドは -N オプション(サブジェクト名) を使用した場合、-K オプショ"
-"ン(プリンシパル名)を必要とします。\n"
+"The IPA backend requires the use of the -K option (principal name) when the "
+"-N option (subject name) is used.\n"
+msgstr "IPA バックエンドは -N オプション(サブジェクト名) を使用した場合、-K オプション(プリンシパル名)を必要とします。\n"
 
 #: src/getcert.c:941 src/getcert.c:1318 src/getcert.c:1662 src/getcert.c:2022
 #: src/getcert.c:2251
@@ -288,9 +269,7 @@ msgstr "\"%s\" という名前の CA が見つかりません。\n"
 #: src/getcert.c:2125
 #, c-format
 msgid "Error setting request arguments.\n"
-msgstr ""
-"リクエストの引数を設定中にエラーが発生しました。\n"
-"\n"
+msgstr "リクエストの引数を設定中にエラーが発生しました。\n\n"
 
 #: src/getcert.c:1039
 #, c-format
@@ -317,9 +296,7 @@ msgstr "新しい追跡リクエストの追加ができません。\n"
 msgid ""
 "None of ID or database directory and nickname or certificate file "
 "specified.\n"
-msgstr ""
-"IDまたはデータベースディレクトリー、もしくはニックネーム、証明書ファイルの指"
-"定されていません。\n"
+msgstr "IDまたはデータベースディレクトリー、もしくはニックネーム、証明書ファイルの指定されていません。\n"
 
 #: src/getcert.c:1714
 #, c-format
@@ -354,9 +331,7 @@ msgstr "リクエスト \"%s\" は削除できません。\n"
 #: src/getcert.c:2139
 #, c-format
 msgid "Error modifying \"%s\".\n"
-msgstr ""
-"\"%s\" を変更中にエラーが発生しました。\n"
-"\n"
+msgstr "\"%s\" を変更中にエラーが発生しました。\n\n"
 
 #: src/getcert.c:2155
 #, c-format
@@ -371,16 +346,12 @@ msgstr "\"%s\" を再送中です。\n"
 #: src/getcert.c:2164
 #, c-format
 msgid "Error attempting to submit \"%s\" to \"%s\".\n"
-msgstr ""
-"\"%s\" を \"%s\" へ送信中にエラーが発生しました。\n"
-"\n"
+msgstr "\"%s\" を \"%s\" へ送信中にエラーが発生しました。\n\n"
 
 #: src/getcert.c:2167
 #, c-format
 msgid "Error attempting to submit \"%s\".\n"
-msgstr ""
-"\"%s\" を送信中にエラーが発生しました。\n"
-"\n"
+msgstr "\"%s\" を送信中にエラーが発生しました。\n\n"
 
 #: src/getcert.c:2280
 #, c-format
@@ -565,16 +536,12 @@ msgstr "  -d DIR\tキーと証明書のための NSS データベース\n"
 
 #: src/getcert.c:2665 src/getcert.c:2710 src/getcert.c:2752 src/getcert.c:2774
 msgid "  -n NAME\tnickname for NSS-based storage (only valid with -d)\n"
-msgstr ""
-"  -n NAME\tNSS ベースストレージのためのニックネーム(-d オプションを指定した時"
-"のみ有効)\n"
+msgstr "  -n NAME\tNSS ベースストレージのためのニックネーム(-d オプションを指定した時のみ有効)\n"
 
 #: src/getcert.c:2666 src/getcert.c:2711 src/getcert.c:2753 src/getcert.c:2775
 msgid ""
 "  -t NAME\toptional token name for NSS-based storage (only valid with -d)\n"
-msgstr ""
-"  -t 名前\tNSS ベースの記憶領域のためのオプションのトークン名(-d オプションを"
-"指定した時のみ有効)\n"
+msgstr "  -t 名前\tNSS ベースの記憶領域のためのオプションのトークン名(-d オプションを指定した時のみ有効)\n"
 
 #: src/getcert.c:2667 src/getcert.c:2712 src/getcert.c:2754 src/getcert.c:2776
 #: src/getcert.c:2823
@@ -623,8 +590,7 @@ msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
 msgstr "  -g SIZE\tキーが存在しない場合に生成されるキーのビット長\n"
 
 #: src/getcert.c:2679 src/getcert.c:2722
-msgid ""
-"  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
+msgid "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
 msgstr "  -r\t\t有効期限が近づいている時に証明書を更新する(デフォルト)\n"
 
 #: src/getcert.c:2680 src/getcert.c:2723
@@ -639,9 +605,7 @@ msgstr "  -c CA\t\t指定されたCAではなく、デフォルトを使用\n"
 msgid ""
 "  -T PROFILE\task the CA to process the request using the named profile or "
 "template\n"
-msgstr ""
-"  -T PROFILE\t名前つきプロファイルまたはテンプレートを使用して、CA がリクエス"
-"トを処理するか確認します\n"
+msgstr "  -T PROFILE\t名前つきプロファイルまたはテンプレートを使用して、CA がリクエストを処理するか確認します\n"
 
 #: src/getcert.c:2685
 msgid "* Parameters for the signing request:\n"
@@ -649,8 +613,7 @@ msgstr "* 署名中リクエストのパラメーター:\n"
 
 #: src/getcert.c:2686 src/getcert.c:2784
 msgid "  -N NAME\tset requested subject name (default: CN=<hostname>)\n"
-msgstr ""
-"  -N NAME\t要求されたサブジェクト名を設定 (デフォルト: CN=<ホスト名>)\n"
+msgstr "  -N NAME\t要求されたサブジェクト名を設定 (デフォルト: CN=<ホスト名>)\n"
 
 #: src/getcert.c:2687 src/getcert.c:2785
 msgid "  -U EXTUSAGE\tset requested extended key usage OID\n"
@@ -673,9 +636,8 @@ msgid "  -E EMAIL\tset requested email address\n"
 msgstr "  -E EMAIL\t要求したEメールアドレスを設定\n"
 
 #: src/getcert.c:2692 src/getcert.c:2790
-#, fuzzy
 msgid "  -A ADDRESS\tset requested IP address\n"
-msgstr "  -E EMAIL\t要求したEメールアドレスを設定\n"
+msgstr ""
 
 #: src/getcert.c:2693 src/getcert.c:2735 src/getcert.c:2759 src/getcert.c:2799
 #: src/getcert.c:2825 src/getcert.c:2840
@@ -750,9 +712,8 @@ msgid "  -E EMAIL\toverride requested email address\n"
 msgstr "  -E EMAIL\t要求されたEメールアドレスを上書き\n"
 
 #: src/getcert.c:2734
-#, fuzzy
 msgid "  -A ADDRESS\toverride requested IP address\n"
-msgstr "  -E EMAIL\t要求されたEメールアドレスを上書き\n"
+msgstr ""
 
 #: src/getcert.c:2745
 #, c-format
@@ -815,21 +776,15 @@ msgstr "* もしも特定のリクエストが選択された場合:\n"
 
 #: src/getcert.c:2821
 msgid "  -d DIR\tonly list requests and certs which use this NSS database\n"
-msgstr ""
-"  -d DIR<span class=\"whitespace other\" title=\"Tab\">»</span>この NSS デー"
-"タベースを使用するリクエストと証明書のみを表示\n"
+msgstr "  -d DIR<span class=\"whitespace other\" title=\"Tab\">»</span>この NSS データベースを使用するリクエストと証明書のみを表示\n"
 
 #: src/getcert.c:2822
 msgid "  -n NAME\tonly list requests and certs which use this nickname\n"
-msgstr ""
-"  -n NAME<span class=\"whitespace other\" title=\"Tab\">»</span>このニック"
-"ネームを使用するリクエストと証明書のみを表示\n"
+msgstr "  -n NAME<span class=\"whitespace other\" title=\"Tab\">»</span>このニックネームを使用するリクエストと証明書のみを表示\n"
 
 #: src/getcert.c:2824
 msgid "  -f FILE\tonly list requests and certs stored in this PEM file\n"
-msgstr ""
-"  -f FILE<span class=\"whitespace other\" title=\"Tab\">»</span>この PEM ファ"
-"イルに保存されているリクエストと証明書のみを表示\n"
+msgstr "  -f FILE<span class=\"whitespace other\" title=\"Tab\">»</span>この PEM ファイルに保存されているリクエストと証明書のみを表示\n"
 
 #: src/getcert.c:2826 src/getcert.c:2841
 msgid "  -S\tconnect to the certmonger service on the system bus\n"
@@ -881,35 +836,26 @@ msgstr "CA の XMLRPC サーバーの場所を解釈できません。\n"
 #: src/ipa.c:291
 #, c-format
 msgid ""
-"Error setting up ccache for \"host\" service on client using default keytab: "
-"%s.\n"
-msgstr ""
-"デフォルトのキーテーブルを使用するクライアントで \"host\" サービスの ccache "
-"セットアップ中にエラーが発生しました: %s。\n"
+"Error setting up ccache for \"host\" service on client using default keytab:"
+" %s.\n"
+msgstr "デフォルトのキーテーブルを使用するクライアントで \"host\" サービスの ccache セットアップ中にエラーが発生しました: %s。\n"
 
 #: src/ipa.c:295
 #, c-format
-msgid ""
-"Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
-msgstr ""
-"デフォルトのキーテーブルを使用するクライアントで \"%s\" の ccache セットアッ"
-"プ中にエラーが発生しました: %s。\n"
+msgid "Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
+msgstr "デフォルトのキーテーブルを使用するクライアントで \"%s\" の ccache セットアップ中にエラーが発生しました: %s。\n"
 
 #: src/ipa.c:302
 #, c-format
 msgid ""
 "Error setting up ccache for \"host\" service on client using keytab \"%s\": "
 "%s.\n"
-msgstr ""
-"デフォルトのキーテーブル \"%s\" を使用するクライアントで \"host\" サービスの "
-"ccache セットアップ中にエラーが発生しました: %s。\n"
+msgstr "デフォルトのキーテーブル \"%s\" を使用するクライアントで \"host\" サービスの ccache セットアップ中にエラーが発生しました: %s。\n"
 
 #: src/ipa.c:306
 #, c-format
 msgid "Error setting up ccache for \"%s\" on client using keytab \"%s\": %s.\n"
-msgstr ""
-" \"%s\" の ccache をデフォルトのキーテーブル \"%s\" を使用するクライアントで"
-"セットアップ中にエラーが発生しました: %s。\n"
+msgstr " \"%s\" の ccache をデフォルトのキーテーブル \"%s\" を使用するクライアントでセットアップ中にエラーが発生しました: %s。\n"
 
 #: src/ipa.c:325
 #, c-format
@@ -917,14 +863,14 @@ msgid "Error setting up for XMLRPC on the client.\n"
 msgstr "クライアントで XMLRPC の設定中にエラーが発生しました。\n"
 
 #: src/ipa.c:403
-#, fuzzy, c-format
+#, c-format
 msgid "Unable to determine location of IPA LDAP server.\n"
-msgstr "CA の XMLRPC サーバーの場所を解釈できません。\n"
+msgstr ""
 
 #: src/ipa.c:465
-#, fuzzy, c-format
+#, c-format
 msgid "Unable to determine base DN of domain information on IPA server.\n"
-msgstr "CA の XMLRPC サーバーの場所を解釈できません。\n"
+msgstr ""
 
 #: src/main.c:120
 #, c-format
@@ -1009,8 +955,7 @@ msgstr "権限が無いため \"%s\" の親ディレクトリにアクセスで�
 #: src/tdbush.c:536 src/tdbush.c:780
 #, c-format
 msgid "The parent of location \"%s\" must be a valid directory."
-msgstr ""
-"場所 \"%s\" の親ディレクトリーは有効なディレクトリーでなければなりません。"
+msgstr "場所 \"%s\" の親ディレクトリーは有効なディレクトリーでなければなりません。"
 
 #: src/tdbush.c:547 src/tdbush.c:791
 #, c-format
@@ -1019,8 +964,7 @@ msgstr "場所 \"%s\" はファイルでなければなりません。"
 
 #: src/tdbush.c:587
 #, c-format
-msgid ""
-"The location \"%s\" could not be accessed due to insufficient permissions."
+msgid "The location \"%s\" could not be accessed due to insufficient permissions."
 msgstr "権限が無いため \"%s\" にアクセスできませんでした。"
 
 #: src/tdbush.c:595 src/tdbush.c:828
@@ -1040,10 +984,9 @@ msgstr "ニックネーム \"%s\" のリクエストは、すでにあります�
 #: src/tdbush.c:695
 #, c-format
 msgid ""
-"Certificate at same location is already used by request with nickname \"%s\"."
-msgstr ""
-"同じ場所にある証明書は、すでにニックネーム \"%s\" を持つリクエストで使用され"
-"ています。"
+"Certificate at same location is already used by request with nickname "
+"\"%s\"."
+msgstr "同じ場所にある証明書は、すでにニックネーム \"%s\" を持つリクエストで使用されています。"
 
 #: src/tdbush.c:728
 #, c-format
@@ -1061,9 +1004,7 @@ msgstr "キーのニックネームが指定されていません。"
 #: src/tdbush.c:903
 #, c-format
 msgid "Key at same location is already used by request with nickname \"%s\"."
-msgstr ""
-"同じ場所にあるキーは、すでにニックネーム \"%s\" を持つリクエストで使用されて"
-"います。"
+msgstr "同じ場所にあるキーは、すでにニックネーム \"%s\" を持つリクエストで使用されています。"
 
 #: src/tdbush.c:974
 #, c-format
@@ -1084,16 +1025,12 @@ msgid "Unrecognized parameter or wrong value type."
 msgstr "認識されていないパラメーターか、もしくは不適切なデータ型です。"
 
 #: src/tdbush.c:4111
-#, fuzzy
 msgid "Error parsing arguments."
 msgstr ""
-"リクエストの引数を設定中にエラーが発生しました。\n"
-"\n"
 
 #: src/tdbush.c:4165
-#, fuzzy
 msgid "Unrecognized property name."
-msgstr "認識できないキー使用法 \"%s\"。\n"
+msgstr ""
 
 #: src/tdbusm.c:1948
 msgid "Insufficient access.  Please retry operation as root.\n"
