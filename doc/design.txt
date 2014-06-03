@@ -46,8 +46,9 @@ Now with some arbitrarily-named states for our per-certificate state machine:
 	  States: NEED_TO_NOTIFY_REJECTION, NOTIFYING_REJECTION [*]
 	* Notifying the admin of CA issued cert, but not saved.
 	  States: NEED_TO_NOTIFY_ISSUED_FAILED, NOTIFYING_ISSUED_FAILED [*]
-	* Kicking off saving of CA certs.
-	  States: NEED_TO_SAVE_CA_CERTS
+	* Saving CA certs.
+	  States: NEED_TO_SAVE_CA_CERTS, START_SAVING_CA_CERTS,
+		  SAVING_CA_CERTS [*], NEED_CA_CERT_SAVE_PERMS
 	* Notifying the admin of CA issued cert, and saved.
 	  States: NEED_TO_NOTIFY_ISSUED_SAVED, NOTIFYING_ISSUED_SAVED [*]
 	* Waiting for user input
@@ -343,6 +344,43 @@ State logic:
 			state_transition = now
 		break
 
+	NEED_TO_SAVE_CA_CERTS:
+		state_next = START_SAVING_CA_CERTS
+		state_transition = now
+
+	START_SAVING_CA_CERTS:
+		if starting-up
+			state_next = NEED_TO_SAVE_CA_CERTS
+			state_transition = now
+		else
+			start-saving-ca-certs
+			state_next = SAVING_CA_CERTS
+			state_transition = now
+		break
+
+	SAVING_CA_CERTS:
+		if starting-up
+			state_next = NEED_TO_SAVE_CA_CERTS
+			state_transition = now
+		else
+			if saving-ca-certs-complete
+				state_next = NEED_TO_NOTIFY_ISSUED_SAVED
+				state_transition = now
+			else
+				if permissions-problem
+					state_next = NEED_CA_CERT_SAVE_PERMS
+					state_transition = now
+				else
+					state_next = NEED_TO_NOTIFY_ISSUED_SAVED
+					state_transition = now
+
+	NEED_CA_CERT_SAVE_PERMS:
+		if starting-up
+			state_next = NEED_TO_SAVE_CA_CERTS
+			state_transition = now
+		break
+
+
 	POST_SAVED_CERT:
 		if starting-up
 			state_next = SAVED_CERT
@@ -383,11 +421,6 @@ State logic:
 				state_next = NEED_TO_SAVE_CERT
 				state_transition = soonish
 		break
-
-	NEED_TO_SAVE_CA_CERTS:
-		move-ca-to-NEED_TO_SAVE_DATA
-		state_next = NEED_TO_NOTIFY_ISSUED_SAVED
-		state_transition = now
 
 	NEED_TO_NOTIFY_ISSUED_SAVED:
 		start-notifying
