@@ -511,7 +511,7 @@ cm_service_ca(struct cm_context *context, struct timeval *current_time, int i,
 		case cm_time_now:
 			t = tevent_add_timer(talloc_parent(context), context,
 					     now, cm_timer_h, context);
-			cm_log(3, "Will revisit %s('%s')-%s now.\n",
+			cm_log(3, "Will revisit %s('%s').%s now.\n",
 			       context->cas[i]->cm_busname,
 			       context->cas[i]->cm_nickname,
 			       cm_store_ca_phase_as_string(phase));
@@ -520,7 +520,7 @@ cm_service_ca(struct cm_context *context, struct timeval *current_time, int i,
 			then = tevent_timeval_add(&now, CM_DELAY_SOON, 0);
 			t = tevent_add_timer(talloc_parent(context), context,
 					     then, cm_timer_h, context);
-			cm_log(3, "Will revisit %s('%s')-%s soon.\n",
+			cm_log(3, "Will revisit %s('%s').%s soon.\n",
 			       context->cas[i]->cm_busname,
 			       context->cas[i]->cm_nickname,
 			       cm_store_ca_phase_as_string(phase));
@@ -529,7 +529,7 @@ cm_service_ca(struct cm_context *context, struct timeval *current_time, int i,
 			then = tevent_timeval_add(&now, CM_DELAY_SOONISH, 0);
 			t = tevent_add_timer(talloc_parent(context), context,
 					     then, cm_timer_h, context);
-			cm_log(3, "Will revisit %s('%s')-%s soonish.\n",
+			cm_log(3, "Will revisit %s('%s').%s soonish.\n",
 			       context->cas[i]->cm_busname,
 			       context->cas[i]->cm_nickname,
 			       cm_store_ca_phase_as_string(phase));
@@ -538,7 +538,7 @@ cm_service_ca(struct cm_context *context, struct timeval *current_time, int i,
 			then = tevent_timeval_add(&now, delay, 0);
 			t = tevent_add_timer(talloc_parent(context), context,
 					     then, cm_timer_h, context);
-			cm_log(3, "Will revisit %s('%s')-%s in %d seconds.\n",
+			cm_log(3, "Will revisit %s('%s').%s in %d seconds.\n",
 			       context->cas[i]->cm_busname,
 			       context->cas[i]->cm_nickname,
 			       cm_store_ca_phase_as_string(phase),
@@ -550,7 +550,7 @@ cm_service_ca(struct cm_context *context, struct timeval *current_time, int i,
 						  context,
 						  fd, TEVENT_FD_READ,
 						  cm_fd_h, context);
-				cm_log(3, "Will revisit %s('%s')-%s on "
+				cm_log(3, "Will revisit %s('%s').%s on "
 				       "traffic from %d.\n",
 				       context->cas[i]->cm_busname,
 				       context->cas[i]->cm_nickname,
@@ -558,7 +558,7 @@ cm_service_ca(struct cm_context *context, struct timeval *current_time, int i,
 				       fd);
 			} else {
 				cm_log(3, "Waiting for instructions for "
-				       "%s('%s')-%s.\n",
+				       "%s('%s').%s.\n",
 				       context->cas[i]->cm_busname,
 				       context->cas[i]->cm_nickname,
 				       cm_store_ca_phase_as_string(phase));
@@ -707,10 +707,11 @@ cm_start_all(struct cm_context *context)
 			if ((context->ca_events[i].iterate_state[phase] == NULL) &&
 			    (cm_iterate_ca_init(context->cas[i], phase,
 						&context->ca_events[i].iterate_state[phase])) != 0) {
-				cm_log(1, "Error starting %s('%s'), "
+				cm_log(1, "Error starting %s('%s')-%s, "
 				       "please try again.\n",
 				       context->cas[i]->cm_busname,
-				       context->cas[i]->cm_nickname);
+				       context->cas[i]->cm_nickname,
+				       cm_store_ca_phase_as_string(phase));
 			} else {
 				context->ca_events[i].next_event[phase] =
 					cm_service_ca(context, NULL, i, phase);

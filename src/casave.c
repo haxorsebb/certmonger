@@ -185,13 +185,15 @@ cm_casave_main_n(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 						}
 						break;
 					} else {
+						cm_log(3, "Wrote '%s' to database '%s'.\n",
+						       state->certs[i]->nickname, state->nssdb);
 						CERT_ChangeCertTrust(CERT_GetDefaultCertDB(),
 								     imported[0], &trust);
 						CERT_DestroyCertificate(imported[0]);
 					}
 					CERT_DestroyCertificate(found);
 				} else{
-					cm_log(2, "Temporary certificate '%s' not found in '%s'.\n",
+					cm_log(3, "Temporary certificate '%s' not found in '%s'.\n",
 					       p, state->nssdb);
 				}
 				CERT_DestroyCertificate(decoded);
@@ -236,11 +238,12 @@ cm_casave_main_o(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 		}
 		for (i = 0; state->certs[i] != NULL; i++) {
 			fprintf(bundle, "%s", state->certs[i]->cert);
-			cm_log(3, "Wrote '%s' to '%s'.\n",
+			cm_log(3, "Wrote '%s' to file '%s'.\n",
 			       state->certs[i]->nickname, state->file);
 		}
 		fclose(bundle);
 	}
+	fclose(fp);
 	return 0;
 }
 
@@ -657,10 +660,10 @@ cm_casave_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 			if (length > 0) {
 				fprintf(fp, "%.*s", length, msg);
 			}
-			fclose(fp);
 		}
 		cm_subproc_done(e, subproc);
 		if (WIFEXITED(status) && (WEXITSTATUS(status) != 0)) {
+			fclose(fp);
 			_exit(WEXITSTATUS(status));
 		}
 	}
@@ -689,14 +692,15 @@ cm_casave_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 			if (length > 0) {
 				fprintf(fp, "%.*s", length, msg);
 			}
-			fclose(fp);
 		}
 		cm_subproc_done(e, subproc);
 		if (WIFEXITED(status) && (WEXITSTATUS(status) != 0)) {
+			fclose(fp);
 			_exit(WEXITSTATUS(status));
 		}
 	}
 
+	fclose(fp);
 	_exit(0);
 }
 

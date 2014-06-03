@@ -325,8 +325,9 @@ cm_writing_lock_by_ca(struct cm_store_ca *ca, enum cm_ca_phase phase)
 	if (((writing_lock == ca) && (writing_lock_ca_phase == phase)) ||
 	    (writing_lock == NULL)) {
 		if (writing_lock == NULL) {
-			cm_log(3, "%s('%s') taking writing lock\n",
-			       ca->cm_busname, ca->cm_nickname);
+			cm_log(3, "%s('%s').%s taking writing lock\n",
+			       ca->cm_busname, ca->cm_nickname,
+			       cm_store_ca_phase_as_string(phase));
 			writing_lock = ca;
 			if (phase == cm_ca_phase_invalid) {
 				abort();
@@ -346,8 +347,9 @@ cm_writing_unlock_by_ca(struct cm_store_ca *ca, enum cm_ca_phase phase)
 	if (((writing_lock == ca) && (writing_lock_ca_phase == phase)) ||
 	    (writing_lock == NULL)) {
 		if (writing_lock == ca) {
-			cm_log(3, "%s('%s') releasing writing lock\n",
-			       ca->cm_busname, ca->cm_nickname);
+			cm_log(3, "%s('%s').%s releasing writing lock\n",
+			       ca->cm_busname, ca->cm_nickname,
+			       cm_store_ca_phase_as_string(phase));
 			writing_lock = NULL;
 			writing_lock_ca_phase = cm_ca_phase_invalid;
 		} else {
@@ -1826,7 +1828,7 @@ cm_iterate_ca_init(struct cm_store_ca *ca, enum cm_ca_phase phase,
 
 	cm_store_ca_save(ca);
 
-	cm_log(3, "%s('%s') starts (%s/%s)\n",
+	cm_log(3, "%s('%s').%s starts (%s)\n",
 	       ca->cm_busname, ca->cm_nickname,
 	       cm_store_ca_phase_as_string(state->cm_phase),
 	       cm_store_ca_state_as_string(ca->cm_ca_state[phase]));
@@ -1896,7 +1898,7 @@ cm_iterate_ca(struct cm_store_ca *ca,
 	case CM_CA_REFRESHING:
 		if (cm_cadata_ready(ca, state->cm_task_state) == 0) {
 			if (cm_cadata_modified(ca, state->cm_task_state) == 0) {
-				cm_log(3, "%s('%s')-%s data updated\n",
+				cm_log(3, "%s('%s').%s data updated\n",
 				       ca->cm_busname, ca->cm_nickname,
 				       cm_store_ca_phase_as_string(state->cm_phase));
 				cm_cadata_done(ca, state->cm_task_state);
@@ -1922,7 +1924,7 @@ cm_iterate_ca(struct cm_store_ca *ca,
 						  state->cm_task_state) == 0) {
 				cm_cadata_done(ca, state->cm_task_state);
 				state->cm_task_state = NULL;
-				cm_log(3, "%s('%s')-%s server unreachable\n",
+				cm_log(3, "%s('%s').%s server unreachable\n",
 				       ca->cm_busname, ca->cm_nickname,
 				       cm_store_ca_phase_as_string(state->cm_phase));
 				ca->cm_ca_state[state->cm_phase] = CM_CA_DATA_UNREACHABLE;
@@ -1932,7 +1934,7 @@ cm_iterate_ca(struct cm_store_ca *ca,
 						  state->cm_task_state) == 0) {
 				cm_cadata_done(ca, state->cm_task_state);
 				state->cm_task_state = NULL;
-				cm_log(3, "%s('%s')-%s retrieval unsupported\n",
+				cm_log(3, "%s('%s').%s retrieval unsupported\n",
 				       ca->cm_busname, ca->cm_nickname,
 				       cm_store_ca_phase_as_string(state->cm_phase));
 				ca->cm_ca_state[state->cm_phase] = CM_CA_DISABLED;
@@ -1940,7 +1942,7 @@ cm_iterate_ca(struct cm_store_ca *ca,
 			} else {
 				cm_cadata_done(ca, state->cm_task_state);
 				state->cm_task_state = NULL;
-				cm_log(3, "%s('%s')-%s unchanged\n",
+				cm_log(3, "%s('%s').%s data is unchanged\n",
 				       ca->cm_busname, ca->cm_nickname,
 				       cm_store_ca_phase_as_string(state->cm_phase));
 				ca->cm_ca_state[state->cm_phase] = CM_CA_NEED_TO_ANALYZE;
@@ -1952,7 +1954,7 @@ cm_iterate_ca(struct cm_store_ca *ca,
 		if (!cm_writing_lock_by_ca(ca, state->cm_phase)) {
 			/* Just hang out in this state while we're messing
 			 * around with the outside world for another CA. */
-			cm_log(3, "%s('%s')-%s waiting for saving lock\n",
+			cm_log(3, "%s('%s').%s waiting for saving lock\n",
 			       ca->cm_busname, ca->cm_nickname,
 			       cm_store_ca_phase_as_string(state->cm_phase));
 			*when = cm_time_soon;
@@ -2097,7 +2099,7 @@ cm_iterate_ca(struct cm_store_ca *ca,
 			/* If for some reason we fail to release the lock that
 			 * we have, try to release it again soon. */
 			*when = cm_time_soon;
-			cm_log(1, "%s('%s')-%s failed to release saving "
+			cm_log(1, "%s('%s').%s failed to release saving "
 			       "lock, probably a bug\n",
 			       ca->cm_busname, ca->cm_nickname,
 			       cm_store_ca_phase_as_string(state->cm_phase));
@@ -2171,7 +2173,7 @@ cm_iterate_ca(struct cm_store_ca *ca,
 		break;
 	}
 	if (ca->cm_ca_state[state->cm_phase] != old_ca.cm_ca_state[state->cm_phase]) {
-		cm_log(3, "%s('%s')-%s moved to state '%s'\n",
+		cm_log(3, "%s('%s').%s moved to state '%s'\n",
 		       ca->cm_busname, ca->cm_nickname,
 		       cm_store_ca_phase_as_string(state->cm_phase),
 		       cm_store_ca_state_as_string(ca->cm_ca_state[state->cm_phase]));
@@ -2216,7 +2218,7 @@ cm_iterate_ca_done(struct cm_store_ca *ca, void *cm_iterate_state)
 		talloc_free(state);
 	}
 
-	cm_log(3, "%s('%s') ends (%s/%s)\n",
+	cm_log(3, "%s('%s').%s ends (%s)\n",
 	       ca->cm_busname, ca->cm_nickname, phases, states);
 
 	if (cm_writing_has_lock(ca, phase)) {
