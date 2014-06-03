@@ -511,33 +511,38 @@ cm_service_ca(struct cm_context *context, struct timeval *current_time, int i,
 		case cm_time_now:
 			t = tevent_add_timer(talloc_parent(context), context,
 					     now, cm_timer_h, context);
-			cm_log(3, "Will revisit %s('%s') now.\n",
+			cm_log(3, "Will revisit %s('%s') (%s) now.\n",
 			       context->cas[i]->cm_busname,
-			       context->cas[i]->cm_nickname);
+			       context->cas[i]->cm_nickname,
+			       cm_store_ca_phase_as_string(phase));
 			break;
 		case cm_time_soon:
 			then = tevent_timeval_add(&now, CM_DELAY_SOON, 0);
 			t = tevent_add_timer(talloc_parent(context), context,
 					     then, cm_timer_h, context);
-			cm_log(3, "Will revisit %s('%s') soon.\n",
+			cm_log(3, "Will revisit %s('%s') (%s) soon.\n",
 			       context->cas[i]->cm_busname,
-			       context->cas[i]->cm_nickname);
+			       context->cas[i]->cm_nickname,
+			       cm_store_ca_phase_as_string(phase));
 			break;
 		case cm_time_soonish:
 			then = tevent_timeval_add(&now, CM_DELAY_SOONISH, 0);
 			t = tevent_add_timer(talloc_parent(context), context,
 					     then, cm_timer_h, context);
-			cm_log(3, "Will revisit %s('%s') soonish.\n",
+			cm_log(3, "Will revisit %s('%s') (%s) soonish.\n",
 			       context->cas[i]->cm_busname,
-			       context->cas[i]->cm_nickname);
+			       context->cas[i]->cm_nickname,
+			       cm_store_ca_phase_as_string(phase));
 			break;
 		case cm_time_delay:
 			then = tevent_timeval_add(&now, delay, 0);
 			t = tevent_add_timer(talloc_parent(context), context,
 					     then, cm_timer_h, context);
-			cm_log(3, "Will revisit %s('%s') in %d seconds.\n",
+			cm_log(3, "Will revisit %s('%s') (%s) in %d seconds.\n",
 			       context->cas[i]->cm_busname,
-			       context->cas[i]->cm_nickname, delay);
+			       context->cas[i]->cm_nickname,
+			       cm_store_ca_phase_as_string(phase),
+			       delay);
 			break;
 		case cm_time_no_time:
 			if (fd != -1) {
@@ -545,15 +550,18 @@ cm_service_ca(struct cm_context *context, struct timeval *current_time, int i,
 						  context,
 						  fd, TEVENT_FD_READ,
 						  cm_fd_h, context);
-				cm_log(3, "Will revisit %s('%s') on "
+				cm_log(3, "Will revisit %s('%s') (%s) on "
 				       "traffic from %d.\n",
 				       context->cas[i]->cm_busname,
-				       context->cas[i]->cm_nickname, fd);
+				       context->cas[i]->cm_nickname,
+				       cm_store_ca_phase_as_string(phase),
+				       fd);
 			} else {
 				cm_log(3, "Waiting for instructions for "
-				       "%s('%s').\n",
+				       "%s('%s') (%s).\n",
 				       context->cas[i]->cm_busname,
-				       context->cas[i]->cm_nickname);
+				       context->cas[i]->cm_nickname,
+				       cm_store_ca_phase_as_string(phase));
 				t = NULL;
 			}
 			break;
