@@ -37,26 +37,6 @@
 #include "submit-int.h"
 #include "subproc.h"
 
-struct cm_submit_state {
-	struct cm_store_entry *entry;
-	struct cm_submit_state_pvt pvt;
-	struct cm_subproc_state *subproc;
-};
-
-/* Get a selectable-for-read descriptor we can poll for status changes. */
-static int
-cm_submit_e_get_fd(struct cm_submit_state *state)
-{
-	return cm_subproc_get_fd(state->subproc);
-}
-
-/* Get a pointer to the entry we started with. */
-static struct cm_store_entry *
-cm_submit_e_get_entry(struct cm_submit_state *state)
-{
-	return state->entry;
-}
-
 /* Try to save a CA-specific identifier for our submitted request.  That is, if
  * it even gave us one. */
 static int
@@ -84,7 +64,7 @@ cm_submit_e_save_ca_cookie(struct cm_submit_state *state)
 					       msg);
 					return -1;
 				}
-				state->pvt.delay = delay;
+				state->delay = delay;
 				msg = p + strspn(p, "\r\n");
 			}
 			state->entry->cm_ca_cookie = talloc_strdup(state->entry,
@@ -385,16 +365,15 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 	state = talloc_ptrtype(entry, state);
 	if (state != NULL) {
 		memset(state, 0, sizeof(*state));
-		state->pvt.get_fd = cm_submit_e_get_fd;
-		state->pvt.get_entry = cm_submit_e_get_entry;
-		state->pvt.save_ca_cookie = cm_submit_e_save_ca_cookie;
-		state->pvt.ready = cm_submit_e_ready;
-		state->pvt.issued = cm_submit_e_issued;
-		state->pvt.rejected = cm_submit_e_rejected;
-		state->pvt.unreachable = cm_submit_e_unreachable;
-		state->pvt.unconfigured = cm_submit_e_unconfigured;
-		state->pvt.done = cm_submit_e_done;
-		state->pvt.delay = -1;
+		state->entry = entry;
+		state->save_ca_cookie = cm_submit_e_save_ca_cookie;
+		state->ready = cm_submit_e_ready;
+		state->issued = cm_submit_e_issued;
+		state->rejected = cm_submit_e_rejected;
+		state->unreachable = cm_submit_e_unreachable;
+		state->unconfigured = cm_submit_e_unconfigured;
+		state->done = cm_submit_e_done;
+		state->delay = -1;
 		if (pipe(errorfds) != -1) {
 			if (fcntl(errorfds[1], F_SETFD, 1L) == -1) {
 				close(errorfds[0]);

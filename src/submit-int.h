@@ -18,17 +18,13 @@
 #ifndef cmsubmitint_h
 #define cmsubmitint_h
 
-struct cm_submit_state;
 struct cm_store_entry;
-struct cm_submit_state_pvt {
-	/* Get a selectable-for-read descriptor which will either have data or
-	 * be closed when status changes. */
-	int (*get_fd)(struct cm_submit_state *state);
+struct cm_submit_state {
+	struct cm_store_entry *entry;
+	struct cm_subproc_state *subproc;
 	/* Check if the CSR was submitted to the CA yet, or we determined that
 	 * doing so was not possible at this time. */
 	int (*ready)(struct cm_submit_state *state);
-	/* Return the entry we were using for cookie storage. */
-	struct cm_store_entry * (*get_entry)(struct cm_submit_state *state);
 	/* Save CA-specific identifier for our submitted request. */
 	int (*save_ca_cookie)(struct cm_submit_state *state);
 	/* Check if the certificate was issued. */

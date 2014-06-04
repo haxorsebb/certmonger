@@ -51,12 +51,6 @@
 #include "tm.h"
 #include "util-o.h"
 
-struct cm_submit_state {
-	struct cm_submit_state_pvt pvt;
-	struct cm_store_entry *entry;
-	struct cm_subproc_state *subproc;
-};
-
 static int
 cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		  void *userdata)
@@ -213,20 +207,6 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	return 0;
 }
 
-/* Get a selectable-for-read descriptor we can poll for status changes. */
-static int
-cm_submit_so_get_fd(struct cm_submit_state *state)
-{
-	return cm_subproc_get_fd(state->subproc);
-}
-
-/* Get a pointer to the entry we started with. */
-static struct cm_store_entry *
-cm_submit_so_get_entry(struct cm_submit_state *state)
-{
-	return state->entry;
-}
-
 /* Save CA-specific identifier for our submitted request. */
 static int
 cm_submit_so_save_ca_cookie(struct cm_submit_state *state)
@@ -315,17 +295,15 @@ cm_submit_so_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 	state = talloc_ptrtype(entry, state);
 	if (state != NULL) {
 		memset(state, 0, sizeof(*state));
-		state->pvt.get_fd = cm_submit_so_get_fd;
-		state->pvt.get_entry = cm_submit_so_get_entry;
-		state->pvt.save_ca_cookie = cm_submit_so_save_ca_cookie;
-		state->pvt.ready = cm_submit_so_ready;
-		state->pvt.issued = cm_submit_so_issued;
-		state->pvt.rejected = cm_submit_so_rejected;
-		state->pvt.unreachable = cm_submit_so_unreachable;
-		state->pvt.unconfigured = cm_submit_so_unconfigured;
-		state->pvt.done = cm_submit_so_done;
-		state->pvt.delay = -1;
 		state->entry = entry;
+		state->save_ca_cookie = cm_submit_so_save_ca_cookie;
+		state->ready = cm_submit_so_ready;
+		state->issued = cm_submit_so_issued;
+		state->rejected = cm_submit_so_rejected;
+		state->unreachable = cm_submit_so_unreachable;
+		state->unconfigured = cm_submit_so_unconfigured;
+		state->done = cm_submit_so_done;
+		state->delay = -1;
 		state->subproc = cm_subproc_start(cm_submit_so_main,
 						  ca, entry, NULL);
 		if (state->subproc == NULL) {
