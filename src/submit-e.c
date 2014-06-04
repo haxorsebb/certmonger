@@ -179,6 +179,19 @@ cm_submit_e_issued(struct cm_submit_state *state)
 	}
 }
 
+/* Check if the submission helper can't request certificates. */
+static int
+cm_submit_e_unsupported(struct cm_submit_state *state)
+{
+	int status;
+	status = cm_subproc_get_exitstatus(state->subproc);
+	if (WIFEXITED(status) &&
+	    (WEXITSTATUS(status) == CM_SUBMIT_STATUS_OPERATION_NOT_SUPPORTED)) {
+		return 0;
+	}
+	return -1;
+}
+
 /* Check if the submission helper is just unconfigured. */
 static int
 cm_submit_e_unconfigured(struct cm_submit_state *state)
@@ -372,6 +385,7 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 		state->rejected = cm_submit_e_rejected;
 		state->unreachable = cm_submit_e_unreachable;
 		state->unconfigured = cm_submit_e_unconfigured;
+		state->unsupported = cm_submit_e_unsupported;
 		state->done = cm_submit_e_done;
 		state->delay = -1;
 		if (pipe(errorfds) != -1) {

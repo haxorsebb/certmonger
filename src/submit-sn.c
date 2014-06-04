@@ -404,6 +404,13 @@ cm_submit_sn_unconfigured(struct cm_submit_state *state)
 	return -1; /* uh, we're the CA */
 }
 
+/* Check if the CA is something we can ask for certificates. */
+static int
+cm_submit_sn_unsupported(struct cm_submit_state *state)
+{
+	return -1; /* uh, we're the CA */
+}
+
 /* Done talking to the CA. */
 static void
 cm_submit_sn_done(struct cm_submit_state *state)
@@ -434,6 +441,7 @@ cm_submit_sn_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 		state->rejected = cm_submit_sn_rejected;
 		state->unreachable = cm_submit_sn_unreachable;
 		state->unconfigured = cm_submit_sn_unconfigured;
+		state->unsupported = cm_submit_sn_unsupported;
 		state->done = cm_submit_sn_done;
 		state->delay = -1;
 		state->entry = entry;

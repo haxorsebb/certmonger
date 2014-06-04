@@ -35,6 +35,8 @@ struct cm_submit_state {
 	int (*unreachable)(struct cm_submit_state *state);
 	/* Check if the CA was unconfigured in some way. */
 	int (*unconfigured)(struct cm_submit_state *state);
+	/* Check if we can't submit requests to the CA. */
+	int (*unsupported)(struct cm_submit_state *state);
 	/* Done talking to the CA. */
 	void (*done)(struct cm_submit_state *state);
 	/* Recommended delay before the next connection to the CA. */

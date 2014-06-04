@@ -126,11 +126,18 @@ cm_submit_rejected(struct cm_submit_state *state)
 	return (*state->rejected)(state);
 }
 
-/* Check if the CA was unreachable. */
+/* Check if we're unconfigured or underconfigured. */
 int
 cm_submit_unconfigured(struct cm_submit_state *state)
 {
 	return (*state->unconfigured)(state);
+}
+
+/* Check if we don't support requesting certificates. */
+int
+cm_submit_unsupported(struct cm_submit_state *state)
+{
+	return (*state->unsupported)(state);
 }
 
 /* Check if the CA was unreachable. */
