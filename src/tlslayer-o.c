@@ -77,11 +77,13 @@ cm_tls_o(const char *hostport,
 	if (ret == NULL) {
 		return NULL;
 	}
+	memset(ret, 0, sizeof(*ret));
 	pvt = talloc_ptrtype(ret, pvt);
 	if (pvt == NULL) {
 		talloc_free(ret);
 		return NULL;
 	}
+	memset(pvt, 0, sizeof(*pvt));
 	pvt->cm_ctx = SSL_CTX_new(SSLv23_client_method());
 	pvt->cm_bio = BIO_new_connect(strdup(hostport));
 	pvt->cm_sbio = BIO_new_ssl(pvt->cm_ctx, 1);

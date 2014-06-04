@@ -140,6 +140,7 @@ cm_hook_start(struct cm_store_ca *ca, struct cm_store_entry *entry,
 
 	state = talloc_ptrtype(parent, state);
 	if (state != NULL) {
+		memset(state, 0, sizeof(*state));
 		state->uid = l;
 		state->command = hook_command;
 		state->subproc = cm_subproc_start(cm_hook_main,

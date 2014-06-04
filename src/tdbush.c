@@ -6950,6 +6950,7 @@ cm_tdbush_handle_method_call(DBusConnection *conn, DBusMessage *msg,
 			pending.cm_fn = meth->cm_fn;
 			tmp = talloc_ptrtype(NULL, tmp);
 			if (tmp != NULL) {
+				memset(tmp, 0, sizeof(*tmp));
 				/* we need to know who this is */
 				msg = dbus_message_new_method_call(DBUS_SERVICE_DBUS,
 								   DBUS_PATH_DBUS,

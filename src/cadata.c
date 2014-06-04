@@ -193,6 +193,7 @@ parse_cert_list(struct cm_store_ca *ca, struct cm_cadata_state *state,
 			talloc_free(certs);
 			return NULL;
 		}
+		memset(nc, 0, sizeof(*nc));
 		tmp = talloc_realloc(ca, certs, struct cm_nickcert *, i + 2);
 		if (tmp == NULL) {
 			talloc_free(certs);
@@ -463,6 +464,7 @@ cm_cadata_start_generic(struct cm_store_ca *ca, const char *op,
 	if (ret == NULL) {
 		return NULL;
 	}
+	memset(ret, 0, sizeof(*ret));
 	ret->ca = ca;
 	ret->error_fd = error_fd[1];
 	ret->op = op;

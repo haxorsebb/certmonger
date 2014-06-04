@@ -935,6 +935,11 @@ cm_tdbusm_get_d_item(DBusMessageIter *item, void *parent)
 	DBusMessageIter value, sval, fields;
 
 	dict = talloc_ptrtype(parent, dict);
+	if (dict == NULL) {
+		return NULL;
+	}
+	memset(dict, 0, sizeof(*dict));
+
 	/* Pull out a string. */
 	switch (dbus_message_iter_get_arg_type(item)) {
 	case DBUS_TYPE_STRING:

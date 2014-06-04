@@ -498,6 +498,7 @@ parse_nickcert_list(void *parent, const char *s)
 		if (nc == NULL) {
 			return NULL;
 		}
+		memset(nc, 0, sizeof(*nc));
 		q = p + strcspn(p, "\r\n");
 		nc->cm_nickname = talloc_strndup(nc, p, q - p);
 		if (nc->cm_nickname == NULL) {
@@ -2124,6 +2125,7 @@ cm_store_maybe_dup_nickcert_list(void *parent, struct cm_nickcert **certs)
 			talloc_free(ret);
 			return NULL;
 		}
+		memset(nc, 0, sizeof(*nc));
 		nc->cm_nickname = talloc_strdup(nc, certs[i]->cm_nickname);
 		nc->cm_cert = talloc_strdup(nc, certs[i]->cm_cert);
 		if ((nc->cm_nickname == NULL) || (nc->cm_cert == NULL)) {
@@ -2142,6 +2144,10 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	struct cm_store_entry *ret;
 
 	ret = talloc_ptrtype(parent, ret);
+	if (ret == NULL) {
+		return ret;
+	}
+	memset(ret, 0, sizeof(*ret));
 
 	ret->cm_busname = cm_store_maybe_strdup(ret, entry->cm_busname);
 	ret->cm_store_private =
@@ -2242,6 +2248,10 @@ cm_store_ca_dup(void *parent, struct cm_store_ca *ca)
 	struct cm_store_ca *ret;
 
 	ret = talloc_ptrtype(parent, ret);
+	if (ret == NULL) {
+		return NULL;
+	}
+	memset(ret, 0, sizeof(*ret));
 	ret->cm_busname = cm_store_maybe_strdup(ret, ca->cm_busname);
 	ret->cm_store_private =
 		cm_store_maybe_strdup(ret, ca->cm_store_private);
