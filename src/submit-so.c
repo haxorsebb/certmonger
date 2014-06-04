@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2009,2010,2011,2012 Red Hat, Inc.
- * 
+ * Copyright (C) 2009,2010,2011,2012,2014 Red Hat, Inc.
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -53,6 +53,7 @@
 
 struct cm_submit_state {
 	struct cm_submit_state_pvt pvt;
+	struct cm_store_entry *entry;
 	struct cm_subproc_state *subproc;
 };
 
@@ -214,20 +215,27 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 
 /* Get a selectable-for-read descriptor we can poll for status changes. */
 static int
-cm_submit_so_get_fd(struct cm_store_entry *entry, struct cm_submit_state *state)
+cm_submit_so_get_fd(struct cm_submit_state *state)
 {
-	return cm_subproc_get_fd(entry, state->subproc);
+	return cm_subproc_get_fd(state->subproc);
+}
+
+/* Get a pointer to the entry we started with. */
+static struct cm_store_entry *
+cm_submit_so_get_entry(struct cm_submit_state *state)
+{
+	return state->entry;
 }
 
 /* Save CA-specific identifier for our submitted request. */
 static int
-cm_submit_so_save_ca_cookie(struct cm_store_entry *entry,
-			    struct cm_submit_state *state)
+cm_submit_so_save_ca_cookie(struct cm_submit_state *state)
 {
-	talloc_free(entry->cm_ca_cookie);
-	entry->cm_ca_cookie = talloc_strdup(entry,
-					    entry->cm_key_storage_location);
-	if (entry->cm_ca_cookie == NULL) {
+	talloc_free(state->entry->cm_ca_cookie);
+	state->entry->cm_ca_cookie =
+		talloc_strdup(state->entry,
+			      state->entry->cm_key_storage_location);
+	if (state->entry->cm_ca_cookie == NULL) {
 		cm_log(1, "Out of memory.\n");
 		return ENOMEM;
 	}
@@ -236,21 +244,22 @@ cm_submit_so_save_ca_cookie(struct cm_store_entry *entry,
 
 /* Check if an attempt to submit has finished. */
 static int
-cm_submit_so_ready(struct cm_store_entry *entry, struct cm_submit_state *state)
+cm_submit_so_ready(struct cm_submit_state *state)
 {
-	return cm_subproc_ready(entry, state->subproc);
+	return cm_subproc_ready(state->subproc);
 }
 
 /* Check if the certificate was issued. */
 static int
-cm_submit_so_issued(struct cm_store_entry *entry, struct cm_submit_state *state)
+cm_submit_so_issued(struct cm_submit_state *state)
 {
 	const char *msg;
-	msg = cm_subproc_get_msg(entry, state->subproc, NULL);
+
+	msg = cm_subproc_get_msg(state->subproc, NULL);
 	if ((strstr(msg, "-----BEGIN CERTIFICATE-----") != NULL) &&
 	    (strstr(msg, "-----END CERTIFICATE-----") != NULL)) {
-		talloc_free(entry->cm_cert);
-		entry->cm_cert = talloc_strdup(entry, msg);
+		talloc_free(state->entry->cm_cert);
+		state->entry->cm_cert = talloc_strdup(state->entry, msg);
 		return 0;
 	}
 	return -1;
@@ -258,11 +267,11 @@ cm_submit_so_issued(struct cm_store_entry *entry, struct cm_submit_state *state)
 
 /* Check if the signing request was rejected. */
 static int
-cm_submit_so_rejected(struct cm_store_entry *entry,
-		      struct cm_submit_state *state)
+cm_submit_so_rejected(struct cm_submit_state *state)
 {
 	int status;
-	status = cm_subproc_get_exitstatus(entry, state->subproc);
+
+	status = cm_subproc_get_exitstatus(state->subproc);
 	if (!WIFEXITED(status) || (WEXITSTATUS(status) != 2)) {
 		return -1; /* it should never get rejected */
 	}
@@ -271,26 +280,24 @@ cm_submit_so_rejected(struct cm_store_entry *entry,
 
 /* Check if the CA was unreachable. */
 static int
-cm_submit_so_unreachable(struct cm_store_entry *entry,
-			 struct cm_submit_state *state)
+cm_submit_so_unreachable(struct cm_submit_state *state)
 {
 	return -1; /* uh, we're the CA */
 }
 
 /* Check if the CA was unconfigured. */
 static int
-cm_submit_so_unconfigured(struct cm_store_entry *entry,
-			  struct cm_submit_state *state)
+cm_submit_so_unconfigured(struct cm_submit_state *state)
 {
 	return -1; /* uh, we're the CA */
 }
 
 /* Done talking to the CA. */
 static void
-cm_submit_so_done(struct cm_store_entry *entry, struct cm_submit_state *state)
+cm_submit_so_done(struct cm_submit_state *state)
 {
 	if (state->subproc != NULL) {
-		cm_subproc_done(entry, state->subproc);
+		cm_subproc_done(state->subproc);
 	}
 	talloc_free(state);
 }
@@ -309,6 +316,7 @@ cm_submit_so_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 	if (state != NULL) {
 		memset(state, 0, sizeof(*state));
 		state->pvt.get_fd = cm_submit_so_get_fd;
+		state->pvt.get_entry = cm_submit_so_get_entry;
 		state->pvt.save_ca_cookie = cm_submit_so_save_ca_cookie;
 		state->pvt.ready = cm_submit_so_ready;
 		state->pvt.issued = cm_submit_so_issued;
@@ -317,6 +325,7 @@ cm_submit_so_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 		state->pvt.unconfigured = cm_submit_so_unconfigured;
 		state->pvt.done = cm_submit_so_done;
 		state->pvt.delay = -1;
+		state->entry = entry;
 		state->subproc = cm_subproc_start(cm_submit_so_main,
 						  ca, entry, NULL);
 		if (state->subproc == NULL) {

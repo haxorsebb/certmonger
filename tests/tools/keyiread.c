@@ -95,18 +95,18 @@ main(int argc, char **argv)
 	state = cm_keyiread_start(entry);
 	if (state != NULL) {
 		for (;;) {
-			fd = cm_keyiread_get_fd(entry, state);
+			fd = cm_keyiread_get_fd(state);
 			if (fd != -1) {
 				wait_to_read(fd);
 			} else {
 				sleep(1);
 			}
-			if (cm_keyiread_ready(entry, state) == 0) {
+			if (cm_keyiread_ready(state) == 0) {
 				break;
 			}
 		}
-		need_pin = cm_keyiread_need_pin(entry, state);
-		cm_keyiread_done(entry, state);
+		need_pin = cm_keyiread_need_pin(state);
+		cm_keyiread_done(state);
 		if (entry->cm_key_type.cm_key_size != 0) {
 			printf("OK (%s:%d).\n",
 			       type_name(entry->cm_key_type.cm_key_algorithm),

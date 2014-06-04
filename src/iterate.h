@@ -24,7 +24,8 @@ struct cm_context;
 enum cm_ca_phase;
 
 /* Start tracking a working state for this entry. */
-int cm_iterate_entry_init(struct cm_store_entry *entry, void **cm_iterate_state);
+int cm_iterate_entry_init(struct cm_store_entry *entry,
+			  void **cm_iterate_state);
 
 /* Start tracking a working state for a CA's maintenance tasks. */
 int cm_iterate_ca_init(struct cm_store_ca *ca, enum cm_ca_phase phase,

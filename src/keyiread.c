@@ -60,61 +60,60 @@ cm_keyiread_start(struct cm_store_entry *entry)
 
 /* Check if something changed, for example we finished reading the key info. */
 int
-cm_keyiread_ready(struct cm_store_entry *entry, struct cm_keyiread_state *state)
+cm_keyiread_ready(struct cm_keyiread_state *state)
 {
 	struct cm_keyiread_state_pvt *pvt;
 	pvt = (struct cm_keyiread_state_pvt *) state;
-	return pvt->ready(entry, state);
+	return pvt->ready(state);
 }
 
 /* Get a selectable-for-read descriptor we can poll for status changes. */
 int
-cm_keyiread_get_fd(struct cm_store_entry *entry,
-		   struct cm_keyiread_state *state)
+cm_keyiread_get_fd(struct cm_keyiread_state *state)
 {
 	struct cm_keyiread_state_pvt *pvt;
 	pvt = (struct cm_keyiread_state_pvt *) state;
-	return pvt->get_fd(entry, state);
+	return pvt->get_fd(state);
 }
 
 /* Check if we finished reading the key information. */
 int
-cm_keyiread_finished_reading(struct cm_store_entry *entry,
-			     struct cm_keyiread_state *state)
+cm_keyiread_finished_reading(struct cm_keyiread_state *state)
 {
 	struct cm_keyiread_state_pvt *pvt;
+
 	pvt = (struct cm_keyiread_state_pvt *) state;
-	return pvt->finished_reading(entry, state);
+	return pvt->finished_reading(state);
 }
 
 /* Check if we need a PIN (or a new PIN) in order to access the key info. */
 int
-cm_keyiread_need_pin(struct cm_store_entry *entry,
-		     struct cm_keyiread_state *state)
+cm_keyiread_need_pin(struct cm_keyiread_state *state)
 {
 	struct cm_keyiread_state_pvt *pvt;
+
 	pvt = (struct cm_keyiread_state_pvt *) state;
-	return pvt->need_pin(entry, state);
+	return pvt->need_pin(state);
 }
 
 /* Check if we need a token to be present in order to access the key info. */
 int
-cm_keyiread_need_token(struct cm_store_entry *entry,
-		       struct cm_keyiread_state *state)
+cm_keyiread_need_token(struct cm_keyiread_state *state)
 {
 	struct cm_keyiread_state_pvt *pvt;
+
 	pvt = (struct cm_keyiread_state_pvt *) state;
-	return pvt->need_token(entry, state);
+	return pvt->need_token(state);
 }
 
 /* Clean up after reading the key info. */
 void
-cm_keyiread_done(struct cm_store_entry *entry, struct cm_keyiread_state *state)
+cm_keyiread_done(struct cm_keyiread_state *state)
 {
 	struct cm_keyiread_state_pvt *pvt;
 
 	pvt = (struct cm_keyiread_state_pvt *) state;
-	pvt->done(entry, state);
+	pvt->done(state);
 }
 
 /* Parse what we know about this key from a buffer. */

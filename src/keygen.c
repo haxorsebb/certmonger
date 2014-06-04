@@ -46,61 +46,58 @@ cm_keygen_start(struct cm_store_entry *entry)
 
 /* Check if the keypair is ready. */
 int
-cm_keygen_ready(struct cm_store_entry *entry, struct cm_keygen_state *state)
+cm_keygen_ready(struct cm_keygen_state *state)
 {
 	struct cm_keygen_state_pvt *pvt = (struct cm_keygen_state_pvt *) state;
-	return pvt->ready(entry, state);
+	return pvt->ready(state);
 }
 
 /* Get a selectable-for-read descriptor we can poll for status changes. */
 int
-cm_keygen_get_fd(struct cm_store_entry *entry, struct cm_keygen_state *state)
+cm_keygen_get_fd(struct cm_keygen_state *state)
 {
 	struct cm_keygen_state_pvt *pvt = (struct cm_keygen_state_pvt *) state;
-	return pvt->get_fd(entry, state);
+	return pvt->get_fd(state);
 }
 
 /* Tell us if the keypair was saved to the location specified in the entry. */
 int
-cm_keygen_saved_keypair(struct cm_store_entry *entry,
-			struct cm_keygen_state *state)
+cm_keygen_saved_keypair(struct cm_keygen_state *state)
 {
 	struct cm_keygen_state_pvt *pvt = (struct cm_keygen_state_pvt *) state;
-	return pvt->saved_keypair(entry, state);
+	return pvt->saved_keypair(state);
 }
 
 /* Tell us if we need filesystem permissions to write the key. */
 int
-cm_keygen_need_perms(struct cm_store_entry *entry,
-		     struct cm_keygen_state *state)
+cm_keygen_need_perms(struct cm_keygen_state *state)
 {
 	struct cm_keygen_state_pvt *pvt = (struct cm_keygen_state_pvt *) state;
-	return pvt->need_perms(entry, state);
+	return pvt->need_perms(state);
 }
 
 /* Tell us if we need a PIN (or a new PIN) to access the key store. */
 int
-cm_keygen_need_pin(struct cm_store_entry *entry,
-		   struct cm_keygen_state *state)
+cm_keygen_need_pin(struct cm_keygen_state *state)
 {
 	struct cm_keygen_state_pvt *pvt = (struct cm_keygen_state_pvt *) state;
-	return pvt->need_pin(entry, state);
+	return pvt->need_pin(state);
 }
 
 /* Tell us if we need a token to be inserted to access the key store. */
 int
-cm_keygen_need_token(struct cm_store_entry *entry,
-		     struct cm_keygen_state *state)
+cm_keygen_need_token(struct cm_keygen_state *state)
 {
 	struct cm_keygen_state_pvt *pvt = (struct cm_keygen_state_pvt *) state;
-	return pvt->need_token(entry, state);
+
+	return pvt->need_token(state);
 }
 
 /* Clean up after key generation. */
 void
-cm_keygen_done(struct cm_store_entry *entry, struct cm_keygen_state *state)
+cm_keygen_done(struct cm_keygen_state *state)
 {
 	struct cm_keygen_state_pvt *pvt = (struct cm_keygen_state_pvt *) state;
 
-	pvt->done(entry, state);
+	pvt->done(state);
 }

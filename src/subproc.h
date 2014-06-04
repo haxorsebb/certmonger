@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,27 +32,25 @@ struct cm_subproc_state *cm_subproc_start(int (*cb)(int fd,
 					  void *data);
 /* Return a descriptor we can monitor.  If we return -1, the caller must poll.
  */
-int cm_subproc_get_fd(struct cm_store_entry *entry,
-		      struct cm_subproc_state *state);
+	/* Get a selectable-for-read descriptor we can poll for status changes.
+	 */
+int cm_subproc_get_fd(struct cm_subproc_state *state);
 /* Return 0 if the process has finished its run. */
-int cm_subproc_ready(struct cm_store_entry *entry,
-		     struct cm_subproc_state *state);
+int cm_subproc_ready(struct cm_subproc_state *state);
 /* Return the subprocess's output. */
-const char *cm_subproc_get_msg(struct cm_store_entry *entry,
-			       struct cm_subproc_state *state,
+const char *cm_subproc_get_msg(struct cm_subproc_state *state,
 			       int *length);
 /* Return the subprocess's exit status. */
-int cm_subproc_get_exitstatus(struct cm_store_entry *entry,
-			      struct cm_subproc_state *state);
+int cm_subproc_get_exitstatus(struct cm_subproc_state *state);
 /* Clean up. */
-void cm_subproc_done(struct cm_store_entry *entry,
-		     struct cm_subproc_state *state);
+void cm_subproc_done(struct cm_subproc_state *state);
 
 /* Parse args. */
 char **cm_subproc_parse_args(void *parent, const char *cmdline,
 			     const char **error);
+
 /* Reset stdio to /dev/null and mark all but the passed-in descriptor as
  * close-on-exec. */
-void cm_subproc_mark_most_cloexec(struct cm_store_entry *entry, int fd);
+void cm_subproc_mark_most_cloexec(int fd);
 
 #endif

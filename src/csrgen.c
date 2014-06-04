@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2011,2012 Red Hat, Inc.
+ * Copyright (C) 2009,2011,2012,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,44 +45,49 @@ cm_csrgen_start(struct cm_store_entry *entry)
 }
 
 int
-cm_csrgen_ready(struct cm_store_entry *entry, struct cm_csrgen_state *state)
+cm_csrgen_ready(struct cm_csrgen_state *state)
 {
 	struct cm_csrgen_state_pvt *pvt = (struct cm_csrgen_state_pvt *) state;
-	return pvt->ready(entry, state);
+
+	return pvt->ready(state);
 }
 
 int
-cm_csrgen_get_fd(struct cm_store_entry *entry, struct cm_csrgen_state *state)
+cm_csrgen_get_fd(struct cm_csrgen_state *state)
 {
 	struct cm_csrgen_state_pvt *pvt = (struct cm_csrgen_state_pvt *) state;
-	return pvt->get_fd(entry, state);
+
+	return pvt->get_fd(state);
 }
 
 int
-cm_csrgen_save_csr(struct cm_store_entry *entry, struct cm_csrgen_state *state)
+cm_csrgen_save_csr(struct cm_csrgen_state *state)
 {
 	struct cm_csrgen_state_pvt *pvt = (struct cm_csrgen_state_pvt *) state;
-	return pvt->save_csr(entry, state);
+
+	return pvt->save_csr(state);
 }
 
 int
-cm_csrgen_need_pin(struct cm_store_entry *entry, struct cm_csrgen_state *state)
+cm_csrgen_need_pin(struct cm_csrgen_state *state)
 {
 	struct cm_csrgen_state_pvt *pvt = (struct cm_csrgen_state_pvt *) state;
-	return pvt->need_pin(entry, state);
+
+	return pvt->need_pin(state);
 }
 
 int
-cm_csrgen_need_token(struct cm_store_entry *entry,
-		     struct cm_csrgen_state *state)
+cm_csrgen_need_token(struct cm_csrgen_state *state)
 {
 	struct cm_csrgen_state_pvt *pvt = (struct cm_csrgen_state_pvt *) state;
-	return pvt->need_token(entry, state);
+
+	return pvt->need_token(state);
 }
 
 void
-cm_csrgen_done(struct cm_store_entry *entry, struct cm_csrgen_state *state)
+cm_csrgen_done(struct cm_csrgen_state *state)
 {
 	struct cm_csrgen_state_pvt *pvt = (struct cm_csrgen_state_pvt *) state;
-	pvt->done(entry, state);
+
+	pvt->done(state);
 }

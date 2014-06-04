@@ -45,6 +45,7 @@ const char *attribute_map[] = {
 };
 
 struct cm_cadata_state {
+	struct cm_store_ca *ca;
 	struct cm_subproc_state *subproc;
 	void (*parse)(struct cm_store_ca *ca, struct cm_cadata_state *state,
 		      const char *msg);
@@ -88,7 +89,7 @@ fetch(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry, void *data)
 		}
 		return -1;
 	}
-	cm_subproc_mark_most_cloexec(NULL, STDOUT_FILENO);
+	cm_subproc_mark_most_cloexec(STDOUT_FILENO);
 	cm_log(1, "Running enrollment/cadata helper \"%s\".\n", argv[0]);
 	execvp(argv[0], argv);
 	u = errno;
@@ -462,6 +463,7 @@ cm_cadata_start_generic(struct cm_store_ca *ca, const char *op,
 	if (ret == NULL) {
 		return NULL;
 	}
+	ret->ca = ca;
 	ret->error_fd = error_fd[1];
 	ret->op = op;
 	ret->modified = 0;
@@ -475,7 +477,6 @@ cm_cadata_start_generic(struct cm_store_ca *ca, const char *op,
 	close(error_fd[1]);
 	ret->error_fd = -1;
 	ret->parse = parse;
-	talloc_steal(ret, ret->subproc);
 	if (read(error_fd[0], &u, 1) == 1) {
 		cm_log(1, "Error running enrollment helper: %s.\n",
 		       strerror(u));
@@ -528,38 +529,37 @@ cm_cadata_start_renew_reqs(struct cm_store_ca *ca)
 }
 
 int
-cm_cadata_ready(struct cm_store_ca *ca, struct cm_cadata_state *state)
+cm_cadata_ready(struct cm_cadata_state *state)
 {
 	int ready, length;
 
-	ready = cm_subproc_ready(NULL, state->subproc);
+	ready = cm_subproc_ready(state->subproc);
 	if ((ready == 0) &&
-	    (cm_subproc_get_exitstatus(NULL, state->subproc) == 0)) {
-		(*(state->parse))(ca, state,
-				  cm_subproc_get_msg(NULL, state->subproc,
-						     &length));
+	    (cm_subproc_get_exitstatus(state->subproc) == 0)) {
+		(*(state->parse))(state->ca, state,
+				  cm_subproc_get_msg(state->subproc, &length));
 	}
 	return ready;
 }
 
 int
-cm_cadata_get_fd(struct cm_store_ca *ca, struct cm_cadata_state *state)
+cm_cadata_get_fd(struct cm_cadata_state *state)
 {
-	return cm_subproc_get_fd(NULL, state->subproc);
+	return cm_subproc_get_fd(state->subproc);
 }
 
 int
-cm_cadata_modified(struct cm_store_ca *ca, struct cm_cadata_state *state)
+cm_cadata_modified(struct cm_cadata_state *state)
 {
 	return state->modified ? 0 : -1;
 }
 
 int
-cm_cadata_unsupported(struct cm_store_ca *ca, struct cm_cadata_state *state)
+cm_cadata_unsupported(struct cm_cadata_state *state)
 {
         int status;
 
-	status = cm_subproc_get_exitstatus(NULL, state->subproc);
+	status = cm_subproc_get_exitstatus(state->subproc);
 	if (WIFEXITED(status) &&
             (WEXITSTATUS(status) == CM_SUBMIT_STATUS_OPERATION_NOT_SUPPORTED)) {
                 return 0;
@@ -568,11 +568,11 @@ cm_cadata_unsupported(struct cm_store_ca *ca, struct cm_cadata_state *state)
 }
 
 int
-cm_cadata_unreachable(struct cm_store_ca *ca, struct cm_cadata_state *state)
+cm_cadata_unreachable(struct cm_cadata_state *state)
 {
         int status;
 
-	status = cm_subproc_get_exitstatus(NULL, state->subproc);
+	status = cm_subproc_get_exitstatus(state->subproc);
 	/* Go ahead and treat "try later" as an "unreachable" error, even
 	 * though helpers aren't supposed to ever return either of these values
 	 * for these cases, so that we don't permanently disable the helper
@@ -589,11 +589,11 @@ cm_cadata_unreachable(struct cm_store_ca *ca, struct cm_cadata_state *state)
 }
 
 int
-cm_cadata_unconfigured(struct cm_store_ca *ca, struct cm_cadata_state *state)
+cm_cadata_unconfigured(struct cm_cadata_state *state)
 {
         int status;
 
-	status = cm_subproc_get_exitstatus(NULL, state->subproc);
+	status = cm_subproc_get_exitstatus(state->subproc);
 	if (WIFEXITED(status) &&
             (WEXITSTATUS(status) == CM_SUBMIT_STATUS_UNCONFIGURED)) {
                 return 0;
@@ -602,8 +602,8 @@ cm_cadata_unconfigured(struct cm_store_ca *ca, struct cm_cadata_state *state)
 }
 
 void
-cm_cadata_done(struct cm_store_ca *ca, struct cm_cadata_state *state)
+cm_cadata_done(struct cm_cadata_state *state)
 {
-	cm_subproc_done(NULL, state->subproc);
+	cm_subproc_done(state->subproc);
 	talloc_free(state);
 }

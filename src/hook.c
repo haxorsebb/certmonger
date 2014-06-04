@@ -107,7 +107,7 @@ cm_hook_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		       state->command);
 		return -1;
 	}
-	cm_subproc_mark_most_cloexec(entry, fd);
+	cm_subproc_mark_most_cloexec(fd);
 	if (execvp(argv[0], argv) == -1) {
 		cm_log(0, "Error execvp()ing command \"%s\" (\"%s\"): %s.\n",
 		       argv[0], state->command,
@@ -170,33 +170,9 @@ cm_hook_start_postsave(struct cm_store_entry *entry)
 			     entry->cm_post_certsave_uid);
 }
 
-/* Get a selectable-for-read descriptor we can poll for status changes. */
-int
-cm_hook_get_fd(struct cm_store_entry *entry, struct cm_hook_state *state)
-{
-	return cm_subproc_get_fd(entry, state->subproc);
-}
-
-/* Check if our child process has exited. */
-int
-cm_hook_ready(struct cm_store_entry *entry, struct cm_hook_state *state)
-{
-	return cm_subproc_ready(entry, state->subproc);
-}
-
-/* Clean up after... well, we don't really know. */
-void
-cm_hook_done(struct cm_store_entry *entry, struct cm_hook_state *state)
-{
-	if (state->subproc != NULL) {
-		cm_subproc_done(entry, state->subproc);
-	}
-	talloc_free(state);
-}
-
 /* Start the pre-save hook. */
 struct cm_hook_state *
-cm_ca_hook_start_presave(struct cm_store_ca *ca)
+cm_hook_start_ca_presave(struct cm_store_ca *ca)
 {
 	return cm_hook_start(ca, NULL, ca, "pre-save",
 			     ca->cm_ca_pre_save_command,
@@ -205,7 +181,7 @@ cm_ca_hook_start_presave(struct cm_store_ca *ca)
 
 /* Start the post-save hook. */
 struct cm_hook_state *
-cm_ca_hook_start_postsave(struct cm_store_ca *ca)
+cm_hook_start_ca_postsave(struct cm_store_ca *ca)
 {
 	return cm_hook_start(ca, NULL, ca, "post-save",
 			     ca->cm_ca_post_save_command,
@@ -214,24 +190,24 @@ cm_ca_hook_start_postsave(struct cm_store_ca *ca)
 
 /* Get a selectable-for-read descriptor we can poll for status changes. */
 int
-cm_ca_hook_get_fd(struct cm_store_ca *ca, struct cm_hook_state *state)
+cm_hook_get_fd(struct cm_hook_state *state)
 {
-	return cm_subproc_get_fd(NULL, state->subproc);
+	return cm_subproc_get_fd(state->subproc);
 }
 
 /* Check if our child process has exited. */
 int
-cm_ca_hook_ready(struct cm_store_ca *ca, struct cm_hook_state *state)
+cm_hook_ready(struct cm_hook_state *state)
 {
-	return cm_subproc_ready(NULL, state->subproc);
+	return cm_subproc_ready(state->subproc);
 }
 
 /* Clean up after... well, we don't really know. */
 void
-cm_ca_hook_done(struct cm_store_ca *ca, struct cm_hook_state *state)
+cm_hook_done(struct cm_hook_state *state)
 {
 	if (state->subproc != NULL) {
-		cm_subproc_done(NULL, state->subproc);
+		cm_subproc_done(state->subproc);
 	}
 	talloc_free(state);
 }

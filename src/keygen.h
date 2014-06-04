@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2013 Red Hat, Inc.
+ * Copyright (C) 2009,2013,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,31 +27,25 @@ struct cm_keygen_state *cm_keygen_n_start(struct cm_store_entry *entry);
 struct cm_keygen_state *cm_keygen_o_start(struct cm_store_entry *entry);
 
 /* Check if the keypair is ready. */
-int cm_keygen_ready(struct cm_store_entry *entry,
-		    struct cm_keygen_state *state);
+int cm_keygen_ready(struct cm_keygen_state *state);
 
-/* Get a selectable-for-read descriptor we can poll for status changes. */
-int cm_keygen_get_fd(struct cm_store_entry *entry,
-		     struct cm_keygen_state *state);
+/* Get a selectable-for-read descriptor which will either have data or be
+ * closed when status changes. */
+int cm_keygen_get_fd(struct cm_keygen_state *state);
 
 /* Check if we need a PIN (or a new PIN) to generate a key pair. */
-int cm_keygen_need_pin(struct cm_store_entry *entry,
-		       struct cm_keygen_state *state);
+int cm_keygen_need_pin(struct cm_keygen_state *state);
 
 /* Check if we need the right token to be present to generate a key pair. */
-int cm_keygen_need_token(struct cm_store_entry *entry,
-			 struct cm_keygen_state *state);
+int cm_keygen_need_token(struct cm_keygen_state *state);
 
 /* Tell us if the keypair was saved to the location specified in the entry. */
-int cm_keygen_saved_keypair(struct cm_store_entry *entry,
-			    struct cm_keygen_state *state);
+int cm_keygen_saved_keypair(struct cm_keygen_state *state);
 
 /* Tell us if we need filesystem permissions to write the key. */
-int cm_keygen_need_perms(struct cm_store_entry *entry,
-			 struct cm_keygen_state *state);
+int cm_keygen_need_perms(struct cm_keygen_state *state);
 
 /* Clean up after key generation. */
-void cm_keygen_done(struct cm_store_entry *entry,
-		    struct cm_keygen_state *state);
+void cm_keygen_done(struct cm_keygen_state *state);
 
 #endif

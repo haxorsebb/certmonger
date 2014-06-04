@@ -51,6 +51,7 @@
 
 struct cm_keygen_state {
 	struct cm_keygen_state_pvt pvt;
+	struct cm_store_entry *entry;
 	struct cm_subproc_state *subproc;
 };
 struct cm_keygen_n_settings {
@@ -607,25 +608,24 @@ retry_gen:
 
 /* Check if the keypair is ready. */
 static int
-cm_keygen_n_ready(struct cm_store_entry *entry, struct cm_keygen_state *state)
+cm_keygen_n_ready(struct cm_keygen_state *state)
 {
-	return cm_subproc_ready(entry, state->subproc);
+	return cm_subproc_ready(state->subproc);
 }
 
 /* Get a selectable-for-read descriptor we can poll for status changes. */
 static int
-cm_keygen_n_get_fd(struct cm_store_entry *entry, struct cm_keygen_state *state)
+cm_keygen_n_get_fd(struct cm_keygen_state *state)
 {
-	return cm_subproc_get_fd(entry, state->subproc);
+	return cm_subproc_get_fd(state->subproc);
 }
 
 /* Tell us if the keypair was saved to the location specified in the entry. */
 static int
-cm_keygen_n_saved_keypair(struct cm_store_entry *entry,
-		          struct cm_keygen_state *state)
+cm_keygen_n_saved_keypair(struct cm_keygen_state *state)
 {
 	int status;
-	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	status = cm_subproc_get_exitstatus(state->subproc);
 	if (WIFEXITED(status) && (WEXITSTATUS(status) == 0)) {
 		return 0;
 	}
@@ -634,11 +634,10 @@ cm_keygen_n_saved_keypair(struct cm_store_entry *entry,
 
 /* Tell us if we don't have permissions. */
 static int
-cm_keygen_n_need_perms(struct cm_store_entry *entry,
-		       struct cm_keygen_state *state)
+cm_keygen_n_need_perms(struct cm_keygen_state *state)
 {
 	int status;
-	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	status = cm_subproc_get_exitstatus(state->subproc);
 	if (WIFEXITED(status) &&
 	    (WEXITSTATUS(status) == CM_SUB_STATUS_ERROR_PERMS)) {
 		return 0;
@@ -648,11 +647,10 @@ cm_keygen_n_need_perms(struct cm_store_entry *entry,
 
 /* Tell us if we need a new/correct PIN to use the key store. */
 static int
-cm_keygen_n_need_pin(struct cm_store_entry *entry,
-		     struct cm_keygen_state *state)
+cm_keygen_n_need_pin(struct cm_keygen_state *state)
 {
 	int status;
-	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	status = cm_subproc_get_exitstatus(state->subproc);
 	if (WIFEXITED(status) &&
 	    (WEXITSTATUS(status) == CM_SUB_STATUS_ERROR_AUTH)) {
 		return 0;
@@ -662,11 +660,10 @@ cm_keygen_n_need_pin(struct cm_store_entry *entry,
 
 /* Check if we need a token to be inserted to generate the key. */
 static int
-cm_keygen_n_need_token(struct cm_store_entry *entry,
-		       struct cm_keygen_state *state)
+cm_keygen_n_need_token(struct cm_keygen_state *state)
 {
 	int status;
-	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	status = cm_subproc_get_exitstatus(state->subproc);
 	if (WIFEXITED(status) &&
 	    (WEXITSTATUS(status) == CM_SUB_STATUS_ERROR_NO_TOKEN)) {
 		return 0;
@@ -676,28 +673,27 @@ cm_keygen_n_need_token(struct cm_store_entry *entry,
 
 /* Clean up after key generation. */
 static void
-cm_keygen_n_done(struct cm_store_entry *entry, struct cm_keygen_state *state)
+cm_keygen_n_done(struct cm_keygen_state *state)
 {
 	const char *pubkey_info, *p;
 	int len;
 
 	if (state->subproc != NULL) {
-		pubkey_info = cm_subproc_get_msg(entry, state->subproc, NULL);
+		pubkey_info = cm_subproc_get_msg(state->subproc, NULL);
 		if (pubkey_info != NULL) {
 			len = strcspn(pubkey_info, "\r\n");
-			entry->cm_key_pubkey_info = talloc_strndup(entry,
-								   pubkey_info,
-								   len);
+			state->entry->cm_key_pubkey_info =
+				talloc_strndup(state->entry, pubkey_info, len);
 			p = pubkey_info + len;
 			p += strspn(p, "\r\n");
 			len = strcspn(p, "\r\n");
-			entry->cm_key_pubkey = talloc_strndup(entry,
-							      p, len);
+			state->entry->cm_key_pubkey =
+				talloc_strndup(state->entry, p, len);
 		} else {
-			entry->cm_key_pubkey_info = NULL;
-			entry->cm_key_pubkey = NULL;
+			state->entry->cm_key_pubkey_info = NULL;
+			state->entry->cm_key_pubkey = NULL;
 		}
-		cm_subproc_done(entry, state->subproc);
+		cm_subproc_done(state->subproc);
 	}
 	talloc_free(state);
 }
@@ -723,6 +719,7 @@ cm_keygen_n_start(struct cm_store_entry *entry)
 		state->pvt.need_pin = cm_keygen_n_need_pin;
 		state->pvt.need_token = cm_keygen_n_need_token;
 		state->pvt.done = cm_keygen_n_done;
+		state->entry = entry;
 		state->subproc = cm_subproc_start(cm_keygen_n_main,
 						  NULL, entry, &settings);
 		if (state->subproc == NULL) {

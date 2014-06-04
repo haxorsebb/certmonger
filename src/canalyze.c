@@ -159,15 +159,15 @@ cm_ca_analyze_start_certs(struct cm_store_ca *ca)
 }
 
 int
-cm_ca_analyze_ready(struct cm_store_ca *ca, struct cm_ca_analyze_state *state)
+cm_ca_analyze_ready(struct cm_ca_analyze_state *state)
 {
 	int ready, length;
 	const char *p;
 
-	ready = cm_subproc_ready(NULL, state->subproc);
+	ready = cm_subproc_ready(state->subproc);
 	if ((ready == 0) &&
-	    (cm_subproc_get_exitstatus(NULL, state->subproc) == 0)) {
-		p = cm_subproc_get_msg(NULL, state->subproc, &length);
+	    (cm_subproc_get_exitstatus(state->subproc) == 0)) {
+		p = cm_subproc_get_msg(state->subproc, &length);
 		if (length > 0) {
 			state->delay = atol(p);
 		}
@@ -176,20 +176,20 @@ cm_ca_analyze_ready(struct cm_store_ca *ca, struct cm_ca_analyze_state *state)
 }
 
 long
-cm_ca_analyze_get_delay(struct cm_store_ca *ca, struct cm_ca_analyze_state *state)
+cm_ca_analyze_get_delay(struct cm_ca_analyze_state *state)
 {
 	return state->delay;
 }
 
 int
-cm_ca_analyze_get_fd(struct cm_store_ca *ca, struct cm_ca_analyze_state *state)
+cm_ca_analyze_get_fd(struct cm_ca_analyze_state *state)
 {
-	return cm_subproc_get_fd(NULL, state->subproc);
+	return cm_subproc_get_fd(state->subproc);
 }
 
 void
-cm_ca_analyze_done(struct cm_store_ca *ca, struct cm_ca_analyze_state *state)
+cm_ca_analyze_done(struct cm_ca_analyze_state *state)
 {
-	cm_subproc_done(NULL, state->subproc);
+	cm_subproc_done(state->subproc);
 	talloc_free(state);
 }

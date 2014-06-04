@@ -87,17 +87,17 @@ main(int argc, char **argv)
 	state = cm_submit_start(ca, entry);
 	if (state != NULL) {
 		for (;;) {
-			fd = cm_submit_get_fd(entry, state);
+			fd = cm_submit_get_fd(state);
 			if (fd != -1) {
 				wait_to_read(fd);
 			} else {
 				sleep(1);
 			}
-			if (cm_submit_ready(entry, state) == 0) {
+			if (cm_submit_ready(state) == 0) {
 				break;
 			}
 		}
-		if (cm_submit_issued(entry, state) == 0) {
+		if (cm_submit_issued(state) == 0) {
 			while (strlen(entry->cm_cert) > 0) {
 				i = strlen(entry->cm_cert) - 1;
 				if (entry->cm_cert[i] == '\n') {
@@ -112,11 +112,11 @@ main(int argc, char **argv)
 			printf("%s", entry->cm_cert);
 			ret = CM_SUBMIT_STATUS_ISSUED;
 		} else
-		if (cm_submit_save_ca_cookie(entry, state) == 0) {
+		if (cm_submit_save_ca_cookie(state) == 0) {
 			printf("Certificate not issued, saved a cookie.\n");
 			ret = CM_SUBMIT_STATUS_WAIT;
 		} else
-		if (cm_submit_rejected(entry, state) == 0) {
+		if (cm_submit_rejected(state) == 0) {
 			if (entry->cm_ca_error != NULL) {
 				printf("Request rejected: %s.\n",
 				       entry->cm_ca_error);
@@ -125,7 +125,7 @@ main(int argc, char **argv)
 			}
 			ret = CM_SUBMIT_STATUS_REJECTED;
 		} else
-		if (cm_submit_unreachable(entry, state) == 0) {
+		if (cm_submit_unreachable(state) == 0) {
 			if (entry->cm_ca_error != NULL) {
 				printf("CA was unreachable: %s.\n",
 				       entry->cm_ca_error);
@@ -134,7 +134,7 @@ main(int argc, char **argv)
 			}
 			ret = CM_SUBMIT_STATUS_UNREACHABLE;
 		} else
-		if (cm_submit_unconfigured(entry, state) == 0) {
+		if (cm_submit_unconfigured(state) == 0) {
 			if (entry->cm_ca_error != NULL) {
 				printf("CA helper was un- or "
 				       "under-configured: %s.\n",
@@ -148,7 +148,7 @@ main(int argc, char **argv)
 			printf("Can't explain what happened.\n");
 			ret = -1;
 		}
-		cm_submit_done(entry, state);
+		cm_submit_done(state);
 	} else {
 		printf("Failed to start.\n");
 		ret = -1;

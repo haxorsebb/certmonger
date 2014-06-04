@@ -33,34 +33,24 @@ struct cm_casave_state *cm_casave_start(struct cm_store_entry *entry,
 					int (*get_n_entries)(struct cm_context *));
 
 /* Check if something changed, for example we finished saving certs. */
-int cm_casave_ready(struct cm_store_entry *entry, struct cm_store_ca *ca,
-		    struct cm_casave_state *state);
+int cm_casave_ready(struct cm_casave_state *state);
 
 /* Get a selectable-for-read descriptor we can poll for status changes. */
-int cm_casave_get_fd(struct cm_store_entry *entry, struct cm_store_ca *ca,
-		     struct cm_casave_state *state);
+int cm_casave_get_fd(struct cm_casave_state *state);
 
 /* Check if we saved the certificate. */
-int cm_casave_saved(struct cm_store_entry *entry, struct cm_store_ca *ca,
-		    struct cm_casave_state *state);
+int cm_casave_saved(struct cm_casave_state *state);
 
 /* Check if we failed due to a subject name conflict. */
-int cm_casave_conflict_subject(struct cm_store_entry *entry,
-			       struct cm_store_ca *ca,
-			       struct cm_casave_state *state);
+int cm_casave_conflict_subject(struct cm_casave_state *state);
 
 /* Check if we failed due to a nickname conflict. */
-int cm_casave_conflict_nickname(struct cm_store_entry *entry,
-				struct cm_store_ca *ca,
-				struct cm_casave_state *state);
+int cm_casave_conflict_nickname(struct cm_casave_state *state);
 
 /* Check if we failed due to a permissions error. */
-int cm_casave_permissions_error(struct cm_store_entry *entry,
-				struct cm_store_ca *ca,
-				struct cm_casave_state *state);
+int cm_casave_permissions_error(struct cm_casave_state *state);
 
 /* Clean up after saving the certificate. */
-void cm_casave_done(struct cm_store_entry *entry, struct cm_store_ca *ca,
-		    struct cm_casave_state *state);
+void cm_casave_done(struct cm_casave_state *state);
 
 #endif

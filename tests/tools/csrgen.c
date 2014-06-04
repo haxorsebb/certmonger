@@ -70,17 +70,17 @@ main(int argc, char **argv)
 	state = cm_csrgen_start(entry);
 	if (state != NULL) {
 		for (;;) {
-			fd = cm_csrgen_get_fd(entry, state);
+			fd = cm_csrgen_get_fd(state);
 			if (fd != -1) {
 				wait_to_read(fd);
 			} else {
 				sleep(1);
 			}
-			if (cm_csrgen_ready(entry, state) == 0) {
+			if (cm_csrgen_ready(state) == 0) {
 				break;
 			}
 		}
-		if (cm_csrgen_save_csr(entry, state) == 0) {
+		if (cm_csrgen_save_csr(state) == 0) {
 			while (strlen(entry->cm_csr) > 0) {
 				i = strlen(entry->cm_csr) - 1;
 				if (entry->cm_csr[i] == '\n') {
@@ -96,15 +96,15 @@ main(int argc, char **argv)
 			ret = 0;
 		} else {
 			printf("Failed to save.\n");
-			if (cm_csrgen_need_token(entry, state) == 0) {
+			if (cm_csrgen_need_token(state) == 0) {
 				printf("(Need token.)\n");
 			} else
-			if (cm_csrgen_need_pin(entry, state) == 0) {
+			if (cm_csrgen_need_pin(state) == 0) {
 				printf("(Need PIN.)\n");
 			}
 			ret = 1;
 		}
-		cm_csrgen_done(entry, state);
+		cm_csrgen_done(state);
 	} else {
 		printf("Failed to start.\n");
 		ret = 1;

@@ -51,6 +51,7 @@
 
 struct cm_certread_state {
 	struct cm_certread_state_pvt pvt;
+	struct cm_store_entry *entry;
 	struct cm_subproc_state *subproc;
 };
 struct cm_certread_n_settings {
@@ -491,31 +492,27 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 /* Check if something changed, for example we finished reading the data we need
  * from the cert. */
 static int
-cm_certread_n_ready(struct cm_store_entry *entry,
-		    struct cm_certread_state *state)
+cm_certread_n_ready(struct cm_certread_state *state)
 {
-	return cm_subproc_ready(entry, state->subproc);
+	return cm_subproc_ready(state->subproc);
 }
 
 /* Get a selectable-for-read descriptor we can poll for status changes. */
 static int
-cm_certread_n_get_fd(struct cm_store_entry *entry,
-		     struct cm_certread_state *state)
+cm_certread_n_get_fd(struct cm_certread_state *state)
 {
-	return cm_subproc_get_fd(entry, state->subproc);
+	return cm_subproc_get_fd(state->subproc);
 }
 
 /* Clean up after reading the certificate. */
 static void
-cm_certread_n_done(struct cm_store_entry *entry,
-		   struct cm_certread_state *state)
+cm_certread_n_done(struct cm_certread_state *state)
 {
 	if (state->subproc != NULL) {
-		cm_certread_read_data_from_buffer(entry,
-						  cm_subproc_get_msg(entry,
-								     state->subproc,
+		cm_certread_read_data_from_buffer(state->entry,
+						  cm_subproc_get_msg(state->subproc,
 								     NULL));
-		cm_subproc_done(entry, state->subproc);
+		cm_subproc_done(state->subproc);
 	}
 	talloc_free(state);
 }
@@ -539,6 +536,7 @@ cm_certread_n_start(struct cm_store_entry *entry)
 		state->pvt.ready = cm_certread_n_ready;
 		state->pvt.get_fd= cm_certread_n_get_fd;
 		state->pvt.done= cm_certread_n_done;
+		state->entry = entry;
 		state->subproc = cm_subproc_start(cm_certread_n_main,
 						  NULL, entry, &settings);
 		if (state->subproc == NULL) {

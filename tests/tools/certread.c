@@ -69,17 +69,17 @@ main(int argc, char **argv)
 	state = cm_certread_start(entry);
 	if (state != NULL) {
 		for (;;) {
-			fd = cm_certread_get_fd(entry, state);
+			fd = cm_certread_get_fd(state);
 			if (fd != -1) {
 				wait_to_read(fd);
 			} else {
 				sleep(1);
 			}
-			if (cm_certread_ready(entry, state) == 0) {
+			if (cm_certread_ready(state) == 0) {
 				break;
 			}
 		}
-		cm_certread_done(entry, state);
+		cm_certread_done(state);
 		ret = 0;
 	} else {
 		printf("Failed to start.\n");

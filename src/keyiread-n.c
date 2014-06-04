@@ -53,6 +53,7 @@
 
 struct cm_keyiread_state {
 	struct cm_keyiread_state_pvt pvt;
+	struct cm_store_entry *entry;
 	struct cm_subproc_state *subproc;
 };
 struct cm_keyiread_n_settings {
@@ -526,19 +527,17 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 /* Check if something changed, for example we finished reading the data we need
  * from the key data. */
 static int
-cm_keyiread_n_ready(struct cm_store_entry *entry,
-		    struct cm_keyiread_state *state)
+cm_keyiread_n_ready(struct cm_keyiread_state *state)
 {
-	return cm_subproc_ready(entry, state->subproc);
+	return cm_subproc_ready(state->subproc);
 }
 
 /* Check if we were able to successfully read the key information. */
 static int
-cm_keyiread_n_finished_reading(struct cm_store_entry *entry,
-			       struct cm_keyiread_state *state)
+cm_keyiread_n_finished_reading(struct cm_keyiread_state *state)
 {
 	int status;
-	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	status = cm_subproc_get_exitstatus(state->subproc);
 	if (WIFEXITED(status) && (WEXITSTATUS(status) == 0)) {
 		return 0;
 	}
@@ -547,11 +546,10 @@ cm_keyiread_n_finished_reading(struct cm_store_entry *entry,
 
 /* Check if we need a PIN (or a new PIN) to access the key information. */
 static int
-cm_keyiread_n_need_pin(struct cm_store_entry *entry,
-		       struct cm_keyiread_state *state)
+cm_keyiread_n_need_pin(struct cm_keyiread_state *state)
 {
 	int status;
-	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	status = cm_subproc_get_exitstatus(state->subproc);
 	if (WIFEXITED(status) &&
 	    (WEXITSTATUS(status) == CM_SUB_STATUS_ERROR_AUTH)) {
 		return 0;
@@ -561,11 +559,10 @@ cm_keyiread_n_need_pin(struct cm_store_entry *entry,
 
 /* Check if we need a token to be inserted to access the key information. */
 static int
-cm_keyiread_n_need_token(struct cm_store_entry *entry,
-		         struct cm_keyiread_state *state)
+cm_keyiread_n_need_token(struct cm_keyiread_state *state)
 {
 	int status;
-	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	status = cm_subproc_get_exitstatus(state->subproc);
 	if (WIFEXITED(status) &&
 	    (WEXITSTATUS(status) == CM_SUB_STATUS_ERROR_NO_TOKEN)) {
 		return 0;
@@ -575,23 +572,20 @@ cm_keyiread_n_need_token(struct cm_store_entry *entry,
 
 /* Get a selectable-for-read descriptor we can poll for status changes. */
 static int
-cm_keyiread_n_get_fd(struct cm_store_entry *entry,
-		     struct cm_keyiread_state *state)
+cm_keyiread_n_get_fd(struct cm_keyiread_state *state)
 {
-	return cm_subproc_get_fd(entry, state->subproc);
+	return cm_subproc_get_fd(state->subproc);
 }
 
 /* Clean up after reading the key info. */
 static void
-cm_keyiread_n_done(struct cm_store_entry *entry,
-		   struct cm_keyiread_state *state)
+cm_keyiread_n_done(struct cm_keyiread_state *state)
 {
 	if (state->subproc != NULL) {
-		cm_keyiread_read_data_from_buffer(entry,
-						  cm_subproc_get_msg(entry,
-								     state->subproc,
+		cm_keyiread_read_data_from_buffer(state->entry,
+						  cm_subproc_get_msg(state->subproc,
 								     NULL));
-		cm_subproc_done(entry, state->subproc);
+		cm_subproc_done(state->subproc);
 	}
 	talloc_free(state);
 }
@@ -618,6 +612,7 @@ cm_keyiread_n_start(struct cm_store_entry *entry)
 		state->pvt.ready = cm_keyiread_n_ready;
 		state->pvt.get_fd= cm_keyiread_n_get_fd;
 		state->pvt.done= cm_keyiread_n_done;
+		state->entry = entry;
 		state->subproc = cm_subproc_start(cm_keyiread_n_main,
 						  NULL, entry, &settings);
 		if (state->subproc == NULL) {

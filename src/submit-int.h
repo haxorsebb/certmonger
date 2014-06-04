@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,32 +21,26 @@
 struct cm_submit_state;
 struct cm_store_entry;
 struct cm_submit_state_pvt {
-	/* Get a selectable-for-read descriptor we can poll for status changes.
-	 */
-	int (*get_fd)(struct cm_store_entry *entry,
-		      struct cm_submit_state *state);
+	/* Get a selectable-for-read descriptor which will either have data or
+	 * be closed when status changes. */
+	int (*get_fd)(struct cm_submit_state *state);
 	/* Check if the CSR was submitted to the CA yet, or we determined that
 	 * doing so was not possible at this time. */
-	int (*ready)(struct cm_store_entry *entry,
-		     struct cm_submit_state *state);
+	int (*ready)(struct cm_submit_state *state);
+	/* Return the entry we were using for cookie storage. */
+	struct cm_store_entry * (*get_entry)(struct cm_submit_state *state);
 	/* Save CA-specific identifier for our submitted request. */
-	int (*save_ca_cookie)(struct cm_store_entry *entry,
-			      struct cm_submit_state *state);
+	int (*save_ca_cookie)(struct cm_submit_state *state);
 	/* Check if the certificate was issued. */
-	int (*issued)(struct cm_store_entry *entry,
-		      struct cm_submit_state *state);
+	int (*issued)(struct cm_submit_state *state);
 	/* Check if the certificate request was rejected. */
-	int (*rejected)(struct cm_store_entry *entry,
-			struct cm_submit_state *state);
+	int (*rejected)(struct cm_submit_state *state);
 	/* Check if the CA was unreachable for some reason. */
-	int (*unreachable)(struct cm_store_entry *entry,
-			   struct cm_submit_state *state);
+	int (*unreachable)(struct cm_submit_state *state);
 	/* Check if the CA was unconfigured in some way. */
-	int (*unconfigured)(struct cm_store_entry *entry,
-			    struct cm_submit_state *state);
+	int (*unconfigured)(struct cm_submit_state *state);
 	/* Done talking to the CA. */
-	void (*done)(struct cm_store_entry *entry,
-		     struct cm_submit_state *state);
+	void (*done)(struct cm_submit_state *state);
 	/* Recommended delay before the next connection to the CA. */
 	int delay;
 };

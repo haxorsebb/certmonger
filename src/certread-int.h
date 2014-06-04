@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,15 +21,12 @@
 struct cm_certread_state_pvt {
 	/* Check if something changed, for example we finished reading the
 	 * cert. */
-	int (*ready)(struct cm_store_entry *entry,
-		     struct cm_certread_state *state);
+	int (*ready)(struct cm_certread_state *state);
 	/* Get a selectable-for-read descriptor we can poll for status changes.
 	 * */
-	int (*get_fd)(struct cm_store_entry *entry,
-		      struct cm_certread_state *state);
+	int (*get_fd)(struct cm_certread_state *state);
 	/* Clean up after reading the certificate. */
-	void (*done)(struct cm_store_entry *entry,
-		     struct cm_certread_state *state);
+	void (*done)(struct cm_certread_state *state);
 };
 
 void cm_certread_n_parse(struct cm_store_entry *entry,

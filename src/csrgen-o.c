@@ -49,6 +49,7 @@
 
 struct cm_csrgen_state {
 	struct cm_csrgen_state_pvt pvt;
+	struct cm_store_entry *entry;
 	struct cm_subproc_state *subproc;
 };
 
@@ -269,45 +270,44 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 
 /* Check if a CSR is ready. */
 static int
-cm_csrgen_o_ready(struct cm_store_entry *entry, struct cm_csrgen_state *state)
+cm_csrgen_o_ready(struct cm_csrgen_state *state)
 {
-	return cm_subproc_ready(entry, state->subproc);
+	return cm_subproc_ready(state->subproc);
 }
 
 /* Get a selectable-for-read descriptor we can poll for status changes. */
 static int
-cm_csrgen_o_get_fd(struct cm_store_entry *entry, struct cm_csrgen_state *state)
+cm_csrgen_o_get_fd(struct cm_csrgen_state *state)
 {
-	return cm_subproc_get_fd(entry, state->subproc);
+	return cm_subproc_get_fd(state->subproc);
 }
 
 /* Save the CSR to the entry. */
 static int
-cm_csrgen_o_save_csr(struct cm_store_entry *entry,
-		     struct cm_csrgen_state *state)
+cm_csrgen_o_save_csr(struct cm_csrgen_state *state)
 {
 	int status;
 	char *p, *q;
-	status = cm_subproc_get_exitstatus(entry, state->subproc);
+
+	status = cm_subproc_get_exitstatus(state->subproc);
 	if (!WIFEXITED(status) || (WEXITSTATUS(status) != 0)) {
 		return -1;
 	}
-	talloc_free(entry->cm_csr);
-	entry->cm_csr = talloc_strdup(entry,
-				      cm_subproc_get_msg(entry,
-							 state->subproc,
-							 NULL));
-	if (entry->cm_csr == NULL) {
+	talloc_free(state->entry->cm_csr);
+	state->entry->cm_csr =
+		talloc_strdup(state->entry,
+			      cm_subproc_get_msg(state->subproc, NULL));
+	if (state->entry->cm_csr == NULL) {
 		return ENOMEM;
 	}
-	p = strstr(entry->cm_csr, "-----END");
+	p = strstr(state->entry->cm_csr, "-----END");
 	if (p != NULL) {
 		p = strstr(p, "REQUEST-----");
 		if (p != NULL) {
 			p += strcspn(p, "\r\n");
 			q = p + strspn(p, "\r\n");
-			entry->cm_spkac = talloc_strdup(entry, q);
-			if (entry->cm_spkac == NULL) {
+			state->entry->cm_spkac = talloc_strdup(state->entry, q);
+			if (state->entry->cm_spkac == NULL) {
 				return ENOMEM;
 			}
 			*q = '\0';
@@ -318,11 +318,10 @@ cm_csrgen_o_save_csr(struct cm_store_entry *entry,
 
 /* Check if we need a PIN (or a new PIN) to access the key information. */
 static int
-cm_csrgen_o_need_pin(struct cm_store_entry *entry,
-		     struct cm_csrgen_state *state)
+cm_csrgen_o_need_pin(struct cm_csrgen_state *state)
 {
 	int status;
-	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	status = cm_subproc_get_exitstatus(state->subproc);
 	if (WIFEXITED(status) &&
 	    (WEXITSTATUS(status) == CM_SUB_STATUS_ERROR_AUTH)) {
 		return 0;
@@ -332,11 +331,10 @@ cm_csrgen_o_need_pin(struct cm_store_entry *entry,
 
 /* Check if we need a token to be inserted to access the key information. */
 static int
-cm_csrgen_o_need_token(struct cm_store_entry *entry,
-		       struct cm_csrgen_state *state)
+cm_csrgen_o_need_token(struct cm_csrgen_state *state)
 {
 	int status;
-	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	status = cm_subproc_get_exitstatus(state->subproc);
 	if (WIFEXITED(status) &&
 	    (WEXITSTATUS(status) == CM_SUB_STATUS_ERROR_NO_TOKEN)) {
 		return 0;
@@ -346,10 +344,10 @@ cm_csrgen_o_need_token(struct cm_store_entry *entry,
 
 /* Clean up after CSR generation. */
 static void
-cm_csrgen_o_done(struct cm_store_entry *entry, struct cm_csrgen_state *state)
+cm_csrgen_o_done(struct cm_csrgen_state *state)
 {
 	if (state->subproc != NULL) {
-		cm_subproc_done(entry, state->subproc);
+		cm_subproc_done(state->subproc);
 	}
 	talloc_free(state);
 }
@@ -368,6 +366,7 @@ cm_csrgen_o_start(struct cm_store_entry *entry)
 		state->pvt.need_pin = &cm_csrgen_o_need_pin;
 		state->pvt.need_token = &cm_csrgen_o_need_token;
 		state->pvt.done = &cm_csrgen_o_done;
+		state->entry = entry;
 		state->subproc = cm_subproc_start(cm_csrgen_o_main,
 						  NULL, entry, NULL);
 		if (state->subproc == NULL) {

@@ -312,6 +312,5 @@ char *cm_store_entry_next_busname(void *parent);
 struct cm_store_entry *cm_store_files_entry_read(void *parent,
 						 const char *filename);
 char *cm_store_ca_next_busname(void *parent);
-struct cm_store_ca *cm_store_files_ca_read(void *parent,
-					   const char *filename);
+struct cm_store_ca *cm_store_files_ca_read(void *parent, const char *filename);
 #endif

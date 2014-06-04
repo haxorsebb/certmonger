@@ -69,13 +69,13 @@ main(int argc, char **argv)
 	state = cm_keygen_start(entry);
 	if (state != NULL) {
 		for (;;) {
-			fd = cm_keygen_get_fd(entry, state);
+			fd = cm_keygen_get_fd(state);
 			if (fd != -1) {
 				wait_to_read(fd);
 			} else {
 				sleep(1);
 			}
-			if (cm_keygen_ready(entry, state) == 0) {
+			if (cm_keygen_ready(state) == 0) {
 				break;
 			}
 		}
@@ -90,18 +90,18 @@ main(int argc, char **argv)
 			ktype = "NSS";
 			break;
 		}
-		if (cm_keygen_saved_keypair(entry, state) == 0) {
+		if (cm_keygen_saved_keypair(state) == 0) {
 			printf("OK.\n");
 			ret = 0;
-		} else if (cm_keygen_need_pin(entry, state) == 0) {
+		} else if (cm_keygen_need_pin(state) == 0) {
 			printf("Failed to save %s:%s: need PIN.\n",
 			       ktype, entry->cm_key_storage_location);
 			ret = 1;
-		} else if (cm_keygen_need_token(entry, state) == 0) {
+		} else if (cm_keygen_need_token(state) == 0) {
 			printf("Failed to save %s:%s: token not present.\n",
 			       ktype, entry->cm_key_storage_location);
 			ret = 1;
-		} else if (cm_keygen_need_perms(entry, state) == 0) {
+		} else if (cm_keygen_need_perms(state) == 0) {
 			printf("Failed to save %s:%s: need fs permissions.\n",
 			       ktype, entry->cm_key_storage_location);
 			ret = 1;
@@ -110,7 +110,7 @@ main(int argc, char **argv)
 			       ktype, entry->cm_key_storage_location);
 			ret = 1;
 		}
-		cm_keygen_done(entry, state);
+		cm_keygen_done(state);
 	} else {
 		printf("Failed to start.\n");
 		ret = 1;

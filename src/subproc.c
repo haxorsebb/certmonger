@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2011,2013 Red Hat, Inc.
+ * Copyright (C) 2009,2011,2013,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -132,15 +132,14 @@ cm_subproc_start(int (*cb)(int fd,
 
 /* Get a selectable-for-read descriptor we can poll for status changes. */
 int
-cm_subproc_get_fd(struct cm_store_entry *entry, struct cm_subproc_state *state)
+cm_subproc_get_fd(struct cm_subproc_state *state)
 {
 	return state->fd;
 }
 
 /* Get the output to-date. */
 const char *
-cm_subproc_get_msg(struct cm_store_entry *entry, struct cm_subproc_state *state,
-		   int *length)
+cm_subproc_get_msg(struct cm_subproc_state *state, int *length)
 {
 	if (length != NULL) {
 		*length = state->count;
@@ -150,15 +149,14 @@ cm_subproc_get_msg(struct cm_store_entry *entry, struct cm_subproc_state *state,
 
 /* Get the exit status. */
 int
-cm_subproc_get_exitstatus(struct cm_store_entry *entry,
-			  struct cm_subproc_state *state)
+cm_subproc_get_exitstatus(struct cm_subproc_state *state)
 {
 	return state->status;
 }
 
 /* Clean up when we're done. */
 void
-cm_subproc_done(struct cm_store_entry *entry, struct cm_subproc_state *state)
+cm_subproc_done(struct cm_subproc_state *state)
 {
 	pid_t pid;
 
@@ -178,8 +176,7 @@ cm_subproc_done(struct cm_store_entry *entry, struct cm_subproc_state *state)
 
 /* Check if we're done (return 0), or need to be called again (-1). */
 int
-cm_subproc_ready(struct cm_store_entry *entry,
-		 struct cm_subproc_state *state)
+cm_subproc_ready(struct cm_subproc_state *state)
 {
 	ssize_t i, remainder;
 	char *tmp;
@@ -363,7 +360,7 @@ cm_subproc_parse_args(void *parent, const char *cmdline, const char **error)
 /* Redirect stdio to /dev/null, and mark everything else as close-on-exec,
  * except for perhaps one of them that is passed in by number. */
 void
-cm_subproc_mark_most_cloexec(struct cm_store_entry *entry, int fd)
+cm_subproc_mark_most_cloexec(int fd)
 {
 	int i;
 	long l;

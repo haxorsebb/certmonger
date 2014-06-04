@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,13 +34,10 @@ struct cm_notify_state *cm_notify_start(struct cm_store_entry *entry,
 					enum cm_notify_event event);
 /* Get a selectable-for-read descriptor we can poll for status changes when
  * we're finished sending the notification. */
-int cm_notify_get_fd(struct cm_store_entry *entry,
-		     struct cm_notify_state *state);
+int cm_notify_get_fd(struct cm_notify_state *state);
 /* Check if we're ready to call notification done. */
-int cm_notify_ready(struct cm_store_entry *entry,
-		    struct cm_notify_state *state);
+int cm_notify_ready(struct cm_notify_state *state);
 /* Clean up after notification. */
-void cm_notify_done(struct cm_store_entry *entry,
-		    struct cm_notify_state *state);
+void cm_notify_done(struct cm_notify_state *state);
 
 #endif

@@ -440,27 +440,24 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 
 /* Check if something changed, for example we finished saving the cert. */
 static int
-cm_certsave_n_ready(struct cm_store_entry *entry,
-		    struct cm_certsave_state *state)
+cm_certsave_n_ready(struct cm_certsave_state *state)
 {
-	return cm_subproc_ready(entry, state->subproc);
+	return cm_subproc_ready(state->subproc);
 }
 
 /* Get a selectable-for-read descriptor we can poll for status changes. */
 static int
-cm_certsave_n_get_fd(struct cm_store_entry *entry,
-		     struct cm_certsave_state *state)
+cm_certsave_n_get_fd(struct cm_certsave_state *state)
 {
-	return cm_subproc_get_fd(entry, state->subproc);
+	return cm_subproc_get_fd(state->subproc);
 }
 
 /* Check if we saved the certificate -- the child exited with status 0. */
 static int
-cm_certsave_n_saved(struct cm_store_entry *entry,
-		    struct cm_certsave_state *state)
+cm_certsave_n_saved(struct cm_certsave_state *state)
 {
 	int status;
-	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	status = cm_subproc_get_exitstatus(state->subproc);
 	if (!WIFEXITED(status) || (WEXITSTATUS(status) != CM_CERTSAVE_STATUS_SAVED)) {
 		return -1;
 	}
@@ -470,11 +467,10 @@ cm_certsave_n_saved(struct cm_store_entry *entry,
 /* Check if we failed because the subject was already there with a different
  * nickname. */
 static int
-cm_certsave_n_conflict_subject(struct cm_store_entry *entry,
-			       struct cm_certsave_state *state)
+cm_certsave_n_conflict_subject(struct cm_certsave_state *state)
 {
 	int status;
-	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	status = cm_subproc_get_exitstatus(state->subproc);
 	if (!WIFEXITED(status) || (WEXITSTATUS(status) != CM_CERTSAVE_STATUS_SUBJECT_CONFLICT)) {
 		return -1;
 	}
@@ -484,11 +480,10 @@ cm_certsave_n_conflict_subject(struct cm_store_entry *entry,
 /* Check if we failed because the nickname was already taken by a different
  * subject . */
 static int
-cm_certsave_n_conflict_nickname(struct cm_store_entry *entry,
-			        struct cm_certsave_state *state)
+cm_certsave_n_conflict_nickname(struct cm_certsave_state *state)
 {
 	int status;
-	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	status = cm_subproc_get_exitstatus(state->subproc);
 	if (!WIFEXITED(status) || (WEXITSTATUS(status) != CM_CERTSAVE_STATUS_NICKNAME_CONFLICT)) {
 		return -1;
 	}
@@ -498,12 +493,12 @@ cm_certsave_n_conflict_nickname(struct cm_store_entry *entry,
 /* Check if we failed because we couldn't read or write to the storage
  * location. */
 static int
-cm_certsave_n_permissions_error(struct cm_store_entry *entry,
-			        struct cm_certsave_state *state)
+cm_certsave_n_permissions_error(struct cm_certsave_state *state)
 {
 	int status;
-	status = cm_subproc_get_exitstatus(entry, state->subproc);
-	if (!WIFEXITED(status) || (WEXITSTATUS(status) != CM_CERTSAVE_STATUS_PERMS)) {
+	status = cm_subproc_get_exitstatus(state->subproc);
+	if (!WIFEXITED(status) ||
+	    (WEXITSTATUS(status) != CM_CERTSAVE_STATUS_PERMS)) {
 		return -1;
 	}
 	return 0;
@@ -511,11 +506,10 @@ cm_certsave_n_permissions_error(struct cm_store_entry *entry,
 
 /* Clean up after saving the certificate. */
 static void
-cm_certsave_n_done(struct cm_store_entry *entry,
-		   struct cm_certsave_state *state)
+cm_certsave_n_done(struct cm_certsave_state *state)
 {
 	if (state->subproc != NULL) {
-		cm_subproc_done(entry, state->subproc);
+		cm_subproc_done(state->subproc);
 	}
 	talloc_free(state);
 }

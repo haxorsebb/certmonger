@@ -114,36 +114,36 @@ main(int argc, char **argv)
 		state = (*(flags[i].start))(ca);
 		if (state != NULL) {
 			for (;;) {
-				fd = cm_cadata_get_fd(ca, state);
+				fd = cm_cadata_get_fd(state);
 				if (fd != -1) {
 					wait_to_read(fd);
 				} else {
 					sleep(1);
 				}
-				if (cm_cadata_ready(ca, state) == 0) {
+				if (cm_cadata_ready(state) == 0) {
 					break;
 				}
 			}
-			if (cm_cadata_unsupported(ca, state) == 0) {
+			if (cm_cadata_unsupported(state) == 0) {
 				printf("Helper doesn't implement.\n");
 				ret = CM_SUBMIT_STATUS_OPERATION_NOT_SUPPORTED;
 			} else
-			if (cm_cadata_unreachable(ca, state) == 0) {
+			if (cm_cadata_unreachable(state) == 0) {
 				printf("CA was unreachable.\n");
 				ret = CM_SUBMIT_STATUS_UNREACHABLE;
 			} else
-			if (cm_cadata_unconfigured(ca, state) == 0) {
+			if (cm_cadata_unconfigured(state) == 0) {
 				printf("CA helper was un- or "
 				       "under-configured.\n");
 				ret = CM_SUBMIT_STATUS_UNCONFIGURED;
 			} else
-			if (cm_cadata_modified(ca, state) == 0) {
+			if (cm_cadata_modified(state) == 0) {
 				ret = CM_SUBMIT_STATUS_ISSUED;
 			} else {
 				printf("CA helper provided data.\n");
 				ret = -1;
 			}
-			cm_cadata_done(ca, state);
+			cm_cadata_done(state);
 		} else {
 			printf("Failed to start.\n");
 			ret = -1;

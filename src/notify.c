@@ -320,7 +320,7 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			return -1;
 		}
 		cm_log(1, "Running notification helper \"%s\".\n", argv[0]);
-		cm_subproc_mark_most_cloexec(entry, -1);
+		cm_subproc_mark_most_cloexec(-1);
 		setenv(CM_NOTIFICATION_ENV, message, 1);
 		if (execvp(argv[0], argv) == -1) {
 			cm_log(0, "Error execvp()ing command \"%s\" (\"%s\"): %s.\n",
@@ -354,24 +354,24 @@ cm_notify_start(struct cm_store_entry *entry, enum cm_notify_event event)
 
 /* Get a selectable-for-read descriptor we can poll for status changes. */
 int
-cm_notify_get_fd(struct cm_store_entry *entry, struct cm_notify_state *state)
+cm_notify_get_fd(struct cm_notify_state *state)
 {
-	return cm_subproc_get_fd(entry, state->subproc);
+	return cm_subproc_get_fd(state->subproc);
 }
 
 /* Check if our child process has exited. */
 int
-cm_notify_ready(struct cm_store_entry *entry, struct cm_notify_state *state)
+cm_notify_ready(struct cm_notify_state *state)
 {
-	return cm_subproc_ready(entry, state->subproc);
+	return cm_subproc_ready(state->subproc);
 }
 
 /* Clean up after notification. */
 void
-cm_notify_done(struct cm_store_entry *entry, struct cm_notify_state *state)
+cm_notify_done(struct cm_notify_state *state)
 {
 	if (state->subproc != NULL) {
-		cm_subproc_done(entry, state->subproc);
+		cm_subproc_done(state->subproc);
 	}
 	talloc_free(state);
 }

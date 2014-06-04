@@ -70,17 +70,17 @@ main(int argc, char **argv)
 	state = cm_certsave_start(entry);
 	if (state != NULL) {
 		for (;;) {
-			fd = cm_certsave_get_fd(entry, state);
+			fd = cm_certsave_get_fd(state);
 			if (fd != -1) {
 				wait_to_read(fd);
 			} else {
 				sleep(1);
 			}
-			if (cm_certsave_ready(entry, state) == 0) {
+			if (cm_certsave_ready(state) == 0) {
 				break;
 			}
 		}
-		if (cm_certsave_saved(entry, state) == 0) {
+		if (cm_certsave_saved(state) == 0) {
 			ret = 0;
 		} else {
 			ctype = "unknown";
@@ -92,17 +92,17 @@ main(int argc, char **argv)
 				ctype = "NSS";
 				break;
 			}
-			if (cm_certsave_conflict_subject(entry, state) == 0) {
+			if (cm_certsave_conflict_subject(state) == 0) {
 				printf("Failed to save (%s:%s), "
 				       "subject name conflict.\n",
 				       ctype, entry->cm_cert_storage_location);
 			} else
-			if (cm_certsave_conflict_nickname(entry, state) == 0) {
+			if (cm_certsave_conflict_nickname(state) == 0) {
 				printf("Failed to save (%s:%s), "
 				       "certificate nickname conflict.\n",
 				       ctype, entry->cm_cert_storage_location);
 			} else
-			if (cm_certsave_permissions_error(entry, state) == 0) {
+			if (cm_certsave_permissions_error(state) == 0) {
 				printf("Failed to save (%s:%s), "
 				       "filesystem permissions error.\n",
 				       ctype, entry->cm_cert_storage_location);
@@ -113,7 +113,7 @@ main(int argc, char **argv)
 			}
 			ret = 1;
 		}
-		cm_certsave_done(entry, state);
+		cm_certsave_done(state);
 	} else {
 		printf("Failed to start.\n");
 		ret = 1;

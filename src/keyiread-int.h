@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Red Hat, Inc.
+ * Copyright (C) 2009,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,24 +21,18 @@
 struct cm_keyiread_state_pvt {
 	/* Check if something changed, for example we finished reading the
 	 * key info. */
-	int (*ready)(struct cm_store_entry *entry,
-		     struct cm_keyiread_state *state);
+	int (*ready)(struct cm_keyiread_state *state);
 	/* Check if we successfully read the info. */
-	int (*finished_reading)(struct cm_store_entry *entry,
-				struct cm_keyiread_state *state);
+	int (*finished_reading)(struct cm_keyiread_state *state);
 	/* Check if we need a PIN (or a new PIN) to succeed with the task. */
-	int (*need_pin)(struct cm_store_entry *entry,
-		        struct cm_keyiread_state *state);
+	int (*need_pin)(struct cm_keyiread_state *state);
 	/* Check if we need the token to succeed with the task. */
-	int (*need_token)(struct cm_store_entry *entry,
-			  struct cm_keyiread_state *state);
+	int (*need_token)(struct cm_keyiread_state *state);
 	/* Get a selectable-for-read descriptor we can poll for status changes.
 	 * */
-	int (*get_fd)(struct cm_store_entry *entry,
-		      struct cm_keyiread_state *state);
+	int (*get_fd)(struct cm_keyiread_state *state);
 	/* Clean up after reading the key info. */
-	void (*done)(struct cm_store_entry *entry,
-		     struct cm_keyiread_state *state);
+	void (*done)(struct cm_keyiread_state *state);
 };
 
 void cm_keyiread_read_data_from_buffer(struct cm_store_entry *entry,

@@ -38,34 +38,42 @@
 #include "subproc.h"
 
 struct cm_submit_state {
+	struct cm_store_entry *entry;
 	struct cm_submit_state_pvt pvt;
 	struct cm_subproc_state *subproc;
 };
 
 /* Get a selectable-for-read descriptor we can poll for status changes. */
 static int
-cm_submit_e_get_fd(struct cm_store_entry *entry, struct cm_submit_state *state)
+cm_submit_e_get_fd(struct cm_submit_state *state)
 {
-	return cm_subproc_get_fd(entry, state->subproc);
+	return cm_subproc_get_fd(state->subproc);
+}
+
+/* Get a pointer to the entry we started with. */
+static struct cm_store_entry *
+cm_submit_e_get_entry(struct cm_submit_state *state)
+{
+	return state->entry;
 }
 
 /* Try to save a CA-specific identifier for our submitted request.  That is, if
  * it even gave us one. */
 static int
-cm_submit_e_save_ca_cookie(struct cm_store_entry *entry,
-			   struct cm_submit_state *state)
+cm_submit_e_save_ca_cookie(struct cm_submit_state *state)
 {
 	int status;
 	long delay;
 	const char *msg;
 	char *p;
-	talloc_free(entry->cm_ca_cookie);
-	entry->cm_ca_cookie = NULL;
-	status = cm_subproc_get_exitstatus(entry, state->subproc);
+
+	talloc_free(state->entry->cm_ca_cookie);
+	state->entry->cm_ca_cookie = NULL;
+	status = cm_subproc_get_exitstatus(state->subproc);
 	if (WIFEXITED(status) &&
 	    ((WEXITSTATUS(status) == CM_SUBMIT_STATUS_WAIT) ||
 	     (WEXITSTATUS(status) == CM_SUBMIT_STATUS_WAIT_WITH_DELAY))) {
-		msg = cm_subproc_get_msg(entry, state->subproc, NULL);
+		msg = cm_subproc_get_msg(state->subproc, NULL);
 		if ((msg != NULL) && (strlen(msg) > 0)) {
 			if (WEXITSTATUS(status) ==
 			    CM_SUBMIT_STATUS_WAIT_WITH_DELAY) {
@@ -79,8 +87,9 @@ cm_submit_e_save_ca_cookie(struct cm_store_entry *entry,
 				state->pvt.delay = delay;
 				msg = p + strspn(p, "\r\n");
 			}
-			entry->cm_ca_cookie = talloc_strdup(entry, msg);
-			if (entry->cm_ca_cookie == NULL) {
+			state->entry->cm_ca_cookie = talloc_strdup(state->entry,
+								   msg);
+			if (state->entry->cm_ca_cookie == NULL) {
 				cm_log(1, "Out of memory.\n");
 				return -ENOMEM;
 			}
@@ -96,18 +105,19 @@ cm_submit_e_save_ca_cookie(struct cm_store_entry *entry,
 
 /* Check if an attempt to submit the CSR has completed. */
 static int
-cm_submit_e_ready(struct cm_store_entry *entry, struct cm_submit_state *state)
+cm_submit_e_ready(struct cm_submit_state *state)
 {
 	int status, ready;
 	const char *msg;
-	ready = cm_subproc_ready(entry, state->subproc);
+
+	ready = cm_subproc_ready(state->subproc);
 	switch (ready) {
 	case 0:
-		status = cm_subproc_get_exitstatus(entry, state->subproc);
+		status = cm_subproc_get_exitstatus(state->subproc);
 		cm_log(1, "Certificate submission attempt complete.\n");
 		if (WIFEXITED(status)) {
 			cm_log(1, "Child status = %d.\n", WEXITSTATUS(status));
-			msg = cm_subproc_get_msg(entry, state->subproc, NULL);
+			msg = cm_subproc_get_msg(state->subproc, NULL);
 			if ((msg != NULL) && (strlen(msg) > 0)) {
 				cm_log(1, "Child output:\n%s\n", msg);
 				/* If it's a single line, assume it's
@@ -122,12 +132,13 @@ cm_submit_e_ready(struct cm_store_entry *entry, struct cm_submit_state *state)
 				     CM_SUBMIT_STATUS_WAIT) ||
 				    (WEXITSTATUS(status) ==
 				     CM_SUBMIT_STATUS_WAIT_WITH_DELAY)) {
-					talloc_free(entry->cm_ca_error);
-					entry->cm_ca_error = NULL;
+					talloc_free(state->entry->cm_ca_error);
+					state->entry->cm_ca_error = NULL;
 				} else {
-					talloc_free(entry->cm_ca_error);
-					entry->cm_ca_error =
-						talloc_strndup(entry, msg,
+					talloc_free(state->entry->cm_ca_error);
+					state->entry->cm_ca_error =
+						talloc_strndup(state->entry,
+							       msg,
 							       strcspn(msg,
 								       "\r\n"));
 				}
@@ -163,22 +174,23 @@ crlf_to_lf(char *s)
 /* Check if the certificate was issued.  If the exit status was 0, it was
  * issued. */
 static int
-cm_submit_e_issued(struct cm_store_entry *entry, struct cm_submit_state *state)
+cm_submit_e_issued(struct cm_submit_state *state)
 {
 	const char *msg, *p, *q;
 
-	msg = cm_subproc_get_msg(entry, state->subproc, NULL);
+	msg = cm_subproc_get_msg(state->subproc, NULL);
 	if (((p = strstr(msg, "-----BEGIN CERTIFICATE-----")) != NULL) &&
 	    ((q = strstr(p, "-----END CERTIFICATE-----")) != NULL)) {
-		talloc_free(entry->cm_cert);
+		talloc_free(state->entry->cm_cert);
 		q += strcspn(q, "\r\n");
 		if (strspn(q, "\r\n") == 0) {
-			p = talloc_asprintf(entry, "%s\n", p);
+			p = talloc_asprintf(state->entry, "%s\n", p);
 			q = p + strlen(p);
 		} else {
 			q += strspn(q, "\r\n");
 		}
-		entry->cm_cert = crlf_to_lf(talloc_strndup(entry, p, q - p));
+		state->entry->cm_cert = crlf_to_lf(talloc_strndup(state->entry,
+								  p, q - p));
 		cm_log(1, "Certificate issued.\n");
 		return 0;
 	} else {
@@ -189,11 +201,10 @@ cm_submit_e_issued(struct cm_store_entry *entry, struct cm_submit_state *state)
 
 /* Check if the submission helper is just unconfigured. */
 static int
-cm_submit_e_unconfigured(struct cm_store_entry *entry,
-			 struct cm_submit_state *state)
+cm_submit_e_unconfigured(struct cm_submit_state *state)
 {
 	int status;
-	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	status = cm_subproc_get_exitstatus(state->subproc);
 	if (WIFEXITED(status) &&
 	    (WEXITSTATUS(status) == CM_SUBMIT_STATUS_UNCONFIGURED)) {
 		return 0;
@@ -204,11 +215,10 @@ cm_submit_e_unconfigured(struct cm_store_entry *entry,
 /* Check if the certificate was issued.  If the exit status was 0, it was
  * issued. */
 static int
-cm_submit_e_rejected(struct cm_store_entry *entry,
-		     struct cm_submit_state *state)
+cm_submit_e_rejected(struct cm_submit_state *state)
 {
 	int status;
-	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	status = cm_subproc_get_exitstatus(state->subproc);
 	if (WIFEXITED(status) &&
 	    (WEXITSTATUS(status) == CM_SUBMIT_STATUS_REJECTED)) {
 		return 0;
@@ -219,11 +229,10 @@ cm_submit_e_rejected(struct cm_store_entry *entry,
 /* Check if the CA was unreachable.  If the exit status was right, then we
  * never actually talked to the CA. */
 static int
-cm_submit_e_unreachable(struct cm_store_entry *entry,
-			struct cm_submit_state *state)
+cm_submit_e_unreachable(struct cm_submit_state *state)
 {
 	int status;
-	status = cm_subproc_get_exitstatus(entry, state->subproc);
+	status = cm_subproc_get_exitstatus(state->subproc);
 	if (WIFEXITED(status) &&
 	    (WEXITSTATUS(status) == CM_SUBMIT_STATUS_UNREACHABLE)) {
 		return 0;
@@ -233,10 +242,10 @@ cm_submit_e_unreachable(struct cm_store_entry *entry,
 
 /* Done talking to the CA; clean up. */
 static void
-cm_submit_e_done(struct cm_store_entry *entry, struct cm_submit_state *state)
+cm_submit_e_done(struct cm_submit_state *state)
 {
 	if (state->subproc != NULL) {
-		cm_subproc_done(entry, state->subproc);
+		cm_subproc_done(state->subproc);
 	}
 	talloc_free(state);
 }
@@ -348,7 +357,7 @@ cm_submit_e_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 		return -1;
 	}
-	cm_subproc_mark_most_cloexec(entry, STDOUT_FILENO);
+	cm_subproc_mark_most_cloexec(STDOUT_FILENO);
 	cm_log(1, "Running enrollment helper \"%s\".\n", argv[0]);
 	execvp(argv[0], argv);
 	u = errno;
@@ -377,6 +386,7 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 	if (state != NULL) {
 		memset(state, 0, sizeof(*state));
 		state->pvt.get_fd = cm_submit_e_get_fd;
+		state->pvt.get_entry = cm_submit_e_get_entry;
 		state->pvt.save_ca_cookie = cm_submit_e_save_ca_cookie;
 		state->pvt.ready = cm_submit_e_ready;
 		state->pvt.issued = cm_submit_e_issued;
@@ -392,7 +402,7 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 				cm_log(-1, "Unexpected error while "
 				       "starting helper \"%s\".",
 				       ca->cm_ca_external_helper);
-				cm_subproc_done(entry, state->subproc);
+				cm_subproc_done(state->subproc);
 				talloc_free(state);
 				state = NULL;
 			} else {
@@ -423,8 +433,7 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 						       "while starting helper "
 						       "\"%s\".",
 						       ca->cm_ca_external_helper);
-						cm_subproc_done(entry,
-								state->subproc);
+						cm_subproc_done(state->subproc);
 						talloc_free(state);
 						state = NULL;
 						break;
@@ -435,8 +444,7 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 						       "helper \"%s\": %s.",
 						       ca->cm_ca_external_helper,
 						       strerror(u));
-						cm_subproc_done(entry,
-								state->subproc);
+						cm_subproc_done(state->subproc);
 						talloc_free(state);
 						state = NULL;
 						break;

@@ -61,6 +61,7 @@ struct cm_certsave_state;
 
 struct cm_casave_state {
 	void *parent;
+	struct cm_store_ca *ca;
 	struct cm_subproc_state *subproc;
 	struct cm_context *context;
 	struct cm_store_ca *(*get_ca_by_index)(struct cm_context *, int);
@@ -529,8 +530,7 @@ build_locations_lists(void *parent, struct cm_casave_state *state,
  * has entries which point to that CA which list the file as a storage
  * location. */
 static struct cm_savecert **
-build_file_savecerts_list(struct cm_casave_state *state,
-			  const char *filename)
+build_file_savecerts_list(struct cm_casave_state *state, const char *filename)
 {
 	struct cm_savecert **ret = NULL;
 	struct cm_store_ca *ca;
@@ -653,18 +653,18 @@ cm_casave_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 			fclose(fp);
 			_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
 		}
-		while (cm_subproc_ready(e, subproc) != 0) {
-			fd = cm_subproc_get_fd(e, subproc);
+		while (cm_subproc_ready(subproc) != 0) {
+			fd = cm_subproc_get_fd(subproc);
 			cm_waitfor_readable_fd(fd, CM_DELAY_SOON);
 		}
-		msg = cm_subproc_get_msg(e, subproc, &length);
-		status = cm_subproc_get_exitstatus(e, subproc);
+		msg = cm_subproc_get_msg(subproc, &length);
+		status = cm_subproc_get_exitstatus(subproc);
 		if (WIFEXITED(status) && (WEXITSTATUS(status) != 0)) {
 			if (length > 0) {
 				fprintf(fp, "%.*s", length, msg);
 			}
 		}
-		cm_subproc_done(e, subproc);
+		cm_subproc_done(subproc);
 		if (WIFEXITED(status) && (WEXITSTATUS(status) != 0)) {
 			fclose(fp);
 			_exit(WEXITSTATUS(status));
@@ -685,18 +685,18 @@ cm_casave_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 			fclose(fp);
 			_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
 		}
-		while (cm_subproc_ready(e, subproc) != 0) {
-			fd = cm_subproc_get_fd(e, subproc);
+		while (cm_subproc_ready(subproc) != 0) {
+			fd = cm_subproc_get_fd(subproc);
 			cm_waitfor_readable_fd(fd, CM_DELAY_SOON);
 		}
-		msg = cm_subproc_get_msg(e, subproc, &length);
-		status = cm_subproc_get_exitstatus(e, subproc);
+		msg = cm_subproc_get_msg(subproc, &length);
+		status = cm_subproc_get_exitstatus(subproc);
 		if (WIFEXITED(status) && (WEXITSTATUS(status) != 0)) {
 			if (length > 0) {
 				fprintf(fp, "%.*s", length, msg);
 			}
 		}
-		cm_subproc_done(e, subproc);
+		cm_subproc_done(subproc);
 		if (WIFEXITED(status) && (WEXITSTATUS(status) != 0)) {
 			fclose(fp);
 			_exit(WEXITSTATUS(status));
@@ -727,6 +727,7 @@ cm_casave_start(struct cm_store_entry *entry, struct cm_store_ca *ca,
 	if (ret != NULL) {
 		memset(ret, 0, sizeof(*ret));
 		ret->parent = parent;
+		ret->ca = ca;
 		ret->context = context;
 		ret->get_ca_by_index = get_ca_by_index;
 		ret->get_n_cas = get_n_cas;
@@ -743,42 +744,40 @@ cm_casave_start(struct cm_store_entry *entry, struct cm_store_ca *ca,
 }
 
 int
-cm_casave_ready(struct cm_store_entry *entry, struct cm_store_ca *ca,
-		struct cm_casave_state *state)
+cm_casave_ready(struct cm_casave_state *state)
 {
 	int ready, length;
 	const char *msg;
 
-	ready = cm_subproc_ready(NULL, state->subproc);
+	ready = cm_subproc_ready(state->subproc);
 	if (ready == 0) {
-		msg = cm_subproc_get_msg(entry, state->subproc, &length);
+		msg = cm_subproc_get_msg(state->subproc, &length);
 		if (msg != NULL) {
-			if (ca != NULL) {
-				talloc_free(ca->cm_ca_error);
-				ca->cm_ca_error = talloc_strndup(ca, msg,
-								 length);
+			if (state->ca != NULL) {
+				talloc_free(state->ca->cm_ca_error);
+				state->ca->cm_ca_error = talloc_strndup(state->ca,
+									msg,
+									length);
 			}
 		} else {
-			ca->cm_ca_error = NULL;
+			state->ca->cm_ca_error = NULL;
 		}
 	}
 	return ready;
 }
 
 int
-cm_casave_get_fd(struct cm_store_entry *entry, struct cm_store_ca *ca,
-		 struct cm_casave_state *state)
+cm_casave_get_fd(struct cm_casave_state *state)
 {
-	return cm_subproc_get_fd(NULL, state->subproc);
+	return cm_subproc_get_fd(state->subproc);
 }
 
 int
-cm_casave_saved(struct cm_store_entry *entry, struct cm_store_ca *ca,
-		struct cm_casave_state *state)
+cm_casave_saved(struct cm_casave_state *state)
 {
         int status;
 
-	status = cm_subproc_get_exitstatus(NULL, state->subproc);
+	status = cm_subproc_get_exitstatus(state->subproc);
 	if (WIFEXITED(status) &&
 	    (WEXITSTATUS(status) == CM_CERTSAVE_STATUS_SAVED)) {
 		return 0;
@@ -787,13 +786,11 @@ cm_casave_saved(struct cm_store_entry *entry, struct cm_store_ca *ca,
 }
 
 int
-cm_casave_conflict_subject(struct cm_store_entry *entry,
-			   struct cm_store_ca *ca,
-			   struct cm_casave_state *state)
+cm_casave_conflict_subject(struct cm_casave_state *state)
 {
         int status;
 
-	status = cm_subproc_get_exitstatus(NULL, state->subproc);
+	status = cm_subproc_get_exitstatus(state->subproc);
 	if (WIFEXITED(status) &&
 	    (WEXITSTATUS(status) == CM_CERTSAVE_STATUS_SUBJECT_CONFLICT)) {
 		return 0;
@@ -802,13 +799,11 @@ cm_casave_conflict_subject(struct cm_store_entry *entry,
 }
 
 int
-cm_casave_conflict_nickname(struct cm_store_entry *entry,
-			    struct cm_store_ca *ca,
-			    struct cm_casave_state *state)
+cm_casave_conflict_nickname(struct cm_casave_state *state)
 {
         int status;
 
-	status = cm_subproc_get_exitstatus(NULL, state->subproc);
+	status = cm_subproc_get_exitstatus(state->subproc);
 	if (WIFEXITED(status) &&
 	    (WEXITSTATUS(status) == CM_CERTSAVE_STATUS_NICKNAME_CONFLICT)) {
 		return 0;
@@ -817,13 +812,11 @@ cm_casave_conflict_nickname(struct cm_store_entry *entry,
 }
 
 int
-cm_casave_permissions_error(struct cm_store_entry *entry,
-			    struct cm_store_ca *ca,
-			    struct cm_casave_state *state)
+cm_casave_permissions_error(struct cm_casave_state *state)
 {
         int status;
 
-	status = cm_subproc_get_exitstatus(NULL, state->subproc);
+	status = cm_subproc_get_exitstatus(state->subproc);
 	if (WIFEXITED(status) &&
 	    (WEXITSTATUS(status) == CM_CERTSAVE_STATUS_PERMS)) {
 		return 0;
@@ -832,11 +825,10 @@ cm_casave_permissions_error(struct cm_store_entry *entry,
 }
 
 void
-cm_casave_done(struct cm_store_entry *entry, struct cm_store_ca *ca,
-	       struct cm_casave_state *state)
+cm_casave_done(struct cm_casave_state *state)
 {
 	if (state->subproc != NULL) {
-		cm_subproc_done(entry, state->subproc);
+		cm_subproc_done(state->subproc);
 	}
 	talloc_free(state);
 }

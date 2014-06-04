@@ -30,31 +30,24 @@ struct cm_cadata_state *cm_cadata_start_enroll_reqs(struct cm_store_ca *ca);
 struct cm_cadata_state *cm_cadata_start_renew_reqs(struct cm_store_ca *ca);
 
 /* Check if the data has been retrieved. */
-int cm_cadata_ready(struct cm_store_ca *ca,
-		    struct cm_cadata_state *state);
+int cm_cadata_ready(struct cm_cadata_state *state);
 
 /* Get a selectable-for-read descriptor we can poll for status changes. */
-int cm_cadata_get_fd(struct cm_store_ca *ca,
-		     struct cm_cadata_state *state);
+int cm_cadata_get_fd(struct cm_cadata_state *state);
 
 /* Check if the CA data was modified. */
-int cm_cadata_modified(struct cm_store_ca *ca,
-                       struct cm_cadata_state *state);
+int cm_cadata_modified(struct cm_cadata_state *state);
 
 /* Check if the CA was unreachable. */
-int cm_cadata_unreachable(struct cm_store_ca *ca,
-                          struct cm_cadata_state *state);
+int cm_cadata_unreachable(struct cm_cadata_state *state);
 
 /* Check if we're missing some configuration. */
-int cm_cadata_unconfigured(struct cm_store_ca *ca,
-                           struct cm_cadata_state *state);
+int cm_cadata_unconfigured(struct cm_cadata_state *state);
 
 /* Check if the helper didn't support that. */
-int cm_cadata_unsupported(struct cm_store_ca *ca,
-                          struct cm_cadata_state *state);
+int cm_cadata_unsupported(struct cm_cadata_state *state);
 
 /* Clean up after retrieving data. */
-void cm_cadata_done(struct cm_store_ca *ca,
-		    struct cm_cadata_state *state);
+void cm_cadata_done(struct cm_cadata_state *state);
 
 #endif

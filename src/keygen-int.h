@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2013 Red Hat, Inc.
+ * Copyright (C) 2009,2013,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,27 +20,20 @@
 
 struct cm_keygen_state_pvt {
 	/* Check if the keypair is ready. */
-	int (*ready)(struct cm_store_entry *entry,
-		     struct cm_keygen_state *state);
-	/* Get a selectable-for-read descriptor we can poll for status changes.
-	 */
-	int (*get_fd)(struct cm_store_entry *entry,
-		      struct cm_keygen_state *state);
+	int (*ready)(struct cm_keygen_state *state);
+	/* Get a selectable-for-read descriptor which will either have data or
+	 * be closed when status changes. */
+	int (*get_fd)(struct cm_keygen_state *state);
 	/* Tell us if the keypair was saved to the right location. */
-	int (*saved_keypair)(struct cm_store_entry *entry,
-			     struct cm_keygen_state *state);
+	int (*saved_keypair)(struct cm_keygen_state *state);
 	/* Tell us if we need filesystem permissions to write the key. */
-	int (*need_perms)(struct cm_store_entry *entry,
-			  struct cm_keygen_state *state);
+	int (*need_perms)(struct cm_keygen_state *state);
 	/* Tell us if we need a PIN (or a new PIN) to access the key store. */
-	int (*need_pin)(struct cm_store_entry *entry,
-			struct cm_keygen_state *state);
+	int (*need_pin)(struct cm_keygen_state *state);
 	/* Tell us if we need a token to be inserted to access the key store. */
-	int (*need_token)(struct cm_store_entry *entry,
-			  struct cm_keygen_state *state);
+	int (*need_token)(struct cm_keygen_state *state);
 	/* Clean up after key generation. */
-	void (*done)(struct cm_store_entry *entry,
-		     struct cm_keygen_state *state);
+	void (*done)(struct cm_keygen_state *state);
 };
 
 #endif

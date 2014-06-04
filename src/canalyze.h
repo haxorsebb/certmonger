@@ -25,19 +25,15 @@ struct cm_ca_analyze_state;
 struct cm_ca_analyze_state *cm_ca_analyze_start_certs(struct cm_store_ca *ca);
 
 /* Check if the data has been retrieved. */
-int cm_ca_analyze_ready(struct cm_store_ca *ca,
-			struct cm_ca_analyze_state *state);
+int cm_ca_analyze_ready(struct cm_ca_analyze_state *state);
 
 /* Get a selectable-for-read descriptor we can poll for status changes. */
-int cm_ca_analyze_get_fd(struct cm_store_ca *ca,
-			 struct cm_ca_analyze_state *state);
+int cm_ca_analyze_get_fd(struct cm_ca_analyze_state *state);
 
 /* Clean up after retrieving data. */
-void cm_ca_analyze_done(struct cm_store_ca *ca,
-			struct cm_ca_analyze_state *state);
+void cm_ca_analyze_done(struct cm_ca_analyze_state *state);
 
 /* Get the refresh delay. */
-long cm_ca_analyze_get_delay(struct cm_store_ca *ca,
-			     struct cm_ca_analyze_state *state);
+long cm_ca_analyze_get_delay(struct cm_ca_analyze_state *state);
 
 #endif

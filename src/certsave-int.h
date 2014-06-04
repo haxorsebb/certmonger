@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2013 Red Hat, Inc.
+ * Copyright (C) 2009,2013,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,27 +30,20 @@ enum cm_certsave_status {
 struct cm_certsave_state_pvt {
 	/* Check if something changed, for example we finished saving the cert.
 	 */
-	int (*ready)(struct cm_store_entry *entry,
-		     struct cm_certsave_state *state);
+	int (*ready)(struct cm_certsave_state *state);
 	/* Get a selectable-for-read descriptor that we can poll for status
 	 * changes.  */
-	int (*get_fd)(struct cm_store_entry *entry,
-		      struct cm_certsave_state *state);
+	int (*get_fd)(struct cm_certsave_state *state);
 	/* Check if we saved the certificate. */
-	int (*saved)(struct cm_store_entry *entry,
-		     struct cm_certsave_state *state);
+	int (*saved)(struct cm_certsave_state *state);
 	/* Check if we failed due to filesystem permissions. */
-	int (*permissions_error)(struct cm_store_entry *entry,
-				 struct cm_certsave_state *state);
+	int (*permissions_error)(struct cm_certsave_state *state);
 	/* Check if we failed because the subject was already being used. */
-	int (*conflict_subject)(struct cm_store_entry *entry,
-				struct cm_certsave_state *state);
+	int (*conflict_subject)(struct cm_certsave_state *state);
 	/* Check if we failed because the nickname was already being used. */
-	int (*conflict_nickname)(struct cm_store_entry *entry,
-				 struct cm_certsave_state *state);
+	int (*conflict_nickname)(struct cm_certsave_state *state);
 	/* Clean up after saving the certificate. */
-	void (*done)(struct cm_store_entry *entry,
-		     struct cm_certsave_state *state);
+	void (*done)(struct cm_certsave_state *state);
 };
 
 #endif
