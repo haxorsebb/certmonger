@@ -100,8 +100,8 @@ EXTRA_DIST = \
 	021-resume/run.sh \
 	022-base64/expected.out \
 	022-base64/run.sh \
-	023-fetch/expected.out \
-	023-fetch/run.sh \
+	023-cadata/expected.out \
+	023-cadata/run.sh \
 	024-citerate/expected.out \
 	024-citerate/run.sh
 
@@ -131,7 +131,7 @@ subdirs = \
 	019-dparse \
 	021-resume \
 	022-base64 \
-	023-fetch \
+	023-cadata \
 	024-citerate
 
 if HAVE_DBM_NSSDB
