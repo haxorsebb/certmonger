@@ -103,7 +103,9 @@ EXTRA_DIST = \
 	023-cadata/expected.out \
 	023-cadata/run.sh \
 	024-citerate/expected.out \
-	024-citerate/run.sh
+	024-citerate/run.sh \
+	025-casave/expected.out \
+	025-casave/run.sh
 
 subdirs = \
 	001-keyiread \
@@ -132,7 +134,8 @@ subdirs = \
 	021-resume \
 	022-base64 \
 	023-cadata \
-	024-citerate
+	024-citerate \
+	025-casave
 
 if HAVE_DBM_NSSDB
 subdirs += \
