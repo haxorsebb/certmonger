@@ -27,6 +27,7 @@
 #include "submit.h"
 #include "submit-int.h"
 #include "store-int.h"
+#include "subproc.h"
 
 /* Start CSR submission using parameters stored in the entry. */
 struct cm_submit_state *
