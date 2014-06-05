@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.74.92
+Version:	0.74.93
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -205,6 +205,11 @@ exit 0
 %endif
 
 %changelog
+* Tue Jun  5 2014 Nalin Dahyabhai <nalin@redhat.com> 0.74.93-1
+- add some self-tests
+- simplify the internal submit-to-CA logic
+- fixes for more problems found through static analysis
+
 * Tue Jun  3 2014 Nalin Dahyabhai <nalin@redhat.com> 0.74.92-1
 - retrieve CA information from CAs, if the helpers can do so, and
   add a command to explicitly refresh that data: "getcert refresh-ca"
