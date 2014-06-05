@@ -1,8 +1,14 @@
-AM_CFLAGS = $(TALLOC_CFLAGS) $(TEVENT_CFLAGS) $(DBUS_CFLAGS) \
-	-I$(builddir)/../../src
+AM_CFLAGS = $(TALLOC_CFLAGS) $(TEVENT_CFLAGS) $(DBUS_CFLAGS) $(KRB5_CFLAGS) \
+	    $(XMLRPC_CFLAGS) $(IDN_CFLAGS) $(UUID_CFLAGS) $(LDAP_CFLAGS) \
+	    -I$(builddir)/../../src
 LDADD = libtools.a ../../src/libcm.a $(srcdir)/../../src/env-system.c \
 	libtools.a $(OPENSSL_LIBS) $(CERTMONGER_LIBS) $(KRB5_LIBS) $(IDN_LIBS) \
 	$(GMP_LIBS) $(UUID_LIBS) $(LTLIBICONV)
+
+if PIE
+CFLAGS += -fPIC
+LDFLAGS += -fPIC -pie
+endif
 
 noinst_PROGRAMS = keyiread keygen csrgen submit certread certsave oid2name name2oid iterate prefs dates listnicks pem2base base2pem dparse payload checksig base64 cadata citerate casave
 noinst_LIBRARIES = libtools.a
