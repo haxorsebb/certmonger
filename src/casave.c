@@ -609,11 +609,20 @@ build_nssdb_savecerts_list(struct cm_casave_state *state,
 		if (ca != NULL) {
 			if (has_string(entry->cm_root_cert_store_nssdbs, nssdb)) {
 				add_nickcerts(state, &ret, root, ca->cm_ca_root_certs);
+			} else
+			if (has_string(ca->cm_ca_root_cert_store_nssdbs, nssdb)) {
+				add_nickcerts(state, &ret, root, ca->cm_ca_root_certs);
 			}
 			if (has_string(entry->cm_other_root_cert_store_nssdbs, nssdb)) {
 				add_nickcerts(state, &ret, other_root, ca->cm_ca_other_root_certs);
+			} else
+			if (has_string(ca->cm_ca_other_root_cert_store_nssdbs, nssdb)) {
+				add_nickcerts(state, &ret, other_root, ca->cm_ca_other_root_certs);
 			}
 			if (has_string(entry->cm_other_cert_store_nssdbs, nssdb)) {
+				add_nickcerts(state, &ret, other, ca->cm_ca_other_certs);
+			} else
+			if (has_string(ca->cm_ca_other_cert_store_nssdbs, nssdb)) {
 				add_nickcerts(state, &ret, other, ca->cm_ca_other_certs);
 			}
 		}
