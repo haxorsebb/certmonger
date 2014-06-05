@@ -36,7 +36,7 @@
 			"0123456789" \
 			"+/="
 
-static struct {
+static const struct {
 	const char *name;
 	enum cm_state state;
 } cm_state_names[] = {
@@ -103,7 +103,7 @@ static struct {
 	{"NEWLY_ADDED_NEED_KEYI_READ_PIN", CM_NEWLY_ADDED_NEED_KEYINFO_READ_PIN},
 };
 
-static struct {
+static const struct {
 	const char *name;
 	enum cm_ca_phase_state state;
 } cm_ca_state_names[] = {
@@ -123,7 +123,7 @@ static struct {
 	{"DISABLED", CM_CA_DISABLED},
 };
 
-static struct {
+static const struct {
 	const char *name;
 	enum cm_ca_phase phase;
 } cm_ca_phase_names[] = {
