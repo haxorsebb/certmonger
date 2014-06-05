@@ -205,7 +205,7 @@ exit 0
 %endif
 
 %changelog
-* Tue Jun  5 2014 Nalin Dahyabhai <nalin@redhat.com> 0.74.93-1
+* Thu Jun  5 2014 Nalin Dahyabhai <nalin@redhat.com> 0.74.93-1
 - add some self-tests
 - simplify the internal submit-to-CA logic
 - fixes for more problems found through static analysis
