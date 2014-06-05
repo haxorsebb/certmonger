@@ -293,15 +293,21 @@ parse_list(struct cm_store_ca *ca, struct cm_cadata_state *state,
 		}
 		reqs = tmp;
 		if (dict == NULL) {
-			reqs[i++] = talloc_strndup(reqs, p, q - p);
+			reqs[i] = talloc_strndup(reqs, p, q - p);
+			if ((reqs[i] != NULL) && (strlen(reqs[i]) > 0)) {
+				i++;
+			}
 			reqs[i] = NULL;
 		} else {
 			for (j = 0; dict[j] != NULL; j += 2) {
 				len = strlen(dict[j]);
 				if ((q - p == len) &&
 				    (strncasecmp(dict[j], p, len) == 0)) {
-					reqs[i++] = talloc_strdup(reqs,
-								  dict[j + 1]);
+					reqs[i] = talloc_strdup(reqs,
+								dict[j + 1]);
+					if ((reqs[i] != NULL) && (strlen(reqs[i]) > 0)) {
+						i++;
+					}
 					break;
 				}
 			}
