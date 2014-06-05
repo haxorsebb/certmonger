@@ -171,7 +171,7 @@ cm_casave_main_n(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 					if (CERT_ImportCerts(CERT_GetDefaultCertDB(),
 							     certUsageSSLCA,
 							     1, items, &imported,
-							     PR_TRUE, PR_TRUE, p) != SECSuccess) {
+							     PR_TRUE, PR_FALSE, p) != SECSuccess) {
 						ec = PORT_GetError();
 						if (ec != 0) {
 							es = PR_ErrorToName(ec);
