@@ -99,7 +99,7 @@ cm_ca_analyze_certs_main(int fd, struct cm_store_ca *ca,
 	PLArenaPool *arena;
 	char *p;
 	int i;
-	PRTime result = 0, tmp;
+	PRTime result = 0, now, tmp;
 
 	/* Walk the list of certificates we've retrieved, and print a number
 	 * approximating the midpoint of time between now and the first of
@@ -131,8 +131,9 @@ cm_ca_analyze_certs_main(int fd, struct cm_store_ca *ca,
 		result = (result != 0) ? ((result < tmp) ? result : tmp) : tmp;
 	}
 
-	if (result != 0) {
-		result = (result - PR_Now()) / PR_USEC_PER_SEC / 2;
+	now = PR_Now();
+	if ((result != 0) && (result > now)) {
+		result = (result - now) / PR_USEC_PER_SEC / 2;
 	}
 
 	p = talloc_asprintf(ca, "%ld", result);
