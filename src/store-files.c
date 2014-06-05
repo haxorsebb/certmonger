@@ -474,7 +474,12 @@ free_if_empty_multi(void *parent, char *p)
 			k++;
 		}
 		s[i][k] = '\0';
-		i++;
+		if (k > 0) {
+			i++;
+		} else {
+			talloc_free(s[i]);
+			s[i] = NULL;
+		}
 		if (p[j] == '\0') {
 			break;
 		} else {
@@ -482,7 +487,12 @@ free_if_empty_multi(void *parent, char *p)
 		}
 	}
 	s[i] = NULL;
-	return s;
+	if (i > 0) {
+		return s;
+	} else {
+		talloc_free(s);
+		return NULL;
+	}
 }
 
 static struct cm_nickcert **
