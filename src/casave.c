@@ -269,26 +269,22 @@ static void
 add_string(void *parent, char ***dest, const char *value)
 {
 	char **tmp;
-	int i, j;
+	int i;
 
 	for (i = 0; ((*dest) != NULL) && ((*dest)[i] != NULL); i++) {
-		continue;
+		if (strcmp((*dest)[i], value) == 0) {
+			return;
+		}
 	}
 	tmp = talloc_array_ptrtype(parent, tmp, i + 2);
 	if (tmp == NULL) {
 		printf(_("Out of memory.\n"));
 		exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
 	}
-	memcpy(tmp, *dest, sizeof(tmp[0]) * i);
-	for (j = 0; j < i; j++) {
-		if (strcmp((*dest)[j], value) == 0) {
-			break;
-		}
+	if (i > 0) {
+		memcpy(tmp, *dest, sizeof(tmp[0]) * i);
 	}
-	if (j == i) {
-		tmp[i] = talloc_strdup(tmp, value);
-		i++;
-	}
+	tmp[i++] = talloc_strdup(tmp, value);
 	tmp[i] = NULL;
 	*dest = tmp;
 }
@@ -311,10 +307,13 @@ add_cert(void *parent, struct cm_savecert ***dest, enum cert_level level,
 	 const char *nickname, const char *cert)
 {
 	struct cm_savecert **tmp;
-	int i, j;
+	int i;
 
 	for (i = 0; ((*dest) != NULL) && ((*dest)[i] != NULL); i++) {
-		continue;
+		if ((strcmp((*dest)[i]->nickname, nickname) == 0) &&
+		    (strcmp((*dest)[i]->cert, cert) == 0)) {
+			return;
+		}
 	}
 	tmp = talloc_array_ptrtype(parent, tmp, i + 2);
 	if (tmp == NULL) {
@@ -324,21 +323,13 @@ add_cert(void *parent, struct cm_savecert ***dest, enum cert_level level,
 	if (i > 0) {
 		memcpy(tmp, *dest, sizeof(tmp[0]) * i);
 	}
-	for (j = 0; j < i; j++) {
-		if ((strcmp((*dest)[j]->nickname, nickname) == 0) &&
-		    (strcmp((*dest)[j]->cert, cert) == 0)) {
-			break;
-		}
-	}
-	if (j == i) {
-		tmp[i] = talloc_ptrtype(tmp, tmp[i]);
-		if (tmp[i] != NULL) {
-			memset(tmp[i], 0, sizeof(*(tmp[i])));
-			tmp[i]->level = level;
-			tmp[i]->nickname = talloc_strdup(tmp, nickname);
-			tmp[i]->cert = talloc_strdup(tmp, cert);
-			i++;
-		}
+	tmp[i] = talloc_ptrtype(tmp, tmp[i]);
+	if (tmp[i] != NULL) {
+		memset(tmp[i], 0, sizeof(*(tmp[i])));
+		tmp[i]->level = level;
+		tmp[i]->nickname = talloc_strdup(tmp, nickname);
+		tmp[i]->cert = talloc_strdup(tmp, cert);
+		i++;
 	}
 	tmp[i] = NULL;
 	*dest = tmp;
