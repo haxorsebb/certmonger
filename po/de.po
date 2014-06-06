@@ -11,8 +11,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2014-06-05 12:20-0400\n"
-"PO-Revision-Date: 2014-05-28 18:21+0000\n"
+"POT-Creation-Date: 2014-06-06 11:06-0400\n"
+"PO-Revision-Date: 2014-06-05 16:22+0000\n"
 "Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
 "Language-Team: German (http://www.transifex.com/projects/p/certmonger/"
 "language/de/)\n"
@@ -899,15 +899,13 @@ msgstr ""
 "  -c CA\tNr Informationen zu Zertifizierungsstellen dieses Namens auflisten\n"
 
 #: src/getcert.c:3173
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s refresh-ca [options]\n"
-msgstr "Aufruf: %s request [Optionen]\n"
+msgstr ""
 
 #: src/getcert.c:3178
-#, fuzzy
 msgid "  -c CA\trefresh information about the CA with this name\n"
 msgstr ""
-"  -c CA\tNr Informationen zu Zertifizierungsstellen dieses Namens auflisten\n"
 
 #: src/getcert.c:3236
 #, c-format

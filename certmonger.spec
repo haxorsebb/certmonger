@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.74.93
+Version:	0.74.94
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -205,6 +205,12 @@ exit 0
 %endif
 
 %changelog
+* Fri Jun  6 2014 Nalin Dahyabhai <nalin@redhat.com> 0.74.94-1
+- fix self-test errors that we trigger with new OpenSSL
+- fix a build error that would sometimes happen when we're told to
+  build PIE binaries
+- quiet a compile warning
+
 * Thu Jun  5 2014 Nalin Dahyabhai <nalin@redhat.com> 0.74.93-1
 - add some self-tests
 - simplify the internal submit-to-CA logic

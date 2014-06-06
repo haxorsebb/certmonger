@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2014-06-05 12:20-0400\n"
-"PO-Revision-Date: 2014-05-28 18:25+0000\n"
+"POT-Creation-Date: 2014-06-06 11:06-0400\n"
+"PO-Revision-Date: 2014-06-05 16:30+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian (http://www.transifex.com/projects/p/certmonger/"
 "language/uk/)\n"
@@ -482,32 +482,32 @@ msgstr "\teku: "
 #: src/getcert.c:2653 src/getcert.c:2822
 #, c-format
 msgid "\troot certificates saved to files:\n"
-msgstr ""
+msgstr "\tкореневі сертифікати, збережені до файлів:\n"
 
 #: src/getcert.c:2662 src/getcert.c:2831
 #, c-format
 msgid "\tother root certificates saved to files:\n"
-msgstr ""
+msgstr "\tінші кореневі сертифікати, збережені до файлів:\n"
 
 #: src/getcert.c:2671 src/getcert.c:2840
 #, c-format
 msgid "\tother certificates saved to files:\n"
-msgstr ""
+msgstr "\tінші сертифікати, збережені до файлів:\n"
 
 #: src/getcert.c:2680 src/getcert.c:2849
 #, c-format
 msgid "\troot certificates saved to databases:\n"
-msgstr ""
+msgstr "\tкореневі сертифікати, збережені до баз даних:\n"
 
 #: src/getcert.c:2689 src/getcert.c:2858
 #, c-format
 msgid "\tother root certificates saved to databases:\n"
-msgstr ""
+msgstr "\tінше кореневі файли, збережені до баз даних:\n"
 
 #: src/getcert.c:2698 src/getcert.c:2867
 #, c-format
 msgid "\tother certificates saved to databases:\n"
-msgstr ""
+msgstr "\tінші сертифікати, збережені до баз даних:\n"
 
 #: src/getcert.c:2703 src/getcert.c:2883
 #, c-format
@@ -537,7 +537,7 @@ msgstr "Служба сертифікації «%s»:\n"
 #: src/getcert.c:2778
 #, c-format
 msgid "\tself-identifies as: %s\n"
-msgstr ""
+msgstr "\tсамоідентифікація: %s\n"
 
 #: src/getcert.c:2787
 #, c-format
@@ -562,17 +562,17 @@ msgstr "\tвідомі назви видавця:\n"
 #: src/getcert.c:2813
 #, c-format
 msgid "\tknown profiles/templates/certtypes:\n"
-msgstr ""
+msgstr "\tвідомі профілі, шаблони, типи сертифікатів:\n"
 
 #: src/getcert.c:2876
 #, c-format
 msgid "\tdefault profile/template/certtype: %s\n"
-msgstr ""
+msgstr "\tтиповий профіль, шаблон або тип сертифіката: %s\n"
 
 #: src/getcert.c:2951
 #, c-format
 msgid "\terror refreshing CA data\n"
-msgstr ""
+msgstr "\tпомилка під час спроби оновлення даних CA\n"
 
 #: src/getcert.c:2975
 #, c-format
@@ -749,11 +749,11 @@ msgstr "  -C\tкоманда, яку слід виконати після збе
 
 #: src/getcert.c:3018 src/getcert.c:3062 src/getcert.c:3128
 msgid "  -F\tfile in which to store the CA's certificates\n"
-msgstr ""
+msgstr "  -F\tфайл, у якому слід зберігати сертифікати CA\n"
 
 #: src/getcert.c:3019 src/getcert.c:3063 src/getcert.c:3129
 msgid "  -a\tNSS database in which to store the CA's certificates\n"
-msgstr ""
+msgstr "  -a\tбаза даних NSS, у якій слід зберігати сертифікати CA\n"
 
 #: src/getcert.c:3020 src/getcert.c:3064 src/getcert.c:3086 src/getcert.c:3130
 #: src/getcert.c:3154 src/getcert.c:3169 src/getcert.c:3184
@@ -912,16 +912,13 @@ msgstr ""
 "назвою\n"
 
 #: src/getcert.c:3173
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s refresh-ca [options]\n"
-msgstr "Використання: %s request [параметри]\n"
+msgstr "Користування: %s refresh-ca [параметри]\n"
 
 #: src/getcert.c:3178
-#, fuzzy
 msgid "  -c CA\trefresh information about the CA with this name\n"
-msgstr ""
-"  -c CA\tПоказати лише відомості щодо служби сертифікації (CA) з вказаною "
-"назвою\n"
+msgstr "  -c CA\tоновити дані щодо CA із вказаною назвою\n"
 
 #: src/getcert.c:3236
 #, c-format

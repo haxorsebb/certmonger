@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2014-06-05 12:20-0400\n"
-"PO-Revision-Date: 2014-05-28 18:21+0000\n"
+"POT-Creation-Date: 2014-06-06 11:06-0400\n"
+"PO-Revision-Date: 2014-06-05 16:22+0000\n"
 "Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
 "Language-Team: Italian (http://www.transifex.com/projects/p/certmonger/"
 "language/it/)\n"
@@ -888,14 +888,13 @@ msgid "  -c CA\tlist only information about the CA with this name\n"
 msgstr "  -c CA\telenca solo informazioni sulla CA con questo nome\n"
 
 #: src/getcert.c:3173
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s refresh-ca [options]\n"
-msgstr "Utilizzo: %s request [opzioni]\n"
+msgstr ""
 
 #: src/getcert.c:3178
-#, fuzzy
 msgid "  -c CA\trefresh information about the CA with this name\n"
-msgstr "  -c CA\telenca solo informazioni sulla CA con questo nome\n"
+msgstr ""
 
 #: src/getcert.c:3236
 #, c-format
