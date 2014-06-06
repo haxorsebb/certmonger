@@ -1,0 +1,36 @@
+Local Signer: Design and Implementation Notes
+
+"One step forward from self-signed certificates."
+"Still basically a toy signer."
+
+During the run-up to 0.75, we added several entry points during which we call
+per-CA code.  In addition to "ask the CA to sign this", we are:
+* called to self-identity
+  * currenty called at daemon startup
+* called to produce a list of our root certificates
+  * currenty called at daemon startup and at a midpoint between startup and
+    the earliest NotValidAfter date for any known roots, iteratively
+* called to produce a list of profiles we support
+  * currenty called at daemon startup
+* called to produce the name of the default profile
+  * currenty called at daemon startup
+* called to produce a list of required first-time-enrollment attributes
+  * currenty called at daemon startup
+* called to produce a list of required renewal attributes
+  * currenty called at daemon startup
+
+The second one, when we're called to produce a list of our root certificates,
+seems to be a good time to actually bring up a local signer and, when it
+becomes necessary, add a new certificate for it.
+
+The general idea is:
+
+if we-don't-have-a-certificate or not-valid-after-time-is-soon:
+	if we-don't-have-a-private-key-of-the-right-type:
+		generate-a-private-key
+	generate-ca-certificate-using-private-key
+	output all certificates
+
+Since we don't pass the current set of certificates in to helpers, we either
+need to start doing that (ugh, the formatting) or implement it as an internal
+signer, like SelfSign.
