@@ -54,6 +54,26 @@ struct cm_csrgen_state {
 };
 
 static int
+astring_type(const char *attr, const char *p, ssize_t n)
+{
+	unsigned int i;
+
+	if ((strcasecmp(attr, "CN") != 0) &&
+	    (strcasecmp(attr, "commonName") != 0)) {
+		return MBSTRING_UTF8;
+	}
+	if (n < 0) {
+		n = strlen(p);
+	}
+	for (i = 0; i < n; i++) {
+		if ((p[i] & 0x80) != 0) {
+			return MBSTRING_UTF8;
+		}
+	}
+	return V_ASN1_PRINTABLESTRING;
+}
+
+static int
 cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		 void *userdata)
 {
@@ -158,13 +178,13 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 								p[i] = toupper(p[i]);
 							}
 							X509_NAME_add_entry_by_txt(subject,
-										   p, MBSTRING_UTF8,
+										   p, astring_type(p, s + 1, q - s - 1),
 										   (unsigned char *) (s + 1), q - s - 1,
 										   -1, 0);
 							*s = '=';
 						} else {
 							X509_NAME_add_entry_by_txt(subject,
-										   "CN", MBSTRING_UTF8,
+										   "CN", astring_type("CN", p, q - p),
 										   (unsigned char *) p, q - p,
 										   -1, 0);
 						}
@@ -177,7 +197,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				subject = X509_NAME_new();
 				if (subject != NULL) {
 					X509_NAME_add_entry_by_txt(subject,
-								   "CN", MBSTRING_UTF8,
+								   "CN", astring_type("CN", default_cn, -1),
 								   (const unsigned char *) default_cn,
 								   -1, -1, 0);
 				}
