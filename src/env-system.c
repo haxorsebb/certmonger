@@ -63,6 +63,20 @@ cm_env_ca_dir(void)
 }
 
 char *
+cm_env_local_ca_dir(void)
+{
+	static char *ret = NULL;
+
+	if (ret == NULL) {
+		ret = getenv(CM_STORE_LOCAL_CA_DIRECTORY_ENV);
+		if (ret == NULL) {
+			ret = CM_STORE_LOCAL_CA_DIRECTORY;
+		}
+	}
+	return ret;
+}
+
+char *
 cm_env_tmp_dir(void)
 {
 	char *ret;

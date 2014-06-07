@@ -292,6 +292,10 @@ cm_submit_e_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	if ((args->spki != NULL) && (strlen(args->spki) > 0)) {
 		setenv(CM_SUBMIT_SPKI_ENV, args->spki, 1);
 	}
+	if (cm_env_local_ca_dir() != NULL) {
+		setenv(CM_STORE_LOCAL_CA_DIRECTORY_ENV,
+		       cm_env_local_ca_dir(), 1);
+	}
 	key_type = NULL;
 	switch (entry->cm_key_type.cm_key_algorithm) {
 	case cm_key_rsa:

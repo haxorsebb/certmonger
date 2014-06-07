@@ -112,6 +112,8 @@ libcm_o_a_SOURCES += \
 	prefs-o.h \
 	prefs-o.c \
 	submit-so.c \
+	submit-o.c \
+	submit-o.h \
 	util-o.c \
 	util-o.h
 endif
@@ -161,7 +163,7 @@ endif
 if WITH_IPA
 pkglibexec_PROGRAMS += ipa-submit
 endif
-pkglibexec_PROGRAMS += dogtag-ipa-renew-agent-submit
+pkglibexec_PROGRAMS += dogtag-ipa-renew-agent-submit local-submit
 noinst_PROGRAMS += submit-h submit-d
 ipa_submit_SOURCES = ipa.c store.h store-gen.c \
 		submit-x.c submit-x.h submit-u.c submit-u.h \
@@ -182,6 +184,12 @@ dogtag_ipa_renew_agent_submit_SOURCES = dogtag.c submit-d.c submit-d.h \
 dogtag_ipa_renew_agent_submit_LDADD = $(CURL_LIBS) $(XML_LIBS) $(NSS_LIBS) \
 				      $(OPENSSL_LIBS) $(TALLOC_LIBS) \
 				      $(GMP_LIBS) $(UUID_LIBS) $(LTLIBICONV)
+local_submit_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS)
+local_submit_SOURCES = local.c env.h store.h store-gen.c submit-o.c submit-o.h \
+		       submit-u.c submit-u.h env-session.c log.c log.h \
+		       prefs.c prefs.h prefs-o.c prefs-o.h tm.c tm.h \
+		       util.c util.h util-o.c util-o.h
+local_submit_LDADD = $(NSS_LIBS) $(OPENSSL_LIBS) $(TALLOC_LIBS) $(UUID_LIBS)
 submit_d_CFLAGS = $(AM_CFLAGS) $(CURL_CFLAGS) $(XML_CFLAGS) -DCM_SUBMIT_D_MAIN
 submit_d_SOURCES = submit-d.c submit-d.h submit-h.c submit-h.h \
 		   submit-u.c submit-u.h log.c log.h tm.c tm.h util-m.c util-m.h

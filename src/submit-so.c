@@ -46,6 +46,7 @@
 #include "store-int.h"
 #include "submit.h"
 #include "submit-int.h"
+#include "submit-o.h"
 #include "submit-u.h"
 #include "subproc.h"
 #include "tm.h"
@@ -57,23 +58,14 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 {
 	FILE *keyfp, *pem;
 	EVP_PKEY *pkey;
-	X509_REQ *req;
 	X509 *cert;
-	BIO *bio;
-	ASN1_INTEGER *seriali;
-	BASIC_CONSTRAINTS *basic;
-	unsigned char *seriald, *basicd;
-	const unsigned char *serialtmp, *basictmp;
-	char *serial, *pin;
-	int status, seriall, basicl;
+	char *pin;
+	int status;
 	long error;
 	char buf[LINE_MAX];
 	time_t lifedelta;
 	long life;
 	time_t now;
-#ifdef HAVE_UUID
-	unsigned char uuid[16];
-#endif
 
 	util_o_init();
 	ERR_load_crypto_strings();
@@ -102,73 +94,10 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			if (cm_pin_read_for_key(entry, &pin) == 0) {
 				pkey = PEM_read_PrivateKey(keyfp, NULL, NULL, pin);
 				if (pkey != NULL) {
-					bio = BIO_new_mem_buf(entry->cm_csr,
-							      strlen(entry->cm_csr));
-					if (bio != NULL) {
-						req = PEM_read_bio_X509_REQ(bio, NULL,
-									    NULL, NULL);
-						if (req != NULL) {
-							cert = X509_new();
-							if (cert != NULL) {
-								X509_set_subject_name(cert, X509_REQ_get_subject_name(req));
-								X509_set_issuer_name(cert, X509_REQ_get_subject_name(req));
-								X509_set_pubkey(cert, pkey);
-								ASN1_TIME_set(cert->cert_info->validity->notBefore, now);
-								ASN1_TIME_set(cert->cert_info->validity->notAfter, now + life);
-								X509_set_version(cert, 2);
-								/* set the serial number */
-								cm_log(3, "Setting certificate serial number \"%s\".\n",
-								       ca->cm_ca_internal_serial);
-								serial = cm_store_serial_to_der(ca, ca->cm_ca_internal_serial);
-								seriall = strlen(serial) / 2;
-								seriald = talloc_size(ca, seriall);
-								seriall = cm_store_hex_to_bin(serial, seriald, seriall);
-								serialtmp = seriald;
-								seriali = d2i_ASN1_INTEGER(NULL, &serialtmp, seriall);
-								X509_set_serialNumber(cert, seriali);
-#ifdef HAVE_UUID
-								if (cm_prefs_populate_unique_id()) {
-									if (cm_submit_uuid_new(uuid) == 0) {
-										cert->cert_info->subjectUID = M_ASN1_BIT_STRING_new();
-										if (cert->cert_info->subjectUID != NULL) {
-											ASN1_BIT_STRING_set(cert->cert_info->subjectUID, uuid, 16);
-											cert->cert_info->issuerUID = M_ASN1_BIT_STRING_new();
-											if (cert->cert_info->issuerUID != NULL) {
-												ASN1_BIT_STRING_set(cert->cert_info->issuerUID, uuid, 16);
-											}
-										}
-									}
-								}
-#endif
-								/* add basic constraints if needed */
-								cert->cert_info->extensions = X509_REQ_get_extensions(req);
-								if (X509_get_ext_by_NID(cert, NID_basic_constraints, -1) == -1) {
-									basicl = strlen(CM_BASIC_CONSTRAINT_NOT_CA) / 2;
-									basicd = talloc_size(ca, basicl);
-									basicl = cm_store_hex_to_bin(CM_BASIC_CONSTRAINT_NOT_CA,
-												     basicd, basicl);
-									basictmp = basicd;
-									basic = d2i_BASIC_CONSTRAINTS(NULL, &basictmp, basicl);
-									X509_add1_ext_i2d(cert, NID_basic_constraints, basic, 1, 0);
-								}
-								/* finish up */
-								X509_sign(cert, pkey,
-									  cm_prefs_ossl_hash());
-								status = 0;
-							} else {
-								cm_log(1, "Error building "
-								       "template certificate.\n");
-								status = 2;
-							}
-						} else {
-							cm_log(1, "Error reading "
-							       "signing request.\n");
-						}
-						BIO_free(bio);
-					} else {
-						cm_log(1, "Error parsing signing "
-						       "request.\n");
-					}
+					status = cm_submit_o_sign(ca, entry->cm_csr,
+								  NULL, pkey,
+								  ca->cm_ca_internal_serial,
+								  now, life, &cert);
 				} else {
 					cm_log(1, "Error reading private key from "
 					       "'%s': %s.\n",

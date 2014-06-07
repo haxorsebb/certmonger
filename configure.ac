@@ -69,6 +69,18 @@ AC_DEFINE_UNQUOTED(CM_STORE_SESSION_CAS_DIRECTORY,".config/" PACKAGE_NAME "/cas"
 AC_DEFINE_UNQUOTED(CM_STORE_CAS_DIRECTORY_ENV,"${CM_STORE_CAS_DIRECTORY_ENV}",
 		   [Define to the name of the environment variable which can specify the directory for tracking CAs.])
 
+CM_STORE_LOCAL_CA_DIRECTORY="$mylocalstatedir/local"
+CM_STORE_SESSION_LOCAL_CA_DIRECTORY=".config/${PACKAGE_NAME}/local"
+CM_STORE_LOCAL_CA_DIRECTORY_ENV="${UPCASE_PACKAGE_NAME}_LOCAL_CA_DIR"
+AC_SUBST(CM_STORE_LOCAL_CA_DIRECTORY)
+AC_SUBST(CM_STORE_LOCAL_CA_DIRECTORY_ENV)
+AC_DEFINE_UNQUOTED(CM_STORE_LOCAL_CA_DIRECTORY,"${CM_STORE_LOCAL_CA_DIRECTORY}",
+		   [Define to the default path for data belonging to the local CA.])
+AC_DEFINE_UNQUOTED(CM_STORE_SESSION_LOCAL_CA_DIRECTORY,"${CM_STORE_SESSION_LOCAL_CA_DIRECTORY}",
+		   [Define to the default path for data belonging to the user CA.])
+AC_DEFINE_UNQUOTED(CM_STORE_LOCAL_CA_DIRECTORY_ENV,"${CM_STORE_LOCAL_CA_DIRECTORY_ENV}",
+		   [Define to the name of the environment variable which can specify the directory for the local CA.])
+
 AC_ARG_WITH(homedir,
 AS_HELP_STRING([--with-homedir=/],[directory to set as $HOME when running subprocesses as root]),
 myhomedir=$withval,
