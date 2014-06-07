@@ -30,6 +30,12 @@
 #include "tdbus.h"
 
 char *
+cm_env_home_dir(void)
+{
+	return CM_HOMEDIR;
+}
+
+char *
 cm_env_config_dir(void)
 {
 	char *ret;

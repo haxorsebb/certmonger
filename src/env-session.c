@@ -89,6 +89,12 @@ cm_env_homedir(const char *subdir, const char *subfile)
 	return ret;
 }
 
+char *
+cm_env_home_dir(void)
+{
+	return cm_env_homedir(NULL, NULL);
+}
+
 static void
 cm_env_ensure_dir(char *path)
 {

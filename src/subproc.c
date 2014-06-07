@@ -28,8 +28,11 @@
 #include <syslog.h>
 #include <unistd.h>
 
+#include <dbus/dbus.h>
+
 #include <talloc.h>
 
+#include "env.h"
 #include "log.h"
 #include "subproc.h"
 
@@ -68,7 +71,7 @@ cm_subproc_start(int (*cb)(int fd,
 	struct cm_subproc_state *state;
 	int fds[2];
 	long flags;
-	char *configdir, *tmpdir, *tmp;
+	char *configdir, *tmpdir, *tmp, *homedir;
 
 	state = talloc_ptrtype(entry, state);
 	if (state != NULL) {
@@ -96,8 +99,9 @@ cm_subproc_start(int (*cb)(int fd,
 				configdir = (tmp != NULL) ? strdup(tmp) : NULL;
 				tmp = getenv("TMPDIR");
 				tmpdir = (tmp != NULL) ? strdup(tmp) : NULL;
+				homedir = cm_env_home_dir();
 				clear_environment();
-				setenv("HOME", CM_HOMEDIR, 1);
+				setenv("HOME", homedir, 1);
 				setenv("PATH", _PATH_STDPATH, 1);
 				setenv("SHELL", _PATH_BSHELL, 1);
 				setenv("TERM", "dumb", 1);

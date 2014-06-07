@@ -29,6 +29,7 @@
 #include <tevent.h>
 
 #include "cadata.h"
+#include "env.h"
 #include "log.h"
 #include "store-int.h"
 #include "submit-e.h"
@@ -66,6 +67,10 @@ fetch(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry, void *data)
 	if ((ca->cm_nickname != NULL) &&
 	    (strlen(ca->cm_nickname) > 0)) {
 		setenv(CM_SUBMIT_CA_NICKNAME_ENV, ca->cm_nickname, 1);
+	}
+	if (cm_env_local_ca_dir() != NULL) {
+		setenv(CM_STORE_LOCAL_CA_DIRECTORY_ENV,
+		       cm_env_local_ca_dir(), 1);
 	}
 	if (dup2(fd, STDOUT_FILENO) == -1) {
 		u = errno;

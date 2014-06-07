@@ -40,6 +40,7 @@
 
 #include <talloc.h>
 
+#include "env.h"
 #include "log.h"
 #include "prefs.h"
 #include "prefs-o.h"
@@ -58,8 +59,6 @@
 #endif
 
 #define CONSTANTCN "Local Signing Authority"
-#define LIFETIME 60
-#define LIFETIME_BEFORE_RENEWAL 30
 static unsigned char uuid[16];
 
 static void
@@ -442,6 +441,9 @@ main(int argc, char **argv)
 	}
 
 	localdir = getenv(CM_STORE_LOCAL_CA_DIRECTORY_ENV);
+	if (localdir == NULL) {
+		localdir = cm_env_local_ca_dir();
+	}
 	while ((c = getopt(argc, argv, "d:v")) != -1) {
 		switch (c) {
 		case 'd':
@@ -465,7 +467,7 @@ main(int argc, char **argv)
 	}
 
 	csr = NULL;
-	parent = talloc_init("local signer");
+	parent = talloc_init(CONSTANTCN);
 	util_o_init();
 #ifdef HAVE_UUID
 	if (cm_submit_uuid_new(uuid) == 0) {
