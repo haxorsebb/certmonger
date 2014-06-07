@@ -206,4 +206,5 @@ Please file tickets for any that you find at https://fedorahosted.org/certmonger
 \fBgetcert-stop-tracking\fR(1)
 \fBcertmonger-certmaster-submit\fR(8)
 \fBcertmonger-ipa-submit\fR(8)
+\fBcertmonger-local-submit\fR(8)
 \fBcertmonger_selinux\fR(8)
