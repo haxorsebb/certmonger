@@ -87,7 +87,12 @@ cm_submit_o_sign(void *parent, char *csr,
 				}
 				X509_set_pubkey(*cert, X509_PUBKEY_get(req->req_info->pubkey));
 				ASN1_TIME_set((*cert)->cert_info->validity->notBefore, now);
-				ASN1_TIME_set((*cert)->cert_info->validity->notAfter, now + life);
+				if ((life == 0) && (signer != NULL)) {
+					(*cert)->cert_info->validity->notAfter =
+						M_ASN1_TIME_dup(signer->cert_info->validity->notAfter);
+				} else {
+					ASN1_TIME_set((*cert)->cert_info->validity->notAfter, now + life);
+				}
 				X509_set_version(*cert, 2);
 				/* set the serial number */
 				cm_log(3, "Setting certificate serial number \"%s\".\n",

@@ -30,6 +30,7 @@
 
 #include <krb5.h>
 
+#include <openssl/asn1.h>
 #include <openssl/err.h>
 #include <openssl/pem.h>
 #include <openssl/pkcs12.h>
@@ -40,6 +41,7 @@
 #include <talloc.h>
 
 #include "log.h"
+#include "prefs.h"
 #include "prefs-o.h"
 #include "store.h"
 #include "submit-e.h"
@@ -57,7 +59,7 @@
 
 #define CONSTANTCN "Local Signing Authority"
 #define LIFETIME 60
-#define LIFETIME_BEFORE_RENEWAL 60
+#define LIFETIME_BEFORE_RENEWAL 30
 static unsigned char uuid[16];
 
 static void
@@ -75,7 +77,9 @@ set_ca_extensions(void *parent, X509_REQ *req, EVP_PKEY *key)
 {
 	STACK_OF(X509_EXTENSION) *exts;
 	BASIC_CONSTRAINTS basic;
-	ASN1_OCTET_STRING *keyid;
+	AUTHORITY_KEYID akid;
+	ASN1_OCTET_STRING *skid;
+	ASN1_BIT_STRING *ku;
 	unsigned char *p, *q, md[CM_DIGEST_MAX];
 	unsigned int mdlen;
 	long len;
@@ -84,17 +88,24 @@ set_ca_extensions(void *parent, X509_REQ *req, EVP_PKEY *key)
 
 	memset(&basic, 0, sizeof(basic));
 	basic.ca = 1;
-	X509V3_add1_i2d(&exts, NID_basic_constraints, &basic, 0, 0);
+	X509V3_add1_i2d(&exts, NID_basic_constraints, &basic, TRUE, 0);
 
 	len = i2d_PUBKEY(key, NULL);
 	p = malloc(len);
 	q = p;
 	len = i2d_PUBKEY(key, &q);
 	if (EVP_Digest(p, len, md, &mdlen, EVP_sha1(), NULL)) {
-		keyid = M_ASN1_OCTET_STRING_new();
-		M_ASN1_OCTET_STRING_set(keyid, md, mdlen);
-		X509V3_add1_i2d(&exts, NID_subject_key_identifier, keyid, 0, 0);
+		skid = M_ASN1_OCTET_STRING_new();
+		M_ASN1_OCTET_STRING_set(skid, md, mdlen);
+		memset(&akid, 0, sizeof(akid));
+		akid.keyid = skid;
+		X509V3_add1_i2d(&exts, NID_subject_key_identifier, skid, 0, 0);
+		X509V3_add1_i2d(&exts, NID_authority_key_identifier, &akid, 0, 0);
 	}
+
+	ku = M_ASN1_BIT_STRING_new();
+	ASN1_BIT_STRING_set_bit(ku, 5, 1);
+	X509V3_add1_i2d(&exts, NID_key_usage, ku, TRUE, 0);
 
 	len = i2d_X509_EXTENSIONS(exts, NULL);
 	p = malloc(len);
@@ -199,6 +210,8 @@ get_signer_info(void *parent, char *localdir, X509 ***roots,
 	RSA *rsa;
 	char *csr;
 	dbus_bool_t save = FALSE;
+	time_t now, then, life, lifedelta;
+	int i;
 
 	*roots = NULL;
 	*signer_cert = NULL;
@@ -227,6 +240,21 @@ get_signer_info(void *parent, char *localdir, X509 ***roots,
 		cm_log(1, "Trouble parsing signer data.\n");
 		save = TRUE;
 	}
+	now = time(NULL);
+
+	/* Read the desired lifetime. */
+	now = time(NULL);
+	if (cm_submit_u_delta_from_string(cm_prefs_validity_period(), now,
+					  &lifedelta) == 0) {
+		life = lifedelta;
+	} else {
+		if (cm_submit_u_delta_from_string(CM_DEFAULT_CERT_LIFETIME, now,
+						  &lifedelta) == 0) {
+			life = lifedelta;
+		} else {
+			life = 365 * 24 * 60 * 60;
+		}
+	}
 
 	/* If we already have a signer certificate, check how much time it has
 	 * left. */
@@ -234,11 +262,19 @@ get_signer_info(void *parent, char *localdir, X509 ***roots,
 		if (cas == NULL) {
 			cas = sk_X509_new(X509_cmp);
 			if (cas == NULL) {
-				sk_X509_push(cas, *signer_cert);
 				cm_log(1, "Out of memory.\n");
 				return CM_SUBMIT_STATUS_UNREACHABLE;
 			}
 		}
+		then = now + (life / 2);
+		if ((X509_cmp_time(X509_get_notBefore(*signer_cert), &now) > 0) ||
+		    (X509_cmp_time(X509_get_notAfter(*signer_cert), &then) < 0)) {
+			cm_log(1, "CA certificate needs to be replaced.\n");
+			sk_X509_push(cas, *signer_cert);
+			*signer_cert = NULL;
+		}
+	} else {
+		cm_log(1, "CA certificate needs to be generated.\n");
 	}
 
 	/* If we need to generate or replace either, do both. */
@@ -297,17 +333,20 @@ get_signer_info(void *parent, char *localdir, X509 ***roots,
 		}
 		*signer_key = EVP_PKEY_new();
 		EVP_PKEY_set1_RSA(*signer_key, rsa);
+		/* Build a suitable CA signing request. */
 		csr = make_ca_csr(parent, *signer_key, *signer_cert);
 		if (csr == NULL) {
 			cm_log(1, "Error generating CA signing request.\n");
 			return CM_SUBMIT_STATUS_UNREACHABLE;
 		}
+		/* Sign it. */
 		if (cm_submit_o_sign(parent, csr, NULL, *signer_key, hexserial,
-				     time(NULL), LIFETIME, signer_cert) == 0) {
+				     time(NULL), life, signer_cert) == 0) {
 			save = TRUE;
 		} else {
 			*signer_key = NULL;
 			*signer_cert = NULL;
+			save = FALSE;
 		}
 	}
 	/* Save our signer creds. */
@@ -355,6 +394,13 @@ get_signer_info(void *parent, char *localdir, X509 ***roots,
 		fclose(fp);
 
 	}
+	*roots = talloc_array_ptrtype(parent, *roots, sk_X509_num(cas) + 1);
+	if (*roots != NULL) {
+		for (i = 0; i < sk_X509_num(cas); i++) {
+			(*roots)[i] = sk_X509_value(cas, i);
+		}
+		(*roots)[i] = NULL;
+	}
 	return CM_SUBMIT_STATUS_ISSUED;
 }
 
@@ -368,6 +414,7 @@ main(int argc, char **argv)
 	FILE *fp;
 	X509 **roots = NULL, *signer = NULL, *cert = NULL;
 	EVP_PKEY *key = NULL;
+	time_t now;
 
 #ifdef ENABLE_NLS
 	bindtextdomain(PACKAGE, MYLOCALEDIR);
@@ -384,7 +431,7 @@ main(int argc, char **argv)
 		return 0;
 	} else
 	if (strcasecmp(mode, CM_OP_FETCH_ROOTS) == 0) {
-		return 0;
+		/* fall through */
 	} else
 	if ((strcasecmp(mode, CM_OP_SUBMIT) == 0) ||
 	    (strcasecmp(mode, CM_OP_POLL) == 0)) {
@@ -440,7 +487,14 @@ main(int argc, char **argv)
 			/* Try again sometime later. */
 			return i ? i : CM_SUBMIT_STATUS_UNREACHABLE;
 		}
+		printf("%s\n", CONSTANTCN);
+		if (!PEM_write_X509(stdout, signer)) {
+			/* Well, try again sometime later. */
+			cm_log(1, "Error outputting certificate.\n");
+			return CM_SUBMIT_STATUS_UNREACHABLE;
+		}
 		for (i = 0; (roots != NULL) && (roots[i] != NULL); i++) {
+			printf("%s\n", CONSTANTCN);
 			if (!PEM_write_X509(stdout, roots[i])) {
 				/* Well, try again sometime later. */
 				cm_log(1, "Error outputting certificate.\n");
@@ -502,9 +556,10 @@ main(int argc, char **argv)
 			}
 			cm_log(3, "Using serial number '%s'.\n", hexserial);
 		}
+		now = time(NULL);
 		/* Actually sign the request. */
 		i = cm_submit_o_sign(parent, csr, signer, key, hexserial,
-				     time(NULL), LIFETIME, &cert);
+				     now, 0, &cert);
 		if ((i == 0) && (cert != NULL)) {
 			/* Roll the serial number up. */
 			hexserial = cm_store_increment_serial(parent,

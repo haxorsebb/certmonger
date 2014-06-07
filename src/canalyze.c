@@ -87,7 +87,16 @@ not_valid_after(PLArenaPool *arena, struct cm_nickcert *nc)
 			       (int) (q - p), p);
 			exit(1);
 		}
-		return nva;
+		if (nva < PR_Now()) {
+			cm_log(1, "Certificate \"%s\" no longer valid.\n",
+			       nc->cm_nickname);
+			return 0;
+		} else {
+			cm_log(1, "Certificate \"%s\" valid for %lds.\n",
+			       nc->cm_nickname,
+			       (nva - PR_Now()) / PR_USEC_PER_SEC);
+			return nva;
+		}
 	}
 	return 0;
 }
