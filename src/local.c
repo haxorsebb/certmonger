@@ -496,7 +496,7 @@ main(int argc, char **argv)
 			return CM_SUBMIT_STATUS_UNREACHABLE;
 		}
 		for (i = 0; (roots != NULL) && (roots[i] != NULL); i++) {
-			printf("%s\n", CONSTANTCN);
+			printf("%s %d\n", CONSTANTCN, i + 2);
 			if (!PEM_write_X509(stdout, roots[i])) {
 				/* Well, try again sometime later. */
 				cm_log(1, "Error outputting certificate.\n");
