@@ -123,23 +123,27 @@ cm_ca_analyze_certs_main(int fd, struct cm_store_ca *ca,
 	     (ca->cm_ca_root_certs[i] != NULL);
 	     i++) {
 		tmp = not_valid_after(arena, ca->cm_ca_root_certs[i]);
-		result = result ? ((result < tmp) ? result : tmp) : tmp;
+		result = result ? (tmp ? ((result < tmp) ? result : tmp) : result) : tmp;
+		cm_log(3, "Running result is %ld.\n", result);
 	}
 	for (i = 0;
 	     (ca->cm_ca_other_root_certs != NULL) &&
 	     (ca->cm_ca_other_root_certs[i] != NULL);
 	     i++) {
 		tmp = not_valid_after(arena, ca->cm_ca_other_root_certs[i]);
-		result = result ? ((result < tmp) ? result : tmp) : tmp;
+		result = result ? (tmp ? ((result < tmp) ? result : tmp) : result) : tmp;
+		cm_log(3, "Running result is %ld.\n", result);
 	}
 	for (i = 0;
 	     (ca->cm_ca_other_certs != NULL) &&
 	     (ca->cm_ca_other_certs[i] != NULL);
 	     i++) {
 		tmp = not_valid_after(arena, ca->cm_ca_other_certs[i]);
-		result = (result != 0) ? ((result < tmp) ? result : tmp) : tmp;
+		result = result ? (tmp ? ((result < tmp) ? result : tmp) : result) : tmp;
+		cm_log(3, "Running result is %ld.\n", result);
 	}
 
+	cm_log(3, "Final result is %ld.\n", result);
 	now = PR_Now();
 	if ((result != 0) && (result > now)) {
 		result = (result - now) / PR_USEC_PER_SEC / 2;
