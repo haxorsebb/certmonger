@@ -19,7 +19,7 @@ should either be in a file whose name is given as an argument, or fed into
 Identifies the directory which contains the local signer's private key,
 certificates, and other data used by the local signer.
 \fB\-v\fR
-Increases the verbosity of the tool.
+Increases the verbosity of the tool's diagnostic logging.
 
 .SH EXIT STATUS
 .TP
