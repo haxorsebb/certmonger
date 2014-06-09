@@ -403,6 +403,29 @@ get_signer_info(void *parent, char *localdir, X509 ***roots,
 	return CM_SUBMIT_STATUS_ISSUED;
 }
 
+static void
+local_lock(void *parent, const char *localdir)
+{
+	char *lockfile;
+	int lfd;
+
+	lockfile = talloc_asprintf(parent, "%s/lock", localdir);
+	cm_log(2, "Obtaining data lock.\n");
+	lfd = open(lockfile, O_RDWR | O_CREAT,
+		   S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+	if (lfd == -1) {
+		fprintf(stderr, "Error opening lockfile \"%s\": %s\n",
+			lockfile, strerror(errno));
+		exit(CM_SUBMIT_STATUS_UNREACHABLE);
+	}
+	if (lockf(lfd, F_LOCK, 0) != 0) {
+		fprintf(stderr, "Error locking lockfile \"%s\": %s\n",
+			lockfile, strerror(errno));
+		close(lfd);
+		exit(CM_SUBMIT_STATUS_UNREACHABLE);
+	}
+}
+
 int
 main(int argc, char **argv)
 {
@@ -481,6 +504,8 @@ main(int argc, char **argv)
 	}
 
 	if (strcasecmp(mode, CM_OP_FETCH_ROOTS) == 0) {
+		/* Take the lock. */
+		local_lock(parent, localdir);
 		/* Read the signer information. */
 		i = get_signer_info(parent, localdir, &roots,
 				    &signer, &key);
@@ -524,6 +549,8 @@ main(int argc, char **argv)
 			help(argv[0]);
 			return CM_SUBMIT_STATUS_UNCONFIGURED;
 		}
+		/* Take the lock. */
+		local_lock(parent, localdir);
 		/* Read in the signer information. */
 		i = get_signer_info(parent, localdir, &roots,
 				    &signer, &key);
