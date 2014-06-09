@@ -1,0 +1,57 @@
+.TH certmonger 8 "7 June 2014" "certmonger Manual"
+
+.SH NAME
+local-submit
+
+.SH SYNOPSIS
+local-submit [-d state-directory] [-v] [csrfile]
+
+.SH DESCRIPTION
+\fIlocal-submit\fR is the helper which \fIcertmonger\fR uses to implement
+its local signer.  It is not normally run interactively, but it can be for
+troubleshooting purposes.  The signing request which is to be submitted
+should either be in a file whose name is given as an argument, or fed into
+\fIlocal-submit\fR via stdin.
+
+.SH OPTIONS
+.TP
+\fB\-d\fR state-directory
+Identifies the directory which contains the local signer's private key,
+certificates, and other data used by the local signer.
+\fB\-v\fR
+Increases the verbosity of the tool.
+
+.SH EXIT STATUS
+.TP
+0
+if the certificate was issued. The new certificate will be printed.
+.TP
+3
+if the helper needs to be called again.  An error message may be printed.
+.TP
+4
+if critical configuration information is missing.  An error message may be printed.
+
+.SH FILES
+.TP
+.I creds
+.I serial
+is the IPA client configuration file.  This file is consulted to determine
+the URL for the IPA server's XML-RPC interface.
+
+.SH BUGS
+Please file tickets for any that you find at https://fedorahosted.org/certmonger/
+
+.SH SEE ALSO
+\fBcertmonger\fR(8)
+\fBgetcert\fR(1)
+\fBgetcert-list\fR(1)
+\fBgetcert-list-cas\fR(1)
+\fBgetcert-refresh-ca\fR(1)
+\fBgetcert-resubmit\fR(1)
+\fBgetcert-start-tracking\fR(1)
+\fBgetcert-stop-tracking\fR(1)
+\fBcertmonger-dogtag-ipa-renew-agent-submit\fR(8)
+\fBcertmonger-certmaster-submit\fR(8)
+\fBcertmonger-local-submit\fR(8)
+\fBcertmonger_selinux\fR(8)

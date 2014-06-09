@@ -602,6 +602,13 @@ if ! ${configure_dist_target_only:-false} ; then
 	AC_DEFINE_UNQUOTED(CM_CERTMASTER_HELPER_PATH,"$mylibexecdir/certmaster-submit",[Define to the path of the CERTMASTER submission helper.])
 	AM_CONDITIONAL(WITH_CERTMASTER,true)
 
+	AC_DEFINE(WITH_LOCAL,1,[Define to ensure that there's always a local CA defined.])
+	CM_LOCAL_CA_NAME=local
+	AC_SUBST(CM_LOCAL_CA_NAME)
+	AC_DEFINE_UNQUOTED(CM_LOCAL_CA_NAME,"$CM_LOCAL_CA_NAME",[Define to the name that the local CA will be known by.])
+	AC_DEFINE_UNQUOTED(CM_LOCAL_HELPER_PATH,"$mylibexecdir/local-submit",[Define to the path of the local submission helper.])
+	AM_CONDITIONAL(WITH_LOCAL,true)
+
 	CM_DEFAULT_IDLE_TIMEOUT=300
 	AC_SUBST(CM_DEFAULT_IDLE_TIMEOUT)
 	AC_DEFINE_UNQUOTED(CM_DEFAULT_IDLE_TIMEOUT,$CM_DEFAULT_IDLE_TIMEOUT,[Define to the default idle-timeout when bus-activated.])
