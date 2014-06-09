@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.74.94
+Version:	0.74.95
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -205,6 +205,10 @@ exit 0
 %endif
 
 %changelog
+* Mon Jun  9 2014 Nalin Dahyabhai <nalin@redhat.com> 0.74.95-1
+- add the "local" signer, a local toy CA that signs anything you'll
+  ask it to sign
+
 * Fri Jun  6 2014 Nalin Dahyabhai <nalin@redhat.com> 0.74.94-1
 - fix self-test errors that we trigger with new OpenSSL
 - fix a build error that would sometimes happen when we're told to
