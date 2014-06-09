@@ -137,6 +137,9 @@ endif
 bin_PROGRAMS += selfsign-getcert
 selfsign_getcert_SOURCES = selfsign-getcert.c tm.c tm.h
 selfsign_getcert_LDADD = $(getcert_LDADD)
+bin_PROGRAMS += local-getcert
+local_getcert_SOURCES = local-getcert.c tm.c tm.h
+local_getcert_LDADD = $(getcert_LDADD)
 sbin_PROGRAMS = certmonger
 certmonger_SOURCES = main.c env-system.c tm.c tm.h
 certmonger_LDADD = libcm.a \
