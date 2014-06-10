@@ -370,6 +370,7 @@ get_signer_info(void *parent, char *localdir, X509 ***roots,
 		if (ferror(fp)) {
 			cm_log(1, "Error writing '%s': %s.\n", serial,
 			       strerror(errno));
+			fclose(fp);
 			return CM_SUBMIT_STATUS_UNREACHABLE;
 		}
 		fclose(fp);
@@ -611,6 +612,7 @@ main(int argc, char **argv)
 			if (ferror(fp)) {
 				cm_log(1, "Error writing '%s': %s.\n", serial,
 				       strerror(errno));
+				fclose(fp);
 				return CM_SUBMIT_STATUS_UNREACHABLE;
 			}
 			fclose(fp);
