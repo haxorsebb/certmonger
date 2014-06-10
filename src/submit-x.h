@@ -21,6 +21,7 @@
 krb5_error_code cm_submit_x_make_ccache(const char *ktname,
 					const char *principal,
 					char **error_msg);
+char *cm_submit_x_ccache_realm(char **error_msg);
 
 struct cm_submit_x_context;
 enum cm_submit_x_opt_negotiate {

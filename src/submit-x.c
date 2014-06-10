@@ -53,6 +53,68 @@ get_error_message(krb5_context ctx, krb5_error_code kcode)
 	return strdup(ret);
 }
 
+char *
+cm_submit_x_ccache_realm(char **msg)
+{
+	krb5_context ctx;
+	krb5_ccache ccache;
+	krb5_principal princ;
+	krb5_error_code kret;
+	krb5_data *data;
+	char *ret;
+
+	if (msg != NULL) {
+		*msg = NULL;
+	}
+
+	kret = krb5_init_context(&ctx);
+	if (kret != 0) {
+		fprintf(stderr, "Error initializing Kerberos: %s.\n",
+			ret = get_error_message(ctx, kret));
+		if (msg != NULL) {
+			*msg = ret;
+		}
+		return NULL;
+	}
+	kret = krb5_cc_default(ctx, &ccache);
+	if (kret != 0) {
+		fprintf(stderr, "Error resolving default ccache: %s.\n",
+			ret = get_error_message(ctx, kret));
+		if (msg != NULL) {
+			*msg = ret;
+		}
+		return NULL;
+	}
+	kret = krb5_cc_get_principal(ctx, ccache, &princ);
+	if (kret != 0) {
+		fprintf(stderr, "Error reading default principal: %s.\n",
+			ret = get_error_message(ctx, kret));
+		if (msg != NULL) {
+			*msg = ret;
+		}
+		return NULL;
+	}
+	data = krb5_princ_realm(ctx, princ);
+	if (data == NULL) {
+		fprintf(stderr, "Error retrieving principal realm.\n");
+		if (msg != NULL) {
+			*msg = "Error retrieving principal realm.\n";
+		}
+		return NULL;
+	}
+	ret = malloc(data->length + 1);
+	if (ret == NULL) {
+		fprintf(stderr, "Out of memory for principal realm.\n");
+		if (msg != NULL) {
+			*msg = "Out of memory for principal realm.\n";
+		}
+		return NULL;
+	}
+	memcpy(ret, data->data, data->length);
+	ret[data->length] = '\0';
+	return ret;
+}
+
 krb5_error_code
 cm_submit_x_make_ccache(const char *ktname, const char *principal, char **msg)
 {

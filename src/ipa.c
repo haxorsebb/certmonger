@@ -60,6 +60,7 @@ help(const char *argv0)
 		"[-t keytab] "
 		"[-k submitterPrincipal] "
 		"[-P principalOfRequest] "
+		"[-d IPA domain name] "
 		"[csrfile]\n",
 		strchr(argv0, '/') ?
 		strrchr(argv0, '/') + 1 :
@@ -76,8 +77,8 @@ int
 main(int argc, char **argv)
 {
 	int i, c, make_keytab_ccache = TRUE, rc, three;
-	const char *host = NULL, *cainfo = NULL, *capath = NULL;
-	const char *ktname = NULL, *kpname = NULL, *args[2];
+	const char *host = NULL, *domain = NULL, *cainfo = NULL, *capath = NULL;
+	const char *ktname = NULL, *kpname = NULL, *realm = NULL, *args[2];
 	char *csr, *p, uri[LINE_MAX], *s, *reqprinc = NULL, *ipaconfig, *kerr;
 	const char *xmlrpc_uri = NULL, *ldap_uri = NULL;
 	struct cm_submit_x_context *ctx;
@@ -119,10 +120,13 @@ main(int argc, char **argv)
 		return CM_SUBMIT_STATUS_OPERATION_NOT_SUPPORTED;
 	}
 
-	while ((c = getopt(argc, argv, "h:H:L:C:c:t:Kk:P:b:")) != -1) {
+	while ((c = getopt(argc, argv, "h:d:H:L:C:c:t:Kk:P:b:")) != -1) {
 		switch (c) {
 		case 'h':
 			host = optarg;
+			break;
+		case 'd':
+			domain = strdup(optarg);
 			break;
 		case 'H':
 			xmlrpc_uri = optarg;
@@ -202,6 +206,11 @@ main(int argc, char **argv)
 				host = get_config_entry(ipaconfig,
 							"global",
 							"host");
+			}
+			if (domain == NULL) {
+				domain = get_config_entry(ipaconfig,
+							"global",
+							"domain");
 			}
 		}
 	}
@@ -402,6 +411,8 @@ main(int argc, char **argv)
 		}
 	} else
 	if (strcasecmp(mode, CM_OP_FETCH_ROOTS) == 0) {
+		/* Read our realm name from our ccache. */
+		realm = cm_submit_x_ccache_realm(&kerr);
 		/* Prepare to perform an LDAP search. */
 		if (ldap_uri != NULL) {
 			snprintf(uri, sizeof(uri), "%s", ldap_uri);
@@ -501,6 +512,9 @@ main(int argc, char **argv)
 								lbv->bv_len);
 				pem = cm_submit_u_pem_from_base64("CERTIFICATE",
 								  FALSE, lb64);
+				if (realm != NULL) {
+					printf("%s ", realm);
+				}
 				printf("%s\n%s", "IPA CA", pem);
 			}
 		}
