@@ -141,9 +141,11 @@ cm_casave_main_n(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 			}
 			switch (ec) {
 			case PR_NO_ACCESS_RIGHTS_ERROR: /* EACCES or EPERM */
+				fclose(fp);
 				return CM_CERTSAVE_STATUS_PERMS;
 				break;
 			default:
+				fclose(fp);
 				return CM_CERTSAVE_STATUS_INTERNAL_ERROR;
 				break;
 			}
@@ -205,9 +207,11 @@ cm_casave_main_n(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 		error = NSS_ShutdownContext(ctx);
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
+			fclose(fp);
 			return CM_CERTSAVE_STATUS_INTERNAL_ERROR;
 		}
 	}
+	fclose(fp);
 	return 0;
 }
 
@@ -230,9 +234,11 @@ cm_casave_main_o(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 			switch (errno) {
 			case EACCES:
 			case EPERM:
+				fclose(fp);
 				return CM_CERTSAVE_STATUS_PERMS;
 				break;
 			default:
+				fclose(fp);
 				return CM_CERTSAVE_STATUS_INTERNAL_ERROR;
 				break;
 			}
