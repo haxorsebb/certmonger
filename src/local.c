@@ -103,7 +103,9 @@ set_ca_extensions(void *parent, X509_REQ *req, EVP_PKEY *key)
 	}
 
 	ku = M_ASN1_BIT_STRING_new();
+	ASN1_BIT_STRING_set_bit(ku, 0, 1);
 	ASN1_BIT_STRING_set_bit(ku, 5, 1);
+	ASN1_BIT_STRING_set_bit(ku, 6, 1);
 	X509V3_add1_i2d(&exts, NID_key_usage, ku, TRUE, 0);
 
 	len = i2d_X509_EXTENSIONS(exts, NULL);
