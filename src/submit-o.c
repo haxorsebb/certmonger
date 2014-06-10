@@ -139,18 +139,16 @@ cm_submit_o_sign(void *parent, char *csr,
 				/* copy the signer's subject key id to our authority key id */
 				if (signer != NULL) {
 					skid = X509_get_ext_d2i(signer, NID_subject_key_identifier, &crit, NULL);
-					if (skid != NULL) {
-						memset(&akid, 0, sizeof(akid));
-						akid.keyid = skid;
-						X509_add1_ext_i2d(*cert, NID_authority_key_identifier, &akid, crit, 0);
-					}
+					memset(&akid, 0, sizeof(akid));
+					akid.keyid = skid;
+					X509_add1_ext_i2d(*cert, NID_authority_key_identifier, &akid, crit, X509V3_ADD_REPLACE);
 					/* make sure we have a subject key id */
 					i = X509_get_ext_by_NID(*cert, NID_subject_key_identifier, -1);
 					if (i == -1) {
 						if (X509_pubkey_digest(*cert, EVP_sha1(), md, &mdlen)) {
 							skid = M_ASN1_OCTET_STRING_new();
 							M_ASN1_OCTET_STRING_set(skid, md, mdlen);
-							X509_add1_ext_i2d(*cert, NID_subject_key_identifier, skid, crit, 0);
+							X509_add1_ext_i2d(*cert, NID_subject_key_identifier, skid, 0, 0);
 						}
 					}
 				}
