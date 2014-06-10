@@ -150,7 +150,11 @@ cm_ca_analyze_certs_main(int fd, struct cm_store_ca *ca,
 	}
 
 	p = talloc_asprintf(ca, "%ld", result);
-	write(fd, p, strlen(p));
+	i = strlen(p);
+	if (write(fd, p, strlen(p)) != i) {
+		cm_log(0, "Error writing \"%s\" to pipe: %s.\n", p,
+		       strerror(errno));
+	}
 
 	talloc_free(p);
 	PORT_FreeArena(arena, PR_TRUE);

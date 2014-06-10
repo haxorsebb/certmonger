@@ -27,8 +27,11 @@
 #include <time.h>
 #include <unistd.h>
 
+#include <dbus/dbus.h>
+
 #include <talloc.h>
 
+#include "env.h"
 #include "log.h"
 #include "store.h"
 #include "store-int.h"
