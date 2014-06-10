@@ -407,7 +407,7 @@ get_signer_info(void *parent, char *localdir, X509 ***roots,
 	return CM_SUBMIT_STATUS_ISSUED;
 }
 
-static void
+static int
 local_lock(void *parent, const char *localdir)
 {
 	char *lockfile;
@@ -428,12 +428,13 @@ local_lock(void *parent, const char *localdir)
 		close(lfd);
 		exit(CM_SUBMIT_STATUS_UNREACHABLE);
 	}
+	return lfd;
 }
 
 int
 main(int argc, char **argv)
 {
-	int i, c, verbose = 0;
+	int i, c, verbose = 0, lfd;
 	void *parent;
 	const char *mode = CM_OP_SUBMIT;
 	char *csr, *localdir = NULL, *hexserial = NULL, *serial, buf[LINE_MAX];
@@ -509,7 +510,7 @@ main(int argc, char **argv)
 
 	if (strcasecmp(mode, CM_OP_FETCH_ROOTS) == 0) {
 		/* Take the lock. */
-		local_lock(parent, localdir);
+		lfd = local_lock(parent, localdir);
 		/* Read the signer information. */
 		i = get_signer_info(parent, localdir, &roots,
 				    &signer, &key);
@@ -554,7 +555,7 @@ main(int argc, char **argv)
 			return CM_SUBMIT_STATUS_UNCONFIGURED;
 		}
 		/* Take the lock. */
-		local_lock(parent, localdir);
+		lfd = local_lock(parent, localdir);
 		/* Read in the signer information. */
 		i = get_signer_info(parent, localdir, &roots,
 				    &signer, &key);
