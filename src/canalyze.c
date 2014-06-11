@@ -78,7 +78,8 @@ not_valid_after(PLArenaPool *arena, struct cm_nickcert *nc)
 				    SEC_ASN1_GET(CERT_CertificateTemplate),
 				    (const char *) sdata.data.data,
 				    sdata.data.len) != SECSuccess)) {
-				cm_log(0, "Decoding error on \"%.*s\" (%d bytes)!\n",
+				cm_log(0, "Decoding error on \"%.*s\" "
+				       "(%d bytes)!\n",
 				       (int) (q - p), p, length);
 				exit(1);
 			}
@@ -123,7 +124,9 @@ cm_ca_analyze_certs_main(int fd, struct cm_store_ca *ca,
 	     (ca->cm_ca_root_certs[i] != NULL);
 	     i++) {
 		tmp = not_valid_after(arena, ca->cm_ca_root_certs[i]);
-		result = result ? (tmp ? ((result < tmp) ? result : tmp) : result) : tmp;
+		result = result ?
+			 (tmp ? ((result < tmp) ? result : tmp) : result) :
+			 tmp;
 		cm_log(3, "Running result is %ld.\n", result);
 	}
 	for (i = 0;
@@ -131,7 +134,9 @@ cm_ca_analyze_certs_main(int fd, struct cm_store_ca *ca,
 	     (ca->cm_ca_other_root_certs[i] != NULL);
 	     i++) {
 		tmp = not_valid_after(arena, ca->cm_ca_other_root_certs[i]);
-		result = result ? (tmp ? ((result < tmp) ? result : tmp) : result) : tmp;
+		result = result ?
+			 (tmp ? ((result < tmp) ? result : tmp) : result) :
+			 tmp;
 		cm_log(3, "Running result is %ld.\n", result);
 	}
 	for (i = 0;
@@ -139,7 +144,9 @@ cm_ca_analyze_certs_main(int fd, struct cm_store_ca *ca,
 	     (ca->cm_ca_other_certs[i] != NULL);
 	     i++) {
 		tmp = not_valid_after(arena, ca->cm_ca_other_certs[i]);
-		result = result ? (tmp ? ((result < tmp) ? result : tmp) : result) : tmp;
+		result = result ?
+			 (tmp ? ((result < tmp) ? result : tmp) : result) :
+			 tmp;
 		cm_log(3, "Running result is %ld.\n", result);
 	}
 

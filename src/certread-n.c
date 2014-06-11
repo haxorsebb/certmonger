@@ -410,9 +410,9 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 						      item.len);
 	/* Subject name */
 	talloc_free(entry->cm_cert_subject_der);
-	entry->cm_cert_subject_der = cm_store_hex_from_bin(NULL,
-							   cert->derSubject.data,
-							   cert->derSubject.len);
+	item = cert->derSubject;
+	entry->cm_cert_subject_der = cm_store_hex_from_bin(NULL, item.data,
+							   item.len);
 	talloc_free(entry->cm_cert_subject);
 	entry->cm_cert_subject = talloc_strdup(entry, cert->subjectName);
 	/* Subject Public Key Info, encoded into a blob. */
@@ -508,10 +508,11 @@ cm_certread_n_get_fd(struct cm_certread_state *state)
 static void
 cm_certread_n_done(struct cm_certread_state *state)
 {
+	const char *msg;
+
 	if (state->subproc != NULL) {
-		cm_certread_read_data_from_buffer(state->entry,
-						  cm_subproc_get_msg(state->subproc,
-								     NULL));
+		msg = cm_subproc_get_msg(state->subproc, NULL);
+		cm_certread_read_data_from_buffer(state->entry, msg);
 		cm_subproc_done(state->subproc);
 	}
 	talloc_free(state);

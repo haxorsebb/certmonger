@@ -178,7 +178,7 @@ cm_tls_n(const char *hostport,
 		talloc_free(ret);
 		return NULL;
 	}
-        SSL_BadCertHook(pvt->model, &cm_tls_n_bad_cert, NULL);
+	SSL_BadCertHook(pvt->model, &cm_tls_n_bad_cert, NULL);
 	SSL_GetClientAuthDataHook(pvt->model,
 				  &cm_tls_n_get_client_creds,
 				  pvt);

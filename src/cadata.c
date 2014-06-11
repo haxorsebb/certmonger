@@ -310,7 +310,8 @@ parse_list(struct cm_store_ca *ca, struct cm_cadata_state *state,
 				    (strncasecmp(dict[j], p, len) == 0)) {
 					reqs[i] = talloc_strdup(reqs,
 								dict[j + 1]);
-					if ((reqs[i] != NULL) && (strlen(reqs[i]) > 0)) {
+					if ((reqs[i] != NULL) &&
+					    (strlen(reqs[i]) > 0)) {
 						i++;
 					}
 					break;
@@ -433,13 +434,13 @@ cm_cadata_start_generic(struct cm_store_ca *ca, const char *op,
 	int error_fd[2];
 	unsigned char u;
 
-        switch (ca->cm_ca_type) {
+	switch (ca->cm_ca_type) {
 	case cm_ca_internal_self:
 		if (strcasecmp(op, CM_OP_IDENTIFY) == 0) {
 			ca->cm_ca_aka = talloc_asprintf(ca,
 							"SelfSign (%s %s)",
-						        PACKAGE_NAME,
-						        PACKAGE_VERSION);
+							PACKAGE_NAME,
+							PACKAGE_VERSION);
 		} else
 		if (strcasecmp(op, CM_OP_FETCH_ROOTS) == 0) {
 		} else
@@ -570,20 +571,20 @@ cm_cadata_modified(struct cm_cadata_state *state)
 int
 cm_cadata_unsupported(struct cm_cadata_state *state)
 {
-        int status;
+	int status;
 
 	status = cm_subproc_get_exitstatus(state->subproc);
 	if (WIFEXITED(status) &&
-            (WEXITSTATUS(status) == CM_SUBMIT_STATUS_OPERATION_NOT_SUPPORTED)) {
-                return 0;
-        }
-        return -1;
+	    (WEXITSTATUS(status) == CM_SUBMIT_STATUS_OPERATION_NOT_SUPPORTED)) {
+		return 0;
+	}
+	return -1;
 }
 
 int
 cm_cadata_unreachable(struct cm_cadata_state *state)
 {
-        int status;
+	int status;
 
 	status = cm_subproc_get_exitstatus(state->subproc);
 	/* Go ahead and treat "try later" as an "unreachable" error, even
@@ -593,25 +594,25 @@ cm_cadata_unreachable(struct cm_cadata_state *state)
 	 * wrong.  We leave out "rejected" errors, because that's not something
 	 * we'd retry even if the result made sense for these cases. */
 	if (WIFEXITED(status) &&
-            ((WEXITSTATUS(status) == CM_SUBMIT_STATUS_UNREACHABLE) ||
-             (WEXITSTATUS(status) == CM_SUBMIT_STATUS_WAIT) ||
-             (WEXITSTATUS(status) == CM_SUBMIT_STATUS_WAIT_WITH_DELAY))) {
-                return 0;
-        }
-        return -1;
+	    ((WEXITSTATUS(status) == CM_SUBMIT_STATUS_UNREACHABLE) ||
+	     (WEXITSTATUS(status) == CM_SUBMIT_STATUS_WAIT) ||
+	     (WEXITSTATUS(status) == CM_SUBMIT_STATUS_WAIT_WITH_DELAY))) {
+		return 0;
+	}
+	return -1;
 }
 
 int
 cm_cadata_unconfigured(struct cm_cadata_state *state)
 {
-        int status;
+	int status;
 
 	status = cm_subproc_get_exitstatus(state->subproc);
 	if (WIFEXITED(status) &&
-            (WEXITSTATUS(status) == CM_SUBMIT_STATUS_UNCONFIGURED)) {
-                return 0;
-        }
-        return -1;
+	    (WEXITSTATUS(status) == CM_SUBMIT_STATUS_UNCONFIGURED)) {
+		return 0;
+	}
+	return -1;
 }
 
 void

@@ -150,7 +150,7 @@ cm_csrgen_n_attributes(struct cm_store_entry *entry, NSSInitContext *ctx,
 							 &bmp.data,
 							 &bmp.len) == 0) &&
 			    (SEC_ASN1EncodeItem(arena, &friendly, &bmp,
-					        SEC_BMPStringTemplate) == &friendly)) {
+						SEC_BMPStringTemplate) == &friendly)) {
 				friendlies[0] = &friendly;
 				friendlies[1] = NULL;
 				attr[i].attrType = oid->oid;

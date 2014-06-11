@@ -164,7 +164,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 		if (es != NULL) {
 			fprintf(status, "Error initializing database "
-			        "'%s': %s.\n",
+				"'%s': %s.\n",
 				entry->cm_key_storage_location, es);
 			cm_log(1, "Error initializing database '%s': %s.\n",
 			       entry->cm_key_storage_location, es);
@@ -580,7 +580,7 @@ retry_gen:
 	spki = SECKEY_EncodeDERSubjectPublicKeyInfo(pubkey);
 	if (spki != NULL) {
 		pubihex = cm_store_hex_from_bin(NULL, spki->data,
-					        spki->len);
+						spki->len);
 		SECITEM_FreeItem(spki, PR_TRUE);
 	} else {
 		pubihex = "";

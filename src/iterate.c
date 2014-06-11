@@ -285,7 +285,7 @@ cm_writing_has_lock(void *holder, enum cm_ca_phase phase)
 {
 	return (writing_lock == holder) &&
 	       ((writing_lock_ca_phase == cm_ca_phase_invalid) ||
-	        (writing_lock_ca_phase == phase));
+		(writing_lock_ca_phase == phase));
 }
 static dbus_bool_t
 cm_writing_lock_by_entry(struct cm_store_entry *entry)

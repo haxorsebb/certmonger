@@ -75,7 +75,7 @@ static void cm_break_h(struct tevent_context *ec, struct tevent_signal *se,
 static void cm_netlink_fd_h(struct tevent_context *ec, struct tevent_fd *fde,
 			    uint16_t flags, void *pvt);
 static void cm_timeout_h(struct tevent_context *ec, struct tevent_timer *te,
-		         struct timeval current_time, void *pvt);
+			 struct timeval current_time, void *pvt);
 
 int
 cm_init(struct tevent_context *parent, struct cm_context **context,
@@ -617,12 +617,12 @@ cm_add_entry(struct cm_context *context, struct cm_store_entry *new_entry)
 	events = NULL;
 	entries = talloc_realloc(context, context->entries,
 				 struct cm_store_entry *,
-			         context->n_entries + 1);
+				 context->n_entries + 1);
 	if (entries != NULL) {
 		/* Resize the entry state array. */
 		events = talloc_realloc(context, context->entry_events,
-				        struct cm_event,
-				        context->n_entries + 1);
+					struct cm_event,
+					context->n_entries + 1);
 		if (events != NULL) {
 			/* Add the new entry to the array. */
 			talloc_steal(entries, new_entry);

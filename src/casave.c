@@ -85,10 +85,12 @@ cm_casave_main_n(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 	struct cm_casave_state *state = data;
 	FILE *fp;
 	NSSInitContext *ctx;
-	SECStatus error;
+	SECStatus err;
 	CERTCertificate *decoded, *found, **imported = NULL;
 	CERTCertTrust trust;
+	CERTCertDBHandle *certdb;
 	SECItem *items[2];
+	PRUint32 flags;
 	const char *es, *ttrust;
 	char *package, *p;
 	int i, ec;
@@ -108,18 +110,22 @@ cm_casave_main_n(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 					ec = PR_NO_ACCESS_RIGHTS_ERROR;
 					break;
 				default:
-					/* Sigh.  Not a lot of detail.  Check if we
-					 * succeed in read-only mode, which we'll
-					 * interpret as lack of write permissions. */
+					flags = NSS_INIT_READONLY |
+						NSS_INIT_NOROOTINIT |
+						NSS_INIT_NOMODDB;
+					/* Sigh.  Not a lot of detail.  Check
+					 * if we succeed in read-only mode,
+					 * which we'll interpret as lack of
+					 * write permissions. */
 					ctx = NSS_InitContext(state->nssdb,
-							      NULL, NULL, NULL, NULL,
-							      NSS_INIT_READONLY |
-							      NSS_INIT_NOROOTINIT |
-							      NSS_INIT_NOMODDB);
+							      NULL, NULL,
+							      NULL, NULL,
+							      flags);
 					if (ctx != NULL) {
-						error = NSS_ShutdownContext(ctx);
-						if (error != SECSuccess) {
-							cm_log(1, "Error shutting down "
+						err = NSS_ShutdownContext(ctx);
+						if (err != SECSuccess) {
+							cm_log(1, "Error "
+							       "shutting down "
 							       "NSS.\n");
 						}
 						ctx = NULL;
@@ -134,8 +140,8 @@ cm_casave_main_n(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 				es = NULL;
 			}
 			if (es != NULL) {
-				cm_log(1, "Unable to open NSS database '%s': %s.\n",
-				       state->nssdb, es);
+				cm_log(1, "Unable to open NSS database '%s': "
+				       "%s.\n", state->nssdb, es);
 			} else {
 				cm_log(1, "Unable to open NSS database '%s'.\n",
 				       state->nssdb);
@@ -151,9 +157,11 @@ cm_casave_main_n(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 				break;
 			}
 		}
+		certdb = CERT_GetDefaultCertDB();
 		for (i = 0; state->certs[i] != NULL; i++) {
 			package = state->certs[i]->cert;
-			decoded = CERT_DecodeCertFromPackage(package, strlen(package));
+			decoded = CERT_DecodeCertFromPackage(package,
+							     strlen(package));
 			p = state->certs[i]->nickname;
 			ttrust = ",,";
 			switch (state->certs[i]->level) {
@@ -174,15 +182,17 @@ cm_casave_main_n(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 			memset(&trust, 0, sizeof(trust));
 			CERT_DecodeTrustString(&trust, ttrust);
 			if (decoded != NULL) {
-				found = CERT_FindCertByDERCert(CERT_GetDefaultCertDB(),
+				found = CERT_FindCertByDERCert(certdb,
 							       &decoded->derCert);
 				if (found != NULL) {
 					items[0] = &found->derCert;
 					items[1] = NULL;
-					if (CERT_ImportCerts(CERT_GetDefaultCertDB(),
+					if (CERT_ImportCerts(certdb,
 							     certUsageSSLCA,
-							     1, items, &imported,
-							     PR_TRUE, PR_FALSE, p) != SECSuccess) {
+							     1, items,
+							     &imported,
+							     PR_TRUE, PR_FALSE,
+							     p) != SECSuccess) {
 						ec = PORT_GetError();
 						if (ec != 0) {
 							es = PR_ErrorToName(ec);
@@ -190,31 +200,39 @@ cm_casave_main_n(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 							es = NULL;
 						}
 						if (es != NULL) {
-							cm_log(1, "Error importing '%s': %s.\n",
+							cm_log(1, "Error "
+							       "importing '%s':"
+							       " %s.\n",
 							       p, es);
 						} else {
-							cm_log(1, "Error importing '%s'.\n", p);
+							cm_log(1, "Error "
+							       "importing '%s'"
+							       ".\n", p);
 						}
 						break;
 					} else {
-						cm_log(3, "Wrote '%s' to database '%s'.\n",
-						       state->certs[i]->nickname, state->nssdb);
-						CERT_ChangeCertTrust(CERT_GetDefaultCertDB(),
-								     imported[0], &trust);
+						cm_log(3, "Wrote '%s' to "
+						       "database '%s'.\n",
+						       p, state->nssdb);
+						CERT_ChangeCertTrust(certdb,
+								     imported[0],
+								     &trust);
 						CERT_DestroyCertificate(imported[0]);
 					}
 					CERT_DestroyCertificate(found);
 				} else{
-					cm_log(3, "Temporary certificate '%s' not found in '%s'.\n",
+					cm_log(3, "Temporary certificate '%s' "
+					       "not found in '%s'.\n",
 					       p, state->nssdb);
 				}
 				CERT_DestroyCertificate(decoded);
 			} else{
-				cm_log(3, "Error decoding certificate '%s'.\n", p);
+				cm_log(3, "Error decoding certificate '%s'.\n",
+				       p);
 			}
 		}
-		error = NSS_ShutdownContext(ctx);
-		if (error != SECSuccess) {
+		err = NSS_ShutdownContext(ctx);
+		if (err != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 			fclose(fp);
 			return CM_CERTSAVE_STATUS_INTERNAL_ERROR;
@@ -371,6 +389,7 @@ build_locations_lists(void *parent, struct cm_casave_state *state,
 		      char ***files, char ***dbs)
 {
 	struct cm_store_ca *ca2 = NULL;
+	char *dest;
 	int i;
 
 	if (ca != NULL) {
@@ -379,48 +398,48 @@ build_locations_lists(void *parent, struct cm_casave_state *state,
 			for (i = 0;
 			     ca->cm_ca_root_cert_store_files[i] != NULL;
 			     i++) {
-				add_string(state, files,
-					   ca->cm_ca_root_cert_store_files[i]);
+				dest = ca->cm_ca_root_cert_store_files[i];
+				add_string(state, files, dest);
 			}
 		}
 		if (ca->cm_ca_other_root_cert_store_files != NULL) {
 			for (i = 0;
 			     ca->cm_ca_other_root_cert_store_files[i] != NULL;
 			     i++) {
-				add_string(state, files,
-					   ca->cm_ca_other_root_cert_store_files[i]);
+				dest = ca->cm_ca_other_root_cert_store_files[i];
+				add_string(state, files, dest);
 			}
 		}
 		if (ca->cm_ca_other_cert_store_files != NULL) {
 			for (i = 0;
 			     ca->cm_ca_other_cert_store_files[i] != NULL;
 			     i++) {
-				add_string(state, files,
-					   ca->cm_ca_other_cert_store_files[i]);
+				dest = ca->cm_ca_other_cert_store_files[i];
+				add_string(state, files, dest);
 			}
 		}
 		if (ca->cm_ca_root_cert_store_nssdbs != NULL) {
 			for (i = 0;
 			     ca->cm_ca_root_cert_store_nssdbs[i] != NULL;
 			     i++) {
-				add_string(state, dbs,
-					   ca->cm_ca_root_cert_store_nssdbs[i]);
+				dest = ca->cm_ca_root_cert_store_nssdbs[i];
+				add_string(state, dbs, dest);
 			}
 		}
 		if (ca->cm_ca_other_root_cert_store_nssdbs != NULL) {
 			for (i = 0;
 			     ca->cm_ca_other_root_cert_store_nssdbs[i] != NULL;
 			     i++) {
-				add_string(state, dbs,
-					   ca->cm_ca_other_root_cert_store_nssdbs[i]);
+				dest = ca->cm_ca_other_root_cert_store_nssdbs[i];
+				add_string(state, dbs, dest);
 			}
 		}
 		if (ca->cm_ca_other_cert_store_nssdbs != NULL) {
 			for (i = 0;
 			     ca->cm_ca_other_cert_store_nssdbs[i] != NULL;
 			     i++) {
-				add_string(state, dbs,
-					   ca->cm_ca_other_cert_store_nssdbs[i]);
+				dest = ca->cm_ca_other_cert_store_nssdbs[i];
+				add_string(state, dbs, dest);
 			}
 		}
 	}
@@ -430,16 +449,16 @@ build_locations_lists(void *parent, struct cm_casave_state *state,
 			for (i = 0;
 			     e->cm_root_cert_store_files[i] != NULL;
 			     i++) {
-				add_string(state, files,
-					   e->cm_root_cert_store_files[i]);
+				dest = e->cm_root_cert_store_files[i];
+				add_string(state, files, dest);
 			}
 		}
 		if (e->cm_other_root_cert_store_files != NULL) {
 			for (i = 0;
 			     e->cm_other_root_cert_store_files[i] != NULL;
 			     i++) {
-				add_string(state, files,
-					   e->cm_other_root_cert_store_files[i]);
+				dest = e->cm_other_root_cert_store_files[i];
+				add_string(state, files, dest);
 			}
 		}
 		if (e->cm_other_cert_store_files != NULL) {
@@ -462,8 +481,8 @@ build_locations_lists(void *parent, struct cm_casave_state *state,
 			for (i = 0;
 			     e->cm_other_root_cert_store_nssdbs[i] != NULL;
 			     i++) {
-				add_string(state, dbs,
-					   e->cm_other_root_cert_store_nssdbs[i]);
+				dest = e->cm_other_root_cert_store_nssdbs[i];
+				add_string(state, dbs, dest);
 			}
 		}
 		if (e->cm_other_cert_store_nssdbs != NULL) {
@@ -484,48 +503,48 @@ build_locations_lists(void *parent, struct cm_casave_state *state,
 			for (i = 0;
 			     ca2->cm_ca_root_cert_store_files[i] != NULL;
 			     i++) {
-				add_string(state, files,
-					   ca2->cm_ca_root_cert_store_files[i]);
+				dest = ca2->cm_ca_root_cert_store_files[i];
+				add_string(state, files, dest);
 			}
 		}
 		if (ca2->cm_ca_other_root_cert_store_files != NULL) {
 			for (i = 0;
 			     ca2->cm_ca_other_root_cert_store_files[i] != NULL;
 			     i++) {
-				add_string(state, files,
-					   ca2->cm_ca_other_root_cert_store_files[i]);
+				dest = ca2->cm_ca_other_root_cert_store_files[i];
+				add_string(state, files, dest);
 			}
 		}
 		if (ca2->cm_ca_other_cert_store_files != NULL) {
 			for (i = 0;
 			     ca2->cm_ca_other_cert_store_files[i] != NULL;
 			     i++) {
-				add_string(state, files,
-					   ca2->cm_ca_other_cert_store_files[i]);
+				dest = ca2->cm_ca_other_cert_store_files[i];
+				add_string(state, files, dest);
 			}
 		}
 		if (ca2->cm_ca_root_cert_store_nssdbs != NULL) {
 			for (i = 0;
 			     ca2->cm_ca_root_cert_store_nssdbs[i] != NULL;
 			     i++) {
-				add_string(state, dbs,
-					   ca2->cm_ca_root_cert_store_nssdbs[i]);
+				dest = ca2->cm_ca_root_cert_store_nssdbs[i];
+				add_string(state, dbs, dest);
 			}
 		}
 		if (ca2->cm_ca_other_root_cert_store_nssdbs != NULL) {
 			for (i = 0;
 			     ca2->cm_ca_other_root_cert_store_nssdbs[i] != NULL;
 			     i++) {
-				add_string(state, dbs,
-					   ca2->cm_ca_other_root_cert_store_nssdbs[i]);
+				dest = ca2->cm_ca_other_root_cert_store_nssdbs[i];
+				add_string(state, dbs, dest);
 			}
 		}
 		if (ca2->cm_ca_other_cert_store_nssdbs != NULL) {
 			for (i = 0;
 			     ca2->cm_ca_other_cert_store_nssdbs[i] != NULL;
 			     i++) {
-				add_string(state, dbs,
-					   ca2->cm_ca_other_cert_store_nssdbs[i]);
+				dest = ca2->cm_ca_other_cert_store_nssdbs[i];
+				add_string(state, dbs, dest);
 			}
 		}
 	}
@@ -553,12 +572,15 @@ build_file_savecerts_list(struct cm_casave_state *state, const char *filename)
 			add_nickcerts(state, &ret, root, ca->cm_ca_root_certs);
 			have_root = TRUE;
 		}
-		if (has_string(ca->cm_ca_other_root_cert_store_files, filename)) {
-			add_nickcerts(state, &ret, other_root, ca->cm_ca_other_root_certs);
+		if (has_string(ca->cm_ca_other_root_cert_store_files,
+			       filename)) {
+			add_nickcerts(state, &ret, other_root,
+				      ca->cm_ca_other_root_certs);
 			have_other_root = TRUE;
 		}
 		if (has_string(ca->cm_ca_other_cert_store_files, filename)) {
-			add_nickcerts(state, &ret, other, ca->cm_ca_other_certs);
+			add_nickcerts(state, &ret, other,
+				      ca->cm_ca_other_certs);
 			have_other = TRUE;
 		}
 		for (j = 0; j < (*state->get_n_entries)(state->context); j++) {
@@ -566,19 +588,29 @@ build_file_savecerts_list(struct cm_casave_state *state, const char *filename)
 			if (entry->cm_ca_nickname == NULL) {
 				continue;
 			}
-			if (strcmp(entry->cm_ca_nickname, ca->cm_nickname) != 0) {
+			if (strcmp(entry->cm_ca_nickname,
+				   ca->cm_nickname) != 0) {
 				continue;
 			}
-			if (!have_root && has_string(entry->cm_root_cert_store_files, filename)) {
-				add_nickcerts(state, &ret, root, ca->cm_ca_root_certs);
+			if (!have_root &&
+			    has_string(entry->cm_root_cert_store_files,
+				       filename)) {
+				add_nickcerts(state, &ret, root,
+					      ca->cm_ca_root_certs);
 				have_root = TRUE;
 			}
-			if (!have_other_root && has_string(entry->cm_other_root_cert_store_files, filename)) {
-				add_nickcerts(state, &ret, other_root, ca->cm_ca_other_root_certs);
+			if (!have_other_root &&
+			    has_string(entry->cm_other_root_cert_store_files,
+				       filename)) {
+				add_nickcerts(state, &ret, other_root,
+					      ca->cm_ca_other_root_certs);
 				have_other_root = TRUE;
 			}
-			if (!have_other && has_string(entry->cm_other_cert_store_files, filename)) {
-				add_nickcerts(state, &ret, other, ca->cm_ca_other_certs);
+			if (!have_other &&
+			    has_string(entry->cm_other_cert_store_files,
+				       filename)) {
+				add_nickcerts(state, &ret, other,
+					      ca->cm_ca_other_certs);
 				have_other = TRUE;
 			}
 			if (have_root && have_other_root && have_other) {
@@ -604,32 +636,46 @@ build_nssdb_savecerts_list(struct cm_casave_state *state,
 			add_nickcerts(state, &ret, root, ca->cm_ca_root_certs);
 		}
 		if (has_string(ca->cm_ca_other_root_cert_store_nssdbs, nssdb)) {
-			add_nickcerts(state, &ret, other_root, ca->cm_ca_other_root_certs);
+			add_nickcerts(state, &ret, other_root,
+				      ca->cm_ca_other_root_certs);
 		}
 		if (has_string(ca->cm_ca_other_cert_store_nssdbs, nssdb)) {
-			add_nickcerts(state, &ret, other, ca->cm_ca_other_certs);
+			add_nickcerts(state, &ret, other,
+				      ca->cm_ca_other_certs);
 		}
 	}
 	if (entry != NULL) {
 		ca = ca_for_entry(entry, state);
 		if (ca != NULL) {
-			if (has_string(entry->cm_root_cert_store_nssdbs, nssdb)) {
-				add_nickcerts(state, &ret, root, ca->cm_ca_root_certs);
+			if (has_string(entry->cm_root_cert_store_nssdbs,
+				       nssdb)) {
+				add_nickcerts(state, &ret, root,
+					      ca->cm_ca_root_certs);
 			} else
-			if (has_string(ca->cm_ca_root_cert_store_nssdbs, nssdb)) {
-				add_nickcerts(state, &ret, root, ca->cm_ca_root_certs);
+			if (has_string(ca->cm_ca_root_cert_store_nssdbs,
+				       nssdb)) {
+				add_nickcerts(state, &ret, root,
+					      ca->cm_ca_root_certs);
 			}
-			if (has_string(entry->cm_other_root_cert_store_nssdbs, nssdb)) {
-				add_nickcerts(state, &ret, other_root, ca->cm_ca_other_root_certs);
+			if (has_string(entry->cm_other_root_cert_store_nssdbs,
+				       nssdb)) {
+				add_nickcerts(state, &ret, other_root,
+					      ca->cm_ca_other_root_certs);
 			} else
-			if (has_string(ca->cm_ca_other_root_cert_store_nssdbs, nssdb)) {
-				add_nickcerts(state, &ret, other_root, ca->cm_ca_other_root_certs);
+			if (has_string(ca->cm_ca_other_root_cert_store_nssdbs,
+				       nssdb)) {
+				add_nickcerts(state, &ret, other_root,
+					      ca->cm_ca_other_root_certs);
 			}
-			if (has_string(entry->cm_other_cert_store_nssdbs, nssdb)) {
-				add_nickcerts(state, &ret, other, ca->cm_ca_other_certs);
+			if (has_string(entry->cm_other_cert_store_nssdbs,
+				       nssdb)) {
+				add_nickcerts(state, &ret, other,
+					      ca->cm_ca_other_certs);
 			} else
-			if (has_string(ca->cm_ca_other_cert_store_nssdbs, nssdb)) {
-				add_nickcerts(state, &ret, other, ca->cm_ca_other_certs);
+			if (has_string(ca->cm_ca_other_cert_store_nssdbs,
+				       nssdb)) {
+				add_nickcerts(state, &ret, other,
+					      ca->cm_ca_other_certs);
 			}
 		}
 	}
@@ -695,7 +741,8 @@ cm_casave_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 							  state->nssdb);
 		subproc = cm_subproc_start(cm_casave_main_n, ca, e, state);
 		if (subproc == NULL) {
-			fprintf(fp, "Error starting to save to database \"%s\".\n",
+			fprintf(fp,
+				"Error starting to save to database \"%s\".\n",
 				state->nssdb);
 			fclose(fp);
 			_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
@@ -725,9 +772,11 @@ cm_casave_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 struct cm_casave_state *
 cm_casave_start(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		struct cm_context *context,
-		struct cm_store_ca *(*get_ca_by_index)(struct cm_context *, int),
+		struct cm_store_ca *(*get_ca_by_index)(struct cm_context *,
+						       int),
 		int (*get_n_cas)(struct cm_context *),
-		struct cm_store_entry *(*get_entry_by_index)(struct cm_context *, int),
+		struct cm_store_entry *(*get_e_by_index)(struct cm_context *,
+							 int),
 		int (*get_n_entries)(struct cm_context *))
 {
 	struct cm_casave_state *ret;
@@ -746,7 +795,7 @@ cm_casave_start(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		ret->context = context;
 		ret->get_ca_by_index = get_ca_by_index;
 		ret->get_n_cas = get_n_cas;
-		ret->get_entry_by_index = get_entry_by_index;
+		ret->get_entry_by_index = get_e_by_index;
 		ret->get_n_entries = get_n_entries;
 		ret->subproc = cm_subproc_start(cm_casave_main,
 						ca, entry, ret);
@@ -763,6 +812,7 @@ cm_casave_ready(struct cm_casave_state *state)
 {
 	int ready, length;
 	const char *msg;
+	char *p;
 
 	ready = cm_subproc_ready(state->subproc);
 	if (ready == 0) {
@@ -770,9 +820,8 @@ cm_casave_ready(struct cm_casave_state *state)
 		if (msg != NULL) {
 			if (state->ca != NULL) {
 				talloc_free(state->ca->cm_ca_error);
-				state->ca->cm_ca_error = talloc_strndup(state->ca,
-									msg,
-									length);
+				p = talloc_strndup(state->ca, msg, length);
+				state->ca->cm_ca_error = p;
 			}
 		} else {
 			state->ca->cm_ca_error = NULL;
@@ -790,7 +839,7 @@ cm_casave_get_fd(struct cm_casave_state *state)
 int
 cm_casave_saved(struct cm_casave_state *state)
 {
-        int status;
+	int status;
 
 	status = cm_subproc_get_exitstatus(state->subproc);
 	if (WIFEXITED(status) &&
@@ -803,7 +852,7 @@ cm_casave_saved(struct cm_casave_state *state)
 int
 cm_casave_conflict_subject(struct cm_casave_state *state)
 {
-        int status;
+	int status;
 
 	status = cm_subproc_get_exitstatus(state->subproc);
 	if (WIFEXITED(status) &&
@@ -816,7 +865,7 @@ cm_casave_conflict_subject(struct cm_casave_state *state)
 int
 cm_casave_conflict_nickname(struct cm_casave_state *state)
 {
-        int status;
+	int status;
 
 	status = cm_subproc_get_exitstatus(state->subproc);
 	if (WIFEXITED(status) &&
@@ -829,7 +878,7 @@ cm_casave_conflict_nickname(struct cm_casave_state *state)
 int
 cm_casave_permissions_error(struct cm_casave_state *state)
 {
-        int status;
+	int status;
 
 	status = cm_subproc_get_exitstatus(state->subproc);
 	if (WIFEXITED(status) &&

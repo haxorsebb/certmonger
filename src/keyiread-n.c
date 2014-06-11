@@ -490,8 +490,8 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				cm_log(3, "Key size is %d.\n", size);
 				info = SECKEY_EncodeDERSubjectPublicKeyInfo(keys->pubkey);
 				pubihex = cm_store_hex_from_bin(NULL,
-							        info->data,
-							        info->len);
+								info->data,
+								info->len);
 				spki = SECKEY_DecodeDERSubjectPublicKeyInfo(info);
 				pubhex = cm_store_hex_from_bin(NULL,
 							       spki->subjectPublicKey.data,

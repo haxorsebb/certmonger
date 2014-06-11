@@ -912,10 +912,10 @@ cm_certext_read_san(struct cm_store_entry *entry, PLArenaPool *arena,
 			/* An IPv4 or IPv6 address. */
 			if (!((san->name.other.len == 16) &&
 			      (inet_ntop(AF_INET6, san->name.other.data,
-				         abuf, sizeof(abuf)) != NULL)) &&
+					 abuf, sizeof(abuf)) != NULL)) &&
 			    !((san->name.other.len == 4) &&
 			      (inet_ntop(AF_INET, san->name.other.data,
-				         abuf, sizeof(abuf)) != NULL))) {
+					 abuf, sizeof(abuf)) != NULL))) {
 				continue;
 			}
 			for (j = 0;
@@ -1089,7 +1089,8 @@ cm_certext_build_san(struct cm_store_entry *entry, PLArenaPool *arena,
 				continue;
 			}
 #endif
-			next->name.other.data = (unsigned char *) PORT_ArenaStrdup(arena, p);
+			next->name.other.data =
+				(unsigned char *) PORT_ArenaStrdup(arena, p);
 			next->name.other.len = strlen(p);
 			if (p != hostname[i]) {
 				free(p);
@@ -1233,6 +1234,7 @@ cm_certext_build_self_akid(struct cm_store_entry *entry, PLArenaPool *arena)
 	SECItem pubkeyinfo, pubkey, encoded, *item;
 	unsigned char digest[CM_DIGEST_MAX];
 	const char *pubkey_info;
+	size_t len;
 
 	memset(&pubkey, 0, sizeof(pubkey));
 	if (entry->cm_key_pubkey != NULL) {
@@ -1257,9 +1259,10 @@ cm_certext_build_self_akid(struct cm_store_entry *entry, PLArenaPool *arena)
 							   pubkeyinfo.len);
 			spki = NULL;
 			if (pubkeyinfo.data != NULL) {
-				pubkeyinfo.len = cm_store_hex_to_bin(pubkey_info,
-								     pubkeyinfo.data,
-								     pubkeyinfo.len);
+				len = cm_store_hex_to_bin(pubkey_info,
+							  pubkeyinfo.data,
+							  pubkeyinfo.len);
+				pubkeyinfo.len = len;
 				spki = SECKEY_DecodeDERSubjectPublicKeyInfo(&pubkeyinfo);
 			}
 			if (spki != NULL) {
@@ -1304,14 +1307,16 @@ cm_certext_build_skid(struct cm_store_entry *entry, PLArenaPool *arena)
 	SECItem pubkeyinfo, pubkey, value, encoded, *item;
 	unsigned char digest[CM_DIGEST_MAX];
 	const char *pubkey_info;
+	size_t len;
 
 	memset(&pubkey, 0, sizeof(pubkey));
 	if (entry->cm_key_pubkey != NULL) {
 		pubkey.len = strlen(entry->cm_key_pubkey) / 2;
 		pubkey.data = PORT_ArenaZAlloc(arena, pubkey.len);
 		if (pubkey.data != NULL) {
-			pubkey.len = cm_store_hex_to_bin(entry->cm_key_pubkey,
-							 pubkey.data, pubkey.len);
+			len = cm_store_hex_to_bin(entry->cm_key_pubkey,
+						  pubkey.data, pubkey.len);
+			pubkey.len = len;
 		}
 	}
 	if (pubkey.data == NULL) {
@@ -1327,9 +1332,10 @@ cm_certext_build_skid(struct cm_store_entry *entry, PLArenaPool *arena)
 							   pubkeyinfo.len);
 			spki = NULL;
 			if (pubkeyinfo.data != NULL) {
-				pubkeyinfo.len = cm_store_hex_to_bin(pubkey_info,
-								     pubkeyinfo.data,
-								     pubkeyinfo.len);
+				len = cm_store_hex_to_bin(pubkey_info,
+							  pubkeyinfo.data,
+							  pubkeyinfo.len);
+				pubkeyinfo.len = len;
 				spki = SECKEY_DecodeDERSubjectPublicKeyInfo(&pubkeyinfo);
 			}
 			if (spki != NULL) {
@@ -1514,9 +1520,10 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 		.data = (unsigned char *) "\377",
 	};
 	int i;
-	char **tmp;
+	char **tmp, *comment;
 	const char *reason;
 	NSSInitContext *local_ctx = NULL;
+	const SEC_ASN1Template *template;
 
 	*extensions = NULL;
 	*length = 0;
@@ -1539,7 +1546,8 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 		}
 		reason = util_n_fips_hook();
 		if (reason != NULL) {
-			cm_log(1, "Error putting NSS into FIPS mode: %s\n", reason);
+			cm_log(1, "Error putting NSS into FIPS mode: %s\n",
+			       reason);
 			return;
 		}
 	}
@@ -1656,8 +1664,8 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 	}
 	if (entry->cm_template_ns_comment != NULL) {
 		oid = SECOID_FindOIDByTag(SEC_OID_NS_CERT_EXT_COMMENT);
-		item = cm_certext_build_ns_comment(entry, arena,
-						   entry->cm_template_ns_comment);
+		comment = entry->cm_template_ns_comment;
+		item = cm_certext_build_ns_comment(entry, arena, comment);
 		if ((item != NULL) && (oid != NULL)) {
 			ext[i].id = oid->oid;
 			ext[i].critical = der_false;
@@ -1671,9 +1679,11 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 	/* Encode the sequence. */
 	memset(&encoded, 0, sizeof(encoded));
 	if (i > 1) {
+		template = cm_certext_sequence_of_cert_extension_template;
 		if (SEC_ASN1EncodeItem(arena, &encoded, &exts_ptr,
-				       cm_certext_sequence_of_cert_extension_template) == &encoded) {
-			*extensions = talloc_memdup(entry, encoded.data, encoded.len);
+				       template) == &encoded) {
+			*extensions = talloc_memdup(entry, encoded.data,
+						    encoded.len);
 			if (*extensions != NULL) {
 				*length = encoded.len;
 			}

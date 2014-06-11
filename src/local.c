@@ -425,7 +425,7 @@ local_lock(void *parent, const char *localdir)
 int
 main(int argc, char **argv)
 {
-	int i, c, verbose = 0, lfd;
+	int i, c, verbose = 0, lfd = -1;
 	void *parent;
 	const char *mode = CM_OP_SUBMIT;
 	char *csr, *localdir = NULL, *hexserial = NULL, *serial, buf[LINE_MAX];
@@ -525,6 +525,7 @@ main(int argc, char **argv)
 			}
 		}
 		/* All done. */
+		close(lfd);
 		return CM_SUBMIT_STATUS_ISSUED;
 	} else
 	if ((strcasecmp(mode, CM_OP_SUBMIT) == 0) ||
@@ -618,6 +619,7 @@ main(int argc, char **argv)
 				return CM_SUBMIT_STATUS_UNREACHABLE;
 			}
 		}
+		close(lfd);
 		return i;
 	}
 

@@ -529,7 +529,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 				cm_log(1, "Not allowed to access certificate storage location.\n");
 				ret = send_internal_base_bad_arg_error(conn, msg,
 								       _("The parent of location \"%s\" could not be accessed due "
-								         "to insufficient permissions."),
+									"to insufficient permissions."),
 								       param->value.s,
 								       "CERT_LOCATION");
 				break;
@@ -588,7 +588,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 				cm_log(1, "Not allowed to access certificate storage location.\n");
 				ret = send_internal_base_bad_arg_error(conn, msg,
 								       _("The location \"%s\" could not be accessed due "
-								         "to insufficient permissions."),
+									"to insufficient permissions."),
 								       param->value.s,
 								       "CERT_LOCATION");
 				break;
@@ -4881,7 +4881,7 @@ cm_tdbush_property_set(DBusConnection *conn,
 			break;
 		case cm_tdbush_property_string_pairs:
 			if (cm_tdbusm_get_ssass(msg, parent, &interface,
-					        &property, &wpp) != 0) {
+						&property, &wpp) != 0) {
 				cm_log(1, "Error parsing arguments.\n");
 				dbus_message_unref(rep);
 				talloc_free(parent);

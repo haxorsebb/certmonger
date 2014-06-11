@@ -94,21 +94,15 @@ void
 cm_certread_write_data_to_pipe(struct cm_store_entry *entry, FILE *fp)
 {
 	int i;
+	unsigned char *p;
+
 	fprintf(fp, " %s\n", entry->cm_cert_issuer_der ?: "");
-	fprintf(fp, " %s\n",
-		entry->cm_cert_issuer ?
-		cm_store_base64_from_bin(NULL,
-					 (unsigned char *) entry->cm_cert_issuer,
-					 -1) :
-		"");
+	p = (unsigned char *) entry->cm_cert_issuer;
+	fprintf(fp, " %s\n", p ? cm_store_base64_from_bin(NULL, p, -1) : "");
 	fprintf(fp, " %s\n", entry->cm_cert_serial ?: "");
 	fprintf(fp, " %s\n", entry->cm_cert_subject_der ?: "");
-	fprintf(fp, " %s\n",
-		entry->cm_cert_subject ?
-		cm_store_base64_from_bin(NULL,
-					 (unsigned char *) entry->cm_cert_subject,
-					 -1) :
-		"");
+	p = (unsigned char *) entry->cm_cert_subject;
+	fprintf(fp, " %s\n", p ? cm_store_base64_from_bin(NULL, p, -1) : "");
 	fprintf(fp, " %s\n", entry->cm_cert_spki ?: "");
 	fprintf(fp, " %lu\n", entry->cm_cert_not_before ?: 0);
 	fprintf(fp, " %lu\n", entry->cm_cert_not_after ?: 0);
@@ -116,48 +110,42 @@ cm_certread_write_data_to_pipe(struct cm_store_entry *entry, FILE *fp)
 	     (entry->cm_cert_hostname != NULL) &&
 	     (entry->cm_cert_hostname[i] != NULL);
 	     i++) {
+		p = (unsigned char *) entry->cm_cert_hostname[i];
 		fprintf(fp, "%s%s", (i > 0) ? "," : " ",
-			cm_store_base64_from_bin(NULL,
-						 (unsigned char *) entry->cm_cert_hostname[i],
-						 -1));
+			cm_store_base64_from_bin(NULL, p, -1));
 	}
 	fprintf(fp, "%s\n", i > 0 ? "" : " ");
 	for (i = 0;
 	     (entry->cm_cert_email != NULL) &&
 	     (entry->cm_cert_email[i] != NULL);
 	     i++) {
+		p = (unsigned char *) entry->cm_cert_email[i];
 		fprintf(fp, "%s%s", (i > 0) ? "," : " ",
-			cm_store_base64_from_bin(NULL,
-						 (unsigned char *) entry->cm_cert_email[i],
-						 -1));
+			cm_store_base64_from_bin(NULL, p, -1));
 	}
 	fprintf(fp, "%s\n", i > 0 ? "" : " ");
 	for (i = 0;
 	     (entry->cm_cert_principal != NULL) &&
 	     (entry->cm_cert_principal[i] != NULL);
 	     i++) {
+		p = (unsigned char *) entry->cm_cert_principal[i];
 		fprintf(fp, "%s%s", (i > 0) ? "," : " ",
-			cm_store_base64_from_bin(NULL,
-						 (unsigned char *) entry->cm_cert_principal[i],
-						 -1));
+			cm_store_base64_from_bin(NULL, p, -1));
 	}
 	fprintf(fp, "%s\n", i > 0 ? "" : " ");
 	for (i = 0;
 	     (entry->cm_cert_ipaddress != NULL) &&
 	     (entry->cm_cert_ipaddress[i] != NULL);
 	     i++) {
+		p = (unsigned char *) entry->cm_cert_ipaddress[i];
 		fprintf(fp, "%s%s", (i > 0) ? "," : " ",
-			entry->cm_cert_ipaddress[i]);
+			cm_store_base64_from_bin(NULL, p, -1));
 	}
 	fprintf(fp, "%s\n", i > 0 ? "" : " ");
 	fprintf(fp, " %s\n", entry->cm_cert_ku ?: "");
 	fprintf(fp, " %s\n", entry->cm_cert_eku ?: "");
-	fprintf(fp, " %s\n",
-		entry->cm_cert_token ?
-		cm_store_base64_from_bin(NULL,
-					 (unsigned char *) entry->cm_cert_token,
-					 -1) :
-		"");
+	p = (unsigned char *) entry->cm_cert_token;
+	fprintf(fp, " %s\n", p ? cm_store_base64_from_bin(NULL, p, -1) : "");
 	fprintf(fp, " %d\n", entry->cm_cert_is_ca ? 1 : 0);
 	fprintf(fp, " %d\n", entry->cm_cert_is_ca ?
 		entry->cm_cert_ca_path_length : -1);
@@ -165,44 +153,33 @@ cm_certread_write_data_to_pipe(struct cm_store_entry *entry, FILE *fp)
 	     (entry->cm_cert_ocsp_location != NULL) &&
 	     (entry->cm_cert_ocsp_location[i] != NULL);
 	     i++) {
+		p = (unsigned char *) entry->cm_cert_ocsp_location[i];
 		fprintf(fp, "%s%s", (i > 0) ? "," : " ",
-			cm_store_base64_from_bin(NULL,
-						 (unsigned char *) entry->cm_cert_ocsp_location[i],
-						 -1));
+			cm_store_base64_from_bin(NULL, p, -1));
 	}
 	fprintf(fp, "%s\n", i > 0 ? "" : " ");
 	for (i = 0;
 	     (entry->cm_cert_crl_distribution_point != NULL) &&
 	     (entry->cm_cert_crl_distribution_point[i] != NULL);
 	     i++) {
+		p = (unsigned char *) entry->cm_cert_crl_distribution_point[i];
 		fprintf(fp, "%s%s", (i > 0) ? "," : " ",
-			cm_store_base64_from_bin(NULL,
-						 (unsigned char *) entry->cm_cert_crl_distribution_point[i],
-						 -1));
+			cm_store_base64_from_bin(NULL, p, -1));
 	}
 	fprintf(fp, "%s\n", i > 0 ? "" : " ");
 	for (i = 0;
 	     (entry->cm_cert_freshest_crl != NULL) &&
 	     (entry->cm_cert_freshest_crl[i] != NULL);
 	     i++) {
+		p = (unsigned char *) entry->cm_cert_freshest_crl[i];
 		fprintf(fp, "%s%s", (i > 0) ? "," : " ",
-			cm_store_base64_from_bin(NULL,
-						 (unsigned char *) entry->cm_cert_freshest_crl[i],
-						 -1));
+			cm_store_base64_from_bin(NULL, p, -1));
 	}
 	fprintf(fp, "%s\n", i > 0 ? "" : " ");
-	fprintf(fp, " %s\n",
-		entry->cm_cert_ns_comment ?
-		cm_store_base64_from_bin(NULL,
-					 (unsigned char *) entry->cm_cert_ns_comment,
-					 -1) :
-		"");
-	fprintf(fp, " %s\n",
-		entry->cm_cert_profile ?
-		cm_store_base64_from_bin(NULL,
-					 (unsigned char *) entry->cm_cert_profile,
-					 -1) :
-		"");
+	p = (unsigned char *) entry->cm_cert_ns_comment;
+	fprintf(fp, " %s\n", p ? cm_store_base64_from_bin(NULL, p, -1) : "");
+	p = (unsigned char *) entry->cm_cert_profile;
+	fprintf(fp, " %s\n", p ? cm_store_base64_from_bin(NULL, p, -1) : "");
 	fprintf(fp, " %s\n", entry->cm_cert ?: "");
 }
 
@@ -250,9 +227,9 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 			talloc_free(entry->cm_cert_subject);
 			entry->cm_cert_subject = (p == q) ? NULL :
 						 cm_store_base64_as_bin(entry,
-								        p,
-								        q - p,
-								        NULL);
+									p,
+									q - p,
+									NULL);
 			break;
 		case 5:
 			talloc_free(entry->cm_cert_spki);
@@ -280,10 +257,10 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 			while ((*u != '\0') && (u < q)) {
 				v = u + strcspn(u, ",\r\n");
 				if (v > u) {
-					entry->cm_cert_hostname[j] = cm_store_base64_as_bin(vals,
-											    u,
-											    v - u,
-											    NULL);
+					entry->cm_cert_hostname[j] =
+						cm_store_base64_as_bin(vals, u,
+								       v - u,
+								       NULL);
 					j++;
 				}
 				u = v + strspn(u, ",\r\n");
@@ -300,10 +277,10 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 			while ((*u != '\0') && (u < q)) {
 				v = u + strcspn(u, ",\r\n");
 				if (v > u) {
-					entry->cm_cert_email[j] = cm_store_base64_as_bin(vals,
-											 u,
-											 v - u,
-											 NULL);
+					entry->cm_cert_email[j] =
+						cm_store_base64_as_bin(vals, u,
+								       v - u,
+								       NULL);
 					j++;
 				}
 				u = v + strspn(u, ",\r\n");
@@ -320,10 +297,10 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 			while ((*u != '\0') && (u < q)) {
 				v = u + strcspn(u, ",\r\n");
 				if (v > u) {
-					entry->cm_cert_principal[j] = cm_store_base64_as_bin(vals,
-											     u,
-											     v - u,
-											     NULL);
+					entry->cm_cert_principal[j] =
+						cm_store_base64_as_bin(vals, u,
+								       v - u,
+								       NULL);
 					j++;
 				}
 				u = v + strspn(u, ",\r\n");
@@ -340,7 +317,8 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 			while ((*u != '\0') && (u < q)) {
 				v = u + strcspn(u, ",\r\n");
 				if (v > u) {
-					entry->cm_cert_ipaddress[j] = talloc_strndup(vals, u, v - u);
+					entry->cm_cert_ipaddress[j] =
+						talloc_strndup(vals, u, v - u);
 					j++;
 				}
 				u = v + strspn(u, ",\r\n");
@@ -359,10 +337,9 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 		case 14:
 			if (p != q) {
 				talloc_free(entry->cm_cert_token);
-				entry->cm_cert_token = cm_store_base64_as_bin(entry,
-									      p,
-									      q - p,
-									      NULL);
+				entry->cm_cert_token =
+					cm_store_base64_as_bin(entry, p, q - p,
+							       NULL);
 			}
 			break;
 		case 15:
@@ -382,10 +359,10 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 			while ((*u != '\0') && (u < q)) {
 				v = u + strcspn(u, ",\r\n");
 				if (v > u) {
-					entry->cm_cert_ocsp_location[j] = cm_store_base64_as_bin(vals,
-												 u,
-												 v - u,
-												 NULL);
+					entry->cm_cert_ocsp_location[j] =
+						cm_store_base64_as_bin(vals, u,
+								       v - u,
+								       NULL);
 					j++;
 				}
 				u = v + strspn(u, ",\r\n");
@@ -393,9 +370,8 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 			break;
 		case 18:
 			talloc_free(entry->cm_cert_crl_distribution_point);
-			entry->cm_cert_crl_distribution_point = talloc_zero_array(entry,
-										  char *,
-										  q - p + 2);
+			entry->cm_cert_crl_distribution_point =
+				talloc_zero_array(entry, char *, q - p + 2);
 			vals = entry->cm_cert_crl_distribution_point;
 			u = p;
 			j = 0;
@@ -435,17 +411,17 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 			talloc_free(entry->cm_cert_ns_comment);
 			entry->cm_cert_ns_comment = (p == q) ? NULL :
 						    cm_store_base64_as_bin(entry,
-								           p,
-								           q - p,
-								           NULL);
+									   p,
+									   q - p,
+									   NULL);
 			break;
 		case 21:
 			talloc_free(entry->cm_cert_profile);
 			entry->cm_cert_profile = (p == q) ? NULL :
 						 cm_store_base64_as_bin(entry,
-								        p,
-								        q - p,
-								        NULL);
+									p,
+									q - p,
+									NULL);
 			break;
 		case 22:
 			talloc_free(entry->cm_cert);

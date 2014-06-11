@@ -118,7 +118,7 @@ main(int argc, char **argv)
 			break;
 		default:
 			printf(_("Usage: %s [-s|-S] [-n|-f] [-d LEVEL] "
-			         "[-p FILE] [-F]\n"),
+				 "[-p FILE] [-F]\n"),
 			       cm_env_whoami());
 			printf("%s%s%s%s%s%s%s%s%s",
 			       _("\t-s         use session bus\n"),

@@ -690,7 +690,7 @@ request(const char *argv0, int argc, char **argv)
 			if ((kret = krb5_parse_name(kctx, optarg,
 						    &kprincipal)) != 0) {
 				printf(_("Error parsing Kerberos principal "
-				         "name \"%s\": %s.\n"), optarg,
+					 "name \"%s\": %s.\n"), optarg,
 				       error_message(kret));
 				return 1;
 			}
@@ -698,7 +698,7 @@ request(const char *argv0, int argc, char **argv)
 			if ((kret = krb5_unparse_name(kctx, kprincipal,
 						      &kuprincipal)) != 0) {
 				printf(_("Error unparsing Kerberos principal "
-				         "name \"%s\": %s.\n"), optarg,
+					 "name \"%s\": %s.\n"), optarg,
 				       error_message(kret));
 				return 1;
 			}
@@ -776,13 +776,13 @@ request(const char *argv0, int argc, char **argv)
 	if (((dbdir != NULL) && (nickname == NULL)) ||
 	    ((dbdir == NULL) && (nickname != NULL))) {
 		printf(_("Database location or nickname specified "
-		         "without the other.\n"));
+			 "without the other.\n"));
 		help(argv0, "request");
 		return 1;
 	}
 	if ((dbdir != NULL) && (certfile != NULL)) {
 		printf(_("Database directory and certificate file "
-		         "both specified.\n"));
+			 "both specified.\n"));
 		help(argv0, "request");
 		return 1;
 	}
@@ -1516,7 +1516,7 @@ set_tracking(const char *argv0, const char *category,
 			if ((kret = krb5_parse_name(kctx, optarg,
 						    &kprincipal)) != 0) {
 				printf(_("Error parsing Kerberos principal "
-				         "name \"%s\": %s.\n"), optarg,
+					 "name \"%s\": %s.\n"), optarg,
 				       error_message(kret));
 				return 1;
 			}
@@ -1524,7 +1524,7 @@ set_tracking(const char *argv0, const char *category,
 			if ((kret = krb5_unparse_name(kctx, kprincipal,
 						      &kuprincipal)) != 0) {
 				printf(_("Error unparsing Kerberos principal "
-				         "name \"%s\": %s.\n"), optarg,
+					 "name \"%s\": %s.\n"), optarg,
 				       error_message(kret));
 				return 1;
 			}
@@ -1600,13 +1600,13 @@ set_tracking(const char *argv0, const char *category,
 	if (((dbdir != NULL) && (nickname == NULL)) ||
 	    ((dbdir == NULL) && (nickname != NULL))) {
 		printf(_("Database location or nickname specified "
-		         "without the other.\n"));
+			 "without the other.\n"));
 		help(argv0, category);
 		return 1;
 	}
 	if ((dbdir != NULL) && (certfile != NULL)) {
 		printf(_("Database directory and certificate file "
-		         "both specified.\n"));
+			 "both specified.\n"));
 		help(argv0, category);
 		return 1;
 	}
@@ -1807,7 +1807,7 @@ set_tracking(const char *argv0, const char *category,
 			if (((dbdir != NULL) && (nickname == NULL)) ||
 			    ((dbdir == NULL) && (nickname != NULL))) {
 				printf(_("Database location or nickname "
-				         "specified without the other.\n"));
+					 "specified without the other.\n"));
 				help(argv0, category);
 				return 1;
 			}
@@ -1982,7 +1982,7 @@ resubmit(const char *argv0, int argc, char **argv)
 			if ((kret = krb5_parse_name(kctx, optarg,
 						    &kprincipal)) != 0) {
 				printf(_("Error parsing Kerberos principal "
-				         "name \"%s\": %s.\n"), optarg,
+					 "name \"%s\": %s.\n"), optarg,
 				       error_message(kret));
 				return 1;
 			}
@@ -1990,7 +1990,7 @@ resubmit(const char *argv0, int argc, char **argv)
 			if ((kret = krb5_unparse_name(kctx, kprincipal,
 						      &kuprincipal)) != 0) {
 				printf(_("Error unparsing Kerberos principal "
-				         "name \"%s\": %s.\n"), optarg,
+					 "name \"%s\": %s.\n"), optarg,
 				       error_message(kret));
 				return 1;
 			}
@@ -2529,7 +2529,7 @@ list(const char *argv0, int argc, char **argv)
 		rep = query_rep(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
 				"get_key_storage_info", verbose);
 		if (cm_tdbusm_get_sososos(rep, globals.tctx,
-				          &s1, &s2, &s3, &s4) != 0) {
+					  &s1, &s2, &s3, &s4) != 0) {
 			printf(_("Error parsing server response.\n"));
 			exit(1);
 		}
@@ -2564,7 +2564,7 @@ list(const char *argv0, int argc, char **argv)
 		rep = query_rep(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
 				"get_cert_storage_info", verbose);
 		if (cm_tdbusm_get_ssosos(rep, globals.tctx,
-				         &s1, &s2, &s3, &s4) != 0) {
+					 &s1, &s2, &s3, &s4) != 0) {
 			printf(_("Error parsing server response.\n"));
 			exit(1);
 		}
