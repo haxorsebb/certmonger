@@ -489,3 +489,25 @@ cm_prefs_preferred_key_algorithm(void)
 	}
 	return CM_DEFAULT_PUBKEY_TYPE;
 }
+
+const char *
+cm_prefs_nss_ca_trust(void)
+{
+	static const char *trust;
+
+	if (trust == NULL) {
+		trust = cm_prefs_config(NULL, "nss_ca_trust");
+	}
+	return trust;
+}
+
+const char *
+cm_prefs_nss_other_trust(void)
+{
+	static const char *trust;
+
+	if (trust == NULL) {
+		trust = cm_prefs_config(NULL, "nss_other_trust");
+	}
+	return trust;
+}

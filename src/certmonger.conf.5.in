@@ -1,4 +1,4 @@
-.TH certmonger.conf 5 "19 April 2012" "certmonger Manual"
+.TH certmonger.conf 5 "11 June 2014" "certmonger Manual"
 
 .SH NAME
 certmonger.conf - configuration file for certmonger
@@ -62,6 +62,15 @@ signing requests and self-signed certificates.  Recognized values include
 \fIsha1\fP, \fIsha256\fP, \fIsha384\fP, and \fIsha512\fP.  The default is
 \fIsha256\fP.  It is not recommended that this value be changed except in cases
 where the default is incompatible with other software.
+
+.IP nss_ca_trust
+These are the trust attributes which are applied to CA certificates which should be trusted, when they
+are saved to NSS databases.  The default is \fICT,C,C\fP.
+
+.IP nss_other_trust
+These are the trust attributes which are applied to certificates which are not
+necessarily to be trusted, when they are saved to NSS databases.  The default
+is \fI,,\fP.
 
 .SH SELFSIGN
 Within the \fIselfsign\fR section, these variables and values are recognized:

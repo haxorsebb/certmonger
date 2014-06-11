@@ -46,6 +46,8 @@ const char *cm_prefs_validity_period(void);
 int cm_prefs_monitor(void);
 int cm_prefs_autorenew(void);
 int cm_prefs_populate_unique_id(void);
+const char *cm_prefs_nss_ca_trust(void);
+const char *cm_prefs_nss_other_trust(void);
 
 const char *cm_prefs_dogtag_ee_url(void);
 const char *cm_prefs_dogtag_agent_url(void);

@@ -46,6 +46,7 @@ struct cm_certsave_state;
 #include "cm.h"
 #include "iterate.h"
 #include "log.h"
+#include "prefs.h"
 #include "store-int.h"
 #include "submit-e.h"
 #include "subproc.h"
@@ -88,7 +89,7 @@ cm_casave_main_n(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 	CERTCertificate *decoded, *found, **imported = NULL;
 	CERTCertTrust trust;
 	SECItem *items[2];
-	const char *es;
+	const char *es, *ttrust;
 	char *package, *p;
 	int i, ec;
 
@@ -154,20 +155,28 @@ cm_casave_main_n(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 			package = state->certs[i]->cert;
 			decoded = CERT_DecodeCertFromPackage(package, strlen(package));
 			p = state->certs[i]->nickname;
+			ttrust = ",,";
+			switch (state->certs[i]->level) {
+			case root:
+			case other_root:
+				ttrust = cm_prefs_nss_ca_trust();
+				if (ttrust == NULL) {
+					ttrust = "CT,C,C";
+				}
+				break;
+			case other:
+				ttrust = cm_prefs_nss_other_trust();
+				if (ttrust == NULL) {
+					ttrust = ",,";
+				}
+				break;
+			}
+			memset(&trust, 0, sizeof(trust));
+			CERT_DecodeTrustString(&trust, ttrust);
 			if (decoded != NULL) {
 				found = CERT_FindCertByDERCert(CERT_GetDefaultCertDB(),
 							       &decoded->derCert);
 				if (found != NULL) {
-					memset(&trust, 0, sizeof(trust));
-					switch (state->certs[i]->level) {
-					case root:
-					case other_root:
-						CERT_DecodeTrustString(&trust, "CT,C,C");
-						break;
-					case other:
-						CERT_DecodeTrustString(&trust, ",,");
-						break;
-					}
 					items[0] = &found->derCert;
 					items[1] = NULL;
 					if (CERT_ImportCerts(CERT_GetDefaultCertDB(),
