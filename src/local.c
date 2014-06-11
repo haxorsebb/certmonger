@@ -197,12 +197,11 @@ get_signer_info(void *parent, char *localdir, X509 ***roots,
 		X509 **signer_cert, EVP_PKEY **signer_key)
 {
 	FILE *fp;
-	char *creds, *hexserial = NULL, *serial, buf[LINE_MAX];
+	char *creds, *hexserial = NULL, *serial, buf[LINE_MAX], *csr;
 	STACK_OF(X509) *cas = NULL;
 	PKCS12 *p12 = NULL;
 	BIGNUM *exponent = NULL;
 	RSA *rsa;
-	char *csr;
 	dbus_bool_t save = FALSE;
 	time_t now, then, life, lifedelta;
 	int i;
@@ -265,7 +264,7 @@ get_signer_info(void *parent, char *localdir, X509 ***roots,
 		    (X509_cmp_time(X509_get_notAfter(*signer_cert), &then) < 0)) {
 			cm_log(1, "CA certificate needs to be replaced.\n");
 			sk_X509_push(cas, *signer_cert);
-			*signer_cert = NULL;
+			*signer_key = NULL;
 		}
 	} else {
 		cm_log(1, "CA certificate needs to be generated.\n");
