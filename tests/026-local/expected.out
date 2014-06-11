@@ -23,22 +23,6 @@ Certificate Request:
                 OCSP - URI:http://ocsp-1.example.com:12345
                 OCSP - URI:http://ocsp-2.example.com:12345
 
-            X509v3 CRL Distribution Points: 
-
-                Full Name:
-                  URI:http://crl-1.example.com:12345/get
-
-                Full Name:
-                  URI:http://crl-2.example.com:12345/get
-
-            X509v3 Freshest CRL: 
-
-                Full Name:
-                  URI:http://dcrl-1.example.com:12345/get
-
-                Full Name:
-                  URI:http://dcrl-2.example.com:12345/get
-
 [issue]
 [issuer]
 Certificate:
@@ -79,22 +63,6 @@ Certificate:
             Authority Information Access: 
                 OCSP - URI:http://ocsp-1.example.com:12345
                 OCSP - URI:http://ocsp-2.example.com:12345
-
-            X509v3 CRL Distribution Points: 
-
-                Full Name:
-                  URI:http://crl-1.example.com:12345/get
-
-                Full Name:
-                  URI:http://crl-2.example.com:12345/get
-
-            X509v3 Freshest CRL: 
-
-                Full Name:
-                  URI:http://dcrl-1.example.com:12345/get
-
-                Full Name:
-                  URI:http://dcrl-2.example.com:12345/get
 
 [verify]
 cert: OK
