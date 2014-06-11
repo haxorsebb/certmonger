@@ -12,14 +12,13 @@ template_email=root@localhost,root@localhost.localdomain
 template_ku=1000011
 template_is_ca=1
 template_certfname=Babs Jensen's Signer
-template_crldp=http://crl-1.example.com:12345/get,http://crl-2.example.com:12345/get
 template_ocsp=http://ocsp-1.example.com:12345,http://ocsp-2.example.com:12345
 template_nscomment=certmonger generated this request
-template_freshest_crl=http://dcrl-1.example.com:12345/get,http://dcrl-2.example.com:12345/get
 EOF
 filter() {
 	sed -re 's,CN=[[:xdigit:]]{8}-[[:xdigit:]]{8}-[[:xdigit:]]{8}-[[:xdigit:]]{8},CN=$UUID,g' |\
-	sed -re 's,[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2},(160 bits),g'
+	sed -re 's,[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2},(160 bits),g' |\
+	sed s,'^        Signature Algorithm,    Signature Algorithm,g'
 }
 dumpreq() {
 	openssl req -in "$@" -text -noout -reqopt no_serial,no_pubkey,no_sigdump,no_validity | filter
