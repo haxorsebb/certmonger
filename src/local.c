@@ -109,15 +109,7 @@ set_ca_extensions(void *parent, X509_REQ *req, EVP_PKEY *key)
 	ASN1_BIT_STRING_set_bit(ku, 6, 1);
 	X509V3_add1_i2d(&exts, NID_key_usage, ku, TRUE, 0);
 
-	len = i2d_X509_EXTENSIONS(exts, NULL);
-	p = malloc(len);
-	q = p;
-	len = i2d_X509_EXTENSIONS(exts, &q);
-	if (p != NULL) {
-		X509_REQ_add1_attr_by_NID(req, NID_ext_req,
-					  V_ASN1_SEQUENCE,
-					  p, len);
-	}
+	X509_REQ_add_extensions(req, exts);
 }
 
 static char *
