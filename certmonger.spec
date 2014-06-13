@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.74.95
+Version:	0.75
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -205,6 +205,24 @@ exit 0
 %endif
 
 %changelog
+* Fri Jun 11 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75-1
+- add a -w (wait) flag to the getcert's request/resubmit/start-tracking
+  commands, and add a non-waiting status command
+
+* Wed Jun 11 2014 Nalin Dahyabhai <nalin@redhat.com> 0.74.96-1
+- make the trust settings we apply to CA-supplied certificates while
+  saving them to NSS databases run-time configurable
+- fix compiling against EL5-era OpenSSL
+- when saving CA certificates we pull from an IPA server, nickname
+  it using the realm name with " IPA CA" appended rather than just
+  naming it "IPA CA"
+- fix the local signer so that when it issues itself a new certificate,
+  it uses the same subject name
+- add a -w flag to getcert's request, resubmit, and start-tracking
+  commands, telling it to wait until either the certificate is issued,
+  we get to a state where we know that we won't be able to get one, or
+  we are waiting for a CA
+
 * Mon Jun  9 2014 Nalin Dahyabhai <nalin@redhat.com> 0.74.95-1
 - add the "local" signer, a local toy CA that signs anything you'll
   ask it to sign

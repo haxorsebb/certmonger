@@ -11,6 +11,7 @@ ipa-getcert
  ipa-getcert stop-tracking [options]
  ipa-getcert list [options]
  ipa-getcert list-cas [options]
+ ipa-getcert refresh-cas [options]
 
 .SH DESCRIPTION
 The \fIipa-getcert\fR tool issues requests to a @CM_DBUS_NAME@

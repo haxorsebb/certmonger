@@ -11,6 +11,7 @@ local-getcert
  local-getcert stop-tracking [options]
  local-getcert list [options]
  local-getcert list-cas [options]
+ local-getcert refresh-cas [options]
 
 .SH DESCRIPTION
 The \fIlocal-getcert\fR tool issues requests to a @CM_DBUS_NAME@

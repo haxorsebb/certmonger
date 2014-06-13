@@ -11,6 +11,7 @@ selfsign-getcert
  selfsign-getcert stop-tracking [options]
  selfsign-getcert list [options]
  selfsign-getcert list-cas [options]
+ selfsign-getcert refresh-cas [options]
 
 .SH DESCRIPTION
 The \fIselfsign-getcert\fR tool issues requests to a @CM_DBUS_NAME@

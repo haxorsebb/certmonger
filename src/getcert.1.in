@@ -11,6 +11,7 @@ getcert
  getcert stop-tracking [options]
  getcert list [options]
  getcert list-cas [options]
+ getcert refresh-cas [options]
 
 .SH DESCRIPTION
 The \fIgetcert\fR tool issues requests to a @CM_DBUS_NAME@ service on

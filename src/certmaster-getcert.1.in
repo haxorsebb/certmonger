@@ -11,6 +11,7 @@ certmaster-getcert
  certmaster-getcert stop-tracking [options]
  certmaster-getcert list [options]
  certmaster-getcert list-cas [options]
+ certmaster-getcert refresh-cas [options]
 
 .SH DESCRIPTION
 The \fIcertmaster-getcert\fR tool issues requests to a @CM_DBUS_NAME@
