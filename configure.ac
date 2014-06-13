@@ -149,9 +149,9 @@ if ! ${configure_dist_target_only:-false} ; then
 	PKG_CHECK_MODULES(TALLOC,talloc)
 	PKG_CHECK_MODULES(TEVENT,tevent)
 	PKG_CHECK_MODULES(DBUS,dbus-1 >= 1.0)
-	SESSIONBUSSERVICESDIR=`pkg-config --variable=session_bus_services_dir dbus-1 2> /dev/null`
+	SESSIONBUSSERVICESDIR=`pkg-config --variable=session_bus_services_dir dbus-1 2> /dev/null | sed -e "s|^${datadir}|\${datadir}|g" -e "s|^${datarootdir}|\${datarootdir}|g" -e "s|^${prefix}/share|\${datadir}|g"`
 	AC_SUBST(SESSIONBUSSERVICESDIR)
-	SYSTEMBUSSERVICESDIR=`pkg-config --variable=system_bus_services_dir dbus-1 2> /dev/null`
+	SYSTEMBUSSERVICESDIR=`pkg-config --variable=system_bus_services_dir dbus-1 2> /dev/null | sed -e "s|^${datadir}|\${datadir}|g" -e "s|^${datarootdir}|\${datarootdir}|g" -e "s|^${prefix}/share|\${datadir}|g"`
 	AC_SUBST(SYSTEMBUSSERVICESDIR)
 
 	AC_CHECK_FUNCS(clearenv)
