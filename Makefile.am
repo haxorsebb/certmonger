@@ -27,7 +27,20 @@ ARCHIVEOUTDIR=$(shell cd $(top_srcdir) && pwd)
 local-archive:
 	$(MAKE) archive ORIGIN=$(ARCHIVEOUTDIR)
 
-archive:
+srpm:
+	repo=`pwd`; \
+	tmpdir=`mktemp -d /tmp/make_archive_XXXXXX`; \
+	if test -d "$$tmpdir" ; then \
+		git clone $(ORIGIN) $$tmpdir/certmonger;\
+		cd $$tmpdir/certmonger;\
+		git checkout $(GITTAG);\
+		./make-srpm.sh;\
+		cp -v $(distdir)-*.src.rpm $(ARCHIVEOUTDIR)/;\
+		chmod -R u+rw $$tmpdir;\
+		rm -fr $$tmpdir;\
+	fi
+
+archive: srpm
 	repo=`pwd`; \
 	tmpdir=`mktemp -d /tmp/make_archive_XXXXXX`; \
 	if test -d "$$tmpdir" ; then \
