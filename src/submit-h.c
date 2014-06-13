@@ -180,7 +180,7 @@ cm_submit_h_run(struct cm_submit_h_context *ctx)
 #else
 			cm_log(-1,
 			       "warning: libcurl doesn't appear to support "
-			       "Negotiate authentication, continuing");
+			       "Negotiate authentication, continuing\n");
 #endif
 #if defined(CURLOPT_GSSAPI_DELEGATION) && defined(CURLGSSAPI_DELEGATION_FLAG)
 			/* The default before CURLOPT_GSSAPI_DELEGATION existed
