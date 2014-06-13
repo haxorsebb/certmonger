@@ -397,25 +397,6 @@ query_rep_s(enum cm_tdbus_type which,
 }
 
 /* Send the specified, argument-less method call to the named object, and
- * return the single object path from the response. */
-static char *
-query_rep_p(enum cm_tdbus_type which,
-	    const char *path, const char *interface, const char *method,
-	    int verbose,
-	    void *parent)
-{
-	DBusMessage *rep;
-	char *p;
-	rep = query_rep(which, path, interface, method, verbose);
-	if (cm_tdbusm_get_p(rep, parent, &p) != 0) {
-		printf(_("Error parsing server response.\n"));
-		exit(1);
-	}
-	dbus_message_unref(rep);
-	return p;
-}
-
-/* Send the specified, argument-less method call to the named object, and
  * return the array of strings from the response. */
 static char **
 query_rep_as(enum cm_tdbus_type which,
@@ -483,24 +464,6 @@ query_prop(enum cm_tdbus_type which,
 	return send_req(req, verbose);
 }
 
-/* Read a boolean property. */
-static dbus_bool_t
-query_prop_b(enum cm_tdbus_type which,
-	     const char *path, const char *interface, const char *prop,
-	     int verbose,
-	     void *parent)
-{
-	DBusMessage *rep;
-	dbus_bool_t b;
-	rep = query_prop(which, path, interface, prop, verbose);
-	if (cm_tdbusm_get_b(rep, parent, &b) != 0) {
-		printf(_("Error parsing server response.\n"));
-		exit(1);
-	}
-	dbus_message_unref(rep);
-	return b;
-}
-
 /* Read a string property. */
 static char *
 query_prop_s(enum cm_tdbus_type which,
@@ -516,23 +479,6 @@ query_prop_s(enum cm_tdbus_type which,
 	}
 	dbus_message_unref(rep);
 	return s;
-}
-
-/* Read a path property. */
-static char *
-query_prop_p(enum cm_tdbus_type which,
-	     const char *path, const char *interface, const char *prop,
-	     int verbose,
-	     void *parent)
-{
-	DBusMessage *rep;
-	char *p;
-	rep = query_prop(which, path, interface, prop, verbose);
-	if (cm_tdbusm_get_p(rep, parent, &p) != 0) {
-		p = "";
-	}
-	dbus_message_unref(rep);
-	return p;
 }
 
 /* Read an array-of-strings property. */
