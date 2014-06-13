@@ -227,6 +227,9 @@ exit 0
 - add the "local" signer, a local toy CA that signs anything you'll
   ask it to sign
 
+* Sat Jun 07 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.74-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
+
 * Fri Jun  6 2014 Nalin Dahyabhai <nalin@redhat.com> 0.74.94-1
 - fix self-test errors that we trigger with new OpenSSL
 - fix a build error that would sometimes happen when we're told to
