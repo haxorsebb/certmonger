@@ -165,6 +165,7 @@ Please file tickets for any that you find at https://fedorahosted.org/certmonger
 \fBgetcert-refresh-ca\fR(1)
 \fBgetcert-resubmit\fR(1)
 \fBgetcert-start-tracking\fR(1)
+\fBgetcert-status\fR(1)
 \fBgetcert-stop-tracking\fR(1)
 \fBcertmonger-certmaster-submit\fR(8)
 \fBcertmonger-ipa-submit\fR(8)

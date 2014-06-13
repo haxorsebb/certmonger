@@ -7,6 +7,7 @@ local-getcert
  local-getcert request [options]
  local-getcert resubmit [options]
  local-getcert start-tracking [options]
+ local-getcert status [options]
  local-getcert stop-tracking [options]
  local-getcert list [options]
  local-getcert list-cas [options]
@@ -39,6 +40,7 @@ Please file tickets for any that you find at https://fedorahosted.org/certmonger
 \fBgetcert-request\fR(1)
 \fBgetcert-resubmit\fR(1)
 \fBgetcert-start-tracking\fR(1)
+\fBgetcert-status\fR(1)
 \fBgetcert-stop-tracking\fR(1)
 \fBcertmonger-certmaster-submit\fR(8)
 \fBcertmonger-ipa-submit\fR(8)

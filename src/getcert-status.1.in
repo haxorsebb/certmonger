@@ -1,0 +1,67 @@
+.TH certmonger 1 "13 June 2014" "certmonger Manual"
+
+.SH NAME
+getcert
+
+.SH SYNOPSIS
+getcert status [options]
+
+.SH DESCRIPTION
+Queries \fIcertmonger\fR for a status of a particular certificate
+request and sets an exit status to reflect that status.
+
+.SH SELECTION OPTIONS
+.TP
+\fB\-d\fR DIR
+Check that status of a certificate in the named NSS database.  Must be
+specified with the \fB-n\fR option.
+.TP
+\fB\-n\fR NAME
+Check that status of a certificate in with the specified nickname.  Must be
+specified with the \fB-d\fR option.
+.TP
+\fB\-f\fR FILE
+Check that status of a certificate stored in with the specified PEM file.
+.TP
+\fB\-i\fR FILE
+Check that status of a certificate with the specified request nickname.
+
+.SH EXIT STATUS
+.TP
+0
+Certificate is issued and valid.
+.TP
+1
+There was an error communicating with the \fBcertmonger\fR(8) daemon, or
+there is no such certificate known to it.
+.TP
+2.
+Certificate signing request was rejected by the CA.
+.TP
+3.
+CA could not be reached, but attempts to communicate with it will be retried.
+.TP
+4.
+Configuration error.
+.TP
+5.
+Client is working on the request, or waiting for the server.
+
+.SH BUGS
+Please file tickets for any that you find at https://fedorahosted.org/certmonger/
+
+.SH SEE ALSO
+\fBcertmonger\fR(8)
+\fBgetcert\fR(1)
+\fBgetcert-list\fR(1)
+\fBgetcert-list-cas\fR(1)
+\fBgetcert-refresh-ca\fR(1)
+\fBgetcert-request\fR(1)
+\fBgetcert-resubmit\fR(1)
+\fBgetcert-start-tracking\fR(1)
+\fBgetcert-status\fR(1)
+\fBgetcert-stop-tracking\fR(1)
+\fBcertmonger-certmaster-submit\fR(8)
+\fBcertmonger-ipa-submit\fR(8)
+\fBcertmonger-local-submit\fR(8)
+\fBcertmonger_selinux\fR(8)

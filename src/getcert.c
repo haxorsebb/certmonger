@@ -40,6 +40,7 @@
 #include "oiddict.h"
 #include "store.h"
 #include "store-int.h"
+#include "submit-e.h"
 #include "tdbus.h"
 #include "tdbusm.h"
 
@@ -551,6 +552,80 @@ query_prop_as(enum cm_tdbus_type which,
 	return as;
 }
 
+/* Evaluate a single request's status. */
+static int
+evaluate_status(const char *state, dbus_bool_t stuck)
+{
+	if (strcmp(state,
+		   cm_store_state_as_string(CM_MONITORING)) == 0) {
+		return CM_SUBMIT_STATUS_ISSUED;
+	}
+	if (strcmp(state,
+		   cm_store_state_as_string(CM_CA_REJECTED)) == 0) {
+		return CM_SUBMIT_STATUS_REJECTED;
+	}
+	if (strcmp(state,
+		   cm_store_state_as_string(CM_CA_WORKING)) == 0) {
+		return CM_SUBMIT_STATUS_WAIT_WITH_DELAY;
+	}
+	if (strcmp(state,
+		   cm_store_state_as_string(CM_CA_UNREACHABLE)) == 0) {
+		return CM_SUBMIT_STATUS_UNREACHABLE;
+	}
+	if (stuck) {
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
+	}
+	return CM_SUBMIT_STATUS_WAIT_WITH_DELAY;
+}
+
+/* Read the status of a single request, and return a status value. */
+static int
+waitfor(void *parent, enum cm_tdbus_type bus, const char *path, int verbose)
+{
+	DBusMessage *rep;
+	char *state, *old_state = NULL;
+	dbus_bool_t stuck;
+
+	for (;;) {
+		rep = query_rep(bus, path, CM_DBUS_REQUEST_INTERFACE,
+				"get_status", verbose);
+		if (cm_tdbusm_get_sb(rep, globals.tctx, &state, &stuck) != 0) {
+			printf(_("Error parsing server response.\n"));
+			exit(1);
+		}
+		if (verbose &&
+		    ((old_state == NULL) || (strcmp(old_state, state) != 0))) {
+			printf(_("State %s, stuck: %s.\n"),
+			       state, stuck ? "yes" : "no");
+		}
+		if (strcmp(state,
+			   cm_store_state_as_string(CM_MONITORING)) == 0) {
+			return CM_SUBMIT_STATUS_ISSUED;
+		}
+		if (strcmp(state,
+			   cm_store_state_as_string(CM_CA_REJECTED)) == 0) {
+			return CM_SUBMIT_STATUS_REJECTED;
+		}
+		if (strcmp(state,
+			   cm_store_state_as_string(CM_CA_WORKING)) == 0) {
+			return CM_SUBMIT_STATUS_WAIT_WITH_DELAY;
+		}
+		if (strcmp(state,
+			   cm_store_state_as_string(CM_CA_UNREACHABLE)) == 0) {
+			return CM_SUBMIT_STATUS_UNREACHABLE;
+		}
+		if (stuck) {
+			return CM_SUBMIT_STATUS_UNCONFIGURED;
+		}
+		old_state = talloc_strdup(parent, state);
+		/* FIXME: we should be waiting for signals that the state
+		 * property has changed and then asking if we're stuck, not
+		 * just polling using a timer.  But that would require a whole */
+		usleep(100000);
+	}
+	return 0;
+}
+
 /* Add a new request. */
 static int
 request(const char *argv0, int argc, char **argv)
@@ -568,6 +643,7 @@ request(const char *argv0, int argc, char **argv)
 	struct cm_tdbusm_dict param[43];
 	const struct cm_tdbusm_dict *params[42];
 	DBusMessage *req, *rep;
+	int waitreq = 0;
 	dbus_bool_t b;
 	char *p;
 	krb5_context kctx;
@@ -597,7 +673,7 @@ request(const char *argv0, int argc, char **argv)
 
 	opterr = 0;
 	while ((c = getopt(argc, argv,
-			   ":d:n:t:k:f:I:g:rRN:u:U:K:D:E:sSp:P:vB:C:T:G:A:a:F:"
+			   ":d:n:t:k:f:I:g:rRN:u:U:K:D:E:sSp:P:vB:C:T:G:A:a:F:w"
 			   GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
@@ -746,6 +822,9 @@ request(const char *argv0, int argc, char **argv)
 		case 'F':
 			add_string(globals.tctx, &anchor_files,
 				   ensure_pem(globals.tctx, optarg));
+			break;
+		case 'w':
+			waitreq++;
 			break;
 		case 'v':
 			verbose++;
@@ -1068,6 +1147,9 @@ request(const char *argv0, int argc, char **argv)
 		nickname = find_request_name(globals.tctx, bus, p, verbose);
 		printf(_("New signing request \"%s\" added.\n"),
 		       nickname ? nickname : p);
+		if (waitreq) {
+			return waitfor(globals.tctx, bus, p, verbose);
+		}
 	} else {
 		printf(_("New signing request could not be added.\n"));
 		exit(1);
@@ -1211,7 +1293,7 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 		  char *ca, char *profile,
 		  char *precommand, char *postcommand,
 		  char **anchor_dbs, char **anchor_files,
-		  dbus_bool_t auto_renew_stop, int verbose)
+		  dbus_bool_t auto_renew_stop, int waitreq, int verbose)
 {
 	DBusMessage *req, *rep;
 	int i;
@@ -1388,6 +1470,9 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 		nickname = find_request_name(globals.tctx, bus, p, verbose);
 		printf(_("New tracking request \"%s\" added.\n"),
 		       nickname ? nickname : p);
+		if (waitreq) {
+			return waitfor(globals.tctx, bus, p, verbose);
+		}
 		return 0;
 	} else {
 		printf(_("New tracking request could not be added.\n"));
@@ -1413,7 +1498,7 @@ set_tracking(const char *argv0, const char *category,
 	dbus_bool_t b;
 	char *p;
 	int c, auto_renew_start = 0, auto_renew_stop = 0, verbose = 0, i, j;
-	int ku = 0, kubit;
+	int ku = 0, kubit, waitreq = 0;
 	char **eku = NULL, *oid, kustring[16];
 	char **principal = NULL, **dns = NULL, **email = NULL, **ipaddr = NULL;
 	krb5_context kctx;
@@ -1436,7 +1521,7 @@ set_tracking(const char *argv0, const char *category,
 
 	opterr = 0;
 	while ((c = getopt(argc, argv,
-			   ":d:n:t:k:f:g:p:P:rRi:I:u:U:K:D:E:sSvB:C:T:A:a:F:"
+			   ":d:n:t:k:f:g:p:P:rRi:I:u:U:K:D:E:sSvB:C:T:A:a:F:w"
 			   GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
@@ -1572,6 +1657,14 @@ set_tracking(const char *argv0, const char *category,
 		case 'F':
 			add_string(globals.tctx, &anchor_files,
 				   ensure_pem(globals.tctx, optarg));
+			break;
+		case 'w':
+			if (track) {
+				waitreq++;
+			} else {
+				help(argv0, category);
+				return 1;
+			}
 			break;
 		case 'v':
 			verbose++;
@@ -1834,7 +1927,7 @@ set_tracking(const char *argv0, const char *category,
 						 precommand, postcommand,
 						 anchor_dbs, anchor_files,
 						 (auto_renew_stop > 0),
-						 verbose);
+						 waitreq, verbose);
 		}
 	} else {
 		/* Drop a request. */
@@ -1907,7 +2000,7 @@ resubmit(const char *argv0, int argc, char **argv)
 	char *profile = NULL, kustring[16];
 	dbus_bool_t b;
 	char *p;
-	int verbose = 0, ku = 0, kubit, c, i, j;
+	int verbose = 0, ku = 0, kubit, c, i, j, waitreq = 0;
 	krb5_context kctx;
 	krb5_error_code kret;
 	krb5_principal kprincipal;
@@ -1923,7 +2016,7 @@ resubmit(const char *argv0, int argc, char **argv)
 
 	opterr = 0;
 	while ((c = getopt(argc, argv,
-			   ":d:n:N:t:u:U:K:E:D:f:i:I:sSp:P:vB:C:T:A:a:F:"
+			   ":d:n:N:t:u:U:K:E:D:f:i:I:sSp:P:vB:C:T:A:a:F:w"
 			   GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
@@ -2038,6 +2131,9 @@ resubmit(const char *argv0, int argc, char **argv)
 		case 'F':
 			add_string(globals.tctx, &anchor_files,
 				   ensure_pem(globals.tctx, optarg));
+			break;
+		case 'w':
+			waitreq++;
 			break;
 		case 'v':
 			verbose++;
@@ -2265,6 +2361,9 @@ resubmit(const char *argv0, int argc, char **argv)
 		} else {
 			printf(_("Resubmitting \"%s\".\n"),
 			       nickname ? nickname : request);
+		}
+		if (waitreq) {
+			return waitfor(globals.tctx, bus, request, verbose);
 		}
 		return 0;
 	} else {
@@ -2719,6 +2818,96 @@ list(const char *argv0, int argc, char **argv)
 }
 
 static int
+status(const char *argv0, int argc, char **argv)
+{
+	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
+	DBusMessage *rep;
+	char *dbdir = NULL, *dbnickname = NULL, *certfile = NULL, *id = NULL;
+	char *nss_scheme;
+	const char *request;
+	char *s;
+	dbus_bool_t b;
+	int verbose = 0, c;
+
+	opterr = 0;
+	while ((c = getopt(argc, argv, ":sSvd:n:f:i:")) != -1) {
+		switch (c) {
+		case 's':
+			bus = cm_tdbus_session;
+			break;
+		case 'S':
+			bus = cm_tdbus_system;
+			break;
+		case 'd':
+			nss_scheme = NULL;
+			dbdir = ensure_nss(globals.tctx, optarg, &nss_scheme);
+			if ((nss_scheme != NULL) && (dbdir != NULL)) {
+				dbdir = talloc_asprintf(globals.tctx, "%s:%s",
+							nss_scheme, dbdir);
+			}
+			break;
+		case 'n':
+			dbnickname = talloc_strdup(globals.tctx, optarg);
+			break;
+		case 'f':
+			certfile = ensure_pem(globals.tctx, optarg);
+			break;
+		case 'i':
+			id = talloc_strdup(globals.tctx, optarg);
+			break;
+		case 'v':
+			verbose++;
+			break;
+		default:
+			if (c == ':') {
+				fprintf(stderr,
+					_("%s: option requires an argument -- '%c'\n"),
+					"list", optopt);
+			} else {
+				fprintf(stderr, _("%s: invalid option -- '%c'\n"),
+					"list", optopt);
+			}
+			help(argv0, "list");
+			return 1;
+		}
+	}
+	if (optind < argc) {
+		printf(_("Error: unused extra arguments were supplied.\n"));
+		help(argv0, "list");
+		return 1;
+	}
+	if (id != NULL) {
+		request = find_request_by_name(globals.tctx, bus, id, verbose);
+		if (request == NULL) {
+			printf(_("No request found with specified "
+				 "nickname.\n"));
+			return 1;
+		}
+	} else {
+		request = find_request_by_storage(globals.tctx, bus,
+						  dbdir, dbnickname, NULL,
+						  certfile, verbose);
+		if (request == NULL) {
+			if (((dbdir != NULL) && (dbnickname != NULL)) ||
+			    (certfile != NULL)) {
+				printf(_("No request found that matched "
+					 "arguments.\n"));
+				return 1;
+			}
+		}
+	}
+		/* Get the status of this request. */
+	rep = query_rep(bus, request, CM_DBUS_REQUEST_INTERFACE,
+			"get_status", verbose);
+	if (cm_tdbusm_get_sb(rep, globals.tctx, &s, &b) != 0) {
+		printf(_("Error parsing server response.\n"));
+		exit(1);
+	}
+	dbus_message_unref(rep);
+	return evaluate_status(s, b);
+}
+
+static int
 list_cas(const char *argv0, int argc, char **argv)
 {
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
@@ -2963,6 +3152,7 @@ static struct {
 	{"stop-tracking", stop_tracking},
 	{"resubmit", resubmit},
 	{"list", list},
+	{"status", status},
 	{"list-cas", list_cas},
 	{"refresh-ca", refresh_ca},
 };
@@ -3017,6 +3207,7 @@ help(const char *cmd, const char *category)
 		N_("  -C	command to run after saving the certificate\n"),
 		N_("  -F	file in which to store the CA's certificates\n"),
 		N_("  -a	NSS database in which to store the CA's certificates\n"),
+		N_("  -w	try to wait for the certificate to be issued\n"),
 		N_("  -v	report all details of errors\n"),
 		NULL,
 	};
@@ -3061,6 +3252,7 @@ help(const char *cmd, const char *category)
 		N_("  -C	command to run after saving the certificate\n"),
 		N_("  -F	file in which to store the CA's certificates\n"),
 		N_("  -a	NSS database in which to store the CA's certificates\n"),
+		N_("  -w	try to wait for the certificate to be issued\n"),
 		N_("  -v	report all details of errors\n"),
 		NULL,
 	};
@@ -3127,6 +3319,7 @@ help(const char *cmd, const char *category)
 		N_("  -C	command to run after saving the certificate\n"),
 		N_("  -F	file in which to store the CA's certificates\n"),
 		N_("  -a	NSS database in which to store the CA's certificates\n"),
+		N_("  -w	try to wait for the certificate to be issued\n"),
 		N_("  -v	report all details of errors\n"),
 		NULL,
 	};
@@ -3147,6 +3340,25 @@ help(const char *cmd, const char *category)
 		N_("  -n NAME	only list requests and certs which use this nickname\n"),
 		N_("* If using files for storage:\n"),
 		N_("  -f FILE	only list requests and certs stored in this PEM file\n"),
+		N_("* Bus options:\n"),
+		N_("  -S	connect to the certmonger service on the system bus\n"),
+		N_("  -s	connect to the certmonger service on the session bus\n"),
+		N_("* Other options:\n"),
+		N_("  -v	report all details of errors\n"),
+		NULL,
+	};
+	const char *status_help[] = {
+		N_("Usage: %s status [options]\n"),
+		"\n",
+		N_("Optional arguments:\n"),
+		N_("* General options:\n"),
+		N_("* Selecting a specific request:\n"),
+		N_("  -i NAME	nickname for tracking request\n"),
+		N_("* When using an NSS database for storage:\n"),
+		N_("  -d DIR	return status for the request in this NSS database\n"),
+		N_("  -n NAME	return status for cert which uses this nickname\n"),
+		N_("* When using files for storage:\n"),
+		N_("  -f FILE	return status for cert stored in this PEM file\n"),
 		N_("* Bus options:\n"),
 		N_("  -S	connect to the certmonger service on the system bus\n"),
 		N_("  -s	connect to the certmonger service on the session bus\n"),
@@ -3194,6 +3406,7 @@ help(const char *cmd, const char *category)
 		{"stop-tracking", stop_tracking_help},
 		{"resubmit", resubmit_help},
 		{"list", list_help},
+		{"status", status_help},
 		{"list-cas", list_cas_help},
 		{"refresh-ca", refresh_ca_help},
 	};

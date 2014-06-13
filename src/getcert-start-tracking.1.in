@@ -153,6 +153,10 @@ certificates for the CA are available, save them to the specified NSS database.
 When ever the certificate is saved to the specified location, if root
 certificates for the CA are available, save them to the specified file.
 .TP
+\fB\-w\fR
+Wait for the certificate to become valid or to be reissued and saved, or for
+the attempt to obtain a new one to fail.
+.TP
 \fB\-v\fR
 Be verbose about errors.  Normally, the details of an error received from
 the daemon will be suppressed if the client can make a diagnostic suggestion.
@@ -176,6 +180,7 @@ Please file tickets for any that you find at https://fedorahosted.org/certmonger
 \fBgetcert-refresh-ca\fR(1)
 \fBgetcert-request\fR(1)
 \fBgetcert-resubmit\fR(1)
+\fBgetcert-status\fR(1)
 \fBgetcert-stop-tracking\fR(1)
 \fBcertmonger-certmaster-submit\fR(8)
 \fBcertmonger-ipa-submit\fR(8)
