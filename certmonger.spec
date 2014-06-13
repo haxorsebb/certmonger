@@ -205,7 +205,7 @@ exit 0
 %endif
 
 %changelog
-* Fri Jun 11 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75-1
+* Fri Jun 13 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75-1
 - add a -w (wait) flag to the getcert's request/resubmit/start-tracking
   commands, and add a non-waiting status command
 
