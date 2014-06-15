@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.75
+Version:	0.75.1
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -205,6 +205,9 @@ exit 0
 %endif
 
 %changelog
+* Sat Jun 14 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75.1-1
+- log the state in 'getcert status' verbose mode
+
 * Fri Jun 13 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75-1
 - add a -w (wait) flag to the getcert's request/resubmit/start-tracking
   commands, and add a non-waiting status command
