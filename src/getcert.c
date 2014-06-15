@@ -2850,6 +2850,10 @@ status(const char *argv0, int argc, char **argv)
 		exit(1);
 	}
 	dbus_message_unref(rep);
+	if (verbose) {
+		printf(_("State %s, stuck: %s.\n"),
+		       s, b ? "yes" : "no");
+	}
 	return evaluate_status(s, b);
 }
 
