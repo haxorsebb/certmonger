@@ -286,9 +286,20 @@ next_slot:
 			}
 			PK11_InitPin(slot, NULL, pin ? pin : "");
 			ec = PORT_GetError();
+			if (ec != 0) {
+				es = PR_ErrorToName(ec);
+			} else {
+				es = NULL;
+			}
 			if (PK11_NeedUserInit(slot)) {
-				cm_log(1, "Key generation slot still "
-				       "needs user PIN to be set.\n");
+				if (es != NULL) {
+					cm_log(1, "Key generation slot still "
+					       "needs user PIN to be set: "
+					       "%s.\n", es);
+				} else {
+					cm_log(1, "Key generation slot still "
+					       "needs user PIN to be set.\n");
+				}
 				PK11_FreeSlotList(slotlist);
 				error = NSS_ShutdownContext(ctx);
 				if (error != SECSuccess) {

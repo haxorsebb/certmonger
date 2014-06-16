@@ -121,6 +121,13 @@ retry_gen:
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
 		if (RSA_generate_key_ex(rsa, cm_key_size, exponent, NULL) != 1) {
+			if (cm_key_size != CM_DEFAULT_PUBKEY_SIZE) {
+				cm_log(1, "Error generating %d-bit key, "
+				       "attempting %d bits.\n",
+				       cm_key_size, CM_DEFAULT_PUBKEY_SIZE);
+				cm_key_size = CM_DEFAULT_PUBKEY_SIZE;
+				goto retry_gen;
+			}
 			cm_log(1, "Error generating key.\n");
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
@@ -140,6 +147,13 @@ retry_gen:
 		if (DSA_generate_parameters_ex(dsa, cm_key_size,
 					       NULL, 0,
 					       NULL, NULL, NULL) != 1) {
+			if (cm_key_size != CM_DEFAULT_PUBKEY_SIZE) {
+				cm_log(1, "Error generating %d-bit key, "
+				       "attempting %d bits.\n",
+				       cm_key_size, CM_DEFAULT_PUBKEY_SIZE);
+				cm_key_size = CM_DEFAULT_PUBKEY_SIZE;
+				goto retry_gen;
+			}
 			cm_log(1, "Error generating parameters.\n");
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
