@@ -13,11 +13,16 @@ troubleshooting purposes.  The signing request which is to be submitted
 should either be in a file whose name is given as an argument, or fed into
 \fIlocal-submit\fR via stdin.
 
+The local signer is currently hard-coded to generate and use a
+@CM_DEFAULT_PUBKEY_SIZE@-bit RSA key and a name and initial serial number based
+on a UUID.
+
 .SH OPTIONS
 .TP
 \fB\-d\fR state-directory
 Identifies the directory which contains the local signer's private key,
 certificates, and other data used by the local signer.
+.TP
 \fB\-v\fR
 Increases the verbosity of the tool's diagnostic logging.
 
@@ -35,9 +40,14 @@ if critical configuration information is missing.  An error message may be print
 .SH FILES
 .TP
 .I creds
+is currently a PKCS#12 bundle containing the local signer's current signing key
+and current and previously-used signer certificates.  It should not be modified
+except by the local signer.  A new key is currently generated when ever a new
+signer certificate is needed.
+.TP
 .I serial
-is the IPA client configuration file.  This file is consulted to determine
-the URL for the IPA server's XML-RPC interface.
+currently contains the serial number which will be used for the next issued
+certificate.  It should not be modified except by the local signer.
 
 .SH BUGS
 Please file tickets for any that you find at https://fedorahosted.org/certmonger/

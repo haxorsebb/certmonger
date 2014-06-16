@@ -1,0 +1,13 @@
+Notes on running in FIPS mode:
+
+* All NSS databases need PINs, typically UTF-8 values of 7-255 characters
+  in length, composed of at members of least three of these classes:
+  * Upper-case ASCII character (unless it's the first character)
+  * Lower-case ASCII character
+  * Digit (unless it's the last character)
+  * Other ASCII character
+  * Other character
+
+* Attempts to generate keys of certain sizes less than allowed by the
+  underlying crypto libraries will fail.  The daemon will attempt to retry
+  using its compile-time default key size.
