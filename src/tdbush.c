@@ -4929,6 +4929,8 @@ cm_tdbush_property_set(DBusConnection *conn,
 	case cm_tdbush_object_type_parent_of_cas:
 	case cm_tdbush_object_type_group_of_requests:
 	case cm_tdbush_object_type_group_of_cas:
+		/* Not reached, since we returned on these earlier. */
+		break;
 	case cm_tdbush_object_type_base:
 		break;
 	case cm_tdbush_object_type_ca:
