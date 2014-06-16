@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.75.1
+Version:	0.75.2
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -205,6 +205,11 @@ exit 0
 %endif
 
 %changelog
+* Mon Jun 16 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75.2-1
+- when generating keys using OpenSSL, if key generation fails, try
+  again with the default key size, in case we're in FIPS mode
+- documentation updates
+
 * Sat Jun 14 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75.1-1
 - log the state in 'getcert status' verbose mode
 
