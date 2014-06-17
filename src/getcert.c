@@ -3301,7 +3301,6 @@ help(const char *cmd, const char *category)
 		N_("Usage: %s status [options]\n"),
 		"\n",
 		N_("Optional arguments:\n"),
-		N_("* General options:\n"),
 		N_("* Selecting a specific request:\n"),
 		N_("  -i NAME	nickname for tracking request\n"),
 		N_("* When using an NSS database for storage:\n"),
