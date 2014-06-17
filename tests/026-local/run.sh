@@ -14,6 +14,7 @@ template_is_ca=1
 template_certfname=Babs Jensen's Signer
 template_ocsp=http://ocsp-1.example.com:12345,http://ocsp-2.example.com:12345
 template_nscomment=certmonger generated this request
+template_no_ocsp_check=1
 EOF
 filter() {
 	sed -re 's,CN=[[:xdigit:]]{8}-[[:xdigit:]]{8}-[[:xdigit:]]{8}-[[:xdigit:]]{8},CN=$UUID,g' |\

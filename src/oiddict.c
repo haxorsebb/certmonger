@@ -48,6 +48,7 @@ static const struct {
 	{"id-on-dnsSRV", "id-on.7"},
 	{"id-ad", "id-pkix.48"},
 	{"id-ad-ca-ocsp", "id-ad.1"},
+	{"id-pkix-ocsp-nocheck", "id-ad-ca-ocsp.5"},
 	{"id-ad-ca-Issuers", "id-ad.2"},
 	{"id-pkinit", "iso.org.dod.internet.security.kerberosV5.3"},
 	{"id-pkinit-KPClientAuth", "id-pkinit.4"},

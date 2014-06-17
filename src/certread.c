@@ -180,6 +180,7 @@ cm_certread_write_data_to_pipe(struct cm_store_entry *entry, FILE *fp)
 	fprintf(fp, " %s\n", p ? cm_store_base64_from_bin(NULL, p, -1) : "");
 	p = (unsigned char *) entry->cm_cert_profile;
 	fprintf(fp, " %s\n", p ? cm_store_base64_from_bin(NULL, p, -1) : "");
+	fprintf(fp, " %d\n", entry->cm_cert_no_ocsp_check ? 1 : 0);
 	fprintf(fp, " %s\n", entry->cm_cert ?: "");
 }
 
@@ -424,6 +425,9 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 									NULL);
 			break;
 		case 22:
+			entry->cm_cert_no_ocsp_check = (p != q) ? (atoi(p) != 0) : 0;
+			break;
+		case 23:
 			talloc_free(entry->cm_cert);
 			entry->cm_cert = (p[strspn(p, " \r\n")] == '\0') ?
 					 NULL :

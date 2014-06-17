@@ -23,6 +23,8 @@ Certificate Request:
                 OCSP - URI:http://ocsp-1.example.com:12345
                 OCSP - URI:http://ocsp-2.example.com:12345
 
+            OCSP No Check: 
+
 [issue]
 [issuer]
 Certificate:
@@ -34,6 +36,8 @@ Certificate:
         X509v3 extensions:
             X509v3 Basic Constraints: critical
                 CA:TRUE
+            OCSP No Check: 
+
             X509v3 Subject Key Identifier: 
                 (160 bits)
             X509v3 Authority Key Identifier: 
@@ -63,6 +67,8 @@ Certificate:
             Authority Information Access: 
                 OCSP - URI:http://ocsp-1.example.com:12345
                 OCSP - URI:http://ocsp-2.example.com:12345
+
+            OCSP No Check: 
 
 [verify]
 cert: OK

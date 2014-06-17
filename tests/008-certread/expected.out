@@ -3,6 +3,7 @@ cert_email=babs@example.com
 cert_is_ca=0
 cert_issuer=CN=Babs Jensen
 cert_issuer_der=3016311430120603550403130B42616273204A656E73656E
+cert_no_ocsp_check=0
 cert_not_after=20091211214654
 cert_not_before=20091111214654
 cert_principal=bjensen@EXAMPLE.COM

@@ -1501,6 +1501,26 @@ cm_certext_build_ns_comment(struct cm_store_entry *entry, PLArenaPool *arena,
 	return item;
 }
 
+/* Build a no-ocsp-checking extension value. */
+static SECItem *
+cm_certext_build_ocsp_no_check(struct cm_store_entry *entry,
+			       PLArenaPool *arena)
+{
+	SECItem value, encoded, *item;
+
+	memset(&value, 0, sizeof(value));
+	value.data = NULL;
+	value.len = 0;
+	memset(&encoded, 0, sizeof(encoded));
+	if (SEC_ASN1EncodeItem(arena, &encoded, &value,
+			       SEC_NullTemplate) == &encoded) {
+		item = SECITEM_ArenaDupItem(arena, &encoded);
+	} else {
+		item = NULL;
+	}
+	return item;
+}
+
 /* Build a requestedExtensions attribute. */
 void
 cm_certext_build_csr_extensions(struct cm_store_entry *entry,
@@ -1508,7 +1528,7 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 				unsigned char **extensions, size_t *length)
 {
 	PLArenaPool *arena;
-	CERTCertExtension ext[10], *exts[11], **exts_ptr;
+	CERTCertExtension ext[11], *exts[12], **exts_ptr;
 	SECOidData *oid;
 	SECItem *item, encoded;
 	SECItem der_false = {
@@ -1666,6 +1686,17 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 		oid = SECOID_FindOIDByTag(SEC_OID_NS_CERT_EXT_COMMENT);
 		comment = entry->cm_template_ns_comment;
 		item = cm_certext_build_ns_comment(entry, arena, comment);
+		if ((item != NULL) && (oid != NULL)) {
+			ext[i].id = oid->oid;
+			ext[i].critical = der_false;
+			ext[i].value = *item;
+			exts[i] = &ext[i];
+			i++;
+		}
+	}
+	if (entry->cm_template_no_ocsp_check) {
+		oid = SECOID_FindOIDByTag(SEC_OID_PKIX_OCSP_NO_CHECK);
+		item = cm_certext_build_ocsp_no_check(entry, arena);
 		if ((item != NULL) && (oid != NULL)) {
 			ext[i].id = oid->oid;
 			ext[i].critical = der_false;
@@ -1881,6 +1912,7 @@ cm_certext_read_extensions(struct cm_store_entry *entry, PLArenaPool *arena,
 	PLArenaPool *local_arena;
 	SECOidData *ku_oid, *eku_oid, *san_oid, *freshest_crl_oid;
 	SECOidData *basic_oid, *nsc_oid, *aia_oid, *crldp_oid, *profile_oid;
+	SECOidData *no_ocsp_check_oid;
 
 	if (extensions == NULL) {
 		return;
@@ -1942,7 +1974,14 @@ cm_certext_read_extensions(struct cm_store_entry *entry, PLArenaPool *arena,
 		       "freshest certificate revocation list extension.\n");
 		return;
 	}
+	no_ocsp_check_oid = SECOID_FindOIDByTag(SEC_OID_PKIX_OCSP_NO_CHECK);
+	if (no_ocsp_check_oid == NULL) {
+		cm_log(1, "Internal library error: unable to look up OID for "
+		       "no-OCSP-check extension.\n");
+		return;
+	}
 	profile_oid = (SECOidData *) &oid_microsoft_certtype;
+	entry->cm_cert_no_ocsp_check = FALSE;
 	for (i = 0; extensions[i] != NULL; i++) {
 		if (SECITEM_ItemsAreEqual(&ku_oid->oid, &extensions[i]->id)) {
 			cm_certext_read_ku(entry, arena, extensions[i]);
@@ -1974,6 +2013,10 @@ cm_certext_read_extensions(struct cm_store_entry *entry, PLArenaPool *arena,
 		if (SECITEM_ItemsAreEqual(&profile_oid->oid,
 					  &extensions[i]->id)) {
 			cm_certext_read_profile(entry, arena, extensions[i]);
+		}
+		if (SECITEM_ItemsAreEqual(&no_ocsp_check_oid->oid,
+					  &extensions[i]->id)) {
+			entry->cm_cert_no_ocsp_check = TRUE;
 		}
 	}
 	if (arena == local_arena) {
