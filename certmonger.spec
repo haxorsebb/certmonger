@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.75.2
+Version:	0.75.3
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -205,6 +205,10 @@ exit 0
 %endif
 
 %changelog
+* Wed Jun 18 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75.3-1
+- read and cache whether or not we saw a noOCSPcheck extension in certificates
+- documentation updates
+
 * Mon Jun 16 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75.2-1
 - when generating keys using OpenSSL, if key generation fails, try
   again with the default key size, in case we're in FIPS mode
