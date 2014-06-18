@@ -194,7 +194,9 @@ accessible to the \fIcertmonger\fR daemon process.  When run as a system
 daemon on a system which uses a mandatory access control mechanism such
 as SELinux, the system policy must ensure that the daemon is allowed to
 access the locations where certificates and keys that it will manage
-will be stored (these locations are typically labeled as \fIcert_t\fR).
+will be stored (these locations are typically labeled as \fIcert_t\fR or
+an equivalent).  More SELinux-specific information can be found in the
+\fIselinux.txt\fR documentation file for this package.
 
 .SH BUGS
 Please file tickets for any that you find at https://fedorahosted.org/certmonger/

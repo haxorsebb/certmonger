@@ -1,0 +1,76 @@
+I'm running SELinux.  What is certmonger allowed to access?
+
+If your copy of certmonger runs confined, you can read the label which
+should be applied to its binary file with:
+
+  # matchpathcon /usr/sbin/certmonger
+  /usr/sbin/certmonger	system_u:object_r:certmonger_exec_t:s0
+
+Meanwhile, you can read the label which is currently applied to its
+binary file with:
+
+  # ls --scontext /usr/sbin/certmonger 
+  system_u:object_r:certmonger_exec_t:s0 /usr/sbin/certmonger
+
+If the results differ, use "restorecon" to reset the label of the
+file to value that your configuration says it should have:
+
+  # restorecon /usr/sbin/certmonger 
+
+You can query which domain the process will be run in, when the binary
+is started by the init system, with:
+
+  # sesearch -T -t certmonger_exec_t
+  Found 2 semantic te rules:
+     type_transition init_t certmonger_exec_t : process certmonger_t;
+     type_transition initrc_t certmonger_exec_t : process certmonger_t;
+
+You can then query which types and attributes (loosely, groups of type)
+of directories a process running as "certmonger_t" will be allowed to
+create files in, and what sorts of files it will be able to create and
+write to:
+
+  # sesearch --allow -s certmonger_t -c dir -p add_name
+     allow certmonger_t cert_type : dir { ioctl read write getattr lock add_name remove_name search open } ;
+     allow certmonger_t certmonger_var_lib_t : dir { ioctl read write create getattr setattr lock unlink link rename add_name remove_name reparent search rmdir open } ;
+     allow certmonger_t certmonger_var_run_t : dir { ioctl read write create getattr setattr lock unlink link rename add_name remove_name reparent search rmdir open } ;
+     ...
+
+  # sesearch --allow -s certmonger_t -c file -p create,write
+     allow certmonger_t cert_type : file { ioctl read write create getattr setattr lock append unlink link rename open } ;
+     allow certmonger_t certmonger_t : file { ioctl read write getattr lock append open } ;
+     allow certmonger_t certmonger_var_lib_t : file { ioctl read write create getattr setattr lock append unlink link rename open } ;
+     allow certmonger_t certmonger_var_run_t : file { ioctl read write create getattr setattr lock append unlink link rename open } ;
+     ...
+
+By convention, type names end with "_t", but attribute names don't.
+Attribute names can be resolved to the list of types to which they're
+applied with:
+
+  # seinfo -x --attribute=cert_type
+     cert_type
+        pki_tomcat_cert_t
+        dovecot_cert_t
+        home_cert_t
+        cert_t
+        slapd_cert_t
+
+Each of those types, in turn, will be applied to one or more files or
+directories by default when packages are installed, when the system was
+installed, or when the "restorecon" command is used to relabel files and
+directories.  To obtain a list of which path patterns are configured to
+receive a particular type, you can use a command like this one:
+
+  # semanage fcontext -l | grep :cert_t:
+  /etc/httpd/alias(/.*)?               all files system_u:object_r:cert_t:s0
+  /etc/pki(/.*)?                       all files system_u:object_r:cert_t:s0
+  /etc/ssl(/.*)?                       all files system_u:object_r:cert_t:s0
+  /usr/share/ca-certificates(/.*)?     all files system_u:object_r:cert_t:s0
+  /usr/share/pki/ca-certificates(/.*)? all files system_u:object_r:cert_t:s0
+  /usr/share/pki/ca-trust-source(/.*)? all files system_u:object_r:cert_t:s0
+  /usr/share/ssl/certs(/.*)?           all files system_u:object_r:cert_t:s0
+  /usr/share/ssl/private(/.*)?         all files system_u:object_r:cert_t:s0
+  /var/named/chroot/etc/pki(/.*)?      all files system_u:object_r:cert_t:s0
+
+In enforcing mode, locations which fit these patterns are the locations
+which the certmonger daemon will be allowed to read and write.
