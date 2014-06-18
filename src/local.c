@@ -80,7 +80,6 @@ set_ca_extensions(void *parent, X509_REQ *req, EVP_PKEY *key)
 	AUTHORITY_KEYID akid;
 	ASN1_OCTET_STRING *skid;
 	ASN1_BIT_STRING *ku;
-	ASN1_NULL *null;
 	unsigned char *p, *q, md[CM_DIGEST_MAX];
 	unsigned int mdlen;
 	long len;
@@ -90,9 +89,6 @@ set_ca_extensions(void *parent, X509_REQ *req, EVP_PKEY *key)
 	memset(&basic, 0, sizeof(basic));
 	basic.ca = 1;
 	X509V3_add1_i2d(&exts, NID_basic_constraints, &basic, TRUE, 0);
-
-	null = ASN1_NULL_new();
-	X509V3_add1_i2d(&exts, NID_id_pkix_OCSP_noCheck, null, 0, 0);
 
 	len = i2d_PUBKEY(key, NULL);
 	p = malloc(len);
