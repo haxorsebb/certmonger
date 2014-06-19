@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2011,2012,2013,2014 Red Hat, Inc.
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -109,7 +109,7 @@ cm_env_ensure_dir(char *path)
 				if (*q == '/') {
 					*q = '\0';
 					i = mkdir(tmp, S_IRWXU);
-					if ((i != 0) && 
+					if ((i != 0) &&
 					    (errno != EEXIST)) {
 						cm_log(0, "Error ensuring "
 						       "that directory '%s' "
@@ -119,6 +119,15 @@ cm_env_ensure_dir(char *path)
 					}
 					*q = '/';
 				}
+			}
+			i = mkdir(tmp, S_IRWXU);
+			if ((i != 0) &&
+			    (errno != EEXIST)) {
+				cm_log(0, "Error ensuring "
+				       "that directory '%s' "
+				       "exists: %s.\n", tmp,
+				       strerror(errno));
+				_exit(1);
 			}
 			free(tmp);
 		}
