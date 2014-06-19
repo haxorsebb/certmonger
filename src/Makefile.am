@@ -14,9 +14,9 @@ pkgsysconf_DATA = certmonger.conf
 EXTRA_PROGRAMS =
 install-data-hook::
 	chmod go-rwx $(DESTDIR)$(pkgsysconfdir)/certmonger.conf
-	mkdir -p $(DESTDIR)@CM_STORE_CAS_DIRECTORY@
-	mkdir -p $(DESTDIR)@CM_STORE_REQUESTS_DIRECTORY@
-	mkdir -p $(DESTDIR)@CM_STORE_LOCAL_CA_DIRECTORY@
+	mkdir -m 700 -p $(DESTDIR)@CM_STORE_CAS_DIRECTORY@
+	mkdir -m 700 -p $(DESTDIR)@CM_STORE_REQUESTS_DIRECTORY@
+	mkdir -m 700 -p $(DESTDIR)@CM_STORE_LOCAL_CA_DIRECTORY@
 noinst_LIBRARIES = libcm.a libcm-o.a
 libcm_a_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS)
 libcm_a_SOURCES = \
