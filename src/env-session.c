@@ -45,9 +45,6 @@ cm_env_homedir(const char *subdir, const char *subfile)
 	int len;
 	dbus_bool_t free_home;
 
-	if ((subdir == NULL) && (subfile == NULL)) {
-		return NULL;
-	}
 	home = getenv("HOME");
 	if (home == NULL) {
 		pwd = getpwuid(getuid());
