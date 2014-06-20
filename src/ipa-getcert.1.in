@@ -30,6 +30,11 @@ The \fIipa-getcert\fR tool behaves identically to the generic
 \fIgetcert\fR tool when it is used with the \fB-c
 \fI@CM_IPA_CA_NAME@\fR option.
 
+\fBcertmonger\fR supports retrieving trusted certificates from IPA CAs.  See
+\fBgetcert-request\fR(1) and \fBgetcert-resubmit\fR(1) for information about
+using the \fB-F\fR and \fB-a\fR options to specify where those certificates
+should be stored.
+
 .SH BUGS
 Please file tickets for any that you find at https://fedorahosted.org/certmonger/
 

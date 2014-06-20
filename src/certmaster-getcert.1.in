@@ -30,6 +30,11 @@ The \fIcertmaster-getcert\fR tool behaves identically to the generic
 \fIgetcert\fR tool when it is used with the \fB-c
 \fI@CM_CERTMASTER_CA_NAME@\fR option.
 
+There is no standard authenticated method for obtaining the root certificate
+from certmaster CAs, so \fBcertmonger\fR does not support retrieving trust
+information from them.  While the \fB-F\fR and \fB-a\fR options will still
+be recognized, they will effectively be ignored.
+
 .SH BUGS
 Please file tickets for any that you find at https://fedorahosted.org/certmonger/
 

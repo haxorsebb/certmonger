@@ -37,6 +37,9 @@ The signing request which is to be submitted should either be in a file whose
 name is given as an argument, or fed into \fIdogtag-ipa-renew-agent-submit\fR
 via stdin.
 
+\fBcertmonger\fR does not yet support retrieving trust information from Dogtag
+CAs.
+
 .SH OPTIONS
 .TP
 \fB\-E\fR EE-URL

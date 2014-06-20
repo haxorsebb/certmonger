@@ -14,6 +14,10 @@ but it can be for troubleshooting purposes.  The signing request which is
 to be submitted should either be in a file whose name is given as an argument,
 or fed into \fIipa-submit\fR via stdin.
 
+\fBcertmonger\fR supports retrieving trusted certificates from IPA CAs.  See
+\fBgetcert-request\fR(1) and \fBgetcert-resubmit\fR(1) for information about
+specifying where those certificates should be stored.
+
 .SH OPTIONS
 .TP
 \fB\-P\fR csrPrincipal
@@ -85,6 +89,7 @@ Please file tickets for any that you find at https://fedorahosted.org/certmonger
 \fBgetcert\fR(1)
 \fBgetcert-list\fR(1)
 \fBgetcert-list-cas\fR(1)
+\fBgetcert-request\fR(1)
 \fBgetcert-refresh-ca\fR(1)
 \fBgetcert-resubmit\fR(1)
 \fBgetcert-start-tracking\fR(1)

@@ -15,7 +15,13 @@ should either be in a file whose name is given as an argument, or fed into
 
 The local signer is currently hard-coded to generate and use a
 @CM_DEFAULT_PUBKEY_SIZE@-bit RSA key and a name and initial serial number based
-on a UUID.
+on a UUID, replacing that key and certificate at roughly the midpoint of their
+useful lifetime.
+
+\fBcertmonger\fR supports retrieving the list of current and previously-used
+local CA certificates.  See \fBgetcert-request\fR(1) and
+\fBgetcert-resubmit\fR(1) for information about specifying where those
+certificates should be stored.
 
 .SH OPTIONS
 .TP

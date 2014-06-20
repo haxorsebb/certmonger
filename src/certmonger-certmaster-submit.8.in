@@ -13,6 +13,10 @@ but it can be for troubleshooting purposes.  The signing request which is
 to be submitted should either be in a file whose name is given as an argument,
 or fed into \fIcertmaster-submit\fR via stdin.
 
+There is no standard authenticated method for obtaining the root certificate
+from certmaster CAs, so \fBcertmonger\fR does not support retrieving trust
+information from them.
+
 .SH OPTIONS
 .TP
 \fB\-h\fR serverHost

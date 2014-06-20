@@ -30,6 +30,10 @@ The \fIselfsign-getcert\fR tool behaves identically to the generic
 \fIgetcert\fR tool when it is used with the \fB-c
 \fI@CM_SELF_SIGN_CA_NAME@\fR option.
 
+\fBcertmonger\fR's self-signer doesn't use root certificates.  While the
+\fB-F\fR and \fB-a\fR options will still be recognized, they will effectively
+be ignored.
+
 .SH BUGS
 Please file tickets for any that you find at https://fedorahosted.org/certmonger/
 
