@@ -1,7 +1,7 @@
 I'm running SELinux.  What is certmonger allowed to access?
 
 If your copy of certmonger runs confined, you can read the label which
-should be applied to its binary file with:
+the configuration states should be applied to its binary file with:
 
   # matchpathcon /usr/sbin/certmonger
   /usr/sbin/certmonger	system_u:object_r:certmonger_exec_t:s0
@@ -12,23 +12,35 @@ binary file with:
   # ls --scontext /usr/sbin/certmonger 
   system_u:object_r:certmonger_exec_t:s0 /usr/sbin/certmonger
 
-If the results differ, use "restorecon" to reset the label of the
-file to value that your configuration says it should have:
+If the results differ, use "restorecon" to reset the label of the file
+to value that your configuration says it should have:
 
   # restorecon /usr/sbin/certmonger 
 
-You can query which domain the process will be run in, when the binary
-is started by the init system, with:
+The domain in which the certmonger process runs, like most daemon
+processes, will often be decided by a transition rule which is specified
+for the combination of the domain of the process that starts it and the
+label of the binary file.  You can query which domain certmonger be run
+in, when the binary is started by the init system (which usually runs as
+"init_t"), with:
 
   # sesearch -T -t certmonger_exec_t
   Found 2 semantic te rules:
      type_transition init_t certmonger_exec_t : process certmonger_t;
      type_transition initrc_t certmonger_exec_t : process certmonger_t;
 
-You can then query which types and attributes (loosely, groups of type)
-of directories a process running as "certmonger_t" will be allowed to
-create files in, and what sorts of files it will be able to create and
-write to:
+If there weren't rules for the combination, the daemon would simply run
+as the same domain as the process which started it.  That's not the case
+here, though, because an SELinux policy has already been defined for
+certmonger.
+
+SELinux policy is often specified using the names of types, but
+permissions in the policy can also be expressed in terms of "attributes"
+which are applied to multiple types.  A policy rule that which refers to
+an attribute applies to all types to which that attribute applies.  You
+can query which types and attributes of directories a process running as
+"certmonger_t" will be allowed to create files in, and what sorts of
+files it will be able to create and write to:
 
   # sesearch --allow -s certmonger_t -c dir -p add_name
      allow certmonger_t cert_type : dir { ioctl read write getattr lock add_name remove_name search open } ;
@@ -43,9 +55,9 @@ write to:
      allow certmonger_t certmonger_var_run_t : file { ioctl read write create getattr setattr lock append unlink link rename open } ;
      ...
 
-By convention, type names end with "_t", but attribute names don't.
-Attribute names can be resolved to the list of types to which they're
-applied with:
+By convention, type names in policy end with "_t", but attribute names
+don't.  Attribute names can be resolved to the list of types to which
+they're applied by running:
 
   # seinfo -x --attribute=cert_type
      cert_type
