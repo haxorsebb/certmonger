@@ -19,8 +19,8 @@
 %endif
 
 Name:		certmonger
-Version:	0.75.4
-Release:	2%{?dist}
+Version:	0.75.5
+Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
 Group:		System Environment/Daemons
@@ -221,6 +221,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Jun 20 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75.5-1
+- documentation updates
+
 * Fri Jun 20 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75.4-2
 - add a %%trigger to remove knowledge of the "dogtag-ipa-renew-agent" CA
   when we detect certmonger versions prior to 0.58 being installed, to
