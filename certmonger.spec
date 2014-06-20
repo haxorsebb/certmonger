@@ -20,7 +20,7 @@
 
 Name:		certmonger
 Version:	0.75.4
-Release:	1%{?dist}
+Release:	2%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
 Group:		System Environment/Daemons
@@ -69,14 +69,14 @@ Requires:	dbus
 %if %{systemd}
 BuildRequires:	systemd-units
 Requires(post):	systemd-units
-Requires(preun):	systemd-units
+Requires(preun):	systemd-units, dbus, sed
 Requires(postun):	systemd-units
 Requires(post):	systemd-sysv
 %endif
 
 %if %{sysvinit}
 Requires(post):	/sbin/chkconfig, /sbin/service
-Requires(preun):	/sbin/chkconfig, /sbin/service
+Requires(preun):	/sbin/chkconfig, /sbin/service, dbus, sed
 %endif
 
 %if 0%{?fedora} >= 15
@@ -138,6 +138,22 @@ fi
 %if %{sysvinit}
 /sbin/chkconfig --add certmonger
 %endif
+
+%triggerin -- certmonger < 0.58
+if test $1 -gt 1 ; then
+	# If the daemon is running, remove knowledge of the dogtag renewer.
+	objpath=`dbus-send --system --reply-timeout=10000 --dest=org.fedorahosted.certmonger --print-reply=o /org/fedorahosted/certmonger org.fedorahosted.certmonger.find_ca_by_nickname string:dogtag-ipa-renew-agent 2> /dev/null | sed -r 's,^ +,,g' || true`
+	if test -n "$objpath" ; then
+		dbus-send --system --dest=org.fedorahosted.certmonger --print-reply /org/fedorahosted/certmonger org.fedorahosted.certmonger.remove_known_ca objpath:"$objpath" >/dev/null 2> /dev/null
+	fi
+	# Remove the data file, in case it isn't running.
+	for cafile in %{_localstatedir}/lib/certmonger/cas/* ; do
+		if grep -q '^id=dogtag-ipa-renew-agent$' "$cafile" ; then
+			rm -f "$cafile"
+		fi
+	done
+fi
+exit 0
 
 %postun
 %if %{systemd}
@@ -205,6 +221,12 @@ exit 0
 %endif
 
 %changelog
+* Fri Jun 20 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75.4-2
+- add a %%trigger to remove knowledge of the "dogtag-ipa-renew-agent" CA
+  when we detect certmonger versions prior to 0.58 being installed, to
+  avoid cases where some older versions choke on CAs with nicknames that
+  contain characters that can't legally be part of a D-Bus name (#948993)
+
 * Thu Jun 19 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75.4-1
 - fix creation and packaging of the "local" CA's data directory
 
