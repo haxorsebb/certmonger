@@ -133,8 +133,8 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal, char **msg)
 
 	kret = krb5_init_context(&ctx);
 	if (kret != 0) {
-		fprintf(stderr, "Error initializing Kerberos: %s.\n",
-			ret = get_error_message(ctx, kret));
+		ret = get_error_message(ctx, kret);
+		fprintf(stderr, "Error initializing Kerberos: %s.\n", ret);
 		if (msg != NULL) {
 			*msg = ret;
 		}

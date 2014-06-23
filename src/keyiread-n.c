@@ -63,7 +63,7 @@ struct cm_keyiread_n_settings {
 struct cm_keyiread_n_ctx_and_keys *
 cm_keyiread_n_get_keys(struct cm_store_entry *entry, int readwrite)
 {
-	const char *token, *nickname, *reason, *es;
+	const char *token, *nickname = "(no such key)", *reason, *es;
 	char *pin, *pubhex;
 	PLArenaPool *arena;
 	SECStatus error;
