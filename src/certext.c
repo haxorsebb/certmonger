@@ -323,6 +323,7 @@ cm_certext_build_ku(struct cm_store_entry *entry, PLArenaPool *arena,
 {
 	SECItem *ret, encoded, *bits;
 	unsigned int i, used, val, len;
+
 	if ((ku_value == NULL) || (strlen(ku_value) == 0)) {
 		/* Nothing to encode, so don't include this extension. */
 		return NULL;
@@ -525,6 +526,7 @@ cm_certext_build_eku(struct cm_store_entry *entry, PLArenaPool *arena,
 	char *numeric, *symbolic;
 	void *tctx;
 	SECItem **oids = NULL, **tmp, encoded, *ret;
+
 	if ((eku_value == NULL) || (strlen(eku_value) == 0)) {
 		return NULL;
 	}
@@ -1077,6 +1079,9 @@ cm_certext_build_san(struct cm_store_entry *entry, PLArenaPool *arena,
 	name = NULL;
 	/* Build a list of dnsName values. */
 	for (i = 0; (hostname != NULL) && (hostname[i] != NULL); i++) {
+		if (strlen(hostname[i]) == 0) {
+			continue;
+		}
 		next = PORT_ArenaZAlloc(arena, sizeof(*next));
 		if (next != NULL) {
 			next->type = certDNSName;
@@ -1105,6 +1110,9 @@ cm_certext_build_san(struct cm_store_entry *entry, PLArenaPool *arena,
 	}
 	/* Build a list of email address values. */
 	for (i = 0; (email != NULL) && (email[i] != NULL); i++) {
+		if (strlen(email[i]) == 0) {
+			continue;
+		}
 		next = PORT_ArenaZAlloc(arena, sizeof(*next));
 		if (next != NULL) {
 			next->type = certRFC822Name;
@@ -1121,6 +1129,9 @@ cm_certext_build_san(struct cm_store_entry *entry, PLArenaPool *arena,
 	/* Build a list of otherName values. Encode every principal name in two
 	 * forms. */
 	for (i = 0; (principal != NULL) && (principal[i] != NULL); i++) {
+		if (strlen(principal[i]) == 0) {
+			continue;
+		}
 		for (j = 0; (j < i) && (principal[j] != NULL); j++) {
 			if (strcmp(principal[i], principal[j]) == 0) {
 				/* We've already seen [i]; skip it. */
@@ -1163,6 +1174,9 @@ cm_certext_build_san(struct cm_store_entry *entry, PLArenaPool *arena,
 	}
 	/* Build a list of IP address values. */
 	for (i = 0; (ipaddress != NULL) && (ipaddress[i] != NULL); i++) {
+		if (strlen(ipaddress[i]) == 0) {
+			continue;
+		}
 		next = PORT_ArenaZAlloc(arena, sizeof(*next));
 		if (next != NULL) {
 			next->type = certIPAddress;
@@ -1382,7 +1396,7 @@ cm_certext_build_aia(struct cm_store_entry *entry, PLArenaPool *arena,
 	SECItem encoded, *item;
 	SECOidData *oid;
 	unsigned char *tmp;
-	unsigned int i, n;
+	unsigned int i, j, n;
 
 	oid = SECOID_FindOIDByTag(SEC_OID_PKIX_OCSP);
 	if (oid == NULL) {
@@ -1408,14 +1422,18 @@ cm_certext_build_aia(struct cm_store_entry *entry, PLArenaPool *arena,
 	if (values == NULL) {
 		return NULL;
 	}
-	for (i = 0; i < n; i++) {
-		location[i].type = certURI;
+	for (i = 0, j = 0; i < n; i++) {
+		if (strlen(ocsp_location[i]) == 0) {
+			continue;
+		}
+		location[j].type = certURI;
 		tmp = (unsigned char *) ocsp_location[i];
-		location[i].name.other.data = tmp;
-		location[i].name.other.len = strlen(ocsp_location[i]);
-		value[i].method = oid->oid;
-		value[i].location = &location[i];
-		values[i] = &value[i];
+		location[j].name.other.data = tmp;
+		location[j].name.other.len = strlen(ocsp_location[i]);
+		value[j].method = oid->oid;
+		value[j].location = &location[j];
+		values[j] = &value[j];
+		j++;
 	}
 	memset(&encoded, 0, sizeof(encoded));
 	if (CERT_EncodeInfoAccessExtension(arena, values,
@@ -1437,7 +1455,7 @@ cm_certext_build_crldp(struct cm_store_entry *entry, PLArenaPool *arena,
 	CERTGeneralName *location;
 	SECItem encoded, *item;
 	SECOidData *oid;
-	unsigned int i, n;
+	unsigned int i, j, n;
 
 	oid = SECOID_FindOIDByTag(SEC_OID_PKIX_OCSP);
 	if (oid == NULL) {
@@ -1461,14 +1479,18 @@ cm_certext_build_crldp(struct cm_store_entry *entry, PLArenaPool *arena,
 	if (values == NULL) {
 		return NULL;
 	}
-	for (i = 0; i < n; i++) {
-		location[i].type = certURI;
-		location[i].name.other.data = (unsigned char *) crldp[i];
-		location[i].name.other.len = strlen(crldp[i]);
-		location[i].l.next = &location[i].l;
-		value[i].distPointType = generalName;
-		value[i].distPoint.fullName = &location[i];
-		values[i] = &value[i];
+	for (i = 0, j = 0; i < n; i++) {
+		if (strlen(crldp[i]) == 0) {
+			continue;
+		}
+		location[j].type = certURI;
+		location[j].name.other.data = (unsigned char *) crldp[i];
+		location[j].name.other.len = strlen(crldp[i]);
+		location[j].l.next = &location[j].l;
+		value[j].distPointType = generalName;
+		value[j].distPoint.fullName = &location[j];
+		values[j] = &value[j];
+		j++;
 	}
 	decoded.distPoints = values;
 	memset(&encoded, 0, sizeof(encoded));
@@ -1488,6 +1510,9 @@ cm_certext_build_ns_comment(struct cm_store_entry *entry, PLArenaPool *arena,
 {
 	SECItem value, encoded, *item;
 
+	if (strlen(comment) == 0) {
+		return NULL;
+	}
 	memset(&value, 0, sizeof(value));
 	value.data = (unsigned char *) comment;
 	value.len = strlen(comment);

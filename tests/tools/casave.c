@@ -133,7 +133,6 @@ main(int argc, char **argv)
 			break;
 		}
 	}
-	ret = -1;
 	if (optind == argc) {
 		printf("No CA or entry names specified.\n");
 		return -1;

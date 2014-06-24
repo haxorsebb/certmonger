@@ -173,17 +173,17 @@ for subjectder in "" 30223120301E060355040313177361 30223120301E0603550403131773
 done
 subjectder=
 
-for hostname in "" localhost,localhost.localdomain; do
+for hostname in "" "," localhost,localhost.localdomain; do
 	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress" "$freshestcrl" "$no_ocsp_check"
 done
 hostname=
 
-for email in "" root@localhost,root@localhost.localdomain; do
+for email in "" "," root@localhost,root@localhost.localdomain; do
 	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress" "$freshestcrl" "$no_ocsp_check"
 done
 email=
 
-for principal in "" root@EXAMPLE.COM,root@FOO.EXAMPLE.COM; do
+for principal in "" "," root@EXAMPLE.COM,root@FOO.EXAMPLE.COM; do
 	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress" "$freshestcrl" "$no_ocsp_check"
 done
 principal=
@@ -193,7 +193,7 @@ for ku in "" 1 10 111 ; do
 done
 ku=
 
-for eku in "" id-kp-clientAuth,id-kp-emailProtection ; do
+for eku in "" "," id-kp-clientAuth,id-kp-emailProtection ; do
 	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress" "$freshestcrl" "$no_ocsp_check"
 done
 eku=
@@ -218,12 +218,12 @@ for capathlen in -1 3 ; do
 done
 capathlen=
 
-for crldp in "" http://crl-1.example.com:12345/get,http://crl-2.example.com:12345/get ; do
+for crldp in "" "," http://crl-1.example.com:12345/get,http://crl-2.example.com:12345/get ; do
 	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress" "$freshestcrl" "$no_ocsp_check"
 done
 crldp=
 
-for ocsp in "" http://ocsp-1.example.com:12345,http://ocsp-2.example.com:12345 ; do
+for ocsp in "" "," http://ocsp-1.example.com:12345,http://ocsp-2.example.com:12345 ; do
 	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress" "$freshestcrl" "$no_ocsp_check"
 done
 ocsp=
@@ -233,12 +233,12 @@ for nscomment in "" "certmonger generated this request" ; do
 done
 nscomment=
 
-for ipaddress in "" "127.0.0.1" "::1" "blargh" "this request" "1.2.3.4,fe80::" ; do
+for ipaddress in "" "," "127.0.0.1" "::1" "blargh" "this request" "1.2.3.4,fe80::" ; do
 	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress" "$freshestcrl" "$no_ocsp_check"
 done
 ipaddress=
 
-for freshestcrl in "" http://crl-1.example.com:12345/getdelta,http://crl-2.example.com:12345/getdelta ; do
+for freshestcrl in "" "," http://crl-1.example.com:12345/getdelta,http://crl-2.example.com:12345/getdelta ; do
 	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment" "$subjectder" "$ipaddress" "$freshestcrl" "$no_ocsp_check"
 done
 freshestcrl=
