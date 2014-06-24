@@ -594,8 +594,8 @@ request(const char *argv0, int argc, char **argv)
 	char *p;
 	krb5_context kctx;
 	krb5_error_code kret;
-	krb5_principal kprincipal;
-	char *krealm, *kuprincipal, *precommand = NULL, *postcommand = NULL;
+	krb5_principal kprinc;
+	char *krealm, *kuprinc, *precommand = NULL, *postcommand = NULL;
 
 	memset(subject_default, '\0', sizeof(subject_default));
 	strcpy(subject_default, "CN=");
@@ -708,24 +708,30 @@ request(const char *argv0, int argc, char **argv)
 			add_string(globals.tctx, &eku, oid);
 			break;
 		case 'K':
-			kprincipal = NULL;
-			if ((kret = krb5_parse_name(kctx, optarg,
-						    &kprincipal)) != 0) {
-				printf(_("Error parsing Kerberos principal "
-					 "name \"%s\": %s.\n"), optarg,
-				       error_message(kret));
-				return 1;
+			kprinc = NULL;
+			if (strlen(optarg) > 0) {
+				if ((kret = krb5_parse_name(kctx, optarg,
+							    &kprinc)) != 0) {
+					printf(_("Error parsing Kerberos "
+						 "principal name \"%s\": "
+						 "%s.\n"), optarg,
+					       error_message(kret));
+					return 1;
+				}
+				kuprinc = NULL;
+				if ((kret = krb5_unparse_name(kctx, kprinc,
+							      &kuprinc)) != 0) {
+					printf(_("Error unparsing Kerberos "
+						 "principal name \"%s\": "
+						 "%s.\n"), optarg,
+					       error_message(kret));
+					return 1;
+				}
+				add_string(globals.tctx, &principal, kuprinc);
+				krb5_free_principal(kctx, kprinc);
+			} else {
+				add_string(globals.tctx, &principal, "");
 			}
-			kuprincipal = NULL;
-			if ((kret = krb5_unparse_name(kctx, kprincipal,
-						      &kuprincipal)) != 0) {
-				printf(_("Error unparsing Kerberos principal "
-					 "name \"%s\": %s.\n"), optarg,
-				       error_message(kret));
-				return 1;
-			}
-			add_string(globals.tctx, &principal, kuprincipal);
-			krb5_free_principal(kctx, kprincipal);
 			break;
 		case 'D':
 			add_string(globals.tctx, &dns, optarg);
@@ -1449,8 +1455,8 @@ set_tracking(const char *argv0, const char *category,
 	char **principal = NULL, **dns = NULL, **email = NULL, **ipaddr = NULL;
 	krb5_context kctx;
 	krb5_error_code kret;
-	krb5_principal kprincipal;
-	char *krealm, *kuprincipal;
+	krb5_principal kprinc;
+	char *krealm, *kuprinc;
 	char *precommand = NULL, *postcommand = NULL;
 
 	kctx = NULL;
@@ -1543,24 +1549,30 @@ set_tracking(const char *argv0, const char *category,
 			add_string(globals.tctx, &eku, oid);
 			break;
 		case 'K':
-			kprincipal = NULL;
-			if ((kret = krb5_parse_name(kctx, optarg,
-						    &kprincipal)) != 0) {
-				printf(_("Error parsing Kerberos principal "
-					 "name \"%s\": %s.\n"), optarg,
-				       error_message(kret));
-				return 1;
+			kprinc = NULL;
+			if (strlen(optarg) > 0) {
+				if ((kret = krb5_parse_name(kctx, optarg,
+							    &kprinc)) != 0) {
+					printf(_("Error parsing Kerberos "
+						 "principal name \"%s\": "
+						 "%s.\n"), optarg,
+					       error_message(kret));
+					return 1;
+				}
+				kuprinc = NULL;
+				if ((kret = krb5_unparse_name(kctx, kprinc,
+							      &kuprinc)) != 0) {
+					printf(_("Error unparsing Kerberos "
+						 "principal name \"%s\": "
+						 "%s.\n"), optarg,
+					       error_message(kret));
+					return 1;
+				}
+				add_string(globals.tctx, &principal, kuprinc);
+				krb5_free_principal(kctx, kprinc);
+			} else {
+				add_string(globals.tctx, &principal, "");
 			}
-			kuprincipal = NULL;
-			if ((kret = krb5_unparse_name(kctx, kprincipal,
-						      &kuprincipal)) != 0) {
-				printf(_("Error unparsing Kerberos principal "
-					 "name \"%s\": %s.\n"), optarg,
-				       error_message(kret));
-				return 1;
-			}
-			add_string(globals.tctx, &principal, kuprincipal);
-			krb5_free_principal(kctx, kprincipal);
 			break;
 		case 'D':
 			add_string(globals.tctx, &dns, optarg);
@@ -1949,8 +1961,8 @@ resubmit(const char *argv0, int argc, char **argv)
 	int verbose = 0, ku = 0, kubit, c, i, j, waitreq = 0;
 	krb5_context kctx;
 	krb5_error_code kret;
-	krb5_principal kprincipal;
-	char *kuprincipal, *precommand = NULL, *postcommand = NULL;
+	krb5_principal kprinc;
+	char *kuprinc, *precommand = NULL, *postcommand = NULL;
 
 	kctx = NULL;
 	if ((kret = krb5_init_context(&kctx)) != 0) {
@@ -2017,24 +2029,30 @@ resubmit(const char *argv0, int argc, char **argv)
 			add_string(globals.tctx, &eku, oid);
 			break;
 		case 'K':
-			kprincipal = NULL;
-			if ((kret = krb5_parse_name(kctx, optarg,
-						    &kprincipal)) != 0) {
-				printf(_("Error parsing Kerberos principal "
-					 "name \"%s\": %s.\n"), optarg,
-				       error_message(kret));
-				return 1;
+			kprinc = NULL;
+			if (strlen(optarg) > 0) {
+				if ((kret = krb5_parse_name(kctx, optarg,
+							    &kprinc)) != 0) {
+					printf(_("Error parsing Kerberos "
+						 "principal name \"%s\": "
+						 "%s.\n"), optarg,
+					       error_message(kret));
+					return 1;
+				}
+				kuprinc = NULL;
+				if ((kret = krb5_unparse_name(kctx, kprinc,
+							      &kuprinc)) != 0) {
+					printf(_("Error unparsing Kerberos "
+						 "principal name \"%s\": "
+						 "%s.\n"), optarg,
+					       error_message(kret));
+					return 1;
+				}
+				add_string(globals.tctx, &principal, kuprinc);
+				krb5_free_principal(kctx, kprinc);
+			} else {
+				add_string(globals.tctx, &principal, "");
 			}
-			kuprincipal = NULL;
-			if ((kret = krb5_unparse_name(kctx, kprincipal,
-						      &kuprincipal)) != 0) {
-				printf(_("Error unparsing Kerberos principal "
-					 "name \"%s\": %s.\n"), optarg,
-				       error_message(kret));
-				return 1;
-			}
-			add_string(globals.tctx, &principal, kuprincipal);
-			krb5_free_principal(kctx, kprincipal);
 			break;
 		case 'D':
 			add_string(globals.tctx, &dns, optarg);
