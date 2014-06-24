@@ -99,6 +99,8 @@ main(int argc, char **argv)
 		}
 	}
 
+	umask(S_IRWXG | S_IRWXO);
+
 	if (host == NULL) {
 		/* Okay, we have to figure out what the master name is.  Hope
 		 * the minion is configured. */

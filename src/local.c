@@ -477,6 +477,9 @@ main(int argc, char **argv)
 			break;
 		}
 	}
+
+	umask(S_IRWXG | S_IRWXO);
+
 	cm_log_set_method(cm_log_stderr);
 	cm_log_set_level(verbose);
 

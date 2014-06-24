@@ -18,7 +18,9 @@
 #include "config.h"
 
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -177,6 +179,8 @@ main(int argc, char **argv)
 			break;
 		}
 	}
+
+	umask(S_IRWXG | S_IRWXO);
 
 	/* Start backfilling defaults, both hard-coded and from the IPA
 	 * configuration. */
