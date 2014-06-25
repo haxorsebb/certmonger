@@ -567,9 +567,8 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 	int i;
 	enum cm_store_file_field field;
 
-	ret = talloc_ptrtype(parent, ret);
+	ret = cm_store_entry_new(parent);
 	if (ret != NULL) {
-		memset(ret, 0, sizeof(*ret));
 		s = cm_store_file_read_lines(ret, fp);
 		ret->cm_busname = cm_store_entry_next_busname(ret);
 		ret->cm_store_private = talloc_strdup(ret, filename);
@@ -1017,9 +1016,9 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 	char **s, *p;
 	int i;
 	enum cm_store_file_field field;
-	ret = talloc_ptrtype(parent, ret);
+
+	ret = cm_store_ca_new(parent);
 	if (ret != NULL) {
-		memset(ret, 0, sizeof(*ret));
 		s = cm_store_file_read_lines(ret, fp);
 		ret->cm_busname = cm_store_ca_next_busname(ret);
 		ret->cm_store_private = talloc_strdup(ret, filename);
@@ -2191,11 +2190,10 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 {
 	struct cm_store_entry *ret;
 
-	ret = talloc_ptrtype(parent, ret);
+	ret = cm_store_entry_new(parent);
 	if (ret == NULL) {
 		return ret;
 	}
-	memset(ret, 0, sizeof(*ret));
 
 	ret->cm_busname = cm_store_maybe_strdup(ret, entry->cm_busname);
 	ret->cm_store_private =
@@ -2297,11 +2295,10 @@ cm_store_ca_dup(void *parent, struct cm_store_ca *ca)
 {
 	struct cm_store_ca *ret;
 
-	ret = talloc_ptrtype(parent, ret);
+	ret = cm_store_ca_new(parent);
 	if (ret == NULL) {
 		return NULL;
 	}
-	memset(ret, 0, sizeof(*ret));
 	ret->cm_busname = cm_store_maybe_strdup(ret, ca->cm_busname);
 	ret->cm_store_private =
 		cm_store_maybe_strdup(ret, ca->cm_store_private);

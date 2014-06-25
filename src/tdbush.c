@@ -349,7 +349,7 @@ base_add_known_ca(DBusConnection *conn, DBusMessage *msg,
 		}
 	}
 	/* Okay, we can go ahead and add the CA. */
-	new_ca = talloc_ptrtype(parent, new_ca);
+	new_ca = cm_store_ca_new(parent);
 	if (new_ca == NULL) {
 		talloc_free(parent);
 		return send_internal_base_error(conn, msg);
@@ -1229,7 +1229,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		post_command = NULL;
 	}
 	/* Okay, we can go ahead and add the entry. */
-	new_entry = talloc_ptrtype(parent, new_entry);
+	new_entry = cm_store_entry_new(parent);
 	if (new_entry == NULL) {
 		talloc_free(parent);
 		return send_internal_base_error(conn, msg);
