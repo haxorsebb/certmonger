@@ -876,9 +876,11 @@ int
 cm_add_ca(struct cm_context *context, struct cm_store_ca *new_ca)
 {
 	struct cm_store_ca **cas;
+	struct cm_ca_event *events;
 	int i;
 	time_t now;
 	char timestamp[15];
+	enum cm_ca_phase phase;
 
 	/* Check for duplicates and count the number of CAs we're already
 	 * managing. */
@@ -911,14 +913,30 @@ cm_add_ca(struct cm_context *context, struct cm_store_ca *new_ca)
 	/* Allocate storage for a new CA array. */
 	cas = talloc_realloc(context, context->cas, struct cm_store_ca *,
 			     context->n_cas + 1);
-	if (cas != NULL) {
+	events = talloc_realloc(context, context->ca_events,
+				struct cm_ca_event, context->n_cas + 1);
+	if ((cas != NULL) && (events != NULL)) {
 		/* Save this entry to the store. */
 		cm_store_ca_save(new_ca);
 		cas[context->n_cas] = new_ca;
+		talloc_steal(context, new_ca);
 		context->cas = cas;
+		memset(&events[context->n_cas], 0,
+		       sizeof(events[context->n_cas]));
+		context->ca_events = events;
 		/* Update the recorded count of CAs. */
 		context->n_cas++;
+		/* Start the CA's data fetchers. */
+		for (phase = 0; phase < cm_ca_phase_invalid; phase++) {
+			cm_start_ca(context, new_ca->cm_nickname, phase);
+		}
 		return 0;
+	}
+	if (cas != NULL) {
+		context->cas = cas;
+	}
+	if (events != NULL) {
+		context->ca_events = events;
 	}
 	return -1;
 }
