@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.75.5
+Version:	0.75.6
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -221,6 +221,10 @@ exit 0
 %endif
 
 %changelog
+* Thu Jun 26 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75.6-1
+- avoid potential use-after-free and read overrun after a CA is added
+  dynamically (thanks to Jan Cholasta)
+
 * Fri Jun 20 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75.5-1
 - documentation updates
 
