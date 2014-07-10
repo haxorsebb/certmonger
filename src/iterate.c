@@ -252,6 +252,7 @@ static time_t
 cm_decide_ca_delay(time_t remaining)
 {
 	time_t delay;
+
 	delay = CM_DELAY_CA_POLL;
 	if ((remaining != (time_t) -1) && (remaining < 2 * delay)) {
 		delay = remaining / 2;
@@ -267,6 +268,7 @@ static time_t
 cm_decide_monitor_delay(time_t remaining)
 {
 	time_t delay;
+
 	delay = CM_DELAY_MONITOR_POLL;
 	if ((remaining != (time_t) -1) && (remaining < 2 * delay)) {
 		delay = remaining / 2;
@@ -274,6 +276,17 @@ cm_decide_monitor_delay(time_t remaining)
 			delay = CM_DELAY_MONITOR_POLL_MINIMUM;
 		}
 	}
+	return delay;
+}
+
+/* Decide how long to wait before attempting to contact the CA to retrieve
+ * information again. */
+static time_t
+cm_decide_cadata_delay(void)
+{
+	time_t delay;
+
+	delay = CM_DELAY_CADATA_POLL;
 	return delay;
 }
 
@@ -833,6 +846,9 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				/* Saved CA's identifier for our request; give
 				 * it the specified time, or a little time, and
 				 * then ask for a progress update. */
+				cm_log(4, "%s('%s') provided CA "
+				       "cookie \"%s\"\n", entry->cm_busname,
+				       entry->cm_nickname, entry->cm_ca_cookie);
 				*delay = cm_submit_specified_delay(state->cm_submit_state);
 				cm_submit_done(state->cm_submit_state);
 				state->cm_submit_state = NULL;
@@ -1853,6 +1869,19 @@ cm_iterate_ca(struct cm_store_ca *ca,
 				}
 				*when = cm_time_now;
 			} else
+			if (cm_cadata_needs_retry(state->cm_task_state) == 0) {
+				*when = cm_time_delay;
+				*delay = cm_cadata_specified_delay(state->cm_task_state);
+				if (*delay < 0) {
+					*delay = cm_decide_cadata_delay();
+				}
+				cm_cadata_done(state->cm_task_state);
+				state->cm_task_state = NULL;
+				cm_log(3, "%s('%s').%s server needs retry\n",
+				       ca->cm_busname, ca->cm_nickname,
+				       cm_store_ca_phase_as_string(state->cm_phase));
+				ca->cm_ca_state[state->cm_phase] = CM_CA_NEED_TO_REFRESH;
+			} else
 			if (cm_cadata_unreachable(state->cm_task_state) == 0) {
 				cm_cadata_done(state->cm_task_state);
 				state->cm_task_state = NULL;
@@ -1860,7 +1889,8 @@ cm_iterate_ca(struct cm_store_ca *ca,
 				       ca->cm_busname, ca->cm_nickname,
 				       cm_store_ca_phase_as_string(state->cm_phase));
 				ca->cm_ca_state[state->cm_phase] = CM_CA_DATA_UNREACHABLE;
-				*when = cm_time_now;
+				*when = cm_time_delay;
+				*delay = cm_decide_cadata_delay();
 			} else
 			if (cm_cadata_unsupported(state->cm_task_state) == 0) {
 				cm_cadata_done(state->cm_task_state);
@@ -2096,8 +2126,10 @@ cm_iterate_ca(struct cm_store_ca *ca,
 			}
 		}
 		break;
-		break;
 	case CM_CA_DATA_UNREACHABLE:
+		ca->cm_ca_state[state->cm_phase] = CM_CA_NEED_TO_REFRESH;
+		*when = cm_time_soonish;
+		break;
 	case CM_CA_IDLE:
 	case CM_CA_DISABLED:
 		*when = cm_time_no_time;

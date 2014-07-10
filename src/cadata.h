@@ -38,6 +38,12 @@ int cm_cadata_get_fd(struct cm_cadata_state *state);
 /* Check if the CA data was modified. */
 int cm_cadata_modified(struct cm_cadata_state *state);
 
+/* Check if we need to retry. */
+int cm_cadata_needs_retry(struct cm_cadata_state *state);
+
+/* Check when we need to retry. */
+int cm_cadata_specified_delay(struct cm_cadata_state *state);
+
 /* Check if the CA was unreachable. */
 int cm_cadata_unreachable(struct cm_cadata_state *state);
 

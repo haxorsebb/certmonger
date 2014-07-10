@@ -577,6 +577,7 @@ if ! ${configure_dist_target_only:-false} ; then
 	AC_DEFINE(CM_DELAY_SOON,5,[Define to the time to wait for something that will happen soon.])
 	AC_DEFINE(CM_DELAY_SOONISH,30,[Define to the time to wait for something that will happen soon, but not that soon.])
 	AC_DEFINE(CM_DELAY_CA_POLL,(7 * 24 * 60 * 60),[Define to the time to wait between attempts to see if the CA issued a certificate.])
+	AC_DEFINE(CM_DELAY_CADATA_POLL,(6 * 60 * 60),[Define to the time to wait between attempts to fetch the CA certificate, if it was unreachable.])
 	AC_DEFINE(CM_DELAY_CA_POLL_MINIMUM,(5 * 60),[Define to the absolute minimum time to wait between attempts to see if the CA issued a certificate.])
 	AC_DEFINE(CM_DELAY_MONITOR_POLL,(24 * 60 * 60),[Define to the time to wait between attempts to re-read a certificate and check for expiration.])
 	AC_DEFINE(CM_DELAY_MONITOR_POLL_MINIMUM,(30 * 60),[Define to the absolute minimum time to wait between attempts to re-read a certificate and check for expiration.])

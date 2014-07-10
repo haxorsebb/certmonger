@@ -711,6 +711,9 @@ And this state machine:
 			if ca-gave-us-data
 				state_next = NEED_TO_SAVE_DATA
 				state_transition = now
+			elseif ca-needs-retry
+				state_next = NEED_TO_REFRESH
+				state_transition = later
 			elseif ca-is-unreachable
 				state_next = UNREACHABLE
 				state_transition = later
@@ -783,3 +786,7 @@ And this state machine:
 		else:
 			state_next = IDLE
 			state_transition = now
+
+	UNREACHABLE:
+		state_next = NEED_TO_REFRESH
+		state_transition = now

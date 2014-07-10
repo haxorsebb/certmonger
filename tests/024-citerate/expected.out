@@ -22,7 +22,8 @@ ca_external_helper=${tmpdir}/ca-data
 [identify:UNREACHABLE]
 UNREACHABLE
 -START-
--STUCK- (4:0)
+NEED_TO_REFRESH
+-STOP-
 id=Test CA
 ca_is_default=0
 ca_type=EXTERNAL
@@ -121,7 +122,8 @@ ca_root_certs=Root
 [certs:UNREACHABLE]
 UNREACHABLE
 -START-
--STUCK- (4:0)
+NEED_TO_REFRESH
+-STOP-
 id=Test CA
 ca_is_default=0
 ca_type=EXTERNAL
@@ -226,7 +228,8 @@ ca_profiles=None
 [profiles:UNREACHABLE]
 UNREACHABLE
 -START-
--STUCK- (4:0)
+NEED_TO_REFRESH
+-STOP-
 id=Test CA
 ca_is_default=0
 ca_type=EXTERNAL
@@ -301,7 +304,8 @@ ca_default_profile=None
 [default_profile:UNREACHABLE]
 UNREACHABLE
 -START-
--STUCK- (4:0)
+NEED_TO_REFRESH
+-STOP-
 id=Test CA
 ca_is_default=0
 ca_type=EXTERNAL
@@ -375,7 +379,8 @@ ca_external_helper=${tmpdir}/ca-data
 [enrollment_reqs:UNREACHABLE]
 UNREACHABLE
 -START-
--STUCK- (4:0)
+NEED_TO_REFRESH
+-STOP-
 id=Test CA
 ca_is_default=0
 ca_type=EXTERNAL
@@ -448,7 +453,8 @@ ca_external_helper=${tmpdir}/ca-data
 [renewal_reqs:UNREACHABLE]
 UNREACHABLE
 -START-
--STUCK- (4:0)
+NEED_TO_REFRESH
+-STOP-
 id=Test CA
 ca_is_default=0
 ca_type=EXTERNAL

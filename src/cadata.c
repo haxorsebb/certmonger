@@ -51,7 +51,7 @@ struct cm_cadata_state {
 	void (*parse)(struct cm_store_ca *ca, struct cm_cadata_state *state,
 		      const char *msg);
 	const char *op;
-	int error_fd;
+	int error_fd, delay;
 	unsigned int modified: 1;
 };
 
@@ -479,6 +479,7 @@ cm_cadata_start_generic(struct cm_store_ca *ca, const char *op,
 	memset(ret, 0, sizeof(*ret));
 	ret->ca = ca;
 	ret->error_fd = error_fd[1];
+	ret->delay = -1;
 	ret->op = op;
 	ret->modified = 0;
 	ret->subproc = cm_subproc_start(fetch, ca, NULL, ret);
@@ -545,13 +546,35 @@ cm_cadata_start_renew_reqs(struct cm_store_ca *ca)
 int
 cm_cadata_ready(struct cm_cadata_state *state)
 {
-	int ready, length;
+	int ready, status, length;
+	const char *msg = NULL;
+	char *p = NULL;
+	long delay = -1;
 
 	ready = cm_subproc_ready(state->subproc);
-	if ((ready == 0) &&
-	    (cm_subproc_get_exitstatus(state->subproc) == 0)) {
-		(*(state->parse))(state->ca, state,
-				  cm_subproc_get_msg(state->subproc, &length));
+	if (ready == 0) {
+		status = cm_subproc_get_exitstatus(state->subproc);
+		msg = cm_subproc_get_msg(state->subproc, &length);
+		if (WIFEXITED(status)) {
+			switch (WEXITSTATUS(status)) {
+			case CM_SUBMIT_STATUS_ISSUED:
+				(*(state->parse))(state->ca, state, msg);
+				break;
+			case CM_SUBMIT_STATUS_WAIT_WITH_DELAY:
+				delay = -1;
+				if (length > 0) {
+					delay = strtol(msg, &p, 10);
+					if ((p != NULL) &&
+					    ((*p == '\0') ||
+					     (strchr("\r\n", *p) != NULL))) {
+						state->delay = delay;
+					}
+				}
+				break;
+			default:
+				break;
+			}
+		}
 	}
 	return ready;
 }
@@ -582,21 +605,33 @@ cm_cadata_unsupported(struct cm_cadata_state *state)
 }
 
 int
+cm_cadata_needs_retry(struct cm_cadata_state *state)
+{
+	int status;
+
+	status = cm_subproc_get_exitstatus(state->subproc);
+	if (WIFEXITED(status) &&
+	    ((WEXITSTATUS(status) == CM_SUBMIT_STATUS_WAIT) ||
+	     (WEXITSTATUS(status) == CM_SUBMIT_STATUS_WAIT_WITH_DELAY))) {
+		return 0;
+	}
+	return -1;
+}
+
+int
+cm_cadata_specified_delay(struct cm_cadata_state *state)
+{
+	return state->delay;
+}
+
+int
 cm_cadata_unreachable(struct cm_cadata_state *state)
 {
 	int status;
 
 	status = cm_subproc_get_exitstatus(state->subproc);
-	/* Go ahead and treat "try later" as an "unreachable" error, even
-	 * though helpers aren't supposed to ever return either of these values
-	 * for these cases, so that we don't permanently disable the helper
-	 * when it's just telling us to try again, even though it's doing it
-	 * wrong.  We leave out "rejected" errors, because that's not something
-	 * we'd retry even if the result made sense for these cases. */
 	if (WIFEXITED(status) &&
-	    ((WEXITSTATUS(status) == CM_SUBMIT_STATUS_UNREACHABLE) ||
-	     (WEXITSTATUS(status) == CM_SUBMIT_STATUS_WAIT) ||
-	     (WEXITSTATUS(status) == CM_SUBMIT_STATUS_WAIT_WITH_DELAY))) {
+	    (WEXITSTATUS(status) == CM_SUBMIT_STATUS_UNREACHABLE)) {
 		return 0;
 	}
 	return -1;
