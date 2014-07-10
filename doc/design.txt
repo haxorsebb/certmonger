@@ -716,7 +716,7 @@ And this state machine:
 				state_transition = later
 			elseif ca-is-unreachable
 				state_next = UNREACHABLE
-				state_transition = later
+				state_transition = now
 			else
 				state_next = DISABLED
 				state_transition = now
