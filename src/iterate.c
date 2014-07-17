@@ -1310,7 +1310,7 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		break;
 
 	case CM_START_SAVING_CA_CERTS:
-		state->cm_casave_state = cm_casave_start(entry, ca, context,
+		state->cm_casave_state = cm_casave_start(entry, NULL, context,
 							 get_ca_by_index,
 							 get_n_cas,
 							 get_entry_by_index,

@@ -28,117 +28,117 @@ ca_name=CAD3
 EOF
 cat > $tmpdir/entryb1 <<- EOF
 id=EntryB1
-ca_root_cert_files=$tmpdir/bundle1,$tmpdir/bundle-all
-ca_other_root_cert_files=
-ca_other_cert_files=
-ca_root_cert_dbs=
-ca_other_root_cert_dbs=
-ca_other_cert_dbs=
+root_cert_files=$tmpdir/bundle1,$tmpdir/bundle-all
+other_root_cert_files=
+other_cert_files=
+root_cert_dbs=
+other_root_cert_dbs=
+other_cert_dbs=
 EOF
 cat > $tmpdir/entryb2 <<- EOF
 id=EntryB2
-ca_root_cert_files=
-ca_other_root_cert_files=$tmpdir/bundle2,$tmpdir/bundle-all
-ca_other_cert_files=
-ca_root_cert_dbs=
-ca_other_root_cert_dbs=
-ca_other_cert_dbs=
+root_cert_files=
+other_root_cert_files=$tmpdir/bundle2,$tmpdir/bundle-all
+other_cert_files=
+root_cert_dbs=
+other_root_cert_dbs=
+other_cert_dbs=
 EOF
 cat > $tmpdir/entryb3 <<- EOF
 id=EntryB3
-ca_root_cert_files=
-ca_other_root_cert_files=
-ca_other_cert_files=$tmpdir/bundle3,$tmpdir/bundle-all
-ca_root_cert_dbs=
-ca_other_root_cert_dbs=
-ca_other_cert_dbs=
+root_cert_files=
+other_root_cert_files=
+other_cert_files=$tmpdir/bundle3,$tmpdir/bundle-all
+root_cert_dbs=
+other_root_cert_dbs=
+other_cert_dbs=
 EOF
 cat > $tmpdir/entryd1 <<- EOF
 id=EntryD1
-ca_root_cert_files=
-ca_other_root_cert_files=
-ca_other_cert_files=
-ca_root_cert_dbs=$tmpdir/db1,$tmpdir/dba
-ca_other_root_cert_dbs=
-ca_other_cert_dbs=
+root_cert_files=
+other_root_cert_files=
+other_cert_files=
+root_cert_dbs=$tmpdir/db1,$tmpdir/dba
+other_root_cert_dbs=
+other_cert_dbs=
 EOF
 cat > $tmpdir/entryd2 <<- EOF
 id=EntryD2
-ca_root_cert_files=
-ca_other_root_cert_files=
-ca_other_cert_files=
-ca_root_cert_dbs=
-ca_other_root_cert_dbs=$tmpdir/db2,$tmpdir/dba
-ca_other_cert_dbs=
+root_cert_files=
+other_root_cert_files=
+other_cert_files=
+root_cert_dbs=
+other_root_cert_dbs=$tmpdir/db2,$tmpdir/dba
+other_cert_dbs=
 EOF
 cat > $tmpdir/entryd3 <<- EOF
 id=EntryD3
-ca_root_cert_files=
-ca_other_root_cert_files=
-ca_other_cert_files=
-ca_root_cert_dbs=
-ca_other_root_cert_dbs=
-ca_other_cert_dbs=$tmpdir/db3,$tmpdir/dba
+root_cert_files=
+other_root_cert_files=
+other_cert_files=
+root_cert_dbs=
+other_root_cert_dbs=
+other_cert_dbs=$tmpdir/db3,$tmpdir/dba
 EOF
 cat > $tmpdir/entrycab1 <<- EOF
 id=EntryCAB1
 ca_name=CAB1
-ca_root_cert_files=$tmpdir/bundle1,$tmpdir/bundle-all
-ca_other_root_cert_files=
-ca_other_cert_files=
-ca_root_cert_dbs=
-ca_other_root_cert_dbs=
-ca_other_cert_dbs=
+root_cert_files=$tmpdir/bundle1,$tmpdir/bundle-all
+other_root_cert_files=
+other_cert_files=
+root_cert_dbs=
+other_root_cert_dbs=
+other_cert_dbs=
 EOF
 cat > $tmpdir/entrycab2 <<- EOF
 id=EntryCAB2
 ca_name=CAB2
-ca_root_cert_files=
-ca_other_root_cert_files=$tmpdir/bundle2,$tmpdir/bundle-all
-ca_other_cert_files=
-ca_root_cert_dbs=
-ca_other_root_cert_dbs=
-ca_other_cert_dbs=
+root_cert_files=
+other_root_cert_files=$tmpdir/bundle2,$tmpdir/bundle-all
+other_cert_files=
+root_cert_dbs=
+other_root_cert_dbs=
+other_cert_dbs=
 EOF
 cat > $tmpdir/entrycab3 <<- EOF
 id=EntryCAB3
 ca_name=CAB3
-ca_root_cert_files=
-ca_other_root_cert_files=
-ca_other_cert_files=$tmpdir/bundle3,$tmpdir/bundle-all
-ca_root_cert_dbs=
-ca_other_root_cert_dbs=
-ca_other_cert_dbs=
+root_cert_files=
+other_root_cert_files=
+other_cert_files=$tmpdir/bundle3,$tmpdir/bundle-all
+root_cert_dbs=
+other_root_cert_dbs=
+other_cert_dbs=
 EOF
 cat > $tmpdir/entrycad1 <<- EOF
 id=EntryCAD1
 ca_name=CAD1
-ca_root_cert_files=
-ca_other_root_cert_files=
-ca_other_cert_files=
-ca_root_cert_dbs=$tmpdir/db1,$tmpdir/dba
-ca_other_root_cert_dbs=
-ca_other_cert_dbs=
+root_cert_files=
+other_root_cert_files=
+other_cert_files=
+root_cert_dbs=$tmpdir/db1,$tmpdir/dba
+other_root_cert_dbs=
+other_cert_dbs=
 EOF
 cat > $tmpdir/entrycad2 <<- EOF
 id=EntryCAD2
 ca_name=CAD2
-ca_root_cert_files=
-ca_other_root_cert_files=
-ca_other_cert_files=
-ca_root_cert_dbs=
-ca_other_root_cert_dbs=$tmpdir/db2,$tmpdir/dba
-ca_other_cert_dbs=
+root_cert_files=
+other_root_cert_files=
+other_cert_files=
+root_cert_dbs=
+other_root_cert_dbs=$tmpdir/db2,$tmpdir/dba
+other_cert_dbs=
 EOF
 cat > $tmpdir/entrycad3 <<- EOF
 id=EntryCAD3
 ca_name=CAD3
-ca_root_cert_files=
-ca_other_root_cert_files=
-ca_other_cert_files=
-ca_root_cert_dbs=
-ca_other_root_cert_dbs=
-ca_other_cert_dbs=$tmpdir/db3,$tmpdir/dba
+root_cert_files=
+other_root_cert_files=
+other_cert_files=
+root_cert_dbs=
+other_root_cert_dbs=
+other_cert_dbs=$tmpdir/db3,$tmpdir/dba
 EOF
 
 cat > $tmpdir/cab1 <<- EOF
@@ -639,46 +639,41 @@ centries=" -e entrycb1 -e entrycb2 -e entrycb3 -e entrycd1 -e entrycd2 -e entryc
 caentries=" -e entrycab1 -e entrycab2 -e entrycab3 -e entrycad1 -e entrycad2 -e entrycad3"
 cas=" -c cab1 -c cab2 -c cab3 -c cad1 -c cad2 -c cad3 -c cada"
 
-for ca in "" CAB1 CAB2 CAB3 CAD1 CAD2 CAD3 ; do
-	for entry in "" EntryB1 EntryB2 EntryB3 EntryD1 EntryD2 EntryD3 EntryCB1 EntryCB2 EntryCB3 EntryCD1 EntryCD2 EntryCD3 EntryCAB1 EntryCAB2 EntryCAB3 EntryCAD1 EntryCAD2 EntryCAD3 ; do
-		if test -z "$ca" && test -z "$entry" ; then
-			continue
+for which in CAB1 CAB2 CAB3 CAD1 CAD2 CAD3 EntryB1 EntryB2 EntryB3 EntryD1 EntryD2 EntryD3 EntryCB1 EntryCB2 EntryCB3 EntryCD1 EntryCD2 EntryCD3 EntryCAB1 EntryCAB2 EntryCAB3 EntryCAD1 EntryCAD2 EntryCAD3 ; do
+	echo "[($which)]"
+	rm -f $tmpdir/bundle1 $tmpdir/bundle2 $tmpdir/bundle3 $tmpdir/bundle-all
+	rm -fr $tmpdir/db1 $tmpdir/db2 $tmpdir/db3 $tmpdir/dba
+	mkdir $tmpdir/db1 $tmpdir/db2 $tmpdir/db3 $tmpdir/dba
+	$toolsdir/casave $entries $centries $caentries $cas $which
+	for bundle in 1 2 3 -all ; do
+		echo "[bundle$bundle]"
+		touch "bundle$bundle"
+		cat "bundle$bundle" > "oldbundle$bundle"
+		if test `grep 'BEGIN CERTIFICATE-----' "bundle$bundle" | wc -l` \
+			-ne `grep 'END CERTIFICATE-----' "bundle$bundle" | wc -l` ; then
+			echo Storage error: possibly-truncated certs in "bundle$bundle".
+			cat "bundle$bundle"
+			exit 1
 		fi
-		echo "[($ca,$entry)]"
-		rm -f $tmpdir/bundle1 $tmpdir/bundle2 $tmpdir/bundle3 $tmpdir/bundle-all
-		rm -fr $tmpdir/db1 $tmpdir/db2 $tmpdir/db3 $tmpdir/dba
-		mkdir $tmpdir/db1 $tmpdir/db2 $tmpdir/db3 $tmpdir/dba
-		$toolsdir/casave $entries $centries $caentries $cas $entry $ca
-		for bundle in 1 2 3 -all ; do
-			echo "[bundle$bundle]"
-			touch "bundle$bundle"
-			cat "bundle$bundle" > "oldbundle$bundle"
-			if test `grep 'BEGIN CERTIFICATE-----' "bundle$bundle" | wc -l` \
-				-ne `grep 'END CERTIFICATE-----' "bundle$bundle" | wc -l` ; then
-				echo Storage error: possibly-truncated certs in "bundle$bundle".
-				cat "bundle$bundle"
-				exit 1
-			fi
-			grep 'BEGIN CERTIFICATE-----' "bundle$bundle" | wc -l
-		done
-		for db in 1 2 3 a ; do
-			echo "[db$db]"
-			certutil -L -d "db$db" 2> /dev/null | \
-			grep , | grep -v JAR/XPI | sed -r 's, +, ,g' | \
-			env LANG=C sort | tee "olddblist$db"
-		done
-		$toolsdir/casave $entries $centries $caentries $cas $entry $ca
-		for bundle in 1 2 3 -all ; do
-			diff -u "bundle$bundle" "oldbundle$bundle"
-		done
-		for db in 1 2 3 a ; do
-			certutil -L -d "db$db" 2> /dev/null | \
-			grep , | grep -v JAR/XPI | sed -r 's, +, ,g' | \
-			env LANG=C sort > "dblist$db"
-			diff -u "olddblist$db" "dblist$db"
-		done
-		echo
+		grep 'BEGIN CERTIFICATE-----' "bundle$bundle" | wc -l
 	done
+	for db in 1 2 3 a ; do
+		echo "[db$db]"
+		certutil -L -d "db$db" 2> /dev/null | \
+		grep , | grep -v JAR/XPI | sed -r 's, +, ,g' | \
+		env LANG=C sort | tee "olddblist$db"
+	done
+	$toolsdir/casave $entries $centries $caentries $cas $which
+	for bundle in 1 2 3 -all ; do
+		diff -u "bundle$bundle" "oldbundle$bundle"
+	done
+	for db in 1 2 3 a ; do
+		certutil -L -d "db$db" 2> /dev/null | \
+		grep , | grep -v JAR/XPI | sed -r 's, +, ,g' | \
+		env LANG=C sort > "dblist$db"
+		diff -u "olddblist$db" "dblist$db"
+	done
+	echo
 done
 
 echo OK.

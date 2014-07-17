@@ -160,14 +160,14 @@ main(int argc, char **argv)
 				&get_n_entries);
 	if (state != NULL) {
 		for (;;) {
+			if (cm_casave_ready(state) == 0) {
+				break;
+			}
 			fd = cm_casave_get_fd(state);
 			if (fd != -1) {
 				wait_to_read(fd);
 			} else {
 				sleep(1);
-			}
-			if (cm_casave_ready(state) == 0) {
-				break;
 			}
 		}
 		if (cm_casave_saved(state) == 0) {
