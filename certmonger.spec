@@ -19,7 +19,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.75.6
+Version:	0.75.7
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -71,7 +71,6 @@ BuildRequires:	systemd-units
 Requires(post):	systemd-units
 Requires(preun):	systemd-units, dbus, sed
 Requires(postun):	systemd-units
-Requires(post):	systemd-sysv
 %endif
 
 %if %{sysvinit}
@@ -221,6 +220,17 @@ exit 0
 %endif
 
 %changelog
+* Thu Jul 17 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75.7-1
+- fix an inconsistency in how we parse cookie values returned by CA helpers,
+  in that single-line values would lose the end-of-line after a daemon
+  restart, but not before
+- handle timeout values and exit status values when calling CA helpers
+  in non-SUBMIT, non-POLL modes
+- rework how we save CA certificates so that we save CA certificates associated
+  with end-entity certificates when we save that end-entity certificate, which
+  requires running all of the involved pre- and post-save commands
+- drop package Requires: on systemd-sysv (#1104138)
+
 * Thu Jun 26 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75.6-1
 - avoid potential use-after-free and read overrun after a CA is added
   dynamically (thanks to Jan Cholasta)
