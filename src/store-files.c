@@ -1264,7 +1264,16 @@ cm_store_file_write_str(FILE *fp, enum cm_store_file_field field, const char *s)
 	while (*p != '\0') {
 		q = p + strcspn(p, "\r\n");
 		fprintf(fp, " %.*s\n", (int) (q - p), p);
-		p = q + strspn(q, "\r\n");
+		if (*q == '\r') {
+			q++;
+		}
+		if (*q == '\n') {
+			q++;
+		}
+		if (p == q) {
+			break;
+		}
+		p = q;
 	}
 	if (ferror(fp)) {
 		return -1;
