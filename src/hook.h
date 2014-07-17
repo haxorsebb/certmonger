@@ -21,16 +21,37 @@
 struct cm_hook_state;
 struct cm_store_entry;
 struct cm_store_ca;
+struct cm_context;
 
 /* Start doing whatever we need to before saving the certificate to the
  * configured location. */
-struct cm_hook_state *cm_hook_start_presave(struct cm_store_entry *entry);
-struct cm_hook_state *cm_hook_start_ca_presave(struct cm_store_ca *ca);
+struct cm_hook_state *cm_hook_start_presave(struct cm_store_entry *entry,
+					    struct cm_context *context,
+					    struct cm_store_ca *(*get_ca_by_index)(struct cm_context *, int),
+					    int (*get_n_cas)(struct cm_context *),
+					    struct cm_store_entry *(*get_entry_by_index)(struct cm_context *, int),
+					    int (*get_n_entries)(struct cm_context *));
+struct cm_hook_state *cm_hook_start_ca_presave(struct cm_store_ca *ca,
+					       struct cm_context *context,
+					       struct cm_store_ca *(*get_ca_by_index)(struct cm_context *, int),
+					       int (*get_n_cas)(struct cm_context *),
+					       struct cm_store_entry *(*get_entry_by_index)(struct cm_context *, int),
+					       int (*get_n_entries)(struct cm_context *));
 
 /* Start doing whatever we need to after saving the certificate to the
  * configured location. */
-struct cm_hook_state *cm_hook_start_postsave(struct cm_store_entry *entry);
-struct cm_hook_state *cm_hook_start_ca_postsave(struct cm_store_ca *ca);
+struct cm_hook_state *cm_hook_start_postsave(struct cm_store_entry *entry,
+					     struct cm_context *context,
+					     struct cm_store_ca *(*get_ca_by_index)(struct cm_context *, int),
+					     int (*get_n_cas)(struct cm_context *),
+					     struct cm_store_entry *(*get_entry_by_index)(struct cm_context *, int),
+					     int (*get_n_entries)(struct cm_context *));
+struct cm_hook_state *cm_hook_start_ca_postsave(struct cm_store_ca *ca,
+						struct cm_context *context,
+						struct cm_store_ca *(*get_ca_by_index)(struct cm_context *, int),
+						int (*get_n_cas)(struct cm_context *),
+						struct cm_store_entry *(*get_entry_by_index)(struct cm_context *, int),
+						int (*get_n_entries)(struct cm_context *));
 
 /* Check if something changed, for example we finished doing whatever it is
  * that we're doing. */

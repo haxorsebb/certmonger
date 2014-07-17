@@ -1,0 +1,99 @@
+[EntryCB1 -B]
+Starting pre-save for entry EntryCB1.
+Running pre-save for CAB1
+Running pre-save for EntryCAB1
+[EntryCB1 -C]
+Starting post-save for entry EntryCB1.
+Running post-save for CAB1
+Running post-save for EntryCAB1
+[EntryCB2 -B]
+Starting pre-save for entry EntryCB2.
+Running pre-save for EntryCAB2
+[EntryCB2 -C]
+Starting post-save for entry EntryCB2.
+Running post-save for EntryCAB2
+[EntryCD1 -B]
+Starting pre-save for entry EntryCD1.
+Running pre-save for CAD1
+Running pre-save for EntryCAD1
+[EntryCD1 -C]
+Starting post-save for entry EntryCD1.
+Running post-save for CAD1
+Running post-save for EntryCAD1
+[EntryCD2 -B]
+Starting pre-save for entry EntryCD2.
+Running pre-save for EntryCAD2
+[EntryCD2 -C]
+Starting post-save for entry EntryCD2.
+Running post-save for EntryCAD2
+[CAB1 -B]
+Starting pre-save for CA CAB1.
+Running pre-save for CAB1
+Running pre-save for CAB2
+Running pre-save for CAB3
+Running pre-save for CADA
+Running pre-save for EntryCAB1
+[CAB1 -C]
+Starting post-save for CA CAB1.
+Running post-save for CAB1
+Running post-save for CAB2
+Running post-save for CAB3
+Running post-save for CADA
+Running post-save for EntryCAB1
+[CAB2 -B]
+Starting pre-save for CA CAB2.
+Running pre-save for CAB1
+Running pre-save for CAB2
+Running pre-save for CAB3
+Running pre-save for CADA
+[CAB2 -C]
+Starting post-save for CA CAB2.
+Running post-save for CAB1
+Running post-save for CAB2
+Running post-save for CAB3
+Running post-save for CADA
+[CAD1 -B]
+Starting pre-save for CA CAD1.
+Running pre-save for CAD1
+Running pre-save for CAD2
+Running pre-save for CAD3
+Running pre-save for CADA
+Running pre-save for EntryCAD1
+[CAD1 -C]
+Starting post-save for CA CAD1.
+Running post-save for CAD1
+Running post-save for CAD2
+Running post-save for CAD3
+Running post-save for CADA
+Running post-save for EntryCAD1
+[CAD2 -B]
+Starting pre-save for CA CAD2.
+Running pre-save for CAD1
+Running pre-save for CAD2
+Running pre-save for CAD3
+Running pre-save for CADA
+[CAD2 -C]
+Starting post-save for CA CAD2.
+Running post-save for CAD1
+Running post-save for CAD2
+Running post-save for CAD3
+Running post-save for CADA
+[CADA -B]
+Starting pre-save for CA CADA.
+Running pre-save for CAB1
+Running pre-save for CAB2
+Running pre-save for CAB3
+Running pre-save for CAD1
+Running pre-save for CAD2
+Running pre-save for CAD3
+Running pre-save for CADA
+[CADA -C]
+Starting post-save for CA CADA.
+Running post-save for CAB1
+Running post-save for CAB2
+Running post-save for CAB3
+Running post-save for CAD1
+Running post-save for CAD2
+Running post-save for CAD3
+Running post-save for CADA
+OK.

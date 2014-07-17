@@ -76,7 +76,7 @@ int
 main(int argc, char **argv)
 {
 	struct cm_store_entry *entry;
-	struct cm_context cm;
+	struct cm_context *cm;
 	enum cm_state old_state;
 	int readfd, delay;
 	void *parent, *istate;
@@ -88,9 +88,14 @@ main(int argc, char **argv)
 	cm_log_set_level(3);
 	cm_set_fips_from_env();
 	parent = talloc_new(NULL);
+	cm = talloc_ptrtype(parent, cm);
+	if (cm == NULL) {
+		return 1;
+	}
+	memset(cm, 0, sizeof(*cm));
 	if (argc > 3) {
-		cm.ca = cm_store_files_ca_read(parent, argv[1]);
-		if (cm.ca == NULL) {
+		cm->ca = cm_store_files_ca_read(parent, argv[1]);
+		if (cm->ca == NULL) {
 			printf("Error reading %s: %s.\n", argv[1],
 			       strerror(errno));
 			return 1;
@@ -102,11 +107,11 @@ main(int argc, char **argv)
 			return 1;
 		}
 		if ((entry->cm_ca_nickname == NULL) ||
-		    (cm.ca->cm_nickname == NULL) ||
+		    (cm->ca->cm_nickname == NULL) ||
 		    (strcasecmp(entry->cm_ca_nickname,
-				cm.ca->cm_nickname) != 0)) {
-			talloc_free(cm.ca);
-			cm.ca = NULL;
+				cm->ca->cm_nickname) != 0)) {
+			talloc_free(cm->ca);
+			cm->ca = NULL;
 		}
 		continue_states = argv[3];
 		stop_states = NULL;
@@ -136,7 +141,7 @@ main(int argc, char **argv)
 	state = cm_store_state_as_string(entry->cm_state);
 	printf("%s\n-START-\n", state);
 	fflush(NULL);
-	while (cm_iterate_entry(entry, cm.ca, &cm, get_ca_by_index, get_n_cas,
+	while (cm_iterate_entry(entry, cm->ca, cm, get_ca_by_index, get_n_cas,
 				NULL, NULL, NULL, NULL, istate, &when, &delay,
 				&readfd) == 0) {
 		state = cm_store_state_as_string(entry->cm_state);

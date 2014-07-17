@@ -911,24 +911,25 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			*when = cm_time_soon;
 			break;
 		}
-		if (entry->cm_pre_certsave_command != NULL) {
-			state->cm_hook_state = cm_hook_start_presave(entry);
-			if (state->cm_hook_state != NULL) {
-				/* Note that we're doing the pre-save. */
-				entry->cm_state = CM_PRE_SAVE_CERT;
-				/* Wait for status update, or poll. */
-				*readfd = cm_hook_get_fd(state->cm_hook_state);
-				if (*readfd == -1) {
-					*when = cm_time_soon;
-				} else {
-					*when = cm_time_no_time;
-				}
+		state->cm_hook_state = cm_hook_start_presave(entry,
+							     context,
+							     get_ca_by_index,
+							     get_n_cas,
+							     get_entry_by_index,
+							     get_n_entries);
+		if (state->cm_hook_state != NULL) {
+			/* Note that we're doing the pre-save. */
+			entry->cm_state = CM_PRE_SAVE_CERT;
+			/* Wait for status update, or poll. */
+			*readfd = cm_hook_get_fd(state->cm_hook_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
 			} else {
-				/* Failed to start the pre-save; skip it. */
-				entry->cm_state = CM_START_SAVING_CERT;
-				*when = cm_time_now;
+				*when = cm_time_no_time;
 			}
 		} else {
+			/* Failed to start the pre-save, or nothing to do; skip
+			 * it. */
 			entry->cm_state = CM_START_SAVING_CERT;
 			*when = cm_time_now;
 		}
@@ -1072,24 +1073,25 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			*when = cm_time_soon;
 			break;
 		}
-		if (entry->cm_post_certsave_command != NULL) {
-			state->cm_hook_state = cm_hook_start_postsave(entry);
-			if (state->cm_hook_state != NULL) {
-				/* Note that we're doing the post-save. */
-				entry->cm_state = CM_POST_SAVED_CERT;
-				/* Wait for status update, or poll. */
-				*readfd = cm_hook_get_fd(state->cm_hook_state);
-				if (*readfd == -1) {
-					*when = cm_time_soon;
-				} else {
-					*when = cm_time_no_time;
-				}
-			} else {
-				/* Failed to start the post-save; skip it. */
-				entry->cm_state = CM_NEED_TO_SAVE_CA_CERTS;
+		state->cm_hook_state = cm_hook_start_postsave(entry,
+							      context,
+							      get_ca_by_index,
+							      get_n_cas,
+							      get_entry_by_index,
+							      get_n_entries);
+		if (state->cm_hook_state != NULL) {
+			/* Note that we're doing the post-save. */
+			entry->cm_state = CM_POST_SAVED_CERT;
+			/* Wait for status update, or poll. */
+			*readfd = cm_hook_get_fd(state->cm_hook_state);
+			if (*readfd == -1) {
 				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
 			}
 		} else {
+			/* Failed to start the post-save, or nothing to do;
+			 * skip it. */
 			entry->cm_state = CM_NEED_TO_SAVE_CA_CERTS;
 			*when = cm_time_now;
 		}
@@ -1929,24 +1931,24 @@ cm_iterate_ca(struct cm_store_ca *ca,
 			*when = cm_time_soon;
 			break;
 		}
-		if (ca->cm_ca_pre_save_command != NULL) {
-			state->cm_hook_state = cm_hook_start_ca_presave(ca);
-			if (state->cm_hook_state != NULL) {
-				/* Note that we're doing the pre-save. */
-				ca->cm_ca_state[state->cm_phase] = CM_CA_PRE_SAVE_DATA;
-				/* Wait for status update, or poll. */
-				*readfd = cm_hook_get_fd(state->cm_hook_state);
-				if (*readfd == -1) {
-					*when = cm_time_soon;
-				} else {
-					*when = cm_time_no_time;
-				}
+		state->cm_hook_state = cm_hook_start_ca_presave(ca,
+							        context,
+							        get_ca_by_index,
+							        get_n_cas,
+							        get_entry_by_index,
+							        get_n_entries);
+		if (state->cm_hook_state != NULL) {
+			/* Note that we're doing the pre-save. */
+			ca->cm_ca_state[state->cm_phase] = CM_CA_PRE_SAVE_DATA;
+			/* Wait for status update, or poll. */
+			*readfd = cm_hook_get_fd(state->cm_hook_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
 			} else {
-				/* Failed to start the pre-save; skip it. */
-				ca->cm_ca_state[state->cm_phase] = CM_CA_START_SAVING_DATA;
-				*when = cm_time_now;
+				*when = cm_time_no_time;
 			}
 		} else {
+			/* Failed to start the pre-save; skip it. */
 			ca->cm_ca_state[state->cm_phase] = CM_CA_START_SAVING_DATA;
 			*when = cm_time_now;
 		}
@@ -2017,24 +2019,25 @@ cm_iterate_ca(struct cm_store_ca *ca,
 		}
 		break;
 	case CM_CA_NEED_POST_SAVE_DATA:
-		if (ca->cm_ca_post_save_command != NULL) {
-			state->cm_hook_state = cm_hook_start_ca_postsave(ca);
-			if (state->cm_hook_state != NULL) {
-				/* Note that we're doing the post-save. */
-				ca->cm_ca_state[state->cm_phase] = CM_CA_POST_SAVE_DATA;
-				/* Wait for status update, or poll. */
-				*readfd = cm_hook_get_fd(state->cm_hook_state);
-				if (*readfd == -1) {
-					*when = cm_time_soon;
-				} else {
-					*when = cm_time_no_time;
-				}
-			} else {
-				/* Failed to start the post-save; skip it. */
-				ca->cm_ca_state[state->cm_phase] = CM_CA_SAVED_DATA;
+		state->cm_hook_state = cm_hook_start_ca_postsave(ca,
+							         context,
+							         get_ca_by_index,
+							         get_n_cas,
+							         get_entry_by_index,
+							         get_n_entries);
+		if (state->cm_hook_state != NULL) {
+			/* Note that we're doing the post-save. */
+			ca->cm_ca_state[state->cm_phase] = CM_CA_POST_SAVE_DATA;
+			/* Wait for status update, or poll. */
+			*readfd = cm_hook_get_fd(state->cm_hook_state);
+			if (*readfd == -1) {
 				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
 			}
 		} else {
+			/* Failed to start the post-save, or nothing to do;
+			 * skip it. */
 			ca->cm_ca_state[state->cm_phase] = CM_CA_SAVED_DATA;
 			*when = cm_time_now;
 		}
