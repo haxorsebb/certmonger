@@ -76,7 +76,8 @@ cm_submit_e_save_ca_cookie(struct cm_submit_state *state)
 				cm_log(1, "Out of memory.\n");
 				return -ENOMEM;
 			}
-			cm_log(1, "Saved cookie.\n");
+			cm_log(1, "Saved cookie \"%s\".\n",
+			       state->entry->cm_ca_cookie);
 			return 0;
 		} else {
 			cm_log(1, "No cookie.\n");
