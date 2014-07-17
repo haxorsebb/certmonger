@@ -40,6 +40,43 @@
 #include "submit-int.h"
 #include "subproc.h"
 
+/* Clean up a cookie value in a way that's compatible with what happens when we
+ * save and then reload an entry: if the value fits on a single line (whether
+ * or not it ends with a newline), we strip the newline off of the end.
+ * Otherwise we strip out blank lines and make sure they end with a single
+ * character. */
+static char *
+sanitize(void *parent, const char *value)
+{
+	const char *p, *q;
+	char *ret;
+
+	p = value + strcspn(value, "\r\n");
+	ret = talloc_strndup(parent, value, p - value);
+	if (ret != NULL) {
+		p += strspn(p, "\r\n");
+		if (*p != '\0') {
+			ret = talloc_strdup_append(ret, "\n");
+		}
+		while (*p != '\0') {
+			q = p + strcspn(p, "\r\n");
+			ret = talloc_asprintf_append(ret, "%.*s\n",
+						     (int) (q - p), p);
+			if (*q == '\r') {
+				q++;
+			}
+			if (*q == '\n') {
+				q++;
+			}
+			if (p == q) {
+				break;
+			}
+			p = q;
+		}
+	}
+	return ret;
+}
+
 /* Try to save a CA-specific identifier for our submitted request.  That is, if
  * it even gave us one. */
 static int
@@ -70,8 +107,8 @@ cm_submit_e_save_ca_cookie(struct cm_submit_state *state)
 				state->delay = delay;
 				msg = p + strspn(p, "\r\n");
 			}
-			state->entry->cm_ca_cookie = talloc_strdup(state->entry,
-								   msg);
+			state->entry->cm_ca_cookie = sanitize(state->entry,
+							      msg);
 			if (state->entry->cm_ca_cookie == NULL) {
 				cm_log(1, "Out of memory.\n");
 				return -ENOMEM;
