@@ -6,6 +6,12 @@
 %global	sysvinit 1
 %endif
 
+%if 0%{?fedora} > 15 && 0%{?fedora} < 20
+%global systemdsysv 1
+%else
+%global systemdsysv 0
+%endif
+
 %if 0%{?fedora} > 14 || 0%{?rhel} > 6
 %global tmpfiles 1
 %else
@@ -20,7 +26,7 @@
 
 Name:		certmonger
 Version:	0.75.7
-Release:	1%{?dist}
+Release:	2%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
 Group:		System Environment/Daemons
@@ -71,6 +77,17 @@ BuildRequires:	systemd-units
 Requires(post):	systemd-units
 Requires(preun):	systemd-units, dbus, sed
 Requires(postun):	systemd-units
+%endif
+
+%if %{systemdsysv}
+Requires(post):	systemd-sysv
+%global systemdsysvsave \
+# Save the current service runlevel info, in case the user wants \
+# to apply the enabled status manually later, by running \
+#   "systemd-sysv-convert --apply certmonger". \
+%{_bindir}/systemd-sysv-convert --save certmonger >/dev/null 2>&1 ||:
+%else
+%global systemdsysvsave %{nil}
 %endif
 
 %if %{sysvinit}
@@ -185,10 +202,7 @@ exit 0
 
 %if %{systemd}
 %triggerun -- certmonger < 0.43
-# Save the current service runlevel info, in case the user wants to apply
-# the enabled status manually later, by running
-#   "systemd-sysv-convert --apply certmonger".
-%{_bindir}/systemd-sysv-convert --save certmonger >/dev/null 2>&1 ||:
+%{systemdsysvsave}
 # Do this because the old package's %%postun doesn't know we need to do it.
 /sbin/chkconfig --del certmonger >/dev/null 2>&1 || :
 # Do this because the old package's %%postun wouldn't have tried.
@@ -220,6 +234,12 @@ exit 0
 %endif
 
 %changelog
+* Thu Jul 17 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75.7-2
+- reintroduce package Requires: on systemd-sysv on F19 and EL6 and older,
+  conditionalized it so that it's ignored on newer releases, and make
+  whether or not we call systemd-sysv-convert in triggers depend on that,
+  too (#1104138)
+
 * Thu Jul 17 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75.7-1
 - fix an inconsistency in how we parse cookie values returned by CA helpers,
   in that single-line values would lose the end-of-line after a daemon
