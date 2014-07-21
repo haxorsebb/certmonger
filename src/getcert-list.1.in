@@ -26,19 +26,250 @@ List only entries which are not currently being enrolled or refreshed.
 
 .TP
 \fB\-d\fR DIR
-List only entries which use an NSS database in the specified directory for
-storing the certificate.
+List only entries which use an NSS database in the specified directory
+for storing the certificate.
 .TP
 \fB\-n\fR NAME
 List only tracking requests which use an NSS database and the specified
 nickname for storing the certificate.
 .TP
 \fB\-f\fR FILE
-List only tracking requests which specify that the certificate should be stored
-in file.
+List only tracking requests which specify that the certificate should be
+stored in the specified file.
 .TP
-\fB\-i\fR FILE
+\fB\-i\fR NAME
 List only tracking requests which use this request nickname.
+
+.SH STATES
+.TP
+NEED_KEY_PAIR
+The service is about to generate a new key pair.
+.TP
+GENERATING_KEY_PAIR
+The service is currently generating a new key pair.
+.TP
+NEED_KEY_GEN_PERMS
+The service encountered a filesystem permission error while attempting
+to save the newly-generated key pair.
+.TP
+NEED_KEY_GEN_PIN
+The service is missing the PIN which is required to access an NSS
+database in order to save the newly-generated key pair, or it has an
+incorrect PIN for a database.
+.TP
+NEED_KEY_GEN_TOKEN
+The service was unable to find a suitable token to use for generating the
+new key pair.
+.TP
+HAVE_KEY_PAIR
+The service has successfully generated a new key pair.
+.TP
+NEED_KEYINFO
+The service needs to read information about the key pair.
+.TP
+READING_KEYINFO
+The service is currently reading information about the key pair.
+.TP
+NEED_KEYINFO_READ_PIN
+The service is missing the PIN which is required to access an NSS
+database in order to read information about the newly-generated key pair, or
+it has an incorrect PIN for a database, or has an incorrect password for
+accessing a key stored in encrypted PEM format.
+.TP
+NEED_KEYINFO_READ_TOKEN
+The service was unable to find the token in which the key pair is
+supposed to be stored.
+.TP
+HAVE_KEYINFO
+The service has successfully read information about the key pair.
+.TP
+NEED_CSR
+The service is about to generate a new signing request.
+.TP
+GENERATING_CSR
+The service is generating a signing request.
+.TP
+NEED_CSR_GEN_PIN
+The service is missing the PIN which is required to access an NSS database in
+order to use the key pair, or it has an incorrect PIN for a database, or has
+an incorrect password for reading a key stored in encrypted PEM format.
+.TP
+NEED_CSR_GEN_TOKEN
+The service was unable to find the token in which the key pair is
+supposed to be stored.
+.TP
+HAVE_CSR
+The service has successfully generated a signing request.
+.TP
+NEED_TO_SUBMIT
+The service is about to submit a signing request to a CA for signing.
+.TP
+SUBMITTING
+The service is currently submitting a signing request to a CA for signing.
+.TP
+NEED_CA
+The service can't submit a request to a CA because it doesn't know which
+CA to use.
+.TP
+CA_UNREACHABLE
+The service was unable to contact the CA, but it will try again later.
+.TP
+CA_UNCONFIGURED
+The service is missing configuration which will be needed in order to
+successfully contact the CA.
+.TP
+CA_REJECTED
+The CA rejected the signing request.
+.TP
+CA_WORKING
+The CA has not yet approved or rejected the request.  The service will
+check on the status of the request later.
+.TP
+NEED_TO_SAVE_CERT
+The CA approved the signing request, and the service is about to save the
+issued certificate to the location where it has been told to save it.
+.TP
+PRE_SAVE_CERT
+The service is running a configured pre-saving command before saving the
+newly-issued certificate to the location where it has been told to save
+it.
+.TP
+START_SAVING_CERT
+The service is starting to save the issued certificate to the location
+where it has been told to save it.
+.TP
+SAVING_CERT
+The service is attempting to save the issued certificate to the location
+where it has been told to save it.
+.TP
+NEED_CERTSAVE_PERMS
+The service encountered a filesystem permission error while attempting
+to save the newly-issued certificate to the location where it has been
+told to save it.
+.TP
+NEED_TO_SAVE_CA_CERTS
+The service is about to save the certificate of the issuing CA to the
+locations where it has been told to save them.
+.TP
+START_SAVING_CA_CERTS
+The service is starting to save the certificate of the issuing CA to the
+locations where it has been told to save them.
+.TP
+SAVING_CA_CERTS
+The service is saving the certificate of the issuing CA to the locations
+where it has been told to save them.
+.TP
+NEED_CA_CERT_SAVE_PERMS
+The service encountered a filesystem permission error while attempting
+to save the certificate of the issuing CA to the locations where it has
+been told to save them.
+.TP
+NEED_TO_READ_CERT
+The service is about to read the issued certificate from the location
+where it has been told to save it.
+.TP
+READING_CERT
+The service is reading the issued certificate from the location where it
+has been told to save it.
+.TP
+SAVED_CERT
+The service has finished finished saving the issued certificate and the
+issuer's certificate to the locations where it has been told to save
+them.
+.TP
+POST_SAVED_CERT
+The service is running a configured post-saving command after saving the
+newly-issued certificate to the location where it has been told to save
+them.
+.TP
+MONITORING
+The service is monitoring the certificate and waiting for its
+not-valid-after date to approach.  This is expected to be the status
+most often seen.
+.TP
+NEED_TO_NOTIFY_VALIDITY
+The service is about to notify the system administrator that the
+certificate's not-valid-after date is approaching.
+.TP
+NOTIFYING_VALIDITY
+The service is notifying the system administrator that the certificate's
+not-valid-after date is approaching.
+.TP
+NEED_TO_NOTIFY_REJECTION
+The service is about to notify the system administrator that the
+CA rejected the signing request.
+.TP
+NOTIFYING_REJECTION
+The service is notifying the system administrator that the CA rejected
+the signing request.
+.TP
+NEED_TO_NOTIFY_ISSUED_FAILED
+The service is needs to notify the system administrator that the CA issued
+a certificate, but that there was a problem saving the certificate to the
+location where the service was told to save it.
+.TP
+NOTIFYING_ISSUED_FAILED
+The service is is notifying the system administrator that the CA issued
+a certificate, but that there was a problem saving the certificate to the
+location where the service was told to save it.
+.TP
+NEED_TO_NOTIFY_ISSUED_SAVED
+The service is needs to notify the system administrator that the CA issued
+a certificate and it has been saved to the location where the service has
+been told to save it.
+.TP
+NOTIFYING_ISSUED_SAVED
+The service is notifying the system administrator that the CA issued
+a certificate and it has been saved to the location where the service has
+been told to save it.
+.TP
+NEED_GUIDANCE
+An unhandled error was encountered while attempting to contact the CA,
+or there is the service has just been told to monitor a certificate
+which does not exist and for which it has no location specified for
+storing a key pair that could be used to generate a signing request to
+obtain one.
+.TP
+NEWLY_ADDED
+The service has just been told to track a certificate, or to generate a
+signing request to obtain one.
+.TP
+NEWLY_ADDED_START_READING_KEYINFO
+The service has just been told to track a certificate, or to generate a
+signing request to obtain one, and is about to check if there is already
+a key pair present.
+.TP
+NEWLY_ADDED_READING_KEYINFO
+The service has just been told to track a certificate, or to generate a
+signing request to obtain one, and is checking if there is already a key
+pair present.
+.TP
+NEWLY_ADDED_NEED_KEYINFO_READ_PIN
+The service has just been told to track a certificate, or to generate a
+signing request to obtain one, and was unable to check if a key pair was
+present because it is missing the PIN which is required to access an NSS
+database, or because it has an incorrect PIN for a database.
+.TP
+NEWLY_ADDED_NEED_KEYINFO_READ_TOKEN
+The service has just been told to track a certificate, or to generate a
+signing request to obtain one, and was unable to check if a key pair was
+present because the token which should be used for storing the key pair
+is not present.
+.TP
+NEWLY_ADDED_START_READING_CERT
+The service has just been told to track a certificate, or to generate a
+signing request to obtain one, and is about to check if a certificate is
+already present in the specified location.
+.TP
+NEWLY_ADDED_READING_CERT
+The service has just been told to track a certificate, or to generate a
+signing request to obtain one, and is checking if a certificate is
+already present in the specified location.
+.TP
+NEWLY_ADDED_DECIDING
+The service has just been told to track a certificate, or to generate a
+signing request to obtain one, and is determining its next course of
+action.
 
 .SH BUGS
 Please file tickets for any that you find at https://fedorahosted.org/certmonger/

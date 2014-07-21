@@ -21,9 +21,9 @@ Check that status of a certificate in with the specified nickname.  Must be
 specified with the \fB-d\fR option.
 .TP
 \fB\-f\fR FILE
-Check that status of a certificate stored in with the specified PEM file.
+Check that status of a certificate stored in the specified PEM file.
 .TP
-\fB\-i\fR FILE
+\fB\-i\fR NAME
 Check that status of a certificate with the specified request nickname.
 
 .SH EXIT STATUS
