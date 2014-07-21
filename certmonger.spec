@@ -25,8 +25,8 @@
 %endif
 
 Name:		certmonger
-Version:	0.75.7
-Release:	2%{?dist}
+Version:	0.75.8
+Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
 Group:		System Environment/Daemons
@@ -234,6 +234,10 @@ exit 0
 %endif
 
 %changelog
+* Mon Jul 21 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75.8-1
+- add a 'refresh' option to the getcert command
+- add a '-a' flag to the getcert command's 'refresh-ca' option
+
 * Thu Jul 17 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75.7-2
 - reintroduce package Requires: on systemd-sysv on F19 and EL6 and older,
   conditionalized it so that it's ignored on newer releases, and make
@@ -245,7 +249,7 @@ exit 0
   in that single-line values would lose the end-of-line after a daemon
   restart, but not before
 - handle timeout values and exit status values when calling CA helpers
-  in non-SUBMIT, non-POLL modes
+  in non-SUBMIT, non-POLL modes (#1118468)
 - rework how we save CA certificates so that we save CA certificates associated
   with end-entity certificates when we save that end-entity certificate, which
   requires running all of the involved pre- and post-save commands
