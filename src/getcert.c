@@ -3055,12 +3055,16 @@ refresh_ca(const char *argv0, int argc, char **argv)
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	char **cas, *s, *only_ca = DEFAULT_CA;
 	int c, i, verbose = 0;
-	dbus_bool_t b;
+	dbus_bool_t b, all = FALSE;
 
 	opterr = 0;
-	while ((c = getopt(argc, argv, ":sSv" GETOPT_CA)) != -1) {
+	while ((c = getopt(argc, argv, ":asSv" GETOPT_CA)) != -1) {
 		switch (c) {
+		case 'a':
+			all = TRUE;
+			break;
 		case 'c':
+			all = FALSE;
 			only_ca = optarg;
 			break;
 		case 's':
@@ -3085,6 +3089,11 @@ refresh_ca(const char *argv0, int argc, char **argv)
 			return 1;
 		}
 	}
+	if (!all && (only_ca == NULL)) {
+		printf(_("Neither CA nickname nor -a flag specified.\n"));
+		help(argv0, "refresh-ca");
+		return 1;
+	}
 	if (optind < argc) {
 		printf(_("Error: unused extra arguments were supplied.\n"));
 		help(argv0, "refresh-ca");
@@ -3095,7 +3104,7 @@ refresh_ca(const char *argv0, int argc, char **argv)
 	for (i = 0; (cas != NULL) && (cas[i] != NULL); i++) {
 		/* Filter out based on the CA. */
 		s = find_ca_name(globals.tctx, bus, cas[i], verbose);
-		if (s != NULL) {
+		if ((s != NULL) && !all) {
 			if ((only_ca != NULL) && (strcmp(s, only_ca) != 0)) {
 				continue;
 			}
@@ -3104,7 +3113,13 @@ refresh_ca(const char *argv0, int argc, char **argv)
 				CM_DBUS_CA_INTERFACE, "refresh",
 				verbose,
 				globals.tctx);
-		if (!b) {
+		if (b) {
+			if (s != NULL) {
+				printf(_("Data for CA '%s' being refreshed.\n"), s);
+			} else {
+				printf(_("Data for unnamed CA being refreshed.\n"));
+			}
+		} else {
 			printf(_("\terror refreshing CA data\n"));
 		}
 	}
@@ -3355,6 +3370,7 @@ help(const char *cmd, const char *category)
 #ifndef FORCE_CA
 		N_("* General options:\n"),
 		N_("  -c CA	refresh information about the CA with this name\n"),
+		N_("  -a   	refresh information about all known CAs\n"),
 #endif
 		N_("* Bus options:\n"),
 		N_("  -S	connect to the certmonger service on the system bus\n"),
