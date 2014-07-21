@@ -186,6 +186,8 @@ o object layout
       argument: path -> object path of CA
     returns: boolean -> ok
              path    -> object path, in case it changed
+  - refresh
+    returns: boolean -> in progress
   - resubmit (for requests that have been denied, generates a new csr)
     returns: boolean -> working-on-it
 
@@ -215,6 +217,8 @@ o object layout
       returns: boolean -> changed?
     - associated issuer names (for when we have to guess which CA to use)
       arguments: array of string (optional) -> set of issuer names
+  - refresh
+    returns: boolean -> in progress
 
 Marshallers needed:
 Arguments:

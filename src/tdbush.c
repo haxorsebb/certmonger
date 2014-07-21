@@ -3281,6 +3281,45 @@ request_resubmit(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certmonger.request.refresh */
+static DBusHandlerResult
+request_refresh(DBusConnection *conn, DBusMessage *msg,
+		struct cm_client_info *ci, struct cm_context *ctx)
+{
+	DBusMessage *rep;
+	struct cm_store_entry *entry;
+
+	entry = get_entry_for_request_message(msg, ctx);
+	if (entry == NULL) {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+	rep = dbus_message_new_method_return(msg);
+	if (rep != NULL) {
+		switch (entry->cm_state) {
+		case CM_CA_WORKING:
+		case CM_CA_UNREACHABLE:
+			if (cm_stop_entry(ctx, entry->cm_nickname)) {
+				if (cm_start_entry(ctx, entry->cm_nickname)) {
+					cm_tdbusm_set_b(rep, TRUE);
+				} else {
+					cm_tdbusm_set_b(rep, FALSE);
+				}
+			} else {
+				cm_tdbusm_set_b(rep, FALSE);
+			}
+			break;
+		default:
+			cm_tdbusm_set_b(rep, FALSE);
+			break;
+		}
+		dbus_connection_send(conn, rep, NULL);
+		dbus_message_unref(rep);
+		return DBUS_HANDLER_RESULT_HANDLED;
+	} else {
+		return send_internal_request_error(conn, msg);
+	}
+}
+
 /* Custom property get/set logic for request structures. */
 static dbus_bool_t
 request_prop_get_autorenew(struct cm_context *ctx, void *parent,
@@ -6371,6 +6410,14 @@ cm_tdbush_iface_request(void)
 										     cm_tdbush_method_arg_out,
 										     NULL),
 								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("refresh",
+								     request_refresh,
+								     make_method_arg("working",
+										     "b",
+										     cm_tdbush_method_arg_out,
+										     NULL),
+								     NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_CERT_PRESAVE_COMMAND,
 								       cm_tdbush_property_string,
@@ -6410,7 +6457,7 @@ cm_tdbush_iface_request(void)
 				     make_interface_item(cm_tdbush_interface_signal,
 							 make_signal(CM_DBUS_SIGNAL_REQUEST_CERT_SAVED,
 								     NULL),
-							 NULL)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
+							 NULL))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
 	}
 	return ret;
 }
@@ -6498,7 +6545,7 @@ cm_tdbush_iface_ca(void)
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("refresh",
 								     ca_refresh,
-								     make_method_arg("status",
+								     make_method_arg("working",
 										     "b",
 										     cm_tdbush_method_arg_out,
 										     NULL),
