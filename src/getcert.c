@@ -2343,6 +2343,181 @@ resubmit(const char *argv0, int argc, char **argv)
 }
 
 static int
+refresh(const char *argv0, int argc, char **argv)
+{
+	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
+	DBusMessage *rep;
+	char **requests, *p, *nickname, *only_ca = DEFAULT_CA, *ca_name;
+	char *dbdir = NULL, *dbnickname = NULL, *certfile = NULL, *id = NULL;
+	char *nss_scheme;
+	const char *capath;
+	dbus_bool_t b, all = FALSE;
+	char *s1, *s2, *s3, *s4;
+	enum cm_state state;
+	int verbose = 0, c, i;
+
+	opterr = 0;
+	while ((c = getopt(argc, argv, ":sSad:n:f:i:v" GETOPT_CA)) != -1) {
+		switch (c) {
+		case 'c':
+			only_ca = optarg;
+			break;
+		case 's':
+			bus = cm_tdbus_session;
+			break;
+		case 'S':
+			bus = cm_tdbus_system;
+			break;
+		case 'a':
+			all = TRUE;
+			nss_scheme = NULL;
+			dbdir = NULL;
+			dbnickname = NULL;
+			certfile = NULL;
+			id = NULL;
+			break;
+		case 'd':
+			all = FALSE;
+			nss_scheme = NULL;
+			dbdir = ensure_nss(globals.tctx, optarg, &nss_scheme);
+			if ((nss_scheme != NULL) && (dbdir != NULL)) {
+				dbdir = talloc_asprintf(globals.tctx, "%s:%s",
+							nss_scheme, dbdir);
+			}
+			break;
+		case 'n':
+			all = FALSE;
+			dbnickname = talloc_strdup(globals.tctx, optarg);
+			break;
+		case 'f':
+			all = FALSE;
+			certfile = ensure_pem(globals.tctx, optarg);
+			break;
+		case 'i':
+			all = FALSE;
+			id = talloc_strdup(globals.tctx, optarg);
+			break;
+		case 'v':
+			verbose++;
+			break;
+		default:
+			if (c == ':') {
+				fprintf(stderr,
+					_("%s: option requires an argument -- '%c'\n"),
+					"list", optopt);
+			} else {
+				fprintf(stderr, _("%s: invalid option -- '%c'\n"),
+					"list", optopt);
+			}
+			help(argv0, "refresh");
+			return 1;
+		}
+	}
+	if (!all && (id == NULL) &&
+	    ((dbdir == NULL) || (dbnickname == NULL)) && (certfile == NULL)) {
+		printf(_("None of ID or database directory and nickname or "
+			 "certificate file specified.\n"));
+		help(argv0, "refresh");
+		return 1;
+	}
+	if (optind < argc) {
+		printf(_("Error: unused extra arguments were supplied.\n"));
+		help(argv0, "refresh");
+		return 1;
+	}
+	if (only_ca != NULL) {
+		capath = find_ca_by_name(globals.tctx, bus, only_ca, verbose);
+		if (capath == NULL) {
+			printf(_("No CA with name \"%s\" found.\n"), only_ca);
+			return 1;
+		}
+	}
+	requests = query_rep_ap(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
+				"get_requests", verbose, globals.tctx);
+	for (i = 0; (requests != NULL) && (requests[i] != NULL); i++) {
+		/* Filter out based on the CA. */
+		ca_name = NULL;
+		rep = query_rep(bus, requests[i],
+				CM_DBUS_REQUEST_INTERFACE, "get_ca", verbose);
+		if (cm_tdbusm_get_p(rep, globals.tctx, &p) == 0) {
+			ca_name = find_ca_name(globals.tctx, bus, p, verbose);
+		}
+		dbus_message_unref(rep);
+		if (only_ca != NULL) {
+			if (ca_name == NULL) {
+				continue;
+			}
+			if (strcmp(only_ca, ca_name) != 0) {
+				continue;
+			}
+		}
+		/* Filter based on request name or storage. */
+		nickname = find_request_name(globals.tctx, bus, requests[i],
+					     verbose);
+		if ((id != NULL) && (strcmp(nickname, id) != 0)) {
+			continue;
+		}
+		if ((dbdir != NULL) || (dbnickname != NULL) ||
+		    (certfile != NULL)) {
+			rep = query_rep(bus, requests[i],
+					CM_DBUS_REQUEST_INTERFACE,
+					"get_cert_storage_info", verbose);
+			if (cm_tdbusm_get_ssosos(rep, globals.tctx,
+						 &s1, &s2, &s3, &s4) != 0) {
+				printf(_("Error parsing server response.\n"));
+				exit(1);
+			}
+			dbus_message_unref(rep);
+			if ((dbdir != NULL) || (dbnickname != NULL)) {
+				if ((strcmp(s1, "NSSDB") != 0) ||
+				    ((dbdir != NULL) &&
+				     (s2 != NULL) &&
+				     (strcmp(dbdir, s2) != 0)) ||
+				    ((dbnickname != NULL) &&
+				     (s3 != NULL) &&
+				     (strcmp(dbnickname, s3) != 0))) {
+					continue;
+				}
+			}
+			if (certfile != NULL) {
+				if ((strcmp(s1, "FILE") != 0) ||
+				    (strcmp(certfile, s2) != 0)) {
+					continue;
+				}
+			}
+		}
+		/* Get the status of this request. */
+		rep = query_rep(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
+				"get_status", verbose);
+		if (cm_tdbusm_get_sb(rep, globals.tctx, &s1, &b) != 0) {
+			printf(_("Error parsing server response.\n"));
+			exit(1);
+		}
+		dbus_message_unref(rep);
+		/* Filter out based on the current state. */
+		state = cm_store_state_from_string(s1);
+		switch (state) {
+		case CM_CA_WORKING:
+		case CM_CA_UNREACHABLE:
+			break;
+		default:
+			continue;
+			break;
+		}
+		/* Tell the daemon to refresh for this request. */
+		b = query_rep_b(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
+				"refresh", verbose, globals.tctx);
+		if (b) {
+			printf(_("Request ID '%s' being refreshed.\n"), nickname);
+		} else {
+			printf(_("Request ID '%s' NOT being refreshed.\n"),
+			       nickname);
+		}
+	}
+	return 0;
+}
+
+static int
 list(const char *argv0, int argc, char **argv)
 {
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
@@ -3134,6 +3309,7 @@ static struct {
 	{"start-tracking", start_tracking},
 	{"stop-tracking", stop_tracking},
 	{"resubmit", resubmit},
+	{"refresh", refresh},
 	{"list", list},
 	{"status", status},
 	{"list-cas", list_cas},
@@ -3330,6 +3506,29 @@ help(const char *cmd, const char *category)
 		N_("  -v	report all details of errors\n"),
 		NULL,
 	};
+	const char *refresh_help[] = {
+		N_("Usage: %s refresh [options]\n"),
+		"\n",
+		N_("* General options:\n"),
+		N_("  -a   	refresh information about all outstanding requests\n"),
+		"\n",
+		N_("Required arguments:\n"),
+		N_("* By request identifier:\n"),
+		N_("  -i NAME	nickname for tracking request\n"),
+		N_("* If using an NSS database for storage:\n"),
+		N_("  -d DIR	NSS database for key and cert\n"),
+		N_("  -n NAME	nickname for NSS-based storage (only valid with -d)\n"),
+		N_("  -t NAME	optional token name for NSS-based storage (only valid with -d)\n"),
+		N_("* If using files for storage:\n"),
+		N_("  -f FILE	PEM file for certificate\n"),
+		"\n",
+		N_("Optional arguments:\n"),
+		N_("* Bus options:\n"),
+		N_("  -S		connect to the certmonger service on the system bus\n"),
+		N_("  -s		connect to the certmonger service on the session bus\n"),
+		N_("  -v	report all details of errors\n"),
+		NULL,
+	};
 	const char *status_help[] = {
 		N_("Usage: %s status [options]\n"),
 		"\n",
@@ -3388,6 +3587,7 @@ help(const char *cmd, const char *category)
 		{"start-tracking", start_tracking_help},
 		{"stop-tracking", stop_tracking_help},
 		{"resubmit", resubmit_help},
+		{"refresh", refresh_help},
 		{"list", list_help},
 		{"status", status_help},
 		{"list-cas", list_cas_help},

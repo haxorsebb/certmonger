@@ -1,0 +1,64 @@
+.TH certmonger 1 "21 July 2014" "certmonger Manual"
+
+.SH NAME
+getcert
+
+.SH SYNOPSIS
+getcert refresh [options]
+
+.SH DESCRIPTION
+Forces \fIcertmonger\fR to immediately check on the status of an enrollment
+request for which it was either unable to contact a CA or for which it is
+waiting for the CA.
+
+.SH SPECIFYING REQUESTS BY NICKNAME
+.TP
+\fB\-i\fR NAME
+Check on the status of the signing request which has this nickname.
+If this option is not specified, and a tracking entry which matches the
+certificate storage options which are specified already exists, that entry
+will be used.  If not specified, the location of the certificate should be
+specified with either a combination of the \fB\-d\fR and \fB\-n\fR options, or
+with the \fB\-f\fR option.
+
+.SH SPECIFYING REQUESTS BY CERTIFICATE LOCATION
+.TP
+\fB\-d\fR DIR
+The certificate is in the NSS database in the specified directory.
+.TP
+\fB\-n\fR NAME
+The certificate in the NSS database named with \fB\-d\fR has the specified
+nickname.  Only valid with \fB\-d\fR.
+.TP
+\fB\-t\fR TOKEN
+If the NSS database has more than one token available, the certificate
+is stored in this token.  This argument only rarely needs to be specified.
+Only valid with \fB\-d\fR.
+.TP
+\fB\-f\fR FILE
+The certificate is stored in the named file.
+
+.SH OPTIONS
+.TP
+\fB\-a\fR
+Refresh information about all requests for which the service will need to
+attempt to contact the CA again.
+
+.SH BUGS
+Please file tickets for any that you find at https://fedorahosted.org/certmonger/
+
+.SH SEE ALSO
+\fBcertmonger\fR(8)
+\fBgetcert\fR(1)
+\fBgetcert-list\fR(1)
+\fBgetcert-list-cas\fR(1)
+\fBgetcert-refresh-ca\fR(1)
+\fBgetcert-request\fR(1)
+\fBgetcert-resubmit\fR(1)
+\fBgetcert-start-tracking\fR(1)
+\fBgetcert-status\fR(1)
+\fBgetcert-stop-tracking\fR(1)
+\fBcertmonger-certmaster-submit\fR(8)
+\fBcertmonger-ipa-submit\fR(8)
+\fBcertmonger-local-submit\fR(8)
+\fBcertmonger_selinux\fR(8)
