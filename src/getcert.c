@@ -2471,7 +2471,6 @@ refresh(const char *argv0, int argc, char **argv)
 			if ((dbdir != NULL) || (dbnickname != NULL)) {
 				if ((strcmp(s1, "NSSDB") != 0) ||
 				    ((dbdir != NULL) &&
-				     (s2 != NULL) &&
 				     (strcmp(dbdir, s2) != 0)) ||
 				    ((dbnickname != NULL) &&
 				     (s3 != NULL) &&
