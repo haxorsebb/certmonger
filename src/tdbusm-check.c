@@ -74,7 +74,13 @@ static struct cm_tdbusm_dict d4 = {
 	.value_type = cm_tdbusm_dict_ass,
 	.value.as = (char **) ass,
 };
-static const struct cm_tdbusm_dict *d[] = {&d0, &d1, &d2, &d3, &d4, NULL};
+static const struct cm_tdbusm_dict *dsub[] = {&d0, &d1, NULL};
+static struct cm_tdbusm_dict d5 = {
+	.key = "key 5",
+	.value_type = cm_tdbusm_dict_d,
+	.value.d = dsub,
+};
+static const struct cm_tdbusm_dict *d[] = {&d0, &d1, &d2, &d3, &d4, &d5, NULL};
 
 static int
 set_b(DBusMessage *msg)
@@ -539,55 +545,69 @@ get_sasasasnas(DBusMessage *rep, int msgid)
 	return ret;
 }
 static int
+print_d(DBusMessage *rep, const struct cm_tdbusm_dict **d)
+{
+	int i, k;
+
+	for (i = 0; (d != NULL) && (d[i] != NULL); i++) {
+		printf("%s{%s=", i > 0 ? "," : "", d[i]->key);
+		switch (d[i]->value_type) {
+		case cm_tdbusm_dict_s:
+			printf("s:%s}", d[i]->value.s);
+			break;
+		case cm_tdbusm_dict_p:
+			printf("p:%s}", d[i]->value.s);
+			break;
+		case cm_tdbusm_dict_as:
+			printf("as:[");
+			for (k = 0;
+			     (d[i]->value.as != NULL) &&
+			     (d[i]->value.as[k] != NULL);
+			     k++) {
+				printf("%s%s", k > 0 ? "," : "",
+				       d[i]->value.as[k]);
+			}
+			printf("]");
+			break;
+		case cm_tdbusm_dict_ass:
+			printf("ass:[");
+			for (k = 0;
+			     (d[i]->value.ass != NULL) &&
+			     (d[i]->value.ass[k] != NULL) &&
+			     (d[i]->value.ass[k + 1] != NULL);
+			     k += 2) {
+				printf("%s(%s,%s)", k > 0 ? "," : "",
+				       d[i]->value.ass[k],
+				       d[i]->value.ass[k + 1]);
+			}
+			printf("]");
+			break;
+		case cm_tdbusm_dict_n:
+			printf("n:%ld}", d[i]->value.n);
+			break;
+		case cm_tdbusm_dict_b:
+			printf("b:%s}",
+			       d[i]->value.b ? "TRUE" : "FALSE");
+			break;
+		case cm_tdbusm_dict_d:
+			printf("d:[");
+			print_d(rep, d[i]->value.d);
+			printf("]");
+			break;
+		}
+	}
+	return i;
+}
+static int
 get_d(DBusMessage *rep, int msgid)
 {
-	int ret, i, k;
+	int ret;
 	struct cm_tdbusm_dict **d;
+
 	ret = cm_tdbusm_get_d(rep, NULL, &d);
 	if (ret == 0) {
 		printf("Message %d - [", msgid);
-		for (i = 0; (d != NULL) && (d[i] != NULL); i++) {
-			printf("%s{%s=", i > 0 ? "," : "", d[i]->key);
-			switch (d[i]->value_type) {
-			case cm_tdbusm_dict_s:
-				printf("s:%s}", d[i]->value.s);
-				break;
-			case cm_tdbusm_dict_p:
-				printf("p:%s}", d[i]->value.s);
-				break;
-			case cm_tdbusm_dict_as:
-				printf("as:[");
-				for (k = 0;
-				     (d[i]->value.as != NULL) &&
-				     (d[i]->value.as[k] != NULL);
-				     k++) {
-					printf("%s%s", k > 0 ? "," : "",
-					       d[i]->value.as[k]);
-				}
-				printf("]");
-				break;
-			case cm_tdbusm_dict_ass:
-				printf("ass:[");
-				for (k = 0;
-				     (d[i]->value.ass != NULL) &&
-				     (d[i]->value.ass[k] != NULL) &&
-				     (d[i]->value.ass[k + 1] != NULL);
-				     k += 2) {
-					printf("%s(%s,%s)", k > 0 ? "," : "",
-					       d[i]->value.ass[k],
-					       d[i]->value.ass[k + 1]);
-				}
-				printf("]");
-				break;
-			case cm_tdbusm_dict_n:
-				printf("n:%ld}", d[i]->value.n);
-				break;
-			case cm_tdbusm_dict_b:
-				printf("b:%s}",
-				       d[i]->value.b ? "TRUE" : "FALSE");
-				break;
-			}
-		}
+		print_d(rep, (const struct cm_tdbusm_dict **) d);
 		printf("]\n");
 	}
 	return ret;
@@ -595,54 +615,14 @@ get_d(DBusMessage *rep, int msgid)
 static int
 get_sd(DBusMessage *rep, int msgid)
 {
-	int ret, i, k;
+	int ret;
 	struct cm_tdbusm_dict **d;
 	char *s;
+
 	ret = cm_tdbusm_get_sd(rep, NULL, &s, &d);
 	if (ret == 0) {
 		printf("Message %d - s:%s,[", msgid, s);
-		for (i = 0; (d != NULL) && (d[i] != NULL); i++) {
-			printf("%s{%s=", i > 0 ? "," : "", d[i]->key);
-			switch (d[i]->value_type) {
-			case cm_tdbusm_dict_s:
-				printf("s:%s}", d[i]->value.s);
-				break;
-			case cm_tdbusm_dict_p:
-				printf("p:%s}", d[i]->value.s);
-				break;
-			case cm_tdbusm_dict_as:
-				printf("as:[");
-				for (k = 0;
-				     (d[i]->value.as != NULL) &&
-				     (d[i]->value.as[k] != NULL);
-				     k++) {
-					printf("%s%s", k > 0 ? "," : "",
-					       d[i]->value.as[k]);
-				}
-				printf("]");
-				break;
-			case cm_tdbusm_dict_ass:
-				printf("ass:[");
-				for (k = 0;
-				     (d[i]->value.ass != NULL) &&
-				     (d[i]->value.ass[k] != NULL) &&
-				     (d[i]->value.ass[k + 1] != NULL);
-				     k += 2) {
-					printf("%s(%s,%s)", k > 0 ? "," : "",
-					       d[i]->value.ass[k],
-					       d[i]->value.ass[k + 1]);
-				}
-				printf("]");
-				break;
-			case cm_tdbusm_dict_n:
-				printf("n:%ld}", d[i]->value.n);
-				break;
-			case cm_tdbusm_dict_b:
-				printf("b:%s}",
-				       d[i]->value.b ? "TRUE" : "FALSE");
-				break;
-			}
-		}
+		print_d(rep, (const struct cm_tdbusm_dict **) d);
 		printf("]\n");
 	}
 	return ret;

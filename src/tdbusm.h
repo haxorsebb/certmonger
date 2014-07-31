@@ -67,6 +67,7 @@ struct cm_tdbusm_dict {
 		cm_tdbusm_dict_ass,
 		cm_tdbusm_dict_n,
 		cm_tdbusm_dict_b,
+		cm_tdbusm_dict_d,
 	} value_type;
 	union {
 		char *s;
@@ -74,6 +75,7 @@ struct cm_tdbusm_dict {
 		char **ass;
 		long n;
 		dbus_bool_t b;
+		const struct cm_tdbusm_dict **d;
 	} value;
 };
 int cm_tdbusm_get_d(DBusMessage *msg, void *parent, struct cm_tdbusm_dict ***d);

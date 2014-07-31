@@ -26,12 +26,15 @@
 
 #include <dbus/dbus.h>
 
+#include "log.h"
 #include "tdbusm.h"
 
 #define N_(_text) _text
 
 static char empty_string[] = "";
 static const char *empty_string_array[] = {NULL};
+static struct cm_tdbusm_dict **cm_tdbusm_get_d_array(DBusMessageIter *array,
+						     void *parent);
 
 static int
 cm_tdbusm_array_length(const char **array)
@@ -927,6 +930,7 @@ static struct cm_tdbusm_dict *
 cm_tdbusm_get_d_item(DBusMessageIter *item, void *parent)
 {
 	struct cm_tdbusm_dict *dict;
+	struct cm_tdbusm_dict **dicts;
 	char *s, **as, **ass;
 	int64_t i64;
 	int32_t i32;
@@ -1050,6 +1054,11 @@ cm_tdbusm_get_d_item(DBusMessageIter *item, void *parent)
 					n_values += 2;
 					ass[n_values] = NULL;
 					dict->value.ass = ass;
+					break;
+				case DBUS_TYPE_DICT_ENTRY:
+					dict->value_type = cm_tdbusm_dict_d;
+					dicts = cm_tdbusm_get_d_array(&sval, dict);
+					dict->value.d = (const struct cm_tdbusm_dict **) dicts;
 					break;
 				default:
 					talloc_free(dict);
@@ -1764,19 +1773,15 @@ cm_tdbusm_set_sasasasnas(DBusMessage *msg, const char *s,
 }
 
 static int
-cm_tdbusm_set_osd(DBusMessage *msg,
-		  const char *s, const struct cm_tdbusm_dict **d)
+cm_tdbusm_append_d(DBusMessage *msg, DBusMessageIter *args,
+		   const struct cm_tdbusm_dict **d)
 {
-	DBusMessageIter args, array, entry, val, elt, fields;
-	int i;
+	DBusMessageIter array, entry, val, elt, fields;
+	int i, subs = 0;
 	int64_t l;
-	memset(&args, 0, sizeof(args));
-	dbus_message_iter_init_append(msg, &args);
-	if (s != NULL) {
-		dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &s);
-	}
+
 	memset(&array, 0, sizeof(array));
-	dbus_message_iter_open_container(&args,
+	dbus_message_iter_open_container(args,
 					 DBUS_TYPE_ARRAY,
 					 DBUS_DICT_ENTRY_BEGIN_CHAR_AS_STRING
 					 DBUS_TYPE_STRING_AS_STRING
@@ -1892,10 +1897,40 @@ cm_tdbusm_set_osd(DBusMessage *msg,
 			dbus_message_iter_close_container(&val, &elt);
 			dbus_message_iter_close_container(&entry, &val);
 			break;
+		case cm_tdbusm_dict_d:
+			dbus_message_iter_open_container(&entry,
+							 DBUS_TYPE_VARIANT,
+							 DBUS_TYPE_ARRAY_AS_STRING
+							 DBUS_DICT_ENTRY_BEGIN_CHAR_AS_STRING
+							 DBUS_TYPE_STRING_AS_STRING
+							 DBUS_TYPE_VARIANT_AS_STRING
+							 DBUS_DICT_ENTRY_END_CHAR_AS_STRING,
+							 &val);
+			subs += cm_tdbusm_append_d(msg, &val,
+						   (const struct cm_tdbusm_dict **) d[i]->value.d);
+			dbus_message_iter_close_container(&entry, &val);
+			break;
 		}
 		dbus_message_iter_close_container(&array, &entry);
 	}
-	dbus_message_iter_close_container(&args, &array);
+	dbus_message_iter_close_container(args, &array);
+	return i + subs;
+}
+
+
+static int
+cm_tdbusm_set_osd(DBusMessage *msg,
+		  const char *s, const struct cm_tdbusm_dict **d)
+{
+	DBusMessageIter args;
+	int i;
+
+	memset(&args, 0, sizeof(args));
+	dbus_message_iter_init_append(msg, &args);
+	if (s != NULL) {
+		dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &s);
+	}
+	i = cm_tdbusm_append_d(msg, &args, d);
 	return (i > 0) ? 0 : -1;
 }
 

@@ -151,6 +151,7 @@ certmonger_session_LDADD = libcm.a \
 		   $(OPENSSL_LIBS) $(CERTMONGER_LIBS) $(KRB5_LIBS) $(IDN_LIBS) \
 		   $(GMP_LIBS) $(UUID_LIBS) $(LTLIBICONV)
 noinst_PROGRAMS = tdbusm-check serial-check nl-check submit-x tlslayer toklist
+tdbusm_check_SOURCES = tdbusm-check.c tm.c tm.h
 tdbusm_check_LDADD = libcm.a $(CERTMONGER_LIBS)
 serial_check_LDADD = libcm.a $(CERTMONGER_LIBS) $(LTLIBICONV)
 nl_check_LDADD = libcm.a $(CERTMONGER_LIBS)
