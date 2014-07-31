@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-#
+# 
 # Translators:
 # alanzheng <machinecat1666@gmail.com>, 2011
 # Huan Chen <chenhuan126@126.com>, 2011
@@ -17,12 +17,11 @@ msgstr ""
 "POT-Creation-Date: 2014-07-21 15:56-0400\n"
 "PO-Revision-Date: 2014-07-21 19:56+0000\n"
 "Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
-"Language-Team: Chinese (China) (http://www.transifex.com/projects/p/"
-"certmonger/language/zh_CN/)\n"
-"Language: zh_CN\n"
+"Language-Team: Chinese (China) (http://www.transifex.com/projects/p/certmonger/language/zh_CN/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
 #: src/certmaster.c:129 src/ipa.c:252
@@ -251,8 +250,7 @@ msgstr "数据库目录和证书文件都已指定。\n"
 
 #: src/getcert.c:823 src/getcert.c:1874 src/getcert.c:2156
 #, c-format
-msgid ""
-"None of database directory and nickname or certificate file specified.\n"
+msgid "None of database directory and nickname or certificate file specified.\n"
 msgstr "没有指定数据库目录和别名，或证书文件。\n"
 
 #: src/getcert.c:830 src/getcert.c:1675
@@ -263,8 +261,8 @@ msgstr "密钥和证书不能保存到同一个文件。\n"
 #: src/getcert.c:856
 #, c-format
 msgid ""
-"The IPA backend requires the use of the -K option (principal name) when the -"
-"N option (subject name) is used.\n"
+"The IPA backend requires the use of the -K option (principal name) when the "
+"-N option (subject name) is used.\n"
 msgstr "当使用 -N 选项（主题名）时，IPA 后端要求使用 -K 选项（实体名）。\n"
 
 #: src/getcert.c:988 src/getcert.c:1383 src/getcert.c:1775 src/getcert.c:2176
@@ -667,9 +665,7 @@ msgstr "* 证书处理设置：\n"
 
 #: src/getcert.c:3344
 msgid "  -I NAME\tnickname to assign to the request\n"
-msgstr ""
-"  -I NAME    要分配给请求的别名\n"
-"\n"
+msgstr "  -I NAME    要分配给请求的别名\n\n"
 
 #: src/getcert.c:3345
 msgid "  -G TYPE\ttype of key to be generated if one is not already in place\n"
@@ -680,8 +676,7 @@ msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
 msgstr "  -g SIZE    要生成的密钥大小，如果密钥不存在\n"
 
 #: src/getcert.c:3347 src/getcert.c:3393
-msgid ""
-"  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
+msgid "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
 msgstr "  -r     在临近到期时试图更新证书（默认）\n"
 
 #: src/getcert.c:3348 src/getcert.c:3394
@@ -884,21 +879,15 @@ msgstr "* 如果选择一个特定的需求：\n"
 
 #: src/getcert.c:3498
 msgid "  -d DIR\tonly list requests and certs which use this NSS database\n"
-msgstr ""
-"  -d 目录<span class=\"whitespace other\" title=\"Tab\">»</span>仅列出使用该 "
-"NSS 数据库的请求和认证\n"
+msgstr "  -d 目录<span class=\"whitespace other\" title=\"Tab\">»</span>仅列出使用该 NSS 数据库的请求和认证\n"
 
 #: src/getcert.c:3499
 msgid "  -n NAME\tonly list requests and certs which use this nickname\n"
-msgstr ""
-"  -n 名称<span class=\"whitespace other\" title=\"Tab\">»</span>仅显示使用该"
-"名称的请求和认证\n"
+msgstr "  -n 名称<span class=\"whitespace other\" title=\"Tab\">»</span>仅显示使用该名称的请求和认证\n"
 
 #: src/getcert.c:3501
 msgid "  -f FILE\tonly list requests and certs stored in this PEM file\n"
-msgstr ""
-"  -f 文件<span class=\"whitespace other\" title=\"Tab\">»</span>仅列出保存在"
-"此 PEM 文件中的请求和认证\n"
+msgstr "  -f 文件<span class=\"whitespace other\" title=\"Tab\">»</span>仅列出保存在此 PEM 文件中的请求和认证\n"
 
 #: src/getcert.c:3503 src/getcert.c:3544 src/getcert.c:3559 src/getcert.c:3575
 msgid "  -S\tconnect to the certmonger service on the system bus\n"
@@ -976,9 +965,7 @@ msgstr "%s：未识别命令\n"
 #: src/ipa.c:151
 #, c-format
 msgid "The -t option can not be used with the -K option.\n"
-msgstr ""
-"选项 -t 不可跟选项 -K 共同使用。\n"
-"\n"
+msgstr "选项 -t 不可跟选项 -K 共同使用。\n\n"
 
 #: src/ipa.c:159
 #, c-format
@@ -1003,14 +990,13 @@ msgstr "无法确定 CA 的 XMLRPC 服务器的位置。\n"
 #: src/ipa.c:306
 #, c-format
 msgid ""
-"Error setting up ccache for \"host\" service on client using default keytab: "
-"%s.\n"
+"Error setting up ccache for \"host\" service on client using default keytab:"
+" %s.\n"
 msgstr ""
 
 #: src/ipa.c:310
 #, c-format
-msgid ""
-"Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
+msgid "Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
 msgstr ""
 
 #: src/ipa.c:317
@@ -1075,9 +1061,7 @@ msgstr "\t-d LEVEL   设定调试级别 (使用 -n)\n"
 
 #: src/main.c:131
 msgid "\t-p FILE    write service PID to file\n"
-msgstr ""
-"\t-p FILE    在文件中写入服务 PID\n"
-"\n"
+msgstr "\t-p FILE    在文件中写入服务 PID\n\n"
 
 #: src/main.c:132
 msgid "\t-F         force NSS into FIPS mode\n"
@@ -1138,8 +1122,7 @@ msgstr "位置“%s”必须是文件。"
 
 #: src/tdbush.c:590 src/tdbush.c:937 src/tdbush.c:1037 src/tdbush.c:1137
 #, c-format
-msgid ""
-"The location \"%s\" could not be accessed due to insufficient permissions."
+msgid "The location \"%s\" could not be accessed due to insufficient permissions."
 msgstr ""
 
 #: src/tdbush.c:598 src/tdbush.c:831 src/tdbush.c:945 src/tdbush.c:1045
@@ -1160,7 +1143,8 @@ msgstr "具有别名“%s”的请求已经存在。"
 #: src/tdbush.c:698
 #, c-format
 msgid ""
-"Certificate at same location is already used by request with nickname \"%s\"."
+"Certificate at same location is already used by request with nickname "
+"\"%s\"."
 msgstr "在相同位置的认证已经被包含昵称 \"%s\" 的请求使用。"
 
 #: src/tdbush.c:731

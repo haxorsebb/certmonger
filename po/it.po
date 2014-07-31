@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-#
+# 
 # Translators:
 # Mario Santagiuliana <fedora at marionline.it>, 2012
 # Silvio Pierro <perplesso82@gmail.com>, 2012
@@ -12,12 +12,11 @@ msgstr ""
 "POT-Creation-Date: 2014-07-21 15:56-0400\n"
 "PO-Revision-Date: 2014-07-21 19:56+0000\n"
 "Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
-"Language-Team: Italian (http://www.transifex.com/projects/p/certmonger/"
-"language/it/)\n"
-"Language: it\n"
+"Language-Team: Italian (http://www.transifex.com/projects/p/certmonger/language/it/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: it\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: src/certmaster.c:129 src/ipa.c:252
@@ -97,17 +96,14 @@ msgstr ""
 #: src/getcert.c:92
 #, c-format
 msgid "Path \"%s\" is not absolute, attempting to use \"%s\" instead.\n"
-msgstr ""
-"Il percorso \"%s\" non è assoluto, tentativo di usare \"%s\" al suo posto.\n"
+msgstr "Il percorso \"%s\" non è assoluto, tentativo di usare \"%s\" al suo posto.\n"
 
 #: src/getcert.c:97
 #, c-format
 msgid ""
 "Path \"%s\" is not absolute, and there was an error determining the name of "
 "the current directory.\n"
-msgstr ""
-"Il percorso \"%s\" non è assoluto, e si è verificato un errore nella "
-"determinazione del nome della cartella attuale.\n"
+msgstr "Il percorso \"%s\" non è assoluto, e si è verificato un errore nella determinazione del nome della cartella attuale.\n"
 
 #: src/getcert.c:119
 #, c-format
@@ -249,27 +245,20 @@ msgstr "Cartella database e file certificato specificati contemporaneamente.\n"
 
 #: src/getcert.c:823 src/getcert.c:1874 src/getcert.c:2156
 #, c-format
-msgid ""
-"None of database directory and nickname or certificate file specified.\n"
-msgstr ""
-"Non è stata specificata nessuna cartella di database e nickname o file "
-"certificato.\n"
+msgid "None of database directory and nickname or certificate file specified.\n"
+msgstr "Non è stata specificata nessuna cartella di database e nickname o file certificato.\n"
 
 #: src/getcert.c:830 src/getcert.c:1675
 #, c-format
 msgid "Key and certificate can not both be saved to the same file.\n"
-msgstr ""
-"La chiave ed il certificato non possono essere salvati entrambi nello stesso "
-"file.\n"
+msgstr "La chiave ed il certificato non possono essere salvati entrambi nello stesso file.\n"
 
 #: src/getcert.c:856
 #, c-format
 msgid ""
-"The IPA backend requires the use of the -K option (principal name) when the -"
-"N option (subject name) is used.\n"
-msgstr ""
-"Il backend IPA richiede l'uso dell'opzione -K (nome principale) quando si "
-"usa l'opzione -N (nome soggetto).\n"
+"The IPA backend requires the use of the -K option (principal name) when the "
+"-N option (subject name) is used.\n"
+msgstr "Il backend IPA richiede l'uso dell'opzione -K (nome principale) quando si usa l'opzione -N (nome soggetto).\n"
 
 #: src/getcert.c:988 src/getcert.c:1383 src/getcert.c:1775 src/getcert.c:2176
 #: src/getcert.c:2431 src/getcert.c:2597
@@ -308,9 +297,7 @@ msgstr "La nuova richiesta di tracking non può essere aggiunta.\n"
 msgid ""
 "None of ID or database directory and nickname or certificate file "
 "specified.\n"
-msgstr ""
-"Non è stato specificato nessuno tra l'ID oppure la cartella di database ed "
-"il nickname oppure il certificato.\n"
+msgstr "Non è stato specificato nessuno tra l'ID oppure la cartella di database ed il nickname oppure il certificato.\n"
 
 #: src/getcert.c:1841
 #, c-format
@@ -628,16 +615,13 @@ msgstr "  -d DIR\tDatabase NSS per chiave e certificato\n"
 #: src/getcert.c:3333 src/getcert.c:3381 src/getcert.c:3426 src/getcert.c:3448
 #: src/getcert.c:3520
 msgid "  -n NAME\tnickname for NSS-based storage (only valid with -d)\n"
-msgstr ""
-"  -n NOME\tnickname per gli storage basati su NSS (valido solo con -d)\n"
+msgstr "  -n NOME\tnickname per gli storage basati su NSS (valido solo con -d)\n"
 
 #: src/getcert.c:3334 src/getcert.c:3382 src/getcert.c:3427 src/getcert.c:3449
 #: src/getcert.c:3521
 msgid ""
 "  -t NAME\toptional token name for NSS-based storage (only valid with -d)\n"
-msgstr ""
-"  -t NOME\tnome token opzionale per storage basato su NSS (valido solo con -"
-"d)\n"
+msgstr "  -t NOME\tnome token opzionale per storage basato su NSS (valido solo con -d)\n"
 
 #: src/getcert.c:3335 src/getcert.c:3383 src/getcert.c:3428 src/getcert.c:3450
 #: src/getcert.c:3500 src/getcert.c:3522
@@ -684,21 +668,15 @@ msgstr ""
 
 #: src/getcert.c:3346
 msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
-msgstr ""
-"  -g DIM\tdimensione della chiave da generare se non ne è già presente una\n"
+msgstr "  -g DIM\tdimensione della chiave da generare se non ne è già presente una\n"
 
 #: src/getcert.c:3347 src/getcert.c:3393
-msgid ""
-"  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
-msgstr ""
-"  -r\t\ttenta di rinnovare il certificato quando si avvicina la scadenza "
-"(predefinito)\n"
+msgid "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
+msgstr "  -r\t\ttenta di rinnovare il certificato quando si avvicina la scadenza (predefinito)\n"
 
 #: src/getcert.c:3348 src/getcert.c:3394
 msgid "  -R\t\tdon't attempt to renew the certificate when expiration nears\n"
-msgstr ""
-"  -r\t\tnon tentare di rinnovare il certificato quando si avvicina la "
-"scadenza\n"
+msgstr "  -r\t\tnon tentare di rinnovare il certificato quando si avvicina la scadenza\n"
 
 #: src/getcert.c:3350 src/getcert.c:3396
 msgid "  -c CA\t\tuse the specified CA rather than the default\n"
@@ -816,8 +794,7 @@ msgstr "* Parametri per la richiesta segnante al momento del rinnovo:\n"
 
 #: src/getcert.c:3400
 msgid "  -U EXTUSAGE\toverride requested extended key usage OID\n"
-msgstr ""
-"  -U USOEXT\tSovrascrive l'utilizzo OID della chiave estesa richiesta\n"
+msgstr "  -U USOEXT\tSovrascrive l'utilizzo OID della chiave estesa richiesta\n"
 
 #: src/getcert.c:3402
 msgid "  -K NAME\toverride requested principal name\n"
@@ -881,8 +858,7 @@ msgstr "* Opzioni generali:\n"
 
 #: src/getcert.c:3491
 msgid "  -c CA\tlist only requests and certs associated with this CA\n"
-msgstr ""
-"  -c CA\telenca solo le richieste ed i certificati associati a questo CA\n"
+msgstr "  -c CA\telenca solo le richieste ed i certificati associati a questo CA\n"
 
 #: src/getcert.c:3493
 msgid "  -r\tlist only information about outstanding requests\n"
@@ -898,21 +874,15 @@ msgstr "* Se si seleziona una richiesta specifica:\n"
 
 #: src/getcert.c:3498
 msgid "  -d DIR\tonly list requests and certs which use this NSS database\n"
-msgstr ""
-"  -d DIR\telenca solo le richieste ed i certificati che usano questo "
-"database NSS\n"
+msgstr "  -d DIR\telenca solo le richieste ed i certificati che usano questo database NSS\n"
 
 #: src/getcert.c:3499
 msgid "  -n NAME\tonly list requests and certs which use this nickname\n"
-msgstr ""
-"  -n NOME\telenca solo le richieste ed i certificati che usano questo "
-"nickname\n"
+msgstr "  -n NOME\telenca solo le richieste ed i certificati che usano questo nickname\n"
 
 #: src/getcert.c:3501
 msgid "  -f FILE\tonly list requests and certs stored in this PEM file\n"
-msgstr ""
-"  -f FILE\telenca solo le richieste ed i certificati immagazzinati in questo "
-"file PEM\n"
+msgstr "  -f FILE\telenca solo le richieste ed i certificati immagazzinati in questo file PEM\n"
 
 #: src/getcert.c:3503 src/getcert.c:3544 src/getcert.c:3559 src/getcert.c:3575
 msgid "  -S\tconnect to the certmonger service on the system bus\n"
@@ -1000,15 +970,12 @@ msgstr "L'opzione -k non può essere usata con l'opzione -K .\n"
 #: src/ipa.c:167
 #, c-format
 msgid "The -K option can not be used with either the -k or the -t option.\n"
-msgstr ""
-"L'opzione -K non può essere usata ne con l'opzione -k che con l'opzione -"
-"t .\n"
+msgstr "L'opzione -K non può essere usata ne con l'opzione -k che con l'opzione -t .\n"
 
 #: src/ipa.c:238
 #, c-format
 msgid "Unable to determine principal name for signing request.\n"
-msgstr ""
-"Impossibile determinare il nome principale per la richiesta di firma.\n"
+msgstr "Impossibile determinare il nome principale per la richiesta di firma.\n"
 
 #: src/ipa.c:255
 #, c-format
@@ -1018,14 +985,13 @@ msgstr "Impossibile determinare la posizione del server XMLRPC di CA.\n"
 #: src/ipa.c:306
 #, c-format
 msgid ""
-"Error setting up ccache for \"host\" service on client using default keytab: "
-"%s.\n"
+"Error setting up ccache for \"host\" service on client using default keytab:"
+" %s.\n"
 msgstr ""
 
 #: src/ipa.c:310
 #, c-format
-msgid ""
-"Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
+msgid "Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
 msgstr ""
 
 #: src/ipa.c:317
@@ -1141,9 +1107,7 @@ msgstr ""
 #: src/tdbush.c:1190
 #, c-format
 msgid "The parent of location \"%s\" must be a valid directory."
-msgstr ""
-"La directory superiore della posizione \"%s\" deve essere una cartella "
-"valida."
+msgstr "La directory superiore della posizione \"%s\" deve essere una cartella valida."
 
 #: src/tdbush.c:550 src/tdbush.c:794 src/tdbush.c:1001 src/tdbush.c:1101
 #: src/tdbush.c:1201
@@ -1153,8 +1117,7 @@ msgstr "La posizione \"%s\" deve essere un file."
 
 #: src/tdbush.c:590 src/tdbush.c:937 src/tdbush.c:1037 src/tdbush.c:1137
 #, c-format
-msgid ""
-"The location \"%s\" could not be accessed due to insufficient permissions."
+msgid "The location \"%s\" could not be accessed due to insufficient permissions."
 msgstr ""
 
 #: src/tdbush.c:598 src/tdbush.c:831 src/tdbush.c:945 src/tdbush.c:1045
@@ -1175,10 +1138,9 @@ msgstr "E' già presente una richiesta con il nickname \"%s\"."
 #: src/tdbush.c:698
 #, c-format
 msgid ""
-"Certificate at same location is already used by request with nickname \"%s\"."
-msgstr ""
-"Il certificato con questa posizione è già usato dalla richiesta con il "
-"nickname \"%s\"."
+"Certificate at same location is already used by request with nickname "
+"\"%s\"."
+msgstr "Il certificato con questa posizione è già usato dalla richiesta con il nickname \"%s\"."
 
 #: src/tdbush.c:731
 #, c-format
@@ -1196,9 +1158,7 @@ msgstr "Nickname di chiave non specificata."
 #: src/tdbush.c:906
 #, c-format
 msgid "Key at same location is already used by request with nickname \"%s\"."
-msgstr ""
-"La chiave con questa posizione è già usata dalla richiesta con il nickname "
-"\"%s\"."
+msgstr "La chiave con questa posizione è già usata dalla richiesta con il nickname \"%s\"."
 
 #: src/tdbush.c:1277
 #, c-format

@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-#
+# 
 # Translators:
 # Cleiton Lima <cleitoncfl@yahoo.com.br>, 2011
 # Fábio Olivé Leite <fabio.olive@gmail.com>, 2013
@@ -14,12 +14,11 @@ msgstr ""
 "POT-Creation-Date: 2014-07-21 15:56-0400\n"
 "PO-Revision-Date: 2014-07-21 19:56+0000\n"
 "Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
-"Language-Team: Portuguese (Brazil) (http://www.transifex.com/projects/p/"
-"certmonger/language/pt_BR/)\n"
-"Language: pt_BR\n"
+"Language-Team: Portuguese (Brazil) (http://www.transifex.com/projects/p/certmonger/language/pt_BR/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: pt_BR\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: src/certmaster.c:129 src/ipa.c:252
@@ -99,18 +98,14 @@ msgstr "Erro interno: nenhuma resposta para \"%s?%s\".\n"
 #: src/getcert.c:92
 #, c-format
 msgid "Path \"%s\" is not absolute, attempting to use \"%s\" instead.\n"
-msgstr ""
-"Caminho \"%s\" não é absoluto, tente usar o \"%s\" em vez disso.\n"
-"\n"
+msgstr "Caminho \"%s\" não é absoluto, tente usar o \"%s\" em vez disso.\n\n"
 
 #: src/getcert.c:97
 #, c-format
 msgid ""
 "Path \"%s\" is not absolute, and there was an error determining the name of "
 "the current directory.\n"
-msgstr ""
-"Caminho \"%s\" não é absoluto, e houve um erro ao determinar o nome do "
-"diretório atual.\n"
+msgstr "Caminho \"%s\" não é absoluto, e houve um erro ao determinar o nome do diretório atual.\n"
 
 #: src/getcert.c:119
 #, c-format
@@ -145,9 +140,7 @@ msgstr "Erro ao conectar-se ao DBus.\n"
 #: src/getcert.c:275 src/tdbusm.c:1963
 #, c-format
 msgid "Please verify that the message bus (D-Bus) service is running.\n"
-msgstr ""
-"Por favor verifique se o serviço de barramento de mensagens (D-Bus) está em "
-"execução.\n"
+msgstr "Por favor verifique se o serviço de barramento de mensagens (D-Bus) está em execução.\n"
 
 #: src/getcert.c:282
 #, c-format
@@ -162,9 +155,7 @@ msgstr "Erro %s: %s\n"
 #: src/getcert.c:328
 #, c-format
 msgid "Error %s\n"
-msgstr ""
-"Erro %s\n"
-"\n"
+msgstr "Erro %s\n\n"
 
 #: src/getcert.c:334
 #, c-format
@@ -252,16 +243,12 @@ msgstr "Localização do banco de dados ou login especificado sem o outro\n"
 #: src/getcert.c:815 src/getcert.c:1659 src/getcert.c:1866 src/getcert.c:2148
 #, c-format
 msgid "Database directory and certificate file both specified.\n"
-msgstr ""
-"Diretório do banco de dados e arquivo de certificado, ambos especificados\n"
+msgstr "Diretório do banco de dados e arquivo de certificado, ambos especificados\n"
 
 #: src/getcert.c:823 src/getcert.c:1874 src/getcert.c:2156
 #, c-format
-msgid ""
-"None of database directory and nickname or certificate file specified.\n"
-msgstr ""
-"Nenhum diretório e login de banco de dados ou arquivo de certificado "
-"especificado.\n"
+msgid "None of database directory and nickname or certificate file specified.\n"
+msgstr "Nenhum diretório e login de banco de dados ou arquivo de certificado especificado.\n"
 
 #: src/getcert.c:830 src/getcert.c:1675
 #, c-format
@@ -271,11 +258,9 @@ msgstr "A chave e o certificado não podem ser salvos no mesmo arquivo.\n"
 #: src/getcert.c:856
 #, c-format
 msgid ""
-"The IPA backend requires the use of the -K option (principal name) when the -"
-"N option (subject name) is used.\n"
-msgstr ""
-"O backend IPA requer o uso da opção -K (nome do principal) quando a opção -N "
-"(nome do subject) é usada.\n"
+"The IPA backend requires the use of the -K option (principal name) when the "
+"-N option (subject name) is used.\n"
+msgstr "O backend IPA requer o uso da opção -K (nome do principal) quando a opção -N (nome do subject) é usada.\n"
 
 #: src/getcert.c:988 src/getcert.c:1383 src/getcert.c:1775 src/getcert.c:2176
 #: src/getcert.c:2431 src/getcert.c:2597
@@ -307,18 +292,14 @@ msgstr "Nova requisição de rastreamento \"%s\" adicionada.\n"
 #: src/getcert.c:1430
 #, c-format
 msgid "New tracking request could not be added.\n"
-msgstr ""
-"Nova requisição de rastreamento não foi adicionada.\n"
-"\n"
+msgstr "Nova requisição de rastreamento não foi adicionada.\n\n"
 
 #: src/getcert.c:1668 src/getcert.c:2418
 #, c-format
 msgid ""
 "None of ID or database directory and nickname or certificate file "
 "specified.\n"
-msgstr ""
-"Nenhum ID, diretório da base de dados e nome de usuário ou arquivo de "
-"certificados especificados.\n"
+msgstr "Nenhum ID, diretório da base de dados e nome de usuário ou arquivo de certificados especificados.\n"
 
 #: src/getcert.c:1841
 #, c-format
@@ -606,9 +587,7 @@ msgstr ""
 #: src/getcert.c:3298
 #, c-format
 msgid "\terror refreshing CA data\n"
-msgstr ""
-"\terro ao atualizar o dado de CA\n"
-"\n"
+msgstr "\terro ao atualizar o dado de CA\n\n"
 
 #: src/getcert.c:3324
 #, c-format
@@ -638,16 +617,13 @@ msgstr "  -d DIR\tBanco de dados NSS para chave e certificado\n"
 #: src/getcert.c:3333 src/getcert.c:3381 src/getcert.c:3426 src/getcert.c:3448
 #: src/getcert.c:3520
 msgid "  -n NAME\tnickname for NSS-based storage (only valid with -d)\n"
-msgstr ""
-"  -n NOME \tapelido para NSS-based armazenamento (válido somente com -d)\n"
+msgstr "  -n NOME \tapelido para NSS-based armazenamento (válido somente com -d)\n"
 
 #: src/getcert.c:3334 src/getcert.c:3382 src/getcert.c:3427 src/getcert.c:3449
 #: src/getcert.c:3521
 msgid ""
 "  -t NAME\toptional token name for NSS-based storage (only valid with -d)\n"
-msgstr ""
-"  -t NOME\tnome de token opcional para NSS-based armazenamento (válido "
-"somente com -d)\n"
+msgstr "  -t NOME\tnome de token opcional para NSS-based armazenamento (válido somente com -d)\n"
 
 #: src/getcert.c:3335 src/getcert.c:3383 src/getcert.c:3428 src/getcert.c:3450
 #: src/getcert.c:3500 src/getcert.c:3522
@@ -694,20 +670,15 @@ msgstr "  -G TIPO\ttipo de chave para a gerada se um já não esta no local\n"
 
 #: src/getcert.c:3346
 msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
-msgstr ""
-"  -g TAMANHO\ttamanho da chave a ser gerada se um já não está neste lugar\n"
+msgstr "  -g TAMANHO\ttamanho da chave a ser gerada se um já não está neste lugar\n"
 
 #: src/getcert.c:3347 src/getcert.c:3393
-msgid ""
-"  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
-msgstr ""
-"  -r\t\ttentativa de renovar o certificado quando o vencimento se aproximar "
-"(padrão)\n"
+msgid "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
+msgstr "  -r\t\ttentativa de renovar o certificado quando o vencimento se aproximar (padrão)\n"
 
 #: src/getcert.c:3348 src/getcert.c:3394
 msgid "  -R\t\tdon't attempt to renew the certificate when expiration nears\n"
-msgstr ""
-"  -R\t\tnão tente renovar o certificado quando se aproxima da expiração\n"
+msgstr "  -R\t\tnão tente renovar o certificado quando se aproxima da expiração\n"
 
 #: src/getcert.c:3350 src/getcert.c:3396
 msgid "  -c CA\t\tuse the specified CA rather than the default\n"
@@ -717,9 +688,7 @@ msgstr "  -c CA\t\tuse o CA especificado ao invés do padrão\n"
 msgid ""
 "  -T PROFILE\task the CA to process the request using the named profile or "
 "template\n"
-msgstr ""
-"  -T PERFIL\tperguntar o CA processar a requisição usando o modelo ou perfil "
-"nomeado\n"
+msgstr "  -T PERFIL\tperguntar o CA processar a requisição usando o modelo ou perfil nomeado\n"
 
 #: src/getcert.c:3353
 msgid "* Parameters for the signing request:\n"
@@ -727,8 +696,7 @@ msgstr "* Parâmetros para a solicitação de assinatura:\n"
 
 #: src/getcert.c:3354 src/getcert.c:3458
 msgid "  -N NAME\tset requested subject name (default: CN=<hostname>)\n"
-msgstr ""
-"  -N NOME\tnome do assunto solicitado em conjunto (padrão: CN=<hostname>)\n"
+msgstr "  -N NOME\tnome do assunto solicitado em conjunto (padrão: CN=<hostname>)\n"
 
 #: src/getcert.c:3355 src/getcert.c:3459
 msgid "  -U EXTUSAGE\tset requested extended key usage OID\n"
@@ -740,49 +708,35 @@ msgstr "  -u KEYUSAGE\tdefine requisição o valor de uso da chave\n"
 
 #: src/getcert.c:3357 src/getcert.c:3461
 msgid "  -K NAME\tset requested principal name\n"
-msgstr ""
-"  -K NOME\tconjunto solicitado para o nome principal\n"
-"\n"
+msgstr "  -K NOME\tconjunto solicitado para o nome principal\n\n"
 
 #: src/getcert.c:3358 src/getcert.c:3462
 msgid "  -D DNSNAME\tset requested DNS name\n"
-msgstr ""
-"  -D DNSNAME\tconjunto solicitado para o nome do DNS \n"
-"\n"
+msgstr "  -D DNSNAME\tconjunto solicitado para o nome do DNS \n\n"
 
 #: src/getcert.c:3359 src/getcert.c:3463
 msgid "  -E EMAIL\tset requested email address\n"
-msgstr ""
-"  -E EMAIL\tconjunto solicitado para o endereço de email\n"
-"\n"
+msgstr "  -E EMAIL\tconjunto solicitado para o endereço de email\n\n"
 
 #: src/getcert.c:3360 src/getcert.c:3464
 msgid "  -A ADDRESS\tset requested IP address\n"
-msgstr ""
-"  -A ENDEREÇO\tdefinido requisição de endereço IP\n"
-"\n"
+msgstr "  -A ENDEREÇO\tdefinido requisição de endereço IP\n\n"
 
 #: src/getcert.c:3361 src/getcert.c:3406 src/getcert.c:3433 src/getcert.c:3473
 #: src/getcert.c:3502 src/getcert.c:3526 src/getcert.c:3543 src/getcert.c:3558
 #: src/getcert.c:3574
 msgid "* Bus options:\n"
-msgstr ""
-"* Bus opções:\n"
-"\n"
+msgstr "* Bus opções:\n\n"
 
 #: src/getcert.c:3362 src/getcert.c:3407 src/getcert.c:3434 src/getcert.c:3474
 #: src/getcert.c:3527
 msgid "  -S\t\tconnect to the certmonger service on the system bus\n"
-msgstr ""
-"  -S\t\tconnectado para o serviço de certmonger sobre o barramento do "
-"sistema\n"
+msgstr "  -S\t\tconnectado para o serviço de certmonger sobre o barramento do sistema\n"
 
 #: src/getcert.c:3363 src/getcert.c:3408 src/getcert.c:3435 src/getcert.c:3475
 #: src/getcert.c:3528
 msgid "  -s\t\tconnect to the certmonger service on the session bus\n"
-msgstr ""
-"  -s\t\tconnectado para o serviço de certmonger sobre o barramento da "
-"sessão\n"
+msgstr "  -s\t\tconnectado para o serviço de certmonger sobre o barramento da sessão\n"
 
 #: src/getcert.c:3364 src/getcert.c:3409 src/getcert.c:3436 src/getcert.c:3476
 #: src/getcert.c:3505 src/getcert.c:3546 src/getcert.c:3561 src/getcert.c:3577
@@ -791,15 +745,11 @@ msgstr "* Outras opções:\n"
 
 #: src/getcert.c:3365 src/getcert.c:3410 src/getcert.c:3477
 msgid "  -B\tcommand to run before saving the certificate\n"
-msgstr ""
-"  -B\tcomando para rodar antes de salvar o certificado\n"
-"\n"
+msgstr "  -B\tcomando para rodar antes de salvar o certificado\n\n"
 
 #: src/getcert.c:3366 src/getcert.c:3411 src/getcert.c:3478
 msgid "  -C\tcommand to run after saving the certificate\n"
-msgstr ""
-"  -C\tcomando para rodar após salvar o certificado\n"
-"\n"
+msgstr "  -C\tcomando para rodar após salvar o certificado\n\n"
 
 #: src/getcert.c:3367 src/getcert.c:3412 src/getcert.c:3479
 msgid "  -F\tfile in which to store the CA's certificates\n"
@@ -807,9 +757,7 @@ msgstr "  -F\tarquivo para armazenar certificados CA's\n"
 
 #: src/getcert.c:3368 src/getcert.c:3413 src/getcert.c:3480
 msgid "  -a\tNSS database in which to store the CA's certificates\n"
-msgstr ""
-"  -a\tNSS banco de dados para armazenar certificados CA's\n"
-"\n"
+msgstr "  -a\tNSS banco de dados para armazenar certificados CA's\n\n"
 
 #: src/getcert.c:3369 src/getcert.c:3414 src/getcert.c:3481
 msgid "  -w\ttry to wait for the certificate to be issued\n"
@@ -819,16 +767,12 @@ msgstr ""
 #: src/getcert.c:3506 src/getcert.c:3529 src/getcert.c:3547 src/getcert.c:3562
 #: src/getcert.c:3578
 msgid "  -v\treport all details of errors\n"
-msgstr ""
-"  -v\treportar todos os detalhes de erros\n"
-"\n"
+msgstr "  -v\treportar todos os detalhes de erros\n\n"
 
 #: src/getcert.c:3374
 #, c-format
 msgid "Usage: %s start-tracking [options]\n"
-msgstr ""
-"Use: %s start-tracking [opções]\n"
-"\n"
+msgstr "Use: %s start-tracking [opções]\n\n"
 
 #: src/getcert.c:3377
 msgid "* If modifying an existing request:\n"
@@ -860,21 +804,15 @@ msgstr "  -K NOME\tsubstituir o nome principal requerido\n"
 
 #: src/getcert.c:3403
 msgid "  -D DNSNAME\toverride requested DNS name\n"
-msgstr ""
-"  -D DNSNAME\tsubstituir requisição do nome do DNS\n"
-"\n"
+msgstr "  -D DNSNAME\tsubstituir requisição do nome do DNS\n\n"
 
 #: src/getcert.c:3404
 msgid "  -E EMAIL\toverride requested email address\n"
-msgstr ""
-"  -E EMAIL\tsubstituir requisição do endereço de email\n"
-"\n"
+msgstr "  -E EMAIL\tsubstituir requisição do endereço de email\n\n"
 
 #: src/getcert.c:3405
 msgid "  -A ADDRESS\toverride requested IP address\n"
-msgstr ""
-"  -A ENDEREÇO\tsobreescreve requisição de endereço IP\n"
-"\n"
+msgstr "  -A ENDEREÇO\tsobreescreve requisição de endereço IP\n\n"
 
 #: src/getcert.c:3419
 #, c-format
@@ -888,9 +826,7 @@ msgstr "* Por identificador de requisição:\n"
 #: src/getcert.c:3423 src/getcert.c:3445 src/getcert.c:3496 src/getcert.c:3517
 #: src/getcert.c:3537
 msgid "  -i NAME\tnickname for tracking request\n"
-msgstr ""
-"  -i NOME\tapelido para rastreamento de requisição\n"
-"\n"
+msgstr "  -i NOME\tapelido para rastreamento de requisição\n\n"
 
 #: src/getcert.c:3441
 #, c-format
@@ -899,9 +835,7 @@ msgstr "Uso: %s reenvio [opções]\n"
 
 #: src/getcert.c:3451 src/getcert.c:3523
 msgid "  -f FILE\tPEM file for certificate\n"
-msgstr ""
-"  -f ARQUIVO\tPEM arquivo para o certificado\n"
-"\n"
+msgstr "  -f ARQUIVO\tPEM arquivo para o certificado\n\n"
 
 #: src/getcert.c:3457
 msgid "* New parameter values for the signing request:\n"
@@ -926,8 +860,7 @@ msgstr "* Opções gerais:\n"
 
 #: src/getcert.c:3491
 msgid "  -c CA\tlist only requests and certs associated with this CA\n"
-msgstr ""
-"  -c CA\tlistar somente solicitações e certificados associados com esta CA\n"
+msgstr "  -c CA\tlistar somente solicitações e certificados associados com esta CA\n"
 
 #: src/getcert.c:3493
 msgid "  -r\tlist only information about outstanding requests\n"
@@ -943,32 +876,23 @@ msgstr "* Se selecionado um pedido específico:\n"
 
 #: src/getcert.c:3498
 msgid "  -d DIR\tonly list requests and certs which use this NSS database\n"
-msgstr ""
-"  -d DIRETÓRIO\tsomente lista as requisições e os certificados que usam este "
-"NSS como banco de dados\n"
+msgstr "  -d DIRETÓRIO\tsomente lista as requisições e os certificados que usam este NSS como banco de dados\n"
 
 #: src/getcert.c:3499
 msgid "  -n NAME\tonly list requests and certs which use this nickname\n"
-msgstr ""
-"  -n NOME\tsomente lista requisições e certificados que usem este apelido\n"
-"\n"
+msgstr "  -n NOME\tsomente lista requisições e certificados que usem este apelido\n\n"
 
 #: src/getcert.c:3501
 msgid "  -f FILE\tonly list requests and certs stored in this PEM file\n"
-msgstr ""
-"  -f ARQUIVO\tsomente lista as requisições e os certificados armazenadas "
-"neste arquivo PEM\n"
-"\n"
+msgstr "  -f ARQUIVO\tsomente lista as requisições e os certificados armazenadas neste arquivo PEM\n\n"
 
 #: src/getcert.c:3503 src/getcert.c:3544 src/getcert.c:3559 src/getcert.c:3575
 msgid "  -S\tconnect to the certmonger service on the system bus\n"
-msgstr ""
-"  -S\tconectado para o serviço de certmonger sob o barramento do sistema\n"
+msgstr "  -S\tconectado para o serviço de certmonger sob o barramento do sistema\n"
 
 #: src/getcert.c:3504 src/getcert.c:3545 src/getcert.c:3560 src/getcert.c:3576
 msgid "  -s\tconnect to the certmonger service on the session bus\n"
-msgstr ""
-"  -s\tconectado para o serviço de certmonger sob a sessão do barramento\n"
+msgstr "  -s\tconectado para o serviço de certmonger sob a sessão do barramento\n"
 
 #: src/getcert.c:3510
 #, c-format
@@ -1024,9 +948,7 @@ msgstr "Uso: %s refresh-ca [opções]\n"
 
 #: src/getcert.c:3571
 msgid "  -c CA\trefresh information about the CA with this name\n"
-msgstr ""
-"  -c CA\tatualizar informação sobre a CA com este nome\n"
-"\n"
+msgstr "  -c CA\tatualizar informação sobre a CA com este nome\n\n"
 
 #: src/getcert.c:3572
 msgid "  -a   \trefresh information about all known CAs\n"
@@ -1055,8 +977,7 @@ msgstr "A opção -K não pode ser usada com a opção -k ou com a opção -t.\n
 #: src/ipa.c:238
 #, c-format
 msgid "Unable to determine principal name for signing request.\n"
-msgstr ""
-"Não é possível determinar o nome principal para solicitação de assinatura.\n"
+msgstr "Não é possível determinar o nome principal para solicitação de assinatura.\n"
 
 #: src/ipa.c:255
 #, c-format
@@ -1066,46 +987,36 @@ msgstr "Não foi possível determinar a localização do servidor XMLRPC do CA.\
 #: src/ipa.c:306
 #, c-format
 msgid ""
-"Error setting up ccache for \"host\" service on client using default keytab: "
-"%s.\n"
-msgstr ""
-"Erro definido ccache para serviço de \"host\" no cliente usando o padrão "
-"keytab: %s.\n"
+"Error setting up ccache for \"host\" service on client using default keytab:"
+" %s.\n"
+msgstr "Erro definido ccache para serviço de \"host\" no cliente usando o padrão keytab: %s.\n"
 
 #: src/ipa.c:310
 #, c-format
-msgid ""
-"Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
-msgstr ""
-"Erro definido ccache para \"%s\" no cliente usando o padrão keytab: %s.\n"
+msgid "Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
+msgstr "Erro definido ccache para \"%s\" no cliente usando o padrão keytab: %s.\n"
 
 #: src/ipa.c:317
 #, c-format
 msgid ""
 "Error setting up ccache for \"host\" service on client using keytab \"%s\": "
 "%s.\n"
-msgstr ""
-"Erro definido ccache para \"host\" no cliente usando keytab \"%s\": %s.\n"
+msgstr "Erro definido ccache para \"host\" no cliente usando keytab \"%s\": %s.\n"
 
 #: src/ipa.c:321
 #, c-format
 msgid "Error setting up ccache for \"%s\" on client using keytab \"%s\": %s.\n"
-msgstr ""
-"Erro definido ccache para \"%s\" no cliente usando keytab \"%s\": %s.\n"
+msgstr "Erro definido ccache para \"%s\" no cliente usando keytab \"%s\": %s.\n"
 
 #: src/ipa.c:348
 #, c-format
 msgid "Error setting up for XMLRPC on the client.\n"
-msgstr ""
-"Erro definido para XMLRPC no cliente.\n"
-"\n"
+msgstr "Erro definido para XMLRPC no cliente.\n\n"
 
 #: src/ipa.c:428
 #, c-format
 msgid "Unable to determine location of IPA LDAP server.\n"
-msgstr ""
-"Não foi possível determinar a localização do servidor IPA LDAP server.\n"
-"\n"
+msgstr "Não foi possível determinar a localização do servidor IPA LDAP server.\n\n"
 
 #: src/ipa.c:490
 #, c-format
@@ -1119,27 +1030,19 @@ msgstr "Uso: %s [-s|-S] [-n|-f] [-d NÍVEL] [-p ARQUIVO] [-F]\n"
 
 #: src/main.c:124
 msgid "\t-s         use session bus\n"
-msgstr ""
-"\t-s         use a sessão do barramento\n"
-"\n"
+msgstr "\t-s         use a sessão do barramento\n\n"
 
 #: src/main.c:125
 msgid "\t-S         use system bus\n"
-msgstr ""
-"\t-S         use o sistema do barramento\n"
-"\n"
+msgstr "\t-S         use o sistema do barramento\n\n"
 
 #: src/main.c:126
 msgid "\t-n         don't become a daemon\n"
-msgstr ""
-"\t-n         não se torna um daemon\n"
-"\n"
+msgstr "\t-n         não se torna um daemon\n\n"
 
 #: src/main.c:127
 msgid "\t-f         do become a daemon\n"
-msgstr ""
-"\t-f         torna-se um daemon\n"
-"\n"
+msgstr "\t-f         torna-se um daemon\n\n"
 
 #: src/main.c:128
 msgid "\t-b TIMEOUT bus-activated, idle timeout\n"
@@ -1147,15 +1050,11 @@ msgstr "\t-b TIMEOUT bus-activated, idle timeout\n"
 
 #: src/main.c:129
 msgid "\t-B         don't use an idle timeout\n"
-msgstr ""
-"\t-B         não use um timeout oscioso\n"
-"\n"
+msgstr "\t-B         não use um timeout oscioso\n\n"
 
 #: src/main.c:130
 msgid "\t-d LEVEL   set debugging level (implies -n)\n"
-msgstr ""
-"\t-d NIVEL   define depuração de nível(implica -n)\n"
-"\n"
+msgstr "\t-d NIVEL   define depuração de nível(implica -n)\n\n"
 
 #: src/main.c:131
 msgid "\t-p FILE    write service PID to file\n"
@@ -1204,9 +1103,7 @@ msgstr "Localização do armazenamento de certificado não especificada."
 msgid ""
 "The parent of location \"%s\" could not be accessed due to insufficient "
 "permissions."
-msgstr ""
-"O pai da localização \"%s\" não pode ser acessado devido a permissões "
-"insuficientes."
+msgstr "O pai da localização \"%s\" não pode ser acessado devido a permissões insuficientes."
 
 #: src/tdbush.c:539 src/tdbush.c:783 src/tdbush.c:990 src/tdbush.c:1090
 #: src/tdbush.c:1190
@@ -1222,10 +1119,8 @@ msgstr "A localização \"%s\" deve ser um arquivo."
 
 #: src/tdbush.c:590 src/tdbush.c:937 src/tdbush.c:1037 src/tdbush.c:1137
 #, c-format
-msgid ""
-"The location \"%s\" could not be accessed due to insufficient permissions."
-msgstr ""
-"A localização \"%s\" não pode ser acessada devido a permissões insuficientes."
+msgid "The location \"%s\" could not be accessed due to insufficient permissions."
+msgstr "A localização \"%s\" não pode ser acessada devido a permissões insuficientes."
 
 #: src/tdbush.c:598 src/tdbush.c:831 src/tdbush.c:945 src/tdbush.c:1045
 #: src/tdbush.c:1145
@@ -1245,10 +1140,9 @@ msgstr "Já existe um pedido com o nome de usuário \"%s\"."
 #: src/tdbush.c:698
 #, c-format
 msgid ""
-"Certificate at same location is already used by request with nickname \"%s\"."
-msgstr ""
-"Certificado no mesmo local já é utilizado por requisição com o apelido de "
+"Certificate at same location is already used by request with nickname "
 "\"%s\"."
+msgstr "Certificado no mesmo local já é utilizado por requisição com o apelido de \"%s\"."
 
 #: src/tdbush.c:731
 #, c-format
@@ -1266,8 +1160,7 @@ msgstr "Nome de usuário da chave não foi especificado."
 #: src/tdbush.c:906
 #, c-format
 msgid "Key at same location is already used by request with nickname \"%s\"."
-msgstr ""
-"Chave no mesmo local já é utilizado por solicitação com o apelido de \"%s\"."
+msgstr "Chave no mesmo local já é utilizado por solicitação com o apelido de \"%s\"."
 
 #: src/tdbush.c:1277
 #, c-format
