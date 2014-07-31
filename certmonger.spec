@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.75.8
+Version:	0.75.9
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -234,6 +234,11 @@ exit 0
 %endif
 
 %changelog
+* Thu Jul 31 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75.9-1
+- avoid potential use-after-free after a CA is removed dynamically (thanks to
+  Keenan Brock) (#1125342)
+- add a "external-helper" property to CA objects
+
 * Mon Jul 21 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75.8-1
 - add a 'refresh' option to the getcert command
 - add a '-a' flag to the getcert command's 'refresh-ca' option
