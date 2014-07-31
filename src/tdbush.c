@@ -2105,6 +2105,45 @@ ca_prop_set_is_default(struct cm_context *ctx, void *parent,
 	}
 }
 
+static const char *
+ca_prop_get_external_helper(struct cm_context *ctx, void *parent,
+			    void *record, const char *name)
+{
+	struct cm_store_ca *ca = record;
+
+	if (ca->cm_ca_type != cm_ca_external) {
+		return NULL;
+	}
+	if (strcmp(name, CM_DBUS_PROP_EXTERNAL_HELPER) == 0) {
+		return ca->cm_ca_external_helper;
+	}
+	return NULL;
+}
+
+static void
+ca_prop_set_external_helper(struct cm_context *ctx, void *parent,
+			    void *record, const char *name,
+			    const char *new_value)
+{
+	const char *propname[2], *path;
+	struct cm_store_ca *ca = record;
+
+	if (strcmp(name, CM_DBUS_PROP_EXTERNAL_HELPER) == 0) {
+		talloc_free(ca->cm_ca_external_helper);
+		ca->cm_ca_external_helper = new_value ?
+					    talloc_strdup(ca, new_value) :
+					    NULL;
+		propname[0] = CM_DBUS_PROP_EXTERNAL_HELPER;
+		propname[1] = NULL;
+		path = talloc_asprintf(parent, "%s/%s",
+				       CM_DBUS_CA_PATH,
+				       ca->cm_busname);
+		cm_tdbush_property_emit_changed(ctx, path,
+						CM_DBUS_CA_INTERFACE,
+						propname);
+	}
+}
+
 static const char **
 ca_prop_read_nickcerts(struct cm_context *ctx, void *parent,
 		       struct cm_nickcert **nickcerts)
@@ -3653,7 +3692,7 @@ request_prop_set_key_pin(struct cm_context *ctx, void *parent,
 		entry->cm_key_pin_file = NULL;
 		properties[0] = CM_DBUS_PROP_KEY_PIN_FILE;
 		properties[1] = NULL;
-		path = talloc_asprintf(parent, "%s/%s",
+		path = talloc_asprintf(record, "%s/%s",
 				       CM_DBUS_REQUEST_PATH,
 				       entry->cm_busname);
 		cm_tdbush_property_emit_changed(ctx, path,
@@ -3683,7 +3722,7 @@ request_prop_set_key_pin_file(struct cm_context *ctx, void *parent,
 		entry->cm_key_pin = NULL;
 		properties[0] = CM_DBUS_PROP_KEY_PIN;
 		properties[1] = NULL;
-		path = talloc_asprintf(parent, "%s/%s",
+		path = talloc_asprintf(record, "%s/%s",
 				       CM_DBUS_REQUEST_PATH,
 				       entry->cm_busname);
 		cm_tdbush_property_emit_changed(ctx, path,
@@ -4853,7 +4892,7 @@ cm_tdbush_property_set(DBusConnection *conn,
 		}
 		record += prop->cm_offset;
 		wpp = (char **) record;
-		*wpp = maybe_strdup(record, wp);
+		*wpp = maybe_strdup(record - prop->cm_offset, wp);
 		break;
 	case cm_tdbush_property_char_pp:
 		if (cm_tdbusm_get_ssas(msg, parent, &interface, &property,
@@ -4865,7 +4904,7 @@ cm_tdbush_property_set(DBusConnection *conn,
 		}
 		record += prop->cm_offset;
 		wppp = (char ***) record;
-		*wppp = maybe_strdupv(record, wpp);
+		*wppp = maybe_strdupv(record - prop->cm_offset, wpp);
 		break;
 	case cm_tdbush_property_time_t:
 		if (cm_tdbusm_get_ssn(msg, parent, &interface, &property,
@@ -4959,7 +4998,6 @@ cm_tdbush_property_set(DBusConnection *conn,
 		dbus_connection_send(conn, rep, NULL);
 		dbus_message_unref(rep);
 	}
-	talloc_free(parent);
 
 	switch (type) {
 	case cm_tdbush_object_type_none:
@@ -4983,6 +5021,8 @@ cm_tdbush_property_set(DBusConnection *conn,
 	properties[0] = prop->cm_name;
 	properties[1] = NULL;
 	cm_tdbush_property_emit_changed(ctx, path, interface, properties);
+
+	talloc_free(parent);
 
 	return DBUS_HANDLER_RESULT_HANDLED;
 }
@@ -6534,6 +6574,15 @@ cm_tdbush_iface_ca(void)
 										     cm_tdbush_method_arg_out,
 										     NULL),
 								     NULL),
+				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_EXTERNAL_HELPER,
+								       cm_tdbush_property_string,
+								       cm_tdbush_property_readwrite,
+								       cm_tdbush_property_special,
+								       0,
+								       ca_prop_get_external_helper, NULL, NULL, NULL, NULL,
+								       ca_prop_set_external_helper, NULL, NULL, NULL, NULL,
+								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_issuer_names",
 								     ca_get_issuer_names,
@@ -6710,7 +6759,7 @@ cm_tdbush_iface_ca(void)
 								       NULL, NULL, NULL, NULL, NULL,
 								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
-				     NULL))))))))))))))))))))))))))))));
+				     NULL)))))))))))))))))))))))))))))));
 	}
 	return ret;
 }
