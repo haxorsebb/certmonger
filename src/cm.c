@@ -919,7 +919,7 @@ cm_add_ca(struct cm_context *context, struct cm_store_ca *new_ca)
 		/* Save this entry to the store. */
 		cm_store_ca_save(new_ca);
 		cas[context->n_cas] = new_ca;
-		talloc_steal(context, new_ca);
+		talloc_steal(cas, new_ca);
 		context->cas = cas;
 		memset(&events[context->n_cas], 0,
 		       sizeof(events[context->n_cas]));
@@ -1044,17 +1044,32 @@ int
 cm_remove_ca(struct cm_context *context, const char *nickname)
 {
 	int i;
+	enum cm_ca_phase phase;
 	i = cm_find_ca_by_nickname(context, nickname);
 	if (i != -1) {
+		for (phase = 0; phase < cm_ca_phase_invalid; phase++) {
+			if (!cm_stop_ca(context, nickname, phase)) {
+				break;
+			}
+		}
+		if (phase != cm_ca_phase_invalid) {
+			cm_log(3, "Error stopping CA '%s'-%s, please retry.\n",
+			       nickname, cm_store_ca_phase_as_string(phase));
+			return -1;
+		}
 		if (cm_store_ca_delete(context->cas[i]) == 0) {
 			/* Free the entry. */
 			talloc_free(context->cas[i]);
-			/* Shorten up the arrays of entries and event
+			/* Shorten up the arrays of CAs and event
 			 * information. */
 			memmove(context->cas + i,
 				context->cas + i + 1,
 				(context->n_cas - i - 1) *
 				sizeof(context->cas[i]));
+			memmove(context->ca_events + i,
+				context->ca_events + i + 1,
+				(context->n_cas - i - 1) *
+				sizeof(context->ca_events[i]));
 			context->n_cas--;
 			return 0;
 		} else {
