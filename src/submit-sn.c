@@ -445,7 +445,7 @@ cm_submit_sn_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 		state->done = cm_submit_sn_done;
 		state->delay = -1;
 		state->entry = entry;
-		state->subproc = cm_subproc_start(cm_submit_sn_main,
+		state->subproc = cm_subproc_start(cm_submit_sn_main, state,
 						  ca, entry, NULL);
 		if (state->subproc == NULL) {
 			talloc_free(state);

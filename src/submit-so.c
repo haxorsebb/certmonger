@@ -241,7 +241,7 @@ cm_submit_so_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 		state->unsupported = cm_submit_so_unsupported;
 		state->done = cm_submit_so_done;
 		state->delay = -1;
-		state->subproc = cm_subproc_start(cm_submit_so_main,
+		state->subproc = cm_subproc_start(cm_submit_so_main, state,
 						  ca, entry, NULL);
 		if (state->subproc == NULL) {
 			talloc_free(state);

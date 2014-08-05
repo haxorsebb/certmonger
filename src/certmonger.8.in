@@ -1,10 +1,10 @@
-.TH certmonger 8 "28 November 2012" "certmonger Manual"
+.TH certmonger 8 "13 August 2014" "certmonger Manual"
 
 .SH NAME
 certmonger
 
 .SH SYNOPSIS
-certmonger [-s|-S] [-b TIMEOUT|-B] [-n|-f] [-d LEVEL] [-p FILE] [-F]
+certmonger [-s|-S] [-b TIMEOUT|-B] [-n|-f] [-d LEVEL] [-p FILE] [-F] [-C cmd]
 
 .SH DESCRIPTION
 The \fIcertmonger\fR daemon monitors certificates for impending
@@ -45,6 +45,10 @@ Store the daemon's process ID in the named file.
 -F
 Force NSS to be initialized in FIPS mode.  The default behavior is to heed
 the setting stored in \fI/proc/sys/crypto/fips_enabled\fR.
+.TP
+-C cmd
+After the service has initialized, run the specified command, then shut down
+the service after the command exits.
 
 .SH FILES
 The set of certificates being monitored or signed is tracked using files stored

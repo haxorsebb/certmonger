@@ -379,7 +379,7 @@ cm_notify_start(struct cm_store_entry *entry, enum cm_notify_event event)
 		memset(state, 0, sizeof(*state));
 		memset(&details, 0, sizeof(details));
 		details.event = event;
-		state->subproc = cm_subproc_start(cm_notify_main,
+		state->subproc = cm_subproc_start(cm_notify_main, state,
 						  NULL, entry, &details);
 		if (state->subproc == NULL) {
 			talloc_free(state);

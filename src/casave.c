@@ -719,7 +719,8 @@ cm_casave_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 		state->file = files[i];
 		state->nssdb = NULL;
 		state->certs = build_file_savecerts_list(state, state->file);
-		subproc = cm_subproc_start(cm_casave_main_o, ca, e, state);
+		subproc = cm_subproc_start(cm_casave_main_o, state, ca, e,
+					   state);
 		if (subproc == NULL) {
 			fprintf(fp, "Error starting to save to file \"%s\".\n",
 				state->file);
@@ -751,7 +752,8 @@ cm_casave_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 		state->nssdb = dbs[i];
 		state->certs = build_nssdb_savecerts_list(state, ca, e,
 							  state->nssdb);
-		subproc = cm_subproc_start(cm_casave_main_n, ca, e, state);
+		subproc = cm_subproc_start(cm_casave_main_n, state, ca, e,
+					   state);
 		if (subproc == NULL) {
 			fprintf(fp,
 				"Error starting to save to database \"%s\".\n",
@@ -809,7 +811,7 @@ cm_casave_start(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		ret->get_n_cas = get_n_cas;
 		ret->get_entry_by_index = get_e_by_index;
 		ret->get_n_entries = get_n_entries;
-		ret->subproc = cm_subproc_start(cm_casave_main,
+		ret->subproc = cm_subproc_start(cm_casave_main, ret,
 						ca, entry, ret);
 		if (ret->subproc == NULL) {
 			talloc_free(ret);

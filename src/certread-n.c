@@ -538,7 +538,7 @@ cm_certread_n_start(struct cm_store_entry *entry)
 		state->pvt.get_fd= cm_certread_n_get_fd;
 		state->pvt.done= cm_certread_n_done;
 		state->entry = entry;
-		state->subproc = cm_subproc_start(cm_certread_n_main,
+		state->subproc = cm_subproc_start(cm_certread_n_main, state,
 						  NULL, entry, &settings);
 		if (state->subproc == NULL) {
 			talloc_free(state);

@@ -537,7 +537,7 @@ cm_certsave_n_start(struct cm_store_entry *entry)
 		state->pvt.conflict_nickname = cm_certsave_n_conflict_nickname;
 		state->pvt.permissions_error = cm_certsave_n_permissions_error;
 		state->pvt.done= cm_certsave_n_done;
-		state->subproc = cm_subproc_start(cm_certsave_n_main,
+		state->subproc = cm_subproc_start(cm_certsave_n_main, state,
 						  NULL, entry, &settings);
 		if (state->subproc == NULL) {
 			talloc_free(state);

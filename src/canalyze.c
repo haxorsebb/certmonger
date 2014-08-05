@@ -177,8 +177,8 @@ cm_ca_analyze_start_certs(struct cm_store_ca *ca)
 	ret = talloc_ptrtype(ca, ret);
 	if (ret != NULL) {
 		memset(ret, 0, sizeof(*ret));
-		ret->subproc = cm_subproc_start(&cm_ca_analyze_certs_main, ca,
-						NULL, ret);
+		ret->subproc = cm_subproc_start(&cm_ca_analyze_certs_main, ret,
+						ca, NULL, ret);
 	}
 	return ret;
 }

@@ -258,7 +258,7 @@ cm_keyiread_o_start(struct cm_store_entry *entry)
 		state->pvt.get_fd= cm_keyiread_o_get_fd;
 		state->pvt.done= cm_keyiread_o_done;
 		state->entry = entry;
-		state->subproc = cm_subproc_start(cm_keyiread_o_main,
+		state->subproc = cm_subproc_start(cm_keyiread_o_main, state,
 						  NULL, entry, NULL);
 		if (state->subproc == NULL) {
 			talloc_free(state);

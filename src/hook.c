@@ -146,7 +146,7 @@ cm_hook_start(struct cm_store_ca *ca, struct cm_store_entry *entry,
 		memset(state, 0, sizeof(*state));
 		state->hooks = hooks;
 		talloc_steal(state, hooks);
-		state->subproc = cm_subproc_start(cm_hook_main,
+		state->subproc = cm_subproc_start(cm_hook_main, state,
 						  ca, entry, state);
 		if (state->subproc == NULL) {
 			cm_log(0, "Error starting command \"%s\".\n",
@@ -496,7 +496,7 @@ cm_hook_ready(struct cm_hook_state *state)
 			}
 			/* Start the next subprocess. */
 			state->hooks = state->hooks->next;
-			state->subproc = cm_subproc_start(cm_hook_main,
+			state->subproc = cm_subproc_start(cm_hook_main, state,
 							  state->ca,
 							  state->entry, state);
 			if (state->subproc == NULL) {

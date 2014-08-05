@@ -482,7 +482,7 @@ cm_cadata_start_generic(struct cm_store_ca *ca, const char *op,
 	ret->delay = -1;
 	ret->op = op;
 	ret->modified = 0;
-	ret->subproc = cm_subproc_start(fetch, ca, NULL, ret);
+	ret->subproc = cm_subproc_start(fetch, ret, ca, NULL, ret);
 	if (ret->subproc == NULL) {
 		close(error_fd[0]);
 		close(error_fd[1]);

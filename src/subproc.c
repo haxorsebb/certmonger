@@ -64,6 +64,7 @@ cm_subproc_start(int (*cb)(int fd,
 			   struct cm_store_ca *ca,
 			   struct cm_store_entry *entry,
 			   void *data),
+		 void *parent,
 		 struct cm_store_ca *ca,
 		 struct cm_store_entry *entry,
 		 void *data)
@@ -73,7 +74,7 @@ cm_subproc_start(int (*cb)(int fd,
 	long flags;
 	char *configdir, *tmpdir, *tmp, *homedir;
 
-	state = talloc_ptrtype(entry, state);
+	state = talloc_ptrtype(parent, state);
 	if (state != NULL) {
 		memset(state, 0, sizeof(*state));
 		state->fd = -1;

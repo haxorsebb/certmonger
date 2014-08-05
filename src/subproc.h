@@ -27,13 +27,12 @@ struct cm_subproc_state *cm_subproc_start(int (*cb)(int fd,
 						    struct cm_store_ca *ca,
 						    struct cm_store_entry *e,
 						    void *data),
+					  void *parent,
 					  struct cm_store_ca *ca,
 					  struct cm_store_entry *entry,
 					  void *data);
-/* Return a descriptor we can monitor.  If we return -1, the caller must poll.
- */
-	/* Get a selectable-for-read descriptor we can poll for status changes.
-	 */
+/* Get a selectable-for-read descriptor we can wait on for status changes.  If
+ * we return -1, the caller must poll.  */
 int cm_subproc_get_fd(struct cm_subproc_state *state);
 /* Return 0 if the process has finished its run. */
 int cm_subproc_ready(struct cm_subproc_state *state);

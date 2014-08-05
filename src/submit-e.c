@@ -459,6 +459,7 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 				args.cookie = cookie;
 				args.operation = operation;
 				state->subproc = cm_subproc_start(cm_submit_e_main,
+								  state,
 								  ca, entry,
 								  &args);
 				close(errorfds[1]);
