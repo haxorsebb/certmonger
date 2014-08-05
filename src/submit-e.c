@@ -213,7 +213,7 @@ cm_submit_e_issued(struct cm_submit_state *state)
 		talloc_free(state->entry->cm_cert);
 		q += strcspn(q, "\r\n");
 		if (strspn(q, "\r\n") == 0) {
-			p = talloc_asprintf(state->entry, "%s\n", p);
+			p = talloc_asprintf(state, "%s\n", p);
 			q = p + strlen(p);
 		} else {
 			q += strspn(q, "\r\n");
@@ -511,7 +511,7 @@ cm_submit_e_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 	char *spki = NULL;
 
 	if (entry->cm_key_pubkey_info != NULL) {
-		spki = cm_store_base64_from_hex(NULL,
+		spki = cm_store_base64_from_hex(entry,
 						entry->cm_key_pubkey_info);
 	}
 	if ((entry->cm_ca_cookie != NULL) &&

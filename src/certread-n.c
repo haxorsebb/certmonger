@@ -398,7 +398,7 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 	/* Pick out the interesting bits. */
 	/* Issuer name */
 	talloc_free(entry->cm_cert_issuer_der);
-	entry->cm_cert_issuer_der = cm_store_hex_from_bin(NULL,
+	entry->cm_cert_issuer_der = cm_store_hex_from_bin(entry,
 							  cert->derIssuer.data,
 							  cert->derIssuer.len);
 	talloc_free(entry->cm_cert_issuer);
@@ -406,12 +406,12 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 	/* Serial number */
 	talloc_free(entry->cm_cert_serial);
 	item = cert->serialNumber;
-	entry->cm_cert_serial = cm_store_hex_from_bin(NULL, item.data,
+	entry->cm_cert_serial = cm_store_hex_from_bin(entry, item.data,
 						      item.len);
 	/* Subject name */
 	talloc_free(entry->cm_cert_subject_der);
 	item = cert->derSubject;
-	entry->cm_cert_subject_der = cm_store_hex_from_bin(NULL, item.data,
+	entry->cm_cert_subject_der = cm_store_hex_from_bin(entry, item.data,
 							   item.len);
 	talloc_free(entry->cm_cert_subject);
 	entry->cm_cert_subject = talloc_strdup(entry, cert->subjectName);
@@ -427,7 +427,7 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 		}
 		_exit(1);
 	}
-	entry->cm_cert_spki = cm_store_hex_from_bin(NULL, items->data,
+	entry->cm_cert_spki = cm_store_hex_from_bin(entry, items->data,
 						    items->len);
 	/* Not-before date. */
 	p = talloc_strndup(entry, (char *) cert->validity.notBefore.data,

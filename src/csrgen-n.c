@@ -305,7 +305,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			memset(&utf8, 0, sizeof(utf8));
 			if (SEC_ASN1EncodeItem(arena, &utf8, &item,
 					       SEC_PrintableStringTemplate) == &utf8) {
-				q = cm_store_hex_from_bin(NULL,
+				q = cm_store_hex_from_bin(entry,
 							  utf8.data,
 							  utf8.len);
 				if (q != NULL) {
