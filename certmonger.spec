@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.75.9
+Version:	0.75.10
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -234,6 +234,11 @@ exit 0
 %endif
 
 %changelog
+* Tue Aug  5 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75.10-1
+- when attempting to contact an IPA LDAP server, if no "ldap_uri" is set in
+  default.conf, and no "host" is set either, try to construct the server URI
+  using the "server" setting (#1126985)
+
 * Thu Jul 31 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75.9-1
 - avoid potential use-after-free after a CA is removed dynamically (thanks to
   Keenan Brock) (#1125342)
