@@ -82,7 +82,7 @@ main(int argc, char **argv)
 	const char *host = NULL, *domain = NULL, *cainfo = NULL, *capath = NULL;
 	const char *ktname = NULL, *kpname = NULL, *realm = NULL, *args[2];
 	char *csr, *p, uri[LINE_MAX], *s, *reqprinc = NULL, *ipaconfig, *kerr;
-	const char *xmlrpc_uri = NULL, *ldap_uri = NULL;
+	const char *xmlrpc_uri = NULL, *ldap_uri = NULL, *server = NULL;
 	struct cm_submit_x_context *ctx;
 	const char *mode = CM_OP_SUBMIT;
 	LDAP *ld = NULL;
@@ -197,6 +197,8 @@ main(int argc, char **argv)
 							      "xmlrpc_uri");
 			}
 			if (ldap_uri == NULL) {
+				/* Preferred, but likely to only be set on a
+				 * server. */
 				ldap_uri = get_config_entry(ipaconfig,
 							    "global",
 							    "ldap_uri");
@@ -207,9 +209,17 @@ main(int argc, char **argv)
 							  "basedn");
 			}
 			if (host == NULL) {
+				/* Preferred, but not always set. */
 				host = get_config_entry(ipaconfig,
 							"global",
 							"host");
+			}
+			if (server == NULL) {
+				/* Deprecated, but could be set if "host" is
+				 * not. */
+				server = get_config_entry(ipaconfig,
+							  "global",
+							  "server");
 			}
 			if (domain == NULL) {
 				domain = get_config_entry(ipaconfig,
@@ -246,6 +256,10 @@ main(int argc, char **argv)
 		if (host != NULL) {
 			snprintf(uri, sizeof(uri),
 				 "https://%s/ipa/xml", host);
+		} else
+		if (server != NULL) {
+			snprintf(uri, sizeof(uri),
+				 "https://%s/ipa/xml", server);
 		}
 		if (strlen(uri) == 0) {
 #if 0
@@ -423,6 +437,9 @@ main(int argc, char **argv)
 		} else
 		if (host != NULL) {
 			snprintf(uri, sizeof(uri), "ldap://%s/", host);
+		} else
+		if (server != NULL) {
+			snprintf(uri, sizeof(uri), "ldap://%s/", server);
 		}
 		if (strlen(uri) == 0) {
 			printf(_("Unable to determine location of "
