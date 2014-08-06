@@ -25,7 +25,7 @@ struct tevent_context;
 enum cm_ca_phase;
 
 int cm_init(struct tevent_context *parent, struct cm_context **context,
-	    int idle_timeout);
+	    int idle_timeout, const char *gate_command);
 int cm_start_all(struct cm_context *context);
 void cm_reset_timeout(struct cm_context *context);
 int cm_keep_going(struct cm_context *context);

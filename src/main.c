@@ -58,7 +58,7 @@ main(int argc, char **argv)
 	long l;
 	pid_t pid;
 	FILE *pfp;
-	const char *pidfile = NULL, *tmpdir;
+	const char *pidfile = NULL, *tmpdir, *gate_command = NULL;
 	char *env_tmpdir, *hint;
 	dbus_bool_t dofork;
 	enum force_fips_mode forcefips;
@@ -87,13 +87,17 @@ main(int argc, char **argv)
 		exit(1);
 	};
 
-	while ((c = getopt(argc, argv, "sSp:fb:Bd:nF")) != -1) {
+	while ((c = getopt(argc, argv, "sSp:fb:Bd:nFc:")) != -1) {
 		switch (c) {
 		case 's':
 			bus = cm_tdbus_session;
 			break;
 		case 'S':
 			bus = cm_tdbus_system;
+			break;
+		case 'c':
+			bustime = 0;
+			gate_command = optarg;
 			break;
 		case 'p':
 			pidfile = optarg;
@@ -102,6 +106,7 @@ main(int argc, char **argv)
 			dofork = TRUE;
 			break;
 		case 'b':
+			gate_command = NULL;
 			bustime = atoi(optarg);
 			break;
 		case 'B':
@@ -120,7 +125,7 @@ main(int argc, char **argv)
 			printf(_("Usage: %s [-s|-S] [-n|-f] [-d LEVEL] "
 				 "[-p FILE] [-F]\n"),
 			       cm_env_whoami());
-			printf("%s%s%s%s%s%s%s%s%s",
+			printf("%s%s%s%s%s%s%s%s%s%s",
 			       _("\t-s         use session bus\n"),
 			       _("\t-S         use system bus\n"),
 			       _("\t-n         don't become a daemon\n"),
@@ -208,7 +213,7 @@ main(int argc, char **argv)
 	}
 
 	ctx = NULL;
-	i = cm_init(ec, &ctx, bustime);
+	i = cm_init(ec, &ctx, bustime, gate_command);
 	if (i != 0) {
 		fprintf(stderr, "Error: %s\n", strerror(i));
 		talloc_free(ec);
@@ -307,16 +312,18 @@ main(int argc, char **argv)
 			fflush(pfp);
 		}
 	}
-	cm_start_all(ctx);
-	do {
-		i = tevent_loop_once(ec);
-		if (i != 0) {
-			cm_log(3, "Event loop exits with status %d.\n", i);
-			break;
-		}
-	} while (cm_keep_going(ctx) == 0);
-	cm_log(3, "Shutting down.\n");
-	cm_stop_all(ctx);
+	if (cm_start_all(ctx) == 0) {
+		do {
+			i = tevent_loop_once(ec);
+			if (i != 0) {
+				cm_log(3, "Event loop exits with status %d.\n",
+				       i);
+				break;
+			}
+		} while (cm_keep_going(ctx) == 0);
+		cm_log(3, "Shutting down.\n");
+		cm_stop_all(ctx);
+	}
 	talloc_free(ctx);
 	talloc_free(ec);
 	if ((pidfile != NULL) && (pfp != NULL)) {

@@ -38,6 +38,7 @@
 #include "netlink.h"
 #include "store.h"
 #include "store-int.h"
+#include "subproc.h"
 #include "tdbush.h"
 #include "tm.h"
 
@@ -59,6 +60,12 @@ struct cm_context {
 	void *netlink_tfd, *netlink_delayed_event;
 	int idle_timeout;
 	void *idle_event, *conn_ptr;
+	struct {
+		void *tfd;
+		char *command;
+		int fd;
+		struct cm_subproc_state *state;
+	} gate;
 };
 
 static void *cm_service_entry(struct cm_context *context,
@@ -79,7 +86,7 @@ static void cm_timeout_h(struct tevent_context *ec, struct tevent_timer *te,
 
 int
 cm_init(struct tevent_context *parent, struct cm_context **context,
-	int idle_timeout)
+	int idle_timeout, const char *gate_command)
 {
 	struct cm_context *ctx;
 	int i, j;
@@ -126,6 +133,10 @@ cm_init(struct tevent_context *parent, struct cm_context **context,
 	/* Be ready for an idle timeout. */
 	ctx->idle_timeout = idle_timeout;
 	ctx->idle_event = NULL;
+	/* Be ready to launch a gating command. */
+	if (gate_command != NULL) {
+		ctx->gate.command = talloc_strdup(ctx, gate_command);
+	}
 	/* Initialize state tracking, but don't set things in motion yet. */
 	for (i = 0; i < ctx->n_entries; i++) {
 		memset(&ctx->entry_events[i], 0, sizeof(ctx->entry_events[i]));
@@ -683,12 +694,92 @@ cm_find_ca_by_nickname(struct cm_context *context, const char *nickname)
 	return -1;
 }
 
+static void
+cm_gate_fd_h(struct tevent_context *ec, struct tevent_fd *fde,
+	     uint16_t flags, void *pvt)
+{
+	struct cm_context *ctx = pvt;
+	int length, status;
+	const char *msg;
+
+	talloc_free(ctx->gate.tfd);
+	if (cm_subproc_ready(ctx->gate.state) == 0) {
+		msg = cm_subproc_get_msg(ctx->gate.state, &length);
+		if (length > 0) {
+			cm_log(0, "Failed to start command '%s': %s.\n",
+			       ctx->gate.command,
+			       strerror((unsigned int) msg[0]));
+		} else {
+			status = cm_subproc_get_exitstatus(ctx->gate.state);
+			if (WIFEXITED(status)) {
+				cm_log(1, "Command '%s' exited, status %d.\n",
+				       ctx->gate.command, WEXITSTATUS(status));
+			} else {
+				cm_log(0, "Command '%s' exited abnormally.\n",
+				       ctx->gate.command);
+			}
+		}
+		ctx->should_quit++;
+		ctx->gate.tfd = NULL;
+	} else {
+		cm_log(1, "Command '%s' output error data, but is still "
+		       "running.\n", ctx->gate.command);
+		ctx->gate.tfd = tevent_add_fd(ec, ctx, ctx->gate.fd,
+					      TEVENT_FD_READ, cm_gate_fd_h,
+					      ctx);
+	}
+}
+
+static int
+cm_gate_run(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
+	    void *data)
+{
+	struct cm_context *ctx = data;
+	char **argv;
+	const char *error = NULL;
+	unsigned char u;
+
+	cm_subproc_mark_most_cloexec(fd);
+	argv = cm_subproc_parse_args(NULL, ctx->gate.command, &error);
+	if (argv == NULL) {
+		cm_log(1, "Error parsing '%s'.\n", ctx->gate.command);
+		return -1;
+	}
+	cm_log(1, "Running gate command \"%s\".\n", argv[0]);
+	execvp(argv[0], argv);
+	u = errno;
+	if (write(fd, &u, 1) != 1) {
+		cm_log(1, "Error sending exec() error to parent.\n");
+	}
+	return u;
+}
+
 int
 cm_start_all(struct cm_context *context)
 {
 	int i;
 	enum cm_ca_phase phase;
 
+	if (context->gate.command != NULL) {
+		context->gate.state = cm_subproc_start(cm_gate_run, context,
+						       NULL, NULL, context);
+		if (context->gate.state == NULL) {
+			cm_log(1, "Error starting '%s', please try again.\n",
+			       context->gate.command);
+			return -1;
+		}
+		i = cm_subproc_get_fd(context->gate.state);
+		if (i == -1) {
+			cm_log(1, "Error starting '%s', please try again.\n",
+			       context->gate.command);
+			return -1;
+		}
+		context->gate.fd = i;
+		context->gate.tfd = tevent_add_fd(talloc_parent(context),
+						  context, i, TEVENT_FD_READ,
+						  cm_gate_fd_h, context);
+		cm_log(3, "Command '%s' on FD %d.\n", context->gate.command, i);
+	}
 	for (i = 0; i < context->n_entries; i++) {
 		if ((context->entry_events[i].iterate_state == NULL) &&
 		    (cm_iterate_entry_init(context->entries[i],
@@ -745,6 +836,9 @@ cm_stop_all(struct cm_context *context)
 			context->ca_events[i].iterate_state[phase] = NULL;
 		}
 		cm_store_ca_save(context->cas[i]);
+	}
+	if (context->gate.state != NULL) {
+		cm_subproc_done(context->gate.state);
 	}
 }
 
