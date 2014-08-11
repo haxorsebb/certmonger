@@ -461,6 +461,70 @@ cm_tdbusm_get_sss(DBusMessage *msg, void *parent, char **s1, char **s2,
 }
 
 int
+cm_tdbusm_get_ssv(DBusMessage *msg, void *parent, char **s1, char **s2,
+		   union cm_tdbusm_variant *v, int *dbus_type)
+{
+	DBusError err;
+	DBusMessageIter iter, var_iter;
+	int type;
+	void *t = NULL;
+	*s1 = *s2 = NULL;
+
+	dbus_error_init(&err);
+	dbus_message_iter_init(msg, &iter);
+
+	/* get first string */
+	if ((type = dbus_message_iter_get_arg_type(&iter)) != DBUS_TYPE_STRING) {
+		/* unexpected type */
+		return -1;
+	} else {
+		dbus_message_iter_get_basic(&iter, (void*)s1);
+	}
+
+	if (dbus_message_iter_next(&iter) != TRUE) {
+		/* nothing more */
+		return -1;
+	}
+
+	/* get second string */
+	if ((type = dbus_message_iter_get_arg_type(&iter)) != DBUS_TYPE_STRING) {
+		/* unexpected type */
+		return -1;
+	} else {
+		dbus_message_iter_get_basic(&iter, (void*)s2);
+	}
+
+	if (dbus_message_iter_next(&iter) != TRUE) {
+		/* nothing more */
+		return -1;
+	}
+
+	/* get variant */
+	if (dbus_message_iter_get_arg_type(&iter) != DBUS_TYPE_VARIANT) {
+		/* unexpected type */
+		return -1;
+	} else {
+		dbus_message_iter_recurse(&iter, &var_iter);
+		*dbus_type = type = dbus_message_iter_get_arg_type(&var_iter);
+		dbus_message_iter_get_basic(&var_iter, (void*)&t);
+	}
+
+	switch (type) {
+	case DBUS_TYPE_STRING:
+		v->s = t ? talloc_strdup(parent, t) : NULL;
+		break;
+	default:
+		/* add other cases if needed, edit cm_tdbusm_variant union as well */
+		return -1;
+		break;
+	}
+	*s1 = *s1 ? talloc_strdup(parent, *s1) : NULL;
+	*s2 = *s2 ? talloc_strdup(parent, *s2) : NULL;
+
+	return 0;
+}
+
+int
 cm_tdbusm_get_ssb(DBusMessage *msg, void *parent, char **s1, char **s2,
 		  dbus_bool_t *b)
 {

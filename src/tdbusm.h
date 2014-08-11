@@ -78,6 +78,9 @@ struct cm_tdbusm_dict {
 		const struct cm_tdbusm_dict **d;
 	} value;
 };
+union cm_tdbusm_variant {
+	char *s;
+};
 int cm_tdbusm_get_d(DBusMessage *msg, void *parent, struct cm_tdbusm_dict ***d);
 int cm_tdbusm_get_sd(DBusMessage *msg, void *parent,
 		     char **s, struct cm_tdbusm_dict ***d);
@@ -96,6 +99,8 @@ int cm_tdbusm_set_as(DBusMessage *msg, const char **s);
 int cm_tdbusm_set_ass(DBusMessage *msg, const char **ss);
 int cm_tdbusm_set_sss(DBusMessage *msg,
 		      const char *s1, const char *s2, const char *s3);
+int cm_tdbusm_get_ssv(DBusMessage *msg, void *parent, char **s1, char **s2,
+		      union cm_tdbusm_variant *v, int *dbus_type);
 int cm_tdbusm_set_ssb(DBusMessage *msg,
 		      const char *s1, const char *s2, dbus_bool_t b);
 int cm_tdbusm_set_ssn(DBusMessage *msg,

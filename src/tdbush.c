@@ -4784,6 +4784,9 @@ cm_tdbush_property_set(DBusConnection *conn,
 	long l;
 	DBusMessage *rep;
 	const char *properties[2];
+	union cm_tdbusm_variant v;
+	int dbus_type;
+
 
 	path = dbus_message_get_path(msg);
 	type = cm_tdbush_classify_path(ctx, path);
@@ -4888,16 +4891,22 @@ cm_tdbush_property_set(DBusConnection *conn,
 	/* Read the argument and set the data. */
 	switch (prop->cm_local_type) {
 	case cm_tdbush_property_char_p:
-		if (cm_tdbusm_get_sss(msg, parent, &interface, &property,
-				      &wp) != 0) {
+		if (cm_tdbusm_get_ssv(msg, parent, &interface, &property,
+					&v, &dbus_type) != 0) {
 			cm_log(1, "Error parsing arguments.\n");
 			dbus_message_unref(rep);
 			talloc_free(parent);
 			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 		}
+
+		if (dbus_type != DBUS_TYPE_STRING) {
+			talloc_free(parent);
+			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		}
+
 		record += prop->cm_offset;
 		wpp = (char **) record;
-		*wpp = maybe_strdup(record - prop->cm_offset, wp);
+		*wpp = maybe_strdup(record - prop->cm_offset, v.s);
 		break;
 	case cm_tdbush_property_char_pp:
 		if (cm_tdbusm_get_ssas(msg, parent, &interface, &property,
@@ -6583,10 +6592,10 @@ cm_tdbush_iface_ca(void)
 							 make_property(CM_DBUS_PROP_EXTERNAL_HELPER,
 								       cm_tdbush_property_string,
 								       cm_tdbush_property_readwrite,
-								       cm_tdbush_property_special,
-								       0,
-								       ca_prop_get_external_helper, NULL, NULL, NULL, NULL,
-								       ca_prop_set_external_helper, NULL, NULL, NULL, NULL,
+								       cm_tdbush_property_char_p,
+								       offsetof(struct cm_store_ca, cm_ca_external_helper),
+								       NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_issuer_names",
