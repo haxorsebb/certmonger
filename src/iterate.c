@@ -195,6 +195,21 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 	case CM_NOTIFYING_ISSUED_SAVED:
 		entry->cm_state = CM_NEED_TO_NOTIFY_ISSUED_SAVED;
 		break;
+	case CM_NEED_TO_SAVE_ONLY_CA_CERTS:
+		entry->cm_state = CM_NEED_TO_SAVE_ONLY_CA_CERTS;
+		break;
+	case CM_START_SAVING_ONLY_CA_CERTS:
+		entry->cm_state = CM_NEED_TO_SAVE_ONLY_CA_CERTS;
+		break;
+	case CM_SAVING_ONLY_CA_CERTS:
+		entry->cm_state = CM_NEED_TO_SAVE_ONLY_CA_CERTS;
+		break;
+	case CM_NEED_TO_NOTIFY_ONLY_CA_SAVE_FAILED:
+		entry->cm_state = CM_NEED_TO_NOTIFY_ONLY_CA_SAVE_FAILED;
+		break;
+	case CM_NOTIFYING_ONLY_CA_SAVE_FAILED:
+		entry->cm_state = CM_NEED_TO_NOTIFY_ONLY_CA_SAVE_FAILED;
+		break;
 	case CM_NEWLY_ADDED:
 		break;
 	case CM_NEWLY_ADDED_START_READING_KEYINFO:
@@ -1423,6 +1438,127 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		}
 		break;
 
+	case CM_NEED_TO_SAVE_ONLY_CA_CERTS:
+		if (!cm_writing_has_lock(entry, cm_ca_phase_invalid) && !cm_writing_lock_by_entry(entry)) {
+			/* Just hang out in this state while we're messing
+			 * around with the outside world for another entry. */
+			cm_log(3, "%s('%s') waiting for saving lock\n",
+			       entry->cm_busname, entry->cm_nickname);
+			*when = cm_time_soon;
+			break;
+		}
+		entry->cm_state = CM_START_SAVING_ONLY_CA_CERTS;
+		*when = cm_time_now;
+		break;
+
+	case CM_START_SAVING_ONLY_CA_CERTS:
+		state->cm_casave_state = cm_casave_start(entry, NULL, context,
+							 get_ca_by_index,
+							 get_n_cas,
+							 get_entry_by_index,
+							 get_n_entries);
+		if (state->cm_casave_state != NULL) {
+			entry->cm_state = CM_SAVING_ONLY_CA_CERTS;
+			/* Wait for status update, or poll. */
+			*readfd = cm_casave_get_fd(state->cm_casave_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
+		} else {
+			/* Failed to start saving CA certs; try again. */
+			*when = cm_time_soonish;
+		}
+		break;
+
+	case CM_SAVING_ONLY_CA_CERTS:
+		if (cm_casave_ready(state->cm_casave_state) == 0) {
+			if (cm_casave_saved(state->cm_casave_state) == 0) {
+				/* Saved certificates. */
+				cm_casave_done(state->cm_casave_state);
+				state->cm_casave_state = NULL;
+				entry->cm_state = CM_MONITORING;
+				*when = cm_time_now;
+			} else
+			if (cm_casave_permissions_error(state->cm_casave_state) == 0) {
+				/* Whoops, we need help. */
+				cm_casave_done(state->cm_casave_state);
+				state->cm_casave_state = NULL;
+				entry->cm_state = CM_NEED_CA_CERT_SAVE_PERMS;
+				*when = cm_time_now;
+			} else {
+				/* Failed to save certs. */
+				cm_casave_done(state->cm_casave_state);
+				state->cm_casave_state = NULL;
+				entry->cm_state = CM_NEED_TO_NOTIFY_ONLY_CA_SAVE_FAILED;
+				*when = cm_time_soonish;
+			}
+		} else {
+			/* Wait for status update, or poll. */
+			*readfd = cm_casave_get_fd(state->cm_casave_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
+		}
+		break;
+
+	case CM_NEED_TO_NOTIFY_ONLY_CA_SAVE_FAILED:
+		/* We should already have the lock here.  In cases where we're
+		 * resuming things at startup, try to acquire it if we don't
+		 * have it. */
+		if (!cm_writing_has_lock(entry, cm_ca_phase_invalid) && !cm_writing_lock_by_entry(entry)) {
+			/* Just hang out in this state while we're messing
+			 * around with the outside world for another entry. */
+			cm_log(3, "%s('%s') waiting for saving lock\n",
+			       entry->cm_busname, entry->cm_nickname);
+			*when = cm_time_soon;
+			break;
+		}
+		if (!cm_writing_unlock_by_entry(entry)) {
+			/* If for some reason we fail to release the lock that
+			 * we have, try to release it again soon. */
+			*when = cm_time_soon;
+			cm_log(1, "%s('%s') failed to release saving "
+			       "lock, probably a bug\n",
+			       entry->cm_busname, entry->cm_nickname);
+			break;
+		}
+		state->cm_notify_state = cm_notify_start(entry,
+							 cm_notify_event_ca_not_saved);
+		if (state->cm_notify_state != NULL) {
+			entry->cm_state = CM_NOTIFYING_ONLY_CA_SAVE_FAILED;
+			/* Wait for status update, or poll. */
+			*readfd = cm_notify_get_fd(state->cm_notify_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
+		} else {
+			/* Failed to start notifying; try again. */
+			*when = cm_time_soonish;
+		}
+		break;
+
+	case CM_NOTIFYING_ONLY_CA_SAVE_FAILED:
+		if (cm_notify_ready(state->cm_notify_state) == 0) {
+			cm_notify_done(state->cm_notify_state);
+			state->cm_notify_state = NULL;
+			entry->cm_state = CM_MONITORING;
+			*when = cm_time_soonish;
+		} else {
+			/* Wait for status update, or poll. */
+			*readfd = cm_notify_get_fd(state->cm_notify_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
+		}
+		break;
 
 	case CM_NEWLY_ADDED:
 		/* Take the lock here because the database is opened read-write
@@ -1620,10 +1756,10 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 								      tmp_ca_name);
 			}
 		}
-		/* If we have a certificate, we go straight to monitoring it.
-		 * If we didn't get any explicit requests for names, SAN, KU
-		 * and EKU values, then try to pull them from the certificate,
-		 * too. */
+		/* If we have a certificate in the expected location, we go
+		 * straight to monitoring it.  If we didn't get any explicit
+		 * requests for names, SAN, KU and EKU values, then try to pull
+		 * them from the certificate, too. */
 		if (entry->cm_cert != NULL) {
 			cm_store_set_if_not_set_s(entry,
 						  &entry->cm_template_subject_der,
@@ -1655,9 +1791,46 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			cm_store_set_if_not_set_s(entry,
 						  &entry->cm_template_profile,
 						  entry->cm_cert_profile);
-			cm_log(3, "%s('%s') has a certificate, monitoring it\n",
-			       entry->cm_busname, entry->cm_nickname);
-			entry->cm_state = CM_MONITORING;
+			/* Walk the list of known names of known CAs and try to
+			 * find the entry's CA. */
+			tmp_ca = NULL;
+			for (i = 0; i < (*get_n_cas)(context); i++) {
+				tmp_ca = (*get_ca_by_index)(context, i);
+				if ((tmp_ca->cm_nickname != NULL) &&
+				    (entry->cm_ca_nickname != NULL) &&
+				    (strcmp(entry->cm_ca_nickname,
+					    tmp_ca->cm_nickname) == 0)) {
+					break;
+				}
+				tmp_ca = NULL;
+			}
+			/* If there's an associated CA, and we know of
+			 * certificates for it, and we need them to be stored
+			 * somewhere, we need to make sure they'll show up in
+			 * the expected locations. */
+			if ((tmp_ca != NULL) &&
+			    (((tmp_ca->cm_ca_root_certs != NULL) &&
+			      ((entry->cm_root_cert_store_files != NULL) ||
+			       (entry->cm_root_cert_store_nssdbs != NULL))) ||
+			     ((tmp_ca->cm_ca_other_root_certs != NULL) &&
+			      ((entry->cm_other_root_cert_store_files != NULL) ||
+			       (entry->cm_other_root_cert_store_nssdbs != NULL))) ||
+			     ((tmp_ca->cm_ca_other_certs != NULL) &&
+			      ((entry->cm_other_cert_store_files != NULL) ||
+			       (entry->cm_other_cert_store_nssdbs != NULL))))) {
+				cm_log(3, "%s('%s') already had a "
+				       "certificate, making sure CA "
+				       "certificates will be there\n",
+				       entry->cm_busname,
+				       entry->cm_nickname);
+				entry->cm_state = CM_NEED_TO_SAVE_ONLY_CA_CERTS;
+			} else {
+				cm_log(3, "%s('%s') has a certificate, "
+				       "monitoring it\n",
+				       entry->cm_busname,
+				       entry->cm_nickname);
+				entry->cm_state = CM_MONITORING;
+			}
 			*when = cm_time_now;
 		} else
 		/* If we don't have a certificate, but we know where the key

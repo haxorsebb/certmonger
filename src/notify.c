@@ -253,6 +253,41 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			break;
 		}
 		break;
+	case cm_notify_event_ca_not_saved:
+		switch (entry->cm_cert_storage_type) {
+		case cm_cert_storage_nssdb:
+			if (entry->cm_cert_token != NULL) {
+				message = talloc_asprintf(entry, "CA certificate "
+							  "for certificate "
+							  "named \"%s\" "
+							  "in token \"%s\" "
+							  "in database \"%s\" "
+							  "(CA \"%s\") not saved.",
+							  entry->cm_cert_nickname,
+							  entry->cm_cert_token,
+							  entry->cm_cert_storage_location,
+							  entry->cm_ca_nickname);
+			} else {
+				message = talloc_asprintf(entry, "CA certificate "
+							  "for certificate "
+							  "named \"%s\" "
+							  "in database \"%s\" "
+							  "(CA \"%s\") not saved.",
+							  entry->cm_cert_nickname,
+							  entry->cm_cert_storage_location,
+							  entry->cm_ca_nickname);
+			}
+			break;
+		case cm_cert_storage_file:
+			message = talloc_asprintf(entry, "CA certificate "
+						  "for certificate "
+						  "in file \"%s\" "
+						  "(CA \"%s\") not saved.",
+						  entry->cm_cert_storage_location,
+						  entry->cm_ca_nickname);
+			break;
+		}
+		break;
 	}
 	method = entry->cm_notification_method;
 	if (method == cm_notification_unspecified) {

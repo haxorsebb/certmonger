@@ -2695,8 +2695,11 @@ list(const char *argv0, int argc, char **argv)
 		case CM_NEWLY_ADDED_READING_CERT:
 		case CM_NEWLY_ADDED_DECIDING:
 		case CM_NEED_TO_SAVE_CA_CERTS:
+		case CM_NEED_TO_SAVE_ONLY_CA_CERTS:
 		case CM_START_SAVING_CA_CERTS:
+		case CM_START_SAVING_ONLY_CA_CERTS:
 		case CM_SAVING_CA_CERTS:
+		case CM_SAVING_ONLY_CA_CERTS:
 		case CM_NEED_CA_CERT_SAVE_PERMS:
 			if (tracking_only) {
 				continue;
@@ -2711,6 +2714,8 @@ list(const char *argv0, int argc, char **argv)
 		case CM_NOTIFYING_ISSUED_FAILED:
 		case CM_NEED_TO_NOTIFY_ISSUED_SAVED:
 		case CM_NOTIFYING_ISSUED_SAVED:
+		case CM_NEED_TO_NOTIFY_ONLY_CA_SAVE_FAILED:
+		case CM_NOTIFYING_ONLY_CA_SAVE_FAILED:
 			if (requests_only) {
 				continue;
 			}

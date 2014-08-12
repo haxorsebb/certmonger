@@ -46,11 +46,17 @@ Now with some arbitrarily-named states for our per-certificate state machine:
 	  States: NEED_TO_NOTIFY_REJECTION, NOTIFYING_REJECTION [*]
 	* Notifying the admin of CA issued cert, but not saved.
 	  States: NEED_TO_NOTIFY_ISSUED_FAILED, NOTIFYING_ISSUED_FAILED [*]
-	* Saving CA certs.
+	* Notifying the admin of that we failed to save CA certs.
+	  States: NEED_TO_NOTIFY_ONLY_CA_SAVE_FAILED,
+		  NOTIFYING_ONLY_CA_SAVE_FAILED
+	* Saving CA certs while saving an issued cert.
 	  States: NEED_TO_SAVE_CA_CERTS, START_SAVING_CA_CERTS,
 		  SAVING_CA_CERTS [*], NEED_CA_CERT_SAVE_PERMS
 	* Notifying the admin of CA issued cert, and saved.
 	  States: NEED_TO_NOTIFY_ISSUED_SAVED, NOTIFYING_ISSUED_SAVED [*]
+	* Saving CA certs while not saving an issued cert.
+	  States: NEED_TO_SAVE_ONLY_CA_CERTS, START_SAVING_ONLY_CA_CERTS,
+		  SAVING_ONLY_CA_CERTS [*]
 	* Waiting for user input
 	  States: NEED_GUIDANCE [*]
 	* Getting our bearings
@@ -374,6 +380,36 @@ State logic:
 					state_next = NEED_TO_NOTIFY_ISSUED_SAVED
 					state_transition = now
 
+	NEED_TO_SAVE_ONLY_CA_CERTS:
+		state_next = START_SAVING_ONLY_CA_CERTS
+		state_transition = now
+
+	START_SAVING_ONLY_CA_CERTS:
+		if starting-up
+			state_next = NEED_TO_SAVE_ONLY_CA_CERTS
+			state_transition = now
+		else
+			start-saving-only-ca-certs
+			state_next = SAVING_ONLY_CA_CERTS
+			state_transition = now
+		break
+
+	SAVING_ONLY_CA_CERTS:
+		if starting-up
+			state_next = NEED_TO_SAVE_ONLY_CA_CERTS
+			state_transition = now
+		else
+			if saving-ca-certs-complete
+				state_next = MONITORING
+				state_transition = now
+			else
+				if permissions-problem
+					state_next = NEED_CA_CERT_SAVE_PERMS
+					state_transition = now
+				else
+					state_next = NEED_TO_NOTIFY_ONLY_CA_SAVE_FAILED
+					state_transition = now
+
 	NEED_CA_CERT_SAVE_PERMS:
 		if starting-up
 			state_next = NEED_TO_SAVE_CA_CERTS
@@ -420,6 +456,23 @@ State logic:
 			if notification-completed
 				state_next = NEED_TO_SAVE_CERT
 				state_transition = soonish
+		break
+
+	NEED_TO_NOTIFY_ONLY_CA_SAVE_FAILED
+		start-notifying
+		state_next = NOTIFYING_ONLY_CA_SAVE_FAILED
+		state_transition = now
+		break
+
+	NOTIFYING_ONLY_CA_SAVE_FAILED
+		if starting-up
+			state_next = NEED_TO_NOTIFY_ONLY_CA_SAVE_FAILED
+		start-notifying
+			state_transition = now
+		else
+			if notification-completed
+				state_next = MONITORING
+				state_transition = now
 		break
 
 	NEED_TO_NOTIFY_ISSUED_SAVED:
@@ -591,8 +644,12 @@ State logic:
 		if entry-has-no-associated-ca
 			try-to-set-ca-using-known-ca-list
 		if we-have-a-cert
-			state_next = MONITORING
-			state_transition = now
+			if we-have-ca-certs-to-save
+				state_next = NEED_TO_SAVE_ONLY_CA_CERTS
+				state_transition = now
+			else
+				state_next = MONITORING
+				state_transition = now
 		else
 			if key-storage-is-known
 				if key-is-present

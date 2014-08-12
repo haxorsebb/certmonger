@@ -3786,6 +3786,11 @@ request_prop_get_stuck(struct cm_context *ctx, void *parent,
 	case CM_NEED_TO_SAVE_CA_CERTS:
 	case CM_START_SAVING_CA_CERTS:
 	case CM_SAVING_CA_CERTS:
+	case CM_NEED_TO_SAVE_ONLY_CA_CERTS:
+	case CM_START_SAVING_ONLY_CA_CERTS:
+	case CM_SAVING_ONLY_CA_CERTS:
+	case CM_NEED_TO_NOTIFY_ONLY_CA_SAVE_FAILED:
+	case CM_NOTIFYING_ONLY_CA_SAVE_FAILED:
 		stuck = FALSE;
 		break;
 	case CM_NEED_KEYINFO_READ_TOKEN:
