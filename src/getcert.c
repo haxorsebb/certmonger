@@ -765,10 +765,9 @@ request(const char *argv0, int argc, char **argv)
 			if ((nss_scheme != NULL) && (p != NULL)) {
 				p = talloc_asprintf(globals.tctx, "%s:%s",
 						    nss_scheme, p);
-				if (p != NULL) {
-					add_string(globals.tctx, &anchor_dbs,
-						   p);
-				}
+			}
+			if (p != NULL) {
+				add_string(globals.tctx, &anchor_dbs, p);
 			}
 			break;
 		case 'F':
@@ -1606,10 +1605,9 @@ set_tracking(const char *argv0, const char *category,
 			if ((nss_scheme != NULL) && (p != NULL)) {
 				p = talloc_asprintf(globals.tctx, "%s:%s",
 						    nss_scheme, p);
-				if (p != NULL) {
-					add_string(globals.tctx, &anchor_dbs,
-						   p);
-				}
+			}
+			if (p != NULL) {
+				add_string(globals.tctx, &anchor_dbs, p);
 			}
 			break;
 		case 'F':
@@ -2086,10 +2084,9 @@ resubmit(const char *argv0, int argc, char **argv)
 			if ((nss_scheme != NULL) && (p != NULL)) {
 				p = talloc_asprintf(globals.tctx, "%s:%s",
 						    nss_scheme, p);
-				if (p != NULL) {
-					add_string(globals.tctx, &anchor_dbs,
-						   p);
-				}
+			}
+			if (p != NULL) {
+				add_string(globals.tctx, &anchor_dbs, p);
 			}
 			break;
 		case 'F':
@@ -3034,7 +3031,7 @@ status(const char *argv0, int argc, char **argv)
 			}
 		}
 	}
-		/* Get the status of this request. */
+	/* Get the status of this request. */
 	rep = query_rep(bus, request, CM_DBUS_REQUEST_INTERFACE,
 			"get_status", verbose);
 	if (cm_tdbusm_get_sb(rep, globals.tctx, &s, &b) != 0) {
