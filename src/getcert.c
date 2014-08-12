@@ -768,6 +768,12 @@ request(const char *argv0, int argc, char **argv)
 			}
 			if (p != NULL) {
 				add_string(globals.tctx, &anchor_dbs, p);
+			} else {
+				fprintf(stderr,
+					_("%s: invalid value -- '%s'\n"),
+					"request", optarg);
+				help(argv0, "request");
+				return 1;
 			}
 			break;
 		case 'F':
@@ -1608,6 +1614,12 @@ set_tracking(const char *argv0, const char *category,
 			}
 			if (p != NULL) {
 				add_string(globals.tctx, &anchor_dbs, p);
+			} else {
+				fprintf(stderr,
+					_("%s: invalid value -- '%s'\n"),
+					"request", optarg);
+				help(argv0, "request");
+				return 1;
 			}
 			break;
 		case 'F':
@@ -2087,6 +2099,12 @@ resubmit(const char *argv0, int argc, char **argv)
 			}
 			if (p != NULL) {
 				add_string(globals.tctx, &anchor_dbs, p);
+			} else {
+				fprintf(stderr,
+					_("%s: invalid value -- '%s'\n"),
+					"request", optarg);
+				help(argv0, "request");
+				return 1;
 			}
 			break;
 		case 'F':
