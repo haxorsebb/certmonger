@@ -561,7 +561,6 @@ cm_cadata_ready(struct cm_cadata_state *state)
 				(*(state->parse))(state->ca, state, msg);
 				break;
 			case CM_SUBMIT_STATUS_WAIT_WITH_DELAY:
-				delay = -1;
 				if (length > 0) {
 					delay = strtol(msg, &p, 10);
 					if ((p != NULL) &&
