@@ -169,6 +169,8 @@ cm_subproc_done(struct cm_subproc_state *state)
 			kill(state->pid, SIGKILL);
 			do {
 				pid = waitpid(state->pid, &state->status, 0);
+				cm_log(4, "Waited for %ld, got %ld.\n",
+				       (long) state->pid, (long) pid);
 			} while ((pid == -1) && (errno == EINTR));
 		}
 		if (state->fd != -1) {
