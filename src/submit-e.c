@@ -182,13 +182,21 @@ cm_submit_e_ready(struct cm_submit_state *state)
 static char *
 crlf_to_lf(char *s)
 {
-	size_t length;
-	char *p;
+	char *p, *q;
 
-	length = strlen(s);
-	while ((p = strstr(s, "\r\n")) != NULL) {
-		memmove(p, p + 1, length-- - (p - s));
+	p = s;
+	q = s;
+	while (*q != '\0') {
+		if ((q[0] == '\r') && (q[1] == '\n')) {
+			q++;
+		}
+		if (q != p) {
+			*p = *q;
+		}
+		p++;
+		q++;
 	}
+	*p = '\0';
 	return s;
 }
 
