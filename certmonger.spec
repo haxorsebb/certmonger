@@ -237,10 +237,10 @@ exit 0
 * Tue Aug 12 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75.11-1
 - when getcert is passed a -a flag, to indicate that CA root certificates
   should be stored in the specified database, don't ignore locations which
-  don't include a storage scheme (spotted by Kaleemullah Siddiqui)
+  don't include a storage scheme (#1129537)
 - when called to 'start-tracking' with the -a or -F flags, if we have
   applicable certificates on-hand for a CA that we're either told to use
-  or which we decide is the correct one, save the certificates
+  or which we decide is the correct one, save the certificates (#1129696)
 
 * Tue Aug  5 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75.10-1
 - when attempting to contact an IPA LDAP server, if no "ldap_uri" is set in
