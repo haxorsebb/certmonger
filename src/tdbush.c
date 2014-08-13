@@ -2079,6 +2079,7 @@ ca_prop_set_is_default(struct cm_context *ctx, void *parent,
 		propname[1] = NULL;
 		if (new_value) {
 			i = 0;
+			/* There can be only one... default. */
 			while ((other = cm_get_ca_by_index(ctx, i++)) != NULL) {
 				if ((other != ca) &&
 				    (other->cm_ca_is_default)) {
@@ -4538,11 +4539,13 @@ cm_tdbush_property_get(DBusConnection *conn,
 	unsigned int i;
 	struct cm_store_entry *entry;
 	struct cm_store_ca *ca;
-	char *record, **wpp;
-	const char *p, **pp, ***ppp;
-	time_t *tp;
+	char *record, **wpp, ***wppp;
+	const char *p, **pp;
 	dbus_bool_t b;
 	long l;
+	time_t *tp;
+	enum cm_tdbusm_dict_value_type value_type;
+	union cm_tdbusm_variant value;
 	DBusMessage *rep;
 
 	path = dbus_message_get_path(msg);
@@ -4666,47 +4669,30 @@ cm_tdbush_property_get(DBusConnection *conn,
 	}
 
 	/* Read the property data and set it as an argument. */
+	memset(&value, 0, sizeof(value));
 	switch (prop->cm_local_type) {
 	case cm_tdbush_property_char_p:
 		record += prop->cm_offset;
-		pp = (const char **) record;
-		if (*pp != NULL) {
-			p = *pp;
-			if ((p == NULL) || (strlen(p) == 0)) {
-				if (prop->cm_bus_type == cm_tdbush_property_path) {
-					p = NULL;
-				}
-				if (prop->cm_bus_type == cm_tdbush_property_string) {
-					p = "";
-				}
-			}
-			if (p != NULL) {
-				if (prop->cm_bus_type == cm_tdbush_property_path) {
-					cm_tdbusm_set_p(rep, p);
-				}
-				if (prop->cm_bus_type == cm_tdbush_property_string) {
-					cm_tdbusm_set_s(rep, p);
-				}
-			}
-		}
+		wpp = (char **) record;
+		value.s = *wpp;
 		break;
 	case cm_tdbush_property_char_pp:
 		record += prop->cm_offset;
-		ppp = (const char ***) record;
-		cm_tdbusm_set_as(rep, *ppp);
+		wppp = (char ***) record;
+		value.as = *wppp;
+		value.ass = *wppp;
 		break;
 	case cm_tdbush_property_time_t:
 		record += prop->cm_offset;
 		tp = (time_t *) record;
-		cm_tdbusm_set_n(rep, (long) *tp);
+		value.n = *tp;
 		break;
 	case cm_tdbush_property_comma_list:
 		record += prop->cm_offset;
 		pp = (const char **) record;
 		wpp = eku_splitv(record - prop->cm_offset, *pp);
-		pp = (const char **) wpp;
 		if (wpp != NULL) {
-			cm_tdbusm_set_as(rep, pp);
+			value.as = wpp;
 		}
 		break;
 	case cm_tdbush_property_special:
@@ -4714,41 +4700,64 @@ cm_tdbush_property_get(DBusConnection *conn,
 		case cm_tdbush_property_path:
 			p = (*(prop->cm_read_string))(ctx, parent,
 						      record, property);
-			/* libdbus won't allow us to set NULL or empty paths */
-			if ((p != NULL) && (strlen(p) > 0)) {
-				cm_tdbusm_set_p(rep, p);
-			}
+			value.s = (char *) p;
 			break;
 		case cm_tdbush_property_string:
 			p = (*(prop->cm_read_string))(ctx, parent,
 						      record, property);
-			/* libdbus won't allow us to set NULL strings */
-			if (p == NULL) {
-				p = "";
-			}
-			cm_tdbusm_set_s(rep, p);
+			value.s = (char *) p;
 			break;
 		case cm_tdbush_property_strings:
 			pp = (*(prop->cm_read_strings))(ctx, parent,
 							record, property);
-			cm_tdbusm_set_as(rep, pp);
+			value.as = (char **) pp;
 			break;
 		case cm_tdbush_property_string_pairs:
 			pp = (*(prop->cm_read_string_pairs))(ctx, parent,
 							     record, property);
-			cm_tdbusm_set_ass(rep, pp);
+			value.ass = (char **) pp;
 			break;
 		case cm_tdbush_property_boolean:
 			b = (*(prop->cm_read_boolean))(ctx, parent,
 						       record, property);
-			cm_tdbusm_set_b(rep, b);
+			value.b = b;
 			break;
 		case cm_tdbush_property_number:
 			l = (*(prop->cm_read_number))(ctx, parent,
 						      record, property);
-			cm_tdbusm_set_n(rep, l);
+			value.n = l;
 			break;
 		}
+		break;
+	}
+	switch (prop->cm_bus_type) {
+	case cm_tdbush_property_path:
+		value_type = cm_tdbusm_dict_p;
+		if ((value.s != NULL) && (strlen(value.s) > 0)) {
+			cm_tdbusm_set_v(rep, value_type, &value);
+		}
+		break;
+	case cm_tdbush_property_string:
+		value_type = cm_tdbusm_dict_s;
+		if (value.s != NULL) {
+			cm_tdbusm_set_v(rep, value_type, &value);
+		}
+		break;
+	case cm_tdbush_property_strings:
+		value_type = cm_tdbusm_dict_as;
+		cm_tdbusm_set_v(rep, value_type, &value);
+		break;
+	case cm_tdbush_property_string_pairs:
+		value_type = cm_tdbusm_dict_ass;
+		cm_tdbusm_set_v(rep, value_type, &value);
+		break;
+	case cm_tdbush_property_boolean:
+		value_type = cm_tdbusm_dict_b;
+		cm_tdbusm_set_v(rep, value_type, &value);
+		break;
+	case cm_tdbush_property_number:
+		value_type = cm_tdbusm_dict_n;
+		cm_tdbusm_set_v(rep, value_type, &value);
 		break;
 	}
 	if (rep != NULL) {
@@ -4780,13 +4789,10 @@ cm_tdbush_property_set(DBusConnection *conn,
 	struct cm_store_ca *ca = NULL;
 	char *record, *wp, **wpp, ***wppp;
 	time_t *tp;
-	dbus_bool_t b;
-	long l;
 	DBusMessage *rep;
 	const char *properties[2];
+	enum cm_tdbusm_dict_value_type value_type;
 	union cm_tdbusm_variant v;
-	int dbus_type;
-
 
 	path = dbus_message_get_path(msg);
 	type = cm_tdbush_classify_path(ctx, path);
@@ -4830,7 +4836,8 @@ cm_tdbush_property_set(DBusConnection *conn,
 	}
 
 	parent = talloc_new(NULL);
-	if (cm_tdbusm_get_ss(msg, parent, &interface, &property) != 0) {
+	if (cm_tdbusm_get_ssv(msg, parent, &interface, &property,
+			      &value_type, &v) != 0) {
 		cm_log(1, "Error parsing arguments.\n");
 		talloc_free(parent);
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
@@ -4888,31 +4895,27 @@ cm_tdbush_property_set(DBusConnection *conn,
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
 
-	/* Read the argument and set the data. */
+	/* Set the property. */
 	switch (prop->cm_local_type) {
 	case cm_tdbush_property_char_p:
-		if (cm_tdbusm_get_ssv(msg, parent, &interface, &property,
-					&v, &dbus_type) != 0) {
-			cm_log(1, "Error parsing arguments.\n");
-			dbus_message_unref(rep);
+		if ((value_type != cm_tdbusm_dict_s) &&
+		    (value_type != cm_tdbusm_dict_p)) {
+			cm_log(1, "Error: arguments type mismatch.\n");
 			talloc_free(parent);
 			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 		}
-
-		if (dbus_type != DBUS_TYPE_STRING) {
-			talloc_free(parent);
-			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-		}
-
 		record += prop->cm_offset;
 		wpp = (char **) record;
 		*wpp = maybe_strdup(record - prop->cm_offset, v.s);
 		break;
 	case cm_tdbush_property_char_pp:
-		if (cm_tdbusm_get_ssas(msg, parent, &interface, &property,
-				       &wpp) != 0) {
-			cm_log(1, "Error parsing arguments.\n");
-			dbus_message_unref(rep);
+		if (value_type == cm_tdbusm_dict_as) {
+			wpp = v.as;
+		} else
+		if (value_type == cm_tdbusm_dict_ass) {
+			wpp = v.ass;
+		} else {
+			cm_log(1, "Error: arguments type mismatch.\n");
 			talloc_free(parent);
 			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 		}
@@ -4921,26 +4924,22 @@ cm_tdbush_property_set(DBusConnection *conn,
 		*wppp = maybe_strdupv(record - prop->cm_offset, wpp);
 		break;
 	case cm_tdbush_property_time_t:
-		if (cm_tdbusm_get_ssn(msg, parent, &interface, &property,
-				      &l) != 0) {
-			cm_log(1, "Error parsing arguments.\n");
-			dbus_message_unref(rep);
+		if (value_type != cm_tdbusm_dict_n) {
+			cm_log(1, "Error: arguments type mismatch.\n");
 			talloc_free(parent);
 			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 		}
 		record += prop->cm_offset;
 		tp = (time_t *) record;
-		*tp = l;
+		*tp = v.n;
 		break;
 	case cm_tdbush_property_comma_list:
-		if (cm_tdbusm_get_ssas(msg, parent, &interface, &property,
-				       &wpp) != 0) {
-			cm_log(1, "Error parsing arguments.\n");
-			dbus_message_unref(rep);
+		if (value_type != cm_tdbusm_dict_as) {
+			cm_log(1, "Error: arguments type mismatch.\n");
 			talloc_free(parent);
 			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 		}
-		wp = cm_submit_maybe_joinv(record, ",", wpp);
+		wp = cm_submit_maybe_joinv(record, ",", v.as);
 		record += prop->cm_offset;
 		wpp = (char **) record;
 		*wpp = maybe_strdup(record - prop->cm_offset, wp);
@@ -4949,61 +4948,52 @@ cm_tdbush_property_set(DBusConnection *conn,
 		switch (prop->cm_bus_type) {
 		case cm_tdbush_property_path:
 		case cm_tdbush_property_string:
-			if (cm_tdbusm_get_sss(msg, parent, &interface,
-					      &property, &wp) != 0) {
-				cm_log(1, "Error parsing arguments.\n");
-				dbus_message_unref(rep);
+			if ((value_type != cm_tdbusm_dict_s) &&
+			    (value_type != cm_tdbusm_dict_p)) {
+				cm_log(1, "Error: arguments type mismatch.\n");
 				talloc_free(parent);
 				return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 			}
 			(*(prop->cm_write_string))(ctx, parent,
-						   record, property, wp);
+						   record, property, v.s);
 			break;
 		case cm_tdbush_property_strings:
-			if (cm_tdbusm_get_ssas(msg, parent, &interface,
-					       &property, &wpp) != 0) {
-				cm_log(1, "Error parsing arguments.\n");
-				dbus_message_unref(rep);
+			if (value_type != cm_tdbusm_dict_as) {
+				cm_log(1, "Error: arguments type mismatch.\n");
 				talloc_free(parent);
 				return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 			}
 			(*(prop->cm_write_strings))(ctx, parent,
 						    record, property,
-						    (const char **) wpp);
+						    (const char **) v.as);
 			break;
 		case cm_tdbush_property_string_pairs:
-			if (cm_tdbusm_get_ssass(msg, parent, &interface,
-						&property, &wpp) != 0) {
-				cm_log(1, "Error parsing arguments.\n");
-				dbus_message_unref(rep);
+			if (value_type != cm_tdbusm_dict_ass) {
+				cm_log(1, "Error: arguments type mismatch.\n");
 				talloc_free(parent);
 				return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 			}
 			(*(prop->cm_write_string_pairs))(ctx, parent,
 							 record, property,
-							 (const char **) wpp);
+							 (const char **) v.ass);
 			break;
 		case cm_tdbush_property_boolean:
-			if (cm_tdbusm_get_ssb(msg, parent, &interface,
-					      &property, &b) != 0) {
-				cm_log(1, "Error parsing arguments.\n");
-				dbus_message_unref(rep);
+			if (value_type != cm_tdbusm_dict_b) {
+				cm_log(1, "Error: arguments type mismatch.\n");
 				talloc_free(parent);
 				return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 			}
 			(*(prop->cm_write_boolean))(ctx, parent,
-						    record, property, b);
+						    record, property, v.b);
 			break;
 		case cm_tdbush_property_number:
-			if (cm_tdbusm_get_ssn(msg, parent, &interface,
-					      &property, &l) != 0) {
-				cm_log(1, "Error parsing arguments.\n");
-				dbus_message_unref(rep);
+			if (value_type != cm_tdbusm_dict_n) {
+				cm_log(1, "Error: arguments type mismatch.\n");
 				talloc_free(parent);
 				return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 			}
 			(*(prop->cm_write_number))(ctx, parent,
-						   record, property, l);
+						   record, property, v.n);
 			break;
 		}
 		break;
@@ -6613,10 +6603,10 @@ cm_tdbush_iface_ca(void)
 							 make_property(CM_DBUS_PROP_EXTERNAL_HELPER,
 								       cm_tdbush_property_string,
 								       cm_tdbush_property_readwrite,
-								       cm_tdbush_property_char_p,
-								       offsetof(struct cm_store_ca, cm_ca_external_helper),
-								       NULL, NULL, NULL, NULL, NULL,
-								       NULL, NULL, NULL, NULL, NULL,
+								       cm_tdbush_property_special,
+								       0,
+								       ca_prop_get_external_helper, NULL, NULL, NULL, NULL,
+								       ca_prop_set_external_helper, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_issuer_names",
