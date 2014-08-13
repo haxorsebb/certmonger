@@ -59,5 +59,7 @@ dbus_bool_t cm_start_ca(struct cm_context *c, const char *nickname,
 
 void *cm_get_conn_ptr(struct cm_context *context);
 void cm_set_conn_ptr(struct cm_context *context, void *ptr);
+const char *cm_get_server_address(struct cm_context *context);
+void cm_set_server_address(struct cm_context *context, const char *address);
 
 #endif

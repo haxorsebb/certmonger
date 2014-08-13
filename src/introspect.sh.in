@@ -1,10 +1,13 @@
-#!/bin/sh
-bus=--system
+#!/bin/sh -x
+bus=${CERTMONGER_BUS_ADDRESS:+--bus=${CERTMONGER_BUS_ADDRESS}}${CERTMONGER_BUS_ADDRESS:---system}
 for object in "$@" ; do
 	case "$object" in
 	--*)
-		bus="$object";;
+		bus="$object"
+		object=
+		;;
 	*)
 		dbus-send $bus --print-reply --dest=@CM_DBUS_NAME@ "${object:-/}" org.freedesktop.DBus.Introspectable.Introspect
+		;;
 	esac
 done

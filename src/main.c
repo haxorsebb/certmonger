@@ -59,8 +59,8 @@ main(int argc, char **argv)
 	pid_t pid;
 	FILE *pfp;
 	const char *pidfile = NULL, *tmpdir, *gate_command = NULL;
-	char *env_tmpdir, *hint;
-	dbus_bool_t dofork;
+	char *env_tmpdir, *hint, *address;
+	dbus_bool_t dofork, server, server_only;
 	enum force_fips_mode forcefips;
 	int bustime;
 	DBusError error;
@@ -69,6 +69,8 @@ main(int argc, char **argv)
 	dofork = cm_env_default_fork();
 	bustime = cm_env_default_bus_timeout();
 	forcefips = do_not_force_fips;
+	server = FALSE;
+	server_only = FALSE;
 
 #ifdef ENABLE_NLS
 	bindtextdomain(PACKAGE, MYLOCALEDIR);
@@ -87,13 +89,20 @@ main(int argc, char **argv)
 		exit(1);
 	};
 
-	while ((c = getopt(argc, argv, "sSp:fb:Bd:nFc:")) != -1) {
+	while ((c = getopt(argc, argv, "sSp:fb:Bd:nFlLc:")) != -1) {
 		switch (c) {
 		case 's':
 			bus = cm_tdbus_session;
 			break;
 		case 'S':
 			bus = cm_tdbus_system;
+			break;
+		case 'l':
+			server = TRUE;
+			break;
+		case 'L':
+			server = TRUE;
+			server_only = TRUE;
 			break;
 		case 'c':
 			bustime = 0;
@@ -172,6 +181,7 @@ main(int argc, char **argv)
 	umask(S_IRWXG | S_IRWXO);
 
 	switch (bus) {
+	case cm_tdbus_other:
 	case cm_tdbus_system:
 		if (chdir("/") != 0) {
 			cm_log(0, "Error in chdir(\"/\"): %s.\n",
@@ -221,14 +231,28 @@ main(int argc, char **argv)
 		exit(1);
 	}
 
-	if (cm_tdbus_setup(ec, bus, ctx, &error) != 0) {
-		fprintf(stderr, "Error connecting to D-Bus.\n");
-		hint = cm_tdbusm_hint(ec, error.name, error.message);
-		if (hint != NULL) {
-			fprintf(stderr, "%s", hint);
+	if (!server_only) {
+		if (cm_tdbus_setup(ec, bus, ctx, &error) != 0) {
+			fprintf(stderr, "Error connecting to D-Bus.\n");
+			hint = cm_tdbusm_hint(ec, error.name, error.message);
+			if (hint != NULL) {
+				fprintf(stderr, "%s", hint);
+			}
+			talloc_free(ec);
+			exit(1);
 		}
-		talloc_free(ec);
-		exit(1);
+	}
+	if (server) {
+		if (cm_tdbus_setup_server(ec, ctx, &address, &error) != 0) {
+			fprintf(stderr, "Error setting up D-Bus listener.\n");
+			hint = cm_tdbusm_hint(ec, error.name, error.message);
+			if (hint != NULL) {
+				fprintf(stderr, "%s", hint);
+			}
+			talloc_free(ec);
+			exit(1);
+		}
+		cm_set_server_address(ctx, address);
 	}
 
 	if (pidfile != NULL) {

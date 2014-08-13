@@ -24,15 +24,21 @@
 #include <talloc.h>
 #include <tevent.h>
 
+#include <krb5.h>
+
 #include <dbus/dbus.h>
+
+#include <openssl/rand.h>
 
 #include "cm.h"
 #include "log.h"
+#include "submit-u.h"
 #include "tdbus.h"
 #include "tdbush.h"
 #include "tdbusm.h"
 
 struct tdbus_connection {
+	DBusServer *server;
 	DBusConnection *conn;
 	enum cm_tdbus_type conn_type;
 	struct tdbus_watch {
@@ -58,7 +64,10 @@ struct tdbus_connection {
 	void *data;
 };
 
-static int cm_tdbus_setup_connection(struct tdbus_connection *tdb, DBusError *);
+static int cm_tdbus_setup_connection(struct tdbus_connection *tdb,
+				     DBusConnection *conn,
+				     enum cm_tdbus_type bus_type,
+				     DBusError *error);
 
 static void
 cm_tdbus_dispatch_status(DBusConnection *conn, DBusDispatchStatus new_status,
@@ -451,6 +460,7 @@ cm_tdbus_reconnect(struct tevent_context *ec, struct tevent_timer *timer,
 		/* Close the current connection and open a new one. */
 		if (tdb->conn != NULL) {
 			dbus_connection_unref(tdb->conn);
+			tdb->conn = NULL;
 		}
 		bus_desc = NULL;
 		switch (tdb->conn_type) {
@@ -470,6 +480,9 @@ cm_tdbus_reconnect(struct tevent_context *ec, struct tevent_timer *timer,
 			exit_on_disconnect = TRUE;
 			bus_desc = "session";
 			break;
+		case cm_tdbus_other:
+			abort();
+			break;
 		}
 		if ((tdb->conn != NULL) &&
 		    dbus_connection_get_is_connected(tdb->conn)) {
@@ -477,7 +490,8 @@ cm_tdbus_reconnect(struct tevent_context *ec, struct tevent_timer *timer,
 			cm_log(1, "Reconnected to %s bus.\n", bus_desc);
 			dbus_connection_set_exit_on_disconnect(tdb->conn,
 							       exit_on_disconnect);
-			cm_tdbus_setup_connection(tdb, NULL);
+			cm_tdbus_setup_connection(tdb, tdb->conn,
+						  tdb->conn_type, NULL);
 		} else {
 			/* Try reconnecting again later. */
 			later = tevent_timeval_current_ofs(CM_DBUS_RECONNECT_TIMEOUT, 0),
@@ -493,8 +507,10 @@ cm_tdbus_filter(DBusConnection *conn, DBusMessage *dmessage, void *data)
 {
 	struct tdbus_connection *tdb = data;
 	const char *destination, *unique_name, *path, *interface, *member;
+
 	/* If we're disconnected, queue a reconnect. */
-	if (!dbus_connection_get_is_connected(conn)) {
+	if ((tdb->conn_type != cm_tdbus_other) &&
+	    !dbus_connection_get_is_connected(conn)) {
 		tevent_add_timer(talloc_parent(tdb), tdb,
 				 tevent_timeval_current(),
 				 cm_tdbus_reconnect,
@@ -538,18 +554,19 @@ cm_tdbus_filter(DBusConnection *conn, DBusMessage *dmessage, void *data)
 }
 
 static int
-cm_tdbus_setup_connection(struct tdbus_connection *tdb, DBusError *error)
+cm_tdbus_setup_connection(struct tdbus_connection *tdb, DBusConnection *conn,
+			  enum cm_tdbus_type bus_type, DBusError *error)
 {
 	DBusError err;
-	const char *bus_desc;
 	int i;
+
 	/* Set the callback to be called when I/O processing has yielded a
 	 * request that we need to act on. */
-	dbus_connection_set_dispatch_status_function(tdb->conn,
+	dbus_connection_set_dispatch_status_function(conn,
 						     cm_tdbus_dispatch_status,
 						     tdb, NULL);
 	/* Hook up the I/O callbacks so that D-Bus can actually do its thing. */
-	if (!dbus_connection_set_watch_functions(tdb->conn,
+	if (!dbus_connection_set_watch_functions(conn,
 						 &cm_tdbus_watch_add,
 						 &cm_tdbus_watch_remove,
 						 &cm_tdbus_watch_toggle,
@@ -559,7 +576,7 @@ cm_tdbus_setup_connection(struct tdbus_connection *tdb, DBusError *error)
 		return -1;
 	}
 	/* Hook up the (unused?) timer callbacks to be polite. */
-	if (!dbus_connection_set_timeout_functions(tdb->conn,
+	if (!dbus_connection_set_timeout_functions(conn,
 						   cm_tdbus_timeout_add,
 						   cm_tdbus_timeout_remove,
 						   cm_tdbus_timeout_toggle,
@@ -569,45 +586,61 @@ cm_tdbus_setup_connection(struct tdbus_connection *tdb, DBusError *error)
 		return -1;
 	}
 	/* Set the filter on messages. */
-	if (!dbus_connection_add_filter(tdb->conn, cm_tdbus_filter,
+	if (!dbus_connection_add_filter(conn, cm_tdbus_filter,
 					tdb, NULL)) {
 		cm_log(1, "Unable to add filter.\n");
 		return -1;
 	}
 	/* Bind to the well-known name we intend to use. */
-	memset(&err, 0, sizeof(err));
-	i = dbus_bus_request_name(tdb->conn, CM_DBUS_NAME, 0, &err);
-	if ((i == 0) ||
-	    ((i != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER) &&
-	     (i != DBUS_REQUEST_NAME_REPLY_ALREADY_OWNER)) ||
-	    dbus_error_is_set(&err)) {
-		cm_log(-2,
-		       "Unable to set well-known bus name \"%s\": %s(%d).\n",
-		       CM_DBUS_NAME,
-		       err.message ? err.message : (err.name ? err.name : ""),
-		       i);
-		if (error != NULL) {
-			dbus_move_error(&err, error);
+	switch (bus_type) {
+	case cm_tdbus_system:
+	case cm_tdbus_session:
+		memset(&err, 0, sizeof(err));
+		i = dbus_bus_request_name(conn, CM_DBUS_NAME, 0, &err);
+		if ((i == 0) ||
+		    ((i != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER) &&
+		     (i != DBUS_REQUEST_NAME_REPLY_ALREADY_OWNER)) ||
+		    dbus_error_is_set(&err)) {
+			cm_log(0,
+			       "Unable to set well-known bus name \"%s\": "
+			       "%s(%d).\n",
+			       CM_DBUS_NAME,
+			       err.message ?
+			       err.message :
+			       (err.name ? err.name : ""),
+			       i);
+			if (error != NULL) {
+				dbus_move_error(&err, error);
+			}
+			return -1;
 		}
-		return -1;
+		break;
+	case cm_tdbus_other:
+		/* Don't request a name. */
+		break;
 	}
 	/* Handle any messages that are already pending. */
-	cm_tdbus_dispatch_status(tdb->conn,
-				 dbus_connection_get_dispatch_status(tdb->conn),
+	cm_tdbus_dispatch_status(conn,
+				 dbus_connection_get_dispatch_status(conn),
 				 tdb);
-	bus_desc = NULL;
-	switch (tdb->conn_type) {
+	switch (bus_type) {
 	case cm_tdbus_system:
-		bus_desc = "system";
+		cm_log(3, "Connected to system message bus with name \"%s\", "
+		       "unique name \"%s\".\n",
+		       dbus_bus_get_unique_name(conn) ?: "(unknown)",
+		       CM_DBUS_NAME);
 		break;
 	case cm_tdbus_session:
-		bus_desc = "session";
+		cm_log(3, "Connected to session message bus with name \"%s\", "
+		       "unique name \"%s\".\n",
+		       dbus_bus_get_unique_name(conn) ?: "(unknown)",
+		       CM_DBUS_NAME);
+		break;
+	case cm_tdbus_other:
+		cm_log(3, "Accepted connection to bus with name \"%s\".\n",
+		       dbus_bus_get_unique_name(conn));
 		break;
 	}
-	cm_log(3, "Connected to %s message bus with name \"%s\", "
-	       "unique name \"%s\".\n",
-	       bus_desc, dbus_bus_get_unique_name(tdb->conn) ?: "(unknown)",
-	       CM_DBUS_NAME);
 	return 0;
 }
 
@@ -648,9 +681,12 @@ cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type,
 		exit_on_disconnect = TRUE;
 		bus_desc = "session";
 		break;
+	case cm_tdbus_other:
+		abort();
+		break;
 	}
 	if (conn == NULL) {
-		cm_log(-2, "Error connecting to %s bus.\n", bus_desc);
+		cm_log(0, "Error connecting to %s bus.\n", bus_desc);
 		talloc_free(tdb);
 		return -1;
 	}
@@ -658,5 +694,100 @@ cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type,
 	tdb->conn = conn;
 	tdb->conn_type = bus_type;
 	tdb->data = data;
-	return cm_tdbus_setup_connection(tdb, error);
+	return cm_tdbus_setup_connection(tdb, conn, bus_type, error);
+}
+
+static void
+cm_tdbus_new_client(DBusServer *server, DBusConnection *new_conn, void *data)
+{
+	struct tdbus_connection *tdb = data;
+	DBusError error;
+
+	dbus_error_init(&error);
+	if (cm_tdbus_setup_connection(tdb, new_conn, cm_tdbus_other,
+				      &error) == 0) {
+		cm_log(4, "new client\n");
+		dbus_connection_ref(new_conn);
+	} else {
+		cm_log(0, "Error setting up for client.\n");
+	}
+}
+
+int
+cm_tdbus_setup_server(struct tevent_context *ec, void *data, char **address,
+		      DBusError *error)
+{
+	struct tdbus_connection *tdb;
+	unsigned char uuid[16];
+	char *addr;
+
+	*address = NULL;
+
+	/* Build our own context. */
+	tdb = talloc_ptrtype(ec, tdb);
+	if (tdb == NULL) {
+		return ENOMEM;
+	}
+	memset(tdb, 0, sizeof(*tdb));
+
+	/* Start up the listener. */
+	if (error != NULL) {
+		dbus_error_init(error);
+	}
+#ifdef HAVE_UUID
+	if (cm_submit_uuid_new(uuid) == 0) {
+		/* we're good */
+	} else
+#endif
+	if (!RAND_pseudo_bytes(uuid, sizeof(uuid))) {
+		/* Try again sometime later. */
+		cm_log(1, "Error generating UUID.\n");
+		talloc_free(tdb);
+		return -1;
+	}
+	addr = talloc_asprintf(ec, "unix:abstract=%s/listen-"
+			       "%02x%02x%02x%02x%02x%02x%02x%02x"
+			       "%02x%02x%02x%02x%02x%02x%02x%02x",
+			       CM_TMPDIR,
+			       uuid[0], uuid[1], uuid[2], uuid[3],
+			       uuid[4], uuid[5], uuid[6], uuid[7],
+			       uuid[8], uuid[9], uuid[10], uuid[11],
+			       uuid[12], uuid[13], uuid[14], uuid[15]);
+	tdb->server = dbus_server_listen(addr, error);
+	if (dbus_error_is_set(error)) {
+		cm_log(0, "Error setting up D-Bus server.\n");
+		talloc_free(tdb);
+		return -1;
+	}
+	/* Hook up the I/O callbacks so that D-Bus can actually do its thing. */
+	if (!dbus_server_set_watch_functions(tdb->server,
+					     &cm_tdbus_watch_add,
+					     &cm_tdbus_watch_remove,
+					     &cm_tdbus_watch_toggle,
+					     tdb,
+					     &cm_tdbus_watch_cleanup)) {
+		cm_log(1, "Unable to add timer callbacks.\n");
+		talloc_free(tdb);
+		return -1;
+	}
+	/* Hook up the (unused?) timer callbacks to be polite. */
+	if (!dbus_server_set_timeout_functions(tdb->server,
+					       cm_tdbus_timeout_add,
+					       cm_tdbus_timeout_remove,
+					       cm_tdbus_timeout_toggle,
+					       tdb,
+					       cm_tdbus_timeout_cleanup)) {
+		cm_log(1, "Unable to add timer callbacks.\n");
+		talloc_free(tdb);
+		return -1;
+	}
+	/* Provide the callback to use when we get a new client connection. */
+	dbus_server_set_new_connection_function(tdb->server,
+						cm_tdbus_new_client,
+						tdb,
+						NULL);
+	tdb->conn_type = cm_tdbus_other;
+	tdb->data = data;
+	*address = dbus_server_get_address(tdb->server);
+	return 0;
 }

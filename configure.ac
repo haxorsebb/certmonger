@@ -112,6 +112,8 @@ CM_NOTIFICATION_ENV="${UPCASE_PACKAGE_NAME}_NOTIFICATION"
 AC_DEFINE_UNQUOTED(CM_NOTIFICATION_ENV,"${CM_NOTIFICATION_ENV}",[Define to the variable name to be used to hold a notification message.])
 AC_SUBST(CM_NOTIFICATION_ENV)
 
+AC_DEFINE_UNQUOTED(CERTMONGER_BUS_ADDRESS_ENV,"CERTMONGER_BUS_ADDRESS",[Define to the variable name used to pass the location of the D-Bus service to subprocesses.])
+
 mylocaledir="$localedir"
 mylocaledir=`eval echo $mylocaledir | sed "s,NONE,$prefix,g"`
 mylocaledir=`eval echo $mylocaledir | sed "s,NONE,$ac_default_prefix,g"`

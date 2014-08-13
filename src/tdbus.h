@@ -117,8 +117,10 @@
 #define CM_DBUS_PROP_REQUIRED_RENEW_ATTRIBUTES "required-renew-attributes"
 #define CM_DBUS_PROP_AKA "aka"
 
-enum cm_tdbus_type { cm_tdbus_system, cm_tdbus_session };
+enum cm_tdbus_type { cm_tdbus_system, cm_tdbus_session, cm_tdbus_other };
 int cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type,
 		   void *data, DBusError *error);
+int cm_tdbus_setup_server(struct tevent_context *ec, void *data, char **address,
+			  DBusError *error);
 
 #endif

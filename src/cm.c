@@ -61,6 +61,7 @@ struct cm_context {
 	void *netlink_tfd, *netlink_delayed_event;
 	int idle_timeout;
 	void *idle_event, *conn_ptr;
+	char *server_address;
 	struct {
 		void *tfd;
 		char *command;
@@ -747,6 +748,9 @@ cm_gate_run(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 		return -1;
 	}
 	cm_log(1, "Running gate command \"%s\".\n", argv[0]);
+	if (ctx->server_address != NULL) {
+		setenv(CERTMONGER_BUS_ADDRESS_ENV, ctx->server_address, 1);
+	}
 	execvp(argv[0], argv);
 	u = errno;
 	if (write(fd, &u, 1) != 1) {
@@ -1184,4 +1188,16 @@ void
 cm_set_conn_ptr(struct cm_context *context, void *ptr)
 {
 	context->conn_ptr = ptr;
+}
+
+const char *
+cm_get_server_address(struct cm_context *context)
+{
+	return context->server_address;
+}
+
+void
+cm_set_server_address(struct cm_context *context, const char *address)
+{
+	context->server_address = talloc_strdup(context, address);
 }

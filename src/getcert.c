@@ -261,6 +261,8 @@ prep_req(enum cm_tdbus_type which,
 	 const char *path, const char *interface, const char *method)
 {
 	DBusMessage *msg;
+	const char *busaddr;
+
 	if (globals.conn == NULL) {
 		switch (which) {
 		case cm_tdbus_session:
@@ -269,9 +271,15 @@ prep_req(enum cm_tdbus_type which,
 		case cm_tdbus_system:
 			globals.conn = dbus_bus_get(DBUS_BUS_SYSTEM, NULL);
 			break;
+		case cm_tdbus_other:
+			busaddr = getenv(CERTMONGER_BUS_ADDRESS_ENV);
+			if (busaddr != NULL) {
+				globals.conn = dbus_connection_open_private(busaddr, NULL);
+			}
+			break;
 		}
 		if (globals.conn == NULL) {
-			printf(_("Error connecting to DBus.\n"));
+			printf(_("Error connecting to D-Bus.\n"));
 			printf(_("Please verify that the message bus (D-Bus) service is running.\n"));
 			exit(1);
 		}
