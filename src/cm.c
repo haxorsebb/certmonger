@@ -20,6 +20,7 @@
 #include <sys/types.h>
 #include <sys/select.h>
 #include <sys/socket.h>
+#include <sys/wait.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <signal.h>
