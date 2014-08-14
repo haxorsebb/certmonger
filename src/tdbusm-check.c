@@ -552,6 +552,9 @@ print_d(DBusMessage *rep, const struct cm_tdbusm_dict **d)
 	for (i = 0; (d != NULL) && (d[i] != NULL); i++) {
 		printf("%s{%s=", i > 0 ? "," : "", d[i]->key);
 		switch (d[i]->value_type) {
+		case cm_tdbusm_dict_invalid:
+			printf("(invalid)}");
+			break;
 		case cm_tdbusm_dict_s:
 			printf("s:%s}", d[i]->value.s);
 			break;

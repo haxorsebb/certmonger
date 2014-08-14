@@ -4905,6 +4905,9 @@ cm_tdbush_property_set(DBusConnection *conn,
 	/* Set the property. */
 	switch (prop->cm_local_type) {
 	case cm_tdbush_property_char_p:
+		if (value_type == cm_tdbusm_dict_invalid) {
+			v.s = NULL;
+		} else
 		if ((value_type != cm_tdbusm_dict_s) &&
 		    (value_type != cm_tdbusm_dict_p)) {
 			cm_log(1, "Error: arguments type mismatch.\n");
@@ -4916,6 +4919,9 @@ cm_tdbush_property_set(DBusConnection *conn,
 		*wpp = maybe_strdup(record - prop->cm_offset, v.s);
 		break;
 	case cm_tdbush_property_char_pp:
+		if (value_type == cm_tdbusm_dict_invalid) {
+			wpp = NULL;
+		} else
 		if (value_type == cm_tdbusm_dict_as) {
 			wpp = v.as;
 		} else
@@ -4931,6 +4937,9 @@ cm_tdbush_property_set(DBusConnection *conn,
 		*wppp = maybe_strdupv(record - prop->cm_offset, wpp);
 		break;
 	case cm_tdbush_property_time_t:
+		if (value_type == cm_tdbusm_dict_invalid) {
+			v.n = 0;
+		} else
 		if (value_type != cm_tdbusm_dict_n) {
 			cm_log(1, "Error: arguments type mismatch.\n");
 			talloc_free(parent);
@@ -4941,6 +4950,9 @@ cm_tdbush_property_set(DBusConnection *conn,
 		*tp = v.n;
 		break;
 	case cm_tdbush_property_comma_list:
+		if (value_type == cm_tdbusm_dict_invalid) {
+			v.as = NULL;
+		} else
 		if (value_type != cm_tdbusm_dict_as) {
 			cm_log(1, "Error: arguments type mismatch.\n");
 			talloc_free(parent);
@@ -4955,6 +4967,9 @@ cm_tdbush_property_set(DBusConnection *conn,
 		switch (prop->cm_bus_type) {
 		case cm_tdbush_property_path:
 		case cm_tdbush_property_string:
+			if (value_type == cm_tdbusm_dict_invalid) {
+				v.s = NULL;
+			} else
 			if ((value_type != cm_tdbusm_dict_s) &&
 			    (value_type != cm_tdbusm_dict_p)) {
 				cm_log(1, "Error: arguments type mismatch.\n");
@@ -4965,6 +4980,9 @@ cm_tdbush_property_set(DBusConnection *conn,
 						   record, property, v.s);
 			break;
 		case cm_tdbush_property_strings:
+			if (value_type == cm_tdbusm_dict_invalid) {
+				v.as = NULL;
+			} else
 			if (value_type != cm_tdbusm_dict_as) {
 				cm_log(1, "Error: arguments type mismatch.\n");
 				talloc_free(parent);
@@ -4975,6 +4993,9 @@ cm_tdbush_property_set(DBusConnection *conn,
 						    (const char **) v.as);
 			break;
 		case cm_tdbush_property_string_pairs:
+			if (value_type == cm_tdbusm_dict_invalid) {
+				v.ass = NULL;
+			} else
 			if (value_type != cm_tdbusm_dict_ass) {
 				cm_log(1, "Error: arguments type mismatch.\n");
 				talloc_free(parent);
@@ -4985,6 +5006,9 @@ cm_tdbush_property_set(DBusConnection *conn,
 							 (const char **) v.ass);
 			break;
 		case cm_tdbush_property_boolean:
+			if (value_type == cm_tdbusm_dict_invalid) {
+				v.b = FALSE;
+			} else
 			if (value_type != cm_tdbusm_dict_b) {
 				cm_log(1, "Error: arguments type mismatch.\n");
 				talloc_free(parent);
@@ -4994,6 +5018,9 @@ cm_tdbush_property_set(DBusConnection *conn,
 						    record, property, v.b);
 			break;
 		case cm_tdbush_property_number:
+			if (value_type == cm_tdbusm_dict_invalid) {
+				v.n = 0;
+			} else
 			if (value_type != cm_tdbusm_dict_n) {
 				cm_log(1, "Error: arguments type mismatch.\n");
 				talloc_free(parent);

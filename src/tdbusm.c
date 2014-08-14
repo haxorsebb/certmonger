@@ -1077,7 +1077,14 @@ cm_tdbusm_get_d_value(DBusMessageIter *item, void *parent,
 					dicts = cm_tdbusm_get_d_array(&sval, dict);
 					dict->value.d = (const struct cm_tdbusm_dict **) dicts;
 					break;
+				case DBUS_TYPE_INVALID:
+					dict->value_type = cm_tdbusm_dict_invalid;
+					memset(&dict->value, 0, sizeof(dict->value));
+					break;
 				default:
+					cm_log(6, "Unexpected array member type %c (%d)\n",
+					       dbus_message_iter_get_arg_type(&sval),
+					       dbus_message_iter_get_arg_type(&sval));
 					talloc_free(dict);
 					return NULL;
 					break;
@@ -1833,6 +1840,16 @@ cm_tdbusm_append_d_value(DBusMessage *msg, DBusMessageIter *args,
 
 	memset(&val, 0, sizeof(val));
 	switch (value_type) {
+	case cm_tdbusm_dict_invalid:
+		dbus_message_iter_open_container(args,
+						 DBUS_TYPE_VARIANT,
+						 DBUS_TYPE_INVALID_AS_STRING,
+						 &val);
+		dbus_message_iter_append_basic(&val,
+					       DBUS_TYPE_INVALID,
+					       NULL);
+		dbus_message_iter_close_container(args, &val);
+		break;
 	case cm_tdbusm_dict_b:
 		dbus_message_iter_open_container(args,
 						 DBUS_TYPE_VARIANT,
