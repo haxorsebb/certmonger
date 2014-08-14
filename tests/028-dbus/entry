@@ -1,0 +1,22 @@
+id=Buddy
+key_type=RSA
+key_gen_type=RSA
+key_size=512
+key_gen_size=512
+key_storage_type=FILE
+key_storage_location=@tmpdir@/test.key
+cert_storage_type=FILE
+cert_storage_location=@tmpdir@/test.crt
+template_subject=CN=localhost
+template_hostname=localhost
+template_principal=host/localhost@LOCALHOST
+template_eku=id-kp-serverAuth
+template_ku=1001
+template_is_ca=0
+template_ca_path_length=0
+template_no_ocsp_check=0
+template_ns_comment=Comments For Everyone
+template_profile=Left
+ca_name=local
+autorenew=1
+monitor=1

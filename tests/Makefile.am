@@ -109,7 +109,13 @@ EXTRA_DIST = \
 	026-local/expected.out \
 	026-local/run.sh \
 	027-hooks/expected.out \
-	027-hooks/run.sh
+	027-hooks/run.sh \
+	028-dbus/expected.out \
+	028-dbus/entry 028-dbus/bogus-entry \
+	028-dbus/prequal.sh \
+	028-dbus/run.sh \
+	028-dbus/runsub.sh \
+	028-dbus/simpleprop.py
 
 subdirs = \
 	001-keyiread \
@@ -141,7 +147,8 @@ subdirs = \
 	024-citerate \
 	025-casave \
 	026-local \
-	027-hooks
+	027-hooks \
+	028-dbus
 
 if HAVE_DBM_NSSDB
 subdirs += \
