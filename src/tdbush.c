@@ -2112,11 +2112,15 @@ ca_prop_get_external_helper(struct cm_context *ctx, void *parent,
 {
 	struct cm_store_ca *ca = record;
 
-	if (ca->cm_ca_type != cm_ca_external) {
-		return NULL;
-	}
 	if (strcmp(name, CM_DBUS_PROP_EXTERNAL_HELPER) == 0) {
-		return ca->cm_ca_external_helper;
+		if (ca->cm_ca_type != cm_ca_external) {
+			return "";
+		}
+		if (ca->cm_ca_external_helper != NULL) {
+			return ca->cm_ca_external_helper;
+		} else {
+			return "";
+		}
 	}
 	return NULL;
 }
@@ -2130,6 +2134,9 @@ ca_prop_set_external_helper(struct cm_context *ctx, void *parent,
 	struct cm_store_ca *ca = record;
 
 	if (strcmp(name, CM_DBUS_PROP_EXTERNAL_HELPER) == 0) {
+		if (ca->cm_ca_type != cm_ca_external) {
+			return;
+		}
 		talloc_free(ca->cm_ca_external_helper);
 		ca->cm_ca_external_helper = new_value ?
 					    talloc_strdup(ca, new_value) :
