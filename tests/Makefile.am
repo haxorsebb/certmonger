@@ -12,12 +12,16 @@ EXTRA_DIST = \
 	001-keyiread-ec/expected.out.2 \
 	001-keyiread-ec/expected.out.3 \
 	001-keyiread-ec/expected.out.4 \
+	002-keygen/prequal.sh \
 	002-keygen/run.sh \
 	002-keygen/expected.out \
+	002-keygen-rsa/prequal.sh \
 	002-keygen-rsa/run.sh \
 	002-keygen-rsa/expected.out \
+	002-keygen-dsa/prequal.sh \
 	002-keygen-dsa/run.sh \
 	002-keygen-dsa/expected.out \
+	002-keygen-ec/prequal.sh \
 	002-keygen-ec/run.sh \
 	002-keygen-ec/expected.out \
 	002-keygen-ec/expected.out.2 \
@@ -43,10 +47,13 @@ EXTRA_DIST = \
 	005-dbusm/expected.out \
 	006-serial/run.sh \
 	006-serial/expected.out \
+	007-certsave/prequal.sh \
 	007-certsave/run.sh \
 	007-certsave/expected.out \
+	007-certsave-dbm/prequal.sh \
 	007-certsave-dbm/run.sh \
 	007-certsave-dbm/expected.out \
+	007-certsave-sql/prequal.sh \
 	007-certsave-sql/run.sh \
 	007-certsave-sql/expected.out \
 	008-certread/run.sh \
