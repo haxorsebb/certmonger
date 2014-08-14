@@ -72,7 +72,7 @@ cm_subproc_start(int (*cb)(int fd,
 	struct cm_subproc_state *state;
 	int fds[2];
 	long flags;
-	char *configdir, *tmpdir, *tmp, *homedir, *bus;
+	char *configdir, *tmpdir, *tmp, *homedir, *bus, *local;
 
 	state = talloc_ptrtype(parent, state);
 	if (state != NULL) {
@@ -103,6 +103,8 @@ cm_subproc_start(int (*cb)(int fd,
 				homedir = cm_env_home_dir();
 				bus = getenv("DBUS_SESSION_BUS_ADDRESS");
 				bus = bus ? strdup(bus) : NULL;
+				local = cm_env_local_ca_dir();
+				local = local ? strdup(local) : NULL;
 				clear_environment();
 				setenv("HOME", homedir, 1);
 				setenv("PATH", _PATH_STDPATH, 1);
@@ -118,6 +120,10 @@ cm_subproc_start(int (*cb)(int fd,
 				if (bus != NULL) {
 					setenv("DBUS_SESSION_BUS_ADDRESS", bus,
 					       1);
+				}
+				if (local != NULL) {
+					setenv(CM_STORE_LOCAL_CA_DIRECTORY_ENV,
+					       local, 1);
 				}
 
 				exit((*cb)(fds[1], ca, entry, data));
