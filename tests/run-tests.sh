@@ -52,6 +52,12 @@ if test $# -eq 0 ; then
 	subdirs=`cd "$srcdir"; ls -1 | grep '^[0-9]'`
 fi
 for testid in "$@" $subdirs ; do
+	if test -x "$srcdir"/"$testid"/prequal.sh ; then
+		if ! "$srcdir"/"$testid"/prequal.sh ; then
+			echo "Skipping test "$testid"."
+			continue
+		fi
+	fi
 	if test -x "$srcdir"/"$testid"/run.sh ; then
 		mkdir -p "$builddir"/"$testid"
 		pushd "$srcdir"/"$testid" > /dev/null
