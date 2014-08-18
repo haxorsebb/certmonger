@@ -122,7 +122,8 @@ EXTRA_DIST = \
 	028-dbus/prequal.sh \
 	028-dbus/run.sh \
 	028-dbus/runsub.sh \
-	028-dbus/simpleprop.py
+	028-dbus/simpleprop.py \
+	028-dbus/walk.py
 
 subdirs = \
 	001-keyiread \
