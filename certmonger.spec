@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.75.11
+Version:	0.75.12
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -234,6 +234,11 @@ exit 0
 %endif
 
 %changelog
+* Mon Aug 18 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75.12-1
+- correct encoding/decoding of variant-typed data which we receive and
+  send as part of the org.freedesktop.DBus.Properties interface over the
+  bus, and add some tests for them (based on patch from David Kupka)
+
 * Tue Aug 12 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75.11-1
 - when getcert is passed a -a flag, to indicate that CA root certificates
   should be stored in the specified database, don't ignore locations which
