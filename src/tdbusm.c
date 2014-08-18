@@ -477,7 +477,9 @@ cm_tdbusm_get_ssv(DBusMessage *msg, void *parent, char **s1, char **s2,
 
 	*s1 = NULL;
 	*s2 = NULL;
-	dbus_message_iter_init(msg, &iter);
+	if (!dbus_message_iter_init(msg, &iter)) {
+		return -1;
+	}
 
 	if (dbus_message_iter_get_arg_type(&iter) != DBUS_TYPE_STRING) {
 		return -1;
