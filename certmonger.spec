@@ -68,6 +68,8 @@ BuildRequires:	/usr/bin/dos2unix
 BuildRequires:	/usr/bin/unix2dos
 #  for which
 BuildRequires:	/usr/bin/which
+#  for dbus tests
+BuildRequires:	dbus-python
 
 # we need a running system bus
 Requires:	dbus
