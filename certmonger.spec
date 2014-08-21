@@ -242,6 +242,9 @@ exit 0
   as part of the org.freedesktop.DBus.Properties interface over the bus, and
   add some tests for them (based on patch from David Kupka, ticket #36)
 
+* Fri Aug 15 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.75.10-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
+
 * Tue Aug 12 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75.11-1
 - when getcert is passed a -a flag, to indicate that CA root certificates
   should be stored in the specified database, don't ignore locations which
