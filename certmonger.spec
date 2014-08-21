@@ -236,6 +236,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Aug 21 2014 Kevin Fenzi <kevin@scrye.com> - 0.75.13-2
+- Rebuild for rpm bug 1131960
+
 * Mon Aug 18 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75.13-1
 - add a missing test case file (whoops)
 
