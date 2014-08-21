@@ -9,6 +9,7 @@ export CERTMONGER_LOCAL_CA_DIR="$tmpdir/local"
 libexecdir=`$toolsdir/libexecdir`
 cp ../certmonger.conf "$tmpdir"/config/
 cp prequal.sh runsub.sh *.py "$tmpdir"/
+ln -s `pwd`/../../src/getcert "$tmpdir"/
 for entry in entry bogus-entry ; do
 	sed "s|@tmpdir@|$tmpdir|g" $entry > "$tmpdir"/requests/$entry
 done
