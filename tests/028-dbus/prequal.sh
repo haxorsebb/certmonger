@@ -21,3 +21,7 @@ if ! python -c 'import xml' 2> /dev/null ; then
 	echo python-xml not found
 	exit 1
 fi
+if ! python -c 'import xml.etree.ElementTree' 2> /dev/null ; then
+	echo python-xml does not include etree.ElementTree
+	exit 1
+fi
