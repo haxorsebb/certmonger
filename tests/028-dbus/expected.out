@@ -19,6 +19,10 @@ Request ID 'Buddy':
 	post-save command: 
 	track: yes
 	auto-renew: yes
+CA 'local':
+	is-default: no
+	ca-type: EXTERNAL
+	helper-location: $tmpdir/local-submit
 CA 'SelfSign':
 	is-default: no
 	ca-type: INTERNAL:SELF
@@ -35,10 +39,6 @@ CA 'dogtag-ipa-renew-agent':
 	is-default: no
 	ca-type: EXTERNAL
 	helper-location: $libexecdir/dogtag-ipa-renew-agent-submit
-CA 'local':
-	is-default: no
-	ca-type: EXTERNAL
-	helper-location: $libexecdir/local-submit
 
 [[ API ]]
 [ simpleprop.py ]
@@ -450,7 +450,7 @@ recently
 (dbus.String(u'MONITORING'), dbus.Boolean(False))
 
 [ /org/fedorahosted/certmonger/requests/Request2: org.fedorahosted.certmonger.request.get_ca ]
-/org/fedorahosted/certmonger/cas/CA5
+/org/fedorahosted/certmonger/cas/CA1
 
 [ /org/fedorahosted/certmonger/requests/Request2: org.fedorahosted.certmonger.request.get_submitted_cookie ]
 None
@@ -559,21 +559,20 @@ modify
 </node>
 
 [ /org/fedorahosted/certmonger/cas/CA1: org.fedorahosted.certmonger.ca.get_nickname ]
-SelfSign
+local
 
 [ /org/fedorahosted/certmonger/cas/CA1: org.fedorahosted.certmonger.ca.get_is_default ]
 0
 
 [ /org/fedorahosted/certmonger/cas/CA1: org.fedorahosted.certmonger.ca.get_type ]
-INTERNAL:SELF
+EXTERNAL
 
 [ /org/fedorahosted/certmonger/cas/CA1: org.fedorahosted.certmonger.ca.get_serial ]
-01
+None
 
 [ /org/fedorahosted/certmonger/cas/CA1: org.fedorahosted.certmonger.ca.get_location ]
+$tmpdir/local-submit
 
-
-/org/fedorahosted/certmonger/cas/CA1: warning: property org.fedorahosted.certmonger.ca.external-helper not settable on this object
 [ /org/fedorahosted/certmonger/cas/CA1: org.fedorahosted.certmonger.ca.get_issuer_names ]
 dbus.Array([], signature=dbus.Signature('s'))
 
@@ -660,20 +659,21 @@ dbus.Array([], signature=dbus.Signature('s'))
 </node>
 
 [ /org/fedorahosted/certmonger/cas/CA2: org.fedorahosted.certmonger.ca.get_nickname ]
-IPA
+SelfSign
 
 [ /org/fedorahosted/certmonger/cas/CA2: org.fedorahosted.certmonger.ca.get_is_default ]
 0
 
 [ /org/fedorahosted/certmonger/cas/CA2: org.fedorahosted.certmonger.ca.get_type ]
-EXTERNAL
+INTERNAL:SELF
 
 [ /org/fedorahosted/certmonger/cas/CA2: org.fedorahosted.certmonger.ca.get_serial ]
-None
+01
 
 [ /org/fedorahosted/certmonger/cas/CA2: org.fedorahosted.certmonger.ca.get_location ]
-$libexecdir/ipa-submit
 
+
+/org/fedorahosted/certmonger/cas/CA2: warning: property org.fedorahosted.certmonger.ca.external-helper not settable on this object
 [ /org/fedorahosted/certmonger/cas/CA2: org.fedorahosted.certmonger.ca.get_issuer_names ]
 dbus.Array([], signature=dbus.Signature('s'))
 
@@ -760,7 +760,7 @@ dbus.Array([], signature=dbus.Signature('s'))
 </node>
 
 [ /org/fedorahosted/certmonger/cas/CA3: org.fedorahosted.certmonger.ca.get_nickname ]
-certmaster
+IPA
 
 [ /org/fedorahosted/certmonger/cas/CA3: org.fedorahosted.certmonger.ca.get_is_default ]
 0
@@ -772,7 +772,7 @@ EXTERNAL
 None
 
 [ /org/fedorahosted/certmonger/cas/CA3: org.fedorahosted.certmonger.ca.get_location ]
-$libexecdir/certmaster-submit
+$libexecdir/ipa-submit
 
 [ /org/fedorahosted/certmonger/cas/CA3: org.fedorahosted.certmonger.ca.get_issuer_names ]
 dbus.Array([], signature=dbus.Signature('s'))
@@ -860,7 +860,7 @@ dbus.Array([], signature=dbus.Signature('s'))
 </node>
 
 [ /org/fedorahosted/certmonger/cas/CA4: org.fedorahosted.certmonger.ca.get_nickname ]
-dogtag-ipa-renew-agent
+certmaster
 
 [ /org/fedorahosted/certmonger/cas/CA4: org.fedorahosted.certmonger.ca.get_is_default ]
 0
@@ -872,7 +872,7 @@ EXTERNAL
 None
 
 [ /org/fedorahosted/certmonger/cas/CA4: org.fedorahosted.certmonger.ca.get_location ]
-$libexecdir/dogtag-ipa-renew-agent-submit
+$libexecdir/certmaster-submit
 
 [ /org/fedorahosted/certmonger/cas/CA4: org.fedorahosted.certmonger.ca.get_issuer_names ]
 dbus.Array([], signature=dbus.Signature('s'))
@@ -960,7 +960,7 @@ dbus.Array([], signature=dbus.Signature('s'))
 </node>
 
 [ /org/fedorahosted/certmonger/cas/CA5: org.fedorahosted.certmonger.ca.get_nickname ]
-local
+dogtag-ipa-renew-agent
 
 [ /org/fedorahosted/certmonger/cas/CA5: org.fedorahosted.certmonger.ca.get_is_default ]
 0
@@ -972,7 +972,7 @@ EXTERNAL
 None
 
 [ /org/fedorahosted/certmonger/cas/CA5: org.fedorahosted.certmonger.ca.get_location ]
-$libexecdir/local-submit
+$libexecdir/dogtag-ipa-renew-agent-submit
 
 [ /org/fedorahosted/certmonger/cas/CA5: org.fedorahosted.certmonger.ca.get_issuer_names ]
 dbus.Array([], signature=dbus.Signature('s'))

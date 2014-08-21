@@ -10,9 +10,16 @@ libexecdir=`$toolsdir/libexecdir`
 cp ../certmonger.conf "$tmpdir"/config/
 cp prequal.sh runsub.sh *.py "$tmpdir"/
 ln -s `pwd`/../../src/getcert "$tmpdir"/
+ln -s `pwd`/../../src/local-submit "$tmpdir"/
 for entry in entry bogus-entry ; do
 	sed "s|@tmpdir@|$tmpdir|g" $entry > "$tmpdir"/requests/$entry
 done
+cat > "$tmpdir"/cas/local << EOF
+id=local
+ca_is_default=0
+ca_type=EXTERNAL
+ca_external_helper=$tmpdir/local-submit
+EOF
 $DBUSDAEMON --session --print-address=3 --print-pid=4 --fork 3> $tmpdir/address 4> $tmpdir/pid
 if test -s $tmpdir/pid ; then
 	env DBUS_SESSION_BUS_ADDRESS=`cat $tmpdir/address` \

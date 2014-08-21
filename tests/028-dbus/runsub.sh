@@ -1,5 +1,11 @@
 #!/bin/bash
 exec > "$TMPDIR"/runsub.out 2> "$TMPDIR"/runsub.err
+for i in `seq 60` ; do
+	if test -s "$TMPDIR"/test.crt ; then
+		break
+	fi
+	sleep 1
+done
 cd "$TMPDIR"
 source prequal.sh
 echo "[[ getcert ]]"
