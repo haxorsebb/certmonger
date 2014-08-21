@@ -196,7 +196,7 @@ ensure_nss(void *parent, const char *path, char **nss_scheme)
 	}
 	ret = ensure_path_is_absolute(parent, path);
 	if (ret != NULL) {
-		ret = cm_store_canonicalize_directory(parent, ret);
+		ret = cm_store_canonicalize_path(parent, ret);
 	}
 	if (ret != NULL) {
 		if (ensure_path_is_directory(ret) != 0) {
@@ -216,7 +216,7 @@ ensure_pem(void *parent, const char *path)
 	char *ret;
 	ret = ensure_path_is_absolute(parent, path);
 	if (ret != NULL) {
-		ret = cm_store_canonicalize_directory(parent, ret);
+		ret = cm_store_canonicalize_path(parent, ret);
 	}
 	if (ret != NULL) {
 		if (ensure_parent_is_directory(parent, ret) != 0) {

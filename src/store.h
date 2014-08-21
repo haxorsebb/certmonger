@@ -57,7 +57,7 @@ int cm_store_base64_to_bin(const char *serial, int insize,
 char *cm_store_base64_as_bin(void *parent, const char *serial, int insize,
 			     int *length);
 char *cm_store_base64_from_hex(void *parent, const char *hex);
-char *cm_store_canonicalize_directory(void *parent, const char *path);
+char *cm_store_canonicalize_path(void *parent, const char *path);
 char *cm_store_maybe_strdup(void *parent, const char *s);
 char **cm_store_maybe_strdupv(void *parent, char **s);
 

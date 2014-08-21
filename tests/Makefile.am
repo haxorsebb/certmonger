@@ -123,7 +123,9 @@ EXTRA_DIST = \
 	028-dbus/run.sh \
 	028-dbus/runsub.sh \
 	028-dbus/simpleprop.py \
-	028-dbus/walk.py
+	028-dbus/walk.py \
+	029-canonize/expected.out \
+	029-canonize/run.sh
 
 subdirs = \
 	001-keyiread \
@@ -156,7 +158,8 @@ subdirs = \
 	025-casave \
 	026-local \
 	027-hooks \
-	028-dbus
+	028-dbus \
+	029-canonize
 
 if HAVE_DBM_NSSDB
 subdirs += \

@@ -603,8 +603,8 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 			talloc_free(parent);
 			return ret;
 		}
-		cert_location = cm_store_canonicalize_directory(parent,
-								param->value.s);
+		cert_location = cm_store_canonicalize_path(parent,
+							   param->value.s);
 		param = cm_tdbusm_find_dict_entry(d, "CERT_NICKNAME",
 						  cm_tdbusm_dict_s);
 		if (param == NULL) {
@@ -834,8 +834,8 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 				talloc_free(parent);
 				return ret;
 			}
-			key_location = cm_store_canonicalize_directory(parent,
-								       param->value.s);
+			key_location = cm_store_canonicalize_path(parent,
+								  param->value.s);
 			param = cm_tdbusm_find_dict_entry(d, "KEY_NICKNAME",
 							  cm_tdbusm_dict_s);
 			if (param == NULL) {

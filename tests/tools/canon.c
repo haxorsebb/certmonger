@@ -32,7 +32,7 @@ main(int argc, char **argv)
 	char *result;
 
 	for (i = 1; i < argc; i++) {
-		result = cm_store_canonicalize_directory(NULL, argv[i]);
+		result = cm_store_canonicalize_path(NULL, argv[i]);
 		if (result == NULL) {
 			printf("\"%s\": (null)\n", argv[i]);
 			return 1;

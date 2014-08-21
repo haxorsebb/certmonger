@@ -683,8 +683,8 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_key_storage_location:
 				ret->cm_key_storage_location = free_if_empty(p);
 				if (ret->cm_key_storage_location != NULL) {
-					p = cm_store_canonicalize_directory(ret,
-									    ret->cm_key_storage_location);
+					p = cm_store_canonicalize_path(ret,
+								       ret->cm_key_storage_location);
 					talloc_free(ret->cm_key_storage_location);
 					ret->cm_key_storage_location = p;
 				}
@@ -730,8 +730,8 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_cert_storage_location:
 				ret->cm_cert_storage_location = free_if_empty(p);
 				if (ret->cm_cert_storage_location != NULL) {
-					p = cm_store_canonicalize_directory(ret,
-									    ret->cm_cert_storage_location);
+					p = cm_store_canonicalize_path(ret,
+								       ret->cm_cert_storage_location);
 					talloc_free(ret->cm_cert_storage_location);
 					ret->cm_cert_storage_location = p;
 				}

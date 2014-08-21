@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 
 #include <talloc.h>
 
@@ -501,10 +502,29 @@ cm_store_hex_to_bin(const char *serial, unsigned char *buf, int length)
 }
 
 char *
-cm_store_canonicalize_directory(void *parent, const char *path)
+cm_store_canonicalize_path(void *parent, const char *path)
 {
-	char *tmp, *p;
+	char *tmp = NULL, *p, *q, buf[PATH_MAX], *prefix;
 	int i;
+
+	if (strncmp(path, "dbm:", 4) == 0) {
+		prefix = "dbm";
+		path += 4;
+	} else
+	if (strncmp(path, "sql:", 4) == 0) {
+		prefix = "sql";
+		path += 4;
+	} else
+	if (strncmp(path, "rdb:", 4) == 0) {
+		prefix = "rdb";
+		path += 4;
+	} else
+	if (strncmp(path, "extern:", 4) == 0) {
+		prefix = "extern";
+		path += 7;
+	} else {
+		prefix = NULL;
+	}
 	i = strlen(path);
 	if (i > 1) {
 		while ((i > 1) && (path[i - 1] == '/')) {
@@ -514,11 +534,43 @@ cm_store_canonicalize_directory(void *parent, const char *path)
 	} else {
 		tmp = talloc_strdup(parent, path);
 	}
-	while ((p = strstr(tmp, "/./")) != NULL) {
-		memmove(p, p + 2, strlen(p) - 1);
+	if ((tmp != NULL) && (tmp[0] != '/')) {
+		memset(buf, '\0', sizeof(buf));
+		if (getcwd(buf, sizeof(buf) - 1) != NULL) {
+			tmp = talloc_asprintf(parent, "%s//%s", buf, tmp);
+		}
 	}
-	while ((p = strstr(tmp, "//")) != NULL) {
-		memmove(p, p + 1, strlen(p));
+	if (tmp != NULL) {
+		for (p = tmp; *p != '\0'; p++) {
+			if ((strncmp(p, "/", 1) == 0) &&
+			    ((p[1] == '/') || (p[1] == '\0'))) {
+				memmove(p, p + 1, strlen(p + 1) + 1);
+			}
+		}
+		for (p = tmp; *p != '\0'; p++) {
+			if ((strncmp(p, "/.", 2) == 0) &&
+			    ((p[2] == '/') || (p[2] == '\0'))) {
+				q = p - 1;
+				memmove(p, p + 2, strlen(p + 2) + 1);
+			}
+		}
+		for (p = tmp; *p != '\0'; p++) {
+			if ((strncmp(p, "/..", 3) == 0) &&
+			    ((p[3] == '/') || (p[3] == '\0'))) {
+				q = p - 1;
+				while ((q >= tmp) && (*q != '/')) {
+					q--;
+				}
+				if (*q == '/') {
+					memmove(q, p + 3, strlen(p + 3) + 1);
+				} else {
+					break;
+				}
+			}
+		}
+		if (prefix != NULL) {
+			tmp = talloc_asprintf(parent, "%s:%s", prefix, tmp);
+		}
 	}
 	return tmp;
 }
