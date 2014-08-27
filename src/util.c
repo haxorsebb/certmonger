@@ -170,21 +170,3 @@ get_config_entry(char * in_data, const char *section, const char *key)
     free(data);
     return NULL;
 }
-
-/* Get the IPA server from the configuration file.
- * The caller is responsible for freeing this value
- */
-char *
-get_ipa_server(char * data)
-{
-    return get_config_entry(data, "defaults", "server");
-}
-
-/* Get the IPA realm from the configuration file.
- * The caller is responsible for freeing this value
- */
-char *
-get_ipa_realm(char * data)
-{
-    return get_config_entry(data, "defaults", "realm");
-}

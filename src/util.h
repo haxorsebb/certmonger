@@ -20,7 +20,5 @@
 
 char *read_config_file(const char *filename);
 char *get_config_entry(char *data, const char *section, const char *key);
-char *get_ipa_server(char *data);
-char *get_ipa_realm(char *data);
 
 #endif
