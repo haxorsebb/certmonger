@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-#
+# 
 # Translators:
 # Geert Warrink <geert.warrink@onsnet.nu>, 2011-2014
 msgid ""
@@ -11,12 +11,11 @@ msgstr ""
 "POT-Creation-Date: 2014-08-18 09:24-0400\n"
 "PO-Revision-Date: 2014-08-15 09:41+0000\n"
 "Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
-"Language-Team: Dutch (http://www.transifex.com/projects/p/certmonger/"
-"language/nl/)\n"
-"Language: nl\n"
+"Language-Team: Dutch (http://www.transifex.com/projects/p/certmonger/language/nl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: nl\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: src/certmaster.c:129 src/ipa.c:266
@@ -96,18 +95,14 @@ msgstr "Interne fout: geen antwoord op \"%s?%s\".\n"
 #: src/getcert.c:92
 #, c-format
 msgid "Path \"%s\" is not absolute, attempting to use \"%s\" instead.\n"
-msgstr ""
-"Pad \"%s\" is niet absoluut, in plaats daarvan wordt geprobeerd om \"%s\" te "
-"gebruiken.\n"
+msgstr "Pad \"%s\" is niet absoluut, in plaats daarvan wordt geprobeerd om \"%s\" te gebruiken.\n"
 
 #: src/getcert.c:97
 #, c-format
 msgid ""
 "Path \"%s\" is not absolute, and there was an error determining the name of "
 "the current directory.\n"
-msgstr ""
-"Pad \"%s\" is niet absoluut en er was een fout bij het bepalen van de naam "
-"van de huidige map.\n"
+msgstr "Pad \"%s\" is niet absoluut en er was een fout bij het bepalen van de naam van de huidige map.\n"
 
 #: src/getcert.c:119
 #, c-format
@@ -240,9 +235,7 @@ msgstr "Fout: niet gebruikt extra argument \"%s\".\n"
 #: src/getcert.c:2604 src/getcert.c:3033 src/getcert.c:3109 src/getcert.c:3292
 #, c-format
 msgid "Error: unused extra arguments were supplied.\n"
-msgstr ""
-"Fout: er zijn niet gebruikte extra argumenten opgegeven.\n"
-" \n"
+msgstr "Fout: er zijn niet gebruikte extra argumenten opgegeven.\n \n"
 
 #: src/getcert.c:814 src/getcert.c:1663 src/getcert.c:1870 src/getcert.c:2157
 #, c-format
@@ -256,25 +249,20 @@ msgstr "Database map en certificaatbestand beide gespecificeerd.\n"
 
 #: src/getcert.c:828 src/getcert.c:1884 src/getcert.c:2171
 #, c-format
-msgid ""
-"None of database directory and nickname or certificate file specified.\n"
+msgid "None of database directory and nickname or certificate file specified.\n"
 msgstr "Zowel database map als bijnaam of certificaat niet opgegeven.\n"
 
 #: src/getcert.c:835 src/getcert.c:1685
 #, c-format
 msgid "Key and certificate can not both be saved to the same file.\n"
-msgstr ""
-"Sleutel en certificaat kunnen niet beide in hetzelfde bestand opgeslagen "
-"worden.\n"
+msgstr "Sleutel en certificaat kunnen niet beide in hetzelfde bestand opgeslagen worden.\n"
 
 #: src/getcert.c:861
 #, c-format
 msgid ""
-"The IPA backend requires the use of the -K option (principal name) when the -"
-"N option (subject name) is used.\n"
-msgstr ""
-"De IPA backend vereist het gebruik van de -K optie (principal naam) als de -"
-"N optie (onderwerpnaam) gebruikt wordt.\n"
+"The IPA backend requires the use of the -K option (principal name) when the "
+"-N option (subject name) is used.\n"
+msgstr "De IPA backend vereist het gebruik van de -K optie (principal naam) als de -N optie (onderwerpnaam) gebruikt wordt.\n"
 
 #: src/getcert.c:993 src/getcert.c:1388 src/getcert.c:1785 src/getcert.c:2191
 #: src/getcert.c:2446 src/getcert.c:2611
@@ -631,16 +619,13 @@ msgstr "  -d MAP»NSS database voor sleutel en cert\n"
 #: src/getcert.c:3352 src/getcert.c:3400 src/getcert.c:3445 src/getcert.c:3467
 #: src/getcert.c:3539
 msgid "  -n NAME\tnickname for NSS-based storage (only valid with -d)\n"
-msgstr ""
-"  -n NAAM»bijnaam voor op NSS gebaseerde opslag (alleen geldig met -d)\n"
+msgstr "  -n NAAM»bijnaam voor op NSS gebaseerde opslag (alleen geldig met -d)\n"
 
 #: src/getcert.c:3353 src/getcert.c:3401 src/getcert.c:3446 src/getcert.c:3468
 #: src/getcert.c:3540
 msgid ""
 "  -t NAME\toptional token name for NSS-based storage (only valid with -d)\n"
-msgstr ""
-"  -t NAAM»optionele token naam voor op NSS gebaseerde opslag (alleen geldig "
-"met -d)\n"
+msgstr "  -t NAAM»optionele token naam voor op NSS gebaseerde opslag (alleen geldig met -d)\n"
 
 #: src/getcert.c:3354 src/getcert.c:3402 src/getcert.c:3447 src/getcert.c:3469
 #: src/getcert.c:3519 src/getcert.c:3541
@@ -683,26 +668,19 @@ msgstr "  -I NAAM»bijnaam toegekend aan het verzoek\n"
 
 #: src/getcert.c:3364
 msgid "  -G TYPE\ttype of key to be generated if one is not already in place\n"
-msgstr ""
-"  -G TYPE\tsleuteltype dat aangemaakt wordt als er nog geen aanwezig is\n"
+msgstr "  -G TYPE\tsleuteltype dat aangemaakt wordt als er nog geen aanwezig is\n"
 
 #: src/getcert.c:3365
 msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
-msgstr ""
-"  -g GROOTTE»grootte van de te genereren sleutel als er nog geen aanwezig "
-"is\n"
+msgstr "  -g GROOTTE»grootte van de te genereren sleutel als er nog geen aanwezig is\n"
 
 #: src/getcert.c:3366 src/getcert.c:3412
-msgid ""
-"  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
-msgstr ""
-"  -r»»probeer het certificaat te vernieuwen als de verloopdatum nadert "
-"(standaard)\n"
+msgid "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
+msgstr "  -r»»probeer het certificaat te vernieuwen als de verloopdatum nadert (standaard)\n"
 
 #: src/getcert.c:3367 src/getcert.c:3413
 msgid "  -R\t\tdon't attempt to renew the certificate when expiration nears\n"
-msgstr ""
-"  -R»»probeer het certificaat niet te vernieuwen als de verloopdatum nadert\n"
+msgstr "  -R»»probeer het certificaat niet te vernieuwen als de verloopdatum nadert\n"
 
 #: src/getcert.c:3369 src/getcert.c:3415
 msgid "  -c CA\t\tuse the specified CA rather than the default\n"
@@ -712,9 +690,7 @@ msgstr "  -c CA»»gebruik de gespecificeerde CA in plaats van de standaard\n"
 msgid ""
 "  -T PROFILE\task the CA to process the request using the named profile or "
 "template\n"
-msgstr ""
-"  -T PROFILE\tvraag de CA om het verzoek de verwerken met het opgegeven "
-"profiel of template\n"
+msgstr "  -T PROFILE\tvraag de CA om het verzoek de verwerken met het opgegeven profiel of template\n"
 
 #: src/getcert.c:3372
 msgid "* Parameters for the signing request:\n"
@@ -722,8 +698,7 @@ msgstr "* Parameters voor het ondertekening verzoek:\n"
 
 #: src/getcert.c:3373 src/getcert.c:3477
 msgid "  -N NAME\tset requested subject name (default: CN=<hostname>)\n"
-msgstr ""
-"  -N NAAM»stel de gevraagde subject naam in (standaard: CN=<hostnaam>)\n"
+msgstr "  -N NAAM»stel de gevraagde subject naam in (standaard: CN=<hostnaam>)\n"
 
 #: src/getcert.c:3374 src/getcert.c:3478
 msgid "  -U EXTUSAGE\tset requested extended key usage OID\n"
@@ -903,20 +878,15 @@ msgstr "* Als een specifiek verzoek geselecteerd wordt:\n"
 
 #: src/getcert.c:3517
 msgid "  -d DIR\tonly list requests and certs which use this NSS database\n"
-msgstr ""
-"  -d MAP»toon alleen verzoeken en certificaten die deze NSS database "
-"gebruiken\n"
+msgstr "  -d MAP»toon alleen verzoeken en certificaten die deze NSS database gebruiken\n"
 
 #: src/getcert.c:3518
 msgid "  -n NAME\tonly list requests and certs which use this nickname\n"
-msgstr ""
-"  -n NAAM» toon alleen verzoeken en certificaten die deze bijnaam gebruiken\n"
+msgstr "  -n NAAM» toon alleen verzoeken en certificaten die deze bijnaam gebruiken\n"
 
 #: src/getcert.c:3520
 msgid "  -f FILE\tonly list requests and certs stored in this PEM file\n"
-msgstr ""
-"  -f BESTAND»toon alleen verzoeken en certificaten die in dit PEM bestand "
-"opgeslagen zijn\n"
+msgstr "  -f BESTAND»toon alleen verzoeken en certificaten die in dit PEM bestand opgeslagen zijn\n"
 
 #: src/getcert.c:3522 src/getcert.c:3563 src/getcert.c:3578 src/getcert.c:3594
 msgid "  -S\tconnect to the certmonger service on the system bus\n"
@@ -1019,35 +989,26 @@ msgstr "Kan locatie van CA XMLRPC server niet vaststellen.\n"
 #: src/ipa.c:320
 #, c-format
 msgid ""
-"Error setting up ccache for \"host\" service on client using default keytab: "
-"%s.\n"
-msgstr ""
-"Fout bij het instellen van ccache voor \"host\" service op cliënt die "
-"standaard keytab: %s gebruikt.\n"
+"Error setting up ccache for \"host\" service on client using default keytab:"
+" %s.\n"
+msgstr "Fout bij het instellen van ccache voor \"host\" service op cliënt die standaard keytab: %s gebruikt.\n"
 
 #: src/ipa.c:324
 #, c-format
-msgid ""
-"Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
-msgstr ""
-"Fout bij het instellen van ccache voor  \"%s\" op cliënt die standaard "
-"keytab: %s gebruikt.\n"
+msgid "Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
+msgstr "Fout bij het instellen van ccache voor  \"%s\" op cliënt die standaard keytab: %s gebruikt.\n"
 
 #: src/ipa.c:331
 #, c-format
 msgid ""
 "Error setting up ccache for \"host\" service on client using keytab \"%s\": "
 "%s.\n"
-msgstr ""
-"Fout bij het instellen van ccache voor \"host\" service die keytab \"%s\" "
-"gebruikt: %s.\n"
+msgstr "Fout bij het instellen van ccache voor \"host\" service die keytab \"%s\" gebruikt: %s.\n"
 
 #: src/ipa.c:335
 #, c-format
 msgid "Error setting up ccache for \"%s\" on client using keytab \"%s\": %s.\n"
-msgstr ""
-"Fout bij het instellen van ccache voor \"%s\" op cliënt die keytab \"%s\" "
-"gebruikt: %s.\n"
+msgstr "Fout bij het instellen van ccache voor \"%s\" op cliënt die keytab \"%s\" gebruikt: %s.\n"
 
 #: src/ipa.c:362
 #, c-format
@@ -1148,9 +1109,7 @@ msgstr "Certificaat opslaglocatie niet gespecificeerd."
 msgid ""
 "The parent of location \"%s\" could not be accessed due to insufficient "
 "permissions."
-msgstr ""
-"Er is geen toegang tot de ouder van locatie \"%s\" wegens onvoldoende "
-"rechten."
+msgstr "Er is geen toegang tot de ouder van locatie \"%s\" wegens onvoldoende rechten."
 
 #: src/tdbush.c:539 src/tdbush.c:783 src/tdbush.c:990 src/tdbush.c:1090
 #: src/tdbush.c:1190
@@ -1166,8 +1125,7 @@ msgstr "De locatie \"%s\" moet een bestand zijn."
 
 #: src/tdbush.c:590 src/tdbush.c:937 src/tdbush.c:1037 src/tdbush.c:1137
 #, c-format
-msgid ""
-"The location \"%s\" could not be accessed due to insufficient permissions."
+msgid "The location \"%s\" could not be accessed due to insufficient permissions."
 msgstr "Er is geen toegang tot de locatie \"%s\" wegens onvoldoende rechten."
 
 #: src/tdbush.c:598 src/tdbush.c:831 src/tdbush.c:945 src/tdbush.c:1045
@@ -1188,10 +1146,9 @@ msgstr "Er is al een verzoek met de bijnaam \"%s\"."
 #: src/tdbush.c:698
 #, c-format
 msgid ""
-"Certificate at same location is already used by request with nickname \"%s\"."
-msgstr ""
-"Een certificaat op dezelfde locatie wordt al gebruik door een aanvraag met "
-"bijnaam \"%s\"."
+"Certificate at same location is already used by request with nickname "
+"\"%s\"."
+msgstr "Een certificaat op dezelfde locatie wordt al gebruik door een aanvraag met bijnaam \"%s\"."
 
 #: src/tdbush.c:731
 #, c-format
@@ -1209,9 +1166,7 @@ msgstr "Sleutel bijnaam niet opgegeven."
 #: src/tdbush.c:906
 #, c-format
 msgid "Key at same location is already used by request with nickname \"%s\"."
-msgstr ""
-"Een sleutel op dezelfde locatie wordt al gebruik door een aanvraag met "
-"bijnaam \"%s\"."
+msgstr "Een sleutel op dezelfde locatie wordt al gebruik door een aanvraag met bijnaam \"%s\"."
 
 #: src/tdbush.c:1277
 #, c-format
