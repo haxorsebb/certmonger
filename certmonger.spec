@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.75.13
+Version:	0.75.14
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -236,6 +236,11 @@ exit 0
 %endif
 
 %changelog
+* Thu Aug 28 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75.14-1
+- make pathname canonicalization slightly smarter, to handle ".." in
+  locations
+- updates to self-tests
+
 * Thu Aug 21 2014 Kevin Fenzi <kevin@scrye.com> - 0.75.13-2
 - Rebuild for rpm bug 1131960
 
