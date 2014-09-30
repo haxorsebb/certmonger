@@ -3051,6 +3051,11 @@ status(const char *argv0, int argc, char **argv)
 				printf(_("No request found that matched "
 					 "arguments.\n"));
 				return 1;
+			} else {
+				printf(_("None of ID or database directory and "
+					 "and nickname or certificate file "
+					 "specified.\n"));
+				return 1;
 			}
 		}
 	}
