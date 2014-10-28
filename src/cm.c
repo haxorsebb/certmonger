@@ -28,10 +28,10 @@
 #include <time.h>
 #include <unistd.h>
 
+#include <dbus/dbus.h>
+
 #include <talloc.h>
 #include <tevent.h>
-
-#include <dbus/dbus.h>
 
 #include "cm.h"
 #include "log.h"

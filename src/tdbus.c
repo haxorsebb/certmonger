@@ -133,6 +133,8 @@ cm_tdbus_queue_fd(struct tevent_context *ec, struct tdbus_watch *watch,
 {
 	struct tdbus_dwatch *dwatch;
 	int newtflags, dflags;
+	char flags[20] = "";
+
 	newtflags = 0;
 	dwatch = watch->dwatches;
 	while (dwatch != NULL) {
@@ -144,12 +146,23 @@ cm_tdbus_queue_fd(struct tevent_context *ec, struct tdbus_watch *watch,
 		dwatch = dwatch->next;
 	}
 	if (newtflags != 0) {
-		cm_log(5, "Queuing FD %d for 0x%02x.\n", watch->fd, newtflags);
+		if (newtflags & TEVENT_FD_READ) {
+			strcpy(flags, "Read");
+		}
+		if (newtflags & TEVENT_FD_WRITE) {
+			if (strlen(flags) > 0) {
+				strcat(flags, "-");
+			}
+			strcat(flags, "Write");
+		}
 		watch->tfd = tevent_add_fd(ec, watch, watch->fd, newtflags,
 					   handler, watch);
+		cm_log(5, "Queuing FD %d for %s for %p:%p.\n", watch->fd,
+		       flags, watch->conn, watch->tfd);
 	} else {
-		cm_log(5, "Not queuing FD %d.\n", watch->fd);
 		watch->tfd = NULL;
+		cm_log(5, "Not queuing FD %d for %p.\n", watch->fd,
+		       watch->conn);
 	}
 }
 
@@ -160,21 +173,48 @@ cm_tdbus_handle_fd(struct tevent_context *ec, struct tevent_fd *tfd,
 	struct tdbus_watch *watch;
 	struct tdbus_dwatch *dwatch;
 	int dflags;
+	char flags[20] = "";
+
 	watch = pvt;
+	dflags = cm_tdbus_watch_flags_for_tfd_flags(tflags);
+	if (tflags & TEVENT_FD_READ) {
+		strcpy(flags, "Read");
+	}
+	if (tflags & TEVENT_FD_WRITE) {
+		if (strlen(flags) > 0) {
+			strcat(flags, "-");
+		}
+		strcat(flags, "Write");
+	}
+	cm_log(5, "Dequeuing FD %d for %s for %p:%p.\n",
+	       watch->fd, flags, watch->conn, watch->tfd);
 	talloc_free(watch->tfd);
 	watch->tfd = NULL;
 	dwatch = watch->dwatches;
-	dflags = cm_tdbus_watch_flags_for_tfd_flags(tflags);
 	while (dwatch != NULL) {
 		if (dwatch->active) {
-			cm_log(5, "Handling D-Bus traffic on %d.\n", watch->fd);
+			cm_log(5, "Handling D-Bus traffic (%s) on FD %d for "
+			       "%p.\n", flags, watch->fd, watch->conn);
 			if ((dflags & dwatch->dflags) != 0) {
 				dbus_watch_handle(dwatch->watch,
 						  dflags & dwatch->dflags);
 				break;
 			}
+		} else {
+			cm_log(5, "Skipping disabled %d handler on FD %d for "
+			       "%p.\n", dwatch->dflags, watch->fd, watch->conn);
 		}
 		dwatch = dwatch->next;
+	}
+	if (dwatch == NULL) {
+		cm_log(5, "Unexpected D-Bus traffic (%s) on FD %d for %p:%p.\n",
+		       flags, watch->fd, watch->conn, tfd);
+	}
+	if (watch->tfd != NULL) {
+		cm_log(5, "Dequeuing FD %d for %s for %p:%p.\n",
+		       watch->fd, flags, watch->conn, watch->tfd);
+		talloc_free(watch->tfd);
+		watch->tfd = NULL;
 	}
 	cm_tdbus_queue_fd(ec, watch, cm_tdbus_handle_fd);
 }
@@ -207,9 +247,22 @@ cm_tdbus_watch_add(DBusWatch *watch, void *data)
 	struct tdbus_watch *tdb_watch;
 	struct tdbus_dwatch *tdb_dwatch;
 	int fd;
+	char flags[20] = "";
+
 	conn = data;
 	fd = cm_tdbus_watch_get_fd(watch);
-	cm_log(5, "Adding DBus watch on %d.\n", fd);
+	if (dbus_watch_get_flags(watch) & DBUS_WATCH_READABLE) {
+		strcpy(flags, "Read");
+	}
+	if (dbus_watch_get_flags(watch) & DBUS_WATCH_WRITABLE) {
+		if (strlen(flags) > 0) {
+			strcat(flags, "-");
+		}
+		strcat(flags, "Write");
+	}
+	cm_log(5, "Adding %sabled DBus watch on FD %d (for %s) for %p.\n",
+	       dbus_watch_get_enabled(watch) ? "en" : "dis", fd, flags,
+	       data);
 	/* Find the tevent watch for this fd. */
 	tdb_watch = conn->watches;
 	while (tdb_watch != NULL) {
@@ -220,7 +273,8 @@ cm_tdbus_watch_add(DBusWatch *watch, void *data)
 	}
 	/* If we couldn't find one, add it. */
 	if (tdb_watch == NULL) {
-		cm_log(5, "Adding a new tevent FD for %d.\n", fd);
+		cm_log(5, "Adding a watch group for FD %d for %p.\n", fd,
+		       data);
 		tdb_watch = talloc_ptrtype(conn, tdb_watch);
 		if (tdb_watch == NULL) {
 			return FALSE;
@@ -245,7 +299,10 @@ cm_tdbus_watch_add(DBusWatch *watch, void *data)
 	tdb_dwatch->next = tdb_watch->dwatches;
 	tdb_watch->dwatches = tdb_dwatch;
 	/* (Re-)queue the tfd. */
+	cm_log(5, "Dequeuing FD %d for %p:%p.\n",
+	       tdb_watch->fd, tdb_watch->conn, tdb_watch->tfd);
 	talloc_free(tdb_watch->tfd);
+	tdb_watch->tfd = NULL;
 	cm_tdbus_queue_fd(talloc_parent(conn), tdb_watch, cm_tdbus_handle_fd);
 	return TRUE;
 }
@@ -259,7 +316,8 @@ cm_tdbus_watch_remove(DBusWatch *watch, void *data)
 	int fd;
 	conn = data;
 	fd = cm_tdbus_watch_get_fd(watch);
-	cm_log(5, "Removing a DBus watch for %d.\n", fd);
+	cm_log(5, "Removing a DBus watch for FD %d (for %u) for %p.\n", fd,
+	       dbus_watch_get_flags(watch), data);
 	/* Find the tevent watch for this fd. */
 	tdb_watch = conn->watches;
 	while (tdb_watch != NULL) {
@@ -269,6 +327,7 @@ cm_tdbus_watch_remove(DBusWatch *watch, void *data)
 		tdb_watch = tdb_watch->next;
 	}
 	if (tdb_watch == NULL) {
+		cm_log(5, "No matching watch found.\n");
 		return;
 	}
 	/* Find the watch in the list of dwatches. */
@@ -290,7 +349,10 @@ cm_tdbus_watch_remove(DBusWatch *watch, void *data)
 		prev = tdb_dwatch;
 	}
 	/* (Re-)queue the tfd. */
+	cm_log(5, "Dequeuing FD %d for %p:%p.\n",
+	       tdb_watch->fd, tdb_watch->conn, tdb_watch->tfd);
 	talloc_free(tdb_watch->tfd);
+	tdb_watch->tfd = NULL;
 	cm_tdbus_queue_fd(talloc_parent(conn), tdb_watch, cm_tdbus_handle_fd);
 }
 
@@ -303,6 +365,8 @@ cm_tdbus_watch_toggle(DBusWatch *watch, void *data)
 	int fd;
 	conn = data;
 	fd = cm_tdbus_watch_get_fd(watch);
+	cm_log(5, "Toggling a DBus watch for FD %d (for %u) for "
+	       "%p.\n", fd, dbus_watch_get_flags(watch), conn);
 	/* Find the tevent watch for this fd. */
 	tdb_watch = conn->watches;
 	while (tdb_watch != NULL) {
@@ -312,6 +376,7 @@ cm_tdbus_watch_toggle(DBusWatch *watch, void *data)
 		tdb_watch = tdb_watch->next;
 	}
 	if (tdb_watch == NULL) {
+		cm_log(5, "No matching watch found.\n");
 		return;
 	}
 	/* Find the watch in the list of dwatches. */
@@ -319,12 +384,17 @@ cm_tdbus_watch_toggle(DBusWatch *watch, void *data)
 	while (tdb_dwatch != NULL) {
 		if (tdb_dwatch->watch == watch) {
 			tdb_dwatch->active = dbus_watch_get_enabled(watch);
+			cm_log(5, "Watch %sabled.\n",
+			       tdb_dwatch->active ?  "en" : "dis");
 			break;
 		}
 		tdb_dwatch = tdb_dwatch->next;
 	}
 	/* (Re-)queue the tfd. */
+	cm_log(5, "Dequeuing FD %d for %p:%p.\n",
+	       tdb_watch->fd, tdb_watch->conn, tdb_watch->tfd);
 	talloc_free(tdb_watch->tfd);
+	tdb_watch->tfd = NULL;
 	cm_tdbus_queue_fd(talloc_parent(conn), tdb_watch, cm_tdbus_handle_fd);
 }
 
