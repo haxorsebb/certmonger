@@ -480,7 +480,7 @@ cm_tdbus_reconnect(struct tevent_context *ec, struct tevent_timer *timer,
 			exit_on_disconnect = TRUE;
 			bus_desc = "session";
 			break;
-		case cm_tdbus_other:
+		case cm_tdbus_private:
 			abort();
 			break;
 		}
@@ -509,7 +509,7 @@ cm_tdbus_filter(DBusConnection *conn, DBusMessage *dmessage, void *data)
 	const char *destination, *unique_name, *path, *interface, *member;
 
 	/* If we're disconnected, queue a reconnect. */
-	if ((tdb->conn_type != cm_tdbus_other) &&
+	if ((tdb->conn_type != cm_tdbus_private) &&
 	    !dbus_connection_get_is_connected(conn)) {
 		tevent_add_timer(talloc_parent(tdb), tdb,
 				 tevent_timeval_current(),
@@ -531,7 +531,8 @@ cm_tdbus_filter(DBusConnection *conn, DBusMessage *dmessage, void *data)
 		cm_log(4, "message %p(%s)->%s:%s:%s.%s\n", tdb,
 		       dbus_message_type_to_string(dbus_message_get_type(dmessage)),
 		       destination, path, interface ? interface : "", member);
-		return cm_tdbush_handle_method_call(conn, dmessage, tdb->data);
+		return cm_tdbush_handle_method_call(conn, dmessage,
+						    tdb->conn_type, tdb->data);
 		break;
 	case DBUS_MESSAGE_TYPE_METHOD_RETURN:
 		/* Check that the call or return is directed to us. */
@@ -545,7 +546,9 @@ cm_tdbus_filter(DBusConnection *conn, DBusMessage *dmessage, void *data)
 		       dbus_message_type_to_string(dbus_message_get_type(dmessage)),
 		       (unsigned long) dbus_message_get_reply_serial(dmessage),
 		       (unsigned long) dbus_message_get_serial(dmessage));
-		return cm_tdbush_handle_method_return(conn, dmessage, tdb->data);
+		return cm_tdbush_handle_method_return(conn, dmessage,
+						      tdb->conn_type,
+						      tdb->data);
 		break;
 	default:
 		break;
@@ -615,7 +618,7 @@ cm_tdbus_setup_connection(struct tdbus_connection *tdb, DBusConnection *conn,
 			return -1;
 		}
 		break;
-	case cm_tdbus_other:
+	case cm_tdbus_private:
 		/* Don't request a name. */
 		break;
 	}
@@ -636,9 +639,8 @@ cm_tdbus_setup_connection(struct tdbus_connection *tdb, DBusConnection *conn,
 		       dbus_bus_get_unique_name(conn) ?: "(unknown)",
 		       CM_DBUS_NAME);
 		break;
-	case cm_tdbus_other:
-		cm_log(3, "Accepted connection to bus with name \"%s\".\n",
-		       dbus_bus_get_unique_name(conn));
+	case cm_tdbus_private:
+		cm_log(3, "Accepted private connection.\n");
 		break;
 	}
 	return 0;
@@ -681,7 +683,7 @@ cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type,
 		exit_on_disconnect = TRUE;
 		bus_desc = "session";
 		break;
-	case cm_tdbus_other:
+	case cm_tdbus_private:
 		abort();
 		break;
 	}
@@ -701,12 +703,17 @@ static void
 cm_tdbus_new_client(DBusServer *server, DBusConnection *new_conn, void *data)
 {
 	struct tdbus_connection *tdb = data;
+	int sd;
 	DBusError error;
 
 	dbus_error_init(&error);
-	if (cm_tdbus_setup_connection(tdb, new_conn, cm_tdbus_other,
+	if (cm_tdbus_setup_connection(tdb, new_conn, cm_tdbus_private,
 				      &error) == 0) {
-		cm_log(4, "new client\n");
+		if (dbus_connection_get_socket(new_conn, &sd)) {
+			cm_log(4, "New client on FD %d.\n", sd);
+		} else {
+			cm_log(4, "New client on unknown socket.\n");
+		}
 		dbus_connection_ref(new_conn);
 	} else {
 		cm_log(0, "Error setting up for client.\n");
@@ -786,7 +793,7 @@ cm_tdbus_setup_server(struct tevent_context *ec, void *data, char **address,
 						cm_tdbus_new_client,
 						tdb,
 						NULL);
-	tdb->conn_type = cm_tdbus_other;
+	tdb->conn_type = cm_tdbus_private;
 	tdb->data = data;
 	*address = dbus_server_get_address(tdb->server);
 	return 0;

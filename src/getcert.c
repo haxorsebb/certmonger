@@ -271,8 +271,8 @@ prep_req(enum cm_tdbus_type which,
 		case cm_tdbus_system:
 			globals.conn = dbus_bus_get(DBUS_BUS_SYSTEM, NULL);
 			break;
-		case cm_tdbus_other:
-			busaddr = getenv(CERTMONGER_BUS_ADDRESS_ENV);
+		case cm_tdbus_private:
+			busaddr = getenv(CERTMONGER_PVT_ADDRESS_ENV);
 			if (busaddr != NULL) {
 				globals.conn = dbus_connection_open_private(busaddr, NULL);
 			}
@@ -623,6 +623,11 @@ request(const char *argv0, int argc, char **argv)
 	krealm = NULL;
 	if ((kret = krb5_get_default_realm(kctx, &krealm)) != 0) {
 		krealm = NULL;
+	}
+
+	if ((getenv(CERTMONGER_PVT_ADDRESS_ENV) != NULL) &&
+	    (strlen(getenv(CERTMONGER_PVT_ADDRESS_ENV)) > 0)) {
+		bus = cm_tdbus_private;
 	}
 
 	opterr = 0;
@@ -1484,6 +1489,11 @@ set_tracking(const char *argv0, const char *category,
 		krealm = NULL;
 	}
 
+	if ((getenv(CERTMONGER_PVT_ADDRESS_ENV) != NULL) &&
+	    (strlen(getenv(CERTMONGER_PVT_ADDRESS_ENV)) > 0)) {
+		bus = cm_tdbus_private;
+	}
+
 	opterr = 0;
 	while ((c = getopt(argc, argv,
 			   ":d:n:t:k:f:g:p:P:rRi:I:u:U:K:D:E:sSvB:C:T:A:a:F:w"
@@ -1990,6 +2000,11 @@ resubmit(const char *argv0, int argc, char **argv)
 		return 1;
 	}
 
+	if ((getenv(CERTMONGER_PVT_ADDRESS_ENV) != NULL) &&
+	    (strlen(getenv(CERTMONGER_PVT_ADDRESS_ENV)) > 0)) {
+		bus = cm_tdbus_private;
+	}
+
 	opterr = 0;
 	while ((c = getopt(argc, argv,
 			   ":d:n:N:t:u:U:K:E:D:f:i:I:sSp:P:vB:C:T:A:a:F:w"
@@ -2379,6 +2394,11 @@ refresh(const char *argv0, int argc, char **argv)
 	enum cm_state state;
 	int verbose = 0, c, i;
 
+	if ((getenv(CERTMONGER_PVT_ADDRESS_ENV) != NULL) &&
+	    (strlen(getenv(CERTMONGER_PVT_ADDRESS_ENV)) > 0)) {
+		bus = cm_tdbus_private;
+	}
+
 	opterr = 0;
 	while ((c = getopt(argc, argv, ":sSad:n:f:i:v" GETOPT_CA)) != -1) {
 		switch (c) {
@@ -2556,6 +2576,11 @@ list(const char *argv0, int argc, char **argv)
 	int requests_only = 0, tracking_only = 0, verbose = 0, c, i, j;
 	unsigned int k;
 	char key_usages[LINE_MAX];
+
+	if ((getenv(CERTMONGER_PVT_ADDRESS_ENV) != NULL) &&
+	    (strlen(getenv(CERTMONGER_PVT_ADDRESS_ENV)) > 0)) {
+		bus = cm_tdbus_private;
+	}
 
 	opterr = 0;
 	while ((c = getopt(argc, argv, ":rtsSvd:n:f:i:" GETOPT_CA)) != -1) {
@@ -2995,6 +3020,11 @@ status(const char *argv0, int argc, char **argv)
 	dbus_bool_t b;
 	int verbose = 0, c;
 
+	if ((getenv(CERTMONGER_PVT_ADDRESS_ENV) != NULL) &&
+	    (strlen(getenv(CERTMONGER_PVT_ADDRESS_ENV)) > 0)) {
+		bus = cm_tdbus_private;
+	}
+
 	opterr = 0;
 	while ((c = getopt(argc, argv, ":sSvd:n:f:i:")) != -1) {
 		switch (c) {
@@ -3089,6 +3119,11 @@ list_cas(const char *argv0, int argc, char **argv)
 	char **cas, *s, *only_ca = DEFAULT_CA;
 	char **as;
 	int c, i, j, verbose = 0;
+
+	if ((getenv(CERTMONGER_PVT_ADDRESS_ENV) != NULL) &&
+	    (strlen(getenv(CERTMONGER_PVT_ADDRESS_ENV)) > 0)) {
+		bus = cm_tdbus_private;
+	}
 
 	opterr = 0;
 	while ((c = getopt(argc, argv, ":sSv" GETOPT_CA)) != -1) {
@@ -3263,6 +3298,11 @@ refresh_ca(const char *argv0, int argc, char **argv)
 	char **cas, *s, *only_ca = DEFAULT_CA;
 	int c, i, verbose = 0;
 	dbus_bool_t b, all = FALSE;
+
+	if ((getenv(CERTMONGER_PVT_ADDRESS_ENV) != NULL) &&
+	    (strlen(getenv(CERTMONGER_PVT_ADDRESS_ENV)) > 0)) {
+		bus = cm_tdbus_private;
+	}
 
 	opterr = 0;
 	while ((c = getopt(argc, argv, ":asSv" GETOPT_CA)) != -1) {

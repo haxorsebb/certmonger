@@ -72,7 +72,7 @@ cm_subproc_start(int (*cb)(int fd,
 	struct cm_subproc_state *state;
 	int fds[2];
 	long flags;
-	char *configdir, *tmpdir, *tmp, *homedir, *bus, *local;
+	char *configdir, *tmpdir, *tmp, *homedir, *bus, *local, *pvt;
 
 	state = talloc_ptrtype(parent, state);
 	if (state != NULL) {
@@ -105,6 +105,8 @@ cm_subproc_start(int (*cb)(int fd,
 				bus = bus ? strdup(bus) : NULL;
 				local = cm_env_local_ca_dir();
 				local = local ? strdup(local) : NULL;
+				pvt = getenv(CERTMONGER_PVT_ADDRESS_ENV);
+				pvt = pvt ? strdup(pvt) : NULL;
 				clear_environment();
 				setenv("HOME", homedir, 1);
 				setenv("PATH", _PATH_STDPATH, 1);
@@ -119,6 +121,10 @@ cm_subproc_start(int (*cb)(int fd,
 				}
 				if (bus != NULL) {
 					setenv("DBUS_SESSION_BUS_ADDRESS", bus,
+					       1);
+				}
+				if (pvt != NULL) {
+					setenv(CERTMONGER_PVT_ADDRESS_ENV, pvt,
 					       1);
 				}
 				if (local != NULL) {

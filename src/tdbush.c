@@ -7150,12 +7150,13 @@ struct cm_tdbush_pending_call {
  * by asking for information about the caller */
 DBusHandlerResult
 cm_tdbush_handle_method_call(DBusConnection *conn, DBusMessage *msg,
-			     struct cm_context *ctx)
+			     enum cm_tdbus_type bus, struct cm_context *ctx)
 {
 	struct cm_tdbush_pending_call pending, *tmp;
 	struct cm_tdbush_interface *iface;
 	struct cm_tdbush_interface_item *item;
 	struct cm_tdbush_method *meth;
+	struct cm_client_info self;
 	unsigned int i;
 
 	memset(&pending, 0, sizeof(pending));
@@ -7189,8 +7190,24 @@ cm_tdbush_handle_method_call(DBusConnection *conn, DBusMessage *msg,
 			if (cm_name_cmp(meth->cm_name, pending.cm_method) != 0) {
 				continue;
 			}
+
 			/* found it */
 			pending.cm_fn = meth->cm_fn;
+
+			if (bus == cm_tdbus_private) {
+				/* just run the method */
+				pending.cm_uid = self.uid = getuid();
+				pending.cm_pid = self.pid = getpid(); /* XXX */
+				cm_log(4, "User ID %lu PID %lu called %s:%s.%s.\n",
+				       (unsigned long) pending.cm_uid, (unsigned long) pending.cm_pid,
+				       pending.cm_path, pending.cm_interface, pending.cm_method);
+				(*meth->cm_fn)(conn, pending.cm_msg, &self, ctx);
+				dbus_message_unref(pending.cm_msg);
+				cm_reset_timeout(ctx);
+				return DBUS_HANDLER_RESULT_HANDLED;
+			}
+
+			/* "public" */
 			tmp = talloc_ptrtype(NULL, tmp);
 			if (tmp != NULL) {
 				memset(tmp, 0, sizeof(*tmp));
@@ -7250,7 +7267,7 @@ cm_tdbush_handle_method_call(DBusConnection *conn, DBusMessage *msg,
 
 DBusHandlerResult
 cm_tdbush_handle_method_return(DBusConnection *conn, DBusMessage *msg,
-			       struct cm_context *ctx)
+			       enum cm_tdbus_type bus, struct cm_context *ctx)
 {
 	struct cm_tdbush_pending_call **p, *call, *next;
 	dbus_uint32_t serial;

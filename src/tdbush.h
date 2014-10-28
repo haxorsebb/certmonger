@@ -24,10 +24,12 @@ DBusHandlerResult cm_tdbush_handle(DBusConnection *conn, DBusMessage *msg,
 struct cm_context;
 DBusHandlerResult cm_tdbush_handle_method_call(DBusConnection *conn,
 					       DBusMessage *msg,
+					       enum cm_tdbus_type bus,
 					       struct cm_context *ctx);
 struct cm_context;
 DBusHandlerResult cm_tdbush_handle_method_return(DBusConnection *conn,
 						 DBusMessage *msg,
+						 enum cm_tdbus_type bus,
 						 struct cm_context *ctx);
 void cm_tdbush_property_emit_entry_changes(struct cm_context *ctx,
 					   struct cm_store_entry *old_entry,

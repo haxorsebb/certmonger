@@ -181,7 +181,7 @@ main(int argc, char **argv)
 	umask(S_IRWXG | S_IRWXO);
 
 	switch (bus) {
-	case cm_tdbus_other:
+	case cm_tdbus_private:
 	case cm_tdbus_system:
 		if (chdir("/") != 0) {
 			cm_log(0, "Error in chdir(\"/\"): %s.\n",

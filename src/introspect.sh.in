@@ -1,5 +1,5 @@
 #!/bin/sh -x
-bus=${CERTMONGER_BUS_ADDRESS:+--bus=${CERTMONGER_BUS_ADDRESS}}${CERTMONGER_BUS_ADDRESS:---system}
+bus=${CERTMONGER_PVT_ADDRESS:+--bus=${CERTMONGER_PVT_ADDRESS}}${CERTMONGER_PVT_ADDRESS:---system}
 for object in "$@" ; do
 	case "$object" in
 	--*)
