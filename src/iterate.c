@@ -444,13 +444,14 @@ cm_check_expiration_is_noteworthy(struct cm_store_entry *entry,
 	unsigned int i, n_ttls;
 	time_t now, ttl, previous_ttl;
 	const time_t *ttls;
+
 	now = cm_time(NULL);
 	/* Do we have validity information? */
 	if (entry->cm_cert_not_after == 0) {
 		return -1;
 	}
 	/* Is it at least (some arbitrary minimum) old? */
-	if (entry->cm_cert_not_before > (now - 60 * 60 )) {
+	if (entry->cm_cert_not_before > (now - CM_DELAY_MONITOR_POLL_MINIMUM)) {
 		return -1;
 	}
 	/* How much time is left? */
