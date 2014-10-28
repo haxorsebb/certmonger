@@ -40,6 +40,7 @@
 #include "store.h"
 #include "store-int.h"
 #include "subproc.h"
+#include "tdbus.h"
 #include "tdbush.h"
 #include "tm.h"
 
@@ -741,7 +742,7 @@ cm_gate_run(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 	const char *error = NULL;
 	unsigned char u;
 
-	cm_subproc_mark_most_cloexec(fd);
+	cm_subproc_mark_most_cloexec(fd, STDOUT_FILENO, STDERR_FILENO);
 	argv = cm_subproc_parse_args(NULL, ctx->gate.command, &error);
 	if (argv == NULL) {
 		cm_log(1, "Error parsing '%s'.\n", ctx->gate.command);

@@ -385,11 +385,13 @@ cm_subproc_parse_args(void *parent, const char *cmdline, const char **error)
 /* Redirect stdio to /dev/null, and mark everything else as close-on-exec,
  * except for perhaps one of them that is passed in by number. */
 void
-cm_subproc_mark_most_cloexec(int fd)
+cm_subproc_mark_most_cloexec(int fd, int fd2, int fd3)
 {
 	int i;
 	long l;
-	if (fd != STDIN_FILENO) {
+	if ((fd != STDIN_FILENO) &&
+	    (fd2 != STDIN_FILENO) &&
+	    (fd3 != STDIN_FILENO)) {
 		i = open("/dev/null", O_RDONLY);
 		if (i != -1) {
 			if (i != STDIN_FILENO) {
@@ -400,7 +402,9 @@ cm_subproc_mark_most_cloexec(int fd)
 			close(STDIN_FILENO);
 		}
 	}
-	if (fd != STDOUT_FILENO) {
+	if ((fd != STDOUT_FILENO) &&
+	    (fd2 != STDOUT_FILENO) &&
+	    (fd3 != STDOUT_FILENO)) {
 		i = open("/dev/null", O_WRONLY);
 		if (i != -1) {
 			if (i != STDOUT_FILENO) {
@@ -411,7 +415,9 @@ cm_subproc_mark_most_cloexec(int fd)
 			close(STDOUT_FILENO);
 		}
 	}
-	if (fd != STDERR_FILENO) {
+	if ((fd != STDERR_FILENO) &&
+	    (fd2 != STDERR_FILENO) &&
+	    (fd3 != STDERR_FILENO)) {
 		i = open("/dev/null", O_WRONLY);
 		if (i != -1) {
 			if (i != STDERR_FILENO) {
@@ -423,7 +429,9 @@ cm_subproc_mark_most_cloexec(int fd)
 		}
 	}
 	for (i = getdtablesize() - 1; i >= 3; i--) {
-		if (i == fd) {
+		if ((i == fd) ||
+		    (i == fd2) ||
+		    (i == fd3)) {
 			continue;
 		}
 		l = fcntl(i, F_GETFD);

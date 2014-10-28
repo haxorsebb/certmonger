@@ -50,6 +50,6 @@ char **cm_subproc_parse_args(void *parent, const char *cmdline,
 
 /* Reset stdio to /dev/null and mark all but the passed-in descriptor as
  * close-on-exec. */
-void cm_subproc_mark_most_cloexec(int fd);
+void cm_subproc_mark_most_cloexec(int fd, int fd2, int fd3);
 
 #endif

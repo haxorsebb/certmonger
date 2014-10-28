@@ -355,7 +355,7 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			return -1;
 		}
 		cm_log(1, "Running notification helper \"%s\".\n", argv[0]);
-		cm_subproc_mark_most_cloexec(-1);
+		cm_subproc_mark_most_cloexec(-1, -1, -1);
 		setenv(CM_NOTIFICATION_ENV, message, 1);
 		if (execvp(argv[0], argv) == -1) {
 			cm_log(0, "Error execvp()ing command \"%s\" (\"%s\"): %s.\n",

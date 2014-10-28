@@ -90,7 +90,7 @@ fetch(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry, void *data)
 		}
 		return -1;
 	}
-	cm_subproc_mark_most_cloexec(STDOUT_FILENO);
+	cm_subproc_mark_most_cloexec(STDOUT_FILENO, -1, -1);
 	cm_log(1, "Running enrollment/cadata helper \"%s\".\n", argv[0]);
 	execvp(argv[0], argv);
 	u = errno;
