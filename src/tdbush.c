@@ -4528,6 +4528,81 @@ cm_tdbush_introspect(DBusConnection *conn,
 
 }
 
+/* Loose name matching: consider '-' and '_' equivalent, and consider either
+ * followed by a lower-case character to be equivalent to just that character
+ * in upper case. */
+static int
+cm_is_lower(char c)
+{
+	return (c >= 'a') && (c <= 'z');
+}
+static int
+cm_is_upper(char c)
+{
+	return (c >= 'A') && (c <= 'Z');
+}
+static char
+cm_to_upper(char c)
+{
+	return c - ('a' - 'A');
+}
+int
+cm_name_cmp(const char *a, const char *b)
+{
+	const char *p, *q;
+
+	if (strcmp(a, b) == 0) {
+		return 0;
+	}
+	p = a;
+	q = b;
+	while ((*p != '\0') && (*q != '\0')) {
+		if (*p == *q) {
+			p++;
+			q++;
+			continue;
+		}
+		if (((*p == '-') && (*q == '_')) ||
+		    ((*p == '_') && (*q == '-'))) {
+			p++;
+			q++;
+			continue;
+		}
+		if ((p == a) && (q == b)) {
+			if (cm_is_lower(*p) && cm_is_upper(*q) &&
+			    (cm_to_upper(*p) == *q)) {
+				p++;
+				q++;
+				continue;
+			}
+			if (cm_is_lower(*q) && cm_is_upper(*p) &&
+			    (cm_to_upper(*q) == *p)) {
+				p++;
+				q++;
+				continue;
+			}
+		}
+		if ((*p == '-') || (*p == '_')) {
+			if (cm_is_lower(*(p + 1)) && cm_is_upper(*q) &&
+			    (cm_to_upper(*(p + 1)) == *q)) {
+				p += 2;
+				q++;
+				continue;
+			}
+		}
+		if ((*q == '-') || (*q == '_')) {
+			if (cm_is_lower(*(q + 1)) && cm_is_upper(*p) &&
+			    (cm_to_upper(*(q + 1)) == *p)) {
+				p++;
+				q += 2;
+				continue;
+			}
+		}
+		return *p - *q;
+	}
+	return *p - *q;
+}
+
 /* org.freedesktop.DBus.Properties.Get */
 static DBusHandlerResult
 cm_tdbush_property_get(DBusConnection *conn,
@@ -4622,7 +4697,7 @@ cm_tdbush_property_get(DBusConnection *conn,
 		iface = (*(map->cm_interface))();
 		if ((interface != NULL) &&
 		    (strlen(interface) > 0) &&
-		    (strcmp(interface, iface->cm_name) != 0)) {
+		    (cm_name_cmp(interface, iface->cm_name) != 0)) {
 			continue;
 		}
 		for (item = iface->cm_items;
@@ -4634,7 +4709,7 @@ cm_tdbush_property_get(DBusConnection *conn,
 			}
 			prop = item->cm_property;
 			if ((property != NULL) &&
-			    (strcmp(property, prop->cm_name) != 0)) {
+			    (cm_name_cmp(property, prop->cm_name) != 0)) {
 				continue;
 			}
 			switch (prop->cm_access) {
@@ -4859,7 +4934,7 @@ cm_tdbush_property_set(DBusConnection *conn,
 		iface = (*(map->cm_interface))();
 		if ((interface != NULL) &&
 		    (strlen(interface) > 0) &&
-		    (strcmp(interface, iface->cm_name) != 0)) {
+		    (cm_name_cmp(interface, iface->cm_name) != 0)) {
 			continue;
 		}
 		for (item = iface->cm_items;
@@ -4871,7 +4946,7 @@ cm_tdbush_property_set(DBusConnection *conn,
 			}
 			prop = item->cm_property;
 			if ((property != NULL) &&
-			    (strcmp(property, prop->cm_name) != 0)) {
+			    (cm_name_cmp(property, prop->cm_name) != 0)) {
 				continue;
 			}
 			switch (prop->cm_access) {
@@ -5225,7 +5300,7 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 		iface = (*(map->cm_interface))();
 		if ((interface != NULL) &&
 		    (strlen(interface) > 0) &&
-		    (strcmp(interface, iface->cm_name) != 0)) {
+		    (cm_name_cmp(interface, iface->cm_name) != 0)) {
 			continue;
 		}
 		for (item = iface->cm_items;
@@ -5250,8 +5325,8 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 				 * properties to list and this one's not
 				 * included */
 				for (j = 0; properties[j] != NULL; j++) {
-					if (strcmp(properties[j],
-						   prop->cm_name) == 0) {
+					if (cm_name_cmp(properties[j],
+							  prop->cm_name) == 0) {
 						break;
 					}
 				}
@@ -7101,7 +7176,7 @@ cm_tdbush_handle_method_call(DBusConnection *conn, DBusMessage *msg,
 		}
 		iface = (*((cm_tdbush_object_type_map[i]).cm_interface))();
 		if ((pending.cm_interface != NULL) &&
-		    (strcmp(iface->cm_name, pending.cm_interface) != 0)) {
+		    (cm_name_cmp(iface->cm_name, pending.cm_interface) != 0)) {
 			continue;
 		}
 		for (item = iface->cm_items;
@@ -7111,7 +7186,7 @@ cm_tdbush_handle_method_call(DBusConnection *conn, DBusMessage *msg,
 				continue;
 			}
 			meth = item->cm_method;
-			if (strcmp(meth->cm_name, pending.cm_method) != 0) {
+			if (cm_name_cmp(meth->cm_name, pending.cm_method) != 0) {
 				continue;
 			}
 			/* found it */
