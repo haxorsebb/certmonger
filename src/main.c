@@ -232,7 +232,7 @@ main(int argc, char **argv)
 	}
 
 	if (!server_only) {
-		if (cm_tdbus_setup(ec, bus, ctx, &error) != 0) {
+		if (cm_tdbus_setup_public(ec, bus, ctx, &error) != 0) {
 			fprintf(stderr, "Error connecting to D-Bus.\n");
 			hint = cm_tdbusm_hint(ec, error.name, error.message);
 			if (hint != NULL) {
@@ -243,7 +243,7 @@ main(int argc, char **argv)
 		}
 	}
 	if (server) {
-		if (cm_tdbus_setup_server(ec, ctx, &address, &error) != 0) {
+		if (cm_tdbus_setup_private(ec, ctx, &address, &error) != 0) {
 			fprintf(stderr, "Error setting up D-Bus listener.\n");
 			hint = cm_tdbusm_hint(ec, error.name, error.message);
 			if (hint != NULL) {

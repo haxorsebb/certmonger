@@ -64,10 +64,10 @@ struct tdbus_connection {
 	void *data;
 };
 
-static int cm_tdbus_setup_connection(struct tdbus_connection *tdb,
-				     DBusConnection *conn,
-				     enum cm_tdbus_type bus_type,
-				     DBusError *error);
+static int cm_tdbus_setup_public_connection(struct tdbus_connection *tdb,
+					    DBusConnection *conn,
+					    const char *bus_desc,
+					    DBusError *error);
 
 static void
 cm_tdbus_dispatch_status(DBusConnection *conn, DBusDispatchStatus new_status,
@@ -560,8 +560,8 @@ cm_tdbus_reconnect(struct tevent_context *ec, struct tevent_timer *timer,
 			cm_log(1, "Reconnected to %s bus.\n", bus_desc);
 			dbus_connection_set_exit_on_disconnect(tdb->conn,
 							       exit_on_disconnect);
-			cm_tdbus_setup_connection(tdb, tdb->conn,
-						  tdb->conn_type, NULL);
+			cm_tdbus_setup_public_connection(tdb, tdb->conn,
+							 bus_desc, NULL);
 		} else {
 			/* Try reconnecting again later. */
 			later = tevent_timeval_current_ofs(CM_DBUS_RECONNECT_TIMEOUT, 0),
@@ -627,12 +627,8 @@ cm_tdbus_filter(DBusConnection *conn, DBusMessage *dmessage, void *data)
 }
 
 static int
-cm_tdbus_setup_connection(struct tdbus_connection *tdb, DBusConnection *conn,
-			  enum cm_tdbus_type bus_type, DBusError *error)
+cm_tdbus_setup_conn_loop(struct tdbus_connection *tdb, DBusConnection *conn)
 {
-	DBusError err;
-	int i;
-
 	/* Set the callback to be called when I/O processing has yielded a
 	 * request that we need to act on. */
 	dbus_connection_set_dispatch_status_function(conn,
@@ -658,69 +654,89 @@ cm_tdbus_setup_connection(struct tdbus_connection *tdb, DBusConnection *conn,
 		cm_log(1, "Unable to add timer callbacks.\n");
 		return -1;
 	}
-	/* Set the filter on messages. */
-	if (!dbus_connection_add_filter(conn, cm_tdbus_filter,
-					tdb, NULL)) {
-		cm_log(1, "Unable to add filter.\n");
-		return -1;
-	}
-	/* Bind to the well-known name we intend to use. */
-	switch (bus_type) {
-	case cm_tdbus_system:
-	case cm_tdbus_session:
-		memset(&err, 0, sizeof(err));
-		i = dbus_bus_request_name(conn, CM_DBUS_NAME, 0, &err);
-		if ((i == 0) ||
-		    ((i != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER) &&
-		     (i != DBUS_REQUEST_NAME_REPLY_ALREADY_OWNER)) ||
-		    dbus_error_is_set(&err)) {
-			cm_log(0,
-			       "Unable to set well-known bus name \"%s\": "
-			       "%s(%d).\n",
-			       CM_DBUS_NAME,
-			       err.message ?
-			       err.message :
-			       (err.name ? err.name : ""),
-			       i);
-			if (error != NULL) {
-				dbus_move_error(&err, error);
-			}
-			return -1;
-		}
-		break;
-	case cm_tdbus_private:
-		/* Don't request a name. */
-		break;
-	}
 	/* Handle any messages that are already pending. */
 	cm_tdbus_dispatch_status(conn,
 				 dbus_connection_get_dispatch_status(conn),
 				 tdb);
-	switch (bus_type) {
-	case cm_tdbus_system:
-		cm_log(3, "Connected to system message bus with name \"%s\", "
-		       "unique name \"%s\".\n",
-		       dbus_bus_get_unique_name(conn) ?: "(unknown)",
-		       CM_DBUS_NAME);
-		break;
-	case cm_tdbus_session:
-		cm_log(3, "Connected to session message bus with name \"%s\", "
-		       "unique name \"%s\".\n",
-		       dbus_bus_get_unique_name(conn) ?: "(unknown)",
-		       CM_DBUS_NAME);
-		break;
-	case cm_tdbus_private:
-		cm_log(3, "Accepted private connection.\n");
-		break;
+	return 0;
+}
+
+static int
+cm_tdbus_setup_server_loop(struct tdbus_connection *tdb, DBusServer *server)
+{
+	/* Hook up the I/O callbacks so that D-Bus can actually do its thing. */
+	if (!dbus_server_set_watch_functions(server,
+					     &cm_tdbus_watch_add,
+					     &cm_tdbus_watch_remove,
+					     &cm_tdbus_watch_toggle,
+					     tdb,
+					     &cm_tdbus_watch_cleanup)) {
+		cm_log(1, "Unable to add timer callbacks.\n");
+		return -1;
+	}
+	/* Hook up the (unused?) timer callbacks to be polite. */
+	if (!dbus_server_set_timeout_functions(server,
+					       cm_tdbus_timeout_add,
+					       cm_tdbus_timeout_remove,
+					       cm_tdbus_timeout_toggle,
+					       tdb,
+					       cm_tdbus_timeout_cleanup)) {
+		cm_log(1, "Unable to add timer callbacks.\n");
+		return -1;
 	}
 	return 0;
 }
 
+static int
+cm_tdbus_setup_public_connection(struct tdbus_connection *tdb,
+				 DBusConnection *conn,
+				 const char *bus_desc,
+				 DBusError *error)
+{
+	DBusError err;
+	int ret;
+
+	/* Add the event loop glue. */
+	if (cm_tdbus_setup_conn_loop(tdb, conn) != 0) {
+		cm_log(0, "Error setting up connection to %s bus.\n", bus_desc);
+		return -1;
+	}
+
+	/* Request our service name. */
+	memset(&err, 0, sizeof(err));
+	ret = dbus_bus_request_name(conn, CM_DBUS_NAME, 0, &err);
+	if ((ret == 0) ||
+	    ((ret != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER) &&
+	     (ret != DBUS_REQUEST_NAME_REPLY_ALREADY_OWNER)) ||
+	    dbus_error_is_set(&err)) {
+		cm_log(0, "Unable to set well-known bus name \"%s\": %s(%d).\n",
+		       CM_DBUS_NAME,
+		       err.message ?  err.message : (err.name ? err.name : ""),
+		       ret);
+		if (error != NULL) {
+			dbus_move_error(&err, error);
+		}
+		return -1;
+	}
+	cm_log(3, "Connected to %s message bus with name "
+	       "\"%s\", unique name \"%s\".\n", bus_desc,
+	       dbus_bus_get_unique_name(conn) ?: "(unknown)", CM_DBUS_NAME);
+
+	/* Watch for method calls on this connection. */
+	if (!dbus_connection_add_filter(conn, cm_tdbus_filter, tdb, NULL)) {
+		cm_log(1, "Unable to add filter.\n");
+		return -1;
+	}
+
+	return 0;
+}
+
 int
-cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type,
-	       void *data, DBusError *error)
+cm_tdbus_setup_public(struct tevent_context *ec, enum cm_tdbus_type bus_type,
+		      void *data, DBusError *error)
 {
 	DBusConnection *conn;
+	DBusError err;
 	const char *bus_desc;
 	struct tdbus_connection *tdb;
 	dbus_bool_t exit_on_disconnect;
@@ -731,6 +747,7 @@ cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type,
 		return ENOMEM;
 	}
 	memset(tdb, 0, sizeof(*tdb));
+
 	/* Connect to the right bus. */
 	bus_desc = NULL;
 	conn = NULL;
@@ -766,33 +783,46 @@ cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type,
 	tdb->conn = conn;
 	tdb->conn_type = bus_type;
 	tdb->data = data;
-	return cm_tdbus_setup_connection(tdb, conn, bus_type, error);
+
+	/* Hook up the event loop, register our name, and set up the filter. */
+	memset(&err, 0, sizeof(err));
+	if (cm_tdbus_setup_public_connection(tdb, conn, bus_desc, &err) != 0) {
+		talloc_free(tdb);
+		return -1;
+	}
+
+	return 0;
 }
 
 static void
-cm_tdbus_new_client(DBusServer *server, DBusConnection *new_conn, void *data)
+cm_tdbus_new_private_client(DBusServer *server, DBusConnection *new_conn,
+			    void *data)
 {
 	struct tdbus_connection *tdb = data;
 	int sd;
-	DBusError error;
 
-	dbus_error_init(&error);
-	if (cm_tdbus_setup_connection(tdb, new_conn, cm_tdbus_private,
-				      &error) == 0) {
-		if (dbus_connection_get_socket(new_conn, &sd)) {
-			cm_log(4, "New client on FD %d.\n", sd);
-		} else {
-			cm_log(4, "New client on unknown socket.\n");
+	if (dbus_connection_get_socket(new_conn, &sd)) {
+		cm_log(4, "New client on FD %d.\n", sd);
+	} else {
+		cm_log(4, "New client on unknown socket.\n");
+	}
+	if (cm_tdbus_setup_conn_loop(tdb, new_conn) == 0) {
+		/* Watch for method calls on this connection. */
+		if (!dbus_connection_add_filter(new_conn, cm_tdbus_filter,
+						tdb, NULL)) {
+			cm_log(1, "Unable to add filter, dropping.\n");
+			return;
 		}
 		dbus_connection_ref(new_conn);
+		cm_log(3, "Accepted private connection.\n");
 	} else {
-		cm_log(0, "Error setting up for client.\n");
+		cm_log(0, "Error setting up for client, dropping.\n");
 	}
 }
 
 int
-cm_tdbus_setup_server(struct tevent_context *ec, void *data, char **address,
-		      DBusError *error)
+cm_tdbus_setup_private(struct tevent_context *ec, void *data, char **address,
+		       DBusError *error)
 {
 	struct tdbus_connection *tdb;
 	unsigned char uuid[16];
@@ -836,35 +866,22 @@ cm_tdbus_setup_server(struct tevent_context *ec, void *data, char **address,
 		talloc_free(tdb);
 		return -1;
 	}
-	/* Hook up the I/O callbacks so that D-Bus can actually do its thing. */
-	if (!dbus_server_set_watch_functions(tdb->server,
-					     &cm_tdbus_watch_add,
-					     &cm_tdbus_watch_remove,
-					     &cm_tdbus_watch_toggle,
-					     tdb,
-					     &cm_tdbus_watch_cleanup)) {
-		cm_log(1, "Unable to add timer callbacks.\n");
-		talloc_free(tdb);
-		return -1;
-	}
-	/* Hook up the (unused?) timer callbacks to be polite. */
-	if (!dbus_server_set_timeout_functions(tdb->server,
-					       cm_tdbus_timeout_add,
-					       cm_tdbus_timeout_remove,
-					       cm_tdbus_timeout_toggle,
-					       tdb,
-					       cm_tdbus_timeout_cleanup)) {
-		cm_log(1, "Unable to add timer callbacks.\n");
-		talloc_free(tdb);
-		return -1;
-	}
-	/* Provide the callback to use when we get a new client connection. */
-	dbus_server_set_new_connection_function(tdb->server,
-						cm_tdbus_new_client,
-						tdb,
-						NULL);
 	tdb->conn_type = cm_tdbus_private;
 	tdb->data = data;
+
+	/* Add the event loop glue. */
+	if (cm_tdbus_setup_server_loop(tdb, tdb->server) != 0) {
+		cm_log(0, "Error setting up private listener.\n");
+		talloc_free(tdb);
+		return -1;
+	}
+
+	/* Provide the callback to use when we get a new client connection. */
+	dbus_server_set_new_connection_function(tdb->server,
+						cm_tdbus_new_private_client,
+						tdb,
+						NULL);
+
 	*address = dbus_server_get_address(tdb->server);
 	return 0;
 }

@@ -118,9 +118,10 @@
 #define CM_DBUS_PROP_AKA "aka"
 
 enum cm_tdbus_type { cm_tdbus_system, cm_tdbus_session, cm_tdbus_private };
-int cm_tdbus_setup(struct tevent_context *ec, enum cm_tdbus_type bus_type,
-		   void *data, DBusError *error);
-int cm_tdbus_setup_server(struct tevent_context *ec, void *data, char **address,
-			  DBusError *error);
+int cm_tdbus_setup_public(struct tevent_context *ec,
+			  enum cm_tdbus_type bus_type,
+			  void *data, DBusError *error);
+int cm_tdbus_setup_private(struct tevent_context *ec, void *data,
+			   char **address, DBusError *error);
 
 #endif
