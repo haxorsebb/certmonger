@@ -2447,10 +2447,10 @@ refresh(const char *argv0, int argc, char **argv)
 			if (c == ':') {
 				fprintf(stderr,
 					_("%s: option requires an argument -- '%c'\n"),
-					"list", optopt);
+					"refresh", optopt);
 			} else {
 				fprintf(stderr, _("%s: invalid option -- '%c'\n"),
-					"list", optopt);
+					"refresh", optopt);
 			}
 			help(argv0, "refresh");
 			return 1;
@@ -3058,18 +3058,18 @@ status(const char *argv0, int argc, char **argv)
 			if (c == ':') {
 				fprintf(stderr,
 					_("%s: option requires an argument -- '%c'\n"),
-					"list", optopt);
+					"status", optopt);
 			} else {
 				fprintf(stderr, _("%s: invalid option -- '%c'\n"),
-					"list", optopt);
+					"status", optopt);
 			}
-			help(argv0, "list");
+			help(argv0, "status");
 			return 1;
 		}
 	}
 	if (optind < argc) {
 		printf(_("Error: unused extra arguments were supplied.\n"));
-		help(argv0, "list");
+		help(argv0, "status");
 		return 1;
 	}
 	if (id != NULL) {
