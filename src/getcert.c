@@ -3653,28 +3653,51 @@ help(const char *cmd, const char *category)
 	struct {
 		const char *category;
 		const char **msgs;
+		const char *brief;
 	} msgs[] = {
-		{NULL, general_help},
-		{"request", request_help},
-		{"start-tracking", start_tracking_help},
-		{"stop-tracking", stop_tracking_help},
-		{"resubmit", resubmit_help},
-		{"refresh", refresh_help},
-		{"list", list_help},
-		{"status", status_help},
-		{"list-cas", list_cas_help},
-		{"refresh-ca", refresh_ca_help},
+		{NULL, general_help,
+		 N_("Usage: %s command [options]\n")},
+		{"request", request_help,
+		 N_("request a new certificate from a CA\n")},
+		{"start-tracking", start_tracking_help,
+		 N_("begin monitoring an already-issued certificate\n")},
+		{"stop-tracking", stop_tracking_help,
+		 N_("stop monitoring a certificate\n")},
+		{"resubmit", resubmit_help,
+		 N_("resubmit an in-progress enrollment request, or start a new one\n")},
+		{"refresh", refresh_help,
+		 N_("check on the status of an in-progress enrollment request\n")},
+		{"list", list_help,
+		 N_("list certificates being monitored and requested\n")},
+		{"status", status_help,
+		 N_("check the status of a certificate being monitored or requested\n")},
+		{"list-cas", list_cas_help,
+		 N_("list known CAs\n")},
+		{"refresh-ca", refresh_ca_help,
+		 N_("refresh cache of all information obtained from a CA\n")},
 	};
 	for (i = 0; i < sizeof(msgs) / sizeof(msgs[0]); i++) {
 		if ((category != NULL) && (msgs[i].category != NULL) &&
 		    (strcmp(category, msgs[i].category) != 0)) {
 			continue;
 		}
-		if (i > 0) {
-			printf("\n");
-		}
-		for (j = 0; msgs[i].msgs[j] != NULL; j++) {
-			printf(_(msgs[i].msgs[j]), cmd);
+		if (category == NULL) {
+			if (msgs[i].category != NULL) {
+				printf("%-15s\t", msgs[i].category);
+			} else {
+				for (j = 0; msgs[i].msgs[j] != NULL; j++) {
+					printf(_(msgs[i].msgs[j]), cmd);
+				}
+				printf("\n");
+			}
+			printf(_(msgs[i].brief), cmd);
+		} else {
+			if (i > 0) {
+				printf("\n");
+			}
+			for (j = 0; msgs[i].msgs[j] != NULL; j++) {
+				printf(_(msgs[i].msgs[j]), cmd);
+			}
 		}
 	}
 }
