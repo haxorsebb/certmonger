@@ -823,8 +823,8 @@ cm_tdbus_new_private_client(DBusServer *server, DBusConnection *new_conn,
 }
 
 int
-cm_tdbus_setup_private(struct tevent_context *ec, void *data, char **address,
-		       DBusError *error)
+cm_tdbus_setup_private(struct tevent_context *ec, void *data,
+		       const char *path, char **address, DBusError *error)
 {
 	struct tdbus_connection *tdb;
 	unsigned char uuid[16];
@@ -843,25 +843,29 @@ cm_tdbus_setup_private(struct tevent_context *ec, void *data, char **address,
 	if (error != NULL) {
 		dbus_error_init(error);
 	}
+	if (path != NULL) {
+		addr = talloc_asprintf(ec, "unix:path=%s", path);
+	} else {
 #ifdef HAVE_UUID
-	if (cm_submit_uuid_new(uuid) == 0) {
-		/* we're good */
-	} else
+		if (cm_submit_uuid_new(uuid) == 0) {
+			/* we're good */
+		} else
 #endif
-	if (!RAND_pseudo_bytes(uuid, sizeof(uuid))) {
-		/* Try again sometime later. */
-		cm_log(1, "Error generating UUID.\n");
-		talloc_free(tdb);
-		return -1;
+		if (!RAND_pseudo_bytes(uuid, sizeof(uuid))) {
+			/* Try again sometime later. */
+			cm_log(1, "Error generating UUID.\n");
+			talloc_free(tdb);
+			return -1;
+		}
+		addr = talloc_asprintf(ec, "unix:abstract=%s/listen-"
+				       "%02x%02x%02x%02x%02x%02x%02x%02x"
+				       "%02x%02x%02x%02x%02x%02x%02x%02x",
+				       CM_TMPDIR,
+				       uuid[0], uuid[1], uuid[2], uuid[3],
+				       uuid[4], uuid[5], uuid[6], uuid[7],
+				       uuid[8], uuid[9], uuid[10], uuid[11],
+				       uuid[12], uuid[13], uuid[14], uuid[15]);
 	}
-	addr = talloc_asprintf(ec, "unix:abstract=%s/listen-"
-			       "%02x%02x%02x%02x%02x%02x%02x%02x"
-			       "%02x%02x%02x%02x%02x%02x%02x%02x",
-			       CM_TMPDIR,
-			       uuid[0], uuid[1], uuid[2], uuid[3],
-			       uuid[4], uuid[5], uuid[6], uuid[7],
-			       uuid[8], uuid[9], uuid[10], uuid[11],
-			       uuid[12], uuid[13], uuid[14], uuid[15]);
 	tdb->server = dbus_server_listen(addr, error);
 	if (dbus_error_is_set(error)) {
 		cm_log(0, "Error setting up D-Bus server.\n");

@@ -58,7 +58,7 @@ main(int argc, char **argv)
 	long l;
 	pid_t pid;
 	FILE *pfp;
-	const char *pidfile = NULL, *tmpdir, *gate_command = NULL;
+	const char *pidfile = NULL, *tmpdir, *gate_command = NULL, *path = NULL;
 	char *env_tmpdir, *hint, *address;
 	dbus_bool_t dofork, server, server_only;
 	enum force_fips_mode forcefips;
@@ -89,7 +89,7 @@ main(int argc, char **argv)
 		exit(1);
 	};
 
-	while ((c = getopt(argc, argv, "sSp:fb:Bd:nFlLc:")) != -1) {
+	while ((c = getopt(argc, argv, "sSp:fb:Bd:nFlLP:c:")) != -1) {
 		switch (c) {
 		case 's':
 			bus = cm_tdbus_session;
@@ -103,6 +103,9 @@ main(int argc, char **argv)
 		case 'L':
 			server = TRUE;
 			server_only = TRUE;
+			break;
+		case 'P':
+			path = optarg;
 			break;
 		case 'c':
 			bustime = 0;
@@ -134,15 +137,18 @@ main(int argc, char **argv)
 			printf(_("Usage: %s [-s|-S] [-n|-f] [-d LEVEL] "
 				 "[-p FILE] [-F]\n"),
 			       cm_env_whoami());
-			printf("%s%s%s%s%s%s%s%s%s%s",
+			printf("%s%s%s%s%s%s%s%s%s%s%s%s%s",
 			       _("\t-s         use session bus\n"),
 			       _("\t-S         use system bus\n"),
+			       _("\t-l         start a dedicated listening socket\n"),
+			       _("\t-L         only use a dedicated listening socket\n"),
+			       _("\t-P PATH    specify the dedicated listening socket\n"),
 			       _("\t-n         don't become a daemon\n"),
 			       _("\t-f         do become a daemon\n"),
 			       _("\t-b TIMEOUT bus-activated, idle timeout\n"),
 			       _("\t-B         don't use an idle timeout\n"),
 			       _("\t-d LEVEL   set debugging level (implies -n)\n"),
-			       _("\t-c COMMAND run COMMAND and exit when it does\n"),
+			       _("\t-c COMMAND start COMMAND and exit when it does\n"),
 			       _("\t-p FILE    write service PID to file\n"),
 			       _("\t-F         force NSS into FIPS mode\n"));
 			exit(1);
@@ -243,7 +249,8 @@ main(int argc, char **argv)
 		}
 	}
 	if (server) {
-		if (cm_tdbus_setup_private(ec, ctx, &address, &error) != 0) {
+		if (cm_tdbus_setup_private(ec, ctx, path, &address,
+					   &error) != 0) {
 			fprintf(stderr, "Error setting up D-Bus listener.\n");
 			hint = cm_tdbusm_hint(ec, error.name, error.message);
 			if (hint != NULL) {

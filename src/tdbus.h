@@ -122,6 +122,7 @@ int cm_tdbus_setup_public(struct tevent_context *ec,
 			  enum cm_tdbus_type bus_type,
 			  void *data, DBusError *error);
 int cm_tdbus_setup_private(struct tevent_context *ec, void *data,
+			   const char *socket_path,
 			   char **address, DBusError *error);
 
 #endif
