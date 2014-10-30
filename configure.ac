@@ -14,12 +14,22 @@ if test x$GCC = xyes ; then
 fi
 AC_CONFIG_HEADER(src/config.h)
 
+mybindir="$bindir"
+mybindir=`eval echo $mybindir | sed "s,NONE,$prefix,g"`
+mybindir=`eval echo $mybindir | sed "s,NONE,$exec_prefix,g"`
+mybindir=`eval echo $mybindir | sed "s,NONE,$ac_default_prefix,g"`
+mybindir=`eval echo $mybindir | sed "s,NONE,,g"`
+AC_SUBST(mybindir)
+AC_DEFINE_UNQUOTED(CM_GETCERT_DIR,"${mybindir}",
+		   [Define to the directory holding various getcert commands after installation.])
 mysbindir="$sbindir"
 mysbindir=`eval echo $mysbindir | sed "s,NONE,$prefix,g"`
 mysbindir=`eval echo $mysbindir | sed "s,NONE,$exec_prefix,g"`
 mysbindir=`eval echo $mysbindir | sed "s,NONE,$ac_default_prefix,g"`
 mysbindir=`eval echo $mysbindir | sed "s,NONE,,g"`
 AC_SUBST(mysbindir)
+AC_DEFINE_UNQUOTED(CM_CERTMONGER_DAEMON_PATH,"${mysbindir}/certmonger",
+		   [Define to the path of the certmonger daemon after installation.])
 
 UPCASE_PACKAGE_NAME=`echo "${PACKAGE_NAME}" | tr '[a-z]' '[A-Z]'`
 mysysconfdir="$sysconfdir"

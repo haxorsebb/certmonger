@@ -63,6 +63,7 @@
 static void help(const char *cmd, const char *category);
 
 static struct {
+	const char *argv0;
 	DBusConnection *conn;
 	void *tctx;
 } globals = {
@@ -253,6 +254,58 @@ add_string(void *parent, char ***dest, const char *value)
 	i++;
 	tmp[i] = NULL;
 	*dest = tmp;
+}
+
+/* Connect to the bus, or not. */
+static char *
+escape(void *t, const char *text)
+{
+	char *tmp;
+	int i, j;
+
+	tmp = talloc_size(t, strlen(text) * 2 + 1);
+	for (i = 0, j = 0; text[i] != '\0'; i++) {
+		if (strchr("\\'\" \t", text[i]) != NULL) {
+			tmp[j++] = '\\';
+		}
+		tmp[j++] = text[i];
+	}
+	tmp[j++] = '\0';
+	return tmp;
+}
+static void
+prep_bus(enum cm_tdbus_type which, const char *mode,
+	 int argc, char **argv)
+{
+	DBusError err;
+	char *nargv[6] = {
+		CM_CERTMONGER_DAEMON_PATH,
+		"-n",
+		"-L",
+		"-c",
+	};
+	char *cmd = NULL;
+	int i;
+
+	if ((which != cm_tdbus_system) || (globals.conn != NULL) ||
+	    (getuid() != 0)) {
+		return;
+	}
+	memset(&err, 0, sizeof(err));
+	globals.conn = dbus_bus_get(DBUS_BUS_SYSTEM, &err);
+	if (globals.conn != NULL) {
+		return;
+	}
+	if (!dbus_error_has_name(&err, DBUS_ERROR_NO_SERVER)) {
+		return;
+	}
+	cmd = talloc_asprintf(NULL, "%s/%s", CM_GETCERT_DIR, globals.argv0);
+	for (i = 0; i < argc; i++) {
+		cmd = talloc_strdup_append(cmd, " ");
+		cmd = talloc_strdup_append(cmd, escape(cmd, argv[i]));
+	}
+	nargv[4] = cmd;
+	execv(nargv[0], nargv);
 }
 
 /* Connect to the bus and set up as much of the request as we can. */
@@ -1705,6 +1758,7 @@ set_tracking(const char *argv0, const char *category,
 		help(argv0, category);
 		return 1;
 	}
+	prep_bus(bus, category, argc, argv);
 	if (id != NULL) {
 		request = find_request_by_name(globals.tctx, bus, id, verbose);
 	} else {
@@ -2161,6 +2215,7 @@ resubmit(const char *argv0, int argc, char **argv)
 
 	krb5_free_context(kctx);
 
+	prep_bus(bus, "resubmit", argc, argv);
 	if (id != NULL) {
 		request = find_request_by_name(globals.tctx, bus, id, verbose);
 	} else {
@@ -2468,6 +2523,7 @@ refresh(const char *argv0, int argc, char **argv)
 		help(argv0, "refresh");
 		return 1;
 	}
+	prep_bus(bus, "refresh", argc, argv);
 	if (only_ca != NULL) {
 		capath = find_ca_by_name(globals.tctx, bus, only_ca, verbose);
 		if (capath == NULL) {
@@ -2638,6 +2694,7 @@ list(const char *argv0, int argc, char **argv)
 		help(argv0, "list");
 		return 1;
 	}
+	prep_bus(bus, "list", argc, argv);
 	if (only_ca != NULL) {
 		capath = find_ca_by_name(globals.tctx, bus, only_ca, verbose);
 		if (capath == NULL) {
@@ -3072,6 +3129,7 @@ status(const char *argv0, int argc, char **argv)
 		help(argv0, "status");
 		return 1;
 	}
+	prep_bus(bus, "status", argc, argv);
 	if (id != NULL) {
 		request = find_request_by_name(globals.tctx, bus, id, verbose);
 		if (request == NULL) {
@@ -3158,6 +3216,7 @@ list_cas(const char *argv0, int argc, char **argv)
 		help(argv0, "list-cas");
 		return 1;
 	}
+	prep_bus(bus, "list-cas", argc, argv);
 	cas = query_rep_ap(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
 			   "get_known_cas", verbose, globals.tctx);
 	for (i = 0; (cas != NULL) && (cas[i] != NULL); i++) {
@@ -3346,6 +3405,7 @@ refresh_ca(const char *argv0, int argc, char **argv)
 		help(argv0, "refresh-ca");
 		return 1;
 	}
+	prep_bus(bus, "refresh-ca", argc, argv);
 	cas = query_rep_ap(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
 			   "get_known_cas", verbose, globals.tctx);
 	for (i = 0; (cas != NULL) && (cas[i] != NULL); i++) {
@@ -3714,6 +3774,7 @@ main(int argc, char **argv)
 	if (strchr(p, '/') != NULL) {
 		p = strrchr(p, '/') + 1;
 	}
+	globals.argv0 = p;
 	if (argc > 1) {
 		verb = argv[1];
 		globals.tctx = talloc_new(NULL);
