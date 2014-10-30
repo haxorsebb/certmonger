@@ -7146,6 +7146,21 @@ struct cm_tdbush_pending_call {
 	struct cm_tdbush_pending_call *cm_next;
 } *cm_pending_calls;
 
+/* read the UID and PID of a directly-connected client */
+static int
+cm_tdbush_read_conn_id(DBusConnection *conn, uid_t *uid, pid_t *pid)
+{
+	unsigned long utmp, ptmp;
+
+	if (!dbus_connection_get_unix_user(conn, &utmp) ||
+	    !dbus_connection_get_unix_process_id(conn, &ptmp)) {
+		return -1;
+	}
+	*uid = utmp;
+	*pid = ptmp;
+	return 0;
+}
+
 /* handle a method call by either asserting that we don't support a method, or
  * by asking for information about the caller */
 DBusHandlerResult
@@ -7194,20 +7209,38 @@ cm_tdbush_handle_method_call(DBusConnection *conn, DBusMessage *msg,
 			/* found it */
 			pending.cm_fn = meth->cm_fn;
 
+			/* "private": no bus daemon, so identify the client */
 			if (bus == cm_tdbus_private) {
 				/* just run the method */
-				pending.cm_uid = self.uid = getuid();
-				pending.cm_pid = self.pid = getpid(); /* XXX */
-				cm_log(4, "User ID %lu PID %lu called %s:%s.%s.\n",
-				       (unsigned long) pending.cm_uid, (unsigned long) pending.cm_pid,
-				       pending.cm_path, pending.cm_interface, pending.cm_method);
-				(*meth->cm_fn)(conn, pending.cm_msg, &self, ctx);
+				if (cm_tdbush_read_conn_id(conn,
+							   &pending.cm_uid,
+							   &pending.cm_pid) != 0) {
+					cm_log(4, "Error reading client ID, "
+					       "ignoring.\n");
+				} else {
+					pending.cm_know_uid = TRUE;
+					pending.cm_know_pid = TRUE;
+					if (pending.cm_uid != getuid()) {
+						cm_log(4, "Client's UID is "
+						       "not the same as ours, "
+						       "ignoring.\n");
+					} else {
+						cm_log(4, "User ID %lu PID %lu "
+						       "called %s:%s.%s.\n",
+						       (unsigned long) pending.cm_uid,
+						       (unsigned long) pending.cm_pid,
+						       pending.cm_path,
+						       pending.cm_interface,
+						       pending.cm_method);
+						(*meth->cm_fn)(conn, pending.cm_msg, &self, ctx);
+					}
+				}
 				dbus_message_unref(pending.cm_msg);
 				cm_reset_timeout(ctx);
 				return DBUS_HANDLER_RESULT_HANDLED;
 			}
 
-			/* "public" */
+			/* "public": go ask the daemon who the client is */
 			tmp = talloc_ptrtype(NULL, tmp);
 			if (tmp != NULL) {
 				memset(tmp, 0, sizeof(*tmp));
