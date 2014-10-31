@@ -752,6 +752,9 @@ cm_gate_run(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 	if (ctx->server_address != NULL) {
 		setenv(CERTMONGER_PVT_ADDRESS_ENV, ctx->server_address, 1);
 	}
+	signal(SIGHUP, SIG_DFL);
+	signal(SIGINT, SIG_DFL);
+	signal(SIGTERM, SIG_DFL);
 	execvp(argv[0], argv);
 	u = errno;
 	if (write(fd, &u, 1) != 1) {
