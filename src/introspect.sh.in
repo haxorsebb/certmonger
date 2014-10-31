@@ -1,13 +1,17 @@
 #!/bin/sh -x
-bus=${CERTMONGER_PVT_ADDRESS:+--bus=${CERTMONGER_PVT_ADDRESS}}${CERTMONGER_PVT_ADDRESS:---system}
+if test -n "$@CERTMONGER_PVT_ADDRESS_ENV@" ; then
+	address=--address="$@CERTMONGER_PVT_ADDRESS_ENV@"
+else
+	address="--system --dest=@CM_DBUS_NAME@"
+fi
 for object in "$@" ; do
 	case "$object" in
 	--*)
-		bus="$object"
+		address="$object"
 		object=
 		;;
 	*)
-		dbus-send $bus --print-reply --dest=@CM_DBUS_NAME@ "${object:-/}" org.freedesktop.DBus.Introspectable.Introspect
+		dbus-send $address --print-reply "${object:-/}" org.freedesktop.DBus.Introspectable.Introspect
 		;;
 	esac
 done

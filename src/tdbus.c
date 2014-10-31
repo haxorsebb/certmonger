@@ -822,6 +822,12 @@ cm_tdbus_new_private_client(DBusServer *server, DBusConnection *new_conn,
 	}
 }
 
+static void
+cm_tdbus_lost_private_client(void *data)
+{
+	cm_log(3, "Lost private connection.\n");
+}
+
 int
 cm_tdbus_setup_private(struct tevent_context *ec, void *data,
 		       const char *path, char **address, DBusError *error)
@@ -886,7 +892,7 @@ cm_tdbus_setup_private(struct tevent_context *ec, void *data,
 	dbus_server_set_new_connection_function(tdb->server,
 						cm_tdbus_new_private_client,
 						tdb,
-						NULL);
+						cm_tdbus_lost_private_client);
 
 	*address = dbus_server_get_address(tdb->server);
 	return 0;
