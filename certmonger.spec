@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.75.14
+Version:	0.76
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -236,10 +236,22 @@ exit 0
 %endif
 
 %changelog
+* Fri Oct 31 2014 Nalin Dahyabhai <nalin@redhat.com> 0.76-1
+- require a single certificate to be specified to 'getcert status' (#1148001)
+- shorten the default help message which getcert prints when it's not given
+  a specific command (#1131704)
+- add private listener (-l, -L, -P) mode to certmonger, to allow it to listen
+  for connections directly from clients running under the same UID
+- add a command mode (-c) to certmonger, in which once it's started, it
+  launches a specified command, and after that command exits, the daemon exits
+- when getcert is invoked with no bus running, if it's running as root, run
+  certmonger in private listener mode with the same invocation of getcert as
+  the command to start and wait for (#1134497)
+
 * Thu Aug 28 2014 Nalin Dahyabhai <nalin@redhat.com> 0.75.14-1
 - make pathname canonicalization slightly smarter, to handle ".." in
-  locations
-- updates to self-tests
+  locations (#1131758)
+- updates to self-tests (#1144082)
 
 * Thu Aug 21 2014 Kevin Fenzi <kevin@scrye.com> - 0.75.13-2
 - Rebuild for rpm bug 1131960
