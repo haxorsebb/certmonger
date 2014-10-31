@@ -275,10 +275,10 @@ escape(void *t, const char *text)
 }
 static void
 prep_bus(enum cm_tdbus_type which, const char *mode,
-	 int argc, char **argv)
+	 int verbose, int argc, char **argv)
 {
 	DBusError err;
-	char *nargv[6] = {
+	char *nargv[7] = {
 		CM_CERTMONGER_DAEMON_PATH,
 		"-n",
 		"-L",
@@ -305,6 +305,9 @@ prep_bus(enum cm_tdbus_type which, const char *mode,
 		cmd = talloc_strdup_append(cmd, escape(cmd, argv[i]));
 	}
 	nargv[4] = cmd;
+	if (verbose > 0) {
+		nargv[5] = talloc_asprintf(cmd, "-d%d", verbose);
+	}
 	execv(nargv[0], nargv);
 }
 
@@ -1758,7 +1761,7 @@ set_tracking(const char *argv0, const char *category,
 		help(argv0, category);
 		return 1;
 	}
-	prep_bus(bus, category, argc, argv);
+	prep_bus(bus, category, verbose, argc, argv);
 	if (id != NULL) {
 		request = find_request_by_name(globals.tctx, bus, id, verbose);
 	} else {
@@ -2215,7 +2218,7 @@ resubmit(const char *argv0, int argc, char **argv)
 
 	krb5_free_context(kctx);
 
-	prep_bus(bus, "resubmit", argc, argv);
+	prep_bus(bus, "resubmit", verbose, argc, argv);
 	if (id != NULL) {
 		request = find_request_by_name(globals.tctx, bus, id, verbose);
 	} else {
@@ -2523,7 +2526,7 @@ refresh(const char *argv0, int argc, char **argv)
 		help(argv0, "refresh");
 		return 1;
 	}
-	prep_bus(bus, "refresh", argc, argv);
+	prep_bus(bus, "refresh", verbose, argc, argv);
 	if (only_ca != NULL) {
 		capath = find_ca_by_name(globals.tctx, bus, only_ca, verbose);
 		if (capath == NULL) {
@@ -2694,7 +2697,7 @@ list(const char *argv0, int argc, char **argv)
 		help(argv0, "list");
 		return 1;
 	}
-	prep_bus(bus, "list", argc, argv);
+	prep_bus(bus, "list", verbose, argc, argv);
 	if (only_ca != NULL) {
 		capath = find_ca_by_name(globals.tctx, bus, only_ca, verbose);
 		if (capath == NULL) {
@@ -3129,7 +3132,7 @@ status(const char *argv0, int argc, char **argv)
 		help(argv0, "status");
 		return 1;
 	}
-	prep_bus(bus, "status", argc, argv);
+	prep_bus(bus, "status", verbose, argc, argv);
 	if (id != NULL) {
 		request = find_request_by_name(globals.tctx, bus, id, verbose);
 		if (request == NULL) {
@@ -3216,7 +3219,7 @@ list_cas(const char *argv0, int argc, char **argv)
 		help(argv0, "list-cas");
 		return 1;
 	}
-	prep_bus(bus, "list-cas", argc, argv);
+	prep_bus(bus, "list-cas", verbose, argc, argv);
 	cas = query_rep_ap(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
 			   "get_known_cas", verbose, globals.tctx);
 	for (i = 0; (cas != NULL) && (cas[i] != NULL); i++) {
@@ -3405,7 +3408,7 @@ refresh_ca(const char *argv0, int argc, char **argv)
 		help(argv0, "refresh-ca");
 		return 1;
 	}
-	prep_bus(bus, "refresh-ca", argc, argv);
+	prep_bus(bus, "refresh-ca", verbose, argc, argv);
 	cas = query_rep_ap(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
 			   "get_known_cas", verbose, globals.tctx);
 	for (i = 0; (cas != NULL) && (cas[i] != NULL); i++) {
