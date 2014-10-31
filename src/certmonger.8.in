@@ -30,9 +30,10 @@ Also listen on a private socket.
 Listen only on a private socket, and skip connecting to a bus.
 .TP
 -P
-Specify a filesystem path for the private listening socket.  If none is
-specified, the listening socket, if one is created, will be placed in the
-abstract namespace.
+Specify a location for the private listening socket.  If the location beings
+with a '/' character, it will be prefixed with 'unix:path=', otherwise it will
+be prefixed with 'unix:'.  If this option is not specified, the listening
+socket, if one is created, will be placed in the abstract namespace.
 .TP
 -b TIMEOUT
 Behave as a bus-activated service: if there are no certificates to be monitored

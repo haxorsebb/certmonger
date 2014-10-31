@@ -850,7 +850,11 @@ cm_tdbus_setup_private(struct tevent_context *ec, void *data,
 		dbus_error_init(error);
 	}
 	if (path != NULL) {
-		addr = talloc_asprintf(ec, "unix:path=%s", path);
+		if (path[0] == '/') {
+			addr = talloc_asprintf(ec, "unix:path=%s", path);
+		} else {
+			addr = talloc_asprintf(ec, "unix:%s", path);
+		}
 	} else {
 #ifdef HAVE_UUID
 		if (cm_submit_uuid_new(uuid) == 0) {
