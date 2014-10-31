@@ -191,7 +191,7 @@ dogtag_ipa_renew_agent_submit_LDADD = $(CURL_LIBS) $(XML_LIBS) $(NSS_LIBS) \
 				      $(GMP_LIBS) $(UUID_LIBS) $(LTLIBICONV)
 local_submit_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS)
 local_submit_SOURCES = local.c env.h store.h store-gen.c submit-o.c submit-o.h \
-		       submit-u.c submit-u.h env-session.c log.c log.h \
+		       submit-u.c submit-u.h env-session.c env-shared.c log.c log.h \
 		       prefs.c prefs.h prefs-o.c prefs-o.h tm.c tm.h \
 		       util.c util.h util-o.c util-o.h
 local_submit_LDADD = $(NSS_LIBS) $(OPENSSL_LIBS) $(TALLOC_LIBS) $(UUID_LIBS)

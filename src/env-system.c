@@ -122,3 +122,14 @@ cm_env_default_bus_timeout(void)
 {
 	return 0;
 }
+
+char *
+cm_env_lock_file(void)
+{
+	char *ret;
+	ret = getenv(CM_STORE_SYSTEM_LOCK_FILE_ENV);
+	if (ret == NULL) {
+		ret = CM_STORE_SYSTEM_LOCK_FILE;
+	}
+	return ret;
+}

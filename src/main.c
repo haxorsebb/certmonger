@@ -189,10 +189,12 @@ main(int argc, char **argv)
 	switch (bus) {
 	case cm_tdbus_private:
 	case cm_tdbus_system:
+		cm_log(2, "Changing to root directory.\n");
 		if (chdir("/") != 0) {
 			cm_log(0, "Error in chdir(\"/\"): %s.\n",
 			       strerror(errno));
 		}
+		cm_log(2, "Obtaining system lock.\n");
 		break;
 	case cm_tdbus_session:
 		cm_log(2, "Changing to config directory.\n");
@@ -201,32 +203,32 @@ main(int argc, char **argv)
 			       cm_env_config_dir(), strerror(errno));
 		}
 		cm_log(2, "Obtaining session lock.\n");
-		lfd = open(cm_env_lock_file(), O_RDWR | O_CREAT,
-			   S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-		if (lfd == -1) {
-			fprintf(stderr, "Error opening lockfile \"%s\": %s\n",
-				cm_env_lock_file(), strerror(errno));
-			exit(1);
-		}
-		if (lockf(lfd, F_LOCK, 0) != 0) {
-			fprintf(stderr, "Error locking lockfile \"%s\": %s\n",
+		break;
+	}
+	lfd = open(cm_env_lock_file(), O_RDWR | O_CREAT,
+		   S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+	if (lfd == -1) {
+		fprintf(stderr, "Error opening lockfile \"%s\": %s\n",
+			cm_env_lock_file(), strerror(errno));
+		exit(1);
+	}
+	if (lockf(lfd, F_LOCK, 0) != 0) {
+		fprintf(stderr, "Error locking lockfile \"%s\": %s\n",
+			cm_env_lock_file(), strerror(errno));
+		close(lfd);
+		exit(1);
+	}
+	l = fcntl(lfd, F_GETFD);
+	if (l != -1) {
+		l = fcntl(lfd, F_SETFD, l | FD_CLOEXEC);
+		if (l == -1) {
+			fprintf(stderr,
+				"Error setting close-on-exec flag on "
+				"\"%s\": %s\n",
 				cm_env_lock_file(), strerror(errno));
 			close(lfd);
 			exit(1);
 		}
-		l = fcntl(lfd, F_GETFD);
-		if (l != -1) {
-			l = fcntl(lfd, F_SETFD, l | FD_CLOEXEC);
-			if (l == -1) {
-				fprintf(stderr,
-					"Error setting close-on-exec flag on "
-					"\"%s\": %s\n",
-					cm_env_lock_file(), strerror(errno));
-				close(lfd);
-				exit(1);
-			}
-		}
-		break;
 	}
 
 	ctx = NULL;

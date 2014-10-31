@@ -57,6 +57,15 @@ mylocalstatedir=`eval echo $mylocalstatedir | sed "s,NONE,$prefix,g"`
 mylocalstatedir=`eval echo $mylocalstatedir | sed "s,NONE,$ac_default_prefix,g"`
 mylocalstatedir=`eval echo $mylocalstatedir | sed "s,NONE,,g"`
 
+CM_STORE_SYSTEM_LOCK_FILE="$mylocalstatedir/lock"
+CM_STORE_SYSTEM_LOCK_FILE_ENV="${UPCASE_PACKAGE_NAME}_SYSTEM_LOCK_FILE"
+AC_SUBST(CM_STORE_SYSTEM_LOCK_FILE)
+AC_SUBST(CM_STORE_SYSTEM_LOCK_FILE_ENV)
+AC_DEFINE_UNQUOTED(CM_STORE_SYSTEM_LOCK_FILE,"${CM_STORE_SYSTEM_LOCK_FILE}",
+		   [Define to the default path for the system daemon lock file.])
+AC_DEFINE_UNQUOTED(CM_STORE_SYSTEM_LOCK_FILE_ENV,"${CM_STORE_SYSTEM_LOCK_FILE_ENV}",
+		   [Define to the name of the environment variable which can specify the location of the system daemon lock file.])
+
 CM_STORE_REQUESTS_DIRECTORY="$mylocalstatedir/requests"
 CM_STORE_REQUESTS_DIRECTORY_ENV="${UPCASE_PACKAGE_NAME}_REQUESTS_DIR"
 AC_SUBST(CM_STORE_REQUESTS_DIRECTORY)

@@ -239,3 +239,9 @@ cm_env_default_bus_timeout(void)
 {
 	return CM_DEFAULT_IDLE_TIMEOUT;
 }
+
+char *
+cm_env_lock_file(void)
+{
+	return cm_env_config(NULL, "lock");
+}

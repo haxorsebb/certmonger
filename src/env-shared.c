@@ -59,9 +59,3 @@ cm_env_config(const char *subdir, const char *subfile)
 	}
 	return ret;
 }
-
-char *
-cm_env_lock_file(void)
-{
-	return cm_env_config(NULL, "lock");
-}
