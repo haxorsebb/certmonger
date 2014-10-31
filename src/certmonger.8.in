@@ -1,10 +1,10 @@
-.TH certmonger 8 "13 August 2014" "certmonger Manual"
+.TH certmonger 8 "31 October 2014" "certmonger Manual"
 
 .SH NAME
 certmonger
 
 .SH SYNOPSIS
-certmonger [-s|-S] [-b TIMEOUT|-B] [-n|-f] [-d LEVEL] [-p FILE] [-F] [-C cmd]
+certmonger [-s|-S] [-L|-l] [-P SOCKET] [-b TIMEOUT|-B] [-n|-f] [-d LEVEL] [-p FILE] [-F] [-C cmd]
 
 .SH DESCRIPTION
 The \fIcertmonger\fR daemon monitors certificates for impending
@@ -23,9 +23,21 @@ Listen on the session bus rather than the system bus.
 -S
 Listen on the system bus rather than the session bus.  This is the default.
 .TP
+-l
+Also listen on a private socket.
+.TP
+-L
+Listen only on a private socket, and skip connecting to a bus.
+.TP
+-P
+Specify a filesystem path for the private listening socket.  If none is
+specified, the listening socket, if one is created, will be placed in the
+abstract namespace.
+.TP
 -b TIMEOUT
 Behave as a bus-activated service: if there are no certificates to be monitored
-or obtained, and no requests received within TIMEOUT seconds, exit.
+or obtained, and no requests are received within TIMEOUT seconds, exit.  Not
+compatible with the -C option.
 .TP
 -B
 Don't behave as a bus-activated service.  This is the default.
@@ -48,7 +60,10 @@ the setting stored in \fI/proc/sys/crypto/fips_enabled\fR.
 .TP
 -C cmd
 After the service has initialized, run the specified command, then shut down
-the service after the command exits.
+the service after the command exits.  If the -l or -L option was also
+specified, the command will be run with the \fI@CERTMONGER_PVT_ADDRESS_ENV@\fR
+environment variable set to the listening socket's location.  Not compatible
+with the -b option.
 
 .SH FILES
 The set of certificates being monitored or signed is tracked using files stored

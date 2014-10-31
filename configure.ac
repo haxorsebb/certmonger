@@ -122,7 +122,9 @@ CM_NOTIFICATION_ENV="${UPCASE_PACKAGE_NAME}_NOTIFICATION"
 AC_DEFINE_UNQUOTED(CM_NOTIFICATION_ENV,"${CM_NOTIFICATION_ENV}",[Define to the variable name to be used to hold a notification message.])
 AC_SUBST(CM_NOTIFICATION_ENV)
 
-AC_DEFINE_UNQUOTED(CERTMONGER_PVT_ADDRESS_ENV,"CERTMONGER_PVT_ADDRESS",[Define to the variable name used to pass the location of the private D-Bus connection to subprocesses.])
+CERTMONGER_PVT_ADDRESS_ENV=CERTMONGER_PVT_ADDRESS
+AC_DEFINE_UNQUOTED(CERTMONGER_PVT_ADDRESS_ENV,"${CERTMONGER_PVT_ADDRESS_ENV}",[Define to the variable name used to pass the location of the private D-Bus connection to subprocesses.])
+AC_SUBST(CERTMONGER_PVT_ADDRESS_ENV)
 
 mylocaledir="$localedir"
 mylocaledir=`eval echo $mylocaledir | sed "s,NONE,$prefix,g"`
