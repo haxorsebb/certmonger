@@ -489,8 +489,8 @@ cm_cadata_start_generic(struct cm_store_ca *ca, const char *op,
 	ret->error_fd = -1;
 	ret->parse = parse;
 	if (read(error_fd[0], &u, 1) == 1) {
-		cm_log(1, "Error running enrollment helper: %s.\n",
-		       strerror(u));
+		cm_log(1, "Error running enrollment helper \"%s\": %s.\n",
+		       ca->cm_ca_external_helper, strerror(u));
 		talloc_free(ret);
 		return NULL;
 	}
