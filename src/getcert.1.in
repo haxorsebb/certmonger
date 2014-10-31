@@ -26,10 +26,12 @@ If no command is given as the first command-line argument, \fIgetcert\fR
 will print short usage information for each of its functions.
 
 .SH COMMON ARGUMENTS
-All commands can take either the \fB-s\fR or \fB-S\fR arguments, which
-instruct \fIgetcert\fR to contact the @CM_DBUS_NAME@ service on the
-session or system bus, respectively.  By default, \fIgetcert\fR consults
-the @CM_DBUS_NAME@ service attached to the system bus.
+If \fI@CERTMONGER_PVT_ADDRESS_ENV@\fR is set in the environment, \fIgetcert\fR
+contacts the service directly at the specified location.
+All commands can take either the \fB-s\fR or \fB-S\fR arguments, which instruct
+\fIgetcert\fR to contact the @CM_DBUS_NAME@ service on the session or system
+bus, if no value is set.  By default, \fIgetcert\fR consults the @CM_DBUS_NAME@
+service attached to the system bus.
 
 .SH BUGS
 Please file tickets for any that you find at https://fedorahosted.org/certmonger/
