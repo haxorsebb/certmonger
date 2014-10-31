@@ -748,7 +748,8 @@ cm_gate_run(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 		cm_log(1, "Error parsing '%s'.\n", ctx->gate.command);
 		return -1;
 	}
-	cm_log(1, "Running gate command \"%s\".\n", argv[0]);
+	cm_log(1, "Running gate command \"%s\" (\"%s\").\n", argv[0],
+	       ctx->gate.command);
 	if (ctx->server_address != NULL) {
 		setenv(CERTMONGER_PVT_ADDRESS_ENV, ctx->server_address, 1);
 	}
