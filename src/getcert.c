@@ -308,6 +308,11 @@ prep_bus(enum cm_tdbus_type which, const char *mode,
 	if (verbose > 0) {
 		nargv[5] = talloc_asprintf(cmd, "-d%d", verbose);
 	}
+	if (verbose) {
+		printf(_("No system bus running.\n"));
+		printf(_("Running as UID 0.\n"));
+		printf(_("Launching temporary dedicated service daemon.\n"));
+	}
 	execv(nargv[0], nargv);
 }
 

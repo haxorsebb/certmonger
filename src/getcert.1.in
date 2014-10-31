@@ -25,6 +25,10 @@ it can list the set of CAs that the service is capable of using.
 If no command is given as the first command-line argument, \fIgetcert\fR
 will print short usage information for each of its functions.
 
+If \fIgetcert\fR is invoked by a user with UID 0, and there is no system bus
+available, \fIgetcert\fR will attempt to launch a temporary copy of the
+\fIcertmonger\fR daemon to handle its requests.
+
 .SH COMMON ARGUMENTS
 If \fI@CERTMONGER_PVT_ADDRESS_ENV@\fR is set in the environment, \fIgetcert\fR
 contacts the service directly at the specified location.
