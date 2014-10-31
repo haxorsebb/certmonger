@@ -24,10 +24,12 @@ Listen on the session bus rather than the system bus.
 Listen on the system bus rather than the session bus.  This is the default.
 .TP
 -l
-Also listen on a private socket.
+Also listen on a private socket for connections from clients running under the
+same UID.
 .TP
 -L
-Listen only on a private socket, and skip connecting to a bus.
+Listen only on a private socket for connections from clients running under the
+same UID, and skip connecting to a bus.
 .TP
 -P
 Specify a location for the private listening socket.  If the location beings
