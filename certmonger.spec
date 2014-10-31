@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.76
+Version:	0.76.1
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -236,6 +236,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Oct 31 2014 Nalin Dahyabhai <nalin@redhat.com> 0.76.1-1
+- allow for 'certmonger -P abstract:...' to work, too
+
 * Fri Oct 31 2014 Nalin Dahyabhai <nalin@redhat.com> 0.76-1
 - require a single certificate to be specified to 'getcert status' (#1148001)
 - shorten the default help message which getcert prints when it's not given
