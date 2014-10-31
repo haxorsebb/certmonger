@@ -635,7 +635,8 @@ waitfor(void *parent, enum cm_tdbus_type bus, const char *path, int verbose)
 		old_state = talloc_strdup(parent, state);
 		/* FIXME: we should be waiting for signals that the state
 		 * property has changed and then asking if we're stuck, not
-		 * just polling using a timer.  But that would require a whole */
+		 * just polling using a timer.  But that would require a whole
+		 * event loop. */
 		usleep(100000);
 	}
 	return 0;
