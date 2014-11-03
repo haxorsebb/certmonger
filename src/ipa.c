@@ -223,8 +223,8 @@ main(int argc, char **argv)
 			}
 			if (domain == NULL) {
 				domain = get_config_entry(ipaconfig,
-							"global",
-							"domain");
+							  "global",
+							  "domain");
 			}
 		}
 	}
