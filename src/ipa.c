@@ -250,16 +250,16 @@ main(int argc, char **argv)
 			help(argv[0]);
 			return CM_SUBMIT_STATUS_UNCONFIGURED;
 		}
+		if (server != NULL) {
+			snprintf(uri, sizeof(uri),
+				 "https://%s/ipa/xml", server);
+		} else
 		if (xmlrpc_uri != NULL) {
 			snprintf(uri, sizeof(uri), "%s", xmlrpc_uri);
 		} else
 		if (host != NULL) {
 			snprintf(uri, sizeof(uri),
 				 "https://%s/ipa/xml", host);
-		} else
-		if (server != NULL) {
-			snprintf(uri, sizeof(uri),
-				 "https://%s/ipa/xml", server);
 		}
 		if (strlen(uri) == 0) {
 #if 0
@@ -432,14 +432,14 @@ main(int argc, char **argv)
 		/* Read our realm name from our ccache. */
 		realm = cm_submit_x_ccache_realm(&kerr);
 		/* Prepare to perform an LDAP search. */
+		if (server != NULL) {
+			snprintf(uri, sizeof(uri), "ldap://%s/", server);
+		} else
 		if (ldap_uri != NULL) {
 			snprintf(uri, sizeof(uri), "%s", ldap_uri);
 		} else
 		if (host != NULL) {
 			snprintf(uri, sizeof(uri), "ldap://%s/", host);
-		} else
-		if (server != NULL) {
-			snprintf(uri, sizeof(uri), "ldap://%s/", server);
 		}
 		if (strlen(uri) == 0) {
 			printf(_("Unable to determine location of "
