@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2011,2012 Red Hat, Inc.
+ * Copyright (C) 2009,2011,2012,2014 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -249,6 +249,43 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			message = talloc_asprintf(entry, "Certificate "
 						  "in file \"%s\" "
 						  "issued by CA and saved.",
+						  entry->cm_cert_storage_location);
+			break;
+		}
+		break;
+	case cm_notify_event_issued_ca_not_saved:
+		switch (entry->cm_cert_storage_type) {
+		case cm_cert_storage_nssdb:
+			if (entry->cm_cert_token != NULL) {
+				message = talloc_asprintf(entry, "Certificate "
+							  "named \"%s\" "
+							  "in token \"%s\" "
+							  "in database \"%s\" "
+							  "issued by CA and "
+							  "saved, but the CA "
+							  "certificate was "
+							  "not saved.",
+							  entry->cm_cert_nickname,
+							  entry->cm_cert_token,
+							  entry->cm_cert_storage_location);
+			} else {
+				message = talloc_asprintf(entry, "Certificate "
+							  "named \"%s\" "
+							  "in database \"%s\" "
+							  "issued by CA and "
+							  "saved, but the CA "
+							  "certificate was "
+							  "not saved.",
+							  entry->cm_cert_nickname,
+							  entry->cm_cert_storage_location);
+			}
+			break;
+		case cm_cert_storage_file:
+			message = talloc_asprintf(entry, "Certificate "
+						  "in file \"%s\" "
+						  "issued by CA and saved, "
+						  "but the CA certificate was "
+						  "not saved.",
 						  entry->cm_cert_storage_location);
 			break;
 		}

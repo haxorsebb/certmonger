@@ -27,6 +27,7 @@ enum cm_notify_event {
 	cm_notify_event_rejected,
 	cm_notify_event_issued_not_saved,
 	cm_notify_event_issued_and_saved,
+	cm_notify_event_issued_ca_not_saved,
 	cm_notify_event_ca_not_saved
 };
 
