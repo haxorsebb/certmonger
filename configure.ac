@@ -474,7 +474,7 @@ if ! ${configure_dist_target_only:-false} ; then
 	AC_SUBST(SYSTEMDSYSTEMUNITDIR)
 	if test x$SYSTEMD = xyes ; then
 		SYSTEMDSYSTEMUNITDIR=`pkg-config --variable=systemdsystemunitdir systemd 2> /dev/null`
-		AC_MSG_RESULT(will install systemd unit files)
+		AC_MSG_RESULT(will install systemd unit files to $SYSTEMDSYSTEMUNITDIR)
 	fi
 
 	TMPFILES=no
@@ -495,7 +495,9 @@ if ! ${configure_dist_target_only:-false} ; then
 		      SYSVINIT=no)
 	AC_SUBST(SYSVINIT)
 	AM_CONDITIONAL(SYSVINIT,test x$SYSVINIT != xno)
-	AC_MSG_RESULT(will install sysvinit init script to $SYSVINIT)
+	if test x$SYSVINIT != xno ; then
+		AC_MSG_RESULT(will install sysvinit init script to $SYSVINIT)
+	fi
 
 	AC_ARG_ENABLE(pie,
 	AS_HELP_STRING(--enable-pie,[Build position-independent executables.]),
