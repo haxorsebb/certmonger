@@ -22,6 +22,7 @@
 #include <arpa/nameser.h>
 #include <netdb.h>
 #include <resolv.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
