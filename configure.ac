@@ -167,7 +167,7 @@ if ! ${configure_dist_target_only:-false} ; then
 		#include <linux/netlink.h>
 		#endif
 	])
-	AC_CHECK_HEADERS(systemd/sd-login.h resolv.h)
+	AC_CHECK_HEADERS(systemd/sd-login.h)
 
 	PKG_CHECK_MODULES(TALLOC,talloc)
 	PKG_CHECK_MODULES(TEVENT,tevent)
@@ -183,10 +183,70 @@ if ! ${configure_dist_target_only:-false} ; then
 	LIBS="$DBUS_LIBS $LIBS"
 	AC_CHECK_FUNCS(dbus_watch_get_unix_fd dbus_watch_get_fd)
 	LIBS="$savedLIBS"
+
+	savedLIBS="$LIBS"
 	RESOLV_LIBS=
 	AC_CHECK_LIB(resolv,main,RESOLV_LIBS=-lresolv)
+	LIBS="$RESOLV_LIBS"
+	AC_CHECK_HEADERS(resolv.h arpa/nameser.h)
+	have_ns_initparse=false
+	AC_LINK_IFELSE(AC_LANG_PROGRAM([
+		#ifdef HAVE_RESOLV_H
+		#include <resolv.h>
+		#endif
+		#ifdef HAVE_ARPA_NAMESER_H
+		#include <arpa/nameser.h>
+		#endif
+		],[
+		ns_msg msg;
+		ns_initparse(NULL, 0, &msg);
+		]),
+		have_ns_initparse=true,
+		LIBS="-lbind $LIBS"
+		AC_LINK_IFELSE(AC_LANG_PROGRAM([
+			#ifdef HAVE_RESOLV_H
+			#include <resolv.h>
+			#endif
+			#ifdef HAVE_ARPA_NAMESER_H
+			#include <arpa/nameser.h>
+			#endif
+			],[
+			ns_msg msg;
+			ns_initparse(NULL, 0, &msg);
+			]),
+			RESOLV_LIBS="-lbind $RESOLV_LIBS"
+			have_ns_initparse=true,
+			AC_MSG_WARN([cannot find ns_initparse() in libresolv or libbind])
+			have_ns_initparse=false
+		)
+	)
+	AC_ARG_ENABLE(srv-location,
+		      AS_HELP_STRING([--disable-srv-location],[disable SRV location for servers]),
+		      SRV=$enableval,
+		      SRV=auto)
+	case "x$SRV" in
+	xyes)
+		if ! $have_ns_initparse ; then
+			AC_MSG_ERROR([cannot build with SRV location])
+		fi
+		;;
+	xno)
+		have_ns_initparse=false
+		;;
+	xauto)
+		;;
+	esac
+	AC_MSG_CHECKING(for SRV location)
+	if $have_ns_initparse ; then
+		AC_DEFINE(HAVE_NS_INITPARSE,1,[Define if you have ns_initparse() and want to use SRV location])
+		AC_MSG_RESULT([yes, using $RESOLV_LIBS])
+	else
+		AC_MSG_RESULT(no)
+		RESOLV_LIBS=
+	fi
 	AC_SUBST(RESOLV_LIBS)
 	LIBS="$savedLIBS"
+
 	PKG_CHECK_MODULES(CERTMONGER,dbus-1 talloc tevent nss)
 	PKG_CHECK_MODULES(GETCERT,dbus-1 talloc)
 

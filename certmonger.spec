@@ -50,6 +50,9 @@ BuildRequires:	libcurl-devel
 BuildRequires:	curl-devel
 %endif
 BuildRequires:	libxml2-devel, xmlrpc-c-devel
+%if 0%{?rhel} < 6
+BuildRequires:	bind-libbind-devel
+%endif
 # Required for 'make check':
 #  for diff and cmp
 BuildRequires:	diffutils
