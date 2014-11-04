@@ -110,7 +110,7 @@ cm_open_ldap(const char *uri)
 	return ld;
 }
 
-/* Connect and authenticate to the right directory server. */
+/* Connect and authenticate to the domain's directory server. */
 static int
 cm_open_any_ldap(const char *server,
 		 int ldap_uri_cmd, const char *ldap_uri,
@@ -166,6 +166,49 @@ cm_open_any_ldap(const char *server,
 	return 0;
 }
 
+/* Choose a default base DN for the domain. */
+static int
+cm_find_default_naming_context(LDAP *ld, char **basedn)
+{
+	LDAPMessage *lresult = NULL, *lmsg = NULL;
+	char *lncattrs[2] = {"defaultNamingContext", NULL};
+	struct berval **lbvalues;
+	int i, c, rc;
+
+	*basedn = NULL;
+	rc = ldap_search_ext_s(ld, "", LDAP_SCOPE_BASE,
+			       NULL, lncattrs, 0, NULL, NULL, NULL,
+			       1, &lresult);
+	if (rc != LDAP_SUCCESS) {
+		fprintf(stderr, "Error searching root DSE: %s.",
+			ldap_err2string(rc));
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
+	}
+	for (lmsg = ldap_first_entry(ld, lresult);
+	     lmsg != NULL;
+	     lmsg = ldap_next_entry(ld, lmsg)) {
+		lbvalues = ldap_get_values_len(ld, lmsg,
+					       lncattrs[0]);
+		if (lbvalues == NULL) {
+			continue;
+		}
+		for (i = 0; lbvalues[i] != NULL; i++) {
+			c = lbvalues[i]->bv_len;
+			*basedn = malloc(c + 1);
+			if (*basedn != NULL) {
+				memcpy(*basedn,
+				       lbvalues[0]->bv_val,
+				       c);
+				(*basedn)[c] = '\0';
+				break;
+			}
+		}
+	}
+	ldap_msgfree(lresult);
+	return 0;
+}
+
+/* Make an XML-RPC request to the "cert_request" method. */
 static int
 submit_or_poll(const char *uri, const char *cainfo, const char *capath,
 	       const char *csr, const char *reqprinc)
@@ -262,13 +305,12 @@ fetch_roots(const char *server, int ldap_uri_cmd, const char *ldap_uri,
 	LDAP *ld = NULL;
 	LDAPMessage *lresult = NULL, *lmsg = NULL;
 	char *lattrs[2] = {"caCertificate;binary", NULL};
-	char *lncattrs[2] = {"defaultNamingContext", NULL};
 	const char *relativedn = "cn=cacert,cn=ipa,cn=etc";
 	char ldn[LINE_MAX], lfilter[LINE_MAX], uri[LINE_MAX], *kerr;
 	struct berval **lbvalues, *lbv;
 	unsigned char *bv_val;
 	const char *lb64, *pem;
-	int c, i, rc;
+	int i, rc;
 
 	/* Read our realm name from our ccache. */
 	realm = cm_submit_x_ccache_realm(&kerr);
@@ -281,44 +323,19 @@ fetch_roots(const char *server, int ldap_uri_cmd, const char *ldap_uri,
 	/* If we don't have a base DN to search yet, look for a default
 	 * that we can use. */
 	if (basedn == NULL) {
-		rc = ldap_search_ext_s(ld, "", LDAP_SCOPE_BASE,
-				       NULL, lncattrs, 0, NULL, NULL, NULL,
-				       1, &lresult);
-		if (rc != LDAP_SUCCESS) {
-			fprintf(stderr, "Error searching root DSE: %s.",
-				ldap_err2string(rc));
-			return CM_SUBMIT_STATUS_UNCONFIGURED;
+		i = cm_find_default_naming_context(ld, &basedn);
+		if (i != 0) {
+			return i;
 		}
-		for (lmsg = ldap_first_entry(ld, lresult);
-		     lmsg != NULL;
-		     lmsg = ldap_next_entry(ld, lmsg)) {
-			lbvalues = ldap_get_values_len(ld, lmsg,
-						       lncattrs[0]);
-			if (lbvalues == NULL) {
-				continue;
-			}
-			for (i = 0; lbvalues[i] != NULL; i++) {
-				c = lbvalues[i]->bv_len;
-				basedn = malloc(c + 1);
-				if (basedn != NULL) {
-					memcpy(basedn,
-					       lbvalues[0]->bv_val,
-					       c);
-					basedn[c] = '\0';
-					break;
-				}
-			}
-		}
-		ldap_msgfree(lresult);
 	}
 	if (basedn == NULL) {
 		printf(_("Unable to determine base DN of "
 			 "domain information on IPA server.\n"));
 		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
+	/* Now look up the root certificates for the domain. */
 	snprintf(lfilter, sizeof(lfilter), "(%s=*)", lattrs[0]);
-	snprintf(ldn, sizeof(ldn), "%s,%s",
-		 relativedn, basedn);
+	snprintf(ldn, sizeof(ldn), "%s,%s", relativedn, basedn);
 	rc = ldap_search_ext_s(ld, ldn, LDAP_SCOPE_SUBTREE,
 			       lfilter, lattrs, 0, NULL, NULL, NULL,
 			       LDAP_NO_LIMIT, &lresult);
