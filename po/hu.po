@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-#
+# 
 # Translators:
 # Peter Borsa <peter.borsa@gmail.com>, 2012
 # Zoltan Hoppár <zoltanh721@fedoraproject.org>, 2012-2013
@@ -10,14 +10,13 @@ msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2014-10-31 12:56-0400\n"
-"PO-Revision-Date: 2014-08-15 09:41+0000\n"
+"PO-Revision-Date: 2014-11-01 10:01+0000\n"
 "Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
-"Language-Team: Hungarian (http://www.transifex.com/projects/p/certmonger/"
-"language/hu/)\n"
-"Language: hu\n"
+"Language-Team: Hungarian (http://www.transifex.com/projects/p/certmonger/language/hu/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: hu\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: src/certmaster.c:129 src/ipa.c:266
@@ -57,8 +56,7 @@ msgstr ""
 #: src/dogtag.c:366
 #, c-format
 msgid "No end-entity URL (-E) given, and no default known.\n"
-msgstr ""
-"Nincs végentitású URL megadva (-E), és nincs ismert alapértelmezett sem.\n"
+msgstr "Nincs végentitású URL megadva (-E), és nincs ismert alapértelmezett sem.\n"
 
 #: src/dogtag.c:370
 #, c-format
@@ -68,8 +66,7 @@ msgstr "Nincs ágens URL megadva (-A), és nincs ismert alapértelmezett sem.\n"
 #: src/dogtag.c:374
 #, c-format
 msgid "No profile/template (-T) given, and no default known.\n"
-msgstr ""
-"Nincs profil / sablon megadva (-T), és nincs ismert alapértelmezett sem.\n"
+msgstr "Nincs profil / sablon megadva (-T), és nincs ismert alapértelmezett sem.\n"
 
 #: src/dogtag.c:382
 #, c-format
@@ -99,18 +96,14 @@ msgstr "Belső hiba: nincs válasz erre - \"%s?%s\".\n"
 #: src/getcert.c:93
 #, c-format
 msgid "Path \"%s\" is not absolute, attempting to use \"%s\" instead.\n"
-msgstr ""
-"\"%s\" elérési út nem abszolút, próbaként \"%s\" kerül alkalmazásra "
-"helyette.\n"
+msgstr "\"%s\" elérési út nem abszolút, próbaként \"%s\" kerül alkalmazásra helyette.\n"
 
 #: src/getcert.c:98
 #, c-format
 msgid ""
 "Path \"%s\" is not absolute, and there was an error determining the name of "
 "the current directory.\n"
-msgstr ""
-"\"%s\" elérési út nem abszolút, és hiba történt a jelenlegi könyvtár "
-"meghatározásakor.\n"
+msgstr "\"%s\" elérési út nem abszolút, és hiba történt a jelenlegi könyvtár meghatározásakor.\n"
 
 #: src/getcert.c:120
 #, c-format
@@ -153,9 +146,9 @@ msgid "Launching temporary dedicated service daemon.\n"
 msgstr ""
 
 #: src/getcert.c:343
-#, fuzzy, c-format
+#, c-format
 msgid "Error connecting to D-Bus.\n"
-msgstr "Hiba a DBus-hoz való csatlakozáskor.\n"
+msgstr ""
 
 #: src/getcert.c:344 src/tdbusm.c:2102
 #, c-format
@@ -175,9 +168,7 @@ msgstr "Hiba %s: %s\n"
 #: src/getcert.c:397
 #, c-format
 msgid "Error %s\n"
-msgstr ""
-"Hiba %s\n"
-"\n"
+msgstr "Hiba %s\n\n"
 
 #: src/getcert.c:403
 #, c-format
@@ -274,11 +265,8 @@ msgstr "Adatbázis könyvtára és az aláírás fájl meghatározva.\n"
 
 #: src/getcert.c:903 src/getcert.c:1965 src/getcert.c:2258
 #, c-format
-msgid ""
-"None of database directory and nickname or certificate file specified.\n"
-msgstr ""
-"Sem az adatbázis könyvtára és az elnevezése, vagy az aláírás fájl nincs "
-"meghatározva.\n"
+msgid "None of database directory and nickname or certificate file specified.\n"
+msgstr "Sem az adatbázis könyvtára és az elnevezése, vagy az aláírás fájl nincs meghatározva.\n"
 
 #: src/getcert.c:910 src/getcert.c:1765
 #, c-format
@@ -288,11 +276,9 @@ msgstr "A kulcs és az aláírás nem menthető el egy ugyanazon fájlba.\n"
 #: src/getcert.c:936
 #, c-format
 msgid ""
-"The IPA backend requires the use of the -K option (principal name) when the -"
-"N option (subject name) is used.\n"
-msgstr ""
-"Az IPA backend-nek szükséges a -K opció (megbízói név) ha az -N opció (tárgy "
-"név) alkalmazásban van.\n"
+"The IPA backend requires the use of the -K option (principal name) when the "
+"-N option (subject name) is used.\n"
+msgstr "Az IPA backend-nek szükséges a -K opció (megbízói név) ha az -N opció (tárgy név) alkalmazásban van.\n"
 
 #: src/getcert.c:1068 src/getcert.c:1463 src/getcert.c:1866 src/getcert.c:2278
 #: src/getcert.c:2539 src/getcert.c:2710
@@ -331,9 +317,7 @@ msgstr "Új nyomkövetési kérés nem adható hozzá.\n"
 msgid ""
 "None of ID or database directory and nickname or certificate file "
 "specified.\n"
-msgstr ""
-"Sem az ID vagy adatbázis könyvtára és az elnevezése, vagy az aláírás fájl "
-"sincsen meghatározva.\n"
+msgstr "Sem az ID vagy adatbázis könyvtára és az elnevezése, vagy az aláírás fájl sincsen meghatározva.\n"
 
 #: src/getcert.c:1932
 #, c-format
@@ -482,8 +466,7 @@ msgstr "<span class=\"whitespace other\" title=\"Tab\">»</span>subject: %s\n"
 #: src/getcert.c:2952
 #, c-format
 msgid "\texpires: %s\n"
-msgstr ""
-"<span class=\"whitespace other\" title=\"Tab\">»</span>lejárati idő: %s\n"
+msgstr "<span class=\"whitespace other\" title=\"Tab\">»</span>lejárati idő: %s\n"
 
 #: src/getcert.c:2955
 msgid "unknown"
@@ -562,18 +545,14 @@ msgstr "<span class=\"whitespace other\" title=\"Tab\">»</span>track: %s\n"
 #: src/getcert.c:3069
 #, c-format
 msgid "\tauto-renew: %s\n"
-msgstr ""
-"<span class=\"whitespace other\" title=\"Tab\">»</span>automatikus "
-"megújítás: %s\n"
+msgstr "<span class=\"whitespace other\" title=\"Tab\">»</span>automatikus megújítás: %s\n"
 
 #: src/getcert.c:3160
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "None of ID or database directory and and nickname or certificate file "
 "specified.\n"
 msgstr ""
-"Sem az ID vagy adatbázis könyvtára és az elnevezése, vagy az aláírás fájl "
-"sincsen meghatározva.\n"
 
 #: src/getcert.c:3239
 #, c-format
@@ -593,22 +572,17 @@ msgstr "<span class=\"whitespace other\" title=\"Tab\">»</span>ca-típus: %s\n"
 #: src/getcert.c:3256
 #, c-format
 msgid "\thelper-location: %s\n"
-msgstr ""
-"<span class=\"whitespace other\" title=\"Tab\">»</span>segítő-helye: %s\n"
+msgstr "<span class=\"whitespace other\" title=\"Tab\">»</span>segítő-helye: %s\n"
 
 #: src/getcert.c:3261
 #, c-format
 msgid "\tnext-serial-number: %s\n"
-msgstr ""
-"<span class=\"whitespace other\" title=\"Tab\">»</span>következő "
-"sorozatszám: %s\n"
+msgstr "<span class=\"whitespace other\" title=\"Tab\">»</span>következő sorozatszám: %s\n"
 
 #: src/getcert.c:3271
 #, c-format
 msgid "\tknown-issuer-names:\n"
-msgstr ""
-"<span class=\"whitespace other\" title=\"Tab\">»</span>ismert kibocsátó "
-"nevek:\n"
+msgstr "<span class=\"whitespace other\" title=\"Tab\">»</span>ismert kibocsátó nevek:\n"
 
 #: src/getcert.c:3280
 #, c-format
@@ -658,31 +632,23 @@ msgstr "Szükséges paraméterek:\n"
 #: src/getcert.c:3472 src/getcert.c:3520 src/getcert.c:3565 src/getcert.c:3587
 #: src/getcert.c:3638 src/getcert.c:3659
 msgid "* If using an NSS database for storage:\n"
-msgstr ""
-"* Ha egy NSS adatbázist használ a tárolóhoz:\n"
-"\n"
+msgstr "* Ha egy NSS adatbázist használ a tárolóhoz:\n\n"
 
 #: src/getcert.c:3473 src/getcert.c:3521 src/getcert.c:3566 src/getcert.c:3588
 #: src/getcert.c:3660
 msgid "  -d DIR\tNSS database for key and cert\n"
-msgstr ""
-"  -d DIR<span class=\"whitespace other\" title=\"Tab\">»</span>NSS adatbázis "
-"a kulcshoz és a tanusítványhoz\n"
+msgstr "  -d DIR<span class=\"whitespace other\" title=\"Tab\">»</span>NSS adatbázis a kulcshoz és a tanusítványhoz\n"
 
 #: src/getcert.c:3474 src/getcert.c:3522 src/getcert.c:3567 src/getcert.c:3589
 #: src/getcert.c:3661
 msgid "  -n NAME\tnickname for NSS-based storage (only valid with -d)\n"
-msgstr ""
-"  -n NAME<span class=\"whitespace other\" title=\"Tab\">»</span>elnevezés az "
-"NSS-alapú tárolóhoz (csak -d opcióval érvényes)\n"
+msgstr "  -n NAME<span class=\"whitespace other\" title=\"Tab\">»</span>elnevezés az NSS-alapú tárolóhoz (csak -d opcióval érvényes)\n"
 
 #: src/getcert.c:3475 src/getcert.c:3523 src/getcert.c:3568 src/getcert.c:3590
 #: src/getcert.c:3662
 msgid ""
 "  -t NAME\toptional token name for NSS-based storage (only valid with -d)\n"
-msgstr ""
-"  -t NAME\topcionális token név az NSS-alapú tárolókhoz (csak a -d opcióval "
-"érvényes)\n"
+msgstr "  -t NAME\topcionális token név az NSS-alapú tárolókhoz (csak a -d opcióval érvényes)\n"
 
 #: src/getcert.c:3476 src/getcert.c:3524 src/getcert.c:3569 src/getcert.c:3591
 #: src/getcert.c:3641 src/getcert.c:3663
@@ -729,35 +695,25 @@ msgstr ""
 
 #: src/getcert.c:3487
 msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
-msgstr ""
-"  -g SIZE\taz előállítandó kulcs mérete ha egy már nem lenne a helyén\n"
-"\n"
+msgstr "  -g SIZE\taz előállítandó kulcs mérete ha egy már nem lenne a helyén\n\n"
 
 #: src/getcert.c:3488 src/getcert.c:3534
-msgid ""
-"  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
-msgstr ""
-"  -r\t\tmegkísérlés a bizonyítvány megújítására ha a lejárati idő közeledik "
-"(alapértelmezett)\n"
+msgid "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
+msgstr "  -r\t\tmegkísérlés a bizonyítvány megújítására ha a lejárati idő közeledik (alapértelmezett)\n"
 
 #: src/getcert.c:3489 src/getcert.c:3535
 msgid "  -R\t\tdon't attempt to renew the certificate when expiration nears\n"
-msgstr ""
-"  -R\t\tne kísérelje meg a bizonyítvány megújítását ha a lejárati idő "
-"közeledik\n"
+msgstr "  -R\t\tne kísérelje meg a bizonyítvány megújítását ha a lejárati idő közeledik\n"
 
 #: src/getcert.c:3491 src/getcert.c:3537
 msgid "  -c CA\t\tuse the specified CA rather than the default\n"
-msgstr ""
-"  -c CA\t\tinkább alkalmazza a megadott CA mint az alapértelmezettet\n"
-"\n"
+msgstr "  -c CA\t\tinkább alkalmazza a megadott CA mint az alapértelmezettet\n\n"
 
 #: src/getcert.c:3493 src/getcert.c:3539 src/getcert.c:3613
 msgid ""
 "  -T PROFILE\task the CA to process the request using the named profile or "
 "template\n"
-msgstr ""
-"  -T PROFILE\task CA számítás a kért felhasznált profil név vagy sablon\n"
+msgstr "  -T PROFILE\task CA számítás a kért felhasznált profil név vagy sablon\n"
 
 #: src/getcert.c:3494
 msgid "* Parameters for the signing request:\n"
@@ -765,14 +721,11 @@ msgstr "* Paraméterek az aláírási igényléshez:\n"
 
 #: src/getcert.c:3495 src/getcert.c:3599
 msgid "  -N NAME\tset requested subject name (default: CN=<hostname>)\n"
-msgstr ""
-"  -N NAME \tigényelt tárgy nevének beállítása (alapértelmezett: "
-"CN=<hosztnév>)\n"
+msgstr "  -N NAME \tigényelt tárgy nevének beállítása (alapértelmezett: CN=<hosztnév>)\n"
 
 #: src/getcert.c:3496 src/getcert.c:3600
 msgid "  -U EXTUSAGE\tset requested extended key usage OID\n"
-msgstr ""
-"  -U EXTUSAGE\tigényelt kibővített kulcs használatának beállítása OID\n"
+msgstr "  -U EXTUSAGE\tigényelt kibővített kulcs használatának beállítása OID\n"
 
 #: src/getcert.c:3497 src/getcert.c:3542 src/getcert.c:3601
 msgid "  -u KEYUSAGE\tset requested key usage value\n"
@@ -864,9 +817,7 @@ msgstr "  -I NAME\telnevezés a nyomonkövetési kéréshez\n"
 
 #: src/getcert.c:3540
 msgid "* Parameters for the signing request at renewal time:\n"
-msgstr ""
-"* Paraméterek az aláírási kéréshez megújításkor:\n"
-"\n"
+msgstr "* Paraméterek az aláírási kéréshez megújításkor:\n\n"
 
 #: src/getcert.c:3541
 msgid "  -U EXTUSAGE\toverride requested extended key usage OID\n"
@@ -874,9 +825,7 @@ msgstr "  -U EXTUSAGE\tfelülírja a kért kibővített kulcs használat OID-jé
 
 #: src/getcert.c:3543
 msgid "  -K NAME\toverride requested principal name\n"
-msgstr ""
-"  -K NAME\tfelülírja a kért elsődleges nevet\n"
-"\n"
+msgstr "  -K NAME\tfelülírja a kért elsődleges nevet\n\n"
 
 #: src/getcert.c:3544
 msgid "  -D DNSNAME\toverride requested DNS name\n"
@@ -884,9 +833,7 @@ msgstr "  -D DNSNAME\tfelülírja a kért DNS nevet\n"
 
 #: src/getcert.c:3545
 msgid "  -E EMAIL\toverride requested email address\n"
-msgstr ""
-"  -E EMAIL\tfelülírja a kért email címet\n"
-"\n"
+msgstr "  -E EMAIL\tfelülírja a kért email címet\n\n"
 
 #: src/getcert.c:3546
 msgid "  -A ADDRESS\toverride requested IP address\n"
@@ -938,9 +885,7 @@ msgstr "* Általános opciók:\n"
 
 #: src/getcert.c:3632
 msgid "  -c CA\tlist only requests and certs associated with this CA\n"
-msgstr ""
-"  -c CA\tcsak azokat a kéréseket és bizonytványokat listázza amelyek ezzel a "
-"CA-val vannak kapcsolatban\n"
+msgstr "  -c CA\tcsak azokat a kéréseket és bizonytványokat listázza amelyek ezzel a CA-val vannak kapcsolatban\n"
 
 #: src/getcert.c:3634
 msgid "  -r\tlist only information about outstanding requests\n"
@@ -948,9 +893,7 @@ msgstr "  -r\tcsak a kiemelkedő kérésekről szóló információkat listázza
 
 #: src/getcert.c:3635
 msgid "  -t\tlist only information about tracked certificates\n"
-msgstr ""
-"  -t\tcsak a nyomonkövetett bizonytványok adatait listázza\n"
-"\n"
+msgstr "  -t\tcsak a nyomonkövetett bizonytványok adatait listázza\n\n"
 
 #: src/getcert.c:3636
 msgid "* If selecting a specific request:\n"
@@ -958,23 +901,15 @@ msgstr "* Ha kiválaszt egy specifikus igénylést:\n"
 
 #: src/getcert.c:3639
 msgid "  -d DIR\tonly list requests and certs which use this NSS database\n"
-msgstr ""
-"  -d DIR\tcsak olyan igényléseket és bizonyítványokat listáz amelyek ezt az "
-"NSS adatbázist használják\n"
+msgstr "  -d DIR\tcsak olyan igényléseket és bizonyítványokat listáz amelyek ezt az NSS adatbázist használják\n"
 
 #: src/getcert.c:3640
 msgid "  -n NAME\tonly list requests and certs which use this nickname\n"
-msgstr ""
-"  -n NAME\tcsak olyan igényléseket és bizonyítványokat listáz amelyek ezt az "
-"elnevezést használják\n"
-"\n"
+msgstr "  -n NAME\tcsak olyan igényléseket és bizonyítványokat listáz amelyek ezt az elnevezést használják\n\n"
 
 #: src/getcert.c:3642
 msgid "  -f FILE\tonly list requests and certs stored in this PEM file\n"
-msgstr ""
-"  -f FILE\tcsak olyan igényléseket és bizonyítványokat listáz amelyek "
-"tárolásra kerültek ebben a PEM fájlban\n"
-"\n"
+msgstr "  -f FILE\tcsak olyan igényléseket és bizonyítványokat listáz amelyek tárolásra kerültek ebben a PEM fájlban\n\n"
 
 #: src/getcert.c:3644 src/getcert.c:3685 src/getcert.c:3700 src/getcert.c:3716
 msgid "  -S\tconnect to the certmonger service on the system bus\n"
@@ -982,9 +917,7 @@ msgstr "  -S\tkapcsolja össze a certmonger szolgáltatást a rendszer bus-al\n"
 
 #: src/getcert.c:3645 src/getcert.c:3686 src/getcert.c:3701 src/getcert.c:3717
 msgid "  -s\tconnect to the certmonger service on the session bus\n"
-msgstr ""
-"  -s\tkapcsolja össze a certmonger szolgáltatást a session bus-al\n"
-"\n"
+msgstr "  -s\tkapcsolja össze a certmonger szolgáltatást a session bus-al\n\n"
 
 #: src/getcert.c:3651
 #, c-format
@@ -1031,9 +964,7 @@ msgstr "Alkalmazás: %s list-cas [opciók]\n"
 
 #: src/getcert.c:3697
 msgid "  -c CA\tlist only information about the CA with this name\n"
-msgstr ""
-"  -c CA\tcsak az ezzel a névvel rendelkező CA tanúsítvány információit "
-"listázza\n"
+msgstr "  -c CA\tcsak az ezzel a névvel rendelkező CA tanúsítvány információit listázza\n"
 
 #: src/getcert.c:3707
 #, c-format
@@ -1049,9 +980,9 @@ msgid "  -a   \trefresh information about all known CAs\n"
 msgstr ""
 
 #: src/getcert.c:3728
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s command [options]\n"
-msgstr "Alkalmazás: %s list-cas [opciók]\n"
+msgstr ""
 
 #: src/getcert.c:3730
 msgid "request a new certificate from a CA\n"
@@ -1092,9 +1023,7 @@ msgstr ""
 #: src/getcert.c:3797
 #, c-format
 msgid "%s: unrecognized command\n"
-msgstr ""
-"%s: ismeretlen parancs\n"
-"\n"
+msgstr "%s: ismeretlen parancs\n\n"
 
 #: src/ipa.c:151
 #, c-format
@@ -1124,14 +1053,13 @@ msgstr "Nem meghatározható a CA XMLRPC kiszolgáló helye.\n"
 #: src/ipa.c:320
 #, c-format
 msgid ""
-"Error setting up ccache for \"host\" service on client using default keytab: "
-"%s.\n"
+"Error setting up ccache for \"host\" service on client using default keytab:"
+" %s.\n"
 msgstr ""
 
 #: src/ipa.c:324
 #, c-format
-msgid ""
-"Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
+msgid "Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
 msgstr ""
 
 #: src/ipa.c:331
@@ -1172,20 +1100,15 @@ msgstr "\t-s         szálvezérlés használata\n"
 
 #: src/main.c:142
 msgid "\t-S         use system bus\n"
-msgstr ""
-"\t-S         rendszerbusz használata\n"
-"\n"
+msgstr "\t-S         rendszerbusz használata\n\n"
 
 #: src/main.c:143
 msgid "\t-l         start a dedicated listening socket\n"
 msgstr ""
 
 #: src/main.c:144
-#, fuzzy
 msgid "\t-L         only use a dedicated listening socket\n"
 msgstr ""
-"\t-B         várakozási idő elhagyása\n"
-"\n"
 
 #: src/main.c:145
 msgid "\t-P PATH    specify the dedicated listening socket\n"
@@ -1201,15 +1124,11 @@ msgstr "\t-f         művelet váljon daemonná\n"
 
 #: src/main.c:148
 msgid "\t-b TIMEOUT bus-activated, idle timeout\n"
-msgstr ""
-"\t-b TIMEOUT busz-vezérelt, várakozási idővel\n"
-"\n"
+msgstr "\t-b TIMEOUT busz-vezérelt, várakozási idővel\n\n"
 
 #: src/main.c:149
 msgid "\t-B         don't use an idle timeout\n"
-msgstr ""
-"\t-B         várakozási idő elhagyása\n"
-"\n"
+msgstr "\t-B         várakozási idő elhagyása\n\n"
 
 #: src/main.c:150
 msgid "\t-d LEVEL   set debugging level (implies -n)\n"
@@ -1221,9 +1140,7 @@ msgstr ""
 
 #: src/main.c:152
 msgid "\t-p FILE    write service PID to file\n"
-msgstr ""
-"\t-p FILE    szolgáltatás PID rögzítése fájlba\n"
-"\n"
+msgstr "\t-p FILE    szolgáltatás PID rögzítése fájlba\n\n"
 
 #: src/main.c:153
 msgid "\t-F         force NSS into FIPS mode\n"
@@ -1284,8 +1201,7 @@ msgstr "\"%s\" egy fájlnak kell lennie."
 
 #: src/tdbush.c:590 src/tdbush.c:937 src/tdbush.c:1037 src/tdbush.c:1137
 #, c-format
-msgid ""
-"The location \"%s\" could not be accessed due to insufficient permissions."
+msgid "The location \"%s\" could not be accessed due to insufficient permissions."
 msgstr ""
 
 #: src/tdbush.c:598 src/tdbush.c:831 src/tdbush.c:945 src/tdbush.c:1045
@@ -1306,9 +1222,9 @@ msgstr "Már van egy igénylés ezzel a névvel: \"%s\"."
 #: src/tdbush.c:698
 #, c-format
 msgid ""
-"Certificate at same location is already used by request with nickname \"%s\"."
-msgstr ""
-"Tanúsítvány ugyanazt a helyet használja amit a becenévnél igényelt \"%s\"."
+"Certificate at same location is already used by request with nickname "
+"\"%s\"."
+msgstr "Tanúsítvány ugyanazt a helyet használja amit a becenévnél igényelt \"%s\"."
 
 #: src/tdbush.c:731
 #, c-format
@@ -1356,9 +1272,7 @@ msgstr ""
 
 #: src/tdbusm.c:2092
 msgid "Insufficient access.  Please retry operation as root.\n"
-msgstr ""
-"Elégtelen hozzáférési jog. Kérem ismételje meg a műveletet "
-"rendszergazdaként.\n"
+msgstr "Elégtelen hozzáférési jog. Kérem ismételje meg a műveletet rendszergazdaként.\n"
 
 #: src/tdbusm.c:2096
 msgid "Please verify that the certmonger service has been started.\n"

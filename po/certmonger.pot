@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: certmonger 0.76\n"
+"Project-Id-Version: certmonger 0.76.2\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2014-10-31 12:56-0400\n"
+"POT-Creation-Date: 2014-11-04 17:00-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,12 +17,12 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/certmaster.c:129 src/ipa.c:266
+#: src/certmaster.c:129
 #, c-format
 msgid "Unable to determine hostname of CA.\n"
 msgstr ""
 
-#: src/certmaster.c:146 src/dogtag.c:438 src/ipa.c:285
+#: src/certmaster.c:146 src/dogtag.c:438 src/ipa.c:733
 #, c-format
 msgid "Unable to read signing request.\n"
 msgstr ""
@@ -1025,69 +1025,69 @@ msgstr ""
 msgid "%s: unrecognized command\n"
 msgstr ""
 
-#: src/ipa.c:151
+#: src/ipa.c:158
+#, c-format
+msgid "Unable to determine location of IPA LDAP server.\n"
+msgstr ""
+
+#: src/ipa.c:163
+#, c-format
+msgid "Unable to contact an IPA LDAP server.\n"
+msgstr ""
+
+#: src/ipa.c:247 src/ipa.c:503
+#, c-format
+msgid "Unable to determine base DN of domain information on IPA server.\n"
+msgstr ""
+
+#: src/ipa.c:370
+#, c-format
+msgid "Error setting up for XMLRPC on the client.\n"
+msgstr ""
+
+#: src/ipa.c:608
 #, c-format
 msgid "The -t option can not be used with the -K option.\n"
 msgstr ""
 
-#: src/ipa.c:159
+#: src/ipa.c:616
 #, c-format
 msgid "The -k option can not be used with the -K option.\n"
 msgstr ""
 
-#: src/ipa.c:167
+#: src/ipa.c:624
 #, c-format
 msgid "The -K option can not be used with either the -k or the -t option.\n"
 msgstr ""
 
-#: src/ipa.c:248
+#: src/ipa.c:705
 #, c-format
 msgid "Unable to determine principal name for signing request.\n"
 msgstr ""
 
-#: src/ipa.c:269
-#, c-format
-msgid "Unable to determine location of CA's XMLRPC server.\n"
-msgstr ""
-
-#: src/ipa.c:320
+#: src/ipa.c:768
 #, c-format
 msgid ""
 "Error setting up ccache for \"host\" service on client using default keytab: "
 "%s.\n"
 msgstr ""
 
-#: src/ipa.c:324
+#: src/ipa.c:772
 #, c-format
 msgid ""
 "Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
 msgstr ""
 
-#: src/ipa.c:331
+#: src/ipa.c:779
 #, c-format
 msgid ""
 "Error setting up ccache for \"host\" service on client using keytab \"%s\": "
 "%s.\n"
 msgstr ""
 
-#: src/ipa.c:335
+#: src/ipa.c:783
 #, c-format
 msgid "Error setting up ccache for \"%s\" on client using keytab \"%s\": %s.\n"
-msgstr ""
-
-#: src/ipa.c:362
-#, c-format
-msgid "Error setting up for XMLRPC on the client.\n"
-msgstr ""
-
-#: src/ipa.c:445
-#, c-format
-msgid "Unable to determine location of IPA LDAP server.\n"
-msgstr ""
-
-#: src/ipa.c:507
-#, c-format
-msgid "Unable to determine base DN of domain information on IPA server.\n"
 msgstr ""
 
 #: src/main.c:137

@@ -1,21 +1,20 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-#
+# 
 # Translators:
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2014-10-31 12:56-0400\n"
-"PO-Revision-Date: 2014-08-15 09:41+0000\n"
+"PO-Revision-Date: 2014-11-01 10:01+0000\n"
 "Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
-"Language-Team: Interlingua (http://www.transifex.com/projects/p/certmonger/"
-"language/ia/)\n"
-"Language: ia\n"
+"Language-Team: Interlingua (http://www.transifex.com/projects/p/certmonger/language/ia/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: ia\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: src/certmaster.c:129 src/ipa.c:266
@@ -264,8 +263,7 @@ msgstr ""
 
 #: src/getcert.c:903 src/getcert.c:1965 src/getcert.c:2258
 #, c-format
-msgid ""
-"None of database directory and nickname or certificate file specified.\n"
+msgid "None of database directory and nickname or certificate file specified.\n"
 msgstr ""
 
 #: src/getcert.c:910 src/getcert.c:1765
@@ -276,8 +274,8 @@ msgstr ""
 #: src/getcert.c:936
 #, c-format
 msgid ""
-"The IPA backend requires the use of the -K option (principal name) when the -"
-"N option (subject name) is used.\n"
+"The IPA backend requires the use of the -K option (principal name) when the "
+"-N option (subject name) is used.\n"
 msgstr ""
 
 #: src/getcert.c:1068 src/getcert.c:1463 src/getcert.c:1866 src/getcert.c:2278
@@ -698,8 +696,7 @@ msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
 msgstr ""
 
 #: src/getcert.c:3488 src/getcert.c:3534
-msgid ""
-"  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
+msgid "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
 msgstr ""
 
 #: src/getcert.c:3489 src/getcert.c:3535
@@ -1054,14 +1051,13 @@ msgstr ""
 #: src/ipa.c:320
 #, c-format
 msgid ""
-"Error setting up ccache for \"host\" service on client using default keytab: "
-"%s.\n"
+"Error setting up ccache for \"host\" service on client using default keytab:"
+" %s.\n"
 msgstr ""
 
 #: src/ipa.c:324
 #, c-format
-msgid ""
-"Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
+msgid "Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
 msgstr ""
 
 #: src/ipa.c:331
@@ -1203,8 +1199,7 @@ msgstr ""
 
 #: src/tdbush.c:590 src/tdbush.c:937 src/tdbush.c:1037 src/tdbush.c:1137
 #, c-format
-msgid ""
-"The location \"%s\" could not be accessed due to insufficient permissions."
+msgid "The location \"%s\" could not be accessed due to insufficient permissions."
 msgstr ""
 
 #: src/tdbush.c:598 src/tdbush.c:831 src/tdbush.c:945 src/tdbush.c:1045
@@ -1225,7 +1220,8 @@ msgstr ""
 #: src/tdbush.c:698
 #, c-format
 msgid ""
-"Certificate at same location is already used by request with nickname \"%s\"."
+"Certificate at same location is already used by request with nickname "
+"\"%s\"."
 msgstr ""
 
 #: src/tdbush.c:731
