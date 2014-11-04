@@ -87,14 +87,14 @@ cm_open_ldap(const char *uri)
 	ld = NULL;
 	rc = ldap_initialize(&ld, uri);
 	if (rc != LDAP_SUCCESS) {
-		fprintf(stderr, "Error initializing \"%s\": %s.",
+		fprintf(stderr, "Error initializing \"%s\": %s.\n",
 			uri, ldap_err2string(rc));
 		return NULL;
 	}
 	three = 3;
 	rc = ldap_set_option(ld, LDAP_OPT_PROTOCOL_VERSION, &three);
 	if (rc != LDAP_SUCCESS) {
-		fprintf(stderr, "Error initializing \"%s\": %s.",
+		fprintf(stderr, "Error initializing \"%s\": %s.\n",
 			uri, ldap_err2string(rc));
 		return NULL;
 	}
@@ -103,7 +103,7 @@ cm_open_ldap(const char *uri)
 					  LDAP_SASL_QUIET,
 					  &interact, ldefaults);
 	if (rc != LDAP_SUCCESS) {
-		fprintf(stderr, "Error binding to \"%s\": %s.",
+		fprintf(stderr, "Error binding to \"%s\": %s.\n",
 			uri, ldap_err2string(rc));
 		return NULL;
 	}
@@ -180,7 +180,7 @@ cm_find_default_naming_context(LDAP *ld, char **basedn)
 			       NULL, lncattrs, 0, NULL, NULL, NULL,
 			       1, &lresult);
 	if (rc != LDAP_SUCCESS) {
-		fprintf(stderr, "Error searching root DSE: %s.",
+		fprintf(stderr, "Error searching root DSE: %s.\n",
 			ldap_err2string(rc));
 		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
@@ -340,7 +340,7 @@ fetch_roots(const char *server, int ldap_uri_cmd, const char *ldap_uri,
 			       lfilter, lattrs, 0, NULL, NULL, NULL,
 			       LDAP_NO_LIMIT, &lresult);
 	if (rc != LDAP_SUCCESS) {
-		fprintf(stderr, "Error searching '%s': %s.",
+		fprintf(stderr, "Error searching '%s': %s.\n",
 			ldn, ldap_err2string(rc));
 		return CM_SUBMIT_STATUS_ISSUED;
 	}
