@@ -33,6 +33,20 @@
 
 #include "srvloc.h"
 
+#ifdef NS_MAXMSG
+#define CM_MAXMSG NS_MAXMSG
+#else
+#define CM_MAXMSG 65535
+#endif
+
+#ifndef HAVE_NS_INITPARSE
+int
+cm_srvloc_resolve(void *parent, const char *name, const char *domain,
+		  struct cm_srvloc **results)
+{
+	return -1;
+}
+#else
 static int
 cm_srvloc_priority_sort(const void *a, const void *b)
 {
@@ -95,7 +109,7 @@ cm_srvloc_resolve(void *parent, const char *name, const char *domain,
 {
 	int i, j, n, hi, weights;
 	unsigned char *answer;
-	size_t answer_len = NS_MAXMSG;
+	size_t answer_len = CM_MAXMSG;
 	struct cm_srvloc *res = NULL;
 	ns_msg msg;
 	ns_rr rr;
@@ -174,3 +188,4 @@ cm_srvloc_resolve(void *parent, const char *name, const char *domain,
 	*results = res;
 	return 0;
 }
+#endif
