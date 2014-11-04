@@ -208,16 +208,156 @@ cm_find_default_naming_context(LDAP *ld, char **basedn)
 	return 0;
 }
 
+static int
+cm_locate_xmlrpc_service(const char *server,
+			 int ldap_uri_cmd, const char *ldap_uri,
+			 const char *host,
+			 const char *domain,
+			 char *basedn,
+			 const char *service,
+			 char ***uris)
+{
+	LDAP *ld;
+	LDAPMessage *lresult = NULL, *lmsg = NULL;
+	LDAPDN rdn;
+	struct berval *lbv;
+	char *lattrs[2] = {"cn", NULL};
+	const char *relativedn = "cn=masters,cn=ipa,cn=etc", *dn;
+	char ldn[LINE_MAX], lfilter[LINE_MAX], uri[LINE_MAX] = "", **list;
+	int i, j, rc, n;
+	unsigned int flags;
+
+	*uris = NULL;
+
+	/* Prepare to perform an LDAP search. */
+	i = cm_open_any_ldap(server, ldap_uri_cmd, ldap_uri, host, domain,
+			     uri, sizeof(uri), &ld);
+	if (i != 0) {
+		return i;
+	}
+	/* If we don't have a base DN to search yet, look for a default
+	 * that we can use. */
+	if (basedn == NULL) {
+		i = cm_find_default_naming_context(ld, &basedn);
+		if (i != 0) {
+			return i;
+		}
+	}
+	if (basedn == NULL) {
+		printf(_("Unable to determine base DN of "
+			 "domain information on IPA server.\n"));
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
+	}
+	/* Now look up the names of the master CAs. */
+	snprintf(lfilter, sizeof(lfilter),
+		 "(&"
+		 "(objectClass=ipaConfigObject)"
+		 "(cn=%s)"
+		 "(ipaConfigString=enabledService)"
+		 ")", service);
+	snprintf(ldn, sizeof(ldn), "%s,%s", relativedn, basedn);
+	rc = ldap_search_ext_s(ld, ldn, LDAP_SCOPE_SUBTREE,
+			       lfilter, lattrs, 0, NULL, NULL, NULL,
+			       LDAP_NO_LIMIT, &lresult);
+	if (rc != LDAP_SUCCESS) {
+		fprintf(stderr, "Error searching '%s': %s.\n",
+			ldn, ldap_err2string(rc));
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
+	}
+	/* Read their parents' for "cn" values. */
+	n = ldap_count_entries(ld, lresult);
+	if (n == 0) {
+		fprintf(stderr, "No CA masters found.\n");
+		ldap_msgfree(lresult);
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
+	}
+	list = malloc(sizeof(char *) * (n + 2));
+	if (list == NULL) {
+		fprintf(stderr, "Out of memory.\n");
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
+	}
+	i = 0;
+	for (lmsg = ldap_first_entry(ld, lresult);
+	     lmsg != NULL;
+	     lmsg = ldap_next_entry(ld, lmsg)) {
+		dn = ldap_get_dn(ld, lmsg);
+		if (dn != NULL) {
+			if (ldap_str2dn(dn, &rdn, 0) == 0) {
+				lbv = NULL;
+				flags = 0;
+				/* Dig out the CN value of the second RDN.  The
+				 * more correct thing to do would be to
+				 * construct the parent DN, do a base search
+				 * against it, and read its attribute normally,
+				 * but that could become time-consuming, so for
+				 * now do it a bit lazily. */
+				if ((rdn != NULL) && (rdn[0] != NULL) &&
+				    (rdn[1] != NULL)) {
+					for (j = 0; rdn[1][j] != NULL; j++) {
+						lbv = &rdn[1][j]->la_attr;
+						if ((lbv->bv_len == 2) &&
+						    (((lbv->bv_val[0] == 'c') ||
+						      (lbv->bv_val[0] == 'C')) &&
+						     ((lbv->bv_val[1] == 'n') ||
+						      (lbv->bv_val[1] == 'N')))) {
+							lbv = &rdn[1][j]->la_value;
+							flags = rdn[1][j]->la_flags;
+							break;
+						}
+						if ((lbv->bv_len == 3) &&
+						    (((lbv->bv_val[0] == 'c') ||
+						      (lbv->bv_val[0] == 'C')) &&
+						     ((lbv->bv_val[1] == 'n') ||
+						      (lbv->bv_val[1] == 'N')) &&
+						     ((lbv->bv_val[2] == '\0')))) {
+							lbv = &rdn[1][j]->la_value;
+							flags = rdn[1][j]->la_flags;
+							break;
+						}
+						lbv = NULL;
+					}
+				}
+				if (lbv != NULL) {
+					switch (flags & 0x0f) {
+					case LDAP_AVA_STRING:
+						list[i] = talloc_asprintf(NULL,
+									  "https://%.*s/ipa/xml",
+									  (int) lbv->bv_len,
+									  lbv->bv_val);
+						if (list[i] != NULL) {
+							i++;
+						}
+						break;
+					case LDAP_AVA_BINARY:
+						break;
+					}
+				}
+				ldap_dnfree(rdn);
+			}
+		}
+	}
+	ldap_msgfree(lresult);
+	if (i == 0) {
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
+	}
+	list[i] = NULL;
+	*uris = list;
+	return CM_SUBMIT_STATUS_ISSUED;
+}
+
 /* Make an XML-RPC request to the "cert_request" method. */
 static int
-submit_or_poll(const char *uri, const char *cainfo, const char *capath,
-	       const char *csr, const char *reqprinc)
+submit_or_poll_uri(const char *uri, const char *cainfo, const char *capath,
+	           const char *csr, const char *reqprinc)
 {
-
 	struct cm_submit_x_context *ctx;
 	const char *args[2];
 	char *s;
 	int i;
+
+	if ((uri == NULL) || (strlen(uri) == 0)) {
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
+	}
 
 	/* Prepare to make an XML-RPC request. */
 	ctx = cm_submit_x_init(NULL, uri, "cert_request",
@@ -295,6 +435,37 @@ submit_or_poll(const char *uri, const char *cainfo, const char *capath,
 		 * scratch, later. */
 		return CM_SUBMIT_STATUS_UNREACHABLE;
 	}
+}
+
+static int
+submit_or_poll(const char *uri, const char *cainfo, const char *capath,
+	       const char *server, int ldap_uri_cmd, const char *ldap_uri,
+	       const char *host, const char *domain, char *basedn,
+	       const char *csr, const char *reqprinc)
+{
+	int i, u;
+	char **uris;
+
+	i = submit_or_poll_uri(uri, cainfo, capath, csr, reqprinc);
+	if ((i == CM_SUBMIT_STATUS_UNREACHABLE) ||
+	    (i == CM_SUBMIT_STATUS_UNCONFIGURED)) {
+		u = cm_locate_xmlrpc_service(server, ldap_uri_cmd, ldap_uri,
+					     host, domain, basedn, "CA", &uris);
+		if ((u == 0) && (uris != NULL)) {
+			for (u = 0; uris[u] != NULL; u++) {
+				if (strcmp(uris[u], uri) == 0) {
+					continue;
+				}
+				i = submit_or_poll_uri(uris[u], cainfo, capath,
+						       csr, reqprinc);
+				if ((i != CM_SUBMIT_STATUS_UNREACHABLE) &&
+				    (i != CM_SUBMIT_STATUS_UNCONFIGURED)) {
+					return i;
+				}
+			}
+		}
+	}
+	return i;
 }
 
 static int
@@ -547,15 +718,6 @@ main(int argc, char **argv)
 			snprintf(uri, sizeof(uri),
 				 "https://%s/ipa/xml", host);
 		}
-		if (strlen(uri) == 0) {
-#if 0
-			printf(_("Unable to determine hostname of "
-				 "CA.\n"));
-#endif
-			printf(_("Unable to determine location of "
-				 "CA's XMLRPC server.\n"));
-			return CM_SUBMIT_STATUS_UNCONFIGURED;
-		}
 
 		/* Read the CSR from the environment, or from the file named on
 		 * the command-line. */
@@ -637,7 +799,10 @@ main(int argc, char **argv)
 
 	if ((strcasecmp(mode, CM_OP_SUBMIT) == 0) ||
 	    (strcasecmp(mode, CM_OP_POLL) == 0)) {
-		return submit_or_poll(uri, cainfo, capath, csr, reqprinc);
+		return submit_or_poll(uri, cainfo, capath,
+				      server, ldap_uri_cmd, ldap_uri,
+				      host, domain, basedn,
+				      csr, reqprinc);
 	} else
 	if (strcasecmp(mode, CM_OP_FETCH_ROOTS) == 0) {
 		return fetch_roots(server, ldap_uri_cmd, ldap_uri, host,
