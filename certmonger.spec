@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.76.1
+Version:	0.76.2
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -239,6 +239,10 @@ exit 0
 %endif
 
 %changelog
+* Tue Nov  4 2014 Nalin Dahyabhai <nalin@redhat.com> 0.76.2-1
+- ipa-submit: when we fail to locate/contact LDAP or XML-RPC servers,
+  use discovery to find them (#1136900)
+
 * Fri Oct 31 2014 Nalin Dahyabhai <nalin@redhat.com> 0.76.1-1
 - allow for 'certmonger -P abstract:...' to work, too
 
