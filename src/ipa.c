@@ -137,11 +137,11 @@ cm_open_any_ldap(const char *server,
 	if (strlen(uri) != 0) {
 		*ld = cm_open_ldap(uri);
 	}
-	if ((ld == NULL) &&
+	if ((*ld == NULL) &&
 	    (cm_srvloc_resolve(NULL, "_ldap._tcp", domain,
 			       &srvlocs) == 0)) {
 		for (srv = srvlocs;
-		     (srv != NULL) && (ld == NULL);
+		     (srv != NULL) && (*ld == NULL);
 		     srv = srv->next) {
 			if (srv->port != 0) {
 				snprintf(uri, uri_len,
