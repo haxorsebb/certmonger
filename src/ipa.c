@@ -76,9 +76,9 @@ interact(LDAP *ld, unsigned flags, void *defaults, void *sasl_interact)
 	return 0;
 }
 
-/* Connect and authenticate. */
+/* Connect and authenticate to a specific directory server. */
 static LDAP *
-open_ldap(const char *uri)
+cm_open_ldap(const char *uri)
 {
 	LDAP *ld;
 	int rc, three;
@@ -108,6 +108,62 @@ open_ldap(const char *uri)
 		return NULL;
 	}
 	return ld;
+}
+
+/* Connect and authenticate to the right directory server. */
+static int
+cm_open_any_ldap(const char *server,
+		 int ldap_uri_cmd, const char *ldap_uri,
+		 const char *host,
+		 const char *domain,
+		 char *uri,
+		 size_t uri_len,
+		 LDAP **ld)
+{
+	struct cm_srvloc *srvlocs, *srv;
+
+	*ld = NULL;
+	/* Prepare to perform an LDAP search. */
+	if ((server != NULL) && !ldap_uri_cmd) {
+		snprintf(uri, uri_len, "ldap://%s/", server);
+	} else
+	if (ldap_uri != NULL) {
+		snprintf(uri, uri_len, "%s", ldap_uri);
+	} else
+	if (host != NULL) {
+		snprintf(uri, uri_len, "ldap://%s/", host);
+	}
+	/* Connect and authenticate. */
+	if (strlen(uri) != 0) {
+		*ld = cm_open_ldap(uri);
+	}
+	if ((ld == NULL) &&
+	    (cm_srvloc_resolve(NULL, "_ldap._tcp", domain,
+			       &srvlocs) == 0)) {
+		for (srv = srvlocs;
+		     (srv != NULL) && (ld == NULL);
+		     srv = srv->next) {
+			if (srv->port != 0) {
+				snprintf(uri, uri_len,
+					 "ldap://%s:%d/", srv->host,
+					 srv->port);
+			} else {
+				snprintf(uri, uri_len,
+					 "ldap://%s/", srv->host);
+			}
+			*ld = cm_open_ldap(uri);
+		}
+	}
+	if (strlen(uri) == 0) {
+		printf(_("Unable to determine location of "
+			 "IPA LDAP server.\n"));
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
+	}
+	if (*ld == NULL) {
+		printf(_("Unable to contact an IPA LDAP server.\n"));
+		return CM_SUBMIT_STATUS_UNREACHABLE;
+	}
+	return 0;
 }
 
 static int
@@ -205,7 +261,6 @@ fetch_roots(const char *server, int ldap_uri_cmd, const char *ldap_uri,
 	const char *realm = NULL;
 	LDAP *ld = NULL;
 	LDAPMessage *lresult = NULL, *lmsg = NULL;
-	struct cm_srvloc *srvlocs, *srv;
 	char *lattrs[2] = {"caCertificate;binary", NULL};
 	char *lncattrs[2] = {"defaultNamingContext", NULL};
 	const char *relativedn = "cn=cacert,cn=ipa,cn=etc";
@@ -218,45 +273,10 @@ fetch_roots(const char *server, int ldap_uri_cmd, const char *ldap_uri,
 	/* Read our realm name from our ccache. */
 	realm = cm_submit_x_ccache_realm(&kerr);
 	/* Prepare to perform an LDAP search. */
-	if ((server != NULL) && !ldap_uri_cmd) {
-		snprintf(uri, sizeof(uri), "ldap://%s/", server);
-	} else
-	if (ldap_uri != NULL) {
-		snprintf(uri, sizeof(uri), "%s", ldap_uri);
-	} else
-	if (host != NULL) {
-		snprintf(uri, sizeof(uri), "ldap://%s/", host);
-	}
-	/* Connect and authenticate. */
-	ld = NULL;
-	if (strlen(uri) != 0) {
-		ld = open_ldap(uri);
-	}
-	if ((ld == NULL) &&
-	    (cm_srvloc_resolve(NULL, "_ldap._tcp", domain,
-			       &srvlocs) == 0)) {
-		for (srv = srvlocs;
-		     (srv != NULL) && (ld == NULL);
-		     srv = srv->next) {
-			if (srv->port != 0) {
-				snprintf(uri, sizeof(uri),
-					 "ldap://%s:%d/", srv->host,
-					 srv->port);
-			} else {
-				snprintf(uri, sizeof(uri),
-					 "ldap://%s/", srv->host);
-			}
-			ld = open_ldap(uri);
-		}
-	}
-	if (strlen(uri) == 0) {
-		printf(_("Unable to determine location of "
-			 "IPA LDAP server.\n"));
-		return CM_SUBMIT_STATUS_UNCONFIGURED;
-	}
-	if (ld == NULL) {
-		printf(_("Unable to contact an IPA LDAP server.\n"));
-		return CM_SUBMIT_STATUS_UNREACHABLE;
+	i = cm_open_any_ldap(server, ldap_uri_cmd, ldap_uri, host, domain,
+			     uri, sizeof(uri), &ld);
+	if (i != 0) {
+		return i;
 	}
 	/* If we don't have a base DN to search yet, look for a default
 	 * that we can use. */
