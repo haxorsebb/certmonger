@@ -127,6 +127,7 @@ cm_srvloc_resolve(void *parent, const char *name, const char *domain,
 	if (res == NULL) {
 		return -1;
 	}
+	memset(res, 0, sizeof(*res) * i);
 	for (i = 0, j = 0; i < n; i++) {
 		if (ns_parserr(&msg, ns_s_an, i, &rr) != 0) {
 			continue;

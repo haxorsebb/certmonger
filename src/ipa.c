@@ -306,7 +306,7 @@ fetch_roots(const char *server, int ldap_uri_cmd, const char *ldap_uri,
 	LDAPMessage *lresult = NULL, *lmsg = NULL;
 	char *lattrs[2] = {"caCertificate;binary", NULL};
 	const char *relativedn = "cn=cacert,cn=ipa,cn=etc";
-	char ldn[LINE_MAX], lfilter[LINE_MAX], uri[LINE_MAX], *kerr;
+	char ldn[LINE_MAX], lfilter[LINE_MAX], uri[LINE_MAX] = "", *kerr;
 	struct berval **lbvalues, *lbv;
 	unsigned char *bv_val;
 	const char *lb64, *pem;
