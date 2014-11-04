@@ -118,6 +118,7 @@ main(int argc, char **argv)
 	const char *ktname = NULL, *kpname = NULL, *realm = NULL, *args[2];
 	char *csr, *p, uri[LINE_MAX], *s, *reqprinc = NULL, *ipaconfig, *kerr;
 	const char *xmlrpc_uri = NULL, *ldap_uri = NULL, *server = NULL;
+	int xmlrpc_uri_cmd = 0, ldap_uri_cmd = 0;
 	struct cm_submit_x_context *ctx;
 	const char *mode = CM_OP_SUBMIT;
 	LDAP *ld = NULL;
@@ -167,9 +168,11 @@ main(int argc, char **argv)
 			break;
 		case 'H':
 			xmlrpc_uri = optarg;
+			xmlrpc_uri_cmd++;
 			break;
 		case 'L':
 			ldap_uri = optarg;
+			ldap_uri_cmd++;
 			break;
 		case 'b':
 			basedn = strdup(optarg);
@@ -285,7 +288,7 @@ main(int argc, char **argv)
 			help(argv[0]);
 			return CM_SUBMIT_STATUS_UNCONFIGURED;
 		}
-		if (server != NULL) {
+		if ((server != NULL) && !xmlrpc_uri_cmd) {
 			snprintf(uri, sizeof(uri),
 				 "https://%s/ipa/xml", server);
 		} else
@@ -467,7 +470,7 @@ main(int argc, char **argv)
 		/* Read our realm name from our ccache. */
 		realm = cm_submit_x_ccache_realm(&kerr);
 		/* Prepare to perform an LDAP search. */
-		if (server != NULL) {
+		if ((server != NULL) && !ldap_uri_cmd) {
 			snprintf(uri, sizeof(uri), "ldap://%s/", server);
 		} else
 		if (ldap_uri != NULL) {
