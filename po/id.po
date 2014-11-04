@@ -1,29 +1,30 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Nalin Dahyabhai <nalin@fedoraproject.org>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2014-10-31 12:56-0400\n"
+"POT-Creation-Date: 2014-11-04 17:00-0500\n"
 "PO-Revision-Date: 2014-11-01 10:01+0000\n"
 "Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
-"Language-Team: Indonesian (http://www.transifex.com/projects/p/certmonger/language/id/)\n"
+"Language-Team: Indonesian (http://www.transifex.com/projects/p/certmonger/"
+"language/id/)\n"
+"Language: id\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: id\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: src/certmaster.c:129 src/ipa.c:266
+#: src/certmaster.c:129
 #, c-format
 msgid "Unable to determine hostname of CA.\n"
 msgstr "tidak dapat menentukan nama host dari CA.\n"
 
-#: src/certmaster.c:146 src/dogtag.c:438 src/ipa.c:285
+#: src/certmaster.c:146 src/dogtag.c:438 src/ipa.c:733
 #, c-format
 msgid "Unable to read signing request.\n"
 msgstr "Tidak dapat membaca tanda permintaan.\n"
@@ -102,7 +103,9 @@ msgstr ""
 msgid ""
 "Path \"%s\" is not absolute, and there was an error determining the name of "
 "the current directory.\n"
-msgstr "Path \"%s\"tidak mutlak, dan ada eror yang menentukan nama dari sebuah direktori.\n"
+msgstr ""
+"Path \"%s\"tidak mutlak, dan ada eror yang menentukan nama dari sebuah "
+"direktori.\n"
 
 #: src/getcert.c:120
 #, c-format
@@ -264,20 +267,26 @@ msgstr "Direktori database dan sertifikat file kedua secara khusus.\n"
 
 #: src/getcert.c:903 src/getcert.c:1965 src/getcert.c:2258
 #, c-format
-msgid "None of database directory and nickname or certificate file specified.\n"
-msgstr "Tidak ada dari direktori database dan nama panggilan atau sertifikat berkas khusus.\n"
+msgid ""
+"None of database directory and nickname or certificate file specified.\n"
+msgstr ""
+"Tidak ada dari direktori database dan nama panggilan atau sertifikat berkas "
+"khusus.\n"
 
 #: src/getcert.c:910 src/getcert.c:1765
 #, c-format
 msgid "Key and certificate can not both be saved to the same file.\n"
-msgstr "Kunci dan sertifikat tidak dapat di simpan seluruhnya pada file yang sama.\n"
+msgstr ""
+"Kunci dan sertifikat tidak dapat di simpan seluruhnya pada file yang sama.\n"
 
 #: src/getcert.c:936
 #, c-format
 msgid ""
-"The IPA backend requires the use of the -K option (principal name) when the "
-"-N option (subject name) is used.\n"
-msgstr "IPA kembali memerlukan kegunaan dari pilihan -K (nama utama) di mana ketika pilihan -N (nama subjek) telah digunakan.\n"
+"The IPA backend requires the use of the -K option (principal name) when the -"
+"N option (subject name) is used.\n"
+msgstr ""
+"IPA kembali memerlukan kegunaan dari pilihan -K (nama utama) di mana ketika "
+"pilihan -N (nama subjek) telah digunakan.\n"
 
 #: src/getcert.c:1068 src/getcert.c:1463 src/getcert.c:1866 src/getcert.c:2278
 #: src/getcert.c:2539 src/getcert.c:2710
@@ -316,7 +325,9 @@ msgstr "Permintaan pelacakan tidak dapat di tambahkan.\n"
 msgid ""
 "None of ID or database directory and nickname or certificate file "
 "specified.\n"
-msgstr "ID kosong atau direktori database dan nama panggilan atau sertifikat berkas khusus.\n"
+msgstr ""
+"ID kosong atau direktori database dan nama panggilan atau sertifikat berkas "
+"khusus.\n"
 
 #: src/getcert.c:1932
 #, c-format
@@ -641,13 +652,16 @@ msgstr "-d DIR\tNSS database untuk kunci dan pemastian\n"
 #: src/getcert.c:3474 src/getcert.c:3522 src/getcert.c:3567 src/getcert.c:3589
 #: src/getcert.c:3661
 msgid "  -n NAME\tnickname for NSS-based storage (only valid with -d)\n"
-msgstr "-n NAME\tnickname untuk dasar penyimpanan NSS (hanya valid dengan -d)\n"
+msgstr ""
+"-n NAME\tnickname untuk dasar penyimpanan NSS (hanya valid dengan -d)\n"
 
 #: src/getcert.c:3475 src/getcert.c:3523 src/getcert.c:3568 src/getcert.c:3590
 #: src/getcert.c:3662
 msgid ""
 "  -t NAME\toptional token name for NSS-based storage (only valid with -d)\n"
-msgstr "-t NAME\toptional tanda nama untuk dasar penyimpanan NSS (hanya valid dengan -d)\n"
+msgstr ""
+"-t NAME\toptional tanda nama untuk dasar penyimpanan NSS (hanya valid dengan "
+"-d)\n"
 
 #: src/getcert.c:3476 src/getcert.c:3524 src/getcert.c:3569 src/getcert.c:3591
 #: src/getcert.c:3641 src/getcert.c:3663
@@ -694,15 +708,21 @@ msgstr ""
 
 #: src/getcert.c:3487
 msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
-msgstr "-g SIZE\tsize  sebuah kunci untuk menghasilkan jika salah satu telah tidak berada di dalam tempat\n"
+msgstr ""
+"-g SIZE\tsize  sebuah kunci untuk menghasilkan jika salah satu telah tidak "
+"berada di dalam tempat\n"
 
 #: src/getcert.c:3488 src/getcert.c:3534
-msgid "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
-msgstr "-r\t\tattempt untuk memperbarui sertifikat ketika mendekati akhir waktu (kegagalan)\n"
+msgid ""
+"  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
+msgstr ""
+"-r\t\tattempt untuk memperbarui sertifikat ketika mendekati akhir waktu "
+"(kegagalan)\n"
 
 #: src/getcert.c:3489 src/getcert.c:3535
 msgid "  -R\t\tdon't attempt to renew the certificate when expiration nears\n"
-msgstr "-R\t\tdon't usaha untuk memperbarui sertifikat ketika mendekati akhir waktu\n"
+msgstr ""
+"-R\t\tdon't usaha untuk memperbarui sertifikat ketika mendekati akhir waktu\n"
 
 #: src/getcert.c:3491 src/getcert.c:3537
 msgid "  -c CA\t\tuse the specified CA rather than the default\n"
@@ -1024,68 +1044,69 @@ msgstr ""
 msgid "%s: unrecognized command\n"
 msgstr "%s: tidak mengenali perintah\n"
 
-#: src/ipa.c:151
+#: src/ipa.c:158
+#, c-format
+msgid "Unable to determine location of IPA LDAP server.\n"
+msgstr ""
+
+#: src/ipa.c:163
+#, fuzzy, c-format
+msgid "Unable to contact an IPA LDAP server.\n"
+msgstr "Tidak dapat untuk menentukan lokasi dari penyedia CA XMLRPC.\n"
+
+#: src/ipa.c:247 src/ipa.c:503
+#, c-format
+msgid "Unable to determine base DN of domain information on IPA server.\n"
+msgstr ""
+
+#: src/ipa.c:370
+#, c-format
+msgid "Error setting up for XMLRPC on the client.\n"
+msgstr ""
+
+#: src/ipa.c:608
 #, c-format
 msgid "The -t option can not be used with the -K option.\n"
 msgstr ""
 
-#: src/ipa.c:159
+#: src/ipa.c:616
 #, c-format
 msgid "The -k option can not be used with the -K option.\n"
 msgstr ""
 
-#: src/ipa.c:167
+#: src/ipa.c:624
 #, c-format
 msgid "The -K option can not be used with either the -k or the -t option.\n"
 msgstr ""
 
-#: src/ipa.c:248
+#: src/ipa.c:705
 #, c-format
 msgid "Unable to determine principal name for signing request.\n"
 msgstr "Tidak dapat untuk menentukan nama utama untuk menandai permintaan.\n"
 
-#: src/ipa.c:269
-#, c-format
-msgid "Unable to determine location of CA's XMLRPC server.\n"
-msgstr "Tidak dapat untuk menentukan lokasi dari penyedia CA XMLRPC.\n"
-
-#: src/ipa.c:320
+#: src/ipa.c:768
 #, c-format
 msgid ""
-"Error setting up ccache for \"host\" service on client using default keytab:"
-" %s.\n"
+"Error setting up ccache for \"host\" service on client using default keytab: "
+"%s.\n"
 msgstr ""
 
-#: src/ipa.c:324
+#: src/ipa.c:772
 #, c-format
-msgid "Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
+msgid ""
+"Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
 msgstr ""
 
-#: src/ipa.c:331
+#: src/ipa.c:779
 #, c-format
 msgid ""
 "Error setting up ccache for \"host\" service on client using keytab \"%s\": "
 "%s.\n"
 msgstr ""
 
-#: src/ipa.c:335
+#: src/ipa.c:783
 #, c-format
 msgid "Error setting up ccache for \"%s\" on client using keytab \"%s\": %s.\n"
-msgstr ""
-
-#: src/ipa.c:362
-#, c-format
-msgid "Error setting up for XMLRPC on the client.\n"
-msgstr ""
-
-#: src/ipa.c:445
-#, c-format
-msgid "Unable to determine location of IPA LDAP server.\n"
-msgstr ""
-
-#: src/ipa.c:507
-#, c-format
-msgid "Unable to determine base DN of domain information on IPA server.\n"
 msgstr ""
 
 #: src/main.c:137
@@ -1200,7 +1221,8 @@ msgstr "Lokasi \"%s\" harus berupa berkas."
 
 #: src/tdbush.c:590 src/tdbush.c:937 src/tdbush.c:1037 src/tdbush.c:1137
 #, c-format
-msgid "The location \"%s\" could not be accessed due to insufficient permissions."
+msgid ""
+"The location \"%s\" could not be accessed due to insufficient permissions."
 msgstr ""
 
 #: src/tdbush.c:598 src/tdbush.c:831 src/tdbush.c:945 src/tdbush.c:1045
@@ -1221,8 +1243,7 @@ msgstr "Permintaan telah dilakukan dengan nama panggilan \"%s\"."
 #: src/tdbush.c:698
 #, c-format
 msgid ""
-"Certificate at same location is already used by request with nickname "
-"\"%s\"."
+"Certificate at same location is already used by request with nickname \"%s\"."
 msgstr ""
 
 #: src/tdbush.c:731

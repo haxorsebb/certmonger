@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Cheng-Chia Tseng <pswo10680@gmail.com>, 2011
 # Walter Cheuk <wwycheuk@gmail.com>, 2012
@@ -9,22 +9,23 @@ msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2014-10-31 12:56-0400\n"
+"POT-Creation-Date: 2014-11-04 17:00-0500\n"
 "PO-Revision-Date: 2014-11-01 10:01+0000\n"
 "Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
-"Language-Team: Chinese (Taiwan) (http://www.transifex.com/projects/p/certmonger/language/zh_TW/)\n"
+"Language-Team: Chinese (Taiwan) (http://www.transifex.com/projects/p/"
+"certmonger/language/zh_TW/)\n"
+"Language: zh_TW\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: zh_TW\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: src/certmaster.c:129 src/ipa.c:266
+#: src/certmaster.c:129
 #, c-format
 msgid "Unable to determine hostname of CA.\n"
 msgstr "無法判斷 CA 的主機名稱。\n"
 
-#: src/certmaster.c:146 src/dogtag.c:438 src/ipa.c:285
+#: src/certmaster.c:146 src/dogtag.c:438 src/ipa.c:733
 #, c-format
 msgid "Unable to read signing request.\n"
 msgstr "無法讀取簽署請求。\n"
@@ -128,7 +129,9 @@ msgstr "\"%s\" 路徑並非普通檔案。\n"
 #: src/getcert.c:249
 #, c-format
 msgid "Out of memory.\n"
-msgstr "記憶體不足。\n\n"
+msgstr ""
+"記憶體不足。\n"
+"\n"
 
 #: src/getcert.c:312
 #, c-format
@@ -265,7 +268,8 @@ msgstr ""
 
 #: src/getcert.c:903 src/getcert.c:1965 src/getcert.c:2258
 #, c-format
-msgid "None of database directory and nickname or certificate file specified.\n"
+msgid ""
+"None of database directory and nickname or certificate file specified.\n"
 msgstr ""
 
 #: src/getcert.c:910 src/getcert.c:1765
@@ -276,8 +280,8 @@ msgstr ""
 #: src/getcert.c:936
 #, c-format
 msgid ""
-"The IPA backend requires the use of the -K option (principal name) when the "
-"-N option (subject name) is used.\n"
+"The IPA backend requires the use of the -K option (principal name) when the -"
+"N option (subject name) is used.\n"
 msgstr ""
 
 #: src/getcert.c:1068 src/getcert.c:1463 src/getcert.c:1866 src/getcert.c:2278
@@ -648,7 +652,9 @@ msgstr "  -n 名稱\t基於 NSS 的儲存裝置的暱稱 (只有與 -d 一起用
 #: src/getcert.c:3662
 msgid ""
 "  -t NAME\toptional token name for NSS-based storage (only valid with -d)\n"
-msgstr "  -t 名稱\t基於 NSS 的儲存裝置的 token 名稱 (可有可無；只有與 -d 一起用才有效)\n"
+msgstr ""
+"  -t 名稱\t基於 NSS 的儲存裝置的 token 名稱 (可有可無；只有與 -d 一起用才有"
+"效)\n"
 
 #: src/getcert.c:3476 src/getcert.c:3524 src/getcert.c:3569 src/getcert.c:3591
 #: src/getcert.c:3641 src/getcert.c:3663
@@ -698,7 +704,8 @@ msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
 msgstr ""
 
 #: src/getcert.c:3488 src/getcert.c:3534
-msgid "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
+msgid ""
+"  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
 msgstr ""
 
 #: src/getcert.c:3489 src/getcert.c:3535
@@ -1025,68 +1032,69 @@ msgstr ""
 msgid "%s: unrecognized command\n"
 msgstr "%s：指令無法辨識\n"
 
-#: src/ipa.c:151
+#: src/ipa.c:158
+#, c-format
+msgid "Unable to determine location of IPA LDAP server.\n"
+msgstr ""
+
+#: src/ipa.c:163
+#, fuzzy, c-format
+msgid "Unable to contact an IPA LDAP server.\n"
+msgstr "無法判斷 CA 的 XMLRPC 伺服器的位置。\n"
+
+#: src/ipa.c:247 src/ipa.c:503
+#, c-format
+msgid "Unable to determine base DN of domain information on IPA server.\n"
+msgstr ""
+
+#: src/ipa.c:370
+#, c-format
+msgid "Error setting up for XMLRPC on the client.\n"
+msgstr ""
+
+#: src/ipa.c:608
 #, c-format
 msgid "The -t option can not be used with the -K option.\n"
 msgstr "選項 -t 不能與 -K 一起使用。\n"
 
-#: src/ipa.c:159
+#: src/ipa.c:616
 #, c-format
 msgid "The -k option can not be used with the -K option.\n"
 msgstr "選項 -k 不能與 -K 一起使用。\n"
 
-#: src/ipa.c:167
+#: src/ipa.c:624
 #, c-format
 msgid "The -K option can not be used with either the -k or the -t option.\n"
 msgstr "選項 -K 不能與 -k 或 -t 一起使用。\n"
 
-#: src/ipa.c:248
+#: src/ipa.c:705
 #, c-format
 msgid "Unable to determine principal name for signing request.\n"
 msgstr ""
 
-#: src/ipa.c:269
-#, c-format
-msgid "Unable to determine location of CA's XMLRPC server.\n"
-msgstr "無法判斷 CA 的 XMLRPC 伺服器的位置。\n"
-
-#: src/ipa.c:320
+#: src/ipa.c:768
 #, c-format
 msgid ""
-"Error setting up ccache for \"host\" service on client using default keytab:"
-" %s.\n"
+"Error setting up ccache for \"host\" service on client using default keytab: "
+"%s.\n"
 msgstr ""
 
-#: src/ipa.c:324
+#: src/ipa.c:772
 #, c-format
-msgid "Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
+msgid ""
+"Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
 msgstr ""
 
-#: src/ipa.c:331
+#: src/ipa.c:779
 #, c-format
 msgid ""
 "Error setting up ccache for \"host\" service on client using keytab \"%s\": "
 "%s.\n"
 msgstr ""
 
-#: src/ipa.c:335
+#: src/ipa.c:783
 #, c-format
 msgid "Error setting up ccache for \"%s\" on client using keytab \"%s\": %s.\n"
-msgstr ""
-
-#: src/ipa.c:362
-#, c-format
-msgid "Error setting up for XMLRPC on the client.\n"
-msgstr ""
-
-#: src/ipa.c:445
-#, c-format
-msgid "Unable to determine location of IPA LDAP server.\n"
-msgstr ""
-
-#: src/ipa.c:507
-#, c-format
-msgid "Unable to determine base DN of domain information on IPA server.\n"
 msgstr ""
 
 #: src/main.c:137
@@ -1201,7 +1209,8 @@ msgstr "\"%s\" 位置須為檔案。"
 
 #: src/tdbush.c:590 src/tdbush.c:937 src/tdbush.c:1037 src/tdbush.c:1137
 #, c-format
-msgid "The location \"%s\" could not be accessed due to insufficient permissions."
+msgid ""
+"The location \"%s\" could not be accessed due to insufficient permissions."
 msgstr ""
 
 #: src/tdbush.c:598 src/tdbush.c:831 src/tdbush.c:945 src/tdbush.c:1045
@@ -1222,8 +1231,7 @@ msgstr "已有暱稱為 \"%s\" 的請求。"
 #: src/tdbush.c:698
 #, c-format
 msgid ""
-"Certificate at same location is already used by request with nickname "
-"\"%s\"."
+"Certificate at same location is already used by request with nickname \"%s\"."
 msgstr ""
 
 #: src/tdbush.c:731
