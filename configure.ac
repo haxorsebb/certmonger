@@ -167,7 +167,7 @@ if ! ${configure_dist_target_only:-false} ; then
 		#include <linux/netlink.h>
 		#endif
 	])
-	AC_CHECK_HEADERS(systemd/sd-login.h)
+	AC_CHECK_HEADERS(systemd/sd-login.h resolv.h)
 
 	PKG_CHECK_MODULES(TALLOC,talloc)
 	PKG_CHECK_MODULES(TEVENT,tevent)
@@ -182,6 +182,10 @@ if ! ${configure_dist_target_only:-false} ; then
 	savedLIBS="$LIBS"
 	LIBS="$DBUS_LIBS $LIBS"
 	AC_CHECK_FUNCS(dbus_watch_get_unix_fd dbus_watch_get_fd)
+	LIBS="$savedLIBS"
+	RESOLV_LIBS=
+	AC_CHECK_LIB(resolv,main,RESOLV_LIBS=-lresolv)
+	AC_SUBST(RESOLV_LIBS)
 	LIBS="$savedLIBS"
 	PKG_CHECK_MODULES(CERTMONGER,dbus-1 talloc tevent nss)
 	PKG_CHECK_MODULES(GETCERT,dbus-1 talloc)

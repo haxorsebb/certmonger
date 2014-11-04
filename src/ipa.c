@@ -35,6 +35,7 @@
 #include <ldap.h>
 #include <krb5.h>
 
+#include "srvloc.h"
 #include "store.h"
 #include "submit-e.h"
 #include "submit-u.h"
@@ -75,10 +76,44 @@ interact(LDAP *ld, unsigned flags, void *defaults, void *sasl_interact)
 	return 0;
 }
 
+/* Connect and authenticate. */
+static LDAP *
+open_ldap(const char *uri)
+{
+	LDAP *ld;
+	int rc, three;
+	const char *ldefaults[] = {"meh"};
+
+	ld = NULL;
+	rc = ldap_initialize(&ld, uri);
+	if (rc != LDAP_SUCCESS) {
+		fprintf(stderr, "Error initializing \"%s\": %s.",
+			uri, ldap_err2string(rc));
+		return NULL;
+	}
+	three = 3;
+	rc = ldap_set_option(ld, LDAP_OPT_PROTOCOL_VERSION, &three);
+	if (rc != LDAP_SUCCESS) {
+		fprintf(stderr, "Error initializing \"%s\": %s.",
+			uri, ldap_err2string(rc));
+		return NULL;
+	}
+	rc = ldap_sasl_interactive_bind_s(ld, NULL, "GSSAPI",
+					  NULL, NULL,
+					  LDAP_SASL_QUIET,
+					  &interact, ldefaults);
+	if (rc != LDAP_SUCCESS) {
+		fprintf(stderr, "Error binding to \"%s\": %s.",
+			uri, ldap_err2string(rc));
+		return NULL;
+	}
+	return ld;
+}
+
 int
 main(int argc, char **argv)
 {
-	int i, c, make_keytab_ccache = TRUE, rc, three;
+	int i, c, make_keytab_ccache = TRUE, rc;
 	const char *host = NULL, *domain = NULL, *cainfo = NULL, *capath = NULL;
 	const char *ktname = NULL, *kpname = NULL, *realm = NULL, *args[2];
 	char *csr, *p, uri[LINE_MAX], *s, *reqprinc = NULL, *ipaconfig, *kerr;
@@ -90,12 +125,12 @@ main(int argc, char **argv)
 	char ldn[LINE_MAX], lfilter[LINE_MAX], *basedn = NULL;
 	char *lattrs[2] = {"caCertificate;binary", NULL};
 	char *lncattrs[2] = {"defaultNamingContext", NULL};
-	const char *ldefaults[] = {"meh"};
 	const char *relativedn = "cn=cacert,cn=ipa,cn=etc";
 	struct berval **lbvalues, *lbv;
 	unsigned char *bv_val;
 	const char *lb64, *pem;
 	krb5_error_code kret;
+	struct cm_srvloc *srvlocs, *srv;
 
 #ifdef ENABLE_NLS
 	bindtextdomain(PACKAGE, MYLOCALEDIR);
@@ -441,33 +476,35 @@ main(int argc, char **argv)
 		if (host != NULL) {
 			snprintf(uri, sizeof(uri), "ldap://%s/", host);
 		}
+		/* Connect and authenticate. */
+		ld = NULL;
+		if (strlen(uri) != 0) {
+			ld = open_ldap(uri);
+		}
+		if ((ld == NULL) &&
+		    (cm_srvloc_resolve(NULL, "_ldap._tcp", domain,
+				       &srvlocs) == 0)) {
+			for (srv = srvlocs;
+			     (srv != NULL) && (ld == NULL);
+			     srv = srv->next) {
+				if (srv->port != 0) {
+					snprintf(uri, sizeof(uri),
+						 "ldap://%s:%d/", srv->host,
+						 srv->port);
+				} else {
+					snprintf(uri, sizeof(uri),
+						 "ldap://%s/", srv->host);
+				}
+				ld = open_ldap(uri);
+			}
+		}
 		if (strlen(uri) == 0) {
 			printf(_("Unable to determine location of "
 				 "IPA LDAP server.\n"));
 			return CM_SUBMIT_STATUS_UNCONFIGURED;
 		}
-		/* Connect and authenticate. */
-		ld = NULL;
-		rc = ldap_initialize(&ld, uri);
-		if (rc != LDAP_SUCCESS) {
-			fprintf(stderr, "Error initializing: %s.",
-				ldap_err2string(rc));
-			return CM_SUBMIT_STATUS_UNREACHABLE;
-		}
-		three = 3;
-		rc = ldap_set_option(ld, LDAP_OPT_PROTOCOL_VERSION, &three);
-		if (rc != LDAP_SUCCESS) {
-			fprintf(stderr, "Error initializing: %s.",
-				ldap_err2string(rc));
-			return CM_SUBMIT_STATUS_UNREACHABLE;
-		}
-		rc = ldap_sasl_interactive_bind_s(ld, NULL, "GSSAPI",
-						  NULL, NULL,
-						  LDAP_SASL_QUIET,
-						  &interact, ldefaults);
-		if (rc != LDAP_SUCCESS) {
-			fprintf(stderr, "Error binding: %s.",
-				ldap_err2string(rc));
+		if (ld == NULL) {
+			printf(_("Unable to contact an IPA LDAP server.\n"));
 			return CM_SUBMIT_STATUS_UNREACHABLE;
 		}
 		/* If we don't have a base DN to search yet, look for a default
