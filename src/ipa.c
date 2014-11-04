@@ -110,28 +110,239 @@ open_ldap(const char *uri)
 	return ld;
 }
 
-int
-main(int argc, char **argv)
+static int
+submit_or_poll(const char *uri, const char *cainfo, const char *capath,
+	       const char *csr, const char *reqprinc)
 {
-	int i, c, make_keytab_ccache = TRUE, rc;
-	const char *host = NULL, *domain = NULL, *cainfo = NULL, *capath = NULL;
-	const char *ktname = NULL, *kpname = NULL, *realm = NULL, *args[2];
-	char *csr, *p, uri[LINE_MAX], *s, *reqprinc = NULL, *ipaconfig, *kerr;
-	const char *xmlrpc_uri = NULL, *ldap_uri = NULL, *server = NULL;
-	int xmlrpc_uri_cmd = 0, ldap_uri_cmd = 0;
+
 	struct cm_submit_x_context *ctx;
-	const char *mode = CM_OP_SUBMIT;
+	const char *args[2];
+	char *s;
+	int i;
+
+	/* Prepare to make an XML-RPC request. */
+	ctx = cm_submit_x_init(NULL, uri, "cert_request",
+			       cainfo, capath,
+			       cm_submit_x_negotiate_on,
+			       cm_submit_x_delegate_on);
+	if (ctx == NULL) {
+		fprintf(stderr, "Error setting up for XMLRPC to %s on "
+			"the client.\n", uri);
+		printf(_("Error setting up for XMLRPC on the client.\n"));
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
+	}
+
+	/* Add the CSR contents as the sole unnamed argument. */
+	args[0] = csr;
+	args[1] = NULL;
+	cm_submit_x_add_arg_as(ctx, args);
+	/* Add the principal name named argument. */
+	cm_submit_x_add_named_arg_s(ctx, "principal", reqprinc);
+	/* Tell the server to add entries for a principal if one
+	 * doesn't exist yet. */
+	cm_submit_x_add_named_arg_b(ctx, "add", 1);
+
+	/* Submit the request. */
+	fprintf(stderr, "Submitting request to \"%s\".\n", uri);
+	cm_submit_x_run(ctx);
+
+	/* Check the results. */
+	if (cm_submit_x_faulted(ctx) == 0) {
+		i = cm_submit_x_fault_code(ctx);
+		/* Interpret the error.  See errors.py to get the
+		 * classifications. */
+		switch (i / 1000) {
+		case 2: /* authorization error - permanent */
+		case 3: /* invocation error - permanent */
+			printf("Server at %s denied our request, "
+			       "giving up: %d (%s).\n", uri, i,
+			       cm_submit_x_fault_text(ctx));
+			return CM_SUBMIT_STATUS_REJECTED;
+			break;
+		case 1: /* authentication error - transient? */
+		case 4: /* execution error - transient? */
+		case 5: /* generic error - transient? */
+		default:
+			printf("Server at %s failed request, "
+			       "will retry: %d (%s).\n", uri, i,
+			       cm_submit_x_fault_text(ctx));
+			return CM_SUBMIT_STATUS_UNREACHABLE;
+			break;
+		}
+	} else
+	if (cm_submit_x_has_results(ctx) == 0) {
+		if (cm_submit_x_get_named_s(ctx, "certificate",
+					    &s) == 0) {
+			/* If we got a certificate, we're probably
+			 * okay. */
+			fprintf(stderr, "Certificate: \"%s\"\n", s);
+			s = cm_submit_u_base64_from_text(s);
+			if (s == NULL) {
+				printf("Out of memory parsing server "
+				       "response, will retry.\n");
+				return CM_SUBMIT_STATUS_UNREACHABLE;
+			}
+			s = cm_submit_u_pem_from_base64("CERTIFICATE",
+							FALSE, s);
+			if (s != NULL) {
+				printf("%s", s);
+			}
+			return CM_SUBMIT_STATUS_ISSUED;
+		} else {
+			return CM_SUBMIT_STATUS_REJECTED;
+		}
+	} else {
+		/* No useful response, no fault.  Try again, from
+		 * scratch, later. */
+		return CM_SUBMIT_STATUS_UNREACHABLE;
+	}
+}
+
+static int
+fetch_roots(const char *server, int ldap_uri_cmd, const char *ldap_uri,
+	    const char *host, const char *domain, char *basedn)
+{
+	const char *realm = NULL;
 	LDAP *ld = NULL;
 	LDAPMessage *lresult = NULL, *lmsg = NULL;
-	char ldn[LINE_MAX], lfilter[LINE_MAX], *basedn = NULL;
+	struct cm_srvloc *srvlocs, *srv;
 	char *lattrs[2] = {"caCertificate;binary", NULL};
 	char *lncattrs[2] = {"defaultNamingContext", NULL};
 	const char *relativedn = "cn=cacert,cn=ipa,cn=etc";
+	char ldn[LINE_MAX], lfilter[LINE_MAX], uri[LINE_MAX], *kerr;
 	struct berval **lbvalues, *lbv;
 	unsigned char *bv_val;
 	const char *lb64, *pem;
+	int c, i, rc;
+
+	/* Read our realm name from our ccache. */
+	realm = cm_submit_x_ccache_realm(&kerr);
+	/* Prepare to perform an LDAP search. */
+	if ((server != NULL) && !ldap_uri_cmd) {
+		snprintf(uri, sizeof(uri), "ldap://%s/", server);
+	} else
+	if (ldap_uri != NULL) {
+		snprintf(uri, sizeof(uri), "%s", ldap_uri);
+	} else
+	if (host != NULL) {
+		snprintf(uri, sizeof(uri), "ldap://%s/", host);
+	}
+	/* Connect and authenticate. */
+	ld = NULL;
+	if (strlen(uri) != 0) {
+		ld = open_ldap(uri);
+	}
+	if ((ld == NULL) &&
+	    (cm_srvloc_resolve(NULL, "_ldap._tcp", domain,
+			       &srvlocs) == 0)) {
+		for (srv = srvlocs;
+		     (srv != NULL) && (ld == NULL);
+		     srv = srv->next) {
+			if (srv->port != 0) {
+				snprintf(uri, sizeof(uri),
+					 "ldap://%s:%d/", srv->host,
+					 srv->port);
+			} else {
+				snprintf(uri, sizeof(uri),
+					 "ldap://%s/", srv->host);
+			}
+			ld = open_ldap(uri);
+		}
+	}
+	if (strlen(uri) == 0) {
+		printf(_("Unable to determine location of "
+			 "IPA LDAP server.\n"));
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
+	}
+	if (ld == NULL) {
+		printf(_("Unable to contact an IPA LDAP server.\n"));
+		return CM_SUBMIT_STATUS_UNREACHABLE;
+	}
+	/* If we don't have a base DN to search yet, look for a default
+	 * that we can use. */
+	if (basedn == NULL) {
+		rc = ldap_search_ext_s(ld, "", LDAP_SCOPE_BASE,
+				       NULL, lncattrs, 0, NULL, NULL, NULL,
+				       1, &lresult);
+		if (rc != LDAP_SUCCESS) {
+			fprintf(stderr, "Error searching root DSE: %s.",
+				ldap_err2string(rc));
+			return CM_SUBMIT_STATUS_UNCONFIGURED;
+		}
+		for (lmsg = ldap_first_entry(ld, lresult);
+		     lmsg != NULL;
+		     lmsg = ldap_next_entry(ld, lmsg)) {
+			lbvalues = ldap_get_values_len(ld, lmsg,
+						       lncattrs[0]);
+			if (lbvalues == NULL) {
+				continue;
+			}
+			for (i = 0; lbvalues[i] != NULL; i++) {
+				c = lbvalues[i]->bv_len;
+				basedn = malloc(c + 1);
+				if (basedn != NULL) {
+					memcpy(basedn,
+					       lbvalues[0]->bv_val,
+					       c);
+					basedn[c] = '\0';
+					break;
+				}
+			}
+		}
+		ldap_msgfree(lresult);
+	}
+	if (basedn == NULL) {
+		printf(_("Unable to determine base DN of "
+			 "domain information on IPA server.\n"));
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
+	}
+	snprintf(lfilter, sizeof(lfilter), "(%s=*)", lattrs[0]);
+	snprintf(ldn, sizeof(ldn), "%s,%s",
+		 relativedn, basedn);
+	rc = ldap_search_ext_s(ld, ldn, LDAP_SCOPE_SUBTREE,
+			       lfilter, lattrs, 0, NULL, NULL, NULL,
+			       LDAP_NO_LIMIT, &lresult);
+	if (rc != LDAP_SUCCESS) {
+		fprintf(stderr, "Error searching '%s': %s.",
+			ldn, ldap_err2string(rc));
+		return CM_SUBMIT_STATUS_ISSUED;
+	}
+	for (lmsg = ldap_first_entry(ld, lresult);
+	     lmsg != NULL;
+	     lmsg = ldap_next_entry(ld, lmsg)) {
+		lbvalues = ldap_get_values_len(ld, lmsg, lattrs[0]);
+		for (i = 0;
+		     (lbvalues != NULL) && (lbvalues[i] != NULL);
+		     i++) {
+			lbv = lbvalues[i];
+			bv_val = (unsigned char *) lbv->bv_val,
+			lb64 = cm_store_base64_from_bin(NULL,
+							bv_val,
+							lbv->bv_len);
+			pem = cm_submit_u_pem_from_base64("CERTIFICATE",
+							  FALSE, lb64);
+			if (realm != NULL) {
+				printf("%s ", realm);
+			}
+			printf("%s\n%s", "IPA CA", pem);
+		}
+	}
+	ldap_msgfree(lresult);
+	return CM_SUBMIT_STATUS_ISSUED;
+}
+
+int
+main(int argc, char **argv)
+{
+	int c, make_keytab_ccache = TRUE;
+	const char *host = NULL, *domain = NULL, *cainfo = NULL, *capath = NULL;
+	const char *ktname = NULL, *kpname = NULL;
+	char *csr, *p, uri[LINE_MAX], *reqprinc = NULL, *ipaconfig, *kerr;
+	const char *xmlrpc_uri = NULL, *ldap_uri = NULL, *server = NULL;
+	int xmlrpc_uri_cmd = 0, ldap_uri_cmd = 0;
+	const char *mode = CM_OP_SUBMIT;
+	char ldn[LINE_MAX], *basedn = NULL;
 	krb5_error_code kret;
-	struct cm_srvloc *srvlocs, *srv;
 
 #ifdef ENABLE_NLS
 	bindtextdomain(PACKAGE, MYLOCALEDIR);
@@ -389,198 +600,11 @@ main(int argc, char **argv)
 
 	if ((strcasecmp(mode, CM_OP_SUBMIT) == 0) ||
 	    (strcasecmp(mode, CM_OP_POLL) == 0)) {
-		/* Prepare to make an XML-RPC request. */
-		ctx = cm_submit_x_init(NULL, uri, "cert_request",
-				       cainfo, capath,
-				       cm_submit_x_negotiate_on,
-				       cm_submit_x_delegate_on);
-		if (ctx == NULL) {
-			fprintf(stderr, "Error setting up for XMLRPC to %s on "
-				"the client.\n", uri);
-			printf(_("Error setting up for XMLRPC on the client.\n"));
-			return CM_SUBMIT_STATUS_UNCONFIGURED;
-		}
-
-		/* Add the CSR contents as the sole unnamed argument. */
-		args[0] = csr;
-		args[1] = NULL;
-		cm_submit_x_add_arg_as(ctx, args);
-		/* Add the principal name named argument. */
-		cm_submit_x_add_named_arg_s(ctx, "principal", reqprinc);
-		/* Tell the server to add entries for a principal if one
-		 * doesn't exist yet. */
-		cm_submit_x_add_named_arg_b(ctx, "add", 1);
-
-		/* Submit the request. */
-		fprintf(stderr, "Submitting request to \"%s\".\n", uri);
-		cm_submit_x_run(ctx);
-
-		/* Check the results. */
-		if (cm_submit_x_faulted(ctx) == 0) {
-			i = cm_submit_x_fault_code(ctx);
-			/* Interpret the error.  See errors.py to get the
-			 * classifications. */
-			switch (i / 1000) {
-			case 2: /* authorization error - permanent */
-			case 3: /* invocation error - permanent */
-				printf("Server at %s denied our request, "
-				       "giving up: %d (%s).\n", uri, i,
-				       cm_submit_x_fault_text(ctx));
-				return CM_SUBMIT_STATUS_REJECTED;
-				break;
-			case 1: /* authentication error - transient? */
-			case 4: /* execution error - transient? */
-			case 5: /* generic error - transient? */
-			default:
-				printf("Server at %s failed request, "
-				       "will retry: %d (%s).\n", uri, i,
-				       cm_submit_x_fault_text(ctx));
-				return CM_SUBMIT_STATUS_UNREACHABLE;
-				break;
-			}
-		} else
-		if (cm_submit_x_has_results(ctx) == 0) {
-			if (cm_submit_x_get_named_s(ctx, "certificate",
-						    &s) == 0) {
-				/* If we got a certificate, we're probably
-				 * okay. */
-				fprintf(stderr, "Certificate: \"%s\"\n", s);
-				s = cm_submit_u_base64_from_text(s);
-				if (s == NULL) {
-					printf("Out of memory parsing server "
-					       "response, will retry.\n");
-					return CM_SUBMIT_STATUS_UNREACHABLE;
-				}
-				s = cm_submit_u_pem_from_base64("CERTIFICATE",
-								FALSE, s);
-				if (s != NULL) {
-					printf("%s", s);
-				}
-				return CM_SUBMIT_STATUS_ISSUED;
-			} else {
-				return CM_SUBMIT_STATUS_REJECTED;
-			}
-		} else {
-			/* No useful response, no fault.  Try again, from
-			 * scratch, later. */
-			return CM_SUBMIT_STATUS_UNREACHABLE;
-		}
+		return submit_or_poll(uri, cainfo, capath, csr, reqprinc);
 	} else
 	if (strcasecmp(mode, CM_OP_FETCH_ROOTS) == 0) {
-		/* Read our realm name from our ccache. */
-		realm = cm_submit_x_ccache_realm(&kerr);
-		/* Prepare to perform an LDAP search. */
-		if ((server != NULL) && !ldap_uri_cmd) {
-			snprintf(uri, sizeof(uri), "ldap://%s/", server);
-		} else
-		if (ldap_uri != NULL) {
-			snprintf(uri, sizeof(uri), "%s", ldap_uri);
-		} else
-		if (host != NULL) {
-			snprintf(uri, sizeof(uri), "ldap://%s/", host);
-		}
-		/* Connect and authenticate. */
-		ld = NULL;
-		if (strlen(uri) != 0) {
-			ld = open_ldap(uri);
-		}
-		if ((ld == NULL) &&
-		    (cm_srvloc_resolve(NULL, "_ldap._tcp", domain,
-				       &srvlocs) == 0)) {
-			for (srv = srvlocs;
-			     (srv != NULL) && (ld == NULL);
-			     srv = srv->next) {
-				if (srv->port != 0) {
-					snprintf(uri, sizeof(uri),
-						 "ldap://%s:%d/", srv->host,
-						 srv->port);
-				} else {
-					snprintf(uri, sizeof(uri),
-						 "ldap://%s/", srv->host);
-				}
-				ld = open_ldap(uri);
-			}
-		}
-		if (strlen(uri) == 0) {
-			printf(_("Unable to determine location of "
-				 "IPA LDAP server.\n"));
-			return CM_SUBMIT_STATUS_UNCONFIGURED;
-		}
-		if (ld == NULL) {
-			printf(_("Unable to contact an IPA LDAP server.\n"));
-			return CM_SUBMIT_STATUS_UNREACHABLE;
-		}
-		/* If we don't have a base DN to search yet, look for a default
-		 * that we can use. */
-		if (basedn == NULL) {
-			rc = ldap_search_ext_s(ld, "", LDAP_SCOPE_BASE,
-					       NULL, lncattrs, 0, NULL, NULL, NULL,
-					       1, &lresult);
-			if (rc != LDAP_SUCCESS) {
-				fprintf(stderr, "Error searching root DSE: %s.",
-					ldap_err2string(rc));
-				return CM_SUBMIT_STATUS_UNCONFIGURED;
-			}
-			for (lmsg = ldap_first_entry(ld, lresult);
-			     lmsg != NULL;
-			     lmsg = ldap_next_entry(ld, lmsg)) {
-				lbvalues = ldap_get_values_len(ld, lmsg,
-							       lncattrs[0]);
-				if (lbvalues == NULL) {
-					continue;
-				}
-				for (i = 0; lbvalues[i] != NULL; i++) {
-					c = lbvalues[i]->bv_len;
-					basedn = malloc(c + 1);
-					if (basedn != NULL) {
-						memcpy(basedn,
-						       lbvalues[0]->bv_val,
-						       c);
-						basedn[c] = '\0';
-						break;
-					}
-				}
-			}
-			ldap_msgfree(lresult);
-		}
-		if (basedn == NULL) {
-			printf(_("Unable to determine base DN of "
-				 "domain information on IPA server.\n"));
-			return CM_SUBMIT_STATUS_UNCONFIGURED;
-		}
-		snprintf(lfilter, sizeof(lfilter), "(%s=*)", lattrs[0]);
-		snprintf(ldn, sizeof(ldn), "%s,%s",
-			 relativedn, basedn);
-		rc = ldap_search_ext_s(ld, ldn, LDAP_SCOPE_SUBTREE,
-				       lfilter, lattrs, 0, NULL, NULL, NULL,
-				       LDAP_NO_LIMIT, &lresult);
-		if (rc != LDAP_SUCCESS) {
-			fprintf(stderr, "Error searching '%s': %s.",
-				ldn, ldap_err2string(rc));
-			return CM_SUBMIT_STATUS_ISSUED;
-		}
-		for (lmsg = ldap_first_entry(ld, lresult);
-		     lmsg != NULL;
-		     lmsg = ldap_next_entry(ld, lmsg)) {
-			lbvalues = ldap_get_values_len(ld, lmsg, lattrs[0]);
-			for (i = 0;
-			     (lbvalues != NULL) && (lbvalues[i] != NULL);
-			     i++) {
-				lbv = lbvalues[i];
-				bv_val = (unsigned char *) lbv->bv_val,
-				lb64 = cm_store_base64_from_bin(NULL,
-								bv_val,
-								lbv->bv_len);
-				pem = cm_submit_u_pem_from_base64("CERTIFICATE",
-								  FALSE, lb64);
-				if (realm != NULL) {
-					printf("%s ", realm);
-				}
-				printf("%s\n%s", "IPA CA", pem);
-			}
-		}
-		ldap_msgfree(lresult);
-		return CM_SUBMIT_STATUS_ISSUED;
+		return fetch_roots(server, ldap_uri_cmd, ldap_uri, host,
+				   domain, basedn);
 	}
 
 	return CM_SUBMIT_STATUS_OPERATION_NOT_SUPPORTED;
