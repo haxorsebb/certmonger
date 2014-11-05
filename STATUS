@@ -62,6 +62,8 @@ Complete:
   * Put NSS into FIPS mode.
   * Offer to store certificates for CAs and their intermediates, potentially in
     multiple certificate databases and PEM files.
+  * Local signing should support signing with a key other than the one
+    used to generate the CSR.
 
 To-do:
   * Also generate a CRMF request (RFC 4211) when we generate CSRs.  Not sure
@@ -73,8 +75,6 @@ To-do:
   * Make certmonger a proper daemon.
     * Sort out logging levels for log messages. (1 day)
       MUST
-  * Local signing should support signing with a key other than the one
-    used to generate the CSR. (2 days)
   * Local signing should track a revocation list for each signing key
     and maintain a CRL for it. (3 days)
     COULD
