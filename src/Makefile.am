@@ -8,7 +8,7 @@ endif
 if NOW
 LDFLAGS += -Wl,-z,relro,-z,now
 endif
-man_MANS = certmonger.8 getcert.1 getcert-request.1 getcert-list.1 getcert-list-cas.1 getcert-start-tracking.1 getcert-stop-tracking.1 selfsign-getcert.1 ipa-getcert.1 certmaster-getcert.1 getcert-resubmit.1 certmonger-ipa-submit.8 certmonger-certmaster-submit.8 certmonger-dogtag-ipa-renew-agent-submit.8 certmonger.conf.5 getcert-refresh.1 getcert-refresh-ca.1 local-getcert.1 certmonger-local-submit.8 getcert-status.1
+man_MANS = certmonger.8 getcert.1 getcert-request.1 getcert-list.1 getcert-list-cas.1 getcert-start-tracking.1 getcert-stop-tracking.1 selfsign-getcert.1 ipa-getcert.1 certmaster-getcert.1 getcert-resubmit.1 certmonger-ipa-submit.8 certmonger-certmaster-submit.8 certmonger-dogtag-ipa-renew-agent-submit.8 certmonger.conf.5 getcert-refresh.1 getcert-refresh-ca.1 local-getcert.1 certmonger-local-submit.8 getcert-status.1 certmonger-dogtag-submit.8
 pkgsysconfdir = $(sysconfdir)/$(PACKAGE)
 pkgsysconf_DATA = certmonger.conf
 EXTRA_PROGRAMS =
@@ -168,7 +168,7 @@ endif
 if WITH_IPA
 pkglibexec_PROGRAMS += ipa-submit
 endif
-pkglibexec_PROGRAMS += dogtag-ipa-renew-agent-submit local-submit
+pkglibexec_PROGRAMS += dogtag-ipa-renew-agent-submit dogtag-submit local-submit
 noinst_PROGRAMS += submit-h submit-d
 ipa_submit_SOURCES = ipa.c srvloc.c srvloc.h store.h store-gen.c \
 		submit-x.c submit-x.h submit-u.c submit-u.h \
@@ -181,14 +181,25 @@ certmaster_submit_SOURCES = certmaster.c submit-x.c submit-x.h \
 certmaster_submit_LDADD = $(XMLRPC_LIBS) $(KRB5_LIBS) $(TALLOC_LIBS) \
 			  $(GMP_LIBS) $(UUID_LIBS) $(LTLIBICONV)
 dogtag_ipa_renew_agent_submit_CFLAGS = $(AM_CFLAGS) $(XML_CFLAGS) \
-				       $(NSS_CFLAGS) $(CURL_CFLAGS)
+				       $(NSS_CFLAGS) $(CURL_CFLAGS) \
+				       -DDOGTAG_IPA_RENEW_AGENT=1
 dogtag_ipa_renew_agent_submit_SOURCES = dogtag.c submit-d.c submit-d.h \
 		submit-h.c submit-h.h util-m.c util-m.h util-n.c util-n.h \
 		submit-u.c submit-u.h submit-e.h util.c util.h log.c log.h \
-		store.h store-gen.c tm.c tm.h prefs.c prefs.h env.h env-system.c
+		store.h store-gen.c tm.c tm.h prefs.c prefs.h \
+		dogtag-ipa.c dogtag-ipa.h env.h env-system.c
 dogtag_ipa_renew_agent_submit_LDADD = $(CURL_LIBS) $(XML_LIBS) $(NSS_LIBS) \
 				      $(OPENSSL_LIBS) $(TALLOC_LIBS) \
 				      $(GMP_LIBS) $(UUID_LIBS) $(LTLIBICONV)
+dogtag_submit_CFLAGS = $(AM_CFLAGS) $(XML_CFLAGS) $(NSS_CFLAGS) $(CURL_CFLAGS)
+dogtag_submit_SOURCES = dogtag.c submit-d.c submit-d.h \
+		submit-h.c submit-h.h util-m.c util-m.h util-n.c util-n.h \
+		submit-u.c submit-u.h submit-e.h util.c util.h log.c log.h \
+		store.h store-gen.c tm.c tm.h prefs.c prefs.h \
+		env.h env-system.c
+dogtag_submit_LDADD = $(CURL_LIBS) $(XML_LIBS) $(NSS_LIBS) \
+		      $(OPENSSL_LIBS) $(TALLOC_LIBS) \
+		      $(GMP_LIBS) $(UUID_LIBS) $(LTLIBICONV)
 local_submit_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS)
 local_submit_SOURCES = local.c env.h store.h store-gen.c submit-o.c submit-o.h \
 		       submit-u.c submit-u.h env-session.c env-shared.c log.c log.h \

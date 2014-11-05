@@ -1,10 +1,10 @@
 .TH certmonger 8 "5 Nov 2014" "certmonger Manual"
 
 .SH NAME
-dogtag-ipa-renew-agent-submit
+dogtag-submit
 
 .SH SYNOPSIS
-dogtag-ipa-renew-agent-submit -E EE-URL -A AGENT-URL
+dogtag-submit -E EE-URL -A AGENT-URL
 [-d dbdir]
 [-n nickname]
 [-i cainfo]
@@ -21,10 +21,9 @@ dogtag-ipa-renew-agent-submit -E EE-URL -A AGENT-URL
 [csrfile]
 
 .SH DESCRIPTION
-\fIdogtag-ipa-renew-agent-submit\fR is the helper which \fIcertmonger\fR uses
-to make certificate renewal requests to Dogtag instances running on IPA
-servers.  It is not normally run interactively, but it can be for
-troubleshooting purposes.
+\fIdogtag-submit\fR is the helper which \fIcertmonger\fR can use to make
+certificate enrollment and renewal requests to Dogtag servers.  It is not
+normally run interactively, but it can be for troubleshooting purposes.
 
 The preferred option is to request a renewal of an already-issued certificate,
 using its serial number, which can be read from a PEM-formatted certificate
@@ -34,8 +33,7 @@ provided, then the client will attempt to obtain a new certificate by
 submitting a signing request to the CA.
 
 The signing request which is to be submitted should either be in a file whose
-name is given as an argument, or fed into \fIdogtag-ipa-renew-agent-submit\fR
-via stdin.
+name is given as an argument, or fed into \fIdogtag-submit\fR via stdin.
 
 \fBcertmonger\fR does not yet support retrieving trust information from Dogtag
 CAs.
@@ -43,67 +41,29 @@ CAs.
 .SH OPTIONS
 .TP
 \fB\-E\fR EE-URL
-The top-level URL for the end-entity interface provided by the CA.  In IPA
-installations, this is typically
+The top-level URL for the end-entity interface provided by the CA.  This is
+typically
 \fIhttp://\fBSERVER\fP:\fBEEPORT\fP/ca/ee/ca\fR.
-If no URL is specified, the \fIhost\fR named in the \fI[global]\fR section in
-the \fI/etc/ipa/default.conf\fR file is used as the value of \fBSERVER\fR,
-and the value of \fBEEPORT\fR will be inferred based on the value of the
-\fIdogtag_version\fR in the \fI[global]\fR section in the
-\fI/etc/ipa/default.conf\fR file:
-if \fIdogtag_version\fR is set to \fI10\fR or more, \fBEEPORT\fR will
-be set to 8080.  Otherwise it will be 9180.
 .TP
 \fB\-A\fR AGENT-URL
-The top-level URL for the agent interface provided by the CA.  In IPA
-installations, this is typically
+The top-level URL for the agent interface provided by the CA.  This is
+typically
 \fIhttps://\fBSERVER\fP:\fBAGENTPORT\fP/ca/agent/ca\fR.
-If no URL is specified, the \fIhost\fR named in the \fI[global]\fR section in
-the \fI/etc/ipa/default.conf\fR file is used as the value of \fBSERVER\fR,
-and the value of \fBAGENTPORT\fR will be inferred based on the value of the
-\fIdogtag_version\fR in the \fI[global]\fR section in the
-\fI/etc/ipa/default.conf\fR file:
-if \fIdogtag_version\fR is set to \fI10\fR or more, \fBAGENTPORT\fR will
-be set to 8443.  Otherwise it will be 9443.
 .TP
 \fB\-d\fR dbdir \fB\-n\fR nickname \fB\-c\fR certfile \fB\-k\fR keyfile
 The location of the key and certificate which the client should use to
 authenticate to the CA's agent interface.  Exactly which values are
 meaningful depend on which cryptography library your copy of libcurl was
 linked with.
-
-If none of these options are specified, and none of the \fB-p\fR, \fB-P\fR,
-\fB-i\fR, nor \fB-C\fR options are specified, then this set of defaults is
-used:
- \fB-i\fR \fI/etc/ipa/ca.crt\fR
- \fB-d\fR \fI/etc/httpd/alias\fR
- \fB-n\fR \fIipaCert\fR
- \fB-p\fR \fI/etc/httpd/alias/pwdfile.txt\fR
 .TP
 \fB\-p\fR pinfile
 The name of a file which contains a PIN/password which will be needed in
 order to make use of the agent credentials.
-
-If this option is not specified, and none of the \fB-d\fR, \fB-n\fR, \fB-c\fR,
-\fB-k\fR, \fB-P\fR, \fB-i\fR, nor \fB-C\fR options are specified, then this set
-of defaults is used:
- \fB-i\fR \fI/etc/ipa/ca.crt\fR
- \fB-d\fR \fI/etc/httpd/alias\fR
- \fB-n\fR \fIipaCert\fR
- \fB-p\fR \fI/etc/httpd/alias/pwdfile.txt\fR
 .TP
 \fB\-i\fR cainfo \fB\-C\fR capath
 The location of a file containing a copy of the CA's certificate, against which
 the CA server's certificate will be verified, or a directory containing, among
 other things, such a file.
-
-If these options are not specified, and none of the \fB-d\fR, \fB-n\fR,
-\fB-c\fR, \fB-k\fR, \fB-p\fR, nor \fB-P\fR options are specified, then this set
-of defaults is used:
- \fB-i\fR \fI/etc/ipa/ca.crt\fR
- \fB-d\fR \fI/etc/httpd/alias\fR
- \fB-n\fR \fIipaCert\fR
- \fB-p\fR \fI/etc/httpd/alias/pwdfile.txt\fR
 .TP
 \fB-s\fR serial
 The serial number of an already-issued certificate for which the client should
@@ -149,13 +109,6 @@ if critical configuration information is missing.  An error message may be print
 5
 if the CA is still thinking.  A suggested poll delay (specified in seconds) and
 a cookie (state) value will be printed.
-
-.SH FILES
-.TP
-.I /etc/ipa/default.conf
-is the IPA client configuration file.  This file is consulted to determine
-the URL for the Dogtag server's end-entity and agent interfaces if they are
-not supplied as arguments.
 
 .SH BUGS
 Please file tickets for any that you find at https://fedorahosted.org/certmonger/

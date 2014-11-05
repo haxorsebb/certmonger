@@ -244,6 +244,9 @@ exit 0
   CA certificates, then re-read the certificate, then run the post hook and
   issue notifications, in that order, instead of saving CA certificates after
   running the post hook, which was always a surprising order (#1131700)
+- add a generic dogtag-submit helper that doesn't include any IPA defaults,
+  to make it easier to know the difference between paramenters it requires
+  and parameters which are optional
 
 * Tue Nov  4 2014 Nalin Dahyabhai <nalin@redhat.com> 0.76.2-1
 - ipa-submit: when we fail to locate/contact LDAP or XML-RPC servers,

@@ -55,8 +55,9 @@
 #define _(_text) (_text)
 #endif
 
-#define IPACONFIG "/etc/ipa/default.conf"
-#define IPASECTION "dogtag"
+#ifdef DOGTAG_IPA_RENEW_AGENT
+#include "dogtag-ipa.h"
+#endif
 
 static void
 help(const char *cmd)
@@ -141,7 +142,7 @@ main(int argc, char **argv)
 	const char *sslpin = NULL, *sslpinfile = NULL;
 	const char *host = NULL, *csr = NULL, *serial = NULL, *template = NULL;
 	const char *dogtag_version = NULL;
-	char *ipaconfig = NULL, *savedstate = NULL;
+	char *savedstate = NULL;
 	char *p, *q, *params = NULL, *params2 = NULL;
 	const char *lasturl = NULL, *lastparams = NULL;
 	const char *tmp = NULL, *results = NULL;
@@ -261,21 +262,9 @@ main(int argc, char **argv)
 
 	ctx = talloc_new(NULL);
 
-	ipaconfig = read_config_file(IPACONFIG);
-	if (ipaconfig != NULL) {
-		host = get_config_entry(ipaconfig,
-					"global",
-					"host");
-		if (dogtag_version == NULL) {
-			dogtag_version = get_config_entry(ipaconfig,
-							  "global",
-							  "dogtag_version");
-		}
-	} else {
-		host = NULL;
-		dogtag_version = NULL;
-	}
-
+#ifdef DOGTAG_IPA_RENEW_AGENT
+	cm_dogtag_ipa_hostver(&host, &dogtag_version);
+#endif
 	if ((dogtag_version != NULL) && (atof(dogtag_version) >= 10)) {
 		eeport = 8080;
 		agentport = 8443;
@@ -341,6 +330,7 @@ main(int argc, char **argv)
 	if ((sslpinfile == NULL) && (sslpin == NULL)) {
 		sslpinfile = cm_prefs_dogtag_sslpinfile();
 	}
+#ifdef DOGTAG_IPA_RENEW_AGENT
 	if ((cainfo == NULL) &&
 	    (capath == NULL) &&
 	    (ssldir == NULL) &&
@@ -353,6 +343,7 @@ main(int argc, char **argv)
 		sslcert = "ipaCert";
 		sslpinfile = "/etc/httpd/alias/pwdfile.txt";
 	}
+#endif
 	if ((sslcert != NULL) && (strlen(sslcert) > 0)) {
 		can_agent = TRUE;
 	} else {
