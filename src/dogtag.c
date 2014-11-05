@@ -140,8 +140,7 @@ main(int argc, char **argv)
 	const char *ssldir = NULL, *cainfo = NULL, *capath = NULL;
 	const char *sslcert = NULL, *sslkey = NULL;
 	const char *sslpin = NULL, *sslpinfile = NULL;
-	const char *host = NULL, *csr = NULL, *serial = NULL, *template = NULL;
-	const char *dogtag_version = NULL;
+	const char *csr = NULL, *serial = NULL, *template = NULL;
 	char *savedstate = NULL;
 	char *p, *q, *params = NULL, *params2 = NULL;
 	const char *lasturl = NULL, *lastparams = NULL;
@@ -149,7 +148,10 @@ main(int argc, char **argv)
 	struct cm_submit_h_context *hctx;
 	void *ctx;
 	int c, verbose = 0, force_new = 0, force_renew = 0, i;
+#ifdef DOGTAG_IPA_RENEW_AGENT
+	const char *host = NULL, *dogtag_version = NULL;
 	int eeport, agentport;
+#endif
 	enum { op_none, op_submit, op_check, op_approve, op_retrieve } op = op_none;
 	dbus_bool_t can_agent, use_agent, missing_args = FALSE;
 	struct dogtag_default **defaults;
@@ -224,9 +226,11 @@ main(int argc, char **argv)
 		case 'v':
 			verbose++;
 			break;
+#ifdef DOGTAG_IPA_RENEW_AGENT
 		case 'V':
 			dogtag_version = optarg;
 			break;
+#endif
 		case 'N':
 			force_new++;
 			force_renew = 0;
@@ -264,7 +268,6 @@ main(int argc, char **argv)
 
 #ifdef DOGTAG_IPA_RENEW_AGENT
 	cm_dogtag_ipa_hostver(&host, &dogtag_version);
-#endif
 	if ((dogtag_version != NULL) && (atof(dogtag_version) >= 10)) {
 		eeport = 8080;
 		agentport = 8443;
@@ -272,7 +275,6 @@ main(int argc, char **argv)
 		eeport = 9180;
 		agentport = 9443;
 	}
-
 	if (eeurl == NULL) {
 		eeurl = cm_prefs_dogtag_ee_url();
 		if ((eeurl == NULL) && (host != NULL)) {
@@ -289,6 +291,8 @@ main(int argc, char **argv)
 						   host, agentport);
 		}
 	}
+#endif
+
 	if (template == NULL) {
 		template = getenv(CM_SUBMIT_PROFILE_ENV);
 		if (template == NULL) {
