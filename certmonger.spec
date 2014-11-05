@@ -239,6 +239,12 @@ exit 0
 %endif
 
 %changelog
+* Wed Nov  5 2014 Nalin Dahyabhai <nalin@redhat.com>
+- rework the state machine so that we save an issued certificate's associated
+  CA certificates, then re-read the certificate, then run the post hook and
+  issue notifications, in that order, instead of saving CA certificates after
+  running the post hook, which was always a surprising order (#1131700)
+
 * Tue Nov  4 2014 Nalin Dahyabhai <nalin@redhat.com> 0.76.2-1
 - ipa-submit: when we fail to locate/contact LDAP or XML-RPC servers,
   use discovery to find them (#1136900)

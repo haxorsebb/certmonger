@@ -146,6 +146,12 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 	case CM_NEED_CA_CERT_SAVE_PERMS:
 		entry->cm_state = CM_NEED_TO_SAVE_CA_CERTS;
 		break;
+	case CM_NEED_TO_NOTIFY_ISSUED_CA_SAVE_FAILED:
+		entry->cm_state = CM_NEED_TO_NOTIFY_ISSUED_CA_SAVE_FAILED;
+		break;
+	case CM_NOTIFYING_ISSUED_CA_SAVE_FAILED:
+		entry->cm_state = CM_NEED_TO_NOTIFY_ISSUED_CA_SAVE_FAILED;
+		break;
 	case CM_NEED_TO_READ_CERT:
 		break;
 	case CM_READING_CERT:
@@ -154,7 +160,7 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 	case CM_SAVED_CERT:
 		break;
 	case CM_POST_SAVED_CERT:
-		entry->cm_state = CM_SAVED_CERT;
+		entry->cm_state = CM_NEED_TO_NOTIFY_ISSUED_SAVED;
 		break;
 	case CM_CA_REJECTED:
 		break;
@@ -185,10 +191,10 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 	case CM_NOTIFYING_REJECTION:
 		entry->cm_state = CM_NEED_TO_NOTIFY_REJECTION;
 		break;
-	case CM_NEED_TO_NOTIFY_ISSUED_FAILED:
+	case CM_NEED_TO_NOTIFY_ISSUED_SAVE_FAILED:
 		break;
-	case CM_NOTIFYING_ISSUED_FAILED:
-		entry->cm_state = CM_NEED_TO_NOTIFY_ISSUED_FAILED;
+	case CM_NOTIFYING_ISSUED_SAVE_FAILED:
+		entry->cm_state = CM_NEED_TO_NOTIFY_ISSUED_SAVE_FAILED;
 		break;
 	case CM_NEED_TO_NOTIFY_ISSUED_SAVED:
 		break;
@@ -202,6 +208,9 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 		entry->cm_state = CM_NEED_TO_SAVE_ONLY_CA_CERTS;
 		break;
 	case CM_SAVING_ONLY_CA_CERTS:
+		entry->cm_state = CM_NEED_TO_SAVE_ONLY_CA_CERTS;
+		break;
+	case CM_NEED_ONLY_CA_CERT_SAVE_PERMS:
 		entry->cm_state = CM_NEED_TO_SAVE_ONLY_CA_CERTS;
 		break;
 	case CM_NEED_TO_NOTIFY_ONLY_CA_SAVE_FAILED:
@@ -989,11 +998,10 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 	case CM_SAVING_CERT:
 		if (cm_certsave_ready(state->cm_certsave_state) == 0) {
 			if (cm_certsave_saved(state->cm_certsave_state) == 0) {
-				/* Saved certificate; note that we have to
-				 * reload the information that was in it. */
+				/* Saved certificate. */
 				cm_certsave_done(state->cm_certsave_state);
 				state->cm_certsave_state = NULL;
-				entry->cm_state = CM_NEED_TO_READ_CERT;
+				entry->cm_state = CM_SAVED_CERT;
 				*when = cm_time_now;
 			} else
 			if (cm_certsave_permissions_error(state->cm_certsave_state) == 0) {
@@ -1007,7 +1015,7 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				 * again in a bit. */
 				cm_certsave_done(state->cm_certsave_state);
 				state->cm_certsave_state = NULL;
-				entry->cm_state = CM_NEED_TO_NOTIFY_ISSUED_FAILED;
+				entry->cm_state = CM_NEED_TO_NOTIFY_ISSUED_SAVE_FAILED;
 				*when = cm_time_soonish;
 			}
 		} else {
@@ -1061,10 +1069,31 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			/* Finished reloading certificate. */
 			cm_certread_done(state->cm_certread_state);
 			state->cm_certread_state = NULL;
-			entry->cm_state = CM_SAVED_CERT;
-			*when = cm_time_now;
 			if (emit_entry_saved_cert != NULL) {
 				(*emit_entry_saved_cert)(context, entry);
+			}
+			/* Start the post-save hoook, if there is one. */
+			state->cm_hook_state = cm_hook_start_postsave(entry,
+								      context,
+								      get_ca_by_index,
+								      get_n_cas,
+								      get_entry_by_index,
+								      get_n_entries);
+			if (state->cm_hook_state != NULL) {
+				/* Note that we're doing the post-save. */
+				entry->cm_state = CM_POST_SAVED_CERT;
+				/* Wait for status update, or poll. */
+				*readfd = cm_hook_get_fd(state->cm_hook_state);
+				if (*readfd == -1) {
+					*when = cm_time_soon;
+				} else {
+					*when = cm_time_no_time;
+				}
+			} else {
+				/* Failed to start the post-save, or nothing to do;
+				 * skip it. */
+				entry->cm_state = CM_NEED_TO_NOTIFY_ISSUED_SAVED;
+				*when = cm_time_now;
 			}
 		} else {
 			/* Wait for status update, or poll. */
@@ -1077,47 +1106,11 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		}
 		break;
 
-	case CM_SAVED_CERT:
-		/* We should already have the lock here.  In cases where we're
-		 * resuming things at startup, try to acquire it if we don't
-		 * have it. */
-		if (!cm_writing_has_lock(entry, cm_ca_phase_invalid) && !cm_writing_lock_by_entry(entry)) {
-			/* Just hang out in this state while we're messing
-			 * around with the outside world for another entry. */
-			cm_log(3, "%s('%s') waiting for saving lock\n",
-			       entry->cm_busname, entry->cm_nickname);
-			*when = cm_time_soon;
-			break;
-		}
-		state->cm_hook_state = cm_hook_start_postsave(entry,
-							      context,
-							      get_ca_by_index,
-							      get_n_cas,
-							      get_entry_by_index,
-							      get_n_entries);
-		if (state->cm_hook_state != NULL) {
-			/* Note that we're doing the post-save. */
-			entry->cm_state = CM_POST_SAVED_CERT;
-			/* Wait for status update, or poll. */
-			*readfd = cm_hook_get_fd(state->cm_hook_state);
-			if (*readfd == -1) {
-				*when = cm_time_soon;
-			} else {
-				*when = cm_time_no_time;
-			}
-		} else {
-			/* Failed to start the post-save, or nothing to do;
-			 * skip it. */
-			entry->cm_state = CM_NEED_TO_SAVE_CA_CERTS;
-			*when = cm_time_now;
-		}
-		break;
-
 	case CM_POST_SAVED_CERT:
 		if (cm_hook_ready(state->cm_hook_state) == 0) {
 			cm_hook_done(state->cm_hook_state);
 			state->cm_hook_state = NULL;
-			entry->cm_state = CM_NEED_TO_SAVE_CA_CERTS;
+			entry->cm_state = CM_NEED_TO_NOTIFY_ISSUED_SAVED;
 			*when = cm_time_now;
 		} else {
 			/* Wait for status update, or poll. */
@@ -1128,6 +1121,11 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				*when = cm_time_no_time;
 			}
 		}
+		break;
+
+	case CM_SAVED_CERT:
+		entry->cm_state = CM_NEED_TO_SAVE_CA_CERTS;
+		*when = cm_time_now;
 		break;
 
 	case CM_CA_REJECTED:
@@ -1265,7 +1263,7 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		}
 		break;
 
-	case CM_NEED_TO_NOTIFY_ISSUED_FAILED:
+	case CM_NEED_TO_NOTIFY_ISSUED_SAVE_FAILED:
 		/* We should already have the lock here.  In cases where we're
 		 * resuming things at startup, try to acquire it if we don't
 		 * have it. */
@@ -1289,7 +1287,7 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		state->cm_notify_state = cm_notify_start(entry,
 							 cm_notify_event_issued_not_saved);
 		if (state->cm_notify_state != NULL) {
-			entry->cm_state = CM_NOTIFYING_ISSUED_FAILED;
+			entry->cm_state = CM_NOTIFYING_ISSUED_SAVE_FAILED;
 			/* Wait for status update, or poll. */
 			*readfd = cm_notify_get_fd(state->cm_notify_state);
 			if (*readfd == -1) {
@@ -1303,11 +1301,11 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		}
 		break;
 
-	case CM_NOTIFYING_ISSUED_FAILED:
+	case CM_NOTIFYING_ISSUED_SAVE_FAILED:
 		if (cm_notify_ready(state->cm_notify_state) == 0) {
 			cm_notify_done(state->cm_notify_state);
 			state->cm_notify_state = NULL;
-			entry->cm_state = CM_NEED_TO_SAVE_CERT;
+			entry->cm_state = CM_START_SAVING_CERT;
 			*when = cm_time_soonish;
 		} else {
 			/* Wait for status update, or poll. */
@@ -1321,6 +1319,17 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		break;
 
 	case CM_NEED_TO_SAVE_CA_CERTS:
+		/* We should already have the lock here.  In cases where we're
+		 * resuming things at startup, try to acquire it if we don't
+		 * have it. */
+		if (!cm_writing_has_lock(entry, cm_ca_phase_invalid) && !cm_writing_lock_by_entry(entry)) {
+			/* Just hang out in this state while we're messing
+			 * around with the outside world for another entry. */
+			cm_log(3, "%s('%s') waiting for saving lock\n",
+			       entry->cm_busname, entry->cm_nickname);
+			*when = cm_time_soon;
+			break;
+		}
 		entry->cm_state = CM_START_SAVING_CA_CERTS;
 		*when = cm_time_now;
 		break;
@@ -1349,10 +1358,11 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 	case CM_SAVING_CA_CERTS:
 		if (cm_casave_ready(state->cm_casave_state) == 0) {
 			if (cm_casave_saved(state->cm_casave_state) == 0) {
-				/* Saved certificates. */
+				/* Saved CA certificates, no go re-read the
+				 * issued certificate. */
 				cm_casave_done(state->cm_casave_state);
 				state->cm_casave_state = NULL;
-				entry->cm_state = CM_NEED_TO_NOTIFY_ISSUED_SAVED;
+				entry->cm_state = CM_NEED_TO_READ_CERT;
 				*when = cm_time_now;
 			} else
 			if (cm_casave_permissions_error(state->cm_casave_state) == 0) {
@@ -1362,10 +1372,10 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				entry->cm_state = CM_NEED_CA_CERT_SAVE_PERMS;
 				*when = cm_time_now;
 			} else {
-				/* Failed to save certs. */
+				/* Failed to save CA certs. */
 				cm_casave_done(state->cm_casave_state);
 				state->cm_casave_state = NULL;
-				entry->cm_state = CM_NEED_TO_NOTIFY_ISSUED_FAILED;
+				entry->cm_state = CM_NEED_TO_NOTIFY_ISSUED_CA_SAVE_FAILED;
 				*when = cm_time_soonish;
 			}
 		} else {
@@ -1439,6 +1449,61 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		}
 		break;
 
+	case CM_NEED_TO_NOTIFY_ISSUED_CA_SAVE_FAILED:
+		/* We should already have the lock here.  In cases where we're
+		 * resuming things at startup, try to acquire it if we don't
+		 * have it. */
+		if (!cm_writing_has_lock(entry, cm_ca_phase_invalid) && !cm_writing_lock_by_entry(entry)) {
+			/* Just hang out in this state while we're messing
+			 * around with the outside world for another entry. */
+			cm_log(3, "%s('%s') waiting for saving lock\n",
+			       entry->cm_busname, entry->cm_nickname);
+			*when = cm_time_soon;
+			break;
+		}
+		if (!cm_writing_unlock_by_entry(entry)) {
+			/* If for some reason we fail to release the lock that
+			 * we have, try to release it again soon. */
+			*when = cm_time_soon;
+			cm_log(1, "%s('%s') failed to release saving "
+			       "lock, probably a bug\n",
+			       entry->cm_busname, entry->cm_nickname);
+			break;
+		}
+		state->cm_notify_state = cm_notify_start(entry,
+							 cm_notify_event_issued_ca_not_saved);
+		if (state->cm_notify_state != NULL) {
+			entry->cm_state = CM_NOTIFYING_ISSUED_CA_SAVE_FAILED;
+			/* Wait for status update, or poll. */
+			*readfd = cm_notify_get_fd(state->cm_notify_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
+		} else {
+			/* Failed to start notifying; try again. */
+			*when = cm_time_soonish;
+		}
+		break;
+
+	case CM_NOTIFYING_ISSUED_CA_SAVE_FAILED:
+		if (cm_notify_ready(state->cm_notify_state) == 0) {
+			cm_notify_done(state->cm_notify_state);
+			state->cm_notify_state = NULL;
+			entry->cm_state = CM_NEED_TO_SAVE_CA_CERTS;
+			*when = cm_time_soonish;
+		} else {
+			/* Wait for status update, or poll. */
+			*readfd = cm_notify_get_fd(state->cm_notify_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
+		}
+		break;
+
 	case CM_NEED_TO_SAVE_ONLY_CA_CERTS:
 		if (!cm_writing_has_lock(entry, cm_ca_phase_invalid) && !cm_writing_lock_by_entry(entry)) {
 			/* Just hang out in this state while we're messing
@@ -1476,6 +1541,15 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 	case CM_SAVING_ONLY_CA_CERTS:
 		if (cm_casave_ready(state->cm_casave_state) == 0) {
 			if (cm_casave_saved(state->cm_casave_state) == 0) {
+				if (!cm_writing_unlock_by_entry(entry)) {
+					/* If for some reason we fail to release the lock that
+					 * we have, try to release it again soon. */
+					*when = cm_time_soon;
+					cm_log(1, "%s('%s') failed to release saving "
+					       "lock, probably a bug\n",
+					       entry->cm_busname, entry->cm_nickname);
+					break;
+				}
 				/* Saved certificates. */
 				cm_casave_done(state->cm_casave_state);
 				state->cm_casave_state = NULL;
@@ -1483,10 +1557,19 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				*when = cm_time_now;
 			} else
 			if (cm_casave_permissions_error(state->cm_casave_state) == 0) {
+				if (!cm_writing_unlock_by_entry(entry)) {
+					/* If for some reason we fail to release the lock that
+					 * we have, try to release it again soon. */
+					*when = cm_time_soon;
+					cm_log(1, "%s('%s') failed to release saving "
+					       "lock, probably a bug\n",
+					       entry->cm_busname, entry->cm_nickname);
+					break;
+				}
 				/* Whoops, we need help. */
 				cm_casave_done(state->cm_casave_state);
 				state->cm_casave_state = NULL;
-				entry->cm_state = CM_NEED_CA_CERT_SAVE_PERMS;
+				entry->cm_state = CM_NEED_ONLY_CA_CERT_SAVE_PERMS;
 				*when = cm_time_now;
 			} else {
 				/* Failed to save certs. */
@@ -1504,6 +1587,11 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				*when = cm_time_no_time;
 			}
 		}
+		break;
+
+	case CM_NEED_ONLY_CA_CERT_SAVE_PERMS:
+		/* Revisit this later. */
+		*when = cm_time_no_time;
 		break;
 
 	case CM_NEED_TO_NOTIFY_ONLY_CA_SAVE_FAILED:

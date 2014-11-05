@@ -172,6 +172,7 @@ The service is saving the certificate of the issuing CA to the locations
 where it has been told to save them.
 .TP
 NEED_CA_CERT_SAVE_PERMS
+NEED_ONLY_CA_CERT_SAVE_PERMS
 The service encountered a filesystem permission error while attempting
 to save the certificate of the issuing CA to the locations where it has
 been told to save them.
@@ -215,15 +216,27 @@ NOTIFYING_REJECTION
 The service is notifying the system administrator that the CA rejected
 the signing request.
 .TP
-NEED_TO_NOTIFY_ISSUED_FAILED
+NEED_TO_NOTIFY_ISSUED_SAVE_FAILED
 The service is needs to notify the system administrator that the CA issued
 a certificate, but that there was a problem saving the certificate to the
 location where the service was told to save it.
 .TP
-NOTIFYING_ISSUED_FAILED
+NOTIFYING_ISSUED_SAVE_FAILED
 The service is is notifying the system administrator that the CA issued
 a certificate, but that there was a problem saving the certificate to the
 location where the service was told to save it.
+.TP
+NEED_TO_NOTIFY_ISSUED_CA_SAVE_FAILED
+The service is needs to notify the system administrator that the CA issued
+a certificate, and the issued certificate was saved to the location where
+the service has been told to save it, but that there was a problem saving the
+CA's certificate to the locations where the service was told to save it.
+.TP
+NOTIFYING_ISSUED_CA_SAVE_FAILED
+The service is notifying the system administrator that the CA issued a
+certificate, and the issued certificate was saved to the location where the
+service has been told to save it, but that there was a problem saving the CA's
+certificate to the locations where the service was told to save it.
 .TP
 NEED_TO_NOTIFY_ISSUED_SAVED
 The service is needs to notify the system administrator that the CA issued

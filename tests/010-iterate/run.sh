@@ -122,6 +122,10 @@ key_storage_location=$tmpdir/keyfile
 cert_storage_type=FILE
 cert_storage_location=$tmpdir/certfile
 notification_method=STDOUT
+post_certsave_command=echo POSTHOOK
+post_certsave_uid=`id -u`
+pre_certsave_command=echo PREHOOK
+pre_certsave_uid=`id -u`
 EOF
 # These cover parts of the process, forcing it to stop if any phase needs
 # to be tried again, so that we don't hit infinite loops.
@@ -163,7 +167,7 @@ fi
 
 echo
 echo '[Saving certificate.]'
-$toolsdir/iterate ca entry START_SAVING_CERT,SAVING_CERT,NEED_TO_READ_CERT,READING_CERT,NEED_TO_SAVE_CA_CERTS,START_SAVING_CA_CERTS,SAVING_CA_CERTS,NEED_TO_NOTIFY_ISSUED_SAVED,NOTIFYING_ISSUED_SAVED,SAVED_CERT | sed 's@'"$tmpdir"'@$tmpdir@g'
+$toolsdir/iterate ca entry START_SAVING_CERT,PRE_SAVE_CERT,SAVING_CERT,NEED_TO_READ_CERT,READING_CERT,POST_SAVED_CERT,NEED_TO_SAVE_CA_CERTS,START_SAVING_CA_CERTS,SAVING_CA_CERTS,NEED_TO_NOTIFY_ISSUED_SAVED,NOTIFYING_ISSUED_SAVED,SAVED_CERT | sed 's@'"$tmpdir"'@$tmpdir@g'
 if test "`grep ^state entry`" != state=MONITORING ; then
 	echo Saving failed or did not move to monitoring.
 	grep ^state entry

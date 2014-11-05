@@ -78,8 +78,10 @@ static const struct {
 	{"NOTIFYING_VALIDITY", CM_NOTIFYING_VALIDITY},
 	{"NEED_TO_NOTIFY_REJECTION", CM_NEED_TO_NOTIFY_REJECTION},
 	{"NOTIFYING_REJECTION", CM_NOTIFYING_REJECTION},
-	{"NEED_TO_NOTIFY_ISSUED_FAILED", CM_NEED_TO_NOTIFY_ISSUED_FAILED},
-	{"NOTIFYING_ISSUED_FAILED", CM_NOTIFYING_ISSUED_FAILED},
+	{"NEED_TO_NOTIFY_ISSUED_SAVE_FAILED", CM_NEED_TO_NOTIFY_ISSUED_SAVE_FAILED},
+	{"NOTIFYING_ISSUED_SAVE_FAILED", CM_NOTIFYING_ISSUED_SAVE_FAILED},
+	{"NEED_TO_NOTIFY_ISSUED_CA_SAVE_FAILED", CM_NEED_TO_NOTIFY_ISSUED_CA_SAVE_FAILED},
+	{"NOTIFYING_ISSUED_CA_SAVE_FAILED", CM_NOTIFYING_ISSUED_CA_SAVE_FAILED},
 	{"NEED_TO_NOTIFY_ONLY_CA_SAVE_FAILED", CM_NEED_TO_NOTIFY_ONLY_CA_SAVE_FAILED},
 	{"NOTIFYING_ONLY_CA_SAVE_FAILED", CM_NOTIFYING_ONLY_CA_SAVE_FAILED},
 	{"NEED_TO_SAVE_CA_CERTS", CM_NEED_TO_SAVE_CA_CERTS},
@@ -100,13 +102,16 @@ static const struct {
 	{"START_SAVING_ONLY_CA_CERTS", CM_START_SAVING_ONLY_CA_CERTS},
 	{"SAVING_ONLY_CA_CERTS", CM_SAVING_ONLY_CA_CERTS},
 	{"NEED_CA_CERT_SAVE_PERMS", CM_NEED_CA_CERT_SAVE_PERMS},
+	{"NEED_ONLY_CA_CERT_SAVE_PERMS", CM_NEED_ONLY_CA_CERT_SAVE_PERMS},
 	{"INVALID", CM_INVALID},
-	/* old names */
+	/* old names for since-renamed states */
 	{"NEED_TO_NOTIFY", CM_NEED_TO_NOTIFY_VALIDITY},
 	{"NOTIFYING", CM_NOTIFYING_VALIDITY},
 	{"NEWLY_ADDED_START_READING_KEYI", CM_NEWLY_ADDED_START_READING_KEYINFO},
 	{"NEWLY_ADDED_READING_KEYI", CM_NEWLY_ADDED_READING_KEYINFO},
 	{"NEWLY_ADDED_NEED_KEYI_READ_PIN", CM_NEWLY_ADDED_NEED_KEYINFO_READ_PIN},
+	{"NEED_TO_NOTIFY_ISSUED_FAILED", CM_NEED_TO_NOTIFY_ISSUED_SAVE_FAILED},
+	{"NOTIFYING_ISSUED_FAILED", CM_NOTIFYING_ISSUED_SAVE_FAILED},
 };
 
 static const struct {
@@ -189,7 +194,9 @@ cm_store_state_as_string(enum cm_state state)
 enum cm_ca_phase_state
 cm_store_ca_state_from_string(const char *name)
 {
+	unsigned long l;
 	unsigned i;
+	char *p;
 
 	for (i = 0;
 	     i < sizeof(cm_ca_state_names) / sizeof(cm_ca_state_names[0]);
@@ -198,13 +205,19 @@ cm_store_ca_state_from_string(const char *name)
 			return cm_ca_state_names[i].state;
 		}
 	}
+	l = strtoul(name, &p, 10);
+	if ((*name != '\0') && (p != NULL) && (*p == '\0')) {
+		return l;
+	}
 	return CM_CA_DISABLED;
 }
 
 enum cm_ca_phase
 cm_store_ca_phase_from_string(const char *name)
 {
+	unsigned long l;
 	unsigned int i;
+	char *p;
 
 	for (i = 0;
 	     i < sizeof(cm_ca_phase_names) / sizeof(cm_ca_phase_names[0]);
@@ -213,13 +226,19 @@ cm_store_ca_phase_from_string(const char *name)
 			return cm_ca_phase_names[i].phase;
 		}
 	}
+	l = strtoul(name, &p, 10);
+	if ((*name != '\0') && (p != NULL) && (*p == '\0')) {
+		return l;
+	}
 	return cm_ca_phase_invalid;
 }
 
 enum cm_state
 cm_store_state_from_string(const char *name)
 {
+	unsigned long l;
 	unsigned int i;
+	char *p;
 
 	for (i = 0;
 	     i < sizeof(cm_state_names) / sizeof(cm_state_names[0]);
@@ -227,6 +246,10 @@ cm_store_state_from_string(const char *name)
 		if (strcasecmp(cm_state_names[i].name, name) == 0) {
 			return cm_state_names[i].state;
 		}
+	}
+	l = strtoul(name, &p, 10);
+	if ((*name != '\0') && (p != NULL) && (*p == '\0')) {
+		return l;
 	}
 	return CM_INVALID;
 }
