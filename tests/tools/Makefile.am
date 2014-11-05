@@ -10,7 +10,7 @@ CFLAGS += -fPIC
 LDFLAGS += -fPIC -pie
 endif
 
-noinst_PROGRAMS = keyiread keygen csrgen submit certread certsave oid2name name2oid iterate prefs dates listnicks pem2base base2pem dparse payload checksig base64 cadata citerate casave hooks libexecdir canon srvloc
+noinst_PROGRAMS = keyiread keygen csrgen submit certread certsave oid2name name2oid iterate prefs dates listnicks pem2base base2pem dparse payload checksig base64 cadata citerate casave hooks libexecdir canon srv
 noinst_LIBRARIES = libtools.a
 
 libtools_a_SOURCES = ../../src/tm.h tm.c tools.h tools.c
@@ -25,4 +25,4 @@ dparse_LDADD = $(LDADD) $(XML_LIBS)
 
 citerate_SOURCES = citerate.c ../../src/store-gen.c
 
-srvloc_SOURCES = srvloc.c ../../src/srvloc.c
+srv_SOURCES = srv.c ../../src/srvloc.c
