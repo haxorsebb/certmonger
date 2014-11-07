@@ -361,10 +361,12 @@ main(int argc, char **argv)
 		printf(_("No end-entity URL (-E) given, and no default known.\n"));
 		missing_args = TRUE;
 	}
+#ifdef DOGTAG_IPA_RENEW_AGENT
 	if (agenturl == NULL) {
 		printf(_("No agent URL (-A) given, and no default known.\n"));
 		missing_args = TRUE;
 	}
+#endif
 	if (template == NULL) {
 		printf(_("No profile/template (-T) given, and no default known.\n"));
 		missing_args = TRUE;
@@ -455,6 +457,18 @@ main(int argc, char **argv)
 		use_agent = FALSE;
 		break;
 	case op_approve:
+		if (agenturl == NULL) {
+			printf(_("No agent URL (-A) given, and no default "
+				 "known.\n"));
+			help(argv[0]);
+			return CM_SUBMIT_STATUS_UNCONFIGURED;
+		}
+		if ((sslcert == NULL) || (strlen(sslcert) == 0)) {
+			printf(_("No agent credentials (-n) given, but they "
+				 "are needed.\n"));
+			help(argv[0]);
+			return CM_SUBMIT_STATUS_UNCONFIGURED;
+		}
 		/* Reading profile defaults for this certificate, then applying
 		 * them and issuing a new certificate. */
 		url = talloc_asprintf(ctx, "%s/profileReview", agenturl);
