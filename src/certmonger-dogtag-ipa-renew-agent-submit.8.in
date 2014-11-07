@@ -122,8 +122,9 @@ is being asked to continue a multi-step enrollment process.  If the
 .TP
 \fB-T\fR profile/template
 The name of the type of certificate which the client should request from the CA
-if it is not renewing a certificate (per the \fB-s\fR option above).  The
-default value is \fBcaServerCert\fP.
+if it is not renewing a certificate (per the \fB-s\fR option above).  If the
+\fICERTMONGER_CA_PROFILE\fR environment variable is set, its value is used.
+Otherwise, the default value is \fBcaServerCert\fP.
 .TP
 \fB-v\fR
 Increases the logging level.  Use twice for more logging.  This option is mainly
