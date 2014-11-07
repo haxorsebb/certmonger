@@ -119,7 +119,7 @@ can tell it to include one or more of several types of SAN values, too:
 Let's create another certificate:
 
    selfsign-getcert request -f /tmp/babs.crt -k /tmp/babs.key \
-   	-N "CN=Babs Jensen" -K bjensen@EXAMPLE.COM -E babs@example.com
+	-N "CN=Babs Jensen" -K bjensen@EXAMPLE.COM -E babs@example.com
 
 For flat files, we can use OpenSSL to look at the certificate's contents.
 Have a look at the first certificate we generated:
@@ -154,15 +154,52 @@ certificate when the existing one expires:
 We could have added the "-r" when we initially requested the certificate and
 skipped this step, but this is documentation, so sometimes we go the long way.
 
+Using certmonger's Built-in "Toy" CA
+
+Using a toy CA to sign certificates is slightly more useful than self-signing
+certificates, because you can issue multiple certificates, all signed by a
+single signing certificate, and only have to deal with distributing one copy of
+the signing certificate to the various places where it'll be needed.
+
+The certmonger package includes a "local" signer which uses a its own
+self-signed certificate to sign certificates.  Using it instead of self-signing
+is straightforward:
+
+   local-getcert request -r \
+	-f /etc/httpd/conf/ssl.crt/server.crt \
+	-k /etc/httpd/conf/ssl.key/server.key \
+	-F /etc/httpd/conf/ssl.crt/ca.crt \
+	-N CN=`hostname --fqdn` \
+	-D `hostname --fqdn` \
+	-U id-kp-serverAuth
+
+   local-getcert request -r \
+	-f /etc/ldap/server.crt \
+	-k /etc/ldap/server.key \
+	-F /etc/ldap/ca.crt \
+	-N CN=`hostname --fqdn` \
+	-D `hostname --fqdn` \
+	-U id-kp-serverAuth
+
+In this example, both /etc/httpd/conf/ssl.crt/ca.crt and /etc/ldap/ca.crt will
+contain copies of the same certificate, and a client connecting to either of
+the two services will only need to be given a copy of one of the files in order
+to verify the certificate used by either service.
+
+The "local" signer doesn't support revoking certificates, whether in response
+to a key compromise or for any of several less catastrophic reasons, so it's
+not recommended for general use, either.
+
 Using certmonger With Real CAs
 
-Having certmonger send a CSR to a real CA rather than self-signing everything
+Having certmonger send a CSR to a real CA rather than itself signing everything
 is supposed to be trivial.  For example, certmonger already "knows" how to
 interact with the CA component of an IPA system, so the only thing you'd do
-differently is call "ipa-getcert" instead of "selfsign-getcert".
+differently is call "ipa-getcert" instead of "selfsign-getcert" or
+"local-getcert".
 
    ipa-getcert request -r \
-   	-f /etc/httpd/conf/ssl.crt/server.crt \
+	-f /etc/httpd/conf/ssl.crt/server.crt \
 	-k /etc/httpd/conf/ssl.key/server.key \
 	-N CN=`hostname --fqdn` \
 	-D `hostname --fqdn` \
