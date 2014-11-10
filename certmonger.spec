@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.76.3
+Version:	0.76.4
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -239,7 +239,11 @@ exit 0
 %endif
 
 %changelog
+* Mon Nov 10 2014 Nalin Dahyabhai <nalin@redhat.com> 0.76.4-1
+- fix a failure in self-tests
+
 * Mon Nov 10 2014 Nalin Dahyabhai <nalin@redhat.com> 0.76.3-1
+- fixes for bugs found by static analysis
 - handle IDN correctly when doing service location using SRV records
 - documentation updates
 
