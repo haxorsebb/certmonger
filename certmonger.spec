@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.76.5
+Version:	0.76.6
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -239,6 +239,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Nov 10 2014 Nalin Dahyabhai <nalin@redhat.com> 0.76.6-1
+- don't discard the priority value in DNS SRV records
+
 * Mon Nov 10 2014 Nalin Dahyabhai <nalin@redhat.com> 0.76.5-1
 - avoid premature exit on CA data analysis failures (should fix issue
   reported by Natxo Asenjo)
