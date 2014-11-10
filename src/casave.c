@@ -312,7 +312,7 @@ add_string(void *parent, char ***dest, const char *value)
 	tmp = talloc_array_ptrtype(parent, tmp, i + 2);
 	if (tmp == NULL) {
 		printf(_("Out of memory.\n"));
-		exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
+		_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
 	}
 	if (i > 0) {
 		memcpy(tmp, *dest, sizeof(tmp[0]) * i);
@@ -351,7 +351,7 @@ add_cert(void *parent, struct cm_savecert ***dest, enum cert_level level,
 	tmp = talloc_array_ptrtype(parent, tmp, i + 2);
 	if (tmp == NULL) {
 		printf(_("Out of memory.\n"));
-		exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
+		_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
 	}
 	if (i > 0) {
 		memcpy(tmp, *dest, sizeof(tmp[0]) * i);
