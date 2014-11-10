@@ -1,10 +1,10 @@
 [submit-as-agent(good.profileSubmit.serial.in-range) = WAIT_WITH_DELAY]
-error_reason="Request Deferred - defer request",status="2",requestId="12"
+error="Request Deferred - defer request",status="2",requestId="12"
 0
 state=approve&requestId=12
 
 [review-as-agent(good.profileReview) = WAIT_WITH_DELAY]
-error="0",status="pending",requestId="17"
+error_code="0",status="pending",requestId="17"
 0
 state=approve&requestId=17
 
@@ -41,57 +41,57 @@ FxfR4qHzwpD9Q7rvTzFP2/J/Cr8=
 -----END CERTIFICATE-----
 
 [submit-as-agent(bad.profileSubmit.csr.empty) = REJECTED]
-error_reason="Invalid Request",status="1"
+error="Invalid Request",status="1"
 Server at "SUBMIT" replied: Invalid Request
 [submit-as-agent(bad.profileSubmit.csr.subject-mismatch) = REJECTED]
-error_reason="Request Rejected - Subject Name Not Matched O=Default Company Ltd,L=Default City,C=XX",status="3",requestId="13"
+error="Request Rejected - Subject Name Not Matched O=Default Company Ltd,L=Default City,C=XX",status="3",requestId="13"
 Server at "SUBMIT" replied: Request Rejected - Subject Name Not Matched O=Default Company Ltd,L=Default City,C=XX
 [submit-as-agent(bad.profileSubmit.serial.empty) = REJECTED]
 
 [submit-as-agent(bad.profileSubmit.serial.invalid) = REJECTED]
 
 [submit-as-agent(bad.profileSubmit.serial.out-of-range) = REJECTED]
-error="1",error_code="Server Internal Error"
+error_code="1",error_reason="Server Internal Error"
 Server at "SUBMIT" replied: 1: Server Internal Error
 [review-as-agent(bad.profileReview.no-such-request) = REJECTED]
-error="1",error_code="Request 0 Not Found"
+error_code="1",error_reason="Request 0 Not Found"
 Server at "REVIEW" replied: 1: Request 0 Not Found
 [review-as-agent(bad.profileReview.unauthorized-cert) = REJECTED]
-error="1",error_code="Authentication Error"
+error_code="1",error_reason="Authentication Error"
 Server at "REVIEW" replied: 1: Authentication Error
 [review-as-agent(bad.profileReview.wrong-nssdb) = REJECTED]
 
 [approve-as-agent(bad.profileProcess.bad-property) = REJECTED]
-error="1",error_code="Property Error - Invalid Property notBefore",status="pending",requestId="17"
+error_code="1",error_reason="Property Error - Invalid Property notBefore",status="pending",requestId="17"
 Server at "APPROVE" replied: 1: Property Error - Invalid Property notBefore
 [approve-as-agent(bad.profileProcess.no-agent-cert) = REJECTED]
 
 [approve-as-agent(bad.profileProcess.no-ca-cert) = REJECTED]
 
 [approve-as-agent(bad.profileProcess.no-property) = REJECTED]
-error="1",error_code="Property Error - Invalid Property notBefore",status="pending",requestId="17"
+error_code="1",error_reason="Property Error - Invalid Property notBefore",status="pending",requestId="17"
 Server at "APPROVE" replied: 1: Property Error - Invalid Property notBefore
 [approve-as-agent(bad.profileProcess.not-pending) = REJECTED]
-error="1",error_code="Request Not In Pending State",requestId="17"
+error_code="1",error_reason="Request Not In Pending State",requestId="17"
 Server at "APPROVE" replied: 1: Request Not In Pending State
 [check-as-agent(bad.checkRequest.nosuch) = REJECTED]
-error_reason="Request ID 29 was not found in the request queue."
+error="Request ID 29 was not found in the request queue."
 Server at "CHECK" replied: Request ID 29 was not found in the request queue.
 [fetch-as-agent(bad.displayCertFromRequest.incomplete) = REJECTED]
-error_reason="Request ID 14 was not completed.",status="7"
+error="Request ID 14 was not completed.",status="7"
 Server at "FETCH" replied: Request ID 14 was not completed.
 [fetch-as-agent(bad.displayCertFromRequest.no-such-request) = REJECTED]
-error_reason="Request ID 19 was not found in the request queue.",status="7"
+error="Request ID 19 was not found in the request queue.",status="7"
 Server at "FETCH" replied: Request ID 19 was not found in the request queue.
 [fetch-as-agent(bad.displayCertFromRequest.rejected) = REJECTED]
-error_reason="Request ID 17 was not completed.",status="7"
+error="Request ID 17 was not completed.",status="7"
 Server at "FETCH" replied: Request ID 17 was not completed.
 [submit-as-end-entity(good.profileSubmit.serial.in-range) = WAIT]
-error_reason="Request Deferred - defer request",status="2",requestId="12"
+error="Request Deferred - defer request",status="2",requestId="12"
 state=check&requestId=12
 
 [review-as-end-entity(good.profileReview) = WAIT_WITH_DELAY]
-error="0",status="pending",requestId="17"
+error_code="0",status="pending",requestId="17"
 0
 state=approve&requestId=17
 
@@ -127,49 +127,49 @@ FxfR4qHzwpD9Q7rvTzFP2/J/Cr8=
 -----END CERTIFICATE-----
 
 [submit-as-end-entity(bad.profileSubmit.csr.empty) = REJECTED]
-error_reason="Invalid Request",status="1"
+error="Invalid Request",status="1"
 Server at "SUBMIT" replied: Invalid Request
 [submit-as-end-entity(bad.profileSubmit.csr.subject-mismatch) = REJECTED]
-error_reason="Request Rejected - Subject Name Not Matched O=Default Company Ltd,L=Default City,C=XX",status="3",requestId="13"
+error="Request Rejected - Subject Name Not Matched O=Default Company Ltd,L=Default City,C=XX",status="3",requestId="13"
 Server at "SUBMIT" replied: Request Rejected - Subject Name Not Matched O=Default Company Ltd,L=Default City,C=XX
 [submit-as-end-entity(bad.profileSubmit.serial.empty) = REJECTED]
 
 [submit-as-end-entity(bad.profileSubmit.serial.invalid) = REJECTED]
 
 [submit-as-end-entity(bad.profileSubmit.serial.out-of-range) = REJECTED]
-error="1",error_code="Server Internal Error"
+error_code="1",error_reason="Server Internal Error"
 Server at "SUBMIT" replied: 1: Server Internal Error
 [review-as-end-entity(bad.profileReview.no-such-request) = REJECTED]
-error="1",error_code="Request 0 Not Found"
+error_code="1",error_reason="Request 0 Not Found"
 Server at "REVIEW" replied: 1: Request 0 Not Found
 [review-as-end-entity(bad.profileReview.unauthorized-cert) = REJECTED]
-error="1",error_code="Authentication Error"
+error_code="1",error_reason="Authentication Error"
 Server at "REVIEW" replied: 1: Authentication Error
 [review-as-end-entity(bad.profileReview.wrong-nssdb) = REJECTED]
 
 [approve-as-end-entity(bad.profileProcess.bad-property) = REJECTED]
-error="1",error_code="Property Error - Invalid Property notBefore",status="pending",requestId="17"
+error_code="1",error_reason="Property Error - Invalid Property notBefore",status="pending",requestId="17"
 Server at "APPROVE" replied: 1: Property Error - Invalid Property notBefore
 [approve-as-end-entity(bad.profileProcess.no-agent-cert) = REJECTED]
 
 [approve-as-end-entity(bad.profileProcess.no-ca-cert) = REJECTED]
 
 [approve-as-end-entity(bad.profileProcess.no-property) = REJECTED]
-error="1",error_code="Property Error - Invalid Property notBefore",status="pending",requestId="17"
+error_code="1",error_reason="Property Error - Invalid Property notBefore",status="pending",requestId="17"
 Server at "APPROVE" replied: 1: Property Error - Invalid Property notBefore
 [approve-as-end-entity(bad.profileProcess.not-pending) = REJECTED]
-error="1",error_code="Request Not In Pending State",requestId="17"
+error_code="1",error_reason="Request Not In Pending State",requestId="17"
 Server at "APPROVE" replied: 1: Request Not In Pending State
 [check-as-end-entity(bad.checkRequest.nosuch) = REJECTED]
-error_reason="Request ID 29 was not found in the request queue."
+error="Request ID 29 was not found in the request queue."
 Server at "CHECK" replied: Request ID 29 was not found in the request queue.
 [fetch-as-end-entity(bad.displayCertFromRequest.incomplete) = REJECTED]
-error_reason="Request ID 14 was not completed.",status="7"
+error="Request ID 14 was not completed.",status="7"
 Server at "FETCH" replied: Request ID 14 was not completed.
 [fetch-as-end-entity(bad.displayCertFromRequest.no-such-request) = REJECTED]
-error_reason="Request ID 19 was not found in the request queue.",status="7"
+error="Request ID 19 was not found in the request queue.",status="7"
 Server at "FETCH" replied: Request ID 19 was not found in the request queue.
 [fetch-as-end-entity(bad.displayCertFromRequest.rejected) = REJECTED]
-error_reason="Request ID 17 was not completed.",status="7"
+error="Request ID 17 was not completed.",status="7"
 Server at "FETCH" replied: Request ID 17 was not completed.
 44 samples.
