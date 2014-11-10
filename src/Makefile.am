@@ -168,14 +168,17 @@ endif
 if WITH_IPA
 pkglibexec_PROGRAMS += ipa-submit
 endif
-pkglibexec_PROGRAMS += dogtag-ipa-renew-agent-submit dogtag-submit local-submit
+pkglibexec_PROGRAMS += dogtag-ipa-renew-agent-submit dogtag-submit
+if HAVE_OPENSSL
+pkglibexec_PROGRAMS += local-submit
+endif
 noinst_PROGRAMS += submit-h submit-d
 ipa_submit_SOURCES = ipa.c srvloc.c srvloc.h store.h store-gen.c \
 		submit-x.c submit-x.h submit-u.c submit-u.h \
 		submit-e.h util.c util.h log.c log.h tm.c tm.h
 ipa_submit_LDADD = $(XMLRPC_LIBS) $(LDAP_LIBS) $(KRB5_LIBS) $(TALLOC_LIBS) \
-		   $(GMP_LIBS) $(IDN_LIBS) $(UUID_LIBS) $(RESOLV_LIBS) \
-		   $(LTLIBICONV)
+		   $(GMP_LIBS) $(IDN_LIBS) $(OPENSSL_LIBS) $(UUID_LIBS) \
+		   $(RESOLV_LIBS) $(LTLIBICONV)
 certmaster_submit_SOURCES = certmaster.c submit-x.c submit-x.h \
 		submit-e.h submit-u.c submit-u.h util.c util.h log.c log.h \
 		tm.c tm.h

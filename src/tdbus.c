@@ -30,7 +30,12 @@
 
 #include <dbus/dbus.h>
 
+#ifdef HAVE_OPENSSL
 #include <openssl/rand.h>
+#endif
+#ifdef HAVE_GMP
+#include <gmp.h>
+#endif
 
 #include "cm.h"
 #include "log.h"
@@ -828,6 +833,22 @@ cm_tdbus_lost_private_client(void *data)
 	cm_log(3, "Lost private connection.\n");
 }
 
+#ifndef HAVE_OPENSSL
+#ifdef HAVE_GMP
+static void
+fill_uuid(unsigned char *uuid, size_t length)
+{
+	gmp_randstate_t state;
+	unsigned int i;
+
+	gmp_randinit_default(state);
+	for (i = 0; i < length; i++) {
+		uuid[i] = gmp_urandomb_ui(state, 8);
+	}
+}
+#endif
+#endif
+
 int
 cm_tdbus_setup_private(struct tevent_context *ec, void *data,
 		       const char *path, char **address, DBusError *error)
@@ -861,12 +882,18 @@ cm_tdbus_setup_private(struct tevent_context *ec, void *data,
 			/* we're good */
 		} else
 #endif
+#ifdef HAVE_OPENSSL
 		if (!RAND_pseudo_bytes(uuid, sizeof(uuid))) {
 			/* Try again sometime later. */
 			cm_log(1, "Error generating UUID.\n");
 			talloc_free(tdb);
 			return -1;
 		}
+#else
+#ifdef HAVE_GMP
+		fill_uuid(uuid, sizeof(uuid));
+#endif
+#endif
 		addr = talloc_asprintf(ec, "unix:abstract=%s/listen-"
 				       "%02x%02x%02x%02x%02x%02x%02x%02x"
 				       "%02x%02x%02x%02x%02x%02x%02x%02x",

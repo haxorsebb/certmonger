@@ -33,6 +33,13 @@
 #include <idna.h>
 #endif
 
+#ifdef HAVE_OPENSSL
+#include <openssl/rand.h>
+#endif
+#ifdef HAVE_GMP
+#include <gmp.h>
+#endif
+
 #include <talloc.h>
 
 #include "srvloc.h"
@@ -71,13 +78,53 @@ cm_srvloc_weight_sort(const void *a, const void *b)
 	return sa->weight - sb->weight;
 }
 
+#ifdef HAVE_OPENSSL
+static unsigned int
+cm_srvloc_rand(unsigned int range)
+{
+	long long r;
+
+	if (RAND_status() != 1) {
+		return 0;
+	}
+	if (RAND_pseudo_bytes((unsigned char *) &r, sizeof(r)) == -1) {
+		return 0;
+	}
+	if (r < 0) {
+		r = -r;
+	}
+	return r % range;
+}
+#else
+#ifdef HAVE_GMP
+static unsigned int
+cm_srvloc_rand(unsigned int range)
+{
+	static gmp_randstate_t state;
+	static int initialized = 0;
+
+	if (initialized == 0) {
+		gmp_randinit_default(state);
+		initialized++;
+	}
+	return gmp_urandomm_ui(state, range);
+}
+#else
+static unsigned int
+cm_srvloc_rand(unsigned int range)
+{
+	return 0;
+}
+#endif
+#endif
+
 static void
 cm_srvloc_weigh(struct cm_srvloc *res, int n)
 {
-	int i, j, k, r, tweight;
+	int i, j, k, tweight;
 	struct cm_srvloc tmp;
+	long long r;
 
-	srand48(getpid() + time(NULL));
 	qsort(res, n, sizeof(res[0]), cm_srvloc_weight_sort);
 	for (i = 0; res[i].weight == 0; i++) {
 		continue;
@@ -90,7 +137,7 @@ cm_srvloc_weigh(struct cm_srvloc *res, int n)
 		for (k = j; k < n; k++) {
 			tweight += res[k].weight;
 		}
-		r = lrand48() % tweight;
+		r = cm_srvloc_rand(tweight);
 		tweight = 0;
 		for (k = j; k < n; k++) {
 			tweight += res[k].weight;
