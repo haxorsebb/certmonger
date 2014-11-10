@@ -62,42 +62,42 @@ main(int argc, char **argv)
 
 	if (strcmp(mode, "submit") == 0) {
 		cm_submit_d_submit_result(NULL, xml,
-					  &error, &error_code, &error_reason,
+					  &error_code, &error_reason, &error,
 					  &status, &requestId);
 		i = cm_submit_d_submit_eval(NULL, xml, "SUBMIT",
 					    can_agent, &out, &err);
 	} else
 	if (strcmp(mode, "check") == 0) {
 		cm_submit_d_check_result(NULL, xml,
-					 &error, &error_code, &error_reason,
+					 &error_code, &error_reason, &error,
 					 &status, &requestId);
 		i = cm_submit_d_check_eval(NULL, xml, "CHECK",
 					   can_agent, &out, &err);
 	} else
 	if (strcmp(mode, "reject") == 0) {
 		cm_submit_d_reject_result(NULL, xml,
-					  &error, &error_code, &error_reason,
+					  &error_code, &error_reason, &error,
 					  &status, &requestId);
 		i = cm_submit_d_reject_eval(NULL, xml, "REJECT",
 					    can_agent, &out, &err);
 	} else
 	if (strcmp(mode, "review") == 0) {
 		cm_submit_d_review_result(NULL, xml,
-					  &error, &error_code, &error_reason,
+					  &error_code, &error_reason, &error,
 					  &status, &requestId);
 		i = cm_submit_d_review_eval(NULL, xml, "REVIEW",
 					    can_agent, &out, &err);
 	} else
 	if (strcmp(mode, "approve") == 0) {
 		cm_submit_d_approve_result(NULL, xml,
-					   &error, &error_code, &error_reason,
+					   &error_code, &error_reason, &error,
 					   &status, &requestId);
 		i = cm_submit_d_approve_eval(NULL, xml, "APPROVE",
 					     can_agent, &out, &err);
 	} else
 	if (strcmp(mode, "fetch") == 0) {
 		cm_submit_d_fetch_result(NULL, xml,
-					 &error, &error_code, &error_reason,
+					 &error_code, &error_reason, &error,
 					 &status, &requestId, &cert);
 		i = cm_submit_d_fetch_eval(NULL, xml, "FETCH",
 					   can_agent, &out, &err);

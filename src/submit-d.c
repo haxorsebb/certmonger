@@ -412,7 +412,7 @@ cm_submit_d_submit_eval(void *parent, const char *xml, const char *url,
 	*out = NULL;
 	*err = NULL;
 	cm_submit_d_submit_result(parent, xml,
-				  &error, &error_code, &error_reason,
+				  &error_code, &error_reason, &error,
 				  &status, &requestId);
 	if ((status != NULL) && (strcmp(status, "2") == 0) &&
 	    (requestId != NULL)) {
@@ -454,7 +454,7 @@ cm_submit_d_check_eval(void *parent, const char *xml, const char *url,
 	*out = NULL;
 	*err = NULL;
 	cm_submit_d_check_result(parent, xml,
-				 &error, &error_code, &error_reason,
+				 &error_code, &error_reason, &error,
 				 &status, &requestId);
 	if ((status != NULL) &&
 	    (strcmp(status, "complete") == 0) &&
@@ -505,7 +505,7 @@ cm_submit_d_reject_eval(void *parent, const char *xml, const char *url,
 	*out = NULL;
 	*err = NULL;
 	cm_submit_d_reject_result(parent, xml,
-				  &error, &error_code, &error_reason,
+				  &error_code, &error_reason, &error,
 				  &status, &requestId);
 	if ((error != NULL) || (error_code != NULL) || (error_reason != NULL)) {
 		*out = talloc_asprintf(parent, "Server at \"%s\" replied", url);
@@ -533,7 +533,7 @@ cm_submit_d_review_eval(void *parent, const char *xml, const char *url,
 	*out = NULL;
 	*err = NULL;
 	cm_submit_d_review_result(parent, xml,
-				  &error, &error_code, &error_reason,
+				  &error_code, &error_reason, &error,
 				  &status, &requestId);
 	if ((status != NULL) &&
 	    (strcmp(status, "pending") == 0) &&
@@ -577,7 +577,7 @@ cm_submit_d_approve_eval(void *parent, const char *xml, const char *url,
 	*out = NULL;
 	*err = NULL;
 	cm_submit_d_approve_result(parent, xml,
-				   &error, &error_code, &error_reason,
+				   &error_code, &error_reason, &error,
 				   &status, &requestId);
 	if ((status != NULL) && (strcmp(status, "complete") == 0) &&
 	    (requestId != NULL)) {
@@ -612,7 +612,7 @@ cm_submit_d_fetch_eval(void *parent, const char *xml, const char *url,
 	*out = NULL;
 	*err = NULL;
 	cm_submit_d_fetch_result(parent, xml,
-				 &error, &error_code, &error_reason,
+				 &error_code, &error_reason, &error,
 				 &status, &requestId, &cert);
 	if (cert != NULL) {
 		*out = talloc_asprintf(parent, "%s\n", trim(parent, cert));
