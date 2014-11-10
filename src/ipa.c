@@ -354,7 +354,7 @@ submit_or_poll_uri(const char *uri, const char *cainfo, const char *capath,
 {
 	struct cm_submit_x_context *ctx;
 	const char *args[2];
-	char *s;
+	char *s, *p;
 	int i;
 
 	if ((uri == NULL) || (strlen(uri) == 0)) {
@@ -423,12 +423,13 @@ submit_or_poll_uri(const char *uri, const char *cainfo, const char *capath,
 				       "response, will retry.\n");
 				return CM_SUBMIT_STATUS_UNREACHABLE;
 			}
-			s = cm_submit_u_pem_from_base64("CERTIFICATE",
+			p = cm_submit_u_pem_from_base64("CERTIFICATE",
 							FALSE, s);
-			if (s != NULL) {
-				printf("%s", s);
+			if (p != NULL) {
+				printf("%s", p);
 			}
 			free(s);
+			free(p);
 			return CM_SUBMIT_STATUS_ISSUED;
 		} else {
 			return CM_SUBMIT_STATUS_REJECTED;
@@ -495,8 +496,6 @@ fetch_roots(const char *server, int ldap_uri_cmd, const char *ldap_uri,
 	char *pem;
 	int i, rc;
 
-	/* Read our realm name from our ccache. */
-	realm = cm_submit_x_ccache_realm(&kerr);
 	/* Prepare to perform an LDAP search. */
 	i = cm_open_any_ldap(server, ldap_uri_cmd, ldap_uri, host, domain,
 			     uri, sizeof(uri), &ld);
@@ -528,6 +527,9 @@ fetch_roots(const char *server, int ldap_uri_cmd, const char *ldap_uri,
 			ldn, ldap_err2string(rc));
 		return CM_SUBMIT_STATUS_ISSUED;
 	}
+	/* Read our realm name from our ccache. */
+	realm = cm_submit_x_ccache_realm(&kerr);
+	/* Read all of the certificates. */
 	for (lmsg = ldap_first_entry(ld, lresult);
 	     lmsg != NULL;
 	     lmsg = ldap_next_entry(ld, lmsg)) {
