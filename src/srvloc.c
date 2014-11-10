@@ -29,6 +29,10 @@
 #include <time.h>
 #include <unistd.h>
 
+#ifdef CM_USE_IDN
+#include <idna.h>
+#endif
+
 #include <talloc.h>
 
 #include "srvloc.h"
@@ -104,11 +108,12 @@ cm_srvloc_weigh(struct cm_srvloc *res, int n)
 }
 
 int
-cm_srvloc_resolve(void *parent, const char *name, const char *domain,
+cm_srvloc_resolve(void *parent, const char *name, const char *udomain,
 		  struct cm_srvloc **results)
 {
 	int i, j, n, hi, weights;
 	unsigned char *answer;
+	char *domain;
 	size_t answer_len = CM_MAXMSG;
 	struct cm_srvloc *res = NULL;
 	ns_msg msg;
@@ -121,6 +126,13 @@ cm_srvloc_resolve(void *parent, const char *name, const char *domain,
 	if (answer == NULL) {
 		return -1;
 	}
+#ifdef CM_USE_IDN
+	if (idna_to_ascii_lz(udomain, &domain, 0) != IDNA_SUCCESS) {
+		domain = strdup(udomain);
+	}
+#else
+	domain = strdup(udomain);
+#endif
 	i = res_querydomain(name, domain, C_IN, T_SRV, answer, answer_len);
 	if (i == -1) {
 		return -1;

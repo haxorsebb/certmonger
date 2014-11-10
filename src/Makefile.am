@@ -128,7 +128,7 @@ getcert_LDADD = libcm.a $(GETCERT_LIBS) $(KRB5_LIBS) $(LTLIBICONV)
 if WITH_IPA
 bin_PROGRAMS += ipa-getcert
 ipa_getcert_SOURCES = ipa-getcert.c tm.c tm.h
-ipa_getcert_LDADD = $(getcert_LDADD)
+ipa_getcert_LDADD = $(getcert_LDADD) $(IDN_LIBS)
 endif
 if WITH_IPA
 bin_PROGRAMS += certmaster-getcert

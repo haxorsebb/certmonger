@@ -716,7 +716,7 @@ if ! ${configure_dist_target_only:-false} ; then
 	AC_SUBST(LDAP_LIBS)
 
 	AC_ARG_WITH(idn,
-	AS_HELP_STRING([--without-idn],[do not handle international dnsName subjectAltNames]),
+	AS_HELP_STRING([--without-idn],[do not handle international dnsName subjectAltNames or international domain names during service location]),
 	if test x$with_idn = xno ; then
 		idn=false
 	else
@@ -725,7 +725,7 @@ if ! ${configure_dist_target_only:-false} ; then
 	idn=true)
 	if $idn ; then
 		PKG_CHECK_MODULES(IDN,libidn)
-		AC_DEFINE(CM_USE_IDN,1,[Define if dnsName subjectAltNames should be encoded properly.])
+		AC_DEFINE(CM_USE_IDN,1,[Define if dnsName subjectAltNames should be encoded properly, and if international domain names should be handled during service location.])
 	fi
 
 	AC_ARG_WITH(uuid,
