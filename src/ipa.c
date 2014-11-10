@@ -256,6 +256,7 @@ cm_locate_xmlrpc_service(const char *server,
 		 "(ipaConfigString=enabledService)"
 		 ")", service);
 	snprintf(ldn, sizeof(ldn), "%s,%s", relativedn, basedn);
+	free(basedn);
 	rc = ldap_search_ext_s(ld, ldn, LDAP_SCOPE_SUBTREE,
 			       lfilter, lattrs, 0, NULL, NULL, NULL,
 			       LDAP_NO_LIMIT, &lresult);
@@ -338,6 +339,7 @@ cm_locate_xmlrpc_service(const char *server,
 	}
 	ldap_msgfree(lresult);
 	if (i == 0) {
+		free(list);
 		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
 	list[i] = NULL;
@@ -426,6 +428,7 @@ submit_or_poll_uri(const char *uri, const char *cainfo, const char *capath,
 			if (s != NULL) {
 				printf("%s", s);
 			}
+			free(s);
 			return CM_SUBMIT_STATUS_ISSUED;
 		} else {
 			return CM_SUBMIT_STATUS_REJECTED;
@@ -460,9 +463,17 @@ submit_or_poll(const char *uri, const char *cainfo, const char *capath,
 						       csr, reqprinc);
 				if ((i != CM_SUBMIT_STATUS_UNREACHABLE) &&
 				    (i != CM_SUBMIT_STATUS_UNCONFIGURED)) {
+					for (u = 0; uris[u] != NULL; u++) {
+						free(uris[u]);
+					}
+					free(uris);
 					return i;
 				}
 			}
+			for (u = 0; uris[u] != NULL; u++) {
+				free(uris[u]);
+			}
+			free(uris);
 		}
 	}
 	return i;
@@ -472,15 +483,16 @@ static int
 fetch_roots(const char *server, int ldap_uri_cmd, const char *ldap_uri,
 	    const char *host, const char *domain, char *basedn)
 {
-	const char *realm = NULL;
+	char *realm = NULL;
 	LDAP *ld = NULL;
 	LDAPMessage *lresult = NULL, *lmsg = NULL;
 	char *lattrs[2] = {"caCertificate;binary", NULL};
 	const char *relativedn = "cn=cacert,cn=ipa,cn=etc";
-	char ldn[LINE_MAX], lfilter[LINE_MAX], uri[LINE_MAX] = "", *kerr;
+	char ldn[LINE_MAX], lfilter[LINE_MAX], uri[LINE_MAX] = "", *kerr = NULL;
 	struct berval **lbvalues, *lbv;
 	unsigned char *bv_val;
-	const char *lb64, *pem;
+	const char *lb64;
+	char *pem;
 	int i, rc;
 
 	/* Read our realm name from our ccache. */
@@ -507,6 +519,7 @@ fetch_roots(const char *server, int ldap_uri_cmd, const char *ldap_uri,
 	/* Now look up the root certificates for the domain. */
 	snprintf(lfilter, sizeof(lfilter), "(%s=*)", lattrs[0]);
 	snprintf(ldn, sizeof(ldn), "%s,%s", relativedn, basedn);
+	free(basedn);
 	rc = ldap_search_ext_s(ld, ldn, LDAP_SCOPE_SUBTREE,
 			       lfilter, lattrs, 0, NULL, NULL, NULL,
 			       LDAP_NO_LIMIT, &lresult);
@@ -533,9 +546,12 @@ fetch_roots(const char *server, int ldap_uri_cmd, const char *ldap_uri,
 				printf("%s ", realm);
 			}
 			printf("%s\n%s", "IPA CA", pem);
+			free(pem);
 		}
 	}
 	ldap_msgfree(lresult);
+	free(realm);
+	free(kerr);
 	return CM_SUBMIT_STATUS_ISSUED;
 }
 
