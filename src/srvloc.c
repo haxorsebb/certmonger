@@ -167,7 +167,6 @@ cm_srvloc_resolve(void *parent, const char *name, const char *udomain,
 			return -1;
 		}
 		res[j].priority = ntohs(*(uint16_t *)rr.rdata);
-		res[j].priority = 50;
 		res[j].weight = ntohs(*(uint16_t *)(rr.rdata + 2));
 		res[j].port = ntohs(*(uint16_t *)(rr.rdata + 4));
 		memcpy(res[j].host, rr.rdata + 6, rr.rdlength - 6);
