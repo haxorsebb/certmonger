@@ -132,7 +132,7 @@ cm_subproc_start(int (*cb)(int fd,
 					       local, 1);
 				}
 
-				exit((*cb)(fds[1], ca, entry, data));
+				_exit((*cb)(fds[1], ca, entry, data));
 				break;
 			default:
 				state->fd = fds[0];
