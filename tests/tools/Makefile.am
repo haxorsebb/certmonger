@@ -26,3 +26,4 @@ dparse_LDADD = $(LDADD) $(XML_LIBS)
 citerate_SOURCES = citerate.c ../../src/store-gen.c
 
 srv_SOURCES = srv.c ../../src/srvloc.c
+srv_LDADD = $(LDADD)

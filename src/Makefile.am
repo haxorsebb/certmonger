@@ -128,7 +128,7 @@ getcert_LDADD = libcm.a $(GETCERT_LIBS) $(KRB5_LIBS) $(LTLIBICONV)
 if WITH_IPA
 bin_PROGRAMS += ipa-getcert
 ipa_getcert_SOURCES = ipa-getcert.c tm.c tm.h
-ipa_getcert_LDADD = $(getcert_LDADD) $(IDN_LIBS)
+ipa_getcert_LDADD = $(getcert_LDADD)
 endif
 if WITH_IPA
 bin_PROGRAMS += certmaster-getcert
@@ -174,7 +174,8 @@ ipa_submit_SOURCES = ipa.c srvloc.c srvloc.h store.h store-gen.c \
 		submit-x.c submit-x.h submit-u.c submit-u.h \
 		submit-e.h util.c util.h log.c log.h tm.c tm.h
 ipa_submit_LDADD = $(XMLRPC_LIBS) $(LDAP_LIBS) $(KRB5_LIBS) $(TALLOC_LIBS) \
-		   $(GMP_LIBS) $(UUID_LIBS) $(RESOLV_LIBS) $(LTLIBICONV)
+		   $(GMP_LIBS) $(IDN_LIBS) $(UUID_LIBS) $(RESOLV_LIBS) \
+		   $(LTLIBICONV)
 certmaster_submit_SOURCES = certmaster.c submit-x.c submit-x.h \
 		submit-e.h submit-u.c submit-u.h util.c util.h log.c log.h \
 		tm.c tm.h
