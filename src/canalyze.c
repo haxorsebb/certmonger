@@ -81,12 +81,12 @@ not_valid_after(PLArenaPool *arena, struct cm_nickcert *nc)
 				cm_log(0, "Decoding error on \"%.*s\" "
 				       "(%d bytes)!\n",
 				       (int) (q - p), p, length);
-				exit(1);
+				_exit(1);
 			}
 		if (CERT_GetCertTimes(&cert, &nvb, &nva) != SECSuccess) {
 			cm_log(0, "Parsing error on \"%.*s\"!\n",
 			       (int) (q - p), p);
-			exit(1);
+			_exit(1);
 		}
 		if (nva < PR_Now()) {
 			cm_log(1, "Certificate \"%s\" no longer valid.\n",
