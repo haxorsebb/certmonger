@@ -168,7 +168,12 @@ main(int argc, char **argv)
 		/* fall through */
 	} else
 	if (strcasecmp(mode, CM_OP_IDENTIFY) == 0) {
+#ifdef DOGTAG_IPA_RENEW_AGENT
+		printf("Dogtag (IPA,renew,agent) (%s %s)\n", PACKAGE_NAME,
+		       PACKAGE_VERSION);
+#else
 		printf("Dogtag (%s %s)\n", PACKAGE_NAME, PACKAGE_VERSION);
+#endif
 		return 0;
 	} else {
 		/* unsupported request */

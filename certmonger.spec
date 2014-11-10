@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.76.2
+Version:	0.76.3
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -239,6 +239,10 @@ exit 0
 %endif
 
 %changelog
+* Mon Nov 10 2014 Nalin Dahyabhai <nalin@redhat.com> 0.76.3-1
+- handle IDN correctly when doing service location using SRV records
+- documentation updates
+
 * Wed Nov  5 2014 Nalin Dahyabhai <nalin@redhat.com>
 - rework the state machine so that we save an issued certificate's associated
   CA certificates, then re-read the certificate, then run the post hook and
