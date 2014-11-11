@@ -2132,7 +2132,7 @@ cm_store_get_all_cas(void *parent)
 		}
 #endif
 #ifdef WITH_LOCAL
-		/* Make sure we get at least 1 dogtag-ipa-renew-agent entry. */
+		/* Make sure we get at least 1 "local" entry. */
 		for (k = 0; k < j; k++) {
 			if ((ret[k]->cm_ca_type == cm_ca_external) &&
 			    (strcmp(ret[k]->cm_nickname,
