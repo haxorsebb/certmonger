@@ -8,9 +8,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2014-11-10 11:42-0500\n"
-"PO-Revision-Date: 2014-11-05 17:55+0000\n"
-"Last-Translator: Geert Warrink <geert.warrink@onsnet.nu>\n"
+"POT-Creation-Date: 2014-11-11 12:26-0500\n"
+"PO-Revision-Date: 2014-11-11 10:00+0000\n"
+"Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
 "Language-Team: Dutch (http://www.transifex.com/projects/p/certmonger/"
 "language/nl/)\n"
 "Language: nl\n"
@@ -24,7 +24,7 @@ msgstr ""
 msgid "Unable to determine hostname of CA.\n"
 msgstr "Kan de hostnaam van CA niet bepalen.\n"
 
-#: src/certmaster.c:146 src/dogtag.c:440 src/ipa.c:749
+#: src/certmaster.c:146 src/dogtag.c:440 src/ipa.c:751
 #, c-format
 msgid "Unable to read signing request.\n"
 msgstr "Kan ondetekeningverzoek niet lezen.\n"
@@ -1077,7 +1077,7 @@ msgstr "Kan locatie van IPA LDAP server niet vaststellen.\n"
 msgid "Unable to contact an IPA LDAP server.\n"
 msgstr "Kan geen contact krijgen met een IPA LDAP server.\n"
 
-#: src/ipa.c:247 src/ipa.c:515
+#: src/ipa.c:247 src/ipa.c:514
 #, c-format
 msgid "Unable to determine base DN of domain information on IPA server.\n"
 msgstr "Kan basis DN niet vaststellen uit domeininformatie van IPA server.\n"
@@ -1087,27 +1087,27 @@ msgstr "Kan basis DN niet vaststellen uit domeininformatie van IPA server.\n"
 msgid "Error setting up for XMLRPC on the client.\n"
 msgstr "Fout bij het instellen van XMLRPC op de cliënt.\n"
 
-#: src/ipa.c:624
+#: src/ipa.c:626
 #, c-format
 msgid "The -t option can not be used with the -K option.\n"
 msgstr "De -t optie kan niet met de -K optie gebruikt worden.\n"
 
-#: src/ipa.c:632
+#: src/ipa.c:634
 #, c-format
 msgid "The -k option can not be used with the -K option.\n"
 msgstr "De -k optie kan niet met de -K optie gebruikt worden.\n"
 
-#: src/ipa.c:640
+#: src/ipa.c:642
 #, c-format
 msgid "The -K option can not be used with either the -k or the -t option.\n"
 msgstr "De -K optie niet met de -k of the -t optie gebruikt worden.\n"
 
-#: src/ipa.c:721
+#: src/ipa.c:723
 #, c-format
 msgid "Unable to determine principal name for signing request.\n"
 msgstr "Kan principal naam voor de aanvraag ondertekening niet bepalen.\n"
 
-#: src/ipa.c:784
+#: src/ipa.c:786
 #, c-format
 msgid ""
 "Error setting up ccache for \"host\" service on client using default keytab: "
@@ -1116,7 +1116,7 @@ msgstr ""
 "Fout bij het instellen van ccache voor \"host\" service op cliënt die "
 "standaard keytab: %s gebruikt.\n"
 
-#: src/ipa.c:788
+#: src/ipa.c:790
 #, c-format
 msgid ""
 "Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
@@ -1124,7 +1124,7 @@ msgstr ""
 "Fout bij het instellen van ccache voor  \"%s\" op cliënt die standaard "
 "keytab: %s gebruikt.\n"
 
-#: src/ipa.c:795
+#: src/ipa.c:797
 #, c-format
 msgid ""
 "Error setting up ccache for \"host\" service on client using keytab \"%s\": "
@@ -1133,7 +1133,7 @@ msgstr ""
 "Fout bij het instellen van ccache voor \"host\" service die keytab \"%s\" "
 "gebruikt: %s.\n"
 
-#: src/ipa.c:799
+#: src/ipa.c:801
 #, c-format
 msgid "Error setting up ccache for \"%s\" on client using keytab \"%s\": %s.\n"
 msgstr ""
