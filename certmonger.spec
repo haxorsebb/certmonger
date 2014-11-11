@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.76.6
+Version:	0.76.7
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -239,11 +239,15 @@ exit 0
 %endif
 
 %changelog
+* Tue Nov 11 2014 Nalin Dahyabhai <nalin@redhat.com> 0.76.7-1
+- correctly read CA not-valid-after dates on 32-bit machines (also reported by
+  Natxo Asenjo), so that we don't spin on polling them
+
 * Mon Nov 10 2014 Nalin Dahyabhai <nalin@redhat.com> 0.76.6-1
 - don't discard the priority value in DNS SRV records
 
 * Mon Nov 10 2014 Nalin Dahyabhai <nalin@redhat.com> 0.76.5-1
-- avoid premature exit on CA data analysis failures (should fix issue
+- avoid premature exit on CA data analysis failures (should fix an issue
   reported by Natxo Asenjo)
 
 * Mon Nov 10 2014 Nalin Dahyabhai <nalin@redhat.com> 0.76.4-1
