@@ -48,7 +48,7 @@ struct cm_ca_analyze_state {
 	long delay;
 };
 
-static long
+static PRTime
 not_valid_after(PLArenaPool *arena, struct cm_nickcert *nc)
 {
 	CERTCertificate cert;
@@ -127,7 +127,7 @@ cm_ca_analyze_certs_main(int fd, struct cm_store_ca *ca,
 		result = result ?
 			 (tmp ? ((result < tmp) ? result : tmp) : result) :
 			 tmp;
-		cm_log(3, "Running result is %ld.\n", result);
+		cm_log(3, "Running result is %lld.\n", (long long) result);
 	}
 	for (i = 0;
 	     (ca->cm_ca_other_root_certs != NULL) &&
@@ -137,7 +137,7 @@ cm_ca_analyze_certs_main(int fd, struct cm_store_ca *ca,
 		result = result ?
 			 (tmp ? ((result < tmp) ? result : tmp) : result) :
 			 tmp;
-		cm_log(3, "Running result is %ld.\n", result);
+		cm_log(3, "Running result is %lld.\n", (long long) result);
 	}
 	for (i = 0;
 	     (ca->cm_ca_other_certs != NULL) &&
@@ -147,21 +147,22 @@ cm_ca_analyze_certs_main(int fd, struct cm_store_ca *ca,
 		result = result ?
 			 (tmp ? ((result < tmp) ? result : tmp) : result) :
 			 tmp;
-		cm_log(3, "Running result is %ld.\n", result);
+		cm_log(3, "Running result is %lld.\n", (long long) result);
 	}
 
-	cm_log(3, "Final result is %ld.\n", result);
+	cm_log(3, "Final result is %lld.\n", (long long) result);
 	now = PR_Now();
 	if ((result != 0) && (result > now)) {
 		result = (result - now) / PR_USEC_PER_SEC / 2;
 	}
 
-	p = talloc_asprintf(ca, "%ld", result);
+	p = talloc_asprintf(ca, "%lld", (long long) result);
 	i = strlen(p);
 	if (write(fd, p, strlen(p)) != i) {
 		cm_log(0, "Error writing \"%s\" to pipe: %s.\n", p,
 		       strerror(errno));
 	}
+	cm_log(3, "Time until refresh: %s.\n", p);
 
 	talloc_free(p);
 	PORT_FreeArena(arena, PR_TRUE);
