@@ -283,6 +283,9 @@ cm_decide_ca_delay(time_t remaining)
 		if (delay < CM_DELAY_CA_POLL_MINIMUM) {
 			delay = CM_DELAY_CA_POLL_MINIMUM;
 		}
+		if (delay > CM_DELAY_CA_POLL_MAXIMUM) {
+			delay = CM_DELAY_CA_POLL_MAXIMUM;
+		}
 	}
 	return delay;
 }
@@ -2375,6 +2378,9 @@ cm_iterate_ca(struct cm_store_ca *ca,
 				*delay = state->cm_refresh_delay;
 				if (*delay < CM_DELAY_CA_POLL_MINIMUM) {
 					*delay = CM_DELAY_CA_POLL_MINIMUM;
+				}
+				if (*delay > CM_DELAY_CA_POLL_MAXIMUM) {
+					*delay = CM_DELAY_CA_POLL_MAXIMUM;
 				}
 				*when = cm_time_delay;
 			} else {
