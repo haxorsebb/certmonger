@@ -774,6 +774,14 @@ main(int argc, char **argv)
 		while ((p = strchr(csr, '\n')) != NULL) {
 			memmove(p, p + 1, strlen(p));
 		}
+	} else
+	if (strcasecmp(mode, CM_OP_FETCH_ROOTS) == 0) {
+		/* Stop now if we don't have an IPA domain name. */
+		if (domain == NULL) {
+			printf(_("No IPA domain configured, and none "
+			         "specified.\n"));
+			return CM_SUBMIT_STATUS_OPERATION_NOT_SUPPORTED;
+		}
 	}
 
 	/* Setup a ccache unless we're told to use the default one. */
