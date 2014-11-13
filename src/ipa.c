@@ -780,7 +780,7 @@ main(int argc, char **argv)
 		if (domain == NULL) {
 			printf(_("No IPA domain configured, and none "
 			         "specified.\n"));
-			return CM_SUBMIT_STATUS_OPERATION_NOT_SUPPORTED;
+			return CM_SUBMIT_STATUS_UNCONFIGURED;
 		}
 	}
 
