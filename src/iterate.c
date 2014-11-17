@@ -2174,8 +2174,9 @@ cm_iterate_ca(struct cm_store_ca *ca,
 				cm_log(3, "%s('%s').%s missing configuration\n",
 				       ca->cm_busname, ca->cm_nickname,
 				       cm_store_ca_phase_as_string(state->cm_phase));
-				ca->cm_ca_state[state->cm_phase] = CM_CA_DISABLED;
-				*when = cm_time_now;
+				ca->cm_ca_state[state->cm_phase] = CM_CA_DATA_UNREACHABLE;
+				*when = cm_time_delay;
+				*delay = cm_decide_cadata_delay();
 			} else {
 				cm_cadata_done(state->cm_task_state);
 				state->cm_task_state = NULL;
