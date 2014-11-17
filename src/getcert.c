@@ -3163,6 +3163,7 @@ status(const char *argv0, int argc, char **argv)
 				printf(_("None of ID or database directory and "
 					 "and nickname or certificate file "
 					 "specified.\n"));
+				help(argv0, "status");
 				return 1;
 			}
 		}
