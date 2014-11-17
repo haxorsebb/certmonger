@@ -233,7 +233,6 @@ get_signer_info(void *parent, char *localdir, X509 ***roots,
 		cm_log(1, "Trouble parsing signer data.\n");
 		save = TRUE;
 	}
-	now = time(NULL);
 
 	/* Read the desired lifetime. */
 	now = time(NULL);
