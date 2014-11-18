@@ -1,4 +1,4 @@
-.TH certmonger 8 "5 Nov 2014" "certmonger Manual"
+.TH certmonger 8 "18 Nov 2014" "certmonger Manual"
 
 .SH NAME
 dogtag-ipa-renew-agent-submit
@@ -17,6 +17,7 @@ dogtag-ipa-renew-agent-submit -E EE-URL -A AGENT-URL
 [-D serial (decimal)]
 [-S state]
 [-T profile]
+[-O param=value]
 [-v]
 [csrfile]
 
@@ -125,6 +126,13 @@ The name of the type of certificate which the client should request from the CA
 if it is not renewing a certificate (per the \fB-s\fR option above).  If the
 \fICERTMONGER_CA_PROFILE\fR environment variable is set, its value is used.
 Otherwise, the default value is \fBcaServerCert\fP.
+.TP
+\fB-O\fR param=value
+An additional parameter to pass to the server when approving the signing
+request using the agent's credentials.  By default, any server-supplied default
+settings are applied.  This option can be used either to override a
+server-supplied default setting, or to supply one which would otherwise have
+not been used.
 .TP
 \fB-v\fR
 Increases the logging level.  Use twice for more logging.  This option is mainly
