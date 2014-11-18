@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.76.7
+Version:	0.76.8
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -239,6 +239,11 @@ exit 0
 %endif
 
 %changelog
+* Tue Nov 18 2014 Nalin Dahyabhai <nalin@redhat.com> 0.76.8-1
+- dogtag-submit: accept additional options to pass to the server when
+  approving requests using agent creds (patch by Jan Cholasta)
+- getcert: print help output when 'status' isn't given any args (#1163541)
+
 * Tue Nov 11 2014 Nalin Dahyabhai <nalin@redhat.com> 0.76.7-1
 - correctly read CA not-valid-after dates on 32-bit machines (also reported by
   Natxo Asenjo), so that we don't spin on polling them
