@@ -402,6 +402,18 @@ main(int argc, char **argv)
 		printf(_("No profile/template (-T) given, and no default known.\n"));
 		missing_args = TRUE;
 	}
+	if (options != NULL) {
+		if (agenturl == NULL) {
+			printf(_("No agent URL (-A) given, and no default "
+				 "known.\n"));
+			missing_args = TRUE;
+		}
+		if (!can_agent) {
+			printf(_("No agent credentials specified, and no "
+				 "default known.\n"));
+			missing_args = TRUE;
+		}
+	}
 	if (missing_args) {
 		help(argv[0]);
 		return CM_SUBMIT_STATUS_UNCONFIGURED;
