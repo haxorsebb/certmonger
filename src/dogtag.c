@@ -142,7 +142,7 @@ main(int argc, char **argv)
 	const char *sslcert = NULL, *sslkey = NULL;
 	const char *sslpin = NULL, *sslpinfile = NULL;
 	const char *csr = NULL, *serial = NULL, *template = NULL;
-	struct dogtag_option {
+	struct {
 		char *name;
 		char *value;
 	} *options = NULL;
@@ -246,13 +246,13 @@ main(int argc, char **argv)
 				printf(_("Out of memory.\n"));
 				return CM_SUBMIT_STATUS_UNCONFIGURED;
 			}
-			options[num_options-1].name = strdup(optarg);
-			if (options[num_options-1].name == NULL) {
+			options[num_options - 1].name = strdup(optarg);
+			if (options[num_options - 1].name == NULL) {
 				printf(_("Out of memory.\n"));
 				return CM_SUBMIT_STATUS_UNCONFIGURED;
 			}
-			*strchr(options[num_options-1].name, '=') = '\0';
-			options[num_options-1].value = strchr(optarg, '=') + 1;
+			*strchr(options[num_options - 1].name, '=') = '\0';
+			options[num_options - 1].value = strchr(optarg, '=') + 1;
 			break;
 		case 'v':
 			verbose++;
@@ -584,19 +584,24 @@ main(int argc, char **argv)
 			for (i = 0;
 			     (defaults != NULL) && (defaults[i] != NULL);
 			     i++) {
+				/* Check if this default is one of the
+				 * paramters we've been explicitly provided. */
 				for (j = 0; j < num_options; j++) {
 					if (strcmp(defaults[i]->name,
 						   options[j].name) == 0) {
-						goto next_default;
+						break;
 					}
+				}
+				/* If we have a non-default value for it, skip
+				 * this default. */
+				if (j < num_options) {
+					continue;
 				}
 				p = cm_submit_u_url_encode(defaults[i]->name);
 				q = cm_submit_u_url_encode(defaults[i]->value);
 				params2 = talloc_asprintf(ctx,
 							  "%s&%s=%s",
 							  params2, p, q);
-next_default:
-				;
 			};
 			/* Add parameters specified on command line */
 			for (j = 0; j < num_options; j++) {
