@@ -77,6 +77,7 @@ help(const char *cmd)
 		"\t[-D serial (decimal)]\n"
 		"\t[-S state]\n"
 		"\t[-T profile]\n"
+		"\t[-O param=value]\n"
 		"\t[-v]\n"
 		"\t[-N]\n"
 		"\t[-V dogtag_version]\n"
@@ -141,6 +142,11 @@ main(int argc, char **argv)
 	const char *sslcert = NULL, *sslkey = NULL;
 	const char *sslpin = NULL, *sslpinfile = NULL;
 	const char *csr = NULL, *serial = NULL, *template = NULL;
+	struct dogtag_option {
+		char *name;
+		char *value;
+	} *options = NULL;
+	size_t num_options = 0, j;
 	char *savedstate = NULL;
 	char *p, *q, *params = NULL, *params2 = NULL;
 	const char *lasturl = NULL, *lastparams = NULL;
@@ -186,7 +192,7 @@ main(int argc, char **argv)
 
 	savedstate = getenv(CM_SUBMIT_COOKIE_ENV);
 
-	while ((c = getopt(argc, argv, "E:A:d:n:i:C:c:k:p:P:s:D:S:T:vV:NR")) != -1) {
+	while ((c = getopt(argc, argv, "E:A:d:n:i:C:c:k:p:P:s:D:S:T:O:vV:NR")) != -1) {
 		switch (c) {
 		case 'E':
 			eeurl = optarg;
@@ -227,6 +233,26 @@ main(int argc, char **argv)
 			break;
 		case 'T':
 			template = optarg;
+			break;
+		case 'O':
+			if (strchr(optarg, '=') == NULL) {
+				printf(_("Profile params (-O) must be in the form of param=value.\n"));
+				help(argv[0]);
+				return CM_SUBMIT_STATUS_UNCONFIGURED;
+			}
+			options = realloc(options,
+					  ++num_options * sizeof(*options));
+			if (options == NULL) {
+				printf(_("Out of memory.\n"));
+				return CM_SUBMIT_STATUS_UNCONFIGURED;
+			}
+			options[num_options-1].name = strdup(optarg);
+			if (options[num_options-1].name == NULL) {
+				printf(_("Out of memory.\n"));
+				return CM_SUBMIT_STATUS_UNCONFIGURED;
+			}
+			*strchr(options[num_options-1].name, '=') = '\0';
+			options[num_options-1].value = strchr(optarg, '=') + 1;
 			break;
 		case 'v':
 			verbose++;
@@ -558,12 +584,28 @@ main(int argc, char **argv)
 			for (i = 0;
 			     (defaults != NULL) && (defaults[i] != NULL);
 			     i++) {
+				for (j = 0; j < num_options; j++) {
+					if (strcmp(defaults[i]->name,
+						   options[j].name) == 0) {
+						goto next_default;
+					}
+				}
 				p = cm_submit_u_url_encode(defaults[i]->name);
 				q = cm_submit_u_url_encode(defaults[i]->value);
 				params2 = talloc_asprintf(ctx,
 							  "%s&%s=%s",
 							  params2, p, q);
+next_default:
+				;
 			};
+			/* Add parameters specified on command line */
+			for (j = 0; j < num_options; j++) {
+				p = cm_submit_u_url_encode(options[j].name);
+				q = cm_submit_u_url_encode(options[j].value);
+				params2 = talloc_asprintf(ctx,
+							  "%s&%s=%s",
+							  params2, p, q);
+			}
 			break;
 		case op_none:
 		case op_submit:
