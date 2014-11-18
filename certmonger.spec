@@ -241,7 +241,7 @@ exit 0
 %changelog
 * Tue Nov 18 2014 Nalin Dahyabhai <nalin@redhat.com> 0.76.8-1
 - dogtag-submit: accept additional options to pass to the server when
-  approving requests using agent creds (patch by Jan Cholasta)
+  approving requests using agent creds (#1165155, patch by Jan Cholasta)
 - getcert: print help output when 'status' isn't given any args (#1163541)
 
 * Tue Nov 11 2014 Nalin Dahyabhai <nalin@redhat.com> 0.76.7-1
