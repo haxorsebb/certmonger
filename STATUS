@@ -130,3 +130,4 @@ To-do:
   * Stamp "approved by certmonger $version", or something, on certificates,
     to help identify certificates that we approve with agent credentials.
   * Learn to read and create RFC3820 ProxyCertInfo extensions.
+  * Learn to speak ACME (see https://github.com/letsencrypt/acme-spec).
