@@ -246,7 +246,7 @@ exit 0
 
 * Tue Nov 11 2014 Nalin Dahyabhai <nalin@redhat.com> 0.76.7-1
 - correctly read CA not-valid-after dates on 32-bit machines (also reported by
-  Natxo Asenjo), so that we don't spin on polling them
+  Natxo Asenjo), so that we don't spin on polling them (#1163023)
 
 * Mon Nov 10 2014 Nalin Dahyabhai <nalin@redhat.com> 0.76.6-1
 - don't discard the priority value in DNS SRV records
