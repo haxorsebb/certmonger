@@ -246,13 +246,15 @@ main(int argc, char **argv)
 				printf(_("Out of memory.\n"));
 				return CM_SUBMIT_STATUS_UNCONFIGURED;
 			}
-			options[num_options - 1].name = strdup(optarg);
-			if (options[num_options - 1].name == NULL) {
+			p = strdup(optarg);
+			if (p == NULL) {
 				printf(_("Out of memory.\n"));
 				return CM_SUBMIT_STATUS_UNCONFIGURED;
 			}
-			*strchr(options[num_options - 1].name, '=') = '\0';
-			options[num_options - 1].value = strchr(optarg, '=') + 1;
+			i = strcspn(p, "=");
+			options[num_options - 1].name = p;
+			p[i] = '\0';
+			options[num_options - 1].value = p + i + 1;
 			break;
 		case 'v':
 			verbose++;
