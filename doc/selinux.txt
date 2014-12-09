@@ -9,7 +9,7 @@ the configuration states should be applied to its binary file with:
 Meanwhile, you can read the label which is currently applied to its
 binary file with:
 
-  # ls --scontext /usr/sbin/certmonger 
+  # ls --context /usr/sbin/certmonger
   system_u:object_r:certmonger_exec_t:s0 /usr/sbin/certmonger
 
 If the results differ, use "restorecon" to reset the label of the file
