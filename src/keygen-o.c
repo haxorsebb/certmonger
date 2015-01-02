@@ -250,22 +250,21 @@ retry_gen:
 		while ((keyfd == -1) && (errno == EEXIST)) {
 			/* Check if there's also a permissions problem, which
 			 * we care about more than getting the naming right. */
-			if (errno == EEXIST) {
-				keyfd = open(filename, O_RDWR, S_IRUSR | S_IWUSR);
-				if (keyfd == -1) {
-					switch (errno) {
-					case EACCES:
-					case EPERM:
-						_exit(CM_SUB_STATUS_ERROR_PERMS);
-						break;
-					default:
-						errno_save = errno;
-						close(keyfd);
-						keyfd = -1;
-						errno = errno_save;
-						break;
-					}
+			keyfd = open(filename, O_RDWR, S_IRUSR | S_IWUSR);
+			if (keyfd == -1) {
+				switch (errno) {
+				case EACCES:
+				case EPERM:
+					_exit(CM_SUB_STATUS_ERROR_PERMS);
+					break;
+				default:
+					break;
 				}
+			} else {
+				errno_save = errno;
+				close(keyfd);
+				keyfd = -1;
+				errno = errno_save;
 			}
 			cm_log(1,
 			       "Error opening key file \"%s\" "
