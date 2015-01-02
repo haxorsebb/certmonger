@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2012,2014 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2012,2014,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -60,6 +60,7 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	SECStatus error;
 	SECItem *esdata = NULL, *ecert = NULL;
 	struct cm_keyiread_n_ctx_and_keys *keys;
+	SECKEYPrivateKey *privkey;
 	CERTCertificate *ucert = NULL;
 	CERTCertExtension **extensions;
 	CERTCertificateRequest *req = NULL, sreq;
@@ -78,6 +79,13 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	if (keys == NULL) {
 		cm_log(1, "Unable to locate private key for self-signing.\n");
 		_exit(2);
+	}
+	/* Select the right key pair. */
+	if ((entry->cm_key_next_marker != NULL) &&
+	    (strlen(entry->cm_key_next_marker) > 0)) {
+		privkey = keys->privkey_next;
+	} else {
+		privkey = keys->privkey;
 	}
 	/* Allocate a memory pool. */
 	arena = PORT_NewArena(sizeof(double));
@@ -115,7 +123,7 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	} else {
 		data = &sdata;
 	}
-	sigoid = SECOID_FindOIDByTag(cm_prefs_nss_sig_alg(keys->privkey));
+	sigoid = SECOID_FindOIDByTag(cm_prefs_nss_sig_alg(privkey));
 	if (sigoid == NULL) {
 		cm_log(1, "Internal error resolving signature OID.\n");
 		_exit(1);
@@ -289,7 +297,7 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		_exit(1);
 	}
 	if (SEC_SignData(&scert.signature, ecert->data, ecert->len,
-			 keys->privkey, sigoid->offset) != SECSuccess) {
+			 privkey, sigoid->offset) != SECSuccess) {
 		cm_log(1, "Unable to generate signature.\n");
 		_exit(1);
 	}
@@ -329,7 +337,15 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	if (keys->pubkey != NULL) {
 		SECKEY_DestroyPublicKey(keys->pubkey);
 	}
-	SECKEY_DestroyPrivateKey(keys->privkey);
+	if (keys->privkey != NULL) {
+		SECKEY_DestroyPrivateKey(keys->privkey);
+	}
+	if (keys->pubkey_next != NULL) {
+		SECKEY_DestroyPublicKey(keys->pubkey_next);
+	}
+	if (keys->privkey_next != NULL) {
+		SECKEY_DestroyPrivateKey(keys->privkey_next);
+	}
 	PORT_FreeArena(arena, PR_TRUE);
 	error = NSS_ShutdownContext(keys->ctx);
 	PORT_FreeArena(keys->arena, PR_TRUE);
