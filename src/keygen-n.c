@@ -415,6 +415,7 @@ retry_gen:
 				cm_log(1, "Trying again.\n");
 				pqg_params = NULL;
 				pqg_verify = NULL;
+				goto retry_gen;
 			}
 			if (PK11_PQG_VerifyParams(pqg_params, pqg_verify,
 						  &pqg_ok) != SECSuccess) {
@@ -439,6 +440,13 @@ retry_gen:
 					}
 					_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 				}
+			}
+			generated_size = pqg_params->prime.len * 8;
+			if ((generated_size < cm_key_size) &&
+			    (generated_size > (cm_key_size * 9 / 10))) {
+				cm_log(1, "Params are a bit small (%d vs %d).  Retrying.\n",
+				       pqg_params->prime.len * 8, cm_key_size);
+				goto retry_gen;
 			}
 			if (pqg_ok == SECFailure) {
 				cm_log(1, "Params are bad.  Retrying.\n");
