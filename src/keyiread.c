@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -125,7 +125,7 @@ cm_keyiread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 	enum cm_key_algorithm alg;
 
 	/* Break out the algorithm. */
-	q = p + strcspn(p, "/\r\n");
+	q = p + strcspn(p, "/");
 	if (((q - p) == strlen("RSA")) &&
 	     (strncasecmp(p, "RSA", 3) == 0)) {
 		alg = cm_key_rsa;
@@ -167,12 +167,62 @@ cm_keyiread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 				entry->cm_key_pubkey = talloc_strndup(entry,
 								      p, q - p);
 			}
+			talloc_free(entry->cm_key_token);
+			entry->cm_key_token = NULL;
+			if (strchr("\r\n", *q) == NULL) {
+				p = q + strspn(q, "/\r\n");
+				q = p + strcspn(p, "/\r\n");
+				if (p != q) {
+					entry->cm_key_token = talloc_strndup(entry,
+									     p, q - p);
+				}
+			}
+		}
+	}
+
+	/* Break out the algorithm. */
+	p = q + strspn(q, "/\r\n");
+	q = p + strcspn(p, "/\r\n");
+	if (((q - p) == strlen("RSA")) &&
+	     (strncasecmp(p, "RSA", 3) == 0)) {
+		alg = cm_key_rsa;
+#ifdef CM_ENABLE_DSA
+	} else
+	if (((q - p) == strlen("DSA")) &&
+	    (strncasecmp(p, "DSA", 3) == 0)) {
+		alg = cm_key_dsa;
+#endif
+#ifdef CM_ENABLE_EC
+	} else
+	if (((q - p) == strlen("EC")) &&
+	    (strncasecmp(p, "EC", 2) == 0)) {
+		alg = cm_key_ecdsa;
+#endif
+	} else {
+		alg = cm_key_unspecified;
+	}
+	if (alg != cm_key_unspecified) {
+		p = q + strspn(q, "/\r\n");
+		q = p + strcspn(p, "/\r\n");
+		if (p != q) {
+			size = atoi(p);
+			if (size > 0) {
+				entry->cm_key_next_type.cm_key_algorithm = alg;
+				entry->cm_key_next_type.cm_key_size = size;
+			}
 			p = q + strspn(q, "/\r\n");
 			q = p + strcspn(p, "/\r\n");
 			if (p != q) {
-				talloc_free(entry->cm_key_token);
-				entry->cm_key_token = talloc_strndup(entry,
-								     p, q - p);
+				talloc_free(entry->cm_key_next_pubkey_info);
+				entry->cm_key_next_pubkey_info = talloc_strndup(entry,
+										p, q - p);
+			}
+			p = q + strspn(q, "/\r\n");
+			q = p + strcspn(p, "/\r\n");
+			if (p != q) {
+				talloc_free(entry->cm_key_next_pubkey);
+				entry->cm_key_next_pubkey = talloc_strndup(entry,
+									   p, q - p);
 			}
 		}
 	}

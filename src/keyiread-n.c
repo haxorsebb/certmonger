@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012,2013,2014 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013,2014,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,7 +64,7 @@ struct cm_keyiread_n_ctx_and_keys *
 cm_keyiread_n_get_keys(struct cm_store_entry *entry, int readwrite)
 {
 	const char *token, *nickname = "(no such key)", *reason, *es;
-	char *pin, *pubhex;
+	char *pin, *pubhex, *nextnick;
 	PLArenaPool *arena;
 	SECStatus error;
 	NSSInitContext *ctx;
@@ -73,8 +73,8 @@ cm_keyiread_n_get_keys(struct cm_store_entry *entry, int readwrite)
 	PK11SlotListElement *sle;
 	SECKEYPrivateKeyList *keys;
 	SECKEYPrivateKeyListNode *knode;
-	SECKEYPrivateKey *key, *ckey;
-	SECKEYPublicKey *pubkey;
+	SECKEYPrivateKey *key, *ckey, *nextkey = NULL;
+	SECKEYPublicKey *pubkey, *nextpubkey = NULL;
 	CK_MECHANISM_TYPE mech;
 	CERTCertList *certs;
 	CERTCertListNode *cnode;
@@ -258,6 +258,37 @@ cm_keyiread_n_get_keys(struct cm_store_entry *entry, int readwrite)
 			_exit(CM_SUB_STATUS_ERROR_AUTH);
 		}
 
+		/* Look up the "next" key. */
+		if ((entry->cm_key_next_marker != NULL) &&
+		    (strlen(entry->cm_key_next_marker) != 0)) {
+			nextnick = util_build_next_nickname(entry->cm_key_nickname,
+							    entry->cm_key_next_marker);
+			keys = PK11_ListPrivKeysInSlot(slot, nextnick, NULL);
+			if (keys != NULL) {
+				for (knode = PRIVKEY_LIST_HEAD(keys);
+				     !PRIVKEY_LIST_EMPTY(keys) &&
+				     !PRIVKEY_LIST_END(knode, keys);
+				     knode = PRIVKEY_LIST_NEXT(knode)) {
+					nickname = PK11_GetPrivateKeyNickname(knode->key);
+					if ((nickname != NULL) &&
+					    (strcmp(nextnick, nickname) == 0)) {
+						cm_log(3, "Located the key '%s'.\n",
+						       nextnick);
+						nextkey = SECKEY_CopyPrivateKey(knode->key);
+						break;
+					}
+				}
+				SECKEY_DestroyPrivateKeyList(keys);
+			}
+
+			/* Try to recover a public key. */
+			nextpubkey = nextkey ? SECKEY_ConvertToPublicKey(nextkey) : NULL;
+			if (pubkey != NULL) {
+				cm_log(3, "Converted private key '%s' to public key.\n",
+				       nextnick);
+			}
+		}
+
 		/* Walk the list of private keys in the token, looking at each
 		 * one to see if it matches the specified nickname. */
 		keys = PK11_ListPrivKeysInSlot(slot,
@@ -415,6 +446,8 @@ next_slot:
 		ret->ctx = ctx;
 		ret->privkey = key;
 		ret->pubkey = pubkey;
+		ret->privkey_next = nextkey;
+		ret->pubkey_next = nextpubkey;
 	}
 
 	if ((n_tokens == 0) &&
@@ -506,10 +539,56 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				cm_log(1, "Error reading public key.\n");
 			}
 		}
+		if ((entry->cm_key_next_marker != NULL) &&
+		    (strlen(entry->cm_key_next_marker) != 0)) {
+			if ((keys->privkey_next == NULL) || (keys->pubkey_next == NULL)) {
+				cm_log(1, "Error reading next key.\n");
+				fprintf(fp, "\n");
+			} else {
+				switch (SECKEY_GetPrivateKeyType(keys->privkey_next)) {
+				case rsaKey:
+					cm_log(3, "Next key is an RSA key.\n");
+					alg = "RSA";
+					break;
+				case dsaKey:
+					cm_log(3, "Next key is a DSA key.\n");
+					alg = "DSA";
+					break;
+				case ecKey:
+					cm_log(3, "Next key is an EC key.\n");
+					alg = "EC";
+					break;
+				case nullKey:
+				default:
+					cm_log(3, "Next key is of an unknown type.\n");
+					break;
+				}
+				size = SECKEY_PublicKeyStrengthInBits(keys->pubkey_next);
+				cm_log(3, "Next key size is %d.\n", size);
+				info = SECKEY_EncodeDERSubjectPublicKeyInfo(keys->pubkey_next);
+				pubihex = cm_store_hex_from_bin(NULL,
+								info->data,
+								info->len);
+				spki = SECKEY_DecodeDERSubjectPublicKeyInfo(info);
+				pubhex = cm_store_hex_from_bin(NULL,
+							       spki->subjectPublicKey.data,
+							       spki->subjectPublicKey.len / 8);
+				fprintf(fp, "%s/%d/%s/%s\n", alg, size,
+					pubihex,
+					pubhex);
+				status = 0;
+			}
+		}
 		if (keys->pubkey != NULL) {
 			SECKEY_DestroyPublicKey(keys->pubkey);
 		}
+		if (keys->pubkey_next != NULL) {
+			SECKEY_DestroyPublicKey(keys->pubkey_next);
+		}
 		SECKEY_DestroyPrivateKey(keys->privkey);
+		if (keys->privkey_next != NULL) {
+			SECKEY_DestroyPrivateKey(keys->privkey_next);
+		}
 	}
 	fclose(fp);
 	if (keys != NULL) {

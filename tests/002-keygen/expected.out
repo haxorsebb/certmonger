@@ -1,21 +1,57 @@
 [nss:512]
 OK.
 OK (RSA:512).
+OK.
+OK (RSA:512 after RSA:512).
+OK.
+OK (RSA:512 after RSA:512).
+keyi512
+keyi512 (candidate (next))
 [nss:1024]
 OK.
 OK (RSA:1024).
+OK.
+OK (RSA:1024 after RSA:1024).
+OK.
+OK (RSA:1024 after RSA:1024).
+keyi1024
+keyi1024 (candidate (next))
 [nss:1536]
 OK.
 OK (RSA:1536).
+OK.
+OK (RSA:1536 after RSA:1536).
+OK.
+OK (RSA:1536 after RSA:1536).
+keyi1536
+keyi1536 (candidate (next))
 [nss:2048]
 OK.
 OK (RSA:2048).
+OK.
+OK (RSA:2048 after RSA:2048).
+OK.
+OK (RSA:2048 after RSA:2048).
+keyi2048
+keyi2048 (candidate (next))
 [nss:3072]
 OK.
 OK (RSA:3072).
+OK.
+OK (RSA:3072 after RSA:3072).
+OK.
+OK (RSA:3072 after RSA:3072).
+keyi3072
+keyi3072 (candidate (next))
 [nss:4096]
 OK.
 OK (RSA:4096).
+OK.
+OK (RSA:4096 after RSA:4096).
+OK.
+OK (RSA:4096 after RSA:4096).
+keyi4096
+keyi4096 (candidate (next))
 [nss:rosubdir]
 Failed to save NSS:${tmpdir}/rosubdir: need fs permissions.
 [nss:rwsubdir]
@@ -23,21 +59,57 @@ Failed to save NSS:${tmpdir}/rwsubdir: need fs permissions.
 [openssl:512]
 OK.
 OK (RSA:512).
+OK.
+OK (RSA:512 after RSA:512).
+OK.
+OK (RSA:512 after RSA:512).
+${tmpdir}/sample.512
+${tmpdir}/sample.512.(next).key
 [openssl:1024]
 OK.
 OK (RSA:1024).
+OK.
+OK (RSA:1024 after RSA:1024).
+OK.
+OK (RSA:1024 after RSA:1024).
+${tmpdir}/sample.1024
+${tmpdir}/sample.1024.(next).key
 [openssl:1536]
 OK.
 OK (RSA:1536).
+OK.
+OK (RSA:1536 after RSA:1536).
+OK.
+OK (RSA:1536 after RSA:1536).
+${tmpdir}/sample.1536
+${tmpdir}/sample.1536.(next).key
 [openssl:2048]
 OK.
 OK (RSA:2048).
+OK.
+OK (RSA:2048 after RSA:2048).
+OK.
+OK (RSA:2048 after RSA:2048).
+${tmpdir}/sample.2048
+${tmpdir}/sample.2048.(next).key
 [openssl:3072]
 OK.
 OK (RSA:3072).
+OK.
+OK (RSA:3072 after RSA:3072).
+OK.
+OK (RSA:3072 after RSA:3072).
+${tmpdir}/sample.3072
+${tmpdir}/sample.3072.(next).key
 [openssl:4096]
 OK.
 OK (RSA:4096).
+OK.
+OK (RSA:4096 after RSA:4096).
+OK.
+OK (RSA:4096 after RSA:4096).
+${tmpdir}/sample.4096
+${tmpdir}/sample.4096.(next).key
 [openssl:rosubdir]
 Failed to save FILE:${tmpdir}/rosubdir/sample.4096: need fs permissions.
 [openssl:rwsubdir]

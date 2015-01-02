@@ -108,9 +108,17 @@ main(int argc, char **argv)
 		need_pin = cm_keyiread_need_pin(state);
 		cm_keyiread_done(state);
 		if (entry->cm_key_type.cm_key_size != 0) {
-			printf("OK (%s:%d).\n",
-			       type_name(entry->cm_key_type.cm_key_algorithm),
-			       entry->cm_key_type.cm_key_size);
+			if (entry->cm_key_next_type.cm_key_size != 0) {
+				printf("OK (%s:%d after %s:%d).\n",
+				       type_name(entry->cm_key_next_type.cm_key_algorithm),
+				       entry->cm_key_next_type.cm_key_size,
+				       type_name(entry->cm_key_next_type.cm_key_algorithm),
+				       entry->cm_key_next_type.cm_key_size);
+			} else {
+				printf("OK (%s:%d).\n",
+				       type_name(entry->cm_key_type.cm_key_algorithm),
+				       entry->cm_key_type.cm_key_size);
+			}
 			ret = 0;
 		} else {
 			switch (entry->cm_key_storage_type) {

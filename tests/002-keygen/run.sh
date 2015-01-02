@@ -18,6 +18,17 @@ for size in 512 1024 1536 2048 3072 4096 ; do
 	# Read the type and size.
 	sed -i 's,^key_gen_size.*,,g' entry.$size
 	$toolsdir/keyiread entry.$size
+	# Generate a new key and read it.
+	echo key_gen_size=$size >> entry.$size
+	$toolsdir/keygen entry.$size
+	$toolsdir/keyiread entry.$size
+	# One more time.
+	$toolsdir/keygen entry.$size
+	$toolsdir/keyiread entry.$size
+	# Extract the marker.
+	marker=`grep ^key_next_marker= entry.$size | cut -f2- -d=`
+	# Make sure we're clean.
+	run_certutil -K -d "$tmpdir" | grep keyi$size | sed -e 's,.*keyi,keyi,' -e s,"$marker","(next)",g | env LANG=C sort
 done
 
 echo "[nss:rosubdir]"
@@ -50,6 +61,17 @@ for size in 512 1024 1536 2048 3072 4096 ; do
 	# Read the size.
 	sed -i 's,^key_gen_size.*,,g' entry.$size
 	$toolsdir/keyiread entry.$size
+	# Generate a new key and read it.
+	echo key_gen_size=$size >> entry.$size
+	$toolsdir/keygen entry.$size
+	$toolsdir/keyiread entry.$size
+	# One more time.
+	$toolsdir/keygen entry.$size
+	$toolsdir/keyiread entry.$size
+	# Extract the marker.
+	marker=`grep ^key_next_marker= entry.$size | cut -f2- -d=`
+	# Make sure we're clean.
+	find $tmpdir -name "sample.$size"'*' -print | sed s,"$marker","(next)",g | env LANG=C sort
 done
 
 echo "[openssl:rosubdir]"

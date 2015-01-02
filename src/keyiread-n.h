@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2011,2014 Red Hat, Inc.
+ * Copyright (C) 2009,2011,2014,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@
 struct cm_keyiread_n_ctx_and_keys {
 	PLArenaPool *arena; /* owns this structure */
 	NSSInitContext *ctx;
-	SECKEYPrivateKey *privkey;
-	SECKEYPublicKey *pubkey;
+	SECKEYPrivateKey *privkey, *privkey_next;
+	SECKEYPublicKey *pubkey, *pubkey_next;
 };
 struct cm_keyiread_n_ctx_and_keys *cm_keyiread_n_get_keys(struct cm_store_entry *entry,
 							  int readwrite);
