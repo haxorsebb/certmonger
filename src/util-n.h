@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Red Hat, Inc.
+ * Copyright (C) 2012,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,5 +21,6 @@
 enum force_fips_mode { do_not_force_fips, do_force_fips };
 void util_n_set_fips(enum force_fips_mode force);
 const char *util_n_fips_hook(void);
+char *util_build_next_nickname(const char *prefix, const char *marker);
 
 #endif

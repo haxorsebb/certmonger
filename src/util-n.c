@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Red Hat, Inc.
+ * Copyright (C) 2012,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -97,4 +97,18 @@ util_n_fips_hook(void)
 	}
 
 	return NULL;
+}
+
+char *
+util_build_next_nickname(const char *prefix, const char *marker)
+{
+	size_t len;
+	char *ret;
+
+	len = strlen(prefix) + strlen(marker) + sizeof("%s (candidate %s)");
+	ret = malloc(len + 1);
+	if (ret != NULL) {
+		snprintf(ret, len, "%s (candidate %s)", prefix, marker);
+	}
+	return ret;
 }

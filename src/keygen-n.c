@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012,2013,2014 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013,2014,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -78,6 +78,28 @@ pqg_size(int key_size)
 }
 #endif
 
+static char *
+make_nickname(const char *prefix, char **marker)
+{
+	unsigned char suffix[6];
+	char *ret;
+
+	if (PK11_GenerateRandom(suffix, sizeof(suffix)) != SECSuccess) {
+		/* Try again sometime later. */
+		cm_log(1, "Error generating suffix: %s.\n",
+		       PR_ErrorToName(PORT_GetError()));
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+	}
+	*marker = cm_store_base64_from_bin(NULL, suffix, sizeof(suffix));
+	if (*marker == NULL) {
+		/* Try again sometime later. */
+		cm_log(1, "Error generating suffix.\n");
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+	}
+	ret = util_build_next_nickname(prefix, *marker);
+	return ret;
+}
+
 static int
 cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		 void *userdata)
@@ -110,6 +132,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	SECKEYPrivateKeyListNode *node;
 	SECKEYPublicKey *pubkey;
 	const char *es, *token, *keyname, *reason;
+	char *nickname, *marker = "", *markertmp;
 	char *pin, *pubhex, *pubihex;
 	struct cm_keygen_n_settings *settings;
 	struct cm_pin_cb_data cb_data;
@@ -541,37 +564,39 @@ retry_gen:
 			break;
 		}
 	}
-	/* Try to remove any keys with conflicting names. */
-	privkeys = PK11_ListPrivKeysInSlot(slot, entry->cm_key_nickname, NULL);
+	/* Check for keys with the desired name, selecting a new one if there's
+	 * already one with the actual name. */
+	nickname = entry->cm_key_nickname;
+	privkeys = PK11_ListPrivKeysInSlot(slot, nickname, NULL);
 	while ((privkeys != NULL) && !PRIVKEY_LIST_EMPTY(privkeys)) {
-		delkey = NULL;
+		markertmp = NULL;
 		for (node = PRIVKEY_LIST_HEAD(privkeys);
 		     !PRIVKEY_LIST_EMPTY(privkeys) &&
 		     !PRIVKEY_LIST_END(node, privkeys);
 		     node = PRIVKEY_LIST_NEXT(node)) {
 			keyname = PK11_GetPrivateKeyNickname(node->key);
 			if ((keyname != NULL) &&
-			    (entry->cm_key_nickname != NULL) &&
-			    (strcmp(keyname, entry->cm_key_nickname) == 0)) {
-				/* Avoid stealing the key reference from the
-				 * list. */
-				delkey = SECKEY_CopyPrivateKey(node->key);
+			    (strcmp(keyname, nickname) == 0)) {
+				/* We're going to need to use a different nickname. */
+				cm_log(1, "Key already exists with nickname \"%s\".\n", nickname);
+				nickname = make_nickname(entry->cm_key_nickname, &markertmp);
 				break;
 			}
 		}
 		SECKEY_DestroyPrivateKeyList(privkeys);
-		if (delkey != NULL) {
-			PK11_DeleteTokenPrivateKey(delkey, PR_TRUE);
-			/* If we found at least one key before, scan again. */
+		if (markertmp != NULL) {
+			/* If we found at least one match, scan again for the new nickname. */
 			privkeys = PK11_ListPrivKeysInSlot(slot,
-							   entry->cm_key_nickname,
+							   nickname,
 							   NULL);
+			marker = markertmp;
 		} else {
+			cm_log(1, "Nickname \"%s\" appears to be unused.\n", nickname);
 			privkeys = NULL;
 		}
 	}
 	/* Attach the specified nickname to the key. */
-	error = PK11_SetPrivateKeyNickname(privkey, entry->cm_key_nickname);
+	error = PK11_SetPrivateKeyNickname(privkey, nickname);
 	if (error != SECSuccess) {
 		ec = PORT_GetError();
 		if (ec != 0) {
@@ -580,10 +605,11 @@ retry_gen:
 			es = NULL;
 		}
 		if (es != NULL) {
-			cm_log(1, "Error setting nickname on private key: "
-			       "%s.\n", es);
+			cm_log(1, "Error setting nickname \"%s\" on private key: "
+			       "%s.\n", nickname, es);
 		} else {
-			cm_log(1, "Error setting nickname on private key.\n");
+			cm_log(1, "Error setting nickname \"%s\" on private key.\n",
+			       nickname);
 		}
 		switch (ec) {
 		case PR_NO_ACCESS_RIGHTS_ERROR: /* EACCES or EPERM */
@@ -594,6 +620,7 @@ retry_gen:
 			break;
 		}
 	}
+	cm_log(1, "Set nickname \"%s\" on private key.\n", nickname);
 	/* Encode the public key to hex, and print it. */
 	spki = SECKEY_EncodeDERSubjectPublicKeyInfo(pubkey);
 	if (spki != NULL) {
@@ -612,9 +639,42 @@ retry_gen:
 	} else {
 		pubhex = "";
 	}
-	fprintf(status, "%s\n%s\n", pubihex, pubhex);
+	fprintf(status, "%s\n%s\n%s\n", pubihex, pubhex, marker);
 	SECKEY_DestroyPrivateKey(privkey);
 	SECKEY_DestroyPublicKey(pubkey);
+	/* Try to remove any keys with old candidate names. */
+	if ((entry->cm_key_next_marker != NULL) &&
+	    (strlen(entry->cm_key_next_marker) > 0)) {
+		nickname = util_build_next_nickname(entry->cm_key_nickname, entry->cm_key_next_marker);
+		privkeys = PK11_ListPrivKeysInSlot(slot, nickname, NULL);
+		while ((privkeys != NULL) && !PRIVKEY_LIST_EMPTY(privkeys)) {
+			delkey = NULL;
+			for (node = PRIVKEY_LIST_HEAD(privkeys);
+			     !PRIVKEY_LIST_EMPTY(privkeys) &&
+			     !PRIVKEY_LIST_END(node, privkeys);
+			     node = PRIVKEY_LIST_NEXT(node)) {
+				keyname = PK11_GetPrivateKeyNickname(node->key);
+				if ((keyname != NULL) && (nickname != NULL) &&
+				    (strcmp(keyname, nickname) == 0)) {
+					/* Avoid stealing the key reference from the
+					 * list. */
+					delkey = SECKEY_CopyPrivateKey(node->key);
+					break;
+				}
+			}
+			SECKEY_DestroyPrivateKeyList(privkeys);
+			if (delkey != NULL) {
+				PK11_DeleteTokenPrivateKey(delkey, PR_TRUE);
+				cm_log(1, "Removing key with nickname \"%s\".\n", nickname);
+				/* If we found at least one key before, scan again. */
+				privkeys = PK11_ListPrivKeysInSlot(slot,
+								   nickname,
+								   NULL);
+			} else {
+				privkeys = NULL;
+			}
+		}
+	}
 	PK11_FreeSlotList(slotlist);
 	error = NSS_ShutdownContext(ctx);
 	if (error != SECSuccess) {
@@ -693,23 +753,37 @@ cm_keygen_n_need_token(struct cm_keygen_state *state)
 static void
 cm_keygen_n_done(struct cm_keygen_state *state)
 {
-	const char *pubkey_info, *p;
+	const char *output, *p, *q;
+	char *pubkey_info, *pubkey, *marker = NULL;
 	int len;
 
 	if (state->subproc != NULL) {
-		pubkey_info = cm_subproc_get_msg(state->subproc, NULL);
-		if (pubkey_info != NULL) {
-			len = strcspn(pubkey_info, "\r\n");
-			state->entry->cm_key_pubkey_info =
-				talloc_strndup(state->entry, pubkey_info, len);
-			p = pubkey_info + len;
-			p += strspn(p, "\r\n");
+		output = cm_subproc_get_msg(state->subproc, NULL);
+		if (output != NULL) {
+			p = output;
+			len = strcspn(output, "\r\n");
+			pubkey_info = talloc_strndup(state->entry, p, len);
+			q = p + len;
+			p = q + strspn(q, "\r\n");
 			len = strcspn(p, "\r\n");
-			state->entry->cm_key_pubkey =
-				talloc_strndup(state->entry, p, len);
-		} else {
-			state->entry->cm_key_pubkey_info = NULL;
-			state->entry->cm_key_pubkey = NULL;
+			pubkey = talloc_strndup(state->entry, p, len);
+			q = p + len;
+			p = q + strspn(q, "\r\n");
+			len = strcspn(p, "\r\n");
+			if (len > 0) {
+				marker = talloc_strndup(state->entry, p, len);
+			}
+			if (marker != NULL) {
+				state->entry->cm_key_next_pubkey_info = pubkey_info;
+				state->entry->cm_key_next_pubkey = pubkey;
+				state->entry->cm_key_next_marker = marker;
+			} else {
+				state->entry->cm_key_next_pubkey_info = NULL;
+				state->entry->cm_key_next_pubkey = NULL;
+				state->entry->cm_key_next_marker = NULL;
+				state->entry->cm_key_pubkey_info = pubkey_info;
+				state->entry->cm_key_pubkey = pubkey;
+			}
 		}
 		cm_subproc_done(state->subproc);
 	}

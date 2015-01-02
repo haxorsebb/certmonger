@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2013,2014 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2013,2014,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -58,6 +58,27 @@ struct cm_keygen_state {
 	struct cm_subproc_state *subproc;
 };
 
+static char *
+make_filename(const char *prefix, char **marker)
+{
+	unsigned char suffix[6];
+	char *ret;
+
+	if (!RAND_pseudo_bytes(suffix, sizeof(suffix))) {
+		/* Try again sometime later. */
+		cm_log(1, "Error generating suffix.\n");
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+	}
+	*marker = cm_store_base64_from_bin(NULL, suffix, sizeof(suffix));
+	if (*marker == NULL) {
+		/* Try again sometime later. */
+		cm_log(1, "Error generating suffix.\n");
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+	}
+	ret = util_build_next_filename(prefix, *marker);
+	return ret;
+}
+
 static int
 cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		 void *userdata)
@@ -65,12 +86,15 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	struct cm_pin_cb_data cb_data;
 	FILE *fp, *status;
 	EVP_PKEY *pkey;
-	char buf[LINE_MAX], *pin, *pubhex, *pubihex;
+	char buf[LINE_MAX], *pin, *pubhex, *pubihex, *oldfile;
 	unsigned char *p, *q;
 	long error, errno_save;
 	enum cm_key_algorithm cm_key_algorithm;
 	int cm_key_size;
 	int len;
+	int keyfd;
+	const char *filename;
+	char *marker;
 	BIGNUM *exponent;
 	RSA *rsa;
 #ifdef CM_ENABLE_DSA
@@ -206,15 +230,66 @@ retry_gen:
 		break;
 	}
 
-	fp = fopen(entry->cm_key_storage_location, "w");
+	filename = entry->cm_key_storage_location;
+	marker = "";
+	keyfd = open(filename, O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
+	if (keyfd != -1) {
+		fp = fdopen(keyfd, "w");
+	} else {
+		while ((keyfd == -1) && (errno == EEXIST)) {
+			/* Check if there's also a permissions problem, which
+			 * we care about more than getting the naming right. */
+			if (errno == EEXIST) {
+				keyfd = open(filename, O_RDWR, S_IRUSR | S_IWUSR);
+				if (keyfd == -1) {
+					switch (errno) {
+					case EACCES:
+					case EPERM:
+						_exit(CM_SUB_STATUS_ERROR_PERMS);
+						break;
+					default:
+						errno_save = errno;
+						close(keyfd);
+						keyfd = -1;
+						errno = errno_save;
+						break;
+					}
+				}
+			}
+			cm_log(1,
+			       "Error opening key file \"%s\" "
+			       "for writing: %s.\n",
+			       filename, strerror(errno));
+			filename = make_filename(entry->cm_key_storage_location, &marker);
+			cm_log(1,
+			       "Attempting to open key file \"%s\" "
+			       "for writing.\n", filename);
+			keyfd = open(filename, O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
+		}
+		if (keyfd == -1) {
+			switch (errno) {
+			case EACCES:
+			case EPERM:
+				_exit(CM_SUB_STATUS_ERROR_PERMS);
+				break;
+			default:
+				cm_log(1,
+				       "Error opening key file \"%s\" "
+				       "for writing: %s.\n",
+				       filename, strerror(errno));
+				_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+				break;
+			}
+		}
+		fp = fdopen(keyfd, "w");
+	}
 	if (fp == NULL) {
 		if (errno != ENOENT) {
 			error = errno;
 			cm_log(1,
 			       "Error opening key file \"%s\" "
 			       "for writing: %s.\n",
-			       entry->cm_key_storage_location,
-			       strerror(errno));
+			       filename, strerror(errno));
 			switch (error) {
 			case EACCES:
 			case EPERM:
@@ -280,9 +355,17 @@ retry_gen:
 			free(p);
 		}
 	}
-	fprintf(status, "%s\n%s\n", pubihex, pubhex);
+	fprintf(status, "%s\n%s\n%s\n", pubihex, pubhex, marker);
 	fclose(fp);
 	fclose(status);
+
+	if ((entry->cm_key_next_marker != NULL) &&
+	    (strlen(entry->cm_key_next_marker) > 0)) {
+		oldfile = util_build_next_filename(entry->cm_key_storage_location, entry->cm_key_next_marker);
+		if (oldfile != NULL) {
+			unlink(oldfile);
+		}
+	}
 
 	return 0;
 }
@@ -356,23 +439,37 @@ cm_keygen_o_need_token(struct cm_keygen_state *state)
 static void
 cm_keygen_o_done(struct cm_keygen_state *state)
 {
-	const char *pubkey_info, *p;
+	const char *output, *p, *q;
+	char *pubkey_info, *pubkey, *marker = NULL;
 	int len;
 
 	if (state->subproc != NULL) {
-		pubkey_info = cm_subproc_get_msg(state->subproc, NULL);
-		if (pubkey_info != NULL) {
-			len = strcspn(pubkey_info, "\r\n");
-			state->entry->cm_key_pubkey_info =
-				talloc_strndup(state->entry, pubkey_info, len);
-			p = pubkey_info + len;
-			p += strspn(p, "\r\n");
+		output = cm_subproc_get_msg(state->subproc, NULL);
+		if (output != NULL) {
+			p = output;
+			len = strcspn(output, "\r\n");
+			pubkey_info = talloc_strndup(state->entry, p, len);
+			q = p + len;
+			p = q + strspn(q, "\r\n");
 			len = strcspn(p, "\r\n");
-			state->entry->cm_key_pubkey =
-				talloc_strndup(state->entry, p, len);
-		} else {
-			state->entry->cm_key_pubkey_info = NULL;
-			state->entry->cm_key_pubkey = NULL;
+			pubkey = talloc_strndup(state->entry, p, len);
+			q = p + len;
+			p = q + strspn(q, "\r\n");
+			len = strcspn(p, "\r\n");
+			if (len > 0) {
+				marker = talloc_strndup(state->entry, p, len);
+			}
+			if (marker != NULL) {
+				state->entry->cm_key_next_pubkey_info = pubkey_info;
+				state->entry->cm_key_next_pubkey = pubkey;
+				state->entry->cm_key_next_marker = marker;
+			} else {
+				state->entry->cm_key_next_pubkey_info = NULL;
+				state->entry->cm_key_next_pubkey = NULL;
+				state->entry->cm_key_next_marker = NULL;
+				state->entry->cm_key_pubkey_info = pubkey_info;
+				state->entry->cm_key_pubkey = pubkey;
+			}
 		}
 		cm_subproc_done(state->subproc);
 	}

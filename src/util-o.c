@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Red Hat, Inc.
+ * Copyright (C) 2010,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,4 +31,18 @@ util_o_init(void)
 #else
 	SSL_library_init();
 #endif
+}
+
+char *
+util_build_next_filename(const char *prefix, const char *marker)
+{
+	size_t len;
+	char *ret;
+
+	len = strlen(prefix) + strlen(marker) + sizeof("%s.%s.key");
+	ret = malloc(len + 1);
+	if (ret != NULL) {
+		snprintf(ret, len, "%s.%s.key", prefix, marker);
+	}
+	return ret;
 }
