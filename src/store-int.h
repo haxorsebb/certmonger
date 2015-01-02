@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012,2013,2014 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013,2014,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,7 +41,8 @@ struct cm_store_entry {
 #endif
 		} cm_key_algorithm, cm_key_gen_algorithm;
 		int cm_key_size, cm_key_gen_size;
-	} cm_key_type;
+	} cm_key_type, cm_key_next_type;
+	char *cm_key_next_marker;
 	/* Location of key pair [use-once default] NSS,/etc/pki/nssdb */
 	enum cm_key_storage_type {
 		cm_key_storage_none = 0,
@@ -53,10 +54,10 @@ struct cm_store_entry {
 	char *cm_key_nickname;
 	char *cm_key_pin;
 	char *cm_key_pin_file;
-	/* Cached plain public key (used for subject and authority key IDs) */
-	char *cm_key_pubkey;
+	/* Cached plain public key (used for computing subject and authority key IDs) */
+	char *cm_key_pubkey, *cm_key_next_pubkey;
 	/* Cached public key info (used in signing requests when using NSS) */
-	char *cm_key_pubkey_info;
+	char *cm_key_pubkey_info, *cm_key_next_pubkey_info;
 	/* Location of certificate [use-once default]
 	 * NSS,/etc/pki/nssdb,Server-Cert-default */
 	enum cm_cert_storage_type {

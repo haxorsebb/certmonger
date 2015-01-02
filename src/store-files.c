@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012,2013,2014 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013,2014,2015 Red Hat, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,6 +51,13 @@ enum cm_store_file_field {
 	cm_store_entry_field_key_size,
 	cm_store_entry_field_key_gen_size,
 
+	cm_store_entry_field_key_next_type,
+	cm_store_entry_field_key_next_gen_type,
+	cm_store_entry_field_key_next_size,
+	cm_store_entry_field_key_next_gen_size,
+
+	cm_store_entry_field_key_next_marker,
+
 	cm_store_entry_field_key_storage_type,
 	cm_store_entry_field_key_storage_location,
 	cm_store_entry_field_key_token,
@@ -59,6 +66,9 @@ enum cm_store_file_field {
 	cm_store_entry_field_key_pin_file,
 	cm_store_entry_field_key_pubkey,
 	cm_store_entry_field_key_pubkey_info,
+
+	cm_store_entry_field_key_next_pubkey,
+	cm_store_entry_field_key_next_pubkey_info,
 
 	cm_store_entry_field_cert_storage_type,
 	cm_store_entry_field_cert_storage_location,
@@ -183,6 +193,13 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_key_size, "key_size"},
 	{cm_store_entry_field_key_gen_size, "key_gen_size"},
 
+	{cm_store_entry_field_key_next_type, "key_next_type"},
+	{cm_store_entry_field_key_next_gen_type, "key_next_gen_type"},
+	{cm_store_entry_field_key_next_size, "key_next_size"},
+	{cm_store_entry_field_key_next_gen_size, "key_next_gen_size"},
+
+	{cm_store_entry_field_key_next_marker, "key_next_marker"},
+
 	{cm_store_entry_field_key_storage_type, "key_storage_type"},
 	{cm_store_entry_field_key_storage_location, "key_storage_location"},
 	{cm_store_entry_field_key_token, "key_token"},
@@ -191,6 +208,9 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_key_pin_file, "key_pin_file"},
 	{cm_store_entry_field_key_pubkey, "key_pubkey"},
 	{cm_store_entry_field_key_pubkey_info, "key_pubkey_info"},
+
+	{cm_store_entry_field_key_next_pubkey, "key_next_pubkey"},
+	{cm_store_entry_field_key_next_pubkey_info, "key_next_pubkey_info"},
 
 	{cm_store_entry_field_cert_storage_type, "cert_storage_type"},
 	{cm_store_entry_field_cert_storage_location, "cert_storage_location"},
@@ -662,6 +682,63 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 				ret->cm_key_type.cm_key_gen_size = atoi(p);
 				talloc_free(p);
 				break;
+			case cm_store_entry_field_key_next_type:
+				if (strcasecmp(s[i], "RSA") == 0) {
+					ret->cm_key_next_type.cm_key_algorithm =
+						cm_key_rsa;
+#ifdef CM_ENABLE_DSA
+				} else
+				if (strcasecmp(s[i], "DSA") == 0) {
+					ret->cm_key_next_type.cm_key_algorithm =
+						cm_key_dsa;
+#endif
+#ifdef CM_ENABLE_EC
+				} else
+				if ((strcasecmp(s[i], "ECDSA") == 0) ||
+				    (strcasecmp(s[i], "EC") == 0)) {
+					ret->cm_key_next_type.cm_key_algorithm =
+						cm_key_ecdsa;
+#endif
+				} else {
+					ret->cm_key_next_type.cm_key_algorithm =
+						cm_key_unspecified;
+				}
+				talloc_free(p);
+				break;
+			case cm_store_entry_field_key_next_gen_type:
+				if (strcasecmp(s[i], "RSA") == 0) {
+					ret->cm_key_next_type.cm_key_gen_algorithm =
+						cm_key_rsa;
+#ifdef CM_ENABLE_DSA
+				} else
+				if (strcasecmp(s[i], "DSA") == 0) {
+					ret->cm_key_next_type.cm_key_gen_algorithm =
+						cm_key_dsa;
+#endif
+#ifdef CM_ENABLE_EC
+				} else
+				if ((strcasecmp(s[i], "ECDSA") == 0) ||
+				    (strcasecmp(s[i], "EC") == 0)) {
+					ret->cm_key_next_type.cm_key_gen_algorithm =
+						cm_key_ecdsa;
+#endif
+				} else {
+					ret->cm_key_next_type.cm_key_gen_algorithm =
+						cm_key_unspecified;
+				}
+				talloc_free(p);
+				break;
+			case cm_store_entry_field_key_next_size:
+				ret->cm_key_next_type.cm_key_size = atoi(p);
+				talloc_free(p);
+				break;
+			case cm_store_entry_field_key_next_gen_size:
+				ret->cm_key_next_type.cm_key_gen_size = atoi(p);
+				talloc_free(p);
+				break;
+			case cm_store_entry_field_key_next_marker:
+				ret->cm_key_next_marker = free_if_empty(p);
+				break;
 			case cm_store_entry_field_key_storage_type:
 				if (strcasecmp(p, "FILE") == 0) {
 					ret->cm_key_storage_type =
@@ -712,6 +789,12 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 				break;
 			case cm_store_entry_field_key_pubkey_info:
 				ret->cm_key_pubkey_info = free_if_empty(p);
+				break;
+			case cm_store_entry_field_key_next_pubkey:
+				ret->cm_key_next_pubkey = free_if_empty(p);
+				break;
+			case cm_store_entry_field_key_next_pubkey_info:
+				ret->cm_key_next_pubkey_info = free_if_empty(p);
 				break;
 			case cm_store_entry_field_cert_storage_type:
 				if (strcasecmp(p, "FILE") == 0) {
@@ -1033,6 +1116,11 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_key_gen_type:
 			case cm_store_entry_field_key_size:
 			case cm_store_entry_field_key_gen_size:
+			case cm_store_entry_field_key_next_type:
+			case cm_store_entry_field_key_next_gen_type:
+			case cm_store_entry_field_key_next_size:
+			case cm_store_entry_field_key_next_gen_size:
+			case cm_store_entry_field_key_next_marker:
 			case cm_store_entry_field_key_storage_type:
 			case cm_store_entry_field_key_storage_location:
 			case cm_store_entry_field_key_token:
@@ -1041,6 +1129,8 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_key_pin_file:
 			case cm_store_entry_field_key_pubkey:
 			case cm_store_entry_field_key_pubkey_info:
+			case cm_store_entry_field_key_next_pubkey:
+			case cm_store_entry_field_key_next_pubkey_info:
 			case cm_store_entry_field_cert_storage_type:
 			case cm_store_entry_field_cert_storage_location:
 			case cm_store_entry_field_cert_token:
@@ -1416,6 +1506,56 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 				entry->cm_key_type.cm_key_size);
 	cm_store_file_write_int(fp, cm_store_entry_field_key_gen_size,
 				entry->cm_key_type.cm_key_gen_size);
+	switch (entry->cm_key_next_type.cm_key_algorithm) {
+	case cm_key_unspecified:
+		cm_store_file_write_str(fp, cm_store_entry_field_key_next_type,
+					"UNSPECIFIED");
+		break;
+	case cm_key_rsa:
+		cm_store_file_write_str(fp, cm_store_entry_field_key_next_type,
+					"RSA");
+		break;
+#ifdef CM_ENABLE_DSA
+	case cm_key_dsa:
+		cm_store_file_write_str(fp, cm_store_entry_field_key_next_type,
+					"DSA");
+		break;
+#endif
+#ifdef CM_ENABLE_EC
+	case cm_key_ecdsa:
+		cm_store_file_write_str(fp, cm_store_entry_field_key_next_type,
+					"EC");
+		break;
+#endif
+	}
+	switch (entry->cm_key_next_type.cm_key_gen_algorithm) {
+	case cm_key_unspecified:
+		cm_store_file_write_str(fp, cm_store_entry_field_key_next_gen_type,
+					"UNSPECIFIED");
+		break;
+	case cm_key_rsa:
+		cm_store_file_write_str(fp, cm_store_entry_field_key_next_gen_type,
+					"RSA");
+		break;
+#ifdef CM_ENABLE_DSA
+	case cm_key_dsa:
+		cm_store_file_write_str(fp, cm_store_entry_field_key_next_gen_type,
+					"DSA");
+		break;
+#endif
+#ifdef CM_ENABLE_EC
+	case cm_key_ecdsa:
+		cm_store_file_write_str(fp, cm_store_entry_field_key_next_gen_type,
+					"EC");
+		break;
+#endif
+	}
+	cm_store_file_write_int(fp, cm_store_entry_field_key_next_size,
+				entry->cm_key_next_type.cm_key_size);
+	cm_store_file_write_int(fp, cm_store_entry_field_key_next_gen_size,
+				entry->cm_key_next_type.cm_key_gen_size);
+	cm_store_file_write_str(fp, cm_store_entry_field_key_next_marker,
+				entry->cm_key_next_marker);
 
 	switch (entry->cm_key_storage_type) {
 	case cm_key_storage_file:
@@ -1450,6 +1590,11 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 				entry->cm_key_pubkey);
 	cm_store_file_write_str(fp, cm_store_entry_field_key_pubkey_info,
 				entry->cm_key_pubkey_info);
+
+	cm_store_file_write_str(fp, cm_store_entry_field_key_next_pubkey,
+				entry->cm_key_next_pubkey);
+	cm_store_file_write_str(fp, cm_store_entry_field_key_next_pubkey_info,
+				entry->cm_key_next_pubkey_info);
 
 	switch (entry->cm_cert_storage_type) {
 	case cm_cert_storage_file:
@@ -2221,6 +2366,11 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	}
 	ret->cm_key_pubkey = cm_store_maybe_strdup(ret, entry->cm_key_pubkey);
 	ret->cm_key_pubkey_info = cm_store_maybe_strdup(ret, entry->cm_key_pubkey_info);
+
+	ret->cm_key_next_type = entry->cm_key_next_type;
+	ret->cm_key_next_pubkey = cm_store_maybe_strdup(ret, entry->cm_key_next_pubkey);
+	ret->cm_key_next_pubkey_info = cm_store_maybe_strdup(ret, entry->cm_key_next_pubkey_info);
+	ret->cm_key_next_marker = cm_store_maybe_strdup(ret, entry->cm_key_next_marker);
 
 	ret->cm_cert_storage_type = entry->cm_cert_storage_type;
 	ret->cm_cert_storage_location = cm_store_maybe_strdup(ret, entry->cm_cert_storage_location);

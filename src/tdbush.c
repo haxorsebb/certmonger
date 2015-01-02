@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012,2013,2014 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013,2014,2015 Red Hat, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1283,6 +1283,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	} else {
 		new_entry->cm_key_type.cm_key_gen_algorithm = cm_prefs_preferred_key_algorithm();
 	}
+	new_entry->cm_key_next_type.cm_key_gen_algorithm = new_entry->cm_key_type.cm_key_gen_algorithm;
 	param = cm_tdbusm_find_dict_entry(d, "KEY_SIZE", cm_tdbusm_dict_n);
 	if (param == NULL) {
 		param = cm_tdbusm_find_dict_entry(d,
@@ -1318,6 +1319,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	default:
 		break;
 	}
+	new_entry->cm_key_next_type.cm_key_gen_size = new_entry->cm_key_type.cm_key_gen_size;
 	/* Key and certificate storage. */
 	new_entry->cm_key_storage_type = key_storage;
 	new_entry->cm_key_storage_location = maybe_strdup(new_entry,
