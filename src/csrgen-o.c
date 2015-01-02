@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012,2013,2014 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013,2014,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -84,7 +84,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	NETSCAPE_SPKI spki;
 	NETSCAPE_SPKAC spkac;
 	EVP_PKEY *pkey;
-	char buf[LINE_MAX], *p, *q, *s, *nickname, *pin, *password;
+	char buf[LINE_MAX], *p, *q, *s, *nickname, *pin, *password, *filename;
 	unsigned char *extensions, *upassword, *bmp, *name;
 	const char *default_cn = CM_DEFAULT_CERT_SUBJECT_CN;
 	const unsigned char *nametmp;
@@ -97,13 +97,24 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	if (status == NULL) {
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
-	keyfp = fopen(entry->cm_key_storage_location, "r");
+	if ((entry->cm_key_next_marker != NULL) &&
+	    (strlen(entry->cm_key_next_marker) > 0)) {
+		filename = util_build_next_filename(entry->cm_key_storage_location, entry->cm_key_next_marker);
+		if (filename == NULL) {
+			cm_log(1, "Error opening key file \"%s\" "
+			       "for reading: %s.\n",
+			       filename, strerror(errno));
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		}
+	} else {
+		filename = entry->cm_key_storage_location;
+	}
+	keyfp = fopen(filename, "r");
 	if (keyfp == NULL) {
 		if (errno != ENOENT) {
 			cm_log(1, "Error opening key file \"%s\" "
 			       "for reading: %s.\n",
-			       entry->cm_key_storage_location,
-			       strerror(errno));
+			       filename, strerror(errno));
 		}
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}

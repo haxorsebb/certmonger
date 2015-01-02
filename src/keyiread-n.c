@@ -423,8 +423,11 @@ next_slot:
 
 	PK11_FreeSlotList(slotlist);
 
-	if (key == NULL) {
-		cm_log(1, "Error locating key.\n");
+	if ((key == NULL) ||
+	    ((entry->cm_key_next_marker != NULL) &&
+	     (strlen(entry->cm_key_next_marker) != 0) &&
+	     (nextkey == NULL))) {
+		cm_log(1, "Error locating a key.\n");
 		error = NSS_ShutdownContext(ctx);
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
