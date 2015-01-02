@@ -83,6 +83,7 @@ make_nickname(const char *prefix, char **marker)
 {
 	unsigned char suffix[6];
 	char *ret;
+	size_t l;
 
 	if (PK11_GenerateRandom(suffix, sizeof(suffix)) != SECSuccess) {
 		/* Try again sometime later. */
@@ -95,6 +96,16 @@ make_nickname(const char *prefix, char **marker)
 		/* Try again sometime later. */
 		cm_log(1, "Error generating suffix.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+	}
+	while ((l = strcspn(*marker, "+/")) != strlen(*marker)) {
+		switch ((*marker)[l]) {
+		case '+':
+			(*marker)[l] = '=';
+			break;
+		case '/':
+			(*marker)[l] = '_';
+			break;
+		}
 	}
 	ret = util_build_next_nickname(prefix, *marker);
 	return ret;
