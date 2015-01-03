@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010,2011,2012 Red Hat, Inc.
+ * Copyright (C) 2010,2011,2012,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,6 +49,7 @@
 struct cm_submit_h_context {
 	int ret;
 	char *method, *uri, *args, *accept, *ctype, *cainfo, *capath, *result;
+	int result_length;
 	char *sslcert, *sslkey, *sslpass;
 	enum cm_submit_h_opt_negotiate negotiate;
 	enum cm_submit_h_opt_delegate negotiate_delegate;
@@ -102,20 +103,22 @@ static uint
 append_result(char *in, uint size, uint nmemb, struct cm_submit_h_context *ctx)
 {
 	uint n;
+	unsigned char *data;
+
 	if (size < nmemb) {
 		n = nmemb;
 		nmemb = size;
 		size = n;
 	}
 	for (n = 0; n < nmemb; n++) {
-		if (ctx->result == NULL) {
-			ctx->result = talloc_strndup(ctx, in, size);
-		} else {
-			ctx->result = talloc_strndup_append_buffer(ctx->result,
-								   in +
-								   n * size,
-								   size);
+		data = talloc_realloc_size(ctx, ctx->result, ctx->result_length + size + 1);
+		if (data == NULL) {
+			return n * size;
 		}
+		memcpy(data + ctx->result_length, in + n * size, size);
+		data[ctx->result_length + size + 1] = '\0';
+		ctx->result = data;
+		ctx->result_length += size;
 	}
 	return n * size;
 }
@@ -260,8 +263,11 @@ cm_submit_h_result_code_text(struct cm_submit_h_context *ctx)
 }
 
 const char *
-cm_submit_h_results(struct cm_submit_h_context *ctx)
+cm_submit_h_results(struct cm_submit_h_context *ctx, int *length)
 {
+	if (length != NULL) {
+		*length = ctx->result_length;
+	}
 	return ctx->result;
 }
 
@@ -287,7 +293,7 @@ main(int argc, char **argv)
 	enum cm_submit_h_opt_negotiate negotiate;
 	enum cm_submit_h_opt_delegate negotiate_delegate;
 	enum cm_submit_h_opt_clientauth clientauth;
-	int c, fd, l, verbose = 0;
+	int c, fd, l, verbose = 0, length = 0;
 	char *ctype, *accept, *capath, *cainfo, *sslcert, *sslkey, *sslpass;
 
 	ctype = NULL;
@@ -408,8 +414,8 @@ main(int argc, char **argv)
 			       cm_submit_h_curl_verbose_on :
 			       cm_submit_h_curl_verbose_off);
 	cm_submit_h_run(ctx);
-	if (cm_submit_h_results(ctx) != NULL) {
-		printf("%s", cm_submit_h_results(ctx));
+	if (cm_submit_h_results(ctx, &length) != NULL) {
+		printf("%.*s", length, cm_submit_h_results(ctx, NULL));
 	}
 	if (cm_submit_h_result_code(ctx) != 0) {
 		fflush(stdout);

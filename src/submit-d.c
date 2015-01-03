@@ -1005,7 +1005,7 @@ restart:
 		}
 		return 1;
 	}
-	result = cm_submit_h_results(hctx) ?: "";
+	result = cm_submit_h_results(hctx, NULL) ?: "";
 	if (verbose > 0) {
 		printf("result = \"%s\"\n", result);
 	}

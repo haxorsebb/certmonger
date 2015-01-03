@@ -575,7 +575,7 @@ main(int argc, char **argv)
 			printf("code_text = \"%s\"\n", cm_submit_h_result_code_text(hctx));
 			syslog(LOG_DEBUG, "%s %s?%s\n", "GET", url, params);
 		}
-		results = cm_submit_h_results(hctx);
+		results = cm_submit_h_results(hctx, NULL);
 		if (verbose > 0) {
 			printf("results = \"%s\"\n", results);
 			syslog(LOG_DEBUG, "%s", results);
