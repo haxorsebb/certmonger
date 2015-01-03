@@ -421,6 +421,21 @@ parse_renew_reqs(struct cm_store_ca *ca, struct cm_cadata_state *state,
 		   &ca->cm_ca_required_renewal_attributes);
 }
 
+static void
+parse_capabilities(struct cm_store_ca *ca, struct cm_cadata_state *state,
+		   const char *msg)
+{
+	parse_list(ca, state, msg, NULL, &ca->cm_ca_capabilities);
+}
+
+
+static void
+parse_encryption_cert(struct cm_store_ca *ca, struct cm_cadata_state *state,
+		      const char *msg)
+{
+	ca->cm_ca_encryption_cert = talloc_strdup(ca, msg);
+}
+
 static struct cm_cadata_state *
 cm_cadata_start_generic(struct cm_store_ca *ca, const char *op,
 			void (*parse)(struct cm_store_ca *,
@@ -537,6 +552,20 @@ cm_cadata_start_renew_reqs(struct cm_store_ca *ca)
 {
 	return cm_cadata_start_generic(ca, CM_OP_FETCH_RENEWAL_REQUIREMENTS,
 				       parse_renew_reqs);
+}
+
+struct cm_cadata_state *
+cm_cadata_start_capabilities(struct cm_store_ca *ca)
+{
+	return cm_cadata_start_generic(ca, CM_OP_FETCH_SCEP_CA_CAPS,
+				       parse_capabilities);
+}
+
+struct cm_cadata_state *
+cm_cadata_start_encryption_cert(struct cm_store_ca *ca)
+{
+	return cm_cadata_start_generic(ca, CM_OP_FETCH_SCEP_CA_CERTS,
+				       parse_encryption_cert);
 }
 
 int

@@ -28,6 +28,8 @@ struct cm_cadata_state *cm_cadata_start_profiles(struct cm_store_ca *ca);
 struct cm_cadata_state *cm_cadata_start_default_profile(struct cm_store_ca *ca);
 struct cm_cadata_state *cm_cadata_start_enroll_reqs(struct cm_store_ca *ca);
 struct cm_cadata_state *cm_cadata_start_renew_reqs(struct cm_store_ca *ca);
+struct cm_cadata_state *cm_cadata_start_capabilities(struct cm_store_ca *ca);
+struct cm_cadata_state *cm_cadata_start_encryption_cert(struct cm_store_ca *ca);
 
 /* Check if the data has been retrieved. */
 int cm_cadata_ready(struct cm_cadata_state *state);

@@ -240,6 +240,8 @@ struct cm_store_ca {
 		cm_ca_phase_default_profile,
 		cm_ca_phase_enroll_reqs,
 		cm_ca_phase_renew_reqs,
+		cm_ca_phase_capabilities,
+		cm_ca_phase_encryption_cert,
 		cm_ca_phase_invalid,
 	} cm_ca_phase;
 	/* Data refresh state. */
