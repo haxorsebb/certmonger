@@ -112,3 +112,17 @@ util_build_next_nickname(const char *prefix, const char *marker)
 	}
 	return ret;
 }
+
+char *
+util_build_old_nickname(const char *prefix, const char *serial)
+{
+	size_t len;
+	char *ret;
+
+	len = strlen(prefix) + strlen(serial) + sizeof("%s (serial %s)");
+	ret = malloc(len + 1);
+	if (ret != NULL) {
+		snprintf(ret, len, "%s (serial %s)", prefix, serial);
+	}
+	return ret;
+}

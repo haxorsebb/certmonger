@@ -1,0 +1,127 @@
+#!/bin/bash -e
+
+cd "$tmpdir"
+
+source "$srcdir"/functions
+initnssdb "$tmpdir"
+
+function setupca() {
+	cat > ca.self <<- EOF
+	id=self_signer
+	ca_is_default=0
+	ca_type=INTERNAL:SELF
+	ca_internal_serial=1235
+	ca_internal_issue_time=40271
+	EOF
+}
+
+for size in 2048 3072 4096 ; do
+	rm -f "$tmpdir"/*.db
+	initnssdb "$tmpdir"
+	# Build a self-signed certificate.
+	run_certutil -d "$tmpdir" -S -g $size -n "i$size" \
+		-s "cn=T$size" -c "cn=T$size" \
+		-x -t u -m 4660
+	# Export the certificate and key.
+	pk12util -d "$tmpdir" -o $size.p12 -W "" -n "i$size" > /dev/null 2>&1
+	openssl pkcs12 -in $size.p12 -passin pass: -nocerts -nodes | awk '/^-----BEGIN/,/^-----END/{print}' > keyi$size
+	openssl pkcs12 -in $size.p12 -passin pass: -nokeys  -nodes | awk '/^-----BEGIN/,/^-----END/{print}' > certi$size
+	# Read that NSS key.
+	cat > entry.nss.$size <<- EOF
+	ca_name=self_signer
+	key_storage_type=NSSDB
+	key_storage_location=$tmpdir
+	key_nickname=i$size
+	cert_storage_type=NSSDB
+	cert_storage_location=$tmpdir
+	cert_nickname=i$size
+	template_subject=CN=T$size
+	EOF
+	$toolsdir/keyiread entry.nss.$size > /dev/null 2>&1
+	# Read that OpenSSL key.
+	cat > entry.openssl.$size <<- EOF
+	ca_name=self_signer
+	key_storage_type=FILE
+	key_storage_location=$tmpdir/keyi$size
+	cert_storage_type=FILE
+	cert_storage_location=$tmpdir/certi$size
+	EOF
+	$toolsdir/keyiread entry.openssl.$size > /dev/null 2>&1
+	# Use that NSS key.
+	cat > entry.nss.$size <<- EOF
+	ca_name=self_signer
+	key_storage_type=NSSDB
+	key_storage_location=$tmpdir
+	key_nickname=i$size
+	cert_storage_type=NSSDB
+	cert_storage_location=$tmpdir
+	cert_nickname=i$size
+	template_subject=CN=T$size
+	EOF
+	$toolsdir/keyiread entry.nss.$size > /dev/null 2>&1
+	$toolsdir/csrgen entry.nss.$size > csr.nss.$size
+	setupca
+	$toolsdir/submit ca.self entry.nss.$size > cert.nss.$size
+	# Use that OpenSSL key.
+	cat > entry.openssl.$size <<- EOF
+	ca_name=self_signer
+	key_storage_type=FILE
+	key_storage_location=$tmpdir/keyi$size
+	cert_storage_type=FILE
+	cert_storage_location=$tmpdir/certi$size
+	template_subject=CN=T$size
+	EOF
+	$toolsdir/keyiread entry.openssl.$size > /dev/null 2>&1
+	$toolsdir/csrgen entry.openssl.$size > csr.openssl.$size
+	setupca
+	$toolsdir/submit ca.self entry.openssl.$size > cert.openssl.$size
+	# Now compare them.
+	if ! cmp cert.nss.$size cert.openssl.$size ; then
+		echo Certificates differ:
+		cat cert.nss.$size cert.openssl.$size
+		exit 1
+	else
+		echo $size OK.
+	fi
+	# Now generate new keys, CSRs, and certificates.
+	$toolsdir/keygen entry.nss.$size
+	$toolsdir/keyiread entry.nss.$size > /dev/null 2>&1
+	$toolsdir/csrgen entry.nss.$size > csr.nss.$size
+	setupca
+	$toolsdir/submit ca.self entry.nss.$size > cert.nss.$size
+
+	echo "[$size] certs before saving"
+	run_certutil -L -d $tmpdir | grep -v SSL,S/MIME | grep -v '^$' | grep -v 'Trust'
+	echo "[$size] keys before saving"
+	run_certutil -K -d $tmpdir | grep -v NSS | sed -r -e 's,[0123456789abcdef]{8},hex,g' -e 's,< 0>,<->,g' -e 's,< 1>,<->,g' | env LANG=C sort
+
+	$toolsdir/certsave entry.nss.$size
+
+	echo "[$size] certs after saving"
+	run_certutil -L -d $tmpdir | grep -v SSL,S/MIME | grep -v '^$' | grep -v 'Trust'
+	echo "[$size] keys after saving"
+	run_certutil -K -d $tmpdir | grep -v NSS | sed -r -e 's,[0123456789abcdef]{8},hex,g' -e 's,< 0>,<->,g' -e 's,< 1>,<->,g' | env LANG=C sort
+
+	$toolsdir/keygen entry.openssl.$size
+	$toolsdir/keyiread entry.openssl.$size > /dev/null 2>&1
+	$toolsdir/csrgen entry.openssl.$size > csr.openssl.$size
+	setupca
+	$toolsdir/submit ca.self entry.openssl.$size > cert.openssl.$size
+
+	echo "[$size] PEM certs before saving"
+	find $tmpdir -name "certi${size}*" -print | env LANG=C sort
+	find $tmpdir -name "certi${size}*" -print | xargs -n 1 openssl x509 -noout -serial -in
+	echo "[$size] PEM keys before saving"
+	marker=`grep ^key_next_marker= entry.openssl.$size | cut -f2- -d=`
+	find $tmpdir -name "keyi${size}*" -print | sed -e s,"$marker","(next)", | env LANG=C sort
+
+	$toolsdir/certsave entry.openssl.$size
+
+	echo "[$size] PEM certs after saving"
+	find $tmpdir -name "certi${size}*" -print | env LANG=C sort
+	find $tmpdir -name "certi${size}*" -print | xargs -n 1 openssl x509 -noout -serial -in
+	echo "[$size] PEM keys after saving"
+	find $tmpdir -name "keyi${size}*" -print | env LANG=C sort
+done
+cat cert.nss.$size 1>&2
+echo Test complete.

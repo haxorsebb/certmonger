@@ -46,3 +46,17 @@ util_build_next_filename(const char *prefix, const char *marker)
 	}
 	return ret;
 }
+
+char *
+util_build_old_filename(const char *prefix, const char *serial)
+{
+	size_t len;
+	char *ret;
+
+	len = strlen(prefix) + strlen(serial) + sizeof("%s.%s.key");
+	ret = malloc(len + 1);
+	if (ret != NULL) {
+		snprintf(ret, len, "%s.%s.key", prefix, serial);
+	}
+	return ret;
+}

@@ -125,7 +125,9 @@ EXTRA_DIST = \
 	028-dbus/simpleprop.py \
 	028-dbus/walk.py \
 	029-canonize/expected.out \
-	029-canonize/run.sh
+	029-canonize/run.sh \
+	030-rekey/expected.out \
+	030-rekey/run.sh
 
 subdirs = \
 	001-keyiread \
@@ -159,7 +161,8 @@ subdirs = \
 	026-local \
 	027-hooks \
 	028-dbus \
-	029-canonize
+	029-canonize \
+	030-rekey
 
 if HAVE_DBM_NSSDB
 subdirs += \

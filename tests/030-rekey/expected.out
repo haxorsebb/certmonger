@@ -1,0 +1,73 @@
+2048 OK.
+OK.
+[2048] certs before saving
+i2048                                                        u,u,u
+[2048] keys before saving
+<-> rsa      hexhexhexhexhex   i2048
+[2048] certs after saving
+i2048                                                        u,u,u
+[2048] keys after saving
+<-> rsa      hexhexhexhexhex   i2048
+<-> rsa      hexhexhexhexhex   i2048 (serial 1234)
+OK.
+[2048] PEM certs before saving
+${tmpdir}/certi2048
+serial=1234
+[2048] PEM keys before saving
+${tmpdir}/keyi2048
+${tmpdir}/keyi2048.(next).key
+[2048] PEM certs after saving
+${tmpdir}/certi2048
+serial=1235
+[2048] PEM keys after saving
+${tmpdir}/keyi2048
+${tmpdir}/keyi2048.1234.key
+3072 OK.
+OK.
+[3072] certs before saving
+i3072                                                        u,u,u
+[3072] keys before saving
+<-> rsa      hexhexhexhexhex   i3072
+[3072] certs after saving
+i3072                                                        u,u,u
+[3072] keys after saving
+<-> rsa      hexhexhexhexhex   i3072
+<-> rsa      hexhexhexhexhex   i3072 (serial 1234)
+OK.
+[3072] PEM certs before saving
+${tmpdir}/certi3072
+serial=1234
+[3072] PEM keys before saving
+${tmpdir}/keyi3072
+${tmpdir}/keyi3072.(next).key
+[3072] PEM certs after saving
+${tmpdir}/certi3072
+serial=1235
+[3072] PEM keys after saving
+${tmpdir}/keyi3072
+${tmpdir}/keyi3072.1234.key
+4096 OK.
+OK.
+[4096] certs before saving
+i4096                                                        u,u,u
+[4096] keys before saving
+<-> rsa      hexhexhexhexhex   i4096
+[4096] certs after saving
+i4096                                                        u,u,u
+[4096] keys after saving
+<-> rsa      hexhexhexhexhex   i4096
+<-> rsa      hexhexhexhexhex   i4096 (serial 1234)
+OK.
+[4096] PEM certs before saving
+${tmpdir}/certi4096
+serial=1234
+[4096] PEM keys before saving
+${tmpdir}/keyi4096
+${tmpdir}/keyi4096.(next).key
+[4096] PEM certs after saving
+${tmpdir}/certi4096
+serial=1235
+[4096] PEM keys after saving
+${tmpdir}/keyi4096
+${tmpdir}/keyi4096.1234.key
+Test complete.

@@ -20,5 +20,6 @@
 
 void util_o_init(void);
 char *util_build_next_filename(const char *prefix, const char *marker);
+char *util_build_old_filename(const char *prefix, const char *serial);
 
 #endif

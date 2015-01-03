@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012,2013,2014 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013,2014,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@
 #include <nssb64.h>
 #include <cert.h>
 #include <certdb.h>
+#include <keyhi.h>
 #include <pk11pub.h>
 #include <prerror.h>
 #include <secerr.h>
@@ -61,7 +62,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	PLArenaPool *arena;
 	SECStatus error;
 	SECItem *item, subject;
-	char *p, *q;
+	char *p, *q, *serial = NULL;
 	const char *es;
 	NSSInitContext *ctx;
 	CERTCertDBHandle *certdb;
@@ -70,6 +71,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	CERTCertTrust trust;
 	CERTSignedData csdata;
 	CERTCertListNode *node;
+	SECKEYPrivateKey *privkey = NULL;
 	struct cm_certsave_n_settings *settings;
 
 	if (entry->cm_cert_storage_location == NULL) {
@@ -249,6 +251,12 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 							       node->cert->subjectName ?
 							       node->cert->subjectName :
 							       "");
+							if (privkey == NULL) {
+								privkey = PK11_FindKeyByAnyCert(node->cert, NULL);
+								serial = cm_store_hex_from_bin(NULL,
+											       node->cert->serialNumber.data,
+											       node->cert->serialNumber.len);
+							}
 							SEC_DeletePermCertificate(node->cert);
 						}
 					}
@@ -391,6 +399,12 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 							       "different "
 							       "contents, "
 							       "removing it.\n");
+							if (privkey == NULL) {
+								privkey = PK11_FindKeyByAnyCert(node->cert, NULL);
+								serial = cm_store_hex_from_bin(NULL,
+											       node->cert->serialNumber.data,
+											       node->cert->serialNumber.len);
+							}
 							SEC_DeletePermCertificate(node->cert);
 						}
 					}
@@ -423,6 +437,19 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			}
 			if (returned != NULL) {
 				CERT_DestroyCertArray(returned, 1);
+			}
+			if (privkey != NULL) {
+				/* If there are no more certificates, try to rename the key. */
+				oldcert = PK11_GetCertFromPrivateKey(privkey);
+				if (oldcert == NULL) {
+					p = util_build_old_nickname(entry->cm_cert_nickname, serial);
+					if (p != NULL) {
+						PK11_SetPrivateKeyNickname(privkey, p);
+					}
+				} else {
+					CERT_DestroyCertificate(oldcert);
+				}
+				SECKEY_DestroyPrivateKey(privkey);
 			}
 		} else {
 			cm_log(1, "Error getting handle to default NSS DB.\n");
