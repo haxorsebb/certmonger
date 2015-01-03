@@ -310,6 +310,11 @@ struct cm_store_ca {
 	char **cm_ca_root_cert_store_nssdbs;
 	char **cm_ca_other_root_cert_store_nssdbs;
 	char **cm_ca_other_cert_store_nssdbs;
+	/* CA capabilities.  Currently only ever SCEP capabilities. */
+	char **cm_ca_capabilities;
+	/* The CA's SCEP certificate, used for encrypting requests to it.
+	 * Currently only used for SCEP. */
+	char *cm_ca_encryption_cert;
 };
 
 const char *cm_store_state_as_string(enum cm_state state);

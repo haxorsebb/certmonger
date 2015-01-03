@@ -180,6 +180,9 @@ enum cm_store_file_field {
 	cm_store_ca_field_other_root_cert_nssdbs,
 	cm_store_ca_field_other_cert_nssdbs,
 
+	cm_store_ca_field_capabilities,
+	cm_store_ca_field_encryption_cert,
+
 	cm_store_file_field_invalid_high,
 };
 static struct cm_store_file_field_list {
@@ -325,6 +328,8 @@ static struct cm_store_file_field_list {
 	{cm_store_ca_field_root_cert_nssdbs, "ca_root_cert_dbs"},
 	{cm_store_ca_field_other_root_cert_nssdbs, "ca_other_root_cert_dbs"},
 	{cm_store_ca_field_other_cert_nssdbs, "ca_other_cert_dbs"},
+	{cm_store_ca_field_capabilities, "ca_capabilities"},
+	{cm_store_ca_field_encryption_cert, "ca_encryption_cert"},
 };
 
 static enum cm_store_file_field
@@ -624,6 +629,8 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_ca_field_root_cert_nssdbs:
 			case cm_store_ca_field_other_root_cert_nssdbs:
 			case cm_store_ca_field_other_cert_nssdbs:
+			case cm_store_ca_field_capabilities:
+			case cm_store_ca_field_encryption_cert:
 				break;
 			case cm_store_file_field_id:
 				ret->cm_nickname = free_if_empty(p);
@@ -1300,6 +1307,14 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_ca_field_other_cert_nssdbs:
 				ret->cm_ca_other_cert_store_nssdbs =
 					free_if_empty_multi(ret, p);
+				break;
+			case cm_store_ca_field_capabilities:
+				ret->cm_ca_capabilities =
+					free_if_empty_multi(ret, p);
+				break;
+			case cm_store_ca_field_encryption_cert:
+				ret->cm_ca_encryption_cert =
+					free_if_empty(p);
 				break;
 			}
 		}
@@ -2030,6 +2045,10 @@ cm_store_ca_write(FILE *fp, struct cm_store_ca *ca)
 				 ca->cm_ca_other_root_cert_store_nssdbs);
 	cm_store_file_write_strs(fp, cm_store_ca_field_other_cert_nssdbs,
 				 ca->cm_ca_other_cert_store_nssdbs);
+	cm_store_file_write_strs(fp, cm_store_ca_field_capabilities,
+				 ca->cm_ca_capabilities);
+	cm_store_file_write_str(fp, cm_store_ca_field_encryption_cert,
+				ca->cm_ca_encryption_cert);
 	if (ferror(fp)) {
 		return -1;
 	}
@@ -2513,6 +2532,11 @@ cm_store_ca_dup(void *parent, struct cm_store_ca *ca)
 		cm_store_maybe_strdupv(ret, ca->cm_ca_other_cert_store_nssdbs);
 	ret->cm_ca_other_cert_store_nssdbs =
 		cm_store_maybe_strdupv(ret, ca->cm_ca_other_cert_store_nssdbs);
+
+	ret->cm_ca_capabilities =
+		cm_store_maybe_strdupv(ret, ca->cm_ca_capabilities);
+	ret->cm_ca_encryption_cert =
+		cm_store_maybe_strdup(ret, ca->cm_ca_encryption_cert);
 
 	return ret;
 }
