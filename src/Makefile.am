@@ -172,6 +172,7 @@ pkglibexec_PROGRAMS += dogtag-ipa-renew-agent-submit dogtag-submit
 if HAVE_OPENSSL
 pkglibexec_PROGRAMS += local-submit
 endif
+pkglibexec_PROGRAMS += scep-submit
 noinst_PROGRAMS += submit-h submit-d
 ipa_submit_SOURCES = ipa.c srvloc.c srvloc.h store.h store-gen.c \
 		submit-x.c submit-x.h submit-u.c submit-u.h \
@@ -202,6 +203,15 @@ dogtag_submit_SOURCES = dogtag.c submit-d.c submit-d.h \
 		store.h store-gen.c tm.c tm.h prefs.c prefs.h \
 		env.h env-system.c
 dogtag_submit_LDADD = $(CURL_LIBS) $(XML_LIBS) $(NSS_LIBS) \
+		      $(OPENSSL_LIBS) $(TALLOC_LIBS) \
+		      $(GMP_LIBS) $(UUID_LIBS) $(LTLIBICONV)
+scep_submit_CFLAGS = $(AM_CFLAGS) $(XML_CFLAGS) $(NSS_CFLAGS) $(CURL_CFLAGS)
+scep_submit_SOURCES = scep.c \
+		submit-h.c submit-h.h util-m.c util-m.h util-n.c util-n.h \
+		submit-u.c submit-u.h submit-e.h util.c util.h log.c log.h \
+		store.h store-gen.c tm.c tm.h prefs.c prefs.h \
+		env.h env-system.c
+scep_submit_LDADD = $(CURL_LIBS) $(XML_LIBS) $(NSS_LIBS) \
 		      $(OPENSSL_LIBS) $(TALLOC_LIBS) \
 		      $(GMP_LIBS) $(UUID_LIBS) $(LTLIBICONV)
 local_submit_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS)
