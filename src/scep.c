@@ -70,13 +70,14 @@ static void
 help(const char *cmd)
 {
 	fprintf(stderr,
-		"Usage: %s -u URL [options]\n"
+		"Usage: %s -u URL [options] [-c|-C|-g|-p] [pkiMessage]\n"
 		"Options:\n"
 		"\t[-i CA identifier]\n"
 		"\t[-c]\n"
 		"\t[-C]\n"
 		"\t[-g]\n"
 		"\t[-p]\n"
+		"\t[-r racert]\n"
 		"\t[-v]\n",
 		strchr(cmd, '/') ? strrchr(cmd, '/') + 1 : cmd);
 }
@@ -89,33 +90,41 @@ main(int argc, char **argv)
 	int c, verbose = 0, results_length = 0;
 	NSSInitContext *nctx;
 	enum known_ops op = op_unset;
-	const char *es, *id = NULL, *message = NULL;
+	const char *es, *racert = NULL, *id = NULL, *message = NULL;
 	const char *mode = NULL, *p, *q;
 	unsigned char *u;
 	void *ctx;
 	char *params = "";
 	PRBool missing_args = PR_FALSE;
 
+	id = getenv(CM_SUBMIT_SCEP_CA_IDENTIFIER_ENV);
+	racert = getenv(CM_SUBMIT_SCEP_RA_CERTIFICATE_ENV);
+
 	if (getenv(CM_SUBMIT_OPERATION_ENV) != NULL) {
 		mode = getenv(CM_SUBMIT_OPERATION_ENV);
 		if (strcasecmp(mode, CM_OP_SUBMIT) == 0) {
 			op = op_pkcsreq;
+			message = getenv(CM_SUBMIT_SCEP_PKCSREQ_REKEY_ENV);
+			if (message != NULL) {
+				message = getenv(CM_SUBMIT_SCEP_PKCSREQ_ENV);
+			}
 		} else
 		if (strcasecmp(mode, CM_OP_POLL) == 0) {
 			op = op_get_initial_cert;
+			message = getenv(CM_SUBMIT_SCEP_GETCERTINITIAL_REKEY_ENV);
+			if (message != NULL) {
+				message = getenv(CM_SUBMIT_SCEP_GETCERTINITIAL_ENV);
+			}
 		} else
 		if (strcasecmp(mode, CM_OP_FETCH_SCEP_CA_CERTS) == 0) {
 			op = op_get_ca_cert;
-			id = getenv(CM_SUBMIT_SCEP_CA_IDENTIFIER_ENV);
 		} else
 		if (strcasecmp(mode, CM_OP_FETCH_SCEP_CA_CAPS) == 0) {
 			op = op_get_ca_caps;
-			id = getenv(CM_SUBMIT_SCEP_CA_IDENTIFIER_ENV);
 		} else
 		if ((strcasecmp(mode, CM_OP_FETCH_ENROLL_REQUIREMENTS) == 0) ||
 		    (strcasecmp(mode, CM_OP_FETCH_RENEWAL_REQUIREMENTS) == 0)) {
 			printf("%s\n", CM_SUBMIT_SCEP_RA_CERTIFICATE_ENV);
-			printf("%s\n", CM_SUBMIT_SCEP_NONCE_ENV);
 			printf("%s\n", CM_SUBMIT_SCEP_PKCSREQ_ENV);
 			printf("%s\n", CM_SUBMIT_SCEP_PKCSREQ_REKEY_ENV);
 			printf("%s\n", CM_SUBMIT_SCEP_GETCERTINITIAL_ENV);
@@ -135,7 +144,7 @@ main(int argc, char **argv)
 	bindtextdomain(PACKAGE, MYLOCALEDIR);
 #endif
 
-	while ((c = getopt(argc, argv, "u:i:v:cCgp")) != -1) {
+	while ((c = getopt(argc, argv, "u:i:v:cCgpr:")) != -1) {
 		switch (c) {
 		case 'u':
 			url = optarg;
@@ -157,6 +166,10 @@ main(int argc, char **argv)
 			break;
 		case 'p':
 			op = op_pkcsreq;
+			break;
+		case 'r':
+			/* XXX - read RA cert from the named file */
+			racert = NULL;
 			break;
 		default:
 			help(argv[0]);
@@ -193,6 +206,7 @@ main(int argc, char **argv)
 		printf(_("No SCEP operation (-c/-C/-g/-p) given, and no default known.\n"));
 		missing_args = TRUE;
 	}
+
 	/* Format the HTTP request's parameters. */
 	switch (op) {
 	case op_unset:
@@ -213,20 +227,31 @@ main(int argc, char **argv)
 		}
 		break;
 	case op_get_initial_cert:
-		if (id == NULL) {
-			params = "operation=" OP_GET_INITIAL_CERT;
+		if (racert == NULL) {
+			printf(_("No RA certificate (-r) given, and no default known.\n"));
+			missing_args = TRUE;
 		} else {
-			params = talloc_asprintf(ctx, "operation=" OP_GET_INITIAL_CERT "&message=%s", id);
+			/* XXX - read a PKCS7 Signed Data message (pkiMessage) from either stdin or a named file. */
+			if (message == NULL) {
+				return CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
+			}
+			params = talloc_asprintf(ctx, "operation=" OP_GET_INITIAL_CERT "&message=%s", message);
 		}
 		break;
 	case op_pkcsreq:
-		if (id == NULL) {
-			params = "operation=" OP_PKCSREQ;
+		if (racert == NULL) {
+			printf(_("No RA certificate (-r) given, and no default known.\n"));
+			missing_args = TRUE;
 		} else {
-			params = talloc_asprintf(ctx, "operation=" OP_PKCSREQ "&message=%s", id);
+			/* XXX - read a PKCS7 Signed Data message (pkiMessage) from either stdin or a named file. */
+			if (message == NULL) {
+				return CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
+			}
+			params = talloc_asprintf(ctx, "operation=" OP_PKCSREQ "&message=%s", message);
 		}
 		break;
 	}
+
 	/* Supply help output, if it's needed. */
 	if (missing_args) {
 		help(argv[0]);
@@ -294,6 +319,7 @@ main(int argc, char **argv)
 		return CM_SUBMIT_STATUS_ISSUED;
 		break;
 	case op_get_ca_cert:
+		/* XXX - make sure it's either X.509 or Signed-Data, and if it's the latter, output just the RA's cert */
 		u = talloc_memdup(NULL, results, results_length);
 		p = cm_store_base64_from_bin(NULL, u, results_length);
 		printf("-----BEGIN CERTIFICATE-----\n");
@@ -310,10 +336,10 @@ main(int argc, char **argv)
 		return CM_SUBMIT_STATUS_ISSUED;
 		break;
 	case op_get_initial_cert:
-		/* XXX */
+		/* XXX - verify that the reply is Signed-Data (a CertRep pkiMessage), signed by the RA cert, with a nonce matching the message we sent, and output an Enveloped-Data wrapped in a ContentInfo, if there is one in the Signed-Data. */
 		break;
 	case op_pkcsreq:
-		/* XXX */
+		/* XXX - verify that the reply is Signed-Data (a CertRep pkiMessage), signed by the RA cert, with a nonce matching the message we sent, and output an Enveloped-Data wrapped in a ContentInfo, if there is one in the Signed-Data. */
 		break;
 	}
 	return CM_SUBMIT_STATUS_UNCONFIGURED;
