@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010,2014 Red Hat, Inc.
+ * Copyright (C) 2010,2014,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -101,4 +101,44 @@ cm_prefs_nss_sig_alg(SECKEYPrivateKey *pkey)
 		return SEC_OID_UNKNOWN;
 		break;
 	}
+}
+
+unsigned int
+cm_prefs_nss_dig_alg(void)
+{
+	switch (cm_prefs_preferred_digest()) {
+	case cm_prefs_sha1:
+		return SEC_OID_SHA1;
+		break;
+	case cm_prefs_sha256:
+		return SEC_OID_SHA256;
+		break;
+	case cm_prefs_sha384:
+		return SEC_OID_SHA384;
+		break;
+	case cm_prefs_sha512:
+		return SEC_OID_SHA512;
+		break;
+	}
+	return SEC_OID_SHA256;
+}
+
+unsigned int
+cm_prefs_nss_dig_alg_len(void)
+{
+	switch (cm_prefs_nss_dig_alg()) {
+	case SEC_OID_SHA1:
+		return 160 / 8;
+		break;
+	case SEC_OID_SHA256:
+		return 256 / 8;
+		break;
+	case SEC_OID_SHA384:
+		return 384 / 8;
+		break;
+	case SEC_OID_SHA512:
+		return 512 / 8;
+		break;
+	}
+	return 0;
 }

@@ -140,6 +140,8 @@ struct cm_store_entry {
 	char *cm_csr;
 	/* The SPKAC, base64-encoded. */
 	char *cm_spkac;
+	/* An SCEP transaction number corresponding to this signing request. */
+	char *cm_scep_tx;
 	/* Our idea of the state of the cert. */
 	enum cm_state {
 		CM_NEED_KEY_PAIR, CM_GENERATING_KEY_PAIR,

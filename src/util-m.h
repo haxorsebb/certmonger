@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef utilo_h
-#define utilo_h
+#ifndef utilm_h
+#define utilm_h
 
 char *util_dec_from_hex(const char *hex);
 

@@ -33,14 +33,30 @@ for size in 512 1024 1536 2048 3072 4096 ; do
 	# Generate a new CSR for that certificate's key.
 	$toolsdir/csrgen entry.nss.$size > csr.nss.$size
 	grep ^spkac entry.nss.$size | sed s,spkac,SPKAC, > spkac.nss.$size
+	grep ^scep_tx entry.nss.$size | sed s,^scep_tx=,, > sceptx.nss.$size
+	if ! test -s sceptx.nss.$size ; then
+		echo No SCEP TX ID \(OpenSSL\)
+		exit 1
+	fi
 	# Generate a new CSR using the extracted key.
 	$toolsdir/csrgen entry.openssl.$size > csr.openssl.$size
 	grep ^spkac entry.openssl.$size | sed s,spkac,SPKAC, > spkac.openssl.$size
+	grep ^scep_tx entry.openssl.$size | sed s,^scep_tx=,, > sceptx.openssl.$size
+	if ! test -s sceptx.openssl.$size ; then
+		echo No SCEP TX ID \(OpenSSL\)
+		exit 1
+	fi
 	# They'd better be the same!
 	if cmp csr.nss.$size csr.openssl.$size ; then
 		if cmp spkac.nss.$size spkac.openssl.$size ; then
-			echo $size OK.
-			cat spkac.nss.$size | openssl spkac -verify -noout 2>&1
+			if cmp sceptx.nss.$size sceptx.openssl.$size ; then
+				echo $size OK.
+				cat spkac.nss.$size | openssl spkac -verify -noout 2>&1
+			else
+				echo With basic/default settings, SCEP TX IDs differ \(NSS, OpenSSL\):
+				cat sceptx.nss.$size sceptx.openssl.$size
+				exit 1
+			fi
 		else
 			echo With basic/default settings, SPKACs differ \(NSS, OpenSSL\):
 			cat spkac.nss.$size spkac.openssl.$size

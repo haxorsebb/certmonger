@@ -52,6 +52,7 @@
 #include "store.h"
 #include "store-int.h"
 #include "subproc.h"
+#include "util-m.h"
 
 struct cm_csrgen_state {
 	struct cm_csrgen_state_pvt pvt;
@@ -248,7 +249,8 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	SECItem ereq, esreq, epkac, espkac, *attrs, item, utf8;
 	int ec;
 	char *b64, *b642, *p, *q;
-	const char *es;
+	const char *es, *spkihex, *spkidec;
+	unsigned char spkidigest[CM_DIGEST_MAX];
 	SECOidData *sigoid;
 
 	/* Allocate an arena pool and a place to write status updates. */
@@ -719,6 +721,16 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		fclose(status);
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
+	/* Generate the SCEP transaction ID. */
+	spkidec = "";
+	if (PK11_HashBuf(cm_prefs_nss_dig_alg(), spkidigest,
+			 pkac.spki.data, pkac.spki.len) == SECSuccess) {
+		spkihex = cm_store_hex_from_bin(NULL, spkidigest,
+						cm_prefs_nss_dig_alg_len());
+		if (spkihex != NULL) {
+			spkidec = util_dec_from_hex(spkihex);
+		}
+	}
 	/* Encode the request into base-64 and pass it to our caller. */
 	b64 = NSSBase64_EncodeItem(arena, NULL, -1, &esreq);
 	b642 = NSSBase64_EncodeItem(arena, NULL, -1, &espkac);
@@ -737,6 +749,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			fprintf(status, "%.*s", (int) (q - p), p);
 			p = q + strspn(q, "\r\n");
 		}
+		fprintf(status, "\n%s\n", spkidec);
 		if (keys->pubkey != NULL) {
 			SECKEY_DestroyPublicKey(keys->pubkey);
 		}
@@ -819,11 +832,20 @@ cm_csrgen_n_save_csr(struct cm_csrgen_state *state)
 		if (p != NULL) {
 			p += strcspn(p, "\r\n");
 			q = p + strspn(p, "\r\n");
-			state->entry->cm_spkac = talloc_strdup(state->entry, q);
+			p = q + strcspn(q, "\r\n");
+			state->entry->cm_spkac = talloc_strndup(state->entry, q, p - q);
 			if (state->entry->cm_spkac == NULL) {
 				return ENOMEM;
 			}
 			*q = '\0';
+			q = p + strspn(p, "\r\n");
+			p = q + strcspn(q, "\r\n");
+			if (p > q) {
+				state->entry->cm_scep_tx = talloc_strndup(state->entry, q, p - q);
+				if (state->entry->cm_scep_tx == NULL) {
+					return ENOMEM;
+				}
+			}
 		}
 	}
 	return 0;

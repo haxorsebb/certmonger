@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010,2014 Red Hat, Inc.
+ * Copyright (C) 2010,2014,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,5 +19,7 @@
 #define cmprefsn_h
 
 unsigned int cm_prefs_nss_sig_alg(SECKEYPrivateKey *pkey);
+unsigned int cm_prefs_nss_dig_alg(void);
+unsigned int cm_prefs_nss_dig_alg_len(void);
 
 #endif

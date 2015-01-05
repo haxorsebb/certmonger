@@ -123,6 +123,7 @@ enum cm_store_file_field {
 
 	cm_store_entry_field_csr,
 	cm_store_entry_field_spkac,
+	cm_store_entry_field_scep_tx,
 
 	cm_store_entry_field_state,
 
@@ -271,6 +272,8 @@ static struct cm_store_file_field_list {
 
 	{cm_store_entry_field_csr, "csr"},
 	{cm_store_entry_field_spkac, "spkac"},
+	{cm_store_entry_field_scep_tx, "scep_tx"},
+
 	{cm_store_entry_field_state, "state"},
 
 	{cm_store_entry_field_autorenew, "autorenew"},
@@ -998,6 +1001,9 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_spkac:
 				ret->cm_spkac = free_if_empty(p);
 				break;
+			case cm_store_entry_field_scep_tx:
+				ret->cm_scep_tx = free_if_empty(p);
+				break;
 			case cm_store_entry_field_state:
 				ret->cm_state = cm_store_state_from_string(p);
 				talloc_free(p);
@@ -1186,6 +1192,7 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_challenge_password:
 			case cm_store_entry_field_csr:
 			case cm_store_entry_field_spkac:
+			case cm_store_entry_field_scep_tx:
 			case cm_store_entry_field_state:
 			case cm_store_entry_field_autorenew:
 			case cm_store_entry_field_monitor:
@@ -1727,6 +1734,8 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 	cm_store_file_write_str(fp, cm_store_entry_field_csr, entry->cm_csr);
 	cm_store_file_write_str(fp, cm_store_entry_field_spkac,
 				entry->cm_spkac);
+	cm_store_file_write_str(fp, cm_store_entry_field_scep_tx,
+				entry->cm_scep_tx);
 
 	cm_store_file_write_str(fp, cm_store_entry_field_state,
 				cm_store_state_as_string(entry->cm_state));
@@ -2445,6 +2454,7 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	ret->cm_challenge_password = cm_store_maybe_strdup(ret, entry->cm_challenge_password);
 	ret->cm_csr = cm_store_maybe_strdup(ret, entry->cm_csr);
 	ret->cm_spkac = cm_store_maybe_strdup(ret, entry->cm_spkac);
+	ret->cm_scep_tx = cm_store_maybe_strdup(ret, entry->cm_scep_tx);
 	ret->cm_state = entry->cm_state;
 	ret->cm_autorenew = entry->cm_autorenew;
 	ret->cm_monitor = entry->cm_monitor;

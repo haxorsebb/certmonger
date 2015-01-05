@@ -45,6 +45,7 @@
 #include "store.h"
 #include "store-int.h"
 #include "subproc.h"
+#include "util-m.h"
 #include "util-o.h"
 
 struct cm_csrgen_state {
@@ -85,11 +86,12 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	NETSCAPE_SPKAC spkac;
 	EVP_PKEY *pkey;
 	char buf[LINE_MAX], *p, *q, *s, *nickname, *pin, *password, *filename;
-	unsigned char *extensions, *upassword, *bmp, *name;
-	const char *default_cn = CM_DEFAULT_CERT_SUBJECT_CN;
+	unsigned char *extensions, *upassword, *bmp, *name, *up, *uq, md[CM_DIGEST_MAX];
+	const char *default_cn = CM_DEFAULT_CERT_SUBJECT_CN, *spkihex, *spkidec;
 	const unsigned char *nametmp;
 	size_t extensions_len;
-	unsigned int bmpcount;
+	ssize_t len;
+	unsigned int bmpcount, mdlen;
 	long error;
 	int i;
 
@@ -279,8 +281,26 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			NETSCAPE_SPKI_sign(&spki, pkey, cm_prefs_ossl_hash());
 			s = NETSCAPE_SPKI_b64_encode(&spki);
 			if (s != NULL) {
-				fprintf(status, "%s\n", s);
+				fprintf(status, "%s", s);
 			}
+			spkidec = "";
+			len = i2d_PUBKEY(pkey, NULL);
+			if (len > 0) {
+				up = malloc(len);
+				if (up != NULL) {
+					uq = up;
+					if (i2d_PUBKEY(pkey, &uq) == len) {
+						if (EVP_Digest(up, uq - up, md, &mdlen, cm_prefs_ossl_hash(), NULL)) {
+							spkihex = cm_store_hex_from_bin(NULL, md, mdlen);
+							if (spkihex != NULL) {
+								spkidec = util_dec_from_hex(spkihex);
+							}
+						}
+					}
+					free(up);
+				}
+			}
+			fprintf(status, "\n%s\n", spkidec);
 		} else {
 			cm_log(1, "Error creating template certificate.\n");
 			while ((error = ERR_get_error()) != 0) {
@@ -337,11 +357,20 @@ cm_csrgen_o_save_csr(struct cm_csrgen_state *state)
 		if (p != NULL) {
 			p += strcspn(p, "\r\n");
 			q = p + strspn(p, "\r\n");
-			state->entry->cm_spkac = talloc_strdup(state->entry, q);
+			p = q + strcspn(q, "\r\n");
+			state->entry->cm_spkac = talloc_strndup(state->entry, q, p - q);
 			if (state->entry->cm_spkac == NULL) {
 				return ENOMEM;
 			}
 			*q = '\0';
+			q = p + strspn(p, "\r\n");
+			p = q + strcspn(q, "\r\n");
+			if (p > q) {
+				state->entry->cm_scep_tx = talloc_strndup(state->entry, q, p - q);
+				if (state->entry->cm_scep_tx == NULL) {
+					return ENOMEM;
+				}
+			}
 		}
 	}
 	return 0;
