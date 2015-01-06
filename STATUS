@@ -115,9 +115,9 @@ To-do:
     whether or not they're actually required to be specified for a given CA,
     rather than sloppily hard-coding it as we do now.
   * Learn about using SRV records for locating servers, particularly KCA ones.
-  * Learn to talk to KCAs (per http://datatracker.ietf.org/doc/draft-hotz-kx509)
-  * Learn to generate SCEP messages (versions 1 and 2).
-  * Learn to parse SCEP responses (versions 1 and 2).
+  * Learn to talk to KCAs (RFC 6717)
+  * Learn to generate SCEP messages.
+  * Learn to parse SCEP responses).
   * Learn to speak CMP (see http://marc.info/?l=openssl-dev&m=137535536301203)
   * Learn to talk to puppet CAs.
     * Check in with awnuk, who's been looking at this combination.
