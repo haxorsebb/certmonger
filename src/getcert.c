@@ -543,7 +543,7 @@ query_prop_s(enum cm_tdbus_type which,
 	DBusMessage *rep;
 	char *s;
 	rep = query_prop(which, path, interface, prop, verbose);
-	if (cm_tdbusm_get_s(rep, parent, &s) != 0) {
+	if (cm_tdbusm_get_vs(rep, parent, &s) != 0) {
 		s = "";
 	}
 	dbus_message_unref(rep);

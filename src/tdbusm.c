@@ -175,6 +175,44 @@ cm_tdbusm_get_p(DBusMessage *msg, void *parent, char **p)
 }
 
 int
+cm_tdbusm_get_vs(DBusMessage *msg, void *parent, char **s)
+{
+	DBusError err;
+	DBusMessageIter iter, sub_iter;
+
+	*s = NULL;
+	dbus_error_init(&err);
+
+	if (dbus_message_iter_init(msg, &iter) == FALSE) {
+		if (dbus_error_is_set(&err)) {
+			cm_log(3, "DBus error: %s", err.message);
+			dbus_error_free(&err);
+		} else {
+			cm_log(3, "Unknown DBus error.");
+		}
+		return -1;
+	}
+
+	if (dbus_message_iter_get_arg_type(&iter) == DBUS_TYPE_VARIANT) {
+		dbus_message_iter_recurse(&iter, &sub_iter);
+		if (dbus_message_iter_get_arg_type(&sub_iter) == DBUS_TYPE_STRING) {
+			dbus_message_iter_get_basic(&sub_iter, s);
+			*s = *s ? talloc_strdup(parent, *s) : NULL;
+			return 0;
+		}
+	}
+
+	if (dbus_error_is_set(&err)) {
+		cm_log(3, "Failed to extract data from DBus message: %s", err.message);
+		dbus_error_free(&err);
+	} else {
+		cm_log(3, "Failed to extract data from DBus message.");
+	}
+	*s = NULL;
+	return -1;
+}
+
+int
 cm_tdbusm_get_s(DBusMessage *msg, void *parent, char **s)
 {
 	DBusError err;
