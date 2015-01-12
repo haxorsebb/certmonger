@@ -463,7 +463,7 @@ exit 0
 
 * Mon Feb 10 2014 Nalin Dahyabhai <nalin@redhat.com>
 - move the tmpfiles.d file from /etc/tmpfiles.d to %%{_tmpfilesdir},
-  where it belongs
+  where it belongs (#1180978)
 
 * Mon Feb 10 2014 Nalin Dahyabhai <nalin@redhat.com>
 - updates for 0.73
