@@ -390,13 +390,13 @@ cm_certsave_o_start(struct cm_store_entry *entry)
 		state->pvt.conflict_subject = cm_certsave_o_conflict_subject;
 		state->pvt.conflict_nickname = cm_certsave_o_conflict_nickname;
 		state->pvt.permissions_error = cm_certsave_o_permissions_error;
+		state->entry = entry;
 		state->subproc = cm_subproc_start(cm_certsave_o_main, state,
 						  NULL, entry, NULL);
 		if (state->subproc == NULL) {
 			talloc_free(state);
 			state = NULL;
 		}
-		state->entry = entry;
 	}
 	return state;
 }

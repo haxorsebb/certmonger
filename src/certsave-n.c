@@ -48,6 +48,7 @@
 struct cm_certsave_state {
 	struct cm_certsave_state_pvt pvt;
 	struct cm_subproc_state *subproc;
+	struct cm_store_entry *entry;
 };
 struct cm_certsave_n_settings {
 	unsigned int readwrite:1;
@@ -488,6 +489,7 @@ cm_certsave_n_saved(struct cm_certsave_state *state)
 	if (!WIFEXITED(status) || (WEXITSTATUS(status) != CM_CERTSAVE_STATUS_SAVED)) {
 		return -1;
 	}
+	state->entry->cm_key_next_marker = NULL;
 	return 0;
 }
 
@@ -564,6 +566,7 @@ cm_certsave_n_start(struct cm_store_entry *entry)
 		state->pvt.conflict_nickname = cm_certsave_n_conflict_nickname;
 		state->pvt.permissions_error = cm_certsave_n_permissions_error;
 		state->pvt.done= cm_certsave_n_done;
+		state->entry = entry;
 		state->subproc = cm_subproc_start(cm_certsave_n_main, state,
 						  NULL, entry, &settings);
 		if (state->subproc == NULL) {
