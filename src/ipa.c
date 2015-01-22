@@ -272,7 +272,7 @@ cm_locate_xmlrpc_service(const char *server,
 		ldap_msgfree(lresult);
 		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
-	list = malloc(sizeof(char *) * (n + 2));
+	list = talloc_array_ptrtype(NULL, list, n + 2);
 	if (list == NULL) {
 		fprintf(stderr, "Out of memory.\n");
 		return CM_SUBMIT_STATUS_UNCONFIGURED;
@@ -321,7 +321,7 @@ cm_locate_xmlrpc_service(const char *server,
 				if (lbv != NULL) {
 					switch (flags & 0x0f) {
 					case LDAP_AVA_STRING:
-						list[i] = talloc_asprintf(NULL,
+						list[i] = talloc_asprintf(list,
 									  "https://%.*s/ipa/xml",
 									  (int) lbv->bv_len,
 									  lbv->bv_val);
@@ -464,17 +464,11 @@ submit_or_poll(const char *uri, const char *cainfo, const char *capath,
 						       csr, reqprinc);
 				if ((i != CM_SUBMIT_STATUS_UNREACHABLE) &&
 				    (i != CM_SUBMIT_STATUS_UNCONFIGURED)) {
-					for (u = 0; uris[u] != NULL; u++) {
-						free(uris[u]);
-					}
-					free(uris);
+					talloc_free(uris);
 					return i;
 				}
 			}
-			for (u = 0; uris[u] != NULL; u++) {
-				free(uris[u]);
-			}
-			free(uris);
+			talloc_free(uris);
 		}
 	}
 	return i;
