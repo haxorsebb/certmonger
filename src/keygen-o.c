@@ -370,6 +370,7 @@ retry_gen:
 	fclose(fp);
 	fclose(status);
 
+	/* Try to remove any keys with old candidate names. */
 	if ((entry->cm_key_next_marker != NULL) &&
 	    (strlen(entry->cm_key_next_marker) > 0)) {
 		oldfile = util_build_next_filename(entry->cm_key_storage_location, entry->cm_key_next_marker);
