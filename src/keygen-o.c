@@ -471,7 +471,7 @@ cm_keygen_o_done(struct cm_keygen_state *state)
 			if (len > 0) {
 				marker = talloc_strndup(state->entry, p, len);
 			}
-			if (marker != NULL) {
+			if ((marker != NULL) && (strlen(marker) > 0)) {
 				state->entry->cm_key_next_pubkey_info = pubkey_info;
 				state->entry->cm_key_next_pubkey = pubkey;
 				state->entry->cm_key_next_marker = marker;

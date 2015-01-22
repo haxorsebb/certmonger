@@ -173,7 +173,8 @@ cm_certsave_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 
 	util_o_init();
 
-	if ((entry->cm_key_storage_location != NULL) &&
+	if (entry->cm_key_preserve &&
+	    (entry->cm_key_storage_location != NULL) &&
 	    (entry->cm_cert_storage_location != NULL) &&
 	    (entry->cm_key_next_marker != NULL) &&
 	    (strlen(entry->cm_key_next_marker) > 0)) {

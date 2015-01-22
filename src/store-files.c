@@ -56,6 +56,7 @@ enum cm_store_file_field {
 	cm_store_entry_field_key_next_size,
 	cm_store_entry_field_key_next_gen_size,
 
+	cm_store_entry_field_key_preserve,
 	cm_store_entry_field_key_next_marker,
 
 	cm_store_entry_field_key_storage_type,
@@ -202,6 +203,7 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_key_next_size, "key_next_size"},
 	{cm_store_entry_field_key_next_gen_size, "key_next_gen_size"},
 
+	{cm_store_entry_field_key_preserve, "key_preserve"},
 	{cm_store_entry_field_key_next_marker, "key_next_marker"},
 
 	{cm_store_entry_field_key_storage_type, "key_storage_type"},
@@ -746,6 +748,9 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 				ret->cm_key_next_type.cm_key_gen_size = atoi(p);
 				talloc_free(p);
 				break;
+			case cm_store_entry_field_key_preserve:
+				ret->cm_key_preserve = atoi(p) != 0;
+				break;
 			case cm_store_entry_field_key_next_marker:
 				ret->cm_key_next_marker = free_if_empty(p);
 				break;
@@ -1133,6 +1138,7 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_key_next_gen_type:
 			case cm_store_entry_field_key_next_size:
 			case cm_store_entry_field_key_next_gen_size:
+			case cm_store_entry_field_key_preserve:
 			case cm_store_entry_field_key_next_marker:
 			case cm_store_entry_field_key_storage_type:
 			case cm_store_entry_field_key_storage_location:
@@ -1578,6 +1584,8 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 				entry->cm_key_next_type.cm_key_gen_size);
 	cm_store_file_write_str(fp, cm_store_entry_field_key_next_marker,
 				entry->cm_key_next_marker);
+	cm_store_file_write_int(fp, cm_store_entry_field_key_preserve,
+				entry->cm_key_preserve);
 
 	switch (entry->cm_key_storage_type) {
 	case cm_key_storage_file:
@@ -2399,6 +2407,7 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	ret->cm_key_next_pubkey = cm_store_maybe_strdup(ret, entry->cm_key_next_pubkey);
 	ret->cm_key_next_pubkey_info = cm_store_maybe_strdup(ret, entry->cm_key_next_pubkey_info);
 	ret->cm_key_next_marker = cm_store_maybe_strdup(ret, entry->cm_key_next_marker);
+	ret->cm_key_preserve = entry->cm_key_preserve;
 
 	ret->cm_cert_storage_type = entry->cm_cert_storage_type;
 	ret->cm_cert_storage_location = cm_store_maybe_strdup(ret, entry->cm_cert_storage_location);

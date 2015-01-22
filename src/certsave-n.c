@@ -450,7 +450,13 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				} else {
 					CERT_DestroyCertificate(oldcert);
 				}
-				SECKEY_DestroyPrivateKey(privkey);
+				/* If we're not saving keys, remove this one. */
+				if (entry->cm_key_preserve) {
+					SECKEY_DestroyPrivateKey(privkey);
+				} else {
+					PK11_DeleteTokenPrivateKey(privkey, PR_TRUE);
+					SECKEY_DestroyPrivateKey(privkey);
+				}
 			}
 		} else {
 			cm_log(1, "Error getting handle to default NSS DB.\n");
