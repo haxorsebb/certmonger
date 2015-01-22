@@ -144,7 +144,7 @@ main(int argc, char **argv)
 	bindtextdomain(PACKAGE, MYLOCALEDIR);
 #endif
 
-	while ((c = getopt(argc, argv, "u:i:v:cCgpr:")) != -1) {
+	while ((c = getopt(argc, argv, "u:i:vcCgpr:")) != -1) {
 		switch (c) {
 		case 'u':
 			url = optarg;
@@ -263,32 +263,26 @@ main(int argc, char **argv)
 	}
 
 	/* Submit the request. */
-	hctx = NULL;
-	while (url != NULL) {
-		hctx = cm_submit_h_init(ctx, "GET", url, params, NULL, NULL,
-					NULL, NULL, NULL, NULL, NULL,
-					cm_submit_h_negotiate_off,
-					cm_submit_h_delegate_off,
-					cm_submit_h_clientauth_off,
-					cm_submit_h_env_modify_off,
-					verbose > 1 ?
-					cm_submit_h_curl_verbose_on :
-					cm_submit_h_curl_verbose_off);
-		cm_submit_h_run(hctx);
-		if (verbose > 0) {
-			printf("%s \"%s?%s\"\n", "GET", url, params);
-			printf("code = %d\n", cm_submit_h_result_code(hctx));
-			printf("code_text = \"%s\"\n", cm_submit_h_result_code_text(hctx));
-			syslog(LOG_DEBUG, "%s %s?%s\n", "GET", url, params);
-		}
-		results = cm_submit_h_results(hctx, &results_length);
-		if (verbose > 0) {
-			printf("results = \"%s\"\n", results);
-			syslog(LOG_DEBUG, "%s", results);
-		}
-		if (cm_submit_h_result_code(hctx) != 0) {
-			break;
-		}
+	hctx = cm_submit_h_init(ctx, "GET", url, params, NULL, NULL,
+				NULL, NULL, NULL, NULL, NULL,
+				cm_submit_h_negotiate_off,
+				cm_submit_h_delegate_off,
+				cm_submit_h_clientauth_off,
+				cm_submit_h_env_modify_off,
+				verbose > 1 ?
+				cm_submit_h_curl_verbose_on :
+				cm_submit_h_curl_verbose_off);
+	cm_submit_h_run(hctx);
+	if (verbose > 0) {
+		printf("%s \"%s?%s\"\n", "GET", url, params);
+		printf("code = %d\n", cm_submit_h_result_code(hctx));
+		printf("code_text = \"%s\"\n", cm_submit_h_result_code_text(hctx));
+		syslog(LOG_DEBUG, "%s %s?%s\n", "GET", url, params);
+	}
+	results = cm_submit_h_results(hctx, &results_length);
+	if (verbose > 0) {
+		printf("results = \"%s\"\n", results);
+		syslog(LOG_DEBUG, "%s", results);
 	}
 
 	/* Figure out what to output. */
