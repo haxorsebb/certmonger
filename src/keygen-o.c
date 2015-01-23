@@ -105,7 +105,7 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	int cm_key_size;
 	int len;
 	int keyfd;
-	const char *filename;
+	char *filename;
 	char *marker;
 	BIGNUM *exponent;
 	RSA *rsa;
@@ -242,7 +242,7 @@ retry_gen:
 		break;
 	}
 
-	filename = entry->cm_key_storage_location;
+	filename = strdup(entry->cm_key_storage_location);
 	marker = "";
 	keyfd = open(filename, O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
 	if (keyfd != -1) {
@@ -264,13 +264,13 @@ retry_gen:
 			} else {
 				errno_save = errno;
 				close(keyfd);
-				keyfd = -1;
 				errno = errno_save;
 			}
 			cm_log(1,
 			       "Error opening key file \"%s\" "
 			       "for writing: %s.\n",
 			       filename, strerror(errno));
+			free(filename);
 			filename = make_filename(entry->cm_key_storage_location, &marker);
 			cm_log(1,
 			       "Attempting to open key file \"%s\" "
@@ -312,6 +312,7 @@ retry_gen:
 		}
 		_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
 	}
+	free(filename);
 
 	if (cm_pin_read_for_key(entry, &pin) != 0) {
 		cm_log(1, "Error reading key encryption PIN.\n");
@@ -375,7 +376,11 @@ retry_gen:
 	    (strlen(entry->cm_key_next_marker) > 0)) {
 		oldfile = util_build_next_filename(entry->cm_key_storage_location, entry->cm_key_next_marker);
 		if (oldfile != NULL) {
-			remove(oldfile);
+			if (remove(oldfile) != 0) {
+				cm_log(1, "Error removing \"%s\": %s.\n",
+				       oldfile, strerror(errno));
+			}
+			free(oldfile);
 		}
 	}
 

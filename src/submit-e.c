@@ -553,6 +553,8 @@ cm_submit_e_status_text(enum cm_external_status status)
 		return "WAIT_WITH_DELAY";
 	case CM_SUBMIT_STATUS_OPERATION_NOT_SUPPORTED:
 		return "OPERATION_NOT_SUPPORTED_BY_HELPER";
+	case CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES:
+		return "NEED_SCEP_MESSAGES";
 	}
 	return "(unknown)";
 }

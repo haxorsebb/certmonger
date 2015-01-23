@@ -103,7 +103,7 @@ static uint
 append_result(char *in, uint size, uint nmemb, struct cm_submit_h_context *ctx)
 {
 	uint n;
-	unsigned char *data;
+	char *data;
 
 	if (size < nmemb) {
 		n = nmemb;

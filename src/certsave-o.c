@@ -285,6 +285,10 @@ cm_certsave_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		cm_log(1, "Error setting up to parse certificate.\n");
 		status = CM_CERTSAVE_STATUS_INTERNAL_ERROR;
 	}
+	free(next_key);
+	free(old_key);
+	free(old_cert);
+	free(next_keyfile);
 	if (status != 0) {
 		_exit(status);
 	}

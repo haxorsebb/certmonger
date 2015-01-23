@@ -87,7 +87,8 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	EVP_PKEY *pkey;
 	char buf[LINE_MAX], *p, *q, *s, *nickname, *pin, *password, *filename;
 	unsigned char *extensions, *upassword, *bmp, *name, *up, *uq, md[CM_DIGEST_MAX];
-	const char *default_cn = CM_DEFAULT_CERT_SUBJECT_CN, *spkihex, *spkidec;
+	char *spkidec;
+	const char *default_cn = CM_DEFAULT_CERT_SUBJECT_CN, *spkihex;
 	const unsigned char *nametmp;
 	size_t extensions_len;
 	ssize_t len;
@@ -120,6 +121,10 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
+	if (filename != entry->cm_key_storage_location) {
+		free(filename);
+	}
+	filename = NULL;
 	util_o_init();
 	ERR_load_crypto_strings();
 	pkey = EVP_PKEY_new();
@@ -283,7 +288,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			if (s != NULL) {
 				fprintf(status, "%s", s);
 			}
-			spkidec = "";
+			spkidec = NULL;
 			len = i2d_PUBKEY(pkey, NULL);
 			if (len > 0) {
 				up = malloc(len);
@@ -300,7 +305,8 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					free(up);
 				}
 			}
-			fprintf(status, "\n%s\n", spkidec);
+			fprintf(status, "\n%s\n", spkidec ? spkidec : "");
+			free(spkidec);
 		} else {
 			cm_log(1, "Error creating template certificate.\n");
 			while ((error = ERR_get_error()) != 0) {

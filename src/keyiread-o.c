@@ -135,6 +135,7 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				       nextfile, strerror(errno));
 				nextpkey = NULL;
 			}
+			free(nextfile);
 		}
 	} else {
 		if (errno != ENOENT) {
