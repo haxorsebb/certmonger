@@ -31,6 +31,7 @@
 #include <nss.h>
 #include <pk11pqg.h>
 #include <pk11pub.h>
+#include <cert.h>
 #include <keyhi.h>
 #include <keythi.h>
 #include <prerror.h>
@@ -138,10 +139,13 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	SECOidData *ecurve;
 	SECItem ec_params;
 #endif
-	SECKEYPrivateKey *privkey, *delkey;
+	SECKEYPrivateKey *privkey, *delkey, *ckey;
 	SECKEYPrivateKeyList *privkeys;
 	SECKEYPrivateKeyListNode *node;
 	SECKEYPublicKey *pubkey;
+	CERTCertList *certs;
+	CERTCertListNode *cnode;
+	CERTCertificate *cert;
 	const char *es, *token, *keyname, *reason;
 	char *nickname, *marker = "", *markertmp;
 	char *pin, *pubhex, *pubihex;
@@ -575,8 +579,8 @@ retry_gen:
 			break;
 		}
 	}
-	/* Check for keys with the desired name, selecting a new one if there's
-	 * already one with the actual name. */
+	/* Check for keys with the desired name, selecting a new name if
+	 * there's already one with the desired name. */
 	nickname = entry->cm_key_nickname;
 	privkeys = PK11_ListPrivKeysInSlot(slot, nickname, NULL);
 	while ((privkeys != NULL) && !PRIVKEY_LIST_EMPTY(privkeys)) {
@@ -606,6 +610,50 @@ retry_gen:
 			privkeys = NULL;
 		}
 	}
+	if ((marker == NULL) || (strlen(marker) == 0)) {
+		/* Look harder.  Walk the list of certificates in the token,
+		 * looking at each one to see if it matches the specified
+		 * nickname. */
+		markertmp = NULL;
+		certs = PK11_ListCertsInSlot(slot);
+		while (certs != NULL) {
+			cert = NULL;
+			for (cnode = CERT_LIST_HEAD(certs);
+			     !CERT_LIST_EMPTY(certs) &&
+			     !CERT_LIST_END(cnode, certs);
+			     cnode = CERT_LIST_NEXT(cnode)) {
+				cert = cnode->cert;
+				if ((nickname != NULL) &&
+				    (strcmp(cert->nickname, nickname) == 0)) {
+					cm_log(3, "Located a certificate with "
+					       "the desired nickname (\"%s\").\n",
+					       nickname);
+					ckey = PK11_FindPrivateKeyFromCert(slot,
+									   cert,
+									   NULL);
+					if (ckey != NULL) {
+						cm_log(3, "And we found "
+						       "its private key.\n");
+						SECKEY_DestroyPrivateKey(ckey);
+					} else {
+						cm_log(3, "But we didn't find "
+						       "its private key.\n");
+					}
+					break;
+				}
+				cert = NULL;
+			}
+			if (cert == NULL) {
+				cm_log(1, "Nickname \"%s\" appears to be unused.\n", nickname);
+				CERT_DestroyCertList(certs);
+				certs = NULL;
+			} else {
+				nickname = make_nickname(entry->cm_key_nickname, &markertmp);
+				marker = markertmp;
+			}
+		}
+	}
+
 	/* Attach the specified nickname to the key. */
 	error = PK11_SetPrivateKeyNickname(privkey, nickname);
 	if (error != SECSuccess) {

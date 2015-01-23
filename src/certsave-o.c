@@ -173,8 +173,7 @@ cm_certsave_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 
 	util_o_init();
 
-	if (entry->cm_key_preserve &&
-	    (entry->cm_key_storage_location != NULL) &&
+	if ((entry->cm_key_storage_location != NULL) &&
 	    (entry->cm_cert_storage_location != NULL) &&
 	    (entry->cm_key_next_marker != NULL) &&
 	    (strlen(entry->cm_key_next_marker) > 0)) {
@@ -193,7 +192,7 @@ cm_certsave_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					      "certificate file", PR_FALSE);
 	}
 
-	if ((old_cert != NULL) && (old_key != NULL)) {
+	if (entry->cm_key_preserve && (old_cert != NULL) && (old_key != NULL)) {
 		bio = BIO_new_mem_buf(old_cert, strlen(old_cert));
 		if (bio != NULL) {
 			cert = PEM_read_bio_X509(bio, NULL, NULL, NULL);
@@ -243,14 +242,15 @@ cm_certsave_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					       strerror(errno));
 				} else {
 					if ((entry->cm_key_storage_location != NULL) &&
-					    (old_keyfile != NULL) &&
-					    (old_key != NULL) &&
 					    (next_key != NULL)) {
-						remove(old_keyfile);
-						write_file_contents(old_keyfile,
-								    old_key,
-								    "old key file",
-								    PR_TRUE);
+						if ((old_keyfile != NULL) &&
+						    (old_key != NULL)) {
+							remove(old_keyfile);
+							write_file_contents(old_keyfile,
+									    old_key,
+									    "old key file",
+									    PR_TRUE);
+						}
 						write_file_contents(entry->cm_key_storage_location,
 								    next_key,
 								    "key file",

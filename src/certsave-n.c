@@ -436,16 +436,39 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					break;
 				}
 			}
-			if (returned != NULL) {
-				CERT_DestroyCertArray(returned, 1);
-			}
 			if (privkey != NULL) {
 				/* If there are no more certificates, try to rename the key. */
 				oldcert = PK11_GetCertFromPrivateKey(privkey);
 				if (oldcert == NULL) {
 					p = util_build_old_nickname(entry->cm_cert_nickname, serial);
 					if (p != NULL) {
-						PK11_SetPrivateKeyNickname(privkey, p);
+						error = PK11_SetPrivateKeyNickname(privkey, p);
+						if (error == SECSuccess) {
+							cm_log(3, "Renamed "
+							       "old key to "
+							       "\"%s\".\n", p);
+						} else {
+							ec = PORT_GetError();
+							if (ec != 0) {
+								es = PR_ErrorToName(ec);
+							} else {
+								es = NULL;
+							}
+							if (es != NULL) {
+								cm_log(0, "Failed "
+								       "to rename "
+								       "old key to"
+								       " \"%s\": "
+								       "%s.\n", p,
+								       es);
+							} else {
+								cm_log(0, "Failed "
+								       "to rename "
+								       "old key to"
+								       " \"%s\"\n",
+								       p);
+							}
+						}
 					}
 				} else {
 					CERT_DestroyCertificate(oldcert);
@@ -455,6 +478,57 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					SECKEY_DestroyPrivateKey(privkey);
 				} else {
 					PK11_DeleteTokenPrivateKey(privkey, PR_TRUE);
+					if (error == SECSuccess) {
+						cm_log(3, "Removed "
+						       "old key.\n");
+					} else {
+						ec = PORT_GetError();
+						if (ec != 0) {
+							es = PR_ErrorToName(ec);
+						} else {
+							es = NULL;
+						}
+						if (es != NULL) {
+							cm_log(0, "Failed "
+							       "to remove "
+							       "old key: "
+							       "%s.\n", es);
+						} else {
+							cm_log(0, "Failed "
+							       "to remove "
+							       "old key.\n");
+						}
+					}
+					SECKEY_DestroyPrivateKey(privkey);
+				}
+			}
+			if (returned != NULL) {
+				privkey = PK11_FindKeyByAnyCert(returned[0], NULL);
+				CERT_DestroyCertArray(returned, 1);
+				if (privkey != NULL) {
+					error = PK11_SetPrivateKeyNickname(privkey, entry->cm_key_nickname);
+					if (error == SECSuccess) {
+						cm_log(3, "Renamed new key to "
+						       "\"%s\".\n",
+						       entry->cm_key_nickname);
+					} else {
+						ec = PORT_GetError();
+						if (ec != 0) {
+							es = PR_ErrorToName(ec);
+						} else {
+							es = NULL;
+						}
+						if (es != NULL) {
+							cm_log(0, "Failed "
+							       "to rename "
+							       "new key: "
+							       "%s.\n", es);
+						} else {
+							cm_log(0, "Failed "
+							       "to rename "
+							       "new key.\n");
+						}
+					}
 					SECKEY_DestroyPrivateKey(privkey);
 				}
 			}

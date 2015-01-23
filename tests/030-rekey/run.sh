@@ -11,12 +11,14 @@ function setupca() {
 	ca_is_default=0
 	ca_type=INTERNAL:SELF
 	ca_internal_serial=1235
-	ca_internal_issue_time=40271
 	EOF
 }
 
-for size in 2048 3072 4096 ; do
+for preserve in 1 0 ; do
+	size=2048
 	rm -f "$tmpdir"/*.db
+	touch "$tmpdir"/keyi "$tmpdir"/certi
+	rm -f "$tmpdir"/keyi* "$tmpdir"/certi*
 	initnssdb "$tmpdir"
 	# Build a self-signed certificate.
 	run_certutil -d "$tmpdir" -S -g $size -n "i$size" \
@@ -32,6 +34,7 @@ for size in 2048 3072 4096 ; do
 	key_storage_type=NSSDB
 	key_storage_location=$tmpdir
 	key_nickname=i$size
+	key_preserve=$preserve
 	cert_storage_type=NSSDB
 	cert_storage_location=$tmpdir
 	cert_nickname=i$size
@@ -43,6 +46,7 @@ for size in 2048 3072 4096 ; do
 	ca_name=self_signer
 	key_storage_type=FILE
 	key_storage_location=$tmpdir/keyi$size
+	key_preserve=$preserve
 	cert_storage_type=FILE
 	cert_storage_location=$tmpdir/certi$size
 	EOF
@@ -53,6 +57,7 @@ for size in 2048 3072 4096 ; do
 	key_storage_type=NSSDB
 	key_storage_location=$tmpdir
 	key_nickname=i$size
+	key_preserve=$preserve
 	cert_storage_type=NSSDB
 	cert_storage_location=$tmpdir
 	cert_nickname=i$size
@@ -67,6 +72,7 @@ for size in 2048 3072 4096 ; do
 	ca_name=self_signer
 	key_storage_type=FILE
 	key_storage_location=$tmpdir/keyi$size
+	key_preserve=$preserve
 	cert_storage_type=FILE
 	cert_storage_location=$tmpdir/certi$size
 	template_subject=CN=T$size
@@ -84,44 +90,95 @@ for size in 2048 3072 4096 ; do
 		echo $size OK.
 	fi
 	# Now generate new keys, CSRs, and certificates.
+	echo "NSS keys before keygen (preserve=$preserve)"
+	marker=`grep ^key_next_marker= entry.nss.$size | cut -f2- -d=`
+	run_certutil -K -d $tmpdir | grep -v 'Checking token' | sed -e s,"${marker:-////////}","(next)", | sed -r -e 's,[0123456789abcdef]{8},hex,g' -e 's,< 0>,<->,g' -e 's,< 1>,<->,g' | env LANG=C sort
 	$toolsdir/keygen entry.nss.$size
+	echo "NSS keys after keygen (preserve=$preserve)"
+	marker=`grep ^key_next_marker= entry.nss.$size | cut -f2- -d=`
+	run_certutil -K -d $tmpdir | grep -v 'Checking token' | sed -e s,"${marker:-////////}","(next)", | sed -r -e 's,[0123456789abcdef]{8},hex,g' -e 's,< 0>,<->,g' -e 's,< 1>,<->,g' | env LANG=C sort
 	$toolsdir/keyiread entry.nss.$size > /dev/null 2>&1
 	$toolsdir/csrgen entry.nss.$size > csr.nss.$size
 	setupca
 	$toolsdir/submit ca.self entry.nss.$size > cert.nss.$size
 
-	echo "[$size] certs before saving"
+	echo "NSS certs before saving (preserve=$preserve)"
 	run_certutil -L -d $tmpdir | grep -v SSL,S/MIME | grep -v '^$' | grep -v 'Trust'
-	echo "[$size] keys before saving"
-	run_certutil -K -d $tmpdir | grep -v NSS | sed -r -e 's,[0123456789abcdef]{8},hex,g' -e 's,< 0>,<->,g' -e 's,< 1>,<->,g' | env LANG=C sort
+	echo "NSS keys before saving (preserve=$preserve)"
+	marker=`grep ^key_next_marker= entry.nss.$size | cut -f2- -d=`
+	run_certutil -K -d $tmpdir | grep -v 'Checking token' | sed -e s,"${marker:-////////}","(next)", | sed -r -e 's,[0123456789abcdef]{8},hex,g' -e 's,< 0>,<->,g' -e 's,< 1>,<->,g' | env LANG=C sort
+
+	echo "This is the plaintext." > plain.txt
+	echo "NSS Signing"
+	certutil -M -d $tmpdir -n i$size -t P,P,P
+	cmsutil -S -d $tmpdir -N i$size -i plain.txt -o signed
+	echo "NSS Verify"
+	cmsutil -D -d $tmpdir -i signed
+	certutil -M -d $tmpdir -n i$size -t ,,
+	echo "OpenSSL Signing"
+	openssl smime -sign -signer certi$size -binary -nodetach -inkey keyi$size -in plain.txt -outform PEM -out signed
+	echo "OpenSSL Verify"
+	openssl smime -verify -CAfile certi$size -inform PEM -in signed
+	certutil -M -d $tmpdir -n i$size -t ,,
 
 	$toolsdir/certsave entry.nss.$size
 
-	echo "[$size] certs after saving"
+	echo "NSS certs after saving (preserve=$preserve)"
 	run_certutil -L -d $tmpdir | grep -v SSL,S/MIME | grep -v '^$' | grep -v 'Trust'
-	echo "[$size] keys after saving"
-	run_certutil -K -d $tmpdir | grep -v NSS | sed -r -e 's,[0123456789abcdef]{8},hex,g' -e 's,< 0>,<->,g' -e 's,< 1>,<->,g' | env LANG=C sort
+	echo "NSS keys after saving (preserve=$preserve)"
+	marker=`grep ^key_next_marker= entry.nss.$size | cut -f2- -d=`
+	run_certutil -K -d $tmpdir | grep -v 'Checking token' | sed -e s,"${marker:-////////}","(next)", | sed -r -e 's,[0123456789abcdef]{8},hex,g' -e 's,< 0>,<->,g' -e 's,< 1>,<->,g' | env LANG=C sort
 
+	echo "PEM keys before keygen (preserve=$preserve)"
+	marker=`grep ^key_next_marker= entry.openssl.$size | cut -f2- -d=`
+	find $tmpdir -name "keyi${size}*" -print | sed -e s,"${marker:-////////}","(next)", | env LANG=C sort
 	$toolsdir/keygen entry.openssl.$size
+	echo "PEM keys after keygen (preserve=$preserve)"
+	marker=`grep ^key_next_marker= entry.openssl.$size | cut -f2- -d=`
+	find $tmpdir -name "keyi${size}*" -print | sed -e s,"${marker:-////////}","(next)", | env LANG=C sort
 	$toolsdir/keyiread entry.openssl.$size > /dev/null 2>&1
 	$toolsdir/csrgen entry.openssl.$size > csr.openssl.$size
 	setupca
 	$toolsdir/submit ca.self entry.openssl.$size > cert.openssl.$size
 
-	echo "[$size] PEM certs before saving"
+	echo "PEM certs before saving (preserve=$preserve)"
 	find $tmpdir -name "certi${size}*" -print | env LANG=C sort
 	find $tmpdir -name "certi${size}*" -print | xargs -n 1 openssl x509 -noout -serial -in
-	echo "[$size] PEM keys before saving"
+	echo "PEM keys before saving (preserve=$preserve)"
 	marker=`grep ^key_next_marker= entry.openssl.$size | cut -f2- -d=`
-	find $tmpdir -name "keyi${size}*" -print | sed -e s,"$marker","(next)", | env LANG=C sort
+	find $tmpdir -name "keyi${size}*" -print | sed -e s,"${marker:-////////}","(next)", | env LANG=C sort
+
+	echo "This is the plaintext." > plain.txt
+	echo "NSS Signing"
+	certutil -M -d $tmpdir -n i$size -t P,P,P
+	cmsutil -S -d $tmpdir -N i$size -i plain.txt -o signed
+	echo "NSS Verify"
+	cmsutil -D -d $tmpdir -i signed
+	certutil -M -d $tmpdir -n i$size -t ,,
+	echo "OpenSSL Signing"
+	openssl smime -sign -signer certi$size -binary -nodetach -inkey keyi$size -in plain.txt -outform PEM -out signed
+	echo "OpenSSL Verify"
+	openssl smime -verify -CAfile certi$size -inform PEM -in signed
 
 	$toolsdir/certsave entry.openssl.$size
 
-	echo "[$size] PEM certs after saving"
+	echo "PEM certs after saving (preserve=$preserve)"
 	find $tmpdir -name "certi${size}*" -print | env LANG=C sort
 	find $tmpdir -name "certi${size}*" -print | xargs -n 1 openssl x509 -noout -serial -in
-	echo "[$size] PEM keys after saving"
+	echo "PEM keys after saving (preserve=$preserve)"
 	find $tmpdir -name "keyi${size}*" -print | env LANG=C sort
+
+	echo "This is the plaintext." > plain.txt
+	echo "NSS Signing"
+	certutil -M -d $tmpdir -n i$size -t P,P,P
+	cmsutil -S -d $tmpdir -N i$size -i plain.txt -o signed
+	echo "NSS Verify"
+	cmsutil -D -d $tmpdir -i signed
+	certutil -M -d $tmpdir -n i$size -t ,,
+	echo "OpenSSL Signing"
+	openssl smime -sign -signer certi$size -binary -nodetach -inkey keyi$size -in plain.txt -outform PEM -out signed
+	echo "OpenSSL Verify"
+	openssl smime -verify -CAfile certi$size -inform PEM -in signed
 done
 cat cert.nss.$size 1>&2
 echo Test complete.
