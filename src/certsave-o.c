@@ -245,7 +245,10 @@ cm_certsave_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					    (next_key != NULL)) {
 						if ((old_keyfile != NULL) &&
 						    (old_key != NULL)) {
-							remove(old_keyfile);
+							if (remove(old_keyfile) != 0) {
+								cm_log(1, "Error removing \"%s\": %s.\n",
+								       old_keyfile, strerror(errno));
+							}
 							write_file_contents(old_keyfile,
 									    old_key,
 									    "old key file",
@@ -255,7 +258,10 @@ cm_certsave_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 								    next_key,
 								    "key file",
 								    PR_TRUE);
-						remove(next_keyfile);
+						if (remove(next_keyfile) != 0) {
+							cm_log(1, "Error removing \"%s\": %s.\n",
+							       next_keyfile, strerror(errno));
+						}
 					}
 					status = CM_CERTSAVE_STATUS_SAVED;
 				}

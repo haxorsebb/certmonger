@@ -581,7 +581,11 @@ retry_gen:
 	}
 	/* Check for keys with the desired name, selecting a new name if
 	 * there's already one with the desired name. */
-	nickname = entry->cm_key_nickname;
+	nickname = strdup(entry->cm_key_nickname);
+	if (nickname == NULL) {
+		cm_log(1, "Out of memory.\n");
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+	}
 	privkeys = PK11_ListPrivKeysInSlot(slot, nickname, NULL);
 	while ((privkeys != NULL) && !PRIVKEY_LIST_EMPTY(privkeys)) {
 		markertmp = NULL;
@@ -594,6 +598,7 @@ retry_gen:
 			    (strcmp(keyname, nickname) == 0)) {
 				/* We're going to need to use a different nickname. */
 				cm_log(1, "Key already exists with nickname \"%s\".\n", nickname);
+				free(nickname);
 				nickname = make_nickname(entry->cm_key_nickname, &markertmp);
 				break;
 			}
@@ -648,6 +653,7 @@ retry_gen:
 				CERT_DestroyCertList(certs);
 				certs = NULL;
 			} else {
+				free(nickname);
 				nickname = make_nickname(entry->cm_key_nickname, &markertmp);
 				marker = markertmp;
 			}
@@ -704,6 +710,7 @@ retry_gen:
 	/* Try to remove any keys with old candidate names. */
 	if ((entry->cm_key_next_marker != NULL) &&
 	    (strlen(entry->cm_key_next_marker) > 0)) {
+		free(nickname);
 		nickname = util_build_next_nickname(entry->cm_key_nickname, entry->cm_key_next_marker);
 		privkeys = PK11_ListPrivKeysInSlot(slot, nickname, NULL);
 		while ((privkeys != NULL) && !PRIVKEY_LIST_EMPTY(privkeys)) {
@@ -736,6 +743,7 @@ retry_gen:
 	}
 	PK11_FreeSlotList(slotlist);
 	error = NSS_ShutdownContext(ctx);
+	free(nickname);
 	if (error != SECSuccess) {
 		cm_log(1, "Error shutting down NSS.\n");
 	}
