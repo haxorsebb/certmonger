@@ -35,7 +35,12 @@ for size in 512 1024 1536 2048 3072 4096 ; do
 	grep ^spkac entry.nss.$size | sed s,spkac,SPKAC, > spkac.nss.$size
 	grep ^scep_tx entry.nss.$size | sed s,^scep_tx=,, > sceptx.nss.$size
 	if ! test -s sceptx.nss.$size ; then
-		echo No SCEP TX ID \(OpenSSL\)
+		echo No SCEP TX ID \(NSS\)
+		exit 1
+	fi
+	grep ^minicert entry.nss.$size | sed s,^minicert=,, > minicert.nss.$size
+	if ! test -s minicert.nss.$size ; then
+		echo No minicert \(NSS\)
 		exit 1
 	fi
 	# Generate a new CSR using the extracted key.
@@ -46,12 +51,25 @@ for size in 512 1024 1536 2048 3072 4096 ; do
 		echo No SCEP TX ID \(OpenSSL\)
 		exit 1
 	fi
+	grep ^minicert entry.openssl.$size | sed s,^minicert=,, > minicert.openssl.$size
+	if ! test -s minicert.openssl.$size ; then
+		echo No minicert \(OpenSSL\)
+		exit 1
+	fi
 	# They'd better be the same!
 	if cmp csr.nss.$size csr.openssl.$size ; then
 		if cmp spkac.nss.$size spkac.openssl.$size ; then
 			if cmp sceptx.nss.$size sceptx.openssl.$size ; then
-				echo $size OK.
 				cat spkac.nss.$size | openssl spkac -verify -noout 2>&1
+				if cmp minicert.nss.$size minicert.openssl.$size ; then
+					base64 -d < minicert.openssl.$size | openssl x509 -out minicert.openssl.$size.pem -inform der
+					openssl verify -CAfile minicert.openssl.$size.pem minicert.openssl.$size.pem
+					echo $size OK.
+				else
+					echo With basic/default settings, minicertss differ \(NSS, OpenSSL\):
+					cat minicert.nss.$size minicert.openssl.$size
+					exit 1
+				fi
 			else
 				echo With basic/default settings, SCEP TX IDs differ \(NSS, OpenSSL\):
 				cat sceptx.nss.$size sceptx.openssl.$size

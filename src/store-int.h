@@ -143,6 +143,8 @@ struct cm_store_entry {
 	char *cm_spkac;
 	/* An SCEP transaction number corresponding to this signing request. */
 	char *cm_scep_tx;
+	/* A minimal self-signed certificate. */
+	char *cm_minicert;
 	/* Our idea of the state of the cert. */
 	enum cm_state {
 		CM_NEED_KEY_PAIR, CM_GENERATING_KEY_PAIR,

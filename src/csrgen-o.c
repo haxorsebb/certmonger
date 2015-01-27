@@ -82,14 +82,18 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	FILE *keyfp, *status;
 	X509_REQ *req;
 	X509_NAME *subject;
+	X509 *minicert;
+	ASN1_INTEGER *serial;
 	NETSCAPE_SPKI spki;
 	NETSCAPE_SPKAC spkac;
 	EVP_PKEY *pkey;
 	char buf[LINE_MAX], *p, *q, *s, *nickname, *pin, *password, *filename;
 	unsigned char *extensions, *upassword, *bmp, *name, *up, *uq, md[CM_DIGEST_MAX];
-	char *spkidec;
+	char *spkidec, *mcb64, *nows;
 	const char *default_cn = CM_DEFAULT_CERT_SUBJECT_CN, *spkihex;
 	const unsigned char *nametmp;
+	struct tm *now;
+	time_t nowt;
 	size_t extensions_len;
 	ssize_t len;
 	unsigned int bmpcount, mdlen;
@@ -268,6 +272,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			}
 			X509_REQ_sign(req, pkey, cm_prefs_ossl_hash());
 			PEM_write_X509_REQ_NEW(status, req);
+			/* Generate the SPKAC. */
 			memset(&spkac, 0, sizeof(spkac));
 			spkac.challenge = M_ASN1_IA5STRING_new();
 			if (entry->cm_challenge_password != NULL) {
@@ -288,6 +293,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			if (s != NULL) {
 				fprintf(status, "%s", s);
 			}
+			/* Generate the SCEP transaction identifier. */
 			spkidec = NULL;
 			len = i2d_PUBKEY(pkey, NULL);
 			if (len > 0) {
@@ -307,6 +313,48 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			}
 			fprintf(status, "\n%s\n", spkidec ? spkidec : "");
 			free(spkidec);
+			/* Generate a "mini" certificate. */
+			minicert = X509_new();
+			if (minicert == NULL) {
+				cm_log(1, "Out of memory creating mini certificate.\n");
+				_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+			}
+			nowt = time(NULL);
+			now = gmtime(&nowt);
+			nows = talloc_asprintf(entry, "%04d%02d%02d000000Z",
+					       now->tm_year + 1900, now->tm_mon + 1, now->tm_mday);
+			minicert->cert_info->validity->notBefore = M_ASN1_GENERALIZEDTIME_new();
+			ASN1_GENERALIZEDTIME_set_string(minicert->cert_info->validity->notBefore, nows);
+			nows = talloc_asprintf(entry, "%04d%02d%02d000000Z",
+					       now->tm_year + 1900 + 100, now->tm_mon + 1, now->tm_mday);
+			minicert->cert_info->validity->notAfter = M_ASN1_GENERALIZEDTIME_new();
+			ASN1_GENERALIZEDTIME_set_string(minicert->cert_info->validity->notAfter, nows);
+			X509_NAME_set(&minicert->cert_info->issuer, subject);
+			X509_NAME_set(&minicert->cert_info->subject, subject);
+			X509_set_version(minicert, 0);
+			serial = M_ASN1_INTEGER_new();
+			if (serial == NULL) {
+				cm_log(1, "Out of memory creating mini certificate.\n");
+				_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+			}
+			ASN1_INTEGER_set(serial, 1);
+			X509_set_serialNumber(minicert, serial);
+			X509_set_pubkey(minicert, pkey);
+			X509_sign(minicert, pkey, cm_prefs_ossl_hash());
+			len = i2d_X509(minicert, NULL);
+			mcb64 = NULL;
+			if (len > 0) {
+				up = malloc(len);
+				if (up != NULL) {
+					uq = up;
+					if (i2d_X509(minicert, &uq) == len) {
+						mcb64 = cm_store_base64_from_bin(entry,
+										 up,
+										 uq - up);
+					}
+				}
+			}
+			fprintf(status, "%s\n", mcb64 ? mcb64 : "");
 		} else {
 			cm_log(1, "Error creating template certificate.\n");
 			while ((error = ERR_get_error()) != 0) {
@@ -374,6 +422,15 @@ cm_csrgen_o_save_csr(struct cm_csrgen_state *state)
 			if (p > q) {
 				state->entry->cm_scep_tx = talloc_strndup(state->entry, q, p - q);
 				if (state->entry->cm_scep_tx == NULL) {
+					return ENOMEM;
+				}
+			}
+			*q = '\0';
+			q = p + strspn(p, "\r\n");
+			p = q + strcspn(q, "\r\n");
+			if (p > q) {
+				state->entry->cm_minicert = talloc_strndup(state->entry, q, p - q);
+				if (state->entry->cm_minicert == NULL) {
 					return ENOMEM;
 				}
 			}

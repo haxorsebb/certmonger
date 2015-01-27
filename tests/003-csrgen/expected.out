@@ -1,27 +1,33 @@
 pk12util: PKCS12 EXPORT SUCCESSFUL
 MAC verified OK
+Signature OK
+minicert.openssl.512.pem: OK
 512 OK.
-Signature OK
 pk12util: PKCS12 EXPORT SUCCESSFUL
 MAC verified OK
+Signature OK
+minicert.openssl.1024.pem: OK
 1024 OK.
-Signature OK
 pk12util: PKCS12 EXPORT SUCCESSFUL
 MAC verified OK
+Signature OK
+minicert.openssl.1536.pem: OK
 1536 OK.
-Signature OK
 pk12util: PKCS12 EXPORT SUCCESSFUL
 MAC verified OK
+Signature OK
+minicert.openssl.2048.pem: OK
 2048 OK.
-Signature OK
 pk12util: PKCS12 EXPORT SUCCESSFUL
 MAC verified OK
+Signature OK
+minicert.openssl.3072.pem: OK
 3072 OK.
-Signature OK
 pk12util: PKCS12 EXPORT SUCCESSFUL
 MAC verified OK
-4096 OK.
 Signature OK
+minicert.openssl.4096.pem: OK
+4096 OK.
 The last CSR (the one with everything) was:
     0:d=0  hl=4 l=1173 cons: SEQUENCE          
     4:d=1  hl=4 l=1087 cons: SEQUENCE          
