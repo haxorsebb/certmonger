@@ -38,6 +38,7 @@
 #include <talloc.h>
 
 #include "log.h"
+#include "pkcs7.h"
 #include "prefs.h"
 #include "store.h"
 #include "submit-e.h"
@@ -90,11 +91,10 @@ main(int argc, char **argv)
 	int c, verbose = 0, results_length = 0;
 	NSSInitContext *nctx;
 	enum known_ops op = op_unset;
-	const char *es, *racert = NULL, *id = NULL, *message = NULL;
-	const char *mode = NULL, *p, *q;
-	unsigned char *u;
+	const char *es, *id = NULL, *message = NULL;
+	const char *mode = NULL;
 	void *ctx;
-	char *params = "";
+	char *params = "", *racert = NULL;
 	PRBool missing_args = PR_FALSE;
 
 	id = getenv(CM_SUBMIT_SCEP_CA_IDENTIFIER_ENV);
@@ -314,20 +314,15 @@ main(int argc, char **argv)
 		break;
 	case op_get_ca_cert:
 		/* XXX - make sure it's either X.509 or Signed-Data, and if it's the latter, output just the RA's cert */
-		u = talloc_memdup(NULL, results, results_length);
-		p = cm_store_base64_from_bin(NULL, u, results_length);
-		printf("-----BEGIN CERTIFICATE-----\n");
-		while (*p != '\0') {
-			if (strlen(p) > 72) {
-				q = p + 72;
-			} else {
-				q = p + strlen(p);
-			}
-			printf("%.*s\n", (int) (q - p), p);
-			p = q;
+		if (cm_pkcs7_parse((const unsigned char *) results,
+				   results_length,
+				   CM_PKCS7_LEAF_PREFER_ENCRYPT, NULL,
+				   &racert, NULL, NULL) == 0) {
+			printf("%s", racert);
+			return CM_SUBMIT_STATUS_ISSUED;
+		} else {
+			return CM_SUBMIT_STATUS_UNREACHABLE;
 		}
-		printf("-----END CERTIFICATE-----\n");
-		return CM_SUBMIT_STATUS_ISSUED;
 		break;
 	case op_get_initial_cert:
 		/* XXX - verify that the reply is Signed-Data (a CertRep pkiMessage), signed by the RA cert, with a nonce matching the message we sent, and output an Enveloped-Data wrapped in a ContentInfo, if there is one in the Signed-Data. */
