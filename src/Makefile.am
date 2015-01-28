@@ -110,8 +110,10 @@ libcm_o_a_SOURCES += \
 	csrgen-o.c \
 	keygen-o.c \
 	keyiread-o.c \
-	prefs-o.h \
+	pkcs7.c \
+	pkcs7.h \
 	prefs-o.c \
+	prefs-o.h \
 	submit-so.c \
 	submit-o.c \
 	submit-o.h \

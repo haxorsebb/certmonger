@@ -728,7 +728,7 @@ cm_store_utf8_from_bmp_string(unsigned char *bmp, unsigned int len)
 }
 
 char *
-cm_store_base64_from_bin(void *parent, unsigned char *buf, int length)
+cm_store_base64_from_bin(void *parent, const unsigned char *buf, int length)
 {
 	char *p, *ret;
 	int max, i, j;

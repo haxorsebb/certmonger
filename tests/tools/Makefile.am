@@ -12,6 +12,9 @@ endif
 
 noinst_PROGRAMS = keyiread keygen csrgen submit certread certsave oid2name name2oid iterate prefs dates listnicks pem2base base2pem dparse payload checksig base64 cadata citerate casave hooks libexecdir canon srv
 noinst_LIBRARIES = libtools.a
+if HAVE_OPENSSL
+noinst_PROGRAMS += pk7parse
+endif
 
 libtools_a_SOURCES = ../../src/tm.h tm.c tools.h tools.c
 listnicks_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS)
