@@ -217,6 +217,9 @@ cm_submit_h_run(struct cm_submit_h_context *ctx)
 			}
 		} else {
 			curl_easy_setopt(ctx->curl,
+					 CURLOPT_FOLLOWLOCATION,
+					 1);
+			curl_easy_setopt(ctx->curl,
 					 CURLOPT_HTTPAUTH,
 					 CURLAUTH_NONE);
 		}
