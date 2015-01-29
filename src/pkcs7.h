@@ -27,5 +27,10 @@ int cm_pkcs7_envelope_data(char *encryption_cert,
 			   unsigned char **enveloped, size_t *length);
 int cm_pkcs7_envelope_csr(char *encryption_cert, char *csr,
 			  unsigned char **enveloped, size_t *length);
+int cm_pkcs7_generate_ias(char *cacert, char *minicert,
+			  unsigned char **ias, size_t *length);
+int cm_pkcs7_envelope_ias(char *encryption_cert, char *cacert, char *minicert,
+			  unsigned char **enveloped, size_t *length);
+
 
 #endif

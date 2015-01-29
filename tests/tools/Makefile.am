@@ -10,7 +10,7 @@ CFLAGS += -fPIC
 LDFLAGS += -fPIC -pie
 endif
 
-noinst_PROGRAMS = keyiread keygen csrgen submit certread certsave oid2name name2oid iterate prefs dates listnicks pem2base base2pem dparse payload checksig base64 cadata citerate casave hooks libexecdir canon srv
+noinst_PROGRAMS = keyiread keygen csrgen submit certread certsave oid2name name2oid iterate prefs dates listnicks pem2base base2pem dparse payload checksig base64 cadata citerate casave hooks libexecdir canon srv addcinfo
 noinst_LIBRARIES = libtools.a
 if HAVE_OPENSSL
 noinst_PROGRAMS += pk7parse pk7env
@@ -21,6 +21,7 @@ listnicks_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS)
 
 payload_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS)
 checksig_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS)
+addcinfo_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS)
 
 dparse_CFLAGS = $(AM_CFLAGS) $(XML_CFLAGS)
 dparse_SOURCES = dparse.c ../../src/submit-d.c

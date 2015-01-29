@@ -110,6 +110,58 @@ MIIBoDCCAQmgAwIBAAIBATANBgkqhkiG9w0BAQsFADAUMRIwEAYDVQQDEwlsb2NhbGhvc3QwIhgPMjAx
 -----END CERTIFICATE-----
 Blah blah blah.
 EOF
+cat > recipient << EOF
+-----BEGIN CERTIFICATE-----
+MIIB0TCCATqgAwIBAgICEjUwDQYJKoZIhvcNAQELBQAwFDESMBAGA1UEAxMJbG9j
+YWxob3N0MB4XDTcwMDEwMTExMTExMVoXDTcxMDEwMTExMTExMVowFDESMBAGA1UE
+AxMJbG9jYWxob3N0MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC394oITlJc
+hLbXLUAYJ+IGpvr3YfyQlQb3u95p3s0gEemx/+Dy3ViJW7WhMuc/FHJSV5ghLflk
+TRLfUdS18LGBkfkREBJVWfELhgm5ZHqiGzCvTmg01tgvouKj+8kFNJIaWsEm8mBa
+SoJzk8+vOQsnXjrZAKAFY7WrVryilh4cQQIDAQABozIwMDAMBgNVHRMBAf8EAjAA
+MCAGA1UdDgEBAAQWBBQfjVS9H0rXGb4SFB9bkzTpHHUH2jANBgkqhkiG9w0BAQsF
+AAOBgQCt6xbyri3BobQUPQmN7ROc3mveMSfMyOwBSTDjl2XIWV98HjVLWRjScbg7
+KW6z8W7iaasSDF7GWM2YqWaanWx5XwzayNUvIX3gHKqo+OwHo5QUfawtEV5Niop1
+N4nZp1GMclRuk9UFXLV2NfaohRPYs7FVdBVtWNvg7hH8XedLyw==
+-----END CERTIFICATE-----
+EOF
+cat > key << EOF
+-----BEGIN PRIVATE KEY-----
+MIICdQIBADANBgkqhkiG9w0BAQEFAASCAl8wggJbAgEAAoGBALf3ighOUlyEttct
+QBgn4gam+vdh/JCVBve73mnezSAR6bH/4PLdWIlbtaEy5z8UclJXmCEt+WRNEt9R
+1LXwsYGR+REQElVZ8QuGCblkeqIbMK9OaDTW2C+i4qP7yQU0khpawSbyYFpKgnOT
+z685CydeOtkAoAVjtatWvKKWHhxBAgMBAAECgYBowoXQBQnRtaGJFzOQjeWgdCYm
+CZ6RlsvI9yrIjx+wS4MQ4e1vX6yzS446pYoZ2cLgMRFok42ZGGrO0QKYOOBbOE1c
+fS7FGddn/8KENW8w2kxRI2pxFXQuHBWuWdkoArhZOPxL4O+xg9dAvrwxy2pOBvpr
+veZ/8siYc49ki69hgQJBAO5WSjDQ2M0aVfZOwCKm7+0tVeC6ZGS4MPH/h1oQNfSk
+oB1Pbc9i/gR7M5690i9eqGvr98kGGSvlvKC6LGqgT5UCQQDFmb6DbLa3HiVn7W7b
+u53rhZpnghn7OdFATxeyMDVnU6GFye5+8EhwVUDLVF7S7v8hOYOYY3HjkpzqhxkT
+7B79AkBlTpZwk4VkASrC7Ixs7kqTpS6YvIHJ8iUT6ErPNI7Ks2M/sjB585kHrJqv
+gf4ilni+jumfMBFpAFkidKBGnmfVAkAqKom1/9/pqZwv1kHez+V+Gc9+IQwsSQU3
+JOmYk6MBvp3sL9Ad9GZw2jBucz2c43U8AMrtHONzvZiQj22xi6R9AkAYfAWQHEkc
+1BQ/aKNIfymCkV/1mNcOlm6OE6jy8gJitMzFd8OrpokwGIQpTjKCMQwDtWbRouYE
+GcR9Xs1JgYLI
+-----END PRIVATE KEY-----
+EOF
+cat > csr << EOF
+-----BEGIN NEW CERTIFICATE REQUEST-----
+MIIBwjCCASsCAQAwFDESMBAGA1UEAxMJbG9jYWxob3N0MIGfMA0GCSqGSIb3DQEB
+AQUAA4GNADCBiQKBgQC394oITlJchLbXLUAYJ+IGpvr3YfyQlQb3u95p3s0gEemx
+/+Dy3ViJW7WhMuc/FHJSV5ghLflkTRLfUdS18LGBkfkREBJVWfELhgm5ZHqiGzCv
+Tmg01tgvouKj+8kFNJIaWsEm8mBaSoJzk8+vOQsnXjrZAKAFY7WrVryilh4cQQID
+AQABoG4wKwYJKoZIhvcNAQkUMR4eHAAyADAAMQA1ADAAMQAyADIAMgAzADIANQAx
+ADMwPwYJKoZIhvcNAQkOMTIwMDAMBgNVHRMBAf8EAjAAMCAGA1UdDgEBAAQWBBQf
+jVS9H0rXGb4SFB9bkzTpHHUH2jANBgkqhkiG9w0BAQsFAAOBgQAliHNkTQ35679h
+9RWudkBBn5aRnp+AoRPVyPMoqr8vl4SyrMiqg+U71hbju5fEnrFi8kDHYgq0otbb
+rjLR8fyXjJzhoUgY1twomdFeLvfd1Dk2DClEKGqye8rTQaatL3tq29NjqASSge1z
+c9gcIfqK9dgYShx5Iy0Rshend17aBw==
+-----END NEW CERTIFICATE REQUEST-----
+EOF
 $toolsdir/pk7parse dercert
 $toolsdir/pk7parse derpkcs7
 $toolsdir/pk7parse bundle
+echo Decrypted CSR:
+$toolsdir/pk7env recipient csr | base64 -d | $toolsdir/addcinfo | openssl smime -inform der -decrypt -inkey key recipient -binary | base64
+echo Encoded issuer-and-subject:
+$toolsdir/pk7env recipient recipient recipient | head -n 1
+echo Decrypted issuer-and-subject:
+$toolsdir/pk7env recipient recipient recipient | tail -n 1 | base64 -d | $toolsdir/addcinfo | openssl smime -inform der -decrypt -inkey key recipient | base64

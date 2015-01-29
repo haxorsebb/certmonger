@@ -29,6 +29,10 @@
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
 
+#include <nss.h>
+#include <secasn1.h>
+#include <secitem.h>
+
 #include <talloc.h>
 
 #include "log.h"
@@ -411,7 +415,8 @@ cm_pkcs7_envelope_data(char *encryption_cert,
 		cm_log(1, "Out of memory.\n");
 		goto done;
 	}
-	p7 = PKCS7_encrypt(recipients, in, cm_prefs_ossl_cipher(), 0);
+	p7 = PKCS7_encrypt(recipients, in, cm_prefs_ossl_cipher(),
+			   PKCS7_BINARY);
 	BIO_free(in);
 
 	if (p7 == NULL) {
@@ -456,6 +461,9 @@ cm_pkcs7_envelope_csr(char *encryption_cert, char *csr,
 	int dlen, ret = -1;
 	unsigned char *dreq = NULL, *u;
 
+	*enveloped = NULL;
+	*length = 0;
+
 	in = BIO_new_mem_buf(csr, -1);
 	if (in == NULL) {
 		cm_log(1, "Out of memory.\n");
@@ -490,5 +498,155 @@ done:
 		X509_REQ_free(req);
 	}
 	free(dreq);
+	return ret;
+}
+
+struct cm_pkcs7_ias {
+	SECItem issuer, subject;
+};
+static const SEC_ASN1Template
+cm_pkcs7_ias_template[] = {
+	{
+		.kind = SEC_ASN1_SEQUENCE,
+		.offset = 0,
+		.sub = NULL,
+		.size = sizeof(struct cm_pkcs7_ias),
+	},
+	{
+		.kind = SEC_ASN1_ANY,
+		.offset = offsetof(struct cm_pkcs7_ias, issuer),
+		.sub = &SEC_ASN1_GET(SEC_AnyTemplate),
+		.size = sizeof(SECItem),
+	},
+	{
+		.kind = SEC_ASN1_ANY,
+		.offset = offsetof(struct cm_pkcs7_ias, subject),
+		.sub = &SEC_ASN1_GET(SEC_AnyTemplate),
+		.size = sizeof(SECItem),
+	},
+	{ 0, 0, NULL, 0 },
+};
+
+int
+cm_pkcs7_generate_ias(char *cacert, char *minicert,
+		      unsigned char **ias, size_t *length)
+{
+	BIO *in;
+	X509 *ca = NULL, *mini = NULL;
+	int subjectlen, issuerlen, ret = -1;
+	unsigned char *issuer = NULL, *subject = NULL, *u;
+	struct cm_pkcs7_ias issuerandsubject;
+	SECItem encoded;
+
+	*ias = NULL;
+	*length = 0;
+	memset(&encoded, 0, sizeof(encoded));
+
+	in = BIO_new_mem_buf(cacert, -1);
+	if (in == NULL) {
+		cm_log(1, "Out of memory.\n");
+		goto done;
+	}
+	ca = PEM_read_bio_X509(in, NULL, NULL, NULL);
+	BIO_free(in);
+	if (ca == NULL) {
+		cm_log(1, "Error parsing CA certificate.\n");
+		goto done;
+	}
+
+	in = BIO_new_mem_buf(minicert, -1);
+	if (in == NULL) {
+		cm_log(1, "Out of memory.\n");
+		goto done;
+	}
+	mini = PEM_read_bio_X509(in, NULL, NULL, NULL);
+	BIO_free(in);
+	if (mini == NULL) {
+		cm_log(1, "Error parsing client certificate.\n");
+		goto done;
+	}
+
+	issuerlen = i2d_X509_NAME(ca->cert_info->issuer, NULL);
+	if (issuerlen < 0) {
+		cm_log(1, "Error encoding CA certificate issuer name.\n");
+		goto done;
+	}
+	issuer = malloc(issuerlen);
+	if (issuer == NULL) {
+		cm_log(1, "Out of memory.\n");
+		goto done;
+	}
+	u = issuer;
+	if (i2d_X509_NAME(ca->cert_info->issuer, &u) != issuerlen) {
+		cm_log(1, "Error encoding CA certificate issuer name.\n");
+		goto done;
+	}
+
+	subjectlen = i2d_X509_NAME(mini->cert_info->subject, NULL);
+	if (subjectlen < 0) {
+		cm_log(1, "Error encoding client certificate subject name.\n");
+		goto done;
+	}
+	subject = malloc(subjectlen);
+	if (subject == NULL) {
+		cm_log(1, "Out of memory.\n");
+		goto done;
+	}
+	u = subject;
+	if (i2d_X509_NAME(ca->cert_info->subject, &u) != subjectlen) {
+		cm_log(1, "Error encoding client certificate subject name.\n");
+		goto done;
+	}
+	memset(&issuerandsubject, 0, sizeof(issuerandsubject));
+	issuerandsubject.issuer.data = issuer;
+	issuerandsubject.issuer.len = issuerlen;
+	issuerandsubject.subject.data = subject;
+	issuerandsubject.subject.len = subjectlen;
+	if (SEC_ASN1EncodeItem(NULL, &encoded, &issuerandsubject,
+			       cm_pkcs7_ias_template) != &encoded) {
+		cm_log(1, "Error encoding issuer and subject names.\n");
+		goto done;
+	}
+	*ias = malloc(encoded.len);
+	if (*ias != NULL) {
+		memcpy(*ias, encoded.data, encoded.len);
+		*length = encoded.len;
+		ret = 0;
+	}
+done:
+	if (encoded.data != NULL) {
+		SECITEM_FreeItem(&encoded, PR_FALSE);
+	}
+	if (mini != NULL) {
+		X509_free(mini);
+	}
+	if (ca != NULL) {
+		X509_free(ca);
+	}
+	free(issuer);
+	free(subject);
+	return ret;
+}
+
+int
+cm_pkcs7_envelope_ias(char *encryption_cert, char *cacert, char *minicert,
+		      unsigned char **enveloped, size_t *length)
+{
+	int ret = -1;
+	unsigned char *dias = NULL;
+	size_t dlen;
+
+	*enveloped = NULL;
+	*length = 0;
+
+	ret = cm_pkcs7_generate_ias(cacert, minicert, &dias, &dlen);
+	if (ret != 0) {
+		goto done;
+	}
+
+	ret = cm_pkcs7_envelope_data(encryption_cert, dias, dlen,
+				     enveloped, length);
+done:
+	free(dias);
 	return ret;
 }
