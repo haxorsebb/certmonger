@@ -91,7 +91,7 @@ main(int argc, char **argv)
 	int c, verbose = 0, results_length = 0;
 	NSSInitContext *nctx;
 	enum known_ops op = op_unset;
-	const char *es, *id = NULL, *message = NULL;
+	const char *es, *id = "0", *message = NULL;
 	const char *mode = NULL;
 	void *ctx;
 	char *params = "", *racert = NULL;
