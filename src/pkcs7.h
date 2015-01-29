@@ -19,9 +19,9 @@
 #define cmpkcs7_h
 
 #define CM_PKCS7_LEAF_PREFER_ENCRYPT (1 << 0)
-int cm_pkcs7_parse(const unsigned char *buffer, size_t length,
-		   unsigned int flags, void *parent,
-		   char **certleaf, char **certtop, char ***certothers);
+int cm_pkcs7_parse(unsigned int flags, void *parent,
+		   char **certleaf, char **certtop, char ***certothers,
+		   const unsigned char *buffer, size_t length, ...);
 int cm_pkcs7_envelope_csr(char *encryption_cert, char *csr,
 			  unsigned char **enveloped, size_t *length);
 

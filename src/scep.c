@@ -314,10 +314,11 @@ main(int argc, char **argv)
 		break;
 	case op_get_ca_cert:
 		/* XXX - make sure it's either X.509 or Signed-Data, and if it's the latter, output just the RA's cert */
-		if (cm_pkcs7_parse((const unsigned char *) results,
+		if (cm_pkcs7_parse(CM_PKCS7_LEAF_PREFER_ENCRYPT, NULL,
+				   &racert, NULL, NULL,
+				   (const unsigned char *) results,
 				   results_length,
-				   CM_PKCS7_LEAF_PREFER_ENCRYPT, NULL,
-				   &racert, NULL, NULL) == 0) {
+				   NULL) == 0) {
 			printf("%s", racert);
 			return CM_SUBMIT_STATUS_ISSUED;
 		} else {

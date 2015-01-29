@@ -70,8 +70,9 @@ main(int argc, char **argv)
 			}
 			len += j;
 		}
-		if (cm_pkcs7_parse(p, len, CM_PKCS7_LEAF_PREFER_ENCRYPT,
-				   parent, &leaf, &top, &certs) != 0) {
+		if (cm_pkcs7_parse(CM_PKCS7_LEAF_PREFER_ENCRYPT,
+				   parent, &leaf, &top, &certs,
+				   p, len, NULL) != 0) {
 			fprintf(stderr, "\"%s\": parse error.\n", argv[i]);
 			return 1;
 		}
@@ -82,5 +83,6 @@ main(int argc, char **argv)
 		}
 		close(fd);
 	}
+	talloc_free(parent);
 	return 0;
 }

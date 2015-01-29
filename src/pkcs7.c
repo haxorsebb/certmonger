@@ -18,6 +18,8 @@
 #include "config.h"
 
 #include <sys/types.h>
+#include <stdarg.h>
+#include <string.h>
 #include <unistd.h>
 
 #include <krb5.h>
@@ -141,32 +143,54 @@ bettertop(X509 *candidate, X509 *current, unsigned int flags)
 /* Given either a single certificate or a PKCS#7 signed-data message, pull out
  * the end-entity certificate and, if there is one, the top-level certificate,
  * and if there are any others, any others. */
-int
-cm_pkcs7_parse(const unsigned char *buffer, size_t length, unsigned int flags,
-	       void *parent,
-	       char **certleaf, char **certtop, char ***certothers)
+static void cm_pkcs7_parse_buffer(const unsigned char *buffer,
+				  size_t length, STACK_OF(X509) *sk);
+static void
+cm_pkcs7_parse_pem(const char *pem, size_t length,
+		   STACK_OF(X509) *sk)
 {
-	PKCS7 *p7 = NULL;
-	X509 *x = NULL, *a, *b;
-	STACK_OF(X509) *sk;
+	const char *p, *q;
+	unsigned char *buf;
+	size_t len;
+	int decoded;
+
+	if (strncmp(pem, "-----BEGIN", 10) == 0) {
+		p = pem;
+		p += strcspn(p, "\r\n");
+		p += strspn(p, "\r\n");
+		q = p;
+		while (q < pem + length) {
+			q = q + strcspn(q, "\r\n");
+			q += strspn(q, "\r\n");
+			if (strncmp(q, "-----END", 8) == 0) {
+				len = q - p;
+				buf = malloc(len);
+				if (buf != NULL) {
+					decoded = cm_store_base64_to_bin(p,
+									 q - p,
+									 buf,
+									 len);
+					if (decoded > 0) {
+						cm_pkcs7_parse_buffer(buf,
+								      decoded,
+								      sk);
+					}
+					free(buf);
+				}
+			}
+		}
+	}
+}
+static void
+cm_pkcs7_parse_buffer(const unsigned char *buffer, size_t length,
+		      STACK_OF(X509) *sk)
+{
+	PKCS7 *p7;
+	X509 *x;
 	const unsigned char *p;
-	char *cleaf = NULL, *ctop = NULL, **cothers = NULL;
-	int leaf, top, n_certs, i, j;
+	char *s, *sp, *sq;
+	int i;
 
-	if (certleaf != NULL) {
-		*certleaf = NULL;
-	}
-	if (certothers != NULL) {
-		*certothers = NULL;
-	}
-	if (certtop != NULL) {
-		*certtop = NULL;
-	}
-
-	sk = sk_X509_new(cert_cmp);
-	if (sk == NULL) {
-		return -1;
-	}
 	/* First, try to parse as a PKCS#7 signed data item. */
 	p = buffer;
 	p7 = d2i_PKCS7(NULL, &p, length);
@@ -191,9 +215,71 @@ cm_pkcs7_parse(const unsigned char *buffer, size_t length, unsigned int flags,
 			if (sk_X509_find(sk, x) < 0) {
 				sk_X509_push(sk, X509_dup(x));
 			}
+			X509_free(x);
+		} else {
+			/* Not a certificate.  Maybe it's PEM.  Check if it's
+			 * ASCII. */
+			for (p = buffer; p < buffer + length; p++) {
+				if ((*p & 0x80) != 0) {
+					break;
+				}
+			}
+			if (p == buffer + length) {
+				s = malloc(length + 1);
+				if (s == NULL) {
+					return;
+				}
+				memcpy(s, buffer, length);
+				s[length] = '\0';
+				sp = s;
+				while ((sp = strstr(sp, "-----BEGIN")) != NULL) {
+					sq = strstr(sp, "-----END");
+					if (sq != NULL) {
+						sq += strcspn(sq, "\r\n");
+						sq += strspn(sq, "\r\n");
+						cm_pkcs7_parse_pem(sp, sq - sp,
+								   sk);
+						sp = sq;
+					}
+				}
+				free(s);
+			}
 		}
-		X509_free(x);
 	}
+}
+
+int
+cm_pkcs7_parse(unsigned int flags, void *parent,
+	       char **certleaf, char **certtop, char ***certothers,
+	       const unsigned char *buffer, size_t length, ...)
+{
+	X509 *x = NULL, *a, *b;
+	STACK_OF(X509) *sk;
+	char *cleaf = NULL, *ctop = NULL, **cothers = NULL;
+	int leaf, top, n_certs, i, j;
+	va_list args;
+
+	if (certleaf != NULL) {
+		*certleaf = NULL;
+	}
+	if (certothers != NULL) {
+		*certothers = NULL;
+	}
+	if (certtop != NULL) {
+		*certtop = NULL;
+	}
+
+	sk = sk_X509_new(cert_cmp);
+	if (sk == NULL) {
+		return -1;
+	}
+	cm_pkcs7_parse_buffer(buffer, length, sk);
+	va_start(args, length);
+	while ((buffer = va_arg(args, const unsigned char *)) != NULL) {
+		length = va_arg(args, size_t);
+		cm_pkcs7_parse_buffer(buffer, length, sk);
+	}
+	va_end(args);
 	/* Count the number of certificates. */
 	n_certs = sk_X509_num(sk);
 	/* Find one that didn't issue any of the others. */
