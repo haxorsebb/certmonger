@@ -60,6 +60,23 @@ ca_other_certs=Other Random Certificate 1
  -----BEGIN CERTIFICATE-----
  This is a sixth certificate. Not a real one.
  -----END CERTIFICATE-----
+[s]
+id=CADataRetrievalTest
+ca_is_default=0
+ca_type=EXTERNAL
+ca_external_helper=${tmpdir}/helper.sh
+ca_encryption_cert=-----BEGIN CERTIFICATE-----
+ This is a certificate. Not a real one.
+ -----END CERTIFICATE-----
+ca_encryption_issuer_cert=-----BEGIN CERTIFICATE-----
+ This is a second certificate. Not a real one.
+ -----END CERTIFICATE-----
+[C]
+id=CADataRetrievalTest
+ca_is_default=0
+ca_type=EXTERNAL
+ca_external_helper=${tmpdir}/helper.sh
+ca_capabilities=GetNextCACert,POSTPKIOperation,Renewal,SHA-512,SHA-256,SHA-1,DES3
 [all]
 id=CADataRetrievalTest
 ca_aka=Best. CA. Ever.
@@ -94,4 +111,11 @@ ca_required_enroll_attributes=template-profile,template-principal
 ca_required_renewal_attributes=template-principal
 ca_profiles=DefaultTemplate,OtherTemplate,ThirdTemplate
 ca_default_profile=DefaultTemplate
+ca_capabilities=GetNextCACert,POSTPKIOperation,Renewal,SHA-512,SHA-256,SHA-1,DES3
+ca_encryption_cert=-----BEGIN CERTIFICATE-----
+ This is a certificate. Not a real one.
+ -----END CERTIFICATE-----
+ca_encryption_issuer_cert=-----BEGIN CERTIFICATE-----
+ This is a second certificate. Not a real one.
+ -----END CERTIFICATE-----
 OK.

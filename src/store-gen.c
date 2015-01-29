@@ -145,7 +145,7 @@ static const struct {
 	{"enrollment_reqs", cm_ca_phase_enroll_reqs},
 	{"renewal_reqs", cm_ca_phase_renew_reqs},
 	{"capabilities", cm_ca_phase_capabilities},
-	{"encryption_cert", cm_ca_phase_encryption_cert},
+	{"encryption_certs", cm_ca_phase_encryption_certs},
 	{"invalid", cm_ca_phase_invalid},
 };
 

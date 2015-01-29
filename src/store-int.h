@@ -246,7 +246,7 @@ struct cm_store_ca {
 		cm_ca_phase_enroll_reqs,
 		cm_ca_phase_renew_reqs,
 		cm_ca_phase_capabilities,
-		cm_ca_phase_encryption_cert,
+		cm_ca_phase_encryption_certs,
 		cm_ca_phase_invalid,
 	} cm_ca_phase;
 	/* Data refresh state. */
@@ -319,9 +319,12 @@ struct cm_store_ca {
 	char **cm_ca_other_cert_store_nssdbs;
 	/* CA capabilities.  Currently only ever SCEP capabilities. */
 	char **cm_ca_capabilities;
-	/* The CA's SCEP certificate, used for encrypting requests to it.
+	/* The CA's SCEP RA certificate, used for encrypting requests to it.
 	 * Currently only used for SCEP. */
 	char *cm_ca_encryption_cert;
+	/* The CA's SCEP CA certificate, if it's different from the RA's
+	 * certificate.  Currently only used for SCEP. */
+	char *cm_ca_encryption_issuer_cert;
 };
 
 const char *cm_store_state_as_string(enum cm_state state);

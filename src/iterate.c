@@ -2097,8 +2097,8 @@ cm_iterate_ca(struct cm_store_ca *ca,
 		case cm_ca_phase_capabilities:
 			state->cm_task_state = cm_cadata_start_capabilities(ca);
 			break;
-		case cm_ca_phase_encryption_cert:
-			state->cm_task_state = cm_cadata_start_encryption_cert(ca);
+		case cm_ca_phase_encryption_certs:
+			state->cm_task_state = cm_cadata_start_encryption_certs(ca);
 			break;
 		case cm_ca_phase_invalid:
 			abort();
@@ -2135,7 +2135,7 @@ cm_iterate_ca(struct cm_store_ca *ca,
 				case cm_ca_phase_enroll_reqs:
 				case cm_ca_phase_renew_reqs:
 				case cm_ca_phase_capabilities:
-				case cm_ca_phase_encryption_cert:
+				case cm_ca_phase_encryption_certs:
 					ca->cm_ca_state[state->cm_phase] = CM_CA_NEED_TO_ANALYZE;
 					break;
 				case cm_ca_phase_invalid:
@@ -2379,7 +2379,7 @@ cm_iterate_ca(struct cm_store_ca *ca,
 		case cm_ca_phase_enroll_reqs:
 		case cm_ca_phase_renew_reqs:
 		case cm_ca_phase_capabilities:
-		case cm_ca_phase_encryption_cert:
+		case cm_ca_phase_encryption_certs:
 			ca->cm_ca_state[state->cm_phase] = CM_CA_IDLE;
 			*when = cm_time_now;
 			break;

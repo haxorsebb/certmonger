@@ -56,6 +56,7 @@ main(int argc, char **argv)
 	struct cm_store_ca *ca;
 	int c, fd, ret = CM_SUBMIT_STATUS_REJECTED;
 	int iflag = 0, cflag = 0, pflag = 0, dflag = 0, eflag = 0, rflag = 0;
+	int Cflag = 0, sflag = 0;
 	unsigned i;
 	void *parent;
 	struct {
@@ -68,13 +69,15 @@ main(int argc, char **argv)
 		{cm_cadata_start_default_profile, &dflag},
 		{cm_cadata_start_enroll_reqs, &eflag},
 		{cm_cadata_start_renew_reqs, &rflag},
+		{cm_cadata_start_capabilities, &Cflag},
+		{cm_cadata_start_encryption_certs, &sflag},
 	};
 
 	cm_log_set_method(cm_log_stderr);
 	cm_log_set_level(3);
 	cm_set_fips_from_env();
 	parent = talloc_new(NULL);
-	while ((c = getopt(argc, argv, "icpder")) != -1) {
+	while ((c = getopt(argc, argv, "icpderCs")) != -1) {
 		switch (c) {
 		case 'i':
 			iflag++;
@@ -93,6 +96,12 @@ main(int argc, char **argv)
 			break;
 		case 'r':
 			rflag++;
+			break;
+		case 'C':
+			Cflag++;
+			break;
+		case 's':
+			sflag++;
 			break;
 		}
 	}

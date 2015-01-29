@@ -185,6 +185,7 @@ enum cm_store_file_field {
 
 	cm_store_ca_field_capabilities,
 	cm_store_ca_field_encryption_cert,
+	cm_store_ca_field_encryption_issuer_cert,
 
 	cm_store_file_field_invalid_high,
 };
@@ -337,6 +338,7 @@ static struct cm_store_file_field_list {
 	{cm_store_ca_field_other_cert_nssdbs, "ca_other_cert_dbs"},
 	{cm_store_ca_field_capabilities, "ca_capabilities"},
 	{cm_store_ca_field_encryption_cert, "ca_encryption_cert"},
+	{cm_store_ca_field_encryption_issuer_cert, "ca_encryption_issuer_cert"},
 };
 
 static enum cm_store_file_field
@@ -638,6 +640,7 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_ca_field_other_cert_nssdbs:
 			case cm_store_ca_field_capabilities:
 			case cm_store_ca_field_encryption_cert:
+			case cm_store_ca_field_encryption_issuer_cert:
 				break;
 			case cm_store_file_field_id:
 				ret->cm_nickname = free_if_empty(p);
@@ -1333,6 +1336,10 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 				break;
 			case cm_store_ca_field_encryption_cert:
 				ret->cm_ca_encryption_cert =
+					free_if_empty(p);
+				break;
+			case cm_store_ca_field_encryption_issuer_cert:
+				ret->cm_ca_encryption_issuer_cert =
 					free_if_empty(p);
 				break;
 			}
@@ -2074,6 +2081,8 @@ cm_store_ca_write(FILE *fp, struct cm_store_ca *ca)
 				 ca->cm_ca_capabilities);
 	cm_store_file_write_str(fp, cm_store_ca_field_encryption_cert,
 				ca->cm_ca_encryption_cert);
+	cm_store_file_write_str(fp, cm_store_ca_field_encryption_issuer_cert,
+				ca->cm_ca_encryption_issuer_cert);
 	if (ferror(fp)) {
 		return -1;
 	}
@@ -2565,6 +2574,8 @@ cm_store_ca_dup(void *parent, struct cm_store_ca *ca)
 		cm_store_maybe_strdupv(ret, ca->cm_ca_capabilities);
 	ret->cm_ca_encryption_cert =
 		cm_store_maybe_strdup(ret, ca->cm_ca_encryption_cert);
+	ret->cm_ca_encryption_issuer_cert =
+		cm_store_maybe_strdup(ret, ca->cm_ca_encryption_issuer_cert);
 
 	return ret;
 }

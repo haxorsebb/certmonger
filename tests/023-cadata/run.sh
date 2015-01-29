@@ -64,12 +64,31 @@ FETCH-ROOTS)
 	echo -----END CERTIFICATE-----
 	exit 0
 	;;
+FETCH-SCEP-CA-CERTS)
+	echo -----BEGIN CERTIFICATE-----
+	echo This is a certificate.  Not a real one.
+	echo -----END CERTIFICATE-----
+	echo -----BEGIN CERTIFICATE-----
+	echo This is a second certificate.  Not a real one.
+	echo -----END CERTIFICATE-----
+	exit 0
+	;;
+FETCH-SCEP-CA-CAPS)
+	echo GetNextCACert
+	echo POSTPKIOperation
+	echo Renewal
+	echo SHA-512
+	echo SHA-256
+	echo SHA-1
+	echo DES3
+	exit 0
+	;;
 esac
 exit 6
 EOF
 chmod +x $tmpdir/helper.sh
 
-for flag in i r e d p c ; do
+for flag in i r e d p c s C; do
 	cat > $tmpdir/ca <<- EOF
 	id=CADataRetrievalTest
 	ca_type=EXTERNAL
@@ -85,7 +104,7 @@ id=CADataRetrievalTest
 ca_type=EXTERNAL
 ca_external_helper=$tmpdir/helper.sh
 EOF
-for flag in i r e d p c ; do
+for flag in i r e d p c s C ; do
 	$toolsdir/cadata -$flag $tmpdir/ca
 done
 cat $tmpdir/ca

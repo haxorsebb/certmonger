@@ -62,7 +62,7 @@
 enum known_ops {
 	op_unset,
 	op_get_ca_caps,
-	op_get_ca_cert,
+	op_get_ca_certs,
 	op_get_initial_cert,
 	op_pkcsreq,
 };
@@ -74,11 +74,12 @@ help(const char *cmd)
 		"Usage: %s -u URL [options] [-c|-C|-g|-p] [pkiMessage]\n"
 		"Options:\n"
 		"\t[-i CA identifier]\n"
-		"\t[-c]\n"
-		"\t[-C]\n"
-		"\t[-g]\n"
-		"\t[-p]\n"
+		"\t[-c]\tread CA capabilities\n"
+		"\t[-C]\tread RA+CA certificates\n"
+		"\t[-g]\tsend a GetInitialCert request (poll)\n"
+		"\t[-p]\tsend a PKCS request (submit)\n"
 		"\t[-r racert]\n"
+		"\t[-R cacert]\n"
 		"\t[-v]\n",
 		strchr(cmd, '/') ? strrchr(cmd, '/') + 1 : cmd);
 }
@@ -94,11 +95,12 @@ main(int argc, char **argv)
 	const char *es, *id = "0", *message = NULL;
 	const char *mode = NULL;
 	void *ctx;
-	char *params = "", *racert = NULL;
+	char *params = "", *racert = NULL, *cacert = NULL;
 	PRBool missing_args = PR_FALSE;
 
 	id = getenv(CM_SUBMIT_SCEP_CA_IDENTIFIER_ENV);
 	racert = getenv(CM_SUBMIT_SCEP_RA_CERTIFICATE_ENV);
+	cacert = getenv(CM_SUBMIT_SCEP_CA_CERTIFICATE_ENV);
 
 	if (getenv(CM_SUBMIT_OPERATION_ENV) != NULL) {
 		mode = getenv(CM_SUBMIT_OPERATION_ENV);
@@ -117,7 +119,7 @@ main(int argc, char **argv)
 			}
 		} else
 		if (strcasecmp(mode, CM_OP_FETCH_SCEP_CA_CERTS) == 0) {
-			op = op_get_ca_cert;
+			op = op_get_ca_certs;
 		} else
 		if (strcasecmp(mode, CM_OP_FETCH_SCEP_CA_CAPS) == 0) {
 			op = op_get_ca_caps;
@@ -151,6 +153,9 @@ main(int argc, char **argv)
 			break;
 		case 'i':
 			id = optarg;
+			if (strlen(id) == 0) {
+				id = NULL;
+			}
 			break;
 		case 'v':
 			verbose++;
@@ -159,7 +164,7 @@ main(int argc, char **argv)
 			op = op_get_ca_caps;
 			break;
 		case 'C':
-			op = op_get_ca_cert;
+			op = op_get_ca_certs;
 			break;
 		case 'g':
 			op = op_get_initial_cert;
@@ -170,6 +175,10 @@ main(int argc, char **argv)
 		case 'r':
 			/* XXX - read RA cert from the named file */
 			racert = NULL;
+			break;
+		case 'R':
+			/* XXX - read CA cert from the named file */
+			cacert = NULL;
 			break;
 		default:
 			help(argv[0]);
@@ -219,7 +228,7 @@ main(int argc, char **argv)
 			params = talloc_asprintf(ctx, "operation=" OP_GET_CA_CAPS "&message=%s", id);
 		}
 		break;
-	case op_get_ca_cert:
+	case op_get_ca_certs:
 		if (id == NULL) {
 			params = "operation=" OP_GET_CA_CERT;
 		} else {
@@ -312,14 +321,18 @@ main(int argc, char **argv)
 		printf("%s\n", results);
 		return CM_SUBMIT_STATUS_ISSUED;
 		break;
-	case op_get_ca_cert:
-		/* XXX - make sure it's either X.509 or Signed-Data, and if it's the latter, output just the RA's cert */
+	case op_get_ca_certs:
 		if (cm_pkcs7_parse(CM_PKCS7_LEAF_PREFER_ENCRYPT, NULL,
-				   &racert, NULL, NULL,
+				   &racert, &cacert, NULL,
 				   (const unsigned char *) results,
 				   results_length,
 				   NULL) == 0) {
-			printf("%s", racert);
+			if (racert != NULL) {
+				printf("%s", racert);
+				if (cacert != NULL) {
+					printf("%s", cacert);
+				}
+			}
 			return CM_SUBMIT_STATUS_ISSUED;
 		} else {
 			return CM_SUBMIT_STATUS_UNREACHABLE;
