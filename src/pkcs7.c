@@ -373,15 +373,15 @@ cm_pkcs7_parse(unsigned int flags, void *parent,
 
 /* Envelope some data for the recipient. */
 int
-cm_pkcs7_envelope_csr(char *encryption_cert, char *csr,
-		      unsigned char **enveloped, size_t *length)
+cm_pkcs7_envelope_data(char *encryption_cert,
+		       unsigned char *data, size_t dlength,
+		       unsigned char **enveloped, size_t *length)
 {
 	STACK_OF(X509) *recipients = NULL;
 	X509 *recipient = NULL;
-	X509_REQ *req = NULL;
 	BIO *in = NULL;
 	PKCS7 *p7 = NULL;
-	unsigned char *dreq = NULL, *dp7 = NULL, *u = NULL;
+	unsigned char *dp7 = NULL, *u = NULL;
 	int ret = -1, len;
 
 	*enveloped = NULL;
@@ -399,34 +399,6 @@ cm_pkcs7_envelope_csr(char *encryption_cert, char *csr,
 	}
 	BIO_free(in);
 
-	in = BIO_new_mem_buf(csr, -1);
-	if (in == NULL) {
-		cm_log(1, "Out of memory.\n");
-		goto done;
-	}
-	req = PEM_read_bio_X509_REQ(in, NULL, NULL, NULL);
-	if (recipient == NULL) {
-		cm_log(1, "Error parsing certificate signing request.\n");
-		goto done;
-	}
-	BIO_free(in);
-
-	len = i2d_X509_REQ(req, NULL);
-	if (len < 0) {
-		cm_log(1, "Error encoding certificate signing request.\n");
-		goto done;
-	}
-	dreq = malloc(len);
-	if (dreq == NULL) {
-		cm_log(1, "Out of memory.\n");
-		goto done;
-	}
-	u = dreq;
-	if (i2d_X509_REQ(req, &u) != len) {
-		cm_log(1, "Error encoding certificate signing request.\n");
-		goto done;
-	}
-
 	recipients = sk_X509_new(cert_cmp);
 	if (recipients == NULL) {
 		cm_log(1, "Out of memory.\n");
@@ -434,7 +406,7 @@ cm_pkcs7_envelope_csr(char *encryption_cert, char *csr,
 	}
 	sk_X509_push(recipients, recipient);
 
-	in = BIO_new_mem_buf(dreq, len);
+	in = BIO_new_mem_buf(data, dlength);
 	if (in == NULL) {
 		cm_log(1, "Out of memory.\n");
 		goto done;
@@ -472,6 +444,48 @@ done:
 	if (recipient != NULL) {
 		X509_free(recipient);
 	}
+	return ret;
+}
+
+int
+cm_pkcs7_envelope_csr(char *encryption_cert, char *csr,
+		      unsigned char **enveloped, size_t *length)
+{
+	BIO *in;
+	X509_REQ *req = NULL;
+	int dlen, ret = -1;
+	unsigned char *dreq = NULL, *u;
+
+	in = BIO_new_mem_buf(csr, -1);
+	if (in == NULL) {
+		cm_log(1, "Out of memory.\n");
+		goto done;
+	}
+	req = PEM_read_bio_X509_REQ(in, NULL, NULL, NULL);
+	BIO_free(in);
+	if (req == NULL) {
+		cm_log(1, "Error parsing certificate signing request.\n");
+		goto done;
+	}
+
+	dlen = i2d_X509_REQ(req, NULL);
+	if (dlen < 0) {
+		cm_log(1, "Error encoding certificate signing request.\n");
+		goto done;
+	}
+	dreq = malloc(dlen);
+	if (dreq == NULL) {
+		cm_log(1, "Out of memory.\n");
+		goto done;
+	}
+	u = dreq;
+	if (i2d_X509_REQ(req, &u) != dlen) {
+		cm_log(1, "Error encoding certificate signing request.\n");
+		goto done;
+	}
+	ret = cm_pkcs7_envelope_data(encryption_cert, dreq, dlen,
+				     enveloped, length);
+done:
 	if (req != NULL) {
 		X509_REQ_free(req);
 	}

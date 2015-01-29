@@ -22,6 +22,9 @@
 int cm_pkcs7_parse(unsigned int flags, void *parent,
 		   char **certleaf, char **certtop, char ***certothers,
 		   const unsigned char *buffer, size_t length, ...);
+int cm_pkcs7_envelope_data(char *encryption_cert,
+			   unsigned char *data, size_t dlength,
+			   unsigned char **enveloped, size_t *length);
 int cm_pkcs7_envelope_csr(char *encryption_cert, char *csr,
 			  unsigned char **enveloped, size_t *length);
 
