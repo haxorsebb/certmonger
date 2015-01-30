@@ -255,7 +255,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	int ec;
 	char *b64, *b642, *b643, *now, *p, *q;
 	const char *es, *spkihex, *spkidec;
-	unsigned char spkidigest[CM_DIGEST_MAX];
+	unsigned char spkidigest[CM_DIGEST_MAX + 1];
 	SECOidData *sigoid;
 
 	/* Allocate an arena pool and a place to write status updates. */
@@ -728,9 +728,10 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 	/* Generate the SCEP transaction ID. */
 	spkidec = "";
-	if (PK11_HashBuf(cm_prefs_nss_dig_alg(), spkidigest,
+	memset(spkidigest, 0, sizeof(spkidigest));
+	if (PK11_HashBuf(cm_prefs_nss_dig_alg(), spkidigest + 1,
 			 pkac.spki.data, pkac.spki.len) == SECSuccess) {
-		spkihex = cm_store_hex_from_bin(NULL, spkidigest,
+		spkihex = cm_store_hex_from_bin(NULL, spkidigest + 1,
 						cm_prefs_nss_dig_alg_len());
 		if (spkihex != NULL) {
 			spkidec = util_dec_from_hex(spkihex);
@@ -765,7 +766,13 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	validity->notAfter = nowe;
 	minicert = CERT_CreateCertificate(1, name, validity, req);
 	SEC_ASN1EncodeInteger(arena, &minicert->version, 0);
-	SEC_ASN1EncodeInteger(arena, &minicert->serialNumber, 1);
+	if ((spkidigest[1] & 0x80) != 0) {
+		minicert->serialNumber.data = spkidigest;
+		minicert->serialNumber.len = cm_prefs_nss_dig_alg_len() + 1;
+	} else {
+		minicert->serialNumber.data = spkidigest + 1;
+		minicert->serialNumber.len = cm_prefs_nss_dig_alg_len();
+	}
 	if (SECOID_SetAlgorithmID(arena, &minicert->signature,
 				  sigoid->offset, NULL) != SECSuccess) {
 		cm_log(1, "Unable to set signature algorithm ID.\n");

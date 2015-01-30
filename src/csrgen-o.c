@@ -30,6 +30,7 @@
 #include <nss.h>
 #include <pk11pub.h>
 
+#include <openssl/bn.h>
 #include <openssl/err.h>
 #include <openssl/pem.h>
 
@@ -87,10 +88,11 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	NETSCAPE_SPKI spki;
 	NETSCAPE_SPKAC spkac;
 	EVP_PKEY *pkey;
+	BIGNUM *serialbn;
 	char buf[LINE_MAX], *p, *q, *s, *nickname, *pin, *password, *filename;
 	unsigned char *extensions, *upassword, *bmp, *name, *up, *uq, md[CM_DIGEST_MAX];
 	char *spkidec, *mcb64, *nows;
-	const char *default_cn = CM_DEFAULT_CERT_SUBJECT_CN, *spkihex;
+	const char *default_cn = CM_DEFAULT_CERT_SUBJECT_CN, *spkihex = NULL;
 	const unsigned char *nametmp;
 	struct tm *now;
 	time_t nowt;
@@ -312,7 +314,6 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				}
 			}
 			fprintf(status, "\n%s\n", spkidec ? spkidec : "");
-			free(spkidec);
 			/* Generate a "mini" certificate. */
 			minicert = X509_new();
 			if (minicert == NULL) {
@@ -337,7 +338,15 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				cm_log(1, "Out of memory creating mini certificate.\n");
 				_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 			}
-			ASN1_INTEGER_set(serial, 1);
+			serialbn = NULL;
+			if ((spkidec != NULL) && (BN_dec2bn(&serialbn, spkidec) != 0)) {
+				if (BN_to_ASN1_INTEGER(serialbn, serial) != serial) {
+					cm_log(1, "Error setting serial number.\n");
+					_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+				}
+			} else {
+				ASN1_INTEGER_set(serial, 1);
+			}
 			X509_set_serialNumber(minicert, serial);
 			X509_set_pubkey(minicert, pkey);
 			X509_sign(minicert, pkey, cm_prefs_ossl_hash());
@@ -368,6 +377,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		ERR_error_string_n(error, buf, sizeof(buf));
 		cm_log(1, "%s\n", buf);
 	}
+	free(spkidec);
 	fclose(status);
 	fclose(keyfp);
 	return 0;
