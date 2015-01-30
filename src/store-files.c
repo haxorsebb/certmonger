@@ -125,6 +125,11 @@ enum cm_store_file_field {
 	cm_store_entry_field_csr,
 	cm_store_entry_field_spkac,
 	cm_store_entry_field_scep_tx,
+	cm_store_entry_field_scep_nonce,
+	cm_store_entry_field_scep_gic,
+	cm_store_entry_field_scep_gic_next,
+	cm_store_entry_field_scep_req,
+	cm_store_entry_field_scep_req_next,
 	cm_store_entry_field_minicert,
 
 	cm_store_entry_field_state,
@@ -277,6 +282,11 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_csr, "csr"},
 	{cm_store_entry_field_spkac, "spkac"},
 	{cm_store_entry_field_scep_tx, "scep_tx"},
+	{cm_store_entry_field_scep_nonce, "scep_nonce"},
+	{cm_store_entry_field_scep_gic, "scep_gic"},
+	{cm_store_entry_field_scep_gic_next, "scep_gic_next"},
+	{cm_store_entry_field_scep_req, "scep_req"},
+	{cm_store_entry_field_scep_req_next, "scep_req_next"},
 	{cm_store_entry_field_minicert, "minicert"},
 
 	{cm_store_entry_field_state, "state"},
@@ -1014,6 +1024,21 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_scep_tx:
 				ret->cm_scep_tx = free_if_empty(p);
 				break;
+			case cm_store_entry_field_scep_nonce:
+				ret->cm_scep_nonce = free_if_empty(p);
+				break;
+			case cm_store_entry_field_scep_gic:
+				ret->cm_scep_gic = free_if_empty(p);
+				break;
+			case cm_store_entry_field_scep_gic_next:
+				ret->cm_scep_gic_next = free_if_empty(p);
+				break;
+			case cm_store_entry_field_scep_req:
+				ret->cm_scep_req = free_if_empty(p);
+				break;
+			case cm_store_entry_field_scep_req_next:
+				ret->cm_scep_req_next = free_if_empty(p);
+				break;
 			case cm_store_entry_field_minicert:
 				ret->cm_minicert = free_if_empty(p);
 				break;
@@ -1207,6 +1232,11 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_csr:
 			case cm_store_entry_field_spkac:
 			case cm_store_entry_field_scep_tx:
+			case cm_store_entry_field_scep_nonce:
+			case cm_store_entry_field_scep_gic:
+			case cm_store_entry_field_scep_gic_next:
+			case cm_store_entry_field_scep_req:
+			case cm_store_entry_field_scep_req_next:
 			case cm_store_entry_field_minicert:
 			case cm_store_entry_field_state:
 			case cm_store_entry_field_autorenew:
@@ -1757,6 +1787,16 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 				entry->cm_spkac);
 	cm_store_file_write_str(fp, cm_store_entry_field_scep_tx,
 				entry->cm_scep_tx);
+	cm_store_file_write_str(fp, cm_store_entry_field_scep_nonce,
+				entry->cm_scep_nonce);
+	cm_store_file_write_str(fp, cm_store_entry_field_scep_gic,
+				entry->cm_scep_gic);
+	cm_store_file_write_str(fp, cm_store_entry_field_scep_gic_next,
+				entry->cm_scep_gic_next);
+	cm_store_file_write_str(fp, cm_store_entry_field_scep_req,
+				entry->cm_scep_req);
+	cm_store_file_write_str(fp, cm_store_entry_field_scep_req_next,
+				entry->cm_scep_req_next);
 	cm_store_file_write_str(fp, cm_store_entry_field_minicert,
 				entry->cm_minicert);
 
@@ -2481,6 +2521,11 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	ret->cm_csr = cm_store_maybe_strdup(ret, entry->cm_csr);
 	ret->cm_spkac = cm_store_maybe_strdup(ret, entry->cm_spkac);
 	ret->cm_scep_tx = cm_store_maybe_strdup(ret, entry->cm_scep_tx);
+	ret->cm_scep_nonce = cm_store_maybe_strdup(ret, entry->cm_scep_nonce);
+	ret->cm_scep_gic = cm_store_maybe_strdup(ret, entry->cm_scep_gic);
+	ret->cm_scep_gic_next = cm_store_maybe_strdup(ret, entry->cm_scep_gic_next);
+	ret->cm_scep_req = cm_store_maybe_strdup(ret, entry->cm_scep_req);
+	ret->cm_scep_req_next = cm_store_maybe_strdup(ret, entry->cm_scep_req_next);
 	ret->cm_minicert = cm_store_maybe_strdup(ret, entry->cm_minicert);
 	ret->cm_state = entry->cm_state;
 	ret->cm_autorenew = entry->cm_autorenew;

@@ -141,8 +141,16 @@ struct cm_store_entry {
 	char *cm_csr;
 	/* The SPKAC, base64-encoded. */
 	char *cm_spkac;
-	/* An SCEP transaction number corresponding to this signing request. */
+	/* An SCEP transaction number corresponding to this CSR and signing request. */
 	char *cm_scep_tx;
+	/* An SCEP nonce. */
+	char *cm_scep_nonce;
+	/* An SCEP PKCSReq message, signed with our current key, and possibly
+	 * the next key. */
+	char *cm_scep_req, *cm_scep_req_next;
+	/* An SCEP GetInitialCert message, signed with our current key, and
+	 * possibly the next key. */
+	char *cm_scep_gic, *cm_scep_gic_next;
 	/* A minimal self-signed certificate. */
 	char *cm_minicert;
 	/* Our idea of the state of the cert. */
