@@ -913,6 +913,7 @@ request(const char *argv0, int argc, char **argv)
 		help(argv0, "request");
 		return 1;
 	}
+	prep_bus(bus, "request", verbose, argc, argv);
 	i = 0;
 	/* If the caller supplied _no_ naming information, substitute our own
 	 * defaults. */
