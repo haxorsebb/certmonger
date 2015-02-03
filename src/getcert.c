@@ -296,7 +296,8 @@ prep_bus(enum cm_tdbus_type which, const char *mode,
 	if (globals.conn != NULL) {
 		return;
 	}
-	if (!dbus_error_has_name(&err, DBUS_ERROR_NO_SERVER)) {
+	if (!dbus_error_has_name(&err, DBUS_ERROR_NO_SERVER) &&
+	    !dbus_error_has_name(&err, DBUS_ERROR_FILE_NOT_FOUND)) {
 		return;
 	}
 	cmd = talloc_asprintf(NULL, "%s/%s", CM_GETCERT_DIR, globals.argv0);
