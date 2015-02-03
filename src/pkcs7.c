@@ -593,7 +593,7 @@ cm_pkcs7_generate_ias(char *cacert, char *minicert,
 		goto done;
 	}
 	u = subject;
-	if (i2d_X509_NAME(ca->cert_info->subject, &u) != subjectlen) {
+	if (i2d_X509_NAME(mini->cert_info->subject, &u) != subjectlen) {
 		cm_log(1, "Error encoding client certificate subject name.\n");
 		goto done;
 	}
@@ -638,6 +638,10 @@ cm_pkcs7_envelope_ias(char *encryption_cert, char *cacert, char *minicert,
 
 	*enveloped = NULL;
 	*length = 0;
+
+	if ((cacert == NULL) || (strlen(cacert) == 0)) {
+		cacert = encryption_cert;
+	}
 
 	ret = cm_pkcs7_generate_ias(cacert, minicert, &dias, &dlen);
 	if (ret != 0) {
