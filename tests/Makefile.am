@@ -130,7 +130,9 @@ EXTRA_DIST = \
 	030-rekey/run.sh \
 	031-pkcs7/prequal.sh \
 	031-pkcs7/expected.out \
-	031-pkcs7/run.sh
+	031-pkcs7/run.sh \
+	032-chain/expected.out \
+	032-chain/run.sh
 
 subdirs = \
 	001-keyiread \
@@ -166,7 +168,8 @@ subdirs = \
 	028-dbus \
 	029-canonize \
 	030-rekey \
-	031-pkcs7
+	031-pkcs7 \
+	032-chain
 
 if HAVE_DBM_NSSDB
 subdirs += \

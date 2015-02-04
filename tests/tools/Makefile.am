@@ -5,6 +5,8 @@ LDADD = libtools.a ../../src/libcm.a $(srcdir)/../../src/env-system.c \
 	libtools.a $(OPENSSL_LIBS) $(CERTMONGER_LIBS) $(KRB5_LIBS) $(IDN_LIBS) \
 	$(GMP_LIBS) $(UUID_LIBS) $(RESOLV_LIBS) $(LTLIBICONV)
 
+noinst_SCRIPTS = cachain.sh
+
 if PIE
 CFLAGS += -fPIC
 LDFLAGS += -fPIC -pie

@@ -364,8 +364,11 @@ cm_pkcs7_parsev(unsigned int flags, void *parent,
 		do {
 			/* Find a leaf among the rest. */
 			leaf = -1;
-			for (i = sorted; i < n_certs - 1; i++) {
-				for (j = i + 1; j < n_certs; j++) {
+			for (i = sorted; i < n_certs; i++) {
+				for (j = sorted; j < n_certs; j++) {;
+					if (j == i) {
+						continue;
+					}
 					/* If it issued another, then it's not a leaf. */
 					if (issuerissued(certs[i], certs[j]) == 0) {
 						break;
@@ -373,7 +376,7 @@ cm_pkcs7_parsev(unsigned int flags, void *parent,
 				}
 				/* If it didn't issue any others, then it goes first. */
 				if (j == n_certs) {
-					leaf = j;
+					leaf = i;
 					break;
 				}
 			}
