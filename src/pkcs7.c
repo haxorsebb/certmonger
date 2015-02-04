@@ -48,7 +48,8 @@
 #define _(_text) (_text)
 #endif
 
-/* Return 0 if we think "issuer" could have issued "issued". */
+/* Return 0 if we think "issuer" could have issued "issued", which includes
+ * self-signing. */
 static int
 issuerissued(X509 *issuer, X509 *issued)
 {
@@ -222,7 +223,7 @@ cm_pkcs7_parse_buffer(const unsigned char *buffer, size_t length,
 			X509_free(x);
 		} else {
 			/* Not a certificate.  Maybe it's PEM.  Check if it's
-			 * ASCII. */
+			 * all ASCII. */
 			for (p = buffer; p < buffer + length; p++) {
 				if ((*p & 0x80) != 0) {
 					break;
@@ -257,10 +258,10 @@ cm_pkcs7_parse(unsigned int flags, void *parent,
 	       char **certleaf, char **certtop, char ***certothers,
 	       const unsigned char *buffer, size_t length, ...)
 {
-	X509 *x = NULL, *a, *b;
+	X509 *x = NULL, *a, *b, **certs;
 	STACK_OF(X509) *sk;
 	char *cleaf = NULL, *ctop = NULL, **cothers = NULL;
-	int leaf, top, n_certs, i, j;
+	int leaf, top, n_certs, sorted, i, j;
 	va_list args;
 
 	if (certleaf != NULL) {
@@ -289,7 +290,9 @@ cm_pkcs7_parse(unsigned int flags, void *parent,
 	/* Find one that didn't issue any of the others. */
 	leaf = -1;
 	for (i = 0; i < n_certs; i++) {
+		/* Start with a candidate. */
 		a = sk_X509_value(sk, i);
+		/* Look for any that it issued. */
 		for (j = 0; j < n_certs; j++) {
 			if (j == i) {
 				continue;
@@ -299,10 +302,12 @@ cm_pkcs7_parse(unsigned int flags, void *parent,
 				break;
 			}
 		}
+		/* If it didn't issue any, then we found it. */
 		if (j == sk_X509_num(sk)) {
 			if (leaf == -1) {
 				leaf = i;
 			} else {
+				/* Or we may have found a better one. */
 				if (betterleaf(a,
 					       sk_X509_value(sk, leaf),
 					       flags) == 0) {
@@ -314,7 +319,9 @@ cm_pkcs7_parse(unsigned int flags, void *parent,
 	/* Find one that isn't issued by any of the others. */
 	top = -1;
 	for (i = 0; i < n_certs; i++) {
+		/* Start with a candidate. */
 		a = sk_X509_value(sk, i);
+		/* Look for any that issued it. */
 		for (j = 0; j < n_certs; j++) {
 			if (j == i) {
 				continue;
@@ -324,10 +331,12 @@ cm_pkcs7_parse(unsigned int flags, void *parent,
 				break;
 			}
 		}
+		/* If we found none, then it's the top. */
 		if (j == sk_X509_num(sk)) {
 			if (top == -1) {
 				top = i;
 			} else {
+				/* Or we may have found a better one. */
 				if (bettertop(a,
 					      sk_X509_value(sk, top),
 					      flags) == 0) {
@@ -336,7 +345,7 @@ cm_pkcs7_parse(unsigned int flags, void *parent,
 			}
 		}
 	}
-	/* Set the output values. */
+	/* Set the output values.  Leaf and top first. */
 	if (leaf != -1) {
 		cleaf = pemx509(parent, sk_X509_value(sk, leaf));
 		n_certs--;
@@ -345,17 +354,49 @@ cm_pkcs7_parse(unsigned int flags, void *parent,
 		ctop = pemx509(parent, sk_X509_value(sk, top));
 		n_certs--;
 	}
+	/* Now the rest, which may be in between the top and leaf. */
 	if (n_certs > 0) {
+		/* We need a plain array for sorting. */
+		certs = talloc_array_ptrtype(parent, certs,
+					     n_certs);
+		for (i = 0, j = 0; i < sk_X509_num(sk); i++) {
+			if ((i != top) && (i != leaf)) {
+				certs[j++] = sk_X509_value(sk, i);
+			}
+		}
+		sorted = 0;
+		do {
+			/* Find a leaf among the rest. */
+			leaf = -1;
+			for (i = sorted; i < n_certs - 1; i++) {
+				for (j = i + 1; j < n_certs; j++) {
+					/* If it issued another, then it's not a leaf. */
+					if (issuerissued(certs[i], certs[j]) == 0) {
+						break;
+					}
+				}
+				/* If it didn't issue any others, then it goes first. */
+				if (j == n_certs) {
+					leaf = j;
+					break;
+				}
+			}
+			if (leaf != -1) {
+				/* Move the leaf to the front of the list. */
+				x = certs[leaf];
+				certs[leaf] = certs[sorted];
+				certs[sorted] = x;
+				sorted++;
+			}
+		} while (leaf != -1);
+		/* Dump them into an array of PEM data. */
 		cothers = talloc_array_ptrtype(parent, *certothers,
 					       n_certs + 1);
 		if (cothers != NULL) {
-			for (i = 0, j = 0; i < sk_X509_num(sk); i++) {
-				if ((i != leaf) && (i != top)) {
-					cothers[j++] = pemx509(parent,
-							       sk_X509_value(sk, i));
-				}
+			for (i = 0; i < n_certs; i++) {
+				cothers[i] = pemx509(parent, certs[i]);
 			}
-			cothers[j] = NULL;
+			cothers[i] = NULL;
 		}
 	}
 	/* Clean up. */
