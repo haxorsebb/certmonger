@@ -190,6 +190,7 @@ cm_submit_u_pem_from_base64(const char *what, int dos, const char *base64)
 	char *ret, *tmp, *p;
 	const char *q;
 	int i;
+	const unsigned int width = 64;
 
 	tmp = strdup(base64);
 	if (tmp == NULL) {
@@ -203,19 +204,19 @@ cm_submit_u_pem_from_base64(const char *what, int dos, const char *base64)
 	*p = '\0';
 	i = strlen("-----BEGIN -----\r\n"
 		   "-----END -----\r\n") +
-		   strlen(tmp) * 2 +
-		   strlen(base64) +
-		   howmany(strlen(base64), 64) * 2;
+		   strlen(what) * 2 +
+		   strlen(tmp) +
+		   howmany(strlen(tmp), width) * 2;
 	ret = malloc(i + 1);
 	if (ret != NULL) {
 		p = stpcpy(ret, "-----BEGIN ");
 		p = stpcpy(p, what);
 		p = stpcpy(p, dos ? "-----\r\n" : "-----\n");
 		q = tmp;
-		while (strlen(q) > 64) {
-			memcpy(p, q, 64);
-			p += 64;
-			q += 64;
+		while (strlen(q) > width) {
+			memcpy(p, q, width);
+			p += width;
+			q += width;
 			p = stpcpy(p, dos ? "\r\n" : "\n");
 		}
 		if (strlen(q) > 0) {
