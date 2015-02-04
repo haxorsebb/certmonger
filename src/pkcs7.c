@@ -254,15 +254,15 @@ cm_pkcs7_parse_buffer(const unsigned char *buffer, size_t length,
 }
 
 int
-cm_pkcs7_parse(unsigned int flags, void *parent,
-	       char **certleaf, char **certtop, char ***certothers,
-	       const unsigned char *buffer, size_t length, ...)
+cm_pkcs7_parsev(unsigned int flags, void *parent,
+		char **certleaf, char **certtop, char ***certothers,
+		int n_buffers,
+		const unsigned char **buffer, size_t *length)
 {
 	X509 *x = NULL, *a, *b, **certs;
 	STACK_OF(X509) *sk;
 	char *cleaf = NULL, *ctop = NULL, **cothers = NULL;
 	int leaf, top, n_certs, sorted, i, j;
-	va_list args;
 
 	if (certleaf != NULL) {
 		*certleaf = NULL;
@@ -278,13 +278,9 @@ cm_pkcs7_parse(unsigned int flags, void *parent,
 	if (sk == NULL) {
 		return -1;
 	}
-	cm_pkcs7_parse_buffer(buffer, length, sk);
-	va_start(args, length);
-	while ((buffer = va_arg(args, const unsigned char *)) != NULL) {
-		length = va_arg(args, size_t);
-		cm_pkcs7_parse_buffer(buffer, length, sk);
+	for (i = 0; i < n_buffers; i++) {
+		cm_pkcs7_parse_buffer(buffer[i], length[i], sk);
 	}
-	va_end(args);
 	/* Count the number of certificates. */
 	n_certs = sk_X509_num(sk);
 	/* Find one that didn't issue any of the others. */
@@ -414,6 +410,54 @@ cm_pkcs7_parse(unsigned int flags, void *parent,
 	}
 	sk_X509_free(sk);
 	return 0;
+}
+
+int
+cm_pkcs7_parse(unsigned int flags, void *parent,
+	       char **certleaf, char **certtop, char ***certothers,
+	       const unsigned char *buffer, size_t length, ...)
+{
+	va_list args;
+	const unsigned char **buffers = NULL;
+	size_t *lengths = NULL;
+	int n_buffers = 0, ret;
+
+	if (buffer != NULL) {
+		buffers = talloc_realloc_size(parent, buffers,
+					      sizeof(buffers[0]) *
+					      (n_buffers + 1));
+		lengths = talloc_realloc_size(parent, lengths,
+					      sizeof(lengths[0]) *
+					      (n_buffers + 1));
+		if ((buffers == NULL) || (lengths == NULL)) {
+			return -1;
+		}
+		buffers[n_buffers] = buffer;
+		lengths[n_buffers] = length;
+		n_buffers++;
+	}
+	va_start(args, length);
+	while ((buffer = va_arg(args, const unsigned char *)) != NULL) {
+		length = va_arg(args, size_t);
+		buffers = talloc_realloc_size(parent, buffers,
+					      sizeof(buffers[0]) *
+					      (n_buffers + 1));
+		lengths = talloc_realloc_size(parent, lengths,
+					      sizeof(lengths[0]) *
+					      (n_buffers + 1));
+		if ((buffers == NULL) || (lengths == NULL)) {
+			return -1;
+		}
+		buffers[n_buffers] = buffer;
+		lengths[n_buffers] = length;
+		n_buffers++;
+	}
+	va_end(args);
+	ret = cm_pkcs7_parsev(flags, parent, certleaf, certtop, certothers,
+			      n_buffers, buffers, lengths);
+	talloc_free(buffers);
+	talloc_free(lengths);
+	return ret;
 }
 
 /* Envelope some data for the recipient. */

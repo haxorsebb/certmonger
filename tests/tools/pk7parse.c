@@ -35,13 +35,18 @@ int
 main(int argc, char **argv)
 {
 	struct stat st;
-	int fd, i, j;
+	int fd, i, j, n_buffers = 0;
 	ssize_t len;
 	void *parent;
 	unsigned char *p;
-	char *leaf, *top, **certs;
+	const unsigned char **buffers;
+	size_t *lengths;
+	char *label, *leaf, *top, **certs;
 
 	parent = talloc_new(NULL);
+	buffers = talloc_array_ptrtype(parent, buffers, argc);
+	lengths = talloc_array_ptrtype(parent, lengths, argc);
+	label = "";
 	for (i = 1; i < argc; i++) {
 		fd = open(argv[i], O_RDONLY);
 		if (fd == -1) {
@@ -54,7 +59,7 @@ main(int argc, char **argv)
 				argv[i], strerror(errno));
 			return 1;
 		}
-		p = talloc_size(parent, st.st_size);
+		p = talloc_size(buffers, st.st_size);
 		if (p == NULL) {
 			fprintf(stderr, "Out of memory.\n");
 			return 1;
@@ -70,18 +75,26 @@ main(int argc, char **argv)
 			}
 			len += j;
 		}
-		if (cm_pkcs7_parse(CM_PKCS7_LEAF_PREFER_ENCRYPT,
-				   parent, &leaf, &top, &certs,
-				   p, len, NULL) != 0) {
-			fprintf(stderr, "\"%s\": parse error.\n", argv[i]);
-			return 1;
-		}
-		printf("[%s]\nTOP:\n%sLEAF:\n%s", argv[i],
-		       top ? top : "", leaf ? leaf : "");
-		for (j = 0; (certs != NULL) && (certs[j] != NULL); j++) {
-			printf("%d:\n%s", j + 1, certs[j]);
-		}
 		close(fd);
+		buffers[n_buffers] = p;
+		lengths[n_buffers] = st.st_size;
+		if (n_buffers > 0) {
+			label = talloc_asprintf_append(label, ",%s", argv[i]);
+		} else {
+			label = talloc_strdup(parent, argv[i]);
+		}
+		n_buffers++;
+	}
+	if (cm_pkcs7_parsev(CM_PKCS7_LEAF_PREFER_ENCRYPT,
+			    parent, &leaf, &top, &certs,
+			    n_buffers, buffers, lengths) != 0) {
+		fprintf(stderr, "\"%s\": parse error.\n", argv[i]);
+		return 1;
+	}
+	printf("[%s]\nTOP:\n%sLEAF:\n%s", label,
+	       top ? top : "", leaf ? leaf : "");
+	for (i = 0; (certs != NULL) && (certs[i] != NULL); i++) {
+		printf("%d:\n%s", i + 1, certs[i]);
 	}
 	talloc_free(parent);
 	return 0;
