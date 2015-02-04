@@ -74,6 +74,8 @@ libcm_a_SOURCES = \
 	prefs.h \
 	prefs-n.c \
 	prefs-n.h \
+	scepgen.c \
+	scepgen-n.c \
 	store-files.c \
 	store-gen.c \
 	store.h \
@@ -114,6 +116,7 @@ libcm_o_a_SOURCES += \
 	pkcs7.h \
 	prefs-o.c \
 	prefs-o.h \
+	scepgen-o.c \
 	submit-so.c \
 	submit-o.c \
 	submit-o.h \
