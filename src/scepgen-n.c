@@ -68,7 +68,7 @@ cm_scepgen_sign(CERTCertificate *signer, SECKEYPrivateKey *privkey,
 	SEC_PKCS7ContentInfo *cinfo;
 	SECCertUsage certusage = certUsageSSLClient;
 	SECItem *itemp, item;
-	unsigned int bits = CERTDB_TRUSTED_CLIENT_CA | CERTDB_TRUSTED_CA;
+	unsigned int bits = 0;
 
 	memset(&trust, 0, sizeof(trust));
 	if (CERT_GetCertTrust(signer, &trust) != SECSuccess) {
@@ -93,6 +93,12 @@ cm_scepgen_sign(CERTCertificate *signer, SECKEYPrivateKey *privkey,
 		       PR_ErrorToName(PORT_GetError()));
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
+	if (SEC_PKCS7IncludeCertChain(cinfo,
+				      CERT_GetDefaultCertDB()) != SECSuccess) {
+		cm_log(1, "Error adding signing chain to signed data: %s.\n",
+		       PR_ErrorToName(PORT_GetError()));
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+	}
 	if (SEC_PKCS7SetContent(cinfo, (const char *) content->data,
 				content->len) != SECSuccess) {
 		cm_log(1, "Error setting signed content: %s.\n",
@@ -111,6 +117,34 @@ cm_scepgen_sign(CERTCertificate *signer, SECKEYPrivateKey *privkey,
 	return 0;
 }
 
+static void
+import_ca(char *pem, int i, PRBool trusted)
+{
+	CERTCertificate *chain_cert;
+	SECStatus status;
+
+	chain_cert = CERT_DecodeCertFromPackage(pem, strlen(pem));
+	if (chain_cert != NULL) {
+		if (trusted) {
+			status = CERT_ImportCAChainTrusted(&chain_cert->derCert,
+							   1, certUsageSSLCA);
+		} else {
+			status = CERT_ImportCAChain(&chain_cert->derCert,
+						    1, certUsageSSLCA);
+		}
+		if (status != SECSuccess) {
+			cm_log(1, "Error importing chain certificate %d: %s.\n",
+			       i, PR_ErrorToName(PORT_GetError()));
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		}
+		CERT_DestroyCertificate(chain_cert);
+	} else {
+		cm_log(1, "Error decoding chain certificate %d: %s.\n",
+		       i, PR_ErrorToName(PORT_GetError()));
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+	}
+}
+
 static int
 cm_scepgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		  void *userdata)
@@ -124,7 +158,7 @@ cm_scepgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	struct cm_keyiread_n_ctx_and_keys *keys;
 	char *pem;
 	const char *p, *es, *reason;
-	int ec;
+	int ec, i;
 
 	status = fdopen(fd, "w");
 	if (status == NULL) {
@@ -178,12 +212,33 @@ cm_scepgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
 	}
 
+	/* Make sure we know about the signer's certificate chain. */
+	for (i = 0;
+	     (entry->cm_cert_chain != NULL) &&
+	     (entry->cm_cert_chain[i] != NULL);
+	     i++) {
+		import_ca(entry->cm_cert_chain[i]->cm_cert, i + 1, PR_FALSE);
+	}
+	/* ... and import the RA's certificates so that we have a valid root. */
+	if (ca->cm_ca_encryption_issuer_cert != NULL) {
+		import_ca(ca->cm_ca_encryption_issuer_cert, -2, PR_TRUE);
+		if (ca->cm_ca_encryption_cert != NULL) {
+			import_ca(ca->cm_ca_encryption_cert, -1, PR_FALSE);
+		}
+	} else {
+		if (ca->cm_ca_encryption_cert != NULL) {
+			import_ca(ca->cm_ca_encryption_cert, -1, PR_TRUE);
+		}
+	}
+
+	/* Generate the request nonce. */
 	if (PK11_GenerateRandom(nonce, sizeof(nonce)) != SECSuccess) {
 		cm_log(1, "Error generating nonce: %s.\n",
 		       PR_ErrorToName(PORT_GetError()));
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 
+	/* Read the keys and certificates. */
 	keys = cm_keyiread_n_get_keys(entry, 0);
 	if (entry->cm_cert != NULL) {
 		old_cert = CERT_DecodeCertFromPackage(entry->cm_cert,
@@ -211,6 +266,7 @@ cm_scepgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 
 	if (old_cert != NULL) {
+		/* Generate a get-initial-cert inner request, old cert name. */
 		if (cm_pkcs7_envelope_ias(ca->cm_ca_encryption_cert,
 					  ca->cm_ca_encryption_issuer_cert,
 					  entry->cm_cert,
@@ -222,6 +278,7 @@ cm_scepgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		old_ias = NULL;
 		old_ias_length = 0;
 	}
+	/* Generate a get-initial-cert inner request, new cert name. */
 	if (cm_pkcs7_envelope_ias(ca->cm_ca_encryption_cert,
 				  ca->cm_ca_encryption_issuer_cert,
 				  pem,

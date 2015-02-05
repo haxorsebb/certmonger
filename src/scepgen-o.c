@@ -151,6 +151,53 @@ cert_from_pem(char *pem, struct cm_store_entry *entry)
 	return NULL;
 }
 
+static int
+cert_cmp(const void *a, const void *b)
+{
+	X509 * const *x, * const *y;
+
+	x = a;
+	y = b;
+	return X509_cmp(*x, *y);
+}
+
+
+static STACK_OF(X509) *
+certs_from_nickcerts(struct cm_nickcert **list)
+{
+	BIO *in;
+	X509 *cert = NULL;
+	STACK_OF(X509) *sk = NULL;
+	struct cm_nickcert *this;
+	int i;
+
+	for (i = 0; (list != NULL) && (list[i] != NULL); i++) {
+		this = list[i];
+		if ((this->cm_cert != NULL) && (strlen(this->cm_cert) > 0)) {
+			in = BIO_new_mem_buf(this->cm_cert, -1);
+			if (in == NULL) {
+				cm_log(1, "Out of memory.\n");
+				_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+			}
+			cert = PEM_read_bio_X509(in, NULL, NULL, NULL);
+			BIO_free(in);
+			if (cert == NULL) {
+				cm_log(1, "Error parsing certificate.\n");
+				_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+			}
+			if (sk == NULL) {
+				sk = sk_X509_new(cert_cmp);
+				if (sk == NULL) {
+					cm_log(1, "Out of memory.\n");
+					_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+				}
+			}
+			sk_X509_push(sk, cert);
+		}
+	}
+	return sk;
+}
+
 static char *
 b64_from_p7(void *parent, PKCS7 *p7)
 {
@@ -183,6 +230,7 @@ cm_scepgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	BIO *in;
 	PKCS7 *csr_new, *csr_old, *ias_new, *ias_old;
 	X509 *old_cert, *new_cert = NULL;
+	STACK_OF(X509) *chain = NULL;
 	FILE *status;
 	EVP_PKEY *old_pkey, *new_pkey = NULL;
 	char *filename, *pem, *p;
@@ -274,6 +322,7 @@ cm_scepgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 
+	chain = certs_from_nickcerts(entry->cm_cert_chain);
 	if (old_cert != NULL) {
 		/* Sign the data using the previously-issued certificate and
 		 * the matching key. */
@@ -282,14 +331,14 @@ cm_scepgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(1, "Out of memory.\n");
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
-		csr_old = PKCS7_sign(old_cert, old_pkey, NULL, in, PKCS7_BINARY);
+		csr_old = PKCS7_sign(old_cert, old_pkey, chain, in, PKCS7_BINARY);
 		BIO_free(in);
 		in = BIO_new_mem_buf(old_ias, old_ias_length);
 		if (in == NULL) {
 			cm_log(1, "Out of memory.\n");
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
-		ias_old = PKCS7_sign(old_cert, old_pkey, NULL, in, PKCS7_BINARY);
+		ias_old = PKCS7_sign(old_cert, old_pkey, chain, in, PKCS7_BINARY);
 		BIO_free(in);
 	} else {
 		csr_old = NULL;
@@ -344,6 +393,9 @@ cm_scepgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	fprintf(status, "%s\n", p ? p : "");
 
 	fclose(status);
+	if (chain != NULL) {
+		sk_X509_pop_free(chain, X509_free);
+	}
 	if (new_cert != NULL) {
 		X509_free(new_cert);
 	}
