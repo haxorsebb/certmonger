@@ -118,26 +118,37 @@ cm_scepgen_sign(CERTCertificate *signer, SECKEYPrivateKey *privkey,
 }
 
 static void
-import_ca(char *pem, int i, PRBool trusted)
+import_ca(PK11SlotInfo *slot, char *pem, const char *nickname, int i,
+	  PRBool trusted)
 {
 	CERTCertificate *chain_cert;
 	SECStatus status;
+	CERTCertTrust trust;
+	unsigned int bits = CERTDB_VALID_CA | CERTDB_TRUSTED | CERTDB_TRUSTED_CA | CERTDB_TRUSTED_CLIENT_CA;
 
 	chain_cert = CERT_DecodeCertFromPackage(pem, strlen(pem));
 	if (chain_cert != NULL) {
-		if (trusted) {
-			status = CERT_ImportCAChainTrusted(&chain_cert->derCert,
-							   1, certUsageSSLCA);
-		} else {
-			status = CERT_ImportCAChain(&chain_cert->derCert,
-						    1, certUsageSSLCA);
-		}
+		status = PK11_ImportCert(slot, chain_cert, CK_INVALID_HANDLE,
+					 nickname, trusted);
 		if (status != SECSuccess) {
 			cm_log(1, "Error importing chain certificate %d: %s.\n",
 			       i, PR_ErrorToName(PORT_GetError()));
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
-		CERT_DestroyCertificate(chain_cert);
+		memset(&trust, 0, sizeof(trust));
+		if (CERT_GetCertTrust(chain_cert, &trust) != SECSuccess) {
+			cm_log(1, "Error reading trust on chain cert: %s.\n",
+			       PR_ErrorToName(PORT_GetError()));
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		}
+		trust.sslFlags |= bits;
+		trust.emailFlags |= bits;
+		trust.objectSigningFlags |= bits;
+		if (CERT_ChangeCertTrust(CERT_GetDefaultCertDB(), chain_cert,
+					 &trust) != SECSuccess) {
+			cm_log(1, "Error tweaking trust on chain cert: %s; "
+			       "continuing.\n", PR_ErrorToName(PORT_GetError()));
+		}
 	} else {
 		cm_log(1, "Error decoding chain certificate %d: %s.\n",
 		       i, PR_ErrorToName(PORT_GetError()));
@@ -151,6 +162,7 @@ cm_scepgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 {
 	FILE *status;
 	NSSInitContext *ctx;
+	PK11SlotInfo *slot;
 	CERTCertificate *new_cert, *old_cert;
 	unsigned char nonce[16], *new_ias, *old_ias, *csr;
 	size_t new_ias_length, old_ias_length, csr_length;
@@ -211,23 +223,61 @@ cm_scepgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		cm_log(1, "Error putting NSS into FIPS mode: %s\n", reason);
 		_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
 	}
+	slot = SECMOD_OpenUserDB("configDir='/var/tmp'");
+	if (slot == NULL) {
+		cm_log(1, "Error opening additional slot: %s\n",
+		       PR_ErrorToName(PORT_GetError()));
+		_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
+	}
 
 	/* Make sure we know about the signer's certificate chain. */
 	for (i = 0;
 	     (entry->cm_cert_chain != NULL) &&
 	     (entry->cm_cert_chain[i] != NULL);
 	     i++) {
-		import_ca(entry->cm_cert_chain[i]->cm_cert, i + 1, PR_FALSE);
+		import_ca(slot, entry->cm_cert_chain[i]->cm_cert,
+			  entry->cm_cert_chain[i]->cm_nickname,
+			  i + 1, PR_FALSE);
+	}
+	for (i = 0;
+	     (ca->cm_ca_root_certs != NULL) &&
+	     (ca->cm_ca_root_certs[i] != NULL);
+	     i++) {
+		import_ca(slot, ca->cm_ca_root_certs[i]->cm_cert,
+			  ca->cm_ca_root_certs[i]->cm_nickname,
+			  i + 1, PR_TRUE);
+	}
+	for (i = 0;
+	     (ca->cm_ca_other_root_certs != NULL) &&
+	     (ca->cm_ca_other_root_certs[i] != NULL);
+	     i++) {
+		import_ca(slot, ca->cm_ca_other_root_certs[i]->cm_cert,
+			  ca->cm_ca_other_root_certs[i]->cm_nickname,
+			  i + 1, PR_TRUE);
+	}
+	for (i = 0;
+	     (ca->cm_ca_other_certs != NULL) &&
+	     (ca->cm_ca_other_certs[i] != NULL);
+	     i++) {
+		import_ca(slot, ca->cm_ca_other_certs[i]->cm_cert,
+			  ca->cm_ca_other_certs[i]->cm_nickname,
+			  i + 1, PR_TRUE);
 	}
 	/* ... and import the RA's certificates so that we have a valid root. */
 	if (ca->cm_ca_encryption_issuer_cert != NULL) {
-		import_ca(ca->cm_ca_encryption_issuer_cert, -2, PR_TRUE);
+		import_ca(slot, ca->cm_ca_encryption_issuer_cert,
+			  "RA issuer cert",
+			  -2, PR_TRUE);
 		if (ca->cm_ca_encryption_cert != NULL) {
-			import_ca(ca->cm_ca_encryption_cert, -1, PR_FALSE);
+			import_ca(slot, ca->cm_ca_encryption_cert,
+				  "RA cert",
+				  -1, PR_FALSE);
 		}
 	} else {
 		if (ca->cm_ca_encryption_cert != NULL) {
-			import_ca(ca->cm_ca_encryption_cert, -1, PR_TRUE);
+			import_ca(slot, ca->cm_ca_encryption_cert,
+				  "RA cert",
+				  -1, PR_TRUE);
 		}
 	}
 
@@ -347,6 +397,10 @@ cm_scepgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	fprintf(status, "%s\n", p ? p : "");
 
 	fclose(status);
+	SECMOD_CloseUserDB(slot);
+	if (NSS_ShutdownContext(ctx) != SECSuccess) {
+		cm_log(1, "Error shutting down NSS.\n");
+	}
 	return 0;
 }
 
