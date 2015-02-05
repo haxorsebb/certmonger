@@ -198,8 +198,8 @@ certs_from_nickcerts(struct cm_nickcert **list)
 	return sk;
 }
 
-static char *
-b64_from_p7(void *parent, PKCS7 *p7)
+char *
+cm_scepgen_o_b64_from_p7(void *parent, PKCS7 *p7)
 {
 	unsigned char *u, *p;
 	char *ret;
@@ -220,32 +220,23 @@ b64_from_p7(void *parent, PKCS7 *p7)
 	return ret;
 }
 
-static int
-cm_scepgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
-		  void *userdata)
+void
+cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
+		    unsigned char *nonce, size_t nonce_length,
+		    EVP_PKEY *old_pkey, EVP_PKEY *new_pkey,
+		    PKCS7 **csr_new, PKCS7 **csr_old,
+		    PKCS7 **ias_new, PKCS7 **ias_old)
 {
 	char buf[LINE_MAX];
-	unsigned char nonce[16], *new_ias, *old_ias, *csr;
+	unsigned char *new_ias, *old_ias, *csr;
 	size_t new_ias_length, old_ias_length, csr_length;
 	BIO *in;
-	PKCS7 *csr_new, *csr_old, *ias_new, *ias_old;
 	X509 *old_cert, *new_cert = NULL;
 	STACK_OF(X509) *chain = NULL;
-	FILE *status;
-	EVP_PKEY *old_pkey, *new_pkey = NULL;
-	char *filename, *pem, *p;
+	EVP_PKEY *pubkey;
+	char *pem;
 	long error;
-
-	status = fdopen(fd, "w");
-	if (status == NULL) {
-		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-	}
-
-	if (ca->cm_ca_encryption_cert == NULL) {
-		cm_log(1, "Can't generate new SCEP request data without "
-		       "the RA/CA encryption certificate.\n");
-		_exit(CM_SUB_STATUS_NEED_SCEP_DATA);
-	}
+	int flags = PKCS7_BINARY | PKCS7_NOSMIMECAP | PKCS7_NOVERIFY;
 
 	util_o_init();
 	ERR_load_crypto_strings();
@@ -253,27 +244,11 @@ cm_scepgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		cm_log(1, "PRNG not seeded for generating key.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
-	if (RAND_pseudo_bytes(nonce, sizeof(nonce)) == -1) {
+	if (RAND_pseudo_bytes(nonce, nonce_length) == -1) {
 		cm_log(1, "PRNG unable to generate nonce.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 
-	old_pkey = key_from_file(entry->cm_key_storage_location, entry);
-	if ((entry->cm_key_next_marker != NULL) &&
-	    (strlen(entry->cm_key_next_marker) > 0)) {
-		filename = util_build_next_filename(entry->cm_key_storage_location, entry->cm_key_next_marker);
-		if (filename == NULL) {
-			cm_log(1, "Error opening key file \"%s\" "
-			       "for reading: %s.\n",
-			       filename, strerror(errno));
-			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-		}
-		filename = entry->cm_key_storage_location;
-		new_pkey = key_from_file(filename, entry);
-		free(filename);
-	} else {
-		new_pkey = NULL;
-	}
 	if (entry->cm_cert != NULL) {
 		old_cert = cert_from_pem(entry->cm_cert, entry);
 	} else {
@@ -286,10 +261,11 @@ cm_scepgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	new_cert = cert_from_pem(pem, entry);
-
-	while ((error = ERR_get_error()) != 0) {
-		ERR_error_string_n(error, buf, sizeof(buf));
-		cm_log(1, "%s\n", buf);
+	if (new_cert == NULL) {
+		while ((error = ERR_get_error()) != 0) {
+			ERR_error_string_n(error, buf, sizeof(buf));
+			cm_log(1, "%s\n", buf);
+		}
 		free(pem);
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
@@ -326,84 +302,133 @@ cm_scepgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	if (old_cert != NULL) {
 		/* Sign the data using the previously-issued certificate and
 		 * the matching key. */
+		pubkey = X509_PUBKEY_get(old_cert->cert_info->key);
+		X509_PUBKEY_set(&old_cert->cert_info->key, old_pkey);
 		in = BIO_new_mem_buf(csr, csr_length);
 		if (in == NULL) {
 			cm_log(1, "Out of memory.\n");
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
-		csr_old = PKCS7_sign(old_cert, old_pkey, chain, in, PKCS7_BINARY);
+		*csr_old = PKCS7_sign(old_cert, old_pkey, chain, in, flags);
 		BIO_free(in);
 		in = BIO_new_mem_buf(old_ias, old_ias_length);
 		if (in == NULL) {
 			cm_log(1, "Out of memory.\n");
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
-		ias_old = PKCS7_sign(old_cert, old_pkey, chain, in, PKCS7_BINARY);
+		*ias_old = PKCS7_sign(old_cert, old_pkey, chain, in, flags);
 		BIO_free(in);
+		X509_PUBKEY_set(&old_cert->cert_info->key, pubkey);
+		X509_free(old_cert);
 	} else {
-		csr_old = NULL;
-		ias_old = NULL;
+		*csr_old = NULL;
+		*ias_old = NULL;
 	}
 	if (new_pkey != NULL) {
 		/* Sign the data using the new key and mini certificate, since
 		 * any previously-issued certificate won't match. */
+		pubkey = X509_PUBKEY_get(new_cert->cert_info->key);
+		X509_PUBKEY_set(&new_cert->cert_info->key, new_pkey);
 		in = BIO_new_mem_buf(csr, csr_length);
 		if (in == NULL) {
 			cm_log(1, "Out of memory.\n");
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
-		csr_new = PKCS7_sign(new_cert, new_pkey, NULL, in, PKCS7_BINARY);
+		*csr_new = PKCS7_sign(new_cert, new_pkey, NULL, in, flags);
 		BIO_free(in);
 		in = BIO_new_mem_buf(new_ias, new_ias_length);
 		if (in == NULL) {
 			cm_log(1, "Out of memory.\n");
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
-		ias_new = PKCS7_sign(new_cert, new_pkey, NULL, in, PKCS7_BINARY);
+		*ias_new = PKCS7_sign(new_cert, new_pkey, NULL, in, flags);
 		BIO_free(in);
+		X509_PUBKEY_set(&new_cert->cert_info->key, pubkey);
 	} else {
 		/* Sign the data using the old key and the mini certificate,
 		 * since we may not have a previously-issued certificate (and
 		 * if we do, we just did that). */
+		pubkey = X509_PUBKEY_get(new_cert->cert_info->key);
+		X509_PUBKEY_set(&new_cert->cert_info->key, old_pkey);
 		in = BIO_new_mem_buf(csr, csr_length);
 		if (in == NULL) {
 			cm_log(1, "Out of memory.\n");
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
-		csr_new = PKCS7_sign(new_cert, old_pkey, NULL, in, PKCS7_BINARY);
+		*csr_new = PKCS7_sign(new_cert, old_pkey, NULL, in, PKCS7_BINARY);
 		BIO_free(in);
 		in = BIO_new_mem_buf(new_ias, new_ias_length);
 		if (in == NULL) {
 			cm_log(1, "Out of memory.\n");
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
-		ias_new = PKCS7_sign(new_cert, old_pkey, NULL, in, PKCS7_BINARY);
+		*ias_new = PKCS7_sign(new_cert, old_pkey, NULL, in, PKCS7_BINARY);
+		X509_PUBKEY_set(&new_cert->cert_info->key, pubkey);
 		BIO_free(in);
 	}
+	X509_free(new_cert);
+	while ((error = ERR_get_error()) != 0) {
+		ERR_error_string_n(error, buf, sizeof(buf));
+		cm_log(1, "%s\n", buf);
+	}
+}
+
+static int
+cm_scepgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
+		  void *userdata)
+{
+	unsigned char nonce[16];
+	PKCS7 *csr_new, *csr_old, *ias_new, *ias_old;
+	FILE *status;
+	EVP_PKEY *old_pkey, *new_pkey = NULL;
+	char *filename, *p;
+
+	status = fdopen(fd, "w");
+	if (status == NULL) {
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+	}
+
+	if (ca->cm_ca_encryption_cert == NULL) {
+		cm_log(1, "Can't generate new SCEP request data without "
+		       "the RA/CA encryption certificate.\n");
+		_exit(CM_SUB_STATUS_NEED_SCEP_DATA);
+	}
+
+	old_pkey = key_from_file(entry->cm_key_storage_location, entry);
+	if ((entry->cm_key_next_marker != NULL) &&
+	    (strlen(entry->cm_key_next_marker) > 0)) {
+		filename = util_build_next_filename(entry->cm_key_storage_location, entry->cm_key_next_marker);
+		if (filename == NULL) {
+			cm_log(1, "Error opening key file \"%s\" "
+			       "for reading: %s.\n",
+			       filename, strerror(errno));
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		}
+		filename = entry->cm_key_storage_location;
+		new_pkey = key_from_file(filename, entry);
+		free(filename);
+	} else {
+		new_pkey = NULL;
+	}
+
+	cm_scepgen_o_cooked(ca, entry, nonce, sizeof(nonce),
+			    old_pkey, new_pkey,
+			    &csr_new, &csr_old, &ias_new, &ias_old);
 
 	p = cm_store_base64_from_bin(NULL, nonce, sizeof(nonce));
 	fprintf(status, "%s:", p ? p : "");
-	p = csr_old ? b64_from_p7(NULL, csr_old) : NULL;
+	p = csr_old ? cm_scepgen_o_b64_from_p7(NULL, csr_old) : NULL;
 	fprintf(status, "%s:", p ? p : "");
-	p = ias_old ? b64_from_p7(NULL, ias_old) : NULL;
+	p = ias_old ? cm_scepgen_o_b64_from_p7(NULL, ias_old) : NULL;
 	fprintf(status, "%s:", p ? p : "");
-	p = csr_new ? b64_from_p7(NULL, csr_new) : NULL;
+	p = csr_new ? cm_scepgen_o_b64_from_p7(NULL, csr_new) : NULL;
 	fprintf(status, "%s:", p ? p : "");
-	p = ias_new ? b64_from_p7(NULL, ias_new) : NULL;
+	p = ias_new ? cm_scepgen_o_b64_from_p7(NULL, ias_new) : NULL;
 	fprintf(status, "%s\n", p ? p : "");
 
 	fclose(status);
-	if (chain != NULL) {
-		sk_X509_pop_free(chain, X509_free);
-	}
-	if (new_cert != NULL) {
-		X509_free(new_cert);
-	}
 	if (new_pkey != NULL) {
 		EVP_PKEY_free(new_pkey);
-	}
-	if (old_cert != NULL) {
-		X509_free(old_cert);
 	}
 	if (old_pkey != NULL) {
 		EVP_PKEY_free(old_pkey);

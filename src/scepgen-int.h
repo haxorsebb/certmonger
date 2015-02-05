@@ -38,4 +38,11 @@ struct cm_scepgen_state_pvt {
 	void (*done)(struct cm_scepgen_state *state);
 };
 
+void cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
+			 unsigned char *nonce, size_t nonce_length,
+			 EVP_PKEY *old_pkey, EVP_PKEY *new_pkey,
+			 PKCS7 **csr_new, PKCS7 **csr_old,
+			 PKCS7 **ias_new, PKCS7 **ias_old);
+char *cm_scepgen_o_b64_from_p7(void *parent, PKCS7 *p7);
+
 #endif

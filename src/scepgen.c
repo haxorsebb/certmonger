@@ -16,6 +16,12 @@
  */
 
 #include "config.h"
+
+#include <sys/types.h>
+
+#include <openssl/evp.h>
+#include <openssl/pkcs7.h>
+
 #include "scepgen.h"
 #include "scepgen-int.h"
 #include "log.h"
