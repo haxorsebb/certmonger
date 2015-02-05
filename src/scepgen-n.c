@@ -30,10 +30,18 @@
 #include <nss.h>
 #include <cert.h>
 #include <certdb.h>
+#include <cryptohi.h>
 #include <pk11pub.h>
 #include <prerror.h>
+#include <secdig.h>
 #include <secpkcs7.h>
 #include <secport.h>
+
+#include <openssl/bn.h>
+#include <openssl/evp.h>
+#include <openssl/pkcs7.h>
+#include <openssl/rsa.h>
+#include <openssl/x509.h>
 
 #include <talloc.h>
 
@@ -60,100 +68,84 @@ struct cm_scepgen_state {
 	struct cm_subproc_state *subproc;
 };
 
-static int
-cm_scepgen_sign(CERTCertificate *signer, SECKEYPrivateKey *privkey,
-		SECOidTag digalg, SECItem *content, SECItem *result)
-{
-	CERTCertTrust trust;
-	SEC_PKCS7ContentInfo *cinfo;
-	SECCertUsage certusage = certUsageSSLClient;
-	SECItem *itemp, item;
-	unsigned int bits = 0;
-
-	memset(&trust, 0, sizeof(trust));
-	if (CERT_GetCertTrust(signer, &trust) != SECSuccess) {
-		cm_log(1, "Error reading trust on signer: %s.\n",
-		       PR_ErrorToName(PORT_GetError()));
-		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-	}
-	trust.sslFlags |= bits;
-	trust.emailFlags |= bits;
-	trust.objectSigningFlags |= bits;
-	if (CERT_ChangeCertTrust(CERT_GetDefaultCertDB(), signer,
-				 &trust) != SECSuccess) {
-		cm_log(1, "Error tweaking trust on signer: %s; continuing.\n",
-		       PR_ErrorToName(PORT_GetError()));
-	}
-
-	cinfo = SEC_PKCS7CreateSignedData(signer, certusage,
-					  CERT_GetDefaultCertDB(),
-					  digalg, NULL, NULL, NULL);
-	if (cinfo == NULL) {
-		cm_log(1, "Error creating signed data: %s.\n",
-		       PR_ErrorToName(PORT_GetError()));
-		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-	}
-	if (SEC_PKCS7IncludeCertChain(cinfo,
-				      CERT_GetDefaultCertDB()) != SECSuccess) {
-		cm_log(1, "Error adding signing chain to signed data: %s.\n",
-		       PR_ErrorToName(PORT_GetError()));
-		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-	}
-	if (SEC_PKCS7SetContent(cinfo, (const char *) content->data,
-				content->len) != SECSuccess) {
-		cm_log(1, "Error setting signed content: %s.\n",
-		       PR_ErrorToName(PORT_GetError()));
-		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-	}
-	memset(&item, 0, sizeof(item));
-	itemp = SEC_PKCS7EncodeItem(NULL, &item, cinfo, NULL, NULL, NULL);
-	if (itemp != &item) {
-		cm_log(1, "Error encoding enveloped content: %s.\n",
-		       PR_ErrorToName(PORT_GetError()));
-		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-	}
-	memset(result, 0, sizeof(*result));
-	*result = item;
-	return 0;
-}
-
 static void
-import_ca(PK11SlotInfo *slot, char *pem, const char *nickname, int i,
-	  PRBool trusted)
+cm_scepgen_n_resign(PKCS7 *p7, SECKEYPrivateKey *privkey)
 {
-	CERTCertificate *chain_cert;
-	SECStatus status;
-	CERTCertTrust trust;
-	unsigned int bits = CERTDB_VALID_CA | CERTDB_TRUSTED | CERTDB_TRUSTED_CA | CERTDB_TRUSTED_CLIENT_CA;
+	unsigned char *sabuf = NULL, *u;
+	int salen;
+	SECItem signature;
+	SECOidTag digalg, sigalg;
+	PKCS7_SIGNER_INFO *sinfo;
 
-	chain_cert = CERT_DecodeCertFromPackage(pem, strlen(pem));
-	if (chain_cert != NULL) {
-		status = PK11_ImportCert(slot, chain_cert, CK_INVALID_HANDLE,
-					 nickname, trusted);
-		if (status != SECSuccess) {
-			cm_log(1, "Error importing chain certificate %d: %s.\n",
-			       i, PR_ErrorToName(PORT_GetError()));
-			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-		}
-		memset(&trust, 0, sizeof(trust));
-		if (CERT_GetCertTrust(chain_cert, &trust) != SECSuccess) {
-			cm_log(1, "Error reading trust on chain cert: %s.\n",
-			       PR_ErrorToName(PORT_GetError()));
-			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-		}
-		trust.sslFlags |= bits;
-		trust.emailFlags |= bits;
-		trust.objectSigningFlags |= bits;
-		if (CERT_ChangeCertTrust(CERT_GetDefaultCertDB(), chain_cert,
-					 &trust) != SECSuccess) {
-			cm_log(1, "Error tweaking trust on chain cert: %s; "
-			       "continuing.\n", PR_ErrorToName(PORT_GetError()));
-		}
-	} else {
-		cm_log(1, "Error decoding chain certificate %d: %s.\n",
-		       i, PR_ErrorToName(PORT_GetError()));
+	if (sk_PKCS7_SIGNER_INFO_num(p7->d.sign->signer_info) != 1) {
+		cm_log(1, "More than one signer, not sure what to do.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
+	sinfo = sk_PKCS7_SIGNER_INFO_value(p7->d.sign->signer_info, 0);
+
+	salen = i2d_ASN1_SET_OF_X509_ATTRIBUTE(sinfo->auth_attr, NULL,
+					       i2d_X509_ATTRIBUTE,
+					       V_ASN1_SET,
+					       V_ASN1_UNIVERSAL,
+					       IS_SET);
+	sabuf = malloc(salen);
+	if (sabuf == NULL) {
+		cm_log(1, "Out of memory.\n");
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+	}
+	u = sabuf;
+	if (i2d_ASN1_SET_OF_X509_ATTRIBUTE(sinfo->auth_attr, &u,
+					   i2d_X509_ATTRIBUTE,
+					   V_ASN1_SET,
+					   V_ASN1_UNIVERSAL,
+					   IS_SET) != salen) {
+		cm_log(1, "Encoding error.\n");
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+	}
+	memset(&signature, 0, sizeof(signature));
+	switch (OBJ_obj2nid(sinfo->digest_alg->algorithm)) {
+	case NID_md2:
+		digalg = SEC_OID_MD2;
+		break;
+	case NID_md4:
+		digalg = SEC_OID_MD4;
+		break;
+	case NID_md5:
+		digalg = SEC_OID_MD5;
+		break;
+	case NID_sha1:
+		digalg = SEC_OID_SHA1;
+		break;
+	case NID_sha224:
+		digalg = SEC_OID_SHA224;
+		break;
+	case NID_sha256:
+		digalg = SEC_OID_SHA256;
+		break;
+	case NID_sha512:
+		digalg = SEC_OID_SHA512;
+		break;
+	default:
+		digalg = SEC_OID_UNKNOWN;
+		cm_log(1, "Unknown digest algorithm %d.\n",
+		       OBJ_obj2nid(sinfo->digest_alg->algorithm));
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		break;
+	}
+	sigalg = SEC_GetSignatureAlgorithmOidTag(privkey->keyType, digalg);
+	if (sigalg == SEC_OID_UNKNOWN) {
+		cm_log(1, "Unable to match digest algorithm and key.\n");
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+	}
+	if (SEC_SignData(&signature, sabuf, salen, privkey,
+			 sigalg) != SECSuccess) {
+		cm_log(1, "Error re-signing: %s.\n",
+		       PR_ErrorToName(PORT_GetError()));
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+	}
+	M_ASN1_OCTET_STRING_set(sinfo->enc_digest,
+				signature.data, signature.len);
+	free(sabuf);
 }
 
 static int
@@ -162,15 +154,14 @@ cm_scepgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 {
 	FILE *status;
 	NSSInitContext *ctx;
-	PK11SlotInfo *slot;
-	CERTCertificate *new_cert, *old_cert;
-	unsigned char nonce[16], *new_ias, *old_ias, *csr;
-	size_t new_ias_length, old_ias_length, csr_length;
-	SECItem content, csr_new, csr_old, ias_new, ias_old;
+	unsigned char nonce[16];
 	struct cm_keyiread_n_ctx_and_keys *keys;
-	char *pem;
 	const char *p, *es, *reason;
-	int ec, i;
+	int ec;
+	PKCS7 *csr_new, *csr_old, *ias_new, *ias_old;
+	EVP_PKEY *key;
+	RSA *rsa;
+	BIGNUM *exponent;
 
 	status = fdopen(fd, "w");
 	if (status == NULL) {
@@ -223,181 +214,66 @@ cm_scepgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		cm_log(1, "Error putting NSS into FIPS mode: %s\n", reason);
 		_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
 	}
-	slot = SECMOD_OpenUserDB("configDir='/var/tmp'");
-	if (slot == NULL) {
-		cm_log(1, "Error opening additional slot: %s\n",
-		       PR_ErrorToName(PORT_GetError()));
-		_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
-	}
 
-	/* Make sure we know about the signer's certificate chain. */
-	for (i = 0;
-	     (entry->cm_cert_chain != NULL) &&
-	     (entry->cm_cert_chain[i] != NULL);
-	     i++) {
-		import_ca(slot, entry->cm_cert_chain[i]->cm_cert,
-			  entry->cm_cert_chain[i]->cm_nickname,
-			  i + 1, PR_FALSE);
-	}
-	for (i = 0;
-	     (ca->cm_ca_root_certs != NULL) &&
-	     (ca->cm_ca_root_certs[i] != NULL);
-	     i++) {
-		import_ca(slot, ca->cm_ca_root_certs[i]->cm_cert,
-			  ca->cm_ca_root_certs[i]->cm_nickname,
-			  i + 1, PR_TRUE);
-	}
-	for (i = 0;
-	     (ca->cm_ca_other_root_certs != NULL) &&
-	     (ca->cm_ca_other_root_certs[i] != NULL);
-	     i++) {
-		import_ca(slot, ca->cm_ca_other_root_certs[i]->cm_cert,
-			  ca->cm_ca_other_root_certs[i]->cm_nickname,
-			  i + 1, PR_TRUE);
-	}
-	for (i = 0;
-	     (ca->cm_ca_other_certs != NULL) &&
-	     (ca->cm_ca_other_certs[i] != NULL);
-	     i++) {
-		import_ca(slot, ca->cm_ca_other_certs[i]->cm_cert,
-			  ca->cm_ca_other_certs[i]->cm_nickname,
-			  i + 1, PR_TRUE);
-	}
-	/* ... and import the RA's certificates so that we have a valid root. */
-	if (ca->cm_ca_encryption_issuer_cert != NULL) {
-		import_ca(slot, ca->cm_ca_encryption_issuer_cert,
-			  "RA issuer cert",
-			  -2, PR_TRUE);
-		if (ca->cm_ca_encryption_cert != NULL) {
-			import_ca(slot, ca->cm_ca_encryption_cert,
-				  "RA cert",
-				  -1, PR_FALSE);
-		}
-	} else {
-		if (ca->cm_ca_encryption_cert != NULL) {
-			import_ca(slot, ca->cm_ca_encryption_cert,
-				  "RA cert",
-				  -1, PR_TRUE);
-		}
-	}
-
-	/* Generate the request nonce. */
-	if (PK11_GenerateRandom(nonce, sizeof(nonce)) != SECSuccess) {
-		cm_log(1, "Error generating nonce: %s.\n",
-		       PR_ErrorToName(PORT_GetError()));
+	/* Use a dummy key to sign using OpenSSL. */
+	key = EVP_PKEY_new();
+	if (key == NULL) {
+		cm_log(1, "Error allocating new key.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
+	exponent = BN_new();
+	if (exponent == NULL) {
+		cm_log(1, "Error setting up exponent.\n");
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+	}
+	BN_set_word(exponent, CM_DEFAULT_RSA_EXPONENT);
+	rsa = RSA_new();
+	if (rsa == NULL) {
+		cm_log(1, "Error allocating new RSA key.\n");
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+	}
+retry_gen:
+	if (RSA_generate_key_ex(rsa, CM_DEFAULT_PUBKEY_SIZE, exponent, NULL) != 1) {
+		cm_log(1, "Error generating key.\n");
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+	}
+	if (RSA_check_key(rsa) != 1) { /* should be unnecessary */
+		cm_log(1, "Key fails checks.  Retrying.\n");
+		goto retry_gen;
+	}
+	BN_free(exponent);
+	EVP_PKEY_set1_RSA(key, rsa);
+	cm_scepgen_o_cooked(ca, entry,
+			    nonce, sizeof(nonce),
+			    key, key,
+			    &csr_new, &csr_old,
+			    &ias_new, &ias_old);
+	EVP_PKEY_free(key);
 
-	/* Read the keys and certificates. */
+	/* Read the proper keys, and re-sign using them. */
 	keys = cm_keyiread_n_get_keys(entry, 0);
-	if (entry->cm_cert != NULL) {
-		old_cert = CERT_DecodeCertFromPackage(entry->cm_cert,
-						      strlen(entry->cm_cert));
-		if (old_cert == NULL) {
-			cm_log(1, "Error parsing previously-issued certificate: %s.\n",
-			       PR_ErrorToName(PORT_GetError()));
-			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-		}
+	cm_scepgen_n_resign(csr_old, keys->privkey);
+	cm_scepgen_n_resign(ias_old, keys->privkey);
+	if (keys->privkey_next != NULL) {
+		cm_scepgen_n_resign(csr_new, keys->privkey_next);
+		cm_scepgen_n_resign(ias_new, keys->privkey_next);
 	} else {
-		old_cert = NULL;
-	}
-	pem = cm_submit_u_pem_from_base64("CERTIFICATE", 0,
-					  entry->cm_minicert);
-	if (pem == NULL) {
-		cm_log(1, "Out of memory.\n");
-		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-	}
-	new_cert = CERT_DecodeCertFromPackage(pem, strlen(pem));
-	if (new_cert == NULL) {
-		cm_log(1, "Error parsing self-signed mini certificate: %s.\n",
-		       PR_ErrorToName(PORT_GetError()));
-		free(pem);
-		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		cm_scepgen_n_resign(csr_new, keys->privkey);
+		cm_scepgen_n_resign(ias_new, keys->privkey);
 	}
 
-	if (old_cert != NULL) {
-		/* Generate a get-initial-cert inner request, old cert name. */
-		if (cm_pkcs7_envelope_ias(ca->cm_ca_encryption_cert,
-					  ca->cm_ca_encryption_issuer_cert,
-					  entry->cm_cert,
-					  &old_ias, &old_ias_length) != 0) {
-			cm_log(1, "Error generating enveloped issuer-and-subject.\n");
-			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-		}
-	} else {
-		old_ias = NULL;
-		old_ias_length = 0;
-	}
-	/* Generate a get-initial-cert inner request, new cert name. */
-	if (cm_pkcs7_envelope_ias(ca->cm_ca_encryption_cert,
-				  ca->cm_ca_encryption_issuer_cert,
-				  pem,
-				  &new_ias, &new_ias_length) != 0) {
-		cm_log(1, "Error generating enveloped issuer-and-subject.\n");
-		free(pem);
-		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-	}
-	free(pem);
-	if (cm_pkcs7_envelope_csr(ca->cm_ca_encryption_cert,
-				  entry->cm_csr,
-				  &csr, &csr_length) != 0) {
-		cm_log(1, "Error generating enveloped CSR.\n");
-		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-	}
-	memset(&content, 0, sizeof(content));
-	memset(&csr_old, 0, sizeof(csr_old));
-	memset(&ias_old, 0, sizeof(ias_old));
-	if (old_cert != NULL) {
-		/* Sign the data using the previously-issued certificate and
-		 * the matching key. */
-		content.data = csr;
-		content.len = csr_length;
-		cm_scepgen_sign(old_cert, keys->privkey, cm_prefs_nss_dig_alg(),
-				&content, &csr_old);
-		content.data = old_ias;
-		content.len = old_ias_length;
-		cm_scepgen_sign(old_cert, keys->privkey, cm_prefs_nss_dig_alg(),
-				&content, &ias_old);
-	}
-	memset(&csr_new, 0, sizeof(csr_new));
-	memset(&ias_new, 0, sizeof(ias_new));
-	if (keys->privkey_next != NULL) {
-		/* Sign the data using the new key and mini certificate, since
-		 * any previously-issued certificate won't match. */
-		content.data = csr;
-		content.len = csr_length;
-		cm_scepgen_sign(new_cert, keys->privkey_next,
-				cm_prefs_nss_dig_alg(), &content, &csr_new);
-		content.data = new_ias;
-		content.len = new_ias_length;
-		cm_scepgen_sign(new_cert, keys->privkey_next,
-				cm_prefs_nss_dig_alg(), &content, &ias_new);
-	} else {
-		/* Sign the data using the old key and the mini certificate,
-		 * since we may not have a previously-issued certificate (and
-		 * if we do, we just did that). */
-		content.data = csr;
-		content.len = csr_length;
-		cm_scepgen_sign(new_cert, keys->privkey, cm_prefs_nss_dig_alg(),
-				&content, &csr_new);
-		content.data = new_ias;
-		content.len = new_ias_length;
-		cm_scepgen_sign(new_cert, keys->privkey, cm_prefs_nss_dig_alg(),
-				&content, &ias_new);
-	}
 	p = cm_store_base64_from_bin(NULL, nonce, sizeof(nonce));
 	fprintf(status, "%s:", p ? p : "");
-	p = csr_old.data ? cm_store_base64_from_bin(NULL, csr_old.data, csr_old.len) : NULL;
+	p = csr_old ? cm_scepgen_o_b64_from_p7(NULL, csr_old) : NULL;
 	fprintf(status, "%s:", p ? p : "");
-	p = ias_old.data ? cm_store_base64_from_bin(NULL, ias_old.data, ias_old.len) : NULL;
+	p = ias_old ? cm_scepgen_o_b64_from_p7(NULL, ias_old) : NULL;
 	fprintf(status, "%s:", p ? p : "");
-	p = csr_new.data ? cm_store_base64_from_bin(NULL, csr_new.data, csr_new.len) : NULL;
+	p = csr_new ? cm_scepgen_o_b64_from_p7(NULL, csr_new) : NULL;
 	fprintf(status, "%s:", p ? p : "");
-	p = ias_new.data ? cm_store_base64_from_bin(NULL, ias_new.data, ias_new.len) : NULL;
+	p = ias_new ? cm_scepgen_o_b64_from_p7(NULL, ias_new) : NULL;
 	fprintf(status, "%s\n", p ? p : "");
 
 	fclose(status);
-	SECMOD_CloseUserDB(slot);
 	if (NSS_ShutdownContext(ctx) != SECSuccess) {
 		cm_log(1, "Error shutting down NSS.\n");
 	}
