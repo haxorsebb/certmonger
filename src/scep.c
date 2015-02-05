@@ -57,6 +57,7 @@
 
 #define OP_GET_CA_CAPS "GetCACaps"
 #define OP_GET_CA_CERT "GetCACert"
+#define OP_GET_CA_CHAIN "GetCAChain"
 #define OP_GET_INITIAL_CERT "PKCSOperation"
 #define OP_PKCSREQ "PKCSOperation"
 enum known_ops {
@@ -87,18 +88,22 @@ help(const char *cmd)
 int
 main(int argc, char **argv)
 {
-	const char *url = NULL, *results = NULL;
+	const char *url = NULL, *results = NULL, *results2 = NULL;
 	struct cm_submit_h_context *hctx;
-	int c, verbose = 0, results_length = 0;
+	int c, verbose = 0, results_length = 0, results_length2 = 0;
 	NSSInitContext *nctx;
 	enum known_ops op = op_unset;
-	const char *es, *id = "0", *message = NULL;
+	const char *es, *id, *message = NULL;
 	const char *mode = NULL;
 	void *ctx;
-	char *params = "", *racert = NULL, *cacert = NULL;
+	char *params = "", *params2 = NULL, *racert = NULL, *cacert = NULL;
+	char **chaincerts = NULL;
 	PRBool missing_args = PR_FALSE;
 
 	id = getenv(CM_SUBMIT_SCEP_CA_IDENTIFIER_ENV);
+	if (id == NULL) {
+		id = "0";
+	}
 	racert = getenv(CM_SUBMIT_SCEP_RA_CERTIFICATE_ENV);
 	cacert = getenv(CM_SUBMIT_SCEP_CA_CERTIFICATE_ENV);
 
@@ -231,8 +236,10 @@ main(int argc, char **argv)
 	case op_get_ca_certs:
 		if (id == NULL) {
 			params = "operation=" OP_GET_CA_CERT;
+			params2 = "operation=" OP_GET_CA_CHAIN;
 		} else {
 			params = talloc_asprintf(ctx, "operation=" OP_GET_CA_CERT "&message=%s", id);
+			params2 = talloc_asprintf(ctx, "operation=" OP_GET_CA_CHAIN "&message=%s", id);
 		}
 		break;
 	case op_get_initial_cert:
@@ -293,6 +300,29 @@ main(int argc, char **argv)
 		printf("results = \"%s\"\n", results);
 		syslog(LOG_DEBUG, "%s", results);
 	}
+	if (params2 != NULL) {
+		hctx = cm_submit_h_init(ctx, "GET", url, params2, NULL, NULL,
+					NULL, NULL, NULL, NULL, NULL,
+					cm_submit_h_negotiate_off,
+					cm_submit_h_delegate_off,
+					cm_submit_h_clientauth_off,
+					cm_submit_h_env_modify_off,
+					verbose > 1 ?
+					cm_submit_h_curl_verbose_on :
+					cm_submit_h_curl_verbose_off);
+		cm_submit_h_run(hctx);
+		if (verbose > 0) {
+			printf("%s \"%s?%s\"\n", "GET", url, params2);
+			printf("code = %d\n", cm_submit_h_result_code(hctx));
+			printf("code_text = \"%s\"\n", cm_submit_h_result_code_text(hctx));
+			syslog(LOG_DEBUG, "%s %s?%s\n", "GET", url, params2);
+		}
+		results2 = cm_submit_h_results(hctx, &results_length2);
+		if (verbose > 0) {
+			printf("results = \"%s\"\n", results2);
+			syslog(LOG_DEBUG, "%s", results2);
+		}
+	}
 
 	/* Figure out what to output. */
 	if (cm_submit_h_result_code(hctx) != 0) {
@@ -323,14 +353,26 @@ main(int argc, char **argv)
 		break;
 	case op_get_ca_certs:
 		if (cm_pkcs7_parse(CM_PKCS7_LEAF_PREFER_ENCRYPT, NULL,
-				   &racert, &cacert, NULL,
+				   &racert, &cacert, &chaincerts,
 				   (const unsigned char *) results,
 				   results_length,
+				   ((results_length2 > 0) ?
+				    (const unsigned char *) results2 :
+				    NULL),
+				   results_length2,
 				   NULL) == 0) {
 			if (racert != NULL) {
 				printf("%s", racert);
 				if (cacert != NULL) {
 					printf("%s", cacert);
+					if (chaincerts != NULL) {
+						for (c = 0;
+						     chaincerts[c] != NULL;
+						     c++) {
+							printf("%s",
+							       chaincerts[c]);
+						}
+					}
 				}
 			}
 			return CM_SUBMIT_STATUS_ISSUED;
