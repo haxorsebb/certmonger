@@ -220,6 +220,131 @@ cm_scepgen_o_b64_from_p7(void *parent, PKCS7 *p7)
 	return ret;
 }
 
+static int
+get_scep_msgtype_nid(void)
+{
+	static int nid = -1;
+	if (nid == -1) {
+		nid = OBJ_create("2.16.840.1.113733.1.9.2", "scep-messageType", "id-scep-messageType");
+	}
+	return nid;
+}
+
+static int
+get_scep_pkistatus_nid(void)
+{
+	static int nid = -1;
+	if (nid == -1) {
+		nid = OBJ_create("2.16.840.1.113733.1.9.3", "scep-pkiStatus", "id-scep-pkiStatus");
+	}
+	return nid;
+}
+
+static int
+get_scep_failinfo_nid(void)
+{
+	static int nid = -1;
+	if (nid == -1) {
+		nid = OBJ_create("2.16.840.1.113733.1.9.4", "scep-failInfo", "id-scep-failInfo");
+	}
+	return nid;
+}
+
+static int
+get_scep_sender_nonce_nid(void)
+{
+	static int nid = -1;
+	if (nid == -1) {
+		nid = OBJ_create("2.16.840.1.113733.1.9.5", "scep-senderNonce", "id-scep-senderNonce");
+	}
+	return nid;
+}
+
+static int
+get_scep_recipient_nonce_nid(void)
+{
+	static int nid = -1;
+	if (nid == -1) {
+		nid = OBJ_create("2.16.840.1.113733.1.9.6", "scep-recipientNonce", "id-scep-recipientNonce");
+	}
+	return nid;
+}
+
+static int
+get_scep_tx_nid(void)
+{
+	static int nid = -1;
+	if (nid == -1) {
+		nid = OBJ_create("2.16.840.1.113733.1.9.7", "scep-transId", "id-scep-transId");
+	}
+	return nid;
+}
+
+static void
+set_pkimessage_attrs(PKCS7 *p7,
+		     const char *tx, const char *msgtype,
+		     const char *pkistatus, const char *failinfo,
+		     const unsigned char *sender_nonce,
+		     size_t sender_nonce_length,
+		     const unsigned char *recipient_nonce,
+		     size_t recipient_nonce_length)
+{
+	PKCS7_SIGNER_INFO *sinfo;
+	ASN1_OCTET_STRING *s, *r;
+	ASN1_PRINTABLESTRING *t, *m, *p, *f;
+
+	sinfo = sk_PKCS7_SIGNER_INFO_value(p7->d.sign->signer_info, 0);
+	if (tx != NULL) {
+		t = M_ASN1_PRINTABLE_new();
+		if (t == NULL) {
+			return;
+		}
+		ASN1_STRING_set(t, tx, strlen(tx));
+		PKCS7_add_signed_attribute(sinfo, get_scep_tx_nid(), V_ASN1_PRINTABLESTRING, t);
+	}
+	if (msgtype != NULL) {
+		m = M_ASN1_PRINTABLE_new();
+		if (m == NULL) {
+			return;
+		}
+		ASN1_STRING_set(m, msgtype, strlen(msgtype));
+		PKCS7_add_signed_attribute(sinfo, get_scep_msgtype_nid(), V_ASN1_PRINTABLESTRING, m);
+	}
+	if (pkistatus != NULL) {
+		p = M_ASN1_PRINTABLE_new();
+		if (p == NULL) {
+			return;
+		}
+		ASN1_STRING_set(p, pkistatus, strlen(pkistatus));
+		PKCS7_add_signed_attribute(sinfo, get_scep_pkistatus_nid(), V_ASN1_PRINTABLESTRING, p);
+	}
+	if (failinfo != NULL) {
+		f = M_ASN1_PRINTABLE_new();
+		if (f == NULL) {
+			return;
+		}
+		ASN1_STRING_set(f, failinfo, strlen(failinfo));
+		PKCS7_add_signed_attribute(sinfo, get_scep_failinfo_nid(), V_ASN1_PRINTABLESTRING, f);
+	}
+	if (sender_nonce != NULL) {
+		s = ASN1_OCTET_STRING_new();
+		if (s == NULL) {
+			return;
+		}
+		M_ASN1_OCTET_STRING_set(s, sender_nonce, sender_nonce_length);
+		PKCS7_add_signed_attribute(sinfo, get_scep_sender_nonce_nid(), V_ASN1_OCTET_STRING, s);
+	}
+	if (recipient_nonce != NULL) {
+		r = ASN1_OCTET_STRING_new();
+		if (r == NULL) {
+			return;
+		}
+		M_ASN1_OCTET_STRING_set(s, recipient_nonce, recipient_nonce_length);
+		PKCS7_add_signed_attribute(sinfo, get_scep_recipient_nonce_nid(), V_ASN1_OCTET_STRING, s);
+	}
+	PKCS7_SIGNER_INFO_sign(sinfo);
+}
+
 void
 cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 		    unsigned char *nonce, size_t nonce_length,
@@ -310,6 +435,8 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
 		*csr_old = PKCS7_sign(old_cert, old_pkey, chain, in, flags);
+		set_pkimessage_attrs(*csr_old, entry->cm_scep_tx, "19",
+				     NULL, NULL, nonce, nonce_length, NULL, 0);
 		BIO_free(in);
 		in = BIO_new_mem_buf(old_ias, old_ias_length);
 		if (in == NULL) {
@@ -317,6 +444,8 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
 		*ias_old = PKCS7_sign(old_cert, old_pkey, chain, in, flags);
+		set_pkimessage_attrs(*ias_old, entry->cm_scep_tx, "20",
+				     NULL, NULL, nonce, nonce_length, NULL, 0);
 		BIO_free(in);
 		X509_PUBKEY_set(&old_cert->cert_info->key, pubkey);
 		X509_free(old_cert);
@@ -335,6 +464,8 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
 		*csr_new = PKCS7_sign(new_cert, new_pkey, NULL, in, flags);
+		set_pkimessage_attrs(*csr_new, entry->cm_scep_tx, "19",
+				     NULL, NULL, nonce, nonce_length, NULL, 0);
 		BIO_free(in);
 		in = BIO_new_mem_buf(new_ias, new_ias_length);
 		if (in == NULL) {
@@ -342,6 +473,8 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
 		*ias_new = PKCS7_sign(new_cert, new_pkey, NULL, in, flags);
+		set_pkimessage_attrs(*ias_new, entry->cm_scep_tx, "20",
+				     NULL, NULL, nonce, nonce_length, NULL, 0);
 		BIO_free(in);
 		X509_PUBKEY_set(&new_cert->cert_info->key, pubkey);
 	} else {
@@ -356,6 +489,8 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
 		*csr_new = PKCS7_sign(new_cert, old_pkey, NULL, in, PKCS7_BINARY);
+		set_pkimessage_attrs(*csr_new, entry->cm_scep_tx, "19",
+				     NULL, NULL, nonce, nonce_length, NULL, 0);
 		BIO_free(in);
 		in = BIO_new_mem_buf(new_ias, new_ias_length);
 		if (in == NULL) {
@@ -363,8 +498,10 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
 		*ias_new = PKCS7_sign(new_cert, old_pkey, NULL, in, PKCS7_BINARY);
-		X509_PUBKEY_set(&new_cert->cert_info->key, pubkey);
+		set_pkimessage_attrs(*ias_new, entry->cm_scep_tx, "20",
+				     NULL, NULL, nonce, nonce_length, NULL, 0);
 		BIO_free(in);
+		X509_PUBKEY_set(&new_cert->cert_info->key, pubkey);
 	}
 	X509_free(new_cert);
 	while ((error = ERR_get_error()) != 0) {
