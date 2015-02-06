@@ -937,6 +937,23 @@ cm_restart_entry(struct cm_context *context, const char *nickname)
 	       cm_start_entry(context, nickname);
 }
 
+dbus_bool_t
+cm_restart_entries_by_ca(struct cm_context *context, const char *nickname)
+{
+	struct cm_store_entry *entry;
+	dbus_bool_t status = FALSE, this;
+	int i, n = 0;
+
+	for (i = 0; i < context->n_entries; i++) {
+		entry = context->entries[i];
+		if (strcmp(entry->cm_ca_nickname, nickname) == 0) {
+			this = cm_restart_entry(context, entry->cm_nickname);
+			status = n++ ? this && status : this;
+		}
+	}
+	return status;
+}
+
 struct cm_store_entry *
 cm_get_entry_by_busname(struct cm_context *context, const char *name)
 {
