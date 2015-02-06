@@ -132,6 +132,7 @@ main(int argc, char **argv)
 		if ((strcasecmp(mode, CM_OP_FETCH_ENROLL_REQUIREMENTS) == 0) ||
 		    (strcasecmp(mode, CM_OP_FETCH_RENEWAL_REQUIREMENTS) == 0)) {
 			printf("%s\n", CM_SUBMIT_SCEP_RA_CERTIFICATE_ENV);
+			printf("%s\n", CM_SUBMIT_SCEP_CA_CERTIFICATE_ENV);
 			printf("%s\n", CM_SUBMIT_SCEP_PKCSREQ_ENV);
 			printf("%s\n", CM_SUBMIT_SCEP_PKCSREQ_REKEY_ENV);
 			printf("%s\n", CM_SUBMIT_SCEP_GETCERTINITIAL_ENV);
@@ -251,6 +252,8 @@ main(int argc, char **argv)
 			if (message == NULL) {
 				return CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
 			}
+			message = cm_submit_u_base64_from_text(message);
+			message = cm_submit_u_url_encode(message);
 			params = talloc_asprintf(ctx, "operation=" OP_GET_INITIAL_CERT "&message=%s", message);
 		}
 		break;
@@ -263,6 +266,8 @@ main(int argc, char **argv)
 			if (message == NULL) {
 				return CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
 			}
+			message = cm_submit_u_base64_from_text(message);
+			message = cm_submit_u_url_encode(message);
 			params = talloc_asprintf(ctx, "operation=" OP_PKCSREQ "&message=%s", message);
 		}
 		break;
