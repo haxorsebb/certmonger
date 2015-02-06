@@ -45,6 +45,9 @@ int cm_scepgen_need_token(struct cm_scepgen_state *state);
 /* Check if we need the server's certificates to encrypt SCEP requests. */
 int cm_scepgen_need_encryption_certs(struct cm_scepgen_state *state);
 
+/* Check if we need a different key type. */
+int cm_scepgen_need_different_key_type(struct cm_scepgen_state *state);
+
 /* Save the SCEP request data to the entry. */
 int cm_scepgen_save_scep(struct cm_scepgen_state *state);
 

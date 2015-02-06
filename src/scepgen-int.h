@@ -34,6 +34,9 @@ struct cm_scepgen_state_pvt {
 	/* Check if we need the server's encryption certs in order to be able
 	 * to generate request data. */
 	int (*need_encryption_certs)(struct cm_scepgen_state *state);
+	/* Check if we need a different key type, because SCEP only works with
+	 * RSA keys. */
+	int (*need_different_key_type)(struct cm_scepgen_state *state);
 	/* Clean up after SCEP request generation. */
 	void (*done)(struct cm_scepgen_state *state);
 };

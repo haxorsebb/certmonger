@@ -252,6 +252,12 @@ retry_gen:
 
 	/* Read the proper keys, and re-sign using them. */
 	keys = cm_keyiread_n_get_keys(entry, 0);
+	if ((keys->privkey->keyType != rsaKey) ||
+	    ((keys->privkey_next != NULL) &&
+	     (keys->privkey_next->keyType != rsaKey))) {
+		cm_log(1, "Keys aren't RSA.  They won't work with SCEP.\n");
+		_exit(CM_SUB_STATUS_ERROR_KEY_TYPE);
+	}
 	cm_scepgen_n_resign(csr_old, keys->privkey);
 	cm_scepgen_n_resign(ias_old, keys->privkey);
 	if (keys->privkey_next != NULL) {
@@ -274,6 +280,16 @@ retry_gen:
 	fprintf(status, "%s\n", p ? p : "");
 
 	fclose(status);
+	if (keys->pubkey != NULL) {
+		SECKEY_DestroyPublicKey(keys->pubkey);
+	}
+	if (keys->pubkey_next != NULL) {
+		SECKEY_DestroyPublicKey(keys->pubkey_next);
+	}
+	SECKEY_DestroyPrivateKey(keys->privkey);
+	if (keys->privkey_next != NULL) {
+		SECKEY_DestroyPrivateKey(keys->privkey_next);
+	}
 	if (NSS_ShutdownContext(ctx) != SECSuccess) {
 		cm_log(1, "Error shutting down NSS.\n");
 	}
@@ -378,7 +394,7 @@ cm_scepgen_n_need_token(struct cm_scepgen_state *state)
 	return -1;
 }
 
-/* Check if we need informatoin about the CA in order to generate data. */
+/* Check if we need information about the CA in order to generate data. */
 static int
 cm_scepgen_n_need_encryption_certs(struct cm_scepgen_state *state)
 {
@@ -386,6 +402,19 @@ cm_scepgen_n_need_encryption_certs(struct cm_scepgen_state *state)
 	status = cm_subproc_get_exitstatus(state->subproc);
 	if (WIFEXITED(status) &&
 	    (WEXITSTATUS(status) == CM_SUB_STATUS_NEED_SCEP_DATA)) {
+		return 0;
+	}
+	return -1;
+}
+
+/* Check if we need a different key type (which is probably RSA). */
+static int
+cm_scepgen_n_need_different_key_type(struct cm_scepgen_state *state)
+{
+	int status;
+	status = cm_subproc_get_exitstatus(state->subproc);
+	if (WIFEXITED(status) &&
+	    (WEXITSTATUS(status) == CM_SUB_STATUS_ERROR_KEY_TYPE)) {
 		return 0;
 	}
 	return -1;
@@ -417,6 +446,8 @@ cm_scepgen_n_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 		state->pvt.need_token = &cm_scepgen_n_need_token;
 		state->pvt.need_encryption_certs =
 			&cm_scepgen_n_need_encryption_certs;
+		state->pvt.need_different_key_type =
+			&cm_scepgen_n_need_different_key_type;
 		state->pvt.done = &cm_scepgen_n_done;
 		state->entry = entry;
 		state->subproc = cm_subproc_start(cm_scepgen_n_main, state,

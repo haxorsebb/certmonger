@@ -98,6 +98,14 @@ cm_scepgen_need_encryption_certs(struct cm_scepgen_state *state)
 	return pvt->need_encryption_certs(state);
 }
 
+int
+cm_scepgen_need_different_key_type(struct cm_scepgen_state *state)
+{
+	struct cm_scepgen_state_pvt *pvt = (struct cm_scepgen_state_pvt *) state;
+
+	return pvt->need_different_key_type(state);
+}
+
 void
 cm_scepgen_done(struct cm_scepgen_state *state)
 {

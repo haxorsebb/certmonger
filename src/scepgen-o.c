@@ -32,6 +32,7 @@
 #include <secpkcs7.h>
 
 #include <openssl/err.h>
+#include <openssl/evp.h>
 #include <openssl/pem.h>
 #include <openssl/rand.h>
 #include <openssl/x509.h>
@@ -547,6 +548,11 @@ cm_scepgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	} else {
 		new_pkey = NULL;
 	}
+	if ((EVP_PKEY_type(old_pkey->type) != EVP_PKEY_RSA) ||
+	    ((new_pkey != NULL) && (EVP_PKEY_type(new_pkey->type) != EVP_PKEY_RSA))) {
+		cm_log(1, "Keys aren't RSA.  They won't work with SCEP.\n");
+		_exit(CM_SUB_STATUS_ERROR_KEY_TYPE);
+	}
 
 	cm_scepgen_o_cooked(ca, entry, nonce, sizeof(nonce),
 			    old_pkey, new_pkey,
@@ -671,7 +677,7 @@ cm_scepgen_o_need_token(struct cm_scepgen_state *state)
 	return -1;
 }
 
-/* Check if we need informatoin about the CA in order to generate data. */
+/* Check if we need information about the CA in order to generate data. */
 static int
 cm_scepgen_o_need_encryption_certs(struct cm_scepgen_state *state)
 {
@@ -679,6 +685,19 @@ cm_scepgen_o_need_encryption_certs(struct cm_scepgen_state *state)
 	status = cm_subproc_get_exitstatus(state->subproc);
 	if (WIFEXITED(status) &&
 	    (WEXITSTATUS(status) == CM_SUB_STATUS_NEED_SCEP_DATA)) {
+		return 0;
+	}
+	return -1;
+}
+
+/* Check if we need a different key type (which is probably RSA). */
+static int
+cm_scepgen_o_need_different_key_type(struct cm_scepgen_state *state)
+{
+	int status;
+	status = cm_subproc_get_exitstatus(state->subproc);
+	if (WIFEXITED(status) &&
+	    (WEXITSTATUS(status) == CM_SUB_STATUS_ERROR_KEY_TYPE)) {
 		return 0;
 	}
 	return -1;
@@ -710,6 +729,8 @@ cm_scepgen_o_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 		state->pvt.need_token = &cm_scepgen_o_need_token;
 		state->pvt.need_encryption_certs =
 			&cm_scepgen_o_need_encryption_certs;
+		state->pvt.need_different_key_type =
+			&cm_scepgen_o_need_different_key_type;
 		state->pvt.done = &cm_scepgen_o_done;
 		state->entry = entry;
 		state->subproc = cm_subproc_start(cm_scepgen_o_main, state,
