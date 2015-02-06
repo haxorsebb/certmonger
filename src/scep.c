@@ -97,7 +97,7 @@ main(int argc, char **argv)
 	const char *mode = NULL;
 	void *ctx;
 	char *params = "", *params2 = NULL, *racert = NULL, *cacert = NULL;
-	char **chaincerts = NULL;
+	char **othercerts = NULL;
 	PRBool missing_args = PR_FALSE;
 
 	id = getenv(CM_SUBMIT_SCEP_CA_IDENTIFIER_ENV);
@@ -112,14 +112,14 @@ main(int argc, char **argv)
 		if (strcasecmp(mode, CM_OP_SUBMIT) == 0) {
 			op = op_pkcsreq;
 			message = getenv(CM_SUBMIT_SCEP_PKCSREQ_REKEY_ENV);
-			if (message != NULL) {
+			if (message == NULL) {
 				message = getenv(CM_SUBMIT_SCEP_PKCSREQ_ENV);
 			}
 		} else
 		if (strcasecmp(mode, CM_OP_POLL) == 0) {
 			op = op_get_initial_cert;
 			message = getenv(CM_SUBMIT_SCEP_GETCERTINITIAL_REKEY_ENV);
-			if (message != NULL) {
+			if (message == NULL) {
 				message = getenv(CM_SUBMIT_SCEP_GETCERTINITIAL_ENV);
 			}
 		} else
@@ -358,7 +358,7 @@ main(int argc, char **argv)
 		break;
 	case op_get_ca_certs:
 		if (cm_pkcs7_parse(CM_PKCS7_LEAF_PREFER_ENCRYPT, NULL,
-				   &racert, &cacert, &chaincerts,
+				   &racert, &cacert, &othercerts,
 				   (const unsigned char *) results,
 				   results_length,
 				   ((results_length2 > 0) ?
@@ -370,12 +370,12 @@ main(int argc, char **argv)
 				printf("%s", racert);
 				if (cacert != NULL) {
 					printf("%s", cacert);
-					if (chaincerts != NULL) {
+					if (othercerts != NULL) {
 						for (c = 0;
-						     chaincerts[c] != NULL;
+						     othercerts[c] != NULL;
 						     c++) {
 							printf("%s",
-							       chaincerts[c]);
+							       othercerts[c]);
 						}
 					}
 				}
@@ -387,9 +387,11 @@ main(int argc, char **argv)
 		break;
 	case op_get_initial_cert:
 		/* XXX - verify that the reply is Signed-Data (a CertRep pkiMessage), signed by the RA cert, with a nonce matching the message we sent, and output an Enveloped-Data wrapped in a ContentInfo, if there is one in the Signed-Data. */
+		printf("%.*s", results_length, results);
 		break;
 	case op_pkcsreq:
 		/* XXX - verify that the reply is Signed-Data (a CertRep pkiMessage), signed by the RA cert, with a nonce matching the message we sent, and output an Enveloped-Data wrapped in a ContentInfo, if there is one in the Signed-Data. */
+		printf("%.*s", results_length, results);
 		break;
 	}
 	return CM_SUBMIT_STATUS_UNCONFIGURED;
