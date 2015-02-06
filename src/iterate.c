@@ -1032,7 +1032,7 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				       "need to generate SCEP data.\n",
 				       entry->cm_busname, entry->cm_nickname);
 				entry->cm_state = CM_NEED_SCEP_DATA;
-				*when = cm_time_soonish;
+				*when = cm_time_soon;
 			} else {
 				/* Don't know what's going on. HELP! */
 				cm_log(1,
