@@ -127,6 +127,13 @@ cm_submit_rejected(struct cm_submit_state *state)
 	return (*state->rejected)(state);
 }
 
+/* Check if we need SCEP-specific data to be generated. */
+int
+cm_submit_need_scep_messages(struct cm_submit_state *state)
+{
+	return (*state->need_scep_messages)(state);
+}
+
 /* Check if we're unconfigured or underconfigured. */
 int
 cm_submit_unconfigured(struct cm_submit_state *state)

@@ -31,6 +31,8 @@ struct cm_submit_state {
 	int (*issued)(struct cm_submit_state *state);
 	/* Check if the certificate request was rejected. */
 	int (*rejected)(struct cm_submit_state *state);
+	/* Check if we need SCEP-specific data to be provided. */
+	int (*need_scep_messages)(struct cm_submit_state *state);
 	/* Check if the CA was unreachable for some reason. */
 	int (*unreachable)(struct cm_submit_state *state);
 	/* Check if the CA was unconfigured in some way. */

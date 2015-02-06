@@ -20,6 +20,11 @@ Now with some arbitrarily-named states for our per-certificate state machine:
 	* Generating a CSR containing public key.
 	  States: NEED_CSR, GENERATING_CSR [*],
 		  NEED_CSR_GEN_TOKEN, NEED_CSR_GEN_PIN, HAVE_CSR
+	* Generating SCEP data, if we need it.
+	  States: NEED_SCEP_DATA, GENERATING_SCEP_DATA [*],
+		  NEED_SCEP_GEN_TOKEN, NEED_SCEP_GEN_PIN,
+		  NEED_SCEP_ENCRYPTION_CERT, NEED_SCEP_RSA_CLIENT_KEY,
+		  HAVE_SCEP_DATA
 	* Submitting CSR to a CA.
 	  States: NEED_TO_SUBMIT, SUBMITTING [*]
 	* Don't know which CA to submit to.
@@ -220,6 +225,73 @@ State logic:
 		state_transition = now
 		break
 
+	NEED_SCEP_DATA:
+		if starting-up
+			state_next = HAVE_KEYINFO
+			state_transition = now
+		else
+			if don't-have-a-full-template
+				fill-in-template-values-based-on-defaults
+			start-csr-generation-using-template-values
+			state_next = GENERATING_SCEP_DATA
+			state_transition = now
+		break
+
+	GENERATING_SCEP_DATA:
+		if starting-up
+			state_next = NEED_SCEP_DATA
+			state_transition = now
+		else
+			if scepgen-finished
+				if scep-data-was-stored
+					state_next = HAVE_SCEP_DATA
+					state_transition = now
+				elseif key-store-needs-token
+					state_next = NEED_SCEP_GEN_TOKEN
+					state_transition = now
+				elseif key-store-needs-pin
+					state_next = NEED_SCEP_GEN_PIN
+					state_transition = now
+				elseif requires-ra-encryption-cert
+					state_next = NEED_SCEP_ENCRYPTION_CERT
+					state_transition = now
+				else
+					state_next = NEED_SCEP_RSA_CLIENT_KEY
+					state_transition = now
+			else
+				state_next = GENERATING_SCEP_DATA
+				state_transition = when-notified
+		break
+
+	NEED_SCEP_GEN_TOKEN:
+		if starting-up
+			state_next = NEED_SCEP_DATA
+			state_transition = soon
+		break
+
+	NEED_SCEP_GEN_PIN:
+		if starting-up
+			state_next = NEED_SCEP_DATA
+			state_transition = now
+		break
+
+	NEED_SCEP_ENCRYPTION_CERT:
+		if starting-up
+			state_next = NEED_SCEP_DATA
+			state_transition = now
+		break
+
+	NEED_SCEP_RSA_CLIENT_KEY:
+		if starting-up
+			state_next = NEED_SCEP_DATA
+			state_transition = now
+		break
+
+	HAVE_SCEP_DATA:
+		state_next = NEED_TO_SUBMIT
+		state_transition = now
+		break
+
 	NEED_TO_SUBMIT:
 		if starting-up
 			state_next = HAVE_CSR
@@ -267,6 +339,9 @@ State logic:
 						store-ca-cookie
 						state_next = CA_UNCONFIGURED
 						state_transition = later
+				elseif ca-is-underconfigured
+					state_next = NEED_SCEP_DATA
+					state_transition = soon
 				else
 					state_next = NEED_GUIDANCE
 					state_transition = now

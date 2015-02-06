@@ -406,6 +406,13 @@ cm_submit_sn_rejected(struct cm_submit_state *state)
 	return -1; /* it never gets rejected */
 }
 
+/* Check if we need SCEP messages. */
+static int
+cm_submit_sn_need_scep_messages(struct cm_submit_state *state)
+{
+	return -1; /* nope */
+}
+
 /* Check if the CA was unreachable. */
 static int
 cm_submit_sn_unreachable(struct cm_submit_state *state)
@@ -455,6 +462,7 @@ cm_submit_sn_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 		state->ready = cm_submit_sn_ready;
 		state->issued = cm_submit_sn_issued;
 		state->rejected = cm_submit_sn_rejected;
+		state->need_scep_messages = cm_submit_sn_need_scep_messages;
 		state->unreachable = cm_submit_sn_unreachable;
 		state->unconfigured = cm_submit_sn_unconfigured;
 		state->unsupported = cm_submit_sn_unsupported;

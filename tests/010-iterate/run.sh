@@ -107,6 +107,12 @@ echo What do you want?
 exit 6
 EOF
 chmod u+x ca-what-what-6
+cat > ca-needs-scep-16 << EOF
+#!/bin/sh
+echo Nope, need SCEP data.
+exit 16
+EOF
+chmod u+x ca-needs-scep-16
 
 cat > ca << EOF
 id=SelfSign
@@ -555,6 +561,39 @@ EOF
 $toolsdir/iterate ca9 entry9 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
 $toolsdir/iterate ca9 entry9 NEED_CSR,GENERATING_CSR
 $toolsdir/iterate ca9 entry9 NEED_TO_SUBMIT,SUBMITTING
+
+echo
+echo "[Enroll until we have SCEP data to go with it.]"
+cat > entry9 << EOF
+id=Test
+ca_name=SCEP
+state=HAVE_KEY_PAIR
+key_storage_type=FILE
+key_storage_location=$tmpdir/keyfile
+notification_method=STDOUT
+EOF
+cat > ca9 << EOF
+id=SCEP
+ca_type=EXTERNAL
+ca_external_helper=$tmpdir/ca-needs-scep-16
+ca_encryption_cert=-----BEGIN CERTIFICATE-----
+ MIICBDCCAW2gAwIBAgIEEjRWgTANBgkqhkiG9w0BAQUFADAaMRgwFgYDVQQDDA9U
+ ZXN0IExldmVsIDggQ0EwHhcNMTUwMjA0MTk0NjU4WhcNMTYwMjA0MTk0NjU4WjAX
+ MRUwEwYDVQQDDAxUZXN0IEVFIENlcnQwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJ
+ AoGBALjcinKYW+KHmciWmdXK5ZNRpKXcc6DqKykg0dUYgUsKTr6GYBeyA64Jmq8S
+ IOYqP2gWnSnw+LWQpbzKvCW0gCO6/skqwNdDZfcxXQmWVEE2oJPmu0a5I02DD46y
+ vVeugjriz2RHVNNjORXmf2xm6bZtcWtzzXew+H5lJIpRzj4LAgMBAAGjWjBYMAkG
+ A1UdEwQCMAAwCwYDVR0PBAQDAgTwMB0GA1UdDgQWBBRd3x1DMcHyzexXrenW0TRw
+ 3ANRyjAfBgNVHSMEGDAWgBQz4V1OzMt4ObAn9koy3aLP2bzFTjANBgkqhkiG9w0B
+ AQUFAAOBgQBozEcRs625HJ6YMZ2TLJKST1Z38ouIfwtl2Gv4WzGgVcRKVpoMgWjl
+ DbC+yjEDPm5+GwzEwVuR0E4g/nThfff/Ld8wVLfqdvClIUcgM8XEpPSRGrWLri+t
+ 9KqCx+t7heiWQcRD4OT1EfsHmXUz2+tAat6XvRcJ3AI1gtks0vJ6mA==
+ -----END CERTIFICATE-----
+EOF
+$toolsdir/iterate ca9 entry9 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
+$toolsdir/iterate ca9 entry9 NEED_CSR,GENERATING_CSR
+$toolsdir/iterate ca9 entry9 NEED_TO_SUBMIT,SUBMITTING
+$toolsdir/iterate ca9 entry9 NEED_SCEP_DATA,GENERATING_SCEP_DATA,HAVE_SCEP_DATA
 
 # Note! The "iterate" harness rounds delay times up to the next multiple of 50.
 for interval in 0 30 1800 3600 7200 86000 86500 604800 1000000 2000000; do

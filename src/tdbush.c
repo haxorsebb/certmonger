@@ -3766,6 +3766,9 @@ request_prop_get_stuck(struct cm_context *ctx, void *parent,
 	case CM_NEED_CSR:
 	case CM_GENERATING_CSR:
 	case CM_HAVE_CSR:
+	case CM_NEED_SCEP_DATA:
+	case CM_GENERATING_SCEP_DATA:
+	case CM_HAVE_SCEP_DATA:
 	case CM_NEED_TO_SUBMIT:
 	case CM_SUBMITTING:
 	case CM_CA_WORKING:
@@ -3812,6 +3815,10 @@ request_prop_get_stuck(struct cm_context *ctx, void *parent,
 	case CM_NEED_KEY_GEN_PIN:
 	case CM_NEED_CSR_GEN_TOKEN:
 	case CM_NEED_CSR_GEN_PIN:
+	case CM_NEED_SCEP_GEN_TOKEN:
+	case CM_NEED_SCEP_GEN_PIN:
+	case CM_NEED_SCEP_ENCRYPTION_CERT:
+	case CM_NEED_SCEP_RSA_CLIENT_KEY:
 	case CM_NEWLY_ADDED_NEED_KEYINFO_READ_TOKEN:
 	case CM_NEWLY_ADDED_NEED_KEYINFO_READ_PIN:
 	case CM_NEED_CA_CERT_SAVE_PERMS:

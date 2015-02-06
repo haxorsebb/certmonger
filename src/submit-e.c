@@ -254,8 +254,7 @@ cm_submit_e_unconfigured(struct cm_submit_state *state)
 	return -1;
 }
 
-/* Check if the certificate was issued.  If the exit status was 0, it was
- * issued. */
+/* Check if the certificate request was rejected. */
 static int
 cm_submit_e_rejected(struct cm_submit_state *state)
 {
@@ -263,6 +262,19 @@ cm_submit_e_rejected(struct cm_submit_state *state)
 	status = cm_subproc_get_exitstatus(state->subproc);
 	if (WIFEXITED(status) &&
 	    (WEXITSTATUS(status) == CM_SUBMIT_STATUS_REJECTED)) {
+		return 0;
+	}
+	return -1;
+}
+
+/* Check if we need SCEP data for this helper. */
+static int
+cm_submit_e_need_scep_messages(struct cm_submit_state *state)
+{
+	int status;
+	status = cm_subproc_get_exitstatus(state->subproc);
+	if (WIFEXITED(status) &&
+	    (WEXITSTATUS(status) == CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES)) {
 		return 0;
 	}
 	return -1;
@@ -436,6 +448,7 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 		state->ready = cm_submit_e_ready;
 		state->issued = cm_submit_e_issued;
 		state->rejected = cm_submit_e_rejected;
+		state->need_scep_messages = cm_submit_e_need_scep_messages;
 		state->unreachable = cm_submit_e_unreachable;
 		state->unconfigured = cm_submit_e_unconfigured;
 		state->unsupported = cm_submit_e_unsupported;

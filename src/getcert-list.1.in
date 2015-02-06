@@ -1,4 +1,4 @@
-.TH certmonger 1 "12 August 2014" "certmonger Manual"
+.TH certmonger 1 "6 February 2015" "certmonger Manual"
 
 .SH NAME
 getcert
@@ -100,6 +100,34 @@ supposed to be stored.
 .TP
 HAVE_CSR
 The service has successfully generated a signing request.
+.TP
+NEED_SCEP_DATA
+The service is about to generate data specifically needed for connecting to a
+CA using SCEP.
+.TP
+GENERATING_SCEP_DATA
+The service is generating data specifically needed for connecting to a CA using
+SCEP.
+.TP
+NEED_SCEP_GEN_PIN
+The service is missing the PIN which is required to access an NSS database in
+order to use the key pair, or it has an incorrect PIN for a database, or has
+an incorrect password for reading a key stored in encrypted PEM format.
+.TP
+NEED_SCEP_GEN_TOKEN
+The service was unable to find the token in which the key pair is
+supposed to be stored.
+.TP
+NEED_SCEP_ENCRYPTION_CERT
+The service is waiting until it can retrieve a copy of the CA's certificate
+before it can generate data required for connecting to the CA using SCEP.
+.TP
+NEED_SCEP_RSA_CLIENT_KEY
+The CA should be contacted using SCEP, but SCEP requires the client key pair to
+be an RSA key pair, and it is not.
+.TP
+HAVE_SCEP_DATA
+The service has successfully generated data for use in SCEP.
 .TP
 NEED_TO_SUBMIT
 The service is about to submit a signing request to a CA for signing.

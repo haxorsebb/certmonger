@@ -2788,6 +2788,13 @@ list(const char *argv0, int argc, char **argv)
 		case CM_NEED_CSR_GEN_TOKEN:
 		case CM_GENERATING_CSR:
 		case CM_HAVE_CSR:
+		case CM_NEED_SCEP_DATA:
+		case CM_NEED_SCEP_GEN_PIN:
+		case CM_NEED_SCEP_GEN_TOKEN:
+		case CM_NEED_SCEP_ENCRYPTION_CERT:
+		case CM_NEED_SCEP_RSA_CLIENT_KEY:
+		case CM_GENERATING_SCEP_DATA:
+		case CM_HAVE_SCEP_DATA:
 		case CM_NEED_TO_SUBMIT:
 		case CM_SUBMITTING:
 		case CM_NEED_TO_SAVE_CERT:

@@ -40,6 +40,7 @@
 #include "log.h"
 #include "notify.h"
 #include "prefs.h"
+#include "scepgen.h"
 #include "store.h"
 #include "store-int.h"
 #include "submit.h"
@@ -49,6 +50,7 @@ struct cm_entry_state {
 	struct cm_keygen_state *cm_keygen_state;
 	struct cm_keyiread_state *cm_keyiread_state;
 	struct cm_csrgen_state *cm_csrgen_state;
+	struct cm_scepgen_state *cm_scepgen_state;
 	struct cm_submit_state *cm_submit_state;
 	struct cm_certsave_state *cm_certsave_state;
 	struct cm_hook_state *cm_hook_state;
@@ -114,6 +116,25 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 		entry->cm_state = CM_HAVE_KEYINFO;
 		break;
 	case CM_HAVE_CSR:
+		break;
+	case CM_NEED_SCEP_DATA:
+		break;
+	case CM_NEED_SCEP_GEN_TOKEN:
+		entry->cm_state = CM_NEED_SCEP_DATA;
+		break;
+	case CM_NEED_SCEP_GEN_PIN:
+		entry->cm_state = CM_NEED_SCEP_DATA;
+		break;
+	case CM_NEED_SCEP_ENCRYPTION_CERT:
+		entry->cm_state = CM_NEED_SCEP_DATA;
+		break;
+	case CM_NEED_SCEP_RSA_CLIENT_KEY:
+		entry->cm_state = CM_NEED_SCEP_DATA;
+		break;
+	case CM_GENERATING_SCEP_DATA:
+		entry->cm_state = CM_NEED_SCEP_DATA;
+		break;
+	case CM_HAVE_SCEP_DATA:
 		break;
 	case CM_NEED_TO_SUBMIT:
 		entry->cm_state = CM_HAVE_CSR;
@@ -828,6 +849,101 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		}
 		break;
 
+	case CM_NEED_SCEP_DATA:
+		state->cm_scepgen_state = cm_scepgen_start(ca, entry);
+		if (state->cm_scepgen_state != NULL) {
+			/* Note that we're in the process of generating SCEP
+			 * data. */
+			entry->cm_state = CM_GENERATING_SCEP_DATA;
+			/* Wait for status update, or poll. */
+			*readfd = cm_scepgen_get_fd(state->cm_scepgen_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
+		} else {
+			/* Failed to start generating data; take a breather and
+			 * try again. */
+			*when = cm_time_soonish;
+		}
+		break;
+
+	case CM_GENERATING_SCEP_DATA:
+		if (cm_scepgen_ready(state->cm_scepgen_state) == 0) {
+			if (cm_scepgen_save_scep(state->cm_scepgen_state) == 0) {
+				/* Saved SCEP data; move on. */
+				cm_scepgen_done(state->cm_scepgen_state);
+				state->cm_scepgen_state = NULL;
+				entry->cm_state = CM_HAVE_SCEP_DATA;
+				*when = cm_time_now;
+			} else
+			if (cm_scepgen_need_token(state->cm_scepgen_state) == 0) {
+				/* Need a token; wait for it. */
+				cm_scepgen_done(state->cm_scepgen_state);
+				state->cm_scepgen_state = NULL;
+				entry->cm_state = CM_NEED_SCEP_GEN_TOKEN;
+				*when = cm_time_now;
+			} else
+			if (cm_scepgen_need_pin(state->cm_scepgen_state) == 0) {
+				/* Need a PIN; wait for it. */
+				cm_scepgen_done(state->cm_scepgen_state);
+				state->cm_scepgen_state = NULL;
+				entry->cm_state = CM_NEED_SCEP_GEN_PIN;
+				*when = cm_time_now;
+			} else
+			if (cm_scepgen_need_encryption_certs(state->cm_scepgen_state) == 0) {
+				/* Need the RA's encryption cert; wait for it. */
+				cm_scepgen_done(state->cm_scepgen_state);
+				state->cm_scepgen_state = NULL;
+				entry->cm_state = CM_NEED_SCEP_ENCRYPTION_CERT;
+				*when = cm_time_now;
+			} else
+			if (cm_scepgen_need_different_key_type(state->cm_scepgen_state) == 0) {
+				/* Need an RSA key. */
+				cm_scepgen_done(state->cm_scepgen_state);
+				state->cm_scepgen_state = NULL;
+				entry->cm_state = CM_NEED_SCEP_RSA_CLIENT_KEY;
+				*when = cm_time_now;
+			} else {
+				/* Failed to save SCEP data; try again. */
+				cm_scepgen_done(state->cm_scepgen_state);
+				state->cm_scepgen_state = NULL;
+				entry->cm_state = CM_NEED_SCEP_DATA;
+				*when = cm_time_soonish;
+			}
+		} else {
+			/* Wait for status update, or poll. */
+			*readfd = cm_scepgen_get_fd(state->cm_scepgen_state);
+			if (*readfd == -1) {
+				*when = cm_time_soon;
+			} else {
+				*when = cm_time_no_time;
+			}
+		}
+		break;
+
+	case CM_NEED_SCEP_GEN_TOKEN:
+		*when = cm_time_no_time;
+		break;
+
+	case CM_NEED_SCEP_GEN_PIN:
+		*when = cm_time_no_time;
+		break;
+
+	case CM_NEED_SCEP_ENCRYPTION_CERT:
+		*when = cm_time_no_time;
+		break;
+
+	case CM_NEED_SCEP_RSA_CLIENT_KEY:
+		*when = cm_time_no_time;
+		break;
+
+	case CM_HAVE_SCEP_DATA:
+		entry->cm_state = CM_NEED_TO_SUBMIT;
+		*when = cm_time_now;
+		break;
+
 	case CM_SUBMITTING:
 		if (cm_submit_ready(state->cm_submit_state) == 0) {
 			entry->cm_submitted = cm_time(NULL);
@@ -907,6 +1023,16 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 						*delay = cm_decide_ca_delay(remaining);
 					}
 				}
+			} else
+			if (cm_submit_need_scep_messages(state->cm_submit_state) == 0) {
+				/* We need to generate SCEP data. */
+				cm_submit_done(state->cm_submit_state);
+				state->cm_submit_state = NULL;
+				cm_log(3, "%s('%s') goes to a CA over SCEP, "
+				       "need to generate SCEP data.\n",
+				       entry->cm_busname, entry->cm_nickname);
+				entry->cm_state = CM_NEED_SCEP_DATA;
+				*when = cm_time_soonish;
 			} else {
 				/* Don't know what's going on. HELP! */
 				cm_log(1,
@@ -1993,6 +2119,10 @@ cm_iterate_entry_done(struct cm_store_entry *entry, void *cm_iterate_state)
 		if (state->cm_csrgen_state != NULL) {
 			cm_csrgen_done(state->cm_csrgen_state);
 			state->cm_csrgen_state = NULL;
+		}
+		if (state->cm_scepgen_state != NULL) {
+			cm_scepgen_done(state->cm_scepgen_state);
+			state->cm_scepgen_state = NULL;
 		}
 		if (state->cm_keyiread_state != NULL) {
 			cm_keyiread_done(state->cm_keyiread_state);
