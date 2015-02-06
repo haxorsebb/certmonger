@@ -17,6 +17,20 @@ An external CA helper has a few jobs:
   * $CERTMONGER_SPKAC         -> signing request as an SPKAC (since 0.73)
   * $CERTMONGER_SPKI          -> request's SubjectPublicKeyInfo (since 0.73)
   * $CERTMONGER_KEY_TYPE      -> client's public key type (since 0.73)
+  * $CERTMONGER_SCEP_NONCE    -> client's SCEP sender nonce (since 0.77)
+  * $CERTMONGER_SCEP_CA_IDENTIFIER
+  -> name of an SCEP CA for which the helper should request certs (since 0.77)
+  * $CERTMONGER_PKCSREQ       -> an SCEP PKCSReq pkiMessage (since 0.77)
+  * $CERTMONGER_PKCSREQ_REKEY
+  -> if set, an SCEP PKCSReq pkiMessage, when rekeying (since 0.77)
+  * $CERTMONGER_GETCERTINITIAL-> an SCEP GetCertInitial pkiMessage (since 0.77)
+  * $CERTMONGER_GETCERTINITIAL_REKEY
+  -> if set, an SCEP GetCertInitial pkiMessage, when rekeying (since 0.77)
+  * $CERTMONGER_SCEP_RA_CERTIFICATE
+  -> the SCEP server's RA cert, used in building the SCEP requests (since 0.77)
+  * $CERTMONGER_SCEP_CA_CERTIFICATE
+  -> if set, the SCEP server's CA cert, if the RA cert isn't self-signed (0.77)
+
 * If in "submit" mode, $CERTMONGER_CSR has as its value a PEM-formatted CSR.
   * Submit request to CA.
     * Issued         -> output PEM-formatted cert on stdout, exit with status 0.

@@ -31,6 +31,7 @@
 #include <cert.h>
 #include <certdb.h>
 #include <cryptohi.h>
+#include <keyhi.h>
 #include <pk11pub.h>
 #include <prerror.h>
 #include <secdig.h>
