@@ -343,7 +343,55 @@ set_pkimessage_attrs(PKCS7 *p7,
 		M_ASN1_OCTET_STRING_set(s, recipient_nonce, recipient_nonce_length);
 		PKCS7_add_signed_attribute(sinfo, get_scep_recipient_nonce_nid(), V_ASN1_OCTET_STRING, s);
 	}
-	PKCS7_SIGNER_INFO_sign(sinfo);
+}
+
+static PKCS7 *
+build_pkimessage(EVP_PKEY *key, X509 *signer, STACK_OF(X509) *certs,
+		 unsigned char *data, size_t data_length,
+		 const char *tx, const char *msgtype,
+		 const char *pkistatus, const char *failinfo,
+		 const unsigned char *sender_nonce,
+		 size_t sender_nonce_length,
+		 const unsigned char *recipient_nonce,
+		 size_t recipient_nonce_length)
+{
+	BIO *in, *out;
+	PKCS7 *ret;
+	long error;
+	char buf[LINE_MAX];
+	int flags = PKCS7_BINARY | PKCS7_NOSMIMECAP | PKCS7_NOVERIFY;
+
+	in = BIO_new_mem_buf(data, data_length);
+	if (in == NULL) {
+		cm_log(1, "Out of memory.\n");
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+	}
+	ret = PKCS7_sign(signer, key, certs, in, flags);
+	if (ret == NULL) {
+		cm_log(1, "Error signing data.\n");
+		goto errors;
+	}
+	BIO_free(in);
+	set_pkimessage_attrs(ret, tx, msgtype, pkistatus, failinfo,
+			     sender_nonce, sender_nonce_length,
+			     recipient_nonce, recipient_nonce_length);
+	/* We'd use PKCS7_SIGNER_INFO_sign() here, but it's relatively new, and
+	 * we want to build on versions of OpenSSL that didn't have it. */
+	PKCS7_content_new(ret, NID_pkcs7_data);
+	out = PKCS7_dataInit(ret, NULL);
+	if (out == NULL) {
+		cm_log(1, "Error signing data.\n");
+		goto errors;
+	}
+	BIO_write(out, data, data_length);
+	PKCS7_dataFinal(ret, out);
+	return ret;
+errors:
+	while ((error = ERR_get_error()) != 0) {
+		ERR_error_string_n(error, buf, sizeof(buf));
+		cm_log(1, "%s\n", buf);
+	}
+	_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 }
 
 void
@@ -356,13 +404,11 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 	char buf[LINE_MAX];
 	unsigned char *new_ias, *old_ias, *csr;
 	size_t new_ias_length, old_ias_length, csr_length;
-	BIO *in;
 	X509 *old_cert, *new_cert = NULL;
 	STACK_OF(X509) *chain = NULL;
 	EVP_PKEY *pubkey;
 	char *pem;
 	long error;
-	int flags = PKCS7_BINARY | PKCS7_NOSMIMECAP | PKCS7_NOVERIFY;
 
 	util_o_init();
 	ERR_load_crypto_strings();
@@ -430,24 +476,18 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 		 * the matching key. */
 		pubkey = X509_PUBKEY_get(old_cert->cert_info->key);
 		X509_PUBKEY_set(&old_cert->cert_info->key, old_pkey);
-		in = BIO_new_mem_buf(csr, csr_length);
-		if (in == NULL) {
-			cm_log(1, "Out of memory.\n");
-			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-		}
-		*csr_old = PKCS7_sign(old_cert, old_pkey, chain, in, flags);
-		set_pkimessage_attrs(*csr_old, entry->cm_scep_tx, "19",
-				     NULL, NULL, nonce, nonce_length, NULL, 0);
-		BIO_free(in);
-		in = BIO_new_mem_buf(old_ias, old_ias_length);
-		if (in == NULL) {
-			cm_log(1, "Out of memory.\n");
-			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-		}
-		*ias_old = PKCS7_sign(old_cert, old_pkey, chain, in, flags);
-		set_pkimessage_attrs(*ias_old, entry->cm_scep_tx, "20",
-				     NULL, NULL, nonce, nonce_length, NULL, 0);
-		BIO_free(in);
+		*csr_old = build_pkimessage(old_pkey, old_cert, chain,
+					    csr, csr_length,
+					    entry->cm_scep_tx, "19",
+					    NULL, NULL,
+					    nonce, nonce_length,
+					    NULL, 0);
+		*ias_old = build_pkimessage(old_pkey, old_cert, chain,
+					    old_ias, old_ias_length,
+					    entry->cm_scep_tx, "20",
+					    NULL, NULL,
+					    nonce, nonce_length,
+					    NULL, 0);
 		X509_PUBKEY_set(&old_cert->cert_info->key, pubkey);
 		X509_free(old_cert);
 	} else {
@@ -459,24 +499,18 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 		 * any previously-issued certificate won't match. */
 		pubkey = X509_PUBKEY_get(new_cert->cert_info->key);
 		X509_PUBKEY_set(&new_cert->cert_info->key, new_pkey);
-		in = BIO_new_mem_buf(csr, csr_length);
-		if (in == NULL) {
-			cm_log(1, "Out of memory.\n");
-			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-		}
-		*csr_new = PKCS7_sign(new_cert, new_pkey, NULL, in, flags);
-		set_pkimessage_attrs(*csr_new, entry->cm_scep_tx, "19",
-				     NULL, NULL, nonce, nonce_length, NULL, 0);
-		BIO_free(in);
-		in = BIO_new_mem_buf(new_ias, new_ias_length);
-		if (in == NULL) {
-			cm_log(1, "Out of memory.\n");
-			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-		}
-		*ias_new = PKCS7_sign(new_cert, new_pkey, NULL, in, flags);
-		set_pkimessage_attrs(*ias_new, entry->cm_scep_tx, "20",
-				     NULL, NULL, nonce, nonce_length, NULL, 0);
-		BIO_free(in);
+		*csr_new = build_pkimessage(new_pkey, new_cert, chain,
+					    csr, csr_length,
+					    entry->cm_scep_tx, "19",
+					    NULL, NULL,
+					    nonce, nonce_length,
+					    NULL, 0);
+		*ias_new = build_pkimessage(new_pkey, new_cert, chain,
+					    new_ias, new_ias_length,
+					    entry->cm_scep_tx, "20",
+					    NULL, NULL,
+					    nonce, nonce_length,
+					    NULL, 0);
 		X509_PUBKEY_set(&new_cert->cert_info->key, pubkey);
 	} else {
 		/* Sign the data using the old key and the mini certificate,
@@ -484,24 +518,18 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 		 * if we do, we just did that). */
 		pubkey = X509_PUBKEY_get(new_cert->cert_info->key);
 		X509_PUBKEY_set(&new_cert->cert_info->key, old_pkey);
-		in = BIO_new_mem_buf(csr, csr_length);
-		if (in == NULL) {
-			cm_log(1, "Out of memory.\n");
-			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-		}
-		*csr_new = PKCS7_sign(new_cert, old_pkey, NULL, in, PKCS7_BINARY);
-		set_pkimessage_attrs(*csr_new, entry->cm_scep_tx, "19",
-				     NULL, NULL, nonce, nonce_length, NULL, 0);
-		BIO_free(in);
-		in = BIO_new_mem_buf(new_ias, new_ias_length);
-		if (in == NULL) {
-			cm_log(1, "Out of memory.\n");
-			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-		}
-		*ias_new = PKCS7_sign(new_cert, old_pkey, NULL, in, PKCS7_BINARY);
-		set_pkimessage_attrs(*ias_new, entry->cm_scep_tx, "20",
-				     NULL, NULL, nonce, nonce_length, NULL, 0);
-		BIO_free(in);
+		*csr_new = build_pkimessage(old_pkey, new_cert, chain,
+					    csr, csr_length,
+					    entry->cm_scep_tx, "19",
+					    NULL, NULL,
+					    nonce, nonce_length,
+					    NULL, 0);
+		*ias_new = build_pkimessage(old_pkey, new_cert, chain,
+					    new_ias, new_ias_length,
+					    entry->cm_scep_tx, "20",
+					    NULL, NULL,
+					    nonce, nonce_length,
+					    NULL, 0);
 		X509_PUBKEY_set(&new_cert->cert_info->key, pubkey);
 	}
 	X509_free(new_cert);
