@@ -446,6 +446,15 @@ parse_encryption_certs(struct cm_store_ca *ca, struct cm_cadata_state *state,
 			*p = '\0';
 		}
 	}
+	if (ca->cm_ca_encryption_issuer_cert != NULL) {
+		p = strstr(ca->cm_ca_encryption_issuer_cert,
+			   "-----END CERTIFICATE-----");
+		if (p != NULL) {
+			p += strcspn(p, "\r\n");
+			p += strspn(p, "\r\n");
+			*p = '\0';
+		}
+	}
 	if (ca->cm_ca_encryption_cert != NULL) {
 		if (strspn(ca->cm_ca_encryption_cert, "\r\n \t") ==
 		    strlen(ca->cm_ca_encryption_cert)) {
