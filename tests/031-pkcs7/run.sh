@@ -1,6 +1,6 @@
 #!/bin/bash
 cd "$tmpdir"
-base64 -d > dercert << EOF
+base64 -i -d > dercert << EOF
 MIIFYzCCBEugAwIBAgITHQAAAANgXaDHI7LEzAAAAAAAAzANBgkqhkiG9w0BAQUF
 ADBqMRMwEQYKCZImiZPyLGQBGRYDY29tMRYwFAYKCZImiZPyLGQBGRYGcmVkaGF0
 MRMwEQYKCZImiZPyLGQBGRYDYm9zMRQwEgYKCZImiZPyLGQBGRYEY2F0czEQMA4G
@@ -31,7 +31,7 @@ BDaVp27+sxMXTs7CFiKCm7pcUN+kZrDk9KpQbUchsjf405f32wh7hGpxW8YQvPkY
 SAIRO1wEYrabyn5nJPuGi4WvEdqYEOH0ohYaBNX6Z6CG4n0/20k422HxFsNA8fJ5
 hkwu1JZ5HT4ZsguDFO1Ch6b1LQk7lCw7TyOJTg+5NrdcEzZ3O/mY
 EOF
-base64 -d > derpkcs7 << EOF
+base64 -i -d > derpkcs7 << EOF
 MIIOmgYJKoZIhvcNAQcCoIIOizCCDocCAQExADALBgkqhkiG9w0BBwGggg5vMIIFYzCCBEugAwIB
 AgITHQAAAANgXaDHI7LEzAAAAAAAAzANBgkqhkiG9w0BAQUFADBqMRMwEQYKCZImiZPyLGQBGRYD
 Y29tMRYwFAYKCZImiZPyLGQBGRYGcmVkaGF0MRMwEQYKCZImiZPyLGQBGRYDYm9zMRQwEgYKCZIm
@@ -160,8 +160,8 @@ $toolsdir/pk7parse dercert
 $toolsdir/pk7parse derpkcs7
 $toolsdir/pk7parse bundle
 echo Decrypted CSR:
-$toolsdir/pk7env recipient csr | base64 -d | $toolsdir/addcinfo | openssl smime -inform der -decrypt -inkey key recipient -binary | base64
+$toolsdir/pk7env recipient csr | base64 -i -d | $toolsdir/addcinfo | openssl smime -inform der -decrypt -inkey key recipient -binary | base64
 echo Encoded issuer-and-subject:
 $toolsdir/pk7env recipient recipient recipient | head -n 1
 echo Decrypted issuer-and-subject:
-$toolsdir/pk7env recipient recipient recipient | tail -n 1 | base64 -d | $toolsdir/addcinfo | openssl smime -inform der -decrypt -inkey key recipient | base64
+$toolsdir/pk7env recipient recipient recipient | tail -n 1 | base64 -i -d | $toolsdir/addcinfo | openssl smime -inform der -decrypt -inkey key recipient | base64
