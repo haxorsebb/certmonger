@@ -75,6 +75,7 @@ libcm_a_SOURCES = \
 	prefs-n.c \
 	prefs-n.h \
 	scepgen.c \
+	scepgen.h \
 	scepgen-n.c \
 	store-files.c \
 	store-gen.c \
