@@ -4,6 +4,7 @@ cd "$tmpdir"
 
 source "$srcdir"/functions
 initnssdb "$tmpdir"
+issuetime=`date +%s`
 
 function setupca() {
 	cat > ca.self <<- EOF
@@ -11,7 +12,7 @@ function setupca() {
 	ca_is_default=0
 	ca_type=INTERNAL:SELF
 	ca_internal_serial=1235
-	ca_internal_issue_time=`date +%s`
+	ca_internal_issue_time=$issuetime
 	EOF
 }
 
