@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012,2013,2014 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013,2014,2015 Red Hat, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -652,13 +652,13 @@ request(const char *argv0, int argc, char **argv)
 	char *nss_scheme, *dbdir = NULL, *token = NULL, *nickname = NULL;
 	char *keytype = NULL, *keyfile = NULL, *certfile = NULL, *capath;
 	char **anchor_dbs = NULL, **anchor_files = NULL;
-	char *pin = NULL, *pinfile = NULL;
+	char *pin = NULL, *pinfile = NULL, *cpass = NULL, *cpassfile = NULL;
 	int keysize = 0, auto_renew = 1, verbose = 0, ku = 0, kubit, c, i, j;
 	char *ca = DEFAULT_CA, *subject = NULL, **eku = NULL, *oid, *id = NULL;
 	char *profile = NULL, kustring[16];
 	char **principal = NULL, **dns = NULL, **email = NULL, **ipaddr = NULL;
-	struct cm_tdbusm_dict param[43];
-	const struct cm_tdbusm_dict *params[42];
+	struct cm_tdbusm_dict param[45];
+	const struct cm_tdbusm_dict *params[44];
 	DBusMessage *req, *rep;
 	int waitreq = 0;
 	dbus_bool_t b;
@@ -829,6 +829,12 @@ request(const char *argv0, int argc, char **argv)
 			break;
 		case 'P':
 			pin = optarg;
+			break;
+		case 'l':
+			cpassfile = optarg;
+			break;
+		case 'L':
+			cpass = optarg;
 			break;
 		case 'B':
 			precommand = optarg;
@@ -1030,6 +1036,20 @@ request(const char *argv0, int argc, char **argv)
 		param[i].key = "KEY_PIN_FILE";
 		param[i].value_type = cm_tdbusm_dict_s;
 		param[i].value.s = pinfile;
+		params[i] = &param[i];
+		i++;
+	}
+	if (cpass != NULL) {
+		param[i].key = CM_DBUS_PROP_TEMPLATE_CHALLENGE_PASSWORD;
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = cpass;
+		params[i] = &param[i];
+		i++;
+	}
+	if (cpassfile != NULL) {
+		param[i].key = CM_DBUS_PROP_TEMPLATE_CHALLENGE_PASSWORD_FILE;
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = cpassfile;
 		params[i] = &param[i];
 		i++;
 	}
@@ -1324,6 +1344,7 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 		  char *dbdir, char *nickname, char *token,
 		  char *keyfile, char *certfile,
 		  char *pin, char *pinfile,
+		  char *cpass, char *cpassfile,
 		  char *ca, char *profile,
 		  char *precommand, char *postcommand,
 		  char **anchor_dbs, char **anchor_files,
@@ -1331,8 +1352,8 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 {
 	DBusMessage *req, *rep;
 	int i;
-	struct cm_tdbusm_dict param[22];
-	const struct cm_tdbusm_dict *params[23];
+	struct cm_tdbusm_dict param[24];
+	const struct cm_tdbusm_dict *params[25];
 	dbus_bool_t b;
 	const char *capath;
 	char *p;
@@ -1425,6 +1446,20 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 		param[i].key = "KEY_PIN_FILE";
 		param[i].value_type = cm_tdbusm_dict_s;
 		param[i].value.s = pinfile;
+		params[i] = &param[i];
+		i++;
+	}
+	if (cpass != NULL) {
+		param[i].key = CM_DBUS_PROP_TEMPLATE_CHALLENGE_PASSWORD;
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = cpass;
+		params[i] = &param[i];
+		i++;
+	}
+	if (cpassfile != NULL) {
+		param[i].key = CM_DBUS_PROP_TEMPLATE_CHALLENGE_PASSWORD_FILE;
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = cpassfile;
 		params[i] = &param[i];
 		i++;
 	}
@@ -1521,14 +1556,14 @@ set_tracking(const char *argv0, const char *category,
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	DBusMessage *req, *rep;
 	const char *request, *capath;
-	struct cm_tdbusm_dict param[19];
-	const struct cm_tdbusm_dict *params[20];
+	struct cm_tdbusm_dict param[21];
+	const struct cm_tdbusm_dict *params[22];
 	char *nss_scheme, *dbdir = NULL, *token = NULL, *nickname = NULL;
 	char **anchor_dbs = NULL, **anchor_files = NULL;
 	char *id = NULL, *new_id = NULL, *new_request;
 	char *keyfile = NULL, *certfile = NULL, *ca = DEFAULT_CA;
 	char *profile = NULL;
-	char *pin = NULL, *pinfile = NULL;
+	char *pin = NULL, *pinfile = NULL, *cpass = NULL, *cpassfile = NULL;
 	dbus_bool_t b;
 	char *p;
 	int c, auto_renew_start = 0, auto_renew_stop = 0, verbose = 0, i, j;
@@ -1681,6 +1716,12 @@ set_tracking(const char *argv0, const char *category,
 			break;
 		case 'P':
 			pin = optarg;
+			break;
+		case 'l':
+			cpassfile = optarg;
+			break;
+		case 'L':
+			cpass = optarg;
 			break;
 		case 'B':
 			precommand = optarg;
@@ -1974,6 +2015,7 @@ set_tracking(const char *argv0, const char *category,
 						 dbdir, nickname, token,
 						 keyfile, certfile,
 						 pin, pinfile,
+						 cpass, cpassfile,
 						 ca, profile,
 						 precommand, postcommand,
 						 anchor_dbs, anchor_files,
@@ -2044,7 +2086,7 @@ resubmit(const char *argv0, int argc, char **argv)
 	const struct cm_tdbusm_dict *params[24];
 	char *dbdir = NULL, *token = NULL, *nickname = NULL, *certfile = NULL;
 	char **anchor_dbs = NULL, **anchor_files = NULL;
-	char *pin = NULL, *pinfile = NULL;
+	char *pin = NULL, *pinfile = NULL, *cpass = NULL, *cpassfile = NULL;
 	char *id = NULL, *new_id = NULL, *ca = NULL, *new_request, *nss_scheme;
 	char *subject = NULL, **eku = NULL, *oid = NULL;
 	char **principal = NULL, **dns = NULL, **email = NULL, **ipaddr = NULL;
@@ -2172,6 +2214,12 @@ resubmit(const char *argv0, int argc, char **argv)
 			break;
 		case 'P':
 			pin = optarg;
+			break;
+		case 'l':
+			cpassfile = optarg;
+			break;
+		case 'L':
+			cpass = optarg;
 			break;
 		case 'B':
 			precommand = optarg;
@@ -2351,6 +2399,20 @@ resubmit(const char *argv0, int argc, char **argv)
 		param[i].key = "KEY_PIN_FILE";
 		param[i].value_type = cm_tdbusm_dict_s;
 		param[i].value.s = pinfile;
+		params[i] = &param[i];
+		i++;
+	}
+	if (cpass != NULL) {
+		param[i].key = CM_DBUS_PROP_TEMPLATE_CHALLENGE_PASSWORD;
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = cpass;
+		params[i] = &param[i];
+		i++;
+	}
+	if (cpassfile != NULL) {
+		param[i].key = CM_DBUS_PROP_TEMPLATE_CHALLENGE_PASSWORD_FILE;
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = cpassfile;
 		params[i] = &param[i];
 		i++;
 	}
@@ -3512,6 +3574,8 @@ help(const char *cmd, const char *category)
 		N_("  -D DNSNAME	set requested DNS name\n"),
 		N_("  -E EMAIL	set requested email address\n"),
 		N_("  -A ADDRESS	set requested IP address\n"),
+		N_("  -l FILE	file which holds an optional challenge password\n"),
+		N_("  -L PASSWORD	an optional challenge password value\n"),
 		N_("* Bus options:\n"),
 		N_("  -S		connect to the certmonger service on the system bus\n"),
 		N_("  -s		connect to the certmonger service on the session bus\n"),
@@ -3557,6 +3621,8 @@ help(const char *cmd, const char *category)
 		N_("  -D DNSNAME	override requested DNS name\n"),
 		N_("  -E EMAIL	override requested email address\n"),
 		N_("  -A ADDRESS	override requested IP address\n"),
+		N_("  -l FILE	file which holds an optional challenge password\n"),
+		N_("  -L PASSWORD	an optional challenge password value\n"),
 		N_("* Bus options:\n"),
 		N_("  -S		connect to the certmonger service on the system bus\n"),
 		N_("  -s		connect to the certmonger service on the session bus\n"),
@@ -3616,6 +3682,8 @@ help(const char *cmd, const char *category)
 		N_("  -D DNSNAME	set requested DNS name\n"),
 		N_("  -E EMAIL	set requested email address\n"),
 		N_("  -A ADDRESS	set requested IP address\n"),
+		N_("  -l FILE	file which holds an optional challenge password\n"),
+		N_("  -L PASSWORD	an optional challenge password value\n"),
 		"\n",
 		N_("Optional arguments:\n"),
 		N_("* Certificate handling settings:\n"),

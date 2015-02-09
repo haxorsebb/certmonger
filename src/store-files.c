@@ -121,6 +121,7 @@ enum cm_store_file_field {
 	cm_store_entry_field_template_no_ocsp_check,
 
 	cm_store_entry_field_challenge_password,
+	cm_store_entry_field_challenge_password_file,
 
 	cm_store_entry_field_csr,
 	cm_store_entry_field_spkac,
@@ -278,7 +279,9 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_template_profile, "ca_profile"}, /* wrong */
 	{cm_store_entry_field_template_no_ocsp_check, "template_no_ocsp_check"},
 
-	{cm_store_entry_field_challenge_password, "challenge_password"},
+	{cm_store_entry_field_challenge_password, "template_challenge_password"}, /* right */
+	{cm_store_entry_field_challenge_password, "challenge_password"}, /* wrong */
+	{cm_store_entry_field_challenge_password_file, "template_challenge_password_file"},
 
 	{cm_store_entry_field_csr, "csr"},
 	{cm_store_entry_field_spkac, "spkac"},
@@ -1017,7 +1020,10 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 				talloc_free(p);
 				break;
 			case cm_store_entry_field_challenge_password:
-				ret->cm_challenge_password = free_if_empty(p);
+				ret->cm_template_challenge_password = free_if_empty(p);
+				break;
+			case cm_store_entry_field_challenge_password_file:
+				ret->cm_template_challenge_password_file = free_if_empty(p);
 				break;
 			case cm_store_entry_field_csr:
 				ret->cm_csr = free_if_empty(p);
@@ -1233,6 +1239,7 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_template_profile:
 			case cm_store_entry_field_template_no_ocsp_check:
 			case cm_store_entry_field_challenge_password:
+			case cm_store_entry_field_challenge_password_file:
 			case cm_store_entry_field_csr:
 			case cm_store_entry_field_spkac:
 			case cm_store_entry_field_scep_tx:
@@ -1788,7 +1795,9 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 				entry->cm_template_no_ocsp_check ? 1 : 0);
 
 	cm_store_file_write_str(fp, cm_store_entry_field_challenge_password,
-				entry->cm_challenge_password);
+				entry->cm_template_challenge_password);
+	cm_store_file_write_str(fp, cm_store_entry_field_challenge_password_file,
+				entry->cm_template_challenge_password_file);
 
 	cm_store_file_write_str(fp, cm_store_entry_field_csr, entry->cm_csr);
 	cm_store_file_write_str(fp, cm_store_entry_field_spkac,
@@ -2527,7 +2536,8 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	ret->cm_template_profile = cm_store_maybe_strdup(ret, entry->cm_template_profile);
 	ret->cm_template_no_ocsp_check = entry->cm_template_no_ocsp_check;
 
-	ret->cm_challenge_password = cm_store_maybe_strdup(ret, entry->cm_challenge_password);
+	ret->cm_template_challenge_password = cm_store_maybe_strdup(ret, entry->cm_template_challenge_password);
+	ret->cm_template_challenge_password_file = cm_store_maybe_strdup(ret, entry->cm_template_challenge_password_file);
 	ret->cm_csr = cm_store_maybe_strdup(ret, entry->cm_csr);
 	ret->cm_spkac = cm_store_maybe_strdup(ret, entry->cm_spkac);
 	ret->cm_scep_tx = cm_store_maybe_strdup(ret, entry->cm_scep_tx);

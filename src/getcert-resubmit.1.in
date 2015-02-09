@@ -1,4 +1,4 @@
-.TH certmonger 1 "30 May 2014" "certmonger Manual"
+.TH certmonger 1 "9 February 2015" "certmonger Manual"
 
 .SH NAME
 getcert
@@ -98,6 +98,13 @@ extensionRequest attribute in the signing request.
 \fB\-A\fR ADDRESS
 Change the IP address specified as part of a subjectAltName extension part of
 the extensionRequest attribute in the signing request.
+.TP
+\fB\-l\fR FILE
+Add an optional ChallengePassword value, read from the file, to the signing
+request.
+.TP
+\fB\-L\fR PIN
+Add the argument value to the signing request as a ChallengePassword attribute.
 
 .SH OTHER OPTIONS
 .TP

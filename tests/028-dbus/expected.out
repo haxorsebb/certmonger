@@ -320,6 +320,8 @@ OK
   <property name="template-freshest-crl" type="as" access="readwrite"/>
   <property name="template-ns-comment" type="s" access="readwrite"/>
   <property name="template-profile" type="s" access="readwrite"/>
+  <property name="template-challenge-password" type="s" access="readwrite"/>
+  <property name="template-challenge-password-file" type="s" access="readwrite"/>
   <method name="get_key_pin">
    <arg name="pin" type="s" direction="out"/>
   </method>

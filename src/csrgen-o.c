@@ -263,7 +263,17 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 							  bmpcount);
 				free(bmp);
 			}
-			password = entry->cm_challenge_password;
+			error = cm_csrgen_read_challenge_password(entry,
+								  &password);
+			if (error != 0) {
+				cm_log(1, "Error reading challenge password: %s.\n",
+				       strerror(error));
+				while ((error = ERR_get_error()) != 0) {
+					ERR_error_string_n(error, buf, sizeof(buf));
+					cm_log(1, "%s\n", buf);
+				}
+				_exit(CM_SUB_STATUS_ERROR_AUTH); /* XXX */
+			}
 			upassword = (unsigned char *) password;
 			if (password != NULL) {
 				X509_REQ_add1_attr_by_NID(req,
@@ -277,10 +287,9 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			/* Generate the SPKAC. */
 			memset(&spkac, 0, sizeof(spkac));
 			spkac.challenge = M_ASN1_IA5STRING_new();
-			if (entry->cm_challenge_password != NULL) {
+			if (password != NULL) {
 				ASN1_STRING_set(spkac.challenge,
-						entry->cm_challenge_password,
-						strlen(entry->cm_challenge_password));
+						password, strlen(password));
 			} else {
 				ASN1_STRING_set(spkac.challenge,
 						"", 0);

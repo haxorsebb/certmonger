@@ -131,6 +131,7 @@ cm_csrgen_n_attributes(struct cm_store_entry *entry, NSSInitContext *ctx,
 	SECOidData *oid;
 	SECItem *item, friendly, *friendlies[2], encoded, encattr[3], plain;
 	SECItem *encattrs[4], **encattrs_ptr, password, *passwords[2], bmp;
+	char *challenge_password;
 	int i, n_attrs;
 
 	i = 0;
@@ -179,12 +180,13 @@ cm_csrgen_n_attributes(struct cm_store_entry *entry, NSSInitContext *ctx,
 		}
 	}
 	/* Build an attribute to hold the challenge password. */
+	cm_csrgen_read_challenge_password(entry, &challenge_password);
 	oid = SECOID_FindOIDByTag(SEC_OID_PKCS9_CHALLENGE_PASSWORD);
 	if (oid != NULL) {
 		memset(&plain, 0, sizeof(plain));
-		plain.data = (unsigned char *) entry->cm_challenge_password;
+		plain.data = (unsigned char *) challenge_password;
 		if (plain.data != NULL) {
-			plain.len = strlen(entry->cm_challenge_password);
+			plain.len = strlen(challenge_password);
 			if (SEC_ASN1EncodeItem(arena, &password, &plain,
 					       SEC_PrintableStringTemplate) == &password) {
 				passwords[0] = &password;
@@ -253,7 +255,7 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	SECItem ereq, esreq, epkac, espkac, eminicert, esminicert;
 	SECItem *attrs, item, utf8, nowe;
 	int ec;
-	char *b64, *b642, *b643, *now, *p, *q;
+	char *b64, *b642, *b643, *now, *p, *q, *challenge_password;
 	const char *es, *spkihex, *spkidec;
 	unsigned char spkidigest[CM_DIGEST_MAX + 1];
 	SECOidData *sigoid;
@@ -534,9 +536,32 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		fclose(status);
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
-	pkac.challenge.data = (unsigned char *) entry->cm_challenge_password;
-	pkac.challenge.len = entry->cm_challenge_password ?
-			     strlen(entry->cm_challenge_password) : 0;
+	if (cm_csrgen_read_challenge_password(entry,
+					      &challenge_password) != 0) {
+		cm_log(1, "Error reading challenge password file.\n");
+		if (keys->pubkey != NULL) {
+			SECKEY_DestroyPublicKey(keys->pubkey);
+		}
+		if (keys->privkey != NULL) {
+			SECKEY_DestroyPrivateKey(keys->privkey);
+		}
+		if (keys->pubkey_next != NULL) {
+			SECKEY_DestroyPublicKey(keys->pubkey_next);
+		}
+		if (keys->privkey_next != NULL) {
+			SECKEY_DestroyPrivateKey(keys->privkey_next);
+		}
+		PORT_FreeArena(arena, PR_TRUE);
+		error = NSS_ShutdownContext(keys->ctx);
+		PORT_FreeArena(keys->arena, PR_TRUE);
+		if (error != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
+		}
+		fclose(status);
+		_exit(CM_SUB_STATUS_ERROR_AUTH);
+	}
+	pkac.challenge.data = (unsigned char *) challenge_password;
+	pkac.challenge.len = challenge_password ? strlen(challenge_password) : 0;
 	/* Encode the PublicKeyAndChallenge. */
 	if (SEC_ASN1EncodeItem(arena, &epkac, &pkac,
 			       cm_csrgen_n_cert_pkac_template) !=

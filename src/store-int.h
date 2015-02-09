@@ -136,7 +136,8 @@ struct cm_store_entry {
 	unsigned int cm_template_no_ocsp_check: 1;
 	/* A challenge password, which may be included (in cleartext form!) in
 	 * a CSR. */
-	char *cm_challenge_password;
+	char *cm_template_challenge_password;
+	char *cm_template_challenge_password_file;
 	/* The CSR, base64-encoded. */
 	char *cm_csr;
 	/* The SPKAC, base64-encoded. */

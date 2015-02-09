@@ -35,4 +35,7 @@ struct cm_csrgen_state_pvt {
 	void (*done)(struct cm_csrgen_state *state);
 };
 
+int cm_csrgen_read_challenge_password(struct cm_store_entry *entry,
+				      char **password);
+
 #endif

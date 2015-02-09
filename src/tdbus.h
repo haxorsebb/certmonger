@@ -65,6 +65,8 @@
 #define CM_DBUS_PROP_TEMPLATE_EKU "template-eku"
 #define CM_DBUS_PROP_TEMPLATE_HOSTNAME "template-hostname"
 #define CM_DBUS_PROP_TEMPLATE_PRINCIPAL "template-principal"
+#define CM_DBUS_PROP_TEMPLATE_CHALLENGE_PASSWORD "template-challenge-password"
+#define CM_DBUS_PROP_TEMPLATE_CHALLENGE_PASSWORD_FILE "template-challenge-password-file"
 #define CM_DBUS_PROP_KEY_LOCATION_TYPE "key-storage"
 #define CM_DBUS_PROP_KEY_LOCATION_FILE "key-file"
 #define CM_DBUS_PROP_KEY_LOCATION_DATABASE "key-database"

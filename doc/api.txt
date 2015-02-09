@@ -56,6 +56,8 @@ o object layout
                {("template-crldp"),array-of-string (CRL distribution point URIs)}
                {("template-ns-comment"),string (Netscape comment)}
                {("template-profile"),string (certificate profile)}
+               {("template-challenge-password"),string (password to add to CSR)}
+               {("template-challenge-password-file"),string (password file)
                {("cert-presave-command"),string}
                {("cert-postsave-command"),string}
                * = required values
@@ -162,6 +164,8 @@ o object layout
                {("template-crldp"),array-of-string (CRL distribution point URIs)}
                {("template-ns-comment"),string (Netscape comment)}
                {("template-profile"),string (certificate profile)}
+               {("template-challenge-password"),string (password to add to CSR)}
+               {("template-challenge-password-file"),string (password file)
                {("cert-presave-command"),string}
                {("cert-postsave-command"),string}
     - nickname for request

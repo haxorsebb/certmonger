@@ -407,6 +407,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	int i, n_entries;
 	enum cm_key_storage_type key_storage;
 	char *key_location, *key_nickname, *key_token, *key_pin, *key_pin_file;
+	char *challenge_password, *challenge_password_file;
 	enum cm_cert_storage_type cert_storage;
 	char *cert_location, *cert_nickname, *cert_token;
 	char *path, *pre_command, *post_command;
@@ -1521,6 +1522,42 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 		new_entry->cm_template_profile = maybe_strdup(new_entry,
 							      param->value.s);
 	}
+	param = cm_tdbusm_find_dict_entry(d,
+					  CM_DBUS_PROP_TEMPLATE_CHALLENGE_PASSWORD,
+					  cm_tdbusm_dict_s);
+	if ((param != NULL) &&
+	    (param->value.s != NULL) &&
+	    (strlen(param->value.s) != 0)) {
+		challenge_password = param->value.s;
+		challenge_password_file = NULL;
+	} else {
+		challenge_password = NULL;
+	}
+	param = cm_tdbusm_find_dict_entry(d,
+					  CM_DBUS_PROP_TEMPLATE_CHALLENGE_PASSWORD_FILE,
+					  cm_tdbusm_dict_s);
+	if ((param != NULL) &&
+	    (param->value.s == NULL) &&
+	    (strlen(param->value.s) != 0)) {
+		if (check_arg_is_absolute_path(param->value.s) != 0) {
+			cm_log(1, "Challenge password storage location is not "
+			       "an absolute path.\n");
+			ret = send_internal_base_bad_arg_error(conn, msg,
+							       _("The location \"%s\" must be an absolute path."),
+							       param->value.s,
+							       CM_DBUS_PROP_TEMPLATE_CHALLENGE_PASSWORD_FILE);
+			talloc_free(parent);
+			return ret;
+		}
+		challenge_password_file = param->value.s;
+		challenge_password = NULL;
+	} else {
+		challenge_password_file = NULL;
+	}
+	new_entry->cm_template_challenge_password = maybe_strdup(new_entry,
+								 challenge_password);
+	new_entry->cm_template_challenge_password_file = maybe_strdup(new_entry,
+								      challenge_password_file);
 	/* Hand it off to the main loop. */
 	new_entry->cm_state = CM_NEWLY_ADDED;
 	if (cm_add_entry(ctx, new_entry) != 0) {
@@ -3144,6 +3181,41 @@ request_modify(DBusConnection *conn, DBusMessage *msg,
 				}
 			} else
 			if ((param->value_type == cm_tdbusm_dict_s) &&
+			    (strcasecmp(param->key, CM_DBUS_PROP_TEMPLATE_CHALLENGE_PASSWORD) == 0)) {
+				talloc_free(entry->cm_template_challenge_password);
+				entry->cm_template_challenge_password = maybe_strdup(entry,
+										     param->value.s);
+				if (entry->cm_template_challenge_password != NULL) {
+					entry->cm_template_challenge_password_file = NULL;
+				}
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_TEMPLATE_CHALLENGE_PASSWORD;
+				}
+			} else
+			if ((param->value_type == cm_tdbusm_dict_s) &&
+			    (strcasecmp(param->key, CM_DBUS_PROP_TEMPLATE_CHALLENGE_PASSWORD_FILE) == 0)) {
+				if ((param->value.s != NULL) &&
+				    (strlen(param->value.s) != 0) &&
+				    (check_arg_is_absolute_path(param->value.s) != 0)) {
+					cm_log(1, "Challenge password storage "
+					       "location is not an absolute "
+					       "path.\n");
+					return send_internal_base_bad_arg_error(conn, msg,
+										_("The location \"%s\" must be an absolute path."),
+										param->value.s,
+										CM_DBUS_PROP_TEMPLATE_CHALLENGE_PASSWORD_FILE);
+				}
+				talloc_free(entry->cm_template_challenge_password_file);
+				entry->cm_template_challenge_password_file = maybe_strdup(entry,
+											  param->value.s);
+				if (entry->cm_template_challenge_password_file != NULL) {
+					entry->cm_template_challenge_password = NULL;
+				}
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_TEMPLATE_CHALLENGE_PASSWORD_FILE;
+				}
+			} else
+			if ((param->value_type == cm_tdbusm_dict_s) &&
 			    (strcasecmp(param->key, CM_DBUS_PROP_CERT_PRESAVE_COMMAND) == 0)) {
 				talloc_free(entry->cm_pre_certsave_command);
 				entry->cm_pre_certsave_command = maybe_strdup(entry,
@@ -3731,6 +3803,72 @@ request_prop_set_key_pin_file(struct cm_context *ctx, void *parent,
 	if (entry->cm_key_pin_file != NULL) {
 		entry->cm_key_pin = NULL;
 		properties[0] = CM_DBUS_PROP_KEY_PIN;
+		properties[1] = NULL;
+		path = talloc_asprintf(record, "%s/%s",
+				       CM_DBUS_REQUEST_PATH,
+				       entry->cm_busname);
+		cm_tdbush_property_emit_changed(ctx, path,
+						CM_DBUS_REQUEST_INTERFACE,
+						properties);
+	}
+}
+
+static const char *
+request_prop_get_challenge_password(struct cm_context *ctx, void *parent,
+				    void *record, const char *name)
+{
+	struct cm_store_entry *entry = record;
+	return entry->cm_template_challenge_password ?
+	       entry->cm_template_challenge_password : "";
+}
+
+static void
+request_prop_set_challenge_password(struct cm_context *ctx, void *parent,
+				    void *record, const char *name,
+				    const char *value)
+{
+	struct cm_store_entry *entry = record;
+	const char *properties[2];
+	char *path;
+
+	entry->cm_template_challenge_password = maybe_strdup(entry, value);
+	if (entry->cm_template_challenge_password != NULL) {
+		entry->cm_template_challenge_password_file = NULL;
+		properties[0] = CM_DBUS_PROP_TEMPLATE_CHALLENGE_PASSWORD_FILE,
+		properties[1] = NULL;
+		path = talloc_asprintf(record, "%s/%s",
+				       CM_DBUS_REQUEST_PATH,
+				       entry->cm_busname);
+		cm_tdbush_property_emit_changed(ctx, path,
+						CM_DBUS_REQUEST_INTERFACE,
+						properties);
+	}
+}
+
+static const char *
+request_prop_get_challenge_password_file(struct cm_context *ctx,
+					 void *parent,
+					 void *record, const char *name)
+{
+	struct cm_store_entry *entry = record;
+	return entry->cm_template_challenge_password_file ?
+	       entry->cm_template_challenge_password_file : "";
+}
+
+static void
+request_prop_set_challenge_password_file(struct cm_context *ctx,
+					 void *parent,
+					 void *record, const char *name,
+					 const char *value)
+{
+	struct cm_store_entry *entry = record;
+	const char *properties[2];
+	char *path;
+
+	entry->cm_template_challenge_password_file = maybe_strdup(entry, value);
+	if (entry->cm_template_challenge_password_file != NULL) {
+		entry->cm_template_challenge_password = NULL;
+		properties[0] = CM_DBUS_PROP_TEMPLATE_CHALLENGE_PASSWORD,
 		properties[1] = NULL;
 		path = talloc_asprintf(record, "%s/%s",
 				       CM_DBUS_REQUEST_PATH,
@@ -6250,6 +6388,24 @@ cm_tdbush_iface_request(void)
 								       offsetof(struct cm_store_entry, cm_template_profile),
 								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_TEMPLATE_CHALLENGE_PASSWORD,
+								       cm_tdbush_property_string,
+								       cm_tdbush_property_readwrite,
+								       cm_tdbush_property_special,
+								       0,
+								       request_prop_get_challenge_password, NULL, NULL, NULL, NULL,
+								       request_prop_set_challenge_password, NULL, NULL, NULL, NULL,
+								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_TEMPLATE_CHALLENGE_PASSWORD_FILE,
+								       cm_tdbush_property_string,
+								       cm_tdbush_property_readwrite,
+								       cm_tdbush_property_special,
+								       0,
+								       request_prop_get_challenge_password_file, NULL, NULL, NULL, NULL,
+								       request_prop_set_challenge_password_file, NULL, NULL, NULL, NULL,
+								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_key_pin",
 								     request_get_key_pin,
@@ -6643,7 +6799,7 @@ cm_tdbush_iface_request(void)
 				     make_interface_item(cm_tdbush_interface_signal,
 							 make_signal(CM_DBUS_SIGNAL_REQUEST_CERT_SAVED,
 								     NULL),
-							 NULL))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
+							 NULL))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
 	}
 	return ret;
 }

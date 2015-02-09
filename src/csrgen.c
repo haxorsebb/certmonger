@@ -16,10 +16,79 @@
  */
 
 #include "config.h"
+
+#include <sys/stat.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#include <talloc.h>
+
 #include "csrgen.h"
 #include "csrgen-int.h"
 #include "log.h"
 #include "store-int.h"
+
+int
+cm_csrgen_read_challenge_password(struct cm_store_entry *entry, char **password)
+{
+	const char *filename, *value;
+	struct stat st;
+	int fd, l, err;
+
+	if (password == NULL) {
+		return EINVAL;
+	}
+	*password = NULL;
+	err = 0;
+	filename = entry->cm_template_challenge_password_file;
+	value = entry->cm_template_challenge_password;
+	if ((filename != NULL) && (strlen(filename) > 0)) {
+		fd = open(filename, O_RDONLY);
+		if (fd != -1) {
+			if ((fstat(fd, &st) == 0) && (st.st_size > 0)) {
+				*password = talloc_zero_size(entry, st.st_size + 1);
+				if (*password != NULL) {
+					if (read(fd, *password, st.st_size) != -1) {
+						l = strcspn(*password, "\r\n");
+						if (l == 0) {
+							talloc_free(*password);
+							*password = NULL;
+						} else {
+							(*password)[l] = '\0';
+						}
+					} else {
+						err = errno;
+						cm_log(-1,
+						       "Error reading \"%s\": "
+						       "%s.\n",
+						       filename, strerror(err));
+						talloc_free(*password);
+						*password = NULL;
+					}
+				}
+			} else {
+				err = errno;
+				cm_log(-1, "Error determining size of \"%s\": "
+				       "%s.\n",
+				       filename, strerror(err));
+			}
+			close(fd);
+		} else {
+			err = errno;
+			cm_log(-1, "Error reading challenge password from "
+			       "\"%s\": %s.\n", filename, strerror(err));
+		}
+	}
+	if ((password != NULL) && (*password == NULL) && (err == 0)) {
+		if (value != NULL) {
+			*password = talloc_strdup(entry, value);
+		}
+	}
+	return err;
+}
 
 struct cm_csrgen_state *
 cm_csrgen_start(struct cm_store_entry *entry)
