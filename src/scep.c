@@ -93,8 +93,8 @@ main(int argc, char **argv)
 	int c, verbose = 0, results_length = 0, results_length2 = 0;
 	NSSInitContext *nctx;
 	enum known_ops op = op_unset;
-	const char *es, *id, *message = NULL;
-	const char *mode = NULL;
+	const char *es, *id, *message = NULL, *base64, *pem;
+	const char *mode = NULL, *content_type = NULL, *content_type2 = NULL;
 	void *ctx;
 	char *params = "", *params2 = NULL, *racert = NULL, *cacert = NULL;
 	char **othercerts = NULL;
@@ -294,8 +294,13 @@ main(int argc, char **argv)
 				cm_submit_h_curl_verbose_on :
 				cm_submit_h_curl_verbose_off);
 	cm_submit_h_run(hctx);
+	content_type = cm_submit_h_result_type(hctx);
+	if (content_type == NULL) {
+		content_type = "";
+	}
 	if (verbose > 0) {
 		printf("%s \"%s?%s\"\n", "GET", url, params);
+		printf("content-type = \"%s\"\n", content_type);
 		printf("code = %d\n", cm_submit_h_result_code(hctx));
 		printf("code_text = \"%s\"\n", cm_submit_h_result_code_text(hctx));
 		syslog(LOG_DEBUG, "%s %s?%s\n", "GET", url, params);
@@ -316,8 +321,13 @@ main(int argc, char **argv)
 					cm_submit_h_curl_verbose_on :
 					cm_submit_h_curl_verbose_off);
 		cm_submit_h_run(hctx);
+		content_type2 = cm_submit_h_result_type(hctx);
+		if (content_type2 == NULL) {
+			content_type2 = "";
+		}
 		if (verbose > 0) {
 			printf("%s \"%s?%s\"\n", "GET", url, params2);
+			printf("content-type = \"%s\"\n", content_type2);
 			printf("code = %d\n", cm_submit_h_result_code(hctx));
 			printf("code_text = \"%s\"\n", cm_submit_h_result_code_text(hctx));
 			syslog(LOG_DEBUG, "%s %s?%s\n", "GET", url, params2);
@@ -387,11 +397,29 @@ main(int argc, char **argv)
 		break;
 	case op_get_initial_cert:
 		/* XXX - verify that the reply is Signed-Data (a CertRep pkiMessage), signed by the RA cert, with a nonce matching the message we sent, and output an Enveloped-Data wrapped in a ContentInfo, if there is one in the Signed-Data. */
-		printf("%.*s", results_length, results);
+		if (strcasecmp(content_type,
+			       "application/x-pki-message") == 0) {
+			base64 = cm_store_base64_from_bin(NULL,
+							  (unsigned char *) results,
+							  results_length);
+			pem = cm_submit_u_pem_from_base64("PKCS7", 0, base64);
+			printf("%s", pem);
+		} else {
+			printf("%.*s", results_length, results);
+		}
 		break;
 	case op_pkcsreq:
 		/* XXX - verify that the reply is Signed-Data (a CertRep pkiMessage), signed by the RA cert, with a nonce matching the message we sent, and output an Enveloped-Data wrapped in a ContentInfo, if there is one in the Signed-Data. */
-		printf("%.*s", results_length, results);
+		if (strcasecmp(content_type,
+			       "application/x-pki-message") == 0) {
+			base64 = cm_store_base64_from_bin(NULL,
+							  (unsigned char *) results,
+							  results_length);
+			pem = cm_submit_u_pem_from_base64("PKCS7", 0, base64);
+			printf("%s\n", pem);
+		} else {
+			printf("%.*s", results_length, results);
+		}
 		break;
 	}
 	return CM_SUBMIT_STATUS_UNCONFIGURED;
