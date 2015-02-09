@@ -343,6 +343,8 @@ set_pkimessage_attrs(PKCS7 *p7,
 		M_ASN1_OCTET_STRING_set(s, recipient_nonce, recipient_nonce_length);
 		PKCS7_add_signed_attribute(sinfo, get_scep_recipient_nonce_nid(), V_ASN1_OCTET_STRING, s);
 	}
+	PKCS7_add_signed_attribute(sinfo, NID_pkcs9_contentType, V_ASN1_OBJECT,
+				   OBJ_nid2obj(NID_pkcs7_data));
 }
 
 static PKCS7 *
