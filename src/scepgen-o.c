@@ -606,7 +606,7 @@ cm_scepgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	if (old_pkey != NULL) {
 		EVP_PKEY_free(old_pkey);
 	}
-	return 0;
+	_exit(0);
 }
 
 /* Check if a SCEP is ready. */

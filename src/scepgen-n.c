@@ -294,7 +294,7 @@ retry_gen:
 	if (NSS_ShutdownContext(ctx) != SECSuccess) {
 		cm_log(1, "Error shutting down NSS.\n");
 	}
-	return 0;
+	_exit(0);
 }
 
 /* Check if a SCEP is ready. */

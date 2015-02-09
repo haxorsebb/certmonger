@@ -167,7 +167,7 @@ cm_ca_analyze_certs_main(int fd, struct cm_store_ca *ca,
 	talloc_free(p);
 	PORT_FreeArena(arena, PR_TRUE);
 
-	return 0;
+	_exit(0);
 }
 
 struct cm_ca_analyze_state *
