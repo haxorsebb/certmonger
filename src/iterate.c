@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012,2013,2014 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013,2014,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -61,8 +61,10 @@ struct cm_entry_state {
 
 struct cm_ca_state {
 	enum cm_ca_phase cm_phase;
-	struct cm_ca_analyze_state *cm_ca_analyze_state;
-	time_t cm_refresh_delay;
+	struct cm_ca_analyze_state *cm_ca_cert_analyze_state;
+	struct cm_ca_analyze_state *cm_ca_ecert_analyze_state;
+	time_t cm_cert_refresh_delay;
+	time_t cm_ecert_refresh_delay;
 	struct cm_cadata_state *cm_task_state;
 	struct cm_hook_state *cm_hook_state;
 	struct cm_casave_state *cm_casave_state;
@@ -2505,14 +2507,14 @@ cm_iterate_ca(struct cm_store_ca *ca,
 	case CM_CA_NEED_TO_ANALYZE:
 		switch (state->cm_phase) {
 		case cm_ca_phase_certs:
-			state->cm_ca_analyze_state = cm_ca_analyze_start_certs(ca);
-			if (state->cm_ca_analyze_state == NULL) {
+			state->cm_ca_cert_analyze_state = cm_ca_analyze_start_certs(ca);
+			if (state->cm_ca_cert_analyze_state == NULL) {
 				ca->cm_ca_state[state->cm_phase] = CM_CA_DISABLED;
 				*when = cm_time_now;
 			} else {
-				*readfd = cm_ca_analyze_get_fd(state->cm_ca_analyze_state);
+				*readfd = cm_ca_analyze_get_fd(state->cm_ca_cert_analyze_state);
 				if (*readfd == -1) {
-					cm_ca_analyze_done(state->cm_ca_analyze_state);
+					cm_ca_analyze_done(state->cm_ca_cert_analyze_state);
 					ca->cm_ca_state[state->cm_phase] = CM_CA_DISABLED;
 				} else {
 					ca->cm_ca_state[state->cm_phase] = CM_CA_ANALYZING;
@@ -2526,9 +2528,24 @@ cm_iterate_ca(struct cm_store_ca *ca,
 		case cm_ca_phase_enroll_reqs:
 		case cm_ca_phase_renew_reqs:
 		case cm_ca_phase_capabilities:
-		case cm_ca_phase_encryption_certs:
 			ca->cm_ca_state[state->cm_phase] = CM_CA_IDLE;
 			*when = cm_time_now;
+			break;
+		case cm_ca_phase_encryption_certs:
+			state->cm_ca_ecert_analyze_state = cm_ca_analyze_start_encryption_certs(ca);
+			if (state->cm_ca_ecert_analyze_state == NULL) {
+				ca->cm_ca_state[state->cm_phase] = CM_CA_DISABLED;
+				*when = cm_time_now;
+			} else {
+				*readfd = cm_ca_analyze_get_fd(state->cm_ca_ecert_analyze_state);
+				if (*readfd == -1) {
+					cm_ca_analyze_done(state->cm_ca_ecert_analyze_state);
+					ca->cm_ca_state[state->cm_phase] = CM_CA_DISABLED;
+				} else {
+					ca->cm_ca_state[state->cm_phase] = CM_CA_ANALYZING;
+					*when = cm_time_no_time;
+				}
+			}
 			break;
 		case cm_ca_phase_invalid:
 			abort();
@@ -2536,34 +2553,75 @@ cm_iterate_ca(struct cm_store_ca *ca,
 		}
 		break;
 	case CM_CA_ANALYZING:
-		if (cm_ca_analyze_ready(state->cm_ca_analyze_state) == 0) {
-			state->cm_refresh_delay = cm_ca_analyze_get_delay(state->cm_ca_analyze_state);
-			cm_ca_analyze_done(state->cm_ca_analyze_state);
-			state->cm_ca_analyze_state = NULL;
-			if (state->cm_refresh_delay != 0) {
-				ca->cm_ca_state[state->cm_phase] = CM_CA_NEED_TO_REFRESH;
-				*delay = state->cm_refresh_delay;
-				if (*delay < CM_DELAY_CA_POLL_MINIMUM) {
-					*delay = CM_DELAY_CA_POLL_MINIMUM;
+		switch (state->cm_phase) {
+		case cm_ca_phase_certs:
+			if (cm_ca_analyze_ready(state->cm_ca_cert_analyze_state) == 0) {
+				state->cm_cert_refresh_delay = cm_ca_analyze_get_delay(state->cm_ca_cert_analyze_state);
+				cm_ca_analyze_done(state->cm_ca_cert_analyze_state);
+				state->cm_ca_cert_analyze_state = NULL;
+				if (state->cm_cert_refresh_delay != 0) {
+					ca->cm_ca_state[state->cm_phase] = CM_CA_NEED_TO_REFRESH;
+					*delay = state->cm_cert_refresh_delay;
+					if (*delay < CM_DELAY_CA_POLL_MINIMUM) {
+						*delay = CM_DELAY_CA_POLL_MINIMUM;
+					}
+					if (*delay > CM_DELAY_CA_POLL_MAXIMUM) {
+						*delay = CM_DELAY_CA_POLL_MAXIMUM;
+					}
+					*when = cm_time_delay;
+				} else {
+					ca->cm_ca_state[state->cm_phase] = CM_CA_IDLE;
+					*when = cm_time_now;
 				}
-				if (*delay > CM_DELAY_CA_POLL_MAXIMUM) {
-					*delay = CM_DELAY_CA_POLL_MAXIMUM;
+			} else {
+				/* Wait for status update, or poll. */
+				*readfd = cm_ca_analyze_get_fd(state->cm_ca_cert_analyze_state);
+				if (*readfd == -1) {
+					*when = cm_time_soon;
+				} else {
+					*when = cm_time_no_time;
 				}
-				*when = cm_time_delay;
-			} else {
-				ca->cm_ca_state[state->cm_phase] = CM_CA_IDLE;
-				*when = cm_time_now;
 			}
-		} else {
-			/* Wait for status update, or poll. */
-			*readfd = cm_ca_analyze_get_fd(state->cm_ca_analyze_state);
-			if (*readfd == -1) {
-				*when = cm_time_soon;
+			break;
+		case cm_ca_phase_encryption_certs:
+			if (cm_ca_analyze_ready(state->cm_ca_ecert_analyze_state) == 0) {
+				state->cm_ecert_refresh_delay = cm_ca_analyze_get_delay(state->cm_ca_ecert_analyze_state);
+				cm_ca_analyze_done(state->cm_ca_ecert_analyze_state);
+				state->cm_ca_ecert_analyze_state = NULL;
+				if (state->cm_ecert_refresh_delay != 0) {
+					ca->cm_ca_state[state->cm_phase] = CM_CA_NEED_TO_REFRESH;
+					*delay = state->cm_ecert_refresh_delay;
+					if (*delay < CM_DELAY_CA_POLL_MINIMUM) {
+						*delay = CM_DELAY_CA_POLL_MINIMUM;
+					}
+					if (*delay > CM_DELAY_CA_POLL_MAXIMUM) {
+						*delay = CM_DELAY_CA_POLL_MAXIMUM;
+					}
+					*when = cm_time_delay;
+				} else {
+					ca->cm_ca_state[state->cm_phase] = CM_CA_IDLE;
+					*when = cm_time_now;
+				}
 			} else {
-				*when = cm_time_no_time;
+				/* Wait for status update, or poll. */
+				*readfd = cm_ca_analyze_get_fd(state->cm_ca_ecert_analyze_state);
+				if (*readfd == -1) {
+					*when = cm_time_soon;
+				} else {
+					*when = cm_time_no_time;
+				}
 			}
+			break;
+		case cm_ca_phase_identify:
+		case cm_ca_phase_profiles:
+		case cm_ca_phase_default_profile:
+		case cm_ca_phase_enroll_reqs:
+		case cm_ca_phase_renew_reqs:
+		case cm_ca_phase_capabilities:
+		case cm_ca_phase_invalid:
+			abort();
+			break;
 		}
-		break;
 	case CM_CA_DATA_UNREACHABLE:
 		ca->cm_ca_state[state->cm_phase] = CM_CA_NEED_TO_REFRESH;
 		*when = cm_time_soonish;
@@ -2600,9 +2658,13 @@ cm_iterate_ca_done(struct cm_store_ca *ca, void *cm_iterate_state)
 	       phase = state->cm_phase,
 	       phases = cm_store_ca_phase_as_string(phase),
 	       states = cm_store_ca_state_as_string(ca->cm_ca_state[phase]);
-		if (state->cm_ca_analyze_state != NULL) {
-			cm_ca_analyze_done(state->cm_ca_analyze_state);
-			state->cm_ca_analyze_state = NULL;
+		if (state->cm_ca_cert_analyze_state != NULL) {
+			cm_ca_analyze_done(state->cm_ca_cert_analyze_state);
+			state->cm_ca_cert_analyze_state = NULL;
+		}
+		if (state->cm_ca_ecert_analyze_state != NULL) {
+			cm_ca_analyze_done(state->cm_ca_ecert_analyze_state);
+			state->cm_ca_ecert_analyze_state = NULL;
 		}
 		if (state->cm_task_state != NULL) {
 			cm_cadata_done(state->cm_task_state);

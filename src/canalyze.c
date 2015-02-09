@@ -170,6 +170,71 @@ cm_ca_analyze_certs_main(int fd, struct cm_store_ca *ca,
 	_exit(0);
 }
 
+static int
+cm_ca_analyze_encryption_certs_main(int fd, struct cm_store_ca *ca,
+				    struct cm_store_entry *e, void *data)
+{
+	PLArenaPool *arena;
+	char *p;
+	int i;
+	PRTime result = 0, now, ratime, catime;
+	struct cm_nickcert *racert, *cacert;
+
+	if (ca->cm_ca_encryption_issuer_cert == NULL) {
+		cacert = NULL;
+	} else {
+		cacert = talloc_ptrtype(ca, racert);
+		cacert->cm_nickname = talloc_strdup(cacert, "CA certificate");
+		cacert->cm_cert = ca->cm_ca_encryption_issuer_cert;
+	}
+	if (ca->cm_ca_encryption_cert == NULL) {
+		racert = NULL;
+	} else {
+		racert = talloc_ptrtype(ca, racert);
+		racert->cm_nickname = talloc_strdup(racert, cacert ?
+						    "RA certificate" :
+						    "CA certificate");
+		racert->cm_cert = ca->cm_ca_encryption_cert;
+	}
+
+	/* Look at the RA and CA certificates, and print a number approximating
+	 * the midpoint of time between now and the first of their
+	 * not-valid-after dates. */
+	arena = PORT_NewArena(sizeof(double));
+	if (arena == NULL) {
+		cm_log(0, "Out of memory.\n");
+		return 1;
+	}
+	now = PR_Now();
+	ratime = not_valid_after(arena, racert);
+	catime = now + CM_DELAY_CA_POLL_MAXIMUM * PR_USEC_PER_SEC;
+	if (cacert != NULL) {
+		catime = not_valid_after(arena, cacert);
+	}
+	if (ratime < catime) {
+		result = ratime;
+	} else {
+		result = catime;
+	}
+
+	cm_log(3, "Result is %lld.\n", (long long) result);
+	if ((result != 0) && (result > now)) {
+		result = (result - now) / PR_USEC_PER_SEC / 2;
+	}
+
+	p = talloc_asprintf(ca, "%lld", (long long) result);
+	i = strlen(p);
+	if (write(fd, p, strlen(p)) != i) {
+		cm_log(0, "Error writing \"%s\" to pipe: %s.\n", p,
+		       strerror(errno));
+	}
+
+	talloc_free(p);
+	PORT_FreeArena(arena, PR_TRUE);
+
+	_exit(0);
+}
+
 struct cm_ca_analyze_state *
 cm_ca_analyze_start_certs(struct cm_store_ca *ca)
 {
@@ -179,6 +244,20 @@ cm_ca_analyze_start_certs(struct cm_store_ca *ca)
 	if (ret != NULL) {
 		memset(ret, 0, sizeof(*ret));
 		ret->subproc = cm_subproc_start(&cm_ca_analyze_certs_main, ret,
+						ca, NULL, ret);
+	}
+	return ret;
+}
+
+struct cm_ca_analyze_state *
+cm_ca_analyze_start_encryption_certs(struct cm_store_ca *ca)
+{
+	struct cm_ca_analyze_state *ret;
+
+	ret = talloc_ptrtype(ca, ret);
+	if (ret != NULL) {
+		memset(ret, 0, sizeof(*ret));
+		ret->subproc = cm_subproc_start(&cm_ca_analyze_encryption_certs_main, ret,
 						ca, NULL, ret);
 	}
 	return ret;

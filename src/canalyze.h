@@ -24,6 +24,9 @@ struct cm_ca_analyze_state;
 /* Start computing information about the CA. */
 struct cm_ca_analyze_state *cm_ca_analyze_start_certs(struct cm_store_ca *ca);
 
+/* Start computing information about the encryption certs. */
+struct cm_ca_analyze_state *cm_ca_analyze_start_encryption_certs(struct cm_store_ca *ca);
+
 /* Check if the data has been retrieved. */
 int cm_ca_analyze_ready(struct cm_ca_analyze_state *state);
 
