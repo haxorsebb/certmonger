@@ -58,8 +58,8 @@
 #define OP_GET_CA_CAPS "GetCACaps"
 #define OP_GET_CA_CERT "GetCACert"
 #define OP_GET_CA_CHAIN "GetCAChain"
-#define OP_GET_INITIAL_CERT "PKCSOperation"
-#define OP_PKCSREQ "PKCSOperation"
+#define OP_GET_INITIAL_CERT "PKIOperation"
+#define OP_PKCSREQ "PKIOperation"
 enum known_ops {
 	op_unset,
 	op_get_ca_caps,
