@@ -299,15 +299,15 @@ main(int argc, char **argv)
 		content_type = "";
 	}
 	if (verbose > 0) {
-		printf("%s \"%s?%s\"\n", "GET", url, params);
-		printf("content-type = \"%s\"\n", content_type);
-		printf("code = %d\n", cm_submit_h_result_code(hctx));
-		printf("code_text = \"%s\"\n", cm_submit_h_result_code_text(hctx));
+		fprintf(stderr, "%s \"%s?%s\"\n", "GET", url, params);
+		fprintf(stderr, "content-type = \"%s\"\n", content_type);
+		fprintf(stderr, "code = %d\n", cm_submit_h_result_code(hctx));
+		fprintf(stderr, "code_text = \"%s\"\n", cm_submit_h_result_code_text(hctx));
 		syslog(LOG_DEBUG, "%s %s?%s\n", "GET", url, params);
 	}
 	results = cm_submit_h_results(hctx, &results_length);
 	if (verbose > 0) {
-		printf("results = \"%s\"\n", results);
+		fprintf(stderr, "results = \"%s\"\n", results);
 		syslog(LOG_DEBUG, "%s", results);
 	}
 	if (params2 != NULL) {
@@ -326,15 +326,15 @@ main(int argc, char **argv)
 			content_type2 = "";
 		}
 		if (verbose > 0) {
-			printf("%s \"%s?%s\"\n", "GET", url, params2);
-			printf("content-type = \"%s\"\n", content_type2);
-			printf("code = %d\n", cm_submit_h_result_code(hctx));
-			printf("code_text = \"%s\"\n", cm_submit_h_result_code_text(hctx));
+			fprintf(stderr, "%s \"%s?%s\"\n", "GET", url, params2);
+			fprintf(stderr, "content-type = \"%s\"\n", content_type2);
+			fprintf(stderr, "code = %d\n", cm_submit_h_result_code(hctx));
+			fprintf(stderr, "code_text = \"%s\"\n", cm_submit_h_result_code_text(hctx));
 			syslog(LOG_DEBUG, "%s %s?%s\n", "GET", url, params2);
 		}
 		results2 = cm_submit_h_results(hctx, &results_length2);
 		if (verbose > 0) {
-			printf("results = \"%s\"\n", results2);
+			fprintf(stderr, "results = \"%s\"\n", results2);
 			syslog(LOG_DEBUG, "%s", results2);
 		}
 	}

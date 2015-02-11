@@ -570,14 +570,14 @@ main(int argc, char **argv)
 		lastparams = params;
 		cm_submit_h_run(hctx);
 		if (verbose > 0) {
-			printf("%s \"%s?%s\"\n", "GET", url, params);
-			printf("code = %d\n", cm_submit_h_result_code(hctx));
-			printf("code_text = \"%s\"\n", cm_submit_h_result_code_text(hctx));
+			fprintf(stderr, "%s \"%s?%s\"\n", "GET", url, params);
+			fprintf(stderr, "code = %d\n", cm_submit_h_result_code(hctx));
+			fprintf(stderr, "code_text = \"%s\"\n", cm_submit_h_result_code_text(hctx));
 			syslog(LOG_DEBUG, "%s %s?%s\n", "GET", url, params);
 		}
 		results = cm_submit_h_results(hctx, NULL);
 		if (verbose > 0) {
-			printf("results = \"%s\"\n", results);
+			fprintf(stderr, "results = \"%s\"\n", results);
 			syslog(LOG_DEBUG, "%s", results);
 		}
 		if (cm_submit_h_result_code(hctx) != 0) {

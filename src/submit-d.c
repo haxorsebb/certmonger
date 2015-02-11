@@ -981,8 +981,8 @@ restart:
 	}
 	uri = talloc_asprintf(ctx, "%s/%s", agent ? agenturl : eeurl, cgi);
 	if (verbose > 0) {
-		printf("url = \"%s%s%s\"\n", uri,
-		       params ? "?" : "", params ? params : "");
+		fprintf(stderr, "url = \"%s%s%s\"\n", uri,
+		        params ? "?" : "", params ? params : "");
 	}
 	hctx = cm_submit_h_init(ctx, method, uri, params, NULL, NULL,
 				cainfo, capath, sslcert, sslkey, sslpin,
@@ -1007,7 +1007,7 @@ restart:
 	}
 	result = cm_submit_h_results(hctx, NULL) ?: "";
 	if (verbose > 0) {
-		printf("result = \"%s\"\n", result);
+		fprintf(stderr, "result = \"%s\"\n", result);
 	}
 	switch (op) {
 	case op_submit_csr:
