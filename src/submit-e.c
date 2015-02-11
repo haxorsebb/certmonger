@@ -203,6 +203,29 @@ crlf_to_lf(char *s)
 	return s;
 }
 
+/* Convert any LF/LF pairs to just LF characters, in case we're getting a
+ * certificate with randomly-inserted blank links in it. */
+static char *
+lflf_to_lf(char *s)
+{
+	char *p, *q;
+
+	p = s;
+	q = s;
+	while (*q != '\0') {
+		while ((q[0] == '\n') && (q[1] == '\n')) {
+			q++;
+		}
+		if (q != p) {
+			*p = *q;
+		}
+		p++;
+		q++;
+	}
+	*p = '\0';
+	return s;
+}
+
 /* Check if the certificate was issued.  If the exit status was 0, it was
  * issued. */
 static int
@@ -221,8 +244,8 @@ cm_submit_e_issued(struct cm_submit_state *state)
 		} else {
 			q += strspn(q, "\r\n");
 		}
-		state->entry->cm_cert = crlf_to_lf(talloc_strndup(state->entry,
-								  p, q - p));
+		state->entry->cm_cert = lflf_to_lf(crlf_to_lf(talloc_strndup(state->entry,
+									     p, q - p)));
 		cm_log(1, "Certificate issued.\n");
 		return 0;
 	} else {
