@@ -1,0 +1,24 @@
+[req, no trust root]
+OK
+[gic, no trust root]
+OK
+[req, self root]
+OK
+[gic, self root]
+OK
+[req, old root]
+OK
+[gic, old trust root]
+OK
+[req next, no trust root]
+OK
+[gic next, no trust root]
+OK
+[req next, self root]
+OK
+[gic next, self root]
+OK
+[req next, old root]
+OK
+[gic next, old trust root]
+OK

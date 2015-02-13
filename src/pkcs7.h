@@ -26,6 +26,7 @@ int cm_pkcs7_parsev(unsigned int flags, void *parent,
 int cm_pkcs7_parse(unsigned int flags, void *parent,
 		   char **certleaf, char **certtop, char ***certothers,
 		   const unsigned char *buffer, size_t length, ...);
+
 int cm_pkcs7_envelope_data(char *encryption_cert,
 			   unsigned char *data, size_t dlength,
 			   unsigned char **enveloped, size_t *length);
@@ -35,6 +36,17 @@ int cm_pkcs7_generate_ias(char *cacert, char *minicert,
 			  unsigned char **ias, size_t *length);
 int cm_pkcs7_envelope_ias(char *encryption_cert, char *cacert, char *minicert,
 			  unsigned char **enveloped, size_t *length);
+int cm_pkcs7_verify_signed(unsigned char *data, size_t length,
+			   const char **roots, const char **othercerts,
+			   int expected_content_type,
+			   void *parent,
+			   char **tx, char **msgtype,
+			   char **pkistatus, char **failinfo,
+			   unsigned char **sender_nonce,
+			   size_t *sender_nonce_length,
+			   unsigned char **recipient_nonce,
+			   size_t *recipient_nonce_length,
+			   unsigned char **payload, size_t *payload_length);
 
 
 #endif

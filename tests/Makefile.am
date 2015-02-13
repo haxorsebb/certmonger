@@ -132,7 +132,9 @@ EXTRA_DIST = \
 	031-pkcs7/expected.out \
 	031-pkcs7/run.sh \
 	032-chain/expected.out \
-	032-chain/run.sh
+	032-chain/run.sh \
+	033-scep/expected.out \
+	033-scep/run.sh
 
 subdirs = \
 	001-keyiread \
@@ -169,7 +171,8 @@ subdirs = \
 	029-canonize \
 	030-rekey \
 	031-pkcs7 \
-	032-chain
+	032-chain \
+	033-scep
 
 if HAVE_DBM_NSSDB
 subdirs += \

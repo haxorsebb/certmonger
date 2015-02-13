@@ -89,6 +89,12 @@ main(int argc, char **argv)
 			}
 		}
 		if (cm_scepgen_save_scep(state) == 0) {
+			if (entry->cm_minicert != NULL) {
+				printf("minicert:%s\n", entry->cm_minicert);
+			}
+			if (entry->cm_scep_tx != NULL) {
+				printf("tx:%s\n", entry->cm_scep_tx);
+			}
 			if (entry->cm_scep_nonce != NULL) {
 				printf("nonce:%s\n", entry->cm_scep_nonce);
 			}

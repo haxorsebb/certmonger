@@ -24,10 +24,12 @@
 
 #include <krb5.h>
 
+#include <openssl/bio.h>
 #include <openssl/err.h>
 #include <openssl/pem.h>
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
+#include <openssl/x509_vfy.h>
 
 #include <nss.h>
 #include <secasn1.h>
@@ -38,6 +40,7 @@
 #include "log.h"
 #include "pkcs7.h"
 #include "prefs-o.h"
+#include "scep-o.h"
 #include "store.h"
 #include "submit-u.h"
 
@@ -740,5 +743,310 @@ cm_pkcs7_envelope_ias(char *encryption_cert, char *cacert, char *minicert,
 				     enveloped, length);
 done:
 	free(dias);
+	return ret;
+}
+
+static char *
+get_pstring_attribute(void *parent, STACK_OF(X509_ATTRIBUTE) *attrs, int nid)
+{
+	X509_ATTRIBUTE *a;
+	ASN1_TYPE *value;
+	ASN1_PRINTABLESTRING *p;
+	int i, len;
+	const char *s;
+	char *ret;
+
+	if (attrs == NULL) {
+		return NULL;
+	}
+	for (i = 0; i < sk_X509_ATTRIBUTE_num(attrs); i++) {
+		a = sk_X509_ATTRIBUTE_value(attrs, i);
+		if (OBJ_obj2nid(a->object) != nid) {
+			continue;
+		}
+		if (a->single) {
+			value = a->value.single;
+		} else {
+			if (sk_ASN1_TYPE_num(a->value.set) == 1) {
+				value = sk_ASN1_TYPE_value(a->value.set, 0);
+			} else {
+				value = NULL;
+			}
+		}
+		if ((value != NULL) && (value->type == V_ASN1_PRINTABLESTRING)) {
+			p = value->value.printablestring;
+			if (p != NULL) {
+				len = ASN1_STRING_length(p);
+				s = (const char *) ASN1_STRING_data(p);
+				ret = talloc_size(parent, len + 1);
+				if (ret != NULL) {
+					memcpy(ret, s, len);
+					ret[len] = '\0';
+					return ret;
+				}
+			}
+		}
+	}
+	return NULL;
+}
+
+static void
+get_ostring_attribute(void *parent, STACK_OF(X509_ATTRIBUTE) *attrs, int nid,
+		      unsigned char **ret, size_t *length)
+{
+	X509_ATTRIBUTE *a;
+	ASN1_TYPE *value;
+	ASN1_OCTET_STRING *p;
+	const unsigned char *s;
+	int i;
+
+	*ret = NULL;
+	*length = 0;
+	if (attrs == NULL) {
+		return;
+	}
+	for (i = 0; i < sk_X509_ATTRIBUTE_num(attrs); i++) {
+		a = sk_X509_ATTRIBUTE_value(attrs, i);
+		if (OBJ_obj2nid(a->object) != nid) {
+			continue;
+		}
+		if (a->single) {
+			value = a->value.single;
+		} else {
+			if (sk_ASN1_TYPE_num(a->value.set) == 1) {
+				value = sk_ASN1_TYPE_value(a->value.set, 0);
+			} else {
+				value = NULL;
+			}
+		}
+		if ((value != NULL) && (value->type == V_ASN1_OCTET_STRING)) {
+			p = value->value.octet_string;
+			if (p != NULL) {
+				i = ASN1_STRING_length(p);
+				s = ASN1_STRING_data(p);
+				*ret = talloc_size(parent, i + 1);
+				if (*ret != NULL) {
+					memcpy(*ret, s, i);
+					*length = i;
+					return;
+				}
+			}
+		}
+	}
+	return NULL;
+}
+
+int
+cm_pkcs7_verify_signed(unsigned char *data, size_t length,
+		       const char **roots, const char **othercerts,
+		       int expected_content_type,
+		       void *parent,
+		       char **tx, char **msgtype,
+		       char **pkistatus, char **failinfo,
+		       unsigned char **sender_nonce,
+		       size_t *sender_nonce_length,
+		       unsigned char **recipient_nonce,
+		       size_t *recipient_nonce_length,
+		       unsigned char **payload, size_t *payload_length)
+{
+	PKCS7 *p7 = NULL, *encapsulated;
+	X509 *x;
+	STACK_OF(X509) *certs = NULL;
+	STACK_OF(X509_ATTRIBUTE) *attrs;
+	X509_STORE *store = NULL;
+	PKCS7_SIGNED *p7s;
+	PKCS7_SIGNER_INFO *si;
+	BIO *in, *out = NULL;
+	const unsigned char *u;
+	char *s, buf[LINE_MAX];
+	int ret = -1, i;
+	long error;
+
+	if (tx != NULL) {
+		*tx = NULL;
+	}
+	if (msgtype != NULL) {
+		*msgtype = NULL;
+	}
+	if (pkistatus != NULL) {
+		*pkistatus = NULL;
+	}
+	if (failinfo != NULL) {
+		*failinfo = NULL;
+	}
+	if (sender_nonce != NULL) {
+		*sender_nonce = NULL;
+	}
+	if (sender_nonce_length != NULL) {
+		*sender_nonce_length = 0;
+	}
+	if (recipient_nonce != NULL) {
+		*recipient_nonce = NULL;
+	}
+	if (recipient_nonce_length != NULL) {
+		*recipient_nonce_length = 0;
+	}
+	if (payload != NULL) {
+		*payload = NULL;
+	}
+	if (payload_length != NULL) {
+		*payload_length = 0;
+	}
+	u = data;
+	p7 = d2i_PKCS7(NULL, &u, length);
+	if (p7 == NULL) {
+		cm_log(1, "Error parsing what should be PKCS#7 signed-data.\n");
+		goto done;
+	}
+	if ((p7->type == NULL) || (OBJ_obj2nid(p7->type) != NID_pkcs7_signed)) {
+		cm_log(1, "PKCS#7 data is not signed-data.\n");
+		goto done;
+	}
+	store = X509_STORE_new();
+	if (store == NULL) {
+		cm_log(1, "Out of memory.\n");
+	}
+	for (i = 0; (roots != NULL) && (roots [i] != NULL); i++) {
+		s = talloc_strdup(parent, roots[i]);
+		if (s == NULL) {
+			cm_log(1, "Out of memory.\n");
+			goto done;
+		}
+		in = BIO_new_mem_buf(s, -1);
+		if (in == NULL) {
+			cm_log(1, "Out of memory.\n");
+			goto done;
+		}
+		x = PEM_read_bio_X509(in, NULL, NULL, NULL);
+		BIO_free(in);
+		talloc_free(s);
+		if (x == NULL) {
+			cm_log(1, "Error parsing root certificate.\n");
+			goto done;
+		}
+		X509_STORE_add_cert(store, x);
+		X509_free(x);
+	}
+	for (i = 0; (othercerts != NULL) && (othercerts[i] != NULL); i++) {
+		if (certs == NULL) {
+			certs = sk_X509_new(cert_cmp);
+			if (certs == NULL) {
+				cm_log(1, "Out of memory.\n");
+				goto done;
+			}
+		}
+		s = talloc_strdup(parent, othercerts[i]);
+		if (s == NULL) {
+			cm_log(1, "Out of memory.\n");
+			goto done;
+		}
+		in = BIO_new_mem_buf(s, -1);
+		if (in == NULL) {
+			cm_log(1, "Out of memory.\n");
+			goto done;
+		}
+		x = PEM_read_bio_X509(in, NULL, NULL, NULL);
+		BIO_free(in);
+		talloc_free(s);
+		if (x == NULL) {
+			cm_log(1, "Error parsing chain certificate.\n");
+			goto done;
+		}
+		sk_X509_push(certs, x);
+	}
+	out = BIO_new(BIO_s_mem());
+	if (out == NULL) {
+		cm_log(1, "Out of memory.\n");
+		goto done;
+	}
+	if (PKCS7_verify(p7, certs, store, NULL, out, 0) != 1) {
+		cm_log(1, "Message failed verification.\n");
+		goto done;
+	}
+	p7s = p7->d.sign;
+	if (sk_PKCS7_SIGNER_INFO_num(p7s->signer_info) != 1) {
+		cm_log(1, "Number of signers != 1.\n");
+		goto done;
+	}
+	si = sk_PKCS7_SIGNER_INFO_value(p7s->signer_info, 0);
+	attrs = si->auth_attr;
+	encapsulated = p7s->contents;
+	if (expected_content_type != NID_undef) {
+		if (encapsulated == NULL) {
+			cm_log(1, "Error parsing encapsulated content.\n");
+			goto done;
+		}
+		if ((encapsulated->type == NULL) ||
+		    (OBJ_obj2nid(encapsulated->type) != expected_content_type)) {
+			cm_log(1, "PKCS#7 encapsulated data is not %s (%s).\n",
+			       OBJ_nid2ln(expected_content_type),
+			       encapsulated->type ?
+			       OBJ_nid2ln(OBJ_obj2nid(encapsulated->type)) :
+			       "type not set");
+			goto done;
+		}
+	}
+	if (attrs == NULL) {
+		cm_log(1, "No signed attributes!\n");
+		goto done;
+	}
+	ret = 0;
+	if (tx != NULL) {
+		*tx = get_pstring_attribute(parent, attrs,
+					    cm_scep_o_get_tx_nid());
+	}
+	if (msgtype != NULL) {
+		*msgtype = get_pstring_attribute(parent, attrs,
+						 cm_scep_o_get_msgtype_nid());
+	}
+	if (pkistatus != NULL) {
+		*pkistatus = get_pstring_attribute(parent, attrs,
+						   cm_scep_o_get_pkistatus_nid());
+	}
+	if (failinfo != NULL) {
+		*failinfo = get_pstring_attribute(parent, attrs,
+						  cm_scep_o_get_failinfo_nid());
+	}
+	if ((sender_nonce != NULL) && (sender_nonce_length != NULL)) {
+		get_ostring_attribute(parent, attrs,
+				      cm_scep_o_get_sender_nonce_nid(),
+				      sender_nonce, sender_nonce_length);
+	}
+	if ((recipient_nonce != NULL) && (recipient_nonce_length != NULL)) {
+		get_ostring_attribute(parent, attrs,
+				      cm_scep_o_get_recipient_nonce_nid(),
+				      recipient_nonce, recipient_nonce_length);
+	}
+	if ((payload != NULL) && (payload_length != NULL)) {
+		*payload_length = BIO_get_mem_data(out, &s);
+		if (*payload_length > 0) {
+			*payload = talloc_size(parent, *payload_length + 1);
+			if (*payload == NULL) {
+				cm_log(1, "Out of memory.\n");
+				goto done;
+			}
+			memcpy(*payload, s, *payload_length);
+			(*payload)[*payload_length] = '\0';
+		}
+	}
+done:
+	if (ret != 0) {
+		while ((error = ERR_get_error()) != 0) {
+			ERR_error_string_n(error, buf, sizeof(buf));
+			cm_log(1, "%s\n", buf);
+		}
+	}
+	if (p7 != NULL) {
+		PKCS7_free(p7);
+	}
+	if (certs != NULL) {
+		sk_X509_pop_free(certs, X509_free);
+	}
+	if (store != NULL) {
+		X509_STORE_free(store);
+	}
+	if (out != NULL) {
+		BIO_free(out);
+	}
 	return ret;
 }
