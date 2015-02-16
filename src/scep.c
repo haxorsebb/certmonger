@@ -30,8 +30,8 @@
 
 #include <krb5.h>
 
-#include <nss.h>
-#include <cert.h>
+#include <openssl/err.h>
+#include <openssl/objects.h>
 
 #include <dbus/dbus.h>
 
@@ -40,13 +40,14 @@
 #include "log.h"
 #include "pkcs7.h"
 #include "prefs.h"
+#include "scep.h"
 #include "store.h"
 #include "submit-e.h"
 #include "submit-h.h"
 #include "submit-u.h"
 #include "util.h"
 #include "util-m.h"
-#include "util-n.h"
+#include "util-o.h"
 
 #ifdef ENABLE_NLS
 #include <libintl.h>
@@ -81,6 +82,7 @@ help(const char *cmd)
 		"\t[-p]\tsend a PKCS request (submit)\n"
 		"\t[-r racert]\n"
 		"\t[-R cacert]\n"
+		"\t[-I othercerts]\n"
 		"\t[-v]\n",
 		strchr(cmd, '/') ? strrchr(cmd, '/') + 1 : cmd);
 }
@@ -90,15 +92,24 @@ main(int argc, char **argv)
 {
 	const char *url = NULL, *results = NULL, *results2 = NULL;
 	struct cm_submit_h_context *hctx;
-	int c, verbose = 0, results_length = 0, results_length2 = 0;
-	NSSInitContext *nctx;
+	int c, verbose = 0, results_length = 0, results_length2 = 0, i;
 	enum known_ops op = op_unset;
-	const char *es, *id, *message = NULL, *base64, *pem;
+	const char *id, *message = NULL;
 	const char *mode = NULL, *content_type = NULL, *content_type2 = NULL;
 	void *ctx;
 	char *params = "", *params2 = NULL, *racert = NULL, *cacert = NULL;
-	char **othercerts = NULL;
-	PRBool missing_args = PR_FALSE;
+	char **othercerts = NULL, *cert1 = NULL, *cert2 = NULL, *certs = NULL;
+	char buf[LINE_MAX] = "";
+	const char *cacerts[3], **racerts;
+	dbus_bool_t missing_args = FALSE;
+	char *sent_tx, *tx, *msgtype, *pkistatus, *failinfo, *s, *tmp1, *tmp2;
+	unsigned char *sent_nonce, *sender_nonce, *recipient_nonce, *payload;
+	size_t sent_nonce_length, sender_nonce_length, recipient_nonce_length;
+	size_t payload_length;
+	long error;
+
+	util_o_init();
+	ERR_load_crypto_strings();
 
 	id = getenv(CM_SUBMIT_SCEP_CA_IDENTIFIER_ENV);
 	if (id == NULL) {
@@ -106,6 +117,7 @@ main(int argc, char **argv)
 	}
 	racert = getenv(CM_SUBMIT_SCEP_RA_CERTIFICATE_ENV);
 	cacert = getenv(CM_SUBMIT_SCEP_CA_CERTIFICATE_ENV);
+	certs = getenv(CM_SUBMIT_SCEP_CERTIFICATES_ENV);
 
 	if (getenv(CM_SUBMIT_OPERATION_ENV) != NULL) {
 		mode = getenv(CM_SUBMIT_OPERATION_ENV);
@@ -152,7 +164,7 @@ main(int argc, char **argv)
 	bindtextdomain(PACKAGE, MYLOCALEDIR);
 #endif
 
-	while ((c = getopt(argc, argv, "u:i:vcCgpr:")) != -1) {
+	while ((c = getopt(argc, argv, "u:i:vcCgpr:R:I:")) != -1) {
 		switch (c) {
 		case 'u':
 			url = optarg;
@@ -179,12 +191,13 @@ main(int argc, char **argv)
 			op = op_pkcsreq;
 			break;
 		case 'r':
-			/* XXX - read RA cert from the named file */
-			racert = NULL;
+			racert = cm_submit_u_from_file(optarg);
 			break;
 		case 'R':
-			/* XXX - read CA cert from the named file */
-			cacert = NULL;
+			cacert = cm_submit_u_from_file(optarg);
+			break;
+		case 'I':
+			certs = cm_submit_u_from_file(optarg);
 			break;
 		default:
 			help(argv[0]);
@@ -194,22 +207,8 @@ main(int argc, char **argv)
 	}
 
 	umask(S_IRWXG | S_IRWXO);
-
-	nctx = NSS_InitContext(CM_DEFAULT_CERT_STORAGE_LOCATION,
-			       NULL, NULL, NULL, NULL,
-			       NSS_INIT_NOCERTDB |
-			       NSS_INIT_READONLY |
-			       NSS_INIT_NOROOTINIT |
-			       NSS_INIT_NOMODDB);
-	if (nctx == NULL) {
-		cm_log(1, "Unable to initialize NSS.\n");
-		_exit(1);
-	}
-	es = util_n_fips_hook();
-	if (es != NULL) {
-		cm_log(1, "Error putting NSS into FIPS mode: %s\n", es);
-		_exit(1);
-	}
+	cm_log_set_method(cm_log_stderr);
+	cm_log_set_level(verbose);
 
 	ctx = talloc_new(NULL);
 
@@ -244,43 +243,81 @@ main(int argc, char **argv)
 		}
 		break;
 	case op_get_initial_cert:
-		if (racert == NULL) {
+		if ((racert == NULL) || (strlen(racert) == 0)) {
 			printf(_("No RA certificate (-r) given, and no default known.\n"));
 			missing_args = TRUE;
 		} else {
-			/* XXX - read a PKCS7 Signed Data message (pkiMessage) from either stdin or a named file. */
-			if (message == NULL) {
+			if ((message == NULL) || (strlen(message) == 0)) {
+				message = cm_submit_u_from_file(argv[optind]);
+			}
+			if ((message == NULL) || (strlen(message) == 0)) {
+				printf(_("Error reading request, expected PKCS7 data.\n"));
 				return CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
 			}
-			message = cm_submit_u_base64_from_text(message);
-			message = cm_submit_u_url_encode(message);
-			params = talloc_asprintf(ctx, "operation=" OP_GET_INITIAL_CERT "&message=%s", message);
+			tmp1 = cm_submit_u_base64_from_text(message);
+			tmp2 = cm_submit_u_url_encode(tmp1);
+			params = talloc_asprintf(ctx, "operation=" OP_GET_INITIAL_CERT "&message=%s", tmp2);
 		}
 		break;
 	case op_pkcsreq:
-		if (racert == NULL) {
+		if ((racert == NULL) || (strlen(racert) == 0)) {
 			printf(_("No RA certificate (-r) given, and no default known.\n"));
 			missing_args = TRUE;
 		} else {
-			/* XXX - read a PKCS7 Signed Data message (pkiMessage) from either stdin or a named file. */
-			if (message == NULL) {
+			if ((message == NULL) || (strlen(message) == 0)) {
+				message = cm_submit_u_from_file(argv[optind]);
+			}
+			if ((message == NULL) || (strlen(message) == 0)) {
+				printf(_("Error reading request, expected PKCS7 data.\n"));
 				return CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
 			}
-			message = cm_submit_u_base64_from_text(message);
-			message = cm_submit_u_url_encode(message);
-			params = talloc_asprintf(ctx, "operation=" OP_PKCSREQ "&message=%s", message);
+			tmp1 = cm_submit_u_base64_from_text(message);
+			tmp2 = cm_submit_u_url_encode(tmp1);
+			params = talloc_asprintf(ctx, "operation=" OP_PKCSREQ "&message=%s", tmp2);
 		}
 		break;
+	}
+
+	if ((message != NULL) && (strlen(message) != 0)) {
+		tmp1 = cm_submit_u_base64_from_text(message);
+		tmp2 = cm_store_base64_as_bin(ctx, tmp1, -1, &c);
+		cm_pkcs7_verify_signed((unsigned char *) tmp2, c,
+				       NULL, NULL, NID_pkcs7_data, ctx,
+				       &sent_tx, &msgtype, NULL, NULL,
+				       &sent_nonce, &sent_nonce_length,
+				       NULL, NULL, NULL, NULL);
+		if ((msgtype == NULL) ||
+		    ((strcmp(msgtype, SCEP_MSGTYPE_PKCSREQ) != 0) &&
+		     (strcmp(msgtype, SCEP_MSGTYPE_GETCERTINITIAL) != 0))) {
+			if (msgtype == NULL) {
+				fprintf(stderr, _("Warning: request is neither "
+						  "a PKCSReq nor a "
+						  "GetInitialCert request.\n"));
+			} else {
+				fprintf(stderr, _("Warning: request type \"%s\""
+						  "is neither a PKCSReq nor a "
+						  "GetInitialCert request.\n"),
+						  msgtype);
+			}
+		}
+		if (sent_tx == NULL) {
+			fprintf(stderr, _("Warning: request is missing "
+					  "transactionId.\n"));
+		}
+		if (sent_nonce == NULL) {
+			fprintf(stderr, _("Warning: request is missing "
+					  "senderNonce.\n"));
+		}
+	} else {
+		sent_tx = NULL;
+		sent_nonce = NULL;
+		sent_nonce_length = 0;
 	}
 
 	/* Supply help output, if it's needed. */
 	if (missing_args) {
 		help(argv[0]);
 		return CM_SUBMIT_STATUS_UNCONFIGURED;
-	}
-	if (NSS_ShutdownContext(nctx) != SECSuccess) {
-		printf(_("Error shutting down NSS.\n"));
-		return CM_SUBMIT_STATUS_UNREACHABLE;
 	}
 
 	/* Submit the request. */
@@ -367,7 +404,7 @@ main(int argc, char **argv)
 		return CM_SUBMIT_STATUS_ISSUED;
 		break;
 	case op_get_ca_certs:
-		if (cm_pkcs7_parse(CM_PKCS7_LEAF_PREFER_ENCRYPT, NULL,
+		if (cm_pkcs7_parse(CM_PKCS7_LEAF_PREFER_ENCRYPT, ctx,
 				   &racert, &cacert, &othercerts,
 				   (const unsigned char *) results,
 				   results_length,
@@ -396,27 +433,141 @@ main(int argc, char **argv)
 		}
 		break;
 	case op_get_initial_cert:
-		/* XXX - verify that the reply is Signed-Data (a CertRep pkiMessage), signed by the RA cert, with a nonce matching the message we sent, and output an Enveloped-Data wrapped in a ContentInfo, if there is one in the Signed-Data. */
-		if (strcasecmp(content_type,
-			       "application/x-pki-message") == 0) {
-			base64 = cm_store_base64_from_bin(NULL,
-							  (unsigned char *) results,
-							  results_length);
-			pem = cm_submit_u_pem_from_base64("PKCS7", 0, base64);
-			printf("%s", pem);
-		} else {
-			printf("%.*s", results_length, results);
-		}
-		break;
 	case op_pkcsreq:
-		/* XXX - verify that the reply is Signed-Data (a CertRep pkiMessage), signed by the RA cert, with a nonce matching the message we sent, and output an Enveloped-Data wrapped in a ContentInfo, if there is one in the Signed-Data. */
 		if (strcasecmp(content_type,
 			       "application/x-pki-message") == 0) {
-			base64 = cm_store_base64_from_bin(NULL,
-							  (unsigned char *) results,
-							  results_length);
-			pem = cm_submit_u_pem_from_base64("PKCS7", 0, base64);
-			printf("%s\n", pem);
+			memset(&cacerts, 0, sizeof(cacerts));
+			cacerts[0] = cacert ? cacert : racert;
+			cacerts[1] = cacert ? racert : NULL;
+			cacerts[2] = NULL;
+			racerts = NULL;
+			if ((certs != NULL) &&
+			    (cm_pkcs7_parse(0, ctx,
+					    &cert1, &cert2, &othercerts,
+					    (const unsigned char *) certs,
+					    strlen(certs), NULL) == 0)) {
+				for (c = 0;
+				     (othercerts != NULL) &&
+				     (othercerts[c] != NULL);
+				     c++) {
+					continue;
+				}
+				racerts = talloc_array_ptrtype(ctx, racerts, c + 5);
+				for (c = 0;
+				     (othercerts != NULL) &&
+				     (othercerts[c] != NULL);
+				     c++) {
+					racerts[c] = othercerts[c];
+				}
+				if (cacert != NULL) {
+					racerts[c++] = cacert;
+				}
+				if (cert1 != NULL) {
+					racerts[c++] = cert1;
+				}
+				if (cert2 != NULL) {
+					racerts[c++] = cert2;
+				}
+				if (racert != NULL) {
+					racerts[c++] = racert;
+				}
+				racerts[c++] = NULL;
+			}
+			ERR_clear_error();
+			i = cm_pkcs7_verify_signed((unsigned char *) results, results_length,
+						   cacerts, racerts,
+						   NID_pkcs7_data, ctx,
+						   &tx, &msgtype, &pkistatus, &failinfo,
+						   &sender_nonce, &sender_nonce_length,
+						   &recipient_nonce, &recipient_nonce_length,
+						   &payload, &payload_length);
+			if (i != 0) {
+				printf(_("Error: failed to verify signature on "
+					 "server response.\n"));
+				while ((error = ERR_get_error()) != 0) {
+					memset(buf, '\0', sizeof(buf));
+					ERR_error_string_n(error, buf, sizeof(buf));
+					cm_log(1, "%s\n", buf);
+				}
+				s = cm_store_base64_from_bin(ctx, (unsigned char *) results,
+							     results_length);
+				s = cm_submit_u_pem_from_base64("PKCS7", 0, s);
+				fprintf(stderr, "%s", s);
+				return CM_SUBMIT_STATUS_UNREACHABLE;
+			}
+			if ((msgtype == NULL) ||
+			    (strcmp(msgtype, SCEP_MSGTYPE_CERTREP) != 0)) {
+				printf(_("Error: reply was not a CertRep (%s).\n"),
+				       msgtype ? msgtype : "none");
+				return CM_SUBMIT_STATUS_UNREACHABLE;
+			}
+			if (tx == NULL) {
+				printf(_("Error: reply is missing transactionId.\n"));
+				return CM_SUBMIT_STATUS_UNREACHABLE;
+			}
+			if (sent_tx != NULL) {
+				if (strcmp(sent_tx, tx) != 0) {
+					printf(_("Error: reply contains a "
+						 "different transactionId.\n"));
+					return CM_SUBMIT_STATUS_UNREACHABLE;
+				}
+			}
+			if (pkistatus == NULL) {
+				printf(_("Error: reply is missing pkiStatus.\n"));
+				return CM_SUBMIT_STATUS_UNREACHABLE;
+			}
+			if (recipient_nonce == NULL) {
+				printf(_("Error: reply is missing recipientNonce.\n"));
+				return CM_SUBMIT_STATUS_UNREACHABLE;
+			}
+			if ((recipient_nonce_length != sent_nonce_length) ||
+			    (memcmp(recipient_nonce, sent_nonce,
+				    sent_nonce_length) != 0)) {
+				printf(_("Error: reply nonce doesn't match request.\n"));
+				return CM_SUBMIT_STATUS_UNREACHABLE;
+			}
+			if (sender_nonce == NULL) {
+				printf(_("Error: reply is missing senderNonce.\n"));
+				return CM_SUBMIT_STATUS_UNREACHABLE;
+			}
+			if (strcmp(pkistatus, SCEP_PKISTATUS_PENDING) == 0) {
+				s = cm_store_base64_from_bin(ctx, sender_nonce,
+							     sender_nonce_length);
+				printf("%s\n", s);
+				return CM_SUBMIT_STATUS_WAIT;
+			} else
+			if (strcmp(pkistatus, SCEP_PKISTATUS_FAILURE) == 0) {
+				if (failinfo == NULL) {
+					printf(_("Unspecified failure at server.\n"));
+				} else
+				if (strcmp(failinfo, SCEP_FAILINFO_BAD_ALG) == 0) {
+					printf(_("Unrecognized or unsupported algorithm identifier.\n"));
+				} else
+				if (strcmp(failinfo, SCEP_FAILINFO_BAD_MESSAGE_CHECK) == 0) {
+					printf(_("Integrity check failed at server.\n"));
+				} else
+				if (strcmp(failinfo, SCEP_FAILINFO_BAD_REQUEST) == 0) {
+					printf(_("Transaction not permitted or supported by server.\n"));
+				} else
+				if (strcmp(failinfo, SCEP_FAILINFO_BAD_TIME) == 0) {
+					printf(_("Clock skew too great.\n"));
+				} else {
+					printf(_("Server returned failure code \"%s\".\n"),
+					       failinfo);
+				}
+				return CM_SUBMIT_STATUS_REJECTED;
+			} else
+			if (strcmp(pkistatus, SCEP_PKISTATUS_SUCCESS) == 0) {
+				s = cm_store_base64_from_bin(ctx, payload,
+							     payload_length);
+				s = cm_submit_u_pem_from_base64("PKCS7", 0, s);
+				printf("%s", s);
+				return CM_SUBMIT_STATUS_ISSUED;
+			} else {
+				printf(_("Error: pkiStatus \"%s\" not recognized.\n"),
+				       pkistatus);
+				return CM_SUBMIT_STATUS_UNREACHABLE;
+			}
 		} else {
 			printf("%.*s", results_length, results);
 		}

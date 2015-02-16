@@ -836,6 +836,22 @@ get_ostring_attribute(void *parent, STACK_OF(X509_ATTRIBUTE) *attrs, int nid,
 	return NULL;
 }
 
+static int
+ignore_purpose_errors(int ok, X509_STORE_CTX *ctx)
+{
+	switch (X509_STORE_CTX_get_error(ctx)) {
+	case X509_V_ERR_INVALID_PURPOSE:
+	case X509_V_ERR_KEYUSAGE_NO_DIGITAL_SIGNATURE:
+		/* Ignore purpose and usage checks. */
+		return 1;
+		break;
+	default:
+		/* Otherwise go with the library's default behavior. */
+		return ok;
+		break;
+	}
+}
+
 int
 cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 		       const char **roots, const char **othercerts,
@@ -905,6 +921,13 @@ cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 	store = X509_STORE_new();
 	if (store == NULL) {
 		cm_log(1, "Out of memory.\n");
+		goto done;
+	}
+	X509_STORE_set_verify_cb_func(store, &ignore_purpose_errors);
+	certs = sk_X509_new(cert_cmp);
+	if (certs == NULL) {
+		cm_log(1, "Out of memory.\n");
+		goto done;
 	}
 	for (i = 0; (roots != NULL) && (roots [i] != NULL); i++) {
 		s = talloc_strdup(parent, roots[i]);
@@ -925,16 +948,10 @@ cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 			goto done;
 		}
 		X509_STORE_add_cert(store, x);
+		sk_X509_push(certs, X509_dup(x));
 		X509_free(x);
 	}
 	for (i = 0; (othercerts != NULL) && (othercerts[i] != NULL); i++) {
-		if (certs == NULL) {
-			certs = sk_X509_new(cert_cmp);
-			if (certs == NULL) {
-				cm_log(1, "Out of memory.\n");
-				goto done;
-			}
-		}
 		s = talloc_strdup(parent, othercerts[i]);
 		if (s == NULL) {
 			cm_log(1, "Out of memory.\n");
@@ -959,13 +976,15 @@ cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 		cm_log(1, "Out of memory.\n");
 		goto done;
 	}
-	if (PKCS7_verify(p7, certs, store, NULL, out, 0) != 1) {
-		cm_log(1, "Message failed verification.\n");
-		goto done;
+	if (roots != NULL) {
+		if (PKCS7_verify(p7, certs, store, NULL, out, 0) != 1) {
+			cm_log(1, "Message failed verification.\n");
+			goto done;
+		}
 	}
 	p7s = p7->d.sign;
 	if (sk_PKCS7_SIGNER_INFO_num(p7s->signer_info) != 1) {
-		cm_log(1, "Number of signers != 1.\n");
+		cm_log(1, "Number of PKCS#7 signed-data signers != 1.\n");
 		goto done;
 	}
 	si = sk_PKCS7_SIGNER_INFO_value(p7s->signer_info, 0);
@@ -973,7 +992,7 @@ cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 	encapsulated = p7s->contents;
 	if (expected_content_type != NID_undef) {
 		if (encapsulated == NULL) {
-			cm_log(1, "Error parsing encapsulated content.\n");
+			cm_log(1, "Error parsing PKCS#7 encapsulated content.\n");
 			goto done;
 		}
 		if ((encapsulated->type == NULL) ||
@@ -987,7 +1006,7 @@ cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 		}
 	}
 	if (attrs == NULL) {
-		cm_log(1, "No signed attributes!\n");
+		cm_log(1, "PKCS#7 signed-data contains no signed attributes.\n");
 		goto done;
 	}
 	ret = 0;

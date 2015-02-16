@@ -437,6 +437,7 @@ parse_encryption_certs(struct cm_store_ca *ca, struct cm_cadata_state *state,
 	oldei = ca->cm_ca_encryption_issuer_cert;
 	ca->cm_ca_encryption_cert = talloc_strdup(ca, msg);
 	ca->cm_ca_encryption_issuer_cert = NULL;
+	ca->cm_ca_encryption_cert_pool = NULL;
 	p = strstr(ca->cm_ca_encryption_cert, "-----END CERTIFICATE-----");
 	if (p != NULL) {
 		p += strcspn(p, "\r\n");
@@ -452,6 +453,9 @@ parse_encryption_certs(struct cm_store_ca *ca, struct cm_cadata_state *state,
 		if (p != NULL) {
 			p += strcspn(p, "\r\n");
 			p += strspn(p, "\r\n");
+			if (strstr(p, "-----END CERTIFICATE-----") != NULL) {
+				ca->cm_ca_encryption_cert_pool = talloc_strdup(ca, p);
+			}
 			*p = '\0';
 		}
 	}
@@ -465,6 +469,12 @@ parse_encryption_certs(struct cm_store_ca *ca, struct cm_cadata_state *state,
 		if (strspn(ca->cm_ca_encryption_issuer_cert, "\r\n \t") ==
 		    strlen(ca->cm_ca_encryption_issuer_cert)) {
 			ca->cm_ca_encryption_issuer_cert = NULL;
+		}
+	}
+	if (ca->cm_ca_encryption_cert_pool != NULL) {
+		if (strspn(ca->cm_ca_encryption_cert_pool, "\r\n \t") ==
+		    strlen(ca->cm_ca_encryption_cert_pool)) {
+			ca->cm_ca_encryption_cert_pool = NULL;
 		}
 	}
 	if ((olde == NULL) && (ca->cm_ca_encryption_cert == NULL)) {

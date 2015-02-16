@@ -193,6 +193,7 @@ enum cm_store_file_field {
 	cm_store_ca_field_scep_ca_identifier,
 	cm_store_ca_field_encryption_cert,
 	cm_store_ca_field_encryption_issuer_cert,
+	cm_store_ca_field_encryption_cert_pool,
 
 	cm_store_file_field_invalid_high,
 };
@@ -355,6 +356,7 @@ static struct cm_store_file_field_list {
 	{cm_store_ca_field_scep_ca_identifier, "scep_ca_identifier"},
 	{cm_store_ca_field_encryption_cert, "ca_encryption_cert"},
 	{cm_store_ca_field_encryption_issuer_cert, "ca_encryption_issuer_cert"},
+	{cm_store_ca_field_encryption_cert_pool, "ca_encryption_cert_pool"},
 };
 
 static enum cm_store_file_field
@@ -658,6 +660,7 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_ca_field_scep_ca_identifier:
 			case cm_store_ca_field_encryption_cert:
 			case cm_store_ca_field_encryption_issuer_cert:
+			case cm_store_ca_field_encryption_cert_pool:
 				break;
 			case cm_store_file_field_id:
 				ret->cm_nickname = free_if_empty(p);
@@ -1385,6 +1388,10 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 				break;
 			case cm_store_ca_field_encryption_issuer_cert:
 				ret->cm_ca_encryption_issuer_cert =
+					free_if_empty(p);
+				break;
+			case cm_store_ca_field_encryption_cert_pool:
+				ret->cm_ca_encryption_cert_pool =
 					free_if_empty(p);
 				break;
 			}
@@ -2142,6 +2149,8 @@ cm_store_ca_write(FILE *fp, struct cm_store_ca *ca)
 				ca->cm_ca_encryption_cert);
 	cm_store_file_write_str(fp, cm_store_ca_field_encryption_issuer_cert,
 				ca->cm_ca_encryption_issuer_cert);
+	cm_store_file_write_str(fp, cm_store_ca_field_encryption_cert_pool,
+				ca->cm_ca_encryption_cert_pool);
 	if (ferror(fp)) {
 		return -1;
 	}
@@ -2643,6 +2652,8 @@ cm_store_ca_dup(void *parent, struct cm_store_ca *ca)
 		cm_store_maybe_strdup(ret, ca->cm_ca_encryption_cert);
 	ret->cm_ca_encryption_issuer_cert =
 		cm_store_maybe_strdup(ret, ca->cm_ca_encryption_issuer_cert);
+	ret->cm_ca_encryption_cert_pool =
+		cm_store_maybe_strdup(ret, ca->cm_ca_encryption_cert_pool);
 
 	return ret;
 }

@@ -341,6 +341,9 @@ struct cm_store_ca {
 	/* The CA's SCEP CA certificate, if it's different from the RA's
 	 * certificate.  Currently only used for SCEP. */
 	char *cm_ca_encryption_issuer_cert;
+	/* The CA's SCEP certificate pool, used for other SCEP-related
+	 * certificates.  A concatenated list of PEM-format certificates. */
+	char *cm_ca_encryption_cert_pool;
 };
 
 const char *cm_store_state_as_string(enum cm_state state);

@@ -419,11 +419,6 @@ cm_submit_e_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	if ((entry->cm_cert != NULL) && (strlen(entry->cm_cert) > 0)) {
 		setenv(CM_SUBMIT_CERTIFICATE_ENV, entry->cm_cert, 1);
 	}
-	if ((entry->cm_scep_nonce != NULL) &&
-	    (strlen(entry->cm_scep_nonce) > 0)) {
-		setenv(CM_SUBMIT_SCEP_SENDER_NONCE_ENV, entry->cm_scep_nonce,
-		       1);
-	}
 	if ((ca->cm_ca_scep_ca_identifier != NULL) &&
 	    (strlen(ca->cm_ca_scep_ca_identifier) > 0)) {
 		setenv(CM_SUBMIT_SCEP_CA_IDENTIFIER_ENV,
@@ -438,6 +433,11 @@ cm_submit_e_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	    (strlen(ca->cm_ca_encryption_issuer_cert) > 0)) {
 		setenv(CM_SUBMIT_SCEP_CA_CERTIFICATE_ENV,
 		       ca->cm_ca_encryption_issuer_cert, 1);
+	}
+	if ((ca->cm_ca_encryption_cert_pool != NULL) &&
+	    (strlen(ca->cm_ca_encryption_cert_pool) > 0)) {
+		setenv(CM_SUBMIT_SCEP_CERTIFICATES_ENV,
+		       ca->cm_ca_encryption_cert_pool, 1);
 	}
 	if ((entry->cm_scep_req != NULL) &&
 	    (strlen(entry->cm_scep_req) > 0)) {

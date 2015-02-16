@@ -217,7 +217,7 @@ dogtag_submit_LDADD = $(CURL_LIBS) $(XML_LIBS) $(NSS_LIBS) \
 		      $(GMP_LIBS) $(UUID_LIBS) $(LTLIBICONV)
 scep_submit_CFLAGS = $(AM_CFLAGS) $(XML_CFLAGS) $(NSS_CFLAGS) $(CURL_CFLAGS)
 scep_submit_SOURCES = scep.c scep.h \
-		submit-h.c submit-h.h util-m.c util-m.h util-n.c util-n.h \
+		submit-h.c submit-h.h util-m.c util-m.h util-o.c util-o.h \
 		submit-u.c submit-u.h submit-e.h util.c util.h log.c log.h \
 		pkcs7.c pkcs7.h store.h store-gen.c tm.c tm.h prefs.c prefs.h \
 		prefs-o.c prefs-o.h scep-o.c scep-o.h env.h env-system.c
