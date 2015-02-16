@@ -72,7 +72,7 @@ static void
 help(const char *cmd)
 {
 	fprintf(stderr,
-		"Usage: %s -u URL [options] [-c|-C|-g|-p] [pkiMessage]\n"
+		"Usage: %s -u URL [options] [-c|-C|-g|-p] [pkiMessage file]\n"
 		"Options:\n"
 		"\t[-i CA identifier]\n"
 		"\t[-c]\tread CA capabilities\n"

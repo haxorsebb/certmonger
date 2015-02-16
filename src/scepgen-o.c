@@ -47,6 +47,7 @@
 #include "pin.h"
 #include "pkcs7.h"
 #include "prefs-o.h"
+#include "scep.h"
 #include "scep-o.h"
 #include "scepgen.h"
 #include "scepgen-int.h"
@@ -428,13 +429,15 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 		X509_PUBKEY_set(&old_cert->cert_info->key, old_pkey);
 		*csr_old = build_pkimessage(old_pkey, old_cert, chain,
 					    csr, csr_length,
-					    entry->cm_scep_tx, "19",
+					    entry->cm_scep_tx,
+					    SCEP_MSGTYPE_PKCSREQ,
 					    NULL, NULL,
 					    nonce, nonce_length,
 					    NULL, 0);
 		*ias_old = build_pkimessage(old_pkey, old_cert, chain,
 					    old_ias, old_ias_length,
-					    entry->cm_scep_tx, "20",
+					    entry->cm_scep_tx,
+					    SCEP_MSGTYPE_GETCERTINITIAL,
 					    NULL, NULL,
 					    nonce, nonce_length,
 					    NULL, 0);
@@ -451,13 +454,15 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 		X509_PUBKEY_set(&new_cert->cert_info->key, new_pkey);
 		*csr_new = build_pkimessage(new_pkey, new_cert, chain,
 					    csr, csr_length,
-					    entry->cm_scep_tx, "19",
+					    entry->cm_scep_tx,
+					    SCEP_MSGTYPE_PKCSREQ,
 					    NULL, NULL,
 					    nonce, nonce_length,
 					    NULL, 0);
 		*ias_new = build_pkimessage(new_pkey, new_cert, chain,
 					    new_ias, new_ias_length,
-					    entry->cm_scep_tx, "20",
+					    entry->cm_scep_tx,
+					    SCEP_MSGTYPE_GETCERTINITIAL,
 					    NULL, NULL,
 					    nonce, nonce_length,
 					    NULL, 0);
@@ -470,13 +475,15 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 		X509_PUBKEY_set(&new_cert->cert_info->key, old_pkey);
 		*csr_new = build_pkimessage(old_pkey, new_cert, chain,
 					    csr, csr_length,
-					    entry->cm_scep_tx, "19",
+					    entry->cm_scep_tx,
+					    SCEP_MSGTYPE_PKCSREQ,
 					    NULL, NULL,
 					    nonce, nonce_length,
 					    NULL, 0);
 		*ias_new = build_pkimessage(old_pkey, new_cert, chain,
 					    new_ias, new_ias_length,
-					    entry->cm_scep_tx, "20",
+					    entry->cm_scep_tx,
+					    SCEP_MSGTYPE_GETCERTINITIAL,
 					    NULL, NULL,
 					    nonce, nonce_length,
 					    NULL, 0);

@@ -1,6 +1,12 @@
 #!/bin/bash
 cd "$tmpdir"
 
+SCEP_MSGTYPE_PKCSREQ="19"
+SCEP_MSGTYPE_CERTREP="3"
+SCEP_MSGTYPE_GETCERTINITIAL="20"
+SCEP_MSGTYPE_GETCERT="21"
+SCEP_MSGTYPE_GETCRL="22"
+
 $toolsdir/cachain.sh 0 2> /dev/null
 
 cat > ca << EOF
@@ -89,14 +95,14 @@ echo OK
 echo "[req, old root]"
 grep ^req: scepdata | cut -f2- -d: | base64 -i -d | $toolsdir/pk7verify -r ca0.crt ee.crt 2>&1 > results 2>&1
 check_verified
-check_msgtype 19
+check_msgtype $SCEP_MSGTYPE_PKCSREQ
 check_txid
 check_nonce
 echo OK
 echo "[gic, old trust root]"
 grep ^gic: scepdata | cut -f2- -d: | base64 -i -d | $toolsdir/pk7verify -r ca0.crt ee.crt 2>&1 > results 2>&1
 check_verified
-check_msgtype 20
+check_msgtype $SCEP_MSGTYPE_GETCERTINITIAL
 check_txid
 check_nonce
 echo OK
@@ -111,14 +117,14 @@ echo OK
 echo "[req next, self root]"
 grep ^req.next.: scepdata | cut -f2- -d: | base64 -i -d | $toolsdir/pk7verify -r mini.crt ee.crt > results 2>&1
 check_verified
-check_msgtype 19
+check_msgtype $SCEP_MSGTYPE_PKCSREQ
 check_txid
 check_nonce
 echo OK
 echo "[gic next, self root]"
 grep ^gic.next.: scepdata | cut -f2- -d: | base64 -i -d | $toolsdir/pk7verify -r mini.crt ee.crt > results 2>&1
 check_verified
-check_msgtype 20
+check_msgtype $SCEP_MSGTYPE_GETCERTINITIAL
 check_txid
 check_nonce
 echo OK
