@@ -69,6 +69,12 @@ echo iLoveCookiesSome
 exit 1
 EOF
 chmod u+x ca-ask-again
+cat > ca-issued-binary-x509 << EOF
+#!/bin/sh
+echo "$cert" | openssl x509 -outform der
+exit 0
+EOF
+chmod u+x ca-issued-binary-x509
 cat > ca-reject << EOF
 #!/bin/sh
 echo CA rejected us, must have been having a bad day.
@@ -392,6 +398,29 @@ cat > ca3 << EOF
 id=Friendly
 ca_type=EXTERNAL
 ca_external_helper=$tmpdir/ca-issued-with-no-newline
+EOF
+: > $tmpdir/certfile4
+$toolsdir/iterate ca3 entry3 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
+$toolsdir/iterate ca3 entry3 NEED_CSR,GENERATING_CSR
+$toolsdir/iterate ca3 entry3 NEED_TO_SUBMIT,SUBMITTING
+$toolsdir/iterate ca3 entry3 NEED_TO_SAVE_CERT,SAVING_CERT,START_SAVING_CERT
+
+echo
+echo '[Enroll, helper produces binary certificate output.]'
+cat > entry3 << EOF
+id=Test
+ca_name=Friendly
+state=HAVE_KEY_PAIR
+key_storage_type=FILE
+key_storage_location=$tmpdir/keyfile
+cert_storage_type=FILE
+cert_storage_location=$tmpdir/certfile4
+notification_method=STDOUT
+EOF
+cat > ca3 << EOF
+id=Friendly
+ca_type=EXTERNAL
+ca_external_helper=$tmpdir/ca-issued-binary-x509
 EOF
 : > $tmpdir/certfile4
 $toolsdir/iterate ca3 entry3 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
