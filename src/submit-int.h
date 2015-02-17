@@ -20,7 +20,10 @@
 
 struct cm_store_entry;
 struct cm_submit_state {
+	/* The parent usually needs a pointer to the entry for updating. */
 	struct cm_store_entry *entry;
+	/* The parent uses this to manage the subprocess that's doing the heavy
+	 * lifting. */
 	struct cm_subproc_state *subproc;
 	/* Check if the CSR was submitted to the CA yet, or we determined that
 	 * doing so was not possible at this time. */
@@ -43,6 +46,9 @@ struct cm_submit_state {
 	void (*done)(struct cm_submit_state *state);
 	/* Recommended delay before the next connection to the CA. */
 	int delay;
+	/* Reserved for implementation use.  Currently only used by the
+	 * "external" submission implementations. */
+	void *reserved;
 };
 
 struct cm_submit_state *cm_submit_e_start(struct cm_store_ca *ca,
