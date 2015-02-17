@@ -47,6 +47,7 @@
 #include "keygen-int.h"
 #include "log.h"
 #include "pin.h"
+#include "prefs.h"
 #include "prefs-o.h"
 #include "store.h"
 #include "store-int.h"

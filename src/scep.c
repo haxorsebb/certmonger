@@ -541,13 +541,13 @@ main(int argc, char **argv)
 					printf(_("Unspecified failure at server.\n"));
 				} else
 				if (strcmp(failinfo, SCEP_FAILINFO_BAD_ALG) == 0) {
-					printf(_("Unrecognized or unsupported algorithm identifier.\n"));
+					printf(_("Unrecognized or unsupported algorithm identifier in client request.\n"));
 				} else
 				if (strcmp(failinfo, SCEP_FAILINFO_BAD_MESSAGE_CHECK) == 0) {
-					printf(_("Integrity check failed at server.\n"));
+					printf(_("Integrity check of client request failed at server.\n"));
 				} else
 				if (strcmp(failinfo, SCEP_FAILINFO_BAD_REQUEST) == 0) {
-					printf(_("Transaction not permitted or supported by server.\n"));
+					printf(_("Transaction either is not permitted or is not supported by server.\n"));
 				} else
 				if (strcmp(failinfo, SCEP_FAILINFO_BAD_TIME) == 0) {
 					printf(_("Clock skew too great.\n"));
