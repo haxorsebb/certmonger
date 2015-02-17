@@ -339,9 +339,9 @@ State logic:
 						store-ca-cookie
 						state_next = CA_UNCONFIGURED
 						state_transition = later
-				elseif ca-is-underconfigured
+				elseif need-scep-data
 					state_next = NEED_SCEP_DATA
-					state_transition = soon
+					state_transition = now
 				else
 					state_next = NEED_GUIDANCE
 					state_transition = now

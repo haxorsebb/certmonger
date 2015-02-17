@@ -425,16 +425,28 @@ parse_capabilities(struct cm_store_ca *ca, struct cm_cadata_state *state,
 	parse_list(ca, state, msg, NULL, &ca->cm_ca_capabilities);
 }
 
+static dbus_bool_t
+strings_differ(const char *a, const char *b)
+{
+	if (a == NULL) {
+		a = "";
+	}
+	if (b == NULL) {
+		b = "";
+	}
+	return (strcmp(a, b) != 0);
+}
 
 static void
 parse_encryption_certs(struct cm_store_ca *ca, struct cm_cadata_state *state,
 		       const char *msg)
 {
-	const char *olde, *oldei;
+	const char *olde, *oldei, *oldep;
 	char *p;
 
 	olde = ca->cm_ca_encryption_cert;
 	oldei = ca->cm_ca_encryption_issuer_cert;
+	oldep = ca->cm_ca_encryption_cert_pool;
 	ca->cm_ca_encryption_cert = talloc_strdup(ca, msg);
 	ca->cm_ca_encryption_issuer_cert = NULL;
 	ca->cm_ca_encryption_cert_pool = NULL;
@@ -477,31 +489,9 @@ parse_encryption_certs(struct cm_store_ca *ca, struct cm_cadata_state *state,
 			ca->cm_ca_encryption_cert_pool = NULL;
 		}
 	}
-	if ((olde == NULL) && (ca->cm_ca_encryption_cert == NULL)) {
-		if ((oldei == NULL) && (ca->cm_ca_encryption_issuer_cert == NULL)) {
-			state->modified = 0;
-		} else
-		if ((oldei != NULL) && (ca->cm_ca_encryption_issuer_cert != NULL) &&
-		    (strcmp(oldei, ca->cm_ca_encryption_issuer_cert) == 0)) {
-			state->modified = 0;
-		} else {
-			state->modified = 1;
-		}
-	} else
-	if ((olde != NULL) && (ca->cm_ca_encryption_cert != NULL) &&
-	    (strcmp(olde, ca->cm_ca_encryption_cert) == 0)) {
-		if ((oldei == NULL) && (ca->cm_ca_encryption_issuer_cert == NULL)) {
-			state->modified = 0;
-		} else
-		if ((oldei != NULL) && (ca->cm_ca_encryption_issuer_cert != NULL) &&
-		    (strcmp(oldei, ca->cm_ca_encryption_issuer_cert) == 0)) {
-			state->modified = 0;
-		} else {
-			state->modified = 1;
-		}
-	} else {
-		state->modified = 1;
-	}
+	state->modified = strings_differ(olde, ca->cm_ca_encryption_cert) ||
+			  strings_differ(oldei, ca->cm_ca_encryption_issuer_cert) ||
+			  strings_differ(oldep, ca->cm_ca_encryption_cert_pool);
 }
 
 static struct cm_cadata_state *

@@ -2281,6 +2281,7 @@ cm_iterate_ca(struct cm_store_ca *ca,
 				case cm_ca_phase_enroll_reqs:
 				case cm_ca_phase_renew_reqs:
 				case cm_ca_phase_capabilities:
+					cm_restart_entries_by_ca(context, ca->cm_nickname);
 					ca->cm_ca_state[state->cm_phase] = CM_CA_NEED_TO_ANALYZE;
 					break;
 				case cm_ca_phase_encryption_certs:
