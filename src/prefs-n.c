@@ -31,6 +31,9 @@ cm_prefs_nss_sig_alg(SECKEYPrivateKey *pkey)
 	switch (pkey->keyType) {
 	case nullKey:
 		switch (cm_prefs_preferred_digest()) {
+		case cm_prefs_md5:
+			return SEC_OID_MD5;
+			break;
 		case cm_prefs_sha1:
 			return SEC_OID_SHA1;
 			break;
@@ -48,6 +51,9 @@ cm_prefs_nss_sig_alg(SECKEYPrivateKey *pkey)
 		break;
 	case rsaKey:
 		switch (cm_prefs_preferred_digest()) {
+		case cm_prefs_md5:
+			return SEC_OID_PKCS1_MD5_WITH_RSA_ENCRYPTION;
+			break;
 		case cm_prefs_sha1:
 			return SEC_OID_PKCS1_SHA1_WITH_RSA_ENCRYPTION;
 			break;
@@ -68,6 +74,7 @@ cm_prefs_nss_sig_alg(SECKEYPrivateKey *pkey)
 		break;
 	case dsaKey:
 		switch (cm_prefs_preferred_digest()) {
+		case cm_prefs_md5:
 		case cm_prefs_sha1:
 			return SEC_OID_ANSIX9_DSA_SIGNATURE_WITH_SHA1_DIGEST;
 			break;
@@ -82,6 +89,7 @@ cm_prefs_nss_sig_alg(SECKEYPrivateKey *pkey)
 		break;
 	case ecKey:
 		switch (cm_prefs_preferred_digest()) {
+		case cm_prefs_md5:
 		case cm_prefs_sha1:
 			return SEC_OID_ANSIX962_ECDSA_SHA224_SIGNATURE;
 			break;
@@ -107,6 +115,9 @@ unsigned int
 cm_prefs_nss_dig_alg(void)
 {
 	switch (cm_prefs_preferred_digest()) {
+	case cm_prefs_md5:
+		return SEC_OID_MD5;
+		break;
 	case cm_prefs_sha1:
 		return SEC_OID_SHA1;
 		break;
@@ -127,6 +138,9 @@ unsigned int
 cm_prefs_nss_dig_alg_len(void)
 {
 	switch (cm_prefs_nss_dig_alg()) {
+	case SEC_OID_MD5:
+		return 128 / 8;
+		break;
 	case SEC_OID_SHA1:
 		return 160 / 8;
 		break;

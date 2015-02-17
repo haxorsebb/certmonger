@@ -107,6 +107,14 @@ cm_prefs_preferred_cipher(void)
 			free(cipher);
 			return cm_prefs_aes256;
 		}
+		if (strcasecmp(cipher, "des") == 0) {
+			free(cipher);
+			return cm_prefs_des;
+		}
+		if (strcasecmp(cipher, "des3") == 0) {
+			free(cipher);
+			return cm_prefs_des3;
+		}
 		free(cipher);
 	}
 	return cm_prefs_aes128;
@@ -118,6 +126,11 @@ cm_prefs_preferred_digest(void)
 	char *digest;
 	digest = cm_prefs_config(NULL, "digest");
 	if (digest != NULL) {
+		if ((strcasecmp(digest, "md5") == 0) ||
+		    (strcasecmp(digest, "md-5") == 0)) {
+			free(digest);
+			return cm_prefs_md5;
+		}
 		if ((strcasecmp(digest, "sha1") == 0) ||
 		    (strcasecmp(digest, "sha-1") == 0)) {
 			free(digest);
