@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2011,2012,2013,2014 Red Hat, Inc.
+ * Copyright (C) 2009,2011,2012,2013,2014,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -333,7 +333,7 @@ cm_submit_e_done(struct cm_submit_state *state)
 /* Attempt to exec the helper. */
 struct cm_submit_e_args {
 	int error_fd;
-	const char *csr, *spkac, *spki, *cookie, *operation;
+	const char *spki, *operation;
 };
 
 static int
@@ -370,11 +370,11 @@ cm_submit_e_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	if ((args->operation != NULL) && (strlen(args->operation) > 0)) {
 		setenv(CM_SUBMIT_OPERATION_ENV, args->operation, 1);
 	}
-	if ((args->csr != NULL) && (strlen(args->csr) > 0)) {
-		setenv(CM_SUBMIT_CSR_ENV, args->csr, 1);
+	if ((entry->cm_csr != NULL) && (strlen(entry->cm_csr) > 0)) {
+		setenv(CM_SUBMIT_CSR_ENV, entry->cm_csr, 1);
 	}
-	if ((args->spkac != NULL) && (strlen(args->spkac) > 0)) {
-		setenv(CM_SUBMIT_SPKAC_ENV, args->spkac, 1);
+	if ((entry->cm_spkac != NULL) && (strlen(entry->cm_spkac) > 0)) {
+		setenv(CM_SUBMIT_SPKAC_ENV, entry->cm_spkac, 1);
 	}
 	if ((args->spki != NULL) && (strlen(args->spki) > 0)) {
 		setenv(CM_SUBMIT_SPKI_ENV, args->spki, 1);
@@ -405,8 +405,8 @@ cm_submit_e_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	if (key_type != NULL) {
 		setenv(CM_SUBMIT_KEY_TYPE_ENV, key_type, 1);
 	}
-	if ((args->cookie != NULL) && (strlen(args->cookie) > 0)) {
-		setenv(CM_SUBMIT_COOKIE_ENV, args->cookie, 1);
+	if ((entry->cm_ca_cookie != NULL) && (strlen(entry->cm_ca_cookie) > 0)) {
+		setenv(CM_SUBMIT_COOKIE_ENV, entry->cm_ca_cookie, 1);
 	}
 	if ((entry->cm_ca_nickname != NULL) &&
 	    (strlen(entry->cm_ca_nickname) > 0)) {
@@ -499,10 +499,7 @@ cm_submit_e_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 struct cm_submit_state *
 cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 			    struct cm_store_entry *entry,
-			    const char *csr,
-			    const char *spkac,
 			    const char *spki,
-			    const char *cookie,
 			    const char *operation)
 {
 	int errorfds[2], nread;
@@ -536,10 +533,7 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 				state = NULL;
 			} else {
 				args.error_fd = errorfds[1];
-				args.csr = csr;
-				args.spkac = spkac;
 				args.spki = spki;
-				args.cookie = cookie;
 				args.operation = operation;
 				state->subproc = cm_subproc_start(cm_submit_e_main,
 								  state,
@@ -600,17 +594,9 @@ cm_submit_e_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 	}
 	if ((entry->cm_ca_cookie != NULL) &&
 	    (strlen(entry->cm_ca_cookie) > 0)) {
-		ret = cm_submit_e_start_or_resume(ca, entry, entry->cm_csr,
-						  entry->cm_spkac,
-						  spki,
-						  entry->cm_ca_cookie,
-						  "POLL");
+		ret = cm_submit_e_start_or_resume(ca, entry, spki, "POLL");
 	} else {
-		ret = cm_submit_e_start_or_resume(ca, entry, entry->cm_csr,
-						  entry->cm_spkac,
-						  spki,
-						  entry->cm_ca_cookie,
-						  "SUBMIT");
+		ret = cm_submit_e_start_or_resume(ca, entry, spki, "SUBMIT");
 	}
 	if (spki != NULL) {
 		talloc_free(spki);
