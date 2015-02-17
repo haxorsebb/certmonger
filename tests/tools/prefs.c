@@ -38,8 +38,17 @@ main(int argc, char **argv)
 	case cm_prefs_aes256:
 		printf("cipher: AES256\n");
 		break;
+	case cm_prefs_des:
+		printf("cipher: DES\n");
+		break;
+	case cm_prefs_des3:
+		printf("cipher: DES3\n");
+		break;
 	}
 	switch (cm_prefs_preferred_digest()) {
+	case cm_prefs_md5:
+		printf("digest: MD5\n");
+		break;
 	case cm_prefs_sha1:
 		printf("digest: SHA1\n");
 		break;

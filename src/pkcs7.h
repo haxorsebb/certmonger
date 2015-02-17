@@ -18,6 +18,8 @@
 #ifndef cmpkcs7_h
 #define cmpkcs7_h
 
+#include "prefs.h"
+
 #define CM_PKCS7_LEAF_PREFER_ENCRYPT (1 << 0)
 int cm_pkcs7_parsev(unsigned int flags, void *parent,
 		    char **certleaf, char **certtop, char ***certothers,
@@ -27,14 +29,15 @@ int cm_pkcs7_parse(unsigned int flags, void *parent,
 		   char **certleaf, char **certtop, char ***certothers,
 		   const unsigned char *buffer, size_t length, ...);
 
-int cm_pkcs7_envelope_data(char *encryption_cert,
+int cm_pkcs7_envelope_data(char *encryption_cert, enum cm_prefs_cipher cipher,
 			   unsigned char *data, size_t dlength,
 			   unsigned char **enveloped, size_t *length);
-int cm_pkcs7_envelope_csr(char *encryption_cert, char *csr,
-			  unsigned char **enveloped, size_t *length);
+int cm_pkcs7_envelope_csr(char *encryption_cert, enum cm_prefs_cipher cipher,
+			  char *csr, unsigned char **enveloped, size_t *length);
 int cm_pkcs7_generate_ias(char *cacert, char *minicert,
 			  unsigned char **ias, size_t *length);
-int cm_pkcs7_envelope_ias(char *encryption_cert, char *cacert, char *minicert,
+int cm_pkcs7_envelope_ias(char *encryption_cert, enum cm_prefs_cipher cipher,
+			  char *cacert, char *minicert,
 			  unsigned char **enveloped, size_t *length);
 int cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 			   const char **roots, const char **othercerts,

@@ -359,7 +359,10 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 	STACK_OF(X509) *chain = NULL;
 	EVP_PKEY *pubkey;
 	char *pem;
+	const char *capability;
+	int i;
 	long error;
+	enum cm_prefs_cipher cipher;
 
 	util_o_init();
 	ERR_load_crypto_strings();
@@ -392,8 +395,19 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 		free(pem);
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
+	cipher = cm_prefs_des;
+	for (i = 0;
+	     (ca->cm_ca_capabilities != NULL) &&
+	     (ca->cm_ca_capabilities[i] != NULL);
+	     i++) {
+		capability = ca->cm_ca_capabilities[i];
+		if (strcmp(capability, "DES3") == 0) {
+			cipher = cm_prefs_des3;
+			break;
+		}
+	}
 	if (old_cert != NULL) {
-		if (cm_pkcs7_envelope_ias(ca->cm_ca_encryption_cert,
+		if (cm_pkcs7_envelope_ias(ca->cm_ca_encryption_cert, cipher,
 					  ca->cm_ca_encryption_issuer_cert,
 					  entry->cm_cert,
 					  &old_ias, &old_ias_length) != 0) {
@@ -405,7 +419,7 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 		old_ias = NULL;
 		old_ias_length = 0;
 	}
-	if (cm_pkcs7_envelope_ias(ca->cm_ca_encryption_cert,
+	if (cm_pkcs7_envelope_ias(ca->cm_ca_encryption_cert, cipher,
 				  ca->cm_ca_encryption_issuer_cert,
 				  pem,
 				  &new_ias, &new_ias_length) != 0) {
@@ -414,7 +428,7 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	free(pem);
-	if (cm_pkcs7_envelope_csr(ca->cm_ca_encryption_cert,
+	if (cm_pkcs7_envelope_csr(ca->cm_ca_encryption_cert, cipher,
 				  entry->cm_csr,
 				  &csr, &csr_length) != 0) {
 		cm_log(1, "Error generating enveloped CSR.\n");

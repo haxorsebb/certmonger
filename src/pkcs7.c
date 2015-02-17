@@ -39,6 +39,7 @@
 
 #include "log.h"
 #include "pkcs7.h"
+#include "prefs.h"
 #include "prefs-o.h"
 #include "scep-o.h"
 #include "store.h"
@@ -468,7 +469,7 @@ cm_pkcs7_parse(unsigned int flags, void *parent,
 
 /* Envelope some data for the recipient. */
 int
-cm_pkcs7_envelope_data(char *encryption_cert,
+cm_pkcs7_envelope_data(char *encryption_cert, enum cm_prefs_cipher cipher,
 		       unsigned char *data, size_t dlength,
 		       unsigned char **enveloped, size_t *length)
 {
@@ -506,7 +507,7 @@ cm_pkcs7_envelope_data(char *encryption_cert,
 		cm_log(1, "Out of memory.\n");
 		goto done;
 	}
-	p7 = PKCS7_encrypt(recipients, in, cm_prefs_ossl_cipher(),
+	p7 = PKCS7_encrypt(recipients, in, cm_prefs_ossl_cipher_by_pref(cipher),
 			   PKCS7_BINARY);
 	BIO_free(in);
 
@@ -544,8 +545,8 @@ done:
 }
 
 int
-cm_pkcs7_envelope_csr(char *encryption_cert, char *csr,
-		      unsigned char **enveloped, size_t *length)
+cm_pkcs7_envelope_csr(char *encryption_cert, enum cm_prefs_cipher cipher,
+		      char *csr, unsigned char **enveloped, size_t *length)
 {
 	BIO *in;
 	X509_REQ *req = NULL;
@@ -582,7 +583,7 @@ cm_pkcs7_envelope_csr(char *encryption_cert, char *csr,
 		cm_log(1, "Error encoding certificate signing request.\n");
 		goto done;
 	}
-	ret = cm_pkcs7_envelope_data(encryption_cert, dreq, dlen,
+	ret = cm_pkcs7_envelope_data(encryption_cert, cipher, dreq, dlen,
 				     enveloped, length);
 done:
 	if (req != NULL) {
@@ -720,8 +721,9 @@ done:
 }
 
 int
-cm_pkcs7_envelope_ias(char *encryption_cert, char *cacert, char *minicert,
-		      unsigned char **enveloped, size_t *length)
+cm_pkcs7_envelope_ias(char *encryption_cert, enum cm_prefs_cipher cipher,
+		      char *cacert, char *minicert, unsigned char **enveloped,
+		      size_t *length)
 {
 	int ret = -1;
 	unsigned char *dias = NULL;
@@ -739,7 +741,7 @@ cm_pkcs7_envelope_ias(char *encryption_cert, char *cacert, char *minicert,
 		goto done;
 	}
 
-	ret = cm_pkcs7_envelope_data(encryption_cert, dias, dlen,
+	ret = cm_pkcs7_envelope_data(encryption_cert, cipher, dias, dlen,
 				     enveloped, length);
 done:
 	free(dias);

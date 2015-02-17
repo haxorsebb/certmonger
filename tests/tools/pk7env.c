@@ -115,7 +115,8 @@ main(int argc, char **argv)
 
 		if ((strncmp(p[1], CSR1, strlen(CSR1)) == 0) ||
 		    (strncmp(p[1], CSR2, strlen(CSR2)) == 0)) {
-			if (cm_pkcs7_envelope_csr(p[0], p[1], &enveloped, &length) != 0) {
+			if (cm_pkcs7_envelope_csr(p[0], cm_prefs_des3, p[1],
+						  &enveloped, &length) != 0) {
 				fprintf(stderr, "\"%s\"(\"%s\"): enveloping error.\n",
 					argv[i - 2], argv[i - 1]);
 				return 1;
@@ -167,7 +168,8 @@ main(int argc, char **argv)
 			}
 			printf("%s\n", cm_store_base64_from_bin(NULL, enveloped, length));
 			free(enveloped);
-			if (cm_pkcs7_envelope_ias(p[0], p[1], p[2], &enveloped, &length) != 0) {
+			if (cm_pkcs7_envelope_ias(p[0], cm_prefs_des3, p[1],
+						  p[2], &enveloped, &length) != 0) {
 				fprintf(stderr, "\"%s\"(\"%s\",\"%s\"): enveloping error.\n",
 					argv[i - 3], argv[i - 2], argv[i - 1]);
 				return 1;

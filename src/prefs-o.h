@@ -19,6 +19,8 @@
 #define cmprefso_h
 
 const EVP_CIPHER *cm_prefs_ossl_cipher(void);
+const EVP_CIPHER *cm_prefs_ossl_cipher_by_pref(enum cm_prefs_cipher cipher);
 const EVP_MD *cm_prefs_ossl_hash(void);
+const EVP_MD *cm_prefs_ossl_hash_by_pref(enum cm_prefs_digest digest);
 
 #endif
