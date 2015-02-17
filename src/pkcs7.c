@@ -514,7 +514,7 @@ cm_pkcs7_envelope_data(char *encryption_cert,
 		cm_log(1, "Error encrypting signing request.\n");
 		goto done;
 	}
-	len = i2d_PKCS7_ENVELOPE(p7->d.enveloped, NULL);
+	len = i2d_PKCS7(p7, NULL);
 	if (len < 0) {
 		cm_log(1, "Error encoding encrypted signing request.\n");
 		goto done;
@@ -525,7 +525,7 @@ cm_pkcs7_envelope_data(char *encryption_cert,
 		goto done;
 	}
 	u = dp7;
-	if (i2d_PKCS7_ENVELOPE(p7->d.enveloped, &u) != len) {
+	if (i2d_PKCS7(p7, &u) != len) {
 		cm_log(1, "Error encoding encrypted signing request.\n");
 		goto done;
 	}

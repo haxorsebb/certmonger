@@ -160,8 +160,8 @@ $toolsdir/pk7parse dercert
 $toolsdir/pk7parse derpkcs7
 $toolsdir/pk7parse bundle
 echo Decrypted CSR:
-$toolsdir/pk7env recipient csr | base64 -i -d | $toolsdir/addcinfo | openssl smime -inform der -decrypt -inkey key recipient -binary | base64
+$toolsdir/pk7env recipient csr | base64 -i -d | openssl smime -inform der -decrypt -inkey key recipient -binary | base64
 echo Encoded issuer-and-subject:
 $toolsdir/pk7env recipient recipient recipient | head -n 1
 echo Decrypted issuer-and-subject:
-$toolsdir/pk7env recipient recipient recipient | tail -n 1 | base64 -i -d | $toolsdir/addcinfo | openssl smime -inform der -decrypt -inkey key recipient | base64
+$toolsdir/pk7env recipient recipient recipient | tail -n 1 | base64 -i -d | openssl smime -inform der -decrypt -inkey key recipient | base64
