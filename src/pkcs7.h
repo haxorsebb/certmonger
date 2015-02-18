@@ -23,10 +23,22 @@
 #define CM_PKCS7_LEAF_PREFER_ENCRYPT (1 << 0)
 int cm_pkcs7_parsev(unsigned int flags, void *parent,
 		    char **certleaf, char **certtop, char ***certothers,
+		    void (*decrypt_envelope)(const unsigned char *envelope,
+					     size_t length,
+					     void *decrypt_userdata,
+					     unsigned char **payload,
+					     size_t *payload_length),
+		    void *decrypt_userdata,
 		    int n_buffers,
 		    const unsigned char **buffers, size_t *lengths);
 int cm_pkcs7_parse(unsigned int flags, void *parent,
 		   char **certleaf, char **certtop, char ***certothers,
+		   void (*decrypt_envelope)(const unsigned char *envelope,
+					    size_t length,
+					    void *decrypt_userdata,
+					    unsigned char **payload,
+					    size_t *payload_length),
+		   void *decrypt_userdata,
 		   const unsigned char *buffer, size_t length, ...);
 
 int cm_pkcs7_envelope_data(char *encryption_cert, enum cm_prefs_cipher cipher,

@@ -87,6 +87,7 @@ main(int argc, char **argv)
 	}
 	if (cm_pkcs7_parsev(CM_PKCS7_LEAF_PREFER_ENCRYPT,
 			    parent, &leaf, &top, &certs,
+			    NULL, NULL,
 			    n_buffers, buffers, lengths) != 0) {
 		fprintf(stderr, "\"%s\": parse error.\n", argv[i]);
 		return 1;

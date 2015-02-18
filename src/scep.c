@@ -427,6 +427,7 @@ main(int argc, char **argv)
 		}
 		if (cm_pkcs7_parse(CM_PKCS7_LEAF_PREFER_ENCRYPT, ctx,
 				   &racert, &cacert, &othercerts,
+				   NULL, NULL,
 				   (const unsigned char *) results,
 				   results_length,
 				   ((results_length2 > 0) ?
@@ -465,6 +466,7 @@ main(int argc, char **argv)
 			if ((certs != NULL) &&
 			    (cm_pkcs7_parse(0, ctx,
 					    &cert1, &cert2, &othercerts,
+					    NULL, NULL,
 					    (const unsigned char *) certs,
 					    strlen(certs), NULL) == 0)) {
 				for (c = 0;

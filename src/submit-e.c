@@ -376,6 +376,7 @@ cm_submit_e_postprocess_main(int fd, struct cm_store_ca *ca,
 	cm_log(1, "Postprocessing output \"%.*s\".\n", estate->msg_length,
 	       estate->msg);
 	i = cm_pkcs7_parse(0, estate, &leaf, &top, &others,
+			   NULL, NULL,
 			   (const unsigned char *) estate->msg,
 			   estate->msg_length, NULL);
 	if (i == 0) {

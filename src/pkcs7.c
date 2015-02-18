@@ -153,9 +153,22 @@ bettertop(X509 *candidate, X509 *current, unsigned int flags)
  * the end-entity certificate and, if there is one, the top-level certificate,
  * and if there are any others, any others. */
 static void cm_pkcs7_parse_buffer(const unsigned char *buffer,
-				  size_t length, STACK_OF(X509) *sk);
+				  size_t length,
+				  void (*decrypt_envelope)(const unsigned char *envelope,
+							   size_t length,
+							   void *decrypt_userdata,
+							   unsigned char **payload,
+							   size_t *payload_length),
+				  void *decrypt_userdata,
+				  STACK_OF(X509) *sk);
 static void
 cm_pkcs7_parse_pem(const char *pem, size_t length,
+		   void (*decrypt_envelope)(const unsigned char *envelope,
+					    size_t length,
+					    void *decrypt_userdata,
+					    unsigned char **payload,
+					    size_t *payload_length),
+		   void *decrypt_userdata,
 		   STACK_OF(X509) *sk)
 {
 	const char *p, *q;
@@ -182,6 +195,8 @@ cm_pkcs7_parse_pem(const char *pem, size_t length,
 					if (decoded > 0) {
 						cm_pkcs7_parse_buffer(buf,
 								      decoded,
+								      decrypt_envelope,
+								      decrypt_userdata,
 								      sk);
 					}
 					free(buf);
@@ -192,15 +207,23 @@ cm_pkcs7_parse_pem(const char *pem, size_t length,
 }
 static void
 cm_pkcs7_parse_buffer(const unsigned char *buffer, size_t length,
+		      void (*decrypt_envelope)(const unsigned char *envelope,
+					       size_t length,
+					       void *decrypt_userdata,
+					       unsigned char **payload,
+					       size_t *payload_length),
+		      void *decrypt_userdata,
 		      STACK_OF(X509) *sk)
 {
 	PKCS7 *p7;
 	X509 *x;
 	const unsigned char *p;
 	char *s, *sp, *sq;
+	unsigned char *enveloped = NULL;
+	size_t enveloped_length = 0;
 	int i;
 
-	/* First, try to parse as a PKCS#7 signed data item. */
+	/* First, try to parse as a PKCS#7 signed or enveloped data item. */
 	p = buffer;
 	p7 = d2i_PKCS7(NULL, &p, length);
 	if (p7 != NULL) {
@@ -214,6 +237,20 @@ cm_pkcs7_parse_buffer(const unsigned char *buffer, size_t length,
 					sk_X509_push(sk, X509_dup(x));
 				}
 			}
+		} else
+		/* Is it an enveloped-data item that we can try to decrypt? */
+		if (PKCS7_type_is_enveloped(p7) &&
+		    (decrypt_envelope != NULL)) {
+		      decrypt_envelope(buffer, length, decrypt_userdata,
+				       &enveloped, &enveloped_length);
+		      if ((enveloped != NULL) && (enveloped_length > 0)) {
+			      /* Parse out the payload. */
+			      cm_pkcs7_parse_buffer(enveloped,
+						    enveloped_length,
+						    decrypt_envelope,
+						    decrypt_userdata,
+						    sk);
+		      }
 		}
 		PKCS7_free(p7);
 	} else {
@@ -226,8 +263,9 @@ cm_pkcs7_parse_buffer(const unsigned char *buffer, size_t length,
 			}
 			X509_free(x);
 		} else {
-			/* Not a certificate.  Maybe it's PEM.  Check if it's
-			 * all ASCII. */
+			/* Not PKCS#7 binary data that we recognized, and not a
+			 * binary certificate.  Maybe it's a PEM-formatted
+			 * version of one of those.  Check if it's all ASCII. */
 			for (p = buffer; p < buffer + length; p++) {
 				if ((*p & 0x80) != 0) {
 					break;
@@ -247,6 +285,8 @@ cm_pkcs7_parse_buffer(const unsigned char *buffer, size_t length,
 						sq += strcspn(sq, "\r\n");
 						sq += strspn(sq, "\r\n");
 						cm_pkcs7_parse_pem(sp, sq - sp,
+								   decrypt_envelope,
+								   decrypt_userdata,
 								   sk);
 						sp = sq;
 					}
@@ -260,6 +300,12 @@ cm_pkcs7_parse_buffer(const unsigned char *buffer, size_t length,
 int
 cm_pkcs7_parsev(unsigned int flags, void *parent,
 		char **certleaf, char **certtop, char ***certothers,
+		void (*decrypt_envelope)(const unsigned char *envelope,
+					 size_t length,
+					 void *decrypt_userdata,
+					 unsigned char **payload,
+					 size_t *payload_length),
+		void *decrypt_userdata,
 		int n_buffers,
 		const unsigned char **buffer, size_t *length)
 {
@@ -283,7 +329,8 @@ cm_pkcs7_parsev(unsigned int flags, void *parent,
 		return -1;
 	}
 	for (i = 0; i < n_buffers; i++) {
-		cm_pkcs7_parse_buffer(buffer[i], length[i], sk);
+		cm_pkcs7_parse_buffer(buffer[i], length[i],
+				      decrypt_envelope, decrypt_userdata, sk);
 	}
 	/* Count the number of certificates. */
 	n_certs = sk_X509_num(sk);
@@ -422,6 +469,12 @@ cm_pkcs7_parsev(unsigned int flags, void *parent,
 int
 cm_pkcs7_parse(unsigned int flags, void *parent,
 	       char **certleaf, char **certtop, char ***certothers,
+	       void (*decrypt_envelope)(const unsigned char *envelope,
+					size_t length,
+					void *decrypt_userdata,
+					unsigned char **payload,
+					size_t *payload_length),
+	       void *decrypt_userdata,
 	       const unsigned char *buffer, size_t length, ...)
 {
 	va_list args;
@@ -461,6 +514,7 @@ cm_pkcs7_parse(unsigned int flags, void *parent,
 	}
 	va_end(args);
 	ret = cm_pkcs7_parsev(flags, parent, certleaf, certtop, certothers,
+			      decrypt_envelope, decrypt_userdata,
 			      n_buffers, buffers, lengths);
 	talloc_free(buffers);
 	talloc_free(lengths);
