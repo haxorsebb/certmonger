@@ -595,7 +595,7 @@ main(int argc, char **argv)
 					fprintf(stderr, "Full reply:\n%s", s);
 					return CM_SUBMIT_STATUS_UNREACHABLE;
 				}
-				if (OBJ_obj2nid(p7->type) != NID_pkcs7_enveloped) {
+				if (!PKCS7_type_is_enveloped(p7)) {
 					printf(_("Error: signed-data payload is not enveloped-data.\n"));
 					while ((error = ERR_get_error()) != 0) {
 						memset(buf, '\0', sizeof(buf));

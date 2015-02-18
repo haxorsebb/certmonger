@@ -258,12 +258,10 @@ static int
 cm_submit_e_issued(struct cm_submit_state *state)
 {
 	const char *msg, *p;
-	int length;
 	struct cm_submit_external_state *estate;
 
 	estate = state->reserved;
 	msg = estate->msg;
-	length = estate->msg_length;
 	if (msg != NULL) {
 		p = strstr(msg, "-----END CERTIFICATE-----");
 	} else {
