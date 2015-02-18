@@ -56,6 +56,7 @@ struct cm_submit_h_context *cm_submit_h_init(void *parent,
 					     enum cm_submit_h_opt_env_modify env,
 					     enum cm_submit_h_opt_curl_verbose verbose);
 void cm_submit_h_run(struct cm_submit_h_context *ctx);
+int cm_submit_h_response_code(struct cm_submit_h_context *ctx);
 int cm_submit_h_result_code(struct cm_submit_h_context *ctx);
 const char *cm_submit_h_result_code_text(struct cm_submit_h_context *ctx);
 const char *cm_submit_h_results(struct cm_submit_h_context *ctx, int *length);

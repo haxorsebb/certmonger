@@ -48,6 +48,7 @@
 
 struct cm_submit_h_context {
 	int ret;
+	long response_code;
 	char *method, *uri, *args, *accept, *ctype, *cainfo, *capath, *result;
 	int result_length;
 	char *sslcert, *sslkey, *sslpass;
@@ -89,6 +90,7 @@ cm_submit_h_init(void *parent,
 		ctx->sslpass = sslpass ? talloc_strdup(ctx, sslpass) : NULL;
 		ctx->curl = NULL;
 		ctx->ret = -1;
+		ctx->response_code = 0;
 		ctx->result = NULL;
 		ctx->negotiate = neg;
 		ctx->negotiate_delegate = del;
@@ -248,12 +250,19 @@ cm_submit_h_run(struct cm_submit_h_context *ctx)
 			ctx->result = NULL;
 		}
 		ctx->ret = curl_easy_perform(ctx->curl);
+		curl_easy_getinfo(ctx->curl, CURLINFO_RESPONSE_CODE,
+				  &ctx->response_code);
 		if (headers != NULL) {
 			curl_slist_free_all(headers);
 		}
 	}
 }
 
+int
+cm_submit_h_response_code(struct cm_submit_h_context *ctx)
+{
+	return ctx->response_code;
+}
 int
 cm_submit_h_result_code(struct cm_submit_h_context *ctx)
 {

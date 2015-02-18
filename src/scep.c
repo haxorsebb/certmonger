@@ -32,6 +32,7 @@
 
 #include <openssl/err.h>
 #include <openssl/objects.h>
+#include <openssl/pkcs7.h>
 
 #include <dbus/dbus.h>
 
@@ -93,6 +94,7 @@ main(int argc, char **argv)
 	const char *url = NULL, *results = NULL, *results2 = NULL;
 	struct cm_submit_h_context *hctx;
 	int c, verbose = 0, results_length = 0, results_length2 = 0, i;
+	int response_code = 0, response_code2 = 0;
 	enum known_ops op = op_unset;
 	const char *id, *message = NULL;
 	const char *mode = NULL, *content_type = NULL, *content_type2 = NULL;
@@ -104,9 +106,11 @@ main(int argc, char **argv)
 	dbus_bool_t missing_args = FALSE;
 	char *sent_tx, *tx, *msgtype, *pkistatus, *failinfo, *s, *tmp1, *tmp2;
 	unsigned char *sent_nonce, *sender_nonce, *recipient_nonce, *payload;
+	const unsigned char *u;
 	size_t sent_nonce_length, sender_nonce_length, recipient_nonce_length;
 	size_t payload_length;
 	long error;
+	PKCS7 *p7;
 
 	util_o_init();
 	ERR_load_crypto_strings();
@@ -335,8 +339,10 @@ main(int argc, char **argv)
 	if (content_type == NULL) {
 		content_type = "";
 	}
+	response_code = cm_submit_h_response_code(hctx);
 	if (verbose > 0) {
 		fprintf(stderr, "%s \"%s?%s\"\n", "GET", url, params);
+		fprintf(stderr, "response_code = %d\n", response_code);
 		fprintf(stderr, "content-type = \"%s\"\n", content_type);
 		fprintf(stderr, "code = %d\n", cm_submit_h_result_code(hctx));
 		fprintf(stderr, "code_text = \"%s\"\n", cm_submit_h_result_code_text(hctx));
@@ -362,8 +368,10 @@ main(int argc, char **argv)
 		if (content_type2 == NULL) {
 			content_type2 = "";
 		}
+		response_code2 = cm_submit_h_response_code(hctx);
 		if (verbose > 0) {
 			fprintf(stderr, "%s \"%s?%s\"\n", "GET", url, params2);
+			fprintf(stderr, "response_code = %d\n", response_code2);
 			fprintf(stderr, "content-type = \"%s\"\n", content_type2);
 			fprintf(stderr, "code = %d\n", cm_submit_h_result_code(hctx));
 			fprintf(stderr, "code_text = \"%s\"\n", cm_submit_h_result_code_text(hctx));
@@ -390,6 +398,11 @@ main(int argc, char **argv)
 		}
 		return CM_SUBMIT_STATUS_UNREACHABLE;
 	}
+	if (response_code != 200) {
+		printf(_("Got response code %d from %s, not 200.\n"),
+		       response_code, url);
+		return CM_SUBMIT_STATUS_UNREACHABLE;
+	}
 	if (results == NULL) {
 		printf(_("Internal error: no response to \"%s?%s\".\n"),
 		       url, params);
@@ -404,6 +417,14 @@ main(int argc, char **argv)
 		return CM_SUBMIT_STATUS_ISSUED;
 		break;
 	case op_get_ca_certs:
+		if ((strcasecmp(content_type,
+				"application/x-x509-ca-cert") != 0) &&
+		    (strcasecmp(content_type,
+				"application/x-x509-ca-ra-cert") != 0)) {
+			printf(_("Server reply was of unexpected MIME type "
+				 "\"%s\".\n"), content_type);
+			return CM_SUBMIT_STATUS_UNREACHABLE;
+		}
 		if (cm_pkcs7_parse(CM_PKCS7_LEAF_PREFER_ENCRYPT, ctx,
 				   &racert, &cacert, &othercerts,
 				   (const unsigned char *) results,
@@ -558,6 +579,36 @@ main(int argc, char **argv)
 				return CM_SUBMIT_STATUS_REJECTED;
 			} else
 			if (strcmp(pkistatus, SCEP_PKISTATUS_SUCCESS) == 0) {
+				u = payload;
+				p7 = d2i_PKCS7(NULL, &u, payload_length);
+				if (p7 == NULL) {
+					printf(_("Error: couldn't parse signed-data.\n"));
+					while ((error = ERR_get_error()) != 0) {
+						memset(buf, '\0', sizeof(buf));
+						ERR_error_string_n(error, buf, sizeof(buf));
+						cm_log(1, "%s\n", buf);
+					}
+					s = cm_store_base64_from_bin(ctx,
+								     (unsigned char *) results,
+								     results_length);
+					s = cm_submit_u_pem_from_base64("PKCS7", 0, s);
+					fprintf(stderr, "Full reply:\n%s", s);
+					return CM_SUBMIT_STATUS_UNREACHABLE;
+				}
+				if (OBJ_obj2nid(p7->type) != NID_pkcs7_enveloped) {
+					printf(_("Error: signed-data payload is not enveloped-data.\n"));
+					while ((error = ERR_get_error()) != 0) {
+						memset(buf, '\0', sizeof(buf));
+						ERR_error_string_n(error, buf, sizeof(buf));
+						cm_log(1, "%s\n", buf);
+					}
+					s = cm_store_base64_from_bin(ctx,
+								     (unsigned char *) results,
+								     results_length);
+					s = cm_submit_u_pem_from_base64("PKCS7", 0, s);
+					fprintf(stderr, "Full reply:\n%s", s);
+					return CM_SUBMIT_STATUS_UNREACHABLE;
+				}
 				s = cm_store_base64_from_bin(ctx, payload,
 							     payload_length);
 				s = cm_submit_u_pem_from_base64("PKCS7", 0, s);
@@ -569,7 +620,10 @@ main(int argc, char **argv)
 				return CM_SUBMIT_STATUS_UNREACHABLE;
 			}
 		} else {
-			printf("%.*s", results_length, results);
+			printf(_("Server reply was of unexpected MIME type "
+				 "\"%s\".\n"), content_type);
+			printf("Full reply:\n%.*s", results_length, results);
+			return CM_SUBMIT_STATUS_UNREACHABLE;
 		}
 		break;
 	}
