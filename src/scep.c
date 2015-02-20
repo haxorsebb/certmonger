@@ -611,6 +611,37 @@ main(int argc, char **argv)
 					fprintf(stderr, "Full reply:\n%s", s);
 					return CM_SUBMIT_STATUS_UNREACHABLE;
 				}
+				if (!PKCS7_type_is_enveloped(p7)) {
+					printf(_("Error: signed-data payload is not enveloped-data.\n"));
+					while ((error = ERR_get_error()) != 0) {
+						memset(buf, '\0', sizeof(buf));
+						ERR_error_string_n(error, buf, sizeof(buf));
+						cm_log(1, "%s\n", buf);
+					}
+					s = cm_store_base64_from_bin(ctx,
+								     (unsigned char *) results,
+								     results_length);
+					s = cm_submit_u_pem_from_base64("PKCS7", 0, s);
+					fprintf(stderr, "Full reply:\n%s", s);
+					return CM_SUBMIT_STATUS_UNREACHABLE;
+				}
+				if ((p7->d.enveloped == NULL) ||
+				    (p7->d.enveloped->enc_data == NULL) ||
+				    (p7->d.enveloped->enc_data->content_type == NULL) ||
+				    (OBJ_obj2nid(p7->d.enveloped->enc_data->content_type) != NID_pkcs7_data)) {
+					printf(_("Error: enveloped-data payload is not data.\n"));
+					while ((error = ERR_get_error()) != 0) {
+						memset(buf, '\0', sizeof(buf));
+						ERR_error_string_n(error, buf, sizeof(buf));
+						cm_log(1, "%s\n", buf);
+					}
+					s = cm_store_base64_from_bin(ctx,
+								     (unsigned char *) results,
+								     results_length);
+					s = cm_submit_u_pem_from_base64("PKCS7", 0, s);
+					fprintf(stderr, "Full reply:\n%s", s);
+					return CM_SUBMIT_STATUS_UNREACHABLE;
+				}
 				s = cm_store_base64_from_bin(ctx, payload,
 							     payload_length);
 				s = cm_submit_u_pem_from_base64("PKCS7", 0, s);

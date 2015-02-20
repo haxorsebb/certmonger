@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012,2014 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2014.2015 Red Hat, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,6 +50,7 @@
 #include "submit-o.h"
 #include "submit-u.h"
 #include "subproc.h"
+#include "util-o.h"
 
 int
 cm_submit_o_sign(void *parent, char *csr,
@@ -174,4 +175,112 @@ cm_submit_o_sign(void *parent, char *csr,
 		       "request.\n");
 	}
 	return status;
+}
+
+void
+cm_submit_o_decrypt_envelope(const unsigned char *envelope,
+			     size_t length,
+			     void *decrypt_userdata,
+			     unsigned char **payload,
+			     size_t *payload_length)
+{
+	struct cm_pin_cb_data cb_data;
+	struct cm_submit_decrypt_envelope_args *args = decrypt_userdata;
+	FILE *keyfp, *keyfp_next;
+	BIO *out = NULL;
+	EVP_PKEY *pkey = NULL, *pkey_next = NULL;
+	PKCS7 *p7;
+	char buf[LINE_MAX], *pin, *filename, *p;
+	const unsigned char *u;
+	long error, l;
+	int result;
+
+	if ((args->entry->cm_key_next_marker != NULL) &&
+	    (strlen(args->entry->cm_key_next_marker) > 0)) {
+		filename = util_build_next_filename(args->entry->cm_key_storage_location,
+						    args->entry->cm_key_next_marker);
+		keyfp_next = fopen(filename, "r");
+		free(filename);
+	} else {
+		keyfp_next = NULL;
+	}
+	keyfp = fopen(args->entry->cm_key_storage_location, "r");
+
+	util_o_init();
+	ERR_load_crypto_strings();
+	if (cm_pin_read_for_key(args->entry, &pin) != 0) {
+		cm_log(1, "Error reading key encryption PIN.\n");
+		goto done;
+	}
+	memset(&cb_data, 0, sizeof(cb_data));
+	cb_data.entry = args->entry;
+	cb_data.n_attempts = 0;
+	if (keyfp != NULL) {
+		pkey = PEM_read_PrivateKey(keyfp, NULL,
+					   cm_pin_read_for_key_ossl_cb, &cb_data);
+	}
+	if (keyfp_next != NULL) {
+		pkey_next = PEM_read_PrivateKey(keyfp_next, NULL,
+						cm_pin_read_for_key_ossl_cb, &cb_data);
+	}
+	if ((pkey == NULL) && (pkey_next == NULL)) {
+		error = errno;
+		cm_log(1, "Error reading private key '%s': %s.\n",
+		       args->entry->cm_key_storage_location, strerror(error));
+		while ((error = ERR_get_error()) != 0) {
+			ERR_error_string_n(error, buf, sizeof(buf));
+			cm_log(1, "%s\n", buf);
+		}
+		goto done;
+	}
+	u = envelope;
+	p7 = d2i_PKCS7(NULL, &u, length);
+	if ((p7 == NULL) || !PKCS7_type_is_enveloped(p7)) {
+		goto done;
+	}
+	out = BIO_new(BIO_s_mem());
+	if (out == NULL) {
+		cm_log(1, "Out of memory.\n");
+		goto done;
+	}
+	result = 0;
+	if (pkey_next != NULL) {
+		result = PKCS7_decrypt(p7, pkey_next, NULL, out, 0);
+		if (result == 1) {
+			goto done;
+		}
+	}
+	result = PKCS7_decrypt(p7, pkey, NULL, out, 0);
+	if (result == 1) {
+		goto done;
+	}
+done:
+	if (result == 1) {
+		p = NULL;
+		l = BIO_get_mem_data(out, &p);
+		cm_log(1, "Succeeded in decrypting enveloped data.\n");
+		if (p != NULL) {
+			*payload = malloc(l + 1);
+			if (*payload != NULL) {
+				memcpy(*payload, p, l + 1);
+				(*payload)[l] = '\0';
+				*payload_length = l;
+			}
+		}
+	}
+	if (keyfp != NULL) {
+		fclose(keyfp);
+	}
+	if (keyfp_next != NULL) {
+		fclose(keyfp_next);
+	}
+	if (pkey != NULL) {
+		EVP_PKEY_free(pkey);
+	}
+	if (pkey_next != NULL) {
+		EVP_PKEY_free(pkey_next);
+	}
+	if (out != NULL) {
+		BIO_free(out);
+	}
 }

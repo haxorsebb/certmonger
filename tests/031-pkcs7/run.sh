@@ -1,5 +1,7 @@
 #!/bin/bash
 cd "$tmpdir"
+source "$srcdir"/functions
+initnssdb "$tmpdir"
 base64 -i -d > dercert << EOF
 MIIFYzCCBEugAwIBAgITHQAAAANgXaDHI7LEzAAAAAAAAzANBgkqhkiG9w0BAQUF
 ADBqMRMwEQYKCZImiZPyLGQBGRYDY29tMRYwFAYKCZImiZPyLGQBGRYGcmVkaGF0
@@ -156,6 +158,47 @@ rjLR8fyXjJzhoUgY1twomdFeLvfd1Dk2DClEKGqye8rTQaatL3tq29NjqASSge1z
 c9gcIfqK9dgYShx5Iy0Rshend17aBw==
 -----END NEW CERTIFICATE REQUEST-----
 EOF
+cat > other << EOF
+-----BEGIN CERTIFICATE-----
+MIIBoDCCAQmgAwIBAAIBATANBgkqhkiG9w0BAQsFADAUMRIwEAYDVQQDEwls
+b2NhbGhvc3QwIhgPMjAxNTAxMjcwMDAwMDBaGA8yMTE1MDEyNzAwMDAwMFow
+FDESMBAGA1UEAxMJbG9jYWxob3N0MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCB
+iQKBgQDT7+BazrT3e/run8ZxrTfZNFx+vY+twKMPRXowSGot2eLcdDIIryOH
+ir1tUXIDZN2j+nF4U6kX3W66yMZjUApmYcFjhPk0Pg4ymsh/ScW2OlQXvC/f
+soPhvKA6cBeWUWwpdtRnFjZ14qmGuABPi6c/p0C/04HoBR9Y6QI5voRvHwID
+AQABMA0GCSqGSIb3DQEBCwUAA4GBAB4F1sjBaOJVuMmubbxc6vm3yDTwU3Qw
+JzjmXgwGUp5QryUIBZc9Kc5ceMUJ/Xf3OFDGWOqIx4JONdcgfLRJxax9WWg4
+mYbkAmUQBRtl7fGgEvOqF9EgtEY06Nj5aI7vbFEfB80Xd0O9O06ckxr7QBSc
+Wc2RCeFYrUpNi6s3vfM5
+-----END CERTIFICATE-----
+EOF
+cat > plain << EOF
+This is some plaintext.
+EOF
+cat > entry.openssl << EOF
+id=Test
+key_storage_type=FILE
+key_storage_location=key
+EOF
+cat > entry.nss << EOF
+id=Test
+key_storage_type=NSSDB
+key_storage_location=$tmpdir
+cert_storage_type=NSSDB
+cert_storage_location=$tmpdir
+minicert=-----BEGIN CERTIFICATE-----
+ MIIB0TCCATqgAwIBAgICEjUwDQYJKoZIhvcNAQELBQAwFDESMBAGA1UEAxMJbG9j
+ YWxob3N0MB4XDTcwMDEwMTExMTExMVoXDTcxMDEwMTExMTExMVowFDESMBAGA1UE
+ AxMJbG9jYWxob3N0MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC394oITlJc
+ hLbXLUAYJ+IGpvr3YfyQlQb3u95p3s0gEemx/+Dy3ViJW7WhMuc/FHJSV5ghLflk
+ TRLfUdS18LGBkfkREBJVWfELhgm5ZHqiGzCvTmg01tgvouKj+8kFNJIaWsEm8mBa
+ SoJzk8+vOQsnXjrZAKAFY7WrVryilh4cQQIDAQABozIwMDAMBgNVHRMBAf8EAjAA
+ MCAGA1UdDgEBAAQWBBQfjVS9H0rXGb4SFB9bkzTpHHUH2jANBgkqhkiG9w0BAQsF
+ AAOBgQCt6xbyri3BobQUPQmN7ROc3mveMSfMyOwBSTDjl2XIWV98HjVLWRjScbg7
+ KW6z8W7iaasSDF7GWM2YqWaanWx5XwzayNUvIX3gHKqo+OwHo5QUfawtEV5Niop1
+ N4nZp1GMclRuk9UFXLV2NfaohRPYs7FVdBVtWNvg7hH8XedLyw==
+ -----END CERTIFICATE-----
+EOF
 $toolsdir/pk7parse dercert
 $toolsdir/pk7parse derpkcs7
 $toolsdir/pk7parse bundle
@@ -165,3 +208,10 @@ echo Encoded issuer-and-subject:
 $toolsdir/pk7env recipient recipient recipient | head -n 1
 echo Decrypted issuer-and-subject:
 $toolsdir/pk7env recipient recipient recipient | tail -n 1 | base64 -i -d | openssl smime -inform der -decrypt -inkey key recipient | base64
+echo Encrypted plaintext, OpenSSL key:
+openssl smime -in plain -outform der -encrypt recipient | $toolsdir/pk7decrypt entry.openssl
+echo Encrypted plaintext, NSS key:
+openssl pkcs12 -export -name testy -inkey key -in recipient -out p12 -passout pass:foo
+pk12util -i p12 -d "$tmpdir" -W foo
+certutil -d "$tmpdir" -D -n testy
+openssl smime -in plain -outform der -encrypt recipient | $toolsdir/pk7decrypt entry.nss

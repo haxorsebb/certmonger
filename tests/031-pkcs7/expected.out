@@ -160,3 +160,8 @@ Encoded issuer-and-subject:
 MCwwFDESMBAGA1UEAxMJbG9jYWxob3N0MBQxEjAQBgNVBAMTCWxvY2FsaG9zdA==
 Decrypted issuer-and-subject:
 MCwwFDESMBAGA1UEAxMJbG9jYWxob3N0MBQxEjAQBgNVBAMTCWxvY2FsaG9zdA==
+Encrypted plaintext, OpenSSL key:
+payload:VGhpcyBpcyBzb21lIHBsYWludGV4dC4NCg==
+Encrypted plaintext, NSS key:
+pk12util: PKCS12 IMPORT SUCCESSFUL
+payload:VGhpcyBpcyBzb21lIHBsYWludGV4dC4NCg==

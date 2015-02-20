@@ -61,4 +61,19 @@ struct cm_submit_state *cm_submit_so_start(struct cm_store_ca *ca,
 #define CM_BASIC_CONSTRAINT_NOT_CA "3000"
 char *cm_submit_maybe_joinv(void *parent, const char *sep, char **s);
 
+struct cm_submit_decrypt_envelope_args {
+	struct cm_store_ca *ca;
+	struct cm_store_entry *entry;
+};
+void cm_submit_o_decrypt_envelope(const unsigned char *envelope,
+				  size_t length,
+				  void *decrypt_userdata,
+				  unsigned char **payload,
+				  size_t *payload_length);
+void cm_submit_n_decrypt_envelope(const unsigned char *envelope,
+				  size_t length,
+				  void *decrypt_userdata,
+				  unsigned char **payload,
+				  size_t *payload_length);
+
 #endif

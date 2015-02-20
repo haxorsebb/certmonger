@@ -367,6 +367,10 @@ cm_submit_e_postprocess_main(int fd, struct cm_store_ca *ca,
 	char *leaf = NULL, *top = NULL, **others = NULL;
 	int i;
 	FILE *status;
+	void (*decrypt)(const unsigned char *envelope, size_t length,
+			void *decrypt_userdata, unsigned char **payload,
+			size_t *payload_length) = NULL;
+	struct cm_submit_decrypt_envelope_args decrypt_args;
 
 	status = fdopen(fd, "w");
 	if (status == NULL) {
@@ -375,8 +379,22 @@ cm_submit_e_postprocess_main(int fd, struct cm_store_ca *ca,
 	}
 	cm_log(1, "Postprocessing output \"%.*s\".\n", estate->msg_length,
 	       estate->msg);
+	switch (entry->cm_key_storage_type) {
+	case cm_key_storage_none:
+		decrypt = NULL;
+		break;
+	case cm_key_storage_file:
+		decrypt = &cm_submit_o_decrypt_envelope;
+		break;
+	case cm_key_storage_nssdb:
+		decrypt = &cm_submit_n_decrypt_envelope;
+		break;
+	}
+	memset(&decrypt_args, 0, sizeof(decrypt_args));
+	decrypt_args.ca = ca;
+	decrypt_args.entry = entry;
 	i = cm_pkcs7_parse(0, estate, &leaf, &top, &others,
-			   NULL, NULL,
+			   decrypt, &decrypt_args,
 			   (const unsigned char *) estate->msg,
 			   estate->msg_length, NULL);
 	if (i == 0) {

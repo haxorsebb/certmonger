@@ -15,7 +15,7 @@ endif
 noinst_PROGRAMS = keyiread keygen csrgen submit certread certsave oid2name name2oid iterate prefs dates listnicks pem2base base2pem dparse payload checksig base64 cadata citerate casave hooks libexecdir canon srv addcinfo
 noinst_LIBRARIES = libtools.a
 if HAVE_OPENSSL
-noinst_PROGRAMS += pk7parse pk7env scepgen pk7verify
+noinst_PROGRAMS += pk7parse pk7env scepgen pk7verify pk7decrypt
 endif
 
 libtools_a_SOURCES = ../../src/tm.h tm.c tools.h tools.c
