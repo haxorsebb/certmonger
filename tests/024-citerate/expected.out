@@ -504,4 +504,153 @@ ca_is_default=0
 ca_type=EXTERNAL
 ca_external_helper=${tmpdir}/ca-data
 
+[capabilities:IDLE]
+IDLE
+-START-
+-STUCK- (4:0)
+id=Test CA
+ca_is_default=0
+ca_type=EXTERNAL
+ca_external_helper=${tmpdir}/ca-data
+
+[capabilities:NEED_TO_REFRESH]
+NEED_TO_REFRESH
+-START-
+REFRESHING
+NEED_TO_ANALYZE
+-STOP-
+id=Test CA
+ca_is_default=0
+ca_type=EXTERNAL
+ca_external_helper=${tmpdir}/ca-data
+
+[capabilities:UNREACHABLE]
+UNREACHABLE
+-START-
+NEED_TO_REFRESH
+-STOP-
+id=Test CA
+ca_is_default=0
+ca_type=EXTERNAL
+ca_external_helper=${tmpdir}/ca-data
+
+[capabilities:NEED_TO_SAVE_DATA]
+NEED_TO_SAVE_DATA
+-START-
+START_SAVING_DATA
+SAVING_DATA
+NEED_POST_SAVE_DATA
+SAVED_DATA
+NEED_TO_ANALYZE
+-STOP-
+id=Test CA
+ca_is_default=0
+ca_type=EXTERNAL
+ca_external_helper=${tmpdir}/ca-data
+
+[capabilities:NEED_TO_ANALYZE]
+NEED_TO_ANALYZE
+-START-
+IDLE
+-STOP-
+id=Test CA
+ca_is_default=0
+ca_type=EXTERNAL
+ca_external_helper=${tmpdir}/ca-data
+
+[capabilities:DISABLED]
+DISABLED
+-START-
+-STUCK- (4:0)
+id=Test CA
+ca_is_default=0
+ca_type=EXTERNAL
+ca_external_helper=${tmpdir}/ca-data
+
+[capabilities:NEED_TO_REFRESH]
+NEED_TO_REFRESH
+-START-
+REFRESHING
+NEED_TO_ANALYZE
+-STOP-
+id=Test CA
+ca_is_default=0
+ca_type=EXTERNAL
+ca_external_helper=${tmpdir}/ca-data
+
+[encryption_certs:IDLE]
+IDLE
+-START-
+-STUCK- (4:0)
+id=Test CA
+ca_is_default=0
+ca_type=EXTERNAL
+ca_external_helper=${tmpdir}/ca-data
+
+[encryption_certs:NEED_TO_REFRESH]
+NEED_TO_REFRESH
+-START-
+REFRESHING
+NEED_TO_ANALYZE
+-STOP-
+id=Test CA
+ca_is_default=0
+ca_type=EXTERNAL
+ca_external_helper=${tmpdir}/ca-data
+
+[encryption_certs:UNREACHABLE]
+UNREACHABLE
+-START-
+NEED_TO_REFRESH
+-STOP-
+id=Test CA
+ca_is_default=0
+ca_type=EXTERNAL
+ca_external_helper=${tmpdir}/ca-data
+
+[encryption_certs:NEED_TO_SAVE_DATA]
+NEED_TO_SAVE_DATA
+-START-
+START_SAVING_DATA
+SAVING_DATA
+NEED_POST_SAVE_DATA
+SAVED_DATA
+NEED_TO_ANALYZE
+-STOP-
+id=Test CA
+ca_is_default=0
+ca_type=EXTERNAL
+ca_external_helper=${tmpdir}/ca-data
+
+[encryption_certs:NEED_TO_ANALYZE]
+NEED_TO_ANALYZE
+-START-
+ANALYZING
+NEED_TO_REFRESH
+-STOP-
+id=Test CA
+ca_is_default=0
+ca_type=EXTERNAL
+ca_external_helper=${tmpdir}/ca-data
+
+[encryption_certs:DISABLED]
+DISABLED
+-START-
+-STUCK- (4:0)
+id=Test CA
+ca_is_default=0
+ca_type=EXTERNAL
+ca_external_helper=${tmpdir}/ca-data
+
+[encryption_certs:NEED_TO_REFRESH]
+NEED_TO_REFRESH
+-START-
+REFRESHING
+NEED_TO_ANALYZE
+-STOP-
+id=Test CA
+ca_is_default=0
+ca_type=EXTERNAL
+ca_external_helper=${tmpdir}/ca-data
+
 Test complete.

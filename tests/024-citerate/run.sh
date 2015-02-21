@@ -55,7 +55,7 @@ exit 0
 EOF
 chmod +x $tmpdir/ca-data
 
-for phase in identify certs profiles default_profile enrollment_reqs renewal_reqs ; do
+for phase in identify certs profiles default_profile enrollment_reqs renewal_reqs capabilities encryption_certs ; do
 # These cover parts of the process, forcing it to stop if any phase needs
 # to be tried again, so that we don't hit infinite loops.
 for state in IDLE NEED_TO_REFRESH,REFRESHING UNREACHABLE NEED_TO_SAVE_DATA,PRE_SAVE_DATA,START_SAVING_DATA,SAVING_DATA,NEED_POST_SAVE_DATA,POST_SAVE_DATA,SAVED_DATA NEED_TO_ANALYZE,ANALYZING DISABLED NEED_TO_REFRESH,REFRESHING,NEED_TO_SAVE_DATA,PRE_SAVE_DATA,START_SAVING_DATA,SAVING_DATA,NEED_POST_SAVE_DATA,POST_SAVE_DATA,SAVED_DATA ; do
