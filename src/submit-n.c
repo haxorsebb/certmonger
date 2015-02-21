@@ -210,9 +210,8 @@ retry_gen:
 	}
 
 	/* Set the new encrypted bulk key. */
-	X509_ALGOR_set0(p7i->key_enc_algor,
-			OBJ_nid2obj(NID_rsaEncryption),
-			V_ASN1_NULL, NULL);
+	p7i->key_enc_algor->algorithm = OBJ_dup(OBJ_nid2obj(NID_rsaEncryption));
+	ASN1_TYPE_set(p7i->key_enc_algor->parameter, V_ASN1_NULL, NULL);
 	M_ASN1_OCTET_STRING_set(p7i->enc_key, reenc, reenc_len);
 
 	/* And now, finally, decrypt the payload. */
