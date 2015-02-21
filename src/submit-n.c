@@ -26,7 +26,9 @@
 #include <time.h>
 #include <unistd.h>
 
+#include <openssl/bn.h>
 #include <openssl/err.h>
+#include <openssl/evp.h>
 #include <openssl/pkcs7.h>
 #include <openssl/stack.h>
 #include <openssl/x509.h>
@@ -61,122 +63,60 @@
 #define PRIVKEY_LIST_EMPTY(l) PRIVKEY_LIST_END(PRIVKEY_LIST_HEAD(l), l)
 #define WINDOW (24 * 60 * 60 * PR_USEC_PER_SEC)
 
-static PRBool
-decryption_allowed(SECAlgorithmID *algid, PK11SymKey *bulkkey)
+SECOidTag
+cm_submit_n_tag_from_nid(int nid)
 {
-	return PR_TRUE;
+	ASN1_OBJECT *obj;
+	SECItem oid;
+
+	obj = OBJ_nid2obj(nid);
+	if (obj != NULL) {
+		memset(&oid, 0, sizeof(oid));
+		oid.data = (unsigned char *) obj->data;
+		oid.len = obj->length;
+		return SECOID_FindOIDTag(&oid);
+	} else {
+		return SEC_OID_UNKNOWN;
+	}
 }
 
-static SEC_PKCS7ContentInfo *
-try_to_decode(void *parent, SECItem *item, SECKEYPrivateKey *pkey)
+int
+cm_submit_n_nid_from_tag(SECOidTag tag)
 {
-	SEC_PKCS7ContentInfo *ret = NULL;
-	CERTCertificate *cert = NULL, **certs = NULL;
-	CERTCertificateRequest *req = NULL;
-	CERTSubjectPublicKeyInfo *spki = NULL;
-	CERTValidity *validity = NULL;
-	SECKEYPublicKey *pubkey = NULL;
-	CERTName *name = NULL;
-	CERTSignedData sdata;
-	SECOidData *oid;
-	SECItem sitem, ditem, *sder;
+	SECOidData *oid = SECOID_FindOIDByTag(tag);
+	ASN1_OBJECT obj;
+
+	memset(&obj, 0, sizeof(obj));
+	obj.data = oid->oid.data;
+	obj.length = oid->oid.len;
+	return OBJ_obj2nid(&obj);
+}
+
+static SECItem *
+try_to_decode(void *parent, PLArenaPool *arena, SECItem *item,
+	      SECKEYPrivateKey *privkey)
+{
+	SECOidTag tag;
+	SECItem *ret = NULL, param, *parameters;
+	ASN1_OBJECT *algorithm;
+	int nid;
+	CK_MECHANISM_TYPE mech;
+	ASN1_STRING *params = NULL;
 	PKCS7 *p7 = NULL;
 	PKCS7_RECIP_INFO *p7i = NULL;
-	X509 *x = NULL;
-	char buf[BUFSIZ], *n;
+	BIGNUM *exponent = NULL;
+	EVP_PKEY *pkey = NULL;
+	EVP_PKEY_CTX *ctx = NULL;
+	BIO *out;
+	RSA *rsa = NULL;
+	char buf[BUFSIZ];
 	const unsigned char *u;
-	unsigned char *p;
-	int len;
-	long error;
+	unsigned char *enc_key, *dec, *reenc;
+	unsigned int enc_key_len, dec_len;
+	size_t reenc_len;
+	long error, l;
 
-	memset(&sitem, 0, sizeof(sitem));
-	memset(&sdata, 0, sizeof(sdata));
-	memset(&ditem, 0, sizeof(ditem));
-	pubkey = SECKEY_ConvertToPublicKey(pkey);
-	if (pubkey == NULL) {
-		cm_log(1, "Failure obtaining public key: %s.\n",
-		       PR_ErrorToName(PORT_GetError()));
-		goto done;
-	}
-	spki = SECKEY_CreateSubjectPublicKeyInfo(pubkey);
-	if (spki == NULL) {
-		cm_log(1, "Failure creating dummy SPKI: %s.\n",
-		       PR_ErrorToName(PORT_GetError()));
-		goto done;
-	}
-	n = talloc_asprintf(parent, "cn=%.*s", 64,
-			    cm_store_hex_from_bin(parent,
-						  spki->subjectPublicKey.data,
-						  spki->subjectPublicKey.len));
-	name = CERT_AsciiToName(n);
-	if (name == NULL) {
-		goto done;
-	}
-	req = CERT_CreateCertificateRequest(name, spki, NULL);
-	if (req == NULL) {
-		cm_log(1, "Failure creating dummy CSR: %s.\n",
-		       PR_ErrorToName(PORT_GetError()));
-		goto done;
-	}
-	validity = CERT_CreateValidity(PR_Now() - WINDOW, PR_Now() + WINDOW);
-	if (validity == NULL) {
-		cm_log(1, "Failure creating validity: %s.\n",
-		       PR_ErrorToName(PORT_GetError()));
-		goto done;
-	}
-	cert = CERT_CreateCertificate(1, name, validity, req);
-	if (cert == NULL) {
-		cm_log(1, "Error encoding dummy certificate: %s.\n",
-		       PR_ErrorToName(PORT_GetError()));
-		goto done;
-	}
-	SEC_ASN1EncodeInteger(NULL, &cert->version, 2);
-	oid = SECOID_FindOIDByTag(cm_prefs_nss_sig_alg(pkey));
-	if (SECOID_SetAlgorithmID(NULL, &cert->signature,
-				  oid->offset, NULL) != SECSuccess) {
-		cm_log(1, "Unable to set signature algorithm ID: %s.\n",
-		       PR_ErrorToName(PORT_GetError()));
-		goto done;
-	}
-	cert->issuer = *name;
-	cert->subject = *name;
-	cert->subjectPublicKeyInfo = req->subjectPublicKeyInfo;
-	if (SEC_ASN1EncodeItem(NULL, &sdata.data, cert,
-			       CERT_CertificateTemplate) != &sdata.data) {
-		cm_log(1, "Error encoding dummy certificate: %s.\n",
-		       PR_ErrorToName(PORT_GetError()));
-		goto done;
-	}
-	if (SECOID_SetAlgorithmID(NULL, &sdata.signatureAlgorithm,
-				  oid->offset, NULL) != SECSuccess) {
-		cm_log(1, "Unable to set signature algorithm ID: %s.\n",
-		       PR_ErrorToName(PORT_GetError()));
-		goto done;
-	}
-	if (SEC_SignData(&sdata.signature, sdata.data.data, sdata.data.len,
-			 pkey, oid->offset) != SECSuccess) {
-		cm_log(1, "Error signing dummy certificate: %s.\n",
-		       PR_ErrorToName(PORT_GetError()));
-		goto done;
-	}
-	sdata.signature.len *= 8;
-	if (SEC_ASN1EncodeItem(NULL, &sitem, &sdata,
-			       CERT_SignedDataTemplate) != &sitem) {
-		cm_log(1, "Error encoding signed dummy certificate: %s.\n",
-		       PR_ErrorToName(PORT_GetError()));
-		goto done;
-	}
-	u = sitem.data;
-	x = d2i_X509(NULL, &u, sitem.len);
-	if (x == NULL) {
-		cm_log(1, "Error decoding signed dummy certificate: %s\n",
-		       cm_store_base64_from_bin(NULL, sitem.data, sitem.len));
-		while ((error = ERR_get_error()) != 0) {
-			ERR_error_string_n(error, buf, sizeof(buf));
-			cm_log(1, "%s\n", buf);
-		}
-		goto done;
-	}
+	/* Do the standard parse and sanity checking. */
 	u = item->data;
 	p7 = d2i_PKCS7(NULL, &u, item->len);
 	if (p7 == NULL) {
@@ -198,69 +138,120 @@ try_to_decode(void *parent, SECItem *item, SECKEYPrivateKey *pkey)
 		goto done;
 	}
 	p7i = sk_PKCS7_RECIP_INFO_value(p7->d.enveloped->recipientinfo, 0);
-	PKCS7_RECIP_INFO_set(p7i, x);
-	len = i2d_PKCS7(p7, NULL);
-	if (SECITEM_AllocItem(NULL, &ditem, len) != &ditem) {
-		cm_log(1, "Error allocating memory.\n");
+	if ((p7i->key_enc_algor == NULL) ||
+	    (p7i->key_enc_algor->parameter == NULL)) {
+		cm_log(1, "PKCS#7 recipient info is missing parameters.\n");
 		goto done;
 	}
-	p = ditem.data;
-	if (i2d_PKCS7(p7, &p) == len) {
-		ditem.len = len;
+
+	/* Try to decrypt the bulk key using the private key. */
+	algorithm = p7i->key_enc_algor->algorithm;
+	nid = OBJ_obj2nid(algorithm);
+	tag = cm_submit_n_tag_from_nid(nid);
+	mech = PK11_AlgtagToMechanism(tag);
+	if (p7i->key_enc_algor->parameter->type == V_ASN1_OCTET_STRING) {
+		params = p7i->key_enc_algor->parameter->value.octet_string;
+		memset(&param, 0, sizeof(param));
+		param.data = M_ASN1_STRING_data(params);
+		param.len = M_ASN1_STRING_length(params);
+		parameters = &param;
 	} else {
-		cm_log(1, "Error encoding dummy enveloped-data.\n");
+		parameters = NULL;
+	}
+	enc_key = M_ASN1_STRING_data(p7i->enc_key);
+	enc_key_len = M_ASN1_STRING_length(p7i->enc_key);
+	dec_len = enc_key_len + BUFSIZ;
+	dec = talloc_size(parent, dec_len);
+	if (PK11_PrivDecrypt(privkey, mech, parameters,
+			     dec, &dec_len, dec_len,
+			     enc_key, enc_key_len) != SECSuccess) {
+		cm_log(1, "Error decrypting bulk key: %s.\n",
+		       PR_ErrorToName(PORT_GetError()));
+		goto done;
+	}
+
+	/* Generate a dummy key to use when re-encrypting the bulk key using
+	 * OpenSSL so that we can decrypt it again, and with it the payload. */
+	pkey = EVP_PKEY_new();
+	if (pkey == NULL) {
+		cm_log(1, "Error allocating new key.\n");
+		goto done;
+	}
+	exponent = BN_new();
+	if (exponent == NULL) {
+		cm_log(1, "Error setting up exponent.\n");
+		goto done;
+	}
+	BN_set_word(exponent, CM_DEFAULT_RSA_EXPONENT);
+	rsa = RSA_new();
+	if (rsa == NULL) {
+		cm_log(1, "Error allocating new RSA key.\n");
+		goto done;
+	}
+retry_gen:
+	if (RSA_generate_key_ex(rsa, CM_DEFAULT_PUBKEY_SIZE, exponent, NULL) != 1) {
+		cm_log(1, "Error generating key.\n");
+		goto done;
+	}
+	if (RSA_check_key(rsa) != 1) { /* should be unnecessary */
+		cm_log(1, "Key fails checks.  Retrying.\n");
+		goto retry_gen;
+	}
+	BN_free(exponent);
+	EVP_PKEY_set1_RSA(pkey, rsa);
+
+	/* Encrypt the bulk key.  We're about to decrypt it again, so do it the
+	 * simplest way that we can. */
+	ctx = EVP_PKEY_CTX_new(pkey, NULL);
+	if (EVP_PKEY_encrypt_init(ctx) != 1) {
+		cm_log(1, "Error initializing reencryption context.\n");
+		goto retry_gen;
+	}
+	reenc_len = dec_len + RSA_size(rsa);
+	reenc = talloc_size(parent, reenc_len);
+	if (EVP_PKEY_encrypt(ctx, reenc, &reenc_len, dec, dec_len) != 1) {
+		cm_log(1, "Error reencrypting.\n");
+		goto retry_gen;
+	}
+
+	/* Set the new encrypted bulk key. */
+	X509_ALGOR_set0(p7i->key_enc_algor,
+			OBJ_nid2obj(NID_rsaEncryption),
+			V_ASN1_NULL, NULL);
+	M_ASN1_OCTET_STRING_set(p7i->enc_key, reenc, reenc_len);
+
+	/* And now, finally, decrypt the payload. */
+	out = BIO_new(BIO_s_mem());
+	if (out == NULL) {
+		cm_log(1, "Out of memory.\n");
+		goto done;
+	}
+	if (PKCS7_decrypt(p7, pkey, NULL, out, 0) == 1) {
+		u = NULL;
+		l = BIO_get_mem_data(out, &u);
+		cm_log(1, "Succeeded in decrypting enveloped data.\n");
+		if (u != NULL) {
+			ret = SECITEM_AllocItem(arena, NULL, l + 1);
+			if (ret != NULL) {
+				memcpy(ret->data, u, l + 1);
+				ret->data[l] = '\0';
+				ret->len = l;
+			}
+		}
+	}
+
+done:
+	if (ret == NULL) {
 		while ((error = ERR_get_error()) != 0) {
 			ERR_error_string_n(error, buf, sizeof(buf));
 			cm_log(1, "%s\n", buf);
 		}
-		goto done;
 	}
-	sder = &sitem;
-	if (CERT_ImportCerts(CERT_GetDefaultCertDB(), certUsageEmailRecipient,
-			     1, &sder, &certs, PR_FALSE, PR_FALSE,
-			     NULL) != SECSuccess) {
-		cm_log(1, "Error importing dummy certificate.\n");
-		goto done;
-	}
-	ret = SEC_PKCS7DecodeItem(&ditem, NULL, NULL, NULL, NULL, NULL, NULL,
-				  decryption_allowed);
-done:
-	if (x != NULL) {
-		X509_free(x);
+	if (ctx != NULL) {
+		EVP_PKEY_CTX_free(ctx);
 	}
 	if (p7 != NULL) {
 		PKCS7_free(p7);
-	}
-	if (sdata.data.data != NULL) {
-		SECITEM_FreeItem(&sdata.data, PR_FALSE);
-	}
-	if (ditem.data != NULL) {
-		SECITEM_FreeItem(&ditem, PR_FALSE);
-	}
-	if (sitem.data != NULL) {
-		SECITEM_FreeItem(&sitem, PR_FALSE);
-	}
-	if (certs != NULL) {
-		CERT_DestroyCertificate(certs[0]);
-		PORT_Free(certs);
-	}
-	if (cert != NULL) {
-		CERT_DestroyCertificate(cert);
-	}
-	if (validity != NULL) {
-		CERT_DestroyValidity(validity);
-	}
-	if (req != NULL) {
-		CERT_DestroyCertificateRequest(req);
-	}
-	if (spki != NULL) {
-		SECKEY_DestroySubjectPublicKeyInfo(spki);
-	}
-	if (pubkey != NULL) {
-		SECKEY_DestroyPublicKey(pubkey);
-	}
-	if (name != NULL) {
-		CERT_DestroyName(name);
 	}
 	return ret;
 }
@@ -287,7 +278,6 @@ cm_submit_n_decrypt_envelope(const unsigned char *envelope,
 	struct cm_pin_cb_data cb_data;
 	int n_tokens, ec;
 	struct cm_submit_decrypt_envelope_args *args = decrypt_userdata;
-	SEC_PKCS7ContentInfo *ci = NULL;
 
 	util_o_init();
 	ERR_load_crypto_strings();
@@ -425,33 +415,26 @@ next_slot:
 			     !PRIVKEY_LIST_EMPTY(keylist) &&
 			     !PRIVKEY_LIST_END(kle, keylist);
 			     kle = PRIVKEY_LIST_NEXT(kle)) {
-				ci = try_to_decode(args->entry, &item,
-						   kle->key);
-				if (ci != NULL) {
+				plain = try_to_decode(args->entry, arena, &item,
+						      kle->key);
+				if (plain != NULL) {
 					break;
 				}
 			}
 		}
 	}
-	if (ci == NULL) {
+	if (plain == NULL) {
 		cm_log(1, "Error decrypting enveloped data: %s.\n",
-		       PR_ErrorToName(PORT_GetError()));
+		       PR_ErrorToName(PORT_GetError()) ?: "(unknown error)");
 		goto done;
 	}
 
-	/* Recover the plaintext. */
-	plain = SEC_PKCS7GetContent(ci);
-	if (plain == NULL) {
-		cm_log(1, "Error retrieving plain: %s.\n",
-		       PR_ErrorToName(PORT_GetError()));
-		goto done;
-	}
 	cm_log(1, "Succeeded in decrypting enveloped data.\n");
-	*payload = talloc_size(args->entry, item.len + 1);
+	*payload = talloc_size(args->entry, plain->len + 1);
 	if (*payload != NULL) {
-		memcpy(*payload, item.data, item.len);
-		(*payload)[item.len] = '\0';
-		*payload_length = item.len;
+		memcpy(*payload, plain->data, plain->len);
+		(*payload)[plain->len] = '\0';
+		*payload_length = plain->len;
 	}
 
 done:

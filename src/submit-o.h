@@ -18,6 +18,9 @@
 #ifndef cmsubmito_h
 #define cmsubmito_h
 
+SECOidTag cm_submit_n_tag_from_nid(int nid);
+int cm_submit_n_nid_from_tag(SECOidTag tag);
+
 int cm_submit_o_sign(void *parent, char *csr,
 		     X509 *signer, EVP_PKEY *signer_key,
 		     const char *hexserial, time_t now, long life,

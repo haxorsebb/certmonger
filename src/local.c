@@ -31,6 +31,8 @@
 
 #include <krb5.h>
 
+#include <secoid.h>
+
 #include <openssl/asn1.h>
 #include <openssl/err.h>
 #include <openssl/pem.h>

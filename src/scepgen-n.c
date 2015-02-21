@@ -104,35 +104,7 @@ cm_scepgen_n_resign(PKCS7 *p7, SECKEYPrivateKey *privkey)
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	memset(&signature, 0, sizeof(signature));
-	switch (OBJ_obj2nid(sinfo->digest_alg->algorithm)) {
-	case NID_md2:
-		digalg = SEC_OID_MD2;
-		break;
-	case NID_md4:
-		digalg = SEC_OID_MD4;
-		break;
-	case NID_md5:
-		digalg = SEC_OID_MD5;
-		break;
-	case NID_sha1:
-		digalg = SEC_OID_SHA1;
-		break;
-	case NID_sha224:
-		digalg = SEC_OID_SHA224;
-		break;
-	case NID_sha256:
-		digalg = SEC_OID_SHA256;
-		break;
-	case NID_sha512:
-		digalg = SEC_OID_SHA512;
-		break;
-	default:
-		digalg = SEC_OID_UNKNOWN;
-		cm_log(1, "Unknown digest algorithm %d.\n",
-		       OBJ_obj2nid(sinfo->digest_alg->algorithm));
-		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-		break;
-	}
+	digalg = cm_submit_n_tag_from_nid(OBJ_obj2nid(sinfo->digest_alg->algorithm));
 	sigalg = SEC_GetSignatureAlgorithmOidTag(privkey->keyType, digalg);
 	if (sigalg == SEC_OID_UNKNOWN) {
 		cm_log(1, "Unable to match digest algorithm and key.\n");
