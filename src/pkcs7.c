@@ -889,7 +889,7 @@ get_ostring_attribute(void *parent, STACK_OF(X509_ATTRIBUTE) *attrs, int nid,
 			}
 		}
 	}
-	return NULL;
+	return;
 }
 
 static int

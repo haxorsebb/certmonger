@@ -193,7 +193,7 @@ cm_submit_o_decrypt_envelope(const unsigned char *envelope,
 	char buf[LINE_MAX], *pin, *filename, *p;
 	const unsigned char *u;
 	long error, l;
-	int result;
+	int result = 0;
 
 	if ((args->entry->cm_key_next_marker != NULL) &&
 	    (strlen(args->entry->cm_key_next_marker) > 0)) {
@@ -243,7 +243,6 @@ cm_submit_o_decrypt_envelope(const unsigned char *envelope,
 		cm_log(1, "Out of memory.\n");
 		goto done;
 	}
-	result = 0;
 	if (pkey_next != NULL) {
 		result = PKCS7_decrypt(p7, pkey_next, NULL, out, 0);
 		if (result == 1) {

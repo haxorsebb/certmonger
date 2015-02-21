@@ -7470,7 +7470,7 @@ DBusHandlerResult
 cm_tdbush_handle_method_return(DBusConnection *conn, DBusMessage *msg,
 			       enum cm_tdbus_type bus, struct cm_context *ctx)
 {
-	struct cm_tdbush_pending_call **p, *call, *next;
+	struct cm_tdbush_pending_call **p, *call = NULL, *next = NULL;
 	dbus_uint32_t serial;
 	struct cm_client_info client_info;
 	long uid, pid;
