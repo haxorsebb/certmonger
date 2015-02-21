@@ -161,12 +161,29 @@ try_to_decode(void *parent, PLArenaPool *arena, SECItem *item,
 	enc_key_len = M_ASN1_STRING_length(p7i->enc_key);
 	dec_len = enc_key_len + BUFSIZ;
 	dec = talloc_size(parent, dec_len);
-	if (PK11_PrivDecrypt(privkey, mech, parameters,
-			     dec, &dec_len, dec_len,
-			     enc_key, enc_key_len) != SECSuccess) {
-		cm_log(1, "Error decrypting bulk key: %s.\n",
-		       PR_ErrorToName(PORT_GetError()));
+	if (parameters == NULL) {
+		if (PK11_PrivDecryptPKCS1(privkey,
+					  dec, &dec_len, dec_len,
+					  enc_key, enc_key_len) != SECSuccess) {
+			cm_log(1, "Error decrypting bulk key: %s.\n",
+			       PR_ErrorToName(PORT_GetError()));
+			goto done;
+		}
+	} else {
+#ifdef HAVE_PK11_PRIVDECRYPT
+		if (PK11_PrivDecrypt(privkey, mech, parameters,
+				     dec, &dec_len, dec_len,
+				     enc_key, enc_key_len) != SECSuccess) {
+			cm_log(1, "Error decrypting bulk key: %s.\n",
+			       PR_ErrorToName(PORT_GetError()));
+			goto done;
+		}
+#else
+		cm_log(1, "Error decrypting bulk key: "
+		       "the version of NSS we were built with does not "
+		       "support decryption with specified parameters\n");
 		goto done;
+#endif
 	}
 
 	/* Generate a dummy key to use when re-encrypting the bulk key using
