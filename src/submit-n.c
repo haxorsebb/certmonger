@@ -99,21 +99,20 @@ try_to_decode(void *parent, PLArenaPool *arena, SECItem *item,
 	SECOidTag tag;
 	SECItem *ret = NULL, param, *parameters;
 	ASN1_OBJECT *algorithm;
-	int nid;
+	int nid, padding;
 	CK_MECHANISM_TYPE mech;
 	ASN1_STRING *params = NULL;
 	PKCS7 *p7 = NULL;
 	PKCS7_RECIP_INFO *p7i = NULL;
 	BIGNUM *exponent = NULL;
 	EVP_PKEY *pkey = NULL;
-	EVP_PKEY_CTX *ctx = NULL;
 	BIO *out;
 	RSA *rsa = NULL;
 	char buf[BUFSIZ];
 	const unsigned char *u;
 	unsigned char *enc_key, *dec, *reenc;
 	unsigned int enc_key_len, dec_len;
-	size_t reenc_len;
+	ssize_t reenc_len;
 	long error, l;
 
 	/* Do the standard parse and sanity checking. */
@@ -197,19 +196,15 @@ retry_gen:
 		cm_log(1, "Key fails checks.  Retrying.\n");
 		goto retry_gen;
 	}
-	BN_free(exponent);
 	EVP_PKEY_set1_RSA(pkey, rsa);
 
 	/* Encrypt the bulk key.  We're about to decrypt it again, so do it the
 	 * simplest way that we can. */
-	ctx = EVP_PKEY_CTX_new(pkey, NULL);
-	if (EVP_PKEY_encrypt_init(ctx) != 1) {
-		cm_log(1, "Error initializing reencryption context.\n");
-		goto retry_gen;
-	}
 	reenc_len = dec_len + RSA_size(rsa);
 	reenc = talloc_size(parent, reenc_len);
-	if (EVP_PKEY_encrypt(ctx, reenc, &reenc_len, dec, dec_len) != 1) {
+	padding = RSA_PKCS1_PADDING;
+	reenc_len = RSA_public_encrypt(dec_len, dec, reenc, rsa, padding);
+	if (reenc_len < 0) {
 		cm_log(1, "Error reencrypting.\n");
 		goto retry_gen;
 	}
@@ -247,8 +242,15 @@ done:
 			cm_log(1, "%s\n", buf);
 		}
 	}
-	if (ctx != NULL) {
-		EVP_PKEY_CTX_free(ctx);
+	if (pkey != NULL) {
+		EVP_PKEY_free(pkey);
+	} else {
+		if (rsa != NULL) {
+			RSA_free(rsa);
+		}
+	}
+	if (exponent != NULL) {
+		BN_free(exponent);
 	}
 	if (p7 != NULL) {
 		PKCS7_free(p7);
