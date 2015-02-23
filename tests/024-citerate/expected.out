@@ -147,7 +147,7 @@ ca_external_helper=${tmpdir}/ca-data
 NEED_TO_ANALYZE
 -START-
 ANALYZING
-NEED_TO_REFRESH
+IDLE
 -STOP-
 id=Test CA
 ca_is_default=0
