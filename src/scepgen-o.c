@@ -570,9 +570,7 @@ cm_scepgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	if (new_pkey != NULL) {
 		EVP_PKEY_free(new_pkey);
 	}
-	if (old_pkey != NULL) {
-		EVP_PKEY_free(old_pkey);
-	}
+	EVP_PKEY_free(old_pkey);
 	_exit(0);
 }
 
