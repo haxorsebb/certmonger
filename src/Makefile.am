@@ -8,7 +8,7 @@ endif
 if NOW
 LDFLAGS += -Wl,-z,relro,-z,now
 endif
-man_MANS = certmonger.8 getcert.1 getcert-request.1 getcert-list.1 getcert-list-cas.1 getcert-start-tracking.1 getcert-stop-tracking.1 selfsign-getcert.1 ipa-getcert.1 certmaster-getcert.1 getcert-resubmit.1 certmonger-ipa-submit.8 certmonger-certmaster-submit.8 certmonger-dogtag-ipa-renew-agent-submit.8 certmonger.conf.5 getcert-refresh.1 getcert-refresh-ca.1 local-getcert.1 certmonger-local-submit.8 getcert-status.1 certmonger-dogtag-submit.8
+man_MANS = certmonger.8 getcert.1 getcert-request.1 getcert-list.1 getcert-list-cas.1 getcert-start-tracking.1 getcert-stop-tracking.1 selfsign-getcert.1 ipa-getcert.1 certmaster-getcert.1 getcert-resubmit.1 certmonger-ipa-submit.8 certmonger-certmaster-submit.8 certmonger-dogtag-ipa-renew-agent-submit.8 certmonger.conf.5 getcert-refresh.1 getcert-refresh-ca.1 local-getcert.1 certmonger-local-submit.8 getcert-status.1 certmonger-dogtag-submit.8 certmonger-scep-submit.8
 pkgsysconfdir = $(sysconfdir)/$(PACKAGE)
 pkgsysconf_DATA = certmonger.conf
 EXTRA_PROGRAMS =

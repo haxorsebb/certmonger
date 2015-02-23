@@ -1,0 +1,124 @@
+.TH certmonger 8 "23 February 2015" "certmonger Manual"
+
+.SH NAME
+scep-submit
+
+.SH SYNOPSIS
+scep-submit -u SERVER-URL
+[-r ra-cert-file]
+[-R ca-cert-file]
+[-I other-certs-file]
+[-i ca-identifier]
+[-v]
+[-c|-C|-g|-p]
+[pkimessage-filename]
+
+.SH DESCRIPTION
+\fIscep-submit\fR is the helper which \fIcertmonger\fR can use to
+transmit certificate enrollment and renewal requests to servers using
+SCEP.  It is not normally run interactively, but it can be for
+troubleshooting purposes.
+
+The request which is to be submitted should be a PEM-encoded SCEP
+pkiMessage either in a file whose name is given as an argument, or fed
+into \fIscep-submit\fR via stdin.
+
+.SH MODES
+.TP
+\fB\-c\fR
+\fIscep-submit\fR will issue a \fIGetCACaps\fR request to the server and
+print the results.
+.TP
+\fB\-C\fR
+\fIscep-submit\fR will issue \fIGetCACert\fR and \fIGetCAChain\fR
+requests to the server, parse the responses, and then print, in order,
+the RA certificate, the CA certificate, and any additional certificates.
+.TP
+\fB\-p\fR
+\fIscep-submit\fR will issue a \fIPKIOperation\fR request to the server
+using the passed-in message as the message content.  It will parse the
+server's response, verify the signature, and if the response includes an
+issued certificate, it will output the \fIpkcsPKIEnvelope\fR in PEM
+format.  If the response indicates an error, it will print the error.
+.TP
+\fB\-g\fR
+\fIscep-submit\fR will issue a \fIPKIOperation\fR request to the server
+using the passed-in message as the message content.  It will parse the
+server's response, verify the signature, and if the response includes an
+issued certificate, it will output the \fIpkcsPKIEnvelope\fR in PEM
+format.  If the response indicates an error, it will print the error.
+.SH OPTIONS
+.TP
+\fB\-u\fR SERVER-URL
+The location of the SCEP interface provided by the CA.  This is
+typically \fIhttp://\fBSERVER\fP/cgi-bin/PKICLIENT.EXE\fR or
+\fIhttp://\fBSERVER\fP/certsrv/mscep/mscep.dll\fR.  This option is
+always required.
+.TP
+\fB\-R\fR CA-certificate-file
+The location of the SCEP server's CA certificate, which was used to
+issue the SCEP server's certificate, or the SCEP server's own
+certificate, if it is self-signed, in PEM form.  If the URL specified
+with the \fB-u\fR option is an \fIhttps\fR URL, then this option is
+required.
+.TP
+\fB\-r\fR RA-certificate-file
+The location of the SCEP server's RA certificate, which is expected to
+be used for signing responses sent by the SCEP server back to the
+client.  This option is required when either the \fB-g\fR flag or the
+\fB-p\fR flag is specified.
+.TP
+\fB\-I\fR other-certificates-file
+The location of a file containing other PEM-formatted certificates which
+may be needed in order to properly verify signed responses sent by the
+SCEP server back to the client.  This option may be necessary when
+either the \fB-g\fR flag or the \fB-p\fR flag is specified.
+.TP
+\fB-v\fR
+Increases the logging level.  Use twice for more logging.  This option
+is mainly useful for troubleshooting.
+
+.SH EXIT STATUS
+.TP
+0
+if the certificate was issued. The pkcsPKIEnvelope will be printed in
+PEM-encoded form.
+.TP
+1
+if the CA is still thinking.  A cookie (state) value will be printed.
+.TP
+2
+if the CA rejected the request.  An error message may be printed.
+.TP
+3
+if the CA was unreachable.  An error message may be printed.
+.TP
+4
+if critical configuration information is missing.  An error message may be printed.
+.TP
+5
+if the CA is still thinking.  A suggested poll delay (specified in seconds) and
+a cookie (state) value will be printed.
+.TP
+16
+if the helper needs an SCEP pkiMessage, but couldn't read one.
+
+.SH BUGS
+Please file tickets for any that you find at https://fedorahosted.org/certmonger/
+
+.SH SEE ALSO
+\fBcertmonger\fR(8)
+\fBgetcert\fR(1)
+\fBgetcert-list\fR(1)
+\fBgetcert-list-cas\fR(1)
+\fBgetcert-refresh-ca\fR(1)
+\fBgetcert-resubmit\fR(1)
+\fBgetcert-start-tracking\fR(1)
+\fBgetcert-status\fR(1)
+\fBgetcert-stop-tracking\fR(1)
+\fBcertmonger-certmaster-submit\fR(8)
+\fBcertmonger-dogtag-ipa-renew-agent-submit\fR(8)
+\fBcertmonger-dogtag-submit\fR(8)
+\fBcertmonger-ipa-submit\fR(8)
+\fBcertmonger-local-submit\fR(8)
+\fBcertmonger_selinux\fR(8)
