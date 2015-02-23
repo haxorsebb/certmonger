@@ -2629,6 +2629,7 @@ cm_iterate_ca(struct cm_store_ca *ca,
 			abort();
 			break;
 		}
+		break;
 	case CM_CA_DATA_UNREACHABLE:
 		ca->cm_ca_state[state->cm_phase] = CM_CA_NEED_TO_REFRESH;
 		*when = cm_time_soonish;
