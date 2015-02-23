@@ -390,7 +390,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	free(spkidec);
 	fclose(status);
 	fclose(keyfp);
-	return 0;
+	_exit(0);
 }
 
 /* Check if a CSR is ready. */

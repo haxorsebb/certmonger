@@ -71,7 +71,7 @@ cm_certread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 
 	util_o_init();
 	ERR_load_crypto_strings();
-	status = 1;
+	status = CM_SUB_STATUS_INTERNAL_ERROR;
 	fp = fdopen(fd, "w");
 	if (fp == NULL) {
 		cm_log(1, "Unable to initialize I/O.\n");
@@ -108,10 +108,7 @@ cm_certread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 	}
 	fclose(fp);
-	if (status != 0) {
-		_exit(status);
-	}
-	return 0;
+	_exit(0);
 }
 
 /* Check if something changed, for example we finished reading the data we need

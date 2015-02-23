@@ -62,7 +62,7 @@ static int
 cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		   void *userdata)
 {
-	int status = 1, readwrite, ec;
+	int status = CM_SUB_STATUS_INTERNAL_ERROR, readwrite, ec;
 	const char *token;
 	char *pin;
 	PLArenaPool *arena;
@@ -332,10 +332,7 @@ next_slot:
 	if (NSS_ShutdownContext(ctx) != SECSuccess) {
 		cm_log(1, "Error shutting down NSS.\n");
 	}
-	if (status != 0) {
-		_exit(status);
-	}
-	return 0;
+	_exit(0);
 }
 
 /* Parse the certificate in the entry, and refresh the certificate-based
