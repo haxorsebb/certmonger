@@ -96,7 +96,7 @@ main(int argc, char **argv)
 	int c, verbose = 0, results_length = 0, results_length2 = 0, i;
 	int response_code = 0, response_code2 = 0;
 	enum known_ops op = op_unset;
-	const char *id, *message = NULL;
+	const char *id, *message = NULL, *cainfo = NULL;
 	const char *mode = NULL, *content_type = NULL, *content_type2 = NULL;
 	void *ctx;
 	char *params = "", *params2 = NULL, *racert = NULL, *cacert = NULL;
@@ -199,6 +199,7 @@ main(int argc, char **argv)
 			break;
 		case 'R':
 			cacert = cm_submit_u_from_file(optarg);
+			cainfo = optarg;
 			break;
 		case 'I':
 			certs = cm_submit_u_from_file(optarg);
@@ -326,7 +327,7 @@ main(int argc, char **argv)
 
 	/* Submit the request. */
 	hctx = cm_submit_h_init(ctx, "GET", url, params, NULL, NULL,
-				NULL, NULL, NULL, NULL, NULL,
+				cainfo, NULL, NULL, NULL, NULL,
 				cm_submit_h_negotiate_off,
 				cm_submit_h_delegate_off,
 				cm_submit_h_clientauth_off,
