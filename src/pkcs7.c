@@ -506,6 +506,7 @@ cm_pkcs7_parse(unsigned int flags, void *parent,
 					      sizeof(lengths[0]) *
 					      (n_buffers + 1));
 		if ((buffers == NULL) || (lengths == NULL)) {
+			va_end(args);
 			return -1;
 		}
 		buffers[n_buffers] = buffer;
