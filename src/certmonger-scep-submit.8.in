@@ -74,6 +74,11 @@ may be needed in order to properly verify signed responses sent by the
 SCEP server back to the client.  This option may be necessary when
 either the \fB-g\fR flag or the \fB-p\fR flag is specified.
 .TP
+\fB\-i\fR ca-identifier
+When called with the \fB-c\fR or \fB-C\fR flag, this option can be used to
+specify the CA identifier which is passed to the server as part of the client's
+request.  The default is "0".
+.TP
 \fB-v\fR
 Increases the logging level.  Use twice for more logging.  This option
 is mainly useful for troubleshooting.
