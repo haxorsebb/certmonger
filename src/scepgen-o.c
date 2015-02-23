@@ -526,14 +526,14 @@ cm_scepgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 	if ((entry->cm_key_next_marker != NULL) &&
 	    (strlen(entry->cm_key_next_marker) > 0)) {
-		filename = util_build_next_filename(entry->cm_key_storage_location, entry->cm_key_next_marker);
+		filename = util_build_next_filename(entry->cm_key_storage_location,
+						    entry->cm_key_next_marker);
 		if (filename == NULL) {
 			cm_log(1, "Error opening key file \"%s\" "
 			       "for reading: %s.\n",
 			       filename, strerror(errno));
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
-		filename = entry->cm_key_storage_location;
 		new_pkey = key_from_file(filename, entry);
 		if (new_pkey == NULL) {
 			cm_log(1, "Error reading key from file \"%s\".\n",
