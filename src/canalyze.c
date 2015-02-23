@@ -34,6 +34,7 @@
 #include <certdb.h>
 #include <pk11pub.h>
 #include <prerror.h>
+#include <prtime.h>
 #include <secerr.h>
 
 #include "canalyze.h"
@@ -93,7 +94,7 @@ not_valid_after(PLArenaPool *arena, struct cm_nickcert *nc)
 			       nc->cm_nickname);
 			return 0;
 		} else {
-			cm_log(1, "Certificate \"%s\" valid for %lds.\n",
+			cm_log(1, "Certificate \"%s\" valid for %llds.\n",
 			       nc->cm_nickname,
 			       (nva - PR_Now()) / PR_USEC_PER_SEC);
 			return nva;
@@ -206,12 +207,13 @@ cm_ca_analyze_encryption_certs_main(int fd, struct cm_store_ca *ca,
 		return 1;
 	}
 	now = PR_Now();
+	ratime = CM_DELAY_CA_POLL_MAXIMUM;
+	ratime *= PR_USEC_PER_SEC;
+	ratime += now;
 	if (racert != NULL) {
 		ratime = not_valid_after(arena, racert);
-	} else {
-		ratime = now + CM_DELAY_CA_POLL_MAXIMUM * PR_USEC_PER_SEC;
 	}
-	catime = now + CM_DELAY_CA_POLL_MAXIMUM * PR_USEC_PER_SEC;
+	catime = ratime;
 	if (cacert != NULL) {
 		catime = not_valid_after(arena, cacert);
 	}
