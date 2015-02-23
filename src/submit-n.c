@@ -418,6 +418,7 @@ next_slot:
 	}
 
 	/* Now that we're logged in, try to decrypt the enveloped data. */
+	plain = NULL;
 	if (slot != NULL) {
 		keylist = PK11_ListPrivKeysInSlot(slot, NULL, NULL);
 		if (keylist != NULL) {
