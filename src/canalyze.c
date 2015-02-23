@@ -96,7 +96,7 @@ not_valid_after(PLArenaPool *arena, struct cm_nickcert *nc)
 		} else {
 			cm_log(1, "Certificate \"%s\" valid for %llds.\n",
 			       nc->cm_nickname,
-			       (nva - PR_Now()) / PR_USEC_PER_SEC);
+			       (long long) ((nva - PR_Now()) / PR_USEC_PER_SEC));
 			return nva;
 		}
 	}
