@@ -695,7 +695,7 @@ request(const char *argv0, int argc, char **argv)
 
 	opterr = 0;
 	while ((c = getopt(argc, argv,
-			   ":d:n:t:k:f:I:g:rRN:u:U:K:D:E:sSp:P:vB:C:T:G:A:a:F:w"
+			   ":d:n:t:k:f:I:g:rRN:u:U:K:D:E:sSp:P:vB:C:T:G:A:a:F:wL:l:"
 			   GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
@@ -1595,7 +1595,7 @@ set_tracking(const char *argv0, const char *category,
 
 	opterr = 0;
 	while ((c = getopt(argc, argv,
-			   ":d:n:t:k:f:g:p:P:rRi:I:u:U:K:D:E:sSvB:C:T:A:a:F:w"
+			   ":d:n:t:k:f:g:p:P:rRi:I:u:U:K:D:E:sSvB:C:T:A:a:F:wL:l:"
 			   GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
@@ -2114,7 +2114,7 @@ resubmit(const char *argv0, int argc, char **argv)
 
 	opterr = 0;
 	while ((c = getopt(argc, argv,
-			   ":d:n:N:t:u:U:K:E:D:f:i:I:sSp:P:vB:C:T:A:a:F:w"
+			   ":d:n:N:t:u:U:K:E:D:f:i:I:sSp:P:vB:C:T:A:a:F:wL:l:"
 			   GETOPT_CA)) != -1) {
 		switch (c) {
 		case 'd':
