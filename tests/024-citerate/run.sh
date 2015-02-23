@@ -50,6 +50,12 @@ GET-NEW-REQUEST-REQUIREMENTS)
 GET-RENEW-REQUEST-REQUIREMENTS)
 	echo None
 	;;
+FETCH-SCEP-CA-CERTS)
+	echo "\$cert"
+	;;
+FETCH-SCEP-CA-CAPS)
+	echo None
+	;;
 esac
 exit 0
 EOF
