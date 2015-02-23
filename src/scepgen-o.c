@@ -532,6 +532,11 @@ cm_scepgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 
 	old_pkey = key_from_file(entry->cm_key_storage_location, entry);
+	if (old_pkey == NULL) {
+		cm_log(1, "Error reading key from file \"%s\".\n",
+		       entry->cm_key_storage_location);
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+	}
 	if ((entry->cm_key_next_marker != NULL) &&
 	    (strlen(entry->cm_key_next_marker) > 0)) {
 		filename = util_build_next_filename(entry->cm_key_storage_location, entry->cm_key_next_marker);
@@ -543,6 +548,11 @@ cm_scepgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 		filename = entry->cm_key_storage_location;
 		new_pkey = key_from_file(filename, entry);
+		if (new_pkey == NULL) {
+			cm_log(1, "Error reading key from file \"%s\".\n",
+			       filename);
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		}
 		free(filename);
 	} else {
 		new_pkey = NULL;
