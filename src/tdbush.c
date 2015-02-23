@@ -1537,7 +1537,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 					  CM_DBUS_PROP_TEMPLATE_CHALLENGE_PASSWORD_FILE,
 					  cm_tdbusm_dict_s);
 	if ((param != NULL) &&
-	    (param->value.s == NULL) &&
+	    (param->value.s != NULL) &&
 	    (strlen(param->value.s) != 0)) {
 		if (check_arg_is_absolute_path(param->value.s) != 0) {
 			cm_log(1, "Challenge password storage location is not "
