@@ -285,6 +285,7 @@ set_pkimessage_attrs(PKCS7 *p7,
 
 static PKCS7 *
 build_pkimessage(EVP_PKEY *key, X509 *signer, STACK_OF(X509) *certs,
+		 enum cm_prefs_digest pref_digest,
 		 unsigned char *data, size_t data_length,
 		 const char *tx, const char *msgtype,
 		 const char *pkistatus, const char *failinfo,
@@ -295,6 +296,9 @@ build_pkimessage(EVP_PKEY *key, X509 *signer, STACK_OF(X509) *certs,
 {
 	BIO *in, *out;
 	PKCS7 *ret;
+	PKCS7_SIGNER_INFO *p7i;
+	X509_ALGOR *digests;
+	ASN1_OBJECT *digest;
 	long error;
 	char buf[LINE_MAX];
 	int flags = PKCS7_BINARY | PKCS7_NOSMIMECAP | PKCS7_NOVERIFY;
@@ -310,9 +314,48 @@ build_pkimessage(EVP_PKEY *key, X509 *signer, STACK_OF(X509) *certs,
 		goto errors;
 	}
 	BIO_free(in);
+
+	/* Set the digest to use for signing. */
+	if (sk_PKCS7_SIGNER_INFO_num(ret->d.sign->signer_info) != 1) {
+		cm_log(1, "Error signing data: %d signers.\n",
+		       sk_PKCS7_SIGNER_INFO_num(ret->d.sign->signer_info));
+		goto errors;
+	}
+	p7i = sk_PKCS7_SIGNER_INFO_value(ret->d.sign->signer_info, 0);
+	digest = NULL;
+	switch (pref_digest) {
+	case cm_prefs_sha256:
+		digest = OBJ_nid2obj(NID_sha256);
+		break;
+	case cm_prefs_sha384:
+		digest = OBJ_nid2obj(NID_sha384);
+		break;
+	case cm_prefs_sha512:
+		digest = OBJ_nid2obj(NID_sha512);
+		break;
+	case cm_prefs_sha1:
+		digest = OBJ_nid2obj(NID_sha1);
+		break;
+	case cm_prefs_md5:
+		digest = OBJ_nid2obj(NID_md5);
+		break;
+	}
+	if ((digest != NULL) && (p7i->digest_alg != NULL)) {
+		ASN1_OBJECT_free(p7i->digest_alg->algorithm);
+		p7i->digest_alg->algorithm = OBJ_dup(digest);
+		digests = sk_X509_ALGOR_pop(ret->d.sign->md_algs);
+		if (digests != NULL) {
+			X509_ALGOR_free(digests);
+		}
+		sk_X509_ALGOR_push(ret->d.sign->md_algs,
+				   X509_ALGOR_dup(p7i->digest_alg));
+	}
+
+	/* Set the SCEP parameters. */
 	set_pkimessage_attrs(ret, tx, msgtype, pkistatus, failinfo,
 			     sender_nonce, sender_nonce_length,
 			     recipient_nonce, recipient_nonce_length);
+
 	/* We'd use PKCS7_SIGNER_INFO_sign() here, but it's relatively new, and
 	 * we want to build on versions of OpenSSL that didn't have it. */
 	PKCS7_content_new(ret, NID_pkcs7_data);
@@ -350,6 +393,7 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 	int i;
 	long error;
 	enum cm_prefs_cipher cipher;
+	enum cm_prefs_digest digest, pref_digest;
 
 	util_o_init();
 	ERR_load_crypto_strings();
@@ -393,6 +437,29 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 			break;
 		}
 	}
+	pref_digest = cm_prefs_preferred_digest();
+	digest = cm_prefs_md5;
+	for (i = 0;
+	     (ca->cm_ca_capabilities != NULL) &&
+	     (ca->cm_ca_capabilities[i] != NULL);
+	     i++) {
+		capability = ca->cm_ca_capabilities[i];
+		if ((pref_digest == cm_prefs_sha1) &&
+		    (strcmp(capability, "SHA-1") == 0)) {
+			digest = cm_prefs_sha1;
+			break;
+		}
+		if ((pref_digest == cm_prefs_sha256) &&
+		    (strcmp(capability, "SHA-256") == 0)) {
+			digest = cm_prefs_sha256;
+			break;
+		}
+		if ((pref_digest == cm_prefs_sha512) &&
+		    (strcmp(capability, "SHA-512") == 0)) {
+			digest = cm_prefs_sha512;
+			break;
+		}
+	}
 	if (old_cert != NULL) {
 		if (cm_pkcs7_envelope_ias(ca->cm_ca_encryption_cert, cipher,
 					  ca->cm_ca_encryption_issuer_cert,
@@ -428,14 +495,14 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 		 * the matching key. */
 		pubkey = X509_PUBKEY_get(old_cert->cert_info->key);
 		X509_PUBKEY_set(&old_cert->cert_info->key, old_pkey);
-		*csr_old = build_pkimessage(old_pkey, old_cert, chain,
+		*csr_old = build_pkimessage(old_pkey, old_cert, chain, digest,
 					    csr, csr_length,
 					    entry->cm_scep_tx,
 					    SCEP_MSGTYPE_PKCSREQ,
 					    NULL, NULL,
 					    nonce, nonce_length,
 					    NULL, 0);
-		*ias_old = build_pkimessage(old_pkey, old_cert, chain,
+		*ias_old = build_pkimessage(old_pkey, old_cert, chain, digest,
 					    old_ias, old_ias_length,
 					    entry->cm_scep_tx,
 					    SCEP_MSGTYPE_GETCERTINITIAL,
@@ -453,14 +520,14 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 		 * any previously-issued certificate won't match. */
 		pubkey = X509_PUBKEY_get(new_cert->cert_info->key);
 		X509_PUBKEY_set(&new_cert->cert_info->key, new_pkey);
-		*csr_new = build_pkimessage(new_pkey, new_cert, chain,
+		*csr_new = build_pkimessage(new_pkey, new_cert, chain, digest,
 					    csr, csr_length,
 					    entry->cm_scep_tx,
 					    SCEP_MSGTYPE_PKCSREQ,
 					    NULL, NULL,
 					    nonce, nonce_length,
 					    NULL, 0);
-		*ias_new = build_pkimessage(new_pkey, new_cert, chain,
+		*ias_new = build_pkimessage(new_pkey, new_cert, chain, digest,
 					    new_ias, new_ias_length,
 					    entry->cm_scep_tx,
 					    SCEP_MSGTYPE_GETCERTINITIAL,
@@ -474,14 +541,14 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 		 * if we do, we just did that). */
 		pubkey = X509_PUBKEY_get(new_cert->cert_info->key);
 		X509_PUBKEY_set(&new_cert->cert_info->key, old_pkey);
-		*csr_new = build_pkimessage(old_pkey, new_cert, chain,
+		*csr_new = build_pkimessage(old_pkey, new_cert, chain, digest,
 					    csr, csr_length,
 					    entry->cm_scep_tx,
 					    SCEP_MSGTYPE_PKCSREQ,
 					    NULL, NULL,
 					    nonce, nonce_length,
 					    NULL, 0);
-		*ias_new = build_pkimessage(old_pkey, new_cert, chain,
+		*ias_new = build_pkimessage(old_pkey, new_cert, chain, digest,
 					    new_ias, new_ias_length,
 					    entry->cm_scep_tx,
 					    SCEP_MSGTYPE_GETCERTINITIAL,

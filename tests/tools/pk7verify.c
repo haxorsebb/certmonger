@@ -43,7 +43,7 @@ main(int argc, char **argv)
 	int fd, i, j, root = 0, n_roots = 0, n_others = 0;
 	ssize_t len;
 	void *parent;
-	char **roots, **others, *p;
+	char **roots, **others, *p, *digest = NULL;
 	char *tx = NULL, *msgtype = NULL, *pkistatus = NULL, *failinfo = NULL;
 	unsigned char *snonce = NULL, *rnonce = NULL, *payload = NULL;
 	size_t snonce_length = 0, rnonce_length = 0, payload_length = 0;
@@ -115,7 +115,7 @@ main(int argc, char **argv)
 	i = cm_pkcs7_verify_signed(data, len,
 				   (const char **) roots,
 				   (const char **) others,
-				   NID_pkcs7_data, parent,
+				   NID_pkcs7_data, parent, &digest,
 				   &tx, &msgtype, &pkistatus, &failinfo,
 				   &snonce, &snonce_length,
 				   &rnonce, &rnonce_length,
@@ -124,6 +124,9 @@ main(int argc, char **argv)
 		printf("verify passed\n");
 	} else {
 		printf("verify failed\n");
+	}
+	if (digest != NULL) {
+		printf("digest:%s\n", digest);
 	}
 	if (tx != NULL) {
 		printf("tx:%s\n", tx);

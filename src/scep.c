@@ -287,7 +287,7 @@ main(int argc, char **argv)
 		tmp1 = cm_submit_u_base64_from_text(message);
 		tmp2 = cm_store_base64_as_bin(ctx, tmp1, -1, &c);
 		cm_pkcs7_verify_signed((unsigned char *) tmp2, c,
-				       NULL, NULL, NID_pkcs7_data, ctx,
+				       NULL, NULL, NID_pkcs7_data, ctx, NULL,
 				       &sent_tx, &msgtype, NULL, NULL,
 				       &sent_nonce, &sent_nonce_length,
 				       NULL, NULL, NULL, NULL);
@@ -500,7 +500,7 @@ main(int argc, char **argv)
 			ERR_clear_error();
 			i = cm_pkcs7_verify_signed((unsigned char *) results, results_length,
 						   cacerts, racerts,
-						   NID_pkcs7_data, ctx,
+						   NID_pkcs7_data, ctx, NULL,
 						   &tx, &msgtype, &pkistatus, &failinfo,
 						   &sender_nonce, &sender_nonce_length,
 						   &recipient_nonce, &recipient_nonce_length,

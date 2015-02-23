@@ -7,11 +7,15 @@ SCEP_MSGTYPE_GETCERTINITIAL="20"
 SCEP_MSGTYPE_GETCERT="21"
 SCEP_MSGTYPE_GETCRL="22"
 
+CERTMONGER_CONFIG_DIR="$tmpdir"
+export CERTMONGER_CONFIG_DIR
+
 $toolsdir/cachain.sh 0 2> /dev/null
 
 cat > ca << EOF
 id=SCEP
 ca_type=EXTERNAL
+ca_capabilities=Renewal,SHA-512,SHA-256,SHA-1,DES3
 EOF
 var="ca_encryption_cert="
 cat ca0.crt | while read line ; do
@@ -51,30 +55,48 @@ check_failed() {
 }
 check_verified() {
 	if ! grep -q "^verify passed$" results ; then
-		echo expected signature verification to fail, but it did not
+		echo expected signature verification to succeed, but it did not
 		exit 1
+	fi
+}
+set_digest() {
+	cat > $CERTMONGER_CONFIG_DIR/certmonger.conf <<- EOF
+	[defaults]
+	digest = $1
+	notification_method = stdout
+	[selfsign]
+	validity_period = 1d
+	EOF
+}
+check_digest() {
+	digest=`grep ^digest: results | cut -f2 -d:`
+	if test $digest != $1 ; then
+		echo expected digest $1, got $digest
 	fi
 }
 check_msgtype() {
 	msgtype=`grep ^msgtype: results | cut -f2 -d:`
 	if test $msgtype -ne $1 ; then
-		expected message type $1, got $msgtype
+		echo expected message type $1, got $msgtype
 	fi
 }
 check_txid() {
 	original=`grep ^tx: scepdata | cut -f2 -d:`
 	parsed=`grep ^tx: results | cut -f2 -d:`
 	if test "$original" != "$parsed" ; then
-		expected tx id "$original", got "$parsed"
+		echo expected tx id "$original", got "$parsed"
 	fi
 }
 check_nonce() {
 	original=`grep ^nonce: scepdata | cut -f2 -d:`
 	parsed=`grep ^snonce: results | cut -f2 -d:`
 	if test "$original" != "$parsed" ; then
-		expected nonce "$original", got "$parsed"
+		echo expected nonce "$original", got "$parsed"
 	fi
 }
+
+set_digest md5
+$toolsdir/scepgen ca entry > scepdata
 
 echo "[req, no trust root]"
 grep ^req: scepdata | cut -f2- -d: | base64 -i -d | $toolsdir/pk7verify ee.crt 2>&1 > results 2>&1
@@ -93,18 +115,24 @@ grep ^gic: scepdata | cut -f2- -d: | base64 -i -d | $toolsdir/pk7verify -r mini.
 check_failed
 echo OK
 echo "[req, old root]"
+set_digest md5
+$toolsdir/scepgen ca entry > scepdata
 grep ^req: scepdata | cut -f2- -d: | base64 -i -d | $toolsdir/pk7verify -r ca0.crt ee.crt 2>&1 > results 2>&1
 check_verified
 check_msgtype $SCEP_MSGTYPE_PKCSREQ
 check_txid
 check_nonce
+check_digest md5
 echo OK
 echo "[gic, old trust root]"
+set_digest sha1
+$toolsdir/scepgen ca entry > scepdata
 grep ^gic: scepdata | cut -f2- -d: | base64 -i -d | $toolsdir/pk7verify -r ca0.crt ee.crt 2>&1 > results 2>&1
 check_verified
 check_msgtype $SCEP_MSGTYPE_GETCERTINITIAL
 check_txid
 check_nonce
+check_digest sha1
 echo OK
 echo "[req next, no trust root]"
 grep ^req.next.: scepdata | cut -f2- -d: | base64 -i -d | $toolsdir/pk7verify ee.crt > results 2>&1
@@ -115,11 +143,14 @@ grep ^gic.next.: scepdata | cut -f2- -d: | base64 -i -d | $toolsdir/pk7verify ee
 check_failed
 echo OK
 echo "[req next, self root]"
+set_digest sha256
+$toolsdir/scepgen ca entry > scepdata
 grep ^req.next.: scepdata | cut -f2- -d: | base64 -i -d | $toolsdir/pk7verify -r mini.crt ee.crt > results 2>&1
 check_verified
 check_msgtype $SCEP_MSGTYPE_PKCSREQ
 check_txid
 check_nonce
+check_digest sha256
 echo OK
 echo "[gic next, self root]"
 grep ^gic.next.: scepdata | cut -f2- -d: | base64 -i -d | $toolsdir/pk7verify -r mini.crt ee.crt > results 2>&1

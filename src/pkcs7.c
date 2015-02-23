@@ -913,7 +913,7 @@ int
 cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 		       const char **roots, const char **othercerts,
 		       int expected_content_type,
-		       void *parent,
+		       void *parent, char **digest,
 		       char **tx, char **msgtype,
 		       char **pkistatus, char **failinfo,
 		       unsigned char **sender_nonce,
@@ -927,6 +927,7 @@ cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 	STACK_OF(X509) *certs = NULL;
 	STACK_OF(X509_ATTRIBUTE) *attrs;
 	X509_STORE *store = NULL;
+	X509_ALGOR *algor = NULL;
 	PKCS7_SIGNED *p7s;
 	PKCS7_SIGNER_INFO *si;
 	BIO *in, *out = NULL;
@@ -935,6 +936,9 @@ cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 	int ret = -1, i;
 	long error;
 
+	if (digest != NULL) {
+		*digest = NULL;
+	}
 	if (tx != NULL) {
 		*tx = NULL;
 	}
@@ -1067,6 +1071,26 @@ cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 		goto done;
 	}
 	ret = 0;
+	if (digest != NULL) {
+		algor = si->digest_alg;
+		switch (OBJ_obj2nid(algor->algorithm)) {
+		case NID_md5:
+			*digest = talloc_strdup(parent, "md5");
+			break;
+		case NID_sha512:
+			*digest = talloc_strdup(parent, "sha512");
+			break;
+		case NID_sha384:
+			*digest = talloc_strdup(parent, "sha384");
+			break;
+		case NID_sha256:
+			*digest = talloc_strdup(parent, "sha256");
+			break;
+		case NID_sha1:
+			*digest = talloc_strdup(parent, "sha1");
+			break;
+		}
+	}
 	if (tx != NULL) {
 		*tx = get_pstring_attribute(parent, attrs,
 					    cm_scep_o_get_tx_nid());
