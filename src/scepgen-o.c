@@ -547,6 +547,7 @@ cm_scepgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		if (new_pkey == NULL) {
 			cm_log(1, "Error reading key from file \"%s\".\n",
 			       filename);
+			free(filename);
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
 		free(filename);
