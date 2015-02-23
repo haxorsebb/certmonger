@@ -779,6 +779,7 @@ main(int argc, char **argv)
 	}
 
 	/* Setup a ccache unless we're told to use the default one. */
+	kerr = NULL;
 	if (make_keytab_ccache &&
 	    ((kret = cm_submit_x_make_ccache(ktname, kpname, &kerr)) != 0)) {
 		fprintf(stderr, "Error setting up ccache at the client: %s.\n",
@@ -806,6 +807,7 @@ main(int argc, char **argv)
 					 kpname, ktname, kerr);
 			}
 		}
+		free(kerr);
 		switch (kret) {
 		case KRB5_KDC_UNREACH:
 		case KRB5_REALM_CANT_RESOLVE:
