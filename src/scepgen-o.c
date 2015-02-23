@@ -274,10 +274,10 @@ set_pkimessage_attrs(PKCS7 *p7,
 		if (r == NULL) {
 			return;
 		}
-		M_ASN1_OCTET_STRING_set(s, recipient_nonce, recipient_nonce_length);
+		M_ASN1_OCTET_STRING_set(r, recipient_nonce, recipient_nonce_length);
 		PKCS7_add_signed_attribute(sinfo,
 					   cm_scep_o_get_recipient_nonce_nid(),
-					   V_ASN1_OCTET_STRING, s);
+					   V_ASN1_OCTET_STRING, r);
 	}
 	PKCS7_add_signed_attribute(sinfo, NID_pkcs9_contentType, V_ASN1_OBJECT,
 				   OBJ_nid2obj(NID_pkcs7_data));
