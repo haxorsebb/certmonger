@@ -260,10 +260,6 @@ done:
 	}
 	if (pkey != NULL) {
 		EVP_PKEY_free(pkey);
-	} else {
-		if (rsa != NULL) {
-			RSA_free(rsa);
-		}
 	}
 	if (exponent != NULL) {
 		BN_free(exponent);
