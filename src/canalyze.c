@@ -206,7 +206,11 @@ cm_ca_analyze_encryption_certs_main(int fd, struct cm_store_ca *ca,
 		return 1;
 	}
 	now = PR_Now();
-	ratime = not_valid_after(arena, racert);
+	if (racert != NULL) {
+		ratime = not_valid_after(arena, racert);
+	} else {
+		ratime = now + CM_DELAY_CA_POLL_MAXIMUM * PR_USEC_PER_SEC;
+	}
 	catime = now + CM_DELAY_CA_POLL_MAXIMUM * PR_USEC_PER_SEC;
 	if (cacert != NULL) {
 		catime = not_valid_after(arena, cacert);
