@@ -78,6 +78,9 @@ cm_scepgen_n_resign(PKCS7 *p7, SECKEYPrivateKey *privkey)
 	SECOidTag digalg, sigalg;
 	PKCS7_SIGNER_INFO *sinfo;
 
+	if (p7 == NULL) {
+		return;
+	}
 	if (sk_PKCS7_SIGNER_INFO_num(p7->d.sign->signer_info) != 1) {
 		cm_log(1, "More than one signer, not sure what to do.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
@@ -216,6 +219,10 @@ retry_gen:
 	}
 	BN_free(exponent);
 	EVP_PKEY_set1_RSA(key, rsa);
+	csr_new = NULL;
+	csr_old = NULL;
+	ias_new = NULL;
+	ias_old = NULL;
 	cm_scepgen_o_cooked(ca, entry,
 			    nonce, sizeof(nonce),
 			    key, key,
