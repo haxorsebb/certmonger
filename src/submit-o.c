@@ -250,9 +250,6 @@ cm_submit_o_decrypt_envelope(const unsigned char *envelope,
 		}
 	}
 	result = PKCS7_decrypt(p7, pkey, NULL, out, 0);
-	if (result == 1) {
-		goto done;
-	}
 done:
 	if (result == 1) {
 		p = NULL;
