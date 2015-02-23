@@ -59,6 +59,7 @@
 #include "scepgen-int.h"
 #include "store.h"
 #include "store-int.h"
+#include "submit-o.h"
 #include "submit-u.h"
 #include "subproc.h"
 #include "util-n.h"
