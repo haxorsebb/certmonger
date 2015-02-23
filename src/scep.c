@@ -516,6 +516,7 @@ main(int argc, char **argv)
 							     results_length);
 				s = cm_submit_u_pem_from_base64("PKCS7", 0, s);
 				fprintf(stderr, "%s", s);
+				free(s);
 				return CM_SUBMIT_STATUS_UNREACHABLE;
 			}
 			if ((msgtype == NULL) ||
@@ -595,6 +596,7 @@ main(int argc, char **argv)
 								     results_length);
 					s = cm_submit_u_pem_from_base64("PKCS7", 0, s);
 					fprintf(stderr, "Full reply:\n%s", s);
+					free(s);
 					return CM_SUBMIT_STATUS_UNREACHABLE;
 				}
 				if (!PKCS7_type_is_enveloped(p7)) {
@@ -609,6 +611,7 @@ main(int argc, char **argv)
 								     results_length);
 					s = cm_submit_u_pem_from_base64("PKCS7", 0, s);
 					fprintf(stderr, "Full reply:\n%s", s);
+					free(s);
 					return CM_SUBMIT_STATUS_UNREACHABLE;
 				}
 				if (!PKCS7_type_is_enveloped(p7)) {
@@ -623,6 +626,7 @@ main(int argc, char **argv)
 								     results_length);
 					s = cm_submit_u_pem_from_base64("PKCS7", 0, s);
 					fprintf(stderr, "Full reply:\n%s", s);
+					free(s);
 					return CM_SUBMIT_STATUS_UNREACHABLE;
 				}
 				if ((p7->d.enveloped == NULL) ||
@@ -640,12 +644,14 @@ main(int argc, char **argv)
 								     results_length);
 					s = cm_submit_u_pem_from_base64("PKCS7", 0, s);
 					fprintf(stderr, "Full reply:\n%s", s);
+					free(s);
 					return CM_SUBMIT_STATUS_UNREACHABLE;
 				}
 				s = cm_store_base64_from_bin(ctx, payload,
 							     payload_length);
 				s = cm_submit_u_pem_from_base64("PKCS7", 0, s);
 				printf("%s", s);
+				free(s);
 				return CM_SUBMIT_STATUS_ISSUED;
 			} else {
 				printf(_("Error: pkiStatus \"%s\" not recognized.\n"),
