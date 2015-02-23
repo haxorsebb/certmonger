@@ -82,18 +82,14 @@ key_from_file(const char *filename, struct cm_store_entry *entry)
 		}
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
-	if (filename != NULL) {
-		keyfp = fopen(filename, "r");
-		if (keyfp == NULL) {
-			if (errno != ENOENT) {
-				cm_log(1, "Error opening key file \"%s\" "
-				       "for reading: %s.\n",
-				       filename, strerror(errno));
-			}
-			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+	keyfp = fopen(filename, "r");
+	if (keyfp == NULL) {
+		if (errno != ENOENT) {
+			cm_log(1, "Error opening key file \"%s\" "
+			       "for reading: %s.\n",
+			       filename, strerror(errno));
 		}
-	} else {
-		keyfp = NULL;
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	if (cm_pin_read_for_key(entry, &pin) != 0) {
 		cm_log(1, "Internal error reading key encryption PIN.\n");
