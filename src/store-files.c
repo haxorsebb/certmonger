@@ -780,6 +780,7 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 				ret->cm_key_next_marker = free_if_empty(p);
 				break;
 			case cm_store_entry_field_key_storage_type:
+				ret->cm_key_storage_type = cm_key_storage_none;
 				if (strcasecmp(p, "FILE") == 0) {
 					ret->cm_key_storage_type =
 						cm_key_storage_file;
@@ -789,9 +790,6 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 						cm_key_storage_nssdb;
 				} else
 				if (strcasecmp(p, "NONE") == 0) {
-					ret->cm_key_storage_type =
-						cm_key_storage_none;
-				} else {
 					ret->cm_key_storage_type =
 						cm_key_storage_none;
 				}
