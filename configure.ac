@@ -701,6 +701,8 @@ if ! ${configure_dist_target_only:-false} ; then
 	AC_DEFINE_UNQUOTED(CM_LOCAL_HELPER_PATH,"$mylibexecdir/local-submit",[Define to the path of the local submission helper.])
 	AM_CONDITIONAL(WITH_LOCAL,true)
 
+	AC_DEFINE_UNQUOTED(CM_SCEP_HELPER_PATH,"$mylibexecdir/scep-submit",[Define to the path of the SCEP submission helper.])
+
 	CM_DEFAULT_IDLE_TIMEOUT=300
 	AC_SUBST(CM_DEFAULT_IDLE_TIMEOUT)
 	AC_DEFINE_UNQUOTED(CM_DEFAULT_IDLE_TIMEOUT,$CM_DEFAULT_IDLE_TIMEOUT,[Define to the default idle-timeout when bus-activated.])
@@ -784,4 +786,4 @@ else
 fi
 
 AC_CONFIG_COMMANDS(src_introspect_sh,[chmod +x src/introspect.sh])
-AC_OUTPUT(Makefile src/Makefile dbus/Makefile systemd/Makefile sysvinit/Makefile sysvinit/certmonger tests/Makefile tests/tools/Makefile dbus/certmonger.conf dbus/certmonger.service src/introspect.sh src/certmonger.8 src/getcert.1 src/getcert-request.1 src/getcert-list.1 src/getcert-list-cas.1 src/getcert-start-tracking.1 src/getcert-stop-tracking.1 src/selfsign-getcert.1 src/ipa-getcert.1 src/getcert-resubmit.1 src/certmonger-certmaster-submit.8 src/certmonger-ipa-submit.8 src/certmonger-dogtag-ipa-renew-agent-submit.8 src/certmaster-getcert.1 src/certmonger.conf.5 po/Makefile.in src/certmonger.conf systemd/certmonger.service systemd/certmonger.path systemd/certmonger.conf systemd/org.fedorahosted.certmonger.service src/getcert-refresh.1 src/getcert-refresh-ca.1 src/local-getcert.1 src/certmonger-local-submit.8 src/getcert-status.1 src/certmonger-dogtag-submit.8 src/certmonger-scep-submit.8)
+AC_OUTPUT(Makefile src/Makefile dbus/Makefile systemd/Makefile sysvinit/Makefile sysvinit/certmonger tests/Makefile tests/tools/Makefile dbus/certmonger.conf dbus/certmonger.service src/introspect.sh src/certmonger.8 src/getcert.1 src/getcert-request.1 src/getcert-list.1 src/getcert-list-cas.1 src/getcert-start-tracking.1 src/getcert-stop-tracking.1 src/selfsign-getcert.1 src/ipa-getcert.1 src/getcert-resubmit.1 src/certmonger-certmaster-submit.8 src/certmonger-ipa-submit.8 src/certmonger-dogtag-ipa-renew-agent-submit.8 src/certmaster-getcert.1 src/certmonger.conf.5 po/Makefile.in src/certmonger.conf systemd/certmonger.service systemd/certmonger.path systemd/certmonger.conf systemd/org.fedorahosted.certmonger.service src/getcert-refresh.1 src/getcert-refresh-ca.1 src/local-getcert.1 src/certmonger-local-submit.8 src/getcert-status.1 src/certmonger-dogtag-submit.8 src/certmonger-scep-submit.8 src/getcert-add-ca.1 src/getcert-add-scep-ca.1 src/getcert-modify-ca.1 src/getcert-remove-ca.1)

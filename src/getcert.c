@@ -241,6 +241,28 @@ ensure_pem(void *parent, const char *path)
 	return ret;
 }
 
+#ifndef FORCE_CA
+/* Escape any shell special characters. */
+static char *
+shell_escape(void *parent, const char *s)
+{
+	const char *specials = "|&;()<>\"' \t", *p;
+	char *ret, *q;
+
+	ret = talloc_size(parent, strlen(s) * 2 + 1);
+	if (ret != NULL) {
+		for (p = s, q = ret; *p != '\0'; p++) {
+			if (strchr(specials, *p) != NULL) {
+				*q++ = '\\';
+			}
+			*q++ = *p;
+		}
+		*q++ = '\0';
+	}
+	return ret;
+}
+#endif
+
 /* Add a string to a list. */
 static void
 add_string(void *parent, char ***dest, const char *value)
@@ -3638,6 +3660,380 @@ refresh_ca(const char *argv0, int argc, char **argv)
 	return 0;
 }
 
+#ifndef FORCE_CA
+static int
+add_ca(const char *argv0, int argc, char **argv)
+{
+	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
+	char *caname = NULL, *command = NULL, *p = NULL, *nickname;
+	int c, verbose = 0;
+	dbus_bool_t b;
+	static DBusMessage *req, *rep;
+
+	if ((getenv(CERTMONGER_PVT_ADDRESS_ENV) != NULL) &&
+	    (strlen(getenv(CERTMONGER_PVT_ADDRESS_ENV)) > 0)) {
+		bus = cm_tdbus_private;
+	}
+
+	opterr = 0;
+	while ((c = getopt(argc, argv, "c:e:vsS")) != -1) {
+		switch (c) {
+		case 'c':
+			caname = optarg;
+			break;
+		case 'e':
+			command = optarg;
+			break;
+		case 's':
+			bus = cm_tdbus_session;
+			break;
+		case 'S':
+			bus = cm_tdbus_system;
+			break;
+		case 'v':
+			verbose++;
+			break;
+		default:
+			if (c == ':') {
+				fprintf(stderr,
+					_("%s: option requires an argument -- '%c'\n"),
+					"add-ca", optopt);
+			} else {
+				fprintf(stderr, _("%s: invalid option -- '%c'\n"),
+					"add-ca", optopt);
+			}
+			help(argv0, "add-ca");
+			return 1;
+		}
+	}
+	if (caname == NULL) {
+		printf(_("CA nickname not specified.\n"));
+		help(argv0, "add-ca");
+		return 1;
+	}
+	if (command == NULL) {
+		printf(_("CA helper command not specified.\n"));
+		help(argv0, "add-ca");
+		return 1;
+	}
+	if (optind < argc) {
+		printf(_("Error: unused extra arguments were supplied.\n"));
+		help(argv0, "add-ca");
+		return 1;
+	}
+	prep_bus(bus, "add-ca", verbose, argc, argv);
+	req = prep_req(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
+		       "add_known_ca");
+	if (cm_tdbusm_set_ssoas(req, caname, command, NULL) != 0) {
+		printf(_("Error setting request arguments.\n"));
+		exit(1);
+	}
+	rep = send_req(req, verbose);
+	if (cm_tdbusm_get_bp(rep, globals.tctx, &b, &p) != 0) {
+		printf(_("Error parsing server response.\n"));
+		exit(1);
+	}
+	dbus_message_unref(rep);
+	if (b) {
+		nickname = find_ca_name(globals.tctx, bus, p, verbose);
+		printf(_("New CA \"%s\" added.\n"),
+		       nickname ? nickname : p);
+	} else {
+		printf(_("New CA could not be added.\n"));
+		exit(1);
+	}
+	return 0;
+}
+
+static int
+add_scep_ca(const char *argv0, int argc, char **argv)
+{
+	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
+	char *caname = NULL, *url = NULL, *path = NULL, *id = NULL;
+	char *root = NULL, *nickname, *command;
+	const char *err;
+	int c, verbose = 0;
+	dbus_bool_t b;
+	static DBusMessage *req, *rep;
+
+	if ((getenv(CERTMONGER_PVT_ADDRESS_ENV) != NULL) &&
+	    (strlen(getenv(CERTMONGER_PVT_ADDRESS_ENV)) > 0)) {
+		bus = cm_tdbus_private;
+	}
+
+	opterr = 0;
+	while ((c = getopt(argc, argv, "c:u:i:R:vsS")) != -1) {
+		switch (c) {
+		case 'c':
+			caname = optarg;
+			break;
+		case 'u':
+			url = optarg;
+			break;
+		case 'i':
+			id = optarg;
+			break;
+		case 'R':
+			root = optarg;
+			break;
+		case 's':
+			bus = cm_tdbus_session;
+			break;
+		case 'S':
+			bus = cm_tdbus_system;
+			break;
+		case 'v':
+			verbose++;
+			break;
+		default:
+			if (c == ':') {
+				fprintf(stderr,
+					_("%s: option requires an argument -- '%c'\n"),
+					"add-scep-ca", optopt);
+			} else {
+				fprintf(stderr, _("%s: invalid option -- '%c'\n"),
+					"add-scep-ca", optopt);
+			}
+			help(argv0, "add-scep-ca");
+			return 1;
+		}
+	}
+	if (caname == NULL) {
+		printf(_("CA nickname not specified.\n"));
+		help(argv0, "add-scep-ca");
+		return 1;
+	}
+	if (url == NULL) {
+		printf(_("server URL not specified.\n"));
+		help(argv0, "add-scep-ca");
+		return 1;
+	}
+	if ((root == NULL) && (strncmp(url, "https:", 6) == 0)) {
+		printf(_("HTTPS requires a CA certificate.\n"));
+		help(argv0, "add-scep-ca");
+		return 1;
+	}
+	if (optind < argc) {
+		printf(_("Error: unused extra arguments were supplied.\n"));
+		help(argv0, "add-ca");
+		return 1;
+	}
+	command = talloc_asprintf(globals.tctx,
+				  "%s -u %s %s %s",
+				  shell_escape(globals.tctx,
+					       CM_SCEP_HELPER_PATH),
+				  shell_escape(globals.tctx, url),
+				  root ? "-R" : "",
+				  root ? shell_escape(globals.tctx, root) : "");
+	if (command == NULL) {
+		printf(_("Error building command line.\n"));
+		exit(1);
+	}
+	prep_bus(bus, "add-scep-ca", verbose, argc, argv);
+	req = prep_req(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
+		       "add_known_ca");
+	if (cm_tdbusm_set_ssoas(req, caname, command, NULL) != 0) {
+		printf(_("Error setting request arguments.\n"));
+		exit(1);
+	}
+	rep = send_req(req, verbose);
+	if (cm_tdbusm_get_bp(rep, globals.tctx, &b, &path) != 0) {
+		printf(_("Error parsing server response.\n"));
+		exit(1);
+	}
+	dbus_message_unref(rep);
+	if (b) {
+		nickname = find_ca_name(globals.tctx, bus, path, verbose);
+		printf(_("New CA \"%s\" added.\n"),
+		       nickname ? nickname : path);
+		if (id != NULL) {
+			req = prep_req(bus, path, DBUS_INTERFACE_PROPERTIES,
+				       "Set");
+			if (cm_tdbusm_set_ssvs(req, CM_DBUS_CA_INTERFACE,
+					       CM_DBUS_PROP_SCEP_CA_IDENTIFIER,
+					       id) != 0) {
+				printf(_("Error setting request arguments.\n"));
+				exit(1);
+			}
+			rep = send_req(req, verbose);
+			err = dbus_message_get_error_name(rep);
+			if (err != NULL) {
+				printf(_("Error setting CA identifier.\n"));
+				exit(1);
+			}
+			dbus_message_unref(rep);
+		}
+	} else {
+		printf(_("New CA could not be added.\n"));
+		exit(1);
+	}
+	return 0;
+}
+
+static int
+modify_ca(const char *argv0, int argc, char **argv)
+{
+	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
+	char *caname = NULL, *command = NULL, *nickname, *path;
+	const char *err;
+	int c, verbose = 0;
+	static DBusMessage *req, *rep;
+
+	if ((getenv(CERTMONGER_PVT_ADDRESS_ENV) != NULL) &&
+	    (strlen(getenv(CERTMONGER_PVT_ADDRESS_ENV)) > 0)) {
+		bus = cm_tdbus_private;
+	}
+
+	opterr = 0;
+	while ((c = getopt(argc, argv, "c:e:vsS")) != -1) {
+		switch (c) {
+		case 'c':
+			caname = optarg;
+			break;
+		case 'e':
+			command = optarg;
+			break;
+		case 's':
+			bus = cm_tdbus_session;
+			break;
+		case 'S':
+			bus = cm_tdbus_system;
+			break;
+		case 'v':
+			verbose++;
+			break;
+		default:
+			if (c == ':') {
+				fprintf(stderr,
+					_("%s: option requires an argument -- '%c'\n"),
+					"modify-ca", optopt);
+			} else {
+				fprintf(stderr, _("%s: invalid option -- '%c'\n"),
+					"modify-ca", optopt);
+			}
+			help(argv0, "modify-ca");
+			return 1;
+		}
+	}
+	if (caname == NULL) {
+		printf(_("CA nickname not specified.\n"));
+		help(argv0, "modify-ca");
+		return 1;
+	}
+	if (command == NULL) {
+		printf(_("CA helper command not specified.\n"));
+		help(argv0, "modify-ca");
+		return 1;
+	}
+	if (optind < argc) {
+		printf(_("Error: unused extra arguments were supplied.\n"));
+		help(argv0, "modify-ca");
+		return 1;
+	}
+	prep_bus(bus, "modify-ca", verbose, argc, argv);
+	path = find_ca_by_name(globals.tctx, bus, caname, verbose);
+	req = prep_req(bus, path, DBUS_INTERFACE_PROPERTIES, "Set");
+	if (cm_tdbusm_set_ssvs(req, CM_DBUS_CA_INTERFACE,
+			       CM_DBUS_PROP_EXTERNAL_HELPER,
+			       command) != 0) {
+		printf(_("Error setting request arguments.\n"));
+		exit(1);
+	}
+	rep = send_req(req, verbose);
+	err = dbus_message_get_error_name(rep);
+	if (err == NULL) {
+		nickname = find_ca_name(globals.tctx, bus, path, verbose);
+		printf(_("CA \"%s\" modified.\n"),
+		       nickname ? nickname : caname);
+	} else {
+		printf(_("CA could not be modified.\n"));
+		exit(1);
+	}
+	dbus_message_unref(rep);
+	return 0;
+}
+
+static int
+remove_ca(const char *argv0, int argc, char **argv)
+{
+	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
+	char *caname = NULL, *path;
+	int c, verbose = 0;
+	dbus_bool_t b;
+	static DBusMessage *req, *rep;
+
+	if ((getenv(CERTMONGER_PVT_ADDRESS_ENV) != NULL) &&
+	    (strlen(getenv(CERTMONGER_PVT_ADDRESS_ENV)) > 0)) {
+		bus = cm_tdbus_private;
+	}
+
+	opterr = 0;
+	while ((c = getopt(argc, argv, "c:vsS")) != -1) {
+		switch (c) {
+		case 'c':
+			caname = optarg;
+			break;
+		case 's':
+			bus = cm_tdbus_session;
+			break;
+		case 'S':
+			bus = cm_tdbus_system;
+			break;
+		case 'v':
+			verbose++;
+			break;
+		default:
+			if (c == ':') {
+				fprintf(stderr,
+					_("%s: option requires an argument -- '%c'\n"),
+					"remove-ca", optopt);
+			} else {
+				fprintf(stderr, _("%s: invalid option -- '%c'\n"),
+					"remove-ca", optopt);
+			}
+			help(argv0, "remove-ca");
+			return 1;
+		}
+	}
+	if (caname == NULL) {
+		printf(_("CA nickname not specified.\n"));
+		help(argv0, "add-ca");
+		return 1;
+	}
+	if (optind < argc) {
+		printf(_("Error: unused extra arguments were supplied.\n"));
+		help(argv0, "remove-ca");
+		return 1;
+	}
+	prep_bus(bus, "remove-ca", verbose, argc, argv);
+	path = find_ca_by_name(globals.tctx, bus, caname, verbose);
+	if (path == NULL) {
+		printf(_("No CA with name \"%s\" found.\n"), caname);
+		return 1;
+	}
+	req = prep_req(bus, CM_DBUS_BASE_PATH, CM_DBUS_BASE_INTERFACE,
+		       "remove_known_ca");
+	if (cm_tdbusm_set_p(req, path) != 0) {
+		printf(_("Error setting request arguments.\n"));
+		exit(1);
+	}
+	rep = send_req(req, verbose);
+	if (cm_tdbusm_get_b(rep, globals.tctx, &b) != 0) {
+		printf(_("Error parsing server response.\n"));
+		exit(1);
+	}
+	dbus_message_unref(rep);
+	if (b) {
+		printf(_("CA \"%s\" removed.\n"),
+		       caname ? caname : path);
+	} else {
+		printf(_("CA could not be removed.\n"));
+		exit(1);
+	}
+	return 0;
+}
+#endif
+
 static struct {
 	const char *verb;
 	int (*fn)(const char *, int, char **);
@@ -3649,8 +4045,18 @@ static struct {
 	{"refresh", refresh},
 	{"list", list},
 	{"status", status},
+#ifndef FORCE_CA
+	{"add-ca", add_ca},
+	{"add-scep-ca", add_scep_ca},
+#endif
 	{"list-cas", list_cas},
+#ifndef FORCE_CA
+	{"modify-ca", modify_ca},
+#endif
 	{"refresh-ca", refresh_ca},
+#ifndef FORCE_CA
+	{"remove-ca", remove_ca},
+#endif
 };
 
 static void
@@ -3853,7 +4259,7 @@ help(const char *cmd, const char *category)
 		N_("Usage: %s refresh [options]\n"),
 		"\n",
 		N_("* General options:\n"),
-		N_("  -a   	refresh information about all outstanding requests\n"),
+		N_("  -a	refresh information about all outstanding requests\n"),
 		"\n",
 		N_("Required arguments:\n"),
 		N_("* By request identifier:\n"),
@@ -3912,7 +4318,7 @@ help(const char *cmd, const char *category)
 #ifndef FORCE_CA
 		N_("* General options:\n"),
 		N_("  -c CA	refresh information about the CA with this name\n"),
-		N_("  -a   	refresh information about all known CAs\n"),
+		N_("  -a	refresh information about all known CAs\n"),
 #endif
 		N_("* Bus options:\n"),
 		N_("  -S	connect to the certmonger service on the system bus\n"),
@@ -3921,6 +4327,65 @@ help(const char *cmd, const char *category)
 		N_("  -v	report all details of errors\n"),
 		NULL,
 	};
+#ifndef FORCE_CA
+	const char *add_ca_help[] = {
+		N_("Usage: %s add-ca [options]\n"),
+		"\n",
+		N_("Optional arguments:\n"),
+		N_("* General options:\n"),
+		N_("  -c CA		nickname to give to the new CA configuration\n"),
+		N_("  -e CMD	helper command to run to communicate with CA\n"),
+		N_("* Bus options:\n"),
+		N_("  -S	connect to the certmonger service on the system bus\n"),
+		N_("  -s	connect to the certmonger service on the session bus\n"),
+		N_("* Other options:\n"),
+		N_("  -v	report all details of errors\n"),
+		NULL,
+	};
+	const char *add_scep_ca_help[] = {
+		N_("Usage: %s add-scep-ca [options]\n"),
+		"\n",
+		N_("Optional arguments:\n"),
+		N_("* General options:\n"),
+		N_("  -c CA		nickname to give to the new CA configuration\n"),
+		N_("  -u URL	location of SCEP server\n"),
+		N_("  -i ID		CA identifier\n"),
+		N_("  -R FILE	file containing CA's certificate\n"),
+		N_("* Bus options:\n"),
+		N_("  -S	connect to the certmonger service on the system bus\n"),
+		N_("  -s	connect to the certmonger service on the session bus\n"),
+		N_("* Other options:\n"),
+		N_("  -v	report all details of errors\n"),
+		NULL,
+	};
+	const char *modify_ca_help[] = {
+		N_("Usage: %s modify-ca [options]\n"),
+		"\n",
+		N_("Optional arguments:\n"),
+		N_("* General options:\n"),
+		N_("  -c CA		nickname of the CA configuration\n"),
+		N_("  -e CMD	updated helper command to run to communicate with CA\n"),
+		N_("* Bus options:\n"),
+		N_("  -S	connect to the certmonger service on the system bus\n"),
+		N_("  -s	connect to the certmonger service on the session bus\n"),
+		N_("* Other options:\n"),
+		N_("  -v	report all details of errors\n"),
+		NULL,
+	};
+	const char *remove_ca_help[] = {
+		N_("Usage: %s remove-ca [options]\n"),
+		"\n",
+		N_("Optional arguments:\n"),
+		N_("* General options:\n"),
+		N_("  -c CA	nickname of CA configuration to remove\n"),
+		N_("* Bus options:\n"),
+		N_("  -S	connect to the certmonger service on the system bus\n"),
+		N_("  -s	connect to the certmonger service on the session bus\n"),
+		N_("* Other options:\n"),
+		N_("  -v	report all details of errors\n"),
+		NULL,
+	};
+#endif
 	struct {
 		const char *category;
 		const char **msgs;
@@ -3942,10 +4407,24 @@ help(const char *cmd, const char *category)
 		 N_("list certificates being monitored and requested\n")},
 		{"status", status_help,
 		 N_("check the status of a certificate being monitored or requested\n")},
+#ifndef FORCE_CA
+		{"add-ca", add_ca_help,
+		 N_("add a CA configuration\n")},
+		{"add-scep-ca", add_scep_ca_help,
+		 N_("add an SCEP CA configuration\n")},
+#endif
 		{"list-cas", list_cas_help,
-		 N_("list known CAs\n")},
+		 N_("list known CA configurations\n")},
+#ifndef FORCE_CA
+		{"modify-ca", modify_ca_help,
+		 N_("modify a CA configuration\n")},
+#endif
 		{"refresh-ca", refresh_ca_help,
 		 N_("refresh cache of all information obtained from a CA\n")},
+#ifndef FORCE_CA
+		{"remove-ca", remove_ca_help,
+		 N_("remove a CA configuration\n")},
+#endif
 	};
 	for (i = 0; i < sizeof(msgs) / sizeof(msgs[0]); i++) {
 		if ((category != NULL) && (msgs[i].category != NULL) &&

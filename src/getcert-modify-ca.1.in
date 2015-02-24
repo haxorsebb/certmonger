@@ -1,18 +1,25 @@
-.TH certmonger 1 "3 November 2009" "certmonger Manual"
+.TH certmonger 1 "24 February 2015" "certmonger Manual"
 
 .SH NAME
 getcert
 
 .SH SYNOPSIS
-getcert list-cas [options]
+getcert modify-ca [options]
 
 .SH DESCRIPTION
-Queries \fIcertmonger\fR for a list of known CAs.
+Modifies the helper command in a \fIcertmonger\fR CA configuration.
 
 .SH OPTIONS
 .TP
 \fB\-c\fR NAME
-List only information about the CA which has the specified nickname.
+The nickname of the CA configuration to modify.
+.TP
+\fB\-e\fR COMMAND
+The new helper command to run for communicating with the CA.
+.TP
+\fB\-v\fR
+Be verbose about errors.  Normally, the details of an error received from
+the daemon will be suppressed if the client can make a diagnostic suggestion.
 
 .SH BUGS
 Please file tickets for any that you find at https://fedorahosted.org/certmonger/
@@ -22,14 +29,13 @@ Please file tickets for any that you find at https://fedorahosted.org/certmonger
 \fBgetcert\fR(1)
 \fBgetcert-add-ca\fR(1)
 \fBgetcert-add-scep-ca\fR(1)
+\fBgetcert-list-cas\fR(1)
 \fBgetcert-list\fR(1)
-\fBgetcert-modify-ca\fR(1)
 \fBgetcert-refresh-ca\fR(1)
 \fBgetcert-refresh\fR(1)
 \fBgetcert-remove-ca\fR(1)
 \fBgetcert-request\fR(1)
 \fBgetcert-resubmit\fR(1)
-\fBgetcert-start-tracking\fR(1)
 \fBgetcert-status\fR(1)
 \fBgetcert-stop-tracking\fR(1)
 \fBcertmonger-certmaster-submit\fR(8)

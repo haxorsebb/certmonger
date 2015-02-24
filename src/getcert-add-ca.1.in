@@ -1,0 +1,52 @@
+.TH certmonger 1 "24 February 2015" "certmonger Manual"
+
+.SH NAME
+getcert
+
+.SH SYNOPSIS
+getcert add-ca [options]
+
+.SH DESCRIPTION
+Adds a CA configuration to \fIcertmonger\fR, which can subsequently be
+used to enroll certificates.
+
+.SH OPTIONS
+.TP
+\fB\-c\fR NAME
+The nickname to give to this CA configuration.  This same value can later be
+passed in to \fIgetcert\fR's \fIrequest\fR, \fIresubmit\fR, and
+\fIstart-tracking\fR commands using the \fB-c\fR flag.
+.TP
+\fB\-e\fR COMMAND
+The helper command to run for communicating with the CA.  The helper will be
+used to pass signing requests to the CA, relay the CA's responses back to the
+\fIcertmonger\fR service, and to read information about the CA.
+.TP
+\fB\-v\fR
+Be verbose about errors.  Normally, the details of an error received from
+the daemon will be suppressed if the client can make a diagnostic suggestion.
+
+.SH BUGS
+Please file tickets for any that you find at https://fedorahosted.org/certmonger/
+
+.SH SEE ALSO
+\fBcertmonger\fR(8)
+\fBgetcert\fR(1)
+\fBgetcert-add-scep-ca\fR(1)
+\fBgetcert-list-cas\fR(1)
+\fBgetcert-list\fR(1)
+\fBgetcert-modify-ca\fR(1)
+\fBgetcert-refresh-ca\fR(1)
+\fBgetcert-refresh\fR(1)
+\fBgetcert-remove-ca\fR(1)
+\fBgetcert-request\fR(1)
+\fBgetcert-resubmit\fR(1)
+\fBgetcert-status\fR(1)
+\fBgetcert-stop-tracking\fR(1)
+\fBcertmonger-certmaster-submit\fR(8)
+\fBcertmonger-dogtag-ipa-renew-agent-submit\fR(8)
+\fBcertmonger-dogtag-submit\fR(8)
+\fBcertmonger-ipa-submit\fR(8)
+\fBcertmonger-local-submit\fR(8)
+\fBcertmonger-scep-submit\fR(8)
+\fBcertmonger_selinux\fR(8)
