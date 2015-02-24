@@ -318,12 +318,6 @@ if ! ${configure_dist_target_only:-false} ; then
 	CPPFLAGS="$savedCPPFLAGS"
 	LDFLAGS="$savedLDFLAGS"
 
-	AC_ARG_WITH(openssl,
-		    AS_HELP_STRING(--without-openssl,
-				   [build without support for storing keys and certificates in files]),
-		    withopenssl=$withval,
-		    withopenssl=yes)
-
 	AM_CONDITIONAL(HAVE_OPENSSL,test x$withopenssl != xno)
 	if test x$withopenssl != xno ; then
 		if pkg-config libcrypto 2> /dev/null ; then
