@@ -426,7 +426,7 @@ cm_submit_e_helper_main(int fd, struct cm_store_ca *ca,
 			struct cm_store_entry *entry, void *userdata)
 {
 	struct cm_submit_e_helper_args *args = userdata;
-	char **argv, *p;
+	char **argv;
 	const char *error, *key_type;
 	unsigned char u;
 
@@ -526,31 +526,22 @@ cm_submit_e_helper_main(int fd, struct cm_store_ca *ca,
 	}
 	if ((entry->cm_scep_req != NULL) &&
 	    (strlen(entry->cm_scep_req) > 0)) {
-		p = cm_submit_u_pem_from_base64("PKCS7", 0,
-						entry->cm_scep_req);
-		setenv(CM_SUBMIT_SCEP_PKCSREQ_ENV, p, 1);
-		free(p);
+		setenv(CM_SUBMIT_SCEP_PKCSREQ_ENV, entry->cm_scep_req, 1);
 	}
 	if ((entry->cm_scep_gic != NULL) &&
 	    (strlen(entry->cm_scep_gic) > 0)) {
-		p = cm_submit_u_pem_from_base64("PKCS7", 0,
-						entry->cm_scep_gic);
-		setenv(CM_SUBMIT_SCEP_GETCERTINITIAL_ENV, p, 1);
-		free(p);
+		setenv(CM_SUBMIT_SCEP_GETCERTINITIAL_ENV,
+		       entry->cm_scep_gic, 1);
 	}
 	if ((entry->cm_scep_req_next != NULL) &&
 	    (strlen(entry->cm_scep_req_next) > 0)) {
-		p = cm_submit_u_pem_from_base64("PKCS7", 0,
-						entry->cm_scep_req_next);
-		setenv(CM_SUBMIT_SCEP_PKCSREQ_REKEY_ENV, p, 1);
-		free(p);
+		setenv(CM_SUBMIT_SCEP_PKCSREQ_REKEY_ENV,
+		       entry->cm_scep_req_next, 1);
 	}
 	if ((entry->cm_scep_gic_next != NULL) &&
 	    (strlen(entry->cm_scep_gic_next) > 0)) {
-		p = cm_submit_u_pem_from_base64("PKCS7", 0,
-						entry->cm_scep_gic_next);
-		setenv(CM_SUBMIT_SCEP_GETCERTINITIAL_REKEY_ENV, p, 1);
-		free(p);
+		setenv(CM_SUBMIT_SCEP_GETCERTINITIAL_REKEY_ENV,
+		       entry->cm_scep_gic_next, 1);
 	}
 	if (dup2(fd, STDOUT_FILENO) == -1) {
 		u = errno;

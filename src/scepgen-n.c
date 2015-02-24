@@ -291,6 +291,23 @@ cm_scepgen_n_get_fd(struct cm_scepgen_state *state)
 	return cm_subproc_get_fd(state->subproc);
 }
 
+static char *
+make_pem(void *parent, const char *p, size_t len)
+{
+	char *s, *t;
+
+	s = talloc_strndup(parent, p, len);
+	if (s != NULL) {
+		t = cm_submit_u_pem_from_base64("PKCS7", 0, s);
+		if (t != NULL) {
+			talloc_free(s);
+			s = talloc_strdup(parent, t);
+			free(t);
+		}
+	}
+	return s;
+}
+
 /* Save the SCEP to the entry. */
 static int
 cm_scepgen_n_save_scep(struct cm_scepgen_state *state)
@@ -318,32 +335,32 @@ cm_scepgen_n_save_scep(struct cm_scepgen_state *state)
 		p = ++q;
 		q = p + strcspn(p, ":");
 		if (q > p) {
-			state->entry->cm_scep_req =
-				talloc_strndup(state->entry, p, q - p);
+			state->entry->cm_scep_req = make_pem(state->entry,
+							     p, q - p);
 		}
 	}
 	if (*q != '\0') {
 		p = ++q;
 		q = p + strcspn(p, ":");
 		if (q > p) {
-			state->entry->cm_scep_gic =
-				talloc_strndup(state->entry, p, q - p);
+			state->entry->cm_scep_gic = make_pem(state->entry,
+							     p, q - p);
 		}
 	}
 	if (*q != '\0') {
 		p = ++q;
 		q = p + strcspn(p, ":");
 		if (q > p) {
-			state->entry->cm_scep_req_next =
-				talloc_strndup(state->entry, p, q - p);
+			state->entry->cm_scep_req_next = make_pem(state->entry,
+								  p, q - p);
 		}
 	}
 	if (*q != '\0') {
 		p = ++q;
 		q = p + strcspn(p, ":");
 		if (q > p) {
-			state->entry->cm_scep_gic_next =
-				talloc_strndup(state->entry, p, q - p);
+			state->entry->cm_scep_gic_next = make_pem(state->entry,
+								  p, q - p);
 		}
 	}
 	return 0;

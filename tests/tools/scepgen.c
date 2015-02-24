@@ -26,10 +26,13 @@
 #include <talloc.h>
 #include <unistd.h>
 
+#include <krb5.h>
+
 #include "../../src/log.h"
 #include "../../src/scepgen.h"
 #include "../../src/store.h"
 #include "../../src/store-int.h"
+#include "../../src/submit-u.h"
 #include "tools.h"
 
 static void
@@ -99,16 +102,20 @@ main(int argc, char **argv)
 				printf("nonce:%s\n", entry->cm_scep_nonce);
 			}
 			if (entry->cm_scep_req != NULL) {
-				printf("req:%s\n", entry->cm_scep_req);
+				printf("req:%s\n",
+				       cm_submit_u_base64_from_text(entry->cm_scep_req));
 			}
 			if (entry->cm_scep_gic != NULL) {
-				printf("gic:%s\n", entry->cm_scep_gic);
+				printf("gic:%s\n",
+				       cm_submit_u_base64_from_text(entry->cm_scep_gic));
 			}
 			if (entry->cm_scep_req_next != NULL) {
-				printf("req(next):%s\n", entry->cm_scep_req_next);
+				printf("req(next):%s\n",
+				       cm_submit_u_base64_from_text(entry->cm_scep_req_next));
 			}
 			if (entry->cm_scep_gic_next != NULL) {
-				printf("gic(next):%s\n", entry->cm_scep_gic_next);
+				printf("gic(next):%s\n",
+				       cm_submit_u_base64_from_text(entry->cm_scep_gic_next));
 			}
 			ret = 0;
 		} else {
