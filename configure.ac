@@ -454,7 +454,7 @@ if ! ${configure_dist_target_only:-false} ; then
 	AC_SUBST(GMP_CFLAGS)
 	AC_SUBST(GMP_LIBS)
 	AM_CONDITIONAL(USE_GMP,test $withgmp != no)
-	if test $withgmp = no && test $withopenssl = no ; then
+	if test $withgmp = no && test x$withopenssl = xno ; then
 		AC_MSG_ERROR([Need at least one of OpenSSL or GMP for big number operations.])
 	fi
 
