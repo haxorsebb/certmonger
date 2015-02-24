@@ -342,7 +342,9 @@ struct cm_store_ca {
 	 * certificate.  Currently only used for SCEP. */
 	char *cm_ca_encryption_issuer_cert;
 	/* The CA's SCEP certificate pool, used for other SCEP-related
-	 * certificates.  A concatenated list of PEM-format certificates. */
+	 * certificates.  A concatenated list of PEM-format certificates, since
+	 * we don't need anything more complicated than that in order to verify
+	 * the chain on signed data coming from the RA. */
 	char *cm_ca_encryption_cert_pool;
 };
 

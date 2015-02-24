@@ -557,6 +557,11 @@ modify
   <property name="ca-presave-uid" type="s" access="read"/>
   <property name="ca-postsave-command" type="s" access="read"/>
   <property name="ca-postsave-uid" type="s" access="read"/>
+  <property name="scep-ca-identifier" type="s" access="read"/>
+  <property name="scep-ca-capabilities" type="as" access="read"/>
+  <property name="scep-ra-cert" type="s" access="read"/>
+  <property name="scep-ca-cert" type="s" access="read"/>
+  <property name="scep-other-certs" type="s" access="read"/>
  </interface>
 </node>
 
@@ -657,6 +662,11 @@ dbus.Array([], signature=dbus.Signature('s'))
   <property name="ca-presave-uid" type="s" access="read"/>
   <property name="ca-postsave-command" type="s" access="read"/>
   <property name="ca-postsave-uid" type="s" access="read"/>
+  <property name="scep-ca-identifier" type="s" access="read"/>
+  <property name="scep-ca-capabilities" type="as" access="read"/>
+  <property name="scep-ra-cert" type="s" access="read"/>
+  <property name="scep-ca-cert" type="s" access="read"/>
+  <property name="scep-other-certs" type="s" access="read"/>
  </interface>
 </node>
 
@@ -758,6 +768,11 @@ dbus.Array([], signature=dbus.Signature('s'))
   <property name="ca-presave-uid" type="s" access="read"/>
   <property name="ca-postsave-command" type="s" access="read"/>
   <property name="ca-postsave-uid" type="s" access="read"/>
+  <property name="scep-ca-identifier" type="s" access="read"/>
+  <property name="scep-ca-capabilities" type="as" access="read"/>
+  <property name="scep-ra-cert" type="s" access="read"/>
+  <property name="scep-ca-cert" type="s" access="read"/>
+  <property name="scep-other-certs" type="s" access="read"/>
  </interface>
 </node>
 
@@ -858,6 +873,11 @@ dbus.Array([], signature=dbus.Signature('s'))
   <property name="ca-presave-uid" type="s" access="read"/>
   <property name="ca-postsave-command" type="s" access="read"/>
   <property name="ca-postsave-uid" type="s" access="read"/>
+  <property name="scep-ca-identifier" type="s" access="read"/>
+  <property name="scep-ca-capabilities" type="as" access="read"/>
+  <property name="scep-ra-cert" type="s" access="read"/>
+  <property name="scep-ca-cert" type="s" access="read"/>
+  <property name="scep-other-certs" type="s" access="read"/>
  </interface>
 </node>
 
@@ -958,6 +978,11 @@ dbus.Array([], signature=dbus.Signature('s'))
   <property name="ca-presave-uid" type="s" access="read"/>
   <property name="ca-postsave-command" type="s" access="read"/>
   <property name="ca-postsave-uid" type="s" access="read"/>
+  <property name="scep-ca-identifier" type="s" access="read"/>
+  <property name="scep-ca-capabilities" type="as" access="read"/>
+  <property name="scep-ra-cert" type="s" access="read"/>
+  <property name="scep-ca-cert" type="s" access="read"/>
+  <property name="scep-other-certs" type="s" access="read"/>
  </interface>
 </node>
 
