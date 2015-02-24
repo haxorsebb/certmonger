@@ -1,0 +1,38 @@
+The addition of SCEP support brings with it a couple of new command-line
+options which are useful for SCEP.  Non-SCEP use cases are not affected.
+
+Unlike IPA, certmaster, the local signer, or self-signing, there's no
+concept of a "default" SCEP server for the system, so certmonger doesn't
+provide a pre-canned configuration which attempts to use a default
+server.  In order to be able to use certmonger with an SCEP server,
+then, a CA configuration needs to be added.
+
+While previously this could only be done either through the D-Bus API or
+by manually editing certmonger's data files, the "getcert" command now
+also provides both an "add-ca" command for the general case, and an
+"add-scep-ca" command, which "knows" both the location of certmonger's
+bundled SCEP helper and the options it recognizes, for the specific
+case.  The results are the same regardless of which command is used.
+
+The general option looks like this:
+
+  getcert add-ca -c exampleSCEPca -e \
+    "/usr/libexec/certmonger/scep-submit -u http://ca.example.com/cgi-bin/pkiclient.exe"
+
+The more specific option looks like this:
+
+  getcert add-scep-ca -c exampleSCEPca -u http://ca.example.com/cgi-bin/pkiclient.exe
+
+If the URL of the server is an HTTPS URL, the -R option should be used
+to specify the location of the CA certificate, so that the server's
+HTTPS certificate can be verified.
+
+Once that's done, the CA will be listed by "getcert list-cas", and can
+be used to request a certificate, as per usual:
+
+  getcert request -c exampleSCEPca -f /etc/pki/certfile -k /etc/pki/keyfile
+
+SCEP servers often expect an enrollment challenge password to be present
+in the enrollment request.  The "getcert request" command now recognizes
+the -L and -l options for specifying such a value, or the name of a file
+that contains such a value, to include in the client's request.
