@@ -44,4 +44,3 @@ sed -r -e 's,CN=........-........-........-........,CN=$UUID,g' \
        -e "s|$tmpdir|\$tmpdir|g" \
        -e "s|expires:.*|expires: sometime|g" \
        -e "s|u'(00)?[0-9a-fA-F]{32}|u'"'$UUID|g'
-sed
