@@ -158,6 +158,11 @@ set_sss(DBusMessage *msg)
 	return cm_tdbusm_set_sss(msg, s1, s2, s3);
 }
 static int
+set_ssvs(DBusMessage *msg)
+{
+	return cm_tdbusm_set_ssvs(msg, s1, s2, s3);
+}
+static int
 set_ssas(DBusMessage *msg)
 {
 	return cm_tdbusm_set_ssas(msg, s1, s2, as);
@@ -369,6 +374,24 @@ get_sss(DBusMessage *rep, int msgid)
 	if (ret == 0) {
 		printf("Message %d - s:%s,s:%s,s:%s\n", msgid,
 		       s1, s2, s3);
+	}
+	return ret;
+}
+static int
+get_ssvs(DBusMessage *rep, int msgid)
+{
+	int ret;
+	char *s1, *s2;
+	enum cm_tdbusm_dict_value_type type;
+	union cm_tdbusm_variant value;
+
+	memset(&value, 0, sizeof(value));
+	ret = cm_tdbusm_get_ssv(rep, NULL, &s1, &s2, &type, &value);
+	if (ret == 0) {
+		if (type == cm_tdbusm_dict_s) {
+			printf("Message %d - s:%s,s:%s,s:%s\n", msgid,
+			       s1, s2, value.s);
+		}
 	}
 	return ret;
 }
@@ -693,6 +716,7 @@ main(int argc, char **argv)
 		{&set_d, &get_d},
 		{&set_sd, &get_sd},
 		{&set_ssass, &get_ssass},
+		{&set_ssvs, &get_ssvs},
 	};
 	memset(&err, 0, sizeof(err));
 	while ((c = getopt(argc, argv, "sS")) != -1) {

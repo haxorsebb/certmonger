@@ -112,6 +112,8 @@ int cm_tdbusm_set_ssass(DBusMessage *msg,
 int cm_tdbusm_set_ssss(DBusMessage *msg,
 		       const char *s1, const char *s2,
 		       const char *s3, const char *s4);
+int cm_tdbusm_set_ssvs(DBusMessage *msg, const char *s1, const char *s2,
+		       const char *s3);
 int cm_tdbusm_set_ssoas(DBusMessage *msg,
 			const char *s1, const char *s2, const char **as);
 int cm_tdbusm_set_sssas(DBusMessage *msg,

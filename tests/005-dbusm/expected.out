@@ -29,4 +29,5 @@ Message 27 - [(This,is),(a,string)]
 Message 28 - [{key 0=b:TRUE},{key 1=n:12345},{key 2=s:this is a string value},{key 3=as:[This,is,a,string,array.],{key 4=ass:[(This,is),(a,string)],{key 5=d:[{key 0=b:TRUE},{key 1=n:12345}]]
 Message 29 - s:This is a string.,[{key 0=b:TRUE},{key 1=n:12345},{key 2=s:this is a string value},{key 3=as:[This,is,a,string,array.],{key 4=ass:[(This,is),(a,string)],{key 5=d:[{key 0=b:TRUE},{key 1=n:12345}]]
 Message 30 - s:This is a first string.,s:This is a second string.,ass:[(This,is),(a,string)]
+Message 31 - s:This is a first string.,s:This is a second string.,s:This is a third string.
 Test complete.

@@ -42,6 +42,9 @@ static struct cm_tdbusm_dict *cm_tdbusm_get_d_value(DBusMessageIter *item,
 						    struct cm_tdbusm_dict *dict);
 static int cm_tdbusm_append_d(DBusMessage *msg, DBusMessageIter *args,
 			      const struct cm_tdbusm_dict **d);
+static int cm_tdbusm_append_d_value(DBusMessage *msg, DBusMessageIter *args,
+				    enum cm_tdbusm_dict_value_type value_type,
+				    const union cm_tdbusm_variant *value);
 
 static int
 cm_tdbusm_array_length(const char **array)
@@ -1620,6 +1623,30 @@ cm_tdbusm_set_sss(DBusMessage *msg, const char *s1, const char *s2,
 	} else {
 		return -1;
 	}
+}
+
+int
+cm_tdbusm_set_ssvs(DBusMessage *msg, const char *s1, const char *s2,
+		   const char *s3)
+{
+	DBusMessageIter args;
+	union cm_tdbusm_variant v;
+	char *p;
+	int i = 0;
+
+	memset(&args, 0, sizeof(args));
+	dbus_message_iter_init_append(msg, &args);
+	dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &s1);
+	i++;
+	dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &s2);
+	i++;
+	p = strdup(s3);
+	memset(&v, 0, sizeof(v));
+	v.s = p;
+	cm_tdbusm_append_d_value(msg, &args, cm_tdbusm_dict_s, &v);
+	i++;
+	free(p);
+	return (i > 0) ? 0 : -1;
 }
 
 int
