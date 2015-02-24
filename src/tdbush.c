@@ -2195,6 +2195,56 @@ ca_prop_set_external_helper(struct cm_context *ctx, void *parent,
 	}
 }
 
+static const char *
+ca_prop_get_scep_ca_identifier(struct cm_context *ctx, void *parent,
+			       void *record, const char *name)
+{
+	struct cm_store_ca *ca = record;
+
+	if (strcmp(name, CM_DBUS_PROP_SCEP_CA_IDENTIFIER) == 0) {
+		if (ca->cm_ca_type != cm_ca_external) {
+			return "";
+		}
+		if (ca->cm_ca_scep_ca_identifier != NULL) {
+			return ca->cm_ca_scep_ca_identifier;
+		} else {
+			return "";
+		}
+	}
+	return NULL;
+}
+
+static void
+ca_prop_set_scep_ca_identifier(struct cm_context *ctx, void *parent,
+			       void *record, const char *name,
+			       const char *new_value)
+{
+	const char *propname[2], *path;
+	struct cm_store_ca *ca = record;
+	enum cm_ca_phase phase;
+
+	if (strcmp(name, CM_DBUS_PROP_SCEP_CA_IDENTIFIER) == 0) {
+		if (ca->cm_ca_type != cm_ca_external) {
+			return;
+		}
+		talloc_free(ca->cm_ca_scep_ca_identifier);
+		ca->cm_ca_scep_ca_identifier = new_value ?
+					       talloc_strdup(ca, new_value) :
+					       NULL;
+		for (phase = 0; phase < cm_ca_phase_invalid; phase++) {
+			cm_restart_ca(ctx, ca->cm_nickname, phase);
+		}
+		propname[0] = CM_DBUS_PROP_SCEP_CA_IDENTIFIER;
+		propname[1] = NULL;
+		path = talloc_asprintf(parent, "%s/%s",
+				       CM_DBUS_CA_PATH,
+				       ca->cm_busname);
+		cm_tdbush_property_emit_changed(ctx, path,
+						CM_DBUS_CA_INTERFACE,
+						propname);
+	}
+}
+
 static const char **
 ca_prop_read_nickcerts(struct cm_context *ctx, void *parent,
 		       struct cm_nickcert **nickcerts)
@@ -7069,11 +7119,11 @@ cm_tdbush_iface_ca(void)
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_SCEP_CA_IDENTIFIER,
 								       cm_tdbush_property_string,
-								       cm_tdbush_property_read,
-								       cm_tdbush_property_char_p,
-								       offsetof(struct cm_store_ca, cm_ca_scep_ca_identifier),
-								       NULL, NULL, NULL, NULL, NULL,
-								       NULL, NULL, NULL, NULL, NULL,
+								       cm_tdbush_property_readwrite,
+								       cm_tdbush_property_special,
+								       0,
+								       ca_prop_get_scep_ca_identifier, NULL, NULL, NULL, NULL,
+								       ca_prop_set_scep_ca_identifier, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_SCEP_CA_CAPABILITIES,

@@ -109,7 +109,7 @@ def examine_interface(objpath, interface, idata):
 				# Check that we can read it.
 				value = i.Get(interface, prop)
 			elif child.get('access') == 'readwrite':
-				if prop == 'external-helper':
+				if prop == 'external-helper' or prop == 'scep-ca-identifier':
 					cai = dbus.Interface(o, 'org.fedorahosted.certmonger.ca')
 					if cai.get_type() != 'EXTERNAL':
 						print("%s: warning: property %s.%s not settable on this object" % (objpath, interface, prop))
