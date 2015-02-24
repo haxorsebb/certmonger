@@ -2171,6 +2171,7 @@ ca_prop_set_external_helper(struct cm_context *ctx, void *parent,
 {
 	const char *propname[2], *path;
 	struct cm_store_ca *ca = record;
+	enum cm_ca_phase phase;
 
 	if (strcmp(name, CM_DBUS_PROP_EXTERNAL_HELPER) == 0) {
 		if (ca->cm_ca_type != cm_ca_external) {
@@ -2180,6 +2181,9 @@ ca_prop_set_external_helper(struct cm_context *ctx, void *parent,
 		ca->cm_ca_external_helper = new_value ?
 					    talloc_strdup(ca, new_value) :
 					    NULL;
+		for (phase = 0; phase < cm_ca_phase_invalid; phase++) {
+			cm_restart_ca(ctx, ca->cm_nickname, phase);
+		}
 		propname[0] = CM_DBUS_PROP_EXTERNAL_HELPER;
 		propname[1] = NULL;
 		path = talloc_asprintf(parent, "%s/%s",
