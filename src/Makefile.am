@@ -134,25 +134,31 @@ libcm_a_LIBADD = $(libcm_o_a_OBJECTS)
 bin_PROGRAMS = getcert
 pkglibexec_PROGRAMS = certmonger-session
 pkglibexecdir = $(libexecdir)/$(PACKAGE)
+getcert_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS) $(UUID_CFLAGS)
 getcert_SOURCES = getcert.c tm.c tm.h
-getcert_LDADD = libcm.a $(GETCERT_LIBS) $(KRB5_LIBS) $(LTLIBICONV)
+getcert_LDADD = libcm.a $(GETCERT_LIBS) $(KRB5_LIBS) $(NSS_LIBS) $(UUID_LIBS) $(LTLIBICONV)
 if WITH_IPA
 bin_PROGRAMS += ipa-getcert
+ipa_getcert_CFLAGS = $(getcert_CFLAGS)
 ipa_getcert_SOURCES = ipa-getcert.c tm.c tm.h
 ipa_getcert_LDADD = $(getcert_LDADD)
 endif
 if WITH_IPA
 bin_PROGRAMS += certmaster-getcert
+certmaster_getcert_CFLAGS = $(getcert_CFLAGS)
 certmaster_getcert_SOURCES = certmaster-getcert.c tm.c tm.h
 certmaster_getcert_LDADD = $(getcert_LDADD)
 endif
 bin_PROGRAMS += selfsign-getcert
+selfsign_getcert_CFLAGS = $(getcert_CFLAGS)
 selfsign_getcert_SOURCES = selfsign-getcert.c tm.c tm.h
 selfsign_getcert_LDADD = $(getcert_LDADD)
 bin_PROGRAMS += local-getcert
+local_getcert_CFLAGS = $(getcert_CFLAGS)
 local_getcert_SOURCES = local-getcert.c tm.c tm.h
 local_getcert_LDADD = $(getcert_LDADD)
 sbin_PROGRAMS = certmonger
+certmonger_getcert_CFLAGS = $(getcert_CFLAGS)
 certmonger_SOURCES = main.c env-system.c tm.c tm.h
 certmonger_LDADD = libcm.a \
 		   $(OPENSSL_LIBS) $(CERTMONGER_LIBS) $(KRB5_LIBS) $(IDN_LIBS) \

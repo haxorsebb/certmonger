@@ -17,6 +17,7 @@
 
 #include "config.h"
 
+#include <sys/param.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
@@ -33,6 +34,9 @@
 
 #include <dbus/dbus.h>
 
+#include <nss.h>
+#include <pk11pub.h>
+
 #include <krb5.h>
 
 #include "cm.h"
@@ -41,6 +45,7 @@
 #include "store.h"
 #include "store-int.h"
 #include "submit-e.h"
+#include "submit-u.h"
 #include "tdbus.h"
 #include "tdbusm.h"
 
@@ -3254,6 +3259,48 @@ status(const char *argv0, int argc, char **argv)
 	return evaluate_status(s, b);
 }
 
+char *
+thumbprint(const char *s)
+{
+	unsigned char digest[CM_DIGEST_MAX], *u = NULL;
+	char *t = NULL;
+	char *ret = NULL;
+	int length, i;
+	const char *hexchars = "0123456789ABCDEF";
+
+	t = cm_submit_u_base64_from_text(s);
+	if (t == NULL) {
+		goto done;
+	}
+	length = strlen(t);
+	if (length == 0) {
+		goto done;
+	}
+	u = malloc(length);
+	if (u == NULL) {
+		goto done;
+	}
+	length = cm_store_base64_to_bin(t, -1, u, length);
+	if (PK11_HashBuf(SEC_OID_MD5, digest, u, length) == SECSuccess) {
+		free(t);
+		t = malloc(128 / 4 + howmany(128, 32));
+		if (t != NULL) {
+			ret = t;
+			for (i = 0; i < 128 / 8; i++) {
+				if ((i > 0) && ((i % 4) == 0)) {
+					*t++ = ' ';
+				}
+				*t++ = hexchars[(digest[i] >> 4) & 0x0f];
+				*t++ = hexchars[(digest[i]) & 0x0f];
+			}
+			*t++ = '\0';
+		}
+	}
+done:
+	free(u);
+	return ret;
+}
+
 static int
 list_cas(const char *argv0, int argc, char **argv)
 {
@@ -3417,6 +3464,26 @@ list_cas(const char *argv0, int argc, char **argv)
 		if ((s != NULL) && (strlen(s) > 0)) {
 			printf(_("\tdefault profile/template/certtype: %s\n"),
 			       s);
+		}
+		s = query_prop_s(bus, cas[i], CM_DBUS_CA_INTERFACE,
+				 CM_DBUS_PROP_SCEP_CA_IDENTIFIER,
+				 verbose, globals.tctx);
+		if ((s != NULL) && (strlen(s) > 0)) {
+			printf(_("\tSCEP CA identifier: %s\n"), s);
+		}
+		s = query_prop_s(bus, cas[i], CM_DBUS_CA_INTERFACE,
+				 CM_DBUS_PROP_SCEP_CA_CERT,
+				 verbose, globals.tctx);
+		if ((s == NULL) || (strlen(s) == 0)) {
+			s = query_prop_s(bus, cas[i], CM_DBUS_CA_INTERFACE,
+					 CM_DBUS_PROP_SCEP_RA_CERT,
+					 verbose, globals.tctx);
+		}
+		if ((s != NULL) && (strlen(s) > 0)) {
+			s = thumbprint(s);
+			if ((s != NULL) && (strlen(s) > 0)) {
+				printf(_("\tSCEP CA certificate thumbprint (hash value): %s\n"), s);
+			}
 		}
 		s = query_prop_s(bus, cas[i], CM_DBUS_CA_INTERFACE,
 				 CM_DBUS_PROP_CA_PRESAVE_COMMAND,
@@ -3860,6 +3927,7 @@ main(int argc, char **argv)
 #ifdef ENABLE_NLS
 	bindtextdomain(PACKAGE, MYLOCALEDIR);
 #endif
+	NSS_NoDB_Init(NULL);
 	p = argv[0];
 	if (strchr(p, '/') != NULL) {
 		p = strrchr(p, '/') + 1;
