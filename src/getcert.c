@@ -66,6 +66,7 @@
 #endif
 
 static void help(const char *cmd, const char *category);
+static char *thumbprint(const char *s, SECOidTag tag, int bits);
 
 static struct {
 	const char *argv0;
@@ -2693,6 +2694,35 @@ refresh(const char *argv0, int argc, char **argv)
 	return 0;
 }
 
+/* Check if a CA is an SCEP CA. */
+static dbus_bool_t
+ca_is_scep(void *parent, enum cm_tdbus_type bus,
+	   const char *nickname, int verbose)
+{
+	char *busname, *s;
+
+	if (nickname == NULL) {
+		return FALSE;
+	}
+	busname = find_ca_by_name(parent, bus, nickname, verbose);
+	if (busname == NULL) {
+		return FALSE;
+	}
+	s = query_prop_s(bus, busname, CM_DBUS_CA_INTERFACE,
+			 CM_DBUS_PROP_SCEP_RA_CERT,
+			 verbose, parent);
+	if ((s != NULL) && (strlen(s) > 0)) {
+		return TRUE;
+	}
+	s = query_prop_s(bus, busname, CM_DBUS_CA_INTERFACE,
+			 CM_DBUS_PROP_SCEP_CA_CERT,
+			 verbose, parent);
+	if ((s != NULL) && (strlen(s) > 0)) {
+		return TRUE;
+	}
+	return FALSE;
+}
+
 static int
 list(const char *argv0, int argc, char **argv)
 {
@@ -3012,6 +3042,22 @@ list(const char *argv0, int argc, char **argv)
 			printf(_(",token='%s'"), s4);
 		}
 		printf("\n");
+		/* Information about the CSR. */
+		if ((ca_name != NULL) &&
+		    ca_is_scep(globals.tctx, bus, ca_name, verbose)) {
+			s1 = query_prop_s(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
+					  CM_DBUS_PROP_CSR, verbose, globals.tctx);
+			if ((s1 != NULL) && (strlen(s1) > 0)) {
+				s2 = thumbprint(s1, SEC_OID_MD5, 128);
+				if ((s2 != NULL) && (strlen(s2) > 0)) {
+					printf(_("\tsigning request thumbprint (MD5): %s\n"), s2);
+				}
+				s2 = thumbprint(s1, SEC_OID_SHA1, 160);
+				if ((s2 != NULL) && (strlen(s2) > 0)) {
+					printf(_("\tsigning request thumbprint (SHA1): %s\n"), s2);
+				}
+			}
+		}
 		/* Information from the certificate. */
 		rep = query_rep(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
 				"get_cert_info", verbose);
@@ -3260,7 +3306,7 @@ status(const char *argv0, int argc, char **argv)
 }
 
 char *
-thumbprint(const char *s)
+thumbprint(const char *s, SECOidTag tag, int bits)
 {
 	unsigned char digest[CM_DIGEST_MAX], *u = NULL;
 	char *t = NULL;
@@ -3281,12 +3327,12 @@ thumbprint(const char *s)
 		goto done;
 	}
 	length = cm_store_base64_to_bin(t, -1, u, length);
-	if (PK11_HashBuf(SEC_OID_MD5, digest, u, length) == SECSuccess) {
+	if (PK11_HashBuf(tag, digest, u, length) == SECSuccess) {
 		free(t);
-		t = malloc(128 / 4 + howmany(128, 32));
+		t = malloc(bits / 4 + howmany(bits, 32));
 		if (t != NULL) {
 			ret = t;
-			for (i = 0; i < 128 / 8; i++) {
+			for (i = 0; i < bits / 8; i++) {
 				if ((i > 0) && ((i % 4) == 0)) {
 					*t++ = ' ';
 				}
@@ -3305,7 +3351,7 @@ static int
 list_cas(const char *argv0, int argc, char **argv)
 {
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
-	char **cas, *s, *only_ca = DEFAULT_CA;
+	char **cas, *s, *only_ca = DEFAULT_CA, *thumb, *ca_name;
 	char **as;
 	int c, i, j, verbose = 0;
 
@@ -3352,13 +3398,13 @@ list_cas(const char *argv0, int argc, char **argv)
 			   "get_known_cas", verbose, globals.tctx);
 	for (i = 0; (cas != NULL) && (cas[i] != NULL); i++) {
 		/* Filter out based on the CA. */
-		s = find_ca_name(globals.tctx, bus, cas[i], verbose);
-		if (s != NULL) {
-			if ((only_ca != NULL) && (strcmp(s, only_ca) != 0)) {
+		ca_name = find_ca_name(globals.tctx, bus, cas[i], verbose);
+		if (ca_name != NULL) {
+			if ((only_ca != NULL) && (strcmp(ca_name, only_ca) != 0)) {
 				continue;
 			}
 		}
-		printf(_("CA '%s':\n"), s);
+		printf(_("CA '%s':\n"), ca_name);
 		if (verbose > 0) {
 			s = query_prop_s(bus, cas[i], CM_DBUS_CA_INTERFACE,
 					 CM_DBUS_PROP_AKA,
@@ -3465,24 +3511,32 @@ list_cas(const char *argv0, int argc, char **argv)
 			printf(_("\tdefault profile/template/certtype: %s\n"),
 			       s);
 		}
-		s = query_prop_s(bus, cas[i], CM_DBUS_CA_INTERFACE,
-				 CM_DBUS_PROP_SCEP_CA_IDENTIFIER,
-				 verbose, globals.tctx);
-		if ((s != NULL) && (strlen(s) > 0)) {
-			printf(_("\tSCEP CA identifier: %s\n"), s);
-		}
-		s = query_prop_s(bus, cas[i], CM_DBUS_CA_INTERFACE,
-				 CM_DBUS_PROP_SCEP_CA_CERT,
-				 verbose, globals.tctx);
-		if ((s == NULL) || (strlen(s) == 0)) {
+		if (ca_is_scep(globals.tctx, bus, ca_name, verbose)) {
 			s = query_prop_s(bus, cas[i], CM_DBUS_CA_INTERFACE,
-					 CM_DBUS_PROP_SCEP_RA_CERT,
+					 CM_DBUS_PROP_SCEP_CA_IDENTIFIER,
 					 verbose, globals.tctx);
-		}
-		if ((s != NULL) && (strlen(s) > 0)) {
-			s = thumbprint(s);
 			if ((s != NULL) && (strlen(s) > 0)) {
-				printf(_("\tSCEP CA certificate thumbprint (hash value): %s\n"), s);
+				printf(_("\tSCEP CA identifier: %s\n"), s);
+			}
+			s = query_prop_s(bus, cas[i], CM_DBUS_CA_INTERFACE,
+					 CM_DBUS_PROP_SCEP_CA_CERT,
+					 verbose, globals.tctx);
+			if ((s == NULL) || (strlen(s) == 0)) {
+				s = query_prop_s(bus, cas[i], CM_DBUS_CA_INTERFACE,
+						 CM_DBUS_PROP_SCEP_RA_CERT,
+						 verbose, globals.tctx);
+			}
+			if ((s != NULL) && (strlen(s) > 0)) {
+				thumb = thumbprint(s, SEC_OID_MD5, 128);
+				if ((thumb != NULL) && (strlen(thumb) > 0)) {
+					printf(_("\tSCEP CA certificate thumbprint (MD5): %s\n"),
+					       thumb);
+				}
+				thumb = thumbprint(s, SEC_OID_SHA1, 160);
+				if ((thumb != NULL) && (strlen(thumb) > 0)) {
+					printf(_("\tSCEP CA certificate thumbprint (SHA1): %s\n"),
+					       thumb);
+				}
 			}
 		}
 		s = query_prop_s(bus, cas[i], CM_DBUS_CA_INTERFACE,
