@@ -838,20 +838,12 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 					cm_store_ca_save(ca);
 				}
 			}
-			/* In case we're talking to a server over SCEP, discard
-			 * any data that we're handing to the helper, so that
-			 * we'll generate new data using a new sender nonce for
-			 * the next time. */
-			talloc_free(entry->cm_scep_nonce);
-			entry->cm_scep_nonce = NULL;
-			talloc_free(entry->cm_scep_req);
-			entry->cm_scep_req = NULL;
-			talloc_free(entry->cm_scep_req_next);
-			entry->cm_scep_req_next = NULL;
-			talloc_free(entry->cm_scep_gic);
-			entry->cm_scep_gic = NULL;
-			talloc_free(entry->cm_scep_gic_next);
-			entry->cm_scep_gic_next = NULL;
+			/* In case we're talking to a server over SCEP, make a
+			 * note of the nonce, so that we won't re-send an
+			 * identical request. */
+			if (entry->cm_scep_nonce != NULL) {
+				entry->cm_scep_last_nonce = talloc_strdup(entry, entry->cm_scep_nonce);
+			}
 		} else {
 			if (ca == NULL) {
 				/* No known CA is associated with this entry. */

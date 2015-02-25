@@ -127,6 +127,7 @@ enum cm_store_file_field {
 	cm_store_entry_field_spkac,
 	cm_store_entry_field_scep_tx,
 	cm_store_entry_field_scep_nonce,
+	cm_store_entry_field_scep_last_nonce,
 	cm_store_entry_field_scep_gic,
 	cm_store_entry_field_scep_gic_next,
 	cm_store_entry_field_scep_req,
@@ -288,6 +289,7 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_spkac, "spkac"},
 	{cm_store_entry_field_scep_tx, "scep_tx"},
 	{cm_store_entry_field_scep_nonce, "scep_nonce"},
+	{cm_store_entry_field_scep_last_nonce, "scep_last_nonce"},
 	{cm_store_entry_field_scep_gic, "scep_gic"},
 	{cm_store_entry_field_scep_gic_next, "scep_gic_next"},
 	{cm_store_entry_field_scep_req, "scep_req"},
@@ -1038,6 +1040,9 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_scep_nonce:
 				ret->cm_scep_nonce = free_if_empty(p);
 				break;
+			case cm_store_entry_field_scep_last_nonce:
+				ret->cm_scep_last_nonce = free_if_empty(p);
+				break;
 			case cm_store_entry_field_scep_gic:
 				ret->cm_scep_gic = free_if_empty(p);
 				break;
@@ -1245,6 +1250,7 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_spkac:
 			case cm_store_entry_field_scep_tx:
 			case cm_store_entry_field_scep_nonce:
+			case cm_store_entry_field_scep_last_nonce:
 			case cm_store_entry_field_scep_gic:
 			case cm_store_entry_field_scep_gic_next:
 			case cm_store_entry_field_scep_req:
@@ -1811,6 +1817,8 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 				entry->cm_scep_tx);
 	cm_store_file_write_str(fp, cm_store_entry_field_scep_nonce,
 				entry->cm_scep_nonce);
+	cm_store_file_write_str(fp, cm_store_entry_field_scep_last_nonce,
+				entry->cm_scep_last_nonce);
 	cm_store_file_write_str(fp, cm_store_entry_field_scep_gic,
 				entry->cm_scep_gic);
 	cm_store_file_write_str(fp, cm_store_entry_field_scep_gic_next,
@@ -2549,6 +2557,7 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	ret->cm_spkac = cm_store_maybe_strdup(ret, entry->cm_spkac);
 	ret->cm_scep_tx = cm_store_maybe_strdup(ret, entry->cm_scep_tx);
 	ret->cm_scep_nonce = cm_store_maybe_strdup(ret, entry->cm_scep_nonce);
+	ret->cm_scep_last_nonce = cm_store_maybe_strdup(ret, entry->cm_scep_last_nonce);
 	ret->cm_scep_gic = cm_store_maybe_strdup(ret, entry->cm_scep_gic);
 	ret->cm_scep_gic_next = cm_store_maybe_strdup(ret, entry->cm_scep_gic_next);
 	ret->cm_scep_req = cm_store_maybe_strdup(ret, entry->cm_scep_req);

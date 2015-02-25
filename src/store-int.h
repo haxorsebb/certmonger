@@ -145,7 +145,7 @@ struct cm_store_entry {
 	/* An SCEP transaction number corresponding to this CSR and signing request. */
 	char *cm_scep_tx;
 	/* An SCEP nonce. */
-	char *cm_scep_nonce;
+	char *cm_scep_nonce, *cm_scep_last_nonce;
 	/* An SCEP PKCSReq message, signed with our current key, and possibly
 	 * the next key. */
 	char *cm_scep_req, *cm_scep_req_next;

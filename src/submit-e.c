@@ -504,6 +504,8 @@ cm_submit_e_helper_main(int fd, struct cm_store_ca *ca,
 	if ((entry->cm_cert != NULL) && (strlen(entry->cm_cert) > 0)) {
 		setenv(CM_SUBMIT_CERTIFICATE_ENV, entry->cm_cert, 1);
 	}
+	/* Only pass SCEP data to the helper if we haven't used this set of
+	 * nonced data before.  It'll ask for fresh data if it needs it. */
 	if ((ca->cm_ca_scep_ca_identifier != NULL) &&
 	    (strlen(ca->cm_ca_scep_ca_identifier) > 0)) {
 		setenv(CM_SUBMIT_SCEP_CA_IDENTIFIER_ENV,
@@ -524,24 +526,29 @@ cm_submit_e_helper_main(int fd, struct cm_store_ca *ca,
 		setenv(CM_SUBMIT_SCEP_CERTIFICATES_ENV,
 		       ca->cm_ca_encryption_cert_pool, 1);
 	}
-	if ((entry->cm_scep_req != NULL) &&
-	    (strlen(entry->cm_scep_req) > 0)) {
-		setenv(CM_SUBMIT_SCEP_PKCSREQ_ENV, entry->cm_scep_req, 1);
-	}
-	if ((entry->cm_scep_gic != NULL) &&
-	    (strlen(entry->cm_scep_gic) > 0)) {
-		setenv(CM_SUBMIT_SCEP_GETCERTINITIAL_ENV,
-		       entry->cm_scep_gic, 1);
-	}
-	if ((entry->cm_scep_req_next != NULL) &&
-	    (strlen(entry->cm_scep_req_next) > 0)) {
-		setenv(CM_SUBMIT_SCEP_PKCSREQ_REKEY_ENV,
-		       entry->cm_scep_req_next, 1);
-	}
-	if ((entry->cm_scep_gic_next != NULL) &&
-	    (strlen(entry->cm_scep_gic_next) > 0)) {
-		setenv(CM_SUBMIT_SCEP_GETCERTINITIAL_REKEY_ENV,
-		       entry->cm_scep_gic_next, 1);
+	if ((entry->cm_scep_last_nonce == NULL) ||
+	    (entry->cm_scep_nonce == NULL) ||
+	    (strcmp(entry->cm_scep_last_nonce, entry->cm_scep_nonce) != 0)) {
+		if ((entry->cm_scep_req != NULL) &&
+		    (strlen(entry->cm_scep_req) > 0)) {
+			setenv(CM_SUBMIT_SCEP_PKCSREQ_ENV,
+			       entry->cm_scep_req, 1);
+		}
+		if ((entry->cm_scep_gic != NULL) &&
+		    (strlen(entry->cm_scep_gic) > 0)) {
+			setenv(CM_SUBMIT_SCEP_GETCERTINITIAL_ENV,
+			       entry->cm_scep_gic, 1);
+		}
+		if ((entry->cm_scep_req_next != NULL) &&
+		    (strlen(entry->cm_scep_req_next) > 0)) {
+			setenv(CM_SUBMIT_SCEP_PKCSREQ_REKEY_ENV,
+			       entry->cm_scep_req_next, 1);
+		}
+		if ((entry->cm_scep_gic_next != NULL) &&
+		    (strlen(entry->cm_scep_gic_next) > 0)) {
+			setenv(CM_SUBMIT_SCEP_GETCERTINITIAL_REKEY_ENV,
+			       entry->cm_scep_gic_next, 1);
+		}
 	}
 	if (dup2(fd, STDOUT_FILENO) == -1) {
 		u = errno;
