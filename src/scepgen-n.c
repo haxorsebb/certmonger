@@ -219,6 +219,17 @@ retry_gen:
 		goto retry_gen;
 	}
 	BN_free(exponent);
+
+	/* Read the proper keys. */
+	keys = cm_keyiread_n_get_keys(entry, 0);
+	if ((keys->privkey->keyType != rsaKey) ||
+	    ((keys->privkey_next != NULL) &&
+	     (keys->privkey_next->keyType != rsaKey))) {
+		cm_log(1, "Keys aren't RSA.  They won't work with SCEP.\n");
+		_exit(CM_SUB_STATUS_ERROR_KEY_TYPE);
+	}
+
+	/* Sign using a dummy key. */
 	EVP_PKEY_set1_RSA(key, rsa);
 	csr_new = NULL;
 	csr_old = NULL;
@@ -231,14 +242,7 @@ retry_gen:
 			    &ias_new, &ias_old);
 	EVP_PKEY_free(key);
 
-	/* Read the proper keys, and re-sign using them. */
-	keys = cm_keyiread_n_get_keys(entry, 0);
-	if ((keys->privkey->keyType != rsaKey) ||
-	    ((keys->privkey_next != NULL) &&
-	     (keys->privkey_next->keyType != rsaKey))) {
-		cm_log(1, "Keys aren't RSA.  They won't work with SCEP.\n");
-		_exit(CM_SUB_STATUS_ERROR_KEY_TYPE);
-	}
+	/* Re-sign using the proper keys. */
 	if (csr_old != NULL) {
 		cm_scepgen_n_resign(csr_old, keys->privkey);
 	}
@@ -263,7 +267,7 @@ retry_gen:
 	p = csr_new ? cm_scepgen_o_b64_from_p7(NULL, csr_new) : NULL;
 	fprintf(status, "%s:", p ? p : "");
 	p = ias_new ? cm_scepgen_o_b64_from_p7(NULL, ias_new) : NULL;
-	fprintf(status, "%s\n", p ? p : "");
+	fprintf(status, "%s:\n", p ? p : "");
 
 	fclose(status);
 	if (keys->pubkey != NULL) {

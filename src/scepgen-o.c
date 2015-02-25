@@ -512,8 +512,32 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 		X509_PUBKEY_set(&old_cert->cert_info->key, pubkey);
 		X509_free(old_cert);
 	} else {
-		*csr_old = NULL;
-		*ias_old = NULL;
+		if (new_pkey == NULL) {
+			/* Sign the data using the old key and the mini certificate,
+			 * since we may not have a previously-issued certificate (and
+			 * if we do, we did that in another code path. */
+			pubkey = X509_PUBKEY_get(new_cert->cert_info->key);
+			X509_PUBKEY_set(&new_cert->cert_info->key, old_pkey);
+			*csr_old = build_pkimessage(old_pkey, new_cert, chain, digest,
+						    csr, csr_length,
+						    entry->cm_scep_tx,
+						    SCEP_MSGTYPE_PKCSREQ,
+						    NULL, NULL,
+						    nonce, nonce_length,
+						    NULL, 0);
+			*ias_old = build_pkimessage(old_pkey, new_cert, chain, digest,
+						    new_ias, new_ias_length,
+						    entry->cm_scep_tx,
+						    SCEP_MSGTYPE_GETCERTINITIAL,
+						    NULL, NULL,
+						    nonce, nonce_length,
+						    NULL, 0);
+			X509_PUBKEY_set(&new_cert->cert_info->key, pubkey);
+		} else {
+			/* No cert, and the minicert matches the new key. */
+			*csr_old = NULL;
+			*ias_old = NULL;
+		}
 	}
 	if (new_pkey != NULL) {
 		/* Sign the data using the new key and mini certificate, since
@@ -536,26 +560,8 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 					    NULL, 0);
 		X509_PUBKEY_set(&new_cert->cert_info->key, pubkey);
 	} else {
-		/* Sign the data using the old key and the mini certificate,
-		 * since we may not have a previously-issued certificate (and
-		 * if we do, we just did that). */
-		pubkey = X509_PUBKEY_get(new_cert->cert_info->key);
-		X509_PUBKEY_set(&new_cert->cert_info->key, old_pkey);
-		*csr_new = build_pkimessage(old_pkey, new_cert, chain, digest,
-					    csr, csr_length,
-					    entry->cm_scep_tx,
-					    SCEP_MSGTYPE_PKCSREQ,
-					    NULL, NULL,
-					    nonce, nonce_length,
-					    NULL, 0);
-		*ias_new = build_pkimessage(old_pkey, new_cert, chain, digest,
-					    new_ias, new_ias_length,
-					    entry->cm_scep_tx,
-					    SCEP_MSGTYPE_GETCERTINITIAL,
-					    NULL, NULL,
-					    nonce, nonce_length,
-					    NULL, 0);
-		X509_PUBKEY_set(&new_cert->cert_info->key, pubkey);
+		*csr_new = NULL;
+		*ias_new = NULL;
 	}
 	X509_free(new_cert);
 	while ((error = ERR_get_error()) != 0) {
@@ -631,7 +637,7 @@ cm_scepgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	p = csr_new ? cm_scepgen_o_b64_from_p7(NULL, csr_new) : NULL;
 	fprintf(status, "%s:", p ? p : "");
 	p = ias_new ? cm_scepgen_o_b64_from_p7(NULL, ias_new) : NULL;
-	fprintf(status, "%s\n", p ? p : "");
+	fprintf(status, "%s:\n", p ? p : "");
 
 	fclose(status);
 	if (new_pkey != NULL) {
