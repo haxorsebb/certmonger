@@ -3076,10 +3076,12 @@ list(const char *argv0, int argc, char **argv)
 				if ((s2 != NULL) && (strlen(s2) > 0)) {
 					printf(_("\tsigning request thumbprint (MD5): %s\n"), s2);
 				}
+				free(s2);
 				s2 = thumbprint(s1, SEC_OID_SHA1, 160);
 				if ((s2 != NULL) && (strlen(s2) > 0)) {
 					printf(_("\tsigning request thumbprint (SHA1): %s\n"), s2);
 				}
+				free(s2);
 			}
 		}
 		/* Information from the certificate. */
@@ -3556,11 +3558,13 @@ list_cas(const char *argv0, int argc, char **argv)
 					printf(_("\tSCEP CA certificate thumbprint (MD5): %s\n"),
 					       thumb);
 				}
+				free(thumb);
 				thumb = thumbprint(s, SEC_OID_SHA1, 160);
 				if ((thumb != NULL) && (strlen(thumb) > 0)) {
 					printf(_("\tSCEP CA certificate thumbprint (SHA1): %s\n"),
 					       thumb);
 				}
+				free(thumb);
 			}
 		}
 		s = query_prop_s(bus, cas[i], CM_DBUS_CA_INTERFACE,
