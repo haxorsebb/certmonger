@@ -158,6 +158,12 @@ cm_entry_reset_state(struct cm_store_entry *entry)
 	case CM_NEED_CERTSAVE_PERMS:
 		entry->cm_state = CM_NEED_TO_SAVE_CERT;
 		break;
+	case CM_NEED_CERTSAVE_TOKEN:
+		entry->cm_state = CM_NEED_TO_SAVE_CERT;
+		break;
+	case CM_NEED_CERTSAVE_PIN:
+		entry->cm_state = CM_NEED_TO_SAVE_CERT;
+		break;
 	case CM_NEED_TO_SAVE_CA_CERTS:
 		break;
 	case CM_START_SAVING_CA_CERTS:
@@ -1147,6 +1153,20 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				state->cm_certsave_state = NULL;
 				entry->cm_state = CM_NEED_CERTSAVE_PERMS;
 				*when = cm_time_now;
+			} else
+			if (cm_certsave_token_error(state->cm_certsave_state) == 0) {
+				/* Whoops, we need help. */
+				cm_certsave_done(state->cm_certsave_state);
+				state->cm_certsave_state = NULL;
+				entry->cm_state = CM_NEED_CERTSAVE_TOKEN;
+				*when = cm_time_now;
+			} else
+			if (cm_certsave_pin_error(state->cm_certsave_state) == 0) {
+				/* Whoops, we need help. */
+				cm_certsave_done(state->cm_certsave_state);
+				state->cm_certsave_state = NULL;
+				entry->cm_state = CM_NEED_CERTSAVE_PIN;
+				*when = cm_time_now;
 			} else {
 				/* Failed to save cert; make a note and try
 				 * again in a bit. */
@@ -1167,6 +1187,16 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		break;
 
 	case CM_NEED_CERTSAVE_PERMS:
+		/* Revisit this later. */
+		*when = cm_time_no_time;
+		break;
+
+	case CM_NEED_CERTSAVE_TOKEN:
+		/* Revisit this later. */
+		*when = cm_time_no_time;
+		break;
+
+	case CM_NEED_CERTSAVE_PIN:
 		/* Revisit this later. */
 		*when = cm_time_no_time;
 		break;

@@ -364,6 +364,33 @@ cm_certsave_o_permissions_error(struct cm_certsave_state *state)
 	return 0;
 }
 
+/* Check if we failed because the right token wasn't present. */
+static int
+cm_certsave_o_token_error(struct cm_certsave_state *state)
+{
+	int status;
+	status = cm_subproc_get_exitstatus(state->subproc);
+	if (!WIFEXITED(status) ||
+	    (WEXITSTATUS(status) != CM_CERTSAVE_STATUS_NO_TOKEN)) {
+		return -1;
+	}
+	return 0;
+}
+
+/* Check if we failed because we didn't have the right PIN or password to
+ * access the storage location. */
+static int
+cm_certsave_o_pin_error(struct cm_certsave_state *state)
+{
+	int status;
+	status = cm_subproc_get_exitstatus(state->subproc);
+	if (!WIFEXITED(status) ||
+	    (WEXITSTATUS(status) != CM_CERTSAVE_STATUS_AUTH)) {
+		return -1;
+	}
+	return 0;
+}
+
 /* Get a selectable-for-read descriptor we can poll for status changes. */
 static int
 cm_certsave_o_get_fd(struct cm_certsave_state *state)
@@ -401,6 +428,8 @@ cm_certsave_o_start(struct cm_store_entry *entry)
 		state->pvt.conflict_subject = cm_certsave_o_conflict_subject;
 		state->pvt.conflict_nickname = cm_certsave_o_conflict_nickname;
 		state->pvt.permissions_error = cm_certsave_o_permissions_error;
+		state->pvt.token_error = cm_certsave_o_token_error;
+		state->pvt.pin_error = cm_certsave_o_pin_error;
 		state->entry = entry;
 		state->subproc = cm_subproc_start(cm_certsave_o_main, state,
 						  NULL, entry, NULL);

@@ -613,6 +613,33 @@ cm_certsave_n_permissions_error(struct cm_certsave_state *state)
 	return 0;
 }
 
+/* Check if we failed because the right token wasn't present. */
+static int
+cm_certsave_n_token_error(struct cm_certsave_state *state)
+{
+	int status;
+	status = cm_subproc_get_exitstatus(state->subproc);
+	if (!WIFEXITED(status) ||
+	    (WEXITSTATUS(status) != CM_CERTSAVE_STATUS_NO_TOKEN)) {
+		return -1;
+	}
+	return 0;
+}
+
+/* Check if we failed because we didn't have the right PIN or password to
+ * access the storage location. */
+static int
+cm_certsave_n_pin_error(struct cm_certsave_state *state)
+{
+	int status;
+	status = cm_subproc_get_exitstatus(state->subproc);
+	if (!WIFEXITED(status) ||
+	    (WEXITSTATUS(status) != CM_CERTSAVE_STATUS_AUTH)) {
+		return -1;
+	}
+	return 0;
+}
+
 /* Clean up after saving the certificate. */
 static void
 cm_certsave_n_done(struct cm_certsave_state *state)
@@ -645,6 +672,8 @@ cm_certsave_n_start(struct cm_store_entry *entry)
 		state->pvt.conflict_subject = cm_certsave_n_conflict_subject;
 		state->pvt.conflict_nickname = cm_certsave_n_conflict_nickname;
 		state->pvt.permissions_error = cm_certsave_n_permissions_error;
+		state->pvt.token_error = cm_certsave_n_token_error;
+		state->pvt.pin_error = cm_certsave_n_pin_error;
 		state->pvt.done= cm_certsave_n_done;
 		state->entry = entry;
 		state->subproc = cm_subproc_start(cm_certsave_n_main, state,

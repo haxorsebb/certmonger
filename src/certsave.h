@@ -44,6 +44,13 @@ int cm_certsave_conflict_nickname(struct cm_certsave_state *state);
 /* Check if we failed due to a permissions error. */
 int cm_certsave_permissions_error(struct cm_certsave_state *state);
 
+/* Check if we failed due to the storage token not being present. */
+int cm_certsave_token_error(struct cm_certsave_state *state);
+
+/* Check if we failed due to not having the right PIN for accessing the
+ * storage location. */
+int cm_certsave_pin_error(struct cm_certsave_state *state);
+
 /* Clean up after saving the certificate. */
 void cm_certsave_done(struct cm_certsave_state *state);
 

@@ -4015,6 +4015,8 @@ request_prop_get_stuck(struct cm_context *ctx, void *parent,
 	case CM_NEWLY_ADDED_NEED_KEYINFO_READ_PIN:
 	case CM_NEED_CA_CERT_SAVE_PERMS:
 	case CM_NEED_CERTSAVE_PERMS:
+	case CM_NEED_CERTSAVE_TOKEN:
+	case CM_NEED_CERTSAVE_PIN:
 	case CM_NEED_ONLY_CA_CERT_SAVE_PERMS:
 	case CM_NEED_GUIDANCE:
 	case CM_NEED_CA:

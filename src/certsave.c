@@ -99,6 +99,27 @@ cm_certsave_permissions_error(struct cm_certsave_state *state)
 	return pvt->permissions_error(state);
 }
 
+/* Check if we failed because the storage token is not present. */
+int
+cm_certsave_token_error(struct cm_certsave_state *state)
+{
+	struct cm_certsave_state_pvt *pvt;
+
+	pvt = (struct cm_certsave_state_pvt *) state;
+	return pvt->token_error(state);
+}
+
+/* Check if we failed because we're missing a PIN or password that's required
+ * for accessing the data store. */
+int
+cm_certsave_pin_error(struct cm_certsave_state *state)
+{
+	struct cm_certsave_state_pvt *pvt;
+
+	pvt = (struct cm_certsave_state_pvt *) state;
+	return pvt->pin_error(state);
+}
+
 /* Clean up after saving the certificate. */
 void
 cm_certsave_done(struct cm_certsave_state *state)

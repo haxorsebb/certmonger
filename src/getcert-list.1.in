@@ -1,4 +1,4 @@
-.TH certmonger 1 "6 February 2015" "certmonger Manual"
+.TH certmonger 1 "25 February 2015" "certmonger Manual"
 
 .SH NAME
 getcert
@@ -174,6 +174,15 @@ NEED_CERTSAVE_PERMS
 The service encountered a filesystem permission error while attempting
 to save the newly-issued certificate to the location where it has been
 told to save it.
+.TP
+NEED_CERTSAVE_TOKEN
+The service is unable to find the token in which the newly-issued
+certificate is to be stored.
+.TP
+NEED_CERTSAVE_PIN
+The service is missing the PIN which is required to access an NSS
+database in order to save the newly-issued certificate to the location
+where it has been told to save it.
 .TP
 NEED_TO_SAVE_CA_CERTS
 The service is about to save the certificate of the issuing CA to the

@@ -25,6 +25,8 @@ enum cm_certsave_status {
 	CM_CERTSAVE_STATUS_NICKNAME_CONFLICT = 3,
 	CM_CERTSAVE_STATUS_INTERNAL = 4,
 	CM_CERTSAVE_STATUS_PERMS = 5,
+	CM_CERTSAVE_STATUS_AUTH = 6,
+	CM_CERTSAVE_STATUS_NO_TOKEN = 7,
 };
 
 struct cm_certsave_state_pvt {
@@ -38,6 +40,12 @@ struct cm_certsave_state_pvt {
 	int (*saved)(struct cm_certsave_state *state);
 	/* Check if we failed due to filesystem permissions. */
 	int (*permissions_error)(struct cm_certsave_state *state);
+	/* Tell us if we need a token to be inserted to access the storage
+	 * location. */
+	int (*token_error)(struct cm_certsave_state *state);
+	/* Tell us if we need a PIN (or a new PIN) to access the storage
+	 * location. */
+	int (*pin_error)(struct cm_certsave_state *state);
 	/* Check if we failed because the subject was already being used. */
 	int (*conflict_subject)(struct cm_certsave_state *state);
 	/* Check if we failed because the nickname was already being used. */

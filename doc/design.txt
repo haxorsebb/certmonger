@@ -41,6 +41,7 @@ Now with some arbitrarily-named states for our per-certificate state machine:
 	  information we think is interesting.
 	  States: NEED_TO_SAVE_CERT, PRE_SAVE_CERT[*],
 		  START_SAVING_CERT, SAVING_CERT [*], NEED_CERTSAVE_PERMS,
+		  NEED_CERTSAVE_TOKEN, NEED_CERTSAVE_PIN,
 		  NEED_TO_READ_CERT, READING_CERT [*],
 		  SAVED_CERT, POST_SAVED_CERT[*]
 	* Waiting for certificate to near expiration.
@@ -388,12 +389,30 @@ State logic:
 				if cert-save-needs-perms
 					state_next = NEED_CERTSAVE_PERMS
 					state_transition = now
+				elseif cert-save-needs-token
+					state_next = NEED_CERTSAVE_TOKEN
+					state_transition = now
+				elseif cert-save-needs-pin
+					state_next = NEED_CERTSAVE_PIN
+					state_transition = now
 				else
 					state_next = NEED_TO_NOTIFY_ISSUED_SAVE_FAILED
 					state_transition = now
 		break
 
 	NEED_CERTSAVE_PERMS:
+		if starting-up
+			state_next = NEED_TO_SAVE_CERT
+			state_transition = now
+		break
+
+	NEED_CERTSAVE_TOKEN:
+		if starting-up
+			state_next = NEED_TO_SAVE_CERT
+			state_transition = now
+		break
+
+	NEED_CERTSAVE_PIN:
 		if starting-up
 			state_next = NEED_TO_SAVE_CERT
 			state_transition = now
