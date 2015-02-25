@@ -118,7 +118,7 @@ append_result(char *in, uint size, uint nmemb, struct cm_submit_h_context *ctx)
 			return n * size;
 		}
 		memcpy(data + ctx->result_length, in + n * size, size);
-		data[ctx->result_length + size + 1] = '\0';
+		data[ctx->result_length + size] = '\0';
 		ctx->result = data;
 		ctx->result_length += size;
 	}
