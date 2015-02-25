@@ -2213,10 +2213,11 @@ cm_iterate_ca(struct cm_store_ca *ca,
 	      int *delay,
 	      int *readfd)
 {
-	struct cm_store_ca old_ca = *ca;
+	struct cm_store_ca *old_ca;
 	struct cm_ca_state *state = cm_iterate_state;
 
 	*readfd = -1;
+	old_ca = cm_store_ca_dup(ca, ca);
 
 	switch (ca->cm_ca_state[state->cm_phase]) {
 	case CM_CA_NEED_TO_REFRESH:
@@ -2325,6 +2326,34 @@ cm_iterate_ca(struct cm_store_ca *ca,
 			} else
 			if (cm_cadata_unsupported(state->cm_task_state) == 0) {
 				cm_cadata_done(state->cm_task_state);
+				switch (state->cm_phase) {
+				case cm_ca_phase_certs:
+					ca->cm_ca_root_certs = NULL;
+					ca->cm_ca_other_root_certs = NULL;
+					ca->cm_ca_other_certs = NULL;
+					break;
+				case cm_ca_phase_identify:
+					break;
+				case cm_ca_phase_profiles:
+					break;
+				case cm_ca_phase_default_profile:
+					break;
+				case cm_ca_phase_enroll_reqs:
+					break;
+				case cm_ca_phase_renew_reqs:
+					break;
+				case cm_ca_phase_capabilities:
+					ca->cm_ca_capabilities = NULL;
+					break;
+				case cm_ca_phase_encryption_certs:
+					ca->cm_ca_encryption_cert = NULL;
+					ca->cm_ca_encryption_issuer_cert = NULL;
+					ca->cm_ca_encryption_cert_pool = NULL;
+					break;
+				case cm_ca_phase_invalid:
+					abort();
+					break;
+				}
 				state->cm_task_state = NULL;
 				cm_log(3, "%s('%s').%s retrieval unsupported\n",
 				       ca->cm_busname, ca->cm_nickname,
@@ -2639,13 +2668,17 @@ cm_iterate_ca(struct cm_store_ca *ca,
 		*when = cm_time_no_time;
 		break;
 	}
-	if (ca->cm_ca_state[state->cm_phase] != old_ca.cm_ca_state[state->cm_phase]) {
+	if (ca->cm_ca_state[state->cm_phase] != old_ca->cm_ca_state[state->cm_phase]) {
 		cm_log(3, "%s('%s').%s moved to state '%s'\n",
 		       ca->cm_busname, ca->cm_nickname,
 		       cm_store_ca_phase_as_string(state->cm_phase),
 		       cm_store_ca_state_as_string(ca->cm_ca_state[state->cm_phase]));
 		cm_store_ca_save(ca);
 	}
+	if (emit_ca_changes != NULL) {
+		(*emit_ca_changes)(context, old_ca, ca);
+	}
+	talloc_free(old_ca);
 	return 0;
 }
 
