@@ -672,7 +672,7 @@ make_pem(void *parent, const char *p, size_t len)
 	return s;
 }
 
-/* Save the SCEP to the entry. */
+/* Save the SCEP data to the entry. */
 static int
 cm_scepgen_o_save_scep(struct cm_scepgen_state *state)
 {

@@ -226,7 +226,7 @@ retry_gen:
 	ias_old = NULL;
 	cm_scepgen_o_cooked(ca, entry,
 			    nonce, sizeof(nonce),
-			    key, key,
+			    key, (keys->privkey_next != NULL) ? key : NULL,
 			    &csr_new, &csr_old,
 			    &ias_new, &ias_old);
 	EVP_PKEY_free(key);
@@ -239,14 +239,19 @@ retry_gen:
 		cm_log(1, "Keys aren't RSA.  They won't work with SCEP.\n");
 		_exit(CM_SUB_STATUS_ERROR_KEY_TYPE);
 	}
-	cm_scepgen_n_resign(csr_old, keys->privkey);
-	cm_scepgen_n_resign(ias_old, keys->privkey);
+	if (csr_old != NULL) {
+		cm_scepgen_n_resign(csr_old, keys->privkey);
+	}
+	if (ias_old != NULL) {
+		cm_scepgen_n_resign(ias_old, keys->privkey);
+	}
 	if (keys->privkey_next != NULL) {
-		cm_scepgen_n_resign(csr_new, keys->privkey_next);
-		cm_scepgen_n_resign(ias_new, keys->privkey_next);
-	} else {
-		cm_scepgen_n_resign(csr_new, keys->privkey);
-		cm_scepgen_n_resign(ias_new, keys->privkey);
+		if (csr_new != NULL) {
+			cm_scepgen_n_resign(csr_new, keys->privkey_next);
+		}
+		if (ias_new != NULL) {
+			cm_scepgen_n_resign(ias_new, keys->privkey_next);
+		}
 	}
 
 	p = cm_store_base64_from_bin(NULL, nonce, sizeof(nonce));
@@ -308,7 +313,7 @@ make_pem(void *parent, const char *p, size_t len)
 	return s;
 }
 
-/* Save the SCEP to the entry. */
+/* Save the SCEP data to the entry. */
 static int
 cm_scepgen_n_save_scep(struct cm_scepgen_state *state)
 {
