@@ -12,14 +12,14 @@ An external CA helper has a few jobs:
   * $CERTMONGER_REQ_HOSTNAME  -> DNS name subjectAltName values
   * $CERTMONGER_REQ_PRINCIPAL -> Kerberos principal name subjectAltName values
   * $CERTMONGER_CA_PROFILE    -> requested enrollment profile/template/certtype
+  * $CERTMONGER_CSR           -> certificate signing request
   * $CERTMONGER_CERTIFICATE   -> previously-issued certificate, if there is one
   * $CERTMONGER_CA_NICKNAME   -> nickname of CA (since 0.73)
   * $CERTMONGER_SPKAC         -> signing request as an SPKAC (since 0.73)
   * $CERTMONGER_SPKI          -> request's SubjectPublicKeyInfo (since 0.73)
   * $CERTMONGER_KEY_TYPE      -> client's public key type (since 0.73)
-  * $CERTMONGER_SCEP_NONCE    -> client's SCEP sender nonce (since 0.77)
   * $CERTMONGER_SCEP_CA_IDENTIFIER
-  -> name of an SCEP CA for which the helper should request certs (since 0.77)
+  -> name of an SCEP CA to use when requesting capabilities (since 0.77)
   * $CERTMONGER_PKCSREQ       -> an SCEP PKCSReq pkiMessage (since 0.77)
   * $CERTMONGER_PKCSREQ_REKEY
   -> if set, an SCEP PKCSReq pkiMessage, when rekeying (since 0.77)
@@ -30,26 +30,30 @@ An external CA helper has a few jobs:
   -> the SCEP server's RA cert, used in building the SCEP requests (since 0.77)
   * $CERTMONGER_SCEP_CA_CERTIFICATE
   -> if set, the SCEP server's CA cert, if the RA cert isn't self-signed (0.77)
+  * $CERTMONGER_SCEP_CERTIFICATES
+  -> if set, the other certificates provided by the SCEP server (0.77)
 
 * If in "submit" mode, $CERTMONGER_CSR has as its value a PEM-formatted CSR.
   * Submit request to CA.
-    * Issued         -> output PEM-formatted cert on stdout, exit with status 0.
+    * Issued         -> output certificate on stdout, exit with status 0.
     * Wait a bit     -> output CA cookie value on stdout, exit with status 1.
     * Rejected       -> output error message on stdout, exit with status 2.
     * Connect error  -> output error message on stdout, exit with status 3.
     * Underconfigured-> output error message on stdout, exit with status 4.
     * Wait a bit more-> output recommended delay (seconds) and CA cookie value
                         on stdout, separated by newline, and exit with status 5.
+    * Need SCEP data -> exit with status 16.
 * If in "poll" mode, $CERTMONGER_CA_COOKIE has as its value a CA cookie value
   in addition to the PEM-formatted CSR in $CERTMONGER_CSR.
   * Poll CA for result of previously-started enrollment operation.
-    * Issued         -> output PEM-formatted cert on stdout, exit with status 0.
+    * Issued         -> output certificate on stdout, exit with status 0.
     * Wait some more -> output CA cookie value on stdout, exit with status 1.
     * Rejected       -> output error message on stdout, exit with status 2.
     * Connect error  -> output error message on stdout, exit with status 3.
     * Underconfigured-> output error message on stdout, exit with status 4.
     * Wait some more -> output recommended delay (seconds) and CA cookie value
                         on stdout, separated by newline, and exit with status 5.
+    * Need SCEP data -> exit with status 16.
 * Invoked with "IDENTIFY" as the value of the $CERTMONGER_OPERATION
   environment variable:
   * Output suggested ID for CA, exit with status 0.
@@ -93,6 +97,18 @@ An external CA helper has a few jobs:
     none is specified on the command line, exit with status 0.
   * Connect error: exit with status 3.
   * Polled at startup.
+* Invoked with "FETCH-SCEP-CA-CAPS" as the value of the
+  $CERTMONGER_OPERATION environment variable:
+  * If the helper uses SCEP, connect to the server, issue a GetCACaps
+    request, and output the results.
+  * Connect error: exit with status 3.
+  * Polled at startup.
+* Invoked with "FETCH-SCEP-CA-CERTS" as the value of the
+  $CERTMONGER_OPERATION environment variable:
+  * If the helper uses SCEP, connect to the server, issue GetCACert
+    and GetCAChain requests, and output the results.
+  * Connect error: exit with status 3.
+  * Polled at startup.
 
 * Other operations will be defined later.
   * Operation not supported by this helper -> exit with status 6.
@@ -100,12 +116,23 @@ An external CA helper has a few jobs:
 Operations to be added (tentative):
   * Caching CRLs and delta CRLs.
 
+When a certificate is issued, it can be output as a PEM-formatted X.509
+certificate, a PEM-formatted "certificates only" PKCS#7 signed-data
+item, a PEM-formatted PKCS#7 enveloped-data with encapsulated content
+identified as type "data", containing either an X.509 certificate or
+PKCS#7 signed-data item in binary form, or any of the previous in binary
+form.  When PEM formatting is used, multiple PEM-formatted items can be
+output if needed
+
 For testing purposes, a helper can be added by creating a file in the CAs
 directory (usually /var/lib/certmonger/cas) with these contents:
   id=Test
   ca_type=EXTERNAL
   ca_is_default=0
   ca_external_helper=/usr/libexec/certmonger/test-submit-helper
+
+Equivalently, this can be accomplished by running:
+  getcert add-ca -c Test -e /usr/libexec/certmonger/test-submit-helper
 
 Passing the "-c Test" flag to the "getcert request" command will then use the
 helper to attempt enrollment.
