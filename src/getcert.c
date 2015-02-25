@@ -4030,8 +4030,7 @@ remove_ca(const char *argv0, int argc, char **argv)
 	}
 	dbus_message_unref(rep);
 	if (b) {
-		printf(_("CA \"%s\" removed.\n"),
-		       caname ? caname : path);
+		printf(_("CA \"%s\" removed.\n"), caname);
 	} else {
 		printf(_("CA could not be removed.\n"));
 		exit(1);
