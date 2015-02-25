@@ -1632,21 +1632,17 @@ cm_tdbusm_set_ssvs(DBusMessage *msg, const char *s1, const char *s2,
 	DBusMessageIter args;
 	union cm_tdbusm_variant v;
 	char *p;
-	int i = 0;
 
 	memset(&args, 0, sizeof(args));
 	dbus_message_iter_init_append(msg, &args);
 	dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &s1);
-	i++;
 	dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &s2);
-	i++;
 	p = strdup(s3);
 	memset(&v, 0, sizeof(v));
 	v.s = p;
 	cm_tdbusm_append_d_value(msg, &args, cm_tdbusm_dict_s, &v);
-	i++;
 	free(p);
-	return (i > 0) ? 0 : -1;
+	return 0;
 }
 
 int
