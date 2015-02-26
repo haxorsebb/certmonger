@@ -1,9 +1,0 @@
-[main]
-host = https://www.transifex.net
-
-[certmonger.main]
-file_filter = po/<lang>.po
-host = http://www.transifex.net
-source_file = po/certmonger.pot
-source_lang = en_US
-
