@@ -164,8 +164,6 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		cb_data.entry = entry;
 		cb_data.n_attempts = 0;
 		pin = NULL;
-		/* Log in, if case we need to muck around with the key
-		 * database. */
 		if (cm_pin_read_for_key(entry, &pin) != 0) {
 			cm_log(1, "Error reading PIN for key store, "
 			       "failing to save certificate.\n");
@@ -176,6 +174,48 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			}
 			_exit(CM_CERTSAVE_STATUS_AUTH);
 		}
+		/* Set a PIN if we're supposed to be using one and aren't using
+		 * one yet in this database. */
+		if (PK11_NeedUserInit(PK11_GetInternalKeySlot())) {
+			PK11_InitPin(PK11_GetInternalKeySlot(), NULL,
+				     pin ? pin : "");
+			ec = PORT_GetError();
+			if (ec != 0) {
+				es = PR_ErrorToName(ec);
+			} else {
+				es = NULL;
+			}
+			if (PK11_NeedUserInit(PK11_GetInternalKeySlot())) {
+				if (es != NULL) {
+					cm_log(1, "Key storage slot still "
+					       "needs user PIN to be set: "
+					       "%s.\n", es);
+				} else {
+					cm_log(1, "Key storage slot still "
+					       "needs user PIN to be set.\n");
+				}
+				PORT_FreeArena(arena, PR_TRUE);
+				error = NSS_ShutdownContext(ctx);
+				if (error != SECSuccess) {
+					cm_log(1, "Error shutting down NSS.\n");
+				}
+				switch (ec) {
+				case PR_NO_ACCESS_RIGHTS_ERROR: /* EACCES or EPERM */
+					_exit(CM_CERTSAVE_STATUS_PERMS);
+					break;
+				default:
+					_exit(CM_CERTSAVE_STATUS_AUTH);
+					break;
+				}
+			}
+			/* We're authenticated now, so count this as a use of
+			 * the PIN. */
+			if ((pin != NULL) && (strlen(pin) > 0)) {
+				cb_data.n_attempts++;
+			}
+		}
+		/* Log in, if case we need to muck around with the key
+		 * database. */
 		PK11_SetPasswordFunc(&cm_pin_read_for_key_nss_cb);
 		error = PK11_Authenticate(PK11_GetInternalKeySlot(), PR_TRUE,
 					  &cb_data);
