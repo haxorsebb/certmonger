@@ -23,9 +23,23 @@ passed in to \fIgetcert\fR's \fIrequest\fR, \fIresubmit\fR, and
 The location of the SCEP server's enrollment interface.  This option must be
 specified.
 .TP
-\fB\-R\fR filename
-The location of a copy of the SCEP server's CA's certificate.  This is required
-if the URL is an \fIhttps\fR location, and is optional otherwise.
+\fB\-R\fR ca-certificate-file
+The location of a PEM-formatted copy of the SCEP server's CA's certificate.
+A discovered value is supplied by the certmonger daemon for use in verifying
+the signature on data returned by the SCEP server, but it is not used for
+verifying HTTPS server certificates.
+This option must be specified if the URL is an \fIhttps\fR location.
+.TP
+\fB\-r\fR ra-certificate-file
+The location of a PEM-formatted copy of the SCEP server's RA's certificate.
+A discovered value is normally supplied by the certmonger daemon, but one can
+be specified for troubleshooting purposes.
+.TP
+\fB\-I\fR other-certificates-file
+The location of a file containing other PEM-formatted certificates which may be
+needed in order to properly verify signed responses sent by the SCEP server
+back to the client.  A discovered set is normally supplied by the certmonger
+daemon, but can be specified for troubleshooting purposes.
 .TP
 \fB\-i\fR identifier
 A CA identifier value which will passed to the server when the

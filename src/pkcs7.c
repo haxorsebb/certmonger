@@ -223,6 +223,9 @@ cm_pkcs7_parse_buffer(const unsigned char *buffer, size_t length,
 	size_t enveloped_length = 0;
 	int i;
 
+	if (length == 0) {
+		return;
+	}
 	/* First, try to parse as a PKCS#7 signed or enveloped data item. */
 	p = buffer;
 	p7 = d2i_PKCS7(NULL, &p, length);

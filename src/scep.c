@@ -30,9 +30,12 @@
 
 #include <krb5.h>
 
+#include <openssl/bio.h>
 #include <openssl/err.h>
 #include <openssl/objects.h>
 #include <openssl/pkcs7.h>
+#include <openssl/pem.h>
+#include <openssl/x509.h>
 
 #include <dbus/dbus.h>
 
@@ -88,6 +91,64 @@ help(const char *cmd)
 		strchr(cmd, '/') ? strrchr(cmd, '/') + 1 : cmd);
 }
 
+static int
+cert_cmp(X509 *x, char *candidate)
+{
+	X509 *c;
+	BIO *in;
+	int ret = 1;
+
+	in = BIO_new_mem_buf(candidate, -1);
+	if (in != NULL) {
+		c = PEM_read_bio_X509(in, NULL, NULL, NULL);
+		BIO_free(in);
+		if (c != NULL) {
+			ret = X509_cmp(x, c);
+			X509_free(c);
+		}
+	}
+	return ret;
+}
+
+static int
+cert_among(char *needle, char *candidate1, char *candidate2, char **haystack)
+{
+	X509 *n;
+	BIO *in;
+	int ret = 1, i;
+
+	in = BIO_new_mem_buf(needle, -1);
+	if (in != NULL) {
+		n = PEM_read_bio_X509(in, NULL, NULL, NULL);
+		BIO_free(in);
+		if (candidate1 != NULL) {
+			ret = cert_cmp(n, candidate1);
+			if (ret == 0) {
+				X509_free(n);
+				return ret;
+			}
+		}
+		if (candidate2 != NULL) {
+			ret = cert_cmp(n, candidate2);
+			if (ret == 0) {
+				X509_free(n);
+				return ret;
+			}
+		}
+		for (i = 0; (haystack != NULL) && (haystack[i] != NULL); i++) {
+			ret = cert_cmp(n, haystack[i]);
+			if (ret == 0) {
+				X509_free(n);
+				return ret;
+			}
+		}
+		if (n != NULL) {
+			X509_free(n);
+		}
+	}
+	return ret;
+}
+
 int
 main(int argc, char **argv)
 {
@@ -101,7 +162,10 @@ main(int argc, char **argv)
 	void *ctx;
 	char *params = "", *params2 = NULL, *racert = NULL, *cacert = NULL;
 	char **othercerts = NULL, *cert1 = NULL, *cert2 = NULL, *certs = NULL;
+	char **racertp, **cacertp, *dracert = NULL, *dcacert = NULL;
 	char buf[LINE_MAX] = "";
+	const unsigned char *buffers[4];
+	size_t lengths[4];
 	const char *cacerts[3], **racerts;
 	dbus_bool_t missing_args = FALSE;
 	char *sent_tx, *tx, *msgtype, *pkistatus, *failinfo, *s, *tmp1, *tmp2;
@@ -426,16 +490,28 @@ main(int argc, char **argv)
 				 "\"%s\".\n"), content_type);
 			return CM_SUBMIT_STATUS_UNREACHABLE;
 		}
-		if (cm_pkcs7_parse(CM_PKCS7_LEAF_PREFER_ENCRYPT, ctx,
-				   &racert, &cacert, &othercerts,
-				   NULL, NULL,
-				   (const unsigned char *) results,
-				   results_length,
-				   ((results_length2 > 0) ?
-				    (const unsigned char *) results2 :
-				    NULL),
-				   results_length2,
-				   NULL) == 0) {
+		if (racert == NULL) {
+			racertp = &racert;
+		} else {
+			racertp = &dracert;
+		}
+		if (cacert == NULL) {
+			cacertp = &cacert;
+		} else {
+			cacertp = &dcacert;
+		}
+		buffers[0] = (const unsigned char *) results;
+		lengths[0] = results_length;
+		buffers[1] = (const unsigned char *) results2;
+		lengths[1] = results_length2;
+		buffers[2] = (const unsigned char *) cacert;
+		lengths[2] = cacert ? strlen(cacert) : 0;
+		buffers[3] = (const unsigned char *) racert;
+		lengths[3] = racert ? strlen(racert) : 0;
+		if (cm_pkcs7_parsev(CM_PKCS7_LEAF_PREFER_ENCRYPT, ctx,
+				    racertp, cacertp, &othercerts,
+				    NULL, NULL,
+				    4, buffers, lengths) == 0) {
 			if (racert != NULL) {
 				printf("%s", racert);
 				if (cacert != NULL) {
@@ -447,6 +523,14 @@ main(int argc, char **argv)
 							printf("%s",
 							       othercerts[c]);
 						}
+					}
+					if ((dracert != NULL) &&
+					    (cert_among(dracert, racert, cacert, othercerts) != 0)) {
+						printf("%s", dracert);
+					}
+					if ((dcacert != NULL) &&
+					    (cert_among(dcacert, racert, cacert, othercerts) != 0)) {
+						printf("%s", dcacert);
 					}
 				}
 			}

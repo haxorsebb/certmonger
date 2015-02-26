@@ -3756,7 +3756,7 @@ add_scep_ca(const char *argv0, int argc, char **argv)
 {
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	char *caname = NULL, *url = NULL, *path = NULL, *id = NULL;
-	char *root = NULL, *nickname, *command;
+	char *root = NULL, *racert = NULL, *certs = NULL, *nickname, *command;
 	const char *err;
 	int c, verbose = 0;
 	dbus_bool_t b;
@@ -3768,7 +3768,7 @@ add_scep_ca(const char *argv0, int argc, char **argv)
 	}
 
 	opterr = 0;
-	while ((c = getopt(argc, argv, "c:u:i:R:vsS")) != -1) {
+	while ((c = getopt(argc, argv, "c:u:i:R:vsSr:I:")) != -1) {
 		switch (c) {
 		case 'c':
 			caname = optarg;
@@ -3790,6 +3790,12 @@ add_scep_ca(const char *argv0, int argc, char **argv)
 			break;
 		case 'v':
 			verbose++;
+			break;
+		case 'r':
+			racert = optarg;
+			break;
+		case 'I':
+			certs = optarg;
 			break;
 		default:
 			if (c == ':') {
@@ -3821,16 +3827,20 @@ add_scep_ca(const char *argv0, int argc, char **argv)
 	}
 	if (optind < argc) {
 		printf(_("Error: unused extra arguments were supplied.\n"));
-		help(argv0, "add-ca");
+		help(argv0, "add-scep-ca");
 		return 1;
 	}
 	command = talloc_asprintf(globals.tctx,
-				  "%s -u %s %s %s",
+				  "%s -u %s %s %s %s %s %s %s",
 				  shell_escape(globals.tctx,
 					       CM_SCEP_HELPER_PATH),
 				  shell_escape(globals.tctx, url),
 				  root ? "-R" : "",
-				  root ? shell_escape(globals.tctx, root) : "");
+				  root ? shell_escape(globals.tctx, root) : "",
+				  racert ? "-r" : "",
+				  racert ? shell_escape(globals.tctx, racert) : "",
+				  certs ? "-I" : "",
+				  certs ? shell_escape(globals.tctx, certs) : "");
 	if (command == NULL) {
 		printf(_("Error building command line.\n"));
 		exit(1);
@@ -4356,6 +4366,8 @@ help(const char *cmd, const char *category)
 		N_("  -u URL	location of SCEP server\n"),
 		N_("  -i ID		CA identifier\n"),
 		N_("  -R FILE	file containing CA's certificate\n"),
+		N_("  -r FILE	file containing RA's certificate\n"),
+		N_("  -I FILE	file containing certificates in RA's certifying chain\n"),
 		N_("* Bus options:\n"),
 		N_("  -S	connect to the certmonger service on the system bus\n"),
 		N_("  -s	connect to the certmonger service on the session bus\n"),
