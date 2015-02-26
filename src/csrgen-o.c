@@ -454,6 +454,12 @@ cm_csrgen_o_save_csr(struct cm_csrgen_state *state)
 					return ENOMEM;
 				}
 			}
+			state->entry->cm_scep_nonce = NULL;
+			state->entry->cm_scep_last_nonce = NULL;
+			state->entry->cm_scep_req = NULL;
+			state->entry->cm_scep_req_next = NULL;
+			state->entry->cm_scep_gic = NULL;
+			state->entry->cm_scep_gic_next = NULL;
 		}
 	}
 	return 0;
