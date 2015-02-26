@@ -1,23 +1,24 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-#
+# 
 # Translators:
 # Kris Thomsen <lakristho@gmail.com>, 2011
 msgid ""
 msgstr ""
-"Project-Id-Version: certmonger\n"
+"Project-Id-Version: certmonger 0.76.8\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2014-11-18 09:47-0500\n"
-"PO-Revision-Date: 2014-11-11 10:00+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2014-11-11 05:00-0500\n"
 "Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
 "Language-Team: Danish (http://www.transifex.com/projects/p/certmonger/"
 "language/da/)\n"
 "Language: da\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Zanata 3.5.1\n"
 
 #: src/certmaster.c:129
 #, c-format
@@ -335,8 +336,8 @@ msgstr "Ny sporingsforespørgsel kunne ikke tilføjes.\n"
 #: src/getcert.c:1758 src/getcert.c:2525
 #, c-format
 msgid ""
-"None of ID or database directory and nickname or certificate file "
-"specified.\n"
+"None of ID or database directory and nickname or certificate file specified."
+"\n"
 msgstr ""
 "Intet ID eller databasemappe og -kaldenavn eller certifikatfil angivet.\n"
 
@@ -470,8 +471,8 @@ msgstr ",pinfil='%s'"
 #, c-format
 msgid "\tcertificate: type=%s,location='%s'"
 msgstr ""
-"<span class=\"whitespace other\" title=\"Tab\">»</span>certifikat: type=%s,"
-"placering='%s'"
+"<span class=\"whitespace other\" title=\"Tab\">»</span>certifikat: type="
+"%s,placering='%s'"
 
 #: src/getcert.c:2951
 #, c-format
@@ -917,8 +918,7 @@ msgstr "* Generelle tilvalg:\n"
 
 #: src/getcert.c:3636
 msgid "  -c CA\tlist only requests and certs associated with this CA\n"
-msgstr ""
-"  -c CA\tvis kun forespørgsler og certifikater forbundet med denne CA\n"
+msgstr "  -c CA\tvis kun forespørgsler og certifikater forbundet med denne CA\n"
 
 #: src/getcert.c:3638
 msgid "  -r\tlist only information about outstanding requests\n"
@@ -1118,8 +1118,7 @@ msgstr ""
 
 #: src/ipa.c:798
 #, c-format
-msgid ""
-"Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
+msgid "Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
 msgstr ""
 
 #: src/ipa.c:805
@@ -1269,6 +1268,7 @@ msgstr "Der er allerede en forespørgsel med kaldenavnet \"%s\"."
 #, c-format
 msgid ""
 "Certificate at same location is already used by request with nickname \"%s\"."
+""
 msgstr ""
 
 #: src/tdbush.c:731

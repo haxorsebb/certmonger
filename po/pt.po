@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-#
+# 
 # Translators:
 # Manuela Silva <manuela.silva@sky.com>, 2014
 # Miguel Sousa <migueljorgesousa@sapo.pt>, 2012
@@ -9,18 +9,19 @@
 # Rui Gouveia <rui.gouveia@gmail.com>, 2011, 2012
 msgid ""
 msgstr ""
-"Project-Id-Version: certmonger\n"
+"Project-Id-Version: certmonger 0.76.8\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2014-11-18 09:47-0500\n"
-"PO-Revision-Date: 2014-11-11 10:00+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2014-11-11 05:00-0500\n"
 "Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
 "Language-Team: Portuguese (http://www.transifex.com/projects/p/certmonger/"
 "language/pt/)\n"
 "Language: pt\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Zanata 3.5.1\n"
 
 #: src/certmaster.c:129
 #, c-format
@@ -283,8 +284,8 @@ msgstr "Localização da base de dados ou nome especificado sem o outro.\n"
 #, c-format
 msgid "Database directory and certificate file both specified.\n"
 msgstr ""
-"Directório da base de dados e do ficheiro do certificado ambos "
-"especificados.\n"
+"Directório da base de dados e do ficheiro do certificado ambos especificados."
+"\n"
 
 #: src/getcert.c:903 src/getcert.c:1965 src/getcert.c:2258
 #, c-format
@@ -343,8 +344,8 @@ msgstr "O novo pedido de monitorização não pode ser adicionado.\n"
 #: src/getcert.c:1758 src/getcert.c:2525
 #, c-format
 msgid ""
-"None of ID or database directory and nickname or certificate file "
-"specified.\n"
+"None of ID or database directory and nickname or certificate file specified."
+"\n"
 msgstr ""
 "Nenhum ID, directoria da base de dados e nome ou ficheiro do certificado "
 "especificados.\n"
@@ -729,8 +730,7 @@ msgstr ""
 
 #: src/getcert.c:3491
 msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
-msgstr ""
-"  -g SIZE\ttamanho da chave a ser gerada se uma já não estiver em uso\n"
+msgstr "  -g SIZE\ttamanho da chave a ser gerada se uma já não estiver em uso\n"
 
 #: src/getcert.c:3492 src/getcert.c:3538
 msgid ""
@@ -861,8 +861,7 @@ msgstr "* Parâmetros para o pedido de assinatura no tempo de renovação:\n"
 
 #: src/getcert.c:3545
 msgid "  -U EXTUSAGE\toverride requested extended key usage OID\n"
-msgstr ""
-"  -U EXTUSAGE\tsobrescreve a utilização de chave estendida OID pedida\n"
+msgstr "  -U EXTUSAGE\tsobrescreve a utilização de chave estendida OID pedida\n"
 
 #: src/getcert.c:3547
 msgid "  -K NAME\toverride requested principal name\n"
@@ -1125,8 +1124,7 @@ msgstr ""
 
 #: src/ipa.c:798
 #, c-format
-msgid ""
-"Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
+msgid "Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
 msgstr ""
 
 #: src/ipa.c:805
@@ -1277,9 +1275,10 @@ msgstr "Já existe um pedido com o nome \"%s\"."
 #, c-format
 msgid ""
 "Certificate at same location is already used by request with nickname \"%s\"."
+""
 msgstr ""
-"Certificado na mesma localização já é utilizado para pedidos com alcunha \"%s"
-"\"."
+"Certificado na mesma localização já é utilizado para pedidos com alcunha "
+"\"%s\"."
 
 #: src/tdbush.c:731
 #, c-format

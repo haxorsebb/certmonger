@@ -1,23 +1,24 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-#
+# 
 # Translators:
 # Geert Warrink <geert.warrink@onsnet.nu>, 2011-2014
 msgid ""
 msgstr ""
-"Project-Id-Version: certmonger\n"
+"Project-Id-Version: certmonger 0.76.8\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2014-11-18 09:47-0500\n"
-"PO-Revision-Date: 2014-11-12 11:06+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2014-11-12 06:06-0500\n"
 "Last-Translator: Geert Warrink <geert.warrink@onsnet.nu>\n"
 "Language-Team: Dutch (http://www.transifex.com/projects/p/certmonger/"
 "language/nl/)\n"
 "Language: nl\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Zanata 3.5.1\n"
 
 #: src/certmaster.c:129
 #, c-format
@@ -270,8 +271,7 @@ msgstr "Fout: niet gebruikt extra argument \"%s\".\n"
 #: src/getcert.c:2702 src/getcert.c:3140 src/getcert.c:3228 src/getcert.c:3417
 #, c-format
 msgid "Error: unused extra arguments were supplied.\n"
-msgstr ""
-"Fout: er zijn niet gebruikte extra argumenten opgegeven.\n"
+msgstr "Fout: er zijn niet gebruikte extra argumenten opgegeven.\n"
 " \n"
 
 #: src/getcert.c:889 src/getcert.c:1743 src/getcert.c:1951 src/getcert.c:2244
@@ -341,8 +341,8 @@ msgstr "Nieuw track verzoek kon niet toegevoegd worden.\n"
 #: src/getcert.c:1758 src/getcert.c:2525
 #, c-format
 msgid ""
-"None of ID or database directory and nickname or certificate file "
-"specified.\n"
+"None of ID or database directory and nickname or certificate file specified."
+"\n"
 msgstr "Zowel ID als database map en bijnaam of certificaat niet opgegeven.\n"
 
 #: src/getcert.c:1932
@@ -741,7 +741,8 @@ msgstr ""
 #: src/getcert.c:3493 src/getcert.c:3539
 msgid "  -R\t\tdon't attempt to renew the certificate when expiration nears\n"
 msgstr ""
-"  -R»»probeer het certificaat niet te vernieuwen als de verloopdatum nadert\n"
+"  -R»»probeer het certificaat niet te vernieuwen als de verloopdatum "
+"nadert\n"
 
 #: src/getcert.c:3495 src/getcert.c:3541
 msgid "  -c CA\t\tuse the specified CA rather than the default\n"
@@ -823,8 +824,7 @@ msgstr "  -F\tbestand waarin de certificaten van de CA opgeslagen worden\n"
 
 #: src/getcert.c:3513 src/getcert.c:3558 src/getcert.c:3625
 msgid "  -a\tNSS database in which to store the CA's certificates\n"
-msgstr ""
-"  -a\tNSS database waarin de certificaten van de CA opgeslagen worden\n"
+msgstr "  -a\tNSS database waarin de certificaten van de CA opgeslagen worden\n"
 
 #: src/getcert.c:3514 src/getcert.c:3559 src/getcert.c:3626
 msgid "  -w\ttry to wait for the certificate to be issued\n"
@@ -950,7 +950,8 @@ msgstr ""
 #: src/getcert.c:3644
 msgid "  -n NAME\tonly list requests and certs which use this nickname\n"
 msgstr ""
-"  -n NAAM» toon alleen verzoeken en certificaten die deze bijnaam gebruiken\n"
+"  -n NAAM» toon alleen verzoeken en certificaten die deze bijnaam "
+"gebruiken\n"
 
 #: src/getcert.c:3646
 msgid "  -f FILE\tonly list requests and certs stored in this PEM file\n"
@@ -1133,8 +1134,7 @@ msgstr ""
 
 #: src/ipa.c:798
 #, c-format
-msgid ""
-"Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
+msgid "Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
 msgstr ""
 "Fout bij het instellen van ccache voor  \"%s\" op cliënt die standaard "
 "keytab: %s gebruikt.\n"
@@ -1174,8 +1174,7 @@ msgstr "\t-l         start een specifieke socket om naar te luisteren\n"
 
 #: src/main.c:144
 msgid "\t-L         only use a dedicated listening socket\n"
-msgstr ""
-"\t-L         gebruik alleen een specifiek socket om naar te luisteren\n"
+msgstr "\t-L         gebruik alleen een specifiek socket om naar te luisteren\n"
 
 #: src/main.c:145
 msgid "\t-P PATH    specify the dedicated listening socket\n"
@@ -1294,6 +1293,7 @@ msgstr "Er is al een verzoek met de bijnaam \"%s\"."
 #, c-format
 msgid ""
 "Certificate at same location is already used by request with nickname \"%s\"."
+""
 msgstr ""
 "Een certificaat op dezelfde locatie wordt al gebruik door een aanvraag met "
 "bijnaam \"%s\"."

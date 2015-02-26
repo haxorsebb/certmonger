@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-#
+# 
 # Translators:
 # alanzheng <machinecat1666@gmail.com>, 2011
 # Huan Chen <chenhuan126@126.com>, 2011
@@ -12,18 +12,19 @@
 # Wei Liu <LLIU@REDHAT.COM>, 2012
 msgid ""
 msgstr ""
-"Project-Id-Version: certmonger\n"
+"Project-Id-Version: certmonger 0.76.8\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2014-11-18 09:47-0500\n"
-"PO-Revision-Date: 2014-11-11 10:00+0000\n"
-"Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
-"Language-Team: Chinese (China) (http://www.transifex.com/projects/p/"
-"certmonger/language/zh_CN/)\n"
-"Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2014-11-11 05:00-0500\n"
+"Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
+"Language-Team: Chinese (China) (http://www.transifex.com/projects/p/"
+"certmonger/language/zh_CN/)\n"
+"Language: zh-CN\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Zanata 3.5.1\n"
 
 #: src/certmaster.c:129
 #, c-format
@@ -337,8 +338,8 @@ msgstr "新的跟踪请求无法添加。\n"
 #: src/getcert.c:1758 src/getcert.c:2525
 #, c-format
 msgid ""
-"None of ID or database directory and nickname or certificate file "
-"specified.\n"
+"None of ID or database directory and nickname or certificate file specified."
+"\n"
 msgstr "没有指定 ID 、数据库目录和别名，或证书文件。\n"
 
 #: src/getcert.c:1932
@@ -709,8 +710,7 @@ msgstr "* 证书处理设置：\n"
 
 #: src/getcert.c:3489
 msgid "  -I NAME\tnickname to assign to the request\n"
-msgstr ""
-"  -I NAME    要分配给请求的别名\n"
+msgstr "  -I NAME    要分配给请求的别名\n"
 "\n"
 
 #: src/getcert.c:3490
@@ -927,20 +927,20 @@ msgstr "* 如果选择一个特定的需求：\n"
 #: src/getcert.c:3643
 msgid "  -d DIR\tonly list requests and certs which use this NSS database\n"
 msgstr ""
-"  -d 目录<span class=\"whitespace other\" title=\"Tab\">»</span>仅列出使用该 "
-"NSS 数据库的请求和认证\n"
+"  -d 目录<span class=\"whitespace other\" title=\"Tab\">»</span>仅列出使用该 NSS "
+"数据库的请求和认证\n"
 
 #: src/getcert.c:3644
 msgid "  -n NAME\tonly list requests and certs which use this nickname\n"
 msgstr ""
-"  -n 名称<span class=\"whitespace other\" title=\"Tab\">»</span>仅显示使用该"
-"名称的请求和认证\n"
+"  -n 名称<span class=\"whitespace other\" title=\"Tab\">»</"
+"span>仅显示使用该名称的请求和认证\n"
 
 #: src/getcert.c:3646
 msgid "  -f FILE\tonly list requests and certs stored in this PEM file\n"
 msgstr ""
-"  -f 文件<span class=\"whitespace other\" title=\"Tab\">»</span>仅列出保存在"
-"此 PEM 文件中的请求和认证\n"
+"  -f 文件<span class=\"whitespace other\" title=\"Tab\">»</span>仅列出保存在此 PEM "
+"文件中的请求和认证\n"
 
 #: src/getcert.c:3648 src/getcert.c:3689 src/getcert.c:3704 src/getcert.c:3720
 msgid "  -S\tconnect to the certmonger service on the system bus\n"
@@ -1079,8 +1079,7 @@ msgstr ""
 #: src/ipa.c:626
 #, c-format
 msgid "The -t option can not be used with the -K option.\n"
-msgstr ""
-"选项 -t 不可跟选项 -K 共同使用。\n"
+msgstr "选项 -t 不可跟选项 -K 共同使用。\n"
 "\n"
 
 #: src/ipa.c:634
@@ -1112,8 +1111,7 @@ msgstr ""
 
 #: src/ipa.c:798
 #, c-format
-msgid ""
-"Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
+msgid "Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
 msgstr ""
 
 #: src/ipa.c:805
@@ -1179,8 +1177,7 @@ msgstr ""
 
 #: src/main.c:152
 msgid "\t-p FILE    write service PID to file\n"
-msgstr ""
-"\t-p FILE    在文件中写入服务 PID\n"
+msgstr "\t-p FILE    在文件中写入服务 PID\n"
 "\n"
 
 #: src/main.c:153
@@ -1265,6 +1262,7 @@ msgstr "具有别名“%s”的请求已经存在。"
 #, c-format
 msgid ""
 "Certificate at same location is already used by request with nickname \"%s\"."
+""
 msgstr "在相同位置的认证已经被包含昵称 \"%s\" 的请求使用。"
 
 #: src/tdbush.c:731
