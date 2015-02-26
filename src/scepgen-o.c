@@ -133,7 +133,7 @@ cert_from_pem(char *pem, struct cm_store_entry *entry)
 		cert = PEM_read_bio_X509(in, NULL, NULL, NULL);
 		BIO_free(in);
 		if (cert == NULL) {
-			cm_log(1, "Error parsing certificate.\n");
+			cm_log(1, "Error parsing certificate \"%s\".\n", pem);
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
 		return cert;
@@ -225,6 +225,7 @@ set_pkimessage_attrs(PKCS7 *p7,
 
 	sinfo = sk_PKCS7_SIGNER_INFO_value(p7->d.sign->signer_info, 0);
 	if (tx != NULL) {
+		cm_log(1, "Setting transaction ID \"%s\".\n", tx);
 		t = M_ASN1_PRINTABLE_new();
 		if (t == NULL) {
 			return;
@@ -234,6 +235,7 @@ set_pkimessage_attrs(PKCS7 *p7,
 					   V_ASN1_PRINTABLESTRING, t);
 	}
 	if (msgtype != NULL) {
+		cm_log(1, "Setting message type \"%s\".\n", msgtype);
 		m = M_ASN1_PRINTABLE_new();
 		if (m == NULL) {
 			return;
@@ -243,6 +245,7 @@ set_pkimessage_attrs(PKCS7 *p7,
 					   V_ASN1_PRINTABLESTRING, m);
 	}
 	if (pkistatus != NULL) {
+		cm_log(1, "Setting pkiStatus \"%s\".\n", pkistatus);
 		p = M_ASN1_PRINTABLE_new();
 		if (p == NULL) {
 			return;
@@ -252,6 +255,7 @@ set_pkimessage_attrs(PKCS7 *p7,
 					   V_ASN1_PRINTABLESTRING, p);
 	}
 	if (failinfo != NULL) {
+		cm_log(1, "Setting failInfo \"%s\".\n", failinfo);
 		f = M_ASN1_PRINTABLE_new();
 		if (f == NULL) {
 			return;
@@ -261,6 +265,7 @@ set_pkimessage_attrs(PKCS7 *p7,
 					   V_ASN1_PRINTABLESTRING, f);
 	}
 	if (sender_nonce != NULL) {
+		cm_log(1, "Setting sender nonce.\n");
 		s = ASN1_OCTET_STRING_new();
 		if (s == NULL) {
 			return;
@@ -270,6 +275,7 @@ set_pkimessage_attrs(PKCS7 *p7,
 					   V_ASN1_OCTET_STRING, s);
 	}
 	if (recipient_nonce != NULL) {
+		cm_log(1, "Setting recipient nonce.\n");
 		r = ASN1_OCTET_STRING_new();
 		if (r == NULL) {
 			return;
@@ -366,6 +372,7 @@ build_pkimessage(EVP_PKEY *key, X509 *signer, STACK_OF(X509) *certs,
 	}
 	BIO_write(out, data, data_length);
 	PKCS7_dataFinal(ret, out);
+	cm_log(1, "Signed data.\n");
 	return ret;
 errors:
 	while ((error = ERR_get_error()) != 0) {
@@ -433,9 +440,13 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 	     i++) {
 		capability = ca->cm_ca_capabilities[i];
 		if (strcmp(capability, "DES3") == 0) {
+			cm_log(1, "Server supports DES3, using that.\n");
 			cipher = cm_prefs_des3;
 			break;
 		}
+	}
+	if (cipher == cm_prefs_des) {
+		cm_log(1, "Server does not support DES3, using DES.\n");
 	}
 	pref_digest = cm_prefs_preferred_digest();
 	digest = cm_prefs_md5;
@@ -446,19 +457,25 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 		capability = ca->cm_ca_capabilities[i];
 		if ((pref_digest == cm_prefs_sha1) &&
 		    (strcmp(capability, "SHA-1") == 0)) {
+			cm_log(1, "Server supports SHA-1, using that.\n");
 			digest = cm_prefs_sha1;
 			break;
 		}
 		if ((pref_digest == cm_prefs_sha256) &&
 		    (strcmp(capability, "SHA-256") == 0)) {
+			cm_log(1, "Server supports SHA-256, using that.\n");
 			digest = cm_prefs_sha256;
 			break;
 		}
 		if ((pref_digest == cm_prefs_sha512) &&
 		    (strcmp(capability, "SHA-512") == 0)) {
+			cm_log(1, "Server supports SHA-512, using that.\n");
 			digest = cm_prefs_sha512;
 			break;
 		}
+	}
+	if (digest == cm_prefs_md5) {
+		cm_log(1, "Server does not support better digests, using MD5.\n");
 	}
 	if (old_cert != NULL) {
 		if (cm_pkcs7_envelope_ias(ca->cm_ca_encryption_cert, cipher,
@@ -495,6 +512,7 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 		 * the matching key. */
 		pubkey = X509_PUBKEY_get(old_cert->cert_info->key);
 		X509_PUBKEY_set(&old_cert->cert_info->key, old_pkey);
+		cm_log(1, "Generating PKCSREQ pkiMessage.\n");
 		*csr_old = build_pkimessage(old_pkey, old_cert, chain, digest,
 					    csr, csr_length,
 					    entry->cm_scep_tx,
@@ -502,6 +520,7 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 					    NULL, NULL,
 					    nonce, nonce_length,
 					    NULL, 0);
+		cm_log(1, "Generating GetCertInitial pkiMessage.\n");
 		*ias_old = build_pkimessage(old_pkey, old_cert, chain, digest,
 					    old_ias, old_ias_length,
 					    entry->cm_scep_tx,
@@ -518,6 +537,7 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 			 * if we do, we did that in another code path. */
 			pubkey = X509_PUBKEY_get(new_cert->cert_info->key);
 			X509_PUBKEY_set(&new_cert->cert_info->key, old_pkey);
+			cm_log(1, "Generating PKCSREQ pkiMessage.\n");
 			*csr_old = build_pkimessage(old_pkey, new_cert, chain, digest,
 						    csr, csr_length,
 						    entry->cm_scep_tx,
@@ -525,6 +545,7 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 						    NULL, NULL,
 						    nonce, nonce_length,
 						    NULL, 0);
+			cm_log(1, "Generating GetCertInitial pkiMessage.\n");
 			*ias_old = build_pkimessage(old_pkey, new_cert, chain, digest,
 						    new_ias, new_ias_length,
 						    entry->cm_scep_tx,
@@ -544,6 +565,7 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 		 * any previously-issued certificate won't match. */
 		pubkey = X509_PUBKEY_get(new_cert->cert_info->key);
 		X509_PUBKEY_set(&new_cert->cert_info->key, new_pkey);
+		cm_log(1, "Generating rekeying PKCSREQ pkiMessage.\n");
 		*csr_new = build_pkimessage(new_pkey, new_cert, chain, digest,
 					    csr, csr_length,
 					    entry->cm_scep_tx,
@@ -551,6 +573,7 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 					    NULL, NULL,
 					    nonce, nonce_length,
 					    NULL, 0);
+		cm_log(1, "Generating rekeying GetCertInitial pkiMessage.\n");
 		*ias_new = build_pkimessage(new_pkey, new_cert, chain, digest,
 					    new_ias, new_ias_length,
 					    entry->cm_scep_tx,

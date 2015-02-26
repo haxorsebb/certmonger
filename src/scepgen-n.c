@@ -193,6 +193,7 @@ cm_scepgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 
 	/* Use a dummy key to sign using OpenSSL. */
+	cm_log(1, "Generating dummy key.\n");
 	key = EVP_PKEY_new();
 	if (key == NULL) {
 		cm_log(1, "Error allocating new key.\n");
@@ -244,16 +245,22 @@ retry_gen:
 
 	/* Re-sign using the proper keys. */
 	if (csr_old != NULL) {
+		cm_log(1, "Re-signing PKCSREQ message with proper key.\n");
 		cm_scepgen_n_resign(csr_old, keys->privkey);
 	}
 	if (ias_old != NULL) {
+		cm_log(1, "Re-signing GetCertInitial message with proper key.\n");
 		cm_scepgen_n_resign(ias_old, keys->privkey);
 	}
 	if (keys->privkey_next != NULL) {
 		if (csr_new != NULL) {
+			cm_log(1, "Re-signing PKCSREQ rekeying message with "
+			       "proper key.\n");
 			cm_scepgen_n_resign(csr_new, keys->privkey_next);
 		}
 		if (ias_new != NULL) {
+			cm_log(1, "Re-signing GetCertInitial rekeying message "
+			       "with proper key.\n");
 			cm_scepgen_n_resign(ias_new, keys->privkey_next);
 		}
 	}
