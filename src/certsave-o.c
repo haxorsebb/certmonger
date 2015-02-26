@@ -193,7 +193,7 @@ cm_certsave_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 
 	if (entry->cm_key_preserve && (old_cert != NULL) && (old_key != NULL)) {
-		bio = BIO_new_mem_buf(old_cert, strlen(old_cert));
+		bio = BIO_new_mem_buf(old_cert, -1);
 		if (bio != NULL) {
 			cert = PEM_read_bio_X509(bio, NULL, NULL, NULL);
 			if (cert != NULL) {
@@ -220,7 +220,7 @@ cm_certsave_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 	}
 
-	bio = BIO_new_mem_buf(entry->cm_cert, strlen(entry->cm_cert));
+	bio = BIO_new_mem_buf(entry->cm_cert, -1);
 	if (bio != NULL) {
 		cert = PEM_read_bio_X509(bio, NULL, NULL, NULL);
 		if (cert != NULL) {

@@ -73,7 +73,7 @@ cm_submit_o_sign(void *parent, char *csr,
 	unsigned char uuid[16];
 #endif
 
-	bio = BIO_new_mem_buf(csr, strlen(csr));
+	bio = BIO_new_mem_buf(csr, -1);
 	if (bio != NULL) {
 		req = PEM_read_bio_X509_REQ(bio, NULL,
 					    NULL, NULL);
