@@ -1,105 +1,201 @@
-2048 OK.
-NSS keys before keygen (preserve=1)
+[ Begin pass (preserve=1,pin=""). ]
+First round certificates OK.
+NSS keys before re-keygen (preserve=1,pin=""):
 <-> rsa      hexhexhexhexhex   NSS Certificate DB:i2048
 OK.
-NSS keys after keygen (preserve=1)
+NSS keys after re-keygen (preserve=1,pin=""):
 <-> rsa      hexhexhexhexhex   NSS Certificate DB:i2048
 <-> rsa      hexhexhexhexhex   i2048 (candidate (next))
-NSS certs before saving (preserve=1)
+NSS certs before saving (preserve=1,pin=""):
 i2048                                                        u,u,u
-NSS keys before saving (preserve=1)
+serial=1234
+NSS keys before saving (preserve=1,pin=""):
 <-> rsa      hexhexhexhexhex   NSS Certificate DB:i2048
 <-> rsa      hexhexhexhexhex   i2048 (candidate (next))
-NSS Signing
-NSS Verify
+NSS Signing:
+NSS Verify:
 This is the plaintext.
-OpenSSL Signing
-OpenSSL Verify
-This is the plaintext.
-NSS certs after saving (preserve=1)
+NSS certs after saving (preserve=1,pin=""):
 i2048                                                        u,u,u
-NSS keys after saving (preserve=1)
+serial=1235
+NSS keys after saving (preserve=1,pin=""):
 <-> rsa      hexhexhexhexhex   i2048
 <-> rsa      hexhexhexhexhex   i2048 (serial 1234)
-PEM keys before keygen (preserve=1)
+NSS Signing:
+NSS Verify:
+This is the plaintext.
+PEM keys before re-keygen (preserve=1,pin=""):
 ${tmpdir}/keyi2048
 OK.
-PEM keys after keygen (preserve=1)
+PEM keys after re-keygen (preserve=1,pin=""):
 ${tmpdir}/keyi2048
 ${tmpdir}/keyi2048.(next).key
-PEM certs before saving (preserve=1)
+PEM certs before saving (preserve=1,pin=""):
 ${tmpdir}/certi2048
 serial=1234
-PEM keys before saving (preserve=1)
+PEM keys before saving (preserve=1,pin=""):
 ${tmpdir}/keyi2048
 ${tmpdir}/keyi2048.(next).key
-NSS Signing
-NSS Verify
+OpenSSL Signing:
+OpenSSL Verify:
 This is the plaintext.
-OpenSSL Signing
-OpenSSL Verify
-This is the plaintext.
-PEM certs after saving (preserve=1)
+PEM certs after saving (preserve=1,pin=""):
 ${tmpdir}/certi2048
 serial=1235
-PEM keys after saving (preserve=1)
+PEM keys after saving (preserve=1,pin=""):
 ${tmpdir}/keyi2048
 ${tmpdir}/keyi2048.1234.key
-NSS Signing
-NSS Verify
+OpenSSL Signing:
+OpenSSL Verify:
 This is the plaintext.
-OpenSSL Signing
-OpenSSL Verify
-This is the plaintext.
-2048 OK.
-NSS keys before keygen (preserve=0)
+[ End pass (preserve=1,pin=""). ]
+[ Begin pass (preserve=1,pin="password"). ]
+First round certificates OK.
+NSS keys before re-keygen (preserve=1,pin="password"):
 <-> rsa      hexhexhexhexhex   NSS Certificate DB:i2048
 OK.
-NSS keys after keygen (preserve=0)
+NSS keys after re-keygen (preserve=1,pin="password"):
 <-> rsa      hexhexhexhexhex   NSS Certificate DB:i2048
 <-> rsa      hexhexhexhexhex   i2048 (candidate (next))
-NSS certs before saving (preserve=0)
+NSS certs before saving (preserve=1,pin="password"):
 i2048                                                        u,u,u
-NSS keys before saving (preserve=0)
+serial=1234
+NSS keys before saving (preserve=1,pin="password"):
 <-> rsa      hexhexhexhexhex   NSS Certificate DB:i2048
 <-> rsa      hexhexhexhexhex   i2048 (candidate (next))
-NSS Signing
-NSS Verify
+NSS Signing:
+NSS Verify:
 This is the plaintext.
-OpenSSL Signing
-OpenSSL Verify
-This is the plaintext.
-NSS certs after saving (preserve=0)
+NSS certs after saving (preserve=1,pin="password"):
 i2048                                                        u,u,u
-NSS keys after saving (preserve=0)
+serial=1235
+NSS keys after saving (preserve=1,pin="password"):
 <-> rsa      hexhexhexhexhex   i2048
-PEM keys before keygen (preserve=0)
+<-> rsa      hexhexhexhexhex   i2048 (serial 1234)
+NSS Signing:
+NSS Verify:
+This is the plaintext.
+PEM keys before re-keygen (preserve=1,pin="password"):
 ${tmpdir}/keyi2048
 OK.
-PEM keys after keygen (preserve=0)
+PEM keys after re-keygen (preserve=1,pin="password"):
 ${tmpdir}/keyi2048
 ${tmpdir}/keyi2048.(next).key
-PEM certs before saving (preserve=0)
+PEM certs before saving (preserve=1,pin="password"):
 ${tmpdir}/certi2048
 serial=1234
-PEM keys before saving (preserve=0)
+PEM keys before saving (preserve=1,pin="password"):
 ${tmpdir}/keyi2048
 ${tmpdir}/keyi2048.(next).key
-NSS Signing
-NSS Verify
+OpenSSL Signing:
+OpenSSL Verify:
 This is the plaintext.
-OpenSSL Signing
-OpenSSL Verify
-This is the plaintext.
-PEM certs after saving (preserve=0)
+PEM certs after saving (preserve=1,pin="password"):
 ${tmpdir}/certi2048
 serial=1235
-PEM keys after saving (preserve=0)
+PEM keys after saving (preserve=1,pin="password"):
 ${tmpdir}/keyi2048
-NSS Signing
-NSS Verify
+${tmpdir}/keyi2048.1234.key
+OpenSSL Signing:
+OpenSSL Verify:
 This is the plaintext.
-OpenSSL Signing
-OpenSSL Verify
+[ End pass (preserve=1,pin="password"). ]
+[ Begin pass (preserve=0,pin=""). ]
+First round certificates OK.
+NSS keys before re-keygen (preserve=0,pin=""):
+<-> rsa      hexhexhexhexhex   NSS Certificate DB:i2048
+OK.
+NSS keys after re-keygen (preserve=0,pin=""):
+<-> rsa      hexhexhexhexhex   NSS Certificate DB:i2048
+<-> rsa      hexhexhexhexhex   i2048 (candidate (next))
+NSS certs before saving (preserve=0,pin=""):
+i2048                                                        u,u,u
+serial=1234
+NSS keys before saving (preserve=0,pin=""):
+<-> rsa      hexhexhexhexhex   NSS Certificate DB:i2048
+<-> rsa      hexhexhexhexhex   i2048 (candidate (next))
+NSS Signing:
+NSS Verify:
 This is the plaintext.
+NSS certs after saving (preserve=0,pin=""):
+i2048                                                        u,u,u
+serial=1235
+NSS keys after saving (preserve=0,pin=""):
+<-> rsa      hexhexhexhexhex   i2048
+NSS Signing:
+NSS Verify:
+This is the plaintext.
+PEM keys before re-keygen (preserve=0,pin=""):
+${tmpdir}/keyi2048
+OK.
+PEM keys after re-keygen (preserve=0,pin=""):
+${tmpdir}/keyi2048
+${tmpdir}/keyi2048.(next).key
+PEM certs before saving (preserve=0,pin=""):
+${tmpdir}/certi2048
+serial=1234
+PEM keys before saving (preserve=0,pin=""):
+${tmpdir}/keyi2048
+${tmpdir}/keyi2048.(next).key
+OpenSSL Signing:
+OpenSSL Verify:
+This is the plaintext.
+PEM certs after saving (preserve=0,pin=""):
+${tmpdir}/certi2048
+serial=1235
+PEM keys after saving (preserve=0,pin=""):
+${tmpdir}/keyi2048
+OpenSSL Signing:
+OpenSSL Verify:
+This is the plaintext.
+[ End pass (preserve=0,pin=""). ]
+[ Begin pass (preserve=0,pin="password"). ]
+First round certificates OK.
+NSS keys before re-keygen (preserve=0,pin="password"):
+<-> rsa      hexhexhexhexhex   NSS Certificate DB:i2048
+OK.
+NSS keys after re-keygen (preserve=0,pin="password"):
+<-> rsa      hexhexhexhexhex   NSS Certificate DB:i2048
+<-> rsa      hexhexhexhexhex   i2048 (candidate (next))
+NSS certs before saving (preserve=0,pin="password"):
+i2048                                                        u,u,u
+serial=1234
+NSS keys before saving (preserve=0,pin="password"):
+<-> rsa      hexhexhexhexhex   NSS Certificate DB:i2048
+<-> rsa      hexhexhexhexhex   i2048 (candidate (next))
+NSS Signing:
+NSS Verify:
+This is the plaintext.
+NSS certs after saving (preserve=0,pin="password"):
+i2048                                                        u,u,u
+serial=1235
+NSS keys after saving (preserve=0,pin="password"):
+<-> rsa      hexhexhexhexhex   i2048
+NSS Signing:
+NSS Verify:
+This is the plaintext.
+PEM keys before re-keygen (preserve=0,pin="password"):
+${tmpdir}/keyi2048
+OK.
+PEM keys after re-keygen (preserve=0,pin="password"):
+${tmpdir}/keyi2048
+${tmpdir}/keyi2048.(next).key
+PEM certs before saving (preserve=0,pin="password"):
+${tmpdir}/certi2048
+serial=1234
+PEM keys before saving (preserve=0,pin="password"):
+${tmpdir}/keyi2048
+${tmpdir}/keyi2048.(next).key
+OpenSSL Signing:
+OpenSSL Verify:
+This is the plaintext.
+PEM certs after saving (preserve=0,pin="password"):
+${tmpdir}/certi2048
+serial=1235
+PEM keys after saving (preserve=0,pin="password"):
+${tmpdir}/keyi2048
+OpenSSL Signing:
+OpenSSL Verify:
+This is the plaintext.
+[ End pass (preserve=0,pin="password"). ]
 Test complete.
