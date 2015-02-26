@@ -11,9 +11,10 @@ RELEASE=
 GITTAG=certmonger-$(VERSION)
 
 all-gmo:
-	tx pull -f -a
+	zanata-cli pull -B
 	cd po ; for po in *.po ; do make `basename $$po .po`.gmo ; done
 	$(MAKE) -C po update-po
+	zanata-cli push -B
 
 tag: all-gmo
 	git tag $(GITTAG)
