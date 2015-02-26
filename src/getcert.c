@@ -3153,6 +3153,12 @@ list(const char *argv0, int argc, char **argv)
 			       cm_oid_to_name(NULL, as4[j]),
 			       as4[j + 1] ? "" : "\n");
 		}
+		s1 = query_prop_s(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
+				  CM_DBUS_PROP_CA_PROFILE, verbose,
+				  globals.tctx);
+		if ((s1 != NULL) && (strlen(s1) > 0)) {
+			printf(_("\tcertificate template/profile: %s\n"), s1);
+		}
 		as = query_prop_as(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
 				   CM_DBUS_PROP_ROOT_CERT_FILES,
 				   verbose, globals.tctx);
