@@ -6679,7 +6679,7 @@ cm_tdbush_iface_request(void)
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_CA_PROFILE,
 								       cm_tdbush_property_string,
-								       cm_tdbush_property_readwrite,
+								       cm_tdbush_property_read,
 								       cm_tdbush_property_char_p,
 								       offsetof(struct cm_store_entry, cm_cert_profile),
 								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,

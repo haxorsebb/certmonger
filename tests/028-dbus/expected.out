@@ -366,7 +366,7 @@ OK
    <arg name="name" type="o" direction="out"/>
   </method>
   <property name="ca" type="o" access="read"/>
-  <property name="ca-profile" type="s" access="readwrite"/>
+  <property name="ca-profile" type="s" access="read"/>
   <property name="root-cert-files" type="as" access="read"/>
   <property name="root-other-cert-files" type="as" access="read"/>
   <property name="other-cert-files" type="as" access="read"/>
