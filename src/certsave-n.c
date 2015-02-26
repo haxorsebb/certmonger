@@ -63,7 +63,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	PLArenaPool *arena;
 	SECStatus error;
 	SECItem *item, subject;
-	char *p, *q, *serial = NULL;
+	char *p, *q, *serial = NULL, *pin;
 	const char *es;
 	NSSInitContext *ctx;
 	CERTCertDBHandle *certdb;
@@ -74,6 +74,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	CERTCertListNode *node;
 	SECKEYPrivateKey *privkey = NULL;
 	struct cm_certsave_n_settings *settings;
+	struct cm_pin_cb_data cb_data;
 
 	if (entry->cm_cert_storage_location == NULL) {
 		cm_log(1, "Error saving certificate: no location "
@@ -157,6 +158,59 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				cm_log(1, "Error shutting down NSS.\n");
 			}
 			_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
+		}
+		/* Be ready to count our uses of a PIN. */
+		memset(&cb_data, 0, sizeof(cb_data));
+		cb_data.entry = entry;
+		cb_data.n_attempts = 0;
+		pin = NULL;
+		/* Log in, if case we need to muck around with the key
+		 * database. */
+		if (cm_pin_read_for_key(entry, &pin) != 0) {
+			cm_log(1, "Error reading PIN for key store, "
+			       "failing to save certificate.\n");
+			PORT_FreeArena(arena, PR_TRUE);
+			error = NSS_ShutdownContext(ctx);
+			if (error != SECSuccess) {
+				cm_log(1, "Error shutting down NSS.\n");
+			}
+			_exit(CM_CERTSAVE_STATUS_AUTH);
+		}
+		PK11_SetPasswordFunc(&cm_pin_read_for_key_nss_cb);
+		error = PK11_Authenticate(PK11_GetInternalKeySlot(), PR_TRUE,
+					  &cb_data);
+		ec = PORT_GetError();
+		if (error != SECSuccess) {
+			if (ec != 0) {
+				es = PR_ErrorToName(ec);
+			} else {
+				es = NULL;
+			}
+			if (es != NULL) {
+				cm_log(1, "Error authenticating to key store: %s.\n",
+				       es);
+			} else {
+				cm_log(1, "Error authenticating to key store.\n");
+			}
+			PORT_FreeArena(arena, PR_TRUE);
+			error = NSS_ShutdownContext(ctx);
+			if (error != SECSuccess) {
+				cm_log(1, "Error shutting down NSS.\n");
+			}
+			_exit(CM_CERTSAVE_STATUS_AUTH);
+		}
+		if ((pin != NULL) &&
+		    (strlen(pin) > 0) &&
+		    (cb_data.n_attempts == 0)) {
+			cm_log(1, "PIN was not needed to auth to key "
+			       "store, though one was provided. "
+			       "Treating this as an error.\n");
+			PORT_FreeArena(arena, PR_TRUE);
+			error = NSS_ShutdownContext(ctx);
+			if (error != SECSuccess) {
+				cm_log(1, "Error shutting down NSS.\n");
+			}
+			_exit(CM_CERTSAVE_STATUS_AUTH);
 		}
 		certdb = CERT_GetDefaultCertDB();
 		if (certdb != NULL) {
