@@ -138,10 +138,10 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 		switch (ec) {
 		case PR_NO_ACCESS_RIGHTS_ERROR: /* EACCES or EPERM */
-			status = CM_SUB_STATUS_ERROR_PERMS;
+			status = CM_CERTSAVE_STATUS_PERMS;
 			break;
 		default:
-			status = CM_SUB_STATUS_ERROR_INITIALIZING;
+			status = CM_CERTSAVE_STATUS_INITIALIZING;
 			break;
 		}
 	} else {

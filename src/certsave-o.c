@@ -182,7 +182,7 @@ cm_certsave_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		if (next_keyfile == NULL) {
 			cm_log(1, "Error building key file name "
 			       "for reading: %s.\n", strerror(errno));
-			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+			_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
 		}
 		next_key = read_file_contents(next_keyfile, "next key file",
 					      PR_TRUE);
@@ -212,7 +212,7 @@ cm_certsave_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 						cm_log(1, "Error building key file name "
 						       "for writing: %s.\n",
 						       strerror(errno));
-						_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+						_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
 					}
 				}
 			}
