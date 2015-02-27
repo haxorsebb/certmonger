@@ -572,7 +572,11 @@ main(int argc, char **argv)
 			n_buffers++;
 		}
 		i = 1;
-		while (strcmp(id, "0") == 0) {
+		/* If the server handed us one certificate back, then maybe
+		 * it's Dogtag, which expects us to walk the list. */
+		while ((strcmp(id, "0") == 0) &&
+		       (strcasecmp(content_type,
+			           "application/x-x509-ca-cert") == 0)) {
 			if (i > 32) {
 				if (verbose > 0) {
 					fprintf(stderr, "Improbably long "
@@ -645,6 +649,9 @@ main(int argc, char **argv)
 					}
 					break;
 				}
+			}
+			if (j < n_buffers) {
+				break;
 			}
 			buffers = talloc_realloc(ctx, buffers,
 						 const unsigned char *,
