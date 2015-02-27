@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.76.8
+Version:	0.77
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -239,6 +239,21 @@ exit 0
 %endif
 
 %changelog
+* Fri Feb 27 2014 Nalin Dahyabhai <nalin@redhat.com> 0.77-1
+- update to 0.77
+  - add initial, still rough, SCEP support (#1140241,#1161768)
+    - add an scep-submit helper to handle part of it
+  - getcert: add add-ca/add-scep-ca/modify-ca/remove-ca commands
+  - getcert: add -l, -L flags to request/resubmit/start-tracking commands
+    to provide a way to set a ChallengePassword in signing requests
+  - lay some groundwork for rekeying support
+  - bundled dogtag enrollment helpers now output debugging info to stderr (#)
+  - ipa-getcert: fix a crash when using DNS discovery to locate servers (#39)
+  - getcert: fix displaying of pre-request pre-/post-save commands (#1178190,
+    #1181022, patch by David Kupka)
+  - use Zanata for translations
+  - getcert list: list the certificate's profile name, if it contains one
+
 * Tue Nov 18 2014 Nalin Dahyabhai <nalin@redhat.com> 0.76.8-1
 - dogtag-submit: accept additional options to pass to the server when
   approving requests using agent creds (#1165155, patch by Jan Cholasta)
@@ -270,7 +285,7 @@ exit 0
   running the post hook, which was always a surprising order (#1131700)
 - add a generic dogtag-submit helper that doesn't include any IPA defaults,
   to make it easier to know the difference between paramenters it requires
-  and parameters which are optional
+  and parameters which are optional (#12)
 
 * Tue Nov  4 2014 Nalin Dahyabhai <nalin@redhat.com> 0.76.2-1
 - ipa-submit: when we fail to locate/contact LDAP or XML-RPC servers,
@@ -280,7 +295,8 @@ exit 0
 - allow for 'certmonger -P abstract:...' to work, too
 
 * Fri Oct 31 2014 Nalin Dahyabhai <nalin@redhat.com> 0.76-1
-- require a single certificate to be specified to 'getcert status' (#1148001)
+- require a single certificate to be specified to 'getcert status' (#1148001,
+  #1163541, #1163539)
 - shorten the default help message which getcert prints when it's not given
   a specific command (#1131704)
 - add private listener (-l, -L, -P) mode to certmonger, to allow it to listen
@@ -476,7 +492,7 @@ exit 0
   - also pass the SPKAC value to enrollment helpers in the environment as
     a base64 value in "CERTMONGER_SPKAC"
   - also pass the request's SubjectPublicKeyInfo value to enrollment helpers
-    in the environment as a base64 value in "CERTMONGER_SPKI"
+    in the environment as a base64 value in "CERTMONGER_SPKI" (part of #16)
   - when generating signing requests using NSS, be more accommodating of
     requested subject names that don't parse properly
 
