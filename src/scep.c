@@ -466,7 +466,13 @@ main(int argc, char **argv)
 	if (response_code != 200) {
 		printf(_("Got response code %d from %s, not 200.\n"),
 		       response_code, url);
-		return CM_SUBMIT_STATUS_UNREACHABLE;
+		if (response_code == 500) {
+			/* The server might recover, right? */
+			return CM_SUBMIT_STATUS_UNREACHABLE;
+		} else {
+			/* Maybe not? */
+			return CM_SUBMIT_STATUS_REJECTED;
+		}
 	}
 	if (results == NULL) {
 		printf(_("Internal error: no response to \"%s?%s\".\n"),
@@ -478,6 +484,19 @@ main(int argc, char **argv)
 		return CM_SUBMIT_STATUS_UNREACHABLE;
 		break;
 	case op_get_ca_caps:
+		if (results_length > 1024) {
+			/* This is a guess at a reasonable maximum size for a
+			 * result that isn't just some random page being served
+			 * up at the location we queried.  The spec says we
+			 * can't make any assumptions about the content-type,
+			 * so this is the best we can do to avoid trying to
+			 * parse a pile of HTML as a capabilities list. */
+			if (verbose > 0) {
+				fprintf(stderr, "Result is surprisingly large, "
+					"suppressing it.\n");
+			}
+			return CM_SUBMIT_STATUS_REJECTED;
+		}
 		printf("%s\n", results);
 		return CM_SUBMIT_STATUS_ISSUED;
 		break;
