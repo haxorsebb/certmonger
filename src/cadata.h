@@ -52,6 +52,9 @@ int cm_cadata_unreachable(struct cm_cadata_state *state);
 /* Check if we're missing some configuration. */
 int cm_cadata_unconfigured(struct cm_cadata_state *state);
 
+/* Check if the server didn't support that. */
+int cm_cadata_rejected(struct cm_cadata_state *state);
+
 /* Check if the helper didn't support that. */
 int cm_cadata_unsupported(struct cm_cadata_state *state);
 

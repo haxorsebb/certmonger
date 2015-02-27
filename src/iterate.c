@@ -2336,6 +2336,16 @@ cm_iterate_ca(struct cm_store_ca *ca,
 				       cm_store_ca_phase_as_string(state->cm_phase));
 				ca->cm_ca_state[state->cm_phase] = CM_CA_NEED_TO_REFRESH;
 			} else
+			if (cm_cadata_rejected(state->cm_task_state) == 0) {
+				cm_cadata_done(state->cm_task_state);
+				state->cm_task_state = NULL;
+				cm_log(3, "%s('%s').%s server doesn't support that\n",
+				       ca->cm_busname, ca->cm_nickname,
+				       cm_store_ca_phase_as_string(state->cm_phase));
+				ca->cm_ca_state[state->cm_phase] = CM_CA_IDLE;
+				*when = cm_time_delay;
+				*delay = CM_DELAY_CA_POLL_MAXIMUM;
+			} else
 			if (cm_cadata_unreachable(state->cm_task_state) == 0) {
 				cm_cadata_done(state->cm_task_state);
 				state->cm_task_state = NULL;

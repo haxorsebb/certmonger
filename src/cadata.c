@@ -674,6 +674,19 @@ cm_cadata_modified(struct cm_cadata_state *state)
 }
 
 int
+cm_cadata_rejected(struct cm_cadata_state *state)
+{
+	int status;
+
+	status = cm_subproc_get_exitstatus(state->subproc);
+	if (WIFEXITED(status) &&
+	    (WEXITSTATUS(status) == CM_SUBMIT_STATUS_REJECTED)) {
+		return 0;
+	}
+	return -1;
+}
+
+int
 cm_cadata_unsupported(struct cm_cadata_state *state)
 {
 	int status;
