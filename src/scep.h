@@ -33,5 +33,15 @@
 #define SCEP_FAILINFO_BAD_REQUEST	"2"
 #define SCEP_FAILINFO_BAD_TIME		"3"
 #define SCEP_FAILINFO_BAD_CERT_ID	"4"
+/* These aren't in the drafts that I can find, but Dogtag uses them. */
+#define SCEP_FAILINFO_UNSUPPORTED_EXT	"5"
+#define SCEP_FAILINFO_MUST_ARCHIVE_KEYS	"6"
+#define SCEP_FAILINFO_BAD_IDENTITY	"7"
+#define SCEP_FAILINFO_POP_REQUIRED	"8"
+#define SCEP_FAILINFO_POP_FAILED	"9"
+#define SCEP_FAILINFO_NO_KEY_REUSE	"10"
+#define SCEP_FAILINFO_INTERNAL_CA_ERROR	"11"
+#define SCEP_FAILINFO_TRY_LATER		"12"
+
 
 #endif

@@ -820,6 +820,30 @@ main(int argc, char **argv)
 				} else
 				if (strcmp(failinfo, SCEP_FAILINFO_BAD_TIME) == 0) {
 					printf(_("Clock skew too great.\n"));
+				} else
+				if (strcmp(failinfo, SCEP_FAILINFO_UNSUPPORTED_EXT) == 0) {
+					printf(_("Unsupported extension.\n"));
+				} else
+				if (strcmp(failinfo, SCEP_FAILINFO_MUST_ARCHIVE_KEYS) == 0) {
+					printf(_("Must archive keys.\n"));
+				} else
+				if (strcmp(failinfo, SCEP_FAILINFO_BAD_IDENTITY) == 0) {
+					printf(_("Bad identity.\n"));
+				} else
+				if (strcmp(failinfo, SCEP_FAILINFO_POP_REQUIRED) == 0) {
+					printf(_("Proof of possession required.\n"));
+				} else
+				if (strcmp(failinfo, SCEP_FAILINFO_POP_FAILED) == 0) {
+					printf(_("Proof of possession failed.\n"));
+				} else
+				if (strcmp(failinfo, SCEP_FAILINFO_NO_KEY_REUSE) == 0) {
+					printf(_("No key reuse.\n"));
+				} else
+				if (strcmp(failinfo, SCEP_FAILINFO_INTERNAL_CA_ERROR) == 0) {
+					printf(_("Internal CA error.\n"));
+				} else
+				if (strcmp(failinfo, SCEP_FAILINFO_TRY_LATER) == 0) {
+					printf(_("Try later.\n"));
 				} else {
 					printf(_("Server returned failure code \"%s\".\n"),
 					       failinfo);
