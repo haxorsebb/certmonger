@@ -164,8 +164,8 @@ main(int argc, char **argv)
 	char **othercerts = NULL, *cert1 = NULL, *cert2 = NULL, *certs = NULL;
 	char **racertp, **cacertp, *dracert = NULL, *dcacert = NULL;
 	char buf[LINE_MAX] = "";
-	const unsigned char *buffers[4];
-	size_t lengths[4];
+	const unsigned char **buffers = NULL;
+	size_t n_buffers = 0, *lengths = NULL, j;
 	const char *cacerts[3], **racerts;
 	dbus_bool_t missing_args = FALSE;
 	char *sent_tx, *tx, *msgtype, *pkistatus, *failinfo, *s, *tmp1, *tmp2;
@@ -513,24 +513,156 @@ main(int argc, char **argv)
 			racertp = &racert;
 		} else {
 			racertp = &dracert;
+			buffers = talloc_realloc(ctx, buffers,
+						 const unsigned char *,
+						 n_buffers + 1);
+			lengths = talloc_realloc(ctx, lengths, size_t,
+						 n_buffers + 1);
+			if ((buffers == NULL) || (lengths == NULL)) {
+				fprintf(stderr, "Out of memory.\n");
+				return CM_SUBMIT_STATUS_UNREACHABLE;
+			}
+			buffers[n_buffers] = (unsigned char *) racert;
+			lengths[n_buffers] = strlen(racert);
+			n_buffers++;
 		}
 		if (cacert == NULL) {
 			cacertp = &cacert;
 		} else {
 			cacertp = &dcacert;
+			buffers = talloc_realloc(ctx, buffers,
+						 const unsigned char *,
+						 n_buffers + 1);
+			lengths = talloc_realloc(ctx, lengths, size_t,
+						 n_buffers + 1);
+			if ((buffers == NULL) || (lengths == NULL)) {
+				fprintf(stderr, "Out of memory.\n");
+				return CM_SUBMIT_STATUS_UNREACHABLE;
+			}
+			buffers[n_buffers] = (unsigned char *) cacert;
+			lengths[n_buffers] = strlen(cacert);
+			n_buffers++;
 		}
-		buffers[0] = (const unsigned char *) results;
-		lengths[0] = results_length;
-		buffers[1] = (const unsigned char *) results2;
-		lengths[1] = results_length2;
-		buffers[2] = (const unsigned char *) cacert;
-		lengths[2] = cacert ? strlen(cacert) : 0;
-		buffers[3] = (const unsigned char *) racert;
-		lengths[3] = racert ? strlen(racert) : 0;
+		if (results != NULL) {
+			buffers = talloc_realloc(ctx, buffers,
+						 const unsigned char *,
+						 n_buffers + 1);
+			lengths = talloc_realloc(ctx, lengths, size_t,
+						 n_buffers + 1);
+			if ((buffers == NULL) || (lengths == NULL)) {
+				fprintf(stderr, "Out of memory.\n");
+				return CM_SUBMIT_STATUS_UNREACHABLE;
+			}
+			buffers[n_buffers] = (unsigned char *) results;
+			lengths[n_buffers] = results_length;
+			n_buffers++;
+		}
+		if (results2 != NULL) {
+			buffers = talloc_realloc(ctx, buffers,
+						 const unsigned char *,
+						 n_buffers + 1);
+			lengths = talloc_realloc(ctx, lengths, size_t,
+						 n_buffers + 1);
+			if ((buffers == NULL) || (lengths == NULL)) {
+				fprintf(stderr, "Out of memory.\n");
+				return CM_SUBMIT_STATUS_UNREACHABLE;
+			}
+			buffers[n_buffers] = (unsigned char *) results2;
+			lengths[n_buffers] = results_length2;
+			n_buffers++;
+		}
+		i = 1;
+		while (strcmp(id, "0") == 0) {
+			if (i > 32) {
+				if (verbose > 0) {
+					fprintf(stderr, "Improbably long "
+						"chain, or bug.\n");
+				}
+				break;
+			}
+			if (verbose > 0) {
+				fprintf(stderr, "Asking for cert for ID "
+					"\"%d\".\n", i);
+			}
+			params = talloc_asprintf(ctx, "operation="
+						 OP_GET_CA_CERT
+						 "&message=%d", i++);
+			hctx = cm_submit_h_init(ctx, "GET", url, params,
+						NULL, NULL, NULL, NULL,
+						NULL, NULL, NULL,
+						cm_submit_h_negotiate_off,
+						cm_submit_h_delegate_off,
+						cm_submit_h_clientauth_off,
+						cm_submit_h_env_modify_off,
+						verbose > 1 ?
+						cm_submit_h_curl_verbose_on :
+						cm_submit_h_curl_verbose_off);
+			cm_submit_h_run(hctx);
+			content_type2 = cm_submit_h_result_type(hctx);
+			response_code2 = cm_submit_h_response_code(hctx);
+			if (verbose > 0) {
+				fprintf(stderr, "%s \"%s?%s\"\n", "GET", url, params2);
+				fprintf(stderr, "response_code = %d\n", response_code2);
+				fprintf(stderr, "content-type = \"%s\"\n", content_type2);
+				fprintf(stderr, "code = %d\n", cm_submit_h_result_code(hctx));
+				fprintf(stderr, "code_text = \"%s\"\n", cm_submit_h_result_code_text(hctx));
+				syslog(LOG_DEBUG, "%s %s?%s\n", "GET", url, params2);
+			}
+			if (strcasecmp(content_type2,
+				       "application/x-x509-ca-cert") != 0) {
+				if (verbose > 0) {
+					fprintf(stderr, "Content is not "
+						"\"application/x-x509-ca-cert\""
+						", done.\n");
+				}
+				break;
+			}
+			if (response_code != 200) {
+				if (verbose > 0) {
+					fprintf(stderr, "Response code "
+						"is not 200, done.\n");
+				}
+				break;
+			}
+			results2 = cm_submit_h_results(hctx, &results_length2);
+			if (verbose > 0) {
+				fprintf(stderr, "results = \"%s\"\n", results2);
+				syslog(LOG_DEBUG, "%s", results2);
+			}
+			if (results_length2 <= 0) {
+				if (verbose > 0) {
+					fprintf(stderr, "Content is empty, "
+						"done.\n");
+				}
+				break;
+			}
+			for (j = 0; j < n_buffers; j++) {
+				if ((results_length2 == (int) lengths[j]) &&
+				    (memcmp(results2, buffers[j], lengths[j]) == 0)) {
+					if (verbose > 0) {
+						fprintf(stderr, "Content is "
+							"a duplicate, done.\n");
+					}
+					break;
+				}
+			}
+			buffers = talloc_realloc(ctx, buffers,
+						 const unsigned char *,
+						 n_buffers + 1);
+			lengths = talloc_realloc(ctx, lengths, size_t,
+						 n_buffers + 1);
+			if ((buffers == NULL) || (lengths == NULL)) {
+				fprintf(stderr, "Out of memory.\n");
+				return CM_SUBMIT_STATUS_UNREACHABLE;
+			}
+			buffers[n_buffers] = (unsigned char *) results2;
+			lengths[n_buffers] = results_length2;
+			n_buffers++;
+		}
 		if (cm_pkcs7_parsev(CM_PKCS7_LEAF_PREFER_ENCRYPT, ctx,
 				    racertp, cacertp, &othercerts,
 				    NULL, NULL,
-				    4, buffers, lengths) == 0) {
+				    n_buffers, buffers, lengths) == 0) {
 			if (racert != NULL) {
 				printf("%s", racert);
 				if (cacert != NULL) {
@@ -553,8 +685,10 @@ main(int argc, char **argv)
 					}
 				}
 			}
+			talloc_free(ctx);
 			return CM_SUBMIT_STATUS_ISSUED;
 		} else {
+			talloc_free(ctx);
 			return CM_SUBMIT_STATUS_UNREACHABLE;
 		}
 		break;
