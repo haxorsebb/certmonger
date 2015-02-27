@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.77
+Version:	0.77.1
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -239,7 +239,7 @@ exit 0
 %endif
 
 %changelog
-* Fri Feb 27 2014 Nalin Dahyabhai <nalin@redhat.com> 0.77-1
+* Fri Feb 27 2015 Nalin Dahyabhai <nalin@redhat.com> 0.77.1-1
 - update to 0.77
   - add initial, still rough, SCEP support (#1140241,#1161768)
     - add an scep-submit helper to handle part of it
