@@ -415,8 +415,12 @@ main(int argc, char **argv)
 	}
 	results = cm_submit_h_results(hctx, &results_length);
 	if (verbose > 0) {
-		fprintf(stderr, "results = \"%s\"\n", results);
-		syslog(LOG_DEBUG, "%s", results);
+		fprintf(stderr, "results = \"%s\"\n",
+			cm_store_base64_from_bin(ctx, (const unsigned char *) results,
+						 results_length));
+		syslog(LOG_DEBUG, "%s",
+		       cm_store_base64_from_bin(ctx, (const unsigned char *) results,
+						results_length));
 	}
 	if (params2 != NULL) {
 		hctx = cm_submit_h_init(ctx, "GET", url, params2, NULL, NULL,
@@ -444,8 +448,12 @@ main(int argc, char **argv)
 		}
 		results2 = cm_submit_h_results(hctx, &results_length2);
 		if (verbose > 0) {
-			fprintf(stderr, "results = \"%s\"\n", results2);
-			syslog(LOG_DEBUG, "%s", results2);
+			fprintf(stderr, "results = \"%s\"\n",
+				cm_store_base64_from_bin(ctx, (const unsigned char *) results2,
+							 results_length2));
+			syslog(LOG_DEBUG, "%s",
+			       cm_store_base64_from_bin(ctx, (const unsigned char *) results2,
+							results_length2));
 		}
 	}
 
