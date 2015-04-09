@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2011,2012,2014 Red Hat, Inc.
+ * Copyright (C) 2009,2011,2012,2014,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,6 +47,8 @@
 #define CM_DBUS_PROP_CERT_ISSUER "issuer"
 #define CM_DBUS_PROP_CERT_SERIAL "serial"
 #define CM_DBUS_PROP_CERT_SUBJECT "subject"
+#define CM_DBUS_PROP_CERT_NOT_VALID_BEFORE "not-valid-before"
+#define CM_DBUS_PROP_CERT_NOT_VALID_AFTER "not-valid-after"
 #define CM_DBUS_PROP_CERT_EMAIL "email"
 #define CM_DBUS_PROP_CERT_KU "ku"
 #define CM_DBUS_PROP_CERT_EKU "eku"

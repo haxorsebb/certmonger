@@ -15,8 +15,9 @@ Request ID 'Buddy':
 	principal name: host/localhost@LOCALHOST
 	key usage: digitalSignature,dataEncipherment
 	eku: id-kp-serverAuth
-	pre-save command: 
-	post-save command: 
+	certificate template/profile: SomeProfileName
+	pre-save command: echo Pre
+	post-save command: echo Post
 	track: yes
 	auto-renew: yes
 CA 'local':
@@ -273,6 +274,8 @@ OK
   <property name="issuer" type="s" access="read"/>
   <property name="serial" type="s" access="read"/>
   <property name="subject" type="s" access="read"/>
+  <property name="not-valid-before" type="x" access="read"/>
+  <property name="not-valid-after" type="x" access="read"/>
   <property name="email" type="as" access="read"/>
   <property name="ku" type="s" access="read"/>
   <property name="eku" type="as" access="read"/>

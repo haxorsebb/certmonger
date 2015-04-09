@@ -6155,6 +6155,22 @@ cm_tdbush_iface_request(void)
 								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_CERT_NOT_VALID_BEFORE,
+								       cm_tdbush_property_number,
+								       cm_tdbush_property_read,
+								       cm_tdbush_property_time_t,
+								       offsetof(struct cm_store_entry, cm_cert_not_before),
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_CERT_NOT_VALID_AFTER,
+								       cm_tdbush_property_number,
+								       cm_tdbush_property_read,
+								       cm_tdbush_property_time_t,
+								       offsetof(struct cm_store_entry, cm_cert_not_after),
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_CERT_EMAIL,
 								       cm_tdbush_property_strings,
 								       cm_tdbush_property_read,
@@ -6855,7 +6871,7 @@ cm_tdbush_iface_request(void)
 				     make_interface_item(cm_tdbush_interface_signal,
 							 make_signal(CM_DBUS_SIGNAL_REQUEST_CERT_SAVED,
 								     NULL),
-							 NULL))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
+							 NULL))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
 	}
 	return ret;
 }
