@@ -4135,6 +4135,7 @@ struct cm_tdbush_property {
 		cm_tdbush_property_char_p,
 		cm_tdbush_property_char_pp,
 		cm_tdbush_property_time_t,
+		cm_tdbush_property_long_long,
 		cm_tdbush_property_comma_list,
 	} cm_local_type;
 	/* for char_p, char_pp, time_t, comma_list members */
@@ -4340,6 +4341,7 @@ make_property(const char *name,
 	case cm_tdbush_property_char_p:
 	case cm_tdbush_property_char_pp:
 	case cm_tdbush_property_time_t:
+	case cm_tdbush_property_long_long:
 	case cm_tdbush_property_comma_list:
 		assert(ret->cm_offset != 0);
 		break;
@@ -4831,6 +4833,7 @@ cm_tdbush_property_get(DBusConnection *conn,
 	const char *p, **pp;
 	dbus_bool_t b;
 	long l;
+	long long *llp;
 	time_t *tp;
 	enum cm_tdbusm_dict_value_type value_type;
 	union cm_tdbusm_variant value;
@@ -4975,6 +4978,11 @@ cm_tdbush_property_get(DBusConnection *conn,
 		tp = (time_t *) record;
 		value.n = *tp;
 		break;
+	case cm_tdbush_property_long_long:
+		record += prop->cm_offset;
+		llp = (long long *) record;
+		value.n = *llp;
+		break;
 	case cm_tdbush_property_comma_list:
 		record += prop->cm_offset;
 		pp = (const char **) record;
@@ -5077,6 +5085,7 @@ cm_tdbush_property_set(DBusConnection *conn,
 	struct cm_store_ca *ca = NULL;
 	char *record, *wp, **wpp, ***wppp;
 	time_t *tp;
+	long long *llp;
 	DBusMessage *rep;
 	const char *properties[2];
 	enum cm_tdbusm_dict_value_type value_type;
@@ -5229,6 +5238,19 @@ cm_tdbush_property_set(DBusConnection *conn,
 		record += prop->cm_offset;
 		tp = (time_t *) record;
 		*tp = v.n;
+		break;
+	case cm_tdbush_property_long_long:
+		if (value_type == cm_tdbusm_dict_invalid) {
+			v.n = 0;
+		} else
+		if (value_type != cm_tdbusm_dict_n) {
+			cm_log(1, "Error: arguments type mismatch.\n");
+			talloc_free(parent);
+			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		}
+		record += prop->cm_offset;
+		llp = (long long *) record;
+		*llp = v.n;
 		break;
 	case cm_tdbush_property_comma_list:
 		if (value_type == cm_tdbusm_dict_invalid) {
@@ -5402,6 +5424,7 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 	time_t *tp, *old_tp;
 	dbus_bool_t b, old_b;
 	long l, old_l;
+	long long *llp, *old_llp;
 	DBusMessage *rep;
 	const struct cm_tdbusm_dict **d;
 	struct cm_tdbusm_dict *dict, **dtmp;
@@ -5675,6 +5698,23 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 					old_rec = old_record + prop->cm_offset;
 					old_tp = (time_t *) old_rec;
 					if (*tp == *old_tp) {
+						continue;
+					}
+				}
+				d[n] = &dict[n];
+				n++;
+				break;
+			case cm_tdbush_property_long_long:
+				rec = record + prop->cm_offset;
+				llp = (long long *) rec;
+				dict[n].value.n = *llp;
+				if (old_record != NULL) {
+					/* if we have an old record, compare
+					 * its value to the current one, and
+					 * skip this if they're "the same" */
+					old_rec = old_record + prop->cm_offset;
+					old_llp = (long long *) old_rec;
+					if (*llp == *old_llp) {
 						continue;
 					}
 				}
