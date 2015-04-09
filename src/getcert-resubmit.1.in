@@ -101,10 +101,12 @@ the extensionRequest attribute in the signing request.
 .TP
 \fB\-l\fR FILE
 Add an optional ChallengePassword value, read from the file, to the signing
-request.
+request.  A ChallengePassword is often required when the CA is accessed using
+SCEP.
 .TP
 \fB\-L\fR PIN
 Add the argument value to the signing request as a ChallengePassword attribute.
+A ChallengePassword is often required when the CA is accessed using SCEP.
 
 .SH OTHER OPTIONS
 .TP
