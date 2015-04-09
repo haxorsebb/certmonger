@@ -15,3 +15,6 @@
 # [selfsign]
 # validity_period = @CM_DEFAULT_CERT_LIFETIME@
 #
+# [local]
+# validity_period = @CM_DEFAULT_CERT_LIFETIME@
+#

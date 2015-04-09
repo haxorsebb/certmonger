@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010,2011,2012,2014 Red Hat, Inc.
+ * Copyright (C) 2010,2011,2012,2014,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -280,13 +280,30 @@ cm_prefs_default_ca(void)
 }
 
 const char *
-cm_prefs_validity_period(void)
+cm_prefs_selfsign_validity_period(void)
 {
 	static const char *period;
 	if (period == NULL) {
 		period = cm_prefs_config("selfsign", "validity_period");
 		if (period == NULL) {
 			period = CM_DEFAULT_CERT_LIFETIME;
+		}
+	}
+	return period;
+}
+
+const char *
+cm_prefs_local_validity_period(void)
+{
+	static const char *period;
+
+	if (period == NULL) {
+		period = cm_prefs_config("local", "validity_period");
+		if (period == NULL) {
+			period = cm_prefs_config("selfsign", "validity_period");
+			if (period == NULL) {
+				period = CM_DEFAULT_CERT_LIFETIME;
+			}
 		}
 	}
 	return period;

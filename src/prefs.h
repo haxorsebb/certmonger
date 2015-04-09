@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010,2012,2014 Red Hat, Inc.
+ * Copyright (C) 2010,2012,2014,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,7 +45,8 @@ int cm_prefs_enroll_ttls(const time_t **ttls, unsigned int *n_ttls);
 enum cm_notification_method cm_prefs_notification_method(void);
 const char *cm_prefs_notification_destination(void);
 const char *cm_prefs_default_ca(void);
-const char *cm_prefs_validity_period(void);
+const char *cm_prefs_selfsign_validity_period(void);
+const char *cm_prefs_local_validity_period(void);
 int cm_prefs_monitor(void);
 int cm_prefs_autorenew(void);
 int cm_prefs_populate_unique_id(void);

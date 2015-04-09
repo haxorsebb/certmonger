@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Red Hat, Inc.
+ * Copyright (C) 2014,2015 Red Hat, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -238,8 +238,8 @@ get_signer_info(void *parent, char *localdir, X509 ***roots,
 
 	/* Read the desired lifetime. */
 	now = time(NULL);
-	if (cm_submit_u_delta_from_string(cm_prefs_validity_period(), now,
-					  &lifedelta) == 0) {
+	if (cm_submit_u_delta_from_string(cm_prefs_local_validity_period(),
+					  now, &lifedelta) == 0) {
 		life = lifedelta;
 	} else {
 		if (cm_submit_u_delta_from_string(CM_DEFAULT_CERT_LIFETIME, now,

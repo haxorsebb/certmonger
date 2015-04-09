@@ -87,6 +87,17 @@ subjectUniqueID and issuerUniqueID fields populated.  While RFC5280 prohibits
 their use, they may be needed and/or used by older applications.  The default
 value is \fI@CM_DEFAULT_POPULATE_UNIQUE_ID@\fR.
 
+.SH LOCAL
+Within the \fIlocal\fR section, these variables and values are recognized:
+
+.IP validity_period
+This is the validity period given to the locally-signed CA's certificate when it
+is generated.  The value is specified as a combination of years (y), months
+(M), weeks (w), days (d), hours (h), minutes (m), and/or seconds (s).  If no
+unit of time is specified, seconds are assumed.  If not set, the value of the
+\fIvalidity_period\fR setting from the \fIselfsign\fR section, if one is set
+there, will be used.  The default value is \fI@CM_DEFAULT_CERT_LIFETIME@\fR.
+
 .SH BUGS
 Please file tickets for any that you find at https://fedorahosted.org/certmonger/
 
