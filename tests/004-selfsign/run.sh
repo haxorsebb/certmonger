@@ -27,6 +27,9 @@ function append() {
 	template_nscomment=certmonger generated this request
 	template_ipaddress=127.0.0.1,::1
 	template_freshest_crl=http://dcrl-1.example.com:12345/get,http://dcrl-2.example.com:12345/get
+	template_no_ocsp_check=1
+	template_profile=caAwesomeCert
+	template_ns_certtype=client,email
 	EOF
 }
 

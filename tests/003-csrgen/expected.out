@@ -29,8 +29,8 @@ Signature OK
 minicert.openssl.4096.pem: OK
 4096 OK.
 The last CSR (the one with everything) was:
-    0:d=0  hl=4 l=1173 cons: SEQUENCE          
-    4:d=1  hl=4 l=1087 cons: SEQUENCE          
+    0:d=0  hl=4 l=1241 cons: SEQUENCE          
+    4:d=1  hl=4 l=1155 cons: SEQUENCE          
     8:d=2  hl=2 l=   1 prim: INTEGER           :00
    11:d=2  hl=2 l=  22 cons: SEQUENCE          
    13:d=3  hl=2 l=  20 cons: SET               
@@ -42,7 +42,7 @@ The last CSR (the one with everything) was:
    39:d=4  hl=2 l=   9 prim: OBJECT            :rsaEncryption
    50:d=4  hl=2 l=   0 prim: NULL              
    52:d=3  hl=2 l=  75 prim: BIT STRING        
-  129:d=2  hl=4 l= 962 cons: cont [ 0 ]        
+  129:d=2  hl=4 l=1030 cons: cont [ 0 ]        
   133:d=3  hl=2 l=  52 cons: SEQUENCE          
   135:d=4  hl=2 l=   9 prim: OBJECT            :challengePassword
   146:d=4  hl=2 l=  39 cons: SET               
@@ -51,10 +51,10 @@ The last CSR (the one with everything) was:
   189:d=4  hl=2 l=   9 prim: OBJECT            :friendlyName
   200:d=4  hl=2 l=  48 cons: SET               
   202:d=5  hl=2 l=  46 prim: BMPSTRING         
-  250:d=3  hl=4 l= 841 cons: SEQUENCE          
+  250:d=3  hl=4 l= 909 cons: SEQUENCE          
   254:d=4  hl=2 l=   9 prim: OBJECT            :Extension Request
-  265:d=4  hl=4 l= 826 cons: SET               
-  269:d=5  hl=4 l= 822 cons: SEQUENCE          
+  265:d=4  hl=4 l= 894 cons: SET               
+  269:d=5  hl=4 l= 890 cons: SEQUENCE          
   273:d=6  hl=2 l=  14 cons: SEQUENCE          
   275:d=7  hl=2 l=   3 prim: OBJECT            :X509v3 Key Usage
   280:d=7  hl=2 l=   1 prim: BOOLEAN           :0
@@ -99,8 +99,16 @@ The last CSR (the one with everything) was:
  1077:d=7  hl=2 l=   9 prim: OBJECT            :OCSP No Check
  1088:d=7  hl=2 l=   1 prim: BOOLEAN           :0
  1091:d=7  hl=2 l=   2 prim: OCTET STRING      [HEX DUMP]:0500
- 1095:d=1  hl=2 l=  13 cons: SEQUENCE          
- 1097:d=2  hl=2 l=   9 prim: OBJECT            :sha256WithRSAEncryption
- 1108:d=2  hl=2 l=   0 prim: NULL              
- 1110:d=1  hl=2 l=  65 prim: BIT STRING        
-Test complete (56 combinations).
+ 1095:d=6  hl=2 l=  44 cons: SEQUENCE          
+ 1097:d=7  hl=2 l=   9 prim: OBJECT            :1.3.6.1.4.1.311.20.2
+ 1108:d=7  hl=2 l=   1 prim: BOOLEAN           :0
+ 1111:d=7  hl=2 l=  28 prim: OCTET STRING      [HEX DUMP]:1E1A006300610041007700650073006F006D00650043006500720074
+ 1141:d=6  hl=2 l=  20 cons: SEQUENCE          
+ 1143:d=7  hl=2 l=   9 prim: OBJECT            :Netscape Cert Type
+ 1154:d=7  hl=2 l=   1 prim: BOOLEAN           :0
+ 1157:d=7  hl=2 l=   4 prim: OCTET STRING      [HEX DUMP]:030205A0
+ 1163:d=1  hl=2 l=  13 cons: SEQUENCE          
+ 1165:d=2  hl=2 l=   9 prim: OBJECT            :sha256WithRSAEncryption
+ 1176:d=2  hl=2 l=   0 prim: NULL              
+ 1178:d=1  hl=2 l=  65 prim: BIT STRING        
+Test complete (69 combinations).

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2011,2012,2013,2014 Red Hat, Inc.
+ * Copyright (C) 2009,2011,2012,2013,2014,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -315,26 +315,26 @@ cm_certext_read_ku(struct cm_store_entry *entry, PLArenaPool *arena,
 	}
 }
 
-/* Build a keyUsage extension value from a string, with each bit being
+/* Build a BitString extension value from a string, with each bit being
  * represented by either a "1" or a "0", most significant bit first. */
 static SECItem *
-cm_certext_build_ku(struct cm_store_entry *entry, PLArenaPool *arena,
-		    const char *ku_value)
+cm_certext_build_bitstring(struct cm_store_entry *entry, PLArenaPool *arena,
+			   const char *bitstring)
 {
 	SECItem *ret, encoded, *bits;
 	unsigned int i, used, val, len;
 
-	if ((ku_value == NULL) || (strlen(ku_value) == 0)) {
+	if ((bitstring == NULL) || (strlen(bitstring) == 0)) {
 		/* Nothing to encode, so don't include this extension. */
 		return NULL;
 	}
-	len = strlen(ku_value) + 1;
+	len = strlen(bitstring) + 1;
 	bits = SECITEM_AllocItem(arena, NULL, len);
 	memset(bits->data, '\0', len);
 	for (i = 0, used = 0;
-	     (ku_value != NULL) && (ku_value[i] != '\0');
+	     (bitstring != NULL) && (bitstring[i] != '\0');
 	     i++) {
-		val = ((ku_value[i] == '1') ? 0x80 : 0x00) >> (i % 8);
+		val = ((bitstring[i] == '1') ? 0x80 : 0x00) >> (i % 8);
 		bits->data[i / 8] |= val;
 		if (val != 0) {
 			used = i + 1;
@@ -351,6 +351,15 @@ cm_certext_build_ku(struct cm_store_entry *entry, PLArenaPool *arena,
 		ret = SECITEM_ArenaDupItem(arena, &encoded);
 	}
 	return ret;
+}
+
+/* Build a keyUsage extension value from a string, with each bit being
+ * represented by either a "1" or a "0", most significant bit first. */
+static SECItem *
+cm_certext_build_ku(struct cm_store_entry *entry, PLArenaPool *arena,
+		    const char *ku_value)
+{
+	return cm_certext_build_bitstring(entry, arena, ku_value);
 }
 
 /* Convert an OID to a printable string.  For now, we're limited to components
@@ -1546,6 +1555,86 @@ cm_certext_build_ocsp_no_check(struct cm_store_entry *entry,
 	return item;
 }
 
+/* Build a Microsoft certtype extension value. */
+static SECItem *
+cm_certext_build_profile(struct cm_store_entry *entry,
+			 PLArenaPool *arena,
+			 char *profile)
+{
+	SECItem value, encoded, *item;
+	unsigned int len = 0;
+
+	if (strlen(profile) == 0) {
+		return NULL;
+	}
+	memset(&value, 0, sizeof(value));
+	memset(&encoded, 0, sizeof(encoded));
+	if (cm_store_utf8_to_bmp_string(profile, &value.data, &len) != -1) {
+		value.len = len;
+		if (SEC_ASN1EncodeItem(arena, &encoded, &value,
+				       SEC_BMPStringTemplate) == &encoded) {
+			item = SECITEM_ArenaDupItem(arena, &encoded);
+		} else {
+			item = NULL;
+		}
+		free(value.data);
+	} else {
+		item = NULL;
+	}
+	return item;
+}
+
+/* Build a Netscape certtype extension value. */
+static SECItem *
+cm_certext_build_ns_certtype(struct cm_store_entry *entry,
+			     PLArenaPool *arena,
+			     char *certtype)
+{
+	char bitstring[] = "00000000";
+	char *p, *q;
+	int len = 0;
+
+	if (strlen(certtype) == 0) {
+		return NULL;
+	}
+	p = certtype;
+	while (*p != '\0') {
+		q = p + strcspn(p, ",");
+		if (strncasecmp(p, "client", q - p) == 0) {
+			bitstring[0] = '1';
+		} else
+		if (strncasecmp(p, "server", q - p) == 0) {
+			bitstring[1] = '1';
+		} else
+		if (strncasecmp(p, "email", q - p) == 0) {
+			bitstring[2] = '1';
+		} else
+		if (strncasecmp(p, "objsign", q - p) == 0) {
+			bitstring[3] = '1';
+		} else
+		if (strncasecmp(p, "reserved", q - p) == 0) {
+			bitstring[4] = '1';
+		} else
+		if (strncasecmp(p, "sslca", q - p) == 0) {
+			bitstring[5] = '1';
+		} else
+		if (strncasecmp(p, "emailca", q - p) == 0) {
+			bitstring[6] = '1';
+		} else
+		if (strncasecmp(p, "objca", q - p) == 0) {
+			bitstring[7] = '1';
+		}
+		p = q + strspn(q, ",");
+	}
+	if (strchr(bitstring, '1') != NULL) {
+		len = strrchr(bitstring, '1') - bitstring;
+		p[len + 1] = '\0';
+		return cm_certext_build_bitstring(entry, arena, bitstring);
+	} else {
+		return NULL;
+	}
+}
+
 /* Build a requestedExtensions attribute. */
 void
 cm_certext_build_csr_extensions(struct cm_store_entry *entry,
@@ -1553,7 +1642,7 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 				unsigned char **extensions, size_t *length)
 {
 	PLArenaPool *arena;
-	CERTCertExtension ext[11], *exts[12], **exts_ptr;
+	CERTCertExtension ext[13], *exts[14], **exts_ptr;
 	SECOidData *oid;
 	SECItem *item, encoded;
 	SECItem der_false = {
@@ -1722,6 +1811,30 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 	if (entry->cm_template_no_ocsp_check) {
 		oid = SECOID_FindOIDByTag(SEC_OID_PKIX_OCSP_NO_CHECK);
 		item = cm_certext_build_ocsp_no_check(entry, arena);
+		if ((item != NULL) && (oid != NULL)) {
+			ext[i].id = oid->oid;
+			ext[i].critical = der_false;
+			ext[i].value = *item;
+			exts[i] = &ext[i];
+			i++;
+		}
+	}
+	if (entry->cm_template_profile != NULL) {
+		oid = (SECOidData *) &oid_microsoft_certtype;
+		item = cm_certext_build_profile(entry, arena,
+						entry->cm_template_profile);
+		if ((item != NULL) && (oid != NULL)) {
+			ext[i].id = oid->oid;
+			ext[i].critical = der_false;
+			ext[i].value = *item;
+			exts[i] = &ext[i];
+			i++;
+		}
+	}
+	if (entry->cm_template_ns_certtype != NULL) {
+		oid = SECOID_FindOIDByTag(SEC_OID_NS_CERT_EXT_CERT_TYPE);
+		item = cm_certext_build_ns_certtype(entry, arena,
+						    entry->cm_template_ns_certtype);
 		if ((item != NULL) && (oid != NULL)) {
 			ext[i].id = oid->oid;
 			ext[i].critical = der_false;
@@ -1928,6 +2041,76 @@ cm_certext_read_profile(struct cm_store_entry *entry, PLArenaPool *arena,
 	}
 }
 
+static void
+cm_certext_read_ns_certtype(struct cm_store_entry *entry, PLArenaPool *arena,
+			    CERTCertExtension *ext)
+{
+	SECItem item;
+	unsigned int i, bit;
+	char *tmp = NULL, *t = NULL;
+
+	if (SEC_ASN1DecodeItem(arena, &item, SEC_BitStringTemplate,
+			       &ext->value) == SECSuccess) {
+		/* A bitString decodes with length == number of bits, not
+		 * bytes, which is what we want anyway. */
+		tmp = talloc_zero_size(entry, item.len + 1);
+		for (i = 0; i < item.len; i++) {
+			bit = (item.data[i / 8] & (0x80 >> (i % 8))) ? 1 : 0;
+			sprintf(tmp + i, "%.*u", 1, bit);
+		}
+	}
+	talloc_free(entry->cm_cert_ns_certtype);
+	entry->cm_cert_ns_certtype = NULL;
+	if (tmp == NULL) {
+		return;
+	}
+	t = talloc_strdup(entry, "");
+	if ((tmp != NULL) && (strlen(tmp) > 0)) {
+		if (tmp[0] == '1') {
+			t = talloc_strdup_append(t, ",client");
+		}
+	}
+	if ((tmp != NULL) && (strlen(tmp) > 1)) {
+		if (tmp[1] == '1') {
+			t = talloc_strdup_append(t, ",server");
+		}
+	}
+	if ((tmp != NULL) && (strlen(tmp) > 2)) {
+		if (tmp[2] == '1') {
+			t = talloc_strdup_append(t, ",email");
+		}
+	}
+	if ((tmp != NULL) && (strlen(tmp) > 3)) {
+		if (tmp[3] == '1') {
+			t = talloc_strdup_append(t, ",objsign");
+		}
+	}
+	if ((tmp != NULL) && (strlen(tmp) > 4)) {
+		if (tmp[4] == '1') {
+			t = talloc_strdup_append(t, ",reserved");
+		}
+	}
+	if ((tmp != NULL) && (strlen(tmp) > 5)) {
+		if (tmp[5] == '1') {
+			t = talloc_strdup_append(t, ",sslCA");
+		}
+	}
+	if ((tmp != NULL) && (strlen(tmp) > 6)) {
+		if (tmp[6] == '1') {
+			t = talloc_strdup_append(t, ",emailCA");
+		}
+	}
+	if ((tmp != NULL) && (strlen(tmp) > 7)) {
+		if (tmp[7] == '1') {
+			t = talloc_strdup_append(t, ",objCA");
+		}
+	}
+	if (strlen(t) > 0) {
+		entry->cm_cert_ns_certtype = talloc_strdup(entry, t + 1);
+	}
+	talloc_free(t);
+}
+
 /* Read the extensions from a certificate. */
 void
 cm_certext_read_extensions(struct cm_store_entry *entry, PLArenaPool *arena,
@@ -1937,7 +2120,7 @@ cm_certext_read_extensions(struct cm_store_entry *entry, PLArenaPool *arena,
 	PLArenaPool *local_arena;
 	SECOidData *ku_oid, *eku_oid, *san_oid, *freshest_crl_oid;
 	SECOidData *basic_oid, *nsc_oid, *aia_oid, *crldp_oid, *profile_oid;
-	SECOidData *no_ocsp_check_oid;
+	SECOidData *no_ocsp_check_oid, *ns_certtype_oid;
 
 	if (extensions == NULL) {
 		return;
@@ -2006,6 +2189,12 @@ cm_certext_read_extensions(struct cm_store_entry *entry, PLArenaPool *arena,
 		return;
 	}
 	profile_oid = (SECOidData *) &oid_microsoft_certtype;
+	ns_certtype_oid = SECOID_FindOIDByTag(SEC_OID_NS_CERT_EXT_CERT_TYPE);
+	if (ns_certtype_oid == NULL) {
+		cm_log(1, "Internal library error: unable to look up OID for "
+		       "nsCertType extension.\n");
+		return;
+	}
 	entry->cm_cert_no_ocsp_check = FALSE;
 	for (i = 0; extensions[i] != NULL; i++) {
 		if (SECITEM_ItemsAreEqual(&ku_oid->oid, &extensions[i]->id)) {
@@ -2042,6 +2231,10 @@ cm_certext_read_extensions(struct cm_store_entry *entry, PLArenaPool *arena,
 		if (SECITEM_ItemsAreEqual(&no_ocsp_check_oid->oid,
 					  &extensions[i]->id)) {
 			entry->cm_cert_no_ocsp_check = TRUE;
+		}
+		if (SECITEM_ItemsAreEqual(&ns_certtype_oid->oid,
+					  &extensions[i]->id)) {
+			cm_certext_read_ns_certtype(entry, arena, extensions[i]);
 		}
 	}
 	if (arena == local_arena) {

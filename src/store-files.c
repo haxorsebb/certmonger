@@ -98,6 +98,7 @@ enum cm_store_file_field {
 	cm_store_entry_field_cert_ns_comment,
 	cm_store_entry_field_cert_profile,
 	cm_store_entry_field_cert_no_ocsp_check,
+	cm_store_entry_field_cert_ns_certtype,
 
 	cm_store_entry_field_last_expiration_check,
 	cm_store_entry_field_last_need_notify_check,
@@ -119,6 +120,7 @@ enum cm_store_file_field {
 	cm_store_entry_field_template_ns_comment,
 	cm_store_entry_field_template_profile,
 	cm_store_entry_field_template_no_ocsp_check,
+	cm_store_entry_field_template_ns_certtype,
 
 	cm_store_entry_field_challenge_password,
 	cm_store_entry_field_challenge_password_file,
@@ -258,6 +260,7 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_cert_ns_comment, "cert_ns_comment"},
 	{cm_store_entry_field_cert_profile, "cert_profile"},
 	{cm_store_entry_field_cert_no_ocsp_check, "cert_no_ocsp_check"},
+	{cm_store_entry_field_cert_ns_certtype, "cert_ns_certtype"},
 
 	{cm_store_entry_field_last_expiration_check, "last_expiration_check"},
 	{cm_store_entry_field_last_need_notify_check, "last_need_notify_check"},
@@ -280,6 +283,7 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_template_profile, "template_profile"}, /* right */
 	{cm_store_entry_field_template_profile, "ca_profile"}, /* wrong */
 	{cm_store_entry_field_template_no_ocsp_check, "template_no_ocsp_check"},
+	{cm_store_entry_field_template_ns_certtype, "template_ns_certtype"},
 
 	{cm_store_entry_field_challenge_password, "template_challenge_password"}, /* right */
 	{cm_store_entry_field_challenge_password, "challenge_password"}, /* wrong */
@@ -945,6 +949,9 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 				ret->cm_cert_no_ocsp_check = atoi(p) != 0;
 				talloc_free(p);
 				break;
+			case cm_store_entry_field_cert_ns_certtype:
+				ret->cm_cert_ns_certtype = free_if_empty(p);
+				break;
 			case cm_store_entry_field_last_expiration_check:
 				/* backward compatibility before we split them
 				 * into two settings */
@@ -1021,6 +1028,9 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_template_no_ocsp_check:
 				ret->cm_template_no_ocsp_check = atoi(p) != 0;
 				talloc_free(p);
+				break;
+			case cm_store_entry_field_template_ns_certtype:
+				ret->cm_template_ns_certtype = free_if_empty(p);
 				break;
 			case cm_store_entry_field_challenge_password:
 				ret->cm_template_challenge_password = free_if_empty(p);
@@ -1225,6 +1235,7 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_cert_ns_comment:
 			case cm_store_entry_field_cert_profile:
 			case cm_store_entry_field_cert_no_ocsp_check:
+			case cm_store_entry_field_cert_ns_certtype:
 			case cm_store_entry_field_last_expiration_check:
 			case cm_store_entry_field_last_need_notify_check:
 			case cm_store_entry_field_last_need_enroll_check:
@@ -1244,6 +1255,7 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_template_ns_comment:
 			case cm_store_entry_field_template_profile:
 			case cm_store_entry_field_template_no_ocsp_check:
+			case cm_store_entry_field_template_ns_certtype:
 			case cm_store_entry_field_challenge_password:
 			case cm_store_entry_field_challenge_password_file:
 			case cm_store_entry_field_csr:
@@ -1762,6 +1774,8 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 				entry->cm_cert_ns_comment);
 	cm_store_file_write_str(fp, cm_store_entry_field_cert_profile,
 				entry->cm_cert_profile);
+	cm_store_file_write_str(fp, cm_store_entry_field_cert_ns_certtype,
+				entry->cm_cert_ns_certtype);
 	cm_store_file_write_int(fp, cm_store_entry_field_cert_no_ocsp_check,
 				entry->cm_cert_no_ocsp_check ? 1 : 0);
 
@@ -1804,6 +1818,8 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 				entry->cm_template_profile);
 	cm_store_file_write_int(fp, cm_store_entry_field_template_no_ocsp_check,
 				entry->cm_template_no_ocsp_check ? 1 : 0);
+	cm_store_file_write_str(fp, cm_store_entry_field_template_ns_certtype,
+				entry->cm_template_ns_certtype);
 
 	cm_store_file_write_str(fp, cm_store_entry_field_challenge_password,
 				entry->cm_template_challenge_password);
@@ -2528,6 +2544,8 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	ret->cm_cert_profile = cm_store_maybe_strdup(ret,
 						     entry->cm_cert_profile);
 	ret->cm_cert_no_ocsp_check = entry->cm_cert_no_ocsp_check;
+	ret->cm_cert_ns_certtype = cm_store_maybe_strdup(ret,
+							 entry->cm_cert_ns_certtype);
 
 	ret->cm_last_need_notify_check = entry->cm_last_need_notify_check;
 	ret->cm_last_need_enroll_check = entry->cm_last_need_enroll_check;
@@ -2550,6 +2568,8 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	ret->cm_template_ns_comment = cm_store_maybe_strdup(ret, entry->cm_template_ns_comment);
 	ret->cm_template_profile = cm_store_maybe_strdup(ret, entry->cm_template_profile);
 	ret->cm_template_no_ocsp_check = entry->cm_template_no_ocsp_check;
+	ret->cm_template_ns_certtype = cm_store_maybe_strdup(ret,
+							     entry->cm_template_ns_certtype);
 
 	ret->cm_template_challenge_password = cm_store_maybe_strdup(ret, entry->cm_template_challenge_password);
 	ret->cm_template_challenge_password_file = cm_store_maybe_strdup(ret, entry->cm_template_challenge_password_file);

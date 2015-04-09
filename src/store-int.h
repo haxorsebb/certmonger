@@ -90,6 +90,7 @@ struct cm_store_entry {
 	char **cm_cert_ocsp_location;
 	char *cm_cert_ns_comment;
 	char *cm_cert_profile;
+	char *cm_cert_ns_certtype;
 	unsigned int cm_cert_no_ocsp_check: 1;
 	time_t cm_last_need_notify_check;
 	time_t cm_last_need_enroll_check;
@@ -133,6 +134,7 @@ struct cm_store_entry {
 	char **cm_template_ocsp_location;
 	char *cm_template_ns_comment;
 	char *cm_template_profile;
+	char *cm_template_ns_certtype;
 	unsigned int cm_template_no_ocsp_check: 1;
 	/* A challenge password, which may be included (in cleartext form!) in
 	 * a CSR. */

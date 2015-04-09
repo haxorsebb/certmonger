@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2012,2014 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2012,2014,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -181,6 +181,8 @@ cm_certread_write_data_to_pipe(struct cm_store_entry *entry, FILE *fp)
 	p = (unsigned char *) entry->cm_cert_profile;
 	fprintf(fp, " %s\n", p ? cm_store_base64_from_bin(NULL, p, -1) : "");
 	fprintf(fp, " %d\n", entry->cm_cert_no_ocsp_check ? 1 : 0);
+	p = (unsigned char *) entry->cm_cert_ns_certtype;
+	fprintf(fp, " %s\n", p ? cm_store_base64_from_bin(NULL, p, -1) : "");
 	fprintf(fp, " %s\n", entry->cm_cert ?: "");
 }
 
@@ -428,6 +430,14 @@ cm_certread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 			entry->cm_cert_no_ocsp_check = (p != q) ? (atoi(p) != 0) : 0;
 			break;
 		case 23:
+			talloc_free(entry->cm_cert_ns_certtype);
+			entry->cm_cert_ns_certtype = (p == q) ? NULL :
+						     cm_store_base64_as_bin(entry,
+									    p,
+									    q - p,
+									    NULL);
+			break;
+		case 24:
 			talloc_free(entry->cm_cert);
 			entry->cm_cert = (p[strspn(p, " \r\n")] == '\0') ?
 					 NULL :
