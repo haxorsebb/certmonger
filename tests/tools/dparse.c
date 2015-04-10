@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Red Hat, Inc.
+ * Copyright (C) 2012,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,13 +38,13 @@ main(int argc, char **argv)
 	const char *mode, *role, *filename;
 	char *error = NULL, *error_code = NULL, *error_reason = NULL;
 	char *status = NULL, *requestId = NULL, *cert = NULL;
-	char *xml, *out = NULL, *err = NULL;
+	char *xml, *out = NULL, *err = NULL, **profiles = NULL;
 	dbus_bool_t can_agent;
 	int i, vars;
 
 	if (argc < 4) {
 		printf("usage: dparse "
-		       "{submit|check|review|reject|approve|fetch} "
+		       "{submit|check|review|reject|approve|fetch|profiles} "
 		       "{agent|ee} "
 		       "reply.xml\n");
 		return 0;
@@ -101,6 +101,13 @@ main(int argc, char **argv)
 					 &status, &requestId, &cert);
 		i = cm_submit_d_fetch_eval(NULL, xml, "FETCH",
 					   can_agent, &out, &err);
+	} else
+	if (strcmp(mode, "profiles") == 0) {
+		cm_submit_d_profiles_result(NULL, xml,
+					    &error_code, &error_reason, &error,
+					    &status, &profiles);
+		i = cm_submit_d_profiles_eval(NULL, xml, "PROFILES",
+					      can_agent, &out, &err);
 	} else {
 		fprintf(stderr, "unknown mode \"%s\"\n", mode);
 		return -1;

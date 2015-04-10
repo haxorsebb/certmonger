@@ -78,9 +78,10 @@ help(const char *cmd)
 		"\t[-S state]\n"
 		"\t[-T profile]\n"
 		"\t[-O param=value]\n"
-		"\t[-v]\n"
 		"\t[-N | -R]\n"
 		"\t[-V dogtag_version]\n"
+		"\t[-t]\n"
+		"\t[-v]\n"
 		"\t[csrfile]\n",
 		strchr(cmd, '/') ? strrchr(cmd, '/') + 1 : cmd);
 }
@@ -158,7 +159,7 @@ main(int argc, char **argv)
 	const char *host = NULL, *dogtag_version = NULL;
 	int eeport, agentport;
 #endif
-	enum { op_none, op_submit, op_check, op_approve, op_retrieve } op = op_none;
+	enum { op_none, op_submit, op_check, op_approve, op_retrieve, op_profiles } op = op_submit;
 	dbus_bool_t can_agent, use_agent, missing_args = FALSE;
 	struct dogtag_default **defaults;
 	enum cm_external_status ret;
@@ -172,6 +173,9 @@ main(int argc, char **argv)
 	if ((strcasecmp(mode, CM_OP_SUBMIT) == 0) ||
 	    (strcasecmp(mode, CM_OP_POLL) == 0)) {
 		/* fall through */
+	} else
+	if (strcasecmp(mode, CM_OP_FETCH_PROFILES) == 0) {
+		op = op_profiles;
 	} else
 	if (strcasecmp(mode, CM_OP_IDENTIFY) == 0) {
 #ifdef DOGTAG_IPA_RENEW_AGENT
@@ -192,7 +196,7 @@ main(int argc, char **argv)
 
 	savedstate = getenv(CM_SUBMIT_COOKIE_ENV);
 
-	while ((c = getopt(argc, argv, "E:A:d:n:i:C:c:k:p:P:s:D:S:T:O:vV:NR")) != -1) {
+	while ((c = getopt(argc, argv, "E:A:d:n:i:C:c:k:p:P:s:D:S:T:O:vV:NRt")) != -1) {
 		switch (c) {
 		case 'E':
 			eeurl = optarg;
@@ -255,6 +259,9 @@ main(int argc, char **argv)
 			options[num_options - 1].name = p;
 			p[i] = '\0';
 			options[num_options - 1].value = p + i + 1;
+			break;
+		case 't':
+			op = op_profiles;
 			break;
 		case 'v':
 			verbose++;
@@ -426,7 +433,6 @@ main(int argc, char **argv)
 	}
 
 	/* Figure out where we are in the multi-step process. */
-	op = op_none;
 	if ((savedstate != NULL) &&
 	    ((p = statevar(savedstate, "state")) != NULL) &&
 	    ((q = statevar(savedstate, "requestId")) != NULL)) {
@@ -443,7 +449,6 @@ main(int argc, char **argv)
 		}
 		params = talloc_asprintf(ctx, "requestId=%s", q);
 	} else {
-		op = op_submit;
 		params = "";
 	}
 
@@ -537,6 +542,18 @@ main(int argc, char **argv)
 					 "xml=true",
 					 params);
 		use_agent = FALSE;
+	case op_profiles:
+		/* Retrieving the list of profiles. */
+		url = talloc_asprintf(ctx, "%s/profileList", eeurl);
+		if (strlen(params) > 0) {
+			params = talloc_asprintf(ctx,
+						 "%s&"
+						 "xml=true",
+						 params);
+		} else {
+			params = "xml=true";
+		}
+		use_agent_approval = FALSE;
 		break;
 	}
 
@@ -630,6 +647,7 @@ main(int argc, char **argv)
 		case op_submit:
 		case op_check:
 		case op_retrieve:
+		case op_profiles:
 			/* No second form for these. */
 			break;
 		}
@@ -651,16 +669,19 @@ main(int argc, char **argv)
 			       cm_submit_h_result_code(hctx),
 			       lasturl);
 		}
+		talloc_free(ctx);
 		return CM_SUBMIT_STATUS_UNREACHABLE;
 	}
 	if (results == NULL) {
 		printf(_("Internal error: no response to \"%s?%s\".\n"),
 		       lasturl, lastparams);
+		talloc_free(ctx);
 		return CM_SUBMIT_STATUS_REJECTED;
 	}
 	switch (op) {
 	case op_none:
 		printf(_("Internal error: unknown state.\n"));
+		talloc_free(ctx);
 		return CM_SUBMIT_STATUS_UNCONFIGURED;
 		break;
 	case op_submit:
@@ -672,6 +693,7 @@ main(int argc, char **argv)
 		if (q != NULL) {
 			fprintf(stderr, "%s", q);
 		}
+		talloc_free(ctx);
 		return ret;
 		break;
 	case op_check:
@@ -683,6 +705,7 @@ main(int argc, char **argv)
 		if (q != NULL) {
 			fprintf(stderr, "%s", q);
 		}
+		talloc_free(ctx);
 		return ret;
 		break;
 	case op_approve:
@@ -695,6 +718,7 @@ main(int argc, char **argv)
 			if (q != NULL) {
 				fprintf(stderr, "%s", q);
 			}
+			talloc_free(ctx);
 			return ret;
 		} else {
 			ret = cm_submit_d_review_eval(ctx, results, lasturl,
@@ -705,6 +729,7 @@ main(int argc, char **argv)
 			if (q != NULL) {
 				fprintf(stderr, "%s", q);
 			}
+			talloc_free(ctx);
 			return ret;
 		}
 		break;
@@ -717,8 +742,22 @@ main(int argc, char **argv)
 		if (q != NULL) {
 			fprintf(stderr, "%s", q);
 		}
+		talloc_free(ctx);
+		return ret;
+		break;
+	case op_profiles:
+		ret = cm_submit_d_profiles_eval(ctx, results, lasturl,
+						can_agent, &p, &q);
+		if (p != NULL) {
+			fprintf(stdout, "%s", p);
+		}
+		if (q != NULL) {
+			fprintf(stderr, "%s", q);
+		}
+		talloc_free(ctx);
 		return ret;
 		break;
 	}
+	talloc_free(ctx);
 	return CM_SUBMIT_STATUS_UNCONFIGURED;
 }

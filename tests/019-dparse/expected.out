@@ -40,6 +40,32 @@ LCT7m5N535pDf4tELcXRQAUv/xTp7F5O84pp8Bez14iVTtKazqseq5K7EKCsRXfW
 FxfR4qHzwpD9Q7rvTzFP2/J/Cr8=
 -----END CERTIFICATE-----
 
+[profiles-as-agent(good.profileList) = ISSUED]
+error_code="0",error_reason=""
+caUserCert
+caUserSMIMEcapCert
+caDualCert
+caSignedLogCert
+caTPSCert
+caServerCert
+caOtherCert
+caCACert
+caInstallCACert
+caRACert
+caOCSPCert
+caTransportCert
+caDirUserCert
+caAgentServerCert
+caAgentFileSigning
+caCMCUserCert
+DomainController
+caDualRAuserCert
+caRAagentCert
+caRAserverCert
+caSSLClientSelfRenewal
+caDirUserRenewal
+caManualRenewal
+
 [submit-as-agent(bad.profileSubmit.csr.empty) = REJECTED]
 error="Invalid Request",status="1"
 Server at "SUBMIT" replied: Invalid Request
@@ -126,6 +152,32 @@ LCT7m5N535pDf4tELcXRQAUv/xTp7F5O84pp8Bez14iVTtKazqseq5K7EKCsRXfW
 FxfR4qHzwpD9Q7rvTzFP2/J/Cr8=
 -----END CERTIFICATE-----
 
+[profiles-as-end-entity(good.profileList) = ISSUED]
+error_code="0",error_reason=""
+caUserCert
+caUserSMIMEcapCert
+caDualCert
+caSignedLogCert
+caTPSCert
+caServerCert
+caOtherCert
+caCACert
+caInstallCACert
+caRACert
+caOCSPCert
+caTransportCert
+caDirUserCert
+caAgentServerCert
+caAgentFileSigning
+caCMCUserCert
+DomainController
+caDualRAuserCert
+caRAagentCert
+caRAserverCert
+caSSLClientSelfRenewal
+caDirUserRenewal
+caManualRenewal
+
 [submit-as-end-entity(bad.profileSubmit.csr.empty) = REJECTED]
 error="Invalid Request",status="1"
 Server at "SUBMIT" replied: Invalid Request
@@ -172,4 +224,4 @@ Server at "FETCH" replied: Request ID 19 was not found in the request queue.
 [fetch-as-end-entity(bad.displayCertFromRequest.rejected) = REJECTED]
 error="Request ID 17 was not completed.",status="7"
 Server at "FETCH" replied: Request ID 17 was not completed.
-44 samples.
+46 samples.

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010,2011,2012,2013 Red Hat, Inc.
+ * Copyright (C) 2010,2011,2012,2013,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -217,6 +217,7 @@ cm_submit_d_xml_defaults(void *parent, const char *xml)
 				}
 				ret[j] = NULL;
 			}
+			xmlXPathFreeObject(obj);
 			xmlXPathFreeContext(xpctx);
 		}
 		xmlFreeDoc(doc);
@@ -274,6 +275,152 @@ cm_submit_d_xml_value(void *parent, const char *xml, const char *path)
 				}
 				ret = talloc_strndup(parent, content, i + 1);
 			}
+			xmlXPathFreeObject(obj);
+			xmlXPathFreeContext(xpctx);
+		}
+		xmlFreeDoc(doc);
+	}
+	return ret;
+}
+
+static char *
+cm_submit_d_text_node(void *parent, xmlXPathObjectPtr obj)
+{
+	xmlNodePtr node = NULL;
+	const char *content;
+	int i;
+
+	if ((obj != NULL) &&
+	    (obj->nodesetval != NULL) &&
+	    (obj->nodesetval->nodeNr > 0)) {
+		for (i = 0;
+		     (i < obj->nodesetval->nodeNr) &&
+		     (node == NULL);
+		     i++) {
+			node = obj->nodesetval->nodeTab[i]->children;
+			while (node != NULL) {
+				if (node->type == XML_TEXT_NODE) {
+					break;
+				}
+				node = node->next;
+			}
+		}
+	}
+	if (node != NULL) {
+		content = (const char *) node->content;
+		content = content + strspn(content, "\n");
+		i = strlen(content) - 1;
+		while ((i > 0) &&
+		       (strchr("\n", content[i]) != NULL)) {
+			i--;
+		}
+		return talloc_strndup(parent, content, i + 1);
+	}
+	return NULL;
+}
+
+static char *
+cm_submit_d_xml_value_if(void *parent, xmlXPathContextPtr xpctx,
+			 xmlNodePtr node,
+			 const char *value_path, const char *boolean_path1,
+			 const char *boolean_path2)
+{
+	xmlChar *vpath, *bpath1, *bpath2;
+	xmlXPathObjectPtr vobj, bobj1, bobj2;
+	char *v, *b1, *b2;
+
+	vpath = xmlCharStrdup(value_path);
+	bpath1 = xmlCharStrdup(boolean_path1);
+	bpath2 = xmlCharStrdup(boolean_path2);
+	vobj = NULL;
+	if (vpath != NULL) {
+		vobj = xmlXPathNodeEval(node, vpath, xpctx);
+		xmlFree(vpath);
+	}
+	v = cm_submit_d_text_node(parent, vobj);
+	xmlXPathFreeObject(vobj);
+	if ((v == NULL) || (strlen(v) == 0)) {
+		return NULL;
+	}
+	bobj1 = NULL;
+	if (bpath1 != NULL) {
+		bobj1 = xmlXPathNodeEval(node, bpath1, xpctx);
+		xmlFree(bpath1);
+	}
+	bobj2 = NULL;
+	if (bpath2 != NULL) {
+		bobj2 = xmlXPathNodeEval(node, bpath2, xpctx);
+		xmlFree(bpath2);
+	}
+	if (bobj1 != NULL) {
+		b1 = cm_submit_d_text_node(parent, bobj1);
+		if (strcasecmp(b1, "true") != 0) {
+			v = NULL;
+		}
+		xmlXPathFreeObject(bobj1);
+	}
+	if (bobj2 != NULL) {
+		b2 = cm_submit_d_text_node(parent, bobj2);
+		if (strcasecmp(b2, "true") != 0) {
+			v = NULL;
+		}
+		xmlXPathFreeObject(bobj2);
+	}
+	return (v != NULL) ? talloc_strdup(parent, v) : NULL;
+}
+
+static char **
+cm_submit_d_xml_profiles(void *parent, const char *xml)
+{
+	xmlXPathContextPtr xpctx;
+	xmlXPathObjectPtr obj;
+	xmlDocPtr doc;
+	xmlNodePtr node;
+	xmlChar *xpath;
+	char **ret = NULL, **tmp, *profile;
+	int i, n = 0;
+
+	doc = xmlParseMemory(xml, strlen(xml));
+	if (doc != NULL) {
+		xpctx = xmlXPathNewContext(doc);
+		if (xpctx != NULL) {
+			xpath = xmlCharStrdup("/xml/output/set/record/list/*");
+			obj = NULL;
+			if (xpath != NULL) {
+				obj = xmlXPathEval(xpath, xpctx);
+				xmlFree(xpath);
+			}
+			node = NULL;
+			if ((obj != NULL) &&
+			    (obj->nodesetval != NULL) &&
+			    (obj->nodesetval->nodeNr > 0)) {
+				for (i = 0;
+				     (i < obj->nodesetval->nodeNr);
+				     i++) {
+					node = obj->nodesetval->nodeTab[i];
+					if ((node->type == XML_ELEMENT_NODE) &&
+					    (strcmp((const char *) node->name,
+						    "record") == 0)) {
+						profile = cm_submit_d_xml_value_if(parent, xpctx, node,
+										   "set/profileId",
+										   "set/profileIsEnable",
+										   "set/profileIsVisible");
+						if (profile != NULL) {
+							tmp = talloc_zero_array(parent, char *, n + 2);
+							if (tmp != NULL) {
+								if (n > 0) {
+									memcpy(tmp, ret, sizeof(char *) * n);
+								}
+								tmp[n] = profile;
+								n++;
+								tmp[n] = NULL;
+								ret = tmp;
+							}
+						}
+					}
+				}
+			}
+			xmlXPathFreeObject(obj);
 			xmlXPathFreeContext(xpctx);
 		}
 		xmlFreeDoc(doc);
@@ -400,6 +547,20 @@ cm_submit_d_fetch_result(void *parent, const char *xml,
 					   "/xml/header/requestId");
 	*cert = cm_submit_d_xml_value(parent, xml,
 				      "/xml/records/record/base64Cert");
+	return 0;
+}
+
+int
+cm_submit_d_profiles_result(void *parent, const char *xml,
+			    char **error_code, char **error_reason,
+			    char **error, char **status,
+			    char ***profiles)
+{
+	*error_code = cm_submit_d_xml_value(parent, xml,
+					    "/xml/output/set/errorCode");
+	*error_reason = cm_submit_d_xml_value(parent, xml,
+					      "/xml/output/set/errorReason");
+	*profiles = cm_submit_d_xml_profiles(parent, xml);
 	return 0;
 }
 
@@ -631,6 +792,31 @@ cm_submit_d_fetch_eval(void *parent, const char *xml, const char *url,
 			*out = talloc_asprintf_append(*out, ": %s",
 						      error_reason);
 		}
+	}
+	return CM_SUBMIT_STATUS_REJECTED;
+}
+
+enum cm_external_status
+cm_submit_d_profiles_eval(void *parent, const char *xml, const char *url,
+			  dbus_bool_t can_agent, char **out, char **err)
+{
+	char *error_code = NULL, *error_reason = NULL, *status = NULL;
+	char **profiles = NULL;
+	int i;
+
+	*out = NULL;
+	*err = NULL;
+	cm_submit_d_profiles_result(parent, xml, &error_code, &error_reason,
+				    err, &status, &profiles);
+	if (profiles != NULL) {
+		for (i = 0; profiles[i] != NULL; i++) {
+			if (*out != NULL) {
+				*out = talloc_asprintf(parent, "%s%s\n", *out, profiles[i]);
+			} else {
+				*out = talloc_asprintf(parent, "%s\n", profiles[i]);
+			}
+		}
+		return CM_SUBMIT_STATUS_ISSUED;
 	}
 	return CM_SUBMIT_STATUS_REJECTED;
 }

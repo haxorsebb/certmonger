@@ -17,6 +17,10 @@ for good in good.displayCertFromRequest* ; do
 	$toolsdir/dparse fetch $role $good
 	count=`expr $count + 1`
 done
+for good in good.profileList* ; do
+	$toolsdir/dparse profiles $role $good
+	count=`expr $count + 1`
+done
 for bad in bad.profileSubmit* ; do
 	$toolsdir/dparse submit $role $bad
 	count=`expr $count + 1`

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010,2012 Red Hat, Inc.
+ * Copyright (C) 2010,2012,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,6 +42,10 @@ int cm_submit_d_fetch_result(void *parent, const char *xml,
 			     char **error_code, char **error_reason,
 			     char **error, char **status,
 			     char **requestId, char **cert);
+int cm_submit_d_profiles_result(void *parent, const char *xml,
+				char **error_code, char **error_reason,
+				char **error, char **status,
+				char ***profiles);
 enum cm_external_status cm_submit_d_submit_eval(void *parent, const char *xml,
 						const char *url,
 						dbus_bool_t can_agent,
@@ -66,6 +70,10 @@ enum cm_external_status cm_submit_d_fetch_eval(void *parent, const char *xml,
 					       const char *url,
 					       dbus_bool_t can_agent,
 					       char **out, char **err);
+enum cm_external_status cm_submit_d_profiles_eval(void *parent, const char *xml,
+						  const char *url,
+						  dbus_bool_t can_agent,
+						  char **out, char **err);
 
 struct dogtag_default {
 	enum {

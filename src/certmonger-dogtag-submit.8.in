@@ -104,6 +104,10 @@ Instead, attempt to obtain a new certificate using the signing request.
 \fB-R\fR
 Negates the effect of the \fB-N\fR flag.
 .TP
+\fB-t\fR
+Instead of attempting to obtain a new certificate, query the server for a list
+of the enabled enrollment profiles.
+.TP
 \fB-v\fR
 Increases the logging level.  Use twice for more logging.  This option is mainly
 useful for troubleshooting.
