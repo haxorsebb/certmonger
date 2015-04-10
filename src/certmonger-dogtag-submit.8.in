@@ -18,6 +18,7 @@ dogtag-submit -E EE-URL -A AGENT-URL
 [-S state]
 [-T profile]
 [-O param=value]
+[-N | -R]
 [-v]
 [csrfile]
 
@@ -93,6 +94,15 @@ request using agent credentials.  By default, any server-supplied default
 settings are applied.  This option can be used either to override a
 server-supplied default setting, or to supply one which would otherwise have
 not been used.  Requires the \fB-A\fR option.
+.TP
+\fB-N\fR
+Even if an already-issued certificate is available in the
+\fICERTMONGER_CERTIFICATE\fR environment variable, or a serial number has been
+provided, don't attempt to renew a certificate using its serial number.
+Instead, attempt to obtain a new certificate using the signing request.
+.TP
+\fB-R\fR
+Negates the effect of the \fB-N\fR flag.
 .TP
 \fB-v\fR
 Increases the logging level.  Use twice for more logging.  This option is mainly

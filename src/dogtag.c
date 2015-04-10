@@ -79,7 +79,7 @@ help(const char *cmd)
 		"\t[-T profile]\n"
 		"\t[-O param=value]\n"
 		"\t[-v]\n"
-		"\t[-N]\n"
+		"\t[-N | -R]\n"
 		"\t[-V dogtag_version]\n"
 		"\t[csrfile]\n",
 		strchr(cmd, '/') ? strrchr(cmd, '/') + 1 : cmd);
