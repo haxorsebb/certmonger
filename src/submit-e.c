@@ -72,7 +72,12 @@ sanitize_cookie(void *parent, const char *value)
 	p = value + strcspn(value, "\r\n");
 	ret = talloc_strndup(parent, value, p - value);
 	if (ret != NULL) {
-		p += strspn(p, "\r\n");
+		if (*p == '\r') {
+			p++;
+		}
+		if (*p == '\n') {
+			p++;
+		}
 		if (*p != '\0') {
 			ret = talloc_strdup_append(ret, "\n");
 		}
@@ -149,6 +154,7 @@ cm_submit_e_ready(struct cm_submit_state *state)
 {
 	int status, ready, length;
 	const char *msg;
+	char *tmp;
 	struct cm_submit_external_state *estate;
 	struct cm_subproc_state *subproc;
 
@@ -190,8 +196,13 @@ cm_submit_e_ready(struct cm_submit_state *state)
 									       "\r\n"));
 					}
 					/* Save the output for processing later. */
-					estate->msg = talloc_memdup(estate, msg, length);
-					estate->msg_length = length;
+					tmp = talloc_size(estate, length + 1);
+					if (tmp != NULL) {
+						memcpy(tmp, msg, length);
+						tmp[length] = '\0';
+						estate->msg_length = length;
+					}
+					estate->msg = tmp;
 					/* Now launch the postprocessing step,
 					 * if we've got data to process. */
 					if (WEXITSTATUS(status) ==
@@ -227,8 +238,13 @@ cm_submit_e_ready(struct cm_submit_state *state)
 					if (WEXITSTATUS(status) == 0) {
 						/* Save the output for processing later. */
 						cm_log(1, "Child output:\n\"%.*s\"\n", length, msg);
-						estate->msg = talloc_memdup(estate, msg, length);
-						estate->msg_length = length;
+						tmp = talloc_size(estate, length + 1);
+						if (tmp != NULL) {
+							memcpy(tmp, msg, length);
+							tmp[length] = '\0';
+							estate->msg_length = length;
+						}
+						estate->msg = tmp;
 					} else{
 						cm_log(1, "Exit status was %d.\n",
 						       WEXITSTATUS(status));

@@ -81,6 +81,21 @@ echo CA rejected us, must have been having a bad day.
 exit 2
 EOF
 chmod u+x ca-reject
+cat > ca-reject-second-time << EOF
+#!/bin/sh
+if test -z "\$CERTMONGER_CA_COOKIE" ; then
+	echo 1
+	echo Try again.
+	echo
+	echo Maybe later.
+	exit 5
+else
+	echo CA rejected us, must have been having a bad day.
+	echo cookie was "\$CERTMONGER_CA_COOKIE"
+	exit 2
+fi
+EOF
+chmod u+x ca-reject-second-time
 cat > ca-unreachable << EOF
 #!/bin/sh
 echo Could not contact CA.
@@ -487,6 +502,29 @@ EOF
 $toolsdir/iterate ca5 entry5 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
 $toolsdir/iterate ca5 entry5 NEED_CSR,GENERATING_CSR
 $toolsdir/iterate ca5 entry5 NEED_TO_SUBMIT,SUBMITTING
+$toolsdir/iterate ca5 entry5 NEED_TO_NOTIFY_REJECTION,NOTIFYING_REJECTION | sed 's@'"$tmpdir"'@$tmpdir@g'
+$toolsdir/iterate ca5 entry5 "" | sed 's@'"$tmpdir"'@$tmpdir@g'
+
+echo
+echo '[Enroll until the CA rejects us after poll.]'
+cat > entry5 << EOF
+id=Test
+ca_name=Meanie
+state=HAVE_KEY_PAIR
+key_storage_type=FILE
+key_storage_location=$tmpdir/keyfile
+cert_storage_type=FILE
+cert_storage_location=$tmpdir/certfile3
+notification_method=STDOUT
+EOF
+cat > ca5 << EOF
+id=Meanie
+ca_type=EXTERNAL
+ca_external_helper=$tmpdir/ca-reject-second-time
+EOF
+$toolsdir/iterate ca5 entry5 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
+$toolsdir/iterate ca5 entry5 NEED_CSR,GENERATING_CSR
+$toolsdir/iterate ca5 entry5 NEED_TO_SUBMIT,SUBMITTING,CA_WORKING
 $toolsdir/iterate ca5 entry5 NEED_TO_NOTIFY_REJECTION,NOTIFYING_REJECTION | sed 's@'"$tmpdir"'@$tmpdir@g'
 $toolsdir/iterate ca5 entry5 "" | sed 's@'"$tmpdir"'@$tmpdir@g'
 
