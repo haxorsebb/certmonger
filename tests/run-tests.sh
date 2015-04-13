@@ -58,15 +58,19 @@ for testid in "$@" $subdirs ; do
 			continue
 		fi
 	fi
+	RUNVALGRIND=${VALGRIND:+valgrind --log-file="$builddir"/"$testid"/valgrind/%p.log --trace-children=yes --track-origins=yes}
+	if test -n "$RUNVALGRIND" ; then
+		rm -fr "$builddir"/"$testid"/valgrind
+		mkdir -p "$builddir"/"$testid"/valgrind
+	fi
 	if test -x "$srcdir"/"$testid"/run.sh ; then
-		mkdir -p "$builddir"/"$testid"
 		pushd "$srcdir"/"$testid" > /dev/null
 		rm -fr "$tmpdir"/*
 		mkdir -m 500 "$tmpdir"/rosubdir
 		mkdir -m 700 "$tmpdir"/rwsubdir
 		if test -r ./expected.out ; then
 			echo -n "Running test "$testid"... "
-			./run.sh "$tmpdir" > "$tmpfile" 2> "$tmpdir"/errors
+			$RUNVALGRIND ./run.sh "$tmpdir" > "$tmpfile" 2> "$tmpdir"/errors
 			sed -i "s|${TMPDIR:-/tmp}/runtests....../|\${tmpdir}/|g" "$tmpfile" "$tmpdir/errors"
 			stat=1
 			for i in expected.out* ; do
@@ -89,8 +93,14 @@ for testid in "$@" $subdirs ; do
 			fi
 		else
 			echo "Running test "$testid"."
-			./run.sh "$tmpdir"
+			$RUNVALGRIND ./run.sh "$tmpdir"
 			stat=$?
+		fi
+		if test -n "$RUNVALGRIND" ; then
+			echo > $tmpfile
+			if grep "ERROR SUMMARY" "$builddir"/"$testid"/valgrind/*.log | grep -v '0 errors' | cut -f1 -d: | xargs grep Command: $tmpfile | grep -qv "Command: /usr" ; then
+				echo valgrind detected errors
+			fi
 		fi
 		for i in "$tmpdir"/core* ; do
 			if test -s "$i"; then
