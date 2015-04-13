@@ -80,6 +80,7 @@ help(const char *cmd)
 		"\t[-O param=value]\n"
 		"\t[-N | -R]\n"
 		"\t[-V dogtag_version]\n"
+		"\t[-o param=value]\n"
 		"\t[-t]\n"
 		"\t[-v]\n"
 		"\t[csrfile]\n",
@@ -146,8 +147,8 @@ main(int argc, char **argv)
 	struct {
 		char *name;
 		char *value;
-	} *aoptions = NULL;
-	size_t num_aoptions = 0, j;
+	} *aoptions = NULL, *soptions = NULL;
+	size_t num_aoptions = 0, num_soptions = 0, j;
 	char *savedstate = NULL;
 	char *p, *q, *params = NULL, *params2 = NULL;
 	const char *lasturl = NULL, *lastparams = NULL;
@@ -196,7 +197,7 @@ main(int argc, char **argv)
 
 	savedstate = getenv(CM_SUBMIT_COOKIE_ENV);
 
-	while ((c = getopt(argc, argv, "E:A:d:n:i:C:c:k:p:P:s:D:S:T:O:vV:NRt")) != -1) {
+	while ((c = getopt(argc, argv, "E:A:d:n:i:C:c:k:p:P:s:D:S:T:O:o:vV:NRt")) != -1) {
 		switch (c) {
 		case 'E':
 			eeurl = optarg;
@@ -259,6 +260,28 @@ main(int argc, char **argv)
 			aoptions[num_aoptions - 1].name = p;
 			p[i] = '\0';
 			aoptions[num_aoptions - 1].value = p + i + 1;
+			break;
+		case 'o':
+			if (strchr(optarg, '=') == NULL) {
+				printf(_("Submit params (-o) must be in the form of param=value.\n"));
+				help(argv[0]);
+				return CM_SUBMIT_STATUS_UNCONFIGURED;
+			}
+			soptions = realloc(soptions,
+					   ++num_soptions * sizeof(*soptions));
+			if (soptions == NULL) {
+				printf(_("Out of memory.\n"));
+				return CM_SUBMIT_STATUS_UNCONFIGURED;
+			}
+			p = strdup(optarg);
+			if (p == NULL) {
+				printf(_("Out of memory.\n"));
+				return CM_SUBMIT_STATUS_UNCONFIGURED;
+			}
+			i = strcspn(p, "=");
+			soptions[num_soptions - 1].name = p;
+			p[i] = '\0';
+			soptions[num_soptions - 1].value = p + i + 1;
 			break;
 		case 't':
 			op = op_profiles;
@@ -499,6 +522,14 @@ main(int argc, char **argv)
 						 "xml=true",
 						 template,
 						 csr);
+		}
+		/* Add parameters specified on command line */
+		for (j = 0; j < num_soptions; j++) {
+			p = cm_submit_u_url_encode(soptions[j].name);
+			q = cm_submit_u_url_encode(soptions[j].value);
+			params = talloc_asprintf(ctx,
+						 "%s&%s=%s",
+						 params, p, q);
 		}
 		use_agent_approval = FALSE;
 		break;
