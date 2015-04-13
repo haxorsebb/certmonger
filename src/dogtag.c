@@ -81,6 +81,13 @@ help(const char *cmd)
 		"\t[-N | -R]\n"
 		"\t[-V dogtag_version]\n"
 		"\t[-o param=value]\n"
+		"\t[-a]\n"
+		"\t[-u username]\n"
+		"\t[-U userdn]\n"
+		"\t[-W userpassword]\n"
+		"\t[-w userpasswordfile]\n"
+		"\t[-Y userpin]\n"
+		"\t[-y userpinfile]\n"
 		"\t[-t]\n"
 		"\t[-v]\n"
 		"\t[csrfile]\n",
@@ -144,6 +151,8 @@ main(int argc, char **argv)
 	const char *sslcert = NULL, *sslkey = NULL;
 	const char *sslpin = NULL, *sslpinfile = NULL;
 	const char *csr = NULL, *serial = NULL, *template = NULL;
+	const char *uid = NULL, *pwd = NULL, *pwdfile = NULL;
+	const char *udn = NULL, *pin = NULL, *pinfile = NULL;
 	struct {
 		char *name;
 		char *value;
@@ -162,6 +171,7 @@ main(int argc, char **argv)
 #endif
 	enum { op_none, op_submit, op_check, op_approve, op_retrieve, op_profiles } op = op_submit;
 	dbus_bool_t can_agent, use_agent_approval = FALSE, missing_args = FALSE;
+	dbus_bool_t use_agent_submission = FALSE;
 	struct dogtag_default **defaults;
 	enum cm_external_status ret;
 	NSSInitContext *nctx;
@@ -197,7 +207,7 @@ main(int argc, char **argv)
 
 	savedstate = getenv(CM_SUBMIT_COOKIE_ENV);
 
-	while ((c = getopt(argc, argv, "E:A:d:n:i:C:c:k:p:P:s:D:S:T:O:o:vV:NRt")) != -1) {
+	while ((c = getopt(argc, argv, "E:A:d:n:i:C:c:k:p:P:s:D:S:T:O:o:vV:NRtau:U:W:w:Y:y:")) != -1) {
 		switch (c) {
 		case 'E':
 			eeurl = optarg;
@@ -301,6 +311,27 @@ main(int argc, char **argv)
 		case 'R':
 			force_renew++;
 			force_new = 0;
+			break;
+		case 'a':
+			use_agent_submission = TRUE;
+			break;
+		case 'u':
+			uid = optarg;
+			break;
+		case 'U':
+			udn = optarg;
+			break;
+		case 'W':
+			pwd = optarg;
+			break;
+		case 'w':
+			pwdfile = optarg;
+			break;
+		case 'Y':
+			pin = optarg;
+			break;
+		case 'y':
+			pinfile = optarg;
 			break;
 		default:
 			help(argv[0]);
@@ -421,6 +452,11 @@ main(int argc, char **argv)
 			 "default known.\n"));
 		missing_args = TRUE;
 	}
+	if (use_agent_submission && !can_agent) {
+		printf(_("No agent credentials specified, and no "
+			 "default known.\n"));
+		missing_args = TRUE;
+	}
 	if (force_renew && (serial == NULL)) {
 		printf(_("Requested renewal, but no serial number provided.\n"));
 		missing_args = TRUE;
@@ -480,6 +516,14 @@ main(int argc, char **argv)
 		params = "";
 	}
 
+	/* Read the client password and/or PIN, if we need to. */
+	if ((pwdfile != NULL) && (pwd == NULL)) {
+		pwd = cm_submit_u_from_file(pwdfile);
+	}
+	if ((pinfile != NULL) && (pin == NULL)) {
+		pin = cm_submit_u_from_file(pinfile);
+	}
+
 	/* Figure out which form and arguments to use. */
 	switch (op) {
 	case op_none:
@@ -487,7 +531,10 @@ main(int argc, char **argv)
 		return CM_SUBMIT_STATUS_UNCONFIGURED;
 		break;
 	case op_submit:
-		url = talloc_asprintf(ctx, "%s/profileSubmit", eeurl);
+		url = talloc_asprintf(ctx, "%s/%s", eeurl,
+				      use_agent_submission ?
+				      "profileSubmitSSLClient" :
+				      "profileSubmit");
 		template = cm_submit_u_url_encode(template);
 		if ((serial != NULL) && (strlen(serial) > 0) && !force_new) {
 			/* Renew-by-serial. */
@@ -522,6 +569,40 @@ main(int argc, char **argv)
 						 "xml=true",
 						 template,
 						 csr);
+		}
+		/* Check for creds specified as options. */
+		for (j = 0; j < num_soptions; j++) {
+			if (strcmp(soptions[j].name, "uid") == 0) {
+				uid = NULL;
+			}
+			if (strcmp(soptions[j].name, "udn") == 0) {
+				udn = NULL;
+			}
+			if (strcmp(soptions[j].name, "pwd") == 0) {
+				pwd = NULL;
+			}
+			if (strcmp(soptions[j].name, "pin") == 0) {
+				pin = NULL;
+			}
+		}
+		/* Add client creds. */
+		if (uid != NULL) {
+			uid = cm_submit_u_url_encode(uid);
+			params = talloc_asprintf(ctx, "%s&uid=%s", params, uid);
+		}
+		if (udn != NULL) {
+			udn = cm_submit_u_url_encode(udn);
+			params = talloc_asprintf(ctx, "%s&udn=%s", params, udn);
+		}
+		if (pwd != NULL) {
+			pwd = cm_submit_u_url_encode(pwd);
+			params = talloc_asprintf(ctx, "%s&pwd=%s",
+						 params, pwd);
+		}
+		if (pin != NULL) {
+			pin = cm_submit_u_url_encode(pin);
+			params = talloc_asprintf(ctx, "%s&pin=%s",
+						 params, pin);
 		}
 		/* Add parameters specified on command line */
 		for (j = 0; j < num_soptions; j++) {
@@ -612,7 +693,7 @@ main(int argc, char **argv)
 					cainfo, capath, sslcert, sslkey, sslpin,
 					cm_submit_h_negotiate_off,
 					cm_submit_h_delegate_off,
-					use_agent ?
+					use_agent_approval || use_agent_submission ?
 					cm_submit_h_clientauth_on :
 					cm_submit_h_clientauth_off,
 					cm_submit_h_env_modify_off,

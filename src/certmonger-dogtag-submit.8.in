@@ -1,4 +1,4 @@
-.TH certmonger 8 "18 Nov 2014" "certmonger Manual"
+.TH certmonger 8 "13 Apr 2015" "certmonger Manual"
 
 .SH NAME
 dogtag-submit
@@ -20,6 +20,13 @@ dogtag-submit -E EE-URL -A AGENT-URL
 [-O param=value]
 [-N | -R]
 [-o option=value]
+[-a ]
+[-u username]
+[-U userdn]
+[-W userpassword]
+[-w userpasswordfile]
+[-Y userpin]
+[-y userpinfile]
 [-v]
 [csrfile]
 
@@ -44,13 +51,13 @@ CAs.
 .SH OPTIONS
 .TP
 \fB\-E\fR EE-URL
-The top-level URL for the end-entity interface provided by the CA.  This is
-typically
+The top-level URL for the end-entity interface provided by the CA, through
+which the initial enrollment request will be submitted.  This is typically
 \fIhttp://\fBSERVER\fP:\fBEEPORT\fP/ca/ee/ca\fR.
 .TP
 \fB\-A\fR AGENT-URL
-The top-level URL for the agent interface provided by the CA.  This is
-typically
+The top-level URL for the agent interface provided by the CA, through which the
+request can be approved using agent credentials.  This is typically
 \fIhttps://\fBSERVER\fP:\fBAGENTPORT\fP/ca/agent/ca\fR.
 .TP
 \fB\-d\fR dbdir \fB\-n\fR nickname \fB\-c\fR certfile \fB\-k\fR keyfile
@@ -83,7 +90,7 @@ A cookie value provided by a previous instance of this helper, if the helper
 is being asked to continue a multi-step enrollment process.  If the
 \fICERTMONGER_COOKIE\fR environment variable is set, its value is used.
 .TP
-\fB-T\fR profile/template
+\fB-T\fR profile
 The name of the type of certificate which the client should request from the CA
 if it is not renewing a certificate (per the \fB-s\fR option above).  If the
 \fICERTMONGER_CA_PROFILE\fR environment variable is set, its value is used.
@@ -112,6 +119,71 @@ of the enabled enrollment profiles.
 \fB-o\fR param=value
 When initially submitting a request to the CA, add the specified parameter and
 value along with any request parameters which would otherwise be sent.
+.TP
+\fB-a\fR
+Use agent credentials, specified using some combination of the \fB\-d\fR,
+\fB\-n\fR, \fB\-c\fR, and \fB\-k\fR flags, to authenticate to the CA when
+initially submitting a request to the CA or retrieving the list of enabled
+enrollment profiles.
+This is typically required when the enrollment profile being used uses
+\fIAgentCertAuth\fR-based
+authentication,
+and requires that the URL specified using the \fB-E\fR flag be an HTTPS URL,
+or when the URL specified using the \fB-E\fR flag is an HTTPS URL.
+.TP
+\fB-u username\fR
+When initially submitting a request to the CA, supply the specified value as a user name.
+This is typically required when the enrollment profile being used uses
+\fIUidPwdDirAuth\fR-based or \fINISAuth\fR-based
+authentication.
+.TP
+\fB-U userdn\fR
+When initially submitting a request to the CA, supply the specified value as the DN
+(distinguished name) of the user's entry in a directory server which the CA is
+configured to use for checking the user's password.
+This is typically required when the enrollment profile being used uses
+\fIUdnPwdDirAuth\fR-based
+authentication.
+.TP
+\fB-W userpassword\fR
+When initially submitting a request to the CA, supply the specified value as the password
+for the user whose name is specified with the \fB-u\fR option, or whose DN is
+specified with the \fB-U\fR option.
+This is typically only required when the enrollment profile being used uses
+\fIUidPwdDirAuth\fR-based, \fIUserPwdDirAuth\fR-based, or \fINISAuth\fR-based
+authentication.
+If the URL specified using the \fB-E\fR flag is not an HTTPS URL, this value
+will not be encrypted.
+.TP
+\fB-w userpasswordfile\fR
+When initially submitting a request to the CA, read from the specified file a
+password to supply for the user whose name is specified with the \fB-u\fR
+option, or whose DN is specified with the \fB-U\fR option.
+This is typically only required when the enrollment profile being used uses
+\fIUidPwdDirAuth\fR-based, \fIUserPwdDirAuth\fR-based, or \fINISAuth\fR-based
+authentication.
+If the URL specified using the \fB-E\fR flag is not an HTTPS URL, this value
+will not be encrypted.
+.TP
+\fB-Y userpin\fR
+When initially submitting a request to the CA, supply the specified value as the PIN
+for the user whose name is specified with the \fB-u\fR option, or whose DN is
+specified with the \fB-U\fR option.
+This is typically only required when the enrollment profile being used uses
+\fIUidPwdPinDirAuth\fR-based
+authentication.
+If the URL specified using the \fB-E\fR flag is not an HTTPS URL, this value
+will not be encrypted.
+.TP
+\fB-y userpinfile\fR
+When initially submitting a request to the CA, read from the specified file a
+PIN to supply for the user whose name is specified with the \fB-u\fR
+option, or whose DN is specified with the \fB-U\fR option.
+This is typically only required when the enrollment profile being used uses
+\fIUidPwdPinDirAuth\fR-based
+authentication.
+If the URL specified using the \fB-E\fR flag is not an HTTPS URL, this value
+will not be encrypted.
 .TP
 \fB-v\fR
 Increases the logging level.  Use twice for more logging.  This option is mainly
