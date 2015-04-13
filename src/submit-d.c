@@ -431,9 +431,11 @@ cm_submit_d_xml_profiles(void *parent, const char *xml)
 int
 cm_submit_d_submit_result(void *parent, const char *xml,
 			  char **error_code, char **error_reason,
-			  char **error, char **status, char **requestId)
+			  char **error, char **status, char **requestId,
+			  char **cert)
 {
 	/* ProfileSubmitServlet.java:
+	 * 0: issued
 	 * 1: internal error
 	 * 2: deferred (or "pending")
 	 * 3: rejected
@@ -448,6 +450,11 @@ cm_submit_d_submit_result(void *parent, const char *xml,
 			  cm_submit_d_xml_value(parent,
 						xml,
 						"/XMLResponse/RequestId"));
+	*cert = cm_submit_d_xml_value(parent, xml,
+				      "/XMLResponse/Requests/Request/b64");
+	if ((*cert != NULL) && (strlen(*cert) > 0)) {
+		*cert = cm_submit_u_pem_from_base64("CERTIFICATE", 0, *cert);
+	}
 	return 0;
 }
 
@@ -569,12 +576,17 @@ cm_submit_d_submit_eval(void *parent, const char *xml, const char *url,
 			dbus_bool_t can_agent, char **out, char **err)
 {
 	char *error = NULL, *error_code = NULL, *error_reason = NULL;
-	char *status = NULL, *requestId = NULL;
+	char *status = NULL, *requestId = NULL, *cert = NULL;
 	*out = NULL;
 	*err = NULL;
 	cm_submit_d_submit_result(parent, xml,
 				  &error_code, &error_reason, &error,
-				  &status, &requestId);
+				  &status, &requestId, &cert);
+	if ((status != NULL) && (strcmp(status, "0") == 0) &&
+	    (cert != NULL)) {
+		*out = talloc_asprintf(parent, "%s\n", trim(parent, cert));
+		return CM_SUBMIT_STATUS_ISSUED;
+	}
 	if ((status != NULL) && (strcmp(status, "2") == 0) &&
 	    (requestId != NULL)) {
 		if (can_agent) {
@@ -1200,7 +1212,8 @@ restart:
 	case op_submit_serial:
 		cm_submit_d_submit_result(hctx, result,
 					  &error_code, &error_reason,
-					  &error, &status, &requestId);
+					  &error, &status, &requestId,
+					  &cert);
 		if (error_code != NULL) {
 			printf("error code: %s\n", error_code);
 		}
@@ -1215,6 +1228,9 @@ restart:
 		}
 		if (requestId != NULL) {
 			printf("requestId: %s\n", requestId);
+		}
+		if (cert != NULL) {
+			printf("cert: %s\n", cert);
 		}
 		break;
 	case op_reject:

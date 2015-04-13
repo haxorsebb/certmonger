@@ -63,7 +63,7 @@ main(int argc, char **argv)
 	if (strcmp(mode, "submit") == 0) {
 		cm_submit_d_submit_result(NULL, xml,
 					  &error_code, &error_reason, &error,
-					  &status, &requestId);
+					  &status, &requestId, &cert);
 		i = cm_submit_d_submit_eval(NULL, xml, "SUBMIT",
 					    can_agent, &out, &err);
 	} else

@@ -21,7 +21,7 @@
 int cm_submit_d_submit_result(void *parent, const char *xml,
 			      char **error_code, char **error_reason,
 			      char **error, char **status,
-			      char **requestId);
+			      char **requestId, char **cert);
 int cm_submit_d_check_result(void *parent, const char *xml,
 			     char **error_code, char **error_reason,
 			     char **error, char **status,
