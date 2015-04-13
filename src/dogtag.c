@@ -146,8 +146,8 @@ main(int argc, char **argv)
 	struct {
 		char *name;
 		char *value;
-	} *options = NULL;
-	size_t num_options = 0, j;
+	} *aoptions = NULL;
+	size_t num_aoptions = 0, j;
 	char *savedstate = NULL;
 	char *p, *q, *params = NULL, *params2 = NULL;
 	const char *lasturl = NULL, *lastparams = NULL;
@@ -160,7 +160,7 @@ main(int argc, char **argv)
 	int eeport, agentport;
 #endif
 	enum { op_none, op_submit, op_check, op_approve, op_retrieve, op_profiles } op = op_submit;
-	dbus_bool_t can_agent, use_agent, missing_args = FALSE;
+	dbus_bool_t can_agent, use_agent_approval = FALSE, missing_args = FALSE;
 	struct dogtag_default **defaults;
 	enum cm_external_status ret;
 	NSSInitContext *nctx;
@@ -244,9 +244,9 @@ main(int argc, char **argv)
 				help(argv[0]);
 				return CM_SUBMIT_STATUS_UNCONFIGURED;
 			}
-			options = realloc(options,
-					  ++num_options * sizeof(*options));
-			if (options == NULL) {
+			aoptions = realloc(aoptions,
+					   ++num_aoptions * sizeof(*aoptions));
+			if (aoptions == NULL) {
 				printf(_("Out of memory.\n"));
 				return CM_SUBMIT_STATUS_UNCONFIGURED;
 			}
@@ -256,9 +256,9 @@ main(int argc, char **argv)
 				return CM_SUBMIT_STATUS_UNCONFIGURED;
 			}
 			i = strcspn(p, "=");
-			options[num_options - 1].name = p;
+			aoptions[num_aoptions - 1].name = p;
 			p[i] = '\0';
-			options[num_options - 1].value = p + i + 1;
+			aoptions[num_aoptions - 1].value = p + i + 1;
 			break;
 		case 't':
 			op = op_profiles;
@@ -393,6 +393,11 @@ main(int argc, char **argv)
 	} else {
 		can_agent = FALSE;
 	}
+	if (use_agent_approval && !can_agent) {
+		printf(_("No agent credentials specified, and no "
+			 "default known.\n"));
+		missing_args = TRUE;
+	}
 	if (force_renew && (serial == NULL)) {
 		printf(_("Requested renewal, but no serial number provided.\n"));
 		missing_args = TRUE;
@@ -411,7 +416,7 @@ main(int argc, char **argv)
 		printf(_("No profile/template (-T) given, and no default known.\n"));
 		missing_args = TRUE;
 	}
-	if (options != NULL) {
+	if (aoptions != NULL) {
 		if (agenturl == NULL) {
 			printf(_("No agent URL (-A) given, and no default "
 				 "known.\n"));
@@ -495,7 +500,7 @@ main(int argc, char **argv)
 						 template,
 						 csr);
 		}
-		use_agent = FALSE;
+		use_agent_approval = FALSE;
 		break;
 	case op_check:
 		/* Check if the certificate has been issued or rejected. */
@@ -504,7 +509,7 @@ main(int argc, char **argv)
 					 "%s&"
 					 "xml=true",
 					 params);
-		use_agent = FALSE;
+		use_agent_approval = FALSE;
 		break;
 	case op_approve:
 		if (agenturl == NULL) {
@@ -531,7 +536,7 @@ main(int argc, char **argv)
 					  "%s&"
 					  "op=approve",
 					  params);
-		use_agent = TRUE;
+		use_agent_approval = TRUE;
 		break;
 	case op_retrieve:
 		/* Retrieving the new certificate. */
@@ -541,7 +546,7 @@ main(int argc, char **argv)
 					 "importCert=true&"
 					 "xml=true",
 					 params);
-		use_agent = FALSE;
+		use_agent_approval = FALSE;
 	case op_profiles:
 		/* Retrieving the list of profiles. */
 		url = talloc_asprintf(ctx, "%s/profileList", eeurl);
@@ -616,31 +621,41 @@ main(int argc, char **argv)
 			     (defaults != NULL) && (defaults[i] != NULL);
 			     i++) {
 				/* Check if this default is one of the
-				 * paramters we've been explicitly provided. */
-				for (j = 0; j < num_options; j++) {
+				 * parameters we've been explicitly provided. */
+				for (j = 0; j < num_aoptions; j++) {
 					if (strcmp(defaults[i]->name,
-						   options[j].name) == 0) {
+						   aoptions[j].name) == 0) {
 						break;
 					}
 				}
 				/* If we have a non-default value for it, skip
 				 * this default. */
-				if (j < num_options) {
+				if (j < num_aoptions) {
 					continue;
 				}
 				p = cm_submit_u_url_encode(defaults[i]->name);
 				q = cm_submit_u_url_encode(defaults[i]->value);
+				if (verbose > 0) {
+					fprintf(stderr, "setting \"%s\" to "
+						"default value \"%s\"\n",
+						p, q);
+				}
 				params2 = talloc_asprintf(ctx,
 							  "%s&%s=%s",
 							  params2, p, q);
 			};
 			/* Add parameters specified on command line */
-			for (j = 0; j < num_options; j++) {
-				p = cm_submit_u_url_encode(options[j].name);
-				q = cm_submit_u_url_encode(options[j].value);
+			for (j = 0; j < num_aoptions; j++) {
+				p = cm_submit_u_url_encode(aoptions[j].name);
+				q = cm_submit_u_url_encode(aoptions[j].value);
 				params2 = talloc_asprintf(ctx,
 							  "%s&%s=%s",
 							  params2, p, q);
+				if (verbose > 0) {
+					fprintf(stderr, "setting \"%s\" to "
+						"specified value \"%s\"\n",
+						p, q);
+				}
 			}
 			break;
 		case op_none:
