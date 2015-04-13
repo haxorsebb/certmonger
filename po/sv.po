@@ -6,9 +6,9 @@
 # Göran Uddeborg <goeran@uddeborg.se>, 2011-2013
 msgid ""
 msgstr ""
-"Project-Id-Version: certmonger 0.76.8\n"
+"Project-Id-Version: certmonger 0.77\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2015-02-27 16:10-0500\n"
+"POT-Creation-Date: 2015-04-13 19:19-0400\n"
 "PO-Revision-Date: 2014-11-11 05:00-0500\n"
 "Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
 "Language-Team: Swedish (http://www.transifex.com/projects/p/certmonger/"
@@ -18,14 +18,14 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Zanata 3.5.1\n"
+"X-Generator: Zanata 3.6.2\n"
 
 #: src/certmaster.c:129
 #, c-format
 msgid "Unable to determine hostname of CA.\n"
 msgstr "Det går inte att avgöra värdnamnet för CA:n.\n"
 
-#: src/certmaster.c:146 src/dogtag.c:480 src/ipa.c:745
+#: src/certmaster.c:146 src/dogtag.c:560 src/ipa.c:745
 #, c-format
 msgid "Unable to read signing request.\n"
 msgstr "Kan inte läsa signeringsbegäran.\n"
@@ -50,67 +50,73 @@ msgstr "Fel vid tolkning av svar från servern.\n"
 msgid "Server error.\n"
 msgstr "Serverfel.\n"
 
-#: src/dogtag.c:239
+#: src/dogtag.c:254
 #, c-format
 msgid "Profile params (-O) must be in the form of param=value.\n"
 msgstr ""
 
-#: src/dogtag.c:246 src/dogtag.c:251 src/getcert.c:277
+#: src/dogtag.c:261 src/dogtag.c:266 src/dogtag.c:283 src/dogtag.c:288
+#: src/getcert.c:277
 #, c-format
 msgid "Out of memory.\n"
 msgstr "Slut på minne.\n"
 
-#: src/dogtag.c:390
+#: src/dogtag.c:276
 #, c-format
-msgid "Requested renewal, but no serial number provided.\n"
-msgstr "Förnyelse begärd, men inget serienummer angivet.\n"
+msgid "Submit params (-o) must be in the form of param=value.\n"
+msgstr ""
 
-#: src/dogtag.c:394
-#, c-format
-msgid "No end-entity URL (-E) given, and no default known.\n"
-msgstr "Ingen slutposts-URL (-E) angiven, och inget standardvärde är känt.\n"
-
-#: src/dogtag.c:399 src/dogtag.c:409 src/dogtag.c:506
-#, c-format
-msgid "No agent URL (-A) given, and no default known.\n"
-msgstr "Ingen agent-URL (-A) angiven, och inget standardvärde är känt.\n"
-
-#: src/dogtag.c:404
-#, c-format
-msgid "No profile/template (-T) given, and no default known.\n"
-msgstr "Ingen profil/mall (-T) angiven, och inget standardvärde är känt.\n"
-
-#: src/dogtag.c:414
+#: src/dogtag.c:451 src/dogtag.c:456 src/dogtag.c:485
 #, fuzzy, c-format
 msgid "No agent credentials specified, and no default known.\n"
 msgstr "Ingen agent-URL (-A) angiven, och inget standardvärde är känt.\n"
 
-#: src/dogtag.c:424
+#: src/dogtag.c:461
+#, c-format
+msgid "Requested renewal, but no serial number provided.\n"
+msgstr "Förnyelse begärd, men inget serienummer angivet.\n"
+
+#: src/dogtag.c:465
+#, c-format
+msgid "No end-entity URL (-E) given, and no default known.\n"
+msgstr "Ingen slutposts-URL (-E) angiven, och inget standardvärde är känt.\n"
+
+#: src/dogtag.c:470 src/dogtag.c:480 src/dogtag.c:628
+#, c-format
+msgid "No agent URL (-A) given, and no default known.\n"
+msgstr "Ingen agent-URL (-A) angiven, och inget standardvärde är känt.\n"
+
+#: src/dogtag.c:475
+#, c-format
+msgid "No profile/template (-T) given, and no default known.\n"
+msgstr "Ingen profil/mall (-T) angiven, och inget standardvärde är känt.\n"
+
+#: src/dogtag.c:495
 #, c-format
 msgid "Error shutting down NSS.\n"
 msgstr "Fel när NSS stängdes av.\n"
 
-#: src/dogtag.c:453 src/dogtag.c:663
+#: src/dogtag.c:530 src/dogtag.c:810
 #, c-format
 msgid "Internal error: unknown state.\n"
 msgstr "Internt fel: okänt tillstånd.\n"
 
-#: src/dogtag.c:512
+#: src/dogtag.c:634
 #, c-format
 msgid "No agent credentials (-n) given, but they are needed.\n"
 msgstr ""
 
-#: src/dogtag.c:645
+#: src/dogtag.c:790
 #, c-format
 msgid "Error %d connecting to %s: %s.\n"
 msgstr "Fel %d vid anslutning till %s: %s.\n"
 
-#: src/dogtag.c:650
+#: src/dogtag.c:795
 #, c-format
 msgid "Error %d connecting to %s.\n"
 msgstr "Fel %d vid anslutning till %s.\n"
 
-#: src/dogtag.c:657
+#: src/dogtag.c:803
 #, c-format
 msgid "Internal error: no response to \"%s?%s\".\n"
 msgstr "Internt fel: inget svar på ”%s?%s”.\n"
@@ -538,9 +544,9 @@ msgid "\teku: "
 msgstr "\teku: "
 
 #: src/getcert.c:3160
-#, fuzzy, c-format
+#, c-format
 msgid "\tcertificate template/profile: %s\n"
-msgstr "\trotcertifikat sparades i filer:\n"
+msgstr ""
 
 #: src/getcert.c:3166 src/getcert.c:3489
 #, c-format
@@ -640,9 +646,9 @@ msgid "\tdefault profile/template/certtype: %s\n"
 msgstr "\tstandardprofil/-mall/-certifikattyp: %s\n"
 
 #: src/getcert.c:3551
-#, fuzzy, c-format
+#, c-format
 msgid "\tSCEP CA identifier: %s\n"
-msgstr "\tsjälvidentifierar som: %s\n"
+msgstr ""
 
 #: src/getcert.c:3564
 #, c-format
@@ -675,29 +681,29 @@ msgid "\terror refreshing CA data\n"
 msgstr "\tfel vid uppdatering av CA-data\n"
 
 #: src/getcert.c:3722 src/getcert.c:3820 src/getcert.c:3941 src/getcert.c:4021
-#, fuzzy, c-format
+#, c-format
 msgid "CA nickname not specified.\n"
-msgstr "Nyckelsmeknamn inte angivet."
+msgstr ""
 
 #: src/getcert.c:3727 src/getcert.c:3946
-#, fuzzy, c-format
+#, c-format
 msgid "CA helper command not specified.\n"
-msgstr "Nyckelsmeknamn inte angivet."
+msgstr ""
 
 #: src/getcert.c:3751 src/getcert.c:3869
-#, fuzzy, c-format
+#, c-format
 msgid "New CA \"%s\" added.\n"
-msgstr "Nya begäran om signering ”%s” tillagd.\n"
+msgstr ""
 
 #: src/getcert.c:3754 src/getcert.c:3889
-#, fuzzy, c-format
+#, c-format
 msgid "New CA could not be added.\n"
-msgstr "Nya begäran om signering kunde inte läggas till.\n"
+msgstr ""
 
 #: src/getcert.c:3825
-#, fuzzy, c-format
+#, c-format
 msgid "server URL not specified.\n"
-msgstr "Nyckelsmeknamn inte angivet."
+msgstr ""
 
 #: src/getcert.c:3830
 #, c-format
@@ -710,29 +716,29 @@ msgid "Error building command line.\n"
 msgstr ""
 
 #: src/getcert.c:3883
-#, fuzzy, c-format
+#, c-format
 msgid "Error setting CA identifier.\n"
-msgstr "Fel vid inställning av XMLRPC.\n"
+msgstr ""
 
 #: src/getcert.c:3968
-#, fuzzy, c-format
+#, c-format
 msgid "CA \"%s\" modified.\n"
-msgstr "Begäran ”%s” ändrad.\n"
+msgstr ""
 
 #: src/getcert.c:3971
-#, fuzzy, c-format
+#, c-format
 msgid "CA could not be modified.\n"
-msgstr "Begäran ”%s” kunde inte ändras.\n"
+msgstr ""
 
 #: src/getcert.c:4049
-#, fuzzy, c-format
+#, c-format
 msgid "CA \"%s\" removed.\n"
-msgstr "Begäran ”%s” borttagen.\n"
+msgstr ""
 
 #: src/getcert.c:4051
-#, fuzzy, c-format
+#, c-format
 msgid "CA could not be removed.\n"
-msgstr "Begäran ”%s” kunde inte tas bort.\n"
+msgstr ""
 
 #: src/getcert.c:4088
 #, c-format
@@ -879,9 +885,8 @@ msgid "  -A ADDRESS\tset requested IP address\n"
 msgstr "  -A ADRESS\tange begärd IP-adress\n"
 
 #: src/getcert.c:4125 src/getcert.c:4172 src/getcert.c:4233
-#, fuzzy
 msgid "  -l FILE\tfile which holds an optional challenge password\n"
-msgstr "  -p FIL\tfil som håller PIN för kryptering\n"
+msgstr ""
 
 #: src/getcert.c:4126 src/getcert.c:4173 src/getcert.c:4234
 msgid "  -L PASSWORD\tan optional challenge password value\n"
@@ -1076,9 +1081,8 @@ msgid "Usage: %s refresh [options]\n"
 msgstr "Användning: %s refresh [flaggor]\n"
 
 #: src/getcert.c:4283
-#, fuzzy
 msgid "  -a\trefresh information about all outstanding requests\n"
-msgstr "  -a   \tuppdatera informationen om alla utestående begäranden\n"
+msgstr ""
 
 #: src/getcert.c:4303
 #, c-format
@@ -1129,28 +1133,26 @@ msgid "  -c CA\trefresh information about the CA with this name\n"
 msgstr "  -c CA\tuppdatera information om CA:n med detta namn\n"
 
 #: src/getcert.c:4342
-#, fuzzy
 msgid "  -a\trefresh information about all known CAs\n"
-msgstr "  -a   \tuppdatera information om alla kända CA:n\n"
+msgstr ""
 
 #: src/getcert.c:4353
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s add-ca [options]\n"
-msgstr "Användning: %s list-cas [flaggor]\n"
+msgstr ""
 
 #: src/getcert.c:4357 src/getcert.c:4371
-#, fuzzy
 msgid "  -c CA\t\tnickname to give to the new CA configuration\n"
-msgstr "  -I NAMN\tsmeknamn att ge på spårningbegäran\n"
+msgstr ""
 
 #: src/getcert.c:4358
 msgid "  -e CMD\thelper command to run to communicate with CA\n"
 msgstr ""
 
 #: src/getcert.c:4367
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s add-scep-ca [options]\n"
-msgstr "Användning: %s list-cas [flaggor]\n"
+msgstr ""
 
 #: src/getcert.c:4372
 msgid "  -u URL\tlocation of SCEP server\n"
@@ -1161,23 +1163,21 @@ msgid "  -i ID\t\tCA identifier\n"
 msgstr ""
 
 #: src/getcert.c:4374
-#, fuzzy
 msgid "  -R FILE\tfile containing CA's certificate\n"
-msgstr "  -f FIL\tPEM-fil för certifikat\n"
+msgstr ""
 
 #: src/getcert.c:4375
-#, fuzzy
 msgid "  -r FILE\tfile containing RA's certificate\n"
-msgstr "  -f FIL\tPEM-fil för certifikat\n"
+msgstr ""
 
 #: src/getcert.c:4376
 msgid "  -I FILE\tfile containing certificates in RA's certifying chain\n"
 msgstr ""
 
 #: src/getcert.c:4385
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s modify-ca [options]\n"
-msgstr "Användning: %s list-cas [flaggor]\n"
+msgstr ""
 
 #: src/getcert.c:4389
 msgid "  -c CA\t\tnickname of the CA configuration\n"
@@ -1188,14 +1188,13 @@ msgid "  -e CMD\tupdated helper command to run to communicate with CA\n"
 msgstr ""
 
 #: src/getcert.c:4399
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s remove-ca [options]\n"
-msgstr "Användning: %s refresh-ca [flaggor]\n"
+msgstr ""
 
 #: src/getcert.c:4403
-#, fuzzy
 msgid "  -c CA\tnickname of CA configuration to remove\n"
-msgstr "  -I NAMN\tsmeknamn att tilldela till begäran\n"
+msgstr ""
 
 #: src/getcert.c:4418
 #, c-format
@@ -1513,11 +1512,11 @@ msgstr "Certifikatmyndighet ”%s” inte känd."
 msgid "Unrecognized parameter or wrong value type."
 msgstr "Okända parameter eller fel värdetyp."
 
-#: src/tdbush.c:4885
+#: src/tdbush.c:4888
 msgid "Error parsing arguments."
 msgstr "Fel vid argumenttolkning."
 
-#: src/tdbush.c:4939
+#: src/tdbush.c:4942
 msgid "Unrecognized property name."
 msgstr "Okänt egenskapsnamn."
 

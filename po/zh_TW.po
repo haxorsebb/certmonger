@@ -7,9 +7,9 @@
 # Walter Cheuk <wwycheuk@gmail.com>, 2012
 msgid ""
 msgstr ""
-"Project-Id-Version: certmonger 0.76.8\n"
+"Project-Id-Version: certmonger 0.77\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2015-02-27 16:10-0500\n"
+"POT-Creation-Date: 2015-04-13 19:19-0400\n"
 "PO-Revision-Date: 2014-11-11 05:00-0500\n"
 "Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
 "Language-Team: Chinese (Taiwan) (http://www.transifex.com/projects/p/"
@@ -19,14 +19,14 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Zanata 3.5.1\n"
+"X-Generator: Zanata 3.6.2\n"
 
 #: src/certmaster.c:129
 #, c-format
 msgid "Unable to determine hostname of CA.\n"
 msgstr "無法判斷 CA 的主機名稱。\n"
 
-#: src/certmaster.c:146 src/dogtag.c:480 src/ipa.c:745
+#: src/certmaster.c:146 src/dogtag.c:560 src/ipa.c:745
 #, c-format
 msgid "Unable to read signing request.\n"
 msgstr "無法讀取簽署請求。\n"
@@ -51,69 +51,75 @@ msgstr "解析伺服器回應時發生錯誤。\n"
 msgid "Server error.\n"
 msgstr "伺服器錯誤。\n"
 
-#: src/dogtag.c:239
+#: src/dogtag.c:254
 #, c-format
 msgid "Profile params (-O) must be in the form of param=value.\n"
 msgstr ""
 
-#: src/dogtag.c:246 src/dogtag.c:251 src/getcert.c:277
+#: src/dogtag.c:261 src/dogtag.c:266 src/dogtag.c:283 src/dogtag.c:288
+#: src/getcert.c:277
 #, c-format
 msgid "Out of memory.\n"
 msgstr ""
 "記憶體不足。\n"
 "\n"
 
-#: src/dogtag.c:390
+#: src/dogtag.c:276
 #, c-format
-msgid "Requested renewal, but no serial number provided.\n"
+msgid "Submit params (-o) must be in the form of param=value.\n"
 msgstr ""
 
-#: src/dogtag.c:394
-#, c-format
-msgid "No end-entity URL (-E) given, and no default known.\n"
-msgstr ""
-
-#: src/dogtag.c:399 src/dogtag.c:409 src/dogtag.c:506
-#, c-format
-msgid "No agent URL (-A) given, and no default known.\n"
-msgstr ""
-
-#: src/dogtag.c:404
-#, c-format
-msgid "No profile/template (-T) given, and no default known.\n"
-msgstr ""
-
-#: src/dogtag.c:414
+#: src/dogtag.c:451 src/dogtag.c:456 src/dogtag.c:485
 #, c-format
 msgid "No agent credentials specified, and no default known.\n"
 msgstr ""
 
-#: src/dogtag.c:424
+#: src/dogtag.c:461
+#, c-format
+msgid "Requested renewal, but no serial number provided.\n"
+msgstr ""
+
+#: src/dogtag.c:465
+#, c-format
+msgid "No end-entity URL (-E) given, and no default known.\n"
+msgstr ""
+
+#: src/dogtag.c:470 src/dogtag.c:480 src/dogtag.c:628
+#, c-format
+msgid "No agent URL (-A) given, and no default known.\n"
+msgstr ""
+
+#: src/dogtag.c:475
+#, c-format
+msgid "No profile/template (-T) given, and no default known.\n"
+msgstr ""
+
+#: src/dogtag.c:495
 #, c-format
 msgid "Error shutting down NSS.\n"
 msgstr ""
 
-#: src/dogtag.c:453 src/dogtag.c:663
+#: src/dogtag.c:530 src/dogtag.c:810
 #, c-format
 msgid "Internal error: unknown state.\n"
 msgstr ""
 
-#: src/dogtag.c:512
+#: src/dogtag.c:634
 #, c-format
 msgid "No agent credentials (-n) given, but they are needed.\n"
 msgstr ""
 
-#: src/dogtag.c:645
+#: src/dogtag.c:790
 #, c-format
 msgid "Error %d connecting to %s: %s.\n"
 msgstr ""
 
-#: src/dogtag.c:650
+#: src/dogtag.c:795
 #, c-format
 msgid "Error %d connecting to %s.\n"
 msgstr ""
 
-#: src/dogtag.c:657
+#: src/dogtag.c:803
 #, c-format
 msgid "Internal error: no response to \"%s?%s\".\n"
 msgstr ""
@@ -533,9 +539,9 @@ msgid "\teku: "
 msgstr "\teku："
 
 #: src/getcert.c:3160
-#, fuzzy, c-format
+#, c-format
 msgid "\tcertificate template/profile: %s\n"
-msgstr "\t憑證：類型=%s、位置='%s'"
+msgstr ""
 
 #: src/getcert.c:3166 src/getcert.c:3489
 #, c-format
@@ -670,29 +676,29 @@ msgid "\terror refreshing CA data\n"
 msgstr ""
 
 #: src/getcert.c:3722 src/getcert.c:3820 src/getcert.c:3941 src/getcert.c:4021
-#, fuzzy, c-format
+#, c-format
 msgid "CA nickname not specified.\n"
-msgstr "未指定金鑰暱稱。"
+msgstr ""
 
 #: src/getcert.c:3727 src/getcert.c:3946
-#, fuzzy, c-format
+#, c-format
 msgid "CA helper command not specified.\n"
-msgstr "未指定金鑰暱稱。"
+msgstr ""
 
 #: src/getcert.c:3751 src/getcert.c:3869
-#, fuzzy, c-format
+#, c-format
 msgid "New CA \"%s\" added.\n"
-msgstr "已加入新增的簽署請求「%s」。\n"
+msgstr ""
 
 #: src/getcert.c:3754 src/getcert.c:3889
-#, fuzzy, c-format
+#, c-format
 msgid "New CA could not be added.\n"
-msgstr "無法加入新增的簽署請求。\n"
+msgstr ""
 
 #: src/getcert.c:3825
-#, fuzzy, c-format
+#, c-format
 msgid "server URL not specified.\n"
-msgstr "未指定金鑰暱稱。"
+msgstr ""
 
 #: src/getcert.c:3830
 #, c-format
@@ -705,9 +711,9 @@ msgid "Error building command line.\n"
 msgstr ""
 
 #: src/getcert.c:3883
-#, fuzzy, c-format
+#, c-format
 msgid "Error setting CA identifier.\n"
-msgstr "設置 XMLRPC 時發生錯誤。\n"
+msgstr ""
 
 #: src/getcert.c:3968
 #, c-format
@@ -867,9 +873,8 @@ msgid "  -A ADDRESS\tset requested IP address\n"
 msgstr ""
 
 #: src/getcert.c:4125 src/getcert.c:4172 src/getcert.c:4233
-#, fuzzy
 msgid "  -l FILE\tfile which holds an optional challenge password\n"
-msgstr "  -p 檔案\t儲存加密 PIN 的檔案\n"
+msgstr ""
 
 #: src/getcert.c:4126 src/getcert.c:4173 src/getcert.c:4234
 msgid "  -L PASSWORD\tan optional challenge password value\n"
@@ -1114,9 +1119,9 @@ msgid "  -a\trefresh information about all known CAs\n"
 msgstr ""
 
 #: src/getcert.c:4353
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s add-ca [options]\n"
-msgstr "用法：%s list-cas [選項]\n"
+msgstr ""
 
 #: src/getcert.c:4357 src/getcert.c:4371
 msgid "  -c CA\t\tnickname to give to the new CA configuration\n"
@@ -1127,9 +1132,9 @@ msgid "  -e CMD\thelper command to run to communicate with CA\n"
 msgstr ""
 
 #: src/getcert.c:4367
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s add-scep-ca [options]\n"
-msgstr "用法：%s list-cas [選項]\n"
+msgstr ""
 
 #: src/getcert.c:4372
 msgid "  -u URL\tlocation of SCEP server\n"
@@ -1140,23 +1145,21 @@ msgid "  -i ID\t\tCA identifier\n"
 msgstr ""
 
 #: src/getcert.c:4374
-#, fuzzy
 msgid "  -R FILE\tfile containing CA's certificate\n"
-msgstr "  -f 檔案\t憑證的 PEM 檔案\n"
+msgstr ""
 
 #: src/getcert.c:4375
-#, fuzzy
 msgid "  -r FILE\tfile containing RA's certificate\n"
-msgstr "  -f 檔案\t憑證的 PEM 檔案\n"
+msgstr ""
 
 #: src/getcert.c:4376
 msgid "  -I FILE\tfile containing certificates in RA's certifying chain\n"
 msgstr ""
 
 #: src/getcert.c:4385
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s modify-ca [options]\n"
-msgstr "用法：%s list-cas [選項]\n"
+msgstr ""
 
 #: src/getcert.c:4389
 msgid "  -c CA\t\tnickname of the CA configuration\n"
@@ -1167,9 +1170,9 @@ msgid "  -e CMD\tupdated helper command to run to communicate with CA\n"
 msgstr ""
 
 #: src/getcert.c:4399
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s remove-ca [options]\n"
-msgstr "用法：%s 請求 [選項]\n"
+msgstr ""
 
 #: src/getcert.c:4403
 msgid "  -c CA\tnickname of CA configuration to remove\n"
@@ -1481,11 +1484,11 @@ msgstr "未知的憑證授權機構「%s」。"
 msgid "Unrecognized parameter or wrong value type."
 msgstr "無法辨識的參數或錯誤的值類型。"
 
-#: src/tdbush.c:4885
+#: src/tdbush.c:4888
 msgid "Error parsing arguments."
 msgstr ""
 
-#: src/tdbush.c:4939
+#: src/tdbush.c:4942
 msgid "Unrecognized property name."
 msgstr ""
 

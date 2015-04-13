@@ -10,9 +10,9 @@
 # Kévin Raymond <shaiton@fedoraproject.org>, 2012
 msgid ""
 msgstr ""
-"Project-Id-Version: certmonger 0.76.8\n"
+"Project-Id-Version: certmonger 0.77\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2015-02-27 16:10-0500\n"
+"POT-Creation-Date: 2015-04-13 19:19-0400\n"
 "PO-Revision-Date: 2014-11-11 05:00-0500\n"
 "Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/certmonger/"
@@ -22,7 +22,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Zanata 3.5.1\n"
+"X-Generator: Zanata 3.6.2\n"
 
 #: src/certmaster.c:129
 #, c-format
@@ -30,7 +30,7 @@ msgid "Unable to determine hostname of CA.\n"
 msgstr ""
 "Impossible de déterminer le nom d'hôte de l'autorité de certification.\n"
 
-#: src/certmaster.c:146 src/dogtag.c:480 src/ipa.c:745
+#: src/certmaster.c:146 src/dogtag.c:560 src/ipa.c:745
 #, c-format
 msgid "Unable to read signing request.\n"
 msgstr "Impossible de lire la signature de la demande.\n"
@@ -55,72 +55,78 @@ msgstr "Erreur d'analyse de la réponse du serveur.\n"
 msgid "Server error.\n"
 msgstr "Erreur du serveur.\n"
 
-#: src/dogtag.c:239
+#: src/dogtag.c:254
 #, c-format
 msgid "Profile params (-O) must be in the form of param=value.\n"
 msgstr ""
 
-#: src/dogtag.c:246 src/dogtag.c:251 src/getcert.c:277
+#: src/dogtag.c:261 src/dogtag.c:266 src/dogtag.c:283 src/dogtag.c:288
+#: src/getcert.c:277
 #, c-format
 msgid "Out of memory.\n"
 msgstr "Mémoire saturée.\n"
 
-#: src/dogtag.c:390
+#: src/dogtag.c:276
+#, c-format
+msgid "Submit params (-o) must be in the form of param=value.\n"
+msgstr ""
+
+#: src/dogtag.c:451 src/dogtag.c:456 src/dogtag.c:485
+#, fuzzy, c-format
+msgid "No agent credentials specified, and no default known.\n"
+msgstr ""
+"Aucune URL d'agent spécifiée (-A), et aucune valeur par défaut connue.\n"
+
+#: src/dogtag.c:461
 #, c-format
 msgid "Requested renewal, but no serial number provided.\n"
 msgstr "Renouvellement demandé, mais numéro de série manquant.\n"
 
-#: src/dogtag.c:394
+#: src/dogtag.c:465
 #, c-format
 msgid "No end-entity URL (-E) given, and no default known.\n"
 msgstr ""
 "Aucune URL d'entité finale spécifiée (-E), et aucune valeur par défaut "
 "connue.\n"
 
-#: src/dogtag.c:399 src/dogtag.c:409 src/dogtag.c:506
+#: src/dogtag.c:470 src/dogtag.c:480 src/dogtag.c:628
 #, c-format
 msgid "No agent URL (-A) given, and no default known.\n"
 msgstr ""
 "Aucune URL d'agent spécifiée (-A), et aucune valeur par défaut connue.\n"
 
-#: src/dogtag.c:404
+#: src/dogtag.c:475
 #, c-format
 msgid "No profile/template (-T) given, and no default known.\n"
 msgstr ""
 "Aucune profil ou patron spécifié (-T), et aucune valeur par défaut connue.\n"
 
-#: src/dogtag.c:414
-#, fuzzy, c-format
-msgid "No agent credentials specified, and no default known.\n"
-msgstr ""
-"Aucune URL d'agent spécifiée (-A), et aucune valeur par défaut connue.\n"
-
-#: src/dogtag.c:424
+#: src/dogtag.c:495
 #, c-format
 msgid "Error shutting down NSS.\n"
 msgstr "Erreur lors de l'arrêt de NSS.\n"
 
-#: src/dogtag.c:453 src/dogtag.c:663
+#: src/dogtag.c:530 src/dogtag.c:810
 #, c-format
 msgid "Internal error: unknown state.\n"
 msgstr "Erreur interne : état inconnu.\n"
 
-#: src/dogtag.c:512
+#: src/dogtag.c:634
 #, c-format
 msgid "No agent credentials (-n) given, but they are needed.\n"
 msgstr ""
 
-#: src/dogtag.c:645
+#: src/dogtag.c:790
 #, c-format
 msgid "Error %d connecting to %s: %s.\n"
 msgstr "Erreur %d lors de la connexion à %s : %s.\n"
 
-#: src/dogtag.c:650
+#: src/dogtag.c:795
 #, c-format
 msgid "Error %d connecting to %s.\n"
 msgstr "Erreur %d lors de la connexion à %s.\n"
 
-#: src/dogtag.c:657
+#: src/dogtag.c:803
 #, c-format
 msgid "Internal error: no response to \"%s?%s\".\n"
 msgstr "Erreur interne : pas de réponse à « %s?%s ».\n"
@@ -558,9 +564,9 @@ msgid "\teku: "
 msgstr "\teku : "
 
 #: src/getcert.c:3160
-#, fuzzy, c-format
+#, c-format
 msgid "\tcertificate template/profile: %s\n"
-msgstr "\tcertificats racine enregistrés sur fichiers :\n"
+msgstr ""
 
 #: src/getcert.c:3166 src/getcert.c:3489
 #, c-format
@@ -660,9 +666,9 @@ msgid "\tdefault profile/template/certtype: %s\n"
 msgstr "\tprofils/modèles/types de certificats par défaut : %s\n"
 
 #: src/getcert.c:3551
-#, fuzzy, c-format
+#, c-format
 msgid "\tSCEP CA identifier: %s\n"
-msgstr "\tauto-identification en tant que : %s\n"
+msgstr ""
 
 #: src/getcert.c:3564
 #, c-format
@@ -695,29 +701,29 @@ msgid "\terror refreshing CA data\n"
 msgstr "\terreur lors du rafraîchissement des données du CA\n"
 
 #: src/getcert.c:3722 src/getcert.c:3820 src/getcert.c:3941 src/getcert.c:4021
-#, fuzzy, c-format
+#, c-format
 msgid "CA nickname not specified.\n"
-msgstr "Nom de la clé non spécifié."
+msgstr ""
 
 #: src/getcert.c:3727 src/getcert.c:3946
-#, fuzzy, c-format
+#, c-format
 msgid "CA helper command not specified.\n"
-msgstr "Nom de la clé non spécifié."
+msgstr ""
 
 #: src/getcert.c:3751 src/getcert.c:3869
-#, fuzzy, c-format
+#, c-format
 msgid "New CA \"%s\" added.\n"
-msgstr "Nouvelle demande de signature de « %s » ajoutée.\n"
+msgstr ""
 
 #: src/getcert.c:3754 src/getcert.c:3889
-#, fuzzy, c-format
+#, c-format
 msgid "New CA could not be added.\n"
-msgstr "La nouvelle demande de signature n'a pas pu être ajoutée.\n"
+msgstr ""
 
 #: src/getcert.c:3825
-#, fuzzy, c-format
+#, c-format
 msgid "server URL not specified.\n"
-msgstr "Nom de la clé non spécifié."
+msgstr ""
 
 #: src/getcert.c:3830
 #, c-format
@@ -730,29 +736,29 @@ msgid "Error building command line.\n"
 msgstr ""
 
 #: src/getcert.c:3883
-#, fuzzy, c-format
+#, c-format
 msgid "Error setting CA identifier.\n"
-msgstr "Erreur lors de la configuration de XMLRPC.\n"
+msgstr ""
 
 #: src/getcert.c:3968
-#, fuzzy, c-format
+#, c-format
 msgid "CA \"%s\" modified.\n"
-msgstr "Demande « %s » modifiée.\n"
+msgstr ""
 
 #: src/getcert.c:3971
-#, fuzzy, c-format
+#, c-format
 msgid "CA could not be modified.\n"
-msgstr "La demande « %s » ne peux être modifiée.\n"
+msgstr ""
 
 #: src/getcert.c:4049
-#, fuzzy, c-format
+#, c-format
 msgid "CA \"%s\" removed.\n"
-msgstr "Demande « %s » suprimée.\n"
+msgstr ""
 
 #: src/getcert.c:4051
-#, fuzzy, c-format
+#, c-format
 msgid "CA could not be removed.\n"
-msgstr "Demande « %s » n'a pas pu être enlevée.\n"
+msgstr ""
 
 #: src/getcert.c:4088
 #, c-format
@@ -904,9 +910,8 @@ msgid "  -A ADDRESS\tset requested IP address\n"
 msgstr "  -A ADRESSE\tdéfinit l'adresse IP demandée\n"
 
 #: src/getcert.c:4125 src/getcert.c:4172 src/getcert.c:4233
-#, fuzzy
 msgid "  -l FILE\tfile which holds an optional challenge password\n"
-msgstr "  -p FICHIER\tfichier qui contient le code PIN de chiffrement\n"
+msgstr ""
 
 #: src/getcert.c:4126 src/getcert.c:4173 src/getcert.c:4234
 msgid "  -L PASSWORD\tan optional challenge password value\n"
@@ -1106,9 +1111,8 @@ msgid "Usage: %s refresh [options]\n"
 msgstr ""
 
 #: src/getcert.c:4283
-#, fuzzy
 msgid "  -a\trefresh information about all outstanding requests\n"
-msgstr "  -r\tliste seulement l'information des demandes en attente\n"
+msgstr ""
 
 #: src/getcert.c:4303
 #, c-format
@@ -1160,28 +1164,26 @@ msgid "  -c CA\trefresh information about the CA with this name\n"
 msgstr "  -c CA\trafraîchir l'information du CA de ce nom\n"
 
 #: src/getcert.c:4342
-#, fuzzy
 msgid "  -a\trefresh information about all known CAs\n"
-msgstr "  -c CA\trafraîchir l'information du CA de ce nom\n"
+msgstr ""
 
 #: src/getcert.c:4353
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s add-ca [options]\n"
-msgstr "Utilisation : %s list-cas [options]\n"
+msgstr ""
 
 #: src/getcert.c:4357 src/getcert.c:4371
-#, fuzzy
 msgid "  -c CA\t\tnickname to give to the new CA configuration\n"
-msgstr "  -I NOM\tnom à donner à la demande de suivi\n"
+msgstr ""
 
 #: src/getcert.c:4358
 msgid "  -e CMD\thelper command to run to communicate with CA\n"
 msgstr ""
 
 #: src/getcert.c:4367
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s add-scep-ca [options]\n"
-msgstr "Utilisation : %s list-cas [options]\n"
+msgstr ""
 
 #: src/getcert.c:4372
 msgid "  -u URL\tlocation of SCEP server\n"
@@ -1192,23 +1194,21 @@ msgid "  -i ID\t\tCA identifier\n"
 msgstr ""
 
 #: src/getcert.c:4374
-#, fuzzy
 msgid "  -R FILE\tfile containing CA's certificate\n"
-msgstr "  -f FICHIER\tfichier PEM pour le certificat\n"
+msgstr ""
 
 #: src/getcert.c:4375
-#, fuzzy
 msgid "  -r FILE\tfile containing RA's certificate\n"
-msgstr "  -f FICHIER\tfichier PEM pour le certificat\n"
+msgstr ""
 
 #: src/getcert.c:4376
 msgid "  -I FILE\tfile containing certificates in RA's certifying chain\n"
 msgstr ""
 
 #: src/getcert.c:4385
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s modify-ca [options]\n"
-msgstr "Utilisation : %s list-cas [options]\n"
+msgstr ""
 
 #: src/getcert.c:4389
 msgid "  -c CA\t\tnickname of the CA configuration\n"
@@ -1219,14 +1219,13 @@ msgid "  -e CMD\tupdated helper command to run to communicate with CA\n"
 msgstr ""
 
 #: src/getcert.c:4399
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s remove-ca [options]\n"
-msgstr "Utilisation : %s refresh-ca [options]\n"
+msgstr ""
 
 #: src/getcert.c:4403
-#, fuzzy
 msgid "  -c CA\tnickname of CA configuration to remove\n"
-msgstr "  -I NOM\tnom à attribuer à la demande\n"
+msgstr ""
 
 #: src/getcert.c:4418
 #, c-format
@@ -1549,11 +1548,11 @@ msgstr "L'autorité de certification « %s » non connue."
 msgid "Unrecognized parameter or wrong value type."
 msgstr "Paramètre inconnu ou type de valeur incorrecte."
 
-#: src/tdbush.c:4885
+#: src/tdbush.c:4888
 msgid "Error parsing arguments."
 msgstr "Erreur lors de l'analyse des arguments."
 
-#: src/tdbush.c:4939
+#: src/tdbush.c:4942
 msgid "Unrecognized property name."
 msgstr "Nom de propriété inconnu."
 

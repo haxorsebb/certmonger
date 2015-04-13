@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: certmonger\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2015-02-27 16:10-0500\n"
+"POT-Creation-Date: 2015-04-13 19:19-0400\n"
 "PO-Revision-Date: 2014-11-11 10:00+0000\n"
 "Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
 "Language-Team: Estonian (http://www.transifex.com/projects/p/certmonger/"
@@ -23,7 +23,7 @@ msgstr ""
 msgid "Unable to determine hostname of CA.\n"
 msgstr ""
 
-#: src/certmaster.c:146 src/dogtag.c:480 src/ipa.c:745
+#: src/certmaster.c:146 src/dogtag.c:560 src/ipa.c:745
 #, c-format
 msgid "Unable to read signing request.\n"
 msgstr ""
@@ -48,67 +48,73 @@ msgstr ""
 msgid "Server error.\n"
 msgstr ""
 
-#: src/dogtag.c:239
+#: src/dogtag.c:254
 #, c-format
 msgid "Profile params (-O) must be in the form of param=value.\n"
 msgstr ""
 
-#: src/dogtag.c:246 src/dogtag.c:251 src/getcert.c:277
+#: src/dogtag.c:261 src/dogtag.c:266 src/dogtag.c:283 src/dogtag.c:288
+#: src/getcert.c:277
 #, c-format
 msgid "Out of memory.\n"
 msgstr ""
 
-#: src/dogtag.c:390
+#: src/dogtag.c:276
 #, c-format
-msgid "Requested renewal, but no serial number provided.\n"
+msgid "Submit params (-o) must be in the form of param=value.\n"
 msgstr ""
 
-#: src/dogtag.c:394
-#, c-format
-msgid "No end-entity URL (-E) given, and no default known.\n"
-msgstr ""
-
-#: src/dogtag.c:399 src/dogtag.c:409 src/dogtag.c:506
-#, c-format
-msgid "No agent URL (-A) given, and no default known.\n"
-msgstr ""
-
-#: src/dogtag.c:404
-#, c-format
-msgid "No profile/template (-T) given, and no default known.\n"
-msgstr ""
-
-#: src/dogtag.c:414
+#: src/dogtag.c:451 src/dogtag.c:456 src/dogtag.c:485
 #, c-format
 msgid "No agent credentials specified, and no default known.\n"
 msgstr ""
 
-#: src/dogtag.c:424
+#: src/dogtag.c:461
+#, c-format
+msgid "Requested renewal, but no serial number provided.\n"
+msgstr ""
+
+#: src/dogtag.c:465
+#, c-format
+msgid "No end-entity URL (-E) given, and no default known.\n"
+msgstr ""
+
+#: src/dogtag.c:470 src/dogtag.c:480 src/dogtag.c:628
+#, c-format
+msgid "No agent URL (-A) given, and no default known.\n"
+msgstr ""
+
+#: src/dogtag.c:475
+#, c-format
+msgid "No profile/template (-T) given, and no default known.\n"
+msgstr ""
+
+#: src/dogtag.c:495
 #, c-format
 msgid "Error shutting down NSS.\n"
 msgstr ""
 
-#: src/dogtag.c:453 src/dogtag.c:663
+#: src/dogtag.c:530 src/dogtag.c:810
 #, c-format
 msgid "Internal error: unknown state.\n"
 msgstr ""
 
-#: src/dogtag.c:512
+#: src/dogtag.c:634
 #, c-format
 msgid "No agent credentials (-n) given, but they are needed.\n"
 msgstr ""
 
-#: src/dogtag.c:645
+#: src/dogtag.c:790
 #, c-format
 msgid "Error %d connecting to %s: %s.\n"
 msgstr ""
 
-#: src/dogtag.c:650
+#: src/dogtag.c:795
 #, c-format
 msgid "Error %d connecting to %s.\n"
 msgstr ""
 
-#: src/dogtag.c:657
+#: src/dogtag.c:803
 #, c-format
 msgid "Internal error: no response to \"%s?%s\".\n"
 msgstr ""
@@ -1471,11 +1477,11 @@ msgstr ""
 msgid "Unrecognized parameter or wrong value type."
 msgstr ""
 
-#: src/tdbush.c:4885
+#: src/tdbush.c:4888
 msgid "Error parsing arguments."
 msgstr ""
 
-#: src/tdbush.c:4939
+#: src/tdbush.c:4942
 msgid "Unrecognized property name."
 msgstr ""
 

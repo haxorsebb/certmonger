@@ -1,37 +1,33 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR Red Hat, Inc.
-# This file is distributed under the same license as the PACKAGE package.
-#
-# Translators:
+# Robert Antoni Buj Gelonch <rbuj@fedoraproject.org>, 2015. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: certmonger\n"
+"Project-Id-Version: certmonger 0.77\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2015-02-27 16:10-0500\n"
-"PO-Revision-Date: 2014-11-11 10:00+0000\n"
-"Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
-"Language-Team: Catalan (http://www.transifex.com/projects/p/certmonger/"
-"language/ca/)\n"
+"POT-Creation-Date: 2015-04-13 19:19-0400\n"
+"PO-Revision-Date: 2015-03-16 05:39-0400\n"
+"Last-Translator: Robert Antoni Buj Gelonch <rbuj@fedoraproject.org>\n"
+"Language-Team: Catalan\n"
 "Language: ca\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Zanata 3.6.2\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
 #: src/certmaster.c:129
 #, c-format
 msgid "Unable to determine hostname of CA.\n"
-msgstr ""
+msgstr "No es pot determinar el nom d'amfitrió de l'AC.\n"
 
-#: src/certmaster.c:146 src/dogtag.c:480 src/ipa.c:745
+#: src/certmaster.c:146 src/dogtag.c:560 src/ipa.c:745
 #, c-format
 msgid "Unable to read signing request.\n"
-msgstr ""
+msgstr "No es pot llegir la sol·licitud de signatura.\n"
 
 #: src/certmaster.c:176
 #, c-format
 msgid "Error setting up for XMLRPC.\n"
-msgstr ""
+msgstr "S'ha produït un error en preparar-se per a l'XMLRPC.\n"
 
 #: src/certmaster.c:198 src/getcert.c:471 src/getcert.c:490 src/getcert.c:509
 #: src/getcert.c:528 src/getcert.c:546 src/getcert.c:637 src/getcert.c:1224
@@ -42,81 +38,103 @@ msgstr ""
 #, c-format
 msgid "Error parsing server response.\n"
 msgstr ""
+"S'ha produït un error en analitzar sintàcticament la resposta del servidor.\n"
 
 #: src/certmaster.c:202
 #, c-format
 msgid "Server error.\n"
-msgstr ""
+msgstr "Error del servidor.\n"
 
-#: src/dogtag.c:239
+#: src/dogtag.c:254
 #, c-format
 msgid "Profile params (-O) must be in the form of param=value.\n"
 msgstr ""
+"Els paràmetres del perfil (-O) han de tenir la forma paràmetre=valor.\n"
 
-#: src/dogtag.c:246 src/dogtag.c:251 src/getcert.c:277
+#: src/dogtag.c:261 src/dogtag.c:266 src/dogtag.c:283 src/dogtag.c:288
+#: src/getcert.c:277
 #, c-format
 msgid "Out of memory.\n"
-msgstr ""
+msgstr "Sense memòria.\n"
 
-#: src/dogtag.c:390
-#, c-format
-msgid "Requested renewal, but no serial number provided.\n"
+#: src/dogtag.c:276
+#, fuzzy, c-format
+msgid "Submit params (-o) must be in the form of param=value.\n"
 msgstr ""
+"Els paràmetres del perfil (-O) han de tenir la forma paràmetre=valor.\n"
 
-#: src/dogtag.c:394
-#, c-format
-msgid "No end-entity URL (-E) given, and no default known.\n"
-msgstr ""
-
-#: src/dogtag.c:399 src/dogtag.c:409 src/dogtag.c:506
-#, c-format
-msgid "No agent URL (-A) given, and no default known.\n"
-msgstr ""
-
-#: src/dogtag.c:404
-#, c-format
-msgid "No profile/template (-T) given, and no default known.\n"
-msgstr ""
-
-#: src/dogtag.c:414
+#: src/dogtag.c:451 src/dogtag.c:456 src/dogtag.c:485
 #, c-format
 msgid "No agent credentials specified, and no default known.\n"
 msgstr ""
+"No s'han especificat les credencials de l'agent, i no n'hi ha cap de conegut "
+"per defecte.\n"
 
-#: src/dogtag.c:424
+#: src/dogtag.c:461
+#, c-format
+msgid "Requested renewal, but no serial number provided.\n"
+msgstr ""
+"Es va sol·licitar una renovació, però no es va proporcionar cap número de "
+"sèrie.\n"
+
+#: src/dogtag.c:465
+#, c-format
+msgid "No end-entity URL (-E) given, and no default known.\n"
+msgstr ""
+"No s'ha indicat cap URL de l'entitat final (-E), i no n'hi ha cap de "
+"coneguda per defecte.\n"
+
+#: src/dogtag.c:470 src/dogtag.c:480 src/dogtag.c:628
+#, c-format
+msgid "No agent URL (-A) given, and no default known.\n"
+msgstr ""
+"No s'ha indicat cap URL de l'agent (-A), i no n'hi ha cap de conegut per "
+"defecte.\n"
+
+#: src/dogtag.c:475
+#, c-format
+msgid "No profile/template (-T) given, and no default known.\n"
+msgstr ""
+"No s'ha indicat cap perfil/plantilla (-T), i no n'hi ha cap de conegut per "
+"defecte.\n"
+
+#: src/dogtag.c:495
 #, c-format
 msgid "Error shutting down NSS.\n"
-msgstr ""
+msgstr "S'ha produït un error en aturar NSS.\n"
 
-#: src/dogtag.c:453 src/dogtag.c:663
+#: src/dogtag.c:530 src/dogtag.c:810
 #, c-format
 msgid "Internal error: unknown state.\n"
-msgstr ""
+msgstr "S'ha produït un error intern: estat desconegut.\n"
 
-#: src/dogtag.c:512
+#: src/dogtag.c:634
 #, c-format
 msgid "No agent credentials (-n) given, but they are needed.\n"
 msgstr ""
+"No s'han especificat les credencials de l'agent (-n) però són necessàries.\n"
 
-#: src/dogtag.c:645
+#: src/dogtag.c:790
 #, c-format
 msgid "Error %d connecting to %s: %s.\n"
-msgstr ""
+msgstr "S'ha produït l'error %d en connectar-se a %s: %s.\n"
 
-#: src/dogtag.c:650
+#: src/dogtag.c:795
 #, c-format
 msgid "Error %d connecting to %s.\n"
-msgstr ""
+msgstr "S'ha produït l'error %d en connectar-se a %s.\n"
 
-#: src/dogtag.c:657
+#: src/dogtag.c:803
 #, c-format
 msgid "Internal error: no response to \"%s?%s\".\n"
-msgstr ""
+msgstr "S'ha produït un error intern: sense resposta a \"%s?%s\".\n"
 
 #: src/getcert.c:99
 #, c-format
 msgid "Path \"%s\" is not absolute, attempting to use \"%s\" instead.\n"
 msgstr ""
+"El camí \"%s\" no és absolut, s'està intentant d'utilitzar \"%s\" en lloc "
+"seu.\n"
 
 #: src/getcert.c:104
 #, c-format
@@ -124,173 +142,188 @@ msgid ""
 "Path \"%s\" is not absolute, and there was an error determining the name of "
 "the current directory.\n"
 msgstr ""
+"El camí \"%s\" no és absolut i a més d’això hi va haver un error en "
+"determinar el nom del directori actual.\n"
 
 #: src/getcert.c:126
 #, c-format
 msgid "Path \"%s\": insufficient permissions.\n"
-msgstr ""
+msgstr "Camí \"%s\": permisos insuficients.\n"
 
 #: src/getcert.c:132
 #, c-format
 msgid "Path \"%s\" is not a directory.\n"
-msgstr ""
+msgstr "El camí \"%s\" no és un directori.\n"
 
 #: src/getcert.c:138
 #, c-format
 msgid "Path \"%s\": %s.\n"
-msgstr ""
+msgstr "Camí \"%s\": %s.\n"
 
 #: src/getcert.c:178
 #, c-format
 msgid "Path \"%s\" is not a regular file.\n"
-msgstr ""
+msgstr "El camí \"%s\" no és un fitxer regular.\n"
 
 #: src/getcert.c:341
 #, c-format
 msgid "No system bus running.\n"
-msgstr ""
+msgstr "No hi ha cap bus de sistema executant-se.\n"
 
 #: src/getcert.c:342
 #, c-format
 msgid "Running as UID 0.\n"
-msgstr ""
+msgstr "S'està executant com a UID 0.\n"
 
 #: src/getcert.c:343
 #, c-format
 msgid "Launching temporary dedicated service daemon.\n"
-msgstr ""
+msgstr "S'està llançant el dimoni de servei dedicat temporal.\n"
 
 #: src/getcert.c:372
 #, c-format
 msgid "Error connecting to D-Bus.\n"
-msgstr ""
+msgstr "S'ha produït un error en connectar amb D-Bus.\n"
 
 #: src/getcert.c:373 src/tdbusm.c:2163
 #, c-format
 msgid "Please verify that the message bus (D-Bus) service is running.\n"
 msgstr ""
+"Si us plau, comproveu que s'estigui executant el servei del bus de missatges "
+"(D-Bus).\n"
 
 #: src/getcert.c:380
 #, c-format
 msgid "Error creating DBus request message.\n"
-msgstr ""
+msgstr "S'ha produït un error en crear el missatge de sol·licitud DBUS.\n"
 
 #: src/getcert.c:422
 #, c-format
 msgid "Error %s: %s\n"
-msgstr ""
+msgstr "Error %s: %s\n"
 
 #: src/getcert.c:426
 #, c-format
 msgid "Error %s\n"
-msgstr ""
+msgstr "Error %s\n"
 
 #: src/getcert.c:432
 #, c-format
 msgid "Error: %s\n"
-msgstr ""
+msgstr "Error: %s\n"
 
 #: src/getcert.c:434
 #, c-format
 msgid "Received error response from local %s service.\n"
-msgstr ""
+msgstr "S'ha rebut una resposta d'error del servei local %s.\n"
 
 #: src/getcert.c:440
 #, c-format
 msgid "No response received from %s service.\n"
-msgstr ""
+msgstr "No s'ha rebut cap resposta del servei %s.\n"
 
 #: src/getcert.c:642 src/getcert.c:3334
 #, c-format
 msgid "State %s, stuck: %s.\n"
-msgstr ""
+msgstr "Estat %s, branca: %s.\n"
 
 #: src/getcert.c:710 src/getcert.c:1610 src/getcert.c:2133
 #, c-format
 msgid "Error initializing Kerberos library: %s.\n"
 msgstr ""
+"S'ha produït un error en inicialitzar la biblioteca del Kerberos: %s.\n"
 
 #: src/getcert.c:759
 #, c-format
 msgid "No support for generating \"%s\" keys.\n"
-msgstr ""
+msgstr "Sense suport per a la generació de les claus \"%s\".\n"
 
 #: src/getcert.c:761
 #, c-format
 msgid "Known key types include:"
-msgstr ""
+msgstr "Els tipus de claus conegudes inclouen:"
 
 #: src/getcert.c:798 src/getcert.c:1685 src/getcert.c:2183
 #, c-format
 msgid "Unrecognized keyUsage \"%s\".\n"
-msgstr ""
+msgstr "Ús de clau no reconegut \"%s\".\n"
 
 #: src/getcert.c:808 src/getcert.c:1695 src/getcert.c:2193
 #, c-format
 msgid "Could not evaluate OID \"%s\".\n"
-msgstr ""
+msgstr "No es pot avaluar l'OID \"%s\".\n"
 
 #: src/getcert.c:819 src/getcert.c:1706 src/getcert.c:2204
 #, c-format
 msgid "Error parsing Kerberos principal name \"%s\": %s.\n"
 msgstr ""
+"S'ha produït un error en analitzar sintàcticament el nom del principal de "
+"Kerberos \"%s\": %s.\n"
 
 #: src/getcert.c:828 src/getcert.c:1715 src/getcert.c:2213
 #, c-format
 msgid "Error unparsing Kerberos principal name \"%s\": %s.\n"
 msgstr ""
+"S'ha produït un error en composar sintàcticament el nom del principal de "
+"Kerberos \"%s\": %s.\n"
 
 #: src/getcert.c:883 src/getcert.c:1770 src/getcert.c:2268
 #, c-format
 msgid "%s: invalid value -- '%s'\n"
-msgstr ""
+msgstr "%s: el valor no és vàlid -- '%s'\n"
 
 #: src/getcert.c:902 src/getcert.c:1794 src/getcert.c:2287 src/getcert.c:2605
 #: src/getcert.c:2812 src/getcert.c:3283 src/getcert.c:3413 src/getcert.c:3627
 #: src/getcert.c:3711 src/getcert.c:3809 src/getcert.c:3930 src/getcert.c:4010
 #, c-format
 msgid "%s: option requires an argument -- '%c'\n"
-msgstr ""
+msgstr "%s: l'opció requereix un argument -- '%c'\n"
 
 #: src/getcert.c:906 src/getcert.c:1797 src/getcert.c:2290 src/getcert.c:2608
 #: src/getcert.c:2815 src/getcert.c:3286 src/getcert.c:3416 src/getcert.c:3630
 #: src/getcert.c:3714 src/getcert.c:3812 src/getcert.c:3933 src/getcert.c:4013
 #, c-format
 msgid "%s: invalid option -- '%c'\n"
-msgstr ""
+msgstr "%s: l'opció no és vàlida -- '%c'\n"
 
 #: src/getcert.c:915
 #, c-format
 msgid "Error: unused extra argument \"%s\".\n"
-msgstr ""
+msgstr "Error: argument extra \"%s\" sense utilitzar.\n"
 
 #: src/getcert.c:918 src/getcert.c:1808 src/getcert.c:2298 src/getcert.c:2623
 #: src/getcert.c:2823 src/getcert.c:3294 src/getcert.c:3424 src/getcert.c:3643
 #: src/getcert.c:3732 src/getcert.c:3835 src/getcert.c:3951 src/getcert.c:4026
 #, c-format
 msgid "Error: unused extra arguments were supplied.\n"
-msgstr ""
+msgstr "Error: Es van subministrar arguments extra sense utilitzar.\n"
 
 #: src/getcert.c:924 src/getcert.c:1814 src/getcert.c:2022 src/getcert.c:2322
 #, c-format
 msgid "Database location or nickname specified without the other.\n"
 msgstr ""
+"La localització de la base de dades o el sobrenom s'ha especificat un sense "
+"l'altre.\n"
 
 #: src/getcert.c:930 src/getcert.c:1820 src/getcert.c:2028 src/getcert.c:2328
 #, c-format
 msgid "Database directory and certificate file both specified.\n"
 msgstr ""
+"S'han especificat ambdós, el directori de la base de dades i el fitxer del "
+"certificat.\n"
 
 #: src/getcert.c:938 src/getcert.c:2036 src/getcert.c:2336
 #, c-format
 msgid ""
 "None of database directory and nickname or certificate file specified.\n"
 msgstr ""
+"No s'ha especificat cap directori de la base de dades i sobrenom o cap "
+"fitxer de certificat.\n"
 
 #: src/getcert.c:945 src/getcert.c:1836
 #, c-format
 msgid "Key and certificate can not both be saved to the same file.\n"
-msgstr ""
+msgstr "La clau i el certificat no poden desar-se ambdós al mateix fitxer.\n"
 
 #: src/getcert.c:972
 #, c-format
@@ -298,39 +331,41 @@ msgid ""
 "The IPA backend requires the use of the -K option (principal name) when the -"
 "N option (subject name) is used.\n"
 msgstr ""
+"El motor IPA requereix l'ús de l'opció -K (nom del principal) quan "
+"s'utilitza l'opció -N (nom del subjecte).\n"
 
 #: src/getcert.c:1118 src/getcert.c:1528 src/getcert.c:1937 src/getcert.c:2356
 #: src/getcert.c:2631 src/getcert.c:2831 src/getcert.c:4033
 #, c-format
 msgid "No CA with name \"%s\" found.\n"
-msgstr ""
+msgstr "No es va trobar cap AC amb el nom \"%s\".\n"
 
 #: src/getcert.c:1219 src/getcert.c:1557 src/getcert.c:1989 src/getcert.c:2073
 #: src/getcert.c:2487 src/getcert.c:3740 src/getcert.c:3858 src/getcert.c:3877
 #: src/getcert.c:3961 src/getcert.c:4039
 #, c-format
 msgid "Error setting request arguments.\n"
-msgstr ""
+msgstr "S'ha produït un error en establir els arguments de la sol·licitud.\n"
 
 #: src/getcert.c:1230
 #, c-format
 msgid "New signing request \"%s\" added.\n"
-msgstr ""
+msgstr "Es va afegir la nova sol·licitud de signatura \"%s\".\n"
 
 #: src/getcert.c:1236
 #, c-format
 msgid "New signing request could not be added.\n"
-msgstr ""
+msgstr "No es va poder afegir la nova sol·licitud de signatura.\n"
 
 #: src/getcert.c:1568
 #, c-format
 msgid "New tracking request \"%s\" added.\n"
-msgstr ""
+msgstr "Es va afegir la nova sol·licitud de seguiment \"%s\".\n"
 
 #: src/getcert.c:1575
 #, c-format
 msgid "New tracking request could not be added.\n"
-msgstr ""
+msgstr "No es va poder afegir la nova sol·licitud de seguiment.\n"
 
 #: src/getcert.c:1829 src/getcert.c:2617
 #, c-format
@@ -338,249 +373,251 @@ msgid ""
 "None of ID or database directory and nickname or certificate file "
 "specified.\n"
 msgstr ""
+"No s'ha especificat cap Id. ni tampoc cap directori de la base de dades i el "
+"sobrenom o cap fitxer de certificat.\n"
 
 #: src/getcert.c:2003
 #, c-format
 msgid "Request \"%s\" modified.\n"
-msgstr ""
+msgstr "Es va modificar la sol·licitud \"%s\".\n"
 
 #: src/getcert.c:2007
 #, c-format
 msgid "Request \"%s\" could not be modified.\n"
-msgstr ""
+msgstr "No es va poder modificar la sol·licitud \"%s.\n"
 
 #: src/getcert.c:2015 src/getcert.c:2315 src/getcert.c:2838 src/getcert.c:3302
 #, c-format
 msgid "No request found with specified nickname.\n"
-msgstr ""
+msgstr "No s'ha trobat cap sol·licitud amb el sobrenom indicat.\n"
 
 #: src/getcert.c:2064 src/getcert.c:2342 src/getcert.c:2849 src/getcert.c:3313
 #, c-format
 msgid "No request found that matched arguments.\n"
-msgstr ""
+msgstr "No s'ha trobat cap sol·licitud que coincideixi amb els arguments.\n"
 
 #: src/getcert.c:2083
 #, c-format
 msgid "Request \"%s\" removed.\n"
-msgstr ""
+msgstr "Es va eliminar la sol·licitud \"%s\".\n"
 
 #: src/getcert.c:2087
 #, c-format
 msgid "Request \"%s\" could not be removed.\n"
-msgstr ""
+msgstr "No es va poder eliminar la sol·licitud \"%s\".\n"
 
 #: src/getcert.c:2501
 #, c-format
 msgid "Error modifying \"%s\".\n"
-msgstr ""
+msgstr "S'ha produït un error en modificar \"%s\".\n"
 
 #: src/getcert.c:2517
 #, c-format
 msgid "Resubmitting \"%s\" to \"%s\".\n"
-msgstr ""
+msgstr "S'està tornant a presentar \"%s\" a \"%s\".\n"
 
 #: src/getcert.c:2520
 #, c-format
 msgid "Resubmitting \"%s\".\n"
-msgstr ""
+msgstr "S'està tornant a presentar \"%s\".\n"
 
 #: src/getcert.c:2529
 #, c-format
 msgid "Error attempting to submit \"%s\" to \"%s\".\n"
-msgstr ""
+msgstr "S'ha produït un error en intentar presentar \"%s\" a \"%s\".\n"
 
 #: src/getcert.c:2532
 #, c-format
 msgid "Error attempting to submit \"%s\".\n"
-msgstr ""
+msgstr "S'ha produït un error en intentar presentar \"%s\".\n"
 
 #: src/getcert.c:2710
 #, c-format
 msgid "Request ID '%s' being refreshed.\n"
-msgstr ""
+msgstr "L'Id. de la sol·licitud '%s' que s'està refrescant.\n"
 
 #: src/getcert.c:2712
 #, c-format
 msgid "Request ID '%s' NOT being refreshed.\n"
-msgstr ""
+msgstr "L'Id. de la sol·licitud '%s' que NO s'està refrescant.\n"
 
 #: src/getcert.c:2860
 #, c-format
 msgid "Number of certificates and requests being tracked: %d.\n"
-msgstr ""
+msgstr "Número de certificats i de sol·licituds que s'estan seguint: %d.\n"
 
 #: src/getcert.c:3009
 #, c-format
 msgid "Request ID '%s':\n"
-msgstr ""
+msgstr "Id. de la sol·licitud '%s':\n"
 
 #: src/getcert.c:3010
 #, c-format
 msgid "\tstatus: %s\n"
-msgstr ""
+msgstr "\testat: %s\n"
 
 #: src/getcert.c:3014
 #, c-format
 msgid "\tca-error: %s\n"
-msgstr ""
+msgstr "\terror-ac: %s\n"
 
 #: src/getcert.c:3016
 #, c-format
 msgid "\tstuck: %s\n"
-msgstr ""
+msgstr "\tbranca: %s\n"
 
 #: src/getcert.c:3036
 #, c-format
 msgid "\tkey pair storage: type=%s"
-msgstr ""
+msgstr "\temgatgatzematge parell clau: tupis=%s"
 
 #: src/getcert.c:3036
 msgid "NONE"
-msgstr ""
+msgstr "CAP"
 
 #: src/getcert.c:3038
 #, c-format
 msgid ",location='%s'"
-msgstr ""
+msgstr ",localització='%s'"
 
 #: src/getcert.c:3041 src/getcert.c:3063
 #, c-format
 msgid ",nickname='%s'"
-msgstr ""
+msgstr ",sobrenom='%s'"
 
 #: src/getcert.c:3044 src/getcert.c:3066
 #, c-format
 msgid ",token='%s'"
-msgstr ""
+msgstr ",mostra='%s'"
 
 #: src/getcert.c:3047
 #, c-format
 msgid ",pin='%s'"
-msgstr ""
+msgstr ",pin='%s'"
 
 #: src/getcert.c:3050
 #, c-format
 msgid ",pinfile='%s'"
-msgstr ""
+msgstr ",fitxer-pin='%s'"
 
 #: src/getcert.c:3061
 #, c-format
 msgid "\tcertificate: type=%s,location='%s'"
-msgstr ""
+msgstr "\tcertificat: tipus=%s,localització='%s'"
 
 #: src/getcert.c:3077
 #, c-format
 msgid "\tsigning request thumbprint (MD5): %s\n"
-msgstr ""
+msgstr "\tempremta de sol·licitud de signatura (MD5): %s\n"
 
 #: src/getcert.c:3082
 #, c-format
 msgid "\tsigning request thumbprint (SHA1): %s\n"
-msgstr ""
+msgstr "\tempremta de sol·licitud de signatura (SHA1): %s\n"
 
 #: src/getcert.c:3099
 #, c-format
 msgid "\tCA: %s\n"
-msgstr ""
+msgstr "\tAC: %s\n"
 
 #: src/getcert.c:3101
 #, c-format
 msgid "\tissuer: %s\n"
-msgstr ""
+msgstr "\temissor: %s\n"
 
 #: src/getcert.c:3102
 #, c-format
 msgid "\tsubject: %s\n"
-msgstr ""
+msgstr "\tsubjecte: %s\n"
 
 #: src/getcert.c:3103
 #, c-format
 msgid "\texpires: %s\n"
-msgstr ""
+msgstr "\tvenç: %s\n"
 
 #: src/getcert.c:3106
 msgid "unknown"
-msgstr ""
+msgstr "desconegut"
 
 #: src/getcert.c:3109
 msgid "\temail: "
-msgstr ""
+msgstr "\tcorreu electrònic: "
 
 #: src/getcert.c:3115
 msgid "\tdns: "
-msgstr ""
+msgstr "\tdns: "
 
 #: src/getcert.c:3121
 msgid "\tprincipal name: "
-msgstr ""
+msgstr "\tnom del principal: "
 
 #: src/getcert.c:3129
 msgid "\tIP address: "
-msgstr ""
+msgstr "\tadreça IP: "
 
 #: src/getcert.c:3148
 #, c-format
 msgid "\tkey usage: %s\n"
-msgstr ""
+msgstr "\tús de la clau: %s\n"
 
 #: src/getcert.c:3152
 msgid "\teku: "
-msgstr ""
+msgstr "\teku: "
 
 #: src/getcert.c:3160
 #, c-format
 msgid "\tcertificate template/profile: %s\n"
-msgstr ""
+msgstr "\tplantilla de certificat/perfil: %s\n"
 
 #: src/getcert.c:3166 src/getcert.c:3489
 #, c-format
 msgid "\troot certificates saved to files:\n"
-msgstr ""
+msgstr "\tels certificats arrel s'han desat als fitxers:\n"
 
 #: src/getcert.c:3175 src/getcert.c:3498
 #, c-format
 msgid "\tother root certificates saved to files:\n"
-msgstr ""
+msgstr "\tels altres certificats arrel s'han desat als fitxers:\n"
 
 #: src/getcert.c:3184 src/getcert.c:3507
 #, c-format
 msgid "\tother certificates saved to files:\n"
-msgstr ""
+msgstr "\tels altres certificats s'han desat als fitxers:\n"
 
 #: src/getcert.c:3193 src/getcert.c:3516
 #, c-format
 msgid "\troot certificates saved to databases:\n"
-msgstr ""
+msgstr "\tels certificats arrel s'han desat a les bases de dades:\n"
 
 #: src/getcert.c:3202 src/getcert.c:3525
 #, c-format
 msgid "\tother root certificates saved to databases:\n"
-msgstr ""
+msgstr "\tels altres certificats arrel s'han desat a les bases de dades:\n"
 
 #: src/getcert.c:3211 src/getcert.c:3534
 #, c-format
 msgid "\tother certificates saved to databases:\n"
-msgstr ""
+msgstr "\tels altres certificats s'han desat a les bases de dades:\n"
 
 #: src/getcert.c:3216 src/getcert.c:3580
 #, c-format
 msgid "\tpre-save command: %s\n"
-msgstr ""
+msgstr "\tordre abans de desar: %s\n"
 
 #: src/getcert.c:3219 src/getcert.c:3586
 #, c-format
 msgid "\tpost-save command: %s\n"
-msgstr ""
+msgstr "\tordre després de desar: %s\n"
 
 #: src/getcert.c:3222
 #, c-format
 msgid "\ttrack: %s\n"
-msgstr ""
+msgstr "\tpista: %s\n"
 
 #: src/getcert.c:3226
 #, c-format
 msgid "\tauto-renew: %s\n"
-msgstr ""
+msgstr "\tauto-renova: %s\n"
 
 #: src/getcert.c:3317
 #, c-format
@@ -588,689 +625,731 @@ msgid ""
 "None of ID or database directory and and nickname or certificate file "
 "specified.\n"
 msgstr ""
+"No s'ha especificat cap Id. ni tampoc cap directori de la base de dades i el "
+"sobrenom o cap fitxer de certificat.\n"
 
 #: src/getcert.c:3439
 #, c-format
 msgid "CA '%s':\n"
-msgstr ""
+msgstr "AC '%s':\n"
 
 #: src/getcert.c:3445
 #, c-format
 msgid "\tself-identifies as: %s\n"
-msgstr ""
+msgstr "\tauto-identifica com: %s\n"
 
 #: src/getcert.c:3454
 #, c-format
 msgid "\tca-type: %s\n"
-msgstr ""
+msgstr "\ttipus-ac: %s\n"
 
 #: src/getcert.c:3456
 #, c-format
 msgid "\thelper-location: %s\n"
-msgstr ""
+msgstr "\tlocalització-ajudant: %s\n"
 
 #: src/getcert.c:3461
 #, c-format
 msgid "\tnext-serial-number: %s\n"
-msgstr ""
+msgstr "\tsegüent número de sèrie: %s\n"
 
 #: src/getcert.c:3471
 #, c-format
 msgid "\tknown-issuer-names:\n"
-msgstr ""
+msgstr "\tnoms d'emissors coneguts:\n"
 
 #: src/getcert.c:3480
 #, c-format
 msgid "\tknown profiles/templates/certtypes:\n"
-msgstr ""
+msgstr "\tperfil/plantilla/tipus-certificat coneguts:\n"
 
 #: src/getcert.c:3543
 #, c-format
 msgid "\tdefault profile/template/certtype: %s\n"
-msgstr ""
+msgstr "\tperfil/plantilla/tipus-certificat per defecte: %s\n"
 
 #: src/getcert.c:3551
 #, c-format
 msgid "\tSCEP CA identifier: %s\n"
-msgstr ""
+msgstr "\tIdentificador de l'AC SCEP: %s\n"
 
 #: src/getcert.c:3564
 #, c-format
 msgid "\tSCEP CA certificate thumbprint (MD5): %s\n"
-msgstr ""
+msgstr "\tEmpremta del certificat de l'AC SCEP (MD5): %s\n"
 
 #: src/getcert.c:3570
 #, c-format
 msgid "\tSCEP CA certificate thumbprint (SHA1): %s\n"
-msgstr ""
+msgstr "\tEmpremta del certificat de l'AC SCEP (SHA1): %s\n"
 
 #: src/getcert.c:3638
 #, c-format
 msgid "Neither CA nickname nor -a flag specified.\n"
-msgstr ""
+msgstr "No s'ha especificat ni el sobrenom de l'AC ni el marcador -a.\n"
 
 #: src/getcert.c:3664
 #, c-format
 msgid "Data for CA '%s' being refreshed.\n"
-msgstr ""
+msgstr "Les dades per a l'AC '%s' que s'estan refrescant.\n"
 
 #: src/getcert.c:3666
 #, c-format
 msgid "Data for unnamed CA being refreshed.\n"
-msgstr ""
+msgstr "Les dades per a l'AC sense nom que s'estan refrescant.\n"
 
 #: src/getcert.c:3669
 #, c-format
 msgid "\terror refreshing CA data\n"
-msgstr ""
+msgstr "\ts'ha produït un error en refrescar les dades de l'AC\n"
 
 #: src/getcert.c:3722 src/getcert.c:3820 src/getcert.c:3941 src/getcert.c:4021
 #, c-format
 msgid "CA nickname not specified.\n"
-msgstr ""
+msgstr "No s'ha especificat el sobrenom de l'AC,\n"
 
 #: src/getcert.c:3727 src/getcert.c:3946
 #, c-format
 msgid "CA helper command not specified.\n"
-msgstr ""
+msgstr "No s'ha especificat l'ordre de l'ajudant de l'AC.\n"
 
 #: src/getcert.c:3751 src/getcert.c:3869
 #, c-format
 msgid "New CA \"%s\" added.\n"
-msgstr ""
+msgstr "S'ha afegit la nova AC \"%s\".\n"
 
 #: src/getcert.c:3754 src/getcert.c:3889
 #, c-format
 msgid "New CA could not be added.\n"
-msgstr ""
+msgstr "No es va poder afegir la nova AC.\n"
 
 #: src/getcert.c:3825
 #, c-format
 msgid "server URL not specified.\n"
-msgstr ""
+msgstr "no s'ha especificat la URL del servidor.\n"
 
 #: src/getcert.c:3830
 #, c-format
 msgid "HTTPS requires a CA certificate.\n"
-msgstr ""
+msgstr "HTTPS requereix un certificat de l'AC.\n"
 
 #: src/getcert.c:3851
 #, c-format
 msgid "Error building command line.\n"
-msgstr ""
+msgstr "S'ha produït un error en la construcció de la línia d'ordres.\n"
 
 #: src/getcert.c:3883
 #, c-format
 msgid "Error setting CA identifier.\n"
-msgstr ""
+msgstr "S'ha produït un error en establir l'identificador de l'AC.\n"
 
 #: src/getcert.c:3968
 #, c-format
 msgid "CA \"%s\" modified.\n"
-msgstr ""
+msgstr "S'ha modificat l'AC\"%s\".\n"
 
 #: src/getcert.c:3971
 #, c-format
 msgid "CA could not be modified.\n"
-msgstr ""
+msgstr "No es va poder modificar l'AC.\n"
 
 #: src/getcert.c:4049
 #, c-format
 msgid "CA \"%s\" removed.\n"
-msgstr ""
+msgstr "S'ha eliminat l'AC \"%s\".\n"
 
 #: src/getcert.c:4051
 #, c-format
 msgid "CA could not be removed.\n"
-msgstr ""
+msgstr "No es va poder eliminar l'AC.\n"
 
 #: src/getcert.c:4088
 #, c-format
 msgid "%s - client certificate enrollment tool\n"
-msgstr ""
+msgstr "%s - eina d'inscripció de certificats de client\n"
 
 #: src/getcert.c:4092
 #, c-format
 msgid "Usage: %s request [options]\n"
-msgstr ""
+msgstr "Ús: %s request [opcions]\n"
 
 #: src/getcert.c:4094 src/getcert.c:4142 src/getcert.c:4189 src/getcert.c:4211
 #: src/getcert.c:4285
 msgid "Required arguments:\n"
-msgstr ""
+msgstr "Arguments requerits:\n"
 
 #: src/getcert.c:4095 src/getcert.c:4145 src/getcert.c:4192 src/getcert.c:4214
 #: src/getcert.c:4267 src/getcert.c:4288
 msgid "* If using an NSS database for storage:\n"
-msgstr ""
+msgstr "* Si s'utilitza una base de dades NSS per a l'emmagatzematge:\n"
 
 #: src/getcert.c:4096 src/getcert.c:4146 src/getcert.c:4193 src/getcert.c:4215
 #: src/getcert.c:4289
 msgid "  -d DIR\tNSS database for key and cert\n"
-msgstr ""
+msgstr "  -d DIR\tbase de dades NSS per a la clau i el certificat\n"
 
 #: src/getcert.c:4097 src/getcert.c:4147 src/getcert.c:4194 src/getcert.c:4216
 #: src/getcert.c:4290
 msgid "  -n NAME\tnickname for NSS-based storage (only valid with -d)\n"
 msgstr ""
+"  -n NOM\tsobrenom per a l'emmagatzematge basat en NSS (tan sols és vàlid "
+"amb -d)\n"
 
 #: src/getcert.c:4098 src/getcert.c:4148 src/getcert.c:4195 src/getcert.c:4217
 #: src/getcert.c:4291
 msgid ""
 "  -t NAME\toptional token name for NSS-based storage (only valid with -d)\n"
 msgstr ""
+"  -t NOM\tnom de mostra opcional per a l'emmagatzematge basat amb NSS (tan "
+"sols és vàlid amb -d)\n"
 
 #: src/getcert.c:4099 src/getcert.c:4149 src/getcert.c:4196 src/getcert.c:4218
 #: src/getcert.c:4270 src/getcert.c:4292
 msgid "* If using files for storage:\n"
-msgstr ""
+msgstr "* Si s'utilitzen fitxers per a l'emmagatzematge:\n"
 
 #: src/getcert.c:4100 src/getcert.c:4150 src/getcert.c:4197
 msgid "  -k FILE\tPEM file for private key\n"
-msgstr ""
+msgstr "  -k FITXER\tfitxer PEM per a la clau privada\n"
 
 #: src/getcert.c:4101 src/getcert.c:4151 src/getcert.c:4198
 msgid "  -f FILE\tPEM file for certificate (only valid with -k)\n"
-msgstr ""
+msgstr "  -f FITXER\tfitxer PEM per al certificat (tan sols és vàlid amb -k)\n"
 
 #: src/getcert.c:4102
 msgid "* If keys are to be encrypted:\n"
-msgstr ""
+msgstr "* Si s'han de xifrar les claus:\n"
 
 #: src/getcert.c:4103 src/getcert.c:4153 src/getcert.c:4222
 msgid "  -p FILE\tfile which holds the encryption PIN\n"
-msgstr ""
+msgstr "  -p FILE\tfitxer que conté el PIN de xifratge\n"
 
 #: src/getcert.c:4104 src/getcert.c:4154 src/getcert.c:4223
 msgid "  -P PIN\tPIN value\n"
-msgstr ""
+msgstr "  -P PIN\tvalor del PIN\n"
 
 #: src/getcert.c:4106 src/getcert.c:4156 src/getcert.c:4200 src/getcert.c:4236
 #: src/getcert.c:4258 src/getcert.c:4295 src/getcert.c:4305 src/getcert.c:4323
 #: src/getcert.c:4338 src/getcert.c:4355 src/getcert.c:4369 src/getcert.c:4387
 #: src/getcert.c:4401
 msgid "Optional arguments:\n"
-msgstr ""
+msgstr "Arguments opcionals:\n"
 
 #: src/getcert.c:4107 src/getcert.c:4157 src/getcert.c:4237
 msgid "* Certificate handling settings:\n"
-msgstr ""
+msgstr "* Ajustos del tractament del certificat:\n"
 
 #: src/getcert.c:4108
 msgid "  -I NAME\tnickname to assign to the request\n"
-msgstr ""
+msgstr "  -I NOM\tsobrenom a assignar a la sol·licitud\n"
 
 #: src/getcert.c:4109
 msgid "  -G TYPE\ttype of key to be generated if one is not already in place\n"
 msgstr ""
+"  -G TIPUS\ttipus de clau que es generarà si encara no n'hi ha cap ja al seu "
+"lloc\n"
 
 #: src/getcert.c:4110
 msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
 msgstr ""
+"  -g MIDA\tmida de la clau que es generarà si encara no n'hi ha cap ja al "
+"seu lloc\n"
 
 #: src/getcert.c:4111 src/getcert.c:4159
 msgid ""
 "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
 msgstr ""
+"  -r\t\tintenta de renovar el certificat quan s'apropi el venciment (per "
+"defecte)\n"
 
 #: src/getcert.c:4112 src/getcert.c:4160
 msgid "  -R\t\tdon't attempt to renew the certificate when expiration nears\n"
 msgstr ""
+"  -R\t\tno intentis de renovar el certificat quan s'apropi el venciment\n"
 
 #: src/getcert.c:4114 src/getcert.c:4162
 msgid "  -c CA\t\tuse the specified CA rather than the default\n"
-msgstr ""
+msgstr "  -c AC\t\tutilitza l'AC especificada en lloc de la predeterminada\n"
 
 #: src/getcert.c:4116 src/getcert.c:4164 src/getcert.c:4242
 msgid ""
 "  -T PROFILE\task the CA to process the request using the named profile or "
 "template\n"
 msgstr ""
+"  -T PERFIL\tpregunta a l'AC per processar la sol·licitud mitjançant el "
+"perfil o la plantilla amb nom\n"
 
 #: src/getcert.c:4117
 msgid "* Parameters for the signing request:\n"
-msgstr ""
+msgstr "* Paràmetres per a la sol·licitud de signatura:\n"
 
 #: src/getcert.c:4118 src/getcert.c:4226
 msgid "  -N NAME\tset requested subject name (default: CN=<hostname>)\n"
 msgstr ""
+"  -N NOM\testableix el nom del subjecte sol·licitat (per defecte: CN=<nom-"
+"amfitrió>)\n"
 
 #: src/getcert.c:4119 src/getcert.c:4227
 msgid "  -U EXTUSAGE\tset requested extended key usage OID\n"
-msgstr ""
+msgstr "  -U ÚSEXT\testableix l'OID de l'ús estès de la clau sol·licitat\n"
 
 #: src/getcert.c:4120 src/getcert.c:4167 src/getcert.c:4228
 msgid "  -u KEYUSAGE\tset requested key usage value\n"
-msgstr ""
+msgstr "  -u ÚSCLAU\testableix l'ús de la clau sol·licitat\n"
 
 #: src/getcert.c:4121 src/getcert.c:4229
 msgid "  -K NAME\tset requested principal name\n"
-msgstr ""
+msgstr "  -K NOM\testableix el nom del principal sol·licitat\n"
 
 #: src/getcert.c:4122 src/getcert.c:4230
 msgid "  -D DNSNAME\tset requested DNS name\n"
-msgstr ""
+msgstr "  -D NOMDNS\testableix el nom DNS sol·licitat\n"
 
 #: src/getcert.c:4123 src/getcert.c:4231
 msgid "  -E EMAIL\tset requested email address\n"
-msgstr ""
+msgstr "  -E CORREU\testableix l'adreça de correu electrònic sol·licitada\n"
 
 #: src/getcert.c:4124 src/getcert.c:4232
 msgid "  -A ADDRESS\tset requested IP address\n"
-msgstr ""
+msgstr "  -A ADREÇA\testableix l'adreça IP sol·licitada\n"
 
 #: src/getcert.c:4125 src/getcert.c:4172 src/getcert.c:4233
 msgid "  -l FILE\tfile which holds an optional challenge password\n"
-msgstr ""
+msgstr "  -l FITXER\tfitxer que conté la contrasenya d'un repte opcional\n"
 
 #: src/getcert.c:4126 src/getcert.c:4173 src/getcert.c:4234
 msgid "  -L PASSWORD\tan optional challenge password value\n"
-msgstr ""
+msgstr "  -L CONTRASENYA\tcontrasenya d'un repte opcional\n"
 
 #: src/getcert.c:4127 src/getcert.c:4174 src/getcert.c:4201 src/getcert.c:4243
 #: src/getcert.c:4272 src/getcert.c:4296 src/getcert.c:4313 src/getcert.c:4328
 #: src/getcert.c:4344 src/getcert.c:4359 src/getcert.c:4377 src/getcert.c:4391
 #: src/getcert.c:4404
 msgid "* Bus options:\n"
-msgstr ""
+msgstr "* Opcions del bus:\n"
 
 #: src/getcert.c:4128 src/getcert.c:4175 src/getcert.c:4202 src/getcert.c:4244
 #: src/getcert.c:4297
 msgid "  -S\t\tconnect to the certmonger service on the system bus\n"
-msgstr ""
+msgstr "  -S\t\tconnecta al servei certmonger sobre el bus del sistema\n"
 
 #: src/getcert.c:4129 src/getcert.c:4176 src/getcert.c:4203 src/getcert.c:4245
 #: src/getcert.c:4298
 msgid "  -s\t\tconnect to the certmonger service on the session bus\n"
-msgstr ""
+msgstr "  -s\t\tconnecta al servei certmonger sobre el bus de la sessió\n"
 
 #: src/getcert.c:4130 src/getcert.c:4177 src/getcert.c:4204 src/getcert.c:4246
 #: src/getcert.c:4275 src/getcert.c:4316 src/getcert.c:4331 src/getcert.c:4347
 #: src/getcert.c:4362 src/getcert.c:4380 src/getcert.c:4394 src/getcert.c:4407
 msgid "* Other options:\n"
-msgstr ""
+msgstr "* Altres opcions:\n"
 
 #: src/getcert.c:4131 src/getcert.c:4178 src/getcert.c:4247
 msgid "  -B\tcommand to run before saving the certificate\n"
-msgstr ""
+msgstr "  -B\tordre a executar abans que es desi el certificat\n"
 
 #: src/getcert.c:4132 src/getcert.c:4179 src/getcert.c:4248
 msgid "  -C\tcommand to run after saving the certificate\n"
-msgstr ""
+msgstr "  -C\tordre a executar un cop es desi el certificat\n"
 
 #: src/getcert.c:4133 src/getcert.c:4180 src/getcert.c:4249
 msgid "  -F\tfile in which to store the CA's certificates\n"
-msgstr ""
+msgstr "  -F\tfitxer on s'emmagatzemen els certificats de l'AC\n"
 
 #: src/getcert.c:4134 src/getcert.c:4181 src/getcert.c:4250
 msgid "  -a\tNSS database in which to store the CA's certificates\n"
-msgstr ""
+msgstr "  -a\tbase de dades NSS on s'emmagatzemen els certificats de l'AC\n"
 
 #: src/getcert.c:4135 src/getcert.c:4182 src/getcert.c:4251
 msgid "  -w\ttry to wait for the certificate to be issued\n"
-msgstr ""
+msgstr "  -w\tprova d'esperar l'expedició del certificat\n"
 
 #: src/getcert.c:4136 src/getcert.c:4183 src/getcert.c:4205 src/getcert.c:4252
 #: src/getcert.c:4276 src/getcert.c:4299 src/getcert.c:4317 src/getcert.c:4332
 #: src/getcert.c:4348 src/getcert.c:4363 src/getcert.c:4381 src/getcert.c:4395
 #: src/getcert.c:4408
 msgid "  -v\treport all details of errors\n"
-msgstr ""
+msgstr "  -v\tinforma de tots els detalls dels errors\n"
 
 #: src/getcert.c:4140
 #, c-format
 msgid "Usage: %s start-tracking [options]\n"
-msgstr ""
+msgstr "Ús: %s start-tracking [opcions]\n"
 
 #: src/getcert.c:4143
 msgid "* If modifying an existing request:\n"
-msgstr ""
+msgstr "* Si es modifica una sol·licitud existent:\n"
 
 #: src/getcert.c:4144
 msgid "  -i NAME\tnickname of an existing tracking request\n"
-msgstr ""
+msgstr "  -i NOM\tsobrenom d'una sol·licitud de seguiment existent\n"
 
 #: src/getcert.c:4152 src/getcert.c:4221
 msgid "* If keys are encrypted:\n"
-msgstr ""
+msgstr "* Si les claus estan xifrades:\n"
 
 #: src/getcert.c:4158
 msgid "  -I NAME\tnickname to give to tracking request\n"
-msgstr ""
+msgstr "  -I NOM\tsobrenom a donar a la sol·licitud de seguiment\n"
 
 #: src/getcert.c:4165
 msgid "* Parameters for the signing request at renewal time:\n"
 msgstr ""
+"* Paràmetres per a la sol·licitud de signatura en el moment de la "
+"renovació:\n"
 
 #: src/getcert.c:4166
 msgid "  -U EXTUSAGE\toverride requested extended key usage OID\n"
-msgstr ""
+msgstr "  -U ÚSEXT\treemplaça l'OID de l'ús estès de la clau sol·licitat\n"
 
 #: src/getcert.c:4168
 msgid "  -K NAME\toverride requested principal name\n"
-msgstr ""
+msgstr "  -K NOM\treemplaça el nom del principal sol·licitat\n"
 
 #: src/getcert.c:4169
 msgid "  -D DNSNAME\toverride requested DNS name\n"
-msgstr ""
+msgstr "  -D NOMDNS\treemplaça el nom DNS sol·licitat\n"
 
 #: src/getcert.c:4170
 msgid "  -E EMAIL\toverride requested email address\n"
-msgstr ""
+msgstr "  -E CORREU\treemplaça l'adreça de correu electrònic sol·licitada\n"
 
 #: src/getcert.c:4171
 msgid "  -A ADDRESS\toverride requested IP address\n"
-msgstr ""
+msgstr "  -A ADREÇA\treemplaça l'adreça IP sol·licitada\n"
 
 #: src/getcert.c:4187
 #, c-format
 msgid "Usage: %s stop-tracking [options]\n"
-msgstr ""
+msgstr "Ús: %s stop-tracking [opcions]\n"
 
 #: src/getcert.c:4190 src/getcert.c:4212 src/getcert.c:4286
 msgid "* By request identifier:\n"
-msgstr ""
+msgstr "* Per a l'identificador sol·licitat:\n"
 
 #: src/getcert.c:4191 src/getcert.c:4213 src/getcert.c:4266 src/getcert.c:4287
 #: src/getcert.c:4307
 msgid "  -i NAME\tnickname for tracking request\n"
-msgstr ""
+msgstr "  -I NOM\tsobrenom per seguir a la sol·licitud\n"
 
 #: src/getcert.c:4209
 #, c-format
 msgid "Usage: %s resubmit [options]\n"
-msgstr ""
+msgstr "Ús: %s resubmit [opcions]\n"
 
 #: src/getcert.c:4219 src/getcert.c:4293
 msgid "  -f FILE\tPEM file for certificate\n"
-msgstr ""
+msgstr "  -f FITXER\tfitxer PEM per al certificat\n"
 
 #: src/getcert.c:4225
 msgid "* New parameter values for the signing request:\n"
-msgstr ""
+msgstr "* Nous valors dels paràmetres per a la sol·licitud de signatura:\n"
 
 #: src/getcert.c:4238
 msgid "  -I NAME\tnew nickname to give to tracking request\n"
-msgstr ""
+msgstr "  -I NOM\tnou sobrenom a donar a la sol·licitud de seguiment\n"
 
 #: src/getcert.c:4240
 msgid "  -c CA\t\tuse the specified CA rather than the current one\n"
-msgstr ""
+msgstr "  -c AC\t\tutilitza l'AC especificada en lloc de l'actual\n"
 
 #: src/getcert.c:4256
 #, c-format
 msgid "Usage: %s list [options]\n"
-msgstr ""
+msgstr "Ús: %s list [opcions]\n"
 
 #: src/getcert.c:4259 src/getcert.c:4282 src/getcert.c:4325 src/getcert.c:4340
 #: src/getcert.c:4356 src/getcert.c:4370 src/getcert.c:4388 src/getcert.c:4402
 msgid "* General options:\n"
-msgstr ""
+msgstr "* Opcions generals:\n"
 
 #: src/getcert.c:4261
 msgid "  -c CA\tlist only requests and certs associated with this CA\n"
 msgstr ""
+"  -c AC\ttan sols llista les sol·licituds i els certificats que estiguin "
+"associats amb aquesta AC\n"
 
 #: src/getcert.c:4263
 msgid "  -r\tlist only information about outstanding requests\n"
-msgstr ""
+msgstr "  -r\ttan sols llista la informació sobre les sol·licituds pendents\n"
 
 #: src/getcert.c:4264
 msgid "  -t\tlist only information about tracked certificates\n"
-msgstr ""
+msgstr "  -t\ttan sols llista la informació sobre els certificats seguits\n"
 
 #: src/getcert.c:4265
 msgid "* If selecting a specific request:\n"
-msgstr ""
+msgstr "* Si es selecciona una sol·licitud específica:\n"
 
 #: src/getcert.c:4268
 msgid "  -d DIR\tonly list requests and certs which use this NSS database\n"
 msgstr ""
+"  -d DIR\ttan sols llista les sol·licituds i els certificats que utilitzin "
+"aquesta base de dades NSS\n"
 
 #: src/getcert.c:4269
 msgid "  -n NAME\tonly list requests and certs which use this nickname\n"
 msgstr ""
+"  -n NOM\ttan sols llista les sol·licituds i els certificats que utilitzin "
+"aquest sobrenom\n"
 
 #: src/getcert.c:4271
 msgid "  -f FILE\tonly list requests and certs stored in this PEM file\n"
 msgstr ""
+"  -f FITXER\ttan sols llista les sol·licituds i els certificats "
+"emmagatzemats en aquest fitxer PEM\n"
 
 #: src/getcert.c:4273 src/getcert.c:4314 src/getcert.c:4329 src/getcert.c:4345
 #: src/getcert.c:4360 src/getcert.c:4378 src/getcert.c:4392 src/getcert.c:4405
 msgid "  -S\tconnect to the certmonger service on the system bus\n"
-msgstr ""
+msgstr "  -S\tconnecta al servei certmonger sobre el bus del sistema\n"
 
 #: src/getcert.c:4274 src/getcert.c:4315 src/getcert.c:4330 src/getcert.c:4346
 #: src/getcert.c:4361 src/getcert.c:4379 src/getcert.c:4393 src/getcert.c:4406
 msgid "  -s\tconnect to the certmonger service on the session bus\n"
-msgstr ""
+msgstr "  -s\tconnecta al servei certmonger sobre el bus de la sessió\n"
 
 #: src/getcert.c:4280
 #, c-format
 msgid "Usage: %s refresh [options]\n"
-msgstr ""
+msgstr "Ús: %s refresh [opcions]\n"
 
 #: src/getcert.c:4283
 msgid "  -a\trefresh information about all outstanding requests\n"
-msgstr ""
+msgstr "  -a\trefresca la informació sobre totes les sol·licituds pendents\n"
 
 #: src/getcert.c:4303
 #, c-format
 msgid "Usage: %s status [options]\n"
-msgstr ""
+msgstr "Ús: %s status [opcions]\n"
 
 #: src/getcert.c:4306
 msgid "* Selecting a specific request:\n"
-msgstr ""
+msgstr "* Selecció d'una sol·licitud específica:\n"
 
 #: src/getcert.c:4308
 msgid "* When using an NSS database for storage:\n"
-msgstr ""
+msgstr "* Quan s'utilitzi una base de dades NSS per a l'emmagatzematge:\n"
 
 #: src/getcert.c:4309
 msgid "  -d DIR\treturn status for the request in this NSS database\n"
 msgstr ""
+"  -d DIR\tretorna l'estat per a la sol·licitud en aquesta base de dades NSS\n"
 
 #: src/getcert.c:4310
 msgid "  -n NAME\treturn status for cert which uses this nickname\n"
 msgstr ""
+"  -n NOM\tretorna l'estat del certificat que utilitzi aquest sobrenom\n"
 
 #: src/getcert.c:4311
 msgid "* When using files for storage:\n"
-msgstr ""
+msgstr "* Quan s'utilitzin fitxers per a l'emmagatzematge:\n"
 
 #: src/getcert.c:4312
 msgid "  -f FILE\treturn status for cert stored in this PEM file\n"
 msgstr ""
+"  -f FITXER\tretorna l'estat per al certificat emmagatzemat en aquest fitxer "
+"PEM\n"
 
 #: src/getcert.c:4321
 #, c-format
 msgid "Usage: %s list-cas [options]\n"
-msgstr ""
+msgstr "Ús: %s list-cas [opcions]\n"
 
 #: src/getcert.c:4326
 msgid "  -c CA\tlist only information about the CA with this name\n"
-msgstr ""
+msgstr "  -c AC\ttan sols llista la informació sobre l'AC amb aquest nom\n"
 
 #: src/getcert.c:4336
 #, c-format
 msgid "Usage: %s refresh-ca [options]\n"
-msgstr ""
+msgstr "Ús: %s refresh-ca [opcions]\n"
 
 #: src/getcert.c:4341
 msgid "  -c CA\trefresh information about the CA with this name\n"
-msgstr ""
+msgstr "  -c AC\trefresca la informació sobre l'AC amb aquest nom\n"
 
 #: src/getcert.c:4342
 msgid "  -a\trefresh information about all known CAs\n"
-msgstr ""
+msgstr "  -a\trefresca la informació sobre totes les AC conegudes\n"
 
 #: src/getcert.c:4353
 #, c-format
 msgid "Usage: %s add-ca [options]\n"
-msgstr ""
+msgstr "Ús: %s add-ca [opcions]\n"
 
 #: src/getcert.c:4357 src/getcert.c:4371
 msgid "  -c CA\t\tnickname to give to the new CA configuration\n"
-msgstr ""
+msgstr "  -c AC\t\tsobrenom a donar a la nova configuració de l'AC\n"
 
 #: src/getcert.c:4358
 msgid "  -e CMD\thelper command to run to communicate with CA\n"
-msgstr ""
+msgstr "  -e ORDRE\tordre de l'ajudant a executar per comunicar-se amb l'AC\n"
 
 #: src/getcert.c:4367
 #, c-format
 msgid "Usage: %s add-scep-ca [options]\n"
-msgstr ""
+msgstr "Ús: %s add-scep-ca [opcions]\n"
 
 #: src/getcert.c:4372
 msgid "  -u URL\tlocation of SCEP server\n"
-msgstr ""
+msgstr "  -u URL\tlocalització del servidor SCEP\n"
 
 #: src/getcert.c:4373
 msgid "  -i ID\t\tCA identifier\n"
-msgstr ""
+msgstr "  -i ID\t\tidentificador de l'AC\n"
 
 #: src/getcert.c:4374
 msgid "  -R FILE\tfile containing CA's certificate\n"
-msgstr ""
+msgstr "  -R FITXER\tfitxer que conté el certificat de l'AC\n"
 
 #: src/getcert.c:4375
 msgid "  -r FILE\tfile containing RA's certificate\n"
-msgstr ""
+msgstr "  -r FITXER\tfitxer que conté el certificat de la RA\n"
 
 #: src/getcert.c:4376
 msgid "  -I FILE\tfile containing certificates in RA's certifying chain\n"
 msgstr ""
+"  -I FITXER\tfitxer que conté els certificats a la cadena de certificació de "
+"la RA\n"
 
 #: src/getcert.c:4385
 #, c-format
 msgid "Usage: %s modify-ca [options]\n"
-msgstr ""
+msgstr "Ús: %s modify-ca [opcions]\n"
 
 #: src/getcert.c:4389
 msgid "  -c CA\t\tnickname of the CA configuration\n"
-msgstr ""
+msgstr "  -c AC\t\tsobrenom de la configuració de l'AC\n"
 
 #: src/getcert.c:4390
 msgid "  -e CMD\tupdated helper command to run to communicate with CA\n"
 msgstr ""
+"  -e ORDRE\tordre de l'ajudant actualitzat a executar per comunicar-se amb "
+"l'AC\n"
 
 #: src/getcert.c:4399
 #, c-format
 msgid "Usage: %s remove-ca [options]\n"
-msgstr ""
+msgstr "Ús: %s remove-ca [opcions]\n"
 
 #: src/getcert.c:4403
 msgid "  -c CA\tnickname of CA configuration to remove\n"
-msgstr ""
+msgstr "  -c AC\tsobrenom de la configuració de l'AC a eliminar\n"
 
 #: src/getcert.c:4418
 #, c-format
 msgid "Usage: %s command [options]\n"
-msgstr ""
+msgstr "Ús: %s ordre [opcions]\n"
 
 #: src/getcert.c:4420
 msgid "request a new certificate from a CA\n"
-msgstr ""
+msgstr "sol·licita un nou certificat des d'una AC\n"
 
 #: src/getcert.c:4422
 msgid "begin monitoring an already-issued certificate\n"
-msgstr ""
+msgstr "comença la monitorització d'un certificat ja expedit\n"
 
 #: src/getcert.c:4424
 msgid "stop monitoring a certificate\n"
-msgstr ""
+msgstr "atura la monitorització d'un certificat\n"
 
 #: src/getcert.c:4426
 msgid "resubmit an in-progress enrollment request, or start a new one\n"
 msgstr ""
+"tornar a presentar una sol·licitud d'inscripció en curs, o n'inicia un de "
+"nova\n"
 
 #: src/getcert.c:4428
 msgid "check on the status of an in-progress enrollment request\n"
-msgstr ""
+msgstr "comprova l'estat d'una sol·licitud d'inscripció en curs\n"
 
 #: src/getcert.c:4430
 msgid "list certificates being monitored and requested\n"
-msgstr ""
+msgstr "llista els certificats que s'estan monitoritzant i sol·licitant\n"
 
 #: src/getcert.c:4432
 msgid "check the status of a certificate being monitored or requested\n"
 msgstr ""
+"comprova l'estat d'un certificat que s'està monitoritzant o sol·licitant\n"
 
 #: src/getcert.c:4435
 msgid "add a CA configuration\n"
-msgstr ""
+msgstr "afegeix la configuració d'una AC\n"
 
 #: src/getcert.c:4437
 msgid "add an SCEP CA configuration\n"
-msgstr ""
+msgstr "afegeix la configuració d'una AC SCEP\n"
 
 #: src/getcert.c:4440
 msgid "list known CA configurations\n"
-msgstr ""
+msgstr "llista les configuracions de les AC conegudes\n"
 
 #: src/getcert.c:4443
 msgid "modify a CA configuration\n"
-msgstr ""
+msgstr "modifica la configuració d'una AC\n"
 
 #: src/getcert.c:4446
 msgid "refresh cache of all information obtained from a CA\n"
-msgstr ""
+msgstr "refresca la memòria cau de tota la informació obtinguda d'una AC\n"
 
 #: src/getcert.c:4449
 msgid "remove a CA configuration\n"
-msgstr ""
+msgstr "elimina la configuració d'una AC\n"
 
 #: src/getcert.c:4502
 #, c-format
 msgid "%s: unrecognized command\n"
-msgstr ""
+msgstr "%s: no s'ha reconegut l'ordre\n"
 
 #: src/ipa.c:158
 #, c-format
 msgid "Unable to determine location of IPA LDAP server.\n"
-msgstr ""
+msgstr "No es pot determinar la localització del servidor LDAP IPA.\n"
 
 #: src/ipa.c:163
 #, c-format
 msgid "Unable to contact an IPA LDAP server.\n"
-msgstr ""
+msgstr "No es pot contactar amb el servidor LDAP IPA.\n"
 
 #: src/ipa.c:247 src/ipa.c:508
 #, c-format
 msgid "Unable to determine base DN of domain information on IPA server.\n"
 msgstr ""
+"No es pot determinar el DN base de la informació de domini sobre el servidor "
+"IPA.\n"
 
 #: src/ipa.c:372
 #, c-format
 msgid "Error setting up for XMLRPC on the client.\n"
-msgstr ""
+msgstr "S'ha produït un error en preparar-se per a l'XMLRPC sobre el client.\n"
 
 #: src/ipa.c:620
 #, c-format
 msgid "The -t option can not be used with the -K option.\n"
-msgstr ""
+msgstr "L'opció -t no pot utilitzar-se amb l'opció -K.\n"
 
 #: src/ipa.c:628
 #, c-format
 msgid "The -k option can not be used with the -K option.\n"
-msgstr ""
+msgstr "L'opció -k no pot utilitzar-se amb l'opció -K.\n"
 
 #: src/ipa.c:636
 #, c-format
 msgid "The -K option can not be used with either the -k or the -t option.\n"
-msgstr ""
+msgstr "L'opció -K no pot utilitzar-se amb l'opció -k ni amb l'opció -t.\n"
 
 #: src/ipa.c:717
 #, c-format
 msgid "Unable to determine principal name for signing request.\n"
 msgstr ""
+"No es pot determinar el nom del principal per a la sol·licitud de "
+"signatura.\n"
 
 #: src/ipa.c:775
 #, c-format
 msgid "No IPA domain configured, and none specified.\n"
-msgstr ""
+msgstr "No hi ha cap domini IPA configurat i no se n'ha especificat cap.\n"
 
 #: src/ipa.c:789
 #, c-format
@@ -1278,12 +1357,16 @@ msgid ""
 "Error setting up ccache for \"host\" service on client using default keytab: "
 "%s.\n"
 msgstr ""
+"S'ha produït un error en preparar ccache per al servei \"host\" al client "
+"mitjançant la taula de claus predeterminada: %s.\n"
 
 #: src/ipa.c:793
 #, c-format
 msgid ""
 "Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
 msgstr ""
+"S'ha produït un error en preparar ccache per a \"%s\" al client mitjançant "
+"la taula de claus predeterminada: %s.\n"
 
 #: src/ipa.c:800
 #, c-format
@@ -1291,90 +1374,94 @@ msgid ""
 "Error setting up ccache for \"host\" service on client using keytab \"%s\": "
 "%s.\n"
 msgstr ""
+"S'ha produït un error en preparar ccache per al servei \"host\" al client "
+"mitjançant la taula de claus \"%s\": %s.\n"
 
 #: src/ipa.c:804
 #, c-format
 msgid "Error setting up ccache for \"%s\" on client using keytab \"%s\": %s.\n"
 msgstr ""
+"S'ha produït un error en preparar ccache per a \"%s\" al client mitjançant "
+"la taula de claus \"%s\": %s.\n"
 
 #: src/main.c:137
 #, c-format
 msgid "Usage: %s [-s|-S] [-n|-f] [-d LEVEL] [-p FILE] [-F]\n"
-msgstr ""
+msgstr "Ús: %s [-s|-S] [-n|-f] [-d NIVELL] [-p FITXER] [-F]\n"
 
 #: src/main.c:141
 msgid "\t-s         use session bus\n"
-msgstr ""
+msgstr "\t-s         utilitza el bus de la sessió\n"
 
 #: src/main.c:142
 msgid "\t-S         use system bus\n"
-msgstr ""
+msgstr "\t-S         utilitza el bus del sistema\n"
 
 #: src/main.c:143
 msgid "\t-l         start a dedicated listening socket\n"
-msgstr ""
+msgstr "\t-l         inicia un socket dedicat a escoltar\n"
 
 #: src/main.c:144
 msgid "\t-L         only use a dedicated listening socket\n"
-msgstr ""
+msgstr "\t-L         tan sols utilitza el socket dedicat a escoltar\n"
 
 #: src/main.c:145
 msgid "\t-P PATH    specify the dedicated listening socket\n"
-msgstr ""
+msgstr "\t-P CAMÍ    especifica el socket dedicat a escoltar\n"
 
 #: src/main.c:146
 msgid "\t-n         don't become a daemon\n"
-msgstr ""
+msgstr "\t-n         no et converteixis en un dimoni\n"
 
 #: src/main.c:147
 msgid "\t-f         do become a daemon\n"
-msgstr ""
+msgstr "\t-f         converteix-te en un dimoni\n"
 
 #: src/main.c:148
 msgid "\t-b TIMEOUT bus-activated, idle timeout\n"
-msgstr ""
+msgstr "\t-b TIMEOUT activat per bus, temps d'expiració d'inactivitat\n"
 
 #: src/main.c:149
 msgid "\t-B         don't use an idle timeout\n"
-msgstr ""
+msgstr "\t-B         no utilitzis un temps d'expiració d'inactivitat\n"
 
 #: src/main.c:150
 msgid "\t-d LEVEL   set debugging level (implies -n)\n"
-msgstr ""
+msgstr "\t-d NIVELL   estableix el nivell d depuració (implica -n)\n"
 
 #: src/main.c:151
 msgid "\t-c COMMAND start COMMAND and exit when it does\n"
-msgstr ""
+msgstr "\t-c ORDRE inicia l'ORDRE i surt quan també ho faci l'ordre.\n"
 
 #: src/main.c:152
 msgid "\t-p FILE    write service PID to file\n"
-msgstr ""
+msgstr "\t-p FITXER    escriu el PID del servei al fitxer\n"
 
 #: src/main.c:153
 msgid "\t-F         force NSS into FIPS mode\n"
-msgstr ""
+msgstr "\t-F         força NSS al mode FIPS\n"
 
 #: src/tdbush.c:119 src/tdbush.c:1898 src/tdbush.c:2301
 msgid "An internal error has occurred."
-msgstr ""
+msgstr "S'ha produït un error intern."
 
 #: src/tdbush.c:183
 msgid "No matching entry found.\n"
-msgstr ""
+msgstr "No s'han trobat cap entrada que coincideixi.\n"
 
 #: src/tdbush.c:345
 #, c-format
 msgid "There is already a CA with the nickname \"%s\"."
-msgstr ""
+msgstr "Ja hi ha una AC amb el sobrenom \"%s\"."
 
 #: src/tdbush.c:437
 msgid "Certificate storage type not specified."
-msgstr ""
+msgstr "No s'ha especificat el tipus d'emmagatzematge de certificat,"
 
 #: src/tdbush.c:450
 #, c-format
 msgid "Certificate storage type \"%s\" not supported."
-msgstr ""
+msgstr "El tipus d'emmagatzematge de certificat \"%s\" no està suportat."
 
 #: src/tdbush.c:487 src/tdbush.c:520 src/tdbush.c:579 src/tdbush.c:764
 #: src/tdbush.c:823 src/tdbush.c:926 src/tdbush.c:971 src/tdbush.c:1026
@@ -1382,11 +1469,12 @@ msgstr ""
 #: src/tdbush.c:3114 src/tdbush.c:3258
 #, c-format
 msgid "The location \"%s\" must be an absolute path."
-msgstr ""
+msgstr "La localització \"%s\" ha de ser un camí absolut."
 
 #: src/tdbush.c:514 src/tdbush.c:573 src/tdbush.c:642
 msgid "Certificate storage location not specified."
 msgstr ""
+"No s'ha especificat la localització de l'emmagatzematge del certificat."
 
 #: src/tdbush.c:532 src/tdbush.c:776 src/tdbush.c:983 src/tdbush.c:1083
 #: src/tdbush.c:1183
@@ -1395,98 +1483,106 @@ msgid ""
 "The parent of location \"%s\" could not be accessed due to insufficient "
 "permissions."
 msgstr ""
+"No es pot accedir a la localització pare \"%s\" a causa de permisos "
+"insuficients."
 
 #: src/tdbush.c:540 src/tdbush.c:784 src/tdbush.c:991 src/tdbush.c:1091
 #: src/tdbush.c:1191
 #, c-format
 msgid "The parent of location \"%s\" must be a valid directory."
-msgstr ""
+msgstr "El pare de la localització \"%s\" ha de ser un directori vàlid."
 
 #: src/tdbush.c:551 src/tdbush.c:795 src/tdbush.c:1002 src/tdbush.c:1102
 #: src/tdbush.c:1202
 #, c-format
 msgid "The location \"%s\" must be a file."
-msgstr ""
+msgstr "La localització \"%s\" ha de ser un fitxer."
 
 #: src/tdbush.c:591 src/tdbush.c:938 src/tdbush.c:1038 src/tdbush.c:1138
 #, c-format
 msgid ""
 "The location \"%s\" could not be accessed due to insufficient permissions."
 msgstr ""
+"No es pot accedir a la localització \"%s\" a causa de permisos insuficients."
 
 #: src/tdbush.c:599 src/tdbush.c:832 src/tdbush.c:946 src/tdbush.c:1046
 #: src/tdbush.c:1146
 #, c-format
 msgid "The location \"%s\" must be a directory."
-msgstr ""
+msgstr "La localització \"%s\" ha de ser un directori."
 
 #: src/tdbush.c:620
 msgid "Certificate nickname not specified."
-msgstr ""
+msgstr "No s'ha especificat el sobrenom del certificat."
 
 #: src/tdbush.c:663 src/tdbush.c:3005
 #, c-format
 msgid "There is already a request with the nickname \"%s\"."
-msgstr ""
+msgstr "Ja hi ha una sol·licitud amb el sobrenom \"%s\"."
 
 #: src/tdbush.c:699
 #, c-format
 msgid ""
 "Certificate at same location is already used by request with nickname \"%s\"."
 msgstr ""
+"El certificat a la mateixa localització ja està utilitzat per la sol·licitud "
+"amb sobrenom \"%s\"."
 
 #: src/tdbush.c:732
 #, c-format
 msgid "Key storage type \"%s\" not supported."
-msgstr ""
+msgstr "El tipus d'emmagatzematge de clau \"%s\" no està suportat."
 
 #: src/tdbush.c:758 src/tdbush.c:817
 msgid "Key storage location not specified."
-msgstr ""
+msgstr "No s'ha especificat la localització de l'emmagatzematge de la clau."
 
 #: src/tdbush.c:851
 msgid "Key nickname not specified."
-msgstr ""
+msgstr "No s'ha especificat el sobrenom de la clau."
 
 #: src/tdbush.c:907
 #, c-format
 msgid "Key at same location is already used by request with nickname \"%s\"."
 msgstr ""
+"La clau a la mateixa localització ja està utilitzada per la sol·licitud amb "
+"sobrenom \"%s\"."
 
 #: src/tdbush.c:1278
 #, c-format
 msgid "No support for key type \"%s\"."
-msgstr ""
+msgstr "Sense suport per al tipus de clau \"%s\"."
 
 #: src/tdbush.c:1361
 msgid "No such CA."
-msgstr ""
+msgstr "No existeix l'AC."
 
 #: src/tdbush.c:3023
 #, c-format
 msgid "Certificate authority \"%s\" not known."
-msgstr ""
+msgstr "Autoritat de certificació \"%s\" no coneguda."
 
 #: src/tdbush.c:3394
 msgid "Unrecognized parameter or wrong value type."
-msgstr ""
+msgstr "Paràmetre no reconegut o tipus de valor erroni."
 
-#: src/tdbush.c:4885
+#: src/tdbush.c:4888
 msgid "Error parsing arguments."
-msgstr ""
+msgstr "S'ha produït un error en analitzar sintàcticament els arguments."
 
-#: src/tdbush.c:4939
+#: src/tdbush.c:4942
 msgid "Unrecognized property name."
-msgstr ""
+msgstr "Nom de propietat no reconeguda."
 
 #: src/tdbusm.c:2153
 msgid "Insufficient access.  Please retry operation as root.\n"
-msgstr ""
+msgstr "Accés insuficient.  Si us plau, torneu a repetir-ho com a root.\n"
 
 #: src/tdbusm.c:2157
 msgid "Please verify that the certmonger service has been started.\n"
-msgstr ""
+msgstr "Si us plau, verifiqueu que s'hagi iniciat el servei certmonger.\n"
 
 #: src/tdbusm.c:2160
 msgid "Please verify that the certmonger service is still running.\n"
 msgstr ""
+"Si us plau, verifiqueu que encara s'estigui executant el servei certmonger.\n"

@@ -8,9 +8,9 @@
 # Porcsin László <dzsolly85@gmail.com>, 2015. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: certmonger 0.76.8\n"
+"Project-Id-Version: certmonger 0.77\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
-"POT-Creation-Date: 2015-02-27 16:10-0500\n"
+"POT-Creation-Date: 2015-04-13 19:19-0400\n"
 "PO-Revision-Date: 2015-02-22 02:25-0500\n"
 "Last-Translator: Porcsin László <dzsolly85@gmail.com>\n"
 "Language-Team: Hungarian (http://www.transifex.com/projects/p/certmonger/"
@@ -20,14 +20,14 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Zanata 3.5.1\n"
+"X-Generator: Zanata 3.6.2\n"
 
 #: src/certmaster.c:129
 #, c-format
 msgid "Unable to determine hostname of CA.\n"
 msgstr "CA hosztnevének meghatározása meghiúsult.\n"
 
-#: src/certmaster.c:146 src/dogtag.c:480 src/ipa.c:745
+#: src/certmaster.c:146 src/dogtag.c:560 src/ipa.c:745
 #, c-format
 msgid "Unable to read signing request.\n"
 msgstr "Bejelentkezési kérés olvasása meghiúsult.\n"
@@ -52,69 +52,75 @@ msgstr "Hiba a szerver válasz értelmezésében.\n"
 msgid "Server error.\n"
 msgstr "Szerver hiba.\n"
 
-#: src/dogtag.c:239
+#: src/dogtag.c:254
 #, c-format
 msgid "Profile params (-O) must be in the form of param=value.\n"
 msgstr ""
 
-#: src/dogtag.c:246 src/dogtag.c:251 src/getcert.c:277
+#: src/dogtag.c:261 src/dogtag.c:266 src/dogtag.c:283 src/dogtag.c:288
+#: src/getcert.c:277
 #, c-format
 msgid "Out of memory.\n"
 msgstr "Elfogyott a rendelkezésre álló memória.\n"
 
-#: src/dogtag.c:390
+#: src/dogtag.c:276
+#, c-format
+msgid "Submit params (-o) must be in the form of param=value.\n"
+msgstr ""
+
+#: src/dogtag.c:451 src/dogtag.c:456 src/dogtag.c:485
+#, fuzzy, c-format
+msgid "No agent credentials specified, and no default known.\n"
+msgstr "Nincs ágens URL megadva (-A), és nincs ismert alapértelmezett sem.\n"
+
+#: src/dogtag.c:461
 #, c-format
 msgid "Requested renewal, but no serial number provided.\n"
 msgstr ""
 
-#: src/dogtag.c:394
+#: src/dogtag.c:465
 #, c-format
 msgid "No end-entity URL (-E) given, and no default known.\n"
 msgstr ""
 "Nincs végentitású URL megadva (-E), és nincs ismert alapértelmezett sem.\n"
 
-#: src/dogtag.c:399 src/dogtag.c:409 src/dogtag.c:506
+#: src/dogtag.c:470 src/dogtag.c:480 src/dogtag.c:628
 #, c-format
 msgid "No agent URL (-A) given, and no default known.\n"
 msgstr "Nincs ágens URL megadva (-A), és nincs ismert alapértelmezett sem.\n"
 
-#: src/dogtag.c:404
+#: src/dogtag.c:475
 #, c-format
 msgid "No profile/template (-T) given, and no default known.\n"
 msgstr ""
 "Nincs profil / sablon megadva (-T), és nincs ismert alapértelmezett sem.\n"
 
-#: src/dogtag.c:414
-#, fuzzy, c-format
-msgid "No agent credentials specified, and no default known.\n"
-msgstr "Nincs ágens URL megadva (-A), és nincs ismert alapértelmezett sem.\n"
-
-#: src/dogtag.c:424
+#: src/dogtag.c:495
 #, c-format
 msgid "Error shutting down NSS.\n"
 msgstr ""
 
-#: src/dogtag.c:453 src/dogtag.c:663
+#: src/dogtag.c:530 src/dogtag.c:810
 #, c-format
 msgid "Internal error: unknown state.\n"
 msgstr "Belső hiba: ismeretlen állapot.\n"
 
-#: src/dogtag.c:512
+#: src/dogtag.c:634
 #, c-format
 msgid "No agent credentials (-n) given, but they are needed.\n"
 msgstr ""
 
-#: src/dogtag.c:645
+#: src/dogtag.c:790
 #, c-format
 msgid "Error %d connecting to %s: %s.\n"
 msgstr "Hiba: %d csatlakozik ide - %s: %s.\n"
 
-#: src/dogtag.c:650
+#: src/dogtag.c:795
 #, c-format
 msgid "Error %d connecting to %s.\n"
 msgstr "Hiba: %d csatlakozik ide - %s.\n"
 
-#: src/dogtag.c:657
+#: src/dogtag.c:803
 #, c-format
 msgid "Internal error: no response to \"%s?%s\".\n"
 msgstr "Belső hiba: nincs válasz erre - \"%s?%s\".\n"
@@ -547,9 +553,9 @@ msgid "\teku: "
 msgstr "<span class=\"whitespace other\" title=\"Tab\">»</span>eku: "
 
 #: src/getcert.c:3160
-#, fuzzy, c-format
+#, c-format
 msgid "\tcertificate template/profile: %s\n"
-msgstr "\ttanusítvány: típusa=%s,helye='%s'"
+msgstr ""
 
 #: src/getcert.c:3166 src/getcert.c:3489
 #, c-format
@@ -691,29 +697,29 @@ msgid "\terror refreshing CA data\n"
 msgstr ""
 
 #: src/getcert.c:3722 src/getcert.c:3820 src/getcert.c:3941 src/getcert.c:4021
-#, fuzzy, c-format
+#, c-format
 msgid "CA nickname not specified.\n"
-msgstr "Kulcs elnevezés nem meghatározott."
+msgstr ""
 
 #: src/getcert.c:3727 src/getcert.c:3946
-#, fuzzy, c-format
+#, c-format
 msgid "CA helper command not specified.\n"
-msgstr "Kulcs elnevezés nem meghatározott."
+msgstr ""
 
 #: src/getcert.c:3751 src/getcert.c:3869
-#, fuzzy, c-format
+#, c-format
 msgid "New CA \"%s\" added.\n"
-msgstr "Új aláírási kérelem \"%s\" hozzáadva.\n"
+msgstr ""
 
 #: src/getcert.c:3754 src/getcert.c:3889
-#, fuzzy, c-format
+#, c-format
 msgid "New CA could not be added.\n"
-msgstr "Új aláírási kérelem nem adható hozzá.\n"
+msgstr ""
 
 #: src/getcert.c:3825
-#, fuzzy, c-format
+#, c-format
 msgid "server URL not specified.\n"
-msgstr "Kulcs elnevezés nem meghatározott."
+msgstr ""
 
 #: src/getcert.c:3830
 #, c-format
@@ -726,29 +732,29 @@ msgid "Error building command line.\n"
 msgstr ""
 
 #: src/getcert.c:3883
-#, fuzzy, c-format
+#, c-format
 msgid "Error setting CA identifier.\n"
-msgstr "Hiba történt a XMLRPC-re történő beállításkor\n"
+msgstr ""
 
 #: src/getcert.c:3968
-#, fuzzy, c-format
+#, c-format
 msgid "CA \"%s\" modified.\n"
-msgstr "\"%s\" kérés módosult.\n"
+msgstr ""
 
 #: src/getcert.c:3971
-#, fuzzy, c-format
+#, c-format
 msgid "CA could not be modified.\n"
-msgstr "\"%s\" kérés nem módosítható.\n"
+msgstr ""
 
 #: src/getcert.c:4049
-#, fuzzy, c-format
+#, c-format
 msgid "CA \"%s\" removed.\n"
-msgstr "\"%s\" kérés eltávolítva.\n"
+msgstr ""
 
 #: src/getcert.c:4051
-#, fuzzy, c-format
+#, c-format
 msgid "CA could not be removed.\n"
-msgstr "\"%s\" kérés nem távolítható el.\n"
+msgstr ""
 
 #: src/getcert.c:4088
 #, c-format
@@ -906,9 +912,8 @@ msgid "  -A ADDRESS\tset requested IP address\n"
 msgstr ""
 
 #: src/getcert.c:4125 src/getcert.c:4172 src/getcert.c:4233
-#, fuzzy
 msgid "  -l FILE\tfile which holds an optional challenge password\n"
-msgstr "  -p FILE\tfájl ami a titkosító PIN-t tartalmazza\n"
+msgstr ""
 
 #: src/getcert.c:4126 src/getcert.c:4173 src/getcert.c:4234
 msgid "  -L PASSWORD\tan optional challenge password value\n"
@@ -1118,9 +1123,8 @@ msgid "Usage: %s refresh [options]\n"
 msgstr ""
 
 #: src/getcert.c:4283
-#, fuzzy
 msgid "  -a\trefresh information about all outstanding requests\n"
-msgstr "  -r\tcsak a kiemelkedő kérésekről szóló információkat listázza\n"
+msgstr ""
 
 #: src/getcert.c:4303
 #, c-format
@@ -1172,28 +1176,26 @@ msgid "  -c CA\trefresh information about the CA with this name\n"
 msgstr ""
 
 #: src/getcert.c:4342
-#, fuzzy
 msgid "  -a\trefresh information about all known CAs\n"
-msgstr "  -r\tcsak a kiemelkedő kérésekről szóló információkat listázza\n"
+msgstr ""
 
 #: src/getcert.c:4353
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s add-ca [options]\n"
-msgstr "Alkalmazás: %s list-cas [opciók]\n"
+msgstr ""
 
 #: src/getcert.c:4357 src/getcert.c:4371
-#, fuzzy
 msgid "  -c CA\t\tnickname to give to the new CA configuration\n"
-msgstr "  -I NAME\telnevezés a nyomonkövetési kéréshez\n"
+msgstr ""
 
 #: src/getcert.c:4358
 msgid "  -e CMD\thelper command to run to communicate with CA\n"
 msgstr ""
 
 #: src/getcert.c:4367
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s add-scep-ca [options]\n"
-msgstr "Alkalmazás: %s list-cas [opciók]\n"
+msgstr ""
 
 #: src/getcert.c:4372
 msgid "  -u URL\tlocation of SCEP server\n"
@@ -1204,23 +1206,21 @@ msgid "  -i ID\t\tCA identifier\n"
 msgstr ""
 
 #: src/getcert.c:4374
-#, fuzzy
 msgid "  -R FILE\tfile containing CA's certificate\n"
-msgstr "  -f FILE\tPEM fájl az aláírásért\n"
+msgstr ""
 
 #: src/getcert.c:4375
-#, fuzzy
 msgid "  -r FILE\tfile containing RA's certificate\n"
-msgstr "  -f FILE\tPEM fájl az aláírásért\n"
+msgstr ""
 
 #: src/getcert.c:4376
 msgid "  -I FILE\tfile containing certificates in RA's certifying chain\n"
 msgstr ""
 
 #: src/getcert.c:4385
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s modify-ca [options]\n"
-msgstr "Alkalmazás: %s list-cas [opciók]\n"
+msgstr ""
 
 #: src/getcert.c:4389
 msgid "  -c CA\t\tnickname of the CA configuration\n"
@@ -1231,14 +1231,13 @@ msgid "  -e CMD\tupdated helper command to run to communicate with CA\n"
 msgstr ""
 
 #: src/getcert.c:4399
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s remove-ca [options]\n"
-msgstr "Használata: %s kérés [opciók]\n"
+msgstr ""
 
 #: src/getcert.c:4403
-#, fuzzy
 msgid "  -c CA\tnickname of CA configuration to remove\n"
-msgstr "  -I NAME\telnevezés amelyet hozzárendelhetünk az igényléshez\n"
+msgstr ""
 
 #: src/getcert.c:4418
 #, c-format
@@ -1557,11 +1556,11 @@ msgstr "\"%s\" nevű tanúsítvány hatóság nem ismert."
 msgid "Unrecognized parameter or wrong value type."
 msgstr "Ismeretlen paraméter, vagy rossz értéktípus."
 
-#: src/tdbush.c:4885
+#: src/tdbush.c:4888
 msgid "Error parsing arguments."
 msgstr ""
 
-#: src/tdbush.c:4939
+#: src/tdbush.c:4942
 msgid "Unrecognized property name."
 msgstr ""
 
