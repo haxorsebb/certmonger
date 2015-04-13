@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.77.1
+Version:	0.77.2
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -239,6 +239,18 @@ exit 0
 %endif
 
 %changelog
+* Tue Apr 14 2015 Nalin Dahyabhai <nalin@redhat.com> 0.77.2-1
+- expose the certificate's not-valid-before and not-valid-after dates as a
+  property over D-Bus (ticket #41)
+- give the local signer its own configuration option to set the lifetime
+  of its signing certificate, falling back to the lifetime configured for
+  the self-signer as a default to match the previous behavior
+- fix a potential read segfault parsing the output of an enrollment helper,
+  introduced in 0.77 (thanks to Steve Neuharth)
+- read the ns-certtype extension value in certificates
+- request an enrollment certtype extension to CSRs if we have a profile name
+  that we want to use (ticket #17, possibly part of IPA ticket #57)
+
 * Fri Feb 27 2015 Nalin Dahyabhai <nalin@redhat.com> 0.77.1-1
 - update to 0.77
   - add initial, still rough, SCEP support (#1140241,#1161768)
