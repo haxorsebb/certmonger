@@ -993,7 +993,7 @@ cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 		cm_log(1, "Out of memory.\n");
 		goto done;
 	}
-	for (i = 0; (roots != NULL) && (roots [i] != NULL); i++) {
+	for (i = 0; (roots != NULL) && (roots[i] != NULL); i++) {
 		s = talloc_strdup(parent, roots[i]);
 		if (s == NULL) {
 			cm_log(1, "Out of memory.\n");
