@@ -96,6 +96,8 @@ main(int argc, char **argv)
 			others[n_others++] = p;
 		}
 	}
+	roots[n_roots] = NULL;
+	others[n_others] = NULL;
 
 	len = 0;
 	data = NULL;
