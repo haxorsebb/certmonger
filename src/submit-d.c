@@ -319,22 +319,38 @@ cm_submit_d_text_node(void *parent, xmlXPathObjectPtr obj)
 	return NULL;
 }
 
+static xmlXPathObjectPtr
+node_eval(const xmlChar *base, const xmlChar *rel, xmlXPathContextPtr xpctx)
+{
+	xmlXPathObjectPtr ret = NULL;
+	char *path = NULL;
+	xmlChar *xpath = NULL;
+
+	path = talloc_asprintf(NULL, "%s/%s", base, rel);
+	xpath = xmlCharStrdup(path);
+	ret = xmlXPathEval(xpath, xpctx);
+	xmlFree(xpath);
+	talloc_free(path);
+	return ret;
+}
+
 static char *
 cm_submit_d_xml_value_if(void *parent, xmlXPathContextPtr xpctx,
 			 xmlNodePtr node,
 			 const char *value_path, const char *boolean_path1,
 			 const char *boolean_path2)
 {
-	xmlChar *vpath, *bpath1, *bpath2;
+	xmlChar *npath, *vpath, *bpath1, *bpath2;
 	xmlXPathObjectPtr vobj, bobj1, bobj2;
 	char *v, *b1, *b2;
 
 	vpath = xmlCharStrdup(value_path);
 	bpath1 = xmlCharStrdup(boolean_path1);
 	bpath2 = xmlCharStrdup(boolean_path2);
+	npath = xmlGetNodePath(node);
 	vobj = NULL;
 	if (vpath != NULL) {
-		vobj = xmlXPathNodeEval(node, vpath, xpctx);
+		vobj = node_eval(npath, vpath, xpctx);
 		xmlFree(vpath);
 	}
 	v = cm_submit_d_text_node(parent, vobj);
@@ -344,12 +360,12 @@ cm_submit_d_xml_value_if(void *parent, xmlXPathContextPtr xpctx,
 	}
 	bobj1 = NULL;
 	if (bpath1 != NULL) {
-		bobj1 = xmlXPathNodeEval(node, bpath1, xpctx);
+		bobj1 = node_eval(npath, bpath1, xpctx);
 		xmlFree(bpath1);
 	}
 	bobj2 = NULL;
 	if (bpath2 != NULL) {
-		bobj2 = xmlXPathNodeEval(node, bpath2, xpctx);
+		bobj2 = node_eval(npath, bpath2, xpctx);
 		xmlFree(bpath2);
 	}
 	if (bobj1 != NULL) {
