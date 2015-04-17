@@ -633,6 +633,8 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		if (NSS_ShutdownContext(ctx) != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
+		util_set_db_entry_key_owner(entry->cm_key_storage_location, entry);
+		util_set_db_entry_cert_owner(entry->cm_cert_storage_location, entry);
 	}
 	if (status != 0) {
 		_exit(status);

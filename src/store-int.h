@@ -18,6 +18,7 @@
 #ifndef cmstore_int_h
 #define cmstore_int_h
 
+#include <sys/stat.h>
 #include <time.h>
 
 struct cm_store_entry {
@@ -55,6 +56,8 @@ struct cm_store_entry {
 	char *cm_key_nickname;
 	char *cm_key_pin;
 	char *cm_key_pin_file;
+	char *cm_key_owner;
+	mode_t cm_key_perms;
 	/* Cached plain public key (used for computing subject and authority key IDs) */
 	char *cm_key_pubkey, *cm_key_next_pubkey;
 	/* Cached public key info (used in signing requests when using NSS) */
@@ -68,6 +71,8 @@ struct cm_store_entry {
 	char *cm_cert_storage_location;
 	char *cm_cert_token;
 	char *cm_cert_nickname;
+	char *cm_cert_owner;
+	mode_t cm_cert_perms;
 	/* Cached certificate issuer/serial/subject/spki/expiration */
 	char *cm_cert_issuer_der;
 	char *cm_cert_issuer;

@@ -117,7 +117,8 @@ read_file_contents(const char *filename, char *what, PRBool critical)
 
 static void
 write_file_contents(const char *filename, const char *contents,
-		    const char *what, PRBool critical)
+		    const char *what, PRBool is_key,
+		    struct cm_store_entry *entry)
 {
 	FILE *fp;
 	int i;
@@ -137,6 +138,11 @@ write_file_contents(const char *filename, const char *contents,
 			_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
 			break;
 		}
+	}
+	if (is_key) {
+		util_set_fd_entry_key_owner(fileno(fp), filename, entry);
+	} else {
+		util_set_fd_entry_cert_owner(fileno(fp), filename, entry);
 	}
 	n = 0;
 	len = strlen(contents);
@@ -190,6 +196,10 @@ cm_certsave_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					     "key file", PR_TRUE);
 		old_cert = read_file_contents(entry->cm_cert_storage_location,
 					      "certificate file", PR_FALSE);
+	} else
+	if (entry->cm_key_storage_location != NULL) {
+		old_key = read_file_contents(entry->cm_key_storage_location,
+					     "key file", PR_TRUE);
 	}
 
 	if (entry->cm_key_preserve && (old_cert != NULL) && (old_key != NULL)) {
@@ -252,19 +262,32 @@ cm_certsave_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 							write_file_contents(old_keyfile,
 									    old_key,
 									    "old key file",
-									    PR_TRUE);
+									    PR_TRUE,
+									    entry);
 						}
 						write_file_contents(entry->cm_key_storage_location,
 								    next_key,
 								    "key file",
-								    PR_TRUE);
+								    PR_TRUE,
+								    entry);
 						if (remove(next_keyfile) != 0) {
 							cm_log(1, "Error removing \"%s\": %s.\n",
 							       next_keyfile, strerror(errno));
 						}
+					} else
+					if ((entry->cm_key_storage_location != NULL) &&
+					    (old_key != NULL)) {
+						write_file_contents(entry->cm_key_storage_location,
+								    old_key,
+								    "key file",
+								    PR_TRUE,
+								    entry);
 					}
 					status = CM_CERTSAVE_STATUS_SAVED;
 				}
+				util_set_fd_entry_cert_owner(fileno(pem),
+							     entry->cm_cert_storage_location,
+							     entry);
 				fclose(pem);
 			} else {
 				switch (errno) {

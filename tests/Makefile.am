@@ -134,7 +134,13 @@ EXTRA_DIST = \
 	032-chain/expected.out \
 	032-chain/run.sh \
 	033-scep/expected.out \
-	033-scep/run.sh
+	033-scep/run.sh \
+	034-perms/expected.out \
+	034-perms/run.sh \
+	034-perms-dbm/expected.out \
+	034-perms-dbm/run.sh \
+	034-perms-sql/expected.out \
+	034-perms-sql/run.sh
 
 subdirs = \
 	001-keyiread \
@@ -172,7 +178,8 @@ subdirs = \
 	030-rekey \
 	031-pkcs7 \
 	032-chain \
-	033-scep
+	033-scep \
+	034-perms
 
 if HAVE_DBM_NSSDB
 subdirs += \
@@ -181,7 +188,8 @@ subdirs += \
 	012-dbadd-dbm \
 	013-enckey-dbm \
 	015-lockedkey-dbm \
-	017-notoken-dbm
+	017-notoken-dbm \
+	034-perms-dbm
 endif
 
 if HAVE_SQL_NSSDB
@@ -191,7 +199,8 @@ subdirs += \
 	012-dbadd-sql \
 	013-enckey-sql \
 	015-lockedkey-sql \
-	017-notoken-sql
+	017-notoken-sql \
+	034-perms-sql
 endif
 
 if HAVE_DSA

@@ -744,6 +744,7 @@ retry_gen:
 	PK11_FreeSlotList(slotlist);
 	error = NSS_ShutdownContext(ctx);
 	free(nickname);
+	util_set_db_entry_key_owner(entry->cm_key_storage_location, entry);
 	if (error != SECSuccess) {
 		cm_log(1, "Error shutting down NSS.\n");
 	}

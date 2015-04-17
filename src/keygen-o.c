@@ -313,6 +313,7 @@ retry_gen:
 		}
 		_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
 	}
+	util_set_fd_entry_key_owner(keyfd, filename, entry);
 	free(filename);
 
 	if (cm_pin_read_for_key(entry, &pin) != 0) {

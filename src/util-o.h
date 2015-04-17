@@ -18,8 +18,16 @@
 #ifndef utilo_h
 #define utilo_h
 
+struct cm_store_entry;
+
 void util_o_init(void);
 char *util_build_next_filename(const char *prefix, const char *marker);
 char *util_build_old_filename(const char *prefix, const char *serial);
+void util_set_fd_owner_perms(int fd, const char *filename,
+			     const char *owner, mode_t perms);
+void util_set_fd_entry_key_owner(int keyfd, const char *filename,
+				 struct cm_store_entry *entry);
+void util_set_fd_entry_cert_owner(int certfd, const char *filename,
+				  struct cm_store_entry *entry);
 
 #endif

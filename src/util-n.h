@@ -18,10 +18,16 @@
 #ifndef utiln_h
 #define utiln_h
 
+struct cm_store_entry;
+
 enum force_fips_mode { do_not_force_fips, do_force_fips };
 void util_n_set_fips(enum force_fips_mode force);
 const char *util_n_fips_hook(void);
 char *util_build_next_nickname(const char *prefix, const char *marker);
 char *util_build_old_nickname(const char *prefix, const char *serial);
+void util_set_db_entry_key_owner(const char *dbdir,
+				 struct cm_store_entry *entry);
+void util_set_db_entry_cert_owner(const char *dbdir,
+				  struct cm_store_entry *entry);
 
 #endif

@@ -65,6 +65,8 @@ enum cm_store_file_field {
 	cm_store_entry_field_key_nickname,
 	cm_store_entry_field_key_pin,
 	cm_store_entry_field_key_pin_file,
+	cm_store_entry_field_key_owner,
+	cm_store_entry_field_key_perms,
 	cm_store_entry_field_key_pubkey,
 	cm_store_entry_field_key_pubkey_info,
 
@@ -75,6 +77,8 @@ enum cm_store_file_field {
 	cm_store_entry_field_cert_storage_location,
 	cm_store_entry_field_cert_token,
 	cm_store_entry_field_cert_nickname,
+	cm_store_entry_field_cert_owner,
+	cm_store_entry_field_cert_perms,
 
 	cm_store_entry_field_cert_issuer_der,
 	cm_store_entry_field_cert_issuer,
@@ -225,6 +229,8 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_key_nickname, "key_nickname"},
 	{cm_store_entry_field_key_pin, "key_pin"},
 	{cm_store_entry_field_key_pin_file, "key_pin_file"},
+	{cm_store_entry_field_key_owner, "key_owner"},
+	{cm_store_entry_field_key_perms, "key_perms"},
 	{cm_store_entry_field_key_pubkey, "key_pubkey"},
 	{cm_store_entry_field_key_pubkey_info, "key_pubkey_info"},
 
@@ -235,6 +241,8 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_cert_storage_location, "cert_storage_location"},
 	{cm_store_entry_field_cert_token, "cert_token"},
 	{cm_store_entry_field_cert_nickname, "cert_nickname"},
+	{cm_store_entry_field_cert_owner, "cert_owner"},
+	{cm_store_entry_field_cert_perms, "cert_perms"},
 
 	{cm_store_entry_field_cert_issuer_der, "cert_issuer_der"},
 	{cm_store_entry_field_cert_issuer, "cert_issuer"},
@@ -621,7 +629,7 @@ static struct cm_store_entry *
 cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 {
 	struct cm_store_entry *ret;
-	char **s, *p;
+	char **s, *p, *end;
 	int i;
 	enum cm_store_file_field field;
 
@@ -828,6 +836,17 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 					ret->cm_key_pin = NULL;
 				}
 				break;
+			case cm_store_entry_field_key_owner:
+				ret->cm_key_owner = free_if_empty(p);
+				break;
+			case cm_store_entry_field_key_perms:
+				if (strlen(p) > 0) {
+					ret->cm_key_perms = strtoul(p, &end, 8);
+					if ((end == NULL) || (*end != '\0')) {
+						ret->cm_key_perms = 0;
+					}
+				}
+				break;
 			case cm_store_entry_field_key_pubkey:
 				ret->cm_key_pubkey = free_if_empty(p);
 				break;
@@ -868,6 +887,17 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 				break;
 			case cm_store_entry_field_cert_nickname:
 				ret->cm_cert_nickname = free_if_empty(p);
+				break;
+			case cm_store_entry_field_cert_owner:
+				ret->cm_cert_owner = free_if_empty(p);
+				break;
+			case cm_store_entry_field_cert_perms:
+				if (strlen(p) > 0) {
+					ret->cm_cert_perms = strtoul(p, &end, 8);
+					if ((end == NULL) || (*end != '\0')) {
+						ret->cm_cert_perms = 0;
+					}
+				}
 				break;
 			case cm_store_entry_field_cert_issuer_der:
 				ret->cm_cert_issuer_der = free_if_empty(p);
@@ -1205,6 +1235,8 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_key_nickname:
 			case cm_store_entry_field_key_pin:
 			case cm_store_entry_field_key_pin_file:
+			case cm_store_entry_field_key_owner:
+			case cm_store_entry_field_key_perms:
 			case cm_store_entry_field_key_pubkey:
 			case cm_store_entry_field_key_pubkey_info:
 			case cm_store_entry_field_key_next_pubkey:
@@ -1213,6 +1245,8 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_cert_storage_location:
 			case cm_store_entry_field_cert_token:
 			case cm_store_entry_field_cert_nickname:
+			case cm_store_entry_field_cert_owner:
+			case cm_store_entry_field_cert_perms:
 			case cm_store_entry_field_cert_issuer_der:
 			case cm_store_entry_field_cert_issuer:
 			case cm_store_entry_field_cert_serial:
@@ -1436,6 +1470,16 @@ cm_store_files_ca_read(void *parent, const char *filename)
 		ret = NULL;
 	}
 	return ret;
+}
+
+static int
+cm_store_file_write_octal(FILE *fp, enum cm_store_file_field field, unsigned long value)
+{
+	fprintf(fp, "%s=%lo\n", cm_store_file_line_of_field(field), value);
+	if (ferror(fp)) {
+		return -1;
+	}
+	return 0;
 }
 
 static int
@@ -1697,6 +1741,10 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 	}
 	cm_store_file_write_str(fp, cm_store_entry_field_key_pin_file,
 				entry->cm_key_pin_file);
+	cm_store_file_write_str(fp, cm_store_entry_field_key_owner,
+				entry->cm_key_owner);
+	cm_store_file_write_octal(fp, cm_store_entry_field_key_perms,
+				  entry->cm_key_perms);
 	cm_store_file_write_str(fp, cm_store_entry_field_key_pubkey,
 				entry->cm_key_pubkey);
 	cm_store_file_write_str(fp, cm_store_entry_field_key_pubkey_info,
@@ -1725,6 +1773,10 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 				entry->cm_cert_token);
 	cm_store_file_write_str(fp, cm_store_entry_field_cert_nickname,
 				entry->cm_cert_nickname);
+	cm_store_file_write_str(fp, cm_store_entry_field_cert_owner,
+				entry->cm_cert_owner);
+	cm_store_file_write_octal(fp, cm_store_entry_field_cert_perms,
+				  entry->cm_cert_perms);
 
 	cm_store_file_write_str(fp, cm_store_entry_field_cert_issuer_der,
 				entry->cm_cert_issuer_der);
@@ -2507,6 +2559,8 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	if (ret->cm_key_pin_file != NULL) {
 		ret->cm_key_pin = NULL;
 	}
+	ret->cm_key_owner = cm_store_maybe_strdup(ret, entry->cm_key_owner);
+	ret->cm_key_perms = entry->cm_key_perms;
 	ret->cm_key_pubkey = cm_store_maybe_strdup(ret, entry->cm_key_pubkey);
 	ret->cm_key_pubkey_info = cm_store_maybe_strdup(ret, entry->cm_key_pubkey_info);
 
@@ -2520,6 +2574,8 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	ret->cm_cert_storage_location = cm_store_maybe_strdup(ret, entry->cm_cert_storage_location);
 	ret->cm_cert_token = cm_store_maybe_strdup(ret, entry->cm_cert_token);
 	ret->cm_cert_nickname = cm_store_maybe_strdup(ret, entry->cm_cert_nickname);
+	ret->cm_cert_owner = cm_store_maybe_strdup(ret, entry->cm_cert_owner);
+	ret->cm_cert_perms = entry->cm_cert_perms;
 
 	ret->cm_cert_issuer_der = cm_store_maybe_strdup(ret, entry->cm_cert_issuer_der);
 	ret->cm_cert_issuer = cm_store_maybe_strdup(ret, entry->cm_cert_issuer);

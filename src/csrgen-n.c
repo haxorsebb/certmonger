@@ -53,6 +53,7 @@
 #include "store-int.h"
 #include "subproc.h"
 #include "util-m.h"
+#include "util-n.h"
 
 struct cm_csrgen_state {
 	struct cm_csrgen_state_pvt pvt;
@@ -980,6 +981,8 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(1, "Error shutting down NSS.\n");
 		}
 		fclose(status);
+		util_set_db_entry_key_owner(entry->cm_key_storage_location,
+					    entry);
 		_exit(0);
 	}
 	/* Clean up. */

@@ -128,6 +128,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
+	util_set_fd_entry_key_owner(fileno(keyfp), filename, entry);
 	if (filename != entry->cm_key_storage_location) {
 		free(filename);
 	}
