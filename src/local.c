@@ -389,12 +389,14 @@ get_signer_info(void *parent, char *localdir, X509 ***roots,
 		fclose(fp);
 
 	}
-	*roots = talloc_array_ptrtype(parent, *roots, sk_X509_num(cas) + 1);
-	if (*roots != NULL) {
-		for (i = 0; i < sk_X509_num(cas); i++) {
-			(*roots)[i] = sk_X509_value(cas, i);
+	if (cas != NULL) {
+		*roots = talloc_array_ptrtype(parent, *roots, sk_X509_num(cas) + 1);
+		if (*roots != NULL) {
+			for (i = 0; i < sk_X509_num(cas); i++) {
+				(*roots)[i] = sk_X509_value(cas, i);
+			}
+			(*roots)[i] = NULL;
 		}
-		(*roots)[i] = NULL;
 	}
 	return CM_SUBMIT_STATUS_ISSUED;
 }
