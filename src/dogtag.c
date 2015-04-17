@@ -659,6 +659,7 @@ main(int argc, char **argv)
 					 "xml=true",
 					 params);
 		use_agent_approval = FALSE;
+		break;
 	case op_profiles:
 		/* Retrieving the list of profiles. */
 		url = talloc_asprintf(ctx, "%s/profileList", eeurl);
