@@ -142,7 +142,7 @@ util_set_db_owner_perms(const char *dbdir, const char *filename,
 	struct group *grp;
 	uid_t uid;
 	gid_t gid;
-	struct stat st;
+	struct stat st, before;
 	int fd;
 
 	if (filename == NULL) {
@@ -153,12 +153,22 @@ util_set_db_owner_perms(const char *dbdir, const char *filename,
 		return;
 	}
 	sprintf(pathname, "%s/%s", dbdir, filename);
-	fd = open(pathname, O_RDWR | O_NOFOLLOW);
+	if ((lstat(pathname, &before) == -1) || !S_ISREG(before.st_mode)) {
+		free(pathname);
+		return;
+	}
+	fd = open(pathname, O_RDWR);
 	if (fd == -1) {
 		free(pathname);
 		return;
 	}
 	if ((fstat(fd, &st) == -1) || !S_ISREG(st.st_mode)) {
+		close(fd);
+		free(pathname);
+		return;
+	}
+	if ((st.st_dev != before.st_dev) ||
+	    (st.st_ino != before.st_ino)) {
 		close(fd);
 		free(pathname);
 		return;
