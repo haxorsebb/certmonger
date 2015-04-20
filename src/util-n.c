@@ -175,10 +175,8 @@ util_set_db_owner_perms(const char *dbdir, const char *filename,
 	}
 	if (owner != NULL) {
 		user = strdup(owner);
-		if (strchr(user, ':') == NULL) {
-			group = NULL;
-		} else {
-			group = strchr(user, ':');
+		group = strchr(user, ':');
+		if (group != NULL) {
 			*group++ = '\0';
 			if (strlen(group) == 0) {
 				group = NULL;
