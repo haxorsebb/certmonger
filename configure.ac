@@ -760,6 +760,13 @@ if ! ${configure_dist_target_only:-false} ; then
 	AM_CONDITIONAL(HAVE_UUID,test x$uuid = xyes)
 	AC_SUBST(UUID_CFLAGS)
 	AC_SUBST(UUID_LIBS)
+	LIBSsave="$LIBS"
+	AC_CHECK_HEADERS(popt.h)
+	AC_CHECK_FUNC(poptGetContext,,AC_CHECK_LIB(popt,poptGetContext))
+	POPT_LIBS="$LIBS"
+	LIBS="$LIBSsave"
+	AC_SUBST(POPT_CFLAGS)
+	AC_SUBST(POPT_LIBS)
 else
 	AM_CONDITIONAL(HAVE_OPENSSL,false)
 	AM_CONDITIONAL(HAVE_NSS,false)
