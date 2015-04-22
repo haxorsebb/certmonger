@@ -153,12 +153,12 @@ util_set_db_owner_perms(const char *dbdir, const char *filename,
 		return;
 	}
 	sprintf(pathname, "%s/%s", dbdir, filename);
-	if ((lstat(pathname, &before) == -1) || !S_ISREG(before.st_mode)) {
+	fd = open(pathname, O_RDWR);
+	if (fd == -1) {
 		free(pathname);
 		return;
 	}
-	fd = open(pathname, O_RDWR);
-	if (fd == -1) {
+	if ((lstat(pathname, &before) == -1) || !S_ISREG(before.st_mode)) {
 		free(pathname);
 		return;
 	}
