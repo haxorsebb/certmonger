@@ -173,11 +173,11 @@ certmonger_getcert_CFLAGS = $(getcert_CFLAGS)
 certmonger_SOURCES = main.c env-system.c tm.c tm.h
 certmonger_LDADD = libcm.a \
 		   $(OPENSSL_LIBS) $(CERTMONGER_LIBS) $(KRB5_LIBS) $(IDN_LIBS) \
-		   $(GMP_LIBS) $(UUID_LIBS) $(LTLIBICONV)
+		   $(GMP_LIBS) $(UUID_LIBS) $(POPT_LIBS) $(LTLIBICONV)
 certmonger_session_SOURCES = main.c env-session.c tm.c tm.h
 certmonger_session_LDADD = libcm.a \
 		   $(OPENSSL_LIBS) $(CERTMONGER_LIBS) $(KRB5_LIBS) $(IDN_LIBS) \
-		   $(GMP_LIBS) $(UUID_LIBS) $(LTLIBICONV)
+		   $(GMP_LIBS) $(UUID_LIBS) $(POPT_LIBS) $(LTLIBICONV)
 noinst_PROGRAMS = tdbusm-check serial-check nl-check submit-x tlslayer toklist
 tdbusm_check_SOURCES = tdbusm-check.c tm.c tm.h
 tdbusm_check_LDADD = libcm.a $(CERTMONGER_LIBS) $(POPT_LIBS)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2011,2012,2013,2014 Red Hat, Inc.
+ * Copyright (C) 2009,2011,2012,2013,2014,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,6 +34,8 @@
 
 #include <dbus/dbus.h>
 
+#include <popt.h>
+
 #include "cm.h"
 #include "env.h"
 #include "log.h"
@@ -43,18 +45,21 @@
 
 #ifdef ENABLE_NLS
 #include <libintl.h>
+#define N_(_text) _text
 #define _(_text) dgettext(PACKAGE, _text)
 #else
+#define N_(_text) _text
 #define _(_text) (_text)
 #endif
 
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
 	struct tevent_context *ec;
 	struct cm_context *ctx;
 	enum cm_tdbus_type bus;
 	int i, c, dlevel = 0, pfd = -1, lfd = -1;
+	unsigned int u;
 	long l;
 	pid_t pid;
 	FILE *pfp;
@@ -64,6 +69,25 @@ main(int argc, char **argv)
 	enum force_fips_mode forcefips;
 	int bustime;
 	DBusError error;
+	poptContext pctx;
+	struct poptOption popts[] = {
+		{"session-bus", 's', POPT_ARG_NONE, NULL, 's', N_("use session bus"), NULL},
+		{"system-bus", 'S', POPT_ARG_NONE, NULL, 'S', N_("use system bus"), NULL},
+		{"listening-socket", 'l', POPT_ARG_NONE, NULL, 'l', N_("start a dedicated listening socket"), NULL},
+		{"only-listening-socket", 'L', POPT_ARG_NONE, NULL, 'L', N_("only use a dedicated listening socket"), NULL},
+		{"listening-socket-path", 'P', POPT_ARG_STRING, &path, 0, N_("specify the dedicated listening socket"), N_("PATHNAME")},
+		{"nofork", 'n', POPT_ARG_NONE, NULL, 'n', N_("don't become a daemon"), NULL},
+		{"fork", 'f', POPT_ARG_NONE, NULL, 'f', N_("do become a daemon"), NULL, NULL},
+		{"bus-activation-timeout", 'b', POPT_ARG_INT, NULL, 'b', N_("bus-activated, idle timeout"), N_("SECONDS")},
+		{"no-bus-activation-timeout", 'B', POPT_ARG_NONE, NULL, 'B', N_("don't use an idle timeout"), NULL},
+		{"debug-level", 'd', POPT_ARG_INT, NULL, 'd', N_("set debugging level (implies -n)"), N_("NUMBER")},
+		{"command", 'c', POPT_ARG_STRING, &gate_command, 'c', N_("start COMMAND and exit when it does"), N_("COMMAND")},
+		{"pidfile", 'p', POPT_ARG_STRING, &pidfile, 0, N_("write service PID to file"), N_("FILENAME")},
+		{"fips", 'F', POPT_ARG_NONE, NULL, 'F', N_("force NSS into FIPS mode"), NULL},
+		{"help", 'h', POPT_ARG_NONE, NULL, 'h', NULL, NULL},
+		{"autohelp", 'H', POPT_ARG_NONE | POPT_ARGFLAG_DOC_HIDDEN, NULL, 'H', NULL, NULL},
+		POPT_TABLEEND
+	};
 
 	bus = cm_env_default_bus();
 	dofork = cm_env_default_fork();
@@ -74,6 +98,15 @@ main(int argc, char **argv)
 
 #ifdef ENABLE_NLS
 	bindtextdomain(PACKAGE, MYLOCALEDIR);
+	for (u = 0; u < sizeof(popts) / sizeof(popts[0]); u++) {
+		if (popts[u].descrip != NULL) {
+			popts[u].descrip = dgettext(PACKAGE, popts[u].descrip);
+		}
+		if (popts[u].argDescrip != NULL) {
+			popts[u].argDescrip = dgettext(PACKAGE,
+						       popts[u].argDescrip);
+		}
+	}
 #endif
 
 	if (cm_env_whoami() == NULL) {
@@ -89,7 +122,11 @@ main(int argc, char **argv)
 		exit(1);
 	};
 
-	while ((c = getopt(argc, argv, "sSp:fb:Bd:nFlLP:c:")) != -1) {
+	pctx = poptGetContext(argv[0], argc, argv, popts, 0);
+	if (pctx == NULL) {
+		exit(1);
+	}
+	while ((c = poptGetNextOpt(pctx)) > 0) {
 		switch (c) {
 		case 's':
 			bus = cm_tdbus_session;
@@ -104,28 +141,21 @@ main(int argc, char **argv)
 			server = TRUE;
 			server_only = TRUE;
 			break;
-		case 'P':
-			path = optarg;
-			break;
 		case 'c':
 			bustime = 0;
-			gate_command = optarg;
-			break;
-		case 'p':
-			pidfile = optarg;
 			break;
 		case 'f':
 			dofork = TRUE;
 			break;
 		case 'b':
 			gate_command = NULL;
-			bustime = atoi(optarg);
+			bustime = atoi(poptGetOptArg(pctx));
 			break;
 		case 'B':
 			bustime = 0;
 			break;
 		case 'd':
-			dlevel = atoi(optarg);
+			dlevel = atoi(poptGetOptArg(pctx));
 			/* fall through */
 		case 'n':
 			dofork = FALSE;
@@ -133,10 +163,13 @@ main(int argc, char **argv)
 		case 'F':
 			forcefips = do_force_fips;
 			break;
+		case 'H':
+			poptPrintHelp(pctx, stdout, 0);
+			exit(1);
+			break;
 		default:
 			printf(_("Usage: %s [-s|-S] [-n|-f] [-d LEVEL] "
-				 "[-p FILE] [-F]\n"),
-			       cm_env_whoami());
+				 "[-p FILE] [-F]\n"), cm_env_whoami());
 			printf("%s%s%s%s%s%s%s%s%s%s%s%s%s",
 			       _("\t-s         use session bus\n"),
 			       _("\t-S         use system bus\n"),
@@ -154,6 +187,9 @@ main(int argc, char **argv)
 			exit(1);
 			break;
 		}
+	}
+	if (c != -1) {
+		exit(1);
 	}
 
 	cm_log_set_level(dlevel);
