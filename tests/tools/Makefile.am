@@ -1,9 +1,9 @@
 AM_CFLAGS = $(TALLOC_CFLAGS) $(TEVENT_CFLAGS) $(DBUS_CFLAGS) $(KRB5_CFLAGS) \
 	    $(XMLRPC_CFLAGS) $(IDN_CFLAGS) $(UUID_CFLAGS) $(LDAP_CFLAGS) \
-	    -I$(builddir)/../../src
+	    $(POPT_CFLAGS) -I$(builddir)/../../src
 LDADD = libtools.a ../../src/libcm.a $(srcdir)/../../src/env-system.c \
 	libtools.a $(OPENSSL_LIBS) $(CERTMONGER_LIBS) $(KRB5_LIBS) $(IDN_LIBS) \
-	$(GMP_LIBS) $(UUID_LIBS) $(RESOLV_LIBS) $(LTLIBICONV)
+	$(GMP_LIBS) $(UUID_LIBS) $(RESOLV_LIBS) $(POPT_LIBS) $(LTLIBICONV)
 
 noinst_SCRIPTS = cachain.sh
 
@@ -12,7 +12,10 @@ CFLAGS += -fPIC
 LDFLAGS += -fPIC -pie
 endif
 
-noinst_PROGRAMS = keyiread keygen csrgen submit certread certsave oid2name name2oid iterate prefs dates listnicks pem2base base2pem dparse payload checksig base64 cadata citerate casave hooks libexecdir canon srv addcinfo ls
+noinst_PROGRAMS = keyiread keygen csrgen submit certread certsave oid2name \
+		  name2oid iterate prefs dates listnicks pem2base base2pem \
+		  dparse payload checksig base64 cadata citerate casave hooks \
+		  libexecdir canon srv addcinfo ls
 noinst_LIBRARIES = libtools.a
 if HAVE_OPENSSL
 noinst_PROGRAMS += pk7parse pk7env scepgen pk7verify pk7decrypt
