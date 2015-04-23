@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Red Hat, Inc.
+ * Copyright (C) 2014,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,8 @@
 #include <krb5.h>
 
 #include <talloc.h>
+
+#include <popt.h>
 
 #include "../../src/hook.h"
 #include "../../src/log.h"
@@ -73,29 +75,45 @@ get_entry_by_index(struct cm_context *ctx, int n)
 }
 
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
 	struct cm_hook_state *state;
 	struct cm_store_ca *tmpca, **tmpcas;
 	struct cm_store_entry *tmpentry, **tmpentries;
-	int fd, i, c;
+	int fd, i, c, verbose = 0;
 	void *parent;
 	const char *name;
+	poptContext pctx;
+	struct poptOption popts[] = {
+		{"ca", 'c', POPT_ARG_STRING, NULL, 'c', NULL, "FILENAME"},
+		{"entry", 'e', POPT_ARG_STRING, NULL, 'e', NULL, "FILENAME"},
+		{"before-command", 'B', POPT_ARG_STRING, NULL, 'B', NULL, "NICKNAME"},
+		{"after-command", 'C', POPT_ARG_STRING, NULL, 'C', NULL, "NICKNAME"},
+		{"verbose", 'v', POPT_ARG_NONE, NULL, 'v', NULL, NULL},
+		POPT_AUTOHELP
+		POPT_TABLEEND
+	};
 
 	cm_log_set_method(cm_log_stderr);
-	cm_log_set_level(3);
 	cm_set_fips_from_env();
 	parent = talloc_new(NULL);
+	pctx = poptGetContext("hooks", argc, argv, popts, 0);
+	if (pctx == NULL) {
+		return -1;
+	}
 	if (argc > 2) {
-		while ((c = getopt(argc, argv, "c:e:B:C:")) != -1) {
+		while ((c = poptGetNextOpt(pctx)) > 0) {
+			cm_log_set_level(verbose);
 			switch (c) {
-			default:
+			case 'v':
+				verbose++;
 				break;
 			case 'c':
-				tmpca = cm_store_files_ca_read(parent, optarg);
+				name = poptGetOptArg(pctx);
+				tmpca = cm_store_files_ca_read(parent, name);
 				if (tmpca == NULL) {
 					printf("Error reading %s: %s.\n",
-					       optarg, strerror(errno));
+					       name, strerror(errno));
 					return -1;
 				}
 				tmpcas = talloc_array_ptrtype(parent, tmpcas,
@@ -113,11 +131,12 @@ main(int argc, char **argv)
 				ca = tmpcas;
 				break;
 			case 'e':
+				name = poptGetOptArg(pctx);
 				tmpentry = cm_store_files_entry_read(parent,
-								     optarg);
+								     name);
 				if (tmpentry == NULL) {
 					printf("Error reading %s: %s.\n",
-					       optarg, strerror(errno));
+					       name, strerror(errno));
 					return -1;
 				}
 				tmpentries = talloc_array_ptrtype(parent,
@@ -137,19 +156,22 @@ main(int argc, char **argv)
 				break;
 			}
 		}
+		if (c != -1) {
+			poptPrintUsage(pctx, stdout, 0);
+			return 1;
+		}
 	} else {
 		printf("Specify CA files (-c) and entry files (-e) as "
 		       "arguments, and nicknames (-B/-C) for actions.\n");
+		poptPrintUsage(pctx, stdout, 0);
 		return -1;
 	}
-	optind = 1;
-	while ((c = getopt(argc, argv, "c:e:B:C:")) != -1) {
+	poptResetContext(pctx);
+	while ((c = poptGetNextOpt(pctx)) > 0) {
 		state = NULL;
 		switch (c) {
-		default:
-			break;
 		case 'B':
-			name = optarg;
+			name = poptGetOptArg(pctx);
 			for (i = 0; i < n_entries; i++) {
 				if (strcmp(name, entry[i]->cm_nickname) == 0) {
 					printf("Starting pre-save for entry %s.\n", name);
@@ -172,7 +194,7 @@ main(int argc, char **argv)
 			}
 			break;
 		case 'C':
-			name = optarg;
+			name = poptGetOptArg(pctx);
 			for (i = 0; i < n_entries; i++) {
 				if (strcmp(name, entry[i]->cm_nickname) == 0) {
 					printf("Starting post-save for entry %s.\n", name);
@@ -209,6 +231,10 @@ main(int argc, char **argv)
 			}
 			cm_hook_done(state);
 		}
+	}
+	if (c != -1) {
+		poptPrintUsage(pctx, stdout, 0);
+		return 1;
 	}
 	talloc_free(parent);
 	return 0;
