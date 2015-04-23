@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2013 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2013,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,6 +33,8 @@
 
 #include <krb5.h>
 
+#include <popt.h>
+
 #include "log.h"
 #include "submit-e.h"
 #include "submit-u.h"
@@ -47,14 +49,23 @@
 #endif
 
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
-	int i, c;
+	int i, c, verbose = 0;
 	const char *host = NULL, *port = NULL, *cainfo = NULL, *capath = NULL;
 	char *csr, *p, uri[LINE_MAX], *s1, *s2, *config;
 	struct cm_submit_x_context *ctx;
 	struct stat st;
-	const char *mode = CM_OP_SUBMIT;
+	const char *mode = CM_OP_SUBMIT, *csrfile;
+	poptContext pctx;
+	const struct poptOption popts[] = {
+		{"server-host", 'h', POPT_ARG_STRING, &host, 0, NULL, "HOSTNAME"},
+		{"capath", 'C', POPT_ARG_STRING, &capath, 0, NULL, "DIRECTORY"},
+		{"cafile", 'c', POPT_ARG_STRING, &cainfo, 0, NULL, "FILENAME"},
+		{"verbose", 'v', POPT_ARG_NONE, NULL, 'v', NULL, NULL},
+		POPT_AUTOHELP
+		POPT_TABLEEND
+	};
 
 	if (getenv(CM_SUBMIT_OPERATION_ENV) != NULL) {
 		mode = getenv(CM_SUBMIT_OPERATION_ENV);
@@ -76,30 +87,26 @@ main(int argc, char **argv)
 #endif
 
 	cm_log_set_method(cm_log_stderr);
-	while ((c = getopt(argc, argv, "h:C:c:")) != -1) {
+	pctx = poptGetContext(argv[0], argc, argv, popts, 0);
+	if (pctx == NULL) {
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
+	}
+	poptSetOtherOptionHelp(pctx, "[options...] [csrfile]");
+	while ((c = poptGetNextOpt(pctx)) > 0) {
 		switch (c) {
-		case 'h':
-			host = optarg;
-			break;
-		case 'C':
-			capath = optarg;
-			break;
-		case 'c':
-			cainfo = optarg;
-			break;
-		default:
-			fprintf(stderr,
-				"Usage: %s [-h serverHost] "
-				"[-c cafile] [-C capath] [csrfile]\n",
-				strchr(argv[0], '/') ?
-				strrchr(argv[0], '/') + 1 :
-				argv[0]);
-			return CM_SUBMIT_STATUS_UNCONFIGURED;
+		case 'v':
+			verbose++;
 			break;
 		}
 	}
+	if (c != -1) {
+		poptPrintUsage(pctx, stdout, 0);
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
+	}
 
 	umask(S_IRWXG | S_IRWXO);
+	cm_log_set_method(cm_log_stderr);
+	cm_log_set_level(verbose);
 
 	if (host == NULL) {
 		/* Okay, we have to figure out what the master name is.  Hope
@@ -127,29 +134,23 @@ main(int argc, char **argv)
 	}
 	if (host == NULL) {
 		printf(_("Unable to determine hostname of CA.\n"));
-		fprintf(stderr,
-			"Usage: %s [-h serverHost] "
-			"[-c cafile] [-C capath] [csrfile]\n",
-			strchr(argv[0], '/') ?
-			strrchr(argv[0], '/') + 1 :
-			argv[0]);
+		poptPrintUsage(pctx, stdout, 0);
 		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
 
 	/* Read the CSR from the environment, or from the command-line. */
-	csr = getenv(CM_SUBMIT_CSR_ENV);
-	if (csr == NULL) {
-		csr = cm_submit_u_from_file((optind < argc) ?
-					    argv[optind++] : NULL);
+	csrfile = poptGetArg(pctx);
+	if (csrfile != NULL) {
+		csr = cm_submit_u_from_file(csrfile);
+	} else {
+		csr = getenv(CM_SUBMIT_CSR_ENV);
+		if (csr != NULL) {
+			csr = strdup(csr);
+		}
 	}
 	if ((csr == NULL) || (strlen(csr) == 0)) {
 		printf(_("Unable to read signing request.\n"));
-		fprintf(stderr,
-			"Usage: %s [-h serverHost] "
-			"[-c cafile] [-C capath] [csrfile]\n",
-			strchr(argv[0], '/') ?
-			strrchr(argv[0], '/') + 1 :
-			argv[0]);
+		poptPrintUsage(pctx, stdout, 0);
 		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
 

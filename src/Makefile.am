@@ -212,7 +212,7 @@ certmaster_submit_SOURCES = certmaster.c submit-x.c submit-x.h \
 		submit-e.h submit-u.c submit-u.h util.c util.h log.c log.h \
 		tm.c tm.h
 certmaster_submit_LDADD = $(XMLRPC_LIBS) $(KRB5_LIBS) $(TALLOC_LIBS) \
-			  $(GMP_LIBS) $(UUID_LIBS) $(LTLIBICONV)
+			  $(GMP_LIBS) $(UUID_LIBS) $(LTLIBICONV) $(POPT_LIBS)
 dogtag_ipa_renew_agent_submit_CFLAGS = $(AM_CFLAGS) $(XML_CFLAGS) \
 				       $(NSS_CFLAGS) $(CURL_CFLAGS) \
 				       -DDOGTAG_IPA_RENEW_AGENT=1
