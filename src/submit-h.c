@@ -30,6 +30,8 @@
 
 #include <curl/curl.h>
 
+#include <popt.h>
+
 #include "log.h"
 #include "submit-e.h"
 #include "submit-h.h"
@@ -298,7 +300,7 @@ cm_submit_h_result_type(struct cm_submit_h_context *ctx)
 
 #ifdef CM_SUBMIT_H_MAIN
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
 	struct cm_submit_h_context *ctx;
 	struct stat st;
@@ -307,7 +309,24 @@ main(int argc, char **argv)
 	enum cm_submit_h_opt_clientauth clientauth;
 	int c, fd, l, verbose = 0, length = 0;
 	char *ctype, *accept, *capath, *cainfo, *sslcert, *sslkey, *sslpass;
-
+	char *pinfile;
+	const char *method, *url;
+	poptContext pctx;
+	struct poptOption popts[] = {
+		{"accept-type", 'a', POPT_ARG_STRING, &accept, 0, "acceptable response content-type", NULL},
+		{"capath", 'C', POPT_ARG_STRING, &capath, 0, "root certificate directory", "DIRECTORY"},
+		{"cainfo", 'c', POPT_ARG_STRING, &cainfo, 0, "root certificate info", NULL},
+		{"negotiate", 'N', POPT_ARG_NONE, NULL, 'N', "use Negotiate", NULL},
+		{"delegate", 'D', POPT_ARG_NONE, NULL, 'D', "use Negotiate with delegation", NULL},
+		{"sslcert", 'k', POPT_ARG_STRING, &sslcert, 'k', "use client authentication with cert", "CERT"},
+		{"sslkey", 'K', POPT_ARG_STRING, &sslkey, 'K', "use client authentication with key", "KEY"},
+		{"pinfile", 'p', POPT_ARG_STRING, &pinfile, 'p', "client authentication key pinfile", "FILENAME"},
+		{"pin", 'P', POPT_ARG_STRING, &sslpass, 0, "client authentication key pin", NULL},
+		{"content-type", 't', POPT_ARG_STRING, &ctype, 0, "client data content-type", NULL},
+		{"verbose", 'v', POPT_ARG_NONE, NULL, 'v', NULL, NULL},
+		POPT_AUTOHELP
+		POPT_TABLEEND
+	};
 	ctype = NULL;
 	accept = NULL;
 	capath = NULL;
@@ -315,20 +334,18 @@ main(int argc, char **argv)
 	sslcert = NULL;
 	sslkey = NULL;
 	sslpass = NULL;
+	pinfile = NULL;
 	negotiate = cm_submit_h_negotiate_off;
 	negotiate_delegate = cm_submit_h_delegate_off;
 	clientauth = cm_submit_h_clientauth_off;
-	while ((c = getopt(argc, argv, "a:C:c:NDk:K:p:P:t:v")) != -1) {
+
+	pctx = poptGetContext("submit-h", argc, argv, popts, 0);
+	if (pctx == NULL) {
+		exit(1);
+	}
+	poptSetOtherOptionHelp(pctx, "[options...] METHOD URL");
+	while ((c = poptGetNextOpt(pctx)) > 0) {
 		switch (c) {
-		case 'a':
-			accept = optarg;
-			break;
-		case 'C':
-			capath = optarg;
-			break;
-		case 'c':
-			cainfo = optarg;
-			break;
 		case 'N':
 			negotiate = cm_submit_h_negotiate_on;
 			break;
@@ -337,16 +354,14 @@ main(int argc, char **argv)
 			negotiate_delegate = cm_submit_h_delegate_on;
 			break;
 		case 'k':
-			sslcert = optarg;
 			clientauth = cm_submit_h_clientauth_on;
 			break;
 		case 'K':
-			sslkey = optarg;
 			clientauth = cm_submit_h_clientauth_on;
 			break;
 		case 'p':
-			if ((optarg != NULL) && (strlen(optarg) > 0)) {
-				fd = open(optarg, O_RDONLY);
+			if (pinfile != NULL) {
+				fd = open(pinfile, O_RDONLY);
 				if (fd != -1) {
 					if ((fstat(fd, &st) == 0) && (st.st_size > 0)) {
 						sslpass = malloc(st.st_size + 1);
@@ -358,66 +373,39 @@ main(int argc, char **argv)
 									sslpass[l] = '\0';
 								}
 							} else {
-								fprintf(stderr, "Error reading \"%s\": %s.\n", optarg, strerror(errno));
+								fprintf(stderr, "Error reading \"%s\": %s.\n", pinfile, strerror(errno));
 								exit(1);
 							}
 						}
 					} else {
-						fprintf(stderr, "Error determining size of \"%s\": %s.\n", optarg, strerror(errno));
+						fprintf(stderr, "Error determining size of \"%s\": %s.\n", pinfile, strerror(errno));
 						exit(1);
 					}
 					close(fd);
 				} else {
-					fprintf(stderr, "Error reading PIN from \"%s\": %s.\n", optarg, strerror(errno));
+					fprintf(stderr, "Error reading PIN from \"%s\": %s.\n", pinfile, strerror(errno));
 					exit(1);
 				}
 			}
 			break;
-		case 'P':
-			sslpass = optarg;
-			break;
-		case 't':
-			ctype = optarg;
-			break;
 		case 'v':
 			verbose++;
 			break;
-		default:
-			printf("Usage: submit-h METHOD URI [ARGS]\n");
-			printf("  -a TYPE\tacceptable response content-type\n");
-			printf("  -C CAPATH\troot certificate directory\n");
-			printf("  -c CAINFO\troot certificate info\n");
-			printf("  -N\t\tuse Negotiate\n");
-			printf("  -D\t\tuse Negotiate with delegation enabled\n");
-			printf("  -k CERT\tuse client authentication with cert\n");
-			printf("  -K KEY\tuse client authentication with key\n");
-			printf("  -p FILE\tclient authentication key pinfile\n");
-			printf("  -P PIN\tclient authentication key pin\n");
-			printf("  -t TYPE\tclient data content-type\n");
-			printf("  -v\t\tverbose\n");
-			return 1;
-			break;
 		}
 	}
-	if (argc - optind < 3) {
+	if (c != -1) {
+		poptPrintUsage(pctx, stdout, 0);
+		return 1;
+	}
+	method = poptGetArg(pctx);
+	url = poptGetArg(pctx);
+	if ((method == NULL) || (url == NULL)) {
 		printf("Missing a required argument.\n");
-		printf("Usage: submit-h METHOD URI [ARGS]\n");
-		printf("  -a TYPE\tacceptable response content-type\n");
-		printf("  -C CAPATH\troot certificate directory\n");
-		printf("  -c CAINFO\troot certificate info\n");
-		printf("  -N\t\tuse Negotiate\n");
-		printf("  -D\t\tuse Negotiate with delegation enabled\n");
-		printf("  -k CERT\tuse client authentication with cert\n");
-		printf("  -K KEY\tuse client authentication with key\n");
-		printf("  -p FILE\tclient authentication key pinfile\n");
-		printf("  -P PIN\tclient authentication key pin\n");
-		printf("  -t TYPE\tclient data content-type\n");
-		printf("  -v\t\tverbose\n");
+		poptPrintUsage(pctx, stdout, 0);
 		return 1;
 	}
 
-	ctx = cm_submit_h_init(NULL, argv[optind], argv[optind + 1],
-			       (argc > optind + 2) ? argv[optind + 2] : NULL,
+	ctx = cm_submit_h_init(NULL, method, url, poptGetArg(pctx),
 			       ctype, accept,
 			       cainfo, capath, sslcert, sslkey, sslpass,
 			       negotiate, negotiate_delegate,

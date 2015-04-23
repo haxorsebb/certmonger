@@ -255,7 +255,8 @@ submit_d_LDADD = libcm-o.a $(CURL_LIBS) $(OPENSSL_LIBS) $(XML_LIBS) \
 		 $(TALLOC_LIBS) $(GMP_LIBS) $(UUID_LIBS) $(LTLIBICONV)
 submit_h_CFLAGS = $(AM_CFLAGS) $(CURL_CFLAGS) $(XML_CFLAGS) -DCM_SUBMIT_H_MAIN
 submit_h_SOURCES = submit-h.c submit-h.h log.c log.h tm.c tm.h
-submit_h_LDADD = $(CURL_LIBS) $(XML_LIBS) $(TALLOC_LIBS) $(LTLIBICONV)
+submit_h_LDADD = $(CURL_LIBS) $(XML_LIBS) $(TALLOC_LIBS) $(LTLIBICONV) \
+		 $(POPT_LIBS)
 tlslayer_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS) $(OPENSSL_SSL_CFLAGS) \
 	-DCM_TLSLAYER_MAIN
 tlslayer_SOURCES = tlslayer.c tlslayer-n.c \
