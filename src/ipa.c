@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012,2013,2014 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013,2014,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,6 +35,9 @@
 #include <ldap.h>
 #include <krb5.h>
 
+#include <popt.h>
+
+#include "log.h"
 #include "srvloc.h"
 #include "store.h"
 #include "submit-e.h"
@@ -48,27 +51,6 @@
 #else
 #define _(_text) (_text)
 #endif
-
-static void
-help(const char *argv0)
-{
-	fprintf(stderr,
-		"Usage: %s [-h serverHost] "
-		"[-H xmlrpcUri] "
-		"[-L ldapUri] "
-		"[-b basedn] "
-		"[-c cafile] "
-		"[-C capath] "
-		"[-K] "
-		"[-t keytab] "
-		"[-k submitterPrincipal] "
-		"[-P principalOfRequest] "
-		"[-d IPA domain name] "
-		"[csrfile]\n",
-		strchr(argv0, '/') ?
-		strrchr(argv0, '/') + 1 :
-		argv0);
-}
 
 static int
 interact(LDAP *ld, unsigned flags, void *defaults, void *sasl_interact)
@@ -552,17 +534,34 @@ fetch_roots(const char *server, int ldap_uri_cmd, const char *ldap_uri,
 }
 
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
 	int c, make_keytab_ccache = TRUE;
 	const char *host = NULL, *domain = NULL, *cainfo = NULL, *capath = NULL;
 	const char *ktname = NULL, *kpname = NULL;
 	char *csr, *p, uri[LINE_MAX], *reqprinc = NULL, *ipaconfig, *kerr;
-	const char *xmlrpc_uri = NULL, *ldap_uri = NULL, *server = NULL;
-	int xmlrpc_uri_cmd = 0, ldap_uri_cmd = 0;
+	const char *xmlrpc_uri = NULL, *ldap_uri = NULL, *server = NULL, *csrfile;
+	int xmlrpc_uri_cmd = 0, ldap_uri_cmd = 0, verbose = 0;
 	const char *mode = CM_OP_SUBMIT;
 	char ldn[LINE_MAX], *basedn = NULL;
 	krb5_error_code kret;
+	poptContext pctx;
+	struct poptOption popts[] = {
+		{"host", 'h', POPT_ARG_STRING, &host, 0, "IPA server hostname", "HOSTNAME"},
+		{"domain", 'd', POPT_ARG_STRING, &domain, 0, "IPA domain name", "NAME"},
+		{"xmlrpc-url", 'H', POPT_ARG_STRING, NULL, 'H', "IPA XMLRPC service location", "URL"},
+		{"ldap-url", 'L', POPT_ARG_STRING, NULL, 'L', "IPA LDAP service location", "URL"},
+		{"capath", 'C', POPT_ARG_STRING, &capath, 0, NULL, "DIRECTORY"},
+		{"cafile", 'c', POPT_ARG_STRING, &cainfo, 0, NULL, "FILENAME"},
+		{"keytab-name", 't', POPT_ARG_STRING, NULL, 't', "location of credentials to use for authenticating to server", "KEYTAB"},
+		{"submitter-principal", 'k', POPT_ARG_STRING, &kpname, 'k', "principal name to use for authenticating to server", "PRINCIPAL"},
+		{"use-ccache-creds", 'K', POPT_ARG_NONE, NULL, 'K', "use default ccache instead of creating a new one using keytab", NULL},
+		{"principal-of-request", 'P', POPT_ARG_STRING, &reqprinc, 0, "principal name in signing request", "PRINCIPAL"},
+		{"basedn", 'b', POPT_ARG_STRING, &basedn, 0, "IPA domain LDAP base DN", "DN"},
+		{"verbose", 'v', POPT_ARG_NONE, NULL, 'v', NULL, NULL},
+		POPT_AUTOHELP
+		POPT_TABLEEND
+	};
 
 #ifdef ENABLE_NLS
 	bindtextdomain(PACKAGE, MYLOCALEDIR);
@@ -589,45 +588,37 @@ main(int argc, char **argv)
 		return CM_SUBMIT_STATUS_OPERATION_NOT_SUPPORTED;
 	}
 
-	while ((c = getopt(argc, argv, "h:d:H:L:C:c:t:Kk:P:b:")) != -1) {
+	pctx = poptGetContext(argv[0], argc, argv, popts, 0);
+	if (pctx == NULL) {
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
+	}
+	poptSetOtherOptionHelp(pctx, "[options] [csrfile]");
+	while ((c = poptGetNextOpt(pctx)) > 0) {
 		switch (c) {
-		case 'h':
-			host = optarg;
-			break;
-		case 'd':
-			domain = strdup(optarg);
-			break;
 		case 'H':
-			xmlrpc_uri = optarg;
+			xmlrpc_uri = poptGetOptArg(pctx);
 			xmlrpc_uri_cmd++;
 			break;
 		case 'L':
-			ldap_uri = optarg;
+			ldap_uri = poptGetOptArg(pctx);
 			ldap_uri_cmd++;
 			break;
-		case 'b':
-			basedn = strdup(optarg);
-			break;
-		case 'C':
-			capath = optarg;
-			break;
-		case 'c':
-			cainfo = optarg;
-			break;
 		case 't':
-			ktname = optarg;
+			ktname = poptGetOptArg(pctx);
 			if (!make_keytab_ccache) {
 				printf(_("The -t option can not be used with "
 					 "the -K option.\n"));
-				goto help;
+				poptPrintUsage(pctx, stdout, 0);
+				return CM_SUBMIT_STATUS_UNCONFIGURED;
 			}
 			break;
 		case 'k':
-			kpname = optarg;
+			kpname = poptGetOptArg(pctx);
 			if (!make_keytab_ccache) {
 				printf(_("The -k option can not be used with "
 					 "the -K option.\n"));
-				goto help;
+				poptPrintUsage(pctx, stdout, 0);
+				return CM_SUBMIT_STATUS_UNCONFIGURED;
 			}
 			break;
 		case 'K':
@@ -635,21 +626,22 @@ main(int argc, char **argv)
 			if ((kpname != NULL) || (ktname != NULL)) {
 				printf(_("The -K option can not be used with "
 					 "either the -k or the -t option.\n"));
-				goto help;
+				poptPrintUsage(pctx, stdout, 0);
+				return CM_SUBMIT_STATUS_UNCONFIGURED;
 			}
 			break;
-		case 'P':
-			reqprinc = optarg;
-			break;
-		help:
-		default:
-			help(argv[0]);
-			return CM_SUBMIT_STATUS_UNCONFIGURED;
+		case 'v':
+			verbose++;
 			break;
 		}
 	}
+	if (c != -1) {
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
+	}
 
 	umask(S_IRWXG | S_IRWXO);
+	cm_log_set_method(cm_log_stderr);
+	cm_log_set_level(verbose);
 
 	/* Start backfilling defaults, both hard-coded and from the IPA
 	 * configuration. */
@@ -716,7 +708,7 @@ main(int argc, char **argv)
 		if ((reqprinc == NULL) || (strlen(reqprinc) == 0)) {
 			printf(_("Unable to determine principal name for "
 				 "signing request.\n"));
-			help(argv[0]);
+			poptPrintUsage(pctx, stdout, 0);
 			return CM_SUBMIT_STATUS_UNCONFIGURED;
 		}
 		if ((server != NULL) && !xmlrpc_uri_cmd) {
@@ -733,8 +725,9 @@ main(int argc, char **argv)
 
 		/* Read the CSR from the environment, or from the file named on
 		 * the command-line. */
-		if (optind < argc) {
-			csr = cm_submit_u_from_file(argv[optind++]);
+		csrfile = poptGetArg(pctx);
+		if (csrfile != NULL) {
+			csr = cm_submit_u_from_file(csrfile);
 		} else {
 			csr = getenv(CM_SUBMIT_CSR_ENV);
 			if (csr != NULL) {
@@ -743,7 +736,7 @@ main(int argc, char **argv)
 		}
 		if ((csr == NULL) || (strlen(csr) == 0)) {
 			printf(_("Unable to read signing request.\n"));
-			help(argv[0]);
+			poptPrintUsage(pctx, stdout, 0);
 			return CM_SUBMIT_STATUS_UNCONFIGURED;
 		}
 
