@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Red Hat, Inc.
+ * Copyright (C) 2014,2015 Red Hat, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@
 #include <sys/types.h>
 #include <sys/select.h>
 #include <errno.h>
-#include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -29,6 +28,8 @@
 #include <krb5.h>
 
 #include <talloc.h>
+
+#include <popt.h>
 
 #include "../../src/casave.h"
 #include "../../src/log.h"
@@ -77,27 +78,39 @@ wait_to_read(int fd)
 }
 
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
 	struct cm_casave_state *state;
 	struct cm_store_ca *ca, *save_ca = NULL;
 	struct cm_store_entry *entry, *save_entry = NULL;
 	struct cm_context ctx;
-	int c, fd, ret = -1, i;
+	int c, fd, ret = -1, verbose = 0;
 	unsigned int j;
 	void *parent;
+	const char *name;
+	poptContext pctx;
+	struct poptOption popts[] = {
+		{"cafile", 'c', POPT_ARG_STRING, NULL, 'c', NULL, "FILENAME"},
+		{"entry", 'e', POPT_ARG_STRING, NULL, 'e', NULL, "FILENAME"},
+		{"verbose", 'v', POPT_ARG_NONE, NULL, 'v', NULL, NULL},
+		POPT_AUTOHELP
+		POPT_TABLEEND
+	};
 
+	pctx = poptGetContext("casave", argc, argv, popts, 0);
+	if (pctx == NULL) {
+		return -1;
+	}
 	memset(&ctx, 0, sizeof(ctx));
-	cm_log_set_method(cm_log_stderr);
-	cm_log_set_level(3);
-	cm_set_fips_from_env();
 	parent = talloc_new(NULL);
-	while ((c = getopt(argc, argv, "c:e:")) != -1) {
+	poptSetOtherOptionHelp(pctx, "[options...] caname entryname");
+	while ((c = poptGetNextOpt(pctx)) > 0) {
+		cm_log_set_level(verbose);
 		switch (c) {
 		case 'c':
-			ca = cm_store_files_ca_read(parent, optarg);
+			ca = cm_store_files_ca_read(parent, poptGetOptArg(pctx));
 			if (ca == NULL) {
-				printf("Error reading CA \"%s\".\n", optarg);
+				printf("Error reading CA \"%s\".\n", poptGetOptArg(pctx));
 				return -1;
 			}
 			ctx.cas = talloc_realloc(parent, ctx.cas,
@@ -111,9 +124,9 @@ main(int argc, char **argv)
 			ctx.cas[ctx.n_cas] = NULL;
 			break;
 		case 'e':
-			entry = cm_store_files_entry_read(parent, optarg);
+			entry = cm_store_files_entry_read(parent, poptGetOptArg(pctx));
 			if (entry == NULL) {
-				printf("Error reading entry \"%s\".\n", optarg);
+				printf("Error reading entry \"%s\".\n", poptGetOptArg(pctx));
 				return -1;
 			}
 			ctx.entries = talloc_realloc(parent, ctx.entries,
@@ -126,25 +139,30 @@ main(int argc, char **argv)
 			ctx.entries[ctx.n_entries++] = entry;
 			ctx.entries[ctx.n_entries] = NULL;
 			break;
-		default:
-			printf("Specify CA (-c) and entry (-e) files as "
-			       "arguments.\n");
-			return -1;
+		case 'v':
+			verbose++;
 			break;
 		}
 	}
-	if (optind == argc) {
+	if (c != -1) {
+		poptPrintUsage(pctx, stdout, 0);
+		return 1;
+	}
+	cm_log_set_method(cm_log_stderr);
+	cm_log_set_level(verbose);
+	cm_set_fips_from_env();
+	if (poptPeekArg(pctx) == NULL) {
 		printf("No CA or entry names specified.\n");
 		return -1;
 	}
-	for (i = optind; i < argc; i++) {
+	while ((name = poptGetArg(pctx)) != NULL) {
 		for (j = 0; j < ctx.n_cas; j++) {
-			if (strcmp(argv[i], ctx.cas[j]->cm_nickname) == 0) {
+			if (strcmp(name, ctx.cas[j]->cm_nickname) == 0) {
 				save_ca = ctx.cas[j];
 			}
 		}
 		for (j = 0; j < ctx.n_entries; j++) {
-			if (strcmp(argv[i], ctx.entries[j]->cm_nickname) == 0) {
+			if (strcmp(name, ctx.entries[j]->cm_nickname) == 0) {
 				save_entry = ctx.entries[j];
 			}
 		}
