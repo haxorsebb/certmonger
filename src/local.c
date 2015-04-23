@@ -43,6 +43,8 @@
 
 #include <talloc.h>
 
+#include <popt.h>
+
 #include "env.h"
 #include "log.h"
 #include "prefs.h"
@@ -63,16 +65,6 @@
 
 #define CONSTANTCN "Local Signing Authority"
 static unsigned char uuid[16];
-
-static void
-help(const char *argv0)
-{
-	fprintf(stderr,
-		"Usage: %s [-v] [-d ca-data-directory] [csrfile]\n",
-		strchr(argv0, '/') ?
-		strrchr(argv0, '/') + 1 :
-		argv0);
-}
 
 static void
 set_ca_extensions(void *parent, X509_REQ *req, EVP_PKEY *key)
@@ -426,16 +418,23 @@ local_lock(void *parent, const char *localdir)
 }
 
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
 	int i, c, verbose = 0, lfd = -1;
 	void *parent;
-	const char *mode = CM_OP_SUBMIT;
+	const char *mode = CM_OP_SUBMIT, *csrfile;
 	char *csr, *localdir = NULL, *hexserial = NULL, *serial, buf[LINE_MAX];
 	FILE *fp;
 	X509 **roots = NULL, *signer = NULL, *cert = NULL;
 	EVP_PKEY *key = NULL;
 	time_t now;
+	poptContext pctx;
+	const struct poptOption popts[] = {
+		{"ca-data-directory", 'd', POPT_ARG_STRING | POPT_ARGFLAG_SHOW_DEFAULT, &localdir, 0, "storage location for the CA's data", "DIRECTORY"},
+		{"verbose", 'v', POPT_ARG_NONE, NULL, 'v', NULL, NULL},
+		POPT_AUTOHELP
+		POPT_TABLEEND
+	};
 
 #ifdef ENABLE_NLS
 	bindtextdomain(PACKAGE, MYLOCALEDIR);
@@ -466,19 +465,21 @@ main(int argc, char **argv)
 	if (localdir == NULL) {
 		localdir = cm_env_local_ca_dir();
 	}
-	while ((c = getopt(argc, argv, "d:v")) != -1) {
+	pctx = poptGetContext(argv[0], argc, argv, popts, 0);
+	if (pctx == NULL) {
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
+	}
+	poptSetOtherOptionHelp(pctx, "[options...] [csrfile]");
+	while ((c = poptGetNextOpt(pctx)) > 0) {
 		switch (c) {
-		case 'd':
-			localdir = optarg;
-			break;
 		case 'v':
 			verbose++;
 			break;
-		default:
-			help(argv[0]);
-			return CM_SUBMIT_STATUS_UNCONFIGURED;
-			break;
 		}
+	}
+	if (c != -1) {
+		poptPrintUsage(pctx, stdout, 0);
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
 
 	umask(S_IRWXG | S_IRWXO);
@@ -487,7 +488,7 @@ main(int argc, char **argv)
 	cm_log_set_level(verbose);
 
 	if (localdir == NULL) {
-		help(argv[0]);
+		poptPrintUsage(pctx, stdout, 0);
 		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
 
@@ -538,8 +539,9 @@ main(int argc, char **argv)
 	    (strcasecmp(mode, CM_OP_POLL) == 0)) {
 		/* Read the CSR from the environment, or from the file named on
 		 * the command-line. */
-		if (optind < argc) {
-			csr = cm_submit_u_from_file(argv[optind++]);
+		csrfile = poptGetArg(pctx);
+		if (csrfile != NULL) {
+			csr = cm_submit_u_from_file(csrfile);
 		} else {
 			csr = getenv(CM_SUBMIT_CSR_ENV);
 			if (csr != NULL) {
@@ -549,7 +551,7 @@ main(int argc, char **argv)
 		if ((csr == NULL) || (strlen(csr) == 0)) {
 			printf(_("Unable to read signing request.\n"));
 			cm_log(1, "Unable to read signing request.\n");
-			help(argv[0]);
+			poptPrintUsage(pctx, stdout, 0);
 			return CM_SUBMIT_STATUS_UNCONFIGURED;
 		}
 		/* Take the lock. */
