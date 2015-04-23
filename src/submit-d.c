@@ -33,6 +33,8 @@
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
 
+#include <popt.h>
+
 #include "submit-d.h"
 #include "submit-e.h"
 #include "submit-h.h"
@@ -850,37 +852,8 @@ cm_submit_d_profiles_eval(void *parent, const char *xml, const char *url,
 }
 
 #ifdef CM_SUBMIT_D_MAIN
-static void
-usage(void)
-{
-	printf("usage: submit-d [-u EE-URL | -U AGENT-URL] MODE OPTIONS\n");
-	printf("Modes:\n"
-	       "\t-S serialhex: submit-renewal-by-serial\n"
-	       "\t-D serialdec: submit-renewal-by-serial\n"
-	       "\t-s csrfile:   submit-request-using-CSR\n"
-	       "\t-c requestid: check-request-progress\n"
-	       "\t-f requestid: fetch-requested-certificate\n"
-	       "\t-R requestid: review-profile-based-request\n"
-	       "\t-J requestid: reject-profile-based-request\n"
-	       "\t-A requestid: approve-profile-based-request\n");
-	printf("Options:\n"
-	       "\t-a  use client auth\n"
-	       "\t-d: NSS db\n"
-	       "\t-P: ca_path\n"
-	       "\t-I: ca_info\n"
-	       "\t-K: ssl_key\n"
-	       "\t-C: ssl_cert\n"
-	       "\t-p: ssl_pin\n"
-	       "\t-T: profile_name\n"
-	       "\t-n: requestor_name\n"
-	       "\t-e: requestor_email\n"
-	       "\t-t: requestor_telephone\n"
-	       "\t-V: approval_params\n"
-	       "\t-v  verbose (repeat for more)\n");
-}
-
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
 	void *ctx;
 	enum {
@@ -894,15 +867,43 @@ main(int argc, char **argv)
 		op_fetch
 	} op;
 	int c, i, id, agent, clientauth, verbose;
-	const char *method, *eeurl, *agenturl, *cgi, *file, *serial, *profile;
-	const char *name, *email, *tele;
+	const char *method = NULL, *eeurl, *agenturl, *cgi = NULL, *file;
+	const char *serial, *profile, *name, *email, *tele;
 	const char *nssdb, *capath, *cainfo, *sslkey, *sslcert, *sslpin;
 	const char *result, *default_values;
 	struct dogtag_default **defaults, *nodefault[] = { NULL };
-	char *params, *uri, *p, *q, *request;
+	char *params = NULL, *uri, *p, *q, *request;
 	char *error = NULL, *error_code = NULL, *error_reason = NULL;
 	char *status = NULL, *requestId = NULL, *cert = NULL;
 	struct cm_submit_h_context *hctx;
+	poptContext pctx;
+	const struct poptOption popts[] = {
+		{"submit-csr", 's', POPT_ARG_STRING, &file, 's', "submit request for signing", "FILENAME"},
+		{"submit-serial-hex", 'S', POPT_ARG_STRING, NULL, 'S', "request renewal using hex serial number", "HEXNUMBER"},
+		{"submit-serial-dec", 'D', POPT_ARG_STRING, NULL, 'D', "request renewal using serial number", "DECIMALNUMBER"},
+		{"check", 'c', POPT_ARG_INT, NULL, 'c', "check on pending request", "REQUESTNUMBER"},
+		{"review", 'R', POPT_ARG_INT, NULL, 'R', "review pending request", "REQUESTNUMBER"},
+		{"approve", 'A', POPT_ARG_INT, NULL, 'A', "approve pending request", "REQUESTNUMBER"},
+		{"reject", 'J', POPT_ARG_INT, NULL, 'J', "reject pending request", "REQUESTNUMBER"},
+		{"fetch", 'f', POPT_ARG_INT, NULL, 'f', "fetch certificate issued for request", "REQUESTNUMBER"},
+		{"values", 'V', POPT_ARG_STRING, &default_values, 0, "values to set when approving a request", NULL},
+		{"client-auth", 'a', POPT_ARG_NONE, NULL, 'a', "submit request using TLS client auth", NULL},
+		{"ee-url", 'u', POPT_ARG_STRING, &eeurl, 0, NULL, "URL"},
+		{"agent-url", 'U', POPT_ARG_STRING, &agenturl, 0, NULL, "URL"},
+		{"name", 'n', POPT_ARG_STRING, &name, 0, "pass \"name\" when submitting request", NULL},
+		{"email", 'e', POPT_ARG_STRING, &email, 0, "pass \"email\" when submitting request", "ADDRESS"},
+		{"tele", 't', POPT_ARG_STRING, &tele, 0, "pass \"tele\" when submitting request", "NUMBER"},
+		{"profile", 'T', POPT_ARG_STRING, &profile, 0, "enrollment profile to request", "NAME"},
+		{"dbdir", 'd', POPT_ARG_STRING, &nssdb, 0, NULL, "DIRECTORY"},
+		{"capath", 'P', POPT_ARG_STRING, &capath, 0, NULL, NULL},
+		{"cafile", 'I', POPT_ARG_STRING, &cainfo, 0, NULL, NULL},
+		{"sslkey", 'K', POPT_ARG_STRING, &sslkey, 0, NULL, NULL},
+		{"sslcert", 'C', POPT_ARG_STRING, &sslcert, 0, NULL, NULL},
+		{"sslpin", 'p', POPT_ARG_STRING, &sslpin, 0, NULL, NULL},
+		{"verbose", 'v', POPT_ARG_NONE, NULL, 'v', NULL, NULL},
+		POPT_AUTOHELP
+		POPT_TABLEEND
+	};
 
 	op = op_none;
 	id = 0;
@@ -926,65 +927,52 @@ main(int argc, char **argv)
 	defaults = NULL;
 	default_values = NULL;
 	profile = "caServerCert";
-	while ((c = getopt(argc, argv, "u:U:n:e:t:T:s:S:D:c:f:R:J:A:vaP:I:K:C:d:p:V:")) != -1) {
+
+	pctx = poptGetContext("submit-d", argc, argv, popts, 0);
+	if (pctx == NULL) {
+		return 1;
+	}
+	while ((c = poptGetNextOpt(pctx)) > 0) {
 		switch (c) {
-		case 'u':
-			eeurl = optarg;
-			break;
-		case 'U':
-			agenturl = optarg;
-			break;
-		case 'n':
-			name = optarg;
-			break;
-		case 'e':
-			email = optarg;
-			break;
-		case 't':
-			tele = optarg;
-			break;
-		case 'T':
-			profile = optarg;
-			break;
 		case 's':
 			op = op_submit_csr;
 			agent = 0;
-			file = optarg;
+			file = poptGetOptArg(pctx);
 			break;
 		case 'S':
 			op = op_submit_serial;
 			agent = 0;
-			serial = util_dec_from_hex(optarg);
+			serial = util_dec_from_hex(poptGetOptArg(pctx));
 			break;
 		case 'D':
 			op = op_submit_serial;
 			agent = 0;
-			serial = optarg;
+			serial = poptGetOptArg(pctx);
 			break;
 		case 'c':
 			op = op_check;
 			agent = 0;
-			id = strtol(optarg, NULL, 0);
+			id = strtol(poptGetOptArg(pctx), NULL, 0);
 			break;
 		case 'R':
 			op = op_review;
 			agent = 1;
-			id = strtol(optarg, NULL, 0);
+			id = strtol(poptGetOptArg(pctx), NULL, 0);
 			break;
 		case 'A':
 			op = op_approve;
 			agent = 1;
-			id = strtol(optarg, NULL, 0);
+			id = strtol(poptGetOptArg(pctx), NULL, 0);
 			break;
 		case 'J':
 			op = op_reject;
 			agent = 1;
-			id = strtol(optarg, NULL, 0);
+			id = strtol(poptGetOptArg(pctx), NULL, 0);
 			break;
 		case 'f':
 			op = op_fetch;
 			agent = 0;
-			id = strtol(optarg, NULL, 0);
+			id = strtol(poptGetOptArg(pctx), NULL, 0);
 			break;
 		case 'v':
 			verbose++;
@@ -992,32 +980,11 @@ main(int argc, char **argv)
 		case 'a':
 			clientauth++;
 			break;
-		case 'd':
-			nssdb = optarg;
-			break;
-		case 'P':
-			capath = optarg;
-			break;
-		case 'I':
-			cainfo = optarg;
-			break;
-		case 'K':
-			sslkey = optarg;
-			break;
-		case 'C':
-			sslcert = optarg;
-			break;
-		case 'p':
-			sslpin = optarg;
-			break;
-		case 'V':
-			default_values = optarg;
-			break;
-		default:
-			usage();
-			return 1;
-			break;
 		}
+	}
+	if (c != -1) {
+		poptPrintUsage(pctx, stdout, 0);
+		return 1;
 	}
 	if (nssdb != NULL) {
 		setenv("SSL_DIR", nssdb, 1);
@@ -1161,14 +1128,14 @@ restart:
 					 id);
 		break;
 	case op_none:
-		printf("Error: no specific request given.\n");
-		usage();
+		printf("Error: no specific request (-s/-S/-D/-c/-R/-A/-J/-f) given.\n");
+		poptPrintUsage(pctx, stdout, 0);
 		return 1;
 	}
 	if (agent) {
 		if (agenturl == NULL) {
 			printf("Error: CA AGENT-URL not given.\n");
-			usage();
+			poptPrintUsage(pctx, stdout, 0);
 			return 1;
 		}
 		if (strstr(agenturl, "/") == NULL) {
@@ -1182,7 +1149,7 @@ restart:
 	} else {
 		if (eeurl == NULL) {
 			printf("Error: CA EE-URL not given.\n");
-			usage();
+			poptPrintUsage(pctx, stdout, 0);
 			return 1;
 		}
 		if (strstr(eeurl, "/") == NULL) {
