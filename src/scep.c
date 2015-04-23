@@ -41,6 +41,8 @@
 
 #include <talloc.h>
 
+#include <popt.h>
+
 #include "log.h"
 #include "pkcs7.h"
 #include "prefs.h"
@@ -72,24 +74,6 @@ enum known_ops {
 	op_get_initial_cert,
 	op_pkcsreq,
 };
-
-static void
-help(const char *cmd)
-{
-	fprintf(stderr,
-		"Usage: %s -u URL [options] [-c|-C|-g|-p] [pkiMessage file]\n"
-		"Options:\n"
-		"\t[-i CA identifier]\n"
-		"\t[-c]\tread CA capabilities\n"
-		"\t[-C]\tread RA+CA certificates\n"
-		"\t[-g]\tsend a GetInitialCert request (poll)\n"
-		"\t[-p]\tsend a PKCS request (submit)\n"
-		"\t[-r racert]\n"
-		"\t[-R cacert]\n"
-		"\t[-I othercerts]\n"
-		"\t[-v]\n",
-		strchr(cmd, '/') ? strrchr(cmd, '/') + 1 : cmd);
-}
 
 static int
 cert_cmp(X509 *x, char *candidate)
@@ -150,7 +134,7 @@ cert_among(char *needle, char *candidate1, char *candidate2, char **haystack)
 }
 
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
 	const char *url = NULL, *results = NULL, *results2 = NULL;
 	struct cm_submit_h_context *hctx;
@@ -175,6 +159,21 @@ main(int argc, char **argv)
 	size_t payload_length;
 	long error;
 	PKCS7 *p7;
+	poptContext pctx;
+	struct poptOption popts[] = {
+		{"url", 'u', POPT_ARG_STRING, &url, 0, "service location", "URL"},
+		{"ca-identifier", 'i', POPT_ARG_STRING, &id, 0, "name to use when querying for capabilities", "IDENTIFIER"},
+		{"retrieve-ca-capabilities", 'c', POPT_ARG_NONE, NULL, 'c', "make a GetCACaps request", NULL},
+		{"retrieve-ca-certificates", 'C', POPT_ARG_NONE, NULL, 'C', "make GetCACert/GetCAChain requests", NULL},
+		{"get-initial-cert", 'g', POPT_ARG_NONE, NULL, 'g', "send a PKIOperation pkiMessage", NULL},
+		{"pki-message", 'p', POPT_ARG_NONE, NULL, 'p', "send a PKIOperation pkiMessage", NULL},
+		{"racert", 'r', POPT_ARG_STRING, NULL, 'r', NULL, "FILENAME"},
+		{"cacert", 'R', POPT_ARG_STRING, NULL, 'R', NULL, "FILENAME"},
+		{"other-certs", 'I', POPT_ARG_STRING, NULL, 'I', NULL, "FILENAME"},
+		{"verbose", 'v', POPT_ARG_NONE, NULL, 'v', NULL, NULL},
+		POPT_AUTOHELP
+		POPT_TABLEEND
+	};
 
 	util_o_init();
 	ERR_load_crypto_strings();
@@ -232,17 +231,13 @@ main(int argc, char **argv)
 	bindtextdomain(PACKAGE, MYLOCALEDIR);
 #endif
 
-	while ((c = getopt(argc, argv, "u:i:vcCgpr:R:I:")) != -1) {
+	pctx = poptGetContext(argv[0], argc, argv, popts, 0);
+	if (pctx == NULL) {
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
+	}
+	poptSetOtherOptionHelp(pctx, "[options] [pkiMessage file]");
+	while ((c = poptGetNextOpt(pctx)) > 0) {
 		switch (c) {
-		case 'u':
-			url = optarg;
-			break;
-		case 'i':
-			id = optarg;
-			if (strlen(id) == 0) {
-				id = NULL;
-			}
-			break;
 		case 'v':
 			verbose++;
 			break;
@@ -259,20 +254,20 @@ main(int argc, char **argv)
 			op = op_pkcsreq;
 			break;
 		case 'r':
-			racert = cm_submit_u_from_file(optarg);
+			racert = cm_submit_u_from_file(poptGetOptArg(pctx));
 			break;
 		case 'R':
-			cacert = cm_submit_u_from_file(optarg);
-			cainfo = optarg;
+			cacert = cm_submit_u_from_file(poptGetOptArg(pctx));
+			cainfo = poptGetOptArg(pctx);
 			break;
 		case 'I':
-			certs = cm_submit_u_from_file(optarg);
-			break;
-		default:
-			help(argv[0]);
-			return CM_SUBMIT_STATUS_UNCONFIGURED;
+			certs = cm_submit_u_from_file(poptGetOptArg(pctx));
 			break;
 		}
+	}
+	if (c != -1) {
+		poptPrintUsage(pctx, stdout, 0);
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
 
 	umask(S_IRWXG | S_IRWXO);
@@ -317,7 +312,9 @@ main(int argc, char **argv)
 			missing_args = TRUE;
 		} else {
 			if ((message == NULL) || (strlen(message) == 0)) {
-				message = cm_submit_u_from_file(argv[optind]);
+				if (poptPeekArg(pctx) != NULL) {
+					message = cm_submit_u_from_file(poptGetArg(pctx));
+				}
 			}
 			if ((message == NULL) || (strlen(message) == 0)) {
 				printf(_("Error reading request, expected PKCS7 data.\n"));
@@ -334,7 +331,9 @@ main(int argc, char **argv)
 			missing_args = TRUE;
 		} else {
 			if ((message == NULL) || (strlen(message) == 0)) {
-				message = cm_submit_u_from_file(argv[optind]);
+				if (poptPeekArg(pctx) != NULL) {
+					message = cm_submit_u_from_file(poptGetArg(pctx));
+				}
 			}
 			if ((message == NULL) || (strlen(message) == 0)) {
 				printf(_("Error reading request, expected PKCS7 data.\n"));
@@ -385,7 +384,7 @@ main(int argc, char **argv)
 
 	/* Supply help output, if it's needed. */
 	if (missing_args) {
-		help(argv[0]);
+		poptPrintUsage(pctx, stdout, 0);
 		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
 
