@@ -223,7 +223,8 @@ dogtag_ipa_renew_agent_submit_SOURCES = dogtag.c submit-d.c submit-d.h \
 		dogtag-ipa.c dogtag-ipa.h env.h env-system.c
 dogtag_ipa_renew_agent_submit_LDADD = $(CURL_LIBS) $(XML_LIBS) $(NSS_LIBS) \
 				      $(OPENSSL_LIBS) $(TALLOC_LIBS) \
-				      $(GMP_LIBS) $(UUID_LIBS) $(LTLIBICONV)
+				      $(GMP_LIBS) $(UUID_LIBS) $(LTLIBICONV) \
+				      $(POPT_LIBS)
 dogtag_submit_CFLAGS = $(AM_CFLAGS) $(XML_CFLAGS) $(NSS_CFLAGS) $(CURL_CFLAGS)
 dogtag_submit_SOURCES = dogtag.c submit-d.c submit-d.h \
 		submit-h.c submit-h.h util-m.c util-m.h util-n.c util-n.h \
@@ -232,7 +233,8 @@ dogtag_submit_SOURCES = dogtag.c submit-d.c submit-d.h \
 		env.h env-system.c
 dogtag_submit_LDADD = $(CURL_LIBS) $(XML_LIBS) $(NSS_LIBS) \
 		      $(OPENSSL_LIBS) $(TALLOC_LIBS) \
-		      $(GMP_LIBS) $(UUID_LIBS) $(LTLIBICONV)
+		      $(GMP_LIBS) $(UUID_LIBS) $(LTLIBICONV) \
+		      $(POPT_LIBS)
 scep_submit_CFLAGS = $(AM_CFLAGS) $(XML_CFLAGS) $(NSS_CFLAGS) $(CURL_CFLAGS)
 scep_submit_SOURCES = scep.c scep.h \
 		submit-h.c submit-h.h util-m.c util-m.h util-o.c util-o.h \

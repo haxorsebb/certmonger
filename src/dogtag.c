@@ -37,6 +37,8 @@
 
 #include <talloc.h>
 
+#include <popt.h>
+
 #include "log.h"
 #include "prefs.h"
 #include "store.h"
@@ -58,41 +60,6 @@
 #ifdef DOGTAG_IPA_RENEW_AGENT
 #include "dogtag-ipa.h"
 #endif
-
-static void
-help(const char *cmd)
-{
-	fprintf(stderr,
-		"Usage: %s -E EE-URL -A AGENT-URL [options]\n"
-		"Options:\n"
-		"\t[-d dbdir]\n"
-		"\t[-n nickname]\n"
-		"\t[-i cainfo]\n"
-		"\t[-C capath]\n"
-		"\t[-c certfile]\n"
-		"\t[-k keyfile]\n"
-		"\t[-p pinfile]\n"
-		"\t[-P pin]\n"
-		"\t[-s serial (hex)]\n"
-		"\t[-D serial (decimal)]\n"
-		"\t[-S state]\n"
-		"\t[-T profile]\n"
-		"\t[-O param=value]\n"
-		"\t[-N | -R]\n"
-		"\t[-V dogtag_version]\n"
-		"\t[-o param=value]\n"
-		"\t[-a]\n"
-		"\t[-u username]\n"
-		"\t[-U userdn]\n"
-		"\t[-W userpassword]\n"
-		"\t[-w userpasswordfile]\n"
-		"\t[-Y userpin]\n"
-		"\t[-y userpinfile]\n"
-		"\t[-t]\n"
-		"\t[-v]\n"
-		"\t[csrfile]\n",
-		strchr(cmd, '/') ? strrchr(cmd, '/') + 1 : cmd);
-}
 
 static char *
 statevar(const char *state, const char *what)
@@ -144,7 +111,7 @@ serial_hex_from_cert(const char *cert)
 }
 
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
 	const char *eeurl = NULL, *agenturl = NULL, *url = NULL, *url2 = NULL;
 	const char *ssldir = NULL, *cainfo = NULL, *capath = NULL;
@@ -176,7 +143,42 @@ main(int argc, char **argv)
 	enum cm_external_status ret;
 	NSSInitContext *nctx;
 	const char *es;
-	const char *mode = CM_OP_SUBMIT;
+	const char *mode = CM_OP_SUBMIT, *csrfile;
+	poptContext pctx;
+	const struct poptOption popts[] = {
+		{"ee-url", 'E', POPT_ARG_STRING, &eeurl, 0, "end-entity services location", "URL"},
+		{"agent-url", 'A', POPT_ARG_STRING, &agenturl, 0, "agent services location", "URL"},
+		{"cafile", 'i', POPT_ARG_STRING, &cainfo, 0, NULL, "FILENAME"},
+		{"capath", 'C', POPT_ARG_STRING, &capath, 0, NULL, "DIRECTORY"},
+		{"dbdir", 'd', POPT_ARG_STRING, &ssldir, 0, "database containing agent or client creds", "DIRECTORY"},
+		{"nickname", 'n', POPT_ARG_STRING, &sslcert, 0, "nickname of agent or client creds", "NAME"},
+		{"certfile", 'c', POPT_ARG_STRING, &sslcert, 0, "agent or client certificate", "FILENAME"},
+		{"keyfile", 'k', POPT_ARG_STRING, &sslkey, 0, "agent or client key", "FILENAME"},
+		{"sslpinfile", 'p', POPT_ARG_STRING, &sslpinfile, 0, "agent or client key pinfile", "FILENAME"},
+		{"sslpin", 'P', POPT_ARG_STRING, &sslpin, 0, "agent or client key pin", NULL},
+		{"hex-serial", 's', POPT_ARG_STRING, NULL, 's', "request renewal for certificate by serial number (hexadecimal)", "NUMBER"},
+		{"serial", 'D', POPT_ARG_STRING, &serial, 'D', "request renewal for certificate by serial number", "NUMBER"},
+		{"submit-option", 'o', POPT_ARG_STRING, NULL, 'o', "key-value pair to send to server", NULL},
+		{"approval-option", 'O', POPT_ARG_STRING, NULL, 'O', "key-value pair to set in certificate", NULL},
+		{"profile", 'T', POPT_ARG_STRING, &template, 0, "enrollment profile", "NAME"},
+		{"profile-list", 't', POPT_ARG_NONE, NULL, 't', "list enrollment profiles", NULL},
+		{"state", 'S', POPT_ARG_STRING, &savedstate, 0, "previously-provided state data", "STATE-VALUE"},
+#ifdef DOGTAG_IPA_RENEW_AGENT
+		{"dogtag-version", 'V', POPT_ARG_STRING, &dogtag_version, 'V', NULL, "NUMBER"},
+#endif
+		{"force-new", 'N', POPT_ARG_NONE, NULL, 'N', "prefer to obtain a new certificate", NULL},
+		{"force-renew", 'R', POPT_ARG_NONE, NULL, 'R', "prefer to renew a certificate", NULL},
+		{"agent-submit", 'a', POPT_ARG_NONE, NULL, 'a', "submit enrollment or renewal request using agent or client creds", NULL},
+		{"uid", 'u', POPT_ARG_STRING, &uid, 0, "submit enrollment or renewal request using user name", "USERNAME"},
+		{"udn", 'U', POPT_ARG_STRING, &udn, 0, "submit enrollment or renewal request using user DN", "USERDN"},
+		{"userpwd", 'W', POPT_ARG_STRING, &pwd, 0, "submit password with enrollment or renewal request", NULL},
+		{"userpwdfile", 'w', POPT_ARG_STRING, &pwdfile, 0, "submit password from file with enrollment or renewal request", "FILENAME"},
+		{"userpin", 'Y', POPT_ARG_STRING, &pin, 0, "submit pin with enrollment or renewal request", NULL},
+		{"userpinfile", 'y', POPT_ARG_STRING, &pinfile, 0, "submit pin from file with enrollment or renewal request", "FILENAME"},
+		{"verbose", 'v', POPT_ARG_NONE, NULL, 'v', NULL, NULL},
+		POPT_AUTOHELP
+		POPT_TABLEEND
+	};
 
 	if (getenv(CM_SUBMIT_OPERATION_ENV) != NULL) {
 		mode = getenv(CM_SUBMIT_OPERATION_ENV);
@@ -207,52 +209,20 @@ main(int argc, char **argv)
 
 	savedstate = getenv(CM_SUBMIT_COOKIE_ENV);
 
-	while ((c = getopt(argc, argv, "E:A:d:n:i:C:c:k:p:P:s:D:S:T:O:o:vV:NRtau:U:W:w:Y:y:")) != -1) {
+	pctx = poptGetContext(argv[0], argc, argv, popts, 0);
+	if (pctx == NULL) {
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
+	}
+	poptSetOtherOptionHelp(pctx, "[options] -E EE-URL -A AGENT-URL [csrfile]");
+	while ((c = poptGetNextOpt(pctx)) > 0) {
 		switch (c) {
-		case 'E':
-			eeurl = optarg;
-			break;
-		case 'A':
-			agenturl = optarg;
-			break;
-		case 'd':
-			ssldir = optarg;
-			break;
-		case 'i':
-			cainfo = optarg;
-			break;
-		case 'C':
-			capath = optarg;
-			break;
-		case 'c':
-		case 'n':
-			sslcert = optarg;
-			break;
-		case 'k':
-			sslkey = optarg;
-			break;
-		case 'p':
-			sslpinfile = optarg;
-			break;
-		case 'P':
-			sslpin = optarg;
-			break;
-		case 'D':
-			serial = optarg;
-			break;
 		case 's':
-			serial = util_dec_from_hex(optarg);
-			break;
-		case 'S':
-			savedstate = optarg;
-			break;
-		case 'T':
-			template = optarg;
+			serial = util_dec_from_hex(poptGetOptArg(pctx));
 			break;
 		case 'O':
-			if (strchr(optarg, '=') == NULL) {
+			if (strchr(poptGetOptArg(pctx), '=') == NULL) {
 				printf(_("Profile params (-O) must be in the form of param=value.\n"));
-				help(argv[0]);
+				poptPrintUsage(pctx, stdout, 0);
 				return CM_SUBMIT_STATUS_UNCONFIGURED;
 			}
 			aoptions = realloc(aoptions,
@@ -261,7 +231,7 @@ main(int argc, char **argv)
 				printf(_("Out of memory.\n"));
 				return CM_SUBMIT_STATUS_UNCONFIGURED;
 			}
-			p = strdup(optarg);
+			p = strdup(poptGetOptArg(pctx));
 			if (p == NULL) {
 				printf(_("Out of memory.\n"));
 				return CM_SUBMIT_STATUS_UNCONFIGURED;
@@ -272,9 +242,9 @@ main(int argc, char **argv)
 			aoptions[num_aoptions - 1].value = p + i + 1;
 			break;
 		case 'o':
-			if (strchr(optarg, '=') == NULL) {
+			if (strchr(poptGetOptArg(pctx), '=') == NULL) {
 				printf(_("Submit params (-o) must be in the form of param=value.\n"));
-				help(argv[0]);
+				poptPrintUsage(pctx, stdout, 0);
 				return CM_SUBMIT_STATUS_UNCONFIGURED;
 			}
 			soptions = realloc(soptions,
@@ -283,7 +253,7 @@ main(int argc, char **argv)
 				printf(_("Out of memory.\n"));
 				return CM_SUBMIT_STATUS_UNCONFIGURED;
 			}
-			p = strdup(optarg);
+			p = strdup(poptGetOptArg(pctx));
 			if (p == NULL) {
 				printf(_("Out of memory.\n"));
 				return CM_SUBMIT_STATUS_UNCONFIGURED;
@@ -301,7 +271,7 @@ main(int argc, char **argv)
 			break;
 #ifdef DOGTAG_IPA_RENEW_AGENT
 		case 'V':
-			dogtag_version = optarg;
+			dogtag_version = poptGetOptArg(pctx);
 			break;
 #endif
 		case 'N':
@@ -315,32 +285,16 @@ main(int argc, char **argv)
 		case 'a':
 			use_agent_submission = TRUE;
 			break;
-		case 'u':
-			uid = optarg;
-			break;
-		case 'U':
-			udn = optarg;
-			break;
-		case 'W':
-			pwd = optarg;
-			break;
-		case 'w':
-			pwdfile = optarg;
-			break;
-		case 'Y':
-			pin = optarg;
-			break;
-		case 'y':
-			pinfile = optarg;
-			break;
-		default:
-			help(argv[0]);
-			return CM_SUBMIT_STATUS_UNCONFIGURED;
-			break;
 		}
+	}
+	if (c != -1) {
+		poptPrintUsage(pctx, stdout, 0);
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
 
 	umask(S_IRWXG | S_IRWXO);
+	cm_log_set_method(cm_log_stderr);
+	cm_log_set_level(verbose);
 
 	nctx = NSS_InitContext(CM_DEFAULT_CERT_STORAGE_LOCATION,
 			       NULL, NULL, NULL, NULL,
@@ -488,7 +442,7 @@ main(int argc, char **argv)
 		}
 	}
 	if (missing_args) {
-		help(argv[0]);
+		poptPrintUsage(pctx, stdout, 0);
 		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
 	if (NSS_ShutdownContext(nctx) != SECSuccess) {
@@ -550,15 +504,18 @@ main(int argc, char **argv)
 			/* Fresh enrollment.  Read the CSR from the
 			 * environment, or from the command-line, that we're
 			 * going to submit for signing. */
-			csr = getenv(CM_SUBMIT_CSR_ENV);
-			if (csr == NULL) {
-				csr = cm_submit_u_from_file((optind < argc) ?
-							    argv[optind++] :
-							    NULL);
+			csrfile = poptGetArg(pctx);
+			if (csrfile != NULL) {
+				csr = cm_submit_u_from_file(csrfile);
+			} else {
+				csr = getenv(CM_SUBMIT_CSR_ENV);
+				if (csr != NULL) {
+					csr = strdup(csr);
+				}
 			}
 			if ((csr == NULL) || (strlen(csr) == 0)) {
 				printf(_("Unable to read signing request.\n"));
-				help(argv[0]);
+				poptPrintUsage(pctx, stdout, 0);
 				return CM_SUBMIT_STATUS_UNCONFIGURED;
 			}
 			csr = cm_submit_u_url_encode(csr);
@@ -627,13 +584,13 @@ main(int argc, char **argv)
 		if (agenturl == NULL) {
 			printf(_("No agent URL (-A) given, and no default "
 				 "known.\n"));
-			help(argv[0]);
+			poptPrintUsage(pctx, stdout, 0);
 			return CM_SUBMIT_STATUS_UNCONFIGURED;
 		}
 		if ((sslcert == NULL) || (strlen(sslcert) == 0)) {
 			printf(_("No agent credentials (-n) given, but they "
 				 "are needed.\n"));
-			help(argv[0]);
+			poptPrintUsage(pctx, stdout, 0);
 			return CM_SUBMIT_STATUS_UNCONFIGURED;
 		}
 		/* Reading profile defaults for this certificate, then applying
