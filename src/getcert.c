@@ -22,7 +22,6 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <getopt.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,6 +37,8 @@
 #include <pk11pub.h>
 
 #include <krb5.h>
+
+#include <popt.h>
 
 #include "cm.h"
 #include "kudict.h"
@@ -57,11 +58,24 @@
 #endif
 #define N_(_msg) (_msg)
 
+#define HELP_TYPE_COMMAND _("COMMAND")
+#define HELP_TYPE_DIRECTORY _("DIRECTORY")
+#define HELP_TYPE_EKU _("LIST")
+#define HELP_TYPE_EMAIL _("ADDRESS")
+#define HELP_TYPE_FILENAME _("FILENAME")
+#define HELP_TYPE_HOSTNAME _("HOSTNAME")
+#define HELP_TYPE_ID _("ID")
+#define HELP_TYPE_IP _("ADDRESS")
+#define HELP_TYPE_KEYSIZE _("BITS")
+#define HELP_TYPE_KU _("LIST")
+#define HELP_TYPE_NAME _("NAME")
+#define HELP_TYPE_PRINCIPAL _("PRINCIPAL")
+#define HELP_TYPE_SUBJECT _("SUBJECT")
+#define HELP_TYPE_URL _("URL")
+
 #ifdef FORCE_CA
-#define GETOPT_CA ""
 #define DEFAULT_CA FORCE_CA
 #else
-#define GETOPT_CA "c:"
 #define DEFAULT_CA NULL
 #endif
 
@@ -303,7 +317,7 @@ escape(void *t, const char *text)
 }
 static void
 prep_bus(enum cm_tdbus_type which, const char *mode,
-	 int verbose, int argc, char **argv)
+	 int verbose, int argc, const char **argv)
 {
 	DBusError err;
 	char *nargv[7] = {
@@ -673,7 +687,7 @@ waitfor(void *parent, enum cm_tdbus_type bus, const char *path, int verbose)
 
 /* Add a new request. */
 static int
-request(const char *argv0, int argc, char **argv)
+request(const char *argv0, int argc, const char **argv)
 {
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	char subject_default[LINE_MAX];
@@ -695,6 +709,45 @@ request(const char *argv0, int argc, char **argv)
 	krb5_error_code kret;
 	krb5_principal kprinc;
 	char *krealm, *kuprinc, *precommand = NULL, *postcommand = NULL;
+	const char *poptarg;
+	poptContext pctx;
+	struct poptOption popts[] = {
+		{"dbdir", 'd', POPT_ARG_STRING, NULL, 'd', _("NSS database for key and cert"), HELP_TYPE_DIRECTORY},
+		{"nickname", 'n', POPT_ARG_STRING, NULL, 'n', _("nickname for NSS-based storage (only valid with -d)"), HELP_TYPE_NAME},
+		{"token", 't', POPT_ARG_STRING, NULL, 't', _("optional token name for NSS-based storage (only valid with -d)"), HELP_TYPE_NAME},
+		{"keyfile", 'k', POPT_ARG_STRING, NULL, 'k', _("PEM file for private key"), HELP_TYPE_FILENAME},
+		{"certfile", 'f', POPT_ARG_STRING, NULL, 'f', _("PEM file for certificate (only valid with -k)"), HELP_TYPE_FILENAME},
+		{"pinfile", 'p', POPT_ARG_STRING, NULL, 'p', _("file which holds the private key encryption PIN"), HELP_TYPE_FILENAME},
+		{"pin", 'P', POPT_ARG_STRING, NULL, 'P', _("private key encryption PIN"), NULL},
+		{"ca-dbdir", 'a', POPT_ARG_STRING, NULL, 'a', _("NSS database in which to store the CA's certificates"), HELP_TYPE_DIRECTORY},
+		{"ca-file", 'F', POPT_ARG_STRING, NULL, 'F', _("file in which to store the CA's certificates"), HELP_TYPE_FILENAME},
+		{"before-command", 'B', POPT_ARG_STRING, NULL, 'B', _("command to run before saving the certificate"), HELP_TYPE_COMMAND},
+		{"after-command", 'C', POPT_ARG_STRING, NULL, 'C', _("command to run after saving the certificate"), HELP_TYPE_COMMAND},
+		{"id", 'I', POPT_ARG_STRING, NULL, 'I', _("nickname to assign to the request"), HELP_TYPE_ID},
+		{"key-type", 'G', POPT_ARG_STRING, NULL, 'G', _("type of key to be generated if one is not already in place"), NULL},
+		{"keysize", 'g', POPT_ARG_STRING, NULL, 'g', _("size of key to be generated if one is not already in place"), HELP_TYPE_KEYSIZE},
+		{"renew", 'r', POPT_ARG_NONE, NULL, 'r', _("attempt to renew the certificate when expiration nears (default)"), NULL},
+		{"no-renew", 'R', POPT_ARG_NONE, NULL, 'R', _("don't attempt to renew the certificate when expiration nears"), NULL},
+#ifndef FORCE_CA
+		{"ca", 'c', POPT_ARG_STRING, NULL, 0, _("use the specified CA configuration rather than the default"), HELP_TYPE_NAME},
+#endif
+		{"profile", 'T', POPT_ARG_STRING, NULL, 'T', _("ask the CA to process the request using the named profile or template"), HELP_TYPE_NAME},
+		{"subject-name", 'N', POPT_ARG_STRING, NULL, 'N', _("set requested subject name (default: CN=<hostname>)"), HELP_TYPE_SUBJECT},
+		{"key-usage", 'u', POPT_ARG_STRING, NULL, 'u', _("set requested key usage value"), HELP_TYPE_KU},
+		{"extended-key-usage", 'U', POPT_ARG_STRING, NULL, 'U', _("set requested extended key usage OID"), HELP_TYPE_EKU},
+		{"principal", 'K', POPT_ARG_STRING, NULL, 'K', _("set requested principal name"), HELP_TYPE_PRINCIPAL},
+		{"dns", 'D', POPT_ARG_STRING, NULL, 'D', _("set requested DNS name"), HELP_TYPE_HOSTNAME},
+		{"email", 'E', POPT_ARG_STRING, NULL, 'E', _("set requested email address"), HELP_TYPE_EMAIL},
+		{"ip-address", 'A', POPT_ARG_STRING, NULL, 'A', _("set requested IP address"), HELP_TYPE_IP},
+		{"challenge-password-file", 'l', POPT_ARG_STRING, NULL, 'l', _("file which holds an optional challenge password value"), HELP_TYPE_FILENAME},
+		{"challenge-password", 'L', POPT_ARG_STRING, NULL, 'L', _("an optional challenge password value"), NULL},
+		{"wait", 'w', POPT_ARG_NONE, NULL, 'w', _("try to wait for the certificate to be issued"), NULL},
+		{"session", 's', POPT_ARG_NONE, NULL, 's', _("connect to the certmonger service on the session bus"), NULL},
+		{"system", 'S', POPT_ARG_NONE, NULL, 'S', _("connect to the certmonger service on the system bus"), NULL},
+		{"verbose", 'v', POPT_ARG_NONE, NULL, 'v', NULL, NULL},
+		{"autohelp", 'H', POPT_ARG_NONE | POPT_ARGFLAG_DOC_HIDDEN, NULL, 'H', NULL, NULL},
+		POPT_TABLEEND
+	};
 
 	memset(subject_default, '\0', sizeof(subject_default));
 	strcpy(subject_default, "CN=");
@@ -721,43 +774,46 @@ request(const char *argv0, int argc, char **argv)
 		bus = cm_tdbus_private;
 	}
 
-	opterr = 0;
-	while ((c = getopt(argc, argv,
-			   ":d:n:t:k:f:I:g:rRN:u:U:K:D:E:sSp:P:vB:C:T:G:A:a:F:wL:l:"
-			   GETOPT_CA)) != -1) {
+	pctx = poptGetContext(argv0, argc, argv, popts, 0);
+	if (pctx == NULL) {
+		help(argv0, "request");
+		return 1;
+	}
+	while ((c = poptGetNextOpt(pctx)) > 0) {
+		poptarg = poptGetOptArg(pctx);
 		switch (c) {
 		case 'd':
 			nss_scheme = NULL;
-			dbdir = ensure_nss(globals.tctx, optarg, &nss_scheme);
+			dbdir = ensure_nss(globals.tctx, poptarg, &nss_scheme);
 			if ((nss_scheme != NULL) && (dbdir != NULL)) {
 				dbdir = talloc_asprintf(globals.tctx, "%s:%s",
 							nss_scheme, dbdir);
 			}
 			break;
 		case 't':
-			token = talloc_strdup(globals.tctx, optarg);
+			token = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'n':
-			nickname = talloc_strdup(globals.tctx, optarg);
+			nickname = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'k':
-			keyfile = ensure_pem(globals.tctx, optarg);
+			keyfile = ensure_pem(globals.tctx, poptarg);
 			break;
 		case 'f':
-			certfile = ensure_pem(globals.tctx, optarg);
+			certfile = ensure_pem(globals.tctx, poptarg);
 			break;
 		case 'G':
-			if ((strcasecmp(optarg, "RSA") != 0)
+			if ((strcasecmp(poptarg, "RSA") != 0)
 #ifdef CM_ENABLE_DSA
-			    && (strcasecmp(optarg, "DSA") != 0)
+			    && (strcasecmp(poptarg, "DSA") != 0)
 #endif
 #ifdef CM_ENABLE_EC
-			    && (strcasecmp(optarg, "ECDSA") != 0)
-			    && (strcasecmp(optarg, "EC") != 0)
+			    && (strcasecmp(poptarg, "ECDSA") != 0)
+			    && (strcasecmp(poptarg, "EC") != 0)
 #endif
 			    ) {
 				printf(_("No support for generating \"%s\" keys.\n"),
-				       optarg);
+				       poptarg);
 				printf(_("Known key types include:"));
 				printf(" RSA");
 #ifdef CM_ENABLE_DSA
@@ -769,13 +825,13 @@ request(const char *argv0, int argc, char **argv)
 				printf("\n");
 				return 1;
 			}
-			keytype = talloc_strdup(globals.tctx, optarg);
+			keytype = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'g':
-			keysize = atoi(optarg);
+			keysize = atoi(poptarg);
 			break;
 		case 'I':
-			id = talloc_strdup(globals.tctx, optarg);
+			id = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'r':
 			auto_renew++;
@@ -784,41 +840,41 @@ request(const char *argv0, int argc, char **argv)
 			auto_renew = 0;
 			break;
 		case 'c':
-			ca = talloc_strdup(globals.tctx, optarg);
+			ca = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'T':
-			profile = talloc_strdup(globals.tctx, optarg);
+			profile = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'N':
-			subject = talloc_strdup(globals.tctx, optarg);
+			subject = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'u':
-			kubit = cm_ku_from_name(optarg);
+			kubit = cm_ku_from_name(poptarg);
 			if (kubit == -1) {
 				printf(_("Unrecognized keyUsage \"%s\".\n"),
-				       optarg);
+				       poptarg);
 				return 1;
 			}
 			ku |= (1 << kubit);
 			break;
 		case 'U':
-			oid = cm_oid_from_name(globals.tctx, optarg);
+			oid = cm_oid_from_name(globals.tctx, poptarg);
 			if ((oid == NULL) ||
 			    (strspn(oid, "0123456789.") != strlen(oid))) {
 				printf(_("Could not evaluate OID \"%s\".\n"),
-				       optarg);
+				       poptarg);
 				return 1;
 			}
 			add_string(globals.tctx, &eku, oid);
 			break;
 		case 'K':
 			kprinc = NULL;
-			if (strlen(optarg) > 0) {
-				if ((kret = krb5_parse_name(kctx, optarg,
+			if (strlen(poptarg) > 0) {
+				if ((kret = krb5_parse_name(kctx, poptarg,
 							    &kprinc)) != 0) {
 					printf(_("Error parsing Kerberos "
 						 "principal name \"%s\": "
-						 "%s.\n"), optarg,
+						 "%s.\n"), poptarg,
 					       error_message(kret));
 					return 1;
 				}
@@ -827,7 +883,7 @@ request(const char *argv0, int argc, char **argv)
 							      &kuprinc)) != 0) {
 					printf(_("Error unparsing Kerberos "
 						 "principal name \"%s\": "
-						 "%s.\n"), optarg,
+						 "%s.\n"), poptarg,
 					       error_message(kret));
 					return 1;
 				}
@@ -838,13 +894,13 @@ request(const char *argv0, int argc, char **argv)
 			}
 			break;
 		case 'D':
-			add_string(globals.tctx, &dns, optarg);
+			add_string(globals.tctx, &dns, poptarg);
 			break;
 		case 'E':
-			add_string(globals.tctx, &email, optarg);
+			add_string(globals.tctx, &email, poptarg);
 			break;
 		case 'A':
-			add_string(globals.tctx, &ipaddr, optarg);
+			add_string(globals.tctx, &ipaddr, poptarg);
 			break;
 		case 's':
 			bus = cm_tdbus_session;
@@ -853,25 +909,25 @@ request(const char *argv0, int argc, char **argv)
 			bus = cm_tdbus_system;
 			break;
 		case 'p':
-			pinfile = optarg;
+			pinfile = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'P':
-			pin = optarg;
+			pin = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'l':
-			cpassfile = optarg;
+			cpassfile = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'L':
-			cpass = optarg;
+			cpass = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'B':
-			precommand = optarg;
+			precommand = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'C':
-			postcommand = optarg;
+			postcommand = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'a':
-			p = ensure_nss(globals.tctx, optarg, &nss_scheme);
+			p = ensure_nss(globals.tctx, poptarg, &nss_scheme);
 			if ((nss_scheme != NULL) && (p != NULL)) {
 				p = talloc_asprintf(globals.tctx, "%s:%s",
 						    nss_scheme, p);
@@ -881,20 +937,24 @@ request(const char *argv0, int argc, char **argv)
 			} else {
 				fprintf(stderr,
 					_("%s: invalid value -- '%s'\n"),
-					"request", optarg);
+					"request", poptarg);
 				help(argv0, "request");
 				return 1;
 			}
 			break;
 		case 'F':
 			add_string(globals.tctx, &anchor_files,
-				   ensure_pem(globals.tctx, optarg));
+				   ensure_pem(globals.tctx, poptarg));
 			break;
 		case 'w':
 			waitreq++;
 			break;
 		case 'v':
 			verbose++;
+			break;
+		case 'H':
+			poptPrintHelp(pctx, stdout, 0);
+			return 1;
 			break;
 		default:
 			if (c == ':') {
@@ -910,10 +970,14 @@ request(const char *argv0, int argc, char **argv)
 			return 1;
 		}
 	}
-	if (optind < argc) {
-		for (c = optind; c < argc; c++) {
+	if (c != -1) {
+		help(argv0, "request");
+		return 1;
+	}
+	if (poptPeekArg(pctx) != NULL) {
+		while (poptPeekArg(pctx) != NULL) {
 			printf(_("Error: unused extra argument \"%s\".\n"),
-			       argv[c]);
+			       poptGetArg(pctx));
 		}
 		printf(_("Error: unused extra arguments were supplied.\n"));
 		help(argv0, "request");
@@ -1579,7 +1643,7 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 
 static int
 set_tracking(const char *argv0, const char *category,
-	     int argc, char **argv, dbus_bool_t track)
+	     int argc, const char **argv, dbus_bool_t track)
 {
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	DBusMessage *req, *rep;
@@ -1603,6 +1667,43 @@ set_tracking(const char *argv0, const char *category,
 	krb5_principal kprinc;
 	char *krealm, *kuprinc;
 	char *precommand = NULL, *postcommand = NULL;
+	const char *poptarg;
+	poptContext pctx;
+	struct poptOption popts[] = {
+		{"dbdir", 'd', POPT_ARG_STRING, NULL, 'd', _("NSS database for key and cert"), HELP_TYPE_DIRECTORY},
+		{"nickname", 'n', POPT_ARG_STRING, NULL, 'n', _("nickname for NSS-based storage (only valid with -d)"), HELP_TYPE_NAME},
+		{"token", 't', POPT_ARG_STRING, NULL, 't', _("optional token name for NSS-based storage (only valid with -d)"), HELP_TYPE_NAME},
+		{"keyfile", 'k', POPT_ARG_STRING, NULL, 'k', _("PEM file for private key (only valid with -f)"), HELP_TYPE_FILENAME},
+		{"certfile", 'f', POPT_ARG_STRING, NULL, 'f', _("PEM file for certificate"), HELP_TYPE_FILENAME},
+		{"pinfile", 'p', POPT_ARG_STRING, NULL, 'p', _("file which holds the private key encryption PIN"), HELP_TYPE_FILENAME},
+		{"pin", 'P', POPT_ARG_STRING, NULL, 'P', _("private key encryption PIN"), NULL},
+		{"ca-dbdir", 'a', POPT_ARG_STRING, NULL, 'a', _("NSS database in which to store the CA's certificates"), HELP_TYPE_DIRECTORY},
+		{"ca-file", 'F', POPT_ARG_STRING, NULL, 'F', _("file in which to store the CA's certificates"), HELP_TYPE_FILENAME},
+		{"before-command", 'B', POPT_ARG_STRING, NULL, 'B', _("command to run before saving the certificate"), HELP_TYPE_COMMAND},
+		{"after-command", 'C', POPT_ARG_STRING, NULL, 'C', _("command to run after saving the certificate"), HELP_TYPE_COMMAND},
+		{"id", 'i', POPT_ARG_STRING, NULL, 'i', _("nickname of an existing request"), HELP_TYPE_ID},
+		{"new-id", 'I', POPT_ARG_STRING, NULL, 'I', _("nickname to give to tracking request"), HELP_TYPE_ID},
+		{"renew", 'r', POPT_ARG_NONE, NULL, 'r', _("attempt to renew the certificate when expiration nears (default)"), NULL},
+		{"no-renew", 'R', POPT_ARG_NONE, NULL, 'R', _("don't attempt to renew the certificate when expiration nears"), NULL},
+#ifndef FORCE_CA
+		{"ca", 'c', POPT_ARG_STRING, NULL, 0, _("use the specified CA configuration rather than the default"), HELP_TYPE_NAME},
+#endif
+		{"profile", 'T', POPT_ARG_STRING, NULL, 'T', _("ask the CA to process the request using the named profile or template"), HELP_TYPE_NAME},
+		{"key-usage", 'u', POPT_ARG_STRING, NULL, 'u', _("override requested key usage value"), HELP_TYPE_KU},
+		{"extended-key-usage", 'U', POPT_ARG_STRING, NULL, 'U', _("override requested extended key usage OID"), HELP_TYPE_EKU},
+		{"principal", 'K', POPT_ARG_STRING, NULL, 'K', _("override requested principal name"), HELP_TYPE_PRINCIPAL},
+		{"dns", 'D', POPT_ARG_STRING, NULL, 'D', _("override requested DNS name"), HELP_TYPE_HOSTNAME},
+		{"email", 'E', POPT_ARG_STRING, NULL, 'E', _("override requested email address"), HELP_TYPE_EMAIL},
+		{"ip-address", 'A', POPT_ARG_STRING, NULL, 'A', _("override requested IP address"), HELP_TYPE_IP},
+		{"challenge-password", 'L', POPT_ARG_STRING, NULL, 'L', _("an optional challenge password value"), NULL},
+		{"challenge-password-file", 'l', POPT_ARG_STRING, NULL, 'l', _("file which holds an optional challenge password value"), HELP_TYPE_FILENAME},
+		{"wait", 'w', POPT_ARG_NONE, NULL, 'w', _("try to wait for the certificate to be issued"), NULL},
+		{"session", 's', POPT_ARG_NONE, NULL, 's', _("connect to the certmonger service on the session bus"), NULL},
+		{"system", 'S', POPT_ARG_NONE, NULL, 'S', _("connect to the certmonger service on the system bus"), NULL},
+		{"verbose", 'v', POPT_ARG_NONE, NULL, 'v', NULL, NULL},
+		{"autohelp", 'H', POPT_ARG_NONE | POPT_ARGFLAG_DOC_HIDDEN, NULL, 'H', NULL, NULL},
+		POPT_TABLEEND
+	};
 
 	kctx = NULL;
 	if ((kret = krb5_init_context(&kctx)) != 0) {
@@ -1621,30 +1722,33 @@ set_tracking(const char *argv0, const char *category,
 		bus = cm_tdbus_private;
 	}
 
-	opterr = 0;
-	while ((c = getopt(argc, argv,
-			   ":d:n:t:k:f:g:p:P:rRi:I:u:U:K:D:E:sSvB:C:T:A:a:F:wL:l:"
-			   GETOPT_CA)) != -1) {
+	pctx = poptGetContext(argv0, argc, argv, popts, 0);
+	if (pctx == NULL) {
+		help(argv0, category);
+		return 1;
+	}
+	while ((c = poptGetNextOpt(pctx)) > 0) {
+		poptarg = poptGetOptArg(pctx);
 		switch (c) {
 		case 'd':
 			nss_scheme = NULL;
-			dbdir = ensure_nss(globals.tctx, optarg, &nss_scheme);
+			dbdir = ensure_nss(globals.tctx, poptarg, &nss_scheme);
 			if ((nss_scheme != NULL) && (dbdir != NULL)) {
 				dbdir = talloc_asprintf(globals.tctx, "%s:%s",
 							nss_scheme, dbdir);
 			}
 			break;
 		case 't':
-			token = talloc_strdup(globals.tctx, optarg);
+			token = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'n':
-			nickname = talloc_strdup(globals.tctx, optarg);
+			nickname = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'k':
-			keyfile = ensure_pem(globals.tctx, optarg);
+			keyfile = ensure_pem(globals.tctx, poptarg);
 			break;
 		case 'f':
-			certfile = ensure_pem(globals.tctx, optarg);
+			certfile = ensure_pem(globals.tctx, poptarg);
 			break;
 		case 'r':
 			if (track) {
@@ -1664,48 +1768,48 @@ set_tracking(const char *argv0, const char *category,
 			break;
 		case 'c':
 			if (track) {
-				ca = talloc_strdup(globals.tctx, optarg);
+				ca = talloc_strdup(globals.tctx, poptarg);
 			} else {
 				help(argv0, category);
 				return 1;
 			}
 			break;
 		case 'T':
-			profile = talloc_strdup(globals.tctx, optarg);
+			profile = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'i':
-			id = talloc_strdup(globals.tctx, optarg);
+			id = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'I':
-			new_id = talloc_strdup(globals.tctx, optarg);
+			new_id = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'u':
-			kubit = cm_ku_from_name(optarg);
+			kubit = cm_ku_from_name(poptarg);
 			if (kubit == -1) {
 				printf(_("Unrecognized keyUsage \"%s\".\n"),
-				       optarg);
+				       poptarg);
 				return 1;
 			}
 			ku |= (1 << kubit);
 			break;
 		case 'U':
-			oid = cm_oid_from_name(globals.tctx, optarg);
+			oid = cm_oid_from_name(globals.tctx, poptarg);
 			if ((oid == NULL) ||
 			    (strspn(oid, "0123456789.") != strlen(oid))) {
 				printf(_("Could not evaluate OID \"%s\".\n"),
-				       optarg);
+				       poptarg);
 				return 1;
 			}
 			add_string(globals.tctx, &eku, oid);
 			break;
 		case 'K':
 			kprinc = NULL;
-			if (strlen(optarg) > 0) {
-				if ((kret = krb5_parse_name(kctx, optarg,
+			if (strlen(poptarg) > 0) {
+				if ((kret = krb5_parse_name(kctx, poptarg,
 							    &kprinc)) != 0) {
 					printf(_("Error parsing Kerberos "
 						 "principal name \"%s\": "
-						 "%s.\n"), optarg,
+						 "%s.\n"), poptarg,
 					       error_message(kret));
 					return 1;
 				}
@@ -1714,7 +1818,7 @@ set_tracking(const char *argv0, const char *category,
 							      &kuprinc)) != 0) {
 					printf(_("Error unparsing Kerberos "
 						 "principal name \"%s\": "
-						 "%s.\n"), optarg,
+						 "%s.\n"), poptarg,
 					       error_message(kret));
 					return 1;
 				}
@@ -1725,13 +1829,13 @@ set_tracking(const char *argv0, const char *category,
 			}
 			break;
 		case 'D':
-			add_string(globals.tctx, &dns, optarg);
+			add_string(globals.tctx, &dns, poptarg);
 			break;
 		case 'E':
-			add_string(globals.tctx, &email, optarg);
+			add_string(globals.tctx, &email, poptarg);
 			break;
 		case 'A':
-			add_string(globals.tctx, &ipaddr, optarg);
+			add_string(globals.tctx, &ipaddr, poptarg);
 			break;
 		case 's':
 			bus = cm_tdbus_session;
@@ -1740,25 +1844,25 @@ set_tracking(const char *argv0, const char *category,
 			bus = cm_tdbus_system;
 			break;
 		case 'p':
-			pinfile = optarg;
+			pinfile = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'P':
-			pin = optarg;
+			pin = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'l':
-			cpassfile = optarg;
+			cpassfile = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'L':
-			cpass = optarg;
+			cpass = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'B':
-			precommand = optarg;
+			precommand = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'C':
-			postcommand = optarg;
+			postcommand = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'a':
-			p = ensure_nss(globals.tctx, optarg, &nss_scheme);
+			p = ensure_nss(globals.tctx, poptarg, &nss_scheme);
 			if ((nss_scheme != NULL) && (p != NULL)) {
 				p = talloc_asprintf(globals.tctx, "%s:%s",
 						    nss_scheme, p);
@@ -1768,14 +1872,14 @@ set_tracking(const char *argv0, const char *category,
 			} else {
 				fprintf(stderr,
 					_("%s: invalid value -- '%s'\n"),
-					"request", optarg);
+					"request", poptarg);
 				help(argv0, "request");
 				return 1;
 			}
 			break;
 		case 'F':
 			add_string(globals.tctx, &anchor_files,
-				   ensure_pem(globals.tctx, optarg));
+				   ensure_pem(globals.tctx, poptarg));
 			break;
 		case 'w':
 			if (track) {
@@ -1787,6 +1891,10 @@ set_tracking(const char *argv0, const char *category,
 			break;
 		case 'v':
 			verbose++;
+			break;
+		case 'H':
+			poptPrintHelp(pctx, stdout, 0);
+			return 1;
 			break;
 		default:
 			if (c == ':') {
@@ -1801,10 +1909,14 @@ set_tracking(const char *argv0, const char *category,
 			return 1;
 		}
 	}
+	if (c != -1) {
+		help(argv0, category);
+		return 1;
+	}
 
 	krb5_free_context(kctx);
 
-	if (optind < argc) {
+	if (poptPeekArg(pctx) != NULL) {
 		printf(_("Error: unused extra arguments were supplied.\n"));
 		help(argv0, category);
 		return 1;
@@ -2092,19 +2204,19 @@ set_tracking(const char *argv0, const char *category,
 }
 
 static int
-start_tracking(const char *argv0, int argc, char **argv)
+start_tracking(const char *argv0, int argc, const char **argv)
 {
 	return set_tracking(argv0, "start-tracking", argc, argv, TRUE);
 }
 
 static int
-stop_tracking(const char *argv0, int argc, char **argv)
+stop_tracking(const char *argv0, int argc, const char **argv)
 {
 	return set_tracking(argv0, "stop-tracking", argc, argv, FALSE);
 }
 
 static int
-resubmit(const char *argv0, int argc, char **argv)
+resubmit(const char *argv0, int argc, const char **argv)
 {
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	DBusMessage *req, *rep;
@@ -2126,6 +2238,41 @@ resubmit(const char *argv0, int argc, char **argv)
 	krb5_error_code kret;
 	krb5_principal kprinc;
 	char *kuprinc, *precommand = NULL, *postcommand = NULL;
+	const char *poptarg;
+	poptContext pctx;
+	struct poptOption popts[] = {
+		{"dbdir", 'd', POPT_ARG_STRING, NULL, 'd', _("NSS database for key and cert"), HELP_TYPE_DIRECTORY},
+		{"nickname", 'n', POPT_ARG_STRING, NULL, 'n', _("nickname for NSS-based storage (only valid with -d)"), HELP_TYPE_NAME},
+		{"token", 't', POPT_ARG_STRING, NULL, 't', _("optional token name for NSS-based storage (only valid with -d)"), HELP_TYPE_NAME},
+		{"certfile", 'f', POPT_ARG_STRING, NULL, 'f', _("PEM file for certificate"), HELP_TYPE_FILENAME},
+		{"id", 'i', POPT_ARG_STRING, NULL, 'i', _("nickname for tracking request"), HELP_TYPE_ID},
+		{"new-id", 'I', POPT_ARG_STRING, NULL, 'I', _("new nickname to give to tracking request"), HELP_TYPE_ID},
+		{"pinfile", 'p', POPT_ARG_STRING, NULL, 'p', _("file which holds the private key encryption PIN"), HELP_TYPE_FILENAME},
+		{"pin", 'P', POPT_ARG_STRING, NULL, 'P', _("private key encryption PIN"), NULL},
+		{"ca-dbdir", 'a', POPT_ARG_STRING, NULL, 'a', _("NSS database in which to store the CA's certificates"), HELP_TYPE_DIRECTORY},
+		{"ca-file", 'F', POPT_ARG_STRING, NULL, 'F', _("file in which to store the CA's certificates"), HELP_TYPE_FILENAME},
+		{"before-command", 'B', POPT_ARG_STRING, NULL, 'B', _("command to run before saving the certificate"), HELP_TYPE_COMMAND},
+		{"after-command", 'C', POPT_ARG_STRING, NULL, 'C', _("command to run after saving the certificate"), HELP_TYPE_COMMAND},
+#ifndef FORCE_CA
+		{"ca", 'c', POPT_ARG_STRING, NULL, 0, _("use the specified CA configuration rather than the current one"), HELP_TYPE_NAME},
+#endif
+		{"profile", 'T', POPT_ARG_STRING, NULL, 'T', _("ask the CA to process the request using the named profile or template"), HELP_TYPE_NAME},
+		{"subject-name", 'N', POPT_ARG_STRING, NULL, 'N', _("set requested subject name (default: CN=<hostname>)"), HELP_TYPE_SUBJECT},
+		{"key-usage", 'u', POPT_ARG_STRING, NULL, 'u', _("set requested key usage value"), HELP_TYPE_KU},
+		{"extended-key-usage", 'U', POPT_ARG_STRING, NULL, 'U', _("set requested extended key usage OID"), HELP_TYPE_EKU},
+		{"principal", 'K', POPT_ARG_STRING, NULL, 'K', _("set requested principal name"), HELP_TYPE_PRINCIPAL},
+		{"dns", 'D', POPT_ARG_STRING, NULL, 'D', _("set requested DNS name"), HELP_TYPE_HOSTNAME},
+		{"email", 'E', POPT_ARG_STRING, NULL, 'E', _("set requested email address"), HELP_TYPE_EMAIL},
+		{"ip-address", 'A', POPT_ARG_STRING, NULL, 'A', _("set requested IP address"), HELP_TYPE_IP},
+		{"challenge-password", 'L', POPT_ARG_STRING, NULL, 'L', _("an optional challenge password value"), NULL},
+		{"challenge-password-file", 'l', POPT_ARG_STRING, NULL, 'l', _("file which holds an optional challenge password value"), HELP_TYPE_FILENAME},
+		{"wait", 'w', POPT_ARG_NONE, NULL, 'w', _("try to wait for the certificate to be issued"), NULL},
+		{"session", 's', POPT_ARG_NONE, NULL, 's', _("connect to the certmonger service on the session bus"), NULL},
+		{"system", 'S', POPT_ARG_NONE, NULL, 'S', _("connect to the certmonger service on the system bus"), NULL},
+		{"verbose", 'v', POPT_ARG_NONE, NULL, 'v', NULL, NULL},
+		{"autohelp", 'H', POPT_ARG_NONE | POPT_ARGFLAG_DOC_HIDDEN, NULL, 'H', NULL, NULL},
+		POPT_TABLEEND
+	};
 
 	kctx = NULL;
 	if ((kret = krb5_init_context(&kctx)) != 0) {
@@ -2140,70 +2287,73 @@ resubmit(const char *argv0, int argc, char **argv)
 		bus = cm_tdbus_private;
 	}
 
-	opterr = 0;
-	while ((c = getopt(argc, argv,
-			   ":d:n:N:t:u:U:K:E:D:f:i:I:sSp:P:vB:C:T:A:a:F:wL:l:"
-			   GETOPT_CA)) != -1) {
+	pctx = poptGetContext(argv0, argc, argv, popts, 0);
+	if (pctx == NULL) {
+		help(argv0, "resubmit");
+		return 1;
+	}
+	while ((c = poptGetNextOpt(pctx)) > 0) {
+		poptarg = poptGetOptArg(pctx);
 		switch (c) {
 		case 'd':
 			nss_scheme = NULL;
-			dbdir = ensure_nss(globals.tctx, optarg, &nss_scheme);
+			dbdir = ensure_nss(globals.tctx, poptarg, &nss_scheme);
 			if ((nss_scheme != NULL) && (dbdir != NULL)) {
 				dbdir = talloc_asprintf(globals.tctx, "%s:%s",
 							nss_scheme, dbdir);
 			}
 			break;
 		case 't':
-			token = talloc_strdup(globals.tctx, optarg);
+			token = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'n':
-			nickname = talloc_strdup(globals.tctx, optarg);
+			nickname = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'f':
-			certfile = ensure_pem(globals.tctx, optarg);
+			certfile = ensure_pem(globals.tctx, poptarg);
 			break;
 		case 'c':
-			ca = talloc_strdup(globals.tctx, optarg);
+			ca = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'T':
-			profile = talloc_strdup(globals.tctx, optarg);
+			profile = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'i':
-			id = talloc_strdup(globals.tctx, optarg);
+			id = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'I':
-			new_id = talloc_strdup(globals.tctx, optarg);
+			new_id = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'N':
-			subject = talloc_strdup(globals.tctx, optarg);
+			subject = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'u':
-			kubit = cm_ku_from_name(optarg);
+			kubit = cm_ku_from_name(poptarg);
 			if (kubit == -1) {
 				printf(_("Unrecognized keyUsage \"%s\".\n"),
-				       optarg);
+				       poptarg);
 				return 1;
 			}
 			ku |= (1 << kubit);
 			break;
 		case 'U':
-			oid = cm_oid_from_name(globals.tctx, optarg);
+			oid = cm_oid_from_name(globals.tctx, poptarg);
 			if ((oid == NULL) ||
 			    (strspn(oid, "0123456789.") != strlen(oid))) {
 				printf(_("Could not evaluate OID \"%s\".\n"),
-				       optarg);
+				       poptarg);
 				return 1;
 			}
 			add_string(globals.tctx, &eku, oid);
 			break;
 		case 'K':
 			kprinc = NULL;
-			if (strlen(optarg) > 0) {
-				if ((kret = krb5_parse_name(kctx, optarg,
+			if (strlen(poptarg) > 0) {
+				if ((kret = krb5_parse_name(kctx, poptarg,
 							    &kprinc)) != 0) {
 					printf(_("Error parsing Kerberos "
 						 "principal name \"%s\": "
-						 "%s.\n"), optarg,
+						 "%s.\n"), poptarg,
 					       error_message(kret));
 					return 1;
 				}
@@ -2212,7 +2362,7 @@ resubmit(const char *argv0, int argc, char **argv)
 							      &kuprinc)) != 0) {
 					printf(_("Error unparsing Kerberos "
 						 "principal name \"%s\": "
-						 "%s.\n"), optarg,
+						 "%s.\n"), poptarg,
 					       error_message(kret));
 					return 1;
 				}
@@ -2223,13 +2373,13 @@ resubmit(const char *argv0, int argc, char **argv)
 			}
 			break;
 		case 'D':
-			add_string(globals.tctx, &dns, optarg);
+			add_string(globals.tctx, &dns, poptarg);
 			break;
 		case 'E':
-			add_string(globals.tctx, &email, optarg);
+			add_string(globals.tctx, &email, poptarg);
 			break;
 		case 'A':
-			add_string(globals.tctx, &ipaddr, optarg);
+			add_string(globals.tctx, &ipaddr, poptarg);
 			break;
 		case 's':
 			bus = cm_tdbus_session;
@@ -2238,25 +2388,25 @@ resubmit(const char *argv0, int argc, char **argv)
 			bus = cm_tdbus_system;
 			break;
 		case 'p':
-			pinfile = optarg;
+			pinfile = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'P':
-			pin = optarg;
+			pin = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'l':
-			cpassfile = optarg;
+			cpassfile = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'L':
-			cpass = optarg;
+			cpass = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'B':
-			precommand = optarg;
+			precommand = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'C':
-			postcommand = optarg;
+			postcommand = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'a':
-			p = ensure_nss(globals.tctx, optarg, &nss_scheme);
+			p = ensure_nss(globals.tctx, poptarg, &nss_scheme);
 			if ((nss_scheme != NULL) && (p != NULL)) {
 				p = talloc_asprintf(globals.tctx, "%s:%s",
 						    nss_scheme, p);
@@ -2266,20 +2416,24 @@ resubmit(const char *argv0, int argc, char **argv)
 			} else {
 				fprintf(stderr,
 					_("%s: invalid value -- '%s'\n"),
-					"request", optarg);
+					"request", poptarg);
 				help(argv0, "request");
 				return 1;
 			}
 			break;
 		case 'F':
 			add_string(globals.tctx, &anchor_files,
-				   ensure_pem(globals.tctx, optarg));
+				   ensure_pem(globals.tctx, poptarg));
 			break;
 		case 'w':
 			waitreq++;
 			break;
 		case 'v':
 			verbose++;
+			break;
+		case 'H':
+			poptPrintHelp(pctx, stdout, 0);
+			return 1;
 			break;
 		default:
 			if (c == ':') {
@@ -2294,7 +2448,11 @@ resubmit(const char *argv0, int argc, char **argv)
 			return 1;
 		}
 	}
-	if (optind < argc) {
+	if (c != -1) {
+		help(argv0, "resubmit");
+		return 1;
+	}
+	if (poptPeekArg(pctx) != NULL) {
 		printf(_("Error: unused extra arguments were supplied.\n"));
 		help(argv0, "resubmit");
 		return 1;
@@ -2537,29 +2695,53 @@ resubmit(const char *argv0, int argc, char **argv)
 }
 
 static int
-refresh(const char *argv0, int argc, char **argv)
+refresh(const char *argv0, int argc, const char **argv)
 {
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	DBusMessage *rep;
-	char **requests, *p, *nickname, *only_ca = DEFAULT_CA, *ca_name;
+	const char *only_ca = DEFAULT_CA;
+	char **requests, *p, *nickname, *ca_name;
 	char *dbdir = NULL, *dbnickname = NULL, *certfile = NULL, *id = NULL;
-	char *nss_scheme;
+	char *nss_scheme, *token = NULL;
 	const char *capath;
 	dbus_bool_t b, all = FALSE;
 	char *s1, *s2, *s3, *s4;
 	enum cm_state state;
 	int verbose = 0, c, i;
+	const char *poptarg;
+	poptContext pctx;
+	struct poptOption popts[] = {
+		{"all", 'a', POPT_ARG_NONE, NULL, 'a', _("refresh information about all outstanding requests"), NULL},
+#ifndef FORCE_CA
+		{"ca", 'c', POPT_ARG_STRING, NULL, 0, _("refresh information only for requests using the specified CA configuration"), HELP_TYPE_NAME},
+#endif
+		{"dbdir", 'd', POPT_ARG_STRING, NULL, 'd', _("NSS database for key and cert"), HELP_TYPE_DIRECTORY},
+		{"nickname", 'n', POPT_ARG_STRING, NULL, 'n', _("nickname for NSS-based storage (only valid with -d)"), HELP_TYPE_NAME},
+		{"token", 't', POPT_ARG_STRING, NULL, 't', _("optional token name for NSS-based storage (only valid with -d)"), HELP_TYPE_NAME},
+		{"certfile", 'f', POPT_ARG_STRING, NULL, 'f', _("PEM file for certificate"), HELP_TYPE_FILENAME},
+		{"id", 'i', POPT_ARG_STRING, NULL, 'i', _("nickname for tracking request"), HELP_TYPE_ID},
+		{"session", 's', POPT_ARG_NONE, NULL, 's', _("connect to the certmonger service on the session bus"), NULL},
+		{"system", 'S', POPT_ARG_NONE, NULL, 'S', _("connect to the certmonger service on the system bus"), NULL},
+		{"verbose", 'v', POPT_ARG_NONE, NULL, 'v', NULL, NULL},
+		{"autohelp", 'H', POPT_ARG_NONE | POPT_ARGFLAG_DOC_HIDDEN, NULL, 'H', NULL, NULL},
+		POPT_TABLEEND
+	};
 
 	if ((getenv(CERTMONGER_PVT_ADDRESS_ENV) != NULL) &&
 	    (strlen(getenv(CERTMONGER_PVT_ADDRESS_ENV)) > 0)) {
 		bus = cm_tdbus_private;
 	}
 
-	opterr = 0;
-	while ((c = getopt(argc, argv, ":sSad:n:f:i:v" GETOPT_CA)) != -1) {
+	pctx = poptGetContext(argv0, argc, argv, popts, 0);
+	if (pctx == NULL) {
+		help(argv0, "refresh");
+		return 1;
+	}
+	while ((c = poptGetNextOpt(pctx)) > 0) {
+		poptarg = poptGetOptArg(pctx);
 		switch (c) {
 		case 'c':
-			only_ca = optarg;
+			only_ca = poptarg;
 			break;
 		case 's':
 			bus = cm_tdbus_session;
@@ -2578,26 +2760,33 @@ refresh(const char *argv0, int argc, char **argv)
 		case 'd':
 			all = FALSE;
 			nss_scheme = NULL;
-			dbdir = ensure_nss(globals.tctx, optarg, &nss_scheme);
+			dbdir = ensure_nss(globals.tctx, poptarg, &nss_scheme);
 			if ((nss_scheme != NULL) && (dbdir != NULL)) {
 				dbdir = talloc_asprintf(globals.tctx, "%s:%s",
 							nss_scheme, dbdir);
 			}
 			break;
+		case 't':
+			token = talloc_strdup(globals.tctx, poptarg);
+			break;
 		case 'n':
 			all = FALSE;
-			dbnickname = talloc_strdup(globals.tctx, optarg);
+			dbnickname = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'f':
 			all = FALSE;
-			certfile = ensure_pem(globals.tctx, optarg);
+			certfile = ensure_pem(globals.tctx, poptarg);
 			break;
 		case 'i':
 			all = FALSE;
-			id = talloc_strdup(globals.tctx, optarg);
+			id = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'v':
 			verbose++;
+			break;
+		case 'H':
+			poptPrintHelp(pctx, stdout, 0);
+			return 1;
 			break;
 		default:
 			if (c == ':') {
@@ -2605,12 +2794,17 @@ refresh(const char *argv0, int argc, char **argv)
 					_("%s: option requires an argument -- '%c'\n"),
 					"refresh", optopt);
 			} else {
-				fprintf(stderr, _("%s: invalid option -- '%c'\n"),
+				fprintf(stderr,
+					_("%s: invalid option -- '%c'\n"),
 					"refresh", optopt);
 			}
 			help(argv0, "refresh");
 			return 1;
 		}
+	}
+	if (c != -1) {
+		help(argv0, "refresh");
+		return 1;
 	}
 	if (!all && (id == NULL) &&
 	    ((dbdir == NULL) || (dbnickname == NULL)) && (certfile == NULL)) {
@@ -2619,7 +2813,7 @@ refresh(const char *argv0, int argc, char **argv)
 		help(argv0, "refresh");
 		return 1;
 	}
-	if (optind < argc) {
+	if (poptPeekArg(pctx) != NULL) {
 		printf(_("Error: unused extra arguments were supplied.\n"));
 		help(argv0, "refresh");
 		return 1;
@@ -2674,7 +2868,10 @@ refresh(const char *argv0, int argc, char **argv)
 				     (strcmp(dbdir, s2) != 0)) ||
 				    ((dbnickname != NULL) &&
 				     (s3 != NULL) &&
-				     (strcmp(dbnickname, s3) != 0))) {
+				     (strcmp(dbnickname, s3) != 0)) ||
+				    ((token != NULL) &&
+				     (s4 != NULL) &&
+				     (strcmp(token, s4) != 0))) {
 					continue;
 				}
 			}
@@ -2746,14 +2943,14 @@ ca_is_scep(void *parent, enum cm_tdbus_type bus,
 }
 
 static int
-list(const char *argv0, int argc, char **argv)
+list(const char *argv0, int argc, const char **argv)
 {
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	enum cm_state state;
 	DBusMessage *rep;
 	char **requests, *s, *p, *nickname, *only_ca = DEFAULT_CA, *ca_name;
 	char *dbdir = NULL, *dbnickname = NULL, *certfile = NULL, *id = NULL;
-	char *nss_scheme;
+	char *nss_scheme, *token = NULL;
 	const char *capath, *request;
 	dbus_bool_t b;
 	char *s1, *s2, *s3, *s4, *s5, *s6;
@@ -2762,18 +2959,39 @@ list(const char *argv0, int argc, char **argv)
 	int requests_only = 0, tracking_only = 0, verbose = 0, c, i, j;
 	unsigned int k;
 	char key_usages[LINE_MAX];
+	const char *poptarg;
+	poptContext pctx;
+	struct poptOption popts[] = {
+		{"requests-only", 'r', POPT_ARG_NONE, NULL, 'r', _("list only information about outstanding requests"), NULL},
+		{"tracking-only", 't', POPT_ARG_NONE, NULL, 't', _("list only information about tracked certificates"), NULL},
+#ifndef FORCE_CA
+		{"ca", 'c', POPT_ARG_STRING, &only_ca, 0, _("list only requests and certs associated with this CA configuration"), HELP_TYPE_NAME},
+#endif
+		{"dbdir", 'd', POPT_ARG_STRING, NULL, 'd', _("NSS database for key and cert"), HELP_TYPE_DIRECTORY},
+		{"nickname", 'n', POPT_ARG_STRING, NULL, 'n', _("nickname for NSS-based storage (only valid with -d)"), HELP_TYPE_NAME},
+		{"token", 't', POPT_ARG_STRING, NULL, 't', _("optional token name for NSS-based storage (only valid with -d)"), HELP_TYPE_NAME},
+		{"certfile", 'f', POPT_ARG_STRING, NULL, 'f', _("PEM file for certificate"), HELP_TYPE_FILENAME},
+		{"id", 'i', POPT_ARG_STRING, NULL, 'i', _("nickname for tracking request"), HELP_TYPE_ID},
+		{"session", 's', POPT_ARG_NONE, NULL, 's', _("connect to the certmonger service on the session bus"), NULL},
+		{"system", 'S', POPT_ARG_NONE, NULL, 'S', _("connect to the certmonger service on the system bus"), NULL},
+		{"verbose", 'v', POPT_ARG_NONE, NULL, 'v', NULL, NULL},
+		{"autohelp", 'H', POPT_ARG_NONE | POPT_ARGFLAG_DOC_HIDDEN, NULL, 'H', NULL, NULL},
+		POPT_TABLEEND
+	};
 
 	if ((getenv(CERTMONGER_PVT_ADDRESS_ENV) != NULL) &&
 	    (strlen(getenv(CERTMONGER_PVT_ADDRESS_ENV)) > 0)) {
 		bus = cm_tdbus_private;
 	}
 
-	opterr = 0;
-	while ((c = getopt(argc, argv, ":rtsSvd:n:f:i:" GETOPT_CA)) != -1) {
+	pctx = poptGetContext(argv0, argc, argv, popts, 0);
+	if (pctx == NULL) {
+		help(argv0, "list");
+		return 1;
+	}
+	while ((c = poptGetNextOpt(pctx)) > 0) {
+		poptarg = poptGetOptArg(pctx);
 		switch (c) {
-		case 'c':
-			only_ca = optarg;
-			break;
 		case 'r':
 			requests_only++;
 			break;
@@ -2788,23 +3006,27 @@ list(const char *argv0, int argc, char **argv)
 			break;
 		case 'd':
 			nss_scheme = NULL;
-			dbdir = ensure_nss(globals.tctx, optarg, &nss_scheme);
+			dbdir = ensure_nss(globals.tctx, poptarg, &nss_scheme);
 			if ((nss_scheme != NULL) && (dbdir != NULL)) {
 				dbdir = talloc_asprintf(globals.tctx, "%s:%s",
 							nss_scheme, dbdir);
 			}
 			break;
 		case 'n':
-			dbnickname = talloc_strdup(globals.tctx, optarg);
+			dbnickname = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'f':
-			certfile = ensure_pem(globals.tctx, optarg);
+			certfile = ensure_pem(globals.tctx, poptarg);
 			break;
 		case 'i':
-			id = talloc_strdup(globals.tctx, optarg);
+			id = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'v':
 			verbose++;
+			break;
+		case 'H':
+			poptPrintHelp(pctx, stdout, 0);
+			return 1;
 			break;
 		default:
 			if (c == ':') {
@@ -2812,14 +3034,19 @@ list(const char *argv0, int argc, char **argv)
 					_("%s: option requires an argument -- '%c'\n"),
 					"list", optopt);
 			} else {
-				fprintf(stderr, _("%s: invalid option -- '%c'\n"),
+				fprintf(stderr,
+					_("%s: invalid option -- '%c'\n"),
 					"list", optopt);
 			}
 			help(argv0, "list");
 			return 1;
 		}
 	}
-	if (optind < argc) {
+	if (c != -1) {
+		help(argv0, "list");
+		return 1;
+	}
+	if (poptPeekArg(pctx) != NULL) {
 		printf(_("Error: unused extra arguments were supplied.\n"));
 		help(argv0, "list");
 		return 1;
@@ -2841,7 +3068,7 @@ list(const char *argv0, int argc, char **argv)
 		}
 	} else {
 		request = find_request_by_storage(globals.tctx, bus,
-						  dbdir, dbnickname, NULL,
+						  dbdir, dbnickname, token,
 						  certfile, verbose);
 		if (request == NULL) {
 			if (((dbdir != NULL) && (dbnickname != NULL)) ||
@@ -3232,24 +3459,43 @@ list(const char *argv0, int argc, char **argv)
 }
 
 static int
-status(const char *argv0, int argc, char **argv)
+status(const char *argv0, int argc, const char **argv)
 {
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	DBusMessage *rep;
 	char *dbdir = NULL, *dbnickname = NULL, *certfile = NULL, *id = NULL;
-	char *nss_scheme;
+	char *nss_scheme, *token = NULL;
 	const char *request;
 	char *s;
 	dbus_bool_t b;
 	int verbose = 0, c;
+	const char *poptarg;
+	poptContext pctx;
+	struct poptOption popts[] = {
+		{"dbdir", 'd', POPT_ARG_STRING, NULL, 'd', _("NSS database for key and cert"), HELP_TYPE_DIRECTORY},
+		{"nickname", 'n', POPT_ARG_STRING, NULL, 'n', _("nickname for NSS-based storage (only valid with -d)"), HELP_TYPE_NAME},
+		{"token", 't', POPT_ARG_STRING, NULL, 't', _("optional token name for NSS-based storage (only valid with -d)"), HELP_TYPE_NAME},
+		{"certfile", 'f', POPT_ARG_STRING, NULL, 'f', _("PEM file for certificate"), HELP_TYPE_FILENAME},
+		{"id", 'i', POPT_ARG_STRING, NULL, 'i', _("nickname for tracking request"), HELP_TYPE_ID},
+		{"session", 's', POPT_ARG_NONE, NULL, 's', _("connect to the certmonger service on the session bus"), NULL},
+		{"system", 'S', POPT_ARG_NONE, NULL, 'S', _("connect to the certmonger service on the system bus"), NULL},
+		{"verbose", 'v', POPT_ARG_NONE, NULL, 'v', NULL, NULL},
+		{"autohelp", 'H', POPT_ARG_NONE | POPT_ARGFLAG_DOC_HIDDEN, NULL, 'H', NULL, NULL},
+		POPT_TABLEEND
+	};
 
 	if ((getenv(CERTMONGER_PVT_ADDRESS_ENV) != NULL) &&
 	    (strlen(getenv(CERTMONGER_PVT_ADDRESS_ENV)) > 0)) {
 		bus = cm_tdbus_private;
 	}
 
-	opterr = 0;
-	while ((c = getopt(argc, argv, ":sSvd:n:f:i:")) != -1) {
+	pctx = poptGetContext(argv0, argc, argv, popts, 0);
+	if (pctx == NULL) {
+		help(argv0, "status");
+		return 1;
+	}
+	while ((c = poptGetNextOpt(pctx)) > 0) {
+		poptarg = poptGetOptArg(pctx);
 		switch (c) {
 		case 's':
 			bus = cm_tdbus_session;
@@ -3259,38 +3505,35 @@ status(const char *argv0, int argc, char **argv)
 			break;
 		case 'd':
 			nss_scheme = NULL;
-			dbdir = ensure_nss(globals.tctx, optarg, &nss_scheme);
+			dbdir = ensure_nss(globals.tctx, poptarg, &nss_scheme);
 			if ((nss_scheme != NULL) && (dbdir != NULL)) {
 				dbdir = talloc_asprintf(globals.tctx, "%s:%s",
 							nss_scheme, dbdir);
 			}
 			break;
 		case 'n':
-			dbnickname = talloc_strdup(globals.tctx, optarg);
+			dbnickname = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'f':
-			certfile = ensure_pem(globals.tctx, optarg);
+			certfile = ensure_pem(globals.tctx, poptarg);
 			break;
 		case 'i':
-			id = talloc_strdup(globals.tctx, optarg);
+			id = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'v':
 			verbose++;
 			break;
-		default:
-			if (c == ':') {
-				fprintf(stderr,
-					_("%s: option requires an argument -- '%c'\n"),
-					"status", optopt);
-			} else {
-				fprintf(stderr, _("%s: invalid option -- '%c'\n"),
-					"status", optopt);
-			}
-			help(argv0, "status");
+		case 'H':
+			poptPrintHelp(pctx, stdout, 0);
 			return 1;
+			break;
 		}
 	}
-	if (optind < argc) {
+	if (c != -1) {
+		help(argv0, "status");
+		return 1;
+	}
+	if (poptPeekArg(pctx) != NULL) {
 		printf(_("Error: unused extra arguments were supplied.\n"));
 		help(argv0, "status");
 		return 1;
@@ -3305,7 +3548,7 @@ status(const char *argv0, int argc, char **argv)
 		}
 	} else {
 		request = find_request_by_storage(globals.tctx, bus,
-						  dbdir, dbnickname, NULL,
+						  dbdir, dbnickname, token,
 						  certfile, verbose);
 		if (request == NULL) {
 			if (((dbdir != NULL) && (dbnickname != NULL)) ||
@@ -3380,24 +3623,36 @@ done:
 }
 
 static int
-list_cas(const char *argv0, int argc, char **argv)
+list_cas(const char *argv0, int argc, const char **argv)
 {
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	char **cas, *s, *only_ca = DEFAULT_CA, *thumb, *ca_name;
 	char **as;
 	int c, i, j, verbose = 0;
+	poptContext pctx;
+	struct poptOption popts[] = {
+#ifndef FORCE_CA
+		{"ca", 'c', POPT_ARG_STRING, &only_ca, 0, _("list only the specified CA configuration"), HELP_TYPE_NAME},
+#endif
+		{"session", 's', POPT_ARG_NONE, NULL, 's', _("connect to the certmonger service on the session bus"), NULL},
+		{"system", 'S', POPT_ARG_NONE, NULL, 'S', _("connect to the certmonger service on the system bus"), NULL},
+		{"verbose", 'v', POPT_ARG_NONE, NULL, 'v', NULL, NULL},
+		{"autohelp", 'H', POPT_ARG_NONE | POPT_ARGFLAG_DOC_HIDDEN, NULL, 'H', NULL, NULL},
+		POPT_TABLEEND
+	};
 
 	if ((getenv(CERTMONGER_PVT_ADDRESS_ENV) != NULL) &&
 	    (strlen(getenv(CERTMONGER_PVT_ADDRESS_ENV)) > 0)) {
 		bus = cm_tdbus_private;
 	}
 
-	opterr = 0;
-	while ((c = getopt(argc, argv, ":sSv" GETOPT_CA)) != -1) {
+	pctx = poptGetContext(argv0, argc, argv, popts, 0);
+	if (pctx == NULL) {
+		help(argv0, "list-cas");
+		return 1;
+	}
+	while ((c = poptGetNextOpt(pctx)) > 0) {
 		switch (c) {
-		case 'c':
-			only_ca = optarg;
-			break;
 		case 's':
 			bus = cm_tdbus_session;
 			break;
@@ -3406,6 +3661,10 @@ list_cas(const char *argv0, int argc, char **argv)
 			break;
 		case 'v':
 			verbose++;
+			break;
+		case 'H':
+			poptPrintHelp(pctx, stdout, 0);
+			return 1;
 			break;
 		default:
 			if (c == ':') {
@@ -3420,7 +3679,11 @@ list_cas(const char *argv0, int argc, char **argv)
 			return 1;
 		}
 	}
-	if (optind < argc) {
+	if (c != -1) {
+		help(argv0, "list-cas");
+		return 1;
+	}
+	if (poptPeekArg(pctx) != NULL) {
 		printf(_("Error: unused extra arguments were supplied.\n"));
 		help(argv0, "list-cas");
 		return 1;
@@ -3590,27 +3853,42 @@ list_cas(const char *argv0, int argc, char **argv)
 }
 
 static int
-refresh_ca(const char *argv0, int argc, char **argv)
+refresh_ca(const char *argv0, int argc, const char **argv)
 {
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	char **cas, *s, *only_ca = DEFAULT_CA;
 	int c, i, verbose = 0;
 	dbus_bool_t b, all = FALSE;
+	poptContext pctx;
+	struct poptOption popts[] = {
+#ifndef FORCE_CA
+		{"ca", 'c', POPT_ARG_STRING, &only_ca, 0, _("refresh information about the CA configuration with this name"), HELP_TYPE_NAME},
+#endif
+		{"all", 'a', POPT_ARG_NONE, NULL, 'a', _("refresh information about all known CAs"), NULL},
+		{"session", 's', POPT_ARG_NONE, NULL, 's', _("connect to the certmonger service on the session bus"), NULL},
+		{"system", 'S', POPT_ARG_NONE, NULL, 'S', _("connect to the certmonger service on the system bus"), NULL},
+		{"verbose", 'v', POPT_ARG_NONE, NULL, 'v', NULL, NULL},
+		{"autohelp", 'H', POPT_ARG_NONE | POPT_ARGFLAG_DOC_HIDDEN, NULL, 'H', NULL, NULL},
+		POPT_TABLEEND
+	};
 
 	if ((getenv(CERTMONGER_PVT_ADDRESS_ENV) != NULL) &&
 	    (strlen(getenv(CERTMONGER_PVT_ADDRESS_ENV)) > 0)) {
 		bus = cm_tdbus_private;
 	}
 
-	opterr = 0;
-	while ((c = getopt(argc, argv, ":asSv" GETOPT_CA)) != -1) {
+	pctx = poptGetContext(argv0, argc, argv, popts, 0);
+	if (pctx == NULL) {
+		help(argv0, "refresh-ca");
+		return 1;
+	}
+	while ((c = poptGetNextOpt(pctx)) > 0) {
 		switch (c) {
 		case 'a':
 			all = TRUE;
 			break;
 		case 'c':
 			all = FALSE;
-			only_ca = optarg;
 			break;
 		case 's':
 			bus = cm_tdbus_session;
@@ -3621,25 +3899,22 @@ refresh_ca(const char *argv0, int argc, char **argv)
 		case 'v':
 			verbose++;
 			break;
-		default:
-			if (c == ':') {
-				fprintf(stderr,
-					_("%s: option requires an argument -- '%c'\n"),
-					"refresh-ca", optopt);
-			} else {
-				fprintf(stderr, _("%s: invalid option -- '%c'\n"),
-					"refresh-ca", optopt);
-			}
-			help(argv0, "refresh-ca");
+		case 'H':
+			poptPrintHelp(pctx, stdout, 0);
 			return 1;
+			break;
 		}
+	}
+	if (c != -1) {
+		help(argv0, "refresh-ca");
+		return 1;
 	}
 	if (!all && (only_ca == NULL)) {
 		printf(_("Neither CA nickname nor -a flag specified.\n"));
 		help(argv0, "refresh-ca");
 		return 1;
 	}
-	if (optind < argc) {
+	if (poptPeekArg(pctx) != NULL) {
 		printf(_("Error: unused extra arguments were supplied.\n"));
 		help(argv0, "refresh-ca");
 		return 1;
@@ -3674,28 +3949,36 @@ refresh_ca(const char *argv0, int argc, char **argv)
 
 #ifndef FORCE_CA
 static int
-add_ca(const char *argv0, int argc, char **argv)
+add_ca(const char *argv0, int argc, const char **argv)
 {
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	char *caname = NULL, *command = NULL, *p = NULL, *nickname;
 	int c, verbose = 0;
 	dbus_bool_t b;
 	static DBusMessage *req, *rep;
+	poptContext pctx;
+	struct poptOption popts[] = {
+		{"ca", 'c', POPT_ARG_STRING, &caname, 0, _("nickname to give to the new CA configuration"), HELP_TYPE_NAME},
+		{"command", 'e', POPT_ARG_STRING, &command, 0, _("helper command to run to communicate with CA"), HELP_TYPE_COMMAND},
+		{"session", 's', POPT_ARG_NONE, NULL, 's', _("connect to the certmonger service on the session bus"), NULL},
+		{"system", 'S', POPT_ARG_NONE, NULL, 'S', _("connect to the certmonger service on the system bus"), NULL},
+		{"verbose", 'v', POPT_ARG_NONE, NULL, 'v', NULL, NULL},
+		{"autohelp", 'H', POPT_ARG_NONE | POPT_ARGFLAG_DOC_HIDDEN, NULL, 'H', NULL, NULL},
+		POPT_TABLEEND
+	};
 
 	if ((getenv(CERTMONGER_PVT_ADDRESS_ENV) != NULL) &&
 	    (strlen(getenv(CERTMONGER_PVT_ADDRESS_ENV)) > 0)) {
 		bus = cm_tdbus_private;
 	}
 
-	opterr = 0;
-	while ((c = getopt(argc, argv, "c:e:vsS")) != -1) {
+	pctx = poptGetContext(argv0, argc, argv, popts, 0);
+	if (pctx == NULL) {
+		help(argv0, "add-ca");
+		return 1;
+	}
+	while ((c = poptGetNextOpt(pctx)) > 0) {
 		switch (c) {
-		case 'c':
-			caname = optarg;
-			break;
-		case 'e':
-			command = optarg;
-			break;
 		case 's':
 			bus = cm_tdbus_session;
 			break;
@@ -3705,18 +3988,15 @@ add_ca(const char *argv0, int argc, char **argv)
 		case 'v':
 			verbose++;
 			break;
-		default:
-			if (c == ':') {
-				fprintf(stderr,
-					_("%s: option requires an argument -- '%c'\n"),
-					"add-ca", optopt);
-			} else {
-				fprintf(stderr, _("%s: invalid option -- '%c'\n"),
-					"add-ca", optopt);
-			}
-			help(argv0, "add-ca");
+		case 'H':
+			poptPrintHelp(pctx, stdout, 0);
 			return 1;
+			break;
 		}
+	}
+	if (c != -1) {
+		help(argv0, "add-ca");
+		return 1;
 	}
 	if (caname == NULL) {
 		printf(_("CA nickname not specified.\n"));
@@ -3728,7 +4008,7 @@ add_ca(const char *argv0, int argc, char **argv)
 		help(argv0, "add-ca");
 		return 1;
 	}
-	if (optind < argc) {
+	if (poptPeekArg(pctx) != NULL) {
 		printf(_("Error: unused extra arguments were supplied.\n"));
 		help(argv0, "add-ca");
 		return 1;
@@ -3758,7 +4038,7 @@ add_ca(const char *argv0, int argc, char **argv)
 }
 
 static int
-add_scep_ca(const char *argv0, int argc, char **argv)
+add_scep_ca(const char *argv0, int argc, const char **argv)
 {
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	char *caname = NULL, *url = NULL, *path = NULL, *id = NULL;
@@ -3767,27 +4047,33 @@ add_scep_ca(const char *argv0, int argc, char **argv)
 	int c, verbose = 0;
 	dbus_bool_t b;
 	static DBusMessage *req, *rep;
+	poptContext pctx;
+	struct poptOption popts[] = {
+		{"ca", 'c', POPT_ARG_STRING, &caname, 0, _("nickname to give to the new CA configuration"), HELP_TYPE_NAME},
+		{"url", 'u', POPT_ARG_STRING, &url, 0, _("location of SCEP server"), HELP_TYPE_URL},
+		{"id", 'i', POPT_ARG_STRING, &id, 0, _("CA identifier"), HELP_TYPE_ID},
+		{"ca-cert", 'R', POPT_ARG_STRING, &root, 0, _("file containing CA's certificate"), HELP_TYPE_FILENAME},
+		{"ra-cert", 'r', POPT_ARG_STRING, &racert, 0, _("file containing RA's certificate"), HELP_TYPE_FILENAME},
+		{"other-certs", 'I', POPT_ARG_STRING, &certs, 0, _("file containing certificates in RA's certifying chain"), HELP_TYPE_FILENAME},
+		{"session", 's', POPT_ARG_NONE, NULL, 's', _("connect to the certmonger service on the session bus"), NULL},
+		{"system", 'S', POPT_ARG_NONE, NULL, 'S', _("connect to the certmonger service on the system bus"), NULL},
+		{"verbose", 'v', POPT_ARG_NONE, NULL, 'v', NULL, NULL},
+		{"autohelp", 'H', POPT_ARG_NONE | POPT_ARGFLAG_DOC_HIDDEN, NULL, 'H', NULL, NULL},
+		POPT_TABLEEND
+	};
 
 	if ((getenv(CERTMONGER_PVT_ADDRESS_ENV) != NULL) &&
 	    (strlen(getenv(CERTMONGER_PVT_ADDRESS_ENV)) > 0)) {
 		bus = cm_tdbus_private;
 	}
 
-	opterr = 0;
-	while ((c = getopt(argc, argv, "c:u:i:R:vsSr:I:")) != -1) {
+	pctx = poptGetContext(argv0, argc, argv, popts, 0);
+	if (pctx == NULL) {
+		help(argv0, "add-scep-ca");
+		return 1;
+	}
+	while ((c = poptGetNextOpt(pctx)) > 0) {
 		switch (c) {
-		case 'c':
-			caname = optarg;
-			break;
-		case 'u':
-			url = optarg;
-			break;
-		case 'i':
-			id = optarg;
-			break;
-		case 'R':
-			root = optarg;
-			break;
 		case 's':
 			bus = cm_tdbus_session;
 			break;
@@ -3797,24 +4083,15 @@ add_scep_ca(const char *argv0, int argc, char **argv)
 		case 'v':
 			verbose++;
 			break;
-		case 'r':
-			racert = optarg;
-			break;
-		case 'I':
-			certs = optarg;
-			break;
-		default:
-			if (c == ':') {
-				fprintf(stderr,
-					_("%s: option requires an argument -- '%c'\n"),
-					"add-scep-ca", optopt);
-			} else {
-				fprintf(stderr, _("%s: invalid option -- '%c'\n"),
-					"add-scep-ca", optopt);
-			}
-			help(argv0, "add-scep-ca");
+		case 'H':
+			poptPrintHelp(pctx, stdout, 0);
 			return 1;
+			break;
 		}
+	}
+	if (c != -1) {
+		help(argv0, "add-scep-ca");
+		return 1;
 	}
 	if (caname == NULL) {
 		printf(_("CA nickname not specified.\n"));
@@ -3831,7 +4108,7 @@ add_scep_ca(const char *argv0, int argc, char **argv)
 		help(argv0, "add-scep-ca");
 		return 1;
 	}
-	if (optind < argc) {
+	if (poptPeekArg(pctx) != NULL) {
 		printf(_("Error: unused extra arguments were supplied.\n"));
 		help(argv0, "add-scep-ca");
 		return 1;
@@ -3893,28 +4170,36 @@ add_scep_ca(const char *argv0, int argc, char **argv)
 }
 
 static int
-modify_ca(const char *argv0, int argc, char **argv)
+modify_ca(const char *argv0, int argc, const char **argv)
 {
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	char *caname = NULL, *command = NULL, *nickname, *path;
 	const char *err;
 	int c, verbose = 0;
 	static DBusMessage *req, *rep;
+	poptContext pctx;
+	struct poptOption popts[] = {
+		{"ca", 'c', POPT_ARG_STRING, &caname, 0, _("nickname of the CA configuration"), HELP_TYPE_NAME},
+		{"command", 'e', POPT_ARG_STRING, &command, 0, _("updated helper command to run to communicate with CA"), HELP_TYPE_COMMAND},
+		{"session", 's', POPT_ARG_NONE, NULL, 's', _("connect to the certmonger service on the session bus"), NULL},
+		{"system", 'S', POPT_ARG_NONE, NULL, 'S', _("connect to the certmonger service on the system bus"), NULL},
+		{"verbose", 'v', POPT_ARG_NONE, NULL, 'v', NULL, NULL},
+		{"autohelp", 'H', POPT_ARG_NONE | POPT_ARGFLAG_DOC_HIDDEN, NULL, 'H', NULL, NULL},
+		POPT_TABLEEND
+	};
 
 	if ((getenv(CERTMONGER_PVT_ADDRESS_ENV) != NULL) &&
 	    (strlen(getenv(CERTMONGER_PVT_ADDRESS_ENV)) > 0)) {
 		bus = cm_tdbus_private;
 	}
 
-	opterr = 0;
-	while ((c = getopt(argc, argv, "c:e:vsS")) != -1) {
+	pctx = poptGetContext(argv0, argc, argv, popts, 0);
+	if (pctx == NULL) {
+		help(argv0, "modify-ca");
+		return 1;
+	}
+	while ((c = poptGetNextOpt(pctx)) > 0) {
 		switch (c) {
-		case 'c':
-			caname = optarg;
-			break;
-		case 'e':
-			command = optarg;
-			break;
 		case 's':
 			bus = cm_tdbus_session;
 			break;
@@ -3924,18 +4209,15 @@ modify_ca(const char *argv0, int argc, char **argv)
 		case 'v':
 			verbose++;
 			break;
-		default:
-			if (c == ':') {
-				fprintf(stderr,
-					_("%s: option requires an argument -- '%c'\n"),
-					"modify-ca", optopt);
-			} else {
-				fprintf(stderr, _("%s: invalid option -- '%c'\n"),
-					"modify-ca", optopt);
-			}
-			help(argv0, "modify-ca");
+		case 'H':
+			poptPrintHelp(pctx, stdout, 0);
 			return 1;
+			break;
 		}
+	}
+	if (c != -1) {
+		help(argv0, "modify-ca");
+		return 1;
 	}
 	if (caname == NULL) {
 		printf(_("CA nickname not specified.\n"));
@@ -3947,7 +4229,7 @@ modify_ca(const char *argv0, int argc, char **argv)
 		help(argv0, "modify-ca");
 		return 1;
 	}
-	if (optind < argc) {
+	if (poptPeekArg(pctx) != NULL) {
 		printf(_("Error: unused extra arguments were supplied.\n"));
 		help(argv0, "modify-ca");
 		return 1;
@@ -3976,25 +4258,35 @@ modify_ca(const char *argv0, int argc, char **argv)
 }
 
 static int
-remove_ca(const char *argv0, int argc, char **argv)
+remove_ca(const char *argv0, int argc, const char **argv)
 {
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	char *caname = NULL, *path;
 	int c, verbose = 0;
 	dbus_bool_t b;
 	static DBusMessage *req, *rep;
+	poptContext pctx;
+	struct poptOption popts[] = {
+		{"ca", 'c', POPT_ARG_STRING, &caname, 0, _("nickname of CA configuration to remove"), HELP_TYPE_NAME},
+		{"session", 's', POPT_ARG_NONE, NULL, 's', _("connect to the certmonger service on the session bus"), NULL},
+		{"system", 'S', POPT_ARG_NONE, NULL, 'S', _("connect to the certmonger service on the system bus"), NULL},
+		{"verbose", 'v', POPT_ARG_NONE, NULL, 'v', NULL, NULL},
+		{"autohelp", 'H', POPT_ARG_NONE | POPT_ARGFLAG_DOC_HIDDEN, NULL, 'H', NULL, NULL},
+		POPT_TABLEEND
+	};
 
 	if ((getenv(CERTMONGER_PVT_ADDRESS_ENV) != NULL) &&
 	    (strlen(getenv(CERTMONGER_PVT_ADDRESS_ENV)) > 0)) {
 		bus = cm_tdbus_private;
 	}
 
-	opterr = 0;
-	while ((c = getopt(argc, argv, "c:vsS")) != -1) {
+	pctx = poptGetContext(argv0, argc, argv, popts, 0);
+	if (pctx == NULL) {
+		help(argv0, "remove-ca");
+		return 1;
+	}
+	while ((c = poptGetNextOpt(pctx)) > 0) {
 		switch (c) {
-		case 'c':
-			caname = optarg;
-			break;
 		case 's':
 			bus = cm_tdbus_session;
 			break;
@@ -4004,25 +4296,22 @@ remove_ca(const char *argv0, int argc, char **argv)
 		case 'v':
 			verbose++;
 			break;
-		default:
-			if (c == ':') {
-				fprintf(stderr,
-					_("%s: option requires an argument -- '%c'\n"),
-					"remove-ca", optopt);
-			} else {
-				fprintf(stderr, _("%s: invalid option -- '%c'\n"),
-					"remove-ca", optopt);
-			}
-			help(argv0, "remove-ca");
+		case 'H':
+			poptPrintHelp(pctx, stdout, 0);
 			return 1;
+			break;
 		}
+	}
+	if (c != -1) {
+		help(argv0, "remove-ca");
+		return 1;
 	}
 	if (caname == NULL) {
 		printf(_("CA nickname not specified.\n"));
-		help(argv0, "add-ca");
+		help(argv0, "remove-ca");
 		return 1;
 	}
-	if (optind < argc) {
+	if (poptPeekArg(pctx) != NULL) {
 		printf(_("Error: unused extra arguments were supplied.\n"));
 		help(argv0, "remove-ca");
 		return 1;
@@ -4057,7 +4346,7 @@ remove_ca(const char *argv0, int argc, char **argv)
 
 static struct {
 	const char *verb;
-	int (*fn)(const char *, int, char **);
+	int (*fn)(const char *, int, const char **);
 } verbs[] = {
 	{"request", request},
 	{"start-tracking", start_tracking},
@@ -4476,9 +4765,10 @@ help(const char *cmd, const char *category)
 }
 
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
 	const char *verb, *p;
+	char poptname[LINE_MAX];
 	unsigned int i;
 #ifdef ENABLE_NLS
 	bindtextdomain(PACKAGE, MYLOCALEDIR);
@@ -4491,18 +4781,21 @@ main(int argc, char **argv)
 	globals.argv0 = p;
 	if (argc > 1) {
 		verb = argv[1];
+		snprintf(poptname, sizeof(poptname), "%s %s", p, verb);
 		globals.tctx = talloc_new(NULL);
 		for (i = 0; i < sizeof(verbs) / sizeof(verbs[0]); i++) {
 			if (strcmp(verbs[i].verb, verb) == 0) {
-				return (*verbs[i].fn)(p, argc - 1, argv + 1);
+				argv[1] = poptname;
+				return (*verbs[i].fn)(poptname, argc - 1,
+						      argv + 1);
 			}
 		}
-		talloc_free(globals.tctx);
-		globals.tctx = NULL;
 		fprintf(stderr, _("%s: unrecognized command\n"), verb);
 		if (verb[0] == '-') {
 			help(p, NULL);
 		}
+		talloc_free(globals.tctx);
+		globals.tctx = NULL;
 		return 1;
 	} else {
 		help(p, NULL);
