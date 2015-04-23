@@ -187,7 +187,7 @@ submit_x_CFLAGS = $(AM_CFLAGS) -DCM_SUBMIT_X_MAIN
 submit_x_SOURCES = submit-x.c submit-x.h submit-u.c submit-u.h log.c log.h \
 	tm.c tm.h
 submit_x_LDADD = $(XMLRPC_LIBS) $(KRB5_LIBS) $(TALLOC_LIBS) \
-		 $(GMP_LIBS) $(UUID_LIBS)
+		 $(GMP_LIBS) $(UUID_LIBS) $(POPT_LIBS)
 toklist_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS)
 toklist_LDADD = $(NSS_LIBS) $(POPT_LIBS)
 if WITH_CERTMASTER

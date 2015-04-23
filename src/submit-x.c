@@ -32,6 +32,8 @@
 
 #include <krb5.h>
 
+#include <popt.h>
+
 #include "certext.h"
 #include "log.h"
 #include "submit-e.h"
@@ -735,87 +737,77 @@ cm_submit_x_get_named_s(struct cm_submit_x_context *ctx,
 
 #ifdef CM_SUBMIT_X_MAIN
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
-	int i, j, c, ret, k5 = FALSE, make_ccache = TRUE;
+	int i, j, c, ret, k5 = FALSE, make_ccache = TRUE, verbose = 0;
 	int64_t i8;
 	int32_t i32;
 	const char *uri = NULL, *method = NULL, *ktname = NULL, *kpname = NULL;
-	const char *s, *cainfo = NULL, *capath = NULL;
+	const char *s, *cainfo = NULL, *capath = NULL, *csrfile, *dictval;
 	char *csr, *p, *skey, *sval, *s1, *s2;
 	struct cm_submit_x_context *ctx;
 	xmlrpc_value *arg, *key, *val;
 	xmlrpc_bool boo;
+	poptContext pctx;
+	struct poptOption popts[] = {
+		{"uri", 's', POPT_ARG_STRING, &uri, 0, "server location", "URI"},
+		{"method", 'm', POPT_ARG_STRING, &method, 0, "RPC to call", "METHOD"},
+		{"kerberos", 'k', POPT_ARG_NONE, NULL, 'k', "use Negotiate authentication", NULL},
+		{"no-make-ccache", 'K', POPT_ARG_NONE, NULL, 'K', "use creds from default ccache instead of using the keytab", NULL},
+		{"keytab", 't', POPT_ARG_STRING, &ktname, 0, "keytab to use to obtain creds", "KEYTAB"},
+		{"principal", 'p', POPT_ARG_STRING, &kpname, 0, "client for whom creds will be obtained", "PRINCIPAL"},
+		{"capath", 'C', POPT_ARG_STRING, &capath, 0, NULL, NULL},
+		{"cafile", 'c', POPT_ARG_STRING, &cainfo, 0, NULL, NULL},
+		{"verbose", 'v', POPT_ARG_NONE, NULL, 'v', NULL, NULL},
+		POPT_AUTOHELP
+		POPT_TABLEEND
+	};
 
-	cm_log_set_method(cm_log_stderr);
-	while ((c = getopt(argc, argv, "s:m:kKt:p:c:")) != -1) {
+	pctx = poptGetContext("submit-x", argc, argv, popts, 0);
+	if (pctx == NULL) {
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
+	}
+	poptSetOtherOptionHelp(pctx, "[options...] [values...]");
+	while ((c = poptGetNextOpt(pctx)) > 0) {
 		switch (c) {
-		case 's':
-			uri = optarg;
-			break;
-		case 'm':
-			method = optarg;
-			break;
-		case 'p':
-			kpname = optarg;
-			break;
-		case 't':
-			ktname = optarg;
-			break;
 		case 'k':
 			k5 = TRUE;
 			break;
 		case 'K':
 			make_ccache = FALSE;
 			break;
-		case 'C':
-			capath = optarg;
-			break;
-		case 'c':
-			cainfo = optarg;
-			break;
-		default:
-			fprintf(stderr,
-				"Usage: %s [-s serverURI] [-m method] "
-				"[-k [-K]] [-t keytab] [-p principal] "
-				"[-C capath] [-c cainfo]\n"
-				"Examples:\n"
-				"           -s http://localhost:51235/\n"
-				"           -m wait_for_cert\n"
-				"           -t /etc/krb5.keytab\n",
-				strchr(argv[0], '/') ?
-				strrchr(argv[0], '/') + 1 :
-				argv[0]);
-			return CM_SUBMIT_STATUS_UNCONFIGURED;
+		case 'v':
+			verbose++;
 			break;
 		}
 	}
-	if ((uri == NULL) || (method == NULL)) {
-		fprintf(stderr,
-			"Usage: %s [-s serverURI] [-m method] "
-			"[-k [-K]] [-t keytab] [-p principal] "
-			"[-C capath] [-c cainfo]\n"
-			"Examples:\n"
-			"           -s http://localhost:51235/\n"
-			"           -m wait_for_cert\n"
-			"           -t /etc/krb5.keytab\n",
-			strchr(argv[0], '/') ?
-			strrchr(argv[0], '/') + 1 :
-			argv[0]);
+	if (c != -1) {
+		poptPrintUsage(pctx, stdout, 0);
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
+	}
+	cm_log_set_method(cm_log_stderr);
+	cm_log_set_level(verbose);
+	if (uri == NULL) {
+		printf("No URI (-s) set.\n");
+		poptPrintUsage(pctx, stdout, 0);
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
+	}
+	if (method == NULL) {
+		printf("No method (-m) set.\n");
+		poptPrintUsage(pctx, stdout, 0);
 		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
 	ret = CM_SUBMIT_STATUS_UNREACHABLE;
 
 	/* Read the CSR from the environment, or from the command-line. */
 	csr = getenv(CM_SUBMIT_CSR_ENV);
+	csrfile = poptGetArg(pctx);
+	if (csrfile != NULL) {
+		csr = cm_submit_u_from_file(csrfile);
+	}
 	if (csr == NULL) {
-		csr = cm_submit_u_from_file((optind < argc) ?
-					    argv[optind++] : NULL);
-		if (csr == NULL) {
-			fprintf(stderr,
-				"Error reading certificate signing request.\n");
-			return CM_SUBMIT_STATUS_UNCONFIGURED;
-		}
+		fprintf(stderr, "Error reading certificate signing request.\n");
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
 
 	/* Clean up the CSR. */
@@ -876,8 +868,8 @@ main(int argc, char **argv)
 	}
 
 	/* Add additional arguments as dict values. */
-	for (i = optind; i < argc; i++) {
-		skey = strdup(argv[i]);
+	while ((dictval = poptGetArg(pctx)) != NULL) {
+		skey = strdup(dictval);
 		sval = skey + strcspn(skey, "=");
 		if (*sval != '\0') {
 			*sval++ = '\0';
