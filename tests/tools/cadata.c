@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Red Hat, Inc.
+ * Copyright (C) 2014,2015 Red Hat, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@
 #include <sys/types.h>
 #include <sys/select.h>
 #include <errno.h>
-#include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -29,6 +28,8 @@
 #include <krb5.h>
 
 #include <talloc.h>
+
+#include <popt.h>
 
 #include "../../src/cadata.h"
 #include "../../src/log.h"
@@ -50,13 +51,14 @@ wait_to_read(int fd)
 }
 
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
 	struct cm_cadata_state *state;
 	struct cm_store_ca *ca;
 	int c, fd, ret = CM_SUBMIT_STATUS_REJECTED;
 	int iflag = 0, cflag = 0, pflag = 0, dflag = 0, eflag = 0, rflag = 0;
-	int Cflag = 0, sflag = 0;
+	int Cflag = 0, sflag = 0, verbose = 0;
+	const char *cafile;
 	unsigned i;
 	void *parent;
 	struct {
@@ -72,48 +74,51 @@ main(int argc, char **argv)
 		{cm_cadata_start_capabilities, &Cflag},
 		{cm_cadata_start_encryption_certs, &sflag},
 	};
+	poptContext pctx;
+	struct poptOption popts[] = {
+		{"identity", 'i', POPT_ARG_NONE, &iflag, 0, NULL, NULL},
+		{"root-certs", 'c', POPT_ARG_NONE, &cflag, 0, NULL, NULL},
+		{"profiles", 'p', POPT_ARG_NONE, &pflag, 0, NULL, NULL},
+		{"default-profile", 'd', POPT_ARG_NONE, &dflag, 0, NULL, NULL},
+		{"enroll-reqs", 'e', POPT_ARG_NONE, &eflag, 0, NULL, NULL},
+		{"renew-reqs", 'r', POPT_ARG_NONE, &rflag, 0, NULL, NULL},
+		{"capabilities", 'C', POPT_ARG_NONE, &Cflag, 0, NULL, NULL},
+		{"encryption-certs", 's', POPT_ARG_NONE, &sflag, 0, NULL, NULL},
+		{"verbose", 'v', POPT_ARG_NONE, NULL, 'v', NULL, NULL},
+		POPT_AUTOHELP
+		POPT_TABLEEND
+	};
 
-	cm_log_set_method(cm_log_stderr);
-	cm_log_set_level(3);
-	cm_set_fips_from_env();
-	parent = talloc_new(NULL);
-	while ((c = getopt(argc, argv, "icpderCs")) != -1) {
+	pctx = poptGetContext("cadata", argc, argv, popts, 0);
+	if (pctx == NULL) {
+		return 1;
+	}
+	poptSetOtherOptionHelp(pctx, "[options...] cafile");
+	while ((c = poptGetNextOpt(pctx)) > 0) {
 		switch (c) {
-		case 'i':
-			iflag++;
-			break;
-		case 'c':
-			cflag++;
-			break;
-		case 'p':
-			pflag++;
-			break;
-		case 'd':
-			dflag++;
-			break;
-		case 'e':
-			eflag++;
-			break;
-		case 'r':
-			rflag++;
-			break;
-		case 'C':
-			Cflag++;
-			break;
-		case 's':
-			sflag++;
+		case 'v':
+			verbose++;
 			break;
 		}
 	}
-	if (argc - optind > 0) {
-		ca = cm_store_files_ca_read(parent, argv[optind]);
+	if (c != -1) {
+		poptPrintUsage(pctx, stdout, 0);
+		return 1;
+	}
+	cm_log_set_method(cm_log_stderr);
+	cm_log_set_level(verbose);
+	cm_set_fips_from_env();
+	parent = talloc_new(NULL);
+	cafile = poptGetArg(pctx);
+	if (cafile != NULL) {
+		ca = cm_store_files_ca_read(parent, cafile);
 		if (ca == NULL) {
-			printf("Error reading %s: %s.\n", argv[optind],
+			printf("Error reading %s: %s.\n", cafile,
 			       strerror(errno));
 			return -1;
 		}
 	} else {
-		printf("Specify a CA file as the argument.\n");
+		printf("Specify a CA file as an argument.\n");
 		return -1;
 	}
 	for (i = 0; i < sizeof(flags) / sizeof(flags[0]); i++) {
