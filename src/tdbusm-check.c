@@ -19,13 +19,14 @@
 
 #include <sys/types.h>
 #include <errno.h>
-#include <getopt.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <dbus/dbus.h>
 
 #include <tevent.h>
+
+#include <popt.h>
 
 #include "tdbus.h"
 #include "tdbusm.h"
@@ -673,7 +674,7 @@ get_ssass(DBusMessage *rep, int msgid)
 }
 
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
 	DBusConnection *conn;
 	DBusMessage *msg;
@@ -718,8 +719,19 @@ main(int argc, char **argv)
 		{&set_ssass, &get_ssass},
 		{&set_ssvs, &get_ssvs},
 	};
+	poptContext pctx;
+	struct poptOption popts[] = {
+		{"session", 's', POPT_ARG_NONE, NULL, 's', NULL, NULL},
+		{"system", 'S', POPT_ARG_NONE, NULL, 'S', NULL, NULL},
+		POPT_AUTOHELP
+		POPT_TABLEEND
+	};
 	memset(&err, 0, sizeof(err));
-	while ((c = getopt(argc, argv, "sS")) != -1) {
+	pctx = poptGetContext("tdbusm-check", argc, argv, popts, 0);
+	if (pctx == NULL) {
+		return 1;
+	}
+	while ((c = poptGetNextOpt(pctx)) > 0) {
 		switch (c) {
 		case 's':
 			bus = DBUS_BUS_SESSION;
@@ -728,6 +740,10 @@ main(int argc, char **argv)
 			bus = DBUS_BUS_SYSTEM;
 			break;
 		}
+	}
+	if (c != -1) {
+		poptPrintUsage(pctx, stdout, 0);
+		return 1;
 	}
 	conn = dbus_bus_get(bus, NULL);
 	if (conn == NULL) {

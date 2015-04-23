@@ -180,7 +180,7 @@ certmonger_session_LDADD = libcm.a \
 		   $(GMP_LIBS) $(UUID_LIBS) $(LTLIBICONV)
 noinst_PROGRAMS = tdbusm-check serial-check nl-check submit-x tlslayer toklist
 tdbusm_check_SOURCES = tdbusm-check.c tm.c tm.h
-tdbusm_check_LDADD = libcm.a $(CERTMONGER_LIBS)
+tdbusm_check_LDADD = libcm.a $(CERTMONGER_LIBS) $(POPT_LIBS)
 serial_check_LDADD = libcm.a $(CERTMONGER_LIBS) $(LTLIBICONV)
 nl_check_LDADD = libcm.a $(CERTMONGER_LIBS)
 submit_x_CFLAGS = $(AM_CFLAGS) -DCM_SUBMIT_X_MAIN
