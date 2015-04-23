@@ -189,7 +189,7 @@ submit_x_SOURCES = submit-x.c submit-x.h submit-u.c submit-u.h log.c log.h \
 submit_x_LDADD = $(XMLRPC_LIBS) $(KRB5_LIBS) $(TALLOC_LIBS) \
 		 $(GMP_LIBS) $(UUID_LIBS)
 toklist_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS)
-toklist_LDADD = $(NSS_LIBS)
+toklist_LDADD = $(NSS_LIBS) $(POPT_LIBS)
 if WITH_CERTMASTER
 pkglibexec_PROGRAMS += certmaster-submit
 endif

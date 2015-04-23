@@ -35,34 +35,46 @@
 #include <pk11pub.h>
 #include <prerror.h>
 
+#include <popt.h>
+
 #include "log.h"
 
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
 	NSSInitContext *ctx;
 	PLArenaPool *arena;
 	PK11SlotList *slotlist;
 	PK11SlotListElement *sle;
-	CK_MECHANISM_TYPE mech = 0;
+	CK_MECHANISM_TYPE mech;
+	int imech = 0;
 	CK_TOKEN_INFO info;
-	const char *dbdir = "/etc/pki/nssdb", *token;
+	char *dbdir = "/etc/pki/nssdb", *token;
 	int c;
+	poptContext pctx;
+	struct poptOption popts[] = {
+		{"dbdir", 'd', POPT_ARG_STRING | POPT_ARGFLAG_SHOW_DEFAULT, &dbdir, 0, "NSS database", "DIRECTORY"},
+		{"mech", 'm', POPT_ARG_INT, &imech, 0, NULL, NULL},
+		POPT_AUTOHELP
+		POPT_TABLEEND
+	};
 
-	while ((c = getopt(argc, argv, "d:m:")) != -1) {
-		switch (c) {
-		case 'd':
-			dbdir = optarg;
-			break;
-		case 'm':
-			mech = atol(optarg);
-			break;
-		default:
-			printf("Usage: toklist [-d dbdir] [-m mechnum]\n");
-			return 1;
-			break;
-		}
+	pctx = poptGetContext("toklist", argc, argv, popts, 0);
+	if (pctx == NULL) {
+		return 1;
 	}
+	while ((c = poptGetNextOpt(pctx)) > 0) {
+		continue;
+	}
+	if (c != -1) {
+		poptPrintUsage(pctx, stdout, 0);
+		return 1;
+	}
+	if (dbdir == NULL) {
+		poptPrintUsage(pctx, stdout, 0);
+		return 1;
+	}
+	mech = imech;
 	printf("Mechanism %ld:\n", (long) mech);
 
 	/* Open the database. */
