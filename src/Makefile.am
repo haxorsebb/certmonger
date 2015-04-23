@@ -263,4 +263,4 @@ tlslayer_SOURCES = tlslayer.c tlslayer-n.c \
 if HAVE_OPENSSL
 tlslayer_SOURCES += tlslayer-o.c
 endif
-tlslayer_LDADD = $(NSS_LIBS) $(OPENSSL_SSL_LIBS) $(TALLOC_LIBS)
+tlslayer_LDADD = $(NSS_LIBS) $(OPENSSL_SSL_LIBS) $(TALLOC_LIBS) $(POPT_LIBS)

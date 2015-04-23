@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Red Hat, Inc.
+ * Copyright (C) 2012,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,13 +20,14 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <fcntl.h>
-#include <getopt.h>
 #include <netdb.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
 #include <talloc.h>
+
+#include <popt.h>
 
 #include "tlslayer.h"
 #include "tlslayer-int.h"
@@ -187,7 +188,7 @@ cm_tls_close(struct cm_tls_connection *conn)
 
 #ifdef CM_TLSLAYER_MAIN
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
 	struct cm_tls_connection *conn;
 	const char *hostport = NULL;
@@ -196,50 +197,36 @@ main(int argc, char **argv)
 	const char *client_cert_file = NULL, *client_key_file = NULL;
 	const char *client_db = NULL, *client_nickname = NULL;
 	int c;
+	poptContext pctx;
+	struct poptOption popts[] = {
+		{"ca-file", 'c', POPT_ARG_STRING, &trusted_ca_file, 0, NULL, "FILENAME"},
+		{"ca-dir", 'C', POPT_ARG_STRING, &trusted_ca_dir, 0, NULL, "DIRECTORY"},
+		{"ca-database", 'D', POPT_ARG_STRING, &trusted_ca_db, 0, NULL, "DIRECTORY"},
+		{"client-cert", 'f', POPT_ARG_STRING, &client_cert_file, 0, NULL, "FILENAME"},
+		{"client-key", 'k', POPT_ARG_STRING, &client_key_file, 0, NULL, "FILENAME"},
+		{"client-database", 'd', POPT_ARG_STRING, &client_db, 0, NULL, "DIRECTORY"},
+		{"client-nickname", 'n', POPT_ARG_STRING, &client_nickname, 0, NULL, NULL},
+		POPT_AUTOHELP
+		POPT_TABLEEND
+	};
 
-	while ((c = getopt(argc, argv, "c:C:D:f:k:d:n:")) != -1) {
-		switch (c) {
-		case 'c':
-			trusted_ca_file = optarg;
-			break;
-		case 'C':
-			trusted_ca_dir = optarg;
-			break;
-		case 'D':
-			trusted_ca_db = optarg;
-			break;
-		case 'f':
-			client_cert_file = optarg;
-			break;
-		case 'k':
-			client_key_file = optarg;
-			break;
-		case 'd':
-			client_db = optarg;
-			break;
-		case 'n':
-			client_nickname = optarg;
-			break;
-		default:
-			fprintf(stderr, "Usage: tlslayer\n"
-				"\t[-c cafile] [-C capath] [-D cadb]\n"
-				"\t[-f clientcert] [-k clientkey]\n"
-				"\t[-d clientdb] [-n clientnick]\n"
-				"\thostname:port\n");
-			return 1;
-			break;
-		}
+	pctx = poptGetContext("tlslayer", argc, argv, popts, 0);
+	if (pctx == NULL) {
+		return 1;
 	}
-	if (optind > argc - 1) {
-		fprintf(stderr, "No hostname:port specified.\n");
-		fprintf(stderr, "Usage: tlslayer\n"
-			"\t[-c cafile] [-C capath] [-D cadb]\n"
-			"\t[-f clientcert] [-k clientkey]\n"
-			"\t[-d clientdb] [-n clientnick]\n"
-			"\thostname:port\n");
+	poptSetOtherOptionHelp(pctx, "[options...] hostname:port");
+	while ((c = poptGetNextOpt(pctx)) > 0) {
+		continue;
+	}
+	if (c != -1) {
+		poptPrintUsage(pctx, stdout, 0);
+		return 1;
+	}
+	hostport = poptGetArg(pctx);
+	if (hostport == NULL) {
+		poptPrintUsage(pctx, stdout, 0);
 		return 2;
 	}
-	hostport = argv[optind];
 
 	conn = cm_tls_connect(hostport,
 			      trusted_ca_file,
