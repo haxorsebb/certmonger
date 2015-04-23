@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Red Hat, Inc.
+ * Copyright (C) 2011,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@
 #include "../../src/config.h"
 
 #include <sys/types.h>
-#include <getopt.h>
 #include <limits.h>
 #include <stdio.h>
 #include <string.h>
@@ -28,15 +27,29 @@
 
 #include <talloc.h>
 
+#include <popt.h>
+
 #include "../../src/submit-u.h"
 
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
-	char buf[LINE_MAX], *p = NULL, *q;
+	char buf[LINE_MAX], *p = NULL, *q, *type = "CERTIFICATE";
 	int dos = 1, c;
+	poptContext pctx;
+	struct poptOption popts[] = {
+		{"dos", 'd', POPT_ARG_NONE, NULL, 'd', "output using DOS-style end-of-lines", NULL},
+		{"unix", 'u', POPT_ARG_NONE, NULL, 'u', "output using Unix-style end-of-lines", NULL},
+		{"type", 't', POPT_ARG_STRING | POPT_ARGFLAG_SHOW_DEFAULT, &type, 0, "data type to claim", NULL},
+		POPT_AUTOHELP
+		POPT_TABLEEND
+	};
 
-	while ((c = getopt(argc, argv, "du")) != -1) {
+	pctx = poptGetContext("base2pem", argc, argv, popts, 0);
+	if (pctx == NULL) {
+		return 1;
+	}
+	while ((c = poptGetNextOpt(pctx)) > 0) {
 		switch (c) {
 		case 'd':
 			dos = 1;
@@ -45,6 +58,10 @@ main(int argc, char **argv)
 			dos = 0;
 			break;
 		}
+	}
+	if (c != -1) {
+		poptPrintUsage(pctx, stdout, 0);
+		return 1;
 	}
 	while (fgets(buf, sizeof(buf), stdin) != NULL) {
 		if (p == NULL) {
@@ -58,6 +75,6 @@ main(int argc, char **argv)
 			}
 		}
 	}
-	printf("%s", cm_submit_u_pem_from_base64("CERTIFICATE", dos, p));
+	printf("%s", cm_submit_u_pem_from_base64(type, dos, p));
 	return 0;
 }
