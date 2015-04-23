@@ -332,7 +332,7 @@ cm_locate_xmlrpc_service(const char *server,
 /* Make an XML-RPC request to the "cert_request" method. */
 static int
 submit_or_poll_uri(const char *uri, const char *cainfo, const char *capath,
-	           const char *csr, const char *reqprinc)
+	           const char *csr, const char *reqprinc, const char *profile)
 {
 	struct cm_submit_x_context *ctx;
 	const char *args[2];
@@ -344,6 +344,7 @@ submit_or_poll_uri(const char *uri, const char *cainfo, const char *capath,
 	}
 
 	/* Prepare to make an XML-RPC request. */
+submit:
 	ctx = cm_submit_x_init(NULL, uri, "cert_request",
 			       cainfo, capath,
 			       cm_submit_x_negotiate_on,
@@ -361,6 +362,10 @@ submit_or_poll_uri(const char *uri, const char *cainfo, const char *capath,
 	cm_submit_x_add_arg_as(ctx, args);
 	/* Add the principal name named argument. */
 	cm_submit_x_add_named_arg_s(ctx, "principal", reqprinc);
+	/* Add the requested profile name named argument. */
+	if (profile != NULL) {
+		cm_submit_x_add_named_arg_s(ctx, "profile", profile);
+	}
 	/* Tell the server to add entries for a principal if one
 	 * doesn't exist yet. */
 	cm_submit_x_add_named_arg_b(ctx, "add", 1);
@@ -377,6 +382,14 @@ submit_or_poll_uri(const char *uri, const char *cainfo, const char *capath,
 		switch (i / 1000) {
 		case 2: /* authorization error - permanent */
 		case 3: /* invocation error - permanent */
+			if ((i == 3005) && (profile != NULL)) {
+				/* Most likely the server didn't understand the
+				 * "profile" argument.  At least, at this
+				 * point.  Randomly dropping arguments is not
+				 * really an extensible solution, though. */
+				profile = NULL;
+				goto submit;
+			}
 			printf("Server at %s denied our request, "
 			       "giving up: %d (%s).\n", uri, i,
 			       cm_submit_x_fault_text(ctx));
@@ -427,12 +440,12 @@ static int
 submit_or_poll(const char *uri, const char *cainfo, const char *capath,
 	       const char *server, int ldap_uri_cmd, const char *ldap_uri,
 	       const char *host, const char *domain, char *basedn,
-	       const char *csr, const char *reqprinc)
+	       const char *csr, const char *reqprinc, const char *profile)
 {
 	int i, u;
 	char **uris;
 
-	i = submit_or_poll_uri(uri, cainfo, capath, csr, reqprinc);
+	i = submit_or_poll_uri(uri, cainfo, capath, csr, reqprinc, profile);
 	if ((i == CM_SUBMIT_STATUS_UNREACHABLE) ||
 	    (i == CM_SUBMIT_STATUS_UNCONFIGURED)) {
 		u = cm_locate_xmlrpc_service(server, ldap_uri_cmd, ldap_uri,
@@ -443,7 +456,7 @@ submit_or_poll(const char *uri, const char *cainfo, const char *capath,
 					continue;
 				}
 				i = submit_or_poll_uri(uris[u], cainfo, capath,
-						       csr, reqprinc);
+						       csr, reqprinc, profile);
 				if ((i != CM_SUBMIT_STATUS_UNREACHABLE) &&
 				    (i != CM_SUBMIT_STATUS_UNCONFIGURED)) {
 					talloc_free(uris);
@@ -543,7 +556,7 @@ main(int argc, const char **argv)
 	const char *xmlrpc_uri = NULL, *ldap_uri = NULL, *server = NULL, *csrfile;
 	int xmlrpc_uri_cmd = 0, ldap_uri_cmd = 0, verbose = 0;
 	const char *mode = CM_OP_SUBMIT;
-	char ldn[LINE_MAX], *basedn = NULL;
+	char ldn[LINE_MAX], *basedn = NULL, *profile = NULL;
 	krb5_error_code kret;
 	poptContext pctx;
 	struct poptOption popts[] = {
@@ -557,6 +570,7 @@ main(int argc, const char **argv)
 		{"submitter-principal", 'k', POPT_ARG_STRING, &kpname, 'k', "principal name to use for authenticating to server", "PRINCIPAL"},
 		{"use-ccache-creds", 'K', POPT_ARG_NONE, NULL, 'K', "use default ccache instead of creating a new one using keytab", NULL},
 		{"principal-of-request", 'P', POPT_ARG_STRING, &reqprinc, 0, "principal name in signing request", "PRINCIPAL"},
+		{"profile", 'T', POPT_ARG_STRING, &profile, 0, "request enrollment using the specified profile", "NAME"},
 		{"basedn", 'b', POPT_ARG_STRING, &basedn, 0, "IPA domain LDAP base DN", "DN"},
 		{"verbose", 'v', POPT_ARG_NONE, NULL, 'v', NULL, NULL},
 		POPT_AUTOHELP
@@ -711,6 +725,10 @@ main(int argc, const char **argv)
 			poptPrintUsage(pctx, stdout, 0);
 			return CM_SUBMIT_STATUS_UNCONFIGURED;
 		}
+		if ((profile == NULL) &&
+		    (getenv(CM_SUBMIT_PROFILE_ENV) != NULL)) {
+			profile = strdup(getenv(CM_SUBMIT_PROFILE_ENV));
+		}
 		if ((server != NULL) && !xmlrpc_uri_cmd) {
 			snprintf(uri, sizeof(uri),
 				 "https://%s/ipa/xml", server);
@@ -817,7 +835,7 @@ main(int argc, const char **argv)
 		return submit_or_poll(uri, cainfo, capath,
 				      server, ldap_uri_cmd, ldap_uri,
 				      host, domain, basedn,
-				      csr, reqprinc);
+				      csr, reqprinc, profile);
 	} else
 	if (strcasecmp(mode, CM_OP_FETCH_ROOTS) == 0) {
 		return fetch_roots(server, ldap_uri_cmd, ldap_uri, host,

@@ -1,11 +1,11 @@
-.TH certmonger 8 "7 June 2010" "certmonger Manual"
+.TH certmonger 8 "16 April 2015" "certmonger Manual"
 
 .SH NAME
 ipa-submit
 
 .SH SYNOPSIS
 ipa-submit [-h serverHost] [-H serverURL] [-c cafile] [-C capath]
-[[-K]  | [-t keytab] [-k submitterPrincipal]] [-P principalOfRequest] [csrfile]
+[[-K]  | [-t keytab] [-k submitterPrincipal]] [-P principalOfRequest] [-T profile] [csrfile]
 
 .SH DESCRIPTION
 \fIipa-submit\fR is the helper which \fIcertmonger\fR uses to make
@@ -27,6 +27,14 @@ LDAP server's directory tree, where $BASE defaults to the value of the
 \fB\-P\fR csrPrincipal
 Identifies the principal name of the service for which the certificate is being
 issued.  This setting is required by IPA and must always be specified.
+.TP
+\fB\-T\fR profile
+Requests that the certificate be processed using the specified certificate profile.
+By default, if this flag is not specified, and the \fBCERTMONGER_CA_PROFILE\fR
+variable is set in the environment, then the value of the environment variable
+will be used.  This setting is optional, and if a server returns error 3005,
+indicating that it does not understand multiple profiles, the request will be
+re-submitted without specifying a profile.
 .TP
 \fB\-h\fR serverHost
 Submit the request to the IPA server running on the named host.  The default is
