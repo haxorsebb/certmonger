@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Red Hat, Inc.
+ * Copyright (C) 2014,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@
 
 #include <sys/types.h>
 #include <sys/param.h>
-#include <getopt.h>
 #include <limits.h>
 #include <stdio.h>
 #include <string.h>
@@ -28,30 +27,41 @@
 
 #include <talloc.h>
 
+#include <popt.h>
+
 #include "../../src/store.h"
 
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
 	unsigned char buf[LINE_MAX], *p = NULL, *q;
-	unsigned int length, decode = 0, encode = 0, hex = 0, i, j;
+	unsigned int length, i, j;
+	int decode = 0, encode = 0, hex = 0;
 	const char *s;
 	int c, l;
+	poptContext pctx;
+	struct poptOption popts[] = {
+		{"decode", 'd', POPT_ARG_NONE, &decode, 'd', NULL, NULL},
+		{"encode", 'e', POPT_ARG_NONE, &encode, 'e', NULL, NULL},
+		{"hex", 'h', POPT_ARG_NONE, &hex, 'h', "encode from hex / decode to hex", NULL},
+		POPT_AUTOHELP
+		POPT_TABLEEND
+	};
 
-	while ((c = getopt(argc, argv, "deh")) != -1) {
-		switch (c) {
-		case 'd':
-			decode = 1;
-			encode = 0;
-			break;
-		case 'e':
-			encode = 1;
-			decode = 0;
-			break;
-		case 'h':
-			hex++;
-			break;
-		}
+	pctx = poptGetContext("base64", argc, argv, popts, 0);
+	if (pctx == NULL) {
+		return 1;
+	}
+	while ((c = poptGetNextOpt(pctx)) > 0) {
+		continue;
+	}
+	if (c != -1) {
+		poptPrintUsage(pctx, stdout, 0);
+		return 1;
+	}
+	if ((decode && encode) || (!decode && !encode)) {
+		poptPrintUsage(pctx, stdout, 0);
+		return 1;
 	}
 	length = 0;
 	while ((l = read(STDIN_FILENO, buf, sizeof(buf))) > 0) {
