@@ -291,20 +291,11 @@ main(int argc, const char **argv)
 		missing_args = TRUE;
 		break;
 	case op_get_ca_caps:
-		if (id == NULL) {
-			params = "operation=" OP_GET_CA_CAPS;
-		} else {
-			params = talloc_asprintf(ctx, "operation=" OP_GET_CA_CAPS "&message=%s", id);
-		}
+		params = talloc_asprintf(ctx, "operation=" OP_GET_CA_CAPS "&message=%s", id);
 		break;
 	case op_get_ca_certs:
-		if (id == NULL) {
-			params = "operation=" OP_GET_CA_CERT;
-			params2 = "operation=" OP_GET_CA_CHAIN;
-		} else {
-			params = talloc_asprintf(ctx, "operation=" OP_GET_CA_CERT "&message=%s", id);
-			params2 = talloc_asprintf(ctx, "operation=" OP_GET_CA_CHAIN "&message=%s", id);
-		}
+		params = talloc_asprintf(ctx, "operation=" OP_GET_CA_CERT "&message=%s", id);
+		params2 = talloc_asprintf(ctx, "operation=" OP_GET_CA_CHAIN "&message=%s", id);
 		break;
 	case op_get_initial_cert:
 		if ((racert == NULL) || (strlen(racert) == 0)) {
