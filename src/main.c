@@ -322,7 +322,13 @@ main(int argc, const char **argv)
 		}
 		l = fcntl(pfd, F_GETFD);
 		if (l != -1) {
-			fcntl(pfd, F_SETFD, l | FD_CLOEXEC);
+			if (fcntl(pfd, F_SETFD, l | FD_CLOEXEC) != 0) {
+				fprintf(stderr, "Error marking pidfile \"%s\" "
+					"as close-on-exec: %s\n",
+					pidfile, strerror(errno));
+				close(pfd);
+				exit(1);
+			}
 		}
 		pfp = fdopen(pfd, "w");
 		if (pfp == NULL) {
@@ -397,7 +403,10 @@ main(int argc, const char **argv)
 	talloc_free(ctx);
 	talloc_free(ec);
 	if ((pidfile != NULL) && (pfp != NULL)) {
-		remove(pidfile);
+		if (remove(pidfile) != 0) {
+			cm_log(0, "Error removing pidfile \"%s\": %s.\n",
+			       pidfile, strerror(errno));
+		}
 		fclose(pfp);
 	}
 	return 0;
