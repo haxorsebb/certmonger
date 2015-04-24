@@ -159,6 +159,7 @@ util_set_db_owner_perms(const char *dbdir, const char *filename,
 		return;
 	}
 	if ((lstat(pathname, &before) == -1) || !S_ISREG(before.st_mode)) {
+		close(fd);
 		free(pathname);
 		return;
 	}
