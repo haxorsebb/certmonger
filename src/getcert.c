@@ -4767,9 +4767,10 @@ help(const char *cmd, const char *category)
 int
 main(int argc, const char **argv)
 {
-	const char *verb, *p;
+	const char *verb, *p, *argv1;
 	char poptname[LINE_MAX];
 	unsigned int i;
+	int ret;
 #ifdef ENABLE_NLS
 	bindtextdomain(PACKAGE, MYLOCALEDIR);
 #endif
@@ -4785,9 +4786,12 @@ main(int argc, const char **argv)
 		globals.tctx = talloc_new(NULL);
 		for (i = 0; i < sizeof(verbs) / sizeof(verbs[0]); i++) {
 			if (strcmp(verbs[i].verb, verb) == 0) {
+				argv1 = argv[1];
 				argv[1] = poptname;
-				return (*verbs[i].fn)(poptname, argc - 1,
-						      argv + 1);
+				ret = (*verbs[i].fn)(poptname, argc - 1,
+						     argv + 1);
+				argv[1] = argv1;
+				return ret;
 			}
 		}
 		fprintf(stderr, _("%s: unrecognized command\n"), verb);
