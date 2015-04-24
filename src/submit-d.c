@@ -452,6 +452,8 @@ cm_submit_d_submit_result(void *parent, const char *xml,
 			  char **error, char **status, char **requestId,
 			  char **cert)
 {
+	char *tmp;
+
 	/* ProfileSubmitServlet.java:
 	 * 0: issued
 	 * 1: internal error
@@ -471,7 +473,9 @@ cm_submit_d_submit_result(void *parent, const char *xml,
 	*cert = cm_submit_d_xml_value(parent, xml,
 				      "/XMLResponse/Requests/Request/b64");
 	if ((*cert != NULL) && (strlen(*cert) > 0)) {
-		*cert = cm_submit_u_pem_from_base64("CERTIFICATE", 0, *cert);
+		tmp = cm_submit_u_pem_from_base64("CERTIFICATE", 0, *cert);
+		*cert = talloc_strdup(parent, tmp);
+		free(tmp);
 	}
 	return 0;
 }
