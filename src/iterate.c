@@ -2047,6 +2047,9 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			cm_store_set_if_not_set_s(entry,
 						  &entry->cm_template_profile,
 						  entry->cm_cert_profile);
+			cm_store_set_if_not_set_s(entry,
+						  &entry->cm_template_ns_certtype,
+						  entry->cm_cert_ns_certtype);
 			/* Walk the list of known names of known CAs and try to
 			 * find the entry's CA. */
 			tmp_ca = NULL;
