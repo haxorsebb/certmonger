@@ -66,7 +66,7 @@ for size in 512 1024 1536 2048 3072 4096 ; do
 					openssl verify -CAfile minicert.openssl.$size.pem minicert.openssl.$size.pem
 					echo $size OK.
 				else
-					echo With basic/default settings, minicertss differ \(NSS, OpenSSL\):
+					echo With basic/default settings, minicerts differ \(NSS, OpenSSL\):
 					cat minicert.nss.$size minicert.openssl.$size
 					exit 1
 				fi
