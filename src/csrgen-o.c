@@ -85,7 +85,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	X509_REQ *req;
 	X509_NAME *subject;
 	X509 *minicert;
-	ASN1_INTEGER *serial;
+	ASN1_INTEGER *serial, *version;
 	NETSCAPE_SPKI spki;
 	NETSCAPE_SPKAC spkac;
 	EVP_PKEY *pkey;
@@ -343,7 +343,17 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			ASN1_GENERALIZEDTIME_set_string(minicert->cert_info->validity->notAfter, nows);
 			X509_NAME_set(&minicert->cert_info->issuer, subject);
 			X509_NAME_set(&minicert->cert_info->subject, subject);
-			X509_set_version(minicert, 0);
+			/* This used to just be X509_set_version(), but
+			 * starting in 1.0.2, OpenSSL began setting it to NULL
+			 * for v1, which breaks tests which expect identical
+			 * output from both NSS and OpenSSL. */
+			version = M_ASN1_INTEGER_new();
+			if (version == NULL) {
+				cm_log(1, "Out of memory creating mini certificate.\n");
+				_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+			}
+			ASN1_INTEGER_set(version, 0);
+			minicert->cert_info->version = version;
 			serial = M_ASN1_INTEGER_new();
 			if (serial == NULL) {
 				cm_log(1, "Out of memory creating mini certificate.\n");
