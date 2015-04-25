@@ -762,7 +762,15 @@ if ! ${configure_dist_target_only:-false} ; then
 	AC_SUBST(UUID_LIBS)
 	LIBSsave="$LIBS"
 	AC_CHECK_HEADERS(popt.h)
+	if test x$ac_cv_header_popt_h != xyes ; then
+		AC_MSG_ERROR(popt.h header file not found)
+	fi
 	AC_CHECK_FUNC(poptGetContext,,AC_CHECK_LIB(popt,poptGetContext))
+	if test x$ac_cv_func_poptGetContext != xyes ; then
+		if test x$ac_cv_lib_popt_poptGetContext != xyes ; then
+			AC_MSG_ERROR(libpopt not found)
+		fi
+	fi
 	POPT_LIBS="$LIBS"
 	LIBS="$LIBSsave"
 	AC_SUBST(POPT_CFLAGS)
