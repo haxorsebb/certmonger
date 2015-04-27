@@ -410,6 +410,8 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	char *challenge_password, *challenge_password_file;
 	enum cm_cert_storage_type cert_storage;
 	char *cert_location, *cert_nickname, *cert_token;
+	char *cert_owner, *key_owner;
+	mode_t cert_perms, key_perms;
 	char *path, *pre_command, *post_command;
 	char **root_cert_nssdbs, **root_cert_files;
 	char **other_root_cert_nssdbs, **other_root_cert_files;
@@ -1229,6 +1231,39 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	} else {
 		post_command = NULL;
 	}
+	/* Permissions to set on the keys and certificates. */
+	param = cm_tdbusm_find_dict_entry(d,
+					  CM_DBUS_PROP_CERT_OWNER,
+					  cm_tdbusm_dict_s);
+	if (param != NULL) {
+		cert_owner = param->value.s;
+	} else {
+		cert_owner = NULL;
+	}
+	param = cm_tdbusm_find_dict_entry(d,
+					  CM_DBUS_PROP_CERT_PERMS,
+					  cm_tdbusm_dict_n);
+	if (param != NULL) {
+		cert_perms = param->value.n;
+	} else {
+		cert_perms = 0;
+	}
+	param = cm_tdbusm_find_dict_entry(d,
+					  CM_DBUS_PROP_KEY_OWNER,
+					  cm_tdbusm_dict_s);
+	if (param != NULL) {
+		key_owner = param->value.s;
+	} else {
+		key_owner = NULL;
+	}
+	param = cm_tdbusm_find_dict_entry(d,
+					  CM_DBUS_PROP_KEY_PERMS,
+					  cm_tdbusm_dict_n);
+	if (param != NULL) {
+		key_perms = param->value.n;
+	} else {
+		key_perms = 0;
+	}
 	/* Okay, we can go ahead and add the entry. */
 	new_entry = cm_store_entry_new(parent);
 	if (new_entry == NULL) {
@@ -1329,11 +1364,15 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	new_entry->cm_key_token = maybe_strdup(new_entry, key_token);
 	new_entry->cm_key_pin = maybe_strdup(new_entry, key_pin);
 	new_entry->cm_key_pin_file = maybe_strdup(new_entry, key_pin_file);
+	new_entry->cm_key_owner = maybe_strdup(new_entry, key_owner);
+	new_entry->cm_key_perms = key_perms;
 	new_entry->cm_cert_storage_type = cert_storage;
 	new_entry->cm_cert_storage_location = maybe_strdup(new_entry,
 							   cert_location);
 	new_entry->cm_cert_nickname = maybe_strdup(new_entry, cert_nickname);
 	new_entry->cm_cert_token = maybe_strdup(new_entry, cert_token);
+	new_entry->cm_cert_owner = maybe_strdup(new_entry, cert_owner);
+	new_entry->cm_cert_perms = cert_perms;
 
 	new_entry->cm_root_cert_store_nssdbs = maybe_strdupv(new_entry, root_cert_nssdbs);
 	new_entry->cm_root_cert_store_files = maybe_strdupv(new_entry, root_cert_files);
@@ -3029,6 +3068,34 @@ request_modify(DBusConnection *conn, DBusMessage *msg,
 		 * change. */
 		for (i = 0; (d != NULL) && (d[i] != NULL); i++) {
 			param = d[i];
+			if ((param->value_type == cm_tdbusm_dict_s) &&
+			    (strcasecmp(param->key, CM_DBUS_PROP_CERT_OWNER) == 0)) {
+				entry->cm_cert_owner = talloc_strdup(entry, param->value.s);
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_CERT_OWNER;
+				}
+			} else
+			if ((param->value_type == cm_tdbusm_dict_n) &&
+			    (strcasecmp(param->key, CM_DBUS_PROP_CERT_PERMS) == 0)) {
+				entry->cm_cert_perms = param->value.n;
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_CERT_PERMS;
+				}
+			} else
+			if ((param->value_type == cm_tdbusm_dict_s) &&
+			    (strcasecmp(param->key, CM_DBUS_PROP_KEY_OWNER) == 0)) {
+				entry->cm_key_owner = talloc_strdup(entry, param->value.s);
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_KEY_OWNER;
+				}
+			} else
+			if ((param->value_type == cm_tdbusm_dict_n) &&
+			    (strcasecmp(param->key, CM_DBUS_PROP_KEY_PERMS) == 0)) {
+				entry->cm_key_perms = param->value.n;
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_KEY_PERMS;
+				}
+			} else
 			if ((param->value_type == cm_tdbusm_dict_b) &&
 			    ((strcasecmp(param->key, "RENEW") == 0) ||
 			     (strcasecmp(param->key, CM_DBUS_PROP_AUTORENEW) == 0))) {
@@ -4137,8 +4204,9 @@ struct cm_tdbush_property {
 		cm_tdbush_property_time_t,
 		cm_tdbush_property_long_long,
 		cm_tdbush_property_comma_list,
+		cm_tdbush_property_mode_t,
 	} cm_local_type;
-	/* for char_p, char_pp, time_t, comma_list members */
+	/* for char_p, char_pp, time_t, long long, comma_list, mode_t members */
 	ptrdiff_t cm_offset;
 	/* for "special" members */
 	const char * (*cm_read_string)(struct cm_context *ctx, void *parent,
@@ -4343,6 +4411,7 @@ make_property(const char *name,
 	case cm_tdbush_property_time_t:
 	case cm_tdbush_property_long_long:
 	case cm_tdbush_property_comma_list:
+	case cm_tdbush_property_mode_t:
 		assert(ret->cm_offset != 0);
 		break;
 	case cm_tdbush_property_special:
@@ -4835,6 +4904,7 @@ cm_tdbush_property_get(DBusConnection *conn,
 	long l;
 	long long *llp;
 	time_t *tp;
+	mode_t *mp;
 	enum cm_tdbusm_dict_value_type value_type;
 	union cm_tdbusm_variant value;
 	DBusMessage *rep;
@@ -4991,6 +5061,11 @@ cm_tdbush_property_get(DBusConnection *conn,
 			value.as = wpp;
 		}
 		break;
+	case cm_tdbush_property_mode_t:
+		record += prop->cm_offset;
+		mp = (mode_t *) record;
+		value.n = *mp;
+		break;
 	case cm_tdbush_property_special:
 		switch (prop->cm_bus_type) {
 		case cm_tdbush_property_path:
@@ -5086,6 +5161,7 @@ cm_tdbush_property_set(DBusConnection *conn,
 	char *record, *wp, **wpp, ***wppp;
 	time_t *tp;
 	long long *llp;
+	mode_t *mp;
 	DBusMessage *rep;
 	const char *properties[2];
 	enum cm_tdbusm_dict_value_type value_type;
@@ -5266,6 +5342,19 @@ cm_tdbush_property_set(DBusConnection *conn,
 		wpp = (char **) record;
 		*wpp = maybe_strdup(record - prop->cm_offset, wp);
 		break;
+	case cm_tdbush_property_mode_t:
+		if (value_type == cm_tdbusm_dict_invalid) {
+			v.n = 0;
+		} else
+		if (value_type != cm_tdbusm_dict_n) {
+			cm_log(1, "Error: arguments type mismatch.\n");
+			talloc_free(parent);
+			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		}
+		record += prop->cm_offset;
+		mp = (mode_t *) record;
+		*mp = v.n;
+		break;
 	case cm_tdbush_property_special:
 		switch (prop->cm_bus_type) {
 		case cm_tdbush_property_path:
@@ -5425,6 +5514,7 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 	dbus_bool_t b, old_b;
 	long l, old_l;
 	long long *llp, *old_llp;
+	mode_t *mp, *old_mp;
 	DBusMessage *rep;
 	const struct cm_tdbusm_dict **d;
 	struct cm_tdbusm_dict *dict, **dtmp;
@@ -5715,6 +5805,23 @@ cm_tdbush_property_get_all_or_changed(struct cm_context *ctx,
 					old_rec = old_record + prop->cm_offset;
 					old_llp = (long long *) old_rec;
 					if (*llp == *old_llp) {
+						continue;
+					}
+				}
+				d[n] = &dict[n];
+				n++;
+				break;
+			case cm_tdbush_property_mode_t:
+				rec = record + prop->cm_offset;
+				mp = (mode_t *) rec;
+				dict[n].value.n = *mp;
+				if (old_record != NULL) {
+					/* if we have an old record, compare
+					 * its value to the current one, and
+					 * skip this if they're "the same" */
+					old_rec = old_record + prop->cm_offset;
+					old_mp = (mode_t *) old_rec;
+					if (*mp == *old_mp) {
 						continue;
 					}
 				}
@@ -6325,6 +6432,24 @@ cm_tdbush_iface_request(void)
 								       request_prop_get_cert_location_token, NULL, NULL, NULL, NULL,
 								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_CERT_OWNER,
+								       cm_tdbush_property_string,
+								       cm_tdbush_property_readwrite,
+								       cm_tdbush_property_char_p,
+								       offsetof(struct cm_store_entry, cm_cert_owner),
+								       NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
+								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_CERT_PERMS,
+								       cm_tdbush_property_number,
+								       cm_tdbush_property_readwrite,
+								       cm_tdbush_property_mode_t,
+								       offsetof(struct cm_store_entry, cm_cert_perms),
+								       NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
+								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_csr_data",
 								     request_get_csr_data,
@@ -6501,6 +6626,14 @@ cm_tdbush_iface_request(void)
 								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_TEMPLATE_NS_CERTTYPE,
+								       cm_tdbush_property_string,
+								       cm_tdbush_property_readwrite,
+								       cm_tdbush_property_char_p,
+								       offsetof(struct cm_store_entry, cm_template_ns_certtype),
+								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_TEMPLATE_CHALLENGE_PASSWORD,
 								       cm_tdbush_property_string,
 								       cm_tdbush_property_readwrite,
@@ -6591,6 +6724,24 @@ cm_tdbush_iface_request(void)
 								       cm_tdbush_property_special,
 								       0,
 								       request_prop_get_key_location_token, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
+								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_KEY_OWNER,
+								       cm_tdbush_property_string,
+								       cm_tdbush_property_readwrite,
+								       cm_tdbush_property_char_p,
+								       offsetof(struct cm_store_entry, cm_key_owner),
+								       NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
+								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_KEY_PERMS,
+								       cm_tdbush_property_number,
+								       cm_tdbush_property_readwrite,
+								       cm_tdbush_property_mode_t,
+								       offsetof(struct cm_store_entry, cm_key_perms),
+								       NULL, NULL, NULL, NULL, NULL,
 								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
@@ -6911,7 +7062,7 @@ cm_tdbush_iface_request(void)
 				     make_interface_item(cm_tdbush_interface_signal,
 							 make_signal(CM_DBUS_SIGNAL_REQUEST_CERT_SAVED,
 								     NULL),
-							 NULL))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
+							 NULL)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
 	}
 	return ret;
 }
