@@ -99,6 +99,22 @@ def examine_method(objpath, interface, method, idata):
 		return False
 	return True
 
+def iget(child, proxy, interface, prop):
+	value = proxy.Get(interface, prop)
+	if not value:
+		if child.get('type') == 'b':
+			value = False
+		elif child.get('type') == 'n' or child.get('type') == 'x':
+			value = 0
+		elif child.get('type') == 's':
+			value = ''
+		elif child.get('type') == 'as':
+			value = ['']
+		else:
+			print("%s.%s: %s" % (interface, prop, child.get('type')))
+			return False
+	return value
+
 def examine_interface(objpath, interface, idata):
 	o = bus.get_object('org.fedorahosted.certmonger', objpath)
 	i = dbus.Interface(o, 'org.freedesktop.DBus.Properties')
@@ -115,30 +131,30 @@ def examine_interface(objpath, interface, idata):
 						print("%s: warning: property %s.%s not settable on this object" % (objpath, interface, prop))
 						continue
 				# Check that we can read it, tweak it, and then reset it.
-				value = i.Get(interface, prop)
+				value = iget(child, i, interface, prop)
 				i.Set(interface, prop, value)
 				newvalue = None
 				if child.get('type') == 'b':
 					newvalue = not value
-				elif child.get('type') == 'n':
+				elif child.get('type') == 'n' or child.get('type') == 'x':
 					newvalue = value + 1
 				elif child.get('type') == 's':
 					newvalue = 'x' + value
 				elif child.get('type') == 'as':
 					newvalue = ['x'] + value
 				else:
-					print(child.get('type'))
+					print("%s.%s: %s" % (interface, prop, child.get('type')))
 					return False
 				if newvalue:
 					if newvalue == value:
 						print("%s: error determining new value: (%s, %s): %s" % (objpath, interface, prop, value))
 						return False
 					i.Set(interface, prop, newvalue)
-					if newvalue != i.Get(interface, prop):
+					if newvalue != iget(child, i, interface, prop):
 						print("%s: property %s.%s not set: (%s, %s)" % (objpath, interface, prop, value, newvalue))
 						return False
 					i.Set(interface, prop, value)
-					if value != i.Get(interface, prop):
+					if value != iget(child, i, interface, prop):
 						print("%s: property %s.%s not reset: (%s, %s)" % (objpath, interface, prop, newvalue, value))
 						return False
 		elif child.tag == 'method':
