@@ -230,6 +230,10 @@ struct cm_store_entry {
 		char *cm_nickname;	/* Suggested nickname. */
 		char *cm_cert;		/* PEM-format certificate. */
 	} **cm_cert_chain;
+	/* Per-certificate CA certificate list, if for some reason we're
+	 * tracking CA certificates for just this certificate instead of as
+	 * part of the metadata we keep about the CA. */
+	struct cm_nickcert **cm_cert_roots;
 	/* A command to run before we save the certificate. */
 	char *cm_pre_certsave_command;
 	/* The UID of the user as whom we run the above command. */

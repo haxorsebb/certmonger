@@ -260,6 +260,7 @@ OK
    <annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="true"/>
   </property>
   <property name="cert-chain" type="a(ss)" access="read"/>
+  <property name="cert-roots" type="a(ss)" access="read"/>
   <method name="get_cert_info">
    <arg name="issuer" type="s" direction="out"/>
    <arg name="serial_hex" type="s" direction="out"/>

@@ -153,6 +153,7 @@ enum cm_store_file_field {
 
 	cm_store_entry_field_cert,
 	cm_store_entry_field_cert_chain,
+	cm_store_entry_field_cert_roots,
 
 	cm_store_entry_field_pre_certsave_command,
 	cm_store_entry_field_pre_certsave_uid,
@@ -321,6 +322,7 @@ static struct cm_store_file_field_list {
 
 	{cm_store_entry_field_cert, "cert"},
 	{cm_store_entry_field_cert_chain, "cert_chain"},
+	{cm_store_entry_field_cert_roots, "cert_roots"},
 
 	{cm_store_entry_field_pre_certsave_command, "pre_certsave_command"},
 	{cm_store_entry_field_pre_certsave_uid, "pre_certsave_uid"},
@@ -1132,6 +1134,11 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 					parse_nickcert_list(ret, p);
 				talloc_free(p);
 				break;
+			case cm_store_entry_field_cert_roots:
+				ret->cm_cert_roots =
+					parse_nickcert_list(ret, p);
+				talloc_free(p);
+				break;
 			case cm_store_entry_field_pre_certsave_command:
 				ret->cm_pre_certsave_command  = free_if_empty(p);
 				break;
@@ -1311,6 +1318,7 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_ca_error:
 			case cm_store_entry_field_cert:
 			case cm_store_entry_field_cert_chain:
+			case cm_store_entry_field_cert_roots:
 			case cm_store_entry_field_pre_certsave_command:
 			case cm_store_entry_field_pre_certsave_uid:
 			case cm_store_entry_field_post_certsave_command:
@@ -1919,6 +1927,8 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 	cm_store_file_write_str(fp, cm_store_entry_field_cert, entry->cm_cert);
 	cm_store_file_write_nickcert_list(fp, cm_store_entry_field_cert_chain,
 					  entry->cm_cert_chain);
+	cm_store_file_write_nickcert_list(fp, cm_store_entry_field_cert_roots,
+					  entry->cm_cert_roots);
 	cm_store_file_write_str(fp, cm_store_entry_field_pre_certsave_command,
 				entry->cm_pre_certsave_command);
 	cm_store_file_write_str(fp, cm_store_entry_field_pre_certsave_uid,
@@ -2648,6 +2658,7 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	ret->cm_ca_error = cm_store_maybe_strdup(ret, entry->cm_ca_error);
 	ret->cm_cert = cm_store_maybe_strdup(ret, entry->cm_cert);
 	ret->cm_cert_chain = cm_store_maybe_dup_nickcert_list(ret, entry->cm_cert_chain);
+	ret->cm_cert_roots = cm_store_maybe_dup_nickcert_list(ret, entry->cm_cert_roots);
 	ret->cm_pre_certsave_command = cm_store_maybe_strdup(ret, entry->cm_pre_certsave_command);
 	ret->cm_pre_certsave_uid = cm_store_maybe_strdup(ret, entry->cm_pre_certsave_uid);
 	ret->cm_post_certsave_command = cm_store_maybe_strdup(ret, entry->cm_post_certsave_command);

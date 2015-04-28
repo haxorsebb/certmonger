@@ -2316,6 +2316,10 @@ ca_prop_get_nickcerts(struct cm_context *ctx, void *parent,
 		return ca_prop_read_nickcerts(ctx, parent,
 					      entry->cm_cert_chain);
 	} else
+	if (strcmp(name, CM_DBUS_PROP_CERT_ROOTS) == 0) {
+		return ca_prop_read_nickcerts(ctx, parent,
+					      entry->cm_cert_roots);
+	} else
 	if (strcmp(name, CM_DBUS_PROP_ROOT_CERTS) == 0) {
 		return ca_prop_read_nickcerts(ctx, parent,
 					      ca->cm_ca_root_certs);
@@ -6241,6 +6245,15 @@ cm_tdbush_iface_request(void)
 								       NULL, NULL, ca_prop_get_nickcerts, NULL, NULL,
 								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_CERT_ROOTS,
+								       cm_tdbush_property_string_pairs,
+								       cm_tdbush_property_read,
+								       cm_tdbush_property_special,
+								       0,
+								       NULL, NULL, ca_prop_get_nickcerts, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
+								       NULL),
 				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_cert_info",
 								     request_get_cert_info,
@@ -7062,7 +7075,7 @@ cm_tdbush_iface_request(void)
 				     make_interface_item(cm_tdbush_interface_signal,
 							 make_signal(CM_DBUS_SIGNAL_REQUEST_CERT_SAVED,
 								     NULL),
-							 NULL)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
+							 NULL))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
 	}
 	return ret;
 }
