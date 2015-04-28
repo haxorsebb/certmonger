@@ -264,6 +264,10 @@ cm_reset_timeout(struct cm_context *context)
 						       then,
 						       cm_timeout_h,
 						       context);
+	} else if (context->idle_timeout > 0) {
+		cm_log(1, "There are active certificates and requests, "
+		       "ignoring idle timeout.\n");
+		context->idle_timeout = 0;
 	}
 }
 
