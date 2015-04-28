@@ -93,9 +93,22 @@ def examine_method(objpath, interface, method, idata):
 			print("[ %s : %s.%s ] error: %s\n" % (objpath, interface, method, i.Get('org.fedorahosted.certmonger.request', 'nickname')))
 			return False
 		print("[ %s : %s.%s ]\nOK\n" % (objpath, interface, method))
+	elif method == 'modify':
+		mods = {}
+		propname = "template-eku"
+		propval = '1.2.3.4.5.6.7.8.9.10'
+		mods[propname] = [propval,]
+		status, path = i.modify(mods)
+		if not status:
+			print("[ %s : %s.%s ] error\n" % (objpath, interface, method))
+			return False
+		print("[ %s : %s.%s ]\n%d on %s" % (objpath, interface, method, status, path))
+		props = dbus.Interface(o, 'org.freedesktop.DBus.Properties')
+		prop = props.Get(interface, 'template-eku')
+		print("After setting %s to %s, we got %s\n" % (propname, propval, prop))
 	else:
 		# We're in FIXME territory.
-		print method
+		print('FIXME: need support for "%s"' % method)
 		return False
 	return True
 
@@ -164,7 +177,7 @@ def examine_interface(objpath, interface, idata):
 		elif child.tag == 'signal':
 			continue
 		else:
-			print child.tag
+			print "FIXME: handle child tag %s" % child.tag
 			return False
 	return True
 
@@ -195,7 +208,7 @@ def examine_object(objpath):
 				childpath = objpath + '/' + child.get('name')
 			examine_object(childpath)
 		else:
-			print child.tag
+			print "FIXME: handle child tag %s" % child.tag
 			return False
 	return True
 

@@ -475,7 +475,19 @@ None
 [ /org/fedorahosted/certmonger/requests/Request2: org.fedorahosted.certmonger.request.get_submitted_date ]
 recently
 
-modify
+[ /org/fedorahosted/certmonger/requests/Request2 : org.fedorahosted.certmonger.request.modify ]
+1 on /org/fedorahosted/certmonger/requests/Request2
+After setting template-eku to 1.2.3.4.5.6.7.8.9.10, we got dbus.Array([dbus.String(u'1.2.3.4.5.6.7.8.9.10')], signature=dbus.Signature('s'), variant_level=1)
+
+[ /org/fedorahosted/certmonger/requests/Request2: org.fedorahosted.certmonger.request.rekey ]
+1
+
+[ /org/fedorahosted/certmonger/requests/Request2: org.fedorahosted.certmonger.request.resubmit ]
+1
+
+[ /org/fedorahosted/certmonger/requests/Request2: org.fedorahosted.certmonger.request.refresh ]
+0
+
 [ /org/fedorahosted/certmonger/cas: org.freedesktop.DBus.Introspectable.Introspect ]
 <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
 "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
