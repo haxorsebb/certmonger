@@ -3493,10 +3493,12 @@ request_resubmit(DBusConnection *conn, DBusMessage *msg,
 	rep = dbus_message_new_method_return(msg);
 	if (rep != NULL) {
 		if (cm_stop_entry(ctx, entry->cm_nickname)) {
-			/* if we have a key, the thing to do now is to generate
-			 * a new CSR, otherwise we have to generate a key first
-			 * */
-			if (entry->cm_key_type.cm_key_size == 0) {
+			/* if we have a key of the right type and size, the
+			 * thing to do now is to generate a new CSR, otherwise
+			 * we have to generate a new key first */
+			if ((entry->cm_key_type.cm_key_size == 0) ||
+			    (entry->cm_key_type.cm_key_algorithm != entry->cm_key_type.cm_key_gen_algorithm) ||
+			    (entry->cm_key_type.cm_key_size != entry->cm_key_type.cm_key_gen_size)) {
 				entry->cm_state = CM_NEED_KEY_PAIR;
 			} else {
 				entry->cm_state = CM_NEED_CSR;
@@ -3557,6 +3559,51 @@ request_refresh(DBusConnection *conn, DBusMessage *msg,
 		default:
 			cm_tdbusm_set_b(rep, FALSE);
 			break;
+		}
+		dbus_connection_send(conn, rep, NULL);
+		dbus_message_unref(rep);
+		return DBUS_HANDLER_RESULT_HANDLED;
+	} else {
+		return send_internal_request_error(conn, msg);
+	}
+}
+
+/* org.fedorahosted.certmonger.request.rekey */
+static DBusHandlerResult
+request_rekey(DBusConnection *conn, DBusMessage *msg,
+	      struct cm_client_info *ci, struct cm_context *ctx)
+{
+	DBusMessage *rep;
+	struct cm_store_entry *entry;
+	const char *propname[2];
+	char *path;
+
+	entry = get_entry_for_request_message(msg, ctx);
+	if (entry == NULL) {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+	rep = dbus_message_new_method_return(msg);
+	if (rep != NULL) {
+		if (cm_stop_entry(ctx, entry->cm_nickname)) {
+			/* need a new key pair */
+			entry->cm_state = CM_NEED_KEY_PAIR;
+			/* emit a properties-changed signal for the state */
+			propname[0] = CM_DBUS_PROP_STATUS;
+			propname[1] = NULL;
+			path = talloc_asprintf(entry, "%s/%s",
+					       CM_DBUS_REQUEST_PATH,
+					       entry->cm_busname);
+			cm_tdbush_property_emit_changed(ctx, path,
+							CM_DBUS_REQUEST_INTERFACE,
+							propname);
+			talloc_free(path);
+			if (cm_start_entry(ctx, entry->cm_nickname)) {
+				cm_tdbusm_set_b(rep, TRUE);
+			} else {
+				cm_tdbusm_set_b(rep, FALSE);
+			}
+		} else {
+			cm_tdbusm_set_b(rep, FALSE);
 		}
 		dbus_connection_send(conn, rep, NULL);
 		dbus_message_unref(rep);
@@ -7021,6 +7068,14 @@ cm_tdbush_iface_request(void)
 										     NULL))),
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("rekey",
+								     request_rekey,
+								     make_method_arg("working",
+										     DBUS_TYPE_BOOLEAN_AS_STRING,
+										     cm_tdbush_method_arg_out,
+										     NULL),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("resubmit",
 								     request_resubmit,
 								     make_method_arg("working",
@@ -7075,7 +7130,7 @@ cm_tdbush_iface_request(void)
 				     make_interface_item(cm_tdbush_interface_signal,
 							 make_signal(CM_DBUS_SIGNAL_REQUEST_CERT_SAVED,
 								     NULL),
-							 NULL))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
+							 NULL)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
 	}
 	return ret;
 }

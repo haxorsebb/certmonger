@@ -733,7 +733,7 @@ request(const char *argv0, int argc, const char **argv)
 		{"after-command", 'C', POPT_ARG_STRING, NULL, 'C', _("command to run after saving the certificate"), HELP_TYPE_COMMAND},
 		{"id", 'I', POPT_ARG_STRING, NULL, 'I', _("nickname to assign to the request"), HELP_TYPE_ID},
 		{"key-type", 'G', POPT_ARG_STRING, NULL, 'G', _("type of key to be generated if one is not already in place"), NULL},
-		{"keysize", 'g', POPT_ARG_STRING, NULL, 'g', _("size of key to be generated if one is not already in place"), HELP_TYPE_KEYSIZE},
+		{"key-size", 'g', POPT_ARG_STRING, NULL, 'g', _("size of key to be generated if one is not already in place"), HELP_TYPE_KEYSIZE},
 		{"renew", 'r', POPT_ARG_NONE, NULL, 'r', _("attempt to renew the certificate when expiration nears (default)"), NULL},
 		{"no-renew", 'R', POPT_ARG_NONE, NULL, 'R', _("don't attempt to renew the certificate when expiration nears"), NULL},
 #ifndef FORCE_CA
@@ -2342,14 +2342,15 @@ stop_tracking(const char *argv0, int argc, const char **argv)
 }
 
 static int
-resubmit(const char *argv0, int argc, const char **argv)
+rekey_or_resubmit(const char *argv0, const char *category, int argc,
+		  const char **argv)
 {
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	DBusMessage *req, *rep;
 	const char *request;
 	char *capath;
-	struct cm_tdbusm_dict param[27];
-	const struct cm_tdbusm_dict *params[28];
+	struct cm_tdbusm_dict param[29];
+	const struct cm_tdbusm_dict *params[30];
 	char *dbdir = NULL, *token = NULL, *nickname = NULL, *certfile = NULL;
 	char **anchor_dbs = NULL, **anchor_files = NULL;
 	char *pin = NULL, *pinfile = NULL, *cpass = NULL, *cpassfile = NULL;
@@ -2359,6 +2360,8 @@ resubmit(const char *argv0, int argc, const char **argv)
 	char *profile = NULL, kustring[16];
 	char *key_owner = NULL, *key_perms = NULL;
 	char *cert_owner = NULL, *cert_perms = NULL;
+	char *keytype = NULL;
+	int keysize = 0;
 	dbus_bool_t b;
 	char *p;
 	int verbose = 0, ku = 0, kubit, c, i, j, waitreq = 0;
@@ -2375,6 +2378,8 @@ resubmit(const char *argv0, int argc, const char **argv)
 		{"certfile", 'f', POPT_ARG_STRING, NULL, 'f', _("PEM file for certificate"), HELP_TYPE_FILENAME},
 		{"id", 'i', POPT_ARG_STRING, NULL, 'i', _("nickname for tracking request"), HELP_TYPE_ID},
 		{"new-id", 'I', POPT_ARG_STRING, NULL, 'I', _("new nickname to give to tracking request"), HELP_TYPE_ID},
+		{"key-type", 'G', POPT_ARG_STRING, NULL, 'G', _("type of new key to be generated"), NULL},
+		{"key-size", 'g', POPT_ARG_STRING, NULL, 'g', _("size of new key to be generated"), HELP_TYPE_KEYSIZE},
 		{"pinfile", 'p', POPT_ARG_STRING, NULL, 'p', _("file which holds the private key encryption PIN"), HELP_TYPE_FILENAME},
 		{"pin", 'P', POPT_ARG_STRING, NULL, 'P', _("private key encryption PIN"), NULL},
 		{"key-owner", 'o', POPT_ARG_STRING, NULL, 'o', _("owner information for private key"), HELP_TYPE_USER},
@@ -2421,7 +2426,7 @@ resubmit(const char *argv0, int argc, const char **argv)
 
 	pctx = poptGetContext(argv0, argc, argv, popts, 0);
 	if (pctx == NULL) {
-		help(argv0, "resubmit");
+		help(argv0, category);
 		return 1;
 	}
 	while ((c = poptGetNextOpt(pctx)) > 0) {
@@ -2467,6 +2472,34 @@ resubmit(const char *argv0, int argc, const char **argv)
 			break;
 		case 'I':
 			new_id = talloc_strdup(globals.tctx, poptarg);
+			break;
+		case 'G':
+			if ((strcasecmp(poptarg, "RSA") != 0)
+#ifdef CM_ENABLE_DSA
+			    && (strcasecmp(poptarg, "DSA") != 0)
+#endif
+#ifdef CM_ENABLE_EC
+			    && (strcasecmp(poptarg, "ECDSA") != 0)
+			    && (strcasecmp(poptarg, "EC") != 0)
+#endif
+			    ) {
+				printf(_("No support for generating \"%s\" keys.\n"),
+				       poptarg);
+				printf(_("Known key types include:"));
+				printf(" RSA");
+#ifdef CM_ENABLE_DSA
+				printf(" DSA");
+#endif
+#ifdef CM_ENABLE_EC
+				printf(" EC");
+#endif
+				printf("\n");
+				return 1;
+			}
+			keytype = talloc_strdup(globals.tctx, poptarg);
+			break;
+		case 'g':
+			keysize = atoi(poptarg);
 			break;
 		case 'N':
 			subject = talloc_strdup(globals.tctx, poptarg);
@@ -2583,28 +2616,28 @@ resubmit(const char *argv0, int argc, const char **argv)
 			if (c == ':') {
 				fprintf(stderr,
 					_("%s: option requires an argument -- '%c'\n"),
-					"resubmit", optopt);
+					category, optopt);
 			} else {
 				fprintf(stderr, _("%s: invalid option -- '%c'\n"),
-					"resubmit", optopt);
+					category, optopt);
 			}
-			help(argv0, "resubmit");
+			help(argv0, category);
 			return 1;
 		}
 	}
 	if (c != -1) {
-		help(argv0, "resubmit");
+		help(argv0, category);
 		return 1;
 	}
 	if (poptPeekArg(pctx) != NULL) {
 		printf(_("Error: unused extra arguments were supplied.\n"));
-		help(argv0, "resubmit");
+		help(argv0, category);
 		return 1;
 	}
 
 	krb5_free_context(kctx);
 
-	prep_bus(bus, "resubmit", verbose, argc, argv);
+	prep_bus(bus, category, verbose, argc, argv);
 	if (id != NULL) {
 		request = find_request_by_name(globals.tctx, bus, id, verbose);
 	} else {
@@ -2616,20 +2649,20 @@ resubmit(const char *argv0, int argc, const char **argv)
 		if (id != NULL) {
 			printf(_("No request found with specified "
 				 "nickname.\n"));
-			help(argv0, "resubmit");
+			help(argv0, category);
 			return 1;
 		}
 		if (((dbdir != NULL) && (nickname == NULL)) ||
 		    ((dbdir == NULL) && (nickname != NULL))) {
 			printf(_("Database location or nickname "
 				 "specified without the other.\n"));
-			help(argv0, "resubmit");
+			help(argv0, category);
 			return 1;
 		}
 		if ((dbdir != NULL) && (certfile != NULL)) {
 			printf(_("Database directory and certificate "
 				 "file both specified.\n"));
-			help(argv0, "resubmit");
+			help(argv0, category);
 			return 1;
 		}
 		if ((dbdir == NULL) &&
@@ -2638,7 +2671,7 @@ resubmit(const char *argv0, int argc, const char **argv)
 			printf(_("None of database directory and "
 				 "nickname or certificate file "
 				 "specified.\n"));
-			help(argv0, "resubmit");
+			help(argv0, category);
 			return 1;
 		}
 		printf(_("No request found that matched arguments.\n"));
@@ -2670,6 +2703,20 @@ resubmit(const char *argv0, int argc, const char **argv)
 		param[i].key = CM_DBUS_PROP_CERT_PERMS;
 		param[i].value_type = cm_tdbusm_dict_n;
 		param[i].value.n = strtol(cert_perms, NULL, 8);
+		params[i] = &param[i];
+		i++;
+	}
+	if (keytype != NULL) {
+		param[i].key = "KEY_TYPE";
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = keytype;
+		params[i] = &param[i];
+		i++;
+	}
+	if (keysize > 0) {
+		param[i].key = "KEY_SIZE";
+		param[i].value_type = cm_tdbusm_dict_n;
+		param[i].value.n = keysize;
 		params[i] = &param[i];
 		i++;
 	}
@@ -2841,7 +2888,7 @@ resubmit(const char *argv0, int argc, const char **argv)
 		ca = NULL;
 	}
 	nickname = find_request_name(globals.tctx, bus, request, verbose);
-	if (query_rep_b(bus, request, CM_DBUS_REQUEST_INTERFACE, "resubmit",
+	if (query_rep_b(bus, request, CM_DBUS_REQUEST_INTERFACE, category,
 			verbose, globals.tctx)) {
 		if (ca != NULL) {
 			printf(_("Resubmitting \"%s\" to \"%s\".\n"),
@@ -2864,6 +2911,18 @@ resubmit(const char *argv0, int argc, const char **argv)
 		}
 		return 1;
 	}
+}
+
+static int
+rekey(const char *argv0, int argc, const char **argv)
+{
+	return rekey_or_resubmit(argv0, "rekey", argc, argv);
+}
+
+static int
+resubmit(const char *argv0, int argc, const char **argv)
+{
+	return rekey_or_resubmit(argv0, "resubmit", argc, argv);
 }
 
 static int
@@ -4524,6 +4583,7 @@ static struct {
 	{"start-tracking", start_tracking},
 	{"stop-tracking", stop_tracking},
 	{"resubmit", resubmit},
+	{"rekey", rekey},
 	{"refresh", refresh},
 	{"list", list},
 	{"status", status},
@@ -4713,6 +4773,55 @@ help(const char *cmd, const char *category)
 		N_("  -v	report all details of errors\n"),
 		NULL,
 	};
+	const char *rekey_help[] = {
+		N_("Usage: %s rekey [options]\n"),
+		"\n",
+		N_("Required arguments:\n"),
+		N_("* By request identifier:\n"),
+		N_("  -i NAME	nickname for tracking request\n"),
+		N_("* If using an NSS database for storage:\n"),
+		N_("  -d DIR	NSS database for key and cert\n"),
+		N_("  -n NAME	nickname for NSS-based storage (only valid with -d)\n"),
+		N_("  -t NAME	optional token name for NSS-based storage (only valid with -d)\n"),
+		N_("* If using files for storage:\n"),
+		N_("  -f FILE	PEM file for certificate\n"),
+		"\n",
+		N_("* If keys are encrypted:\n"),
+		N_("  -p FILE	file which holds the encryption PIN\n"),
+		N_("  -P PIN	PIN value\n"),
+		"\n",
+		N_("* New parameter values for the signing request:\n"),
+		N_("  -N NAME	set requested subject name (default: CN=<hostname>)\n"),
+		N_("  -U EXTUSAGE	set requested extended key usage OID\n"),
+		N_("  -u KEYUSAGE	set requested key usage value\n"),
+		N_("  -K NAME	set requested principal name\n"),
+		N_("  -D DNSNAME	set requested DNS name\n"),
+		N_("  -E EMAIL	set requested email address\n"),
+		N_("  -A ADDRESS	set requested IP address\n"),
+		N_("  -l FILE	file which holds an optional challenge password\n"),
+		N_("  -L PASSWORD	an optional challenge password value\n"),
+		"\n",
+		N_("Optional arguments:\n"),
+		N_("* Certificate handling settings:\n"),
+		N_("  -I NAME	new nickname to give to tracking request\n"),
+#ifndef FORCE_CA
+		N_("  -c CA		use the specified CA rather than the current one\n"),
+#endif
+		N_("  -T PROFILE	ask the CA to process the request using the named profile or template\n"),
+		N_("  -G TYPE	type of new key to be generated\n"),
+		N_("  -g SIZE	size of new key to be generated\n"),
+		N_("* Bus options:\n"),
+		N_("  -S		connect to the certmonger service on the system bus\n"),
+		N_("  -s		connect to the certmonger service on the session bus\n"),
+		N_("* Other options:\n"),
+		N_("  -B	command to run before saving the certificate\n"),
+		N_("  -C	command to run after saving the certificate\n"),
+		N_("  -F	file in which to store the CA's certificates\n"),
+		N_("  -a	NSS database in which to store the CA's certificates\n"),
+		N_("  -w	try to wait for the certificate to be issued\n"),
+		N_("  -v	report all details of errors\n"),
+		NULL,
+	};
 	const char *list_help[] = {
 		N_("Usage: %s list [options]\n"),
 		"\n",
@@ -4885,6 +4994,8 @@ help(const char *cmd, const char *category)
 		 N_("stop monitoring a certificate\n")},
 		{"resubmit", resubmit_help,
 		 N_("resubmit an in-progress enrollment request, or start a new one\n")},
+		{"rekey", rekey_help,
+		 N_("generate a new private key and replace a certificate\n")},
 		{"refresh", refresh_help,
 		 N_("check on the status of an in-progress enrollment request\n")},
 		{"list", list_help,

@@ -399,6 +399,9 @@ OK
    <arg name="status" type="b" direction="out"/>
    <arg name="path" type="o" direction="out"/>
   </method>
+  <method name="rekey">
+   <arg name="working" type="b" direction="out"/>
+  </method>
   <method name="resubmit">
    <arg name="working" type="b" direction="out"/>
   </method>
