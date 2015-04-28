@@ -23,7 +23,7 @@ for preserve in 1 0 ; do
 	size=2048
 	rm -f "$tmpdir"/*.db
 	touch "$tmpdir"/keyi "$tmpdir"/certi
-	rm -f "$tmpdir"/keyi* "$tmpdir"/certi*
+	rm -f "$tmpdir"/keyi* "$tmpdir"/certi* "$tmpdir"/pubkey*
 	initnssdb "$tmpdir" $pin
 	echo "$pin" > pinfile
 	# Build a self-signed certificate.
@@ -34,6 +34,8 @@ for preserve in 1 0 ; do
 	pk12util -d "$tmpdir" -k pinfile -o $size.p12 -W "" -n "i$size" > /dev/null 2>&1
 	openssl pkcs12 -in $size.p12 -passin pass: -nocerts -passout pass:${pin:- -nodes} | awk '/^-----BEGIN/,/^-----END/{print}' > keyi$size
 	openssl pkcs12 -in $size.p12 -passin pass: -nokeys  -nodes | awk '/^-----BEGIN/,/^-----END/{print}' > certi$size
+	# Grab a copy of the public key.
+	openssl x509 -pubkey -noout -in "$tmpdir"/certi$size > "$tmpdir"/pubkey.old
 	# Read info about that key using NSS
 	cat > entry.nss.$size <<- EOF
 	ca_name=self_signer
@@ -100,7 +102,7 @@ for preserve in 1 0 ; do
 		echo First round certificates OK.
 	fi
 
-	# Now generate new keys, CSRs, and certificates.
+	# Now generate new keys, CSRs, and certificates (NSS).
 	echo "NSS keys before re-keygen (preserve=$preserve,pin=\"$pin\"):"
 	marker=`grep ^key_next_marker= entry.nss.$size | cut -f2- -d=`
 	run_certutil -K -d $tmpdir -f pinfile | grep -v 'Checking token' | sed -e s,"${marker:-////////}","(next)", | sed -r -e 's,[0123456789abcdef]{8},hex,g' -e 's,< 0>,<->,g' -e 's,< 1>,<->,g' | env LANG=C sort
@@ -113,7 +115,7 @@ for preserve in 1 0 ; do
 	setupca
 	$toolsdir/submit ca.self entry.nss.$size > cert.nss.$size
 
-	# Verify that we can still sign using the old key and cert using the right name.
+	# Verify that we can still sign using the old key and cert using the right name (NSS).
 	echo "NSS certs before saving (preserve=$preserve,pin=\"$pin\"):"
 	run_certutil -L -d $tmpdir | grep -v SSL,S/MIME | grep -v '^$' | grep -v 'Trust'
 	run_certutil -L -d $tmpdir -n i$size -a | openssl x509 -noout -serial
@@ -129,10 +131,12 @@ for preserve in 1 0 ; do
 	cmsutil -D -d $tmpdir -f pinfile -i signed
 	certutil -M -d $tmpdir -n i$size -t ,,
 
-	# Go and save the new certs and keys.
+	# Go and save the new certs and keys (NSS).
 	$toolsdir/certsave entry.nss.$size
+	# Grab a copy of the public key (NSS).
+	certutil -L -d $tmpdir -n i$size -a | openssl x509 -pubkey -noout > "$tmpdir"/pubkey.nss
 
-	# Verify that we can sign using the new key and cert using the right name.
+	# Verify that we can sign using the new key and cert using the right name (NSS).
 	echo "NSS certs after saving (preserve=$preserve,pin=\"$pin\"):"
 	run_certutil -L -d $tmpdir | grep -v SSL,S/MIME | grep -v '^$' | grep -v 'Trust'
 	run_certutil -L -d $tmpdir -n i$size -a | openssl x509 -noout -serial
@@ -148,7 +152,7 @@ for preserve in 1 0 ; do
 	cmsutil -D -d $tmpdir -f pinfile -i signed
 	certutil -M -d $tmpdir -n i$size -t ,,
 
-	# Now generate new keys, CSRs, and certificates.
+	# Now generate new keys, CSRs, and certificates (OpenSSL).
 	echo "PEM keys before re-keygen (preserve=$preserve,pin=\"$pin\"):"
 	marker=`grep ^key_next_marker= entry.openssl.$size | cut -f2- -d=`
 	find $tmpdir -name "keyi${size}*" -print | sed -e s,"${marker:-////////}","(next)", | env LANG=C sort
@@ -161,7 +165,7 @@ for preserve in 1 0 ; do
 	setupca
 	$toolsdir/submit ca.self entry.openssl.$size > cert.openssl.$size
 
-	# Verify that we can still sign using the old key and cert.
+	# Verify that we can still sign using the old key and cert (OpenSSL).
 	echo "PEM certs before saving (preserve=$preserve,pin=\"$pin\"):"
 	find $tmpdir -name "certi${size}*" -print | env LANG=C sort
 	find $tmpdir -name "certi${size}*" -print | xargs -n 1 openssl x509 -noout -serial -in
@@ -175,10 +179,12 @@ for preserve in 1 0 ; do
 	echo "OpenSSL Verify:"
 	openssl smime -verify -CAfile certi$size -inform PEM -in signed
 
-	# Go and save the new certs and keys.
+	# Go and save the new certs and keys (OpenSSL).
 	$toolsdir/certsave entry.openssl.$size
+	# Grab a copy of the public key (OpenSSL).
+	openssl x509 -pubkey -noout -in "$tmpdir"/certi$size > "$tmpdir"/pubkey.openssl
 
-	# Verify that we can sign using the new key and cert.
+	# Verify that we can sign using the new key and cert (OpenSSL).
 	echo "PEM certs after saving (preserve=$preserve,pin=\"$pin\"):"
 	find $tmpdir -name "certi${size}*" -print | env LANG=C sort
 	find $tmpdir -name "certi${size}*" -print | xargs -n 1 openssl x509 -noout -serial -in
@@ -191,6 +197,25 @@ for preserve in 1 0 ; do
 	echo "OpenSSL Verify:"
 	openssl smime -verify -CAfile certi$size -inform PEM -in signed
 
+	# Double-check that the keys were changed.
+	if ! test -s "$tmpdir"/pubkey.old ; then
+		echo Error reading old pubkey.
+	fi
+	if ! test -s "$tmpdir"/pubkey.nss ; then
+		echo Error reading NSS pubkey.
+	fi
+	if ! test -s "$tmpdir"/pubkey.openssl ; then
+		echo Error reading OpenSSL pubkey.
+	fi
+	if cmp -s "$tmpdir"/pubkey.old "$tmpdir"/pubkey.nss ; then
+		echo NSS key not changed.
+	fi
+	if cmp -s "$tmpdir"/pubkey.old "$tmpdir"/pubkey.openssl ; then
+		echo OpenSSL key not changed.
+	fi
+	if cmp -s "$tmpdir"/pubkey.nss "$tmpdir"/pubkey.openssl ; then
+		echo Rekey produced the same keys.
+	fi
 	echo "[ End pass (preserve=$preserve,pin=\"$pin\"). ]"
 	done
 done
