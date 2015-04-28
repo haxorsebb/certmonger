@@ -381,15 +381,16 @@ add_nickcerts(void *parent, struct cm_savecert ***dest, enum cert_level level,
 }
 
 /* Build the full list of locations where we'll be saving things.  If we're
- * passed an entry, that's the locations in the entry.  If we're passed a CA,
- * that's the locations in the CA and the locations in all of the entries which
- * refer to the CA. */
+ * passed an entry, that's the locations in the entry and the entry's CA.  If
+ * we're passed a CA, that's the locations in the CA and the locations in all
+ * of the entries which refer to the CA. */
 static void
 build_locations_lists(void *parent, struct cm_casave_state *state,
 		      struct cm_store_ca *ca, struct cm_store_entry *e,
 		      char ***files, char ***dbs)
 {
 	struct cm_store_entry *cae = NULL;
+	struct cm_store_ca *eca = NULL;
 	char *dest;
 	int i, j;
 
@@ -561,11 +562,80 @@ build_locations_lists(void *parent, struct cm_casave_state *state,
 			}
 		}
 	}
+	/* If we were passed a CA, look for entries that reference the CA. */
+	for (j = 0;
+	     (e != NULL) && (e->cm_ca_nickname != NULL) &&
+	     (j < (*state->get_n_cas)(state->context));
+	     j++) {
+		/* If this CA is the entry's CA, collect the list of applicable
+		 * locations from the CA. */
+		eca = (*state->get_ca_by_index)(state->context, j);
+		if ((eca == NULL) || (eca == ca)) {
+			continue;
+		}
+		if (eca->cm_nickname == NULL) {
+			continue;
+		}
+		if (strcmp(e->cm_ca_nickname, eca->cm_nickname) != 0) {
+			continue;
+		}
+		/* Collect the list of applicable locations from the CA. */
+		if (eca->cm_ca_root_cert_store_files != NULL) {
+			for (i = 0;
+			     eca->cm_ca_root_cert_store_files[i] != NULL;
+			     i++) {
+				dest = eca->cm_ca_root_cert_store_files[i];
+				add_string(state, files, dest);
+			}
+		}
+		if (eca->cm_ca_other_root_cert_store_files != NULL) {
+			for (i = 0;
+			     eca->cm_ca_other_root_cert_store_files[i] != NULL;
+			     i++) {
+				dest = eca->cm_ca_other_root_cert_store_files[i];
+				add_string(state, files, dest);
+			}
+		}
+		if (eca->cm_ca_other_cert_store_files != NULL) {
+			for (i = 0;
+			     eca->cm_ca_other_cert_store_files[i] != NULL;
+			     i++) {
+				dest = eca->cm_ca_other_cert_store_files[i];
+				add_string(state, files, dest);
+			}
+		}
+		if (eca->cm_ca_root_cert_store_nssdbs != NULL) {
+			for (i = 0;
+			     eca->cm_ca_root_cert_store_nssdbs[i] != NULL;
+			     i++) {
+				dest = eca->cm_ca_root_cert_store_nssdbs[i];
+				add_string(state, dbs, dest);
+			}
+		}
+		if (eca->cm_ca_other_root_cert_store_nssdbs != NULL) {
+			for (i = 0;
+			     eca->cm_ca_other_root_cert_store_nssdbs[i] != NULL;
+			     i++) {
+				dest = eca->cm_ca_other_root_cert_store_nssdbs[i];
+				add_string(state, dbs, dest);
+			}
+		}
+		if (eca->cm_ca_other_cert_store_nssdbs != NULL) {
+			for (i = 0;
+			     eca->cm_ca_other_cert_store_nssdbs[i] != NULL;
+			     i++) {
+				dest = eca->cm_ca_other_cert_store_nssdbs[i];
+				add_string(state, dbs, dest);
+			}
+		}
+	}
 }
 
 /* Build the list of certificates that belong in this file.  That's the
  * certificates of any CA which lists the file as a storage location, and of
- * any CA referenced by entries which list the file as a storage location. */
+ * any CA referenced by entries which list the file as a storage location, and
+ * any certificates held directly in entries which list the file as a storage
+ * location. */
 static struct cm_savecert **
 build_file_savecerts_list(struct cm_casave_state *state, const char *filename)
 {
@@ -630,11 +700,27 @@ build_file_savecerts_list(struct cm_casave_state *state, const char *filename)
 			}
 		}
 	}
+	for (j = 0; j < (*state->get_n_entries)(state->context); j++) {
+		entry = (*state->get_entry_by_index)(state->context, j);
+		if (has_string(entry->cm_root_cert_store_files,
+			       filename)) {
+			add_nickcerts(state, &ret, root,
+				      entry->cm_cert_roots);
+		}
+		if (has_string(entry->cm_other_cert_store_files,
+			       filename)) {
+			add_nickcerts(state, &ret, other,
+				      entry->cm_cert_chain);
+		}
+	}
 	return ret;
 }
 
 /* Build the list of certificates which we need to store in this database.
- * That's the certificates of the CA, and of the entry's CA. */
+ * That's the certificates of the CA, of the entry, and of the entry's CA.  We
+ * don't walk the list of CAs because we don't prune databases, and we're not
+ * rewriting the database from scratch every time we write to it, so we don't
+ * need to. */
 static struct cm_savecert **
 build_nssdb_savecerts_list(struct cm_casave_state *state,
 			   struct cm_store_ca *ca,
@@ -657,17 +743,31 @@ build_nssdb_savecerts_list(struct cm_casave_state *state,
 		}
 	}
 	if (entry != NULL) {
+		if (has_string(entry->cm_root_cert_store_nssdbs,
+			       nssdb)) {
+			add_nickcerts(state, &ret, root,
+				      entry->cm_cert_roots);
+		}
+		if (has_string(entry->cm_other_cert_store_nssdbs,
+			       nssdb)) {
+			add_nickcerts(state, &ret, other,
+				      entry->cm_cert_chain);
+		}
 		ca = ca_for_entry(entry, state);
 		if (ca != NULL) {
 			if (has_string(entry->cm_root_cert_store_nssdbs,
 				       nssdb)) {
 				add_nickcerts(state, &ret, root,
 					      ca->cm_ca_root_certs);
+				add_nickcerts(state, &ret, root,
+					      entry->cm_cert_roots);
 			} else
 			if (has_string(ca->cm_ca_root_cert_store_nssdbs,
 				       nssdb)) {
 				add_nickcerts(state, &ret, root,
 					      ca->cm_ca_root_certs);
+				add_nickcerts(state, &ret, root,
+					      entry->cm_cert_roots);
 			}
 			if (has_string(entry->cm_other_root_cert_store_nssdbs,
 				       nssdb)) {
@@ -683,11 +783,15 @@ build_nssdb_savecerts_list(struct cm_casave_state *state,
 				       nssdb)) {
 				add_nickcerts(state, &ret, other,
 					      ca->cm_ca_other_certs);
+				add_nickcerts(state, &ret, other,
+					      entry->cm_cert_chain);
 			} else
 			if (has_string(ca->cm_ca_other_cert_store_nssdbs,
 				       nssdb)) {
 				add_nickcerts(state, &ret, other,
 					      ca->cm_ca_other_certs);
+				add_nickcerts(state, &ret, other,
+					      entry->cm_cert_chain);
 			}
 		}
 	}

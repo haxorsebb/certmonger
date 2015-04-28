@@ -1,12 +1,12 @@
 [(CAB1)]
 [bundle1]
-1
+2
 [bundle2]
 0
 [bundle3]
 0
 [bundle-all]
-4
+6
 [db1]
 [db2]
 [db3]
@@ -20,7 +20,7 @@
 [bundle3]
 0
 [bundle-all]
-4
+6
 [db1]
 [db2]
 [db3]
@@ -32,9 +32,9 @@
 [bundle2]
 0
 [bundle3]
-1
+2
 [bundle-all]
-4
+6
 [db1]
 [db2]
 [db3]
@@ -96,13 +96,13 @@ Root Certificate D3 CT,C,C
 
 [(EntryB1)]
 [bundle1]
-1
+2
 [bundle2]
 0
 [bundle3]
 0
 [bundle-all]
-4
+6
 [db1]
 [db2]
 [db3]
@@ -116,7 +116,7 @@ Root Certificate D3 CT,C,C
 [bundle3]
 0
 [bundle-all]
-4
+6
 [db1]
 [db2]
 [db3]
@@ -128,9 +128,9 @@ Root Certificate D3 CT,C,C
 [bundle2]
 0
 [bundle3]
-1
+2
 [bundle-all]
-4
+6
 [db1]
 [db2]
 [db3]
@@ -146,9 +146,11 @@ Root Certificate D3 CT,C,C
 [bundle-all]
 0
 [db1]
+Per-certificate Signing Authority D1 CT,C,C
 [db2]
 [db3]
 [dba]
+Per-certificate Signing Authority D1 CT,C,C
 
 [(EntryD2)]
 [bundle1]
@@ -176,17 +178,19 @@ Root Certificate D3 CT,C,C
 [db1]
 [db2]
 [db3]
+Per-certificate Signing Authority D3 ,, 
 [dba]
+Per-certificate Signing Authority D3 ,, 
 
 [(EntryCB1)]
 [bundle1]
-0
+2
 [bundle2]
 0
 [bundle3]
 0
 [bundle-all]
-0
+6
 [db1]
 [db2]
 [db3]
@@ -196,11 +200,11 @@ Root Certificate D3 CT,C,C
 [bundle1]
 0
 [bundle2]
-0
+1
 [bundle3]
 0
 [bundle-all]
-0
+6
 [db1]
 [db2]
 [db3]
@@ -212,9 +216,9 @@ Root Certificate D3 CT,C,C
 [bundle2]
 0
 [bundle3]
-0
+2
 [bundle-all]
-0
+6
 [db1]
 [db2]
 [db3]
@@ -230,9 +234,15 @@ Root Certificate D3 CT,C,C
 [bundle-all]
 0
 [db1]
+Per-certificate Signing Authority CD1 CT,C,C
+Root Certificate D1 CT,C,C
 [db2]
 [db3]
 [dba]
+Other Certificate D1 ,, 
+Other Root Certificate D1 CT,C,C
+Per-certificate Signing Authority CD1 CT,C,C
+Root Certificate D1 CT,C,C
 
 [(EntryCD2)]
 [bundle1]
@@ -245,8 +255,12 @@ Root Certificate D3 CT,C,C
 0
 [db1]
 [db2]
+Other Root Certificate D2 CT,C,C
 [db3]
 [dba]
+Other Certificate D2 ,, 
+Other Root Certificate D2 CT,C,C
+Root Certificate D2 CT,C,C
 
 [(EntryCD3)]
 [bundle1]
@@ -260,17 +274,23 @@ Root Certificate D3 CT,C,C
 [db1]
 [db2]
 [db3]
+Other Certificate D3 ,, 
+Per-certificate Signing Authority CD3 ,, 
 [dba]
+Other Certificate D3 ,, 
+Other Root Certificate D3 CT,C,C
+Per-certificate Signing Authority CD3 ,, 
+Root Certificate D3 CT,C,C
 
 [(EntryCAB1)]
 [bundle1]
-1
+2
 [bundle2]
 0
 [bundle3]
 0
 [bundle-all]
-4
+6
 [db1]
 [db2]
 [db3]
@@ -284,7 +304,7 @@ Root Certificate D3 CT,C,C
 [bundle3]
 0
 [bundle-all]
-4
+6
 [db1]
 [db2]
 [db3]
@@ -296,9 +316,9 @@ Root Certificate D3 CT,C,C
 [bundle2]
 0
 [bundle3]
-1
+2
 [bundle-all]
-4
+6
 [db1]
 [db2]
 [db3]
