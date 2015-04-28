@@ -68,10 +68,12 @@
 #define HELP_TYPE_IP _("ADDRESS")
 #define HELP_TYPE_KEYSIZE _("BITS")
 #define HELP_TYPE_KU _("LIST")
+#define HELP_TYPE_MODE _("MODE")
 #define HELP_TYPE_NAME _("NAME")
 #define HELP_TYPE_PRINCIPAL _("PRINCIPAL")
 #define HELP_TYPE_SUBJECT _("SUBJECT")
 #define HELP_TYPE_URL _("URL")
+#define HELP_TYPE_USER _("USERNAME[:GROUPNAME]")
 
 #ifdef FORCE_CA
 #define DEFAULT_CA FORCE_CA
@@ -699,8 +701,10 @@ request(const char *argv0, int argc, const char **argv)
 	char *ca = DEFAULT_CA, *subject = NULL, **eku = NULL, *oid, *id = NULL;
 	char *profile = NULL, kustring[16];
 	char **principal = NULL, **dns = NULL, **email = NULL, **ipaddr = NULL;
-	struct cm_tdbusm_dict param[45];
-	const struct cm_tdbusm_dict *params[44];
+	char *key_owner = NULL, *key_perms = NULL;
+	char *cert_owner = NULL, *cert_perms = NULL;
+	struct cm_tdbusm_dict param[49];
+	const struct cm_tdbusm_dict *params[48];
 	DBusMessage *req, *rep;
 	int waitreq = 0;
 	dbus_bool_t b;
@@ -719,6 +723,10 @@ request(const char *argv0, int argc, const char **argv)
 		{"certfile", 'f', POPT_ARG_STRING, NULL, 'f', _("PEM file for certificate (only valid with -k)"), HELP_TYPE_FILENAME},
 		{"pinfile", 'p', POPT_ARG_STRING, NULL, 'p', _("file which holds the private key encryption PIN"), HELP_TYPE_FILENAME},
 		{"pin", 'P', POPT_ARG_STRING, NULL, 'P', _("private key encryption PIN"), NULL},
+		{"key-owner", 'o', POPT_ARG_STRING, NULL, 'o', _("owner information for private key"), HELP_TYPE_USER},
+		{"key-perms", 'm', POPT_ARG_STRING, NULL, 'm', _("file permissions for private key"), HELP_TYPE_MODE},
+		{"cert-owner", 'O', POPT_ARG_STRING, NULL, 'O', _("owner information for certificate"), HELP_TYPE_USER},
+		{"cert-perms", 'M', POPT_ARG_STRING, NULL, 'M', _("file permissions for certificate"), HELP_TYPE_MODE},
 		{"ca-dbdir", 'a', POPT_ARG_STRING, NULL, 'a', _("NSS database in which to store the CA's certificates"), HELP_TYPE_DIRECTORY},
 		{"ca-file", 'F', POPT_ARG_STRING, NULL, 'F', _("file in which to store the CA's certificates"), HELP_TYPE_FILENAME},
 		{"before-command", 'B', POPT_ARG_STRING, NULL, 'B', _("command to run before saving the certificate"), HELP_TYPE_COMMAND},
@@ -798,6 +806,18 @@ request(const char *argv0, int argc, const char **argv)
 			break;
 		case 'k':
 			keyfile = ensure_pem(globals.tctx, poptarg);
+			break;
+		case 'o':
+			key_owner = talloc_strdup(globals.tctx, poptarg);
+			break;
+		case 'm':
+			key_perms = talloc_strdup(globals.tctx, poptarg);
+			break;
+		case 'O':
+			cert_owner = talloc_strdup(globals.tctx, poptarg);
+			break;
+		case 'M':
+			cert_perms = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'f':
 			certfile = ensure_pem(globals.tctx, poptarg);
@@ -1155,6 +1175,34 @@ request(const char *argv0, int argc, const char **argv)
 	param[i].value.b = auto_renew > 0;
 	params[i] = &param[i];
 	i++;
+	if (key_owner != NULL) {
+		param[i].key = CM_DBUS_PROP_KEY_OWNER;
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = key_owner;
+		params[i] = &param[i];
+		i++;
+	}
+	if (key_perms != NULL) {
+		param[i].key = CM_DBUS_PROP_KEY_PERMS;
+		param[i].value_type = cm_tdbusm_dict_n;
+		param[i].value.n = strtol(key_perms, NULL, 8);
+		params[i] = &param[i];
+		i++;
+	}
+	if (cert_owner != NULL) {
+		param[i].key = CM_DBUS_PROP_CERT_OWNER;
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = cert_owner;
+		params[i] = &param[i];
+		i++;
+	}
+	if (cert_perms != NULL) {
+		param[i].key = CM_DBUS_PROP_CERT_PERMS;
+		param[i].value_type = cm_tdbusm_dict_n;
+		param[i].value.n = strtol(cert_perms, NULL, 8);
+		params[i] = &param[i];
+		i++;
+	}
 	if (keytype != NULL) {
 		param[i].key = "KEY_TYPE";
 		param[i].value_type = cm_tdbusm_dict_s;
@@ -1435,6 +1483,8 @@ static int
 add_basic_request(enum cm_tdbus_type bus, char *id,
 		  char *dbdir, char *nickname, char *token,
 		  char *keyfile, char *certfile,
+		  char *key_owner, char *cert_owner,
+		  char *key_perms, char *cert_perms,
 		  char *pin, char *pinfile,
 		  char *cpass, char *cpassfile,
 		  char *ca, char *profile,
@@ -1538,6 +1588,34 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 		param[i].key = "KEY_PIN_FILE";
 		param[i].value_type = cm_tdbusm_dict_s;
 		param[i].value.s = pinfile;
+		params[i] = &param[i];
+		i++;
+	}
+	if (key_owner != NULL) {
+		param[i].key = CM_DBUS_PROP_KEY_OWNER;
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = key_owner;
+		params[i] = &param[i];
+		i++;
+	}
+	if (key_perms != NULL) {
+		param[i].key = CM_DBUS_PROP_KEY_PERMS;
+		param[i].value_type = cm_tdbusm_dict_n;
+		param[i].value.n = strtol(key_perms, NULL, 8);
+		params[i] = &param[i];
+		i++;
+	}
+	if (cert_owner != NULL) {
+		param[i].key = CM_DBUS_PROP_CERT_OWNER;
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = cert_owner;
+		params[i] = &param[i];
+		i++;
+	}
+	if (cert_perms != NULL) {
+		param[i].key = CM_DBUS_PROP_CERT_PERMS;
+		param[i].value_type = cm_tdbusm_dict_n;
+		param[i].value.n = strtol(cert_perms, NULL, 8);
 		params[i] = &param[i];
 		i++;
 	}
@@ -1648,14 +1726,16 @@ set_tracking(const char *argv0, const char *category,
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	DBusMessage *req, *rep;
 	const char *request, *capath;
-	struct cm_tdbusm_dict param[21];
-	const struct cm_tdbusm_dict *params[22];
+	struct cm_tdbusm_dict param[25];
+	const struct cm_tdbusm_dict *params[26];
 	char *nss_scheme, *dbdir = NULL, *token = NULL, *nickname = NULL;
 	char **anchor_dbs = NULL, **anchor_files = NULL;
 	char *id = NULL, *new_id = NULL, *new_request;
 	char *keyfile = NULL, *certfile = NULL, *ca = DEFAULT_CA;
 	char *profile = NULL;
 	char *pin = NULL, *pinfile = NULL, *cpass = NULL, *cpassfile = NULL;
+	char *key_owner = NULL, *key_perms = NULL;
+	char *cert_owner = NULL, *cert_perms = NULL;
 	dbus_bool_t b;
 	char *p;
 	int c, auto_renew_start = 0, auto_renew_stop = 0, verbose = 0, i, j;
@@ -1677,6 +1757,10 @@ set_tracking(const char *argv0, const char *category,
 		{"certfile", 'f', POPT_ARG_STRING, NULL, 'f', _("PEM file for certificate"), HELP_TYPE_FILENAME},
 		{"pinfile", 'p', POPT_ARG_STRING, NULL, 'p', _("file which holds the private key encryption PIN"), HELP_TYPE_FILENAME},
 		{"pin", 'P', POPT_ARG_STRING, NULL, 'P', _("private key encryption PIN"), NULL},
+		{"key-owner", 'o', POPT_ARG_STRING, NULL, 'o', _("owner information for private key"), HELP_TYPE_USER},
+		{"key-perms", 'm', POPT_ARG_STRING, NULL, 'm', _("file permissions for private key"), HELP_TYPE_MODE},
+		{"cert-owner", 'O', POPT_ARG_STRING, NULL, 'O', _("owner information for certificate"), HELP_TYPE_USER},
+		{"cert-perms", 'M', POPT_ARG_STRING, NULL, 'M', _("file permissions for certificate"), HELP_TYPE_MODE},
 		{"ca-dbdir", 'a', POPT_ARG_STRING, NULL, 'a', _("NSS database in which to store the CA's certificates"), HELP_TYPE_DIRECTORY},
 		{"ca-file", 'F', POPT_ARG_STRING, NULL, 'F', _("file in which to store the CA's certificates"), HELP_TYPE_FILENAME},
 		{"before-command", 'B', POPT_ARG_STRING, NULL, 'B', _("command to run before saving the certificate"), HELP_TYPE_COMMAND},
@@ -1749,6 +1833,18 @@ set_tracking(const char *argv0, const char *category,
 			break;
 		case 'f':
 			certfile = ensure_pem(globals.tctx, poptarg);
+			break;
+		case 'o':
+			key_owner = talloc_strdup(globals.tctx, poptarg);
+			break;
+		case 'm':
+			key_perms = talloc_strdup(globals.tctx, poptarg);
+			break;
+		case 'O':
+			cert_owner = talloc_strdup(globals.tctx, poptarg);
+			break;
+		case 'M':
+			cert_perms = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'r':
 			if (track) {
@@ -2028,6 +2124,34 @@ set_tracking(const char *argv0, const char *category,
 				params[i] = &param[i];
 				i++;
 			}
+			if (key_owner != NULL) {
+				param[i].key = CM_DBUS_PROP_KEY_OWNER;
+				param[i].value_type = cm_tdbusm_dict_s;
+				param[i].value.s = key_owner;
+				params[i] = &param[i];
+				i++;
+			}
+			if (key_perms != NULL) {
+				param[i].key = CM_DBUS_PROP_KEY_PERMS;
+				param[i].value_type = cm_tdbusm_dict_n;
+				param[i].value.n = strtol(key_perms, NULL, 8);
+				params[i] = &param[i];
+				i++;
+			}
+			if (cert_owner != NULL) {
+				param[i].key = CM_DBUS_PROP_CERT_OWNER;
+				param[i].value_type = cm_tdbusm_dict_s;
+				param[i].value.s = cert_owner;
+				params[i] = &param[i];
+				i++;
+			}
+			if (cert_perms != NULL) {
+				param[i].key = CM_DBUS_PROP_CERT_PERMS;
+				param[i].value_type = cm_tdbusm_dict_n;
+				param[i].value.n = strtol(cert_perms, NULL, 8);
+				params[i] = &param[i];
+				i++;
+			}
 			if (pin != NULL) {
 				param[i].key = "KEY_PIN";
 				param[i].value_type = cm_tdbusm_dict_s;
@@ -2154,6 +2278,8 @@ set_tracking(const char *argv0, const char *category,
 			return add_basic_request(bus, new_id,
 						 dbdir, nickname, token,
 						 keyfile, certfile,
+						 key_owner, cert_owner,
+						 key_perms, cert_perms,
 						 pin, pinfile,
 						 cpass, cpassfile,
 						 ca, profile,
@@ -2222,8 +2348,8 @@ resubmit(const char *argv0, int argc, const char **argv)
 	DBusMessage *req, *rep;
 	const char *request;
 	char *capath;
-	struct cm_tdbusm_dict param[23];
-	const struct cm_tdbusm_dict *params[24];
+	struct cm_tdbusm_dict param[27];
+	const struct cm_tdbusm_dict *params[28];
 	char *dbdir = NULL, *token = NULL, *nickname = NULL, *certfile = NULL;
 	char **anchor_dbs = NULL, **anchor_files = NULL;
 	char *pin = NULL, *pinfile = NULL, *cpass = NULL, *cpassfile = NULL;
@@ -2231,6 +2357,8 @@ resubmit(const char *argv0, int argc, const char **argv)
 	char *subject = NULL, **eku = NULL, *oid = NULL;
 	char **principal = NULL, **dns = NULL, **email = NULL, **ipaddr = NULL;
 	char *profile = NULL, kustring[16];
+	char *key_owner = NULL, *key_perms = NULL;
+	char *cert_owner = NULL, *cert_perms = NULL;
 	dbus_bool_t b;
 	char *p;
 	int verbose = 0, ku = 0, kubit, c, i, j, waitreq = 0;
@@ -2249,6 +2377,10 @@ resubmit(const char *argv0, int argc, const char **argv)
 		{"new-id", 'I', POPT_ARG_STRING, NULL, 'I', _("new nickname to give to tracking request"), HELP_TYPE_ID},
 		{"pinfile", 'p', POPT_ARG_STRING, NULL, 'p', _("file which holds the private key encryption PIN"), HELP_TYPE_FILENAME},
 		{"pin", 'P', POPT_ARG_STRING, NULL, 'P', _("private key encryption PIN"), NULL},
+		{"key-owner", 'o', POPT_ARG_STRING, NULL, 'o', _("owner information for private key"), HELP_TYPE_USER},
+		{"key-perms", 'm', POPT_ARG_STRING, NULL, 'm', _("file permissions for private key"), HELP_TYPE_MODE},
+		{"cert-owner", 'O', POPT_ARG_STRING, NULL, 'O', _("owner information for certificate"), HELP_TYPE_USER},
+		{"cert-perms", 'M', POPT_ARG_STRING, NULL, 'M', _("file permissions for certificate"), HELP_TYPE_MODE},
 		{"ca-dbdir", 'a', POPT_ARG_STRING, NULL, 'a', _("NSS database in which to store the CA's certificates"), HELP_TYPE_DIRECTORY},
 		{"ca-file", 'F', POPT_ARG_STRING, NULL, 'F', _("file in which to store the CA's certificates"), HELP_TYPE_FILENAME},
 		{"before-command", 'B', POPT_ARG_STRING, NULL, 'B', _("command to run before saving the certificate"), HELP_TYPE_COMMAND},
@@ -2311,6 +2443,18 @@ resubmit(const char *argv0, int argc, const char **argv)
 			break;
 		case 'f':
 			certfile = ensure_pem(globals.tctx, poptarg);
+			break;
+		case 'o':
+			key_owner = talloc_strdup(globals.tctx, poptarg);
+			break;
+		case 'm':
+			key_perms = talloc_strdup(globals.tctx, poptarg);
+			break;
+		case 'O':
+			cert_owner = talloc_strdup(globals.tctx, poptarg);
+			break;
+		case 'M':
+			cert_perms = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'c':
 			ca = talloc_strdup(globals.tctx, poptarg);
@@ -2501,6 +2645,34 @@ resubmit(const char *argv0, int argc, const char **argv)
 		return 1;
 	}
 	i = 0;
+	if (key_owner != NULL) {
+		param[i].key = CM_DBUS_PROP_KEY_OWNER;
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = key_owner;
+		params[i] = &param[i];
+		i++;
+	}
+	if (key_perms != NULL) {
+		param[i].key = CM_DBUS_PROP_KEY_PERMS;
+		param[i].value_type = cm_tdbusm_dict_n;
+		param[i].value.n = strtol(key_perms, NULL, 8);
+		params[i] = &param[i];
+		i++;
+	}
+	if (cert_owner != NULL) {
+		param[i].key = CM_DBUS_PROP_CERT_OWNER;
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = cert_owner;
+		params[i] = &param[i];
+		i++;
+	}
+	if (cert_perms != NULL) {
+		param[i].key = CM_DBUS_PROP_CERT_PERMS;
+		param[i].value_type = cm_tdbusm_dict_n;
+		param[i].value.n = strtol(cert_perms, NULL, 8);
+		params[i] = &param[i];
+		i++;
+	}
 	if (new_id != NULL) {
 		param[i].key = "NICKNAME";
 		param[i].value_type = cm_tdbusm_dict_s;
