@@ -1380,8 +1380,8 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 {
 	DBusMessage *req, *rep;
 	int i;
-	struct cm_tdbusm_dict param[24];
-	const struct cm_tdbusm_dict *params[25];
+	struct cm_tdbusm_dict param[25];
+	const struct cm_tdbusm_dict *params[26];
 	dbus_bool_t b;
 	const char *capath;
 	char *p;
