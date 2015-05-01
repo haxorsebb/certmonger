@@ -60,7 +60,14 @@ main(int argc, const char **argv)
 		return 1;
 	}
 	while ((filename = poptGetArg(pctx)) != NULL) {
-		if (stat(filename, &st) == -1) {
+		fd = open(filename, O_RDONLY);
+		if (fd == -1) {
+			ret = errno;
+			fprintf(stderr, "open(\"%s\"): %s\n", filename,
+				strerror(errno));
+			continue;
+		}
+		if (fstat(fd, &st) == -1) {
 			ret = errno;
 			fprintf(stderr, "stat(\"%s\"): %s\n", filename,
 				strerror(errno));
@@ -70,13 +77,6 @@ main(int argc, const char **argv)
 		if (e == NULL) {
 			ret = errno;
 			fprintf(stderr, "malloc(): %s\n", strerror(errno));
-			continue;
-		}
-		fd = open(filename, O_RDONLY);
-		if (fd == -1) {
-			ret = errno;
-			fprintf(stderr, "open(\"%s\"): %s\n", filename,
-				strerror(errno));
 			continue;
 		}
 		r = 0;
