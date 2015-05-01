@@ -436,7 +436,6 @@ cm_store_should_ignore_file(const char *filename)
 static ssize_t
 my_getline(char **buf, size_t *n, FILE *stream)
 {
-	int i;
 	size_t used = 0, max = 128;
 	char *ret, *tmp;
 
