@@ -35,7 +35,7 @@ main(int argc, char **argv)
 	char buf[7];
 	int n, o;
 
-	for (point = 0; point < 0x10ffff; point++) {
+	for (point = 0; point < 0x5000000; point++) {
 		if ((point >= 0xd800) && (point <= 0xdfff)) {
 			continue;
 		}
