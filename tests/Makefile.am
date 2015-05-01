@@ -140,7 +140,11 @@ EXTRA_DIST = \
 	034-perms-dbm/expected.out \
 	034-perms-dbm/run.sh \
 	034-perms-sql/expected.out \
-	034-perms-sql/run.sh
+	034-perms-sql/run.sh \
+	035-json/expected.out \
+	035-json/run.sh \
+	035-json/good.* \
+	035-json/bad.*
 
 subdirs = \
 	001-keyiread \
@@ -179,7 +183,8 @@ subdirs = \
 	031-pkcs7 \
 	032-chain \
 	033-scep \
-	034-perms
+	034-perms \
+	035-json
 
 if HAVE_DBM_NSSDB
 subdirs += \
