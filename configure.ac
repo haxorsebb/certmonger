@@ -178,6 +178,9 @@ if ! ${configure_dist_target_only:-false} ; then
 	AC_SUBST(SYSTEMBUSSERVICESDIR)
 
 	AC_CHECK_FUNCS(clearenv)
+	AC_CHECK_DECLS(strtold,,,[
+		#include <stdlib.h>
+	])
 
 	savedLIBS="$LIBS"
 	LIBS="$DBUS_LIBS $LIBS"

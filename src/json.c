@@ -20,6 +20,7 @@
 #include <sys/types.h>
 #include <errno.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <talloc.h>
@@ -713,6 +714,16 @@ cm_json_decode_string(void *parent, const char *s, ssize_t length,
 	return ret;
 }
 
+static long double
+my_strtold(const char *nptr, char **endptr)
+{
+#if HAVE_DECL_STRTOLD
+	return strtold(nptr, endptr);
+#else
+	return strtod(nptr, endptr);
+#endif
+}
+
 int
 cm_json_decode(void *parent, const char *encoded, ssize_t length,
 	       struct cm_json **json, const char **next)
@@ -982,7 +993,7 @@ cm_json_decode(void *parent, const char *encoded, ssize_t length,
 				if (strcspn(tmp, "Ee.") == strlen(tmp)) {
 					sub = cm_json_new_numberl(parent, strtoll(tmp, NULL, 10));
 				} else {
-					sub = cm_json_new_numberd(parent, strtold(tmp, NULL));
+					sub = cm_json_new_numberd(parent, my_strtold(tmp, NULL));
 				}
 				talloc_free(tmp);
 				if (sub == NULL) {
