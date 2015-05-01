@@ -433,6 +433,43 @@ cm_store_should_ignore_file(const char *filename)
 	return FALSE;
 }
 
+static ssize_t
+my_getline(char **buf, size_t *n, FILE *stream)
+{
+	int i;
+	size_t used = 0, max = 128;
+	char *ret, *tmp;
+
+	*buf = NULL;
+	*n = 0;
+	ret = malloc(max);
+	if (ret == NULL) {
+		return -1;
+	}
+	while (fgets(ret + used, max - used, stream) != NULL) {
+		used += strlen(ret + used);
+		if ((used > 0) && (ret[used - 1] == '\n')) {
+			break;
+		}
+		if (used >= max - 1) {
+			max *= 2;
+			if (max > 1024 * 1024) {
+				free(ret);
+				return -1;
+			}
+			tmp = realloc(ret, max);
+			if (tmp == NULL) {
+				free(ret);
+				return -1;
+			}
+			ret = tmp;
+		}
+	}
+	*buf = ret;
+	*n = used;
+	return used;
+}
+
 static char **
 cm_store_file_read_lines(void *parent, FILE *fp)
 {
@@ -446,7 +483,7 @@ cm_store_file_read_lines(void *parent, FILE *fp)
 	trim = 1;
 	buf = NULL;
 	buflen = 0;
-	while (getline(&buf, &buflen, fp) > 0) {
+	while (my_getline(&buf, &buflen, fp) > 0) {
 		offset = 0;
 		switch (buf[0]) {
 		case '=':
