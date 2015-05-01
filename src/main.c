@@ -82,6 +82,8 @@ main(int argc, const char **argv)
 		{"no-bus-activation-timeout", 'B', POPT_ARG_NONE, NULL, 'B', N_("don't use an idle timeout"), NULL},
 		{"debug-level", 'd', POPT_ARG_INT, NULL, 'd', N_("set debugging level (implies -n)"), N_("NUMBER")},
 		{"command", 'c', POPT_ARG_STRING, &gate_command, 'c', N_("start COMMAND and exit when it does"), N_("COMMAND")},
+		/* this next one is there to paper over documentation that named the flag wrong */
+		{NULL, 'C', POPT_ARG_STRING | POPT_ARGFLAG_DOC_HIDDEN, &gate_command, 'c', N_("start COMMAND and exit when it does"), N_("COMMAND")},
 		{"pidfile", 'p', POPT_ARG_STRING, &pidfile, 0, N_("write service PID to file"), N_("FILENAME")},
 		{"fips", 'F', POPT_ARG_NONE, NULL, 'F', N_("force NSS into FIPS mode"), NULL},
 		{"help", 'h', POPT_ARG_NONE, NULL, 'h', NULL, NULL},

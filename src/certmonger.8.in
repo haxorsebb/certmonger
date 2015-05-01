@@ -1,10 +1,10 @@
-.TH certmonger 8 "31 October 2014" "certmonger Manual"
+.TH certmonger 8 "1 May 2015" "certmonger Manual"
 
 .SH NAME
 certmonger
 
 .SH SYNOPSIS
-certmonger [-s|-S] [-L|-l] [-P SOCKET] [-b TIMEOUT|-B] [-n|-f] [-d LEVEL] [-p FILE] [-F] [-C cmd]
+certmonger [-s|-S] [-L|-l] [-P SOCKET] [-b TIMEOUT|-B] [-n|-f] [-d LEVEL] [-p FILE] [-F] [-c cmd]
 
 .SH DESCRIPTION
 The \fIcertmonger\fR daemon monitors certificates for impending
@@ -40,7 +40,7 @@ socket, if one is created, will be placed in the abstract namespace.
 -b TIMEOUT
 Behave as a bus-activated service: if there are no certificates to be monitored
 or obtained, and no requests are received within TIMEOUT seconds, exit.  Not
-compatible with the -C option.
+compatible with the -c option.
 .TP
 -B
 Don't behave as a bus-activated service.  This is the default.
@@ -61,7 +61,7 @@ Store the daemon's process ID in the named file.
 Force NSS to be initialized in FIPS mode.  The default behavior is to heed
 the setting stored in \fI/proc/sys/crypto/fips_enabled\fR.
 .TP
--C cmd
+-c cmd
 After the service has initialized, run the specified command, then shut down
 the service after the command exits.  If the -l or -L option was also
 specified, the command will be run with the \fI@CERTMONGER_PVT_ADDRESS_ENV@\fR
