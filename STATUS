@@ -91,6 +91,7 @@ To-do:
     COULD
   * Queue management.
     COULD -> Move entries and CAs from hand-rolled files to simple XML. (2 days)
+    COULD -> Move them to JSON. (2 days)
     COULD -> Move them to an ldb. (3 days)
     COULD -> Move them to something that's more end-user-serviceable. (3 days)
     - IPA mucks with our files directly in their current form, so this is
@@ -131,3 +132,4 @@ To-do:
     to help identify certificates that we approve with agent credentials.
   * Learn to read and create RFC3820 ProxyCertInfo extensions.
   * Learn to speak ACME (see https://github.com/letsencrypt/acme-spec).
+  * Learn to read and create NameConstraints extensions.

@@ -60,6 +60,8 @@ libcm_a_SOURCES = \
 	hook.h \
 	iterate.c \
 	iterate.h \
+	json.c \
+	json.h \
 	keygen.c \
 	keygen.h \
 	keygen-int.h \
