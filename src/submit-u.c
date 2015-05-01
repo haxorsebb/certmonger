@@ -209,22 +209,22 @@ cm_submit_u_pem_from_base64(const char *what, int dos, const char *base64)
 		   howmany(strlen(tmp), width) * 2;
 	ret = malloc(i + 1);
 	if (ret != NULL) {
-		p = stpcpy(ret, "-----BEGIN ");
-		p = stpcpy(p, what);
-		p = stpcpy(p, dos ? "-----\r\n" : "-----\n");
+		p = my_stpcpy(ret, "-----BEGIN ");
+		p = my_stpcpy(p, what);
+		p = my_stpcpy(p, dos ? "-----\r\n" : "-----\n");
 		q = tmp;
 		while (strlen(q) > width) {
 			memcpy(p, q, width);
 			p += width;
 			q += width;
-			p = stpcpy(p, dos ? "\r\n" : "\n");
+			p = my_stpcpy(p, dos ? "\r\n" : "\n");
 		}
 		if (strlen(q) > 0) {
-			p = stpcpy(p, q);
-			p = stpcpy(p, dos ? "\r\n" : "\n");
+			p = my_stpcpy(p, q);
+			p = my_stpcpy(p, dos ? "\r\n" : "\n");
 		}
-		p = stpcpy(p, "-----END ");
-		p = stpcpy(p, what);
+		p = my_stpcpy(p, "-----END ");
+		p = my_stpcpy(p, what);
 		strcpy(p, dos ? "-----\r\n" : "-----\n");
 	}
 	free(tmp);
