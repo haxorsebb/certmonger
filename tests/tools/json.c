@@ -84,10 +84,14 @@ main(int argc, const char **argv)
 			n = read(fd, e + r, st.st_size - r);
 			if (n <= 0) {
 				ret = errno;
-				close(fd);
-				continue;
+				break;
 			}
 			r += n;
+		}
+		if (r < st.st_size) {
+			fprintf(stderr, "read(): %s\n", strerror(errno));
+			close(fd);
+			break;
 		}
 		close(fd);
 		i = cm_json_decode(parent, e, st.st_size, &j, &left);
