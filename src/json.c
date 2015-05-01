@@ -1076,7 +1076,7 @@ cm_json_find(struct cm_json *json, const char *path)
 	long l;
 	struct cm_json *this = json;
 
-	while (*path != '\0') {
+	while ((*path != '\0') && (this != NULL)) {
 		while (*path == '/') {
 			path++;
 		}
