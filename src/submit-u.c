@@ -46,7 +46,7 @@
 			"+/="
 
 static char *
-my_stpcpy(char *dest, char *src)
+my_stpcpy(char *dest, const char *src)
 {
 	size_t len;
 	len = strlen(src);
