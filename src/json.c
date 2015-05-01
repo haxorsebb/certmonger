@@ -735,6 +735,7 @@ cm_json_decode(void *parent, const char *encoded, ssize_t length,
 	enum cm_json_type aggtype;
 	enum {key, keyorclose, colon, commaorclose, expr, exprorclose} expect = expr;
 
+	p = encoded;
 	if (next == NULL) {
 		next = &nextp;
 	}
@@ -744,7 +745,6 @@ cm_json_decode(void *parent, const char *encoded, ssize_t length,
 	}
 	aggtype = cm_json_type_undefined;
 	*json = NULL;
-	p = encoded;
 	while ((p < encoded + length) && (*json == NULL)) {
 		switch (*p) {
 		case ' ':
