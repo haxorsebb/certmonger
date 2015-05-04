@@ -54,6 +54,9 @@ struct cm_json {
 enum cm_json_type
 cm_json_type(struct cm_json *json)
 {
+	if (json == NULL) {
+		return cm_json_type_undefined;
+	}
 	return json->type;
 }
 
@@ -252,6 +255,9 @@ cm_json_get(struct cm_json *json, const char *key)
 {
 	ssize_t n;
 
+	if ((cm_json_type(json) != cm_json_type_object) || (key == NULL)) {
+		return NULL;
+	}
 	for (n = json->o.n - 1; n >= 0; n--) {
 		if (strcmp(key, json->o.o[n].key) == 0) {
 			return json->o.o[n].val;
