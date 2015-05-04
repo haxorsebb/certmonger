@@ -1032,6 +1032,9 @@ cm_json_decode(void *parent, const char *encoded, ssize_t length,
 					goto done;
 				}
 				p = q;
+			} else {
+				/* Doesn't look like a valid token. */
+				goto done;
 			}
 			if (aggtype == cm_json_type_undefined) {
 				/* This level is a simple item. */
