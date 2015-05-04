@@ -268,8 +268,11 @@ cm_json_set(struct cm_json *json, const char *key, struct cm_json *value)
 
 	for (n = json->o.n - 1; n >= 0; n--) {
 		if (strcmp(key, json->o.o[n].key) == 0) {
-			talloc_steal(json, value);
+			if (value != NULL) {
+				talloc_steal(json, value);
+			}
 			json->o.o[n].val = value;
+			break;
 		}
 	}
 	if (n < 0) {
@@ -283,7 +286,9 @@ cm_json_set(struct cm_json *json, const char *key, struct cm_json *value)
 		if (recs[n].key == NULL) {
 			return ENOMEM;
 		}
-		talloc_steal(json, value);
+		if (value != NULL) {
+			talloc_steal(json, value);
+		}
 		recs[n].val = value;
 		json->o.n = n + 1;
 	}
@@ -471,7 +476,7 @@ cm_json_encode(void *parent, struct cm_json *json)
 	size_t i;
 
 	if (json == NULL) {
-		return NULL;
+		return talloc_strdup(parent, "");
 	}
 	switch (json->type) {
 	case cm_json_type_undefined:
@@ -494,6 +499,10 @@ cm_json_encode(void *parent, struct cm_json *json)
 	case cm_json_type_object:
 		ret = talloc_strdup(parent, "{");
 		for (i = 0; i < json->o.n; i++) {
+			if ((json->o.o[i].key == NULL) ||
+			    (json->o.o[i].val == NULL)) {
+				continue;
+			}
 			key = cm_json_escape(ret, json->o.o[i].key, -1);
 			val = cm_json_encode(ret, json->o.o[i].val);
 			if ((key == NULL) || (val == NULL)) {
