@@ -30,7 +30,10 @@
 struct cm_json {
 	enum cm_json_type type;
 	union {
-		char *s;
+		struct {
+			char *s;
+			ssize_t l;
+		} s;
 		long long l;
 		long double d;
 		unsigned char b;
@@ -75,11 +78,17 @@ cm_json_new_string(void *parent, const char *string, ssize_t length)
 	if (json != NULL) {
 		json->type = cm_json_type_string;
 		if (length < 0) {
-			json->s = talloc_strdup(json, string);
+			json->s.s = talloc_strdup(json, string);
+			json->s.l = strlen(json->s.s);
 		} else {
-			json->s = talloc_strndup(json, string, length);
+			json->s.s = talloc_size(json, length + 1);
+			if (json->s.s != NULL) {
+				memcpy(json->s.s, string, length);
+				json->s.s[length] = '\0';
+			}
+			json->s.l = length;
 		}
-		if (json->s == NULL) {
+		if (json->s.s == NULL) {
 			talloc_free(json);
 			json = NULL;
 		}
@@ -155,12 +164,15 @@ cm_json_new_array(void *parent)
 }
 
 const char *
-cm_json_string(struct cm_json *json)
+cm_json_string(struct cm_json *json, ssize_t *length)
 {
 	if (cm_json_type(json) != cm_json_type_string) {
 		return NULL;
 	}
-	return json->s;
+	if (length != NULL) {
+		*length = json->s.l;
+	}
+	return json->s.s;
 }
 
 long double
@@ -368,7 +380,7 @@ cm_json_utf8_to_point(const char *p, uint32_t *point)
 }
 
 static char *
-cm_json_escape(void *parent, const char *s)
+cm_json_escape(void *parent, const char *s, ssize_t l)
 {
 	char *ret, *q;
 	const unsigned char *p;
@@ -376,17 +388,20 @@ cm_json_escape(void *parent, const char *s)
 	uint32_t uni;
 	int esc = 0, n;
 
-	for (p = (const unsigned char *) s; *p != '\0'; p++) {
+	if (l < 0) {
+		l = strlen(s);
+	}
+	for (p = (const unsigned char *) s; (const char *) p < s + l; p++) {
 		uc = *p;
 		if ((uc < 0x20) || (uc == 0x22) || (uc == 0x5c) || (uc > 0x7f)) {
 			esc++;
 		}
 	}
-	ret = talloc_size(parent, strlen(s) + esc * 12 + 2 + 1);
+	ret = talloc_size(parent, l + esc * 12 + 2 + 1);
 	if (ret != NULL) {
 		q = ret;
 		*q++ = '"';
-		for (p = (const unsigned char *) s; *p != '\0'; p++) {
+		for (p = (const unsigned char *) s; (const char *) p < s + l; p++) {
 			uc = *p;
 			switch (uc) {
 			case '"':
@@ -465,7 +480,7 @@ cm_json_encode(void *parent, struct cm_json *json)
 		ret = talloc_strdup(parent, "null");
 		break;
 	case cm_json_type_string:
-		ret = cm_json_escape(ret, json->s);
+		ret = cm_json_escape(ret, json->s.s, json->s.l);
 		break;
 	case cm_json_type_numberl:
 		ret = talloc_asprintf(parent, "%lld", json->l);
@@ -479,7 +494,7 @@ cm_json_encode(void *parent, struct cm_json *json)
 	case cm_json_type_object:
 		ret = talloc_strdup(parent, "{");
 		for (i = 0; i < json->o.n; i++) {
-			key = cm_json_escape(ret, json->o.o[i].key);
+			key = cm_json_escape(ret, json->o.o[i].key, -1);
 			val = cm_json_encode(ret, json->o.o[i].val);
 			if ((key == NULL) || (val == NULL)) {
 				talloc_free(ret);
@@ -562,13 +577,16 @@ cm_json_point_to_utf8(uint32_t point, char *out, ssize_t max)
 
 static char *
 cm_json_decode_string(void *parent, const char *s, ssize_t length,
-		      const char **next)
+		      const char **next, ssize_t *out_length)
 {
 	char *ret = NULL, *q, *end;
 	const char *p, *hex, *hexchars = "00112233445566778899AaBbCcDdEeFf", *psave;
 	int unesc = 0, i;
 	uint32_t point, point2;
 
+	if (out_length != NULL) {
+		*out_length = 0;
+	}
 	*next = s;
 	if (*s != '"') {
 		return NULL;
@@ -711,6 +729,9 @@ cm_json_decode_string(void *parent, const char *s, ssize_t length,
 		}
 	}
 	*q = '\0';
+	if (out_length != NULL) {
+		*out_length = q - ret;
+	}
 	return ret;
 }
 
@@ -733,6 +754,7 @@ cm_json_decode(void *parent, const char *encoded, ssize_t length,
 	char *s = NULL, *tmp;
 	struct cm_json *agg = NULL, *sub = NULL;
 	enum cm_json_type aggtype;
+	ssize_t slength;
 	enum {key, keyorclose, colon, commaorclose, expr, exprorclose} expect = expr;
 
 	p = encoded;
@@ -924,15 +946,15 @@ cm_json_decode(void *parent, const char *encoded, ssize_t length,
 				if (s != NULL) {
 					goto done;
 				}
-				s = cm_json_decode_string(parent, p, length - (p - encoded), &p);
+				s = cm_json_decode_string(parent, p, length - (p - encoded), &p, &slength);
 				if (s == NULL) {
 					goto done;
 				}
-				*json = cm_json_new_string(parent, s, -1);
+				*json = cm_json_new_string(parent, s, slength);
 				talloc_free(s);
 				s = NULL;
 			} else {
-				tmp = cm_json_decode_string(parent, p, length - (p - encoded), &p);
+				tmp = cm_json_decode_string(parent, p, length - (p - encoded), &p, &slength);
 				if (tmp == NULL) {
 					goto done;
 				}
@@ -942,7 +964,7 @@ cm_json_decode(void *parent, const char *encoded, ssize_t length,
 					expect = colon;
 				} else {
 					/* It's a value in an object or array. */
-					sub = cm_json_new_string(parent, tmp, -1);
+					sub = cm_json_new_string(parent, tmp, slength);
 					talloc_free(tmp);
 					tmp = NULL;
 					expect = commaorclose;

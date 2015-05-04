@@ -57,7 +57,7 @@ struct cm_json *cm_json_n(struct cm_json *json, size_t n);
 int cm_json_append(struct cm_json *json, struct cm_json *value);
 int cm_json_set_n(struct cm_json *json, size_t n, struct cm_json *value);
 
-const char *cm_json_string(struct cm_json *json);
+const char *cm_json_string(struct cm_json *json, ssize_t *length);
 long double cm_json_numberd(struct cm_json *json);
 long long cm_json_numberl(struct cm_json *json);
 unsigned char cm_json_boolean(struct cm_json *json);
