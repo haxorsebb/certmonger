@@ -172,6 +172,38 @@ mYbkAmUQBRtl7fGgEvOqF9EgtEY06Nj5aI7vbFEfB80Xd0O9O06ckxr7QBSc
 Wc2RCeFYrUpNi6s3vfM5
 -----END CERTIFICATE-----
 EOF
+cat > other2 << EOF
+
+-----BEGIN CERTIFICATE-----
+MIIBoDCCAQmgAwIBAAIBATANBgkqhkiG9w0BAQsFADAUMRIwEAYDVQQDEwls
+b2NhbGhvc3QwIhgPMjAxNTAxMjcwMDAwMDBaGA8yMTE1MDEyNzAwMDAwMFow
+FDESMBAGA1UEAxMJbG9jYWxob3N0MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCB
+iQKBgQDT7+BazrT3e/run8ZxrTfZNFx+vY+twKMPRXowSGot2eLcdDIIryOH
+ir1tUXIDZN2j+nF4U6kX3W66yMZjUApmYcFjhPk0Pg4ymsh/ScW2OlQXvC/f
+soPhvKA6cBeWUWwpdtRnFjZ14qmGuABPi6c/p0C/04HoBR9Y6QI5voRvHwID
+AQABMA0GCSqGSIb3DQEBCwUAA4GBAB4F1sjBaOJVuMmubbxc6vm3yDTwU3Qw
+JzjmXgwGUp5QryUIBZc9Kc5ceMUJ/Xf3OFDGWOqIx4JONdcgfLRJxax9WWg4
+mYbkAmUQBRtl7fGgEvOqF9EgtEY06Nj5aI7vbFEfB80Xd0O9O06ckxr7QBSc
+Wc2RCeFYrUpNi6s3vfM5
+-----END CERTIFICATE-----
+
+EOF
+cat > other3 << EOF
+-----BEGIN CERTIFICATE-----
+MIIBoDCCAQmgAwIBAAIBATANBgkqhkiG9w0BAQsFADAUMRIwEAYDVQQDEwls
+b2NhbGhvc3QwIhgPMjAxNTAxMjcwMDAwMDBaGA8yMTE1MDEyNzAwMDAwMFow
+FDESMBAGA1UEAxMJbG9jYWxob3N0MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCB
+iQKBgQDT7+BazrT3e/run8ZxrTfZNFx+vY+twKMPRXowSGot2eLcdDIIryOH
+ir1tUXIDZN2j+nF4U6kX3W66yMZjUApmYcFjhPk0Pg4ymsh/ScW2OlQXvC/f
+soPhvKA6cBeWUWwpdtRnFjZ14qmGuABPi6c/p0C/04HoBR9Y6QI5voRvHwID
+AQABMA0GCSqGSIb3DQEBCwUAA4GBAB4F1sjBaOJVuMmubbxc6vm3yDTwU3Qw
+JzjmXgwGUp5QryUIBZc9Kc5ceMUJ/Xf3OFDGWOqIx4JONdcgfLRJxax9WWg4
+mYbkAmUQBRtl7fGgEvOqF9EgtEY06Nj5aI7vbFEfB80Xd0O9O06ckxr7QBSc
+Wc2RCeFYrUpNi6s3vfM5
+
+EOF
+echo -n -----END CERTIFICATE----- >> other3
+
 cat > plain << EOF
 This is some plaintext.
 EOF
@@ -201,6 +233,9 @@ minicert=-----BEGIN CERTIFICATE-----
 EOF
 $toolsdir/pk7parse dercert
 $toolsdir/pk7parse derpkcs7
+$toolsdir/pk7parse other
+$toolsdir/pk7parse other2
+$toolsdir/pk7parse other3
 $toolsdir/pk7parse bundle
 echo Decrypted CSR:
 $toolsdir/pk7env recipient csr | base64 -i -d | openssl smime -inform der -decrypt -inkey key recipient -binary | base64
