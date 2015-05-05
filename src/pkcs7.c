@@ -372,6 +372,9 @@ cm_pkcs7_parsev(unsigned int flags, void *parent,
 	/* Find one that isn't issued by any of the others. */
 	top = -1;
 	for (i = 0; i < n_certs; i++) {
+		if (i == leaf) {
+			continue;
+		}
 		/* Start with a candidate. */
 		a = sk_X509_value(sk, i);
 		/* Look for any that issued it. */
