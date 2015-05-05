@@ -665,6 +665,18 @@ cm_certsave_n_saved(struct cm_certsave_state *state)
 	if (!WIFEXITED(status) || (WEXITSTATUS(status) != CM_CERTSAVE_STATUS_SAVED)) {
 		return -1;
 	}
+	if ((state->entry->cm_key_next_marker != NULL) &&
+	    (strlen(state->entry->cm_key_next_marker) > 0)) {
+		state->entry->cm_key_requested_count =
+			state->entry->cm_key_next_requested_count;
+		state->entry->cm_key_next_requested_count = 0;
+		state->entry->cm_key_generated_date =
+			state->entry->cm_key_next_generated_date;
+		state->entry->cm_key_next_generated_date = 0;
+		state->entry->cm_key_issued_count = 1;
+	} else {
+		state->entry->cm_key_issued_count++;
+	}
 	state->entry->cm_key_next_marker = NULL;
 	return 0;
 }

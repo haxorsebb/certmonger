@@ -870,6 +870,12 @@ cm_submit_e_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 		ret = cm_submit_e_start_or_resume(ca, entry, spki, "POLL");
 	} else {
 		ret = cm_submit_e_start_or_resume(ca, entry, spki, "SUBMIT");
+		if ((entry->cm_key_next_marker != NULL) &&
+		    (strlen(entry->cm_key_next_marker) > 0)) {
+			entry->cm_key_next_requested_count++;
+		} else {
+			entry->cm_key_requested_count++;
+		}
 	}
 	if (spki != NULL) {
 		talloc_free(spki);

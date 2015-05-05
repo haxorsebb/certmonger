@@ -483,6 +483,12 @@ cm_submit_sn_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 			talloc_free(state);
 			state = NULL;
 		}
+		if ((entry->cm_key_next_marker != NULL) &&
+		    (strlen(entry->cm_key_next_marker) > 0)) {
+			entry->cm_key_next_requested_count++;
+		} else {
+			entry->cm_key_requested_count++;
+		}
 	}
 	return state;
 }

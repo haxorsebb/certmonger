@@ -482,12 +482,18 @@ cm_keygen_o_done(struct cm_keygen_state *state)
 				state->entry->cm_key_next_pubkey_info = pubkey_info;
 				state->entry->cm_key_next_pubkey = pubkey;
 				state->entry->cm_key_next_marker = marker;
+				state->entry->cm_key_next_generated_date = time(NULL);
+				state->entry->cm_key_next_requested_count = 0;
 			} else {
 				state->entry->cm_key_next_pubkey_info = NULL;
 				state->entry->cm_key_next_pubkey = NULL;
 				state->entry->cm_key_next_marker = NULL;
+				state->entry->cm_key_next_generated_date = 0;
 				state->entry->cm_key_pubkey_info = pubkey_info;
 				state->entry->cm_key_pubkey = pubkey;
+				state->entry->cm_key_generated_date = time(NULL);
+				state->entry->cm_key_requested_count = 0;
+				state->entry->cm_key_issued_count = 0;
 			}
 		}
 		cm_subproc_done(state->subproc);

@@ -214,6 +214,7 @@ if test "`grep ^state entry`" != state=NEED_KEYINFO ; then
 	grep ^state entry
 	exit 1
 fi
+grep ^key.\*count= entry | LANG=C sort
 
 echo
 echo '[Reading back key info.]'
@@ -224,6 +225,7 @@ if test "`grep ^state entry`" != state=NEED_CSR ; then
 	exit 1
 fi
 grep ^key_size entry
+grep ^key.\*count= entry | LANG=C sort
 
 echo
 echo '[Generating CSR.]'
@@ -233,6 +235,7 @@ if test "`grep ^state entry`" != state=HAVE_CSR ; then
 	grep ^state entry
 	exit 1
 fi
+grep ^key.\*count= entry | LANG=C sort
 
 echo
 echo '[Getting CSR signed.]'
@@ -242,6 +245,7 @@ if test "`grep ^state entry`" != state=NEED_TO_SAVE_CERT ; then
 	grep ^state entry
 	exit 1
 fi
+grep ^key.\*count= entry | LANG=C sort
 
 echo
 echo '[Saving certificate.]'
@@ -251,6 +255,7 @@ if test "`grep ^state entry`" != state=MONITORING ; then
 	grep ^state entry
 	exit 1
 fi
+grep ^key.\*count= entry | LANG=C sort
 
 echo
 echo '[From-scratch enrollment scenario OK.]'
@@ -375,9 +380,13 @@ ca_external_helper=$tmpdir/ca-issued
 EOF
 : > $tmpdir/certfile4
 $toolsdir/iterate ca3 entry3 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
+grep ^key.\*count= entry3 | LANG=C sort
 $toolsdir/iterate ca3 entry3 NEED_CSR,GENERATING_CSR
+grep ^key.\*count= entry3 | LANG=C sort
 $toolsdir/iterate ca3 entry3 NEED_TO_SUBMIT,SUBMITTING
+grep ^key.\*count= entry3 | LANG=C sort
 $toolsdir/iterate ca3 entry3 NEED_TO_SAVE_CERT,SAVING_CERT,START_SAVING_CERT
+grep ^key.\*count= entry3 | LANG=C sort
 
 echo
 echo '[Enroll, helper produces noise before.]'
@@ -607,10 +616,15 @@ ca_type=EXTERNAL
 ca_external_helper=$tmpdir/ca-reject
 EOF
 $toolsdir/iterate ca5 entry5 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
+grep ^key.\*count= entry5 | LANG=C sort
 $toolsdir/iterate ca5 entry5 NEED_CSR,GENERATING_CSR
+grep ^key.\*count= entry5 | LANG=C sort
 $toolsdir/iterate ca5 entry5 NEED_TO_SUBMIT,SUBMITTING
+grep ^key.\*count= entry5 | LANG=C sort
 $toolsdir/iterate ca5 entry5 NEED_TO_NOTIFY_REJECTION,NOTIFYING_REJECTION | sed 's@'"$tmpdir"'@$tmpdir@g'
+grep ^key.\*count= entry5 | LANG=C sort
 $toolsdir/iterate ca5 entry5 "" | sed 's@'"$tmpdir"'@$tmpdir@g'
+grep ^key.\*count= entry5 | LANG=C sort
 
 echo
 echo '[Enroll until the CA rejects us after poll.]'
@@ -765,9 +779,13 @@ ca_encryption_cert=-----BEGIN CERTIFICATE-----
  -----END CERTIFICATE-----
 EOF
 $toolsdir/iterate ca9 entry9 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
+grep ^key.\*count= entry9 | LANG=C sort
 $toolsdir/iterate ca9 entry9 NEED_CSR,GENERATING_CSR
+grep ^key.\*count= entry9 | LANG=C sort
 $toolsdir/iterate ca9 entry9 NEED_TO_SUBMIT,SUBMITTING
+grep ^key.\*count= entry9 | LANG=C sort
 $toolsdir/iterate ca9 entry9 NEED_SCEP_DATA,GENERATING_SCEP_DATA,HAVE_SCEP_DATA
+grep ^key.\*count= entry9 | LANG=C sort
 
 # Note! The "iterate" harness rounds delay times up to the next multiple of 50.
 for interval in 0 30 1800 3600 7200 86000 86500 604800 1000000 2000000; do

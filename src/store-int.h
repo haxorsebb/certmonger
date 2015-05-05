@@ -45,6 +45,9 @@ struct cm_store_entry {
 	} cm_key_type, cm_key_next_type;
 	char *cm_key_next_marker;
 	unsigned int cm_key_preserve: 1;
+	time_t cm_key_generated_date, cm_key_next_generated_date;
+	unsigned int cm_key_issued_count;
+	unsigned int cm_key_requested_count, cm_key_next_requested_count;
 	/* Location of key pair [use-once default] NSS,/etc/pki/nssdb */
 	enum cm_key_storage_type {
 		cm_key_storage_none = 0,
