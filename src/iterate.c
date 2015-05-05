@@ -1047,6 +1047,15 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				       entry->cm_busname, entry->cm_nickname);
 				entry->cm_state = CM_NEED_SCEP_DATA;
 				*when = cm_time_now;
+			} else
+			if (cm_submit_need_rekey(state->cm_submit_state) == 0) {
+				/* We need to generate a new key pair. */
+				cm_submit_done(state->cm_submit_state);
+				state->cm_submit_state = NULL;
+				cm_log(3, "%s('%s') needs to be rekeyed.\n",
+				       entry->cm_busname, entry->cm_nickname);
+				entry->cm_state = CM_NEED_KEY_PAIR;
+				*when = cm_time_soonish;
 			} else {
 				/* Don't know what's going on. HELP! */
 				cm_log(1,

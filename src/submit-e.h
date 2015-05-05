@@ -31,6 +31,7 @@ enum cm_external_status {
 	CM_SUBMIT_STATUS_WAIT_WITH_DELAY = 5,
 	CM_SUBMIT_STATUS_OPERATION_NOT_SUPPORTED = 6,
 	CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES = 16,
+	CM_SUBMIT_STATUS_NEED_REKEY = 17,
 };
 const char *cm_submit_e_status_text(enum cm_external_status status);
 

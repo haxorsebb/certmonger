@@ -114,6 +114,12 @@ echo iLoveCookiesSome
 exit 1
 EOF
 chmod u+x ca-ask-again
+cat > ca-need-rekey << EOF
+#!/bin/sh
+echo NotThatKeyAgain
+exit 17
+EOF
+chmod u+x ca-need-rekey
 cat > ca-issued-binary-x509 << EOF
 #!/bin/sh
 echo "$cert" | openssl x509 -outform der
@@ -517,6 +523,32 @@ $toolsdir/iterate ca11 entry11 NEED_TO_SAVE_CERT,START_SAVING_CERT,SAVING_CERT,S
 grep 'BEGIN CERTIFICATE' $tmpdir/certfile11 | wc -l
 grep 'BEGIN CERTIFICATE' $tmpdir/othercertfile | wc -l
 grep 'BEGIN CERTIFICATE' $tmpdir/rootcertfile | wc -l
+
+echo
+echo '[Try to enroll, but we need to generate a new key]'
+cat > entry12 << EOF
+id=Test
+ca_name=Webby
+state=HAVE_KEY_PAIR
+key_storage_type=FILE
+key_storage_location=$tmpdir/keyfile
+cert_storage_type=FILE
+cert_storage_location=$tmpdir/certfile12
+notification_method=STDOUT
+EOF
+cat > ca12 << EOF
+id=Webby
+ca_type=EXTERNAL
+ca_external_helper=$tmpdir/ca-need-rekey
+EOF
+: > $tmpdir/certfile12
+rm -f $tmpdir/rootcertfile
+rm -f $tmpdir/othercertfile
+$toolsdir/iterate ca12 entry12 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
+$toolsdir/iterate ca12 entry12 NEED_CSR,GENERATING_CSR
+$toolsdir/iterate ca12 entry12 NEED_TO_SUBMIT,SUBMITTING
+$toolsdir/iterate ca12 entry12 NEED_KEY_PAIR,GENERATING_KEY_PAIR,HAVE_KEY_PAIR
+$toolsdir/iterate ca12 entry12 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
 
 echo
 echo '[Enroll until we notice we have no specified CA.]'

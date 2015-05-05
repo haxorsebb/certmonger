@@ -58,6 +58,9 @@ int cm_submit_unconfigured(struct cm_submit_state *state);
 /* Check if we need SCEP-specific data to be generated. */
 int cm_submit_need_scep_messages(struct cm_submit_state *state);
 
+/* Check if the CA says we need a new key. */
+int cm_submit_need_rekey(struct cm_submit_state *state);
+
 /* Done talking to the CA. */
 void cm_submit_done(struct cm_submit_state *state);
 

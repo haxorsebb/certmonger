@@ -412,6 +412,19 @@ cm_submit_e_need_scep_messages(struct cm_submit_state *state)
 	return -1;
 }
 
+/* Check if the CA says we need to use a new public key. */
+static int
+cm_submit_e_need_rekey(struct cm_submit_state *state)
+{
+	int status;
+	status = cm_subproc_get_exitstatus(state->subproc);
+	if (WIFEXITED(status) &&
+	    (WEXITSTATUS(status) == CM_SUBMIT_STATUS_NEED_REKEY)) {
+		return 0;
+	}
+	return -1;
+}
+
 /* Check if the CA was unreachable.  If the exit status was right, then we
  * never actually talked to the CA. */
 static int
@@ -770,6 +783,7 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 		state->issued = cm_submit_e_issued;
 		state->rejected = cm_submit_e_rejected;
 		state->need_scep_messages = cm_submit_e_need_scep_messages;
+		state->need_rekey = cm_submit_e_need_rekey;
 		state->unreachable = cm_submit_e_unreachable;
 		state->unconfigured = cm_submit_e_unconfigured;
 		state->unsupported = cm_submit_e_unsupported;
@@ -883,6 +897,8 @@ cm_submit_e_status_text(enum cm_external_status status)
 		return "OPERATION_NOT_SUPPORTED_BY_HELPER";
 	case CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES:
 		return "NEED_SCEP_MESSAGES";
+	case CM_SUBMIT_STATUS_NEED_REKEY:
+		return "NEED_REKEY";
 	}
 	return "(unknown)";
 }

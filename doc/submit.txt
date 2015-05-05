@@ -42,7 +42,8 @@ An external CA helper has a few jobs:
     * Underconfigured-> output error message on stdout, exit with status 4.
     * Wait a bit more-> output recommended delay (seconds) and CA cookie value
                         on stdout, separated by newline, and exit with status 5.
-    * Need SCEP data -> exit with status 16.
+    * Need SCEP data -> exit with status 16 (since 0.77).
+    * Need to rekey  -> exit with status 17 (since 0.78).
 * If in "poll" mode, $CERTMONGER_CA_COOKIE has as its value a CA cookie value
   in addition to the PEM-formatted CSR in $CERTMONGER_CSR.
   * Poll CA for result of previously-started enrollment operation.
@@ -53,7 +54,8 @@ An external CA helper has a few jobs:
     * Underconfigured-> output error message on stdout, exit with status 4.
     * Wait some more -> output recommended delay (seconds) and CA cookie value
                         on stdout, separated by newline, and exit with status 5.
-    * Need SCEP data -> exit with status 16.
+    * Need SCEP data -> exit with status 16 (since 0.77).
+    * Need to rekey  -> exit with status 17 (since 0.78).
 * Invoked with "IDENTIFY" as the value of the $CERTMONGER_OPERATION
   environment variable:
   * Output suggested ID for CA, exit with status 0.
@@ -122,7 +124,7 @@ item, a PEM-formatted PKCS#7 enveloped-data with encapsulated content
 identified as type "data", containing either an X.509 certificate or
 PKCS#7 signed-data item in binary form, or any of the previous in binary
 form.  When PEM formatting is used, multiple PEM-formatted items can be
-output if needed
+output if needed.
 
 For testing purposes, a helper can be added by creating a file in the CAs
 directory (usually /var/lib/certmonger/cas) with these contents:

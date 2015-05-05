@@ -134,6 +134,13 @@ cm_submit_need_scep_messages(struct cm_submit_state *state)
 	return (*state->need_scep_messages)(state);
 }
 
+/* Check if we need to generate a new key and try again. */
+int
+cm_submit_need_rekey(struct cm_submit_state *state)
+{
+	return (*state->need_rekey)(state);
+}
+
 /* Check if we're unconfigured or underconfigured. */
 int
 cm_submit_unconfigured(struct cm_submit_state *state)

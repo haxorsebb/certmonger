@@ -36,6 +36,8 @@ struct cm_submit_state {
 	int (*rejected)(struct cm_submit_state *state);
 	/* Check if we need SCEP-specific data to be provided. */
 	int (*need_scep_messages)(struct cm_submit_state *state);
+	/* Check if we need to try again with different keys. */
+	int (*need_rekey)(struct cm_submit_state *state);
 	/* Check if the CA was unreachable for some reason. */
 	int (*unreachable)(struct cm_submit_state *state);
 	/* Check if the CA was unconfigured in some way. */
