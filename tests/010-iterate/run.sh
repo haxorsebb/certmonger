@@ -28,6 +28,45 @@ Pi7xjf9BidMvYUEBpJsd9rA1LQtp/ZfxxA6RtgCeXjQPexjsvf6SLKyrmacHZcMJ
 b6JbhXMTzB7QZjR3IooqzXS8T/2zBxDUSH4fJ4o0KSkY8cjNCCxdnkXL96PC9KQ5
 kV1Ad3iHw/TnJjzrJJs3o92pRR/JtF0Jw6dszNP1Sn68uA==
 -----END CERTIFICATE-----"
+cert2="-----BEGIN CERTIFICATE-----
+MIIBoDCCAQmgAwIBAAIBATANBgkqhkiG9w0BAQsFADAUMRIwEAYDVQQDEwls
+b2NhbGhvc3QwIhgPMjAxNTAxMjcwMDAwMDBaGA8yMTE1MDEyNzAwMDAwMFow
+FDESMBAGA1UEAxMJbG9jYWxob3N0MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCB
+iQKBgQDT7+BazrT3e/run8ZxrTfZNFx+vY+twKMPRXowSGot2eLcdDIIryOH
+ir1tUXIDZN2j+nF4U6kX3W66yMZjUApmYcFjhPk0Pg4ymsh/ScW2OlQXvC/f
+soPhvKA6cBeWUWwpdtRnFjZ14qmGuABPi6c/p0C/04HoBR9Y6QI5voRvHwID
+AQABMA0GCSqGSIb3DQEBCwUAA4GBAB4F1sjBaOJVuMmubbxc6vm3yDTwU3Qw
+JzjmXgwGUp5QryUIBZc9Kc5ceMUJ/Xf3OFDGWOqIx4JONdcgfLRJxax9WWg4
+mYbkAmUQBRtl7fGgEvOqF9EgtEY06Nj5aI7vbFEfB80Xd0O9O06ckxr7QBSc
+Wc2RCeFYrUpNi6s3vfM5
+-----END CERTIFICATE-----"
+cert3="-----BEGIN CERTIFICATE-----
+MIIB0TCCATqgAwIBAgICEjUwDQYJKoZIhvcNAQELBQAwFDESMBAGA1UEAxMJbG9j
+YWxob3N0MB4XDTcwMDEwMTExMTExMVoXDTcxMDEwMTExMTExMVowFDESMBAGA1UE
+AxMJbG9jYWxob3N0MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC394oITlJc
+hLbXLUAYJ+IGpvr3YfyQlQb3u95p3s0gEemx/+Dy3ViJW7WhMuc/FHJSV5ghLflk
+TRLfUdS18LGBkfkREBJVWfELhgm5ZHqiGzCvTmg01tgvouKj+8kFNJIaWsEm8mBa
+SoJzk8+vOQsnXjrZAKAFY7WrVryilh4cQQIDAQABozIwMDAMBgNVHRMBAf8EAjAA
+MCAGA1UdDgEBAAQWBBQfjVS9H0rXGb4SFB9bkzTpHHUH2jANBgkqhkiG9w0BAQsF
+AAOBgQCt6xbyri3BobQUPQmN7ROc3mveMSfMyOwBSTDjl2XIWV98HjVLWRjScbg7
+KW6z8W7iaasSDF7GWM2YqWaanWx5XwzayNUvIX3gHKqo+OwHo5QUfawtEV5Niop1
+N4nZp1GMclRuk9UFXLV2NfaohRPYs7FVdBVtWNvg7hH8XedLyw==
+-----END CERTIFICATE-----"
+cert4="-----BEGIN CERTIFICATE-----
+MIIBoDCCAQmgAwIBAAIBATANBgkqhkiG9w0BAQsFADAUMRIwEAYDVQQDEwls
+b2NhbGhvc3QwIhgPMjAxNTAxMjcwMDAwMDBaGA8yMTE1MDEyNzAwMDAwMFow
+FDESMBAGA1UEAxMJbG9jYWxob3N0MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCB
+iQKBgQDT7+BazrT3e/run8ZxrTfZNFx+vY+twKMPRXowSGot2eLcdDIIryOH
+ir1tUXIDZN2j+nF4U6kX3W66yMZjUApmYcFjhPk0Pg4ymsh/ScW2OlQXvC/f
+
+soPhvKA6cBeWUWwpdtRnFjZ14qmGuABPi6c/p0C/04HoBR9Y6QI5voRvHwID
+AQABMA0GCSqGSIb3DQEBCwUAA4GBAB4F1sjBaOJVuMmubbxc6vm3yDTwU3Qw
+JzjmXgwGUp5QryUIBZc9Kc5ceMUJ/Xf3OFDGWOqIx4JONdcgfLRJxax9WWg4
+mYbkAmUQBRtl7fGgEvOqF9EgtEY06Nj5aI7vbFEfB80Xd0O9O06ckxr7QBSc
+Wc2RCeFYrUpNi6s3vfM5
+
+-----END CERTIFICATE-----
+"
 
 cat > ca-issued << EOF
 #!/bin/sh
@@ -63,6 +102,12 @@ echo Also Monkeys
 exit 0
 EOF
 chmod u+x ca-issued-with-noise-both
+cat > ca-issued-json << EOF
+#!/bin/sh
+echo -n "{\"certificate\":\"$cert\",\"roots\":{\"CA1\":\"$cert2\",\"CA2\":\"$cert3\"},\"chain\":{\"CA3\":\"$cert4\"},\"whatever\":null}"
+exit 0
+EOF
+chmod u+x ca-issued-json
 cat > ca-ask-again << EOF
 #!/bin/sh
 echo iLoveCookiesSome
@@ -442,6 +487,36 @@ $toolsdir/iterate ca3 entry3 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
 $toolsdir/iterate ca3 entry3 NEED_CSR,GENERATING_CSR
 $toolsdir/iterate ca3 entry3 NEED_TO_SUBMIT,SUBMITTING
 $toolsdir/iterate ca3 entry3 NEED_TO_SAVE_CERT,SAVING_CERT,START_SAVING_CERT
+
+echo
+echo '[Enroll, helper produces JSON output.]'
+cat > entry11 << EOF
+id=Test
+ca_name=Webby
+state=HAVE_KEY_PAIR
+key_storage_type=FILE
+key_storage_location=$tmpdir/keyfile
+cert_storage_type=FILE
+cert_storage_location=$tmpdir/certfile11
+root_cert_files=$tmpdir/rootcertfile
+other_cert_files=$tmpdir/othercertfile
+notification_method=STDOUT
+EOF
+cat > ca11 << EOF
+id=Webby
+ca_type=EXTERNAL
+ca_external_helper=$tmpdir/ca-issued-json
+EOF
+: > $tmpdir/certfile11
+rm -f $tmpdir/rootcertfile
+rm -f $tmpdir/othercertfile
+$toolsdir/iterate ca11 entry11 NEED_KEYINFO,READING_KEYINFO,HAVE_KEYINFO
+$toolsdir/iterate ca11 entry11 NEED_CSR,GENERATING_CSR
+$toolsdir/iterate ca11 entry11 NEED_TO_SUBMIT,SUBMITTING
+$toolsdir/iterate ca11 entry11 NEED_TO_SAVE_CERT,START_SAVING_CERT,SAVING_CERT,SAVED_CERT,NEED_TO_SAVE_CA_CERTS,START_SAVING_CA_CERTS,SAVING_CA_CERTS
+grep 'BEGIN CERTIFICATE' $tmpdir/certfile11 | wc -l
+grep 'BEGIN CERTIFICATE' $tmpdir/othercertfile | wc -l
+grep 'BEGIN CERTIFICATE' $tmpdir/rootcertfile | wc -l
 
 echo
 echo '[Enroll until we notice we have no specified CA.]'

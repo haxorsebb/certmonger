@@ -34,6 +34,7 @@
 #include <talloc.h>
 
 #include "env.h"
+#include "json.h"
 #include "log.h"
 #include "pkcs7.h"
 #include "store.h"
@@ -273,29 +274,90 @@ cm_submit_e_ready(struct cm_submit_state *state)
 static int
 cm_submit_e_issued(struct cm_submit_state *state)
 {
-	const char *msg, *p;
+	struct cm_json *json, *cert, *chain, *roots, *val;
+	const char *msg, *k, *eom = NULL;
 	struct cm_submit_external_state *estate;
+	struct cm_nickcert **nickcerts, *nickcert;
+	ssize_t i, j;
+	int status;
 
+	status = cm_subproc_get_exitstatus(state->subproc);
+	if (!WIFEXITED(status) ||
+	    (WEXITSTATUS(status) != CM_SUBMIT_STATUS_ISSUED)) {
+		cm_log(1, "Certificate not (yet?) issued.\n");
+		return -1;
+	}
 	estate = state->reserved;
 	msg = estate->msg;
 	if (msg != NULL) {
-		p = strstr(msg, "-----END CERTIFICATE-----");
-	} else {
-		p = NULL;
-	}
-	if (p != NULL) {
-		talloc_free(state->entry->cm_cert);
-		p += strcspn(p, "\n");
-		if (*p != '\0') {
-			p++;
+		if ((cm_json_decode(state, msg, -1, &json, &eom) != 0) ||
+		    (*eom != '\0')) {
+			cm_log(1, "Error parsing child output as JSON.\n");
+			return -1;
 		}
-		state->entry->cm_cert = talloc_strndup(state->entry, msg, p - msg);
-		cm_log(1, "Certificate issued.\n");
-		return 0;
 	} else {
+		json = NULL;
+	}
+	if ((json == NULL) || (cm_json_get(json, "certificate") == NULL)) {
 		cm_log(1, "No issued certificate read.\n");
 		return -1;
 	}
+	talloc_free(state->entry->cm_cert);
+	state->entry->cm_cert = NULL;
+	cert = cm_json_get(json, "certificate");
+	if (cm_json_type(cert) != cm_json_type_string) {
+		cm_log(1, "Error parsing child output as JSON.\n");
+		return -1;
+	}
+	state->entry->cm_cert = talloc_strdup(state->entry,
+					      cm_json_string(cert, NULL));
+	cm_log(1, "Issued certificate is \"%s\".\n", state->entry->cm_cert);
+	talloc_free(state->entry->cm_cert_chain);
+	state->entry->cm_cert_chain = NULL;
+	chain = cm_json_get(json, "chain");
+	if (cm_json_type(chain) == cm_json_type_object) {
+		nickcerts = talloc_array_ptrtype(state->entry, nickcerts,
+						 cm_json_n_keys(chain) + 1);
+		for (i = 0, j = 0; i < cm_json_n_keys(chain); i++) {
+			k = cm_json_nth_key(chain, i);
+			val = cm_json_nth_val(chain, i);
+			if (cm_json_type(val) != cm_json_type_string) {
+				continue;
+			}
+			nickcert = talloc_zero(nickcerts, struct cm_nickcert);
+			nickcert->cm_nickname = talloc_strdup(nickcert, k);
+			nickcert->cm_cert = talloc_strdup(nickcert,
+							  cm_json_string(val, NULL));
+			nickcerts[j++] = nickcert;
+		}
+		nickcerts[j] = NULL;
+		state->entry->cm_cert_chain = nickcerts;
+	}
+	talloc_free(state->entry->cm_cert_roots);
+	state->entry->cm_cert_roots = NULL;
+	roots = cm_json_get(json, "roots");
+	if (cm_json_type(roots) == cm_json_type_object) {
+		nickcerts = talloc_array_ptrtype(state->entry, nickcerts,
+						 cm_json_n_keys(roots) + 1);
+		for (i = 0, j = 0; i < cm_json_n_keys(roots); i++) {
+			k = cm_json_nth_key(roots, i);
+			val = cm_json_nth_val(roots, i);
+			if (cm_json_type(val) != cm_json_type_string) {
+				continue;
+			}
+			nickcert = talloc_zero(nickcerts, struct cm_nickcert);
+			nickcert->cm_nickname = talloc_strdup(nickcert, k);
+			nickcert->cm_cert = talloc_strdup(nickcert,
+							  cm_json_string(val, NULL));
+			nickcerts[j++] = nickcert;
+		}
+		nickcerts[j] = NULL;
+		state->entry->cm_cert_roots = nickcerts;
+	}
+	cm_log(1, "Certificate issued (%ld chain certificates, %ld roots).\n",
+	       cm_json_n_keys(chain) > 0 ?  (long) cm_json_n_keys(chain) : 0,
+	       cm_json_n_keys(roots) > 0 ?  (long) cm_json_n_keys(roots) : 0);
+	return 0;
 }
 
 /* Check if the submission helper can't request certificates. */
@@ -380,7 +442,10 @@ cm_submit_e_postprocess_main(int fd, struct cm_store_ca *ca,
 			     struct cm_store_entry *entry, void *userdata)
 {
 	struct cm_submit_external_state *estate = userdata;
-	char *leaf = NULL, *top = NULL, **others = NULL;
+	struct cm_json *msg, *json, *chain, *roots, *tmp, *cert;
+	char *leaf = NULL, *top = NULL, **others = NULL, *encoded;
+	const char *eom = NULL;
+	char *toproot = NULL, *leafroot = NULL, **otherroots = NULL, *certlist;
 	int i;
 	FILE *status;
 	void (*decrypt)(const unsigned char *envelope, size_t length,
@@ -409,20 +474,105 @@ cm_submit_e_postprocess_main(int fd, struct cm_store_ca *ca,
 	memset(&decrypt_args, 0, sizeof(decrypt_args));
 	decrypt_args.ca = ca;
 	decrypt_args.entry = entry;
-	i = cm_pkcs7_parse(0, estate, &leaf, &top, &others,
-			   decrypt, &decrypt_args,
-			   (const unsigned char *) estate->msg,
-			   estate->msg_length, NULL);
-	if (i == 0) {
-		if (leaf != NULL) {
-			fprintf(status, "%s", leaf);
+	json = cm_json_new_object(entry);
+	if ((cm_json_decode(estate, estate->msg, estate->msg_length, &msg,
+			    &eom) != 0) ||
+	    (eom != estate->msg + estate->msg_length)) {
+		/* Data is one or more certificates and PKCS#7 bundles,
+		 * probably in PEM format, or if there's only one, possibly in
+		 * DER format. */
+		i = cm_pkcs7_parse(0, estate, &leaf, &top, &others,
+				   decrypt, &decrypt_args,
+				   (const unsigned char *) estate->msg,
+				   estate->msg_length, NULL);
+	} else {
+		/* Data is a JSON object, with a "certificate" PEM string, and
+		 * possibly "chain" and "roots" objects which are
+		 * nickname/string mappings.  Parse out the roots first, in
+		 * case there are some PKCS#7 bundles in there. */
+		tmp = cm_json_get(msg, "roots");
+		/* Just concatenate all of the values into one string,... */
+		certlist = talloc_strdup(tmp, "\n");
+		for (i = 0; i < cm_json_n_keys(tmp); i++) {
+			cert = cm_json_nth_val(tmp, i);
+			certlist = talloc_strdup_append(certlist,
+							cm_json_string(cert, NULL));
+			certlist = talloc_strdup_append(certlist, "\n");
 		}
+		/* ... let the parser sort it out, ... */
+		i = cm_pkcs7_parse(0, estate, &leafroot, &toproot, &otherroots,
+				   NULL, NULL, (unsigned char *) certlist, -1,
+				   NULL);
+		cm_log(3, "Parsing \"%s\" returned %d.\n", certlist, i);
+		for (i = 0; (otherroots != NULL) && (otherroots[i] != NULL); i++) {
+			continue;
+		}
+		cm_log(3, "leaf(%p), top(%p), others(%d)\n", leafroot, toproot, i);
+		/* and put the results into the final document. */
+		roots = cm_json_new_object(json);
+		if (leafroot != NULL) {
+			cm_json_set(roots,
+				    talloc_asprintf(roots, "root 1"),
+				    cm_json_new_string(roots, leafroot, -1));
+		}
+		for (i = 0;
+		     (otherroots != NULL) && (otherroots[i] != NULL);
+		     i++) {
+			cm_json_set(roots,
+				    talloc_asprintf(roots, "root %d", i + 2),
+				    cm_json_new_string(roots, otherroots[i],
+						       -1));
+		}
+		if (toproot != NULL) {
+			cm_json_set(roots,
+				    talloc_asprintf(roots, "root %d", i + 2),
+				    cm_json_new_string(roots, toproot, -1));
+		}
+		if (cm_json_n_keys(roots) > 0) {
+			cm_json_set(json, "roots", roots);
+		}
+		/* Now do the same for the chain and issued certificate. */
+		tmp = cm_json_get(msg, "certificate");
+		certlist = talloc_strdup(tmp, "\n");
+		certlist = talloc_strdup_append(certlist, cm_json_string(tmp, NULL));
+		certlist = talloc_strdup_append(certlist, "\n");
+		/* Just concatenate all of the values into one string,... */
+		tmp = cm_json_get(msg, "chain");
+		for (i = 0; i < cm_json_n_keys(tmp); i++) {
+			cert = cm_json_nth_val(tmp, i);
+			certlist = talloc_strdup_append(certlist,
+							cm_json_string(cert, NULL));
+			certlist = talloc_strdup_append(certlist, "\n");
+		}
+		/* ... and let the parser at it. */
+		i = cm_pkcs7_parse(0, estate, &leaf, &top, &others,
+				   decrypt, &decrypt_args,
+				   (unsigned char *) certlist, -1, NULL);
+		cm_log(3, "Parsing \"%s\" returned %d\n",certlist, i);
 		for (i = 0; (others != NULL) && (others[i] != NULL); i++) {
-			fprintf(status, "%s", others[i]);
+			continue;
+		}
+		cm_log(3, "leaf(%p), top(%p), others(%d)\n", leaf, top, i);
+	}
+	if ((i == 0) && (leaf != NULL)) {
+		cm_json_set(json, "certificate",
+			    cm_json_new_string(json, leaf, -1));
+		chain = cm_json_new_object(json);
+		for (i = 0; (others != NULL) && (others[i] != NULL); i++) {
+			cm_json_set(chain,
+				    talloc_asprintf(chain, "chain %d", i + 1),
+				    cm_json_new_string(chain, others[i], -1));
 		}
 		if (top != NULL) {
-			fprintf(status, "%s", top);
+			cm_json_set(chain,
+				    talloc_asprintf(chain, "chain %d", i + 1),
+				    cm_json_new_string(chain, top, -1));
 		}
+		if (cm_json_n_keys(chain) > 0) {
+			cm_json_set(json, "chain", chain);
+		}
+		encoded = cm_json_encode(entry, json);
+		fprintf(status, "%s\n", encoded);
 		fflush(status);
 	} else {
 		cm_log(1, "Error postprocessing output \"%.*s\".\n",
