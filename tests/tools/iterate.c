@@ -54,6 +54,7 @@ wait_to_read(int fd)
 
 struct cm_context {
 	struct cm_store_ca *ca;
+	struct cm_store_entry *entry;
 };
 
 static struct cm_store_ca *
@@ -72,10 +73,25 @@ get_n_cas(struct cm_context *cm)
 	return (cm->ca != NULL) ? 1 : 0;
 }
 
+static struct cm_store_entry *
+get_entry_by_index(struct cm_context *cm, int i)
+{
+	if (i == 0) {
+		return cm->entry;
+	} else {
+		return NULL;
+	}
+}
+
+static int
+get_n_entries(struct cm_context *cm)
+{
+	return (cm->entry != NULL) ? 1 : 0;
+}
+
 int
 main(int argc, char **argv)
 {
-	struct cm_store_entry *entry;
 	struct cm_context *cm;
 	enum cm_state old_state;
 	int readfd, delay;
@@ -100,15 +116,15 @@ main(int argc, char **argv)
 			       strerror(errno));
 			return 1;
 		}
-		entry = cm_store_files_entry_read(parent, argv[2]);
-		if (entry == NULL) {
+		cm->entry = cm_store_files_entry_read(parent, argv[2]);
+		if (cm->entry == NULL) {
 			printf("Error reading %s: %s.\n", argv[2],
 			       strerror(errno));
 			return 1;
 		}
-		if ((entry->cm_ca_nickname == NULL) ||
+		if ((cm->entry->cm_ca_nickname == NULL) ||
 		    (cm->ca->cm_nickname == NULL) ||
-		    (strcasecmp(entry->cm_ca_nickname,
+		    (strcasecmp(cm->entry->cm_ca_nickname,
 				cm->ca->cm_nickname) != 0)) {
 			talloc_free(cm->ca);
 			cm->ca = NULL;
@@ -128,47 +144,49 @@ main(int argc, char **argv)
 		       "fourth.\n");
 		return 1;
 	}
-	old_state = entry->cm_state;
-	state = cm_store_state_as_string(entry->cm_state);
-	if (cm_iterate_entry_init(entry, &istate) != 0) {
+	old_state = cm->entry->cm_state;
+	state = cm_store_state_as_string(cm->entry->cm_state);
+	if (cm_iterate_entry_init(cm->entry, &istate) != 0) {
 		printf("Error initializing.\n");
 		return 1;
 	}
-	if (old_state != entry->cm_state) {
+	if (old_state != cm->entry->cm_state) {
 		printf("%s\n-(RESET)-\n", state);
 	}
 	old_state = CM_INVALID;
-	state = cm_store_state_as_string(entry->cm_state);
+	state = cm_store_state_as_string(cm->entry->cm_state);
 	printf("%s\n-START-\n", state);
 	fflush(NULL);
-	while (cm_iterate_entry(entry, cm->ca, cm, get_ca_by_index, get_n_cas,
-				NULL, NULL, NULL, NULL, istate, &when, &delay,
-				&readfd) == 0) {
-		state = cm_store_state_as_string(entry->cm_state);
+	while (cm_iterate_entry(cm->entry, cm->ca, cm,
+				get_ca_by_index, get_n_cas,
+				get_entry_by_index, get_n_entries,
+				NULL, NULL,
+				istate, &when, &delay, &readfd) == 0) {
+		state = cm_store_state_as_string(cm->entry->cm_state);
 		switch (when) {
 		case cm_time_now:
-			if (entry->cm_state != old_state) {
+			if (cm->entry->cm_state != old_state) {
 				printf("%s\n", state);
 			} else {
 				printf("%s (now)\n", state);
 			}
 			break;
 		case cm_time_soon:
-			if (entry->cm_state != old_state) {
+			if (cm->entry->cm_state != old_state) {
 				printf("%s\n", state);
 			} else {
 				printf("%s (soon)\n", state);
 			}
 			break;
 		case cm_time_soonish:
-			if (entry->cm_state != old_state) {
+			if (cm->entry->cm_state != old_state) {
 				printf("%s\n", state);
 			} else {
 				printf("%s (soonish)\n", state);
 			}
 			break;
 		case cm_time_delay:
-			if (entry->cm_state != old_state) {
+			if (cm->entry->cm_state != old_state) {
 				printf("delay=%ld\n%s\n", (long) delay,
 				       state);
 			} else {
@@ -177,12 +195,12 @@ main(int argc, char **argv)
 			}
 			break;
 		case cm_time_no_time:
-			if (entry->cm_state != old_state) {
+			if (cm->entry->cm_state != old_state) {
 				printf("%s\n", state);
 			}
 			break;
 		}
-		if ((entry->cm_state == old_state) &&
+		if ((cm->entry->cm_state == old_state) &&
 		    ((when != cm_time_no_time) || (readfd == -1))) {
 			/* If we didn't change state, stop. */
 			printf("-STUCK- (%d:%ld)\n", when, (long) delay);
@@ -197,7 +215,7 @@ main(int argc, char **argv)
 			     p = q + strspn(q, ",")) {
 				q = p + strcspn(p, ",");
 				tmp = talloc_strndup(parent, p, q - p);
-				if (entry->cm_state ==
+				if (cm->entry->cm_state ==
 				    cm_store_state_from_string(tmp)) {
 					fflush(NULL);
 					talloc_free(tmp);
@@ -220,7 +238,7 @@ main(int argc, char **argv)
 			     p = q + strspn(q, ",")) {
 				q = p + strcspn(p, ",");
 				tmp = talloc_strndup(parent, p, q - p);
-				if (entry->cm_state ==
+				if (cm->entry->cm_state ==
 				    cm_store_state_from_string(tmp)) {
 					fflush(NULL);
 					talloc_free(tmp);
@@ -253,14 +271,14 @@ main(int argc, char **argv)
 			wait_to_read(readfd);
 			break;
 		}
-		state = cm_store_state_as_string(entry->cm_state);
-		old_state = entry->cm_state;
+		state = cm_store_state_as_string(cm->entry->cm_state);
+		old_state = cm->entry->cm_state;
 	}
 	if (state != NULL) {
 		printf("-ERROR-\n");
 		fflush(NULL);
 	}
-	cm_iterate_entry_done(entry, istate);
+	cm_iterate_entry_done(cm->entry, istate);
 	talloc_free(parent);
 	return 0;
 }
