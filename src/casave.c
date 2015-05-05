@@ -187,12 +187,14 @@ cm_casave_main_n(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 				if (found != NULL) {
 					items[0] = &found->derCert;
 					items[1] = NULL;
-					if (CERT_ImportCerts(certdb,
-							     certUsageSSLCA,
-							     1, items,
-							     &imported,
-							     PR_TRUE, PR_FALSE,
-							     p) != SECSuccess) {
+					if ((CERT_ImportCerts(certdb,
+							      certUsageSSLCA,
+							      1, items,
+							      &imported,
+							      PR_TRUE, PR_FALSE,
+							      p) != SECSuccess) ||
+					    (imported == NULL) ||
+					    (imported[0] == NULL)) {
 						ec = PORT_GetError();
 						if (ec != 0) {
 							es = PR_ErrorToName(ec);

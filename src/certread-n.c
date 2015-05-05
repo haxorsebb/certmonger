@@ -383,7 +383,8 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 	if ((CERT_ImportCerts(CERT_GetDefaultCertDB(), 0,
 			      1, &items, &certs, PR_FALSE, PR_FALSE,
 			      "temp") != SECSuccess) ||
-	    (certs == NULL)) {
+	    (certs == NULL) ||
+	    (certs[0] == NULL)) {
 		cm_log(1, "Error decoding certificate.\n");
 		PORT_FreeArena(arena, PR_TRUE);
 		if (NSS_ShutdownContext(ctx) != SECSuccess) {

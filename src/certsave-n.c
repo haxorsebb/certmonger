@@ -596,7 +596,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					SECKEY_DestroyPrivateKey(privkey);
 				}
 			}
-			if (returned != NULL) {
+			if ((returned != NULL) && (returned[0] != NULL)) {
 				privkey = PK11_FindKeyByAnyCert(returned[0], NULL);
 				CERT_DestroyCertArray(returned, 1);
 				if (privkey != NULL) {
