@@ -71,6 +71,12 @@ enum cm_store_file_field {
 	cm_store_entry_field_key_next_pubkey,
 	cm_store_entry_field_key_next_pubkey_info,
 
+	cm_store_entry_field_key_generated_date,
+	cm_store_entry_field_key_next_generated_date,
+	cm_store_entry_field_key_requested_count,
+	cm_store_entry_field_key_next_requested_count,
+	cm_store_entry_field_key_issued_count,
+
 	cm_store_entry_field_cert_storage_type,
 	cm_store_entry_field_cert_storage_location,
 	cm_store_entry_field_cert_token,
@@ -218,6 +224,12 @@ static struct cm_store_file_field_list {
 
 	{cm_store_entry_field_key_preserve, "key_preserve"},
 	{cm_store_entry_field_key_next_marker, "key_next_marker"},
+
+	{cm_store_entry_field_key_generated_date, "key_generated_date"},
+	{cm_store_entry_field_key_next_generated_date, "key_next_generated_date"},
+	{cm_store_entry_field_key_requested_count, "key_requested_count"},
+	{cm_store_entry_field_key_next_requested_count, "key_next_requested_count"},
+	{cm_store_entry_field_key_issued_count, "key_issued_count"},
 
 	{cm_store_entry_field_key_storage_type, "key_storage_type"},
 	{cm_store_entry_field_key_storage_location, "key_storage_location"},
@@ -876,6 +888,28 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_key_next_pubkey_info:
 				ret->cm_key_next_pubkey_info = free_if_empty(p);
 				break;
+			case cm_store_entry_field_key_generated_date:
+				ret->cm_key_generated_date =
+					cm_store_time_from_timestamp(p);
+				talloc_free(p);
+				break;
+			case cm_store_entry_field_key_next_generated_date:
+				ret->cm_key_next_generated_date =
+					cm_store_time_from_timestamp(p);
+				talloc_free(p);
+				break;
+			case cm_store_entry_field_key_requested_count:
+				ret->cm_key_requested_count = atoi(p);
+				talloc_free(p);
+				break;
+			case cm_store_entry_field_key_next_requested_count:
+				ret->cm_key_next_requested_count = atoi(p);
+				talloc_free(p);
+				break;
+			case cm_store_entry_field_key_issued_count:
+				ret->cm_key_issued_count = atoi(p);
+				talloc_free(p);
+				break;
 			case cm_store_entry_field_cert_storage_type:
 				if (strcasecmp(p, "FILE") == 0) {
 					ret->cm_cert_storage_type =
@@ -1245,6 +1279,11 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_key_pubkey_info:
 			case cm_store_entry_field_key_next_pubkey:
 			case cm_store_entry_field_key_next_pubkey_info:
+			case cm_store_entry_field_key_generated_date:
+			case cm_store_entry_field_key_next_generated_date:
+			case cm_store_entry_field_key_requested_count:
+			case cm_store_entry_field_key_next_requested_count:
+			case cm_store_entry_field_key_issued_count:
 			case cm_store_entry_field_cert_storage_type:
 			case cm_store_entry_field_cert_storage_location:
 			case cm_store_entry_field_cert_token:
@@ -1742,6 +1781,19 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 				entry->cm_key_next_pubkey);
 	cm_store_file_write_str(fp, cm_store_entry_field_key_next_pubkey_info,
 				entry->cm_key_next_pubkey_info);
+
+	cm_store_file_write_str(fp, cm_store_entry_field_key_generated_date,
+				cm_store_timestamp_from_time(entry->cm_key_generated_date,
+							     timestamp));
+	cm_store_file_write_str(fp, cm_store_entry_field_key_next_generated_date,
+				cm_store_timestamp_from_time(entry->cm_key_next_generated_date,
+							     timestamp));
+	cm_store_file_write_int(fp, cm_store_entry_field_key_requested_count,
+				entry->cm_key_requested_count);
+	cm_store_file_write_int(fp, cm_store_entry_field_key_next_requested_count,
+				entry->cm_key_next_requested_count);
+	cm_store_file_write_int(fp, cm_store_entry_field_key_issued_count,
+				entry->cm_key_issued_count);
 
 	switch (entry->cm_cert_storage_type) {
 	case cm_cert_storage_file:
@@ -2551,6 +2603,12 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	ret->cm_key_next_pubkey_info = cm_store_maybe_strdup(ret, entry->cm_key_next_pubkey_info);
 	ret->cm_key_next_marker = cm_store_maybe_strdup(ret, entry->cm_key_next_marker);
 	ret->cm_key_preserve = entry->cm_key_preserve;
+
+	ret->cm_key_generated_date = entry->cm_key_generated_date;
+	ret->cm_key_next_generated_date = entry->cm_key_next_generated_date;
+	ret->cm_key_requested_count = entry->cm_key_requested_count;
+	ret->cm_key_next_requested_count = entry->cm_key_next_requested_count;
+	ret->cm_key_issued_count = entry->cm_key_issued_count;
 
 	ret->cm_cert_storage_type = entry->cm_cert_storage_type;
 	ret->cm_cert_storage_location = cm_store_maybe_strdup(ret, entry->cm_cert_storage_location);

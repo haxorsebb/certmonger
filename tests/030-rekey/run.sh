@@ -77,7 +77,10 @@ for preserve in 1 0 ; do
 	$toolsdir/keyiread entry.nss.$size > /dev/null 2>&1
 	$toolsdir/csrgen entry.nss.$size > csr.nss.$size
 	setupca
+	grep ^key.\*count= entry.nss.$size | LANG=C sort
+	echo '(submit NSS)'
 	$toolsdir/submit ca.self entry.nss.$size > cert.nss.$size
+	grep ^key.\*count= entry.nss.$size | LANG=C sort
 	# Use that OpenSSL key to generate a self-signed certificate.
 	cat > entry.openssl.$size <<- EOF
 	ca_name=self_signer
@@ -92,7 +95,10 @@ for preserve in 1 0 ; do
 	$toolsdir/keyiread entry.openssl.$size > /dev/null 2>&1
 	$toolsdir/csrgen entry.openssl.$size > csr.openssl.$size
 	setupca
+	grep ^key.\*count= entry.openssl.$size | LANG=C sort
+	echo '(submit OpenSSL)'
 	$toolsdir/submit ca.self entry.openssl.$size > cert.openssl.$size
+	grep ^key.\*count= entry.openssl.$size | LANG=C sort
 	# Now compare the self-signed certificates built from the keys.
 	if ! cmp cert.nss.$size cert.openssl.$size ; then
 		echo First round certificates differ:
@@ -106,6 +112,7 @@ for preserve in 1 0 ; do
 	echo "NSS keys before re-keygen (preserve=$preserve,pin=\"$pin\"):"
 	marker=`grep ^key_next_marker= entry.nss.$size | cut -f2- -d=`
 	run_certutil -K -d $tmpdir -f pinfile | grep -v 'Checking token' | sed -e s,"${marker:-////////}","(next)", | sed -r -e 's,[0123456789abcdef]{8},hex,g' -e 's,< 0>,<->,g' -e 's,< 1>,<->,g' | env LANG=C sort
+	grep ^key.\*count= entry.nss.$size | LANG=C sort
 	$toolsdir/keygen entry.nss.$size
 	echo "NSS keys after re-keygen (preserve=$preserve,pin=\"$pin\"):"
 	marker=`grep ^key_next_marker= entry.nss.$size | cut -f2- -d=`
@@ -113,7 +120,10 @@ for preserve in 1 0 ; do
 	$toolsdir/keyiread entry.nss.$size > /dev/null 2>&1
 	$toolsdir/csrgen entry.nss.$size > csr.nss.$size
 	setupca
+	grep ^key.\*count= entry.nss.$size | LANG=C sort
+	echo '(submit NSS)'
 	$toolsdir/submit ca.self entry.nss.$size > cert.nss.$size
+	grep ^key.\*count= entry.nss.$size | LANG=C sort
 
 	# Verify that we can still sign using the old key and cert using the right name (NSS).
 	echo "NSS certs before saving (preserve=$preserve,pin=\"$pin\"):"
@@ -132,7 +142,9 @@ for preserve in 1 0 ; do
 	certutil -M -d $tmpdir -n i$size -t ,,
 
 	# Go and save the new certs and keys (NSS).
+	echo '(saving)'
 	$toolsdir/certsave entry.nss.$size
+	grep ^key.\*count= entry.nss.$size | LANG=C sort
 	# Grab a copy of the public key (NSS).
 	certutil -L -d $tmpdir -n i$size -a | openssl x509 -pubkey -noout > "$tmpdir"/pubkey.nss
 
@@ -156,6 +168,7 @@ for preserve in 1 0 ; do
 	echo "PEM keys before re-keygen (preserve=$preserve,pin=\"$pin\"):"
 	marker=`grep ^key_next_marker= entry.openssl.$size | cut -f2- -d=`
 	find $tmpdir -name "keyi${size}*" -print | sed -e s,"${marker:-////////}","(next)", | env LANG=C sort
+	grep ^key.\*count= entry.openssl.$size | LANG=C sort
 	$toolsdir/keygen entry.openssl.$size
 	echo "PEM keys after re-keygen (preserve=$preserve,pin=\"$pin\"):"
 	marker=`grep ^key_next_marker= entry.openssl.$size | cut -f2- -d=`
@@ -163,7 +176,10 @@ for preserve in 1 0 ; do
 	$toolsdir/keyiread entry.openssl.$size > /dev/null 2>&1
 	$toolsdir/csrgen entry.openssl.$size > csr.openssl.$size
 	setupca
+	grep ^key.\*count= entry.openssl.$size | LANG=C sort
+	echo '(submit OpenSSL)'
 	$toolsdir/submit ca.self entry.openssl.$size > cert.openssl.$size
+	grep ^key.\*count= entry.openssl.$size | LANG=C sort
 
 	# Verify that we can still sign using the old key and cert (OpenSSL).
 	echo "PEM certs before saving (preserve=$preserve,pin=\"$pin\"):"
@@ -180,7 +196,9 @@ for preserve in 1 0 ; do
 	openssl smime -verify -CAfile certi$size -inform PEM -in signed
 
 	# Go and save the new certs and keys (OpenSSL).
+	echo '(saving)'
 	$toolsdir/certsave entry.openssl.$size
+	grep ^key.\*count= entry.openssl.$size | LANG=C sort
 	# Grab a copy of the public key (OpenSSL).
 	openssl x509 -pubkey -noout -in "$tmpdir"/certi$size > "$tmpdir"/pubkey.openssl
 
