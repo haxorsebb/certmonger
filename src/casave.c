@@ -261,10 +261,16 @@ cm_casave_main_o(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 			switch (errno) {
 			case EACCES:
 			case EPERM:
+				cm_log(1,
+				       "Permissions error opening \"%s\".\n",
+				       state->file);
 				fclose(fp);
 				return CM_CERTSAVE_STATUS_PERMS;
 				break;
 			default:
+				cm_log(1,
+				       "Error opening \"%s\": %s.\n",
+				       state->file, strerror(errno));
 				fclose(fp);
 				return CM_CERTSAVE_STATUS_INTERNAL_ERROR;
 				break;
@@ -884,7 +890,7 @@ cm_casave_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 	}
 
 	fclose(fp);
-	_exit(0);
+	_exit(CM_CERTSAVE_STATUS_SAVED);
 }
 
 struct cm_casave_state *
