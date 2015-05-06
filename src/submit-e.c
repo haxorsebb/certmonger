@@ -22,6 +22,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -32,6 +33,10 @@
 #include <dbus/dbus.h>
 
 #include <talloc.h>
+
+#include <openssl/bio.h>
+#include <openssl/pem.h>
+#include <openssl/x509.h>
 
 #include "env.h"
 #include "json.h"
@@ -449,14 +454,53 @@ cm_submit_e_done(struct cm_submit_state *state)
 	talloc_free(state);
 }
 
-/* Attempt to postprocess the helper output. */
+/* Dig the SubjectPublicKeyInfo out of the certificate, and return it
+ * hex-encoded, as we do when we're reading key information, so that we can
+ * easily compare it to values obtained from there. */
+static char *
+cm_submit_e_get_spki(void *parent, const char *pem)
+{
+	X509 *x = NULL;
+	BIO *in;
+	unsigned char *pubkey, *p;
+	char *wpem, *ret = NULL;
+	int pubkey_len;
+
+	wpem = talloc_strdup(parent, pem);
+	if (wpem != NULL) {
+		in = BIO_new_mem_buf(wpem, -1);
+		if (in != NULL) {
+			x = PEM_read_bio_X509(in, NULL, NULL, NULL);
+			BIO_free(in);
+		}
+	}
+	if (x != NULL) {
+		pubkey_len = i2d_X509_PUBKEY(X509_get_X509_PUBKEY(x), NULL);
+		if (pubkey_len > 0) {
+			pubkey = talloc_size(wpem, pubkey_len);
+			if (pubkey != NULL) {
+				i2d_X509_PUBKEY(X509_get_X509_PUBKEY(x), &p);
+				ret =cm_store_hex_from_bin(parent,
+							   pubkey,
+							   pubkey_len);
+			}
+		}
+		X509_free(x);
+	}
+	talloc_free(wpem);
+	return ret;
+}
+
+/* Attempt to postprocess the helper output, breaking up PKCS#7 signed data
+ * blobs into certificates, decrypting PKCS#7 enveloped data, and making a few
+ * sanity checks. */
 static int
 cm_submit_e_postprocess_main(int fd, struct cm_store_ca *ca,
 			     struct cm_store_entry *entry, void *userdata)
 {
 	struct cm_submit_external_state *estate = userdata;
 	struct cm_json *msg, *json, *chain, *roots, *tmp, *cert;
-	char *leaf = NULL, *top = NULL, **others = NULL, *encoded;
+	char *leaf = NULL, *top = NULL, **others = NULL, *encoded, *spki;
 	const char *eom = NULL;
 	char *toproot = NULL, *leafroot = NULL, **otherroots = NULL, *certlist;
 	int i;
@@ -567,7 +611,44 @@ cm_submit_e_postprocess_main(int fd, struct cm_store_ca *ca,
 		}
 		cm_log(3, "leaf(%p), top(%p), others(%d)\n", leaf, top, i);
 	}
+	/* Whatever format we got the data in, store the issued certificate and
+	 * any chain certificates in the output object. */
 	if ((i == 0) && (leaf != NULL)) {
+		spki = cm_submit_e_get_spki(json, leaf);
+		if (spki != NULL) {
+			if ((entry->cm_key_next_pubkey_info != NULL) &&
+			    (strlen(entry->cm_key_next_pubkey_info) > 0)) {
+				if (strcmp(spki, entry->cm_key_pubkey_info) == 0) {
+					/* We were issued a certificate
+					 * containing a the OLD pubkey. */
+					cm_json_set(json, "key_reused",
+						    cm_json_new_boolean(json, 1));
+				} else
+				if ((strcmp(spki, entry->cm_key_next_pubkey_info) != 0)) {
+					/* We were issued a certificate
+					 * containing a pubkey different from
+					 * one we asked to be signed. */
+					cm_json_set(json, "key_mismatch",
+						    cm_json_new_boolean(json, 1));
+				} else {
+					cm_json_set(json, "key_checked",
+						    cm_json_new_boolean(json, 1));
+				}
+			} else {
+				if ((strcmp(spki, entry->cm_key_pubkey_info) != 0)) {
+					/* We were issued a certificate
+					 * containing a pubkey different from
+					 * one we asked to be signed. */
+					cm_json_set(json, "key_mismatch",
+						    cm_json_new_boolean(json, 1));
+				} else {
+					cm_json_set(json, "key_checked",
+						    cm_json_new_boolean(json, 1));
+				}
+			}
+		} else {
+			cm_log(3, "Error retrieving SPKI from certificate.\n");
+		}
 		cm_json_set(json, "certificate",
 			    cm_json_new_string(json, leaf, -1));
 		chain = cm_json_new_object(json);
