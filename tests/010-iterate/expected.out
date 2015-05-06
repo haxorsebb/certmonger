@@ -6,7 +6,6 @@ HAVE_KEY_PAIR
 NEED_KEYINFO
 -STOP-
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=0
 
 [Reading back key info.]
@@ -18,7 +17,6 @@ NEED_CSR
 -STOP-
 key_size=2048
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=0
 
 [Generating CSR.]
@@ -31,7 +29,6 @@ GENERATING_CSR
 HAVE_CSR
 -STOP-
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=0
 
 [Getting CSR signed.]
@@ -42,7 +39,6 @@ SUBMITTING
 NEED_TO_SAVE_CERT
 -STOP-
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=1
 
 [Saving certificate.]
@@ -64,7 +60,6 @@ Certificate in file "$tmpdir/certfile" issued by CA and saved.
 MONITORING
 -STOP-
 key_issued_count=1
-key_next_requested_count=0
 key_requested_count=1
 
 [From-scratch enrollment scenario OK.]
@@ -174,7 +169,6 @@ HAVE_KEYINFO
 NEED_CSR
 -STOP-
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=0
 NEED_CSR
 -(RESET)-
@@ -185,7 +179,6 @@ GENERATING_CSR
 HAVE_CSR
 -STOP-
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=0
 HAVE_CSR
 -START-
@@ -194,7 +187,6 @@ SUBMITTING
 NEED_TO_SAVE_CERT
 -STOP-
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=1
 NEED_TO_SAVE_CERT
 -START-
@@ -203,7 +195,6 @@ SAVING_CERT
 SAVED_CERT
 -STOP-
 key_issued_count=1
-key_next_requested_count=0
 key_requested_count=1
 
 [Enroll, helper produces noise before.]
@@ -226,13 +217,11 @@ HAVE_CSR
 -START-
 NEED_TO_SUBMIT
 SUBMITTING
-NEED_TO_SAVE_CERT
+NEED_GUIDANCE
 -STOP-
-NEED_TO_SAVE_CERT
+NEED_GUIDANCE
 -START-
-START_SAVING_CERT
-SAVING_CERT
-SAVED_CERT
+NEED_GUIDANCE
 -STOP-
 
 [Enroll, helper produces noise after]
@@ -284,13 +273,11 @@ HAVE_CSR
 -START-
 NEED_TO_SUBMIT
 SUBMITTING
-NEED_TO_SAVE_CERT
+NEED_GUIDANCE
 -STOP-
-NEED_TO_SAVE_CERT
+NEED_GUIDANCE
 -START-
-START_SAVING_CERT
-SAVING_CERT
-SAVED_CERT
+NEED_GUIDANCE
 -STOP-
 
 [Enroll, helper omits newline at end of certificate.]
@@ -413,7 +400,6 @@ HAVE_KEYINFO
 NEED_CSR
 -STOP-
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=0
 NEED_CSR
 -(RESET)-
@@ -424,7 +410,6 @@ GENERATING_CSR
 HAVE_CSR
 -STOP-
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=0
 HAVE_CSR
 -START-
@@ -433,7 +418,6 @@ SUBMITTING
 NEED_TO_NOTIFY_REJECTION
 -STOP-
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=1
 NEED_TO_NOTIFY_REJECTION
 -START-
@@ -442,14 +426,12 @@ Request for certificate to be stored in file "$tmpdir/certfile3" rejected by CA.
 CA_REJECTED
 -STOP-
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=1
 CA_REJECTED
 -START-
 CA_REJECTED
 -STOP-
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=1
 
 [Enroll until the CA rejects us after poll.]
@@ -640,7 +622,6 @@ HAVE_KEYINFO
 NEED_CSR
 -STOP-
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=0
 NEED_CSR
 -(RESET)-
@@ -651,7 +632,6 @@ GENERATING_CSR
 HAVE_CSR
 -STOP-
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=0
 HAVE_CSR
 -START-
@@ -660,7 +640,6 @@ SUBMITTING
 NEED_SCEP_DATA
 -STOP-
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=1
 NEED_SCEP_DATA
 -START-
@@ -669,7 +648,6 @@ HAVE_SCEP_DATA
 NEED_TO_SUBMIT
 -STOP-
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=1
 
 [CA poll timeout remaining=0.]
