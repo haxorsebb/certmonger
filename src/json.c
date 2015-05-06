@@ -596,7 +596,7 @@ cm_json_decode_string(void *parent, const char *s, ssize_t length,
 {
 	char *ret = NULL, *q, *end;
 	const char *p, *hex, *hexchars = "00112233445566778899AaBbCcDdEeFf", *psave;
-	int unesc = 0, i;
+	int unesc = 0, i, closed = 0;
 	uint32_t point, point2;
 
 	if (out_length != NULL) {
@@ -613,6 +613,7 @@ cm_json_decode_string(void *parent, const char *s, ssize_t length,
 		case '"':
 			length = p - s;
 			*next = s + length + 1;
+			closed++;
 			break;
 		case '\\':
 			psave = p;
@@ -668,6 +669,10 @@ cm_json_decode_string(void *parent, const char *s, ssize_t length,
 			unesc++;
 			break;
 		}
+	}
+	if (!closed) {
+		*next = p;
+		return NULL;
 	}
 	ret = talloc_size(parent, unesc + 1);
 	end = ret + unesc + 1;
