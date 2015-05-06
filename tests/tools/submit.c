@@ -144,6 +144,28 @@ main(int argc, char **argv)
 				       "under-configured.\n");
 			}
 			ret = CM_SUBMIT_STATUS_UNCONFIGURED;
+		} else
+		if (cm_submit_need_scep_messages(state) == 0) {
+			if (entry->cm_ca_error != NULL) {
+				printf("CA helper needs SCEP "
+				       "messages: %s.\n",
+				       entry->cm_ca_error);
+			} else {
+				printf("CA helper needs SCEP "
+				       "messages.\n");
+			}
+			ret = CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
+		} else
+		if (cm_submit_need_rekey(state) == 0) {
+			if (entry->cm_ca_error != NULL) {
+				printf("CA helper says we need to "
+				       "rekey: %s.\n",
+				       entry->cm_ca_error);
+			} else {
+				printf("CA helper says we need to "
+				       "rekey.\n");
+			}
+			ret = CM_SUBMIT_STATUS_NEED_REKEY;
 		} else {
 			printf("Can't explain what happened.\n");
 			ret = -1;
