@@ -1838,16 +1838,24 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 	cm_store_file_write_str(fp, cm_store_entry_field_key_next_pubkey_info,
 				entry->cm_key_next_pubkey_info);
 
-	cm_store_file_write_str(fp, cm_store_entry_field_key_generated_date,
-				cm_store_timestamp_from_time(entry->cm_key_generated_date,
-							     timestamp));
-	cm_store_file_write_str(fp, cm_store_entry_field_key_next_generated_date,
-				cm_store_timestamp_from_time(entry->cm_key_next_generated_date,
-							     timestamp));
+	if (entry->cm_key_generated_date != 0) {
+		cm_store_file_write_str(fp, cm_store_entry_field_key_generated_date,
+					cm_store_timestamp_from_time(entry->cm_key_generated_date,
+								     timestamp));
+	}
+	if ((entry->cm_key_next_marker != NULL) &&
+	    (strlen(entry->cm_key_next_marker) > 0)) {
+		cm_store_file_write_str(fp, cm_store_entry_field_key_next_generated_date,
+					cm_store_timestamp_from_time(entry->cm_key_next_generated_date,
+								     timestamp));
+	}
 	cm_store_file_write_int(fp, cm_store_entry_field_key_requested_count,
 				entry->cm_key_requested_count);
-	cm_store_file_write_int(fp, cm_store_entry_field_key_next_requested_count,
-				entry->cm_key_next_requested_count);
+	if ((entry->cm_key_next_marker != NULL) &&
+	    (strlen(entry->cm_key_next_marker) > 0)) {
+		cm_store_file_write_int(fp, cm_store_entry_field_key_next_requested_count,
+					entry->cm_key_next_requested_count);
+	}
 	cm_store_file_write_int(fp, cm_store_entry_field_key_issued_count,
 				entry->cm_key_issued_count);
 

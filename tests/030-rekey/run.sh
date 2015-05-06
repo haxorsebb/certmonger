@@ -62,6 +62,7 @@ for preserve in 1 0 ; do
 	echo key_pin_file=`pwd`/pinfile >> entry.openssl.$size
 	$toolsdir/keyiread entry.openssl.$size > /dev/null 2>&1
 	# Use that NSS key to generate a self-signed certificate.
+	echo '(prep NSS)'
 	cat > entry.nss.$size <<- EOF
 	ca_name=self_signer
 	key_storage_type=NSSDB
@@ -82,6 +83,7 @@ for preserve in 1 0 ; do
 	$toolsdir/submit ca.self entry.nss.$size > cert.nss.$size
 	grep ^key.\*count= entry.nss.$size | LANG=C sort
 	# Use that OpenSSL key to generate a self-signed certificate.
+	echo '(prep OpenSSL)'
 	cat > entry.openssl.$size <<- EOF
 	ca_name=self_signer
 	key_storage_type=FILE

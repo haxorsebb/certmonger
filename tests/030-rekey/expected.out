@@ -1,23 +1,20 @@
 [ Begin pass (preserve=1,pin=""). ]
+(prep NSS)
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=0
 (submit NSS)
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=1
+(prep OpenSSL)
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=0
 (submit OpenSSL)
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=1
 First round certificates OK.
 NSS keys before re-keygen (preserve=1,pin=""):
 <-> rsa      hexhexhexhexhex   NSS Certificate DB:i2048
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=1
 OK.
 NSS keys after re-keygen (preserve=1,pin=""):
@@ -41,7 +38,6 @@ NSS Verify:
 This is the plaintext.
 (saving)
 key_issued_count=1
-key_next_requested_count=0
 key_requested_count=1
 NSS certs after saving (preserve=1,pin=""):
 i2048                                                        u,u,u
@@ -55,7 +51,6 @@ This is the plaintext.
 PEM keys before re-keygen (preserve=1,pin=""):
 ${tmpdir}/keyi2048
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=1
 OK.
 PEM keys after re-keygen (preserve=1,pin=""):
@@ -79,7 +74,6 @@ OpenSSL Verify:
 This is the plaintext.
 (saving)
 key_issued_count=1
-key_next_requested_count=0
 key_requested_count=1
 PEM certs after saving (preserve=1,pin=""):
 ${tmpdir}/certi2048
@@ -92,25 +86,22 @@ OpenSSL Verify:
 This is the plaintext.
 [ End pass (preserve=1,pin=""). ]
 [ Begin pass (preserve=1,pin="password"). ]
+(prep NSS)
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=0
 (submit NSS)
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=1
+(prep OpenSSL)
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=0
 (submit OpenSSL)
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=1
 First round certificates OK.
 NSS keys before re-keygen (preserve=1,pin="password"):
 <-> rsa      hexhexhexhexhex   NSS Certificate DB:i2048
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=1
 OK.
 NSS keys after re-keygen (preserve=1,pin="password"):
@@ -134,7 +125,6 @@ NSS Verify:
 This is the plaintext.
 (saving)
 key_issued_count=1
-key_next_requested_count=0
 key_requested_count=1
 NSS certs after saving (preserve=1,pin="password"):
 i2048                                                        u,u,u
@@ -148,7 +138,6 @@ This is the plaintext.
 PEM keys before re-keygen (preserve=1,pin="password"):
 ${tmpdir}/keyi2048
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=1
 OK.
 PEM keys after re-keygen (preserve=1,pin="password"):
@@ -172,7 +161,6 @@ OpenSSL Verify:
 This is the plaintext.
 (saving)
 key_issued_count=1
-key_next_requested_count=0
 key_requested_count=1
 PEM certs after saving (preserve=1,pin="password"):
 ${tmpdir}/certi2048
@@ -185,25 +173,22 @@ OpenSSL Verify:
 This is the plaintext.
 [ End pass (preserve=1,pin="password"). ]
 [ Begin pass (preserve=0,pin=""). ]
+(prep NSS)
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=0
 (submit NSS)
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=1
+(prep OpenSSL)
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=0
 (submit OpenSSL)
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=1
 First round certificates OK.
 NSS keys before re-keygen (preserve=0,pin=""):
 <-> rsa      hexhexhexhexhex   NSS Certificate DB:i2048
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=1
 OK.
 NSS keys after re-keygen (preserve=0,pin=""):
@@ -227,7 +212,6 @@ NSS Verify:
 This is the plaintext.
 (saving)
 key_issued_count=1
-key_next_requested_count=0
 key_requested_count=1
 NSS certs after saving (preserve=0,pin=""):
 i2048                                                        u,u,u
@@ -240,7 +224,6 @@ This is the plaintext.
 PEM keys before re-keygen (preserve=0,pin=""):
 ${tmpdir}/keyi2048
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=1
 OK.
 PEM keys after re-keygen (preserve=0,pin=""):
@@ -264,7 +247,6 @@ OpenSSL Verify:
 This is the plaintext.
 (saving)
 key_issued_count=1
-key_next_requested_count=0
 key_requested_count=1
 PEM certs after saving (preserve=0,pin=""):
 ${tmpdir}/certi2048
@@ -276,25 +258,22 @@ OpenSSL Verify:
 This is the plaintext.
 [ End pass (preserve=0,pin=""). ]
 [ Begin pass (preserve=0,pin="password"). ]
+(prep NSS)
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=0
 (submit NSS)
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=1
+(prep OpenSSL)
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=0
 (submit OpenSSL)
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=1
 First round certificates OK.
 NSS keys before re-keygen (preserve=0,pin="password"):
 <-> rsa      hexhexhexhexhex   NSS Certificate DB:i2048
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=1
 OK.
 NSS keys after re-keygen (preserve=0,pin="password"):
@@ -318,7 +297,6 @@ NSS Verify:
 This is the plaintext.
 (saving)
 key_issued_count=1
-key_next_requested_count=0
 key_requested_count=1
 NSS certs after saving (preserve=0,pin="password"):
 i2048                                                        u,u,u
@@ -331,7 +309,6 @@ This is the plaintext.
 PEM keys before re-keygen (preserve=0,pin="password"):
 ${tmpdir}/keyi2048
 key_issued_count=0
-key_next_requested_count=0
 key_requested_count=1
 OK.
 PEM keys after re-keygen (preserve=0,pin="password"):
@@ -355,7 +332,6 @@ OpenSSL Verify:
 This is the plaintext.
 (saving)
 key_issued_count=1
-key_next_requested_count=0
 key_requested_count=1
 PEM certs after saving (preserve=0,pin="password"):
 ${tmpdir}/certi2048
