@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.77.2
+Version:	0.77.3
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -239,6 +239,12 @@ exit 0
 %endif
 
 %changelog
+* Thu May  7 2015 Nalin Dahyabhai <nalin@redhat.com> 0.77.3-1
+- fix a data loss bug when saving renewed certificates to NSS databases - the
+  private key could be removed in error since 0.77
+- fixes for bugs found by static analysis
+- fix self-tests when built with OpenSSL 1.0.2
+
 * Tue Apr 14 2015 Nalin Dahyabhai <nalin@redhat.com> 0.77.2-1
 - expose the certificate's not-valid-before and not-valid-after dates as a
   property over D-Bus (ticket #41)
