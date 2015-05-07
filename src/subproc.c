@@ -59,6 +59,11 @@ struct cm_subproc_state {
 	int fd, count, bufsize, status;
 };
 
+/* Start the passed callback in a subprocess, with a pipe that it can use to
+ * send data back to us.  If the callback exits, it must do so by calling
+ * _exit() or exec(), to avoid calling exit handlers registered by libraries
+ * that we use, which will screw us up.  Pretty much every bit of work that we
+ * can't do quickly is done this way. */
 struct cm_subproc_state *
 cm_subproc_start(int (*cb)(int fd,
 			   struct cm_store_ca *ca,
@@ -383,7 +388,7 @@ cm_subproc_parse_args(void *parent, const char *cmdline, const char **error)
 }
 
 /* Redirect stdio to /dev/null, and mark everything else as close-on-exec,
- * except for perhaps one of them that is passed in by number. */
+ * except for perhaps one to three of them that are passed in by number. */
 void
 cm_subproc_mark_most_cloexec(int fd, int fd2, int fd3)
 {

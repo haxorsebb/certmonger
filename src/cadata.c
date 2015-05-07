@@ -55,6 +55,7 @@ struct cm_cadata_state {
 	unsigned int modified: 1;
 };
 
+/* Callback that just runs the helper to gather the specified data. */
 static int
 fetch(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry, void *data)
 {
@@ -100,6 +101,7 @@ fetch(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry, void *data)
 	return u;
 }
 
+/* Parse IDENTIFY output.  It's just an arbitrary string. */
 static void
 parse_identification(struct cm_store_ca *ca, struct cm_cadata_state *state,
 		     const char *msg)
@@ -130,6 +132,7 @@ parse_identification(struct cm_store_ca *ca, struct cm_cadata_state *state,
 	talloc_free(old_aka);
 }
 
+/* Compare two lists of nickname+certificate pairs. */
 static int
 nickcertlistcmp(struct cm_nickcert **a, struct cm_nickcert **b)
 {
@@ -174,6 +177,7 @@ nickcertlistcmp(struct cm_nickcert **a, struct cm_nickcert **b)
 	}
 }
 
+/* Parse a list of nickname+certificate pairs. */
 static const char *
 parse_cert_list(struct cm_store_ca *ca, struct cm_cadata_state *state,
 		const char *msg, struct cm_nickcert ***list)
@@ -241,6 +245,7 @@ parse_cert_list(struct cm_store_ca *ca, struct cm_cadata_state *state,
 	return p;
 }
 
+/* Parse three lists of nickname+certificate pairs. */
 static void
 parse_certs(struct cm_store_ca *ca, struct cm_cadata_state *state,
 	    const char *msg)
@@ -274,6 +279,8 @@ parse_certs(struct cm_store_ca *ca, struct cm_cadata_state *state,
 	}
 }
 
+/* Parse a list of comma or newline-separated items.  This handles both SCEP
+ * capability lists and our lists of required attributes. */
 static void
 parse_list(struct cm_store_ca *ca, struct cm_cadata_state *state,
 	   const char *msg, const char **dict, char ***list)
@@ -360,6 +367,7 @@ parse_list(struct cm_store_ca *ca, struct cm_cadata_state *state,
 	*list = reqs;
 }
 
+/* Parse a list of known profiles. */
 static void
 parse_profiles(struct cm_store_ca *ca, struct cm_cadata_state *state,
 	       const char *msg)
@@ -367,6 +375,7 @@ parse_profiles(struct cm_store_ca *ca, struct cm_cadata_state *state,
 	parse_list(ca, state, msg, NULL, &ca->cm_ca_profiles);
 }
 
+/* Parse a single profile name that we'll advertise as a default. */
 static void
 parse_default_profile(struct cm_store_ca *ca, struct cm_cadata_state *state,
 		      const char *msg)
@@ -402,6 +411,8 @@ parse_default_profile(struct cm_store_ca *ca, struct cm_cadata_state *state,
 	talloc_free(old_dp);
 }
 
+/* Parse a list of properties that the helper expects us to have set for new
+ * enrollment requests. */
 static void
 parse_enroll_reqs(struct cm_store_ca *ca, struct cm_cadata_state *state,
 		  const char *msg)
@@ -410,6 +421,8 @@ parse_enroll_reqs(struct cm_store_ca *ca, struct cm_cadata_state *state,
 		   &ca->cm_ca_required_enroll_attributes);
 }
 
+/* Parse a list of properties that the helper expects us to have set for
+ * renewal requests. */
 static void
 parse_renew_reqs(struct cm_store_ca *ca, struct cm_cadata_state *state,
 		 const char *msg)
@@ -418,6 +431,7 @@ parse_renew_reqs(struct cm_store_ca *ca, struct cm_cadata_state *state,
 		   &ca->cm_ca_required_renewal_attributes);
 }
 
+/* Parse a list of SCEP capabilities. */
 static void
 parse_capabilities(struct cm_store_ca *ca, struct cm_cadata_state *state,
 		   const char *msg)
@@ -425,6 +439,7 @@ parse_capabilities(struct cm_store_ca *ca, struct cm_cadata_state *state,
 	parse_list(ca, state, msg, NULL, &ca->cm_ca_capabilities);
 }
 
+/* Compare two strings, treating NULL and empty as the same. */
 static dbus_bool_t
 strings_differ(const char *a, const char *b)
 {
@@ -437,6 +452,10 @@ strings_differ(const char *a, const char *b)
 	return (strcmp(a, b) != 0);
 }
 
+/* Parse SCEP encryption certificate data, which is a series of concatenated
+ * X.509 certificates.  The first is for the SCEP server.  The second, if there
+ * is one, is for the CA.  Any additional certificates are assumed to be
+ * intermediates. */
 static void
 parse_encryption_certs(struct cm_store_ca *ca, struct cm_cadata_state *state,
 		       const char *msg)
@@ -494,6 +513,8 @@ parse_encryption_certs(struct cm_store_ca *ca, struct cm_cadata_state *state,
 			  strings_differ(oldep, ca->cm_ca_encryption_cert_pool);
 }
 
+/* Start the helper with the right $CERTMONGER_OPERATION, and feed the output
+ * to the right parser callback. */
 static struct cm_cadata_state *
 cm_cadata_start_generic(struct cm_store_ca *ca, const char *op,
 			void (*parse)(struct cm_store_ca *,

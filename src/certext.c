@@ -53,7 +53,8 @@
 #include "store-int.h"
 #include "util-n.h"
 
-/* Structures and templates for parsing principal name otherName values. */
+/* Structures and templates for creating and parsing principal name otherName
+ * values. */
 struct realm {
 	SECItem name;
 };
@@ -582,6 +583,8 @@ cm_certext_build_eku(struct cm_store_entry *entry, PLArenaPool *arena,
 	return ret;
 }
 
+/* Pull the nth component out of a principal name structure.  Treat numbers
+ * less than zero as a request for the realm name. */
 static unsigned char *
 cm_certext_princ_data(krb5_context ctx, krb5_principal princ, int i)
 {
@@ -600,6 +603,8 @@ cm_certext_princ_data(krb5_context ctx, krb5_principal princ, int i)
 	}
 }
 
+/* Return the length of the data that cm_certext_princ_data() will return for a
+ * given index. */
 static int
 cm_certext_princ_len(krb5_context ctx, krb5_principal princ, int i)
 {
@@ -618,6 +623,7 @@ cm_certext_princ_len(krb5_context ctx, krb5_principal princ, int i)
 	}
 }
 
+/* Return a the name-type from a principal name structure. */
 static int
 cm_certext_princ_get_type(krb5_context ctx, krb5_principal princ)
 {
@@ -628,6 +634,7 @@ cm_certext_princ_get_type(krb5_context ctx, krb5_principal princ)
 #endif
 }
 
+/* Set the name-type in a principal name structure. */
 static void
 cm_certext_princ_set_type(krb5_context ctx, krb5_principal princ, int nt)
 {
@@ -638,6 +645,7 @@ cm_certext_princ_set_type(krb5_context ctx, krb5_principal princ, int nt)
 #endif
 }
 
+/* Free an unparsed principal name. */
 static void
 cm_certext_free_unparsed_name(krb5_context ctx, char *name)
 {
@@ -648,6 +656,7 @@ cm_certext_free_unparsed_name(krb5_context ctx, char *name)
 #endif
 }
 
+/* Check how many components are in a principal name. */
 static int
 cm_certext_princ_get_length(krb5_context ctx, krb5_principal princ)
 {
@@ -658,6 +667,7 @@ cm_certext_princ_get_length(krb5_context ctx, krb5_principal princ)
 #endif
 }
 
+/* Set how many components are in a principal name. */
 static void
 cm_certext_princ_set_length(krb5_context ctx, krb5_principal princ, int length)
 {
@@ -668,6 +678,8 @@ cm_certext_princ_set_length(krb5_context ctx, krb5_principal princ, int length)
 #endif
 }
 
+/* Set a realm name in a principal name to point to a copy of the passed-in
+ * name owned by "parent". */
 static void
 cm_certext_princ_set_realm(krb5_context ctx, void *parent, krb5_principal princ,
 			   int length, char *name)
@@ -685,6 +697,8 @@ cm_certext_princ_set_realm(krb5_context ctx, void *parent, krb5_principal princ,
 #endif
 }
 
+/* Append a component to a principal name, using storage owned by "parent" to
+ * hold a copy of the passed-in component value. */
 static void
 cm_certext_princ_append_comp(krb5_context ctx, void *parent,
 			     krb5_principal princ, char *name, int length)
@@ -1454,7 +1468,7 @@ cm_certext_build_aia(struct cm_store_entry *entry, PLArenaPool *arena,
 	return item;
 }
 
-/* Build a CRL distribution points extension value. */
+/* Build a CRL distribution points or freshest CRL extension value. */
 static SECItem *
 cm_certext_build_crldp(struct cm_store_entry *entry, PLArenaPool *arena,
 		       char **crldp)
@@ -1866,6 +1880,7 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 	PORT_FreeArena(arena, PR_TRUE);
 }
 
+/* Read a basicConstraints extension. */
 static void
 cm_certext_read_basic(struct cm_store_entry *entry, PLArenaPool *arena,
 		      CERTCertExtension *ext)
@@ -1884,6 +1899,7 @@ cm_certext_read_basic(struct cm_store_entry *entry, PLArenaPool *arena,
 	}
 }
 
+/* Read a Netscape comment extension. */
 static void
 cm_certext_read_nsc(struct cm_store_entry *entry, PLArenaPool *arena,
 		    CERTCertExtension *ext)
@@ -1906,6 +1922,8 @@ cm_certext_read_nsc(struct cm_store_entry *entry, PLArenaPool *arena,
 	}
 }
 
+/* Read an authorityInformationAccess extension, and keep track of any OCSP
+ * responders that we find in it. */
 static void
 cm_certext_read_aia(struct cm_store_entry *entry, PLArenaPool *arena,
 		    CERTCertExtension *ext)
@@ -1950,6 +1968,8 @@ cm_certext_read_aia(struct cm_store_entry *entry, PLArenaPool *arena,
 	}
 }
 
+/* Read a CRL distribution points or freshest CRL extension, and return any
+ * locations that we find in it. */
 static void
 cm_certext_read_crlext(struct cm_store_entry *entry, PLArenaPool *arena,
 		       CERTCertExtension *ext, char ***dest)
@@ -1997,6 +2017,7 @@ cm_certext_read_crlext(struct cm_store_entry *entry, PLArenaPool *arena,
 	*dest = list;
 }
 
+/* Read the list of CRL distribution points. */
 static void
 cm_certext_read_crldp(struct cm_store_entry *entry, PLArenaPool *arena,
 		      CERTCertExtension *ext)
@@ -2005,6 +2026,7 @@ cm_certext_read_crldp(struct cm_store_entry *entry, PLArenaPool *arena,
 			       &entry->cm_cert_crl_distribution_point);
 }
 
+/* Read the list of locations where we can find the freshest CRL. */
 static void
 cm_certext_read_freshest_crl(struct cm_store_entry *entry, PLArenaPool *arena,
 			     CERTCertExtension *ext)
@@ -2012,6 +2034,7 @@ cm_certext_read_freshest_crl(struct cm_store_entry *entry, PLArenaPool *arena,
 	cm_certext_read_crlext(entry, arena, ext, &entry->cm_cert_freshest_crl);
 }
 
+/* Parse the data from a Microsoft certificate type extension. */
 static void
 cm_certext_read_profile(struct cm_store_entry *entry, PLArenaPool *arena,
 			CERTCertExtension *ext)
@@ -2036,6 +2059,7 @@ cm_certext_read_profile(struct cm_store_entry *entry, PLArenaPool *arena,
 	}
 }
 
+/* Parse the data from a Netscape certificate type extension. */
 static void
 cm_certext_read_ns_certtype(struct cm_store_entry *entry, PLArenaPool *arena,
 			    CERTCertExtension *ext)

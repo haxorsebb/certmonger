@@ -155,7 +155,7 @@ main(int argc, const char **argv)
 	}
 
 	/* Clean up the CSR -- make sure it's not a "NEW" request.  certmaster
-	 * rewrites the incoming request to its cache previously-received
+	 * rewrites the incoming request to cache previously-received
 	 * requests, and in doing so uses a different PEM header than the one
 	 * we default to using.  So turn any "NEW CERTIFICATE REQUEST" notes
 	 * into "CERTIFICATE REQUEST" before sending them. */

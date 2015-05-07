@@ -224,6 +224,8 @@ main(int argc, const char **argv)
 
 	umask(S_IRWXG | S_IRWXO);
 
+	/* Set our working directory - the root for a system instance, the
+	 * configuration directory for a session instance. */
 	switch (bus) {
 	case cm_tdbus_private:
 	case cm_tdbus_system:
@@ -243,6 +245,10 @@ main(int argc, const char **argv)
 		cm_log(2, "Obtaining session lock.\n");
 		break;
 	}
+
+	/* Open the lock file.  This is primarily here to avoid having multiple
+	 * session copies attempting to read and write and operate on the same
+	 * records at the same time. */
 	lfd = open(cm_env_lock_file(), O_RDWR | O_CREAT,
 		   S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 	if (lfd == -1) {
@@ -269,6 +275,7 @@ main(int argc, const char **argv)
 		}
 	}
 
+	/* Load up all of our data. */
 	ctx = NULL;
 	i = cm_init(ec, &ctx, bustime, gate_command);
 	if (i != 0) {
@@ -278,6 +285,7 @@ main(int argc, const char **argv)
 	}
 
 	if (!server_only) {
+		/* Join a bus and obtain our well-known name. */
 		if (cm_tdbus_setup_public(ec, bus, ctx, &error) != 0) {
 			fprintf(stderr, "Error connecting to D-Bus.\n");
 			hint = cm_tdbusm_hint(ec, error.name, error.message);
@@ -289,6 +297,7 @@ main(int argc, const char **argv)
 		}
 	}
 	if (server) {
+		/* Set up a private listening socket. */
 		if (cm_tdbus_setup_private(ec, ctx, path, &address,
 					   &error) != 0) {
 			fprintf(stderr, "Error setting up D-Bus listener.\n");
@@ -302,6 +311,7 @@ main(int argc, const char **argv)
 		cm_set_server_address(ctx, address);
 	}
 
+	/* Create the pid file, if we need to. */
 	if (pidfile != NULL) {
 		pfd = open(pidfile, O_RDWR | O_CREAT,
 			   S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
@@ -390,6 +400,8 @@ main(int argc, const char **argv)
 			fflush(pfp);
 		}
 	}
+
+	/* Kick each request and CA's state machine off. */
 	if (cm_start_all(ctx) == 0) {
 		do {
 			i = tevent_loop_once(ec);
@@ -402,8 +414,12 @@ main(int argc, const char **argv)
 		cm_log(3, "Shutting down.\n");
 		cm_stop_all(ctx);
 	}
+
+	/* Clean up. */
 	talloc_free(ctx);
 	talloc_free(ec);
+
+	/* Remove the PID file. */
 	if ((pidfile != NULL) && (pfp != NULL)) {
 		if (remove(pidfile) != 0) {
 			cm_log(0, "Error removing pidfile \"%s\": %s.\n",
