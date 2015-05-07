@@ -323,7 +323,8 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 								      NULL);
 				if (certlist != NULL) {
 					/* Look for certs with different
-					 * subject names. */
+					 * subject names but the same nickname,
+					 * because they've got to go. */
 					for (node = CERT_LIST_HEAD(certlist);
 					     (node != NULL) &&
 					     !CERT_LIST_EMPTY(certlist) &&
@@ -346,6 +347,11 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 							       node->cert->subjectName ?
 							       node->cert->subjectName :
 							       "");
+							/* Get a handle for the
+							 * old certificate's
+							 * private key, in case
+							 * we need to remove or
+							 * rename it. */
 							if (privkey == NULL) {
 								privkey = PK11_FindKeyByAnyCert(node->cert, NULL);
 								serial = cm_store_hex_from_bin(NULL,
@@ -367,7 +373,9 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 							      PR_FALSE,
 							      PR_FALSE);
 			if (certlist != NULL) {
-				/* Look for certs with different nicknames. */
+				/* Look for certs with different nicknames but
+				 * the same subject name, because those have
+				 * got to go. */
 				i = 0;
 				for (node = CERT_LIST_HEAD(certlist);
 				     (node != NULL) &&
@@ -494,6 +502,11 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 							       "different "
 							       "contents, "
 							       "removing it.\n");
+							/* Get a handle for the
+							 * old certificate's
+							 * private key, in case
+							 * we need to remove or
+							 * rename it. */
 							if (privkey == NULL) {
 								privkey = PK11_FindKeyByAnyCert(node->cert, NULL);
 								serial = cm_store_hex_from_bin(NULL,
@@ -531,9 +544,12 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				}
 			}
 			if (privkey != NULL) {
-				/* If there are no more certificates, try to rename the key. */
+				/* Check if any certificates are still using the old key. */
 				oldcert = PK11_GetCertFromPrivateKey(privkey);
 				if (oldcert == NULL) {
+					/* Now that there should be no more
+					 * certificates using the old key, try
+					 * to rename the old key. */
 					p = util_build_old_nickname(entry->cm_cert_nickname, serial);
 					if (p != NULL) {
 						error = PK11_SetPrivateKeyNickname(privkey, p);
@@ -565,12 +581,15 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 						}
 					}
 				} else {
+					/* Leave the name alone.  If we're not
+					 * rekeying, the certificate that's
+					 * using the key is the one that we
+					 * just imported. */
 					CERT_DestroyCertificate(oldcert);
 				}
-				/* If we're not saving keys, remove this one. */
-				if (entry->cm_key_preserve) {
-					SECKEY_DestroyPrivateKey(privkey);
-				} else {
+				if (!entry->cm_key_preserve && (oldcert == NULL)) {
+					/* We're not preserving keys, so remove
+					 * the old one. */
 					PK11_DeleteTokenPrivateKey(privkey, PR_TRUE);
 					if (error == SECSuccess) {
 						cm_log(3, "Removed "
@@ -593,13 +612,19 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 							       "old key.\n");
 						}
 					}
-					SECKEY_DestroyPrivateKey(privkey);
 				}
+				SECKEY_DestroyPrivateKey(privkey);
 			}
+			/* If we managed to import the certificate, set the
+			 * desired nickname on it.  We've deleted all possible
+			 * conflicts already, so this should work. */
 			if ((returned != NULL) && (returned[0] != NULL)) {
 				privkey = PK11_FindKeyByAnyCert(returned[0], NULL);
 				CERT_DestroyCertArray(returned, 1);
 				if (privkey != NULL) {
+					/* Set the nickname on the private key,
+					 * too, so that it matches the
+					 * certificate. */
 					error = PK11_SetPrivateKeyNickname(privkey, entry->cm_key_nickname);
 					if (error == SECSuccess) {
 						cm_log(3, "Renamed new key to "
@@ -633,6 +658,8 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		if (NSS_ShutdownContext(ctx) != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
+		/* Fixup the ownership and permissions on the key and
+		 * certificate databases. */
 		util_set_db_entry_key_owner(entry->cm_key_storage_location, entry);
 		util_set_db_entry_cert_owner(entry->cm_cert_storage_location, entry);
 	}
