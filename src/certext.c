@@ -1463,13 +1463,8 @@ cm_certext_build_crldp(struct cm_store_entry *entry, PLArenaPool *arena,
 	CRLDistributionPoint *value, **values;
 	CERTGeneralName *location;
 	SECItem encoded, *item;
-	SECOidData *oid;
 	unsigned int i, j, n;
 
-	oid = SECOID_FindOIDByTag(SEC_OID_PKIX_OCSP);
-	if (oid == NULL) {
-		return NULL;
-	}
 	for (n = 0; (crldp != NULL) && (crldp[n] != NULL); n++) {
 		continue;
 	}
