@@ -39,6 +39,7 @@
 #include "certsave.h"
 #include "certsave-int.h"
 #include "log.h"
+#include "pin.h"
 #include "store.h"
 #include "store-int.h"
 #include "subproc.h"
@@ -157,13 +158,15 @@ cm_certsave_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		   void *userdata)
 {
 	int status = -1;
-	BIO *bio;
+	BIO *bio = NULL;
 	FILE *pem;
 	X509 *cert;
 	char *next_keyfile = NULL, *old_keyfile = NULL, *serial = NULL;
-	char *old_key = NULL, *next_key = NULL, *old_cert = NULL;
+	char *old_key = NULL, *next_key = NULL, *old_cert = NULL, *pin;
 	unsigned char *bin;
 	BIGNUM *bn;
+	struct cm_pin_cb_data cb_data;
+	EVP_PKEY *old_pkey = NULL;
 
 	if (entry->cm_cert_storage_location == NULL) {
 		cm_log(1, "Error saving certificate: no location "
@@ -173,10 +176,14 @@ cm_certsave_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 
 	util_o_init();
 
+	/* If we're about to switch out the private key, because we're
+	 * rekeying, ... */
 	if ((entry->cm_key_storage_location != NULL) &&
 	    (entry->cm_cert_storage_location != NULL) &&
 	    (entry->cm_key_next_marker != NULL) &&
 	    (strlen(entry->cm_key_next_marker) > 0)) {
+		/* ... read the candidate key file's contents and the old
+		 * certificate, along with the old key file's contents. */
 		next_keyfile = util_build_next_filename(entry->cm_key_storage_location,
 							entry->cm_key_next_marker);
 		if (next_keyfile == NULL) {
@@ -190,8 +197,49 @@ cm_certsave_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					     "key file", PR_TRUE);
 		old_cert = read_file_contents(entry->cm_cert_storage_location,
 					      "certificate file", PR_FALSE);
+	} else
+	if (entry->cm_key_storage_location != NULL) {
+		/* Or just read the old file's contents. */
+		old_key = read_file_contents(entry->cm_key_storage_location,
+					     "key file", PR_TRUE);
 	}
 
+	/* Decrypt the old key. */
+	if (old_key != NULL) {
+		bio = BIO_new_mem_buf(old_key, -1);
+	}
+	if (bio != NULL) {
+		if (cm_pin_read_for_key(entry, &pin) != 0) {
+			cm_log(1, "Error reading key encryption PIN.\n");
+			_exit(CM_CERTSAVE_STATUS_AUTH);
+		}
+		memset(&cb_data, 0, sizeof(cb_data));
+		cb_data.entry = entry;
+		cb_data.n_attempts = 0;
+		old_pkey = PEM_read_bio_PrivateKey(bio, NULL,
+						   cm_pin_read_for_key_ossl_cb,
+						   &cb_data);
+		if (old_pkey == NULL) {
+			cm_log(1, "Internal error reading key from \"%s\".\n",
+			       entry->cm_key_storage_location);
+			_exit(CM_CERTSAVE_STATUS_AUTH); /* XXX */
+		} else {
+			if ((pin != NULL) &&
+			    (strlen(pin) > 0) &&
+			    (cb_data.n_attempts == 0)) {
+				cm_log(1, "PIN was not needed to read private "
+				       "key '%s', though one was provided. "
+				       "Treating this as an error.\n",
+				       entry->cm_key_storage_location);
+				_exit(CM_CERTSAVE_STATUS_AUTH); /* XXX */
+			}
+		}
+	}
+
+	/* If we're meant to preserve keys that are no longer going to be used,
+	 * then we should have an old key and certificate.  Use the
+	 * certificate's serial number to construct the file name to use for
+	 * storing the old key. */
 	if (entry->cm_key_preserve && (old_cert != NULL) && (old_key != NULL)) {
 		bio = BIO_new_mem_buf(old_cert, -1);
 		if (bio != NULL) {
@@ -215,15 +263,38 @@ cm_certsave_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 						_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
 					}
 				}
+				X509_free(cert);
 			}
 			BIO_free(bio);
 		}
 	}
 
+	/* Save the certificate itself. */
 	bio = BIO_new_mem_buf(entry->cm_cert, -1);
 	if (bio != NULL) {
 		cert = PEM_read_bio_X509(bio, NULL, NULL, NULL);
 		if (cert != NULL) {
+			/* Double-check that we're not trying to rotate in a
+			 * key that we won't actually be using. */
+			if ((old_pkey != NULL) &&
+			    (EVP_PKEY_cmp(old_pkey, X509_get_pubkey(cert)) == 1)) {
+				entry->cm_key_next_marker = NULL;
+				if (next_key != NULL) {
+					cm_log(1, "Public key was not changed.\n");
+					free(next_key);
+					next_key = NULL;
+				}
+				if (next_keyfile != NULL) {
+					cm_log(1, "Removing candidate private key.\n");
+					if (remove(next_keyfile) != 0) {
+						cm_log(1, "Error removing \"%s\": %s.\n",
+						       next_keyfile, strerror(errno));
+					}
+					free(next_keyfile);
+					next_keyfile = NULL;
+				}
+			}
+			/* Now move on to the saving. */
 			pem = fopen(entry->cm_cert_storage_location, "w");
 			if (pem != NULL) {
 				if (PEM_write_X509(pem, cert) == 0) {
@@ -241,14 +312,27 @@ cm_certsave_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					       entry->cm_cert_storage_location,
 					       strerror(errno));
 				} else {
+					/* If we're replacing the private key
+					 * too, handle that. */
 					if ((entry->cm_key_storage_location != NULL) &&
 					    (next_key != NULL)) {
+						/* If we're saving a copy of
+						 * the old key, take care of
+						 * that first. */
 						if ((old_keyfile != NULL) &&
 						    (old_key != NULL)) {
+							/* Remove anything by
+							 * the name we want
+							 * to use for storing
+							 * the old key. */
 							if (remove(old_keyfile) != 0) {
 								cm_log(1, "Error removing \"%s\": %s.\n",
 								       old_keyfile, strerror(errno));
 							}
+							/* Store the old key to
+							 * the file whose name
+							 * we constructed
+							 * earlier. */
 							write_file_contents(old_keyfile,
 									    old_key,
 									    "old key file",
@@ -290,6 +374,9 @@ cm_certsave_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	} else {
 		cm_log(1, "Error setting up to parse certificate.\n");
 		status = CM_CERTSAVE_STATUS_INTERNAL_ERROR;
+	}
+	if (old_pkey != NULL) {
+		EVP_PKEY_free(old_pkey);
 	}
 	free(next_key);
 	free(old_key);
