@@ -479,10 +479,11 @@ cm_submit_e_get_spki(void *parent, const char *pem)
 		if (pubkey_len > 0) {
 			pubkey = talloc_size(wpem, pubkey_len);
 			if (pubkey != NULL) {
+				p = pubkey;
 				i2d_X509_PUBKEY(X509_get_X509_PUBKEY(x), &p);
-				ret =cm_store_hex_from_bin(parent,
-							   pubkey,
-							   pubkey_len);
+				ret = cm_store_hex_from_bin(parent,
+							    pubkey,
+							    pubkey_len);
 			}
 		}
 		X509_free(x);
