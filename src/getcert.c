@@ -640,13 +640,15 @@ evaluate_status(const char *state, dbus_bool_t stuck)
 
 /* Read the status of a single request, and return a status value. */
 static int
-waitfor(void *parent, enum cm_tdbus_type bus, const char *path, int verbose)
+waitfor(void *parent, enum cm_tdbus_type bus, const char *path, int timeout,
+	int verbose)
 {
 	DBusMessage *rep;
 	char *state, *old_state = NULL;
 	dbus_bool_t stuck;
+	int i = 0;
 
-	for (;;) {
+	while (timeout != 0) {
 		rep = query_rep(bus, path, CM_DBUS_REQUEST_INTERFACE,
 				"get_status", verbose);
 		if (cm_tdbusm_get_sb(rep, globals.tctx, &state, &stuck) != 0) {
@@ -682,9 +684,16 @@ waitfor(void *parent, enum cm_tdbus_type bus, const char *path, int verbose)
 		 * property has changed and then asking if we're stuck, not
 		 * just polling using a timer.  But that would require a whole
 		 * event loop. */
-		usleep(100000);
+		usleep(125000);
+		if (timeout > 0) {
+			i++;
+			if ((i % 8) == 0) {
+				timeout--;
+				i = 0;
+			}
+		}
 	}
-	return 0;
+	return CM_SUBMIT_STATUS_WAIT;
 }
 
 /* Add a new request. */
@@ -706,7 +715,7 @@ request(const char *argv0, int argc, const char **argv)
 	struct cm_tdbusm_dict param[49];
 	const struct cm_tdbusm_dict *params[48];
 	DBusMessage *req, *rep;
-	int waitreq = 0;
+	int waitreq = 0, timeout = -1;
 	dbus_bool_t b;
 	char *p;
 	krb5_context kctx;
@@ -750,6 +759,7 @@ request(const char *argv0, int argc, const char **argv)
 		{"challenge-password-file", 'l', POPT_ARG_STRING, NULL, 'l', _("file which holds an optional challenge password value"), HELP_TYPE_FILENAME},
 		{"challenge-password", 'L', POPT_ARG_STRING, NULL, 'L', _("an optional challenge password value"), NULL},
 		{"wait", 'w', POPT_ARG_NONE, NULL, 'w', _("try to wait for the certificate to be issued"), NULL},
+		{"wait-timeout", 0, POPT_ARG_INT, &timeout, 0, _("maximum time to wait for the certificate to be issued"), NULL},
 		{"session", 's', POPT_ARG_NONE, NULL, 's', _("connect to the certmonger service on the session bus"), NULL},
 		{"system", 'S', POPT_ARG_NONE, NULL, 'S', _("connect to the certmonger service on the system bus"), NULL},
 		{"verbose", 'v', POPT_ARG_NONE, NULL, 'v', NULL, NULL},
@@ -1342,7 +1352,7 @@ request(const char *argv0, int argc, const char **argv)
 		printf(_("New signing request \"%s\" added.\n"),
 		       nickname ? nickname : p);
 		if (waitreq) {
-			return waitfor(globals.tctx, bus, p, verbose);
+			return waitfor(globals.tctx, bus, p, timeout, verbose);
 		}
 	} else {
 		printf(_("New signing request could not be added.\n"));
@@ -1490,7 +1500,8 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 		  char *ca, char *profile,
 		  char *precommand, char *postcommand,
 		  char **anchor_dbs, char **anchor_files,
-		  dbus_bool_t auto_renew_stop, int waitreq, int verbose)
+		  dbus_bool_t auto_renew_stop, int waitreq,
+		  int timeout, int verbose)
 {
 	DBusMessage *req, *rep;
 	int i;
@@ -1710,7 +1721,7 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 		printf(_("New tracking request \"%s\" added.\n"),
 		       nickname ? nickname : p);
 		if (waitreq) {
-			return waitfor(globals.tctx, bus, p, verbose);
+			return waitfor(globals.tctx, bus, p, timeout, verbose);
 		}
 		return 0;
 	} else {
@@ -1739,7 +1750,7 @@ set_tracking(const char *argv0, const char *category,
 	dbus_bool_t b;
 	char *p;
 	int c, auto_renew_start = 0, auto_renew_stop = 0, verbose = 0, i, j;
-	int ku = 0, kubit, waitreq = 0;
+	int ku = 0, kubit, waitreq = 0, timeout = -1;
 	char **eku = NULL, *oid, kustring[16];
 	char **principal = NULL, **dns = NULL, **email = NULL, **ipaddr = NULL;
 	krb5_context kctx;
@@ -1782,6 +1793,7 @@ set_tracking(const char *argv0, const char *category,
 		{"challenge-password", 'L', POPT_ARG_STRING, NULL, 'L', _("an optional challenge password value"), NULL},
 		{"challenge-password-file", 'l', POPT_ARG_STRING, NULL, 'l', _("file which holds an optional challenge password value"), HELP_TYPE_FILENAME},
 		{"wait", 'w', POPT_ARG_NONE, NULL, 'w', _("try to wait for the certificate to be issued"), NULL},
+		{"wait-timeout", 0, POPT_ARG_INT, &timeout, 0, _("maximum time to wait for the certificate to be issued"), NULL},
 		{"session", 's', POPT_ARG_NONE, NULL, 's', _("connect to the certmonger service on the session bus"), NULL},
 		{"system", 'S', POPT_ARG_NONE, NULL, 'S', _("connect to the certmonger service on the system bus"), NULL},
 		{"verbose", 'v', POPT_ARG_NONE, NULL, 'v', NULL, NULL},
@@ -2286,7 +2298,7 @@ set_tracking(const char *argv0, const char *category,
 						 precommand, postcommand,
 						 anchor_dbs, anchor_files,
 						 (auto_renew_stop > 0),
-						 waitreq, verbose);
+						 waitreq, timeout, verbose);
 		}
 	} else {
 		/* Drop a request. */
@@ -2364,7 +2376,7 @@ rekey_or_resubmit(const char *argv0, const char *category, int argc,
 	int keysize = 0;
 	dbus_bool_t b;
 	char *p;
-	int verbose = 0, ku = 0, kubit, c, i, j, waitreq = 0;
+	int verbose = 0, ku = 0, kubit, c, i, j, waitreq = 0, timeout = -1;
 	krb5_context kctx;
 	krb5_error_code kret;
 	krb5_principal kprinc;
@@ -2404,6 +2416,7 @@ rekey_or_resubmit(const char *argv0, const char *category, int argc,
 		{"challenge-password", 'L', POPT_ARG_STRING, NULL, 'L', _("an optional challenge password value"), NULL},
 		{"challenge-password-file", 'l', POPT_ARG_STRING, NULL, 'l', _("file which holds an optional challenge password value"), HELP_TYPE_FILENAME},
 		{"wait", 'w', POPT_ARG_NONE, NULL, 'w', _("try to wait for the certificate to be issued"), NULL},
+		{"wait-timeout", 0, POPT_ARG_INT, &timeout, 0, _("maximum time to wait for the certificate to be issued"), NULL},
 		{"session", 's', POPT_ARG_NONE, NULL, 's', _("connect to the certmonger service on the session bus"), NULL},
 		{"system", 'S', POPT_ARG_NONE, NULL, 'S', _("connect to the certmonger service on the system bus"), NULL},
 		{"verbose", 'v', POPT_ARG_NONE, NULL, 'v', NULL, NULL},
@@ -2898,7 +2911,7 @@ rekey_or_resubmit(const char *argv0, const char *category, int argc,
 			       nickname ? nickname : request);
 		}
 		if (waitreq) {
-			return waitfor(globals.tctx, bus, request, verbose);
+			return waitfor(globals.tctx, bus, request, timeout, verbose);
 		}
 		return 0;
 	} else {
