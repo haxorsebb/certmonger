@@ -730,7 +730,7 @@ retry_gen:
 			}
 			SECKEY_DestroyPrivateKeyList(privkeys);
 			if (delkey != NULL) {
-				PK11_DeleteTokenPrivateKey(delkey, PR_TRUE);
+				PK11_DeleteTokenPrivateKey(delkey, PR_FALSE);
 				cm_log(1, "Removing key with nickname \"%s\".\n", nickname);
 				/* If we found at least one key before, scan again. */
 				privkeys = PK11_ListPrivKeysInSlot(slot,

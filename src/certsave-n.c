@@ -590,7 +590,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				if (!entry->cm_key_preserve && (oldcert == NULL)) {
 					/* We're not preserving keys, so remove
 					 * the old one. */
-					PK11_DeleteTokenPrivateKey(privkey, PR_TRUE);
+					PK11_DeleteTokenPrivateKey(privkey, PR_FALSE);
 					if (error == SECSuccess) {
 						cm_log(3, "Removed "
 						       "old key.\n");
