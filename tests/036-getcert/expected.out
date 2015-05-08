@@ -1,0 +1,40 @@
+[Files, initial.]
+New signing request "first" added.
+1
+-----BEGIN CERTIFICATE-----
+1
+-----BEGIN PRIVATE KEY-----
+[Files, resubmit.]
+Resubmitting "first" to "local".
+1
+-----BEGIN CERTIFICATE-----
+1
+-----BEGIN PRIVATE KEY-----
+[Files, rekey]
+Resubmitting "first" to "local".
+1
+-----BEGIN CERTIFICATE-----
+1
+-----BEGIN PRIVATE KEY-----
+[Database, initial.]
+New signing request "first" added.
+1
+1
+pk12util: PKCS12 EXPORT SUCCESSFUL
+1
+1
+[Database, resubmit]
+Resubmitting "first" to "local".
+1
+1
+pk12util: PKCS12 EXPORT SUCCESSFUL
+1
+1
+[Database, rekey]
+Resubmitting "first" to "local".
+1
+1
+pk12util: PKCS12 EXPORT SUCCESSFUL
+1
+1
+OK

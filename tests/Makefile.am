@@ -144,7 +144,9 @@ EXTRA_DIST = \
 	035-json/expected.out \
 	035-json/run.sh \
 	035-json/good.* \
-	035-json/bad.*
+	035-json/bad.* \
+	036-getcert/expected.out \
+	036-getcert/run.sh
 
 subdirs = \
 	001-keyiread \
@@ -184,7 +186,8 @@ subdirs = \
 	032-chain \
 	033-scep \
 	034-perms \
-	035-json
+	035-json \
+	036-getcert
 
 if HAVE_DBM_NSSDB
 subdirs += \
