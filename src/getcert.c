@@ -737,7 +737,7 @@ request(const char *argv0, int argc, const char **argv)
 		{"renew", 'r', POPT_ARG_NONE, NULL, 'r', _("attempt to renew the certificate when expiration nears (default)"), NULL},
 		{"no-renew", 'R', POPT_ARG_NONE, NULL, 'R', _("don't attempt to renew the certificate when expiration nears"), NULL},
 #ifndef FORCE_CA
-		{"ca", 'c', POPT_ARG_STRING, NULL, 0, _("use the specified CA configuration rather than the default"), HELP_TYPE_NAME},
+		{"ca", 'c', POPT_ARG_STRING, &ca, 0, _("use the specified CA configuration rather than the default"), HELP_TYPE_NAME},
 #endif
 		{"profile", 'T', POPT_ARG_STRING, NULL, 'T', _("ask the CA to process the request using the named profile or template"), HELP_TYPE_NAME},
 		{"subject-name", 'N', POPT_ARG_STRING, NULL, 'N', _("set requested subject name (default: CN=<hostname>)"), HELP_TYPE_SUBJECT},
@@ -1770,7 +1770,7 @@ set_tracking(const char *argv0, const char *category,
 		{"renew", 'r', POPT_ARG_NONE, NULL, 'r', _("attempt to renew the certificate when expiration nears (default)"), NULL},
 		{"no-renew", 'R', POPT_ARG_NONE, NULL, 'R', _("don't attempt to renew the certificate when expiration nears"), NULL},
 #ifndef FORCE_CA
-		{"ca", 'c', POPT_ARG_STRING, NULL, 0, _("use the specified CA configuration rather than the default"), HELP_TYPE_NAME},
+		{"ca", 'c', POPT_ARG_STRING, &ca, 0, _("use the specified CA configuration rather than the default"), HELP_TYPE_NAME},
 #endif
 		{"profile", 'T', POPT_ARG_STRING, NULL, 'T', _("ask the CA to process the request using the named profile or template"), HELP_TYPE_NAME},
 		{"key-usage", 'u', POPT_ARG_STRING, NULL, 'u', _("override requested key usage value"), HELP_TYPE_KU},
@@ -2391,7 +2391,7 @@ rekey_or_resubmit(const char *argv0, const char *category, int argc,
 		{"before-command", 'B', POPT_ARG_STRING, NULL, 'B', _("command to run before saving the certificate"), HELP_TYPE_COMMAND},
 		{"after-command", 'C', POPT_ARG_STRING, NULL, 'C', _("command to run after saving the certificate"), HELP_TYPE_COMMAND},
 #ifndef FORCE_CA
-		{"ca", 'c', POPT_ARG_STRING, NULL, 0, _("use the specified CA configuration rather than the current one"), HELP_TYPE_NAME},
+		{"ca", 'c', POPT_ARG_STRING, &ca, 0, _("use the specified CA configuration rather than the current one"), HELP_TYPE_NAME},
 #endif
 		{"profile", 'T', POPT_ARG_STRING, NULL, 'T', _("ask the CA to process the request using the named profile or template"), HELP_TYPE_NAME},
 		{"subject-name", 'N', POPT_ARG_STRING, NULL, 'N', _("set requested subject name (default: CN=<hostname>)"), HELP_TYPE_SUBJECT},
@@ -2944,7 +2944,7 @@ refresh(const char *argv0, int argc, const char **argv)
 	struct poptOption popts[] = {
 		{"all", 'a', POPT_ARG_NONE, NULL, 'a', _("refresh information about all outstanding requests"), NULL},
 #ifndef FORCE_CA
-		{"ca", 'c', POPT_ARG_STRING, NULL, 0, _("refresh information only for requests using the specified CA configuration"), HELP_TYPE_NAME},
+		{"ca", 'c', POPT_ARG_STRING, &only_ca, 0, _("refresh information only for requests using the specified CA configuration"), HELP_TYPE_NAME},
 #endif
 		{"dbdir", 'd', POPT_ARG_STRING, NULL, 'd', _("NSS database for key and cert"), HELP_TYPE_DIRECTORY},
 		{"nickname", 'n', POPT_ARG_STRING, NULL, 'n', _("nickname for NSS-based storage (only valid with -d)"), HELP_TYPE_NAME},
