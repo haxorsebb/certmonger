@@ -18,14 +18,18 @@ run() {
 }
 
 listfiles() {
+	echo -n certs:
 	ls -1 files/*cert* | wc -l
 	head -n 1 "$tmpdir"/files/cert
+	echo -n keys:
 	ls -1 files/*key* | wc -l
 	head -n 1 "$tmpdir"/files/key
 }
 listdb() {
 	: > "$tmpdir"/db/pinfile
+	echo -n certs:
 	certutil -L -d "$tmpdir"/db | grep -v Nickname | grep -v '^$' | grep -v ,S/MIME, | wc -l
+	echo -n keys:
 	certutil -K -d "$tmpdir"/db -f "$tmpdir"/db/pinfile | grep -v Checking | grep -v '^$' | wc -l
 }
 
@@ -33,7 +37,9 @@ extract() {
 	pk12util -d "$tmpdir"/db -n first -o "$tmpdir"/files/p12 -W "" -K ""
 	openssl pkcs12 -nokeys -nomacver -in "$tmpdir"/files/p12 -passin pass: -nodes | awk '/BEGIN/,/END/{print}' > "$1"/cert
 	openssl pkcs12 -nocerts -nomacver -in "$tmpdir"/files/p12 -passin pass: -nodes | awk '/BEGIN/,/END/{print}' > "$1"/key
+	echo -n cert:
 	head -n 1 "$1"/cert | wc -l
+	echo -n key:
 	head -n 1 "$1"/key | wc -l
 }
 
