@@ -20,10 +20,14 @@ run() {
 listfiles() {
 	echo -n certs:
 	ls -1 files/*cert* | wc -l
-	head -n 1 "$tmpdir"/files/cert
+	for cert in "$tmpdir"/files/*cert* ; do
+		head -n 1 "$cert"
+	done
 	echo -n keys:
 	ls -1 files/*key* | wc -l
-	head -n 1 "$tmpdir"/files/key
+	for key in "$tmpdir"/files/*key* ; do
+		head -n 1 "$key"
+	done
 }
 listdb() {
 	: > "$tmpdir"/db/pinfile
@@ -45,44 +49,90 @@ extract() {
 
 REQOPTS="-N cn=First"
 
+# First round.
 echo '[Files, initial.]'
 run "$builddir"/../src/getcert request -c local -I first -w --wait-timeout=$timeout $REQOPTS -f "$tmpdir"/files/cert -k "$tmpdir"/files/key
 listfiles
 
+# Save the key and cert we just generated, and generate a new certificate.
 cp "$tmpdir"/files/cert "$tmpdir"/files/key "$tmpdir"/backup
 echo '[Files, resubmit.]'
 run "$builddir"/../src/getcert resubmit -c local -w --wait-timeout=$timeout -f "$tmpdir"/files/cert
 listfiles
+# Make sure we have a new certificate and the key is unchanged.
 cmp -s "$tmpdir"/files/key "$tmpdir"/backup/key || echo ERROR: keys were changed on resubmit
 cmp -s "$tmpdir"/files/cert "$tmpdir"/backup/cert && echo ERROR: cert was not changed on resubmit
 
+# Save the key and cert we just generated, and generate a new key and
+# certificate.  Force its serial number, since it'll be used as part of the
+# name when it's renamed out of the way later.
 cp "$tmpdir"/files/cert "$tmpdir"/files/key "$tmpdir"/backup
+echo 1235 > "$tmpdir"/local/serial
 echo '[Files, rekey]'
 run "$builddir"/../src/getcert rekey -c local -w --wait-timeout=$timeout -f "$tmpdir"/files/cert
 listfiles
+# Make sure we have a new certificate and key.
 cmp -s "$tmpdir"/files/key "$tmpdir"/backup/key && echo ERROR: keys were not changed on rekey
 cmp -s "$tmpdir"/files/cert "$tmpdir"/backup/cert && echo ERROR: cert was not changed on rekey
 
+# Save the key and cert we just generated, and generate a new key and certificate.
+echo key_preserve=1 >> "$tmpdir"/requests/*
+cp "$tmpdir"/files/cert "$tmpdir"/files/key "$tmpdir"/backup
+echo '[Files, rekey with preserve=1]'
+run "$builddir"/../src/getcert rekey -c local -w --wait-timeout=$timeout -f "$tmpdir"/files/cert
+listfiles
+# Make sure we have a new certificate and key, and that the old key still
+# exists where we expect it to be.
+cmp -s "$tmpdir"/files/key "$tmpdir"/backup/key && echo ERROR: keys were not changed on rekey
+cmp -s "$tmpdir"/files/cert "$tmpdir"/backup/cert && echo ERROR: cert was not changed on rekey
+cmp -s "$tmpdir"/backup/key "$tmpdir"/files/key.1235.key || echo ERROR: old keys were not saved on rekey
+
 rm -f "$tmpdir"/requests/* "$tmpdir"/local/* "$tmpdir"/files/* "$tmpdir"/db/* "$tmpdir"/backup/*
 
+# First round.
 echo '[Database, initial.]'
 run "$builddir"/../src/getcert request -c local -I first -w --wait-timeout=$timeout $REQOPTS -d "$tmpdir"/db -n first
 listdb
 extract "$tmpdir"/backup
 
+# Save the key and cert we just generated, and generate a new certificate.
 echo '[Database, resubmit]'
 run "$builddir"/../src/getcert resubmit -c local -w --wait-timeout=$timeout -d "$tmpdir"/db -n first
 listdb
 extract "$tmpdir"/files
+# Make sure we have a new certificate and the key is unchanged.
 cmp -s "$tmpdir"/files/key "$tmpdir"/backup/key || echo ERROR: keys were changed on resubmit
 cmp -s "$tmpdir"/files/cert "$tmpdir"/backup/cert && echo ERROR: cert was not changed on resubmit
 
+# Save the key and cert we just generated, and generate a new key and
+# certificate.  Force its serial number, since it'll be used as part of the
+# name when it's renamed out of the way later.
 cp "$tmpdir"/files/cert "$tmpdir"/files/key "$tmpdir"/backup
+echo 1235 > "$tmpdir"/local/serial
 echo '[Database, rekey]'
 run "$builddir"/../src/getcert rekey -c local -w --wait-timeout=$timeout -d "$tmpdir"/db -n first
 listdb
 extract "$tmpdir"/files
+# Make sure we have a new certificate and key.
 cmp -s "$tmpdir"/files/key "$tmpdir"/backup/key && echo ERROR: keys were not changed on rekey
 cmp -s "$tmpdir"/files/cert "$tmpdir"/backup/cert && echo ERROR: cert was not changed on rekey
+
+# Save the key and cert we just generated.
+echo key_preserve=1 >> "$tmpdir"/requests/*
+cp "$tmpdir"/files/cert "$tmpdir"/files/key "$tmpdir"/backup
+# ID is based on a hash of the public key, so use that for comparison, since
+# pk12util can't export a key that doesn't have a certificate to go with it.
+certutil -K -d "$tmpdir"/db -f "$tmpdir"/db/pinfile | grep -v Checking | grep -v '^$' | awk '{print $3}' > "$tmpdir"/backup/id
+# Generate a new key and certificate.
+echo '[Database, rekey with preserve=1]'
+run "$builddir"/../src/getcert rekey -c local -w --wait-timeout=$timeout -d "$tmpdir"/db -n first
+listdb
+extract "$tmpdir"/files
+# Make sure we have a new certificate and key, and that the old key still
+# exists where we expect it to be.
+cmp -s "$tmpdir"/files/key "$tmpdir"/backup/key && echo ERROR: keys were not changed on rekey
+cmp -s "$tmpdir"/files/cert "$tmpdir"/backup/cert && echo ERROR: cert was not changed on rekey
+certutil -K -d "$tmpdir"/db -n 'first (serial 1235)' -f "$tmpdir"/db/pinfile | grep -v Checking | grep -v '^$' | awk '{print $3}' > "$tmpdir"/files/id.old
+cmp -s "$tmpdir"/backup/id "$tmpdir"/files/id.old || echo ERROR: old keys were not saved on rekey
 
 echo OK
