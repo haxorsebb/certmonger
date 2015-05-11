@@ -3985,6 +3985,14 @@ request_prop_set_key_pin_file(struct cm_context *ctx, void *parent,
 	}
 }
 
+static long
+request_prop_get_key_issued_count(struct cm_context *ctx, void *parent,
+				  void *record, const char *name)
+{
+	struct cm_store_entry *entry = record;
+	return entry->cm_key_issued_count;
+}
+
 static const char *
 request_prop_get_challenge_password(struct cm_context *ctx, void *parent,
 				    void *record, const char *name)
@@ -6572,6 +6580,24 @@ cm_tdbush_iface_request(void)
 								       request_prop_set_key_pin_file, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_KEY_GEN_DATE,
+								       cm_tdbush_property_number,
+								       cm_tdbush_property_read,
+								       cm_tdbush_property_time_t,
+								       offsetof(struct cm_store_entry, cm_key_generated_date),
+								       NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
+								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_KEY_ISSUED_COUNT,
+								       cm_tdbush_property_number,
+								       cm_tdbush_property_read,
+								       cm_tdbush_property_special,
+								       0,
+								       NULL, NULL, NULL, NULL, request_prop_get_key_issued_count,
+								       NULL, NULL, NULL, NULL, NULL,
+								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_TEMPLATE_SUBJECT,
 								       cm_tdbush_property_string,
 								       cm_tdbush_property_readwrite,
@@ -7130,7 +7156,7 @@ cm_tdbush_iface_request(void)
 				     make_interface_item(cm_tdbush_interface_signal,
 							 make_signal(CM_DBUS_SIGNAL_REQUEST_CERT_SAVED,
 								     NULL),
-							 NULL)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
+							 NULL)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
 	}
 	return ret;
 }

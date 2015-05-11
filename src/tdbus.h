@@ -88,6 +88,8 @@
 #define CM_DBUS_PROP_NOTIFICATION_COMMAND "notification-command"
 #define CM_DBUS_PROP_KEY_PIN_FILE "key-pin-file"
 #define CM_DBUS_PROP_KEY_PIN "key-pin"
+#define CM_DBUS_PROP_KEY_GEN_DATE "key-generated-date"
+#define CM_DBUS_PROP_KEY_ISSUED_COUNT "key-issued-count"
 #define CM_DBUS_PROP_STATUS "status"
 #define CM_DBUS_PROP_STUCK "stuck"
 #define CM_DBUS_PROP_CA "ca"

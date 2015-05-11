@@ -312,6 +312,8 @@ OK
   </method>
   <property name="key-pin" type="s" access="readwrite"/>
   <property name="key-pin-file" type="s" access="readwrite"/>
+  <property name="key-generated-date" type="x" access="read"/>
+  <property name="key-issued-count" type="x" access="read"/>
   <property name="template-subject" type="s" access="readwrite"/>
   <property name="template-email" type="as" access="readwrite"/>
   <property name="template-ku" type="s" access="readwrite"/>
