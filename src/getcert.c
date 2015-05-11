@@ -3044,7 +3044,7 @@ list(const char *argv0, int argc, char **argv)
 			printf(_(",token='%s'"), s4);
 		}
 		if (s5 != NULL) {
-			printf(_(",pin='%s'"), s5);
+			printf(_(",pin set"));
 		}
 		if (s6 != NULL) {
 			printf(_(",pinfile='%s'"), s6);
