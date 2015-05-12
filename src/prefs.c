@@ -541,3 +541,40 @@ cm_prefs_nss_other_trust(void)
 	}
 	return trust;
 }
+
+long long
+prefs_key_end_of_life(time_t ref)
+{
+	const char *cfg;
+	time_t tmp;
+
+	tmp = -1;
+	cfg = cm_prefs_config(NULL, "max_key_lifetime");
+	if (cfg != NULL) {
+		if (cm_submit_u_delta_from_string(cfg, ref, &tmp) == 0) {
+			return tmp;
+		}
+	}
+	return -1;
+}
+
+long
+prefs_max_key_use_count(void)
+{
+	static long count = -2;
+	long tmp;
+	const char *cfg;
+	char *p;
+
+	if (count == -2) {
+		count = -1;
+		cfg = cm_prefs_config(NULL, "max_key_use_count");
+		if (cfg != NULL) {
+			tmp = strtol(cfg, &p, 10);
+			if ((p != NULL) && (*p == '\0')) {
+				count = tmp;
+			}
+		}
+	}
+	return count;
+}

@@ -533,6 +533,42 @@ cm_check_expiration_is_noteworthy(struct cm_store_entry *entry,
 	return -1;
 }
 
+/* Check if our policy means that the entry needs a new key. */
+static dbus_bool_t
+cm_check_rekey_is_expected(struct cm_store_entry *entry)
+{
+	long long t, now;
+	char tstr[25], nowstr[25];
+	long i;
+
+	if (entry->cm_key_generated_date != 0) {
+		t = prefs_key_end_of_life(entry->cm_key_generated_date);
+		if (t >= 0) {
+			now = time(NULL);
+			if (now >= t) {
+				cm_store_timestamp_from_time_for_display(t, tstr);
+				cm_store_timestamp_from_time_for_display(now, nowstr);
+				cm_log(1, "%s('%s') needs its key replaced "
+				       "after %s, and it's %s now.\n",
+				       entry->cm_busname, entry->cm_nickname,
+				       tstr, nowstr);
+				return TRUE;
+			}
+		}
+	}
+	i = prefs_max_key_use_count();
+	if (i > 0) {
+		if (entry->cm_key_issued_count >= i) {
+			cm_log(1, "%s('%s') needs its key replaced after %ld "
+			       "uses, and it's been used %lld times.\n",
+			       entry->cm_busname, entry->cm_nickname,
+			       i, (long long) entry->cm_key_issued_count);
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
 int
 cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		 struct cm_context *context,
@@ -1347,7 +1383,8 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			 * the way back to generating the CSR because the user
 			 * may have asked us to request with parameters that
 			 * have changed since we last generated a CSR. */
-			entry->cm_state = CM_NEED_CSR;
+			entry->cm_state = cm_check_rekey_is_expected(entry) ?
+					  CM_NEED_KEY_PAIR : CM_NEED_CSR;
 			*when = cm_time_now;
 		} else {
 			/* Nothing to do here.  Check again at an appropriate time. */
@@ -1386,7 +1423,8 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 				 * the way back to generating the CSR because the user
 				 * may have asked us to request with parameters that
 				 * have changed since we last generated a CSR. */
-				entry->cm_state = CM_NEED_CSR;
+				entry->cm_state = cm_check_rekey_is_expected(entry) ?
+						  CM_NEED_KEY_PAIR : CM_NEED_CSR;
 				*when = cm_time_now;
 			} else {
 				entry->cm_state = CM_MONITORING;

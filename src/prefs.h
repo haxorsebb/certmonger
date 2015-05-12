@@ -64,4 +64,7 @@ const char *cm_prefs_dogtag_sslcert(void);
 const char *cm_prefs_dogtag_sslkey(void);
 const char *cm_prefs_dogtag_sslpinfile(void);
 
+long long prefs_key_end_of_life(time_t ref);
+long prefs_max_key_use_count(void);
+
 #endif

@@ -657,7 +657,10 @@ State logic:
 		else
 		if (expiration-time-is-below-renewal-threshold-value and
 		    expiration-time-was-above-renewal-threshold-value)
-			state_next = NEED_CSR
+			if due-for-rekey
+				state_next = NEED_KEY_PAIR
+			else
+				state_next = NEED_CSR
 			state_transition = now
 		else
 			state_next = MONITORING
@@ -683,7 +686,10 @@ State logic:
 				if this-cert-gets-autorenew and
 				   (expiration-time-is-below-renewal-threshold-value and
 				    expiration-time-was-above-renewal-threshold-value)
-					state_next = NEED_CSR
+					if due-for-rekey
+						state_next = NEED_KEY_PAIR
+					else
+						state_next = NEED_CSR
 					state_transition = now
 				else
 					state_next = MONITORING
