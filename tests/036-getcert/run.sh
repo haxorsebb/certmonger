@@ -9,6 +9,11 @@ id=local
 ca_type=EXTERNAL
 ca_external_helper="$builddir"/../src/local-submit -d "$tmpdir"/local
 EOF
+cat > $tmpdir/cas/jerkca << EOF
+id=jerkca
+ca_type=EXTERNAL
+ca_external_helper="$toolsdir"/printenv CERTMONGER_CERTIFICATE
+EOF
 
 run() {
 	env CERTMONGER_CONFIG_DIR="$tmpdir" CERTMONGER_TMPDIR="$tmpdir" \
@@ -19,12 +24,16 @@ run() {
 
 listfiles() {
 	echo -n certs:
+	echo -n certs: 1>&2
 	ls -1 files/*cert* | wc -l
+	ls -1 files/*cert* 1>&2
 	for cert in "$tmpdir"/files/*cert* ; do
 		head -n 1 "$cert"
 	done
 	echo -n keys:
+	echo -n keys: 1>&2
 	ls -1 files/*key* | wc -l
+	ls -1 files/*key* 1>&2
 	for key in "$tmpdir"/files/*key* ; do
 		head -n 1 "$key"
 	done
@@ -32,9 +41,13 @@ listfiles() {
 listdb() {
 	: > "$tmpdir"/db/pinfile
 	echo -n certs:
+	echo -n certs: 1>&2
 	certutil -L -d "$tmpdir"/db | grep -v Nickname | grep -v '^$' | grep -v ,S/MIME, | wc -l
+	certutil -L -d "$tmpdir"/db | wc -l 1>&2
 	echo -n keys:
+	echo -n keys: 1>&2
 	certutil -K -d "$tmpdir"/db -f "$tmpdir"/db/pinfile | grep -v Checking | grep -v '^$' | wc -l
+	certutil -K -d "$tmpdir"/db -f "$tmpdir"/db/pinfile 1>&2
 }
 
 extract() {
@@ -87,6 +100,16 @@ cmp -s "$tmpdir"/files/key "$tmpdir"/backup/key && echo ERROR: keys were not cha
 cmp -s "$tmpdir"/files/cert "$tmpdir"/backup/cert && echo ERROR: cert was not changed on rekey
 cmp -s "$tmpdir"/backup/key "$tmpdir"/files/key.1235.key || echo ERROR: old keys were not saved on rekey
 
+# Save the key and cert we just generated, and try to generate a new key and certificate.
+rm -f "$tmpdir"/files/key.*
+cp "$tmpdir"/files/cert "$tmpdir"/files/key "$tmpdir"/backup
+echo '[Files, rekey with jerk CA]'
+run "$builddir"/../src/getcert rekey -c jerkca -w --wait-timeout=$timeout -f "$tmpdir"/files/cert
+listfiles
+# Make sure we didn't nuke the old key, but we should have been able to get rid of the candidate key.
+cmp -s "$tmpdir"/files/key "$tmpdir"/backup/key || echo ERROR: keys were changed on failed rekey
+cmp -s "$tmpdir"/files/cert "$tmpdir"/backup/cert || echo ERROR: cert was not changed on failed rekey
+
 rm -f "$tmpdir"/requests/* "$tmpdir"/local/* "$tmpdir"/files/* "$tmpdir"/db/* "$tmpdir"/backup/*
 
 # First round.
@@ -134,5 +157,19 @@ cmp -s "$tmpdir"/files/key "$tmpdir"/backup/key && echo ERROR: keys were not cha
 cmp -s "$tmpdir"/files/cert "$tmpdir"/backup/cert && echo ERROR: cert was not changed on rekey
 certutil -K -d "$tmpdir"/db -n 'first (serial 1235)' -f "$tmpdir"/db/pinfile | grep -v Checking | grep -v '^$' | awk '{print $3}' > "$tmpdir"/files/id.old
 cmp -s "$tmpdir"/backup/id "$tmpdir"/files/id.old || echo ERROR: old keys were not saved on rekey
+
+# Save the key and cert we just generated.
+cp "$tmpdir"/files/cert "$tmpdir"/files/key "$tmpdir"/backup
+# ID is based on a hash of the public key, so use that for comparison, since
+# pk12util can't export a key that doesn't have a certificate to go with it.
+certutil -K -d "$tmpdir"/db -f "$tmpdir"/db/pinfile | grep -v Checking | grep -v '^$' | awk '{print $3}' > "$tmpdir"/backup/id
+# Try to generate a new key and certificate.
+echo '[Database, rekey with jerk CA]'
+run "$builddir"/../src/getcert rekey -c jerkca -w --wait-timeout=$timeout -d "$tmpdir"/db -n first
+listdb
+extract "$tmpdir"/files
+# Make sure we didn't nuke the old key.
+cmp -s "$tmpdir"/files/key "$tmpdir"/backup/key || echo ERROR: keys were changed on failed rekey
+cmp -s "$tmpdir"/files/cert "$tmpdir"/backup/cert || echo ERROR: cert was not changed on failed rekey
 
 echo OK

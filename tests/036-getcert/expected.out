@@ -23,6 +23,12 @@ certs:1
 keys:2
 -----BEGIN PRIVATE KEY-----
 -----BEGIN PRIVATE KEY-----
+[Files, rekey with jerk CA]
+Resubmitting "first" to "jerkca".
+certs:1
+-----BEGIN CERTIFICATE-----
+keys:1
+-----BEGIN PRIVATE KEY-----
 [Database, initial.]
 New signing request "first" added.
 certs:1
@@ -48,6 +54,13 @@ key:1
 Resubmitting "first" to "local".
 certs:1
 keys:2
+pk12util: PKCS12 EXPORT SUCCESSFUL
+cert:1
+key:1
+[Database, rekey with jerk CA]
+Resubmitting "first" to "jerkca".
+certs:1
+keys:3
 pk12util: PKCS12 EXPORT SUCCESSFUL
 cert:1
 key:1
