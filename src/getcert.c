@@ -241,7 +241,6 @@ ensure_pem(void *parent, const char *path)
 	return ret;
 }
 
-#ifndef FORCE_CA
 /* Escape any shell special characters. */
 static char *
 shell_escape(void *parent, const char *s)
@@ -261,7 +260,6 @@ shell_escape(void *parent, const char *s)
 	}
 	return ret;
 }
-#endif
 
 /* Add a string to a list. */
 static void
@@ -285,22 +283,6 @@ add_string(void *parent, char ***dest, const char *value)
 }
 
 /* Connect to the bus, or not. */
-static char *
-escape(void *t, const char *text)
-{
-	char *tmp;
-	int i, j;
-
-	tmp = talloc_size(t, strlen(text) * 2 + 1);
-	for (i = 0, j = 0; text[i] != '\0'; i++) {
-		if (strchr("\\'\" \t", text[i]) != NULL) {
-			tmp[j++] = '\\';
-		}
-		tmp[j++] = text[i];
-	}
-	tmp[j++] = '\0';
-	return tmp;
-}
 static void
 prep_bus(enum cm_tdbus_type which, const char *mode,
 	 int verbose, int argc, char **argv)
@@ -331,7 +313,7 @@ prep_bus(enum cm_tdbus_type which, const char *mode,
 	cmd = talloc_asprintf(NULL, "%s/%s", CM_GETCERT_DIR, globals.argv0);
 	for (i = 0; i < argc; i++) {
 		cmd = talloc_strdup_append(cmd, " ");
-		cmd = talloc_strdup_append(cmd, escape(cmd, argv[i]));
+		cmd = talloc_strdup_append(cmd, shell_escape(cmd, argv[i]));
 	}
 	nargv[4] = cmd;
 	if (verbose > 0) {
