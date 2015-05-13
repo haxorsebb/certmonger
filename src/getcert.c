@@ -4598,7 +4598,7 @@ static struct {
 };
 
 static void
-help(const char *cmd, const char *category)
+help(const char *twopartcmd, const char *category)
 {
 	unsigned int i, j;
 	const char *general_help[] = {
@@ -5017,6 +5017,13 @@ help(const char *cmd, const char *category)
 		 N_("remove a CA configuration\n")},
 #endif
 	};
+	char *cmd;
+
+	cmd = strdup(twopartcmd);
+	if (cmd == NULL) {
+		return;
+	}
+	cmd[strcspn(cmd, " \t")] = '\0';
 	for (i = 0; i < sizeof(msgs) / sizeof(msgs[0]); i++) {
 		if ((category != NULL) && (msgs[i].category != NULL) &&
 		    (strcmp(category, msgs[i].category) != 0)) {
@@ -5041,6 +5048,7 @@ help(const char *cmd, const char *category)
 			}
 		}
 	}
+	free(cmd);
 }
 
 int
