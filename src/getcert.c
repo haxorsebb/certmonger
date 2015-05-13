@@ -85,7 +85,7 @@ static void help(const char *cmd, const char *category);
 static char *thumbprint(const char *s, SECOidTag tag, int bits);
 
 static struct {
-	const char *argv0;
+	const char *argv0, *verb;
 	DBusConnection *conn;
 	void *tctx;
 } globals = {
@@ -257,7 +257,6 @@ ensure_pem(void *parent, const char *path)
 	return ret;
 }
 
-#ifndef FORCE_CA
 /* Escape any shell special characters. */
 static char *
 shell_escape(void *parent, const char *s)
@@ -277,7 +276,6 @@ shell_escape(void *parent, const char *s)
 	}
 	return ret;
 }
-#endif
 
 /* Add a string to a list. */
 static void
@@ -301,22 +299,6 @@ add_string(void *parent, char ***dest, const char *value)
 }
 
 /* Connect to the bus, or not. */
-static char *
-escape(void *t, const char *text)
-{
-	char *tmp;
-	int i, j;
-
-	tmp = talloc_size(t, strlen(text) * 2 + 1);
-	for (i = 0, j = 0; text[i] != '\0'; i++) {
-		if (strchr("\\'\" \t", text[i]) != NULL) {
-			tmp[j++] = '\\';
-		}
-		tmp[j++] = text[i];
-	}
-	tmp[j++] = '\0';
-	return tmp;
-}
 static void
 prep_bus(enum cm_tdbus_type which, const char *mode,
 	 int verbose, int argc, const char **argv)
@@ -344,10 +326,11 @@ prep_bus(enum cm_tdbus_type which, const char *mode,
 	    !dbus_error_has_name(&err, DBUS_ERROR_FILE_NOT_FOUND)) {
 		return;
 	}
-	cmd = talloc_asprintf(NULL, "%s/%s", CM_GETCERT_DIR, globals.argv0);
-	for (i = 0; i < argc; i++) {
+	cmd = talloc_asprintf(NULL, "%s/%s %s", CM_GETCERT_DIR, globals.argv0,
+			      globals.verb);
+	for (i = 1; i < argc; i++) {
 		cmd = talloc_strdup_append(cmd, " ");
-		cmd = talloc_strdup_append(cmd, escape(cmd, argv[i]));
+		cmd = talloc_strdup_append(cmd, shell_escape(cmd, argv[i]));
 	}
 	nargv[4] = cmd;
 	if (verbose > 0) {
@@ -5063,7 +5046,7 @@ help(const char *cmd, const char *category)
 int
 main(int argc, const char **argv)
 {
-	const char *verb, *p, *argv1;
+	const char *p, *argv1;
 	char poptname[LINE_MAX];
 	unsigned int i;
 	int ret;
@@ -5077,11 +5060,12 @@ main(int argc, const char **argv)
 	}
 	globals.argv0 = p;
 	if (argc > 1) {
-		verb = argv[1];
-		snprintf(poptname, sizeof(poptname), "%s %s", p, verb);
+		globals.verb = argv[1];
+		snprintf(poptname, sizeof(poptname), "%s %s", globals.argv0,
+			 globals.verb);
 		globals.tctx = talloc_new(NULL);
 		for (i = 0; i < sizeof(verbs) / sizeof(verbs[0]); i++) {
-			if (strcmp(verbs[i].verb, verb) == 0) {
+			if (strcmp(verbs[i].verb, globals.verb) == 0) {
 				argv1 = argv[1];
 				argv[1] = poptname;
 				ret = (*verbs[i].fn)(poptname, argc - 1,
@@ -5090,15 +5074,15 @@ main(int argc, const char **argv)
 				return ret;
 			}
 		}
-		fprintf(stderr, _("%s: unrecognized command\n"), verb);
-		if (verb[0] == '-') {
-			help(p, NULL);
+		fprintf(stderr, _("%s: unrecognized command\n"), globals.verb);
+		if (globals.verb[0] == '-') {
+			help(globals.argv0, NULL);
 		}
 		talloc_free(globals.tctx);
 		globals.tctx = NULL;
 		return 1;
 	} else {
-		help(p, NULL);
+		help(globals.argv0, NULL);
 		return 1;
 	}
 }
