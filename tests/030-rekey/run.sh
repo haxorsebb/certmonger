@@ -113,12 +113,15 @@ for preserve in 1 0 ; do
 	# Now generate new keys, CSRs, and certificates (NSS).
 	echo "NSS keys before re-keygen (preserve=$preserve,pin=\"$pin\"):"
 	marker=`grep ^key_next_marker= entry.nss.$size | cut -f2- -d=`
-	run_certutil -K -d $tmpdir -f pinfile | grep -v 'Checking token' | sed -e s,"${marker:-////////}","(next)", | sed -r -e 's,[0123456789abcdef]{8},hex,g' -e 's,< 0>,<->,g' -e 's,< 1>,<->,g' | env LANG=C sort
+	firstid=`run_certutil -K -d $tmpdir -f pinfile | grep -v 'Checking token' | sed -r 's,< *0>,<->,g' | awk '{print $3}' | env LANG=C sort`
+	run_certutil -K -d $tmpdir -f pinfile | grep -v 'Checking token' | env LANG=C sort 1>&2
+	echo firstid="$firstid" 1>&2
+	run_certutil -K -d $tmpdir -f pinfile | grep -v 'Checking token' | sed -e s,"${marker:-////////}","(next)", -e "s,$firstid,originalhex,g" | sed -r -e 's,[0123456789abcdef]{8},hex,g' -e 's,< 0>,<->,g' -e 's,< 1>,<->,g' | env LANG=C sort
 	grep ^key.\*count= entry.nss.$size | LANG=C sort
 	$toolsdir/keygen entry.nss.$size
 	echo "NSS keys after re-keygen (preserve=$preserve,pin=\"$pin\"):"
 	marker=`grep ^key_next_marker= entry.nss.$size | cut -f2- -d=`
-	run_certutil -K -d $tmpdir -f pinfile | grep -v 'Checking token' | sed -e s,"${marker:-////////}","(next)", | sed -r -e 's,[0123456789abcdef]{8},hex,g' -e 's,< 0>,<->,g' -e 's,< 1>,<->,g' | env LANG=C sort
+	run_certutil -K -d $tmpdir -f pinfile | grep -v 'Checking token' | sed -e s,"${marker:-////////}","(next)", -e "s,$firstid,originalhex,g" | sed -r -e 's,[0123456789abcdef]{8},hex,g' -e 's,< 0>,<->,g' -e 's,< 1>,<->,g' | env LANG=C sort
 	$toolsdir/keyiread entry.nss.$size > /dev/null 2>&1
 	$toolsdir/csrgen entry.nss.$size > csr.nss.$size
 	setupca
@@ -133,7 +136,7 @@ for preserve in 1 0 ; do
 	run_certutil -L -d $tmpdir -n i$size -a | openssl x509 -noout -serial
 	echo "NSS keys before saving (preserve=$preserve,pin=\"$pin\"):"
 	marker=`grep ^key_next_marker= entry.nss.$size | cut -f2- -d=`
-	run_certutil -K -d $tmpdir -f pinfile | grep -v 'Checking token' | sed -e s,"${marker:-////////}","(next)", | sed -r -e 's,[0123456789abcdef]{8},hex,g' -e 's,< 0>,<->,g' -e 's,< 1>,<->,g' | env LANG=C sort
+	run_certutil -K -d $tmpdir -f pinfile | grep -v 'Checking token' | sed -e s,"${marker:-////////}","(next)", -e "s,$firstid,originalhex,g" | sed -r -e 's,[0123456789abcdef]{8},hex,g' -e 's,< 0>,<->,g' -e 's,< 1>,<->,g' | env LANG=C sort
 
 	echo "This is the plaintext." > plain.txt
 	echo "NSS Signing:"
@@ -156,7 +159,7 @@ for preserve in 1 0 ; do
 	run_certutil -L -d $tmpdir -n i$size -a | openssl x509 -noout -serial
 	echo "NSS keys after saving (preserve=$preserve,pin=\"$pin\"):"
 	marker=`grep ^key_next_marker= entry.nss.$size | cut -f2- -d=`
-	run_certutil -K -d $tmpdir -f pinfile | grep -v 'Checking token' | sed -e s,"${marker:-////////}","(next)", | sed -r -e 's,[0123456789abcdef]{8},hex,g' -e 's,< 0>,<->,g' -e 's,< 1>,<->,g' | env LANG=C sort
+	run_certutil -K -d $tmpdir -f pinfile | grep -v 'Checking token' | sed -e s,"${marker:-////////}","(next)", -e "s,$firstid,originalhex,g" | sed -r -e 's,[0123456789abcdef]{8},hex,g' -e 's,< 0>,<->,g' -e 's,< 1>,<->,g' | env LANG=C sort
 
 	echo "This is the plaintext." > plain.txt
 	echo "NSS Signing:"

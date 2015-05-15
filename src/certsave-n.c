@@ -45,6 +45,8 @@
 #include "subproc.h"
 #include "util-n.h"
 
+#define PRIVKEY_LIST_EMPTY(l) PRIVKEY_LIST_END(PRIVKEY_LIST_HEAD(l), l)
+
 struct cm_certsave_state {
 	struct cm_certsave_state_pvt pvt;
 	struct cm_subproc_state *subproc;
@@ -53,6 +55,32 @@ struct cm_certsave_state {
 struct cm_certsave_n_settings {
 	unsigned int readwrite:1;
 };
+
+static SECKEYPrivateKey **
+add_privkey_to_list(SECKEYPrivateKey **list, SECKEYPrivateKey *key)
+{
+	SECKEYPrivateKey **newlist;
+	int i;
+
+	if (key != NULL) {
+		for (i = 0; (list != NULL) && (list[i] != NULL); i++) {
+			if (list[i] == key) {
+				SECKEY_DestroyPrivateKey(key);
+				break;
+			}
+		}
+		if ((list == NULL) || (list[i] == NULL)) {
+			newlist = malloc(sizeof(newlist[0]) * (i + 2));
+			if (newlist != NULL) {
+				memcpy(newlist, list, sizeof(newlist[0]) * i);
+				newlist[i] = key;
+				newlist[i + 1] = NULL;
+				list = newlist;
+			}
+		}
+	}
+	return list;
+}
 
 static int
 cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
@@ -63,7 +91,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	PLArenaPool *arena;
 	SECStatus error;
 	SECItem *item, subject;
-	char *p, *q, *serial = NULL, *pin;
+	char *p, *q, *pin;
 	const char *es;
 	NSSInitContext *ctx;
 	CERTCertDBHandle *certdb;
@@ -72,7 +100,9 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	CERTCertTrust trust;
 	CERTSignedData csdata;
 	CERTCertListNode *node;
-	SECKEYPrivateKey *privkey = NULL;
+	SECKEYPrivateKey **privkeys = NULL, *privkey;
+	SECKEYPrivateKeyList *privkeylist;
+	SECKEYPrivateKeyListNode *knode;
 	struct cm_certsave_n_settings *settings;
 	struct cm_pin_cb_data cb_data;
 
@@ -347,17 +377,13 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 							       node->cert->subjectName ?
 							       node->cert->subjectName :
 							       "");
-							/* Get a handle for the
-							 * old certificate's
+							/* Get a handle for
+							 * this certificate's
 							 * private key, in case
-							 * we need to remove or
-							 * rename it. */
-							if (privkey == NULL) {
-								privkey = PK11_FindKeyByAnyCert(node->cert, NULL);
-								serial = cm_store_hex_from_bin(NULL,
-											       node->cert->serialNumber.data,
-											       node->cert->serialNumber.len);
-							}
+							 * we need to remove
+							 * it. */
+							privkey = PK11_FindKeyByAnyCert(node->cert, NULL);
+							privkeys = add_privkey_to_list(privkeys, privkey);
 							SEC_DeletePermCertificate(node->cert);
 						}
 					}
@@ -397,6 +423,12 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 						       node->cert->subjectName ?
 						       node->cert->subjectName :
 						       "");
+						/* Get a handle for this
+						 * certificate's private key,
+						 * in case we need to remove
+						 * it. */
+						privkey = PK11_FindKeyByAnyCert(node->cert, NULL);
+						privkeys = add_privkey_to_list(privkeys, privkey);
 						SEC_DeletePermCertificate(node->cert);
 					} else {
 						/* Same nickname, and we
@@ -502,17 +534,13 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 							       "different "
 							       "contents, "
 							       "removing it.\n");
-							/* Get a handle for the
-							 * old certificate's
+							/* Get a handle for
+							 * this certificate's
 							 * private key, in case
-							 * we need to remove or
-							 * rename it. */
-							if (privkey == NULL) {
-								privkey = PK11_FindKeyByAnyCert(node->cert, NULL);
-								serial = cm_store_hex_from_bin(NULL,
-											       node->cert->serialNumber.data,
-											       node->cert->serialNumber.len);
-							}
+							 * we need to remove
+							 * it. */
+							privkey = PK11_FindKeyByAnyCert(node->cert, NULL);
+							privkeys = add_privkey_to_list(privkeys, privkey);
 							SEC_DeletePermCertificate(node->cert);
 						}
 					}
@@ -543,20 +571,51 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					break;
 				}
 			}
-			if (privkey != NULL) {
-				/* Check if any certificates are still using the old key. */
-				oldcert = PK11_GetCertFromPrivateKey(privkey);
-				if (oldcert == NULL) {
-					/* Now that there should be no more
-					 * certificates using the old key, try
-					 * to rename the old key. */
-					p = util_build_old_nickname(entry->cm_cert_nickname, serial);
-					if (p != NULL) {
-						error = PK11_SetPrivateKeyNickname(privkey, p);
+			/* If we managed to import the certificate, mark its
+			 * key for having its nickname removed. */
+			if ((returned != NULL) && (returned[0] != NULL)) {
+				privkey = PK11_FindKeyByAnyCert(returned[0], NULL);
+				privkeys = add_privkey_to_list(privkeys, privkey);
+				CERT_DestroyCertArray(returned, 1);
+			}
+			/* In case we're rekeying, but failed, mark the
+			 * candidate key for name-clearing or removal, too. */
+			if ((entry->cm_key_next_marker != NULL) &&
+			    (strlen(entry->cm_key_next_marker) > 0)) {
+				p = util_build_next_nickname(entry->cm_key_nickname,
+							     entry->cm_key_next_marker);
+				privkeylist = PK11_ListPrivKeysInSlot(PK11_GetInternalKeySlot(), p, NULL);
+				if (privkeylist != NULL) {
+					for (knode = PRIVKEY_LIST_HEAD(privkeylist);
+					     !PRIVKEY_LIST_EMPTY(privkeylist) &&
+					     !PRIVKEY_LIST_END(knode, privkeylist);
+					     knode = PRIVKEY_LIST_NEXT(knode)) {
+						q = PK11_GetPrivateKeyNickname(knode->key);
+						if ((q != NULL) &&
+						    (strcmp(p, q) == 0)) {
+							privkey = SECKEY_CopyPrivateKey(knode->key);
+							privkeys = add_privkey_to_list(privkeys, privkey);
+							break;
+						}
+					}
+					SECKEY_DestroyPrivateKeyList(privkeylist);
+				}
+			}
+			if (privkeys != NULL) {
+				/* Check if any certificates are still using
+				 * the keys that correspond to certificates
+				 * that we removed. */
+				for (i = 0; privkeys[i] != NULL; i++) {
+					privkey = privkeys[i];
+					oldcert = PK11_GetCertFromPrivateKey(privkey);
+					if (!entry->cm_key_preserve && (oldcert == NULL)) {
+						/* We're not preserving
+						 * orphaned keys, so remove
+						 * this one.  No need to mess
+						 * with its nickname first. */
+						PK11_DeleteTokenPrivateKey(privkey, PR_FALSE);
 						if (error == SECSuccess) {
-							cm_log(3, "Renamed "
-							       "old key to "
-							       "\"%s\".\n", p);
+							cm_log(3, "Removed old key.\n");
 						} else {
 							ec = PORT_GetError();
 							if (ec != 0) {
@@ -566,90 +625,55 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 							}
 							if (es != NULL) {
 								cm_log(0, "Failed "
-								       "to rename "
-								       "old key to"
-								       " \"%s\": "
-								       "%s.\n", p,
-								       es);
+								       "to remove "
+								       "old key: "
+								       "%s.\n", es);
 							} else {
 								cm_log(0, "Failed "
-								       "to rename "
-								       "old key to"
-								       " \"%s\"\n",
-								       p);
+								       "to remove "
+								       "old key.\n");
+							}
+						}
+					} else {
+						/* Remove the explicit
+						 * nickname, so that the key
+						 * will have to be found using
+						 * the certificate's nickname,
+						 * and certutil will display
+						 * the matching certificate's
+						 * nickname when it's asked to
+						 * list the keys in the
+						 * database. */
+						error = PK11_SetPrivateKeyNickname(privkey, "");
+						if (error == SECSuccess) {
+							cm_log(3, "Removed "
+							       "name from old "
+							       "key.\n");
+						} else {
+							ec = PORT_GetError();
+							if (ec != 0) {
+								es = PR_ErrorToName(ec);
+							} else {
+								es = NULL;
+							}
+							if (es != NULL) {
+								cm_log(0, "Failed "
+								       "to unname "
+								       "old key: "
+								       "%s.\n", es);
+							} else {
+								cm_log(0, "Failed "
+								       "to unname "
+								       "old key.\n");
 							}
 						}
 					}
-				} else {
-					/* Leave the name alone.  If we're not
-					 * rekeying, the certificate that's
-					 * using the key is the one that we
-					 * just imported. */
-					CERT_DestroyCertificate(oldcert);
-				}
-				if (!entry->cm_key_preserve && (oldcert == NULL)) {
-					/* We're not preserving keys, so remove
-					 * the old one. */
-					PK11_DeleteTokenPrivateKey(privkey, PR_FALSE);
-					if (error == SECSuccess) {
-						cm_log(3, "Removed "
-						       "old key.\n");
-					} else {
-						ec = PORT_GetError();
-						if (ec != 0) {
-							es = PR_ErrorToName(ec);
-						} else {
-							es = NULL;
-						}
-						if (es != NULL) {
-							cm_log(0, "Failed "
-							       "to remove "
-							       "old key: "
-							       "%s.\n", es);
-						} else {
-							cm_log(0, "Failed "
-							       "to remove "
-							       "old key.\n");
-						}
-					}
-				}
-				SECKEY_DestroyPrivateKey(privkey);
-			}
-			/* If we managed to import the certificate, set the
-			 * desired nickname on it.  We've deleted all possible
-			 * conflicts already, so this should work. */
-			if ((returned != NULL) && (returned[0] != NULL)) {
-				privkey = PK11_FindKeyByAnyCert(returned[0], NULL);
-				CERT_DestroyCertArray(returned, 1);
-				if (privkey != NULL) {
-					/* Set the nickname on the private key,
-					 * too, so that it matches the
-					 * certificate. */
-					error = PK11_SetPrivateKeyNickname(privkey, entry->cm_key_nickname);
-					if (error == SECSuccess) {
-						cm_log(3, "Renamed new key to "
-						       "\"%s\".\n",
-						       entry->cm_key_nickname);
-					} else {
-						ec = PORT_GetError();
-						if (ec != 0) {
-							es = PR_ErrorToName(ec);
-						} else {
-							es = NULL;
-						}
-						if (es != NULL) {
-							cm_log(0, "Failed "
-							       "to rename "
-							       "new key: "
-							       "%s.\n", es);
-						} else {
-							cm_log(0, "Failed "
-							       "to rename "
-							       "new key.\n");
-						}
-					}
 					SECKEY_DestroyPrivateKey(privkey);
+					if (oldcert != NULL) {
+						CERT_DestroyCertificate(oldcert);
+					}
 				}
+				free(privkeys);
 			}
 		} else {
 			cm_log(1, "Error getting handle to default NSS DB.\n");
