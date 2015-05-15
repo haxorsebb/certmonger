@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.77.3
+Version:	0.77.4
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -239,6 +239,14 @@ exit 0
 %endif
 
 %changelog
+* Fri May 15 2015 Nalin Dahyabhai <nalin@redhat.com> 0.77.4-1
+- don't display PINs in "getcert list" output (#42)
+- clean up launching of a private instance in "getcert"
+- expand on the don't-delete-private-key fix from 0.77.3 by letting NSS's
+  own safety checks have an effect
+- backport record-keeping of key generation dates and counts of how many
+  times we've gotten certificates using a given key pair
+
 * Thu May  7 2015 Nalin Dahyabhai <nalin@redhat.com> 0.77.3-1
 - fix a data loss bug when saving renewed certificates to NSS databases - the
   private key could be removed in error since 0.77
