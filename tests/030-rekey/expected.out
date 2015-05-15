@@ -13,13 +13,13 @@ key_issued_count=0
 key_requested_count=1
 First round certificates OK.
 NSS keys before re-keygen (preserve=1,pin=""):
-<-> rsa      hexhexhexhexhex   NSS Certificate DB:i2048
+<-> rsa      originalhex   NSS Certificate DB:i2048
 key_issued_count=0
 key_requested_count=1
 OK.
 NSS keys after re-keygen (preserve=1,pin=""):
-<-> rsa      hexhexhexhexhex   NSS Certificate DB:i2048
 <-> rsa      hexhexhexhexhex   i2048 (candidate (next))
+<-> rsa      originalhex   NSS Certificate DB:i2048
 key_issued_count=0
 key_next_requested_count=0
 key_requested_count=1
@@ -31,8 +31,8 @@ NSS certs before saving (preserve=1,pin=""):
 i2048                                                        u,u,u
 serial=1234
 NSS keys before saving (preserve=1,pin=""):
-<-> rsa      hexhexhexhexhex   NSS Certificate DB:i2048
 <-> rsa      hexhexhexhexhex   i2048 (candidate (next))
+<-> rsa      originalhex   NSS Certificate DB:i2048
 NSS Signing:
 NSS Verify:
 This is the plaintext.
@@ -43,8 +43,8 @@ NSS certs after saving (preserve=1,pin=""):
 i2048                                                        u,u,u
 serial=1235
 NSS keys after saving (preserve=1,pin=""):
-<-> rsa      hexhexhexhexhex   i2048
-<-> rsa      hexhexhexhexhex   i2048 (serial 1234)
+<-> rsa      hexhexhexhexhex   NSS Certificate DB:i2048
+<-> rsa      originalhex   (orphan)
 NSS Signing:
 NSS Verify:
 This is the plaintext.
@@ -100,13 +100,13 @@ key_issued_count=0
 key_requested_count=1
 First round certificates OK.
 NSS keys before re-keygen (preserve=1,pin="password"):
-<-> rsa      hexhexhexhexhex   NSS Certificate DB:i2048
+<-> rsa      originalhex   NSS Certificate DB:i2048
 key_issued_count=0
 key_requested_count=1
 OK.
 NSS keys after re-keygen (preserve=1,pin="password"):
-<-> rsa      hexhexhexhexhex   NSS Certificate DB:i2048
 <-> rsa      hexhexhexhexhex   i2048 (candidate (next))
+<-> rsa      originalhex   NSS Certificate DB:i2048
 key_issued_count=0
 key_next_requested_count=0
 key_requested_count=1
@@ -118,8 +118,8 @@ NSS certs before saving (preserve=1,pin="password"):
 i2048                                                        u,u,u
 serial=1234
 NSS keys before saving (preserve=1,pin="password"):
-<-> rsa      hexhexhexhexhex   NSS Certificate DB:i2048
 <-> rsa      hexhexhexhexhex   i2048 (candidate (next))
+<-> rsa      originalhex   NSS Certificate DB:i2048
 NSS Signing:
 NSS Verify:
 This is the plaintext.
@@ -130,8 +130,8 @@ NSS certs after saving (preserve=1,pin="password"):
 i2048                                                        u,u,u
 serial=1235
 NSS keys after saving (preserve=1,pin="password"):
-<-> rsa      hexhexhexhexhex   i2048
-<-> rsa      hexhexhexhexhex   i2048 (serial 1234)
+<-> rsa      hexhexhexhexhex   NSS Certificate DB:i2048
+<-> rsa      originalhex   (orphan)
 NSS Signing:
 NSS Verify:
 This is the plaintext.
@@ -187,13 +187,13 @@ key_issued_count=0
 key_requested_count=1
 First round certificates OK.
 NSS keys before re-keygen (preserve=0,pin=""):
-<-> rsa      hexhexhexhexhex   NSS Certificate DB:i2048
+<-> rsa      originalhex   NSS Certificate DB:i2048
 key_issued_count=0
 key_requested_count=1
 OK.
 NSS keys after re-keygen (preserve=0,pin=""):
-<-> rsa      hexhexhexhexhex   NSS Certificate DB:i2048
 <-> rsa      hexhexhexhexhex   i2048 (candidate (next))
+<-> rsa      originalhex   NSS Certificate DB:i2048
 key_issued_count=0
 key_next_requested_count=0
 key_requested_count=1
@@ -205,8 +205,8 @@ NSS certs before saving (preserve=0,pin=""):
 i2048                                                        u,u,u
 serial=1234
 NSS keys before saving (preserve=0,pin=""):
-<-> rsa      hexhexhexhexhex   NSS Certificate DB:i2048
 <-> rsa      hexhexhexhexhex   i2048 (candidate (next))
+<-> rsa      originalhex   NSS Certificate DB:i2048
 NSS Signing:
 NSS Verify:
 This is the plaintext.
@@ -217,7 +217,7 @@ NSS certs after saving (preserve=0,pin=""):
 i2048                                                        u,u,u
 serial=1235
 NSS keys after saving (preserve=0,pin=""):
-<-> rsa      hexhexhexhexhex   i2048
+<-> rsa      hexhexhexhexhex   NSS Certificate DB:i2048
 NSS Signing:
 NSS Verify:
 This is the plaintext.
@@ -272,13 +272,13 @@ key_issued_count=0
 key_requested_count=1
 First round certificates OK.
 NSS keys before re-keygen (preserve=0,pin="password"):
-<-> rsa      hexhexhexhexhex   NSS Certificate DB:i2048
+<-> rsa      originalhex   NSS Certificate DB:i2048
 key_issued_count=0
 key_requested_count=1
 OK.
 NSS keys after re-keygen (preserve=0,pin="password"):
-<-> rsa      hexhexhexhexhex   NSS Certificate DB:i2048
 <-> rsa      hexhexhexhexhex   i2048 (candidate (next))
+<-> rsa      originalhex   NSS Certificate DB:i2048
 key_issued_count=0
 key_next_requested_count=0
 key_requested_count=1
@@ -290,8 +290,8 @@ NSS certs before saving (preserve=0,pin="password"):
 i2048                                                        u,u,u
 serial=1234
 NSS keys before saving (preserve=0,pin="password"):
-<-> rsa      hexhexhexhexhex   NSS Certificate DB:i2048
 <-> rsa      hexhexhexhexhex   i2048 (candidate (next))
+<-> rsa      originalhex   NSS Certificate DB:i2048
 NSS Signing:
 NSS Verify:
 This is the plaintext.
@@ -302,7 +302,7 @@ NSS certs after saving (preserve=0,pin="password"):
 i2048                                                        u,u,u
 serial=1235
 NSS keys after saving (preserve=0,pin="password"):
-<-> rsa      hexhexhexhexhex   i2048
+<-> rsa      hexhexhexhexhex   NSS Certificate DB:i2048
 NSS Signing:
 NSS Verify:
 This is the plaintext.
