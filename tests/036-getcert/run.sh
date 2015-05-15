@@ -155,7 +155,7 @@ extract "$tmpdir"/files
 # exists where we expect it to be.
 cmp -s "$tmpdir"/files/key "$tmpdir"/backup/key && echo ERROR: keys were not changed on rekey
 cmp -s "$tmpdir"/files/cert "$tmpdir"/backup/cert && echo ERROR: cert was not changed on rekey
-certutil -K -d "$tmpdir"/db -n 'first (serial 1235)' -f "$tmpdir"/db/pinfile | grep -v Checking | grep -v '^$' | awk '{print $3}' > "$tmpdir"/files/id.old
+certutil -K -d "$tmpdir"/db -f "$tmpdir"/db/pinfile | grep -v Checking | grep -v first | grep -v '^$' | awk '{print $3}' > "$tmpdir"/files/id.old
 cmp -s "$tmpdir"/backup/id "$tmpdir"/files/id.old || echo ERROR: old keys were not saved on rekey
 
 # Save the key and cert we just generated.
@@ -165,6 +165,21 @@ cp "$tmpdir"/files/cert "$tmpdir"/files/key "$tmpdir"/backup
 certutil -K -d "$tmpdir"/db -f "$tmpdir"/db/pinfile | grep -v Checking | grep -v '^$' | awk '{print $3}' > "$tmpdir"/backup/id
 # Try to generate a new key and certificate.
 echo '[Database, rekey with jerk CA]'
+run "$builddir"/../src/getcert rekey -c jerkca -w --wait-timeout=$timeout -d "$tmpdir"/db -n first
+listdb
+extract "$tmpdir"/files
+# Make sure we didn't nuke the old key.
+cmp -s "$tmpdir"/files/key "$tmpdir"/backup/key || echo ERROR: keys were changed on failed rekey
+cmp -s "$tmpdir"/files/cert "$tmpdir"/backup/cert || echo ERROR: cert was not changed on failed rekey
+
+echo key_preserve=0 >> "$tmpdir"/requests/*
+# Save the key and cert we just generated.
+cp "$tmpdir"/files/cert "$tmpdir"/files/key "$tmpdir"/backup
+# ID is based on a hash of the public key, so use that for comparison, since
+# pk12util can't export a key that doesn't have a certificate to go with it.
+certutil -K -d "$tmpdir"/db -f "$tmpdir"/db/pinfile | grep -v Checking | grep -v '^$' | awk '{print $3}' > "$tmpdir"/backup/id
+# Try to generate a new key and certificate.
+echo '[Database, rekey with jerk CA, nonpreserving]'
 run "$builddir"/../src/getcert rekey -c jerkca -w --wait-timeout=$timeout -d "$tmpdir"/db -n first
 listdb
 extract "$tmpdir"/files
