@@ -11,6 +11,7 @@ An external CA helper has a few jobs:
   * $CERTMONGER_REQ_EMAIL     -> email address subjectAltName values
   * $CERTMONGER_REQ_HOSTNAME  -> DNS name subjectAltName values
   * $CERTMONGER_REQ_PRINCIPAL -> Kerberos principal name subjectAltName values
+  * $CERTMONGER_REQ_IP_ADDRESS-> IP address subjectAltName values (since 0.78)
   * $CERTMONGER_CA_PROFILE    -> requested enrollment profile/template/certtype
   * $CERTMONGER_CSR           -> certificate signing request
   * $CERTMONGER_CERTIFICATE   -> previously-issued certificate, if there is one
