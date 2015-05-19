@@ -30,11 +30,16 @@
 
 #include "cadata.h"
 #include "env.h"
+#include "json.h"
 #include "log.h"
 #include "store-int.h"
 #include "submit-e.h"
 #include "subproc.h"
 #include "tdbus.h"
+
+#define CM_CADATA_ROOTS "roots"
+#define CM_CADATA_OTHER_ROOTS "other-roots"
+#define CM_CADATA_OTHERS "other"
 
 const char *attribute_map[] = {
 	CM_SUBMIT_REQ_SUBJECT_ENV, CM_DBUS_PROP_TEMPLATE_SUBJECT,
@@ -228,10 +233,6 @@ parse_cert_list(struct cm_store_ca *ca, struct cm_cadata_state *state,
 		}
 		if ((strncmp(q, "\n\n", 2) == 0) ||
 		    (strncmp(q, "\r\n\r\n", 4) == 0)) {
-			if ((state != NULL) &&
-			    (nickcertlistcmp(*list, certs) != 0)) {
-				state->modified = 1;
-			}
 			*list = certs;
 			return q + strspn(q, "\r\n");
 		} else {
@@ -239,45 +240,165 @@ parse_cert_list(struct cm_store_ca *ca, struct cm_cadata_state *state,
 			q = p + strcspn(p, "\r\n");
 		}
 	}
-	if ((state != NULL) && (nickcertlistcmp(*list, certs) != 0)) {
-		state->modified = 1;
-	}
 	*list = certs;
 	return p;
 }
 
-/* Parse three lists of nickname+certificate pairs. */
+/* Build a nickcert list out of the keys and values in a JSON object. */
+struct cm_nickcert **
+parse_json_cert_list(void *parent, struct cm_json *nickcerts)
+{
+	struct cm_nickcert **ret;
+	struct cm_json *val;
+	unsigned int i;
+	const char *p;
+
+	i = cm_json_n_keys(nickcerts);
+	if (i > 0) {
+		ret = talloc_array_ptrtype(parent, ret, i + 1);
+		if (ret != NULL) {
+			for (i = 0; i < cm_json_n_keys(nickcerts); i++) {
+				ret[i] = talloc_ptrtype(ret, ret[i]);
+				if (ret[i] != NULL) {
+					val = cm_json_nth_val(nickcerts, i);
+					if (cm_json_type(val) != cm_json_type_string) {
+						continue;
+					}
+					p = talloc_strdup(ret[i], cm_json_nth_key(nickcerts, i));
+					ret[i]->cm_nickname = talloc_strdup(ret[i], p);
+					p = cm_json_string(val, NULL);
+					ret[i]->cm_cert = talloc_strdup(ret[i], p);
+				}
+			}
+			ret[i] = NULL;
+			return ret;
+		}
+	}
+	return NULL;
+}
+
+/* Generate a name that isn't already used in the JSON object. */
+static const char *
+make_fresh_nickname(struct cm_json *json, const char *nickname)
+{
+	const char *result;
+	int i;
+
+	if (cm_json_get(json, nickname) == NULL) {
+		result = nickname;
+	} else {
+		i = 1;
+		do {
+			i++;
+			result = talloc_asprintf(json, "%s #%d", nickname, i);
+		} while (cm_json_get(json, result) != NULL);
+	}
+	return result;
+}
+
+/* Parse three lists of nickname+certificate pairs, or a JSON document that
+ * makes them all members of objects named "root", "other-roots", and "others",
+ * members of an unnamed top-level object. */
 static void
 parse_certs(struct cm_store_ca *ca, struct cm_cadata_state *state,
 	    const char *msg)
 {
 	struct cm_nickcert **roots, **other_roots, **others;
-	const char *p;
+	struct cm_json *json = NULL, *list;
+	const char *p, *eom;
+	int i;
 
 	if (state != NULL) {
 		state->modified = 0;
 	}
-	roots = ca->cm_ca_root_certs;
-	p = parse_cert_list(ca, state, msg, &roots);
-	if (p != NULL) {
-		other_roots = ca->cm_ca_other_root_certs;
-		p = parse_cert_list(ca, state, p, &other_roots);
+	if (cm_json_decode(state, msg, -1, &json, &eom) != 0) {
+		/* Take the older-format data and build a JSON object out of
+		 * it. */
+		json = cm_json_new_object(state);
+		roots = ca->cm_ca_root_certs;
+		p = parse_cert_list(ca, state, msg, &roots);
 		if (p != NULL) {
-			others = ca->cm_ca_other_certs;
-			p = parse_cert_list(ca, state, p, &others);
-			if (p != NULL) {
-				talloc_free(ca->cm_ca_root_certs);
-				talloc_free(ca->cm_ca_other_root_certs);
-				talloc_free(ca->cm_ca_other_certs);
-				ca->cm_ca_root_certs = roots;
-				ca->cm_ca_other_root_certs = other_roots;
-				ca->cm_ca_other_certs = others;
-				return;
+			list = cm_json_new_object(json);
+			for (i = 0;
+			     (roots != NULL) &&
+			     (roots[i] != NULL);
+			     i++) {
+				cm_json_set(list,
+					    make_fresh_nickname(list,
+								roots[i]->cm_nickname),
+					    cm_json_new_string(list,
+							       roots[i]->cm_cert,
+							       -1));
 			}
-			talloc_free(other_roots);
+			if (cm_json_n_keys(list) > 0) {
+				cm_json_set(json,
+					    CM_CADATA_ROOTS,
+					    list);
+			}
+			other_roots = ca->cm_ca_other_root_certs;
+			p = parse_cert_list(ca, state, p, &other_roots);
+			if (p != NULL) {
+				list = cm_json_new_object(json);
+				for (i = 0;
+				     (other_roots != NULL) &&
+				     (other_roots[i] != NULL);
+				     i++) {
+					cm_json_set(list,
+						    make_fresh_nickname(list,
+									other_roots[i]->cm_nickname),
+						    cm_json_new_string(list,
+								       other_roots[i]->cm_cert,
+								       -1));
+				}
+				if (cm_json_n_keys(list) > 0) {
+					cm_json_set(json,
+						    CM_CADATA_OTHER_ROOTS,
+						    list);
+				}
+				others = ca->cm_ca_other_certs;
+				p = parse_cert_list(ca, state, p, &others);
+				if (p != NULL) {
+					list = cm_json_new_object(json);
+					for (i = 0;
+					     (others != NULL) &&
+					     (others[i] != NULL);
+					     i++) {
+						cm_json_set(list,
+							    make_fresh_nickname(list,
+										others[i]->cm_nickname),
+							    cm_json_new_string(list,
+									       others[i]->cm_cert,
+									       -1));
+					}
+					if (cm_json_n_keys(list) > 0) {
+						cm_json_set(json,
+							    CM_CADATA_OTHERS,
+							    list);
+					}
+				}
+				talloc_free(other_roots);
+			}
+			talloc_free(roots);
 		}
-		talloc_free(roots);
 	}
+	/* Parse the JSON document. */
+	if (json == NULL) {
+		return;
+	}
+	roots = parse_json_cert_list(ca, cm_json_get(json, CM_CADATA_ROOTS));
+	other_roots = parse_json_cert_list(ca, cm_json_get(json, CM_CADATA_OTHER_ROOTS));
+	others = parse_json_cert_list(ca, cm_json_get(json, CM_CADATA_OTHERS));
+	if ((nickcertlistcmp(roots, ca->cm_ca_root_certs) != 0) ||
+	    (nickcertlistcmp(other_roots, ca->cm_ca_other_root_certs) != 0) ||
+	    (nickcertlistcmp(others, ca->cm_ca_other_certs) != 0)) {
+		state->modified = 1;
+	}
+	talloc_free(ca->cm_ca_root_certs);
+	talloc_free(ca->cm_ca_other_root_certs);
+	talloc_free(ca->cm_ca_other_certs);
+	ca->cm_ca_root_certs = roots;
+	ca->cm_ca_other_root_certs = other_roots;
+	ca->cm_ca_other_certs = others;
 }
 
 /* Parse a list of comma or newline-separated items.  This handles both SCEP
@@ -299,12 +420,15 @@ parse_list(struct cm_store_ca *ca, struct cm_cadata_state *state,
 		}
 		reqs = tmp;
 		if (dict == NULL) {
+			/* Save every item. */
 			reqs[i] = talloc_strndup(reqs, p, q - p);
 			if ((reqs[i] != NULL) && (strlen(reqs[i]) > 0)) {
 				i++;
 			}
 			reqs[i] = NULL;
 		} else {
+			/* Save only dictionary items that can be mapped from
+			 * items in the list. */
 			for (j = 0; dict[j] != NULL; j += 2) {
 				len = strlen(dict[j]);
 				if ((q - p == len) &&
