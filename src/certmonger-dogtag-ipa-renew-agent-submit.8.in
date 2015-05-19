@@ -158,6 +158,10 @@ if critical configuration information is missing.  An error message may be print
 5
 if the CA is still thinking.  A suggested poll delay (specified in seconds) and
 a cookie (state) value will be printed.
+.TP
+17
+if the CA indicates that the client needs to attempt enrollment using a new key
+pair.
 
 .SH FILES
 .TP

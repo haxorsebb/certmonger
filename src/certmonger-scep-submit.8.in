@@ -107,6 +107,10 @@ a cookie (state) value will be printed.
 .TP
 16
 if the helper needs an SCEP pkiMessage, but couldn't read one.
+.TP
+17
+if the CA indicates that the client needs to attempt enrollment using a new key
+pair.
 
 .SH BUGS
 Please file tickets for any that you find at https://fedorahosted.org/certmonger/

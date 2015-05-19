@@ -86,6 +86,10 @@ if the CA was unreachable.  An error message may be printed.
 .TP
 4
 if critical configuration information is missing.  An error message may be printed.
+.TP
+17
+if the CA indicates that the client needs to attempt enrollment using a new key
+pair.
 
 .SH FILES
 .TP
