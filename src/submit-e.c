@@ -557,6 +557,9 @@ cm_submit_e_postprocess_main(int fd, struct cm_store_ca *ca,
 		certlist = talloc_strdup(tmp, "\n");
 		for (i = 0; i < cm_json_n_keys(tmp); i++) {
 			cert = cm_json_nth_val(tmp, i);
+			if (cm_json_type(cert) != cm_json_type_string) {
+				continue;
+			}
 			certlist = talloc_strdup_append(certlist,
 							cm_json_string(cert, NULL));
 			certlist = talloc_strdup_append(certlist, "\n");
@@ -596,12 +599,18 @@ cm_submit_e_postprocess_main(int fd, struct cm_store_ca *ca,
 		/* Now do the same for the chain and issued certificate. */
 		tmp = cm_json_get(msg, CM_SUBMIT_E_CERTIFICATE);
 		certlist = talloc_strdup(tmp, "\n");
-		certlist = talloc_strdup_append(certlist, cm_json_string(tmp, NULL));
-		certlist = talloc_strdup_append(certlist, "\n");
+		if (cm_json_type(tmp) == cm_json_type_string) {
+			certlist = talloc_strdup_append(certlist,
+							cm_json_string(tmp, NULL));
+			certlist = talloc_strdup_append(certlist, "\n");
+		}
 		/* Just concatenate all of the values into one string,... */
 		tmp = cm_json_get(msg, CM_SUBMIT_E_CHAIN);
 		for (i = 0; i < cm_json_n_keys(tmp); i++) {
 			cert = cm_json_nth_val(tmp, i);
+			if (cm_json_type(cert) != cm_json_type_string) {
+				continue;
+			}
 			certlist = talloc_strdup_append(certlist,
 							cm_json_string(cert, NULL));
 			certlist = talloc_strdup_append(certlist, "\n");
