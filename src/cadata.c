@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Red Hat, Inc.
+ * Copyright (C) 2014,2015 Red Hat, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,6 +41,7 @@ const char *attribute_map[] = {
 	CM_SUBMIT_REQ_HOSTNAME_ENV, CM_DBUS_PROP_TEMPLATE_HOSTNAME,
 	CM_SUBMIT_REQ_PRINCIPAL_ENV, CM_DBUS_PROP_TEMPLATE_PRINCIPAL,
 	CM_SUBMIT_REQ_EMAIL_ENV, CM_DBUS_PROP_TEMPLATE_EMAIL,
+	CM_SUBMIT_REQ_IP_ADDRESS_ENV, CM_DBUS_PROP_TEMPLATE_IP_ADDRESS,
 	CM_SUBMIT_PROFILE_ENV, CM_DBUS_PROP_TEMPLATE_PROFILE,
 	NULL,
 };
