@@ -186,8 +186,8 @@ main(int argc, const char **argv)
 	cacert = getenv(CM_SUBMIT_SCEP_CA_CERTIFICATE_ENV);
 	certs = getenv(CM_SUBMIT_SCEP_CERTIFICATES_ENV);
 
-	if (getenv(CM_SUBMIT_OPERATION_ENV) != NULL) {
-		mode = getenv(CM_SUBMIT_OPERATION_ENV);
+	mode = getenv(CM_SUBMIT_OPERATION_ENV);
+	if (mode != NULL) {
 		if (strcasecmp(mode, CM_OP_SUBMIT) == 0) {
 			op = op_pkcsreq;
 			message = getenv(CM_SUBMIT_SCEP_PKCSREQ_REKEY_ENV);
