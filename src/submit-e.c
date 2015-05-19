@@ -811,6 +811,12 @@ cm_submit_e_helper_main(int fd, struct cm_store_ca *ca,
 			       entry->cm_scep_gic_next, 1);
 		}
 	}
+	if (entry->cm_template_ipaddress != NULL) {
+		setenv(CM_SUBMIT_REQ_IP_ADDRESS_ENV,
+		       cm_submit_maybe_joinv(NULL, "\n",
+					     entry->cm_template_ipaddress),
+		       1);
+	}
 	if (dup2(fd, STDOUT_FILENO) == -1) {
 		u = errno;
 		cm_log(1, "Error redirecting standard out for "
