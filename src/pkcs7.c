@@ -941,7 +941,7 @@ cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 	PKCS7_SIGNER_INFO *si;
 	BIO *in, *out = NULL;
 	const unsigned char *u;
-	char *s, buf[LINE_MAX];
+	char *s, buf[LINE_MAX], *p, *q;
 	int ret = -1, i;
 	long error;
 
@@ -1005,21 +1005,37 @@ cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 			cm_log(1, "Out of memory.\n");
 			goto done;
 		}
-		in = BIO_new_mem_buf(s, -1);
-		if (in == NULL) {
-			cm_log(1, "Out of memory.\n");
-			goto done;
+		/* In case one of these is multiple PEM certificates
+		 * concatenated, always break them up. */
+		p = s;
+		while ((p != NULL) && (*p != '\0')) {
+			if (strncmp(p, "-----BEGIN", 10) != 0) {
+				break;
+			}
+			q = strstr(p, "----END");
+			if (q == NULL) {
+				break;
+			}
+			q += strcspn(q, "\n");
+			if (*q == '\n') {
+				q++;
+			}
+			in = BIO_new_mem_buf(p, q - p);
+			if (in == NULL) {
+				cm_log(1, "Out of memory.\n");
+				goto done;
+			}
+			x = PEM_read_bio_X509(in, NULL, NULL, NULL);
+			BIO_free(in);
+			if (x == NULL) {
+				cm_log(1, "Error parsing chain certificate.\n");
+				goto done;
+			}
+			X509_STORE_add_cert(store, x);
+			X509_free(x);
+			p = q;
 		}
-		x = PEM_read_bio_X509(in, NULL, NULL, NULL);
-		BIO_free(in);
 		talloc_free(s);
-		if (x == NULL) {
-			cm_log(1, "Error parsing root certificate.\n");
-			goto done;
-		}
-		X509_STORE_add_cert(store, x);
-		sk_X509_push(certs, X509_dup(x));
-		X509_free(x);
 	}
 	for (i = 0; (othercerts != NULL) && (othercerts[i] != NULL); i++) {
 		s = talloc_strdup(parent, othercerts[i]);
@@ -1027,19 +1043,36 @@ cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 			cm_log(1, "Out of memory.\n");
 			goto done;
 		}
-		in = BIO_new_mem_buf(s, -1);
-		if (in == NULL) {
-			cm_log(1, "Out of memory.\n");
-			goto done;
+		/* In case one of these is multiple PEM certificates
+		 * concatenated, always break them up. */
+		p = s;
+		while ((p != NULL) && (*p != '\0')) {
+			if (strncmp(p, "-----BEGIN", 10) != 0) {
+				break;
+			}
+			q = strstr(p, "----END");
+			if (q == NULL) {
+				break;
+			}
+			q += strcspn(q, "\n");
+			if (*q == '\n') {
+				q++;
+			}
+			in = BIO_new_mem_buf(p, q - p);
+			if (in == NULL) {
+				cm_log(1, "Out of memory.\n");
+				goto done;
+			}
+			x = PEM_read_bio_X509(in, NULL, NULL, NULL);
+			BIO_free(in);
+			if (x == NULL) {
+				cm_log(1, "Error parsing chain certificate.\n");
+				goto done;
+			}
+			sk_X509_push(certs, x);
+			p = q;
 		}
-		x = PEM_read_bio_X509(in, NULL, NULL, NULL);
-		BIO_free(in);
 		talloc_free(s);
-		if (x == NULL) {
-			cm_log(1, "Error parsing chain certificate.\n");
-			goto done;
-		}
-		sk_X509_push(certs, x);
 	}
 	out = BIO_new(BIO_s_mem());
 	if (out == NULL) {
@@ -1047,6 +1080,14 @@ cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 		goto done;
 	}
 	if (roots != NULL) {
+		for (i = 0; i < sk_X509_num(certs); i++) {
+			x = X509_dup(sk_X509_value(certs, i));
+			if (x == NULL) {
+				cm_log(1, "Out of memory.\n");
+				goto done;
+			}
+			PKCS7_add_certificate(p7, x);
+		}
 		if (PKCS7_verify(p7, certs, store, NULL, out, 0) != 1) {
 			cm_log(1, "Message failed verification.\n");
 			goto done;
