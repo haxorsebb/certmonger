@@ -364,7 +364,7 @@ submit:
 	cm_submit_x_add_named_arg_s(ctx, "principal", reqprinc);
 	/* Add the requested profile name named argument. */
 	if (profile != NULL) {
-		cm_submit_x_add_named_arg_s(ctx, "profile", profile);
+		cm_submit_x_add_named_arg_s(ctx, "profile_id", profile);
 	}
 	/* Tell the server to add entries for a principal if one
 	 * doesn't exist yet. */
@@ -384,7 +384,7 @@ submit:
 		case 3: /* invocation error - permanent */
 			if ((i == 3005) && (profile != NULL)) {
 				/* Most likely the server didn't understand the
-				 * "profile" argument.  At least, at this
+				 * "profile_id" argument.  At least, at this
 				 * point.  Randomly dropping arguments is not
 				 * really an extensible solution, though. */
 				profile = NULL;
