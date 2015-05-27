@@ -1080,6 +1080,12 @@ cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 		goto done;
 	}
 	if (roots != NULL) {
+		/* When PKCS7_verify() goes to verify the signer certificate,
+		 * it uses the trust store we pass in, but it only searches the
+		 * list of certificates in the signed-data for intermediates,
+		 * ignoring the list of non-trusted certificates we passed in.
+		 * Merge our list into the one in the signed-data, to ensure
+		 * that they can be found. */
 		for (i = 0; i < sk_X509_num(certs); i++) {
 			x = X509_dup(sk_X509_value(certs, i));
 			if (x == NULL) {
