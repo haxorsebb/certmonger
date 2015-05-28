@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.77.4
+Version:	0.77.5
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -239,6 +239,15 @@ exit 0
 %endif
 
 %changelog
+* Thu May 28 2015 Nalin Dahyabhai <nalin@redhat.com> 0.77.5-1
+- pass $CERTMONGER_REQ_IP_ADDRESS to enrollment helpers if the signing request
+  includes IP address subjectAltName values
+- correctly verify signatures on SCEP server replies when the signer is neither
+  the top-level CA nor the RA (feedback in #1161768)
+- correctly verify signatures on SCEP server replies when there is more than
+  one certificate in the chain between the RA and the top-level CA (feedback in
+  #1161768)
+
 * Fri May 15 2015 Nalin Dahyabhai <nalin@redhat.com> 0.77.4-1
 - don't display PINs in "getcert list" output (#42)
 - clean up launching of a private instance in "getcert"
