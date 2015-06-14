@@ -58,7 +58,7 @@ main(int argc, const char **argv)
 	struct tevent_context *ec;
 	struct cm_context *ctx;
 	enum cm_tdbus_type bus;
-	int i, c, dlevel = 0, pfd = -1, lfd = -1;
+	int i, c, dlevel = 0, pfd = -1, lfd = -1, version = 0;
 	unsigned int u;
 	long l;
 	pid_t pid;
@@ -87,6 +87,7 @@ main(int argc, const char **argv)
 		{"pidfile", 'p', POPT_ARG_STRING, &pidfile, 0, N_("write service PID to file"), N_("FILENAME")},
 		{"fips", 'F', POPT_ARG_NONE, NULL, 'F', N_("force NSS into FIPS mode"), NULL},
 		{"help", 'h', POPT_ARG_NONE, NULL, 'h', NULL, NULL},
+		{"version", 'v', POPT_ARG_NONE, &version, 0, N_("print version information"), NULL},
 		{"autohelp", 'H', POPT_ARG_NONE | POPT_ARGFLAG_DOC_HIDDEN, NULL, 'H', NULL, NULL},
 		POPT_TABLEEND
 	};
@@ -171,8 +172,8 @@ main(int argc, const char **argv)
 			break;
 		default:
 			printf(_("Usage: %s [-s|-S] [-n|-f] [-d LEVEL] "
-				 "[-p FILE] [-F]\n"), cm_env_whoami());
-			printf("%s%s%s%s%s%s%s%s%s%s%s%s%s",
+				 "[-p FILE] [-F] [-v]\n"), cm_env_whoami());
+			printf("%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
 			       _("\t-s         use session bus\n"),
 			       _("\t-S         use system bus\n"),
 			       _("\t-l         start a dedicated listening socket\n"),
@@ -185,13 +186,18 @@ main(int argc, const char **argv)
 			       _("\t-d LEVEL   set debugging level (implies -n)\n"),
 			       _("\t-c COMMAND start COMMAND and exit when it does\n"),
 			       _("\t-p FILE    write service PID to file\n"),
-			       _("\t-F         force NSS into FIPS mode\n"));
+			       _("\t-F         force NSS into FIPS mode\n"),
+			       _("\t-v         print version information and exit\n"));
 			exit(1);
 			break;
 		}
 	}
 	if (c != -1) {
 		exit(1);
+	}
+	if (version) {
+		printf("%s %s\n", PACKAGE, PACKAGE_VERSION);
+		exit(0);
 	}
 
 	cm_log_set_level(dlevel);

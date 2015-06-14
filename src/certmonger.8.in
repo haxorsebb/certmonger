@@ -1,10 +1,10 @@
-.TH certmonger 8 "1 May 2015" "certmonger Manual"
+.TH certmonger 8 "14 June 2015" "certmonger Manual"
 
 .SH NAME
 certmonger
 
 .SH SYNOPSIS
-certmonger [-s|-S] [-L|-l] [-P SOCKET] [-b TIMEOUT|-B] [-n|-f] [-d LEVEL] [-p FILE] [-F] [-c cmd]
+certmonger [-s|-S] [-L|-l] [-P SOCKET] [-b TIMEOUT|-B] [-n|-f] [-d LEVEL] [-p FILE] [-F] [-c cmd] [-v]
 
 .SH DESCRIPTION
 The \fIcertmonger\fR daemon monitors certificates for impending
@@ -67,6 +67,9 @@ the service after the command exits.  If the -l or -L option was also
 specified, the command will be run with the \fI@CERTMONGER_PVT_ADDRESS_ENV@\fR
 environment variable set to the listening socket's location.  Not compatible
 with the -b option.
+.TP
+-v
+Print version information and exit.
 
 .SH FILES
 The set of certificates being monitored or signed is tracked using files stored
