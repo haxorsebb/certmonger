@@ -79,6 +79,14 @@ When called with the \fB-c\fR or \fB-C\fR flag, this option can be used to
 specify the CA identifier which is passed to the server as part of the client's
 request.  The default is "0".
 .TP
+\fB\-n\fR
+The SCEP Renewal feature allows a client with a previously-issued certificate
+to use that certificate and the associated private key to request a new
+certificate for a different key pair, and can be used to support
+\fIcertmonger\fR's rekeying feature if the SCEP server advertises support for
+it.  This option forces the \fIscep-submit\fR helper to prefer to issue
+requests which do not make use of this feature.
+.TP
 \fB-v\fR
 Increases the logging level.  Use twice for more logging.  This option
 is mainly useful for troubleshooting.

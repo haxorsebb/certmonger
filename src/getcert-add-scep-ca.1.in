@@ -46,6 +46,14 @@ A CA identifier value which will passed to the server when the
 \fIscep-submit\fR helper is used to retrieve copies of the server's
 certificates.
 .TP
+\fB\-n\fR
+The SCEP Renewal feature allows a client with a previously-issued certificate
+to use that certificate and the associated private key to request a new
+certificate for a different key pair, and can be used to support
+\fIcertmonger\fR's rekeying feature if the SCEP server advertises support for
+it.  This option forces the \fIscep-submit\fR helper to issue requests without
+making use of this feature.
+.TP
 \fB\-v\fR
 Be verbose about errors.  Normally, the details of an error received from
 the daemon will be suppressed if the client can make a diagnostic suggestion.

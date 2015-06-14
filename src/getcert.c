@@ -4271,7 +4271,7 @@ add_scep_ca(const char *argv0, int argc, const char **argv)
 	char *caname = NULL, *url = NULL, *path = NULL, *id = NULL;
 	char *root = NULL, *racert = NULL, *certs = NULL, *nickname, *command;
 	const char *err;
-	int c, verbose = 0;
+	int c, prefer_non_renewal = 0, verbose = 0;
 	dbus_bool_t b;
 	static DBusMessage *req, *rep;
 	poptContext pctx;
@@ -4282,6 +4282,7 @@ add_scep_ca(const char *argv0, int argc, const char **argv)
 		{"ca-cert", 'R', POPT_ARG_STRING, &root, 0, _("file containing CA's certificate"), HELP_TYPE_FILENAME},
 		{"ra-cert", 'r', POPT_ARG_STRING, &racert, 0, _("file containing RA's certificate"), HELP_TYPE_FILENAME},
 		{"other-certs", 'I', POPT_ARG_STRING, &certs, 0, _("file containing certificates in RA's certifying chain"), HELP_TYPE_FILENAME},
+		{"non-renewal", 'n', POPT_ARG_NONE, &prefer_non_renewal, 0, _("prefer to not use the SCEP Renewal feature"), NULL},
 		{"session", 's', POPT_ARG_NONE, NULL, 's', _("connect to the certmonger service on the session bus"), NULL},
 		{"system", 'S', POPT_ARG_NONE, NULL, 'S', _("connect to the certmonger service on the system bus"), NULL},
 		{"verbose", 'v', POPT_ARG_NONE, NULL, 'v', NULL, NULL},
@@ -4341,7 +4342,7 @@ add_scep_ca(const char *argv0, int argc, const char **argv)
 		return 1;
 	}
 	command = talloc_asprintf(globals.tctx,
-				  "%s -u %s %s %s %s %s %s %s",
+				  "%s -u %s %s %s %s %s %s %s %s",
 				  shell_escape(globals.tctx,
 					       CM_SCEP_HELPER_PATH),
 				  shell_escape(globals.tctx, url),
@@ -4350,7 +4351,8 @@ add_scep_ca(const char *argv0, int argc, const char **argv)
 				  racert ? "-r" : "",
 				  racert ? shell_escape(globals.tctx, racert) : "",
 				  certs ? "-I" : "",
-				  certs ? shell_escape(globals.tctx, certs) : "");
+				  certs ? shell_escape(globals.tctx, certs) : "",
+				  prefer_non_renewal ? "-n" : "");
 	if (command == NULL) {
 		printf(_("Error building command line.\n"));
 		exit(1);
@@ -4940,6 +4942,7 @@ help(const char *twopartcmd, const char *category)
 		N_("  -R FILE	file containing CA's certificate\n"),
 		N_("  -r FILE	file containing RA's certificate\n"),
 		N_("  -I FILE	file containing certificates in RA's certifying chain\n"),
+		N_("  -n	prefer not to use the SCEP Renewal feature\n"),
 		N_("* Bus options:\n"),
 		N_("  -S	connect to the certmonger service on the system bus\n"),
 		N_("  -s	connect to the certmonger service on the session bus\n"),

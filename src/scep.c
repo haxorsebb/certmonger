@@ -133,15 +133,76 @@ cert_among(char *needle, char *candidate1, char *candidate2, char **haystack)
 	return ret;
 }
 
+static int
+check_capability(const char *list, size_t list_length, const char *capability)
+{
+	const char *p, *q, *r, *n;
+	char *tmp;
+
+	p = list;
+	cm_log(1, "Checking server capabilities list for \"%s\"",
+	       capability);
+	while (p < list + list_length) {
+		/* Skip any blank lines. */
+		while ((p < list + list_length) &&
+		       (strchr("\r\n", *p) != NULL)) {
+			p++;
+		}
+		/* Find either the end of this line, or the buffer. */
+		n = memchr(p, '\n', (list + list_length) - p);
+		r = memchr(p, '\r', (list + list_length) - p);
+		if (n == NULL) {
+			q = r;
+		} else
+		if (r == NULL) {
+			q = n;
+		} else {
+			if (r < n) {
+				q = r;
+			} else {
+				q = n;
+			}
+		}
+		if (q == NULL) {
+			q = list + list_length;
+		}
+		if (q < p) {
+			/* should never happen */
+			break;
+		}
+		/* If the length is right, check for a match. */
+		if (((size_t)(q - p)) == strlen(capability)) {
+			tmp = malloc(q - p + 1);
+			if (tmp != NULL) {
+				memcpy(tmp, capability, q - p);
+				tmp[q - p] = '\0';
+				if (strcasecmp(tmp, capability) == 0) {
+					free(tmp);
+					cm_log(1, " found it.\n");
+					return 1;
+				}
+				free(tmp);
+			}
+		}
+		/* Prepare to move to the next line. */
+		p = q;
+	}
+	/* Out of data, and no match. */
+	cm_log(1, " not found.\n");
+	return 0;
+}
+
 int
 main(int argc, const char **argv)
 {
 	const char *url = NULL, *results = NULL, *results2 = NULL;
 	struct cm_submit_h_context *hctx;
 	int c, verbose = 0, results_length = 0, results_length2 = 0, i;
+	int prefer_non_renewal = 0, can_renewal = 0;
 	int response_code = 0, response_code2 = 0;
 	enum known_ops op = op_unset;
-	const char *id, *message = NULL, *cainfo = NULL;
+	const char *id = NULL, *cainfo = NULL;
+	char *message = NULL, *rekey_message = NULL;
 	const char *mode = NULL, *content_type = NULL, *content_type2 = NULL;
 	void *ctx;
 	char *params = "", *params2 = NULL, *racert = NULL, *cacert = NULL;
@@ -167,9 +228,10 @@ main(int argc, const char **argv)
 		{"retrieve-ca-certificates", 'C', POPT_ARG_NONE, NULL, 'C', "make GetCACert/GetCAChain requests", NULL},
 		{"get-initial-cert", 'g', POPT_ARG_NONE, NULL, 'g', "send a PKIOperation pkiMessage", NULL},
 		{"pki-message", 'p', POPT_ARG_NONE, NULL, 'p', "send a PKIOperation pkiMessage", NULL},
-		{"racert", 'r', POPT_ARG_STRING, NULL, 'r', NULL, "FILENAME"},
-		{"cacert", 'R', POPT_ARG_STRING, NULL, 'R', NULL, "FILENAME"},
-		{"other-certs", 'I', POPT_ARG_STRING, NULL, 'I', NULL, "FILENAME"},
+		{"racert", 'r', POPT_ARG_STRING, NULL, 'r', "the RA certificate, used for encrypting requests", "FILENAME"},
+		{"cacert", 'R', POPT_ARG_STRING, NULL, 'R', "the CA certificate, used for verifying responses", "FILENAME"},
+		{"other-certs", 'I', POPT_ARG_STRING, NULL, 'I', "additional certificates", "FILENAME"},
+		{"non-renewal", 'n', POPT_ARG_NONE, &prefer_non_renewal, 0, "prefer to not use the SCEP Renewal feature", NULL},
 		{"verbose", 'v', POPT_ARG_NONE, NULL, 'v', NULL, NULL},
 		POPT_AUTOHELP
 		POPT_TABLEEND
@@ -193,13 +255,17 @@ main(int argc, const char **argv)
 			message = getenv(CM_SUBMIT_SCEP_PKCSREQ_REKEY_ENV);
 			if (message == NULL) {
 				message = getenv(CM_SUBMIT_SCEP_PKCSREQ_ENV);
+			} else {
+				rekey_message = getenv(CM_SUBMIT_SCEP_PKCSREQ_ENV);
 			}
 		} else
 		if (strcasecmp(mode, CM_OP_POLL) == 0) {
 			op = op_get_initial_cert;
-			message = getenv(CM_SUBMIT_SCEP_GETCERTINITIAL_REKEY_ENV);
+			message = getenv(CM_SUBMIT_SCEP_PKCSREQ_REKEY_ENV);
 			if (message == NULL) {
-				message = getenv(CM_SUBMIT_SCEP_GETCERTINITIAL_ENV);
+				message = getenv(CM_SUBMIT_SCEP_PKCSREQ_ENV);
+			} else {
+				rekey_message = getenv(CM_SUBMIT_SCEP_PKCSREQ_ENV);
 			}
 		} else
 		if (strcasecmp(mode, CM_OP_FETCH_SCEP_CA_CERTS) == 0) {
@@ -285,23 +351,25 @@ main(int argc, const char **argv)
 		missing_args = TRUE;
 	}
 
-	/* Format the HTTP request's parameters. */
+	/* Format the first (or only) HTTP request's parameters. */
 	switch (op) {
 	case op_unset:
 		missing_args = TRUE;
 		break;
 	case op_get_ca_caps:
+		/* Only step: read capabilities for the daemon. */
 		params = talloc_asprintf(ctx, "operation=" OP_GET_CA_CAPS "&message=%s", id);
 		break;
 	case op_get_ca_certs:
+		/* First step: get the root certificate. */
 		params = talloc_asprintf(ctx, "operation=" OP_GET_CA_CERT "&message=%s", id);
-		params2 = talloc_asprintf(ctx, "operation=" OP_GET_CA_CHAIN "&message=%s", id);
 		break;
 	case op_get_initial_cert:
 		if ((racert == NULL) || (strlen(racert) == 0)) {
 			printf(_("No RA certificate (-r) given, and no default known.\n"));
 			missing_args = TRUE;
 		} else {
+			/* Check that we at least have a message to send. */
 			if ((message == NULL) || (strlen(message) == 0)) {
 				if (poptPeekArg(pctx) != NULL) {
 					message = cm_submit_u_from_file(poptGetArg(pctx));
@@ -311,9 +379,8 @@ main(int argc, const char **argv)
 				printf(_("Error reading request, expected PKCS7 data.\n"));
 				return CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
 			}
-			tmp1 = cm_submit_u_base64_from_text(message);
-			tmp2 = cm_submit_u_url_encode(tmp1);
-			params = talloc_asprintf(ctx, "operation=" OP_GET_INITIAL_CERT "&message=%s", tmp2);
+			/* First step: read capabilities for our use. */
+			params = talloc_asprintf(ctx, "operation=" OP_GET_CA_CAPS "&message=%s", id);
 		}
 		break;
 	case op_pkcsreq:
@@ -321,6 +388,7 @@ main(int argc, const char **argv)
 			printf(_("No RA certificate (-r) given, and no default known.\n"));
 			missing_args = TRUE;
 		} else {
+			/* Check that we at least have a message to send. */
 			if ((message == NULL) || (strlen(message) == 0)) {
 				if (poptPeekArg(pctx) != NULL) {
 					message = cm_submit_u_from_file(poptGetArg(pctx));
@@ -330,13 +398,45 @@ main(int argc, const char **argv)
 				printf(_("Error reading request, expected PKCS7 data.\n"));
 				return CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
 			}
-			tmp1 = cm_submit_u_base64_from_text(message);
-			tmp2 = cm_submit_u_url_encode(tmp1);
-			params = talloc_asprintf(ctx, "operation=" OP_PKCSREQ "&message=%s", tmp2);
+			/* First step: read capabilities for our use. */
+			params = talloc_asprintf(ctx, "operation=" OP_GET_CA_CAPS "&message=%s", id);
 		}
 		break;
 	}
 
+	/* Supply help output, if it's needed. */
+	if (missing_args) {
+		poptPrintUsage(pctx, stdout, 0);
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
+	}
+
+	/* Check the rekey PKCSReq message, if we have one. */
+	if ((rekey_message != NULL) && (strlen(rekey_message) != 0)) {
+		tmp1 = cm_submit_u_base64_from_text(rekey_message);
+		tmp2 = cm_store_base64_as_bin(ctx, tmp1, -1, &c);
+		cm_pkcs7_verify_signed((unsigned char *) tmp2, c,
+				       NULL, NULL, NID_pkcs7_data, ctx, NULL,
+				       NULL, &msgtype, NULL, NULL,
+				       NULL, NULL,
+				       NULL, NULL, NULL, NULL);
+		if ((msgtype == NULL) ||
+		    ((strcmp(msgtype, SCEP_MSGTYPE_PKCSREQ) != 0) &&
+		     (strcmp(msgtype, SCEP_MSGTYPE_GETCERTINITIAL) != 0))) {
+			if (msgtype == NULL) {
+				fprintf(stderr, _("Warning: request is neither "
+						  "a PKCSReq nor a "
+						  "GetInitialCert request.\n"));
+			} else {
+				fprintf(stderr, _("Warning: request type \"%s\""
+						  "is neither a PKCSReq nor a "
+						  "GetInitialCert request.\n"),
+						  msgtype);
+			}
+		}
+	}
+
+	/* Now, check the regular single-key message, and pick up the
+	 * transaction ID and nonce from it. */
 	if ((message != NULL) && (strlen(message) != 0)) {
 		tmp1 = cm_submit_u_base64_from_text(message);
 		tmp2 = cm_store_base64_as_bin(ctx, tmp1, -1, &c);
@@ -373,13 +473,7 @@ main(int argc, const char **argv)
 		sent_nonce_length = 0;
 	}
 
-	/* Supply help output, if it's needed. */
-	if (missing_args) {
-		poptPrintUsage(pctx, stdout, 0);
-		return CM_SUBMIT_STATUS_UNCONFIGURED;
-	}
-
-	/* Submit the request. */
+	/* Submit the first request. */
 	hctx = cm_submit_h_init(ctx, "GET", url, params, NULL, NULL,
 				cainfo, NULL, NULL, NULL, NULL,
 				cm_submit_h_negotiate_off,
@@ -412,6 +506,57 @@ main(int argc, const char **argv)
 		       cm_store_base64_from_bin(ctx, (const unsigned char *) results,
 						results_length));
 	}
+
+	/* Format a possible second HTTP request's parameters. */
+	switch (op) {
+	case op_unset:
+		abort(); /* never reached */
+		break;
+	case op_get_ca_caps:
+		/* nothing to do here */
+		params2 = NULL;
+		break;
+	case op_get_ca_certs:
+		/* Step two: request the chain. */
+		params2 = talloc_asprintf(ctx, "operation=" OP_GET_CA_CHAIN "&message=%s", id);
+		break;
+	case op_get_initial_cert:
+		/* Step two: actually poll.  If we have multiple messages which
+		 * we can use, decide which one to use. */
+		can_renewal = check_capability(results, results_length, "Renewal");
+		if (can_renewal && !prefer_non_renewal && (rekey_message != NULL)) {
+			tmp2 = rekey_message;
+		} else {
+			tmp2 = message;
+		}
+		if ((tmp2 == NULL) || (strlen(tmp2) == 0)) {
+			printf(_("Error reading request, expected PKCS7 data.\n"));
+			return CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
+		}
+		tmp1 = cm_submit_u_base64_from_text(tmp2);
+		tmp2 = cm_submit_u_url_encode(tmp1);
+		params2 = talloc_asprintf(ctx, "operation=" OP_GET_INITIAL_CERT "&message=%s", tmp2);
+		break;
+	case op_pkcsreq:
+		/* Step two: actually request a certificate.  If we have
+		 * multiple messages which we can use, decide which one to use
+		 * to make the request. */
+		can_renewal = check_capability(results, results_length, "Renewal");
+		if (can_renewal && !prefer_non_renewal && (rekey_message != NULL)) {
+			tmp2 = rekey_message;
+		} else {
+			tmp2 = message;
+		}
+		if ((tmp2 == NULL) || (strlen(tmp2) == 0)) {
+			printf(_("Error reading request, expected PKCS7 data.\n"));
+			return CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
+		}
+		tmp1 = cm_submit_u_base64_from_text(tmp2);
+		tmp2 = cm_submit_u_url_encode(tmp1);
+		params2 = talloc_asprintf(ctx, "operation=" OP_PKCSREQ "&message=%s", tmp2);
+		break;
+	}
+	/* Submit a second HTTP request if we have one to make. */
 	if (params2 != NULL) {
 		hctx = cm_submit_h_init(ctx, "GET", url, params2, NULL, NULL,
 					NULL, NULL, NULL, NULL, NULL,
@@ -461,25 +606,38 @@ main(int argc, const char **argv)
 		}
 		return CM_SUBMIT_STATUS_UNREACHABLE;
 	}
-	if (response_code != 200) {
-		printf(_("Got response code %d from %s, not 200.\n"),
-		       response_code, url);
-		if (response_code == 500) {
-			/* The server might recover, right? */
-			return CM_SUBMIT_STATUS_UNREACHABLE;
-		} else {
-			/* Maybe not? */
-			return CM_SUBMIT_STATUS_REJECTED;
-		}
-	}
-	if (results == NULL) {
-		printf(_("Internal error: no response to \"%s?%s\".\n"),
-		       url, params);
-		return CM_SUBMIT_STATUS_REJECTED;
-	}
 	switch (op) {
 	case op_unset:
-		return CM_SUBMIT_STATUS_UNREACHABLE;
+		abort();
+		break;
+	case op_get_ca_caps:
+	case op_get_ca_certs:
+		if (response_code != 200) {
+			printf(_("Got response code %d from %s, not 200.\n"),
+			       response_code, url);
+			if (response_code == 500) {
+				/* The server might recover, right? */
+				return CM_SUBMIT_STATUS_UNREACHABLE;
+			} else {
+				/* Maybe not? */
+				return CM_SUBMIT_STATUS_REJECTED;
+			}
+		}
+		if (results == NULL) {
+			printf(_("Internal error: no response to \"%s?%s\".\n"),
+			       url, params);
+			return CM_SUBMIT_STATUS_REJECTED;
+		}
+		break;
+	case op_get_initial_cert:
+	case op_pkcsreq:
+		/* ignore an error status */
+		break;
+	}
+
+	switch (op) {
+	case op_unset:
+		abort(); /* never reached */
 		break;
 	case op_get_ca_caps:
 		if (results_length > 1024) {
@@ -699,7 +857,7 @@ main(int argc, const char **argv)
 		break;
 	case op_get_initial_cert:
 	case op_pkcsreq:
-		if (strcasecmp(content_type,
+		if (strcasecmp(content_type2,
 			       "application/x-pki-message") == 0) {
 			memset(&cacerts, 0, sizeof(cacerts));
 			cacerts[0] = cacert ? cacert : racert;
@@ -740,7 +898,7 @@ main(int argc, const char **argv)
 				racerts[c++] = NULL;
 			}
 			ERR_clear_error();
-			i = cm_pkcs7_verify_signed((unsigned char *) results, results_length,
+			i = cm_pkcs7_verify_signed((unsigned char *) results2, results_length2,
 						   cacerts, racerts,
 						   NID_pkcs7_data, ctx, NULL,
 						   &tx, &msgtype, &pkistatus, &failinfo,
