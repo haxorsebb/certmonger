@@ -40,6 +40,8 @@
 #define CM_CADATA_ROOTS "roots"
 #define CM_CADATA_OTHER_ROOTS "other-roots"
 #define CM_CADATA_OTHERS "other"
+#define CM_CADATA_CERTIFICATE "certificate"
+#define CM_CADATA_NICKNAME "nickname"
 
 const char *attribute_map[] = {
 	CM_SUBMIT_REQ_SUBJECT_ENV, CM_DBUS_PROP_TEMPLATE_SUBJECT,
@@ -52,11 +54,20 @@ const char *attribute_map[] = {
 };
 
 struct cm_cadata_state {
+	enum cm_submit_external_phase {
+		parsing,
+		postprocessing,
+	} phase;
 	struct cm_store_ca *ca;
 	struct cm_subproc_state *subproc;
-	void (*parse)(struct cm_store_ca *ca, struct cm_cadata_state *state,
-		      const char *msg);
+	int (*parse)(struct cm_store_ca *ca, struct cm_cadata_state *state,
+		     const char *msg);
+	int (*second_sub)(int fd, struct cm_store_ca *ca,
+			  struct cm_store_entry *e, void *data);
+	int (*postprocess)(struct cm_store_ca *ca,
+			   struct cm_cadata_state *state, const char *msg);
 	const char *op;
+	char *intermediate;
 	int error_fd, delay;
 	unsigned int modified: 1;
 };
@@ -108,7 +119,7 @@ fetch(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry, void *data)
 }
 
 /* Parse IDENTIFY output.  It's just an arbitrary string. */
-static void
+static int
 parse_identification(struct cm_store_ca *ca, struct cm_cadata_state *state,
 		     const char *msg)
 {
@@ -136,6 +147,7 @@ parse_identification(struct cm_store_ca *ca, struct cm_cadata_state *state,
 	}
 
 	talloc_free(old_aka);
+	return 0;
 }
 
 /* Compare two lists of nickname+certificate pairs. */
@@ -185,8 +197,8 @@ nickcertlistcmp(struct cm_nickcert **a, struct cm_nickcert **b)
 
 /* Parse a list of nickname+certificate pairs. */
 static const char *
-parse_cert_list(struct cm_store_ca *ca, struct cm_cadata_state *state,
-		const char *msg, struct cm_nickcert ***list)
+parse_old_cert_list(struct cm_store_ca *ca, struct cm_cadata_state *state,
+		    const char *msg, struct cm_nickcert ***list)
 {
 	struct cm_nickcert **certs = NULL, **tmp, *nc;
 	const char *p, *q;
@@ -248,26 +260,40 @@ parse_cert_list(struct cm_store_ca *ca, struct cm_cadata_state *state,
 struct cm_nickcert **
 parse_json_cert_list(void *parent, struct cm_json *nickcerts)
 {
-	struct cm_nickcert **ret;
-	struct cm_json *val;
-	unsigned int i;
-	const char *p;
+	struct cm_nickcert **ret, *c;
+	struct cm_json *cert, *val;
+	unsigned int i, j;
+	const char *nickname, *pem;
 
-	i = cm_json_n_keys(nickcerts);
+	i = cm_json_array_size(nickcerts);
 	if (i > 0) {
 		ret = talloc_array_ptrtype(parent, ret, i + 1);
 		if (ret != NULL) {
-			for (i = 0; i < cm_json_n_keys(nickcerts); i++) {
-				ret[i] = talloc_ptrtype(ret, ret[i]);
-				if (ret[i] != NULL) {
-					val = cm_json_nth_val(nickcerts, i);
+			for (i = 0, j = 0;
+			     i < cm_json_array_size(nickcerts);
+			     i++) {
+				c = talloc_ptrtype(ret, c);
+				if (c != NULL) {
+					cert = cm_json_n(nickcerts, i);
+					if (cm_json_type(cert) != cm_json_type_object) {
+						continue;
+					}
+					val = cm_json_get(cert, CM_CADATA_NICKNAME);
 					if (cm_json_type(val) != cm_json_type_string) {
 						continue;
 					}
-					p = talloc_strdup(ret[i], cm_json_nth_key(nickcerts, i));
-					ret[i]->cm_nickname = talloc_strdup(ret[i], p);
-					p = cm_json_string(val, NULL);
-					ret[i]->cm_cert = talloc_strdup(ret[i], p);
+					nickname = cm_json_string(val, NULL);
+					c->cm_nickname = talloc_strdup(c, nickname);
+					val = cm_json_get(cert, CM_CADATA_CERTIFICATE);
+					if (cm_json_type(val) != cm_json_type_string) {
+						continue;
+					}
+					pem = cm_json_string(val, NULL);
+					c->cm_cert = talloc_strdup(c, pem);
+					if ((c->cm_nickname != NULL) &&
+					    (c->cm_cert != NULL)) {
+						ret[j++] = c;
+					}
 				}
 			}
 			ret[i] = NULL;
@@ -277,34 +303,15 @@ parse_json_cert_list(void *parent, struct cm_json *nickcerts)
 	return NULL;
 }
 
-/* Generate a name that isn't already used in the JSON object. */
-static const char *
-make_fresh_nickname(struct cm_json *json, const char *nickname)
-{
-	const char *result;
-	int i;
-
-	if (cm_json_get(json, nickname) == NULL) {
-		result = nickname;
-	} else {
-		i = 1;
-		do {
-			i++;
-			result = talloc_asprintf(json, "%s #%d", nickname, i);
-		} while (cm_json_get(json, result) != NULL);
-	}
-	return result;
-}
-
 /* Parse three lists of nickname+certificate pairs, or a JSON document that
  * makes them all members of objects named "root", "other-roots", and "others",
  * members of an unnamed top-level object. */
-static void
+static int
 parse_certs(struct cm_store_ca *ca, struct cm_cadata_state *state,
 	    const char *msg)
 {
-	struct cm_nickcert **roots, **other_roots, **others;
-	struct cm_json *json = NULL, *list;
+	struct cm_nickcert **certs;
+	struct cm_json *json = NULL, *sub, *cert, *val;
 	const char *p, *eom;
 	int i;
 
@@ -312,78 +319,112 @@ parse_certs(struct cm_store_ca *ca, struct cm_cadata_state *state,
 		state->modified = 0;
 	}
 	if (cm_json_decode(state, msg, -1, &json, &eom) != 0) {
+		json = cm_json_new_object(state);
 		/* Take the older-format data and build a JSON object out of
 		 * it. */
-		json = cm_json_new_object(state);
-		roots = ca->cm_ca_root_certs;
-		p = parse_cert_list(ca, state, msg, &roots);
+		certs = NULL;
+		p = parse_old_cert_list(ca, state, msg, &certs);
 		if (p != NULL) {
-			list = cm_json_new_object(json);
+			sub = cm_json_new_array(json);
 			for (i = 0;
-			     (roots != NULL) &&
-			     (roots[i] != NULL);
+			     (certs != NULL) &&
+			     (certs[i] != NULL);
 			     i++) {
-				cm_json_set(list,
-					    make_fresh_nickname(list,
-								roots[i]->cm_nickname),
-					    cm_json_new_string(list,
-							       roots[i]->cm_cert,
-							       -1));
+				cert = cm_json_new_object(sub);
+				val = cm_json_new_string(cert,
+							 certs[i]->cm_nickname,
+							 -1);
+				cm_json_set(cert, CM_CADATA_NICKNAME, val);
+				val = cm_json_new_string(cert,
+							 certs[i]->cm_cert,
+							 -1);
+				cm_json_set(cert, CM_CADATA_CERTIFICATE, val);
+				cm_json_append(sub, cert);
 			}
-			if (cm_json_n_keys(list) > 0) {
-				cm_json_set(json,
-					    CM_CADATA_ROOTS,
-					    list);
+			if (cm_json_array_size(sub) > 0) {
+				cm_json_set(json, CM_CADATA_ROOTS, sub);
 			}
-			other_roots = ca->cm_ca_other_root_certs;
-			p = parse_cert_list(ca, state, p, &other_roots);
+			certs = NULL;
+			p = parse_old_cert_list(ca, state, p, &certs);
 			if (p != NULL) {
-				list = cm_json_new_object(json);
+				sub = cm_json_new_array(json);
 				for (i = 0;
-				     (other_roots != NULL) &&
-				     (other_roots[i] != NULL);
+				     (certs != NULL) &&
+				     (certs[i] != NULL);
 				     i++) {
-					cm_json_set(list,
-						    make_fresh_nickname(list,
-									other_roots[i]->cm_nickname),
-						    cm_json_new_string(list,
-								       other_roots[i]->cm_cert,
-								       -1));
+					cert = cm_json_new_object(sub);
+					val = cm_json_new_string(cert,
+								 certs[i]->cm_nickname,
+								 -1);
+					cm_json_set(cert, CM_CADATA_NICKNAME, val);
+					val = cm_json_new_string(cert,
+								 certs[i]->cm_cert,
+								 -1);
+					cm_json_set(cert, CM_CADATA_CERTIFICATE, val);
+					cm_json_append(sub, cert);
 				}
-				if (cm_json_n_keys(list) > 0) {
-					cm_json_set(json,
-						    CM_CADATA_OTHER_ROOTS,
-						    list);
+				if (cm_json_array_size(sub) > 0) {
+					cm_json_set(json, CM_CADATA_OTHER_ROOTS, sub);
 				}
-				others = ca->cm_ca_other_certs;
-				p = parse_cert_list(ca, state, p, &others);
+				certs = NULL;
+				p = parse_old_cert_list(ca, state, p, &certs);
 				if (p != NULL) {
-					list = cm_json_new_object(json);
+					sub = cm_json_new_array(json);
 					for (i = 0;
-					     (others != NULL) &&
-					     (others[i] != NULL);
+					     (certs != NULL) &&
+					     (certs[i] != NULL);
 					     i++) {
-						cm_json_set(list,
-							    make_fresh_nickname(list,
-										others[i]->cm_nickname),
-							    cm_json_new_string(list,
-									       others[i]->cm_cert,
-									       -1));
+						cert = cm_json_new_object(sub);
+						val = cm_json_new_string(cert,
+									 certs[i]->cm_nickname,
+									 -1);
+						cm_json_set(cert, CM_CADATA_NICKNAME, val);
+						val = cm_json_new_string(cert,
+									 certs[i]->cm_cert,
+									 -1);
+						cm_json_set(cert, CM_CADATA_CERTIFICATE, val);
+						cm_json_append(sub, cert);
 					}
-					if (cm_json_n_keys(list) > 0) {
-						cm_json_set(json,
-							    CM_CADATA_OTHERS,
-							    list);
+					if (cm_json_array_size(sub) > 0) {
+						cm_json_set(json, CM_CADATA_OTHERS, sub);
 					}
 				}
-				talloc_free(other_roots);
 			}
-			talloc_free(roots);
 		}
 	}
-	/* Parse the JSON document. */
-	if (json == NULL) {
-		return;
+	/* Save the JSON document for postprocessing. */
+	state->intermediate = cm_json_encode(state, json);
+	return 0;
+}
+
+static int
+postprocess_certs_sub(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
+		      void *data)
+{
+	struct cm_cadata_state *state = data;
+	FILE *status;
+
+	status = fdopen(fd, "w");
+	if (status == NULL) {
+		cm_log(1, "Internal error.\n");
+		_exit(errno);
+	}
+	fprintf(status, "%s\n", state->intermediate);
+	fflush(status);
+	return 0;
+}
+
+static int
+postprocess_certs(struct cm_store_ca *ca, struct cm_cadata_state *state,
+		  const char *msg)
+{
+	struct cm_nickcert **roots, **other_roots, **others;
+	struct cm_json *json;
+	const char *eom;
+
+	if (cm_json_decode(state, msg, -1, &json, &eom) != 0) {
+		cm_log(1, "Error parsing JSON root certificate object.\n");
+		return 0;
 	}
 	roots = parse_json_cert_list(ca, cm_json_get(json, CM_CADATA_ROOTS));
 	other_roots = parse_json_cert_list(ca, cm_json_get(json, CM_CADATA_OTHER_ROOTS));
@@ -399,11 +440,12 @@ parse_certs(struct cm_store_ca *ca, struct cm_cadata_state *state,
 	ca->cm_ca_root_certs = roots;
 	ca->cm_ca_other_root_certs = other_roots;
 	ca->cm_ca_other_certs = others;
+	return 0;
 }
 
 /* Parse a list of comma or newline-separated items.  This handles both SCEP
  * capability lists and our lists of required attributes. */
-static void
+static int
 parse_list(struct cm_store_ca *ca, struct cm_cadata_state *state,
 	   const char *msg, const char **dict, char ***list)
 {
@@ -490,18 +532,20 @@ parse_list(struct cm_store_ca *ca, struct cm_cadata_state *state,
 
 	talloc_free(*list);
 	*list = reqs;
+	return 0;
 }
 
 /* Parse a list of known profiles. */
-static void
+static int
 parse_profiles(struct cm_store_ca *ca, struct cm_cadata_state *state,
 	       const char *msg)
 {
 	parse_list(ca, state, msg, NULL, &ca->cm_ca_profiles);
+	return 0;
 }
 
 /* Parse a single profile name that we'll advertise as a default. */
-static void
+static int
 parse_default_profile(struct cm_store_ca *ca, struct cm_cadata_state *state,
 		      const char *msg)
 {
@@ -534,34 +578,38 @@ parse_default_profile(struct cm_store_ca *ca, struct cm_cadata_state *state,
 	}
 
 	talloc_free(old_dp);
+	return 0;
 }
 
 /* Parse a list of properties that the helper expects us to have set for new
  * enrollment requests. */
-static void
+static int
 parse_enroll_reqs(struct cm_store_ca *ca, struct cm_cadata_state *state,
 		  const char *msg)
 {
 	parse_list(ca, state, msg, attribute_map,
 		   &ca->cm_ca_required_enroll_attributes);
+	return 0;
 }
 
 /* Parse a list of properties that the helper expects us to have set for
  * renewal requests. */
-static void
+static int
 parse_renew_reqs(struct cm_store_ca *ca, struct cm_cadata_state *state,
 		 const char *msg)
 {
 	parse_list(ca, state, msg, attribute_map,
 		   &ca->cm_ca_required_renewal_attributes);
+	return 0;
 }
 
 /* Parse a list of SCEP capabilities. */
-static void
+static int
 parse_capabilities(struct cm_store_ca *ca, struct cm_cadata_state *state,
 		   const char *msg)
 {
 	parse_list(ca, state, msg, NULL, &ca->cm_ca_capabilities);
+	return 0;
 }
 
 /* Compare two strings, treating NULL and empty as the same. */
@@ -581,7 +629,7 @@ strings_differ(const char *a, const char *b)
  * X.509 certificates.  The first is for the SCEP server.  The second, if there
  * is one, is for the CA.  Any additional certificates are assumed to be
  * intermediates. */
-static void
+static int
 parse_encryption_certs(struct cm_store_ca *ca, struct cm_cadata_state *state,
 		       const char *msg)
 {
@@ -636,14 +684,19 @@ parse_encryption_certs(struct cm_store_ca *ca, struct cm_cadata_state *state,
 	state->modified = strings_differ(olde, ca->cm_ca_encryption_cert) ||
 			  strings_differ(oldei, ca->cm_ca_encryption_issuer_cert) ||
 			  strings_differ(oldep, ca->cm_ca_encryption_cert_pool);
+	return 0;
 }
 
 /* Start the helper with the right $CERTMONGER_OPERATION, and feed the output
  * to the right parser callback. */
 static struct cm_cadata_state *
 cm_cadata_start_generic(struct cm_store_ca *ca, const char *op,
-			void (*parse)(struct cm_store_ca *,
-				      struct cm_cadata_state *, const char *))
+			int (*parse)(struct cm_store_ca *,
+				     struct cm_cadata_state *, const char *),
+			int (*second_sub)(int fd, struct cm_store_ca *,
+					  struct cm_store_entry *, void *),
+			int (*postprocess)(struct cm_store_ca *,
+					   struct cm_cadata_state *, const char *))
 {
 	struct cm_cadata_state *ret;
 	int error_fd[2];
@@ -692,6 +745,7 @@ cm_cadata_start_generic(struct cm_store_ca *ca, const char *op,
 		return NULL;
 	}
 	memset(ret, 0, sizeof(*ret));
+	ret->phase = parsing;
 	ret->ca = ca;
 	ret->error_fd = error_fd[1];
 	ret->delay = -1;
@@ -707,6 +761,8 @@ cm_cadata_start_generic(struct cm_store_ca *ca, const char *op,
 	close(error_fd[1]);
 	ret->error_fd = -1;
 	ret->parse = parse;
+	ret->second_sub = second_sub;
+	ret->postprocess = postprocess;
 	if (read(error_fd[0], &u, 1) == 1) {
 		cm_log(1, "Error running enrollment helper \"%s\": %s.\n",
 		       ca->cm_ca_external_helper, strerror(u));
@@ -720,61 +776,64 @@ struct cm_cadata_state *
 cm_cadata_start_identify(struct cm_store_ca *ca)
 {
 	return cm_cadata_start_generic(ca, CM_OP_IDENTIFY,
-				       parse_identification);
+				       parse_identification, NULL, NULL);
 }
 
 struct cm_cadata_state *
 cm_cadata_start_certs(struct cm_store_ca *ca)
 {
 	return cm_cadata_start_generic(ca, CM_OP_FETCH_ROOTS,
-				       parse_certs);
+				       parse_certs,
+				       postprocess_certs_sub,
+				       postprocess_certs);
 }
 
 struct cm_cadata_state *
 cm_cadata_start_profiles(struct cm_store_ca *ca)
 {
 	return cm_cadata_start_generic(ca, CM_OP_FETCH_PROFILES,
-				       parse_profiles);
+				       parse_profiles, NULL, NULL);
 }
 
 struct cm_cadata_state *
 cm_cadata_start_default_profile(struct cm_store_ca *ca)
 {
 	return cm_cadata_start_generic(ca, CM_OP_FETCH_DEFAULT_PROFILE,
-				       parse_default_profile);
+				       parse_default_profile, NULL, NULL);
 }
 
 struct cm_cadata_state *
 cm_cadata_start_enroll_reqs(struct cm_store_ca *ca)
 {
 	return cm_cadata_start_generic(ca, CM_OP_FETCH_ENROLL_REQUIREMENTS,
-				       parse_enroll_reqs);
+				       parse_enroll_reqs, NULL, NULL);
 }
 
 struct cm_cadata_state *
 cm_cadata_start_renew_reqs(struct cm_store_ca *ca)
 {
 	return cm_cadata_start_generic(ca, CM_OP_FETCH_RENEWAL_REQUIREMENTS,
-				       parse_renew_reqs);
+				       parse_renew_reqs, NULL, NULL);
 }
 
 struct cm_cadata_state *
 cm_cadata_start_capabilities(struct cm_store_ca *ca)
 {
 	return cm_cadata_start_generic(ca, CM_OP_FETCH_SCEP_CA_CAPS,
-				       parse_capabilities);
+				       parse_capabilities, NULL, NULL);
 }
 
 struct cm_cadata_state *
 cm_cadata_start_encryption_certs(struct cm_store_ca *ca)
 {
 	return cm_cadata_start_generic(ca, CM_OP_FETCH_SCEP_CA_CERTS,
-				       parse_encryption_certs);
+				       parse_encryption_certs, NULL, NULL);
 }
 
 int
 cm_cadata_ready(struct cm_cadata_state *state)
 {
+	struct cm_subproc_state *subproc;
 	int ready, status, length;
 	const char *msg = NULL;
 	char *p = NULL;
@@ -787,7 +846,28 @@ cm_cadata_ready(struct cm_cadata_state *state)
 		if (WIFEXITED(status)) {
 			switch (WEXITSTATUS(status)) {
 			case CM_SUBMIT_STATUS_ISSUED:
-				(*(state->parse))(state->ca, state, msg);
+				switch (state->phase) {
+				case parsing:
+					ready = (*(state->parse))(state->ca, state, msg);
+					if ((ready == 0) &&
+					    (state->second_sub != NULL) &&
+					    (state->postprocess != NULL)) {
+						subproc = cm_subproc_start(state->second_sub,
+									   state, state->ca, NULL, state);
+						if (subproc != NULL) {
+							cm_subproc_done(state->subproc);
+							state->subproc = subproc;
+							state->phase = postprocessing;
+							ready = -1;
+						} else {
+							cm_log(1, "Error running second helper.\n");
+						}
+					}
+					break;
+				case postprocessing:
+					ready = (*(state->postprocess))(state->ca, state, msg);
+					break;
+				}
 				break;
 			case CM_SUBMIT_STATUS_WAIT_WITH_DELAY:
 				if (length > 0) {
