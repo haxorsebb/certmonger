@@ -104,7 +104,7 @@ EOF
 chmod u+x ca-issued-with-noise-both
 cat > ca-issued-json << EOF
 #!/bin/sh
-echo -n "{\"certificate\":\"$cert\",\"roots\":{\"CA1\":\"$cert2\",\"CA2\":\"$cert3\"},\"chain\":{\"CA3\":\"$cert4\"},\"whatever\":null}"
+echo -n "{\"certificate\":\"$cert\",\"roots\":[{\"nickname\":\"CA1\",\"certificate\":\"$cert2\"},{\"nickname\":\"CA2\",\"certificate\":\"$cert3\"}],\"chain\":[{\"nickname\":\"CA3\",\"certificate\":\"$cert4\"}],\"whatever\":null}"
 exit 0
 EOF
 chmod u+x ca-issued-json
