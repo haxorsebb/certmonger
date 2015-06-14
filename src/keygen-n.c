@@ -541,15 +541,6 @@ retry_gen:
 	pubkey = NULL;
 	privkey = PK11_GenerateKeyPair(slot, mech, params, &pubkey,
 				       PR_TRUE, PR_TRUE, NULL);
-	/* If we're just a bit(s?) short (as opposed to cut off at an arbitrary
-	 * limit that's less than 90% of what we asked for), try again. */
-	generated_size = SECKEY_PublicKeyStrengthInBits(pubkey);
-	if ((generated_size < cm_key_size) &&
-	    (generated_size > (cm_key_size * 9 / 10))) {
-		cm_log(1, "Ended up with %d instead of %d.  Retrying.\n",
-		       SECKEY_PublicKeyStrengthInBits(pubkey), cm_key_size);
-		goto retry_gen;
-	}
 	/* Retry with the optimum key size. */
 	if (privkey == NULL) {
 		cm_key_size = PK11_GetBestKeyLength(slot, pmech);
@@ -578,6 +569,15 @@ retry_gen:
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 			break;
 		}
+	}
+	/* If we're just a bit(s?) short (as opposed to cut off at an arbitrary
+	 * limit that's less than 90% of what we asked for), try again. */
+	generated_size = SECKEY_PublicKeyStrengthInBits(pubkey);
+	if ((generated_size < cm_key_size) &&
+	    (generated_size > (cm_key_size * 9 / 10))) {
+		cm_log(1, "Ended up with %d instead of %d.  Retrying.\n",
+		       SECKEY_PublicKeyStrengthInBits(pubkey), cm_key_size);
+		goto retry_gen;
 	}
 	/* Check for keys with the desired name, selecting a new name if
 	 * there's already one with the desired name. */
