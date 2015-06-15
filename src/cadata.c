@@ -262,7 +262,7 @@ parse_json_cert_list(void *parent, struct cm_json *nickcerts)
 {
 	struct cm_nickcert **ret, *c;
 	struct cm_json *cert, *val;
-	unsigned int i, j;
+	int i, j;
 	const char *nickname, *pem;
 
 	i = cm_json_array_size(nickcerts);
@@ -296,8 +296,12 @@ parse_json_cert_list(void *parent, struct cm_json *nickcerts)
 					}
 				}
 			}
-			ret[i] = NULL;
-			return ret;
+			ret[j] = NULL;
+			if (j > 0) {
+				return ret;
+			} else {
+				return NULL;
+			}
 		}
 	}
 	return NULL;
