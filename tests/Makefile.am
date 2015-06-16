@@ -18,6 +18,7 @@ EXTRA_DIST = \
 	002-keygen-rsa/prequal.sh \
 	002-keygen-rsa/run.sh \
 	002-keygen-rsa/expected.out \
+	002-keygen-rsa/expected.out.2 \
 	002-keygen-dsa/prequal.sh \
 	002-keygen-dsa/run.sh \
 	002-keygen-dsa/expected.out \
