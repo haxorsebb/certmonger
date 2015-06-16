@@ -232,7 +232,7 @@ cm_pkcs7_parse_buffer(const unsigned char *buffer, size_t length,
 	/* First, try to parse as a PKCS#7 signed or enveloped data item. */
 	p = buffer;
 	p7 = d2i_PKCS7(NULL, &p, length);
-	if (p7 != NULL) {
+	if ((p7 != NULL) && (p == buffer + length)) {
 		/* Is it a signed-data item? */
 		if (PKCS7_type_is_signed(p7)) {
 			for (i = 0;
@@ -263,7 +263,7 @@ cm_pkcs7_parse_buffer(const unsigned char *buffer, size_t length,
 		/* Not PKCS#7?  Try to parse as a plain certificate. */
 		p = buffer;
 		x = d2i_X509(NULL, &p, length);
-		if (x != NULL) {
+		if ((x != NULL) && (p == buffer + length)) {
 			if (sk_X509_find(sk, x) < 0) {
 				sk_X509_push(sk, X509_dup(x));
 			}
@@ -980,7 +980,7 @@ cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 	}
 	u = data;
 	p7 = d2i_PKCS7(NULL, &u, length);
-	if (p7 == NULL) {
+	if ((p7 == NULL) || (u != data + length)) {
 		cm_log(1, "Error parsing what should be PKCS#7 signed-data.\n");
 		goto done;
 	}
