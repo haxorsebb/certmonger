@@ -532,6 +532,13 @@ main(int argc, const char **argv)
 		if ((tmp2 == NULL) || (strlen(tmp2) == 0)) {
 			printf(_("Error reading request, expected PKCS7 data.\n"));
 			return CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
+		} else
+		if (verbose > 0) {
+			if (tmp2 == rekey_message) {
+				fprintf(stderr, "Using rekeying message.\n");
+			} else {
+				fprintf(stderr, "Using non-rekeying message.\n");
+			}
 		}
 		tmp1 = cm_submit_u_base64_from_text(tmp2);
 		tmp2 = cm_submit_u_url_encode(tmp1);
@@ -550,6 +557,13 @@ main(int argc, const char **argv)
 		if ((tmp2 == NULL) || (strlen(tmp2) == 0)) {
 			printf(_("Error reading request, expected PKCS7 data.\n"));
 			return CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
+		} else
+		if (verbose > 0) {
+			if (tmp2 == rekey_message) {
+				fprintf(stderr, "Using rekeying message.\n");
+			} else {
+				fprintf(stderr, "Using non-rekeying message.\n");
+			}
 		}
 		tmp1 = cm_submit_u_base64_from_text(tmp2);
 		tmp2 = cm_submit_u_url_encode(tmp1);

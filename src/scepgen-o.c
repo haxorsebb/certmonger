@@ -528,6 +528,7 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 					    NULL, NULL,
 					    nonce, nonce_length,
 					    NULL, 0);
+		cm_log(1, "Signing using previously-issued key and cert.\n");
 		X509_PUBKEY_set(&old_cert->cert_info->key, pubkey);
 		X509_free(old_cert);
 	} else {
@@ -553,6 +554,7 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 						    NULL, NULL,
 						    nonce, nonce_length,
 						    NULL, 0);
+			cm_log(1, "Signing using old key.\n");
 			X509_PUBKEY_set(&new_cert->cert_info->key, pubkey);
 		} else {
 			/* No cert, and the minicert matches the new key. */
@@ -581,6 +583,7 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 					    NULL, NULL,
 					    nonce, nonce_length,
 					    NULL, 0);
+		cm_log(1, "Signing using new key.\n");
 		X509_PUBKEY_set(&new_cert->cert_info->key, pubkey);
 	} else {
 		*csr_new = NULL;
