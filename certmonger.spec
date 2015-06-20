@@ -248,15 +248,15 @@ exit 0
 - add some plumbing for eventually receiving per-certificate roots in
   addition to issued certificates and chain certificates
 - add a "rekey" command to getcert, for triggering enrollment using a new
-  key pair
+  key pair (#1087932)
 - scep-submit: check for the Renewal capability, and default to taking
   advantage of it during rekeying, unless the new -n flag is specified to it
 - dogtag-submit: add flags for passing user names, UDNs, passwords, and PINs
-  to the helper
+  to the helper (part of ticket #12)
 - dogtag-submit: add a flag for using the agent creds to do TLS client auth
-  while submitting enrollment requests
+  while submitting enrollment requests (more of ticket #12)
 - dogtag-submit: handle cases where we submit a request and the server
-  returns a success code rather than just queuing the request
+  returns a success code rather than just queuing the request (#12 again)
 - ipa-submit: pass requested profile names to the server as an argument
   named "profile_id"; if the server gives us an "unrecognized argument"
   error, retry without it for compatibility's sake
