@@ -1,4 +1,4 @@
-.TH certmonger 8 "23 February 2015" "certmonger Manual"
+.TH certmonger 8 "20 June 2015" "certmonger Manual"
 
 .SH NAME
 scep-submit
@@ -10,6 +10,7 @@ scep-submit -u SERVER-URL
 [-I other-certs-file]
 [-i ca-identifier]
 [-v]
+[-n]
 [-c|-C|-g|-p]
 [pkimessage-filename]
 
