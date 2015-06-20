@@ -1,10 +1,10 @@
 # Robert Antoni Buj Gelonch <rbuj@fedoraproject.org>, 2015. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: certmonger 0.77.2\n"
+"Project-Id-Version: certmonger 0.77.3\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2015-06-20 10:28-0400\n"
-"PO-Revision-Date: 2015-03-16 05:39-0400\n"
+"PO-Revision-Date: 2015-05-14 04:58-0400\n"
 "Last-Translator: Robert Antoni Buj Gelonch <rbuj@fedoraproject.org>\n"
 "Language-Team: Catalan\n"
 "Language: ca\n"
@@ -61,6 +61,7 @@ msgstr "Sense memòria.\n"
 #, c-format
 msgid "Submit params (-o) must be in the form of param=value.\n"
 msgstr ""
+"Els paràmetres de l'enviament (-o) tan de tenir la forma paràmetre=valor.\n"
 
 #: src/dogtag.c:405 src/dogtag.c:410 src/dogtag.c:439
 #, c-format
@@ -130,59 +131,59 @@ msgstr "S'ha produït un error intern: sense resposta a \"%s?%s\".\n"
 
 #: src/getcert.c:61 src/main.c:84 src/main.c:86
 msgid "COMMAND"
-msgstr ""
+msgstr "ORDRE"
 
 #: src/getcert.c:62
 msgid "DIRECTORY"
-msgstr ""
+msgstr "DIRECTORI"
 
 #: src/getcert.c:63 src/getcert.c:70
 msgid "LIST"
-msgstr ""
+msgstr "LLISTA"
 
 #: src/getcert.c:64 src/getcert.c:68
 msgid "ADDRESS"
-msgstr ""
+msgstr "ADREÇA"
 
 #: src/getcert.c:65 src/main.c:87
 msgid "FILENAME"
-msgstr ""
+msgstr "NOMFITXER"
 
 #: src/getcert.c:66
 msgid "HOSTNAME"
-msgstr ""
+msgstr "NOMAMFITRIÓ"
 
 #: src/getcert.c:67
 msgid "ID"
-msgstr ""
+msgstr "ID."
 
 #: src/getcert.c:69
 msgid "BITS"
-msgstr ""
+msgstr "BITS"
 
 #: src/getcert.c:71
 msgid "MODE"
-msgstr ""
+msgstr "MODE"
 
 #: src/getcert.c:72
 msgid "NAME"
-msgstr ""
+msgstr "NOM"
 
 #: src/getcert.c:73
 msgid "PRINCIPAL"
-msgstr ""
+msgstr "PRINCIPAL"
 
 #: src/getcert.c:74
 msgid "SUBJECT"
-msgstr ""
+msgstr "ASSUMPTE"
 
 #: src/getcert.c:75
 msgid "URL"
-msgstr ""
+msgstr "URL"
 
 #: src/getcert.c:76
 msgid "USERNAME[:GROUPNAME]"
-msgstr ""
+msgstr "NOMUSUARI[:NOMGRUP]"
 
 #: src/getcert.c:115
 #, c-format
@@ -285,151 +286,157 @@ msgstr "Estat %s, branca: %s.\n"
 #: src/getcert.c:711 src/getcert.c:1747 src/getcert.c:2370 src/getcert.c:2945
 #: src/getcert.c:3197 src/getcert.c:3702
 msgid "NSS database for key and cert"
-msgstr ""
+msgstr "base de dades NSS per a la clau i el certificat"
 
 #: src/getcert.c:712 src/getcert.c:1748 src/getcert.c:2371 src/getcert.c:2946
 #: src/getcert.c:3198 src/getcert.c:3703
 msgid "nickname for NSS-based storage (only valid with -d)"
 msgstr ""
+"sobrenom per a l'emmagatzematge basat en NSS (tan sols és vàlid amb -d)"
 
 #: src/getcert.c:713 src/getcert.c:1749 src/getcert.c:2372 src/getcert.c:2947
 #: src/getcert.c:3199 src/getcert.c:3704
 msgid "optional token name for NSS-based storage (only valid with -d)"
 msgstr ""
+"nom de mostra opcional per a l'emmagatzematge basat amb NSS (tan sols és "
+"vàlid amb -d)"
 
 #: src/getcert.c:714
 msgid "PEM file for private key"
-msgstr ""
+msgstr "fitxer PEM per a la clau privada"
 
 #: src/getcert.c:715
 msgid "PEM file for certificate (only valid with -k)"
-msgstr ""
+msgstr "fitxer PEM per al certificat (tan sols és vàlid amb -k)"
 
 #: src/getcert.c:716 src/getcert.c:1752 src/getcert.c:2378
 msgid "file which holds the private key encryption PIN"
-msgstr ""
+msgstr "fitxer que té el PIN de xifratge de la clau privada"
 
 #: src/getcert.c:717 src/getcert.c:1753 src/getcert.c:2379
 msgid "private key encryption PIN"
-msgstr ""
+msgstr "PIN de xifratge de la clau privada"
 
 #: src/getcert.c:718 src/getcert.c:1754 src/getcert.c:2380
 msgid "owner information for private key"
-msgstr ""
+msgstr "informació del propietari per a la clau privada"
 
 #: src/getcert.c:719 src/getcert.c:1755 src/getcert.c:2381
 msgid "file permissions for private key"
-msgstr ""
+msgstr "permisos del fitxer per a la clau privada"
 
 #: src/getcert.c:720 src/getcert.c:1756 src/getcert.c:2382
-#, fuzzy
 msgid "owner information for certificate"
-msgstr "  -t\ttan sols llista la informació sobre els certificats seguits\n"
+msgstr "informació del propietari per al certificat"
 
 #: src/getcert.c:721 src/getcert.c:1757 src/getcert.c:2383
 msgid "file permissions for certificate"
-msgstr ""
+msgstr "permisos del fitxer per al certificat"
 
 #: src/getcert.c:722 src/getcert.c:1758 src/getcert.c:2384
 msgid "NSS database in which to store the CA's certificates"
-msgstr ""
+msgstr "base de dades NSS en el qual s'emmagatzemen els certificats de l'AC"
 
 #: src/getcert.c:723 src/getcert.c:1759 src/getcert.c:2385
 msgid "file in which to store the CA's certificates"
-msgstr ""
+msgstr "fitxer en el qual s'emmagatzemen els certificats de l'AC"
 
 #: src/getcert.c:724 src/getcert.c:1760 src/getcert.c:2386
 msgid "command to run before saving the certificate"
-msgstr ""
+msgstr "ordre a executar abans de desar el certificat"
 
 #: src/getcert.c:725 src/getcert.c:1761 src/getcert.c:2387
 msgid "command to run after saving the certificate"
-msgstr ""
+msgstr "ordre a executar després de desar el certificat"
 
 #: src/getcert.c:726
 msgid "nickname to assign to the request"
-msgstr ""
+msgstr "sobrenom a assignar a la sol·licitud"
 
 #: src/getcert.c:727
 msgid "type of key to be generated if one is not already in place"
-msgstr ""
+msgstr "tipus de clau que es generarà si no n'hi ha ja cap al seu lloc"
 
 #: src/getcert.c:728
 msgid "size of key to be generated if one is not already in place"
-msgstr ""
+msgstr "mida de clau que es generarà si no n'hi ha ja cap al seu lloc"
 
 #: src/getcert.c:729 src/getcert.c:1764
 msgid "attempt to renew the certificate when expiration nears (default)"
 msgstr ""
+"intenta de renovar el certificat quan s'apropi el venciment (per defecte)"
 
 #: src/getcert.c:730 src/getcert.c:1765
 msgid "don't attempt to renew the certificate when expiration nears"
-msgstr ""
+msgstr "no intentis de renovar el certificat quan s'apropi el venciment"
 
 #: src/getcert.c:732 src/getcert.c:1767
 msgid "use the specified CA configuration rather than the default"
 msgstr ""
+"utilitza la configuració especificada de l'AC en lloc de la predeterminada"
 
 #: src/getcert.c:734 src/getcert.c:1769 src/getcert.c:2391
 msgid "ask the CA to process the request using the named profile or template"
 msgstr ""
+"pregunta a l'AC per processar la sol·licitud mitjançant el perfil o la "
+"plantilla amb nom"
 
 #: src/getcert.c:735 src/getcert.c:2392
 msgid "set requested subject name (default: CN=<hostname>)"
 msgstr ""
+"estableix el nom del subjecte sol·licitat (per defecte: CN=<nom-amfitrió>)"
 
 #: src/getcert.c:736 src/getcert.c:2393
 msgid "set requested key usage value"
-msgstr ""
+msgstr "estableix l'ús de la clau sol·licitat"
 
 #: src/getcert.c:737 src/getcert.c:2394
 msgid "set requested extended key usage OID"
-msgstr ""
+msgstr "estableix l'OID de l'ús estès de la clau sol·licitat"
 
 #: src/getcert.c:738 src/getcert.c:2395
 msgid "set requested principal name"
-msgstr ""
+msgstr "estableix el nom del principal sol·licitat"
 
 #: src/getcert.c:739 src/getcert.c:2396
 msgid "set requested DNS name"
-msgstr ""
+msgstr "estableix el nom DNS sol·licitat"
 
 #: src/getcert.c:740 src/getcert.c:2397
 msgid "set requested email address"
-msgstr ""
+msgstr "estableix l'adreça de correu electrònic sol·licitada"
 
 #: src/getcert.c:741 src/getcert.c:2398
 msgid "set requested IP address"
-msgstr ""
+msgstr "estableix l'adreça IP sol·licitada"
 
 #: src/getcert.c:742 src/getcert.c:1777 src/getcert.c:2400
 msgid "file which holds an optional challenge password value"
-msgstr ""
+msgstr "fitxer que conté el valor de la contrasenya d'un repte opcional"
 
 #: src/getcert.c:743 src/getcert.c:1776 src/getcert.c:2399
 msgid "an optional challenge password value"
-msgstr ""
+msgstr "valor de la contrasenya d'un repte opcional"
 
 #: src/getcert.c:744 src/getcert.c:1778 src/getcert.c:2401
 msgid "try to wait for the certificate to be issued"
-msgstr ""
+msgstr "prova d'esperar l'expedició del certificat"
 
 #: src/getcert.c:745 src/getcert.c:1779 src/getcert.c:2402
-#, fuzzy
 msgid "maximum time to wait for the certificate to be issued"
-msgstr "  -w\tprova d'esperar l'expedició del certificat\n"
+msgstr "temps màxim d'espera per l'expedició del certificat"
 
 #: src/getcert.c:746 src/getcert.c:1780 src/getcert.c:2403 src/getcert.c:2950
 #: src/getcert.c:3202 src/getcert.c:3707 src/getcert.c:3864 src/getcert.c:4095
 #: src/getcert.c:4190 src/getcert.c:4286 src/getcert.c:4413 src/getcert.c:4500
 msgid "connect to the certmonger service on the session bus"
-msgstr ""
+msgstr "connecta al servei certmonger sobre el bus de la sessió"
 
 #: src/getcert.c:747 src/getcert.c:1781 src/getcert.c:2404 src/getcert.c:2951
 #: src/getcert.c:3203 src/getcert.c:3708 src/getcert.c:3865 src/getcert.c:4096
 #: src/getcert.c:4191 src/getcert.c:4287 src/getcert.c:4414 src/getcert.c:4501
 msgid "connect to the certmonger service on the system bus"
-msgstr ""
+msgstr "connecta al servei certmonger sobre el bus del sistema"
 
 #: src/getcert.c:764 src/getcert.c:1790 src/getcert.c:2413
 #, c-format
@@ -571,44 +578,44 @@ msgstr "No es va poder afegir la nova sol·licitud de seguiment.\n"
 
 #: src/getcert.c:1750
 msgid "PEM file for private key (only valid with -f)"
-msgstr ""
+msgstr "fitxer PEM per a la clau privada (tan sols és vàlid amb -f)"
 
 #: src/getcert.c:1751 src/getcert.c:2373 src/getcert.c:2948 src/getcert.c:3200
 #: src/getcert.c:3705
 msgid "PEM file for certificate"
-msgstr ""
+msgstr "fitxer PEM per al certificat"
 
 #: src/getcert.c:1762
 msgid "nickname of an existing request"
-msgstr ""
+msgstr "sobrenom d'una sol·licitud existent"
 
 #: src/getcert.c:1763
 msgid "nickname to give to tracking request"
-msgstr ""
+msgstr "sobrenom a donar a la sol·licitud de seguiment"
 
 #: src/getcert.c:1770
 msgid "override requested key usage value"
-msgstr ""
+msgstr "reemplaça l'ús de la clau sol·licitat"
 
 #: src/getcert.c:1771
 msgid "override requested extended key usage OID"
-msgstr ""
+msgstr "reemplaça l'OID de l'ús estès de la clau sol·licitat"
 
 #: src/getcert.c:1772
 msgid "override requested principal name"
-msgstr ""
+msgstr "reemplaça el nom sol·licitat del principal"
 
 #: src/getcert.c:1773
 msgid "override requested DNS name"
-msgstr ""
+msgstr "reemplaça el nom DNS sol·licitat"
 
 #: src/getcert.c:1774
 msgid "override requested email address"
-msgstr ""
+msgstr "reemplaça l'adreça sol·licitada de correu electrònic"
 
 #: src/getcert.c:1775
 msgid "override requested IP address"
-msgstr ""
+msgstr "reemplaça l'adreça IP sol·licitada"
 
 #: src/getcert.c:2032 src/getcert.c:3038
 #, c-format
@@ -651,25 +658,23 @@ msgstr "No es va poder eliminar la sol·licitud \"%s\".\n"
 
 #: src/getcert.c:2374 src/getcert.c:2949 src/getcert.c:3201 src/getcert.c:3706
 msgid "nickname for tracking request"
-msgstr ""
+msgstr "sobrenom per a la sol·licitud de seguiment"
 
 #: src/getcert.c:2375
 msgid "new nickname to give to tracking request"
-msgstr ""
+msgstr "nou sobrenom a donar a la sol·licitud de seguiment"
 
 #: src/getcert.c:2376
-#, fuzzy
 msgid "type of new key to be generated"
-msgstr "* Si s'han de xifrar les claus:\n"
+msgstr "tipus de la nova clau a generar"
 
 #: src/getcert.c:2377
-#, fuzzy
 msgid "size of new key to be generated"
-msgstr "* Si s'han de xifrar les claus:\n"
+msgstr "mida de la nova clau a generar"
 
 #: src/getcert.c:2389
 msgid "use the specified CA configuration rather than the current one"
-msgstr ""
+msgstr "utilitza la configuració especificada de l'AC en lloc de l'actual"
 
 #: src/getcert.c:2874
 #, c-format
@@ -698,12 +703,14 @@ msgstr "S'ha produït un error en intentar presentar \"%s\".\n"
 
 #: src/getcert.c:2941
 msgid "refresh information about all outstanding requests"
-msgstr ""
+msgstr "refresca la informació sobre totes les sol·licituds pendents"
 
 #: src/getcert.c:2943
 msgid ""
 "refresh information only for requests using the specified CA configuration"
 msgstr ""
+"refresca la informació tan sols per a les sol·licituds mitjançant la "
+"configuració especificada de l'AC"
 
 #: src/getcert.c:3134
 #, c-format
@@ -717,15 +724,17 @@ msgstr "L'Id. de la sol·licitud '%s' que NO s'està refrescant.\n"
 
 #: src/getcert.c:3192
 msgid "list only information about outstanding requests"
-msgstr ""
+msgstr "tan sols llista la informació sobre les sol·licituds pendents"
 
 #: src/getcert.c:3193
 msgid "list only information about tracked certificates"
-msgstr ""
+msgstr "tan sols llista la informació sobre els certificats seguits"
 
 #: src/getcert.c:3195
 msgid "list only requests and certs associated with this CA configuration"
 msgstr ""
+"tan sols llista les sol·licituds i els certificats que estiguin associats "
+"amb aquesta configuració de l'AC"
 
 #: src/getcert.c:3314
 #, c-format
@@ -755,7 +764,7 @@ msgstr "\tbranca: %s\n"
 #: src/getcert.c:3490
 #, c-format
 msgid "\tkey pair storage: type=%s"
-msgstr "\temgatgatzematge parell clau: tupis=%s"
+msgstr "\temgatgatzematge parell clau: tipus=%s"
 
 #: src/getcert.c:3490
 msgid "NONE"
@@ -916,7 +925,7 @@ msgstr ""
 
 #: src/getcert.c:3862
 msgid "list only the specified CA configuration"
-msgstr ""
+msgstr "llista tan sols la configuració de l'AC especificada"
 
 #: src/getcert.c:3929
 #, c-format
@@ -975,11 +984,11 @@ msgstr "\tEmpremta del certificat de l'AC SCEP (SHA1): %s\n"
 
 #: src/getcert.c:4092
 msgid "refresh information about the CA configuration with this name"
-msgstr ""
+msgstr "refresca la informació sobre la configuració de l'AC amb aquest nom"
 
 #: src/getcert.c:4094
 msgid "refresh information about all known CAs"
-msgstr ""
+msgstr "refresca la informació sobre les AC conegudes"
 
 #: src/getcert.c:4140
 #, c-format
@@ -1003,11 +1012,11 @@ msgstr "\ts'ha produït un error en refrescar les dades de l'AC\n"
 
 #: src/getcert.c:4188 src/getcert.c:4279
 msgid "nickname to give to the new CA configuration"
-msgstr ""
+msgstr "sobrenom a donar a la nova configuració de l'AC"
 
 #: src/getcert.c:4189
 msgid "helper command to run to communicate with CA"
-msgstr ""
+msgstr "ordre de l'ajudant a executar per comunicar-se amb l'AC"
 
 #: src/getcert.c:4229 src/getcert.c:4325 src/getcert.c:4452 src/getcert.c:4539
 #, c-format
@@ -1031,23 +1040,23 @@ msgstr "No es va poder afegir la nova AC.\n"
 
 #: src/getcert.c:4280
 msgid "location of SCEP server"
-msgstr ""
+msgstr "localització del servidor SCEP"
 
 #: src/getcert.c:4281
 msgid "CA identifier"
-msgstr ""
+msgstr "Identificador de l'AC"
 
 #: src/getcert.c:4282
 msgid "file containing CA's certificate"
-msgstr ""
+msgstr "fitxer que conté els certificats de l'AC"
 
 #: src/getcert.c:4283
 msgid "file containing RA's certificate"
-msgstr ""
+msgstr "fitxer que conté els certificats de la RA"
 
 #: src/getcert.c:4284
 msgid "file containing certificates in RA's certifying chain"
-msgstr ""
+msgstr "fitxer que conté els certificats a la cadena de certificació de la RA"
 
 #: src/getcert.c:4285
 msgid "prefer to not use the SCEP Renewal feature"
@@ -1075,11 +1084,11 @@ msgstr "S'ha produït un error en establir l'identificador de l'AC.\n"
 
 #: src/getcert.c:4411
 msgid "nickname of the CA configuration"
-msgstr ""
+msgstr "sobrenom de la configuració de l'AC"
 
 #: src/getcert.c:4412
 msgid "updated helper command to run to communicate with CA"
-msgstr ""
+msgstr "ordre actualitzada de l'ajudant a executar per comunicar-se amb l'AC"
 
 #: src/getcert.c:4479
 #, c-format
@@ -1093,7 +1102,7 @@ msgstr "No es va poder modificar l'AC.\n"
 
 #: src/getcert.c:4499
 msgid "nickname of CA configuration to remove"
-msgstr ""
+msgstr "sobrenom de la configuració de l'AC a eliminar"
 
 #: src/getcert.c:4567
 #, c-format
@@ -1397,23 +1406,17 @@ msgid "  -c CA\t\tuse the specified CA rather than the current one\n"
 msgstr "  -c AC\t\tutilitza l'AC especificada en lloc de l'actual\n"
 
 #: src/getcert.c:4775
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s rekey [options]\n"
-msgstr "Ús: %s request [opcions]\n"
+msgstr "Ús: %s rekey [opcions]\n"
 
 #: src/getcert.c:4809
-#, fuzzy
 msgid "  -G TYPE\ttype of new key to be generated\n"
-msgstr ""
-"  -G TIPUS\ttipus de clau que es generarà si encara no n'hi ha cap ja al seu "
-"lloc\n"
+msgstr "  -G TIPUS\ttipus de la nova clau a generar\n"
 
 #: src/getcert.c:4810
-#, fuzzy
 msgid "  -g SIZE\tsize of new key to be generated\n"
-msgstr ""
-"  -g MIDA\tmida de la clau que es generarà si encara no n'hi ha cap ja al "
-"seu lloc\n"
+msgstr "  -g MIDA\tmida de la nova clau a generar\n"
 
 #: src/getcert.c:4824
 #, c-format
@@ -1628,7 +1631,7 @@ msgstr ""
 
 #: src/getcert.c:4997
 msgid "generate a new private key and replace a certificate\n"
-msgstr ""
+msgstr "genera una nova clau privada i substitueix un certificat\n"
 
 #: src/getcert.c:4999
 msgid "check on the status of an in-progress enrollment request\n"
@@ -1756,67 +1759,67 @@ msgstr ""
 
 #: src/main.c:74
 msgid "use session bus"
-msgstr ""
+msgstr "utilitza el bus de la sessió"
 
 #: src/main.c:75
 msgid "use system bus"
-msgstr ""
+msgstr "utilitza el bus del sistema"
 
 #: src/main.c:76
 msgid "start a dedicated listening socket"
-msgstr ""
+msgstr "inicia un socket dedicat a escoltar"
 
 #: src/main.c:77
 msgid "only use a dedicated listening socket"
-msgstr ""
+msgstr "tan sols utilitza el socket dedicat a escoltar"
 
 #: src/main.c:78
 msgid "specify the dedicated listening socket"
-msgstr ""
+msgstr "especifica el socket dedicat a escoltar"
 
 #: src/main.c:78
 msgid "PATHNAME"
-msgstr ""
+msgstr "NOMCAMÍ"
 
 #: src/main.c:79
 msgid "don't become a daemon"
-msgstr ""
+msgstr "no te converteixis en un dimoni"
 
 #: src/main.c:80
 msgid "do become a daemon"
-msgstr ""
+msgstr "converteix-te en un dimoni"
 
 #: src/main.c:81
 msgid "bus-activated, idle timeout"
-msgstr ""
+msgstr "activat per bus, temps d'expiració d'inactivitat"
 
 #: src/main.c:81
 msgid "SECONDS"
-msgstr ""
+msgstr "SEGONS"
 
 #: src/main.c:82
 msgid "don't use an idle timeout"
-msgstr ""
+msgstr "no utilitzis un temps d'expiració d'inactivitat"
 
 #: src/main.c:83
 msgid "set debugging level (implies -n)"
-msgstr ""
+msgstr "estableix el nivell de depuració (implica -n)"
 
 #: src/main.c:83
 msgid "NUMBER"
-msgstr ""
+msgstr "NÚMERO"
 
 #: src/main.c:84 src/main.c:86
 msgid "start COMMAND and exit when it does"
-msgstr ""
+msgstr "inicia l'ORDRE i surt quan ho faci"
 
 #: src/main.c:87
 msgid "write service PID to file"
-msgstr ""
+msgstr "escriu el PID del servei al fitxer"
 
 #: src/main.c:88
 msgid "force NSS into FIPS mode"
-msgstr ""
+msgstr "força NSS al mode FIPS"
 
 #: src/main.c:90
 msgid "print version information"
@@ -2028,6 +2031,3 @@ msgstr "Si us plau, verifiqueu que s'hagi iniciat el servei certmonger.\n"
 msgid "Please verify that the certmonger service is still running.\n"
 msgstr ""
 "Si us plau, verifiqueu que encara s'estigui executant el servei certmonger.\n"
-
-#~ msgid ",pin='%s'"
-#~ msgstr ",pin='%s'"

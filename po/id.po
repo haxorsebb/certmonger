@@ -6,7 +6,7 @@
 # Nalin Dahyabhai <nalin@fedoraproject.org>, 2011
 msgid ""
 msgstr ""
-"Project-Id-Version: certmonger 0.77.2\n"
+"Project-Id-Version: certmonger 0.77.3\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2015-06-20 10:28-0400\n"
 "PO-Revision-Date: 2014-11-11 05:00-0500\n"
@@ -311,9 +311,8 @@ msgid "file permissions for private key"
 msgstr ""
 
 #: src/getcert.c:720 src/getcert.c:1756 src/getcert.c:2382
-#, fuzzy
 msgid "owner information for certificate"
-msgstr "-t\tlist hanya informasi tentang jalannya sertifikat\n"
+msgstr ""
 
 #: src/getcert.c:721 src/getcert.c:1757 src/getcert.c:2383
 msgid "file permissions for certificate"
@@ -1364,20 +1363,17 @@ msgid "  -c CA\t\tuse the specified CA rather than the current one\n"
 msgstr "-c CA\t\tuse CA khusus lebih baik daripada saat ini\n"
 
 #: src/getcert.c:4775
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s rekey [options]\n"
-msgstr "Pemakaian: %s request[options]\n"
+msgstr ""
 
 #: src/getcert.c:4809
 msgid "  -G TYPE\ttype of new key to be generated\n"
 msgstr ""
 
 #: src/getcert.c:4810
-#, fuzzy
 msgid "  -g SIZE\tsize of new key to be generated\n"
 msgstr ""
-"-g SIZE\tsize  sebuah kunci untuk menghasilkan jika salah satu telah tidak "
-"berada di dalam tempat\n"
 
 #: src/getcert.c:4824
 #, c-format

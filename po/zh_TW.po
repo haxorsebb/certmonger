@@ -7,7 +7,7 @@
 # Walter Cheuk <wwycheuk@gmail.com>, 2012
 msgid ""
 msgstr ""
-"Project-Id-Version: certmonger 0.77.2\n"
+"Project-Id-Version: certmonger 0.77.3\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2015-06-20 10:28-0400\n"
 "PO-Revision-Date: 2014-11-11 05:00-0500\n"
@@ -631,14 +631,12 @@ msgid "new nickname to give to tracking request"
 msgstr ""
 
 #: src/getcert.c:2376
-#, fuzzy
 msgid "type of new key to be generated"
-msgstr "* 如金鑰要加密：\n"
+msgstr ""
 
 #: src/getcert.c:2377
-#, fuzzy
 msgid "size of new key to be generated"
-msgstr "* 如金鑰要加密：\n"
+msgstr ""
 
 #: src/getcert.c:2389
 msgid "use the specified CA configuration rather than the current one"
@@ -1353,9 +1351,9 @@ msgid "  -c CA\t\tuse the specified CA rather than the current one\n"
 msgstr ""
 
 #: src/getcert.c:4775
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s rekey [options]\n"
-msgstr "用法：%s 請求 [選項]\n"
+msgstr ""
 
 #: src/getcert.c:4809
 msgid "  -G TYPE\ttype of new key to be generated\n"
@@ -1938,6 +1936,3 @@ msgstr ""
 #: src/tdbusm.c:2160
 msgid "Please verify that the certmonger service is still running.\n"
 msgstr ""
-
-#~ msgid ",pin='%s'"
-#~ msgstr "、pin='%s'"

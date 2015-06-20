@@ -10,7 +10,7 @@
 # Kévin Raymond <shaiton@fedoraproject.org>, 2012
 msgid ""
 msgstr ""
-"Project-Id-Version: certmonger 0.77.2\n"
+"Project-Id-Version: certmonger 0.77.3\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2015-06-20 10:28-0400\n"
 "PO-Revision-Date: 2014-11-11 05:00-0500\n"
@@ -325,9 +325,8 @@ msgid "file permissions for private key"
 msgstr ""
 
 #: src/getcert.c:720 src/getcert.c:1756 src/getcert.c:2382
-#, fuzzy
 msgid "owner information for certificate"
-msgstr "  -t\tliste seulement l'information des certificats suivis\n"
+msgstr ""
 
 #: src/getcert.c:721 src/getcert.c:1757 src/getcert.c:2383
 msgid "file permissions for certificate"
@@ -657,14 +656,12 @@ msgid "new nickname to give to tracking request"
 msgstr ""
 
 #: src/getcert.c:2376
-#, fuzzy
 msgid "type of new key to be generated"
-msgstr "* Si les clés sont à chiffrer :\n"
+msgstr ""
 
 #: src/getcert.c:2377
-#, fuzzy
 msgid "size of new key to be generated"
-msgstr "* Si les clés sont à chiffrer :\n"
+msgstr ""
 
 #: src/getcert.c:2389
 msgid "use the specified CA configuration rather than the current one"
@@ -1394,20 +1391,17 @@ msgstr ""
 "  -c AC\t\tutilise l'autorité de certification spécifié plutôt que l'actuel\n"
 
 #: src/getcert.c:4775
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s rekey [options]\n"
-msgstr "Utilisation : %s request [options]\n"
+msgstr ""
 
 #: src/getcert.c:4809
-#, fuzzy
 msgid "  -G TYPE\ttype of new key to be generated\n"
-msgstr "  -G TYPE\ttype de la clé à créer si aucune n'existe déjà\n"
+msgstr ""
 
 #: src/getcert.c:4810
-#, fuzzy
 msgid "  -g SIZE\tsize of new key to be generated\n"
 msgstr ""
-"  -g TAILLE\ttaille de la clé à générer si elle n'est pas déjà en place\n"
 
 #: src/getcert.c:4824
 #, c-format
@@ -2009,6 +2003,3 @@ msgid "Please verify that the certmonger service is still running.\n"
 msgstr ""
 "Merci de vérifier que le service certmonger est en cours d'exécution.\n"
 "\n"
-
-#~ msgid ",pin='%s'"
-#~ msgstr ", pin = « %s »"

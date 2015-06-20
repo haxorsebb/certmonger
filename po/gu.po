@@ -6,7 +6,7 @@
 # sweta <swkothar@redhat.com>, 2011
 msgid ""
 msgstr ""
-"Project-Id-Version: certmonger 0.77.2\n"
+"Project-Id-Version: certmonger 0.77.3\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2015-06-20 10:28-0400\n"
 "PO-Revision-Date: 2014-11-11 05:00-0500\n"
@@ -1346,9 +1346,9 @@ msgid "  -c CA\t\tuse the specified CA rather than the current one\n"
 msgstr ""
 
 #: src/getcert.c:4775
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s rekey [options]\n"
-msgstr "Usage: %s list [options]\n"
+msgstr ""
 
 #: src/getcert.c:4809
 msgid "  -G TYPE\ttype of new key to be generated\n"
