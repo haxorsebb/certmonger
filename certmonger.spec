@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.77.5
+Version:	0.78
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -241,6 +241,36 @@ exit 0
 %endif
 
 %changelog
+* Sat Jun 20 2015 Nalin Dahyabhai <nalin@redhat.com> 0.78-1
+- switch to using popt for parsing command line arguments, continuing to
+  use old help text for now so that we can catch up with translations (print
+  old text for --help, new text (with longopts!) for -H)
+- add some plumbing for eventually receiving per-certificate roots in
+  addition to issued certificates and chain certificates
+- add a "rekey" command to getcert, for triggering enrollment using a new
+  key pair
+- scep-submit: check for the Renewal capability, and default to taking
+  advantage of it during rekeying, unless the new -n flag is specified to it
+- dogtag-submit: add flags for passing user names, UDNs, passwords, and PINs
+  to the helper
+- dogtag-submit: add a flag for using the agent creds to do TLS client auth
+  while submitting enrollment requests
+- dogtag-submit: handle cases where we submit a request and the server
+  returns a success code rather than just queuing the request
+- ipa-submit: pass requested profile names to the server as an argument
+  named "profile_id"; if the server gives us an "unrecognized argument"
+  error, retry without it for compatibility's sake
+- keygen: fix a possible crash if keygen fails to return a key from NSS
+- correct the certmonger(8) man page's description of the -c flag, whic it
+  used to call the -C flag
+- add logic for setting ownership and permissions on certificates and keys
+  when saving them to disk
+- add configuration options "max_key_lifetime" and "max_key_use_count" for
+  making automatic renewal prefer rekeying
+
+* Wed Jun 17 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.77.5-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
+
 * Thu May 28 2015 Nalin Dahyabhai <nalin@redhat.com> 0.77.5-1
 - pass $CERTMONGER_REQ_IP_ADDRESS to enrollment helpers if the signing request
   includes IP address subjectAltName values
