@@ -385,8 +385,8 @@ cm_submit_e_issued(struct cm_submit_state *state)
 		state->entry->cm_cert_roots = nickcerts;
 	}
 	cm_log(1, "Certificate issued (%ld chain certificates, %ld roots).\n",
-	       cm_json_array_size(chain) > 0 ?  (long) cm_json_array_size(chain) : 0,
-	       cm_json_array_size(roots) > 0 ?  (long) cm_json_array_size(roots) : 0);
+	       cm_json_array_size(chain) > 0 ? (long) cm_json_array_size(chain) : 0,
+	       cm_json_array_size(roots) > 0 ? (long) cm_json_array_size(roots) : 0);
 	return 0;
 }
 
