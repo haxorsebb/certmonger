@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2011,2014 Red Hat, Inc.
+ * Copyright (C) 2009,2011,2014,2015 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include <sys/select.h>
 #include <assert.h>
 #include <errno.h>
+#include <popt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -70,20 +71,38 @@ type_name(enum cm_key_algorithm alg)
 }
 
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
 	struct cm_keyiread_state *state;
 	struct cm_store_entry *entry;
-	int fd, ret, need_pin;
+	int fd, ret, need_pin, summary = 0, minimum = -1, i;
 	void *parent;
+	const char *filename;
+	poptContext pctx;
+	struct poptOption popts[] = {
+		{"summary", 's', POPT_ARG_NONE, &summary, 0, NULL, NULL},
+		{"minimum", 'm', POPT_ARG_INT, &minimum, 0, NULL, NULL},
+		POPT_AUTOHELP
+		POPT_TABLEEND
+	};
+
+	pctx = poptGetContext("keyiread", argc, argv, popts, 0);
+	while ((i = poptGetNextOpt(pctx)) > 0) {
+		continue;
+	}
+	if (i != -1) {
+		poptPrintUsage(pctx, stdout, 0);
+		return 1;
+	}
 	cm_log_set_method(cm_log_stderr);
 	cm_log_set_level(3);
 	cm_set_fips_from_env();
 	parent = talloc_new(NULL);
-	if (argc > 1) {
-		entry = cm_store_files_entry_read(parent, argv[1]);
+	if (poptPeekArg(pctx) != NULL) {
+		filename = poptGetArg(pctx);
+		entry = cm_store_files_entry_read(parent, filename);
 		if (entry == NULL) {
-			printf("Error reading %s: %s.\n", argv[1],
+			printf("Error reading %s: %s.\n", filename,
 			       strerror(errno));
 			return 1;
 		}
@@ -109,15 +128,55 @@ main(int argc, char **argv)
 		cm_keyiread_done(state);
 		if (entry->cm_key_type.cm_key_size != 0) {
 			if (entry->cm_key_next_type.cm_key_size != 0) {
-				printf("OK (%s:%d after %s:%d).\n",
-				       type_name(entry->cm_key_next_type.cm_key_algorithm),
-				       entry->cm_key_next_type.cm_key_size,
-				       type_name(entry->cm_key_next_type.cm_key_algorithm),
-				       entry->cm_key_next_type.cm_key_size);
+				if (summary) {
+					if (minimum > 0) {
+					       if ((entry->cm_key_next_type.cm_key_size >= minimum * 0.9) &&
+					           (entry->cm_key_type.cm_key_size >= minimum * 0.9)) {
+							printf("OK (%s >= ~%d after %s >= ~%d).\n",
+							       type_name(entry->cm_key_next_type.cm_key_algorithm),
+							       minimum,
+							       type_name(entry->cm_key_type.cm_key_algorithm),
+							       minimum);
+					       } else {
+							printf("NOT OK (%s:%d < %d after %s:%d < %d).\n",
+							       type_name(entry->cm_key_next_type.cm_key_algorithm),
+							       entry->cm_key_next_type.cm_key_size, minimum,
+							       type_name(entry->cm_key_type.cm_key_algorithm),
+							       entry->cm_key_type.cm_key_size, minimum);
+					       }
+					} else {
+						printf("OK (%s after %s).\n",
+						       type_name(entry->cm_key_next_type.cm_key_algorithm),
+						       type_name(entry->cm_key_type.cm_key_algorithm));
+					}
+				} else {
+					printf("OK (%s:%d after %s:%d).\n",
+					       type_name(entry->cm_key_next_type.cm_key_algorithm),
+					       entry->cm_key_next_type.cm_key_size,
+					       type_name(entry->cm_key_type.cm_key_algorithm),
+					       entry->cm_key_type.cm_key_size);
+				}
 			} else {
-				printf("OK (%s:%d).\n",
-				       type_name(entry->cm_key_type.cm_key_algorithm),
-				       entry->cm_key_type.cm_key_size);
+				if (summary) {
+					if (minimum > 0) {
+					       if (entry->cm_key_type.cm_key_size >= minimum * 0.9) {
+							printf("OK (%s >= ~%d).\n",
+							       type_name(entry->cm_key_type.cm_key_algorithm),
+							       minimum);
+					       } else {
+							printf("NOT OK (%s:%d < %d).\n",
+							       type_name(entry->cm_key_type.cm_key_algorithm),
+							       entry->cm_key_type.cm_key_size, minimum);
+					       }
+					} else {
+						printf("OK (%s).\n",
+						       type_name(entry->cm_key_type.cm_key_algorithm));
+					}
+				} else {
+					printf("OK (%s:%d).\n",
+					       type_name(entry->cm_key_type.cm_key_algorithm),
+					       entry->cm_key_type.cm_key_size);
+				}
 			}
 			ret = 0;
 		} else {
