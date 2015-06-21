@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.78
+Version:	0.78.1
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -241,6 +241,10 @@ exit 0
 %endif
 
 %changelog
+* Sun Jun 21 2015 Nalin Dahyabhai <nalin@redhat.com> 0.78.1-1
+- self-tests: assume that certutil won't generate DSA keys with more than 1024
+  bits, and will often short us by a few
+
 * Sat Jun 20 2015 Nalin Dahyabhai <nalin@redhat.com> 0.78-1
 - switch to using popt for parsing command line arguments, continuing to
   use old help text for now so that we can catch up with translations (print
@@ -259,9 +263,9 @@ exit 0
   returns a success code rather than just queuing the request (#12 again)
 - ipa-submit: pass requested profile names to the server as an argument
   named "profile_id"; if the server gives us an "unrecognized argument"
-  error, retry without it for compatibility's sake
+  error, retry without it for compatibility's sake (part of IPA ticket #57)
 - keygen: fix a possible crash if keygen fails to return a key from NSS
-- correct the certmonger(8) man page's description of the -c flag, whic it
+- correct the certmonger(8) man page's description of the -c flag, which it
   used to call the -C flag
 - add logic for setting ownership and permissions on certificates and keys
   when saving them to disk
