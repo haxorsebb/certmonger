@@ -13,9 +13,6 @@ OK (DSA:2048).
 [nss:3072]
 OK.
 OK (DSA:3072).
-[nss:4096]
-OK.
-OK (DSA:3072).
 [nss:rosubdir]
 Failed to save NSS:${tmpdir}/rosubdir: need fs permissions.
 [nss:rwsubdir]

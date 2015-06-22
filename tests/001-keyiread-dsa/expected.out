@@ -1,19 +1,4 @@
-OK (DSA >= ~512).
-OK (DSA >= ~512).
-OK (DSA >= ~512).
-OK (DSA >= ~1024).
-OK (DSA >= ~1024).
-OK (DSA >= ~1024).
-OK (DSA >= ~1024).
-OK (DSA >= ~1024).
-OK (DSA >= ~1024).
-OK (DSA >= ~1024).
-OK (DSA >= ~1024).
-OK (DSA >= ~1024).
-OK (DSA >= ~1024).
-OK (DSA >= ~1024).
-OK (DSA >= ~1024).
-OK (DSA >= ~1024).
-OK (DSA >= ~1024).
-OK (DSA >= ~1024).
+OK (DSA:1024).
+OK (DSA:1024).
+OK (DSA:1024).
 Test complete.

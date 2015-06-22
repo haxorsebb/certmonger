@@ -5,7 +5,7 @@ cd "$tmpdir"
 source "$srcdir"/functions
 initnssdb "$tmpdir"
 
-for size in 512 1024 1536 2048 3072 4096 ; do
+for size in 512 1024 1536 2048 3072 ; do
 	echo "[nss:$size]"
 	# Generate a key.
 	cat > entry.$size <<- EOF

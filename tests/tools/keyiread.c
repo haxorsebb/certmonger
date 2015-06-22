@@ -18,6 +18,7 @@
 #include "../../src/config.h"
 
 #include <sys/types.h>
+#include <sys/param.h>
 #include <sys/select.h>
 #include <assert.h>
 #include <errno.h>
@@ -68,6 +69,27 @@ type_name(enum cm_key_algorithm alg)
 		break;
 	}
 	return NULL;
+}
+
+static void
+munge_key_size(struct cm_key_type *key)
+{
+	switch (key->cm_key_algorithm) {
+	case cm_key_rsa:
+		break;
+#ifdef CM_ENABLE_DSA
+	case cm_key_dsa:
+		key->cm_key_size = howmany(key->cm_key_size, 8) * 8;
+		break;
+#endif
+#ifdef CM_ENABLE_EC
+	case cm_key_ecdsa:
+		break;
+#endif
+	default:
+		assert(0);
+		break;
+	}
 }
 
 int
@@ -127,7 +149,9 @@ main(int argc, const char **argv)
 		need_pin = cm_keyiread_need_pin(state);
 		cm_keyiread_done(state);
 		if (entry->cm_key_type.cm_key_size != 0) {
+			munge_key_size(&entry->cm_key_type);
 			if (entry->cm_key_next_type.cm_key_size != 0) {
+				munge_key_size(&entry->cm_key_next_type);
 				if (summary) {
 					if (minimum > 0) {
 					       if ((entry->cm_key_next_type.cm_key_size >= minimum * 0.9) &&

@@ -131,6 +131,7 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	PQGVerify *pqg_verify;
 	SECStatus pqg_ok;
 	SECKEYPQGParams dsa_params;
+	int pqg_s;
 #endif
 	SECItem *spki;
 	CERTSubjectPublicKeyInfo *pubkeyinfo;
@@ -417,16 +418,25 @@ retry_gen:
 		break;
 #ifdef CM_ENABLE_DSA
 	case cm_key_dsa:
-		cm_log(1, "Generating domain parameters.\n");
+		cm_log(1, "Computing parameters for domain generation.\n");
 		pqg_ok = SECFailure;
 		cm_key_size = pqg_size(cm_key_size);
 		retry = 0;
 		while (pqg_ok == SECFailure) {
 			pqg_params = NULL;
 			pqg_verify = NULL;
+			pqg_s = cm_key_size / 32;
+			if (pqg_s < 20) {
+				pqg_s = 20;
+			} else
+			if (pqg_s > 64) {
+				pqg_s = 64;
+			}
+			cm_log(1, "Generating domain parameters (L=%d,N=%d,S=%d).\n",
+			       cm_key_size, 0, pqg_s);
 			while (PK11_PQG_ParamGenV2(cm_key_size,
 						   0,
-						   64,
+						   pqg_s,
 						   &pqg_params,
 						   &pqg_verify) != SECSuccess) {
 				ec = PORT_GetError();
@@ -480,11 +490,15 @@ retry_gen:
 				}
 			}
 			generated_size = pqg_params->prime.len * 8;
-			if ((generated_size < cm_key_size) &&
-			    (generated_size > (cm_key_size * 9 / 10))) {
-				cm_log(1, "Params are a bit small (%d vs %d).  Retrying.\n",
+			if (generated_size < (cm_key_size * 9 / 10)) {
+				cm_log(1, "Params are a too small (%d vs %d).\n",
 				       pqg_params->prime.len * 8, cm_key_size);
-				goto retry_gen;
+				PK11_FreeSlotList(slotlist);
+				error = NSS_ShutdownContext(ctx);
+				if (error != SECSuccess) {
+					cm_log(1, "Error shutting down NSS.\n");
+				}
+				_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 			}
 			if (pqg_ok == SECFailure) {
 				cm_log(1, "Params are bad.  Retrying.\n");
@@ -570,15 +584,9 @@ retry_gen:
 			break;
 		}
 	}
-	/* If we're just a bit(s?) short (as opposed to cut off at an arbitrary
-	 * limit that's less than 90% of what we asked for), try again. */
 	generated_size = SECKEY_PublicKeyStrengthInBits(pubkey);
-	if ((generated_size < cm_key_size) &&
-	    (generated_size > (cm_key_size * 9 / 10))) {
-		cm_log(1, "Ended up with %d instead of %d.  Retrying.\n",
-		       SECKEY_PublicKeyStrengthInBits(pubkey), cm_key_size);
-		goto retry_gen;
-	}
+	cm_log(1, "Ended up with %d bit public key.\n",
+	       SECKEY_PublicKeyStrengthInBits(pubkey));
 	/* Check for keys with the desired name, selecting a new name if
 	 * there's already one with the desired name. */
 	nickname = strdup(entry->cm_key_nickname);
