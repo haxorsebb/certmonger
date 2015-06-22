@@ -819,6 +819,15 @@ struct cm_submit_e_helper_args {
 };
 
 static int
+maybe_setenv(const char *var, const char *val)
+{
+	if ((var == NULL) || (val == NULL) || (strlen(val) == 0)) {
+		return -1;
+	}
+	return setenv(var, val, 1);
+}
+
+static int
 cm_submit_e_helper_main(int fd, struct cm_store_ca *ca,
 			struct cm_store_entry *entry, void *userdata)
 {
@@ -827,44 +836,23 @@ cm_submit_e_helper_main(int fd, struct cm_store_ca *ca,
 	const char *error, *key_type;
 	unsigned char u;
 
-	if (entry->cm_template_subject != NULL) {
-		setenv(CM_SUBMIT_REQ_SUBJECT_ENV,
-		       entry->cm_template_subject, 1);
-	}
-	if (entry->cm_template_email != NULL) {
-		setenv(CM_SUBMIT_REQ_EMAIL_ENV,
-		       cm_submit_maybe_joinv(NULL, "\n",
-					     entry->cm_template_email),
-		       1);
-	}
-	if (entry->cm_template_hostname != NULL) {
-		setenv(CM_SUBMIT_REQ_HOSTNAME_ENV,
-		       cm_submit_maybe_joinv(NULL, "\n",
-					     entry->cm_template_hostname),
-		       1);
-	}
-	if (entry->cm_template_principal != NULL) {
-		setenv(CM_SUBMIT_REQ_PRINCIPAL_ENV,
-		       cm_submit_maybe_joinv(NULL, "\n",
-					     entry->cm_template_principal),
-		       1);
-	}
-	if ((args->operation != NULL) && (strlen(args->operation) > 0)) {
-		setenv(CM_SUBMIT_OPERATION_ENV, args->operation, 1);
-	}
-	if ((entry->cm_csr != NULL) && (strlen(entry->cm_csr) > 0)) {
-		setenv(CM_SUBMIT_CSR_ENV, entry->cm_csr, 1);
-	}
-	if ((entry->cm_spkac != NULL) && (strlen(entry->cm_spkac) > 0)) {
-		setenv(CM_SUBMIT_SPKAC_ENV, entry->cm_spkac, 1);
-	}
-	if ((args->spki != NULL) && (strlen(args->spki) > 0)) {
-		setenv(CM_SUBMIT_SPKI_ENV, args->spki, 1);
-	}
-	if (cm_env_local_ca_dir() != NULL) {
-		setenv(CM_STORE_LOCAL_CA_DIRECTORY_ENV,
-		       cm_env_local_ca_dir(), 1);
-	}
+	maybe_setenv(CM_SUBMIT_REQ_SUBJECT_ENV,
+		     entry->cm_template_subject);
+	maybe_setenv(CM_SUBMIT_REQ_EMAIL_ENV,
+		     cm_submit_maybe_joinv(NULL, "\n",
+					   entry->cm_template_email));
+	maybe_setenv(CM_SUBMIT_REQ_HOSTNAME_ENV,
+		     cm_submit_maybe_joinv(NULL, "\n",
+					   entry->cm_template_hostname));
+	maybe_setenv(CM_SUBMIT_REQ_PRINCIPAL_ENV,
+		     cm_submit_maybe_joinv(NULL, "\n",
+					   entry->cm_template_principal));
+	maybe_setenv(CM_SUBMIT_OPERATION_ENV, args->operation);
+	maybe_setenv(CM_SUBMIT_CSR_ENV, entry->cm_csr);
+	maybe_setenv(CM_SUBMIT_SPKAC_ENV, entry->cm_spkac);
+	maybe_setenv(CM_SUBMIT_SPKI_ENV, args->spki);
+	maybe_setenv(CM_STORE_LOCAL_CA_DIRECTORY_ENV,
+		     cm_env_local_ca_dir());
 	key_type = NULL;
 	switch (entry->cm_key_type.cm_key_algorithm) {
 	case cm_key_rsa:
@@ -884,75 +872,36 @@ cm_submit_e_helper_main(int fd, struct cm_store_ca *ca,
 		key_type = NULL;
 		break;
 	}
-	if (key_type != NULL) {
-		setenv(CM_SUBMIT_KEY_TYPE_ENV, key_type, 1);
-	}
-	if ((entry->cm_ca_cookie != NULL) && (strlen(entry->cm_ca_cookie) > 0)) {
-		setenv(CM_SUBMIT_COOKIE_ENV, entry->cm_ca_cookie, 1);
-	}
-	if ((entry->cm_ca_nickname != NULL) &&
-	    (strlen(entry->cm_ca_nickname) > 0)) {
-		setenv(CM_SUBMIT_CA_NICKNAME_ENV, entry->cm_ca_nickname, 1);
-	}
-	if ((entry->cm_template_profile != NULL) &&
-	    (strlen(entry->cm_template_profile) > 0)) {
-		setenv(CM_SUBMIT_PROFILE_ENV, entry->cm_template_profile, 1);
-	}
-	if ((entry->cm_cert != NULL) && (strlen(entry->cm_cert) > 0)) {
-		setenv(CM_SUBMIT_CERTIFICATE_ENV, entry->cm_cert, 1);
-	}
+	maybe_setenv(CM_SUBMIT_KEY_TYPE_ENV, key_type);
+	maybe_setenv(CM_SUBMIT_COOKIE_ENV, entry->cm_ca_cookie);
+	maybe_setenv(CM_SUBMIT_CA_NICKNAME_ENV, entry->cm_ca_nickname);
+	maybe_setenv(CM_SUBMIT_PROFILE_ENV, entry->cm_template_profile);
+	maybe_setenv(CM_SUBMIT_CERTIFICATE_ENV, entry->cm_cert);
 	/* Only pass SCEP data to the helper if we haven't used this set of
 	 * nonced data before.  It'll ask for fresh data if it needs it. */
-	if ((ca->cm_ca_scep_ca_identifier != NULL) &&
-	    (strlen(ca->cm_ca_scep_ca_identifier) > 0)) {
-		setenv(CM_SUBMIT_SCEP_CA_IDENTIFIER_ENV,
-		       ca->cm_ca_scep_ca_identifier, 1);
-	}
-	if ((ca->cm_ca_encryption_cert != NULL) &&
-	    (strlen(ca->cm_ca_encryption_cert) > 0)) {
-		setenv(CM_SUBMIT_SCEP_RA_CERTIFICATE_ENV,
-		       ca->cm_ca_encryption_cert, 1);
-	}
-	if ((ca->cm_ca_encryption_issuer_cert != NULL) &&
-	    (strlen(ca->cm_ca_encryption_issuer_cert) > 0)) {
-		setenv(CM_SUBMIT_SCEP_CA_CERTIFICATE_ENV,
-		       ca->cm_ca_encryption_issuer_cert, 1);
-	}
-	if ((ca->cm_ca_encryption_cert_pool != NULL) &&
-	    (strlen(ca->cm_ca_encryption_cert_pool) > 0)) {
-		setenv(CM_SUBMIT_SCEP_CERTIFICATES_ENV,
-		       ca->cm_ca_encryption_cert_pool, 1);
-	}
+	maybe_setenv(CM_SUBMIT_SCEP_CA_IDENTIFIER_ENV,
+		     ca->cm_ca_scep_ca_identifier);
+	maybe_setenv(CM_SUBMIT_SCEP_RA_CERTIFICATE_ENV,
+		     ca->cm_ca_encryption_cert);
+	maybe_setenv(CM_SUBMIT_SCEP_CA_CERTIFICATE_ENV,
+		     ca->cm_ca_encryption_issuer_cert);
+	maybe_setenv(CM_SUBMIT_SCEP_CERTIFICATES_ENV,
+		     ca->cm_ca_encryption_cert_pool);
 	if ((entry->cm_scep_last_nonce == NULL) ||
 	    (entry->cm_scep_nonce == NULL) ||
 	    (strcmp(entry->cm_scep_last_nonce, entry->cm_scep_nonce) != 0)) {
-		if ((entry->cm_scep_req != NULL) &&
-		    (strlen(entry->cm_scep_req) > 0)) {
-			setenv(CM_SUBMIT_SCEP_PKCSREQ_ENV,
-			       entry->cm_scep_req, 1);
-		}
-		if ((entry->cm_scep_gic != NULL) &&
-		    (strlen(entry->cm_scep_gic) > 0)) {
-			setenv(CM_SUBMIT_SCEP_GETCERTINITIAL_ENV,
-			       entry->cm_scep_gic, 1);
-		}
-		if ((entry->cm_scep_req_next != NULL) &&
-		    (strlen(entry->cm_scep_req_next) > 0)) {
-			setenv(CM_SUBMIT_SCEP_PKCSREQ_REKEY_ENV,
-			       entry->cm_scep_req_next, 1);
-		}
-		if ((entry->cm_scep_gic_next != NULL) &&
-		    (strlen(entry->cm_scep_gic_next) > 0)) {
-			setenv(CM_SUBMIT_SCEP_GETCERTINITIAL_REKEY_ENV,
-			       entry->cm_scep_gic_next, 1);
-		}
+		maybe_setenv(CM_SUBMIT_SCEP_PKCSREQ_ENV,
+			     entry->cm_scep_req);
+		maybe_setenv(CM_SUBMIT_SCEP_GETCERTINITIAL_ENV,
+			     entry->cm_scep_gic);
+		maybe_setenv(CM_SUBMIT_SCEP_PKCSREQ_REKEY_ENV,
+			     entry->cm_scep_req_next);
+		maybe_setenv(CM_SUBMIT_SCEP_GETCERTINITIAL_REKEY_ENV,
+			     entry->cm_scep_gic_next);
 	}
-	if (entry->cm_template_ipaddress != NULL) {
-		setenv(CM_SUBMIT_REQ_IP_ADDRESS_ENV,
-		       cm_submit_maybe_joinv(NULL, "\n",
-					     entry->cm_template_ipaddress),
-		       1);
-	}
+	maybe_setenv(CM_SUBMIT_REQ_IP_ADDRESS_ENV,
+		     cm_submit_maybe_joinv(NULL, "\n",
+					   entry->cm_template_ipaddress));
 	if (dup2(fd, STDOUT_FILENO) == -1) {
 		u = errno;
 		cm_log(1, "Error redirecting standard out for "
