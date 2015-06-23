@@ -791,7 +791,7 @@ main(int argc, const char **argv)
 				}
 				break;
 			}
-			if (response_code != 200) {
+			if (response_code2 != 200) {
 				if (verbose > 0) {
 					fprintf(stderr, "Response code "
 						"is not 200, done.\n");
