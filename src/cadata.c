@@ -319,9 +319,7 @@ parse_certs(struct cm_store_ca *ca, struct cm_cadata_state *state,
 	const char *p, *eom;
 	int i;
 
-	if (state != NULL) {
-		state->modified = 0;
-	}
+	state->modified = 0;
 	if (cm_json_decode(state, msg, -1, &json, &eom) != 0) {
 		json = cm_json_new_object(state);
 		/* Take the older-format data and build a JSON object out of
