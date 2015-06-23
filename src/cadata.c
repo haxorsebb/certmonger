@@ -413,7 +413,8 @@ postprocess_certs_sub(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 	}
 	fprintf(status, "%s\n", state->intermediate);
 	fflush(status);
-	return 0;
+	fclose(status);
+	_exit(0);
 }
 
 static int
