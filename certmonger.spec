@@ -238,6 +238,7 @@ exit 0
 %endif
 %if %{systemd}
 %{_unitdir}/*
+%{_datadir}/dbus-1/system-services/*
 %endif
 
 %changelog

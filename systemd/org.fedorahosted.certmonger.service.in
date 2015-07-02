@@ -1,3 +1,5 @@
 [D-BUS Service]
 Name=@CM_DBUS_NAME@
-Exec=@mysbindir@/certmonger-session -b @CM_DEFAULT_IDLE_TIMEOUT@
+Exec=/bin/false
+User=root
+SystemdService=certmonger.service
