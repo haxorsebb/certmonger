@@ -709,6 +709,12 @@ cm_tdbus_setup_public_connection(struct tdbus_connection *tdb,
 		return -1;
 	}
 
+	/* Watch for method calls on this connection. */
+	if (!dbus_connection_add_filter(conn, cm_tdbus_filter, tdb, NULL)) {
+		cm_log(1, "Unable to add filter.\n");
+		return -1;
+	}
+
 	/* Request our service name. */
 	memset(&err, 0, sizeof(err));
 	ret = dbus_bus_request_name(conn, CM_DBUS_NAME, 0, &err);
@@ -728,13 +734,6 @@ cm_tdbus_setup_public_connection(struct tdbus_connection *tdb,
 	cm_log(3, "Connected to %s message bus with name "
 	       "\"%s\", unique name \"%s\".\n", bus_desc,
 	       dbus_bus_get_unique_name(conn) ?: "(unknown)", CM_DBUS_NAME);
-
-	/* Watch for method calls on this connection. */
-	if (!dbus_connection_add_filter(conn, cm_tdbus_filter, tdb, NULL)) {
-		cm_log(1, "Unable to add filter.\n");
-		return -1;
-	}
-
 	return 0;
 }
 
