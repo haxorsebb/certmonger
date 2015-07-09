@@ -1,22 +1,22 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-#
+# 
 # Translators:
 # Göran Uddeborg <goeran@uddeborg.se>, 2011-2013
 msgid ""
 msgstr ""
-"Project-Id-Version: certmonger 0.77.3\n"
+"Project-Id-Version: certmonger 0.78\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2015-06-20 10:28-0400\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "PO-Revision-Date: 2014-11-11 05:00-0500\n"
 "Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
 "Language-Team: Swedish (http://www.transifex.com/projects/p/certmonger/"
 "language/sv/)\n"
 "Language: sv\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Zanata 3.6.2\n"
 
@@ -209,8 +209,7 @@ msgstr "Sökväg ”%s”: %s.\n"
 #: src/getcert.c:194
 #, c-format
 msgid "Path \"%s\" is not a regular file.\n"
-msgstr ""
-"Sökvägen ”%s” är inte normal fil.\n"
+msgstr "Sökvägen ”%s” är inte normal fil.\n"
 "\n"
 
 #: src/getcert.c:340
@@ -591,8 +590,8 @@ msgstr ""
 #: src/getcert.c:2032 src/getcert.c:3038
 #, c-format
 msgid ""
-"None of ID or database directory and nickname or certificate file "
-"specified.\n"
+"None of ID or database directory and nickname or certificate file specified."
+"\n"
 msgstr ""
 "Ingen av ID eller databaskatalog och smeknamn eller certifikatfil filen "
 "angiven.\n"
@@ -1176,8 +1175,7 @@ msgstr ""
 
 #: src/getcert.c:4631 src/getcert.c:4679
 msgid "  -R\t\tdon't attempt to renew the certificate when expiration nears\n"
-msgstr ""
-"  -R\t\tförsök inte förnya certifikatet när utgångsdatumet närmar sig\n"
+msgstr "  -R\t\tförsök inte förnya certifikatet när utgångsdatumet närmar sig\n"
 
 #: src/getcert.c:4633 src/getcert.c:4681
 msgid "  -c CA\t\tuse the specified CA rather than the default\n"
@@ -1387,8 +1385,7 @@ msgstr "* Allmänna flaggor:\n"
 
 #: src/getcert.c:4829
 msgid "  -c CA\tlist only requests and certs associated with this CA\n"
-msgstr ""
-"  -c CA\tlista endast begäran och certifikat associerade med denna CA\n"
+msgstr "  -c CA\tlista endast begäran och certifikat associerade med denna CA\n"
 
 #: src/getcert.c:4831
 msgid "  -r\tlist only information about outstanding requests\n"
@@ -1415,8 +1412,7 @@ msgstr ""
 
 #: src/getcert.c:4839
 msgid "  -f FILE\tonly list requests and certs stored in this PEM file\n"
-msgstr ""
-"  -f FIL\tlista endast begäran och certifikat lagrade i denna PEM-fil\n"
+msgstr "  -f FIL\tlista endast begäran och certifikat lagrade i denna PEM-fil\n"
 
 #: src/getcert.c:4841 src/getcert.c:4882 src/getcert.c:4897 src/getcert.c:4913
 #: src/getcert.c:4928 src/getcert.c:4947 src/getcert.c:4961 src/getcert.c:4974
@@ -1675,11 +1671,10 @@ msgstr ""
 
 #: src/ipa.c:804
 #, c-format
-msgid ""
-"Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
+msgid "Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
 msgstr ""
-"Fel när ccache sattes upp för ”%s” på klienten med standardnyckeltabell: "
-"%s.\n"
+"Fel när ccache sattes upp för ”%s” på klienten med standardnyckeltabell: %s."
+"\n"
 
 #: src/ipa.c:811
 #, c-format
@@ -1694,7 +1689,8 @@ msgstr ""
 #, c-format
 msgid "Error setting up ccache for \"%s\" on client using keytab \"%s\": %s.\n"
 msgstr ""
-"Fel när ccache sattes upp för ”%s” på klienten med nyckeltabellen ”%s”: %s.\n"
+"Fel när ccache sattes upp för ”%s” på klienten med nyckeltabellen ”%s”: %s."
+"\n"
 
 #: src/main.c:74
 msgid "use session bus"
@@ -1765,9 +1761,9 @@ msgid "print version information"
 msgstr ""
 
 #: src/main.c:174
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s [-s|-S] [-n|-f] [-d LEVEL] [-p FILE] [-F] [-v]\n"
-msgstr "Användning: %s [-s|-S] [-n|-f] [-d NIVÅ] [-p FIL] [-F]\n"
+msgstr ""
 
 #: src/main.c:177
 msgid "\t-s         use session bus\n"
@@ -1906,6 +1902,7 @@ msgstr "Det finns redan en begäran med smeknamnet ”%s”."
 #, c-format
 msgid ""
 "Certificate at same location is already used by request with nickname \"%s\"."
+""
 msgstr ""
 "Certifikat på samma plats används redan av av begäran med smeknamnet ”%s”."
 

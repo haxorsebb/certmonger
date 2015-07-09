@@ -1,16 +1,16 @@
 # Robert Antoni Buj Gelonch <rbuj@fedoraproject.org>, 2015. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: certmonger 0.77.3\n"
+"Project-Id-Version: certmonger 0.78\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2015-06-20 10:28-0400\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "PO-Revision-Date: 2015-05-14 04:58-0400\n"
 "Last-Translator: Robert Antoni Buj Gelonch <rbuj@fedoraproject.org>\n"
 "Language-Team: Catalan\n"
 "Language: ca\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Zanata 3.6.2\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
@@ -38,7 +38,8 @@ msgstr "S'ha produït un error en preparar-se per a l'XMLRPC.\n"
 #, c-format
 msgid "Error parsing server response.\n"
 msgstr ""
-"S'ha produït un error en analitzar sintàcticament la resposta del servidor.\n"
+"S'ha produït un error en analitzar sintàcticament la resposta del servidor."
+"\n"
 
 #: src/certmaster.c:203
 #, c-format
@@ -620,8 +621,8 @@ msgstr "reemplaça l'adreça IP sol·licitada"
 #: src/getcert.c:2032 src/getcert.c:3038
 #, c-format
 msgid ""
-"None of ID or database directory and nickname or certificate file "
-"specified.\n"
+"None of ID or database directory and nickname or certificate file specified."
+"\n"
 msgstr ""
 "No s'ha especificat cap Id. ni tampoc cap directori de la base de dades i el "
 "sobrenom o cap fitxer de certificat.\n"
@@ -1347,8 +1348,8 @@ msgstr "  -I NOM\tsobrenom a donar a la sol·licitud de seguiment\n"
 #: src/getcert.c:4684
 msgid "* Parameters for the signing request at renewal time:\n"
 msgstr ""
-"* Paràmetres per a la sol·licitud de signatura en el moment de la "
-"renovació:\n"
+"* Paràmetres per a la sol·licitud de signatura en el moment de la renovació:"
+"\n"
 
 #: src/getcert.c:4685
 msgid "  -U EXTUSAGE\toverride requested extended key usage OID\n"
@@ -1499,12 +1500,12 @@ msgstr "* Quan s'utilitzi una base de dades NSS per a l'emmagatzematge:\n"
 #: src/getcert.c:4877
 msgid "  -d DIR\treturn status for the request in this NSS database\n"
 msgstr ""
-"  -d DIR\tretorna l'estat per a la sol·licitud en aquesta base de dades NSS\n"
+"  -d DIR\tretorna l'estat per a la sol·licitud en aquesta base de dades "
+"NSS\n"
 
 #: src/getcert.c:4878
 msgid "  -n NAME\treturn status for cert which uses this nickname\n"
-msgstr ""
-"  -n NOM\tretorna l'estat del certificat que utilitzi aquest sobrenom\n"
+msgstr "  -n NOM\tretorna l'estat del certificat que utilitzi aquest sobrenom\n"
 
 #: src/getcert.c:4879
 msgid "* When using files for storage:\n"
@@ -1716,8 +1717,8 @@ msgstr "L'opció -K no pot utilitzar-se amb l'opció -k ni amb l'opció -t.\n"
 #, c-format
 msgid "Unable to determine principal name for signing request.\n"
 msgstr ""
-"No es pot determinar el nom del principal per a la sol·licitud de "
-"signatura.\n"
+"No es pot determinar el nom del principal per a la sol·licitud de signatura."
+"\n"
 
 #: src/ipa.c:786
 #, c-format
@@ -1735,8 +1736,7 @@ msgstr ""
 
 #: src/ipa.c:804
 #, c-format
-msgid ""
-"Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
+msgid "Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
 msgstr ""
 "S'ha produït un error en preparar ccache per a \"%s\" al client mitjançant "
 "la taula de claus predeterminada: %s.\n"
@@ -1826,9 +1826,9 @@ msgid "print version information"
 msgstr ""
 
 #: src/main.c:174
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s [-s|-S] [-n|-f] [-d LEVEL] [-p FILE] [-F] [-v]\n"
-msgstr "Ús: %s [-s|-S] [-n|-f] [-d NIVELL] [-p FITXER] [-F]\n"
+msgstr ""
 
 #: src/main.c:177
 msgid "\t-s         use session bus\n"
@@ -1969,6 +1969,7 @@ msgstr "Ja hi ha una sol·licitud amb el sobrenom \"%s\"."
 #, c-format
 msgid ""
 "Certificate at same location is already used by request with nickname \"%s\"."
+""
 msgstr ""
 "El certificat a la mateixa localització ja està utilitzat per la sol·licitud "
 "amb sobrenom \"%s\"."
@@ -2030,4 +2031,5 @@ msgstr "Si us plau, verifiqueu que s'hagi iniciat el servei certmonger.\n"
 #: src/tdbusm.c:2160
 msgid "Please verify that the certmonger service is still running.\n"
 msgstr ""
-"Si us plau, verifiqueu que encara s'estigui executant el servei certmonger.\n"
+"Si us plau, verifiqueu que encara s'estigui executant el servei certmonger."
+"\n"

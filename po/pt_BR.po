@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-#
+# 
 # Translators:
 # Cleiton Lima <cleitoncfl@yahoo.com.br>, 2011
 # Fábio Olivé Leite <fabio.olive@gmail.com>, 2013
@@ -9,17 +9,17 @@
 # Marcelo Barbosa <firemanxbr@fedoraproject.org>, 2014
 msgid ""
 msgstr ""
-"Project-Id-Version: certmonger 0.77.3\n"
+"Project-Id-Version: certmonger 0.78\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2015-06-20 10:28-0400\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "PO-Revision-Date: 2014-11-11 05:00-0500\n"
 "Last-Translator: Nalin Dahyabhai <nalin@fedoraproject.org>\n"
 "Language-Team: Portuguese (Brazil) (http://www.transifex.com/projects/p/"
 "certmonger/language/pt_BR/)\n"
 "Language: pt-BR\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Zanata 3.6.2\n"
 
@@ -183,8 +183,7 @@ msgstr ""
 #: src/getcert.c:115
 #, c-format
 msgid "Path \"%s\" is not absolute, attempting to use \"%s\" instead.\n"
-msgstr ""
-"Caminho \"%s\" não é absoluto, tente usar o \"%s\" em vez disso.\n"
+msgstr "Caminho \"%s\" não é absoluto, tente usar o \"%s\" em vez disso.\n"
 "\n"
 
 #: src/getcert.c:120
@@ -256,8 +255,7 @@ msgstr "Erro %s: %s\n"
 #: src/getcert.c:425
 #, c-format
 msgid "Error %s\n"
-msgstr ""
-"Erro %s\n"
+msgstr "Erro %s\n"
 "\n"
 
 #: src/getcert.c:431
@@ -555,8 +553,7 @@ msgstr "Nova requisição de rastreamento \"%s\" adicionada.\n"
 #: src/getcert.c:1711
 #, c-format
 msgid "New tracking request could not be added.\n"
-msgstr ""
-"Nova requisição de rastreamento não foi adicionada.\n"
+msgstr "Nova requisição de rastreamento não foi adicionada.\n"
 "\n"
 
 #: src/getcert.c:1750
@@ -603,8 +600,8 @@ msgstr ""
 #: src/getcert.c:2032 src/getcert.c:3038
 #, c-format
 msgid ""
-"None of ID or database directory and nickname or certificate file "
-"specified.\n"
+"None of ID or database directory and nickname or certificate file specified."
+"\n"
 msgstr ""
 "Nenhum ID, diretório da base de dados e nome de usuário ou arquivo de "
 "certificados especificados.\n"
@@ -985,8 +982,7 @@ msgstr ""
 #: src/getcert.c:4171
 #, c-format
 msgid "\terror refreshing CA data\n"
-msgstr ""
-"\terro ao atualizar o dado de CA\n"
+msgstr "\terro ao atualizar o dado de CA\n"
 "\n"
 
 #: src/getcert.c:4188 src/getcert.c:4279
@@ -1224,26 +1220,22 @@ msgstr "  -u KEYUSAGE\tdefine requisição o valor de uso da chave\n"
 
 #: src/getcert.c:4640 src/getcert.c:4748 src/getcert.c:4795
 msgid "  -K NAME\tset requested principal name\n"
-msgstr ""
-"  -K NOME\tconjunto solicitado para o nome principal\n"
+msgstr "  -K NOME\tconjunto solicitado para o nome principal\n"
 "\n"
 
 #: src/getcert.c:4641 src/getcert.c:4749 src/getcert.c:4796
 msgid "  -D DNSNAME\tset requested DNS name\n"
-msgstr ""
-"  -D DNSNAME\tconjunto solicitado para o nome do DNS \n"
+msgstr "  -D DNSNAME\tconjunto solicitado para o nome do DNS \n"
 "\n"
 
 #: src/getcert.c:4642 src/getcert.c:4750 src/getcert.c:4797
 msgid "  -E EMAIL\tset requested email address\n"
-msgstr ""
-"  -E EMAIL\tconjunto solicitado para o endereço de email\n"
+msgstr "  -E EMAIL\tconjunto solicitado para o endereço de email\n"
 "\n"
 
 #: src/getcert.c:4643 src/getcert.c:4751 src/getcert.c:4798
 msgid "  -A ADDRESS\tset requested IP address\n"
-msgstr ""
-"  -A ENDEREÇO\tdefinido requisição de endereço IP\n"
+msgstr "  -A ENDEREÇO\tdefinido requisição de endereço IP\n"
 "\n"
 
 #: src/getcert.c:4644 src/getcert.c:4691 src/getcert.c:4752 src/getcert.c:4799
@@ -1259,8 +1251,7 @@ msgstr ""
 #: src/getcert.c:4896 src/getcert.c:4912 src/getcert.c:4927 src/getcert.c:4946
 #: src/getcert.c:4960 src/getcert.c:4973
 msgid "* Bus options:\n"
-msgstr ""
-"* Bus opções:\n"
+msgstr "* Bus opções:\n"
 "\n"
 
 #: src/getcert.c:4647 src/getcert.c:4694 src/getcert.c:4721 src/getcert.c:4763
@@ -1286,14 +1277,12 @@ msgstr "* Outras opções:\n"
 
 #: src/getcert.c:4650 src/getcert.c:4697 src/getcert.c:4766 src/getcert.c:4815
 msgid "  -B\tcommand to run before saving the certificate\n"
-msgstr ""
-"  -B\tcomando para rodar antes de salvar o certificado\n"
+msgstr "  -B\tcomando para rodar antes de salvar o certificado\n"
 "\n"
 
 #: src/getcert.c:4651 src/getcert.c:4698 src/getcert.c:4767 src/getcert.c:4816
 msgid "  -C\tcommand to run after saving the certificate\n"
-msgstr ""
-"  -C\tcomando para rodar após salvar o certificado\n"
+msgstr "  -C\tcomando para rodar após salvar o certificado\n"
 "\n"
 
 #: src/getcert.c:4652 src/getcert.c:4699 src/getcert.c:4768 src/getcert.c:4817
@@ -1302,8 +1291,7 @@ msgstr "  -F\tarquivo para armazenar certificados CA's\n"
 
 #: src/getcert.c:4653 src/getcert.c:4700 src/getcert.c:4769 src/getcert.c:4818
 msgid "  -a\tNSS database in which to store the CA's certificates\n"
-msgstr ""
-"  -a\tNSS banco de dados para armazenar certificados CA's\n"
+msgstr "  -a\tNSS banco de dados para armazenar certificados CA's\n"
 "\n"
 
 #: src/getcert.c:4654 src/getcert.c:4701 src/getcert.c:4770 src/getcert.c:4819
@@ -1315,15 +1303,13 @@ msgstr ""
 #: src/getcert.c:4900 src/getcert.c:4916 src/getcert.c:4931 src/getcert.c:4950
 #: src/getcert.c:4964 src/getcert.c:4977
 msgid "  -v\treport all details of errors\n"
-msgstr ""
-"  -v\treportar todos os detalhes de erros\n"
+msgstr "  -v\treportar todos os detalhes de erros\n"
 "\n"
 
 #: src/getcert.c:4659
 #, c-format
 msgid "Usage: %s start-tracking [options]\n"
-msgstr ""
-"Use: %s start-tracking [opções]\n"
+msgstr "Use: %s start-tracking [opções]\n"
 "\n"
 
 #: src/getcert.c:4662
@@ -1356,20 +1342,17 @@ msgstr "  -K NOME\tsubstituir o nome principal requerido\n"
 
 #: src/getcert.c:4688
 msgid "  -D DNSNAME\toverride requested DNS name\n"
-msgstr ""
-"  -D DNSNAME\tsubstituir requisição do nome do DNS\n"
+msgstr "  -D DNSNAME\tsubstituir requisição do nome do DNS\n"
 "\n"
 
 #: src/getcert.c:4689
 msgid "  -E EMAIL\toverride requested email address\n"
-msgstr ""
-"  -E EMAIL\tsubstituir requisição do endereço de email\n"
+msgstr "  -E EMAIL\tsubstituir requisição do endereço de email\n"
 "\n"
 
 #: src/getcert.c:4690
 msgid "  -A ADDRESS\toverride requested IP address\n"
-msgstr ""
-"  -A ENDEREÇO\tsobreescreve requisição de endereço IP\n"
+msgstr "  -A ENDEREÇO\tsobreescreve requisição de endereço IP\n"
 "\n"
 
 #: src/getcert.c:4706
@@ -1384,8 +1367,7 @@ msgstr "* Por identificador de requisição:\n"
 #: src/getcert.c:4710 src/getcert.c:4732 src/getcert.c:4779 src/getcert.c:4834
 #: src/getcert.c:4855 src/getcert.c:4875
 msgid "  -i NAME\tnickname for tracking request\n"
-msgstr ""
-"  -i NOME\tapelido para rastreamento de requisição\n"
+msgstr "  -i NOME\tapelido para rastreamento de requisição\n"
 "\n"
 
 #: src/getcert.c:4728
@@ -1395,8 +1377,7 @@ msgstr "Uso: %s reenvio [opções]\n"
 
 #: src/getcert.c:4738 src/getcert.c:4785 src/getcert.c:4861
 msgid "  -f FILE\tPEM file for certificate\n"
-msgstr ""
-"  -f ARQUIVO\tPEM arquivo para o certificado\n"
+msgstr "  -f ARQUIVO\tPEM arquivo para o certificado\n"
 "\n"
 
 #: src/getcert.c:4744 src/getcert.c:4791
@@ -1536,8 +1517,7 @@ msgstr "Uso: %s refresh-ca [opções]\n"
 
 #: src/getcert.c:4909
 msgid "  -c CA\trefresh information about the CA with this name\n"
-msgstr ""
-"  -c CA\tatualizar informação sobre a CA com este nome\n"
+msgstr "  -c CA\tatualizar informação sobre a CA com este nome\n"
 "\n"
 
 #: src/getcert.c:4910
@@ -1694,8 +1674,7 @@ msgstr "Não foi possível determinar a base DN do domínio no servidor IPA.\n"
 #: src/ipa.c:355
 #, c-format
 msgid "Error setting up for XMLRPC on the client.\n"
-msgstr ""
-"Erro definido para XMLRPC no cliente.\n"
+msgstr "Erro definido para XMLRPC no cliente.\n"
 "\n"
 
 #: src/ipa.c:623
@@ -1735,8 +1714,7 @@ msgstr ""
 
 #: src/ipa.c:804
 #, c-format
-msgid ""
-"Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
+msgid "Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
 msgstr ""
 "Erro definido ccache para \"%s\" no cliente usando o padrão keytab: %s.\n"
 
@@ -1745,14 +1723,12 @@ msgstr ""
 msgid ""
 "Error setting up ccache for \"host\" service on client using keytab \"%s\": "
 "%s.\n"
-msgstr ""
-"Erro definido ccache para \"host\" no cliente usando keytab \"%s\": %s.\n"
+msgstr "Erro definido ccache para \"host\" no cliente usando keytab \"%s\": %s.\n"
 
 #: src/ipa.c:815
 #, c-format
 msgid "Error setting up ccache for \"%s\" on client using keytab \"%s\": %s.\n"
-msgstr ""
-"Erro definido ccache para \"%s\" no cliente usando keytab \"%s\": %s.\n"
+msgstr "Erro definido ccache para \"%s\" no cliente usando keytab \"%s\": %s.\n"
 
 #: src/main.c:74
 msgid "use session bus"
@@ -1823,20 +1799,18 @@ msgid "print version information"
 msgstr ""
 
 #: src/main.c:174
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s [-s|-S] [-n|-f] [-d LEVEL] [-p FILE] [-F] [-v]\n"
-msgstr "Uso: %s [-s|-S] [-n|-f] [-d NÍVEL] [-p ARQUIVO] [-F]\n"
+msgstr ""
 
 #: src/main.c:177
 msgid "\t-s         use session bus\n"
-msgstr ""
-"\t-s         use a sessão do barramento\n"
+msgstr "\t-s         use a sessão do barramento\n"
 "\n"
 
 #: src/main.c:178
 msgid "\t-S         use system bus\n"
-msgstr ""
-"\t-S         use o sistema do barramento\n"
+msgstr "\t-S         use o sistema do barramento\n"
 "\n"
 
 #: src/main.c:179
@@ -1853,14 +1827,12 @@ msgstr ""
 
 #: src/main.c:182
 msgid "\t-n         don't become a daemon\n"
-msgstr ""
-"\t-n         não se torna um daemon\n"
+msgstr "\t-n         não se torna um daemon\n"
 "\n"
 
 #: src/main.c:183
 msgid "\t-f         do become a daemon\n"
-msgstr ""
-"\t-f         torna-se um daemon\n"
+msgstr "\t-f         torna-se um daemon\n"
 "\n"
 
 #: src/main.c:184
@@ -1869,14 +1841,12 @@ msgstr "\t-b TIMEOUT bus-activated, idle timeout\n"
 
 #: src/main.c:185
 msgid "\t-B         don't use an idle timeout\n"
-msgstr ""
-"\t-B         não use um timeout oscioso\n"
+msgstr "\t-B         não use um timeout oscioso\n"
 "\n"
 
 #: src/main.c:186
 msgid "\t-d LEVEL   set debugging level (implies -n)\n"
-msgstr ""
-"\t-d NIVEL   define depuração de nível(implica -n)\n"
+msgstr "\t-d NIVEL   define depuração de nível(implica -n)\n"
 "\n"
 
 #: src/main.c:187
@@ -1957,6 +1927,7 @@ msgid ""
 "The location \"%s\" could not be accessed due to insufficient permissions."
 msgstr ""
 "A localização \"%s\" não pode ser acessada devido a permissões insuficientes."
+""
 
 #: src/tdbush.c:601 src/tdbush.c:834 src/tdbush.c:948 src/tdbush.c:1048
 #: src/tdbush.c:1148
@@ -1977,6 +1948,7 @@ msgstr "Já existe um pedido com o nome de usuário \"%s\"."
 #, c-format
 msgid ""
 "Certificate at same location is already used by request with nickname \"%s\"."
+""
 msgstr ""
 "Certificado no mesmo local já é utilizado por requisição com o apelido de "
 "\"%s\"."
