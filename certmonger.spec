@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.78.1
+Version:	0.78.2
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -242,6 +242,15 @@ exit 0
 %endif
 
 %changelog
+* Thu Jul  9 2015 Nalin Dahyabhai <nalin@redhat.com> 0.78.2-1
+- tweak initialization so that we set up for providing our D-Bus API before we
+  register our name with the bus, so that we can handle any requests that
+  arrive before the acknowledgement of that registration
+- on systems that run systemd, add the right data file so that the service gets
+  started when someone tries to talk to the daemon (ticket #38)
+- correctly check for error responses when sending GetCAChain requests to SCEP
+  servers
+
 * Sun Jun 21 2015 Nalin Dahyabhai <nalin@redhat.com> 0.78.1-1
 - self-tests: assume that certutil won't generate DSA keys with more than 1024
   bits, and will often short us by a few
