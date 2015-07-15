@@ -33,10 +33,25 @@
 #include <dbus/dbus.h>
 #include <talloc.h>
 
+#include <krb5.h>
+
+#ifdef HAVE_UUID
+#if defined(HAVE_UUID_H)
+#include <uuid.h>
+#elif defined(HAVE_UUID_UUID_H)
+#include <uuid/uuid.h>
+#endif
+#endif
+
+#ifdef HAVE_GMP
+#include <gmp.h>
+#endif
+
 #include "env.h"
 #include "store.h"
 #include "store-int.h"
 #include "submit-e.h"
+#include "submit-u.h"
 #include "log.h"
 #include "tm.h"
 
@@ -667,6 +682,70 @@ parse_nickcert_list(void *parent, const char *s)
 		p = q;
 	}
 	return ret;
+}
+
+#ifdef HAVE_GMP
+static void
+fill_uuid(unsigned char *uuid, size_t length)
+{
+	gmp_randstate_t state;
+	unsigned int i;
+
+	gmp_randinit_default(state);
+	for (i = 0; i < length; i++) {
+		uuid[i] = gmp_urandomb_ui(state, 8);
+	}
+}
+#endif
+
+int
+cm_store_make_uuid_string(char out[37])
+{
+	unsigned char uuid[16];
+	char *p;
+	int i;
+
+#ifdef HAVE_UUID
+	if (cm_submit_uuid_new(uuid) == 0) {
+		/* we're good */
+	} else
+#endif
+#ifdef HAVE_GMP
+	fill_uuid(uuid, sizeof(uuid));
+#else
+	return -1;
+#endif
+	for (i = 0, p = out; i < 16; i++) {
+		switch (i) {
+		case 4:
+		case 6:
+		case 8:
+		case 10:
+			*p++ = '-';
+			break;
+		default:
+			break;
+		}
+		snprintf(p, 3, "%02x", uuid[i]);
+		p += 2;
+	}
+	return p - out;
+}
+
+int
+cm_store_make_uuid_string_underscore(char out[37])
+{
+	int i, j;
+
+	i = cm_store_make_uuid_string(out);
+	if (i > 0) {
+		for (j = 0; j < i; j++) {
+			if (out[j] == '-') {
+				out[j] = '_';
+			}
+		}
+	}
+	return i;
 }
 
 char *
@@ -1684,11 +1763,15 @@ cm_store_file_write_nickcert_list(FILE *fp, enum cm_store_file_field field,
 static int
 cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 {
-	char timestamp[15];
+	char timestamp[15], uuidstring[37];
 	const char *p;
 
 	if (entry->cm_nickname == NULL) {
-		p = cm_store_timestamp_from_time(cm_time(NULL), timestamp);
+		if (cm_store_make_uuid_string_underscore(uuidstring) > 0) {
+			p = uuidstring;
+		} else {
+			return -1;
+		}
 	} else {
 		p = entry->cm_nickname;
 	}
@@ -2107,16 +2190,16 @@ int
 cm_store_entry_save(struct cm_store_entry *entry)
 {
 	FILE *fp;
-	char timestamp[15], path[PATH_MAX];
+	char timestamp[15], path[PATH_MAX], uuidstring[37];
 	int i, fd = -1, give_up;
 	const char *directory, *dest;
 
 	if (entry->cm_store_private == NULL) {
-		cm_store_timestamp_from_time(cm_time(NULL), timestamp);
+		cm_store_make_uuid_string(uuidstring);
 		directory = cm_env_request_dir();
 		if (directory != NULL) {
 			snprintf(path, sizeof(path), "%s/%s",
-				 directory, timestamp);
+				 directory, uuidstring);
 			fd = open(path,
 				  O_WRONLY | O_CREAT | O_EXCL,
 				  S_IRUSR | S_IWUSR);
@@ -2253,10 +2336,14 @@ static int
 cm_store_ca_write(FILE *fp, struct cm_store_ca *ca)
 {
 	const char *p;
-	char timestamp[15];
+	char uuidstring[37];
 
 	if (ca->cm_nickname == NULL) {
-		p = cm_store_timestamp_from_time(cm_time(NULL), timestamp);
+		if (cm_store_make_uuid_string_underscore(uuidstring) > 0) {
+			p = uuidstring;
+		} else {
+			return -1;
+		}
 	} else {
 		p = ca->cm_nickname;
 	}
@@ -2365,15 +2452,15 @@ int
 cm_store_ca_save(struct cm_store_ca *ca)
 {
 	FILE *fp;
-	char timestamp[15], path[PATH_MAX];
+	char timestamp[15], path[PATH_MAX], uuidstring[37];
 	int i, fd = -1, give_up;
 	const char *directory, *dest;
 
 	if (ca->cm_store_private == NULL) {
-		cm_store_timestamp_from_time(cm_time(NULL), timestamp);
+		cm_store_make_uuid_string(uuidstring);
 		directory = cm_env_ca_dir();
 		if (directory != NULL) {
-			snprintf(path, sizeof(path), "%s/%s", directory, timestamp);
+			snprintf(path, sizeof(path), "%s/%s", directory, uuidstring);
 			fd = open(path,
 				  O_WRONLY | O_CREAT | O_EXCL,
 				  S_IRUSR | S_IWUSR);

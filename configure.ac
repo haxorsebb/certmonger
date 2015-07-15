@@ -732,7 +732,7 @@ if ! ${configure_dist_target_only:-false} ; then
 	AC_ARG_WITH(uuid,
 	AS_HELP_STRING([--with-uuid],[populate subjectUniqueID in self-signed certs]),
 	[uuid=$with_uuid],
-	[uuid=no])
+	[uuid=auto])
 	if test x$with_uuid = xyes ; then
 		PKG_CHECK_MODULES(UUID,uuid)
 	else
