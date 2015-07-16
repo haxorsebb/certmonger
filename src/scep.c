@@ -376,7 +376,7 @@ main(int argc, const char **argv)
 				}
 			}
 			if ((message == NULL) || (strlen(message) == 0)) {
-				printf(_("Error reading request, expected PKCS7 data.\n"));
+				printf(_("Error reading request.  Expected PKCS7 data, got nothing.\n"));
 				return CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
 			}
 			/* First step: read capabilities for our use. */
@@ -395,7 +395,7 @@ main(int argc, const char **argv)
 				}
 			}
 			if ((message == NULL) || (strlen(message) == 0)) {
-				printf(_("Error reading request, expected PKCS7 data.\n"));
+				printf(_("Error reading request.  Expected PKCS7 data, got nothing.\n"));
 				return CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
 			}
 			/* First step: read capabilities for our use. */
@@ -530,7 +530,7 @@ main(int argc, const char **argv)
 			tmp2 = message;
 		}
 		if ((tmp2 == NULL) || (strlen(tmp2) == 0)) {
-			printf(_("Error reading request, expected PKCS7 data.\n"));
+			printf(_("Error reading request.  Expected PKCS7 data, got nothing.\n"));
 			return CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
 		} else
 		if (verbose > 0) {
@@ -555,7 +555,7 @@ main(int argc, const char **argv)
 			tmp2 = message;
 		}
 		if ((tmp2 == NULL) || (strlen(tmp2) == 0)) {
-			printf(_("Error reading request, expected PKCS7 data.\n"));
+			printf(_("Error reading request.  Expected PKCS7 data, got nothing.\n"));
 			return CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
 		} else
 		if (verbose > 0) {
@@ -970,12 +970,19 @@ main(int argc, const char **argv)
 				return CM_SUBMIT_STATUS_UNREACHABLE;
 			}
 			if (strcmp(pkistatus, SCEP_PKISTATUS_PENDING) == 0) {
+				if (verbose > 0) {
+					fprintf(stderr, "SCEP status is \"pending\".\n");
+					fprintf(stderr, "SCEP doesn't use cookie values, outputting server nonce.\n");
+				}
 				s = cm_store_base64_from_bin(ctx, sender_nonce,
 							     sender_nonce_length);
 				printf("%s\n", s);
 				return CM_SUBMIT_STATUS_WAIT;
 			} else
 			if (strcmp(pkistatus, SCEP_PKISTATUS_FAILURE) == 0) {
+				if (verbose > 0) {
+					fprintf(stderr, "SCEP status is \"failure\".\n");
+				}
 				if (failinfo == NULL) {
 					printf(_("Unspecified failure at server.\n"));
 				} else
@@ -1021,6 +1028,9 @@ main(int argc, const char **argv)
 				return CM_SUBMIT_STATUS_REJECTED;
 			} else
 			if (strcmp(pkistatus, SCEP_PKISTATUS_SUCCESS) == 0) {
+				if (verbose > 0) {
+					fprintf(stderr, "SCEP status is \"success\".\n");
+				}
 				u = payload;
 				p7 = d2i_PKCS7(NULL, &u, payload_length);
 				if (p7 == NULL) {
@@ -1093,6 +1103,9 @@ main(int argc, const char **argv)
 				free(s);
 				return CM_SUBMIT_STATUS_ISSUED;
 			} else {
+				if (verbose > 0) {
+					fprintf(stderr, "SCEP status is \"%s\".\n", pkistatus);
+				}
 				printf(_("Error: pkiStatus \"%s\" not recognized.\n"),
 				       pkistatus);
 				return CM_SUBMIT_STATUS_UNREACHABLE;
