@@ -120,6 +120,7 @@ main(int argc, const char **argv)
 	const char *csr = NULL, *serial = NULL, *template = NULL;
 	const char *uid = NULL, *pwd = NULL, *pwdfile = NULL;
 	const char *udn = NULL, *pin = NULL, *pinfile = NULL;
+	char *poptarg;
 	struct {
 		char *name;
 		char *value;
@@ -220,7 +221,8 @@ main(int argc, const char **argv)
 			serial = util_dec_from_hex(poptGetOptArg(pctx));
 			break;
 		case 'O':
-			if (strchr(poptGetOptArg(pctx), '=') == NULL) {
+			poptarg = poptGetOptArg(pctx);
+			if (strchr(poptarg, '=') == NULL) {
 				printf(_("Profile params (-O) must be in the form of param=value.\n"));
 				poptPrintUsage(pctx, stdout, 0);
 				return CM_SUBMIT_STATUS_UNCONFIGURED;
@@ -231,7 +233,7 @@ main(int argc, const char **argv)
 				printf(_("Out of memory.\n"));
 				return CM_SUBMIT_STATUS_UNCONFIGURED;
 			}
-			p = strdup(poptGetOptArg(pctx));
+			p = strdup(poptarg);
 			if (p == NULL) {
 				printf(_("Out of memory.\n"));
 				return CM_SUBMIT_STATUS_UNCONFIGURED;
@@ -242,7 +244,8 @@ main(int argc, const char **argv)
 			aoptions[num_aoptions - 1].value = p + i + 1;
 			break;
 		case 'o':
-			if (strchr(poptGetOptArg(pctx), '=') == NULL) {
+			poptarg = poptGetOptArg(pctx);
+			if (strchr(poptarg, '=') == NULL) {
 				printf(_("Submit params (-o) must be in the form of param=value.\n"));
 				poptPrintUsage(pctx, stdout, 0);
 				return CM_SUBMIT_STATUS_UNCONFIGURED;
@@ -253,7 +256,7 @@ main(int argc, const char **argv)
 				printf(_("Out of memory.\n"));
 				return CM_SUBMIT_STATUS_UNCONFIGURED;
 			}
-			p = strdup(poptGetOptArg(pctx));
+			p = strdup(poptarg);
 			if (p == NULL) {
 				printf(_("Out of memory.\n"));
 				return CM_SUBMIT_STATUS_UNCONFIGURED;

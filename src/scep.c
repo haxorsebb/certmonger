@@ -323,8 +323,8 @@ main(int argc, const char **argv)
 			racert = cm_submit_u_from_file(poptGetOptArg(pctx));
 			break;
 		case 'R':
-			cacert = cm_submit_u_from_file(poptGetOptArg(pctx));
 			cainfo = poptGetOptArg(pctx);
+			cacert = cm_submit_u_from_file(cainfo);
 			break;
 		case 'I':
 			certs = cm_submit_u_from_file(poptGetOptArg(pctx));
