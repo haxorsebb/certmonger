@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.78.2
+Version:	0.78.3
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -242,6 +242,10 @@ exit 0
 %endif
 
 %changelog
+* Mon Jul 20 2015 Nalin Dahyabhai <nalin@redhat.com> 0.78.3-1
+- call poptGetOptArg() correctly, to fix parsing of the -R flag to scep-submit
+  and the -O and -o flags to dogtag-submit (#1244914)
+
 * Thu Jul  9 2015 Nalin Dahyabhai <nalin@redhat.com> 0.78.2-1
 - tweak initialization so that we set up for providing our D-Bus API before we
   register our name with the bus, so that we can handle any requests that
