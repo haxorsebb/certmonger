@@ -202,6 +202,7 @@ main(int argc, const char **argv)
 	int response_code = 0, response_code2 = 0;
 	enum known_ops op = op_unset;
 	const char *id = NULL, *cainfo = NULL;
+	char *poptarg;
 	char *message = NULL, *rekey_message = NULL;
 	const char *mode = NULL, *content_type = NULL, *content_type2 = NULL;
 	void *ctx;
@@ -323,8 +324,9 @@ main(int argc, const char **argv)
 			racert = cm_submit_u_from_file(poptGetOptArg(pctx));
 			break;
 		case 'R':
-			cainfo = poptGetOptArg(pctx);
-			cacert = cm_submit_u_from_file(cainfo);
+			poptarg = poptGetOptArg(pctx);
+			cainfo = strdup(poptarg);
+			cacert = cm_submit_u_from_file(poptarg);
 			break;
 		case 'I':
 			certs = cm_submit_u_from_file(poptGetOptArg(pctx));
