@@ -1031,8 +1031,8 @@ main(int argc, const char **argv)
 						cm_log(1, "%s\n", buf);
 					}
 					s = cm_store_base64_from_bin(ctx,
-								     (unsigned char *) results,
-								     results_length);
+								     (unsigned char *) results2,
+								     results_length2);
 					s = cm_submit_u_pem_from_base64("PKCS7", 0, s);
 					fprintf(stderr, "Full reply:\n%s", s);
 					free(s);
@@ -1046,8 +1046,8 @@ main(int argc, const char **argv)
 						cm_log(1, "%s\n", buf);
 					}
 					s = cm_store_base64_from_bin(ctx,
-								     (unsigned char *) results,
-								     results_length);
+								     (unsigned char *) results2,
+								     results_length2);
 					s = cm_submit_u_pem_from_base64("PKCS7", 0, s);
 					fprintf(stderr, "Full reply:\n%s", s);
 					free(s);
@@ -1061,8 +1061,8 @@ main(int argc, const char **argv)
 						cm_log(1, "%s\n", buf);
 					}
 					s = cm_store_base64_from_bin(ctx,
-								     (unsigned char *) results,
-								     results_length);
+								     (unsigned char *) results2,
+								     results_length2);
 					s = cm_submit_u_pem_from_base64("PKCS7", 0, s);
 					fprintf(stderr, "Full reply:\n%s", s);
 					free(s);
@@ -1079,8 +1079,8 @@ main(int argc, const char **argv)
 						cm_log(1, "%s\n", buf);
 					}
 					s = cm_store_base64_from_bin(ctx,
-								     (unsigned char *) results,
-								     results_length);
+								     (unsigned char *) results2,
+								     results_length2);
 					s = cm_submit_u_pem_from_base64("PKCS7", 0, s);
 					fprintf(stderr, "Full reply:\n%s", s);
 					free(s);
@@ -1100,7 +1100,7 @@ main(int argc, const char **argv)
 		} else {
 			printf(_("Server reply was of unexpected MIME type "
 				 "\"%s\".\n"), content_type);
-			printf("Full reply:\n%.*s", results_length, results);
+			printf("Full reply:\n%.*s", results_length2, results2);
 			return CM_SUBMIT_STATUS_UNREACHABLE;
 		}
 		break;
