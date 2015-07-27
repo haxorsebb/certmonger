@@ -78,6 +78,7 @@ BuildRequires:	/usr/include/popt.h
 
 # we need a running system bus
 Requires:	dbus
+Requires(post):	%{_bindir}/dbus-send
 
 %if %{systemd}
 BuildRequires:	systemd-units
@@ -151,7 +152,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %post
 if test $1 -eq 1 ; then
-	killall -HUP dbus-daemon 2>&1 > /dev/null
+	%{_bindir}/dbus-send --system --type=method_call --dest=org.freedesktop.DBus / org.freedesktop.DBus.ReloadConfig 2>&1 || :
 fi
 %if %{systemd}
 if test $1 -eq 1 ; then
