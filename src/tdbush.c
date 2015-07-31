@@ -3073,6 +3073,44 @@ request_modify(DBusConnection *conn, DBusMessage *msg,
 		for (i = 0; (d != NULL) && (d[i] != NULL); i++) {
 			param = d[i];
 			if ((param->value_type == cm_tdbusm_dict_s) &&
+			    ((strcasecmp(param->key, "KEY_TYPE") == 0) ||
+			     (strcasecmp(param->key, CM_DBUS_PROP_KEY_TYPE) == 0))) {
+				if (strcasecmp(param->value.s, "RSA") == 0) {
+					entry->cm_key_type.cm_key_gen_algorithm = cm_key_rsa;
+#ifdef CM_ENABLE_DSA
+				} else
+				if (strcasecmp(param->value.s, "DSA") == 0) {
+					entry->cm_key_type.cm_key_gen_algorithm = cm_key_dsa;
+#endif
+#ifdef CM_ENABLE_EC
+				} else
+				if ((strcasecmp(param->value.s, "ECDSA") == 0) ||
+				    (strcasecmp(param->value.s, "EC") == 0)) {
+					entry->cm_key_type.cm_key_gen_algorithm = cm_key_ecdsa;
+#endif
+				} else {
+					cm_log(1, "No support for generating \"%s\" keys.\n",
+					       param->value.s);
+					return send_internal_base_bad_arg_error(conn, msg,
+										_("No support for key type \"%s\"."),
+										param->value.s,
+										"KEY_TYPE");
+				}
+				entry->cm_key_next_type.cm_key_gen_algorithm = entry->cm_key_type.cm_key_gen_algorithm;
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_KEY_TYPE;
+				}
+			} else
+			if ((param->value_type == cm_tdbusm_dict_n) &&
+			    ((strcasecmp(param->key, "KEY_SIZE") == 0) ||
+			     (strcasecmp(param->key, CM_DBUS_PROP_KEY_SIZE) == 0))) {
+				entry->cm_key_type.cm_key_gen_size = param->value.n;
+				entry->cm_key_next_type.cm_key_gen_size = entry->cm_key_type.cm_key_gen_size;
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_KEY_SIZE;
+				}
+			} else
+			if ((param->value_type == cm_tdbusm_dict_s) &&
 			    (strcasecmp(param->key, CM_DBUS_PROP_CERT_OWNER) == 0)) {
 				entry->cm_cert_owner = talloc_strdup(entry, param->value.s);
 				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
