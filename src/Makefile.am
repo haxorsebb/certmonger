@@ -19,7 +19,7 @@ man_MANS = certmonger.8 getcert.1 getcert-request.1 getcert-list.1 \
 	   certmonger-local-submit.8 getcert-status.1 \
 	   certmonger-dogtag-submit.8 certmonger-scep-submit.8 \
 	   getcert-add-ca.1 getcert-add-scep-ca.1 getcert-modify-ca.1 \
-	   getcert-remove-ca.1
+	   getcert-remove-ca.1 getcert-rekey.1
 pkgsysconfdir = $(sysconfdir)/$(PACKAGE)
 pkgsysconf_DATA = certmonger.conf
 EXTRA_PROGRAMS =
