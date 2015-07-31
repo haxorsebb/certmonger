@@ -1,0 +1,177 @@
+.TH certmonger 1 "31 July 2015" "certmonger Manual"
+
+.SH NAME
+getcert
+
+.SH SYNOPSIS
+getcert rekey [options]
+
+.SH DESCRIPTION
+Tells \fIcertmonger\fR to generate a new key pair, generate a signing request
+for the public key, and submit the signing request to a CA for signing, in
+order to replace both a certificate and its private key.
+
+.SH SPECIFYING REQUESTS BY NICKNAME
+.TP
+\fB\-i\fR NAME
+The new key pair will be generated and the new certificate will be obtained for
+the tracking request which has this nickname.  If this option is not specified,
+and a tracking entry which matches the key and certificate storage options
+which are specified already exists, that entry will be used.  If not specified,
+the location of the certificate should be specified with either a combination
+of the \fB\-d\fR and \fB\-n\fR options, or with the \fB\-f\fR option.
+
+.SH SPECIFYING REQUESTS BY CERTIFICATE LOCATION
+.TP
+\fB\-d\fR DIR
+The certificate is in the NSS database in the specified directory.
+.TP
+\fB\-n\fR NAME
+The certificate in the NSS database named with \fB\-d\fR has the specified
+nickname.  Only valid with \fB\-d\fR.
+.TP
+\fB\-t\fR TOKEN
+If the NSS database has more than one token available, the certificate
+is stored in this token.  This argument only rarely needs to be specified.
+Only valid with \fB\-d\fR.
+.TP
+\fB\-f\fR FILE
+The certificate is stored in the named file.
+
+.SH KEY GENERATION OPTIONS
+.TP
+\fB\-G\fR TYPE
+In case a new key pair needs to be generated, this option specifies the
+type of the keys to be generated.  If not specified, the current key type
+will be used.
+.TP
+\fB\-g\fR BITS
+This option specifies the size of the new key to be generated.  If not
+specified, a key of the same size as the existing key will be generated.
+
+\fB\-c\fR NAME
+.SH ENROLLMENT OPTIONS
+.TP
+\fB\-c\fR NAME
+Submit the new signing request to the specified CA rather than the one which
+was previously associated with this certificate.  The name of
+the CA should correspond to one listed by \fIgetcert list-cas\fR.
+.TP
+\fB\-T\fR NAME
+Request a certificate using the named profile, template, or certtype,
+from the specified CA.
+.TP
+\fB\-I\fR NAME
+Assign the specified nickname to this task, replacing the previous nickname.
+
+.SH SIGNING REQUEST OPTIONS
+.TP
+\fB\-N\fR NAME
+Change the subject name to include in the signing request.
+.TP
+\fB\-u\fR keyUsage
+Add an extensionRequest for the specified keyUsage to the
+signing request.  The keyUsage value is expected to be one of these names:
+
+digitalSignature
+
+nonRepudiation
+
+keyEncipherment
+
+dataEncipherment
+
+keyAgreement
+
+keyCertSign
+
+cRLSign
+
+encipherOnly
+
+decipherOnly
+.TP
+\fB\-U\fR EKU
+Change the extendedKeyUsage value specified in an extendedKeyUsage
+extension part of the extensionRequest attribute in the signing
+request.  The EKU value is expected to be an object identifier (OID).
+.TP
+\fB\-K\fR NAME
+Change the Kerberos principal name specified as part of a subjectAltName
+extension part of the extensionRequest attribute in the signing request.
+.TP
+\fB\-E\fR EMAIL
+Change the email address specified as part of a subjectAltName
+extension part of the extensionRequest attribute in the signing request.
+.TP
+\fB\-D\fR DNSNAME
+Change the DNS name specified as part of a subjectAltName extension part of the
+extensionRequest attribute in the signing request.
+.TP
+\fB\-A\fR ADDRESS
+Change the IP address specified as part of a subjectAltName extension part of
+the extensionRequest attribute in the signing request.
+.TP
+\fB\-l\fR FILE
+Add an optional ChallengePassword value, read from the file, to the signing
+request.  A ChallengePassword is often required when the CA is accessed using
+SCEP.
+.TP
+\fB\-L\fR PIN
+Add the argument value to the signing request as a ChallengePassword attribute.
+A ChallengePassword is often required when the CA is accessed using SCEP.
+
+.SH OTHER OPTIONS
+.TP
+\fB\-B\fR COMMAND
+When ever the certificate or the CA's certificates are saved to the
+specified locations, run the specified command as the client user before
+saving the certificates.
+.TP
+\fB\-C\fR COMMAND
+When ever the certificate or the CA's certificates are saved to the
+specified locations, run the specified command as the client user after
+saving the certificates.
+.TP
+\fB\-a\fR DIR
+When ever the certificate is saved to the specified location, if root
+certificates for the CA are available, save them to the specified NSS database.
+.TP
+\fB\-F\fR FILE
+When ever the certificate is saved to the specified location, if root
+certificates for the CA are available, and when the local copies of the
+CA's root certificates are updated, save them to the specified file.
+.TP
+\fB\-w\fR
+Wait for the new certificate to be issued and saved, or for the attempt to obtain
+one using the new key to fail.
+.TP
+\fB\-v\fR
+Be verbose about errors.  Normally, the details of an error received from
+the daemon will be suppressed if the client can make a diagnostic suggestion.
+
+.SH BUGS
+Please file tickets for any that you find at https://fedorahosted.org/certmonger/
+
+.SH SEE ALSO
+\fBcertmonger\fR(8)
+\fBgetcert\fR(1)
+\fBgetcert-add-ca\fR(1)
+\fBgetcert-add-scep-ca\fR(1)
+\fBgetcert-list-cas\fR(1)
+\fBgetcert-list\fR(1)
+\fBgetcert-modify-ca\fR(1)
+\fBgetcert-refresh-ca\fR(1)
+\fBgetcert-refresh\fR(1)
+\fBgetcert-remove-ca\fR(1)
+\fBgetcert-request\fR(1)
+\fBgetcert-start-tracking\fR(1)
+\fBgetcert-status\fR(1)
+\fBgetcert-stop-tracking\fR(1)
+\fBcertmonger-certmaster-submit\fR(8)
+\fBcertmonger-dogtag-ipa-renew-agent-submit\fR(8)
+\fBcertmonger-dogtag-submit\fR(8)
+\fBcertmonger-ipa-submit\fR(8)
+\fBcertmonger-local-submit\fR(8)
+\fBcertmonger-scep-submit\fR(8)
+\fBcertmonger_selinux\fR(8)
