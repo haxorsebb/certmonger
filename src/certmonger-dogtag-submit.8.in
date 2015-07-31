@@ -226,6 +226,8 @@ Please file tickets for any that you find at https://fedorahosted.org/certmonger
 \fBgetcert-list\fR(1)
 \fBgetcert-modify-ca\fR(1)
 \fBgetcert-refresh-ca\fR(1)
+\fBgetcert-refresh\fR(1)
+\fBgetcert-rekey\fR(1)
 \fBgetcert-remove-ca\fR(1)
 \fBgetcert-resubmit\fR(1)
 \fBgetcert-start-tracking\fR(1)
