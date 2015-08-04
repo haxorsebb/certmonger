@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.78.3
+Version:	0.78.4
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -242,6 +242,11 @@ exit 0
 %endif
 
 %changelog
+* Tue Aug  4 2015 Nalin Dahyabhai <nalin@redhat.com> 0.78.4-1
+- fix the "getcert start-tracking" -L and -l options (#1249753)
+- output diagnostics about the second request when scep-submit encounters an
+  error during a second request to the SCEP server
+
 * Mon Jul 20 2015 Nalin Dahyabhai <nalin@redhat.com> 0.78.3-1
 - call poptGetOptArg() correctly, to fix parsing of the -R flag to scep-submit
   and the -O and -o flags to dogtag-submit (#1244914)
