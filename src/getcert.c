@@ -1929,6 +1929,20 @@ set_tracking(const char *argv0, const char *category,
 			} else {
 				capath = NULL;
 			}
+			if (cpass != NULL) {
+				param[i].key = CM_DBUS_PROP_TEMPLATE_CHALLENGE_PASSWORD;
+				param[i].value_type = cm_tdbusm_dict_s;
+				param[i].value.s = cpass;
+				params[i] = &param[i];
+				i++;
+			}
+			if (cpassfile != NULL) {
+				param[i].key = CM_DBUS_PROP_TEMPLATE_CHALLENGE_PASSWORD_FILE;
+				param[i].value_type = cm_tdbusm_dict_s;
+				param[i].value.s = cpassfile;
+				params[i] = &param[i];
+				i++;
+			}
 			if (profile != NULL) {
 				param[i].key = CM_DBUS_PROP_TEMPLATE_PROFILE;
 				param[i].value_type = cm_tdbusm_dict_s;
