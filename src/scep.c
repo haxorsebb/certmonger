@@ -378,7 +378,7 @@ main(int argc, const char **argv)
 				}
 			}
 			if ((message == NULL) || (strlen(message) == 0)) {
-				printf(_("Error reading request.  Expected PKCS7 data, got nothing.\n"));
+				printf(_("Error reading request.  Expected PKCS7 data containing a GetInitialCert\npkiMessage, got nothing.\n"));
 				return CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
 			}
 			/* First step: read capabilities for our use. */
@@ -397,7 +397,7 @@ main(int argc, const char **argv)
 				}
 			}
 			if ((message == NULL) || (strlen(message) == 0)) {
-				printf(_("Error reading request.  Expected PKCS7 data, got nothing.\n"));
+				printf(_("Error reading request.  Expected PKCS7 data containing a PKCSReq pkiMessage,\ngot nothing.\n"));
 				return CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
 			}
 			/* First step: read capabilities for our use. */
