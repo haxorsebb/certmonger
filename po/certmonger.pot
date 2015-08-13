@@ -22,7 +22,7 @@ msgstr ""
 msgid "Unable to determine hostname of CA.\n"
 msgstr ""
 
-#: src/certmaster.c:152 src/dogtag.c:517 src/ipa.c:756
+#: src/certmaster.c:152 src/dogtag.c:520 src/ipa.c:756 src/local.c:552
 #, c-format
 msgid "Unable to read signing request.\n"
 msgstr ""
@@ -1790,6 +1790,203 @@ msgstr ""
 
 #: src/main.c:190
 msgid "\t-v         print version information and exit\n"
+msgstr ""
+
+#: src/scep.c:348
+#, c-format
+msgid "No SCEP URL (-u) given, and no default known.\n"
+msgstr ""
+
+#: src/scep.c:352
+#, c-format
+msgid "No SCEP operation (-c/-C/-g/-p) given, and no default known.\n"
+msgstr ""
+
+#: src/scep.c:371 src/scep.c:390
+#, c-format
+msgid "No RA certificate (-r) given, and no default known.\n"
+msgstr ""
+
+#: src/scep.c:381 src/scep.c:400
+#, c-format
+msgid "Error reading request.  Expected PKCS7 data, got nothing.\n"
+msgstr ""
+
+#: src/scep.c:428 src/scep.c:454
+#, c-format
+msgid "Warning: request is neither a PKCSReq nor a GetInitialCert request.\n"
+msgstr ""
+
+#: src/scep.c:432 src/scep.c:458
+#, c-format
+msgid ""
+"Warning: request type \"%s\"is neither a PKCSReq nor a GetInitialCert "
+"request.\n"
+msgstr ""
+
+#: src/scep.c:465
+#, c-format
+msgid "Warning: request is missing transactionId.\n"
+msgstr ""
+
+#: src/scep.c:469
+#, c-format
+msgid "Warning: request is missing senderNonce.\n"
+msgstr ""
+
+#: src/scep.c:535
+#, c-format
+msgid ""
+"Error reading request.  Expected PKCS7 data containing a GetInitialCert\n"
+"pkiMessage, got nothing.\n"
+msgstr ""
+
+#: src/scep.c:560
+#, c-format
+msgid ""
+"Error reading request.  Expected PKCS7 data containing a PKCSReq "
+"pkiMessage,\n"
+"got nothing.\n"
+msgstr ""
+
+#: src/scep.c:632
+#, c-format
+msgid "Got response code %d from %s, not 200.\n"
+msgstr ""
+
+#: src/scep.c:680 src/scep.c:1116
+#, c-format
+msgid "Server reply was of unexpected MIME type \"%s\".\n"
+msgstr ""
+
+#: src/scep.c:925
+#, c-format
+msgid "Error: failed to verify signature on server response.\n"
+msgstr ""
+
+#: src/scep.c:941
+#, c-format
+msgid "Error: reply was not a CertRep (%s).\n"
+msgstr ""
+
+#: src/scep.c:946
+#, c-format
+msgid "Error: reply is missing transactionId.\n"
+msgstr ""
+
+#: src/scep.c:951
+#, c-format
+msgid "Error: reply contains a different transactionId.\n"
+msgstr ""
+
+#: src/scep.c:957
+#, c-format
+msgid "Error: reply is missing pkiStatus.\n"
+msgstr ""
+
+#: src/scep.c:961
+#, c-format
+msgid "Error: reply is missing recipientNonce.\n"
+msgstr ""
+
+#: src/scep.c:967
+#, c-format
+msgid "Error: reply nonce doesn't match request.\n"
+msgstr ""
+
+#: src/scep.c:971
+#, c-format
+msgid "Error: reply is missing senderNonce.\n"
+msgstr ""
+
+#: src/scep.c:989
+#, c-format
+msgid "Unspecified failure at server.\n"
+msgstr ""
+
+#: src/scep.c:992
+#, c-format
+msgid "Unrecognized or unsupported algorithm identifier in client request.\n"
+msgstr ""
+
+#: src/scep.c:995
+#, c-format
+msgid "Integrity check of client request failed at server.\n"
+msgstr ""
+
+#: src/scep.c:998
+#, c-format
+msgid "Transaction either is not permitted or is not supported by server.\n"
+msgstr ""
+
+#: src/scep.c:1001
+#, c-format
+msgid "Clock skew too great.\n"
+msgstr ""
+
+#: src/scep.c:1004
+#, c-format
+msgid "Unsupported extension.\n"
+msgstr ""
+
+#: src/scep.c:1007
+#, c-format
+msgid "Must archive keys.\n"
+msgstr ""
+
+#: src/scep.c:1010
+#, c-format
+msgid "Bad identity.\n"
+msgstr ""
+
+#: src/scep.c:1013
+#, c-format
+msgid "Proof of possession required.\n"
+msgstr ""
+
+#: src/scep.c:1016
+#, c-format
+msgid "Proof of possession failed.\n"
+msgstr ""
+
+#: src/scep.c:1019
+#, c-format
+msgid "No key reuse.\n"
+msgstr ""
+
+#: src/scep.c:1022
+#, c-format
+msgid "Internal CA error.\n"
+msgstr ""
+
+#: src/scep.c:1025
+#, c-format
+msgid "Try later.\n"
+msgstr ""
+
+#: src/scep.c:1027
+#, c-format
+msgid "Server returned failure code \"%s\".\n"
+msgstr ""
+
+#: src/scep.c:1039
+#, c-format
+msgid "Error: couldn't parse signed-data.\n"
+msgstr ""
+
+#: src/scep.c:1054 src/scep.c:1069
+#, c-format
+msgid "Error: signed-data payload is not enveloped-data.\n"
+msgstr ""
+
+#: src/scep.c:1087
+#, c-format
+msgid "Error: enveloped-data payload is not data.\n"
+msgstr ""
+
+#: src/scep.c:1111
+#, c-format
+msgid "Error: pkiStatus \"%s\" not recognized.\n"
 msgstr ""
 
 #: src/tdbush.c:119 src/tdbush.c:1937 src/tdbush.c:2344
