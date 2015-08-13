@@ -71,7 +71,7 @@ enum known_ops {
 	op_unset,
 	op_get_ca_caps,
 	op_get_ca_certs,
-	op_get_initial_cert,
+	op_get_cert_initial,
 	op_pkcsreq,
 };
 
@@ -261,7 +261,7 @@ main(int argc, const char **argv)
 			}
 		} else
 		if (strcasecmp(mode, CM_OP_POLL) == 0) {
-			op = op_get_initial_cert;
+			op = op_get_cert_initial;
 			message = getenv(CM_SUBMIT_SCEP_PKCSREQ_REKEY_ENV);
 			if (message == NULL) {
 				message = getenv(CM_SUBMIT_SCEP_PKCSREQ_ENV);
@@ -315,7 +315,7 @@ main(int argc, const char **argv)
 			op = op_get_ca_certs;
 			break;
 		case 'g':
-			op = op_get_initial_cert;
+			op = op_get_cert_initial;
 			break;
 		case 'p':
 			op = op_pkcsreq;
@@ -366,7 +366,7 @@ main(int argc, const char **argv)
 		/* First step: get the root certificate. */
 		params = talloc_asprintf(ctx, "operation=" OP_GET_CA_CERT "&message=%s", id);
 		break;
-	case op_get_initial_cert:
+	case op_get_cert_initial:
 		if ((racert == NULL) || (strlen(racert) == 0)) {
 			printf(_("No RA certificate (-r) given, and no default known.\n"));
 			missing_args = TRUE;
@@ -522,7 +522,7 @@ main(int argc, const char **argv)
 		/* Step two: request the chain. */
 		params2 = talloc_asprintf(ctx, "operation=" OP_GET_CA_CHAIN "&message=%s", id);
 		break;
-	case op_get_initial_cert:
+	case op_get_cert_initial:
 		/* Step two: actually poll.  If we have multiple messages which
 		 * we can use, decide which one to use. */
 		can_renewal = check_capability(results, results_length, "Renewal");
@@ -645,7 +645,7 @@ main(int argc, const char **argv)
 			return CM_SUBMIT_STATUS_REJECTED;
 		}
 		break;
-	case op_get_initial_cert:
+	case op_get_cert_initial:
 	case op_pkcsreq:
 		/* ignore an error status */
 		break;
@@ -871,7 +871,7 @@ main(int argc, const char **argv)
 			return CM_SUBMIT_STATUS_UNREACHABLE;
 		}
 		break;
-	case op_get_initial_cert:
+	case op_get_cert_initial:
 	case op_pkcsreq:
 		if (strcasecmp(content_type2,
 			       "application/x-pki-message") == 0) {
