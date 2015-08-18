@@ -183,9 +183,19 @@ cm_submit_e_ready(struct cm_submit_state *state)
 				if ((msg != NULL) && (length > 0)) {
 					cm_log(1, "Child output:\n\"%.*s\"\n", length, msg);
 					/* If it's a single line, assume it's
-					 * log-worthy. */
+					 * log-worthy unless the code is all we
+					 * care about. */
 					if (strcspn(msg, "\n") >= (strlen(msg) - 2)) {
-						cm_log(0, "%s", msg);
+						switch (WEXITSTATUS(status)) {
+						case CM_SUBMIT_STATUS_ISSUED:
+						case CM_SUBMIT_STATUS_WAIT:
+						case CM_SUBMIT_STATUS_WAIT_WITH_DELAY:
+						case CM_SUB_STATUS_NEED_SCEP_DATA:
+							break;
+						default:
+							cm_log(0, "%s", msg);
+							break;
+						}
 					}
 					/* If it was an error, save it. */
 					if ((WEXITSTATUS(status) ==
