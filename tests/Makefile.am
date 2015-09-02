@@ -7,6 +7,7 @@ EXTRA_DIST = \
 	001-keyiread-rsa/expected.out \
 	001-keyiread-dsa/run.sh \
 	001-keyiread-dsa/expected.out \
+	001-keyiread-dsa/expected.out.2048 \
 	001-keyiread-ec/run.sh \
 	001-keyiread-ec/expected.out \
 	001-keyiread-ec/expected.out.2 \
