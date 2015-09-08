@@ -963,6 +963,11 @@ cm_submit_e_start_or_resume(struct cm_store_ca *ca,
 		state->done = cm_submit_e_done;
 		state->delay = -1;
 		estate = talloc_ptrtype(state, estate);
+		if (estate == NULL) {
+			talloc_free(state);
+			return NULL;
+		}
+		memset(estate, 0, sizeof(*estate));
 		estate->phase = running_helper;
 		estate->ca = ca;
 		estate->entry = entry;
