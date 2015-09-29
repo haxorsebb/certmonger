@@ -382,6 +382,60 @@ prep_req(enum cm_tdbus_type which,
 	return msg;
 }
 
+/* Produce a useful error about popt. */
+static char *
+make_popt_error(poptContext ctx, int code)
+{
+	char *p;
+
+	switch (code) {
+	case POPT_ERROR_NOARG:
+		p = talloc_asprintf(NULL, _("missing argument for %s"),
+				    poptBadOption(ctx, 0));
+		if (p != NULL) {
+			return p;
+		}
+		return _("missing argument");
+		break;
+	case POPT_ERROR_BADOPT:
+		p = talloc_asprintf(NULL, _("unrecognized option %s"),
+				    poptBadOption(ctx, 0));
+		if (p != NULL) {
+			return p;
+		}
+		return _("unrecognized option");
+		break;
+	case POPT_ERROR_OPTSTOODEEP:
+		return _("aliases nested too deeply");
+		break;
+	case POPT_ERROR_BADQUOTE:
+		return _("bad parameter quoting");
+		break;
+	case POPT_ERROR_ERRNO:
+		return strerror(errno);
+		break;
+	case POPT_ERROR_BADNUMBER:
+		return _("invalid numeric value");
+		break;
+	case POPT_ERROR_OVERFLOW:
+		return _("number too large or too small");
+		break;
+	case POPT_ERROR_BADOPERATION:
+		return _("bad operation");
+		break;
+	case POPT_ERROR_NULLARG:
+		return _("internal error");
+		break;
+	case POPT_ERROR_MALLOC:
+		return _("out of memory");
+		break;
+	case POPT_ERROR_BADCONFIG:
+		return _("error in popt configuration file");
+		break;
+	}
+	return poptStrerror(code);
+}
+
 /* Try to offer some advice based on the error. */
 static enum { hint_unknown, hint_found }
 print_hint(const char *error, const char *message)
@@ -984,6 +1038,7 @@ request(const char *argv0, int argc, const char **argv)
 		}
 	}
 	if (c != -1) {
+		printf("%s\n", make_popt_error(pctx, c));
 		help(argv0, "request");
 		return 1;
 	}
@@ -2001,6 +2056,7 @@ set_tracking(const char *argv0, const char *category,
 		}
 	}
 	if (c != -1) {
+		printf("%s\n", make_popt_error(pctx, c));
 		help(argv0, category);
 		return 1;
 	}
@@ -2636,6 +2692,7 @@ rekey_or_resubmit(const char *argv0, const char *category, int argc,
 		}
 	}
 	if (c != -1) {
+		printf("%s\n", make_popt_error(pctx, c));
 		help(argv0, category);
 		return 1;
 	}
@@ -3044,6 +3101,7 @@ refresh(const char *argv0, int argc, const char **argv)
 		}
 	}
 	if (c != -1) {
+		printf("%s\n", make_popt_error(pctx, c));
 		help(argv0, "refresh");
 		return 1;
 	}
@@ -3284,6 +3342,7 @@ list(const char *argv0, int argc, const char **argv)
 		}
 	}
 	if (c != -1) {
+		printf("%s\n", make_popt_error(pctx, c));
 		help(argv0, "list");
 		return 1;
 	}
@@ -3771,6 +3830,7 @@ status(const char *argv0, int argc, const char **argv)
 		}
 	}
 	if (c != -1) {
+		printf("%s\n", make_popt_error(pctx, c));
 		help(argv0, "status");
 		return 1;
 	}
@@ -3921,6 +3981,7 @@ list_cas(const char *argv0, int argc, const char **argv)
 		}
 	}
 	if (c != -1) {
+		printf("%s\n", make_popt_error(pctx, c));
 		help(argv0, "list-cas");
 		return 1;
 	}
@@ -4147,6 +4208,7 @@ refresh_ca(const char *argv0, int argc, const char **argv)
 		}
 	}
 	if (c != -1) {
+		printf("%s\n", make_popt_error(pctx, c));
 		help(argv0, "refresh-ca");
 		return 1;
 	}
@@ -4236,6 +4298,7 @@ add_ca(const char *argv0, int argc, const char **argv)
 		}
 	}
 	if (c != -1) {
+		printf("%s\n", make_popt_error(pctx, c));
 		help(argv0, "add-ca");
 		return 1;
 	}
@@ -4332,6 +4395,7 @@ add_scep_ca(const char *argv0, int argc, const char **argv)
 		}
 	}
 	if (c != -1) {
+		printf("%s\n", make_popt_error(pctx, c));
 		help(argv0, "add-scep-ca");
 		return 1;
 	}
@@ -4459,6 +4523,7 @@ modify_ca(const char *argv0, int argc, const char **argv)
 		}
 	}
 	if (c != -1) {
+		printf("%s\n", make_popt_error(pctx, c));
 		help(argv0, "modify-ca");
 		return 1;
 	}
@@ -4546,6 +4611,7 @@ remove_ca(const char *argv0, int argc, const char **argv)
 		}
 	}
 	if (c != -1) {
+		printf("%s\n", make_popt_error(pctx, c));
 		help(argv0, "remove-ca");
 		return 1;
 	}
