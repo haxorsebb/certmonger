@@ -749,10 +749,11 @@ request(const char *argv0, int argc, const char **argv)
 	char **principal = NULL, **dns = NULL, **email = NULL, **ipaddr = NULL;
 	char *key_owner = NULL, *key_perms = NULL;
 	char *cert_owner = NULL, *cert_perms = NULL;
-	struct cm_tdbusm_dict param[49];
-	const struct cm_tdbusm_dict *params[48];
+	struct cm_tdbusm_dict param[51];
+	const struct cm_tdbusm_dict *params[50];
 	DBusMessage *req, *rep;
 	int waitreq = 0, timeout = -1;
+	int is_ca = 0, path_length = -1;
 	dbus_bool_t b;
 	char *p;
 	krb5_context kctx;
@@ -795,6 +796,9 @@ request(const char *argv0, int argc, const char **argv)
 		{"ip-address", 'A', POPT_ARG_STRING, NULL, 'A', _("set requested IP address"), HELP_TYPE_IP},
 		{"challenge-password-file", 'l', POPT_ARG_STRING, NULL, 'l', _("file which holds an optional challenge password value"), HELP_TYPE_FILENAME},
 		{"challenge-password", 'L', POPT_ARG_STRING, NULL, 'L', _("an optional challenge password value"), NULL},
+		{"for-ca", 0, POPT_ARG_VAL, &is_ca, 1, _("request a CA certificate"), NULL},
+		{"not-for-ca", 0, POPT_ARG_VAL, &is_ca, 0, _("request a non-CA certificate"), NULL},
+		{"ca-path-length", 0, POPT_ARG_INT, &path_length, 0, _("path length for CA certificate"), NULL},
 		{"wait", 'w', POPT_ARG_NONE, NULL, 'w', _("try to wait for the certificate to be issued"), NULL},
 		{"wait-timeout", 0, POPT_ARG_INT, &timeout, 0, _("maximum time to wait for the certificate to be issued"), NULL},
 		{"session", 's', POPT_ARG_NONE, NULL, 's', _("connect to the certmonger service on the session bus"), NULL},
@@ -1213,6 +1217,16 @@ request(const char *argv0, int argc, const char **argv)
 		params[i] = &param[i];
 		i++;
 	}
+	param[i].key = CM_DBUS_PROP_TEMPLATE_IS_CA;
+	param[i].value_type = cm_tdbusm_dict_b;
+	param[i].value.b = is_ca;
+	params[i] = &param[i];
+	i++;
+	param[i].key = CM_DBUS_PROP_TEMPLATE_CA_PATH_LENGTH;
+	param[i].value_type = cm_tdbusm_dict_n;
+	param[i].value.n = path_length;
+	params[i] = &param[i];
+	i++;
 	param[i].key = "TRACK";
 	param[i].value_type = cm_tdbusm_dict_b;
 	param[i].value.b = TRUE;
@@ -1538,13 +1552,14 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 		  char *ca, char *profile,
 		  char *precommand, char *postcommand,
 		  char **anchor_dbs, char **anchor_files,
+		  int is_ca, int path_length,
 		  dbus_bool_t auto_renew_stop, int waitreq,
 		  int timeout, int verbose)
 {
 	DBusMessage *req, *rep;
 	int i;
-	struct cm_tdbusm_dict param[25];
-	const struct cm_tdbusm_dict *params[26];
+	struct cm_tdbusm_dict param[27];
+	const struct cm_tdbusm_dict *params[28];
 	dbus_bool_t b;
 	const char *capath;
 	char *p;
@@ -1682,6 +1697,16 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 		params[i] = &param[i];
 		i++;
 	}
+	param[i].key = CM_DBUS_PROP_TEMPLATE_IS_CA;
+	param[i].value_type = cm_tdbusm_dict_b;
+	param[i].value.b = is_ca;
+	params[i] = &param[i];
+	i++;
+	param[i].key = CM_DBUS_PROP_TEMPLATE_CA_PATH_LENGTH;
+	param[i].value_type = cm_tdbusm_dict_n;
+	param[i].value.n = path_length;
+	params[i] = &param[i];
+	i++;
 	param[i].key = "TRACK";
 	param[i].value_type = cm_tdbusm_dict_b;
 	param[i].value.b = TRUE;
@@ -1775,8 +1800,8 @@ set_tracking(const char *argv0, const char *category,
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	DBusMessage *req, *rep;
 	const char *request, *capath;
-	struct cm_tdbusm_dict param[25];
-	const struct cm_tdbusm_dict *params[26];
+	struct cm_tdbusm_dict param[27];
+	const struct cm_tdbusm_dict *params[28];
 	char *nss_scheme, *dbdir = NULL, *token = NULL, *nickname = NULL;
 	char **anchor_dbs = NULL, **anchor_files = NULL;
 	char *id = NULL, *new_id = NULL, *new_request;
@@ -1789,6 +1814,7 @@ set_tracking(const char *argv0, const char *category,
 	char *p;
 	int c, auto_renew_start = 0, auto_renew_stop = 0, verbose = 0, i, j;
 	int ku = 0, kubit, waitreq = 0, timeout = -1;
+	int is_ca = 0, path_length = -1;
 	char **eku = NULL, *oid, kustring[16];
 	char **principal = NULL, **dns = NULL, **email = NULL, **ipaddr = NULL;
 	krb5_context kctx;
@@ -1828,8 +1854,11 @@ set_tracking(const char *argv0, const char *category,
 		{"dns", 'D', POPT_ARG_STRING, NULL, 'D', _("override requested DNS name"), HELP_TYPE_HOSTNAME},
 		{"email", 'E', POPT_ARG_STRING, NULL, 'E', _("override requested email address"), HELP_TYPE_EMAIL},
 		{"ip-address", 'A', POPT_ARG_STRING, NULL, 'A', _("override requested IP address"), HELP_TYPE_IP},
-		{"challenge-password", 'L', POPT_ARG_STRING, NULL, 'L', _("an optional challenge password value"), NULL},
 		{"challenge-password-file", 'l', POPT_ARG_STRING, NULL, 'l', _("file which holds an optional challenge password value"), HELP_TYPE_FILENAME},
+		{"challenge-password", 'L', POPT_ARG_STRING, NULL, 'L', _("an optional challenge password value"), NULL},
+		{"for-ca", 0, POPT_ARG_VAL, &is_ca, 1, _("request a CA certificate"), NULL},
+		{"not-for-ca", 0, POPT_ARG_VAL, &is_ca, 0, _("request a non-CA certificate"), NULL},
+		{"ca-path-length", 0, POPT_ARG_INT, &path_length, 0, _("path length for CA certificate"), NULL},
 		{"wait", 'w', POPT_ARG_NONE, NULL, 'w', _("try to wait for the certificate to be issued"), NULL},
 		{"wait-timeout", 0, POPT_ARG_INT, &timeout, 0, _("maximum time to wait for the certificate to be issued"), NULL},
 		{"session", 's', POPT_ARG_NONE, NULL, 's', _("connect to the certmonger service on the session bus"), NULL},
@@ -2248,6 +2277,16 @@ set_tracking(const char *argv0, const char *category,
 				params[i] = &param[i];
 				i++;
 			}
+			param[i].key = CM_DBUS_PROP_TEMPLATE_IS_CA;
+			param[i].value_type = cm_tdbusm_dict_b;
+			param[i].value.b = is_ca;
+			params[i] = &param[i];
+			i++;
+			param[i].key = CM_DBUS_PROP_TEMPLATE_CA_PATH_LENGTH;
+			param[i].value_type = cm_tdbusm_dict_n;
+			param[i].value.n = path_length;
+			params[i] = &param[i];
+			i++;
 			if (profile != NULL) {
 				param[i].key = CM_DBUS_PROP_TEMPLATE_PROFILE;
 				param[i].value_type = cm_tdbusm_dict_s;
@@ -2350,6 +2389,7 @@ set_tracking(const char *argv0, const char *category,
 						 ca, profile,
 						 precommand, postcommand,
 						 anchor_dbs, anchor_files,
+						 is_ca, path_length,
 						 (auto_renew_stop > 0),
 						 waitreq, timeout, verbose);
 		}
@@ -2414,8 +2454,8 @@ rekey_or_resubmit(const char *argv0, const char *category, int argc,
 	DBusMessage *req, *rep;
 	const char *request;
 	char *capath;
-	struct cm_tdbusm_dict param[29];
-	const struct cm_tdbusm_dict *params[30];
+	struct cm_tdbusm_dict param[31];
+	const struct cm_tdbusm_dict *params[32];
 	char *dbdir = NULL, *token = NULL, *nickname = NULL, *certfile = NULL;
 	char **anchor_dbs = NULL, **anchor_files = NULL;
 	char *pin = NULL, *pinfile = NULL, *cpass = NULL, *cpassfile = NULL;
@@ -2430,6 +2470,7 @@ rekey_or_resubmit(const char *argv0, const char *category, int argc,
 	dbus_bool_t b;
 	char *p;
 	int verbose = 0, ku = 0, kubit, c, i, j, waitreq = 0, timeout = -1;
+	int is_ca = 0, path_length = -1;
 	krb5_context kctx;
 	krb5_error_code kret;
 	krb5_principal kprinc;
@@ -2466,8 +2507,11 @@ rekey_or_resubmit(const char *argv0, const char *category, int argc,
 		{"dns", 'D', POPT_ARG_STRING, NULL, 'D', _("set requested DNS name"), HELP_TYPE_HOSTNAME},
 		{"email", 'E', POPT_ARG_STRING, NULL, 'E', _("set requested email address"), HELP_TYPE_EMAIL},
 		{"ip-address", 'A', POPT_ARG_STRING, NULL, 'A', _("set requested IP address"), HELP_TYPE_IP},
-		{"challenge-password", 'L', POPT_ARG_STRING, NULL, 'L', _("an optional challenge password value"), NULL},
 		{"challenge-password-file", 'l', POPT_ARG_STRING, NULL, 'l', _("file which holds an optional challenge password value"), HELP_TYPE_FILENAME},
+		{"challenge-password", 'L', POPT_ARG_STRING, NULL, 'L', _("an optional challenge password value"), NULL},
+		{"for-ca", 0, POPT_ARG_VAL, &is_ca, 1, _("request a CA certificate"), NULL},
+		{"not-for-ca", 0, POPT_ARG_VAL, &is_ca, 0, _("request a non-CA certificate"), NULL},
+		{"ca-path-length", 0, POPT_ARG_INT, &path_length, 0, _("path length for CA certificate"), NULL},
 		{"wait", 'w', POPT_ARG_NONE, NULL, 'w', _("try to wait for the certificate to be issued"), NULL},
 		{"wait-timeout", 0, POPT_ARG_INT, &timeout, 0, _("maximum time to wait for the certificate to be issued"), NULL},
 		{"session", 's', POPT_ARG_NONE, NULL, 's', _("connect to the certmonger service on the session bus"), NULL},
@@ -2888,6 +2932,16 @@ rekey_or_resubmit(const char *argv0, const char *category, int argc,
 		params[i] = &param[i];
 		i++;
 	}
+	param[i].key = CM_DBUS_PROP_TEMPLATE_IS_CA;
+	param[i].value_type = cm_tdbusm_dict_b;
+	param[i].value.b = is_ca;
+	params[i] = &param[i];
+	i++;
+	param[i].key = CM_DBUS_PROP_TEMPLATE_CA_PATH_LENGTH;
+	param[i].value_type = cm_tdbusm_dict_n;
+	param[i].value.n = path_length;
+	params[i] = &param[i];
+	i++;
 	if (profile != NULL) {
 		param[i].key = CM_DBUS_PROP_TEMPLATE_PROFILE;
 		param[i].value_type = cm_tdbusm_dict_s;
