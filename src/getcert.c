@@ -433,8 +433,8 @@ make_popt_error(poptContext ctx, int code)
 	case POPT_ERROR_BADCONFIG:
 		return _("error in popt configuration file");
 		break;
-	}
 #endif
+	}
 	return poptStrerror(code);
 }
 
