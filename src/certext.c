@@ -740,16 +740,18 @@ static char *
 cm_certext_parse_principal(void *parent, struct kerberos_principal_name *p)
 {
 	SECItem **comps;
+	krb5_error_code err;
 	krb5_context ctx;
 	krb5_principal_data princ;
 	char *unparsed, *ret;
 	int i, j;
 	unsigned long name_type;
 	void *tctx;
+
 	ret = NULL;
 	ctx = NULL;
 	tctx = talloc_new(parent);
-	if (krb5_init_context(&ctx) == 0) {
+	if ((err = krb5_init_context(&ctx)) == 0) {
 		memset(&princ, 0, sizeof(princ));
 		/* Copy the realm over. */
 		cm_certext_princ_set_realm(ctx, tctx, &princ,
@@ -783,6 +785,9 @@ cm_certext_parse_principal(void *parent, struct kerberos_principal_name *p)
 		}
 		talloc_free(tctx);
 		krb5_free_context(ctx);
+	} else {
+		cm_log(1, "Error %ld initializing Kerberos.\n",
+		       (long) err);
 	}
 	return ret;
 }
@@ -1026,6 +1031,7 @@ cm_certext_build_principal(struct cm_store_entry *entry, PLArenaPool *arena,
 {
 	SECItem *comp, **comps, encoded;
 	struct kerberos_principal_name p;
+	krb5_error_code err;
 	krb5_context ctx;
 	krb5_principal princ;
 	int i;
@@ -1034,7 +1040,9 @@ cm_certext_build_principal(struct cm_store_entry *entry, PLArenaPool *arena,
 		return NULL;
 	}
 	ctx = NULL;
-	if (krb5_init_context(&ctx) != 0) {
+	if ((err = krb5_init_context(&ctx)) != 0) {
+		cm_log(1, "Error %ld initializing Kerberos.\n",
+		       (long) err);
 		return NULL;
 	}
 	princ = NULL;
