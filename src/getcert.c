@@ -429,10 +429,12 @@ make_popt_error(poptContext ctx, int code)
 	case POPT_ERROR_MALLOC:
 		return _("out of memory");
 		break;
+#ifdef POPT_ERROR_BADCONFIG
 	case POPT_ERROR_BADCONFIG:
 		return _("error in popt configuration file");
 		break;
 	}
+#endif
 	return poptStrerror(code);
 }
 
