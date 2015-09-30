@@ -383,7 +383,7 @@ prep_req(enum cm_tdbus_type which,
 }
 
 /* Produce a useful error about popt. */
-static char *
+static const char *
 make_popt_error(poptContext ctx, int code)
 {
 	char *p;
