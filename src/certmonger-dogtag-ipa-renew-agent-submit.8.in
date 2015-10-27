@@ -19,6 +19,7 @@ dogtag-ipa-renew-agent-submit -E EE-URL -A AGENT-URL
 [-T profile]
 [-O param=value]
 [-N | -R]
+[-t]
 [-o option=value]
 [-v]
 [csrfile]
@@ -145,6 +146,10 @@ The default behavior is to request a renewal if possible.
 .TP
 \fB-R\fR
 Negates the effect of the \fB-N\fR flag.
+.TP
+\fB-t\fR
+Instead of attempting to obtain a new certificate, query the server for a list
+of the enabled enrollment profiles.
 .TP
 \fB-o\fR param=value
 When initially submitting a request to the CA, add the specified parameter and
