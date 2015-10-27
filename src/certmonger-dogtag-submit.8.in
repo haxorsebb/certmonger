@@ -19,6 +19,7 @@ dogtag-submit -E EE-URL -A AGENT-URL
 [-T profile]
 [-O param=value]
 [-N | -R]
+[-t]
 [-o option=value]
 [-a ]
 [-u username]
@@ -90,7 +91,7 @@ A cookie value provided by a previous instance of this helper, if the helper
 is being asked to continue a multi-step enrollment process.  If the
 \fICERTMONGER_COOKIE\fR environment variable is set, its value is used.
 .TP
-\fB-T\fR profile
+\fB-T\fR profile/template
 The name of the type of certificate which the client should request from the CA
 if it is not renewing a certificate (per the \fB-s\fR option above).  If the
 \fICERTMONGER_CA_PROFILE\fR environment variable is set, its value is used.
