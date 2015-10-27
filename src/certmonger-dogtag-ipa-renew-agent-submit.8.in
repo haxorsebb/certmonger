@@ -1,4 +1,4 @@
-.TH certmonger 8 "18 Nov 2014" "certmonger Manual"
+.TH certmonger 8 "27 Oct 2015" "certmonger Manual"
 
 .SH NAME
 dogtag-ipa-renew-agent-submit
@@ -18,6 +18,8 @@ dogtag-ipa-renew-agent-submit -E EE-URL -A AGENT-URL
 [-S state]
 [-T profile]
 [-O param=value]
+[-N | -R]
+[-o option=value]
 [-v]
 [csrfile]
 
@@ -133,6 +135,21 @@ request using the agent's credentials.  By default, any server-supplied default
 settings are applied.  This option can be used either to override a
 server-supplied default setting, or to supply one which would otherwise have
 not been used.
+.TP
+\fB-N\fR
+Even if an already-issued certificate is available in the
+\fICERTMONGER_CERTIFICATE\fR environment variable, or a serial number has been
+provided, don't attempt to renew a certificate using its serial number.
+Instead, attempt to obtain a new certificate using the signing request.
+The default behavior is to request a renewal if possible.
+.TP
+\fB-R\fR
+Negates the effect of the \fB-N\fR flag.
+.TP
+\fB-o\fR param=value
+When initially submitting a request to the CA, add the specified parameter and
+value along with any request parameters which would otherwise be sent.  This
+option is not typically used.
 .TP
 \fB-v\fR
 Increases the logging level.  Use twice for more logging.  This option is mainly

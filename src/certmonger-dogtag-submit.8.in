@@ -1,4 +1,4 @@
-.TH certmonger 8 "13 Apr 2015" "certmonger Manual"
+.TH certmonger 8 "27 Oct 2015" "certmonger Manual"
 
 .SH NAME
 dogtag-submit
@@ -108,6 +108,7 @@ Even if an already-issued certificate is available in the
 \fICERTMONGER_CERTIFICATE\fR environment variable, or a serial number has been
 provided, don't attempt to renew a certificate using its serial number.
 Instead, attempt to obtain a new certificate using the signing request.
+The default behavior is to request a renewal if possible.
 .TP
 \fB-R\fR
 Negates the effect of the \fB-N\fR flag.
