@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.77.5
+Version:	0.77.6
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -241,6 +241,11 @@ exit 0
 %endif
 
 %changelog
+* Thu Nov 12 2015 Nalin Dahyabhai <nalin@redhat.com> 0.77.6-1
+- fix "getcert start-tracking"'s -L and -l options
+- fix a possible uninitialized memory read (possibly #1260871)
+- make self-tests more tolerant of NSS's handling of requested DSA key sizes
+
 * Thu May 28 2015 Nalin Dahyabhai <nalin@redhat.com> 0.77.5-1
 - pass $CERTMONGER_REQ_IP_ADDRESS to enrollment helpers if the signing request
   includes IP address subjectAltName values
