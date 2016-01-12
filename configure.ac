@@ -589,6 +589,7 @@ if ! ${configure_dist_target_only:-false} ; then
 		LIBS="$NSS_LIBS $LIBS"
 		AC_CHECK_FUNCS(SECKEY_CreateECPrivateKey)
 		AC_CHECK_FUNCS(PK11_PrivDecrypt)
+		AC_CHECK_FUNCS(NSS_OptionGet NSS_OptionSet)
 		CFLAGS="$CFLAGSsave"
 		LIBS="$LIBSsave"
 		can_ec=true
