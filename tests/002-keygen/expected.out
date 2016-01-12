@@ -1,12 +1,3 @@
-[nss:512]
-OK.
-OK (RSA:512).
-OK.
-OK (RSA:512 after RSA:512).
-OK.
-OK (RSA:512 after RSA:512).
-keyi512
-keyi512 (candidate (next))
 [nss:1024]
 OK.
 OK (RSA:1024).
@@ -56,15 +47,6 @@ keyi4096 (candidate (next))
 Failed to save NSS:${tmpdir}/rosubdir: need fs permissions.
 [nss:rwsubdir]
 Failed to save NSS:${tmpdir}/rwsubdir: need fs permissions.
-[openssl:512]
-OK.
-OK (RSA:512).
-OK.
-OK (RSA:512 after RSA:512).
-OK.
-OK (RSA:512 after RSA:512).
-${tmpdir}/sample.512
-${tmpdir}/sample.512.(next).key
 [openssl:1024]
 OK.
 OK (RSA:1024).
