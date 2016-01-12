@@ -5,7 +5,7 @@ cd "$tmpdir"
 source "$srcdir"/functions
 initnssdb "$tmpdir"
 
-for size in 512 1024 1536 2048 3072 4096 ; do
+for size in 1024 1536 2048 3072 4096 ; do
 	# Build a self-signed certificate.
 	run_certutil -d "$tmpdir" -S -g $size -n keyi$size \
 		-s "cn=T$size" -c "cn=T$size" \
@@ -216,7 +216,7 @@ for nscomment in "" "certmonger generated this request" ; do
 done
 nscomment=
 
-size=512
+size=2048
 subject="CN=Babs Jensen"
 hostname=localhost,localhost.localdomain
 email=root@localhost,root@localhost.localdomain
