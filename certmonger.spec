@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.78.4
+Version:	0.78.6
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -243,6 +243,14 @@ exit 0
 %endif
 
 %changelog
+* Wed Jan 13 2016 Nalin Dahyabhai <nalin@redhat.com> 0.78.6-1
+- document the -R, -N, -o, and -t flags for dogtag-ipa-renew-agent-submit
+- stop checking that we can generate 512 bit keys during self-tests
+
+* Thu Nov 12 2015 Nalin Dahyabhai <nalin@redhat.com> 0.78.5-1
+- fix a possible uninitialized memory read (possibly #1260871)
+- log a diagnostic error when we fail to initialize libkrb5
+
 * Tue Aug  4 2015 Nalin Dahyabhai <nalin@redhat.com> 0.78.4-1
 - fix the "getcert start-tracking" -L and -l options (#1249753)
 - output diagnostics about the second request when scep-submit encounters an
