@@ -41,6 +41,7 @@ main(int argc, char **argv)
 			when.tm_mday = 1;
 			when.tm_mon = 0;
 			when.tm_year = atoi(argv[1]) - 1900;
+			when.tm_isdst = -1;
 			if (cm_submit_u_delta_from_string(argv[i],
 							  now = mktime(&when),
 							  &delta) != 0) {
