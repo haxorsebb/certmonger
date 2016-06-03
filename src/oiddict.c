@@ -65,6 +65,8 @@ static const struct {
 	{"id-ce-cRLDistributionPoints", "id-ce.31"},
 	{"id-ce-extKeyUsage", "id-ce.37"},
 	{"id-ce-freshestCRL", "id-ce.46"},
+	{"id-IEC62351", "1.2.840.10070"},
+	{"id-IECuserRoles", "id-IEC62351.8.1"},
 };
 
 static int
