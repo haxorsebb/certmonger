@@ -1134,6 +1134,15 @@ cm_json_find(struct cm_json *json, const char *path)
 		component = talloc_strndup(json, p, q - p);
 		if (this->type == cm_json_type_object) {
 			this = cm_json_get(this, component);
+			if (this == NULL) {
+				l = strtol(component, &end, 10);
+				if ((end == NULL) || ((*end != '/') && (*end != '\0')) || (l < 0)) {
+					this = NULL;
+					talloc_free(component);
+					continue;
+				}
+				this = cm_json_nth_val(this, l);
+			}
 			talloc_free(component);
 			continue;
 		}
