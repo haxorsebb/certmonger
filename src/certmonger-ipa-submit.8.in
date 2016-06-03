@@ -39,10 +39,20 @@ re-submitted without specifying a profile.
 \fB\-h\fR serverHost
 Submit the request to the IPA server running on the named host.  The default is
 to read the location of the host from \fB/etc/ipa/default.conf\fR.
+If no server is configured, or the configured server cannot be reached, the
+client will attempt to use DNS discovery to locate LDAP servers for the IPA
+domain.  If servers are found, they will be searched for entries pointing to
+IPA masters running the "CA" service, and the client will attempt to contact
+each of those in turn.
 .TP
 \fB\-H\fR serverURL
 Submit the request to the IPA server at the specified location.  The default is
 to read the location of the host from \fB/etc/ipa/default.conf\fR.
+If no server is configured, or the configured server cannot be reached, the
+client will attempt to use DNS discovery to locate LDAP servers for the IPA
+domain.  If servers are found, they will be searched for entries pointing to
+IPA masters running the "CA" service, and the client will attempt to contact
+each of those in turn.
 .TP
 \fB\-c\fR cafile
 The server's certificate was issued by the CA whose certificate is in the named
