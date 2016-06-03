@@ -2,6 +2,10 @@ The CA submission internal API uses child processes to do the heavy
 lifting.  Self-signing is handled internally, but interaction with
 most CAs is done through external helpers.
 
+This document covers how things look from the daemon's point of view.  See
+helpers.txt for a version that attempts to describe the same information from
+the point of view of a helper.
+
 An external CA helper has a few jobs:
 * Invoked either with "SUBMIT" or "POLL" as the value of the
   $CERTMONGER_OPERATION environment variable, with command-line arguments as
