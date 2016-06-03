@@ -834,6 +834,7 @@ maybe_setenv(const char *var, const char *val)
 	if ((var == NULL) || (val == NULL) || (strlen(val) == 0)) {
 		return -1;
 	}
+	cm_log(2, "Setting \"%s\" to \"%s\" for child.\n", var, val);
 	return setenv(var, val, 1);
 }
 
@@ -934,6 +935,7 @@ cm_submit_e_helper_main(int fd, struct cm_store_ca *ca,
 		}
 		return -1;
 	}
+	cm_log(2, "Redirecting stdin and stderr to /dev/null, leaving stdout open for child \"%s\".\n", argv[0]);
 	cm_subproc_mark_most_cloexec(STDOUT_FILENO, -1, -1);
 	cm_log(1, "Running enrollment helper \"%s\".\n", argv[0]);
 	execvp(argv[0], argv);
