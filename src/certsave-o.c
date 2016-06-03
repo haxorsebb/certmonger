@@ -111,6 +111,7 @@ read_file_contents(const char *filename, char *what, PRBool critical)
 	fclose(fp);
 	content[st.st_size] = '\0';
 	if (st.st_size == 0) {
+		free(content);
 		return NULL;
 	}
 	return content;
