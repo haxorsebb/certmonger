@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012,2013,2014,2015 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013,2014,2015,2016 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,7 +64,7 @@
 
 #define OP_GET_CA_CAPS "GetCACaps"
 #define OP_GET_CA_CERT "GetCACert"
-#define OP_GET_CA_CHAIN "GetCAChain"
+#define OP_GET_CA_CERT_CHAIN "GetCACertChain"
 #define OP_GET_INITIAL_CERT "PKIOperation"
 #define OP_PKCSREQ "PKIOperation"
 enum known_ops {
@@ -520,7 +520,7 @@ main(int argc, const char **argv)
 		break;
 	case op_get_ca_certs:
 		/* Step two: request the chain. */
-		params2 = talloc_asprintf(ctx, "operation=" OP_GET_CA_CHAIN "&message=%s", id);
+		params2 = talloc_asprintf(ctx, "operation=" OP_GET_CA_CERT_CHAIN "&message=%s", id);
 		break;
 	case op_get_cert_initial:
 		/* Step two: actually poll.  If we have multiple messages which
