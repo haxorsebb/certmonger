@@ -649,7 +649,7 @@ if ! ${configure_dist_target_only:-false} ; then
 	AC_SUBST(CM_MINIMUM_RSA_KEY_SIZE)
 	AC_SUBST(CM_MINIMUM_DSA_KEY_SIZE)
 	AC_SUBST(CM_MINIMUM_EC_KEY_SIZE)
-	CM_DEFAULT_TTL_LIST="2419200, 604800, 259200, 172800, 86400"
+	CM_DEFAULT_TTL_LIST="2419200, 604800, 259200, 172800, 86400, 43200, 21600, 7200, 3600"
 	AC_DEFINE_UNQUOTED(CM_DEFAULT_TTL_LIST,[$CM_DEFAULT_TTL_LIST],[Define to the list of default time-left thresholds at which we need to warn the user.])
 	AC_SUBST(CM_DEFAULT_TTL_LIST)
 	AC_DEFINE_UNQUOTED(CM_DEFAULT_CERT_SUBJECT_CN,"localhost",[Define to the last-ditch default CN value for a signing request.])
@@ -670,6 +670,7 @@ if ! ${configure_dist_target_only:-false} ; then
 	AC_DEFINE(CM_DELAY_CA_POLL_MAXIMUM,(365 * 24 * 60 * 60),[Define to the absolute maximum time to wait between attempts to see if the CA issued a certificate.])
 	AC_DEFINE(CM_DELAY_MONITOR_POLL,(24 * 60 * 60),[Define to the time to wait between attempts to re-read a certificate and check for expiration.])
 	AC_DEFINE(CM_DELAY_MONITOR_POLL_MINIMUM,(30 * 60),[Define to the absolute minimum time to wait between attempts to re-read a certificate and check for expiration.])
+	AC_DEFINE(CM_DELAY_MONITOR_POLL_MAXIMUM,(7 * 24 * 60 * 60),[Define to the absolute maximum time to wait between attempts to re-read a certificate and check for expiration.])
 	AC_DEFINE(CM_DELAY_NETLINK,(60),[Define to the time to wait after a netlink routing notification to retry submissions.])
 
 	CM_SELF_SIGN_CA_NAME=SelfSign

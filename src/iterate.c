@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012,2013,2014,2015 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013,2014,2015,2016 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -300,7 +300,8 @@ cm_waitfor_readable_fd(int fd, int delay)
 	}
 }
 
-/* Decide how long to wait before contacting the CA again. */
+/* Decide how long to wait before contacting the CA for an enrollment request
+ * again. */
 static time_t
 cm_decide_ca_delay(time_t remaining)
 {
@@ -321,22 +322,51 @@ cm_decide_ca_delay(time_t remaining)
 
 /* Decide how long to wait before looking at a certificate again. */
 static time_t
-cm_decide_monitor_delay(time_t remaining)
+cm_decide_monitor_delay(time_t remaining,
+			int (*get_ttls1)(const time_t **,
+					 unsigned int *),
+			int (*get_ttls2)(const time_t **,
+					 unsigned int *))
 {
-	time_t delay;
+	time_t delay, next_ttl;
+	unsigned i, n_ttls;
+	const time_t *ttls;
 
 	delay = CM_DELAY_MONITOR_POLL;
-	if ((remaining != (time_t) -1) && (remaining < 2 * delay)) {
-		delay = remaining / 2;
-		if (delay < CM_DELAY_MONITOR_POLL_MINIMUM) {
-			delay = CM_DELAY_MONITOR_POLL_MINIMUM;
+	if ((remaining != (time_t) -1) && (remaining > 0)) {
+		next_ttl = 0;
+		if ((get_ttls1(&ttls, &n_ttls) == 0) && (n_ttls > 0)) {
+			for (i = 0; i < n_ttls; i++) {
+				if ((remaining > ttls[i]) && (ttls[i] > next_ttl)) {
+					next_ttl = ttls[i];
+				}
+			}
 		}
+		if ((get_ttls2(&ttls, &n_ttls) == 0) && (n_ttls > 0)) {
+			for (i = 0; i < n_ttls; i++) {
+				if ((remaining > ttls[i]) && (ttls[i] > next_ttl)) {
+					next_ttl = ttls[i];
+				}
+			}
+		}
+		if ((next_ttl != 0) && (delay > remaining - next_ttl + CM_DELAY_SOON)) {
+			delay = remaining - next_ttl + CM_DELAY_SOON;
+		} else
+		if (remaining < 2 * delay) {
+			delay = remaining / 2;
+		}
+	}
+	if (delay < CM_DELAY_MONITOR_POLL_MINIMUM) {
+		delay = CM_DELAY_MONITOR_POLL_MINIMUM;
+	}
+	if (delay > CM_DELAY_MONITOR_POLL_MAXIMUM) {
+		delay = CM_DELAY_MONITOR_POLL_MAXIMUM;
 	}
 	return delay;
 }
 
-/* Decide how long to wait before attempting to contact the CA to retrieve
- * information again. */
+/* Decide how long to wait before again attempting to contact the CA to
+ * retrieve information about it. */
 static time_t
 cm_decide_cadata_delay(void)
 {
@@ -1389,7 +1419,9 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 		} else {
 			/* Nothing to do here.  Check again at an appropriate time. */
 			*when = cm_time_delay;
-			*delay = cm_decide_monitor_delay(remaining);
+			*delay = cm_decide_monitor_delay(remaining,
+							 &cm_prefs_notify_ttls,
+							 &cm_prefs_enroll_ttls);
 		}
 		break;
 
@@ -1429,7 +1461,9 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 			} else {
 				entry->cm_state = CM_MONITORING;
 				*when = cm_time_delay;
-				*delay = cm_decide_monitor_delay(-1);
+				*delay = cm_decide_monitor_delay(remaining,
+								 &cm_prefs_notify_ttls,
+								 &cm_prefs_enroll_ttls);
 			}
 		} else {
 			/* Wait for status update, or poll. */

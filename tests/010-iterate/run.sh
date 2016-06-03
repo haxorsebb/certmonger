@@ -788,7 +788,7 @@ $toolsdir/iterate ca9 entry9 NEED_SCEP_DATA,GENERATING_SCEP_DATA,HAVE_SCEP_DATA
 grep ^key.\*count= entry9 | LANG=C sort
 
 # Note! The "iterate" harness rounds delay times up to the next multiple of 50.
-for interval in 0 30 1800 3600 7200 86000 86500 604800 1000000 2000000; do
+for interval in 0 30 1800 3600 7200 84700 86000 86500 604800 1000000 2000000; do
 	now=`date +%s`
 	CM_FORCE_TIME=$now ; export CM_FORCE_TIME
 	when=`expr $now + $interval`

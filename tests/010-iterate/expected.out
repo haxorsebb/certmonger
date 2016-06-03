@@ -755,7 +755,7 @@ CA_UNCONFIGURED
 [Monitor poll timeout remaining=0.]
 MONITORING
 -START-
-delay=1800
+delay=86400
 MONITORING
 -STOP-
 
@@ -891,7 +891,41 @@ CA_UNCONFIGURED
 [Monitor poll timeout remaining=7200.]
 MONITORING
 -START-
-delay=3600
+delay=3605
+MONITORING
+-STOP-
+
+[CA poll timeout remaining=84700.]
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+SUBMITTING
+delay=42350
+CA_UNREACHABLE
+-STOP-
+
+[CA poll timeout remaining=84700.]
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+SUBMITTING
+delay=42350
+CA_WORKING
+-STOP-
+
+[CA poll timeout remaining=84700.]
+HAVE_CSR
+-START-
+NEED_TO_SUBMIT
+SUBMITTING
+delay=42350
+CA_UNCONFIGURED
+-STOP-
+
+[Monitor poll timeout remaining=84700.]
+MONITORING
+-START-
+delay=41505
 MONITORING
 -STOP-
 
@@ -925,7 +959,7 @@ CA_UNCONFIGURED
 [Monitor poll timeout remaining=86000.]
 MONITORING
 -START-
-delay=43000
+delay=42805
 MONITORING
 -STOP-
 
@@ -959,7 +993,7 @@ CA_UNCONFIGURED
 [Monitor poll timeout remaining=86500.]
 MONITORING
 -START-
-delay=43250
+delay=1800
 MONITORING
 -STOP-
 
