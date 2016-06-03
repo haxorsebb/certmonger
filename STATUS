@@ -132,4 +132,15 @@ To-do:
     to help identify certificates that we approve with agent credentials.
   * Learn to read and create RFC3820 ProxyCertInfo extensions.
   * Learn to speak ACME (see https://github.com/letsencrypt/acme-spec).
+    * Learn to sign messages as needed by ACME using a request's private key.
   * Learn to read and create NameConstraints extensions.
+  * Correctly mark randomly-generated UUID values as version 4, per RFC4122.
+  * Add "profiles" of some kind to the local signer.
+  * Support RSA-PSS signing.
+  * Support a post-failure hook, much as we do a post-success hook now.
+  * Expose notification settings in getcert.
+  * Add some smaller TTL thresholds to the default list.
+  * Make TTL thresholds overridable on a per-certificate basis.
+  * Learn to talk to anchor (https://github.com/openstack/anchor) CAs.
+  * Display timestamps in local time rather than UTC, unless a --utc flag is
+    specified.
