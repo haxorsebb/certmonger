@@ -887,6 +887,7 @@ cm_submit_e_helper_main(int fd, struct cm_store_ca *ca,
 	maybe_setenv(CM_SUBMIT_COOKIE_ENV, entry->cm_ca_cookie);
 	maybe_setenv(CM_SUBMIT_CA_NICKNAME_ENV, entry->cm_ca_nickname);
 	maybe_setenv(CM_SUBMIT_PROFILE_ENV, entry->cm_template_profile);
+	maybe_setenv(CM_SUBMIT_ISSUER_ENV, entry->cm_template_issuer);
 	maybe_setenv(CM_SUBMIT_CERTIFICATE_ENV, entry->cm_cert);
 	/* Only pass SCEP data to the helper if we haven't used this set of
 	 * nonced data before.  It'll ask for fresh data if it needs it. */

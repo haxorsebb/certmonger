@@ -108,6 +108,7 @@
 #define CM_DBUS_PROP_TEMPLATE_FRESHEST_CRL "template-freshest-crl"
 #define CM_DBUS_PROP_TEMPLATE_NS_COMMENT "template-ns-comment"
 #define CM_DBUS_PROP_TEMPLATE_PROFILE "template-profile"
+#define CM_DBUS_PROP_TEMPLATE_ISSUER "template-issuer"
 #define CM_DBUS_PROP_TEMPLATE_NS_CERTTYPE "template-ns-certtype"
 #define CM_DBUS_SIGNAL_REQUEST_CERT_SAVED "SavedCertificate"
 #define CM_DBUS_PROP_CA_PRESAVE_COMMAND "ca-presave-command"

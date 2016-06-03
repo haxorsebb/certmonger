@@ -48,6 +48,9 @@ the CA should correspond to one listed by \fIgetcert list-cas\fR.
 Request a certificate using the named profile, template, or certtype,
 from the specified CA.
 .TP
+\fB\-X\fR NAME
+Request a certificate using the named issuer from the specified CA.
+.TP
 \fB\-I\fR NAME
 Assign the specified nickname to this task, replacing the previous nickname.
 

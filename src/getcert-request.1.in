@@ -87,6 +87,9 @@ the CA should correspond to one listed by \fIgetcert list-cas\fR.
 \fB\-T\fR NAME
 Request a certificate using the named profile, template, or certtype,
 from the specified CA.
+.TP
+\fB\-X\fR NAME
+Request a certificate using the named issuer from the specified CA.
 
 .SH SIGNING REQUEST OPTIONS
 

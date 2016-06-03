@@ -85,6 +85,9 @@ useful in combination with \fB\-r\fR.
 \fB\-T\fR NAME
 Request a certificate using the named profile, template, or certtype,
 from the specified CA.
+.TP
+\fB\-X\fR NAME
+Request a certificate using the named issuer from the specified CA.
 
 .SH SIGNING REQUEST OPTIONS
 If and when \fIcertmonger\fR attempts to obtain a new certificate to replace
