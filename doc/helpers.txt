@@ -141,13 +141,15 @@ helper is called.
   variable will hold the cookie value returned by the previous call to the
   helper.  If your process requires multiple steps, the cookie is suitable for
   keeping track of which step is next.
+  If your helper never returns status 1 or 5, this will not be used, and you
+  need not implement logic for it.
   Report results as you would for the "SUBMIT" operation.
 
 * "IDENTIFY":
 
   Output version information for your helper, and exit with status 0.  This
   information is tracked by the daemon and included in the output of the
-  "getcert list-cas -v" command.
+  "getcert list-cas -v" command.  Optional.
 
 * "GET-NEW-REQUEST-REQUIREMENTS"
 
@@ -157,6 +159,7 @@ helper is called.
   At some point, we'll teach getcert to instruct people to supply values that
   are required by the CA that they intend to use if it finds that they didn't
   supply one of these.
+  Support for this operation is optional.
 
 * "GET-RENEW-REQUEST-REQUIREMENTS"
 
@@ -164,6 +167,7 @@ helper is called.
   attempts to renew an already-issued certificate.  In most cases, your helper
   will want to do the same thing for "GET-RENEW-REQUEST-REQUIREMENTS" as it
   does for "GET-NEW-REQUEST-REQUIREMENTS"
+  Support for this operation is optional.
 
 * "GET-SUPPORTED-TEMPLATES"
 
@@ -171,6 +175,7 @@ helper is called.
   recognized by the CA.  The list can be either comma- or newline-separated.
   At some point, we'll teach getcert to validate values it receives for its -T
   option against this list.
+  Support for this operation is optional.
 
 * "GET-DEFAULT-TEMPLATE"
 
@@ -178,6 +183,7 @@ helper is called.
   recognized by the CA.  If there is no default, output nothing.
   At some point, we'll teach getcert to use this value as a default if it is
   not passed the -T option.
+  Support for this operation is optional.
 
 * "FETCH-SCEP-CA-CAPS"
 
@@ -202,8 +208,9 @@ helper is called.
   others in the certifying chain), repeat for those.  Note that if there are
   chain certificates but no supplemental root certificates, the root
   certificate should be followed by two blank lines.
-  If you can not guarantee that the data produced is authenticated and has not
-  been tampered with, do not implement this.
+  Support for this operation is optional.  If you can not guarantee that the
+  data produced is authenticated and has not been tampered with, do not
+  implement this.
   The format described here is recognized to be error-prone and will be
   replaced with a JSON object in the future.
 
