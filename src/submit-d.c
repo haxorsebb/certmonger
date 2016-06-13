@@ -874,7 +874,7 @@ main(int argc, const char **argv)
 	const char *method = NULL, *eeurl, *agenturl, *cgi = NULL, *file;
 	const char *serial, *profile, *name, *email, *tele;
 	const char *nssdb, *capath, *cainfo, *sslkey, *sslcert, *sslpin;
-	const char *result, *default_values;
+	const char *result, *specified_values;
 	struct dogtag_default **defaults, *nodefault[] = { NULL };
 	char *params = NULL, *uri, *p, *q, *request;
 	char *error = NULL, *error_code = NULL, *error_reason = NULL;
@@ -890,7 +890,7 @@ main(int argc, const char **argv)
 		{"approve", 'A', POPT_ARG_INT, NULL, 'A', "approve pending request", "REQUESTNUMBER"},
 		{"reject", 'J', POPT_ARG_INT, NULL, 'J', "reject pending request", "REQUESTNUMBER"},
 		{"fetch", 'f', POPT_ARG_INT, NULL, 'f', "fetch certificate issued for request", "REQUESTNUMBER"},
-		{"values", 'V', POPT_ARG_STRING, &default_values, 0, "values to set when approving a request", NULL},
+		{"values", 'V', POPT_ARG_STRING, &specified_values, 0, "values to set when approving a request", NULL},
 		{"client-auth", 'a', POPT_ARG_NONE, NULL, 'a', "submit request using TLS client auth", NULL},
 		{"ee-url", 'u', POPT_ARG_STRING, &eeurl, 0, NULL, "URL"},
 		{"agent-url", 'U', POPT_ARG_STRING, &agenturl, 0, NULL, "URL"},
@@ -929,7 +929,7 @@ main(int argc, const char **argv)
 	sslcert = NULL;
 	sslpin = NULL;
 	defaults = NULL;
-	default_values = NULL;
+	specified_values = NULL;
 	profile = "caServerCert";
 
 	pctx = poptGetContext("submit-d", argc, argv, popts, 0);
@@ -1070,8 +1070,8 @@ restart:
 					 id);
 		break;
 	case op_approve:
-		if ((defaults == NULL) && (default_values == NULL)) {
-			/* ask for defaults */
+		if ((defaults == NULL) && (specified_values == NULL)) {
+			/* ask the server for its defaults */
 			method = "GET";
 			cgi = "profileReview";
 			params = talloc_asprintf(ctx,
@@ -1079,17 +1079,17 @@ restart:
 						 "xml=true",
 						 id);
 		} else
-		if (default_values != NULL) {
-			/* use supplied defaults */
+		if (specified_values != NULL) {
+			/* use values specified as CLI options */
 			method = "GET";
 			cgi = "profileProcess";
 			params = talloc_asprintf(ctx,
 						 "requestId=%d&"
 						 "op=approve&"
 						 "xml=true&%s",
-						 id, default_values);
+						 id, specified_values);
 		} else {
-			/* use asked-for defaults */
+			/* use previously-retrieved defaults */
 			method = "GET";
 			cgi = "profileProcess";
 			params = talloc_asprintf(ctx,
@@ -1274,7 +1274,7 @@ restart:
 		}
 		break;
 	case op_approve:
-		if ((defaults == NULL) && (default_values == NULL)) {
+		if ((defaults == NULL) && (specified_values == NULL)) {
 			/* ask for defaults */
 			defaults = cm_submit_d_xml_defaults(hctx, result);
 			if (defaults == NULL) {
