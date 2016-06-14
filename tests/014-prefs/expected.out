@@ -1,14 +1,14 @@
 [Empty file.]
 cipher: AES128
 digest: SHA256
-notify_ttls: 86400, 172800, 259200, 604800, 2419200
-enroll_ttls: 86400, 172800, 259200, 604800, 2419200
+notify_ttls: 3600, 7200, 21600, 43200, 86400, 172800, 259200, 604800, 2419200
+enroll_ttls: 3600, 7200, 21600, 43200, 86400, 172800, 259200, 604800, 2419200
 notification: SYSLOG:daemon.notice
 [Empty defaults.]
 cipher: AES128
 digest: SHA256
-notify_ttls: 86400, 172800, 259200, 604800, 2419200
-enroll_ttls: 86400, 172800, 259200, 604800, 2419200
+notify_ttls: 3600, 7200, 21600, 43200, 86400, 172800, 259200, 604800, 2419200
+enroll_ttls: 3600, 7200, 21600, 43200, 86400, 172800, 259200, 604800, 2419200
 notification: SYSLOG:daemon.notice
 [Other settings.]
 cipher: AES128
