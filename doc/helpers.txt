@@ -103,6 +103,11 @@ helper is called.
   * CERTMONGER_REQ_IP_ADDRESS
     Any iPAddress subject alt name values from the request.
 
+  These are also present starting with version 0.79:
+
+  * CERTMONGER_CA_ISSUER
+    The requested issuer for enrollment.
+
   The helper is expected to use this information, along with whatever
   credentials it has or is passed on the command line, to send the signing
   request to the CA.
