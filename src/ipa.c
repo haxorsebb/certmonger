@@ -367,7 +367,7 @@ submit:
 	if (profile != NULL) {
 		cm_submit_x_add_named_arg_s(ctx, "profile_id", profile);
 	}
-	/* Add the requested CA named argument. */
+	/* Add the requested CA issuer named argument. */
 	if (issuer != NULL) {
 		cm_submit_x_add_named_arg_s(ctx, "ca", issuer);
 	}

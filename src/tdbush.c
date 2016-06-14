@@ -1566,7 +1566,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 					  cm_tdbusm_dict_s);
 	if (param != NULL) {
 		new_entry->cm_template_issuer = maybe_strdup(new_entry,
-							      param->value.s);
+							     param->value.s);
 	}
 	param = cm_tdbusm_find_dict_entry(d,
 					  CM_DBUS_PROP_TEMPLATE_CHALLENGE_PASSWORD,
