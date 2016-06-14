@@ -1107,9 +1107,7 @@ request(const char *argv0, int argc, const char **argv)
 #ifdef WITH_IPA
 	if ((ca != NULL) && (strcmp(ca, "IPA") == 0)) {
 		if (principal == NULL) {
-			printf(_("The IPA backend requires the use of the "
-				 "-K option (principal name) when the "
-				 "-N option (subject name) is used.\n"));
+			printf(_("The IPA backend requires the use of the -K option (principal name) when any of the -N (subject name), -E (email address), -A (IP address), -D (DNS name), or -U (extendedKeyUsage) options is used.\n"));
 			help(argv0, "request");
 			return 1;
 		}
