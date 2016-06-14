@@ -352,6 +352,7 @@ main(int argc, const char **argv)
 		printf(_("No SCEP operation (-c/-C/-g/-p) given, and no default known.\n"));
 		missing_args = TRUE;
 	}
+	id = cm_submit_u_url_encode(id);
 
 	/* Format the first (or only) HTTP request's parameters. */
 	switch (op) {
