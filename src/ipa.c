@@ -387,6 +387,14 @@ submit:
 		switch (i / 1000) {
 		case 2: /* authorization error - permanent */
 		case 3: /* invocation error - permanent */
+			if ((i == 3005) && (issuer != NULL)) {
+				/* Most likely the server didn't understand the
+				 * "ca" argument.  At least, at this
+				 * point.  Randomly dropping arguments is not
+				 * really an extensible solution, though. */
+				issuer = NULL;
+				goto submit;
+			}
 			if ((i == 3005) && (profile != NULL)) {
 				/* Most likely the server didn't understand the
 				 * "profile_id" argument.  At least, at this
