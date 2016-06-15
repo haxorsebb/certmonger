@@ -28,6 +28,14 @@ LDAP server's directory tree, where $BASE defaults to the value of the
 Identifies the principal name of the service for which the certificate is being
 issued.  This setting is required by IPA and must always be specified.
 .TP
+\fB\-X\fR issuer
+Requests that the certificate be processed by the specified certificate issuer.
+By default, if this flag is not specified, and the \fBCERTMONGER_CA_ISSUER\fR
+variable is set in the environment, then the value of the environment variable
+will be used.  This setting is optional, and if a server returns error 3005,
+indicating that it does not understand multiple profiles, the request will be
+re-submitted without specifying an issuer name.
+.TP
 \fB\-T\fR profile
 Requests that the certificate be processed using the specified certificate profile.
 By default, if this flag is not specified, and the \fBCERTMONGER_CA_PROFILE\fR
