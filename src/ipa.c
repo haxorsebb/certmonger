@@ -774,7 +774,13 @@ main(int argc, const char **argv)
 			}
 		}
 		if ((csr == NULL) || (strlen(csr) == 0)) {
-			printf(_("Unable to read signing request.\n"));
+			if (csrfile != NULL) {
+				printf(_("Unable to read signing request from file \"%s\".\n"),
+				       csrfile);
+			} else {
+				printf(_("Unable to read signing request from environment variable \"%s\".\n"),
+				       CM_SUBMIT_CSR_ENV);
+			}
 			poptPrintUsage(pctx, stdout, 0);
 			return CM_SUBMIT_STATUS_UNCONFIGURED;
 		}
