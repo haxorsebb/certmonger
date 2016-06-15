@@ -167,6 +167,10 @@ cm_srvloc_resolve(void *parent, const char *name, const char *udomain,
 	ns_rr rr;
 
 	*results = NULL;
+	if ((name == NULL) || (strlen(name) == 0) ||
+	    (udomain == NULL) || (strlen(udomain) == 0)) {
+		return -1;
+	}
 
 	res_init();
 	answer = talloc_zero_size(parent, answer_len + 1);
