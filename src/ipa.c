@@ -332,8 +332,9 @@ cm_locate_xmlrpc_service(const char *server,
 /* Make an XML-RPC request to the "cert_request" method. */
 static int
 submit_or_poll_uri(const char *uri, const char *cainfo, const char *capath,
-	           const char *csr, const char *reqprinc,
-		   const char *profile, const char *issuer)
+		   const char *uid, const char *pwd, const char *csr,
+		   const char *reqprinc, const char *profile,
+		   const char *issuer)
 {
 	struct cm_submit_x_context *ctx;
 	const char *args[2];
@@ -346,10 +347,18 @@ submit_or_poll_uri(const char *uri, const char *cainfo, const char *capath,
 
 	/* Prepare to make an XML-RPC request. */
 submit:
-	ctx = cm_submit_x_init(NULL, uri, "cert_request",
-			       cainfo, capath,
-			       cm_submit_x_negotiate_on,
-			       cm_submit_x_delegate_on);
+	if ((uid != NULL) && (pwd != NULL) &&
+	    (strlen(uid) > 0) && (strlen(pwd) > 0)) {
+		ctx = cm_submit_x_init(NULL, uri, "cert_request",
+				       cainfo, capath, uid, pwd,
+				       cm_submit_x_negotiate_off,
+				       cm_submit_x_delegate_off);;
+	} else {
+		ctx = cm_submit_x_init(NULL, uri, "cert_request",
+				       cainfo, capath, NULL, NULL,
+				       cm_submit_x_negotiate_on,
+				       cm_submit_x_delegate_on);
+	}
 	if (ctx == NULL) {
 		fprintf(stderr, "Error setting up for XMLRPC to %s on "
 			"the client.\n", uri);
@@ -453,14 +462,14 @@ static int
 submit_or_poll(const char *uri, const char *cainfo, const char *capath,
 	       const char *server, int ldap_uri_cmd, const char *ldap_uri,
 	       const char *host, const char *domain, char *basedn,
-	       const char *csr, const char *reqprinc,
-	       const char *profile, const char *issuer)
+	       const char *uid, const char *pwd, const char *csr,
+	       const char *reqprinc, const char *profile, const char *issuer)
 {
 	int i, u;
 	char **uris;
 
-	i = submit_or_poll_uri(uri, cainfo, capath, csr, reqprinc, profile,
-			       issuer);
+	i = submit_or_poll_uri(uri, cainfo, capath, uid, pwd, csr, reqprinc,
+			       profile, issuer);
 	if ((i == CM_SUBMIT_STATUS_UNREACHABLE) ||
 	    (i == CM_SUBMIT_STATUS_UNCONFIGURED)) {
 		u = cm_locate_xmlrpc_service(server, ldap_uri_cmd, ldap_uri,
@@ -471,8 +480,8 @@ submit_or_poll(const char *uri, const char *cainfo, const char *capath,
 					continue;
 				}
 				i = submit_or_poll_uri(uris[u], cainfo, capath,
-						       csr, reqprinc, profile,
-						       issuer);
+						       uid, pwd, csr, reqprinc,
+						       profile, issuer);
 				if ((i != CM_SUBMIT_STATUS_UNREACHABLE) &&
 				    (i != CM_SUBMIT_STATUS_UNCONFIGURED)) {
 					talloc_free(uris);
@@ -487,7 +496,8 @@ submit_or_poll(const char *uri, const char *cainfo, const char *capath,
 
 static int
 fetch_roots(const char *server, int ldap_uri_cmd, const char *ldap_uri,
-	    const char *host, const char *domain, char *basedn)
+	    const char *host, const char *uid, const char *pwd,
+	    const char *domain, char *basedn)
 {
 	char *realm = NULL;
 	LDAP *ld = NULL;
@@ -569,6 +579,7 @@ main(int argc, const char **argv)
 	const char *host = NULL, *domain = NULL, *cainfo = NULL, *capath = NULL;
 	const char *ktname = NULL, *kpname = NULL;
 	char *csr, *p, uri[LINE_MAX], *reqprinc = NULL, *ipaconfig, *kerr;
+	char *uid = NULL, *pwd = NULL, *pwdfile = NULL;
 	const char *xmlrpc_uri = NULL, *ldap_uri = NULL, *server = NULL, *csrfile;
 	int xmlrpc_uri_cmd = 0, ldap_uri_cmd = 0, verbose = 0;
 	const char *mode = CM_OP_SUBMIT;
@@ -585,6 +596,9 @@ main(int argc, const char **argv)
 		{"keytab-name", 't', POPT_ARG_STRING, NULL, 't', "location of credentials to use for authenticating to server", "KEYTAB"},
 		{"submitter-principal", 'k', POPT_ARG_STRING, &kpname, 'k', "principal name to use for authenticating to server", "PRINCIPAL"},
 		{"use-ccache-creds", 'K', POPT_ARG_NONE, NULL, 'K', "use default ccache instead of creating a new one using keytab", NULL},
+		{"uid", 'u', POPT_ARG_STRING, &uid, 0, "authenticate to server using Basic authentication", "USERNAME"},
+		{"pwd", 'W', POPT_ARG_STRING, &pwd, 0, "password to use when using Basic authentication", "PASSWORD"},
+		{"pwdfile", 'w', POPT_ARG_STRING, &pwdfile, 0, "read password from file for Basic authentication", "FILENAME"},
 		{"principal-of-request", 'P', POPT_ARG_STRING, &reqprinc, 0, "principal name in signing request", "PRINCIPAL"},
 		{"profile", 'T', POPT_ARG_STRING, &profile, 0, "request enrollment using the specified profile", "NAME"},
 		{"issuer", 'X', POPT_ARG_STRING, &issuer, 0, "request enrollment using the specified CA", "NAME"},
@@ -816,6 +830,29 @@ main(int argc, const char **argv)
 		}
 	}
 
+	/* If we're supposed to read a password from a file, read it now. */
+	if ((pwdfile != NULL) && (pwd == NULL)) {
+		pwd = cm_submit_u_from_file(pwdfile);
+		if (pwd == NULL) {
+			fprintf(stderr,
+				"Error reading password from \"%s\": %s.\n",
+				pwdfile, strerror(errno));
+			return CM_SUBMIT_STATUS_UNCONFIGURED;
+		}
+	}
+
+	/* If we're using Basic auth, make sure we don't try to set up a
+	 * ccache. */
+	if ((uid != NULL) && (pwd != NULL)) {
+		make_keytab_ccache = FALSE;
+	} else {
+		if ((uid != NULL) || (pwd != NULL)) {
+			fprintf(stderr,
+				"Both -u and -W/-w options should be specified.\n");
+			return CM_SUBMIT_STATUS_UNCONFIGURED;
+		}
+	}
+
 	/* Setup a ccache unless we're told to use the default one. */
 	kerr = NULL;
 	if (make_keytab_ccache &&
@@ -859,14 +896,14 @@ main(int argc, const char **argv)
 
 	if ((strcasecmp(mode, CM_OP_SUBMIT) == 0) ||
 	    (strcasecmp(mode, CM_OP_POLL) == 0)) {
-		return submit_or_poll(uri, cainfo, capath,
-				      server, ldap_uri_cmd, ldap_uri,
-				      host, domain, basedn,
-				      csr, reqprinc, profile, issuer);
+		return submit_or_poll(uri, cainfo, capath, server,
+				      ldap_uri_cmd, ldap_uri, host, domain,
+				      basedn, uid, pwd, csr, reqprinc, profile,
+				      issuer);
 	} else
 	if (strcasecmp(mode, CM_OP_FETCH_ROOTS) == 0) {
 		return fetch_roots(server, ldap_uri_cmd, ldap_uri, host,
-				   domain, basedn);
+				   uid, pwd, domain, basedn);
 	}
 
 	return CM_SUBMIT_STATUS_OPERATION_NOT_SUPPORTED;

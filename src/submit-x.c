@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2012,2013,2014 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2012,2013,2014,2015,2016 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -265,6 +265,7 @@ struct cm_submit_x_context {
 struct cm_submit_x_context *
 cm_submit_x_init(void *parent, const char *uri, const char *method,
 		 const char *cainfo, const char *capath,
+		 const char *uid, const char *pwd,
 		 enum cm_submit_x_opt_negotiate negotiate,
 		 enum cm_submit_x_opt_delegate delegate)
 {
@@ -301,6 +302,26 @@ cm_submit_x_init(void *parent, const char *uri, const char *method,
 							   ctx->server);
 		if (ctx->xenv.fault_occurred) {
 			fprintf(stderr, "Fault %d turning off negotiate auth: "
+				"(%s).\n",
+				ctx->xenv.fault_code, ctx->xenv.fault_string);
+			xmlrpc_env_clean(&ctx->xenv);
+		}
+	}
+	if ((uid != NULL) && (pwd != NULL) &&
+	    (strlen(uid) > 0) && (strlen(pwd) > 0)) {
+		xmlrpc_server_info_allow_auth_basic(&ctx->xenv,
+						    ctx->server);
+		if (ctx->xenv.fault_occurred) {
+			fprintf(stderr, "Fault %d turning on basic auth: "
+				"(%s).\n",
+				ctx->xenv.fault_code, ctx->xenv.fault_string);
+			xmlrpc_env_clean(&ctx->xenv);
+		}
+	} else {
+		xmlrpc_server_info_disallow_auth_basic(&ctx->xenv,
+						       ctx->server);
+		if (ctx->xenv.fault_occurred) {
+			fprintf(stderr, "Fault %d turning off basic auth: "
 				"(%s).\n",
 				ctx->xenv.fault_code, ctx->xenv.fault_string);
 			xmlrpc_env_clean(&ctx->xenv);
@@ -744,6 +765,7 @@ main(int argc, const char **argv)
 	int32_t i32;
 	const char *uri = NULL, *method = NULL, *ktname = NULL, *kpname = NULL;
 	const char *s, *cainfo = NULL, *capath = NULL, *csrfile, *dictval;
+	const char *uid = NULL, *pwd = NULL;
 	char *csr, *p, *skey, *sval, *s1, *s2;
 	struct cm_submit_x_context *ctx;
 	xmlrpc_value *arg, *key, *val;
@@ -752,6 +774,8 @@ main(int argc, const char **argv)
 	struct poptOption popts[] = {
 		{"uri", 's', POPT_ARG_STRING, &uri, 0, "server location", "URI"},
 		{"method", 'm', POPT_ARG_STRING, &method, 0, "RPC to call", "METHOD"},
+		{"user", 'U', POPT_ARG_STRING, &uid, 0, "basic user name", "NAME"},
+		{"password", 'P', POPT_ARG_STRING, &pwd, 0, "basic password", "PASSWORD"},
 		{"kerberos", 'k', POPT_ARG_NONE, NULL, 'k', "use Negotiate authentication", NULL},
 		{"no-make-ccache", 'K', POPT_ARG_NONE, NULL, 'K', "use creds from default ccache instead of using the keytab", NULL},
 		{"keytab", 't', POPT_ARG_STRING, &ktname, 0, "keytab to use to obtain creds", "KEYTAB"},
@@ -772,6 +796,12 @@ main(int argc, const char **argv)
 		switch (c) {
 		case 'k':
 			k5 = TRUE;
+			uid = NULL;
+			pwd = NULL;
+			break;
+		case 'U':
+		case 'P':
+			k5 = FALSE;
 			break;
 		case 'K':
 			make_ccache = FALSE;
@@ -845,6 +875,7 @@ main(int argc, const char **argv)
 
 	/* Initialize for XML-RPC. */
 	ctx = cm_submit_x_init(NULL, uri, method, cainfo, capath,
+			       uid, pwd,
 			       k5 || (kpname != NULL) || (ktname != NULL) ?
 			       cm_submit_x_negotiate_on :
 			       cm_submit_x_negotiate_off,

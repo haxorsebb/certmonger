@@ -36,6 +36,7 @@ struct cm_submit_x_context *cm_submit_x_init(void *parent, const char *uri,
 					     const char *method,
 					     const char *cainfo,
 					     const char *capath,
+					     const char *uid, const char *pwd,
 					     enum cm_submit_x_opt_negotiate neg,
 					     enum cm_submit_x_opt_delegate del);
 void cm_submit_x_run(struct cm_submit_x_context *ctx);

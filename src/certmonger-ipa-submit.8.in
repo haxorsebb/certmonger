@@ -72,21 +72,39 @@ a file in the named directory.  There is no default for this option, and it
 is not expected to be necessary.
 .TP
 \fB\-t\fR keytab
-Authenticate to the IPA server using credentials derived from keys stored in
-the named keytab.  The default value can vary, but it is usually
+Authenticate to the IPA server using Kerberos with credentials derived from
+keys stored in the named keytab.  The default value can vary, but it is usually
 \fI/etc/krb5.keytab\fR.
-This option conflicts with the \fB-K\fR option.
+This option conflicts with the \fB-K\fR, \fB-u\fR, \fB-W\fR, and \fB-w\fR
+options.
 .TP
 \fB\-k\fR authPrincipal
-Authenticate to the IPA server using credentials derived from keys stored in
-the named keytab for this principal name.  The default value is the \fBhost\fR
-service for the local host in the local realm.
-This option conflicts with the \fB-K\fR option.
+Authenticate to the IPA server using Kerberos with credentials derived from
+keys stored in the named keytab for this principal name.  The default value is
+the \fBhost\fR service for the local host in the local realm.
+This option conflicts with the \fB-K\fR, \fB-u\fR, \fB-W\fR, and \fB-w\fR
+options.
 .TP
 \fB\-K\fR
-Authenticate to the IPA server using credentials derived from the default
-credential cache rather than a keytab.
-This option conflicts with the \fB-k\fR option.
+Authenticate to the IPA server using Kerberos with credentials derived from the
+default credential cache rather than a keytab.
+This option conflicts with the \fB-k\fR, \fB-u\fR, \fB-W\fR, and \fB-w\fR
+options.
+.TP
+\fB\-u\fR uid
+Authenticate to the IPA server using a user name and password, using the
+specified value as the user name.
+This option conflicts with the \fB-k\fR, \fB-K\fR, and \fB-t\fR options.
+.TP
+\fB\-W\fR pwd
+Authenticate to the IPA server using a user name and password, using the
+specified value as the password.
+This option conflicts with the \fB-k\fR, \fB-K\fR, \fB-t\fR, and \fB-w\fR options.
+.TP
+\fB\-w\fR pwdfile
+Authenticate to the IPA server using a user name and password, reading the
+password from the specified file.
+This option conflicts with the \fB-k\fR, \fB-K\fR, \fB-t\fR, and \fB-W\fR options.
 
 .SH EXIT STATUS
 .TP

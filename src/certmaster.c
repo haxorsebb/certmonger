@@ -176,6 +176,7 @@ main(int argc, const char **argv)
 		 ((port != NULL) && (strlen(port) > 0)) ? ":" : "",
 		 port ? port : "");
 	ctx = cm_submit_x_init(NULL, uri, "wait_for_cert", cainfo, capath,
+			       NULL, NULL,
 			       cm_submit_x_negotiate_off,
 			       cm_submit_x_delegate_off);
 	if (ctx == NULL) {
