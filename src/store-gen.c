@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2011,2012,2013,2014 Red Hat, Inc.
+ * Copyright (C) 2009,2011,2012,2013,2014,2015,2016 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -380,6 +380,28 @@ cm_store_timestamp_from_time(time_t when, char timestamp[15])
 			tm.tm_hour, tm.tm_min, tm.tm_sec);
 	} else {
 		strcpy(timestamp, "19700101000000");
+	}
+	return timestamp;
+}
+
+char *
+cm_store_local_timestamp_from_time_for_display(time_t when)
+{
+	char *timestamp;
+	struct tm tm;
+	tzset();
+	if ((when != 0) && (localtime_r(&when, &tm) == &tm)) {
+		timestamp = malloc(24 + strlen(tm.tm_zone));
+		if (timestamp != NULL) {
+			sprintf(timestamp, "%04d-%02d-%02d %02d:%02d:%02d %s",
+				tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
+				tm.tm_hour, tm.tm_min, tm.tm_sec, tm.tm_zone);
+		}
+	} else {
+		timestamp = malloc(24);
+		if (timestamp != NULL) {
+			strcpy(timestamp, "1970-01-01 00:00:00 UTC");
+		}
 	}
 	return timestamp;
 }

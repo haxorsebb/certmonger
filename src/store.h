@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2011,2012 Red Hat, Inc.
+ * Copyright (C) 2009,2011,2012,2014,2015,2016 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,6 +45,7 @@ char *cm_store_timestamp_from_time(time_t when, char timestamp[15]);
 int cm_store_make_uuid_string(char out[37]);
 int cm_store_make_uuid_string_underscore(char out[37]);
 char *cm_store_timestamp_from_time_for_display(time_t when, char timestamp[24]);
+char *cm_store_local_timestamp_from_time_for_display(time_t when);
 char *cm_store_increment_serial(void *parent, const char *old_serial);
 char *cm_store_serial_to_binary(void *parent,
 				const unsigned char *serial, int length);

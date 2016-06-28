@@ -1,4 +1,4 @@
-.TH certmonger 1 "25 February 2015" "certmonger Manual"
+.TH certmonger 1 "28 June 2016" "certmonger Manual"
 
 .SH NAME
 getcert
@@ -23,6 +23,9 @@ List only entries which are either currently being enrolled or refreshed.
 .TP
 \fB\-t\fR
 List only entries which are not currently being enrolled or refreshed.
+.TP
+\fB\-u\fR|\fB--utc\fR
+Display timestamps in UTC instead of local time.
 
 .TP
 \fB\-d\fR DIR

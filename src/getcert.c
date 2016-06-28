@@ -3333,7 +3333,8 @@ list(const char *argv0, int argc, const char **argv)
 	DBusMessage *rep;
 	char **requests, *s, *p, *nickname, *only_ca = DEFAULT_CA, *ca_name;
 	char *dbdir = NULL, *dbnickname = NULL, *certfile = NULL, *id = NULL;
-	char *nss_scheme, *token = NULL;
+	char *nss_scheme, *token = NULL, *when = NULL;
+	int force_utc = 0;
 	const char *capath, *request;
 	dbus_bool_t b;
 	char *s1, *s2, *s3, *s4, *s5, *s6;
@@ -3355,6 +3356,7 @@ list(const char *argv0, int argc, const char **argv)
 		{"token", 't', POPT_ARG_STRING, NULL, 't', _("optional token name for NSS-based storage (only valid with -d)"), HELP_TYPE_NAME},
 		{"certfile", 'f', POPT_ARG_STRING, NULL, 'f', _("PEM file for certificate"), HELP_TYPE_FILENAME},
 		{"id", 'i', POPT_ARG_STRING, NULL, 'i', _("nickname for tracking request"), HELP_TYPE_ID},
+		{"utc", 'u', POPT_ARG_NONE, NULL, 'u', _("display times in UTC instead of local time"), NULL},
 		{"session", 's', POPT_ARG_NONE, NULL, 's', _("connect to the certmonger service on the session bus"), NULL},
 		{"system", 'S', POPT_ARG_NONE, NULL, 'S', _("connect to the certmonger service on the system bus"), NULL},
 		{"verbose", 'v', POPT_ARG_NONE, NULL, 'v', NULL, NULL},
@@ -3410,6 +3412,9 @@ list(const char *argv0, int argc, const char **argv)
 		case 'H':
 			poptPrintHelp(pctx, stdout, 0);
 			return 1;
+			break;
+		case 'u':
+			force_utc++;
 			break;
 		default:
 			if (c == ':') {
@@ -3711,10 +3716,21 @@ list(const char *argv0, int argc, const char **argv)
 		}
 		printf(_("\tissuer: %s\n"), s1);
 		printf(_("\tsubject: %s\n"), s3);
-		printf(_("\texpires: %s\n"),
-		       n1 ?
-		       cm_store_timestamp_from_time_for_display(n1, t) :
-		       _("unknown"));
+		when = _("unknown");
+		if (n1 != 0) {
+			if (force_utc) {
+				when = cm_store_timestamp_from_time_for_display(n1, t);
+				printf(_("\texpires: %s\n"), when);
+			} else {
+				when = cm_store_local_timestamp_from_time_for_display(n1);
+				if (when != NULL) {
+					printf(_("\texpires: %s\n"), when);
+					free(when);
+				}
+			}
+		} else {
+			printf(_("\texpires: %s\n"), when);
+		}
 		for (j = 0; (as1 != NULL) && (as1[j] != NULL); j++) {
 			printf("%s%s%s",
 			       j == 0 ? _("\temail: ") : ",",
@@ -4998,6 +5014,7 @@ help(const char *twopartcmd, const char *category)
 #endif
 		N_("  -r	list only information about outstanding requests\n"),
 		N_("  -t	list only information about tracked certificates\n"),
+		N_("  -u	display times in UTC instead of local time\n"),
 		N_("* If selecting a specific request:\n"),
 		N_("  -i NAME	nickname for tracking request\n"),
 		N_("* If using an NSS database for storage:\n"),
