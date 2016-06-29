@@ -3,6 +3,7 @@ import dbus
 import xml.etree.ElementTree
 import os
 import sys
+import time
 
 bus = dbus.SessionBus()
 
@@ -110,6 +111,13 @@ def examine_method(objpath, interface, method, idata):
 		# We're in FIXME territory.
 		print('FIXME: need support for "%s"' % method)
 		return False
+	# If we caused things to start churning, wait for them to settle.
+        if method == 'resubmit':
+            props = dbus.Interface(o, 'org.freedesktop.DBus.Properties')
+            prop = props.Get(interface, 'status')
+            while prop != 'MONITORING':
+                time.sleep(1)
+                prop = props.Get(interface, 'status')
 	return True
 
 def iget(child, proxy, interface, prop):

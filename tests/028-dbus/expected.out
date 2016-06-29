@@ -1,4 +1,5 @@
 Certificate in file "${tmpdir}/test.crt" issued by CA and saved.
+Certificate in file "${tmpdir}/test.crt" issued by CA and saved.
 [[ getcert ]]
 State MONITORING, stuck: no.
 Number of certificates and requests being tracked: 1.
