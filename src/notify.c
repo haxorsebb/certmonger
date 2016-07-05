@@ -53,7 +53,7 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	struct cm_notify_details *details = userdata;
 	enum cm_notification_method method;
 	const char *dest, *p, *q, *message = NULL, *error;
-	char *tok, t[15], **argv;
+	char *tok, t[15], **argv, *ltime;
 	int facility, level;
 	struct {
 		const char *name;
@@ -92,74 +92,64 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	unsigned int i;
 	switch (details->event) {
 	case cm_notify_event_unknown:
-		message = talloc_asprintf(entry, "Something "
-					  "happened with certiifcate "
-					  "named \"%s\" "
-					  "in token \"%s\" "
-					  "in database \"%s\".",
+		message = talloc_asprintf(entry,
+					  "Something happened with certificate named \"%s\" in token \"%s\"in database \"%s\".",
 					  entry->cm_cert_nickname,
 					  entry->cm_cert_token,
 					  entry->cm_cert_storage_location);
 		break;
 	case cm_notify_event_validity_ending:
 		if (entry->cm_cert_not_after > cm_time(NULL)) {
+			ltime = cm_store_local_timestamp_from_time_for_display(entry->cm_cert_not_after);
+			if (ltime == NULL) {
+				ltime = cm_store_timestamp_from_time(entry->cm_cert_not_after, t);
+			}
 			switch (entry->cm_cert_storage_type) {
 			case cm_cert_storage_nssdb:
 				if (entry->cm_cert_token != NULL) {
-					message = talloc_asprintf(entry, "Certificate "
-								  "named \"%s\" "
-								  "in token \"%s\" "
-								  "in database \"%s\" "
-								  "will not be valid "
-								  "after %s.",
+					message = talloc_asprintf(entry,
+								  "Certificate named \"%s\" in token \"%s\" in database \"%s\" will not be valid after %s.",
 								  entry->cm_cert_nickname,
 								  entry->cm_cert_token,
 								  entry->cm_cert_storage_location,
-								  cm_store_timestamp_from_time(entry->cm_cert_not_after, t));
+								  ltime);
 				} else {
-					message = talloc_asprintf(entry, "Certificate "
-								  "named \"%s\" "
-								  "in database \"%s\" "
-								  "will expire at "
-								  "%s.",
+					message = talloc_asprintf(entry,
+								  "Certificate named \"%s\" in database \"%s\" will expire at %s.",
 								  entry->cm_cert_nickname,
 								  entry->cm_cert_storage_location,
-								  cm_store_timestamp_from_time(entry->cm_cert_not_after, t));
+								  ltime);
 				}
 				break;
 			case cm_cert_storage_file:
-				message = talloc_asprintf(entry, "Certificate "
-							  "in file \"%s\" will not be "
-							  "valid after %s.",
+				message = talloc_asprintf(entry,
+							  "Certificate in file \"%s\" will not be valid after %s.",
 							  entry->cm_cert_storage_location,
-							  cm_store_timestamp_from_time(entry->cm_cert_not_after, t));
+							  ltime);
 				break;
+			}
+			if (ltime != t) {
+				free(ltime);
 			}
 		} else {
 			switch (entry->cm_cert_storage_type) {
 			case cm_cert_storage_nssdb:
 				if (entry->cm_cert_token != NULL) {
-					message = talloc_asprintf(entry, "Certificate "
-								  "named \"%s\" "
-								  "in token \"%s\" "
-								  "in database \"%s\" "
-								  "is no longer valid.",
+					message = talloc_asprintf(entry,
+								  "Certificate named \"%s\" in token \"%s\" in database \"%s\" is no longer valid.",
 								  entry->cm_cert_nickname,
 								  entry->cm_cert_token,
 								  entry->cm_cert_storage_location);
 				} else {
-					message = talloc_asprintf(entry, "Certificate "
-								  "named \"%s\" "
-								  "in database \"%s\" "
-								  "is no longer valid.",
+					message = talloc_asprintf(entry,
+								  "Certificate named \"%s\" in database \"%s\" is no longer valid.",
 								  entry->cm_cert_nickname,
 								  entry->cm_cert_storage_location);
 				}
 				break;
 			case cm_cert_storage_file:
-				message = talloc_asprintf(entry, "Certificate "
-							  "in file \"%s\" is no longer "
-							  "valid.",
+				message = talloc_asprintf(entry,
+							  "Certificate in file \"%s\" is no longer valid.",
 							  entry->cm_cert_storage_location);
 				break;
 			}
@@ -169,28 +159,21 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		switch (entry->cm_cert_storage_type) {
 		case cm_cert_storage_nssdb:
 			if (entry->cm_cert_token != NULL) {
-				message = talloc_asprintf(entry, "Request for "
-							  "certificate to be "
-							  "named \"%s\" "
-							  "in token \"%s\" "
-							  "in database \"%s\" "
-							  "rejected by CA.",
+				message = talloc_asprintf(entry,
+							  "Request for certificate to be named \"%s\" in token \"%s\" in database \"%s\" rejected by CA.",
 							  entry->cm_cert_nickname,
 							  entry->cm_cert_token,
 							  entry->cm_cert_storage_location);
 			} else {
-				message = talloc_asprintf(entry, "Request for "
-							  "certificate to be "
-							  "named \"%s\" "
-							  "in database \"%s\" "
-							  "rejected by CA.",
+				message = talloc_asprintf(entry,
+							  "Request for certificate to be named \"%s\" in database \"%s\" rejected by CA.",
 							  entry->cm_cert_nickname,
 							  entry->cm_cert_storage_location);
 			}
 			break;
 		case cm_cert_storage_file:
-			message = talloc_asprintf(entry, "Request for certificate to be "
-						  "stored in file \"%s\" rejected by CA.",
+			message = talloc_asprintf(entry,
+						  "Request for certificate to be stored in file \"%s\" rejected by CA.",
 						  entry->cm_cert_storage_location);
 			break;
 		}
@@ -199,27 +182,21 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		switch (entry->cm_cert_storage_type) {
 		case cm_cert_storage_nssdb:
 			if (entry->cm_cert_token != NULL) {
-				message = talloc_asprintf(entry, "Certificate "
-							  "named \"%s\" "
-							  "in token \"%s\" "
-							  "in database \"%s\" "
-							  "issued by CA but not saved.",
+				message = talloc_asprintf(entry,
+							  "Certificate named \"%s\" in token \"%s\" in database \"%s\" issued by CA but not saved.",
 							  entry->cm_cert_nickname,
 							  entry->cm_cert_token,
 							  entry->cm_cert_storage_location);
 			} else {
-				message = talloc_asprintf(entry, "Certificate "
-							  "named \"%s\" "
-							  "in database \"%s\" "
-							  "issued by CA but not saved.",
+				message = talloc_asprintf(entry,
+							  "Certificate named \"%s\" in database \"%s\" issued by CA but not saved.",
 							  entry->cm_cert_nickname,
 							  entry->cm_cert_storage_location);
 			}
 			break;
 		case cm_cert_storage_file:
-			message = talloc_asprintf(entry, "Certificate "
-						  "in file \"%s\" "
-						  "issued by CA but not saved.",
+			message = talloc_asprintf(entry,
+						  "Certificate in file \"%s\" issued by CA but not saved.",
 						  entry->cm_cert_storage_location);
 			break;
 		}
@@ -228,27 +205,21 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		switch (entry->cm_cert_storage_type) {
 		case cm_cert_storage_nssdb:
 			if (entry->cm_cert_token != NULL) {
-				message = talloc_asprintf(entry, "Certificate "
-							  "named \"%s\" "
-							  "in token \"%s\" "
-							  "in database \"%s\" "
-							  "issued by CA and saved.",
+				message = talloc_asprintf(entry,
+							  "Certificate named \"%s\" in token \"%s\" in database \"%s\" issued by CA and saved.",
 							  entry->cm_cert_nickname,
 							  entry->cm_cert_token,
 							  entry->cm_cert_storage_location);
 			} else {
-				message = talloc_asprintf(entry, "Certificate "
-							  "named \"%s\" "
-							  "in database \"%s\" "
-							  "issued by CA and saved.",
+				message = talloc_asprintf(entry,
+							  "Certificate named \"%s\" in database \"%s\" issued by CA and saved.",
 							  entry->cm_cert_nickname,
 							  entry->cm_cert_storage_location);
 			}
 			break;
 		case cm_cert_storage_file:
-			message = talloc_asprintf(entry, "Certificate "
-						  "in file \"%s\" "
-						  "issued by CA and saved.",
+			message = talloc_asprintf(entry,
+						  "Certificate in file \"%s\" issued by CA and saved.",
 						  entry->cm_cert_storage_location);
 			break;
 		}
@@ -257,35 +228,21 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		switch (entry->cm_cert_storage_type) {
 		case cm_cert_storage_nssdb:
 			if (entry->cm_cert_token != NULL) {
-				message = talloc_asprintf(entry, "Certificate "
-							  "named \"%s\" "
-							  "in token \"%s\" "
-							  "in database \"%s\" "
-							  "issued by CA and "
-							  "saved, but the CA "
-							  "certificate was "
-							  "not saved.",
+				message = talloc_asprintf(entry,
+							  "Certificate named \"%s\" in token \"%s\" in database \"%s\" issued by CA and saved, but the CA certificate was not saved.",
 							  entry->cm_cert_nickname,
 							  entry->cm_cert_token,
 							  entry->cm_cert_storage_location);
 			} else {
-				message = talloc_asprintf(entry, "Certificate "
-							  "named \"%s\" "
-							  "in database \"%s\" "
-							  "issued by CA and "
-							  "saved, but the CA "
-							  "certificate was "
-							  "not saved.",
+				message = talloc_asprintf(entry,
+							  "Certificate named \"%s\" in database \"%s\" issued by CA and saved, but the CA certificate was not saved.",
 							  entry->cm_cert_nickname,
 							  entry->cm_cert_storage_location);
 			}
 			break;
 		case cm_cert_storage_file:
-			message = talloc_asprintf(entry, "Certificate "
-						  "in file \"%s\" "
-						  "issued by CA and saved, "
-						  "but the CA certificate was "
-						  "not saved.",
+			message = talloc_asprintf(entry,
+						  "Certificate in file \"%s\" issued by CA and saved, but the CA certificate was not saved.",
 						  entry->cm_cert_storage_location);
 			break;
 		}
@@ -294,32 +251,23 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		switch (entry->cm_cert_storage_type) {
 		case cm_cert_storage_nssdb:
 			if (entry->cm_cert_token != NULL) {
-				message = talloc_asprintf(entry, "CA certificate "
-							  "for certificate "
-							  "named \"%s\" "
-							  "in token \"%s\" "
-							  "in database \"%s\" "
-							  "(CA \"%s\") not saved.",
+				message = talloc_asprintf(entry,
+							  "CA certificate for certificate named \"%s\" in token \"%s\" in database \"%s\" (CA \"%s\") not saved.",
 							  entry->cm_cert_nickname,
 							  entry->cm_cert_token,
 							  entry->cm_cert_storage_location,
 							  entry->cm_ca_nickname);
 			} else {
-				message = talloc_asprintf(entry, "CA certificate "
-							  "for certificate "
-							  "named \"%s\" "
-							  "in database \"%s\" "
-							  "(CA \"%s\") not saved.",
+				message = talloc_asprintf(entry,
+							  "CA certificate for certificate named \"%s\" in database \"%s\" (CA \"%s\") not saved.",
 							  entry->cm_cert_nickname,
 							  entry->cm_cert_storage_location,
 							  entry->cm_ca_nickname);
 			}
 			break;
 		case cm_cert_storage_file:
-			message = talloc_asprintf(entry, "CA certificate "
-						  "for certificate "
-						  "in file \"%s\" "
-						  "(CA \"%s\") not saved.",
+			message = talloc_asprintf(entry,
+						  "CA certificate for certificate in file \"%s\" (CA \"%s\") not saved.",
 						  entry->cm_cert_storage_location,
 						  entry->cm_ca_nickname);
 			break;

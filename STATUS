@@ -68,6 +68,8 @@ Complete:
     name to add to a CSR.
   * Learn to generate SCEP messages.
   * Learn to parse SCEP responses.
+  * Display timestamps in local time rather than UTC, unless a --utc flag is
+    specified.
 
 To-do:
   * Also generate a CRMF request (RFC 4211) when we generate CSRs.  Not sure
@@ -142,5 +144,3 @@ To-do:
   * Add some smaller TTL thresholds to the default list.
   * Make TTL thresholds overridable on a per-certificate basis.
   * Learn to talk to anchor (https://github.com/openstack/anchor) CAs.
-  * Display timestamps in local time rather than UTC, unless a --utc flag is
-    specified.
