@@ -36,8 +36,9 @@
 #include "log.h"
 #include "subproc.h"
 
-#ifndef HAVE_CLEARENV
 extern char **environ;
+
+#ifndef HAVE_CLEARENV
 static void
 clear_environment(void)
 {
@@ -59,6 +60,27 @@ struct cm_subproc_state {
 	int fd, count, bufsize, status;
 };
 
+static size_t
+cm_subproc_propagate_environment(const char *p)
+{
+	size_t equal;
+	equal = strcspn(p, "=");
+	if ((strlen("DBUS_SESSION_BUS_ADDRESS") == equal) &&
+	    (strncmp(p, "DBUS_SESSION_BUS_ADDRESS", equal) == 0)) {
+		return equal;
+	}
+	if ((strlen(CERTMONGER_PVT_ADDRESS_ENV) == equal) &&
+	    (strncmp(p, CERTMONGER_PVT_ADDRESS_ENV, equal) == 0)) {
+		return equal;
+	}
+	if ((equal > 6) &&
+	    ((strncmp(p + equal - 6, "_PROXY", 6) == 0) ||
+	     (strncmp(p + equal - 6, "_proxy", 6) == 0))) {
+		return equal;
+	}
+	return 0;
+}
+
 /* Start the passed callback in a subprocess, with a pipe that it can use to
  * send data back to us.  If the callback exits, it must do so by calling
  * _exit() or exec(), to avoid calling exit handlers registered by libraries
@@ -76,8 +98,10 @@ cm_subproc_start(int (*cb)(int fd,
 {
 	struct cm_subproc_state *state;
 	int fds[2];
+	unsigned int i, childenvs;
 	long flags;
-	char *configdir, *tmpdir, *tmp, *homedir, *bus, *local, *pvt;
+	char *configdir, *tmpdir, *tmp, *homedir, *local;
+	char *p, **childenv;
 
 	state = talloc_ptrtype(parent, state);
 	if (state != NULL) {
@@ -106,12 +130,28 @@ cm_subproc_start(int (*cb)(int fd,
 				tmp = getenv("TMPDIR");
 				tmpdir = (tmp != NULL) ? strdup(tmp) : NULL;
 				homedir = cm_env_home_dir();
-				bus = getenv("DBUS_SESSION_BUS_ADDRESS");
-				bus = bus ? strdup(bus) : NULL;
 				local = cm_env_local_ca_dir();
 				local = local ? strdup(local) : NULL;
-				pvt = getenv(CERTMONGER_PVT_ADDRESS_ENV);
-				pvt = pvt ? strdup(pvt) : NULL;
+				childenvs = 0;
+				for (i = 0; (environ != NULL) && (environ[i] != NULL); i++) {
+					if (cm_subproc_propagate_environment(environ[i]) > 0) {
+						childenvs++;
+					}
+				}
+				if (childenvs > 0) {
+					childenv = calloc(childenvs + 1, sizeof(char *));
+					childenvs = 0;
+					if (childenv != NULL) {
+						for (i = 0; (environ != NULL) && (environ[i] != NULL); i++) {
+							if (cm_subproc_propagate_environment(environ[i]) > 0) {
+								childenv[childenvs++] = strdup(environ[i]);
+							}
+						}
+						childenv[childenvs] = NULL;
+					}
+				} else {
+					childenv = NULL;
+				}
 				clear_environment();
 				setenv("HOME", homedir, 1);
 				setenv("PATH", _PATH_STDPATH, 1);
@@ -124,17 +164,16 @@ cm_subproc_start(int (*cb)(int fd,
 				if (tmpdir != NULL) {
 					setenv("TMPDIR", tmpdir, 1);
 				}
-				if (bus != NULL) {
-					setenv("DBUS_SESSION_BUS_ADDRESS", bus,
-					       1);
-				}
-				if (pvt != NULL) {
-					setenv(CERTMONGER_PVT_ADDRESS_ENV, pvt,
-					       1);
-				}
 				if (local != NULL) {
 					setenv(CM_STORE_LOCAL_CA_DIRECTORY_ENV,
 					       local, 1);
+				}
+				for (i = 0; (childenv != NULL) && (childenv[i] != NULL); i++) {
+					p = childenv[i] + strcspn(childenv[i], "=");
+					if (*p != '\0') {
+						*p++ = '\0';
+						setenv(childenv[i], p, 1);
+					}
 				}
 
 				_exit((*cb)(fds[1], ca, entry, data));
