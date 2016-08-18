@@ -382,7 +382,7 @@ submit:
 	}
 	/* Add the requested CA issuer named argument. */
 	if (issuer != NULL) {
-		cm_submit_x_add_named_arg_s(ctx, "ca", issuer);
+		cm_submit_x_add_named_arg_s(ctx, "cacn", issuer);
 	}
 	/* Tell the server to add entries for a principal if one
 	 * doesn't exist yet. */
@@ -402,7 +402,7 @@ submit:
 		case 3: /* invocation error - permanent */
 			if ((i == 3005) && (issuer != NULL)) {
 				/* Most likely the server didn't understand the
-				 * "ca" argument.  At least, at this
+				 * "cacn" argument.  At least, at this
 				 * point.  Randomly dropping arguments is not
 				 * really an extensible solution, though. */
 				issuer = NULL;
