@@ -667,8 +667,8 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 								       "old key.\n");
 							}
 						}
+						SECKEY_DestroyPrivateKey(privkey);
 					}
-					SECKEY_DestroyPrivateKey(privkey);
 					if (oldcert != NULL) {
 						CERT_DestroyCertificate(oldcert);
 					}
