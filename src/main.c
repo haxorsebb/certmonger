@@ -77,7 +77,7 @@ main(int argc, const char **argv)
 		{"only-listening-socket", 'L', POPT_ARG_NONE, NULL, 'L', N_("only use a dedicated listening socket"), NULL},
 		{"listening-socket-path", 'P', POPT_ARG_STRING, &path, 0, N_("specify the dedicated listening socket"), N_("PATHNAME")},
 		{"nofork", 'n', POPT_ARG_NONE, NULL, 'n', N_("don't become a daemon"), NULL},
-		{"fork", 'f', POPT_ARG_NONE, NULL, 'f', N_("do become a daemon"), NULL, NULL},
+		{"fork", 'f', POPT_ARG_NONE, NULL, 'f', N_("do become a daemon"), NULL},
 		{"bus-activation-timeout", 'b', POPT_ARG_INT, NULL, 'b', N_("bus-activated, idle timeout"), N_("SECONDS")},
 		{"no-bus-activation-timeout", 'B', POPT_ARG_NONE, NULL, 'B', N_("don't use an idle timeout"), NULL},
 		{"debug-level", 'd', POPT_ARG_INT, NULL, 'd', N_("set debugging level (implies -n)"), N_("NUMBER")},
