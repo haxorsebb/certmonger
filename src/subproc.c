@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <syslog.h>
+#include <signal.h>
 #include <unistd.h>
 
 #include <dbus/dbus.h>
