@@ -21,6 +21,7 @@
 #include <sys/unistd.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <prerror.h>
 #include <secasn1.h>
