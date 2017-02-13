@@ -24,6 +24,7 @@
 #include <inttypes.h>
 #endif
 #include <netdb.h>
+#include <netinet/in.h>
 #include <resolv.h>
 #include <stdint.h>
 #include <stdio.h>
