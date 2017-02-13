@@ -18,6 +18,8 @@
 #ifndef cmsrvloc_h
 #define cmsrvloc_h
 
+#include <stdint.h>
+
 struct cm_srvloc {
 	char *host;
 	uint16_t port;
