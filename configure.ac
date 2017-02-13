@@ -193,7 +193,7 @@ if ! ${configure_dist_target_only:-false} ; then
 	LIBS="$RESOLV_LIBS"
 	AC_CHECK_HEADERS(resolv.h arpa/nameser.h)
 	have_ns_initparse=false
-	AC_LINK_IFELSE(AC_LANG_PROGRAM([
+	AC_LINK_IFELSE([AC_LANG_PROGRAM([
 		#ifdef HAVE_RESOLV_H
 		#include <resolv.h>
 		#endif
@@ -203,10 +203,10 @@ if ! ${configure_dist_target_only:-false} ; then
 		],[
 		ns_msg msg;
 		ns_initparse(NULL, 0, &msg);
-		]),
+		])],
 		have_ns_initparse=true,
-		LIBS="-lbind $LIBS"
-		AC_LINK_IFELSE(AC_LANG_PROGRAM([
+		[LIBS="-lbind $LIBS"
+		AC_LINK_IFELSE([AC_LANG_PROGRAM([
 			#ifdef HAVE_RESOLV_H
 			#include <resolv.h>
 			#endif
@@ -216,12 +216,12 @@ if ! ${configure_dist_target_only:-false} ; then
 			],[
 			ns_msg msg;
 			ns_initparse(NULL, 0, &msg);
-			]),
+			])],
 			RESOLV_LIBS="-lbind $RESOLV_LIBS"
 			have_ns_initparse=true,
 			AC_MSG_WARN([cannot find ns_initparse() in libresolv or libbind])
 			have_ns_initparse=false
-		)
+		)]
 	)
 	AC_ARG_ENABLE(srv-location,
 		      AS_HELP_STRING([--disable-srv-location],[disable SRV location for servers]),
@@ -492,10 +492,11 @@ if ! ${configure_dist_target_only:-false} ; then
 		AC_CHECK_HEADERS(gmp.h)
 		AC_CHECK_FUNC(mpz_set_str,,
 			      LIBS="-lgmp $LIBS"
-			      AC_LINK_IFELSE(AC_LANG_PROGRAM([
+			      AC_LINK_IFELSE([AC_LANG_PROGRAM([
 				#include <stdlib.h>
 				#include <gmp.h>
-			      ],[mpz_get_str(NULL,10,NULL);]),GMP_LIBS="$GMP_LIBS -lgmp"))
+			      ],[mpz_get_str(NULL,10,NULL);])],
+			      [GMP_LIBS="$GMP_LIBS -lgmp"]))
 		AC_MSG_CHECKING([for GMP])
 		if test $ac_cv_header_gmp_h = yes ; then
 			AC_MSG_RESULT(found)
