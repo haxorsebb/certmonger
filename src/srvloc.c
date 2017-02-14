@@ -90,7 +90,7 @@ cm_srvloc_rand(unsigned int range)
 	if (RAND_status() != 1) {
 		return 0;
 	}
-	if (RAND_pseudo_bytes((unsigned char *) &r, sizeof(r)) == -1) {
+	if (RAND_bytes((unsigned char *) &r, sizeof(r)) == -1) {
 		return 0;
 	}
 	if (r < 0) {

@@ -397,7 +397,7 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 		cm_log(1, "PRNG not seeded for generating key.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
-	if (RAND_pseudo_bytes(nonce, nonce_length) == -1) {
+	if (RAND_bytes(nonce, nonce_length) == -1) {
 		cm_log(1, "PRNG unable to generate nonce.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}

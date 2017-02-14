@@ -67,7 +67,7 @@ make_filename(const char *prefix, char **marker)
 	char *ret;
 	size_t l;
 
-	if (!RAND_pseudo_bytes(suffix, sizeof(suffix))) {
+	if (!RAND_bytes(suffix, sizeof(suffix))) {
 		/* Try again sometime later. */
 		cm_log(1, "Error generating suffix.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);

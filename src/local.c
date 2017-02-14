@@ -504,7 +504,7 @@ main(int argc, const char **argv)
 		/* we're good */
 	} else
 #endif
-	if (!RAND_pseudo_bytes(uuid, sizeof(uuid))) {
+	if (!RAND_bytes(uuid, sizeof(uuid))) {
 		/* Try again sometime later. */
 		cm_log(1, "Error generating UUID.\n");
 		return CM_SUBMIT_STATUS_UNREACHABLE;
