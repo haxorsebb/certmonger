@@ -22,7 +22,7 @@ tag: all-gmo
 force-tag: all-gmo
 	git tag -f $(GITTAG)
 
-ORIGIN=$(shell git config remote.origin.url 2> /dev/null || /bin/pwd)
+ORIGIN=ssh://git@pagure.io/certmonger.git
 ARCHIVEOUTDIR=$(shell cd $(top_srcdir) && pwd)
 
 local-archive:

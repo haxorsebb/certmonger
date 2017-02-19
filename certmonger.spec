@@ -25,15 +25,15 @@
 %endif
 
 Name:		certmonger
-Version:	0.78.6
+Version:	0.79
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
 Group:		System Environment/Daemons
 License:	GPLv3+
-URL:		http://certmonger.fedorahosted.org
-Source0:	http://fedorahosted.org/released/certmonger/certmonger-%{version}.tar.gz
-#Source1:	http://fedorahosted.org/released/certmonger/certmonger-%{version}.tar.gz.sig
+URL:		http://pagure.io/certmonger/
+Source0:	http://releases.pagure.org/certmonger/certmonger-%{version}.tar.gz
+Source1:	http://releases.pagure.org/certmonger/certmonger-%{version}.tar.gz.sig
 BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 BuildRequires:	openldap-devel
@@ -243,6 +243,41 @@ exit 0
 %endif
 
 %changelog
+* Sun Feb 19 2017 Nalin Dahyabhai <nalin@redhat.com> 0.79-1
+- update to 0.79:
+  - getcert now offers an option (-X) for requesting processing by a particular
+    CA if the server we're contacting is running more than one
+  - getcert also offers options (--for-ca, --not-for-ca, --ca-path-length) for
+    requesting BasicConstraints values
+  - getcert now displays times in local time instead of UTC, which was
+    previously the only way they were displayed; the --utc option can often be
+    used to switch back to its previous behavior
+  - the SCEP enrollment helper now correctly issues GetCACertChain requests to
+    SCEP servers, instead of issuing a GetCAChain request, which isn't part of
+    the protocol; from report by Jason Garland
+  - when issuing SCEP requests, the ID of the CA included in the HTTP request
+    is now URL-encoded, as it should be
+  - renewal or notification-of-impending-expiration logic is now triggered
+    closer to TTL thresholds rather than waiting for a periodic check to pass a
+    threshold
+  - properly builds with OpenSSL 1.1, thanks to Lukas Slebodnik and Tomas Mraz
+    for a lot of the legwork
+- resync .spec file with Fedora
+- upstream project migrated from fedorahosted.org to pagure.io
+
+* Wed Jul  6 2016 Nalin Dahyabhai <nalin@redhat.com> 0.78.6-4
+- add backported fix to wait a reasonable amount of time after calling the
+  'resubmit' method for a new certificate to be issued when we're exercising
+  the D-Bus API during tests (Jan Cholasta, #1351052)
+
+* Wed Jul  6 2016 Nalin Dahyabhai <nalin@redhat.com> 0.78.6-3
+- instead of using killall to send a SIGHUP to the system bus daemon in %%post
+  to get it to reload its configuration, use dbus-send to send a ReloadConfig
+  request over the bus (should fix #1277573)
+
+* Wed Feb 03 2016 Fedora Release Engineering <releng@fedoraproject.org> - 0.78.6-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
+
 * Wed Jan 13 2016 Nalin Dahyabhai <nalin@redhat.com> 0.78.6-1
 - document the -R, -N, -o, and -t flags for dogtag-ipa-renew-agent-submit
 - stop checking that we can generate 512 bit keys during self-tests
