@@ -333,7 +333,7 @@ if ! ${configure_dist_target_only:-false} ; then
 		AC_DEFINE(HAVE_OPENSSL,1,[Define if you have OpenSSL.])
 		CFLAGSsave="$CFLAGS"
 		LIBSsave="$LIBS"
-		CFLAGS="$OPENSSL_CFLAGS $CFLAGS"
+		CFLAGS="$OPENSSL_CFLAGS $CFLAGS -DOPENSSL_NO_DEPRECATED"
 		LIBS="$OPENSSL_LIBS $LIBS"
 		AC_CHECK_DECLS([OpenSSL_add_all_algorithms,OpenSSL_add_ssl_algorithms],,,[#include <openssl/ssl.h>])
 		AC_CHECK_DECLS(OPENSSL_free,,,[#include <openssl/crypto.h>])
