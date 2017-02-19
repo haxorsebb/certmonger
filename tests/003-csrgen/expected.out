@@ -1,25 +1,20 @@
 pk12util: PKCS12 EXPORT SUCCESSFUL
-MAC verified OK
 Signature OK
 minicert.openssl.1024.pem: OK
 1024 OK.
 pk12util: PKCS12 EXPORT SUCCESSFUL
-MAC verified OK
 Signature OK
 minicert.openssl.1536.pem: OK
 1536 OK.
 pk12util: PKCS12 EXPORT SUCCESSFUL
-MAC verified OK
 Signature OK
 minicert.openssl.2048.pem: OK
 2048 OK.
 pk12util: PKCS12 EXPORT SUCCESSFUL
-MAC verified OK
 Signature OK
 minicert.openssl.3072.pem: OK
 3072 OK.
 pk12util: PKCS12 EXPORT SUCCESSFUL
-MAC verified OK
 Signature OK
 minicert.openssl.4096.pem: OK
 4096 OK.

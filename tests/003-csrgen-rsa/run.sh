@@ -12,7 +12,7 @@ for size in 1024 1536 2048 3072 4096 ; do
 		-x -t u -k rsa
 	# Export the key.
 	pk12util -d "$tmpdir" -o $size.p12 -W "" -n "keyi$size"
-	openssl pkcs12 -in $size.p12 -out key.$size -passin pass: -nodes -nocerts 2>&1
+	openssl pkcs12 -in $size.p12 -out key.$size -passin pass: -nodes -nocerts 2>&1 | ( grep -v '^MAC verified OK$' || : )
 	# Read the public key and cache it.
 	cat > entry.openssl.$size <<- EOF
 	key_storage_type=FILE
