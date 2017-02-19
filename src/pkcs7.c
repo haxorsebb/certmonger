@@ -18,7 +18,11 @@
 #include "config.h"
 
 #include <sys/types.h>
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
 #include <stdarg.h>
+#include <stdint.h>
 #include <string.h>
 #include <unistd.h>
 

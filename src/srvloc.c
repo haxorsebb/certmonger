@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Red Hat, Inc.
+ * Copyright (C) 2014,2016,2017 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,9 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/nameser.h>
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
 #include <netdb.h>
 #include <resolv.h>
 #include <stdint.h>

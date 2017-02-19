@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2011,2012,2013,2014,2015 Red Hat, Inc.
+ * Copyright (C) 2009,2011,2012,2013,2014,2015,2017 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,9 @@
 #include <sys/wait.h>
 #include <errno.h>
 #include <fcntl.h>
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
 #include <limits.h>
 #include <stdint.h>
 #include <stdlib.h>
