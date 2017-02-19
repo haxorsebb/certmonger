@@ -279,11 +279,11 @@ if ! ${configure_dist_target_only:-false} ; then
 		AC_MSG_ERROR(xmlrpc-c-config not found)
 	fi
 	AC_MSG_CHECKING(for XMLRPC CFLAGS)
-	XMLRPC_CFLAGS=`${XMLRPC_C_CONFIG} client --cflags`
+	XMLRPC_CFLAGS="`${XMLRPC_C_CONFIG} client --cflags` `${XMLRPC_C_CONFIG} --cflags`"
 	AC_MSG_RESULT([$XMLRPC_CFLAGS])
 	AC_SUBST(XMLRPC_CFLAGS)
 	AC_MSG_CHECKING(for XMLRPC LIBS)
-	XMLRPC_LIBS=`${XMLRPC_C_CONFIG} client --libs`
+	XMLRPC_LIBS="`${XMLRPC_C_CONFIG} client --libs` `${XMLRPC_C_CONFIG} --libs`"
 	AC_MSG_RESULT([$XMLRPC_LIBS])
 	AC_SUBST(XMLRPC_LIBS)
 	CFLAGS="$CFLAGS $XMLRPC_CFLAGS"
