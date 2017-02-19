@@ -17,6 +17,8 @@ template_nscomment=certmonger generated this request
 template_no_ocsp_check=1
 EOF
 filter() {
+	sed -re 's,Version: 0 \(0x0\),Version: 1 (0x0),g' |\
+	sed -re 's,CN = ,CN=,g' |\
 	sed -re 's,CN=[[:xdigit:]]{8}-[[:xdigit:]]{8}-[[:xdigit:]]{8}-[[:xdigit:]]{8},CN=$UUID,g' |\
 	sed -re 's,[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2}:[[:xdigit:]]{2},(160 bits),g' |\
 	sed s,'^        Signature Algorithm,    Signature Algorithm,g'
