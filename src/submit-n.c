@@ -61,7 +61,6 @@
 #include "util-o.h"
 
 #define PRIVKEY_LIST_EMPTY(l) PRIVKEY_LIST_END(PRIVKEY_LIST_HEAD(l), l)
-#define WINDOW (24 * 60 * 60 * PR_USEC_PER_SEC)
 
 SECOidTag
 cm_submit_n_tag_from_nid(int nid)
