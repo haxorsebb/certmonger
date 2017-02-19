@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Red Hat, Inc.
+ * Copyright (C) 2015,2017 Red Hat, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -78,18 +78,6 @@ cm_submit_n_tag_from_nid(int nid)
 	} else {
 		return SEC_OID_UNKNOWN;
 	}
-}
-
-int
-cm_submit_n_nid_from_tag(SECOidTag tag)
-{
-	SECOidData *oid = SECOID_FindOIDByTag(tag);
-	ASN1_OBJECT obj;
-
-	memset(&obj, 0, sizeof(obj));
-	obj.data = oid->oid.data;
-	obj.length = oid->oid.len;
-	return OBJ_obj2nid(&obj);
 }
 
 static SECItem *
