@@ -29,5 +29,10 @@ void util_set_fd_entry_key_owner(int keyfd, const char *filename,
 				 struct cm_store_entry *entry);
 void util_set_fd_entry_cert_owner(int certfd, const char *filename,
 				  struct cm_store_entry *entry);
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+int util_o_cert_cmp(const X509 *const *a, const X509 *const *b);
+#else
+int util_o_cert_cmp(const void *a, const void *b);
+#endif
 
 #endif

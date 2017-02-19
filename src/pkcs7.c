@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Red Hat, Inc.
+ * Copyright (C) 2015,2017 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,6 +44,7 @@
 #include "scep-o.h"
 #include "store.h"
 #include "submit-u.h"
+#include "util-o.h"
 
 #ifdef ENABLE_NLS
 #include <libintl.h>
@@ -119,16 +120,6 @@ pemx509(void *parent, X509 *x)
 	ret = talloc_strdup(parent, pem);
 	free(pem);
 	return ret;
-}
-
-/* Wrap the comparison function to handle the callback indirection. */
-static int
-cert_cmp(const void *a, const void *b)
-{
-	X509 * const *x, * const *y;
-	x = a;
-	y = b;
-	return X509_cmp(*x, *y);
 }
 
 /* Return 0 if "candidate" is more like what we're looking for than "current". */
@@ -330,7 +321,7 @@ cm_pkcs7_parsev(unsigned int flags, void *parent,
 		*certtop = NULL;
 	}
 
-	sk = sk_X509_new(cert_cmp);
+	sk = sk_X509_new(util_o_cert_cmp);
 	if (sk == NULL) {
 		return -1;
 	}
@@ -559,7 +550,7 @@ cm_pkcs7_envelope_data(char *encryption_cert, enum cm_prefs_cipher cipher,
 	}
 	BIO_free(in);
 
-	recipients = sk_X509_new(cert_cmp);
+	recipients = sk_X509_new(util_o_cert_cmp);
 	if (recipients == NULL) {
 		cm_log(1, "Out of memory.\n");
 		goto done;
@@ -994,7 +985,7 @@ cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 		goto done;
 	}
 	X509_STORE_set_verify_cb_func(store, &ignore_purpose_errors);
-	certs = sk_X509_new(cert_cmp);
+	certs = sk_X509_new(util_o_cert_cmp);
 	if (certs == NULL) {
 		cm_log(1, "Out of memory.\n");
 		goto done;

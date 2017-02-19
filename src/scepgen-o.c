@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Red Hat, Inc.
+ * Copyright (C) 2015,2017 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -141,17 +141,6 @@ cert_from_pem(char *pem, struct cm_store_entry *entry)
 	return NULL;
 }
 
-static int
-cert_cmp(const void *a, const void *b)
-{
-	X509 * const *x, * const *y;
-
-	x = a;
-	y = b;
-	return X509_cmp(*x, *y);
-}
-
-
 static STACK_OF(X509) *
 certs_from_nickcerts(struct cm_nickcert **list)
 {
@@ -176,7 +165,7 @@ certs_from_nickcerts(struct cm_nickcert **list)
 				_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 			}
 			if (sk == NULL) {
-				sk = sk_X509_new(cert_cmp);
+				sk = sk_X509_new(util_o_cert_cmp);
 				if (sk == NULL) {
 					cm_log(1, "Out of memory.\n");
 					_exit(CM_SUB_STATUS_INTERNAL_ERROR);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014,2015 Red Hat, Inc.
+ * Copyright (C) 2014,2015,2017 Red Hat, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -246,7 +246,7 @@ get_signer_info(void *parent, char *localdir, X509 ***roots,
 	 * left. */
 	if (*signer_cert != NULL) {
 		if (cas == NULL) {
-			cas = sk_X509_new(X509_cmp);
+			cas = sk_X509_new(util_o_cert_cmp);
 			if (cas == NULL) {
 				cm_log(1, "Out of memory.\n");
 				return CM_SUBMIT_STATUS_UNREACHABLE;

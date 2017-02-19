@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010,2015 Red Hat, Inc.
+ * Copyright (C) 2010,2015,2017 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -149,3 +149,21 @@ util_set_fd_entry_cert_owner(int certfd, const char *filename,
 	util_set_fd_owner_perms(certfd, filename, entry->cm_cert_owner,
 				entry->cm_cert_perms);
 }
+
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+int
+util_o_cert_cmp(const X509 *const *a, const X509 *const *b)
+{
+	return X509_cmp(*a, *b);
+}
+#else
+int
+util_o_cert_cmp(const void *a, const void *b)
+{
+	X509 * const *x, * const *y;
+
+	x = a;
+	y = b;
+	return X509_cmp(*x, *y);
+}
+#endif
