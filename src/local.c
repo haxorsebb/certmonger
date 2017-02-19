@@ -93,15 +93,15 @@ set_ca_extensions(void *parent, X509_REQ *req, EVP_PKEY *key)
 	q = p;
 	len = i2d_PUBKEY(key, &q);
 	if (EVP_Digest(p, len, md, &mdlen, EVP_sha1(), NULL)) {
-		skid = M_ASN1_OCTET_STRING_new();
-		M_ASN1_OCTET_STRING_set(skid, md, mdlen);
+		skid = util_ASN1_OCTET_STRING_new();
+		util_ASN1_OCTET_STRING_set(skid, md, mdlen);
 		memset(&akid, 0, sizeof(akid));
 		akid.keyid = skid;
 		X509V3_add1_i2d(&exts, NID_subject_key_identifier, skid, 0, 0);
 		X509V3_add1_i2d(&exts, NID_authority_key_identifier, &akid, 0, 0);
 	}
 
-	ku = M_ASN1_BIT_STRING_new();
+	ku = util_ASN1_BIT_STRING_new();
 	ASN1_BIT_STRING_set_bit(ku, 0, 1);
 	ASN1_BIT_STRING_set_bit(ku, 5, 1);
 	ASN1_BIT_STRING_set_bit(ku, 6, 1);
@@ -124,9 +124,9 @@ make_ca_csr(void *parent, EVP_PKEY *key, X509 *oldcert)
 	req = X509_REQ_new();
 	if (req != NULL) {
 		if ((oldcert != NULL) &&
-		    (oldcert->cert_info->subject != NULL)) {
+		    (X509_get_subject_name(oldcert) != NULL)) {
 			X509_REQ_set_subject_name(req,
-						  oldcert->cert_info->subject);
+						  X509_get_subject_name(oldcert));
 		} else {
 			subject = X509_NAME_new();
 			if (subject != NULL) {

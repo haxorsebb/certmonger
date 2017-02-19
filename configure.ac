@@ -337,6 +337,58 @@ if ! ${configure_dist_target_only:-false} ; then
 		LIBS="$OPENSSL_LIBS $LIBS"
 		AC_CHECK_DECLS([OpenSSL_add_all_algorithms,OpenSSL_add_ssl_algorithms],,,[#include <openssl/ssl.h>])
 		AC_CHECK_DECLS(OPENSSL_free,,,[#include <openssl/crypto.h>])
+		AC_CHECK_FUNCS(ASN1_BIT_STRING_new)
+		AC_CHECK_FUNCS(ASN1_GENERALIZEDTIME_new)
+		AC_CHECK_FUNCS(ASN1_IA5STRING_new)
+		AC_CHECK_FUNCS(ASN1_INTEGER_new)
+		AC_CHECK_FUNCS(ASN1_OCTET_STRING_new)
+		AC_CHECK_FUNCS(ASN1_OCTET_STRING_set)
+		AC_CHECK_FUNCS(ASN1_PRINTABLESTRING_new)
+		AC_CHECK_FUNCS(ASN1_STRING_get0_data)
+		AC_CHECK_FUNCS(ASN1_STRING_get_data)
+		AC_CHECK_FUNCS(ASN1_STRING_length)
+		AC_CHECK_FUNCS(ASN1_STRING_new)
+		AC_CHECK_FUNCS(ASN1_TIME_dup)
+		AC_CHECK_FUNCS(ASN1_TIME_new)
+		AC_CHECK_FUNCS(ASN1_TIME_set)
+		AC_CHECK_FUNCS(EVP_PKEY_base_id)
+		AC_CHECK_FUNCS(EVP_PKEY_id)
+		AC_CHECK_FUNCS(OBJ_get0_data)
+		AC_CHECK_FUNCS(OBJ_length)
+		AC_CHECK_FUNCS(X509_ATTRIBUTE_get0_object)
+		AC_CHECK_FUNCS(X509_get0_notAfter)
+		AC_CHECK_FUNCS(X509_get0_pubkey)
+		AC_CHECK_FUNCS(X509_get0_serialNumber)
+		AC_CHECK_FUNCS(X509_get_issuer_name)
+		AC_CHECK_FUNCS(X509_get_key_usage)
+		AC_CHECK_FUNCS(X509_get_subject_name)
+		AC_CHECK_FUNCS(X509_REQ_get0_pubkey)
+		AC_CHECK_FUNCS(X509_REQ_get0_signature)
+		AC_CHECK_FUNCS(X509_REQ_set_subject_name)
+		AC_CHECK_FUNCS(X509_set1_notAfter)
+		AC_CHECK_FUNCS(X509_set1_notBefore)
+		AC_CHECK_FUNCS(X509_set_issuer_name)
+		AC_CHECK_FUNCS(X509_set_pubkey)
+		AC_CHECK_FUNCS(X509_set_subject_name)
+		AC_CHECK_FUNCS(X509_set_version)
+		AC_CHECK_MEMBERS(X509.cert_info,,,
+				 [
+				 #include <openssl/x509.h>
+				 ])
+		AC_MSG_CHECKING([if NETSCAPE_SPKI.sig_algor is a pointer or a struct])
+		have_sig_algor_pointer=unknown
+		AC_LINK_IFELSE(AC_LANG_PROGRAM([
+			#include <stddef.h>
+			#include <openssl/x509.h>
+			],[
+			NETSCAPE_SPKI spki;
+			spki.sig_algor = NULL;
+			]),
+			AC_DEFINE(CM_NETSCAPE_SPKI_SIG_ALGOR_IS_POINTER,1,[Define if NETSCAPE_SPKI.sig_algor is a pointer])
+			have_sig_algor_pointer="pointer to X509_ALGOR",
+			have_sig_algor_pointer=X509_ALGOR
+		)
+		AC_MSG_RESULT($have_sig_algor_pointer)
 		CFLAGS="$CFLAGSsave"
 		LIBS="$LIBSsave"
 	fi

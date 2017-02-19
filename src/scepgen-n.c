@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Red Hat, Inc.
+ * Copyright (C) 2015,2017 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,6 +38,7 @@
 #include <secpkcs7.h>
 #include <secport.h>
 
+#include <openssl/asn1t.h>
 #include <openssl/bn.h>
 #include <openssl/evp.h>
 #include <openssl/pkcs7.h>
@@ -63,6 +64,7 @@
 #include "submit-u.h"
 #include "subproc.h"
 #include "util-n.h"
+#include "util-o.h"
 
 struct cm_scepgen_state {
 	struct cm_scepgen_state_pvt pvt;
@@ -70,14 +72,51 @@ struct cm_scepgen_state {
 	struct cm_subproc_state *subproc;
 };
 
+/* Ad-hoc. */
+static const SEC_ASN1Template
+cm_scepgen_n_certattr_template[] = {
+	{
+	.kind = SEC_ASN1_SEQUENCE,
+	.offset = 0,
+	.sub = NULL,
+	.size = sizeof(CERTAttribute),
+	},
+	{
+	.kind = SEC_ASN1_OBJECT_ID,
+	.offset = offsetof(CERTAttribute, attrType),
+	.sub = NULL,
+	.size = sizeof(SECItem),
+	},
+	{
+	.kind = SEC_ASN1_SET_OF,
+	.offset = offsetof(CERTAttribute, attrValue),
+	.sub = &SEC_AnyTemplate,
+	.size = 0,
+	},
+	{0, 0, NULL, 0},
+};
+
+static const SEC_ASN1Template
+cm_scepgen_n_set_of_certattr_template[] = {
+	{
+	.kind = SEC_ASN1_SET_OF,
+	.offset = 0,
+	.sub = cm_scepgen_n_certattr_template,
+	.size = 0,
+	},
+};
+
 static void
 cm_scepgen_n_resign(PKCS7 *p7, SECKEYPrivateKey *privkey)
 {
-	unsigned char *sabuf = NULL, *u;
-	int salen;
-	SECItem signature;
+	PLArenaPool *arena;
+	SECItem signature, item;
 	SECOidTag digalg, sigalg;
 	PKCS7_SIGNER_INFO *sinfo;
+	X509_ATTRIBUTE *a;
+	CERTAttribute **attr, aitem;
+	unsigned char *p, *q;
+	int len, auth_attr_count, i, j, l;
 
 	if (p7 == NULL) {
 		return;
@@ -88,23 +127,45 @@ cm_scepgen_n_resign(PKCS7 *p7, SECKEYPrivateKey *privkey)
 	}
 	sinfo = sk_PKCS7_SIGNER_INFO_value(p7->d.sign->signer_info, 0);
 
-	salen = i2d_ASN1_SET_OF_X509_ATTRIBUTE(sinfo->auth_attr, NULL,
-					       i2d_X509_ATTRIBUTE,
-					       V_ASN1_SET,
-					       V_ASN1_UNIVERSAL,
-					       IS_SET);
-	sabuf = malloc(salen);
-	if (sabuf == NULL) {
-		cm_log(1, "Out of memory.\n");
+	arena = PORT_NewArena(sizeof(double));
+	if (arena == NULL) {
+		cm_log(1, "Out of memory re-signing data.");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
-	u = sabuf;
-	if (i2d_ASN1_SET_OF_X509_ATTRIBUTE(sinfo->auth_attr, &u,
-					   i2d_X509_ATTRIBUTE,
-					   V_ASN1_SET,
-					   V_ASN1_UNIVERSAL,
-					   IS_SET) != salen) {
-		cm_log(1, "Encoding error.\n");
+
+	auth_attr_count = X509at_get_attr_count(sinfo->auth_attr);
+	attr = PORT_ArenaZAlloc(arena, (auth_attr_count + 1) * sizeof(CERTAttribute*));
+	for (i = j = 0; i < auth_attr_count; i++) {
+		a = X509at_get_attr(sinfo->auth_attr, i);
+		len = i2d_X509_ATTRIBUTE(a, NULL);
+		if (len < 0) {
+			cm_log(1, "Error determining size of X509 attribute.");
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		}
+		p = q = malloc(len);
+		l = i2d_X509_ATTRIBUTE(a, &q);
+		if (l != len) {
+			cm_log(1, "Error encoding X509 attribute.");
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		}
+		memset(&item, 0, sizeof(item));
+		item.data = p;
+		item.len = len;
+		memset(&aitem, 0, sizeof(aitem));
+		if (SEC_ASN1DecodeItem(arena, &aitem, cm_scepgen_n_certattr_template, &item) == SECSuccess) {
+			attr[j] = PORT_ArenaZAlloc(arena, sizeof(CERTAttribute));
+			if (attr[j] == NULL) {
+				cm_log(1, "Out of memory copying X509 attribute.");
+				_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+			}
+			*(attr[j]) = aitem;
+			j++;
+		}
+		free(p);
+	}
+	memset(&item, 0, sizeof(item));
+	if (SEC_ASN1EncodeItem(arena, &item, &attr, cm_scepgen_n_set_of_certattr_template) != &item) {
+		cm_log(1, "Unable to encode signing attributes.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	memset(&signature, 0, sizeof(signature));
@@ -114,15 +175,14 @@ cm_scepgen_n_resign(PKCS7 *p7, SECKEYPrivateKey *privkey)
 		cm_log(1, "Unable to match digest algorithm and key.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
-	if (SEC_SignData(&signature, sabuf, salen, privkey,
+	if (SEC_SignData(&signature, item.data, item.len, privkey,
 			 sigalg) != SECSuccess) {
 		cm_log(1, "Error re-signing: %s.\n",
 		       PR_ErrorToName(PORT_GetError()));
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
-	M_ASN1_OCTET_STRING_set(sinfo->enc_digest,
-				signature.data, signature.len);
-	free(sabuf);
+	util_ASN1_OCTET_STRING_set(sinfo->enc_digest,
+				   signature.data, signature.len);
 }
 
 static int

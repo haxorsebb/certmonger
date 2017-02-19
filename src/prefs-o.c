@@ -26,6 +26,7 @@
 #include <keythi.h>
 
 #include <openssl/evp.h>
+#include <openssl/x509.h>
 
 #include "prefs.h"
 #include "prefs.h"

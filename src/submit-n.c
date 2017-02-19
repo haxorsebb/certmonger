@@ -29,6 +29,7 @@
 #include <openssl/bn.h>
 #include <openssl/err.h>
 #include <openssl/evp.h>
+#include <openssl/objects.h>
 #include <openssl/pkcs7.h>
 #include <openssl/stack.h>
 #include <openssl/x509.h>
@@ -71,8 +72,8 @@ cm_submit_n_tag_from_nid(int nid)
 	obj = OBJ_nid2obj(nid);
 	if (obj != NULL) {
 		memset(&oid, 0, sizeof(oid));
-		oid.data = (unsigned char *) obj->data;
-		oid.len = obj->length;
+		oid.data = (unsigned char *) util_OBJ_get0_data(obj);
+		oid.len = util_OBJ_length(obj);
 		return SECOID_FindOIDTag(&oid);
 	} else {
 		return SEC_OID_UNKNOWN;
@@ -97,7 +98,7 @@ try_to_decode(void *parent, PLArenaPool *arena, SECItem *item,
 	RSA *rsa = NULL;
 	char buf[BUFSIZ];
 	const unsigned char *u;
-	unsigned char *enc_key, *dec, *reenc;
+	unsigned char *enc_key, *dec, *reenc, *param_data;
 	unsigned int enc_key_len, dec_len;
 	ssize_t reenc_len;
 	long error, l;
@@ -138,14 +139,25 @@ try_to_decode(void *parent, PLArenaPool *arena, SECItem *item,
 	if (p7i->key_enc_algor->parameter->type == V_ASN1_OCTET_STRING) {
 		params = p7i->key_enc_algor->parameter->value.octet_string;
 		memset(&param, 0, sizeof(param));
-		param.data = M_ASN1_STRING_data(params);
-		param.len = M_ASN1_STRING_length(params);
+		param.len = util_ASN1_STRING_length(params);
+		param_data = PORT_ArenaZAlloc(arena, param.len);
+		if (param_data == NULL) {
+			cm_log(1, "Out of memory decrypting bulk key.\n");
+			goto done;
+		}
+		memcpy(param_data, util_ASN1_STRING_get0_data(params), param.len);
+		param.data = param_data;
 		parameters = &param;
 	} else {
 		parameters = NULL;
 	}
-	enc_key = M_ASN1_STRING_data(p7i->enc_key);
-	enc_key_len = M_ASN1_STRING_length(p7i->enc_key);
+	enc_key_len = util_ASN1_STRING_length(p7i->enc_key);
+	enc_key = PORT_ArenaZAlloc(arena, enc_key_len);
+	if (enc_key == NULL) {
+		cm_log(1, "Out of memory decrypting bulk key.\n");
+		goto done;
+	}
+	memcpy(enc_key, util_ASN1_STRING_get0_data(p7i->enc_key), enc_key_len);
 	dec_len = enc_key_len + BUFSIZ;
 	dec = talloc_size(parent, dec_len);
 	if (parameters == NULL) {
@@ -216,7 +228,7 @@ retry_gen:
 	/* Set the new encrypted bulk key. */
 	p7i->key_enc_algor->algorithm = OBJ_dup(OBJ_nid2obj(NID_rsaEncryption));
 	ASN1_TYPE_set(p7i->key_enc_algor->parameter, V_ASN1_NULL, NULL);
-	M_ASN1_OCTET_STRING_set(p7i->enc_key, reenc, reenc_len);
+	util_ASN1_OCTET_STRING_set(p7i->enc_key, reenc, reenc_len);
 
 	/* And now, finally, decrypt the payload. */
 	out = BIO_new(BIO_s_mem());
