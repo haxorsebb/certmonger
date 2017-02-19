@@ -1,7 +1,7 @@
 AC_INIT(certmonger,0.78.6)
 AM_INIT_AUTOMAKE([foreign subdir-objects])
 AC_CONFIG_MACRO_DIR(m4)
-AM_MAINTAINER_MODE([enable])
+AM_MAINTAINER_MODE([disable])
 AC_PROG_CC
 AM_PROG_CC_C_O
 AC_PROG_RANLIB
