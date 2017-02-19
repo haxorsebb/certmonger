@@ -62,35 +62,11 @@
 static int
 issuerissued(X509 *issuer, X509 *issued)
 {
-	GENERAL_NAME *gn;
-	int i;
-
-	if ((issuer->skid != NULL) &&
-	    (issued->akid != NULL) &&
-	    (issued->akid->keyid != NULL)) {
-		if (M_ASN1_OCTET_STRING_cmp(issuer->skid,
-					    issued->akid->keyid) == 0) {
-			return 0;
-		}
+	if (X509_check_issued(issuer, issued) == X509_V_OK) {
+		return 0;
 	}
-	if ((issued->akid != NULL) &&
-	    (issued->akid->issuer != NULL) &&
-	    (issued->akid->serial != NULL)) {
-		for (i = 0;
-		     i < sk_GENERAL_NAME_num(issued->akid->issuer);
-		     i++) {
-			gn = sk_GENERAL_NAME_value(issued->akid->issuer, i);
-			if ((gn->type == GEN_DIRNAME) &&
-			    (X509_NAME_cmp(issuer->cert_info->issuer,
-					   gn->d.dirn) == 0) &&
-			    (M_ASN1_INTEGER_cmp(issuer->cert_info->serialNumber,
-						issued->akid->serial) == 0)) {
-				return 0;
-			}
-		}
-	}
-	return X509_name_cmp(issuer->cert_info->subject,
-			     issued->cert_info->issuer);
+	return X509_name_cmp(util_X509_get0_subject_name(issuer),
+			     util_X509_get0_issuer_name(issued));
 }
 
 /* Render the certificate as a PEM string. */
