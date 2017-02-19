@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012,2013,2014,2015 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013,2014,2015,2017 Red Hat, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1769,15 +1769,11 @@ cm_store_file_write_nickcert_list(FILE *fp, enum cm_store_file_field field,
 static int
 cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 {
-	char timestamp[15], uuidstring[37];
+	char timestamp[15];
 	const char *p;
 
 	if (entry->cm_nickname == NULL) {
-		if (cm_store_make_uuid_string_underscore(uuidstring) > 0) {
-			p = uuidstring;
-		} else {
-			return -1;
-		}
+		p = cm_store_timestamp_from_time(cm_time(NULL), timestamp);
 	} else {
 		p = entry->cm_nickname;
 	}
@@ -2198,16 +2194,16 @@ int
 cm_store_entry_save(struct cm_store_entry *entry)
 {
 	FILE *fp;
-	char timestamp[15], path[PATH_MAX], uuidstring[37];
+	char timestamp[15], path[PATH_MAX];
 	int i, fd = -1, give_up;
 	const char *directory, *dest;
 
 	if (entry->cm_store_private == NULL) {
-		cm_store_make_uuid_string(uuidstring);
+		cm_store_timestamp_from_time(cm_time(NULL), timestamp);
 		directory = cm_env_request_dir();
 		if (directory != NULL) {
 			snprintf(path, sizeof(path), "%s/%s",
-				 directory, uuidstring);
+				 directory, timestamp);
 			fd = open(path,
 				  O_WRONLY | O_CREAT | O_EXCL,
 				  S_IRUSR | S_IWUSR);
@@ -2344,14 +2340,10 @@ static int
 cm_store_ca_write(FILE *fp, struct cm_store_ca *ca)
 {
 	const char *p;
-	char uuidstring[37];
+	char timestamp[15];
 
 	if (ca->cm_nickname == NULL) {
-		if (cm_store_make_uuid_string_underscore(uuidstring) > 0) {
-			p = uuidstring;
-		} else {
-			return -1;
-		}
+		p = cm_store_timestamp_from_time(cm_time(NULL), timestamp);
 	} else {
 		p = ca->cm_nickname;
 	}
@@ -2460,15 +2452,15 @@ int
 cm_store_ca_save(struct cm_store_ca *ca)
 {
 	FILE *fp;
-	char timestamp[15], path[PATH_MAX], uuidstring[37];
+	char timestamp[15], path[PATH_MAX];
 	int i, fd = -1, give_up;
 	const char *directory, *dest;
 
 	if (ca->cm_store_private == NULL) {
-		cm_store_make_uuid_string(uuidstring);
+		cm_store_timestamp_from_time(cm_time(NULL), timestamp);
 		directory = cm_env_ca_dir();
 		if (directory != NULL) {
-			snprintf(path, sizeof(path), "%s/%s", directory, uuidstring);
+			snprintf(path, sizeof(path), "%s/%s", directory, timestamp);
 			fd = open(path,
 				  O_WRONLY | O_CREAT | O_EXCL,
 				  S_IRUSR | S_IWUSR);
