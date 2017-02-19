@@ -52,6 +52,11 @@ main(int argc, char **argv)
 	int fd, ret, i;
 	void *parent;
 	char *p;
+
+	/* Make minicerts claim to be v3 so that OpenSSL won't skip the version
+	 * number field, which is optional, because we default to the spec's
+	 * default value. */
+	cm_csrgen_version_for_testing_minicerts = 2;
 	cm_log_set_method(cm_log_stderr);
 	cm_log_set_level(3);
 	cm_set_fips_from_env();

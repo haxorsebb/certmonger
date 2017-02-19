@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2011,2012,2014 Red Hat, Inc.
+ * Copyright (C) 2009,2011,2012,2014,2017 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,8 @@
 #include "csrgen-int.h"
 #include "log.h"
 #include "store-int.h"
+
+int cm_csrgen_version_for_testing_minicerts = 0;
 
 int
 cm_csrgen_read_challenge_password(struct cm_store_entry *entry, char **password)

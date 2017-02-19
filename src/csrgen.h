@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2014 Red Hat, Inc.
+ * Copyright (C) 2009,2014,2017 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,8 @@
 
 struct cm_csrgen_state;
 struct cm_store_entry;
+
+extern int cm_csrgen_version_for_testing_minicerts;
 
 /* Start CSR generation using template information in the entry. */
 struct cm_csrgen_state *cm_csrgen_start(struct cm_store_entry *entry);

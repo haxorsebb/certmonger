@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012,2013,2014,2015 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013,2014,2015,2017 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -791,7 +791,8 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	nowe.len = strlen(now);
 	validity->notAfter = nowe;
 	minicert = CERT_CreateCertificate(1, name, validity, req);
-	SEC_ASN1EncodeInteger(arena, &minicert->version, 0);
+	SEC_ASN1EncodeInteger(arena, &minicert->version,
+			      cm_csrgen_version_for_testing_minicerts);
 	if ((spkidigest[1] & 0x80) != 0) {
 		minicert->serialNumber.data = spkidigest;
 		minicert->serialNumber.len = cm_prefs_nss_dig_alg_len() + 1;

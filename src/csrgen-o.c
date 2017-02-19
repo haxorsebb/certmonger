@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012,2013,2014,2015 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013,2014,2015,2017 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -343,16 +343,12 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			ASN1_GENERALIZEDTIME_set_string(minicert->cert_info->validity->notAfter, nows);
 			X509_NAME_set(&minicert->cert_info->issuer, subject);
 			X509_NAME_set(&minicert->cert_info->subject, subject);
-			/* This used to just be X509_set_version(), but
-			 * starting in 1.0.2, OpenSSL began setting it to NULL
-			 * for v1, which breaks tests which expect identical
-			 * output from both NSS and OpenSSL. */
 			version = M_ASN1_INTEGER_new();
 			if (version == NULL) {
 				cm_log(1, "Out of memory creating mini certificate.\n");
 				_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 			}
-			ASN1_INTEGER_set(version, 0);
+			ASN1_INTEGER_set(version, cm_csrgen_version_for_testing_minicerts);
 			minicert->cert_info->version = version;
 			serial = M_ASN1_INTEGER_new();
 			if (serial == NULL) {
