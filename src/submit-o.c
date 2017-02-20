@@ -65,9 +65,10 @@ cm_submit_o_set_things(X509 **cert, X509 *signer, unsigned char uuid[16], unsign
 	CERTCertificate subject, issuer;
 	CERTSignedData scert;
 	SECItem item, *encoded;
+	X509_EXTENSION *ext;
 	unsigned char *p, *q;
 	const unsigned char *d;
-	int length, l;
+	int length, l, i;
 
 	arena = PORT_NewArena(sizeof(double));
 	if (arena == NULL) {
@@ -108,6 +109,17 @@ cm_submit_o_set_things(X509 **cert, X509 *signer, unsigned char uuid[16], unsign
 			return;
 		}
 		free(p);
+	}
+
+	for (i = 0; i < sk_X509_EXTENSION_num(extensions); i++) {
+		ext = sk_X509_EXTENSION_value(extensions, i);
+		if (ext != NULL) {
+			if (X509_add_ext(*cert, ext, -1) != 1) {
+				cm_log(1, "Error adding extension to certificate.");
+				PORT_FreeArena(arena, PR_TRUE);
+				return;
+			}
+		}
 	}
 
 	length = i2d_X509(*cert, NULL);
@@ -154,25 +166,6 @@ cm_submit_o_set_things(X509 **cert, X509 *signer, unsigned char uuid[16], unsign
 			subject.issuerID.len = uuid_len;
 		}
 	}
-
-	length = i2d_X509_EXTENSIONS(extensions, NULL);
-	p = q = malloc(length);
-	l = i2d_X509_EXTENSIONS(extensions, &q);
-	if (l != length) {
-		cm_log(1, "Error encoding extensions: %d != %d.", l, length);
-		free(p);
-		PORT_FreeArena(arena, PR_TRUE);
-		return;
-	}
-	item.data = p;
-	item.len = length;
-	if (SEC_ASN1DecodeItem(arena, &subject.extensions, CERT_SequenceOfCertExtensionTemplate, &item) != SECSuccess) {
-		cm_log(1, "Error decoding extensions: %s.", PR_ErrorToName(PORT_GetError()));
-		free(p);
-		PORT_FreeArena(arena, PR_TRUE);
-		return;
-	}
-	free(p);
 
 	memset(&scert.data, 0, sizeof(scert.data));
 	encoded = SEC_ASN1EncodeItem(arena, &scert.data, &subject, CERT_CertificateTemplate);
@@ -265,6 +258,7 @@ cm_submit_o_sign(void *parent, char *csr,
 #endif
 				/* Add a signature so that it looks right...ish. */
 				X509_sign(*cert, signer_key, cm_prefs_ossl_hash());
+				/* Add extensions and possibly add deprecated UUIDs. */
 				cm_submit_o_set_things(cert, signer, uuid, uuid_len,
 						       X509_REQ_get_extensions(req));
 				/* add basic constraints if needed */
