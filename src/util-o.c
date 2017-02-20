@@ -420,6 +420,8 @@ util_X509_get_key_usage(X509 *x)
 #ifdef HAVE_X509_GET_KEY_USAGE
 	return X509_get_key_usage(x);
 #else
+	/* Call for side-effect of computing hash and caching extensions */
+	X509_check_purpose(x, -1, -1);
 	return x->ex_kusage;
 #endif
 }
