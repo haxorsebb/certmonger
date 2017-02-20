@@ -798,22 +798,26 @@ get_pstring_attribute(void *parent, STACK_OF(X509_ATTRIBUTE) *attrs, int nid)
 	}
 	for (i = 0; i < sk_X509_ATTRIBUTE_num(attrs); i++) {
 		a = sk_X509_ATTRIBUTE_value(attrs, i);
+		if (a == NULL) { /* should not happen */
+			continue;
+		}
 		if (OBJ_obj2nid(util_X509_ATTRIBUTE_get0_object(a)) != nid) {
 			continue;
 		}
-		if (X509_ATTRIBUTE_count(a) > 0) {
-			value = X509_ATTRIBUTE_get0_type(a, 0);
-			if (value->type == V_ASN1_PRINTABLESTRING) {
-				p = value->value.printablestring;
-				if (p != NULL) {
-					len = util_ASN1_STRING_length(p);
-					s = (const char *) util_ASN1_STRING_get0_data(p);
-					ret = talloc_size(parent, len + 1);
-					if (ret != NULL) {
-						memcpy(ret, s, len);
-						ret[len] = '\0';
-						return ret;
-					}
+		if (X509_ATTRIBUTE_count(a) != 1) {
+			continue;
+		}
+		value = X509_ATTRIBUTE_get0_type(a, 0);
+		if ((value != NULL) && (value->type == V_ASN1_PRINTABLESTRING)) {
+			p = value->value.printablestring;
+			if (p != NULL) {
+				len = util_ASN1_STRING_length(p);
+				s = (const char *) util_ASN1_STRING_get0_data(p);
+				ret = talloc_size(parent, len + 1);
+				if (ret != NULL) {
+					memcpy(ret, s, len);
+					ret[len] = '\0';
+					return ret;
 				}
 			}
 		}
@@ -829,7 +833,7 @@ get_ostring_attribute(void *parent, STACK_OF(X509_ATTRIBUTE) *attrs, int nid,
 	ASN1_TYPE *value;
 	ASN1_OCTET_STRING *p;
 	const unsigned char *s;
-	int i;
+	int i, len;
 
 	*ret = NULL;
 	*length = 0;
@@ -838,22 +842,26 @@ get_ostring_attribute(void *parent, STACK_OF(X509_ATTRIBUTE) *attrs, int nid,
 	}
 	for (i = 0; i < sk_X509_ATTRIBUTE_num(attrs); i++) {
 		a = sk_X509_ATTRIBUTE_value(attrs, i);
+		if (a == NULL) { /* should not happen */
+			continue;
+		}
 		if (OBJ_obj2nid(util_X509_ATTRIBUTE_get0_object(a)) != nid) {
 			continue;
 		}
-		if (X509_ATTRIBUTE_count(a) > 0) {
-			value = X509_ATTRIBUTE_get0_type(a, 0);
-			if (value->type == V_ASN1_OCTET_STRING) {
-				p = value->value.octet_string;
-				if (p != NULL) {
-					i = util_ASN1_STRING_length(p);
-					s = util_ASN1_STRING_get0_data(p);
-					*ret = talloc_size(parent, i + 1);
-					if (*ret != NULL) {
-						memcpy(*ret, s, i);
-						*length = i;
-						return;
-					}
+		if (X509_ATTRIBUTE_count(a) != 1) {
+			continue;
+		}
+		value = X509_ATTRIBUTE_get0_type(a, 0);
+		if ((value != NULL) && (value->type == V_ASN1_OCTET_STRING)) {
+			p = value->value.octet_string;
+			if (p != NULL) {
+				len = util_ASN1_STRING_length(p);
+				s = util_ASN1_STRING_get0_data(p);
+				*ret = talloc_size(parent, len + 1);
+				if (*ret != NULL) {
+					memcpy(*ret, s, len);
+					*length = len;
+					return;
 				}
 			}
 		}
