@@ -72,53 +72,17 @@ struct cm_scepgen_state {
 	struct cm_subproc_state *subproc;
 };
 
-/* Ad-hoc. */
-static const SEC_ASN1Template
-cm_scepgen_n_certattr_template[] = {
-	{
-	.kind = SEC_ASN1_SEQUENCE,
-	.offset = 0,
-	.sub = NULL,
-	.size = sizeof(CERTAttribute),
-	},
-	{
-	.kind = SEC_ASN1_OBJECT_ID,
-	.offset = offsetof(CERTAttribute, attrType),
-	.sub = NULL,
-	.size = sizeof(SECItem),
-	},
-	{
-	.kind = SEC_ASN1_SET_OF,
-	.offset = offsetof(CERTAttribute, attrValue),
-	.sub = &SEC_AnyTemplate,
-	.size = 0,
-	},
-	{0, 0, NULL, 0},
-};
-
-static const SEC_ASN1Template
-cm_scepgen_n_set_of_certattr_template[] = {
-	{
-	.kind = SEC_ASN1_SET_OF,
-	.offset = 0,
-	.sub = cm_scepgen_n_certattr_template,
-	.size = 0,
-	},
-};
-
 static void
 cm_scepgen_n_resign(PKCS7 *p7, SECKEYPrivateKey *privkey)
 {
-	PLArenaPool *arena;
-	SECItem signature, item;
+	unsigned char *sabuf = NULL, *u;
+	int salen, l;
+	SECItem signature;
 	SECOidTag digalg, sigalg;
 	PKCS7_SIGNER_INFO *sinfo;
-	X509_ATTRIBUTE *a;
-	CERTAttribute **attr, aitem;
-	unsigned char *p, *q;
-	int len, auth_attr_count, i, j, l;
 
 	if (p7 == NULL) {
+		cm_log(1, "Nothing to resign.\n");
 		return;
 	}
 	if (sk_PKCS7_SIGNER_INFO_num(p7->d.sign->signer_info) != 1) {
@@ -126,48 +90,21 @@ cm_scepgen_n_resign(PKCS7 *p7, SECKEYPrivateKey *privkey)
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	sinfo = sk_PKCS7_SIGNER_INFO_value(p7->d.sign->signer_info, 0);
-
-	arena = PORT_NewArena(sizeof(double));
-	if (arena == NULL) {
-		cm_log(1, "Out of memory re-signing data.");
+	salen = ASN1_item_i2d((ASN1_VALUE *)sinfo->auth_attr, NULL, &PKCS7_ATTR_SIGN_it);
+	u = sabuf = malloc(salen);
+	if (sabuf == NULL) {
+		cm_log(1, "Out of memory.\n");
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+	}
+	/* ASN1_item_i2d doesn't actually modify the passed-in pointer, which
+	 * allows it to allocate the memory on its own, but we want to handle
+	 * that ourselves. */
+	l = ASN1_item_i2d((ASN1_VALUE *)sinfo->auth_attr, &u, &PKCS7_ATTR_SIGN_it);
+	if (l != salen) {
+		cm_log(1, "Error encoding attributes.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 
-	auth_attr_count = X509at_get_attr_count(sinfo->auth_attr);
-	attr = PORT_ArenaZAlloc(arena, (auth_attr_count + 1) * sizeof(CERTAttribute*));
-	for (i = j = 0; i < auth_attr_count; i++) {
-		a = X509at_get_attr(sinfo->auth_attr, i);
-		len = i2d_X509_ATTRIBUTE(a, NULL);
-		if (len < 0) {
-			cm_log(1, "Error determining size of X509 attribute.");
-			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-		}
-		p = q = malloc(len);
-		l = i2d_X509_ATTRIBUTE(a, &q);
-		if (l != len) {
-			cm_log(1, "Error encoding X509 attribute.");
-			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-		}
-		memset(&item, 0, sizeof(item));
-		item.data = p;
-		item.len = len;
-		memset(&aitem, 0, sizeof(aitem));
-		if (SEC_ASN1DecodeItem(arena, &aitem, cm_scepgen_n_certattr_template, &item) == SECSuccess) {
-			attr[j] = PORT_ArenaZAlloc(arena, sizeof(CERTAttribute));
-			if (attr[j] == NULL) {
-				cm_log(1, "Out of memory copying X509 attribute.");
-				_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-			}
-			*(attr[j]) = aitem;
-			j++;
-		}
-		free(p);
-	}
-	memset(&item, 0, sizeof(item));
-	if (SEC_ASN1EncodeItem(arena, &item, &attr, cm_scepgen_n_set_of_certattr_template) != &item) {
-		cm_log(1, "Unable to encode signing attributes.\n");
-		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-	}
 	memset(&signature, 0, sizeof(signature));
 	digalg = cm_submit_n_tag_from_nid(OBJ_obj2nid(sinfo->digest_alg->algorithm));
 	sigalg = SEC_GetSignatureAlgorithmOidTag(privkey->keyType, digalg);
@@ -175,7 +112,7 @@ cm_scepgen_n_resign(PKCS7 *p7, SECKEYPrivateKey *privkey)
 		cm_log(1, "Unable to match digest algorithm and key.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
-	if (SEC_SignData(&signature, item.data, item.len, privkey,
+	if (SEC_SignData(&signature, sabuf, salen, privkey,
 			 sigalg) != SECSuccess) {
 		cm_log(1, "Error re-signing: %s.\n",
 		       PR_ErrorToName(PORT_GetError()));
