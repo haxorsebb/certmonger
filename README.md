@@ -21,19 +21,26 @@ expire.  If you tell it where the private key is, and where the CA is,
 it can go ahead and try to re-enroll if you like.
 
 Keys and certificates can be stored and read in any of these formats:
+
   * PEM-formatted files
   * NSS database (dbm or sql)
 
-The certmonger daemon knows how to self-sign certificates, and will be
-able to submit requests to:
-  * self-signing [implemented]
-  * IPA [implemented]
-  * certmaster [implemented]
-I'd like for it to also be able to submit requests to:
-  * Dogtag/RHCS
-  * ADCS
-And perhaps also:
-  * KMIP-compatible systems
-  * SCEP
+The certmonger daemon knows how to self-sign certificates, and can submit
+signing to:
 
-This package is hosted at http://certmonger.fedorahosted.org/.
+  * [FreeIPA](http://www.freeipa.org/)
+  * certmaster
+  * [Dogtag](http://pki.fedoraproject.org/)
+  * SCEP servers
+
+I'd like for it to also be able to submit requests to:
+
+  * ADCS
+  * [anchor](https://github.com/openstack/anchor)
+  * ACME servers
+
+And perhaps also:
+
+  * KMIP-compatible systems
+
+This package is hosted at https://pagure.io/certmonger/.
