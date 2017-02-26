@@ -172,10 +172,18 @@ if ! ${configure_dist_target_only:-false} ; then
 	PKG_CHECK_MODULES(TALLOC,talloc)
 	PKG_CHECK_MODULES(TEVENT,tevent)
 	PKG_CHECK_MODULES(DBUS,dbus-1 >= 1.0)
-	SESSIONBUSSERVICESDIR=`pkg-config --variable=session_bus_services_dir dbus-1 2> /dev/null | sed -e "s|^${datadir}|\${datadir}|g" -e "s|^${datarootdir}|\${datarootdir}|g" -e "s|^${prefix}/share|\${datadir}|g"`
+	AC_ARG_WITH(session-bus-services-dir,
+	AS_HELP_STRING([--with-session-bus-services-dir=],[directory to install session bus configuration]),
+	SESSIONBUSSERVICESDIR=$withval,
+	SESSIONBUSSERVICESDIR=`pkg-config --variable=session_bus_services_dir dbus-1 2> /dev/null | sed -e "s|^${datadir}|\${datadir}|g" -e "s|^${datarootdir}|\${datarootdir}|g" -e "s|^${prefix}/share|\${datadir}|g"`)
 	AC_SUBST(SESSIONBUSSERVICESDIR)
-	SYSTEMBUSSERVICESDIR=`pkg-config --variable=system_bus_services_dir dbus-1 2> /dev/null | sed -e "s|^${datadir}|\${datadir}|g" -e "s|^${datarootdir}|\${datarootdir}|g" -e "s|^${prefix}/share|\${datadir}|g"`
+	AM_CONDITIONAL(SESSIONBUS,test x$SESSIONBUSSERVICESDIR != xno)
+	AC_ARG_WITH(system-bus-services-dir,
+	AS_HELP_STRING([--with-system-bus-services-dir=],[directory to install system bus configuration]),
+	SESSIONBUSSERVICESDIR=$withval,
+	SYSTEMBUSSERVICESDIR=`pkg-config --variable=system_bus_services_dir dbus-1 2> /dev/null | sed -e "s|^${datadir}|\${datadir}|g" -e "s|^${datarootdir}|\${datarootdir}|g" -e "s|^${prefix}/share|\${datadir}|g"`)
 	AC_SUBST(SYSTEMBUSSERVICESDIR)
+	AM_CONDITIONAL(SYSTEMBUS,test x$SYSTEMBUSSERVICESDIR != xno)
 
 	AC_CHECK_FUNCS(clearenv)
 	AC_CHECK_DECLS(strtold,,,[
@@ -834,6 +842,8 @@ if ! ${configure_dist_target_only:-false} ; then
 	AC_SUBST(POPT_CFLAGS)
 	AC_SUBST(POPT_LIBS)
 else
+	AM_CONDITIONAL(SESSIONBUS,false)
+	AM_CONDITIONAL(SYSTEMBUS,false)
 	AM_CONDITIONAL(HAVE_OPENSSL,false)
 	AM_CONDITIONAL(HAVE_NSS,false)
 	AM_CONDITIONAL(HAVE_SQL_NSSDB,false)

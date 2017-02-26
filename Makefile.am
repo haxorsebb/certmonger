@@ -4,7 +4,7 @@ SUBDIRS = po src dbus systemd sysvinit tests
 EXTRA_DIST = config.rpath \
 	     certmonger.spec LICENSE README.md STATUS doc src/certmonger.conf.in
 
-DISTCHECK_CONFIGURE_FLAGS = --enable-systemd --enable-sysvinit=/etc/rc.d/init.d --with-tmpdir=/var/run/certmonger
+DISTCHECK_CONFIGURE_FLAGS = --disable-systemd --disable-sysvinit --with-tmpdir=/var/run/certmonger --without-system-bus-services-dir --without-session-bus-services-dir
 
 VERSION=$(PACKAGE_VERSION)
 RELEASE=
