@@ -103,9 +103,37 @@ EXTRA_DIST = \
 	018-pembase/run.sh \
 	019-dparse/expected.out \
 	019-dparse/run.sh \
-	019-dparse/good.* \
-	019-dparse/bad.* \
-	020-xparse/*.xml \
+	019-dparse/bad.checkRequest.nosuch \
+	019-dparse/bad.displayCertFromRequest.incomplete \
+	019-dparse/bad.displayCertFromRequest.no-such-request \
+	019-dparse/bad.displayCertFromRequest.rejected \
+	019-dparse/bad.profileProcess.bad-property \
+	019-dparse/bad.profileProcess.no-agent-cert \
+	019-dparse/bad.profileProcess.no-ca-cert \
+	019-dparse/bad.profileProcess.no-property \
+	019-dparse/bad.profileProcess.not-pending \
+	019-dparse/bad.profileReview.no-such-request \
+	019-dparse/bad.profileReview.unauthorized-cert \
+	019-dparse/bad.profileReview.wrong-nssdb \
+	019-dparse/bad.profileSubmit.csr.empty \
+	019-dparse/bad.profileSubmit.csr.subject-mismatch \
+	019-dparse/bad.profileSubmit.serial.empty \
+	019-dparse/bad.profileSubmit.serial.invalid \
+	019-dparse/bad.profileSubmit.serial.out-of-range \
+	019-dparse/good.checkRequest.complete \
+	019-dparse/good.checkRequest.pending \
+	019-dparse/good.displayCertFromRequest \
+	019-dparse/good.profileList \
+	019-dparse/good.profileReview \
+	019-dparse/good.profileSubmit.issued \
+	019-dparse/good.profileSubmit.serial.in-range \
+	020-xparse/certmaster-fault.xml \
+	020-xparse/certmaster-rep1.xml \
+	020-xparse/certmaster-rep2.xml \
+	020-xparse/certmaster-req.xml \
+	020-xparse/ipa-fault.xml \
+	020-xparse/ipa-rep-new.xml \
+	020-xparse/ipa-req.xml \
 	021-resume/expected.out \
 	021-resume/run.sh \
 	022-base64/expected.out \
@@ -146,8 +174,45 @@ EXTRA_DIST = \
 	034-perms-sql/run.sh \
 	035-json/expected.out \
 	035-json/run.sh \
-	035-json/good.* \
-	035-json/bad.* \
+	035-json/bad.1 \
+	035-json/bad.15 \
+	035-json/bad.1a \
+	035-json/bad.1b \
+	035-json/bad.1c \
+	035-json/bad.1d \
+	035-json/bad.1e \
+	035-json/bad.2 \
+	035-json/bad.3 \
+	035-json/bad.4 \
+	035-json/bad.5 \
+	035-json/bad.6 \
+	035-json/bad.8 \
+	035-json/bad.9 \
+	035-json/good.1 \
+	035-json/good.10 \
+	035-json/good.11 \
+	035-json/good.12 \
+	035-json/good.13 \
+	035-json/good.14 \
+	035-json/good.15 \
+	035-json/good.16 \
+	035-json/good.17 \
+	035-json/good.18 \
+	035-json/good.19 \
+	035-json/good.2 \
+	035-json/good.20 \
+	035-json/good.21 \
+	035-json/good.22 \
+	035-json/good.2a \
+	035-json/good.2b \
+	035-json/good.2c \
+	035-json/good.3 \
+	035-json/good.4 \
+	035-json/good.5 \
+	035-json/good.6 \
+	035-json/good.7 \
+	035-json/good.8 \
+	035-json/good.9 \
 	036-getcert/expected.out \
 	036-getcert/run.sh \
 	037-rekey2/expected.out \
