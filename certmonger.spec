@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.79.1
+Version:	0.79.2
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -243,8 +243,12 @@ exit 0
 %endif
 
 %changelog
+* Mon Feb 27 2017 Nalin Dahyabhai <nalin@redhat.com> 0.79.2-1
+- update to 0.79.2:
+  - fix 'make distcheck' target
+
 * Sun Feb 19 2017 Nalin Dahyabhai <nalin@redhat.com> 0.79.1-1
-- update to 0.79:
+- update to 0.79.1:
   - update translations
   - fix 'make archive' target
 
