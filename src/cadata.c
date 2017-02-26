@@ -275,6 +275,7 @@ parse_json_cert_list(void *parent, struct cm_json *nickcerts)
 			     i++) {
 				c = talloc_ptrtype(ret, c);
 				if (c != NULL) {
+					memset(c, 0, sizeof(*c));
 					cert = cm_json_n(nickcerts, i);
 					if (cm_json_type(cert) != cm_json_type_object) {
 						continue;
