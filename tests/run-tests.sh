@@ -65,6 +65,7 @@ for testid in "$@" $subdirs ; do
 	fi
 	if test -x "$srcdir"/"$testid"/run.sh ; then
 		pushd "$srcdir"/"$testid" > /dev/null
+		mkdir -p "$builddir"/"$testid"
 		rm -fr "$tmpdir"/*
 		mkdir -m 500 "$tmpdir"/rosubdir
 		mkdir -m 700 "$tmpdir"/rwsubdir
