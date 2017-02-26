@@ -10,7 +10,7 @@ SCEP_MSGTYPE_GETCRL="22"
 CERTMONGER_CONFIG_DIR="$tmpdir"
 export CERTMONGER_CONFIG_DIR
 
-$toolsdir/cachain.sh 0 2> /dev/null
+$srcdir/tools/cachain.sh 0 2> /dev/null
 
 cat > ca << EOF
 id=SCEP
