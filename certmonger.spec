@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.79
+Version:	0.79.1
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -243,6 +243,11 @@ exit 0
 %endif
 
 %changelog
+* Sun Feb 19 2017 Nalin Dahyabhai <nalin@redhat.com> 0.79.1-1
+- update to 0.79:
+  - update translations
+  - fix 'make archive' target
+
 * Sun Feb 19 2017 Nalin Dahyabhai <nalin@redhat.com> 0.79-1
 - update to 0.79:
   - getcert now offers an option (-X) for requesting processing by a particular
