@@ -1,7 +1,7 @@
 AC_INIT(certmonger,0.78.6)
 AM_INIT_AUTOMAKE([foreign subdir-objects])
 AC_CONFIG_MACRO_DIR(m4)
-AM_MAINTAINER_MODE([enable])
+AM_MAINTAINER_MODE([disable])
 AC_PROG_CC
 AM_PROG_CC_C_O
 AC_PROG_RANLIB
@@ -459,10 +459,10 @@ if ! ${configure_dist_target_only:-false} ; then
 					return 1;
 				}
 			],
-			AC_DEFINE(HAVE_DBM_NSSDB,1,[Define if your copy of NSS supports DBMite databases.])
+			AC_DEFINE(HAVE_DBM_NSSDB,1,[Define if your copy of NSS supports DBM databases.])
 			have_dbm_nssdb=yes,
 			have_dbm_nssdb=no,
-			AC_DEFINE(HAVE_DBM_NSSDB,1,[Define if your copy of NSS supports DBMite databases.])
+			AC_DEFINE(HAVE_DBM_NSSDB,1,[Define if your copy of NSS supports DBM databases.])
 			have_dbm_nssdb="guessing yes")
 		rm -f -r _nss_db_testdir
 		AC_MSG_RESULT($have_dbm_nssdb)
