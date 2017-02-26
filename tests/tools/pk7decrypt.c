@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Red Hat, Inc.
+ * Copyright (C) 2015,2017 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,11 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <fcntl.h>
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
 #include <limits.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,6 +34,8 @@
 
 #include <openssl/err.h>
 #include <openssl/objects.h>
+#include <openssl/x509.h>
+#include <openssl/x509v3.h>
 
 #include "../../src/log.h"
 #include "../../src/pkcs7.h"

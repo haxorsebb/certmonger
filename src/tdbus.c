@@ -882,7 +882,7 @@ cm_tdbus_setup_private(struct tevent_context *ec, void *data,
 		} else
 #endif
 #ifdef HAVE_OPENSSL
-		if (!RAND_pseudo_bytes(uuid, sizeof(uuid))) {
+		if (!RAND_bytes(uuid, sizeof(uuid))) {
 			/* Try again sometime later. */
 			cm_log(1, "Error generating UUID.\n");
 			talloc_free(tdb);

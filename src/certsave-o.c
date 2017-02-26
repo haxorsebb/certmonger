@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2013,2014,2015 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2013,2014,2015,2017 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -252,7 +252,7 @@ cm_certsave_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		if (bio != NULL) {
 			cert = PEM_read_bio_X509(bio, NULL, NULL, NULL);
 			if (cert != NULL) {
-				bn = ASN1_INTEGER_to_BN(cert->cert_info->serialNumber, NULL);
+				bn = ASN1_INTEGER_to_BN(util_X509_get0_serialNumber(cert), NULL);
 				if (bn != NULL) {
 					bin = malloc(BN_num_bytes(bn));
 					if (bin != NULL) {

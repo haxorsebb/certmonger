@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Red Hat, Inc.
+ * Copyright (C) 2015,2017 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -141,17 +141,6 @@ cert_from_pem(char *pem, struct cm_store_entry *entry)
 	return NULL;
 }
 
-static int
-cert_cmp(const void *a, const void *b)
-{
-	X509 * const *x, * const *y;
-
-	x = a;
-	y = b;
-	return X509_cmp(*x, *y);
-}
-
-
 static STACK_OF(X509) *
 certs_from_nickcerts(struct cm_nickcert **list)
 {
@@ -176,7 +165,7 @@ certs_from_nickcerts(struct cm_nickcert **list)
 				_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 			}
 			if (sk == NULL) {
-				sk = sk_X509_new(cert_cmp);
+				sk = sk_X509_new(util_o_cert_cmp);
 				if (sk == NULL) {
 					cm_log(1, "Out of memory.\n");
 					_exit(CM_SUB_STATUS_INTERNAL_ERROR);
@@ -226,7 +215,7 @@ set_pkimessage_attrs(PKCS7 *p7,
 	sinfo = sk_PKCS7_SIGNER_INFO_value(p7->d.sign->signer_info, 0);
 	if (tx != NULL) {
 		cm_log(1, "Setting transaction ID \"%s\".\n", tx);
-		t = M_ASN1_PRINTABLE_new();
+		t = util_ASN1_PRINTABLESTRING_new();
 		if (t == NULL) {
 			return;
 		}
@@ -236,7 +225,7 @@ set_pkimessage_attrs(PKCS7 *p7,
 	}
 	if (msgtype != NULL) {
 		cm_log(1, "Setting message type \"%s\".\n", msgtype);
-		m = M_ASN1_PRINTABLE_new();
+		m = util_ASN1_PRINTABLESTRING_new();
 		if (m == NULL) {
 			return;
 		}
@@ -246,7 +235,7 @@ set_pkimessage_attrs(PKCS7 *p7,
 	}
 	if (pkistatus != NULL) {
 		cm_log(1, "Setting pkiStatus \"%s\".\n", pkistatus);
-		p = M_ASN1_PRINTABLE_new();
+		p = util_ASN1_PRINTABLESTRING_new();
 		if (p == NULL) {
 			return;
 		}
@@ -256,7 +245,7 @@ set_pkimessage_attrs(PKCS7 *p7,
 	}
 	if (failinfo != NULL) {
 		cm_log(1, "Setting failInfo \"%s\".\n", failinfo);
-		f = M_ASN1_PRINTABLE_new();
+		f = util_ASN1_PRINTABLESTRING_new();
 		if (f == NULL) {
 			return;
 		}
@@ -266,21 +255,21 @@ set_pkimessage_attrs(PKCS7 *p7,
 	}
 	if (sender_nonce != NULL) {
 		cm_log(1, "Setting sender nonce.\n");
-		s = ASN1_OCTET_STRING_new();
+		s = util_ASN1_OCTET_STRING_new();
 		if (s == NULL) {
 			return;
 		}
-		M_ASN1_OCTET_STRING_set(s, sender_nonce, sender_nonce_length);
+		util_ASN1_OCTET_STRING_set(s, sender_nonce, sender_nonce_length);
 		PKCS7_add_signed_attribute(sinfo, cm_scep_o_get_sender_nonce_nid(),
 					   V_ASN1_OCTET_STRING, s);
 	}
 	if (recipient_nonce != NULL) {
 		cm_log(1, "Setting recipient nonce.\n");
-		r = ASN1_OCTET_STRING_new();
+		r = util_ASN1_OCTET_STRING_new();
 		if (r == NULL) {
 			return;
 		}
-		M_ASN1_OCTET_STRING_set(r, recipient_nonce, recipient_nonce_length);
+		util_ASN1_OCTET_STRING_set(r, recipient_nonce, recipient_nonce_length);
 		PKCS7_add_signed_attribute(sinfo,
 					   cm_scep_o_get_recipient_nonce_nid(),
 					   V_ASN1_OCTET_STRING, r);
@@ -408,7 +397,7 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 		cm_log(1, "PRNG not seeded for generating key.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
-	if (RAND_pseudo_bytes(nonce, nonce_length) == -1) {
+	if (RAND_bytes(nonce, nonce_length) == -1) {
 		cm_log(1, "PRNG unable to generate nonce.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
@@ -510,8 +499,12 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 	if (old_cert != NULL) {
 		/* Sign the data using the previously-issued certificate and
 		 * the matching key. */
-		pubkey = X509_PUBKEY_get(old_cert->cert_info->key);
-		X509_PUBKEY_set(&old_cert->cert_info->key, old_pkey);
+		pubkey = util_public_EVP_PKEY_dup(util_X509_get0_pubkey(old_cert));
+		if (pubkey == NULL) {
+			cm_log(1, "Error generating PKCSREQ pkiMessage: error copying key.\n");
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		}
+		util_X509_set_pubkey(old_cert, old_pkey);
 		cm_log(1, "Generating PKCSREQ pkiMessage.\n");
 		*csr_old = build_pkimessage(old_pkey, old_cert, chain, digest,
 					    csr, csr_length,
@@ -529,15 +522,20 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 					    nonce, nonce_length,
 					    NULL, 0);
 		cm_log(1, "Signing using previously-issued key and cert.\n");
-		X509_PUBKEY_set(&old_cert->cert_info->key, pubkey);
+		util_X509_set_pubkey(old_cert, pubkey);
+		EVP_PKEY_free(pubkey);
 		X509_free(old_cert);
 	} else {
 		if (new_pkey == NULL) {
 			/* Sign the data using the old key and the mini certificate,
 			 * since we may not have a previously-issued certificate (and
 			 * if we do, we did that in another code path. */
-			pubkey = X509_PUBKEY_get(new_cert->cert_info->key);
-			X509_PUBKEY_set(&new_cert->cert_info->key, old_pkey);
+			pubkey = util_public_EVP_PKEY_dup(util_X509_get0_pubkey(new_cert));
+			if (pubkey == NULL) {
+				cm_log(1, "Error generating PKCSREQ pkiMessage: error copying key.\n");
+				_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+			}
+			util_X509_set_pubkey(new_cert, old_pkey);
 			cm_log(1, "Generating PKCSREQ pkiMessage.\n");
 			*csr_old = build_pkimessage(old_pkey, new_cert, chain, digest,
 						    csr, csr_length,
@@ -555,7 +553,8 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 						    nonce, nonce_length,
 						    NULL, 0);
 			cm_log(1, "Signing using old key.\n");
-			X509_PUBKEY_set(&new_cert->cert_info->key, pubkey);
+			util_X509_set_pubkey(new_cert, pubkey);
+			EVP_PKEY_free(pubkey);
 		} else {
 			/* No cert, and the minicert matches the new key. */
 			*csr_old = NULL;
@@ -565,8 +564,12 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 	if (new_pkey != NULL) {
 		/* Sign the data using the new key and mini certificate, since
 		 * any previously-issued certificate won't match. */
-		pubkey = X509_PUBKEY_get(new_cert->cert_info->key);
-		X509_PUBKEY_set(&new_cert->cert_info->key, new_pkey);
+		pubkey = util_public_EVP_PKEY_dup(util_X509_get0_pubkey(new_cert));
+		if (pubkey == NULL) {
+			cm_log(1, "Error generating rekeying PKCSREQ pkiMessage: error copying key.\n");
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		}
+		util_X509_set_pubkey(new_cert, new_pkey);
 		cm_log(1, "Generating rekeying PKCSREQ pkiMessage.\n");
 		*csr_new = build_pkimessage(new_pkey, new_cert, chain, digest,
 					    csr, csr_length,
@@ -584,7 +587,8 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 					    nonce, nonce_length,
 					    NULL, 0);
 		cm_log(1, "Signing using new key.\n");
-		X509_PUBKEY_set(&new_cert->cert_info->key, pubkey);
+		util_X509_set_pubkey(new_cert, pubkey);
+		EVP_PKEY_free(pubkey);
 	} else {
 		*csr_new = NULL;
 		*ias_new = NULL;
@@ -644,8 +648,8 @@ cm_scepgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	} else {
 		new_pkey = NULL;
 	}
-	if ((EVP_PKEY_type(old_pkey->type) != EVP_PKEY_RSA) ||
-	    ((new_pkey != NULL) && (EVP_PKEY_type(new_pkey->type) != EVP_PKEY_RSA))) {
+	if ((util_EVP_PKEY_base_id(old_pkey) != EVP_PKEY_RSA) ||
+	    ((new_pkey != NULL) && (util_EVP_PKEY_base_id(new_pkey) != EVP_PKEY_RSA))) {
 		cm_log(1, "Keys aren't RSA.  They won't work with SCEP.\n");
 		_exit(CM_SUB_STATUS_ERROR_KEY_TYPE);
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Red Hat, Inc.
+ * Copyright (C) 2014,2015 Red Hat, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@
 #define cmsubmito_h
 
 SECOidTag cm_submit_n_tag_from_nid(int nid);
-int cm_submit_n_nid_from_tag(SECOidTag tag);
 
 int cm_submit_o_sign(void *parent, char *csr,
 		     X509 *signer, EVP_PKEY *signer_key,

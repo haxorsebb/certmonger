@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Red Hat, Inc.
+ * Copyright (C) 2015,2017 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,6 +38,7 @@
 #include <secpkcs7.h>
 #include <secport.h>
 
+#include <openssl/asn1t.h>
 #include <openssl/bn.h>
 #include <openssl/evp.h>
 #include <openssl/pkcs7.h>
@@ -63,6 +64,7 @@
 #include "submit-u.h"
 #include "subproc.h"
 #include "util-n.h"
+#include "util-o.h"
 
 struct cm_scepgen_state {
 	struct cm_scepgen_state_pvt pvt;
@@ -74,12 +76,13 @@ static void
 cm_scepgen_n_resign(PKCS7 *p7, SECKEYPrivateKey *privkey)
 {
 	unsigned char *sabuf = NULL, *u;
-	int salen;
+	int salen, l;
 	SECItem signature;
 	SECOidTag digalg, sigalg;
 	PKCS7_SIGNER_INFO *sinfo;
 
 	if (p7 == NULL) {
+		cm_log(1, "Nothing to resign.\n");
 		return;
 	}
 	if (sk_PKCS7_SIGNER_INFO_num(p7->d.sign->signer_info) != 1) {
@@ -87,26 +90,21 @@ cm_scepgen_n_resign(PKCS7 *p7, SECKEYPrivateKey *privkey)
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	sinfo = sk_PKCS7_SIGNER_INFO_value(p7->d.sign->signer_info, 0);
-
-	salen = i2d_ASN1_SET_OF_X509_ATTRIBUTE(sinfo->auth_attr, NULL,
-					       i2d_X509_ATTRIBUTE,
-					       V_ASN1_SET,
-					       V_ASN1_UNIVERSAL,
-					       IS_SET);
-	sabuf = malloc(salen);
+	salen = ASN1_item_i2d((ASN1_VALUE *)sinfo->auth_attr, NULL, &PKCS7_ATTR_SIGN_it);
+	u = sabuf = malloc(salen);
 	if (sabuf == NULL) {
 		cm_log(1, "Out of memory.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
-	u = sabuf;
-	if (i2d_ASN1_SET_OF_X509_ATTRIBUTE(sinfo->auth_attr, &u,
-					   i2d_X509_ATTRIBUTE,
-					   V_ASN1_SET,
-					   V_ASN1_UNIVERSAL,
-					   IS_SET) != salen) {
-		cm_log(1, "Encoding error.\n");
+	/* ASN1_item_i2d doesn't actually modify the passed-in pointer, which
+	 * allows it to allocate the memory on its own, but we want to handle
+	 * that ourselves. */
+	l = ASN1_item_i2d((ASN1_VALUE *)sinfo->auth_attr, &u, &PKCS7_ATTR_SIGN_it);
+	if (l != salen) {
+		cm_log(1, "Error encoding attributes.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
+
 	memset(&signature, 0, sizeof(signature));
 	digalg = cm_submit_n_tag_from_nid(OBJ_obj2nid(sinfo->digest_alg->algorithm));
 	sigalg = SEC_GetSignatureAlgorithmOidTag(privkey->keyType, digalg);
@@ -120,9 +118,8 @@ cm_scepgen_n_resign(PKCS7 *p7, SECKEYPrivateKey *privkey)
 		       PR_ErrorToName(PORT_GetError()));
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
-	M_ASN1_OCTET_STRING_set(sinfo->enc_digest,
-				signature.data, signature.len);
-	free(sabuf);
+	util_ASN1_OCTET_STRING_set(sinfo->enc_digest,
+				   signature.data, signature.len);
 }
 
 static int

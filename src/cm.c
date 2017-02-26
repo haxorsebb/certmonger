@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2014,2015 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2014,2015,2017 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -600,7 +600,8 @@ cm_add_entry(struct cm_context *context, struct cm_store_entry *new_entry)
 	struct cm_store_entry **entries;
 	struct cm_event *events;
 	int i;
-	char uuidstring[37];
+	time_t now;
+	char timestamp[15];
 
 	/* Check for duplicates and count the number of entries we're already
 	 * managing. */
@@ -612,11 +613,23 @@ cm_add_entry(struct cm_context *context, struct cm_store_entry *new_entry)
 			}
 		}
 	} else {
-		/* Assign a new ID. */
-		if (cm_store_make_uuid_string_underscore(uuidstring) < 0) {
-			return -1;
-		}
-		new_entry->cm_nickname = talloc_strdup(new_entry, uuidstring);
+		do {
+			/* Try to assign a new ID. */
+			now = cm_time(NULL);
+			new_entry->cm_nickname = cm_store_timestamp_from_time(now,
+									      timestamp);
+			/* Check for duplicates. */
+			for (i = 0; i < context->n_entries; i++) {
+				if (strcmp(context->entries[i]->cm_nickname,
+					   new_entry->cm_nickname) == 0) {
+					/* Busy wait 0.1s. Ugh. */
+					usleep(100000);
+					break;
+				}
+			}
+		} while (i < context->n_entries);
+		new_entry->cm_nickname = talloc_strdup(new_entry,
+						       new_entry->cm_nickname);
 	}
 	/* Resize the entry array. */
 	events = NULL;
@@ -991,7 +1004,8 @@ cm_add_ca(struct cm_context *context, struct cm_store_ca *new_ca)
 	struct cm_store_ca **cas;
 	struct cm_ca_event *events;
 	int i;
-	char uuidstring[37];
+	time_t now;
+	char timestamp[15];
 	enum cm_ca_phase phase;
 
 	/* Check for duplicates and count the number of CAs we're already
@@ -1004,11 +1018,23 @@ cm_add_ca(struct cm_context *context, struct cm_store_ca *new_ca)
 			}
 		}
 	} else {
-		/* Assign a new ID. */
-		if (cm_store_make_uuid_string_underscore(uuidstring) < 0) {
-			return -1;
-		}
-		new_ca->cm_nickname = talloc_strdup(new_ca, uuidstring);
+		do {
+			/* Try to assign a new nickname. */
+			now = cm_time(NULL);
+			new_ca->cm_nickname = cm_store_timestamp_from_time(now,
+									   timestamp);
+			/* Check for duplicates. */
+			for (i = 0; i < context->n_cas; i++) {
+				if (strcmp(context->cas[i]->cm_nickname,
+					   new_ca->cm_nickname) == 0) {
+					/* Busy wait 0.1s. Ugh. */
+					usleep(100000);
+					break;
+				}
+			}
+		} while (i < context->n_cas);
+		new_ca->cm_nickname = talloc_strdup(new_ca,
+						    new_ca->cm_nickname);
 	}
 	/* Allocate storage for a new CA array. */
 	cas = talloc_realloc(context, context->cas, struct cm_store_ca *,

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Red Hat, Inc.
+ * Copyright (C) 2015,2017 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,11 @@
 #include "config.h"
 
 #include <sys/types.h>
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
 #include <stdarg.h>
+#include <stdint.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -44,6 +48,7 @@
 #include "scep-o.h"
 #include "store.h"
 #include "submit-u.h"
+#include "util-o.h"
 
 #ifdef ENABLE_NLS
 #include <libintl.h>
@@ -57,35 +62,11 @@
 static int
 issuerissued(X509 *issuer, X509 *issued)
 {
-	GENERAL_NAME *gn;
-	int i;
-
-	if ((issuer->skid != NULL) &&
-	    (issued->akid != NULL) &&
-	    (issued->akid->keyid != NULL)) {
-		if (M_ASN1_OCTET_STRING_cmp(issuer->skid,
-					    issued->akid->keyid) == 0) {
-			return 0;
-		}
+	if (X509_check_issued(issuer, issued) == X509_V_OK) {
+		return 0;
 	}
-	if ((issued->akid != NULL) &&
-	    (issued->akid->issuer != NULL) &&
-	    (issued->akid->serial != NULL)) {
-		for (i = 0;
-		     i < sk_GENERAL_NAME_num(issued->akid->issuer);
-		     i++) {
-			gn = sk_GENERAL_NAME_value(issued->akid->issuer, i);
-			if ((gn->type == GEN_DIRNAME) &&
-			    (X509_NAME_cmp(issuer->cert_info->issuer,
-					   gn->d.dirn) == 0) &&
-			    (M_ASN1_INTEGER_cmp(issuer->cert_info->serialNumber,
-						issued->akid->serial) == 0)) {
-				return 0;
-			}
-		}
-	}
-	return X509_name_cmp(issuer->cert_info->subject,
-			     issued->cert_info->issuer);
+	return X509_name_cmp(util_X509_get0_subject_name(issuer),
+			     util_X509_get0_issuer_name(issued));
 }
 
 /* Render the certificate as a PEM string. */
@@ -121,23 +102,13 @@ pemx509(void *parent, X509 *x)
 	return ret;
 }
 
-/* Wrap the comparison function to handle the callback indirection. */
-static int
-cert_cmp(const void *a, const void *b)
-{
-	X509 * const *x, * const *y;
-	x = a;
-	y = b;
-	return X509_cmp(*x, *y);
-}
-
 /* Return 0 if "candidate" is more like what we're looking for than "current". */
 static int
 betterleaf(X509 *candidate, X509 *current, unsigned int flags)
 {
 	if (flags & CM_PKCS7_LEAF_PREFER_ENCRYPT) {
-		if (((candidate->ex_kusage & (KU_KEY_ENCIPHERMENT | KU_DATA_ENCIPHERMENT)) != 0) &&
-		    ((current->ex_kusage & (KU_KEY_ENCIPHERMENT | KU_DATA_ENCIPHERMENT)) == 0)) {
+		if (((util_X509_get_key_usage(candidate) & (KU_KEY_ENCIPHERMENT | KU_DATA_ENCIPHERMENT)) != 0) &&
+		    ((util_X509_get_key_usage(current) & (KU_KEY_ENCIPHERMENT | KU_DATA_ENCIPHERMENT)) == 0)) {
 			return 0;
 		}
 	}
@@ -330,7 +301,7 @@ cm_pkcs7_parsev(unsigned int flags, void *parent,
 		*certtop = NULL;
 	}
 
-	sk = sk_X509_new(cert_cmp);
+	sk = sk_X509_new(util_o_cert_cmp);
 	if (sk == NULL) {
 		return -1;
 	}
@@ -559,7 +530,7 @@ cm_pkcs7_envelope_data(char *encryption_cert, enum cm_prefs_cipher cipher,
 	}
 	BIO_free(in);
 
-	recipients = sk_X509_new(cert_cmp);
+	recipients = sk_X509_new(util_o_cert_cmp);
 	if (recipients == NULL) {
 		cm_log(1, "Out of memory.\n");
 		goto done;
@@ -722,7 +693,7 @@ cm_pkcs7_generate_ias(char *cacert, char *minicert,
 		goto done;
 	}
 
-	issuerlen = i2d_X509_NAME(ca->cert_info->issuer, NULL);
+	issuerlen = i2d_X509_NAME(X509_get_issuer_name(ca), NULL);
 	if (issuerlen < 0) {
 		cm_log(1, "Error encoding CA certificate issuer name.\n");
 		goto done;
@@ -733,12 +704,12 @@ cm_pkcs7_generate_ias(char *cacert, char *minicert,
 		goto done;
 	}
 	u = issuer;
-	if (i2d_X509_NAME(ca->cert_info->issuer, &u) != issuerlen) {
+	if (i2d_X509_NAME(X509_get_issuer_name(ca), &u) != issuerlen) {
 		cm_log(1, "Error encoding CA certificate issuer name.\n");
 		goto done;
 	}
 
-	subjectlen = i2d_X509_NAME(mini->cert_info->subject, NULL);
+	subjectlen = i2d_X509_NAME(X509_get_subject_name(mini), NULL);
 	if (subjectlen < 0) {
 		cm_log(1, "Error encoding client certificate subject name.\n");
 		goto done;
@@ -749,7 +720,7 @@ cm_pkcs7_generate_ias(char *cacert, char *minicert,
 		goto done;
 	}
 	u = subject;
-	if (i2d_X509_NAME(mini->cert_info->subject, &u) != subjectlen) {
+	if (i2d_X509_NAME(X509_get_subject_name(mini), &u) != subjectlen) {
 		cm_log(1, "Error encoding client certificate subject name.\n");
 		goto done;
 	}
@@ -827,23 +798,21 @@ get_pstring_attribute(void *parent, STACK_OF(X509_ATTRIBUTE) *attrs, int nid)
 	}
 	for (i = 0; i < sk_X509_ATTRIBUTE_num(attrs); i++) {
 		a = sk_X509_ATTRIBUTE_value(attrs, i);
-		if (OBJ_obj2nid(a->object) != nid) {
+		if (a == NULL) { /* should not happen */
 			continue;
 		}
-		if (a->single) {
-			value = a->value.single;
-		} else {
-			if (sk_ASN1_TYPE_num(a->value.set) == 1) {
-				value = sk_ASN1_TYPE_value(a->value.set, 0);
-			} else {
-				value = NULL;
-			}
+		if (OBJ_obj2nid(util_X509_ATTRIBUTE_get0_object(a)) != nid) {
+			continue;
 		}
+		if (X509_ATTRIBUTE_count(a) != 1) {
+			continue;
+		}
+		value = X509_ATTRIBUTE_get0_type(a, 0);
 		if ((value != NULL) && (value->type == V_ASN1_PRINTABLESTRING)) {
 			p = value->value.printablestring;
 			if (p != NULL) {
-				len = ASN1_STRING_length(p);
-				s = (const char *) ASN1_STRING_data(p);
+				len = util_ASN1_STRING_length(p);
+				s = (const char *) util_ASN1_STRING_get0_data(p);
 				ret = talloc_size(parent, len + 1);
 				if (ret != NULL) {
 					memcpy(ret, s, len);
@@ -864,7 +833,7 @@ get_ostring_attribute(void *parent, STACK_OF(X509_ATTRIBUTE) *attrs, int nid,
 	ASN1_TYPE *value;
 	ASN1_OCTET_STRING *p;
 	const unsigned char *s;
-	int i;
+	int i, len;
 
 	*ret = NULL;
 	*length = 0;
@@ -873,27 +842,25 @@ get_ostring_attribute(void *parent, STACK_OF(X509_ATTRIBUTE) *attrs, int nid,
 	}
 	for (i = 0; i < sk_X509_ATTRIBUTE_num(attrs); i++) {
 		a = sk_X509_ATTRIBUTE_value(attrs, i);
-		if (OBJ_obj2nid(a->object) != nid) {
+		if (a == NULL) { /* should not happen */
 			continue;
 		}
-		if (a->single) {
-			value = a->value.single;
-		} else {
-			if (sk_ASN1_TYPE_num(a->value.set) == 1) {
-				value = sk_ASN1_TYPE_value(a->value.set, 0);
-			} else {
-				value = NULL;
-			}
+		if (OBJ_obj2nid(util_X509_ATTRIBUTE_get0_object(a)) != nid) {
+			continue;
 		}
+		if (X509_ATTRIBUTE_count(a) != 1) {
+			continue;
+		}
+		value = X509_ATTRIBUTE_get0_type(a, 0);
 		if ((value != NULL) && (value->type == V_ASN1_OCTET_STRING)) {
 			p = value->value.octet_string;
 			if (p != NULL) {
-				i = ASN1_STRING_length(p);
-				s = ASN1_STRING_data(p);
-				*ret = talloc_size(parent, i + 1);
+				len = util_ASN1_STRING_length(p);
+				s = util_ASN1_STRING_get0_data(p);
+				*ret = talloc_size(parent, len + 1);
 				if (*ret != NULL) {
-					memcpy(*ret, s, i);
-					*length = i;
+					memcpy(*ret, s, len);
+					*length = len;
 					return;
 				}
 			}
@@ -994,7 +961,7 @@ cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 		goto done;
 	}
 	X509_STORE_set_verify_cb_func(store, &ignore_purpose_errors);
-	certs = sk_X509_new(cert_cmp);
+	certs = sk_X509_new(util_o_cert_cmp);
 	if (certs == NULL) {
 		cm_log(1, "Out of memory.\n");
 		goto done;

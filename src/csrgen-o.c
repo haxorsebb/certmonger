@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012,2013,2014,2015 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013,2014,2015,2017 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -84,8 +84,10 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	FILE *keyfp, *status;
 	X509_REQ *req;
 	X509_NAME *subject;
+	const X509_ALGOR *sig_alg;
 	X509 *minicert;
 	ASN1_INTEGER *serial, *version;
+	ASN1_GENERALIZEDTIME *notBefore = NULL, *notAfter = NULL;
 	NETSCAPE_SPKI spki;
 	NETSCAPE_SPKAC spkac;
 	EVP_PKEY *pkey;
@@ -229,7 +231,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				}
 			}
 			if (subject != NULL) {
-				X509_NAME_set(&req->req_info->subject, subject);
+				util_X509_REQ_set_subject_name(req, subject);
 			}
 			X509_REQ_set_pubkey(req, pkey);
 			X509_REQ_set_version(req, SEC_CERTIFICATE_REQUEST_VERSION);
@@ -288,7 +290,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			PEM_write_X509_REQ_NEW(status, req);
 			/* Generate the SPKAC. */
 			memset(&spkac, 0, sizeof(spkac));
-			spkac.challenge = M_ASN1_IA5STRING_new();
+			spkac.challenge = util_ASN1_IA5STRING_new();
 			if (password != NULL) {
 				ASN1_STRING_set(spkac.challenge,
 						password, strlen(password));
@@ -298,8 +300,9 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			}
 			memset(&spki, 0, sizeof(spki));
 			spki.spkac = &spkac;
-			spki.sig_algor = req->sig_alg;
-			spki.signature = M_ASN1_BIT_STRING_new();
+			util_X509_REQ_get0_signature(req, NULL, &sig_alg);
+			util_NETSCAPE_SPKI_set_sig_alg(&spki, sig_alg);
+			spki.signature = util_ASN1_BIT_STRING_new();
 			NETSCAPE_SPKI_set_pubkey(&spki, pkey);
 			NETSCAPE_SPKI_sign(&spki, pkey, cm_prefs_ossl_hash());
 			s = NETSCAPE_SPKI_b64_encode(&spki);
@@ -335,26 +338,24 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			now = gmtime(&nowt);
 			nows = talloc_asprintf(entry, "%04d%02d%02d000000Z",
 					       now->tm_year + 1900, now->tm_mon + 1, now->tm_mday);
-			minicert->cert_info->validity->notBefore = M_ASN1_GENERALIZEDTIME_new();
-			ASN1_GENERALIZEDTIME_set_string(minicert->cert_info->validity->notBefore, nows);
+			notBefore = util_ASN1_GENERALIZEDTIME_new();
+			ASN1_GENERALIZEDTIME_set_string(notBefore, nows);
+			util_X509_set1_notBefore(minicert, notBefore);
 			nows = talloc_asprintf(entry, "%04d%02d%02d000000Z",
 					       now->tm_year + 1900 + 100, now->tm_mon + 1, now->tm_mday);
-			minicert->cert_info->validity->notAfter = M_ASN1_GENERALIZEDTIME_new();
-			ASN1_GENERALIZEDTIME_set_string(minicert->cert_info->validity->notAfter, nows);
-			X509_NAME_set(&minicert->cert_info->issuer, subject);
-			X509_NAME_set(&minicert->cert_info->subject, subject);
-			/* This used to just be X509_set_version(), but
-			 * starting in 1.0.2, OpenSSL began setting it to NULL
-			 * for v1, which breaks tests which expect identical
-			 * output from both NSS and OpenSSL. */
-			version = M_ASN1_INTEGER_new();
+			notAfter = util_ASN1_GENERALIZEDTIME_new();
+			ASN1_GENERALIZEDTIME_set_string(notAfter, nows);
+			util_X509_set1_notAfter(minicert, notAfter);
+			util_X509_set_issuer_name(minicert, subject);
+			util_X509_set_subject_name(minicert, subject);
+			version = util_ASN1_INTEGER_new();
 			if (version == NULL) {
 				cm_log(1, "Out of memory creating mini certificate.\n");
 				_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 			}
-			ASN1_INTEGER_set(version, 0);
-			minicert->cert_info->version = version;
-			serial = M_ASN1_INTEGER_new();
+			ASN1_INTEGER_set(version, cm_csrgen_version_for_testing_minicerts);
+			util_X509_set1_version(minicert, version);
+			serial = util_ASN1_INTEGER_new();
 			if (serial == NULL) {
 				cm_log(1, "Out of memory creating mini certificate.\n");
 				_exit(CM_SUB_STATUS_INTERNAL_ERROR);

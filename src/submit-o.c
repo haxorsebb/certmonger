@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012,2014.2015 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2014,2015,2017 Red Hat, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,13 +26,18 @@
 #include <time.h>
 #include <unistd.h>
 
-#include <nss.h>
-#include <pk11pub.h>
-
 #include <openssl/err.h>
 #include <openssl/pem.h>
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
+
+#include <prerror.h>
+#include <prtypes.h>
+#include <certt.h>
+#include <secasn1.h>
+#include <secerr.h>
+#include <secoidt.h>
+#include <secmodt.h>
 
 #include <krb5.h>
 
@@ -52,6 +57,142 @@
 #include "subproc.h"
 #include "util-o.h"
 
+static void
+cm_submit_o_set_things(X509 **cert, X509 *signer, unsigned char uuid[16], unsigned int uuid_len,
+		       STACK_OF(X509_EXTENSION) *extensions)
+{
+	PLArenaPool *arena = NULL;
+	CERTCertificate subject, issuer;
+	CERTSignedData scert;
+	SECItem item, *encoded;
+	X509_EXTENSION *ext;
+	unsigned char *p, *q;
+	const unsigned char *d;
+	int length, l, i;
+
+	arena = PORT_NewArena(sizeof(double));
+	if (arena == NULL) {
+		cm_log(1, "Out of memory for decoding cert_info.");
+		return;
+	}
+	memset(&item, 0, sizeof(item));
+
+	if (signer != NULL) {
+		length = i2d_X509(signer, NULL);
+		if (length < 0) {
+			cm_log(1, "Error encoding signer cert.");
+			PORT_FreeArena(arena, PR_TRUE);
+			return;
+		}
+		p = q = malloc(length);
+		l = i2d_X509(signer, &q);
+		if (l != length) {
+			cm_log(1, "Error encoding signer cert: %d != %d.", l, length);
+			free(p);
+			PORT_FreeArena(arena, PR_TRUE);
+			return;
+		}
+		memset(&scert, 0, sizeof(scert));
+		item.data = p;
+		item.len = length;
+		if (SEC_ASN1DecodeItem(arena, &scert, CERT_SignedDataTemplate, &item) != SECSuccess) {
+			cm_log(1, "Error decoding signer cert: %s.", PR_ErrorToName(PORT_GetError()));
+			free(p);
+			PORT_FreeArena(arena, PR_TRUE);
+			return;
+		}
+		memset(&issuer, 0, sizeof(issuer));
+		if (SEC_ASN1DecodeItem(arena, &issuer, CERT_CertificateTemplate, &scert.data) != SECSuccess) {
+			cm_log(1, "Error decoding signer cert info: %s.", PR_ErrorToName(PORT_GetError()));
+			free(p);
+			PORT_FreeArena(arena, PR_TRUE);
+			return;
+		}
+		free(p);
+	}
+
+	for (i = 0; i < sk_X509_EXTENSION_num(extensions); i++) {
+		ext = sk_X509_EXTENSION_value(extensions, i);
+		if (ext != NULL) {
+			if (X509_add_ext(*cert, ext, -1) != 1) {
+				cm_log(1, "Error adding extension to certificate.");
+				PORT_FreeArena(arena, PR_TRUE);
+				return;
+			}
+		}
+	}
+
+	length = i2d_X509(*cert, NULL);
+	if (length < 0) {
+		cm_log(1, "Error encoding cert.");
+		PORT_FreeArena(arena, PR_TRUE);
+		return;
+	}
+	p = q = malloc(length);
+	l = i2d_X509(*cert, &q);
+	if (l != length) {
+		cm_log(1, "Error encoding cert: %d != %d.", l, length);
+		free(p);
+		PORT_FreeArena(arena, PR_TRUE);
+		return;
+	}
+	memset(&scert, 0, sizeof(scert));
+	item.data = p;
+	item.len = length;
+	if (SEC_ASN1DecodeItem(arena, &scert, CERT_SignedDataTemplate, &item) != SECSuccess) {
+		cm_log(1, "Error decoding cert: %s.", PR_ErrorToName(PORT_GetError()));
+		free(p);
+		PORT_FreeArena(arena, PR_TRUE);
+		return;
+	}
+	memset(&subject, 0, sizeof(subject));
+	if (SEC_ASN1DecodeItem(arena, &subject, CERT_CertificateTemplate, &scert.data) != SECSuccess) {
+		cm_log(1, "Error decoding cert info: %s.", PR_ErrorToName(PORT_GetError()));
+		free(p);
+		PORT_FreeArena(arena, PR_TRUE);
+		return;
+	}
+	free(p);
+
+	memset(&subject.issuerID, 0, sizeof(subject.issuerID));
+	memset(&subject.subjectID, 0, sizeof(subject.subjectID));
+	if (uuid_len > 0) {
+		subject.subjectID.data = uuid;
+		subject.subjectID.len = uuid_len;
+		if (signer != NULL) {
+			subject.issuerID = issuer.subjectID;
+		} else {
+			subject.issuerID.data = uuid;
+			subject.issuerID.len = uuid_len;
+		}
+	}
+
+	memset(&scert.data, 0, sizeof(scert.data));
+	encoded = SEC_ASN1EncodeItem(arena, &scert.data, &subject, CERT_CertificateTemplate);
+	if (encoded != &scert.data) {
+		cm_log(1, "Error re-encoding cert_info: %s.", PR_ErrorToName(PORT_GetError()));
+		PORT_FreeArena(arena, PR_TRUE);
+		return;
+	}
+	memset(&item, 0, sizeof(item));
+	encoded = SEC_ASN1EncodeItem(arena, &item, &scert, CERT_SignedDataTemplate);
+	if (encoded != &item) {
+		cm_log(1, "Error re-encoding cert: %s.", PR_ErrorToName(PORT_GetError()));
+		PORT_FreeArena(arena, PR_TRUE);
+		return;
+	}
+
+	d = item.data;
+	*cert = d2i_X509(NULL, &d, item.len);
+	if (*cert == NULL) {
+		cm_log(1, "Error re-decoding cert.");
+		PORT_FreeArena(arena, PR_TRUE);
+		return;
+	}
+
+	PORT_FreeArena(arena, PR_TRUE);
+}
+
 int
 cm_submit_o_sign(void *parent, char *csr,
 		 X509 *signer, EVP_PKEY *signer_key,
@@ -61,6 +202,7 @@ cm_submit_o_sign(void *parent, char *csr,
 	X509_REQ *req;
 	BIO *bio;
 	ASN1_INTEGER *seriali;
+	ASN1_TIME *not_before, *not_after;
 	BASIC_CONSTRAINTS *basic;
 	ASN1_OCTET_STRING *skid;
 	AUTHORITY_KEYID akid;
@@ -68,10 +210,8 @@ cm_submit_o_sign(void *parent, char *csr,
 	const unsigned char *serialtmp, *basictmp;
 	char *serial;
 	int status = CM_SUBMIT_STATUS_WAIT, seriall, basicl, crit, i;
-	unsigned int mdlen;
-#ifdef HAVE_UUID
+	unsigned int mdlen, uuid_len;
 	unsigned char uuid[16];
-#endif
 
 	bio = BIO_new_mem_buf(csr, -1);
 	if (bio != NULL) {
@@ -82,18 +222,21 @@ cm_submit_o_sign(void *parent, char *csr,
 			if (*cert != NULL) {
 				X509_set_subject_name(*cert, X509_REQ_get_subject_name(req));
 				if (signer != NULL) {
-					X509_set_issuer_name(*cert, signer->cert_info->subject);
+					X509_set_issuer_name(*cert, X509_get_subject_name(signer));
 				} else {
 					X509_set_issuer_name(*cert, X509_REQ_get_subject_name(req));
 				}
-				X509_set_pubkey(*cert, X509_PUBKEY_get(req->req_info->pubkey));
-				ASN1_TIME_set((*cert)->cert_info->validity->notBefore, now);
+				X509_set_pubkey(*cert, util_X509_REQ_get0_pubkey(req));
+				not_before = util_ASN1_TIME_new();
+				ASN1_TIME_set(not_before, now);
+				util_X509_set1_notBefore(*cert, not_before);
 				if ((life == 0) && (signer != NULL)) {
-					(*cert)->cert_info->validity->notAfter =
-						M_ASN1_TIME_dup(signer->cert_info->validity->notAfter);
+					not_after = util_ASN1_TIME_dup((ASN1_TIME *)util_X509_get0_notAfter(signer));
 				} else {
-					ASN1_TIME_set((*cert)->cert_info->validity->notAfter, now + life);
+					not_after = util_ASN1_TIME_new();
+					ASN1_TIME_set(not_after, now + life);
 				}
+				util_X509_set1_notAfter(*cert, not_after);
 				X509_set_version(*cert, 2);
 				/* set the serial number */
 				cm_log(3, "Setting certificate serial number \"%s\".\n",
@@ -105,28 +248,20 @@ cm_submit_o_sign(void *parent, char *csr,
 				serialtmp = seriald;
 				seriali = d2i_ASN1_INTEGER(NULL, &serialtmp, seriall);
 				X509_set_serialNumber(*cert, seriali);
+				uuid_len = 0;
 #ifdef HAVE_UUID
 				if (cm_prefs_populate_unique_id()) {
 					if (cm_submit_uuid_new(uuid) == 0) {
-						(*cert)->cert_info->subjectUID = M_ASN1_BIT_STRING_new();
-						if ((*cert)->cert_info->subjectUID != NULL) {
-							ASN1_BIT_STRING_set((*cert)->cert_info->subjectUID, uuid, 16);
-						}
-						if (signer != NULL) {
-							if (signer->cert_info->subjectUID != NULL) {
-								(*cert)->cert_info->issuerUID = M_ASN1_BIT_STRING_dup(signer->cert_info->subjectUID);
-							}
-						} else {
-							(*cert)->cert_info->issuerUID = M_ASN1_BIT_STRING_new();
-							if ((*cert)->cert_info->issuerUID != NULL) {
-								ASN1_BIT_STRING_set((*cert)->cert_info->issuerUID, uuid, 16);
-							}
-						}
+						uuid_len = sizeof(uuid);
 					}
 				}
 #endif
+				/* Add a signature so that it looks right...ish. */
+				X509_sign(*cert, signer_key, cm_prefs_ossl_hash());
+				/* Add extensions and possibly add deprecated UUIDs. */
+				cm_submit_o_set_things(cert, signer, uuid, uuid_len,
+						       X509_REQ_get_extensions(req));
 				/* add basic constraints if needed */
-				(*cert)->cert_info->extensions = X509_REQ_get_extensions(req);
 				i = X509_get_ext_by_NID(*cert, NID_basic_constraints, -1);
 				if (i == -1) {
 					basicl = strlen(CM_BASIC_CONSTRAINT_NOT_CA) / 2;
@@ -147,8 +282,8 @@ cm_submit_o_sign(void *parent, char *csr,
 					i = X509_get_ext_by_NID(*cert, NID_subject_key_identifier, -1);
 					if (i == -1) {
 						if (X509_pubkey_digest(*cert, EVP_sha1(), md, &mdlen)) {
-							skid = M_ASN1_OCTET_STRING_new();
-							M_ASN1_OCTET_STRING_set(skid, md, mdlen);
+							skid = util_ASN1_OCTET_STRING_new();
+							util_ASN1_OCTET_STRING_set(skid, md, mdlen);
 							X509_add1_ext_i2d(*cert, NID_subject_key_identifier, skid, 0, 0);
 						}
 					}
@@ -161,18 +296,15 @@ cm_submit_o_sign(void *parent, char *csr,
 					status = CM_SUBMIT_STATUS_UNREACHABLE;
 				}
 			} else {
-				cm_log(1, "Error building "
-				       "template certificate.\n");
+				cm_log(1, "Error building template certificate.\n");
 				status = CM_SUBMIT_STATUS_REJECTED;
 			}
 		} else {
-			cm_log(1, "Error reading "
-			       "signing request.\n");
+			cm_log(1, "Error reading signing request.\n");
 		}
 		BIO_free(bio);
 	} else {
-		cm_log(1, "Error parsing signing "
-		       "request.\n");
+		cm_log(1, "Error parsing signing request.\n");
 	}
 	return status;
 }

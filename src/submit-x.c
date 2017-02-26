@@ -761,7 +761,7 @@ int
 main(int argc, const char **argv)
 {
 	int i, j, c, ret, k5 = FALSE, make_ccache = TRUE, verbose = 0;
-	int64_t i8;
+	xmlrpc_int64 i8;
 	int32_t i32;
 	const char *uri = NULL, *method = NULL, *ktname = NULL, *kpname = NULL;
 	const char *s, *cainfo = NULL, *capath = NULL, *csrfile, *dictval;

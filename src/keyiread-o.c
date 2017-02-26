@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012,2014,2015 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2014,2015,2017 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -152,7 +152,7 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		pubkey = "";
 		pubikey = "";
 		if (pkey != NULL) {
-			switch (EVP_PKEY_type(pkey->type)) {
+			switch (util_EVP_PKEY_base_id(pkey)) {
 			case EVP_PKEY_RSA:
 				cm_log(3, "Key is an RSA key.\n");
 				alg = "RSA";
@@ -189,7 +189,7 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 		fprintf(fp, "%s/%d/%s/%s\n", alg, bits, pubikey, pubkey);
 		if (nextpkey != NULL) {
-			switch (EVP_PKEY_type(nextpkey->type)) {
+			switch (util_EVP_PKEY_base_id(nextpkey)) {
 			case EVP_PKEY_RSA:
 				cm_log(3, "Next key is an RSA key.\n");
 				alg = "RSA";

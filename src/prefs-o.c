@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Red Hat, Inc.
+ * Copyright (C) 2010,2015,2017 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,9 +17,16 @@
 
 #include "config.h"
 
+#include <sys/types.h>
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
+#include <stdint.h>
+
 #include <keythi.h>
 
 #include <openssl/evp.h>
+#include <openssl/x509.h>
 
 #include "prefs.h"
 #include "prefs.h"
