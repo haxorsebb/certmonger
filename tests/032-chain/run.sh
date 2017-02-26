@@ -1,6 +1,6 @@
 #!/bin/bash
 cd "$tmpdir"
-$toolsdir/cachain.sh 5 2> /dev/null
+$srcdir/tools/cachain.sh 5 2> /dev/null
 for c0 in ca0 ca1 ca2 ca3 ca4 ca5 ee ; do
 for c1 in ca0 ca1 ca2 ca3 ca4 ca5 ee ; do
 if test $c1 = $c0 ; then
