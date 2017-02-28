@@ -275,7 +275,7 @@ EXTRA_DIST = \
 	026-local/run.sh \
 	027-hooks/expected.out \
 	027-hooks/run.sh \
-	028-dbus/expected.out \
+	028-dbus/expected.out 028-dbus/expected.out.nodsa \
 	028-dbus/entry 028-dbus/bogus-entry \
 	028-dbus/prequal.sh \
 	028-dbus/run.sh \
