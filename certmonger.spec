@@ -243,7 +243,7 @@ exit 0
 %endif
 
 %changelog
-* Tue Feb 27 2017 Nalin Dahyabhai <nalin@redhat.com> 0.79.3-1
+* Tue Feb 28 2017 Nalin Dahyabhai <nalin@redhat.com> 0.79.3-1
 - update to 0.79.3:
   - fix self-signing self-test cases that used DSA or EC keys
 
