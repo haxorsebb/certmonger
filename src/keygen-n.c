@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012,2013,2014,2015 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013,2014,2015,2017 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -707,7 +707,7 @@ retry_gen:
 	if (pubkeyinfo != NULL) {
 		pubhex = cm_store_hex_from_bin(NULL,
 					       pubkeyinfo->subjectPublicKey.data,
-					       pubkeyinfo->subjectPublicKey.len / 8);
+					       howmany(pubkeyinfo->subjectPublicKey.len, 8));
 		SECKEY_DestroySubjectPublicKeyInfo(pubkeyinfo);
 	} else {
 		pubhex = "";

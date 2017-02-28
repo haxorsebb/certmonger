@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2011,2012,2013,2014,2015 Red Hat, Inc.
+ * Copyright (C) 2009,2011,2012,2013,2014,2015,2017 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1311,7 +1311,7 @@ cm_certext_build_self_akid(struct cm_store_entry *entry, PLArenaPool *arena)
 				spki = SECKEY_DecodeDERSubjectPublicKeyInfo(&pubkeyinfo);
 			}
 			if (spki != NULL) {
-				pubkey.len = spki->subjectPublicKey.len / 8;
+				pubkey.len = howmany(spki->subjectPublicKey.len, 8);
 				pubkey.data = PORT_ArenaZAlloc(arena,
 							       pubkey.len);
 				if (pubkey.data != NULL) {
@@ -1384,7 +1384,7 @@ cm_certext_build_skid(struct cm_store_entry *entry, PLArenaPool *arena)
 				spki = SECKEY_DecodeDERSubjectPublicKeyInfo(&pubkeyinfo);
 			}
 			if (spki != NULL) {
-				pubkey.len = spki->subjectPublicKey.len / 8;
+				pubkey.len = howmany(spki->subjectPublicKey.len, 8);
 				pubkey.data = PORT_ArenaZAlloc(arena,
 							       pubkey.len);
 				if (pubkey.data != NULL) {

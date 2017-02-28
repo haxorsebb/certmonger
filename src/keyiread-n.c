@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012,2013,2014,2015 Red Hat, Inc.
+ * Copyright (C) 2009,2010,2011,2012,2013,2014,2015,2017 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 #include "config.h"
 
 #include <sys/types.h>
+#include <sys/param.h>
 #include <sys/wait.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -531,7 +532,7 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				spki = SECKEY_DecodeDERSubjectPublicKeyInfo(info);
 				pubhex = cm_store_hex_from_bin(NULL,
 							       spki->subjectPublicKey.data,
-							       spki->subjectPublicKey.len / 8);
+							       howmany(spki->subjectPublicKey.len, 8));
 				fprintf(fp, "%s/%d/%s/%s%s%s\n", alg, size,
 					pubihex,
 					pubhex,
@@ -575,7 +576,7 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				spki = SECKEY_DecodeDERSubjectPublicKeyInfo(info);
 				pubhex = cm_store_hex_from_bin(NULL,
 							       spki->subjectPublicKey.data,
-							       spki->subjectPublicKey.len / 8);
+							       howmany(spki->subjectPublicKey.len, 8));
 				fprintf(fp, "%s/%d/%s/%s\n", alg, size,
 					pubihex,
 					pubhex);

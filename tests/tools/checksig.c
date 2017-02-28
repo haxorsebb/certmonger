@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Red Hat, Inc.
+ * Copyright (C) 2014,2017 Red Hat, Inc.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 #include "../../src/config.h"
 
 #include <sys/types.h>
+#include <sys/param.h>
 #include <sys/select.h>
 #include <errno.h>
 #include <limits.h>
@@ -101,6 +102,7 @@ main(int argc, char **argv)
 		printf("error finding public key\n");
 		return 1;
 	}
+	signed_data.signature.len = howmany(signed_data.signature.len, 8);
 	if (VFY_VerifyDataWithAlgorithmID(signed_data.data.data,
 					  signed_data.data.len,
 					  pubkey,
