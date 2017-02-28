@@ -6,7 +6,7 @@ AC_PROG_CC
 AM_PROG_CC_C_O
 AC_PROG_RANLIB
 AM_GNU_GETTEXT([external])
-AM_GNU_GETTEXT_VERSION(0.17)
+AM_GNU_GETTEXT_VERSION(0.19)
 AM_ICONV
 ALL_LINGUAS="`ls -1 $srcdir/po/*.po | xargs -n 1 basename | xargs -n 1 -I'{}' basename '{}' .po`"
 if test x$GCC = xyes ; then
