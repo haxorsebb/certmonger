@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.79.2
+Version:	0.79.3
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -33,7 +33,7 @@ Group:		System Environment/Daemons
 License:	GPLv3+
 URL:		http://pagure.io/certmonger/
 Source0:	http://releases.pagure.org/certmonger/certmonger-%{version}.tar.gz
-Source1:	http://releases.pagure.org/certmonger/certmonger-%{version}.tar.gz.sig
+#Source1:	http://releases.pagure.org/certmonger/certmonger-%{version}.tar.gz.sig
 BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 BuildRequires:	openldap-devel
@@ -220,7 +220,7 @@ exit 0
 
 %files -f %{name}.lang
 %defattr(-,root,root,-)
-%doc README LICENSE STATUS doc/*.txt
+%doc README.md LICENSE STATUS doc/*.txt
 %config(noreplace) %{_sysconfdir}/dbus-1/system.d/*
 %{_datadir}/dbus-1/services/*
 %dir %{_sysconfdir}/certmonger
@@ -243,6 +243,13 @@ exit 0
 %endif
 
 %changelog
+* Tue Feb 27 2017 Nalin Dahyabhai <nalin@redhat.com> 0.79.3-1
+- update to 0.79.3:
+  - fix self-signing self-test cases that used DSA or EC keys
+
+* Mon Feb 27 2017 Nalin Dahyabhai <nalin@redhat.com> 0.79.2-2
+- update %%docs list because README is now README.md
+
 * Mon Feb 27 2017 Nalin Dahyabhai <nalin@redhat.com> 0.79.2-1
 - update to 0.79.2:
   - fix 'make distcheck' target
@@ -273,6 +280,12 @@ exit 0
     for a lot of the legwork
 - resync .spec file with Fedora
 - upstream project migrated from fedorahosted.org to pagure.io
+
+* Fri Feb 10 2017 Fedora Release Engineering <releng@fedoraproject.org> - 0.78.6-6
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_26_Mass_Rebuild
+
+* Sat Jan 21 2017 Igor Gnatenko <ignatenko@redhat.com> - 0.78.6-5
+- Rebuild for xmlrpc-c
 
 * Wed Jul  6 2016 Nalin Dahyabhai <nalin@redhat.com> 0.78.6-4
 - add backported fix to wait a reasonable amount of time after calling the
