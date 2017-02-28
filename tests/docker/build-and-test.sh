@@ -19,6 +19,4 @@ echo '['"${PRETTY_NAME}"']'
 export CFLAGS="-Wall -Wextra -Wno-unused-parameter"
 ./configure --prefix=/usr --sysconfdir=/etc --with-tmpdir=/var/run/certmonger  --localstatedir=/var --disable-maintainer-mode --enable-srv-location --disable-systemd --disable-sysvinit
 echo '['"${PRETTY_NAME}"']'
-make all
-echo '['"${PRETTY_NAME}"']'
-make check
+make distcheck
