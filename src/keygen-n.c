@@ -234,7 +234,12 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 	cm_requested_key_size = entry->cm_key_type.cm_key_gen_size;
 	if (cm_requested_key_size <= 0) {
-		cm_requested_key_size = CM_DEFAULT_PUBKEY_SIZE;
+#ifdef CM_ENABLE_EC
+		if (cm_key_algorithm == cm_key_ecdsa)
+			cm_requested_key_size = CM_DEFAULT_EC_PUBKEY_SIZE;
+		else
+#endif
+			cm_requested_key_size = CM_DEFAULT_PUBKEY_SIZE;
 	}
 	/* Convert our key type to a mechanism. */
 	switch (cm_key_algorithm) {
@@ -407,6 +412,11 @@ next_slot:
 	}
 	/* Select an initial key size. */
 	if (cm_requested_key_size == 0) {
+#ifdef CM_ENABLE_EC
+	if (cm_key_algorithm == cm_key_ecdsa)
+		cm_requested_key_size = CM_DEFAULT_EC_PUBKEY_SIZE;
+	else
+#endif
 		cm_requested_key_size = CM_DEFAULT_PUBKEY_SIZE;
 	}
 	cm_key_size = cm_requested_key_size;

@@ -61,7 +61,8 @@ type of the keys to be generated.  If not specified, a reasonable default
 \fB\-g\fR BITS
 In case a new key pair needs to be generated, this option specifies the
 size of the key.  If not specified, a reasonable default (currently
-@CM_DEFAULT_PUBKEY_SIZE@ bits) will be used.
+@CM_DEFAULT_PUBKEY_SIZE@ bits for RSA, @CM_DEFAULT_EC_PUBKEY_SIZE bits for EC)
+will be used.
 
 .SH TRACKING OPTIONS
 .TP

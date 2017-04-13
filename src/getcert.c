@@ -746,6 +746,7 @@ request(const char *argv0, int argc, const char **argv)
 	char **anchor_dbs = NULL, **anchor_files = NULL;
 	char *pin = NULL, *pinfile = NULL, *cpass = NULL, *cpassfile = NULL;
 	int keysize = 0, auto_renew = 1, verbose = 0, ku = 0, kubit, c, i, j;
+	int ec_curve = 0;
 	char *ca = DEFAULT_CA, *subject = NULL, **eku = NULL, *oid, *id = NULL;
 	char *profile = NULL, *issuer = NULL, kustring[16];
 	char **principal = NULL, **dns = NULL, **email = NULL, **ipaddr = NULL;
@@ -783,6 +784,9 @@ request(const char *argv0, int argc, const char **argv)
 		{"id", 'I', POPT_ARG_STRING, NULL, 'I', _("nickname to assign to the request"), HELP_TYPE_ID},
 		{"key-type", 'G', POPT_ARG_STRING, NULL, 'G', _("type of key to be generated if one is not already in place"), NULL},
 		{"key-size", 'g', POPT_ARG_STRING, NULL, 'g', _("size of key to be generated if one is not already in place"), HELP_TYPE_KEYSIZE},
+#ifdef CM_ENABLE_EC
+                {"ec-curve", 'V', POPT_ARG_STRING, NULL, 'V', _("EC curve to use for key if one is not already in place"), NULL},
+#endif
 		{"renew", 'r', POPT_ARG_NONE, NULL, 'r', _("attempt to renew the certificate when expiration nears (default)"), NULL},
 		{"no-renew", 'R', POPT_ARG_NONE, NULL, 'R', _("don't attempt to renew the certificate when expiration nears"), NULL},
 #ifndef FORCE_CA
@@ -902,8 +906,33 @@ request(const char *argv0, int argc, const char **argv)
 			keytype = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'g':
+			if (ec_curve) {
+				printf(_("Use only one of -g and -V\n"));
+				return 1;
+			}
 			keysize = atoi(poptarg);
 			break;
+#ifdef CM_ENABLE_EC
+		case 'V':
+			if (keysize) {
+				printf(_("Use only one of -g and -V\n"));
+				return 1;
+			}
+			if (strcasecmp(poptarg, "secp256r1") == 0)
+				keysize = 256;
+			else if (strcasecmp(poptarg, "secp384r1") == 0)
+				keysize = 384;
+			else if (strcasecmp(poptarg, "secp521r1") == 0)
+				keysize = 521;
+			else {
+				printf(_("No support for curve \"%s\"\n"),
+				       poptarg);
+				printf(_("Supported curves:"));
+				printf(" secp256r1, secp384r1, secp521r1\n");
+				return 1;
+			}
+			break;
+#endif
 		case 'I':
 			id = talloc_strdup(globals.tctx, poptarg);
 			break;
@@ -2486,6 +2515,7 @@ rekey_or_resubmit(const char *argv0, const char *category, int argc,
 	char *cert_owner = NULL, *cert_perms = NULL;
 	char *keytype = NULL;
 	int keysize = 0;
+	int ec_curve = 0;
 	dbus_bool_t b;
 	char *p;
 	int verbose = 0, ku = 0, kubit, c, i, j, waitreq = 0, timeout = -1;
@@ -2505,6 +2535,7 @@ rekey_or_resubmit(const char *argv0, const char *category, int argc,
 		{"new-id", 'I', POPT_ARG_STRING, NULL, 'I', _("new nickname to give to tracking request"), HELP_TYPE_ID},
 		{"key-type", 'G', POPT_ARG_STRING, NULL, 'G', _("type of new key to be generated"), NULL},
 		{"key-size", 'g', POPT_ARG_STRING, NULL, 'g', _("size of new key to be generated"), HELP_TYPE_KEYSIZE},
+                {"ec-curve", 'V', POPT_ARG_STRING, NULL, 'V', _("EC curve for new key to be generated"), NULL},
 		{"pinfile", 'p', POPT_ARG_STRING, NULL, 'p', _("file which holds the private key encryption PIN"), HELP_TYPE_FILENAME},
 		{"pin", 'P', POPT_ARG_STRING, NULL, 'P', _("private key encryption PIN"), NULL},
 		{"key-owner", 'o', POPT_ARG_STRING, NULL, 'o', _("owner information for private key"), HELP_TYPE_USER},
@@ -2632,8 +2663,35 @@ rekey_or_resubmit(const char *argv0, const char *category, int argc,
 			keytype = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'g':
+#ifdef CM_ENABLE_EC
+			if (ec_curve) {
+				printf(_("Use only one of -g and -V\n"));
+				return 1;
+			}
+#endif
 			keysize = atoi(poptarg);
 			break;
+#ifdef CM_ENABLE_EC
+		case 'V':
+			if (keysize) {
+				printf(_("Use only one of -g and -V\n"));
+				return 1;
+			}
+			if (strcasecmp(poptarg, "secp256r1") == 0)
+				keysize = 256;
+			else if (strcasecmp(poptarg, "secp384r1") == 0)
+				keysize = 384;
+			else if (strcasecmp(poptarg, "secp521r1") == 0)
+				keysize = 521;
+			else {
+				printf(_("No support for curve \"%s\"\n"),
+				       poptarg);
+				printf(_("Supported curves:"));
+				printf(" secp256r1, secp384r1, secp521r1\n");
+				return 1;
+			}
+			break;
+#endif
 		case 'N':
 			subject = talloc_strdup(globals.tctx, poptarg);
 			break;
@@ -4807,6 +4865,9 @@ help(const char *twopartcmd, const char *category)
 		N_("  -I NAME	nickname to assign to the request\n"),
 		N_("  -G TYPE	type of key to be generated if one is not already in place\n"),
 		N_("  -g SIZE	size of key to be generated if one is not already in place\n"),
+#ifdef CM_ENABLE_EC
+		N_("  -V CURVE	EC curve to use for key if one is not already in place\n"),
+#endif
 		N_("  -r		attempt to renew the certificate when expiration nears (default)\n"),
 		N_("  -R		don't attempt to renew the certificate when expiration nears\n"),
 #ifndef FORCE_CA
