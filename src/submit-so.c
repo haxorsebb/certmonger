@@ -144,6 +144,9 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		ERR_error_string_n(error, buf, sizeof(buf));
 		cm_log(1, "%s\n", buf);
 	}
+	if (filename != NULL && filename != entry->cm_key_storage_location) {
+		free(filename);
+	}
 	if (status != 0) {
 		_exit(status);
 	}
