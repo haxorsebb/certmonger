@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.79.3
+Version:	0.79.4
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -243,6 +243,14 @@ exit 0
 %endif
 
 %changelog
+* Mon Aug  7 2017 Rob Crittenden <rcritten@redhat.com> 0.79.4-1
+- update to 0.79.4
+  - fix CA option name for ipa cert-request
+  - fix minor memory leak
+  - fix build warnings
+  - fix an incorrect date in the .spec changelog
+  - bump gettext version to avoid warning
+
 * Tue Feb 28 2017 Nalin Dahyabhai <nalin@redhat.com> 0.79.3-1
 - update to 0.79.3:
   - fix self-signing self-test cases that used DSA or EC keys
