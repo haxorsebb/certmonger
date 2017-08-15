@@ -568,6 +568,8 @@ cm_submit_d_fetch_result(void *parent, const char *xml,
 			 char **error, char **status,
 			 char **requestId, char **cert)
 {
+	char *stripped, *reformatted;
+
 	*error = cm_submit_d_xml_value(parent, xml,
 				       "/xml/fixed/unexpectedError");
 	*status = cm_submit_d_xml_value(parent, xml,
@@ -576,6 +578,20 @@ cm_submit_d_fetch_result(void *parent, const char *xml,
 					   "/xml/header/requestId");
 	*cert = cm_submit_d_xml_value(parent, xml,
 				      "/xml/records/record/base64Cert");
+	if (*cert != NULL) {
+		/* The formatting of the certificate includes an extra blank line after the
+		 * last line of base64 data, before the END line, which can trip up some
+		 * parsers.  Clean it up here. */
+		stripped = cm_submit_u_base64_from_text(*cert);
+		if (stripped != NULL) {
+			reformatted = cm_submit_u_pem_from_base64("CERTIFICATE", 0, stripped);
+			if (reformatted != NULL) {
+				*cert = talloc_strdup(parent, reformatted);
+				free(reformatted);
+			}
+			free(stripped);
+		}
+	}
 	return 0;
 }
 

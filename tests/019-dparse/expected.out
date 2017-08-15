@@ -66,6 +66,28 @@ LCT7m5N535pDf4tELcXRQAUv/xTp7F5O84pp8Bez14iVTtKazqseq5K7EKCsRXfW
 FxfR4qHzwpD9Q7rvTzFP2/J/Cr8=
 -----END CERTIFICATE-----
 
+[fetch-as-agent(good.displayCertFromRequest-extra-line) = ISSUED]
+requestId="11",cert="-----BEGIN CERTIFICATE-----"
+-----BEGIN CERTIFICATE-----
+MIIDEDCCAfigAwIBAgIBCzANBgkqhkiG9w0BAQsFADA5MRcwFQYDVQQKEw5CT1Mu
+UkVESEFULkNPTTEeMBwGA1UEAxMVQ2VydGlmaWNhdGUgQXV0aG9yaXR5MB4XDTEy
+MDYyNTIxMDcxMloXDTE2MDYyNTIxMDcxMlowNzEXMBUGA1UEChMOQk9TLlJFREhB
+VC5DT00xHDAaBgNVBAMTE09iamVjdCBTaWduaW5nIENlcnQwggEiMA0GCSqGSIb3
+DQEBAQUAA4IBDwAwggEKAoIBAQCmZoqUb8hHS6E/MmrlimQlhLHlPdxlJZn3de0K
+8vHWCuyBqM9tmISsoSYHOdCm/c6vrVwwSMkn5HMjjWsJGKNdZouBmlA1WuiMDjWF
+r7WexGUd34lUlliG6VQdIdkQMn9rjG+W8wTEOPCxlUBUwUBzIyZ3XDe0eCIN7NBL
+wh7efZZjRgln8mH7aEGaUug2tOqj2niudXZZLLMthU/f74pdBTD+EXiAkEjN8j12
+ba2Zv5mDyDqan5WDMf9a9EbDwMnFKU7/SEDCvra2jrQNPKu/dRsBvGdzqgEJDuNa
+Wrn/kSz2worbW2c7V9jLgsYSjTLeYIAulCifIzBG9bisAT8DAgMBAAGjJTAjMA4G
+A1UdDwEB/wQEAwIChDARBglghkgBhvhCAQEEBAMCBBAwDQYJKoZIhvcNAQELBQAD
+ggEBAJzERxUVdka5UF98Ks9Lj4Y69yoiIFRYswLsCYZoP8rwZlW4aprtE/caz3nb
+mFKSG1oS84DZ/d3wnvSBhdbfBLh59YH9eJnRZPS8Q+jIRkg9VSnleQTJg+kIngUZ
+eWBSUUSfAI6BrgdaFB4us7i0yWJTorRh/Te69M3UKNVfx8LJsPt/nG2nQW/X0ydJ
+LCT7m5N535pDf4tELcXRQAUv/xTp7F5O84pp8Bez14iVTtKazqseq5K7EKCsRXfW
+4zj1FewSYaEaTHyBrcwwArEyBbdkC5cdwfJUVvNFWXrfYiCy6yBmTCQbrucmqC0M
+FxfR4qHzwpD9Q7rvTzFP2/J/Cr8=
+-----END CERTIFICATE-----
+
 [profiles-as-agent(good.profileList) = ISSUED]
 error_code="0",error_reason=""
 caUserCert
@@ -204,6 +226,28 @@ LCT7m5N535pDf4tELcXRQAUv/xTp7F5O84pp8Bez14iVTtKazqseq5K7EKCsRXfW
 FxfR4qHzwpD9Q7rvTzFP2/J/Cr8=
 -----END CERTIFICATE-----
 
+[fetch-as-end-entity(good.displayCertFromRequest-extra-line) = ISSUED]
+requestId="11",cert="-----BEGIN CERTIFICATE-----"
+-----BEGIN CERTIFICATE-----
+MIIDEDCCAfigAwIBAgIBCzANBgkqhkiG9w0BAQsFADA5MRcwFQYDVQQKEw5CT1Mu
+UkVESEFULkNPTTEeMBwGA1UEAxMVQ2VydGlmaWNhdGUgQXV0aG9yaXR5MB4XDTEy
+MDYyNTIxMDcxMloXDTE2MDYyNTIxMDcxMlowNzEXMBUGA1UEChMOQk9TLlJFREhB
+VC5DT00xHDAaBgNVBAMTE09iamVjdCBTaWduaW5nIENlcnQwggEiMA0GCSqGSIb3
+DQEBAQUAA4IBDwAwggEKAoIBAQCmZoqUb8hHS6E/MmrlimQlhLHlPdxlJZn3de0K
+8vHWCuyBqM9tmISsoSYHOdCm/c6vrVwwSMkn5HMjjWsJGKNdZouBmlA1WuiMDjWF
+r7WexGUd34lUlliG6VQdIdkQMn9rjG+W8wTEOPCxlUBUwUBzIyZ3XDe0eCIN7NBL
+wh7efZZjRgln8mH7aEGaUug2tOqj2niudXZZLLMthU/f74pdBTD+EXiAkEjN8j12
+ba2Zv5mDyDqan5WDMf9a9EbDwMnFKU7/SEDCvra2jrQNPKu/dRsBvGdzqgEJDuNa
+Wrn/kSz2worbW2c7V9jLgsYSjTLeYIAulCifIzBG9bisAT8DAgMBAAGjJTAjMA4G
+A1UdDwEB/wQEAwIChDARBglghkgBhvhCAQEEBAMCBBAwDQYJKoZIhvcNAQELBQAD
+ggEBAJzERxUVdka5UF98Ks9Lj4Y69yoiIFRYswLsCYZoP8rwZlW4aprtE/caz3nb
+mFKSG1oS84DZ/d3wnvSBhdbfBLh59YH9eJnRZPS8Q+jIRkg9VSnleQTJg+kIngUZ
+eWBSUUSfAI6BrgdaFB4us7i0yWJTorRh/Te69M3UKNVfx8LJsPt/nG2nQW/X0ydJ
+LCT7m5N535pDf4tELcXRQAUv/xTp7F5O84pp8Bez14iVTtKazqseq5K7EKCsRXfW
+4zj1FewSYaEaTHyBrcwwArEyBbdkC5cdwfJUVvNFWXrfYiCy6yBmTCQbrucmqC0M
+FxfR4qHzwpD9Q7rvTzFP2/J/Cr8=
+-----END CERTIFICATE-----
+
 [profiles-as-end-entity(good.profileList) = ISSUED]
 error_code="0",error_reason=""
 caUserCert
@@ -276,4 +320,4 @@ Server at "FETCH" replied: Request ID 19 was not found in the request queue.
 [fetch-as-end-entity(bad.displayCertFromRequest.rejected) = REJECTED]
 error="Request ID 17 was not completed.",status="7"
 Server at "FETCH" replied: Request ID 17 was not completed.
-48 samples.
+50 samples.
