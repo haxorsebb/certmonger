@@ -69,7 +69,7 @@ struct kerberos_principal_name {
 struct ms_template {
 	SECItem id;
 	SECItem major;
-	SECItem *minor;
+	SECItem minor;
 };
 
 /* KerberosString: RFC 4120, 5.2.1 */
@@ -180,7 +180,7 @@ cm_ms_template_template[] = {
 	.kind = SEC_ASN1_SEQUENCE,
 	.offset = 0,
 	.sub = NULL,
-	.size = sizeof(struct kerberos_principal_name),
+	.size = sizeof(struct ms_template),
 	},
 	{
 	.kind = SEC_ASN1_OBJECT_ID,
@@ -1601,6 +1601,76 @@ cm_certext_build_profile(struct cm_store_entry *entry,
 	return item;
 }
 
+/* Build a Microsoft certificate template extension value. */
+static SECItem *
+cm_certext_build_certificate_template(
+	PLArenaPool *arena,
+	char *template_spec)
+{
+	struct ms_template template_data;
+	memset(&template_data, 0, sizeof(struct ms_template));
+
+	if (NULL == template_spec || *template_spec == '\0')
+		return NULL;
+
+	/* strtok overwrites delimiters with null bytes;
+	 * therefore duplicate the input string */
+	char *template_spec_dup = PORT_ArenaStrdup(arena, template_spec);
+	if (NULL == template_spec_dup)
+		return NULL;
+
+	int i = 0;
+	char *saveptr, *endptr;
+	for (
+		char *part = strtok_r(template_spec_dup, ":", &saveptr);
+		part != NULL;
+		part = strtok_r(NULL, ":", &saveptr)
+	) {
+		if (i == 0) {
+			// parse OID
+			if (SECSuccess != SEC_StringToOID(arena, &template_data.id, part, 0))
+				return NULL;
+		}
+		else if (i == 1) {
+			// parse major version
+			long x = strtol(part, &endptr, 10);
+			if (*part == '\0' || *endptr != '\0') {
+				// string was empty or contained non-digits
+				return NULL;
+			}
+			if (SEC_ASN1EncodeInteger(arena, &template_data.major, x)
+					!= &template_data.major)
+				return NULL;
+		}
+		else if (i == 2) {
+			// parse minor version
+			long x = strtol(part, &endptr, 10);
+			if (*part == '\0' || *endptr != '\0') {
+				// string was empty or contained non-digits
+				return NULL;
+			}
+			if (SEC_ASN1EncodeInteger(arena, &template_data.minor, x)
+					!= &template_data.minor)
+				return NULL;
+		}
+		else {
+			// there are too many parts!
+			return NULL;
+		}
+		i++;
+	}
+	if (i < 2) {
+		// there are too few parts! (OID and major version are required)
+		return NULL;
+	}
+
+	SECItem encoded;
+	if (SEC_ASN1EncodeItem(arena, &encoded, &template_data,
+			       cm_ms_template_template) != &encoded)
+		return NULL;
+	return SECITEM_ArenaDupItem(arena, &encoded);
+}
+
 /* Build a Netscape certtype extension value. */
 static SECItem *
 cm_certext_build_ns_certtype(struct cm_store_entry *entry,
@@ -1840,6 +1910,18 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 		oid = (SECOidData *) &oid_microsoft_certtype;
 		item = cm_certext_build_profile(entry, arena,
 						entry->cm_template_profile);
+		if ((item != NULL) && (oid != NULL)) {
+			ext[i].id = oid->oid;
+			ext[i].critical = der_false;
+			ext[i].value = *item;
+			exts[i] = &ext[i];
+			i++;
+		}
+	}
+	if (entry->cm_template_certificate_template != NULL) {
+		oid = (SECOidData *) &oid_microsoft_certificate_template;
+		item = cm_certext_build_certificate_template(
+			arena, entry->cm_template_certificate_template);
 		if ((item != NULL) && (oid != NULL)) {
 			ext[i].id = oid->oid;
 			ext[i].critical = der_false;
