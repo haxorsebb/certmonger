@@ -250,6 +250,7 @@ EXTRA_DIST = \
 	019-dparse/good.checkRequest.complete \
 	019-dparse/good.checkRequest.pending \
 	019-dparse/good.displayCertFromRequest \
+	019-dparse/good.displayCertFromRequest-extra-line \
 	019-dparse/good.profileList \
 	019-dparse/good.profileReview \
 	019-dparse/good.profileSubmit.issued \
