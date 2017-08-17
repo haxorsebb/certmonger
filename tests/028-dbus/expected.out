@@ -330,6 +330,7 @@ OK
   <property name="template-ns-comment" type="s" access="readwrite"/>
   <property name="template-profile" type="s" access="readwrite"/>
   <property name="template-issuer" type="s" access="readwrite"/>
+  <property name="template-ms-certificate-template" type="s" access="readwrite"/>
   <property name="template-ns-certtype" type="s" access="readwrite"/>
   <property name="template-challenge-password" type="s" access="readwrite"/>
   <property name="template-challenge-password-file" type="s" access="readwrite"/>

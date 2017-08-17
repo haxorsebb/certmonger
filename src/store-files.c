@@ -145,6 +145,7 @@ enum cm_store_file_field {
 	cm_store_entry_field_template_ns_comment,
 	cm_store_entry_field_template_profile,
 	cm_store_entry_field_template_issuer,
+	cm_store_entry_field_template_certificate_template,
 	cm_store_entry_field_template_no_ocsp_check,
 	cm_store_entry_field_template_ns_certtype,
 
@@ -320,6 +321,7 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_template_profile, "template_profile"}, /* right */
 	{cm_store_entry_field_template_profile, "ca_profile"}, /* wrong */
 	{cm_store_entry_field_template_issuer, "template_issuer"},
+	{cm_store_entry_field_template_certificate_template, "template_certificate_template"},
 	{cm_store_entry_field_template_no_ocsp_check, "template_no_ocsp_check"},
 	{cm_store_entry_field_template_ns_certtype, "template_ns_certtype"},
 
@@ -1208,6 +1210,9 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_template_profile:
 				ret->cm_template_profile = free_if_empty(p);
 				break;
+			case cm_store_entry_field_template_certificate_template:
+				ret->cm_template_certificate_template = free_if_empty(p);
+				break;
 			case cm_store_entry_field_template_issuer:
 				ret->cm_template_issuer = free_if_empty(p);
 				break;
@@ -1454,6 +1459,7 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_template_ocsp_location:
 			case cm_store_entry_field_template_ns_comment:
 			case cm_store_entry_field_template_profile:
+			case cm_store_entry_field_template_certificate_template:
 			case cm_store_entry_field_template_issuer:
 			case cm_store_entry_field_template_no_ocsp_check:
 			case cm_store_entry_field_template_ns_certtype:
@@ -2063,6 +2069,8 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 				entry->cm_template_no_ocsp_check ? 1 : 0);
 	cm_store_file_write_str(fp, cm_store_entry_field_template_ns_certtype,
 				entry->cm_template_ns_certtype);
+	cm_store_file_write_str(fp, cm_store_entry_field_template_certificate_template,
+				entry->cm_template_certificate_template);
 
 	cm_store_file_write_str(fp, cm_store_entry_field_challenge_password,
 				entry->cm_template_challenge_password);
@@ -2824,6 +2832,8 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	ret->cm_template_profile = cm_store_maybe_strdup(ret, entry->cm_template_profile);
 	ret->cm_template_issuer = cm_store_maybe_strdup(ret, entry->cm_template_issuer);
 	ret->cm_template_no_ocsp_check = entry->cm_template_no_ocsp_check;
+	ret->cm_template_certificate_template =
+		cm_store_maybe_strdup(ret, entry->cm_template_certificate_template);
 	ret->cm_template_ns_certtype = cm_store_maybe_strdup(ret,
 							     entry->cm_template_ns_certtype);
 

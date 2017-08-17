@@ -144,6 +144,7 @@ struct cm_store_entry {
 	char *cm_template_profile;
 	char *cm_template_issuer;
 	char *cm_template_ns_certtype;
+	char *cm_template_certificate_template;
 	unsigned int cm_template_no_ocsp_check: 1;
 	/* A challenge password, which may be included (in cleartext form!) in
 	 * a CSR. */
