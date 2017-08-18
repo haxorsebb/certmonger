@@ -88,6 +88,12 @@ the CA should correspond to one listed by \fIgetcert list-cas\fR.
 Request a certificate using the named profile, template, or certtype,
 from the specified CA.
 .TP
+\fB\-\-ms-template-spec\fR SPEC
+Include a V2 Certificate Template extension in the signing request.
+This datum includes an Object Identifier, a major version number
+(positive integer) and an optional minor version number.  The format
+is: \fB<oid>:<majorVersion>[:<minorVersion>]\fR.
+.TP
 \fB\-X\fR NAME
 Request a certificate using the named issuer from the specified CA.
 

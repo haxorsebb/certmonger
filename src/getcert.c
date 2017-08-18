@@ -748,6 +748,7 @@ request(const char *argv0, int argc, const char **argv)
 	int keysize = 0, auto_renew = 1, verbose = 0, ku = 0, kubit, c, i, j;
 	char *ca = DEFAULT_CA, *subject = NULL, **eku = NULL, *oid, *id = NULL;
 	char *profile = NULL, *issuer = NULL, kustring[16];
+	char *ms_template_spec = NULL;
 	char **principal = NULL, **dns = NULL, **email = NULL, **ipaddr = NULL;
 	char *key_owner = NULL, *key_perms = NULL;
 	char *cert_owner = NULL, *cert_perms = NULL;
@@ -789,6 +790,7 @@ request(const char *argv0, int argc, const char **argv)
 		{"ca", 'c', POPT_ARG_STRING, &ca, 0, _("use the specified CA configuration rather than the default"), HELP_TYPE_NAME},
 #endif
 		{"profile", 'T', POPT_ARG_STRING, NULL, 'T', _("ask the CA to process the request using the named profile or template"), HELP_TYPE_NAME},
+		{"ms-template-spec", 0, POPT_ARG_STRING, NULL, 'Y', _("include V2 template specifier in CSR (format: OID:MAJOR-VERSION[:MINOR-VERSION])"), HELP_TYPE_NAME},
 		{"issuer", 'X', POPT_ARG_STRING, NULL, 'X', _("ask the CA to process the request using the named issuer"), HELP_TYPE_NAME},
 		{"subject-name", 'N', POPT_ARG_STRING, NULL, 'N', _("set requested subject name (default: CN=<hostname>)"), HELP_TYPE_SUBJECT},
 		{"key-usage", 'u', POPT_ARG_STRING, NULL, 'u', _("set requested key usage value"), HELP_TYPE_KU},
@@ -918,6 +920,9 @@ request(const char *argv0, int argc, const char **argv)
 			break;
 		case 'T':
 			profile = talloc_strdup(globals.tctx, poptarg);
+			break;
+		case 'Y':
+			ms_template_spec = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'X':
 			issuer = talloc_strdup(globals.tctx, poptarg);
@@ -1362,6 +1367,13 @@ request(const char *argv0, int argc, const char **argv)
 		params[i] = &param[i];
 		i++;
 	}
+	if (ms_template_spec != NULL) {
+		param[i].key = CM_DBUS_PROP_TEMPLATE_MS_CERTIFICATE_TEMPLATE;
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = ms_template_spec;
+		params[i] = &param[i];
+		i++;
+	}
 	if (issuer != NULL) {
 		param[i].key = CM_DBUS_PROP_TEMPLATE_ISSUER;
 		param[i].value_type = cm_tdbusm_dict_s;
@@ -1561,6 +1573,7 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 		  char *pin, char *pinfile,
 		  char *cpass, char *cpassfile,
 		  char *ca, char *profile, char *issuer,
+		  char *ms_template_spec,
 		  char *precommand, char *postcommand,
 		  char **anchor_dbs, char **anchor_files,
 		  int is_ca, int path_length,
@@ -1735,6 +1748,13 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 		params[i] = &param[i];
 		i++;
 	}
+	if (ms_template_spec != NULL) {
+		param[i].key = CM_DBUS_PROP_TEMPLATE_MS_CERTIFICATE_TEMPLATE;
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = ms_template_spec;
+		params[i] = &param[i];
+		i++;
+	}
 	if (issuer != NULL) {
 		param[i].key = CM_DBUS_PROP_TEMPLATE_ISSUER;
 		param[i].value_type = cm_tdbusm_dict_s;
@@ -1825,6 +1845,7 @@ set_tracking(const char *argv0, const char *category,
 	char *id = NULL, *new_id = NULL, *new_request;
 	char *keyfile = NULL, *certfile = NULL, *ca = DEFAULT_CA;
 	char *profile = NULL, *issuer = NULL;
+	char *ms_template_spec = NULL;
 	char *pin = NULL, *pinfile = NULL, *cpass = NULL, *cpassfile = NULL;
 	char *key_owner = NULL, *key_perms = NULL;
 	char *cert_owner = NULL, *cert_perms = NULL;
@@ -1866,6 +1887,7 @@ set_tracking(const char *argv0, const char *category,
 		{"ca", 'c', POPT_ARG_STRING, &ca, 0, _("use the specified CA configuration rather than the default"), HELP_TYPE_NAME},
 #endif
 		{"profile", 'T', POPT_ARG_STRING, NULL, 'T', _("ask the CA to process the request using the named profile or template"), HELP_TYPE_NAME},
+		{"ms-template-spec", 0, POPT_ARG_STRING, NULL, 'Y', _("include V2 template specifier in CSR (format: OID:MAJOR-VERSION[:MINOR-VERSION])"), HELP_TYPE_NAME},
 		{"issuer", 'X', POPT_ARG_STRING, NULL, 'X', _("ask the CA to process the request using the named issuer"), HELP_TYPE_NAME},
 		{"key-usage", 'u', POPT_ARG_STRING, NULL, 'u', _("override requested key usage value"), HELP_TYPE_KU},
 		{"extended-key-usage", 'U', POPT_ARG_STRING, NULL, 'U', _("override requested extended key usage OID"), HELP_TYPE_EKU},
@@ -1970,6 +1992,9 @@ set_tracking(const char *argv0, const char *category,
 			break;
 		case 'T':
 			profile = talloc_strdup(globals.tctx, poptarg);
+			break;
+		case 'Y':
+			ms_template_spec = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'X':
 			issuer = talloc_strdup(globals.tctx, poptarg);
@@ -2409,6 +2434,7 @@ set_tracking(const char *argv0, const char *category,
 						 pin, pinfile,
 						 cpass, cpassfile,
 						 ca, profile, issuer,
+						 ms_template_spec,
 						 precommand, postcommand,
 						 anchor_dbs, anchor_files,
 						 is_ca, path_length,
@@ -2485,6 +2511,7 @@ rekey_or_resubmit(const char *argv0, const char *category, int argc,
 	char *subject = NULL, **eku = NULL, *oid = NULL;
 	char **principal = NULL, **dns = NULL, **email = NULL, **ipaddr = NULL;
 	char *profile = NULL, *issuer = NULL, kustring[16];
+	char *ms_template_spec = NULL;
 	char *key_owner = NULL, *key_perms = NULL;
 	char *cert_owner = NULL, *cert_perms = NULL;
 	char *keytype = NULL;
@@ -2522,6 +2549,7 @@ rekey_or_resubmit(const char *argv0, const char *category, int argc,
 		{"ca", 'c', POPT_ARG_STRING, &ca, 0, _("use the specified CA configuration rather than the current one"), HELP_TYPE_NAME},
 #endif
 		{"profile", 'T', POPT_ARG_STRING, NULL, 'T', _("ask the CA to process the request using the named profile or template"), HELP_TYPE_NAME},
+		{"ms-template-spec", 0, POPT_ARG_STRING, NULL, 'Y', _("include V2 template specifier in CSR (format: OID:MAJOR-VERSION[:MINOR-VERSION])"), HELP_TYPE_NAME},
 		{"issuer", 'X', POPT_ARG_STRING, NULL, 'X', _("ask the CA to process the request using the named issuer"), HELP_TYPE_NAME},
 		{"subject-name", 'N', POPT_ARG_STRING, NULL, 'N', _("set requested subject name (default: CN=<hostname>)"), HELP_TYPE_SUBJECT},
 		{"key-usage", 'u', POPT_ARG_STRING, NULL, 'u', _("set requested key usage value"), HELP_TYPE_KU},
@@ -2599,6 +2627,9 @@ rekey_or_resubmit(const char *argv0, const char *category, int argc,
 			break;
 		case 'T':
 			profile = talloc_strdup(globals.tctx, poptarg);
+			break;
+		case 'Y':
+			ms_template_spec = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'X':
 			issuer = talloc_strdup(globals.tctx, poptarg);
@@ -2972,6 +3003,13 @@ rekey_or_resubmit(const char *argv0, const char *category, int argc,
 		param[i].key = CM_DBUS_PROP_TEMPLATE_PROFILE;
 		param[i].value_type = cm_tdbusm_dict_s;
 		param[i].value.s = profile;
+		params[i] = &param[i];
+		i++;
+	}
+	if (ms_template_spec != NULL) {
+		param[i].key = CM_DBUS_PROP_TEMPLATE_MS_CERTIFICATE_TEMPLATE;
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = ms_template_spec;
 		params[i] = &param[i];
 		i++;
 	}
@@ -4816,6 +4854,8 @@ help(const char *twopartcmd, const char *category)
 		N_("  -c CA		use the specified CA rather than the default\n"),
 #endif
 		N_("  -T PROFILE	ask the CA to process the request using the named profile or template\n"),
+		N_("  --ms-template-spec SPEC\n"),
+		N_("	 include V2 template specifier in CSR (format: OID:MAJOR-VERSION[:MINOR-VERSION])\n"),
 		N_("  -X ISSUER	ask the CA to process the request using the named issuer\n"),
 		N_("* Parameters for the signing request:\n"),
 		N_("  -N NAME	set requested subject name (default: CN=<hostname>)\n"),
@@ -4865,6 +4905,8 @@ help(const char *twopartcmd, const char *category)
 		N_("  -c CA		use the specified CA rather than the default\n"),
 #endif
 		N_("  -T PROFILE	ask the CA to process the request using the named profile or template\n"),
+		N_("  --ms-template-spec SPEC\n"),
+		N_("	 include V2 template specifier in CSR (format: OID:MAJOR-VERSION[:MINOR-VERSION])\n"),
 		N_("  -X ISSUER	ask the CA to process the request using the named issuer\n"),
 		N_("* Parameters for the signing request at renewal time:\n"),
 		N_("  -U EXTUSAGE	override requested extended key usage OID\n"),
@@ -4944,6 +4986,8 @@ help(const char *twopartcmd, const char *category)
 		N_("  -c CA		use the specified CA rather than the current one\n"),
 #endif
 		N_("  -T PROFILE	ask the CA to process the request using the named profile or template\n"),
+		N_("  --ms-template-spec SPEC\n"),
+		N_("	 include V2 template specifier in CSR (format: OID:MAJOR-VERSION[:MINOR-VERSION])\n"),
 		N_("  -X ISSUER	ask the CA to process the request using the named issuer\n"),
 		N_("* Bus options:\n"),
 		N_("  -S		connect to the certmonger service on the system bus\n"),
@@ -4992,6 +5036,8 @@ help(const char *twopartcmd, const char *category)
 		N_("  -c CA		use the specified CA rather than the current one\n"),
 #endif
 		N_("  -T PROFILE	ask the CA to process the request using the named profile or template\n"),
+		N_("  --ms-template-spec SPEC\n"),
+		N_("	 include V2 template specifier in CSR (format: OID:MAJOR-VERSION[:MINOR-VERSION])\n"),
 		N_("  -X ISSUER	ask the CA to process the request using the named issuer\n"),
 		N_("  -G TYPE	type of new key to be generated\n"),
 		N_("  -g SIZE	size of new key to be generated\n"),
