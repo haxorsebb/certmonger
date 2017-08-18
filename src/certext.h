@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <prtypes.h>
+
 #ifndef cmcertext_h
 #define cmcertext_h
 
@@ -24,5 +26,8 @@ struct cm_store_entry;
 void cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 				     struct NSSInitContextStr *ctx,
 				     unsigned char **encoded, size_t *length);
+
+/* Validate a V2 template spec */
+PRBool cm_ms_template_valid(char *template_spec);
 
 #endif

@@ -1671,6 +1671,19 @@ cm_certext_build_certificate_template(
 	return SECITEM_ArenaDupItem(arena, &encoded);
 }
 
+/* Validate a V2 template spec */
+PRBool cm_ms_template_valid(char *template_spec) {
+	PLArenaPool *arena = PORT_NewArena(sizeof(double));
+	if (arena == NULL)
+		return PR_FALSE;
+	SECItem *result =
+		cm_certext_build_certificate_template(arena, template_spec);
+	PORT_FreeArena(arena, PR_FALSE);
+	// *result has been freed, but we don't read it;
+	// we only need to know whether the parse succeeded
+	return result != NULL;
+}
+
 /* Build a Netscape certtype extension value. */
 static SECItem *
 cm_certext_build_ns_certtype(struct cm_store_entry *entry,

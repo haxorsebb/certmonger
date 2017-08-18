@@ -186,7 +186,7 @@ tdbusm_check_SOURCES = tdbusm-check.c tm.c tm.h
 tdbusm_check_LDADD = libcm.a $(CERTMONGER_LIBS) $(POPT_LIBS)
 serial_check_LDADD = libcm.a $(CERTMONGER_LIBS) $(LTLIBICONV)
 nl_check_LDADD = libcm.a $(CERTMONGER_LIBS)
-submit_x_CFLAGS = $(AM_CFLAGS) -DCM_SUBMIT_X_MAIN
+submit_x_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS) -DCM_SUBMIT_X_MAIN
 submit_x_SOURCES = submit-x.c submit-x.h submit-u.c submit-u.h log.c log.h \
 	tm.c tm.h
 submit_x_LDADD = $(XMLRPC_LIBS) $(KRB5_LIBS) $(TALLOC_LIBS) \
@@ -205,12 +205,14 @@ pkglibexec_PROGRAMS += local-submit
 pkglibexec_PROGRAMS += scep-submit
 endif
 noinst_PROGRAMS += submit-h submit-d
+ipa_submit_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS)
 ipa_submit_SOURCES = ipa.c srvloc.c srvloc.h store.h store-gen.c \
 		submit-x.c submit-x.h submit-u.c submit-u.h \
 		submit-e.h util.c util.h log.c log.h tm.c tm.h
 ipa_submit_LDADD = $(XMLRPC_LIBS) $(LDAP_LIBS) $(KRB5_LIBS) $(TALLOC_LIBS) \
 		   $(GMP_LIBS) $(IDN_LIBS) $(OPENSSL_LIBS) $(UUID_LIBS) \
 		   $(RESOLV_LIBS) $(LTLIBICONV) $(POPT_LIBS)
+certmaster_submit_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS)
 certmaster_submit_SOURCES = certmaster.c submit-x.c submit-x.h \
 		submit-e.h submit-u.c submit-u.h util.c util.h log.c log.h \
 		tm.c tm.h

@@ -32,6 +32,7 @@
 
 #include "log.h"
 #include "cm.h"
+#include "certext.h"
 #include "prefs.h"
 #include "store.h"
 #include "store-int.h"
@@ -1572,7 +1573,18 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 					  CM_DBUS_PROP_TEMPLATE_MS_CERTIFICATE_TEMPLATE,
 					  cm_tdbusm_dict_s);
 	if (param != NULL) {
-		// TODO check validity
+		if (param->value.s != NULL
+		    && strlen(param->value.s) > 0
+		    && !cm_ms_template_valid(param->value.s)) {
+			cm_log(1, "Invalid V2 certificate template specifier: %s", param->value.s);
+			ret = send_internal_base_bad_arg_error(
+				conn, msg,
+				_("Invalid V2 certificate template specifier: %s"),
+				param->value.s,
+				CM_DBUS_PROP_TEMPLATE_MS_CERTIFICATE_TEMPLATE);
+			talloc_free(parent);
+			return ret;
+		}
 		new_entry->cm_template_certificate_template = maybe_strdup(new_entry,
 									   param->value.s);
 	}
@@ -3368,8 +3380,17 @@ request_modify(DBusConnection *conn, DBusMessage *msg,
 			} else
 			if ((param->value_type == cm_tdbusm_dict_s) &&
 			    (strcasecmp(param->key, CM_DBUS_PROP_TEMPLATE_MS_CERTIFICATE_TEMPLATE) == 0)) {
+				if (param->value.s != NULL
+				    && strlen(param->value.s) > 0
+				    && !cm_ms_template_valid(param->value.s)) {
+					cm_log(1, "Invalid V2 certificate template specifier: %s", param->value.s);
+					return send_internal_base_bad_arg_error(
+						conn, msg,
+						_("Invalid V2 certificate template specifier: %s"),
+						param->value.s,
+						CM_DBUS_PROP_TEMPLATE_MS_CERTIFICATE_TEMPLATE);
+				}
 				talloc_free(entry->cm_template_certificate_template);
-				// TODO check validity
 				entry->cm_template_certificate_template =
 					maybe_strdup(entry, param->value.s);
 				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
