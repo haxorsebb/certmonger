@@ -1971,6 +1971,9 @@ set_tracking(const char *argv0, const char *category,
 		case 'T':
 			profile = talloc_strdup(globals.tctx, poptarg);
 			break;
+		case 'X':
+			issuer = talloc_strdup(globals.tctx, poptarg);
+			break;
 		case 'i':
 			id = talloc_strdup(globals.tctx, poptarg);
 			break;
