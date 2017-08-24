@@ -1,0 +1,19 @@
+[key]
+OK.
+[csr : bogus oid]
+extension not present
+[csr : bogus major version]
+extension not present
+[csr : missing major version]
+extension not present
+[csr : too many parts]
+extension not present
+[csr : oid, major version]
+    0:d=0  hl=2 l=   8 cons: SEQUENCE          
+    2:d=1  hl=2 l=   3 prim: OBJECT            :1.2.3.4
+    7:d=1  hl=2 l=   1 prim: INTEGER           :2A
+[csr : oid, major version, minor version]
+    0:d=0  hl=2 l=  11 cons: SEQUENCE          
+    2:d=1  hl=2 l=   3 prim: OBJECT            :1.2.3.4
+    7:d=1  hl=2 l=   1 prim: INTEGER           :2A
+   10:d=1  hl=2 l=   1 prim: INTEGER           :11
