@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.79.4
+Version:	0.79.5
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -243,8 +243,14 @@ exit 0
 %endif
 
 %changelog
+* Fri Sep  1 2017 Rob Crittenden <rcritten@redhat.com> 0.79.5-1
+- update to 0.79.5:
+   - getcert start-tracking: use issuer option when specified
+   - add support for specifying the MS certificate template
+   - Reformat certificates returned by Dogtag to strip extra newline
+
 * Mon Aug  7 2017 Rob Crittenden <rcritten@redhat.com> 0.79.4-1
-- update to 0.79.4
+- update to 0.79.4:
   - fix CA option name for ipa cert-request
   - fix minor memory leak
   - fix build warnings
