@@ -116,7 +116,7 @@ helper is called.
     See footnote 1 for information about formatting the result.
   * If the client should wait for a period of time, output a "cookie" value and
     exit with status 1.  The daemon will try again later at a time of its
-    choosing.
+    choosing (the default is currently 7 days).
   * If the request was rejected outright, output an error message, and exit
     with status 2.
   * If there was an error connecting to the server, output an error message and
