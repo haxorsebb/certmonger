@@ -1,4 +1,4 @@
-#!/bin/python2
+#!/usr/bin/python2
 
 # Given `openssl asn1parse` output of a CSR, look for the V2 Template
 # extension and output its data if found.  Nonzero exit status if
