@@ -50,16 +50,15 @@ BuildRequires:	libcurl-devel
 BuildRequires:	curl-devel
 %endif
 BuildRequires:	libxml2-devel, xmlrpc-c-devel
-%if 0%{?rhel} < 6
+%if 0%{?rhel} && 0%{?rhel} < 6
 BuildRequires:	bind-libbind-devel
+BuildRequires:	mktemp
 %endif
 # Required for 'make check':
 #  for diff and cmp
 BuildRequires:	diffutils
 #  for expect
 BuildRequires:	expect
-#  for mktemp, which was absorbed into coreutils at some point
-BuildRequires:	mktemp
 #  for certutil and pk12util
 BuildRequires:	nss-tools
 #  for openssl
