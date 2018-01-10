@@ -2,15 +2,17 @@
 
 cd "$tmpdir"
 
+scheme="${scheme:-dbm:}"
+
 source "$srcdir"/functions
-initnssdb "$tmpdir"
+initnssdb "$scheme$tmpdir"
 
 for size in 1024 1536 2048 3072 4096 ; do
 	echo "[nss:$size]"
 	# Generate a key.
 	cat > entry.$size <<- EOF
 	key_storage_type=NSSDB
-	key_storage_location=$tmpdir
+	key_storage_location=$scheme$tmpdir
 	key_nickname=keyi$size
 	key_gen_size=$size
 	EOF
@@ -28,13 +30,13 @@ for size in 1024 1536 2048 3072 4096 ; do
 	# Extract the marker.
 	marker=`grep ^key_next_marker= entry.$size | cut -f2- -d=`
 	# Make sure we're clean.
-	run_certutil -K -d "$tmpdir" | grep keyi$size | sed -e 's,.*keyi,keyi,' -e s,"${marker:-////////}","(next)",g | env LANG=C sort
+	run_certutil -K -d "$scheme$tmpdir" | grep keyi$size | sed -e 's,.*keyi,keyi,' -e s,"${marker:-////////}","(next)",g | env LANG=C sort
 done
 
 echo "[nss:rosubdir]"
 cat > entry.$size <<- EOF
 key_storage_type=NSSDB
-key_storage_location=$tmpdir/rosubdir
+key_storage_location=$scheme$tmpdir/rosubdir
 key_nickname=keyi$size
 key_gen_size=$size
 EOF
@@ -43,7 +45,7 @@ $toolsdir/keygen entry.$size || true
 echo "[nss:rwsubdir]"
 cat > entry.$size <<- EOF
 key_storage_type=NSSDB
-key_storage_location=$tmpdir/rwsubdir
+key_storage_location=$scheme$tmpdir/rwsubdir
 key_nickname=keyi$size
 key_gen_size=$size
 EOF

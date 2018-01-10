@@ -44,9 +44,9 @@ OK (RSA:4096 after RSA:4096).
 keyi4096
 keyi4096 (candidate (next))
 [nss:rosubdir]
-Failed to save NSS:dbm:${tmpdir}/rosubdir: need fs permissions.
+Failed to save NSS:sql:${tmpdir}/rosubdir: need fs permissions.
 [nss:rwsubdir]
-Failed to save NSS:dbm:${tmpdir}/rwsubdir: need fs permissions.
+Failed to save NSS:sql:${tmpdir}/rwsubdir: need fs permissions.
 [openssl:1024]
 OK.
 OK (RSA:1024).
