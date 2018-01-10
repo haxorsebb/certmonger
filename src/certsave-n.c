@@ -128,10 +128,13 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			      NSS_INIT_NOMODDB);
 	ec = PORT_GetError();
 	if (ctx == NULL) {
-		if ((ec == SEC_ERROR_BAD_DATABASE) && readwrite) {
+		if ((ec == SEC_ERROR_READ_ONLY) && readwrite) {
+		        ec = PR_NO_ACCESS_RIGHTS_ERROR;
+		} else if ((ec == SEC_ERROR_BAD_DATABASE) && readwrite) {
 			switch (errno) {
 			case EACCES:
 			case EPERM:
+			case ENOENT:
 				ec = PR_NO_ACCESS_RIGHTS_ERROR;
 				break;
 			default:
