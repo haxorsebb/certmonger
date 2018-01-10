@@ -140,11 +140,11 @@ for preserve in 1 0 ; do
 
 	echo "This is the plaintext." > plain.txt
 	echo "NSS Signing:"
-	certutil -M -d $tmpdir -n i$size -t P,P,P
-	cmsutil -S -d $tmpdir -f pinfile -N i$size -i plain.txt -o signed
+	certutil -M -d $tmpdir -n i$size -t P,P,P -f pinfile
+	cmsutil -S -d $tmpdir -f pinfile -N i$size -i plain.txt -o signed -f pinfile
 	echo "NSS Verify:"
-	cmsutil -D -d $tmpdir -f pinfile -i signed
-	certutil -M -d $tmpdir -n i$size -t ,,
+	cmsutil -D -d $tmpdir -f pinfile -i signed -f pinfile
+	certutil -M -d $tmpdir -n i$size -t ,, -f pinfile
 
 	# Go and save the new certs and keys (NSS).
 	echo '(saving)'
@@ -163,11 +163,11 @@ for preserve in 1 0 ; do
 
 	echo "This is the plaintext." > plain.txt
 	echo "NSS Signing:"
-	certutil -M -d $tmpdir -n i$size -t P,P,P
-	cmsutil -S -d $tmpdir -f pinfile -N i$size -i plain.txt -o signed
+	certutil -M -d $tmpdir -n i$size -t P,P,P -f pinfile
+	cmsutil -S -d $tmpdir -f pinfile -N i$size -i plain.txt -o signed -f pinfile
 	echo "NSS Verify:"
-	cmsutil -D -d $tmpdir -f pinfile -i signed
-	certutil -M -d $tmpdir -n i$size -t ,,
+	cmsutil -D -d $tmpdir -f pinfile -i signed -f pinfile
+	certutil -M -d $tmpdir -n i$size -t ,, -f pinfile
 
 	# Now generate new keys, CSRs, and certificates (OpenSSL).
 	echo "PEM keys before re-keygen (preserve=$preserve,pin=\"$pin\"):"
