@@ -475,6 +475,20 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 						 entry->cm_cert_nickname);
 			ec = PORT_GetError();
 			if (error == SECSuccess) {
+				/* If NSS uses SQL DB storage, CERT_ImportCerts creates
+				 * an incomplete internal state (the cert isn't
+				 * associated with the private key, and calling
+				 * PK11_FindKeyByAnyCert returns no result).
+				 * As a workaround, we import the cert again using 
+				 * PK11_ImportCert, which magically fixes the issue.
+				 * See rhbz#1532188 */
+				error = PK11_ImportCert(PK11_GetInternalKeySlot(),
+					returned[0],
+					CK_INVALID_HANDLE,
+					returned[0]->nickname,
+					PR_FALSE);
+			}
+			if (error == SECSuccess) {
 				cm_log(1, "Imported certificate \"%s\", got "
 				       "nickname \"%s\".\n",
 				       entry->cm_cert_nickname,
