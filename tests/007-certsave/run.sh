@@ -2,8 +2,9 @@
 
 cd "$tmpdir"
 
+scheme="${scheme:-dbm}"
 source "$srcdir"/functions
-initnssdb ${scheme:+${scheme}:}$tmpdir
+initnssdb $scheme:$tmpdir
 
 wrongcert='-----BEGIN CERTIFICATE-----
  MIIDQTCCAimgAwIBAgIBBTANBgkqhkiG9w0BAQsFADASMRAwDgYDVQQDEwdwaWxs
@@ -50,7 +51,7 @@ echo "$wrongcert" | sed -e 's,^$,,g' -e 's,^ ,,g' > cert.wrong
 echo "[nss:wrongnick]"
 cat > entry.nss << EOF
 cert_storage_type=NSSDB
-cert_storage_location=${scheme:+${scheme}:}$tmpdir
+cert_storage_location=$scheme:$tmpdir
 cert_nickname=wrongnick
 cert=$cert
 EOF
@@ -59,7 +60,7 @@ $toolsdir/certsave entry.nss
 echo "[nss:wrongcert]"
 cat > entry.nss << EOF
 cert_storage_type=NSSDB
-cert_storage_location=${scheme:+${scheme}:}$tmpdir
+cert_storage_location=$scheme:$tmpdir
 cert_nickname=cert
 cert=$wrongcert
 EOF
@@ -68,13 +69,13 @@ $toolsdir/certsave entry.nss
 echo "[nss:right]"
 cat > entry.nss << EOF
 cert_storage_type=NSSDB
-cert_storage_location=${scheme:+${scheme}:}$tmpdir
+cert_storage_location=$scheme:$tmpdir
 cert_nickname=cert
 cert=$cert
 EOF
 $toolsdir/certsave entry.nss
 $toolsdir/listnicks entry.nss
-certutil -d ${scheme:+${scheme}:}$tmpdir -L -n cert -a > cert.nss
+certutil -d $scheme:$tmpdir -L -n cert -a > cert.nss
 # Save the wrong certificate to the PEM file.
 echo "[openssl:wrong]"
 cat > entry.openssl << EOF
@@ -96,7 +97,7 @@ run_dos2unix cert.original
 run_dos2unix cert.nss
 run_dos2unix cert.openssl
 if ! cmp cert.original cert.nss ; then
-	echo Original and NSS disagree "(${scheme:+${scheme}:}$tmpdir)".
+	echo Original and NSS disagree "($scheme:$tmpdir)".
 	cat cert.original cert.nss
 	exit 1
 fi
@@ -137,62 +138,62 @@ $toolsdir/certsave entry.openssl || true
 for trust in ,, P,, ,P, CT,C, C,c,p ; do
 	echo Testing setting trust to "$trust":
 	# Save the right certificate to NSS's database and read it back.
-	initnssdb ${scheme:+${scheme}:}$tmpdir
+	initnssdb $scheme:$tmpdir
 	cat > entry.nss <<- EOF
 	cert_storage_type=NSSDB
-	cert_storage_location=${scheme:+${scheme}:}$tmpdir
+	cert_storage_location=$scheme:$tmpdir
 	cert_nickname=cert
 	cert=$cert
 	EOF
 	$toolsdir/certsave entry.nss
-	certutil -d ${scheme:+${scheme}:}$tmpdir -M -n cert -t $trust
+	certutil -d $scheme:$tmpdir -M -n cert -t $trust
 	echo -n " baseline: "
-	certutil -d ${scheme:+${scheme}:}$tmpdir -L | grep cert | sed -r 's,[ \t]+, ,g'
+	certutil -d $scheme:$tmpdir -L | grep cert | sed -r 's,[ \t]+, ,g'
 	$toolsdir/certsave entry.nss
 	echo -n " right nickname, right subject: "
-	certutil -d ${scheme:+${scheme}:}$tmpdir -L | grep cert | sed -r 's,[ \t]+, ,g'
+	certutil -d $scheme:$tmpdir -L | grep cert | sed -r 's,[ \t]+, ,g'
 	# Save the right certificate to NSS's database with the wrong nickname.
-	initnssdb ${scheme:+${scheme}:}$tmpdir
+	initnssdb $scheme:$tmpdir
 	$toolsdir/certsave entry.nss
 	cat > entry.nss <<- EOF
 	cert_storage_type=NSSDB
-	cert_storage_location=${scheme:+${scheme}:}$tmpdir
+	cert_storage_location=$scheme:$tmpdir
 	cert_nickname=wrongnick
 	cert=$cert
 	EOF
 	$toolsdir/certsave entry.nss
-	certutil -d ${scheme:+${scheme}:}$tmpdir -M -n wrongnick -t $trust
+	certutil -d $scheme:$tmpdir -M -n wrongnick -t $trust
 	# Save the right certificate to NSS's database and read it back.
 	cat > entry.nss <<- EOF
 	cert_storage_type=NSSDB
-	cert_storage_location=${scheme:+${scheme}:}$tmpdir
+	cert_storage_location=$scheme:$tmpdir
 	cert_nickname=cert
 	cert=$cert
 	EOF
 	$toolsdir/certsave entry.nss
 	echo -n " wrong nickname, right subject: "
-	certutil -d ${scheme:+${scheme}:}$tmpdir -L | grep cert | sed -r 's,[ \t]+, ,g'
+	certutil -d $scheme:$tmpdir -L | grep cert | sed -r 's,[ \t]+, ,g'
 	# Save the wrong certificate to NSS's database with the right nickname.
-	initnssdb ${scheme:+${scheme}:}$tmpdir
+	initnssdb $scheme:$tmpdir
 	$toolsdir/certsave entry.nss
 	cat > entry.nss <<- EOF
 	cert_storage_type=NSSDB
-	cert_storage_location=${scheme:+${scheme}:}$tmpdir
+	cert_storage_location=$scheme:$tmpdir
 	cert_nickname=cert
 	cert=$wrongcert
 	EOF
 	$toolsdir/certsave entry.nss
-	certutil -d ${scheme:+${scheme}:}$tmpdir -M -n cert -t $trust
+	certutil -d $scheme:$tmpdir -M -n cert -t $trust
 	# Save the right certificate to NSS's database and read it back.
 	cat > entry.nss <<- EOF
 	cert_storage_type=NSSDB
-	cert_storage_location=${scheme:+${scheme}:}$tmpdir
+	cert_storage_location=$scheme:$tmpdir
 	cert_nickname=cert
 	cert=$cert
 	EOF
 	$toolsdir/certsave entry.nss
 	echo -n " wrong subject, right nickname: "
-	certutil -d ${scheme:+${scheme}:}$tmpdir -L | grep cert | sed -r 's,[ \t]+, ,g'
+	certutil -d $scheme:$tmpdir -L | grep cert | sed -r 's,[ \t]+, ,g'
 done
 
 if test "$scheme" = sql ; then
@@ -202,7 +203,7 @@ else
 	echo "[nss:rosubdir]"
 	cat > entry.nss <<- EOF
 	cert_storage_type=NSSDB
-	cert_storage_location=$tmpdir/rosubdir
+	cert_storage_location=$scheme:$tmpdir/rosubdir
 	cert_nickname=cert
 	cert=$cert
 	EOF
@@ -216,7 +217,7 @@ else
 	echo "[nss:rwsubdir]"
 	cat > entry.nss <<- EOF
 	cert_storage_type=NSSDB
-	cert_storage_location=$tmpdir/rwsubdir
+	cert_storage_location=$scheme:$tmpdir/rwsubdir
 	cert_nickname=cert
 	cert=$cert
 	EOF
