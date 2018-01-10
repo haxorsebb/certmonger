@@ -1,6 +1,8 @@
 #!/bin/bash
 cd "$tmpdir"
 
+scheme="${scheme:-dbm:}"
+
 function list() {
 	$toolsdir/ls *.* | sed -e "s~^$owner:$group|~\$owner:\$group|~g"
 }

@@ -37,7 +37,7 @@ Testing setting trust to C,c,p:
  wrong nickname, right subject: cert ,, 
  wrong subject, right nickname: cert ,, 
 [nss:rosubdir]
-Failed to save (NSS:${tmpdir}/rosubdir), filesystem permissions error.
+Failed to save (NSS:dbm:${tmpdir}/rosubdir), filesystem permissions error.
 [nss:rwsubdir]
-Failed to save (NSS:${tmpdir}/rwsubdir), filesystem permissions error.
+Failed to save (NSS:dbm:${tmpdir}/rwsubdir), filesystem permissions error.
 Test complete.
