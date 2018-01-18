@@ -80,6 +80,89 @@ astring_type(const char *attr, const char *p, ssize_t n)
 	return V_ASN1_PRINTABLESTRING;
 }
 
+static X509_NAME *
+ldap_dn_to_X509_NAME(char *s) {
+	LDAPDN dn = NULL;
+	LDAPRDN rdn = NULL;
+	LDAPAVA *attr = NULL;
+	int ret = ldap_str2dn(s, &dn, LDAP_DN_FORMAT_LDAPV3);
+	if (ret != LDAP_SUCCESS)
+		return NULL;
+
+	X509_NAME *x509name = X509_NAME_new();
+	if (x509name == NULL)
+		return NULL;
+
+	for (int i = 0; dn[i] != NULL; i++) {
+		rdn = dn[i];
+		int set = 0; // add next AVA in new RDN
+		for (int j = 0; rdn[j] != NULL; j++) {
+			attr = rdn[j];
+
+			// process attribute type
+			ASN1_OBJECT *obj = OBJ_txt2obj(
+				attr->la_attr.bv_val,
+				0 /* allow dotted OIDs */);
+			if (obj == NULL) {
+				// OpenSSL requires upper-cased short names
+				// i.e. "CN", "O", etc.
+				// Convert to upper and try again.
+				char *attr_upper = str_to_upper(attr->la_attr.bv_val);
+				if (attr_upper != NULL) {
+					obj = OBJ_txt2obj(attr_upper, 0);
+					free(attr_upper);
+				}
+			}
+
+			if (obj == NULL) {
+				cm_log(
+					0,
+					"Unrecognised attribute type: (%s). Continuing.\n",
+					attr->la_attr.bv_val);
+			} else {
+				ret = X509_NAME_add_entry_by_OBJ(
+					x509name,
+					obj,
+					astring_type(
+						attr->la_attr.bv_val,
+						attr->la_value.bv_val,
+						attr->la_value.bv_len),
+					(unsigned char *) attr->la_value.bv_val,
+					attr->la_value.bv_len,
+					-1, // append to RDN
+					set);
+				if (ret == 1) {
+					set = -1; // add next AVA to previous RDN
+				} else {
+					cm_log(
+						0,
+						"Failed to add AVA to CSR: (%s=%s). Continuing.\n",
+						attr->la_attr.bv_val,
+						attr->la_value.bv_val);
+				}
+			}
+		}
+	}
+	ldap_dnfree(dn);
+	return x509name;
+}
+
+/* Create a single-AVA X509_NAME, with given string as CN */
+static X509_NAME *
+cn_to_X509_NAME(const char *s) {
+	X509_NAME *n = X509_NAME_new();
+	if (n != NULL) {
+		X509_NAME_add_entry_by_txt(
+			n,
+			"CN",
+			astring_type("CN", s, -1),
+			(unsigned char *) s,
+			-1 /* compute value length internally */,
+			-1, 0);
+	}
+	return n;
+}
+
 static int
 cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		 void *userdata)
@@ -97,9 +180,6 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	EVP_PKEY *pkey;
 	BIGNUM *serialbn;
 	char buf[LINE_MAX], *s, *nickname, *pin, *password, *filename;
-	LDAPDN dn = NULL;
-	LDAPRDN rdn = NULL;
-	LDAPAVA *attr = NULL;
 	unsigned char *extensions, *upassword, *bmp, *name, *up, *uq, md[CM_DIGEST_MAX];
 	char *spkidec, *mcb64, *nows;
 	const char *default_cn = CM_DEFAULT_CERT_SUBJECT_CN, *spkihex = NULL;
@@ -200,78 +280,14 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			if ((subject == NULL) &&
 			    (entry->cm_template_subject != NULL) &&
 			    (strlen(entry->cm_template_subject) != 0)) {
-				int ret;
-				subject = X509_NAME_new();
-				if (subject != NULL) {
-					ret = ldap_str2dn(entry->cm_template_subject, &dn, LDAP_DN_FORMAT_LDAPV3);
-					if (ret == LDAP_SUCCESS) {
-						for (i = 0; dn[i] != NULL; i++) {
-							rdn = dn[i];
-							int set = 0; // add next AVA in new RDN
-							for (int j = 0; rdn[j] != NULL; j++) {
-								attr = rdn[j];
+				subject = ldap_dn_to_X509_NAME(entry->cm_template_subject);
 
-								// process attribute type
-								ASN1_OBJECT *obj = OBJ_txt2obj(
-									attr->la_attr.bv_val,
-									0 /* allow dotted OIDs */);
-								if (obj == NULL) {
-									// OpenSSL requires upper-cased short names
-									// i.e. "CN", "O", etc.
-									// Convert to upper and try again.
-									char *attr_upper = str_to_upper(attr->la_attr.bv_val);
-									if (attr_upper != NULL) {
-										obj = OBJ_txt2obj(attr_upper, 0);
-										free(attr_upper);
-									}
-								}
-
-								if (obj == NULL) {
-									cm_log(
-										0,
-										"Unrecognised attribute type: (%s). Continuing.\n",
-										attr->la_attr.bv_val);
-								} else {
-									ret = X509_NAME_add_entry_by_OBJ(
-										subject,
-										obj,
-										astring_type(
-											attr->la_attr.bv_val,
-											attr->la_value.bv_val,
-											attr->la_value.bv_len),
-										(unsigned char *) attr->la_value.bv_val,
-										attr->la_value.bv_len,
-										-1, // append to RDN
-										set);
-									if (ret == 1) {
-										set = -1; // add next AVA to previous RDN
-									} else {
-										cm_log(
-											0,
-											"Failed to add AVA to CSR: (%s=%s). Continuing.\n",
-											attr->la_attr.bv_val,
-											attr->la_value.bv_val);
-									}
-								}
-							}
-						}
-						if (dn != NULL)
-							ldap_dnfree(dn);
-					} else {
-						X509_NAME_add_entry_by_txt(subject,
-							"CN", astring_type("CN", entry->cm_template_subject, -1),
-							(unsigned char *) entry->cm_template_subject, -1, -1, 0);
-					}
-					}
+				if (subject == NULL) {
+					subject = cn_to_X509_NAME(entry->cm_template_subject);
+				}
 			}
 			if (subject == NULL) {
-				subject = X509_NAME_new();
-				if (subject != NULL) {
-					X509_NAME_add_entry_by_txt(subject,
-								   "CN", astring_type("CN", default_cn, -1),
-								   (const unsigned char *) default_cn,
-								   -1, -1, 0);
-				}
+				subject = cn_to_X509_NAME(default_cn);
 			}
 			if (subject != NULL) {
 				util_X509_REQ_set_subject_name(req, subject);
