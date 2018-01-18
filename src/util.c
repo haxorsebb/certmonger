@@ -176,3 +176,17 @@ get_config_entry(char * in_data, const char *section, const char *key)
     free(tmp);
     return NULL;
 }
+
+void str_to_upper_inplace(char *s) {
+    if (NULL == s) return;
+    for (; *s != '\0'; s++) {
+        *s = toupper(*s);
+    }
+}
+
+char *str_to_upper(const char *s) {
+    char *ret = strdup(s);
+    if (ret != NULL)
+        str_to_upper_inplace(ret);
+    return ret;
+}

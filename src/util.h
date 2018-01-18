@@ -21,4 +21,17 @@
 char *read_config_file(const char *filename);
 char *get_config_entry(char *data, const char *section, const char *key);
 
+/*
+ * Convert string to upper case in place.
+ * String must be null-terminated.  Locale-unaware.
+ */
+void str_to_upper_inplace(char *s);
+
+/*
+ * Return upper-cased copy of string.
+ * String must be null-terminated.  Locale-unaware.
+ * Return NULL on error (insufficient memory).
+ */
+char *str_to_upper(const char *s);
+
 #endif

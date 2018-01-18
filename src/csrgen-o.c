@@ -32,6 +32,7 @@
 
 #include <openssl/bn.h>
 #include <openssl/err.h>
+#include <openssl/objects.h>
 #include <openssl/pem.h>
 
 #include <ldap.h>
@@ -51,6 +52,7 @@
 #include "subproc.h"
 #include "util-m.h"
 #include "util-o.h"
+#include "util.h"
 
 struct cm_csrgen_state {
 	struct cm_csrgen_state_pvt pvt;
@@ -205,12 +207,53 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					if (ret == LDAP_SUCCESS) {
 						for (i = 0; dn[i] != NULL; i++) {
 							rdn = dn[i];
+							int set = 0; // add next AVA in new RDN
+							for (int j = 0; rdn[j] != NULL; j++) {
+								attr = rdn[j];
 
-							attr = rdn[0];
-							X509_NAME_add_entry_by_txt(subject,
-										   attr->la_attr.bv_val, astring_type(attr->la_attr.bv_val, attr->la_value.bv_val, attr->la_value.bv_len),
-										   (unsigned char *) attr->la_value.bv_val, attr->la_value.bv_len,
-										   -1, 0);
+								// process attribute type
+								ASN1_OBJECT *obj = OBJ_txt2obj(
+									attr->la_attr.bv_val,
+									0 /* allow dotted OIDs */);
+								if (obj == NULL) {
+									// OpenSSL requires upper-cased short names
+									// i.e. "CN", "O", etc.
+									// Convert to upper and try again.
+									char *attr_upper = str_to_upper(attr->la_attr.bv_val);
+									if (attr_upper != NULL) {
+										obj = OBJ_txt2obj(attr_upper, 0);
+										free(attr_upper);
+									}
+								}
+
+								if (obj == NULL) {
+									cm_log(
+										0,
+										"Unrecognised attribute type: (%s). Continuing.\n",
+										attr->la_attr.bv_val);
+								} else {
+									ret = X509_NAME_add_entry_by_OBJ(
+										subject,
+										obj,
+										astring_type(
+											attr->la_attr.bv_val,
+											attr->la_value.bv_val,
+											attr->la_value.bv_len),
+										(unsigned char *) attr->la_value.bv_val,
+										attr->la_value.bv_len,
+										-1, // append to RDN
+										set);
+									if (ret == 1) {
+										set = -1; // add next AVA to previous RDN
+									} else {
+										cm_log(
+											0,
+											"Failed to add AVA to CSR: (%s=%s). Continuing.\n",
+											attr->la_attr.bv_val,
+											attr->la_value.bv_val);
+									}
+								}
+							}
 						}
 						if (dn != NULL)
 							ldap_dnfree(dn);
