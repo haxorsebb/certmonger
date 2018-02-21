@@ -74,6 +74,13 @@ cm_subproc_propagate_environment(const char *p)
 	    (strncmp(p, CERTMONGER_PVT_ADDRESS_ENV, equal) == 0)) {
 		return equal;
 	}
+	if ((strlen("LANG") == equal) && (strncmp(p, "LANG", equal) == 0)) {
+		return equal;
+	}
+	if ((equal > 4) &&
+	    (strncmp(p, "LC_", 3) == 0)) {
+		return equal;
+	}
 	if ((equal > 6) &&
 	    ((strncmp(p + equal - 6, "_PROXY", 6) == 0) ||
 	     (strncmp(p + equal - 6, "_proxy", 6) == 0))) {
@@ -158,6 +165,8 @@ cm_subproc_start(int (*cb)(int fd,
 				setenv("PATH", _PATH_STDPATH, 1);
 				setenv("SHELL", _PATH_BSHELL, 1);
 				setenv("TERM", "dumb", 1);
+				/* sane default, can be overruled by childenv */
+				setenv("LC_CTYPE", "C.UTF-8", 1);
 				if (configdir != NULL) {
 					setenv(CM_STORE_CONFIG_DIRECTORY_ENV,
 					       configdir, 1);
