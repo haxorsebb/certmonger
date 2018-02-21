@@ -476,9 +476,17 @@ main(int argc, const char **argv)
 	/* Read the client password and/or PIN, if we need to. */
 	if ((pwdfile != NULL) && (pwd == NULL)) {
 		pwd = cm_submit_u_from_file(pwdfile);
+        if (pwd != NULL) {
+            pwd = talloc_strndup(ctx, pwd,
+                        strcspn(pwd, "\r\n"));
+		}
 	}
 	if ((pinfile != NULL) && (pin == NULL)) {
 		pin = cm_submit_u_from_file(pinfile);
+        if (pin != NULL) {
+            pin = talloc_strndup(ctx, pin,
+                        strcspn(pin, "\r\n"));
+		}
 	}
 
 	/* Figure out which form and arguments to use. */
