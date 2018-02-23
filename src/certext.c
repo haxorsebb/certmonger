@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009,2011,2012,2013,2014,2015,2017 Red Hat, Inc.
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -1620,9 +1620,9 @@ cm_certext_build_certificate_template(
 		return NULL;
 
 	int i = 0;
-	char *saveptr, *endptr;
+	char *saveptr, *endptr, *part;
 	for (
-		char *part = strtok_r(template_spec_dup, ":", &saveptr);
+		part = strtok_r(template_spec_dup, ":", &saveptr);
 		part != NULL;
 		part = strtok_r(NULL, ":", &saveptr)
 	) {
