@@ -38,6 +38,7 @@ BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 BuildRequires:	openldap-devel
 BuildRequires:	dbus-devel, nspr-devel, nss-devel, openssl-devel, libidn-devel
+BuildRequires:	autoconf, automake, gcc, gettext-devel
 %if 0%{?fedora} >= 12 || 0%{?rhel} >= 6
 BuildRequires:  libuuid-devel
 %else
