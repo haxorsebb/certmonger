@@ -4291,6 +4291,12 @@ list_cas(const char *argv0, int argc, const char **argv)
 		if ((s != NULL) && (strlen(s) > 0)) {
 			printf(_("\tpost-save command: %s\n"), s);
 		}
+		if (verbose > 0) {
+			printf(_("\tconfig-path: %s\n"),
+			       query_rep_s(bus, cas[i], CM_DBUS_CA_INTERFACE,
+					   "get_config_file_path",
+					   verbose, globals.tctx));
+		}
 	}
 	return 0;
 }

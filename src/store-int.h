@@ -349,6 +349,10 @@ struct cm_store_ca {
 	char **cm_ca_other_cert_store_nssdbs;
 	/* CA capabilities.  Currently only ever SCEP capabilities. */
 	char **cm_ca_capabilities;
+	/* SCEP Cipher to use. Overrides CA Capabilities */
+	char *cm_ca_scep_cipher;
+	/* SCEP Digest to use. Overrides CA Capabilities */
+	char *cm_ca_scep_digest;
 	/* An SCEP CA identifier, for use in gathering an RA (and possibly a
 	 * CA) certificate. */
 	char *cm_ca_scep_ca_identifier;

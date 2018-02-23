@@ -20,9 +20,12 @@
 
 enum cm_prefs_cipher {
 	cm_prefs_aes128,
+	cm_prefs_aes192,
 	cm_prefs_aes256,
 	cm_prefs_des3,
 	cm_prefs_des,
+	/* This is for the selection logic */
+	cm_prefs_nocipher,
 };
 
 enum cm_prefs_digest {
@@ -31,6 +34,8 @@ enum cm_prefs_digest {
 	cm_prefs_sha512,
 	cm_prefs_sha1,
 	cm_prefs_md5,
+	/* This is for the selection logic */
+	cm_prefs_nodigest,
 };
 
 enum cm_notification_method;

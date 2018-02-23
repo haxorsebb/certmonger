@@ -221,6 +221,8 @@ enum cm_store_file_field {
 	cm_store_ca_field_other_cert_nssdbs,
 
 	cm_store_ca_field_capabilities,
+	cm_store_ca_field_scep_cipher,
+	cm_store_ca_field_scep_digest,
 	cm_store_ca_field_scep_ca_identifier,
 	cm_store_ca_field_encryption_cert,
 	cm_store_ca_field_encryption_issuer_cert,
@@ -400,6 +402,8 @@ static struct cm_store_file_field_list {
 	{cm_store_ca_field_other_cert_nssdbs, "ca_other_cert_dbs"},
 
 	{cm_store_ca_field_capabilities, "ca_capabilities"},
+	{cm_store_ca_field_scep_cipher, "scep_cipher"},
+	{cm_store_ca_field_scep_digest, "scep_digest"},
 	{cm_store_ca_field_scep_ca_identifier, "scep_ca_identifier"},
 	{cm_store_ca_field_encryption_cert, "ca_encryption_cert"},
 	{cm_store_ca_field_encryption_issuer_cert, "ca_encryption_issuer_cert"},
@@ -804,6 +808,8 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_ca_field_other_root_cert_nssdbs:
 			case cm_store_ca_field_other_cert_nssdbs:
 			case cm_store_ca_field_capabilities:
+			case cm_store_ca_field_scep_cipher:
+			case cm_store_ca_field_scep_digest:
 			case cm_store_ca_field_scep_ca_identifier:
 			case cm_store_ca_field_encryption_cert:
 			case cm_store_ca_field_encryption_issuer_cert:
@@ -1601,6 +1607,14 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_ca_field_capabilities:
 				ret->cm_ca_capabilities =
 					free_if_empty_multi(ret, p);
+				break;
+			case cm_store_ca_field_scep_cipher:
+				ret->cm_ca_scep_cipher =
+					free_if_empty(p);
+				break;
+			case cm_store_ca_field_scep_digest:
+				ret->cm_ca_scep_digest =
+					free_if_empty(p);
 				break;
 			case cm_store_ca_field_scep_ca_identifier:
 				ret->cm_ca_scep_ca_identifier =
@@ -2418,6 +2432,10 @@ cm_store_ca_write(FILE *fp, struct cm_store_ca *ca)
 				 ca->cm_ca_other_cert_store_nssdbs);
 	cm_store_file_write_strs(fp, cm_store_ca_field_capabilities,
 				 ca->cm_ca_capabilities);
+	cm_store_file_write_str(fp, cm_store_ca_field_scep_cipher,
+				ca->cm_ca_scep_cipher);
+	cm_store_file_write_str(fp, cm_store_ca_field_scep_digest,
+				ca->cm_ca_scep_digest);
 	cm_store_file_write_str(fp, cm_store_ca_field_scep_ca_identifier,
 				ca->cm_ca_scep_ca_identifier);
 	cm_store_file_write_str(fp, cm_store_ca_field_encryption_cert,
@@ -2940,6 +2958,10 @@ cm_store_ca_dup(void *parent, struct cm_store_ca *ca)
 
 	ret->cm_ca_capabilities =
 		cm_store_maybe_strdupv(ret, ca->cm_ca_capabilities);
+	ret->cm_ca_scep_cipher =
+		cm_store_maybe_strdup(ret, ca->cm_ca_scep_cipher);
+	ret->cm_ca_scep_digest =
+		cm_store_maybe_strdup(ret, ca->cm_ca_scep_digest);
 	ret->cm_ca_scep_ca_identifier =
 		cm_store_maybe_strdup(ret, ca->cm_ca_scep_ca_identifier);
 	ret->cm_ca_encryption_cert =

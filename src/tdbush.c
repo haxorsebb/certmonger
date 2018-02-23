@@ -2128,6 +2128,27 @@ ca_get_serial(DBusConnection *conn, DBusMessage *msg,
 	}
 }
 
+/* org.fedorahosted.certonger.ca.get_config_file_path */
+ca_get_config_file_path(DBusConnection *conn, DBusMessage *msg,
+		struct cm_client_info *ci, struct cm_context *ctx)
+{
+	DBusMessage *rep;
+	struct cm_store_ca *ca;
+	ca = get_ca_for_request_message(msg, ctx);
+	if (ca == NULL) {
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+	rep = dbus_message_new_method_return(msg);
+	if (rep != NULL) {
+		cm_tdbusm_set_s(rep, ca->cm_store_private);
+		dbus_connection_send(conn, rep, NULL);
+		dbus_message_unref(rep);
+		return DBUS_HANDLER_RESULT_HANDLED;
+	} else {
+		return send_internal_ca_error(conn, msg);
+	}
+}
+
 /* org.fedorahosted.certonger.ca.refresh */
 static DBusHandlerResult
 ca_refresh(DBusConnection *conn, DBusMessage *msg,
@@ -2251,6 +2272,106 @@ ca_prop_set_external_helper(struct cm_context *ctx, void *parent,
 			cm_restart_ca(ctx, ca->cm_nickname, phase);
 		}
 		propname[0] = CM_DBUS_PROP_EXTERNAL_HELPER;
+		propname[1] = NULL;
+		path = talloc_asprintf(parent, "%s/%s",
+				       CM_DBUS_CA_PATH,
+				       ca->cm_busname);
+		cm_tdbush_property_emit_changed(ctx, path,
+						CM_DBUS_CA_INTERFACE,
+						propname);
+	}
+}
+
+static const char *
+ca_prop_get_scep_cipher(struct cm_context *ctx, void *parent,
+			       void *record, const char *name)
+{
+	struct cm_store_ca *ca = record;
+
+	if (strcmp(name, CM_DBUS_PROP_SCEP_CIPHER) == 0) {
+		if (ca->cm_ca_type != cm_ca_external) {
+			return "";
+		}
+		if (ca->cm_ca_scep_cipher != NULL) {
+			return ca->cm_ca_scep_cipher;
+		} else {
+			return "";
+		}
+	}
+	return NULL;
+}
+
+static void
+ca_prop_set_scep_cipher(struct cm_context *ctx, void *parent,
+			       void *record, const char *name,
+			       const char *new_value)
+{
+	const char *propname[2], *path;
+	struct cm_store_ca *ca = record;
+	enum cm_ca_phase phase;
+
+	if (strcmp(name, CM_DBUS_PROP_SCEP_CIPHER) == 0) {
+		if (ca->cm_ca_type != cm_ca_external) {
+			return;
+		}
+		talloc_free(ca->cm_ca_scep_cipher);
+		ca->cm_ca_scep_cipher = new_value ?
+					       talloc_strdup(ca, new_value) :
+					       NULL;
+		for (phase = 0; phase < cm_ca_phase_invalid; phase++) {
+			cm_restart_ca(ctx, ca->cm_nickname, phase);
+		}
+		propname[0] = CM_DBUS_PROP_SCEP_CIPHER;
+		propname[1] = NULL;
+		path = talloc_asprintf(parent, "%s/%s",
+				       CM_DBUS_CA_PATH,
+				       ca->cm_busname);
+		cm_tdbush_property_emit_changed(ctx, path,
+						CM_DBUS_CA_INTERFACE,
+						propname);
+	}
+}
+
+static const char *
+ca_prop_get_scep_digest(struct cm_context *ctx, void *parent,
+			       void *record, const char *name)
+{
+	struct cm_store_ca *ca = record;
+
+	if (strcmp(name, CM_DBUS_PROP_SCEP_DIGEST) == 0) {
+		if (ca->cm_ca_type != cm_ca_external) {
+			return "";
+		}
+		if (ca->cm_ca_scep_digest != NULL) {
+			return ca->cm_ca_scep_digest;
+		} else {
+			return "";
+		}
+	}
+	return NULL;
+}
+
+static void
+ca_prop_set_scep_digest(struct cm_context *ctx, void *parent,
+			       void *record, const char *name,
+			       const char *new_value)
+{
+	const char *propname[2], *path;
+	struct cm_store_ca *ca = record;
+	enum cm_ca_phase phase;
+
+	if (strcmp(name, CM_DBUS_PROP_SCEP_DIGEST) == 0) {
+		if (ca->cm_ca_type != cm_ca_external) {
+			return;
+		}
+		talloc_free(ca->cm_ca_scep_digest);
+		ca->cm_ca_scep_digest = new_value ?
+					       talloc_strdup(ca, new_value) :
+					       NULL;
+		for (phase = 0; phase < cm_ca_phase_invalid; phase++) {
+			cm_restart_ca(ctx, ca->cm_nickname, phase);
+		}
+		propname[0] = CM_DBUS_PROP_SCEP_DIGEST;
 		propname[1] = NULL;
 		path = talloc_asprintf(parent, "%s/%s",
 				       CM_DBUS_CA_PATH,
@@ -7278,6 +7399,14 @@ cm_tdbush_iface_ca(void)
 	if (ret == NULL) {
 		ret = make_interface(CM_DBUS_CA_INTERFACE,
 				     make_interface_item(cm_tdbush_interface_method,
+							 make_method("get_config_file_path",
+								     ca_get_config_file_path,
+								     make_method_arg("path",
+										     DBUS_TYPE_STRING_AS_STRING,
+										     cm_tdbush_method_arg_out,
+										     NULL),
+								     NULL),
+				     make_interface_item(cm_tdbush_interface_method,
 							 make_method("get_nickname",
 								     ca_get_nickname,
 								     make_method_arg("nickname",
@@ -7529,6 +7658,24 @@ cm_tdbush_iface_ca(void)
 								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_SCEP_CIPHER,
+								       cm_tdbush_property_string,
+								       cm_tdbush_property_readwrite,
+								       cm_tdbush_property_special,
+								       0,
+								       ca_prop_get_scep_cipher, NULL, NULL, NULL, NULL,
+								       ca_prop_set_scep_cipher, NULL, NULL, NULL, NULL,
+								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_SCEP_DIGEST,
+								       cm_tdbush_property_string,
+								       cm_tdbush_property_readwrite,
+								       cm_tdbush_property_special,
+								       0,
+								       ca_prop_get_scep_digest, NULL, NULL, NULL, NULL,
+								       ca_prop_set_scep_digest, NULL, NULL, NULL, NULL,
+								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_SCEP_CA_IDENTIFIER,
 								       cm_tdbush_property_string,
 								       cm_tdbush_property_readwrite,
@@ -7573,7 +7720,7 @@ cm_tdbush_iface_ca(void)
 								       NULL, NULL, NULL, NULL, NULL,
 								       NULL, NULL, NULL, NULL, NULL,
 								       NULL),
-				     NULL))))))))))))))))))))))))))))))))))));
+				     NULL)))))))))))))))))))))))))))))))))))))));
 	}
 	return ret;
 }

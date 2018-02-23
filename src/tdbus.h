@@ -119,6 +119,8 @@
 #define CM_DBUS_PROP_ROOT_CERTS "root-certs"
 #define CM_DBUS_PROP_OTHER_ROOT_CERTS "root-other-certs"
 #define CM_DBUS_PROP_OTHER_CERTS "other-certs"
+#define CM_DBUS_PROP_SCEP_CIPHER "scep-cipher"
+#define CM_DBUS_PROP_SCEP_DIGEST "scep-digest"
 #define CM_DBUS_PROP_SCEP_CA_IDENTIFIER "scep-ca-identifier"
 #define CM_DBUS_PROP_SCEP_CA_CAPABILITIES "scep-ca-capabilities"
 #define CM_DBUS_PROP_SCEP_RA_CERT "scep-ra-cert"

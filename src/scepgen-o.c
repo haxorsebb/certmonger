@@ -422,49 +422,155 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 		free(pem);
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
-	cipher = cm_prefs_des;
-	for (i = 0;
-	     (ca->cm_ca_capabilities != NULL) &&
-	     (ca->cm_ca_capabilities[i] != NULL);
-	     i++) {
-		capability = ca->cm_ca_capabilities[i];
-		if (strcmp(capability, "DES3") == 0) {
-			cm_log(1, "Server supports DES3, using that.\n");
+
+	char* scep_cipher = ca->cm_ca_scep_cipher;
+	if (scep_cipher != NULL) {
+		/* Force the cipher to whatever is in the configuration */
+		if (strcmp(scep_cipher, "AES256") == 0) {
+			cipher = cm_prefs_aes256;
+		}
+		else if (strcmp(scep_cipher, "AES192") == 0) {
+			cipher = cm_prefs_aes192;
+		}
+		else if (strcmp(scep_cipher, "AES128") == 0) {
+			cipher = cm_prefs_aes128;
+		}
+		else if (strcmp(scep_cipher, "DES3") == 0) {
 			cipher = cm_prefs_des3;
-			break;
+		}
+		else if (strcmp(scep_cipher, "DES") == 0) {
+			cipher = cm_prefs_des;
+		}
+		else {
+			cm_log(1, "Option 'scep_cipher' must be one of AES256, AES192, AES128, DES3, or DES. Got '%s'\n", scep_cipher);
+			_exit(1);
+		}
+
+		cm_log(1, "SCEP cipher authoritatively set to: '%s'\n", scep_cipher);
+	}
+	else {
+		cipher = cm_prefs_nocipher;
+		for (i = 0;
+		     (ca->cm_ca_capabilities != NULL) &&
+		     (ca->cm_ca_capabilities[i] != NULL);
+		     i++) {
+			capability = ca->cm_ca_capabilities[i];
+			if ((strcmp(capability, "AES-256") == 0) ||
+				(strcmp(capability, "AES256") == 0)) {
+					cm_log(1, "Server supports AES256, using that.\n");
+					cipher = cm_prefs_aes256;
+					break;
+			}
+			if ((strcmp(capability, "AES-192") == 0) ||
+				(strcmp(capability, "AES192") == 0)) {
+					cm_log(1, "Server supports AES192, using that.\n");
+					cipher = cm_prefs_aes192;
+					break;
+			}
+			if ((strcmp(capability, "AES-128") == 0) ||
+				(strcmp(capability, "AES128") == 0)) {
+					cm_log(1, "Server supports AES128, using that.\n");
+					cipher = cm_prefs_aes128;
+					break;
+			}
+			if (strcmp(capability, "AES") == 0) {
+				cm_log(1, "Server supports AES, using AES256.\n");
+				cipher = cm_prefs_aes256;
+				break;
+			}
+			if (strcmp(capability, "DES3") == 0) {
+				cm_log(1, "Server supports DES3, using that.\n");
+				cipher = cm_prefs_des3;
+				break;
+			}
+			/* This remains for backward compatibility */
+			if (strcmp(capability, "DES") == 0) {
+				cm_log(1, "Server supports DES, using that.\n");
+				cipher = cm_prefs_des;
+				break;
+			}
+		}
+		if (cipher == cm_prefs_nocipher) {
+			/* Per the latest Draft RFC */
+			cm_log(1, "Could not determine supported CA capabilities, using AES256.\n");
+			cipher = cm_prefs_aes256;
 		}
 	}
-	if (cipher == cm_prefs_des) {
-		cm_log(1, "Server does not support DES3, using DES.\n");
-	}
-	pref_digest = cm_prefs_preferred_digest();
-	digest = cm_prefs_md5;
-	for (i = 0;
-	     (ca->cm_ca_capabilities != NULL) &&
-	     (ca->cm_ca_capabilities[i] != NULL);
-	     i++) {
-		capability = ca->cm_ca_capabilities[i];
-		if ((pref_digest == cm_prefs_sha1) &&
-		    (strcmp(capability, "SHA-1") == 0)) {
-			cm_log(1, "Server supports SHA-1, using that.\n");
-			digest = cm_prefs_sha1;
-			break;
-		}
-		if ((pref_digest == cm_prefs_sha256) &&
-		    (strcmp(capability, "SHA-256") == 0)) {
-			cm_log(1, "Server supports SHA-256, using that.\n");
-			digest = cm_prefs_sha256;
-			break;
-		}
-		if ((pref_digest == cm_prefs_sha512) &&
-		    (strcmp(capability, "SHA-512") == 0)) {
-			cm_log(1, "Server supports SHA-512, using that.\n");
+
+	char* scep_digest = ca->cm_ca_scep_digest;
+	if (scep_digest != NULL) {
+		/* Force the digest to whatever is in the configuration */
+		if (strcmp(scep_digest, "SHA512") == 0) {
 			digest = cm_prefs_sha512;
-			break;
 		}
+		else if (strcmp(scep_digest, "SHA384") == 0) {
+			digest = cm_prefs_sha384;
+		}
+		else if (strcmp(scep_digest, "SHA256") == 0) {
+			digest = cm_prefs_sha256;
+		}
+		else if (strcmp(scep_digest, "SHA1") == 0) {
+			digest = cm_prefs_sha1;
+		}
+		else if (strcmp(scep_digest, "MD5") == 0) {
+			digest = cm_prefs_md5;
+		}
+		else {
+			cm_log(1, "Option 'scep_digest' must be one of AES256, AES192, AES128, DES3, or DES. Got '%s'\n", scep_digest);
+			_exit(1);
+		}
+
+		cm_log(1, "SCEP digest authoritatively set to: '%s'\n", scep_digest);
 	}
-	if (digest == cm_prefs_md5) {
-		cm_log(1, "Server does not support better digests, using MD5.\n");
+	else {
+		pref_digest = cm_prefs_preferred_digest();
+		digest = cm_prefs_nodigest;
+		for (i = 0;
+		     (ca->cm_ca_capabilities != NULL) &&
+		     (ca->cm_ca_capabilities[i] != NULL);
+		     i++) {
+			capability = ca->cm_ca_capabilities[i];
+			if ((pref_digest == cm_prefs_sha512) &&
+			    ((strcmp(capability, "SHA-512") == 0) ||
+				(strcmp(capability, "SHA512") == 0))) {
+					cm_log(1, "Server supports SHA-512, using that.\n");
+					digest = cm_prefs_sha512;
+					break;
+			}
+			if ((pref_digest == cm_prefs_sha384) &&
+			    ((strcmp(capability, "SHA-384") == 0) ||
+				(strcmp(capability, "SHA384") == 0))) {
+					cm_log(1, "Server supports SHA-384, using that.\n");
+					digest = cm_prefs_sha384;
+					break;
+			}
+			if ((pref_digest == cm_prefs_sha256) &&
+			    ((strcmp(capability, "SHA-256") == 0) ||
+				(strcmp(capability, "SHA256") == 0))) {
+					cm_log(1, "Server supports SHA-256, using that.\n");
+					digest = cm_prefs_sha256;
+					break;
+			}
+			if ((pref_digest == cm_prefs_sha1) &&
+			    ((strcmp(capability, "SHA-1") == 0) ||
+				(strcmp(capability, "SHA1") == 0))) {
+					cm_log(1, "Server supports SHA-1, using that.\n");
+					digest = cm_prefs_sha1;
+					break;
+			}
+			/* This remains for backward compatibility */
+			if ((pref_digest == cm_prefs_sha1) &&
+			    (strcmp(capability, "MD5") == 0)) {
+				cm_log(1, "Server supports MD5, using that.\n");
+				digest = cm_prefs_md5;
+				break;
+			}
+		}
+		if (digest == cm_prefs_nodigest) {
+			/* Per the latest Draft RFC */
+			cm_log(1, "Could not determine supported CA capabilities, using SHA256.\n");
+			digest = cm_prefs_sha256;
+		}
 	}
 	if (old_cert != NULL) {
 		if (cm_pkcs7_envelope_ias(ca->cm_ca_encryption_cert, cipher,
