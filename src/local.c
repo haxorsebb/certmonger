@@ -85,7 +85,7 @@ set_ca_extensions(void *parent, X509_REQ *req, EVP_PKEY *key)
 	exts = sk_X509_EXTENSION_new(NULL);
 
 	memset(&basic, 0, sizeof(basic));
-	basic.ca = 1;
+	basic.ca = 255; // set all bits for TRUE
 	X509V3_add1_i2d(&exts, NID_basic_constraints, &basic, TRUE, 0);
 
 	len = i2d_PUBKEY(key, NULL);
