@@ -976,10 +976,11 @@ cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 		 * concatenated, always break them up. */
 		p = s;
 		while ((p != NULL) && (*p != '\0')) {
-			if (strncmp(p, "-----BEGIN", 10) != 0) {
+			p = strstr(p, "-----BEGIN");
+			if (p == NULL) {
 				break;
 			}
-			q = strstr(p, "----END");
+			q = strstr(p, "-----END");
 			if (q == NULL) {
 				break;
 			}
