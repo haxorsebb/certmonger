@@ -446,7 +446,7 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 			_exit(1);
 		}
 
-		cm_log(1, "SCEP cipher authoritatively set to: '%s'\n", scep_cipher);
+		cm_log(1, "SCEP cipher set from configuration to: '%s'\n", scep_cipher);
 	}
 	else {
 		cipher = cm_prefs_nocipher;
@@ -516,11 +516,11 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 			digest = cm_prefs_md5;
 		}
 		else {
-			cm_log(1, "Option 'scep_digest' must be one of AES256, AES192, AES128, DES3, or DES. Got '%s'\n", scep_digest);
+			cm_log(1, "Option 'scep_digest' must be one of SHA512, SHA384, SHA256, SHA1, or MD5. Got '%s'\n", scep_digest);
 			_exit(1);
 		}
 
-		cm_log(1, "SCEP digest authoritatively set to: '%s'\n", scep_digest);
+		cm_log(1, "SCEP digest set from configuration to: '%s'\n", scep_digest);
 	}
 	else {
 		pref_digest = cm_prefs_preferred_digest();
@@ -567,7 +567,8 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 			}
 		}
 		if (digest == cm_prefs_nodigest) {
-			/* Per the latest Draft RFC */
+			/* Per SCEP RFC draft-gutmann-scep-10 - March 1, 2018 */
+			/* https://www.ietf.org/id/draft-gutmann-scep-10.txt  */
 			cm_log(1, "Could not determine supported CA capabilities, using SHA256.\n");
 			digest = cm_prefs_sha256;
 		}
