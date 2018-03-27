@@ -78,7 +78,9 @@ for testid in "$@" $subdirs ; do
 				if ! test -s "$i" ; then
 					break
 				fi
-				if cmp -s "$tmpfile" "$i" 2> /dev/null ; then
+				# This regex needs to be ignored since it is dynamically created at
+				# every CA creation
+				if diff -q -I "tmpdir/cas/[[:digit:]]\+" "$tmpfile" "$i" 2> /dev/null ; then
 					stat=0
 					echo "OK"
 					cp $tmpfile "$builddir"/"$testid"/actual.out

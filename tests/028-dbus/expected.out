@@ -542,6 +542,9 @@ After setting template-eku to 1.2.3.4.5.6.7.8.9.10, we got dbus.Array([dbus.Stri
   </signal>
  </interface>
  <interface name="org.fedorahosted.certmonger.ca">
+  <method name="get_config_file_path">
+   <arg name="path" type="s" direction="out"/>
+  </method>
   <method name="get_nickname">
    <arg name="nickname" type="s" direction="out"/>
   </method>
@@ -586,6 +589,8 @@ After setting template-eku to 1.2.3.4.5.6.7.8.9.10, we got dbus.Array([dbus.Stri
   <property name="ca-presave-uid" type="s" access="read"/>
   <property name="ca-postsave-command" type="s" access="read"/>
   <property name="ca-postsave-uid" type="s" access="read"/>
+  <property name="scep-cipher" type="s" access="readwrite"/>
+  <property name="scep-digest" type="s" access="readwrite"/>
   <property name="scep-ca-identifier" type="s" access="readwrite"/>
   <property name="scep-ca-capabilities" type="as" access="read"/>
   <property name="scep-ra-cert" type="s" access="read"/>
@@ -593,6 +598,9 @@ After setting template-eku to 1.2.3.4.5.6.7.8.9.10, we got dbus.Array([dbus.Stri
   <property name="scep-other-certs" type="s" access="read"/>
  </interface>
 </node>
+
+[ /org/fedorahosted/certmonger/cas/CA1: org.fedorahosted.certmonger.ca.get_config_file_path ]
+$tmpdir/cas/local
 
 [ /org/fedorahosted/certmonger/cas/CA1: org.fedorahosted.certmonger.ca.get_nickname ]
 local
@@ -647,6 +655,9 @@ dbus.Array([], signature=dbus.Signature('s'))
   </signal>
  </interface>
  <interface name="org.fedorahosted.certmonger.ca">
+  <method name="get_config_file_path">
+   <arg name="path" type="s" direction="out"/>
+  </method>
   <method name="get_nickname">
    <arg name="nickname" type="s" direction="out"/>
   </method>
@@ -691,6 +702,8 @@ dbus.Array([], signature=dbus.Signature('s'))
   <property name="ca-presave-uid" type="s" access="read"/>
   <property name="ca-postsave-command" type="s" access="read"/>
   <property name="ca-postsave-uid" type="s" access="read"/>
+  <property name="scep-cipher" type="s" access="readwrite"/>
+  <property name="scep-digest" type="s" access="readwrite"/>
   <property name="scep-ca-identifier" type="s" access="readwrite"/>
   <property name="scep-ca-capabilities" type="as" access="read"/>
   <property name="scep-ra-cert" type="s" access="read"/>
@@ -698,6 +711,9 @@ dbus.Array([], signature=dbus.Signature('s'))
   <property name="scep-other-certs" type="s" access="read"/>
  </interface>
 </node>
+
+[ /org/fedorahosted/certmonger/cas/CA2: org.fedorahosted.certmonger.ca.get_config_file_path ]
+$tmpdir/cas/20180327134236
 
 [ /org/fedorahosted/certmonger/cas/CA2: org.fedorahosted.certmonger.ca.get_nickname ]
 SelfSign
@@ -721,7 +737,7 @@ dbus.Array([], signature=dbus.Signature('s'))
 [ /org/fedorahosted/certmonger/cas/CA2: org.fedorahosted.certmonger.ca.refresh ]
 1
 
-/org/fedorahosted/certmonger/cas/CA2: warning: property org.fedorahosted.certmonger.ca.scep-ca-identifier not settable on this object
+/org/fedorahosted/certmonger/cas/CA2: property org.fedorahosted.certmonger.ca.scep-cipher not set: (, x)
 [ /org/fedorahosted/certmonger/cas/CA3: org.freedesktop.DBus.Introspectable.Introspect ]
 <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
 "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
@@ -754,6 +770,9 @@ dbus.Array([], signature=dbus.Signature('s'))
   </signal>
  </interface>
  <interface name="org.fedorahosted.certmonger.ca">
+  <method name="get_config_file_path">
+   <arg name="path" type="s" direction="out"/>
+  </method>
   <method name="get_nickname">
    <arg name="nickname" type="s" direction="out"/>
   </method>
@@ -798,6 +817,8 @@ dbus.Array([], signature=dbus.Signature('s'))
   <property name="ca-presave-uid" type="s" access="read"/>
   <property name="ca-postsave-command" type="s" access="read"/>
   <property name="ca-postsave-uid" type="s" access="read"/>
+  <property name="scep-cipher" type="s" access="readwrite"/>
+  <property name="scep-digest" type="s" access="readwrite"/>
   <property name="scep-ca-identifier" type="s" access="readwrite"/>
   <property name="scep-ca-capabilities" type="as" access="read"/>
   <property name="scep-ra-cert" type="s" access="read"/>
@@ -805,6 +826,9 @@ dbus.Array([], signature=dbus.Signature('s'))
   <property name="scep-other-certs" type="s" access="read"/>
  </interface>
 </node>
+
+[ /org/fedorahosted/certmonger/cas/CA3: org.fedorahosted.certmonger.ca.get_config_file_path ]
+$tmpdir/cas/20180327134236-1
 
 [ /org/fedorahosted/certmonger/cas/CA3: org.fedorahosted.certmonger.ca.get_nickname ]
 IPA
@@ -859,6 +883,9 @@ dbus.Array([], signature=dbus.Signature('s'))
   </signal>
  </interface>
  <interface name="org.fedorahosted.certmonger.ca">
+  <method name="get_config_file_path">
+   <arg name="path" type="s" direction="out"/>
+  </method>
   <method name="get_nickname">
    <arg name="nickname" type="s" direction="out"/>
   </method>
@@ -903,6 +930,8 @@ dbus.Array([], signature=dbus.Signature('s'))
   <property name="ca-presave-uid" type="s" access="read"/>
   <property name="ca-postsave-command" type="s" access="read"/>
   <property name="ca-postsave-uid" type="s" access="read"/>
+  <property name="scep-cipher" type="s" access="readwrite"/>
+  <property name="scep-digest" type="s" access="readwrite"/>
   <property name="scep-ca-identifier" type="s" access="readwrite"/>
   <property name="scep-ca-capabilities" type="as" access="read"/>
   <property name="scep-ra-cert" type="s" access="read"/>
@@ -910,6 +939,9 @@ dbus.Array([], signature=dbus.Signature('s'))
   <property name="scep-other-certs" type="s" access="read"/>
  </interface>
 </node>
+
+[ /org/fedorahosted/certmonger/cas/CA4: org.fedorahosted.certmonger.ca.get_config_file_path ]
+$tmpdir/cas/20180327134236-2
 
 [ /org/fedorahosted/certmonger/cas/CA4: org.fedorahosted.certmonger.ca.get_nickname ]
 certmaster
@@ -964,6 +996,9 @@ dbus.Array([], signature=dbus.Signature('s'))
   </signal>
  </interface>
  <interface name="org.fedorahosted.certmonger.ca">
+  <method name="get_config_file_path">
+   <arg name="path" type="s" direction="out"/>
+  </method>
   <method name="get_nickname">
    <arg name="nickname" type="s" direction="out"/>
   </method>
@@ -1008,6 +1043,8 @@ dbus.Array([], signature=dbus.Signature('s'))
   <property name="ca-presave-uid" type="s" access="read"/>
   <property name="ca-postsave-command" type="s" access="read"/>
   <property name="ca-postsave-uid" type="s" access="read"/>
+  <property name="scep-cipher" type="s" access="readwrite"/>
+  <property name="scep-digest" type="s" access="readwrite"/>
   <property name="scep-ca-identifier" type="s" access="readwrite"/>
   <property name="scep-ca-capabilities" type="as" access="read"/>
   <property name="scep-ra-cert" type="s" access="read"/>
@@ -1015,6 +1052,9 @@ dbus.Array([], signature=dbus.Signature('s'))
   <property name="scep-other-certs" type="s" access="read"/>
  </interface>
 </node>
+
+[ /org/fedorahosted/certmonger/cas/CA5: org.fedorahosted.certmonger.ca.get_config_file_path ]
+$tmpdir/cas/20180327134236-3
 
 [ /org/fedorahosted/certmonger/cas/CA5: org.fedorahosted.certmonger.ca.get_nickname ]
 dogtag-ipa-renew-agent

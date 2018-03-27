@@ -103,7 +103,7 @@ check_nonce() {
 	fi
 }
 
-set_digest md5
+set_digest sha256
 $toolsdir/scepgen ca entry > scepdata
 
 echo "[req, no trust root]"
@@ -135,7 +135,7 @@ grep ^gic: scepdata | cut -f2- -d: | base64 -i -d | $toolsdir/pk7verify -r mini.
 check_failed
 echo OK
 echo "[req, old root]"
-set_digest md5
+set_digest sha256
 $toolsdir/scepgen ca entry > scepdata
 if test x`grep ^req: scepdata | cut -f2- -d:` = x ; then
 	echo missing req
@@ -145,7 +145,7 @@ check_verified
 check_msgtype $SCEP_MSGTYPE_PKCSREQ
 check_txid
 check_nonce
-check_digest md5
+check_digest sha256
 echo OK
 echo "[gic, old trust root]"
 set_digest sha1
