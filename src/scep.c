@@ -932,15 +932,18 @@ main(int argc, const char **argv)
 			if (i != 0) {
 				printf(_("Error: failed to verify signature on "
 					 "server response.\n"));
+				cm_log(1, "Error: failed to verify signature on "
+					 "server response.\n");
 				while ((error = ERR_get_error()) != 0) {
 					memset(buf, '\0', sizeof(buf));
 					ERR_error_string_n(error, buf, sizeof(buf));
 					cm_log(1, "%s\n", buf);
 				}
-				s = cm_store_base64_from_bin(ctx, (unsigned char *) results,
-							     results_length);
+				s = cm_store_base64_from_bin(ctx, (unsigned char *) results2,
+							     results_length2);
 				s = cm_submit_u_pem_from_base64("PKCS7", 0, s);
 				fprintf(stderr, "%s", s);
+				cm_log(1, "%s", s);
 				free(s);
 				return CM_SUBMIT_STATUS_UNREACHABLE;
 			}
