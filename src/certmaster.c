@@ -86,7 +86,10 @@ main(int argc, const char **argv)
 	bindtextdomain(PACKAGE, MYLOCALEDIR);
 #endif
 
-	cm_log_set_method(cm_log_stderr);
+    if (isatty(STDERR_FILENO))
+		cm_log_set_method(cm_log_stderr);
+	else
+		cm_log_set_method(cm_log_syslog);
 	pctx = poptGetContext(argv[0], argc, argv, popts, 0);
 	if (pctx == NULL) {
 		return CM_SUBMIT_STATUS_UNCONFIGURED;

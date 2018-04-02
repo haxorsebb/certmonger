@@ -343,7 +343,10 @@ main(int argc, const char **argv)
 	}
 
 	umask(S_IRWXG | S_IRWXO);
-	cm_log_set_method(cm_log_stderr);
+	if (isatty(STDERR_FILENO))
+		cm_log_set_method(cm_log_stderr);
+	else
+		cm_log_set_method(cm_log_syslog);
 	cm_log_set_level(verbose);
 
 	ctx = talloc_new(NULL);
