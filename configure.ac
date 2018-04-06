@@ -788,7 +788,7 @@ if ! ${configure_dist_target_only:-false} ; then
 	fi,
 	idn=true)
 	if $idn ; then
-		PKG_CHECK_MODULES(IDN,libidn)
+		PKG_CHECK_MODULES(IDN,libidn2)
 		AC_DEFINE(CM_USE_IDN,1,[Define if dnsName subjectAltNames should be encoded properly, and if international domain names should be handled during service location.])
 	fi
 

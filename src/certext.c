@@ -42,7 +42,7 @@
 #include <krb5.h>
 
 #ifdef CM_USE_IDN
-#include <idna.h>
+#include <idn2.h>
 #endif
 
 #include "certext.h"

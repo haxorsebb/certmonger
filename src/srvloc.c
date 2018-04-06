@@ -34,7 +34,7 @@
 #include <unistd.h>
 
 #ifdef CM_USE_IDN
-#include <idna.h>
+#include <idn2.h>
 #endif
 
 #ifdef HAVE_OPENSSL

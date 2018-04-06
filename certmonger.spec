@@ -37,7 +37,7 @@ Source0:	http://releases.pagure.org/certmonger/certmonger-%{version}.tar.gz
 BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 BuildRequires:	openldap-devel
-BuildRequires:	dbus-devel, nspr-devel, nss-devel, openssl-devel, libidn-devel
+BuildRequires:	dbus-devel, nspr-devel, nss-devel, openssl-devel, libidn2-devel
 BuildRequires:	autoconf, automake, gcc, gettext-devel
 %if 0%{?fedora} >= 12 || 0%{?rhel} >= 6
 BuildRequires:  libuuid-devel
@@ -243,6 +243,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Apr  2 2018 Rob Crittenden <rcritten@redhat.com> 0.79.5-2
+- Switch from libidn to libidn2 for better IDNA2008 support
+
 * Fri Sep  1 2017 Rob Crittenden <rcritten@redhat.com> 0.79.5-1
 - update to 0.79.5:
    - getcert start-tracking: use issuer option when specified
