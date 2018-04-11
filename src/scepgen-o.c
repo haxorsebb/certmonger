@@ -492,7 +492,7 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 		if (cipher == cm_prefs_nocipher) {
 			/* Per the latest Draft RFC */
-			cm_log(1, "Could not determine supported CA capabilities, using AES256.\n");
+			cm_log(1, "Could not determine supported CA capabilities, using cipher AES256.\n");
 			cipher = cm_prefs_aes256;
 		}
 	}
@@ -569,7 +569,7 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 		if (digest == cm_prefs_nodigest) {
 			/* Per SCEP RFC draft-gutmann-scep-10 - March 1, 2018 */
 			/* https://www.ietf.org/id/draft-gutmann-scep-10.txt  */
-			cm_log(1, "Could not determine supported CA capabilities, using SHA256.\n");
+			cm_log(1, "Could not determine supported CA capabilities, using digest SHA256.\n");
 			digest = cm_prefs_sha256;
 		}
 	}
