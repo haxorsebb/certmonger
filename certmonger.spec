@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.79.5
+Version:	0.79.6
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -243,6 +243,14 @@ exit 0
 %endif
 
 %changelog
+* Tue May  8 2018 Rob Crittenden <rcritten@redhat.com> 0.79.6-1
+- update to 0.79.6:
+   - Better support for NSS SQLite databases 
+   - Fix CA creation in local CA, fix DER issue in constraint
+   - If stderr is not a tty log to syslog so the helpers can log
+   - Allow configuration of client SCEP algorithms
+   - Set default SCEP digest to SHA-256, cipher to AES-256 per spec
+
 * Mon Apr  2 2018 Rob Crittenden <rcritten@redhat.com> 0.79.5-2
 - Switch from libidn to libidn2 for better IDNA2008 support
 
