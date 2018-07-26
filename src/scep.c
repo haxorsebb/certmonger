@@ -68,7 +68,6 @@
 
 #define OP_GET_CA_CAPS "GetCACaps"
 #define OP_GET_CA_CERT "GetCACert"
-#define OP_GET_CA_CERT_CHAIN "GetCACertChain"
 #define OP_GET_INITIAL_CERT "PKIOperation"
 #define OP_PKCSREQ "PKIOperation"
 enum known_ops {
@@ -368,11 +367,11 @@ main(int argc, const char **argv)
 		break;
 	case op_get_ca_caps:
 		/* Only step: read capabilities for the daemon. */
-		params = talloc_asprintf(ctx, "operation=" OP_GET_CA_CAPS "&message=%s", id);
+		params = talloc_asprintf(ctx, "operation=" OP_GET_CA_CAPS);
 		break;
 	case op_get_ca_certs:
 		/* First step: get the root certificate. */
-		params = talloc_asprintf(ctx, "operation=" OP_GET_CA_CERT "&message=%s", id);
+		params = talloc_asprintf(ctx, "operation=" OP_GET_CA_CERT);
 		break;
 	case op_get_cert_initial:
 		if ((racert == NULL) || (strlen(racert) == 0)) {
@@ -390,7 +389,7 @@ main(int argc, const char **argv)
 				return CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
 			}
 			/* First step: read capabilities for our use. */
-			params = talloc_asprintf(ctx, "operation=" OP_GET_CA_CAPS "&message=%s", id);
+			params = talloc_asprintf(ctx, "operation=" OP_GET_CA_CAPS);
 		}
 		break;
 	case op_pkcsreq:
@@ -409,7 +408,7 @@ main(int argc, const char **argv)
 				return CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
 			}
 			/* First step: read capabilities for our use. */
-			params = talloc_asprintf(ctx, "operation=" OP_GET_CA_CAPS "&message=%s", id);
+			params = talloc_asprintf(ctx, "operation=" OP_GET_CA_CAPS);
 		}
 		break;
 	}
@@ -523,12 +522,9 @@ main(int argc, const char **argv)
 		abort(); /* never reached */
 		break;
 	case op_get_ca_caps:
+	case op_get_ca_certs:
 		/* nothing to do here */
 		params2 = NULL;
-		break;
-	case op_get_ca_certs:
-		/* Step two: request the chain. */
-		params2 = talloc_asprintf(ctx, "operation=" OP_GET_CA_CERT_CHAIN "&message=%s", id);
 		break;
 	case op_get_cert_initial:
 		/* Step two: actually poll.  If we have multiple messages which
