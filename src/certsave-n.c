@@ -92,7 +92,11 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	SECStatus error;
 	SECItem *item, subject;
 	char *p, *q, *pin;
+	const char *token;
 	const char *es;
+	PK11SlotList *slotlist;
+	PK11SlotListElement *sle;
+	CK_MECHANISM_TYPE mech;
 	NSSInitContext *ctx;
 	CERTCertDBHandle *certdb;
 	CERTCertList *certlist;
@@ -192,231 +196,253 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			}
 			_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
 		}
-		/* Be ready to count our uses of a PIN. */
-		memset(&cb_data, 0, sizeof(cb_data));
-		cb_data.entry = entry;
-		cb_data.n_attempts = 0;
-		pin = NULL;
-		if (cm_pin_read_for_key(entry, &pin) != 0) {
-			cm_log(1, "Error reading PIN for key store, "
-			       "failing to save certificate.\n");
+		/* Find the tokens that we might use for cert storage. */
+		mech = CKM_RSA_X_509;
+		slotlist = PK11_GetAllTokens(mech, PR_FALSE, PR_FALSE, NULL);
+		if (slotlist == NULL) {
+			cm_log(1, "Error getting list of tokens.\n");
 			PORT_FreeArena(arena, PR_TRUE);
-			error = NSS_ShutdownContext(ctx);
-			if (error != SECSuccess) {
+			if (NSS_ShutdownContext(ctx) != SECSuccess) {
 				cm_log(1, "Error shutting down NSS.\n");
 			}
-			_exit(CM_CERTSAVE_STATUS_AUTH);
+			_exit(2);
 		}
-		/* Set a PIN if we're supposed to be using one and aren't using
-		 * one yet in this database. */
-		if (PK11_NeedUserInit(PK11_GetInternalKeySlot())) {
-			PK11_InitPin(PK11_GetInternalKeySlot(), NULL,
-				     pin ? pin : "");
-			ec = PORT_GetError();
-			if (ec != 0) {
-				es = PR_ErrorToName(ec);
+		/* Walk the list looking for the requested slot, or the first one if
+		 * none was requested. */
+		if (cm_pin_read_for_cert(entry, &pin) != 0) {
+			cm_log(1, "Error reading PIN for cert db.\n");
+			_exit(CM_SUB_STATUS_ERROR_AUTH);
+		}
+		PK11_SetPasswordFunc(&cm_pin_read_for_cert_nss_cb);
+		for (sle = slotlist->head;
+		     ((sle != NULL) && (sle->slot != NULL));
+		     sle = sle->next)
+		{
+			/* Log the slot's name. */
+			token = PK11_GetTokenName(sle->slot);
+			if (token != NULL) {
+				cm_log(3, "Found token '%s'.\n", token);
 			} else {
-				es = NULL;
+				cm_log(3, "Found unnamed token.\n");
 			}
-			if (PK11_NeedUserInit(PK11_GetInternalKeySlot())) {
-				if (es != NULL) {
-					cm_log(1, "Key storage slot still "
-					       "needs user PIN to be set: "
-					       "%s.\n", es);
-				} else {
-					cm_log(1, "Key storage slot still "
-					       "needs user PIN to be set.\n");
-				}
+			/* If we're looking for a specific slot, and this isn't it,
+			 * keep going. */
+			if ((entry->cm_cert_token != NULL) &&
+			    ((token == NULL) ||
+			     (strcmp(entry->cm_cert_token, token) != 0))) {
+					if (token != NULL) {
+						cm_log(1,
+						       "Token is named \"%s\", not \"%s\", "
+						       "skipping.\n",
+						       token, entry->cm_cert_token);
+					} else {
+						cm_log(1,
+						       "Token is unnamed, not \"%s\", "
+						       "skipping.\n",
+						       entry->cm_cert_token);
+					}
+					goto next_slot;
+			}
+			/* Be ready to count our uses of a PIN. */
+			memset(&cb_data, 0, sizeof(cb_data));
+			cb_data.entry = entry;
+			cb_data.n_attempts = 0;
+			pin = NULL;
+			if (cm_pin_read_for_key(entry, &pin) != 0) {
+				cm_log(1, "Error reading PIN for key store, "
+				       "failing to save certificate.\n");
 				PORT_FreeArena(arena, PR_TRUE);
 				error = NSS_ShutdownContext(ctx);
 				if (error != SECSuccess) {
 					cm_log(1, "Error shutting down NSS.\n");
 				}
-				switch (ec) {
-				case PR_NO_ACCESS_RIGHTS_ERROR: /* EACCES or EPERM */
-					_exit(CM_CERTSAVE_STATUS_PERMS);
-					break;
-				default:
-					_exit(CM_CERTSAVE_STATUS_AUTH);
-					break;
-				}
+				_exit(CM_CERTSAVE_STATUS_AUTH);
 			}
-			/* We're authenticated now, so count this as a use of
-			 * the PIN. */
-			if ((pin != NULL) && (strlen(pin) > 0)) {
+			if (PK11_NeedUserInit(sle->slot)) {
+				PK11_InitPin(sle->slot, NULL, pin ? pin : "");
+				ec = PORT_GetError();
+				es = PR_ErrorToName(ec);
+				if (PK11_NeedUserInit(sle->slot)) {
+					if (es != NULL) {
+						cm_log(1, "Key storage slot still "
+						   "needs user PIN to be set: "
+						   "%s.\n", es);
+						} else {
+						cm_log(1, "Key storage slot still "
+						   "needs user PIN to be set.\n");
+					}
+					PORT_FreeArena(arena, PR_TRUE);
+					error = NSS_ShutdownContext(ctx);
+					if (error != SECSuccess) {
+						cm_log(1, "Error shutting down NSS.\n");
+					}
+					switch (ec) {
+						case PR_NO_ACCESS_RIGHTS_ERROR: /* EACCES or EPERM */
+							_exit(CM_CERTSAVE_STATUS_PERMS);
+							break;
+						default:
+							_exit(CM_CERTSAVE_STATUS_AUTH);
+							break;
+					}
+				}
+				/* count this as use of the PIN */
 				cb_data.n_attempts++;
 			}
-		}
-		/* Log in, if case we need to muck around with the key
-		 * database. */
-		PK11_SetPasswordFunc(&cm_pin_read_for_key_nss_cb);
-		error = PK11_Authenticate(PK11_GetInternalKeySlot(), PR_TRUE,
-					  &cb_data);
-		ec = PORT_GetError();
-		if (error != SECSuccess) {
-			if (ec != 0) {
-				es = PR_ErrorToName(ec);
-			} else {
-				es = NULL;
-			}
-			if (es != NULL) {
-				cm_log(1, "Error authenticating to key store: %s.\n",
-				       es);
-			} else {
-				cm_log(1, "Error authenticating to key store.\n");
-			}
-			PORT_FreeArena(arena, PR_TRUE);
-			error = NSS_ShutdownContext(ctx);
-			if (error != SECSuccess) {
-				cm_log(1, "Error shutting down NSS.\n");
-			}
-			_exit(CM_CERTSAVE_STATUS_AUTH);
-		}
-		if ((pin != NULL) &&
-		    (strlen(pin) > 0) &&
-		    (cb_data.n_attempts == 0)) {
-			cm_log(1, "PIN was not needed to auth to key "
-			       "store, though one was provided. "
-			       "Treating this as an error.\n");
-			PORT_FreeArena(arena, PR_TRUE);
-			error = NSS_ShutdownContext(ctx);
-			if (error != SECSuccess) {
-				cm_log(1, "Error shutting down NSS.\n");
-			}
-			_exit(CM_CERTSAVE_STATUS_AUTH);
-		}
-		certdb = CERT_GetDefaultCertDB();
-		if (certdb != NULL) {
-			/* Strip the header and footer. */
-			p = entry->cm_cert;
-			q = NULL;
-			if (p != NULL) {
-				while (strncmp(p, "-----BEGIN ", 11) == 0) {
-					p += strcspn(p, "\r\n");
-					p += strspn(p, "\r\n");
+			if (PK11_NeedLogin(sle->slot)) {
+				error = PK11_Authenticate(sle->slot, PR_TRUE, &cb_data);
+				if (error != SECSuccess) {
+					cm_log(1, "Error authenticating to cert db for token "
+							  "%s.\n", token);
+					goto next_slot;
 				}
-				q = strstr(p, "-----END");
+			    cb_data.n_attempts++;
 			}
-			if ((q == NULL) || (*p == '\0')) {
-				cm_log(1, "Unable to parse certificate.\n");
+			if ((pin != NULL) &&
+			    (strlen(pin) > 0) &&
+			    (cb_data.n_attempts == 0)) {
+				cm_log(1, "PIN was not needed to auth to key "
+				       "store, though one was provided. "
+				       "Treating this as an error.\n");
 				PORT_FreeArena(arena, PR_TRUE);
-				if (NSS_ShutdownContext(ctx) != SECSuccess) {
+				error = NSS_ShutdownContext(ctx);
+				if (error != SECSuccess) {
 					cm_log(1, "Error shutting down NSS.\n");
 				}
-				_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
+				_exit(CM_CERTSAVE_STATUS_AUTH);
 			}
-			/* Handle the base64 decode. */
-			item = NSSBase64_DecodeBuffer(arena, NULL, p, q - p);
-			if (item == NULL) {
-				cm_log(1, "Unable to decode certificate "
-				       "into buffer.\n");
-				PORT_FreeArena(arena, PR_TRUE);
-				if (NSS_ShutdownContext(ctx) != SECSuccess) {
-					cm_log(1, "Error shutting down NSS.\n");
+			certdb = CERT_GetDefaultCertDB();
+			if (certdb != NULL) {
+				/* Strip the header and footer. */
+				p = entry->cm_cert;
+				q = NULL;
+				if (p != NULL) {
+					while (strncmp(p, "-----BEGIN ", 11) == 0) {
+						p += strcspn(p, "\r\n");
+						p += strspn(p, "\r\n");
+					}
+					q = strstr(p, "-----END");
 				}
-				_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
-			}
-			/* Do a "shallow" decode to pull out the subject name
-			 * so that we can check for a conflict. */
-			memset(&csdata, 0, sizeof(csdata));
-			if (SEC_ASN1DecodeItem(arena, &csdata,
-					       CERT_SignedDataTemplate,
-					       item) != SECSuccess) {
-				cm_log(1, "Unable to decode certificate "
-				       "signed data into buffer.\n");
-				PORT_FreeArena(arena, PR_TRUE);
-				if (NSS_ShutdownContext(ctx) != SECSuccess) {
-					cm_log(1, "Error shutting down NSS.\n");
+				if ((q == NULL) || (*p == '\0')) {
+					cm_log(1, "Unable to parse certificate.\n");
+					PORT_FreeArena(arena, PR_TRUE);
+					if (NSS_ShutdownContext(ctx) != SECSuccess) {
+						cm_log(1, "Error shutting down NSS.\n");
+					}
+					_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
 				}
-				_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
-			}
-			memset(&cert, 0, sizeof(cert));
-			if (SEC_ASN1DecodeItem(arena, &cert,
-					       CERT_CertificateTemplate,
-					       &csdata.data) != SECSuccess) {
-				cm_log(1, "Unable to decode certificate "
-				       "data into buffer.\n");
-				PORT_FreeArena(arena, PR_TRUE);
-				if (NSS_ShutdownContext(ctx) != SECSuccess) {
-					cm_log(1, "Error shutting down NSS.\n");
+				/* Handle the base64 decode. */
+				item = NSSBase64_DecodeBuffer(arena, NULL, p, q - p);
+				if (item == NULL) {
+					cm_log(1, "Unable to decode certificate "
+					       "into buffer.\n");
+					PORT_FreeArena(arena, PR_TRUE);
+					if (NSS_ShutdownContext(ctx) != SECSuccess) {
+						cm_log(1, "Error shutting down NSS.\n");
+					}
+					_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
 				}
-				_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
-			}
-			subject = cert.derSubject;
-			/* Ask NSS if there would be a conflict. */
-			have_trust = PR_FALSE;
-			if (SEC_CertNicknameConflict(entry->cm_cert_nickname,
-						     &subject,
-						     certdb)) {
-				/* Delete the certificate that's already there
-				 * with the nickname we want, otherwise our
-				 * cert with a different subject name will be
-				 * discarded. */
-				certlist = PK11_FindCertsFromNickname(entry->cm_cert_nickname,
-								      NULL);
+				/* Do a "shallow" decode to pull out the subject name
+				 * so that we can check for a conflict. */
+				memset(&csdata, 0, sizeof(csdata));
+				if (SEC_ASN1DecodeItem(arena, &csdata,
+						       CERT_SignedDataTemplate,
+						       item) != SECSuccess) {
+					cm_log(1, "Unable to decode certificate "
+					       "signed data into buffer.\n");
+					PORT_FreeArena(arena, PR_TRUE);
+					if (NSS_ShutdownContext(ctx) != SECSuccess) {
+						cm_log(1, "Error shutting down NSS.\n");
+					}
+					_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
+				}
+				memset(&cert, 0, sizeof(cert));
+				if (SEC_ASN1DecodeItem(arena, &cert,
+						       CERT_CertificateTemplate,
+						       &csdata.data) != SECSuccess) {
+					cm_log(1, "Unable to decode certificate "
+					       "data into buffer.\n");
+					PORT_FreeArena(arena, PR_TRUE);
+					if (NSS_ShutdownContext(ctx) != SECSuccess) {
+						cm_log(1, "Error shutting down NSS.\n");
+					}
+					_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
+				}
+				subject = cert.derSubject;
+				/* Ask NSS if there would be a conflict. */
+				have_trust = PR_FALSE;
+				if (SEC_CertNicknameConflict(entry->cm_cert_nickname,
+							     &subject,
+							     certdb)) {
+					/* Delete the certificate that's already there
+					 * with the nickname we want, otherwise our
+					 * cert with a different subject name will be
+					 * discarded. */
+					certlist = PK11_FindCertsFromNickname(entry->cm_cert_nickname,
+									      NULL);
+					if (certlist != NULL) {
+						/* Look for certs with different
+						 * subject names but the same nickname,
+						 * because they've got to go. */
+						for (node = CERT_LIST_HEAD(certlist);
+						     (node != NULL) &&
+						     !CERT_LIST_EMPTY(certlist) &&
+						     !CERT_LIST_END(node, certlist);
+						     node = CERT_LIST_NEXT(node)) {
+							if (!SECITEM_ItemsAreEqual(&subject,
+										   &node->cert->derSubject)) {
+								cm_log(3, "Found a "
+								       "certificate "
+								       "with the same "
+								       "nickname but "
+								       "different "
+								       "subject, "
+								       "removing "
+								       "certificate "
+								       "\"%s\" with "
+								       "subject "
+								       "\"%s\".\n",
+								       node->cert->nickname,
+								       node->cert->subjectName ?
+								       node->cert->subjectName :
+								       "");
+								/* Get a handle for
+								 * this certificate's
+								 * private key, in case
+								 * we need to remove
+								 * it. */
+								privkey = PK11_FindKeyByAnyCert(node->cert, NULL);
+								privkeys = add_privkey_to_list(privkeys, privkey);
+								SEC_DeletePermCertificate(node->cert);
+							}
+						}
+						CERT_DestroyCertList(certlist);
+					}
+				} else {
+					cm_log(3, "No duplicate nickname entries.\n");
+				}
+				/* This certificate's subject may already be present
+				 * with a different nickname.  Delete those, too. */
+				certlist = CERT_CreateSubjectCertList(NULL, certdb,
+								      &subject,
+								      PR_FALSE,
+								      PR_FALSE);
 				if (certlist != NULL) {
-					/* Look for certs with different
-					 * subject names but the same nickname,
-					 * because they've got to go. */
+					/* Look for certs with different nicknames but
+					 * the same subject name, because those have
+					 * got to go. */
+					i = 0;
 					for (node = CERT_LIST_HEAD(certlist);
 					     (node != NULL) &&
 					     !CERT_LIST_EMPTY(certlist) &&
 					     !CERT_LIST_END(node, certlist);
 					     node = CERT_LIST_NEXT(node)) {
-						if (!SECITEM_ItemsAreEqual(&subject,
-									   &node->cert->derSubject)) {
+						if ((node->cert->nickname != NULL) &&
+						    (strcmp(entry->cm_cert_nickname,
+							    node->cert->nickname) != 0))
+						{
+							i++;
 							cm_log(3, "Found a "
-							       "certificate "
-							       "with the same "
-							       "nickname but "
-							       "different "
-							       "subject, "
-							       "removing "
-							       "certificate "
-							       "\"%s\" with "
-							       "subject "
-							       "\"%s\".\n",
-							       node->cert->nickname,
-							       node->cert->subjectName ?
-							       node->cert->subjectName :
-							       "");
-							/* Get a handle for
-							 * this certificate's
-							 * private key, in case
-							 * we need to remove
-							 * it. */
-							privkey = PK11_FindKeyByAnyCert(node->cert, NULL);
-							privkeys = add_privkey_to_list(privkeys, privkey);
-							SEC_DeletePermCertificate(node->cert);
-						}
-					}
-					CERT_DestroyCertList(certlist);
-				}
-			} else {
-				cm_log(3, "No duplicate nickname entries.\n");
-			}
-			/* This certificate's subject may already be present
-			 * with a different nickname.  Delete those, too. */
-			certlist = CERT_CreateSubjectCertList(NULL, certdb,
-							      &subject,
-							      PR_FALSE,
-							      PR_FALSE);
-			if (certlist != NULL) {
-				/* Look for certs with different nicknames but
-				 * the same subject name, because those have
-				 * got to go. */
-				i = 0;
-				for (node = CERT_LIST_HEAD(certlist);
-				     (node != NULL) &&
-				     !CERT_LIST_EMPTY(certlist) &&
-				     !CERT_LIST_END(node, certlist);
-				     node = CERT_LIST_NEXT(node)) {
-					if ((node->cert->nickname != NULL) &&
-					    (strcmp(entry->cm_cert_nickname,
-						    node->cert->nickname) != 0)) {
-						i++;
-						cm_log(3, "Found a "
-						       "certificate with a "
+							       "certificate with a "
 						       "different nickname but "
 						       "the same subject, "
 						       "removing certificate "
@@ -426,284 +452,291 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 						       node->cert->subjectName ?
 						       node->cert->subjectName :
 						       "");
-						/* Get a handle for this
-						 * certificate's private key,
-						 * in case we need to remove
-						 * it. */
-						privkey = PK11_FindKeyByAnyCert(node->cert, NULL);
-						privkeys = add_privkey_to_list(privkeys, privkey);
-						SEC_DeletePermCertificate(node->cert);
-					} else {
-						/* Same nickname, and we
-						 * already know it has the same
-						 * subject name.  Save its
-						 * trust. */
-						if (!have_trust) {
-							if (CERT_GetCertTrust(node->cert,
+							/* Get a handle for this
+							 * certificate's private key,
+							 * in case we need to remove
+							 * it. */
+							privkey = PK11_FindKeyByAnyCert(node->cert, NULL);
+							privkeys = add_privkey_to_list(privkeys, privkey);
+							SEC_DeletePermCertificate(node->cert);
+						} else {
+							/* Same nickname, and we
+							 * already know it has the same
+							 * subject name.  Save its
+							 * trust. */
+							if (!have_trust) {
+								if (CERT_GetCertTrust(node->cert,
 									      &trust) == SECSuccess) {
-								have_trust = PR_TRUE;
+									have_trust = PR_TRUE;
+								}
 							}
 						}
 					}
-				}
-				if (i == 0) {
+					if (i == 0) {
+						cm_log(3, "No duplicate subject name entries.\n");
+					}
+					CERT_DestroyCertList(certlist);
+				} else {
 					cm_log(3, "No duplicate subject name entries.\n");
 				}
-				CERT_DestroyCertList(certlist);
-			} else {
-				cm_log(3, "No duplicate subject name entries.\n");
-			}
-			/* Make one more attempt at finding an existing trust
-			 * value. */
-			if (!have_trust) {
-				oldcert = PK11_FindCertFromNickname(entry->cm_cert_nickname, NULL);
-				if (oldcert != NULL) {
-					if (CERT_GetCertTrust(oldcert,
-							      &trust) == SECSuccess) {
-						have_trust = PR_TRUE;
-					}
-					CERT_DestroyCertificate(oldcert);
-				}
-			}
-			/* Import the certificate. */
-			returned = NULL;
-			error = CERT_ImportCerts(certdb,
-						 certUsageUserCertImport,
-						 1, &item, &returned,
-						 PR_TRUE,
-						 PR_FALSE,
-						 entry->cm_cert_nickname);
-			ec = PORT_GetError();
-			if (error == SECSuccess) {
-				/* If NSS uses SQL DB storage, CERT_ImportCerts creates
-				 * an incomplete internal state (the cert isn't
-				 * associated with the private key, and calling
-				 * PK11_FindKeyByAnyCert returns no result).
-				 * As a workaround, we import the cert again using 
-				 * PK11_ImportCert, which magically fixes the issue.
-				 * See rhbz#1532188 */
-				error = PK11_ImportCert(PK11_GetInternalKeySlot(),
-					returned[0],
-					CK_INVALID_HANDLE,
-					returned[0]->nickname,
-					PR_FALSE);
-			}
-			if (error == SECSuccess) {
-				cm_log(1, "Imported certificate \"%s\", got "
-				       "nickname \"%s\".\n",
-				       entry->cm_cert_nickname,
-				       returned[0]->nickname);
-				status = 0;
-				/* Set the trust on the new certificate,
-				 * perhaps matching the trust on an
-				 * already-present certificate with the same
-				 * nickname. */
+				/* Make one more attempt at finding an existing trust
+				 * value. */
 				if (!have_trust) {
-					memset(&trust, 0, sizeof(trust));
-					trust.sslFlags = CERTDB_USER;
-					trust.emailFlags = CERTDB_USER;
-					trust.objectSigningFlags = CERTDB_USER;
+					oldcert = PK11_FindCertFromNickname(entry->cm_cert_nickname, NULL);
+					if (oldcert != NULL) {
+						if (CERT_GetCertTrust(oldcert,
+								      &trust) == SECSuccess) {
+							have_trust = PR_TRUE;
+						}
+						CERT_DestroyCertificate(oldcert);
+					}
 				}
-				error = CERT_ChangeCertTrust(certdb,
-							     returned[0],
-							     &trust);
+				/* Import the certificate. */
+				returned = NULL;
+				error = CERT_ImportCerts(certdb,
+							 certUsageUserCertImport,
+							 1, &item, &returned,
+							 PR_TRUE,
+							 PR_FALSE,
+							 entry->cm_cert_nickname);
 				ec = PORT_GetError();
-				if (error != SECSuccess) {
+				if (error == SECSuccess) {
+					/* If NSS uses SQL DB storage, CERT_ImportCerts creates
+					 * an incomplete internal state (the cert isn't
+					 * associated with the private key, and calling
+					 * PK11_FindKeyByAnyCert returns no result).
+					 * As a workaround, we import the cert again using
+					 * PK11_ImportCert, which magically fixes the issue.
+					 * See rhbz#1532188 */
+					error = PK11_ImportCert(sle->slot,
+						returned[0],
+						CK_INVALID_HANDLE,
+						returned[0]->nickname,
+						PR_FALSE);
+				}
+				if (error == SECSuccess) {
+					cm_log(1, "Imported certificate \"%s\", got "
+					       "nickname \"%s\".\n",
+					       entry->cm_cert_nickname,
+					       returned[0]->nickname);
+					status = 0;
+					/* Set the trust on the new certificate,
+					 * perhaps matching the trust on an
+					 * already-present certificate with the same
+					 * nickname. */
+					if (!have_trust) {
+						memset(&trust, 0, sizeof(trust));
+						trust.sslFlags = CERTDB_USER;
+						trust.emailFlags = CERTDB_USER;
+						trust.objectSigningFlags = CERTDB_USER;
+					}
+					error = CERT_ChangeCertTrust(certdb,
+								     returned[0],
+								     &trust);
+					ec = PORT_GetError();
+					if (error != SECSuccess) {
+						if (ec != 0) {
+							es = PR_ErrorToName(ec);
+						} else {
+							es = NULL;
+						}
+						if (es != NULL) {
+							cm_log(0, "Error setting trust "
+							       "on certificate \"%s\": "
+							       "%s.\n",
+							       entry->cm_cert_nickname, es);
+						} else {
+							cm_log(0, "Error setting trust "
+							       "on certificate \"%s\".\n",
+							       entry->cm_cert_nickname);
+						}
+					}
+					/* Delete any other certificates that are there
+					 * with the same nickname.  While NSS's
+					 * database allows duplicates so long as they
+					 * have the same subject name and nickname,
+					 * several APIs and many applications can't
+					 * dependably find the right one among more
+					 * than one.  So bye-bye, old certificates. */
+					certlist = PK11_FindCertsFromNickname(entry->cm_cert_nickname,
+									      NULL);
+					if (certlist != NULL) {
+						/* Look for certs with contents. */
+						for (node = CERT_LIST_HEAD(certlist);
+						     (node != NULL) &&
+						     !CERT_LIST_EMPTY(certlist) &&
+						     !CERT_LIST_END(node, certlist);
+						     node = CERT_LIST_NEXT(node)) {
+							if (!SECITEM_ItemsAreEqual(item,
+										   &node->cert->derCert)) {
+								cm_log(3, "Found a "
+								       "certificate "
+								       "with the same "
+								       "nickname and "
+								       "subject, but "
+								       "different "
+								       "contents, "
+								       "removing it.\n");
+								/* Get a handle for
+								 * this certificate's
+								 * private key, in case
+								 * we need to remove
+								 * it. */
+								privkey = PK11_FindKeyByAnyCert(node->cert, NULL);
+								privkeys = add_privkey_to_list(privkeys, privkey);
+								SEC_DeletePermCertificate(node->cert);
+							}
+						}
+						CERT_DestroyCertList(certlist);
+					}
+				} else {
 					if (ec != 0) {
 						es = PR_ErrorToName(ec);
 					} else {
 						es = NULL;
 					}
 					if (es != NULL) {
-						cm_log(0, "Error setting trust "
-						       "on certificate \"%s\": "
-						       "%s.\n",
-						       entry->cm_cert_nickname, es);
+						cm_log(0, "Error importing certificate "
+						       "into NSSDB \"%s\": %s.\n",
+						       entry->cm_cert_storage_location,
+						       es);
 					} else {
-						cm_log(0, "Error setting trust "
-						       "on certificate \"%s\".\n",
-						       entry->cm_cert_nickname);
+						cm_log(0, "Error importing certificate "
+						       "into NSSDB \"%s\".\n",
+						       entry->cm_cert_storage_location);
+					}
+					switch (ec) {
+					case PR_NO_ACCESS_RIGHTS_ERROR: /* ACCES/PERM */
+						status = CM_CERTSAVE_STATUS_PERMS;
+						break;
+					default:
+						status = CM_CERTSAVE_STATUS_INTERNAL_ERROR;
+						break;
 					}
 				}
-				/* Delete any other certificates that are there
-				 * with the same nickname.  While NSS's
-				 * database allows duplicates so long as they
-				 * have the same subject name and nickname,
-				 * several APIs and many applications can't
-				 * dependably find the right one among more
-				 * than one.  So bye-bye, old certificates. */
-				certlist = PK11_FindCertsFromNickname(entry->cm_cert_nickname,
-								      NULL);
-				if (certlist != NULL) {
-					/* Look for certs with contents. */
-					for (node = CERT_LIST_HEAD(certlist);
-					     (node != NULL) &&
-					     !CERT_LIST_EMPTY(certlist) &&
-					     !CERT_LIST_END(node, certlist);
-					     node = CERT_LIST_NEXT(node)) {
-						if (!SECITEM_ItemsAreEqual(item,
-									   &node->cert->derCert)) {
-							cm_log(3, "Found a "
-							       "certificate "
-							       "with the same "
-							       "nickname and "
-							       "subject, but "
-							       "different "
-							       "contents, "
-							       "removing it.\n");
-							/* Get a handle for
-							 * this certificate's
-							 * private key, in case
-							 * we need to remove
-							 * it. */
-							privkey = PK11_FindKeyByAnyCert(node->cert, NULL);
-							privkeys = add_privkey_to_list(privkeys, privkey);
-							SEC_DeletePermCertificate(node->cert);
+				/* If we managed to import the certificate, mark its
+				 * key for having its nickname removed. */
+				if ((returned != NULL) && (returned[0] != NULL)) {
+					privkey = PK11_FindKeyByAnyCert(returned[0], NULL);
+					privkeys = add_privkey_to_list(privkeys, privkey);
+					CERT_DestroyCertArray(returned, 1);
+				}
+				/* In case we're rekeying, but failed, mark the
+				 * candidate key for name-clearing or removal, too. */
+				if ((entry->cm_key_next_marker != NULL) &&
+				    (strlen(entry->cm_key_next_marker) > 0)) {
+					p = util_build_next_nickname(entry->cm_key_nickname,
+								     entry->cm_key_next_marker);
+					privkeylist = PK11_ListPrivKeysInSlot(sle->slot, p, NULL);
+					if (privkeylist != NULL) {
+						for (knode = PRIVKEY_LIST_HEAD(privkeylist);
+						     !PRIVKEY_LIST_EMPTY(privkeylist) &&
+						     !PRIVKEY_LIST_END(knode, privkeylist);
+						     knode = PRIVKEY_LIST_NEXT(knode)) {
+							q = PK11_GetPrivateKeyNickname(knode->key);
+							if ((q != NULL) &&
+							    (strcmp(p, q) == 0)) {
+								privkey = SECKEY_CopyPrivateKey(knode->key);
+								privkeys = add_privkey_to_list(privkeys, privkey);
+								break;
+							}
+						}
+						SECKEY_DestroyPrivateKeyList(privkeylist);
+					}
+				}
+				if (privkeys != NULL) {
+					/* Check if any certificates are still using
+					 * the keys that correspond to certificates
+					 * that we removed. */
+					for (i = 0; privkeys[i] != NULL; i++) {
+						privkey = privkeys[i];
+						oldcert = PK11_GetCertFromPrivateKey(privkey);
+						if (!entry->cm_key_preserve && (oldcert == NULL)) {
+							/* We're not preserving
+							 * orphaned keys, so remove
+							 * this one.  No need to mess
+							 * with its nickname first. */
+							PK11_DeleteTokenPrivateKey(privkey, PR_FALSE);
+							if (error == SECSuccess) {
+								cm_log(3, "Removed old key.\n");
+							} else {
+								ec = PORT_GetError();
+								if (ec != 0) {
+									es = PR_ErrorToName(ec);
+								} else {
+									es = NULL;
+								}
+								if (es != NULL) {
+									cm_log(0, "Failed "
+									       "to remove "
+									       "old key: "
+									       "%s.\n", es);
+								} else {
+									cm_log(0, "Failed "
+									       "to remove "
+									       "old key.\n");
+								}
+							}
+						} else {
+							/* Remove the explicit
+							 * nickname, so that the key
+							 * will have to be found using
+							 * the certificate's nickname,
+							 * and certutil will display
+							 * the matching certificate's
+							 * nickname when it's asked to
+							 * list the keys in the
+							 * database. */
+							error = PK11_SetPrivateKeyNickname(privkey, "");
+							if (error == SECSuccess) {
+								cm_log(3, "Removed "
+								       "name from old "
+								       "key.\n");
+							} else {
+								ec = PORT_GetError();
+								if (ec != 0) {
+									es = PR_ErrorToName(ec);
+								} else {
+									es = NULL;
+								}
+								if (es != NULL) {
+									cm_log(0, "Failed "
+									       "to unname "
+									       "old key: "
+									       "%s.\n", es);
+								} else {
+									cm_log(0, "Failed "
+									       "to unname "
+									       "old key.\n");
+								}
+							}
+							SECKEY_DestroyPrivateKey(privkey);
+						}
+						if (oldcert != NULL) {
+							CERT_DestroyCertificate(oldcert);
 						}
 					}
-					CERT_DestroyCertList(certlist);
+					free(privkeys);
 				}
 			} else {
-				if (ec != 0) {
-					es = PR_ErrorToName(ec);
-				} else {
-					es = NULL;
-				}
-				if (es != NULL) {
-					cm_log(0, "Error importing certificate "
-					       "into NSSDB \"%s\": %s.\n",
-					       entry->cm_cert_storage_location,
-					       es);
-				} else {
-					cm_log(0, "Error importing certificate "
-					       "into NSSDB \"%s\".\n",
-					       entry->cm_cert_storage_location);
-				}
-				switch (ec) {
-				case PR_NO_ACCESS_RIGHTS_ERROR: /* ACCES/PERM */
-					status = CM_CERTSAVE_STATUS_PERMS;
-					break;
-				default:
-					status = CM_CERTSAVE_STATUS_INTERNAL_ERROR;
-					break;
-				}
+				cm_log(1, "Error getting handle to default NSS DB.\n");
 			}
-			/* If we managed to import the certificate, mark its
-			 * key for having its nickname removed. */
-			if ((returned != NULL) && (returned[0] != NULL)) {
-				privkey = PK11_FindKeyByAnyCert(returned[0], NULL);
-				privkeys = add_privkey_to_list(privkeys, privkey);
-				CERT_DestroyCertArray(returned, 1);
+			PORT_FreeArena(arena, PR_TRUE);
+			if (NSS_ShutdownContext(ctx) != SECSuccess) {
+				cm_log(1, "Error shutting down NSS.\n");
 			}
-			/* In case we're rekeying, but failed, mark the
-			 * candidate key for name-clearing or removal, too. */
-			if ((entry->cm_key_next_marker != NULL) &&
-			    (strlen(entry->cm_key_next_marker) > 0)) {
-				p = util_build_next_nickname(entry->cm_key_nickname,
-							     entry->cm_key_next_marker);
-				privkeylist = PK11_ListPrivKeysInSlot(PK11_GetInternalKeySlot(), p, NULL);
-				if (privkeylist != NULL) {
-					for (knode = PRIVKEY_LIST_HEAD(privkeylist);
-					     !PRIVKEY_LIST_EMPTY(privkeylist) &&
-					     !PRIVKEY_LIST_END(knode, privkeylist);
-					     knode = PRIVKEY_LIST_NEXT(knode)) {
-						q = PK11_GetPrivateKeyNickname(knode->key);
-						if ((q != NULL) &&
-						    (strcmp(p, q) == 0)) {
-							privkey = SECKEY_CopyPrivateKey(knode->key);
-							privkeys = add_privkey_to_list(privkeys, privkey);
-							break;
-						}
-					}
-					SECKEY_DestroyPrivateKeyList(privkeylist);
-				}
+			/* Fixup the ownership and permissions on the key and
+			 * certificate databases. */
+			util_set_db_entry_key_owner(entry->cm_key_storage_location, entry);
+			util_set_db_entry_cert_owner(entry->cm_cert_storage_location, entry);
+			break;
+next_slot:
+			if (sle == slotlist->tail) {
+				break;
 			}
-			if (privkeys != NULL) {
-				/* Check if any certificates are still using
-				 * the keys that correspond to certificates
-				 * that we removed. */
-				for (i = 0; privkeys[i] != NULL; i++) {
-					privkey = privkeys[i];
-					oldcert = PK11_GetCertFromPrivateKey(privkey);
-					if (!entry->cm_key_preserve && (oldcert == NULL)) {
-						/* We're not preserving
-						 * orphaned keys, so remove
-						 * this one.  No need to mess
-						 * with its nickname first. */
-						PK11_DeleteTokenPrivateKey(privkey, PR_FALSE);
-						if (error == SECSuccess) {
-							cm_log(3, "Removed old key.\n");
-						} else {
-							ec = PORT_GetError();
-							if (ec != 0) {
-								es = PR_ErrorToName(ec);
-							} else {
-								es = NULL;
-							}
-							if (es != NULL) {
-								cm_log(0, "Failed "
-								       "to remove "
-								       "old key: "
-								       "%s.\n", es);
-							} else {
-								cm_log(0, "Failed "
-								       "to remove "
-								       "old key.\n");
-							}
-						}
-					} else {
-						/* Remove the explicit
-						 * nickname, so that the key
-						 * will have to be found using
-						 * the certificate's nickname,
-						 * and certutil will display
-						 * the matching certificate's
-						 * nickname when it's asked to
-						 * list the keys in the
-						 * database. */
-						error = PK11_SetPrivateKeyNickname(privkey, "");
-						if (error == SECSuccess) {
-							cm_log(3, "Removed "
-							       "name from old "
-							       "key.\n");
-						} else {
-							ec = PORT_GetError();
-							if (ec != 0) {
-								es = PR_ErrorToName(ec);
-							} else {
-								es = NULL;
-							}
-							if (es != NULL) {
-								cm_log(0, "Failed "
-								       "to unname "
-								       "old key: "
-								       "%s.\n", es);
-							} else {
-								cm_log(0, "Failed "
-								       "to unname "
-								       "old key.\n");
-							}
-						}
-						SECKEY_DestroyPrivateKey(privkey);
-					}
-					if (oldcert != NULL) {
-						CERT_DestroyCertificate(oldcert);
-					}
-				}
-				free(privkeys);
-			}
-		} else {
-			cm_log(1, "Error getting handle to default NSS DB.\n");
-		}
-		PORT_FreeArena(arena, PR_TRUE);
-		if (NSS_ShutdownContext(ctx) != SECSuccess) {
-			cm_log(1, "Error shutting down NSS.\n");
-		}
-		/* Fixup the ownership and permissions on the key and
-		 * certificate databases. */
-		util_set_db_entry_key_owner(entry->cm_key_storage_location, entry);
-		util_set_db_entry_cert_owner(entry->cm_cert_storage_location, entry);
-	}
+		} /* for slot loop */
+	} /* ctx == NULL */
+
 	if (status != 0) {
 		_exit(status);
 	}
