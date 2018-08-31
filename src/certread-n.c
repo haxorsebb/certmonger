@@ -259,9 +259,9 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			if ((pin != NULL) &&
 			    (strlen(pin) > 0) &&
 			    (cb_data.n_attempts == 0)) {
-				cm_log(1, "PIN was not needed to auth to cert "
-				       "db, though one was provided. "
-				       "Treating this as an error.\n");
+				cm_log(1, "PIN was not needed to auth to token "
+				       "%s, though one was provided. "
+				       "Treating this as an error.\n", token);
 				goto next_slot;
 			}
 		}

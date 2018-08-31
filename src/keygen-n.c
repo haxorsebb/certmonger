@@ -400,8 +400,8 @@ next_slot:
 	    (strlen(pin) > 0) &&
 	    (cb_data.n_attempts == 0)) {
 		cm_log(1, "PIN was not needed to auth to key "
-		       "store, though one was provided. "
-		       "Treating this as an error.\n");
+		       "store token %s, though one was provided. "
+		       "Treating this as an error.\n", token);
 		PK11_FreeSlotList(slotlist);
 		error = NSS_ShutdownContext(ctx);
 		if (error != SECSuccess) {
