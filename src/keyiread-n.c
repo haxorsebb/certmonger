@@ -152,6 +152,9 @@ cm_keyiread_n_get_keys(struct cm_store_entry *entry, int readwrite)
 		_exit(CM_SUB_STATUS_ERROR_AUTH);
 	}
 	PK11_SetPasswordFunc(&cm_pin_read_for_cert_nss_cb);
+	if (entry->cm_key_token == NULL) {
+		entry->cm_key_token = util_internal_token_name();
+	}
 	n_tokens = 0;
 	pubkey = NULL;
 	/* In practice, the internal slot is either a non-storage slot (in

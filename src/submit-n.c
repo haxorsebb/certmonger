@@ -346,6 +346,9 @@ cm_submit_n_decrypt_envelope(const unsigned char *envelope,
 		cm_log(1, "Error reading PIN for key storage.\n");
 		goto done;
 	}
+	if (args->entry->cm_key_token == NULL) {
+		args->entry->cm_key_token = util_internal_token_name();
+	}
 	PK11_SetPasswordFunc(&cm_pin_read_for_cert_nss_cb);
 	n_tokens = 0;
 	/* In practice, the internal slot is either a non-storage slot (in
@@ -402,7 +405,7 @@ cm_submit_n_decrypt_envelope(const unsigned char *envelope,
 		}
 		error = PK11_Authenticate(slot, PR_TRUE, &cb_data);
 		if (error != SECSuccess) {
-			cm_log(1, "Error authenticating to token "
+			cm_log(1, "submit-n: Error authenticating to token "
 			       "\"%s\".\n", token);
 			goto done;
 		}

@@ -190,6 +190,9 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		cm_log(1, "Error reading PIN for cert db.\n");
 		_exit(CM_SUB_STATUS_ERROR_AUTH);
 	}
+	if (entry->cm_cert_token == NULL) {
+		entry->cm_cert_token = util_internal_token_name();
+	}
 	PK11_SetPasswordFunc(&cm_pin_read_for_cert_nss_cb);
 	for (sle = slotlist->head;
 	     ((sle != NULL) && (sle->slot != NULL));
@@ -253,7 +256,8 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			}
 			error = PK11_Authenticate(sle->slot, PR_TRUE, &cb_data);
 			if (error != SECSuccess) {
-				cm_log(1, "Error authenticating to cert db.\n");
+				cm_log(1, "certread-n: Error authenticating to cert db "
+					   "slot %s.\n", PK11_GetTokenName(sle->slot));
 				goto next_slot;
 			}
 			if ((pin != NULL) &&
