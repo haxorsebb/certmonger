@@ -391,8 +391,9 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 						     !CERT_LIST_EMPTY(certlist) &&
 						     !CERT_LIST_END(node, certlist);
 						     node = CERT_LIST_NEXT(node)) {
-							if (!SECITEM_ItemsAreEqual(&subject,
-										   &node->cert->derSubject)) {
+							if ((!SECITEM_ItemsAreEqual(&subject,
+									   &node->cert->derSubject)) &&
+										(sle->slot == node->cert->slot)) {
 								cm_log(3, "Found a "
 								       "certificate "
 								       "with the same "
@@ -441,7 +442,8 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					     node = CERT_LIST_NEXT(node)) {
 						if ((node->cert->nickname != NULL) &&
 						    (strcmp(entry->cm_cert_nickname,
-							    node->cert->nickname) != 0))
+							    node->cert->nickname) != 0) &&
+								(sle->slot == node->cert->slot))
 						{
 							i++;
 							cm_log(3, "Found a "
