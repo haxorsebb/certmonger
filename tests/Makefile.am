@@ -433,6 +433,9 @@ subdirs += \
 endif
 
 check: all
+	if [ ! -e $$HOME/.rnd ] ; then \
+		openssl rand -writerand $$HOME/.rnd; \
+	fi
 	for required in certutil cmsutil pk12util openssl diff cmp mktemp \
 			dos2unix unix2dos dbus-launch ; do \
 		which $$required || exit 1; \
