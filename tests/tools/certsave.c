@@ -106,6 +106,11 @@ main(int argc, char **argv)
 				printf("Failed to save (%s:%s), "
 				       "filesystem permissions error.\n",
 				       ctype, entry->cm_cert_storage_location);
+			} else
+			if (cm_certsave_pin_error(state) == 0) {
+				printf("Failed to save (%s:%s), "
+				       "pin error.\n",
+				       ctype, entry->cm_cert_storage_location);
 			} else {
 				printf("Failed to save (%s:%s), "
 				       "don't know why.\n",
