@@ -72,7 +72,8 @@ add_privkey_to_list(SECKEYPrivateKey **list, SECKEYPrivateKey *key)
 		if ((list == NULL) || (list[i] == NULL)) {
 			newlist = malloc(sizeof(newlist[0]) * (i + 2));
 			if (newlist != NULL) {
-				memcpy(newlist, list, sizeof(newlist[0]) * i);
+				if (list != NULL)
+					memcpy(newlist, list, sizeof(newlist[0]) * i);
 				newlist[i] = key;
 				newlist[i + 1] = NULL;
 				list = newlist;

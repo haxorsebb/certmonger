@@ -291,7 +291,8 @@ add_string(void *parent, char ***dest, const char *value)
 		printf(_("Out of memory.\n"));
 		exit(1);
 	}
-	memcpy(tmp, *dest, sizeof(tmp[0]) * i);
+	if (*dest)
+		memcpy(tmp, *dest, sizeof(tmp[0]) * i);
 	tmp[i] = talloc_strdup(tmp, value);
 	i++;
 	tmp[i] = NULL;
@@ -1582,8 +1583,8 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 {
 	DBusMessage *req, *rep;
 	int i;
-	struct cm_tdbusm_dict param[28];
-	const struct cm_tdbusm_dict *params[29];
+	struct cm_tdbusm_dict param[30];
+	const struct cm_tdbusm_dict *params[30];
 	dbus_bool_t b;
 	const char *capath;
 	char *p;

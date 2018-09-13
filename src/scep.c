@@ -793,8 +793,8 @@ main(int argc, const char **argv)
 				fprintf(stderr, "code_text = \"%s\"\n", cm_submit_h_result_code_text(hctx));
 				syslog(LOG_DEBUG, "%s %s?%s\n", "GET", url, params2);
 			}
-			if (strcasecmp(content_type2,
-				       "application/x-x509-ca-cert") != 0) {
+			if ((content_type2 != NULL) && (strcasecmp(content_type2,
+				       "application/x-x509-ca-cert") != 0)) {
 				if (verbose > 0) {
 					fprintf(stderr, "Content is not "
 						"\"application/x-x509-ca-cert\""
@@ -882,8 +882,8 @@ main(int argc, const char **argv)
 		break;
 	case op_get_cert_initial:
 	case op_pkcsreq:
-		if (strcasecmp(content_type2,
-			       "application/x-pki-message") == 0) {
+		if ((content_type2 != NULL) && (strcasecmp(content_type2,
+			       "application/x-pki-message") == 0)) {
 			memset(&cacerts, 0, sizeof(cacerts));
 			cacerts[0] = cacert ? cacert : racert;
 			cacerts[1] = cacert ? racert : NULL;

@@ -258,8 +258,11 @@ cm_submit_sn_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	/* Allocate space for one more extension. */
 	extensions = PORT_ArenaZAlloc(arena, (i + 2) * sizeof(extensions[0]));
 	if (extensions != NULL) {
-		memcpy(extensions, ucert->extensions,
-		       i * sizeof(extensions[0]));
+		if (i != 0) {
+			/* Note that C99 says copy of 0 items is ok, quieting clang */
+			memcpy(extensions, ucert->extensions,
+			       i * sizeof(extensions[0]));
+		}
 		if (found_basic) {
 			extensions[i] = NULL;
 		} else {
