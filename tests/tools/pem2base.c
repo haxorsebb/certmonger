@@ -46,5 +46,6 @@ main(int argc, char **argv)
 		}
 	}
 	printf("%s\n", cm_submit_u_base64_from_text(p));
+	free(p);
 	return 0;
 }

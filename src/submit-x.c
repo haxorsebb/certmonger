@@ -75,6 +75,8 @@ cm_submit_x_ccache_realm(char **msg)
 			ret = get_error_message(ctx, kret));
 		if (msg != NULL) {
 			*msg = ret;
+		} else {
+			free(ret);
 		}
 		return NULL;
 	}
@@ -84,6 +86,8 @@ cm_submit_x_ccache_realm(char **msg)
 			ret = get_error_message(ctx, kret));
 		if (msg != NULL) {
 			*msg = ret;
+		} else {
+			free(ret);
 		}
 		return NULL;
 	}
@@ -93,6 +97,8 @@ cm_submit_x_ccache_realm(char **msg)
 			ret = get_error_message(ctx, kret));
 		if (msg != NULL) {
 			*msg = ret;
+		} else {
+			free(ret);
 		}
 		return NULL;
 	}
@@ -139,6 +145,8 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal, char **msg)
 		fprintf(stderr, "Error initializing Kerberos: %s.\n", ret);
 		if (msg != NULL) {
 			*msg = ret;
+		} else {
+			free(ret);
 		}
 		return kret;
 	}
@@ -152,6 +160,8 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal, char **msg)
 			ret = get_error_message(ctx, kret));
 		if (msg != NULL) {
 			*msg = ret;
+		} else {
+			free(ret);
 		}
 		return kret;
 	}
@@ -163,6 +173,8 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal, char **msg)
 				principal, ret = get_error_message(ctx, kret));
 			if (msg != NULL) {
 				*msg = ret;
+			} else {
+				free(ret);
 			}
 			return kret;
 		}
@@ -174,6 +186,8 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal, char **msg)
 				ret = get_error_message(ctx, kret));
 			if (msg != NULL) {
 				*msg = ret;
+			} else {
+				free(ret);
 			}
 			return kret;
 		}
@@ -195,6 +209,8 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal, char **msg)
 			ret = get_error_message(ctx, kret));
 		if (msg != NULL) {
 			*msg = ret;
+		} else {
+			free(ret);
 		}
 		return kret;
 	}
@@ -213,6 +229,8 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal, char **msg)
 			ret = get_error_message(ctx, kret));
 		if (msg != NULL) {
 			*msg = ret;
+		} else {
+			free(ret);
 		}
 		return kret;
 	}
@@ -227,6 +245,8 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal, char **msg)
 			ret = get_error_message(ctx, kret));
 		if (msg != NULL) {
 			*msg = ret;
+		} else {
+			free(ret);
 		}
 		return kret;
 	}
@@ -237,6 +257,8 @@ cm_submit_x_make_ccache(const char *ktname, const char *principal, char **msg)
 			ret = get_error_message(ctx, kret));
 		if (msg != NULL) {
 			*msg = ret;
+		} else {
+			free(ret);
 		}
 		return kret;
 	}

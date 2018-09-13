@@ -559,6 +559,7 @@ main(int argc, const char **argv)
 			printf(_("Unable to read signing request.\n"));
 			cm_log(1, "Unable to read signing request.\n");
 			poptPrintUsage(pctx, stdout, 0);
+			free(csr);
 			return CM_SUBMIT_STATUS_UNCONFIGURED;
 		}
 		/* Take the lock. */
@@ -568,6 +569,7 @@ main(int argc, const char **argv)
 				    &signer, &key);
 		if ((i != 0) || (signer == NULL)) {
 			cm_log(1, "Error reading signer info.\n");
+			free(csr);
 			/* Try again sometime later. */
 			return CM_SUBMIT_STATUS_UNREACHABLE;
 		}
@@ -577,11 +579,13 @@ main(int argc, const char **argv)
 		if ((fp == NULL) && (errno != ENOENT)) {
 			cm_log(1, "Error reading '%s': %s.\n", serial,
 			       strerror(errno));
+			free(csr);
 			return CM_SUBMIT_STATUS_UNREACHABLE;
 		}
 		if (fp != NULL) {
 			if (fgets(buf, sizeof(buf), fp) == NULL) {
 				fclose(fp);
+				free(csr);
 				return CM_SUBMIT_STATUS_UNREACHABLE;
 			}
 			buf[strcspn(buf, "\r\n")] = '\0';
@@ -601,6 +605,7 @@ main(int argc, const char **argv)
 		/* Actually sign the request. */
 		i = cm_submit_o_sign(parent, csr, signer, key, hexserial,
 				     now, 0, &cert);
+		free(csr);
 		if ((i == 0) && (cert != NULL)) {
 			/* Roll the serial number up. */
 			hexserial = cm_store_increment_serial(parent,

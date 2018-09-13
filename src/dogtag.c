@@ -536,6 +536,7 @@ main(int argc, const char **argv)
 					       CM_SUBMIT_CSR_ENV);
 				}
 				poptPrintUsage(pctx, stdout, 0);
+				free(csr);
 				return CM_SUBMIT_STATUS_UNCONFIGURED;
 			}
 			csr = cm_submit_u_url_encode(csr);
@@ -588,6 +589,8 @@ main(int argc, const char **argv)
 			params = talloc_asprintf(ctx,
 						 "%s&%s=%s",
 						 params, p, q);
+			free(p);
+			free(q);
 		}
 		use_agent_approval = FALSE;
 		break;

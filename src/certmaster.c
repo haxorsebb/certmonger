@@ -160,6 +160,7 @@ main(int argc, const char **argv)
 			       CM_SUBMIT_CSR_ENV);
 		}
 		poptPrintUsage(pctx, stdout, 0);
+		free(csr);
 		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
 
@@ -185,11 +186,13 @@ main(int argc, const char **argv)
 	if (ctx == NULL) {
 		fprintf(stderr, "Error setting up for XMLRPC.\n");
 		printf(_("Error setting up for XMLRPC.\n"));
+		free(csr);
 		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
 
 	/* Add the CSR as the sole argument. */
 	cm_submit_x_add_arg_s(ctx, csr);
+	free(csr);
 
 	/* Submit the request. */
 	fprintf(stderr, "Submitting request to \"%s\".\n", uri);

@@ -86,6 +86,7 @@ main(int argc, char **argv)
 	if (enveloped == NULL) {
 		cm_log(0, "Internal error: %s.\n",
 		       PR_ErrorToName(PORT_GetError()));
+		free(buffer);
 		return 1;
 	}
 	ci.content_type = enveloped->oid;
@@ -96,6 +97,7 @@ main(int argc, char **argv)
 			       content_info_template) != &encoded) {
 		cm_log(0, "Encoding error: %s.\n",
 		       PR_ErrorToName(PORT_GetError()));
+		free(buffer);
 		return 1;
 	}
 	j = 0;
@@ -105,5 +107,6 @@ main(int argc, char **argv)
 			break;
 		}
 	}
+	free(buffer);
 	return 0;
 }

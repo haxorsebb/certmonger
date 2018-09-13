@@ -189,6 +189,7 @@ cm_srvloc_resolve(void *parent, const char *name, const char *udomain,
 	domain = strdup(udomain);
 #endif
 	i = res_querydomain(name, domain, C_IN, T_SRV, answer, answer_len);
+	free(domain);
 	if (i == -1) {
 		return -1;
 	}

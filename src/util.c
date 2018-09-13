@@ -98,7 +98,7 @@ read_config_file(const char *filename)
 char *
 get_config_entry(char * in_data, const char *section, const char *key)
 {
-    char *ptr = NULL, *p, *tmp;
+    char *ptr = NULL, *p, *tmp = NULL;
     char *line;
     int in_section = 0;
     char * data = strdup(in_data);
@@ -129,9 +129,12 @@ get_config_entry(char * in_data, const char *section, const char *key)
                 }
                 if (strcmp(section, tmp) == 0) {
                     free(tmp);
+                    tmp = NULL;
                     in_section = 1;
                     continue;
                 }
+                free(tmp);
+                tmp = NULL;
             }
         } /* [ */
 
@@ -145,8 +148,10 @@ get_config_entry(char * in_data, const char *section, const char *key)
             tmp = strndup(line, p - line);
             if (strcmp(key, tmp) != 0) {
                 free(tmp);
+				tmp = NULL;
             } else {
                 free(tmp);
+				tmp = NULL;
 
                 /* Skip over any whitespace after the equal sign. */
                 line = strchr(line, '=');
@@ -168,5 +173,6 @@ get_config_entry(char * in_data, const char *section, const char *key)
         }
     }
     free(data);
+    free(tmp);
     return NULL;
 }

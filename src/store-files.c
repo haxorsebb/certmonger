@@ -558,8 +558,8 @@ cm_store_file_read_lines(void *parent, FILE *fp)
 		case ';':
 			break;
 		}
+		free(buf);
 	}
-	free(buf);
 	/* If we were reading a line, append it to the list. */
 	if (s != NULL) {
 		tlines = talloc_realloc(parent, lines, char *, n_lines + 2);

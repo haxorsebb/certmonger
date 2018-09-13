@@ -258,6 +258,7 @@ cm_certsave_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					if (bin != NULL) {
 						BN_bn2bin(bn, bin);
 						serial = cm_store_hex_from_bin(NULL, bin, BN_num_bytes(bn));
+						free(bin);
 					}
 				}
 				if (serial != NULL) {

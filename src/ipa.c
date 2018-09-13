@@ -226,6 +226,7 @@ cm_locate_xmlrpc_service(const char *server,
 	if (basedn == NULL) {
 		i = cm_find_default_naming_context(ld, &basedn);
 		if (i != 0) {
+			free(basedn);
 			return i;
 		}
 	}
@@ -526,6 +527,7 @@ fetch_roots(const char *server, int ldap_uri_cmd, const char *ldap_uri,
 	if (basedn == NULL) {
 		i = cm_find_default_naming_context(ld, &basedn);
 		if (i != 0) {
+			free(basedn);
 			return i;
 		}
 	}
@@ -802,6 +804,7 @@ main(int argc, const char **argv)
 				printf(_("Unable to read signing request from environment variable \"%s\".\n"),
 				       CM_SUBMIT_CSR_ENV);
 			}
+			free(csr);
 			poptPrintUsage(pctx, stdout, 0);
 			return CM_SUBMIT_STATUS_UNCONFIGURED;
 		}
@@ -903,12 +906,16 @@ main(int argc, const char **argv)
 
 	if ((strcasecmp(mode, CM_OP_SUBMIT) == 0) ||
 	    (strcasecmp(mode, CM_OP_POLL) == 0)) {
-		return submit_or_poll(uri, cainfo, capath, server,
+		int ret;
+		ret = submit_or_poll(uri, cainfo, capath, server,
 				      ldap_uri_cmd, ldap_uri, host, domain,
 				      basedn, uid, pwd, csr, reqprinc, profile,
 				      issuer);
+		free(csr);
+		return ret;
 	} else
 	if (strcasecmp(mode, CM_OP_FETCH_ROOTS) == 0) {
+		free(csr);
 		return fetch_roots(server, ldap_uri_cmd, ldap_uri, host,
 				   uid, pwd, domain, basedn);
 	}

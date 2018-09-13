@@ -76,5 +76,6 @@ main(int argc, const char **argv)
 		}
 	}
 	printf("%s", cm_submit_u_pem_from_base64(type, dos, p));
+	free(p);
 	return 0;
 }

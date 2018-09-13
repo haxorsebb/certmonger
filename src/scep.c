@@ -338,6 +338,7 @@ main(int argc, const char **argv)
 	}
 	if (c != -1) {
 		poptPrintUsage(pctx, stdout, 0);
+		free(cainfo);
 		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
 
@@ -386,6 +387,7 @@ main(int argc, const char **argv)
 			}
 			if ((message == NULL) || (strlen(message) == 0)) {
 				printf(_("Error reading request.  Expected PKCS7 data containing a GetInitialCert pkiMessage, got nothing.\n"));
+				free(cainfo);
 				return CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
 			}
 			/* First step: read capabilities for our use. */
@@ -405,6 +407,7 @@ main(int argc, const char **argv)
 			}
 			if ((message == NULL) || (strlen(message) == 0)) {
 				printf(_("Error reading request.  Expected PKCS7 data containing a PKCSReq pkiMessage, got nothing.\n"));
+				free(cainfo);
 				return CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
 			}
 			/* First step: read capabilities for our use. */
@@ -416,6 +419,7 @@ main(int argc, const char **argv)
 	/* Supply help output, if it's needed. */
 	if (missing_args) {
 		poptPrintUsage(pctx, stdout, 0);
+		free(cainfo);
 		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
 
@@ -492,6 +496,7 @@ main(int argc, const char **argv)
 				verbose > 1 ?
 				cm_submit_h_curl_verbose_on :
 				cm_submit_h_curl_verbose_off);
+	free(cainfo);
 	cm_submit_h_run(hctx);
 	content_type = cm_submit_h_result_type(hctx);
 	if (content_type == NULL) {
