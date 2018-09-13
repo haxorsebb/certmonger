@@ -492,7 +492,6 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	readwrite = settings->readwrite;
 	keys = cm_keyiread_n_get_keys(entry, readwrite);
 	alg = "";
-	size = 0;
 	if (keys != NULL) {
 		switch (SECKEY_GetPrivateKeyType(keys->privkey)) {
 		case rsaKey:

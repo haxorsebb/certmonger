@@ -120,14 +120,12 @@ cm_submit_u_from_file_single(const char *filename)
 	if (csr == NULL) {
 		return NULL;
 	}
-	p = csr;
 	for (i = 0; i < sizeof(strip) / sizeof(strip[0]); i++) {
 		while ((p = strstr(csr, strip[i])) != NULL) {
 			q = p + strcspn(p, "\r\n");
 			memmove(p, q, strlen(q) + 1);
 		}
 	}
-	p = csr;
 	q = strdup(csr);
 	for (p = csr, i = 0; *p != '\0'; p++) {
 		if (strchr("\r\n\t ", *p) == NULL) {

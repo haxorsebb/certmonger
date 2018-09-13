@@ -587,32 +587,34 @@ cm_submit_e_postprocess_main(int fd, struct cm_store_ca *ca,
 				   estate->msg_length, NULL);
 		msg = cm_json_new_object(estate);
 		chain = cm_json_new_array(msg);
-		if (leaf != NULL) {
-			cert = cm_json_new_string(msg, leaf, -1);
-			cm_json_set(msg, CM_SUBMIT_E_CERTIFICATE, cert);
-		}
-		for (i = 0;
-		     (others != NULL) && (others[i] != NULL);
-		     i++) {
-			cert = cm_json_new_object(chain);
-			val = cm_json_new_string(cert, others[i], -1);
-			cm_json_set(cert, CM_SUBMIT_E_CERTIFICATE, val);
-			nthnick = talloc_asprintf(cert, "chain #%d", i + 1);
-			nick = cm_json_new_string(cert, nthnick, -1);
-			cm_json_set(cert, CM_SUBMIT_E_NICKNAME, nick);
-			cm_json_append(chain, cert);
-		}
-		if (top!= NULL) {
-			cert = cm_json_new_object(chain);
-			val = cm_json_new_string(cert, top, -1);
-			cm_json_set(cert, CM_SUBMIT_E_CERTIFICATE, val);
-			nthnick = talloc_asprintf(cert, "chain #%d", i + 1);
-			nick = cm_json_new_string(cert, nthnick, -1);
-			cm_json_set(cert, CM_SUBMIT_E_NICKNAME, nick);
-			cm_json_append(chain, cert);
-		}
-		if (cm_json_array_size(chain) > 0) {
-			cm_json_set(msg, CM_SUBMIT_E_CHAIN, chain);
+		if (i == 0) {
+			if (leaf != NULL) {
+				cert = cm_json_new_string(msg, leaf, -1);
+				cm_json_set(msg, CM_SUBMIT_E_CERTIFICATE, cert);
+			}
+			for (i = 0;
+			     (others != NULL) && (others[i] != NULL);
+			     i++) {
+				cert = cm_json_new_object(chain);
+				val = cm_json_new_string(cert, others[i], -1);
+				cm_json_set(cert, CM_SUBMIT_E_CERTIFICATE, val);
+				nthnick = talloc_asprintf(cert, "chain #%d", i + 1);
+				nick = cm_json_new_string(cert, nthnick, -1);
+				cm_json_set(cert, CM_SUBMIT_E_NICKNAME, nick);
+				cm_json_append(chain, cert);
+			}
+			if (top!= NULL) {
+				cert = cm_json_new_object(chain);
+				val = cm_json_new_string(cert, top, -1);
+				cm_json_set(cert, CM_SUBMIT_E_CERTIFICATE, val);
+				nthnick = talloc_asprintf(cert, "chain #%d", i + 1);
+				nick = cm_json_new_string(cert, nthnick, -1);
+				cm_json_set(cert, CM_SUBMIT_E_NICKNAME, nick);
+				cm_json_append(chain, cert);
+			}
+			if (cm_json_array_size(chain) > 0) {
+				cm_json_set(msg, CM_SUBMIT_E_CHAIN, chain);
+			}
 		}
 	}
 	/* Get ready to build an output message. */

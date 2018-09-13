@@ -591,7 +591,6 @@ retry_gen:
 			break;
 		}
 	}
-	generated_size = SECKEY_PublicKeyStrengthInBits(pubkey);
 	cm_log(1, "Ended up with %d bit public key.\n",
 	       SECKEY_PublicKeyStrengthInBits(pubkey));
 	/* Check for keys with the desired name, selecting a new name if

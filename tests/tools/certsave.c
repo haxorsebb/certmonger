@@ -83,13 +83,15 @@ main(int argc, char **argv)
 		if (cm_certsave_saved(state) == 0) {
 			ret = 0;
 		} else {
-			ctype = "unknown";
 			switch (entry->cm_cert_storage_type) {
 			case cm_cert_storage_file:
 				ctype = "FILE";
 				break;
 			case cm_cert_storage_nssdb:
 				ctype = "NSS";
+				break;
+			default:
+				ctype = "unknown";
 				break;
 			}
 			if (cm_certsave_conflict_subject(state) == 0) {

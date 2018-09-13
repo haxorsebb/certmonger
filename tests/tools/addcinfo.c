@@ -98,7 +98,6 @@ main(int argc, char **argv)
 		       PR_ErrorToName(PORT_GetError()));
 		return 1;
 	}
-	n = encoded.len;
 	j = 0;
 	while ((i = write(STDOUT_FILENO, encoded.data + j, encoded.len - j)) > 0) {
 		j += i;

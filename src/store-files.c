@@ -2182,7 +2182,6 @@ cm_store_entry_delete(struct cm_store_entry *entry)
 	} else {
 		cm_log(3, "No file to remove for \"%s\".\n",
 		       entry->cm_nickname);
-		ret = 0;
 	}
 	return 0;
 }
@@ -2469,7 +2468,6 @@ cm_store_ca_delete(struct cm_store_ca *ca)
 		}
 	} else {
 		cm_log(3, "No file to remove for \"%s\".\n", ca->cm_nickname);
-		ret = 0;
 	}
 	return 0;
 }

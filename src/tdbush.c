@@ -2911,7 +2911,6 @@ request_get_key_type_and_size(DBusConnection *conn, DBusMessage *msg,
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
 	rep = dbus_message_new_method_return(msg);
-	type = "UNKNOWN";
 	switch (entry->cm_key_type.cm_key_algorithm) {
 	case cm_key_unspecified:
 		type = "UNKNOWN";
@@ -2929,6 +2928,9 @@ request_get_key_type_and_size(DBusConnection *conn, DBusMessage *msg,
 		type = "EC";
 		break;
 #endif
+	default:
+		type = "UNKNOWN";
+		break;
 	}
 	if (rep != NULL) {
 		size = entry->cm_key_type.cm_key_size;
@@ -4790,13 +4792,15 @@ cm_tdbush_introspect_method(void *parent,
 			      method->cm_name);
 	arg = method->cm_args;
 	while (arg != NULL) {
-		direction = "unknown";
 		switch (arg->cm_direction) {
 		case cm_tdbush_method_arg_in:
 			direction = "in";
 			break;
 		case cm_tdbush_method_arg_out:
 			direction = "out";
+			break;
+		default:
+			direction = "unknown";
 			break;
 		}
 		ret = talloc_asprintf(parent,

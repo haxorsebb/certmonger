@@ -163,7 +163,6 @@ cm_casave_main_n(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 			decoded = CERT_DecodeCertFromPackage(package,
 							     strlen(package));
 			p = state->certs[i]->nickname;
-			ttrust = ",,";
 			switch (state->certs[i]->level) {
 			case root:
 			case other_root:
@@ -177,6 +176,9 @@ cm_casave_main_n(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 				if (ttrust == NULL) {
 					ttrust = ",,";
 				}
+				break;
+			default:
+				ttrust = ",,";
 				break;
 			}
 			memset(&trust, 0, sizeof(trust));

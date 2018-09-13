@@ -530,8 +530,6 @@ cm_store_hex_to_bin(const char *serial, unsigned char *buf, int length)
 	const char *p, *q, *chars = "0123456789abcdef";
 	unsigned char *b, u;
 
-	p = serial;
-	b = buf;
 	u = 0;
 	for (p = serial, b = buf;
 	     ((*p != '\0') && ((b - buf) < length));
@@ -606,7 +604,6 @@ cm_store_canonicalize_path(void *parent, const char *path)
 		for (p = tmp; *p != '\0'; p++) {
 			if ((strncmp(p, "/.", 2) == 0) &&
 			    ((p[2] == '/') || (p[2] == '\0'))) {
-				q = p - 1;
 				memmove(p, p + 2, strlen(p + 2) + 1);
 			}
 		}
