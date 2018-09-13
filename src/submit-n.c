@@ -281,7 +281,7 @@ cm_submit_n_decrypt_envelope(const unsigned char *envelope,
 	PLArenaPool *arena = NULL;
 	SECStatus error;
 	NSSInitContext *ctx = NULL;
-	PK11SlotInfo *slot;
+	PK11SlotInfo *slot = NULL;
 	PK11SlotList *slotlist = NULL;
 	PK11SlotListElement *sle;
 	SECKEYPrivateKeyList *keylist = NULL;
