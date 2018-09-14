@@ -363,7 +363,6 @@ cm_store_time_from_timestamp(const char *timestamp)
 	buf[2] = '\0';
 	stamp.tm_min = atoi(buf);
 	memcpy(buf, timestamp + i, 2);
-	i += 2;
 	buf[2] = '\0';
 	stamp.tm_sec = atoi(buf);
 	t = timegm(&stamp);
