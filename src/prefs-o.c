@@ -75,6 +75,9 @@ cm_prefs_ossl_cipher_by_pref(enum cm_prefs_cipher cipher)
 	case cm_prefs_aes128:
 		return EVP_aes_128_cbc();
 		break;
+	case cm_prefs_aes192:
+		return EVP_aes_192_cbc();
+		break;
 	case cm_prefs_aes256:
 		return EVP_aes_256_cbc();
 		break;
