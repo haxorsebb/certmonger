@@ -3655,37 +3655,39 @@ request_modify(DBusConnection *conn, DBusMessage *msg,
 				break;
 			}
 		}
-		if (d[i] == NULL) {
-			new_request_path = talloc_asprintf(parent, "%s/%s",
-							   CM_DBUS_REQUEST_PATH,
-							   entry->cm_busname);
-			if ((n_propname > 0) &&
-			    (n_propname + 1 < sizeof(propname) / sizeof(propname[0]))) {
-				propname[n_propname] = NULL;
-				cm_tdbush_property_emit_changed(ctx, new_request_path,
-								CM_DBUS_REQUEST_INTERFACE,
-								propname);
-			}
-			cm_tdbusm_set_bp(rep,
-					 cm_restart_entry(ctx,
-							  entry->cm_nickname),
-					 new_request_path);
-			dbus_connection_send(conn, rep, NULL);
-			dbus_message_unref(rep);
-			talloc_free(new_request_path);
-			return DBUS_HANDLER_RESULT_HANDLED;
-		} else {
-			dbus_message_unref(rep);
-			rep = dbus_message_new_error(msg,
-						     CM_DBUS_ERROR_REQUEST_BAD_ARG,
-						     _("Unrecognized parameter or wrong value type."));
-			if (rep != NULL) {
-				cm_tdbusm_set_s(rep, d[i]->key);
+		if (d != NULL) {
+			if (d[i] == NULL) {
+				new_request_path = talloc_asprintf(parent, "%s/%s",
+								   CM_DBUS_REQUEST_PATH,
+								   entry->cm_busname);
+				if ((n_propname > 0) &&
+				    (n_propname + 1 < sizeof(propname) / sizeof(propname[0]))) {
+					propname[n_propname] = NULL;
+					cm_tdbush_property_emit_changed(ctx, new_request_path,
+									CM_DBUS_REQUEST_INTERFACE,
+									propname);
+				}
+				cm_tdbusm_set_bp(rep,
+						 cm_restart_entry(ctx,
+								  entry->cm_nickname),
+						 new_request_path);
 				dbus_connection_send(conn, rep, NULL);
 				dbus_message_unref(rep);
+				talloc_free(new_request_path);
 				return DBUS_HANDLER_RESULT_HANDLED;
+			} else {
+				dbus_message_unref(rep);
+				rep = dbus_message_new_error(msg,
+							     CM_DBUS_ERROR_REQUEST_BAD_ARG,
+							     _("Unrecognized parameter or wrong value type."));
+				if (rep != NULL) {
+					cm_tdbusm_set_s(rep, d[i]->key);
+					dbus_connection_send(conn, rep, NULL);
+					dbus_message_unref(rep);
+					return DBUS_HANDLER_RESULT_HANDLED;
+				}
+				return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 			}
-			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 		}
 	} else {
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
