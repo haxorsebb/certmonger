@@ -100,7 +100,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	NSSInitContext *ctx;
 	CERTCertDBHandle *certdb;
 	CERTCertList *certlist;
-	CERTCertificate **returned, *oldcert, cert;
+	CERTCertificate *oldcert, *newcert, cert;
 	CERTCertTrust trust;
 	CERTSignedData csdata;
 	CERTCertListNode *node;
@@ -497,33 +497,18 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					}
 				}
 				/* Import the certificate. */
-				returned = NULL;
-				error = CERT_ImportCerts(certdb,
-							 certUsageUserCertImport,
-							 1, &item, &returned,
-							 PR_TRUE,
-							 PR_FALSE,
-							 entry->cm_cert_nickname);
-				ec = PORT_GetError();
-				if (error == SECSuccess) {
-					/* If NSS uses SQL DB storage, CERT_ImportCerts creates
-					 * an incomplete internal state (the cert isn't
-					 * associated with the private key, and calling
-					 * PK11_FindKeyByAnyCert returns no result).
-					 * As a workaround, we import the cert again using
-					 * PK11_ImportCert, which magically fixes the issue.
-					 * See rhbz#1532188 */
+				newcert = CERT_DecodeCertFromPackage((char *)item->data, item->len);
+				if (newcert != NULL) {
 					error = PK11_ImportCert(sle->slot,
-						returned[0],
+						newcert,
 						CK_INVALID_HANDLE,
-						returned[0]->nickname,
+						entry->cm_cert_nickname,
 						PR_FALSE);
 				}
 				if (error == SECSuccess) {
-					cm_log(1, "Imported certificate \"%s\", got "
+					cm_log(1, "Imported certificate with "
 					       "nickname \"%s\".\n",
-					       entry->cm_cert_nickname,
-					       returned[0]->nickname);
+					       entry->cm_cert_nickname);
 					status = 0;
 					/* Set the trust on the new certificate,
 					 * perhaps matching the trust on an
@@ -536,7 +521,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 						trust.objectSigningFlags = CERTDB_USER;
 					}
 					error = CERT_ChangeCertTrust(certdb,
-								     returned[0],
+								     newcert,
 								     &trust);
 					ec = PORT_GetError();
 					if (error != SECSuccess) {
@@ -621,10 +606,10 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				}
 				/* If we managed to import the certificate, mark its
 				 * key for having its nickname removed. */
-				if ((returned != NULL) && (returned[0] != NULL)) {
-					privkey = PK11_FindKeyByAnyCert(returned[0], NULL);
+				if (newcert != NULL) {
+					privkey = PK11_FindKeyByAnyCert(newcert, NULL);
 					privkeys = add_privkey_to_list(privkeys, privkey);
-					CERT_DestroyCertArray(returned, 1);
+					CERT_DestroyCertificate(newcert);
 				}
 				/* In case we're rekeying, but failed, mark the
 				 * candidate key for name-clearing or removal, too. */
