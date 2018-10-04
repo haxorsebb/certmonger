@@ -153,7 +153,7 @@ cm_keyiread_n_get_keys(struct cm_store_entry *entry, int readwrite)
 	}
 	PK11_SetPasswordFunc(&cm_pin_read_for_cert_nss_cb);
 	if (entry->cm_key_token == NULL) {
-		entry->cm_key_token = util_internal_token_name();
+		entry->cm_key_token = talloc_strdup(entry, util_internal_token_name());
 	}
 	n_tokens = 0;
 	pubkey = NULL;

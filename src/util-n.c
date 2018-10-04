@@ -291,5 +291,5 @@ util_set_db_entry_cert_owner(const char *dbdir, struct cm_store_entry *entry)
 char *
 util_internal_token_name()
 {
-	return strdup(PK11_GetTokenName(PK11_GetInternalKeySlot()));
+	return PK11_GetTokenName(PK11_GetInternalKeySlot());
 }
