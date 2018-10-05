@@ -181,7 +181,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	BIGNUM *serialbn;
 	char buf[LINE_MAX], *s, *nickname, *pin, *password, *filename;
 	unsigned char *extensions, *upassword, *bmp, *name, *up, *uq, md[CM_DIGEST_MAX];
-	char *spkidec, *mcb64, *nows;
+	char *spkidec = NULL, *mcb64, *nows;
 	const char *default_cn = CM_DEFAULT_CERT_SUBJECT_CN, *spkihex = NULL;
 	const unsigned char *nametmp;
 	struct tm *now;
