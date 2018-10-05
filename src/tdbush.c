@@ -2129,6 +2129,7 @@ ca_get_serial(DBusConnection *conn, DBusMessage *msg,
 }
 
 /* org.fedorahosted.certonger.ca.get_config_file_path */
+static DBusHandlerResult
 ca_get_config_file_path(DBusConnection *conn, DBusMessage *msg,
 		struct cm_client_info *ci, struct cm_context *ctx)
 {
