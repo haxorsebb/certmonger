@@ -4084,7 +4084,9 @@ thumbprint(const char *s, SECOidTag tag, int bits)
 			}
 			*t++ = '\0';
 		}
-	}
+	} else {
+        free(t);
+    }
 done:
 	free(u);
 	return ret;
