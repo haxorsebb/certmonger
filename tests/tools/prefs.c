@@ -35,6 +35,9 @@ main(int argc, char **argv)
 	case cm_prefs_aes128:
 		printf("cipher: AES128\n");
 		break;
+	case cm_prefs_aes192:
+		printf("cipher: AES192\n");
+		break;
 	case cm_prefs_aes256:
 		printf("cipher: AES256\n");
 		break;
@@ -43,6 +46,9 @@ main(int argc, char **argv)
 		break;
 	case cm_prefs_des3:
 		printf("cipher: DES3\n");
+		break;
+	case cm_prefs_nocipher:
+		printf("No cipher selected. Shouldn't happen\n");
 		break;
 	}
 	switch (cm_prefs_preferred_digest()) {
@@ -60,6 +66,9 @@ main(int argc, char **argv)
 		break;
 	case cm_prefs_sha512:
 		printf("digest: SHA512\n");
+		break;
+	case cm_prefs_nodigest:
+		printf("No cipher selected. Shouldn't happen\n");
 		break;
 	}
 
