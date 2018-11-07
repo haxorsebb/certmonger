@@ -59,6 +59,11 @@ helper is called.
   * CERTMONGER_CERTIFICATE
     An older certificate, if we were previously issued one.
 
+  If multiple options were passed in for CERTMONGER_REQ_EMAIL,
+  CERTMONGER_REQ_HOSTNAME, CERTMONGER_REQ_PRINCIPAL or
+  CERTMONGER_REQ_IP_ADDRESS (0.78+) then the variable will include all
+  values passed in delimited by \n.
+
   These are also present starting with version 0.73:
 
   * CERTMONGER_CA_NICKNAME

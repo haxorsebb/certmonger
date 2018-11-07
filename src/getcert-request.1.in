@@ -104,6 +104,9 @@ specified, a default group of settings will be used to request an SSL
 server certificate for the current host, with the \fIhost\fR Kerberos
 service as an additional name.
 
+The options \fB\-K\fR, \fB\-E\fR, \fB\-D\fR and \fB\-A\fR may be provided
+multiple times to set multiple subjectAltName of the same type.
+
 .TP
 \fB\-N\fR NAME
 Set the subject name to include in the signing request.  The default
