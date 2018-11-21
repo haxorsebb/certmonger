@@ -772,6 +772,8 @@ if ! ${configure_dist_target_only:-false} ; then
 	AC_CHECK_HEADER(ldap.h,,AC_MSG_ERROR(ldap.h not found))
 	AC_CHECK_FUNC(ldap_initialize,,AC_CHECK_LIB(ldap,ldap_initialize))
 	AC_CHECK_FUNC(ldap_sasl_interactive_bind_s,,AC_CHECK_LIB(ldap,ldap_sasl_interactive_bind_s))
+	AC_CHECK_FUNC(ldap_str2dn,,AC_CHECK_LIB(ldap,ldap_str2dn))
+	AC_CHECK_FUNC(ldap_dnfree,,AC_CHECK_LIB(ldap,ldap_dnfree))
 	LDAP_CFLAGS="$CFLAGS"
 	LDAP_LIBS="$LIBS"
 	CFLAGS="$CFLAGSsave"

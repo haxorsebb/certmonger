@@ -3,7 +3,8 @@ AM_CFLAGS = $(TALLOC_CFLAGS) $(TEVENT_CFLAGS) $(DBUS_CFLAGS) $(KRB5_CFLAGS) \
 	    $(POPT_CFLAGS) -I$(top_builddir)/src -I$(top_srcdir)/src
 LDADD = libtools.a $(top_builddir)/src/libcm.a $(top_srcdir)/src/env-system.c \
 	libtools.a $(OPENSSL_LIBS) $(CERTMONGER_LIBS) $(KRB5_LIBS) $(IDN_LIBS) \
-	$(GMP_LIBS) $(UUID_LIBS) $(RESOLV_LIBS) $(POPT_LIBS) $(LTLIBICONV)
+	$(GMP_LIBS) $(UUID_LIBS) $(RESOLV_LIBS) $(POPT_LIBS) $(LTLIBICONV) \
+	$(LDAP_LIBS)
 
 noinst_SCRIPTS = cachain.sh
 

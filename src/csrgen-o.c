@@ -34,6 +34,8 @@
 #include <openssl/err.h>
 #include <openssl/pem.h>
 
+#include <ldap.h>
+
 #include <talloc.h>
 
 #include "certext.h"
@@ -92,7 +94,10 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	NETSCAPE_SPKAC spkac;
 	EVP_PKEY *pkey;
 	BIGNUM *serialbn;
-	char buf[LINE_MAX], *p, *q, *s, *nickname, *pin, *password, *filename;
+	char buf[LINE_MAX], *s, *nickname, *pin, *password, *filename;
+	LDAPDN dn = NULL;
+	LDAPRDN rdn = NULL;
+	LDAPAVA *attr = NULL;
 	unsigned char *extensions, *upassword, *bmp, *name, *up, *uq, md[CM_DIGEST_MAX];
 	char *spkidec, *mcb64, *nows;
 	const char *default_cn = CM_DEFAULT_CERT_SUBJECT_CN, *spkihex = NULL;
@@ -193,33 +198,28 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			if ((subject == NULL) &&
 			    (entry->cm_template_subject != NULL) &&
 			    (strlen(entry->cm_template_subject) != 0)) {
-				/* This isn't really correct, but it will
-				 * probably do for now. */
-				p = entry->cm_template_subject;
-				q = p + strcspn(p, ",");
+				int ret;
 				subject = X509_NAME_new();
 				if (subject != NULL) {
-					while (*p != '\0') {
-						if ((s = memchr(p, '=', q - p)) != NULL) {
-							*s = '\0';
-							for (i = 0; p[i] != '\0'; i++) {
-								p[i] = toupper(p[i]);
-							}
+					ret = ldap_str2dn(entry->cm_template_subject, &dn, LDAP_DN_FORMAT_LDAPV3);
+					if (ret == LDAP_SUCCESS) {
+						for (i = 0; dn[i] != NULL; i++) {
+							rdn = dn[i];
+
+							attr = rdn[0];
 							X509_NAME_add_entry_by_txt(subject,
-										   p, astring_type(p, s + 1, q - s - 1),
-										   (unsigned char *) (s + 1), q - s - 1,
-										   -1, 0);
-							*s = '=';
-						} else {
-							X509_NAME_add_entry_by_txt(subject,
-										   "CN", astring_type("CN", p, q - p),
-										   (unsigned char *) p, q - p,
+										   attr->la_attr.bv_val, astring_type(attr->la_attr.bv_val, attr->la_value.bv_val, attr->la_value.bv_len),
+										   (unsigned char *) attr->la_value.bv_val, attr->la_value.bv_len,
 										   -1, 0);
 						}
-						p = q + strspn(q, ",");
-						q = p + strcspn(p, ",");
+						if (dn != NULL)
+							ldap_dnfree(dn);
+					} else {
+						X509_NAME_add_entry_by_txt(subject,
+							"CN", astring_type("CN", entry->cm_template_subject, -1),
+							(unsigned char *) entry->cm_template_subject, -1, -1, 0);
 					}
-				}
+					}
 			}
 			if (subject == NULL) {
 				subject = X509_NAME_new();

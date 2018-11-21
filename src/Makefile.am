@@ -150,7 +150,7 @@ pkglibexecdir = $(libexecdir)/$(PACKAGE)
 getcert_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS) $(UUID_CFLAGS)
 getcert_SOURCES = getcert.c tm.c tm.h
 getcert_LDADD = libcm.a $(GETCERT_LIBS) $(KRB5_LIBS) $(NSS_LIBS) $(UUID_LIBS) \
-			$(POPT_LIBS) $(LTLIBICONV)
+			$(POPT_LIBS) $(LTLIBICONV) $(LDAP_LIBS)
 if WITH_IPA
 bin_PROGRAMS += ipa-getcert
 ipa_getcert_CFLAGS = $(getcert_CFLAGS)
@@ -176,16 +176,16 @@ certmonger_getcert_CFLAGS = $(getcert_CFLAGS)
 certmonger_SOURCES = main.c env-system.c tm.c tm.h
 certmonger_LDADD = libcm.a \
 		   $(OPENSSL_LIBS) $(CERTMONGER_LIBS) $(KRB5_LIBS) $(IDN_LIBS) \
-		   $(GMP_LIBS) $(UUID_LIBS) $(POPT_LIBS) $(LTLIBICONV)
+		   $(GMP_LIBS) $(UUID_LIBS) $(POPT_LIBS) $(LTLIBICONV) $(LDAP_LIBS)
 certmonger_session_SOURCES = main.c env-session.c tm.c tm.h
 certmonger_session_LDADD = libcm.a \
 		   $(OPENSSL_LIBS) $(CERTMONGER_LIBS) $(KRB5_LIBS) $(IDN_LIBS) \
-		   $(GMP_LIBS) $(UUID_LIBS) $(POPT_LIBS) $(LTLIBICONV)
+		   $(GMP_LIBS) $(UUID_LIBS) $(POPT_LIBS) $(LTLIBICONV) $(LDAP_LIBS)
 noinst_PROGRAMS = tdbusm-check serial-check nl-check submit-x toklist
 tdbusm_check_SOURCES = tdbusm-check.c tm.c tm.h
-tdbusm_check_LDADD = libcm.a $(CERTMONGER_LIBS) $(POPT_LIBS)
-serial_check_LDADD = libcm.a $(CERTMONGER_LIBS) $(LTLIBICONV)
-nl_check_LDADD = libcm.a $(CERTMONGER_LIBS)
+tdbusm_check_LDADD = libcm.a $(CERTMONGER_LIBS) $(POPT_LIBS) $(LDAP_LIBS)
+serial_check_LDADD = libcm.a $(CERTMONGER_LIBS) $(LTLIBICONV) $(LDAP_LIBS)
+nl_check_LDADD = libcm.a $(CERTMONGER_LIBS) $(LDAP_LIBS)
 submit_x_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS) -DCM_SUBMIT_X_MAIN
 submit_x_SOURCES = submit-x.c submit-x.h submit-u.c submit-u.h log.c log.h \
 	tm.c tm.h
