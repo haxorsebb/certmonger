@@ -299,7 +299,7 @@ done
 ns_certtype=
 
 size=2048
-subject="CN=Babs Jensen"
+subject="CN=Cloud\, Inc."
 hostname=localhost,localhost.localdomain
 email=root@localhost,root@localhost.localdomain
 principal=root@EXAMPLE.COM,root@FOO.EXAMPLE.COM
