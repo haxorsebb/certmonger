@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.79.6
+Version:	0.79.7
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -243,6 +243,13 @@ exit 0
 %endif
 
 %changelog
+* Mon Feb 18 2019 Rob Crittenden <rcritten@redhat.com> 0.79.7-1
+- update to 0.79.7:
+   - Handle escaped characters in DN handling
+   - Fix handling of tokens
+   - Don't set message for SCEP GetCACaps, GetCACert, drop GetCACertChain
+   - Address issued discovered by clang
+
 * Tue May  8 2018 Rob Crittenden <rcritten@redhat.com> 0.79.6-1
 - update to 0.79.6:
    - Better support for NSS SQLite databases 
