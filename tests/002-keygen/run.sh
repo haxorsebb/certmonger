@@ -7,7 +7,7 @@ scheme="${scheme:-dbm:}"
 source "$srcdir"/functions
 initnssdb "$scheme$tmpdir"
 
-for size in 1024 1536 2048 3072 4096 ; do
+for size in 2048 3072 4096 ; do
 	echo "[nss:$size]"
 	# Generate a key.
 	cat > entry.$size <<- EOF
@@ -51,7 +51,7 @@ key_gen_size=$size
 EOF
 $toolsdir/keygen entry.$size || true
 
-for size in 1024 1536 2048 3072 4096 ; do
+for size in 2048 3072 4096 ; do
 	echo "[openssl:$size]"
 	# Generate a key.
 	cat > entry.$size <<- EOF

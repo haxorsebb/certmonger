@@ -1,21 +1,3 @@
-[nss:1024]
-OK.
-OK (RSA:1024).
-OK.
-OK (RSA:1024 after RSA:1024).
-OK.
-OK (RSA:1024 after RSA:1024).
-keyi1024
-keyi1024 (candidate (next))
-[nss:1536]
-OK.
-OK (RSA:1536).
-OK.
-OK (RSA:1536 after RSA:1536).
-OK.
-OK (RSA:1536 after RSA:1536).
-keyi1536
-keyi1536 (candidate (next))
 [nss:2048]
 OK.
 OK (RSA:2048).
@@ -47,24 +29,6 @@ keyi4096 (candidate (next))
 Failed to save NSS:dbm:${tmpdir}/rosubdir: need fs permissions.
 [nss:rwsubdir]
 Failed to save NSS:dbm:${tmpdir}/rwsubdir: need fs permissions.
-[openssl:1024]
-OK.
-OK (RSA:1024).
-OK.
-OK (RSA:1024 after RSA:1024).
-OK.
-OK (RSA:1024 after RSA:1024).
-${tmpdir}/sample.1024
-${tmpdir}/sample.1024.(next).key
-[openssl:1536]
-OK.
-OK (RSA:1536).
-OK.
-OK (RSA:1536 after RSA:1536).
-OK.
-OK (RSA:1536 after RSA:1536).
-${tmpdir}/sample.1536
-${tmpdir}/sample.1536.(next).key
 [openssl:2048]
 OK.
 OK (RSA:2048).

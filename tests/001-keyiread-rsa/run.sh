@@ -5,7 +5,7 @@ cd "$tmpdir"
 source "$srcdir"/functions
 initnssdb "$tmpdir"
 
-for size in 1024 1536 2048 3072 4096 ; do
+for size in 2048 3072 4096 ; do
 	# Generate a self-signed cert.
 	run_certutil -d "$tmpdir" -S -g $size -n keyi$size \
 		-s "cn=T$size" -c "cn=T$size" \
@@ -30,7 +30,7 @@ for size in 1024 1536 2048 3072 4096 ; do
 	$toolsdir/keyiread entry.nss.$size
 done
 
-for size in 1024 1536 2048 3072 4096 ; do
+for size in 2048 3072 4096 ; do
 	# Generate a key.
 	openssl genrsa $size > sample.$size 2> /dev/null
 	# Check the size of the key.

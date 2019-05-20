@@ -5,7 +5,7 @@ cd "$tmpdir"
 source "$srcdir"/functions
 initnssdb "$tmpdir"
 
-for size in 1024 1536 2048 3072 4096 ; do
+for size in 2048 3072 4096 ; do
 	# Build a self-signed certificate.
 	run_certutil -d "$tmpdir" -S -g $size -n keyi$size \
 		-s "cn=T$size" -c "cn=T$size" \
@@ -147,7 +147,7 @@ iterate() {
 
 iteration=1
 
-for size in 1024 ; do
+for size in 2048 ; do
 	iterate "$size" "$subject" "$hostname" "$email" "$principal" "$ku" "$eku" "$challengepassword" "$certfname" "$ca" "$capathlen" "$crldp" "$ocsp" "$nscomment"
 done
 

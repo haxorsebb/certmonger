@@ -5,7 +5,7 @@ cd "$tmpdir"
 source "$srcdir"/functions
 initnssdb "$tmpdir"
 
-for size in 1024 ; do
+for size in 2048 ; do
 	# Generate a self-signed cert.
 	run_certutil -d "$tmpdir" -S -g $size -n keyi$size \
 		-s "cn=T$size" -c "cn=T$size" \

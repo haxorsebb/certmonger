@@ -5,7 +5,7 @@ cd "$tmpdir"
 source "$srcdir"/functions
 initnssdb "$tmpdir"
 
-for size in 1024 1536 2048 3072 ; do
+for size in 2048 3072 ; do
 	echo "[nss:$size]"
 	# Generate a key.
 	cat > entry.$size <<- EOF
@@ -41,7 +41,7 @@ key_gen_type=DSA
 EOF
 $toolsdir/keygen entry.$size || true
 
-for size in 1024 1536 2048 3072 4096 ; do
+for size in 2048 3072 4096 ; do
 	echo "[openssl:$size]"
 	# Generate a key.
 	cat > entry.$size <<- EOF
