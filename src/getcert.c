@@ -3882,6 +3882,24 @@ list(const char *argv0, int argc, const char **argv)
 				printf("\t\t%s\n", as[j]);
 			}
 		}
+		as = query_prop_as(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
+				   CM_DBUS_PROP_TEMPLATE_PROFILE,
+				   verbose, globals.tctx);
+		if (as != NULL) {
+			printf(_("\tprofile: %s\n"), as);
+		}
+		as = query_prop_as(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
+				   CM_DBUS_PROP_TEMPLATE_MS_CERTIFICATE_TEMPLATE,
+				   verbose, globals.tctx);
+		if (as != NULL) {
+			printf(_("\tms v2 template: %s\n"), as);
+		}
+		as = query_prop_as(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
+				   CM_DBUS_PROP_TEMPLATE_ISSUER,
+				   verbose, globals.tctx);
+		if (as != NULL) {
+			printf(_("\tissuer template: %s\n"), as);
+		}
 		printf(_("\tpre-save command: %s\n"),
 		       query_prop_s(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
 				    CM_DBUS_PROP_CERT_PRESAVE_COMMAND, verbose, globals.tctx));
