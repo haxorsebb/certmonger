@@ -211,6 +211,14 @@ one to fail.
 \fB\-v\fR
 Be verbose about errors.  Normally, the details of an error received from
 the daemon will be suppressed if the client can make a diagnostic suggestion.
+\fB\-o\fR OWNER, --key-owner=OWNER
+After generation set the owner on the private key file or database to OWNER.
+\fB\-m\fR MODE, --key-perms=MODE
+After generation set the file permissions on the private key file or database to MODE.
+\fB\-O\fR OWNER, --cert-owner=OWNER
+After generation set the owner on the certificate file or database to OWNER.
+\fB\-M\fR MODE, --cert-perms=MODE
+After generation set the file permissions on the certificate file or database to MODE.
 
 .SH NOTES
 Locations specified for key and certificate storage need to be

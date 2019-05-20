@@ -4902,6 +4902,10 @@ help(const char *twopartcmd, const char *category)
 		N_("  -a	NSS database in which to store the CA's certificates\n"),
 		N_("  -w	try to wait for the certificate to be issued\n"),
 		N_("  -v	report all details of errors\n"),
+		N_("  -o OWNER	owner information for private key\n"),
+		N_("  -m MODE	file permissions for private key\n"),
+		N_("  -O OWNER	owner information for certificate\n"),
+		N_("  -M MODE	file permissions for certificate\n"),
 		NULL,
 	};
 	const char *start_tracking_help[] = {
@@ -4952,6 +4956,10 @@ help(const char *twopartcmd, const char *category)
 		N_("  -a	NSS database in which to store the CA's certificates\n"),
 		N_("  -w	try to wait for the certificate to be issued\n"),
 		N_("  -v	report all details of errors\n"),
+		N_("  -o OWNER	owner information for private key\n"),
+		N_("  -m MODE	file permissions for private key\n"),
+		N_("  -O OWNER	owner information for certificate\n"),
+		N_("  -M MODE	file permissions for certificate\n"),
 		NULL,
 	};
 	const char *stop_tracking_help[] = {
@@ -5024,6 +5032,10 @@ help(const char *twopartcmd, const char *category)
 		N_("  -a	NSS database in which to store the CA's certificates\n"),
 		N_("  -w	try to wait for the certificate to be issued\n"),
 		N_("  -v	report all details of errors\n"),
+		N_("  -o OWNER	owner information for private key\n"),
+		N_("  -m MODE	file permissions for private key\n"),
+		N_("  -O OWNER	owner information for certificate\n"),
+		N_("  -M MODE	file permissions for certificate\n"),
 		NULL,
 	};
 	const char *rekey_help[] = {
