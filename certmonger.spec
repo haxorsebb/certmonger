@@ -26,7 +26,7 @@
 
 Name:		certmonger
 Version:	0.79.7
-Release:	1%{?dist}
+Release:	2%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
 Group:		System Environment/Daemons
@@ -131,8 +131,8 @@ sed -i 's,^# chkconfig: - ,# chkconfig: 345 ,g' sysvinit/certmonger.in
 %if %{tmpfiles}
 	--enable-tmpfiles \
 %endif
-	--with-homedir=/var/run/certmonger \
-	--with-tmpdir=/var/run/certmonger --enable-pie --enable-now
+	--with-homedir=/run/certmonger \
+	--with-tmpdir=/run/certmonger --enable-pie --enable-now
 # For some reason, some versions of xmlrpc-c-config in Fedora and RHEL just
 # tell us about libxmlrpc_client, but we need more.  Work around.
 make %{?_smp_mflags} XMLRPC_LIBS="-lxmlrpc_client -lxmlrpc_util -lxmlrpc"
@@ -141,7 +141,7 @@ make %{?_smp_mflags} XMLRPC_LIBS="-lxmlrpc_client -lxmlrpc_util -lxmlrpc"
 rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT/%{_localstatedir}/lib/certmonger/{cas,requests}
-install -m755 -d $RPM_BUILD_ROOT/var/run/certmonger
+install -m755 -d $RPM_BUILD_ROOT/run/certmonger
 %{find_lang} %{name}
 
 %check
@@ -225,7 +225,7 @@ exit 0
 %{_datadir}/dbus-1/services/*
 %dir %{_sysconfdir}/certmonger
 %config(noreplace) %{_sysconfdir}/certmonger/certmonger.conf
-%dir /var/run/certmonger
+%dir /run/certmonger
 %{_bindir}/*
 %{_sbindir}/certmonger
 %{_mandir}/man*/*
@@ -243,6 +243,9 @@ exit 0
 %endif
 
 %changelog
+* Mon May 20 2019 Rob Crittenden <rcritten@redhat.com> - 0.79.7-2
+- Move systemd tmpfiles from /var/run to /run (upstream #111)
+
 * Mon Feb 18 2019 Rob Crittenden <rcritten@redhat.com> 0.79.7-1
 - update to 0.79.7:
    - Handle escaped characters in DN handling
