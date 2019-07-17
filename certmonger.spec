@@ -25,8 +25,8 @@
 %endif
 
 Name:		certmonger
-Version:	0.79.7
-Release:	2%{?dist}
+Version:	0.79.8
+Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
 Group:		System Environment/Daemons
@@ -243,6 +243,13 @@ exit 0
 %endif
 
 %changelog
+* Wed Jul 17 2019 Rob Crittenden <rcritten@redhat.com> - 0.79.8-1
+- update to 0.78.8:
+   - Change /var/run -> /run in systemd service file
+   - Drop tests for 1024 and 1536-bit keys
+   - Move systemd tmpfiles from /var/run to /run
+   - Display profile, MS template and requested issuer if available
+
 * Mon May 20 2019 Rob Crittenden <rcritten@redhat.com> - 0.79.7-2
 - Move systemd tmpfiles from /var/run to /run (upstream #111)
 
