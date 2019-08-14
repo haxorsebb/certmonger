@@ -90,7 +90,9 @@ for testid in "$@" $subdirs ; do
 			done
 			if test $stat -eq 1 ; then
 				echo "FAIL"
-				diff -u expected.out "$tmpfile" | sed s,"^\+\+\+ $tmpfile","+++ actual",g
+				for i in expected.out* ; do
+					diff -u "$tmpfile" "$i" -I "tmpdir/cas/[[:digit:]]\+" | sed s,"^\+\+\+ $tmpfile","+++ actual",g
+				done
 				cp $tmpfile "$builddir"/"$testid"/actual.out
 				cp "$tmpdir"/errors "$builddir"/"$testid"/actual.err
 			fi
