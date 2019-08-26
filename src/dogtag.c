@@ -306,8 +306,7 @@ main(int argc, const char **argv)
 			       NULL, NULL, NULL, NULL,
 			       NSS_INIT_NOCERTDB |
 			       NSS_INIT_READONLY |
-			       NSS_INIT_NOROOTINIT |
-			       NSS_INIT_NOMODDB);
+			       NSS_INIT_NOROOTINIT);
 	if (nctx == NULL) {
 		cm_log(1, "Unable to initialize NSS.\n");
 		_exit(1);

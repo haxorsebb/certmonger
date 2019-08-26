@@ -111,8 +111,7 @@ cm_casave_main_n(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 					break;
 				default:
 					flags = NSS_INIT_READONLY |
-						NSS_INIT_NOROOTINIT |
-						NSS_INIT_NOMODDB;
+						NSS_INIT_NOROOTINIT;
 					/* Sigh.  Not a lot of detail.  Check
 					 * if we succeed in read-only mode,
 					 * which we'll interpret as lack of

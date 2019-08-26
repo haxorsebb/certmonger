@@ -79,7 +79,7 @@ main(int argc, const char **argv)
 
 	/* Open the database. */
 	ctx = NSS_InitContext(dbdir, NULL, NULL, NULL, NULL,
-			      NSS_INIT_NOROOTINIT | NSS_INIT_NOMODDB);
+			      NSS_INIT_NOROOTINIT);
 	if (ctx == NULL) {
 		printf("Unable to open NSS database '%s'.\n", dbdir);
 		_exit(CM_SUB_STATUS_ERROR_INITIALIZING);

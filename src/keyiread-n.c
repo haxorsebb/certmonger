@@ -115,6 +115,11 @@ cm_keyiread_n_get_keys(struct cm_store_entry *entry, int readwrite)
 			break;
 		}
 	}
+	NSS_ShutdownContext(ctx);
+	ctx = NSS_InitContext(entry->cm_key_storage_location,
+			      NULL, NULL, NULL, NULL,
+			      (readwrite ? 0 : NSS_INIT_READONLY) |
+			      NSS_INIT_NOROOTINIT);
 	reason = util_n_fips_hook();
 	if (reason != NULL) {
 		cm_log(1, "Error putting NSS into FIPS mode: %s\n", reason);
@@ -340,8 +345,12 @@ cm_keyiread_n_get_keys(struct cm_store_entry *entry, int readwrite)
 			     cnode = CERT_LIST_NEXT(cnode)) {
 				nickname = entry->cm_key_nickname;
 				cert = cnode->cert;
+				es = talloc_asprintf(entry, "%s:%s",
+									         entry->cm_cert_token,
+											 entry->cm_cert_nickname);
 				if ((nickname != NULL) &&
-				    (strcmp(cert->nickname, nickname) == 0)) {
+				    ((strcmp(cert->nickname, nickname) == 0) ||
+					(strcmp(cert->nickname, es) == 0))) {
 					cm_log(3, "Located a certificate with "
 					       "the key's nickname (\"%s\").\n",
 					       nickname);

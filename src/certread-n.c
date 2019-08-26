@@ -157,27 +157,22 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		cm_log(1, "Unable to open NSS database.\n");
 		_exit(status);
 	}
+    /* Re-open the database with modules enabled */
+	NSS_ShutdownContext(ctx);
+	ctx = NSS_InitContext(entry->cm_cert_storage_location,
+			      NULL, NULL, NULL, NULL,
+			      (readwrite ? 0 : NSS_INIT_READONLY) |
+			      NSS_INIT_NOROOTINIT);
 	es = util_n_fips_hook();
 	if (es != NULL) {
 		cm_log(1, "Error putting NSS into FIPS mode: %s\n", es);
 		_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
-	}
-	/* Allocate a memory pool. */
-	arena = PORT_NewArena(sizeof(double));
-	if (arena == NULL) {
-		cm_log(1, "Error opening database '%s'.\n",
-		       entry->cm_cert_storage_location);
-		if (NSS_ShutdownContext(ctx) != SECSuccess) {
-			cm_log(1, "Error shutting down NSS.\n");
-		}
-		_exit(ENOMEM);
 	}
 	/* Find the tokens that we might use for cert storage. */
 	mech = CKM_RSA_X_509;
 	slotlist = PK11_GetAllTokens(mech, PR_FALSE, PR_FALSE, NULL);
 	if (slotlist == NULL) {
 		cm_log(1, "Error getting list of tokens.\n");
-		PORT_FreeArena(arena, PR_TRUE);
 		if (NSS_ShutdownContext(ctx) != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
@@ -249,6 +244,7 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 		/* If we need to log in in order to read certificates, do so. */
 		if (PK11_NeedLogin(sle->slot)) {
+			cm_log(3, "Need login to token %s\n", PK11_GetTokenName(sle->slot));
 			if (cm_pin_read_for_cert(entry, &pin) != 0) {
 				cm_log(1, "Error reading PIN for cert db, "
 				       "skipping.\n");
@@ -272,13 +268,19 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		/* Walk the list of certificates in the slot, looking for one
 		 * which matches the specified nickname. */
 		certs = PK11_ListCertsInSlot(sle->slot);
+		cm_log(3, "Looking for %s\n", entry->cm_cert_nickname);
 		if (certs != NULL) {
 			for (node = CERT_LIST_HEAD(certs);
 			     !CERT_LIST_EMPTY(certs) &&
 			     !CERT_LIST_END(node, certs);
 			     node = CERT_LIST_NEXT(node)) {
-				if (strcmp(node->cert->nickname,
-					   entry->cm_cert_nickname) == 0) {
+				cm_log(3, "certread-n: Slot nickname %s\n",
+							node->cert->nickname);
+		        es = talloc_asprintf(entry, "%s:%s",
+					   entry->cm_cert_token, entry->cm_cert_nickname);
+				if ((strcmp(node->cert->nickname,
+					   entry->cm_cert_nickname) == 0) ||
+                    (strcmp(node->cert->nickname, es) == 0)) {
 					cm_log(3, "Located the certificate "
 					       "\"%s\".\n",
 					       entry->cm_cert_nickname);
@@ -321,7 +323,6 @@ next_slot:
 	if (cert == NULL) {
 		cm_log(1, "Error locating certificate.\n");
 		PK11_FreeSlotList(slotlist);
-		PORT_FreeArena(arena, PR_TRUE);
 		if (NSS_ShutdownContext(ctx) != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
@@ -332,7 +333,6 @@ next_slot:
 	fclose(fp);
 	CERT_DestroyCertificate(cert);
 	PK11_FreeSlotList(slotlist);
-	PORT_FreeArena(arena, PR_TRUE);
 	if (NSS_ShutdownContext(ctx) != SECSuccess) {
 		cm_log(1, "Error shutting down NSS.\n");
 	}
@@ -358,8 +358,7 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 			      NULL, NULL, NULL, NULL,
 			      NSS_INIT_NOCERTDB |
 			      NSS_INIT_READONLY |
-			      NSS_INIT_NOROOTINIT |
-			      NSS_INIT_NOMODDB);
+			      NSS_INIT_NOROOTINIT);
 	if (ctx == NULL) {
 		cm_log(1, "Unable to initialize NSS.\n");
 		_exit(1);
