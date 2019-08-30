@@ -1575,6 +1575,7 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 		  char *cpass, char *cpassfile,
 		  char *ca, char *profile, char *issuer,
 		  char *ms_template_spec,
+		  char **principal,
 		  char *precommand, char *postcommand,
 		  char **anchor_dbs, char **anchor_files,
 		  int is_ca, int path_length,
@@ -1583,8 +1584,8 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 {
 	DBusMessage *req, *rep;
 	int i;
-	struct cm_tdbusm_dict param[30];
-	const struct cm_tdbusm_dict *params[30];
+	struct cm_tdbusm_dict param[31];
+	const struct cm_tdbusm_dict *params[31];
 	dbus_bool_t b;
 	const char *capath;
 	char *p;
@@ -1753,6 +1754,13 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 		param[i].key = CM_DBUS_PROP_TEMPLATE_MS_CERTIFICATE_TEMPLATE;
 		param[i].value_type = cm_tdbusm_dict_s;
 		param[i].value.s = ms_template_spec;
+		params[i] = &param[i];
+		i++;
+	}
+	if (principal != NULL) {
+		param[i].key = CM_DBUS_PROP_TEMPLATE_PRINCIPAL;
+		param[i].value_type = cm_tdbusm_dict_as;
+		param[i].value.as = principal;
 		params[i] = &param[i];
 		i++;
 	}
@@ -2436,6 +2444,7 @@ set_tracking(const char *argv0, const char *category,
 						 cpass, cpassfile,
 						 ca, profile, issuer,
 						 ms_template_spec,
+						 principal,
 						 precommand, postcommand,
 						 anchor_dbs, anchor_files,
 						 is_ca, path_length,
