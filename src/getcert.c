@@ -4595,7 +4595,7 @@ add_scep_ca(const char *argv0, int argc, const char **argv)
 		return 1;
 	}
 	command = talloc_asprintf(globals.tctx,
-				  "%s -u %s %s %s %s %s %s %s %s",
+				  "%s -u %s %s %s %s %s %s %s %s %s %s",
 				  shell_escape(globals.tctx,
 					       CM_SCEP_HELPER_PATH),
 				  shell_escape(globals.tctx, url),
@@ -4603,6 +4603,8 @@ add_scep_ca(const char *argv0, int argc, const char **argv)
 				  root ? shell_escape(globals.tctx, root) : "",
 				  racert ? "-r" : "",
 				  racert ? shell_escape(globals.tctx, racert) : "",
+				  id ? "-i" : "",
+				  id ? shell_escape(globals.tctx, id) : "",
 				  certs ? "-I" : "",
 				  certs ? shell_escape(globals.tctx, certs) : "",
 				  prefer_non_renewal ? "-n" : "");
