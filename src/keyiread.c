@@ -152,6 +152,10 @@ cm_keyiread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 			if (size > 0) {
 				entry->cm_key_type.cm_key_algorithm = alg;
 				entry->cm_key_type.cm_key_size = size;
+				if (entry->cm_key_type.cm_key_gen_algorithm == 0) {
+					entry->cm_key_type.cm_key_gen_algorithm = alg;
+					entry->cm_key_type.cm_key_gen_size = size;
+				}
 			}
 			p = q + strspn(q, "/\r\n");
 			q = p + strcspn(p, "/\r\n");
