@@ -19,6 +19,7 @@
 
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <paths.h>
@@ -436,6 +437,25 @@ cm_subproc_parse_args(void *parent, const char *cmdline, const char **error)
 	return argv;
 }
 
+/* Based heavily on systemd version */
+static
+int safe_atoi(const char *s, int *ret_i) {
+	char *x = NULL;
+	long l;
+
+	errno = 0;
+	l = strtol(s, &x, 0);
+	if (errno > 0)
+		return -1;
+	if (!x || x == s || *x != 0)
+		return -1;
+	if ((long) (int) l != l)
+		return -1;
+
+	*ret_i = (int) l;
+	return 0;
+}
+
 /* Redirect stdio to /dev/null, and mark everything else as close-on-exec,
  * except for perhaps one to three of them that are passed in by number. */
 void
@@ -443,6 +463,9 @@ cm_subproc_mark_most_cloexec(int fd, int fd2, int fd3)
 {
 	int i;
 	long l;
+	DIR *dir = NULL;
+	struct dirent *de;
+
 	if ((fd != STDIN_FILENO) &&
 	    (fd2 != STDIN_FILENO) &&
 	    (fd3 != STDIN_FILENO)) {
@@ -482,17 +505,47 @@ cm_subproc_mark_most_cloexec(int fd, int fd2, int fd3)
 			close(STDERR_FILENO);
 		}
 	}
-	for (i = getdtablesize() - 1; i >= 3; i--) {
-		if ((i == fd) ||
-		    (i == fd2) ||
-		    (i == fd3)) {
-			continue;
-		}
-		l = fcntl(i, F_GETFD);
-		if (l != -1) {
-			if (fcntl(i, F_SETFD, l | FD_CLOEXEC) != 0) {
-				cm_log(0, "Potentially leaking FD %d.\n", i);
+	dir = opendir("/proc/self/fd");
+	if (!dir) {
+		/* /proc isn't available, fall back to old way */
+		for (i = getdtablesize() - 1; i >= 3; i--) {
+			if ((i == fd) ||
+			    (i == fd2) ||
+			    (i == fd3)) {
+				continue;
+			}
+			l = fcntl(i, F_GETFD);
+			if (l != -1) {
+				if (fcntl(i, F_SETFD, l | FD_CLOEXEC) != 0) {
+					cm_log(0, "Potentially leaking FD %d.\n", i);
+				}
 			}
 		}
+	} else {
+		while ((de = readdir(dir)) != NULL) {
+			int i = -1;
+
+			if (safe_atoi(de->d_name, &i) < 0) {
+				continue;
+			}
+
+			if ((i == fd) ||
+			    (i == fd2) ||
+			    (i == fd3)) {
+				continue;
+			}
+
+			if (i == dirfd(dir)) {
+				continue;
+			}
+
+			l = fcntl(i, F_GETFD);
+			if (l != -1) {
+				if (fcntl(i, F_SETFD, l | FD_CLOEXEC) != 0) {
+					cm_log(0, "Potentially leaking FD %d.\n", i);
+				}
+			}
+		}
+		closedir(dir);
 	}
 }
