@@ -508,7 +508,8 @@ fetch_roots(const char *server, int ldap_uri_cmd, const char *ldap_uri,
 	LDAP *ld = NULL;
 	LDAPMessage *lresult = NULL, *lmsg = NULL;
 	char *lattrs[2] = {"caCertificate;binary", NULL};
-	const char *relativedn = "cn=cacert,cn=ipa,cn=etc";
+	const char *relativedn = "cn=certificates,cn=ipa,cn=etc";
+	const char *relativecompatdn = "cn=cacert,cn=ipa,cn=etc";
 	char ldn[LINE_MAX], lfilter[LINE_MAX], uri[LINE_MAX] = "", *kerr = NULL;
 	struct berval **lbvalues, *lbv;
 	unsigned char *bv_val;
@@ -543,6 +544,13 @@ fetch_roots(const char *server, int ldap_uri_cmd, const char *ldap_uri,
 	rc = ldap_search_ext_s(ld, ldn, LDAP_SCOPE_SUBTREE,
 			       lfilter, lattrs, 0, NULL, NULL, NULL,
 			       LDAP_NO_LIMIT, &lresult);
+    if (rc == LDAP_SUCCESS && ldap_count_entries(ld, lresult) == 0) {
+		/* Fall back to the old location */
+		snprintf(ldn, sizeof(ldn), "%s,%s", relativecompatdn, basedn);
+		rc = ldap_search_ext_s(ld, ldn, LDAP_SCOPE_SUBTREE,
+				       lfilter, lattrs, 0, NULL, NULL, NULL,
+				       LDAP_NO_LIMIT, &lresult);
+	}
 	if (rc != LDAP_SUCCESS) {
 		fprintf(stderr, "Error searching '%s': %s.\n",
 			ldn, ldap_err2string(rc));
