@@ -33,8 +33,8 @@ now=`date +%s`
 for i in `seq 240` ; do
 	recently=$(($now-$i))
 	tomorrow=$(($now-$i+24*60*60))
-	sed -i -e s/^$recently'$/recently/g' -e s/"("$recently"L)"/'(recently)'/g \
-	       -e s/^$tomorrow'$/tomorrow/g' -e s/"("$tomorrow"L)"/'(tomorrow)'/g $tmpdir/runsub.out
+	sed -i -e s/^$recently'$/recently/g' -e s/"("$recently")"/'(recently)'/g \
+	       -e s/^$tomorrow'$/tomorrow/g' -e s/"("$tomorrow")"/'(tomorrow)'/g $tmpdir/runsub.out
 done
 
 cat $tmpdir/runsub.out | \
@@ -43,4 +43,4 @@ sed -r -e 's,CN=........-........-........-........,CN=$UUID,g' \
        -e "s|$libexecdir|\$libexecdir|g" \
        -e "s|$tmpdir|\$tmpdir|g" \
        -e "s|expires:.*|expires: sometime|g" \
-       -e "s|u'(00)?[0-9a-fA-F]{32}|u'"'$UUID|g'
+       -e "s|'(00)?[0-9a-fA-F]{32}|'"'$UUID|g'

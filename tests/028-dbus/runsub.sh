@@ -22,5 +22,5 @@ echo ""
 echo "[[ API ]]"
 for i in ./*.py ; do
 	echo "[" `basename "$i"` "]"
-	python $i
+	$PYTHON $i
 done

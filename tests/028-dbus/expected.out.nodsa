@@ -187,13 +187,13 @@ dbus.Array([dbus.ObjectPath('/org/fedorahosted/certmonger/cas/CA1'), dbus.Object
 dbus.Array([dbus.ObjectPath('/org/fedorahosted/certmonger/requests/Request2')], signature=dbus.Signature('o'))
 
 [ /org/fedorahosted/certmonger: org.fedorahosted.certmonger.get_supported_key_types ]
-dbus.Array([dbus.String(u'RSA'), dbus.String(u'EC')], signature=dbus.Signature('s'))
+dbus.Array([dbus.String('RSA'), dbus.String('EC')], signature=dbus.Signature('s'))
 
 [ /org/fedorahosted/certmonger: org.fedorahosted.certmonger.get_supported_key_storage ]
-dbus.Array([dbus.String(u'NSSDB'), dbus.String(u'FILE')], signature=dbus.Signature('s'))
+dbus.Array([dbus.String('NSSDB'), dbus.String('FILE')], signature=dbus.Signature('s'))
 
 [ /org/fedorahosted/certmonger: org.fedorahosted.certmonger.get_supported_cert_storage ]
-dbus.Array([dbus.String(u'NSSDB'), dbus.String(u'FILE')], signature=dbus.Signature('s'))
+dbus.Array([dbus.String('NSSDB'), dbus.String('FILE')], signature=dbus.Signature('s'))
 
 [ /org/fedorahosted/certmonger : org.fedorahosted.certmonger.remove_known_ca ]
 OK
@@ -433,19 +433,19 @@ Buddy
 
 
 [ /org/fedorahosted/certmonger/requests/Request2: org.fedorahosted.certmonger.request.get_cert_info ]
-(dbus.String(u'CN=$UUID,CN=Local Signing Authority'), dbus.String(u'$UUID'), dbus.String(u'CN=localhost'), dbus.Int64(tomorrow), dbus.Array([], signature=dbus.Signature('s')), dbus.Array([dbus.String(u'localhost')], signature=dbus.Signature('s')), dbus.Array([dbus.String(u'host/localhost@LOCALHOST')], signature=dbus.Signature('s')), dbus.Int64(9L), dbus.Array([dbus.String(u'1.3.6.1.5.5.7.3.1')], signature=dbus.Signature('s')))
+(dbus.String('CN=$UUID,CN=Local Signing Authority'), dbus.String('$UUID'), dbus.String('CN=localhost'), dbus.Int64(tomorrow), dbus.Array([], signature=dbus.Signature('s')), dbus.Array([dbus.String('localhost')], signature=dbus.Signature('s')), dbus.Array([dbus.String('host/localhost@LOCALHOST')], signature=dbus.Signature('s')), dbus.Int64(9), dbus.Array([dbus.String('1.3.6.1.5.5.7.3.1')], signature=dbus.Signature('s')))
 
 [ /org/fedorahosted/certmonger/requests/Request2: org.fedorahosted.certmonger.request.get_cert_last_checked ]
 recently
 
 [ /org/fedorahosted/certmonger/requests/Request2: org.fedorahosted.certmonger.request.get_cert_storage_info ]
-(dbus.String(u'FILE'), dbus.String(u'$tmpdir/test.crt'))
+(dbus.String('FILE'), dbus.String('$tmpdir/test.crt'))
 
 [ /org/fedorahosted/certmonger/requests/Request2: org.fedorahosted.certmonger.request.get_csr_data ]
 
 
 [ /org/fedorahosted/certmonger/requests/Request2: org.fedorahosted.certmonger.request.get_csr_info ]
-(dbus.String(u'CN=localhost'), dbus.Array([], signature=dbus.Signature('s')), dbus.Array([dbus.String(u'localhost')], signature=dbus.Signature('s')), dbus.Array([dbus.String(u'host/localhost@LOCALHOST')], signature=dbus.Signature('s')), dbus.Int64(9L), dbus.Array([dbus.String(u'id-kp-serverAuth')], signature=dbus.Signature('s')))
+(dbus.String('CN=localhost'), dbus.Array([], signature=dbus.Signature('s')), dbus.Array([dbus.String('localhost')], signature=dbus.Signature('s')), dbus.Array([dbus.String('host/localhost@LOCALHOST')], signature=dbus.Signature('s')), dbus.Int64(9), dbus.Array([dbus.String('id-kp-serverAuth')], signature=dbus.Signature('s')))
 
 [ /org/fedorahosted/certmonger/requests/Request2: org.fedorahosted.certmonger.request.get_key_pin ]
 
@@ -454,19 +454,19 @@ recently
 
 
 [ /org/fedorahosted/certmonger/requests/Request2: org.fedorahosted.certmonger.request.get_key_storage_info ]
-(dbus.String(u'FILE'), dbus.String(u'$tmpdir/test.key'))
+(dbus.String('FILE'), dbus.String('$tmpdir/test.key'))
 
 [ /org/fedorahosted/certmonger/requests/Request2: org.fedorahosted.certmonger.request.get_key_type_and_size ]
-(dbus.String(u'RSA'), dbus.Int64(512L))
+(dbus.String('RSA'), dbus.Int64(512))
 
 [ /org/fedorahosted/certmonger/requests/Request2: org.fedorahosted.certmonger.request.get_monitoring ]
 1
 
 [ /org/fedorahosted/certmonger/requests/Request2: org.fedorahosted.certmonger.request.get_notification_info ]
-(dbus.String(u'stdout'), dbus.String(u'daemon.notice'))
+(dbus.String('stdout'), dbus.String('daemon.notice'))
 
 [ /org/fedorahosted/certmonger/requests/Request2: org.fedorahosted.certmonger.request.get_status ]
-(dbus.String(u'MONITORING'), dbus.Boolean(False))
+(dbus.String('MONITORING'), dbus.Boolean(False))
 
 [ /org/fedorahosted/certmonger/requests/Request2: org.fedorahosted.certmonger.request.get_ca ]
 /org/fedorahosted/certmonger/cas/CA1
@@ -482,7 +482,7 @@ recently
 
 [ /org/fedorahosted/certmonger/requests/Request2 : org.fedorahosted.certmonger.request.modify ]
 1 on /org/fedorahosted/certmonger/requests/Request2
-After setting template-eku to 1.2.3.4.5.6.7.8.9.10, we got dbus.Array([dbus.String(u'1.2.3.4.5.6.7.8.9.10')], signature=dbus.Signature('s'), variant_level=1)
+After setting template-eku to 1.2.3.4.5.6.7.8.9.10, we got dbus.Array([dbus.String('1.2.3.4.5.6.7.8.9.10')], signature=dbus.Signature('s'), variant_level=1)
 
 [ /org/fedorahosted/certmonger/requests/Request2: org.fedorahosted.certmonger.request.rekey ]
 1
