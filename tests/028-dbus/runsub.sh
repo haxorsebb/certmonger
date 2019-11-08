@@ -1,4 +1,5 @@
 #!/bin/bash
+PYTHON=${PYTHON:-python3}
 exec > "$TMPDIR"/runsub.out 2> "$TMPDIR"/runsub.err
 for i in `seq 60` ; do
 	if test -s "$TMPDIR"/test.crt ; then
@@ -22,5 +23,5 @@ echo ""
 echo "[[ API ]]"
 for i in ./*.py ; do
 	echo "[" `basename "$i"` "]"
-	python $i
+	$PYTHON $i
 done

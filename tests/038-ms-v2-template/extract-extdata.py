@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 # Given `openssl asn1parse` output of a CSR, look for the V2 Template
 # extension and output its data if found.  Nonzero exit status if
@@ -21,7 +21,7 @@ for line in sys.stdin:
     #
     if state == STATE_FOUND and 'OCTET STRING' in line:
         result = re.search(r'\[HEX DUMP\]:(\w*)', line)
-        sys.stdout.write(binascii.unhexlify(result.group(1)))
+        sys.stdout.buffer.write(binascii.unhexlify(result.group(1)))
         state = STATE_DONE
         break
 

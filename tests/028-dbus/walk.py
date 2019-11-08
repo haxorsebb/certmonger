@@ -1,4 +1,3 @@
-#!/usr/bin/python
 import dbus
 import xml.etree.ElementTree
 import os
@@ -25,7 +24,7 @@ def examine_method(objpath, interface, method, idata):
 	out_args = 0
 	o = bus.get_object('org.fedorahosted.certmonger', objpath)
 	i = dbus.Interface(o, interface)
-	for child in idata.getchildren():
+	for child in idata:
 		if child.tag == 'arg':
 			if child.get('direction') != 'out':
 				in_args = in_args + 1
@@ -112,12 +111,12 @@ def examine_method(objpath, interface, method, idata):
 		print('FIXME: need support for "%s"' % method)
 		return False
 	# If we caused things to start churning, wait for them to settle.
-        if method == 'resubmit':
-            props = dbus.Interface(o, 'org.freedesktop.DBus.Properties')
-            prop = props.Get(interface, 'status')
-            while prop != 'MONITORING':
-                time.sleep(1)
-                prop = props.Get(interface, 'status')
+	if method == 'resubmit':
+		props = dbus.Interface(o, 'org.freedesktop.DBus.Properties')
+		prop = props.Get(interface, 'status')
+		while prop != 'MONITORING':
+			time.sleep(1)
+			prop = props.Get(interface, 'status')
 	return True
 
 def iget(child, proxy, interface, prop):
@@ -139,7 +138,7 @@ def iget(child, proxy, interface, prop):
 def examine_interface(objpath, interface, idata):
 	o = bus.get_object('org.fedorahosted.certmonger', objpath)
 	i = dbus.Interface(o, 'org.freedesktop.DBus.Properties')
-	for child in idata.getchildren():
+	for child in idata:
 		if child.tag == 'property':
 			prop = child.get('name')
 			if child.get('access') == 'read':
@@ -185,7 +184,7 @@ def examine_interface(objpath, interface, idata):
 		elif child.tag == 'signal':
 			continue
 		else:
-			print "FIXME: handle child tag %s" % child.tag
+			print("FIXME: handle child tag %s" % child.tag)
 			return False
 	return True
 
@@ -197,13 +196,13 @@ def examine_object(objpath):
 
 	# Check if the object supports properties interfaces.
 	props = False
-	for child in x.getchildren():
+	for child in x:
 		if child.tag == 'interface':
 			if child.get('name') == 'org.freedesktop.DBus.Properties':
 				props = True
 
 	# Look at the interfaces and child nodes.
-	for child in x.getchildren():
+	for child in x:
 		if child.tag == 'interface':
 			if props and not check_props(objpath, child.get('name')):
 				return False
@@ -216,7 +215,7 @@ def examine_object(objpath):
 				childpath = objpath + '/' + child.get('name')
 			examine_object(childpath)
 		else:
-			print "FIXME: handle child tag %s" % child.tag
+			print("FIXME: handle child tag %s" % child.tag)
 			return False
 	return True
 
