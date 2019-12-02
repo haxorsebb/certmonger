@@ -540,7 +540,6 @@ fetch_roots(const char *server, int ldap_uri_cmd, const char *ldap_uri,
 	/* Now look up the root certificates for the domain. */
 	snprintf(lfilter, sizeof(lfilter), "(%s=*)", lattrs[0]);
 	snprintf(ldn, sizeof(ldn), "%s,%s", relativedn, basedn);
-	free(basedn);
 	rc = ldap_search_ext_s(ld, ldn, LDAP_SCOPE_SUBTREE,
 			       lfilter, lattrs, 0, NULL, NULL, NULL,
 			       LDAP_NO_LIMIT, &lresult);
@@ -551,6 +550,7 @@ fetch_roots(const char *server, int ldap_uri_cmd, const char *ldap_uri,
 				       lfilter, lattrs, 0, NULL, NULL, NULL,
 				       LDAP_NO_LIMIT, &lresult);
 	}
+	free(basedn);
 	if (rc != LDAP_SUCCESS) {
 		fprintf(stderr, "Error searching '%s': %s.\n",
 			ldn, ldap_err2string(rc));
