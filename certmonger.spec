@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.79.8
+Version:	0.79.9
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -243,6 +243,15 @@ exit 0
 %endif
 
 %changelog
+* Thu Jan 30 2020 Rob Crittenden <rcritten@redhat.com> - 0.79.9-1
+- update to 0.79.9:
+   - Allow principal to be set during start-tracking
+   - Remove NOMODDB flag flag from context init, look for full tokens
+   - Pass the CA identifier to the SCEP submit helper
+   - Fix re-key after importing existing private key
+   - Optimize closing open file descriptors
+   - Try to pull the entire CA chain from IPA
+
 * Wed Jul 17 2019 Rob Crittenden <rcritten@redhat.com> - 0.79.8-1
 - update to 0.78.8:
    - Change /var/run -> /run in systemd service file
