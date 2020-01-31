@@ -2,8 +2,6 @@ SUBDIRS = tools
 CLEANFILES = \
 	001-keyiread/actual.out \
 	001-keyiread/actual.err \
-	001-keyiread-dsa/actual.out \
-	001-keyiread-dsa/actual.err \
 	001-keyiread-ec/actual.out \
 	001-keyiread-ec/actual.err \
 	001-keyiread-rsa/actual.out \
@@ -18,16 +16,12 @@ CLEANFILES = \
 	002-keygen-rsa/actual.err \
 	003-csrgen/actual.out \
 	003-csrgen/actual.err \
-	003-csrgen-dsa/actual.out \
-	003-csrgen-dsa/actual.err \
 	003-csrgen-ec/actual.out \
 	003-csrgen-ec/actual.err \
 	003-csrgen-rsa/actual.out \
 	003-csrgen-rsa/actual.err \
 	004-selfsign/actual.out \
 	004-selfsign/actual.err \
-	004-selfsign-dsa/actual.out \
-	004-selfsign-dsa/actual.err \
 	004-selfsign-ec/actual.out \
 	004-selfsign-ec/actual.err \
 	004-selfsign-rsa/actual.out \
@@ -134,9 +128,6 @@ EXTRA_DIST = \
 	001-keyiread/expected.out \
 	001-keyiread-rsa/run.sh \
 	001-keyiread-rsa/expected.out \
-	001-keyiread-dsa/run.sh \
-	001-keyiread-dsa/expected.out \
-	001-keyiread-dsa/expected.out.2048 \
 	001-keyiread-ec/run.sh \
 	001-keyiread-ec/expected.out \
 	001-keyiread-ec/expected.out.2 \
@@ -163,16 +154,12 @@ EXTRA_DIST = \
 	003-csrgen/expected.out \
 	003-csrgen-rsa/run.sh \
 	003-csrgen-rsa/expected.out \
-	003-csrgen-dsa/run.sh \
-	003-csrgen-dsa/expected.out \
 	003-csrgen-ec/run.sh \
 	003-csrgen-ec/expected.out \
 	004-selfsign/run.sh \
 	004-selfsign/expected.out \
 	004-selfsign-rsa/run.sh \
 	004-selfsign-rsa/expected.out \
-	004-selfsign-dsa/run.sh \
-	004-selfsign-dsa/expected.out \
 	004-selfsign-ec/run.sh \
 	004-selfsign-ec/expected.out \
 	005-dbusm/run.sh \
@@ -418,10 +405,7 @@ endif
 
 if HAVE_DSA
 subdirs += \
-	001-keyiread-dsa \
-	002-keygen-dsa \
-	003-csrgen-dsa \
-	004-selfsign-dsa
+	002-keygen-dsa
 endif
 
 if HAVE_EC

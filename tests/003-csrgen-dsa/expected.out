@@ -1,7 +1,0 @@
-verify OK
-verify OK
-Signature OK
-Signature OK
-minicert.openssl.2048.pem: OK
-minicert.nss.2048.pem: OK
-Test complete.
