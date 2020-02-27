@@ -4608,6 +4608,9 @@ add_scep_ca(const char *argv0, int argc, const char **argv)
 				  certs ? "-I" : "",
 				  certs ? shell_escape(globals.tctx, certs) : "",
 				  prefer_non_renewal ? "-n" : "");
+	for (c = 0; c < verbose; c++) {
+		command = talloc_strdup_append(command, " -v");
+	}
 	if (command == NULL) {
 		printf(_("Error building command line.\n"));
 		exit(1);
