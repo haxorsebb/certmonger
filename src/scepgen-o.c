@@ -76,14 +76,14 @@ key_from_file(const char *filename, struct cm_store_entry *entry)
 	keyfp = fopen(filename, "r");
 	if (keyfp == NULL) {
 		if (errno != ENOENT) {
-			cm_log(1, "Error opening key file \"%s\" "
+			cm_log(0, "Error opening key file \"%s\" "
 			       "for reading: %s.\n",
 			       filename, strerror(errno));
 		}
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	if (cm_pin_read_for_key(entry, &pin) != 0) {
-		cm_log(1, "Internal error reading key encryption PIN.\n");
+		cm_log(0, "Internal error reading key encryption PIN.\n");
 		_exit(CM_SUB_STATUS_ERROR_AUTH);
 	}
 	memset(&cb_data, 0, sizeof(cb_data));
@@ -93,24 +93,24 @@ key_from_file(const char *filename, struct cm_store_entry *entry)
 				   cm_pin_read_for_key_ossl_cb, &cb_data);
 	if (pkey == NULL) {
 		error = errno;
-		cm_log(1, "Error reading private key '%s': %s.\n",
+		cm_log(0, "Error reading private key '%s': %s.\n",
 		       filename, strerror(error));
 		while ((error = ERR_get_error()) != 0) {
 			ERR_error_string_n(error, buf, sizeof(buf));
-			cm_log(1, "%s\n", buf);
+			cm_log(0, "%s\n", buf);
 		}
 		_exit(CM_SUB_STATUS_ERROR_AUTH); /* XXX */
 	} else {
 		if ((pin != NULL) &&
 		    (strlen(pin) > 0) &&
 		    (cb_data.n_attempts == 0)) {
-			cm_log(1, "PIN was not needed to read private "
+			cm_log(0, "PIN was not needed to read private "
 			       "key '%s', though one was provided. "
 			       "Treating this as an error.\n",
 			       filename);
 			while ((error = ERR_get_error()) != 0) {
 				ERR_error_string_n(error, buf, sizeof(buf));
-				cm_log(1, "%s\n", buf);
+				cm_log(0, "%s\n", buf);
 			}
 			_exit(CM_SUB_STATUS_ERROR_AUTH); /* XXX */
 		}
@@ -127,13 +127,13 @@ cert_from_pem(char *pem, struct cm_store_entry *entry)
 	if ((pem != NULL) && (strlen(pem) > 0)) {
 		in = BIO_new_mem_buf(pem, -1);
 		if (in == NULL) {
-			cm_log(1, "Out of memory.\n");
+			cm_log(0, "Out of memory.\n");
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
 		cert = PEM_read_bio_X509(in, NULL, NULL, NULL);
 		BIO_free(in);
 		if (cert == NULL) {
-			cm_log(1, "Error parsing certificate \"%s\".\n", pem);
+			cm_log(0, "Error parsing certificate \"%s\".\n", pem);
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
 		return cert;
@@ -155,19 +155,19 @@ certs_from_nickcerts(struct cm_nickcert **list)
 		if ((this->cm_cert != NULL) && (strlen(this->cm_cert) > 0)) {
 			in = BIO_new_mem_buf(this->cm_cert, -1);
 			if (in == NULL) {
-				cm_log(1, "Out of memory.\n");
+				cm_log(0, "Out of memory.\n");
 				_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 			}
 			cert = PEM_read_bio_X509(in, NULL, NULL, NULL);
 			BIO_free(in);
 			if (cert == NULL) {
-				cm_log(1, "Error parsing certificate.\n");
+				cm_log(0, "Error parsing certificate.\n");
 				_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 			}
 			if (sk == NULL) {
 				sk = sk_X509_new(util_o_cert_cmp);
 				if (sk == NULL) {
-					cm_log(1, "Out of memory.\n");
+					cm_log(0, "Out of memory.\n");
 					_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 				}
 			}
@@ -300,19 +300,19 @@ build_pkimessage(EVP_PKEY *key, X509 *signer, STACK_OF(X509) *certs,
 
 	in = BIO_new_mem_buf(data, data_length);
 	if (in == NULL) {
-		cm_log(1, "Out of memory.\n");
+		cm_log(0, "Out of memory.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	ret = PKCS7_sign(signer, key, certs, in, flags);
 	if (ret == NULL) {
-		cm_log(1, "Error signing data.\n");
+		cm_log(0, "Error signing data.\n");
 		goto errors;
 	}
 	BIO_free(in);
 
 	/* Set the digest to use for signing. */
 	if (sk_PKCS7_SIGNER_INFO_num(ret->d.sign->signer_info) != 1) {
-		cm_log(1, "Error signing data: %d signers.\n",
+		cm_log(0, "Error signing data: %d signers.\n",
 		       sk_PKCS7_SIGNER_INFO_num(ret->d.sign->signer_info));
 		goto errors;
 	}
@@ -356,7 +356,7 @@ build_pkimessage(EVP_PKEY *key, X509 *signer, STACK_OF(X509) *certs,
 	PKCS7_content_new(ret, NID_pkcs7_data);
 	out = PKCS7_dataInit(ret, NULL);
 	if (out == NULL) {
-		cm_log(1, "Error signing data.\n");
+		cm_log(0, "Error signing data.\n");
 		goto errors;
 	}
 	BIO_write(out, data, data_length);
@@ -366,7 +366,7 @@ build_pkimessage(EVP_PKEY *key, X509 *signer, STACK_OF(X509) *certs,
 errors:
 	while ((error = ERR_get_error()) != 0) {
 		ERR_error_string_n(error, buf, sizeof(buf));
-		cm_log(1, "%s\n", buf);
+		cm_log(0, "%s\n", buf);
 	}
 	_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 }
@@ -394,11 +394,11 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 	util_o_init();
 	ERR_load_crypto_strings();
         if (RAND_status() != 1) {
-		cm_log(1, "PRNG not seeded for generating key.\n");
+		cm_log(0, "PRNG not seeded for generating key.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	if (RAND_bytes(nonce, nonce_length) == -1) {
-		cm_log(1, "PRNG unable to generate nonce.\n");
+		cm_log(0, "PRNG unable to generate nonce.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 
@@ -410,14 +410,14 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 	pem = cm_submit_u_pem_from_base64("CERTIFICATE", 0,
 					  entry->cm_minicert);
 	if (pem == NULL) {
-		cm_log(1, "Out of memory.\n");
+		cm_log(0, "Out of memory.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	new_cert = cert_from_pem(pem, entry);
 	if (new_cert == NULL) {
 		while ((error = ERR_get_error()) != 0) {
 			ERR_error_string_n(error, buf, sizeof(buf));
-			cm_log(1, "%s\n", buf);
+			cm_log(0, "%s\n", buf);
 		}
 		free(pem);
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
@@ -442,7 +442,7 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cipher = cm_prefs_des;
 		}
 		else {
-			cm_log(1, "Option 'scep_cipher' must be one of AES256, AES192, AES128, DES3, or DES. Got '%s'\n", scep_cipher);
+			cm_log(0, "Option 'scep_cipher' must be one of AES256, AES192, AES128, DES3, or DES. Got '%s'\n", scep_cipher);
 			_exit(1);
 		}
 
@@ -516,7 +516,7 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 			digest = cm_prefs_md5;
 		}
 		else {
-			cm_log(1, "Option 'scep_digest' must be one of SHA512, SHA384, SHA256, SHA1, or MD5. Got '%s'\n", scep_digest);
+			cm_log(0, "Option 'scep_digest' must be one of SHA512, SHA384, SHA256, SHA1, or MD5. Got '%s'\n", scep_digest);
 			_exit(1);
 		}
 
@@ -578,7 +578,7 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 					  ca->cm_ca_encryption_issuer_cert,
 					  entry->cm_cert,
 					  &old_ias, &old_ias_length) != 0) {
-			cm_log(1, "Error generating enveloped issuer-and-subject.\n");
+			cm_log(0, "Error generating enveloped issuer-and-subject.\n");
 			free(pem);
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
@@ -590,7 +590,7 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 				  ca->cm_ca_encryption_issuer_cert,
 				  pem,
 				  &new_ias, &new_ias_length) != 0) {
-		cm_log(1, "Error generating enveloped issuer-and-subject.\n");
+		cm_log(0, "Error generating enveloped issuer-and-subject.\n");
 		free(pem);
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
@@ -598,7 +598,11 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 	if (cm_pkcs7_envelope_csr(ca->cm_ca_encryption_cert, cipher,
 				  entry->cm_csr,
 				  &csr, &csr_length) != 0) {
-		cm_log(1, "Error generating enveloped CSR.\n");
+		cm_log(0, "Error generating enveloped CSR.\n");
+		while ((error = ERR_get_error()) != 0) {
+			ERR_error_string_n(error, buf, sizeof(buf));
+			cm_log(0, "%s\n", buf);
+		}
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 
@@ -608,7 +612,7 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 		 * the matching key. */
 		pubkey = util_public_EVP_PKEY_dup(util_X509_get0_pubkey(old_cert));
 		if (pubkey == NULL) {
-			cm_log(1, "Error generating PKCSREQ pkiMessage: error copying key.\n");
+			cm_log(0, "Error generating PKCSREQ pkiMessage: error copying key.\n");
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
 		util_X509_set_pubkey(old_cert, old_pkey);
@@ -639,7 +643,7 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 			 * if we do, we did that in another code path. */
 			pubkey = util_public_EVP_PKEY_dup(util_X509_get0_pubkey(new_cert));
 			if (pubkey == NULL) {
-				cm_log(1, "Error generating PKCSREQ pkiMessage: error copying key.\n");
+				cm_log(0, "Error generating PKCSREQ pkiMessage: error copying key.\n");
 				_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 			}
 			util_X509_set_pubkey(new_cert, old_pkey);
@@ -673,7 +677,7 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 		 * any previously-issued certificate won't match. */
 		pubkey = util_public_EVP_PKEY_dup(util_X509_get0_pubkey(new_cert));
 		if (pubkey == NULL) {
-			cm_log(1, "Error generating rekeying PKCSREQ pkiMessage: error copying key.\n");
+			cm_log(0, "Error generating rekeying PKCSREQ pkiMessage: error copying key.\n");
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
 		util_X509_set_pubkey(new_cert, new_pkey);
@@ -703,7 +707,7 @@ cm_scepgen_o_cooked(struct cm_store_ca *ca, struct cm_store_entry *entry,
 	X509_free(new_cert);
 	while ((error = ERR_get_error()) != 0) {
 		ERR_error_string_n(error, buf, sizeof(buf));
-		cm_log(1, "%s\n", buf);
+		cm_log(0, "%s\n", buf);
 	}
 }
 
@@ -723,14 +727,14 @@ cm_scepgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 
 	if (ca->cm_ca_encryption_cert == NULL) {
-		cm_log(1, "Can't generate new SCEP request data without "
+		cm_log(0, "Can't generate new SCEP request data without "
 		       "the RA/CA encryption certificate.\n");
 		_exit(CM_SUB_STATUS_NEED_SCEP_DATA);
 	}
 
 	old_pkey = key_from_file(entry->cm_key_storage_location, entry);
 	if (old_pkey == NULL) {
-		cm_log(1, "Error reading key from file \"%s\".\n",
+		cm_log(0, "Error reading key from file \"%s\".\n",
 		       entry->cm_key_storage_location);
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
@@ -739,14 +743,14 @@ cm_scepgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		filename = util_build_next_filename(entry->cm_key_storage_location,
 						    entry->cm_key_next_marker);
 		if (filename == NULL) {
-			cm_log(1, "Error opening key file \"%s\" "
+			cm_log(0, "Error opening key file \"%s\" "
 			       "for reading: %s.\n",
 			       filename, strerror(errno));
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
 		new_pkey = key_from_file(filename, entry);
 		if (new_pkey == NULL) {
-			cm_log(1, "Error reading key from file \"%s\".\n",
+			cm_log(0, "Error reading key from file \"%s\".\n",
 			       filename);
 			free(filename);
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
@@ -757,7 +761,7 @@ cm_scepgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 	if ((util_EVP_PKEY_base_id(old_pkey) != EVP_PKEY_RSA) ||
 	    ((new_pkey != NULL) && (util_EVP_PKEY_base_id(new_pkey) != EVP_PKEY_RSA))) {
-		cm_log(1, "Keys aren't RSA.  They won't work with SCEP.\n");
+		cm_log(0, "Keys aren't RSA.  They won't work with SCEP.\n");
 		_exit(CM_SUB_STATUS_ERROR_KEY_TYPE);
 	}
 

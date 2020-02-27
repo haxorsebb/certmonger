@@ -274,6 +274,25 @@ cm_pkcs7_parse_buffer(const unsigned char *buffer, size_t length,
 	}
 }
 
+void
+log_pkcs7_errors(int level, char *msg)
+{
+    char buf[LINE_MAX] = "";
+    long error;
+	int nss_err;   
+
+    cm_log(level, "%s\n", msg);
+    while ((error = ERR_get_error()) != 0) {
+            memset(buf, '\0', sizeof(buf));
+            ERR_error_string_n(error, buf, sizeof(buf));
+            cm_log(level, "%s\n", buf);
+    }
+	nss_err = PORT_GetError();
+    if (nss_err < 0) {
+		cm_log(level, "%d: %s\n", nss_err, PR_ErrorToString(nss_err, 0));
+	}
+}
+
 int
 cm_pkcs7_parsev(unsigned int flags, void *parent,
 		char **certleaf, char **certtop, char ***certothers,
@@ -520,26 +539,26 @@ cm_pkcs7_envelope_data(char *encryption_cert, enum cm_prefs_cipher cipher,
 
 	in = BIO_new_mem_buf(encryption_cert, -1);
 	if (in == NULL) {
-		cm_log(1, "Out of memory.\n");
+		cm_log(0, "Out of memory.\n");
 		goto done;
 	}
 	recipient = PEM_read_bio_X509(in, NULL, NULL, NULL);
 	if (recipient == NULL) {
-		cm_log(1, "Error parsing recipient certificate.\n");
+		log_pkcs7_errors(0, "Error parsing recipient certificate.\n");
 		goto done;
 	}
 	BIO_free(in);
 
 	recipients = sk_X509_new(util_o_cert_cmp);
 	if (recipients == NULL) {
-		cm_log(1, "Out of memory.\n");
+		cm_log(0, "Out of memory.\n");
 		goto done;
 	}
 	sk_X509_push(recipients, recipient);
 
 	in = BIO_new_mem_buf(data, dlength);
 	if (in == NULL) {
-		cm_log(1, "Out of memory.\n");
+		cm_log(0, "Out of memory.\n");
 		goto done;
 	}
 	p7 = PKCS7_encrypt(recipients, in, cm_prefs_ossl_cipher_by_pref(cipher),
@@ -547,22 +566,22 @@ cm_pkcs7_envelope_data(char *encryption_cert, enum cm_prefs_cipher cipher,
 	BIO_free(in);
 
 	if (p7 == NULL) {
-		cm_log(1, "Error encrypting signing request.\n");
+		log_pkcs7_errors(0, "Error encrypting signing request.\n");
 		goto done;
 	}
 	len = i2d_PKCS7(p7, NULL);
 	if (len < 0) {
-		cm_log(1, "Error encoding encrypted signing request.\n");
+		log_pkcs7_errors(0, "Error encoding encrypted signing request.\n");
 		goto done;
 	}
 	dp7 = malloc(len);
 	if (dp7 == NULL) {
-		cm_log(1, "Out of memory.\n");
+		cm_log(0, "Out of memory.\n");
 		goto done;
 	}
 	u = dp7;
 	if (i2d_PKCS7(p7, &u) != len) {
-		cm_log(1, "Error encoding encrypted signing request.\n");
+		log_pkcs7_errors(0, "Error encoding encrypted signing request.\n");
 		goto done;
 	}
 	*enveloped = dp7;
@@ -593,29 +612,29 @@ cm_pkcs7_envelope_csr(char *encryption_cert, enum cm_prefs_cipher cipher,
 
 	in = BIO_new_mem_buf(csr, -1);
 	if (in == NULL) {
-		cm_log(1, "Out of memory.\n");
+		cm_log(0, "Out of memory.\n");
 		goto done;
 	}
 	req = PEM_read_bio_X509_REQ(in, NULL, NULL, NULL);
 	BIO_free(in);
 	if (req == NULL) {
-		cm_log(1, "Error parsing certificate signing request.\n");
+		log_pkcs7_errors(0, "Error parsing certificate signing request.\n");
 		goto done;
 	}
 
 	dlen = i2d_X509_REQ(req, NULL);
 	if (dlen < 0) {
-		cm_log(1, "Error encoding certificate signing request.\n");
+		log_pkcs7_errors(0, "Error encoding certificate signing request.\n");
 		goto done;
 	}
 	dreq = malloc(dlen);
 	if (dreq == NULL) {
-		cm_log(1, "Out of memory.\n");
+		cm_log(0, "Out of memory.\n");
 		goto done;
 	}
 	u = dreq;
 	if (i2d_X509_REQ(req, &u) != dlen) {
-		cm_log(1, "Error encoding certificate signing request.\n");
+		log_pkcs7_errors(0, "Error encoding certificate signing request.\n");
 		goto done;
 	}
 	ret = cm_pkcs7_envelope_data(encryption_cert, cipher, dreq, dlen,
@@ -671,59 +690,61 @@ cm_pkcs7_generate_ias(char *cacert, char *minicert,
 
 	in = BIO_new_mem_buf(cacert, -1);
 	if (in == NULL) {
-		cm_log(1, "Out of memory.\n");
+		cm_log(0, "Out of memory.\n");
 		goto done;
 	}
 	ca = PEM_read_bio_X509(in, NULL, NULL, NULL);
 	BIO_free(in);
 	if (ca == NULL) {
-		cm_log(1, "Error parsing CA certificate.\n");
+		log_pkcs7_errors(0, "Error parsing CA certificate.\n");
 		goto done;
 	}
 
 	in = BIO_new_mem_buf(minicert, -1);
 	if (in == NULL) {
-		cm_log(1, "Out of memory.\n");
+		cm_log(0, "Out of memory.\n");
 		goto done;
 	}
 	mini = PEM_read_bio_X509(in, NULL, NULL, NULL);
 	BIO_free(in);
 	if (mini == NULL) {
-		cm_log(1, "Error parsing client certificate.\n");
+		log_pkcs7_errors(0, "Error parsing client certificate.\n");
 		goto done;
 	}
 
 	issuerlen = i2d_X509_NAME(X509_get_issuer_name(ca), NULL);
 	if (issuerlen < 0) {
-		cm_log(1, "Error encoding CA certificate issuer name.\n");
+		cm_log(0, "Error encoding CA certificate issuer name.\n");
 		goto done;
 	}
 	issuer = malloc(issuerlen);
 	if (issuer == NULL) {
-		cm_log(1, "Out of memory.\n");
+		cm_log(0, "Out of memory.\n");
 		goto done;
 	}
 	u = issuer;
 	if (i2d_X509_NAME(X509_get_issuer_name(ca), &u) != issuerlen) {
-		cm_log(1, "Error encoding CA certificate issuer name.\n");
+		log_pkcs7_errors(0, "Error encoding CA certificate issuer name.\n");
 		goto done;
 	}
 
 	subjectlen = i2d_X509_NAME(X509_get_subject_name(mini), NULL);
 	if (subjectlen < 0) {
-		cm_log(1, "Error encoding client certificate subject name.\n");
+		cm_log(0, "Error encoding client certificate subject name.\n");
 		goto done;
 	}
 	subject = malloc(subjectlen);
 	if (subject == NULL) {
-		cm_log(1, "Out of memory.\n");
+		cm_log(0, "Out of memory.\n");
 		goto done;
 	}
 	u = subject;
 	if (i2d_X509_NAME(X509_get_subject_name(mini), &u) != subjectlen) {
-		cm_log(1, "Error encoding client certificate subject name.\n");
+		log_pkcs7_errors(0, "Error encoding client certificate subject name.\n");
 		goto done;
 	}
+	PORT_SetError(0);
+    ERR_clear_error();
 	memset(&issuerandsubject, 0, sizeof(issuerandsubject));
 	issuerandsubject.issuer.data = issuer;
 	issuerandsubject.issuer.len = issuerlen;
@@ -731,7 +752,7 @@ cm_pkcs7_generate_ias(char *cacert, char *minicert,
 	issuerandsubject.subject.len = subjectlen;
 	if (SEC_ASN1EncodeItem(NULL, &encoded, &issuerandsubject,
 			       cm_pkcs7_ias_template) != &encoded) {
-		cm_log(1, "Error encoding issuer and subject names.\n");
+		log_pkcs7_errors(0, "Error encoding issuer and subject names.\n");
 		goto done;
 	}
 	*ias = malloc(encoded.len);
@@ -948,28 +969,28 @@ cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 	u = data;
 	p7 = d2i_PKCS7(NULL, &u, length);
 	if ((p7 == NULL) || (u != data + length)) {
-		cm_log(1, "Error parsing what should be PKCS#7 signed-data.\n");
+		cm_log(0, "Error parsing what should be PKCS#7 signed-data.\n");
 		goto done;
 	}
 	if ((p7->type == NULL) || (OBJ_obj2nid(p7->type) != NID_pkcs7_signed)) {
-		cm_log(1, "PKCS#7 data is not signed-data.\n");
+		cm_log(0, "PKCS#7 data is not signed-data.\n");
 		goto done;
 	}
 	store = X509_STORE_new();
 	if (store == NULL) {
-		cm_log(1, "Out of memory.\n");
+		cm_log(0, "Out of memory.\n");
 		goto done;
 	}
 	X509_STORE_set_verify_cb_func(store, &ignore_purpose_errors);
 	certs = sk_X509_new(util_o_cert_cmp);
 	if (certs == NULL) {
-		cm_log(1, "Out of memory.\n");
+		cm_log(0, "Out of memory.\n");
 		goto done;
 	}
 	for (i = 0; (roots != NULL) && (roots[i] != NULL); i++) {
 		s = talloc_strdup(parent, roots[i]);
 		if (s == NULL) {
-			cm_log(1, "Out of memory.\n");
+			cm_log(0, "Out of memory.\n");
 			goto done;
 		}
 		/* In case one of these is multiple PEM certificates
@@ -990,13 +1011,13 @@ cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 			}
 			in = BIO_new_mem_buf(p, q - p);
 			if (in == NULL) {
-				cm_log(1, "Out of memory.\n");
+				cm_log(0, "Out of memory.\n");
 				goto done;
 			}
 			x = PEM_read_bio_X509(in, NULL, NULL, NULL);
 			BIO_free(in);
 			if (x == NULL) {
-				cm_log(1, "Error parsing chain certificate.\n");
+				cm_log(0, "Error parsing chain certificate.\n");
 				goto done;
 			}
 			X509_STORE_add_cert(store, x);
@@ -1008,7 +1029,7 @@ cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 	for (i = 0; (othercerts != NULL) && (othercerts[i] != NULL); i++) {
 		s = talloc_strdup(parent, othercerts[i]);
 		if (s == NULL) {
-			cm_log(1, "Out of memory.\n");
+			cm_log(0, "Out of memory.\n");
 			goto done;
 		}
 		/* In case one of these is multiple PEM certificates
@@ -1028,13 +1049,13 @@ cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 			}
 			in = BIO_new_mem_buf(p, q - p);
 			if (in == NULL) {
-				cm_log(1, "Out of memory.\n");
+				cm_log(0, "Out of memory.\n");
 				goto done;
 			}
 			x = PEM_read_bio_X509(in, NULL, NULL, NULL);
 			BIO_free(in);
 			if (x == NULL) {
-				cm_log(1, "Error parsing chain certificate.\n");
+				cm_log(0, "Error parsing chain certificate.\n");
 				goto done;
 			}
 			sk_X509_push(certs, x);
@@ -1044,7 +1065,7 @@ cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 	}
 	out = BIO_new(BIO_s_mem());
 	if (out == NULL) {
-		cm_log(1, "Out of memory.\n");
+		cm_log(0, "Out of memory.\n");
 		goto done;
 	}
 	if (roots != NULL) {
@@ -1057,19 +1078,19 @@ cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 		for (i = 0; i < sk_X509_num(certs); i++) {
 			x = X509_dup(sk_X509_value(certs, i));
 			if (x == NULL) {
-				cm_log(1, "Out of memory.\n");
+				cm_log(0, "Out of memory.\n");
 				goto done;
 			}
 			PKCS7_add_certificate(p7, x);
 		}
 		if (PKCS7_verify(p7, certs, store, NULL, out, 0) != 1) {
-			cm_log(1, "Message failed verification.\n");
+			cm_log(0, "Message failed verification.\n");
 			goto done;
 		}
 	}
 	p7s = p7->d.sign;
 	if (sk_PKCS7_SIGNER_INFO_num(p7s->signer_info) != 1) {
-		cm_log(1, "Number of PKCS#7 signed-data signers != 1.\n");
+		cm_log(0, "Number of PKCS#7 signed-data signers != 1.\n");
 		goto done;
 	}
 	si = sk_PKCS7_SIGNER_INFO_value(p7s->signer_info, 0);
@@ -1077,12 +1098,12 @@ cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 	encapsulated = p7s->contents;
 	if (expected_content_type != NID_undef) {
 		if (encapsulated == NULL) {
-			cm_log(1, "Error parsing PKCS#7 encapsulated content.\n");
+			cm_log(0, "Error parsing PKCS#7 encapsulated content.\n");
 			goto done;
 		}
 		if ((encapsulated->type == NULL) ||
 		    (OBJ_obj2nid(encapsulated->type) != expected_content_type)) {
-			cm_log(1, "PKCS#7 encapsulated data is not %s (%s).\n",
+			cm_log(0, "PKCS#7 encapsulated data is not %s (%s).\n",
 			       OBJ_nid2ln(expected_content_type),
 			       encapsulated->type ?
 			       OBJ_nid2ln(OBJ_obj2nid(encapsulated->type)) :
@@ -1091,7 +1112,7 @@ cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 		}
 	}
 	if (attrs == NULL) {
-		cm_log(1, "PKCS#7 signed-data contains no signed attributes.\n");
+		cm_log(0, "PKCS#7 signed-data contains no signed attributes.\n");
 		goto done;
 	}
 	ret = 0;
@@ -1146,7 +1167,7 @@ cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 		if (*payload_length > 0) {
 			*payload = talloc_size(parent, *payload_length + 1);
 			if (*payload == NULL) {
-				cm_log(1, "Out of memory.\n");
+				cm_log(0, "Out of memory.\n");
 				goto done;
 			}
 			memcpy(*payload, s, *payload_length);
@@ -1154,12 +1175,6 @@ cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 		}
 	}
 done:
-	if (ret != 0) {
-		while ((error = ERR_get_error()) != 0) {
-			ERR_error_string_n(error, buf, sizeof(buf));
-			cm_log(1, "%s\n", buf);
-		}
-	}
 	if (p7 != NULL) {
 		PKCS7_free(p7);
 	}

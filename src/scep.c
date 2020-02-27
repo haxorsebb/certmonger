@@ -427,11 +427,15 @@ main(int argc, const char **argv)
 	if ((rekey_message != NULL) && (strlen(rekey_message) != 0)) {
 		tmp1 = cm_submit_u_base64_from_text(rekey_message);
 		tmp2 = cm_store_base64_as_bin(ctx, tmp1, -1, &c);
-		cm_pkcs7_verify_signed((unsigned char *) tmp2, c,
+		i = cm_pkcs7_verify_signed((unsigned char *) tmp2, c,
 				       NULL, NULL, NID_pkcs7_data, ctx, NULL,
 				       NULL, &msgtype, NULL, NULL,
 				       NULL, NULL,
 				       NULL, NULL, NULL, NULL);
+		if (i != 0) {
+			log_pkcs7_errors(0, "Error: failed to verify signature on "
+					"rekey PKCSReq.\n");
+		}
 		if ((msgtype == NULL) ||
 		    ((strcmp(msgtype, SCEP_MSGTYPE_PKCSREQ) != 0) &&
 		     (strcmp(msgtype, SCEP_MSGTYPE_GETCERTINITIAL) != 0))) {
@@ -453,11 +457,15 @@ main(int argc, const char **argv)
 	if ((message != NULL) && (strlen(message) != 0)) {
 		tmp1 = cm_submit_u_base64_from_text(message);
 		tmp2 = cm_store_base64_as_bin(ctx, tmp1, -1, &c);
-		cm_pkcs7_verify_signed((unsigned char *) tmp2, c,
+		i = cm_pkcs7_verify_signed((unsigned char *) tmp2, c,
 				       NULL, NULL, NID_pkcs7_data, ctx, NULL,
 				       &sent_tx, &msgtype, NULL, NULL,
 				       &sent_nonce, &sent_nonce_length,
 				       NULL, NULL, NULL, NULL);
+		if (i != 0) {
+			log_pkcs7_errors(0, "Error: failed to verify signature on "
+					"message.\n");
+		}
 		if ((msgtype == NULL) ||
 		    ((strcmp(msgtype, SCEP_MSGTYPE_PKCSREQ) != 0) &&
 		     (strcmp(msgtype, SCEP_MSGTYPE_GETCERTINITIAL) != 0))) {
@@ -932,14 +940,16 @@ main(int argc, const char **argv)
 						   &payload, &payload_length);
 			if (i != 0) {
 				printf(_("Error: failed to verify signature on "
-					 "server response.\n"));
-				cm_log(1, "Error: failed to verify signature on "
-					 "server response.\n");
-				while ((error = ERR_get_error()) != 0) {
+						 "server response. "));
+				error = ERR_peek_last_error();
+				if (error != 0) {
 					memset(buf, '\0', sizeof(buf));
 					ERR_error_string_n(error, buf, sizeof(buf));
-					cm_log(1, "%s\n", buf);
+					printf("%s", buf);
 				}
+				printf("\n");
+				log_pkcs7_errors(0, "Error: failed to verify signature on "
+						  "server response.\n");
 				s = cm_store_base64_from_bin(ctx, (unsigned char *) results2,
 							     results_length2);
 				s = cm_submit_u_pem_from_base64("PKCS7", 0, s);
@@ -1049,11 +1059,7 @@ main(int argc, const char **argv)
 				p7 = d2i_PKCS7(NULL, &u, payload_length);
 				if (p7 == NULL) {
 					printf(_("Error: couldn't parse signed-data.\n"));
-					while ((error = ERR_get_error()) != 0) {
-						memset(buf, '\0', sizeof(buf));
-						ERR_error_string_n(error, buf, sizeof(buf));
-						cm_log(1, "%s\n", buf);
-					}
+					log_pkcs7_errors(0, "Error: couldn't parse signed-data.\n");
 					s = cm_store_base64_from_bin(ctx,
 								     (unsigned char *) results2,
 								     results_length2);
@@ -1064,26 +1070,8 @@ main(int argc, const char **argv)
 				}
 				if (!PKCS7_type_is_enveloped(p7)) {
 					printf(_("Error: signed-data payload is not enveloped-data.\n"));
-					while ((error = ERR_get_error()) != 0) {
-						memset(buf, '\0', sizeof(buf));
-						ERR_error_string_n(error, buf, sizeof(buf));
-						cm_log(1, "%s\n", buf);
-					}
-					s = cm_store_base64_from_bin(ctx,
-								     (unsigned char *) results2,
-								     results_length2);
-					s = cm_submit_u_pem_from_base64("PKCS7", 0, s);
-					fprintf(stderr, "Full reply:\n%s", s);
-					free(s);
-					return CM_SUBMIT_STATUS_UNREACHABLE;
-				}
-				if (!PKCS7_type_is_enveloped(p7)) {
-					printf(_("Error: signed-data payload is not enveloped-data.\n"));
-					while ((error = ERR_get_error()) != 0) {
-						memset(buf, '\0', sizeof(buf));
-						ERR_error_string_n(error, buf, sizeof(buf));
-						cm_log(1, "%s\n", buf);
-					}
+					log_pkcs7_errors(0, "Error: signed-data payload is not "
+								"enveloped-data.\n");
 					s = cm_store_base64_from_bin(ctx,
 								     (unsigned char *) results2,
 								     results_length2);
@@ -1097,11 +1085,8 @@ main(int argc, const char **argv)
 				    (p7->d.enveloped->enc_data->content_type == NULL) ||
 				    (OBJ_obj2nid(p7->d.enveloped->enc_data->content_type) != NID_pkcs7_data)) {
 					printf(_("Error: enveloped-data payload is not data.\n"));
-					while ((error = ERR_get_error()) != 0) {
-						memset(buf, '\0', sizeof(buf));
-						ERR_error_string_n(error, buf, sizeof(buf));
-						cm_log(1, "%s\n", buf);
-					}
+					log_pkcs7_errors(0, "Error: enveloped-data payload is "
+								"not data.\n");
 					s = cm_store_base64_from_bin(ctx,
 								     (unsigned char *) results2,
 								     results_length2);

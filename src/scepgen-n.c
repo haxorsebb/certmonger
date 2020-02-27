@@ -86,14 +86,14 @@ cm_scepgen_n_resign(PKCS7 *p7, SECKEYPrivateKey *privkey)
 		return;
 	}
 	if (sk_PKCS7_SIGNER_INFO_num(p7->d.sign->signer_info) != 1) {
-		cm_log(1, "More than one signer, not sure what to do.\n");
+		cm_log(0, "More than one signer, not sure what to do.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	sinfo = sk_PKCS7_SIGNER_INFO_value(p7->d.sign->signer_info, 0);
 	salen = ASN1_item_i2d((ASN1_VALUE *)sinfo->auth_attr, NULL, &PKCS7_ATTR_SIGN_it);
 	u = sabuf = malloc(salen);
 	if (sabuf == NULL) {
-		cm_log(1, "Out of memory.\n");
+		cm_log(0, "Out of memory.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	/* ASN1_item_i2d doesn't actually modify the passed-in pointer, which
@@ -101,7 +101,7 @@ cm_scepgen_n_resign(PKCS7 *p7, SECKEYPrivateKey *privkey)
 	 * that ourselves. */
 	l = ASN1_item_i2d((ASN1_VALUE *)sinfo->auth_attr, &u, &PKCS7_ATTR_SIGN_it);
 	if (l != salen) {
-		cm_log(1, "Error encoding attributes.\n");
+		cm_log(0, "Error encoding attributes.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 
@@ -109,12 +109,12 @@ cm_scepgen_n_resign(PKCS7 *p7, SECKEYPrivateKey *privkey)
 	digalg = cm_submit_n_tag_from_nid(OBJ_obj2nid(sinfo->digest_alg->algorithm));
 	sigalg = SEC_GetSignatureAlgorithmOidTag(privkey->keyType, digalg);
 	if (sigalg == SEC_OID_UNKNOWN) {
-		cm_log(1, "Unable to match digest algorithm and key.\n");
+		cm_log(0, "Unable to match digest algorithm and key.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	if (SEC_SignData(&signature, sabuf, salen, privkey,
 			 sigalg) != SECSuccess) {
-		cm_log(1, "Error re-signing: %s.\n",
+		cm_log(0, "Error re-signing: %s.\n",
 		       PR_ErrorToName(PORT_GetError()));
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
@@ -143,7 +143,7 @@ cm_scepgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 
 	if (ca->cm_ca_encryption_cert == NULL) {
-		cm_log(1, "Can't generate new SCEP request data without "
+		cm_log(0, "Can't generate new SCEP request data without "
 		       "the RA/CA encryption certificate.\n");
 		_exit(CM_SUB_STATUS_NEED_SCEP_DATA);
 	}
@@ -166,12 +166,12 @@ cm_scepgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			fprintf(status, "Error opening database "
 				"'%s': %s.\n",
 				entry->cm_key_storage_location, es);
-			cm_log(1, "Error opening database '%s': %s.\n",
+			cm_log(0, "Error opening database '%s': %s.\n",
 			       entry->cm_key_storage_location, es);
 		} else {
 			fprintf(status, "Error opening database '%s'.\n",
 				entry->cm_key_storage_location);
-			cm_log(1, "Error opening database '%s'.\n",
+			cm_log(0, "Error opening database '%s'.\n",
 			       entry->cm_key_storage_location);
 		}
 		switch (ec) {
@@ -190,7 +190,7 @@ cm_scepgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			      NSS_INIT_NOROOTINIT);
 	reason = util_n_fips_hook();
 	if (reason != NULL) {
-		cm_log(1, "Error putting NSS into FIPS mode: %s\n", reason);
+		cm_log(0, "Error putting NSS into FIPS mode: %s\n", reason);
 		_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
 	}
 
@@ -198,23 +198,23 @@ cm_scepgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	cm_log(1, "Generating dummy key.\n");
 	key = EVP_PKEY_new();
 	if (key == NULL) {
-		cm_log(1, "Error allocating new key.\n");
+		cm_log(0, "Error allocating new key.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	exponent = BN_new();
 	if (exponent == NULL) {
-		cm_log(1, "Error setting up exponent.\n");
+		cm_log(0, "Error setting up exponent.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	BN_set_word(exponent, CM_DEFAULT_RSA_EXPONENT);
 	rsa = RSA_new();
 	if (rsa == NULL) {
-		cm_log(1, "Error allocating new RSA key.\n");
+		cm_log(0, "Error allocating new RSA key.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 retry_gen:
 	if (RSA_generate_key_ex(rsa, CM_DEFAULT_PUBKEY_SIZE, exponent, NULL) != 1) {
-		cm_log(1, "Error generating key.\n");
+		cm_log(0, "Error generating key.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
 	if (RSA_check_key(rsa) != 1) { /* should be unnecessary */
@@ -228,7 +228,7 @@ retry_gen:
 	if ((keys->privkey->keyType != rsaKey) ||
 	    ((keys->privkey_next != NULL) &&
 	     (keys->privkey_next->keyType != rsaKey))) {
-		cm_log(1, "Keys aren't RSA.  They won't work with SCEP.\n");
+		cm_log(0, "Keys aren't RSA.  They won't work with SCEP.\n");
 		_exit(CM_SUB_STATUS_ERROR_KEY_TYPE);
 	}
 

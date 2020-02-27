@@ -32,7 +32,7 @@ cm_scepgen_start(struct cm_store_ca *ca, struct cm_store_entry *entry)
 {
 	switch (entry->cm_key_storage_type) {
 	case cm_key_storage_none:
-		cm_log(1, "Can't generate new SCEP data for %s('%s') without "
+		cm_log(0, "Can't generate new SCEP data for %s('%s') without "
 		       "the key, and we don't know where that is or should "
 		       "be.\n", entry->cm_busname, entry->cm_nickname);
 		break;

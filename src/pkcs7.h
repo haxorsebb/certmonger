@@ -63,4 +63,6 @@ int cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 			   size_t *recipient_nonce_length,
 			   unsigned char **payload, size_t *payload_length);
 
+void log_pkcs7_errors(int level, char *msg);
+
 #endif
