@@ -298,6 +298,15 @@ cm_submit_h_result_type(struct cm_submit_h_context *ctx)
 	return ret;
 }
 
+void
+cm_submit_h_cleanup(struct cm_submit_h_context *ctx)
+{
+
+	if (ctx != NULL && ctx->curl != NULL) {
+		curl_easy_cleanup(ctx->curl);
+	}
+}
+
 #ifdef CM_SUBMIT_H_MAIN
 int
 main(int argc, const char **argv)
@@ -307,7 +316,7 @@ main(int argc, const char **argv)
 	enum cm_submit_h_opt_negotiate negotiate;
 	enum cm_submit_h_opt_delegate negotiate_delegate;
 	enum cm_submit_h_opt_clientauth clientauth;
-	int c, fd, l, verbose = 0, length = 0;
+	int c, fd, l, verbose = 0, length = 0, rval = 0;
 	char *ctype, *accept, *capath, *cainfo, *sslcert, *sslkey, *sslpass;
 	char *pinfile;
 	const char *method, *url;
@@ -423,6 +432,8 @@ main(int argc, const char **argv)
 			cm_submit_h_result_code(ctx),
 			cm_submit_h_result_code_text(ctx));
 	}
-	return cm_submit_h_result_code(ctx);
+	rval = cm_submit_h_result_code(ctx);
+	cm_submit_h_cleanup(ctx);
+	return rval;
 }
 #endif

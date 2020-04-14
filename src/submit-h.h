@@ -61,5 +61,6 @@ int cm_submit_h_result_code(struct cm_submit_h_context *ctx);
 const char *cm_submit_h_result_code_text(struct cm_submit_h_context *ctx);
 const char *cm_submit_h_results(struct cm_submit_h_context *ctx, int *length);
 const char *cm_submit_h_result_type(struct cm_submit_h_context *ctx);
+void cm_submit_h_cleanup(struct cm_submit_h_context *ctx);
 
 #endif

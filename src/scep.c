@@ -199,7 +199,7 @@ int
 main(int argc, const char **argv)
 {
 	const char *url = NULL, *results = NULL, *results2 = NULL;
-	struct cm_submit_h_context *hctx;
+	struct cm_submit_h_context *hctx = NULL;
 	int c, verbose = 0, results_length = 0, results_length2 = 0, i;
 	int prefer_non_renewal = 0, can_renewal = 0;
 	int response_code = 0, response_code2 = 0;
@@ -224,7 +224,8 @@ main(int argc, const char **argv)
 	size_t payload_length;
 	long error;
 	PKCS7 *p7;
-	poptContext pctx;
+	int rval = CM_SUBMIT_STATUS_UNCONFIGURED;
+	poptContext pctx = NULL;
 	struct poptOption popts[] = {
 		{"url", 'u', POPT_ARG_STRING, &url, 0, "service location", "URL"},
 		{"ca-identifier", 'i', POPT_ARG_STRING, &id, 0, "name to use when querying for capabilities", "IDENTIFIER"},
@@ -387,8 +388,8 @@ main(int argc, const char **argv)
 			}
 			if ((message == NULL) || (strlen(message) == 0)) {
 				printf(_("Error reading request.  Expected PKCS7 data containing a GetInitialCert pkiMessage, got nothing.\n"));
-				free(cainfo);
-				return CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
+				rval = CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
+				goto done;
 			}
 			/* First step: read capabilities for our use. */
 			params = talloc_asprintf(ctx, "operation=" OP_GET_CA_CAPS);
@@ -407,8 +408,8 @@ main(int argc, const char **argv)
 			}
 			if ((message == NULL) || (strlen(message) == 0)) {
 				printf(_("Error reading request.  Expected PKCS7 data containing a PKCSReq pkiMessage, got nothing.\n"));
-				free(cainfo);
-				return CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
+				rval = CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
+				goto done;
 			}
 			/* First step: read capabilities for our use. */
 			params = talloc_asprintf(ctx, "operation=" OP_GET_CA_CAPS);
@@ -419,8 +420,8 @@ main(int argc, const char **argv)
 	/* Supply help output, if it's needed. */
 	if (missing_args) {
 		poptPrintUsage(pctx, stdout, 0);
-		free(cainfo);
-		return CM_SUBMIT_STATUS_UNCONFIGURED;
+		rval = CM_SUBMIT_STATUS_UNCONFIGURED;
+		goto done;
 	}
 
 	/* Check the rekey PKCSReq message, if we have one. */
@@ -504,7 +505,6 @@ main(int argc, const char **argv)
 				verbose > 1 ?
 				cm_submit_h_curl_verbose_on :
 				cm_submit_h_curl_verbose_off);
-	free(cainfo);
 	cm_submit_h_run(hctx);
 	content_type = cm_submit_h_result_type(hctx);
 	if (content_type == NULL) {
@@ -550,7 +550,8 @@ main(int argc, const char **argv)
 		}
 		if ((tmp2 == NULL) || (strlen(tmp2) == 0)) {
 			printf(_("Error reading request.  Expected PKCS7 data containing a GetInitialCert pkiMessage, got nothing.\n"));
-			return CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
+			rval = CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
+			goto done;
 		} else
 		if (verbose > 0) {
 			if (tmp2 == rekey_message) {
@@ -575,7 +576,8 @@ main(int argc, const char **argv)
 		}
 		if ((tmp2 == NULL) || (strlen(tmp2) == 0)) {
 			printf(_("Error reading request.  Expected PKCS7 data containing a PKCSReq pkiMessage, got nothing.\n"));
-			return CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
+			rval = CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
+			goto done;
 		} else
 		if (verbose > 0) {
 			if (tmp2 == rekey_message) {
@@ -637,7 +639,8 @@ main(int argc, const char **argv)
 			       cm_submit_h_result_code(hctx),
 			       url);
 		}
-		return CM_SUBMIT_STATUS_UNREACHABLE;
+		rval = CM_SUBMIT_STATUS_UNREACHABLE;
+		goto done;
 	}
 	switch (op) {
 	case op_unset:
@@ -650,16 +653,19 @@ main(int argc, const char **argv)
 			       response_code, url);
 			if (response_code == 500) {
 				/* The server might recover, right? */
-				return CM_SUBMIT_STATUS_UNREACHABLE;
+				rval = CM_SUBMIT_STATUS_UNREACHABLE;
+				goto done;
 			} else {
 				/* Maybe not? */
-				return CM_SUBMIT_STATUS_REJECTED;
+				rval = CM_SUBMIT_STATUS_REJECTED;
+				goto done;
 			}
 		}
 		if (results == NULL) {
 			printf(_("Internal error: no response to \"%s?%s\".\n"),
 			       url, params);
-			return CM_SUBMIT_STATUS_REJECTED;
+			rval = CM_SUBMIT_STATUS_REJECTED;
+			goto done;
 		}
 		break;
 	case op_get_cert_initial:
@@ -684,10 +690,12 @@ main(int argc, const char **argv)
 				fprintf(stderr, "Result is surprisingly large, "
 					"suppressing it.\n");
 			}
-			return CM_SUBMIT_STATUS_REJECTED;
+			rval = CM_SUBMIT_STATUS_REJECTED;
+			goto done;
 		}
 		printf("%s\n", results);
-		return CM_SUBMIT_STATUS_ISSUED;
+		rval = CM_SUBMIT_STATUS_ISSUED;
+		goto done;
 		break;
 	case op_get_ca_certs:
 		if ((strcasecmp(content_type,
@@ -696,7 +704,8 @@ main(int argc, const char **argv)
 				"application/x-x509-ca-ra-cert") != 0)) {
 			printf(_("Server reply was of unexpected MIME type "
 				 "\"%s\".\n"), content_type);
-			return CM_SUBMIT_STATUS_UNREACHABLE;
+			rval = CM_SUBMIT_STATUS_UNREACHABLE;
+			goto done;
 		}
 		if (racert == NULL) {
 			racertp = &racert;
@@ -709,7 +718,8 @@ main(int argc, const char **argv)
 						 n_buffers + 1);
 			if ((buffers == NULL) || (lengths == NULL)) {
 				fprintf(stderr, "Out of memory.\n");
-				return CM_SUBMIT_STATUS_UNREACHABLE;
+				rval = CM_SUBMIT_STATUS_UNREACHABLE;
+				goto done;
 			}
 			buffers[n_buffers] = (unsigned char *) racert;
 			lengths[n_buffers] = strlen(racert);
@@ -726,7 +736,8 @@ main(int argc, const char **argv)
 						 n_buffers + 1);
 			if ((buffers == NULL) || (lengths == NULL)) {
 				fprintf(stderr, "Out of memory.\n");
-				return CM_SUBMIT_STATUS_UNREACHABLE;
+				rval = CM_SUBMIT_STATUS_UNREACHABLE;
+				goto done;
 			}
 			buffers[n_buffers] = (unsigned char *) cacert;
 			lengths[n_buffers] = strlen(cacert);
@@ -740,7 +751,8 @@ main(int argc, const char **argv)
 						 n_buffers + 1);
 			if ((buffers == NULL) || (lengths == NULL)) {
 				fprintf(stderr, "Out of memory.\n");
-				return CM_SUBMIT_STATUS_UNREACHABLE;
+				rval = CM_SUBMIT_STATUS_UNREACHABLE;
+				goto done;
 			}
 			buffers[n_buffers] = (unsigned char *) results;
 			lengths[n_buffers] = results_length;
@@ -754,7 +766,8 @@ main(int argc, const char **argv)
 						 n_buffers + 1);
 			if ((buffers == NULL) || (lengths == NULL)) {
 				fprintf(stderr, "Out of memory.\n");
-				return CM_SUBMIT_STATUS_UNREACHABLE;
+				rval = CM_SUBMIT_STATUS_UNREACHABLE;
+				goto done;
 			}
 			buffers[n_buffers] = (unsigned char *) results2;
 			lengths[n_buffers] = results_length2;
@@ -849,7 +862,8 @@ main(int argc, const char **argv)
 						 n_buffers + 1);
 			if ((buffers == NULL) || (lengths == NULL)) {
 				fprintf(stderr, "Out of memory.\n");
-				return CM_SUBMIT_STATUS_UNREACHABLE;
+				rval = CM_SUBMIT_STATUS_UNREACHABLE;
+				goto done;
 			}
 			buffers[n_buffers] = (unsigned char *) results2;
 			lengths[n_buffers] = results_length2;
@@ -881,11 +895,11 @@ main(int argc, const char **argv)
 					}
 				}
 			}
-			talloc_free(ctx);
-			return CM_SUBMIT_STATUS_ISSUED;
+			rval = CM_SUBMIT_STATUS_ISSUED;
+			goto done;
 		} else {
-			talloc_free(ctx);
-			return CM_SUBMIT_STATUS_UNREACHABLE;
+			rval = CM_SUBMIT_STATUS_UNREACHABLE;
+			goto done;
 		}
 		break;
 	case op_get_cert_initial:
@@ -956,42 +970,50 @@ main(int argc, const char **argv)
 				fprintf(stderr, "%s", s);
 				cm_log(1, "%s", s);
 				free(s);
-				return CM_SUBMIT_STATUS_UNREACHABLE;
+				rval = CM_SUBMIT_STATUS_UNREACHABLE;
+				goto done;
 			}
 			if ((msgtype == NULL) ||
 			    (strcmp(msgtype, SCEP_MSGTYPE_CERTREP) != 0)) {
 				printf(_("Error: reply was not a CertRep (%s).\n"),
 				       msgtype ? msgtype : "none");
-				return CM_SUBMIT_STATUS_UNREACHABLE;
+				rval = CM_SUBMIT_STATUS_UNREACHABLE;
+				goto done;
 			}
 			if (tx == NULL) {
 				printf(_("Error: reply is missing transactionId.\n"));
-				return CM_SUBMIT_STATUS_UNREACHABLE;
+				rval = CM_SUBMIT_STATUS_UNREACHABLE;
+				goto done;
 			}
 			if (sent_tx != NULL) {
 				if (strcmp(sent_tx, tx) != 0) {
 					printf(_("Error: reply contains a "
 						 "different transactionId.\n"));
-					return CM_SUBMIT_STATUS_UNREACHABLE;
+					rval = CM_SUBMIT_STATUS_UNREACHABLE;
+					goto done;
 				}
 			}
 			if (pkistatus == NULL) {
 				printf(_("Error: reply is missing pkiStatus.\n"));
-				return CM_SUBMIT_STATUS_UNREACHABLE;
+				rval = CM_SUBMIT_STATUS_UNREACHABLE;
+				goto done;
 			}
 			if (recipient_nonce == NULL) {
 				printf(_("Error: reply is missing recipientNonce.\n"));
-				return CM_SUBMIT_STATUS_UNREACHABLE;
+				rval = CM_SUBMIT_STATUS_UNREACHABLE;
+				goto done;
 			}
 			if ((recipient_nonce_length != sent_nonce_length) ||
 			    (memcmp(recipient_nonce, sent_nonce,
 				    sent_nonce_length) != 0)) {
 				printf(_("Error: reply nonce doesn't match request.\n"));
-				return CM_SUBMIT_STATUS_UNREACHABLE;
+				rval = CM_SUBMIT_STATUS_UNREACHABLE;
+				goto done;
 			}
 			if (sender_nonce == NULL) {
 				printf(_("Error: reply is missing senderNonce.\n"));
-				return CM_SUBMIT_STATUS_UNREACHABLE;
+				rval = CM_SUBMIT_STATUS_UNREACHABLE;
+				goto done;
 			}
 			if (strcmp(pkistatus, SCEP_PKISTATUS_PENDING) == 0) {
 				if (verbose > 0) {
@@ -1001,7 +1023,8 @@ main(int argc, const char **argv)
 				s = cm_store_base64_from_bin(ctx, sender_nonce,
 							     sender_nonce_length);
 				printf("%s\n", s);
-				return CM_SUBMIT_STATUS_WAIT;
+				rval = CM_SUBMIT_STATUS_WAIT;
+				goto done;
 			} else
 			if (strcmp(pkistatus, SCEP_PKISTATUS_FAILURE) == 0) {
 				if (verbose > 0) {
@@ -1049,7 +1072,8 @@ main(int argc, const char **argv)
 					printf(_("Server returned failure code \"%s\".\n"),
 					       failinfo);
 				}
-				return CM_SUBMIT_STATUS_REJECTED;
+				rval = CM_SUBMIT_STATUS_REJECTED;
+				goto done;
 			} else
 			if (strcmp(pkistatus, SCEP_PKISTATUS_SUCCESS) == 0) {
 				if (verbose > 0) {
@@ -1066,7 +1090,8 @@ main(int argc, const char **argv)
 					s = cm_submit_u_pem_from_base64("PKCS7", 0, s);
 					fprintf(stderr, "Full reply:\n%s", s);
 					free(s);
-					return CM_SUBMIT_STATUS_UNREACHABLE;
+					rval = CM_SUBMIT_STATUS_UNREACHABLE;
+					goto done;
 				}
 				if (!PKCS7_type_is_enveloped(p7)) {
 					printf(_("Error: signed-data payload is not enveloped-data.\n"));
@@ -1078,7 +1103,8 @@ main(int argc, const char **argv)
 					s = cm_submit_u_pem_from_base64("PKCS7", 0, s);
 					fprintf(stderr, "Full reply:\n%s", s);
 					free(s);
-					return CM_SUBMIT_STATUS_UNREACHABLE;
+					rval = CM_SUBMIT_STATUS_UNREACHABLE;
+					goto done;
 				}
 				if ((p7->d.enveloped == NULL) ||
 				    (p7->d.enveloped->enc_data == NULL) ||
@@ -1093,29 +1119,42 @@ main(int argc, const char **argv)
 					s = cm_submit_u_pem_from_base64("PKCS7", 0, s);
 					fprintf(stderr, "Full reply:\n%s", s);
 					free(s);
-					return CM_SUBMIT_STATUS_UNREACHABLE;
+					rval = CM_SUBMIT_STATUS_UNREACHABLE;
+					goto done;
 				}
 				s = cm_store_base64_from_bin(ctx, payload,
 							     payload_length);
 				s = cm_submit_u_pem_from_base64("PKCS7", 0, s);
 				printf("%s", s);
 				free(s);
-				return CM_SUBMIT_STATUS_ISSUED;
+				rval = CM_SUBMIT_STATUS_ISSUED;
+				goto done;
 			} else {
 				if (verbose > 0) {
 					fprintf(stderr, "SCEP status is \"%s\".\n", pkistatus);
 				}
 				printf(_("Error: pkiStatus \"%s\" not recognized.\n"),
 				       pkistatus);
-				return CM_SUBMIT_STATUS_UNREACHABLE;
+				rval = CM_SUBMIT_STATUS_UNREACHABLE;
+				goto done;
 			}
 		} else {
 			printf(_("Server reply was of unexpected MIME type "
 				 "\"%s\".\n"), content_type);
 			printf("Full reply:\n%.*s", results_length2, results2);
-			return CM_SUBMIT_STATUS_UNREACHABLE;
+			rval = CM_SUBMIT_STATUS_UNREACHABLE;
+			goto done;
 		}
 		break;
 	}
-	return CM_SUBMIT_STATUS_UNCONFIGURED;
+
+done:
+	if (pctx) {
+		poptFreeContext(pctx);
+	}
+	free(cainfo);
+	free(id);
+	cm_submit_h_cleanup(hctx);
+	talloc_free(ctx);
+	return rval;
 }
