@@ -210,12 +210,12 @@ main(int argc, const char **argv)
 	const char *mode = NULL, *content_type = NULL, *content_type2 = NULL;
 	void *ctx;
 	char *params = "", *params2 = NULL, *racert = NULL, *cacert = NULL;
-	char **othercerts = NULL, *cert1 = NULL, *cert2 = NULL, *certs = NULL;
+	char **certothers = NULL, *certleaf = NULL, *certtop = NULL, *certs = NULL;
 	char **racertp, **cacertp, *dracert = NULL, *dcacert = NULL;
 	char buf[LINE_MAX] = "";
 	const unsigned char **buffers = NULL;
 	size_t n_buffers = 0, *lengths = NULL, j;
-	const char *cacerts[3], **racerts;
+	const char *root[3], **othercerts;
 	dbus_bool_t missing_args = FALSE;
 	char *sent_tx, *tx, *msgtype, *pkistatus, *failinfo, *s, *tmp1, *tmp2;
 	unsigned char *sent_nonce, *sender_nonce, *recipient_nonce, *payload;
@@ -870,27 +870,27 @@ main(int argc, const char **argv)
 			n_buffers++;
 		}
 		if (cm_pkcs7_parsev(CM_PKCS7_LEAF_PREFER_ENCRYPT, ctx,
-				    racertp, cacertp, &othercerts,
+				    racertp, cacertp, &certothers,
 				    NULL, NULL,
 				    n_buffers, buffers, lengths) == 0) {
 			if (racert != NULL) {
 				printf("%s", racert);
 				if (cacert != NULL) {
 					printf("%s", cacert);
-					if (othercerts != NULL) {
+					if (certothers != NULL) {
 						for (c = 0;
-						     othercerts[c] != NULL;
+						     certothers[c] != NULL;
 						     c++) {
 							printf("%s",
-							       othercerts[c]);
+							       certothers[c]);
 						}
 					}
 					if ((dracert != NULL) &&
-					    (cert_among(dracert, racert, cacert, othercerts) != 0)) {
+					    (cert_among(dracert, racert, cacert, certothers) != 0)) {
 						printf("%s", dracert);
 					}
 					if ((dcacert != NULL) &&
-					    (cert_among(dcacert, racert, cacert, othercerts) != 0)) {
+					    (cert_among(dcacert, racert, cacert, certothers) != 0)) {
 						printf("%s", dcacert);
 					}
 				}
@@ -906,47 +906,83 @@ main(int argc, const char **argv)
 	case op_pkcsreq:
 		if ((content_type2 != NULL) && (strcasecmp(content_type2,
 			       "application/x-pki-message") == 0)) {
-			memset(&cacerts, 0, sizeof(cacerts));
-			cacerts[0] = cacert ? cacert : racert;
-			cacerts[1] = cacert ? racert : NULL;
-			cacerts[2] = NULL;
-			racerts = NULL;
+			/*
+			 * At this point, we have:
+			 * - zero or more ra certs; and
+			 * - zero or more ca certificates; and
+			 * - zero or more other certificates; that
+			 * need to be reordered so that the leaf
+			 * certificates go first, the ca certificates
+			 * are separated into a seperate certificate
+			 * store, and the other certificates go after
+			 * the leaf certificates.
+			 *
+			 * To do this we put cacert into the ca store,
+			 * the racert at the top of the othercerts list.
+			 * Then we parse certs, placing all ca certs
+			 * we find into the ca store, and all other
+			 * certs we find after the racert.
+			 *
+			 * As a limitation of cm_pkcs7_parse(), we
+			 * can only isolate one ca certificate in the
+			 * list of other certificates.
+			 */
+			/* handle the other certs */
 			if ((certs != NULL) &&
 			    (cm_pkcs7_parse(0, ctx,
-					    &cert1, &cert2, &othercerts,
+					    &certleaf, &certtop, &certothers,
 					    NULL, NULL,
 					    (const unsigned char *) certs,
 					    strlen(certs), NULL) == 0)) {
+				/* Special case for IPA which uses dogtag which signs SCEP
+				 * certs using the CA cert and the typical way to get
+				 * verification to work is to use -I /etc/ipa/ca.crt.
+				 * Because cm_pkcs7_parse explicitly doesn't allow
+				 * certleaf to equal certtop we end up with no CAs so verification
+				 * fails.
+				 * 
+				 * So if cacert and certleaf are both NULL and certtop is
+				 * self-signed then assume the IPA case and set certtop equal
+				 * to certleaf.
+				 */
+				if ((cacert == NULL) && (certtop == NULL) && (certleaf != NULL)) {
+					if (cm_selfsigned(certleaf) == 0) {
+						certtop = certleaf;
+					}
+				}
+				memset(&root, 0, sizeof(root));
+				root[0] = cacert ? cacert : certtop ? certtop : NULL;
+				root[1] = cacert ? certtop : NULL;
+				root[2] = NULL;
 				for (c = 0;
-				     (othercerts != NULL) &&
-				     (othercerts[c] != NULL);
+				     (certothers != NULL) &&
+				     (certothers[c] != NULL);
 				     c++) {
 					continue;
 				}
-				racerts = talloc_array_ptrtype(ctx, racerts, c + 5);
-				for (c = 0;
-				     (othercerts != NULL) &&
-				     (othercerts[c] != NULL);
-				     c++) {
-					racerts[c] = othercerts[c];
-				}
-				if (cacert != NULL) {
-					racerts[c++] = cacert;
-				}
-				if (cert1 != NULL) {
-					racerts[c++] = cert1;
-				}
-				if (cert2 != NULL) {
-					racerts[c++] = cert2;
-				}
+				othercerts = talloc_array_ptrtype(ctx, othercerts, c + 3);
+				c = 0;
 				if (racert != NULL) {
-					racerts[c++] = racert;
+					othercerts[c++] = racert;
 				}
-				racerts[c++] = NULL;
+				if (certleaf != NULL) {
+					othercerts[c++] = certleaf;
+				}
+				while (certothers != NULL && *certothers != NULL) {
+					othercerts[c++] = *certothers++;
+				}
+				othercerts[c++] = NULL;
+			}
+			else {
+				root[0] = cacert;
+				root[1] = NULL;
+				othercerts = talloc_array_ptrtype(ctx, othercerts, 2);
+				othercerts[0] = racert ? racert : NULL;
+				othercerts[1] = NULL;
 			}
 			ERR_clear_error();
 			i = cm_pkcs7_verify_signed((unsigned char *) results2, results_length2,
-						   cacerts, racerts,
+						   root, othercerts,
 						   NID_pkcs7_data, ctx, NULL,
 						   &tx, &msgtype, &pkistatus, &failinfo,
 						   &sender_nonce, &sender_nonce_length,

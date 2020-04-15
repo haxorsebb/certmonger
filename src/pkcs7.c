@@ -1189,3 +1189,21 @@ done:
 	}
 	return ret;
 }
+
+/* Return 0 if we think "issuer" could have issued "issued", which includes
+ * self-signing. */
+int
+cm_selfsigned(char *cert) 
+{
+	BIO *in;
+	X509 *c;
+
+	in = BIO_new_mem_buf(cert, -1);
+	if (in == NULL) {
+		cm_log(0, "Out of memory.\n");
+		return 1;
+	}
+	c = PEM_read_bio_X509(in, NULL, NULL, NULL);
+	BIO_free(in);
+	return(issuerissued(c, c));
+}

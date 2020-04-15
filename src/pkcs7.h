@@ -62,6 +62,7 @@ int cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 			   unsigned char **recipient_nonce,
 			   size_t *recipient_nonce_length,
 			   unsigned char **payload, size_t *payload_length);
+int cm_selfsigned(char *cert);
 
 void log_pkcs7_errors(int level, char *msg);
 
