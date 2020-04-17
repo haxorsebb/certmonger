@@ -24,11 +24,15 @@ The location of the SCEP server's enrollment interface.  This option must be
 specified.
 .TP
 \fB\-R\fR ca-certificate-file
-The location of a PEM-formatted copy of the SCEP server's CA's certificate.
-A discovered value is supplied by the certmonger daemon for use in verifying
-the signature on data returned by the SCEP server, but it is not used for
-verifying HTTPS server certificates.
+The location of a PEM-formatted copy of the CA's certificate used to verify
+the TLS connection the SCEP server.
+
 This option must be specified if the URL is an \fIhttps\fR location.
+.TP
+\fB\-N\fR ca-certificate-file
+The location of a PEM-formatted copy of the SCEP server's CA certificate.
+A discovered value is normally supplied by the certmonger daemon, but one can
+be specified for troubleshooting purposes.
 .TP
 \fB\-r\fR ra-certificate-file
 The location of a PEM-formatted copy of the SCEP server's RA's certificate.

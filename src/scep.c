@@ -205,7 +205,6 @@ main(int argc, const char **argv)
 	int response_code = 0, response_code2 = 0;
 	enum known_ops op = op_unset;
 	const char *id = NULL, *cainfo = NULL;
-	char *poptarg;
 	char *message = NULL, *rekey_message = NULL;
 	const char *mode = NULL, *content_type = NULL, *content_type2 = NULL;
 	void *ctx;
@@ -234,8 +233,9 @@ main(int argc, const char **argv)
 		{"get-initial-cert", 'g', POPT_ARG_NONE, NULL, 'g', "send a PKIOperation pkiMessage", NULL},
 		{"pki-message", 'p', POPT_ARG_NONE, NULL, 'p', "send a PKIOperation pkiMessage", NULL},
 		{"racert", 'r', POPT_ARG_STRING, NULL, 'r', "the RA certificate, used for encrypting requests", "FILENAME"},
-		{"cacert", 'R', POPT_ARG_STRING, NULL, 'R', "the CA certificate, used for verifying responses", "FILENAME"},
+		{"cacert", 'R', POPT_ARG_STRING, NULL, 'R', "the CA certificate, used for verifying TLS connections", "FILENAME"},
 		{"other-certs", 'I', POPT_ARG_STRING, NULL, 'I', "additional certificates", "FILENAME"},
+		{"signingca", 'N', POPT_ARG_STRING, NULL, 'N', "the CA certificate which signed the RA certificate", "FILENAME"},
 		{"non-renewal", 'n', POPT_ARG_NONE, &prefer_non_renewal, 0, "prefer to not use the SCEP Renewal feature", NULL},
 		{"verbose", 'v', POPT_ARG_NONE, NULL, 'v', NULL, NULL},
 		POPT_AUTOHELP
@@ -328,9 +328,10 @@ main(int argc, const char **argv)
 			racert = cm_submit_u_from_file(poptGetOptArg(pctx));
 			break;
 		case 'R':
-			poptarg = poptGetOptArg(pctx);
-			cainfo = strdup(poptarg);
-			cacert = cm_submit_u_from_file(poptarg);
+			cainfo = poptGetOptArg(pctx);
+			break;
+		case 'N':
+			cacert = cm_submit_u_from_file(poptGetOptArg(pctx));
 			break;
 		case 'I':
 			certs = cm_submit_u_from_file(poptGetOptArg(pctx));
@@ -339,7 +340,6 @@ main(int argc, const char **argv)
 	}
 	if (c != -1) {
 		poptPrintUsage(pctx, stdout, 0);
-		free(cainfo);
 		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
 
@@ -1188,7 +1188,6 @@ done:
 	if (pctx) {
 		poptFreeContext(pctx);
 	}
-	free(cainfo);
 	free(id);
 	cm_submit_h_cleanup(hctx);
 	talloc_free(ctx);

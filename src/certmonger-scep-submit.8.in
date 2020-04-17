@@ -8,6 +8,7 @@ scep-submit -u SERVER-URL
 [-r ra-cert-file]
 [-R ca-cert-file]
 [-I other-certs-file]
+[-N ca-cert-file]
 [-i ca-identifier]
 [-v]
 [-n]
@@ -57,11 +58,14 @@ typically \fIhttp://\fBSERVER\fP/cgi-bin/PKICLIENT.EXE\fR or
 always required.
 .TP
 \fB\-R\fR CA-certificate-file
-The location of the SCEP server's CA certificate, which was used to
-issue the SCEP server's certificate, or the SCEP server's own
-certificate, if it is self-signed, in PEM form.  If the URL specified
-with the \fB-u\fR option is an \fIhttps\fR URL, then this option is
-required.
+The location of the CA certificate which was used to issue the SCEP web
+server's certificate in PEM form. If the URL specified with the
+\fB-u\fR option is an \fIhttps\fR URL, then this option is required.
+.TP
+\fB\-N\fR ca-certificate-file
+The location of a PEM-formatted copy of the SCEP server's CA certificate.
+A discovered value is normally supplied by the certmonger daemon, but one can
+be specified for troubleshooting purposes.
 .TP
 \fB\-r\fR RA-certificate-file
 The location of the SCEP server's RA certificate, which is expected to
