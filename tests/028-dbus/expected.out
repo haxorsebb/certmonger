@@ -17,6 +17,7 @@ Request ID 'Buddy':
 	key usage: digitalSignature,dataEncipherment
 	eku: id-kp-serverAuth
 	certificate template/profile: SomeProfileName
+	profile: SomeProfileName
 	pre-save command: echo Pre
 	post-save command: echo Post
 	track: yes
