@@ -4533,7 +4533,7 @@ add_scep_ca(const char *argv0, int argc, const char **argv)
 		{"ca-cert", 'R', POPT_ARG_STRING, &root, 0, _("file containing CA's certificate"), HELP_TYPE_FILENAME},
 		{"ra-cert", 'r', POPT_ARG_STRING, &racert, 0, _("file containing RA's certificate"), HELP_TYPE_FILENAME},
 		{"other-certs", 'I', POPT_ARG_STRING, &certs, 0, _("file containing certificates in RA's certifying chain"), HELP_TYPE_FILENAME},
-		{"signingca", 'N', POPT_ARG_STRING, NULL, &signingca, 0, _("the CA certificate which signed the RA certificate"), HELP_TYPE_FILENAME},
+		{"signingca", 'N', POPT_ARG_STRING, &signingca, 0, _("the CA certificate which signed the RA certificate"), HELP_TYPE_FILENAME},
 		{"non-renewal", 'n', POPT_ARG_NONE, &prefer_non_renewal, 0, _("prefer to not use the SCEP Renewal feature"), NULL},
 		{"session", 's', POPT_ARG_NONE, NULL, 's', _("connect to the certmonger service on the session bus"), NULL},
 		{"system", 'S', POPT_ARG_NONE, NULL, 'S', _("connect to the certmonger service on the system bus"), NULL},
@@ -4595,7 +4595,7 @@ add_scep_ca(const char *argv0, int argc, const char **argv)
 		return 1;
 	}
 	command = talloc_asprintf(globals.tctx,
-				  "%s -u %s %s %s %s %s %s %s %s %s %s %s",
+				  "%s -u %s %s %s %s %s %s %s %s %s %s %s %s",
 				  shell_escape(globals.tctx,
 					       CM_SCEP_HELPER_PATH),
 				  shell_escape(globals.tctx, url),
