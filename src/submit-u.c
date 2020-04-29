@@ -100,6 +100,14 @@ cm_submit_u_from_file(const char *filename)
 	}
 	if (csr == NULL) {
 		csr = strdup("");
+	} else {
+		int length = strlen(csr);
+		if (csr[length-1] != '\n') {
+			length += 1;
+			csr = realloc(csr, length + 1);
+			csr[length - 1] = '\n';
+			csr[length] = '\0';
+		}
 	}
 	return csr;
 }

@@ -16,7 +16,7 @@ endif
 noinst_PROGRAMS = keyiread keygen csrgen submit certread certsave oid2name \
 		  name2oid iterate prefs dates listnicks pem2base base2pem \
 		  dparse payload checksig base64 cadata citerate casave hooks \
-		  libexecdir canon srv addcinfo ls json json-utf8 printenv
+		  libexecdir canon srv addcinfo ls json json-utf8 printenv fromfile
 noinst_LIBRARIES = libtools.a
 if HAVE_OPENSSL
 noinst_PROGRAMS += pk7parse pk7env scepgen pk7verify pk7decrypt
@@ -38,3 +38,7 @@ citerate_LDADD = $(top_srcdir)/src/store-gen.c $(LDADD)
 
 srv_SOURCES = srv.c
 srv_LDADD = $(top_srcdir)/src/srvloc.c $(LDADD)
+
+fromfile_CFLAGS = $(AM_CFLAGS)
+fromfile_SOURCES = fromfile.c
+fromfile_LDADD = $(top_srcdir)/src/submit-u.c $(LDADD) $(UUID_LIBS)
