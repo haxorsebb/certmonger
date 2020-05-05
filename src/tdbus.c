@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include <talloc.h>
 #include <tevent.h>
@@ -522,60 +523,24 @@ cm_tdbus_timeout_cleanup(void *data)
 }
 
 static void
-cm_tdbus_reconnect(struct tevent_context *ec, struct tevent_timer *timer,
+cm_tdbus_disconnected(struct tevent_context *ec, struct tevent_timer *timer,
 		   struct timeval current_time, void *pvt)
 {
-	const char *bus_desc;
 	struct tdbus_connection *tdb;
-	struct timeval later;
-	dbus_bool_t exit_on_disconnect = TRUE;
+	pid_t pid;
 
 	tdb = pvt;
 	talloc_free(timer);
 	if ((tdb->conn == NULL) ||
 	    !dbus_connection_get_is_connected(tdb->conn)) {
-		/* Close the current connection and open a new one. */
+		/* Close the current connection and exit. */
 		if (tdb->conn != NULL) {
 			dbus_connection_unref(tdb->conn);
 			tdb->conn = NULL;
 		}
-		bus_desc = NULL;
-		switch (tdb->conn_type) {
-		case cm_tdbus_system:
-			cm_log(1, "Attempting to reconnect to system bus.\n");
-			tdb->conn = dbus_bus_get(DBUS_BUS_SYSTEM, NULL);
-			cm_set_conn_ptr(tdb->data, tdb->conn);
-			/* Don't exit if we get disconnected. */
-			exit_on_disconnect = FALSE;
-			bus_desc = "system";
-			break;
-		case cm_tdbus_session:
-			cm_log(1, "Attempting to reconnect to session bus.\n");
-			tdb->conn = dbus_bus_get(DBUS_BUS_SESSION, NULL);
-			cm_set_conn_ptr(tdb->data, tdb->conn);
-			/* Exit if we get disconnected. */
-			exit_on_disconnect = TRUE;
-			bus_desc = "session";
-			break;
-		case cm_tdbus_private:
-			abort();
-			break;
-		}
-		if ((tdb->conn != NULL) &&
-		    dbus_connection_get_is_connected(tdb->conn)) {
-			/* We're reconnected; reset our handlers. */
-			cm_log(1, "Reconnected to %s bus.\n", bus_desc);
-			dbus_connection_set_exit_on_disconnect(tdb->conn,
-							       exit_on_disconnect);
-			cm_tdbus_setup_public_connection(tdb, tdb->conn,
-							 bus_desc, NULL);
-		} else {
-			/* Try reconnecting again later. */
-			later = tevent_timeval_current_ofs(CM_DBUS_RECONNECT_TIMEOUT, 0),
-			tevent_add_timer(ec, tdb, later,
-					 cm_tdbus_reconnect,
-					 tdb);
-		}
+		pid = getpid();
+		cm_log(0, "Disconnected from dbus, exiting with SIGTERM.\n");
+		kill(pid, SIGTERM);
 	}
 }
 
@@ -585,12 +550,12 @@ cm_tdbus_filter(DBusConnection *conn, DBusMessage *dmessage, void *data)
 	struct tdbus_connection *tdb = data;
 	const char *destination, *unique_name, *path, *interface, *member;
 
-	/* If we're disconnected, queue a reconnect. */
+	/* If we're disconnected, queue an exit. */
 	if ((tdb->conn_type != cm_tdbus_private) &&
 	    !dbus_connection_get_is_connected(conn)) {
 		tevent_add_timer(talloc_parent(tdb), tdb,
 				 tevent_timeval_current(),
-				 cm_tdbus_reconnect,
+				 cm_tdbus_disconnected,
 				 tdb);
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
@@ -745,7 +710,6 @@ cm_tdbus_setup_public(struct tevent_context *ec, enum cm_tdbus_type bus_type,
 	DBusError err;
 	const char *bus_desc;
 	struct tdbus_connection *tdb;
-	dbus_bool_t exit_on_disconnect;
 
 	/* Build our own context. */
 	tdb = talloc_ptrtype(ec, tdb);
@@ -757,7 +721,6 @@ cm_tdbus_setup_public(struct tevent_context *ec, enum cm_tdbus_type bus_type,
 	/* Connect to the right bus. */
 	bus_desc = NULL;
 	conn = NULL;
-	exit_on_disconnect = TRUE;
 	if (error != NULL) {
 		dbus_error_init(error);
 	}
@@ -765,15 +728,11 @@ cm_tdbus_setup_public(struct tevent_context *ec, enum cm_tdbus_type bus_type,
 	case cm_tdbus_system:
 		conn = dbus_bus_get(DBUS_BUS_SYSTEM, error);
 		cm_set_conn_ptr(data, conn);
-		/* Don't exit if we get disconnected. */
-		exit_on_disconnect = FALSE;
 		bus_desc = "system";
 		break;
 	case cm_tdbus_session:
 		conn = dbus_bus_get(DBUS_BUS_SESSION, error);
 		cm_set_conn_ptr(data, conn);
-		/* Exit if we get disconnected. */
-		exit_on_disconnect = TRUE;
 		bus_desc = "session";
 		break;
 	case cm_tdbus_private:
@@ -785,7 +744,8 @@ cm_tdbus_setup_public(struct tevent_context *ec, enum cm_tdbus_type bus_type,
 		talloc_free(tdb);
 		return -1;
 	}
-	dbus_connection_set_exit_on_disconnect(conn, exit_on_disconnect);
+	/* Exit on disconnect is handled in cm_tdbus_disconnected(). */
+	dbus_connection_set_exit_on_disconnect(conn, FALSE);
 	tdb->conn = conn;
 	tdb->conn_type = bus_type;
 	tdb->data = data;
