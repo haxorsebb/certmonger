@@ -1,98 +1,98 @@
-.TH certmonger 8 "20 June 2015" "certmonger Manual"
+.TH CERTMONGER 8 "June 20, 2015" "certmonger Manual"
 
 .SH NAME
-scep-submit
+scep\-submit
 
 .SH SYNOPSIS
-scep-submit -u SERVER-URL
-[-r ra-cert-file]
-[-R ca-cert-file]
-[-I other-certs-file]
-[-N ca-cert-file]
-[-i ca-identifier]
-[-v]
-[-n]
-[-c|-C|-g|-p]
-[pkimessage-filename]
+scep\-submit \-u SERVER\-URL
+[\-r ra\-cert\-file]
+[\-R ca\-cert\-file]
+[\-I other\-certs\-file]
+[\-N ca\-cert\-file]
+[\-i ca\-identifier]
+[\-v]
+[\-n]
+[\-c|\-C|\-g|\-p]
+[pkimessage\-filename]
 
 .SH DESCRIPTION
-\fIscep-submit\fR is the helper which \fIcertmonger\fR can use to
+\fIscep\-submit\fR is the helper which \fIcertmonger\fR can use to
 transmit certificate enrollment and renewal requests to servers using
 SCEP.  It is not normally run interactively, but it can be for
 troubleshooting purposes.
 
-The request which is to be submitted should be a PEM-encoded SCEP
+The request which is to be submitted should be a PEM\-encoded SCEP
 pkiMessage either in a file whose name is given as an argument, or fed
-into \fIscep-submit\fR via stdin.
+into \fIscep\-submit\fR via stdin.
 
 .SH MODES
 .TP
-\fB\-c\fR
+\fB\-c\fR, \fR\-\-retrieve\-ca\-capabilities\fR
 \fIscep-submit\fR will issue a \fIGetCACaps\fR request to the server and
 print the results.
 .TP
-\fB\-C\fR
-\fIscep-submit\fR will issue \fIGetCACert\fR and \fIGetCAChain\fR
-requests to the server, parse the responses, and then print, in order,
+\fB\-C\fR, \fR\-\-retrieve\-ca\-certificates\fR
+\fIscep-submit\fR will issue a \fIGetCACert\fR
+request to the server, parse the response, and then print, in order,
 the RA certificate, the CA certificate, and any additional certificates.
 .TP
-\fB\-p\fR
-\fIscep-submit\fR will issue a \fIPKIOperation\fR request to the server
-using the passed-in message as the message content.  It will parse the
+\fB\-p\fR, \fB\-\-pki\-message\fR
+\fIscep\-submit\fR will issue a \fIPKIOperation\fR request to the server
+using the passed\-in message as the message content.  It will parse the
 server's response, verify the signature, and if the response includes an
 issued certificate, it will output the \fIpkcsPKIEnvelope\fR in PEM
 format.  If the response indicates an error, it will print the error.
 .TP
-\fB\-g\fR
-\fIscep-submit\fR will issue a \fIPKIOperation\fR request to the server
-using the passed-in message as the message content.  It will parse the
+\fB\-g\fR, \fB\-\-get\-initial\-cert\fR
+\fIscep\-submit\fR will issue a \fIPKIOperation\fR request to the server
+using the passed\-in message as the message content.  It will parse the
 server's response, verify the signature, and if the response includes an
 issued certificate, it will output the \fIpkcsPKIEnvelope\fR in PEM
 format.  If the response indicates an error, it will print the error.
 .SH OPTIONS
 .TP
-\fB\-u\fR SERVER-URL
+\fB\-u\fR \fIURL\fR, \fB\-\-url\fR=\fIURL\fR
 The location of the SCEP interface provided by the CA.  This is
-typically \fIhttp://\fBSERVER\fP/cgi-bin/PKICLIENT.EXE\fR or
+typically \fIhttp://\fBSERVER\fP/cgi\-bin/PKICLIENT.EXE\fR or
 \fIhttp://\fBSERVER\fP/certsrv/mscep/mscep.dll\fR.  This option is
 always required.
 .TP
-\fB\-R\fR CA-certificate-file
+\fB\-R\fR \fIFILE\fR, \fB\-\-cacert\fR=\fIFILE\fR
 The location of the CA certificate which was used to issue the SCEP web
 server's certificate in PEM form. If the URL specified with the
-\fB-u\fR option is an \fIhttps\fR URL, then this option is required.
+\fB\-u\fR option is an \fIhttps\fR URL, then this option is required.
 .TP
-\fB\-N\fR ca-certificate-file
-The location of a PEM-formatted copy of the SCEP server's CA certificate.
+\fB\-N\fR \fIFILE\fR, \fB\-\-signingca\fR=\fIFILE\fR
+The location of a PEM\-formatted copy of the SCEP server's CA certificate.
 A discovered value is normally supplied by the certmonger daemon, but one can
 be specified for troubleshooting purposes.
 .TP
-\fB\-r\fR RA-certificate-file
+\fB\-r\fR \fIFILE\fR, \fB\-\-racert\fR=\fIFILE\fR
 The location of the SCEP server's RA certificate, which is expected to
 be used for signing responses sent by the SCEP server back to the
-client.  This option is required when either the \fB-g\fR flag or the
-\fB-p\fR flag is specified.
+client.  This option is required when either the \fB\-g\fR flag or the
+\fB\-p\fR flag is specified.
 .TP
-\fB\-I\fR other-certificates-file
-The location of a file containing other PEM-formatted certificates which
+\fB\-I\fR \fIFILE\fR, \fB\-\-other\-certs\fR=\fIFILE\fR
+The location of a file containing other PEM\-formatted certificates which
 may be needed in order to properly verify signed responses sent by the
 SCEP server back to the client.  This option may be necessary when
-either the \fB-g\fR flag or the \fB-p\fR flag is specified.
+either the \fB\-g\fR flag or the \fB\-p\fR flag is specified.
 .TP
-\fB\-i\fR ca-identifier
-When called with the \fB-c\fR or \fB-C\fR flag, this option can be used to
+\fB\-i\fR \fINAME\fR, \fB\-\-ca\-identifier\fR=\fINAME\fR
+When called with the \fB\-c\fR or \fB\-C\fR flag, this option can be used to
 specify the CA identifier which is passed to the server as part of the client's
 request.  The default is "0".
 .TP
-\fB\-n\fR
-The SCEP Renewal feature allows a client with a previously-issued certificate
+\fB\-n\fR, \fB\-\-non\-renewal\fR
+The SCEP Renewal feature allows a client with a previously\-issued certificate
 to use that certificate and the associated private key to request a new
 certificate for a different key pair, and can be used to support
 \fIcertmonger\fR's rekeying feature if the SCEP server advertises support for
-it.  This option forces the \fIscep-submit\fR helper to prefer to issue
+it.  This option forces the \fIscep\-submit\fR helper to prefer to issue
 requests which do not make use of this feature.
 .TP
-\fB-v\fR
+\fB-v\fR, \fB\-\-verbose\fR
 Increases the logging level.  Use twice for more logging.  This option
 is mainly useful for troubleshooting.
 
@@ -100,7 +100,7 @@ is mainly useful for troubleshooting.
 .TP
 0
 if the certificate was issued. The pkcsPKIEnvelope will be printed in
-PEM-encoded form.
+PEM\-encoded form.
 .TP
 1
 if the CA is still thinking.  A cookie (state) value will be printed.
@@ -131,22 +131,22 @@ Please file tickets for any that you find at https://fedorahosted.org/certmonger
 .SH SEE ALSO
 \fBcertmonger\fR(8)
 \fBgetcert\fR(1)
-\fBgetcert-add-ca\fR(1)
-\fBgetcert-add-scep-ca\fR(1)
-\fBgetcert-list-cas\fR(1)
-\fBgetcert-list\fR(1)
-\fBgetcert-modify-ca\fR(1)
-\fBgetcert-refresh-ca\fR(1)
-\fBgetcert-refresh\fR(1)
-\fBgetcert-rekey\fR(1)
-\fBgetcert-remove-ca\fR(1)
-\fBgetcert-resubmit\fR(1)
-\fBgetcert-start-tracking\fR(1)
-\fBgetcert-status\fR(1)
-\fBgetcert-stop-tracking\fR(1)
-\fBcertmonger-certmaster-submit\fR(8)
-\fBcertmonger-dogtag-ipa-renew-agent-submit\fR(8)
-\fBcertmonger-dogtag-submit\fR(8)
-\fBcertmonger-ipa-submit\fR(8)
-\fBcertmonger-local-submit\fR(8)
+\fBgetcert\-add\-ca\fR(1)
+\fBgetcert\-add\-scep\-ca\fR(1)
+\fBgetcert\-list\-cas\fR(1)
+\fBgetcert\-list\fR(1)
+\fBgetcert\-modify\-ca\fR(1)
+\fBgetcert\-refresh\-ca\fR(1)
+\fBgetcert\-refresh\fR(1)
+\fBgetcert\-rekey\fR(1)
+\fBgetcert\-remove\-ca\fR(1)
+\fBgetcert\-resubmit\fR(1)
+\fBgetcert\-start\-tracking\fR(1)
+\fBgetcert\-status\fR(1)
+\fBgetcert\-stop\-tracking\fR(1)
+\fBcertmonger\-certmaster\-submit\fR(8)
+\fBcertmonger\-dogtag\-ipa\-renew\-agent\-submit\fR(8)
+\fBcertmonger\-dogtag\-submit\fR(8)
+\fBcertmonger\-ipa\-submit\fR(8)
+\fBcertmonger\-local\-submit\fR(8)
 \fBcertmonger_selinux\fR(8)

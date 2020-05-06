@@ -266,3 +266,9 @@ submit_h_CFLAGS = $(AM_CFLAGS) $(CURL_CFLAGS) $(XML_CFLAGS) -DCM_SUBMIT_H_MAIN
 submit_h_SOURCES = submit-h.c submit-h.h log.c log.h tm.c tm.h
 submit_h_LDADD = $(CURL_LIBS) $(XML_LIBS) $(TALLOC_LIBS) $(LTLIBICONV) \
 		 $(POPT_LIBS)
+
+.PHONY: manlint
+manlint: $(man_MANS)
+	for page in $(MANS); do \
+		mandoc -T lint $${page}; \
+	done

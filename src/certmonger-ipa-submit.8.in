@@ -1,21 +1,23 @@
-.TH certmonger 8 "16 April 2015" "certmonger Manual"
+.TH CERTMONGER 8 "April 16, 2015" "certmonger Manual"
 
 .SH NAME
-ipa-submit
+ipa\-submit
 
 .SH SYNOPSIS
-ipa-submit [-h serverHost] [-H serverURL] [-c cafile] [-C capath]
-[[-K]  | [-t keytab] [-k submitterPrincipal]] [-P principalOfRequest] [-T profile] [csrfile]
+ipa\-submit [\-h serverHost] [\-H serverURL] [\-d domain] [\-L ldapurl] [\-b basedn]
+[\-c cafile] [\-C capath] [[\-K] | [\-t keytab] [\-k submitterPrincipal]]
+[\-u UID] [\-W PASSWORD] [\-w FILE] [\-P principalOfRequest] [\-T profile]
+[\-X issuer] [csrfile]
 
 .SH DESCRIPTION
-\fIipa-submit\fR is the helper which \fIcertmonger\fR uses to make
-requests to IPA-based CAs.  It is not normally run interactively,
+\fIipa\-submit\fR is the helper which \fIcertmonger\fR uses to make
+requests to IPA\-based CAs.  It is not normally run interactively,
 but it can be for troubleshooting purposes.  The signing request which is
 to be submitted should either be in a file whose name is given as an argument,
-or fed into \fIipa-submit\fR via stdin.
+or fed into \fIipa\-submit\fR via stdin.
 
 \fBcertmonger\fR supports retrieving trusted certificates from IPA CAs.  See
-\fBgetcert-request\fR(1) and \fBgetcert-resubmit\fR(1) for information about
+\fBgetcert\-request\fR(1) and \fBgetcert\-resubmit\fR(1) for information about
 specifying where those certificates should be stored on the local system.
 Trusted certificates are retrieved from the \fBcaCertificate\fR attribute of
 entries present at and below \fIcn=cacert,cn=ipa,cn=etc,\fR$BASE in the IPA
@@ -24,27 +26,27 @@ LDAP server's directory tree, where $BASE defaults to the value of the
 
 .SH OPTIONS
 .TP
-\fB\-P\fR csrPrincipal
+\fB\-P\fR \fIPRINCIPAL\fR, \fB\-\-principal\-of\-request\fR=\fIPRINCIPAL\fR
 Identifies the principal name of the service for which the certificate is being
 issued.  This setting is required by IPA and must always be specified.
 .TP
-\fB\-X\fR issuer
+\fB\-X\fR \fINAME\fR, \fB\-\-issuer\fB=\fINAME\fR
 Requests that the certificate be processed by the specified certificate issuer.
 By default, if this flag is not specified, and the \fBCERTMONGER_CA_ISSUER\fR
 variable is set in the environment, then the value of the environment variable
 will be used.  This setting is optional, and if a server returns error 3005,
 indicating that it does not understand multiple profiles, the request will be
-re-submitted without specifying an issuer name.
+re\-submitted without specifying an issuer name.
 .TP
-\fB\-T\fR profile
+\fB\-T\fR \fINAME\fR, \fB\-\-profile\fR=\fINAME\fR
 Requests that the certificate be processed using the specified certificate profile.
 By default, if this flag is not specified, and the \fBCERTMONGER_CA_PROFILE\fR
 variable is set in the environment, then the value of the environment variable
 will be used.  This setting is optional, and if a server returns error 3005,
 indicating that it does not understand multiple profiles, the request will be
-re-submitted without specifying a profile.
+re\-submitted without specifying a profile.
 .TP
-\fB\-h\fR serverHost
+\fB\-h\fR \fIHOSTNAME\fR, \fB\-\-host\fR=\fIHOSTNAME\fR
 Submit the request to the IPA server running on the named host.  The default is
 to read the location of the host from \fB/etc/ipa/default.conf\fR.
 If no server is configured, or the configured server cannot be reached, the
@@ -53,7 +55,7 @@ domain.  If servers are found, they will be searched for entries pointing to
 IPA masters running the "CA" service, and the client will attempt to contact
 each of those in turn.
 .TP
-\fB\-H\fR serverURL
+\fB\-H\fR \fIURL\fR, \fB\-\-xmlrpc\-url\fR=\fIURL\fR
 Submit the request to the IPA server at the specified location.  The default is
 to read the location of the host from \fB/etc/ipa/default.conf\fR.
 If no server is configured, or the configured server cannot be reached, the
@@ -62,49 +64,64 @@ domain.  If servers are found, they will be searched for entries pointing to
 IPA masters running the "CA" service, and the client will attempt to contact
 each of those in turn.
 .TP
-\fB\-c\fR cafile
+\fB\-L\fR \fIURL\fR, \fB\-\-ldap\-url\fR=\fIURL\fR
+Provide the IPA LDAP service location rather than using DNS discovery.
+The default is to read the location of the host from
+\fB/etc/ipa/default.conf\fR and use DNS discovery to find the set of
+_ldap._tcp.DOMAIN values and pick one for use.
+.TP
+\fB\-d\fR \fIDOMAIN\fR, \fB\-\-domain\fR=\fIDOMAIN\fR
+Use this domain when doing DNS discovery to locate LDAP servers for the IPA
+installation. The default is to read the location of the host from
+\fB/etc/ipa/default.conf\fR.
+.TP
+\fB\-b\fR \fIBASEDN\fR, \fB\-\-basedn\fR=\fIBASEDN\fR
+Use this basedn to search for an IPA installation in LDAP. The default is to
+read the location of the host from \fB/etc/ipa/default.conf\fR.
+.TP
+\fB\-c\fR \fIFILE\fR, \fB\-\-cafile\fR=\fIFILE\fR
 The server's certificate was issued by the CA whose certificate is in the named
 file.  The default value is \fI/etc/ipa/ca.crt\fR.
 .TP
-\fB\-C\fR capath
+\fB\-C\fR \fIPATH\fR, \fB\-\-capath\fR=\fIDIR\fR
 Trust the server if its certificate was issued by a CA whose certificate is in
 a file in the named directory.  There is no default for this option, and it
 is not expected to be necessary.
 .TP
-\fB\-t\fR keytab
+\fB\-t\fR \fIKEYTAB\fR, \fB\-\-keytab\fR=\fIKEYTAB\fR
 Authenticate to the IPA server using Kerberos with credentials derived from
 keys stored in the named keytab.  The default value can vary, but it is usually
 \fI/etc/krb5.keytab\fR.
-This option conflicts with the \fB-K\fR, \fB-u\fR, \fB-W\fR, and \fB-w\fR
+This option conflicts with the \fB\-K\fR, \fB\-u\fR, \fB\-W\fR, and \fB\-w\fR
 options.
 .TP
-\fB\-k\fR authPrincipal
+\fB\-k\fR \fIPRINCIPAL\fR, \fB\-\-submitter\-principal\fR=\fIPRINCIPAL\fR
 Authenticate to the IPA server using Kerberos with credentials derived from
 keys stored in the named keytab for this principal name.  The default value is
 the \fBhost\fR service for the local host in the local realm.
-This option conflicts with the \fB-K\fR, \fB-u\fR, \fB-W\fR, and \fB-w\fR
+This option conflicts with the \fB\-K\fR, \fB\-u\fR, \fB\-W\fR, and \fB\-w\fR
 options.
 .TP
-\fB\-K\fR
+\fB\-K\fR, \fB\-\-use\-ccache\-creds\fR
 Authenticate to the IPA server using Kerberos with credentials derived from the
 default credential cache rather than a keytab.
-This option conflicts with the \fB-k\fR, \fB-u\fR, \fB-W\fR, and \fB-w\fR
+This option conflicts with the \fB\-k\fR, \fB\-u\fR, \fB\-W\fR, and \fB\-w\fR
 options.
 .TP
-\fB\-u\fR uid
+\fB\-u\fR \fIUSERNAME\fR, \fB\-\-uid\fR=\fIUSERNAME\fR
 Authenticate to the IPA server using a user name and password, using the
 specified value as the user name.
-This option conflicts with the \fB-k\fR, \fB-K\fR, and \fB-t\fR options.
+This option conflicts with the \fB\-k\fR, \fB\-K\fR, and \fB\-t\fR options.
 .TP
-\fB\-W\fR pwd
+\fB\-W\fR \fIPASSWORD\fR, \fB\-\-pwd\fR=\fIPASSWORD\fR
 Authenticate to the IPA server using a user name and password, using the
 specified value as the password.
-This option conflicts with the \fB-k\fR, \fB-K\fR, \fB-t\fR, and \fB-w\fR options.
+This option conflicts with the \fB\-k\fR, \fB\-K\fR, \fB\-t\fR, and \fB\-w\fR options.
 .TP
-\fB\-w\fR pwdfile
+\fB\-w\fR \fIFILE\fR, \fB\-\-pwdfile\fR=\fIFILE\fR
 Authenticate to the IPA server using a user name and password, reading the
 password from the specified file.
-This option conflicts with the \fB-k\fR, \fB-K\fR, \fB-t\fR, and \fB-W\fR options.
+This option conflicts with the \fB\-k\fR, \fB\-K\fR, \fB\-t\fR, and \fB\-W\fR options.
 
 .SH EXIT STATUS
 .TP
@@ -131,7 +148,7 @@ pair.
 .TP
 .I /etc/ipa/default.conf
 is the IPA client configuration file.  This file is consulted to determine
-the URL for the IPA server's XML-RPC interface.
+the URL for the IPA server's XML\-RPC interface.
 
 .SH BUGS
 Please file tickets for any that you find at https://fedorahosted.org/certmonger/
@@ -139,23 +156,23 @@ Please file tickets for any that you find at https://fedorahosted.org/certmonger
 .SH SEE ALSO
 \fBcertmonger\fR(8)
 \fBgetcert\fR(1)
-\fBgetcert-add-ca\fR(1)
-\fBgetcert-add-scep-ca\fR(1)
-\fBgetcert-list-cas\fR(1)
-\fBgetcert-list\fR(1)
-\fBgetcert-modify-ca\fR(1)
-\fBgetcert-refresh-ca\fR(1)
-\fBgetcert-refresh\fR(1)
-\fBgetcert-rekey\fR(1)
-\fBgetcert-remove-ca\fR(1)
-\fBgetcert-request\fR(1)
-\fBgetcert-resubmit\fR(1)
-\fBgetcert-start-tracking\fR(1)
-\fBgetcert-status\fR(1)
-\fBgetcert-stop-tracking\fR(1)
-\fBcertmonger-certmaster-submit\fR(8)
-\fBcertmonger-dogtag-ipa-renew-agent-submit\fR(8)
-\fBcertmonger-dogtag-submit\fR(8)
-\fBcertmonger-local-submit\fR(8)
-\fBcertmonger-scep-submit\fR(8)
+\fBgetcert\-add\-ca\fR(1)
+\fBgetcert\-add\-scep\-ca\fR(1)
+\fBgetcert\-list\-cas\fR(1)
+\fBgetcert\-list\fR(1)
+\fBgetcert\-modify\-ca\fR(1)
+\fBgetcert\-refresh\-ca\fR(1)
+\fBgetcert\-refresh\fR(1)
+\fBgetcert\-rekey\fR(1)
+\fBgetcert\-remove\-ca\fR(1)
+\fBgetcert\-request\fR(1)
+\fBgetcert\-resubmit\fR(1)
+\fBgetcert\-start\-tracking\fR(1)
+\fBgetcert\-status\fR(1)
+\fBgetcert\-stop\-tracking\fR(1)
+\fBcertmonger\-certmaster\-submit\fR(8)
+\fBcertmonger\-dogtag\-ipa\-renew\-agent\-submit\fR(8)
+\fBcertmonger\-dogtag\-submit\fR(8)
+\fBcertmonger\-local\-submit\fR(8)
+\fBcertmonger\-scep\-submit\fR(8)
 \fBcertmonger_selinux\fR(8)

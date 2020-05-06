@@ -1,4 +1,4 @@
-.TH certmonger 1 "28 June 2016" "certmonger Manual"
+.TH CERTMONGER 1 "June 28, 2016" "certmonger Manual"
 
 .SH NAME
 getcert
@@ -12,35 +12,35 @@ monitoring or attempting to obtain.
 
 .SH ENROLLMENT OPTIONS
 .TP
-\fB\-c\fR NAME
+\fB\-c\fR \fINAME\fR, \fB\-\-ca\fR=\fINAME\fR
 List only entries which use the specified CA.  The name of the CA should
-correspond to one listed by \fIgetcert list-cas\fR.
+correspond to one listed by \fIgetcert list\-cas\fR.
 
 .SH LISTING OPTIONS
 .TP
-\fB\-r\fR
+\fB\-r\fR, \fB\-\-requests\-only\fR
 List only entries which are either currently being enrolled or refreshed.
 .TP
-\fB\-t\fR
+\fB\-t\fR, \fB\-\-tracking\-only\fR
 List only entries which are not currently being enrolled or refreshed.
 .TP
-\fB\-u\fR|\fB--utc\fR
+\fB\-u\fR, \fB\-\-utc\fR
 Display timestamps in UTC instead of local time.
 
 .TP
-\fB\-d\fR DIR
+\fB\-d\fR \fBDIR\fR, \fB\-\-dbdir\fR=\fIDIR\fR
 List only entries which use an NSS database in the specified directory
 for storing the certificate.
 .TP
-\fB\-n\fR NAME
+\fB\-n\fR \fINAME\fR, \fB\-\-nickname\fR=\fINAME\fR
 List only tracking requests which use an NSS database and the specified
 nickname for storing the certificate.
 .TP
-\fB\-f\fR FILE
+\fB\-f\fR \fIFILE\fR, \fB\-\-certfile\fR=\fIFILE\fR
 List only tracking requests which specify that the certificate should be
 stored in the specified file.
 .TP
-\fB\-i\fR NAME
+\fB\-i\fR \fINAME\fR, \fB\-\-id\fR=\fINAME\fR
 List only tracking requests which use this request nickname.
 
 .SH STATES
@@ -53,11 +53,11 @@ The service is currently generating a new key pair.
 .TP
 NEED_KEY_GEN_PERMS
 The service encountered a filesystem permission error while attempting
-to save the newly-generated key pair.
+to save the newly\-generated key pair.
 .TP
 NEED_KEY_GEN_PIN
 The service is missing the PIN which is required to access an NSS
-database in order to save the newly-generated key pair, or it has an
+database in order to save the newly\-generated key pair, or it has an
 incorrect PIN for a database.
 .TP
 NEED_KEY_GEN_TOKEN
@@ -75,7 +75,7 @@ The service is currently reading information about the key pair.
 .TP
 NEED_KEYINFO_READ_PIN
 The service is missing the PIN which is required to access an NSS
-database in order to read information about the newly-generated key pair, or
+database in order to read information about the newly\-generated key pair, or
 it has an incorrect PIN for a database, or has an incorrect password for
 accessing a key stored in encrypted PEM format.
 .TP
@@ -161,8 +161,8 @@ The CA approved the signing request, and the service is about to save the
 issued certificate to the location where it has been told to save it.
 .TP
 PRE_SAVE_CERT
-The service is running a configured pre-saving command before saving the
-newly-issued certificate to the location where it has been told to save
+The service is running a configured pre\-saving command before saving the
+newly\-issued certificate to the location where it has been told to save
 it.
 .TP
 START_SAVING_CERT
@@ -175,16 +175,16 @@ where it has been told to save it.
 .TP
 NEED_CERTSAVE_PERMS
 The service encountered a filesystem permission error while attempting
-to save the newly-issued certificate to the location where it has been
+to save the newly\-issued certificate to the location where it has been
 told to save it.
 .TP
 NEED_CERTSAVE_TOKEN
-The service is unable to find the token in which the newly-issued
+The service is unable to find the token in which the newly\-issued
 certificate is to be stored.
 .TP
 NEED_CERTSAVE_PIN
 The service is missing the PIN which is required to access an NSS
-database in order to save the newly-issued certificate to the location
+database in order to save the newly\-issued certificate to the location
 where it has been told to save it.
 .TP
 NEED_TO_SAVE_CA_CERTS
@@ -231,22 +231,22 @@ issuer's certificate to the locations where it has been told to save
 them.
 .TP
 POST_SAVED_CERT
-The service is running a configured post-saving command after saving the
-newly-issued certificate to the location where it has been told to save
+The service is running a configured post\-saving command after saving the
+newly\-issued certificate to the location where it has been told to save
 them.
 .TP
 MONITORING
 The service is monitoring the certificate and waiting for its
-not-valid-after date to approach.  This is expected to be the status
+not\-valid\-after date to approach.  This is expected to be the status
 most often seen.
 .TP
 NEED_TO_NOTIFY_VALIDITY
 The service is about to notify the system administrator that the
-certificate's not-valid-after date is approaching.
+certificate's not\-valid\-after date is approaching.
 .TP
 NOTIFYING_VALIDITY
 The service is notifying the system administrator that the certificate's
-not-valid-after date is approaching.
+not\-valid\-after date is approaching.
 .TP
 NEED_TO_NOTIFY_REJECTION
 The service is about to notify the system administrator that the
@@ -350,23 +350,23 @@ Please file tickets for any that you find at https://fedorahosted.org/certmonger
 .SH SEE ALSO
 \fBcertmonger\fR(8)
 \fBgetcert\fR(1)
-\fBgetcert-add-ca\fR(1)
-\fBgetcert-add-scep-ca\fR(1)
-\fBgetcert-list-cas\fR(1)
-\fBgetcert-modify-ca\fR(1)
-\fBgetcert-refresh-ca\fR(1)
-\fBgetcert-refresh\fR(1)
-\fBgetcert-rekey\fR(1)
-\fBgetcert-remove-ca\fR(1)
-\fBgetcert-request\fR(1)
-\fBgetcert-resubmit\fR(1)
-\fBgetcert-start-tracking\fR(1)
-\fBgetcert-status\fR(1)
-\fBgetcert-stop-tracking\fR(1)
-\fBcertmonger-certmaster-submit\fR(8)
-\fBcertmonger-dogtag-ipa-renew-agent-submit\fR(8)
-\fBcertmonger-dogtag-submit\fR(8)
-\fBcertmonger-ipa-submit\fR(8)
-\fBcertmonger-local-submit\fR(8)
-\fBcertmonger-scep-submit\fR(8)
+\fBgetcert\-add\-ca\fR(1)
+\fBgetcert\-add\-scep\-ca\fR(1)
+\fBgetcert\-list\-cas\fR(1)
+\fBgetcert\-modify\-ca\fR(1)
+\fBgetcert\-refresh\-ca\fR(1)
+\fBgetcert\-refresh\fR(1)
+\fBgetcert\-rekey\fR(1)
+\fBgetcert\-remove\-ca\fR(1)
+\fBgetcert\-request\fR(1)
+\fBgetcert\-resubmit\fR(1)
+\fBgetcert\-start\-tracking\fR(1)
+\fBgetcert\-status\fR(1)
+\fBgetcert\-stop\-tracking\fR(1)
+\fBcertmonger\-certmaster\-submit\fR(8)
+\fBcertmonger\-dogtag\-ipa\-renew\-agent\-submit\fR(8)
+\fBcertmonger\-dogtag\-submit\fR(8)
+\fBcertmonger\-ipa\-submit\fR(8)
+\fBcertmonger\-local\-submit\fR(8)
+\fBcertmonger\-scep\-submit\fR(8)
 \fBcertmonger_selinux\fR(8)

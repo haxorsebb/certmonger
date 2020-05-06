@@ -1,196 +1,214 @@
-.TH certmonger 8 "27 Oct 2015" "certmonger Manual"
+.TH CERTMONGER 8 "October 27, 2015" "certmonger Manual"
 
 .SH NAME
-dogtag-submit
+dogtag\-submit
 
 .SH SYNOPSIS
-dogtag-submit -E EE-URL -A AGENT-URL
-[-d dbdir]
-[-n nickname]
-[-i cainfo]
-[-C capath]
-[-c certfile]
-[-k keyfile]
-[-p pinfile]
-[-P pin]
-[-s serial (hex)]
-[-D serial (decimal)]
-[-S state]
-[-T profile]
-[-O param=value]
-[-N | -R]
-[-t]
-[-o option=value]
-[-a ]
-[-u username]
-[-U userdn]
-[-W userpassword]
-[-w userpasswordfile]
-[-Y userpin]
-[-y userpinfile]
-[-v]
+dogtag\-submit \-E EE\-URL \-A AGENT\-URL
+[\-d DIR]
+[\-n NAME]
+[\-i FILE]
+[\-C DIR]
+[\-c FILE]
+[\-k FILE]
+[\-p FILE]
+[\-P PIN]
+[\-s serial (hex)]
+[\-D serial (decimal)]
+[\-S state]
+[\-T profile]
+[\-O param=value]
+[\-N | \-R]
+[\-t]
+[\-o option=value]
+[\-a]
+[\-u username]
+[\-U userdn]
+[\-W PASSWORD]
+[\-w FILE]
+[\-Y PIN]
+[\-y FILE]
+[\-v]
 [csrfile]
 
 .SH DESCRIPTION
-\fIdogtag-submit\fR is the helper which \fIcertmonger\fR can use to make
+\fIdogtag\-submit\fR is the helper which \fIcertmonger\fR can use to make
 certificate enrollment and renewal requests to Dogtag servers.  It is not
 normally run interactively, but it can be for troubleshooting purposes.
 
-The preferred option is to request a renewal of an already-issued certificate,
-using its serial number, which can be read from a PEM-formatted certificate
+The preferred option is to request a renewal of an already\-issued certificate,
+using its serial number, which can be read from a PEM\-formatted certificate
 provided in the \fICERTMONGER_CERTIFICATE\fR environment variable, or via the
-\fB-s\fR or \fB-D\fR option on the command line.  If no serial number is
+\fB\-s\fR or \fB\-D\fR option on the command line.  If no serial number is
 provided, then the client will attempt to obtain a new certificate by
 submitting a signing request to the CA.
 
 The signing request which is to be submitted should either be in a file whose
-name is given as an argument, or fed into \fIdogtag-submit\fR via stdin.
+name is given as an argument, or fed into \fIdogtag\-submit\fR via stdin.
 
 \fBcertmonger\fR does not yet support retrieving trust information from Dogtag
 CAs.
 
 .SH OPTIONS
 .TP
-\fB\-E\fR EE-URL
-The top-level URL for the end-entity interface provided by the CA, through
+\fB\-E\fR \fIEE\-URL\fR, \fB\-\-ee\-url\fR=\fIEE\-URL\fR
+The top\-level URL for the end\-entity interface provided by the CA, through
 which the initial enrollment request will be submitted.  This is typically
 \fIhttp://\fBSERVER\fP:\fBEEPORT\fP/ca/ee/ca\fR.
 .TP
-\fB\-A\fR AGENT-URL
-The top-level URL for the agent interface provided by the CA, through which the
+\fB\-A\fR \fIAGENT\-URL\fR, \fB\-\-agent\-url\fR=\fIAGENT\-URL\fR
+The top\-level URL for the agent interface provided by the CA, through which the
 request can be approved using agent credentials.  This is typically
 \fIhttps://\fBSERVER\fP:\fBAGENTPORT\fP/ca/agent/ca\fR.
 .TP
-\fB\-d\fR dbdir \fB\-n\fR nickname \fB\-c\fR certfile \fB\-k\fR keyfile
-The location of the key and certificate which the client should use to
-authenticate to the CA's agent interface.  Exactly which values are
-meaningful depend on which cryptography library your copy of libcurl was
-linked with.
-.TP
-\fB\-p\fR pinfile
-The name of a file which contains a PIN/password which will be needed in
-order to make use of the agent credentials.
-.TP
-\fB\-i\fR cainfo \fB\-C\fR capath
+\fB\-i\fR \fIFILE\fR, \fB\-\-cafile\fR=\fIFILE\fR
 The location of a file containing a copy of the CA's certificate, against which
-the CA server's certificate will be verified, or a directory containing, among
-other things, such a file.
+the CA server's certificate will be verified.
 .TP
-\fB-s\fR serial
-The serial number of an already-issued certificate for which the client should
-attempt to obtain a new certificate, in hexadecimal form, if one can not be
-read from the \fICERTMONGER_CERTIFICATE\fR environment variable.
+\fB\-C\fR \fIDIR\fR, \fB\-\-capath\fR=\fIDIR\fR
+The location of a directory containing a copy of the CA's certificate(s),
+against which the CA server's certificate will be verified.
 .TP
-\fB-D\fR serial
-The serial number of an already-issued certificate for which the client should
+\fB\-D\fR \fISERIAL\fR, \fB\-\-serial\fR=\fISERIAL\fR
+The serial number of an already\-issued certificate for which the client should
 attempt to obtain a new certificate, in decimal form, if one can not be
 read from the \fICERTMONGER_CERTIFICATE\fR environment variable.
 .TP
-\fB-S\fR state
+\fB\-s\fR SERIAL, \fB\-\-hex\-serial\fB=\fISERIAL\fR
+The serial number of an already\-issued certificate for which the client should
+attempt to obtain a new certificate, in hexadecimal form, if one can not be
+read from the \fICERTMONGER_CERTIFICATE\fR environment variable.
+.TP
+\fB\-S\fR \fISTATE\fR, \fB\-\-state\fR=\fISTATE\fR
 A cookie value provided by a previous instance of this helper, if the helper
-is being asked to continue a multi-step enrollment process.  If the
+is being asked to continue a multi\-step enrollment process.  If the
 \fICERTMONGER_COOKIE\fR environment variable is set, its value is used.
 .TP
-\fB-T\fR profile/template
+\fB\-T\fR \fINAME\fR, \fB\-\-profile\fR=\fINAME\fR
 The name of the type of certificate which the client should request from the CA
-if it is not renewing a certificate (per the \fB-s\fR option above).  If the
+if it is not renewing a certificate (per the \fB\-s\fR option above).  If the
 \fICERTMONGER_CA_PROFILE\fR environment variable is set, its value is used.
 Otherwise, the default value is \fBcaServerCert\fP.
 .TP
-\fB-O\fR param=value
+\fB\-O\fR \fIparam=value\fR, \fB\-\-approval\-options\fR=\fIparam=value\fR
 An additional parameter to pass to the server when approving the signing
-request using agent credentials.  By default, any server-supplied default
+request using agent credentials.  By default, any server\-supplied default
 settings are applied.  This option can be used either to override a
-server-supplied default setting, or to supply one which would otherwise have
-not been used.  Requires the \fB-A\fR option.
+server\-supplied default setting, or to supply one which would otherwise have
+not been used.  Requires the \fB\-A\fR option.
 .TP
-\fB-N\fR
-Even if an already-issued certificate is available in the
+\fB\-N\fR, \fB\-\-force\-new\fR
+Even if an already\-issued certificate is available in the
 \fICERTMONGER_CERTIFICATE\fR environment variable, or a serial number has been
 provided, don't attempt to renew a certificate using its serial number.
 Instead, attempt to obtain a new certificate using the signing request.
 The default behavior is to request a renewal if possible.
 .TP
-\fB-R\fR
-Negates the effect of the \fB-N\fR flag.
+\fB\-R\fR, \fB\-\-force\-renew\fR
+Negates the effect of the \fB\-N\fR flag.
 .TP
-\fB-t\fR
+\fB\-t\fR, \fB\-\-profile\-list\fR
 Instead of attempting to obtain a new certificate, query the server for a list
 of the enabled enrollment profiles.
 .TP
-\fB-o\fR param=value
+\fB\-o\fR \fIparam=value\fR, \fB\-\-submit\-option\fR=\fIparam=value\fR
 When initially submitting a request to the CA, add the specified parameter and
 value along with any request parameters which would otherwise be sent.
 .TP
-\fB-a\fR
+\fB\-a\fR, \fB\-\-agent\-submit\fR
 Use agent credentials, specified using some combination of the \fB\-d\fR,
 \fB\-n\fR, \fB\-c\fR, and \fB\-k\fR flags, to authenticate to the CA when
 initially submitting a request to the CA or retrieving the list of enabled
 enrollment profiles.
 This is typically required when the enrollment profile being used uses
-\fIAgentCertAuth\fR-based
+\fIAgentCertAuth\fR\-based
 authentication,
-and requires that the URL specified using the \fB-E\fR flag be an HTTPS URL,
-or when the URL specified using the \fB-E\fR flag is an HTTPS URL.
+and requires that the URL specified using the \fB\-E\fR flag be an HTTPS URL,
+or when the URL specified using the \fB\-E\fR flag is an HTTPS URL.
 .TP
-\fB-u username\fR
+\fB\-u username\fR, \fB\-\-uid\fR=\fIusername\fR
 When initially submitting a request to the CA, supply the specified value as a user name.
 This is typically required when the enrollment profile being used uses
-\fIUidPwdDirAuth\fR-based or \fINISAuth\fR-based
+\fIUidPwdDirAuth\fR\-based or \fINISAuth\fR\-based
 authentication.
 .TP
-\fB-U userdn\fR
+\fB\-U\fR \fIuserdn\fR, \fB\-\-upn\fR=\fIuserdn\fR
 When initially submitting a request to the CA, supply the specified value as the DN
 (distinguished name) of the user's entry in a directory server which the CA is
 configured to use for checking the user's password.
 This is typically required when the enrollment profile being used uses
-\fIUdnPwdDirAuth\fR-based
+\fIUdnPwdDirAuth\fR\-based
 authentication.
 .TP
-\fB-W userpassword\fR
+\fB\-W\fR \fIPASSWORD\fR, \fB\-\-userpwd\fR=\fIPASSWORD\fR
 When initially submitting a request to the CA, supply the specified value as the password
-for the user whose name is specified with the \fB-u\fR option, or whose DN is
-specified with the \fB-U\fR option.
+for the user whose name is specified with the \fB\-u\fR option, or whose DN is
+specified with the \fB\-U\fR option.
 This is typically only required when the enrollment profile being used uses
-\fIUidPwdDirAuth\fR-based, \fIUserPwdDirAuth\fR-based, or \fINISAuth\fR-based
+\fIUidPwdDirAuth\fR\-based, \fIUserPwdDirAuth\fR\-based, or \fINISAuth\fR\-based
 authentication.
-If the URL specified using the \fB-E\fR flag is not an HTTPS URL, this value
+If the URL specified using the \fB\-E\fR flag is not an HTTPS URL, this value
 will not be encrypted.
 .TP
-\fB-w userpasswordfile\fR
+\fB\-w\fR \fIFILE\fR, \fB\-\-userpwdfile\fR=\fIFILE\fR
 When initially submitting a request to the CA, read from the specified file a
-password to supply for the user whose name is specified with the \fB-u\fR
-option, or whose DN is specified with the \fB-U\fR option.
+password to supply for the user whose name is specified with the \fB\-u\fR
+option, or whose DN is specified with the \fB\-U\fR option.
 This is typically only required when the enrollment profile being used uses
-\fIUidPwdDirAuth\fR-based, \fIUserPwdDirAuth\fR-based, or \fINISAuth\fR-based
+\fIUidPwdDirAuth\fR\-based, \fIUserPwdDirAuth\fR\-based, or \fINISAuth\fR\-based
 authentication.
-If the URL specified using the \fB-E\fR flag is not an HTTPS URL, this value
+If the URL specified using the \fB\-E\fR flag is not an HTTPS URL, this value
 will not be encrypted.
 .TP
-\fB-Y userpin\fR
+\fB\-Y\fR \fIPIN\fR, \fB\-\-userpin\fR=\fIPIN\fR
 When initially submitting a request to the CA, supply the specified value as the PIN
-for the user whose name is specified with the \fB-u\fR option, or whose DN is
-specified with the \fB-U\fR option.
+for the user whose name is specified with the \fB\-u\fR option, or whose DN is
+specified with the \fB\-U\fR option.
 This is typically only required when the enrollment profile being used uses
-\fIUidPwdPinDirAuth\fR-based
+\fIUidPwdPinDirAuth\fR\-based
 authentication.
-If the URL specified using the \fB-E\fR flag is not an HTTPS URL, this value
+If the URL specified using the \fB\-E\fR flag is not an HTTPS URL, this value
 will not be encrypted.
 .TP
-\fB-y userpinfile\fR
+\fB\-y\fR \fIFILE\fR, \fB\-\-userpinfile\fR=\fIFILE\fR
 When initially submitting a request to the CA, read from the specified file a
-PIN to supply for the user whose name is specified with the \fB-u\fR
-option, or whose DN is specified with the \fB-U\fR option.
+PIN to supply for the user whose name is specified with the \fB\-u\fR
+option, or whose DN is specified with the \fB\-U\fR option.
 This is typically only required when the enrollment profile being used uses
-\fIUidPwdPinDirAuth\fR-based
+\fIUidPwdPinDirAuth\fR\-based
 authentication.
-If the URL specified using the \fB-E\fR flag is not an HTTPS URL, this value
+If the URL specified using the \fB\-E\fR flag is not an HTTPS URL, this value
 will not be encrypted.
 .TP
-\fB-v\fR
+\fB\-v\fR, \fB\-\-verbose\fR
 Increases the logging level.  Use twice for more logging.  This option is mainly
 useful for troubleshooting.
-
+.SH AGENT KEY AND CERTIFICATE OPTIONS
+Options that provide the location for the private key and public certificate
+which the client should use to authenticate to the CA's agent interface.
+The values to use depend on which cryptography library your copy of libcurl
+was linked with.
+.TP
+\fB\-d\fR \fIDIR\fR, \fB\-\-dbdir\fR=\fIDIR\fR
+Use an NSS database in the specified directory for this certificate
+and key. Only valid with \-n.
+.TP
+\fB\-n\fR \fINAME\fR, \fB\-\-nickname\fR=\fINAME\fR
+Use the NSS key with this nickname. Only valid with \-d.
+.TP
+\fB\-c\fR \fIFILE\fR, \fB\-\-certfile\fR=\fIFILE\fR
+The PEM file that contains the public certificate. Only valid with \-k.
+.TP
+\fB\-k\fR \fIFILE\fR, \fB\-\-keyfile\fR=\fIFILE\fR
+The PEM file that contains the private certificate. Only valid with \-c.
+.TP
+\fB\-p\fR \fIFILE\fR, \fB\-\-sslpinfile\fR=\fIFILE\fR
+The name of a file which contains a PIN/password which will be needed in
+order to make use of the agent credentials.
+.TP
+\fB\-P\fR \fIPIN\fR, \fB\-\-sslpin\fR=\fIPIN\fR
+The name of a file which contains a PIN/password which will be needed in
+order to make use of the agent credentials.
 .SH EXIT STATUS
 .TP
 0
@@ -222,22 +240,22 @@ Please file tickets for any that you find at https://fedorahosted.org/certmonger
 .SH SEE ALSO
 \fBcertmonger\fR(8)
 \fBgetcert\fR(1)
-\fBgetcert-add-ca\fR(1)
-\fBgetcert-add-scep-ca\fR(1)
-\fBgetcert-list-cas\fR(1)
-\fBgetcert-list\fR(1)
-\fBgetcert-modify-ca\fR(1)
-\fBgetcert-refresh-ca\fR(1)
-\fBgetcert-refresh\fR(1)
-\fBgetcert-rekey\fR(1)
-\fBgetcert-remove-ca\fR(1)
-\fBgetcert-resubmit\fR(1)
-\fBgetcert-start-tracking\fR(1)
-\fBgetcert-status\fR(1)
-\fBgetcert-stop-tracking\fR(1)
-\fBcertmonger-certmaster-submit\fR(8)
-\fBcertmonger-dogtag-ipa-renew-agent-submit\fR(8)
-\fBcertmonger-ipa-submit\fR(8)
-\fBcertmonger-local-submit\fR(8)
-\fBcertmonger-scep-submit\fR(8)
+\fBgetcert\-add\-ca\fR(1)
+\fBgetcert\-add\-scep\-ca\fR(1)
+\fBgetcert\-list\-cas\fR(1)
+\fBgetcert\-list\fR(1)
+\fBgetcert\-modify\-ca\fR(1)
+\fBgetcert\-refresh\-ca\fR(1)
+\fBgetcert\-refresh\fR(1)
+\fBgetcert\-rekey\fR(1)
+\fBgetcert\-remove\-ca\fR(1)
+\fBgetcert\-resubmit\fR(1)
+\fBgetcert\-start\-tracking\fR(1)
+\fBgetcert\-status\fR(1)
+\fBgetcert\-stop\-tracking\fR(1)
+\fBcertmonger\-certmaster\-submit\fR(8)
+\fBcertmonger\-dogtag\-ipa\-renew\-agent\-submit\fR(8)
+\fBcertmonger\-ipa\-submit\fR(8)
+\fBcertmonger\-local\-submit\fR(8)
+\fBcertmonger\-scep\-submit\fR(8)
 \fBcertmonger_selinux\fR(8)

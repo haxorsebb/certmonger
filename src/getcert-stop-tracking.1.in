@@ -1,10 +1,10 @@
-.TH certmonger 1 "3 November 2009" "certmonger Manual"
+.TH CERTMONGER 1 "November 3, 2009" "certmonger Manual"
 
 .SH NAME
 getcert
 
 .SH SYNOPSIS
-getcert stop-tracking [options]
+getcert stop\-tracking [options]
 
 .SH DESCRIPTION
 Tells \fIcertmonger\fR to stop monitoring or attempting to obtain or
@@ -12,7 +12,7 @@ refresh a certificate.
 
 .SH TRACKING OPTIONS
 .TP
-\fB\-i\fR NAME
+\fB\-i\fR \fINAME\fR, \fB\-\-id\fR=\fINAME\fR
 The certificate was tracked using the request with the specified nickname.
 If this option is not specified, some combination of \fB\-d\fR and
 \fB\-n\fR or \fB\-f\fR can be used to specify which certificate should
@@ -20,55 +20,62 @@ henceforth be forgotten.
 
 .SH KEY AND CERTIFICATE STORAGE OPTIONS
 .TP
-\fB\-d\fR DIR
+\fB\-d\fR \fIDIR\fR, \fR\-\-dbdir\fR=\fIDIR\fR
 The certificate is the one stored in the specified NSS database.
 .TP
-\fB\-n\fR NAME
+\fB\-n\fR \fINAME\fR, \fR\-\-nickname\fR=\fINAME\fR
 The certificate is the one which has this nickname.  Only valid with
 \fB\-d\fR.
 .TP
-\fB\-t\fR TOKEN
+\fB\-t\fR \fITOKEN\fR, \fB\-\-token\fR=\fITOKEN\fR
 If the NSS database has more than one token available, the certificate
 is stored in this token.  This argument only rarely needs to be
 specified.
 Only valid with \fB\-d\fR.
 .TP
-\fB\-f\fR FILE
+\fB\-f\fR \fIFILE\fR, \fB\-\-certfile\fR=\fIFILE\fR
 The certificate is or was to be stored in this file.
 .TP
-\fB\-k\fR FILE
+\fB\-k\fR \fIFILE\fR, \fB\-\-keyfile\fR=\fIFILE\fR
 The private key is or was to be stored in this file.
 Only valid with \fB\-f\fR.
 
 .SH OTHER OPTIONS
 .TP
-\fB\-v\fR
+\fB\-v\fR, \fB\-\-verbose\fR
 Be verbose about errors.  Normally, the details of an error received from
 the daemon will be suppressed if the client can make a diagnostic suggestion.
-
+.SH BUS OPTIONS
+.TP
+\fB\-s\fR, \fB\-\-session\fR
+Connect to certmonger on the session bus rather than the system bus.
+.TP
+\fB\-S\fR, \fB\-\-system\fR
+Connect to certmonger on the system bus rather than the session bus.  This
+is the default.
 .SH BUGS
 Please file tickets for any that you find at https://fedorahosted.org/certmonger/
 
 .SH SEE ALSO
 \fBcertmonger\fR(8)
 \fBgetcert\fR(1)
-\fBgetcert-add-ca\fR(1)
-\fBgetcert-add-scep-ca\fR(1)
-\fBgetcert-list-cas\fR(1)
-\fBgetcert-list\fR(1)
-\fBgetcert-modify-ca\fR(1)
-\fBgetcert-refresh-ca\fR(1)
-\fBgetcert-refresh\fR(1)
-\fBgetcert-rekey\fR(1)
-\fBgetcert-remove-ca\fR(1)
-\fBgetcert-request\fR(1)
-\fBgetcert-resubmit\fR(1)
-\fBgetcert-start-tracking\fR(1)
-\fBgetcert-status\fR(1)
-\fBcertmonger-certmaster-submit\fR(8)
-\fBcertmonger-dogtag-ipa-renew-agent-submit\fR(8)
-\fBcertmonger-dogtag-submit\fR(8)
-\fBcertmonger-ipa-submit\fR(8)
-\fBcertmonger-local-submit\fR(8)
-\fBcertmonger-scep-submit\fR(8)
+\fBgetcert\-add\-ca\fR(1)
+\fBgetcert\-add\-scep\-ca\fR(1)
+\fBgetcert\-list\-cas\fR(1)
+\fBgetcert\-list\fR(1)
+\fBgetcert\-modify\-ca\fR(1)
+\fBgetcert\-refresh\-ca\fR(1)
+\fBgetcert\-refresh\fR(1)
+\fBgetcert\-rekey\fR(1)
+\fBgetcert\-remove\-ca\fR(1)
+\fBgetcert\-request\fR(1)
+\fBgetcert\-resubmit\fR(1)
+\fBgetcert\-start\-tracking\fR(1)
+\fBgetcert\-status\fR(1)
+\fBcertmonger\-certmaster\-submit\fR(8)
+\fBcertmonger\-dogtag\-ipa\-renew\-agent\-submit\fR(8)
+\fBcertmonger\-dogtag\-submit\fR(8)
+\fBcertmonger\-ipa\-submit\fR(8)
+\fBcertmonger\-local\-submit\fR(8)
+\fBcertmonger\-scep\-submit\fR(8)
 \fBcertmonger_selinux\fR(8)

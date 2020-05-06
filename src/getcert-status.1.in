@@ -1,4 +1,4 @@
-.TH certmonger 1 "13 June 2014" "certmonger Manual"
+.TH CERTMONGER 1 "June 13, 2014" "certmonger Manual"
 
 .SH NAME
 getcert
@@ -12,18 +12,18 @@ request and sets an exit status to reflect that status.
 
 .SH SELECTION OPTIONS
 .TP
-\fB\-d\fR DIR
+\fB\-d\fR \fIDIR\fR, \fR\-\-dbdir\fR=\fIDIR\fR
 Check that status of a certificate in the named NSS database.  Must be
-specified with the \fB-n\fR option.
+specified with the \fB\-n\fR option.
 .TP
-\fB\-n\fR NAME
+\fB\-n\fR \fINAME\fR, \fR\-\-nickname\fR=\fINAME\fR
 Check that status of a certificate in with the specified nickname.  Must be
-specified with the \fB-d\fR option.
+specified with the \fB\-d\fR option.
 .TP
-\fB\-f\fR FILE
+\fB\-f\fR \fIFILE\fR, \fB\-\-certfile\fR=\fIFILE\fR
 Check that status of a certificate stored in the specified PEM file.
 .TP
-\fB\-i\fR NAME
+\fB\-i\fR \fINAME\fR, \fB\-\-id\fR=\fINAME\fR
 Check that status of a certificate with the specified request nickname.
 
 .SH EXIT STATUS
@@ -53,24 +53,24 @@ Please file tickets for any that you find at https://fedorahosted.org/certmonger
 .SH SEE ALSO
 \fBcertmonger\fR(8)
 \fBgetcert\fR(1)
-\fBgetcert-add-ca\fR(1)
-\fBgetcert-add-scep-ca\fR(1)
-\fBgetcert-list-cas\fR(1)
-\fBgetcert-list\fR(1)
-\fBgetcert-modify-ca\fR(1)
-\fBgetcert-refresh-ca\fR(1)
-\fBgetcert-refresh\fR(1)
-\fBgetcert-rekey\fR(1)
-\fBgetcert-remove-ca\fR(1)
-\fBgetcert-request\fR(1)
-\fBgetcert-resubmit\fR(1)
-\fBgetcert-start-tracking\fR(1)
-\fBgetcert-status\fR(1)
-\fBgetcert-stop-tracking\fR(1)
-\fBcertmonger-certmaster-submit\fR(8)
-\fBcertmonger-dogtag-ipa-renew-agent-submit\fR(8)
-\fBcertmonger-dogtag-submit\fR(8)
-\fBcertmonger-ipa-submit\fR(8)
-\fBcertmonger-local-submit\fR(8)
-\fBcertmonger-scep-submit\fR(8)
+\fBgetcert\-add\-ca\fR(1)
+\fBgetcert\-add\-scep\-ca\fR(1)
+\fBgetcert\-list\-cas\fR(1)
+\fBgetcert\-list\fR(1)
+\fBgetcert\-modify\-ca\fR(1)
+\fBgetcert\-refresh\-ca\fR(1)
+\fBgetcert\-refresh\fR(1)
+\fBgetcert\-rekey\fR(1)
+\fBgetcert\-remove\-ca\fR(1)
+\fBgetcert\-request\fR(1)
+\fBgetcert\-resubmit\fR(1)
+\fBgetcert\-start\-tracking\fR(1)
+\fBgetcert\-status\fR(1)
+\fBgetcert\-stop\-tracking\fR(1)
+\fBcertmonger\-certmaster\-submit\fR(8)
+\fBcertmonger\-dogtag\-ipa\-renew\-agent\-submit\fR(8)
+\fBcertmonger\-dogtag\-submit\fR(8)
+\fBcertmonger\-ipa\-submit\fR(8)
+\fBcertmonger\-local\-submit\fR(8)
+\fBcertmonger\-scep\-submit\fR(8)
 \fBcertmonger_selinux\fR(8)

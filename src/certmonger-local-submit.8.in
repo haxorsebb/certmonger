@@ -1,35 +1,35 @@
-.TH certmonger 8 "7 June 2014" "certmonger Manual"
+.TH CERTMONGER 8 "June 7, 2014" "certmonger Manual"
 
 .SH NAME
-local-submit
+local\-submit
 
 .SH SYNOPSIS
-local-submit [-d state-directory] [-v] [csrfile]
+local\-submit [\-d state\-directory] [\-v] [csrfile]
 
 .SH DESCRIPTION
-\fIlocal-submit\fR is the helper which \fIcertmonger\fR uses to implement
+\fIlocal\-submit\fR is the helper which \fIcertmonger\fR uses to implement
 its local signer.  It is not normally run interactively, but it can be for
 troubleshooting purposes.  The signing request which is to be submitted
 should either be in a file whose name is given as an argument, or fed into
-\fIlocal-submit\fR via stdin.
+\fIlocal\-submit\fR via stdin.
 
-The local signer is currently hard-coded to generate and use a
-@CM_DEFAULT_PUBKEY_SIZE@-bit RSA key and a name and initial serial number based
+The local signer is currently hard\-coded to generate and use a
+@CM_DEFAULT_PUBKEY_SIZE@\-bit RSA key and a name and initial serial number based
 on a UUID, replacing that key and certificate at roughly the midpoint of their
 useful lifetime.
 
-\fBcertmonger\fR supports retrieving the list of current and previously-used
-local CA certificates.  See \fBgetcert-request\fR(1) and
-\fBgetcert-resubmit\fR(1) for information about specifying where those
+\fBcertmonger\fR supports retrieving the list of current and previously\-used
+local CA certificates.  See \fBgetcert\-request\fR(1) and
+\fBgetcert\-resubmit\fR(1) for information about specifying where those
 certificates should be stored.
 
 .SH OPTIONS
 .TP
-\fB\-d\fR state-directory
+\fB\-d\fR \fIDIR\fR, \fB\-\-ca\-data\-directory\fR=\fIDIR\fR
 Identifies the directory which contains the local signer's private key,
 certificates, and other data used by the local signer.
 .TP
-\fB\-v\fR
+\fB\-v\fR, \fB\-\-verbose\fR
 Increases the verbosity of the tool's diagnostic logging.
 
 .SH EXIT STATUS
@@ -47,7 +47,7 @@ if critical configuration information is missing.  An error message may be print
 .TP
 .I creds
 is currently a PKCS#12 bundle containing the local signer's current signing key
-and current and previously-used signer certificates.  It should not be modified
+and current and previously\-used signer certificates.  It should not be modified
 except by the local signer.  A new key is currently generated when ever a new
 signer certificate is needed.
 .TP
@@ -61,22 +61,22 @@ Please file tickets for any that you find at https://fedorahosted.org/certmonger
 .SH SEE ALSO
 \fBcertmonger\fR(8)
 \fBgetcert\fR(1)
-\fBgetcert-add-ca\fR(1)
-\fBgetcert-add-scep-ca\fR(1)
-\fBgetcert-list-cas\fR(1)
-\fBgetcert-list\fR(1)
-\fBgetcert-modify-ca\fR(1)
-\fBgetcert-refresh-ca\fR(1)
-\fBgetcert-refresh\fR(1)
-\fBgetcert-rekey\fR(1)
-\fBgetcert-remove-ca\fR(1)
-\fBgetcert-resubmit\fR(1)
-\fBgetcert-start-tracking\fR(1)
-\fBgetcert-status\fR(1)
-\fBgetcert-stop-tracking\fR(1)
-\fBcertmonger-certmaster-submit\fR(8)
-\fBcertmonger-dogtag-ipa-renew-agent-submit\fR(8)
-\fBcertmonger-dogtag-submit\fR(8)
-\fBcertmonger-ipa-submit\fR(8)
-\fBcertmonger-scep-submit\fR(8)
+\fBgetcert\-add\-ca\fR(1)
+\fBgetcert\-add\-scep\-ca\fR(1)
+\fBgetcert\-list\-cas\fR(1)
+\fBgetcert\-list\fR(1)
+\fBgetcert\-modify\-ca\fR(1)
+\fBgetcert\-refresh\-ca\fR(1)
+\fBgetcert\-refresh\fR(1)
+\fBgetcert\-rekey\fR(1)
+\fBgetcert\-remove\-ca\fR(1)
+\fBgetcert\-resubmit\fR(1)
+\fBgetcert\-start\-tracking\fR(1)
+\fBgetcert\-status\fR(1)
+\fBgetcert\-stop\-tracking\fR(1)
+\fBcertmonger\-certmaster\-submit\fR(8)
+\fBcertmonger\-dogtag\-ipa\-renew\-agent\-submit\fR(8)
+\fBcertmonger\-dogtag\-submit\fR(8)
+\fBcertmonger\-ipa\-submit\fR(8)
+\fBcertmonger\-scep\-submit\fR(8)
 \fBcertmonger_selinux\fR(8)

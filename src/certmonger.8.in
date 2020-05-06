@@ -1,14 +1,14 @@
-.TH certmonger 8 "14 June 2015" "certmonger Manual"
+.TH CERTMONGER 8 "June 14, 2015" "certmonger Manual"
 
 .SH NAME
 certmonger
 
 .SH SYNOPSIS
-certmonger [-s|-S] [-L|-l] [-P SOCKET] [-b TIMEOUT|-B] [-n|-f] [-d LEVEL] [-p FILE] [-F] [-c cmd] [-v]
+certmonger [\-s|\-S] [\-L|\-l] [\-P PATH] [\-b TIMEOUT|\-B] [\-n|\-f] [\-d LEVEL] [\-p FILE] [\-F] [\-c command] [\-v]
 
 .SH DESCRIPTION
 The \fIcertmonger\fR daemon monitors certificates for impending
-expiration, and can optionally refresh soon-to-be-expired certificates
+expiration, and can optionally refresh soon\-to\-be\-expired certificates
 with the help of a CA.  If told to, it can drive the entire enrollment
 process from key generation through enrollment and refresh.
 
@@ -17,58 +17,58 @@ service, with which client tools such as \fBgetcert\fR(1) interact.
 
 .SH OPTIONS
 .TP
--s
+\fB\-s\fR, \fB\-\-session\fR
 Listen on the session bus rather than the system bus.
 .TP
--S
+\fB\-S\fR, \fB\-\-system\fR
 Listen on the system bus rather than the session bus.  This is the default.
 .TP
--l
+\fB\-l\fR, \fB\-\-listening\-socket\fR
 Also listen on a private socket for connections from clients running under the
 same UID.
 .TP
--L
+\fB\-L\fR, \fB\-\-only\-listening\-socket\fR
 Listen only on a private socket for connections from clients running under the
 same UID, and skip connecting to a bus.
 .TP
--P
+\fB\-P\fR \fIPATH\fR, \fB\-\-listening\-socket\-path\fR=\fIPATH\fR
 Specify a location for the private listening socket.  If the location beings
 with a '/' character, it will be prefixed with 'unix:path=', otherwise it will
 be prefixed with 'unix:'.  If this option is not specified, the listening
 socket, if one is created, will be placed in the abstract namespace.
 .TP
--b TIMEOUT
-Behave as a bus-activated service: if there are no certificates to be monitored
+\fB\-b \fITIMEOUT\fR, \fR\-\-bus\-activation\-timeout\fB=\fITIMEOUT\fR
+Behave as a bus\-activated service: if there are no certificates to be monitored
 or obtained, and no requests are received within TIMEOUT seconds, exit.  Not
-compatible with the -c option.
+compatible with the \-c option.
 .TP
--B
-Don't behave as a bus-activated service.  This is the default.
+\fB\-B\fR, \fB\-\-no\-bus\-activation\-timeout\fR
+Don't behave as a bus\-activated service.  This is the default.
 .TP
--n
+\fB\-n\fR, \fB\-\-nofork\fR
 Don't fork, and log messages to stderr rather than syslog.
 .TP
--f
+\fB\-f\fR, \fB\-\-fork\fR
 Do fork, and log messages to syslog rather than stderr.  This is the default.
 .TP
--d LEVEL
-Set debugging level.  Higher values produce more debugging output.  Implies -n.
+\fB\-d\fR \fILEVEL\fR, \fB\-\-debug\-level\fR=\fILEVEL\fR
+Set debugging level.  Higher values produce more debugging output.  Implies \-n.
 .TP
--p FILE
+\fB\-p\fR \fIFILE\fR, \fBpidfile\fR=\fIFILE\fR
 Store the daemon's process ID in the named file.
 .TP
--F
+\fB\-F\fR, \fB\-\-fips\fR
 Force NSS to be initialized in FIPS mode.  The default behavior is to heed
 the setting stored in \fI/proc/sys/crypto/fips_enabled\fR.
 .TP
--c cmd
+\fB\-c\fR \fICOMMAND\fR, \fB\-\-command\fR=\fICOMMAND\fR
 After the service has initialized, run the specified command, then shut down
-the service after the command exits.  If the -l or -L option was also
+the service after the command exits.  If the \-l or \-L option was also
 specified, the command will be run with the \fI@CERTMONGER_PVT_ADDRESS_ENV@\fR
 environment variable set to the listening socket's location.  Not compatible
-with the -b option.
+with the \-b option.
 .TP
--v
+\fB\-v\fR, \fB\-\-version\fR
 Print version information and exit.
 
 .SH FILES
@@ -89,24 +89,24 @@ Please file tickets for any that you find at https://fedorahosted.org/certmonger
 
 .SH SEE ALSO
 \fBgetcert\fR(1)
-\fBgetcert-add-ca\fR(1)
-\fBgetcert-add-scep-ca\fR(1)
-\fBgetcert-list-cas\fR(1)
-\fBgetcert-list\fR(1)
-\fBgetcert-modify-ca\fR(1)
-\fBgetcert-refresh-ca\fR(1)
-\fBgetcert-refresh\fR(1)
-\fBgetcert-rekey\fR(1)
-\fBgetcert-remove-ca\fR(1)
-\fBgetcert-request\fR(1)
-\fBgetcert-resubmit\fR(1)
-\fBgetcert-start-tracking\fR(1)
-\fBgetcert-status\fR(1)
-\fBgetcert-stop-tracking\fR(1)
-\fBcertmonger-certmaster-submit\fR(8)
-\fBcertmonger-dogtag-ipa-renew-agent-submit\fR(8)
-\fBcertmonger-dogtag-submit\fR(8)
-\fBcertmonger-ipa-submit\fR(8)
-\fBcertmonger-local-submit\fR(8)
-\fBcertmonger-scep-submit\fR(8)
+\fBgetcert\-add\-ca\fR(1)
+\fBgetcert\-add\-scep\-ca\fR(1)
+\fBgetcert\-list\-cas\fR(1)
+\fBgetcert\-list\fR(1)
+\fBgetcert\-modify\-ca\fR(1)
+\fBgetcert\-refresh\-ca\fR(1)
+\fBgetcert\-refresh\fR(1)
+\fBgetcert\-rekey\fR(1)
+\fBgetcert\-remove\-ca\fR(1)
+\fBgetcert\-request\fR(1)
+\fBgetcert\-resubmit\fR(1)
+\fBgetcert\-start\-tracking\fR(1)
+\fBgetcert\-status\fR(1)
+\fBgetcert\-stop\-tracking\fR(1)
+\fBcertmonger\-certmaster\-submit\fR(8)
+\fBcertmonger\-dogtag\-ipa\-renew\-agent\-submit\fR(8)
+\fBcertmonger\-dogtag\-submit\fR(8)
+\fBcertmonger\-ipa\-submit\fR(8)
+\fBcertmonger\-local\-submit\fR(8)
+\fBcertmonger\-scep\-submit\fR(8)
 \fBcertmonger_selinux\fR(8)

@@ -1,20 +1,20 @@
-.TH certmonger 1 "7 June 2014" "certmonger Manual"
+.TH CERTMONGER 1 "June 7, 2014" "certmonger Manual"
 
 .SH NAME
-local-getcert
+local\-getcert
 
 .SH SYNOPSIS
- local-getcert request [options]
- local-getcert resubmit [options]
- local-getcert start-tracking [options]
- local-getcert status [options]
- local-getcert stop-tracking [options]
- local-getcert list [options]
- local-getcert list-cas [options]
- local-getcert refresh-cas [options]
+ local\-getcert request [options]
+ local\-getcert resubmit [options]
+ local\-getcert start\-tracking [options]
+ local\-getcert status [options]
+ local\-getcert stop\-tracking [options]
+ local\-getcert list [options]
+ local\-getcert list\-cas [options]
+ local\-getcert refresh\-cas [options]
 
 .SH DESCRIPTION
-The \fIlocal-getcert\fR tool issues requests to a @CM_DBUS_NAME@
+The \fIlocal\-getcert\fR tool issues requests to a @CM_DBUS_NAME@
 service on behalf of the invoking user.  It can ask the service to begin
 enrollment, optionally generating a key pair to use, it can ask the
 service to begin monitoring a certificate in a specified location for
@@ -22,17 +22,17 @@ expiration, and optionally to refresh it when expiration nears, it can
 list the set of certificates that the service is already monitoring, or
 it can list the set of CAs that the service is capable of using.
 
-If no command is given as the first command-line argument,
-\fIlocal-getcert\fR will print short usage information for each of
+If no command is given as the first command\-line argument,
+\fIlocal\-getcert\fR will print short usage information for each of
 its functions.
 
-The \fIlocal-getcert\fR tool behaves identically to the generic
-\fIgetcert\fR tool when it is used with the \fB-c
+The \fIlocal\-getcert\fR tool behaves identically to the generic
+\fIgetcert\fR tool when it is used with the \fB\-c
 \fIlocal\fR option.
 
-\fBcertmonger\fR supports retrieving the list of current and previously-used
-local CA certificates.  See \fBgetcert-request\fR(1) and
-\fBgetcert-resubmit\fR(1) for information about using the \fB-F\fR and \fB-a\fR
+\fBcertmonger\fR supports retrieving the list of current and previously\-used
+local CA certificates.  See \fBgetcert\-request\fR(1) and
+\fBgetcert\-resubmit\fR(1) for information about using the \fB\-F\fR and \fB\-a\fR
 options to specify where those certificates should be stored.
 
 .SH BUGS
@@ -41,24 +41,24 @@ Please file tickets for any that you find at https://fedorahosted.org/certmonger
 .SH SEE ALSO
 \fBcertmonger\fR(8)
 \fBgetcert\fR(1)
-\fBgetcert-add-ca\fR(1)
-\fBgetcert-add-scep-ca\fR(1)
-\fBgetcert-list-cas\fR(1)
-\fBgetcert-list\fR(1)
-\fBgetcert-modify-ca\fR(1)
-\fBgetcert-refresh-ca\fR(1)
-\fBgetcert-refresh\fR(1)
-\fBgetcert-rekey\fR(1)
-\fBgetcert-remove-ca\fR(1)
-\fBgetcert-request\fR(1)
-\fBgetcert-resubmit\fR(1)
-\fBgetcert-start-tracking\fR(1)
-\fBgetcert-status\fR(1)
-\fBgetcert-stop-tracking\fR(1)
-\fBcertmonger-certmaster-submit\fR(8)
-\fBcertmonger-dogtag-ipa-renew-agent-submit\fR(8)
-\fBcertmonger-dogtag-submit\fR(8)
-\fBcertmonger-ipa-submit\fR(8)
-\fBcertmonger-local-submit\fR(8)
-\fBcertmonger-scep-submit\fR(8)
+\fBgetcert\-add\-ca\fR(1)
+\fBgetcert\-add\-scep\-ca\fR(1)
+\fBgetcert\-list\-cas\fR(1)
+\fBgetcert\-list\fR(1)
+\fBgetcert\-modify\-ca\fR(1)
+\fBgetcert\-refresh\-ca\fR(1)
+\fBgetcert\-refresh\fR(1)
+\fBgetcert\-rekey\fR(1)
+\fBgetcert\-remove\-ca\fR(1)
+\fBgetcert\-request\fR(1)
+\fBgetcert\-resubmit\fR(1)
+\fBgetcert\-start\-tracking\fR(1)
+\fBgetcert\-status\fR(1)
+\fBgetcert\-stop\-tracking\fR(1)
+\fBcertmonger\-certmaster\-submit\fR(8)
+\fBcertmonger\-dogtag\-ipa\-renew\-agent\-submit\fR(8)
+\fBcertmonger\-dogtag\-submit\fR(8)
+\fBcertmonger\-ipa\-submit\fR(8)
+\fBcertmonger\-local\-submit\fR(8)
+\fBcertmonger\-scep\-submit\fR(8)
 \fBcertmonger_selinux\fR(8)

@@ -1,20 +1,20 @@
-.TH certmonger 1 "23 November 2009" "certmonger Manual"
+.TH CERTMONGER 1 "November 23, 2009" "certmonger Manual"
 
 .SH NAME
-certmaster-getcert
+certmaster\-getcert
 
 .SH SYNOPSIS
- certmaster-getcert request [options]
- certmaster-getcert resubmit [options]
- certmaster-getcert start-tracking [options]
- certmaster-getcert status [options]
- certmaster-getcert stop-tracking [options]
- certmaster-getcert list [options]
- certmaster-getcert list-cas [options]
- certmaster-getcert refresh-cas [options]
+ certmaster\-getcert request [options]
+ certmaster\-getcert resubmit [options]
+ certmaster\-getcert start\-tracking [options]
+ certmaster\-getcert status [options]
+ certmaster\-getcert stop\-tracking [options]
+ certmaster\-getcert list [options]
+ certmaster\-getcert list\-cas [options]
+ certmaster\-getcert refresh\-cas [options]
 
 .SH DESCRIPTION
-The \fIcertmaster-getcert\fR tool issues requests to a @CM_DBUS_NAME@
+The \fIcertmaster\-getcert\fR tool issues requests to a @CM_DBUS_NAME@
 service on behalf of the invoking user.  It can ask the service to begin
 enrollment, optionally generating a key pair to use, it can ask the
 service to begin monitoring a certificate in a specified location for
@@ -22,17 +22,17 @@ expiration, and optionally to refresh it when expiration nears, it can
 list the set of certificates that the service is already monitoring, or
 it can list the set of CAs that the service is capable of using.
 
-If no command is given as the first command-line argument,
-\fIcertmaster-getcert\fR will print short usage information for each of
+If no command is given as the first command\-line argument,
+\fIcertmaster\-getcert\fR will print short usage information for each of
 its functions.
 
-The \fIcertmaster-getcert\fR tool behaves identically to the generic
-\fIgetcert\fR tool when it is used with the \fB-c
+The \fIcertmaster\-getcert\fR tool behaves identically to the generic
+\fIgetcert\fR tool when it is used with the \fB\-c
 \fI@CM_CERTMASTER_CA_NAME@\fR option.
 
 There is no standard authenticated method for obtaining the root certificate
 from certmaster CAs, so \fBcertmonger\fR does not support retrieving trust
-information from them.  While the \fB-F\fR and \fB-a\fR options will still
+information from them.  While the \fB\-F\fR and \fB\-a\fR options will still
 be recognized, they will effectively be ignored.
 
 .SH BUGS
@@ -41,24 +41,24 @@ Please file tickets for any that you find at https://fedorahosted.org/certmonger
 .SH SEE ALSO
 \fBcertmonger\fR(8)
 \fBgetcert\fR(1)
-\fBgetcert-add-ca\fR(1)
-\fBgetcert-add-scep-ca\fR(1)
-\fBgetcert-list-cas\fR(1)
-\fBgetcert-list\fR(1)
-\fBgetcert-modify-ca\fR(1)
-\fBgetcert-refresh-ca\fR(1)
-\fBgetcert-refresh\fR(1)
-\fBgetcert-rekey\fR(1)
-\fBgetcert-remove-ca\fR(1)
-\fBgetcert-request\fR(1)
-\fBgetcert-resubmit\fR(1)
-\fBgetcert-start-tracking\fR(1)
-\fBgetcert-status\fR(1)
-\fBgetcert-stop-tracking\fR(1)
-\fBcertmonger-certmaster-submit\fR(8)
-\fBcertmonger-dogtag-ipa-renew-agent-submit\fR(8)
-\fBcertmonger-dogtag-submit\fR(8)
-\fBcertmonger-ipa-submit\fR(8)
-\fBcertmonger-local-submit\fR(8)
-\fBcertmonger-scep-submit\fR(8)
+\fBgetcert\-add\-ca\fR(1)
+\fBgetcert\-add\-scep\-ca\fR(1)
+\fBgetcert\-list\-cas\fR(1)
+\fBgetcert\-list\fR(1)
+\fBgetcert\-modify\-ca\fR(1)
+\fBgetcert\-refresh\-ca\fR(1)
+\fBgetcert\-refresh\fR(1)
+\fBgetcert\-rekey\fR(1)
+\fBgetcert\-remove\-ca\fR(1)
+\fBgetcert\-request\fR(1)
+\fBgetcert\-resubmit\fR(1)
+\fBgetcert\-start\-tracking\fR(1)
+\fBgetcert\-status\fR(1)
+\fBgetcert\-stop\-tracking\fR(1)
+\fBcertmonger\-certmaster\-submit\fR(8)
+\fBcertmonger\-dogtag\-ipa\-renew\-agent\-submit\fR(8)
+\fBcertmonger\-dogtag\-submit\fR(8)
+\fBcertmonger\-ipa\-submit\fR(8)
+\fBcertmonger\-local\-submit\fR(8)
+\fBcertmonger\-scep\-submit\fR(8)
 \fBcertmonger_selinux\fR(8)

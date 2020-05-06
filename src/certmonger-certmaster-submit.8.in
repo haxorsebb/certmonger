@@ -1,17 +1,17 @@
-.TH certmonger 8 "7 June 2010" "certmonger Manual"
+.TH CERTMONGER 8 "June 7, 2010" "certmonger Manual"
 
 .SH NAME
-certmaster-submit
+certmaster\-submit
 
 .SH SYNOPSIS
-certmaster-submit [-h serverHost] [-c cafile] [-C capath] [csrfile]
+certmaster\-submit [\-h HOST] [\-c FILE] [\-C DIR] [\-v] [csrfile]
 
 .SH DESCRIPTION
-\fIcertmaster-submit\fR is the helper which \fIcertmonger\fR uses to make
-requests to certmaster-based CAs.  It is not normally run interactively,
+\fIcertmaster\-submit\fR is the helper which \fIcertmonger\fR uses to make
+requests to certmaster\-based CAs.  It is not normally run interactively,
 but it can be for troubleshooting purposes.  The signing request which is
 to be submitted should either be in a file whose name is given as an argument,
-or fed into \fIcertmaster-submit\fR via stdin.
+or fed into \fIcertmaster\-submit\fR via stdin.
 
 There is no standard authenticated method for obtaining the root certificate
 from certmaster CAs, so \fBcertmonger\fR does not support retrieving trust
@@ -19,21 +19,24 @@ information from them.
 
 .SH OPTIONS
 .TP
-\fB\-h\fR serverHost
+\fB\-h\fR \fIHOST\fR, \fB\-\-server\-host\fR=\fIHOST\fR
 Submit the request to the certmaster instance running on the named host.  The
 default is \fIlocalhost:51235\fR if a file named \fB/var/run/certmaster.pid\fR
 is found on the local system, and is read from \fB/etc/certmaster/minion.conf\fR
 if that file is not found.
 .TP
-\fB\-c\fR cafile
+\fB\-c\fR \fIFILE\fR, \fB\-\-cafile\fR=\fIFILE\fR
 Submit the request over HTTPS instead of HTTP, and only trust the server
 if its certificate was issued by the CA whose certificate is in the named file.
 .TP
-\fB\-C\fR capath
+\fB\-C\fR \fIDIR\fR, \fB\-\-capath\fR=\fIDIR\fR
 Submit the request over HTTPS instead of HTTP, and only trust the server
 if its certificate was issued by a CA whose certificate is in a file in
 the named directory.
-
+.TP
+\fB\-v\fR, \fB\-\-verbose\fR
+Be verbose about errors.  Normally, the details of an error received from
+the daemon will be suppressed if the client can make a diagnostic suggestion.
 .SH EXIT STATUS
 .TP
 0
@@ -73,22 +76,22 @@ Please file tickets for any that you find at https://fedorahosted.org/certmonger
 .SH SEE ALSO
 \fBcertmonger\fR(8)
 \fBgetcert\fR(1)
-\fBgetcert-add-ca\fR(1)
-\fBgetcert-add-scep-ca\fR(1)
-\fBgetcert-list-cas\fR(1)
-\fBgetcert-list\fR(1)
-\fBgetcert-modify-ca\fR(1)
-\fBgetcert-refresh-ca\fR(1)
-\fBgetcert-refresh\fR(1)
-\fBgetcert-rekey\fR(1)
-\fBgetcert-remove-ca\fR(1)
-\fBgetcert-resubmit\fR(1)
-\fBgetcert-start-tracking\fR(1)
-\fBgetcert-status\fR(1)
-\fBgetcert-stop-tracking\fR(1)
-\fBcertmonger-dogtag-ipa-renew-agent-submit\fR(8)
-\fBcertmonger-dogtag-submit\fR(8)
-\fBcertmonger-ipa-submit\fR(8)
-\fBcertmonger-local-submit\fR(8)
-\fBcertmonger-scep-submit\fR(8)
+\fBgetcert\-add\-ca\fR(1)
+\fBgetcert\-add\-scep\-ca\fR(1)
+\fBgetcert\-list\-cas\fR(1)
+\fBgetcert\-list\fR(1)
+\fBgetcert\-modify\-ca\fR(1)
+\fBgetcert\-refresh\-ca\fR(1)
+\fBgetcert\-refresh\fR(1)
+\fBgetcert\-rekey\fR(1)
+\fBgetcert\-remove\-ca\fR(1)
+\fBgetcert\-resubmit\fR(1)
+\fBgetcert\-start\-tracking\fR(1)
+\fBgetcert\-status\fR(1)
+\fBgetcert\-stop\-tracking\fR(1)
+\fBcertmonger\-dogtag\-ipa\-renew\-agent\-submit\fR(8)
+\fBcertmonger\-dogtag\-submit\fR(8)
+\fBcertmonger\-ipa\-submit\fR(8)
+\fBcertmonger\-local\-submit\fR(8)
+\fBcertmonger\-scep\-submit\fR(8)
 \fBcertmonger_selinux\fR(8)

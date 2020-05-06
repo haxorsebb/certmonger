@@ -1,64 +1,64 @@
-.TH certmonger 1 "24 February 2015" "certmonger Manual"
+.TH CERTMONGER 1 "February 24, 2015" "certmonger Manual"
 
 .SH NAME
 getcert
 
 .SH SYNOPSIS
-getcert add-scep-ca [options]
+getcert add\-scep\-ca [options]
 
 .SH DESCRIPTION
 Adds a CA configuration to \fIcertmonger\fR, which can subsequently be used to
-enroll certificates.  The configuration will use the bundled \fIscep-submit\fR
-helper.  The \fIadd-scep-ca\fR command is more or less a wrapper for the
-\fIadd-ca\fR command.
+enroll certificates.  The configuration will use the bundled \fIscep\-submit\fR
+helper.  The \fIadd\-scep\-ca\fR command is more or less a wrapper for the
+\fIadd\-ca\fR command.
 
 .SH OPTIONS
 .TP
-\fB\-c\fR NAME
+\fB\-c\fR \fINAME\fR, \fB\-\-ca\fR=\fINAME\fR
 The nickname to give to this CA configuration.  This same value can later be
 passed in to \fIgetcert\fR's \fIrequest\fR, \fIresubmit\fR, and
-\fIstart-tracking\fR commands using the \fB-c\fR flag.
+\fIstart\-tracking\fR commands using the \fB\-c\fR flag.
 .TP
-\fB\-u\fR URL
+\fB\-u\fR \fIURL\fR, \fB\-\-url\fR=\fIURL\fR
 The location of the SCEP server's enrollment interface.  This option must be
 specified.
 .TP
-\fB\-R\fR ca-certificate-file
-The location of a PEM-formatted copy of the CA's certificate used to verify
+\fB\-R\fR \fIFILE\fR, \fB\-\-ca\-cacert\fR=\fIFILE\fR
+The location of a PEM\-formatted copy of the CA's certificate used to verify
 the TLS connection the SCEP server.
 
 This option must be specified if the URL is an \fIhttps\fR location.
 .TP
-\fB\-N\fR ca-certificate-file
-The location of a PEM-formatted copy of the SCEP server's CA certificate.
+\fB\-N\fR \fIFILE\fR, \fB\-\-signingca\fR=\fIFILE\fR
+The location of a PEM\-formatted copy of the SCEP server's CA certificate.
 A discovered value is normally supplied by the certmonger daemon, but one can
 be specified for troubleshooting purposes.
 .TP
-\fB\-r\fR ra-certificate-file
-The location of a PEM-formatted copy of the SCEP server's RA's certificate.
+\fB\-r\fR \fIFILE\fR, \fB\-\-ra\-cert\fR=\fIFILE\fR
+The location of a PEM\-formatted copy of the SCEP server's RA's certificate.
 A discovered value is normally supplied by the certmonger daemon, but one can
 be specified for troubleshooting purposes.
 .TP
-\fB\-I\fR other-certificates-file
-The location of a file containing other PEM-formatted certificates which may be
+\fB\-I\fR \fIFILE\fR, \fB\-\-other\-certs\fR=\fIFILE\fR
+The location of a file containing other PEM\-formatted certificates which may be
 needed in order to properly verify signed responses sent by the SCEP server
 back to the client.  A discovered set is normally supplied by the certmonger
 daemon, but can be specified for troubleshooting purposes.
 .TP
-\fB\-i\fR identifier
+\fB\-i\fR \fIID\fR, \fB\-\-id\fR=\fIID\fR
 A CA identifier value which will passed to the server when the
-\fIscep-submit\fR helper is used to retrieve copies of the server's
+\fIscep\-submit\fR helper is used to retrieve copies of the server's
 certificates.
 .TP
-\fB\-n\fR
-The SCEP Renewal feature allows a client with a previously-issued certificate
+\fB\-n\fR, \fB\-\-non\-renewal\fR
+The SCEP Renewal feature allows a client with a previously\-issued certificate
 to use that certificate and the associated private key to request a new
 certificate for a different key pair, and can be used to support
 \fIcertmonger\fR's rekeying feature if the SCEP server advertises support for
-it.  This option forces the \fIscep-submit\fR helper to issue requests without
+it.  This option forces the \fIscep\-submit\fR helper to issue requests without
 making use of this feature.
 .TP
-\fB\-v\fR
+\fB\-v\fR, \fB\-\-verbose\fR
 Be verbose about errors.  Normally, the details of an error received from
 the daemon will be suppressed if the client can make a diagnostic suggestion.
 
@@ -68,22 +68,22 @@ Please file tickets for any that you find at https://fedorahosted.org/certmonger
 .SH SEE ALSO
 \fBcertmonger\fR(8)
 \fBgetcert\fR(1)
-\fBgetcert-add-ca\fR(1)
-\fBgetcert-list-cas\fR(1)
-\fBgetcert-list\fR(1)
-\fBgetcert-modify-ca\fR(1)
-\fBgetcert-refresh-ca\fR(1)
-\fBgetcert-refresh\fR(1)
-\fBgetcert-rekey\fR(1)
-\fBgetcert-remove-ca\fR(1)
-\fBgetcert-request\fR(1)
-\fBgetcert-resubmit\fR(1)
-\fBgetcert-status\fR(1)
-\fBgetcert-stop-tracking\fR(1)
-\fBcertmonger-certmaster-submit\fR(8)
-\fBcertmonger-dogtag-ipa-renew-agent-submit\fR(8)
-\fBcertmonger-dogtag-submit\fR(8)
-\fBcertmonger-ipa-submit\fR(8)
-\fBcertmonger-local-submit\fR(8)
-\fBcertmonger-scep-submit\fR(8)
+\fBgetcert\-add\-ca\fR(1)
+\fBgetcert\-list\-cas\fR(1)
+\fBgetcert\-list\fR(1)
+\fBgetcert\-modify\-ca\fR(1)
+\fBgetcert\-refresh\-ca\fR(1)
+\fBgetcert\-refresh\fR(1)
+\fBgetcert\-rekey\fR(1)
+\fBgetcert\-remove\-ca\fR(1)
+\fBgetcert\-request\fR(1)
+\fBgetcert\-resubmit\fR(1)
+\fBgetcert\-status\fR(1)
+\fBgetcert\-stop\-tracking\fR(1)
+\fBcertmonger\-certmaster\-submit\fR(8)
+\fBcertmonger\-dogtag\-ipa\-renew\-agent\-submit\fR(8)
+\fBcertmonger\-dogtag\-submit\fR(8)
+\fBcertmonger\-ipa\-submit\fR(8)
+\fBcertmonger\-local\-submit\fR(8)
+\fBcertmonger\-scep\-submit\fR(8)
 \fBcertmonger_selinux\fR(8)
