@@ -229,7 +229,7 @@ main(int argc, const char **argv)
 		{"url", 'u', POPT_ARG_STRING, &url, 0, "service location", "URL"},
 		{"ca-identifier", 'i', POPT_ARG_STRING, &id, 0, "name to use when querying for capabilities", "IDENTIFIER"},
 		{"retrieve-ca-capabilities", 'c', POPT_ARG_NONE, NULL, 'c', "make a GetCACaps request", NULL},
-		{"retrieve-ca-certificates", 'C', POPT_ARG_NONE, NULL, 'C', "make GetCACert/GetCAChain requests", NULL},
+		{"retrieve-ca-certificates", 'C', POPT_ARG_NONE, NULL, 'C', "make GetCACert request", NULL},
 		{"get-initial-cert", 'g', POPT_ARG_NONE, NULL, 'g', "send a PKIOperation pkiMessage", NULL},
 		{"pki-message", 'p', POPT_ARG_NONE, NULL, 'p', "send a PKIOperation pkiMessage", NULL},
 		{"racert", 'r', POPT_ARG_STRING, NULL, 'r', "the RA certificate, used for encrypting requests", "FILENAME"},
