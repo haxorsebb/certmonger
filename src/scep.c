@@ -369,11 +369,11 @@ main(int argc, const char **argv)
 		break;
 	case op_get_ca_caps:
 		/* Only step: read capabilities for the daemon. */
-		params = talloc_asprintf(ctx, "operation=" OP_GET_CA_CAPS);
+		params = talloc_asprintf(ctx, "operation=" OP_GET_CA_CAPS "&message=%s", id);
 		break;
 	case op_get_ca_certs:
 		/* First step: get the root certificate. */
-		params = talloc_asprintf(ctx, "operation=" OP_GET_CA_CERT);
+		params = talloc_asprintf(ctx, "operation=" OP_GET_CA_CERT "&message=%s", id);
 		break;
 	case op_get_cert_initial:
 		if ((racert == NULL) || (strlen(racert) == 0)) {
@@ -392,7 +392,7 @@ main(int argc, const char **argv)
 				goto done;
 			}
 			/* First step: read capabilities for our use. */
-			params = talloc_asprintf(ctx, "operation=" OP_GET_CA_CAPS);
+			params = talloc_asprintf(ctx, "operation=" OP_GET_CA_CAPS "&message=%s", id);
 		}
 		break;
 	case op_pkcsreq:
@@ -412,7 +412,7 @@ main(int argc, const char **argv)
 				goto done;
 			}
 			/* First step: read capabilities for our use. */
-			params = talloc_asprintf(ctx, "operation=" OP_GET_CA_CAPS);
+			params = talloc_asprintf(ctx, "operation=" OP_GET_CA_CAPS "&message=%s", id);
 		}
 		break;
 	}
