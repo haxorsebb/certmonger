@@ -2,6 +2,7 @@
 
 cd $tmpdir
 
+scheme="${scheme:-dbm}"
 cat > $tmpdir/entrycb1 <<- EOF
 id=EntryCB1
 ca_name=CAB1
@@ -196,7 +197,7 @@ id=EntryD1
 root_cert_files=
 other_root_cert_files=
 other_cert_files=
-root_cert_dbs=dbm:$tmpdir/db1,dbm:$tmpdir/dba
+root_cert_dbs=$scheme:$tmpdir/db1,$scheme:$tmpdir/dba
 other_root_cert_dbs=
 other_cert_dbs=
 cert_roots=Per-certificate Signing Authority D1
@@ -229,7 +230,7 @@ root_cert_files=
 other_root_cert_files=
 other_cert_files=
 root_cert_dbs=
-other_root_cert_dbs=dbm:$tmpdir/db2,dbm:$tmpdir/dba
+other_root_cert_dbs=$scheme:$tmpdir/db2,$scheme:$tmpdir/dba
 other_cert_dbs=
 EOF
 cat > $tmpdir/entryd3 <<- EOF
@@ -239,7 +240,7 @@ other_root_cert_files=
 other_cert_files=
 root_cert_dbs=
 other_root_cert_dbs=
-other_cert_dbs=dbm:$tmpdir/db3,dbm:$tmpdir/dba
+other_cert_dbs=$scheme:$tmpdir/db3,$scheme:$tmpdir/dba
 cert_chain=Per-certificate Signing Authority D3
  -----BEGIN CERTIFICATE-----
  MIIDjjCCAnagAwIBAgIRALuVK2FuXklPuMP4qtRyQjUwDQYJKoZIhvcNAQELBQAw
@@ -300,7 +301,7 @@ ca_name=CAD1
 root_cert_files=
 other_root_cert_files=
 other_cert_files=
-root_cert_dbs=dbm:$tmpdir/db1,dbm:$tmpdir/dba
+root_cert_dbs=$scheme:$tmpdir/db1,$scheme:$tmpdir/dba
 other_root_cert_dbs=
 other_cert_dbs=
 EOF
@@ -311,7 +312,7 @@ root_cert_files=
 other_root_cert_files=
 other_cert_files=
 root_cert_dbs=
-other_root_cert_dbs=dbm:$tmpdir/db2,dbm:$tmpdir/dba
+other_root_cert_dbs=$scheme:$tmpdir/db2,$scheme:$tmpdir/dba
 other_cert_dbs=
 EOF
 cat > $tmpdir/entrycad3 <<- EOF
@@ -322,7 +323,7 @@ other_root_cert_files=
 other_cert_files=
 root_cert_dbs=
 other_root_cert_dbs=
-other_cert_dbs=dbm:$tmpdir/db3,dbm:$tmpdir/dba
+other_cert_dbs=$scheme:$tmpdir/db3,$scheme:$tmpdir/dba
 EOF
 
 cat > $tmpdir/cab1 <<- EOF
@@ -564,9 +565,9 @@ ca_external_helper=$tmpdir/no-such-helper.sh
 ca_root_cert_files=
 ca_other_root_cert_files=
 ca_other_cert_files=
-ca_root_cert_dbs=dbm:$tmpdir/db1,dbm:$tmpdir/dba
-ca_other_root_cert_dbs=dbm:$tmpdir/dba
-ca_other_cert_dbs=dbm:$tmpdir/dba
+ca_root_cert_dbs=$scheme:$tmpdir/db1,$scheme:$tmpdir/dba
+ca_other_root_cert_dbs=$scheme:$tmpdir/dba
+ca_other_cert_dbs=$scheme:$tmpdir/dba
 ca_root_certs=Root Certificate D1
  -----BEGIN CERTIFICATE-----
  MIIDdzCCAl+gAwIBAgIEAgAAuTANBgkqhkiG9w0BAQUFADBaMQswCQYDVQQGEwJJ
@@ -639,9 +640,9 @@ ca_external_helper=$tmpdir/no-such-helper.sh
 ca_root_cert_files=
 ca_other_root_cert_files=
 ca_other_cert_files=
-ca_root_cert_dbs=dbm:$tmpdir/dba
-ca_other_root_cert_dbs=dbm:$tmpdir/db2,dbm:$tmpdir/dba
-ca_other_cert_dbs=dbm:$tmpdir/dba
+ca_root_cert_dbs=$scheme:$tmpdir/dba
+ca_other_root_cert_dbs=$scheme:$tmpdir/db2,$scheme:$tmpdir/dba
+ca_other_cert_dbs=$scheme:$tmpdir/dba
 ca_root_certs=Root Certificate D2
  -----BEGIN CERTIFICATE-----
  MIIEDzCCAvegAwIBAgIBATANBgkqhkiG9w0BAQUFADBKMQswCQYDVQQGEwJTSzET
@@ -722,9 +723,9 @@ ca_external_helper=$tmpdir/no-such-helper.sh
 ca_root_cert_files=
 ca_other_root_cert_files=
 ca_other_cert_files=
-ca_root_cert_dbs=,dbm:$tmpdir/dba
-ca_other_root_cert_dbs=,dbm:$tmpdir/dba,
-ca_other_cert_dbs=dbm:$tmpdir/db3,dbm:$tmpdir/dba
+ca_root_cert_dbs=,$scheme:$tmpdir/dba
+ca_other_root_cert_dbs=,$scheme:$tmpdir/dba,
+ca_other_cert_dbs=$scheme:$tmpdir/db3,$scheme:$tmpdir/dba
 ca_root_certs=Root Certificate D3
  -----BEGIN CERTIFICATE-----
  MIICiTCCAg+gAwIBAgIQH0evqmIAcFBUTAGem2OZKjAKBggqhkjOPQQDAzCBhTEL
@@ -796,9 +797,9 @@ ca_external_helper=$tmpdir/no-such-helper.sh
 ca_root_cert_files=$tmpdir/bundle-all
 ca_other_root_cert_files=
 ca_other_cert_files=
-ca_root_cert_dbs=dbm:$tmpdir/dba
-ca_other_root_cert_dbs=,dbm:$tmpdir/dba
-ca_other_cert_dbs=,dbm:$tmpdir/dba
+ca_root_cert_dbs=$scheme:$tmpdir/dba
+ca_other_root_cert_dbs=,$scheme:$tmpdir/dba
+ca_other_cert_dbs=,$scheme:$tmpdir/dba
 ca_root_certs=Root Certificate DA
  -----BEGIN CERTIFICATE-----
  MIICiDCCAg2gAwIBAgIQNfwmXNmET8k9Jj1Xm67XVjAKBggqhkjOPQQDAzCBhDEL
