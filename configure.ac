@@ -412,9 +412,11 @@ if ! ${configure_dist_target_only:-false} ; then
 		savedCFLAGS="$CFLAGS"
 		savedCPPFLAGS="$CPPFLAGS"
 		savedLDFLAGS="$LDFLAGS"
+		savedLIBS="$LIBS"
 		CFLAGS="$CFLAGS $NSS_CFLAGS"
 		CPPFLAGS="$CPPFLAGS $NSS_CFLAGS"
-		LDFLAGS="$LDFLAGS $NSS_LIBS"
+		LDFLAGS="$LDFLAGS"
+		LIBS="$NSS_LIBS"
 		AC_MSG_CHECKING([if NSS supports "sql:" databases])
 		mkdir _nss_db_testdir || :
 		AC_TRY_RUN([
@@ -478,6 +480,7 @@ if ! ${configure_dist_target_only:-false} ; then
 		CFLAGS="$savedCFLAGS"
 		CPPFLAGS="$savedCPPFLAGS"
 		LDFLAGS="$savedLDFLAGS"
+		LIBS="$savedLIBS"
 	fi
 
 	AC_ARG_WITH(gmp,
