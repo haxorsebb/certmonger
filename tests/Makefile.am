@@ -344,7 +344,6 @@ EXTRA_DIST = \
 subdirs = \
 	001-keyiread \
 	001-keyiread-rsa \
-	002-keygen \
 	002-keygen-rsa \
 	003-csrgen \
 	003-csrgen-rsa \
@@ -352,17 +351,11 @@ subdirs = \
 	004-selfsign-rsa \
 	005-dbusm \
 	006-serial \
-	007-certsave \
 	008-certread \
 	009-oiddict \
 	010-iterate \
-	011-dbinit \
-	012-dbadd \
-	013-enckey \
 	014-prefs \
-	015-lockedkey \
 	016-dates \
-	017-notoken \
 	018-pembase \
 	019-dparse \
 	021-resume \
@@ -378,7 +371,6 @@ subdirs = \
 	031-pkcs7 \
 	032-chain \
 	033-scep \
-	034-perms \
 	035-json \
 	036-getcert \
 	037-rekey2 \
@@ -387,6 +379,7 @@ subdirs = \
 
 if HAVE_DBM_NSSDB
 subdirs += \
+	002-keygen-dbm \
 	007-certsave-dbm \
 	011-dbinit-dbm \
 	012-dbadd-dbm \
@@ -398,6 +391,7 @@ endif
 
 if HAVE_SQL_NSSDB
 subdirs += \
+	002-keygen-sql \
 	007-certsave-sql \
 	011-dbinit-sql \
 	012-dbadd-sql \
