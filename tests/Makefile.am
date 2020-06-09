@@ -92,6 +92,10 @@ CLEANFILES = \
 	024-citerate/actual.err \
 	025-casave/actual.out \
 	025-casave/actual.err \
+	025-casave-dbm/actual.out \
+	025-casave-dbm/actual.err \
+	025-casave-sql/actual.out \
+	025-casave-sql/actual.err \
 	026-local/actual.out \
 	026-local/actual.err \
 	027-hooks/actual.out \
@@ -263,6 +267,10 @@ EXTRA_DIST = \
 	024-citerate/run.sh \
 	025-casave/expected.out \
 	025-casave/run.sh \
+	025-casave-dbm/expected.out \
+	025-casave-dbm/run.sh \
+	025-casave-sql/expected.out \
+	025-casave-sql/run.sh \
 	026-local/expected.out \
 	026-local/run.sh \
 	027-hooks/expected.out \
@@ -362,7 +370,6 @@ subdirs = \
 	022-base64 \
 	023-cadata \
 	024-citerate \
-	025-casave \
 	026-local \
 	027-hooks \
 	028-dbus \
@@ -386,6 +393,7 @@ subdirs += \
 	013-enckey-dbm \
 	015-lockedkey-dbm \
 	017-notoken-dbm \
+	025-casave-dbm \
 	034-perms-dbm
 endif
 
@@ -398,6 +406,7 @@ subdirs += \
 	013-enckey-sql \
 	015-lockedkey-sql \
 	017-notoken-sql \
+	025-casave-sql \
 	034-perms-sql
 endif
 
