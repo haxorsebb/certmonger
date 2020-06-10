@@ -8,6 +8,10 @@ CLEANFILES = \
 	001-keyiread-rsa/actual.err \
 	002-keygen/actual.out \
 	002-keygen/actual.err \
+	002-keygen-dbm/actual.out \
+	002-keygen-dbm/actual.err \
+	002-keygen-sql/actual.out \
+	002-keygen-sql/actual.err \
 	002-keygen-dsa/actual.out \
 	002-keygen-dsa/actual.err \
 	002-keygen-ec/actual.out \
@@ -142,6 +146,10 @@ EXTRA_DIST = \
 	002-keygen/prequal.sh \
 	002-keygen/run.sh \
 	002-keygen/expected.out \
+	002-keygen-dbm/run.sh \
+	002-keygen-dbm/expected.out \
+	002-keygen-sql/run.sh \
+	002-keygen-sql/expected.out \
 	002-keygen-rsa/prequal.sh \
 	002-keygen-rsa/run.sh \
 	002-keygen-rsa/expected.out \
