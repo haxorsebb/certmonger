@@ -86,9 +86,10 @@ cm_casave_main_n(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 	FILE *fp;
 	NSSInitContext *ctx;
 	SECStatus err;
-	CERTCertificate *decoded, *found, **imported = NULL;
+	CERTCertificate *decoded, *found;
 	CERTCertTrust trust;
 	CERTCertDBHandle *certdb;
+	PK11SlotInfo *slot = NULL;
 	SECItem *items[2];
 	PRUint32 flags;
 	const char *es, *ttrust;
@@ -157,6 +158,16 @@ cm_casave_main_n(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 			}
 		}
 		certdb = CERT_GetDefaultCertDB();
+		slot = PK11_GetInternalKeySlot();
+		if (PK11_NeedUserInit(slot)) {
+			/* If no PIN is set at all on the database set an empty one
+ 			 * in case we are the creator. */
+			PK11_InitPin(slot, NULL, "");
+		}
+		if (PK11_NeedLogin(slot)) {
+			cm_log(0, "NSS database %s requires login\n", state->nssdb);
+				return CM_CERTSAVE_STATUS_INTERNAL_ERROR;
+		}
 		for (i = 0; state->certs[i] != NULL; i++) {
 			package = state->certs[i]->cert;
 			decoded = CERT_DecodeCertFromPackage(package,
@@ -186,16 +197,10 @@ cm_casave_main_n(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 				found = CERT_FindCertByDERCert(certdb,
 							       &decoded->derCert);
 				if (found != NULL) {
-					items[0] = &found->derCert;
-					items[1] = NULL;
-					if ((CERT_ImportCerts(certdb,
-							      certUsageSSLCA,
-							      1, items,
-							      &imported,
-							      PR_TRUE, PR_FALSE,
-							      p) != SECSuccess) ||
-					    (imported == NULL) ||
-					    (imported[0] == NULL)) {
+					if (PK11_ImportCert(slot, found,
+							      CK_INVALID_HANDLE,
+							      p,
+							      PR_FALSE) != SECSuccess) {
 						ec = PORT_GetError();
 						if (ec != 0) {
 							es = PR_ErrorToName(ec);
@@ -217,10 +222,15 @@ cm_casave_main_n(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 						cm_log(3, "Wrote '%s' to "
 						       "database '%s'.\n",
 						       p, state->nssdb);
-						CERT_ChangeCertTrust(certdb,
-								     imported[0],
-								     &trust);
-						CERT_DestroyCertificate(imported[0]);
+						if (CERT_ChangeCertTrust(certdb,
+								     found,
+								     &trust) != SECSuccess) {
+							if (PORT_GetError() == SEC_ERROR_TOKEN_NOT_LOGGED_IN)
+							{
+								cm_log(0, "Unable to set trust. "
+										  "Token not logged in.\n");
+							}
+						}
 					}
 					CERT_DestroyCertificate(found);
 				} else{
@@ -234,6 +244,7 @@ cm_casave_main_n(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 				       p);
 			}
 		}
+		PK11_FreeSlot(slot);
 		err = NSS_ShutdownContext(ctx);
 		if (err != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");

@@ -844,7 +844,7 @@ for which in CAB1 CAB2 CAB3 CAD1 CAD2 CAD3 EntryB1 EntryB2 EntryB3 EntryD1 Entry
 	done
 	for db in 1 2 3 a ; do
 		echo "[db$db]"
-		certutil -L -d "db$db" 2> /dev/null | \
+		certutil -L -d "$scheme:db$db" 2> /dev/null | \
 		grep , | grep -v JAR/XPI | sed -r 's, +, ,g' | \
 		env LANG=C sort | tee "olddblist$db"
 	done
@@ -853,7 +853,7 @@ for which in CAB1 CAB2 CAB3 CAD1 CAD2 CAD3 EntryB1 EntryB2 EntryB3 EntryD1 Entry
 		diff -u "bundle$bundle" "oldbundle$bundle"
 	done
 	for db in 1 2 3 a ; do
-		certutil -L -d "db$db" 2> /dev/null | \
+		certutil -L -d "$scheme:db$db" 2> /dev/null | \
 		grep , | grep -v JAR/XPI | sed -r 's, +, ,g' | \
 		env LANG=C sort > "dblist$db"
 		diff -u "olddblist$db" "dblist$db"
