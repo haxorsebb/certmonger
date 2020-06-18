@@ -114,6 +114,7 @@ int
 main(int argc, const char **argv)
 {
 	const char *eeurl = NULL, *agenturl = NULL, *url = NULL, *url2 = NULL;
+	const char *method = NULL, *method2 = NULL;
 	const char *ssldir = NULL, *cainfo = NULL, *capath = NULL;
 	const char *sslcert = NULL, *sslkey = NULL;
 	const char *sslpin = NULL, *sslpinfile = NULL;
@@ -498,10 +499,11 @@ main(int argc, const char **argv)
 		return CM_SUBMIT_STATUS_UNCONFIGURED;
 		break;
 	case op_submit:
+		method = DOGTAG_PROFILE_SUBMIT_METHOD;
 		url = talloc_asprintf(ctx, "%s/%s", eeurl,
 				      use_agent_submission ?
-				      "profileSubmitSSLClient" :
-				      "profileSubmit");
+				      DOGTAG_PROFILE_SUBMIT_AGENT_RESOURCE :
+				      DOGTAG_PROFILE_SUBMIT_RESOURCE);
 		template = cm_submit_u_url_encode(template);
 		if ((serial != NULL) && (strlen(serial) > 0) && !force_new) {
 			/* Renew-by-serial. */
@@ -595,7 +597,8 @@ main(int argc, const char **argv)
 		break;
 	case op_check:
 		/* Check if the certificate has been issued or rejected. */
-		url = talloc_asprintf(ctx, "%s/checkRequest", eeurl);
+		method = DOGTAG_CHECK_REQUEST_METHOD;
+		url = talloc_asprintf(ctx, "%s/%s", eeurl, DOGTAG_CHECK_REQUEST_RESOURCE);
 		params = talloc_asprintf(ctx,
 					 "%s&"
 					 "xml=true",
@@ -617,8 +620,10 @@ main(int argc, const char **argv)
 		}
 		/* Reading profile defaults for this certificate, then applying
 		 * them and issuing a new certificate. */
-		url = talloc_asprintf(ctx, "%s/profileReview", agenturl);
-		url2 = talloc_asprintf(ctx, "%s/profileProcess", agenturl);
+		method = DOGTAG_PROFILE_REVIEW_METHOD;
+		url = talloc_asprintf(ctx, "%s/%s", agenturl, DOGTAG_PROFILE_REVIEW_RESOURCE);
+		method2 = DOGTAG_PROFILE_PROCESS_METHOD;
+		url2 = talloc_asprintf(ctx, "%s/%s", agenturl, DOGTAG_PROFILE_PROCESS_RESOURCE);
 		params = talloc_asprintf(ctx,
 					 "%s&"
 					 "xml=true",
@@ -631,7 +636,8 @@ main(int argc, const char **argv)
 		break;
 	case op_retrieve:
 		/* Retrieving the new certificate. */
-		url = talloc_asprintf(ctx, "%s/displayCertFromRequest", eeurl);
+		method = DOGTAG_DISPLAY_CERT_METHOD;
+		url = talloc_asprintf(ctx, "%s/%s", eeurl, DOGTAG_DISPLAY_CERT_RESOURCE);
 		params = talloc_asprintf(ctx,
 					 "%s&"
 					 "importCert=true&"
@@ -641,7 +647,8 @@ main(int argc, const char **argv)
 		break;
 	case op_profiles:
 		/* Retrieving the list of profiles. */
-		url = talloc_asprintf(ctx, "%s/profileList", eeurl);
+		method = DOGTAG_PROFILE_LIST_METHOD;
+		url = talloc_asprintf(ctx, "%s/%s", eeurl, DOGTAG_PROFILE_LIST_RESOURCE);
 		if (strlen(params) > 0) {
 			params = talloc_asprintf(ctx,
 						 "%s&"
@@ -669,7 +676,7 @@ main(int argc, const char **argv)
 	/* Submit the form(s). */
 	hctx = NULL;
 	while (url != NULL) {
-		hctx = cm_submit_h_init(ctx, "GET", url, params, NULL, NULL,
+		hctx = cm_submit_h_init(ctx, method, url, params, NULL, NULL,
 					cainfo, capath, sslcert, sslkey, sslpin,
 					cm_submit_h_negotiate_off,
 					cm_submit_h_delegate_off,
@@ -684,10 +691,10 @@ main(int argc, const char **argv)
 		lastparams = params;
 		cm_submit_h_run(hctx);
 		if (verbose > 0) {
-			fprintf(stderr, "%s \"%s?%s\"\n", "GET", url, params);
+			fprintf(stderr, "%s \"%s?%s\"\n", method, url, params);
 			fprintf(stderr, "code = %d\n", cm_submit_h_result_code(hctx));
 			fprintf(stderr, "code_text = \"%s\"\n", cm_submit_h_result_code_text(hctx));
-			syslog(LOG_DEBUG, "%s %s?%s\n", "GET", url, params);
+			syslog(LOG_DEBUG, "%s %s?%s\n", method, url, params);
 		}
 		results = cm_submit_h_results(hctx, NULL);
 		if (verbose > 0) {
@@ -762,6 +769,8 @@ main(int argc, const char **argv)
 		url2 = NULL;
 		params = params2;
 		params2 = NULL;
+		method = method2;
+		method2 = NULL;
 	}
 
 	/* Figure out what to output. */

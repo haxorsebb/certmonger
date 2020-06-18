@@ -18,6 +18,23 @@
 #ifndef cmsubmitd_h
 #define cmsubmitd_h
 
+#define HTTP_METHOD_GET "GET"
+#define HTTP_METHOD_POST "POST"
+
+#define DOGTAG_PROFILE_SUBMIT_METHOD HTTP_METHOD_POST
+#define DOGTAG_PROFILE_SUBMIT_RESOURCE "profileSubmit"
+#define DOGTAG_PROFILE_SUBMIT_AGENT_RESOURCE "profileSubmitSSLClient"
+#define DOGTAG_PROFILE_REVIEW_METHOD HTTP_METHOD_GET
+#define DOGTAG_PROFILE_REVIEW_RESOURCE "profileReview"
+#define DOGTAG_PROFILE_PROCESS_METHOD HTTP_METHOD_POST
+#define DOGTAG_PROFILE_PROCESS_RESOURCE "profileProcess"
+#define DOGTAG_PROFILE_LIST_METHOD HTTP_METHOD_GET
+#define DOGTAG_PROFILE_LIST_RESOURCE "profileList"
+#define DOGTAG_CHECK_REQUEST_METHOD HTTP_METHOD_GET
+#define DOGTAG_CHECK_REQUEST_RESOURCE "checkRequest"
+#define DOGTAG_DISPLAY_CERT_METHOD HTTP_METHOD_GET
+#define DOGTAG_DISPLAY_CERT_RESOURCE "displayCertFromRequest"
+
 int cm_submit_d_submit_result(void *parent, const char *xml,
 			      char **error_code, char **error_reason,
 			      char **error, char **status,

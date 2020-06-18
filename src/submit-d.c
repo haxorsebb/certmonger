@@ -1013,8 +1013,8 @@ restart:
 	ctx = talloc_new(NULL);
 	switch (op) {
 	case op_submit_csr:
-		method = "POST";
-		cgi = "profileSubmit";
+		method = DOGTAG_PROFILE_SUBMIT_METHOD;
+		cgi = DOGTAG_PROFILE_SUBMIT_RESOURCE;
 		p = cm_submit_u_from_file_single(file);
 		if (p == NULL) {
 			printf("Error reading CSR from \"%s\".\n", file);
@@ -1046,8 +1046,8 @@ restart:
 		}
 		break;
 	case op_submit_serial:
-		method = "POST";
-		cgi = "profileSubmit";
+		method = DOGTAG_PROFILE_SUBMIT_METHOD;
+		cgi = DOGTAG_PROFILE_SUBMIT_RESOURCE;
 		params = talloc_asprintf(ctx,
 					 "profileId=%s&"
 					 "serial_num=%s&"
@@ -1069,16 +1069,16 @@ restart:
 		}
 		break;
 	case op_review:
-		method = "GET";
-		cgi = "profileReview";
+		method = DOGTAG_PROFILE_REVIEW_METHOD;
+		cgi = DOGTAG_PROFILE_REVIEW_RESOURCE;
 		params = talloc_asprintf(ctx,
 					 "requestId=%d&"
 					 "xml=true",
 					 id);
 		break;
 	case op_reject:
-		method = "GET";
-		cgi = "profileProcess";
+		method = DOGTAG_PROFILE_PROCESS_METHOD;
+		cgi = DOGTAG_PROFILE_PROCESS_RESOURCE;
 		params = talloc_asprintf(ctx,
 					 "requestId=%d&"
 					 "op=reject&"
@@ -1088,8 +1088,8 @@ restart:
 	case op_approve:
 		if ((defaults == NULL) && (specified_values == NULL)) {
 			/* ask the server for its defaults */
-			method = "GET";
-			cgi = "profileReview";
+			method = DOGTAG_PROFILE_REVIEW_METHOD;
+			cgi = DOGTAG_PROFILE_REVIEW_RESOURCE;
 			params = talloc_asprintf(ctx,
 						 "requestId=%d&"
 						 "xml=true",
@@ -1097,8 +1097,8 @@ restart:
 		} else
 		if (specified_values != NULL) {
 			/* use values specified as CLI options */
-			method = "GET";
-			cgi = "profileProcess";
+			method = DOGTAG_PROFILE_PROCESS_METHOD;
+			cgi = DOGTAG_PROFILE_PROCESS_RESOURCE;
 			params = talloc_asprintf(ctx,
 						 "requestId=%d&"
 						 "op=approve&"
@@ -1106,8 +1106,8 @@ restart:
 						 id, specified_values);
 		} else {
 			/* use previously-retrieved defaults */
-			method = "GET";
-			cgi = "profileProcess";
+			method = DOGTAG_PROFILE_PROCESS_METHOD;
+			cgi = DOGTAG_PROFILE_PROCESS_RESOURCE;
 			params = talloc_asprintf(ctx,
 						 "requestId=%d&"
 						 "op=approve&"
@@ -1130,8 +1130,8 @@ restart:
 		}
 		break;
 	case op_check:
-		method = "GET";
-		cgi = "checkRequest";
+		method = DOGTAG_CHECK_REQUEST_METHOD;
+		cgi = DOGTAG_CHECK_REQUEST_RESOURCE;
 		params = talloc_asprintf(ctx,
 					 "requestId=%d&"
 					 "importCert=true&"
@@ -1139,8 +1139,8 @@ restart:
 					 id);
 		break;
 	case op_fetch:
-		method = "GET";
-		cgi = "displayCertFromRequest";
+		method = DOGTAG_DISPLAY_CERT_METHOD;
+		cgi = DOGTAG_DISPLAY_CERT_RESOURCE;
 		params = talloc_asprintf(ctx,
 					 "requestId=%d&"
 					 "importCert=true&"
