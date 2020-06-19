@@ -38,6 +38,7 @@
 #include <nss.h>
 #include <secasn1.h>
 #include <secitem.h>
+#include <prerror.h>
 
 #include <talloc.h>
 
