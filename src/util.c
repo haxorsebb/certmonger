@@ -155,7 +155,11 @@ get_config_entry(char * in_data, const char *section, const char *key)
 
                 /* Skip over any whitespace after the equal sign. */
                 line = strchr(line, '=');
-                line++;
+				if (line == NULL) {
+					free(data);
+					return NULL;
+				}
+				line++;
                 while (isspace((unsigned char)*line) && (*line != '\0'))
                     line++;
 
