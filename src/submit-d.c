@@ -203,6 +203,7 @@ cm_submit_d_xml_defaults(void *parent, const char *xml)
 				ret = malloc(sizeof(*ret) *
 					     (obj->nodesetval->nodeNr + 1));
 				if (ret == NULL) {
+					xmlFree(obj);
 					return NULL;
 				}
 				memset(ret, 0,
@@ -358,6 +359,8 @@ cm_submit_d_xml_value_if(void *parent, xmlXPathContextPtr xpctx,
 	v = cm_submit_d_text_node(parent, vobj);
 	xmlXPathFreeObject(vobj);
 	if ((v == NULL) || (strlen(v) == 0)) {
+		xmlFree(bpath1);
+		xmlFree(bpath2);
 		return NULL;
 	}
 	bobj1 = NULL;
