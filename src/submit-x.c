@@ -934,6 +934,7 @@ main(int argc, const char **argv)
 		} else {
 			cm_submit_x_add_named_arg_s(ctx, skey, sval);
 		}
+		free(skey);
 	}
 
 	/* Submit the request. */
