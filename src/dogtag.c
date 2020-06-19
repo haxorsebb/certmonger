@@ -250,6 +250,7 @@ main(int argc, const char **argv)
 			if (strchr(poptarg, '=') == NULL) {
 				printf(_("Submit params (-o) must be in the form of param=value.\n"));
 				poptPrintUsage(pctx, stdout, 0);
+				free(soptions);
 				return CM_SUBMIT_STATUS_UNCONFIGURED;
 			}
 			soptions = realloc(soptions,
@@ -261,6 +262,7 @@ main(int argc, const char **argv)
 			p = strdup(poptarg);
 			if (p == NULL) {
 				printf(_("Out of memory.\n"));
+				free(soptions);
 				return CM_SUBMIT_STATUS_UNCONFIGURED;
 			}
 			i = strcspn(p, "=");
@@ -294,6 +296,7 @@ main(int argc, const char **argv)
 	}
 	if (c != -1) {
 		poptPrintUsage(pctx, stdout, 0);
+		free(soptions);
 		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
 
@@ -568,6 +571,7 @@ main(int argc, const char **argv)
 				pin = NULL;
 			}
 		}
+		free(soptions);
 		/* Add client creds. */
 		if (uid != NULL) {
 			uid = cm_submit_u_url_encode(uid);
