@@ -473,6 +473,8 @@ main(int argc, const char **argv)
 			op = op_retrieve;
 		}
 		params = talloc_asprintf(ctx, "requestId=%s", q);
+		free(p);
+		free(q);
 	} else {
 		params = "";
 	}
