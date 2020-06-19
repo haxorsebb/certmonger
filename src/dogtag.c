@@ -227,6 +227,8 @@ main(int argc, const char **argv)
 			if (strchr(poptarg, '=') == NULL) {
 				printf(_("Profile params (-O) must be in the form of param=value.\n"));
 				poptPrintUsage(pctx, stdout, 0);
+				free(soptions);
+				free(aoptions);
 				return CM_SUBMIT_STATUS_UNCONFIGURED;
 			}
 			aoptions = realloc(aoptions,
@@ -238,6 +240,7 @@ main(int argc, const char **argv)
 			p = strdup(poptarg);
 			if (p == NULL) {
 				printf(_("Out of memory.\n"));
+				free(aoptions);
 				return CM_SUBMIT_STATUS_UNCONFIGURED;
 			}
 			i = strcspn(p, "=");
@@ -251,6 +254,7 @@ main(int argc, const char **argv)
 				printf(_("Submit params (-o) must be in the form of param=value.\n"));
 				poptPrintUsage(pctx, stdout, 0);
 				free(soptions);
+				free(aoptions);
 				return CM_SUBMIT_STATUS_UNCONFIGURED;
 			}
 			soptions = realloc(soptions,
@@ -297,6 +301,7 @@ main(int argc, const char **argv)
 	if (c != -1) {
 		poptPrintUsage(pctx, stdout, 0);
 		free(soptions);
+		free(aoptions);
 		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
 
