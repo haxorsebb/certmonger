@@ -1039,9 +1039,9 @@ main(int argc, const char **argv)
 				rval = CM_SUBMIT_STATUS_UNREACHABLE;
 				goto done;
 			}
-			if ((recipient_nonce_length != sent_nonce_length) ||
+			if (sent_nonce && ((recipient_nonce_length != sent_nonce_length) ||
 			    (memcmp(recipient_nonce, sent_nonce,
-				    sent_nonce_length) != 0)) {
+				    sent_nonce_length) != 0))) {
 				printf(_("Error: reply nonce doesn't match request.\n"));
 				rval = CM_SUBMIT_STATUS_UNREACHABLE;
 				goto done;
