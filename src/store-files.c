@@ -559,6 +559,7 @@ cm_store_file_read_lines(void *parent, FILE *fp)
 			break;
 		}
 		free(buf);
+		buf = NULL;
 	}
 	/* If we were reading a line, append it to the list. */
 	if (s != NULL) {
@@ -573,6 +574,7 @@ cm_store_file_read_lines(void *parent, FILE *fp)
 			lines = tlines;
 		}
 	}
+	free(buf);
 	return lines;
 }
 
