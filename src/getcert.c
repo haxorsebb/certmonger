@@ -4065,7 +4065,7 @@ thumbprint(const char *s, SECOidTag tag, int bits)
 	if (length == 0) {
 		goto done;
 	}
-	u = malloc(length);
+	u = malloc(length + 1);
 	if (u == NULL) {
 		goto done;
 	}
@@ -4086,8 +4086,10 @@ thumbprint(const char *s, SECOidTag tag, int bits)
 		}
 	} else {
         free(t);
+        t = NULL;
     }
 done:
+	free(t);
 	free(u);
 	return ret;
 }
