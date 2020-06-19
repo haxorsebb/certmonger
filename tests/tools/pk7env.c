@@ -110,6 +110,7 @@ main(int argc, char **argv)
 			}
 			len += j;
 		}
+		p[1][len] = '\0';
 		close(fd);
 		i++;
 
