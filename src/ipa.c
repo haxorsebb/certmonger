@@ -771,6 +771,7 @@ main(int argc, const char **argv)
 			printf(_("Unable to determine principal name for "
 				 "signing request.\n"));
 			poptPrintUsage(pctx, stdout, 0);
+			free(reqprinc);
 			return CM_SUBMIT_STATUS_UNCONFIGURED;
 		}
 		if ((profile == NULL) &&
@@ -813,6 +814,9 @@ main(int argc, const char **argv)
 				       CM_SUBMIT_CSR_ENV);
 			}
 			free(csr);
+			free(profile);
+			free(issuer);
+			free(reqprinc);
 			poptPrintUsage(pctx, stdout, 0);
 			return CM_SUBMIT_STATUS_UNCONFIGURED;
 		}
@@ -855,6 +859,10 @@ main(int argc, const char **argv)
 			fprintf(stderr,
 				"Error reading password from \"%s\": %s.\n",
 				pwdfile, strerror(errno));
+			free(csr);
+			free(profile);
+			free(issuer);
+			free(reqprinc);
 			return CM_SUBMIT_STATUS_UNCONFIGURED;
 		}
 	}
@@ -867,6 +875,10 @@ main(int argc, const char **argv)
 		if ((uid != NULL) || (pwd != NULL)) {
 			fprintf(stderr,
 				"Both -u and -W/-w options should be specified.\n");
+			free(csr);
+			free(profile);
+			free(issuer);
+			free(reqprinc);
 			return CM_SUBMIT_STATUS_UNCONFIGURED;
 		}
 	}
@@ -901,6 +913,10 @@ main(int argc, const char **argv)
 			}
 		}
 		free(kerr);
+		free(csr);
+		free(profile);
+		free(issuer);
+		free(reqprinc);
 		switch (kret) {
 		case KRB5_KDC_UNREACH:
 		case KRB5_REALM_CANT_RESOLVE:
@@ -920,10 +936,12 @@ main(int argc, const char **argv)
 				      basedn, uid, pwd, csr, reqprinc, profile,
 				      issuer);
 		free(csr);
+		free(profile);
+		free(issuer);
+		free(reqprinc);
 		return ret;
 	} else
 	if (strcasecmp(mode, CM_OP_FETCH_ROOTS) == 0) {
-		free(csr);
 		return fetch_roots(server, ldap_uri_cmd, ldap_uri, host,
 				   uid, pwd, domain, basedn);
 	}
