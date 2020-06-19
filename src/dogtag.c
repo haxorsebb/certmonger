@@ -235,12 +235,14 @@ main(int argc, const char **argv)
 					   ++num_aoptions * sizeof(*aoptions));
 			if (aoptions == NULL) {
 				printf(_("Out of memory.\n"));
+				free(soptions);
 				return CM_SUBMIT_STATUS_UNCONFIGURED;
 			}
 			p = strdup(poptarg);
 			if (p == NULL) {
 				printf(_("Out of memory.\n"));
 				free(aoptions);
+				free(soptions);
 				return CM_SUBMIT_STATUS_UNCONFIGURED;
 			}
 			i = strcspn(p, "=");
@@ -261,6 +263,7 @@ main(int argc, const char **argv)
 					   ++num_soptions * sizeof(*soptions));
 			if (soptions == NULL) {
 				printf(_("Out of memory.\n"));
+				free(aoptions);
 				return CM_SUBMIT_STATUS_UNCONFIGURED;
 			}
 			p = strdup(poptarg);
