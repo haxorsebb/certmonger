@@ -105,6 +105,9 @@ cm_submit_u_from_file(const char *filename)
 		if (csr[length-1] != '\n') {
 			length += 1;
 			csr = realloc(csr, length + 1);
+			if (csr == NULL) {
+				return NULL;
+			}
 			csr[length - 1] = '\n';
 			csr[length] = '\0';
 		}
