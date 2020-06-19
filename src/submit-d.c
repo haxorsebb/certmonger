@@ -1270,6 +1270,7 @@ restart:
 				printf("default: %s=%s\n", p, q);
 			}
 		}
+		free(defaults);
 		cm_submit_d_approve_result(hctx, result,
 					   &error_code, &error_reason,
 					   &error, &status, &requestId);
