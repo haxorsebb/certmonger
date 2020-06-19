@@ -551,6 +551,7 @@ main(int argc, const char **argv)
 						 "xml=true",
 						 template,
 						 csr);
+			free(csr);
 		}
 		/* Check for creds specified as options. */
 		for (j = 0; j < num_soptions; j++) {
