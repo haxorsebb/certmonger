@@ -97,6 +97,9 @@ cm_srvloc_rand(unsigned int range)
 	if (r < 0) {
 		r = -r;
 	}
+	if (range == 0) {
+		return 0;
+	}
 	return r % range;
 }
 #else
