@@ -411,6 +411,7 @@ cm_certsave_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	free(old_key);
 	free(old_cert);
 	free(next_keyfile);
+	free(old_keyfile);
 	if (status != 0) {
 		_exit(status);
 	}
