@@ -517,6 +517,8 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 						CK_INVALID_HANDLE,
 						entry->cm_cert_nickname,
 						PR_FALSE);
+				} else {
+					error = SECFailure;
 				}
 				if (error == SECSuccess) {
 					cm_log(1, "Imported certificate with "
