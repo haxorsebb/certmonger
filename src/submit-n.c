@@ -317,11 +317,18 @@ cm_submit_n_decrypt_envelope(const unsigned char *envelope,
 		}
 		goto done;
 	}
-	NSS_ShutdownContext(ctx);
+	if (NSS_ShutdownContext(ctx) != SECSuccess) {
+		cm_log(0, "Error shutting down NSS.\n");
+		_exit(1);
+	}
 	ctx = NSS_InitContext(args->entry->cm_key_storage_location,
 			      NULL, NULL, NULL, NULL,
 			      NSS_INIT_READONLY |
 			      NSS_INIT_NOROOTINIT);
+	if (ctx == NULL) {
+		cm_log(0, "Unable to initialize NSS.\n");
+		_exit(1);
+	}
 	reason = util_n_fips_hook();
 	if (reason != NULL) {
 		cm_log(1, "Error putting NSS into FIPS mode: %s\n", reason);

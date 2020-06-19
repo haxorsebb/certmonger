@@ -226,11 +226,18 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			break;
 		}
 	}
-	NSS_ShutdownContext(ctx);
+	if (NSS_ShutdownContext(ctx) != SECSuccess) {
+		cm_log(0, "Error shutting down NSS.\n");
+		_exit(1);
+	}
 	ctx = NSS_InitContext(entry->cm_key_storage_location,
 			      NULL, NULL, NULL, NULL,
 			      (readwrite ? 0 : NSS_INIT_READONLY) |
 			      NSS_INIT_NOROOTINIT);
+	if (ctx == NULL) {
+		cm_log(0, "Unable to initialize NSS.\n");
+		_exit(1);
+	}
 	reason = util_n_fips_hook();
 	if (reason != NULL) {
 		cm_log(1, "Error putting NSS into FIPS mode: %s\n", reason);

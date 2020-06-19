@@ -186,11 +186,18 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	} else {
 		/* We don't try to force FIPS mode here, as it seems to get in
 		 * the way of saving the certificate. */
-		NSS_ShutdownContext(ctx);
+		if (NSS_ShutdownContext(ctx) != SECSuccess) {
+			cm_log(0, "Error shutting down NSS.\n");
+			_exit(1);
+		}
 		ctx = NSS_InitContext(entry->cm_cert_storage_location,
 				      NULL, NULL, NULL, NULL,
 				      (readwrite ? 0 : NSS_INIT_READONLY) |
 				      NSS_INIT_NOROOTINIT);
+		if (ctx == NULL) {
+			cm_log(0, "Unable to initialize NSS.\n");
+			_exit(1);
+		}
 
 		/* Allocate a memory pool. */
 		arena = PORT_NewArena(sizeof(double));
