@@ -175,6 +175,11 @@ cm_find_default_naming_context(LDAP *ld, char **basedn)
 	     lmsg = ldap_next_entry(ld, lmsg)) {
 		lbvalues = ldap_get_values_len(ld, lmsg,
 					       lncattrs[0]);
+		/* There should be only one defaultNamingContext so once we
+		 * have a value we're done. */
+		if (*basedn != NULL) {
+			break;
+		}
 		if (lbvalues == NULL) {
 			continue;
 		}
