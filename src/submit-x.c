@@ -914,9 +914,8 @@ main(int argc, const char **argv)
 
 	/* Maybe we need a ccache. */
 	if (k5 || (kpname != NULL) || (ktname != NULL)) {
-		if (!make_ccache ||
-		    (cm_submit_x_make_ccache(ktname, kpname, NULL) == 0)) {
-			k5 = TRUE;
+		if (!make_ccache) {
+		    cm_submit_x_make_ccache(ktname, kpname, NULL);
 		}
 	}
 
