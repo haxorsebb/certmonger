@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.79.9
+Version:	0.79.10
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -243,6 +243,22 @@ exit 0
 %endif
 
 %changelog
+* Thu Jun 25 2020 Rob Crittenden <rcritten@redhat.com> - 0.79.10-1
+- update to 0.79.10:
+   - dogtag: use POST for profileProcess requests
+   - Improve logging in SCEP helper
+   - Add verbose option to SCEP CA if requested in add-scep-ca
+   - Re-order the way the SCEP signing and CA certs are collected
+   - Add new option to allow overriding the detected SCEP CA chain
+   - template_profile, issuer and MS certificate template are single-value
+   - Ensure that files read in have a trailing new-line
+   - Adapt to the new behavior of disconnect in dbus-broker
+   - Add long command-line options to CLI and man pages
+   - Include &message=CA-IDENT with GetCACaps and GetCACert requests
+   - Address issues uncovered by clang and Coverity
+   - Handle an uninitialized token when adding CA certs to an NSS db
+   - tests: Parametrize 025-casave with NSS db types
+
 * Thu Jan 30 2020 Rob Crittenden <rcritten@redhat.com> - 0.79.9-1
 - update to 0.79.9:
    - Allow principal to be set during start-tracking
