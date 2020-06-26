@@ -16,12 +16,16 @@
  */
 
 #include "../../src/config.h"
-#include "../../src/submit-h.h"
 
 #include <sys/types.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
+
+#include <krb5.h>
+
+#include "../../src/submit-u.h"
+#include "../../src/submit-u.c"
 
 int
 main(int argc, char **argv)

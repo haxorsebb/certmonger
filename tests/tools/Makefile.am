@@ -41,4 +41,4 @@ srv_LDADD = $(top_srcdir)/src/srvloc.c $(LDADD)
 
 fromfile_CFLAGS = $(AM_CFLAGS)
 fromfile_SOURCES = fromfile.c
-fromfile_LDADD = $(top_srcdir)/src/submit-u.c $(LDADD) $(UUID_LIBS)
+fromfile_LDADD = $(LDADD) $(UUID_LIBS)
