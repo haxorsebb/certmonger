@@ -25,7 +25,7 @@
 %endif
 
 Name:		certmonger
-Version:	0.79.10
+Version:	0.79.11
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -243,6 +243,10 @@ exit 0
 %endif
 
 %changelog
+* Tue Jun 30 2020 Rob Crittenden <rcritten@redhat.com> - 0.79.11-1
+- update to 0.79.11:
+   - Fix crash bug when generating thumbprints.
+
 * Thu Jun 25 2020 Rob Crittenden <rcritten@redhat.com> - 0.79.10-1
 - update to 0.79.10:
    - dogtag: use POST for profileProcess requests
