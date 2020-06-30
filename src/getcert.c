@@ -4089,7 +4089,6 @@ thumbprint(const char *s, SECOidTag tag, int bits)
         t = NULL;
     }
 done:
-	free(t);
 	free(u);
 	return ret;
 }
