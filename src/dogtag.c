@@ -579,7 +579,6 @@ main(int argc, const char **argv)
 				pin = NULL;
 			}
 		}
-		free(soptions);
 		/* Add client creds. */
 		if (uid != NULL) {
 			uid = cm_submit_u_url_encode(uid);
