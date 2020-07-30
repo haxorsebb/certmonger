@@ -1,6 +1,7 @@
 [Unit]
 Description=Certificate monitoring and PKI enrollment
 After=syslog.target network.target dbus.service
+PartOf=dbus.service
 
 [Service]
 Type=dbus
