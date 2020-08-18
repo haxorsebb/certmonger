@@ -240,7 +240,6 @@ cm_subproc_done(struct cm_subproc_state *state)
 
 	if (state != NULL) {
 		if (state->pid != -1) {
-			kill(state->pid, SIGKILL);
 			do {
 				pid = waitpid(state->pid, &state->status, 0);
 				cm_log(4, "Waited for %ld, got %ld.\n",
