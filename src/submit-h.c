@@ -51,7 +51,7 @@
 struct cm_submit_h_context {
 	int ret;
 	long response_code;
-	char *method, *uri, *args, *accept, *ctype, *cainfo, *capath, *result;
+	char *method, *uri, *args, *accept, *ctype, *referer, *cainfo, *capath, *result;
 	int result_length;
 	char *sslcert, *sslkey, *sslpass;
 	enum cm_submit_h_opt_negotiate negotiate;
@@ -66,7 +66,7 @@ struct cm_submit_h_context *
 cm_submit_h_init(void *parent,
 		 const char *method, const char *uri, const char *args,
 		 const char *content_type, const char *accept,
-		 const char *cainfo, const char *capath,
+		 const char *referer, const char *cainfo, const char *capath,
 		 const char *sslcert, const char *sslkey, const char *sslpass,
 		 enum cm_submit_h_opt_negotiate neg,
 		 enum cm_submit_h_opt_delegate del,
@@ -84,6 +84,7 @@ cm_submit_h_init(void *parent,
 		ctx->ctype = content_type ?
 			     talloc_strdup(ctx, content_type) :
 			     NULL;
+		ctx->referer = referer ? talloc_strdup(ctx, referer) : NULL;
 		ctx->accept = accept ? talloc_strdup(ctx, accept) : NULL;
 		ctx->cainfo = cainfo ? talloc_strdup(ctx, cainfo) : NULL;
 		ctx->capath = capath ? talloc_strdup(ctx, capath) : NULL;
@@ -180,10 +181,11 @@ cm_submit_h_run(struct cm_submit_h_context *ctx)
 			}
 		}
 		if (ctx->negotiate == cm_submit_h_negotiate_on) {
-#if defined(CURLOPT_HTTPAUTH) && defined(CURLAUTH_GSSNEGOTIATE)
+#if defined(CURLAUTH_NEGOTIATE)
 			curl_easy_setopt(ctx->curl,
 					 CURLOPT_HTTPAUTH,
-					 CURLAUTH_GSSNEGOTIATE);
+					 CURLAUTH_NEGOTIATE);
+			curl_easy_setopt(ctx->curl, CURLOPT_USERPWD, ":");
 #else
 			cm_log(-1,
 			       "warning: libcurl doesn't appear to support "
@@ -238,6 +240,14 @@ cm_submit_h_run(struct cm_submit_h_context *ctx)
 		if (ctx->ctype != NULL) {
 			header = talloc_asprintf(ctx, "Content-Type: %s",
 						 ctx->ctype);
+			if (header != NULL) {
+				headers = curl_slist_append(headers,
+							    header);
+			}
+		}
+		if (ctx->referer != NULL) {
+			header = talloc_asprintf(ctx, "Referer: %s",
+						 ctx->referer);
 			if (header != NULL) {
 				headers = curl_slist_append(headers,
 							    header);
@@ -415,7 +425,7 @@ main(int argc, const char **argv)
 	}
 
 	ctx = cm_submit_h_init(NULL, method, url, poptGetArg(pctx),
-			       ctype, accept,
+			       ctype, accept, NULL,
 			       cainfo, capath, sslcert, sslkey, sslpass,
 			       negotiate, negotiate_delegate,
 			       clientauth, cm_submit_h_env_modify_on,

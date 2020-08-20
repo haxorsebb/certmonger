@@ -496,7 +496,7 @@ main(int argc, const char **argv)
 	}
 
 	/* Submit the first request. */
-	hctx = cm_submit_h_init(ctx, "GET", url, params, NULL, NULL,
+	hctx = cm_submit_h_init(ctx, "GET", url, params, NULL, NULL, NULL,
 				cainfo, NULL, NULL, NULL, NULL,
 				cm_submit_h_negotiate_off,
 				cm_submit_h_delegate_off,
@@ -593,7 +593,7 @@ main(int argc, const char **argv)
 	}
 	/* Submit a second HTTP request if we have one to make. */
 	if (params2 != NULL) {
-		hctx = cm_submit_h_init(ctx, "GET", url, params2, NULL, NULL,
+		hctx = cm_submit_h_init(ctx, "GET", url, params2, NULL, NULL, NULL,
 					NULL, NULL, NULL, NULL, NULL,
 					cm_submit_h_negotiate_off,
 					cm_submit_h_delegate_off,
@@ -794,7 +794,7 @@ main(int argc, const char **argv)
 						 OP_GET_CA_CERT
 						 "&message=%d", i++);
 			hctx = cm_submit_h_init(ctx, "GET", url, params,
-						NULL, NULL, NULL, NULL,
+						NULL, NULL, NULL, NULL, NULL,
 						NULL, NULL, NULL,
 						cm_submit_h_negotiate_off,
 						cm_submit_h_delegate_off,

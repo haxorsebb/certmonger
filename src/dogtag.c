@@ -691,7 +691,7 @@ main(int argc, const char **argv)
 	/* Submit the form(s). */
 	hctx = NULL;
 	while (url != NULL) {
-		hctx = cm_submit_h_init(ctx, method, url, params, NULL, NULL,
+		hctx = cm_submit_h_init(ctx, method, url, params, NULL, NULL, NULL,
 					cainfo, capath, sslcert, sslkey, sslpin,
 					cm_submit_h_negotiate_off,
 					cm_submit_h_delegate_off,
