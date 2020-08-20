@@ -278,29 +278,42 @@ if ! ${configure_dist_target_only:-false} ; then
 	CPPFLAGS="$savedCPPFLAGS"
 	LDFLAGS="$savedLDFLAGS"
 
-	dnl PKG_CHECK_MODULES(XMLRPC,xmlrpc_client) # Not provided in upstream versions.
-	savedCFLAGS="$CFLAGS"
-	CFLAGS=
-	AC_ARG_VAR(XMLRPC_C_CONFIG,[the full path of the xmlrpc-c-config command])
-	AC_PATH_PROG(XMLRPC_C_CONFIG,[xmlrpc-c-config],,[$PATH$PATH_SEPARATOR/usr/xmlrpc/bin$PATH_SEPARATOR/usr/xmlrpc-c/bin])
-	if test -z "$XMLRPC_C_CONFIG" ; then
-		AC_MSG_ERROR(xmlrpc-c-config not found)
-	fi
-	AC_MSG_CHECKING(for XMLRPC CFLAGS)
-	XMLRPC_CFLAGS="`${XMLRPC_C_CONFIG} client --cflags` `${XMLRPC_C_CONFIG} --cflags`"
-	AC_MSG_RESULT([$XMLRPC_CFLAGS])
-	AC_SUBST(XMLRPC_CFLAGS)
-	AC_MSG_CHECKING(for XMLRPC LIBS)
-	XMLRPC_LIBS="`${XMLRPC_C_CONFIG} client --libs` `${XMLRPC_C_CONFIG} --libs`"
-	AC_MSG_RESULT([$XMLRPC_LIBS])
-	AC_SUBST(XMLRPC_LIBS)
-	CFLAGS="$CFLAGS $XMLRPC_CFLAGS"
-	AC_CHECK_MEMBERS(struct xmlrpc_curl_xportparms.gssapi_delegation,,,
-			 [
-			 #include <xmlrpc-c/client.h>
-			 #include <xmlrpc-c/transport.h>
-			 ])
-	CFLAGS="$savedCFLAGS"
+	PKG_CHECK_MODULES(JANSSON,jansson)
+	have_jansson=true
+
+	AC_ARG_WITH([xmlrpc],
+		[AC_HELP_STRING([--with-xmlrpc], [Enable XML-RPC support])],
+		[with_xmlrpc=${with_xmlrpc}],
+		[with_xmlrpc=no])
+	AS_IF([test x"$with_xmlrpc" = xyes], [AC_DEFINE([WITH_XMLRPC], [1],
+		[include XMLRPC support])])
+	AM_CONDITIONAL(WITH_XMLRPC,test x"$with_xmlrpc" = xyes)
+
+	AS_IF([test x"$with_xmlrpc" = xyes], [
+		dnl PKG_CHECK_MODULES(XMLRPC,xmlrpc_client) # Not provided in upstream versions.
+		savedCFLAGS="$CFLAGS"
+		CFLAGS=
+		AC_ARG_VAR(XMLRPC_C_CONFIG,[the full path of the xmlrpc-c-config command])
+		AC_PATH_PROG(XMLRPC_C_CONFIG,[xmlrpc-c-config],,[$PATH$PATH_SEPARATOR/usr/xmlrpc/bin$PATH_SEPARATOR/usr/xmlrpc-c/bin])
+		if test -z "$XMLRPC_C_CONFIG" ; then
+			AC_MSG_ERROR(xmlrpc-c-config not found)
+		fi
+		AC_MSG_CHECKING(for XMLRPC CFLAGS)
+		XMLRPC_CFLAGS="`${XMLRPC_C_CONFIG} client --cflags` `${XMLRPC_C_CONFIG} --cflags`"
+		AC_MSG_RESULT([$XMLRPC_CFLAGS])
+		AC_SUBST(XMLRPC_CFLAGS)
+		AC_MSG_CHECKING(for XMLRPC LIBS)
+		XMLRPC_LIBS="`${XMLRPC_C_CONFIG} client --libs` `${XMLRPC_C_CONFIG} --libs`"
+		AC_MSG_RESULT([$XMLRPC_LIBS])
+		AC_SUBST(XMLRPC_LIBS)
+		CFLAGS="$CFLAGS $XMLRPC_CFLAGS"
+		AC_CHECK_MEMBERS(struct xmlrpc_curl_xportparms.gssapi_delegation,,,
+				 [
+				 #include <xmlrpc-c/client.h>
+				 #include <xmlrpc-c/transport.h>
+				 ])
+		CFLAGS="$savedCFLAGS"
+	])
 
 	savedCFLAGS="$CFLAGS"
 	savedCPPFLAGS="$CPPFLAGS"

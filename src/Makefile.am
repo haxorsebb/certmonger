@@ -11,15 +11,17 @@ LDFLAGS += -Wl,-z,relro,-z,now
 endif
 man_MANS = certmonger.8 getcert.1 getcert-request.1 getcert-list.1 \
 	   getcert-list-cas.1 getcert-start-tracking.1 getcert-stop-tracking.1 \
-	   selfsign-getcert.1 ipa-getcert.1 certmaster-getcert.1 \
+	   selfsign-getcert.1 ipa-getcert.1 \
 	   getcert-resubmit.1 certmonger-ipa-submit.8 \
-	   certmonger-certmaster-submit.8 \
 	   certmonger-dogtag-ipa-renew-agent-submit.8 certmonger.conf.5 \
 	   getcert-refresh.1 getcert-refresh-ca.1 local-getcert.1 \
 	   certmonger-local-submit.8 getcert-status.1 \
 	   certmonger-dogtag-submit.8 certmonger-scep-submit.8 \
 	   getcert-add-ca.1 getcert-add-scep-ca.1 getcert-modify-ca.1 \
 	   getcert-remove-ca.1 getcert-rekey.1
+if WITH_XMLRPC
+man_MANS += certmaster-getcert.1 certmonger-certmaster-submit.8
+endif
 pkgsysconfdir = $(sysconfdir)/$(PACKAGE)
 pkgsysconf_DATA = certmonger.conf
 EXTRA_PROGRAMS =
@@ -105,8 +107,6 @@ libcm_a_SOURCES = \
 	submit-sn.c \
 	submit-u.c \
 	submit-u.h \
-	submit-x.c \
-	submit-x.h \
 	subproc.c \
 	subproc.h \
 	tdbus.c \
@@ -121,6 +121,11 @@ libcm_a_SOURCES = \
 	util-m.h \
 	util-n.c \
 	util-n.h
+if WITH_XMLRPC
+libcm_a_SOURCES += \
+	submit-x.c \
+	submit-x.h
+endif
 libcm_o_a_SOURCES =
 if HAVE_OPENSSL
 libcm_o_a_SOURCES += \
@@ -158,10 +163,12 @@ ipa_getcert_SOURCES = ipa-getcert.c tm.c tm.h
 ipa_getcert_LDADD = $(getcert_LDADD)
 endif
 if WITH_IPA
+if WITH_XMLRPC
 bin_PROGRAMS += certmaster-getcert
 certmaster_getcert_CFLAGS = $(getcert_CFLAGS)
 certmaster_getcert_SOURCES = certmaster-getcert.c tm.c tm.h
 certmaster_getcert_LDADD = $(getcert_LDADD)
+endif
 endif
 bin_PROGRAMS += selfsign-getcert
 selfsign_getcert_CFLAGS = $(getcert_CFLAGS)
@@ -181,20 +188,27 @@ certmonger_session_SOURCES = main.c env-session.c tm.c tm.h
 certmonger_session_LDADD = libcm.a \
 		   $(OPENSSL_LIBS) $(CERTMONGER_LIBS) $(KRB5_LIBS) $(IDN_LIBS) \
 		   $(GMP_LIBS) $(UUID_LIBS) $(POPT_LIBS) $(LTLIBICONV) $(LDAP_LIBS)
-noinst_PROGRAMS = tdbusm-check serial-check nl-check submit-x toklist
+noinst_PROGRAMS = tdbusm-check serial-check nl-check toklist
+if WITH_XMLRPC
+noinst_PROGRAMS += submit-x
+endif
 tdbusm_check_SOURCES = tdbusm-check.c tm.c tm.h
 tdbusm_check_LDADD = libcm.a $(CERTMONGER_LIBS) $(POPT_LIBS) $(LDAP_LIBS)
 serial_check_LDADD = libcm.a $(CERTMONGER_LIBS) $(LTLIBICONV) $(LDAP_LIBS)
 nl_check_LDADD = libcm.a $(CERTMONGER_LIBS) $(LDAP_LIBS)
+if WITH_XMLRPC
 submit_x_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS) -DCM_SUBMIT_X_MAIN
 submit_x_SOURCES = submit-x.c submit-x.h submit-u.c submit-u.h log.c log.h \
 	tm.c tm.h
 submit_x_LDADD = $(XMLRPC_LIBS) $(KRB5_LIBS) $(TALLOC_LIBS) \
 		 $(GMP_LIBS) $(UUID_LIBS) $(POPT_LIBS)
+endif
 toklist_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS)
 toklist_LDADD = $(NSS_LIBS) $(POPT_LIBS)
 if WITH_CERTMASTER
+if WITH_XMLRPC
 pkglibexec_PROGRAMS += certmaster-submit
+endif
 endif
 if WITH_IPA
 pkglibexec_PROGRAMS += ipa-submit
@@ -205,19 +219,22 @@ pkglibexec_PROGRAMS += local-submit
 pkglibexec_PROGRAMS += scep-submit
 endif
 noinst_PROGRAMS += submit-h submit-d
-ipa_submit_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS)
+ipa_submit_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS) $(CURL_CFLAGS) $(JANSSON_CFLAGS)
 ipa_submit_SOURCES = ipa.c srvloc.c srvloc.h store.h store-gen.c \
-		submit-x.c submit-x.h submit-u.c submit-u.h \
+		submit-h.c submit-h.h submit-u.c submit-u.h \
 		submit-e.h util.c util.h log.c log.h tm.c tm.h
 ipa_submit_LDADD = $(XMLRPC_LIBS) $(LDAP_LIBS) $(KRB5_LIBS) $(TALLOC_LIBS) \
 		   $(GMP_LIBS) $(IDN_LIBS) $(OPENSSL_LIBS) $(UUID_LIBS) \
-		   $(RESOLV_LIBS) $(LTLIBICONV) $(POPT_LIBS)
+		   $(RESOLV_LIBS) $(LTLIBICONV) $(POPT_LIBS) $(CURL_LIBS) \
+		   $(JANSSON_LIBS)
+if WITH_XMLRPC
 certmaster_submit_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS)
 certmaster_submit_SOURCES = certmaster.c submit-x.c submit-x.h \
 		submit-e.h submit-u.c submit-u.h util.c util.h log.c log.h \
 		tm.c tm.h
 certmaster_submit_LDADD = $(XMLRPC_LIBS) $(KRB5_LIBS) $(TALLOC_LIBS) \
 			  $(GMP_LIBS) $(UUID_LIBS) $(LTLIBICONV) $(POPT_LIBS)
+endif
 dogtag_ipa_renew_agent_submit_CFLAGS = $(AM_CFLAGS) $(XML_CFLAGS) \
 				       $(NSS_CFLAGS) $(CURL_CFLAGS) \
 				       -DDOGTAG_IPA_RENEW_AGENT=1
