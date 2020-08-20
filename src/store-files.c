@@ -2650,6 +2650,7 @@ cm_store_get_all_cas(void *parent)
 			j++;
 		}
 #endif
+#ifdef WITH_XMLRPC
 #ifdef WITH_CERTMASTER
 		/* Make sure we get at least one certmaster entry. */
 		for (k = 0; k < j; k++) {
@@ -2669,6 +2670,7 @@ cm_store_get_all_cas(void *parent)
 								      CM_CERTMASTER_HELPER_PATH);
 			j++;
 		}
+#endif
 #endif
 #ifdef WITH_IPA
 		/* Make sure we get at least 1 dogtag-ipa-renew-agent entry. */

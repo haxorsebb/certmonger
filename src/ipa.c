@@ -33,8 +33,7 @@
 
 #include <talloc.h>
 
-#include <xmlrpc-c/client.h>
-#include <xmlrpc-c/transport.h>
+#include <jansson.h>
 
 #include <ldap.h>
 #include <krb5.h>
@@ -46,7 +45,7 @@
 #include "store.h"
 #include "submit-e.h"
 #include "submit-u.h"
-#include "submit-x.h"
+#include "submit-h.h"
 #include "util.h"
 
 #ifdef ENABLE_NLS
@@ -55,6 +54,229 @@
 #else
 #define _(_text) (_text)
 #endif
+
+static char *
+get_error_message(krb5_context ctx, krb5_error_code kcode)
+{
+	const char *ret;
+#ifdef HAVE_KRB5_GET_ERROR_MESSAGE
+	ret = ctx ? krb5_get_error_message(ctx, kcode) : NULL;
+	if (ret == NULL) {
+		ret = error_message(kcode);
+	}
+#else
+	ret = error_message(kcode);
+#endif
+	return strdup(ret);
+}
+
+char *
+cm_submit_ccache_realm(char **msg)
+{
+	krb5_context ctx;
+	krb5_ccache ccache;
+	krb5_principal princ;
+	krb5_error_code kret;
+	krb5_data *data;
+	char *ret;
+
+	if (msg != NULL) {
+		*msg = NULL;
+	}
+
+	kret = krb5_init_context(&ctx);
+	if (kret != 0) {
+		fprintf(stderr, "Error initializing Kerberos: %s.\n",
+			ret = get_error_message(ctx, kret));
+		if (msg != NULL) {
+			*msg = ret;
+		} else {
+			free(ret);
+		}
+		return NULL;
+	}
+	kret = krb5_cc_default(ctx, &ccache);
+	if (kret != 0) {
+		fprintf(stderr, "Error resolving default ccache: %s.\n",
+			ret = get_error_message(ctx, kret));
+		if (msg != NULL) {
+			*msg = ret;
+		} else {
+			free(ret);
+		}
+		return NULL;
+	}
+	kret = krb5_cc_get_principal(ctx, ccache, &princ);
+	if (kret != 0) {
+		fprintf(stderr, "Error reading default principal: %s.\n",
+			ret = get_error_message(ctx, kret));
+		if (msg != NULL) {
+			*msg = ret;
+		} else {
+			free(ret);
+		}
+		return NULL;
+	}
+	data = krb5_princ_realm(ctx, princ);
+	if (data == NULL) {
+		fprintf(stderr, "Error retrieving principal realm.\n");
+		if (msg != NULL) {
+			*msg = "Error retrieving principal realm.\n";
+		}
+		return NULL;
+	}
+	ret = malloc(data->length + 1);
+	if (ret == NULL) {
+		fprintf(stderr, "Out of memory for principal realm.\n");
+		if (msg != NULL) {
+			*msg = "Out of memory for principal realm.\n";
+		}
+		return NULL;
+	}
+	memcpy(ret, data->data, data->length);
+	ret[data->length] = '\0';
+	return ret;
+}
+
+krb5_error_code
+cm_submit_make_ccache(const char *ktname, const char *principal, char **msg)
+{
+	krb5_context ctx;
+	krb5_keytab keytab;
+	krb5_ccache ccache;
+	krb5_creds creds;
+	krb5_principal princ;
+	krb5_error_code kret;
+	krb5_get_init_creds_opt gicopts, *gicoptsp;
+	char *ret;
+
+	if (msg != NULL) {
+		*msg = NULL;
+	}
+
+	kret = krb5_init_context(&ctx);
+	if (kret != 0) {
+		ret = get_error_message(ctx, kret);
+		fprintf(stderr, "Error initializing Kerberos: %s.\n", ret);
+		if (msg != NULL) {
+			*msg = ret;
+		} else {
+			free(ret);
+		}
+		return kret;
+	}
+	if (ktname != NULL) {
+		kret = krb5_kt_resolve(ctx, ktname, &keytab);
+	} else {
+		kret = krb5_kt_default(ctx, &keytab);
+	}
+	if (kret != 0) {
+		fprintf(stderr, "Error resolving keytab: %s.\n",
+			ret = get_error_message(ctx, kret));
+		if (msg != NULL) {
+			*msg = ret;
+		} else {
+			free(ret);
+		}
+		return kret;
+	}
+	princ = NULL;
+	if (principal != NULL) {
+		kret = krb5_parse_name(ctx, principal, &princ);
+		if (kret != 0) {
+			fprintf(stderr, "Error parsing \"%s\": %s.\n",
+				principal, ret = get_error_message(ctx, kret));
+			if (msg != NULL) {
+				*msg = ret;
+			} else {
+				free(ret);
+			}
+			return kret;
+		}
+	} else {
+		kret = krb5_sname_to_principal(ctx, NULL, NULL,
+					       KRB5_NT_SRV_HST, &princ);
+		if (kret != 0) {
+			fprintf(stderr, "Error building client name: %s.\n",
+				ret = get_error_message(ctx, kret));
+			if (msg != NULL) {
+				*msg = ret;
+			} else {
+				free(ret);
+			}
+			return kret;
+		}
+	}
+	memset(&creds, 0, sizeof(creds));
+#ifdef HAVE_KRB5_GET_INIT_CREDS_OPT_ALLOC
+	memset(&gicopts, 0, sizeof(gicopts));
+	gicoptsp = NULL;
+	kret = krb5_get_init_creds_opt_alloc(ctx, &gicoptsp);
+	if (kret != 0) {
+		fprintf(stderr, "Internal error: %s.\n",
+			ret = get_error_message(ctx, kret));
+		if (msg != NULL) {
+			*msg = ret;
+		} else {
+			free(ret);
+		}
+		return kret;
+	}
+#else
+	krb5_get_init_creds_opt_init(&gicopts);
+	gicoptsp = &gicopts;
+#endif
+	krb5_get_init_creds_opt_set_forwardable(gicoptsp, 1);
+	kret = krb5_get_init_creds_keytab(ctx, &creds, princ, keytab,
+					  0, NULL, gicoptsp);
+#ifdef HAVE_KRB5_GET_INIT_CREDS_OPT_ALLOC
+	krb5_get_init_creds_opt_free(ctx, gicoptsp);
+#endif
+	if (kret != 0) {
+		fprintf(stderr, "Error obtaining initial credentials: %s.\n",
+			ret = get_error_message(ctx, kret));
+		if (msg != NULL) {
+			*msg = ret;
+		} else {
+			free(ret);
+		}
+		return kret;
+	}
+	ccache = NULL;
+	kret = krb5_cc_resolve(ctx, "MEMORY:" PACKAGE_NAME "_submit",
+			       &ccache);
+	if (kret == 0) {
+		kret = krb5_cc_initialize(ctx, ccache, creds.client);
+	}
+	if (kret != 0) {
+		fprintf(stderr, "Error initializing credential cache: %s.\n",
+			ret = get_error_message(ctx, kret));
+		if (msg != NULL) {
+			*msg = ret;
+		} else {
+			free(ret);
+		}
+		return kret;
+	}
+	kret = krb5_cc_store_cred(ctx, ccache, &creds);
+	if (kret != 0) {
+		fprintf(stderr,
+			"Error storing creds in credential cache: %s.\n",
+			ret = get_error_message(ctx, kret));
+		if (msg != NULL) {
+			*msg = ret;
+		} else {
+			free(ret);
+		}
+		return kret;
+	}
+	krb5_cc_close(ctx, ccache);
+	krb5_kt_close(ctx, keytab);
+	krb5_free_principal(ctx, princ);
+	krb5_free_context(ctx);
+	putenv("KRB5CCNAME=MEMORY:" PACKAGE_NAME "_submit");
+	return 0;
+}
 
 static int
 interact(LDAP *ld, unsigned flags, void *defaults, void *sasl_interact)
@@ -200,7 +422,7 @@ cm_find_default_naming_context(LDAP *ld, char **basedn)
 }
 
 static int
-cm_locate_xmlrpc_service(const char *server,
+cm_locate_jsonrpc_service(const char *server,
 			 int ldap_uri_cmd, const char *ldap_uri,
 			 const char *host,
 			 const char *domain,
@@ -213,10 +435,13 @@ cm_locate_xmlrpc_service(const char *server,
 	LDAPDN rdn;
 	struct berval *lbv;
 	char *lattrs[2] = {"cn", NULL};
-	const char *relativedn = "cn=masters,cn=ipa,cn=etc", *dn;
+	const char *relativedn = "cn=masters,cn=ipa,cn=etc";
+	char *dn;
 	char ldn[LINE_MAX], lfilter[LINE_MAX], uri[LINE_MAX] = "", **list;
 	int i, j, rc, n;
 	unsigned int flags;
+	int rval = 0;
+	int alloc_basedn = 0;
 
 	*uris = NULL;
 
@@ -231,14 +456,16 @@ cm_locate_xmlrpc_service(const char *server,
 	if (basedn == NULL) {
 		i = cm_find_default_naming_context(ld, &basedn);
 		if (i != 0) {
-			free(basedn);
-			return i;
+			rval = i;
+			goto done;
 		}
+		alloc_basedn = 1;
 	}
 	if (basedn == NULL) {
 		printf(_("Unable to determine base DN of "
 			 "domain information on IPA server.\n"));
-		return CM_SUBMIT_STATUS_UNCONFIGURED;
+		rval = CM_SUBMIT_STATUS_UNCONFIGURED;
+		goto done;
 	}
 	/* Now look up the names of the master CAs. */
 	snprintf(lfilter, sizeof(lfilter),
@@ -248,26 +475,31 @@ cm_locate_xmlrpc_service(const char *server,
 		 "(ipaConfigString=enabledService)"
 		 ")", service);
 	snprintf(ldn, sizeof(ldn), "%s,%s", relativedn, basedn);
-	free(basedn);
+	if (alloc_basedn) {
+		free(basedn);
+	}
 	rc = ldap_search_ext_s(ld, ldn, LDAP_SCOPE_SUBTREE,
 			       lfilter, lattrs, 0, NULL, NULL, NULL,
 			       LDAP_NO_LIMIT, &lresult);
 	if (rc != LDAP_SUCCESS) {
 		fprintf(stderr, "Error searching '%s': %s.\n",
 			ldn, ldap_err2string(rc));
-		return CM_SUBMIT_STATUS_UNCONFIGURED;
+		rval = CM_SUBMIT_STATUS_UNCONFIGURED;
+		goto done;
 	}
 	/* Read their parents' for "cn" values. */
 	n = ldap_count_entries(ld, lresult);
 	if (n == 0) {
 		fprintf(stderr, "No CA masters found.\n");
 		ldap_msgfree(lresult);
-		return CM_SUBMIT_STATUS_UNCONFIGURED;
+		rval = CM_SUBMIT_STATUS_UNCONFIGURED;
+		goto done;
 	}
 	list = talloc_array_ptrtype(NULL, list, n + 2);
 	if (list == NULL) {
 		fprintf(stderr, "Out of memory.\n");
-		return CM_SUBMIT_STATUS_UNCONFIGURED;
+		rval = CM_SUBMIT_STATUS_UNCONFIGURED;
+		goto done;
 	}
 	i = 0;
 	for (lmsg = ldap_first_entry(ld, lresult);
@@ -314,7 +546,7 @@ cm_locate_xmlrpc_service(const char *server,
 					switch (flags & 0x0f) {
 					case LDAP_AVA_STRING:
 						list[i] = talloc_asprintf(list,
-									  "https://%.*s/ipa/xml",
+									  "https://%.*s/ipa/json",
 									  (int) lbv->bv_len,
 									  lbv->bv_val);
 						if (list[i] != NULL) {
@@ -328,15 +560,67 @@ cm_locate_xmlrpc_service(const char *server,
 				ldap_dnfree(rdn);
 			}
 		}
+		ldap_memfree(dn);
 	}
 	ldap_msgfree(lresult);
 	if (i == 0) {
 		free(list);
-		return CM_SUBMIT_STATUS_UNCONFIGURED;
+		rval = CM_SUBMIT_STATUS_UNCONFIGURED;
+		goto done;
 	}
 	list[i] = NULL;
 	*uris = list;
-	return CM_SUBMIT_STATUS_ISSUED;
+	rval = CM_SUBMIT_STATUS_ISSUED;
+
+done:
+	if (ld) {
+		ldap_unbind_ext(ld, NULL, NULL);
+	}
+
+	return rval;
+}
+
+/*
+ * Parse the JSON response from the IPA server.
+ *
+ * It will return one of three types of values:
+ * 
+ * < 0 is failure to parse JSON output
+ * 0 is success, no errors were found
+ * > 0 is the IPA API error code
+ */
+static int
+parse_json_result(const char *result, char **error_message) {
+	json_error_t j_error;
+
+	json_t *j_root = NULL;
+	json_t *j_error_obj = NULL;
+
+	int error_code = 0;
+
+	j_root = json_loads(result, 0, &j_error);
+	if (!j_root) {
+		cm_log(0, "Parsing JSON-RPC response failed: %s\n", j_error.text);
+		return -1;
+	}
+
+	j_error_obj = json_object_get(j_root, "error");
+	if (!j_error_obj || json_is_null(j_error_obj)) {
+		json_decref(j_root);
+		return 0;  // no errors
+	}
+
+	if (json_unpack_ex(j_error_obj, &j_error, 0, "{s:i, s:s}",
+					   "code", &error_code,
+					   "message", error_message) != 0) {
+		cm_log(0, "Failed extracting error from JSON-RPC response: %s\n", j_error.text);
+		json_decref(j_root);
+		return -1;
+	}
+
+	cm_log(0, "JSON-RPC error: %d: %s\n", error_code, *error_message);
+	json_decref(j_root);
+	return error_code;
 }
 
 /* Make an XML-RPC request to the "cert_request" method. */
@@ -344,63 +628,98 @@ static int
 submit_or_poll_uri(const char *uri, const char *cainfo, const char *capath,
 		   const char *uid, const char *pwd, const char *csr,
 		   const char *reqprinc, const char *profile,
-		   const char *issuer)
+		   const char *issuer, int verbose)
 {
-	struct cm_submit_x_context *ctx;
-	const char *args[2];
+	void *ctx;
+	struct cm_submit_h_context *hctx;
 	char *s, *p;
 	int i;
+	json_t *json_req = NULL;
+	json_error_t j_error;
+	const char *results = NULL;
+	char *json_str = NULL;
+	char *error_message = NULL;
+	char *referer = NULL;
+	int rval = 0;
+	json_t *j_root = NULL;
+	json_t *j_result_outer = NULL;
+	json_t *j_result = NULL;
+	json_t *j_cert = NULL;
+	const char *certificate = NULL;
 
 	if ((uri == NULL) || (strlen(uri) == 0)) {
 		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
 
-	/* Prepare to make an XML-RPC request. */
+	ctx = talloc_new(NULL);
+
+	referer = talloc_asprintf(ctx, "%s", uri);
+
+	/* Prepare to make a JSON-RPC request. */
 submit:
-	if ((uid != NULL) && (pwd != NULL) &&
-	    (strlen(uid) > 0) && (strlen(pwd) > 0)) {
-		ctx = cm_submit_x_init(NULL, uri, "cert_request",
-				       cainfo, capath, uid, pwd,
-				       cm_submit_x_negotiate_off,
-				       cm_submit_x_delegate_off);;
-	} else {
-		ctx = cm_submit_x_init(NULL, uri, "cert_request",
-				       cainfo, capath, NULL, NULL,
-				       cm_submit_x_negotiate_on,
-				       cm_submit_x_delegate_on);
+	json_req = json_pack_ex(&j_error, 0,
+							"{s:s, s:[[s], {s:s, s:s*, s:s*, s:b}]}",
+							"method", "cert_request",
+							"params",
+							csr,
+							"principal", reqprinc,
+							"profile_id", profile,
+							"cacn", issuer,
+							"add", 1);
+	if (!json_req) {
+		cm_log(0, "json_pack_ex() failed: %s\n", j_error.text);
+		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
-	if (ctx == NULL) {
-		fprintf(stderr, "Error setting up for XMLRPC to %s on "
-			"the client.\n", uri);
-		printf(_("Error setting up for XMLRPC on the client.\n"));
+	json_str = json_dumps(json_req, 0);
+	json_decref(json_req);
+	if (!json_str) {
+		cm_log(0, "json_dumps() failed\n");
 		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
 
-	/* Add the CSR contents as the sole unnamed argument. */
-	args[0] = csr;
-	args[1] = NULL;
-	cm_submit_x_add_arg_as(ctx, args);
-	/* Add the principal name named argument. */
-	cm_submit_x_add_named_arg_s(ctx, "principal", reqprinc);
-	/* Add the requested profile name named argument. */
-	if (profile != NULL) {
-		cm_submit_x_add_named_arg_s(ctx, "profile_id", profile);
+	hctx = cm_submit_h_init(ctx, "POST", uri, json_str,
+				       "application/json", "application/json",
+				       referer, cainfo, capath,
+				       NULL, NULL, NULL, 
+				       cm_submit_h_negotiate_on,
+				       cm_submit_h_delegate_off,
+				       cm_submit_h_clientauth_off,
+				       cm_submit_h_env_modify_off,
+				       verbose > 1 ?
+				       cm_submit_h_curl_verbose_on :
+				       cm_submit_h_curl_verbose_off);
+	free(json_str);
+
+	if (hctx == NULL) {
+		fprintf(stderr, "Error setting up JSON-RPC to %s on "
+			"the client.\n", uri);
+		printf(_("Error setting up for JSON-RPC on the client.\n"));
+		rval = CM_SUBMIT_STATUS_UNCONFIGURED;
+		goto cleanup;
 	}
-	/* Add the requested CA issuer named argument. */
-	if (issuer != NULL) {
-		cm_submit_x_add_named_arg_s(ctx, "cacn", issuer);
-	}
-	/* Tell the server to add entries for a principal if one
-	 * doesn't exist yet. */
-	cm_submit_x_add_named_arg_b(ctx, "add", 1);
 
 	/* Submit the request. */
 	fprintf(stderr, "Submitting request to \"%s\".\n", uri);
-	cm_submit_x_run(ctx);
+	cm_submit_h_run(hctx);
 
 	/* Check the results. */
-	if (cm_submit_x_faulted(ctx) == 0) {
-		i = cm_submit_x_fault_code(ctx);
+
+	results = cm_submit_h_results(hctx, NULL);
+	cm_log(1, "%s\n", results);
+	if (cm_submit_h_response_code(hctx) != 200) {
+		cm_log(0, "JSON-RPC call failed with HTTP status code: %d\n",
+				  cm_submit_h_response_code(hctx));
+		cm_log(0, "code = %d, code_text = \"%s\"\n",
+			cm_submit_h_result_code(hctx), cm_submit_h_result_code_text(hctx));
+		rval = CM_SUBMIT_STATUS_UNREACHABLE;
+		goto cleanup;
+	}
+	i = parse_json_result(results, &error_message);
+	if (i < 0) {
+		rval = CM_SUBMIT_STATUS_UNREACHABLE;
+		goto cleanup;
+	}
+	if (i > 0) {
 		/* Interpret the error.  See errors.py to get the
 		 * classifications. */
 		switch (i / 1000) {
@@ -424,8 +743,9 @@ submit:
 			}
 			printf("Server at %s denied our request, "
 			       "giving up: %d (%s).\n", uri, i,
-			       cm_submit_x_fault_text(ctx));
-			return CM_SUBMIT_STATUS_REJECTED;
+			       error_message);
+			rval = CM_SUBMIT_STATUS_REJECTED;
+			goto cleanup;
 			break;
 		case 1: /* authentication error - transient? */
 		case 4: /* execution error - transient? */
@@ -433,22 +753,51 @@ submit:
 		default:
 			printf("Server at %s failed request, "
 			       "will retry: %d (%s).\n", uri, i,
-			       cm_submit_x_fault_text(ctx));
-			return CM_SUBMIT_STATUS_UNREACHABLE;
+			       error_message);
+			rval = CM_SUBMIT_STATUS_UNREACHABLE;
+			goto cleanup;
 			break;
 		}
-	} else
-	if (cm_submit_x_has_results(ctx) == 0) {
-		if (cm_submit_x_get_named_s(ctx, "certificate",
-					    &s) == 0) {
+	} else {
+		j_root = json_loads(results, 0, &j_error);
+		if (!j_root) {
+			cm_log(0, "Parsing JSON-RPC response failed: %s\n", j_error.text);
+			rval = CM_SUBMIT_STATUS_UNREACHABLE;
+			goto cleanup;
+		}
+
+		j_result_outer = json_object_get(j_root, "result");
+		if (!j_result_outer) {
+			cm_log(0, "Parsing JSON-RPC response failed, no outer result\n");
+			rval = CM_SUBMIT_STATUS_UNREACHABLE;
+			goto cleanup;
+		}
+
+		j_result = json_object_get(j_result_outer, "result");
+		if (!j_result) {
+			cm_log(0, "Parsing JSON-RPC response failed, no inner result\n");
+			rval = CM_SUBMIT_STATUS_UNREACHABLE;
+			goto cleanup;
+		}
+
+		j_cert = json_object_get(j_result, "certificate");
+		if (!j_cert) {
+			cm_log(0, "Parsing JSON-RPC response failed, no certificate\n");
+			rval = CM_SUBMIT_STATUS_UNREACHABLE;
+			goto cleanup;
+		}
+		certificate = json_string_value(j_cert);
+
+		if (certificate) {
 			/* If we got a certificate, we're probably
 			 * okay. */
-			fprintf(stderr, "Certificate: \"%s\"\n", s);
-			s = cm_submit_u_base64_from_text(s);
+			fprintf(stderr, "Certificate: \"%s\"\n", certificate);
+			s = cm_submit_u_base64_from_text(certificate);
 			if (s == NULL) {
 				printf("Out of memory parsing server "
 				       "response, will retry.\n");
-				return CM_SUBMIT_STATUS_UNREACHABLE;
+				rval = CM_SUBMIT_STATUS_UNREACHABLE;
+				goto cleanup;
 			}
 			p = cm_submit_u_pem_from_base64("CERTIFICATE",
 							FALSE, s);
@@ -457,15 +806,19 @@ submit:
 			}
 			free(s);
 			free(p);
-			return CM_SUBMIT_STATUS_ISSUED;
+			rval = CM_SUBMIT_STATUS_ISSUED;
+			goto cleanup;
 		} else {
-			return CM_SUBMIT_STATUS_REJECTED;
+			rval = CM_SUBMIT_STATUS_REJECTED;
 		}
-	} else {
-		/* No useful response, no fault.  Try again, from
-		 * scratch, later. */
-		return CM_SUBMIT_STATUS_UNREACHABLE;
 	}
+
+cleanup:
+	json_decref(j_root);
+	cm_submit_h_cleanup(hctx);
+	talloc_free(ctx);
+
+	return rval;
 }
 
 static int
@@ -473,16 +826,17 @@ submit_or_poll(const char *uri, const char *cainfo, const char *capath,
 	       const char *server, int ldap_uri_cmd, const char *ldap_uri,
 	       const char *host, const char *domain, char *basedn,
 	       const char *uid, const char *pwd, const char *csr,
-	       const char *reqprinc, const char *profile, const char *issuer)
+	       const char *reqprinc, const char *profile, const char *issuer,
+	       int verbose)
 {
 	int i, u;
 	char **uris;
 
 	i = submit_or_poll_uri(uri, cainfo, capath, uid, pwd, csr, reqprinc,
-			       profile, issuer);
+			       profile, issuer, verbose);
 	if ((i == CM_SUBMIT_STATUS_UNREACHABLE) ||
 	    (i == CM_SUBMIT_STATUS_UNCONFIGURED)) {
-		u = cm_locate_xmlrpc_service(server, ldap_uri_cmd, ldap_uri,
+		u = cm_locate_jsonrpc_service(server, ldap_uri_cmd, ldap_uri,
 					     host, domain, basedn, "CA", &uris);
 		if ((u == 0) && (uris != NULL)) {
 			for (u = 0; uris[u] != NULL; u++) {
@@ -491,7 +845,7 @@ submit_or_poll(const char *uri, const char *cainfo, const char *capath,
 				}
 				i = submit_or_poll_uri(uris[u], cainfo, capath,
 						       uid, pwd, csr, reqprinc,
-						       profile, issuer);
+						       profile, issuer, verbose);
 				if ((i != CM_SUBMIT_STATUS_UNREACHABLE) &&
 				    (i != CM_SUBMIT_STATUS_UNCONFIGURED)) {
 					talloc_free(uris);
@@ -562,7 +916,7 @@ fetch_roots(const char *server, int ldap_uri_cmd, const char *ldap_uri,
 		return CM_SUBMIT_STATUS_ISSUED;
 	}
 	/* Read our realm name from our ccache. */
-	realm = cm_submit_x_ccache_realm(&kerr);
+	realm = cm_submit_ccache_realm(&kerr);
 	/* Read all of the certificates. */
 	for (lmsg = ldap_first_entry(ld, lresult);
 	     lmsg != NULL;
@@ -588,6 +942,9 @@ fetch_roots(const char *server, int ldap_uri_cmd, const char *ldap_uri,
 	ldap_msgfree(lresult);
 	free(realm);
 	free(kerr);
+	if (ld) {
+		ldap_unbind_ext(ld, NULL, NULL);
+	}
 	return CM_SUBMIT_STATUS_ISSUED;
 }
 
@@ -600,7 +957,8 @@ main(int argc, const char **argv)
 	char *csr, *p, uri[LINE_MAX], *reqprinc = NULL, *ipaconfig, *kerr;
 	char *uid = NULL, *pwd = NULL, *pwdfile = NULL;
 	const char *xmlrpc_uri = NULL, *ldap_uri = NULL, *server = NULL, *csrfile;
-	int xmlrpc_uri_cmd = 0, ldap_uri_cmd = 0, verbose = 0;
+	const char *jsonrpc_uri = NULL;
+	int jsonrpc_uri_cmd = 0, ldap_uri_cmd = 0, verbose = 0;
 	const char *mode = CM_OP_SUBMIT;
 	char ldn[LINE_MAX], *basedn = NULL, *profile = NULL, *issuer = NULL;
 	krb5_error_code kret;
@@ -609,6 +967,7 @@ main(int argc, const char **argv)
 		{"host", 'h', POPT_ARG_STRING, &host, 0, "IPA server hostname", "HOSTNAME"},
 		{"domain", 'd', POPT_ARG_STRING, &domain, 0, "IPA domain name", "NAME"},
 		{"xmlrpc-url", 'H', POPT_ARG_STRING, NULL, 'H', "IPA XMLRPC service location", "URL"},
+		{"jsonrpc-url", 'J', POPT_ARG_STRING, NULL, 'J', "IPA JSON-RPC service location", "URL"},
 		{"ldap-url", 'L', POPT_ARG_STRING, NULL, 'L', "IPA LDAP service location", "URL"},
 		{"capath", 'C', POPT_ARG_STRING, &capath, 0, NULL, "DIRECTORY"},
 		{"cafile", 'c', POPT_ARG_STRING, &cainfo, 0, NULL, "FILENAME"},
@@ -659,9 +1018,10 @@ main(int argc, const char **argv)
 	poptSetOtherOptionHelp(pctx, "[options] [csrfile]");
 	while ((c = poptGetNextOpt(pctx)) > 0) {
 		switch (c) {
-		case 'H':
-			xmlrpc_uri = poptGetOptArg(pctx);
-			xmlrpc_uri_cmd++;
+		case 'H': /* XMLRPC URI kept for backwards compatibility */
+		case 'J':
+			jsonrpc_uri = poptGetOptArg(pctx);
+			jsonrpc_uri_cmd++;
 			break;
 		case 'L':
 			ldap_uri = poptGetOptArg(pctx);
@@ -724,6 +1084,11 @@ main(int argc, const char **argv)
 							      "global",
 							      "xmlrpc_uri");
 			}
+			if (jsonrpc_uri == NULL) {
+				jsonrpc_uri = get_config_entry(ipaconfig,
+							      "global",
+							      "jsonrpc_uri");
+			}
 			if (ldap_uri == NULL) {
 				/* Preferred, but likely to only be set on a
 				 * server. */
@@ -756,6 +1121,7 @@ main(int argc, const char **argv)
 			}
 		}
 	}
+	free(ipaconfig);
 	csr = NULL;
 	memset(uri, '\0', sizeof(uri));
 	memset(ldn, '\0', sizeof(ldn));
@@ -787,16 +1153,25 @@ main(int argc, const char **argv)
 		    (getenv(CM_SUBMIT_ISSUER_ENV) != NULL)) {
 			issuer = strdup(getenv(CM_SUBMIT_ISSUER_ENV));
 		}
-		if ((server != NULL) && !xmlrpc_uri_cmd) {
+		if ((server != NULL) && !jsonrpc_uri_cmd) {
 			snprintf(uri, sizeof(uri),
-				 "https://%s/ipa/xml", server);
+				 "https://%s/ipa/json", server);
+		} else
+		if (jsonrpc_uri != NULL) {
+			snprintf(uri, sizeof(uri), "%s", jsonrpc_uri);
 		} else
 		if (xmlrpc_uri != NULL) {
-			snprintf(uri, sizeof(uri), "%s", xmlrpc_uri);
+			/* strip off the trailing xml and replace with json */
+			if ((strlen(xmlrpc_uri) + 1) > sizeof(uri)) {
+				printf(_("xmlrpc_uri is longer than %ld.\n"), sizeof(uri) - 2);
+				return CM_SUBMIT_STATUS_UNCONFIGURED;
+			}
+			snprintf(uri, strlen(xmlrpc_uri) - 2, "%s", xmlrpc_uri);
+			strcat(uri, "json");
 		} else
 		if (host != NULL) {
 			snprintf(uri, sizeof(uri),
-				 "https://%s/ipa/xml", host);
+				 "https://%s/ipa/json", host);
 		}
 
 		/* Read the CSR from the environment, or from the file named on
@@ -891,7 +1266,7 @@ main(int argc, const char **argv)
 	/* Setup a ccache unless we're told to use the default one. */
 	kerr = NULL;
 	if (make_keytab_ccache &&
-	    ((kret = cm_submit_x_make_ccache(ktname, kpname, &kerr)) != 0)) {
+	    ((kret = cm_submit_make_ccache(ktname, kpname, &kerr)) != 0)) {
 		fprintf(stderr, "Error setting up ccache at the client: %s.\n",
 			kerr);
 		if (ktname == NULL) {
@@ -939,11 +1314,12 @@ main(int argc, const char **argv)
 		ret = submit_or_poll(uri, cainfo, capath, server,
 				      ldap_uri_cmd, ldap_uri, host, domain,
 				      basedn, uid, pwd, csr, reqprinc, profile,
-				      issuer);
+				      issuer, verbose);
 		free(csr);
 		free(profile);
 		free(issuer);
 		free(reqprinc);
+		free(basedn);
 		return ret;
 	} else
 	if (strcasecmp(mode, CM_OP_FETCH_ROOTS) == 0) {
