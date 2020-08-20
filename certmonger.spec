@@ -24,6 +24,8 @@
 %global sysvinitdir %{_initrddir}
 %endif
 
+%bcond_with xmlrpc
+
 Name:		certmonger
 Version:	0.79.11
 Release:	1%{?dist}
@@ -37,6 +39,7 @@ Source0:	http://releases.pagure.org/certmonger/certmonger-%{version}.tar.gz
 BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 BuildRequires:	openldap-devel
+BuildRequires:	krb5-devel
 BuildRequires:	dbus-devel, nspr-devel, nss-devel, openssl-devel, libidn2-devel
 BuildRequires:	autoconf, automake, gcc, gettext-devel
 %if 0%{?fedora} >= 12 || 0%{?rhel} >= 6
@@ -50,7 +53,11 @@ BuildRequires:	libcurl-devel
 %else
 BuildRequires:	curl-devel
 %endif
-BuildRequires:	libxml2-devel, xmlrpc-c-devel
+BuildRequires:	libxml2-devel
+%if %{with xmlrpc}
+BuildRequires:	xmlrpc-c-devel
+%endif
+BuildRequires:	jansson-devel
 %if 0%{?rhel} && 0%{?rhel} < 6
 BuildRequires:	bind-libbind-devel
 BuildRequires:	mktemp
@@ -132,10 +139,17 @@ sed -i 's,^# chkconfig: - ,# chkconfig: 345 ,g' sysvinit/certmonger.in
 	--enable-tmpfiles \
 %endif
 	--with-homedir=/run/certmonger \
+%if %{with xmlrpc}
+	--with-xmlrpc \
+%endif
 	--with-tmpdir=/run/certmonger --enable-pie --enable-now
+%if %{with xmlrpc}
 # For some reason, some versions of xmlrpc-c-config in Fedora and RHEL just
 # tell us about libxmlrpc_client, but we need more.  Work around.
 make %{?_smp_mflags} XMLRPC_LIBS="-lxmlrpc_client -lxmlrpc_util -lxmlrpc"
+%else
+make %{?_smp_mflags}
+%endif
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -154,6 +168,12 @@ rm -rf $RPM_BUILD_ROOT
 if test $1 -eq 1 ; then
 	%{_bindir}/dbus-send --system --type=method_call --dest=org.freedesktop.DBus / org.freedesktop.DBus.ReloadConfig 2>&1 || :
 fi
+%if %{without xmlrpc}
+# remove any existing certmaster CA configuration
+if test $1 -gt 1 ; then
+    %{_bindir}/getcert remove-ca -c certmaster 2>&1 || :
+fi
+%endif
 %if %{systemd}
 if test $1 -eq 1 ; then
 	/bin/systemctl daemon-reload >/dev/null 2>&1 || :
