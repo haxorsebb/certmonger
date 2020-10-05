@@ -27,7 +27,7 @@
 %bcond_with xmlrpc
 
 Name:		certmonger
-Version:	0.79.11
+Version:	0.79.12
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -263,6 +263,15 @@ exit 0
 %endif
 
 %changelog
+* Mon Oct  5 2020 Rob Crittenden <rcritten@redhat.com> - 0.79.12-1
+- update to 0.79.12:
+  - Drop previous dbus fix which allowed certmonger to stop on dbus stop
+  - Configure systemd service so certmonger is managed by dbus start/stop
+  - Remove empty translation files in prep for Weblate
+  - Switch IPA to use the JSON instead of XML-RPC API
+  - Disable certmaster CA support by default
+  - Don't send SIGKILL to children, give them a chance to die
+
 * Tue Jun 30 2020 Rob Crittenden <rcritten@redhat.com> - 0.79.11-1
 - update to 0.79.11:
    - Fix crash bug when generating thumbprints.
