@@ -384,12 +384,15 @@ main(int argc, const char **argv)
 			if ((message == NULL) || (strlen(message) == 0)) {
 				if (poptPeekArg(pctx) != NULL) {
 					message = cm_submit_u_from_file(poptGetArg(pctx));
+					if ((message == NULL) || (strlen(message) == 0)) {
+						printf(_("Error reading request.  Expected PKCS7 data containing a GetInitialCert pkiMessage, got nothing.\n"));
+						rval = CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
+						goto done;
+					}
+				} else {
+					rval = CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
+					goto done;
 				}
-			}
-			if ((message == NULL) || (strlen(message) == 0)) {
-				printf(_("Error reading request.  Expected PKCS7 data containing a GetInitialCert pkiMessage, got nothing.\n"));
-				rval = CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
-				goto done;
 			}
 			/* First step: read capabilities for our use. */
 			params = talloc_asprintf(ctx, "operation=" OP_GET_CA_CAPS "&message=%s", id);
@@ -404,12 +407,15 @@ main(int argc, const char **argv)
 			if ((message == NULL) || (strlen(message) == 0)) {
 				if (poptPeekArg(pctx) != NULL) {
 					message = cm_submit_u_from_file(poptGetArg(pctx));
+					if ((message == NULL) || (strlen(message) == 0)) {
+						printf(_("Error reading request.  Expected PKCS7 data containing a PKCSReq pkiMessage, got nothing.\n"));
+						rval = CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
+						goto done;
+					}
+				} else {
+					rval = CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
+					goto done;
 				}
-			}
-			if ((message == NULL) || (strlen(message) == 0)) {
-				printf(_("Error reading request.  Expected PKCS7 data containing a PKCSReq pkiMessage, got nothing.\n"));
-				rval = CM_SUBMIT_STATUS_NEED_SCEP_MESSAGES;
-				goto done;
 			}
 			/* First step: read capabilities for our use. */
 			params = talloc_asprintf(ctx, "operation=" OP_GET_CA_CAPS "&message=%s", id);
