@@ -359,7 +359,7 @@ cm_submit_n_decrypt_envelope(const unsigned char *envelope,
 		goto done;
 	}
 	if (args->entry->cm_key_token == NULL) {
-		args->entry->cm_key_token = talloc_strdup(args->entry, util_internal_token_name());
+		args->entry->cm_key_token = util_internal_token_name(args->entry);
 	}
 	PK11_SetPasswordFunc(&cm_pin_read_for_cert_nss_cb);
 	n_tokens = 0;

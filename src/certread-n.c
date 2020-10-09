@@ -193,7 +193,7 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		_exit(CM_SUB_STATUS_ERROR_AUTH);
 	}
 	if (entry->cm_cert_token == NULL) {
-		entry->cm_cert_token = talloc_strdup(entry, util_internal_token_name());
+		entry->cm_cert_token = util_internal_token_name(entry);
 	}
 	PK11_SetPasswordFunc(&cm_pin_read_for_cert_nss_cb);
 	for (sle = slotlist->head;

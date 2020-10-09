@@ -34,6 +34,8 @@
 #include "store-int.h"
 #include "util-n.h"
 
+#include <talloc.h>
+
 #define NODE "/proc/sys/crypto/fips_enabled"
 
 static PRBool force_fips = PR_FALSE;
@@ -289,7 +291,13 @@ util_set_db_entry_cert_owner(const char *dbdir, struct cm_store_entry *entry)
 }
 
 char *
-util_internal_token_name()
+util_internal_token_name(void *ctx)
 {
-	return PK11_GetTokenName(PK11_GetInternalKeySlot());
+	PK11SlotInfo *slot = NULL;
+	char *name = NULL;
+
+	slot = PK11_GetInternalKeySlot();
+	name = talloc_strdup(ctx, PK11_GetTokenName(slot));
+	PK11_FreeSlot(slot);
+	return name;
 }

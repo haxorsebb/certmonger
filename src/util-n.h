@@ -29,6 +29,6 @@ void util_set_db_entry_key_owner(const char *dbdir,
 				 struct cm_store_entry *entry);
 void util_set_db_entry_cert_owner(const char *dbdir,
 				  struct cm_store_entry *entry);
-char * util_internal_token_name();
+char * util_internal_token_name(void *ctx);
 
 #endif
