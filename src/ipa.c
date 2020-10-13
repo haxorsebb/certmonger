@@ -597,6 +597,7 @@ parse_json_result(const char *result, char **error_message) {
 	json_t *j_error_obj = NULL;
 
 	int error_code = 0;
+	char * message = NULL;
 
 	j_root = json_loads(result, 0, &j_error);
 	if (!j_root) {
@@ -612,13 +613,14 @@ parse_json_result(const char *result, char **error_message) {
 
 	if (json_unpack_ex(j_error_obj, &j_error, 0, "{s:i, s:s}",
 					   "code", &error_code,
-					   "message", error_message) != 0) {
+					   "message", &message) != 0) {
 		cm_log(0, "Failed extracting error from JSON-RPC response: %s\n", j_error.text);
 		json_decref(j_root);
 		return -1;
 	}
 
-	cm_log(0, "JSON-RPC error: %d: %s\n", error_code, *error_message);
+	cm_log(0, "JSON-RPC error: %d: %s\n", error_code, message);
+	*error_message = strdup(message);
 	json_decref(j_root);
 	return error_code;
 }
@@ -814,6 +816,7 @@ submit:
 	}
 
 cleanup:
+	free(error_message);
 	json_decref(j_root);
 	cm_submit_h_cleanup(hctx);
 	talloc_free(ctx);
