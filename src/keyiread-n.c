@@ -557,6 +557,7 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					(name != NULL ? "/" : ""),
 					(name != NULL ? name : ""));
 				status = 0;
+				SECITEM_FreeItem(info, PR_TRUE);
 			} else {
 				cm_log(1, "Error reading public key.\n");
 			}
@@ -599,6 +600,7 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					pubihex,
 					pubhex);
 				status = 0;
+				SECITEM_FreeItem(info, PR_TRUE);
 			}
 		}
 		if (keys->pubkey != NULL) {
