@@ -27,7 +27,7 @@
 %bcond_with xmlrpc
 
 Name:		certmonger
-Version:	0.79.12
+Version:	0.79.13
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -263,6 +263,14 @@ exit 0
 %endif
 
 %changelog
+* Tue Oct 20 2020 Rob Crittenden <rcritten@redhat.com> - 0.79.13-1
+- update to 0.79.13:
+  -  Fix NSS shutdown issues when obtaining the internal token name
+  -  Save a copy of the IPA error message when parsing the JSON result
+  -  certread-n: Look up certs using PK11_FindCertFromNickname()
+  -  Free public key information after storing and displaying
+  -  Don't report a spurious error if no SCEP pkiMessage is ready yet
+
 * Mon Oct  5 2020 Rob Crittenden <rcritten@redhat.com> - 0.79.12-1
 - update to 0.79.12:
   - Drop previous dbus fix which allowed certmonger to stop on dbus stop
