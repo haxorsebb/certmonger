@@ -68,17 +68,13 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	PLArenaPool *arena;
 	SECStatus error;
 	NSSInitContext *ctx;
-	PK11SlotList *slotlist;
-	PK11SlotListElement *sle;
-	CERTCertList *certs;
-	CERTCertListNode *node;
+	PK11SlotInfo *slot = NULL;
 	CERTCertificate *cert;
-	CK_MECHANISM_TYPE mech;
 	struct cm_certread_n_settings *settings;
 	struct cm_pin_cb_data cb_data;
-	PRTime before_a, after_a, before_b, after_b;
 	FILE *fp;
 	const char *es;
+	char *nickname;
 
 	if (entry->cm_cert_storage_location == NULL) {
 		cm_log(1, "Error reading certificate: no location "
@@ -140,10 +136,10 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			es = NULL;
 		}
 		if (es != NULL) {
-			cm_log(1, "Unable to open NSS database '%s': %s.\n",
+			cm_log(0, "Unable to open NSS database '%s': %s.\n",
 			       entry->cm_cert_storage_location, es);
 		} else {
-			cm_log(1, "Unable to open NSS database '%s'.\n",
+			cm_log(0, "Unable to open NSS database '%s'.\n",
 			       entry->cm_cert_storage_location);
 		}
 		switch (ec) {
@@ -154,12 +150,12 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			status = CM_SUB_STATUS_ERROR_INITIALIZING;
 			break;
 		}
-		cm_log(1, "Unable to open NSS database.\n");
+		cm_log(0, "Unable to open NSS database.\n");
 		_exit(status);
 	}
     /* Re-open the database with modules enabled */
 	if (NSS_ShutdownContext(ctx) != SECSuccess) {
-		cm_log(0, "Error shutting down NSS.\n");
+		cm_log(1, "Error shutting down NSS.\n");
 		_exit(1);
 	}
 	ctx = NSS_InitContext(entry->cm_cert_storage_location,
@@ -172,21 +168,9 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 	es = util_n_fips_hook();
 	if (es != NULL) {
-		cm_log(1, "Error putting NSS into FIPS mode: %s\n", es);
+		cm_log(0, "Error putting NSS into FIPS mode: %s\n", es);
 		_exit(CM_SUB_STATUS_ERROR_INITIALIZING);
 	}
-	/* Find the tokens that we might use for cert storage. */
-	mech = CKM_RSA_X_509;
-	slotlist = PK11_GetAllTokens(mech, PR_FALSE, PR_FALSE, NULL);
-	if (slotlist == NULL) {
-		cm_log(1, "Error getting list of tokens.\n");
-		if (NSS_ShutdownContext(ctx) != SECSuccess) {
-			cm_log(1, "Error shutting down NSS.\n");
-		}
-		_exit(2);
-	}
-	/* Walk the list looking for the requested slot, or the first one if
-	 * none was requested. */
 	cert = NULL;
 	if (cm_pin_read_for_cert(entry, &pin) != 0) {
 		cm_log(1, "Error reading PIN for cert db.\n");
@@ -196,150 +180,107 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		entry->cm_cert_token = util_internal_token_name(entry);
 	}
 	PK11_SetPasswordFunc(&cm_pin_read_for_cert_nss_cb);
-	for (sle = slotlist->head;
-	     ((sle != NULL) && (sle->slot != NULL));
-	     sle = sle->next) {
-		/* Log the slot's name. */
-		token = PK11_GetTokenName(sle->slot);
-		if (token != NULL) {
-			cm_log(3, "Found token '%s'.\n", token);
-		} else {
-			cm_log(3, "Found unnamed token.\n");
-		}
-		/* If we're looking for a specific slot, and this isn't it,
-		 * keep going. */
-		if ((entry->cm_cert_token != NULL) &&
-		    (strlen(entry->cm_cert_token) != 0) &&
-		    ((token == NULL) ||
-		     (strcmp(entry->cm_cert_token, token) != 0))) {
-			if (token != NULL) {
-				cm_log(1,
-				       "Token is named \"%s\", not \"%s\", "
-				       "skipping.\n",
-				       token, entry->cm_cert_token);
-			} else {
-				cm_log(1,
-				       "Token is unnamed, not \"%s\", "
-				       "skipping.\n",
-				       entry->cm_cert_token);
-			}
-			goto next_slot;
-		}
-		/* Be ready to count our uses of a PIN. */
-		memset(&cb_data, 0, sizeof(cb_data));
-		cb_data.entry = entry;
-		cb_data.n_attempts = 0;
-		/* If we're supposed to be using a PIN, and we're offered a
-		 * chance to set one, do it now. */
-		if (readwrite) {
-			if (PK11_NeedUserInit(sle->slot)) {
-				if (cm_pin_read_for_cert(entry, &pin) != 0) {
-					cm_log(1, "Error reading PIN to assign "
-					       "to storage slot, skipping.\n");
-					goto next_slot;
-				}
-				PK11_InitPin(sle->slot, NULL, pin);
-				if (PK11_NeedUserInit(sle->slot)) {
-					cm_log(1, "Cert storage slot still "
-					       "needs user PIN to be set.\n");
-					goto next_slot;
-				}
-				/* We're authenticated now, so count this as a
-				 * use of the PIN. */
-				cb_data.n_attempts++;
-			}
-		}
-		/* If we need to log in in order to read certificates, do so. */
-		if (PK11_NeedLogin(sle->slot)) {
-			cm_log(3, "Need login to token %s\n", PK11_GetTokenName(sle->slot));
-			if (cm_pin_read_for_cert(entry, &pin) != 0) {
-				cm_log(1, "Error reading PIN for cert db, "
-				       "skipping.\n");
-				goto next_slot;
-			}
-			error = PK11_Authenticate(sle->slot, PR_TRUE, &cb_data);
-			if (error != SECSuccess) {
-				cm_log(1, "certread-n: Error authenticating to cert db "
-					   "slot %s.\n", PK11_GetTokenName(sle->slot));
-				goto next_slot;
-			}
-			if ((pin != NULL) &&
-			    (strlen(pin) > 0) &&
-			    (cb_data.n_attempts == 0)) {
-				cm_log(1, "PIN was not needed to auth to token "
-				       "%s, though one was provided. "
-				       "Treating this as an error.\n", token);
-				goto next_slot;
-			}
-		}
-		/* Walk the list of certificates in the slot, looking for one
-		 * which matches the specified nickname. */
-		certs = PK11_ListCertsInSlot(sle->slot);
-		cm_log(3, "Looking for %s\n", entry->cm_cert_nickname);
-		if (certs != NULL) {
-			for (node = CERT_LIST_HEAD(certs);
-			     !CERT_LIST_EMPTY(certs) &&
-			     !CERT_LIST_END(node, certs);
-			     node = CERT_LIST_NEXT(node)) {
-				cm_log(3, "certread-n: Slot nickname %s\n",
-							node->cert->nickname);
-		        es = talloc_asprintf(entry, "%s:%s",
-					   entry->cm_cert_token, entry->cm_cert_nickname);
-				if ((strcmp(node->cert->nickname,
-					   entry->cm_cert_nickname) == 0) ||
-                    (strcmp(node->cert->nickname, es) == 0)) {
-					cm_log(3, "Located the certificate "
-					       "\"%s\".\n",
-					       entry->cm_cert_nickname);
-					if (entry->cm_cert_token == NULL) {
-						entry->cm_cert_token =
-							talloc_strdup(entry,
-								      token);
-					}
-					if (cert == NULL) {
-						cert = CERT_DupCertificate(node->cert);
-					} else {
-						if ((CERT_GetCertTimes(node->cert, &before_a, &after_a) == SECSuccess) &&
-						    (CERT_GetCertTimes(cert, &before_b, &after_b) == SECSuccess) &&
-						    (after_a > after_b)) {
-							cm_log(3, "Located a newer certificate "
-							       "\"%s\".\n",
-							       entry->cm_cert_nickname);
-							if (readwrite &&
-							    (before_a > before_b)) {
-								error = SEC_DeletePermCertificate(cert);
-								if (error != SECSuccess) {
-									cm_log(3, "Error deleting old certificate: %s.\n",
-									       PR_ErrorToName(error));
-								}
-							}
-							CERT_DestroyCertificate(cert);
-							cert = CERT_DupCertificate(node->cert);
-						}
-					}
-				}
-			}
-			CERT_DestroyCertList(certs);
-		}
-next_slot:
-		if (sle == slotlist->tail) {
-			break;
-		}
+	es = util_internal_token_name(entry);
+	if (strcmp(entry->cm_cert_token, es) == 0) {
+		slot = PK11_GetInternalKeySlot();
+		nickname = talloc_strdup(entry, entry->cm_cert_nickname);
+	} else {
+		slot = PK11_FindSlotByName(entry->cm_cert_token);
+		nickname = talloc_asprintf(entry, "%s:%s",
+			entry->cm_cert_token, entry->cm_cert_nickname);
 	}
-
-	if (cert == NULL) {
-		cm_log(1, "Error locating certificate.\n");
-		PK11_FreeSlotList(slotlist);
+	if (slot == NULL) {
+		cm_log(0, "Could not find the slot slot %s.\n", entry->cm_cert_token);
 		if (NSS_ShutdownContext(ctx) != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
 		_exit(2);
 	}
+	/* Be ready to count our uses of a PIN. */
+	memset(&cb_data, 0, sizeof(cb_data));
+	cb_data.entry = entry;
+	cb_data.n_attempts = 0;
+	/* If we're supposed to be using a PIN, and we're offered a
+	 * chance to set one, do it now. */
+	if (readwrite) {
+		if (PK11_NeedUserInit(slot)) {
+			if (cm_pin_read_for_cert(entry, &pin) != 0) {
+				cm_log(0, "Error reading PIN to assign "
+				       "to storage slot.\n");
+				PK11_FreeSlot(slot);
+				if (NSS_ShutdownContext(ctx) != SECSuccess) {
+					cm_log(1, "Error shutting down NSS.\n");
+				}
+				_exit(2);
+			}
+			PK11_InitPin(slot, NULL, pin);
+			if (PK11_NeedUserInit(slot)) {
+				cm_log(0, "Cert storage slot still "
+				       "needs user PIN to be set.\n");
+				PK11_FreeSlot(slot);
+				if (NSS_ShutdownContext(ctx) != SECSuccess) {
+					cm_log(1, "Error shutting down NSS.\n");
+				}
+				_exit(2);
+			}
+			/* We're authenticated now, so count this as a
+			 * use of the PIN. */
+			cb_data.n_attempts++;
+		} 
+	}
+	/* If we need to log in in order to read certificates, do so. */
+	if (PK11_NeedLogin(slot)) {
+		cm_log(3, "Need login to token %s\n", PK11_GetTokenName(slot));
+		if (cm_pin_read_for_cert(entry, &pin) != 0) {
+			cm_log(0, "Error reading PIN for cert db\n");
+			PK11_FreeSlot(slot);
+			if (NSS_ShutdownContext(ctx) != SECSuccess) {
+				cm_log(1, "Error shutting down NSS.\n");
+			}
+			_exit(2);
+		}
+		error = PK11_Authenticate(slot, PR_TRUE, &cb_data);
+		if (error != SECSuccess) {
+			cm_log(0, "certread-n: Error authenticating to cert db "
+				   "slot %s.\n", PK11_GetTokenName(slot));
+			PK11_FreeSlot(slot);
+			if (NSS_ShutdownContext(ctx) != SECSuccess) {
+				cm_log(1, "Error shutting down NSS.\n");
+			}
+			_exit(2);
+		}
+		if ((pin != NULL) &&
+		    (strlen(pin) > 0) &&
+		    (cb_data.n_attempts == 0)) {
+			cm_log(0, "PIN was not needed to auth to token "
+			       "%s, though one was provided. "
+			       "Treating this as an error.\n", token);
+			PK11_FreeSlot(slot);
+			if (NSS_ShutdownContext(ctx) != SECSuccess) {
+				cm_log(1, "Error shutting down NSS.\n");
+			}
+			_exit(2);
+		}
+	}
+	cm_log(3, "Looking for nickname %s\n", nickname);
+	cert = PK11_FindCertFromNickname(nickname, pin);
+
+	if (cert) {
+		cm_log(3, "Located the certificate \"%s\".\n", nickname);
+	} else {
+		cm_log(3, "Error locating certificate.\n");
+		PK11_FreeSlot(slot);
+		if (NSS_ShutdownContext(ctx) != SECSuccess) {
+			cm_log(1, "Error shutting down NSS.\n");
+		}
+		_exit(2);
+	}
+
 	cm_certread_n_parse(entry, cert->derCert.data, cert->derCert.len);
 	cm_certread_write_data_to_pipe(entry, fp);
 	fclose(fp);
+	PK11_FreeSlot(slot);
 	CERT_DestroyCertificate(cert);
-	PK11_FreeSlotList(slotlist);
 	if (NSS_ShutdownContext(ctx) != SECSuccess) {
 		cm_log(1, "Error shutting down NSS.\n");
 	}
