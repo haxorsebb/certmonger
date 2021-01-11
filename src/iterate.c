@@ -2358,6 +2358,10 @@ cm_iterate_ca(struct cm_store_ca *ca,
 			break;
 		}
 		if (state->cm_task_state == NULL) {
+			if (ca->cm_ca_type == cm_ca_external) {
+				/* Reap any failed child processes to prevent zombies */
+				cm_casave_done(state->cm_casave_state);
+			}
 			ca->cm_ca_state[state->cm_phase] = CM_CA_DISABLED;
 			*when = cm_time_now;
 		} else {
