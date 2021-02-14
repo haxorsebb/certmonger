@@ -4,47 +4,48 @@
 #
 # Translators:
 # Hasan Alp İNAN <hasanalpinan@gmail.com>, 2011
+# Oğuz Ersen <oguzersen@protonmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger 0.78.6\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2017-02-26 02:20-0500\n"
-"PO-Revision-Date: 2015-01-05 05:54-0500\n"
-"Last-Translator: Copied by Zanata <copied-by-zanata@zanata.org>\n"
-"Language-Team: Turkish (http://www.transifex.com/projects/p/certmonger/"
-"language/tr/)\n"
+"PO-Revision-Date: 2021-01-11 12:36+0000\n"
+"Last-Translator: Oğuz Ersen <oguzersen@protonmail.com>\n"
+"Language-Team: Turkish <https://translate.fedoraproject.org/projects/"
+"certmonger/master/tr/>\n"
 "Language: tr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Zanata 3.9.6\n"
+"Plural-Forms: nplurals=2; plural=(n>1);\n"
+"X-Generator: Weblate 4.4\n"
 
 #: src/casave.c:322 src/casave.c:361 src/dogtag.c:233 src/dogtag.c:238
 #: src/dogtag.c:256 src/dogtag.c:261 src/getcert.c:291
 #, c-format
 msgid "Out of memory.\n"
-msgstr ""
+msgstr "Bellek yetersiz.\n"
 
 #: src/certmaster.c:136
 #, c-format
 msgid "Unable to determine hostname of CA.\n"
-msgstr ""
+msgstr "CA'nın ana makine adı belirlenemiyor.\n"
 
 #: src/certmaster.c:153 src/dogtag.c:521 src/ipa.c:796
 #, c-format
 msgid "Unable to read signing request from file \"%s\".\n"
-msgstr ""
+msgstr "\"%s\" dosyasından imzalama isteği okunamıyor.\n"
 
 #: src/certmaster.c:156 src/dogtag.c:524 src/ipa.c:799
 #, c-format
 msgid "Unable to read signing request from environment variable \"%s\".\n"
-msgstr ""
+msgstr "\"%s\" ortam değişkeninden imzalama isteği okunamıyor.\n"
 
 #: src/certmaster.c:184
 #, c-format
 msgid "Error setting up for XMLRPC.\n"
-msgstr ""
+msgstr "XMLRPC için kurulum yapılırken hata oluştu.\n"
 
 #: src/certmaster.c:206 src/getcert.c:526 src/getcert.c:545 src/getcert.c:564
 #: src/getcert.c:583 src/getcert.c:601 src/getcert.c:694 src/getcert.c:1409
@@ -54,7 +55,7 @@ msgstr ""
 #: src/getcert.c:4429 src/getcert.c:4547 src/getcert.c:4742
 #, c-format
 msgid "Error parsing server response.\n"
-msgstr ""
+msgstr "Sunucu yanıtı ayrıştırılırken hata oluştu.\n"
 
 #: src/certmaster.c:210
 #, c-format
@@ -64,128 +65,130 @@ msgstr "Sunucu hatası.\n"
 #: src/dogtag.c:226
 #, c-format
 msgid "Profile params (-O) must be in the form of param=value.\n"
-msgstr ""
+msgstr "Profil parametreleri (-O), param=değer biçiminde olmalıdır.\n"
 
 #: src/dogtag.c:249
 #, c-format
 msgid "Submit params (-o) must be in the form of param=value.\n"
-msgstr ""
+msgstr "Gönderme parametreleri (-o), param=değer biçiminde olmalıdır.\n"
 
 #: src/dogtag.c:408 src/dogtag.c:413 src/dogtag.c:442
 #, c-format
 msgid "No agent credentials specified, and no default known.\n"
-msgstr ""
+msgstr "Aracı kimlik bilgileri belirtilmedi ve bilinen öntanımlı değer yok.\n"
 
 #: src/dogtag.c:418
 #, c-format
 msgid "Requested renewal, but no serial number provided.\n"
-msgstr ""
+msgstr "Yenileme istendi, ancak seri numarası belirtilmedi.\n"
 
 #: src/dogtag.c:422
 #, c-format
 msgid "No end-entity URL (-E) given, and no default known.\n"
-msgstr ""
+msgstr "Son varlık URL'si (-E) belirtilmedi ve bilinen öntanımlı değer yok.\n"
 
 #: src/dogtag.c:427 src/dogtag.c:437 src/dogtag.c:594
 #, c-format
 msgid "No agent URL (-A) given, and no default known.\n"
-msgstr ""
+msgstr "Aracı URL'si (-A) belirtilmedi ve bilinen öntanımlı değer yok.\n"
 
 #: src/dogtag.c:432
 #, c-format
 msgid "No profile/template (-T) given, and no default known.\n"
-msgstr ""
+msgstr "Profil/şablon (-T) belirtilmedi ve bilinen öntanımlı değer yok.\n"
 
 #: src/dogtag.c:452
 #, c-format
 msgid "Error shutting down NSS.\n"
-msgstr ""
+msgstr "NSS kapatılırken hata oluştu.\n"
 
 #: src/dogtag.c:487 src/dogtag.c:777
 #, c-format
 msgid "Internal error: unknown state.\n"
-msgstr ""
+msgstr "Dahili hata: bilinmeyen durum.\n"
 
 #: src/dogtag.c:600
 #, c-format
 msgid "No agent credentials (-n) given, but they are needed.\n"
-msgstr ""
+msgstr "Aracı kimlik bilgileri (-n) belirtilmedi ancak gerekli.\n"
 
 #: src/dogtag.c:757 src/scep.c:619
 #, c-format
 msgid "Error %d connecting to %s: %s.\n"
-msgstr ""
+msgstr "%d hatası %s adresine bağlanırken oluştu: %s.\n"
 
 #: src/dogtag.c:762 src/scep.c:624
 #, c-format
 msgid "Error %d connecting to %s.\n"
-msgstr ""
+msgstr "%d hatası %s adresine bağlanırken oluştu.\n"
 
 #: src/dogtag.c:770 src/scep.c:648
 #, c-format
 msgid "Internal error: no response to \"%s?%s\".\n"
-msgstr ""
+msgstr "Dahili hata: \"%s?%s\" için yanıt yok.\n"
 
 #: src/getcert.c:61 src/main.c:84 src/main.c:86
 msgid "COMMAND"
-msgstr ""
+msgstr "KOMUT"
 
 #: src/getcert.c:62
 msgid "DIRECTORY"
-msgstr ""
+msgstr "DİZİN"
 
 #: src/getcert.c:63 src/getcert.c:70
 msgid "LIST"
-msgstr ""
+msgstr "LİSTE"
 
 #: src/getcert.c:64 src/getcert.c:68
 msgid "ADDRESS"
-msgstr ""
+msgstr "ADRES"
 
 #: src/getcert.c:65 src/main.c:87
 msgid "FILENAME"
-msgstr ""
+msgstr "DOSYA_ADI"
 
 #: src/getcert.c:66
 msgid "HOSTNAME"
-msgstr ""
+msgstr "ANA_MAKİNE_ADI"
 
 #: src/getcert.c:67
 msgid "ID"
-msgstr ""
+msgstr "KİMLİK"
 
 #: src/getcert.c:69
 msgid "BITS"
-msgstr ""
+msgstr "BİT"
 
 #: src/getcert.c:71
 msgid "MODE"
-msgstr ""
+msgstr "MOD"
 
 #: src/getcert.c:72
 msgid "NAME"
-msgstr ""
+msgstr "AD"
 
 #: src/getcert.c:73
 msgid "PRINCIPAL"
-msgstr ""
+msgstr "TEMSİLCİ"
 
 #: src/getcert.c:74
 msgid "SUBJECT"
-msgstr ""
+msgstr "SAHİP"
 
 #: src/getcert.c:75
 msgid "URL"
-msgstr ""
+msgstr "URL"
 
 #: src/getcert.c:76
 msgid "USERNAME[:GROUPNAME]"
-msgstr ""
+msgstr "KULLANICI_ADI[:GRUP_ADI]"
 
 #: src/getcert.c:115
 #, c-format
 msgid "Path \"%s\" is not absolute, attempting to use \"%s\" instead.\n"
 msgstr ""
+"\"%s\" yolu mutlak değil, bunun yerine \"%s\" yolu kullanılmaya çalışılıyor."
+"\n"
 
 #: src/getcert.c:120
 #, c-format
@@ -193,106 +196,108 @@ msgid ""
 "Path \"%s\" is not absolute, and there was an error determining the name of "
 "the current directory.\n"
 msgstr ""
+"\"%s\" yolu mutlak değil ve geçerli dizinin adı belirlenirken bir hata "
+"oluştu.\n"
 
 #: src/getcert.c:142
 #, c-format
 msgid "Path \"%s\": insufficient permissions.\n"
-msgstr ""
+msgstr "\"%s\" yolu: izinler yetersiz.\n"
 
 #: src/getcert.c:148
 #, c-format
 msgid "Path \"%s\" is not a directory.\n"
-msgstr ""
+msgstr "\"%s\" yolu bir dizin değil.\n"
 
 #: src/getcert.c:154
 #, c-format
 msgid "Path \"%s\": %s.\n"
-msgstr ""
+msgstr "\"%s\" yolu: %s.\n"
 
 #: src/getcert.c:194
 #, c-format
 msgid "Path \"%s\" is not a regular file.\n"
-msgstr ""
+msgstr "\"%s\" yolu normal bir dosya değil.\n"
 
 #: src/getcert.c:340
 #, c-format
 msgid "No system bus running.\n"
-msgstr ""
+msgstr "Çalışan sistem veri yolu yok.\n"
 
 #: src/getcert.c:341
 #, c-format
 msgid "Running as UID 0.\n"
-msgstr ""
+msgstr "UID 0 olarak çalışıyor.\n"
 
 #: src/getcert.c:342
 #, c-format
 msgid "Launching temporary dedicated service daemon.\n"
-msgstr ""
+msgstr "Geçici bir özel hizmet arka plan programı başlatılıyor.\n"
 
 #: src/getcert.c:371
 #, c-format
 msgid "Error connecting to D-Bus.\n"
-msgstr ""
+msgstr "D-Bus'a bağlanırken hata oluştu.\n"
 
 #: src/getcert.c:372 src/tdbusm.c:2166
 #, c-format
 msgid "Please verify that the message bus (D-Bus) service is running.\n"
-msgstr ""
+msgstr "Lütfen mesaj veri yolu (D-Bus) hizmetinin çalıştığını doğrulayın.\n"
 
 #: src/getcert.c:379
 #, c-format
 msgid "Error creating DBus request message.\n"
-msgstr ""
+msgstr "D-Bus istek mesajı oluşturulurken hata oluştu.\n"
 
 #: src/getcert.c:393
 #, c-format
 msgid "missing argument for %s"
-msgstr ""
+msgstr "%s için argüman eksik"
 
 #: src/getcert.c:398
 msgid "missing argument"
-msgstr ""
+msgstr "argüman eksik"
 
 #: src/getcert.c:401
 #, c-format
 msgid "unrecognized option %s"
-msgstr ""
+msgstr "tanınmayan seçenek %s"
 
 #: src/getcert.c:406
 msgid "unrecognized option"
-msgstr ""
+msgstr "tanınmayan seçenek"
 
 #: src/getcert.c:409
 msgid "aliases nested too deeply"
-msgstr ""
+msgstr "takma adlar çok fazla iç içe geçti"
 
 #: src/getcert.c:412
 msgid "bad parameter quoting"
-msgstr ""
+msgstr "parametrede yanlış tırnak işareti kullanımı"
 
 #: src/getcert.c:418
 msgid "invalid numeric value"
-msgstr ""
+msgstr "geçersiz sayısal değer"
 
 #: src/getcert.c:421
 msgid "number too large or too small"
-msgstr ""
+msgstr "sayı çok büyük veya çok küçük"
 
 #: src/getcert.c:424
 msgid "bad operation"
-msgstr ""
+msgstr "yanlış işlem"
 
 #: src/getcert.c:427
 msgid "internal error"
-msgstr ""
+msgstr "dahili hata"
 
 #: src/getcert.c:430
 msgid "out of memory"
-msgstr ""
+msgstr "bellek yetersiz"
 
 #: src/getcert.c:434
 msgid "error in popt configuration file"
-msgstr ""
+msgstr "popt yapılandırma dosyasında hata"
 
 #: src/getcert.c:477
 #, c-format
@@ -312,265 +317,272 @@ msgstr "Hata: %s\n"
 #: src/getcert.c:489
 #, c-format
 msgid "Received error response from local %s service.\n"
-msgstr ""
+msgstr "Yerel %s hizmetinden hata yanıtı alındı.\n"
 
 #: src/getcert.c:495
 #, c-format
 msgid "No response received from %s service.\n"
-msgstr ""
+msgstr "%s hizmetinden yanıt alınmadı.\n"
 
 #: src/getcert.c:699 src/getcert.c:3978
 #, c-format
 msgid "State %s, stuck: %s.\n"
-msgstr ""
+msgstr "Durum %s, takıldı: %s.\n"
 
 #: src/getcert.c:768 src/getcert.c:1846 src/getcert.c:2500 src/getcert.c:3100
 #: src/getcert.c:3354 src/getcert.c:3875
 msgid "NSS database for key and cert"
-msgstr ""
+msgstr "Anahtar ve sertifika için NSS veri tabanı"
 
 #: src/getcert.c:769 src/getcert.c:1847 src/getcert.c:2501 src/getcert.c:3101
 #: src/getcert.c:3355 src/getcert.c:3876
 msgid "nickname for NSS-based storage (only valid with -d)"
-msgstr ""
+msgstr "NSS tabanlı depolama için takma ad (yalnızca -d ile geçerlidir)"
 
 #: src/getcert.c:770 src/getcert.c:1848 src/getcert.c:2502 src/getcert.c:3102
 #: src/getcert.c:3356 src/getcert.c:3877
 msgid "optional token name for NSS-based storage (only valid with -d)"
 msgstr ""
+"NSS tabanlı depolama için isteğe bağlı belirteç adı (yalnızca -d ile "
+"geçerlidir)"
 
 #: src/getcert.c:771
 msgid "PEM file for private key"
-msgstr ""
+msgstr "özel anahtar için PEM dosyası"
 
 #: src/getcert.c:772
 msgid "PEM file for certificate (only valid with -k)"
-msgstr ""
+msgstr "sertifika için PEM dosyası (yalnızca -k ile geçerlidir)"
 
 #: src/getcert.c:773 src/getcert.c:1851 src/getcert.c:2508
 msgid "file which holds the private key encryption PIN"
-msgstr ""
+msgstr "özel anahtar şifreleme PIN'ini saklayan dosya"
 
 #: src/getcert.c:774 src/getcert.c:1852 src/getcert.c:2509
 msgid "private key encryption PIN"
-msgstr ""
+msgstr "özel anahtar şifreleme PIN'i"
 
 #: src/getcert.c:775 src/getcert.c:1853 src/getcert.c:2510
 msgid "owner information for private key"
-msgstr ""
+msgstr "özel anahtar için sahip bilgisi"
 
 #: src/getcert.c:776 src/getcert.c:1854 src/getcert.c:2511
 msgid "file permissions for private key"
-msgstr ""
+msgstr "özel anahtar için dosya izinleri"
 
 #: src/getcert.c:777 src/getcert.c:1855 src/getcert.c:2512
 msgid "owner information for certificate"
-msgstr ""
+msgstr "sertifika için sahip bilgisi"
 
 #: src/getcert.c:778 src/getcert.c:1856 src/getcert.c:2513
 msgid "file permissions for certificate"
-msgstr ""
+msgstr "sertifika için dosya izinleri"
 
 #: src/getcert.c:779 src/getcert.c:1857 src/getcert.c:2514
 msgid "NSS database in which to store the CA's certificates"
-msgstr ""
+msgstr "CA sertifikalarının saklanacağı NSS veri tabanı"
 
 #: src/getcert.c:780 src/getcert.c:1858 src/getcert.c:2515
 msgid "file in which to store the CA's certificates"
-msgstr ""
+msgstr "CA sertifikalarının saklanacağı dosya"
 
 #: src/getcert.c:781 src/getcert.c:1859 src/getcert.c:2516
 msgid "command to run before saving the certificate"
-msgstr ""
+msgstr "sertifikayı kaydetmeden önce çalıştırılacak komut"
 
 #: src/getcert.c:782 src/getcert.c:1860 src/getcert.c:2517
 msgid "command to run after saving the certificate"
-msgstr ""
+msgstr "sertifikayı kaydettikten sonra çalıştırılacak komut"
 
 #: src/getcert.c:783
 msgid "nickname to assign to the request"
-msgstr ""
+msgstr "isteğe atanacak takma ad"
 
 #: src/getcert.c:784
 msgid "type of key to be generated if one is not already in place"
-msgstr ""
+msgstr "zaten bir tane yoksa oluşturulacak anahtarın türü"
 
 #: src/getcert.c:785
 msgid "size of key to be generated if one is not already in place"
-msgstr ""
+msgstr "zaten bir tane yoksa oluşturulacak anahtarın boyutu"
 
 #: src/getcert.c:786 src/getcert.c:1863
 msgid "attempt to renew the certificate when expiration nears (default)"
-msgstr ""
+msgstr "sona erme tarihi yaklaştığında sertifikayı yenilemeyi dene (öntanımlı)"
 
 #: src/getcert.c:787 src/getcert.c:1864
 msgid "don't attempt to renew the certificate when expiration nears"
-msgstr ""
+msgstr "sona erme tarihi yaklaştığında sertifikayı yenilemeyi deneme"
 
 #: src/getcert.c:789 src/getcert.c:1866
 msgid "use the specified CA configuration rather than the default"
-msgstr ""
+msgstr "öntanımlı olan yerine belirtilen CA yapılandırmasını kullan"
 
 #: src/getcert.c:791 src/getcert.c:1868 src/getcert.c:2521
 msgid "ask the CA to process the request using the named profile or template"
 msgstr ""
+"CA'dan, belirtilen profili veya şablonu kullanarak isteği işlemesini iste"
 
 #: src/getcert.c:792 src/getcert.c:1869 src/getcert.c:2522
 msgid "ask the CA to process the request using the named issuer"
-msgstr ""
+msgstr "CA'dan, belirtilen sağlayıcıyı kullanarak isteği işlemesini iste"
 
 #: src/getcert.c:793 src/getcert.c:2523
 msgid "set requested subject name (default: CN=<hostname>)"
-msgstr ""
+msgstr "istenen sahip adını ayarla (öntanımlı: CN=<ana_makine_adı>)"
 
 #: src/getcert.c:794 src/getcert.c:2524
 msgid "set requested key usage value"
-msgstr ""
+msgstr "istenen anahtar kullanım değerini ayarla"
 
 #: src/getcert.c:795 src/getcert.c:2525
 msgid "set requested extended key usage OID"
-msgstr ""
+msgstr "istenen genişletilmiş anahtar kullanım OID'sini ayarla"
 
 #: src/getcert.c:796 src/getcert.c:2526
 msgid "set requested principal name"
-msgstr ""
+msgstr "istenen temsilci adını ayarla"
 
 #: src/getcert.c:797 src/getcert.c:2527
 msgid "set requested DNS name"
-msgstr ""
+msgstr "istenen DNS adını ayarla"
 
 #: src/getcert.c:798 src/getcert.c:2528
 msgid "set requested email address"
-msgstr ""
+msgstr "istenen e-posta adresini ayarla"
 
 #: src/getcert.c:799 src/getcert.c:2529
 msgid "set requested IP address"
-msgstr ""
+msgstr "istenen IP adresini ayarla"
 
 #: src/getcert.c:800 src/getcert.c:1876 src/getcert.c:2530
 msgid "file which holds an optional challenge password value"
-msgstr ""
+msgstr "isteğe bağlı bir sınama parolası değeri içeren dosya"
 
 #: src/getcert.c:801 src/getcert.c:1877 src/getcert.c:2531
 msgid "an optional challenge password value"
-msgstr ""
+msgstr "isteğe bağlı bir sınama parolası değeri"
 
 #: src/getcert.c:802 src/getcert.c:1878 src/getcert.c:2532
 msgid "request a CA certificate"
-msgstr ""
+msgstr "bir CA sertifikası iste"
 
 #: src/getcert.c:803 src/getcert.c:1879 src/getcert.c:2533
 msgid "request a non-CA certificate"
-msgstr ""
+msgstr "CA olmayan bir sertifika iste"
 
 #: src/getcert.c:804 src/getcert.c:1880 src/getcert.c:2534
 msgid "path length for CA certificate"
-msgstr ""
+msgstr "CA sertifikası için yol uzunluğu"
 
 #: src/getcert.c:805 src/getcert.c:1881 src/getcert.c:2535
 msgid "try to wait for the certificate to be issued"
-msgstr ""
+msgstr "sertifikanın verilmesini beklemeye çalış"
 
 #: src/getcert.c:806 src/getcert.c:1882 src/getcert.c:2536
 msgid "maximum time to wait for the certificate to be issued"
-msgstr ""
+msgstr "sertifikanın verilmesi için beklenecek en fazla süre"
 
 #: src/getcert.c:807 src/getcert.c:1883 src/getcert.c:2537 src/getcert.c:3105
 #: src/getcert.c:3360 src/getcert.c:3880 src/getcert.c:4038 src/getcert.c:4270
 #: src/getcert.c:4366 src/getcert.c:4463 src/getcert.c:4591 src/getcert.c:4679
 msgid "connect to the certmonger service on the session bus"
-msgstr ""
+msgstr "oturum veri yolunda certmonger hizmetine bağlan"
 
 #: src/getcert.c:808 src/getcert.c:1884 src/getcert.c:2538 src/getcert.c:3106
 #: src/getcert.c:3361 src/getcert.c:3881 src/getcert.c:4039 src/getcert.c:4271
 #: src/getcert.c:4367 src/getcert.c:4464 src/getcert.c:4592 src/getcert.c:4680
 msgid "connect to the certmonger service on the system bus"
-msgstr ""
+msgstr "sistem veri yolunda certmonger hizmetine bağlan"
 
 #: src/getcert.c:825 src/getcert.c:1893 src/getcert.c:2547
 #, c-format
 msgid "Error initializing Kerberos library: %s.\n"
-msgstr ""
+msgstr "Kerberos kütüphanesi başlatılırken hata oluştu: %s.\n"
 
 #: src/getcert.c:889 src/getcert.c:2619
 #, c-format
 msgid "No support for generating \"%s\" keys.\n"
-msgstr ""
+msgstr "\"%s\" anahtarları oluşturma desteği yok.\n"
 
 #: src/getcert.c:891 src/getcert.c:2621
 #, c-format
 msgid "Known key types include:"
-msgstr ""
+msgstr "Bilinen anahtar türleri:"
 
 #: src/getcert.c:931 src/getcert.c:1983 src/getcert.c:2643
 #, c-format
 msgid "Unrecognized keyUsage \"%s\".\n"
-msgstr ""
+msgstr "Tanınmayan keyUsage (anahtar kullanımı) \"%s\".\n"
 
 #: src/getcert.c:941 src/getcert.c:1993 src/getcert.c:2653
 #, c-format
 msgid "Could not evaluate OID \"%s\".\n"
-msgstr ""
+msgstr "OID \"%s\" değerlendirilemedi.\n"
 
 #: src/getcert.c:952 src/getcert.c:2004 src/getcert.c:2664
 #, c-format
 msgid "Error parsing Kerberos principal name \"%s\": %s.\n"
-msgstr ""
+msgstr "Kerberos temsilci adı \"%s\" ayrıştırılırken hata oluştu: %s.\n"
 
 #: src/getcert.c:961 src/getcert.c:2013 src/getcert.c:2673
 #, c-format
 msgid "Error unparsing Kerberos principal name \"%s\": %s.\n"
 msgstr ""
+"Kerberos temsilci adı \"%s\" ayrıştırılmasını tersine çevirirken hata oluştu:"
+" %s.\n"
 
 #: src/getcert.c:1016 src/getcert.c:2068 src/getcert.c:2728
 #, c-format
 msgid "%s: invalid value -- '%s'\n"
-msgstr ""
+msgstr "%s: geçersiz değer -- '%s'\n"
 
 #: src/getcert.c:1039 src/getcert.c:2096 src/getcert.c:2751 src/getcert.c:3176
 #: src/getcert.c:3422 src/getcert.c:4073
 #, c-format
 msgid "%s: option requires an argument -- '%c'\n"
-msgstr ""
+msgstr "%s: seçenek bir argüman gerektiriyor -- '%c'\n"
 
 #: src/getcert.c:1043 src/getcert.c:2099 src/getcert.c:2754 src/getcert.c:3180
 #: src/getcert.c:3426 src/getcert.c:4076
 #, c-format
 msgid "%s: invalid option -- '%c'\n"
-msgstr ""
+msgstr "%s: geçersiz seçenek -- '%c'\n"
 
 #: src/getcert.c:1057
 #, c-format
 msgid "Error: unused extra argument \"%s\".\n"
-msgstr ""
+msgstr "Hata: kullanılmayan fazladan argüman \"%s\".\n"
 
 #: src/getcert.c:1060 src/getcert.c:2115 src/getcert.c:2767 src/getcert.c:3200
 #: src/getcert.c:3439 src/getcert.c:3938 src/getcert.c:4089 src/getcert.c:4321
 #: src/getcert.c:4416 src/getcert.c:4518 src/getcert.c:4641 src/getcert.c:4724
 #, c-format
 msgid "Error: unused extra arguments were supplied.\n"
-msgstr ""
+msgstr "Hata: kullanılmayan fazladan argümanlar belirtildi.\n"
 
 #: src/getcert.c:1066 src/getcert.c:2121 src/getcert.c:2381 src/getcert.c:2791
 #, c-format
 msgid "Database location or nickname specified without the other.\n"
-msgstr ""
+msgstr "Veri tabanı konumu veya takma addan biri, diğeri olmadan belirtildi.\n"
 
 #: src/getcert.c:1072 src/getcert.c:2127 src/getcert.c:2387 src/getcert.c:2797
 #, c-format
 msgid "Database directory and certificate file both specified.\n"
-msgstr ""
+msgstr "Hem veri tabanı dizini hem de sertifika dosyası belirtildi.\n"
 
 #: src/getcert.c:1080 src/getcert.c:2395 src/getcert.c:2805
 #, c-format
 msgid ""
 "None of database directory and nickname or certificate file specified.\n"
 msgstr ""
+"Veri tabanı dizini ve takma ad ya da sertifika dosyasından hiçbiri "
+"belirtilmedi.\n"
 
 #: src/getcert.c:1087 src/getcert.c:2143
 #, c-format
 msgid "Key and certificate can not both be saved to the same file.\n"
-msgstr ""
+msgstr "Anahtar ve sertifika aynı dosyaya kaydedilemez.\n"
 
 #: src/getcert.c:1114
 #, c-format
@@ -579,80 +591,83 @@ msgid ""
 "of the -N (subject name), -E (email address), -A (IP address), -D (DNS "
 "name), or -U (extendedKeyUsage) options is used.\n"
 msgstr ""
+"IPA arka ucu -N (sahip adı), -E (e-posta adresi), -A (IP adresi), -D (DNS "
+"adı) veya -U (extendedKeyUsage) seçeneklerinden birisi kullanıldığında -K "
+"seçeneğinin (temsilci adı) kullanılmasını gerektiriyor.\n"
 
 #: src/getcert.c:1296 src/getcert.c:1762 src/getcert.c:2272 src/getcert.c:2867
 #: src/getcert.c:3208 src/getcert.c:3447 src/getcert.c:4731
 #, c-format
 msgid "No CA with name \"%s\" found.\n"
-msgstr ""
+msgstr "\"%s\" adında bir CA bulunamadı.\n"
 
 #: src/getcert.c:1404 src/getcert.c:1791 src/getcert.c:2348 src/getcert.c:2435
 #: src/getcert.c:3015 src/getcert.c:4424 src/getcert.c:4542 src/getcert.c:4561
 #: src/getcert.c:4651 src/getcert.c:4737
 #, c-format
 msgid "Error setting request arguments.\n"
-msgstr ""
+msgstr "İstek argümanları ayarlanırken hata oluştu.\n"
 
 #: src/getcert.c:1415
 #, c-format
 msgid "New signing request \"%s\" added.\n"
-msgstr ""
+msgstr "Yeni imzalama isteği \"%s\" eklendi.\n"
 
 #: src/getcert.c:1421
 #, c-format
 msgid "New signing request could not be added.\n"
-msgstr ""
+msgstr "Yeni imzalama isteği eklenemedi.\n"
 
 #: src/getcert.c:1802
 #, c-format
 msgid "New tracking request \"%s\" added.\n"
-msgstr ""
+msgstr "Yeni izleme isteği \"%s\" eklendi.\n"
 
 #: src/getcert.c:1809
 #, c-format
 msgid "New tracking request could not be added.\n"
-msgstr ""
+msgstr "Yeni izleme isteği eklenemedi.\n"
 
 #: src/getcert.c:1849
 msgid "PEM file for private key (only valid with -f)"
-msgstr ""
+msgstr "Özel anahtar için PEM dosyası (yalnızca -f ile geçerlidir)"
 
 #: src/getcert.c:1850 src/getcert.c:2503 src/getcert.c:3103 src/getcert.c:3357
 #: src/getcert.c:3878
 msgid "PEM file for certificate"
-msgstr ""
+msgstr "Sertifika için PEM dosyası"
 
 #: src/getcert.c:1861
 msgid "nickname of an existing request"
-msgstr ""
+msgstr "var olan bir isteğin takma adı"
 
 #: src/getcert.c:1862
 msgid "nickname to give to tracking request"
-msgstr ""
+msgstr "izleme isteğine verilecek takma ad"
 
 #: src/getcert.c:1870
 msgid "override requested key usage value"
-msgstr ""
+msgstr "istenen anahtar kullanım değerinin üzerine yaz"
 
 #: src/getcert.c:1871
 msgid "override requested extended key usage OID"
-msgstr ""
+msgstr "istenen genişletilmiş anahtar kullanımı OID'sinin üzerine yaz"
 
 #: src/getcert.c:1872
 msgid "override requested principal name"
-msgstr ""
+msgstr "istenen temsilci adının üzerine yaz"
 
 #: src/getcert.c:1873
 msgid "override requested DNS name"
-msgstr ""
+msgstr "istenen DNS adının üzerine yaz"
 
 #: src/getcert.c:1874
 msgid "override requested email address"
-msgstr ""
+msgstr "istenen e-posta adresinin üzerine yaz"
 
 #: src/getcert.c:1875
 msgid "override requested IP address"
-msgstr ""
+msgstr "istenen IP adresinin üzerine yaz"
 
 #: src/getcert.c:2136 src/getcert.c:3194
 #, c-format
@@ -660,81 +675,83 @@ msgid ""
 "None of ID or database directory and nickname or certificate file "
 "specified.\n"
 msgstr ""
+"Kimlik ya da veri tabanı dizini ve takma ad ya da sertifika dosyasından "
+"hiçbiri belirtilmedi.\n"
 
 #: src/getcert.c:2362
 #, c-format
 msgid "Request \"%s\" modified.\n"
-msgstr ""
+msgstr "\"%s\" isteği değiştirildi.\n"
 
 #: src/getcert.c:2366
 #, c-format
 msgid "Request \"%s\" could not be modified.\n"
-msgstr ""
+msgstr "\"%s\" isteği değiştirilemedi.\n"
 
 #: src/getcert.c:2374 src/getcert.c:2784 src/getcert.c:3454 src/getcert.c:3946
 #, c-format
 msgid "No request found with specified nickname.\n"
-msgstr ""
+msgstr "Belirtilen takma ada sahip bir istek bulunamadı.\n"
 
 #: src/getcert.c:2426 src/getcert.c:2811 src/getcert.c:3465 src/getcert.c:3957
 #, c-format
 msgid "No request found that matched arguments.\n"
-msgstr ""
+msgstr "Argümanlarla eşleşen bir istek bulunamadı.\n"
 
 #: src/getcert.c:2445
 #, c-format
 msgid "Request \"%s\" removed.\n"
-msgstr ""
+msgstr "\"%s\" isteği kaldırıldı.\n"
 
 #: src/getcert.c:2449
 #, c-format
 msgid "Request \"%s\" could not be removed.\n"
-msgstr ""
+msgstr "\"%s\" isteği kaldırılamadı.\n"
 
 #: src/getcert.c:2504 src/getcert.c:3104 src/getcert.c:3358 src/getcert.c:3879
 msgid "nickname for tracking request"
-msgstr ""
+msgstr "izleme isteği için takma ad"
 
 #: src/getcert.c:2505
 msgid "new nickname to give to tracking request"
-msgstr ""
+msgstr "izleme isteğine verilecek yeni takma ad"
 
 #: src/getcert.c:2506
 msgid "type of new key to be generated"
-msgstr ""
+msgstr "oluşturulacak yeni anahtarın türü"
 
 #: src/getcert.c:2507
 msgid "size of new key to be generated"
-msgstr ""
+msgstr "oluşturulacak yeni anahtarın boyutu"
 
 #: src/getcert.c:2519
 msgid "use the specified CA configuration rather than the current one"
-msgstr ""
+msgstr "geçerli olanın yerine belirtilen CA yapılandırmasını kullan"
 
 #: src/getcert.c:3029
 #, c-format
 msgid "Error modifying \"%s\".\n"
-msgstr ""
+msgstr "\"%s\" değiştirilirken hata oluştu.\n"
 
 #: src/getcert.c:3045
 #, c-format
 msgid "Resubmitting \"%s\" to \"%s\".\n"
-msgstr ""
+msgstr "\"%s\", \"%s\"e yeniden gönderiliyor.\n"
 
 #: src/getcert.c:3048
 #, c-format
 msgid "Resubmitting \"%s\".\n"
-msgstr ""
+msgstr "\"%s\" yeniden gönderiliyor.\n"
 
 #: src/getcert.c:3057
 #, c-format
 msgid "Error attempting to submit \"%s\" to \"%s\".\n"
-msgstr ""
+msgstr "\"%s\", \"%s\"e gönderilmeye çalışılırken hata oluştu.\n"
 
 #: src/getcert.c:3060
 #, c-format
 msgid "Error attempting to submit \"%s\".\n"
-msgstr ""
+msgstr "\"%s\" gönderilmeye çalışılırken hata oluştu.\n"
 
 #: src/getcert.c:3096
 msgid "refresh information about all outstanding requests"
@@ -784,12 +801,12 @@ msgstr ""
 #: src/getcert.c:3626
 #, c-format
 msgid "\tstatus: %s\n"
-msgstr "<span class=\"whitespace other\" title=\"Tab\">»</span>durum: %s\n"
+msgstr "\tdurum: %s\n"
 
 #: src/getcert.c:3630
 #, c-format
 msgid "\tca-error: %s\n"
-msgstr "<span class=\"whitespace other\" title=\"Tab\">»</span>ca-hatası: %s\n"
+msgstr "\tca-hatası: %s\n"
 
 #: src/getcert.c:3632
 #, c-format
@@ -848,7 +865,7 @@ msgstr ""
 #: src/getcert.c:3715
 #, c-format
 msgid "\tCA: %s\n"
-msgstr "<span class=\"whitespace other\" title=\"Tab\">»</span>CA: %s\n"
+msgstr "\tCA: %s\n"
 
 #: src/getcert.c:3717
 #, c-format
@@ -871,11 +888,11 @@ msgstr ""
 
 #: src/getcert.c:3736
 msgid "\temail: "
-msgstr "<span class=\"whitespace other\" title=\"Tab\">»</span>eposta: "
+msgstr "\te-posta: "
 
 #: src/getcert.c:3742
 msgid "\tdns: "
-msgstr "<span class=\"whitespace other\" title=\"Tab\">»</span>dns: "
+msgstr "\tdns: "
 
 #: src/getcert.c:3748
 msgid "\tprincipal name: "
@@ -973,7 +990,7 @@ msgstr ""
 #: src/getcert.c:4119
 #, c-format
 msgid "\tca-type: %s\n"
-msgstr "<span class=\"whitespace other\" title=\"Tab\">»</span>ca-tipi: %s\n"
+msgstr "\tca-türü: %s\n"
 
 #: src/getcert.c:4121
 #, c-format
@@ -2041,9 +2058,9 @@ msgid "No key reuse.\n"
 msgstr ""
 
 #: src/scep.c:1027
-#, fuzzy, c-format
+#, c-format
 msgid "Internal CA error.\n"
-msgstr "Sunucu hatası.\n"
+msgstr "Dahili CA hatası.\n"
 
 #: src/scep.c:1030
 #, c-format
