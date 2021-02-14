@@ -3,16 +3,16 @@
 # This file is distributed under the same license as the PACKAGE package.
 #
 # Translators:
-# Göran Uddeborg <goeran@uddeborg.se>, 2011-2013
-# Göran Uddeborg <goeran@uddeborg.se>, 2016. #zanata
+# Göran Uddeborg <goeran@uddeborg.se>, 2011-2013, 2021.
+# Göran Uddeborg <goeran@uddeborg.se>, 2016. #zanata, 2021.
 # Luna Jernberg <bittin@reimu.nl>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger 0.78.6\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2017-02-26 02:20-0500\n"
-"PO-Revision-Date: 2020-12-16 12:35+0000\n"
-"Last-Translator: Luna Jernberg <bittin@reimu.nl>\n"
+"PO-Revision-Date: 2021-02-10 20:40+0000\n"
+"Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <https://translate.fedoraproject.org/projects/"
 "certmonger/master/sv/>\n"
 "Language: sv\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.3.2\n"
+"X-Generator: Weblate 4.4.2\n"
 
 #: src/casave.c:322 src/casave.c:361 src/dogtag.c:233 src/dogtag.c:238
 #: src/dogtag.c:256 src/dogtag.c:261 src/getcert.c:291
@@ -39,9 +39,9 @@ msgid "Unable to read signing request from file \"%s\".\n"
 msgstr "Kan inte läsa signeringsbegäran från fil \"%s\".\n"
 
 #: src/certmaster.c:156 src/dogtag.c:524 src/ipa.c:799
-#, fuzzy, c-format
+#, c-format
 msgid "Unable to read signing request from environment variable \"%s\".\n"
-msgstr "Kan inte läsa signeringsbegäran.\n"
+msgstr "Kan inte läsa signeringsbegäran från miljövariabeln ”%s”.\n"
 
 #: src/certmaster.c:184
 #, c-format
@@ -216,9 +216,7 @@ msgstr "Sökväg ”%s”: %s.\n"
 #: src/getcert.c:194
 #, c-format
 msgid "Path \"%s\" is not a regular file.\n"
-msgstr ""
-"Sökvägen ”%s” är inte normal fil.\n"
-"\n"
+msgstr "Sökvägen ”%s” är inte normal fil.\n"
 
 #: src/getcert.c:340
 #, c-format
@@ -260,22 +258,21 @@ msgid "missing argument"
 msgstr "saknar argument"
 
 #: src/getcert.c:401
-#, fuzzy, c-format
+#, c-format
 msgid "unrecognized option %s"
-msgstr "Okänt egenskapsnamn."
+msgstr "okänd flagga %s"
 
 #: src/getcert.c:406
-#, fuzzy
 msgid "unrecognized option"
-msgstr "Okänt egenskapsnamn."
+msgstr "okänd flagga"
 
 #: src/getcert.c:409
 msgid "aliases nested too deeply"
-msgstr ""
+msgstr "alias är nästade för djupt"
 
 #: src/getcert.c:412
 msgid "bad parameter quoting"
-msgstr ""
+msgstr "felaktig parametercitering"
 
 #: src/getcert.c:418
 msgid "invalid numeric value"
@@ -287,7 +284,7 @@ msgstr "nummer för stort eller för litet"
 
 #: src/getcert.c:424
 msgid "bad operation"
-msgstr ""
+msgstr "felaktig åtgärd"
 
 #: src/getcert.c:427
 msgid "internal error"
@@ -426,11 +423,8 @@ msgstr ""
 "mallen"
 
 #: src/getcert.c:792 src/getcert.c:1869 src/getcert.c:2522
-#, fuzzy
 msgid "ask the CA to process the request using the named issuer"
-msgstr ""
-"be CA:n att bearbeta begäran med användning av den angivna profilen eller "
-"mallen"
+msgstr "be CA:n att bearbeta begäran med användning av den namngivna utgivaren"
 
 #: src/getcert.c:793 src/getcert.c:2523
 msgid "set requested subject name (default: CN=<hostname>)"
@@ -469,19 +463,16 @@ msgid "an optional challenge password value"
 msgstr "ett valfritt utmatningslösenordvärde"
 
 #: src/getcert.c:802 src/getcert.c:1878 src/getcert.c:2532
-#, fuzzy
 msgid "request a CA certificate"
-msgstr "HTTPS kräver ett CA-certifikat.\n"
+msgstr "begär ett CA-certifikat"
 
 #: src/getcert.c:803 src/getcert.c:1879 src/getcert.c:2533
-#, fuzzy
 msgid "request a non-CA certificate"
-msgstr "HTTPS kräver ett CA-certifikat.\n"
+msgstr "begär ett icke-CA-certifikat"
 
 #: src/getcert.c:804 src/getcert.c:1880 src/getcert.c:2534
-#, fuzzy
 msgid "path length for CA certificate"
-msgstr "PEM-fil för certifikatet"
+msgstr "sökvägslängd för CA-certifikatet"
 
 #: src/getcert.c:805 src/getcert.c:1881 src/getcert.c:2535
 msgid "try to wait for the certificate to be issued"
@@ -589,14 +580,15 @@ msgid "Key and certificate can not both be saved to the same file.\n"
 msgstr "Nyckeln och certifikatet kan inte båda sparas i samma fil.\n"
 
 #: src/getcert.c:1114
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "The IPA backend requires the use of the -K option (principal name) when any "
 "of the -N (subject name), -E (email address), -A (IP address), -D (DNS "
 "name), or -U (extendedKeyUsage) options is used.\n"
 msgstr ""
-"IPA-backänden kräver användning av -K-flaggan (huvudnamn) när -N-flaggan "
-"(ämnesnamn) används.\n"
+"IPA-backänden kräver användning av flaggan -K (huvudnamn) när någon af "
+"flaggorna -N (subjektnamn), -E (e-postadress), -A (IP-adress), -D (DNS-namn) "
+"eller -U (utökad nyckelanvändning) används.\n"
 
 #: src/getcert.c:1296 src/getcert.c:1762 src/getcert.c:2272 src/getcert.c:2867
 #: src/getcert.c:3208 src/getcert.c:3447 src/getcert.c:4731
@@ -921,7 +913,7 @@ msgstr "\teku: "
 #: src/getcert.c:3787
 #, c-format
 msgid "\tcertificate template/profile: %s\n"
-msgstr " certifikatmall/-profil: %s\n"
+msgstr "\tcertifikatmall/-profil: %s\n"
 
 #: src/getcert.c:3793 src/getcert.c:4154
 #, c-format
@@ -1286,11 +1278,10 @@ msgstr ""
 "profilen eller mallen\n"
 
 #: src/getcert.c:4816 src/getcert.c:4865 src/getcert.c:4944 src/getcert.c:4992
-#, fuzzy
 msgid "  -X ISSUER\task the CA to process the request using the named issuer\n"
 msgstr ""
-"  -T PROFIL\tbe CA:n att bearbeta begäran med användning av den angivna "
-"profilen eller mallen\n"
+"  -X UTGIVARE\tbe CA:n att bearbeta begäran med användning av den namngivna "
+"utgivaren\n"
 
 #: src/getcert.c:4817
 msgid "* Parameters for the signing request:\n"
@@ -1959,6 +1950,8 @@ msgid ""
 "Error reading request.  Expected PKCS7 data containing a GetInitialCert "
 "pkiMessage, got nothing.\n"
 msgstr ""
+"Fel vid läsning av begäran. PKCS7-data innehållande ett GetInitialCert "
+"pkiMessage förväntades, fick ingenting.\n"
 
 #: src/scep.c:405 src/scep.c:565
 #, c-format
@@ -1966,11 +1959,14 @@ msgid ""
 "Error reading request.  Expected PKCS7 data containing a PKCSReq pkiMessage, "
 "got nothing.\n"
 msgstr ""
+"Fel vid läsning av begäran. PKCS7-data innehållande ett PKCSReq pkiMessage "
+"förväntades, fick ingenting.\n"
 
 #: src/scep.c:433 src/scep.c:459
 #, c-format
 msgid "Warning: request is neither a PKCSReq nor a GetInitialCert request.\n"
 msgstr ""
+"Varning: begäran är varken en PKCSReq- eller en GetInitialCert-begäran.\n"
 
 #: src/scep.c:437 src/scep.c:463
 #, c-format
@@ -1978,156 +1974,158 @@ msgid ""
 "Warning: request type \"%s\"is neither a PKCSReq nor a GetInitialCert "
 "request.\n"
 msgstr ""
+"Varning: begäranstypen ”%s” är varken en PKCSReq- eller en GetInitialCert-"
+"begäran.\n"
 
 #: src/scep.c:470
 #, c-format
 msgid "Warning: request is missing transactionId.\n"
-msgstr ""
+msgstr "Varning: begäran saknar transaktions-id.\n"
 
 #: src/scep.c:474
 #, c-format
 msgid "Warning: request is missing senderNonce.\n"
-msgstr ""
+msgstr "Varning: begäran saknar senderNonce.\n"
 
 #: src/scep.c:637
-#, fuzzy, c-format
+#, c-format
 msgid "Got response code %d from %s, not 200.\n"
-msgstr "Inget svar mottaget från tjänsten %s.\n"
+msgstr "Fick svarskod %d från %s, inte 200.\n"
 
 #: src/scep.c:685 src/scep.c:1121
 #, c-format
 msgid "Server reply was of unexpected MIME type \"%s\".\n"
-msgstr ""
+msgstr "Serversvaret var av en oväntad MIME-typ ”%s”.\n"
 
 #: src/scep.c:930
-#, fuzzy, c-format
+#, c-format
 msgid "Error: failed to verify signature on server response.\n"
-msgstr "Fel vid tolkning av svar från servern.\n"
+msgstr "Fel: misslyckades att verifiera signaturen av svar från servern.\n"
 
 #: src/scep.c:946
 #, c-format
 msgid "Error: reply was not a CertRep (%s).\n"
-msgstr ""
+msgstr "Fel: svaret var inte ett CertRep (%s).\n"
 
 #: src/scep.c:951
 #, c-format
 msgid "Error: reply is missing transactionId.\n"
-msgstr ""
+msgstr "Fel: svaret saknar transaktions-id.\n"
 
 #: src/scep.c:956
 #, c-format
 msgid "Error: reply contains a different transactionId.\n"
-msgstr ""
+msgstr "Fel: svaret innehåller ett annat transaktions-id.\n"
 
 #: src/scep.c:962
 #, c-format
 msgid "Error: reply is missing pkiStatus.\n"
-msgstr ""
+msgstr "Fel: svaret saknar pkiStatus.\n"
 
 #: src/scep.c:966
 #, c-format
 msgid "Error: reply is missing recipientNonce.\n"
-msgstr ""
+msgstr "Fel: svaret saknar recipientNonce.\n"
 
 #: src/scep.c:972
 #, c-format
 msgid "Error: reply nonce doesn't match request.\n"
-msgstr ""
+msgstr "Fel: svars-nonce matchar inte begäran.\n"
 
 #: src/scep.c:976
-#, fuzzy, c-format
+#, c-format
 msgid "Error: reply is missing senderNonce.\n"
-msgstr "Fel vid tolkning av svar från servern.\n"
+msgstr "Fel: svaret saknar senderNonce.\n"
 
 #: src/scep.c:994
 #, c-format
 msgid "Unspecified failure at server.\n"
-msgstr ""
+msgstr "Ospecificerat fel på servern.\n"
 
 #: src/scep.c:997
 #, c-format
 msgid "Unrecognized or unsupported algorithm identifier in client request.\n"
-msgstr ""
+msgstr "Okänd eller ej stödd algoritm identifierad i klientbegäran.\n"
 
 #: src/scep.c:1000
 #, c-format
 msgid "Integrity check of client request failed at server.\n"
-msgstr ""
+msgstr "Integritetskontrollen av klientbegäran misslyckades på servern.\n"
 
 #: src/scep.c:1003
 #, c-format
 msgid "Transaction either is not permitted or is not supported by server.\n"
-msgstr ""
+msgstr "Transaktionen är antingen inte tillåten eller stödjs inte av servern.\n"
 
 #: src/scep.c:1006
 #, c-format
 msgid "Clock skew too great.\n"
-msgstr ""
+msgstr "Klockskillnaden är för stor.\n"
 
 #: src/scep.c:1009
 #, c-format
 msgid "Unsupported extension.\n"
-msgstr ""
+msgstr "Ej stödd utökning.\n"
 
 #: src/scep.c:1012
 #, c-format
 msgid "Must archive keys.\n"
-msgstr ""
+msgstr "Måste arkivera nycklar.\n"
 
 #: src/scep.c:1015
 #, c-format
 msgid "Bad identity.\n"
-msgstr ""
+msgstr "Felaktig identitet.\n"
 
 #: src/scep.c:1018
 #, c-format
 msgid "Proof of possession required.\n"
-msgstr ""
+msgstr "Ägandebevis krävs.\n"
 
 #: src/scep.c:1021
 #, c-format
 msgid "Proof of possession failed.\n"
-msgstr ""
+msgstr "Ägandebevis misslyckades.\n"
 
 #: src/scep.c:1024
 #, c-format
 msgid "No key reuse.\n"
-msgstr ""
+msgstr "Ingen nyckelåteranvändning.\n"
 
 #: src/scep.c:1027
-#, fuzzy, c-format
+#, c-format
 msgid "Internal CA error.\n"
-msgstr "Internt fel: okänt tillstånd.\n"
+msgstr "Internt CA-fel.\n"
 
 #: src/scep.c:1030
 #, c-format
 msgid "Try later.\n"
-msgstr ""
+msgstr "Försök senare.\n"
 
 #: src/scep.c:1032
 #, c-format
 msgid "Server returned failure code \"%s\".\n"
-msgstr ""
+msgstr "Servern returnerade felkod ”%s”.\n"
 
 #: src/scep.c:1044
 #, c-format
 msgid "Error: couldn't parse signed-data.\n"
-msgstr ""
+msgstr "Fel: kunde inte tolka signerad data.\n"
 
 #: src/scep.c:1059 src/scep.c:1074
 #, c-format
 msgid "Error: signed-data payload is not enveloped-data.\n"
-msgstr ""
+msgstr "Fel: last med signerad data är inte inslagen data.\n"
 
 #: src/scep.c:1092
 #, c-format
 msgid "Error: enveloped-data payload is not data.\n"
-msgstr ""
+msgstr "Fel: last med inslagen data är inte data.\n"
 
 #: src/scep.c:1116
 #, c-format
 msgid "Error: pkiStatus \"%s\" not recognized.\n"
-msgstr ""
+msgstr "Fel: pkiStatus ”%s” är inte känd.\n"
 
 #: src/tdbush.c:119 src/tdbush.c:1944 src/tdbush.c:2351
 msgid "An internal error has occurred."
@@ -2210,8 +2208,7 @@ msgstr "Det finns redan en begäran med smeknamnet ”%s”."
 #, c-format
 msgid ""
 "Certificate at same location is already used by request with nickname \"%s\"."
-msgstr ""
-"Certifikat på samma plats används redan av av begäran med smeknamnet ”%s”."
+msgstr "Certifikat på samma plats används redan av begäran med smeknamnet ”%s”."
 
 #: src/tdbush.c:734
 #, c-format
