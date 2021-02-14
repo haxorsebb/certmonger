@@ -4,25 +4,25 @@
 #
 # Translators:
 # Nalin Dahyabhai <nalin@fedoraproject.org>, 2011
-# Yuri Chornoivan <yurchor@ukr.net>, 2011-2014
-# Yuri Chornoivan <yurchor@ukr.net>, 2013
-# Yuri Chornoivan <yurchor@ukr.net>, 2016. #zanata
+# Yuri Chornoivan <yurchor@ukr.net>, 2011-2014, 2020.
+# Yuri Chornoivan <yurchor@ukr.net>, 2013, 2020.
+# Yuri Chornoivan <yurchor@ukr.net>, 2016. #zanata, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger 0.78.6\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2017-02-26 02:20-0500\n"
-"PO-Revision-Date: 2016-09-02 01:17-0400\n"
+"PO-Revision-Date: 2020-12-09 08:35+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
-"Language-Team: Ukrainian (http://www.transifex.com/projects/p/certmonger/"
-"language/uk/)\n"
+"Language-Team: Ukrainian <https://translate.fedoraproject.org/projects/"
+"certmonger/master/uk/>\n"
 "Language: uk\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Zanata 3.9.6\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"X-Generator: Weblate 4.3.2\n"
 
 #: src/casave.c:322 src/casave.c:361 src/dogtag.c:233 src/dogtag.c:238
 #: src/dogtag.c:256 src/dogtag.c:261 src/getcert.c:291
@@ -36,14 +36,14 @@ msgid "Unable to determine hostname of CA.\n"
 msgstr "Не вдалося визначити назву вузла служби сертифікації (CA).\n"
 
 #: src/certmaster.c:153 src/dogtag.c:521 src/ipa.c:796
-#, fuzzy, c-format
+#, c-format
 msgid "Unable to read signing request from file \"%s\".\n"
-msgstr "Не вдалося прочитати запит щодо підпису.\n"
+msgstr "Не вдалося прочитати запит щодо підпису з файла «%s».\n"
 
 #: src/certmaster.c:156 src/dogtag.c:524 src/ipa.c:799
-#, fuzzy, c-format
+#, c-format
 msgid "Unable to read signing request from environment variable \"%s\".\n"
-msgstr "Не вдалося прочитати запит щодо підпису.\n"
+msgstr "Не вдалося прочитати запит щодо підпису зі змінної середовища «%s».\n"
 
 #: src/certmaster.c:184
 #, c-format
@@ -259,57 +259,52 @@ msgstr "Помилка під час спроби створення повід�
 #: src/getcert.c:393
 #, c-format
 msgid "missing argument for %s"
-msgstr ""
+msgstr "пропущено аргумент %s"
 
 #: src/getcert.c:398
-#, fuzzy
 msgid "missing argument"
-msgstr "Помилка під час спроби обробити аргументи."
+msgstr "не вистачає аргументу"
 
 #: src/getcert.c:401
-#, fuzzy, c-format
+#, c-format
 msgid "unrecognized option %s"
-msgstr "Нерозпізнана назва властивості."
+msgstr "невідомий параметр %s"
 
 #: src/getcert.c:406
-#, fuzzy
 msgid "unrecognized option"
-msgstr "Нерозпізнана назва властивості."
+msgstr "нерозпізнаний параметр"
 
 #: src/getcert.c:409
 msgid "aliases nested too deeply"
-msgstr ""
+msgstr "надто великий рівень вкладеності у альтернативних назвах"
 
 #: src/getcert.c:412
 msgid "bad parameter quoting"
-msgstr ""
+msgstr "помилкове використання лапок у параметрі"
 
 #: src/getcert.c:418
 msgid "invalid numeric value"
-msgstr ""
+msgstr "некоректне значення символічного посилання"
 
 #: src/getcert.c:421
 msgid "number too large or too small"
-msgstr ""
+msgstr "число є надто великим або надто малим"
 
 #: src/getcert.c:424
 msgid "bad operation"
-msgstr ""
+msgstr "помилкова дія"
 
 #: src/getcert.c:427
-#, fuzzy
 msgid "internal error"
-msgstr "Сталася внутрішня помилка."
+msgstr "внутрішня помилка"
 
 #: src/getcert.c:430
-#, fuzzy
 msgid "out of memory"
-msgstr "Не вистачає пам'яті.\n"
+msgstr "недостатньо пам'яті"
 
 #: src/getcert.c:434
-#, fuzzy
 msgid "error in popt configuration file"
-msgstr "вилучити налаштування CA\n"
+msgstr "помилка у файлі налаштувань popt"
 
 #: src/getcert.c:477
 #, c-format
@@ -441,10 +436,10 @@ msgstr ""
 "попросити CA обробити запит з використанням вказаного профілю або шаблона"
 
 #: src/getcert.c:792 src/getcert.c:1869 src/getcert.c:2522
-#, fuzzy
 msgid "ask the CA to process the request using the named issuer"
 msgstr ""
-"попросити CA обробити запит з використанням вказаного профілю або шаблона"
+"попросити службу сертифікації обробити запит з використанням вказаного "
+"видавця"
 
 #: src/getcert.c:793 src/getcert.c:2523
 msgid "set requested subject name (default: CN=<hostname>)"
@@ -483,19 +478,16 @@ msgid "an optional challenge password value"
 msgstr "додаткове значення пароля виклику"
 
 #: src/getcert.c:802 src/getcert.c:1878 src/getcert.c:2532
-#, fuzzy
 msgid "request a CA certificate"
-msgstr "HTTPS потребує сертифіката служби сертифікації (CA).\n"
+msgstr "надіслати запит щодо сертифіката служби сертифікації (CA)"
 
 #: src/getcert.c:803 src/getcert.c:1879 src/getcert.c:2533
-#, fuzzy
 msgid "request a non-CA certificate"
-msgstr "HTTPS потребує сертифіката служби сертифікації (CA).\n"
+msgstr "надіслати запит щодо сертифіката без служби сертифікації (CA)"
 
 #: src/getcert.c:804 src/getcert.c:1880 src/getcert.c:2534
-#, fuzzy
 msgid "path length for CA certificate"
-msgstr "файл PEM сертифіката"
+msgstr "довжина шляху сертифіката служби сертифікації"
 
 #: src/getcert.c:805 src/getcert.c:1881 src/getcert.c:2535
 msgid "try to wait for the certificate to be issued"
@@ -607,14 +599,16 @@ msgid "Key and certificate can not both be saved to the same file.\n"
 msgstr "Ключ і сертифікат не можна зберігати у одному файлі.\n"
 
 #: src/getcert.c:1114
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "The IPA backend requires the use of the -K option (principal name) when any "
 "of the -N (subject name), -E (email address), -A (IP address), -D (DNS "
 "name), or -U (extendedKeyUsage) options is used.\n"
 msgstr ""
-"Сервер IPA потребує використання параметра -K (назви реєстраційного запису), "
-"якщо використано параметр -N (призначення).\n"
+"Модуль обробки IPA вимагає використання параметра -K (назви реєстраційного "
+"запису), якщо використано якийсь із параметрів з набору -N (ім'я особи чи "
+"назва організації призначення), -E (адреса електронної пошти), -A (IP-адреса)"
+", -D (назва DNS) або -U (extendedKeyUsage).\n"
 
 #: src/getcert.c:1296 src/getcert.c:1762 src/getcert.c:2272 src/getcert.c:2867
 #: src/getcert.c:3208 src/getcert.c:3447 src/getcert.c:4731
@@ -811,7 +805,7 @@ msgstr ""
 
 #: src/getcert.c:3359
 msgid "display times in UTC instead of local time"
-msgstr ""
+msgstr "показувати всесвітній час замість місцевого часу"
 
 #: src/getcert.c:3476
 #, c-format
@@ -1310,11 +1304,10 @@ msgstr ""
 "або шаблона\n"
 
 #: src/getcert.c:4816 src/getcert.c:4865 src/getcert.c:4944 src/getcert.c:4992
-#, fuzzy
 msgid "  -X ISSUER\task the CA to process the request using the named issuer\n"
 msgstr ""
-"  -T ПРОФІЛЬ\tпопросити CA обробити запит з використанням вказаного профілю "
-"або шаблона\n"
+"  -X ВИДАВЕЦЬ\tпопросити службу сертифікації обробити запит з використанням "
+"вказаного видавця\n"
 
 #: src/getcert.c:4817
 msgid "* Parameters for the signing request:\n"
@@ -1535,7 +1528,7 @@ msgstr ""
 
 #: src/getcert.c:5017
 msgid "  -u\tdisplay times in UTC instead of local time\n"
-msgstr ""
+msgstr "  -u\tпоказувати всесвітній час замість місцевого часу\n"
 
 #: src/getcert.c:5018
 msgid "* If selecting a specific request:\n"
@@ -1993,21 +1986,19 @@ msgid "\t-v         print version information and exit\n"
 msgstr "\t-v         вивести дані щодо версії і завершити роботу\n"
 
 #: src/scep.c:352
-#, fuzzy, c-format
+#, c-format
 msgid "No SCEP URL (-u) given, and no default known.\n"
-msgstr ""
-"Не вказано адреси агента (-A), типове значення адреси також невідоме.\n"
+msgstr "Не вказано адреси SCEP (-u), а типова адреса є невідомою.\n"
 
 #: src/scep.c:356
-#, fuzzy, c-format
+#, c-format
 msgid "No SCEP operation (-c/-C/-g/-p) given, and no default known.\n"
-msgstr ""
-"Не вказано адреси агента (-A), типове значення адреси також невідоме.\n"
+msgstr "Не вказано дії SCEP (-c/-C/-g/-p), а типова дія є невідомою.\n"
 
 #: src/scep.c:376 src/scep.c:395
-#, fuzzy, c-format
+#, c-format
 msgid "No RA certificate (-r) given, and no default known.\n"
-msgstr "Не вказано профілю або шаблону (-T), типове значення також невідоме.\n"
+msgstr "Не вказано сертифікат RA (-r), а типовий сертифікат є невідомим.\n"
 
 #: src/scep.c:386 src/scep.c:540
 #, c-format
@@ -2015,6 +2006,8 @@ msgid ""
 "Error reading request.  Expected PKCS7 data containing a GetInitialCert "
 "pkiMessage, got nothing.\n"
 msgstr ""
+"Помилка читання запиту. У даних PKCS7 мало міститися pkiMessage "
+"GetInitialCert, але не отримано нічого.\n"
 
 #: src/scep.c:405 src/scep.c:565
 #, c-format
@@ -2022,11 +2015,14 @@ msgid ""
 "Error reading request.  Expected PKCS7 data containing a PKCSReq pkiMessage, "
 "got nothing.\n"
 msgstr ""
+"Помилка читання запиту. У даних PKCS7 мало міститися pkiMessage PKCSReq, але "
+"не отримано нічого.\n"
 
 #: src/scep.c:433 src/scep.c:459
 #, c-format
 msgid "Warning: request is neither a PKCSReq nor a GetInitialCert request.\n"
 msgstr ""
+"Попередження: запит не є ні запитом PKCSReq, ні запитом GetInitialCert.\n"
 
 #: src/scep.c:437 src/scep.c:463
 #, c-format
@@ -2034,156 +2030,161 @@ msgid ""
 "Warning: request type \"%s\"is neither a PKCSReq nor a GetInitialCert "
 "request.\n"
 msgstr ""
+"Попередження: тип запиту «%s» не є ні запитом PKCSReq, ні запитом "
+"GetInitialCert.\n"
 
 #: src/scep.c:470
 #, c-format
 msgid "Warning: request is missing transactionId.\n"
-msgstr ""
+msgstr "Попередження: у запиті не міститься transactionId.\n"
 
 #: src/scep.c:474
 #, c-format
 msgid "Warning: request is missing senderNonce.\n"
-msgstr ""
+msgstr "Попередження: у запиті не міститься senderNonce.\n"
 
 #: src/scep.c:637
-#, fuzzy, c-format
+#, c-format
 msgid "Got response code %d from %s, not 200.\n"
-msgstr "Не отримано відповіді від служби %s.\n"
+msgstr "Отримано код відповіді %d від %s, а не 200.\n"
 
 #: src/scep.c:685 src/scep.c:1121
 #, c-format
 msgid "Server reply was of unexpected MIME type \"%s\".\n"
-msgstr ""
+msgstr "Відповідь сервера належить до неочікуваного типу MIME «%s».\n"
 
 #: src/scep.c:930
-#, fuzzy, c-format
+#, c-format
 msgid "Error: failed to verify signature on server response.\n"
-msgstr "Помилка обробки відповіді сервера.\n"
+msgstr "Помилка: підпис відповіді сервера не пройшов перевірки.\n"
 
 #: src/scep.c:946
 #, c-format
 msgid "Error: reply was not a CertRep (%s).\n"
-msgstr ""
+msgstr "Помилка: відповідь не є CertRep (%s).\n"
 
 #: src/scep.c:951
 #, c-format
 msgid "Error: reply is missing transactionId.\n"
-msgstr ""
+msgstr "Помилка: у відповіді немає transactionId.\n"
 
 #: src/scep.c:956
 #, c-format
 msgid "Error: reply contains a different transactionId.\n"
-msgstr ""
+msgstr "Помилка: відповідь містить інший transactionId.\n"
 
 #: src/scep.c:962
 #, c-format
 msgid "Error: reply is missing pkiStatus.\n"
-msgstr ""
+msgstr "Помилка: у відповіді немає pkiStatus.\n"
 
 #: src/scep.c:966
 #, c-format
 msgid "Error: reply is missing recipientNonce.\n"
-msgstr ""
+msgstr "Помилка: у відповіді немає recipientNonce.\n"
 
 #: src/scep.c:972
 #, c-format
 msgid "Error: reply nonce doesn't match request.\n"
-msgstr ""
+msgstr "Помилка: nonce відповіді не відповідає запиту.\n"
 
 #: src/scep.c:976
-#, fuzzy, c-format
+#, c-format
 msgid "Error: reply is missing senderNonce.\n"
-msgstr "Помилка обробки відповіді сервера.\n"
+msgstr "Помилка: у відповіді немає senderNonce.\n"
 
 #: src/scep.c:994
 #, c-format
 msgid "Unspecified failure at server.\n"
-msgstr ""
+msgstr "Невказана помилка на сервері.\n"
 
 #: src/scep.c:997
 #, c-format
 msgid "Unrecognized or unsupported algorithm identifier in client request.\n"
 msgstr ""
+"Невідомий або непідтримуваний ідентифікатор алгоритму у запиті клієнта.\n"
 
 #: src/scep.c:1000
 #, c-format
 msgid "Integrity check of client request failed at server.\n"
-msgstr ""
+msgstr "Не вдалося пройти перевірку цілісності запиту клієнта на сервері.\n"
 
 #: src/scep.c:1003
 #, c-format
 msgid "Transaction either is not permitted or is not supported by server.\n"
 msgstr ""
+"Операцію або заборонено на сервері, або на сервері не передбачено підтримки "
+"операції.\n"
 
 #: src/scep.c:1006
 #, c-format
 msgid "Clock skew too great.\n"
-msgstr ""
+msgstr "Надто велика зміна фаз синхронних імпульсів.\n"
 
 #: src/scep.c:1009
 #, c-format
 msgid "Unsupported extension.\n"
-msgstr ""
+msgstr "Непідтримуване розширення.\n"
 
 #: src/scep.c:1012
 #, c-format
 msgid "Must archive keys.\n"
-msgstr ""
+msgstr "Слід архівувати ключі.\n"
 
 #: src/scep.c:1015
 #, c-format
 msgid "Bad identity.\n"
-msgstr ""
+msgstr "Помилковий профіль.\n"
 
 #: src/scep.c:1018
 #, c-format
 msgid "Proof of possession required.\n"
-msgstr ""
+msgstr "Потрібне доведення належності.\n"
 
 #: src/scep.c:1021
 #, c-format
 msgid "Proof of possession failed.\n"
-msgstr ""
+msgstr "Не вдалося довести належність.\n"
 
 #: src/scep.c:1024
 #, c-format
 msgid "No key reuse.\n"
-msgstr ""
+msgstr "Без повторного використання ключа.\n"
 
 #: src/scep.c:1027
-#, fuzzy, c-format
+#, c-format
 msgid "Internal CA error.\n"
-msgstr "Внутрішня помилка: невідомий стан.\n"
+msgstr "Внутрішня помилка служби сертифікації.\n"
 
 #: src/scep.c:1030
 #, c-format
 msgid "Try later.\n"
-msgstr ""
+msgstr "Спробуйте пізніше.\n"
 
 #: src/scep.c:1032
 #, c-format
 msgid "Server returned failure code \"%s\".\n"
-msgstr ""
+msgstr "Сервер повернув код помилки «%s».\n"
 
 #: src/scep.c:1044
 #, c-format
 msgid "Error: couldn't parse signed-data.\n"
-msgstr ""
+msgstr "Помилка: не вдалося обробити signed-data.\n"
 
 #: src/scep.c:1059 src/scep.c:1074
 #, c-format
 msgid "Error: signed-data payload is not enveloped-data.\n"
-msgstr ""
+msgstr "Помилка: вміст signed-data не є enveloped-data.\n"
 
 #: src/scep.c:1092
 #, c-format
 msgid "Error: enveloped-data payload is not data.\n"
-msgstr ""
+msgstr "Помилка: вміст enveloped-data не є даними.\n"
 
 #: src/scep.c:1116
 #, c-format
 msgid "Error: pkiStatus \"%s\" not recognized.\n"
-msgstr ""
+msgstr "Помилка: невідомий pkiStatus «%s».\n"
 
 #: src/tdbush.c:119 src/tdbush.c:1944 src/tdbush.c:2351
 msgid "An internal error has occurred."
