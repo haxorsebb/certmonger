@@ -11,8 +11,8 @@ msgstr ""
 "Project-Id-Version: certmonger 0.78.6\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2017-02-26 02:20-0500\n"
-"PO-Revision-Date: 2021-02-09 16:40+0000\n"
-"Last-Translator: Mustafa Çalışkan <musfay@protonmail.com>\n"
+"PO-Revision-Date: 2021-02-14 15:40+0000\n"
+"Last-Translator: Oğuz Ersen <oguzersen@protonmail.com>\n"
 "Language-Team: Turkish <https://translate.fedoraproject.org/projects/"
 "certmonger/master/tr/>\n"
 "Language: tr\n"
@@ -755,50 +755,52 @@ msgid "Error attempting to submit \"%s\".\n"
 msgstr "\"%s\" gönderilmeye çalışılırken hata oluştu.\n"
 
 #: src/getcert.c:3096
-#, fuzzy
 msgid "refresh information about all outstanding requests"
-msgstr "bekleyen tüm isteklerle ilgili tüm bilgileri yenile"
+msgstr "bekleyen tüm isteklerle ilgili bilgileri yenile"
 
 #: src/getcert.c:3098
 msgid ""
 "refresh information only for requests using the specified CA configuration"
 msgstr ""
+"yalnızca belirtilen CA yapılandırmasını kullanan istekler için bilgileri "
+"yenile"
 
 #: src/getcert.c:3290
 #, c-format
 msgid "Request ID '%s' being refreshed.\n"
-msgstr ""
+msgstr "İstek kimliği '%s' yenileniyor.\n"
 
 #: src/getcert.c:3292
 #, c-format
 msgid "Request ID '%s' NOT being refreshed.\n"
-msgstr ""
+msgstr "İstek kimliği '%s' yenilenmiyor.\n"
 
 #: src/getcert.c:3349
 msgid "list only information about outstanding requests"
-msgstr ""
+msgstr "yalnızca bekleyen isteklerle ilgili bilgileri listele"
 
 #: src/getcert.c:3350
 msgid "list only information about tracked certificates"
-msgstr ""
+msgstr "yalnızca izlenen sertifikalarla ilgili bilgileri listele"
 
 #: src/getcert.c:3352
 msgid "list only requests and certs associated with this CA configuration"
 msgstr ""
+"yalnızca bu CA yapılandırmasıyla ilişkili istekleri ve sertifikaları listele"
 
 #: src/getcert.c:3359
 msgid "display times in UTC instead of local time"
-msgstr ""
+msgstr "saatleri yerel saat yerine UTC olarak göster"
 
 #: src/getcert.c:3476
 #, c-format
 msgid "Number of certificates and requests being tracked: %d.\n"
-msgstr ""
+msgstr "İzlenen sertifika ve isteklerin sayısı: %d.\n"
 
 #: src/getcert.c:3625
 #, c-format
 msgid "Request ID '%s':\n"
-msgstr ""
+msgstr "İstek kimliği '%s':\n"
 
 #: src/getcert.c:3626
 #, c-format
@@ -813,56 +815,56 @@ msgstr "\tca-hatası: %s\n"
 #: src/getcert.c:3632
 #, c-format
 msgid "\tstuck: %s\n"
-msgstr ""
+msgstr "\ttakıldı: %s\n"
 
 #: src/getcert.c:3652
 #, c-format
 msgid "\tkey pair storage: type=%s"
-msgstr ""
+msgstr "\tanahtar çifti deposu: tür=%s"
 
 #: src/getcert.c:3652
 msgid "NONE"
-msgstr ""
+msgstr "YOK"
 
 #: src/getcert.c:3654
 #, c-format
 msgid ",location='%s'"
-msgstr ""
+msgstr ",konum='%s'"
 
 #: src/getcert.c:3657 src/getcert.c:3679
 #, c-format
 msgid ",nickname='%s'"
-msgstr ""
+msgstr ",takma_ad='%s'"
 
 #: src/getcert.c:3660 src/getcert.c:3682
 #, c-format
 msgid ",token='%s'"
-msgstr ""
+msgstr ",belirteç='%s'"
 
 #: src/getcert.c:3663
 #, c-format
 msgid ",pin set"
-msgstr ""
+msgstr ",pin belirlendi"
 
 #: src/getcert.c:3666
 #, c-format
 msgid ",pinfile='%s'"
-msgstr ""
+msgstr ",pin_dosyası='%s'"
 
 #: src/getcert.c:3677
 #, c-format
 msgid "\tcertificate: type=%s,location='%s'"
-msgstr ""
+msgstr "\tsertifika: tür=%s,konum='%s'"
 
 #: src/getcert.c:3693
 #, c-format
 msgid "\tsigning request thumbprint (MD5): %s\n"
-msgstr ""
+msgstr "\timzalama isteği parmak izi (MD5): %s\n"
 
 #: src/getcert.c:3698
 #, c-format
 msgid "\tsigning request thumbprint (SHA1): %s\n"
-msgstr ""
+msgstr "\timzalama isteği parmak izi (SHA1): %s\n"
 
 #: src/getcert.c:3715
 #, c-format
@@ -872,21 +874,21 @@ msgstr "\tCA: %s\n"
 #: src/getcert.c:3717
 #, c-format
 msgid "\tissuer: %s\n"
-msgstr ""
+msgstr "\tsağlayıcı: %s\n"
 
 #: src/getcert.c:3718
 #, c-format
 msgid "\tsubject: %s\n"
-msgstr ""
+msgstr "\tsahip: %s\n"
 
 #: src/getcert.c:3719
 msgid "unknown"
-msgstr ""
+msgstr "bilinmiyor"
 
 #: src/getcert.c:3723 src/getcert.c:3727 src/getcert.c:3732
 #, c-format
 msgid "\texpires: %s\n"
-msgstr ""
+msgstr "\tsona erme tarihi: %s\n"
 
 #: src/getcert.c:3736
 msgid "\temail: "
@@ -898,75 +900,75 @@ msgstr "\tdns: "
 
 #: src/getcert.c:3748
 msgid "\tprincipal name: "
-msgstr ""
+msgstr "\ttemsilci adı: "
 
 #: src/getcert.c:3756
 msgid "\tIP address: "
-msgstr ""
+msgstr "\tIP adresi: "
 
 #: src/getcert.c:3775
 #, c-format
 msgid "\tkey usage: %s\n"
-msgstr ""
+msgstr "\tanahtar kullanımı: %s\n"
 
 #: src/getcert.c:3779
 msgid "\teku: "
-msgstr ""
+msgstr "\tgenişletilmiş anahtar kullanımı: "
 
 #: src/getcert.c:3787
 #, c-format
 msgid "\tcertificate template/profile: %s\n"
-msgstr ""
+msgstr "\tsertifika şablonu/profili: %s\n"
 
 #: src/getcert.c:3793 src/getcert.c:4154
 #, c-format
 msgid "\troot certificates saved to files:\n"
-msgstr ""
+msgstr "\tkök sertifikalar aşağıdaki dosyalara kaydedildi:\n"
 
 #: src/getcert.c:3802 src/getcert.c:4163
 #, c-format
 msgid "\tother root certificates saved to files:\n"
-msgstr ""
+msgstr "\tdiğer kök sertifikalar aşağıdaki dosyalara kaydedildi:\n"
 
 #: src/getcert.c:3811 src/getcert.c:4172
 #, c-format
 msgid "\tother certificates saved to files:\n"
-msgstr ""
+msgstr "\tdiğer sertifikalar aşağıdaki dosyalara kaydedildi:\n"
 
 #: src/getcert.c:3820 src/getcert.c:4181
 #, c-format
 msgid "\troot certificates saved to databases:\n"
-msgstr ""
+msgstr "\tkök sertifikalar aşağıdaki veri tabanlarına kaydedildi:\n"
 
 #: src/getcert.c:3829 src/getcert.c:4190
 #, c-format
 msgid "\tother root certificates saved to databases:\n"
-msgstr ""
+msgstr "\tdiğer kök sertifikalar aşağıdaki veri tabanlarına kaydedildi:\n"
 
 #: src/getcert.c:3838 src/getcert.c:4199
 #, c-format
 msgid "\tother certificates saved to databases:\n"
-msgstr ""
+msgstr "\tdiğer sertifikalar aşağıdaki veri tabanlarına kaydedildi:\n"
 
 #: src/getcert.c:3843 src/getcert.c:4245
 #, c-format
 msgid "\tpre-save command: %s\n"
-msgstr ""
+msgstr "\tkaydetme öncesi komutu: %s\n"
 
 #: src/getcert.c:3846 src/getcert.c:4251
 #, c-format
 msgid "\tpost-save command: %s\n"
-msgstr ""
+msgstr "\tkaydetme sonrası komutu: %s\n"
 
 #: src/getcert.c:3849
 #, c-format
 msgid "\ttrack: %s\n"
-msgstr ""
+msgstr "\tizle: %s\n"
 
 #: src/getcert.c:3853
 #, c-format
 msgid "\tauto-renew: %s\n"
-msgstr ""
+msgstr "\totomatik yenile: %s\n"
 
 #: src/getcert.c:3961
 #, c-format
