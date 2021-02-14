@@ -5,21 +5,22 @@
 # Translators:
 # Göran Uddeborg <goeran@uddeborg.se>, 2011-2013
 # Göran Uddeborg <goeran@uddeborg.se>, 2016. #zanata
+# Luna Jernberg <bittin@reimu.nl>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger 0.78.6\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2017-02-26 02:20-0500\n"
-"PO-Revision-Date: 2016-12-08 04:34-0500\n"
-"Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
-"Language-Team: Swedish (http://www.transifex.com/projects/p/certmonger/"
-"language/sv/)\n"
+"PO-Revision-Date: 2020-12-16 12:35+0000\n"
+"Last-Translator: Luna Jernberg <bittin@reimu.nl>\n"
+"Language-Team: Swedish <https://translate.fedoraproject.org/projects/"
+"certmonger/master/sv/>\n"
 "Language: sv\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Zanata 3.9.6\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 4.3.2\n"
 
 #: src/casave.c:322 src/casave.c:361 src/dogtag.c:233 src/dogtag.c:238
 #: src/dogtag.c:256 src/dogtag.c:261 src/getcert.c:291
@@ -33,9 +34,9 @@ msgid "Unable to determine hostname of CA.\n"
 msgstr "Det går inte att avgöra värdnamnet för CA:n.\n"
 
 #: src/certmaster.c:153 src/dogtag.c:521 src/ipa.c:796
-#, fuzzy, c-format
+#, c-format
 msgid "Unable to read signing request from file \"%s\".\n"
-msgstr "Kan inte läsa signeringsbegäran.\n"
+msgstr "Kan inte läsa signeringsbegäran från fil \"%s\".\n"
 
 #: src/certmaster.c:156 src/dogtag.c:524 src/ipa.c:799
 #, fuzzy, c-format
@@ -252,12 +253,11 @@ msgstr "Fel när DBus-meddelandet med begäran skapades.\n"
 #: src/getcert.c:393
 #, c-format
 msgid "missing argument for %s"
-msgstr ""
+msgstr "saknar argument för %s"
 
 #: src/getcert.c:398
-#, fuzzy
 msgid "missing argument"
-msgstr "Fel vid argumenttolkning."
+msgstr "saknar argument"
 
 #: src/getcert.c:401
 #, fuzzy, c-format
@@ -279,30 +279,27 @@ msgstr ""
 
 #: src/getcert.c:418
 msgid "invalid numeric value"
-msgstr ""
+msgstr "ogiltigt numeriskt värde"
 
 #: src/getcert.c:421
 msgid "number too large or too small"
-msgstr ""
+msgstr "nummer för stort eller för litet"
 
 #: src/getcert.c:424
 msgid "bad operation"
 msgstr ""
 
 #: src/getcert.c:427
-#, fuzzy
 msgid "internal error"
-msgstr "Ett internt fel har uppstått."
+msgstr "internt fel"
 
 #: src/getcert.c:430
-#, fuzzy
 msgid "out of memory"
-msgstr "Slut på minne.\n"
+msgstr "slut på minne"
 
 #: src/getcert.c:434
-#, fuzzy
 msgid "error in popt configuration file"
-msgstr "ta bort en CA-konfiguration\n"
+msgstr "fel i popt konfigurationsfil"
 
 #: src/getcert.c:477
 #, c-format
@@ -796,7 +793,7 @@ msgstr ""
 
 #: src/getcert.c:3359
 msgid "display times in UTC instead of local time"
-msgstr ""
+msgstr "Visa tid i UTC istället för i lokal tid"
 
 #: src/getcert.c:3476
 #, c-format
@@ -1504,7 +1501,7 @@ msgstr "  -t\tlista endast information om spårade certifikat\n"
 
 #: src/getcert.c:5017
 msgid "  -u\tdisplay times in UTC instead of local time\n"
-msgstr ""
+msgstr "  -u\tvisar tid i UTC istället för lokal tid\n"
 
 #: src/getcert.c:5018
 msgid "* If selecting a specific request:\n"
@@ -1940,19 +1937,21 @@ msgid "\t-v         print version information and exit\n"
 msgstr "\t-v         skriv versionsinformation och avsluta\n"
 
 #: src/scep.c:352
-#, fuzzy, c-format
+#, c-format
 msgid "No SCEP URL (-u) given, and no default known.\n"
-msgstr "Ingen agent-URL (-A) angiven, och inget standardvärde är känt.\n"
+msgstr "Ingen SCEP URL (-u) angiven, och inget standardvärde är känt.\n"
 
 #: src/scep.c:356
-#, fuzzy, c-format
+#, c-format
 msgid "No SCEP operation (-c/-C/-g/-p) given, and no default known.\n"
-msgstr "Ingen agent-URL (-A) angiven, och inget standardvärde är känt.\n"
+msgstr ""
+"Ingen SCEP operation (-c/-C/-g/-p) angiven, och inget standardvärde är känt."
+"\n"
 
 #: src/scep.c:376 src/scep.c:395
-#, fuzzy, c-format
+#, c-format
 msgid "No RA certificate (-r) given, and no default known.\n"
-msgstr "Ingen profil/mall (-T) angiven, och inget standardvärde är känt.\n"
+msgstr "Inget RA certifikat (-r) angiven, och inget standardvärde är känt.\n"
 
 #: src/scep.c:386 src/scep.c:540
 #, c-format
