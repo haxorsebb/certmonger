@@ -402,16 +402,16 @@ main(int argc, const char **argv)
 	}
 #ifdef DOGTAG_IPA_RENEW_AGENT
 	if ((cainfo == NULL) &&
-	    (capath == NULL) &&
-	    (ssldir == NULL) &&
-	    (sslcert == NULL) &&
-	    (sslkey == NULL) &&
-	    (sslpin == NULL) &&
-	    (sslpinfile == NULL)) {
+	    (capath == NULL)) {
 		cainfo = "/etc/ipa/ca.crt";
-		ssldir = "/etc/httpd/alias";
-		sslcert = "ipaCert";
-		sslpinfile = "/etc/httpd/alias/pwdfile.txt";
+	}
+	if (((ssldir == NULL) &&
+	   (sslcert == NULL)) ||
+	   ((sslkey == NULL) &&
+	   (sslcert == NULL))) {
+		printf(_("NSS database and nickname or certfile and keyfile  "
+			 "must be provided.\n"));
+		missing_args = TRUE;
 	}
 #endif
 	if ((sslcert != NULL) && (strlen(sslcert) > 0)) {

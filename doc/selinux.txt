@@ -74,7 +74,6 @@ directories.  To obtain a list of which path patterns are configured to
 receive a particular type, you can use a command like this one:
 
   # semanage fcontext -l | grep :cert_t:
-  /etc/httpd/alias(/.*)?               all files system_u:object_r:cert_t:s0
   /etc/pki(/.*)?                       all files system_u:object_r:cert_t:s0
   /etc/ssl(/.*)?                       all files system_u:object_r:cert_t:s0
   /usr/share/ca-certificates(/.*)?     all files system_u:object_r:cert_t:s0

@@ -4,31 +4,7 @@
 dogtag\-ipa\-renew\-agent\-submit
 
 .SH SYNOPSIS
-dogtag\-ipa\-renew\-agent\-submit \-E EE\-URL \-A AGENT\-URL
-[\-d dbdir]
-[\-n nickname]
-[\-i cainfo]
-[\-C capath]
-[\-c certfile]
-[\-k keyfile]
-[\-p pinfile]
-[\-P pin]
-[\-s serial (hex)]
-[\-D serial (decimal)]
-[\-S state]
-[\-T profile]
-[\-O param=value]
-[\-N | \-R]
-[\-t]
-[\-o option=value]
-[\-a]
-[\-u uid]
-[\-U udn]
-[\-W pwd]
-[\-w pwdfile]
-[\-Y pin]
-[\-y pinfile]
-[csrfile]
+dogtag\-ipa\-renew\-agent\-submit [options] [csrfile]
 
 
 .SH DESCRIPTION
@@ -85,6 +61,24 @@ the CA server's certificate will be verified. The default is
 \fB\-C\fR \fIDIR\fR, \fB\-\-capath\fR=\fIDIR\fR
 The location of a directory containing a copy of the CA's certificate,
 against which the CA server's certificate will be verified.
+.TP
+\fB\-d\fR \fIDIR\fR, \fR\-\-dbdir\fR=\fIDIR\fR
+The NSS database that contains credentials to authenticate to the CA.
+.TP
+\fB\-n\fR \fINAME\fR, \fR\-\-nickname\fR=\fINAME\fR
+The nickname of the certificate used for authentication.
+.TP
+\fB\-c\fR \fIFILENAME\fR, \fR\-\-certfile\fR=\fIFILENAME\fR
+The certificate in PEM format used for authentication.
+.TP
+\fB\-k\fR \fIFILENAME\fR, \fR\-\-keyfile\fR=\fIFILENAME\fR
+The private key for the certificate in PEM format used for authentication. It may be encrypted.
+.TP
+\fB\-p\fR \fIFILENAME\fR, \fR\-\-sslpinfile\fR=\fIFILENAME\fR
+A file that contains the pin for the private key file or NSS database.
+.TP
+\fB\-P\fR \fISTRING\fR, \fR\-\-sslpin\fR=\fISTRING\fR
+The pin for the private key file or NSS database.
 .TP
 \fB\-s\fR \fINUMBER\fR, \fB\-\-hex\-serial\fR=\fINUMBER\fB
 The serial number of an already\-issued certificate for which the client should
@@ -204,11 +198,7 @@ which the client should use to authenticate to the CA's agent interface.
 The values to use depend on which cryptography library your copy of libcurl
 was linked with.
 .TP
-If none of these options are specified, and none of the \fB\-p\fR, \fB\-P\fR, \fB\-i\fR, nor \fB\-C\fR options are specified, then this set of defaults is used:
- \fB\-i\fR \fI/etc/ipa/ca.crt\fR
- \fB\-d\fR \fI/etc/httpd/alias\fR
- \fB\-n\fR \fIipaCert\fR
- \fB\-p\fR \fI/etc/httpd/alias/pwdfile.txt\fR
+The location of the certificate used for authentication to the CA needs to be provided in either a combination of PEM files using --certfile and --keyfile or an NSS database using--dbdir and --nickname. The default for --cafile is \fI/etc/ipa/ca.crt\fR.
 .TP
 \fB\-d\fR \fIdbdir\fR, \fB\-\-dbdir\fR=\fIdbdir\fR
 Use an NSS database in the specified directory for this certificate
