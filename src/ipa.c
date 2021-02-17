@@ -1076,7 +1076,10 @@ main(int argc, const char **argv)
 	/* Start backfilling defaults, both hard-coded and from the IPA
 	 * configuration. */
 	if (cainfo == NULL) {
-		cainfo = "/etc/ipa/ca.crt";
+		struct stat st;
+		if (stat("/etc/ipa/ca.crt", &st) == 0) {
+			cainfo = "/etc/ipa/ca.crt";
+		}
 	}
 	if ((host == NULL) || (xmlrpc_uri == NULL) || (ldap_uri == NULL) ||
 	    (basedn == NULL)) {
