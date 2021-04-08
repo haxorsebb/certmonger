@@ -3389,7 +3389,7 @@ list(const char *argv0, int argc, const char **argv)
 	const char *capath, *request;
 	dbus_bool_t b;
 	char *s1, *s2, *s3, *s4, *s5, *s6;
-	long n1, n2;
+	long n1, n2, n3;
 	char **as, **as1, **as2, **as3, **as4, **as5, t[25];
 	int requests_only = 0, tracking_only = 0, verbose = 0, c, i, j;
 	unsigned int k;
@@ -3754,10 +3754,10 @@ list(const char *argv0, int argc, const char **argv)
 		/* Information from the certificate. */
 		rep = query_rep(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
 				"get_cert_info", verbose);
-		if (cm_tdbusm_get_sssnasasasnas(rep, globals.tctx,
+		if (cm_tdbusm_get_sssnasasasnasn(rep, globals.tctx,
 						&s1, &s2, &s3, &n1,
 						&as1, &as2, &as3,
-						&n2, &as4) != 0) {
+						&n2, &as4, &n3) != 0) {
 			printf(_("Error parsing server response.\n"));
 			exit(1);
 		}
@@ -3767,6 +3767,21 @@ list(const char *argv0, int argc, const char **argv)
 		}
 		printf(_("\tissuer: %s\n"), s1);
 		printf(_("\tsubject: %s\n"), s3);
+		when = _("unknown");
+		if (n3 != 0) {
+			if (force_utc) {
+				when = cm_store_timestamp_from_time_for_display(n3, t);
+				printf(_("\tissued: %s\n"), when);
+			} else {
+				when = cm_store_local_timestamp_from_time_for_display(n3);
+				if (when != NULL) {
+					printf(_("\tissued: %s\n"), when);
+					free(when);
+				}
+			}
+		} else {
+			printf(_("\tissued: %s\n"), when);
+		}
 		when = _("unknown");
 		if (n1 != 0) {
 			if (force_utc) {

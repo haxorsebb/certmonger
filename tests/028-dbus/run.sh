@@ -42,5 +42,6 @@ sed -r -e 's,CN=........-........-........-........,CN=$UUID,g' \
        -e '/^-----BEGIN/,/^-----END/d' \
        -e "s|$libexecdir|\$libexecdir|g" \
        -e "s|$tmpdir|\$tmpdir|g" \
+       -e "s|issued:.*|issued: sometime|g" \
        -e "s|expires:.*|expires: sometime|g" \
        -e "s|'(00)?[0-9a-fA-F]{32}|'"'$UUID|g' \

@@ -11,6 +11,7 @@ Request ID 'Buddy':
 	CA: local
 	issuer: CN=$UUID,CN=Local Signing Authority
 	subject: CN=localhost
+	issued: sometime
 	expires: sometime
 	dns: localhost
 	principal name: host/localhost@LOCALHOST
@@ -269,6 +270,7 @@ OK
    <arg name="principal_names" type="as" direction="out"/>
    <arg name="key_usage" type="x" direction="out"/>
    <arg name="extended_key_usage" type="as" direction="out"/>
+   <arg name="not_before" type="x" direction="out"/>
   </method>
   <property name="issuer" type="s" access="read"/>
   <property name="serial" type="s" access="read"/>
@@ -430,7 +432,7 @@ Buddy
 
 
 [ /org/fedorahosted/certmonger/requests/Request2: org.fedorahosted.certmonger.request.get_cert_info ]
-(dbus.String('CN=$UUID,CN=Local Signing Authority'), dbus.String('$UUID'), dbus.String('CN=localhost'), dbus.Int64(tomorrow), dbus.Array([], signature=dbus.Signature('s')), dbus.Array([dbus.String('localhost')], signature=dbus.Signature('s')), dbus.Array([dbus.String('host/localhost@LOCALHOST')], signature=dbus.Signature('s')), dbus.Int64(9), dbus.Array([dbus.String('1.3.6.1.5.5.7.3.1')], signature=dbus.Signature('s')))
+(dbus.String('CN=$UUID,CN=Local Signing Authority'), dbus.String('$UUID'), dbus.String('CN=localhost'), dbus.Int64(tomorrow), dbus.Array([], signature=dbus.Signature('s')), dbus.Array([dbus.String('localhost')], signature=dbus.Signature('s')), dbus.Array([dbus.String('host/localhost@LOCALHOST')], signature=dbus.Signature('s')), dbus.Int64(9), dbus.Array([dbus.String('1.3.6.1.5.5.7.3.1')], signature=dbus.Signature('s')), dbus.Int64(recently))
 
 [ /org/fedorahosted/certmonger/requests/Request2: org.fedorahosted.certmonger.request.get_cert_last_checked ]
 recently

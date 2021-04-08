@@ -2701,7 +2701,7 @@ request_get_cert_info(DBusConnection *conn, DBusMessage *msg,
 	rep = dbus_message_new_method_return(msg);
 	if (rep != NULL) {
 		eku = eku_splitv(entry, entry->cm_cert_eku);
-		cm_tdbusm_set_sssnasasasnas(rep,
+		cm_tdbusm_set_sssnasasasnasn(rep,
 					    entry->cm_cert_issuer,
 					    entry->cm_cert_serial,
 					    entry->cm_cert_subject,
@@ -2710,7 +2710,8 @@ request_get_cert_info(DBusConnection *conn, DBusMessage *msg,
 					    (const char **) entry->cm_cert_hostname,
 					    (const char **) entry->cm_cert_principal,
 					    ku_from_string(entry->cm_cert_ku),
-					    (const char **) eku);
+					    (const char **) eku,
+					    entry->cm_cert_not_before);
 		dbus_connection_send(conn, rep, NULL);
 		dbus_message_unref(rep);
 		talloc_free(eku);
@@ -6563,7 +6564,10 @@ cm_tdbush_iface_request(void)
 										     DBUS_TYPE_ARRAY_AS_STRING
 										     DBUS_TYPE_STRING_AS_STRING,
 										     cm_tdbush_method_arg_out,
-										     NULL))))))))),
+								     make_method_arg("not_before",
+										     DBUS_TYPE_INT64_AS_STRING,
+										     cm_tdbush_method_arg_out,
+										     NULL)))))))))),
 								     NULL),
 				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_CERT_ISSUER,

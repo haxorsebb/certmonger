@@ -539,6 +539,38 @@ get_sssnasasasnas(DBusMessage *rep, int msgid)
 	return ret;
 }
 static int
+get_sssnasasasnasn(DBusMessage *rep, int msgid)
+{
+	int ret, i;
+	long n1, n2, n3;
+	char *s1, *s2, *s3, **as1, **as2, **as3, **as4;
+
+	ret = cm_tdbusm_get_sssnasasasnasn(rep, NULL,
+					  &s1, &s2, &s3, &n1,
+					  &as1, &as2, &as3, &n2, &as4, &n3);
+	if (ret == 0) {
+		printf("Message %d - s:%s,s:%s,s:%s," "n:%ld,[",
+		       msgid, s1, s2, s3, n1);
+		for (i = 0; (as1 != NULL) && (as1[i] != NULL); i++) {
+			printf("%ss:%s", i > 0 ? "," : "", as1[i]);
+		}
+		printf("],[");
+		for (i = 0; (as2 != NULL) && (as2[i] != NULL); i++) {
+			printf("%ss:%s", i > 0 ? "," : "", as2[i]);
+		}
+		printf("],[");
+		for (i = 0; (as3 != NULL) && (as3[i] != NULL); i++) {
+			printf("%ss:%s", i > 0 ? "," : "", as3[i]);
+		}
+		printf("],n:%ld,n:%ld,[", n2, n3);
+		for (i = 0; (as4 != NULL) && (as4[i] != NULL); i++) {
+			printf("%ss:%s", i > 0 ? "," : "", as4[i]);
+		}
+		printf("]\n");
+	}
+	return ret;
+}
+static int
 get_sasasasnas(DBusMessage *rep, int msgid)
 {
 	int ret, i;
