@@ -8,21 +8,22 @@
 # leandro <lcavalcanti.almeida@gmail.com>, 2011
 # Marcelo Barbosa <firemanxbr@fedoraproject.org>, 2014
 # Marco Aurélio Krause <ouesten@me.com>, 2016. #zanata
+# Fábio Rodrigues Ribeiro <farribeiro@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger 0.78.6\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2017-02-26 02:20-0500\n"
-"PO-Revision-Date: 2016-11-22 03:44-0500\n"
-"Last-Translator: Marco Aurélio Krause <ouesten@me.com>\n"
-"Language-Team: Portuguese (Brazil) (http://www.transifex.com/projects/p/"
-"certmonger/language/pt_BR/)\n"
-"Language: pt-BR\n"
+"PO-Revision-Date: 2021-02-22 18:43+0000\n"
+"Last-Translator: Fábio Rodrigues Ribeiro <farribeiro@gmail.com>\n"
+"Language-Team: Portuguese (Brazil) <https://translate.fedoraproject.org/"
+"projects/certmonger/master/pt_BR/>\n"
+"Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Zanata 3.9.6\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
+"X-Generator: Weblate 4.4.2\n"
 
 #: src/casave.c:322 src/casave.c:361 src/dogtag.c:233 src/dogtag.c:238
 #: src/dogtag.c:256 src/dogtag.c:261 src/getcert.c:291
@@ -434,17 +435,17 @@ msgstr ""
 #: src/getcert.c:792 src/getcert.c:1869 src/getcert.c:2522
 #, fuzzy
 msgid "ask the CA to process the request using the named issuer"
-msgstr ""
-"  -T PERFIL\tperguntar o CA processar a requisição usando o modelo ou perfil "
-"nomeado\n"
+msgstr "peça à CA para processar a solicitação usando o emissor nomeado"
 
 #: src/getcert.c:793 src/getcert.c:2523
+#, fuzzy
 msgid "set requested subject name (default: CN=<hostname>)"
-msgstr ""
+msgstr "definir o nome do assunto solicitado (padrão: CN=<hostname>)"
 
 #: src/getcert.c:794 src/getcert.c:2524
+#, fuzzy
 msgid "set requested key usage value"
-msgstr ""
+msgstr "definir o valor de uso da chave solicitado"
 
 #: src/getcert.c:795 src/getcert.c:2525
 msgid "set requested extended key usage OID"
