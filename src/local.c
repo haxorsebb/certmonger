@@ -39,6 +39,7 @@
 
 #include <openssl/asn1.h>
 #include <openssl/err.h>
+#include <openssl/obj_mac.h>
 #include <openssl/pem.h>
 #include <openssl/pkcs12.h>
 #include <openssl/rand.h>
@@ -372,7 +373,8 @@ get_signer_info(void *parent, char *localdir, X509 ***roots,
 			return CM_SUBMIT_STATUS_UNREACHABLE;
 		}
 		p12 = PKCS12_create(NULL, CONSTANTCN, *signer_key, *signer_cert,
-				    cas, 0, 0, 0, 0, 0);
+				    cas, NID_aes_128_cbc, NID_aes_128_cbc,
+				    0, 0, 0);
 		if (p12 != NULL) {
 			if (!i2d_PKCS12_fp(fp, p12)) {
 				fclose(fp);
