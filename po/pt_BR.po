@@ -9,13 +9,14 @@
 # Marcelo Barbosa <firemanxbr@fedoraproject.org>, 2014
 # Marco Aurélio Krause <ouesten@me.com>, 2016. #zanata
 # Fábio Rodrigues Ribeiro <farribeiro@gmail.com>, 2021.
+# Rafael Fontenelle <rafaelff@gnome.org>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger 0.78.6\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2017-02-26 02:20-0500\n"
-"PO-Revision-Date: 2021-02-22 18:43+0000\n"
-"Last-Translator: Fábio Rodrigues Ribeiro <farribeiro@gmail.com>\n"
+"PO-Revision-Date: 2021-04-12 20:18+0000\n"
+"Last-Translator: Rafael Fontenelle <rafaelff@gnome.org>\n"
 "Language-Team: Portuguese (Brazil) <https://translate.fedoraproject.org/"
 "projects/certmonger/master/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -23,7 +24,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.4.2\n"
+"X-Generator: Weblate 4.5.3\n"
 
 #: src/casave.c:322 src/casave.c:361 src/dogtag.c:233 src/dogtag.c:238
 #: src/dogtag.c:256 src/dogtag.c:261 src/getcert.c:291
@@ -190,9 +191,7 @@ msgstr ""
 #: src/getcert.c:115
 #, c-format
 msgid "Path \"%s\" is not absolute, attempting to use \"%s\" instead.\n"
-msgstr ""
-"Caminho \"%s\" não é absoluto, tente usar o \"%s\" em vez disso.\n"
-"\n"
+msgstr "Caminho \"%s\" não é absoluto, tente usar o \"%s\" em vez disso.\n"
 
 #: src/getcert.c:120
 #, c-format
@@ -301,9 +300,8 @@ msgid "internal error"
 msgstr "Um erro interno ocorreu."
 
 #: src/getcert.c:430
-#, fuzzy
 msgid "out of memory"
-msgstr "Sem memória.\n"
+msgstr "sem memória"
 
 #: src/getcert.c:434
 msgid "error in popt configuration file"
@@ -317,9 +315,7 @@ msgstr "Erro %s: %s\n"
 #: src/getcert.c:481
 #, c-format
 msgid "Error %s\n"
-msgstr ""
-"Erro %s\n"
-"\n"
+msgstr "Erro %s\n"
 
 #: src/getcert.c:487
 #, c-format
@@ -636,9 +632,7 @@ msgstr "Nova requisição de rastreamento \"%s\" adicionada.\n"
 #: src/getcert.c:1809
 #, c-format
 msgid "New tracking request could not be added.\n"
-msgstr ""
-"Nova requisição de rastreamento não foi adicionada.\n"
-"\n"
+msgstr "Nova requisição de rastreamento não foi adicionada.\n"
 
 #: src/getcert.c:1849
 msgid "PEM file for private key (only valid with -f)"
@@ -1070,9 +1064,7 @@ msgstr ""
 #: src/getcert.c:4347
 #, c-format
 msgid "\terror refreshing CA data\n"
-msgstr ""
-"\terro ao atualizar o dado de CA\n"
-"\n"
+msgstr "\terro ao atualizar o dado de CA\n"
 
 #: src/getcert.c:4364 src/getcert.c:4456
 msgid "nickname to give to the new CA configuration"
