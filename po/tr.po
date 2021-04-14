@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: certmonger 0.78.6\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2017-02-26 02:20-0500\n"
-"PO-Revision-Date: 2021-02-14 15:40+0000\n"
+"PO-Revision-Date: 2021-03-07 07:01+0000\n"
 "Last-Translator: Oğuz Ersen <oguzersen@protonmail.com>\n"
 "Language-Team: Turkish <https://translate.fedoraproject.org/projects/"
 "certmonger/master/tr/>\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
-"X-Generator: Weblate 4.4.2\n"
+"X-Generator: Weblate 4.5.1\n"
 
 #: src/casave.c:322 src/casave.c:361 src/dogtag.c:233 src/dogtag.c:238
 #: src/dogtag.c:256 src/dogtag.c:261 src/getcert.c:291
@@ -438,7 +438,7 @@ msgstr "istenen anahtar kullanım değerini ayarla"
 
 #: src/getcert.c:795 src/getcert.c:2525
 msgid "set requested extended key usage OID"
-msgstr "istenen genişletilmiş anahtar kullanım OID'sini ayarla"
+msgstr "istenen genişletilmiş anahtar kullanımı OID'sini ayarla"
 
 #: src/getcert.c:796 src/getcert.c:2526
 msgid "set requested principal name"
@@ -631,12 +631,12 @@ msgstr "Yeni izleme isteği eklenemedi.\n"
 
 #: src/getcert.c:1849
 msgid "PEM file for private key (only valid with -f)"
-msgstr "Özel anahtar için PEM dosyası (yalnızca -f ile geçerlidir)"
+msgstr "özel anahtar için PEM dosyası (yalnızca -f ile geçerlidir)"
 
 #: src/getcert.c:1850 src/getcert.c:2503 src/getcert.c:3103 src/getcert.c:3357
 #: src/getcert.c:3878
 msgid "PEM file for certificate"
-msgstr "Sertifika için PEM dosyası"
+msgstr "sertifika için PEM dosyası"
 
 #: src/getcert.c:1861
 msgid "nickname of an existing request"
@@ -976,10 +976,12 @@ msgid ""
 "None of ID or database directory and and nickname or certificate file "
 "specified.\n"
 msgstr ""
+"Kimlik ya da veri tabanı dizini ve takma ad ya da sertifika dosyasından "
+"hiçbiri belirtilmedi.\n"
 
 #: src/getcert.c:4036
 msgid "list only the specified CA configuration"
-msgstr ""
+msgstr "yalnızca belirtilen CA yapılandırmasını listele"
 
 #: src/getcert.c:4104
 #, c-format
@@ -989,7 +991,7 @@ msgstr "CA '%s':\n"
 #: src/getcert.c:4110
 #, c-format
 msgid "\tself-identifies as: %s\n"
-msgstr ""
+msgstr "\tkendini şöyle tanımlar: %s\n"
 
 #: src/getcert.c:4119
 #, c-format
@@ -999,752 +1001,773 @@ msgstr "\tca-türü: %s\n"
 #: src/getcert.c:4121
 #, c-format
 msgid "\thelper-location: %s\n"
-msgstr ""
+msgstr "\tyardımcı konumu: %s\n"
 
 #: src/getcert.c:4126
 #, c-format
 msgid "\tnext-serial-number: %s\n"
-msgstr ""
+msgstr "\tsonraki seri numarası: %s\n"
 
 #: src/getcert.c:4136
 #, c-format
 msgid "\tknown-issuer-names:\n"
-msgstr ""
+msgstr "\tbilinen sağlayıcı adları:\n"
 
 #: src/getcert.c:4145
 #, c-format
 msgid "\tknown profiles/templates/certtypes:\n"
-msgstr ""
+msgstr "\tbilinen profiller/şablonlar/sertifika türleri:\n"
 
 #: src/getcert.c:4208
 #, c-format
 msgid "\tdefault profile/template/certtype: %s\n"
-msgstr ""
+msgstr "\töntanımlı profil/şablon/sertifika türü: %s\n"
 
 #: src/getcert.c:4216
 #, c-format
 msgid "\tSCEP CA identifier: %s\n"
-msgstr ""
+msgstr "\tSCEP CA tanımlayıcısı: %s\n"
 
 #: src/getcert.c:4229
 #, c-format
 msgid "\tSCEP CA certificate thumbprint (MD5): %s\n"
-msgstr ""
+msgstr "\tSCEP CA sertifika parmak izi (MD5): %s\n"
 
 #: src/getcert.c:4235
 #, c-format
 msgid "\tSCEP CA certificate thumbprint (SHA1): %s\n"
-msgstr ""
+msgstr "\tSCEP CA sertifika parmak izi (SHA1): %s\n"
 
 #: src/getcert.c:4267
 msgid "refresh information about the CA configuration with this name"
-msgstr ""
+msgstr "bu ada sahip CA yapılandırmasıyla ilgili bilgileri yenile"
 
 #: src/getcert.c:4269
 msgid "refresh information about all known CAs"
-msgstr ""
+msgstr "bilinen tüm CA'larla ilgili bilgileri yenile"
 
 #: src/getcert.c:4316
 #, c-format
 msgid "Neither CA nickname nor -a flag specified.\n"
-msgstr ""
+msgstr "CA takma adı veya -a seçeneği belirtilmedi.\n"
 
 #: src/getcert.c:4342
 #, c-format
 msgid "Data for CA '%s' being refreshed.\n"
-msgstr ""
+msgstr "CA '%s' için veriler yenileniyor.\n"
 
 #: src/getcert.c:4344
 #, c-format
 msgid "Data for unnamed CA being refreshed.\n"
-msgstr ""
+msgstr "Adsız CA için veriler yenileniyor.\n"
 
 #: src/getcert.c:4347
 #, c-format
 msgid "\terror refreshing CA data\n"
-msgstr ""
+msgstr "\tCA verilerini yenilerken hata oluştu\n"
 
 #: src/getcert.c:4364 src/getcert.c:4456
 msgid "nickname to give to the new CA configuration"
-msgstr ""
+msgstr "yeni CA yapılandırmasına verilecek takma ad"
 
 #: src/getcert.c:4365
 msgid "helper command to run to communicate with CA"
-msgstr ""
+msgstr "CA ile iletişim kurmak için çalıştırılacak yardımcı komut"
 
 #: src/getcert.c:4406 src/getcert.c:4503 src/getcert.c:4631 src/getcert.c:4719
 #, c-format
 msgid "CA nickname not specified.\n"
-msgstr ""
+msgstr "CA takma adı belirtilmedi.\n"
 
 #: src/getcert.c:4411 src/getcert.c:4636
 #, c-format
 msgid "CA helper command not specified.\n"
-msgstr ""
+msgstr "CA yardımcı komutu belirtilmedi.\n"
 
 #: src/getcert.c:4435 src/getcert.c:4553
 #, c-format
 msgid "New CA \"%s\" added.\n"
-msgstr ""
+msgstr "Yeni CA \"%s\" eklendi.\n"
 
 #: src/getcert.c:4438 src/getcert.c:4573
 #, c-format
 msgid "New CA could not be added.\n"
-msgstr ""
+msgstr "Yeni CA eklenemedi.\n"
 
 #: src/getcert.c:4457
 msgid "location of SCEP server"
-msgstr ""
+msgstr "SCEP sunucusu konumu"
 
 #: src/getcert.c:4458
 msgid "CA identifier"
-msgstr ""
+msgstr "CA tanımlayıcısı"
 
 #: src/getcert.c:4459
 msgid "file containing CA's certificate"
-msgstr ""
+msgstr "CA'nın sertifikasını içeren dosya"
 
 #: src/getcert.c:4460
 msgid "file containing RA's certificate"
-msgstr ""
+msgstr "RA'nın sertifikasını içeren dosya"
 
 #: src/getcert.c:4461
 msgid "file containing certificates in RA's certifying chain"
-msgstr ""
+msgstr "RA'nın sertifika zincirindeki sertifikaları içeren dosya"
 
 #: src/getcert.c:4462
 msgid "prefer to not use the SCEP Renewal feature"
-msgstr ""
+msgstr "SCEP yenileme özelliğini kullanmamayı tercih et"
 
 #: src/getcert.c:4508
 #, c-format
 msgid "server URL not specified.\n"
-msgstr ""
+msgstr "sunucu URL'si belirtilmedi.\n"
 
 #: src/getcert.c:4513
 #, c-format
 msgid "HTTPS requires a CA certificate.\n"
-msgstr ""
+msgstr "HTTPS bir CA sertifikası gerektiriyor.\n"
 
 #: src/getcert.c:4535
 #, c-format
 msgid "Error building command line.\n"
-msgstr ""
+msgstr "Komut satırı oluşturulurken hata oluştu.\n"
 
 #: src/getcert.c:4567
 #, c-format
 msgid "Error setting CA identifier.\n"
-msgstr ""
+msgstr "CA tanımlayıcısı ayarlanırken hata oluştu.\n"
 
 #: src/getcert.c:4589
 msgid "nickname of the CA configuration"
-msgstr ""
+msgstr "CA yapılandırmasının takma adı"
 
 #: src/getcert.c:4590
 msgid "updated helper command to run to communicate with CA"
-msgstr ""
+msgstr "CA ile iletişim kurmak için çalıştırılacak güncellenmiş yardımcı komut"
 
 #: src/getcert.c:4658
 #, c-format
 msgid "CA \"%s\" modified.\n"
-msgstr ""
+msgstr "CA \"%s\" değiştirildi.\n"
 
 #: src/getcert.c:4661
 #, c-format
 msgid "CA could not be modified.\n"
-msgstr ""
+msgstr "CA değiştirilemedi.\n"
 
 #: src/getcert.c:4678
 msgid "nickname of CA configuration to remove"
-msgstr ""
+msgstr "kaldırılacak CA yapılandırmasının takma adı"
 
 #: src/getcert.c:4747
 #, c-format
 msgid "CA \"%s\" removed.\n"
-msgstr ""
+msgstr "CA \"%s\" kaldırıldı.\n"
 
 #: src/getcert.c:4749
 #, c-format
 msgid "CA could not be removed.\n"
-msgstr ""
+msgstr "CA kaldırılamadı.\n"
 
 #: src/getcert.c:4787
 #, c-format
 msgid "%s - client certificate enrollment tool\n"
-msgstr ""
+msgstr "%s - istemci sertifika kayıt aracı\n"
 
 #: src/getcert.c:4791
 #, c-format
 msgid "Usage: %s request [options]\n"
-msgstr ""
+msgstr "Kullanım: %s request [seçenekler]\n"
 
 #: src/getcert.c:4793 src/getcert.c:4842 src/getcert.c:4890 src/getcert.c:4912
 #: src/getcert.c:4960 src/getcert.c:5038
 msgid "Required arguments:\n"
-msgstr ""
+msgstr "Gerekli argümanlar:\n"
 
 #: src/getcert.c:4794 src/getcert.c:4845 src/getcert.c:4893 src/getcert.c:4915
 #: src/getcert.c:4963 src/getcert.c:5020 src/getcert.c:5041
 msgid "* If using an NSS database for storage:\n"
-msgstr ""
+msgstr "* Depolama için bir NSS veri tabanı kullanılıyorsa:\n"
 
 #: src/getcert.c:4795 src/getcert.c:4846 src/getcert.c:4894 src/getcert.c:4916
 #: src/getcert.c:4964 src/getcert.c:5042
 msgid "  -d DIR\tNSS database for key and cert\n"
-msgstr ""
+msgstr "  -d DİZİN\tAnahtar ve sertifika için NSS veri tabanı\n"
 
 #: src/getcert.c:4796 src/getcert.c:4847 src/getcert.c:4895 src/getcert.c:4917
 #: src/getcert.c:4965 src/getcert.c:5043
 msgid "  -n NAME\tnickname for NSS-based storage (only valid with -d)\n"
 msgstr ""
+"  -n AD\tNSS tabanlı depolama için takma ad (yalnızca -d ile geçerlidir)\n"
 
 #: src/getcert.c:4797 src/getcert.c:4848 src/getcert.c:4896 src/getcert.c:4918
 #: src/getcert.c:4966 src/getcert.c:5044
 msgid ""
 "  -t NAME\toptional token name for NSS-based storage (only valid with -d)\n"
 msgstr ""
+"  -t AD\tNSS tabanlı depolama için isteğe bağlı belirteç adı (yalnızca -d "
+"ile geçerlidir)\n"
 
 #: src/getcert.c:4798 src/getcert.c:4849 src/getcert.c:4897 src/getcert.c:4919
 #: src/getcert.c:4967 src/getcert.c:5023 src/getcert.c:5045
 msgid "* If using files for storage:\n"
-msgstr ""
+msgstr "* Depolama için dosyalar kullanılıyorsa:\n"
 
 #: src/getcert.c:4799 src/getcert.c:4850 src/getcert.c:4898
 msgid "  -k FILE\tPEM file for private key\n"
-msgstr ""
+msgstr "  -k DOSYA\tözel anahtar için PEM dosyası\n"
 
 #: src/getcert.c:4800 src/getcert.c:4851 src/getcert.c:4899
 msgid "  -f FILE\tPEM file for certificate (only valid with -k)\n"
-msgstr ""
+msgstr "  -f DOSYA\tsertifika için PEM dosyası (yalnızca -k ile geçerlidir)\n"
 
 #: src/getcert.c:4801
 msgid "* If keys are to be encrypted:\n"
-msgstr ""
+msgstr "* Anahtarlar şifrelenecekse:\n"
 
 #: src/getcert.c:4802 src/getcert.c:4853 src/getcert.c:4923 src/getcert.c:4971
 msgid "  -p FILE\tfile which holds the encryption PIN\n"
-msgstr ""
+msgstr "  -p DOSYA\tşifreleme PIN değerinin bulunduğu dosya\n"
 
 #: src/getcert.c:4803 src/getcert.c:4854 src/getcert.c:4924 src/getcert.c:4972
 msgid "  -P PIN\tPIN value\n"
-msgstr ""
+msgstr "  -P PIN\tPIN değeri\n"
 
 #: src/getcert.c:4805 src/getcert.c:4856 src/getcert.c:4901 src/getcert.c:4937
 #: src/getcert.c:4985 src/getcert.c:5010 src/getcert.c:5048 src/getcert.c:5058
 #: src/getcert.c:5076 src/getcert.c:5091 src/getcert.c:5108 src/getcert.c:5122
 #: src/getcert.c:5141 src/getcert.c:5155
 msgid "Optional arguments:\n"
-msgstr ""
+msgstr "İsteğe bağlı argümanlar:\n"
 
 #: src/getcert.c:4806 src/getcert.c:4857 src/getcert.c:4938 src/getcert.c:4986
 msgid "* Certificate handling settings:\n"
-msgstr ""
+msgstr "* Sertifika işleme ayarları:\n"
 
 #: src/getcert.c:4807
 msgid "  -I NAME\tnickname to assign to the request\n"
-msgstr ""
+msgstr "  -I AD\tisteğe atanacak takma ad\n"
 
 #: src/getcert.c:4808
 msgid "  -G TYPE\ttype of key to be generated if one is not already in place\n"
-msgstr ""
+msgstr "  -G TÜR\tzaten bir tane yoksa oluşturulacak anahtarın türü\n"
 
 #: src/getcert.c:4809
 msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
-msgstr ""
+msgstr "  -g BOYUT\tzaten bir tane yoksa oluşturulacak anahtarın boyutu\n"
 
 #: src/getcert.c:4810 src/getcert.c:4859
 msgid ""
 "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
 msgstr ""
+"  -r\t\tsona erme tarihi yaklaştığında sertifikayı yenilemeyi dene "
+"(öntanımlı)\n"
 
 #: src/getcert.c:4811 src/getcert.c:4860
 msgid "  -R\t\tdon't attempt to renew the certificate when expiration nears\n"
-msgstr ""
+msgstr "  -R\t\tsona erme tarihi yaklaştığında sertifikayı yenilemeyi deneme\n"
 
 #: src/getcert.c:4813 src/getcert.c:4862
 msgid "  -c CA\t\tuse the specified CA rather than the default\n"
-msgstr ""
+msgstr "  -c CA\t\töntanımlı olan yerine belirtilen CA'yı kullan\n"
 
 #: src/getcert.c:4815 src/getcert.c:4864 src/getcert.c:4943 src/getcert.c:4991
 msgid ""
 "  -T PROFILE\task the CA to process the request using the named profile or "
 "template\n"
 msgstr ""
+"  -T PROFİL\tCA'dan, belirtilen profili veya şablonu kullanarak isteği "
+"işlemesini iste\n"
 
 #: src/getcert.c:4816 src/getcert.c:4865 src/getcert.c:4944 src/getcert.c:4992
 msgid "  -X ISSUER\task the CA to process the request using the named issuer\n"
 msgstr ""
+"  -X SAĞLAYICI\tCA'dan, belirtilen sağlayıcıyı kullanarak isteği işlemesini "
+"iste\n"
 
 #: src/getcert.c:4817
 msgid "* Parameters for the signing request:\n"
-msgstr ""
+msgstr "* İmzalama isteği için parametreler:\n"
 
 #: src/getcert.c:4818 src/getcert.c:4927 src/getcert.c:4975
 msgid "  -N NAME\tset requested subject name (default: CN=<hostname>)\n"
-msgstr ""
+msgstr "  -N AD\tistenen sahip adını ayarla (öntanımlı: CN=<ana_makine_adı>)\n"
 
 #: src/getcert.c:4819 src/getcert.c:4928 src/getcert.c:4976
 msgid "  -U EXTUSAGE\tset requested extended key usage OID\n"
 msgstr ""
+"  -U KULLANIM\tistenen genişletilmiş anahtar kullanımı OID'sini ayarla\n"
 
 #: src/getcert.c:4820 src/getcert.c:4868 src/getcert.c:4929 src/getcert.c:4977
 msgid "  -u KEYUSAGE\tset requested key usage value\n"
-msgstr ""
+msgstr "  -u KULLANIM\tistenen anahtar kullanım değerini ayarla\n"
 
 #: src/getcert.c:4821 src/getcert.c:4930 src/getcert.c:4978
 msgid "  -K NAME\tset requested principal name\n"
-msgstr ""
+msgstr "  -K AD\tistenen temsilci adını ayarla\n"
 
 #: src/getcert.c:4822 src/getcert.c:4931 src/getcert.c:4979
 msgid "  -D DNSNAME\tset requested DNS name\n"
-msgstr ""
+msgstr "  -D DNS_ADI\tistenen DNS adını ayarla\n"
 
 #: src/getcert.c:4823 src/getcert.c:4932 src/getcert.c:4980
 msgid "  -E EMAIL\tset requested email address\n"
-msgstr ""
+msgstr "  -E EPOSTA\tistenen e-posta adresini ayarla\n"
 
 #: src/getcert.c:4824 src/getcert.c:4933 src/getcert.c:4981
 msgid "  -A ADDRESS\tset requested IP address\n"
-msgstr ""
+msgstr "  -A ADRES\tistenen IP adresini ayarla\n"
 
 #: src/getcert.c:4825 src/getcert.c:4873 src/getcert.c:4934 src/getcert.c:4982
 msgid "  -l FILE\tfile which holds an optional challenge password\n"
-msgstr ""
+msgstr "  -l DOSYA\tisteğe bağlı bir sınama parolası içeren dosya\n"
 
 #: src/getcert.c:4826 src/getcert.c:4874 src/getcert.c:4935 src/getcert.c:4983
 msgid "  -L PASSWORD\tan optional challenge password value\n"
-msgstr ""
+msgstr "  -L PAROLA\tisteğe bağlı bir sınama parolası değeri\n"
 
 #: src/getcert.c:4827 src/getcert.c:4875 src/getcert.c:4902 src/getcert.c:4945
 #: src/getcert.c:4995 src/getcert.c:5025 src/getcert.c:5049 src/getcert.c:5066
 #: src/getcert.c:5081 src/getcert.c:5097 src/getcert.c:5112 src/getcert.c:5131
 #: src/getcert.c:5145 src/getcert.c:5158
 msgid "* Bus options:\n"
-msgstr ""
+msgstr "* Veri yolu seçenekleri:\n"
 
 #: src/getcert.c:4828 src/getcert.c:4876 src/getcert.c:4903 src/getcert.c:4946
 #: src/getcert.c:4996 src/getcert.c:5050
 msgid "  -S\t\tconnect to the certmonger service on the system bus\n"
-msgstr ""
+msgstr "  -S\t\tsistem veri yolunda certmonger hizmetine bağlan\n"
 
 #: src/getcert.c:4829 src/getcert.c:4877 src/getcert.c:4904 src/getcert.c:4947
 #: src/getcert.c:4997 src/getcert.c:5051
 msgid "  -s\t\tconnect to the certmonger service on the session bus\n"
-msgstr ""
+msgstr "  -s\t\toturum veri yolunda certmonger hizmetine bağlan\n"
 
 #: src/getcert.c:4830 src/getcert.c:4878 src/getcert.c:4905 src/getcert.c:4948
 #: src/getcert.c:4998 src/getcert.c:5028 src/getcert.c:5069 src/getcert.c:5084
 #: src/getcert.c:5100 src/getcert.c:5115 src/getcert.c:5134 src/getcert.c:5148
 #: src/getcert.c:5161
 msgid "* Other options:\n"
-msgstr ""
+msgstr "* Diğer seçenekler:\n"
 
 #: src/getcert.c:4831 src/getcert.c:4879 src/getcert.c:4949 src/getcert.c:4999
 msgid "  -B\tcommand to run before saving the certificate\n"
-msgstr ""
+msgstr "  -B\tsertifikayı kaydetmeden önce çalıştırılacak komut\n"
 
 #: src/getcert.c:4832 src/getcert.c:4880 src/getcert.c:4950 src/getcert.c:5000
 msgid "  -C\tcommand to run after saving the certificate\n"
-msgstr ""
+msgstr "  -C\tsertifikayı kaydettikten sonra çalıştırılacak komut\n"
 
 #: src/getcert.c:4833 src/getcert.c:4881 src/getcert.c:4951 src/getcert.c:5001
 msgid "  -F\tfile in which to store the CA's certificates\n"
-msgstr ""
+msgstr "  -F\tCA sertifikalarının saklanacağı dosya\n"
 
 #: src/getcert.c:4834 src/getcert.c:4882 src/getcert.c:4952 src/getcert.c:5002
 msgid "  -a\tNSS database in which to store the CA's certificates\n"
-msgstr ""
+msgstr "  -a\tCA sertifikalarının saklanacağı NSS veri tabanı\n"
 
 #: src/getcert.c:4835 src/getcert.c:4883 src/getcert.c:4953 src/getcert.c:5003
 msgid "  -w\ttry to wait for the certificate to be issued\n"
-msgstr ""
+msgstr "  -w\tsertifikanın verilmesini beklemeye çalış\n"
 
 #: src/getcert.c:4836 src/getcert.c:4884 src/getcert.c:4906 src/getcert.c:4954
 #: src/getcert.c:5004 src/getcert.c:5029 src/getcert.c:5052 src/getcert.c:5070
 #: src/getcert.c:5085 src/getcert.c:5101 src/getcert.c:5116 src/getcert.c:5135
 #: src/getcert.c:5149 src/getcert.c:5162
 msgid "  -v\treport all details of errors\n"
-msgstr ""
+msgstr "  -v\thataların tüm ayrıntılarını bildir\n"
 
 #: src/getcert.c:4840
 #, c-format
 msgid "Usage: %s start-tracking [options]\n"
-msgstr ""
+msgstr "Kullanım: %s start-tracking [seçenekler]\n"
 
 #: src/getcert.c:4843
 msgid "* If modifying an existing request:\n"
-msgstr ""
+msgstr "* Var olan bir istek değiştiriliyorsa:\n"
 
 #: src/getcert.c:4844
 msgid "  -i NAME\tnickname of an existing tracking request\n"
-msgstr ""
+msgstr "  -i AD\tvar olan bir izleme isteğinin takma adı\n"
 
 #: src/getcert.c:4852 src/getcert.c:4922 src/getcert.c:4970
 msgid "* If keys are encrypted:\n"
-msgstr ""
+msgstr "* Anahtarlar şifrelenmişse:\n"
 
 #: src/getcert.c:4858
 msgid "  -I NAME\tnickname to give to tracking request\n"
-msgstr ""
+msgstr "  -I AD\tizleme isteğine verilecek takma ad\n"
 
 #: src/getcert.c:4866
 msgid "* Parameters for the signing request at renewal time:\n"
-msgstr ""
+msgstr "* Yenileme zamanında imzalama isteği için parametreler:\n"
 
 #: src/getcert.c:4867
 msgid "  -U EXTUSAGE\toverride requested extended key usage OID\n"
 msgstr ""
+"  -U KULLANIM\tistenen genişletilmiş anahtar kullanımı OID'sinin üzerine "
+"yaz\n"
 
 #: src/getcert.c:4869
 msgid "  -K NAME\toverride requested principal name\n"
-msgstr ""
+msgstr "  -K AD\tistenen temsilci adının üzerine yaz\n"
 
 #: src/getcert.c:4870
 msgid "  -D DNSNAME\toverride requested DNS name\n"
-msgstr ""
+msgstr "  -D DNS_ADI\tistenen DNS adının üzerine yaz\n"
 
 #: src/getcert.c:4871
 msgid "  -E EMAIL\toverride requested email address\n"
-msgstr ""
+msgstr "  -E EPOSTA\tistenen e-posta adresinin üzerine yaz\n"
 
 #: src/getcert.c:4872
 msgid "  -A ADDRESS\toverride requested IP address\n"
-msgstr ""
+msgstr "  -A ADRES\tistenen IP adresinin üzerine yaz\n"
 
 #: src/getcert.c:4888
 #, c-format
 msgid "Usage: %s stop-tracking [options]\n"
-msgstr ""
+msgstr "Kullanım: %s stop-tracking [seçenekler]\n"
 
 #: src/getcert.c:4891 src/getcert.c:4913 src/getcert.c:4961 src/getcert.c:5039
 msgid "* By request identifier:\n"
-msgstr ""
+msgstr "* İstek tanımlayıcısına göre:\n"
 
 #: src/getcert.c:4892 src/getcert.c:4914 src/getcert.c:4962 src/getcert.c:5019
 #: src/getcert.c:5040 src/getcert.c:5060
 msgid "  -i NAME\tnickname for tracking request\n"
-msgstr ""
+msgstr "  -i AD\tizleme isteği için takma ad\n"
 
 #: src/getcert.c:4910
 #, c-format
 msgid "Usage: %s resubmit [options]\n"
-msgstr ""
+msgstr "Kullanım: %s resubmit [seçenekler]\n"
 
 #: src/getcert.c:4920 src/getcert.c:4968 src/getcert.c:5046
 msgid "  -f FILE\tPEM file for certificate\n"
-msgstr ""
+msgstr "  -f DOSYA\tsertifika için PEM dosyası\n"
 
 #: src/getcert.c:4926 src/getcert.c:4974
 msgid "* New parameter values for the signing request:\n"
-msgstr ""
+msgstr "* İmzalama isteği için yeni parametre değerleri:\n"
 
 #: src/getcert.c:4939 src/getcert.c:4987
 msgid "  -I NAME\tnew nickname to give to tracking request\n"
-msgstr ""
+msgstr "  -I AD\tizleme isteğine verilecek yeni takma ad\n"
 
 #: src/getcert.c:4941 src/getcert.c:4989
 msgid "  -c CA\t\tuse the specified CA rather than the current one\n"
-msgstr ""
+msgstr "  -c CA\t\tgeçerli olanın yerine belirtilen CA'yı kullan\n"
 
 #: src/getcert.c:4958
 #, c-format
 msgid "Usage: %s rekey [options]\n"
-msgstr ""
+msgstr "Kullanım: %s rekey [seçenekler]\n"
 
 #: src/getcert.c:4993
 msgid "  -G TYPE\ttype of new key to be generated\n"
-msgstr ""
+msgstr "  -G TÜR\toluşturulacak yeni anahtarın türü\n"
 
 #: src/getcert.c:4994
 msgid "  -g SIZE\tsize of new key to be generated\n"
-msgstr ""
+msgstr "  -g BOYUT\toluşturulacak yeni anahtarın boyutu\n"
 
 #: src/getcert.c:5008
 #, c-format
 msgid "Usage: %s list [options]\n"
-msgstr ""
+msgstr "Kullanım: %s list [seçenekler]\n"
 
 #: src/getcert.c:5011 src/getcert.c:5035 src/getcert.c:5078 src/getcert.c:5093
 #: src/getcert.c:5109 src/getcert.c:5123 src/getcert.c:5142 src/getcert.c:5156
 msgid "* General options:\n"
-msgstr ""
+msgstr "* Genel seçenekler:\n"
 
 #: src/getcert.c:5013
 msgid "  -c CA\tlist only requests and certs associated with this CA\n"
 msgstr ""
+"  -c CA\tyalnızca bu CA ile ilişkili istekleri ve sertifikaları listele\n"
 
 #: src/getcert.c:5015
 msgid "  -r\tlist only information about outstanding requests\n"
-msgstr ""
+msgstr "  -r\tyalnızca bekleyen isteklerle ilgili bilgileri listele\n"
 
 #: src/getcert.c:5016
 msgid "  -t\tlist only information about tracked certificates\n"
-msgstr ""
+msgstr "  -t\tyalnızca izlenen sertifikalarla ilgili bilgileri listele\n"
 
 #: src/getcert.c:5017
 msgid "  -u\tdisplay times in UTC instead of local time\n"
-msgstr ""
+msgstr "  -u\tsaatleri yerel saat yerine UTC olarak göster\n"
 
 #: src/getcert.c:5018
 msgid "* If selecting a specific request:\n"
-msgstr ""
+msgstr "* Belirli bir istek seçiliyorsa:\n"
 
 #: src/getcert.c:5021
 msgid "  -d DIR\tonly list requests and certs which use this NSS database\n"
 msgstr ""
+"  -d DİZİN\tyalnızca bu NSS veri tabanını kullanan istekleri ve "
+"sertifikaları listele\n"
 
 #: src/getcert.c:5022
 msgid "  -n NAME\tonly list requests and certs which use this nickname\n"
 msgstr ""
+"  -n AD\tyalnızca bu takma adı kullanan istekleri ve sertifikaları listele\n"
 
 #: src/getcert.c:5024
 msgid "  -f FILE\tonly list requests and certs stored in this PEM file\n"
 msgstr ""
+"  -f DOSYA\tyalnızca bu PEM dosyasında saklanan istekleri ve sertifikaları "
+"listele\n"
 
 #: src/getcert.c:5026 src/getcert.c:5067 src/getcert.c:5082 src/getcert.c:5098
 #: src/getcert.c:5113 src/getcert.c:5132 src/getcert.c:5146 src/getcert.c:5159
 msgid "  -S\tconnect to the certmonger service on the system bus\n"
-msgstr ""
+msgstr "  -S\tsistem veri yolunda certmonger hizmetine bağlan\n"
 
 #: src/getcert.c:5027 src/getcert.c:5068 src/getcert.c:5083 src/getcert.c:5099
 #: src/getcert.c:5114 src/getcert.c:5133 src/getcert.c:5147 src/getcert.c:5160
 msgid "  -s\tconnect to the certmonger service on the session bus\n"
-msgstr ""
+msgstr "  -s\toturum veri yolunda certmonger hizmetine bağlan\n"
 
 #: src/getcert.c:5033
 #, c-format
 msgid "Usage: %s refresh [options]\n"
-msgstr ""
+msgstr "Kullanım: %s refresh [seçenekler]\n"
 
 #: src/getcert.c:5036
 msgid "  -a\trefresh information about all outstanding requests\n"
-msgstr ""
+msgstr "  -a\tbekleyen tüm isteklerle ilgili bilgileri yenile\n"
 
 #: src/getcert.c:5056
 #, c-format
 msgid "Usage: %s status [options]\n"
-msgstr ""
+msgstr "Kullanım: %s status [seçenekler]\n"
 
 #: src/getcert.c:5059
 msgid "* Selecting a specific request:\n"
-msgstr ""
+msgstr "* Belirli bir isteğin seçilmesi:\n"
 
 #: src/getcert.c:5061
 msgid "* When using an NSS database for storage:\n"
-msgstr ""
+msgstr "* Depolama için bir NSS veri tabanı kullanıldığında:\n"
 
 #: src/getcert.c:5062
 msgid "  -d DIR\treturn status for the request in this NSS database\n"
-msgstr ""
+msgstr "  -d DİZİN\tBu NSS veri tabanındaki isteğin durumunu döndür\n"
 
 #: src/getcert.c:5063
 msgid "  -n NAME\treturn status for cert which uses this nickname\n"
-msgstr ""
+msgstr "  -n AD\tBu takma adı kullanan sertifikanın durumunu döndür\n"
 
 #: src/getcert.c:5064
 msgid "* When using files for storage:\n"
-msgstr ""
+msgstr "* Depolama için dosyalar kullanıldığında:\n"
 
 #: src/getcert.c:5065
 msgid "  -f FILE\treturn status for cert stored in this PEM file\n"
-msgstr ""
+msgstr "  -f DOSYA\tBu PEM dosyasında saklanan sertifikanın durumunu döndür\n"
 
 #: src/getcert.c:5074
 #, c-format
 msgid "Usage: %s list-cas [options]\n"
-msgstr ""
+msgstr "Kullanım: %s list-cas [seçenekler]\n"
 
 #: src/getcert.c:5079
 msgid "  -c CA\tlist only information about the CA with this name\n"
-msgstr ""
+msgstr "  -c CA\tyalnızca bu ada sahip CA ile ilgili bilgileri listele\n"
 
 #: src/getcert.c:5089
 #, c-format
 msgid "Usage: %s refresh-ca [options]\n"
-msgstr ""
+msgstr "Kullanım: %s refresh-ca [seçenekler]\n"
 
 #: src/getcert.c:5094
 msgid "  -c CA\trefresh information about the CA with this name\n"
-msgstr ""
+msgstr "  -c CA\tbu ada sahip CA ile ilgili bilgileri yenile\n"
 
 #: src/getcert.c:5095
 msgid "  -a\trefresh information about all known CAs\n"
-msgstr ""
+msgstr "  -a\tbilinen tüm CA'larla ilgili bilgileri yenile\n"
 
 #: src/getcert.c:5106
 #, c-format
 msgid "Usage: %s add-ca [options]\n"
-msgstr ""
+msgstr "Kullanım: %s add-ca [seçenekler]\n"
 
 #: src/getcert.c:5110 src/getcert.c:5124
 msgid "  -c CA\t\tnickname to give to the new CA configuration\n"
-msgstr ""
+msgstr "  -c CA\t\tyeni CA yapılandırmasına verilecek takma ad\n"
 
 #: src/getcert.c:5111
 msgid "  -e CMD\thelper command to run to communicate with CA\n"
-msgstr ""
+msgstr "  -e KOMUT\tCA ile iletişim kurmak için çalıştırılacak yardımcı komut\n"
 
 #: src/getcert.c:5120
 #, c-format
 msgid "Usage: %s add-scep-ca [options]\n"
-msgstr ""
+msgstr "Kullanım: %s add-scep-ca [seçenekler]\n"
 
 #: src/getcert.c:5125
 msgid "  -u URL\tlocation of SCEP server\n"
-msgstr ""
+msgstr "  -u URL\tSCEP sunucusunun konumu\n"
 
 #: src/getcert.c:5126
 msgid "  -i ID\t\tCA identifier\n"
-msgstr ""
+msgstr "  -i KİMLİK\t\tCA tanımlayıcısı\n"
 
 #: src/getcert.c:5127
 msgid "  -R FILE\tfile containing CA's certificate\n"
-msgstr ""
+msgstr "  -R DOSYA\tCA'nın sertifikasını içeren dosya\n"
 
 #: src/getcert.c:5128
 msgid "  -r FILE\tfile containing RA's certificate\n"
-msgstr ""
+msgstr "  -r DOSYA\tRA'nın sertifikasını içeren dosya\n"
 
 #: src/getcert.c:5129
 msgid "  -I FILE\tfile containing certificates in RA's certifying chain\n"
-msgstr ""
+msgstr "  -I DOSYA\tRA'nın sertifika zincirindeki sertifikaları içeren dosya\n"
 
 #: src/getcert.c:5130
 msgid "  -n\tprefer not to use the SCEP Renewal feature\n"
-msgstr ""
+msgstr "  -n\tSCEP yenileme özelliğini kullanmamayı tercih et\n"
 
 #: src/getcert.c:5139
 #, c-format
 msgid "Usage: %s modify-ca [options]\n"
-msgstr ""
+msgstr "Kullanım: %s modify-ca [seçenekler]\n"
 
 #: src/getcert.c:5143
 msgid "  -c CA\t\tnickname of the CA configuration\n"
-msgstr ""
+msgstr "  -c CA\t\tCA yapılandırmasının takma adı\n"
 
 #: src/getcert.c:5144
 msgid "  -e CMD\tupdated helper command to run to communicate with CA\n"
 msgstr ""
+"  -e KOMUT\tCA ile iletişim kurmak için çalıştırılacak güncellenmiş yardımcı "
+"komut\n"
 
 #: src/getcert.c:5153
 #, c-format
 msgid "Usage: %s remove-ca [options]\n"
-msgstr ""
+msgstr "Kullanım: %s remove-ca [seçenekler]\n"
 
 #: src/getcert.c:5157
 msgid "  -c CA\tnickname of CA configuration to remove\n"
-msgstr ""
+msgstr "  -c CA\tkaldırılacak CA yapılandırmasının takma adı\n"
 
 #: src/getcert.c:5172
 #, c-format
 msgid "Usage: %s command [options]\n"
-msgstr ""
+msgstr "Kullanım: %s command [seçenekler]\n"
 
 #: src/getcert.c:5174
 msgid "request a new certificate from a CA\n"
-msgstr ""
+msgstr "bir CA'dan yeni bir sertifika iste\n"
 
 #: src/getcert.c:5176
 msgid "begin monitoring an already-issued certificate\n"
-msgstr ""
+msgstr "önceden verilmiş bir sertifikayı izlemeye başla\n"
 
 #: src/getcert.c:5178
 msgid "stop monitoring a certificate\n"
-msgstr ""
+msgstr "sertifikayı izlemeyi bırak\n"
 
 #: src/getcert.c:5180
 msgid "resubmit an in-progress enrollment request, or start a new one\n"
 msgstr ""
+"Devam eden bir kayıt isteğini yeniden gönder veya yeni bir tane başlat\n"
 
 #: src/getcert.c:5182
 msgid "generate a new private key and replace a certificate\n"
-msgstr ""
+msgstr "yeni bir özel anahtar oluştur ve bir sertifikayı değiştir\n"
 
 #: src/getcert.c:5184
 msgid "check on the status of an in-progress enrollment request\n"
-msgstr ""
+msgstr "devam eden bir kayıt isteğinin durumunu denetle\n"
 
 #: src/getcert.c:5186
 msgid "list certificates being monitored and requested\n"
-msgstr ""
+msgstr "izlenen ve istenen sertifikaları listele\n"
 
 #: src/getcert.c:5188
 msgid "check the status of a certificate being monitored or requested\n"
-msgstr ""
+msgstr "izlenen veya istenen bir sertifikanın durumunu denetle\n"
 
 #: src/getcert.c:5191
 msgid "add a CA configuration\n"
-msgstr ""
+msgstr "bir CA yapılandırması ekle\n"
 
 #: src/getcert.c:5193
 msgid "add an SCEP CA configuration\n"
-msgstr ""
+msgstr "bir SCEP CA yapılandırması ekle\n"
 
 #: src/getcert.c:5196
 msgid "list known CA configurations\n"
-msgstr ""
+msgstr "bilinen CA yapılandırmalarını listele\n"
 
 #: src/getcert.c:5199
 msgid "modify a CA configuration\n"
-msgstr ""
+msgstr "bir CA yapılandırmasını değiştir\n"
 
 #: src/getcert.c:5202
 msgid "refresh cache of all information obtained from a CA\n"
-msgstr ""
+msgstr "bir CA'dan alınan tüm bilgilerin önbelleğini yenile\n"
 
 #: src/getcert.c:5205
 msgid "remove a CA configuration\n"
-msgstr ""
+msgstr "bir CA yapılandırmasını kaldır\n"
 
 #: src/getcert.c:5273
 #, c-format
 msgid "%s: unrecognized command\n"
-msgstr ""
+msgstr "%s: tanınmayan komut\n"
 
 #: src/ipa.c:144
 #, c-format
 msgid "Unable to determine location of IPA LDAP server.\n"
-msgstr ""
+msgstr "IPA LDAP sunucusunun konumu belirlenemiyor.\n"
 
 #: src/ipa.c:149
 #, c-format
 msgid "Unable to contact an IPA LDAP server.\n"
-msgstr ""
+msgstr "Bir IPA LDAP sunucusuyla iletişim kurulamıyor.\n"
 
 #: src/ipa.c:233 src/ipa.c:533
 #, c-format
 msgid "Unable to determine base DN of domain information on IPA server.\n"
-msgstr ""
+msgstr "IPA sunucusundaki etki alanı bilgilerinin temel DN'si belirlenemiyor.\n"
 
 #: src/ipa.c:369
 #, c-format
 msgid "Error setting up for XMLRPC on the client.\n"
-msgstr ""
+msgstr "İstemcide XMLRPC için kurulum yapılırken hata oluştu.\n"
 
 #: src/ipa.c:658
 #, c-format
 msgid "The -t option can not be used with the -K option.\n"
-msgstr ""
+msgstr "-t seçeneği, -K seçeneğiyle birlikte kullanılamaz.\n"
 
 #: src/ipa.c:667
 #, c-format
 msgid "The -k option can not be used with the -K option.\n"
-msgstr ""
+msgstr "-k seçeneği, -K seçeneğiyle birlikte kullanılamaz.\n"
 
 #: src/ipa.c:676
 #, c-format
 msgid "The -K option can not be used with either the -k or the -t option.\n"
-msgstr ""
+msgstr "-K seçeneği, -k veya -t seçeneğiyle birlikte kullanılamaz.\n"
 
 #: src/ipa.c:758
 #, c-format
 msgid "Unable to determine principal name for signing request.\n"
-msgstr ""
+msgstr "İmzalama isteği için temsilci adı belirlenemiyor.\n"
 
 #: src/ipa.c:831
 #, c-format
 msgid "No IPA domain configured, and none specified.\n"
-msgstr ""
+msgstr "Bir IPA etki alanı yapılandırılmadı ve hiçbiri belirtilmedi.\n"
 
 #: src/ipa.c:868
 #, c-format
@@ -1752,12 +1775,16 @@ msgid ""
 "Error setting up ccache for \"host\" service on client using default keytab: "
 "%s.\n"
 msgstr ""
+"İstemcide \"host\" hizmeti için öntanımlı anahtar tablosunu kullanarak "
+"ccache ayarlanırken hata oluştu: %s.\n"
 
 #: src/ipa.c:872
 #, c-format
 msgid ""
 "Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
 msgstr ""
+"İstemcide \"%s\" için öntanımlı anahtar tablosunu kullanarak ccache "
+"ayarlanırken hata oluştu : %s.\n"
 
 #: src/ipa.c:879
 #, c-format
@@ -1765,160 +1792,165 @@ msgid ""
 "Error setting up ccache for \"host\" service on client using keytab \"%s\": "
 "%s.\n"
 msgstr ""
+"İstemcide \"host\" hizmeti için \"%s\" anahtar tablosunu kullanarak ccache "
+"ayarlanırken hata oluştu: %s.\n"
 
 #: src/ipa.c:883
 #, c-format
 msgid "Error setting up ccache for \"%s\" on client using keytab \"%s\": %s.\n"
 msgstr ""
+"İstemcide \"%s\" için \"%s\" anahtar tablosunu kullanarak ccache "
+"ayarlanırken hata oluştu: %s.\n"
 
 #: src/local.c:556
 #, c-format
 msgid "Unable to read signing request.\n"
-msgstr ""
+msgstr "İmzalama isteği okunamıyor.\n"
 
 #: src/main.c:74
 msgid "use session bus"
-msgstr ""
+msgstr "oturum veri yolunu kullan"
 
 #: src/main.c:75
 msgid "use system bus"
-msgstr ""
+msgstr "sistem veri yolunu kullan"
 
 #: src/main.c:76
 msgid "start a dedicated listening socket"
-msgstr ""
+msgstr "özel bir dinleme soketi başlat"
 
 #: src/main.c:77
 msgid "only use a dedicated listening socket"
-msgstr ""
+msgstr "yalnızca özel bir dinleme soketi kullan"
 
 #: src/main.c:78
 msgid "specify the dedicated listening socket"
-msgstr ""
+msgstr "özel dinleme soketini belirt"
 
 #: src/main.c:78
 msgid "PATHNAME"
-msgstr ""
+msgstr "YOL_ADI"
 
 #: src/main.c:79
 msgid "don't become a daemon"
-msgstr ""
+msgstr "arka plan programı olma"
 
 #: src/main.c:80
 msgid "do become a daemon"
-msgstr ""
+msgstr "arka plan programı ol"
 
 #: src/main.c:81
 msgid "bus-activated, idle timeout"
-msgstr ""
+msgstr "veri yolu etkinleştirildi, boşta kalma zaman aşımı"
 
 #: src/main.c:81
 msgid "SECONDS"
-msgstr ""
+msgstr "SANİYE"
 
 #: src/main.c:82
 msgid "don't use an idle timeout"
-msgstr ""
+msgstr "boşta kalma zaman aşımı kullanma"
 
 #: src/main.c:83
 msgid "set debugging level (implies -n)"
-msgstr ""
+msgstr "hata ayıklama seviyesini ayarla (-n anlamına gelir)"
 
 #: src/main.c:83
 msgid "NUMBER"
-msgstr ""
+msgstr "SAYI"
 
 #: src/main.c:84 src/main.c:86
 msgid "start COMMAND and exit when it does"
-msgstr ""
+msgstr "KOMUT'u başlat ve başladığında çık"
 
 #: src/main.c:87
 msgid "write service PID to file"
-msgstr ""
+msgstr "hizmetin PID değerini dosyaya yaz"
 
 #: src/main.c:88
 msgid "force NSS into FIPS mode"
-msgstr ""
+msgstr "NSS'yi FIPS moduna zorla"
 
 #: src/main.c:90
 msgid "print version information"
-msgstr ""
+msgstr "sürüm bilgisini yazdır"
 
 #: src/main.c:174
 #, c-format
 msgid "Usage: %s [-s|-S] [-n|-f] [-d LEVEL] [-p FILE] [-F] [-v]\n"
-msgstr ""
+msgstr "Kullanım: %s [-s|-S] [-n|-f] [-d SEVİYE] [-p DOSYA] [-F] [-v]\n"
 
 #: src/main.c:177
 msgid "\t-s         use session bus\n"
-msgstr ""
+msgstr "\t-s         oturum veri yolunu kullan\n"
 
 #: src/main.c:178
 msgid "\t-S         use system bus\n"
-msgstr ""
+msgstr "\t-S         sistem veri yolunu kullan\n"
 
 #: src/main.c:179
 msgid "\t-l         start a dedicated listening socket\n"
-msgstr ""
+msgstr "\t-l         özel bir dinleme soketi başlat\n"
 
 #: src/main.c:180
 msgid "\t-L         only use a dedicated listening socket\n"
-msgstr ""
+msgstr "\t-L         yalnızca özel bir dinleme soketi kullan\n"
 
 #: src/main.c:181
 msgid "\t-P PATH    specify the dedicated listening socket\n"
-msgstr ""
+msgstr "\t-P YOL     özel dinleme soketini belirt\n"
 
 #: src/main.c:182
 msgid "\t-n         don't become a daemon\n"
-msgstr ""
+msgstr "\t-n         arka plan programı olma\n"
 
 #: src/main.c:183
 msgid "\t-f         do become a daemon\n"
-msgstr ""
+msgstr "\t-f         arka plan programı ol\n"
 
 #: src/main.c:184
 msgid "\t-b TIMEOUT bus-activated, idle timeout\n"
-msgstr ""
+msgstr "\t-b SÜRE    veri yolu etkinleştirildi, boşta kalma zaman aşımı\n"
 
 #: src/main.c:185
 msgid "\t-B         don't use an idle timeout\n"
-msgstr ""
+msgstr "\t-B         boşta kalma zaman aşımı kullanma\n"
 
 #: src/main.c:186
 msgid "\t-d LEVEL   set debugging level (implies -n)\n"
-msgstr ""
+msgstr "\t-d SEVİYE  hata ayıklama seviyesini ayarla (-n anlamına gelir)\n"
 
 #: src/main.c:187
 msgid "\t-c COMMAND start COMMAND and exit when it does\n"
-msgstr ""
+msgstr "\t-c KOMUT  KOMUT'u başlat ve başladığında çık\n"
 
 #: src/main.c:188
 msgid "\t-p FILE    write service PID to file\n"
-msgstr ""
+msgstr "\t-p DOSYA   hizmetin PID değerini dosyaya yaz\n"
 
 #: src/main.c:189
 msgid "\t-F         force NSS into FIPS mode\n"
-msgstr ""
+msgstr "\t-F         NSS'yi FIPS moduna zorla\n"
 
 #: src/main.c:190
 msgid "\t-v         print version information and exit\n"
-msgstr ""
+msgstr "\t-v         sürüm bilgisini yazdır ve çık\n"
 
 #: src/scep.c:352
 #, c-format
 msgid "No SCEP URL (-u) given, and no default known.\n"
-msgstr ""
+msgstr "SCEP URL'si (-u) belirtilmedi ve bilinen öntanımlı değer yok.\n"
 
 #: src/scep.c:356
 #, c-format
 msgid "No SCEP operation (-c/-C/-g/-p) given, and no default known.\n"
 msgstr ""
+"SCEP işlemi (-c/-C/-g/-p) belirtilmedi ve bilinen öntanımlı değer yok.\n"
 
 #: src/scep.c:376 src/scep.c:395
 #, c-format
 msgid "No RA certificate (-r) given, and no default known.\n"
-msgstr ""
+msgstr "RA sertifikası (-r) belirtilmedi ve bilinen öntanımlı değer yok.\n"
 
 #: src/scep.c:386 src/scep.c:540
 #, c-format
@@ -1926,6 +1958,8 @@ msgid ""
 "Error reading request.  Expected PKCS7 data containing a GetInitialCert "
 "pkiMessage, got nothing.\n"
 msgstr ""
+"İstek okunurken hata oluştu.  GetInitialCert pkiMessage içeren PKCS7 verisi "
+"bekleniyordu, hiçbir şey alınmadı.\n"
 
 #: src/scep.c:405 src/scep.c:565
 #, c-format
@@ -1933,133 +1967,136 @@ msgid ""
 "Error reading request.  Expected PKCS7 data containing a PKCSReq pkiMessage, "
 "got nothing.\n"
 msgstr ""
+"İstek okunurken hata oluştu.  PKCSReq pkiMessage içeren PKCS7 verisi "
+"bekleniyordu, hiçbir şey alınmadı.\n"
 
 #: src/scep.c:433 src/scep.c:459
 #, c-format
 msgid "Warning: request is neither a PKCSReq nor a GetInitialCert request.\n"
-msgstr ""
+msgstr "Uyarı: istek, PKCSReq veya GetInitialCert isteği değil.\n"
 
 #: src/scep.c:437 src/scep.c:463
 #, c-format
 msgid ""
 "Warning: request type \"%s\"is neither a PKCSReq nor a GetInitialCert "
 "request.\n"
-msgstr ""
+msgstr "Uyarı: \"%s\" istek türü, PKCSReq veya GetInitialCert isteği değil.\n"
 
 #: src/scep.c:470
 #, c-format
 msgid "Warning: request is missing transactionId.\n"
-msgstr ""
+msgstr "Uyarı: isteğin transactionId değeri eksik.\n"
 
 #: src/scep.c:474
 #, c-format
 msgid "Warning: request is missing senderNonce.\n"
-msgstr ""
+msgstr "Uyarı: isteğin senderNonce değeri eksik.\n"
 
 #: src/scep.c:637
 #, c-format
 msgid "Got response code %d from %s, not 200.\n"
-msgstr ""
+msgstr "%d yanıt kodu alındı (%s adresinden), 200 değil.\n"
 
 #: src/scep.c:685 src/scep.c:1121
 #, c-format
 msgid "Server reply was of unexpected MIME type \"%s\".\n"
-msgstr ""
+msgstr "Sunucu yanıtı beklenmeyen \"%s\" MIME türündeydi.\n"
 
 #: src/scep.c:930
 #, c-format
 msgid "Error: failed to verify signature on server response.\n"
-msgstr ""
+msgstr "Hata: sunucu yanıtında imza doğrulaması başarısız oldu.\n"
 
 #: src/scep.c:946
 #, c-format
 msgid "Error: reply was not a CertRep (%s).\n"
-msgstr ""
+msgstr "Hata: yanıt bir CertRep değildi (%s).\n"
 
 #: src/scep.c:951
 #, c-format
 msgid "Error: reply is missing transactionId.\n"
-msgstr ""
+msgstr "Hata: yanıtın transactionId değeri eksik.\n"
 
 #: src/scep.c:956
 #, c-format
 msgid "Error: reply contains a different transactionId.\n"
-msgstr ""
+msgstr "Hata: yanıt farklı bir transactionId içeriyor.\n"
 
 #: src/scep.c:962
 #, c-format
 msgid "Error: reply is missing pkiStatus.\n"
-msgstr ""
+msgstr "Hata: yanıtın pkiStatus değeri eksik.\n"
 
 #: src/scep.c:966
 #, c-format
 msgid "Error: reply is missing recipientNonce.\n"
-msgstr ""
+msgstr "Hata: yanıtın recipientNonce değeri eksik.\n"
 
 #: src/scep.c:972
 #, c-format
 msgid "Error: reply nonce doesn't match request.\n"
-msgstr ""
+msgstr "Hata: nonce yanıtı istekle eşleşmiyor.\n"
 
 #: src/scep.c:976
 #, c-format
 msgid "Error: reply is missing senderNonce.\n"
-msgstr ""
+msgstr "Hata: yanıtın senderNonce değeri eksik.\n"
 
 #: src/scep.c:994
 #, c-format
 msgid "Unspecified failure at server.\n"
-msgstr ""
+msgstr "Sunucuda belirtilmeyen hata.\n"
 
 #: src/scep.c:997
 #, c-format
 msgid "Unrecognized or unsupported algorithm identifier in client request.\n"
 msgstr ""
+"İstemci isteğinde tanınmayan veya desteklenmeyen algoritma tanımlayıcısı.\n"
 
 #: src/scep.c:1000
 #, c-format
 msgid "Integrity check of client request failed at server.\n"
-msgstr ""
+msgstr "Sunucuda istemci isteğinin bütünlük denetimi başarısız oldu.\n"
 
 #: src/scep.c:1003
 #, c-format
 msgid "Transaction either is not permitted or is not supported by server.\n"
-msgstr ""
+msgstr "İşleme izin verilmiyor veya sunucu tarafından desteklenmiyor.\n"
 
 #: src/scep.c:1006
 #, c-format
 msgid "Clock skew too great.\n"
-msgstr ""
+msgstr "Saat farkı çok büyük.\n"
 
 #: src/scep.c:1009
 #, c-format
 msgid "Unsupported extension.\n"
-msgstr ""
+msgstr "Desteklenmeyen uzantı.\n"
 
 #: src/scep.c:1012
 #, c-format
 msgid "Must archive keys.\n"
-msgstr ""
+msgstr "Anahtarlar arşivlenmeli.\n"
 
 #: src/scep.c:1015
 #, c-format
 msgid "Bad identity.\n"
-msgstr ""
+msgstr "Yanlış kimlik.\n"
 
 #: src/scep.c:1018
 #, c-format
 msgid "Proof of possession required.\n"
-msgstr ""
+msgstr "Sahiplik kanıtı gerekli.\n"
 
 #: src/scep.c:1021
 #, c-format
 msgid "Proof of possession failed.\n"
-msgstr ""
+msgstr "Sahiplik kanıtı başarısız oldu.\n"
 
 #: src/scep.c:1024
 #, c-format
 msgid "No key reuse.\n"
-msgstr ""
+msgstr "Anahtarı yeniden kullanma yok.\n"
 
 #: src/scep.c:1027
 #, c-format
@@ -2069,54 +2106,54 @@ msgstr "Dahili CA hatası.\n"
 #: src/scep.c:1030
 #, c-format
 msgid "Try later.\n"
-msgstr ""
+msgstr "Daha sonra tekrar dene.\n"
 
 #: src/scep.c:1032
 #, c-format
 msgid "Server returned failure code \"%s\".\n"
-msgstr ""
+msgstr "Sunucu \"%s\" hata kodunu döndürdü.\n"
 
 #: src/scep.c:1044
 #, c-format
 msgid "Error: couldn't parse signed-data.\n"
-msgstr ""
+msgstr "Hata: signed-data ayrıştırılamadı.\n"
 
 #: src/scep.c:1059 src/scep.c:1074
 #, c-format
 msgid "Error: signed-data payload is not enveloped-data.\n"
-msgstr ""
+msgstr "Hata: signed-data yükü enveloped-data değil.\n"
 
 #: src/scep.c:1092
 #, c-format
 msgid "Error: enveloped-data payload is not data.\n"
-msgstr ""
+msgstr "Hata: enveloped-data yükü veri değil.\n"
 
 #: src/scep.c:1116
 #, c-format
 msgid "Error: pkiStatus \"%s\" not recognized.\n"
-msgstr ""
+msgstr "Hata: pkiStatus \"%s\" tanınmadı.\n"
 
 #: src/tdbush.c:119 src/tdbush.c:1944 src/tdbush.c:2351
 msgid "An internal error has occurred."
-msgstr ""
+msgstr "Dahili bir hata oluştu."
 
 #: src/tdbush.c:183
 msgid "No matching entry found.\n"
-msgstr ""
+msgstr "Eşleşen girdi bulunamadı.\n"
 
 #: src/tdbush.c:345
 #, c-format
 msgid "There is already a CA with the nickname \"%s\"."
-msgstr ""
+msgstr "\"%s\" takma adına sahip bir CA zaten var."
 
 #: src/tdbush.c:439
 msgid "Certificate storage type not specified."
-msgstr ""
+msgstr "Sertifika depolama türü belirtilmedi."
 
 #: src/tdbush.c:452
 #, c-format
 msgid "Certificate storage type \"%s\" not supported."
-msgstr ""
+msgstr "Sertifika depolama türü \"%s\" desteklenmiyor."
 
 #: src/tdbush.c:489 src/tdbush.c:522 src/tdbush.c:581 src/tdbush.c:766
 #: src/tdbush.c:825 src/tdbush.c:928 src/tdbush.c:973 src/tdbush.c:1028
@@ -2124,11 +2161,11 @@ msgstr ""
 #: src/tdbush.c:3230 src/tdbush.c:3382
 #, c-format
 msgid "The location \"%s\" must be an absolute path."
-msgstr ""
+msgstr "\"%s\" konumu bir mutlak yol olmalıdır."
 
 #: src/tdbush.c:516 src/tdbush.c:575 src/tdbush.c:644
 msgid "Certificate storage location not specified."
-msgstr ""
+msgstr "Sertifika depolama konumu belirtilmedi."
 
 #: src/tdbush.c:534 src/tdbush.c:778 src/tdbush.c:985 src/tdbush.c:1085
 #: src/tdbush.c:1185
@@ -2136,99 +2173,103 @@ msgstr ""
 msgid ""
 "The parent of location \"%s\" could not be accessed due to insufficient "
 "permissions."
-msgstr ""
+msgstr "Yetersiz izinler nedeniyle \"%s\" konumunun üst ögesine erişilemedi."
 
 #: src/tdbush.c:542 src/tdbush.c:786 src/tdbush.c:993 src/tdbush.c:1093
 #: src/tdbush.c:1193
 #, c-format
 msgid "The parent of location \"%s\" must be a valid directory."
-msgstr ""
+msgstr "\"%s\" konumunun üst ögesi geçerli bir dizin olmalıdır."
 
 #: src/tdbush.c:553 src/tdbush.c:797 src/tdbush.c:1004 src/tdbush.c:1104
 #: src/tdbush.c:1204
 #, c-format
 msgid "The location \"%s\" must be a file."
-msgstr ""
+msgstr "\"%s\" konumu bir dosya olmalıdır."
 
 #: src/tdbush.c:593 src/tdbush.c:940 src/tdbush.c:1040 src/tdbush.c:1140
 #, c-format
 msgid ""
 "The location \"%s\" could not be accessed due to insufficient permissions."
-msgstr ""
+msgstr "Yetersiz izinler nedeniyle \"%s\" konumuna erişilemedi."
 
 #: src/tdbush.c:601 src/tdbush.c:834 src/tdbush.c:948 src/tdbush.c:1048
 #: src/tdbush.c:1148
 #, c-format
 msgid "The location \"%s\" must be a directory."
-msgstr ""
+msgstr "\"%s\" konumu bir dizin olmalıdır."
 
 #: src/tdbush.c:622
 msgid "Certificate nickname not specified."
-msgstr ""
+msgstr "Sertifika takma adı belirtilmedi."
 
 #: src/tdbush.c:665 src/tdbush.c:3055
 #, c-format
 msgid "There is already a request with the nickname \"%s\"."
-msgstr ""
+msgstr "\"%s\" takma adına sahip bir istek zaten var."
 
 #: src/tdbush.c:701
 #, c-format
 msgid ""
 "Certificate at same location is already used by request with nickname \"%s\"."
 msgstr ""
+"Aynı konumdaki sertifika, \"%s\" takma adına sahip istek tarafından zaten "
+"kullanılıyor."
 
 #: src/tdbush.c:734
 #, c-format
 msgid "Key storage type \"%s\" not supported."
-msgstr ""
+msgstr "Anahtar depolama türü \"%s\" desteklenmiyor."
 
 #: src/tdbush.c:760 src/tdbush.c:819
 msgid "Key storage location not specified."
-msgstr ""
+msgstr "Anahtar depolama konumu belirtilmedi."
 
 #: src/tdbush.c:853
 msgid "Key nickname not specified."
-msgstr ""
+msgstr "Anahtar takma adı belirtilmedi."
 
 #: src/tdbush.c:909
 #, c-format
 msgid "Key at same location is already used by request with nickname \"%s\"."
 msgstr ""
+"Aynı konumdaki anahtar, \"%s\" takma adına sahip istek tarafından zaten "
+"kullanılıyor."
 
 #: src/tdbush.c:1313 src/tdbush.c:3102
 #, c-format
 msgid "No support for key type \"%s\"."
-msgstr ""
+msgstr "\"%s\" anahtar türü için destek yok."
 
 #: src/tdbush.c:1400
 msgid "No such CA."
-msgstr ""
+msgstr "Böyle bir CA yok."
 
 #: src/tdbush.c:3073
 #, c-format
 msgid "Certificate authority \"%s\" not known."
-msgstr ""
+msgstr "Sertifika yetkilisi \"%s\" bilinmiyor."
 
 #: src/tdbush.c:3518
 msgid "Unrecognized parameter or wrong value type."
-msgstr ""
+msgstr "Tanınmayan parametre veya yanlış değer türü."
 
 #: src/tdbush.c:5070
 msgid "Error parsing arguments."
-msgstr ""
+msgstr "Argümanlar ayrıştırılırken hata oluştu."
 
 #: src/tdbush.c:5124
 msgid "Unrecognized property name."
-msgstr ""
+msgstr "Tanınmayan varlık adı."
 
 #: src/tdbusm.c:2156
 msgid "Insufficient access.  Please retry operation as root.\n"
-msgstr ""
+msgstr "Yetersiz erişim.  Lütfen işlemi root olarak yeniden deneyin.\n"
 
 #: src/tdbusm.c:2160
 msgid "Please verify that the certmonger service has been started.\n"
-msgstr ""
+msgstr "Lütfen certmonger hizmetinin başlatıldığını doğrulayın.\n"
 
 #: src/tdbusm.c:2163
 msgid "Please verify that the certmonger service is still running.\n"
-msgstr ""
+msgstr "Lütfen certmonger hizmetinin hala çalışmakta olduğunu doğrulayın.\n"
