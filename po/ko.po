@@ -112,12 +112,12 @@ msgstr "대리 자격증명 (-n)이 주어지지 않았지만, 필요하게 됩�
 #: src/dogtag.c:757 src/scep.c:619
 #, c-format
 msgid "Error %d connecting to %s: %s.\n"
-msgstr "%s:%s에 연결하는 동안 오류 %d 가 발생했습니다.\n"
+msgstr ""
 
 #: src/dogtag.c:762 src/scep.c:624
 #, c-format
 msgid "Error %d connecting to %s.\n"
-msgstr "%s에 연결하는 동안 오류 %d가 발생했습니다.\n"
+msgstr ""
 
 #: src/dogtag.c:770 src/scep.c:648
 #, c-format
@@ -1939,7 +1939,7 @@ msgstr "경고: 요청은 현재전송(senderNonce)이 누락되었습니다.\n"
 #: src/scep.c:637
 #, c-format
 msgid "Got response code %d from %s, not 200.\n"
-msgstr "200이 아닌, %s에서 응답 코드 %d 얻었습니다.\n"
+msgstr ""
 
 #: src/scep.c:685 src/scep.c:1121
 #, c-format
