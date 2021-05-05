@@ -165,6 +165,7 @@ cm_casave_main_n(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 			PK11_InitPin(slot, NULL, "");
 		}
 		if (PK11_NeedLogin(slot)) {
+			fclose(fp);
 			cm_log(0, "NSS database %s requires login\n", state->nssdb);
 				return CM_CERTSAVE_STATUS_INTERNAL_ERROR;
 		}
