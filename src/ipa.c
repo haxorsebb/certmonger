@@ -670,12 +670,14 @@ submit:
 							"add", 1);
 	if (!json_req) {
 		cm_log(0, "json_pack_ex() failed: %s\n", j_error.text);
+		free(error_message);
 		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
 	json_str = json_dumps(json_req, 0);
 	json_decref(json_req);
 	if (!json_str) {
 		cm_log(0, "json_dumps() failed\n");
+		free(error_message);
 		return CM_SUBMIT_STATUS_UNCONFIGURED;
 	}
 
@@ -733,6 +735,8 @@ submit:
 				 * point.  Randomly dropping arguments is not
 				 * really an extensible solution, though. */
 				issuer = NULL;
+				free(error_message);
+				error_message = NULL;
 				goto submit;
 			}
 			if ((i == 3005) && (profile != NULL)) {
@@ -741,6 +745,8 @@ submit:
 				 * point.  Randomly dropping arguments is not
 				 * really an extensible solution, though. */
 				profile = NULL;
+				free(error_message);
+				error_message = NULL;
 				goto submit;
 			}
 			printf("Server at %s denied our request, "
