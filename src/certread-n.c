@@ -63,7 +63,6 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		   void *userdata)
 {
 	int status = CM_SUB_STATUS_INTERNAL_ERROR, readwrite, ec;
-	const char *token;
 	char *pin;
 	PLArenaPool *arena;
 	SECStatus error;
@@ -254,7 +253,7 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		    (cb_data.n_attempts == 0)) {
 			cm_log(0, "PIN was not needed to auth to token "
 			       "%s, though one was provided. "
-			       "Treating this as an error.\n", token);
+			       "Treating this as an error.\n", PK11_GetTokenName(slot));
 			PK11_FreeSlot(slot);
 			if (NSS_ShutdownContext(ctx) != SECSuccess) {
 				cm_log(1, "Error shutting down NSS.\n");
