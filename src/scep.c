@@ -204,7 +204,8 @@ main(int argc, const char **argv)
 	int prefer_non_renewal = 0, can_renewal = 0;
 	int response_code = 0, response_code2 = 0;
 	enum known_ops op = op_unset;
-	const char *id = NULL, *cainfo = NULL;
+	char *id = NULL;
+	const char *cainfo = NULL;
 	char *message = NULL, *rekey_message = NULL;
 	const char *mode = NULL, *content_type = NULL, *content_type2 = NULL;
 	void *ctx;

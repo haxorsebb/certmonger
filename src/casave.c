@@ -90,7 +90,6 @@ cm_casave_main_n(int fd, struct cm_store_ca *ca, struct cm_store_entry *e,
 	CERTCertTrust trust;
 	CERTCertDBHandle *certdb;
 	PK11SlotInfo *slot = NULL;
-	SECItem *items[2];
 	PRUint32 flags;
 	const char *es, *ttrust;
 	char *package, *p;

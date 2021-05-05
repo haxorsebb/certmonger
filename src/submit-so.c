@@ -81,9 +81,8 @@ cm_submit_so_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	    (strlen(entry->cm_key_next_marker) > 0)) {
 		filename = util_build_next_filename(entry->cm_key_storage_location, entry->cm_key_next_marker);
 		if (filename == NULL) {
-			cm_log(1, "Error reading private key from "
-			       "\"%s\": %s.\n",
-			       filename, strerror(errno));
+			cm_log(1, "Error reading private key: %s.\n",
+			       strerror(errno));
 			keyfp = NULL;
 		} else {
 			keyfp = fopen(filename, "r");

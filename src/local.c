@@ -345,7 +345,7 @@ get_signer_info(void *parent, char *localdir, X509 ***roots,
 		/* Roll the serial number up. */
 		hexserial = cm_store_increment_serial(parent, hexserial);
 		if (hexserial == NULL) {
-			cm_log(1, "Error incrementing '%s'.\n", hexserial);
+			cm_log(1, "Error incrementing serial number.\n");
 			return CM_SUBMIT_STATUS_UNREACHABLE;
 		}
 		/* Save the next serial number. */
@@ -613,8 +613,7 @@ main(int argc, const char **argv)
 			hexserial = cm_store_increment_serial(parent,
 							      hexserial);
 			if (hexserial == NULL) {
-				cm_log(1, "Error incrementing '%s'.\n",
-				       hexserial);
+				cm_log(1, "Error incrementing serial number\n");
 				return CM_SUBMIT_STATUS_UNREACHABLE;
 			}
 			/* Save the next serial number. */

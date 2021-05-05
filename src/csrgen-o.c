@@ -200,9 +200,8 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	    (strlen(entry->cm_key_next_marker) > 0)) {
 		filename = util_build_next_filename(entry->cm_key_storage_location, entry->cm_key_next_marker);
 		if (filename == NULL) {
-			cm_log(1, "Error opening key file \"%s\" "
-			       "for reading: %s.\n",
-			       filename, strerror(errno));
+			cm_log(1, "Error opening key file for reading: %s.\n",
+			       strerror(errno));
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
 	} else {

@@ -64,7 +64,6 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 {
 	int status = CM_SUB_STATUS_INTERNAL_ERROR, readwrite, ec;
 	char *pin;
-	PLArenaPool *arena;
 	SECStatus error;
 	NSSInitContext *ctx;
 	PK11SlotInfo *slot = NULL;

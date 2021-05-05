@@ -44,6 +44,7 @@ cm_prefs_ossl_hash_by_pref(enum cm_prefs_digest digest)
 		return EVP_sha1();
 		break;
 	case cm_prefs_sha256:
+    case cm_prefs_nodigest:
 		return EVP_sha256();
 		break;
 	case cm_prefs_sha384:
@@ -52,8 +53,10 @@ cm_prefs_ossl_hash_by_pref(enum cm_prefs_digest digest)
 	case cm_prefs_sha512:
 		return EVP_sha512();
 		break;
+	default:
+		return EVP_sha256();
+		break;
 	}
-	return EVP_sha256();
 }
 
 const EVP_MD *
@@ -73,6 +76,7 @@ cm_prefs_ossl_cipher_by_pref(enum cm_prefs_cipher cipher)
 		return EVP_des_ede3_cbc();
 		break;
 	case cm_prefs_aes128:
+    case cm_prefs_nodigest:
 		return EVP_aes_128_cbc();
 		break;
 	case cm_prefs_aes192:
@@ -81,8 +85,10 @@ cm_prefs_ossl_cipher_by_pref(enum cm_prefs_cipher cipher)
 	case cm_prefs_aes256:
 		return EVP_aes_256_cbc();
 		break;
+	default:
+		return EVP_aes_128_cbc();
+		break;
 	}
-	return EVP_aes_128_cbc();
 }
 
 const EVP_CIPHER *

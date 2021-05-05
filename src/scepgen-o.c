@@ -320,6 +320,7 @@ build_pkimessage(EVP_PKEY *key, X509 *signer, STACK_OF(X509) *certs,
 	digest = NULL;
 	switch (pref_digest) {
 	case cm_prefs_sha256:
+	case cm_prefs_nodigest:
 		digest = OBJ_nid2obj(NID_sha256);
 		break;
 	case cm_prefs_sha384:
@@ -743,9 +744,8 @@ cm_scepgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		filename = util_build_next_filename(entry->cm_key_storage_location,
 						    entry->cm_key_next_marker);
 		if (filename == NULL) {
-			cm_log(0, "Error opening key file \"%s\" "
-			       "for reading: %s.\n",
-			       filename, strerror(errno));
+			cm_log(0, "Error opening key file for reading: %s.\n",
+			       strerror(errno));
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
 		new_pkey = key_from_file(filename, entry);

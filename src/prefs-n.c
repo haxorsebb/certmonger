@@ -38,6 +38,7 @@ cm_prefs_nss_sig_alg(SECKEYPrivateKey *pkey)
 			return SEC_OID_SHA1;
 			break;
 		case cm_prefs_sha256:
+		case cm_prefs_nodigest:
 			return SEC_OID_SHA256;
 			break;
 		case cm_prefs_sha384:
@@ -46,9 +47,10 @@ cm_prefs_nss_sig_alg(SECKEYPrivateKey *pkey)
 		case cm_prefs_sha512:
 			return SEC_OID_SHA512;
 			break;
+		default:
+			return SEC_OID_SHA256;
+			break;
 		}
-		return SEC_OID_SHA256;
-		break;
 	case rsaKey:
 		switch (cm_prefs_preferred_digest()) {
 		case cm_prefs_md5:
@@ -58,6 +60,7 @@ cm_prefs_nss_sig_alg(SECKEYPrivateKey *pkey)
 			return SEC_OID_PKCS1_SHA1_WITH_RSA_ENCRYPTION;
 			break;
 		case cm_prefs_sha256:
+		case cm_prefs_nodigest:
 			return SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION;
 			break;
 		case cm_prefs_sha384:
@@ -66,9 +69,10 @@ cm_prefs_nss_sig_alg(SECKEYPrivateKey *pkey)
 		case cm_prefs_sha512:
 			return SEC_OID_PKCS1_SHA512_WITH_RSA_ENCRYPTION;
 			break;
+		default:
+			return SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION;
+			break;
 		}
-		return SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION;
-		break;
 	case rsaPssKey:
 		return SEC_OID_PKCS1_RSA_PSS_SIGNATURE;
 		break;
@@ -83,10 +87,13 @@ cm_prefs_nss_sig_alg(SECKEYPrivateKey *pkey)
 			break;
 		case cm_prefs_sha384:
 		case cm_prefs_sha512:
+		case cm_prefs_nodigest:
+			return SEC_OID_NIST_DSA_SIGNATURE_WITH_SHA256_DIGEST;
+			break;
+		default:
+			return SEC_OID_NIST_DSA_SIGNATURE_WITH_SHA256_DIGEST;
 			break;
 		}
-		return SEC_OID_NIST_DSA_SIGNATURE_WITH_SHA256_DIGEST;
-		break;
 	case ecKey:
 		switch (cm_prefs_preferred_digest()) {
 		case cm_prefs_md5:
@@ -94,6 +101,7 @@ cm_prefs_nss_sig_alg(SECKEYPrivateKey *pkey)
 			return SEC_OID_ANSIX962_ECDSA_SHA224_SIGNATURE;
 			break;
 		case cm_prefs_sha256:
+		case cm_prefs_nodigest:
 			return SEC_OID_ANSIX962_ECDSA_SHA256_SIGNATURE;
 			break;
 		case cm_prefs_sha384:
@@ -102,9 +110,10 @@ cm_prefs_nss_sig_alg(SECKEYPrivateKey *pkey)
 		case cm_prefs_sha512:
 			return SEC_OID_ANSIX962_ECDSA_SHA512_SIGNATURE;
 			break;
+		default:
+			return SEC_OID_ANSIX962_ECDSA_SHA256_SIGNATURE;
+			break;
 		}
-		return SEC_OID_ANSIX962_ECDSA_SHA256_SIGNATURE;
-		break;
 	default:
 		return SEC_OID_UNKNOWN;
 		break;
@@ -122,6 +131,7 @@ cm_prefs_nss_dig_alg(void)
 		return SEC_OID_SHA1;
 		break;
 	case cm_prefs_sha256:
+    case cm_prefs_nodigest:
 		return SEC_OID_SHA256;
 		break;
 	case cm_prefs_sha384:
@@ -130,8 +140,10 @@ cm_prefs_nss_dig_alg(void)
 	case cm_prefs_sha512:
 		return SEC_OID_SHA512;
 		break;
+	default:
+		return SEC_OID_SHA256;
+		break;
 	}
-	return SEC_OID_SHA256;
 }
 
 unsigned int
@@ -153,6 +165,8 @@ cm_prefs_nss_dig_alg_len(void)
 	case SEC_OID_SHA512:
 		return 512 / 8;
 		break;
+	default:
+		return 0;
+		break;
 	}
-	return 0;
 }

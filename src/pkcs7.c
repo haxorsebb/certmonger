@@ -930,9 +930,8 @@ cm_pkcs7_verify_signed(unsigned char *data, size_t length,
 	PKCS7_SIGNER_INFO *si;
 	BIO *in, *out = NULL;
 	const unsigned char *u;
-	char *s, buf[LINE_MAX], *p, *q;
+	char *s, *p, *q;
 	int ret = -1, i;
-	long error;
 
 	if (digest != NULL) {
 		*digest = NULL;

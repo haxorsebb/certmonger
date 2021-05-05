@@ -121,7 +121,7 @@ main(int argc, const char **argv)
 	const char *serial = NULL, *template = NULL;
 	const char *uid = NULL, *pwd = NULL, *pwdfile = NULL;
 	const char *udn = NULL, *pin = NULL, *pinfile = NULL;
-	char *csr = NULL, *csre = NULL;
+	char *csr = NULL;
 	char *poptarg;
 	struct {
 		char *name;

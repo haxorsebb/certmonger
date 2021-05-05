@@ -3690,9 +3690,8 @@ request_modify(DBusConnection *conn, DBusMessage *msg,
 				return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 			}
 		}
-	} else {
-		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
+	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
 /* org.fedorahosted.certmonger.request.resubmit */
