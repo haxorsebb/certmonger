@@ -4063,6 +4063,7 @@ thumbprint(const char *s, SECOidTag tag, int bits)
 	}
 	length = strlen(t);
 	if (length == 0) {
+		free(t);
 		goto done;
 	}
 	u = malloc(length + 1);
