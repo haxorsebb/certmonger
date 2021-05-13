@@ -60,14 +60,19 @@ get_error_message(krb5_context ctx, krb5_error_code kcode)
 {
 	const char *ret;
 #ifdef HAVE_KRB5_GET_ERROR_MESSAGE
-	ret = ctx ? krb5_get_error_message(ctx, kcode) : NULL;
-	if (ret == NULL) {
+	const char *kret;
+	kret = ctx ? krb5_get_error_message(ctx, kcode) : NULL;
+	if (kret == NULL) {
 		ret = error_message(kcode);
+	} else {
+		ret = strdup(kret);
+		krb5_free_error_message(ctx, kret);
 	}
+	return ret;
 #else
 	ret = error_message(kcode);
-#endif
 	return strdup(ret);
+#endif
 }
 
 char *
@@ -121,7 +126,7 @@ cm_submit_ccache_realm(char **msg)
 	if (data == NULL) {
 		fprintf(stderr, "Error retrieving principal realm.\n");
 		if (msg != NULL) {
-			*msg = "Error retrieving principal realm.\n";
+			*msg = strdup("Error retrieving principal realm.\n");
 		}
 		return NULL;
 	}
@@ -129,7 +134,7 @@ cm_submit_ccache_realm(char **msg)
 	if (ret == NULL) {
 		fprintf(stderr, "Out of memory for principal realm.\n");
 		if (msg != NULL) {
-			*msg = "Out of memory for principal realm.\n";
+			*msg = strdup("Out of memory for principal realm.\n");
 		}
 		return NULL;
 	}
