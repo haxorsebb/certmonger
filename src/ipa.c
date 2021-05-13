@@ -1176,6 +1176,9 @@ main(int argc, const char **argv)
 			/* strip off the trailing xml and replace with json */
 			if ((strlen(xmlrpc_uri) + 1) > sizeof(uri)) {
 				printf(_("xmlrpc_uri is longer than %ld.\n"), sizeof(uri) - 2);
+				free(profile);
+				free(issuer);
+				free(reqprinc);
 				return CM_SUBMIT_STATUS_UNCONFIGURED;
 			}
 			snprintf(uri, strlen(xmlrpc_uri) - 2, "%s", xmlrpc_uri);
