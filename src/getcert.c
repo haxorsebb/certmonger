@@ -830,7 +830,7 @@ request(const char *argv0, int argc, const char **argv)
 		return 1;
 	}
 	krealm = NULL;
-	if ((kret = krb5_get_default_realm(kctx, &krealm)) != 0) {
+	if (krb5_get_default_realm(kctx, &krealm) != 0) {
 		krealm = NULL;
 	}
 
@@ -1926,7 +1926,7 @@ set_tracking(const char *argv0, const char *category,
 		return 1;
 	}
 	krealm = NULL;
-	if ((kret = krb5_get_default_realm(kctx, &krealm)) != 0) {
+	if (krb5_get_default_realm(kctx, &krealm) != 0) {
 		krealm = NULL;
 	}
 
