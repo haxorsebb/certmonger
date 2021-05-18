@@ -11,7 +11,7 @@ for size in 2048 3072 4096 ; do
 		-s "cn=T$size" -c "cn=T$size" \
 		-x -t u
 	# Export the key.
-	pk12util -d "$tmpdir" -o $size.p12 -W "" -n "keyi$size"
+	pk12util -C AES-128-CBC -c AES-128-CBC -d "$tmpdir" -o $size.p12 -W "" -n "keyi$size"
 	openssl pkcs12 -in $size.p12 -out key.$size -passin pass: -nodes -nocerts 2>&1 | ( grep -v "^MAC verified OK$" || : )
 	# Read the public key and cache it.
 	cat > entry.openssl.$size <<- EOF

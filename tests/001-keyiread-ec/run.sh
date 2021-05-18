@@ -18,7 +18,7 @@ for size in nistp256 nistp384 nistp521 ; do
 	EOF
 	$toolsdir/keyiread entry.nss.$size
 	# Export the key.
-	if ! pk12util -d "$tmpdir" -o $size.p12 -W "" -n "keyi$size" > /dev/null 2>&1 ; then
+	if ! pk12util -C AES-128-CBC -c AES-128-CBC -d "$tmpdir" -o $size.p12 -W "" -n "keyi$size" > /dev/null 2>&1 ; then
 		echo Error exporting key for $size, continuing.
 		continue
 	fi

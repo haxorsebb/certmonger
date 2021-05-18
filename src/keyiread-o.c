@@ -182,9 +182,13 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				pubikey = cm_store_hex_from_bin(NULL, tmp, length);
 			}
 			tmp = NULL;
-			length = i2d_PublicKey(pkey, (unsigned char **) &tmp);
+			length = i2d_PublicKey(pkey, NULL);
 			if (length > 0) {
-				pubkey = cm_store_hex_from_bin(NULL, tmp, length);
+				tmp = malloc(length);
+				if (tmp != NULL) {
+					length = i2d_PublicKey(pkey, (unsigned char **) &tmp);
+					pubkey = cm_store_hex_from_bin(NULL, tmp, length);
+				}
 			}
 		}
 		fprintf(fp, "%s/%d/%s/%s\n", alg, bits, pubikey, pubkey);
@@ -219,9 +223,13 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				pubikey = cm_store_hex_from_bin(NULL, tmp, length);
 			}
 			tmp = NULL;
-			length = i2d_PublicKey(nextpkey, (unsigned char **) &tmp);
+			length = i2d_PublicKey(nextpkey, NULL);
 			if (length > 0) {
-				pubkey = cm_store_hex_from_bin(NULL, tmp, length);
+				tmp = malloc(length);
+				if (tmp != NULL) {
+					length = i2d_PublicKey(nextpkey, (unsigned char **) &tmp);
+					pubkey = cm_store_hex_from_bin(NULL, tmp, length);
+				}
 			}
 			fprintf(fp, "%s/%d/%s/%s\n", alg, bits, pubikey, pubkey);
 		} else {

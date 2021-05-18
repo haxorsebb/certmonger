@@ -2,7 +2,7 @@
 
 cd "$tmpdir"
 
-scheme="${scheme:-dbm:}"
+scheme="${scheme:-sql:}"
 
 source "$srcdir"/functions
 initnssdb "$scheme$tmpdir"

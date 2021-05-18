@@ -51,7 +51,7 @@ listdb() {
 }
 
 extract() {
-	pk12util -d "$tmpdir"/db -n first -o "$tmpdir"/files/p12 -W "" -K ""
+	pk12util -C AES-128-CBC -c AES-128-CBC -d "$tmpdir"/db -n first -o "$tmpdir"/files/p12 -W "" -K ""
 	openssl pkcs12 -nokeys -nomacver -in "$tmpdir"/files/p12 -passin pass: -nodes | awk '/BEGIN/,/END/{print}' > "$1"/cert
 	openssl pkcs12 -nocerts -nomacver -in "$tmpdir"/files/p12 -passin pass: -nodes | awk '/BEGIN/,/END/{print}' > "$1"/key
 	echo -n cert:

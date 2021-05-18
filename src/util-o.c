@@ -46,12 +46,14 @@
 void
 util_o_init(void)
 {
+#if OPENSSL_VERSION_MAJOR < 3
 #if defined(HAVE_DECL_OPENSSL_ADD_ALL_ALGORITHMS) && HAVE_DECL_OPENSSL_ADD_ALL_ALGORITHMS
 	OpenSSL_add_all_algorithms();
 #elif defined(HAVE_DECL_OPENSSL_ADD_SSL_ALGORITHMS) && HAVE_DECL_OPENSSL_ADD_SSL_ALGORITHMS
 	OpenSSL_add_ssl_algorithms();
 #else
 	SSL_library_init();
+#endif
 #endif
 }
 

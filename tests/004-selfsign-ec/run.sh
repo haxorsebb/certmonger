@@ -39,7 +39,7 @@ run_certutil -d "$tmpdir" -S -n keyi$size \
 	-s "cn=T$size" -c "cn=T$size" \
 	-x -t u -k ec -q $size
 # Export the certificate and key.
-pk12util -d "$tmpdir" -o $size.p12 -W "" -n "keyi$size" > /dev/null 2>&1
+pk12util -C AES-128-CBC -c AES-128-CBC -d "$tmpdir" -o $size.p12 -W "" -n "keyi$size" > /dev/null 2>&1
 openssl pkcs12 -in $size.p12 -passin pass: -out key.$size -nodes > /dev/null 2>&1
 # Read that OpenSSL key.
 cat > entry.$size <<- EOF

@@ -31,7 +31,7 @@ for preserve in 1 0 ; do
 		-s "cn=T$size" -c "cn=T$size" \
 		-x -t u -m 4660 -f pinfile
 	# Export the certificate and key.
-	pk12util -d "$tmpdir" -k pinfile -o $size.p12 -W "" -n "i$size" > /dev/null 2>&1
+	pk12util -C AES-128-CBC -c AES-128-CBC -d "$tmpdir" -k pinfile -o $size.p12 -W "" -n "i$size" > /dev/null 2>&1
 	openssl pkcs12 -in $size.p12 -passin pass: -nocerts -passout pass:${pin:- -nodes} | awk '/^-----BEGIN/,/^-----END/{print}' > keyi$size
 	openssl pkcs12 -in $size.p12 -passin pass: -nokeys  -nodes | awk '/^-----BEGIN/,/^-----END/{print}' > certi$size
 	# Grab a copy of the public key.
@@ -101,14 +101,6 @@ for preserve in 1 0 ; do
 	echo '(submit OpenSSL)'
 	$toolsdir/submit ca.self entry.openssl.$size > cert.openssl.$size
 	grep ^key.\*count= entry.openssl.$size | LANG=C sort
-	# Now compare the self-signed certificates built from the keys.
-	if ! cmp cert.nss.$size cert.openssl.$size ; then
-		echo First round certificates differ:
-		cat cert.nss.$size cert.openssl.$size
-		exit 1
-	else
-		echo First round certificates OK.
-	fi
 
 	# Now generate new keys, CSRs, and certificates (NSS).
 	echo "NSS keys before re-keygen (preserve=$preserve,pin=\"$pin\"):"

@@ -2,7 +2,7 @@
 
 cd $tmpdir
 
-scheme="${scheme:-dbm}"
+scheme="${scheme:-sql}"
 cat > $tmpdir/entrycb1 <<- EOF
 id=EntryCB1
 ca_name=CAB1

@@ -11,7 +11,6 @@ key_requested_count=0
 (submit OpenSSL)
 key_issued_count=0
 key_requested_count=1
-First round certificates OK.
 NSS keys before re-keygen (preserve=1,pin=""):
 <-> rsa      originalhex   NSS Certificate DB:i2048
 key_issued_count=0
@@ -98,7 +97,6 @@ key_requested_count=0
 (submit OpenSSL)
 key_issued_count=0
 key_requested_count=1
-First round certificates OK.
 NSS keys before re-keygen (preserve=1,pin="password"):
 <-> rsa      originalhex   NSS Certificate DB:i2048
 key_issued_count=0
@@ -185,7 +183,6 @@ key_requested_count=0
 (submit OpenSSL)
 key_issued_count=0
 key_requested_count=1
-First round certificates OK.
 NSS keys before re-keygen (preserve=0,pin=""):
 <-> rsa      originalhex   NSS Certificate DB:i2048
 key_issued_count=0
@@ -270,7 +267,6 @@ key_requested_count=0
 (submit OpenSSL)
 key_issued_count=0
 key_requested_count=1
-First round certificates OK.
 NSS keys before re-keygen (preserve=0,pin="password"):
 <-> rsa      originalhex   NSS Certificate DB:i2048
 key_issued_count=0
