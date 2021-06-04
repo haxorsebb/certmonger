@@ -26,6 +26,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#include <openssl/bio.h>
 #include <openssl/err.h>
 #include <openssl/pem.h>
 #include <openssl/x509.h>
@@ -326,6 +327,7 @@ cm_submit_o_decrypt_envelope(const unsigned char *envelope,
 	const unsigned char *u;
 	long error, l;
 	int result = 0;
+	X509 *old_cert = NULL;
 
 	if ((args->entry->cm_key_next_marker != NULL) &&
 	    (strlen(args->entry->cm_key_next_marker) > 0)) {
@@ -375,13 +377,47 @@ cm_submit_o_decrypt_envelope(const unsigned char *envelope,
 		cm_log(1, "Out of memory.\n");
 		goto done;
 	}
-	if (pkey_next != NULL) {
-		result = PKCS7_decrypt(p7, pkey_next, NULL, out, 0);
-		if (result == 1) {
+	if (args->entry->cm_cert != NULL) {
+		BIO *bio = NULL;
+		cm_log(3, "Parsing existing certificate\n");
+		bio = BIO_new_mem_buf(args->entry->cm_cert, -1);
+		if (bio == NULL) {
+			cm_log(1, "Out of memory.\n");
 			goto done;
+		} else {
+			old_cert = PEM_read_bio_X509(bio, NULL, NULL, NULL);
+			BIO_free(bio);
+			if (old_cert == NULL) {
+				cm_log(1, "Error parsing certificate \"%s\".\n", args->entry->cm_cert);
+				goto done;
+			}
 		}
 	}
-	result = PKCS7_decrypt(p7, pkey, NULL, out, 0);
+	cm_log(3, "old_cert is %s\n", old_cert == NULL ? "NULL" : "present");
+	if (pkey_next != NULL) {
+		result = PKCS7_decrypt(p7, pkey_next, old_cert, out, 0);
+		if (result == 1) {
+			goto done;
+		} else {
+			error = errno;
+			cm_log(1, "Error decrypting PKCS#7 with pkey_next: %s.\n",
+					strerror(error));
+			while ((error = ERR_get_error()) != 0) {
+				ERR_error_string_n(error, buf, sizeof(buf));
+				cm_log(1, "%s\n", buf);
+			}
+		}
+	}
+	result = PKCS7_decrypt(p7, pkey, old_cert, out, 0);
+	if (result == 0) {
+		error = errno;
+		cm_log(1, "Error decrypting PKCS#7 with pkey: %s.\n",
+				strerror(error));
+		while ((error = ERR_get_error()) != 0) {
+			ERR_error_string_n(error, buf, sizeof(buf));
+			cm_log(1, "%s\n", buf);
+		}
+	}
 done:
 	if (result == 1) {
 		p = NULL;
@@ -410,5 +446,8 @@ done:
 	}
 	if (out != NULL) {
 		BIO_free(out);
+	}
+	if (old_cert != NULL) {
+		X509_free(old_cert);
 	}
 }

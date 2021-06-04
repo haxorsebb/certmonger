@@ -82,7 +82,7 @@ cm_submit_n_tag_from_nid(int nid)
 
 static SECItem *
 try_to_decode(void *parent, PLArenaPool *arena, SECItem *item,
-	      SECKEYPrivateKey *privkey)
+	      SECKEYPrivateKey *privkey, X509 *old_cert)
 {
 	SECOidTag tag;
 	SECItem *ret = NULL, param, *parameters;
@@ -291,6 +291,7 @@ cm_submit_n_decrypt_envelope(const unsigned char *envelope,
 	struct cm_pin_cb_data cb_data;
 	int n_tokens, ec;
 	struct cm_submit_decrypt_envelope_args *args = decrypt_userdata;
+	X509 *old_cert = NULL;
 
 	util_o_init();
 	ERR_load_crypto_strings();
@@ -430,6 +431,23 @@ next_slot:
 			break;
 		}
 	}
+	if (args->entry->cm_cert != NULL) {
+		BIO *bio = NULL;
+		cm_log(3, "Parsing existing certificate\n");
+		bio = BIO_new_mem_buf(args->entry->cm_cert, -1);
+		if (bio == NULL) {
+			cm_log(1, "Out of memory.\n");
+			goto done;
+		} else {
+			old_cert = PEM_read_bio_X509(bio, NULL, NULL, NULL);
+			BIO_free(bio);
+			if (old_cert == NULL) {
+				cm_log(1, "Error parsing certificate \"%s\".\n", args->entry->cm_cert);
+				goto done;
+			}
+		}
+	}
+	cm_log(3, "old_cert is %s\n", old_cert == NULL ? "NULL" : "present");
 
 	/* Now that we're logged in, try to decrypt the enveloped data. */
 	plain = NULL;
@@ -445,7 +463,7 @@ next_slot:
 			     !PRIVKEY_LIST_END(kle, keylist);
 			     kle = PRIVKEY_LIST_NEXT(kle)) {
 				plain = try_to_decode(args->entry, arena, &item,
-						      kle->key);
+						      kle->key, old_cert);
 				if (plain != NULL) {
 					break;
 				}
@@ -481,5 +499,8 @@ done:
 		if (error != SECSuccess) {
 			cm_log(1, "Error shutting down NSS.\n");
 		}
+	}
+	if (old_cert != NULL) {
+		X509_free(old_cert);
 	}
 }
