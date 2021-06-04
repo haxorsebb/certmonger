@@ -5,13 +5,19 @@ getcert
 
 .SH SYNOPSIS
  getcert request [options]
- getcert resubmit [options]
  getcert start\-tracking [options]
- getcert status [options]
  getcert stop\-tracking [options]
+ getcert resubmit [options]
+ getcert rekey [options]
+ getcert refresh [options]
  getcert list [options]
+ getcert status [options]
+ getcert add\-ca [options]
+ getcert add\-scep-ca [options]
  getcert list\-cas [options]
- getcert refresh\-cas [options]
+ getcert modify\-ca [options]
+ getcert refresh\-ca [options]
+ getcert remove\-ca [options]
 
 .SH DESCRIPTION
 The \fIgetcert\fR tool issues requests to a @CM_DBUS_NAME@ service on
