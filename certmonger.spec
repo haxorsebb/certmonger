@@ -128,6 +128,7 @@ sed -i 's,^# chkconfig: - ,# chkconfig: 345 ,g' sysvinit/certmonger.in
 %endif
 
 %build
+autoreconf -i -f
 %configure \
 %if %{systemd}
 	--enable-systemd \
