@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: certmonger 0.79\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2017-02-26 02:20-0500\n"
-"PO-Revision-Date: 2021-05-15 03:02+0000\n"
+"PO-Revision-Date: 2021-06-15 06:04+0000\n"
 "Last-Translator: simmon <simmon@nplob.com>\n"
 "Language-Team: Korean <https://translate.fedoraproject.org/projects/"
 "certmonger/master/ko/>\n"
@@ -1348,7 +1348,7 @@ msgstr "  -v\t모든 오류를 상세히 보고합니다\n"
 #: src/getcert.c:4840
 #, c-format
 msgid "Usage: %s start-tracking [options]\n"
-msgstr "사용법: %s 시작-추적하기 [선택]\n"
+msgstr "사용법: %s 시작-추적하기 [options]\n"
 
 #: src/getcert.c:4843
 msgid "* If modifying an existing request:\n"
@@ -1393,7 +1393,7 @@ msgstr "  -A ADDRESS\t요청된 IP 주소를 재정의합니다\n"
 #: src/getcert.c:4888
 #, c-format
 msgid "Usage: %s stop-tracking [options]\n"
-msgstr "사용법: %s 멈춤-추적하기 [선택]\n"
+msgstr "사용법: %s 멈춤-추적하기 [options]\n"
 
 #: src/getcert.c:4891 src/getcert.c:4913 src/getcert.c:4961 src/getcert.c:5039
 msgid "* By request identifier:\n"
@@ -1407,7 +1407,7 @@ msgstr "  -i NAME\t추적 요청을 위한 별명\n"
 #: src/getcert.c:4910
 #, c-format
 msgid "Usage: %s resubmit [options]\n"
-msgstr "사용법: %s 다시 제출 [선택]\n"
+msgstr "사용법: %s 다시 제출 [options]\n"
 
 #: src/getcert.c:4920 src/getcert.c:4968 src/getcert.c:5046
 msgid "  -f FILE\tPEM file for certificate\n"
@@ -1428,7 +1428,7 @@ msgstr "  -c CA\t\t현재 것 보다 더 지정된 CA를 사용합니다\n"
 #: src/getcert.c:4958
 #, c-format
 msgid "Usage: %s rekey [options]\n"
-msgstr "사용법: %s rekey [선택]\n"
+msgstr "사용법: %s rekey [options]\n"
 
 #: src/getcert.c:4993
 msgid "  -G TYPE\ttype of new key to be generated\n"
@@ -1441,7 +1441,7 @@ msgstr "  -g SIZE\t생성된 새로운 키의 크기\n"
 #: src/getcert.c:5008
 #, c-format
 msgid "Usage: %s list [options]\n"
-msgstr "사용법: %s list [선택]\n"
+msgstr "사용법: %s list [options]\n"
 
 #: src/getcert.c:5011 src/getcert.c:5035 src/getcert.c:5078 src/getcert.c:5093
 #: src/getcert.c:5109 src/getcert.c:5123 src/getcert.c:5142 src/getcert.c:5156
@@ -1493,7 +1493,7 @@ msgstr "  -s\t세션 버스에 certmonger 서비스로 연결합니다\n"
 #: src/getcert.c:5033
 #, c-format
 msgid "Usage: %s refresh [options]\n"
-msgstr "사용법: %s refresh [선택]\n"
+msgstr "사용법: %s refresh [options]\n"
 
 #: src/getcert.c:5036
 msgid "  -a\trefresh information about all outstanding requests\n"
@@ -1502,7 +1502,7 @@ msgstr "  -a\t모든 미결된 요청에 대하여 정보를 갱신합니다\n"
 #: src/getcert.c:5056
 #, c-format
 msgid "Usage: %s status [options]\n"
-msgstr "사용법: %s status [선택]\n"
+msgstr "사용법: %s status [option]\n"
 
 #: src/getcert.c:5059
 msgid "* Selecting a specific request:\n"
@@ -1531,7 +1531,7 @@ msgstr "  -f FILE\t이 PEM에서 저장된 인증서를 위해 상태를 반환�
 #: src/getcert.c:5074
 #, c-format
 msgid "Usage: %s list-cas [options]\n"
-msgstr "사용법: %s list-cas [선택]\n"
+msgstr "사용법: %s list-cas [option]\n"
 
 #: src/getcert.c:5079
 msgid "  -c CA\tlist only information about the CA with this name\n"
@@ -1540,7 +1540,7 @@ msgstr "  -c CA\t이 이름과 함께 CA에 대하여 정보만 목록화합니�
 #: src/getcert.c:5089
 #, c-format
 msgid "Usage: %s refresh-ca [options]\n"
-msgstr "사용법: %s refresh-ca [선택]\n"
+msgstr "사용법: %s refresh-ca [option]\n"
 
 #: src/getcert.c:5094
 msgid "  -c CA\trefresh information about the CA with this name\n"
@@ -1553,7 +1553,7 @@ msgstr "  -a\t알려진 모든 CA에 대하여 정보만 갱신합니다\n"
 #: src/getcert.c:5106
 #, c-format
 msgid "Usage: %s add-ca [options]\n"
-msgstr "사용법: %s add-ca [선택]\n"
+msgstr "사용법: %s add-ca [options]\n"
 
 #: src/getcert.c:5110 src/getcert.c:5124
 msgid "  -c CA\t\tnickname to give to the new CA configuration\n"
@@ -1566,7 +1566,7 @@ msgstr "  -e CMD\tCA와 함께 통신하는데 동작하는 도움 명령\n"
 #: src/getcert.c:5120
 #, c-format
 msgid "Usage: %s add-scep-ca [options]\n"
-msgstr "사용법: %s add-scep-ca [선택]\n"
+msgstr "사용법: %s add-scep-ca [options]\n"
 
 #: src/getcert.c:5125
 msgid "  -u URL\tlocation of SCEP server\n"
@@ -1595,7 +1595,7 @@ msgstr "  -n\tSCEP 새로운 기능을 사용하지 않습니다\n"
 #: src/getcert.c:5139
 #, c-format
 msgid "Usage: %s modify-ca [options]\n"
-msgstr "사용법: %s modify-ca [선택]\n"
+msgstr "사용법: %s modify-ca [options]\n"
 
 #: src/getcert.c:5143
 msgid "  -c CA\t\tnickname of the CA configuration\n"
@@ -1608,7 +1608,7 @@ msgstr "  -e CMD\tCA와 함께 통신하는데 동작하는 최신화된 도움 
 #: src/getcert.c:5153
 #, c-format
 msgid "Usage: %s remove-ca [options]\n"
-msgstr "사용법: %s remove-ca [선택]\n"
+msgstr "사용법: %s remove-ca [options]\n"
 
 #: src/getcert.c:5157
 msgid "  -c CA\tnickname of CA configuration to remove\n"
@@ -1617,7 +1617,7 @@ msgstr "  -c CA\t제거에 CA 구성 별명\n"
 #: src/getcert.c:5172
 #, c-format
 msgid "Usage: %s command [options]\n"
-msgstr "사용법: %s command [선택]\n"
+msgstr "사용법: %s command [options]\n"
 
 #: src/getcert.c:5174
 msgid "request a new certificate from a CA\n"
