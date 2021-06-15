@@ -27,7 +27,7 @@
 %bcond_with xmlrpc
 
 Name:		certmonger
-Version:	0.79.13
+Version:	0.79.14
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -264,6 +264,36 @@ exit 0
 %endif
 
 %changelog
+* Tue Jun 14 2021 Rob Crittenden <rcritten@redhat.com> - 0.79.14-1
+- update to 0.79.14
+  -  Fix local CA to work under FIPS
+  -  Translated using Weblate (Portuguese (Brazil))
+  -  Translated using Weblate (Dutch)
+  -  Translated using Weblate (Swedish)
+  -  Translated using Weblate (Turkish)
+  -  Translated using Weblate (Polish)
+  -  Translated using Weblate (Russian)
+  -  Translated using Weblate (Ukrainian)
+  -  Translated using Weblate (Korean)
+  -  If calling a CA helper fails, call cm_casave_done to reap
+  -  Update cadata test to reflect non-NULL returned by helper
+  -  Drop hardcoded values for Apache NSS db for IPA < v4
+  -  Add NULL checks before string compares when analyzing a cert
+  -  Pass /etc/ipa/ca.crt if it exists to libcurl, else rely on system
+  -  Close file in casave on NSS database login error
+  -  Remove remaining reference to token variable in certread-n
+  -  Free the thumbprint variable before returning
+  -  Free the error message when returning
+  -  Fix compiler warnings
+  -  clang: Unused variable assignment
+  -  clang: Remove memory leak on failure
+  -  clang: free error_message when finding the realm
+  -  Display not_before in getcert output
+  -  Revert "Revert three Korean translations because they change the order"
+  -  Fix list of sub-commands in the getcert man page
+  -  Use the system env and not the session env for the local CA
+  -  Add autoreconf to in-tree rpm spec file
+
 * Tue Oct 20 2020 Rob Crittenden <rcritten@redhat.com> - 0.79.13-1
 - update to 0.79.13:
   -  Fix NSS shutdown issues when obtaining the internal token name
