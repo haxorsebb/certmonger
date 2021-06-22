@@ -110,6 +110,12 @@ main(int argc, char **argv)
 		printf("notification: COMMAND:%s\n", dest);
 		break;
 	}
+    if (cm_prefs_preferred_rsa_key_size() == CM_DEFAULT_PUBKEY_SIZE) {
+		// So we don't have to dynamically update expected.out
+		printf("RSA key size: default\n");
+	} else {
+		printf("RSA key size: %d\n", cm_prefs_preferred_rsa_key_size());
+	}
 
 	return 0;
 }

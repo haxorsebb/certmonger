@@ -520,6 +520,23 @@ cm_prefs_preferred_key_algorithm(void)
 	return CM_DEFAULT_PUBKEY_TYPE;
 }
 
+int
+cm_prefs_preferred_rsa_key_size(void)
+{
+	char *keysize;
+	keysize = cm_prefs_config(NULL, "rsa_key_size");
+	int size = CM_DEFAULT_PUBKEY_SIZE;
+
+	if (keysize != NULL) {
+		size = atoi(keysize);
+		if ((size == 0) || (size < CM_MINIMUM_RSA_KEY_SIZE)) {
+			size = CM_DEFAULT_PUBKEY_SIZE;
+		}
+		free(keysize);
+	}
+	return size;
+}
+
 const char *
 cm_prefs_nss_ca_trust(void)
 {

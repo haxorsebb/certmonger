@@ -50,4 +50,11 @@ notification_destination = logger "The sky is falling!"
 EOF
 $toolsdir/prefs
 
+echo '['RSA key size default.']'
+cat > certmonger.conf << EOF
+[defaults]
+rsa_key_size = 4096
+EOF
+$toolsdir/prefs
+
 echo '['Test complete.']'

@@ -49,6 +49,12 @@ signing requests, and used when self\-signing certificates.
 @MAN_EC@\fIEC\fR (also known as \fIECDSA\fR) is also supported.
 The default is \fIRSA\fP.
 
+.IP rsa_key_size
+This is the size of an RSA key if the value is not included in
+a certificate request. If this value is not set then the default is
+@CM_DEFAULT_PUBKEY_SIZE@. The minimum value allowed
+is @CM_MINIMUM_RSA_KEY_SIZE@.
+
 .IP symmetric_cipher
 This is the symmetric cipher which will be used to encrypt private keys stored
 in OpenSSL's PEM format.  Recognized values include \fIaes128\fP and

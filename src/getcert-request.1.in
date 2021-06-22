@@ -61,7 +61,8 @@ type of the keys to be generated.  If not specified, a reasonable default
 \fB\-g\fR \fIBITS\fR, \fB\-\-key\-size\fR=\fIBITS\fR
 In case a new key pair needs to be generated, this option specifies the
 size of the key.  If not specified, a reasonable default (currently
-@CM_DEFAULT_PUBKEY_SIZE@ bits) will be used.
+@CM_DEFAULT_PUBKEY_SIZE@ bits) will be used. See \fBcertmonger.conf\fR(5)
+for configuration of the default.
 
 .SH TRACKING OPTIONS
 .TP

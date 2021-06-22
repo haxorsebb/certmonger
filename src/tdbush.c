@@ -1330,7 +1330,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	if (param != NULL) {
 		new_entry->cm_key_type.cm_key_gen_size = param->value.n;
 	} else {
-		new_entry->cm_key_type.cm_key_gen_size = CM_DEFAULT_PUBKEY_SIZE;
+		new_entry->cm_key_type.cm_key_gen_size = cm_prefs_preferred_rsa_key_size();
 	}
 	switch (new_entry->cm_key_type.cm_key_gen_algorithm) {
 	case cm_key_rsa:

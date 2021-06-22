@@ -718,6 +718,7 @@ if ! ${configure_dist_target_only:-false} ; then
 	AC_DEFINE_UNQUOTED(CM_DEFAULT_PUBKEY_SIZE,$CM_DEFAULT_PUBKEY_SIZE,[Define to the default public key size.])
 	AC_SUBST(CM_DEFAULT_PUBKEY_SIZE)
 	CM_MINIMUM_RSA_KEY_SIZE=1024
+	AC_SUBST(CM_MINIMUM_RSA_KEY_SIZE)
 	CM_MINIMUM_DSA_KEY_SIZE=512
 	CM_MINIMUM_EC_KEY_SIZE=256
 	AC_DEFINE_UNQUOTED(CM_MINIMUM_RSA_KEY_SIZE,$CM_MINIMUM_RSA_KEY_SIZE,[Define to the minimum key size when generating RSA keys.  Requests to generate smaller keys will be forced to this key size.])
