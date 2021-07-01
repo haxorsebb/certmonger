@@ -6,13 +6,14 @@
 # Göran Uddeborg <goeran@uddeborg.se>, 2011-2013, 2021.
 # Göran Uddeborg <goeran@uddeborg.se>, 2016. #zanata, 2021.
 # Luna Jernberg <bittin@reimu.nl>, 2020.
+# Anders Jonsson <anders.jonsson@norsjovallen.se>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger 0.78.6\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2017-02-26 02:20-0500\n"
-"PO-Revision-Date: 2021-02-10 20:40+0000\n"
-"Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
+"PO-Revision-Date: 2021-07-01 13:04+0000\n"
+"Last-Translator: Anders Jonsson <anders.jonsson@norsjovallen.se>\n"
 "Language-Team: Swedish <https://translate.fedoraproject.org/projects/"
 "certmonger/master/sv/>\n"
 "Language: sv\n"
@@ -20,7 +21,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.4.2\n"
+"X-Generator: Weblate 4.7.1\n"
 
 #: src/casave.c:322 src/casave.c:361 src/dogtag.c:233 src/dogtag.c:238
 #: src/dogtag.c:256 src/dogtag.c:261 src/getcert.c:291
@@ -586,7 +587,7 @@ msgid ""
 "of the -N (subject name), -E (email address), -A (IP address), -D (DNS "
 "name), or -U (extendedKeyUsage) options is used.\n"
 msgstr ""
-"IPA-backänden kräver användning av flaggan -K (huvudnamn) när någon af "
+"IPA-bakänden kräver användning av flaggan -K (huvudnamn) när någon av "
 "flaggorna -N (subjektnamn), -E (e-postadress), -A (IP-adress), -D (DNS-namn) "
 "eller -U (utökad nyckelanvändning) används.\n"
 
@@ -670,8 +671,7 @@ msgid ""
 "None of ID or database directory and nickname or certificate file "
 "specified.\n"
 msgstr ""
-"Ingen av ID eller databaskatalog och smeknamn eller certifikatfil filen "
-"angiven.\n"
+"Ingen av ID eller databaskatalog och smeknamn eller certifikatfil angiven.\n"
 
 #: src/getcert.c:2362
 #, c-format
@@ -1297,7 +1297,7 @@ msgstr "  -U EXTANV\tställ in begärd förlängd nyckelanvändning-OID\n"
 
 #: src/getcert.c:4820 src/getcert.c:4868 src/getcert.c:4929 src/getcert.c:4977
 msgid "  -u KEYUSAGE\tset requested key usage value\n"
-msgstr "  -u NYCELANVÄNDNING\tsätt angivet värde på nyckelanvändning\n"
+msgstr "  -u NYCKELANVÄNDNING\tsätt angivet värde på nyckelanvändning\n"
 
 #: src/getcert.c:4821 src/getcert.c:4930 src/getcert.c:4978
 msgid "  -K NAME\tset requested principal name\n"
@@ -1816,7 +1816,7 @@ msgstr "använd endast ett dedikerat lyssningsuttag"
 
 #: src/main.c:78
 msgid "specify the dedicated listening socket"
-msgstr "angen det dedikerade lyssningsuttaget"
+msgstr "ange det dedikerade lyssningsuttaget"
 
 #: src/main.c:78
 msgid "PATHNAME"
@@ -2133,7 +2133,7 @@ msgstr "Ett internt fel har uppstått."
 
 #: src/tdbush.c:183
 msgid "No matching entry found.\n"
-msgstr "Inga matchande post funnen.\n"
+msgstr "Ingen matchande post funnen.\n"
 
 #: src/tdbush.c:345
 #, c-format
