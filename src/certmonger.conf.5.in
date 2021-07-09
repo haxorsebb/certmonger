@@ -126,6 +126,15 @@ If not set, the value of the \fIvalidity_period\fR setting from the
 \fIselfsign\fR section, if one is set there, will be used.  The default value
 is \fI@CM_DEFAULT_CERT_LIFETIME@\fR.
 
+.SH SCEP
+Within the \fIscep\fR section, these variables and values are recognized:
+
+.IP challenge_password_otp
+This controls whether the SCEP challenge password is treated as a one-time
+password. If set to yes then the challenge password and/or challenge password
+file will be removed from the tracking request after the first certificate
+issuance so will not be sent with renewal requests.  The default is no.
+
 .SH BUGS
 Please file tickets for any that you find at https://fedorahosted.org/certmonger/
 

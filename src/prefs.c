@@ -595,3 +595,18 @@ prefs_max_key_use_count(void)
 	}
 	return count;
 }
+
+int
+cm_prefs_scep_password_otp(void)
+{
+    static int populate = -1;
+    if (populate == -1) {
+        const char *val;
+        val = cm_prefs_config("scep", "challenge_password_otp");
+        if (val == NULL) {
+            val = "no";
+        }
+        populate = cm_prefs_yesno(val);
+    }
+    return populate != -1 ? populate : 0;
+}

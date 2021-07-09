@@ -18,6 +18,8 @@
 #ifndef cmprefs_h
 #define cmprefs_h
 
+#include <time.h>
+
 enum cm_prefs_cipher {
 	cm_prefs_aes128,
 	cm_prefs_aes192,
@@ -72,5 +74,7 @@ const char *cm_prefs_dogtag_sslpinfile(void);
 
 long long prefs_key_end_of_life(time_t ref);
 long prefs_max_key_use_count(void);
+
+int cm_prefs_scep_password_otp(void);
 
 #endif

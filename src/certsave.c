@@ -18,12 +18,25 @@
 #include "config.h"
 #include "certsave.h"
 #include "certsave-int.h"
+#include "prefs.h"
 #include "store-int.h"
+#include "talloc.h"
 
 /* Start writing the certificate from the entry to the configured location. */
 struct cm_certsave_state *
 cm_certsave_start(struct cm_store_entry *entry)
 {
+    /* If saving a SCEP certificate wipe out the challenge password */
+    if ((cm_prefs_scep_password_otp()) &&
+        (entry->cm_template_challenge_password != NULL) &&
+        (entry->cm_scep_nonce != NULL))
+    {
+        talloc_free(entry->cm_template_challenge_password);
+        entry->cm_template_challenge_password = NULL;
+        talloc_free(entry->cm_template_challenge_password_file);
+        entry->cm_template_challenge_password_file = NULL;
+    }
+
 	switch (entry->cm_cert_storage_type) {
 #ifdef HAVE_OPENSSL
 	case cm_cert_storage_file:
