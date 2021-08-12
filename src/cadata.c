@@ -773,6 +773,7 @@ cm_cadata_start_generic(struct cm_store_ca *ca, const char *op,
 		       ca->cm_ca_external_helper, strerror(u));
 		/* return the state so the process can be reaped */
 	}
+	close(error_fd[0]);
 	return ret;
 }
 
