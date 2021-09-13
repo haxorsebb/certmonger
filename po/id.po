@@ -5,13 +5,14 @@
 # Translators:
 # Nalin Dahyabhai <nalin@fedoraproject.org>, 2011
 # Andika Triwidada <andika@gmail.com>, 2021.
+# Didik Supriadi <didiksupriadi41@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger 0.78.6\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2017-02-26 02:20-0500\n"
-"PO-Revision-Date: 2021-09-06 10:04+0000\n"
-"Last-Translator: Andika Triwidada <andika@gmail.com>\n"
+"PO-Revision-Date: 2021-09-13 00:04+0000\n"
+"Last-Translator: Didik Supriadi <didiksupriadi41@gmail.com>\n"
 "Language-Team: Indonesian <https://translate.fedoraproject.org/projects/"
 "certmonger/master/id/>\n"
 "Language: id\n"
@@ -1213,7 +1214,7 @@ msgstr "*Jika menggunakan berkas untuk penyimpanan:\n"
 
 #: src/getcert.c:4799 src/getcert.c:4850 src/getcert.c:4898
 msgid "  -k FILE\tPEM file for private key\n"
-msgstr "-k FILE\tPEM berkas untuk kunci privasi\n"
+msgstr "  -k FILE\tPEM berkas untuk kunci privasi\n"
 
 #: src/getcert.c:4800 src/getcert.c:4851 src/getcert.c:4899
 #, fuzzy
@@ -1226,7 +1227,7 @@ msgstr ""
 
 #: src/getcert.c:4802 src/getcert.c:4853 src/getcert.c:4923 src/getcert.c:4971
 msgid "  -p FILE\tfile which holds the encryption PIN\n"
-msgstr "-p FILE\tfile yang memegang enkripsi suatu PIN\n"
+msgstr "  -p FILE\tfile yang memegang enkripsi suatu PIN\n"
 
 #: src/getcert.c:4803 src/getcert.c:4854 src/getcert.c:4924 src/getcert.c:4972
 msgid "  -P PIN\tPIN value\n"
