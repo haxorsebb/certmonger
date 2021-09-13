@@ -4,21 +4,22 @@
 #
 # Translators:
 # Nalin Dahyabhai <nalin@fedoraproject.org>, 2011
+# Andika Triwidada <andika@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger 0.78.6\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2017-02-26 02:20-0500\n"
-"PO-Revision-Date: 2015-01-05 05:53-0500\n"
-"Last-Translator: Copied by Zanata <copied-by-zanata@zanata.org>\n"
-"Language-Team: Indonesian (http://www.transifex.com/projects/p/certmonger/"
-"language/id/)\n"
+"PO-Revision-Date: 2021-09-06 10:04+0000\n"
+"Last-Translator: Andika Triwidada <andika@gmail.com>\n"
+"Language-Team: Indonesian <https://translate.fedoraproject.org/projects/"
+"certmonger/master/id/>\n"
 "Language: id\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Zanata 3.9.6\n"
+"X-Generator: Weblate 4.8\n"
 
 #: src/casave.c:322 src/casave.c:361 src/dogtag.c:233 src/dogtag.c:238
 #: src/dogtag.c:256 src/dogtag.c:261 src/getcert.c:291
@@ -27,7 +28,7 @@ msgid "Out of memory.\n"
 msgstr ""
 
 #: src/certmaster.c:136
-#, c-format
+#, c-format, fuzzy
 msgid "Unable to determine hostname of CA.\n"
 msgstr "tidak dapat menentukan nama host dari CA.\n"
 
@@ -42,7 +43,7 @@ msgid "Unable to read signing request from environment variable \"%s\".\n"
 msgstr "Tidak dapat membaca tanda permintaan.\n"
 
 #: src/certmaster.c:184
-#, c-format
+#, c-format, fuzzy
 msgid "Error setting up for XMLRPC.\n"
 msgstr "Setting kesalahan untuk XMLRPC\n"
 
@@ -52,7 +53,7 @@ msgstr "Setting kesalahan untuk XMLRPC\n"
 #: src/getcert.c:3244 src/getcert.c:3272 src/getcert.c:3499 src/getcert.c:3603
 #: src/getcert.c:3638 src/getcert.c:3673 src/getcert.c:3710 src/getcert.c:3973
 #: src/getcert.c:4429 src/getcert.c:4547 src/getcert.c:4742
-#, c-format
+#, c-format, fuzzy
 msgid "Error parsing server response.\n"
 msgstr "merespon pelayanan penguraian kesalahan.\n"
 
@@ -188,7 +189,7 @@ msgid "Path \"%s\" is not absolute, attempting to use \"%s\" instead.\n"
 msgstr ""
 
 #: src/getcert.c:120
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "Path \"%s\" is not absolute, and there was an error determining the name of "
 "the current directory.\n"
@@ -242,7 +243,7 @@ msgid "Please verify that the message bus (D-Bus) service is running.\n"
 msgstr ""
 
 #: src/getcert.c:379
-#, c-format
+#, c-format, fuzzy
 msgid "Error creating DBus request message.\n"
 msgstr "permintaan pesan Eror penciptaan DBus.\n"
 
@@ -493,7 +494,7 @@ msgid "connect to the certmonger service on the system bus"
 msgstr ""
 
 #: src/getcert.c:825 src/getcert.c:1893 src/getcert.c:2547
-#, c-format
+#, c-format, fuzzy
 msgid "Error initializing Kerberos library: %s.\n"
 msgstr "Menginisialisasi Kesalahan Kerberos : %s.\n"
 
@@ -518,12 +519,12 @@ msgid "Could not evaluate OID \"%s\".\n"
 msgstr "Tidak dapat mengevaluasi OID\"%s\".\n"
 
 #: src/getcert.c:952 src/getcert.c:2004 src/getcert.c:2664
-#, c-format
+#, c-format, fuzzy
 msgid "Error parsing Kerberos principal name \"%s\": %s.\n"
 msgstr "Kesalahan menguraikan nama utama Kerberos \"%s\": %s.\n"
 
 #: src/getcert.c:961 src/getcert.c:2013 src/getcert.c:2673
-#, c-format
+#, c-format, fuzzy
 msgid "Error unparsing Kerberos principal name \"%s\": %s.\n"
 msgstr "Kesalahan tanpa menguraikan nama utama Kerberos \"%s\": %s.\n"
 
@@ -557,17 +558,17 @@ msgid "Error: unused extra arguments were supplied.\n"
 msgstr ""
 
 #: src/getcert.c:1066 src/getcert.c:2121 src/getcert.c:2381 src/getcert.c:2791
-#, c-format
+#, c-format, fuzzy
 msgid "Database location or nickname specified without the other.\n"
-msgstr "Lokasi database atau nama panggilan khusus tanpa yang lain. \n"
+msgstr "Lokasi database atau nama panggilan khusus tanpa yang lain.\n"
 
 #: src/getcert.c:1072 src/getcert.c:2127 src/getcert.c:2387 src/getcert.c:2797
-#, c-format
+#, c-format, fuzzy
 msgid "Database directory and certificate file both specified.\n"
 msgstr "Direktori database dan sertifikat file kedua secara khusus.\n"
 
 #: src/getcert.c:1080 src/getcert.c:2395 src/getcert.c:2805
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "None of database directory and nickname or certificate file specified.\n"
 msgstr ""
@@ -575,7 +576,7 @@ msgstr ""
 "khusus.\n"
 
 #: src/getcert.c:1087 src/getcert.c:2143
-#, c-format
+#, c-format, fuzzy
 msgid "Key and certificate can not both be saved to the same file.\n"
 msgstr ""
 "Kunci dan sertifikat tidak dapat di simpan seluruhnya pada file yang sama.\n"
@@ -592,34 +593,34 @@ msgstr ""
 
 #: src/getcert.c:1296 src/getcert.c:1762 src/getcert.c:2272 src/getcert.c:2867
 #: src/getcert.c:3208 src/getcert.c:3447 src/getcert.c:4731
-#, c-format
+#, c-format, fuzzy
 msgid "No CA with name \"%s\" found.\n"
 msgstr "Tidak ada CA dengan nama \"%s\"menemukan.\n"
 
 #: src/getcert.c:1404 src/getcert.c:1791 src/getcert.c:2348 src/getcert.c:2435
 #: src/getcert.c:3015 src/getcert.c:4424 src/getcert.c:4542 src/getcert.c:4561
 #: src/getcert.c:4651 src/getcert.c:4737
-#, c-format
+#, c-format, fuzzy
 msgid "Error setting request arguments.\n"
 msgstr "Pengaturan kesalahan permintaan beberapa argumen.\n"
 
 #: src/getcert.c:1415
-#, c-format
+#, c-format, fuzzy
 msgid "New signing request \"%s\" added.\n"
 msgstr "Menandai permintaan baru \"%s\" yang di tambah.\n"
 
 #: src/getcert.c:1421
-#, c-format
+#, c-format, fuzzy
 msgid "New signing request could not be added.\n"
 msgstr "Menandai permintaan baru yang tidak dapat ditambahkan.\n"
 
 #: src/getcert.c:1802
-#, c-format
+#, c-format, fuzzy
 msgid "New tracking request \"%s\" added.\n"
 msgstr "Permintaan pelacakan di tambahkan \"%s\"added.\n"
 
 #: src/getcert.c:1809
-#, c-format
+#, c-format, fuzzy
 msgid "New tracking request could not be added.\n"
 msgstr "Permintaan pelacakan tidak dapat di tambahkan.\n"
 
@@ -665,7 +666,7 @@ msgid "override requested IP address"
 msgstr ""
 
 #: src/getcert.c:2136 src/getcert.c:3194
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "None of ID or database directory and nickname or certificate file "
 "specified.\n"
@@ -674,7 +675,7 @@ msgstr ""
 "khusus.\n"
 
 #: src/getcert.c:2362
-#, c-format
+#, c-format, fuzzy
 msgid "Request \"%s\" modified.\n"
 msgstr "Permintaan \"%s\" memodifikasi.\n"
 
@@ -689,17 +690,17 @@ msgid "No request found with specified nickname.\n"
 msgstr ""
 
 #: src/getcert.c:2426 src/getcert.c:2811 src/getcert.c:3465 src/getcert.c:3957
-#, c-format
+#, c-format, fuzzy
 msgid "No request found that matched arguments.\n"
 msgstr "Tidak menemukan permintaan mengenai argumen yang cocok.\n"
 
 #: src/getcert.c:2445
-#, c-format
+#, c-format, fuzzy
 msgid "Request \"%s\" removed.\n"
 msgstr "Permintaan \"%s\" menghapus.\n"
 
 #: src/getcert.c:2449
-#, c-format
+#, c-format, fuzzy
 msgid "Request \"%s\" could not be removed.\n"
 msgstr "Permintaan \"%s\" tidak dapat menghapus.\n"
 
@@ -724,12 +725,12 @@ msgid "use the specified CA configuration rather than the current one"
 msgstr ""
 
 #: src/getcert.c:3029
-#, c-format
+#, c-format, fuzzy
 msgid "Error modifying \"%s\".\n"
 msgstr "Modifikasi eror \"%s\".\n"
 
 #: src/getcert.c:3045
-#, c-format
+#, c-format, fuzzy
 msgid "Resubmitting \"%s\" to \"%s\".\n"
 msgstr "Pengajuan kembali \"%s\" to \"%s\".\n"
 
@@ -739,12 +740,12 @@ msgid "Resubmitting \"%s\".\n"
 msgstr "Pengajuan kembali \"%s\".\n"
 
 #: src/getcert.c:3057
-#, c-format
+#, c-format, fuzzy
 msgid "Error attempting to submit \"%s\" to \"%s\".\n"
 msgstr "Usaha eror untuk di ajukan \"%s\"untuk \"%s\".\n"
 
 #: src/getcert.c:3060
-#, c-format
+#, c-format, fuzzy
 msgid "Error attempting to submit \"%s\".\n"
 msgstr "Usaha eror untuk di ajukan \"%s\".\n"
 
@@ -789,7 +790,7 @@ msgid "Number of certificates and requests being tracked: %d.\n"
 msgstr ""
 
 #: src/getcert.c:3625
-#, c-format
+#, c-format, fuzzy
 msgid "Request ID '%s':\n"
 msgstr "ID de solicitud '%s':\n"
 
@@ -863,25 +864,27 @@ msgid "\tCA: %s\n"
 msgstr "\tCA: %s\n"
 
 #: src/getcert.c:3717
-#, c-format
+#, c-format, fuzzy
 msgid "\tissuer: %s\n"
 msgstr "\tissuer: %s\n"
 
 #: src/getcert.c:3718
-#, c-format
+#, c-format, fuzzy
 msgid "\tsubject: %s\n"
 msgstr "\tsubject: %s\n"
 
 #: src/getcert.c:3719
+#, fuzzy
 msgid "unknown"
 msgstr "Tidak diketauhui"
 
 #: src/getcert.c:3723 src/getcert.c:3727 src/getcert.c:3732
-#, c-format
+#, c-format, fuzzy
 msgid "\texpires: %s\n"
 msgstr "\texpires: %s\n"
 
 #: src/getcert.c:3736
+#, fuzzy
 msgid "\temail: "
 msgstr "\temail: "
 
@@ -890,6 +893,7 @@ msgid "\tdns: "
 msgstr "\tdns: "
 
 #: src/getcert.c:3748
+#, fuzzy
 msgid "\tprincipal name: "
 msgstr "\tprincipal name: "
 
@@ -952,12 +956,12 @@ msgid "\tpost-save command: %s\n"
 msgstr ""
 
 #: src/getcert.c:3849
-#, c-format
+#, c-format, fuzzy
 msgid "\ttrack: %s\n"
 msgstr "\ttrack: %s\n"
 
 #: src/getcert.c:3853
-#, c-format
+#, c-format, fuzzy
 msgid "\tauto-renew: %s\n"
 msgstr "\tauto-renew: %s\n"
 
@@ -973,7 +977,7 @@ msgid "list only the specified CA configuration"
 msgstr ""
 
 #: src/getcert.c:4104
-#, c-format
+#, c-format, fuzzy
 msgid "CA '%s':\n"
 msgstr "AC '%s':\n"
 
@@ -983,22 +987,22 @@ msgid "\tself-identifies as: %s\n"
 msgstr ""
 
 #: src/getcert.c:4119
-#, c-format
+#, c-format, fuzzy
 msgid "\tca-type: %s\n"
 msgstr "\tca-type: %s\n"
 
 #: src/getcert.c:4121
-#, c-format
+#, c-format, fuzzy
 msgid "\thelper-location: %s\n"
 msgstr "\thelper-location: %s\n"
 
 #: src/getcert.c:4126
-#, c-format
+#, c-format, fuzzy
 msgid "\tnext-serial-number: %s\n"
 msgstr "\tnext-serial-number: %s\n"
 
 #: src/getcert.c:4136
-#, c-format
+#, c-format, fuzzy
 msgid "\tknown-issuer-names:\n"
 msgstr "\tknown-issuer-names:\n"
 
@@ -1160,17 +1164,18 @@ msgid "CA could not be removed.\n"
 msgstr ""
 
 #: src/getcert.c:4787
-#, c-format
+#, c-format, fuzzy
 msgid "%s - client certificate enrollment tool\n"
 msgstr "%s - sertifikat pendaftaran pelanggan\n"
 
 #: src/getcert.c:4791
-#, c-format
+#, c-format, fuzzy
 msgid "Usage: %s request [options]\n"
 msgstr "Pemakaian: %s request[options]\n"
 
 #: src/getcert.c:4793 src/getcert.c:4842 src/getcert.c:4890 src/getcert.c:4912
 #: src/getcert.c:4960 src/getcert.c:5038
+#, fuzzy
 msgid "Required arguments:\n"
 msgstr "Argumentasi yang di butuhkan:\n"
 
@@ -1181,22 +1186,25 @@ msgstr "*Jika menggunakan database NSS untuk menyimpan:\n"
 
 #: src/getcert.c:4795 src/getcert.c:4846 src/getcert.c:4894 src/getcert.c:4916
 #: src/getcert.c:4964 src/getcert.c:5042
+#, fuzzy
 msgid "  -d DIR\tNSS database for key and cert\n"
-msgstr "-d DIR\tNSS database untuk kunci dan pemastian\n"
+msgstr "  -d DIR\tNSS database untuk kunci dan pemastian\n"
 
 #: src/getcert.c:4796 src/getcert.c:4847 src/getcert.c:4895 src/getcert.c:4917
 #: src/getcert.c:4965 src/getcert.c:5043
+#, fuzzy
 msgid "  -n NAME\tnickname for NSS-based storage (only valid with -d)\n"
 msgstr ""
-"-n NAME\tnickname untuk dasar penyimpanan NSS (hanya valid dengan -d)\n"
+"  -n NAME\tnickname untuk dasar penyimpanan NSS (hanya valid dengan -d)\n"
 
 #: src/getcert.c:4797 src/getcert.c:4848 src/getcert.c:4896 src/getcert.c:4918
 #: src/getcert.c:4966 src/getcert.c:5044
+#, fuzzy
 msgid ""
 "  -t NAME\toptional token name for NSS-based storage (only valid with -d)\n"
 msgstr ""
-"-t NAME\toptional tanda nama untuk dasar penyimpanan NSS (hanya valid dengan "
-"-d)\n"
+"  -t NAME\toptional tanda nama untuk dasar penyimpanan NSS (hanya valid "
+"dengan -d)\n"
 
 #: src/getcert.c:4798 src/getcert.c:4849 src/getcert.c:4897 src/getcert.c:4919
 #: src/getcert.c:4967 src/getcert.c:5023 src/getcert.c:5045
@@ -1208,8 +1216,9 @@ msgid "  -k FILE\tPEM file for private key\n"
 msgstr "-k FILE\tPEM berkas untuk kunci privasi\n"
 
 #: src/getcert.c:4800 src/getcert.c:4851 src/getcert.c:4899
+#, fuzzy
 msgid "  -f FILE\tPEM file for certificate (only valid with -k)\n"
-msgstr "-f FILE\tPEM berkas untuk sertifikat (hanya valid dengan -k)\n"
+msgstr "  -f FILE\tPEM berkas untuk sertifikat (hanya valid dengan -k)\n"
 
 #: src/getcert.c:4801
 msgid "* If keys are to be encrypted:\n"
@@ -1227,42 +1236,50 @@ msgstr ""
 #: src/getcert.c:4985 src/getcert.c:5010 src/getcert.c:5048 src/getcert.c:5058
 #: src/getcert.c:5076 src/getcert.c:5091 src/getcert.c:5108 src/getcert.c:5122
 #: src/getcert.c:5141 src/getcert.c:5155
+#, fuzzy
 msgid "Optional arguments:\n"
 msgstr "Pilihan argumen-argumen:\n"
 
 #: src/getcert.c:4806 src/getcert.c:4857 src/getcert.c:4938 src/getcert.c:4986
+#, fuzzy
 msgid "* Certificate handling settings:\n"
 msgstr "* Keadaan menangani sertifikat:\n"
 
 #: src/getcert.c:4807
+#, fuzzy
 msgid "  -I NAME\tnickname to assign to the request\n"
-msgstr "-I NAME\tnickname untuk menandai sebuah permintaan\n"
+msgstr "  -I NAME\tnickname untuk menandai sebuah permintaan\n"
 
 #: src/getcert.c:4808
 msgid "  -G TYPE\ttype of key to be generated if one is not already in place\n"
 msgstr ""
 
 #: src/getcert.c:4809
+#, fuzzy
 msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
 msgstr ""
-"-g SIZE\tsize  sebuah kunci untuk menghasilkan jika salah satu telah tidak "
+"  -g SIZE\tsize  sebuah kunci untuk menghasilkan jika salah satu telah tidak "
 "berada di dalam tempat\n"
 
 #: src/getcert.c:4810 src/getcert.c:4859
+#, fuzzy
 msgid ""
 "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
 msgstr ""
-"-r\t\tattempt untuk memperbarui sertifikat ketika mendekati akhir waktu "
+"  -r\t\tattempt untuk memperbarui sertifikat ketika mendekati akhir waktu "
 "(kegagalan)\n"
 
 #: src/getcert.c:4811 src/getcert.c:4860
+#, fuzzy
 msgid "  -R\t\tdon't attempt to renew the certificate when expiration nears\n"
 msgstr ""
-"-R\t\tdon't usaha untuk memperbarui sertifikat ketika mendekati akhir waktu\n"
+"  -R\t\tdon't usaha untuk memperbarui sertifikat ketika mendekati akhir "
+"waktu\n"
 
 #: src/getcert.c:4813 src/getcert.c:4862
+#, fuzzy
 msgid "  -c CA\t\tuse the specified CA rather than the default\n"
-msgstr " -c CA\t\tuse CA khusus lebih baik daripada kegagalan\n"
+msgstr "  -c CA\t\tuse CA khusus lebih baik daripada kegagalan\n"
 
 #: src/getcert.c:4815 src/getcert.c:4864 src/getcert.c:4943 src/getcert.c:4991
 msgid ""
@@ -1275,32 +1292,38 @@ msgid "  -X ISSUER\task the CA to process the request using the named issuer\n"
 msgstr ""
 
 #: src/getcert.c:4817
+#, fuzzy
 msgid "* Parameters for the signing request:\n"
 msgstr "* Beberapa parameter untuk menandai permintaan:\n"
 
 #: src/getcert.c:4818 src/getcert.c:4927 src/getcert.c:4975
+#, fuzzy
 msgid "  -N NAME\tset requested subject name (default: CN=<hostname>)\n"
 msgstr "  -N NAME\tset permintaan nama subjek (kegagalan: CN=<hostname>)\n"
 
 #: src/getcert.c:4819 src/getcert.c:4928 src/getcert.c:4976
+#, fuzzy
 msgid "  -U EXTUSAGE\tset requested extended key usage OID\n"
-msgstr "-U EXTUSAGE\tset memperluas permintaan pemakaian kunci OID\n"
+msgstr "  -U EXTUSAGE\tset memperluas permintaan pemakaian kunci OID\n"
 
 #: src/getcert.c:4820 src/getcert.c:4868 src/getcert.c:4929 src/getcert.c:4977
 msgid "  -u KEYUSAGE\tset requested key usage value\n"
 msgstr ""
 
 #: src/getcert.c:4821 src/getcert.c:4930 src/getcert.c:4978
+#, fuzzy
 msgid "  -K NAME\tset requested principal name\n"
-msgstr "-K NAME\tset permintaan nama utama\n"
+msgstr "  -K NAME\tset permintaan nama utama\n"
 
 #: src/getcert.c:4822 src/getcert.c:4931 src/getcert.c:4979
+#, fuzzy
 msgid "  -D DNSNAME\tset requested DNS name\n"
-msgstr "-D DNSNAME\tset permintaan nama DNS\n"
+msgstr "  -D DNSNAME\tset permintaan nama DNS\n"
 
 #: src/getcert.c:4823 src/getcert.c:4932 src/getcert.c:4980
+#, fuzzy
 msgid "  -E EMAIL\tset requested email address\n"
-msgstr "-E EMAIL\tset permintaan alamat email\n"
+msgstr "  -E EMAIL\tset permintaan alamat email\n"
 
 #: src/getcert.c:4824 src/getcert.c:4933 src/getcert.c:4981
 msgid "  -A ADDRESS\tset requested IP address\n"
@@ -1318,18 +1341,21 @@ msgstr ""
 #: src/getcert.c:4995 src/getcert.c:5025 src/getcert.c:5049 src/getcert.c:5066
 #: src/getcert.c:5081 src/getcert.c:5097 src/getcert.c:5112 src/getcert.c:5131
 #: src/getcert.c:5145 src/getcert.c:5158
+#, fuzzy
 msgid "* Bus options:\n"
 msgstr "* Pilihan Bus:\n"
 
 #: src/getcert.c:4828 src/getcert.c:4876 src/getcert.c:4903 src/getcert.c:4946
 #: src/getcert.c:4996 src/getcert.c:5050
+#, fuzzy
 msgid "  -S\t\tconnect to the certmonger service on the system bus\n"
-msgstr "-S\t\tconnect untuk layanan pemastian dalam sistem bus\n"
+msgstr "  -S\t\tconnect untuk layanan pemastian dalam sistem bus\n"
 
 #: src/getcert.c:4829 src/getcert.c:4877 src/getcert.c:4904 src/getcert.c:4947
 #: src/getcert.c:4997 src/getcert.c:5051
+#, fuzzy
 msgid "  -s\t\tconnect to the certmonger service on the session bus\n"
-msgstr "-s\t\tconnect untuk layanan pemastian pada pembahasan bus\n"
+msgstr "  -s\t\tconnect untuk layanan pemastian pada pembahasan bus\n"
 
 #: src/getcert.c:4830 src/getcert.c:4878 src/getcert.c:4905 src/getcert.c:4948
 #: src/getcert.c:4998 src/getcert.c:5028 src/getcert.c:5069 src/getcert.c:5084
@@ -1366,7 +1392,7 @@ msgid "  -v\treport all details of errors\n"
 msgstr ""
 
 #: src/getcert.c:4840
-#, c-format
+#, c-format, fuzzy
 msgid "Usage: %s start-tracking [options]\n"
 msgstr "Pemakaian: %s start-tracking [options]\n"
 
@@ -1375,16 +1401,19 @@ msgid "* If modifying an existing request:\n"
 msgstr "* Jika memodifikasi permintaan yang ada:\n"
 
 #: src/getcert.c:4844
+#, fuzzy
 msgid "  -i NAME\tnickname of an existing tracking request\n"
-msgstr "-i NAME\tnickname permintaan mengikuti jalan yang ada\n"
+msgstr "  -i NAME\tnickname permintaan mengikuti jalan yang ada\n"
 
 #: src/getcert.c:4852 src/getcert.c:4922 src/getcert.c:4970
+#, fuzzy
 msgid "* If keys are encrypted:\n"
 msgstr "* Jika kunci adalah enkripsi:\n"
 
 #: src/getcert.c:4858
+#, fuzzy
 msgid "  -I NAME\tnickname to give to tracking request\n"
-msgstr "-I NAME\tnickname untuk memberi mengikuti permintaan\n"
+msgstr "  -I NAME\tnickname untuk memberi mengikuti permintaan\n"
 
 #: src/getcert.c:4866
 msgid "* Parameters for the signing request at renewal time:\n"
@@ -1411,39 +1440,45 @@ msgid "  -A ADDRESS\toverride requested IP address\n"
 msgstr ""
 
 #: src/getcert.c:4888
-#, c-format
+#, c-format, fuzzy
 msgid "Usage: %s stop-tracking [options]\n"
 msgstr "Pemakaian:  %s stop-tracking [options]\n"
 
 #: src/getcert.c:4891 src/getcert.c:4913 src/getcert.c:4961 src/getcert.c:5039
+#, fuzzy
 msgid "* By request identifier:\n"
 msgstr "* Dengan memperkenalkan permintaan:\n"
 
 #: src/getcert.c:4892 src/getcert.c:4914 src/getcert.c:4962 src/getcert.c:5019
 #: src/getcert.c:5040 src/getcert.c:5060
+#, fuzzy
 msgid "  -i NAME\tnickname for tracking request\n"
-msgstr "-i NAME\tnickname untuk mengikuti permintaan\n"
+msgstr "  -i NAME\tnickname untuk mengikuti permintaan\n"
 
 #: src/getcert.c:4910
-#, c-format
+#, c-format, fuzzy
 msgid "Usage: %s resubmit [options]\n"
 msgstr "Pemakaian: %s resubmit [options]\n"
 
 #: src/getcert.c:4920 src/getcert.c:4968 src/getcert.c:5046
+#, fuzzy
 msgid "  -f FILE\tPEM file for certificate\n"
-msgstr "-f FILE\tPEM berkas untuk sertifikat\n"
+msgstr "  -f FILE\tPEM berkas untuk sertifikat\n"
 
 #: src/getcert.c:4926 src/getcert.c:4974
+#, fuzzy
 msgid "* New parameter values for the signing request:\n"
 msgstr "* Parameter baru bernilai untuk menandai permintaan:\n"
 
 #: src/getcert.c:4939 src/getcert.c:4987
+#, fuzzy
 msgid "  -I NAME\tnew nickname to give to tracking request\n"
-msgstr "-I NAME\tnew nama panggilan untuk memberikan mengikuti permintaan\n"
+msgstr "  -I NAME\tnew nama panggilan untuk memberikan mengikuti permintaan\n"
 
 #: src/getcert.c:4941 src/getcert.c:4989
+#, fuzzy
 msgid "  -c CA\t\tuse the specified CA rather than the current one\n"
-msgstr "-c CA\t\tuse CA khusus lebih baik daripada saat ini\n"
+msgstr "  -c CA\t\tuse CA khusus lebih baik daripada saat ini\n"
 
 #: src/getcert.c:4958
 #, c-format
@@ -1459,26 +1494,30 @@ msgid "  -g SIZE\tsize of new key to be generated\n"
 msgstr ""
 
 #: src/getcert.c:5008
-#, c-format
+#, c-format, fuzzy
 msgid "Usage: %s list [options]\n"
 msgstr "Pemakaian:  %s list [options]\n"
 
 #: src/getcert.c:5011 src/getcert.c:5035 src/getcert.c:5078 src/getcert.c:5093
 #: src/getcert.c:5109 src/getcert.c:5123 src/getcert.c:5142 src/getcert.c:5156
+#, fuzzy
 msgid "* General options:\n"
 msgstr "* Pilihan umum:\n"
 
 #: src/getcert.c:5013
+#, fuzzy
 msgid "  -c CA\tlist only requests and certs associated with this CA\n"
-msgstr "-c CA\tlist hanya permintaan dan pemastian kolega dengan CA ini\n"
+msgstr "  -c CA\tlist hanya permintaan dan pemastian kolega dengan CA ini\n"
 
 #: src/getcert.c:5015
+#, fuzzy
 msgid "  -r\tlist only information about outstanding requests\n"
-msgstr "-r\tlist hanya informasi tentang permintaan terkemuka\n"
+msgstr "  -r\tlist hanya informasi tentang permintaan terkemuka\n"
 
 #: src/getcert.c:5016
+#, fuzzy
 msgid "  -t\tlist only information about tracked certificates\n"
-msgstr "-t\tlist hanya informasi tentang jalannya sertifikat\n"
+msgstr "  -t\tlist hanya informasi tentang jalannya sertifikat\n"
 
 #: src/getcert.c:5017
 msgid "  -u\tdisplay times in UTC instead of local time\n"
@@ -1502,13 +1541,15 @@ msgstr ""
 
 #: src/getcert.c:5026 src/getcert.c:5067 src/getcert.c:5082 src/getcert.c:5098
 #: src/getcert.c:5113 src/getcert.c:5132 src/getcert.c:5146 src/getcert.c:5159
+#, fuzzy
 msgid "  -S\tconnect to the certmonger service on the system bus\n"
-msgstr "-S\tconnect untuk layanan pemastian pada sistem bus\n"
+msgstr "  -S\tconnect untuk layanan pemastian pada sistem bus\n"
 
 #: src/getcert.c:5027 src/getcert.c:5068 src/getcert.c:5083 src/getcert.c:5099
 #: src/getcert.c:5114 src/getcert.c:5133 src/getcert.c:5147 src/getcert.c:5160
+#, fuzzy
 msgid "  -s\tconnect to the certmonger service on the session bus\n"
-msgstr "-s\tconnect untuk layanan pemastian pada pembahasan bus\n"
+msgstr "  -s\tconnect untuk layanan pemastian pada pembahasan bus\n"
 
 #: src/getcert.c:5033
 #, c-format
@@ -1549,13 +1590,14 @@ msgid "  -f FILE\treturn status for cert stored in this PEM file\n"
 msgstr ""
 
 #: src/getcert.c:5074
-#, c-format
+#, c-format, fuzzy
 msgid "Usage: %s list-cas [options]\n"
 msgstr "Pemakaian: %s list-cas [options]\n"
 
 #: src/getcert.c:5079
+#, fuzzy
 msgid "  -c CA\tlist only information about the CA with this name\n"
-msgstr "-c CA\tlist hanya informasi tentang CA dengan nama ini\n"
+msgstr "  -c CA\tlist hanya informasi tentang CA dengan nama ini\n"
 
 #: src/getcert.c:5089
 #, c-format
@@ -1696,7 +1738,7 @@ msgid "remove a CA configuration\n"
 msgstr ""
 
 #: src/getcert.c:5273
-#, c-format
+#, c-format, fuzzy
 msgid "%s: unrecognized command\n"
 msgstr "%s: tidak mengenali perintah\n"
 
@@ -1736,7 +1778,7 @@ msgid "The -K option can not be used with either the -k or the -t option.\n"
 msgstr ""
 
 #: src/ipa.c:758
-#, c-format
+#, c-format, fuzzy
 msgid "Unable to determine principal name for signing request.\n"
 msgstr "Tidak dapat untuk menentukan nama utama untuk menandai permintaan.\n"
 
@@ -1771,7 +1813,7 @@ msgid "Error setting up ccache for \"%s\" on client using keytab \"%s\": %s.\n"
 msgstr ""
 
 #: src/local.c:556
-#, c-format
+#, c-format, fuzzy
 msgid "Unable to read signing request.\n"
 msgstr "Tidak dapat membaca tanda permintaan.\n"
 
@@ -2096,10 +2138,12 @@ msgid "Error: pkiStatus \"%s\" not recognized.\n"
 msgstr ""
 
 #: src/tdbush.c:119 src/tdbush.c:1944 src/tdbush.c:2351
+#, fuzzy
 msgid "An internal error has occurred."
 msgstr "Eror pada bagian dalam telah terjadi"
 
 #: src/tdbush.c:183
+#, fuzzy
 msgid "No matching entry found.\n"
 msgstr "Tidak menemukan catatan masuk yang cocok.\n"
 
@@ -2109,11 +2153,12 @@ msgid "There is already a CA with the nickname \"%s\"."
 msgstr ""
 
 #: src/tdbush.c:439
+#, fuzzy
 msgid "Certificate storage type not specified."
 msgstr "Tipe penyimpanan sertifikat tidak khusus."
 
 #: src/tdbush.c:452
-#, c-format
+#, c-format, fuzzy
 msgid "Certificate storage type \"%s\" not supported."
 msgstr "Tipe penyimpanan sertifikat \"%s\" tidak mendukung."
 
@@ -2121,11 +2166,12 @@ msgstr "Tipe penyimpanan sertifikat \"%s\" tidak mendukung."
 #: src/tdbush.c:825 src/tdbush.c:928 src/tdbush.c:973 src/tdbush.c:1028
 #: src/tdbush.c:1073 src/tdbush.c:1128 src/tdbush.c:1173 src/tdbush.c:1592
 #: src/tdbush.c:3230 src/tdbush.c:3382
-#, c-format
+#, c-format, fuzzy
 msgid "The location \"%s\" must be an absolute path."
 msgstr "Lokasi \"%s\" harus analisa yang tepat."
 
 #: src/tdbush.c:516 src/tdbush.c:575 src/tdbush.c:644
+#, fuzzy
 msgid "Certificate storage location not specified."
 msgstr "Lokasi penyimpanan sertifikat tidak khusus."
 
@@ -2139,7 +2185,7 @@ msgstr ""
 
 #: src/tdbush.c:542 src/tdbush.c:786 src/tdbush.c:993 src/tdbush.c:1093
 #: src/tdbush.c:1193
-#, c-format
+#, c-format, fuzzy
 msgid "The parent of location \"%s\" must be a valid directory."
 msgstr "induk dari lokasi \"%s\" harus sebuah direktori yang valid."
 
@@ -2162,11 +2208,12 @@ msgid "The location \"%s\" must be a directory."
 msgstr "Lokasi \"%s\" harus berupa direktori."
 
 #: src/tdbush.c:622
+#, fuzzy
 msgid "Certificate nickname not specified."
 msgstr "nama panggilan sertifikat tidak khusus."
 
 #: src/tdbush.c:665 src/tdbush.c:3055
-#, c-format
+#, c-format, fuzzy
 msgid "There is already a request with the nickname \"%s\"."
 msgstr "Permintaan telah dilakukan dengan nama panggilan \"%s\"."
 
@@ -2177,15 +2224,17 @@ msgid ""
 msgstr ""
 
 #: src/tdbush.c:734
-#, c-format
+#, c-format, fuzzy
 msgid "Key storage type \"%s\" not supported."
 msgstr "Tipe kunci penyimpanan \"%s\" tidak mendukung."
 
 #: src/tdbush.c:760 src/tdbush.c:819
+#, fuzzy
 msgid "Key storage location not specified."
 msgstr "lokasi kunci penyimpanan tidak khusus."
 
 #: src/tdbush.c:853
+#, fuzzy
 msgid "Key nickname not specified."
 msgstr "kunci nama panggilan tidak khusus."
 
@@ -2200,11 +2249,12 @@ msgid "No support for key type \"%s\"."
 msgstr ""
 
 #: src/tdbush.c:1400
+#, fuzzy
 msgid "No such CA."
 msgstr "CA tidak serupa."
 
 #: src/tdbush.c:3073
-#, c-format
+#, c-format, fuzzy
 msgid "Certificate authority \"%s\" not known."
 msgstr "Wewenang sertifikat \"%s\" tidak diketahui."
 
