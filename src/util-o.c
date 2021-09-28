@@ -327,7 +327,7 @@ util_ASN1_TIME_set(ASN1_TIME *str, time_t t)
 int
 util_EVP_PKEY_id(const EVP_PKEY *pkey)
 {
-#ifdef HAVE_EVP_PKEY_ID
+#if defined(HAVE_EVP_PKEY_ID) || defined(HAVE_EVP_PKEY_GET_ID)
 	return EVP_PKEY_id(pkey);
 #else
 	return pkey->type;

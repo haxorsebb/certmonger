@@ -374,6 +374,7 @@ if ! ${configure_dist_target_only:-false} ; then
 		AC_CHECK_FUNCS(ASN1_TIME_set)
 		AC_CHECK_FUNCS(EVP_PKEY_base_id)
 		AC_CHECK_FUNCS(EVP_PKEY_id)
+		AC_CHECK_FUNCS(EVP_PKEY_get_id)
 		AC_CHECK_FUNCS(OBJ_get0_data)
 		AC_CHECK_FUNCS(OBJ_length)
 		AC_CHECK_FUNCS(X509_ATTRIBUTE_get0_object)
