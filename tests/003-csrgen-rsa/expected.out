@@ -8,8 +8,8 @@ pk12util: PKCS12 EXPORT SUCCESSFUL
 4096 OK.
 Signature OK
 The last CSR (the one with everything) was:
-    0:d=0  hl=4 l=1413 cons: SEQUENCE          
-    4:d=1  hl=4 l=1133 cons: SEQUENCE          
+    0:d=0  hl=4 l=1389 cons: SEQUENCE          
+    4:d=1  hl=4 l=1109 cons: SEQUENCE          
     8:d=2  hl=2 l=   1 prim: INTEGER           :00
    11:d=2  hl=2 l=  22 cons: SEQUENCE          
    13:d=3  hl=2 l=  20 cons: SET               
@@ -21,7 +21,7 @@ The last CSR (the one with everything) was:
    41:d=4  hl=2 l=   9 prim: OBJECT            :rsaEncryption
    52:d=4  hl=2 l=   0 prim: NULL              
    54:d=3  hl=4 l= 271 prim: BIT STRING        
-  329:d=2  hl=4 l= 808 cons: cont [ 0 ]        
+  329:d=2  hl=4 l= 784 cons: cont [ 0 ]        
   333:d=3  hl=2 l=  52 cons: SEQUENCE          
   335:d=4  hl=2 l=   9 prim: OBJECT            :challengePassword
   346:d=4  hl=2 l=  39 cons: SET               
@@ -30,48 +30,40 @@ The last CSR (the one with everything) was:
   389:d=4  hl=2 l=   9 prim: OBJECT            :friendlyName
   400:d=4  hl=2 l=  48 cons: SET               
   402:d=5  hl=2 l=  46 prim: BMPSTRING         
-  450:d=3  hl=4 l= 687 cons: SEQUENCE          
+  450:d=3  hl=4 l= 663 cons: SEQUENCE          
   454:d=4  hl=2 l=   9 prim: OBJECT            :Extension Request
-  465:d=4  hl=4 l= 672 cons: SET               
-  469:d=5  hl=4 l= 668 cons: SEQUENCE          
-  473:d=6  hl=2 l=  14 cons: SEQUENCE          
+  465:d=4  hl=4 l= 648 cons: SET               
+  469:d=5  hl=4 l= 644 cons: SEQUENCE          
+  473:d=6  hl=2 l=  11 cons: SEQUENCE          
   475:d=7  hl=2 l=   3 prim: OBJECT            :X509v3 Key Usage
-  480:d=7  hl=2 l=   1 prim: BOOLEAN           :0
-  483:d=7  hl=2 l=   4 prim: OCTET STRING      [HEX DUMP]:030205E0
-  489:d=6  hl=4 l= 264 cons: SEQUENCE          
-  493:d=7  hl=2 l=   3 prim: OBJECT            :X509v3 Subject Alternative Name
-  498:d=7  hl=2 l=   1 prim: BOOLEAN           :0
-  501:d=7  hl=3 l= 253 prim: OCTET STRING      [HEX DUMP]:3081FA82096C6F63616C686F737482156C6F63616C686F73742E6C6F63616C646F6D61696E810E726F6F74406C6F63616C686F7374811A726F6F74406C6F63616C686F73742E6C6F63616C646F6D61696EA020060A2B060104018237140203A0120C10726F6F74404558414D504C452E434F4DA02E06062B0601050202A0243022A00D1B0B4558414D504C452E434F4DA111300FA003020101A10830061B04726F6F74A024060A2B060104018237140203A0160C14726F6F7440464F4F2E4558414D504C452E434F4DA03206062B0601050202A0283026A0111B0F464F4F2E4558414D504C452E434F4DA111300FA003020101A10830061B04726F6F74
-  757:d=6  hl=2 l=  32 cons: SEQUENCE          
-  759:d=7  hl=2 l=   3 prim: OBJECT            :X509v3 Extended Key Usage
-  764:d=7  hl=2 l=   1 prim: BOOLEAN           :0
-  767:d=7  hl=2 l=  22 prim: OCTET STRING      [HEX DUMP]:301406082B0601050507030206082B06010505070304
-  791:d=6  hl=2 l=  18 cons: SEQUENCE          
-  793:d=7  hl=2 l=   3 prim: OBJECT            :X509v3 Basic Constraints
-  798:d=7  hl=2 l=   1 prim: BOOLEAN           :255
-  801:d=7  hl=2 l=   8 prim: OCTET STRING      [HEX DUMP]:30060101FF020103
-  811:d=6  hl=2 l=  34 cons: SEQUENCE          
-  813:d=7  hl=2 l=   3 prim: OBJECT            :X509v3 Authority Key Identifier
-  818:d=7  hl=2 l=   1 prim: BOOLEAN           :0
-  821:d=7  hl=2 l=  24 prim: OCTET STRING      [HEX DUMP]:30168014A9993E364706816ABA3E25717850C26C9CD0D89D
-  847:d=6  hl=2 l=  32 cons: SEQUENCE          
-  849:d=7  hl=2 l=   3 prim: OBJECT            :X509v3 Subject Key Identifier
-  854:d=7  hl=2 l=   1 prim: BOOLEAN           :0
-  857:d=7  hl=2 l=  22 prim: OCTET STRING      [HEX DUMP]:0414A9993E364706816ABA3E25717850C26C9CD0D89D
-  881:d=6  hl=2 l= 107 cons: SEQUENCE          
-  883:d=7  hl=2 l=   8 prim: OBJECT            :Authority Information Access
-  893:d=7  hl=2 l=   1 prim: BOOLEAN           :0
-  896:d=7  hl=2 l=  92 prim: OCTET STRING      [HEX DUMP]:305A302B06082B06010505073001861F687474703A2F2F6F6373702D312E6578616D706C652E636F6D3A3132333435302B06082B06010505073001861F687474703A2F2F6F6373702D322E6578616D706C652E636F6D3A3132333435
-  990:d=6  hl=2 l=  96 cons: SEQUENCE          
-  992:d=7  hl=2 l=   3 prim: OBJECT            :X509v3 CRL Distribution Points
-  997:d=7  hl=2 l=   1 prim: BOOLEAN           :0
- 1000:d=7  hl=2 l=  86 prim: OCTET STRING      [HEX DUMP]:30543028A026A0248622687474703A2F2F63726C2D312E6578616D706C652E636F6D3A31323334352F6765743028A026A0248622687474703A2F2F63726C2D322E6578616D706C652E636F6D3A31323334352F676574
- 1088:d=6  hl=2 l=  51 cons: SEQUENCE          
- 1090:d=7  hl=2 l=   9 prim: OBJECT            :Netscape Comment
- 1101:d=7  hl=2 l=   1 prim: BOOLEAN           :0
- 1104:d=7  hl=2 l=  35 prim: OCTET STRING      [HEX DUMP]:1621636572746D6F6E6765722067656E65726174656420746869732072657175657374
- 1141:d=1  hl=2 l=  13 cons: SEQUENCE          
- 1143:d=2  hl=2 l=   9 prim: OBJECT            :sha256WithRSAEncryption
- 1154:d=2  hl=2 l=   0 prim: NULL              
- 1156:d=1  hl=4 l= 257 prim: BIT STRING        
+  480:d=7  hl=2 l=   4 prim: OCTET STRING      [HEX DUMP]:030205E0
+  486:d=6  hl=4 l= 261 cons: SEQUENCE          
+  490:d=7  hl=2 l=   3 prim: OBJECT            :X509v3 Subject Alternative Name
+  495:d=7  hl=3 l= 253 prim: OCTET STRING      [HEX DUMP]:3081FA82096C6F63616C686F737482156C6F63616C686F73742E6C6F63616C646F6D61696E810E726F6F74406C6F63616C686F7374811A726F6F74406C6F63616C686F73742E6C6F63616C646F6D61696EA020060A2B060104018237140203A0120C10726F6F74404558414D504C452E434F4DA02E06062B0601050202A0243022A00D1B0B4558414D504C452E434F4DA111300FA003020101A10830061B04726F6F74A024060A2B060104018237140203A0160C14726F6F7440464F4F2E4558414D504C452E434F4DA03206062B0601050202A0283026A0111B0F464F4F2E4558414D504C452E434F4DA111300FA003020101A10830061B04726F6F74
+  751:d=6  hl=2 l=  29 cons: SEQUENCE          
+  753:d=7  hl=2 l=   3 prim: OBJECT            :X509v3 Extended Key Usage
+  758:d=7  hl=2 l=  22 prim: OCTET STRING      [HEX DUMP]:301406082B0601050507030206082B06010505070304
+  782:d=6  hl=2 l=  18 cons: SEQUENCE          
+  784:d=7  hl=2 l=   3 prim: OBJECT            :X509v3 Basic Constraints
+  789:d=7  hl=2 l=   1 prim: BOOLEAN           :255
+  792:d=7  hl=2 l=   8 prim: OCTET STRING      [HEX DUMP]:30060101FF020103
+  802:d=6  hl=2 l=  31 cons: SEQUENCE          
+  804:d=7  hl=2 l=   3 prim: OBJECT            :X509v3 Authority Key Identifier
+  809:d=7  hl=2 l=  24 prim: OCTET STRING      [HEX DUMP]:30168014A9993E364706816ABA3E25717850C26C9CD0D89D
+  835:d=6  hl=2 l=  29 cons: SEQUENCE          
+  837:d=7  hl=2 l=   3 prim: OBJECT            :X509v3 Subject Key Identifier
+  842:d=7  hl=2 l=  22 prim: OCTET STRING      [HEX DUMP]:0414A9993E364706816ABA3E25717850C26C9CD0D89D
+  866:d=6  hl=2 l= 104 cons: SEQUENCE          
+  868:d=7  hl=2 l=   8 prim: OBJECT            :Authority Information Access
+  878:d=7  hl=2 l=  92 prim: OCTET STRING      [HEX DUMP]:305A302B06082B06010505073001861F687474703A2F2F6F6373702D312E6578616D706C652E636F6D3A3132333435302B06082B06010505073001861F687474703A2F2F6F6373702D322E6578616D706C652E636F6D3A3132333435
+  972:d=6  hl=2 l=  93 cons: SEQUENCE          
+  974:d=7  hl=2 l=   3 prim: OBJECT            :X509v3 CRL Distribution Points
+  979:d=7  hl=2 l=  86 prim: OCTET STRING      [HEX DUMP]:30543028A026A0248622687474703A2F2F63726C2D312E6578616D706C652E636F6D3A31323334352F6765743028A026A0248622687474703A2F2F63726C2D322E6578616D706C652E636F6D3A31323334352F676574
+ 1067:d=6  hl=2 l=  48 cons: SEQUENCE          
+ 1069:d=7  hl=2 l=   9 prim: OBJECT            :Netscape Comment
+ 1080:d=7  hl=2 l=  35 prim: OCTET STRING      [HEX DUMP]:1621636572746D6F6E6765722067656E65726174656420746869732072657175657374
+ 1117:d=1  hl=2 l=  13 cons: SEQUENCE          
+ 1119:d=2  hl=2 l=   9 prim: OBJECT            :sha256WithRSAEncryption
+ 1130:d=2  hl=2 l=   0 prim: NULL              
+ 1132:d=1  hl=4 l= 257 prim: BIT STRING        
 Test complete (32 combinations).
