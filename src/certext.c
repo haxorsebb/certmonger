@@ -203,45 +203,6 @@ cm_ms_template_template[] = {
 	{0, 0, NULL, 0},
 };
 
-/* RFC 5280, 4.1 */
-const SEC_ASN1Template
-cm_certext_cert_extension_template[] = {
-	{
-	.kind = SEC_ASN1_SEQUENCE,
-	.offset = 0,
-	.sub = NULL,
-	.size = sizeof(CERTCertExtension),
-	},
-	{
-	.kind = SEC_ASN1_OBJECT_ID,
-	.offset = offsetof(CERTCertExtension, id),
-	.sub = NULL,
-	.size = sizeof(SECItem),
-	},
-	{
-	.kind = SEC_ASN1_BOOLEAN,
-	.offset = offsetof(CERTCertExtension, critical),
-	.sub = NULL,
-	.size = sizeof(SECItem),
-	},
-	{
-	.kind = SEC_ASN1_OCTET_STRING,
-	.offset = offsetof(CERTCertExtension, value),
-	.sub = NULL,
-	.size = sizeof(SECItem),
-	},
-	{0, 0, NULL, 0},
-};
-const SEC_ASN1Template
-cm_certext_sequence_of_cert_extension_template[] = {
-	{
-	.kind = SEC_ASN1_SEQUENCE_OF,
-	.offset = 0,
-	.sub = cm_certext_cert_extension_template,
-	.size = sizeof(CERTCertExtension **),
-	},
-};
-
 /* Windows 2000-style UPN */
 static unsigned char oid_ms_upn_name_bytes[] = {0x2b, 0x06, 0x01, 0x04, 0x01, 0x82, 0x37, 0x14, 0x02, 0x03};
 static const SECOidData oid_ms_upn_name = {
@@ -1960,7 +1921,7 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 	/* Encode the sequence. */
 	memset(&encoded, 0, sizeof(encoded));
 	if (i > 1) {
-		template = cm_certext_sequence_of_cert_extension_template;
+		template = CERT_SequenceOfCertExtensionTemplate;
 		if (SEC_ASN1EncodeItem(arena, &encoded, &exts_ptr,
 				       template) == &encoded) {
 			*extensions = talloc_memdup(entry, encoded.data,
