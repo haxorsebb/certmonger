@@ -118,14 +118,14 @@ iterate() {
 	echo key_pubkey=616263 >> entry.openssl.$size
 	$toolsdir/csrgen entry.nss.$size > csr.nss.$size
 	# Both should verify.
-	if test "`openssl req -verify -key key.$size -in csr.openssl.$size -noout 2>&1`" != "verify OK" ; then
+	if test "`openssl req -verify -key key.$size -in csr.openssl.$size -noout 2>&1 | grep -c "verify OK"`" != "1" ; then
 		echo Signature failed for OpenSSL:
 		cat csr.openssl.$size
 		echo Private key:
 		awk '/BEGIN PRIVATE KEY/,/END PRIVATE KEY/{print}{;}' $tmpdir/key.$size
 		exit 1
 	fi
-	if test "`openssl req -verify -key key.$size -in csr.nss.$size -noout 2>&1`" != "verify OK" ; then
+	if test "`openssl req -verify -key key.$size -in csr.nss.$size -noout 2>&1 | grep -c "verify OK"`" != "1" ; then
 		echo Signature failed for NSS:
 		cat csr.nss.$size
 		echo Private key:
