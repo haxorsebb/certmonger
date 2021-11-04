@@ -132,6 +132,8 @@ CLEANFILES = \
 	038-ms-v2-template/actual.err \
 	039-fromfile/actual.out \
 	039-fromfile/actual.err
+	040-pem/actual.out \
+	040-pem/actual.err
 EXTRA_DIST = \
 	run-tests.sh functions certmonger.conf tools/cachain.sh \
 	001-keyiread/run.sh \
@@ -353,7 +355,8 @@ EXTRA_DIST = \
 	038-ms-v2-template/expected.out \
 	038-ms-v2-template/extract-extdata.py \
 	038-ms-v2-template/run.sh \
-	039-fromfile/run.sh
+	039-fromfile/run.sh \
+	040-pem/run.sh
 
 subdirs = \
 	001-keyiread \
@@ -388,7 +391,8 @@ subdirs = \
 	036-getcert \
 	037-rekey2 \
 	038-ms-v2-template \
-	039-fromfile
+	039-fromfile \
+	040-pem
 
 if HAVE_DBM_NSSDB
 subdirs += \

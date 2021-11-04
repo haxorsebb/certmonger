@@ -1,0 +1,7 @@
+OK
+OK
+OK
+got expected error with bad.empty
+got expected error with bad.isrg-root-x1-cross-signed.der
+got expected error with bad.notfound
+OK

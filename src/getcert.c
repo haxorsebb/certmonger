@@ -49,6 +49,7 @@
 #include "submit-u.h"
 #include "tdbus.h"
 #include "tdbusm.h"
+#include "util-o.h"
 
 #ifdef ENABLE_NLS
 #include <libintl.h>
@@ -4544,15 +4545,16 @@ add_scep_ca(const char *argv0, int argc, const char **argv)
 	int c, prefer_non_renewal = 0, verbose = 0;
 	dbus_bool_t b;
 	static DBusMessage *req, *rep;
+	const char *poptarg;
 	poptContext pctx;
 	struct poptOption popts[] = {
 		{"ca", 'c', POPT_ARG_STRING, &caname, 0, _("nickname to give to the new CA configuration"), HELP_TYPE_NAME},
 		{"url", 'u', POPT_ARG_STRING, &url, 0, _("location of SCEP server"), HELP_TYPE_URL},
 		{"id", 'i', POPT_ARG_STRING, &id, 0, _("CA identifier"), HELP_TYPE_ID},
-		{"ca-cert", 'R', POPT_ARG_STRING, &root, 0, _("file containing CA's certificate"), HELP_TYPE_FILENAME},
-		{"ra-cert", 'r', POPT_ARG_STRING, &racert, 0, _("file containing RA's certificate"), HELP_TYPE_FILENAME},
-		{"other-certs", 'I', POPT_ARG_STRING, &certs, 0, _("file containing certificates in RA's certifying chain"), HELP_TYPE_FILENAME},
-		{"signingca", 'N', POPT_ARG_STRING, &signingca, 0, _("the CA certificate which signed the RA certificate"), HELP_TYPE_FILENAME},
+		{"ca-cert", 'R', POPT_ARG_STRING, NULL, 'R', _("file containing CA's certificate"), HELP_TYPE_FILENAME},
+		{"ra-cert", 'r', POPT_ARG_STRING, NULL, 'r', _("file containing RA's certificate"), HELP_TYPE_FILENAME},
+		{"other-certs", 'I', POPT_ARG_STRING, NULL, 'I', _("file containing certificates in RA's certifying chain"), HELP_TYPE_FILENAME},
+		{"signingca", 'N', POPT_ARG_STRING, NULL, 'N', _("the CA certificate which signed the RA certificate"), HELP_TYPE_FILENAME},
 		{"non-renewal", 'n', POPT_ARG_NONE, &prefer_non_renewal, 0, _("prefer to not use the SCEP Renewal feature"), NULL},
 		{"session", 's', POPT_ARG_NONE, NULL, 's', _("connect to the certmonger service on the session bus"), NULL},
 		{"system", 'S', POPT_ARG_NONE, NULL, 'S', _("connect to the certmonger service on the system bus"), NULL},
@@ -4572,6 +4574,7 @@ add_scep_ca(const char *argv0, int argc, const char **argv)
 		return 1;
 	}
 	while ((c = poptGetNextOpt(pctx)) > 0) {
+		poptarg = poptGetOptArg(pctx);
 		switch (c) {
 		case 's':
 			bus = cm_tdbus_session;
@@ -4585,6 +4588,34 @@ add_scep_ca(const char *argv0, int argc, const char **argv)
 		case 'H':
 			poptPrintHelp(pctx, stdout, 0);
 			return 1;
+			break;
+		case 'R':
+            if (validate_pem(globals.tctx, poptarg) != 0) {
+				printf("The root certificate(s) in %s is not valid PEM\n", poptarg);
+				return 1;
+			}
+			root = talloc_strdup(globals.tctx, poptarg);
+			break;
+		case 'r':
+            if (validate_pem(globals.tctx, poptarg) != 0) {
+				printf("The RA certificate(s) in %s is not valid PEM\n", poptarg);
+				return 1;
+			}
+			racert = talloc_strdup(globals.tctx, poptarg);
+			break;
+		case 'I':
+            if (validate_pem(globals.tctx, poptarg) != 0) {
+				printf("The certificate(s) in %s is not valid PEM\n", poptarg);
+				return 1;
+			}
+			certs = talloc_strdup(globals.tctx, poptarg);
+			break;
+		case 'N':
+            if (validate_pem(globals.tctx, poptarg) != 0) {
+				printf("The certificate(s) in %s is not valid PEM\n", poptarg);
+				return 1;
+			}
+			signingca = talloc_strdup(globals.tctx, poptarg);
 			break;
 		}
 	}

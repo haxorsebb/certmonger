@@ -598,3 +598,147 @@ util_private_EVP_PKEY_dup(EVP_PKEY *pkey)
 {
 	return util_EVP_PKEY_dup(pkey, i2d_PrivateKey, d2i_PrivateKey);
 }
+
+static unsigned char *
+decode_base64(const unsigned char *input, int length, int *outlength) {
+	int expected_len;
+	unsigned char *output;
+	int output_len;
+
+	expected_len = 3 * length / 4;
+	output = calloc(expected_len + 1, 1);
+	output_len = EVP_DecodeBlock(output, input, length);
+
+	if (output_len < 0) {
+		*outlength = -1;
+		free(output);
+		return NULL;
+	}
+	if (output_len % 3 != 0) {
+		*outlength = -1;
+		free(output);
+		return NULL;
+	}
+	if (expected_len != output_len) {
+		*outlength = -1;
+		free(output);
+		return NULL;
+	}
+	*outlength = output_len;
+	return output;
+}
+
+int
+validate_pem(void *parent, const char *path)
+{
+	char *p;
+	char *s = NULL, *sp, *sq;
+	int ret = 0;
+	FILE *fp;
+	struct stat st;
+	char *tmp1 = NULL;
+	unsigned char *tmp2 = NULL;
+	char *buffer;
+	int n, i, length;
+	int found = 0;
+
+	fp = fopen(path, "r");
+	if (fp == NULL) {
+		printf("Unable to open %s for reading: %s\n",
+				path, strerror(errno));
+		return -1;
+	}
+	if (fstat(fileno(fp), &st) == -1) {
+		printf("Error opening %s for reading: %s\n",
+				path, strerror(errno));
+		fclose(fp);
+		return -1;
+	}
+	if (st.st_size == 0) {
+		printf("%s is an empty file.\n", path);
+		fclose(fp);
+		return -1;
+	}
+	
+	buffer = malloc(st.st_size + 1);
+	if (buffer == NULL) {
+		printf("Error allocating memory.\n");
+		fclose(fp);
+		return -1;
+	}
+
+	n = 0;
+	while (n < st.st_size) {
+		i = fread(buffer + n, 1, st.st_size - n, fp);
+		if (i <= 0) {
+			printf("Error reading %s: %s.\n",
+				   path, strerror(errno));
+			fclose(fp);
+			ret = -1;
+			goto done;
+		}
+		n += i;
+	}
+	fclose(fp);
+	buffer[st.st_size] = '\0';
+	length = st.st_size;
+	s = malloc(length + 1);
+	if (s == NULL) {
+		printf("Error allocating memory.\n");
+		ret = -1;
+		goto done;
+	}
+	memcpy(s, buffer, length);
+	s[length] = '\0';
+	sp = s;
+	tmp1 = NULL;
+	tmp2 = NULL;
+	while ((sp = strstr(sp, "-----BEGIN")) != NULL) {
+		sq = strstr(sp, "-----END");
+		if (sq != NULL) {
+			found++;
+			sq += strcspn(sq, "\r\n");
+			sq += strspn(sq, "\r\n");
+
+			/* Strip down to pure base64 so no headers, new lines or cr */
+			tmp1 = strndup(sp, sq - sp);
+			p = strstr(tmp1, "-----BEGIN");
+			if (p != NULL) {
+				p += strcspn(p, "\n");
+				if (*p == '\n') {
+   				 p++;
+				}
+				memmove(tmp1, p, strlen(p) + 1);
+			}
+			p = strstr(tmp1, "\n-----END");
+			if (p != NULL) {
+				*p = '\0';
+			}
+			while ((p = strchr(tmp1, '\r')) != NULL) {
+				memmove(p, p + 1, strlen(p));
+			}
+			while ((p = strchr(tmp1, '\n')) != NULL) {
+				memmove(p, p + 1, strlen(p));
+			}
+			length = 0;
+			tmp2 = decode_base64((unsigned char *)tmp1, strlen(tmp1), &length);
+			if (length < 0) {
+				ret = -1;
+				goto done;
+			}
+			sp = sq;
+		}
+	}
+
+	if (found == 0) {
+		ret = -1;
+	}
+
+done:
+	free(buffer);
+	free(s);
+	free(tmp1);
+	free(tmp2);
+
+	return ret;
+}

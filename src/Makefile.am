@@ -155,7 +155,7 @@ pkglibexecdir = $(libexecdir)/$(PACKAGE)
 getcert_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS) $(UUID_CFLAGS)
 getcert_SOURCES = getcert.c tm.c tm.h
 getcert_LDADD = libcm.a $(GETCERT_LIBS) $(KRB5_LIBS) $(NSS_LIBS) $(UUID_LIBS) \
-			$(POPT_LIBS) $(LTLIBICONV) $(LDAP_LIBS)
+			$(POPT_LIBS) $(LTLIBICONV) $(LDAP_LIBS) $(OPENSSL_LIBS)
 if WITH_IPA
 bin_PROGRAMS += ipa-getcert
 ipa_getcert_CFLAGS = $(getcert_CFLAGS)

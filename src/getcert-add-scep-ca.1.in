@@ -14,6 +14,8 @@ helper.  The \fIadd\-scep\-ca\fR command is more or less a wrapper for the
 
 .SH OPTIONS
 .TP
+All user\-provided certificate files must be in PEM format.
+.TP
 \fB\-c\fR \fINAME\fR, \fB\-\-ca\fR=\fINAME\fR
 The nickname to give to this CA configuration.  This same value can later be
 passed in to \fIgetcert\fR's \fIrequest\fR, \fIresubmit\fR, and

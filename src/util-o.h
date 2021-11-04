@@ -16,6 +16,12 @@
  */
 
 #ifndef utilo_h
+#include <openssl/err.h>
+#include <openssl/evp.h>
+#include <openssl/objects.h>
+#include <openssl/x509.h>
+#include <openssl/x509v3.h>
+
 #define utilo_h
 
 struct cm_store_entry;
@@ -71,5 +77,6 @@ int util_X509_set1_version(X509 *x, ASN1_INTEGER *version);
 void util_NETSCAPE_SPKI_set_sig_alg(NETSCAPE_SPKI *spki, const X509_ALGOR *sig_alg);
 EVP_PKEY *util_public_EVP_PKEY_dup(EVP_PKEY *pkey);
 EVP_PKEY *util_private_EVP_PKEY_dup(EVP_PKEY *pkey);
+int validate_pem(void *parent, const char *path);
 
 #endif
