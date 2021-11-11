@@ -616,7 +616,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 							  CM_DBUS_PROP_CERT_LOCATION_NICKNAME,
 							  cm_tdbusm_dict_s);
 		}
-		if (param == NULL) {
+		if (param == NULL || param->value.s == NULL || strlen(param->value.s) == 0) {
 			cm_log(1, "Certificate nickname not specified.\n");
 			talloc_free(parent);
 			return send_internal_base_missing_arg_error(conn, msg,
