@@ -345,7 +345,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 							  strlen(password));
 			}
 			X509_REQ_sign(req, pkey, cm_prefs_ossl_hash());
-			PEM_write_X509_REQ_NEW(status, req);
+			PEM_write_X509_REQ(status, req);
 			/* Generate the SPKAC. */
 			memset(&spkac, 0, sizeof(spkac));
 			spkac.challenge = util_ASN1_IA5STRING_new();

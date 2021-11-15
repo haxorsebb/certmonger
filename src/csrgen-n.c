@@ -941,14 +941,14 @@ cm_csrgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	b642 = NSSBase64_EncodeItem(arena, NULL, -1, &espkac);
 	b643 = NSSBase64_EncodeItem(arena, NULL, -1, &esminicert);
 	if ((b64 != NULL) && (b642 != NULL)) {
-		fprintf(status, "-----BEGIN NEW CERTIFICATE REQUEST-----\n");
+		fprintf(status, "-----BEGIN CERTIFICATE REQUEST-----\n");
 		p = b64;
 		while (*p != '\0') {
 			q = p + strcspn(p, "\r\n");
 			fprintf(status, "%.*s\n", (int) (q - p), p);
 			p = q + strspn(q, "\r\n");
 		}
-		fprintf(status, "-----END NEW CERTIFICATE REQUEST-----\n");
+		fprintf(status, "-----END CERTIFICATE REQUEST-----\n");
 		p = b642;
 		while (*p != '\0') {
 			q = p + strcspn(p, "\r\n");

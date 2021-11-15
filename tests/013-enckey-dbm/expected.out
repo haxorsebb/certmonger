@@ -7,8 +7,8 @@ OK.
 -----BEGIN ENCRYPTED PRIVATE KEY-----
 -----END ENCRYPTED PRIVATE KEY-----
 [Generate CSR With PIN.]
------BEGIN NEW CERTIFICATE REQUEST-----
------END NEW CERTIFICATE REQUEST-----
+-----BEGIN CERTIFICATE REQUEST-----
+-----END CERTIFICATE REQUEST-----
 [Not Pre-creating database.]
 [Generating key (dbm) with PIN.]
 OK.
@@ -19,8 +19,8 @@ OK (RSA:2048).
 certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
 < 0> rsa PRIVATE-KEY Test
 [Generating CSR With PIN.]
------BEGIN NEW CERTIFICATE REQUEST-----
------END NEW CERTIFICATE REQUEST-----
+-----BEGIN CERTIFICATE REQUEST-----
+-----END CERTIFICATE REQUEST-----
 certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
 < 0> rsa PRIVATE-KEY Test
 [Creating database.]
@@ -33,8 +33,8 @@ OK (RSA:2048).
 certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
 < 0> rsa PRIVATE-KEY Test
 [Generating CSR With PIN.]
------BEGIN NEW CERTIFICATE REQUEST-----
------END NEW CERTIFICATE REQUEST-----
+-----BEGIN CERTIFICATE REQUEST-----
+-----END CERTIFICATE REQUEST-----
 certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services"
 < 0> rsa PRIVATE-KEY Test
 [Test complete.]

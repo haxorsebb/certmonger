@@ -31,8 +31,8 @@ Failed to read key "$tmpdir/keyfile".
 [Retry With PIN File.]
 OK (RSA:2048).
 [Generate CSR With PIN.]
------BEGIN NEW CERTIFICATE REQUEST-----
------END NEW CERTIFICATE REQUEST-----
+-----BEGIN CERTIFICATE REQUEST-----
+-----END CERTIFICATE REQUEST-----
 [Not pre-creating database.]
 [Generating key without PIN.]
 OK.
@@ -72,8 +72,8 @@ OK (RSA:2048).
 [Generating CSR Without PIN.]
 [Generating CSR With Bogus PIN Location.]
 [Generating CSR With PIN.]
------BEGIN NEW CERTIFICATE REQUEST-----
------END NEW CERTIFICATE REQUEST-----
+-----BEGIN CERTIFICATE REQUEST-----
+-----END CERTIFICATE REQUEST-----
 [Creating database with PIN.]
 [Generating key with PIN.]
 OK.
@@ -91,6 +91,6 @@ OK (RSA:2048).
 [Generating CSR Without PIN.]
 [Generating CSR With Bogus PIN Location.]
 [Generating CSR With PIN.]
------BEGIN NEW CERTIFICATE REQUEST-----
------END NEW CERTIFICATE REQUEST-----
+-----BEGIN CERTIFICATE REQUEST-----
+-----END CERTIFICATE REQUEST-----
 [Test complete.]
