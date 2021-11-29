@@ -70,4 +70,6 @@ Certificate:
 
 [verify]
 cert: OK
+cert cipher: OK
+key cipher: OK
 OK.

@@ -52,4 +52,20 @@ echo "[subject]"
 dumpcert cert
 echo "[verify]"
 openssl verify -CAfile $tmpdir/ca-cert cert
+
+# Check the encryption used in the creds file
+certenc=`openssl pkcs12 -info -in /tmp/foo/creds -passin pass: -nodes 2>&1 | grep "PKCS7 Encrypted data:" | awk '{ print $6 }' | sed 's/,//'`
+keyenc=`openssl pkcs12 -info -in /tmp/foo/creds -passin pass: -nokeys 2>&1 | grep "Shrouded Keybag:" | awk '{ print $5 }' | sed 's/,//'`
+
+if [ $certenc != "AES-128-CBC" ]; then
+        echo "Fail, cert cipher is $certenc"
+else
+        echo "cert cipher: OK"
+fi
+if [ $keyenc != "AES-128-CBC" ]; then
+        echo "Fail, key cipher is $keyenc"
+else
+        echo "key cipher: OK"
+fi
+
 echo OK.
