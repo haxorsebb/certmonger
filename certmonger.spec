@@ -27,7 +27,7 @@
 %bcond_with xmlrpc
 
 Name:		certmonger
-Version:	0.79.14
+Version:	0.79.15
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -264,6 +264,27 @@ exit 0
 %endif
 
 %changelog
+* Wed Jan  5 2022 Rob Crittenden <rcritten@redhat.com> - 0.79.15-1
+- update to 0.79.15
+  - Translated using Weblate (Swedish)
+  - Translated using Weblate (Indonesian)
+  - Translated using Weblate (Indonesian)
+  - Translated using Weblate (Sinhala)
+  - Translated using Weblate (French)
+  - Translated using Weblate (Korean)
+  - Port to OpenSSL 3.0.0
+  - Use extensions template from NSS
+  - Use implicit, empty FALSE for extensions
+  - Add .gitignore to project
+  - If an existing cert exists, use it to decrypt the PKCS#7 envelope
+  - Increase minimum allowed RSA key size to 1024
+  - Make the default RSA key size configurable
+  - Fix file descriptor leak when executing CA helpers
+  - Add compile check for EVP_PKEY_get_id along with EVP_PKEY_id
+  - Update csrgen test to understand OpenSSL 3.0.0 output
+  - Reject a certificate with an empty NSS nickname
+  - Add SCEP config option to treat the challenge password as an OTP
+
 * Tue Jun 14 2021 Rob Crittenden <rcritten@redhat.com> - 0.79.14-1
 - update to 0.79.14
   -  Fix local CA to work under FIPS
