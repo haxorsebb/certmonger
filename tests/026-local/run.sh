@@ -54,8 +54,8 @@ echo "[verify]"
 openssl verify -CAfile $tmpdir/ca-cert cert
 
 # Check the encryption used in the creds file
-certenc=`openssl pkcs12 -info -in /tmp/foo/creds -passin pass: -nodes 2>&1 | grep "PKCS7 Encrypted data:" | awk '{ print $6 }' | sed 's/,//'`
-keyenc=`openssl pkcs12 -info -in /tmp/foo/creds -passin pass: -nokeys 2>&1 | grep "Shrouded Keybag:" | awk '{ print $5 }' | sed 's/,//'`
+certenc=`openssl pkcs12 -info -in $tmpdir/creds -passin pass: -nodes 2>&1 | grep "PKCS7 Encrypted data:" | awk '{ print $6 }' | sed 's/,//'`
+keyenc=`openssl pkcs12 -info -in $tmpdir/creds -passin pass: -nokeys 2>&1 | grep "Shrouded Keybag:" | awk '{ print $5 }' | sed 's/,//'`
 
 if [ $certenc != "AES-128-CBC" ]; then
         echo "Fail, cert cipher is $certenc"
@@ -66,6 +66,14 @@ if [ $keyenc != "AES-128-CBC" ]; then
         echo "Fail, key cipher is $keyenc"
 else
         echo "key cipher: OK"
+fi
+
+openssl pkcs12 -nokeys -in $tmpdir/creds -passin pass: -nodes > $tmpdir/ca.pem
+openssl asn1parse -in $tmpdir/ca.pem -strictpem 2>&1 | grep -q 30030101FF
+if [ $? -eq 0 ]; then
+	echo "CA constraint: OK"
+else
+	echo "Unexpected DER encoding of CA constraint"
 fi
 
 echo OK.

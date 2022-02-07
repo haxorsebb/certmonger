@@ -72,4 +72,5 @@ Certificate:
 cert: OK
 cert cipher: OK
 key cipher: OK
+CA constraint: OK
 OK.
