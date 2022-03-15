@@ -11,8 +11,8 @@ msgstr ""
 "Project-Id-Version: certmonger 0.78.6\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2017-02-26 02:20-0500\n"
-"PO-Revision-Date: 2021-09-13 00:04+0000\n"
-"Last-Translator: Didik Supriadi <didiksupriadi41@gmail.com>\n"
+"PO-Revision-Date: 2021-09-14 06:04+0000\n"
+"Last-Translator: Andika Triwidada <andika@gmail.com>\n"
 "Language-Team: Indonesian <https://translate.fedoraproject.org/projects/"
 "certmonger/master/id/>\n"
 "Language: id\n"
@@ -1214,12 +1214,11 @@ msgstr "*Jika menggunakan berkas untuk penyimpanan:\n"
 
 #: src/getcert.c:4799 src/getcert.c:4850 src/getcert.c:4898
 msgid "  -k FILE\tPEM file for private key\n"
-msgstr "  -k FILE\tPEM berkas untuk kunci privasi\n"
+msgstr "  -k FILE\tBerkas PEM untuk kunci privat\n"
 
 #: src/getcert.c:4800 src/getcert.c:4851 src/getcert.c:4899
-#, fuzzy
 msgid "  -f FILE\tPEM file for certificate (only valid with -k)\n"
-msgstr "  -f FILE\tPEM berkas untuk sertifikat (hanya valid dengan -k)\n"
+msgstr "  -f FILE\t Berkas PEM untuk sertifikat (hanya valid dengan -k)\n"
 
 #: src/getcert.c:4801
 msgid "* If keys are to be encrypted:\n"
