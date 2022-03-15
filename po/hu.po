@@ -6,21 +6,22 @@
 # Peter Borsa <peter.borsa@gmail.com>, 2012
 # Zoltan Hoppár <zoltanh721@fedoraproject.org>, 2012-2013
 # Porcsin László <dzsolly85@gmail.com>, 2015. #zanata
+# Dankaházi (ifj.) István <dankahazi.istvan@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger 0.78.6\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2017-02-26 02:20-0500\n"
-"PO-Revision-Date: 2015-02-22 02:25-0500\n"
-"Last-Translator: Porcsin László <dzsolly85@gmail.com>\n"
-"Language-Team: Hungarian (http://www.transifex.com/projects/p/certmonger/"
-"language/hu/)\n"
+"PO-Revision-Date: 2021-11-23 15:06+0000\n"
+"Last-Translator: Dankaházi (ifj.) István <dankahazi.istvan@gmail.com>\n"
+"Language-Team: Hungarian <https://translate.fedoraproject.org/projects/"
+"certmonger/master/hu/>\n"
 "Language: hu\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Zanata 3.9.6\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 4.9\n"
 
 #: src/casave.c:322 src/casave.c:361 src/dogtag.c:233 src/dogtag.c:238
 #: src/dogtag.c:256 src/dogtag.c:261 src/getcert.c:291
@@ -215,7 +216,7 @@ msgstr "\"%s\" elérési út nem egy szabályos könyvtár.\n"
 #: src/getcert.c:154
 #, c-format
 msgid "Path \"%s\": %s.\n"
-msgstr " \"%s\" elérési útja: %s.\n"
+msgstr "Elérési út \"%s\": %s.\n"
 
 #: src/getcert.c:194
 #, c-format
@@ -258,23 +259,17 @@ msgid "missing argument for %s"
 msgstr ""
 
 #: src/getcert.c:398
-#, fuzzy
 msgid "missing argument"
-msgstr "Opcionális paraméterek:\n"
+msgstr "hiányzó paraméter"
 
 #: src/getcert.c:401
-#, fuzzy, c-format
+#, c-format
 msgid "unrecognized option %s"
-msgstr ""
-"%s: ismeretlen parancs\n"
-"\n"
+msgstr "ismeretlen opció %s"
 
 #: src/getcert.c:406
-#, fuzzy
 msgid "unrecognized option"
-msgstr ""
-"%s: ismeretlen parancs\n"
-"\n"
+msgstr "ismeretlen opció"
 
 #: src/getcert.c:409
 msgid "aliases nested too deeply"
@@ -297,14 +292,12 @@ msgid "bad operation"
 msgstr ""
 
 #: src/getcert.c:427
-#, fuzzy
 msgid "internal error"
-msgstr "Belső hiba történt."
+msgstr "belső hiba"
 
 #: src/getcert.c:430
-#, fuzzy
 msgid "out of memory"
-msgstr "Elfogyott a rendelkezésre álló memória.\n"
+msgstr "elfogyott a memória"
 
 #: src/getcert.c:434
 msgid "error in popt configuration file"
@@ -318,9 +311,7 @@ msgstr "Hiba %s: %s\n"
 #: src/getcert.c:481
 #, c-format
 msgid "Error %s\n"
-msgstr ""
-"Hiba %s\n"
-"\n"
+msgstr "Hiba %s\n"
 
 #: src/getcert.c:487
 #, c-format
@@ -434,10 +425,10 @@ msgid "ask the CA to process the request using the named profile or template"
 msgstr ""
 
 #: src/getcert.c:792 src/getcert.c:1869 src/getcert.c:2522
-#, fuzzy
 msgid "ask the CA to process the request using the named issuer"
 msgstr ""
-"  -T PROFILE\task CA számítás a kért felhasznált profil név vagy sablon\n"
+"kéri a hitelesítésszolgáltatót, hogy a kérelmet a megnevezett kibocsátó "
+"felhasználásával dolgozza fel"
 
 #: src/getcert.c:793 src/getcert.c:2523
 msgid "set requested subject name (default: CN=<hostname>)"
@@ -1199,9 +1190,7 @@ msgstr "Szükséges paraméterek:\n"
 #: src/getcert.c:4794 src/getcert.c:4845 src/getcert.c:4893 src/getcert.c:4915
 #: src/getcert.c:4963 src/getcert.c:5020 src/getcert.c:5041
 msgid "* If using an NSS database for storage:\n"
-msgstr ""
-"* Ha egy NSS adatbázist használ a tárolóhoz:\n"
-"\n"
+msgstr "* Ha egy NSS adatbázist használ a tárolóhoz:\n"
 
 #: src/getcert.c:4795 src/getcert.c:4846 src/getcert.c:4894 src/getcert.c:4916
 #: src/getcert.c:4964 src/getcert.c:5042
@@ -1271,9 +1260,7 @@ msgstr ""
 
 #: src/getcert.c:4809
 msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
-msgstr ""
-"  -g SIZE\taz előállítandó kulcs mérete ha egy már nem lenne a helyén\n"
-"\n"
+msgstr "  -g SIZE\ta generálandó kulcs mérete, ha még nincs kulcs a helyén\n"
 
 #: src/getcert.c:4810 src/getcert.c:4859
 msgid ""
