@@ -11,13 +11,14 @@
 # Tommy He <lovenemesis@gmail.com>, 2013
 # Wei Liu <LLIU@REDHAT.COM>, 2012
 # Charles Lee <lchopn@gmail.com>, 2021.
+# Serena She <sheyueming@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger 0.78.6\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2017-02-26 02:20-0500\n"
-"PO-Revision-Date: 2021-11-22 10:16+0000\n"
-"Last-Translator: Charles Lee <lchopn@gmail.com>\n"
+"PO-Revision-Date: 2021-12-04 09:16+0000\n"
+"Last-Translator: Serena She <sheyueming@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://translate.fedoraproject.org/"
 "projects/certmonger/master/zh_CN/>\n"
 "Language: zh_CN\n"
@@ -25,7 +26,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.9\n"
+"X-Generator: Weblate 4.9.1\n"
 
 #: src/casave.c:322 src/casave.c:361 src/dogtag.c:233 src/dogtag.c:238
 #: src/dogtag.c:256 src/dogtag.c:261 src/getcert.c:291
@@ -135,47 +136,47 @@ msgstr "内部错误:  \"%s?%s\" 没有响应。\n"
 
 #: src/getcert.c:61 src/main.c:84 src/main.c:86
 msgid "COMMAND"
-msgstr ""
+msgstr "命令"
 
 #: src/getcert.c:62
 msgid "DIRECTORY"
-msgstr ""
+msgstr "目录"
 
 #: src/getcert.c:63 src/getcert.c:70
 msgid "LIST"
-msgstr ""
+msgstr "列表"
 
 #: src/getcert.c:64 src/getcert.c:68
 msgid "ADDRESS"
-msgstr ""
+msgstr "地址"
 
 #: src/getcert.c:65 src/main.c:87
 msgid "FILENAME"
-msgstr ""
+msgstr "文件名称"
 
 #: src/getcert.c:66
 msgid "HOSTNAME"
-msgstr ""
+msgstr "主机名称"
 
 #: src/getcert.c:67
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #: src/getcert.c:69
 msgid "BITS"
-msgstr ""
+msgstr "比特"
 
 #: src/getcert.c:71
 msgid "MODE"
-msgstr ""
+msgstr "模式"
 
 #: src/getcert.c:72
 msgid "NAME"
-msgstr ""
+msgstr "名称"
 
 #: src/getcert.c:73
 msgid "PRINCIPAL"
-msgstr ""
+msgstr "原理"
 
 #: src/getcert.c:74
 msgid "SUBJECT"
@@ -183,7 +184,7 @@ msgstr ""
 
 #: src/getcert.c:75
 msgid "URL"
-msgstr ""
+msgstr "URL"
 
 #: src/getcert.c:76
 msgid "USERNAME[:GROUPNAME]"
@@ -204,7 +205,7 @@ msgstr "路径 %s 不是绝对路径，并且确定当前目录时出错。\n"
 #: src/getcert.c:142
 #, c-format
 msgid "Path \"%s\": insufficient permissions.\n"
-msgstr ""
+msgstr "路径“%s”：权限不足。\n"
 
 #: src/getcert.c:148
 #, c-format
@@ -229,12 +230,12 @@ msgstr ""
 #: src/getcert.c:341
 #, c-format
 msgid "Running as UID 0.\n"
-msgstr ""
+msgstr "以 UID 0 运行。\n"
 
 #: src/getcert.c:342
 #, c-format
 msgid "Launching temporary dedicated service daemon.\n"
-msgstr ""
+msgstr "启动临时专用服务守护程序。\n"
 
 #: src/getcert.c:371
 #, c-format
@@ -271,7 +272,7 @@ msgstr "未识别的选项"
 
 #: src/getcert.c:409
 msgid "aliases nested too deeply"
-msgstr ""
+msgstr "别名嵌套过深"
 
 #: src/getcert.c:412
 msgid "bad parameter quoting"
@@ -279,11 +280,11 @@ msgstr ""
 
 #: src/getcert.c:418
 msgid "invalid numeric value"
-msgstr ""
+msgstr "无效数值"
 
 #: src/getcert.c:421
 msgid "number too large or too small"
-msgstr ""
+msgstr "数字过大或过小"
 
 #: src/getcert.c:424
 msgid "bad operation"
@@ -344,11 +345,11 @@ msgstr ""
 #: src/getcert.c:770 src/getcert.c:1848 src/getcert.c:2502 src/getcert.c:3102
 #: src/getcert.c:3356 src/getcert.c:3877
 msgid "optional token name for NSS-based storage (only valid with -d)"
-msgstr ""
+msgstr "NSS 存储的可选令牌名称（使用 -d 才会生效）"
 
 #: src/getcert.c:771
 msgid "PEM file for private key"
-msgstr ""
+msgstr "私钥 PEM 文件"
 
 #: src/getcert.c:772
 msgid "PEM file for certificate (only valid with -k)"
@@ -356,27 +357,27 @@ msgstr ""
 
 #: src/getcert.c:773 src/getcert.c:1851 src/getcert.c:2508
 msgid "file which holds the private key encryption PIN"
-msgstr ""
+msgstr "保存私钥加密 PIN 码的文件"
 
 #: src/getcert.c:774 src/getcert.c:1852 src/getcert.c:2509
 msgid "private key encryption PIN"
-msgstr ""
+msgstr "私钥加密 PIN 码"
 
 #: src/getcert.c:775 src/getcert.c:1853 src/getcert.c:2510
 msgid "owner information for private key"
-msgstr ""
+msgstr "私钥所有者信息"
 
 #: src/getcert.c:776 src/getcert.c:1854 src/getcert.c:2511
 msgid "file permissions for private key"
-msgstr ""
+msgstr "私钥的文件权限"
 
 #: src/getcert.c:777 src/getcert.c:1855 src/getcert.c:2512
 msgid "owner information for certificate"
-msgstr ""
+msgstr "证书的所有者信息"
 
 #: src/getcert.c:778 src/getcert.c:1856 src/getcert.c:2513
 msgid "file permissions for certificate"
-msgstr ""
+msgstr "证书的文件权限"
 
 #: src/getcert.c:779 src/getcert.c:1857 src/getcert.c:2514
 msgid "NSS database in which to store the CA's certificates"
@@ -388,15 +389,15 @@ msgstr ""
 
 #: src/getcert.c:781 src/getcert.c:1859 src/getcert.c:2516
 msgid "command to run before saving the certificate"
-msgstr ""
+msgstr "保存证书前运行的命令"
 
 #: src/getcert.c:782 src/getcert.c:1860 src/getcert.c:2517
 msgid "command to run after saving the certificate"
-msgstr ""
+msgstr "-C\t在保存证书后运行的命令"
 
 #: src/getcert.c:783
 msgid "nickname to assign to the request"
-msgstr ""
+msgstr "分配给请求的昵称"
 
 #: src/getcert.c:784
 msgid "type of key to be generated if one is not already in place"
@@ -408,11 +409,11 @@ msgstr ""
 
 #: src/getcert.c:786 src/getcert.c:1863
 msgid "attempt to renew the certificate when expiration nears (default)"
-msgstr ""
+msgstr "证书到期时，尝试更新证书（默认）"
 
 #: src/getcert.c:787 src/getcert.c:1864
 msgid "don't attempt to renew the certificate when expiration nears"
-msgstr ""
+msgstr "证书到期时，不尝试更新证书"
 
 #: src/getcert.c:789 src/getcert.c:1866
 msgid "use the specified CA configuration rather than the default"
@@ -480,7 +481,7 @@ msgstr ""
 
 #: src/getcert.c:806 src/getcert.c:1882 src/getcert.c:2536
 msgid "maximum time to wait for the certificate to be issued"
-msgstr ""
+msgstr "等待证书发行的最大时间"
 
 #: src/getcert.c:807 src/getcert.c:1883 src/getcert.c:2537 src/getcert.c:3105
 #: src/getcert.c:3360 src/getcert.c:3880 src/getcert.c:4038 src/getcert.c:4270
@@ -507,7 +508,7 @@ msgstr ""
 #: src/getcert.c:891 src/getcert.c:2621
 #, c-format
 msgid "Known key types include:"
-msgstr ""
+msgstr "已知密钥类型包括："
 
 #: src/getcert.c:931 src/getcert.c:1983 src/getcert.c:2643
 #, c-format
@@ -532,7 +533,7 @@ msgstr "反解析 Kerberos 主机名 “%s”时出错：%s。\n"
 #: src/getcert.c:1016 src/getcert.c:2068 src/getcert.c:2728
 #, c-format
 msgid "%s: invalid value -- '%s'\n"
-msgstr ""
+msgstr "%s：无效值 -- '%s'\n"
 
 #: src/getcert.c:1039 src/getcert.c:2096 src/getcert.c:2751 src/getcert.c:3176
 #: src/getcert.c:3422 src/getcert.c:4073
@@ -629,11 +630,11 @@ msgstr ""
 #: src/getcert.c:1850 src/getcert.c:2503 src/getcert.c:3103 src/getcert.c:3357
 #: src/getcert.c:3878
 msgid "PEM file for certificate"
-msgstr ""
+msgstr "证书的 PEM 文件"
 
 #: src/getcert.c:1861
 msgid "nickname of an existing request"
-msgstr ""
+msgstr "现有请求的昵称"
 
 #: src/getcert.c:1862
 msgid "nickname to give to tracking request"
@@ -702,19 +703,19 @@ msgstr "请求“%s”无法移除。\n"
 
 #: src/getcert.c:2504 src/getcert.c:3104 src/getcert.c:3358 src/getcert.c:3879
 msgid "nickname for tracking request"
-msgstr ""
+msgstr "追踪请求的昵称"
 
 #: src/getcert.c:2505
 msgid "new nickname to give to tracking request"
-msgstr ""
+msgstr "给追踪请求的新昵称"
 
 #: src/getcert.c:2506
 msgid "type of new key to be generated"
-msgstr ""
+msgstr "生成的新密钥的类型"
 
 #: src/getcert.c:2507
 msgid "size of new key to be generated"
-msgstr ""
+msgstr "生成的新密钥的大小"
 
 #: src/getcert.c:2519
 msgid "use the specified CA configuration rather than the current one"
@@ -757,7 +758,7 @@ msgstr ""
 #: src/getcert.c:3290
 #, c-format
 msgid "Request ID '%s' being refreshed.\n"
-msgstr ""
+msgstr "请求 ID ‘%s’ 正在更新中。\n"
 
 #: src/getcert.c:3292
 #, c-format
@@ -770,7 +771,7 @@ msgstr ""
 
 #: src/getcert.c:3350
 msgid "list only information about tracked certificates"
-msgstr ""
+msgstr "-t    只列出被跟踪证书的相关信息"
 
 #: src/getcert.c:3352
 msgid "list only requests and certs associated with this CA configuration"
@@ -892,7 +893,7 @@ msgstr "    实体名： "
 
 #: src/getcert.c:3756
 msgid "\tIP address: "
-msgstr ""
+msgstr "\tIP 地址： "
 
 #: src/getcert.c:3775
 #, c-format
@@ -906,7 +907,7 @@ msgstr "\teku: "
 #: src/getcert.c:3787
 #, c-format
 msgid "\tcertificate template/profile: %s\n"
-msgstr ""
+msgstr "\t证书模板/主页：%s\n"
 
 #: src/getcert.c:3793 src/getcert.c:4154
 #, c-format
@@ -931,12 +932,12 @@ msgstr ""
 #: src/getcert.c:3829 src/getcert.c:4190
 #, c-format
 msgid "\tother root certificates saved to databases:\n"
-msgstr ""
+msgstr "\t保存到数据库的其他根证书：\n"
 
 #: src/getcert.c:3838 src/getcert.c:4199
 #, c-format
 msgid "\tother certificates saved to databases:\n"
-msgstr ""
+msgstr "\t保存到数据库的其他证书：\n"
 
 #: src/getcert.c:3843 src/getcert.c:4245
 #, c-format
@@ -967,7 +968,7 @@ msgstr ""
 
 #: src/getcert.c:4036
 msgid "list only the specified CA configuration"
-msgstr ""
+msgstr "仅列出指定的 CA 配置"
 
 #: src/getcert.c:4104
 #, c-format
@@ -1026,16 +1027,16 @@ msgstr ""
 
 #: src/getcert.c:4267
 msgid "refresh information about the CA configuration with this name"
-msgstr ""
+msgstr "刷新有关该名称的 CA 配置的信息"
 
 #: src/getcert.c:4269
 msgid "refresh information about all known CAs"
-msgstr ""
+msgstr "刷新有关所有已知 CA 的信息"
 
 #: src/getcert.c:4316
 #, c-format
 msgid "Neither CA nickname nor -a flag specified.\n"
-msgstr ""
+msgstr "未指定 CA 昵称或 -a 标记。\n"
 
 #: src/getcert.c:4342
 #, c-format
@@ -1045,35 +1046,35 @@ msgstr ""
 #: src/getcert.c:4344
 #, c-format
 msgid "Data for unnamed CA being refreshed.\n"
-msgstr ""
+msgstr "未命名 CA 的数据正在刷新中。\n"
 
 #: src/getcert.c:4347
 #, c-format
 msgid "\terror refreshing CA data\n"
-msgstr ""
+msgstr "\t刷新 CA 数据出错\n"
 
 #: src/getcert.c:4364 src/getcert.c:4456
 msgid "nickname to give to the new CA configuration"
-msgstr ""
+msgstr "给新 CA 配置的昵称"
 
 #: src/getcert.c:4365
 msgid "helper command to run to communicate with CA"
-msgstr ""
+msgstr "与 CA 通信的帮助命令"
 
 #: src/getcert.c:4406 src/getcert.c:4503 src/getcert.c:4631 src/getcert.c:4719
 #, c-format
 msgid "CA nickname not specified.\n"
-msgstr ""
+msgstr "未指定 CA 昵称。\n"
 
 #: src/getcert.c:4411 src/getcert.c:4636
 #, c-format
 msgid "CA helper command not specified.\n"
-msgstr ""
+msgstr "未指定 CA 帮助命令。\n"
 
 #: src/getcert.c:4435 src/getcert.c:4553
 #, c-format
 msgid "New CA \"%s\" added.\n"
-msgstr ""
+msgstr "新 CA“%s”已添加。\n"
 
 #: src/getcert.c:4438 src/getcert.c:4573
 #, c-format
