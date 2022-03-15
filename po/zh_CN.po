@@ -10,21 +10,22 @@
 # Tiansworld <tiansworld@fedoraproject.org>, 2013
 # Tommy He <lovenemesis@gmail.com>, 2013
 # Wei Liu <LLIU@REDHAT.COM>, 2012
+# Charles Lee <lchopn@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger 0.78.6\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2017-02-26 02:20-0500\n"
-"PO-Revision-Date: 2015-01-05 05:52-0500\n"
-"Last-Translator: Copied by Zanata <copied-by-zanata@zanata.org>\n"
-"Language-Team: Chinese (China) (http://www.transifex.com/projects/p/"
-"certmonger/language/zh_CN/)\n"
-"Language: zh-CN\n"
+"PO-Revision-Date: 2021-11-22 10:16+0000\n"
+"Last-Translator: Charles Lee <lchopn@gmail.com>\n"
+"Language-Team: Chinese (Simplified) <https://translate.fedoraproject.org/"
+"projects/certmonger/master/zh_CN/>\n"
+"Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Zanata 3.9.6\n"
+"X-Generator: Weblate 4.9\n"
 
 #: src/casave.c:322 src/casave.c:361 src/dogtag.c:233 src/dogtag.c:238
 #: src/dogtag.c:256 src/dogtag.c:261 src/getcert.c:291
@@ -38,14 +39,14 @@ msgid "Unable to determine hostname of CA.\n"
 msgstr "无法确定CA的主机名。\n"
 
 #: src/certmaster.c:153 src/dogtag.c:521 src/ipa.c:796
-#, fuzzy, c-format
+#, c-format
 msgid "Unable to read signing request from file \"%s\".\n"
-msgstr "无法读取签名请求。\n"
+msgstr "无法读取来自“%s”文件的签名请求。\n"
 
 #: src/certmaster.c:156 src/dogtag.c:524 src/ipa.c:799
-#, fuzzy, c-format
+#, c-format
 msgid "Unable to read signing request from environment variable \"%s\".\n"
-msgstr "无法读取签名请求。\n"
+msgstr "无法读取来自环境变量“%s”的签名请求。\n"
 
 #: src/certmaster.c:184
 #, c-format
@@ -70,7 +71,7 @@ msgstr "服务器出错。\n"
 #: src/dogtag.c:226
 #, c-format
 msgid "Profile params (-O) must be in the form of param=value.\n"
-msgstr ""
+msgstr "档案参数（-O）必须使用“param=value”的形式。\n"
 
 #: src/dogtag.c:249
 #, c-format
@@ -78,14 +79,14 @@ msgid "Submit params (-o) must be in the form of param=value.\n"
 msgstr ""
 
 #: src/dogtag.c:408 src/dogtag.c:413 src/dogtag.c:442
-#, fuzzy, c-format
+#, c-format
 msgid "No agent credentials specified, and no default known.\n"
-msgstr "未指定中间代理 URL (-A)，且无已知默认值。\n"
+msgstr "未指定代理凭据，且无已知默认值。\n"
 
 #: src/dogtag.c:418
 #, c-format
 msgid "Requested renewal, but no serial number provided.\n"
-msgstr ""
+msgstr "已请求延期，但未提供序列号。\n"
 
 #: src/dogtag.c:422
 #, c-format
@@ -105,7 +106,7 @@ msgstr "未指定预置文件/模板 (-T)，且无已知默认值。\n"
 #: src/dogtag.c:452
 #, c-format
 msgid "Error shutting down NSS.\n"
-msgstr ""
+msgstr "关闭网络代理服务（NSS）时出错。\n"
 
 #: src/dogtag.c:487 src/dogtag.c:777
 #, c-format
@@ -115,7 +116,7 @@ msgstr "内部错误: 未知的状态。\n"
 #: src/dogtag.c:600
 #, c-format
 msgid "No agent credentials (-n) given, but they are needed.\n"
-msgstr ""
+msgstr "未提供代理凭据（-n），它们是必须的。\n"
 
 #: src/dogtag.c:757 src/scep.c:619
 #, c-format
@@ -256,19 +257,17 @@ msgid "missing argument for %s"
 msgstr ""
 
 #: src/getcert.c:398
-#, fuzzy
 msgid "missing argument"
-msgstr "可选参数：\n"
+msgstr "缺少参数"
 
 #: src/getcert.c:401
-#, fuzzy, c-format
+#, c-format
 msgid "unrecognized option %s"
-msgstr "%s：未识别命令\n"
+msgstr "未识别的选项 %s"
 
 #: src/getcert.c:406
-#, fuzzy
 msgid "unrecognized option"
-msgstr "%s：未识别命令\n"
+msgstr "未识别的选项"
 
 #: src/getcert.c:409
 msgid "aliases nested too deeply"
@@ -291,14 +290,12 @@ msgid "bad operation"
 msgstr ""
 
 #: src/getcert.c:427
-#, fuzzy
 msgid "internal error"
-msgstr "发生一个内部错误。"
+msgstr "内部错误"
 
 #: src/getcert.c:430
-#, fuzzy
 msgid "out of memory"
-msgstr "内存不足。\n"
+msgstr "内存不足"
 
 #: src/getcert.c:434
 msgid "error in popt configuration file"
@@ -426,9 +423,8 @@ msgid "ask the CA to process the request using the named profile or template"
 msgstr ""
 
 #: src/getcert.c:792 src/getcert.c:1869 src/getcert.c:2522
-#, fuzzy
 msgid "ask the CA to process the request using the named issuer"
-msgstr "  -T 预置文件\t要求 CA 使用指名的预置文件或模板处理请求\n"
+msgstr "要求 CA 使用指名的签署者处理请求"
 
 #: src/getcert.c:793 src/getcert.c:2523
 msgid "set requested subject name (default: CN=<hostname>)"
@@ -584,12 +580,14 @@ msgid "Key and certificate can not both be saved to the same file.\n"
 msgstr "密钥和证书不能保存到同一个文件。\n"
 
 #: src/getcert.c:1114
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "The IPA backend requires the use of the -K option (principal name) when any "
 "of the -N (subject name), -E (email address), -A (IP address), -D (DNS "
 "name), or -U (extendedKeyUsage) options is used.\n"
-msgstr "当使用 -N 选项（主题名）时，IPA 后端要求使用 -K 选项（实体名）。\n"
+msgstr ""
+"当使用 -N（主题名）、-E（电子邮件地址）、-A（IP地址）、-D（DNS 名称）或者 -U（扩展密钥用途） 时，IPA 后端要求使用 -K "
+"选项（实体名）。\n"
 
 #: src/getcert.c:1296 src/getcert.c:1762 src/getcert.c:2272 src/getcert.c:2867
 #: src/getcert.c:3208 src/getcert.c:3447 src/getcert.c:4731
@@ -903,7 +901,7 @@ msgstr "\t密钥用法: %s\n"
 
 #: src/getcert.c:3779
 msgid "\teku: "
-msgstr "    EKU："
+msgstr "\teku: "
 
 #: src/getcert.c:3787
 #, c-format
@@ -1264,9 +1262,8 @@ msgid ""
 msgstr "  -T 预置文件\t要求 CA 使用指名的预置文件或模板处理请求\n"
 
 #: src/getcert.c:4816 src/getcert.c:4865 src/getcert.c:4944 src/getcert.c:4992
-#, fuzzy
 msgid "  -X ISSUER\task the CA to process the request using the named issuer\n"
-msgstr "  -T 预置文件\t要求 CA 使用指名的预置文件或模板处理请求\n"
+msgstr "  -X 签署者\t要求 CA 使用指名的签署者处理请求\n"
 
 #: src/getcert.c:4817
 msgid "* Parameters for the signing request:\n"
@@ -1909,19 +1906,19 @@ msgid "\t-v         print version information and exit\n"
 msgstr ""
 
 #: src/scep.c:352
-#, fuzzy, c-format
+#, c-format
 msgid "No SCEP URL (-u) given, and no default known.\n"
-msgstr "未指定中间代理 URL (-A)，且无已知默认值。\n"
+msgstr "未指定 SCEP URL（-U），且无已知默认值。\n"
 
 #: src/scep.c:356
-#, fuzzy, c-format
+#, c-format
 msgid "No SCEP operation (-c/-C/-g/-p) given, and no default known.\n"
-msgstr "未指定中间代理 URL (-A)，且无已知默认值。\n"
+msgstr "未指定 SCEP 操作（-c/-C/-g/-p），且无已知默认值。\n"
 
 #: src/scep.c:376 src/scep.c:395
-#, fuzzy, c-format
+#, c-format
 msgid "No RA certificate (-r) given, and no default known.\n"
-msgstr "未指定预置文件/模板 (-T)，且无已知默认值。\n"
+msgstr "未指定 RA 证书（-r），且无已知默认值。\n"
 
 #: src/scep.c:386 src/scep.c:540
 #, c-format
@@ -1960,9 +1957,9 @@ msgid "Warning: request is missing senderNonce.\n"
 msgstr ""
 
 #: src/scep.c:637
-#, fuzzy, c-format
+#, c-format
 msgid "Got response code %d from %s, not 200.\n"
-msgstr "没有从 %s 服务收到响应。\n"
+msgstr "来自 %2$s 响应代码为 %1$d 而非 200。\n"
 
 #: src/scep.c:685 src/scep.c:1121
 #, c-format
@@ -1970,9 +1967,9 @@ msgid "Server reply was of unexpected MIME type \"%s\".\n"
 msgstr ""
 
 #: src/scep.c:930
-#, fuzzy, c-format
+#, c-format
 msgid "Error: failed to verify signature on server response.\n"
-msgstr "分析服务器响应时出错。\n"
+msgstr "错误：验证服务器响应上的签名失败。\n"
 
 #: src/scep.c:946
 #, c-format
@@ -2005,9 +2002,9 @@ msgid "Error: reply nonce doesn't match request.\n"
 msgstr ""
 
 #: src/scep.c:976
-#, fuzzy, c-format
+#, c-format
 msgid "Error: reply is missing senderNonce.\n"
-msgstr "分析服务器响应时出错。\n"
+msgstr "错误：回复缺失 senderNonce。\n"
 
 #: src/scep.c:994
 #, c-format
@@ -2065,9 +2062,9 @@ msgid "No key reuse.\n"
 msgstr ""
 
 #: src/scep.c:1027
-#, fuzzy, c-format
+#, c-format
 msgid "Internal CA error.\n"
-msgstr "内部错误: 未知的状态。\n"
+msgstr "内部 CA 错误。\n"
 
 #: src/scep.c:1030
 #, c-format
