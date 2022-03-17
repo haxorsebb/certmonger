@@ -285,7 +285,7 @@ exit 0
   - Reject a certificate with an empty NSS nickname
   - Add SCEP config option to treat the challenge password as an OTP
 
-* Tue Jun 14 2021 Rob Crittenden <rcritten@redhat.com> - 0.79.14-1
+* Tue Jun 15 2021 Rob Crittenden <rcritten@redhat.com> - 0.79.14-1
 - update to 0.79.14
   -  Fix local CA to work under FIPS
   -  Translated using Weblate (Portuguese (Brazil))
