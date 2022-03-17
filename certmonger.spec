@@ -33,9 +33,9 @@ Summary:	Certificate status monitor and PKI enrollment client
 
 Group:		System Environment/Daemons
 License:	GPLv3+
-URL:		http://pagure.io/certmonger/
-Source0:	http://releases.pagure.org/certmonger/certmonger-%{version}.tar.gz
-#Source1:	http://releases.pagure.org/certmonger/certmonger-%%{version}.tar.gz.sig
+URL:		https://pagure.io/certmonger/
+Source0:	https://releases.pagure.org/certmonger/certmonger-%{version}.tar.gz
+#Source1:	https://releases.pagure.org/certmonger/certmonger-%%{version}.tar.gz.sig
 BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 BuildRequires:	openldap-devel
