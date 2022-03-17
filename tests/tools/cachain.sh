@@ -1,5 +1,5 @@
 #!/bin/bash -e
-digest=sha1
+digest=sha256
 keytype=rsa:1024
 serial=12345678
 cat > openssl.cnf << EOF

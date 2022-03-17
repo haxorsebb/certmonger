@@ -148,7 +148,7 @@ check_nonce
 check_digest sha256
 echo OK
 echo "[gic, old trust root]"
-set_digest sha1
+set_digest sha256
 $toolsdir/scepgen ca entry > scepdata
 if test x`grep ^gic: scepdata | cut -f2- -d:` = x ; then
 	echo missing gic
@@ -158,7 +158,7 @@ check_verified
 check_msgtype $SCEP_MSGTYPE_GETCERTINITIAL
 check_txid
 check_nonce
-check_digest sha1
+check_digest sha256
 echo OK
 echo "[req next, no trust root]"
 if test x`grep ^req.next.: scepdata | cut -f2- -d:` = x ; then
