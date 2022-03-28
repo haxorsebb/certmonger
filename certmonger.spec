@@ -28,7 +28,7 @@
 
 Name:		certmonger
 Version:	0.79.15
-Release:	1%{?dist}
+Release:	2%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
 Group:		System Environment/Daemons
@@ -143,6 +143,7 @@ autoreconf -i -f
 %if %{with xmlrpc}
 	--with-xmlrpc \
 %endif
+	--disable-dsa \
 	--with-tmpdir=/run/certmonger --enable-pie --enable-now
 %if %{with xmlrpc}
 # For some reason, some versions of xmlrpc-c-config in Fedora and RHEL just
@@ -264,6 +265,9 @@ exit 0
 %endif
 
 %changelog
+* Mon Mar 28 2022 Rob Crittenden <rcritten@redhat.com> - 0.79.15-2
+- Disable DSA. It is not allowed by default crypto policy (#2066439) 
+
 * Wed Jan  5 2022 Rob Crittenden <rcritten@redhat.com> - 0.79.15-1
 - update to 0.79.15
   - Translated using Weblate (Swedish)
