@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+Obviously bad code
+
 #include "config.h"
 
 #include <sys/param.h>
