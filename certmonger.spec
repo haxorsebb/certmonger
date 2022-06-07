@@ -57,7 +57,7 @@ BuildRequires:	libxml2-devel
 %if %{with xmlrpc}
 BuildRequires:	xmlrpc-c-devel
 %endif
-BuildRequires:	jansson-devel
+BuildRequires:	jansson-devel >= 2.12
 %if 0%{?rhel} && 0%{?rhel} < 6
 BuildRequires:	bind-libbind-devel
 BuildRequires:	mktemp
