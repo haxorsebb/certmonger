@@ -61,6 +61,7 @@ struct cm_store_entry {
 	char *cm_key_pin_file;
 	char *cm_key_owner;
 	mode_t cm_key_perms;
+	char *cm_nss_user;
 	/* Cached plain public key (used for computing subject and authority key IDs) */
 	char *cm_key_pubkey, *cm_key_next_pubkey;
 	/* Cached public key info (used in signing requests when using NSS) */

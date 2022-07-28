@@ -380,6 +380,7 @@ OK
   </method>
   <property name="ca" type="o" access="read"/>
   <property name="ca-profile" type="s" access="read"/>
+  <property name="nss-user" type="s" access="readwrite"/>
   <property name="root-cert-files" type="as" access="read"/>
   <property name="root-other-cert-files" type="as" access="read"/>
   <property name="other-cert-files" type="as" access="read"/>

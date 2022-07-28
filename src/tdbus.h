@@ -81,6 +81,7 @@
 #define CM_DBUS_PROP_KEY_PERMS "key-perms"
 #define CM_DBUS_PROP_KEY_TYPE "key-type"
 #define CM_DBUS_PROP_KEY_SIZE "key-size"
+#define CM_DBUS_PROP_NSS_USER "nss-user"
 #define CM_DBUS_PROP_MONITORING "monitoring"
 #define CM_DBUS_PROP_NOTIFICATION_TYPE "notification-type"
 #define CM_DBUS_PROP_NOTIFICATION_SYSLOG_PRIORITY "notification-syslog-priority"

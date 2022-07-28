@@ -754,8 +754,9 @@ request(const char *argv0, int argc, const char **argv)
 	char **principal = NULL, **dns = NULL, **email = NULL, **ipaddr = NULL;
 	char *key_owner = NULL, *key_perms = NULL;
 	char *cert_owner = NULL, *cert_perms = NULL;
-	struct cm_tdbusm_dict param[51];
-	const struct cm_tdbusm_dict *params[50];
+	char *nss_user = NULL;
+	struct cm_tdbusm_dict param[52];
+	const struct cm_tdbusm_dict *params[51];
 	DBusMessage *req, *rep;
 	int waitreq = 0, timeout = -1;
 	int is_ca = 0, path_length = -1;
@@ -779,6 +780,7 @@ request(const char *argv0, int argc, const char **argv)
 		{"key-perms", 'm', POPT_ARG_STRING, NULL, 'm', _("file permissions for private key"), HELP_TYPE_MODE},
 		{"cert-owner", 'O', POPT_ARG_STRING, NULL, 'O', _("owner information for certificate"), HELP_TYPE_USER},
 		{"cert-perms", 'M', POPT_ARG_STRING, NULL, 'M', _("file permissions for certificate"), HELP_TYPE_MODE},
+		{"nss-user", 'Z', POPT_ARG_STRING, NULL, 'Z', _("user to save NSS private and public keys as"), HELP_TYPE_USER},
 		{"ca-dbdir", 'a', POPT_ARG_STRING, NULL, 'a', _("NSS database in which to store the CA's certificates"), HELP_TYPE_DIRECTORY},
 		{"ca-file", 'F', POPT_ARG_STRING, NULL, 'F', _("file in which to store the CA's certificates"), HELP_TYPE_FILENAME},
 		{"before-command", 'B', POPT_ARG_STRING, NULL, 'B', _("command to run before saving the certificate"), HELP_TYPE_COMMAND},
@@ -928,6 +930,9 @@ request(const char *argv0, int argc, const char **argv)
 			break;
 		case 'X':
 			issuer = talloc_strdup(globals.tctx, poptarg);
+			break;
+		case 'Z':
+			nss_user = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'N':
 			subject = talloc_strdup(globals.tctx, poptarg);
@@ -1276,6 +1281,13 @@ request(const char *argv0, int argc, const char **argv)
 		params[i] = &param[i];
 		i++;
 	}
+	if (nss_user != NULL) {
+		param[i].key = CM_DBUS_PROP_NSS_USER;
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = nss_user;
+		params[i] = &param[i];
+		i++;
+	}
 	if (keytype != NULL) {
 		param[i].key = "KEY_TYPE";
 		param[i].value_type = cm_tdbusm_dict_s;
@@ -1572,6 +1584,7 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 		  char *keyfile, char *certfile,
 		  char *key_owner, char *cert_owner,
 		  char *key_perms, char *cert_perms,
+		  char *nss_user,
 		  char *pin, char *pinfile,
 		  char *cpass, char *cpassfile,
 		  char *ca, char *profile, char *issuer,
@@ -1585,8 +1598,8 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 {
 	DBusMessage *req, *rep;
 	int i;
-	struct cm_tdbusm_dict param[31];
-	const struct cm_tdbusm_dict *params[31];
+	struct cm_tdbusm_dict param[32];
+	const struct cm_tdbusm_dict *params[32];
 	dbus_bool_t b;
 	const char *capath;
 	char *p;
@@ -1640,6 +1653,13 @@ add_basic_request(enum cm_tdbus_type bus, char *id,
 			param[i].key = "CERT_TOKEN";
 			param[i].value_type = cm_tdbusm_dict_s;
 			param[i].value.s = token;
+			params[i] = &param[i];
+			i++;
+		}
+		if (nss_user != NULL) {
+			param[i].key = CM_DBUS_PROP_NSS_USER;
+			param[i].value_type = cm_tdbusm_dict_s;
+			param[i].value.s = nss_user;
 			params[i] = &param[i];
 			i++;
 		}
@@ -1848,8 +1868,8 @@ set_tracking(const char *argv0, const char *category,
 	enum cm_tdbus_type bus = CM_DBUS_DEFAULT_BUS;
 	DBusMessage *req, *rep;
 	const char *request, *capath;
-	struct cm_tdbusm_dict param[28];
-	const struct cm_tdbusm_dict *params[29];
+	struct cm_tdbusm_dict param[29];
+	const struct cm_tdbusm_dict *params[30];
 	char *nss_scheme, *dbdir = NULL, *token = NULL, *nickname = NULL;
 	char **anchor_dbs = NULL, **anchor_files = NULL;
 	char *id = NULL, *new_id = NULL, *new_request;
@@ -1858,6 +1878,7 @@ set_tracking(const char *argv0, const char *category,
 	char *ms_template_spec = NULL;
 	char *pin = NULL, *pinfile = NULL, *cpass = NULL, *cpassfile = NULL;
 	char *key_owner = NULL, *key_perms = NULL;
+	char *nss_user = NULL;
 	char *cert_owner = NULL, *cert_perms = NULL;
 	dbus_bool_t b;
 	char *p;
@@ -1885,6 +1906,7 @@ set_tracking(const char *argv0, const char *category,
 		{"key-perms", 'm', POPT_ARG_STRING, NULL, 'm', _("file permissions for private key"), HELP_TYPE_MODE},
 		{"cert-owner", 'O', POPT_ARG_STRING, NULL, 'O', _("owner information for certificate"), HELP_TYPE_USER},
 		{"cert-perms", 'M', POPT_ARG_STRING, NULL, 'M', _("file permissions for certificate"), HELP_TYPE_MODE},
+		{"nss-user", 'Z', POPT_ARG_STRING, NULL, 'Z', _("user to save NSS private and public keys as"), HELP_TYPE_USER},
 		{"ca-dbdir", 'a', POPT_ARG_STRING, NULL, 'a', _("NSS database in which to store the CA's certificates"), HELP_TYPE_DIRECTORY},
 		{"ca-file", 'F', POPT_ARG_STRING, NULL, 'F', _("file in which to store the CA's certificates"), HELP_TYPE_FILENAME},
 		{"before-command", 'B', POPT_ARG_STRING, NULL, 'B', _("command to run before saving the certificate"), HELP_TYPE_COMMAND},
@@ -2008,6 +2030,9 @@ set_tracking(const char *argv0, const char *category,
 			break;
 		case 'X':
 			issuer = talloc_strdup(globals.tctx, poptarg);
+			break;
+		case 'Z':
+			nss_user = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'i':
 			id = talloc_strdup(globals.tctx, poptarg);
@@ -2289,6 +2314,13 @@ set_tracking(const char *argv0, const char *category,
 				params[i] = &param[i];
 				i++;
 			}
+			if (nss_user != NULL) {
+				param[i].key = CM_DBUS_PROP_NSS_USER;
+				param[i].value_type = cm_tdbusm_dict_s;
+				param[i].value.s = nss_user;
+				params[i] = &param[i];
+				i++;
+			}
 			if (pin != NULL) {
 				param[i].key = "KEY_PIN";
 				param[i].value_type = cm_tdbusm_dict_s;
@@ -2441,6 +2473,7 @@ set_tracking(const char *argv0, const char *category,
 						 keyfile, certfile,
 						 key_owner, cert_owner,
 						 key_perms, cert_perms,
+						 nss_user,
 						 pin, pinfile,
 						 cpass, cpassfile,
 						 ca, profile, issuer,
@@ -2513,8 +2546,8 @@ rekey_or_resubmit(const char *argv0, const char *category, int argc,
 	DBusMessage *req, *rep;
 	const char *request;
 	char *capath;
-	struct cm_tdbusm_dict param[31];
-	const struct cm_tdbusm_dict *params[32];
+	struct cm_tdbusm_dict param[32];
+	const struct cm_tdbusm_dict *params[33];
 	char *dbdir = NULL, *token = NULL, *nickname = NULL, *certfile = NULL;
 	char **anchor_dbs = NULL, **anchor_files = NULL;
 	char *pin = NULL, *pinfile = NULL, *cpass = NULL, *cpassfile = NULL;
@@ -2525,6 +2558,7 @@ rekey_or_resubmit(const char *argv0, const char *category, int argc,
 	char *ms_template_spec = NULL;
 	char *key_owner = NULL, *key_perms = NULL;
 	char *cert_owner = NULL, *cert_perms = NULL;
+	char *nss_user = NULL;
 	char *keytype = NULL;
 	int keysize = 0;
 	dbus_bool_t b;
@@ -2552,6 +2586,7 @@ rekey_or_resubmit(const char *argv0, const char *category, int argc,
 		{"key-perms", 'm', POPT_ARG_STRING, NULL, 'm', _("file permissions for private key"), HELP_TYPE_MODE},
 		{"cert-owner", 'O', POPT_ARG_STRING, NULL, 'O', _("owner information for certificate"), HELP_TYPE_USER},
 		{"cert-perms", 'M', POPT_ARG_STRING, NULL, 'M', _("file permissions for certificate"), HELP_TYPE_MODE},
+		{"nss-user", 'Z', POPT_ARG_STRING, NULL, 'Z', _("user to save NSS private and public keys as"), HELP_TYPE_USER},
 		{"ca-dbdir", 'a', POPT_ARG_STRING, NULL, 'a', _("NSS database in which to store the CA's certificates"), HELP_TYPE_DIRECTORY},
 		{"ca-file", 'F', POPT_ARG_STRING, NULL, 'F', _("file in which to store the CA's certificates"), HELP_TYPE_FILENAME},
 		{"before-command", 'B', POPT_ARG_STRING, NULL, 'B', _("command to run before saving the certificate"), HELP_TYPE_COMMAND},
@@ -2644,6 +2679,9 @@ rekey_or_resubmit(const char *argv0, const char *category, int argc,
 			break;
 		case 'X':
 			issuer = talloc_strdup(globals.tctx, poptarg);
+			break;
+		case 'Z':
+			nss_user = talloc_strdup(globals.tctx, poptarg);
 			break;
 		case 'i':
 			id = talloc_strdup(globals.tctx, poptarg);
@@ -2882,6 +2920,13 @@ rekey_or_resubmit(const char *argv0, const char *category, int argc,
 		param[i].key = CM_DBUS_PROP_CERT_PERMS;
 		param[i].value_type = cm_tdbusm_dict_n;
 		param[i].value.n = strtol(cert_perms, NULL, 8);
+		params[i] = &param[i];
+		i++;
+	}
+	if (nss_user != NULL) {
+		param[i].key = CM_DBUS_PROP_NSS_USER;
+		param[i].value_type = cm_tdbusm_dict_s;
+		param[i].value.s = nss_user;
 		params[i] = &param[i];
 		i++;
 	}
@@ -5008,6 +5053,8 @@ help(const char *twopartcmd, const char *category)
 		N_("			owner information for certificate\n"),
 		N_("  -M MODE, --cert-perms=MODE\n"),
 		N_("			file permissions for certificate\n"),
+		N_("  -Z USER, --nss-user=USER\n"),
+		N_("			User to switch to during NSS save operations\n"),
 		NULL,
 	};
 	const char *start_tracking_help[] = {
@@ -5096,6 +5143,8 @@ help(const char *twopartcmd, const char *category)
 		N_("			owner information for certificate\n"),
 		N_("  -M MODE, --cert-perms=MODE\n"),
 		N_("			file permissions for certificate\n"),
+		N_("  -Z USER, --nss-user=USER\n"),
+		N_("			User to switch to during NSS save operations\n"),
 		NULL,
 	};
 	const char *stop_tracking_help[] = {
@@ -5204,6 +5253,8 @@ help(const char *twopartcmd, const char *category)
 		N_("			owner information for certificate\n"),
 		N_("  -M MODE, --cert-perms=MODE\n"),
 		N_("			file permissions for certificate\n"),
+		N_("  -Z USER, --nss-user=USER\n"),
+		N_("			User to switch to during NSS save operations\n"),
 		NULL,
 	};
 	const char *rekey_help[] = {

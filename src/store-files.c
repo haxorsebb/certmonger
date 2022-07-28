@@ -101,6 +101,8 @@ enum cm_store_file_field {
 	cm_store_entry_field_cert_owner,
 	cm_store_entry_field_cert_perms,
 
+	cm_store_entry_field_nss_user,
+
 	cm_store_entry_field_cert_issuer_der,
 	cm_store_entry_field_cert_issuer,
 	cm_store_entry_field_cert_serial,
@@ -275,6 +277,8 @@ static struct cm_store_file_field_list {
 	{cm_store_entry_field_cert_nickname, "cert_nickname"},
 	{cm_store_entry_field_cert_owner, "cert_owner"},
 	{cm_store_entry_field_cert_perms, "cert_perms"},
+
+	{cm_store_entry_field_nss_user, "nss_user"},
 
 	{cm_store_entry_field_cert_issuer_der, "cert_issuer_der"},
 	{cm_store_entry_field_cert_issuer, "cert_issuer"},
@@ -1022,6 +1026,9 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 				ret->cm_key_issued_count = atoi(p);
 				talloc_free(p);
 				break;
+			case cm_store_entry_field_nss_user:
+				ret->cm_nss_user = free_if_empty(p);
+				break;
 			case cm_store_entry_field_cert_storage_type:
 				if (strcasecmp(p, "FILE") == 0) {
 					ret->cm_cert_storage_type =
@@ -1420,6 +1427,7 @@ cm_store_ca_read(void *parent, const char *filename, FILE *fp)
 			case cm_store_entry_field_key_requested_count:
 			case cm_store_entry_field_key_next_requested_count:
 			case cm_store_entry_field_key_issued_count:
+			case cm_store_entry_field_nss_user:
 			case cm_store_entry_field_cert_storage_type:
 			case cm_store_entry_field_cert_storage_location:
 			case cm_store_entry_field_cert_token:
@@ -2042,6 +2050,9 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 	cm_store_file_write_int(fp, cm_store_entry_field_cert_no_ocsp_check,
 				entry->cm_cert_no_ocsp_check ? 1 : 0);
 
+	cm_store_file_write_str(fp, cm_store_entry_field_nss_user,
+				entry->cm_nss_user);
+
 	cm_store_file_write_str(fp, cm_store_entry_field_last_need_notify_check,
 				cm_store_timestamp_from_time(entry->cm_last_need_notify_check,
 							     timestamp));
@@ -2280,6 +2291,7 @@ cm_store_entry_save(struct cm_store_entry *entry)
 		if (cm_store_entry_write(fp, entry) == 0) {
 			fclose(fp);
 			dest = (const char *) entry->cm_store_private;
+			cm_log(0, "Wrote to %s\n", dest);
 			if (rename(path, dest) != 0) {
 				cm_log(0, "Error renaming \"%s\" to \"%s\": "
 				       "%s.\n", path, dest, strerror(errno));
@@ -2796,6 +2808,8 @@ cm_store_entry_dup(void *parent, struct cm_store_entry *entry)
 	ret->cm_key_requested_count = entry->cm_key_requested_count;
 	ret->cm_key_next_requested_count = entry->cm_key_next_requested_count;
 	ret->cm_key_issued_count = entry->cm_key_issued_count;
+
+	ret->cm_nss_user = cm_store_maybe_strdup(ret, entry->cm_nss_user);
 
 	ret->cm_cert_storage_type = entry->cm_cert_storage_type;
 	ret->cm_cert_storage_location = cm_store_maybe_strdup(ret, entry->cm_cert_storage_location);

@@ -412,6 +412,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	enum cm_cert_storage_type cert_storage;
 	char *cert_location, *cert_nickname, *cert_token;
 	char *cert_owner, *key_owner;
+	char *nss_user;
 	mode_t cert_perms, key_perms;
 	char *path, *pre_command, *post_command;
 	char **root_cert_nssdbs, **root_cert_files;
@@ -1265,6 +1266,15 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	} else {
 		key_perms = 0;
 	}
+	param = cm_tdbusm_find_dict_entry(d,
+					  CM_DBUS_PROP_NSS_USER,
+					  cm_tdbusm_dict_s);
+	if (param != NULL) {
+		nss_user = param->value.s;
+		cm_log(1, "Setting CM_DBUS_PROP_NSS_USER to %s\n", nss_user);
+	} else {
+		nss_user = NULL;
+	}
 	/* Okay, we can go ahead and add the entry. */
 	new_entry = cm_store_entry_new(parent);
 	if (new_entry == NULL) {
@@ -1374,6 +1384,7 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	new_entry->cm_cert_token = maybe_strdup(new_entry, cert_token);
 	new_entry->cm_cert_owner = maybe_strdup(new_entry, cert_owner);
 	new_entry->cm_cert_perms = cert_perms;
+	new_entry->cm_nss_user = maybe_strdup(new_entry, nss_user);
 
 	new_entry->cm_root_cert_store_nssdbs = maybe_strdupv(new_entry, root_cert_nssdbs);
 	new_entry->cm_root_cert_store_files = maybe_strdupv(new_entry, root_cert_files);
@@ -3288,6 +3299,14 @@ request_modify(DBusConnection *conn, DBusMessage *msg,
 				entry->cm_key_perms = param->value.n;
 				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
 					propname[n_propname++] = CM_DBUS_PROP_KEY_PERMS;
+				}
+			} else
+			if ((param->value_type == cm_tdbusm_dict_s) &&
+			    (strcasecmp(param->key, CM_DBUS_PROP_NSS_USER) == 0)) {
+				entry->cm_nss_user = talloc_strdup(entry, param->value.s);
+		        cm_log(1, "Param CM_DBUS_PROP_NSS_USER to %s\n", entry->cm_nss_user);
+				if (n_propname + 2 < sizeof(propname) / sizeof(propname[0])) {
+					propname[n_propname++] = CM_DBUS_PROP_NSS_USER;
 				}
 			} else
 			if ((param->value_type == cm_tdbusm_dict_b) &&
@@ -7218,6 +7237,15 @@ cm_tdbush_iface_request(void)
 								       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 								       NULL),
 				     make_interface_item(cm_tdbush_interface_property,
+							 make_property(CM_DBUS_PROP_NSS_USER,
+								       cm_tdbush_property_string,
+								       cm_tdbush_property_readwrite,
+								       cm_tdbush_property_char_p,
+								       offsetof(struct cm_store_entry, cm_nss_user),
+								       NULL, NULL, NULL, NULL, NULL,
+								       NULL, NULL, NULL, NULL, NULL,
+								       NULL),
+				     make_interface_item(cm_tdbush_interface_property,
 							 make_property(CM_DBUS_PROP_ROOT_CERT_FILES,
 								       cm_tdbush_property_strings,
 								       cm_tdbush_property_read,
@@ -7396,7 +7424,7 @@ cm_tdbush_iface_request(void)
 				     make_interface_item(cm_tdbush_interface_signal,
 							 make_signal(CM_DBUS_SIGNAL_REQUEST_CERT_SAVED,
 								     NULL),
-							 NULL)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
+							 NULL))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
 	}
 	return ret;
 }

@@ -24,6 +24,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
+#include <pwd.h>
+#include <grp.h>
 
 #include <nss.h>
 #include <nssb64.h>
@@ -83,6 +85,20 @@ add_privkey_to_list(SECKEYPrivateKey **list, SECKEYPrivateKey *key)
 	return list;
 }
 
+/* Return a nickname minus the token */
+static char *
+cm_get_nickname(char *data)
+{
+	char *p = NULL;
+
+	if (strchr(data, ':') != NULL) {
+		p = strrchr(data, ':') + 1;
+	} else {
+		p = data;
+	}
+	return p;
+}
+
 static int
 cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		   void *userdata)
@@ -123,6 +139,62 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	}
 
 	/* Open the database. */
+	if (entry->cm_nss_user != NULL) {
+		struct passwd *pwd;
+		struct group *grp;
+		char *user, *group = NULL;
+		uid_t uid;
+		gid_t gid;
+
+		user = strdup(entry->cm_nss_user);
+		group = strchr(user, ':');
+		if (group != NULL) {
+			*group++ = '\0';
+			if (strlen(group) == 0) {
+				group = NULL;
+			}
+		}
+
+		errno = 0;
+		pwd = getpwnam(user);
+		if (pwd == NULL) {
+			cm_log(0, "Error looking up user \"%s\", "
+					  "not setting identity: %s.\n",
+					  user, strerror(errno));
+			free(user);
+			_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
+		}
+		uid = pwd->pw_uid;
+		gid = pwd->pw_gid;
+		if (group != NULL) {
+			grp = getgrnam(group);
+			if (grp == NULL) {
+				cm_log(0, "Error looking up group \"%s\", "
+					   "not setting identity.\n",
+					   group);
+				free(user);
+				_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
+			}
+			gid = grp->gr_gid;
+		}
+		free(user);
+
+		cm_log(1, "Switching to %s %d:%d\n", pwd->pw_name, uid, gid);
+
+		if (initgroups(pwd->pw_name, gid) == -1) {
+			cm_log(0, "initgroups error (%s: %d): %s\n", pwd->pw_name, gid, strerror(errno));
+			_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
+		}
+		if (setgid(gid) == -1) {
+			cm_log(0, "setgid error (%d): %s\n", gid, strerror(errno));
+			_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
+		}
+		if (setuid(uid) == -1) {
+			cm_log(0, "setuid error (%d): %s\n", uid, strerror(errno));
+			_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
+		}
+	}
+
 	settings = userdata;
 	readwrite = settings->readwrite;
 	errno = 0;
@@ -407,7 +479,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 							if ((!SECITEM_ItemsAreEqual(&subject,
 									   &node->cert->derSubject)) &&
 										(sle->slot == node->cert->slot)) {
-								cm_log(3, "Found a "
+								cm_log(3, "1 Found a "
 								       "certificate "
 								       "with the same "
 								       "nickname but "
@@ -454,22 +526,27 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					     !CERT_LIST_END(node, certlist);
 					     node = CERT_LIST_NEXT(node)) {
 						if ((node->cert->nickname != NULL) &&
-						    (strcmp(entry->cm_cert_nickname,
-							    node->cert->nickname) != 0) &&
+						    (strcmp(cm_get_nickname(entry->cm_cert_nickname),
+							    cm_get_nickname(node->cert->nickname)) != 0) &&
 								(sle->slot == node->cert->slot))
 						{
 							i++;
-							cm_log(3, "Found a "
+							cm_log(3, "2 Found a "
 							       "certificate with a "
 						       "different nickname but "
 						       "the same subject, "
 						       "removing certificate "
-						       "\"%s\" with subject "
-						       "\"%s\".\n",
+						       "\"%s\" vs \"%s\" with subject "
+						       "\"%s\" in slot \"%s\" vs "
+							   "\"%s\".\n",
 						       node->cert->nickname,
+						       entry->cm_cert_nickname,
 						       node->cert->subjectName ?
 						       node->cert->subjectName :
-						       "");
+							   "",
+							   PK11_GetTokenName(sle->slot),
+							   PK11_GetTokenName(node->cert->slot)
+						       );
 							/* Get a handle for this
 							 * certificate's private key,
 							 * in case we need to remove
@@ -573,8 +650,9 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 						     !CERT_LIST_END(node, certlist);
 						     node = CERT_LIST_NEXT(node)) {
 							if (!SECITEM_ItemsAreEqual(item,
-										   &node->cert->derCert)) {
-								cm_log(3, "Found a "
+										   &node->cert->derCert) &&
+									(sle->slot == node->cert->slot)) {
+								cm_log(3, "3 Found a "
 								       "certificate "
 								       "with the same "
 								       "nickname and "
