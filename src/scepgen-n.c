@@ -80,17 +80,19 @@ cm_scepgen_n_resign(PKCS7 *p7, SECKEYPrivateKey *privkey)
 	SECItem signature;
 	SECOidTag digalg, sigalg;
 	PKCS7_SIGNER_INFO *sinfo;
+	STACK_OF(PKCS7_SIGNER_INFO) *sinfos = NULL;
 
 	if (p7 == NULL) {
 		cm_log(1, "Nothing to resign.\n");
 		return;
 	}
-	if (sk_PKCS7_SIGNER_INFO_num(p7->d.sign->signer_info) != 1) {
+	sinfos = PKCS7_get_signer_info(p7);
+	if (sk_PKCS7_SIGNER_INFO_num(sinfos) != 1) {
 		cm_log(0, "More than one signer, not sure what to do.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
-	sinfo = sk_PKCS7_SIGNER_INFO_value(p7->d.sign->signer_info, 0);
-	salen = ASN1_item_i2d((ASN1_VALUE *)sinfo->auth_attr, NULL, &PKCS7_ATTR_SIGN_it);
+	sinfo = sk_PKCS7_SIGNER_INFO_value(sinfos, 0);
+	salen = ASN1_item_i2d((ASN1_VALUE *)sinfo->auth_attr, NULL, ASN1_ITEM_rptr(PKCS7_ATTR_SIGN));
 	u = sabuf = malloc(salen);
 	if (sabuf == NULL) {
 		cm_log(0, "Out of memory.\n");
@@ -99,7 +101,7 @@ cm_scepgen_n_resign(PKCS7 *p7, SECKEYPrivateKey *privkey)
 	/* ASN1_item_i2d doesn't actually modify the passed-in pointer, which
 	 * allows it to allocate the memory on its own, but we want to handle
 	 * that ourselves. */
-	l = ASN1_item_i2d((ASN1_VALUE *)sinfo->auth_attr, &u, &PKCS7_ATTR_SIGN_it);
+	l = ASN1_item_i2d((ASN1_VALUE *)sinfo->auth_attr, &u, ASN1_ITEM_rptr(PKCS7_ATTR_SIGN));
 	if (l != salen) {
 		cm_log(0, "Error encoding attributes.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
