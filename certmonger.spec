@@ -27,8 +27,8 @@
 %bcond_with xmlrpc
 
 Name:		certmonger
-Version:	0.79.15
-Release:	2%{?dist}
+Version:	0.79.16
+Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
 Group:		System Environment/Daemons
@@ -265,6 +265,28 @@ exit 0
 %endif
 
 %changelog
+* Thu Aug 25 2022 Rob Crittenden <rcritten@redhat.com> - 0.79.16-1
+- update to 0.79.16
+  - Add a PEM validity checker and validate SCEP CA files
+  - Fix implicit declaration of function ‘PEM_read_bio_X509’
+  - Don't include "NEW" in certificate signing requests
+  - Verify that the AES-128 is used for encrypting the local CA
+  - Replace DER-encoded test file with a base64-encoded one
+  - Correct a bad date in the spec changelog
+  - Switch to https URLs for Sources, etc.
+  - Remove dependency on SHA-1
+  - tests: Test that the CA constraint DER encoding is correct
+  - Disable DSA in the RPM spec
+  - Manually build the srpm for the copr CI
+  - Require jansson >= 2.12
+  - Mark the current directory as a safe git directory
+  - Fix usage of PKCS#7 ASN1 attribute retrieval for SCEP keygen
+  - Translated using Weblate (Chinese (Simplified) (zh_CN))
+  - Translated using Weblate (Georgian)
+  - Translated using Weblate (Indonesian)
+  - Translated using Weblate (Chinese (Simplified) (zh_CN))
+  - Translated using Weblate (Hungarian)
+
 * Mon Mar 28 2022 Rob Crittenden <rcritten@redhat.com> - 0.79.15-2
 - Disable DSA. It is not allowed by default crypto policy (#2066439) 
 
