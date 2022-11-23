@@ -8,21 +8,22 @@
 # Mario Blättermann <mario.blaettermann@gmail.com>, 2011
 # Nalin Dahyabhai <nalin@fedoraproject.org>, 2011
 # Roman Spirgi <bigant@fedoraproject.org>, 2012-2013
+# Joachim Philipp <joachim.philipp@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger 0.78.6\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2017-02-26 02:20-0500\n"
-"PO-Revision-Date: 2015-01-05 05:53-0500\n"
-"Last-Translator: Copied by Zanata <copied-by-zanata@zanata.org>\n"
-"Language-Team: German (http://www.transifex.com/projects/p/certmonger/"
-"language/de/)\n"
+"PO-Revision-Date: 2022-04-21 10:17+0000\n"
+"Last-Translator: Joachim Philipp <joachim.philipp@gmail.com>\n"
+"Language-Team: German <https://translate.fedoraproject.org/projects/"
+"certmonger/master/de/>\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Zanata 3.9.6\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 4.11.2\n"
 
 #: src/casave.c:322 src/casave.c:361 src/dogtag.c:233 src/dogtag.c:238
 #: src/dogtag.c:256 src/dogtag.c:261 src/getcert.c:291
@@ -37,14 +38,16 @@ msgstr ""
 "Rechnername der Zertifizierungsstelle (CA) konnte nicht ermittelt werden.\n"
 
 #: src/certmaster.c:153 src/dogtag.c:521 src/ipa.c:796
-#, fuzzy, c-format
+#, c-format
 msgid "Unable to read signing request from file \"%s\".\n"
-msgstr "Signaturanfrage konnte nicht gelesen werden.\n"
+msgstr "Signaturanfrage von Datei \"%s\" konnte nicht gelesen werden.\n"
 
 #: src/certmaster.c:156 src/dogtag.c:524 src/ipa.c:799
-#, fuzzy, c-format
+#, c-format
 msgid "Unable to read signing request from environment variable \"%s\".\n"
-msgstr "Signaturanfrage konnte nicht gelesen werden.\n"
+msgstr ""
+"Signaturanfrage der Environment Variablen \"%s\" konnte nicht gelesen werden."
+"\n"
 
 #: src/certmaster.c:184
 #, c-format
@@ -69,22 +72,24 @@ msgstr "Server-Fehler.\n"
 #: src/dogtag.c:226
 #, c-format
 msgid "Profile params (-O) must be in the form of param=value.\n"
-msgstr ""
+msgstr "Profilparameter (-O) müssen die Form param=value haben.\n"
 
 #: src/dogtag.c:249
 #, c-format
 msgid "Submit params (-o) must be in the form of param=value.\n"
-msgstr ""
+msgstr "Übertragung der Parameter (-o) muss die Form param=value haben.\n"
 
 #: src/dogtag.c:408 src/dogtag.c:413 src/dogtag.c:442
-#, fuzzy, c-format
+#, c-format
 msgid "No agent credentials specified, and no default known.\n"
-msgstr "Keine Agent-URL (-T) angegeben, Standarwert nicht gesetzt.\n"
+msgstr ""
+"Keine Anmeldeinformationen des Agenten angegeben, kein Standardwert gesetzt."
+"\n"
 
 #: src/dogtag.c:418
 #, c-format
 msgid "Requested renewal, but no serial number provided.\n"
-msgstr ""
+msgstr "Aktualisierung wurde angefordert, aber keine Seriennummer angegeben.\n"
 
 #: src/dogtag.c:422
 #, c-format
@@ -104,7 +109,7 @@ msgstr "Kein Profil/ Vorlage (-T) angegeben, Standarwert nicht gesetzt.\n"
 #: src/dogtag.c:452
 #, c-format
 msgid "Error shutting down NSS.\n"
-msgstr ""
+msgstr "Fehler beim Beenden von NSS.\n"
 
 #: src/dogtag.c:487 src/dogtag.c:777
 #, c-format
@@ -115,6 +120,8 @@ msgstr "Interner Fehler: Unbekannter Status.\n"
 #, c-format
 msgid "No agent credentials (-n) given, but they are needed.\n"
 msgstr ""
+"Keine Anmeldeinformationen des Agenten (-n) vorhanden, sie werden aber "
+"benötigt.\n"
 
 #: src/dogtag.c:757 src/scep.c:619
 #, c-format
@@ -133,59 +140,59 @@ msgstr "Interner Fehler: Keine Antwort an \"%s?%s\".\n"
 
 #: src/getcert.c:61 src/main.c:84 src/main.c:86
 msgid "COMMAND"
-msgstr ""
+msgstr "BEFEHL"
 
 #: src/getcert.c:62
 msgid "DIRECTORY"
-msgstr ""
+msgstr "VERZEICHNIS"
 
 #: src/getcert.c:63 src/getcert.c:70
 msgid "LIST"
-msgstr ""
+msgstr "LISTE"
 
 #: src/getcert.c:64 src/getcert.c:68
 msgid "ADDRESS"
-msgstr ""
+msgstr "ADRESSE"
 
 #: src/getcert.c:65 src/main.c:87
 msgid "FILENAME"
-msgstr ""
+msgstr "DATEINAME"
 
 #: src/getcert.c:66
 msgid "HOSTNAME"
-msgstr ""
+msgstr "HOSTNAME"
 
 #: src/getcert.c:67
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #: src/getcert.c:69
 msgid "BITS"
-msgstr ""
+msgstr "BITS"
 
 #: src/getcert.c:71
 msgid "MODE"
-msgstr ""
+msgstr "MODUS"
 
 #: src/getcert.c:72
 msgid "NAME"
-msgstr ""
+msgstr "NAME"
 
 #: src/getcert.c:73
 msgid "PRINCIPAL"
-msgstr ""
+msgstr "HAUPT"
 
 #: src/getcert.c:74
 msgid "SUBJECT"
-msgstr ""
+msgstr "THEMA"
 
 #: src/getcert.c:75
 msgid "URL"
-msgstr ""
+msgstr "URL"
 
 #: src/getcert.c:76
 msgid "USERNAME[:GROUPNAME]"
-msgstr ""
+msgstr "BENUTZERNAME[:GRUPPENNAME]"
 
 #: src/getcert.c:115
 #, c-format
@@ -204,7 +211,7 @@ msgstr ""
 #: src/getcert.c:142
 #, c-format
 msgid "Path \"%s\": insufficient permissions.\n"
-msgstr ""
+msgstr "Pfad \"%s\": nicht ausreichende Berechtigungen.\n"
 
 #: src/getcert.c:148
 #, c-format
@@ -224,22 +231,22 @@ msgstr "Pfad »%s« ist keine reguläre Datei.\n"
 #: src/getcert.c:340
 #, c-format
 msgid "No system bus running.\n"
-msgstr ""
+msgstr "Kein System Bus läuft.\n"
 
 #: src/getcert.c:341
 #, c-format
 msgid "Running as UID 0.\n"
-msgstr ""
+msgstr "Läuft als UID 0.\n"
 
 #: src/getcert.c:342
 #, c-format
 msgid "Launching temporary dedicated service daemon.\n"
-msgstr ""
+msgstr "Starte temporär zugewiesenen service daemon.\n"
 
 #: src/getcert.c:371
 #, c-format
 msgid "Error connecting to D-Bus.\n"
-msgstr ""
+msgstr "Fehler beim Verbinden zum D-Bus.\n"
 
 #: src/getcert.c:372 src/tdbusm.c:2166
 #, c-format
@@ -254,56 +261,52 @@ msgstr "Fehler beim Erstellen der D-Bus-Anfragemeldung.\n"
 #: src/getcert.c:393
 #, c-format
 msgid "missing argument for %s"
-msgstr ""
+msgstr "Fehlendes Argument für %s"
 
 #: src/getcert.c:398
-#, fuzzy
 msgid "missing argument"
-msgstr "Optionale Parameter:\n"
+msgstr "Fehlendes Argument"
 
 #: src/getcert.c:401
-#, fuzzy, c-format
+#, c-format
 msgid "unrecognized option %s"
-msgstr "%s: Unbekannter Befehl.\n"
+msgstr "Unbekannte Option %s"
 
 #: src/getcert.c:406
-#, fuzzy
 msgid "unrecognized option"
-msgstr "%s: Unbekannter Befehl.\n"
+msgstr "Unbekannte Option"
 
 #: src/getcert.c:409
 msgid "aliases nested too deeply"
-msgstr ""
+msgstr "Aliase zu tief verschachtelt"
 
 #: src/getcert.c:412
 msgid "bad parameter quoting"
-msgstr ""
+msgstr "schlechte Parameterangabe"
 
 #: src/getcert.c:418
 msgid "invalid numeric value"
-msgstr ""
+msgstr "Ungültiger numerischer Wert"
 
 #: src/getcert.c:421
 msgid "number too large or too small"
-msgstr ""
+msgstr "Nummer zu groß oder zu klein"
 
 #: src/getcert.c:424
 msgid "bad operation"
-msgstr ""
+msgstr "Ungültige Operation"
 
 #: src/getcert.c:427
-#, fuzzy
 msgid "internal error"
-msgstr "Ein interner Fehler ist aufgetreten."
+msgstr "Interner Fehler"
 
 #: src/getcert.c:430
-#, fuzzy
 msgid "out of memory"
-msgstr "Ungenügend Speicher.\n"
+msgstr "Nicht genügend Speicher"
 
 #: src/getcert.c:434
 msgid "error in popt configuration file"
-msgstr ""
+msgstr "Fehler in popt Konfigurationsdatei"
 
 #: src/getcert.c:477
 #, c-format
@@ -333,90 +336,90 @@ msgstr "Keine Antwort vom %s-Dienst erhalten.\n"
 #: src/getcert.c:699 src/getcert.c:3978
 #, c-format
 msgid "State %s, stuck: %s.\n"
-msgstr ""
+msgstr "Status %s, hängt: %s.\n"
 
 #: src/getcert.c:768 src/getcert.c:1846 src/getcert.c:2500 src/getcert.c:3100
 #: src/getcert.c:3354 src/getcert.c:3875
 msgid "NSS database for key and cert"
-msgstr ""
+msgstr "NSS Datenbank für Schlüssel und Zertifikat"
 
 #: src/getcert.c:769 src/getcert.c:1847 src/getcert.c:2501 src/getcert.c:3101
 #: src/getcert.c:3355 src/getcert.c:3876
 msgid "nickname for NSS-based storage (only valid with -d)"
-msgstr ""
+msgstr "Kurzname für NSS-basierte Speicherung (nur gültig mit -d)"
 
 #: src/getcert.c:770 src/getcert.c:1848 src/getcert.c:2502 src/getcert.c:3102
 #: src/getcert.c:3356 src/getcert.c:3877
 msgid "optional token name for NSS-based storage (only valid with -d)"
-msgstr ""
+msgstr "Optionaler Token-Name für NSS-basierte Speicherung (nur gültig mit -d)"
 
 #: src/getcert.c:771
 msgid "PEM file for private key"
-msgstr ""
+msgstr "PEM Datei für privaten Schlüssel"
 
 #: src/getcert.c:772
 msgid "PEM file for certificate (only valid with -k)"
-msgstr ""
+msgstr "PEM-Datei für Zertifikat (nur gültig mit -k)"
 
 #: src/getcert.c:773 src/getcert.c:1851 src/getcert.c:2508
 msgid "file which holds the private key encryption PIN"
-msgstr ""
+msgstr "Datei, die die PIN zum Verschlüsseln des privaten Schlüssels enthält"
 
 #: src/getcert.c:774 src/getcert.c:1852 src/getcert.c:2509
 msgid "private key encryption PIN"
-msgstr ""
+msgstr "PIN zur Verschlüsselung des privaten Schlüssels"
 
 #: src/getcert.c:775 src/getcert.c:1853 src/getcert.c:2510
 msgid "owner information for private key"
-msgstr ""
+msgstr "Eigentümerinformationen für privaten Schlüssel"
 
 #: src/getcert.c:776 src/getcert.c:1854 src/getcert.c:2511
 msgid "file permissions for private key"
-msgstr ""
+msgstr "Dateiberechtigungen für privaten Schlüssel"
 
 #: src/getcert.c:777 src/getcert.c:1855 src/getcert.c:2512
 msgid "owner information for certificate"
-msgstr ""
+msgstr "Eigentümerinformationen für Zertifikat"
 
 #: src/getcert.c:778 src/getcert.c:1856 src/getcert.c:2513
 msgid "file permissions for certificate"
-msgstr ""
+msgstr "Dateiberechtigungen für Zertifikat"
 
 #: src/getcert.c:779 src/getcert.c:1857 src/getcert.c:2514
 msgid "NSS database in which to store the CA's certificates"
-msgstr ""
+msgstr "NSS Datenbank, in der die CA-Zertifikate gespeichert werden"
 
 #: src/getcert.c:780 src/getcert.c:1858 src/getcert.c:2515
 msgid "file in which to store the CA's certificates"
-msgstr ""
+msgstr "Datei in der die CA-Zertifikate gespeichert werden"
 
 #: src/getcert.c:781 src/getcert.c:1859 src/getcert.c:2516
 msgid "command to run before saving the certificate"
-msgstr ""
+msgstr "Auszuführender Befehl vor dem Speichern des Zertifikats"
 
 #: src/getcert.c:782 src/getcert.c:1860 src/getcert.c:2517
 msgid "command to run after saving the certificate"
-msgstr ""
+msgstr "Auszuführender Befehl nach dem Speichern des Zertifikats"
 
 #: src/getcert.c:783
 msgid "nickname to assign to the request"
-msgstr ""
+msgstr "Zugewiesener Kurzname für diese Abfrage"
 
 #: src/getcert.c:784
 msgid "type of key to be generated if one is not already in place"
-msgstr ""
+msgstr "Zu erstellender Schlüsseltyp, falls keiner vorhanden ist"
 
 #: src/getcert.c:785
 msgid "size of key to be generated if one is not already in place"
-msgstr ""
+msgstr "Größe des zu generierenden Schlüssels, falls noch keiner vorhanden ist"
 
 #: src/getcert.c:786 src/getcert.c:1863
 msgid "attempt to renew the certificate when expiration nears (default)"
-msgstr ""
+msgstr "versuchen, kurz vor Ablauf das Zertifikat zu erneuern (Standard)"
 
 #: src/getcert.c:787 src/getcert.c:1864
 msgid "don't attempt to renew the certificate when expiration nears"
-msgstr ""
+msgstr "nicht versuchen, kurz vor Ablauf das Zertifikat zu erneuern (Standard)"
 
 #: src/getcert.c:789 src/getcert.c:1866
 msgid "use the specified CA configuration rather than the default"
