@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: certmonger 0.79\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2017-02-26 02:20-0500\n"
-"PO-Revision-Date: 2022-03-15 14:16+0000\n"
+"PO-Revision-Date: 2022-11-23 17:20+0000\n"
 "Last-Translator: Temuri Doghonadze <temuri.doghonadze@gmail.com>\n"
 "Language-Team: Georgian <https://translate.fedoraproject.org/projects/"
 "certmonger/master/ka/>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.11.2\n"
+"X-Generator: Weblate 4.14.2\n"
 
 #: src/casave.c:322 src/casave.c:361 src/dogtag.c:233 src/dogtag.c:238
 #: src/dogtag.c:256 src/dogtag.c:261 src/getcert.c:291
@@ -210,7 +210,7 @@ msgstr "ბილიკი \"%s\":%s.\n"
 #: src/getcert.c:194
 #, c-format
 msgid "Path \"%s\" is not a regular file.\n"
-msgstr ""
+msgstr "ბილიკი \"%s\" ჩვეულებრივი ფაილი არაა.\n"
 
 #: src/getcert.c:340
 #, c-format
@@ -274,7 +274,7 @@ msgstr "არასწორი რიცხვითი მნიშვნე�
 
 #: src/getcert.c:421
 msgid "number too large or too small"
-msgstr ""
+msgstr "რიცხვი მეტისმეტად დიდი ან მეტისმეტად პატარაა"
 
 #: src/getcert.c:424
 msgid "bad operation"
@@ -824,7 +824,7 @@ msgid ",pin set"
 msgstr ", პინი დაყენებულია"
 
 #: src/getcert.c:3666
-#, c-format, fuzzy
+#, c-format
 msgid ",pinfile='%s'"
 msgstr ",pinfile='%s'"
 
@@ -844,7 +844,7 @@ msgid "\tsigning request thumbprint (SHA1): %s\n"
 msgstr ""
 
 #: src/getcert.c:3715
-#, c-format, fuzzy
+#, c-format
 msgid "\tCA: %s\n"
 msgstr "\tCA: %s\n"
 
@@ -872,7 +872,6 @@ msgid "\temail: "
 msgstr "\tელ-ფოსტა: "
 
 #: src/getcert.c:3742
-#, fuzzy
 msgid "\tdns: "
 msgstr "\tdns: "
 
@@ -890,7 +889,6 @@ msgid "\tkey usage: %s\n"
 msgstr "\tგასაღების გამოყენება: %s\n"
 
 #: src/getcert.c:3779
-#, fuzzy
 msgid "\teku: "
 msgstr "\teku: "
 
@@ -961,7 +959,7 @@ msgid "list only the specified CA configuration"
 msgstr ""
 
 #: src/getcert.c:4104
-#, c-format, fuzzy
+#, c-format
 msgid "CA '%s':\n"
 msgstr "CA '%s':\n"
 
