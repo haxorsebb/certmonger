@@ -10,8 +10,8 @@ msgstr ""
 "Project-Id-Version: certmonger 0.78.6\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2017-02-26 02:20-0500\n"
-"PO-Revision-Date: 2021-05-25 10:02+0000\n"
-"Last-Translator: Semyon Apoykov <semyonapoykov99@gmail.com>\n"
+"PO-Revision-Date: 2022-12-05 11:48+0000\n"
+"Last-Translator: Sergey Kazorin <kazorin@basealt.ru>\n"
 "Language-Team: Russian <https://translate.fedoraproject.org/projects/"
 "certmonger/master/ru/>\n"
 "Language: ru\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.6.2\n"
+"X-Generator: Weblate 4.14.2\n"
 
 #: src/casave.c:322 src/casave.c:361 src/dogtag.c:233 src/dogtag.c:238
 #: src/dogtag.c:256 src/dogtag.c:261 src/getcert.c:291
@@ -126,7 +126,7 @@ msgstr "Ошибка %d при подключении к %s.\n"
 #: src/dogtag.c:770 src/scep.c:648
 #, c-format
 msgid "Internal error: no response to \"%s?%s\".\n"
-msgstr "Внутренняя ошибка: нет ответа на \"%s\"?\"%s\".\n"
+msgstr "Внутренняя ошибка: нет ответа на «%s?%s».\n"
 
 #: src/getcert.c:61 src/main.c:84 src/main.c:86
 msgid "COMMAND"
@@ -1789,6 +1789,8 @@ msgid ""
 "Error setting up ccache for \"host\" service on client using keytab \"%s\": "
 "%s.\n"
 msgstr ""
+"Ошибка настройки кэша учётных данных для службы \"host\" у клиента, "
+"использующего таблицу ключей «%s»: %s\n"
 
 #: src/ipa.c:883
 #, c-format
