@@ -51,8 +51,8 @@ compile
 test-driver
 
 # output
-/dbus/certmonger.conf
-/dbus/certmonger.service
+/dbus/org.fedorahosted.certmonger.conf
+/dbus/org.fedorahosted.certmonger.service
 /src/certmonger
 /src/certmonger-session
 /src/certmonger.conf
