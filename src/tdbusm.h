@@ -23,6 +23,7 @@ int cm_tdbusm_get_n(DBusMessage *msg, void *parent, long *n);
 int cm_tdbusm_get_p(DBusMessage *msg, void *parent, char **p);
 int cm_tdbusm_get_s(DBusMessage *msg, void *parent, char **s);
 int cm_tdbusm_get_vs(DBusMessage *msg, void *parent, char **s);
+int cm_tdbusm_get_vn(DBusMessage *msg, void *parent, long *n);
 int cm_tdbusm_get_bp(DBusMessage *msg, void *parent, dbus_bool_t *b, char **p);
 int cm_tdbusm_get_bs(DBusMessage *msg, void *parent, dbus_bool_t *b, char **s);
 int cm_tdbusm_get_sb(DBusMessage *msg, void *parent, char **s, dbus_bool_t *b);

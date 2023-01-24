@@ -653,6 +653,26 @@ query_prop_as(enum cm_tdbus_type which,
 	return as;
 }
 
+/* Read a numeric property. */
+static long
+query_prop_n(enum cm_tdbus_type which,
+	     const char *path, const char *interface, const char *prop,
+	     int verbose,
+	     void *parent)
+{
+	DBusMessage *rep;
+	DBusMessage *res;
+	long n;
+	rep = prep_req(which, path, DBUS_INTERFACE_PROPERTIES, "Get");
+	cm_tdbusm_set_ss(rep, interface, prop);
+	res = send_req(rep, verbose);
+	if (cm_tdbusm_get_vn(res, parent, &n) != 0) {
+		n = 0;
+	}
+	dbus_message_unref(res);
+	return n;
+}
+
 /* Evaluate a single request's status. */
 static int
 evaluate_status(const char *state, dbus_bool_t stuck)
@@ -3435,6 +3455,8 @@ list(const char *argv0, int argc, const char **argv)
 	const char *capath, *request;
 	dbus_bool_t b;
 	char *s1, *s2, *s3, *s4, *s5, *s6;
+	long perms;
+	char *owner;
 	long n1, n2, n3;
 	char **as, **as1, **as2, **as3, **as4, **as5, t[25];
 	int requests_only = 0, tracking_only = 0, verbose = 0, c, i, j;
@@ -3746,6 +3768,13 @@ list(const char *argv0, int argc, const char **argv)
 		if ((s6 != NULL) && (strlen(s6) == 0)) {
 			s6 = NULL;
 		}
+		owner = query_prop_s(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
+				  CM_DBUS_PROP_KEY_OWNER, verbose, globals.tctx);
+		if ((owner != NULL) && (strlen(owner) == 0)) {
+			owner = NULL;
+		}
+		perms = query_prop_n(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
+				  CM_DBUS_PROP_KEY_PERMS, verbose, globals.tctx);
 		printf(_("\tkey pair storage: type=%s"), s1 ? s1 : _("NONE"));
 		if (s2 != NULL) {
 			printf(_(",location='%s'"), s2);
@@ -3762,6 +3791,12 @@ list(const char *argv0, int argc, const char **argv)
 		if (s6 != NULL) {
 			printf(_(",pinfile='%s'"), s6);
 		}
+		if (owner != NULL) {
+			printf(_(",owner=%s"), owner);
+		}
+		if (perms > 0) {
+			printf(_(",perms=%04o"), (unsigned int)perms & 07777);
+		}
 		printf("\n");
 		rep = query_rep(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
 				"get_cert_storage_info", verbose);
@@ -3770,6 +3805,13 @@ list(const char *argv0, int argc, const char **argv)
 			printf(_("Error parsing server response.\n"));
 			exit(1);
 		}
+		owner = query_prop_s(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
+				  CM_DBUS_PROP_CERT_OWNER, verbose, globals.tctx);
+		if ((owner != NULL) && (strlen(owner) == 0)) {
+			owner = NULL;
+		}
+		perms = query_prop_n(bus, requests[i], CM_DBUS_REQUEST_INTERFACE,
+				  CM_DBUS_PROP_CERT_PERMS, verbose, globals.tctx);
 		dbus_message_unref(rep);
 		printf(_("\tcertificate: type=%s,location='%s'"), s1, s2);
 		if (s3 != NULL) {
@@ -3777,6 +3819,12 @@ list(const char *argv0, int argc, const char **argv)
 		}
 		if (s4 != NULL) {
 			printf(_(",token='%s'"), s4);
+		}
+		if (owner != NULL) {
+			printf(_(",owner=%s"), owner);
+		}
+		if (perms > 0) {
+			printf(_(",perms=%04o"), (unsigned int)perms & 07777);
 		}
 		printf("\n");
 		/* Information about the CSR. */
