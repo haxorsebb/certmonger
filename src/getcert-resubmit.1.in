@@ -157,12 +157,16 @@ Maximum time to wait for the certificate to be issued.
 \fB\-v\fR, \fB\-\-verbose\fR
 Be verbose about errors.  Normally, the details of an error received from
 the daemon will be suppressed if the client can make a diagnostic suggestion.
+.TP
 \fB\-o\fR \fIOWNER\fR, \fB\-\-key\-owner\fR=\fIOWNER\fR
 After generation set the owner on the private key file or database to OWNER.
+.TP
 \fB\-m\fR \fIMODE\fR, \fB\-\-key\-perms\fR=\fIMODE\fR
 After generation set the file permissions on the private key file or database to MODE.
+.TP
 \fB\-O\fR \fIOWNER\fR, \fB\-\-cert\-owner\fR=\fIOWNER\fR
 After generation set the owner on the certificate file or database to OWNER.
+.TP
 \fB\-M\fR \fIMODE\fR, \fB\-\-cert\-perms\fR=\fIMODE\fR
 After generation set the file permissions on the certificate file or database to MODE.
 
