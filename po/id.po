@@ -4,14 +4,14 @@
 #
 # Translators:
 # Nalin Dahyabhai <nalin@fedoraproject.org>, 2011
-# Andika Triwidada <andika@gmail.com>, 2021.
+# Andika Triwidada <andika@gmail.com>, 2021, 2023.
 # Didik Supriadi <didiksupriadi41@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger 0.78.6\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2017-02-26 02:20-0500\n"
-"PO-Revision-Date: 2021-09-14 06:04+0000\n"
+"PO-Revision-Date: 2023-02-18 12:20+0000\n"
 "Last-Translator: Andika Triwidada <andika@gmail.com>\n"
 "Language-Team: Indonesian <https://translate.fedoraproject.org/projects/"
 "certmonger/master/id/>\n"
@@ -20,33 +20,35 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.8\n"
+"X-Generator: Weblate 4.15.2\n"
 
 #: src/casave.c:322 src/casave.c:361 src/dogtag.c:233 src/dogtag.c:238
 #: src/dogtag.c:256 src/dogtag.c:261 src/getcert.c:291
 #, c-format
 msgid "Out of memory.\n"
-msgstr ""
+msgstr "Kehabisan memori.\n"
 
 #: src/certmaster.c:136
-#, c-format, fuzzy
+#, c-format
 msgid "Unable to determine hostname of CA.\n"
-msgstr "tidak dapat menentukan nama host dari CA.\n"
+msgstr "Tidak dapat menentukan nama host dari CA.\n"
 
 #: src/certmaster.c:153 src/dogtag.c:521 src/ipa.c:796
-#, fuzzy, c-format
+#, c-format
 msgid "Unable to read signing request from file \"%s\".\n"
-msgstr "Tidak dapat membaca tanda permintaan.\n"
+msgstr "Tidak dapat membaca permintaan penandatanganan dari berkas \"%s\".\n"
 
 #: src/certmaster.c:156 src/dogtag.c:524 src/ipa.c:799
-#, fuzzy, c-format
+#, c-format
 msgid "Unable to read signing request from environment variable \"%s\".\n"
-msgstr "Tidak dapat membaca tanda permintaan.\n"
+msgstr ""
+"Tidak dapat membaca permintaan penandatanganan dari variabel lingkungan \"%"
+"s\".\n"
 
 #: src/certmaster.c:184
-#, c-format, fuzzy
+#, c-format
 msgid "Error setting up for XMLRPC.\n"
-msgstr "Setting kesalahan untuk XMLRPC\n"
+msgstr "Kesalahan saat menyiapkan XMLRPC.\n"
 
 #: src/certmaster.c:206 src/getcert.c:526 src/getcert.c:545 src/getcert.c:564
 #: src/getcert.c:583 src/getcert.c:601 src/getcert.c:694 src/getcert.c:1409
@@ -54,9 +56,9 @@ msgstr "Setting kesalahan untuk XMLRPC\n"
 #: src/getcert.c:3244 src/getcert.c:3272 src/getcert.c:3499 src/getcert.c:3603
 #: src/getcert.c:3638 src/getcert.c:3673 src/getcert.c:3710 src/getcert.c:3973
 #: src/getcert.c:4429 src/getcert.c:4547 src/getcert.c:4742
-#, c-format, fuzzy
+#, c-format
 msgid "Error parsing server response.\n"
-msgstr "merespon pelayanan penguraian kesalahan.\n"
+msgstr "Kesalahan saat mengurai respon server.\n"
 
 #: src/certmaster.c:210
 #, c-format
