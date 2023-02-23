@@ -28,11 +28,11 @@
 
 Name:		certmonger
 Version:	0.79.17
-Release:	1%{?dist}
+Release:	2%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
 Group:		System Environment/Daemons
-License:	GPLv3+
+License:	GPL-3.0-or-later
 URL:		https://pagure.io/certmonger/
 Source0:	https://releases.pagure.org/certmonger/certmonger-%{version}.tar.gz
 #Source1:	https://releases.pagure.org/certmonger/certmonger-%%{version}.tar.gz.sig
@@ -265,6 +265,9 @@ exit 0
 %endif
 
 %changelog
+* Thu Feb 23 2023 Rob Crittenden <rcritten@redhat.com> - 0.79.17-2
+- migrated to SPDX license
+
 * Wed Nov 30 2022 Rob Crittenden <rcritten@redhat.com> - 0.79.17-1
 - update to 0.79.17
   - Respect LDFLAGS settings defined by user
