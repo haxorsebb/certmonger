@@ -267,7 +267,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				      (readwrite ? 0 : NSS_INIT_READONLY) |
 				      NSS_INIT_NOROOTINIT);
 		if (ctx == NULL) {
-			cm_log(0, "Unable to initialize NSS.\n");
+			cm_log(0, "Unable to initialize NSS %s.\n", entry->cm_cert_storage_location);
 			_exit(1);
 		}
 

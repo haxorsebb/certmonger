@@ -328,7 +328,7 @@ cm_submit_n_decrypt_envelope(const unsigned char *envelope,
 			      NSS_INIT_READONLY |
 			      NSS_INIT_NOROOTINIT);
 	if (ctx == NULL) {
-		cm_log(0, "Unable to initialize NSS.\n");
+		cm_log(0, "Unable to initialize NSS %s.\n", args->entry->cm_key_storage_location);
 		_exit(1);
 	}
 	reason = util_n_fips_hook();

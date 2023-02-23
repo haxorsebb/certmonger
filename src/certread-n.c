@@ -19,6 +19,7 @@
 
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -161,7 +162,7 @@ cm_certread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			      (readwrite ? 0 : NSS_INIT_READONLY) |
 			      NSS_INIT_NOROOTINIT);
 	if (ctx == NULL) {
-		cm_log(0, "Unable to initialize NSS.\n");
+		cm_log(0, "Unable to initialize NSS db\n");
 		_exit(1);
 	}
 	es = util_n_fips_hook();
@@ -296,17 +297,23 @@ cm_certread_n_parse(struct cm_store_entry *entry,
 	CERTCertificate *cert, **certs;
 	NSSInitContext *ctx;
 	char *p;
-	const char *nl, *es;
+	const char *nl, *es = NULL;
 	unsigned int i;
 
 	/* Initialize the library. */
-	ctx = NSS_InitContext(CM_DEFAULT_CERT_STORAGE_LOCATION,
+	ctx = NSS_InitContext(NULL,
 			      NULL, NULL, NULL, NULL,
 			      NSS_INIT_NOCERTDB |
+			      NSS_INIT_NOMODDB |
 			      NSS_INIT_READONLY |
 			      NSS_INIT_NOROOTINIT);
 	if (ctx == NULL) {
-		cm_log(1, "Unable to initialize NSS.\n");
+		PRErrorCode ec = PR_GetError();
+		if (ec) {
+			es = PR_ErrorToName(ec);
+		}
+		cm_log(1, "Unable to initialize NSS %s\n", es ? es: "");
+        
 		_exit(1);
 	}
 	es = util_n_fips_hook();
