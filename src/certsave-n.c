@@ -465,6 +465,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					 * with the nickname we want, otherwise our
 					 * cert with a different subject name will be
 					 * discarded. */
+					cm_log(3, "Looking for duplicate nickname '%s'\n", entry->cm_cert_nickname);
 					certlist = PK11_FindCertsFromNickname(entry->cm_cert_nickname,
 									      NULL);
 					if (certlist != NULL) {
@@ -507,7 +508,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 						CERT_DestroyCertList(certlist);
 					}
 				} else {
-					cm_log(3, "No duplicate nickname entries.\n");
+					cm_log(3, "No duplicate nickname entries for '%s'.\n", entry->cm_cert_nickname);
 				}
 				/* This certificate's subject may already be present
 				 * with a different nickname.  Delete those, too. */
@@ -568,7 +569,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 						}
 					}
 					if (i == 0) {
-						cm_log(3, "No duplicate subject name entries.\n");
+						cm_log(3, "No duplicate subject name entries in certlist.\n");
 					}
 					CERT_DestroyCertList(certlist);
 				} else {
@@ -584,23 +585,55 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 							have_trust = PR_TRUE;
 						}
 						CERT_DestroyCertificate(oldcert);
+						oldcert = NULL;
 					}
+				}
+				/* save off old cert before importing new one */
+				cm_log(3, "Looking for existing certicates with the same nickname\n");
+				oldcert = PK11_FindCertFromNickname(entry->cm_cert_nickname, NULL);
+				if (oldcert) {
+					cm_log(3, "Found existing cert \"%s\".\n", oldcert->nickname);
+				} else {
+					cm_log(3, "No existing certificate found.\n");
 				}
 				/* Import the certificate. */
 				newcert = CERT_DecodeCertFromPackage((char *)item->data, item->len);
 				if (newcert != NULL) {
+					PK11SlotInfo *internal_slot = NULL;
+					SECStatus ierror;
+
 					error = PK11_ImportCert(sle->slot,
 						newcert,
 						CK_INVALID_HANDLE,
 						entry->cm_cert_nickname,
 						PR_FALSE);
+
+					/* Import the updated cert into the internal slot if the
+					 * the configured token is not already internal */
+					internal_slot = PK11_GetInternalKeySlot();
+					if ((ierror == SECSuccess) && (sle->slot != internal_slot))
+					{
+						cm_log(3, "Imported to token, adding to internal\n");
+						ierror = PK11_ImportCert(internal_slot,
+							newcert,
+							CK_INVALID_HANDLE,
+							entry->cm_cert_nickname,
+							PR_FALSE);
+						cm_log(1, "Imported certificate with "
+					       		  "nickname \"%s\" to \"%s\".\n",
+					       		  entry->cm_cert_nickname,
+								  PK11_GetTokenName(internal_slot));
+					}
+					PK11_FreeSlot(internal_slot);
 				} else {
+					cm_log(1, "SECFailure loading certificates\n");
 					error = SECFailure;
 				}
 				if (error == SECSuccess) {
 					cm_log(1, "Imported certificate with "
-					       "nickname \"%s\".\n",
-					       entry->cm_cert_nickname);
+					       "nickname \"%s\" to \"%s\".\n",
+					       entry->cm_cert_nickname,
+						   PK11_GetTokenName(sle->slot));
 					status = 0;
 					/* Set the trust on the new certificate,
 					 * perhaps matching the trust on an
@@ -640,6 +673,68 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					 * several APIs and many applications can't
 					 * dependably find the right one among more
 					 * than one.  So bye-bye, old certificates. */
+					slotlist = PK11_GetAllSlotsForCert(oldcert, NULL);
+					if (slotlist && oldcert) {
+						CERTCertificate *cert = NULL;
+						PK11SlotListElement *se;
+						int deleted = 0;
+
+						/* Loop until no certificates are removed. For some
+						 * reason NSS does not always remove the certificate
+						 * from the token the certificate is associated
+						 * with so loop until there are none to be removed.
+						 */
+						do {
+							deleted = 0;
+							for (se = slotlist->head;
+								((se != NULL) && (se->slot != NULL));
+								se = se->next)
+							{
+								cm_log(3, "Looking to remove \"%s\" from slot \"%s\"\n", oldcert->nickname, PK11_GetTokenName(se->slot));
+								cert = CERT_FindCertByDERCert(certdb, &oldcert->derCert);
+								if (cert == NULL) {
+									cm_log(3, "No matching certificate found \"%s\"\n", oldcert->nickname);
+									continue;
+								}
+								if (!SECITEM_ItemsAreEqual(&cert->derCert,
+										   &oldcert->derCert) &&
+										   (se->slot == cert->slot))
+								{
+									cm_log(1, "Deleting duplicate certificate(s)\n");
+									cm_log(3, "Removing nickname '%s' cert slock '%s' in slot '%s'\n", cert->nickname, PK11_GetTokenName(cert->slot), PK11_GetTokenName(se->slot));
+									/* Mark the key as an orphan candidate in
+									 * case of a rekey.
+									 */
+									privkey = PK11_FindKeyByAnyCert(cert, NULL);
+									privkeys = add_privkey_to_list(privkeys, privkey);
+									SEC_DeletePermCertificate(cert);
+									deleted += 1;
+								} else {
+									cm_log(3, "Certificate not found in \"%s\"\n", PK11_GetTokenName(se->slot));
+								}
+								CERT_DestroyCertificate(cert);
+								cert = NULL;
+							}
+							if (deleted == 0) {
+								cm_log(3, "No certs deleted\n");
+							} else {
+								cm_log(3, "%d certs deleted\n", deleted);
+							}
+							PK11_FreeSlotList(slotlist);
+							//slotlist = PK11_GetAllTokens(mech, PR_FALSE, PR_FALSE, NULL);
+							slotlist = PK11_GetAllSlotsForCert(oldcert, NULL);
+						} while (deleted > 0);
+					} else {
+						cm_log(1, "No existing certificate found to delete\n");
+					}
+					if (slotlist) {
+						PK11_FreeSlotList(slotlist);
+					}
+ 					if (oldcert) {
+						CERT_DestroyCertificate(oldcert);
+						oldcert = NULL;
+					}
+
 					certlist = PK11_FindCertsFromNickname(entry->cm_cert_nickname,
 									      NULL);
 					if (certlist != NULL) {
