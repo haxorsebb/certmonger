@@ -27,8 +27,8 @@
 %bcond_with xmlrpc
 
 Name:		certmonger
-Version:	0.79.17
-Release:	2%{?dist}
+Version:	0.79.18
+Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
 Group:		System Environment/Daemons
@@ -265,6 +265,15 @@ exit 0
 %endif
 
 %changelog
+* Wed Apr  5 2023 Rob Crittenden <rcritten@redhat.com> - 0.79.18-1
+- update to 0.79.18
+  - Rename DBus service and conf files to match canonical name
+  - Add missing .TP tags in getcert-resubmit man page
+  - migrated to SPDX license
+  - Include owner and perms in getcert list output
+  - Don't require an NSS database in cm_certread_n_parse
+  - Add new certs to internal token, try harder to remove on renewal
+
 * Thu Feb 23 2023 Rob Crittenden <rcritten@redhat.com> - 0.79.17-2
 - migrated to SPDX license
 
