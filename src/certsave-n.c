@@ -282,7 +282,7 @@ cm_certsave_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			_exit(CM_CERTSAVE_STATUS_INTERNAL_ERROR);
 		}
 		/* Find the tokens that we might use for cert storage. */
-		mech = CKM_RSA_X_509;
+		mech = CKM_INVALID_MECHANISM;
 		slotlist = PK11_GetAllTokens(mech, PR_FALSE, PR_FALSE, NULL);
 		if (slotlist == NULL) {
 			cm_log(1, "Error getting list of tokens.\n");
