@@ -6,13 +6,13 @@
 # Peter Borsa <peter.borsa@gmail.com>, 2012
 # Zoltan Hoppár <zoltanh721@fedoraproject.org>, 2012-2013
 # Porcsin László <dzsolly85@gmail.com>, 2015. #zanata
-# Dankaházi (ifj.) István <dankahazi.istvan@gmail.com>, 2021.
+# Dankaházi (ifj.) István <dankahazi.istvan@gmail.com>, 2021, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger 0.78.6\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2017-02-26 02:20-0500\n"
-"PO-Revision-Date: 2021-11-23 15:06+0000\n"
+"PO-Revision-Date: 2023-05-10 19:20+0000\n"
 "Last-Translator: Dankaházi (ifj.) István <dankahazi.istvan@gmail.com>\n"
 "Language-Team: Hungarian <https://translate.fedoraproject.org/projects/"
 "certmonger/master/hu/>\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.9\n"
+"X-Generator: Weblate 4.15.2\n"
 
 #: src/casave.c:322 src/casave.c:361 src/dogtag.c:233 src/dogtag.c:238
 #: src/dogtag.c:256 src/dogtag.c:261 src/getcert.c:291
@@ -35,14 +35,15 @@ msgid "Unable to determine hostname of CA.\n"
 msgstr "CA hosztnevének meghatározása meghiúsult.\n"
 
 #: src/certmaster.c:153 src/dogtag.c:521 src/ipa.c:796
-#, fuzzy, c-format
+#, c-format
 msgid "Unable to read signing request from file \"%s\".\n"
-msgstr "Bejelentkezési kérés olvasása meghiúsult.\n"
+msgstr "Nem sikerült beolvasni az aláírási kérelmet a \"%s\" fájlból.\n"
 
 #: src/certmaster.c:156 src/dogtag.c:524 src/ipa.c:799
-#, fuzzy, c-format
+#, c-format
 msgid "Unable to read signing request from environment variable \"%s\".\n"
-msgstr "Bejelentkezési kérés olvasása meghiúsult.\n"
+msgstr ""
+"Nem sikerült beolvasni az aláírási kérelmet a \"%s\" környezeti változóból.\n"
 
 #: src/certmaster.c:184
 #, c-format
@@ -1315,15 +1316,15 @@ msgstr "  -u KEYUSAGE\tbeállítja a kért kulcshasználati értéket\n"
 
 #: src/getcert.c:4821 src/getcert.c:4930 src/getcert.c:4978
 msgid "  -K NAME\tset requested principal name\n"
-msgstr "-K NAME\tigényelt elsődleges név beállítása \n"
+msgstr "  -K NAME\tigényelt elsődleges név beállítása\n"
 
 #: src/getcert.c:4822 src/getcert.c:4931 src/getcert.c:4979
 msgid "  -D DNSNAME\tset requested DNS name\n"
-msgstr "- D DNSNAME\tigényelt DNS név beállítása\n"
+msgstr "  -D DNSNAME\tigényelt DNS név beállítása\n"
 
 #: src/getcert.c:4823 src/getcert.c:4932 src/getcert.c:4980
 msgid "  -E EMAIL\tset requested email address\n"
-msgstr "-E MAIL \tigényelt email cím beállítása\n"
+msgstr "  -E EMAIL\tigényelt email cím beállítása\n"
 
 #: src/getcert.c:4824 src/getcert.c:4933 src/getcert.c:4981
 msgid "  -A ADDRESS\tset requested IP address\n"
@@ -1347,12 +1348,12 @@ msgstr "* Adatcsatorna opciók:\n"
 #: src/getcert.c:4828 src/getcert.c:4876 src/getcert.c:4903 src/getcert.c:4946
 #: src/getcert.c:4996 src/getcert.c:5050
 msgid "  -S\t\tconnect to the certmonger service on the system bus\n"
-msgstr "-S\t\tconnect certmonger szolgáltatásnál a rendszer buszon \n"
+msgstr "  -S\t\tconnect certmonger szolgáltatásnál a rendszer buszon\n"
 
 #: src/getcert.c:4829 src/getcert.c:4877 src/getcert.c:4904 src/getcert.c:4947
 #: src/getcert.c:4997 src/getcert.c:5051
 msgid "  -s\t\tconnect to the certmonger service on the session bus\n"
-msgstr "-s\t\tconnect certmonger szolgáltatásnál a szál vezérélésnél \n"
+msgstr "  -s\t\tconnect certmonger szolgáltatásnál a szál vezérélésnél\n"
 
 #: src/getcert.c:4830 src/getcert.c:4878 src/getcert.c:4905 src/getcert.c:4948
 #: src/getcert.c:4998 src/getcert.c:5028 src/getcert.c:5069 src/getcert.c:5084
@@ -1363,11 +1364,11 @@ msgstr "* Egyéb opciók:\n"
 
 #: src/getcert.c:4831 src/getcert.c:4879 src/getcert.c:4949 src/getcert.c:4999
 msgid "  -B\tcommand to run before saving the certificate\n"
-msgstr "-B\tcommand futtatás előtt a tanúsítványt menti \n"
+msgstr "  -B\tfuttatás előtt a tanúsítványt menti\n"
 
 #: src/getcert.c:4832 src/getcert.c:4880 src/getcert.c:4950 src/getcert.c:5000
 msgid "  -C\tcommand to run after saving the certificate\n"
-msgstr "-C\tcommand futtatás után a tanúsítványt menti \n"
+msgstr "  -C\tcommand futtatás után a tanúsítványt menti\n"
 
 #: src/getcert.c:4833 src/getcert.c:4881 src/getcert.c:4951 src/getcert.c:5001
 msgid "  -F\tfile in which to store the CA's certificates\n"
