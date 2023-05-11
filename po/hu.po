@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: certmonger 0.78.6\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2017-02-26 02:20-0500\n"
-"PO-Revision-Date: 2023-05-10 19:20+0000\n"
+"PO-Revision-Date: 2023-05-12 19:21+0000\n"
 "Last-Translator: Dankaházi (ifj.) István <dankahazi.istvan@gmail.com>\n"
 "Language-Team: Hungarian <https://translate.fedoraproject.org/projects/"
 "certmonger/master/hu/>\n"
@@ -1278,9 +1278,7 @@ msgstr ""
 
 #: src/getcert.c:4813 src/getcert.c:4862
 msgid "  -c CA\t\tuse the specified CA rather than the default\n"
-msgstr ""
-"  -c CA\t\tinkább alkalmazza a megadott CA mint az alapértelmezettet\n"
-"\n"
+msgstr "  -c CA\t\ta megadott CA-t használja az alapértelmezett helyett\n"
 
 #: src/getcert.c:4815 src/getcert.c:4864 src/getcert.c:4943 src/getcert.c:4991
 msgid ""
@@ -1412,9 +1410,7 @@ msgstr "  -I NAME\telnevezés a nyomonkövetési kéréshez\n"
 
 #: src/getcert.c:4866
 msgid "* Parameters for the signing request at renewal time:\n"
-msgstr ""
-"* Paraméterek az aláírási kéréshez megújításkor:\n"
-"\n"
+msgstr "* Az aláírási kérelem paraméterei a megújításkor:\n"
 
 #: src/getcert.c:4867
 msgid "  -U EXTUSAGE\toverride requested extended key usage OID\n"
@@ -1422,9 +1418,7 @@ msgstr "  -U EXTUSAGE\tfelülírja a kért kibővített kulcs használat OID-jé
 
 #: src/getcert.c:4869
 msgid "  -K NAME\toverride requested principal name\n"
-msgstr ""
-"  -K NAME\tfelülírja a kért elsődleges nevet\n"
-"\n"
+msgstr "  -K NAME\tfelülírja a kért elsődleges nevet\n"
 
 #: src/getcert.c:4870
 msgid "  -D DNSNAME\toverride requested DNS name\n"
@@ -1432,9 +1426,7 @@ msgstr "  -D DNSNAME\tfelülírja a kért DNS nevet\n"
 
 #: src/getcert.c:4871
 msgid "  -E EMAIL\toverride requested email address\n"
-msgstr ""
-"  -E EMAIL\tfelülírja a kért email címet\n"
-"\n"
+msgstr "  -E EMAIL\tfelülírja a kért email címet\n"
 
 #: src/getcert.c:4872
 msgid "  -A ADDRESS\toverride requested IP address\n"
@@ -1511,8 +1503,8 @@ msgstr "  -r\tcsak a kiemelkedő kérésekről szóló információkat listázza
 #: src/getcert.c:5016
 msgid "  -t\tlist only information about tracked certificates\n"
 msgstr ""
-"  -t\tcsak a nyomonkövetett bizonytványok adatait listázza\n"
-"\n"
+"  -t\tcsak a nyomon követett tanúsítványokra vonatkozó információkat "
+"listázza\n"
 
 #: src/getcert.c:5017
 msgid "  -u\tdisplay times in UTC instead of local time\n"
@@ -1531,9 +1523,8 @@ msgstr ""
 #: src/getcert.c:5022
 msgid "  -n NAME\tonly list requests and certs which use this nickname\n"
 msgstr ""
-"  -n NAME\tcsak olyan igényléseket és bizonyítványokat listáz amelyek ezt az "
+"  -n NAME\tcsak olyan kérelmeket és tanúsítványokat listázza amelyek ezt az "
 "elnevezést használják\n"
-"\n"
 
 #: src/getcert.c:5024
 msgid "  -f FILE\tonly list requests and certs stored in this PEM file\n"
