@@ -25,7 +25,7 @@ passed in to \fIgetcert\fR's \fIrequest\fR, \fIresubmit\fR, and
 The location of the SCEP server's enrollment interface.  This option must be
 specified.
 .TP
-\fB\-R\fR \fIFILE\fR, \fB\-\-ca\-cacert\fR=\fIFILE\fR
+\fB\-R\fR \fIFILE\fR, \fB\-\-ca\-cert\fR=\fIFILE\fR
 The location of a PEM\-formatted copy of the CA's certificate used to verify
 the TLS connection the SCEP server.
 
