@@ -27,7 +27,7 @@
 %bcond_with xmlrpc
 
 Name:		certmonger
-Version:	0.79.18
+Version:	0.79.19
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -265,6 +265,12 @@ exit 0
 %endif
 
 %changelog
+* Tue Oct 10 2023 Rob Crittenden <rcritten@redhat.com> - 0.79.19-1
+- Update to 0.79.19
+  - getcert: add-scep-ca: fix help for --ca-cert and --ra-cert
+  - Don't restrict tokens to CKM_RSA_X_509
+  - Updated translations from Weblate
+
 * Wed Apr  5 2023 Rob Crittenden <rcritten@redhat.com> - 0.79.18-1
 - update to 0.79.18
   - Rename DBus service and conf files to match canonical name
