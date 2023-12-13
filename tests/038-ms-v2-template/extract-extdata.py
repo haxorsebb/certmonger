@@ -13,7 +13,8 @@ STATE_SEARCH, STATE_FOUND, STATE_DONE = range(3)
 state = STATE_SEARCH
 
 for line in sys.stdin:
-    if state == STATE_SEARCH and ':1.3.6.1.4.1.311.21.7' in line:
+    if state == STATE_SEARCH and (':Microsoft certificate template' in line
+                                  or ':1.3.6.1.4.1.311.21.7' in line):
         state = STATE_FOUND
         continue
 

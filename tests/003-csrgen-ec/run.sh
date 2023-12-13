@@ -42,8 +42,8 @@ grep ^minicert= entry.nss.$size | sed s,^minicert=,, | base64 -d > minicert.nss.
 openssl x509 -out minicert.nss.$size.pem -in minicert.nss.$size -inform der
 # The RSA tests already verify the contents of the requests, so we really only
 # need to care about the signatures passing verification.
-openssl req   -verify -noout < csr.nss.$size 2>&1 | sed 's/Certificate request self-signature //'
-openssl req   -verify -noout < csr.openssl.$size 2>&1 | sed 's/Certificate request self-signature //'
+openssl req   -verify -noout -in csr.nss.$size 2>&1 | sed 's/Certificate request self-signature //'
+openssl req   -verify -noout -in csr.openssl.$size 2>&1 | sed 's/Certificate request self-signature //'
 openssl spkac -verify -noout < spkac.nss.$size 2>&1
 openssl spkac -verify -noout < spkac.openssl.$size 2>&1
 openssl verify -CAfile minicert.openssl.$size.pem minicert.openssl.$size.pem 2>&1
