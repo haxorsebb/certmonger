@@ -5,22 +5,23 @@
 # Translators:
 # Stanislav Darchinov <darchinov@gmail.com>, 2011
 # Semyon Apoykov <semyonapoykov99@gmail.com>, 2021.
+# stanislav levin <slev@basealt.ru>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger 0.78.6\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2017-02-26 02:20-0500\n"
-"PO-Revision-Date: 2022-12-05 11:48+0000\n"
-"Last-Translator: Sergey Kazorin <kazorin@basealt.ru>\n"
+"PO-Revision-Date: 2023-12-22 16:37+0000\n"
+"Last-Translator: stanislav levin <slev@basealt.ru>\n"
 "Language-Team: Russian <https://translate.fedoraproject.org/projects/"
 "certmonger/master/ru/>\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.14.2\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"X-Generator: Weblate 5.3\n"
 
 #: src/casave.c:322 src/casave.c:361 src/dogtag.c:233 src/dogtag.c:238
 #: src/dogtag.c:256 src/dogtag.c:261 src/getcert.c:291
@@ -31,22 +32,22 @@ msgstr "Недостаточно памяти.\n"
 #: src/certmaster.c:136
 #, c-format
 msgid "Unable to determine hostname of CA.\n"
-msgstr "Невозможно определить имя CA\n"
+msgstr "Не удалось определить имя сервера ЦС.\n"
 
 #: src/certmaster.c:153 src/dogtag.c:521 src/ipa.c:796
 #, c-format
 msgid "Unable to read signing request from file \"%s\".\n"
-msgstr "Невозможно прочесть запрос на подписание \"%s\".\n"
+msgstr "Не удалось прочитать запрос на подпись из файла «%s».\n"
 
 #: src/certmaster.c:156 src/dogtag.c:524 src/ipa.c:799
 #, c-format
 msgid "Unable to read signing request from environment variable \"%s\".\n"
-msgstr "Невозможно прочитать запрос подписи из переменной среды \"%s\".\n"
+msgstr "Не удалось прочитать запрос на подпись из переменной среды «%s».\n"
 
 #: src/certmaster.c:184
 #, c-format
 msgid "Error setting up for XMLRPC.\n"
-msgstr "Ошибка при настройке XMLRPC.\n"
+msgstr "Ошибка в настройке для XMLRPC.\n"
 
 #: src/certmaster.c:206 src/getcert.c:526 src/getcert.c:545 src/getcert.c:564
 #: src/getcert.c:583 src/getcert.c:601 src/getcert.c:694 src/getcert.c:1409
@@ -56,7 +57,7 @@ msgstr "Ошибка при настройке XMLRPC.\n"
 #: src/getcert.c:4429 src/getcert.c:4547 src/getcert.c:4742
 #, c-format
 msgid "Error parsing server response.\n"
-msgstr "Ошибка синтаксического анализа ответа сервера.\n"
+msgstr "Ошибка анализа ответа сервера.\n"
 
 #: src/certmaster.c:210
 #, c-format
@@ -66,42 +67,44 @@ msgstr "Ошибка сервера.\n"
 #: src/dogtag.c:226
 #, c-format
 msgid "Profile params (-O) must be in the form of param=value.\n"
-msgstr "Параметры профиля (-О) должны иметь форму параметр=значение.\n"
+msgstr "Параметры профиля (-О) указываются в виде параметр=значение.\n"
 
 #: src/dogtag.c:249
 #, c-format
 msgid "Submit params (-o) must be in the form of param=value.\n"
-msgstr "Параметры отправки (-о) должны иметь форму параметр=значение.\n"
+msgstr "Параметры передачи (-о) указываются в виде параметр=значение.\n"
 
 #: src/dogtag.c:408 src/dogtag.c:413 src/dogtag.c:442
 #, c-format
 msgid "No agent credentials specified, and no default known.\n"
-msgstr "Учетные данные агента не указаны и не известны значения по умолчанию.\n"
+msgstr "Не указаны учетные данные агента и не задано значение по умолчанию.\n"
 
 #: src/dogtag.c:418
 #, c-format
 msgid "Requested renewal, but no serial number provided.\n"
-msgstr "Запрошено продление, но серийный номер не указан.\n"
+msgstr "В запросе на операцию продления не указан серийный номер.\n"
 
 #: src/dogtag.c:422
 #, c-format
 msgid "No end-entity URL (-E) given, and no default known.\n"
-msgstr "URL-адрес конечного объекта (-E) не указан и неизвестен по умолчанию.\n"
+msgstr ""
+"Не указан URL-адрес конечного объекта (-E) и не задано значение по умолчанию."
+"\n"
 
 #: src/dogtag.c:427 src/dogtag.c:437 src/dogtag.c:594
 #, c-format
 msgid "No agent URL (-A) given, and no default known.\n"
-msgstr "URL-адрес агента (-A) не указан и неизвестно значение по умолчанию.\n"
+msgstr "Не указан URL-адрес агента (-A) и не задано значение по умолчанию.\n"
 
 #: src/dogtag.c:432
 #, c-format
 msgid "No profile/template (-T) given, and no default known.\n"
-msgstr "Профиль / шаблон (-T) не указан и неизвестно по умолчанию.\n"
+msgstr "Не указан профиль / шаблон (-T) и не задано значение по умолчанию.\n"
 
 #: src/dogtag.c:452
 #, c-format
 msgid "Error shutting down NSS.\n"
-msgstr "Ошибка выключения NSS.\n"
+msgstr "Ошибка при завершении работы NSS.\n"
 
 #: src/dogtag.c:487 src/dogtag.c:777
 #, c-format
@@ -111,7 +114,7 @@ msgstr "Внутренняя ошибка: неизвестное состоян
 #: src/dogtag.c:600
 #, c-format
 msgid "No agent credentials (-n) given, but they are needed.\n"
-msgstr "Учетные данные агента (-n) не указаны, но они необходимы.\n"
+msgstr "Не указаны обязательные учетные данные агента (-n).\n"
 
 #: src/dogtag.c:757 src/scep.c:619
 #, c-format
@@ -146,11 +149,11 @@ msgstr "АДРЕС"
 
 #: src/getcert.c:65 src/main.c:87
 msgid "FILENAME"
-msgstr "ИМЯ ФАЙЛА"
+msgstr "ИМЯ_ФАЙЛА"
 
 #: src/getcert.c:66
 msgid "HOSTNAME"
-msgstr "ИМЯ ХОСТА"
+msgstr "ИМЯ_ХОСТА"
 
 #: src/getcert.c:67
 msgid "ID"
@@ -170,7 +173,7 @@ msgstr "ИМЯ"
 
 #: src/getcert.c:73
 msgid "PRINCIPAL"
-msgstr "ГЛАВНЫЙ"
+msgstr "ПРИНЦИПАЛ"
 
 #: src/getcert.c:74
 msgid "SUBJECT"
@@ -182,12 +185,14 @@ msgstr "URL"
 
 #: src/getcert.c:76
 msgid "USERNAME[:GROUPNAME]"
-msgstr "ИМЯ_ПОЛЬЗОВАТЕЛЯ[:ГРУППА]"
+msgstr "ИМЯ_ПОЛЬЗОВАТЕЛЯ[:ИМЯ_ГРУППЫ]"
 
 #: src/getcert.c:115
 #, c-format
 msgid "Path \"%s\" is not absolute, attempting to use \"%s\" instead.\n"
-msgstr "Путь \"%s\" не является полным, попытка использовать путь\"%s\".\n"
+msgstr ""
+"Путь «%s» не является абсолютным, будет предпринята попытка использовать "
+"вместо него путь «%s».\n"
 
 #: src/getcert.c:120
 #, c-format
@@ -195,43 +200,43 @@ msgid ""
 "Path \"%s\" is not absolute, and there was an error determining the name of "
 "the current directory.\n"
 msgstr ""
-"Путь \"%s\" не является абсолютным, определение имени текущего каталога было "
-"выполнено с ошибками.\n"
+"Путь «%s» не является абсолютным, и при определении имени текущего каталога "
+"произошла ошибка .\n"
 
 #: src/getcert.c:142
 #, c-format
 msgid "Path \"%s\": insufficient permissions.\n"
-msgstr "Путь \"%s\": недостаточно прав.\n"
+msgstr "Путь «%s»: недостаточно прав.\n"
 
 #: src/getcert.c:148
 #, c-format
 msgid "Path \"%s\" is not a directory.\n"
-msgstr "Путь \"%s\" не является каталогом.\n"
+msgstr "Путь «%s» не является каталогом.\n"
 
 #: src/getcert.c:154
 #, c-format
 msgid "Path \"%s\": %s.\n"
-msgstr "Путь \"%s\":%s.\n"
+msgstr "Путь «%s»: %s.\n"
 
 #: src/getcert.c:194
 #, c-format
 msgid "Path \"%s\" is not a regular file.\n"
-msgstr "Путь \"%s\" не является обычным файлом.\n"
+msgstr "Путь «%s» не является обычным файлом.\n"
 
 #: src/getcert.c:340
 #, c-format
 msgid "No system bus running.\n"
-msgstr "Системная шина не запущена.\n"
+msgstr "Системная шина не работает.\n"
 
 #: src/getcert.c:341
 #, c-format
 msgid "Running as UID 0.\n"
-msgstr "Запущено как UID 0.\n"
+msgstr "Выполняется в качестве UID 0.\n"
 
 #: src/getcert.c:342
 #, c-format
 msgid "Launching temporary dedicated service daemon.\n"
-msgstr "Запуск временного выделенного сервисного демона.\n"
+msgstr "Запуск временной выделенной фоновой службы.\n"
 
 #: src/getcert.c:371
 #, c-format
@@ -241,31 +246,30 @@ msgstr "Ошибка подключения к D-Bus.\n"
 #: src/getcert.c:372 src/tdbusm.c:2166
 #, c-format
 msgid "Please verify that the message bus (D-Bus) service is running.\n"
-msgstr ""
-"Пожалуйста, проверьте, что служба шины сообщений (D-Bus) выполняется.\n"
+msgstr "Убедитесь в работе службы шины сообщений (D-Bus).\n"
 
 #: src/getcert.c:379
 #, c-format
 msgid "Error creating DBus request message.\n"
-msgstr "Ошибка при создании запроса к DBus.\n"
+msgstr "Ошибка при создании сообщения запроса DBus.\n"
 
 #: src/getcert.c:393
 #, c-format
 msgid "missing argument for %s"
-msgstr "отсутствующий аргумент для %s"
+msgstr "отсутствует аргумент для %s"
 
 #: src/getcert.c:398
 msgid "missing argument"
-msgstr "пропущен аргумент"
+msgstr "отсутствует аргумент"
 
 #: src/getcert.c:401
 #, c-format
 msgid "unrecognized option %s"
-msgstr "неизвестная команда %s"
+msgstr "неизвестный параметр %s"
 
 #: src/getcert.c:406
 msgid "unrecognized option"
-msgstr "неизвестная команда"
+msgstr "неизвестный параметр"
 
 #: src/getcert.c:409
 msgid "aliases nested too deeply"
@@ -273,7 +277,7 @@ msgstr "псевдонимы слишком глубоко вложены"
 
 #: src/getcert.c:412
 msgid "bad parameter quoting"
-msgstr "неверное цитирование параметров"
+msgstr "неверное использование кавычек с параметром"
 
 #: src/getcert.c:418
 msgid "invalid numeric value"
@@ -281,11 +285,11 @@ msgstr "недопустимое числовое значение"
 
 #: src/getcert.c:421
 msgid "number too large or too small"
-msgstr "число слишком велико или слишком мало"
+msgstr "число слишком большое или слишком маленькое"
 
 #: src/getcert.c:424
 msgid "bad operation"
-msgstr "плохая операция"
+msgstr "неверная операция"
 
 #: src/getcert.c:427
 msgid "internal error"
@@ -317,34 +321,34 @@ msgstr "Ошибка: %s\n"
 #: src/getcert.c:489
 #, c-format
 msgid "Received error response from local %s service.\n"
-msgstr "Получен ошибочный ответ от службы %s.\n"
+msgstr "Получено сообщение об ошибке от локальной службы %s.\n"
 
 #: src/getcert.c:495
 #, c-format
 msgid "No response received from %s service.\n"
-msgstr "От службы %s не был получен ответ.\n"
+msgstr "Не получен ответ от службы %s.\n"
 
 #: src/getcert.c:699 src/getcert.c:3978
 #, c-format
 msgid "State %s, stuck: %s.\n"
-msgstr "Состояние %s, застряло: %s.\n"
+msgstr "Состояние %s, завис: %s.\n"
 
 #: src/getcert.c:768 src/getcert.c:1846 src/getcert.c:2500 src/getcert.c:3100
 #: src/getcert.c:3354 src/getcert.c:3875
 msgid "NSS database for key and cert"
-msgstr "База данных NSS для ключей и сертификатов"
+msgstr "база данных NSS для ключей и сертификатов"
 
 #: src/getcert.c:769 src/getcert.c:1847 src/getcert.c:2501 src/getcert.c:3101
 #: src/getcert.c:3355 src/getcert.c:3876
 msgid "nickname for NSS-based storage (only valid with -d)"
-msgstr "псевдоним для хранилища на основе NSS (действует только с -d)"
+msgstr "псевдоним для хранилища NSS (используется только с параметром -d)"
 
 #: src/getcert.c:770 src/getcert.c:1848 src/getcert.c:2502 src/getcert.c:3102
 #: src/getcert.c:3356 src/getcert.c:3877
 msgid "optional token name for NSS-based storage (only valid with -d)"
 msgstr ""
-"необязательное имя токена для хранилища на основе NSS (действительно только "
-"с -d)"
+"дополнительное имя токена для хранилища NSS (используется только с "
+"параметром -d)"
 
 #: src/getcert.c:771
 msgid "PEM file for private key"
@@ -352,7 +356,7 @@ msgstr "PEM-файл для закрытого ключа"
 
 #: src/getcert.c:772
 msgid "PEM file for certificate (only valid with -k)"
-msgstr "Файл PEM для сертификата (действителен только с -k)"
+msgstr "PEM-файл для сертификата (используется только с параметром -k)"
 
 #: src/getcert.c:773 src/getcert.c:1851 src/getcert.c:2508
 msgid "file which holds the private key encryption PIN"
@@ -360,7 +364,7 @@ msgstr "файл, содержащий PIN-код шифрования закр�
 
 #: src/getcert.c:774 src/getcert.c:1852 src/getcert.c:2509
 msgid "private key encryption PIN"
-msgstr "PIN-код шифрования с закрытым ключом"
+msgstr "PIN-код шифрования закрытого ключа"
 
 #: src/getcert.c:775 src/getcert.c:1853 src/getcert.c:2510
 msgid "owner information for private key"
@@ -368,7 +372,7 @@ msgstr "информация о владельце закрытого ключа
 
 #: src/getcert.c:776 src/getcert.c:1854 src/getcert.c:2511
 msgid "file permissions for private key"
-msgstr "права доступа к файлам для закрытого ключа"
+msgstr "права доступа к файлу закрытого ключа"
 
 #: src/getcert.c:777 src/getcert.c:1855 src/getcert.c:2512
 msgid "owner information for certificate"
@@ -376,94 +380,96 @@ msgstr "информация о владельце сертификата"
 
 #: src/getcert.c:778 src/getcert.c:1856 src/getcert.c:2513
 msgid "file permissions for certificate"
-msgstr "права доступа к файлу для сертификата"
+msgstr "права доступа к файлу сертификата"
 
 #: src/getcert.c:779 src/getcert.c:1857 src/getcert.c:2514
 msgid "NSS database in which to store the CA's certificates"
-msgstr "База данных NSS, в которой хранятся сертификаты ЦС"
+msgstr "база данных NSS для хранения сертификатов ЦС"
 
 #: src/getcert.c:780 src/getcert.c:1858 src/getcert.c:2515
 msgid "file in which to store the CA's certificates"
-msgstr "файл, в котором хранятся сертификаты ЦС"
+msgstr "файл для хранения сертификатов ЦС"
 
 #: src/getcert.c:781 src/getcert.c:1859 src/getcert.c:2516
 msgid "command to run before saving the certificate"
-msgstr "команда для запуска перед сохранением сертификата"
+msgstr "команда перед сохранением сертификата"
 
 #: src/getcert.c:782 src/getcert.c:1860 src/getcert.c:2517
 msgid "command to run after saving the certificate"
-msgstr "команда для запуска после сохранения сертификата"
+msgstr "команда после сохранения сертификата"
 
 #: src/getcert.c:783
 msgid "nickname to assign to the request"
-msgstr "псевдоним, который нужно присвоить запросу"
+msgstr "псевдоним для присвоения запросу"
 
 #: src/getcert.c:784
 msgid "type of key to be generated if one is not already in place"
-msgstr "тип ключа, который будет сгенерирован, если его еще нет"
+msgstr "тип ключа, который генерируется в случае отсутствия"
 
 #: src/getcert.c:785
 msgid "size of key to be generated if one is not already in place"
-msgstr "размер ключа, который будет сгенерирован, если он еще не установлен"
+msgstr "размер ключа, который генерируется в случае отсутствия"
 
 #: src/getcert.c:786 src/getcert.c:1863
 msgid "attempt to renew the certificate when expiration nears (default)"
 msgstr ""
-"попытаться обновить сертификат, когда истечет срок действия (по умолчанию)"
+"пытаться продлить сертификат, когда приближается истечение срока действия ("
+"по умолчанию)"
 
 #: src/getcert.c:787 src/getcert.c:1864
 msgid "don't attempt to renew the certificate when expiration nears"
-msgstr "не пытайтесь продлить сертификат, когда истекает срок его действия"
+msgstr ""
+"не пытаться продлить сертификат, когда приближается истечение срока действия"
 
 #: src/getcert.c:789 src/getcert.c:1866
 msgid "use the specified CA configuration rather than the default"
-msgstr "использовать указанную конфигурацию ЦС, а не стандартную"
+msgstr "использовать указанную конфигурацию ЦС вместо конфигурации по умолчанию"
 
 #: src/getcert.c:791 src/getcert.c:1868 src/getcert.c:2521
 msgid "ask the CA to process the request using the named profile or template"
 msgstr ""
-"попросить центр сертификации обработать запрос с использованием указанного "
-"профиля или шаблона"
+"задать обработку запроса в ЦС с использованием указанного профиля или шаблона"
 
 #: src/getcert.c:792 src/getcert.c:1869 src/getcert.c:2522
 msgid "ask the CA to process the request using the named issuer"
-msgstr "попросить ЦС обработать запрос с использованием указанного эмитента"
+msgstr "задать обработку запроса в ЦС с использованием указанного эмитента"
 
 #: src/getcert.c:793 src/getcert.c:2523
 msgid "set requested subject name (default: CN=<hostname>)"
-msgstr "установить запрашиваемое имя субъекта (по умолчанию: CN=<hostname>)"
+msgstr "задать в запросе имя субъекта (по умолчанию: CN=<hostname>)"
 
 #: src/getcert.c:794 src/getcert.c:2524
 msgid "set requested key usage value"
-msgstr "установить запрошенное значение использования ключа"
+msgstr "задать в запросе значение использования ключа"
 
 #: src/getcert.c:795 src/getcert.c:2525
 msgid "set requested extended key usage OID"
-msgstr "установить запрошенный OID использования расширенного ключа"
+msgstr ""
+"задать в запросе идентификатор объекта (OID) использования расширенного ключа"
 
 #: src/getcert.c:796 src/getcert.c:2526
 msgid "set requested principal name"
-msgstr "установить запрошенное главное имя"
+msgstr "задать в запросе имя принципала"
 
 #: src/getcert.c:797 src/getcert.c:2527
 msgid "set requested DNS name"
-msgstr "установить запрошенное DNS-имя"
+msgstr "задать в запросе имя DNS"
 
 #: src/getcert.c:798 src/getcert.c:2528
 msgid "set requested email address"
-msgstr "установить запрошенный адрес электронной почты"
+msgstr "задать в запросе адрес электронной почты"
 
 #: src/getcert.c:799 src/getcert.c:2529
 msgid "set requested IP address"
-msgstr "установить запрошенный IP-адрес"
+msgstr "задать в запросе IP-адрес"
 
 #: src/getcert.c:800 src/getcert.c:1876 src/getcert.c:2530
 msgid "file which holds an optional challenge password value"
-msgstr "файл, который содержит необязательное значение пароля запроса"
+msgstr "файл, содержащий необязательное значение пароля вызова"
 
 #: src/getcert.c:801 src/getcert.c:1877 src/getcert.c:2531
 msgid "an optional challenge password value"
-msgstr "необязательное значение пароля запроса"
+msgstr "необязательное значение пароля вызова"
 
 #: src/getcert.c:802 src/getcert.c:1878 src/getcert.c:2532
 msgid "request a CA certificate"
@@ -471,7 +477,7 @@ msgstr "запросить сертификат ЦС"
 
 #: src/getcert.c:803 src/getcert.c:1879 src/getcert.c:2533
 msgid "request a non-CA certificate"
-msgstr "запросить сертификат не ЦС"
+msgstr "запросить сертификат конечного субъекта"
 
 #: src/getcert.c:804 src/getcert.c:1880 src/getcert.c:2534
 msgid "path length for CA certificate"
@@ -479,7 +485,7 @@ msgstr "длина пути для сертификата ЦС"
 
 #: src/getcert.c:805 src/getcert.c:1881 src/getcert.c:2535
 msgid "try to wait for the certificate to be issued"
-msgstr "попробуйте дождаться выдачи сертификата"
+msgstr "дождаться выдачи сертификата"
 
 #: src/getcert.c:806 src/getcert.c:1882 src/getcert.c:2536
 msgid "maximum time to wait for the certificate to be issued"
@@ -489,13 +495,13 @@ msgstr "максимальное время ожидания выдачи сер
 #: src/getcert.c:3360 src/getcert.c:3880 src/getcert.c:4038 src/getcert.c:4270
 #: src/getcert.c:4366 src/getcert.c:4463 src/getcert.c:4591 src/getcert.c:4679
 msgid "connect to the certmonger service on the session bus"
-msgstr "подключиться к сервису сертификатора на шине сеанса"
+msgstr "подключиться к службе certmonger по шине сеанса"
 
 #: src/getcert.c:808 src/getcert.c:1884 src/getcert.c:2538 src/getcert.c:3106
 #: src/getcert.c:3361 src/getcert.c:3881 src/getcert.c:4039 src/getcert.c:4271
 #: src/getcert.c:4367 src/getcert.c:4464 src/getcert.c:4592 src/getcert.c:4680
 msgid "connect to the certmonger service on the system bus"
-msgstr "подключиться к сервису сертификатора на системной шине"
+msgstr "подключиться к службе certmonger по системной шине"
 
 #: src/getcert.c:825 src/getcert.c:1893 src/getcert.c:2547
 #, c-format
@@ -505,7 +511,7 @@ msgstr "Ошибка инициализации библиотеки Kerberos: %
 #: src/getcert.c:889 src/getcert.c:2619
 #, c-format
 msgid "No support for generating \"%s\" keys.\n"
-msgstr "Нет поддержки для создания ключей \"%s\".\n"
+msgstr "Отсутствует поддержка создания ключей «%s».\n"
 
 #: src/getcert.c:891 src/getcert.c:2621
 #, c-format
@@ -515,73 +521,72 @@ msgstr "К известным типам ключей относятся:"
 #: src/getcert.c:931 src/getcert.c:1983 src/getcert.c:2643
 #, c-format
 msgid "Unrecognized keyUsage \"%s\".\n"
-msgstr "Неизвестный keyUsage \"%s\".\n"
+msgstr "Неизвестное значение использования ключа «%s».\n"
 
 #: src/getcert.c:941 src/getcert.c:1993 src/getcert.c:2653
 #, c-format
 msgid "Could not evaluate OID \"%s\".\n"
-msgstr "Не удалось оценить OID \"%s\".\n"
+msgstr "Не удалось определить идентификатор объекта (OID) «%s».\n"
 
 #: src/getcert.c:952 src/getcert.c:2004 src/getcert.c:2664
 #, c-format
 msgid "Error parsing Kerberos principal name \"%s\": %s.\n"
-msgstr "Ошибка синтаксического анализа основного имени Kerberos \"%s\":%s.\n"
+msgstr "Ошибка при анализе имени принципала Kerberos «%s»:%s.\n"
 
 #: src/getcert.c:961 src/getcert.c:2013 src/getcert.c:2673
 #, c-format
 msgid "Error unparsing Kerberos principal name \"%s\": %s.\n"
-msgstr "Ошибка при разборе основного имени Kerberos \"%s\":%s.\n"
+msgstr "Ошибка при анализе имени принципала Kerberos «%s»:%s.\n"
 
 #: src/getcert.c:1016 src/getcert.c:2068 src/getcert.c:2728
 #, c-format
 msgid "%s: invalid value -- '%s'\n"
-msgstr "%s: недопустимое значение - '%s'\n"
+msgstr "%s: недопустимое значение — «%s»\n"
 
 #: src/getcert.c:1039 src/getcert.c:2096 src/getcert.c:2751 src/getcert.c:3176
 #: src/getcert.c:3422 src/getcert.c:4073
 #, c-format
 msgid "%s: option requires an argument -- '%c'\n"
-msgstr "%s: опция требует аргумента - '%c'\n"
+msgstr "%s: использование параметра предполагает наличие аргумента — «%c»\n"
 
 #: src/getcert.c:1043 src/getcert.c:2099 src/getcert.c:2754 src/getcert.c:3180
 #: src/getcert.c:3426 src/getcert.c:4076
 #, c-format
 msgid "%s: invalid option -- '%c'\n"
-msgstr "%s: недопустимая опция -- '%c'\n"
+msgstr "%s: недопустимый параметр — «%c»\n"
 
 #: src/getcert.c:1057
 #, c-format
 msgid "Error: unused extra argument \"%s\".\n"
-msgstr "Ошибка: неиспользованный дополнительный аргумент \"%s\".\n"
+msgstr "Ошибка: неиспользуемый дополнительный аргумент «%s».\n"
 
 #: src/getcert.c:1060 src/getcert.c:2115 src/getcert.c:2767 src/getcert.c:3200
 #: src/getcert.c:3439 src/getcert.c:3938 src/getcert.c:4089 src/getcert.c:4321
 #: src/getcert.c:4416 src/getcert.c:4518 src/getcert.c:4641 src/getcert.c:4724
 #, c-format
 msgid "Error: unused extra arguments were supplied.\n"
-msgstr "Ошибка: предоставлены неиспользованные лишние аргументы.\n"
+msgstr "Ошибка: переданы неиспользуемые дополнительные аргументы.\n"
 
 #: src/getcert.c:1066 src/getcert.c:2121 src/getcert.c:2381 src/getcert.c:2791
 #, c-format
 msgid "Database location or nickname specified without the other.\n"
-msgstr "Расположение базы данных или псевдоним указаны отдельно.\n"
+msgstr "Указан только один параметр: расположение базы данных или псевдоним.\n"
 
 #: src/getcert.c:1072 src/getcert.c:2127 src/getcert.c:2387 src/getcert.c:2797
 #, c-format
 msgid "Database directory and certificate file both specified.\n"
-msgstr "Не определены каталог базы данных и файл сертификата.\n"
+msgstr "Указаны оба параметра: каталог базы данных и файл сертификата.\n"
 
 #: src/getcert.c:1080 src/getcert.c:2395 src/getcert.c:2805
 #, c-format
 msgid ""
 "None of database directory and nickname or certificate file specified.\n"
-msgstr ""
-"Не определены ни каталог базы данных, ни никнейм или файл сертификата.\n"
+msgstr "Не указан ни каталог базы данных, ни псевдоним или файл сертификата.\n"
 
 #: src/getcert.c:1087 src/getcert.c:2143
 #, c-format
 msgid "Key and certificate can not both be saved to the same file.\n"
-msgstr "Ключи и сертификат не могут быть сохранены в один файл.\n"
+msgstr "Ключ и сертификат не могут быть сохранены в одном файле.\n"
 
 #: src/getcert.c:1114
 #, c-format
@@ -590,37 +595,38 @@ msgid ""
 "of the -N (subject name), -E (email address), -A (IP address), -D (DNS "
 "name), or -U (extendedKeyUsage) options is used.\n"
 msgstr ""
-"Бэкэнд IPA требует использования параметра -K (имя участника), когда любой "
-"из параметров -N (имя субъекта), -E (адрес электронной почты), -A (IP-адрес)"
-", -D (имя DNS) или -U (extendedKeyUsage) параметры.\n"
+"Базовый модуль IPA требует наличия параметра -K (имя принципала) при "
+"использовании любого из следующих параметров: -N (имя субъекта), -E (адрес "
+"электронной почты), -A (IP-адрес), -D (имя DNS) или -U (расширенное "
+"использование ключа).\n"
 
 #: src/getcert.c:1296 src/getcert.c:1762 src/getcert.c:2272 src/getcert.c:2867
 #: src/getcert.c:3208 src/getcert.c:3447 src/getcert.c:4731
 #, c-format
 msgid "No CA with name \"%s\" found.\n"
-msgstr "CA с именем \"%s\" не найден.\n"
+msgstr "Не удалось найти ЦС с именем «%s».\n"
 
 #: src/getcert.c:1404 src/getcert.c:1791 src/getcert.c:2348 src/getcert.c:2435
 #: src/getcert.c:3015 src/getcert.c:4424 src/getcert.c:4542 src/getcert.c:4561
 #: src/getcert.c:4651 src/getcert.c:4737
 #, c-format
 msgid "Error setting request arguments.\n"
-msgstr "Ошибка установки аргументов запроса.\n"
+msgstr "Ошибка в установке аргументов запроса.\n"
 
 #: src/getcert.c:1415
 #, c-format
 msgid "New signing request \"%s\" added.\n"
-msgstr "Новый запрос на подписание \"%s\" добавлен.\n"
+msgstr "Добавлен новый запрос на подпись «%s».\n"
 
 #: src/getcert.c:1421
 #, c-format
 msgid "New signing request could not be added.\n"
-msgstr "Новый запрос на подписание не может быть добавлен.\n"
+msgstr "Новый запрос на подпись не может быть добавлен.\n"
 
 #: src/getcert.c:1802
 #, c-format
 msgid "New tracking request \"%s\" added.\n"
-msgstr "Добавлен новый запрос отслеживания \"%s\".\n"
+msgstr "Добавлен новый запрос на отслеживание «%s».\n"
 
 #: src/getcert.c:1809
 #, c-format
@@ -629,7 +635,7 @@ msgstr "Не удалось добавить новый запрос на отс
 
 #: src/getcert.c:1849
 msgid "PEM file for private key (only valid with -f)"
-msgstr "Файл PEM для закрытого ключа (действителен только с -f)"
+msgstr "PEM-файл для закрытого ключа (используется только с параметром -f)"
 
 #: src/getcert.c:1850 src/getcert.c:2503 src/getcert.c:3103 src/getcert.c:3357
 #: src/getcert.c:3878
@@ -642,31 +648,33 @@ msgstr "псевдоним существующего запроса"
 
 #: src/getcert.c:1862
 msgid "nickname to give to tracking request"
-msgstr "псевдоним для запроса отслеживания"
+msgstr "псевдоним для запроса на отслеживание"
 
 #: src/getcert.c:1870
 msgid "override requested key usage value"
-msgstr "переопределить запрошенное значение использования ключа"
+msgstr "переопределить в запросе значение использования ключа"
 
 #: src/getcert.c:1871
 msgid "override requested extended key usage OID"
-msgstr "переопределить запрошенный OID использования расширенного ключа"
+msgstr ""
+"переопределить в запросе идентификатор объекта (OID) расширенного "
+"использования ключа"
 
 #: src/getcert.c:1872
 msgid "override requested principal name"
-msgstr "переопределить запрошенное главное имя"
+msgstr "переопределить в запросе имя принципала"
 
 #: src/getcert.c:1873
 msgid "override requested DNS name"
-msgstr "переопределить запрошенное DNS-имя"
+msgstr "переопределить в запросе имя DNS"
 
 #: src/getcert.c:1874
 msgid "override requested email address"
-msgstr "заменить запрошенный адрес электронной почты"
+msgstr "переопределить в запросе адрес электронной почты"
 
 #: src/getcert.c:1875
 msgid "override requested IP address"
-msgstr "заменить запрошенный IP-адрес"
+msgstr "переопределить в запросе IP-адрес"
 
 #: src/getcert.c:2136 src/getcert.c:3194
 #, c-format
@@ -674,18 +682,18 @@ msgid ""
 "None of ID or database directory and nickname or certificate file "
 "specified.\n"
 msgstr ""
-"Не указаны ни идентификатор, ни каталог базы данных, ни псевдоним, ни файл "
+"Не указаны ни идентификатор или каталог базы данных, ни псевдоним или файл "
 "сертификата.\n"
 
 #: src/getcert.c:2362
 #, c-format
 msgid "Request \"%s\" modified.\n"
-msgstr "Запрос \"%s\" изменен.\n"
+msgstr "Запрос «%s» изменён.\n"
 
 #: src/getcert.c:2366
 #, c-format
 msgid "Request \"%s\" could not be modified.\n"
-msgstr "Запрос \"%s\" не может быть изменен.\n"
+msgstr "Запрос «%s» не может быть изменён.\n"
 
 #: src/getcert.c:2374 src/getcert.c:2784 src/getcert.c:3454 src/getcert.c:3946
 #, c-format
@@ -700,95 +708,94 @@ msgstr "Не найдено ни одного запроса с совпадаю
 #: src/getcert.c:2445
 #, c-format
 msgid "Request \"%s\" removed.\n"
-msgstr "Запрос \"%s\" удален.\n"
+msgstr "Запрос «%s» удалён.\n"
 
 #: src/getcert.c:2449
 #, c-format
 msgid "Request \"%s\" could not be removed.\n"
-msgstr "Запрос \"%s\" не может быть удален.\n"
+msgstr "Запрос «%s» не может быть удалён.\n"
 
 #: src/getcert.c:2504 src/getcert.c:3104 src/getcert.c:3358 src/getcert.c:3879
 msgid "nickname for tracking request"
-msgstr "псевдоним для запроса отслеживания"
+msgstr "псевдоним для запроса на отслеживание"
 
 #: src/getcert.c:2505
 msgid "new nickname to give to tracking request"
-msgstr "новый псевдоним для запроса отслеживания"
+msgstr "новый псевдоним для запроса на отслеживание"
 
 #: src/getcert.c:2506
 msgid "type of new key to be generated"
-msgstr "тип нового ключа, который будет сгенерирован"
+msgstr "тип нового ключа"
 
 #: src/getcert.c:2507
 msgid "size of new key to be generated"
-msgstr "размер нового ключа, который будет сгенерирован"
+msgstr "размер нового ключа"
 
 #: src/getcert.c:2519
 msgid "use the specified CA configuration rather than the current one"
-msgstr "использовать указанную конфигурацию ЦС, а не текущую"
+msgstr "использовать указанную конфигурацию ЦС вместо текущей"
 
 #: src/getcert.c:3029
 #, c-format
 msgid "Error modifying \"%s\".\n"
-msgstr "Ошибка изменения \"%s\".\n"
+msgstr "Ошибка изменения «%s».\n"
 
 #: src/getcert.c:3045
 #, c-format
 msgid "Resubmitting \"%s\" to \"%s\".\n"
-msgstr "Повторная отправка \"%s\" в \"%s\".\n"
+msgstr "Повторная отправка «%s» в «%s».\n"
 
 #: src/getcert.c:3048
 #, c-format
 msgid "Resubmitting \"%s\".\n"
-msgstr "Повторная отправка \"%s\".\n"
+msgstr "Повторная отправка «%s».\n"
 
 #: src/getcert.c:3057
 #, c-format
 msgid "Error attempting to submit \"%s\" to \"%s\".\n"
-msgstr "Ошибка при попытке отправить \"%s\" в \"%s\".\n"
+msgstr "Ошибка при попытке отправить «%s» в «%s».\n"
 
 #: src/getcert.c:3060
 #, c-format
 msgid "Error attempting to submit \"%s\".\n"
-msgstr "Ошибка при попытке отправить \"%s\".\n"
+msgstr "Ошибка при попытке отправить «%s».\n"
 
 #: src/getcert.c:3096
 msgid "refresh information about all outstanding requests"
-msgstr "обновить информацию обо всех невыполненных запросах"
+msgstr "обновить информацию по всем невыполненным запросам"
 
 #: src/getcert.c:3098
 msgid ""
 "refresh information only for requests using the specified CA configuration"
 msgstr ""
-"обновлять информацию только для запросов, использующих указанную "
-"конфигурацию ЦС"
+"обновить информацию только для запросов, использующих указанную конфигурацию "
+"ЦС"
 
 #: src/getcert.c:3290
 #, c-format
 msgid "Request ID '%s' being refreshed.\n"
-msgstr "Идентификатор запроса '%s' обновляется.\n"
+msgstr "Выполняется обновление запроса с идентификатором «%s».\n"
 
 #: src/getcert.c:3292
 #, c-format
 msgid "Request ID '%s' NOT being refreshed.\n"
-msgstr "Идентификатор запроса '%s' НЕ обновляется.\n"
+msgstr "Обновление запроса с идентификатором «%s» НЕ выполняется.\n"
 
 #: src/getcert.c:3349
 msgid "list only information about outstanding requests"
-msgstr "перечислить только информацию о невыполненных запросах"
+msgstr "вывести информацию только о невыполненных запросах"
 
 #: src/getcert.c:3350
 msgid "list only information about tracked certificates"
-msgstr "вывести только информацию об отслеживаемых сертификатах"
+msgstr "вывести информацию только об отслеживаемых сертификатах"
 
 #: src/getcert.c:3352
 msgid "list only requests and certs associated with this CA configuration"
-msgstr ""
-"перечислить только запросы и сертификаты, связанные с этой конфигурацией ЦС"
+msgstr "вывести только запросы и сертификаты, связанные с этой конфигурацией ЦС"
 
 #: src/getcert.c:3359
 msgid "display times in UTC instead of local time"
-msgstr "отображать время в формате UTC вместо местного времени"
+msgstr "отображать время в формате UTC вместо отображения по местному времени"
 
 #: src/getcert.c:3476
 #, c-format
@@ -798,31 +805,31 @@ msgstr "Количество отслеживаемых сертификатов
 #: src/getcert.c:3625
 #, c-format
 msgid "Request ID '%s':\n"
-msgstr "Запрос ID '%s':\n"
+msgstr "Идентификатор запроса «%s»:\n"
 
 #: src/getcert.c:3626
 #, c-format
 msgid "\tstatus: %s\n"
-msgstr "<span class=\"whitespace other\" title=\"Tab\">»</span>статус: %s\n"
+msgstr "\tстатус: %s\n"
 
 #: src/getcert.c:3630
 #, c-format
 msgid "\tca-error: %s\n"
-msgstr "<span class=\"whitespace other\" title=\"Tab\">»</span>ca-ошибка: %s\n"
+msgstr "\tошибка ЦС: %s\n"
 
 #: src/getcert.c:3632
 #, c-format
 msgid "\tstuck: %s\n"
-msgstr "\tзастрял: %s\n"
+msgstr "\tзавис: %s\n"
 
 #: src/getcert.c:3652
 #, c-format
 msgid "\tkey pair storage: type=%s"
-msgstr "\tхранилище пары ключей: type=%s"
+msgstr "\tхранилище пары ключей: тип=%s"
 
 #: src/getcert.c:3652
 msgid "NONE"
-msgstr "NONE"
+msgstr "НЕТ"
 
 #: src/getcert.c:3654
 #, c-format
@@ -832,52 +839,52 @@ msgstr ",место расположения='%s'"
 #: src/getcert.c:3657 src/getcert.c:3679
 #, c-format
 msgid ",nickname='%s'"
-msgstr ",псевдоним='%s'"
+msgstr ",псевдоним=«%s»"
 
 #: src/getcert.c:3660 src/getcert.c:3682
 #, c-format
 msgid ",token='%s'"
-msgstr ",токен='%s'"
+msgstr ",токен=«%s»"
 
 #: src/getcert.c:3663
 #, c-format
 msgid ",pin set"
-msgstr ",настроить прикрепление"
+msgstr ",привязка установлена"
 
 #: src/getcert.c:3666
 #, c-format
 msgid ",pinfile='%s'"
-msgstr ",пин-файл='%s'"
+msgstr ",pin-файл=«%s»"
 
 #: src/getcert.c:3677
 #, c-format
 msgid "\tcertificate: type=%s,location='%s'"
-msgstr "\tсертификат: тип=%s,место расположения='%s'"
+msgstr "\tсертификат: тип=%s,место расположения=«%s»"
 
 #: src/getcert.c:3693
 #, c-format
 msgid "\tsigning request thumbprint (MD5): %s\n"
-msgstr "\tотпечаток запроса подписи (MD5): %s\n"
+msgstr "\tотпечаток запроса на подпись (MD5): %s\n"
 
 #: src/getcert.c:3698
 #, c-format
 msgid "\tsigning request thumbprint (SHA1): %s\n"
-msgstr "\tотпечаток запроса подписи (SHA1): %s\n"
+msgstr "\tотпечаток запроса на подпись (SHA1): %s\n"
 
 #: src/getcert.c:3715
 #, c-format
 msgid "\tCA: %s\n"
-msgstr "<span class=\"whitespace other\" title=\"Tab\">»</span>CA: %s\n"
+msgstr "\tЦС: %s\n"
 
 #: src/getcert.c:3717
 #, c-format
 msgid "\tissuer: %s\n"
-msgstr "\tисточник: %s\n"
+msgstr "\tэмитент: %s\n"
 
 #: src/getcert.c:3718
 #, c-format
 msgid "\tsubject: %s\n"
-msgstr "<span class=\"whitespace other\" title=\"Tab\">»</span>тема: %s\n"
+msgstr "\tобъект: %s\n"
 
 #: src/getcert.c:3719
 msgid "unknown"
@@ -886,19 +893,19 @@ msgstr "неизвестный"
 #: src/getcert.c:3723 src/getcert.c:3727 src/getcert.c:3732
 #, c-format
 msgid "\texpires: %s\n"
-msgstr "<span class=\"whitespace other\" title=\"Tab\">»</span>истекает: %s\n"
+msgstr "\tистекает: %s\n"
 
 #: src/getcert.c:3736
 msgid "\temail: "
-msgstr "<span class=\"whitespace other\" title=\"Tab\">»</span>email: "
+msgstr "\tадрес эл. почты: "
 
 #: src/getcert.c:3742
 msgid "\tdns: "
-msgstr "<span class=\"whitespace other\" title=\"Tab\">»</span>dns: "
+msgstr "\tdns: "
 
 #: src/getcert.c:3748
 msgid "\tprincipal name: "
-msgstr "\tосновное имя: "
+msgstr "\tимя принципала: "
 
 #: src/getcert.c:3756
 msgid "\tIP address: "
@@ -911,7 +918,7 @@ msgstr "\tиспользование ключа: %s\n"
 
 #: src/getcert.c:3779
 msgid "\teku: "
-msgstr "\teku: "
+msgstr "\tрасширенное использование ключа: "
 
 #: src/getcert.c:3787
 #, c-format
@@ -921,37 +928,37 @@ msgstr "\tшаблон/профиль сертификата: %s\n"
 #: src/getcert.c:3793 src/getcert.c:4154
 #, c-format
 msgid "\troot certificates saved to files:\n"
-msgstr "\tкорневые сертификаты, сохраненные в файлы:\n"
+msgstr "\tкорневые сертификаты, хранящиеся в файлах:\n"
 
 #: src/getcert.c:3802 src/getcert.c:4163
 #, c-format
 msgid "\tother root certificates saved to files:\n"
-msgstr "\tдругие корневые сертификаты, сохраненные в файлы:\n"
+msgstr "\tдругие корневые сертификаты, хранящиеся в файлах:\n"
 
 #: src/getcert.c:3811 src/getcert.c:4172
 #, c-format
 msgid "\tother certificates saved to files:\n"
-msgstr "\tдругие сертификаты, сохраненные в файлы:\n"
+msgstr "\tдругие сертификаты, хранящиеся в файлах:\n"
 
 #: src/getcert.c:3820 src/getcert.c:4181
 #, c-format
 msgid "\troot certificates saved to databases:\n"
-msgstr "\tкорневые сертификаты, сохраненные в базах данных:\n"
+msgstr "\tкорневые сертификаты, хранящиеся в базах данных:\n"
 
 #: src/getcert.c:3829 src/getcert.c:4190
 #, c-format
 msgid "\tother root certificates saved to databases:\n"
-msgstr "\tдругие корневые сертификаты, сохраненные в базах данных:\n"
+msgstr "\tдругие корневые сертификаты, хранящиеся в базах данных:\n"
 
 #: src/getcert.c:3838 src/getcert.c:4199
 #, c-format
 msgid "\tother certificates saved to databases:\n"
-msgstr "\tдругие сертификаты, сохраненные в базах данных:\n"
+msgstr "\tдругие сертификаты, хранящиеся в базах данных:\n"
 
 #: src/getcert.c:3843 src/getcert.c:4245
 #, c-format
 msgid "\tpre-save command: %s\n"
-msgstr "\tкоманда предварительного сохранения: %s\n"
+msgstr "\tкоманда перед сохранением: %s\n"
 
 #: src/getcert.c:3846 src/getcert.c:4251
 #, c-format
@@ -961,12 +968,12 @@ msgstr "\tкоманда после сохранения: %s\n"
 #: src/getcert.c:3849
 #, c-format
 msgid "\ttrack: %s\n"
-msgstr "\tотслеживать: %s\n"
+msgstr "\tотслеживание: %s\n"
 
 #: src/getcert.c:3853
 #, c-format
 msgid "\tauto-renew: %s\n"
-msgstr "\tавто-обновление: %s\n"
+msgstr "\tавто-продление: %s\n"
 
 #: src/getcert.c:3961
 #, c-format
@@ -974,32 +981,32 @@ msgid ""
 "None of ID or database directory and and nickname or certificate file "
 "specified.\n"
 msgstr ""
-"Не указано ни идентификатора, ни каталога базы данных, ни псевдонима, ни "
-"файла сертификата.\n"
+"Не указан ни идентификатор или каталог базы данных, ни псевдоним или файл "
+"сертификата.\n"
 
 #: src/getcert.c:4036
 msgid "list only the specified CA configuration"
-msgstr "перечислить только указанную конфигурацию ЦС"
+msgstr "вывод только указанной конфигурации ЦС"
 
 #: src/getcert.c:4104
 #, c-format
 msgid "CA '%s':\n"
-msgstr "CA '%s':\n"
+msgstr "ЦС «%s»:\n"
 
 #: src/getcert.c:4110
 #, c-format
 msgid "\tself-identifies as: %s\n"
-msgstr "\tидентифицирует себя как: %s\n"
+msgstr "\tидентифицирует себя в качестве: %s\n"
 
 #: src/getcert.c:4119
 #, c-format
 msgid "\tca-type: %s\n"
-msgstr "<span class=\"whitespace other\" title=\"Tab\">»</span>ca-тип: %s\n"
+msgstr "\tтип ЦС: %s\n"
 
 #: src/getcert.c:4121
 #, c-format
 msgid "\thelper-location: %s\n"
-msgstr "\tместо-помощник: %s\n"
+msgstr "\tрасположение вспомогательного программного средства: %s\n"
 
 #: src/getcert.c:4126
 #, c-format
@@ -1009,17 +1016,17 @@ msgstr "\tследующий серийный номер: %s\n"
 #: src/getcert.c:4136
 #, c-format
 msgid "\tknown-issuer-names:\n"
-msgstr "\tизвестные-имена-поставщика:\n"
+msgstr "\tизвестные имена эмитента:\n"
 
 #: src/getcert.c:4145
 #, c-format
 msgid "\tknown profiles/templates/certtypes:\n"
-msgstr "\tизвестные профили/шаблоны/сертификаты:\n"
+msgstr "\tизвестные профили/шаблоны/типы сертификатов:\n"
 
 #: src/getcert.c:4208
 #, c-format
 msgid "\tdefault profile/template/certtype: %s\n"
-msgstr "\tпрофиль по умолчанию/шаблон/certtype: %s\n"
+msgstr "\tпрофили/шаблоны/типы сертификатов по умолчанию: %s\n"
 
 #: src/getcert.c:4216
 #, c-format
@@ -1034,7 +1041,7 @@ msgstr "\tОтпечаток сертификата ЦС SCEP (MD5): %s\n"
 #: src/getcert.c:4235
 #, c-format
 msgid "\tSCEP CA certificate thumbprint (SHA1): %s\n"
-msgstr "\tОтпечаток сертификата ЦС SCEP (MD5): %s\n"
+msgstr "\tОтпечаток сертификата ЦС SCEP (SHA1): %s\n"
 
 #: src/getcert.c:4267
 msgid "refresh information about the CA configuration with this name"
@@ -1042,22 +1049,22 @@ msgstr "обновить информацию о конфигурации ЦС �
 
 #: src/getcert.c:4269
 msgid "refresh information about all known CAs"
-msgstr "обновить информацию обо всех известных центрах сертификации"
+msgstr "обновить информацию о всех известных ЦС"
 
 #: src/getcert.c:4316
 #, c-format
 msgid "Neither CA nickname nor -a flag specified.\n"
-msgstr "Ни псевдоним ЦС, ни флаг -a не указаны.\n"
+msgstr "Не указаны ни псевдоним ЦС, ни флаг -a.\n"
 
 #: src/getcert.c:4342
 #, c-format
 msgid "Data for CA '%s' being refreshed.\n"
-msgstr "Данные для ЦС '%s' обновляются.\n"
+msgstr "Выполняется обновление данных для ЦС «%s».\n"
 
 #: src/getcert.c:4344
 #, c-format
 msgid "Data for unnamed CA being refreshed.\n"
-msgstr "Данные для безымянного центра сертификации обновляются.\n"
+msgstr "Выполняется обновление данных для безымянного ЦС.\n"
 
 #: src/getcert.c:4347
 #, c-format
@@ -1070,7 +1077,7 @@ msgstr "псевдоним для новой конфигурации ЦС"
 
 #: src/getcert.c:4365
 msgid "helper command to run to communicate with CA"
-msgstr "вспомогательная команда для запуска для связи с ЦС"
+msgstr "команда вспомогательного средства связи с ЦС"
 
 #: src/getcert.c:4406 src/getcert.c:4503 src/getcert.c:4631 src/getcert.c:4719
 #, c-format
@@ -1080,12 +1087,12 @@ msgstr "Псевдоним ЦС не указан.\n"
 #: src/getcert.c:4411 src/getcert.c:4636
 #, c-format
 msgid "CA helper command not specified.\n"
-msgstr "Не указана вспомогательная команда ЦС.\n"
+msgstr "Не указана команда вспомогательного средства связи с ЦС.\n"
 
 #: src/getcert.c:4435 src/getcert.c:4553
 #, c-format
 msgid "New CA \"%s\" added.\n"
-msgstr "Добавлен новый ЦС \"%s\".\n"
+msgstr "Добавлен новый ЦС «%s».\n"
 
 #: src/getcert.c:4438 src/getcert.c:4573
 #, c-format
@@ -1098,7 +1105,7 @@ msgstr "расположение сервера SCEP"
 
 #: src/getcert.c:4458
 msgid "CA identifier"
-msgstr "Идентификатор ЦС"
+msgstr "идентификатор ЦС"
 
 #: src/getcert.c:4459
 msgid "file containing CA's certificate"
@@ -1106,15 +1113,15 @@ msgstr "файл, содержащий сертификат ЦС"
 
 #: src/getcert.c:4460
 msgid "file containing RA's certificate"
-msgstr ""
+msgstr "файл, содержащий сертификат ЦР"
 
 #: src/getcert.c:4461
 msgid "file containing certificates in RA's certifying chain"
-msgstr "файл, содержащий сертификаты в сертификационной цепочке RA"
+msgstr "файл, содержащий сертификаты в цепочке сертификатов ЦР"
 
 #: src/getcert.c:4462
 msgid "prefer to not use the SCEP Renewal feature"
-msgstr "предпочитаю не использовать функцию продления SCEP"
+msgstr "предпочтительно не использовать функцию продления SCEP"
 
 #: src/getcert.c:4508
 #, c-format
@@ -1124,7 +1131,7 @@ msgstr "URL-адрес сервера не указан.\n"
 #: src/getcert.c:4513
 #, c-format
 msgid "HTTPS requires a CA certificate.\n"
-msgstr "HTTPS требует сертификата ЦС.\n"
+msgstr "HTTPS требует наличия сертификата ЦС.\n"
 
 #: src/getcert.c:4535
 #, c-format
@@ -1134,7 +1141,7 @@ msgstr "Ошибка построения командной строки.\n"
 #: src/getcert.c:4567
 #, c-format
 msgid "Error setting CA identifier.\n"
-msgstr "Ошибка при установке идентификатора CA.\n"
+msgstr "Ошибка при установке идентификатора ЦС.\n"
 
 #: src/getcert.c:4589
 msgid "nickname of the CA configuration"
@@ -1142,12 +1149,12 @@ msgstr "псевдоним конфигурации ЦС"
 
 #: src/getcert.c:4590
 msgid "updated helper command to run to communicate with CA"
-msgstr "обновленная вспомогательная команда для запуска для связи с ЦС"
+msgstr "обновлённая команда вспомогательного средства связи с ЦС"
 
 #: src/getcert.c:4658
 #, c-format
 msgid "CA \"%s\" modified.\n"
-msgstr "ЦС \"%s\" изменен.\n"
+msgstr "ЦС «%s» изменён.\n"
 
 #: src/getcert.c:4661
 #, c-format
@@ -1161,7 +1168,7 @@ msgstr "псевдоним удаляемой конфигурации ЦС"
 #: src/getcert.c:4747
 #, c-format
 msgid "CA \"%s\" removed.\n"
-msgstr "ЦС \"%s\" удалён.\n"
+msgstr "ЦС «%s» удалён.\n"
 
 #: src/getcert.c:4749
 #, c-format
@@ -1171,121 +1178,121 @@ msgstr "ЦС не может быть удалён.\n"
 #: src/getcert.c:4787
 #, c-format
 msgid "%s - client certificate enrollment tool\n"
-msgstr "%s - инструмент регистрации сертификатов клиента\n"
+msgstr "%s — инструмент для регистрации сертификатов клиента\n"
 
 #: src/getcert.c:4791
 #, c-format
 msgid "Usage: %s request [options]\n"
-msgstr "Использование: запрос %s [параметры]\n"
+msgstr "Использование: %s request [параметры]\n"
 
 #: src/getcert.c:4793 src/getcert.c:4842 src/getcert.c:4890 src/getcert.c:4912
 #: src/getcert.c:4960 src/getcert.c:5038
 msgid "Required arguments:\n"
-msgstr "Необходимый аргументы:\n"
+msgstr "Обязательные аргументы:\n"
 
 #: src/getcert.c:4794 src/getcert.c:4845 src/getcert.c:4893 src/getcert.c:4915
 #: src/getcert.c:4963 src/getcert.c:5020 src/getcert.c:5041
 msgid "* If using an NSS database for storage:\n"
-msgstr "* В случае использования для хранения базы данных NSS:\n"
+msgstr "* Если для хранения используется база данных NSS:\n"
 
 #: src/getcert.c:4795 src/getcert.c:4846 src/getcert.c:4894 src/getcert.c:4916
 #: src/getcert.c:4964 src/getcert.c:5042
 msgid "  -d DIR\tNSS database for key and cert\n"
-msgstr "  -d DIR База данных NSS для ключей и сертификатов\n"
+msgstr "  -d КАТАЛОГ\tбаза данных NSS для ключей и сертификатов\n"
 
 #: src/getcert.c:4796 src/getcert.c:4847 src/getcert.c:4895 src/getcert.c:4917
 #: src/getcert.c:4965 src/getcert.c:5043
 msgid "  -n NAME\tnickname for NSS-based storage (only valid with -d)\n"
 msgstr ""
-"  -n NAME псевдоним для хранилища на основе NSS (действует только с -d)\n"
+"  -n ИМЯ\tпсевдоним для хранилища NSS (используется только с параметром -d)\n"
 
 #: src/getcert.c:4797 src/getcert.c:4848 src/getcert.c:4896 src/getcert.c:4918
 #: src/getcert.c:4966 src/getcert.c:5044
 msgid ""
 "  -t NAME\toptional token name for NSS-based storage (only valid with -d)\n"
 msgstr ""
-"  -t NAME необязательное имя токена для хранилища на основе NSS ("
-"действительно только с -d)\n"
+"  -t ИМЯ\tнеобязательное имя токена для хранилища NSS (используется только с "
+"параметром -d)\n"
 
 #: src/getcert.c:4798 src/getcert.c:4849 src/getcert.c:4897 src/getcert.c:4919
 #: src/getcert.c:4967 src/getcert.c:5023 src/getcert.c:5045
 msgid "* If using files for storage:\n"
-msgstr "* В случае использования файлов для хранения:\n"
+msgstr "* Если для хранения используются файлы:\n"
 
 #: src/getcert.c:4799 src/getcert.c:4850 src/getcert.c:4898
 msgid "  -k FILE\tPEM file for private key\n"
-msgstr "  -k FILE PEM файл для закрытого ключа\n"
+msgstr "  -k ФАЙЛ\tPEM-файл для закрытого ключа\n"
 
 #: src/getcert.c:4800 src/getcert.c:4851 src/getcert.c:4899
 msgid "  -f FILE\tPEM file for certificate (only valid with -k)\n"
-msgstr "  -f FILE файл PEM для сертификата (действителен только с -k)\n"
+msgstr ""
+"  -f ФАЙЛ\tPEM-файл для сертификата (используется только с параметром -k)\n"
 
 #: src/getcert.c:4801
 msgid "* If keys are to be encrypted:\n"
-msgstr "* В случае, если ключи шифруются:\n"
+msgstr "* В случае необходимости шифрования ключей:\n"
 
 #: src/getcert.c:4802 src/getcert.c:4853 src/getcert.c:4923 src/getcert.c:4971
 msgid "  -p FILE\tfile which holds the encryption PIN\n"
-msgstr "  -p FILE файл, содержащий PIN-код шифрования\n"
+msgstr "  -p ФАЙЛ\tфайл, содержащий PIN-код шифрования\n"
 
 #: src/getcert.c:4803 src/getcert.c:4854 src/getcert.c:4924 src/getcert.c:4972
 msgid "  -P PIN\tPIN value\n"
-msgstr "  -P PIN PIN-код\n"
+msgstr "  -P PIN\tPIN-код\n"
 
 #: src/getcert.c:4805 src/getcert.c:4856 src/getcert.c:4901 src/getcert.c:4937
 #: src/getcert.c:4985 src/getcert.c:5010 src/getcert.c:5048 src/getcert.c:5058
 #: src/getcert.c:5076 src/getcert.c:5091 src/getcert.c:5108 src/getcert.c:5122
 #: src/getcert.c:5141 src/getcert.c:5155
 msgid "Optional arguments:\n"
-msgstr "Необязательный аргументы:\n"
+msgstr "Необязательные аргументы:\n"
 
 #: src/getcert.c:4806 src/getcert.c:4857 src/getcert.c:4938 src/getcert.c:4986
 msgid "* Certificate handling settings:\n"
-msgstr "* Настройки обработки сертификатов:\n"
+msgstr "* Настройка обработки сертификатов:\n"
 
 #: src/getcert.c:4807
 msgid "  -I NAME\tnickname to assign to the request\n"
-msgstr "  -I NAME псевдоним, который нужно присвоить запросу\n"
+msgstr "  -I ИМЯ\tпсевдоним для присвоения запросу\n"
 
 #: src/getcert.c:4808
 msgid "  -G TYPE\ttype of key to be generated if one is not already in place\n"
-msgstr "  -G TYPE тип ключа, который будет сгенерирован, если его еще нет\n"
+msgstr "  -G ТИП\tтип ключа, который генерируется в случае отсутствия\n"
 
 #: src/getcert.c:4809
 msgid "  -g SIZE\tsize of key to be generated if one is not already in place\n"
-msgstr ""
-"  -g SIZE\tразмер ключа, который будет сгенерирован, если он еще не "
-"установлен\n"
+msgstr "  -g РАЗМЕР\tразмер ключа, который генерируется в случае отсутствия\n"
 
 #: src/getcert.c:4810 src/getcert.c:4859
 msgid ""
 "  -r\t\tattempt to renew the certificate when expiration nears (default)\n"
 msgstr ""
-"  -r\t\tпопытаться обновить сертификат, когда истечет срок действия (по "
-"умолчанию)\n"
+"  -r\t\tпытаться продлить сертификат, когда приближается истечение срока "
+"действия (по умолчанию)\n"
 
 #: src/getcert.c:4811 src/getcert.c:4860
 msgid "  -R\t\tdon't attempt to renew the certificate when expiration nears\n"
 msgstr ""
-"  -R\t\tне пытайтесь продлить сертификат, когда истекает срок его действия\n"
+"  -R\t\tне пытаться продлить сертификат, когда приближается истечение срока "
+"действия\n"
 
 #: src/getcert.c:4813 src/getcert.c:4862
 msgid "  -c CA\t\tuse the specified CA rather than the default\n"
-msgstr "  -c CA\t\tиспользовать указанный ЦС, а не тот, что по умолчанию\n"
+msgstr "  -c ЦС\t\tиспользовать указанный ЦС вместо заданного по умолчанию\n"
 
 #: src/getcert.c:4815 src/getcert.c:4864 src/getcert.c:4943 src/getcert.c:4991
 msgid ""
 "  -T PROFILE\task the CA to process the request using the named profile or "
 "template\n"
 msgstr ""
-"  -T PROFILE\tпопросить центр сертификации обработать запрос с "
-"использованием указанного профиля или шаблона\n"
+"  -T ПРОФИЛЬ\tзадать обработку запроса в ЦС с использованием указанного "
+"профиля или шаблона\n"
 
 #: src/getcert.c:4816 src/getcert.c:4865 src/getcert.c:4944 src/getcert.c:4992
 msgid "  -X ISSUER\task the CA to process the request using the named issuer\n"
 msgstr ""
-"  -X ISSUER\tпопросить ЦС обработать запрос с использованием указанного "
-"поставщика\n"
+"  -X ЭМИТЕНТ\tзадать обработку запроса в ЦС с использованием указанного "
+"эмитента\n"
 
 #: src/getcert.c:4817
 msgid "* Parameters for the signing request:\n"
@@ -1293,42 +1300,41 @@ msgstr "* Параметры для запроса на подпись:\n"
 
 #: src/getcert.c:4818 src/getcert.c:4927 src/getcert.c:4975
 msgid "  -N NAME\tset requested subject name (default: CN=<hostname>)\n"
-msgstr ""
-"  -N NAME\tустановить запрашиваемое имя субъекта (по умолчанию: "
-"CN=<hostname>)\n"
+msgstr "  -N ИМЯ\tзадать в запросе имя субъекта (по умолчанию: CN=<hostname>)\n"
 
 #: src/getcert.c:4819 src/getcert.c:4928 src/getcert.c:4976
 msgid "  -U EXTUSAGE\tset requested extended key usage OID\n"
 msgstr ""
-"  -U EXTUSAGE\tустановить запрошенный OID использования расширенного ключа\n"
+"  -U РАСШ_ИСП\tзадать в запросе идентификатор объекта (OID) расширенного "
+"использования ключа\n"
 
 #: src/getcert.c:4820 src/getcert.c:4868 src/getcert.c:4929 src/getcert.c:4977
 msgid "  -u KEYUSAGE\tset requested key usage value\n"
-msgstr "  -u KEYUSAGE\tустановить запрошенное значение использования ключа\n"
+msgstr "  -u ИСП_КЛЮЧА\tзадать в запросе значение использования ключа\n"
 
 #: src/getcert.c:4821 src/getcert.c:4930 src/getcert.c:4978
 msgid "  -K NAME\tset requested principal name\n"
-msgstr "  -K NAME\tустановить запрошенное главное имя\n"
+msgstr "  -K ФАЙЛ\tзадать в запросе имя принципала\n"
 
 #: src/getcert.c:4822 src/getcert.c:4931 src/getcert.c:4979
 msgid "  -D DNSNAME\tset requested DNS name\n"
-msgstr "  -D DNSNAME\tустановить запрошенное DNS-имя\n"
+msgstr "  -D ИМЯ_DNS\tзадать в запросе имя DNS\n"
 
 #: src/getcert.c:4823 src/getcert.c:4932 src/getcert.c:4980
 msgid "  -E EMAIL\tset requested email address\n"
-msgstr "  -E EMAIL\tустановить запрошенный адрес электронной почты\n"
+msgstr "  -E EMAIL\tзадать в запросе адрес электронной почты\n"
 
 #: src/getcert.c:4824 src/getcert.c:4933 src/getcert.c:4981
 msgid "  -A ADDRESS\tset requested IP address\n"
-msgstr "  -A ADDRESS\tустановить запрошенный IP-адрес\n"
+msgstr "  -A АДРЕС\tзадать в запросе IP-адрес\n"
 
 #: src/getcert.c:4825 src/getcert.c:4873 src/getcert.c:4934 src/getcert.c:4982
 msgid "  -l FILE\tfile which holds an optional challenge password\n"
-msgstr "  -l FILE\tфайл, содержащий необязательный пароль запроса\n"
+msgstr "  -l ФАЙЛ\tфайл, содержащий необязательное значение пароля вызова\n"
 
 #: src/getcert.c:4826 src/getcert.c:4874 src/getcert.c:4935 src/getcert.c:4983
 msgid "  -L PASSWORD\tan optional challenge password value\n"
-msgstr "  -L PASSWORD\tнеобязательное значение пароля запроса\n"
+msgstr "  -L ПАРОЛЬ\tнеобязательное значение пароля вызова\n"
 
 #: src/getcert.c:4827 src/getcert.c:4875 src/getcert.c:4902 src/getcert.c:4945
 #: src/getcert.c:4995 src/getcert.c:5025 src/getcert.c:5049 src/getcert.c:5066
@@ -1340,46 +1346,46 @@ msgstr "* Параметры шины:\n"
 #: src/getcert.c:4828 src/getcert.c:4876 src/getcert.c:4903 src/getcert.c:4946
 #: src/getcert.c:4996 src/getcert.c:5050
 msgid "  -S\t\tconnect to the certmonger service on the system bus\n"
-msgstr "  -S\t\tподключиться к сервису сертификатора на системной шине\n"
+msgstr "  -S\t\tподключиться к службе certmonger по системной шине\n"
 
 #: src/getcert.c:4829 src/getcert.c:4877 src/getcert.c:4904 src/getcert.c:4947
 #: src/getcert.c:4997 src/getcert.c:5051
 msgid "  -s\t\tconnect to the certmonger service on the session bus\n"
-msgstr "  -s\t\tподключиться к сервису сертификатора на шине сеанса\n"
+msgstr "  -s\t\tподключиться к службе certmonger по шине сеанса\n"
 
 #: src/getcert.c:4830 src/getcert.c:4878 src/getcert.c:4905 src/getcert.c:4948
 #: src/getcert.c:4998 src/getcert.c:5028 src/getcert.c:5069 src/getcert.c:5084
 #: src/getcert.c:5100 src/getcert.c:5115 src/getcert.c:5134 src/getcert.c:5148
 #: src/getcert.c:5161
 msgid "* Other options:\n"
-msgstr "* Другие варианты:\n"
+msgstr "* Другие параметры:\n"
 
 #: src/getcert.c:4831 src/getcert.c:4879 src/getcert.c:4949 src/getcert.c:4999
 msgid "  -B\tcommand to run before saving the certificate\n"
-msgstr "  -B\tкоманда для запуска перед сохранением сертификата\n"
+msgstr "  -B\tкоманда перед сохранением сертификата\n"
 
 #: src/getcert.c:4832 src/getcert.c:4880 src/getcert.c:4950 src/getcert.c:5000
 msgid "  -C\tcommand to run after saving the certificate\n"
-msgstr "  -C\tкоманда для запуска после сохранения сертификата\n"
+msgstr "  -C\tкоманда после сохранения сертификата\n"
 
 #: src/getcert.c:4833 src/getcert.c:4881 src/getcert.c:4951 src/getcert.c:5001
 msgid "  -F\tfile in which to store the CA's certificates\n"
-msgstr "  -F\tфайл, в котором хранятся сертификаты ЦС\n"
+msgstr "  -F\tфайл для хранения сертификатов ЦС\n"
 
 #: src/getcert.c:4834 src/getcert.c:4882 src/getcert.c:4952 src/getcert.c:5002
 msgid "  -a\tNSS database in which to store the CA's certificates\n"
-msgstr "  -a\tБаза данных NSS, в которой хранятся сертификаты ЦС\n"
+msgstr "  -a\tбаза данных NSS для хранения сертификатов ЦС\n"
 
 #: src/getcert.c:4835 src/getcert.c:4883 src/getcert.c:4953 src/getcert.c:5003
 msgid "  -w\ttry to wait for the certificate to be issued\n"
-msgstr "  -w\tпопробуйте дождаться выдачи сертификата\n"
+msgstr "  -w\tдождаться выдачи сертификата\n"
 
 #: src/getcert.c:4836 src/getcert.c:4884 src/getcert.c:4906 src/getcert.c:4954
 #: src/getcert.c:5004 src/getcert.c:5029 src/getcert.c:5052 src/getcert.c:5070
 #: src/getcert.c:5085 src/getcert.c:5101 src/getcert.c:5116 src/getcert.c:5135
 #: src/getcert.c:5149 src/getcert.c:5162
 msgid "  -v\treport all details of errors\n"
-msgstr "  -v\tсообщать все подробности об ошибках\n"
+msgstr "  -v\tвыводить подробное сообщение об ошибках\n"
 
 #: src/getcert.c:4840
 #, c-format
@@ -1392,41 +1398,41 @@ msgstr "* При изменении существующего запроса:\n
 
 #: src/getcert.c:4844
 msgid "  -i NAME\tnickname of an existing tracking request\n"
-msgstr "  -i NAME\tпсевдоним существующего запроса на отслеживание\n"
+msgstr "  -i ИМЯ\tпсевдоним существующего запроса на отслеживание\n"
 
 #: src/getcert.c:4852 src/getcert.c:4922 src/getcert.c:4970
 msgid "* If keys are encrypted:\n"
-msgstr "* Если ключи зашифрованы:\n"
+msgstr "* В случае шифрования ключей:\n"
 
 #: src/getcert.c:4858
 msgid "  -I NAME\tnickname to give to tracking request\n"
-msgstr "  -I NAME\tпсевдоним для запроса отслеживания\n"
+msgstr "  -I ИМЯ\tпсевдоним для запроса на отслеживание\n"
 
 #: src/getcert.c:4866
 msgid "* Parameters for the signing request at renewal time:\n"
-msgstr "* Параметры для запроса подписи при продлении:\n"
+msgstr "* Параметры запроса на подпись при продлении:\n"
 
 #: src/getcert.c:4867
 msgid "  -U EXTUSAGE\toverride requested extended key usage OID\n"
 msgstr ""
-"  -U EXTUSAGE\tпереопределить запрошенный OID использования расширенного "
-"ключа\n"
+"  -U РАСШ_ИСП\tпереопределить в запросе идентификатор объекта (OID) "
+"расширенного использования ключа\n"
 
 #: src/getcert.c:4869
 msgid "  -K NAME\toverride requested principal name\n"
-msgstr "  -K NAME\tпереопределить запрошенное главное имя\n"
+msgstr "  -K ИМЯ\tпереопределить в запросе имя принципала\n"
 
 #: src/getcert.c:4870
 msgid "  -D DNSNAME\toverride requested DNS name\n"
-msgstr "  -D DNSNAME\tпереопределить запрошенное DNS-имя\n"
+msgstr "  -D ИМЯ_DNS\tпереопределить в запросе имя DNS\n"
 
 #: src/getcert.c:4871
 msgid "  -E EMAIL\toverride requested email address\n"
-msgstr "  -E EMAIL\tзаменить запрошенный адрес электронной почты\n"
+msgstr "  -E EMAIL\tпереопределить в запросе адрес электронной почты\n"
 
 #: src/getcert.c:4872
 msgid "  -A ADDRESS\toverride requested IP address\n"
-msgstr "  -A ADDRESS\tзаменить запрошенный IP-адрес\n"
+msgstr "  -A АДРЕС\tпереопределить в запросе IP-адрес\n"
 
 #: src/getcert.c:4888
 #, c-format
@@ -1440,28 +1446,28 @@ msgstr "* По идентификатору запроса:\n"
 #: src/getcert.c:4892 src/getcert.c:4914 src/getcert.c:4962 src/getcert.c:5019
 #: src/getcert.c:5040 src/getcert.c:5060
 msgid "  -i NAME\tnickname for tracking request\n"
-msgstr "  -i NAME\tник для запроса отслеживания\n"
+msgstr "  -i ИМЯ\tпсевдоним запроса на отслеживание\n"
 
 #: src/getcert.c:4910
 #, c-format
 msgid "Usage: %s resubmit [options]\n"
-msgstr "Использование: повторная отправка %s [параметры]\n"
+msgstr "Использование: %s resubmit [параметры]\n"
 
 #: src/getcert.c:4920 src/getcert.c:4968 src/getcert.c:5046
 msgid "  -f FILE\tPEM file for certificate\n"
-msgstr "  -f FILE\tPEM-файл для сертификата\n"
+msgstr "  -f ФАЙЛ\tPEM-файл для сертификата\n"
 
 #: src/getcert.c:4926 src/getcert.c:4974
 msgid "* New parameter values for the signing request:\n"
-msgstr "* Новые значения параметров запроса на подписание:\n"
+msgstr "* Новые значения параметров запроса на подпись:\n"
 
 #: src/getcert.c:4939 src/getcert.c:4987
 msgid "  -I NAME\tnew nickname to give to tracking request\n"
-msgstr "  -I NAME\tновый псевдоним для запроса отслеживания\n"
+msgstr "  -I ИМЯ\tновый псевдоним для запроса на отслеживание\n"
 
 #: src/getcert.c:4941 src/getcert.c:4989
 msgid "  -c CA\t\tuse the specified CA rather than the current one\n"
-msgstr "  -c CA\t\tиспользовать указанный ЦС, а не текущий\n"
+msgstr "  -c ЦС\t\tиспользовать указанный ЦС вместо текущего\n"
 
 #: src/getcert.c:4958
 #, c-format
@@ -1470,38 +1476,38 @@ msgstr "Использование: %s rekey [параметры]\n"
 
 #: src/getcert.c:4993
 msgid "  -G TYPE\ttype of new key to be generated\n"
-msgstr "  -G TYPE\tтип нового ключа, который будет сгенерирован\n"
+msgstr "  -G ТИП\tтип нового генерируемого ключа\n"
 
 #: src/getcert.c:4994
 msgid "  -g SIZE\tsize of new key to be generated\n"
-msgstr "  -g SIZE\tразмер нового ключа, который будет сгенерирован\n"
+msgstr "  -g РАЗМЕР\tразмер нового генерируемого ключа\n"
 
 #: src/getcert.c:5008
 #, c-format
 msgid "Usage: %s list [options]\n"
-msgstr "Использование: %s список [параметры]\n"
+msgstr "Использование: %s list [параметры]\n"
 
 #: src/getcert.c:5011 src/getcert.c:5035 src/getcert.c:5078 src/getcert.c:5093
 #: src/getcert.c:5109 src/getcert.c:5123 src/getcert.c:5142 src/getcert.c:5156
 msgid "* General options:\n"
-msgstr "* Основные опции:\n"
+msgstr "* Общие параметры:\n"
 
 #: src/getcert.c:5013
 msgid "  -c CA\tlist only requests and certs associated with this CA\n"
-msgstr ""
-"  -c CA\tперечислить только запросы и сертификаты, связанные с этим ЦС\n"
+msgstr "  -c ЦС\tвывести только запросы и сертификаты, связанные с этим ЦС\n"
 
 #: src/getcert.c:5015
 msgid "  -r\tlist only information about outstanding requests\n"
-msgstr "  -r\tперечислить только информацию о невыполненных запросах\n"
+msgstr "  -r\tвывести информацию только о невыполненных запросах\n"
 
 #: src/getcert.c:5016
 msgid "  -t\tlist only information about tracked certificates\n"
-msgstr "  -t\tвывести информацию об отслеживаемых сертификатах\n"
+msgstr "  -t\tвывести информацию только об отслеживаемых сертификатах\n"
 
 #: src/getcert.c:5017
 msgid "  -u\tdisplay times in UTC instead of local time\n"
-msgstr "  -u\tотображать время в формате UTC вместо местного времени\n"
+msgstr ""
+"  -u\tотображать время в формате UTC вместо отображения по местному времени\n"
 
 #: src/getcert.c:5018
 msgid "* If selecting a specific request:\n"
@@ -1510,215 +1516,216 @@ msgstr "* При выборе конкретного запроса:\n"
 #: src/getcert.c:5021
 msgid "  -d DIR\tonly list requests and certs which use this NSS database\n"
 msgstr ""
-"  -d DIR\tтолько перечислить запросы и сертификаты, которые используют эту "
-"базу данных NSS\n"
+"  -d КАТАЛОГ\tвывести только запросы и сертификаты, использующие эту базу "
+"данных NSS\n"
 
 #: src/getcert.c:5022
 msgid "  -n NAME\tonly list requests and certs which use this nickname\n"
 msgstr ""
-"  -n NAME\tсписок запросов и сертификатов, которые используют этот "
-"псевдоним\n"
+"  -n ИМЯ\tвывести только запросы и сертификаты, использующие этот псевдоним\n"
 
 #: src/getcert.c:5024
 msgid "  -f FILE\tonly list requests and certs stored in this PEM file\n"
 msgstr ""
-"  -f FILE\tтолько список запросов и сертификатов, хранящихся в этом файле "
-"PEM\n"
+"  -f ФАЙЛ\tвывести только запросы и сертификаты, хранящиеся в этом PEM-"
+"файле\n"
 
 #: src/getcert.c:5026 src/getcert.c:5067 src/getcert.c:5082 src/getcert.c:5098
 #: src/getcert.c:5113 src/getcert.c:5132 src/getcert.c:5146 src/getcert.c:5159
 msgid "  -S\tconnect to the certmonger service on the system bus\n"
-msgstr "  -S\tподключиться к сервису сертификатора на системной шине\n"
+msgstr "  -S\tподключиться к службе certmonger по системной шине\n"
 
 #: src/getcert.c:5027 src/getcert.c:5068 src/getcert.c:5083 src/getcert.c:5099
 #: src/getcert.c:5114 src/getcert.c:5133 src/getcert.c:5147 src/getcert.c:5160
 msgid "  -s\tconnect to the certmonger service on the session bus\n"
-msgstr ""
+msgstr "  -s\tподключиться к службе certmonger по шине сеанса\n"
 
 #: src/getcert.c:5033
 #, c-format
 msgid "Usage: %s refresh [options]\n"
-msgstr ""
+msgstr "Использование: %s refresh [параметры]\n"
 
 #: src/getcert.c:5036
 msgid "  -a\trefresh information about all outstanding requests\n"
-msgstr ""
+msgstr "  -a\tобновить информацию по всем невыполненным запросам\n"
 
 #: src/getcert.c:5056
 #, c-format
 msgid "Usage: %s status [options]\n"
-msgstr ""
+msgstr "Использование: %s status [параметры]\n"
 
 #: src/getcert.c:5059
 msgid "* Selecting a specific request:\n"
-msgstr ""
+msgstr "* При выборе конкретного запроса:\n"
 
 #: src/getcert.c:5061
 msgid "* When using an NSS database for storage:\n"
-msgstr ""
+msgstr "* Если для хранения используется база данных NSS:\n"
 
 #: src/getcert.c:5062
 msgid "  -d DIR\treturn status for the request in this NSS database\n"
-msgstr ""
+msgstr "  -d КАТАЛОГ\tвывод статуса запроса в этой базе данных NSS\n"
 
 #: src/getcert.c:5063
 msgid "  -n NAME\treturn status for cert which uses this nickname\n"
-msgstr ""
+msgstr "  -n ИМЯ\tвывод статуса сертификата с данным псевдонимом\n"
 
 #: src/getcert.c:5064
 msgid "* When using files for storage:\n"
-msgstr ""
+msgstr "* Если для хранения используются файлы:\n"
 
 #: src/getcert.c:5065
 msgid "  -f FILE\treturn status for cert stored in this PEM file\n"
-msgstr ""
+msgstr "  -f ФАЙЛ\tвывод статуса сертификатов, хранящихся в этом PEM-файле\n"
 
 #: src/getcert.c:5074
 #, c-format
 msgid "Usage: %s list-cas [options]\n"
-msgstr ""
+msgstr "Использование: %s list-cas [параметры]\n"
 
 #: src/getcert.c:5079
 msgid "  -c CA\tlist only information about the CA with this name\n"
-msgstr ""
+msgstr "  -c ЦС\tвывод информации только о ЦС с данным именем\n"
 
 #: src/getcert.c:5089
 #, c-format
 msgid "Usage: %s refresh-ca [options]\n"
-msgstr ""
+msgstr "Использование: %s refresh-ca [параметры]\n"
 
 #: src/getcert.c:5094
 msgid "  -c CA\trefresh information about the CA with this name\n"
-msgstr ""
+msgstr "  -c ЦС\tобновить информацию о ЦС с данным именем\n"
 
 #: src/getcert.c:5095
 msgid "  -a\trefresh information about all known CAs\n"
-msgstr ""
+msgstr "  -a\tобновить информацию о всех известных ЦС\n"
 
 #: src/getcert.c:5106
 #, c-format
 msgid "Usage: %s add-ca [options]\n"
-msgstr ""
+msgstr "Использование: %s add-ca [параметры]\n"
 
 #: src/getcert.c:5110 src/getcert.c:5124
 msgid "  -c CA\t\tnickname to give to the new CA configuration\n"
-msgstr ""
+msgstr "  -c ЦС\t\tпсевдоним для новой конфигурации ЦС\n"
 
 #: src/getcert.c:5111
 msgid "  -e CMD\thelper command to run to communicate with CA\n"
-msgstr ""
+msgstr "  -e КОМАНДА\tкоманда вспомогательного средства связи с ЦС\n"
 
 #: src/getcert.c:5120
 #, c-format
 msgid "Usage: %s add-scep-ca [options]\n"
-msgstr ""
+msgstr "Использование: %s add-scep-ca [параметры]\n"
 
 #: src/getcert.c:5125
 msgid "  -u URL\tlocation of SCEP server\n"
-msgstr ""
+msgstr "  -u URL\tрасположение сервера SCEP\n"
 
 #: src/getcert.c:5126
 msgid "  -i ID\t\tCA identifier\n"
-msgstr ""
+msgstr "  -i ID\t\tидентификатор ЦС\n"
 
 #: src/getcert.c:5127
 msgid "  -R FILE\tfile containing CA's certificate\n"
-msgstr ""
+msgstr "  -R ФАЙЛ\tфайл, содержащий сертификат ЦС\n"
 
 #: src/getcert.c:5128
 msgid "  -r FILE\tfile containing RA's certificate\n"
-msgstr ""
+msgstr "  -r ФАЙЛ\tфайл, содержащий сертификат ЦР\n"
 
 #: src/getcert.c:5129
 msgid "  -I FILE\tfile containing certificates in RA's certifying chain\n"
-msgstr ""
+msgstr "  -I ФАЙЛ\tфайл, содержащий сертификаты в цепочке сертификатов ЦР\n"
 
 #: src/getcert.c:5130
 msgid "  -n\tprefer not to use the SCEP Renewal feature\n"
-msgstr ""
+msgstr "  -n\tпредпочтительно не использовать функцию продления SCEP\n"
 
 #: src/getcert.c:5139
 #, c-format
 msgid "Usage: %s modify-ca [options]\n"
-msgstr ""
+msgstr "Использование: %s modify-ca [параметры]\n"
 
 #: src/getcert.c:5143
 msgid "  -c CA\t\tnickname of the CA configuration\n"
-msgstr ""
+msgstr "  -c ЦС\t\tпсевдоним конфигурации ЦС\n"
 
 #: src/getcert.c:5144
 msgid "  -e CMD\tupdated helper command to run to communicate with CA\n"
 msgstr ""
+"  -e КОМАНДА\tобновлённая команда вспомогательного средства связи с ЦС\n"
 
 #: src/getcert.c:5153
 #, c-format
 msgid "Usage: %s remove-ca [options]\n"
-msgstr ""
+msgstr "Использование: %s remove-ca [параметры]\n"
 
 #: src/getcert.c:5157
 msgid "  -c CA\tnickname of CA configuration to remove\n"
-msgstr ""
+msgstr "  -c ЦС\tпсевдоним удаляемой конфигурации ЦС\n"
 
 #: src/getcert.c:5172
 #, c-format
 msgid "Usage: %s command [options]\n"
-msgstr ""
+msgstr "Использование: %s command [параметры]\n"
 
 #: src/getcert.c:5174
 msgid "request a new certificate from a CA\n"
-msgstr ""
+msgstr "запросить новый сертификат у ЦС\n"
 
 #: src/getcert.c:5176
 msgid "begin monitoring an already-issued certificate\n"
-msgstr ""
+msgstr "начать отслеживание уже выданного сертификата\n"
 
 #: src/getcert.c:5178
 msgid "stop monitoring a certificate\n"
-msgstr ""
+msgstr "завершить отслеживание сертификата\n"
 
 #: src/getcert.c:5180
 msgid "resubmit an in-progress enrollment request, or start a new one\n"
 msgstr ""
+"повторно направить выполняющийся запрос на регистрацию или запустить новый\n"
 
 #: src/getcert.c:5182
 msgid "generate a new private key and replace a certificate\n"
-msgstr ""
+msgstr "сгенерировать новый закрытый ключ и заменить сертификат\n"
 
 #: src/getcert.c:5184
 msgid "check on the status of an in-progress enrollment request\n"
-msgstr ""
+msgstr "проверить статус выполняющегося запроса на регистрацию\n"
 
 #: src/getcert.c:5186
 msgid "list certificates being monitored and requested\n"
-msgstr ""
+msgstr "вывод отслеживаемых и запрашиваемых сертификатов\n"
 
 #: src/getcert.c:5188
 msgid "check the status of a certificate being monitored or requested\n"
-msgstr ""
+msgstr "проверка статуса отслеживаемого и запрашиваемого сертификата\n"
 
 #: src/getcert.c:5191
 msgid "add a CA configuration\n"
-msgstr ""
+msgstr "добавить конфигурацию ЦС\n"
 
 #: src/getcert.c:5193
 msgid "add an SCEP CA configuration\n"
-msgstr ""
+msgstr "добавить конфигурацию ЦС SCEP\n"
 
 #: src/getcert.c:5196
 msgid "list known CA configurations\n"
-msgstr ""
+msgstr "вывод известных конфигураций ЦС\n"
 
 #: src/getcert.c:5199
 msgid "modify a CA configuration\n"
-msgstr ""
+msgstr "изменить конфигурацию ЦС\n"
 
 #: src/getcert.c:5202
 msgid "refresh cache of all information obtained from a CA\n"
-msgstr ""
+msgstr "обновить кэш всей информации, полученной от ЦС\n"
 
 #: src/getcert.c:5205
 msgid "remove a CA configuration\n"
-msgstr ""
+msgstr "удалить конфигурацию ЦС\n"
 
 #: src/getcert.c:5273
 #, c-format
@@ -1728,47 +1735,49 @@ msgstr "%s: неизвестная команда\n"
 #: src/ipa.c:144
 #, c-format
 msgid "Unable to determine location of IPA LDAP server.\n"
-msgstr ""
+msgstr "Не удалось определить местоположение сервера LDAP IPA.\n"
 
 #: src/ipa.c:149
 #, c-format
 msgid "Unable to contact an IPA LDAP server.\n"
-msgstr ""
+msgstr "Не удалось установить связь с сервером LDAP IPA.\n"
 
 #: src/ipa.c:233 src/ipa.c:533
 #, c-format
 msgid "Unable to determine base DN of domain information on IPA server.\n"
 msgstr ""
+"Не удалось определить базовое различающееся имя в информации о домене на "
+"сервере IPA.\n"
 
 #: src/ipa.c:369
 #, c-format
 msgid "Error setting up for XMLRPC on the client.\n"
-msgstr ""
+msgstr "Ошибка настройки XMLRPC на стороне клиента.\n"
 
 #: src/ipa.c:658
 #, c-format
 msgid "The -t option can not be used with the -K option.\n"
-msgstr ""
+msgstr "Параметр -t нельзя использовать совместно с параметром -K.\n"
 
 #: src/ipa.c:667
 #, c-format
 msgid "The -k option can not be used with the -K option.\n"
-msgstr ""
+msgstr "Параметр -k нельзя использовать совместно с параметром -K.\n"
 
 #: src/ipa.c:676
 #, c-format
 msgid "The -K option can not be used with either the -k or the -t option.\n"
-msgstr ""
+msgstr "Параметр -K нельзя использовать совместно с параметром -k или -t.\n"
 
 #: src/ipa.c:758
 #, c-format
 msgid "Unable to determine principal name for signing request.\n"
-msgstr ""
+msgstr "Не удалось определить имя принципала для запроса на подпись.\n"
 
 #: src/ipa.c:831
 #, c-format
 msgid "No IPA domain configured, and none specified.\n"
-msgstr ""
+msgstr "Не настроен и не указан ни один домен IPA.\n"
 
 #: src/ipa.c:868
 #, c-format
@@ -1776,12 +1785,16 @@ msgid ""
 "Error setting up ccache for \"host\" service on client using default keytab: "
 "%s.\n"
 msgstr ""
+"Ошибка настройки кэша учётных данных для службы \"host\" у клиента, "
+"использующего таблицу ключей по умолчанию: %s.\n"
 
 #: src/ipa.c:872
 #, c-format
 msgid ""
 "Error setting up ccache for \"%s\" on client using default keytab: %s.\n"
 msgstr ""
+"Ошибка настройки кэша учётных данных для «%s» у клиента, использующего "
+"таблицу ключей по умолчанию: %s.\n"
 
 #: src/ipa.c:879
 #, c-format
@@ -1796,155 +1809,164 @@ msgstr ""
 #, c-format
 msgid "Error setting up ccache for \"%s\" on client using keytab \"%s\": %s.\n"
 msgstr ""
+"Ошибка настройки кэша учётных данных для «%s» у клиента, использующего "
+"таблицу ключей «%s»: %s.\n"
 
 #: src/local.c:556
 #, c-format
 msgid "Unable to read signing request.\n"
-msgstr "Невозможно прочесть запрос на подписание.\n"
+msgstr "Не удалось прочитать запрос на подпись.\n"
 
 #: src/main.c:74
 msgid "use session bus"
-msgstr ""
+msgstr "использовать шину сеанса"
 
 #: src/main.c:75
 msgid "use system bus"
-msgstr ""
+msgstr "использовать шину системы"
 
 #: src/main.c:76
 msgid "start a dedicated listening socket"
-msgstr ""
+msgstr "создать выделенный слушающий сокет"
 
 #: src/main.c:77
 msgid "only use a dedicated listening socket"
-msgstr ""
+msgstr "использовать только выделенный слушающий сокет"
 
 #: src/main.c:78
 msgid "specify the dedicated listening socket"
-msgstr ""
+msgstr "указать выделенный слушающий сокет"
 
 #: src/main.c:78
 msgid "PATHNAME"
-msgstr ""
+msgstr "ПУТЬ"
 
 #: src/main.c:79
 msgid "don't become a daemon"
-msgstr ""
+msgstr "не запускать в режиме фоновой службы"
 
 #: src/main.c:80
 msgid "do become a daemon"
-msgstr ""
+msgstr "запускать в режиме фоновой службы"
 
 #: src/main.c:81
 msgid "bus-activated, idle timeout"
 msgstr ""
+"активируется при передаче сообщений по шине, указывается время ожидания в "
+"режиме простоя"
 
 #: src/main.c:81
 msgid "SECONDS"
-msgstr ""
+msgstr "СЕКУНДЫ"
 
 #: src/main.c:82
 msgid "don't use an idle timeout"
-msgstr ""
+msgstr "не использовать время ожидания в режиме простоя"
 
 #: src/main.c:83
 msgid "set debugging level (implies -n)"
-msgstr ""
+msgstr "задать уровень отладки (подразумевает наличие параметра -n)"
 
 #: src/main.c:83
 msgid "NUMBER"
-msgstr ""
+msgstr "ЧИСЛО"
 
 #: src/main.c:84 src/main.c:86
 msgid "start COMMAND and exit when it does"
-msgstr ""
+msgstr "запустить КОМАНДУ и выйти"
 
 #: src/main.c:87
 msgid "write service PID to file"
-msgstr ""
+msgstr "запись идентификатора процесса (PID) службы в файл"
 
 #: src/main.c:88
 msgid "force NSS into FIPS mode"
-msgstr ""
+msgstr "принудительная работа NSS в режиме FIPS"
 
 #: src/main.c:90
 msgid "print version information"
-msgstr ""
+msgstr "вывод информации о версии"
 
 #: src/main.c:174
 #, c-format
 msgid "Usage: %s [-s|-S] [-n|-f] [-d LEVEL] [-p FILE] [-F] [-v]\n"
-msgstr ""
+msgstr "Использование: %s [-s|-S] [-n|-f] [-d УРОВЕНЬ] [-p ФАЙЛ] [-F] [-v]\n"
 
 #: src/main.c:177
 msgid "\t-s         use session bus\n"
-msgstr ""
+msgstr "\t-s         использовать шину сеанса\n"
 
 #: src/main.c:178
 msgid "\t-S         use system bus\n"
-msgstr ""
+msgstr "\t-S         использовать шину системы\n"
 
 #: src/main.c:179
 msgid "\t-l         start a dedicated listening socket\n"
-msgstr ""
+msgstr "\t-l         создать выделенный слушающий сокет\n"
 
 #: src/main.c:180
 msgid "\t-L         only use a dedicated listening socket\n"
-msgstr ""
+msgstr "\t-L         использовать только выделенный слушающий сокет\n"
 
 #: src/main.c:181
 msgid "\t-P PATH    specify the dedicated listening socket\n"
-msgstr ""
+msgstr "\t-P ПУТЬ    указать выделенный слушающий сокет\n"
 
 #: src/main.c:182
 msgid "\t-n         don't become a daemon\n"
-msgstr ""
+msgstr "\t-n         не запускать в режиме фоновой службы\n"
 
 #: src/main.c:183
 msgid "\t-f         do become a daemon\n"
-msgstr ""
+msgstr "\t-f         запускать в режиме фоновой службы\n"
 
 #: src/main.c:184
 msgid "\t-b TIMEOUT bus-activated, idle timeout\n"
 msgstr ""
+"\t-b ВРЕМЯ_ОЖИДАНИЯ активируется при передаче сообщений по шине, указывается "
+"время ожидания в режиме простоя\n"
 
 #: src/main.c:185
 msgid "\t-B         don't use an idle timeout\n"
-msgstr ""
+msgstr "\t-B         не использовать время ожидания в режиме простоя\n"
 
 #: src/main.c:186
 msgid "\t-d LEVEL   set debugging level (implies -n)\n"
 msgstr ""
+"\t-d УРОВЕНЬ   задать уровень отладки (подразумевает наличие параметра -n)\n"
 
 #: src/main.c:187
 msgid "\t-c COMMAND start COMMAND and exit when it does\n"
-msgstr ""
+msgstr "\t-c КОМАНДА запуск КОМАНДЫ и выход\n"
 
 #: src/main.c:188
 msgid "\t-p FILE    write service PID to file\n"
-msgstr ""
+msgstr "\t-p ФАЙЛ    запись идентификатора процесса (PID) службы в файл\n"
 
 #: src/main.c:189
 msgid "\t-F         force NSS into FIPS mode\n"
-msgstr ""
+msgstr "\t-F         принудительная работа NSS в режиме FIPS\n"
 
 #: src/main.c:190
 msgid "\t-v         print version information and exit\n"
-msgstr ""
+msgstr "\t-v         вывод информации о версии и выход\n"
 
 #: src/scep.c:352
 #, c-format
 msgid "No SCEP URL (-u) given, and no default known.\n"
-msgstr ""
+msgstr "Не передан URL-адрес SCEP (-u) и не задано значение по умолчанию.\n"
 
 #: src/scep.c:356
 #, c-format
 msgid "No SCEP operation (-c/-C/-g/-p) given, and no default known.\n"
 msgstr ""
+"Не передана операция для SCEP (-c/-C/-g/-p) и не задано значение по "
+"умолчанию.\n"
 
 #: src/scep.c:376 src/scep.c:395
 #, c-format
 msgid "No RA certificate (-r) given, and no default known.\n"
-msgstr ""
+msgstr "Не передан сертификат ЦР (-r) и не задано значение по умолчанию.\n"
 
 #: src/scep.c:386 src/scep.c:540
 #, c-format
@@ -1952,6 +1974,8 @@ msgid ""
 "Error reading request.  Expected PKCS7 data containing a GetInitialCert "
 "pkiMessage, got nothing.\n"
 msgstr ""
+"Ошибка чтения запроса.  Ожидалось получение данных в формате PKCS7, "
+"содержащих pkiMessage GetInitialCert, но получение данных не состоялось.\n"
 
 #: src/scep.c:405 src/scep.c:565
 #, c-format
@@ -1959,11 +1983,15 @@ msgid ""
 "Error reading request.  Expected PKCS7 data containing a PKCSReq pkiMessage, "
 "got nothing.\n"
 msgstr ""
+"Ошибка чтения запроса.  Ожидалось получение данных в формате PKCS7, "
+"содержащих pkiMessage PKCSReq, но получение данных не состоялось.\n"
 
 #: src/scep.c:433 src/scep.c:459
 #, c-format
 msgid "Warning: request is neither a PKCSReq nor a GetInitialCert request.\n"
 msgstr ""
+"Предупреждение: запрос не является сообщением типа PKCSReq или "
+"GetInitialCert.\n"
 
 #: src/scep.c:437 src/scep.c:463
 #, c-format
@@ -1971,156 +1999,160 @@ msgid ""
 "Warning: request type \"%s\"is neither a PKCSReq nor a GetInitialCert "
 "request.\n"
 msgstr ""
+"Предупреждение: тип запроса «%s» не является сообщением типа PKCSReq или "
+"GetInitialCert.\n"
 
 #: src/scep.c:470
 #, c-format
 msgid "Warning: request is missing transactionId.\n"
-msgstr ""
+msgstr "Предупреждение: в запросе отсутствует transactionId.\n"
 
 #: src/scep.c:474
 #, c-format
 msgid "Warning: request is missing senderNonce.\n"
-msgstr ""
+msgstr "Предупреждение: в запросе отсутствует senderNonce.\n"
 
 #: src/scep.c:637
-#, fuzzy, c-format
+#, c-format
 msgid "Got response code %d from %s, not 200.\n"
-msgstr "От службы %s не был получен ответ.\n"
+msgstr "Получен код ответа %d от %s вместо 200.\n"
 
 #: src/scep.c:685 src/scep.c:1121
 #, c-format
 msgid "Server reply was of unexpected MIME type \"%s\".\n"
-msgstr ""
+msgstr "Ответ сервера получен в непредвиденном MIME-типе «%s».\n"
 
 #: src/scep.c:930
 #, c-format
 msgid "Error: failed to verify signature on server response.\n"
-msgstr ""
+msgstr "Ошибка: не удалось проверить подпись при получении ответа от сервера.\n"
 
 #: src/scep.c:946
 #, c-format
 msgid "Error: reply was not a CertRep (%s).\n"
-msgstr ""
+msgstr "Ошибка: ответ не соответствует типу CertRep (%s).\n"
 
 #: src/scep.c:951
 #, c-format
 msgid "Error: reply is missing transactionId.\n"
-msgstr ""
+msgstr "Ошибка: в ответе отсутствует transactionId.\n"
 
 #: src/scep.c:956
 #, c-format
 msgid "Error: reply contains a different transactionId.\n"
-msgstr ""
+msgstr "Ошибка: ответ содержит другой transactionId.\n"
 
 #: src/scep.c:962
 #, c-format
 msgid "Error: reply is missing pkiStatus.\n"
-msgstr ""
+msgstr "Ошибка: в ответе отсутствует pkiStatus.\n"
 
 #: src/scep.c:966
 #, c-format
 msgid "Error: reply is missing recipientNonce.\n"
-msgstr ""
+msgstr "Ошибка: в ответе отсутствует recipientNonce.\n"
 
 #: src/scep.c:972
 #, c-format
 msgid "Error: reply nonce doesn't match request.\n"
-msgstr ""
+msgstr "Ошибка: ответ nonce не соответствует запросу.\n"
 
 #: src/scep.c:976
 #, c-format
 msgid "Error: reply is missing senderNonce.\n"
-msgstr ""
+msgstr "Ошибка: в ответе отсутствует senderNonce.\n"
 
 #: src/scep.c:994
 #, c-format
 msgid "Unspecified failure at server.\n"
-msgstr ""
+msgstr "Неизвестная ошибка на сервере.\n"
 
 #: src/scep.c:997
 #, c-format
 msgid "Unrecognized or unsupported algorithm identifier in client request.\n"
 msgstr ""
+"Нераспознанный или неподдерживаемый идентификатор алгоритма в запросе "
+"клиента.\n"
 
 #: src/scep.c:1000
 #, c-format
 msgid "Integrity check of client request failed at server.\n"
-msgstr ""
+msgstr "Сбой проверки целостности запроса клиента на сервере.\n"
 
 #: src/scep.c:1003
 #, c-format
 msgid "Transaction either is not permitted or is not supported by server.\n"
-msgstr ""
+msgstr "Транзакция либо не разрешена, либо не поддерживается сервером.\n"
 
 #: src/scep.c:1006
 #, c-format
 msgid "Clock skew too great.\n"
-msgstr ""
+msgstr "Слишком большое отклонение в показаниях времени.\n"
 
 #: src/scep.c:1009
 #, c-format
 msgid "Unsupported extension.\n"
-msgstr ""
+msgstr "Неподдерживаемое расширение.\n"
 
 #: src/scep.c:1012
 #, c-format
 msgid "Must archive keys.\n"
-msgstr ""
+msgstr "Ключи должны быть заархивированы.\n"
 
 #: src/scep.c:1015
 #, c-format
 msgid "Bad identity.\n"
-msgstr ""
+msgstr "Неверное удостоверение.\n"
 
 #: src/scep.c:1018
 #, c-format
 msgid "Proof of possession required.\n"
-msgstr ""
+msgstr "Требуется подтверждение владения.\n"
 
 #: src/scep.c:1021
 #, c-format
 msgid "Proof of possession failed.\n"
-msgstr ""
+msgstr "Сбой подтверждения владения.\n"
 
 #: src/scep.c:1024
 #, c-format
 msgid "No key reuse.\n"
-msgstr ""
+msgstr "Повторное использование ключа невозможно.\n"
 
 #: src/scep.c:1027
-#, fuzzy, c-format
+#, c-format
 msgid "Internal CA error.\n"
-msgstr "Ошибка сервера.\n"
+msgstr "Внутренняя ошибка ЦС.\n"
 
 #: src/scep.c:1030
 #, c-format
 msgid "Try later.\n"
-msgstr ""
+msgstr "Повторить попытку позже.\n"
 
 #: src/scep.c:1032
 #, c-format
 msgid "Server returned failure code \"%s\".\n"
-msgstr ""
+msgstr "Сервер вернул код ошибки «%s».\n"
 
 #: src/scep.c:1044
 #, c-format
 msgid "Error: couldn't parse signed-data.\n"
-msgstr ""
+msgstr "Ошибка: не удалось провести разбор подписанных данных.\n"
 
 #: src/scep.c:1059 src/scep.c:1074
 #, c-format
 msgid "Error: signed-data payload is not enveloped-data.\n"
-msgstr ""
+msgstr "Ошибка: подписанное содержимое не упаковано в контейнер.\n"
 
 #: src/scep.c:1092
 #, c-format
 msgid "Error: enveloped-data payload is not data.\n"
-msgstr ""
+msgstr "Ошибка: содержимое контейнера не является данными.\n"
 
 #: src/scep.c:1116
 #, c-format
 msgid "Error: pkiStatus \"%s\" not recognized.\n"
-msgstr ""
+msgstr "Ошибка: pkiStatus «%s» не распознан.\n"
 
 #: src/tdbush.c:119 src/tdbush.c:1944 src/tdbush.c:2351
 msgid "An internal error has occurred."
@@ -2128,21 +2160,21 @@ msgstr "Произошла внутренняя ошибка."
 
 #: src/tdbush.c:183
 msgid "No matching entry found.\n"
-msgstr ""
+msgstr "Не удалось найти соответствующий элемент.\n"
 
 #: src/tdbush.c:345
 #, c-format
 msgid "There is already a CA with the nickname \"%s\"."
-msgstr "CA  с именем \"%s\" уже существует."
+msgstr "ЦС с псевдонимом «%s» уже существует."
 
 #: src/tdbush.c:439
 msgid "Certificate storage type not specified."
-msgstr ""
+msgstr "Не указан тип хранилища сертификатов."
 
 #: src/tdbush.c:452
 #, c-format
 msgid "Certificate storage type \"%s\" not supported."
-msgstr ""
+msgstr "Тип хранилища сертификатов «%s» не поддерживается."
 
 #: src/tdbush.c:489 src/tdbush.c:522 src/tdbush.c:581 src/tdbush.c:766
 #: src/tdbush.c:825 src/tdbush.c:928 src/tdbush.c:973 src/tdbush.c:1028
@@ -2150,11 +2182,11 @@ msgstr ""
 #: src/tdbush.c:3230 src/tdbush.c:3382
 #, c-format
 msgid "The location \"%s\" must be an absolute path."
-msgstr ""
+msgstr "Путь к файлу «%s» должен быть абсолютным."
 
 #: src/tdbush.c:516 src/tdbush.c:575 src/tdbush.c:644
 msgid "Certificate storage location not specified."
-msgstr ""
+msgstr "Не указано расположение хранилища сертификатов."
 
 #: src/tdbush.c:534 src/tdbush.c:778 src/tdbush.c:985 src/tdbush.c:1085
 #: src/tdbush.c:1185
@@ -2162,99 +2194,105 @@ msgstr ""
 msgid ""
 "The parent of location \"%s\" could not be accessed due to insufficient "
 "permissions."
-msgstr ""
+msgstr "Недостаточно разрешений для доступа к месту расположения родителя «%s»."
 
 #: src/tdbush.c:542 src/tdbush.c:786 src/tdbush.c:993 src/tdbush.c:1093
 #: src/tdbush.c:1193
 #, c-format
 msgid "The parent of location \"%s\" must be a valid directory."
-msgstr ""
+msgstr "Место расположения родителя «%s» должно быть допустимым каталогом."
 
 #: src/tdbush.c:553 src/tdbush.c:797 src/tdbush.c:1004 src/tdbush.c:1104
 #: src/tdbush.c:1204
 #, c-format
 msgid "The location \"%s\" must be a file."
-msgstr ""
+msgstr "Место расположения «%s» должно быть файлом."
 
 #: src/tdbush.c:593 src/tdbush.c:940 src/tdbush.c:1040 src/tdbush.c:1140
 #, c-format
 msgid ""
 "The location \"%s\" could not be accessed due to insufficient permissions."
-msgstr ""
+msgstr "Недостаточно разрешений для доступа к месту расположения «%s»."
 
 #: src/tdbush.c:601 src/tdbush.c:834 src/tdbush.c:948 src/tdbush.c:1048
 #: src/tdbush.c:1148
 #, c-format
 msgid "The location \"%s\" must be a directory."
-msgstr ""
+msgstr "Место расположения «%s» должно быть каталогом."
 
 #: src/tdbush.c:622
 msgid "Certificate nickname not specified."
-msgstr ""
+msgstr "Не указан псевдоним сертификата."
 
 #: src/tdbush.c:665 src/tdbush.c:3055
 #, c-format
 msgid "There is already a request with the nickname \"%s\"."
-msgstr ""
+msgstr "Запрос с псевдонимом «%s» уже существует."
 
 #: src/tdbush.c:701
 #, c-format
 msgid ""
 "Certificate at same location is already used by request with nickname \"%s\"."
 msgstr ""
+"Сертификат в том же месте расположения уже используется в запросе с "
+"псевдонимом «%s»."
 
 #: src/tdbush.c:734
 #, c-format
 msgid "Key storage type \"%s\" not supported."
-msgstr ""
+msgstr "Тип хранилища ключа «%s» не поддерживается."
 
 #: src/tdbush.c:760 src/tdbush.c:819
 msgid "Key storage location not specified."
-msgstr ""
+msgstr "Не указано место расположения хранилища ключа."
 
 #: src/tdbush.c:853
 msgid "Key nickname not specified."
-msgstr ""
+msgstr "Не указан псевдоним ключа."
 
 #: src/tdbush.c:909
 #, c-format
 msgid "Key at same location is already used by request with nickname \"%s\"."
 msgstr ""
+"Ключ в том же месте расположения уже используется в запросе с "
+"псевдонимом«%s»."
 
 #: src/tdbush.c:1313 src/tdbush.c:3102
 #, c-format
 msgid "No support for key type \"%s\"."
-msgstr ""
+msgstr "Тип ключа «%s» не поддерживается."
 
 #: src/tdbush.c:1400
 msgid "No such CA."
-msgstr ""
+msgstr "Такого ЦС не существует."
 
 #: src/tdbush.c:3073
 #, c-format
 msgid "Certificate authority \"%s\" not known."
-msgstr ""
+msgstr "Центр сертификации «%s» неизвестен."
 
 #: src/tdbush.c:3518
 msgid "Unrecognized parameter or wrong value type."
-msgstr ""
+msgstr "Не распознан параметр или неверный тип значения."
 
 #: src/tdbush.c:5070
 msgid "Error parsing arguments."
-msgstr ""
+msgstr "Ошибка разбора аргументов."
 
 #: src/tdbush.c:5124
 msgid "Unrecognized property name."
-msgstr ""
+msgstr "Неизвестное имя свойства."
 
 #: src/tdbusm.c:2156
 msgid "Insufficient access.  Please retry operation as root.\n"
 msgstr ""
+"Недостаточно прав доступа.  Повторите операцию от имени привилегированного "
+"пользователя.\n"
 
 #: src/tdbusm.c:2160
 msgid "Please verify that the certmonger service has been started.\n"
-msgstr ""
+msgstr "Убедитесь в том, что служба certmonger была запущена.\n"
 
 #: src/tdbusm.c:2163
 msgid "Please verify that the certmonger service is still running.\n"
-msgstr ""
+msgstr "Убедитесь в том, что служба certmonger всё ещё выполняется.\n"
