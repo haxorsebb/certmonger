@@ -551,7 +551,7 @@ util_NETSCAPE_SPKI_set_sig_alg(NETSCAPE_SPKI *spki, const X509_ALGOR *sig_alg)
 
 static EVP_PKEY *
 util_EVP_PKEY_dup(EVP_PKEY *pkey,
-		  int (*i2d)(EVP_PKEY *, unsigned char **),
+		  int (*i2d)(const EVP_PKEY *, unsigned char **),
 		  EVP_PKEY *(*d2i)(int, EVP_PKEY **, const unsigned char **, long))
 {
 	EVP_PKEY *k;
