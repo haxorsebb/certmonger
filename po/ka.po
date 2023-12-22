@@ -2,13 +2,15 @@
 # Copyright (C) YEAR Red Hat, Inc.
 # This file is distributed under the same license as the certmonger package.
 # Temuri Doghonadze <temuri.doghonadze@gmail.com>, 2022, 2023.
+# Weblate Translation Memory <noreply-mt-weblate-translation-memory@weblate.org>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger 0.79\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2017-02-26 02:20-0500\n"
-"PO-Revision-Date: 2023-07-07 22:20+0000\n"
-"Last-Translator: Temuri Doghonadze <temuri.doghonadze@gmail.com>\n"
+"PO-Revision-Date: 2023-12-12 05:27+0000\n"
+"Last-Translator: Weblate Translation Memory <noreply-mt-weblate-translation-"
+"memory@weblate.org>\n"
 "Language-Team: Georgian <https://translate.fedoraproject.org/projects/"
 "certmonger/master/ka/>\n"
 "Language: ka\n"
@@ -16,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.18.2\n"
+"X-Generator: Weblate 5.2.1\n"
 
 #: src/casave.c:322 src/casave.c:361 src/dogtag.c:233 src/dogtag.c:238
 #: src/dogtag.c:256 src/dogtag.c:261 src/getcert.c:291
@@ -1663,7 +1665,7 @@ msgstr ""
 
 #: src/getcert.c:5199
 msgid "modify a CA configuration\n"
-msgstr ""
+msgstr "CA-ის კონფიგურაციის შეცვლა.\n"
 
 #: src/getcert.c:5202
 msgid "refresh cache of all information obtained from a CA\n"
