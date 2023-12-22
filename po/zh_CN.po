@@ -12,13 +12,14 @@
 # Wei Liu <LLIU@REDHAT.COM>, 2012
 # Charles Lee <lchopn@gmail.com>, 2021.
 # Serena She <sheyueming@gmail.com>, 2021.
+# Jingge Chen <mariocanfly@hotmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: certmonger 0.78.6\n"
 "Report-Msgid-Bugs-To: certmonger-devel@lists.fedorahosted.org\n"
 "POT-Creation-Date: 2017-02-26 02:20-0500\n"
-"PO-Revision-Date: 2021-12-04 09:16+0000\n"
-"Last-Translator: Serena She <sheyueming@gmail.com>\n"
+"PO-Revision-Date: 2023-12-11 11:43+0000\n"
+"Last-Translator: Jingge Chen <mariocanfly@hotmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://translate.fedoraproject.org/"
 "projects/certmonger/master/zh_CN/>\n"
 "Language: zh_CN\n"
@@ -26,7 +27,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.9.1\n"
+"X-Generator: Weblate 5.2.1\n"
 
 #: src/casave.c:322 src/casave.c:361 src/dogtag.c:233 src/dogtag.c:238
 #: src/dogtag.c:256 src/dogtag.c:261 src/getcert.c:291
@@ -77,7 +78,7 @@ msgstr "档案参数（-O）必须使用“param=value”的形式。\n"
 #: src/dogtag.c:249
 #, c-format
 msgid "Submit params (-o) must be in the form of param=value.\n"
-msgstr ""
+msgstr "参数（-o）必须使用 param=value 的形式。\n"
 
 #: src/dogtag.c:408 src/dogtag.c:413 src/dogtag.c:442
 #, c-format
@@ -180,7 +181,7 @@ msgstr "原理"
 
 #: src/getcert.c:74
 msgid "SUBJECT"
-msgstr ""
+msgstr "主题"
 
 #: src/getcert.c:75
 msgid "URL"
@@ -188,7 +189,7 @@ msgstr "URL"
 
 #: src/getcert.c:76
 msgid "USERNAME[:GROUPNAME]"
-msgstr ""
+msgstr "用户名[:组名]"
 
 #: src/getcert.c:115
 #, c-format
@@ -225,7 +226,7 @@ msgstr "路径 \"%s\" 并不是一个普通文件。\n"
 #: src/getcert.c:340
 #, c-format
 msgid "No system bus running.\n"
-msgstr ""
+msgstr "没有运行系统总线。\n"
 
 #: src/getcert.c:341
 #, c-format
@@ -240,7 +241,7 @@ msgstr "启动临时专用服务守护程序。\n"
 #: src/getcert.c:371
 #, c-format
 msgid "Error connecting to D-Bus.\n"
-msgstr ""
+msgstr "连接 D-Bus 出错。\n"
 
 #: src/getcert.c:372 src/tdbusm.c:2166
 #, c-format
@@ -255,7 +256,7 @@ msgstr "创建 DBus 请求消息时出错。\n"
 #: src/getcert.c:393
 #, c-format
 msgid "missing argument for %s"
-msgstr ""
+msgstr "缺少 %s 的参数"
 
 #: src/getcert.c:398
 msgid "missing argument"
@@ -276,7 +277,7 @@ msgstr "别名嵌套过深"
 
 #: src/getcert.c:412
 msgid "bad parameter quoting"
-msgstr ""
+msgstr "参数引用错误"
 
 #: src/getcert.c:418
 msgid "invalid numeric value"
@@ -288,7 +289,7 @@ msgstr "数字过大或过小"
 
 #: src/getcert.c:424
 msgid "bad operation"
-msgstr ""
+msgstr "坏操作"
 
 #: src/getcert.c:427
 msgid "internal error"
@@ -300,7 +301,7 @@ msgstr "内存不足"
 
 #: src/getcert.c:434
 msgid "error in popt configuration file"
-msgstr ""
+msgstr "popt 配置文件出错"
 
 #: src/getcert.c:477
 #, c-format
@@ -330,17 +331,17 @@ msgstr "没有从 %s 服务收到响应。\n"
 #: src/getcert.c:699 src/getcert.c:3978
 #, c-format
 msgid "State %s, stuck: %s.\n"
-msgstr ""
+msgstr "状态 %s，卡住： %s。\n"
 
 #: src/getcert.c:768 src/getcert.c:1846 src/getcert.c:2500 src/getcert.c:3100
 #: src/getcert.c:3354 src/getcert.c:3875
 msgid "NSS database for key and cert"
-msgstr ""
+msgstr "用于密钥和证书的 NSS 数据库"
 
 #: src/getcert.c:769 src/getcert.c:1847 src/getcert.c:2501 src/getcert.c:3101
 #: src/getcert.c:3355 src/getcert.c:3876
 msgid "nickname for NSS-based storage (only valid with -d)"
-msgstr ""
+msgstr "基于 NSS 的存储的昵称（仅在使用 -d 时有效）"
 
 #: src/getcert.c:770 src/getcert.c:1848 src/getcert.c:2502 src/getcert.c:3102
 #: src/getcert.c:3356 src/getcert.c:3877
@@ -353,7 +354,7 @@ msgstr "私钥 PEM 文件"
 
 #: src/getcert.c:772
 msgid "PEM file for certificate (only valid with -k)"
-msgstr ""
+msgstr "证书的 PEM 文件（仅在使用 -k 时有效）"
 
 #: src/getcert.c:773 src/getcert.c:1851 src/getcert.c:2508
 msgid "file which holds the private key encryption PIN"
@@ -381,7 +382,7 @@ msgstr "证书的文件权限"
 
 #: src/getcert.c:779 src/getcert.c:1857 src/getcert.c:2514
 msgid "NSS database in which to store the CA's certificates"
-msgstr ""
+msgstr "存储 CA 证书的 NSS 数据库"
 
 #: src/getcert.c:780 src/getcert.c:1858 src/getcert.c:2515
 msgid "file in which to store the CA's certificates"
