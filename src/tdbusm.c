@@ -223,7 +223,7 @@ cm_tdbusm_get_vn(DBusMessage *msg, void *parent, long *n)
 {
 	DBusError err;
 	DBusMessageIter iter, sub_iter;
-	int64_t *i64;
+	int64_t i64;
 
 	dbus_error_init(&err);
 
