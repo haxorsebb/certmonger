@@ -80,8 +80,7 @@ BuildRequires:	/usr/bin/unix2dos
 BuildRequires:	/usr/bin/which
 #  for dbus tests
 BuildRequires:	python3-dbus
-#  for popt or popt-devel, depending on the build environment
-BuildRequires:	/usr/include/popt.h
+BuildRequires:	popt-devel
 
 # we need a running system bus
 Requires:	dbus
