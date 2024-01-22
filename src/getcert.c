@@ -497,6 +497,9 @@ send_req(DBusMessage *req, int verbose)
 			printf(_("No response received from %s service.\n"),
 			       CM_DBUS_NAME);
 		}
+		if (strcmp(err.name, "org.fedorahosted.certmonger.duplicate") == 0) {
+			exit(2);
+		}
 		exit(1);
 	}
 	dbus_message_unref(req);

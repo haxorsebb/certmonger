@@ -43,6 +43,15 @@ All commands can take either the \fB\-s\fR or \fB\-S\fR arguments, which instruc
 bus, if no value is set.  By default, \fIgetcert\fR consults the @CM_DBUS_NAME@
 service attached to the system bus.
 
+.SH "EXIT STATUS"
+The exit status is 0 on success, nonzero on error.
+
+0 Success
+
+1 Error
+
+2 Duplicate entry
+
 .SH BUGS
 Please file tickets for any that you find at https://fedorahosted.org/certmonger/
 
