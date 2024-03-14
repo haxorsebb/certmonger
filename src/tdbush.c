@@ -4402,7 +4402,7 @@ request_prop_get_ca(struct cm_context *ctx, void *parent,
 		ca = cm_get_ca_by_nickname(ctx, entry->cm_ca_nickname);
 		if (ca != NULL) {
 			return talloc_asprintf(parent, "%s/%s",
-					       CM_DBUS_REQUEST_PATH,
+					       CM_DBUS_CA_PATH,
 					       ca->cm_busname);
 		}
 	}
