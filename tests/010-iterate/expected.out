@@ -1208,6 +1208,10 @@ NOTIFYING_ISSUED_SAVED
 MONITORING
 -STOP-
 The sky is falling: Certificate in file "$tmpdir/certfile10" is no longer valid.
+Request ID: Test
+Notification type: validity_ending
 The sky is falling: Certificate in file "$tmpdir/certfile10" issued by CA and saved.
+Request ID: Test
+Notification type: issued_and_saved
 
 Test complete.

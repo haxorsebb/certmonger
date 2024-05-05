@@ -31,6 +31,16 @@ enum cm_notify_event {
 	cm_notify_event_ca_not_saved
 };
 
+static const char *cm_notify_event_names[] = {
+	"unknown",
+	"validity_ending",
+	"rejected",
+	"issued_not_saved",
+	"issued_and_saved",
+	"issued_ca_not_saved",
+	"ca_not_saved"
+};
+
 /* Start to notify the administrator or user that expiration is imminent. */
 struct cm_notify_state *cm_notify_start(struct cm_store_entry *entry,
 					enum cm_notify_event event);

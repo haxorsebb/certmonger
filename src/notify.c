@@ -36,6 +36,7 @@
 #include "store-int.h"
 #include "subproc.h"
 #include "tm.h"
+#include "util.h"
 
 struct cm_notify_state {
 	struct cm_subproc_state *subproc;
@@ -342,6 +343,8 @@ cm_notify_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		cm_log(1, "Running notification helper \"%s\".\n", argv[0]);
 		cm_subproc_mark_most_cloexec(-1, -1, -1);
 		setenv(CM_NOTIFICATION_ENV, message, 1);
+		setenv(CM_NOTIFICATION_TYPE_ENV, cm_notify_event_names[details->event], 1);
+		setenv(CM_NOTIFICATION_CERT_NICKNAME_ENV, shell_escape(NULL, entry->cm_nickname), 1);
 		if (execvp(argv[0], argv) == -1) {
 			cm_log(0, "Error execvp()ing command \"%s\" (\"%s\"): %s.\n",
 			       argv[0], entry->cm_post_certsave_command,

@@ -920,6 +920,8 @@ cat > $tmpdir/notify.sh << EOF
 #!/bin/sh
 touch $tmpdir/notification.txt
 echo The sky is falling: \$CERTMONGER_NOTIFICATION >> $tmpdir/notification.txt
+echo Request ID: \$CERTMONGER_NOTIFICATION_CERT_NICKNAME >> $tmpdir/notification.txt
+echo Notification type: \$CERTMONGER_NOTIFICATION_TYPE >> $tmpdir/notification.txt
 EOF
 chmod u+x $tmpdir/notify.sh
 cp $tmpdir/certfile10.bak $tmpdir/certfile10

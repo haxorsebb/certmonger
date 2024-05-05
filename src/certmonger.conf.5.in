@@ -32,8 +32,10 @@ This is the method by which \fIcertmonger\fP will notify the system
 administrator that a certificate will soon become invalid.  The recognized
 values are \fIsyslog\fP, \fImail\fP, and \fIcommand\fP.  The default is \fIsyslog\fP.
 When sending mail, the notification message will be the mail message subject.
-When invoking a command, the notification message will be available in the
-"@CM_NOTIFICATION_ENV@" environment variable.
+When invoking a command, the notification message and type will be available in the
+"@CM_NOTIFICATION_ENV@" and "@CM_NOTIFICATION_TYPE_ENV@" environment variables and
+the related request's nickname/ID will be available in the
+"@CM_NOTIFICATION_CERT_NICKNAME_ENV@" environment variable.
 
 .IP notification_destination
 This is the destination to which \fIcertmonger\fP will send notifications.  It
