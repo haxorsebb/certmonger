@@ -34,4 +34,7 @@ void str_to_upper_inplace(char *s);
  */
 char *str_to_upper(const char *s);
 
+/* Escape any shell special characters. */
+char *shell_escape(void *parent, const char *s);
+
 #endif

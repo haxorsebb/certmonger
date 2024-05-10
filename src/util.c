@@ -38,6 +38,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <errno.h>
+#include <talloc.h>
 
 #include "log.h"
 #include "util.h"
@@ -193,4 +194,22 @@ char *str_to_upper(const char *s) {
     if (ret != NULL)
         str_to_upper_inplace(ret);
     return ret;
+}
+
+char *shell_escape(void *parent, const char *s)
+{
+	const char *specials = "|&;()<>\"' \t", *p;
+	char *ret, *q;
+
+	ret = talloc_size(parent, strlen(s) * 2 + 1);
+	if (ret != NULL) {
+		for (p = s, q = ret; *p != '\0'; p++) {
+			if (strchr(specials, *p) != NULL) {
+				*q++ = '\\';
+			}
+			*q++ = *p;
+		}
+		*q++ = '\0';
+	}
+	return ret;
 }

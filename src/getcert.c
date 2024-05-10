@@ -50,6 +50,7 @@
 #include "tdbus.h"
 #include "tdbusm.h"
 #include "util-o.h"
+#include "util.h"
 
 #ifdef ENABLE_NLS
 #include <libintl.h>
@@ -254,26 +255,6 @@ ensure_pem(void *parent, const char *path)
 	}
 	if (ret == NULL) {
 		exit(1);
-	}
-	return ret;
-}
-
-/* Escape any shell special characters. */
-static char *
-shell_escape(void *parent, const char *s)
-{
-	const char *specials = "|&;()<>\"' \t", *p;
-	char *ret, *q;
-
-	ret = talloc_size(parent, strlen(s) * 2 + 1);
-	if (ret != NULL) {
-		for (p = s, q = ret; *p != '\0'; p++) {
-			if (strchr(specials, *p) != NULL) {
-				*q++ = '\\';
-			}
-			*q++ = *p;
-		}
-		*q++ = '\0';
 	}
 	return ret;
 }
