@@ -27,7 +27,7 @@
 %bcond_with xmlrpc
 
 Name:		certmonger
-Version:	0.79.19
+Version:	0.79.20
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -264,6 +264,21 @@ exit 0
 %endif
 
 %changelog
+* Mon Jun 10 2024 Rob Crittenden <rcritten@redhat.com> - 0.79.20-1
+- Update to 0.79.20
+  - Fix type error in cm_tdbusm_get_vn
+  - Adjust parameter type for util_EVP_PKEY_id
+  - Update tests to be compatible with OpenSSL 3.2
+  - Switch BR from /usr/include/popt.h to popt-devel
+  - getcert: return 2 when trying to create a duplicate entry
+  - getcert: add NULL check to duplicate string compare
+  - Use correct object path for 'ca' property of request objects in D-Bus API
+  - Move shell_escape function to util.c
+  - Add more environment variables to be passed on to the notification command
+  - Translated using Weblate (Chinese (Simplified) (zh_CN))
+  - Translated using Weblate (Georgian)
+  - Translated using Weblate (Russian)
+
 * Tue Oct 10 2023 Rob Crittenden <rcritten@redhat.com> - 0.79.19-1
 - Update to 0.79.19
   - getcert: add-scep-ca: fix help for --ca-cert and --ra-cert
