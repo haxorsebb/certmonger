@@ -374,7 +374,7 @@ cm_store_timestamp_from_time(time_t when, char timestamp[15])
 {
 	struct tm tm;
 	if ((when != 0) && (gmtime_r(&when, &tm) == &tm)) {
-		sprintf(timestamp, "%04d%02d%02d%02d%02d%02d",
+		sprintf(timestamp, "%04hu%02hu%02hu%02hu%02hu%02hu",
 			tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
 			tm.tm_hour, tm.tm_min, tm.tm_sec);
 	} else {
@@ -392,7 +392,7 @@ cm_store_local_timestamp_from_time_for_display(time_t when)
 	if ((when != 0) && (localtime_r(&when, &tm) == &tm)) {
 		timestamp = malloc(24 + strlen(tm.tm_zone));
 		if (timestamp != NULL) {
-			sprintf(timestamp, "%04d-%02d-%02d %02d:%02d:%02d %s",
+			sprintf(timestamp, "%04hu-%02hu-%02hu %02hu:%02hu:%02hu %s",
 				tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
 				tm.tm_hour, tm.tm_min, tm.tm_sec, tm.tm_zone);
 		}
@@ -410,7 +410,7 @@ cm_store_timestamp_from_time_for_display(time_t when, char timestamp[25])
 {
 	struct tm tm;
 	if ((when != 0) && (gmtime_r(&when, &tm) == &tm)) {
-		sprintf(timestamp, "%04d-%02d-%02d %02d:%02d:%02d UTC",
+		sprintf(timestamp, "%04hu-%02hu-%02hu %02hu:%02hu:%02hu UTC",
 			tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
 			tm.tm_hour, tm.tm_min, tm.tm_sec);
 	} else {
