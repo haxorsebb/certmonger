@@ -233,31 +233,40 @@ EXTRA_DIST = \
 	018-pembase/run.sh \
 	019-dparse/expected.out \
 	019-dparse/run.sh \
-	019-dparse/bad.checkRequest.nosuch \
-	019-dparse/bad.displayCertFromRequest.incomplete \
-	019-dparse/bad.displayCertFromRequest.no-such-request \
-	019-dparse/bad.displayCertFromRequest.rejected \
-	019-dparse/bad.profileProcess.bad-property \
-	019-dparse/bad.profileProcess.no-agent-cert \
-	019-dparse/bad.profileProcess.no-ca-cert \
-	019-dparse/bad.profileProcess.no-property \
-	019-dparse/bad.profileProcess.not-pending \
-	019-dparse/bad.profileReview.no-such-request \
-	019-dparse/bad.profileReview.unauthorized-cert \
-	019-dparse/bad.profileReview.wrong-nssdb \
-	019-dparse/bad.profileSubmit.csr.empty \
-	019-dparse/bad.profileSubmit.csr.subject-mismatch \
-	019-dparse/bad.profileSubmit.serial.empty \
-	019-dparse/bad.profileSubmit.serial.invalid \
-	019-dparse/bad.profileSubmit.serial.out-of-range \
-	019-dparse/good.checkRequest.complete \
-	019-dparse/good.checkRequest.pending \
-	019-dparse/good.displayCertFromRequest \
-	019-dparse/good.displayCertFromRequest-extra-line \
-	019-dparse/good.profileList \
-	019-dparse/good.profileReview \
-	019-dparse/good.profileSubmit.issued \
-	019-dparse/good.profileSubmit.serial.in-range \
+	019-dparse/bad.checkRequest.nosuch.json \
+	019-dparse/bad.checkRequest.nosuch.xml \
+	019-dparse/bad.displayCertFromRequest.incomplete.xml \
+	019-dparse/bad.displayCertFromRequest.no-such-request.json \
+	019-dparse/bad.displayCertFromRequest.no-such-request.xml \
+	019-dparse/bad.displayCertFromRequest.rejected.xml \
+	019-dparse/bad.profileProcess.bad-property.xml \
+	019-dparse/bad.profileProcess.no-agent-cert.xml \
+	019-dparse/bad.profileProcess.no-ca-cert.xml \
+	019-dparse/bad.profileProcess.no-property.xml \
+	019-dparse/bad.profileProcess.not-pending.xml \
+	019-dparse/bad.profileReview.no-such-request.xml \
+	019-dparse/bad.profileReview.unauthorized-cert.xml \
+	019-dparse/bad.profileReview.wrong-nssdb.xml \
+	019-dparse/bad.profileSubmit.csr.empty.json \
+	019-dparse/bad.profileSubmit.csr.empty.xml \
+	019-dparse/bad.profileSubmit.csr.invalid.json \
+	019-dparse/bad.profileSubmit.csr.subject-mismatch.xml \
+	019-dparse/bad.profileSubmit.serial.empty.xml \
+	019-dparse/bad.profileSubmit.serial.invalid.xml \
+	019-dparse/bad.profileSubmit.serial.out-of-range.xml \
+	019-dparse/good.checkRequest.complete.json \
+	019-dparse/good.checkRequest.complete.xml \
+	019-dparse/good.checkRequest.pending.json \
+	019-dparse/good.checkRequest.pending.xml \
+	019-dparse/good.displayCertFromRequest-extra-line.xml \
+	019-dparse/good.displayCertFromRequest.json \
+	019-dparse/good.displayCertFromRequest.xml \
+	019-dparse/good.profileList.json \
+	019-dparse/good.profileList.xml \
+	019-dparse/good.profileReview.xml \
+	019-dparse/good.profileSubmit.issued.json \
+	019-dparse/good.profileSubmit.issued.xml \
+	019-dparse/good.profileSubmit.serial.in-range.xml \
 	020-xparse/certmaster-fault.xml \
 	020-xparse/certmaster-rep1.xml \
 	020-xparse/certmaster-rep2.xml \

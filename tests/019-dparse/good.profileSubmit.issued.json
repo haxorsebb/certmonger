@@ -1,0 +1,33 @@
+{
+    "error": null,
+    "id": 0,
+    "principal": "admin@EXAMPLE.TEST",
+    "result": {
+        "result": {
+            "cacn": "ipa",
+            "cert_request_status": "complete",
+            "certificate": "MIIFODCCA6CgAwIBAgIQdlK5QebTx77rrNFpsVOHmTANBgkqhkiG9w0BAQsFADA3MRUwEwYDVQQKDAxFWEFNUExFLlRFU1QxHjAcBgNVBAMMFUNlcnRpZmljYXRlIEF1dGhvcml0eTAeFw0yNDExMTgxOTEyMTFaFw0yNjExMTkxOTEyMTFaMDIxFTATBgNVBAoMDEVYQU1QTEUuVEVTVDEZMBcGA1UEAwwQaXBhLmV4YW1wbGUudGVzdDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAN0G465levl0RkaYb0YmJHLnYnstY35tvODdWcpIoQ8qe57Cid4TDesECpN/xVZ9fUHBPoDNsDb+JzTcCd+JocleuZqj08Ln+Irb5Xhd3DXaCGUUCJ3/+eOVEGnZkp1licZbkkjeRrjiHXYdFia3zzZIokXV+vuJSbasy8o/rWCUCgJBFLqRDBslsQJKqk7rs5w4wcT629Q6Z4jzb+oWbemUS8Puxk2rmubV2EDWlYjgJftkxLLeecPx6h0zEO02hBZngF7x+hKjsJ38f+KL2JqE0yfa+OcSaSkDT94EMVqbhUpuV3I7ilVRC9xv818fUBGjJfRTVCXQizSHYIvfPRcCAwEAAaOCAcMwggG/MB8GA1UdIwQYMBaAFKiEhUhIcDVO6mAnUKaNttlPFiGhMD4GCCsGAQUFBwEBBDIwMDAuBggrBgEFBQcwAYYiaHR0cDovL2lwYS1jYS5leGFtcGxlLnRlc3QvY2Evb2NzcDAOBgNVHQ8BAf8EBAMCBPAwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMHcGA1UdHwRwMG4wbKA0oDKGMGh0dHA6Ly9pcGEtY2EuZXhhbXBsZS50ZXN0L2lwYS9jcmwvTWFzdGVyQ1JMLmJpbqI0pDIwMDEOMAwGA1UECgwFaXBhY2ExHjAcBgNVBAMMFUNlcnRpZmljYXRlIEF1dGhvcml0eTAdBgNVHQ4EFgQUe/DNhx8ZWM+1WfGJEkcMG99yg7kwgZQGA1UdEQSBjDCBiYIQaXBhLmV4YW1wbGUudGVzdKAyBgorBgEEAYI3FAIDoCQMImxkYXAvaXBhLmV4YW1wbGUudGVzdEBFWEFNUExFLlRFU1SgQQYGKwYBBQICoDcwNaAOGwxFWEFNUExFLlRFU1ShIzAhoAMCAQGhGjAYGwRsZGFwGxBpcGEuZXhhbXBsZS50ZXN0MA0GCSqGSIb3DQEBCwUAA4IBgQCSd1tuyjcl5R/kdvyWDzIz3FqzxithbNmaGy9t2carSi3Ndvnh5PNSrhQ1gWM0lLCjoU0vP7p64u7/DLRJR+1d27p8QmEZMeCoh1Qe68iD3jjolzF/j8ReTHN1zKAKMcyJpBKlO89N2XsYnxRlJC/keQVXC5TrEzSTWBwr9RckK9wYhKB8U1U+2Y0/t+HWvvpQELAF1TmSpbHM51trZoFN09nO/grB1m28R8E/34WxwnWo1f2+WaUCOa4wNoZYvgF2beBypjX6/tEzaNeXUe6zpGnCpQ/wGfE1YnDaO8nF4y1fYNxEV+c0REOHXVr8qyHhHAN07fPtlV9YqIk/meB8pMYs8iO45uqoGfrxL4JIXUNjZHp4zOfmZqZ8iNoSAXen/BGpI9tBgnVN6PiEMBBp6QrR//2H1ZTgYbCTn/T9F8XeLDHtakSMzTM5vqDYz6QJ2F/RkcXpPVbd+6Cqb3CelMXTzPhMJxW6IKEgIQj4VtdKm32MyUkR5IlRwCOIbU8=",
+            "issuer": "CN=Certificate Authority,O=EXAMPLE.TEST",
+            "request_id": "332621425870192170580644617633640391310",
+            "san_dnsname": [
+                {
+                    "__dns_name__": "ipa.example.test"
+                }
+            ],
+            "san_other_kpn": [
+                "ldap/ipa.example.test@EXAMPLE.TEST"
+            ],
+            "san_other_upn": [
+                "ldap/ipa.example.test@EXAMPLE.TEST"
+            ],
+            "serial_number": "157278429312064746734040803807480481689",
+            "serial_number_hex": "0x7652B941E6D3C7BEEBACD169B1538799",
+            "subject": "CN=ipa.example.test,O=EXAMPLE.TEST",
+            "valid_not_after": "Thu Nov 19 19:12:11 2026 UTC",
+            "valid_not_before": "Mon Nov 18 19:12:11 2024 UTC"
+        },
+        "summary": null,
+        "value": "332621425870192170580644617633640391310"
+    },
+    "version": "4.13.0.dev202409181703+git4bfbf0ba9"
+}

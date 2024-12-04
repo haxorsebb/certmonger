@@ -1,0 +1,1140 @@
+{
+  "error": null,
+  "id": null,
+  "principal": "host/ipa.example.test@EXAMPLE.TEST",
+  "result": {
+    "count": 93,
+    "messages": [
+      {
+        "code": 13001,
+        "data": {
+          "server_version": "2.254"
+        },
+        "message": "API Version number was not sent, forward compatibility not guaranteed. Assuming server's API version, 2.254",
+        "name": "VersionMissing",
+        "type": "warning"
+      }
+    ],
+    "result": [
+      {
+        "cn": [
+          "acmeIPAServerCert"
+        ],
+        "description": [
+          "ACME IPA service certificate profile"
+        ],
+        "dn": "cn=acmeIPAServerCert,cn=certprofiles,cn=ca,dc=example,dc=test",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caIPAserviceCert"
+        ],
+        "description": [
+          "Standard profile for network services"
+        ],
+        "dn": "cn=caIPAserviceCert,cn=certprofiles,cn=ca,dc=example,dc=test",
+        "ipacertprofilestoreissued": [
+          true
+        ]
+      },
+      {
+        "cn": [
+          "IECUserRoles"
+        ],
+        "description": [
+          "User profile that includes IECUserRoles extension from request"
+        ],
+        "dn": "cn=IECUserRoles,cn=certprofiles,cn=ca,dc=example,dc=test",
+        "ipacertprofilestoreissued": [
+          true
+        ]
+      },
+      {
+        "cn": [
+          "KDCs_PKINIT_Certs"
+        ],
+        "description": [
+          "Profile for PKINIT support by KDCs"
+        ],
+        "dn": "cn=KDCs_PKINIT_Certs,cn=certprofiles,cn=ca,dc=example,dc=test",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "acmeServerCert"
+        ],
+        "description": [
+          "ACME Server Certificate Enrollment"
+        ],
+        "dn": "cn=acmeServerCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caCMCserverCert"
+        ],
+        "description": [
+          "Server Certificate Enrollment using CMC"
+        ],
+        "dn": "cn=caCMCserverCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caCMCECserverCert"
+        ],
+        "description": [
+          "Server Certificate wth ECC keys Enrollment using CMC"
+        ],
+        "dn": "cn=caCMCECserverCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caCMCECsubsystemCert"
+        ],
+        "description": [
+          "Subsystem Certificate Enrollment with ECC keys using CMC"
+        ],
+        "dn": "cn=caCMCECsubsystemCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caCMCsubsystemCert"
+        ],
+        "description": [
+          "Subsystem Certificate Enrollment using CMC"
+        ],
+        "dn": "cn=caCMCsubsystemCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caCMCauditSigningCert"
+        ],
+        "description": [
+          "Audit Signing Certificate Enrollment using CMC"
+        ],
+        "dn": "cn=caCMCauditSigningCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caCMCcaCert"
+        ],
+        "description": [
+          "Certificate Manager Signing Certificate Enrollment using CMC"
+        ],
+        "dn": "cn=caCMCcaCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caCMCocspCert"
+        ],
+        "description": [
+          "OCSP Responder Signing Certificate Enrollment using CMC"
+        ],
+        "dn": "cn=caCMCocspCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caCMCkraTransportCert"
+        ],
+        "description": [
+          "Key Archival Authority Transport Certificate Enrollment using CMC"
+        ],
+        "dn": "cn=caCMCkraTransportCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caCMCkraStorageCert"
+        ],
+        "description": [
+          "KRA storage Certificate Enrollment using CMC"
+        ],
+        "dn": "cn=caCMCkraStorageCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caServerKeygen_UserCert"
+        ],
+        "description": [
+          "Manual User Dual-Use Certificate Enrollment using server-side Key generation"
+        ],
+        "dn": "cn=caServerKeygen_UserCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caServerKeygen_DirUserCert"
+        ],
+        "description": [
+          "Directory-authenticated User Dual-Use Certificate Enrollment using server-side Key generation"
+        ],
+        "dn": "cn=caServerKeygen_DirUserCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caUserCert"
+        ],
+        "description": [
+          "Manual User Dual-Use Certificate Enrollment"
+        ],
+        "dn": "cn=caUserCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caECUserCert"
+        ],
+        "description": [
+          "Manual User Dual-Use ECC Certificate Enrollment"
+        ],
+        "dn": "cn=caECUserCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caUserSMIMEcapCert"
+        ],
+        "description": [
+          "Manual User Dual-Use S/MIME capabilities Certificate Enrollment"
+        ],
+        "dn": "cn=caUserSMIMEcapCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caDualCert"
+        ],
+        "description": [
+          "Manual User Signing & Encryption Certificates Enrollment"
+        ],
+        "dn": "cn=caDualCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caDirBasedDualCert"
+        ],
+        "description": [
+          "Directory-authenticated User Signing & Encryption Certificates Enrollment"
+        ],
+        "dn": "cn=caDirBasedDualCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "AdminCert"
+        ],
+        "description": [
+          "Manual Administrator Certificate Enrollment"
+        ],
+        "dn": "cn=AdminCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "ECAdminCert"
+        ],
+        "description": [
+          "Manual Administrator Certificate Enrollment with ECC keys"
+        ],
+        "dn": "cn=ECAdminCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caSignedLogCert"
+        ],
+        "description": [
+          "(deprecated; use caAuditSigningCert) Manual Log Signing Certificate Enrollment"
+        ],
+        "dn": "cn=caSignedLogCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caTPSCert"
+        ],
+        "description": [
+          "Manual TPS Server Certificate Enrollment"
+        ],
+        "dn": "cn=caTPSCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caRARouterCert"
+        ],
+        "description": [
+          "RA Agent-Authenticated Router Certificate Enrollment"
+        ],
+        "dn": "cn=caRARouterCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caRouterCert"
+        ],
+        "description": [
+          "One Time Pin Router Certificate Enrollment"
+        ],
+        "dn": "cn=caRouterCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caServerCert"
+        ],
+        "description": [
+          "Manual Server Certificate Enrollment"
+        ],
+        "dn": "cn=caServerCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caECServerCert"
+        ],
+        "description": [
+          "Manual Server Certificate Enrollment with ECC keys"
+        ],
+        "dn": "cn=caECServerCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caServerCertWithSCT"
+        ],
+        "description": [
+          "Manual Server SCT Certificate Enrollment"
+        ],
+        "dn": "cn=caServerCertWithSCT",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caECServerCertWithSCT"
+        ],
+        "description": [
+          "Manual Server SCT Certificate Enrollment with ECC keys"
+        ],
+        "dn": "cn=caECServerCertWithSCT",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caSubsystemCert"
+        ],
+        "description": [
+          "Manual Subsystem Certificate Enrollment"
+        ],
+        "dn": "cn=caSubsystemCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caECSubsystemCert"
+        ],
+        "description": [
+          "Manual Subsystem Certificate Enrollment with ECC keys"
+        ],
+        "dn": "cn=caECSubsystemCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caOtherCert"
+        ],
+        "description": [
+          "Other Certificate Enrollment"
+        ],
+        "dn": "cn=caOtherCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caCACert"
+        ],
+        "description": [
+          "Manual Certificate Manager Signing Certificate Enrollment"
+        ],
+        "dn": "cn=caCACert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caCrossSignedCACert"
+        ],
+        "description": [
+          "Manual Cross Signed Certificate Manager Signing Certificate Enrollment"
+        ],
+        "dn": "cn=caCrossSignedCACert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caInstallCACert"
+        ],
+        "description": [
+          "Manual Security Domain Certificate Authority Signing Certificate Enrollment"
+        ],
+        "dn": "cn=caInstallCACert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caRACert"
+        ],
+        "description": [
+          "Manual Registration Manager Signing Certificate Enrollment"
+        ],
+        "dn": "cn=caRACert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caOCSPCert"
+        ],
+        "description": [
+          "Manual OCSP Manager Signing Certificate Enrollment"
+        ],
+        "dn": "cn=caOCSPCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caStorageCert"
+        ],
+        "description": [
+          "Manual Data Recovery Manager Storage Certificate Enrollment"
+        ],
+        "dn": "cn=caStorageCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caTransportCert"
+        ],
+        "description": [
+          "Manual Data Recovery Manager Transport Certificate Enrollment"
+        ],
+        "dn": "cn=caTransportCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caDirPinUserCert"
+        ],
+        "description": [
+          "Directory-Pin-Authenticated User Dual-Use Certificate Enrollment"
+        ],
+        "dn": "cn=caDirPinUserCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caECDirPinUserCert"
+        ],
+        "description": [
+          "Directory-Pin-Authenticated User Dual-Use ECC Certificate Enrollment"
+        ],
+        "dn": "cn=caECDirPinUserCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caDirUserCert"
+        ],
+        "description": [
+          "Directory-Authenticated User Dual-Use Certificate Enrollment"
+        ],
+        "dn": "cn=caDirUserCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caECDirUserCert"
+        ],
+        "description": [
+          "Directory-Authenticated User ECC Certificate Enrollment"
+        ],
+        "dn": "cn=caECDirUserCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caAgentServerCert"
+        ],
+        "description": [
+          "Agent-Authenticated Server Certificate Enrollment"
+        ],
+        "dn": "cn=caAgentServerCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caECAgentServerCert"
+        ],
+        "description": [
+          "Agent-Authenticated Server Certificate Enrollment with ECC keys"
+        ],
+        "dn": "cn=caECAgentServerCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caAgentFileSigning"
+        ],
+        "description": [
+          "Agent-Authenticated File Signing"
+        ],
+        "dn": "cn=caAgentFileSigning",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caCMCUserCert"
+        ],
+        "description": [
+          "Signed CMC-Authenticated User Certificate Enrollment"
+        ],
+        "dn": "cn=caCMCUserCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caCMCECUserCert"
+        ],
+        "description": [
+          "Signed CMC-Authenticated User Certificate wth ECC keys Enrollment"
+        ],
+        "dn": "cn=caCMCECUserCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caCMCcaIssuanceProtectionCert"
+        ],
+        "description": [
+          "CA Issuance Protection Certificate Enrollment using CMC"
+        ],
+        "dn": "cn=caCMCcaIssuanceProtectionCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caFullCMCUserCert"
+        ],
+        "description": [
+          "Agent-Signed CMC-Authenticated User Certificate Enrollment"
+        ],
+        "dn": "cn=caFullCMCUserCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caECFullCMCUserCert"
+        ],
+        "description": [
+          "Agent-Signed CMC-Authenticated User Certificate Enrollment"
+        ],
+        "dn": "cn=caECFullCMCUserCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caFullCMCUserSignedCert"
+        ],
+        "description": [
+          "User-Signed CMC-Authenticated User Certificate Enrollment"
+        ],
+        "dn": "cn=caFullCMCUserSignedCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caECFullCMCUserSignedCert"
+        ],
+        "description": [
+          "User-Signed CMC-Authenticated User Certificate Enrollment"
+        ],
+        "dn": "cn=caECFullCMCUserSignedCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caFullCMCSharedTokenCert"
+        ],
+        "description": [
+          "CMC Shared Token User Certificate Enrollment"
+        ],
+        "dn": "cn=caFullCMCSharedTokenCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caECFullCMCSharedTokenCert"
+        ],
+        "description": [
+          "CMC Shared Token User Certificate Enrollment"
+        ],
+        "dn": "cn=caECFullCMCSharedTokenCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caSimpleCMCUserCert"
+        ],
+        "description": [
+          "Simple CMC Enrollment Request for User Certificate"
+        ],
+        "dn": "cn=caSimpleCMCUserCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caECSimpleCMCUserCert"
+        ],
+        "description": [
+          "Simple CMC Enrollment Request for User Certificate"
+        ],
+        "dn": "cn=caECSimpleCMCUserCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caTokenDeviceKeyEnrollment"
+        ],
+        "description": [
+          "Token Device Key Enrollment"
+        ],
+        "dn": "cn=caTokenDeviceKeyEnrollment",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caTokenUserEncryptionKeyEnrollment"
+        ],
+        "description": [
+          "Token User Encryption Certificate Enrollment"
+        ],
+        "dn": "cn=caTokenUserEncryptionKeyEnrollment",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caTokenUserSigningKeyEnrollment"
+        ],
+        "description": [
+          "Token User Signing Certificate Enrollment"
+        ],
+        "dn": "cn=caTokenUserSigningKeyEnrollment",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caTempTokenDeviceKeyEnrollment"
+        ],
+        "description": [
+          "Temporary Device Certificate Enrollment"
+        ],
+        "dn": "cn=caTempTokenDeviceKeyEnrollment",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caTempTokenUserEncryptionKeyEnrollment"
+        ],
+        "description": [
+          "Temporary Token User Encryption Certificate Enrollment"
+        ],
+        "dn": "cn=caTempTokenUserEncryptionKeyEnrollment",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caTempTokenUserSigningKeyEnrollment"
+        ],
+        "description": [
+          "Temporary Token User Signing Certificate Enrollment"
+        ],
+        "dn": "cn=caTempTokenUserSigningKeyEnrollment",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caAdminCert"
+        ],
+        "description": [
+          "Security Domain Administrator Certificate Enrollment"
+        ],
+        "dn": "cn=caAdminCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caECAdminCert"
+        ],
+        "description": [
+          "Security Domain Administrator Certificate Enrollment with ECC keys"
+        ],
+        "dn": "cn=caECAdminCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caInternalAuthServerCert"
+        ],
+        "description": [
+          "Security Domain Server Certificate Enrollment"
+        ],
+        "dn": "cn=caInternalAuthServerCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caECInternalAuthServerCert"
+        ],
+        "description": [
+          "Security Domain Server Certificate Enrollment"
+        ],
+        "dn": "cn=caECInternalAuthServerCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caInternalAuthTransportCert"
+        ],
+        "description": [
+          "Security Domain Data Recovery Manager Transport Certificate Enrollment"
+        ],
+        "dn": "cn=caInternalAuthTransportCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caInternalAuthDRMstorageCert"
+        ],
+        "description": [
+          "Security Domain DRM storage Certificate Enrollment"
+        ],
+        "dn": "cn=caInternalAuthDRMstorageCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caInternalAuthSubsystemCert"
+        ],
+        "description": [
+          "Security Domain Subsystem Certificate Enrollment"
+        ],
+        "dn": "cn=caInternalAuthSubsystemCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caECInternalAuthSubsystemCert"
+        ],
+        "description": [
+          "Security Domain Subsystem Certificate Enrollment"
+        ],
+        "dn": "cn=caECInternalAuthSubsystemCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caInternalAuthOCSPCert"
+        ],
+        "description": [
+          "Security Domain OCSP Manager Signing Certificate Enrollment"
+        ],
+        "dn": "cn=caInternalAuthOCSPCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caInternalAuthAuditSigningCert"
+        ],
+        "description": [
+          "Audit Signing Certificate Enrollment"
+        ],
+        "dn": "cn=caInternalAuthAuditSigningCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "DomainController"
+        ],
+        "description": [
+          "Domain Controller"
+        ],
+        "dn": "cn=DomainController",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caDualRAuserCert"
+        ],
+        "description": [
+          "RA Agent-Authenticated User Certificate Enrollment"
+        ],
+        "dn": "cn=caDualRAuserCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caRAagentCert"
+        ],
+        "description": [
+          "RA Agent-Authenticated Agent User Certificate Enrollment"
+        ],
+        "dn": "cn=caRAagentCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caRAserverCert"
+        ],
+        "description": [
+          "RA Agent-Authenticated Server Certificate Enrollment"
+        ],
+        "dn": "cn=caRAserverCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caUUIDdeviceCert"
+        ],
+        "description": [
+          "Manual device Dual-Use Certificate Enrollment to contain UUID in SAN"
+        ],
+        "dn": "cn=caUUIDdeviceCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caSSLClientSelfRenewal"
+        ],
+        "description": [
+          "Renewal: Self-renew user SSL client certificates"
+        ],
+        "dn": "cn=caSSLClientSelfRenewal",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caDirUserRenewal"
+        ],
+        "description": [
+          "Renewal: Directory-Authenticated User Certificate Self-Renew profile"
+        ],
+        "dn": "cn=caDirUserRenewal",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caManualRenewal"
+        ],
+        "description": [
+          "Renewal: Renew certificate to be manually approved by agents"
+        ],
+        "dn": "cn=caManualRenewal",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caTokenMSLoginEnrollment"
+        ],
+        "description": [
+          "Token User MS Login Certificate Enrollment"
+        ],
+        "dn": "cn=caTokenMSLoginEnrollment",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caTokenUserSigningKeyRenewal"
+        ],
+        "description": [
+          "smart card token signing cert renewal profile"
+        ],
+        "dn": "cn=caTokenUserSigningKeyRenewal",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caTokenUserEncryptionKeyRenewal"
+        ],
+        "description": [
+          "smart card token encryption cert renewal profile"
+        ],
+        "dn": "cn=caTokenUserEncryptionKeyRenewal",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caTokenUserAuthKeyRenewal"
+        ],
+        "description": [
+          "smart card token authentication cert renewal profile"
+        ],
+        "dn": "cn=caTokenUserAuthKeyRenewal",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caJarSigningCert"
+        ],
+        "description": [
+          "Manual Jar Signing Certificate Enrollment"
+        ],
+        "dn": "cn=caJarSigningCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caAuditSigningCert"
+        ],
+        "description": [
+          "Manual Audit Signing Certificate Enrollment"
+        ],
+        "dn": "cn=caAuditSigningCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caEncUserCert"
+        ],
+        "description": [
+          "Manual User Encryption Certificates Enrollment"
+        ],
+        "dn": "cn=caEncUserCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caSigningUserCert"
+        ],
+        "description": [
+          "Manual User Signing Certificate Enrollment"
+        ],
+        "dn": "cn=caSigningUserCert",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caTokenUserDelegateAuthKeyEnrollment"
+        ],
+        "description": [
+          "Token User Delegate Authentication Certificate Enrollment"
+        ],
+        "dn": "cn=caTokenUserDelegateAuthKeyEnrollment",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      },
+      {
+        "cn": [
+          "caTokenUserDelegateSigningKeyEnrollment"
+        ],
+        "description": [
+          "Token User Delegate Signing Certificate Enrollment"
+        ],
+        "dn": "cn=caTokenUserDelegateSigningKeyEnrollment",
+        "ipacertprofilestoreissued": [
+          false
+        ]
+      }
+    ],
+    "summary": "93 profiles matched",
+    "truncated": false
+  },
+  "version": "4.13.0.dev202409181703+git4bfbf0ba9"
+}

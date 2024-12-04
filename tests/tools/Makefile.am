@@ -32,7 +32,7 @@ addcinfo_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS)
 
 dparse_CFLAGS = $(AM_CFLAGS) $(XML_CFLAGS)
 dparse_SOURCES = dparse.c
-dparse_LDADD = $(top_srcdir)/src/submit-d.c $(LDADD) $(XML_LIBS)
+dparse_LDADD = $(top_srcdir)/src/submit-d.c $(LDADD) $(XML_LIBS) $(JANSSON_LIBS)
 
 citerate_SOURCES = citerate.c
 citerate_LDADD = $(top_srcdir)/src/store-gen.c $(LDADD)

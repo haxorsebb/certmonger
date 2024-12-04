@@ -1,0 +1,15 @@
+{
+    "error": null,
+    "id": null,
+    "principal": "admin@EXAMPLE.TEST",
+    "result": {
+        "result": {
+            "cert_request_status": "pending",
+            "request_id": "73577173089892679894729695106669289136"
+        },
+        "summary": null,
+        "value": "73577173089892679894729695106669289136"
+    },
+    "version": "4.13.0.dev202409181703+git4bfbf0ba9"
+}
+
