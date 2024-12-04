@@ -487,7 +487,6 @@ cm_submit_d_submit_result(void *parent, const char *xml,
 
 int
 cm_submit_d_check_result(void *parent, const char *xml,
-			 char **error_code, char **error_reason,
 			 char **error, char **status, char **requestId)
 {
 	/* RequestStatus.java:
@@ -507,7 +506,6 @@ cm_submit_d_check_result(void *parent, const char *xml,
 
 int
 cm_submit_d_reject_result(void *parent, const char *xml,
-			  char **error_code, char **error_reason,
 			  char **error, char **status, char **requestId)
 {
 	*error = cm_submit_d_xml_value(parent, xml,
@@ -524,7 +522,7 @@ cm_submit_d_reject_result(void *parent, const char *xml,
 int
 cm_submit_d_review_result(void *parent, const char *xml,
 			  char **error_code, char **error_reason,
-			  char **error, char **status, char **requestId)
+			  char **status, char **requestId)
 {
 	*error_code = trim(parent,
 			   cm_submit_d_xml_value(parent, xml,
@@ -547,7 +545,7 @@ cm_submit_d_review_result(void *parent, const char *xml,
 int
 cm_submit_d_approve_result(void *parent, const char *xml,
 			   char **error_code, char **error_reason,
-			   char **error, char **status, char **requestId)
+			   char **status, char **requestId)
 {
 	*error_code = trim(parent,
 			   cm_submit_d_xml_value(parent, xml,
@@ -569,7 +567,6 @@ cm_submit_d_approve_result(void *parent, const char *xml,
 
 int
 cm_submit_d_fetch_result(void *parent, const char *xml,
-			 char **error_code, char **error_reason,
 			 char **error, char **status,
 			 char **requestId, char **cert)
 {
@@ -603,7 +600,6 @@ cm_submit_d_fetch_result(void *parent, const char *xml,
 int
 cm_submit_d_profiles_result(void *parent, const char *xml,
 			    char **error_code, char **error_reason,
-			    char **error, char **status,
 			    char ***profiles)
 {
 	*error_code = cm_submit_d_xml_value(parent, xml,
@@ -677,8 +673,7 @@ cm_submit_d_check_eval(void *parent, const char *xml, const char *url,
 	*err = NULL;
 	if (is_xml) {
 		cm_submit_d_check_result(parent, xml,
-					 &error_code, &error_reason, &error,
-					 &status, &requestId);
+					 &error, &status, &requestId);
 	} else {
 		cm_submit_d_rest_check_result(parent, xml,
 					 &error_code, &error_reason,
@@ -728,15 +723,14 @@ cm_submit_d_check_eval(void *parent, const char *xml, const char *url,
 
 enum cm_external_status
 cm_submit_d_reject_eval(void *parent, const char *xml, const char *url,
-			dbus_bool_t can_agent, char **out, char **err)
+			char **out, char **err)
 {
 	char *error = NULL, *error_code = NULL, *error_reason = NULL;
 	char *status = NULL, *requestId = NULL;
 	*out = NULL;
 	*err = NULL;
 	cm_submit_d_reject_result(parent, xml,
-				  &error_code, &error_reason, &error,
-				  &status, &requestId);
+				  &error, &status, &requestId);
 	if ((error != NULL) || (error_code != NULL) || (error_reason != NULL)) {
 		*out = talloc_asprintf(parent, "Server at \"%s\" replied", url);
 		if (error != NULL) {
@@ -756,14 +750,14 @@ cm_submit_d_reject_eval(void *parent, const char *xml, const char *url,
 
 enum cm_external_status
 cm_submit_d_review_eval(void *parent, const char *xml, const char *url,
-			dbus_bool_t can_agent, char **out, char **err)
+			char **out, char **err)
 {
 	char *error = NULL, *error_code = NULL, *error_reason = NULL;
 	char *status = NULL, *requestId = NULL;
 	*out = NULL;
 	*err = NULL;
 	cm_submit_d_review_result(parent, xml,
-				  &error_code, &error_reason, &error,
+				  &error_code, &error_reason,
 				  &status, &requestId);
 	if ((status != NULL) &&
 	    (strcmp(status, "pending") == 0) &&
@@ -800,7 +794,7 @@ cm_submit_d_review_eval(void *parent, const char *xml, const char *url,
 
 enum cm_external_status
 cm_submit_d_approve_eval(void *parent, const char *xml, const char *url,
-			 dbus_bool_t can_agent, char **out, char **err, int is_xml)
+			 char **out, char **err, int is_xml)
 {
 	char *error = NULL, *error_code = NULL, *error_reason = NULL;
 	char *status = NULL, *requestId = NULL;
@@ -808,7 +802,7 @@ cm_submit_d_approve_eval(void *parent, const char *xml, const char *url,
 	*err = NULL;
 	if (is_xml) {
 		cm_submit_d_approve_result(parent, xml,
-					   &error_code, &error_reason, &error,
+					   &error_code, &error_reason,
 					   &status, &requestId);
 	} else {
 		cm_submit_d_rest_approve_result(parent, xml,
@@ -841,7 +835,7 @@ cm_submit_d_approve_eval(void *parent, const char *xml, const char *url,
 
 enum cm_external_status
 cm_submit_d_fetch_eval(void *parent, const char *xml, const char *url,
-		       dbus_bool_t can_agent, char **out, char **err, int is_xml)
+		      char **out, char **err, int is_xml)
 {
 	char *error = NULL, *error_code = NULL, *error_reason = NULL;
 	char *status = NULL, *requestId = NULL, *cert = NULL;
@@ -849,7 +843,7 @@ cm_submit_d_fetch_eval(void *parent, const char *xml, const char *url,
 	*err = NULL;
 	if (is_xml) {
 		cm_submit_d_fetch_result(parent, xml,
-					 &error_code, &error_reason, &error,
+					 &error,
 					 &status, &requestId, &cert);
 	} else {
 		cm_submit_d_rest_fetch_result(parent, xml,
@@ -878,11 +872,11 @@ cm_submit_d_fetch_eval(void *parent, const char *xml, const char *url,
 }
 
 enum cm_external_status
-cm_submit_d_profiles_eval(void *parent, const char *xml, const char *url,
-			  dbus_bool_t can_agent, char **out, char **err,
+cm_submit_d_profiles_eval(void *parent, const char *xml,
+			  char **out, char **err,
 			  int is_xml)
 {
-	char *error_code = NULL, *error_reason = NULL, *status = NULL;
+	char *error_code = NULL, *error_reason = NULL;
 	char **profiles = NULL;
 	int i;
 
@@ -890,7 +884,7 @@ cm_submit_d_profiles_eval(void *parent, const char *xml, const char *url,
 	*err = NULL;
 	if (is_xml) {
 		cm_submit_d_profiles_result(parent, xml, &error_code, &error_reason,
-					    err, &status, &profiles);
+					    &profiles);
 	} else {
 		cm_submit_d_rest_profiles_result(parent, xml, &error_code,
 				&error_reason, &profiles);
@@ -1625,7 +1619,6 @@ restart:
 		break;
 	case op_reject:
 		cm_submit_d_reject_result(hctx, result,
-					  &error_code, &error_reason,
 					  &error, &status, &requestId);
 		if (error_code != NULL) {
 			printf("error code: %s\n", error_code);
@@ -1660,7 +1653,7 @@ restart:
 		free(defaults);
 		cm_submit_d_approve_result(hctx, result,
 					   &error_code, &error_reason,
-					   &error, &status, &requestId);
+					    &status, &requestId);
 		if (error_code != NULL) {
 			printf("error code: %s\n", error_code);
 		}
@@ -1688,7 +1681,7 @@ restart:
 		} else {
 			cm_submit_d_approve_result(hctx, result,
 						   &error_code, &error_reason,
-						   &error, &status, &requestId);
+						   &status, &requestId);
 			if (error_code != NULL) {
 				printf("error code: %s\n", error_code);
 			}
@@ -1708,7 +1701,6 @@ restart:
 		break;
 	case op_check:
 		cm_submit_d_check_result(hctx, result,
-					 &error_code, &error_reason,
 					 &error, &status, &requestId);
 		if (error_code != NULL) {
 			printf("error code: %s\n", error_code);
@@ -1728,7 +1720,6 @@ restart:
 		break;
 	case op_fetch:
 		cm_submit_d_fetch_result(hctx, result,
-					 &error_code, &error_reason,
 					 &error, &status, &requestId, &cert);
 		if (error_code != NULL) {
 			printf("error code: %s\n", error_code);
