@@ -58,7 +58,10 @@
 
 
 static int
-interact(LDAP *ld, unsigned flags, void *defaults, void *sasl_interact)
+interact(__attribute__ ((unused)) LDAP *ld,
+		 __attribute__ ((unused)) unsigned flags,
+		 __attribute__ ((unused)) void *defaults,
+		 __attribute__ ((unused)) void *sasl_interact)
 {
 	return 0;
 }
