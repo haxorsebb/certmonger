@@ -33,6 +33,8 @@
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
 
+#include <jansson.h>
+
 #include <popt.h>
 
 #include "submit-d.h"
@@ -614,15 +616,21 @@ cm_submit_d_profiles_result(void *parent, const char *xml,
 
 enum cm_external_status
 cm_submit_d_submit_eval(void *parent, const char *xml, const char *url,
-			dbus_bool_t can_agent, char **out, char **err)
+			dbus_bool_t can_agent, char **out, char **err, int is_xml)
 {
 	char *error = NULL, *error_code = NULL, *error_reason = NULL;
 	char *status = NULL, *requestId = NULL, *cert = NULL;
 	*out = NULL;
 	*err = NULL;
-	cm_submit_d_submit_result(parent, xml,
-				  &error_code, &error_reason, &error,
-				  &status, &requestId, &cert);
+	if (is_xml) {
+		cm_submit_d_submit_result(parent, xml,
+					  &error_code, &error_reason, &error,
+					  &status, &requestId, &cert);
+	} else {
+		cm_submit_d_rest_submit_result(parent, xml,
+					  &error_code, &error_reason,
+					  &status, &requestId, &cert);
+	}
 	if ((status != NULL) && (strcmp(status, "0") == 0) &&
 	    (cert != NULL)) {
 		*out = talloc_asprintf(parent, "%s\n", trim(parent, cert));
@@ -661,21 +669,29 @@ cm_submit_d_submit_eval(void *parent, const char *xml, const char *url,
 
 enum cm_external_status
 cm_submit_d_check_eval(void *parent, const char *xml, const char *url,
-		       dbus_bool_t can_agent, char **out, char **err)
+		       dbus_bool_t can_agent, char **out, char **err, int is_xml)
 {
 	char *error = NULL, *error_code = NULL, *error_reason = NULL;
 	char *status = NULL, *requestId = NULL;
 	*out = NULL;
 	*err = NULL;
-	cm_submit_d_check_result(parent, xml,
-				 &error_code, &error_reason, &error,
-				 &status, &requestId);
+	if (is_xml) {
+		cm_submit_d_check_result(parent, xml,
+					 &error_code, &error_reason, &error,
+					 &status, &requestId);
+	} else {
+		cm_submit_d_rest_check_result(parent, xml,
+					 &error_code, &error_reason,
+					 &status, &requestId);
+	}
 	if ((status != NULL) &&
 	    (strcmp(status, "complete") == 0) &&
 	    (requestId != NULL)) {
+		char *encoded = cm_submit_u_url_encode(requestId);
 		*out = talloc_asprintf(parent,
 				       "0\nstate=retrieve&requestId=%s\n",
-				       cm_submit_u_url_encode(requestId));
+				       encoded);
+		free(encoded);
 		return CM_SUBMIT_STATUS_WAIT_WITH_DELAY;
 	}
 	if ((status != NULL) &&
@@ -784,15 +800,21 @@ cm_submit_d_review_eval(void *parent, const char *xml, const char *url,
 
 enum cm_external_status
 cm_submit_d_approve_eval(void *parent, const char *xml, const char *url,
-			 dbus_bool_t can_agent, char **out, char **err)
+			 dbus_bool_t can_agent, char **out, char **err, int is_xml)
 {
 	char *error = NULL, *error_code = NULL, *error_reason = NULL;
 	char *status = NULL, *requestId = NULL;
 	*out = NULL;
 	*err = NULL;
-	cm_submit_d_approve_result(parent, xml,
-				   &error_code, &error_reason, &error,
-				   &status, &requestId);
+	if (is_xml) {
+		cm_submit_d_approve_result(parent, xml,
+					   &error_code, &error_reason, &error,
+					   &status, &requestId);
+	} else {
+		cm_submit_d_rest_approve_result(parent, xml,
+					   &error_code, &error_reason, &status,
+					   &requestId);
+	}
 	if ((status != NULL) && (strcmp(status, "complete") == 0) &&
 	    (requestId != NULL)) {
 		*out = talloc_asprintf(parent,
@@ -819,15 +841,21 @@ cm_submit_d_approve_eval(void *parent, const char *xml, const char *url,
 
 enum cm_external_status
 cm_submit_d_fetch_eval(void *parent, const char *xml, const char *url,
-		       dbus_bool_t can_agent, char **out, char **err)
+		       dbus_bool_t can_agent, char **out, char **err, int is_xml)
 {
 	char *error = NULL, *error_code = NULL, *error_reason = NULL;
 	char *status = NULL, *requestId = NULL, *cert = NULL;
 	*out = NULL;
 	*err = NULL;
-	cm_submit_d_fetch_result(parent, xml,
-				 &error_code, &error_reason, &error,
-				 &status, &requestId, &cert);
+	if (is_xml) {
+		cm_submit_d_fetch_result(parent, xml,
+					 &error_code, &error_reason, &error,
+					 &status, &requestId, &cert);
+	} else {
+		cm_submit_d_rest_fetch_result(parent, xml,
+					 &error_code, &error_reason,
+					 &status, &cert);
+	}
 	if (cert != NULL) {
 		*out = talloc_asprintf(parent, "%s\n", trim(parent, cert));
 		return CM_SUBMIT_STATUS_ISSUED;
@@ -851,7 +879,8 @@ cm_submit_d_fetch_eval(void *parent, const char *xml, const char *url,
 
 enum cm_external_status
 cm_submit_d_profiles_eval(void *parent, const char *xml, const char *url,
-			  dbus_bool_t can_agent, char **out, char **err)
+			  dbus_bool_t can_agent, char **out, char **err,
+			  int is_xml)
 {
 	char *error_code = NULL, *error_reason = NULL, *status = NULL;
 	char **profiles = NULL;
@@ -859,8 +888,13 @@ cm_submit_d_profiles_eval(void *parent, const char *xml, const char *url,
 
 	*out = NULL;
 	*err = NULL;
-	cm_submit_d_profiles_result(parent, xml, &error_code, &error_reason,
-				    err, &status, &profiles);
+	if (is_xml) {
+		cm_submit_d_profiles_result(parent, xml, &error_code, &error_reason,
+					    err, &status, &profiles);
+	} else {
+		cm_submit_d_rest_profiles_result(parent, xml, &error_code,
+				&error_reason, &profiles);
+	}
 	if (profiles != NULL) {
 		for (i = 0; profiles[i] != NULL; i++) {
 			if (*out != NULL) {
@@ -872,6 +906,356 @@ cm_submit_d_profiles_eval(void *parent, const char *xml, const char *url,
 		return CM_SUBMIT_STATUS_ISSUED;
 	}
 	return CM_SUBMIT_STATUS_REJECTED;
+}
+
+/* Return the result object.
+ *
+ * If the result is NULL then *error_reason and *error_code will
+ * have values.
+ *
+ * The caller is responsible for initializing and decref of j_root.
+ *
+ * Returns the result object on success, NULL on failure.
+ */
+static json_t *
+cm_submit_d_parse_json(void *parent, json_t *j_root,
+			char **error_code, char **error_reason)
+{
+	json_t *j_result_outer = NULL;
+	json_t *j_result = NULL;
+
+	json_t *j_error_obj = NULL;
+
+	j_error_obj = json_object_get(j_root, "error");
+	if (!(json_is_null(j_error_obj))) {
+		json_t *j_code;
+		json_t *j_message;
+
+		j_code = json_object_get(j_error_obj, "code");
+		j_message = json_object_get(j_error_obj, "message");
+		*error_reason = talloc_strdup(parent, json_string_value(j_message));
+		*error_code = talloc_asprintf(parent, "%lld", json_integer_value(j_code));
+		return NULL;
+	} else {
+		*error_code = talloc_strdup(parent, "0");
+		*error_reason = "";
+	}
+
+	j_result_outer = json_object_get(j_root, "result");
+	if (!j_result_outer) {
+		*error_reason = talloc_strdup(parent,
+						"Parsing JSON-RPC response failed, no outer result\n");
+		*error_code = talloc_strdup(parent, "1");
+		return NULL;
+	}
+
+	j_result = json_object_get(j_result_outer, "result");
+	if (!j_result) {
+		*error_reason = talloc_strdup(parent,
+						"Parsing JSON-RPC response failed, no outer result\n");
+		*error_code = talloc_strdup(parent, "1");
+		return NULL;
+	}
+
+	return j_result;
+}
+
+/*****************
+ * IPA REST API Implementation
+ */
+int
+cm_submit_d_rest_profiles_result(void *parent, const char *result,
+					 char **error_code, char **error_reason,
+					 char ***profiles)
+{
+	char **ret = NULL;
+
+	json_error_t j_error;
+	json_t *j_root = NULL;
+	json_t *j_result = NULL;
+	size_t i;
+	int rval = CM_SUBMIT_STATUS_REJECTED;
+
+	j_root = json_loads(result, 0, &j_error);
+	if (!j_root) {
+		*error_reason = talloc_asprintf(parent, "cm_submit_d_rest_profiles: Failed to parse JSON string. line %d error %s\n", j_error.line, j_error.text);
+		*error_code = talloc_strdup(parent, "1");
+		goto done;
+	}
+	j_result = cm_submit_d_parse_json(parent, j_root, *&error_code, *&error_reason);
+	if (!j_result) {
+		goto done;
+	}
+
+	ret = talloc_zero_array(parent, char *, json_array_size(j_result) + 1);
+	for (i=0; i < json_array_size(j_result); i++) {
+		json_t *j_item;
+		char *dn, *description;
+		int ipacertprofilestoreissued = 0;
+		json_t *j_cn, *single;;
+
+		j_item = json_array_get(j_result, i);
+		json_unpack(j_item, "{s:o,s:s,s:s,s:b}",
+				"cn", &j_cn,
+				"description", &description,
+				"dn", &dn,
+				"ipacertprofilestoreissued", &ipacertprofilestoreissued
+			);
+		single = json_array_get(j_cn, 0);
+
+		ret[i] = talloc_strdup(parent, json_string_value(single));
+		ret[i+1] = NULL;
+	}
+	*profiles = ret;
+	rval = CM_SUBMIT_STATUS_ISSUED;
+
+done:
+	json_decref(j_root);
+	return rval;
+}
+
+int
+cm_submit_d_rest_submit_result(void *parent, const char *result,
+					 char **error_code, char **error_reason,
+					 char **status, char **requestId, char **cert)
+{
+	/*
+	 * "result": {
+	 *  "cacn": "ipa",
+	 *  "cert_request_status": "pending",
+	 *  "request_id": "309294138780295967028732800397256117914"
+	 *  },
+	 *  "summary": null,
+	 *  "value": "309294138780295967028732800397256117914"
+	 * }
+	 */
+
+	json_error_t j_error;
+	json_t *j_root = NULL;
+	json_t *j_result = NULL;
+	json_t *j_request_id = NULL;
+	json_t *j_status = NULL;
+	json_t *j_cert = NULL;
+	const char *certstatus = NULL;
+
+	j_root = json_loads(result, 0, &j_error);
+	if (!j_root) {
+		*error_reason = talloc_asprintf(parent, "cm_submit_d_rest_profiles: Failed to parse JSON string. line %d error %s\n", j_error.line, j_error.text);
+		*error_code = talloc_strdup(parent, "1");
+		goto done;
+	}
+	j_result = cm_submit_d_parse_json(parent, j_root, *&error_code, *&error_reason);
+	if (!j_result) {
+		goto done;
+	}
+
+	j_request_id = json_object_get(j_result, "request_id");
+	if (!j_request_id) {
+		*error_reason = talloc_strdup(parent, "No request_id found in result");
+		*error_code = talloc_strdup(parent, "1");
+		goto done;
+	}
+	j_status = json_object_get(j_result, "cert_request_status");
+	if (!j_status) {
+		*error_reason = talloc_strdup(parent, "No cert_request_status  found in result");
+		*error_code = talloc_strdup(parent, "1");
+		goto done;
+	}
+	j_cert = json_object_get(j_result, "certificate");
+	if (!(json_is_null(j_cert))) {
+		char *tmp;
+		*cert = (char *)json_string_value(j_cert);
+		if (*cert != NULL) {
+			tmp = cm_submit_u_pem_from_base64("CERTIFICATE", 0, *cert);
+			*cert = talloc_strdup(parent, tmp);
+			free(tmp);
+		}
+	}
+	*requestId = talloc_strdup(parent, json_string_value(j_request_id));
+
+	// translate the text status into the numeric status certmonger wants
+	certstatus = talloc_strdup(parent, json_string_value(j_status));
+	if (strcmp(certstatus, "complete") == 0) {
+		*status = talloc_strdup(parent, "0");
+	} else if (strcmp(certstatus, "error") == 0) {
+		*status = talloc_strdup(parent, "1");
+	} else if (strcmp(certstatus, "pending") == 0) {
+		*status = talloc_strdup(parent, "2");
+	} else if (strcmp(certstatus, "rejected") == 0) {
+		*status = talloc_strdup(parent, "3");
+	}
+done:
+	json_decref(j_root);
+	return 0;
+}
+
+int
+cm_submit_d_rest_check_result(void *parent, const char *result,
+			 char **error_code, char **error_reason,
+			 char **status, char **requestId)
+{
+	/*  "result": {
+	 *  "cert_request_status": "pending",
+	 *  "request_id": "73577173089892679894729695106669289136"
+	 * },
+	 * "summary": null,
+	 * "value": "73577173089892679894729695106669289136"
+	 * },
+	 */
+	json_error_t j_error;
+	json_t *j_root = NULL;
+	json_t *j_result = NULL;
+	json_t *j_request_id = NULL;
+	json_t *j_serial_number = NULL;
+	json_t *j_status = NULL;
+
+	j_root = json_loads(result, 0, &j_error);
+	if (!j_root) {
+		*error_reason = talloc_asprintf(parent, "cm_submit_d_rest_profiles: Failed to parse JSON string. line %d error %s\n", j_error.line, j_error.text);
+		*error_code = talloc_strdup(parent, "1");
+		goto done;
+	}
+	j_result = cm_submit_d_parse_json(parent, j_root, *&error_code, *&error_reason);
+	if (!j_result) {
+		goto done;
+	}
+
+	j_request_id = json_object_get(j_result, "request_id");
+	if (!j_request_id) {
+		*error_reason = talloc_strdup(parent, "No request_id found in result");
+		*error_code = talloc_strdup(parent, "1");
+		goto done;
+	}
+	j_status = json_object_get(j_result, "cert_request_status");
+	if (!j_status) {
+		*error_reason = talloc_strdup(parent, "No cert_request_status found in result");
+		*error_code = talloc_strdup(parent, "1");
+		goto done;
+	}
+	*status = talloc_strdup(parent, json_string_value(j_status));
+
+	if (strcmp(*status, "complete") == 0) {
+		j_serial_number = NULL;
+
+		j_serial_number = json_object_get(j_result, "serial_number");
+		if (!j_status) {
+			*error_reason = talloc_strdup(parent, "No serial_number found in result");
+			*error_code = talloc_strdup(parent, "1");
+			goto done;
+	}
+		*requestId = talloc_strdup(parent, json_string_value(j_serial_number));
+	} else {
+		*requestId = talloc_strdup(parent, json_string_value(j_request_id));
+	}
+
+done:
+	json_decref(j_root);
+	return 0;
+}
+
+int
+cm_submit_d_rest_fetch_result(void *parent, const char *result,
+			 char **error_code, char **error_reason,
+			 char **status, char **cert)
+{
+	json_error_t j_error;
+	json_t *j_result = NULL;
+	json_t *j_root = NULL;
+	json_t *j_cert = NULL;
+	char *s, *p;
+	const char *certificate = NULL;
+
+	j_root = json_loads(result, 0, &j_error);
+	if (!j_root) {
+		*error_reason = talloc_asprintf(parent, "cm_submit_d_rest_profiles: Failed to parse JSON string. line %d error %s\n", j_error.line, j_error.text);
+		*error_code = talloc_strdup(parent, "1");
+		goto done;
+	}
+	j_result = cm_submit_d_parse_json(parent, j_root, *&error_code, *&error_reason);
+	if (!j_result) {
+		goto done;
+	}
+
+	j_cert = json_object_get(j_result, "certificate");
+	if (!j_cert) {
+		*error_reason = talloc_strdup(parent, "No certificate found in result");
+		*error_code = talloc_strdup(parent, "1");
+    	goto done;
+	}                       
+	certificate = json_string_value(j_cert);
+	s = cm_submit_u_base64_from_text(certificate);
+	if (s == NULL) {
+    	*error_reason = talloc_strdup(parent, "Out of memory parsing certificate");
+		*error_code = talloc_strdup(parent, "1");
+		goto done;
+	}
+	p = cm_submit_u_pem_from_base64("CERTIFICATE", FALSE, s);
+	*cert = talloc_strdup(parent, p);
+	*status = talloc_strdup(parent, "complete");
+
+	/* We can't return the status so we can guess on complete but nothing
+     * else. A bogus ID can be passed in so we can't assume pending. */
+	free(s);
+	free(p);
+
+done:
+	json_decref(j_root);
+	return 0;
+}
+
+int
+cm_submit_d_rest_approve_result(void *parent, const char *result,
+			   char **error_code, char **error_reason,
+			   char **status, char **requestId)
+{
+	json_error_t j_error;
+	json_t *j_result = NULL;
+	json_t *j_root = NULL;
+	json_t *j_status = NULL;
+	json_t *j_request_id = NULL;
+	json_t *j_serial = NULL;
+
+	j_root = json_loads(result, 0, &j_error);
+	if (!j_root) {
+		*error_reason = talloc_asprintf(parent, "cm_submit_d_rest_profiles: Failed to parse JSON string. line %d error %s\n", j_error.line, j_error.text);
+		*error_code = talloc_strdup(parent, "1");
+		goto done;
+	}
+	j_result = cm_submit_d_parse_json(parent, j_root, *&error_code, *&error_reason);
+	if (!j_result) {
+		goto done;
+	}
+	j_request_id = json_object_get(j_result, "request_id");
+	if (!j_request_id) {
+		*error_reason = talloc_strdup(parent, "Parsing JSON-RPC response failed, no request_id\n");
+		*error_code = talloc_strdup(parent, "1");
+		goto done;
+	}
+	j_status = json_object_get(j_result, "cert_request_status");
+	if (!j_status) {
+		*error_reason = talloc_strdup(parent, "Parsing JSON-RPC response failed, no cert_request_status\n");
+		*error_code = talloc_strdup(parent, "1");
+		goto done;
+	}
+	*status = talloc_strdup(parent, json_string_value(j_status));
+
+	if ((*status != NULL) &&
+		(strcmp(*status, "complete") == 0))
+	{
+		j_serial = json_object_get(j_result, "serial_number");
+		if (!j_serial) {
+			*error_reason = talloc_strdup(parent, "Parsing JSON-RPC response failed, no serial_number\n");
+			*error_code = talloc_strdup(parent, "1");
+			goto done;
+		}
+		*requestId = talloc_strdup(parent, json_string_value(j_serial));
+    } else {
+		*requestId = talloc_strdup(parent, json_string_value(j_request_id));
+    }
+
+done:
+	json_decref(j_root);
+	return 0;
 }
 
 #ifdef CM_SUBMIT_D_MAIN

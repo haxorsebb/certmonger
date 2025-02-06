@@ -119,7 +119,9 @@ libcm_a_SOURCES = \
 	util-m.c \
 	util-m.h \
 	util-n.c \
-	util-n.h
+	util-n.h \
+	util-ipa.c \
+	util-ipa.h
 if WITH_XMLRPC
 libcm_a_SOURCES += \
 	submit-x.c \
@@ -144,7 +146,9 @@ libcm_o_a_SOURCES += \
 	submit-o.c \
 	submit-o.h \
 	util-o.c \
-	util-o.h
+	util-o.h \
+	util-ipa.c \
+	util-ipa.h
 endif
 libcm_o_a_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS) $(OPENSSL_CFLAGS)
 libcm_a_LIBADD = $(libcm_o_a_OBJECTS)
@@ -221,7 +225,8 @@ noinst_PROGRAMS += submit-h submit-d
 ipa_submit_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS) $(CURL_CFLAGS) $(JANSSON_CFLAGS)
 ipa_submit_SOURCES = ipa.c srvloc.c srvloc.h store.h store-gen.c \
 		submit-h.c submit-h.h submit-u.c submit-u.h \
-		submit-e.h util.c util.h log.c log.h tm.c tm.h
+		submit-e.h util.c util.h log.c log.h tm.c tm.h \
+		util-ipa.c util-ipa.h
 ipa_submit_LDADD = $(XMLRPC_LIBS) $(LDAP_LIBS) $(KRB5_LIBS) $(TALLOC_LIBS) \
 		   $(GMP_LIBS) $(IDN_LIBS) $(OPENSSL_LIBS) $(UUID_LIBS) \
 		   $(RESOLV_LIBS) $(LTLIBICONV) $(POPT_LIBS) $(CURL_LIBS) \
@@ -235,27 +240,35 @@ certmaster_submit_LDADD = $(XMLRPC_LIBS) $(KRB5_LIBS) $(TALLOC_LIBS) \
 			  $(GMP_LIBS) $(UUID_LIBS) $(LTLIBICONV) $(POPT_LIBS)
 endif
 dogtag_ipa_renew_agent_submit_CFLAGS = $(AM_CFLAGS) $(XML_CFLAGS) \
-				       $(NSS_CFLAGS) $(CURL_CFLAGS) \
+				       $(NSS_CFLAGS) $(CURL_CFLAGS) $(LDAP_CFLAGS) \
+				       $(KRB5_CFLAGS) $(JANSSON_CFLAGS) \
+				       $(IDN_CFLAGS) $(RESOLV_CFLAGS) \
 				       -DDOGTAG_IPA_RENEW_AGENT=1
 dogtag_ipa_renew_agent_submit_SOURCES = dogtag.c submit-d.c submit-d.h \
 		submit-h.c submit-h.h util-m.c util-m.h util-n.c util-n.h \
 		submit-u.c submit-u.h submit-e.h util.c util.h log.c log.h \
 		store.h store-gen.c tm.c tm.h prefs.c prefs.h \
-		dogtag-ipa.c dogtag-ipa.h env.h env-system.c
+		dogtag-ipa.c dogtag-ipa.h env.h env-system.c util-ipa.c \
+		srvloc.c srvloc.h
 dogtag_ipa_renew_agent_submit_LDADD = $(CURL_LIBS) $(XML_LIBS) $(NSS_LIBS) \
 				      $(OPENSSL_LIBS) $(TALLOC_LIBS) \
 				      $(GMP_LIBS) $(UUID_LIBS) $(LTLIBICONV) \
-				      $(POPT_LIBS)
-dogtag_submit_CFLAGS = $(AM_CFLAGS) $(XML_CFLAGS) $(NSS_CFLAGS) $(CURL_CFLAGS)
+				      $(POPT_LIBS) $(LDAP_LIBS) $(KRB5_LIBS) $(JANSSON_LIBS) \
+				      $(IDN_LIBS) $(RESOLV_LIBS)
+dogtag_submit_CFLAGS = $(AM_CFLAGS) $(XML_CFLAGS) $(NSS_CFLAGS) $(CURL_CFLAGS) \
+					$(JANSSON_CFLAGS) $(LDAP_CFLAGS) $(IDN_FLAGS) \
+					$(RESOLV_FLAGS) $(KRB5_FLAGS)
 dogtag_submit_SOURCES = dogtag.c submit-d.c submit-d.h \
 		submit-h.c submit-h.h util-m.c util-m.h util-n.c util-n.h \
 		submit-u.c submit-u.h submit-e.h util.c util.h log.c log.h \
 		store.h store-gen.c tm.c tm.h prefs.c prefs.h \
-		env.h env-system.c
+		env.h env-system.c util-ipa.c util-ipa.h \
+		srvloc.c srvloc.h
 dogtag_submit_LDADD = $(CURL_LIBS) $(XML_LIBS) $(NSS_LIBS) \
 		      $(OPENSSL_LIBS) $(TALLOC_LIBS) \
 		      $(GMP_LIBS) $(UUID_LIBS) $(LTLIBICONV) \
-		      $(POPT_LIBS)
+		      $(POPT_LIBS) $(LDAP_LIBS) $(KRB5_LIBS) $(JANSSON_LIBS) \
+			  $(IDN_LIBS) $(RESOLV_LIBS)
 scep_submit_CFLAGS = $(AM_CFLAGS) $(XML_CFLAGS) $(NSS_CFLAGS) $(CURL_CFLAGS)
 scep_submit_SOURCES = scep.c scep.h \
 		submit-h.c submit-h.h util-m.c util-m.h util-o.c util-o.h \
@@ -277,8 +290,9 @@ submit_d_SOURCES = submit-d.c submit-d.h submit-h.c submit-h.h \
 		   submit-u.c submit-u.h log.c log.h tm.c tm.h util-m.c util-m.h
 submit_d_LDADD = libcm-o.a $(CURL_LIBS) $(OPENSSL_LIBS) $(XML_LIBS) \
 		 $(TALLOC_LIBS) $(GMP_LIBS) $(UUID_LIBS) $(LTLIBICONV) \
-		 $(POPT_LIBS)
-submit_h_CFLAGS = $(AM_CFLAGS) $(CURL_CFLAGS) $(XML_CFLAGS) -DCM_SUBMIT_H_MAIN
+		 $(POPT_LIBS) $(JANSSON_LIBS)
+submit_h_CFLAGS = $(AM_CFLAGS) $(CURL_CFLAGS) $(XML_CFLAGS) \
+				  $(JANSSON_CFLAGS) -DCM_SUBMIT_H_MAIN
 submit_h_SOURCES = submit-h.c submit-h.h log.c log.h tm.c tm.h
 submit_h_LDADD = $(CURL_LIBS) $(XML_LIBS) $(TALLOC_LIBS) $(LTLIBICONV) \
 		 $(POPT_LIBS)
