@@ -814,12 +814,12 @@ main(int argc, const char **argv)
 			content_type2 = cm_submit_h_result_type(hctx);
 			response_code2 = cm_submit_h_response_code(hctx);
 			if (verbose > 0) {
-				fprintf(stderr, "%s \"%s?%s\"\n", "GET", url, params2);
+				fprintf(stderr, "%s \"%s?%s\"\n", "GET", url, params2 ? params2 : "");
 				fprintf(stderr, "response_code = %d\n", response_code2);
 				fprintf(stderr, "content-type = \"%s\"\n", content_type2);
 				fprintf(stderr, "code = %d\n", cm_submit_h_result_code(hctx));
 				fprintf(stderr, "code_text = \"%s\"\n", cm_submit_h_result_code_text(hctx));
-				syslog(LOG_DEBUG, "%s %s?%s\n", "GET", url, params2);
+				syslog(LOG_DEBUG, "%s %s?%s\n", "GET", url, params2 ? params2 : "");
 			}
 			if ((content_type2 != NULL) && (strcasecmp(content_type2,
 				       "application/x-x509-ca-cert") != 0)) {
