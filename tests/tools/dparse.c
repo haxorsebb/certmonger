@@ -81,8 +81,7 @@ main(int argc, char **argv)
 	if (strcmp(mode, "check") == 0) {
 		if (is_xml) {
 			cm_submit_d_check_result(ctx, xml,
-						 &error_code, &error_reason, &error,
-						 &status, &requestId);
+						 &error, &status, &requestId);
 		} else {
 			cm_submit_d_rest_check_result(ctx, xml,
 						 &error_code, &error_reason,
@@ -93,22 +92,21 @@ main(int argc, char **argv)
 	} else
 	if (strcmp(mode, "reject") == 0) {
 		cm_submit_d_reject_result(ctx, xml,
-					  &error_code, &error_reason, &error,
-					  &status, &requestId);
+					  &error, &status, &requestId);
 		i = cm_submit_d_reject_eval(ctx, xml, "REJECT",
-					    can_agent, &out, &err);
+					    &out, &err);
 	} else
 	if (strcmp(mode, "review") == 0) {
 		cm_submit_d_review_result(ctx, xml,
-					  &error_code, &error_reason, &error,
+					  &error_code, &error_reason,
 					  &status, &requestId);
 		i = cm_submit_d_review_eval(ctx, xml, "REVIEW",
-					    can_agent, &out, &err);
+					    &out, &err);
 	} else
 	if (strcmp(mode, "approve") == 0) {
 		if (is_xml) {
 			cm_submit_d_approve_result(ctx, xml,
-						   &error_code, &error_reason, &error,
+						   &error_code, &error_reason,
 						   &status, &requestId);
 		} else {
 			cm_submit_d_rest_approve_result(ctx, xml,
@@ -116,33 +114,31 @@ main(int argc, char **argv)
 						   &requestId);
 		}
 		i = cm_submit_d_approve_eval(ctx, xml, "APPROVE",
-					     can_agent, &out, &err, is_xml);
+					     &out, &err, is_xml);
 	} else
 	if (strcmp(mode, "fetch") == 0) {
 		if (is_xml) {
 			cm_submit_d_fetch_result(ctx, xml,
-						 &error_code, &error_reason, &error,
-						 &status, &requestId, &cert);
+						 &error, &status, &requestId, &cert);
 		} else {
 			cm_submit_d_rest_fetch_result(ctx, xml,
 						 &error_code, &error_reason,
 						 &status, &cert);
 		}
 		i = cm_submit_d_fetch_eval(ctx, xml, "FETCH",
-					   can_agent, &out, &err, is_xml);
+					   &out, &err, is_xml);
 	} else
 	if (strcmp(mode, "profiles") == 0) {
 		if (is_xml) {
 			cm_submit_d_profiles_result(ctx, xml,
-						    &error_code, &error_reason, &error,
-						    &status, &profiles);
+						    &error_code, &error_reason,
+						    &profiles);
 		} else {
 			cm_submit_d_rest_profiles_result(ctx, xml,
 						    &error_code, &error_reason,
 						    &profiles);
 		}
-		i = cm_submit_d_profiles_eval(ctx, xml, "PROFILES",
-					      can_agent, &out, &err, is_xml);
+		i = cm_submit_d_profiles_eval(ctx, xml, &out, &err, is_xml);
 	} else {
 		fprintf(stderr, "unknown mode \"%s\"\n", mode);
 		return -1;

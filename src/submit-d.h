@@ -40,28 +40,25 @@ int cm_submit_d_submit_result(void *parent, const char *xml,
 			      char **error, char **status,
 			      char **requestId, char **cert);
 int cm_submit_d_check_result(void *parent, const char *xml,
-			     char **error_code, char **error_reason,
-			     char **error, char **status,
+			     char **error,
+			     char **status,
 			     char **requestId);
 int cm_submit_d_reject_result(void *parent, const char *xml,
-			      char **error_code, char **error_reason,
 			      char **error, char **status,
 			      char **requestId);
 int cm_submit_d_review_result(void *parent, const char *xml,
 			      char **error_code, char **error_reason,
-			      char **error, char **status,
+			      char **status,
 			      char **requestId);
 int cm_submit_d_approve_result(void *parent, const char *xml,
 			       char **error_code, char **error_reason,
-			       char **error, char **status,
+			       char **status,
 			       char **requestId);
 int cm_submit_d_fetch_result(void *parent, const char *xml,
-			     char **error_code, char **error_reason,
 			     char **error, char **status,
 			     char **requestId, char **cert);
 int cm_submit_d_profiles_result(void *parent, const char *xml,
 				char **error_code, char **error_reason,
-				char **error, char **status,
 				char ***profiles);
 enum cm_external_status cm_submit_d_submit_eval(void *parent, const char *xml,
 						const char *url,
@@ -73,23 +70,16 @@ enum cm_external_status cm_submit_d_check_eval(void *parent, const char *xml,
 					       char **out, char **err, int is_xml);
 enum cm_external_status cm_submit_d_reject_eval(void *parent, const char *xml,
 						const char *url,
-						dbus_bool_t can_agent,
 						char **out, char **err);
 enum cm_external_status cm_submit_d_review_eval(void *parent, const char *xml,
-						const char *url,
-						dbus_bool_t can_agent,
-						char **out, char **err);
+						const char *url, char **out, char **err);
 enum cm_external_status cm_submit_d_approve_eval(void *parent, const char *xml,
 						 const char *url,
-						 dbus_bool_t can_agent,
 						 char **out, char **err, int is_xml);
 enum cm_external_status cm_submit_d_fetch_eval(void *parent, const char *xml,
 					       const char *url,
-					       dbus_bool_t can_agent,
 					       char **out, char **err, int is_xml);
 enum cm_external_status cm_submit_d_profiles_eval(void *parent, const char *xml,
-						  const char *url,
-						  dbus_bool_t can_agent,
 						  char **out, char **err, int is_xml);
 
 int cm_submit_d_rest_profiles_result(void *parent, const char *result,
