@@ -279,6 +279,8 @@ EXTRA_DIST = \
 	025-casave-dbm/run.sh \
 	025-casave-sql/expected.out \
 	025-casave-sql/run.sh \
+	026-local/expected.openssl1 \
+	026-local/expected.openssl3 \
 	026-local/expected.out \
 	026-local/run.sh \
 	027-hooks/expected.out \
@@ -356,6 +358,12 @@ EXTRA_DIST = \
 	038-ms-v2-template/extract-extdata.py \
 	038-ms-v2-template/run.sh \
 	039-fromfile/run.sh \
+	040-pem/bad.empty \
+	040-pem/bad.isrg-root-x1-cross-signed.der.b64 \
+	040-pem/expected.out \
+	040-pem/good.isrg-root-x1-cross-signed.pem \
+	040-pem/good.isrg-root-x1-cross-signed_cr.pem \
+	040-pem/good.lets_encrypt_chain.pem \
 	040-pem/run.sh
 
 subdirs = \
