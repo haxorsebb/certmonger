@@ -1,0 +1,26 @@
+{
+    "error": null,
+    "id": 0,
+    "principal": "admin@EXAMPLE.TEST",
+    "result": {
+        "result": {
+            "cacn": "ipa",
+            "certificate": "MIIEGzCCAoOgAwIBAgIRANnvcOIqsXHMhcZSZiOYmeAwDQYJKoZIhvcNAQELBQAwNzEVMBMGA1UECgwMRVhBTVBMRS5URVNUMR4wHAYDVQQDDBVDZXJ0aWZpY2F0ZSBBdXRob3JpdHkwHhcNMjQxMTEyMTUzNTE3WhcNMjYxMTAyMTUzNTE3WjAyMRUwEwYDVQQKDAxFWEFNUExFLlRFU1QxGTAXBgNVBAMMEGlwYS5leGFtcGxlLnRlc3QwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQD6uMp+bGs72KACvmpnSBoGWchLBFxfZiuWXJr9TeYM3h1DGXdW7JwRgADJwgdg6UVjCuDYb5zCQBtCUbAmM7USqH5hAeu48qjVzQcewUR24TchnX/VgpuYShb50WxxSWAV6upQ78WgOQvCP5BjjhnLkOrohHdkkXvnNTxKZ7EeSwa79ajSuGCf30qhISvkxErGJUL7td7bLnxGF9cbEsUNop5wkRpgRhNpu7Kkubj8/yYkMhY6Ju0BhvHTYmyhKmAv98uaDWaOjcNwJpoeuhaAZCSGnvusKzb/W2I5wAGxcQNY4GHJSB8KAzeTSF9Ujx0zprGZh3NK7vpI90nt0j41AgMBAAGjgaYwgaMwHwYDVR0jBBgwFoAUqISFSEhwNU7qYCdQpo222U8WIaEwPgYIKwYBBQUHAQEEMjAwMC4GCCsGAQUFBzABhiJodHRwOi8vaXBhLWNhLmV4YW1wbGUudGVzdC9jYS9vY3NwMA4GA1UdDwEB/wQEAwIEsDATBgNVHSUEDDAKBggrBgEFBQcDATAbBgNVHREEFDASghBpcGEuZXhhbXBsZS50ZXN0MA0GCSqGSIb3DQEBCwUAA4IBgQC2s/38mrzgWBCSPXFQp6chRjN2H1KxJj/FPyd/iKSapv8yboSMdIy5pstiLQE+NLzvFv8OwrpmNKs0BBaB9m6/zCFk5ZI/j1iS9wfeJMZHTJfPS7ZA113iqGmfBZXjNsj85wuPo77mcm/EIEru2IxD6/5qmDIEZiT3PwDKS7rH2w0r4z2DlumOjv6e8+qIq6+zvux1rdVFrsKVSBicVDfUKITlz4AayRJ4lUqBxgKWnG0n06z8eYQxPxyi+2z1ZFg5f2G6M7ZnPv+F/S/vqnTJcYFZqSVyRBGY0p+hL8t0aTxn0hQTXK/yiPnU8UzMky5bsA86qdFzqUtBkSzV63L6YoSbsMJxCIWiv16NjbIBzgVSDbpPTXGkeDhTAfJDioTp63lDFCobRMXuyL6Ohb1+UGx/HMhrJa0w6+tkNJunVCUCy16GK7w6l3dp1GFe+tTRVvmyCX0MCPJa2OHEanSDn711OG4TLnHHzZefp2hlgWUaZ2PlKIgnZ82UK96gTR8=",
+            "issuer": "CN=Certificate Authority,O=EXAMPLE.TEST",
+            "revoked": false,
+            "san_dnsname": [
+                {
+                    "__dns_name__": "ipa.example.test"
+                }
+            ],
+            "serial_number": "289685723583169793116928819144687131104",
+            "serial_number_hex": "0xD9EF70E22AB171CC85C65266239899E0",
+            "subject": "CN=ipa.example.test,O=EXAMPLE.TEST",
+            "valid_not_after": "Mon Nov 02 15:35:17 2026 UTC",
+            "valid_not_before": "Tue Nov 12 15:35:17 2024 UTC"
+        },
+        "summary": null,
+        "value": "289685723583169793116928819144687131104"
+    },
+    "version": "4.13.0.dev202409181703+git4bfbf0ba9"
+}

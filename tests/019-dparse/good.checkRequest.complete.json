@@ -1,0 +1,15 @@
+ {
+    "error": null,
+    "id": 0,
+    "principal": "admin@EXAMPLE.TEST",
+    "result": {
+        "result": {
+            "cert_request_status": "complete",
+            "request_id": "158675329147181044743206792112358494526",
+            "serial_number": "270317855924125321275412697561729983788"
+        },
+        "summary": null,
+        "value": "158675329147181044743206792112358494526"
+    },
+    "version": "4.13.0.dev202409181703+git4bfbf0ba9"
+}

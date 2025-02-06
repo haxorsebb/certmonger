@@ -1,4 +1,4 @@
-[submit-as-agent(good.profileSubmit.issued) = ISSUED]
+[submit-as-agent(good.profileSubmit.issued.xml) = ISSUED]
 status="0",cert="-----BEGIN CERTIFICATE-----"
 -----BEGIN CERTIFICATE-----
 MIIDyDCCArCgAwIBAgIBKjANBgkqhkiG9w0BAQsFADA5MRcwFQYDVQQKEw5CT1Mu
@@ -24,27 +24,27 @@ RfOVKrVpzilh6++ZIbeFYqd3z4vIMLedjk2hSUwK5A3bPgFlqzYii8j4scn+0mZM
 AsSesPzyAiutWBAX
 -----END CERTIFICATE-----
 
-[submit-as-agent(good.profileSubmit.serial.in-range) = WAIT_WITH_DELAY]
+[submit-as-agent(good.profileSubmit.serial.in-range.xml) = WAIT_WITH_DELAY]
 error="Request Deferred - defer request",status="2",requestId="12"
 0
 state=approve&requestId=12
 
-[review-as-agent(good.profileReview) = WAIT_WITH_DELAY]
+[review-as-agent(good.profileReview.xml) = WAIT_WITH_DELAY]
 error_code="0",status="pending",requestId="17"
 0
 state=approve&requestId=17
 
-[check-as-agent(good.checkRequest.complete) = WAIT_WITH_DELAY]
+[check-as-agent(good.checkRequest.complete.xml) = WAIT_WITH_DELAY]
 status="complete",requestId="23"
 0
 state=retrieve&requestId=23
 
-[check-as-agent(good.checkRequest.pending) = WAIT_WITH_DELAY]
+[check-as-agent(good.checkRequest.pending.xml) = WAIT_WITH_DELAY]
 status="pending",requestId="22"
 0
 state=approve&requestId=22
 
-[fetch-as-agent(good.displayCertFromRequest) = ISSUED]
+[fetch-as-agent(good.displayCertFromRequest-extra-line.xml) = ISSUED]
 requestId="11",cert="-----BEGIN CERTIFICATE-----"
 -----BEGIN CERTIFICATE-----
 MIIDEDCCAfigAwIBAgIBCzANBgkqhkiG9w0BAQsFADA5MRcwFQYDVQQKEw5CT1Mu
@@ -66,7 +66,7 @@ LCT7m5N535pDf4tELcXRQAUv/xTp7F5O84pp8Bez14iVTtKazqseq5K7EKCsRXfW
 FxfR4qHzwpD9Q7rvTzFP2/J/Cr8=
 -----END CERTIFICATE-----
 
-[fetch-as-agent(good.displayCertFromRequest-extra-line) = ISSUED]
+[fetch-as-agent(good.displayCertFromRequest.xml) = ISSUED]
 requestId="11",cert="-----BEGIN CERTIFICATE-----"
 -----BEGIN CERTIFICATE-----
 MIIDEDCCAfigAwIBAgIBCzANBgkqhkiG9w0BAQsFADA5MRcwFQYDVQQKEw5CT1Mu
@@ -88,7 +88,7 @@ LCT7m5N535pDf4tELcXRQAUv/xTp7F5O84pp8Bez14iVTtKazqseq5K7EKCsRXfW
 FxfR4qHzwpD9Q7rvTzFP2/J/Cr8=
 -----END CERTIFICATE-----
 
-[profiles-as-agent(good.profileList) = ISSUED]
+[profiles-as-agent(good.profileList.xml) = ISSUED]
 error_code="0",error_reason=""
 caUserCert
 caUserSMIMEcapCert
@@ -114,53 +114,55 @@ caSSLClientSelfRenewal
 caDirUserRenewal
 caManualRenewal
 
-[submit-as-agent(bad.profileSubmit.csr.empty) = REJECTED]
+[submit-as-agent(bad.profileSubmit.csr.empty.xml) = REJECTED]
 error="Invalid Request",status="1"
 Server at "SUBMIT" replied: Invalid Request
-[submit-as-agent(bad.profileSubmit.csr.subject-mismatch) = REJECTED]
+[submit-as-agent(bad.profileSubmit.csr.subject-mismatch.xml) = REJECTED]
 error="Request Rejected - Subject Name Not Matched O=Default Company Ltd,L=Default City,C=XX",status="3",requestId="13"
 Server at "SUBMIT" replied: Request Rejected - Subject Name Not Matched O=Default Company Ltd,L=Default City,C=XX
-[submit-as-agent(bad.profileSubmit.serial.empty) = REJECTED]
+[submit-as-agent(bad.profileSubmit.serial.empty.xml) = REJECTED]
 
-[submit-as-agent(bad.profileSubmit.serial.invalid) = REJECTED]
+[submit-as-agent(bad.profileSubmit.serial.invalid.xml) = REJECTED]
 
-[submit-as-agent(bad.profileSubmit.serial.out-of-range) = REJECTED]
+[submit-as-agent(bad.profileSubmit.serial.out-of-range.xml) = REJECTED]
 error_code="1",error_reason="Server Internal Error"
 Server at "SUBMIT" replied: 1: Server Internal Error
-[review-as-agent(bad.profileReview.no-such-request) = REJECTED]
+[review-as-agent(bad.profileReview.no-such-request.xml) = REJECTED]
 error_code="1",error_reason="Request 0 Not Found"
 Server at "REVIEW" replied: 1: Request 0 Not Found
-[review-as-agent(bad.profileReview.unauthorized-cert) = REJECTED]
+[review-as-agent(bad.profileReview.unauthorized-cert.xml) = REJECTED]
 error_code="1",error_reason="Authentication Error"
 Server at "REVIEW" replied: 1: Authentication Error
-[review-as-agent(bad.profileReview.wrong-nssdb) = REJECTED]
+[review-as-agent(bad.profileReview.wrong-nssdb.xml) = REJECTED]
 
-[approve-as-agent(bad.profileProcess.bad-property) = REJECTED]
+[approve-as-agent(bad.profileProcess.bad-property.xml) = REJECTED]
 error_code="1",error_reason="Property Error - Invalid Property notBefore",status="pending",requestId="17"
 Server at "APPROVE" replied: 1: Property Error - Invalid Property notBefore
-[approve-as-agent(bad.profileProcess.no-agent-cert) = REJECTED]
+[approve-as-agent(bad.profileProcess.no-agent-cert.xml) = REJECTED]
 
-[approve-as-agent(bad.profileProcess.no-ca-cert) = REJECTED]
+[approve-as-agent(bad.profileProcess.no-ca-cert.xml) = REJECTED]
 
-[approve-as-agent(bad.profileProcess.no-property) = REJECTED]
+[approve-as-agent(bad.profileProcess.no-property.xml) = REJECTED]
 error_code="1",error_reason="Property Error - Invalid Property notBefore",status="pending",requestId="17"
 Server at "APPROVE" replied: 1: Property Error - Invalid Property notBefore
-[approve-as-agent(bad.profileProcess.not-pending) = REJECTED]
+[approve-as-agent(bad.profileProcess.not-pending.xml) = REJECTED]
 error_code="1",error_reason="Request Not In Pending State",requestId="17"
 Server at "APPROVE" replied: 1: Request Not In Pending State
-[check-as-agent(bad.checkRequest.nosuch) = REJECTED]
+[check-as-agent(bad.checkRequest.nosuch.xml) = REJECTED]
 error="Request ID 29 was not found in the request queue."
 Server at "CHECK" replied: Request ID 29 was not found in the request queue.
-[fetch-as-agent(bad.displayCertFromRequest.incomplete) = REJECTED]
+[fetch-as-agent(bad.displayCertFromRequest.incomplete.xml) = REJECTED]
 error="Request ID 14 was not completed.",status="7"
 Server at "FETCH" replied: Request ID 14 was not completed.
-[fetch-as-agent(bad.displayCertFromRequest.no-such-request) = REJECTED]
+[fetch-as-agent(bad.displayCertFromRequest.no-such-request.json) = REJECTED]
+
+[fetch-as-agent(bad.displayCertFromRequest.no-such-request.xml) = REJECTED]
 error="Request ID 19 was not found in the request queue.",status="7"
 Server at "FETCH" replied: Request ID 19 was not found in the request queue.
-[fetch-as-agent(bad.displayCertFromRequest.rejected) = REJECTED]
+[fetch-as-agent(bad.displayCertFromRequest.rejected.xml) = REJECTED]
 error="Request ID 17 was not completed.",status="7"
 Server at "FETCH" replied: Request ID 17 was not completed.
-[submit-as-end-entity(good.profileSubmit.issued) = ISSUED]
+[submit-as-end-entity(good.profileSubmit.issued.xml) = ISSUED]
 status="0",cert="-----BEGIN CERTIFICATE-----"
 -----BEGIN CERTIFICATE-----
 MIIDyDCCArCgAwIBAgIBKjANBgkqhkiG9w0BAQsFADA5MRcwFQYDVQQKEw5CT1Mu
@@ -186,25 +188,25 @@ RfOVKrVpzilh6++ZIbeFYqd3z4vIMLedjk2hSUwK5A3bPgFlqzYii8j4scn+0mZM
 AsSesPzyAiutWBAX
 -----END CERTIFICATE-----
 
-[submit-as-end-entity(good.profileSubmit.serial.in-range) = WAIT]
+[submit-as-end-entity(good.profileSubmit.serial.in-range.xml) = WAIT]
 error="Request Deferred - defer request",status="2",requestId="12"
 state=check&requestId=12
 
-[review-as-end-entity(good.profileReview) = WAIT_WITH_DELAY]
+[review-as-end-entity(good.profileReview.xml) = WAIT_WITH_DELAY]
 error_code="0",status="pending",requestId="17"
 0
 state=approve&requestId=17
 
-[check-as-end-entity(good.checkRequest.complete) = WAIT_WITH_DELAY]
+[check-as-end-entity(good.checkRequest.complete.xml) = WAIT_WITH_DELAY]
 status="complete",requestId="23"
 0
 state=retrieve&requestId=23
 
-[check-as-end-entity(good.checkRequest.pending) = WAIT]
+[check-as-end-entity(good.checkRequest.pending.xml) = WAIT]
 status="pending",requestId="22"
 state=check&requestId=22
 
-[fetch-as-end-entity(good.displayCertFromRequest) = ISSUED]
+[fetch-as-end-entity(good.displayCertFromRequest-extra-line.xml) = ISSUED]
 requestId="11",cert="-----BEGIN CERTIFICATE-----"
 -----BEGIN CERTIFICATE-----
 MIIDEDCCAfigAwIBAgIBCzANBgkqhkiG9w0BAQsFADA5MRcwFQYDVQQKEw5CT1Mu
@@ -226,7 +228,7 @@ LCT7m5N535pDf4tELcXRQAUv/xTp7F5O84pp8Bez14iVTtKazqseq5K7EKCsRXfW
 FxfR4qHzwpD9Q7rvTzFP2/J/Cr8=
 -----END CERTIFICATE-----
 
-[fetch-as-end-entity(good.displayCertFromRequest-extra-line) = ISSUED]
+[fetch-as-end-entity(good.displayCertFromRequest.xml) = ISSUED]
 requestId="11",cert="-----BEGIN CERTIFICATE-----"
 -----BEGIN CERTIFICATE-----
 MIIDEDCCAfigAwIBAgIBCzANBgkqhkiG9w0BAQsFADA5MRcwFQYDVQQKEw5CT1Mu
@@ -248,7 +250,7 @@ LCT7m5N535pDf4tELcXRQAUv/xTp7F5O84pp8Bez14iVTtKazqseq5K7EKCsRXfW
 FxfR4qHzwpD9Q7rvTzFP2/J/Cr8=
 -----END CERTIFICATE-----
 
-[profiles-as-end-entity(good.profileList) = ISSUED]
+[profiles-as-end-entity(good.profileList.xml) = ISSUED]
 error_code="0",error_reason=""
 caUserCert
 caUserSMIMEcapCert
@@ -274,50 +276,229 @@ caSSLClientSelfRenewal
 caDirUserRenewal
 caManualRenewal
 
-[submit-as-end-entity(bad.profileSubmit.csr.empty) = REJECTED]
+[submit-as-end-entity(bad.profileSubmit.csr.empty.xml) = REJECTED]
 error="Invalid Request",status="1"
 Server at "SUBMIT" replied: Invalid Request
-[submit-as-end-entity(bad.profileSubmit.csr.subject-mismatch) = REJECTED]
+[submit-as-end-entity(bad.profileSubmit.csr.subject-mismatch.xml) = REJECTED]
 error="Request Rejected - Subject Name Not Matched O=Default Company Ltd,L=Default City,C=XX",status="3",requestId="13"
 Server at "SUBMIT" replied: Request Rejected - Subject Name Not Matched O=Default Company Ltd,L=Default City,C=XX
-[submit-as-end-entity(bad.profileSubmit.serial.empty) = REJECTED]
+[submit-as-end-entity(bad.profileSubmit.serial.empty.xml) = REJECTED]
 
-[submit-as-end-entity(bad.profileSubmit.serial.invalid) = REJECTED]
+[submit-as-end-entity(bad.profileSubmit.serial.invalid.xml) = REJECTED]
 
-[submit-as-end-entity(bad.profileSubmit.serial.out-of-range) = REJECTED]
+[submit-as-end-entity(bad.profileSubmit.serial.out-of-range.xml) = REJECTED]
 error_code="1",error_reason="Server Internal Error"
 Server at "SUBMIT" replied: 1: Server Internal Error
-[review-as-end-entity(bad.profileReview.no-such-request) = REJECTED]
+[review-as-end-entity(bad.profileReview.no-such-request.xml) = REJECTED]
 error_code="1",error_reason="Request 0 Not Found"
 Server at "REVIEW" replied: 1: Request 0 Not Found
-[review-as-end-entity(bad.profileReview.unauthorized-cert) = REJECTED]
+[review-as-end-entity(bad.profileReview.unauthorized-cert.xml) = REJECTED]
 error_code="1",error_reason="Authentication Error"
 Server at "REVIEW" replied: 1: Authentication Error
-[review-as-end-entity(bad.profileReview.wrong-nssdb) = REJECTED]
+[review-as-end-entity(bad.profileReview.wrong-nssdb.xml) = REJECTED]
 
-[approve-as-end-entity(bad.profileProcess.bad-property) = REJECTED]
+[approve-as-end-entity(bad.profileProcess.bad-property.xml) = REJECTED]
 error_code="1",error_reason="Property Error - Invalid Property notBefore",status="pending",requestId="17"
 Server at "APPROVE" replied: 1: Property Error - Invalid Property notBefore
-[approve-as-end-entity(bad.profileProcess.no-agent-cert) = REJECTED]
+[approve-as-end-entity(bad.profileProcess.no-agent-cert.xml) = REJECTED]
 
-[approve-as-end-entity(bad.profileProcess.no-ca-cert) = REJECTED]
+[approve-as-end-entity(bad.profileProcess.no-ca-cert.xml) = REJECTED]
 
-[approve-as-end-entity(bad.profileProcess.no-property) = REJECTED]
+[approve-as-end-entity(bad.profileProcess.no-property.xml) = REJECTED]
 error_code="1",error_reason="Property Error - Invalid Property notBefore",status="pending",requestId="17"
 Server at "APPROVE" replied: 1: Property Error - Invalid Property notBefore
-[approve-as-end-entity(bad.profileProcess.not-pending) = REJECTED]
+[approve-as-end-entity(bad.profileProcess.not-pending.xml) = REJECTED]
 error_code="1",error_reason="Request Not In Pending State",requestId="17"
 Server at "APPROVE" replied: 1: Request Not In Pending State
-[check-as-end-entity(bad.checkRequest.nosuch) = REJECTED]
+[check-as-end-entity(bad.checkRequest.nosuch.xml) = REJECTED]
 error="Request ID 29 was not found in the request queue."
 Server at "CHECK" replied: Request ID 29 was not found in the request queue.
-[fetch-as-end-entity(bad.displayCertFromRequest.incomplete) = REJECTED]
+[fetch-as-end-entity(bad.displayCertFromRequest.incomplete.xml) = REJECTED]
 error="Request ID 14 was not completed.",status="7"
 Server at "FETCH" replied: Request ID 14 was not completed.
-[fetch-as-end-entity(bad.displayCertFromRequest.no-such-request) = REJECTED]
+[fetch-as-end-entity(bad.displayCertFromRequest.no-such-request.json) = REJECTED]
+
+[fetch-as-end-entity(bad.displayCertFromRequest.no-such-request.xml) = REJECTED]
 error="Request ID 19 was not found in the request queue.",status="7"
 Server at "FETCH" replied: Request ID 19 was not found in the request queue.
-[fetch-as-end-entity(bad.displayCertFromRequest.rejected) = REJECTED]
+[fetch-as-end-entity(bad.displayCertFromRequest.rejected.xml) = REJECTED]
 error="Request ID 17 was not completed.",status="7"
 Server at "FETCH" replied: Request ID 17 was not completed.
-50 samples.
+[submit-as-json(good.profileSubmit.issued.json) = ISSUED]
+error_code="0",error_reason="",status="0",requestId="332621425870192170580644617633640391310",cert="-----BEGIN CERTIFICATE-----"
+-----BEGIN CERTIFICATE-----
+MIIFODCCA6CgAwIBAgIQdlK5QebTx77rrNFpsVOHmTANBgkqhkiG9w0BAQsFADA3
+MRUwEwYDVQQKDAxFWEFNUExFLlRFU1QxHjAcBgNVBAMMFUNlcnRpZmljYXRlIEF1
+dGhvcml0eTAeFw0yNDExMTgxOTEyMTFaFw0yNjExMTkxOTEyMTFaMDIxFTATBgNV
+BAoMDEVYQU1QTEUuVEVTVDEZMBcGA1UEAwwQaXBhLmV4YW1wbGUudGVzdDCCASIw
+DQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAN0G465levl0RkaYb0YmJHLnYnst
+Y35tvODdWcpIoQ8qe57Cid4TDesECpN/xVZ9fUHBPoDNsDb+JzTcCd+JocleuZqj
+08Ln+Irb5Xhd3DXaCGUUCJ3/+eOVEGnZkp1licZbkkjeRrjiHXYdFia3zzZIokXV
++vuJSbasy8o/rWCUCgJBFLqRDBslsQJKqk7rs5w4wcT629Q6Z4jzb+oWbemUS8Pu
+xk2rmubV2EDWlYjgJftkxLLeecPx6h0zEO02hBZngF7x+hKjsJ38f+KL2JqE0yfa
++OcSaSkDT94EMVqbhUpuV3I7ilVRC9xv818fUBGjJfRTVCXQizSHYIvfPRcCAwEA
+AaOCAcMwggG/MB8GA1UdIwQYMBaAFKiEhUhIcDVO6mAnUKaNttlPFiGhMD4GCCsG
+AQUFBwEBBDIwMDAuBggrBgEFBQcwAYYiaHR0cDovL2lwYS1jYS5leGFtcGxlLnRl
+c3QvY2Evb2NzcDAOBgNVHQ8BAf8EBAMCBPAwHQYDVR0lBBYwFAYIKwYBBQUHAwEG
+CCsGAQUFBwMCMHcGA1UdHwRwMG4wbKA0oDKGMGh0dHA6Ly9pcGEtY2EuZXhhbXBs
+ZS50ZXN0L2lwYS9jcmwvTWFzdGVyQ1JMLmJpbqI0pDIwMDEOMAwGA1UECgwFaXBh
+Y2ExHjAcBgNVBAMMFUNlcnRpZmljYXRlIEF1dGhvcml0eTAdBgNVHQ4EFgQUe/DN
+hx8ZWM+1WfGJEkcMG99yg7kwgZQGA1UdEQSBjDCBiYIQaXBhLmV4YW1wbGUudGVz
+dKAyBgorBgEEAYI3FAIDoCQMImxkYXAvaXBhLmV4YW1wbGUudGVzdEBFWEFNUExF
+LlRFU1SgQQYGKwYBBQICoDcwNaAOGwxFWEFNUExFLlRFU1ShIzAhoAMCAQGhGjAY
+GwRsZGFwGxBpcGEuZXhhbXBsZS50ZXN0MA0GCSqGSIb3DQEBCwUAA4IBgQCSd1tu
+yjcl5R/kdvyWDzIz3FqzxithbNmaGy9t2carSi3Ndvnh5PNSrhQ1gWM0lLCjoU0v
+P7p64u7/DLRJR+1d27p8QmEZMeCoh1Qe68iD3jjolzF/j8ReTHN1zKAKMcyJpBKl
+O89N2XsYnxRlJC/keQVXC5TrEzSTWBwr9RckK9wYhKB8U1U+2Y0/t+HWvvpQELAF
+1TmSpbHM51trZoFN09nO/grB1m28R8E/34WxwnWo1f2+WaUCOa4wNoZYvgF2beBy
+pjX6/tEzaNeXUe6zpGnCpQ/wGfE1YnDaO8nF4y1fYNxEV+c0REOHXVr8qyHhHAN0
+7fPtlV9YqIk/meB8pMYs8iO45uqoGfrxL4JIXUNjZHp4zOfmZqZ8iNoSAXen/BGp
+I9tBgnVN6PiEMBBp6QrR//2H1ZTgYbCTn/T9F8XeLDHtakSMzTM5vqDYz6QJ2F/R
+kcXpPVbd+6Cqb3CelMXTzPhMJxW6IKEgIQj4VtdKm32MyUkR5IlRwCOIbU8=
+-----END CERTIFICATE-----
+
+[check-as-json(good.checkRequest.complete.json) = WAIT_WITH_DELAY]
+error_code="0",error_reason="",status="complete",requestId="270317855924125321275412697561729983788"
+0
+state=retrieve&requestId=270317855924125321275412697561729983788
+
+[check-as-json(good.checkRequest.pending.json) = WAIT]
+error_code="0",error_reason="",status="pending",requestId="73577173089892679894729695106669289136"
+state=check&requestId=73577173089892679894729695106669289136
+
+[fetch-as-json(good.displayCertFromRequest.json) = ISSUED]
+error_code="0",error_reason="",status="complete",cert="-----BEGIN CERTIFICATE-----"
+-----BEGIN CERTIFICATE-----
+MIIEGzCCAoOgAwIBAgIRANnvcOIqsXHMhcZSZiOYmeAwDQYJKoZIhvcNAQELBQAw
+NzEVMBMGA1UECgwMRVhBTVBMRS5URVNUMR4wHAYDVQQDDBVDZXJ0aWZpY2F0ZSBB
+dXRob3JpdHkwHhcNMjQxMTEyMTUzNTE3WhcNMjYxMTAyMTUzNTE3WjAyMRUwEwYD
+VQQKDAxFWEFNUExFLlRFU1QxGTAXBgNVBAMMEGlwYS5leGFtcGxlLnRlc3QwggEi
+MA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQD6uMp+bGs72KACvmpnSBoGWchL
+BFxfZiuWXJr9TeYM3h1DGXdW7JwRgADJwgdg6UVjCuDYb5zCQBtCUbAmM7USqH5h
+Aeu48qjVzQcewUR24TchnX/VgpuYShb50WxxSWAV6upQ78WgOQvCP5BjjhnLkOro
+hHdkkXvnNTxKZ7EeSwa79ajSuGCf30qhISvkxErGJUL7td7bLnxGF9cbEsUNop5w
+kRpgRhNpu7Kkubj8/yYkMhY6Ju0BhvHTYmyhKmAv98uaDWaOjcNwJpoeuhaAZCSG
+nvusKzb/W2I5wAGxcQNY4GHJSB8KAzeTSF9Ujx0zprGZh3NK7vpI90nt0j41AgMB
+AAGjgaYwgaMwHwYDVR0jBBgwFoAUqISFSEhwNU7qYCdQpo222U8WIaEwPgYIKwYB
+BQUHAQEEMjAwMC4GCCsGAQUFBzABhiJodHRwOi8vaXBhLWNhLmV4YW1wbGUudGVz
+dC9jYS9vY3NwMA4GA1UdDwEB/wQEAwIEsDATBgNVHSUEDDAKBggrBgEFBQcDATAb
+BgNVHREEFDASghBpcGEuZXhhbXBsZS50ZXN0MA0GCSqGSIb3DQEBCwUAA4IBgQC2
+s/38mrzgWBCSPXFQp6chRjN2H1KxJj/FPyd/iKSapv8yboSMdIy5pstiLQE+NLzv
+Fv8OwrpmNKs0BBaB9m6/zCFk5ZI/j1iS9wfeJMZHTJfPS7ZA113iqGmfBZXjNsj8
+5wuPo77mcm/EIEru2IxD6/5qmDIEZiT3PwDKS7rH2w0r4z2DlumOjv6e8+qIq6+z
+vux1rdVFrsKVSBicVDfUKITlz4AayRJ4lUqBxgKWnG0n06z8eYQxPxyi+2z1ZFg5
+f2G6M7ZnPv+F/S/vqnTJcYFZqSVyRBGY0p+hL8t0aTxn0hQTXK/yiPnU8UzMky5b
+sA86qdFzqUtBkSzV63L6YoSbsMJxCIWiv16NjbIBzgVSDbpPTXGkeDhTAfJDioTp
+63lDFCobRMXuyL6Ohb1+UGx/HMhrJa0w6+tkNJunVCUCy16GK7w6l3dp1GFe+tTR
+VvmyCX0MCPJa2OHEanSDn711OG4TLnHHzZefp2hlgWUaZ2PlKIgnZ82UK96gTR8=
+-----END CERTIFICATE-----
+
+[profiles-as-json(good.profileList.json) = ISSUED]
+error_code="0",error_reason=""
+acmeIPAServerCert
+caIPAserviceCert
+IECUserRoles
+KDCs_PKINIT_Certs
+acmeServerCert
+caCMCserverCert
+caCMCECserverCert
+caCMCECsubsystemCert
+caCMCsubsystemCert
+caCMCauditSigningCert
+caCMCcaCert
+caCMCocspCert
+caCMCkraTransportCert
+caCMCkraStorageCert
+caServerKeygen_UserCert
+caServerKeygen_DirUserCert
+caUserCert
+caECUserCert
+caUserSMIMEcapCert
+caDualCert
+caDirBasedDualCert
+AdminCert
+ECAdminCert
+caSignedLogCert
+caTPSCert
+caRARouterCert
+caRouterCert
+caServerCert
+caECServerCert
+caServerCertWithSCT
+caECServerCertWithSCT
+caSubsystemCert
+caECSubsystemCert
+caOtherCert
+caCACert
+caCrossSignedCACert
+caInstallCACert
+caRACert
+caOCSPCert
+caStorageCert
+caTransportCert
+caDirPinUserCert
+caECDirPinUserCert
+caDirUserCert
+caECDirUserCert
+caAgentServerCert
+caECAgentServerCert
+caAgentFileSigning
+caCMCUserCert
+caCMCECUserCert
+caCMCcaIssuanceProtectionCert
+caFullCMCUserCert
+caECFullCMCUserCert
+caFullCMCUserSignedCert
+caECFullCMCUserSignedCert
+caFullCMCSharedTokenCert
+caECFullCMCSharedTokenCert
+caSimpleCMCUserCert
+caECSimpleCMCUserCert
+caTokenDeviceKeyEnrollment
+caTokenUserEncryptionKeyEnrollment
+caTokenUserSigningKeyEnrollment
+caTempTokenDeviceKeyEnrollment
+caTempTokenUserEncryptionKeyEnrollment
+caTempTokenUserSigningKeyEnrollment
+caAdminCert
+caECAdminCert
+caInternalAuthServerCert
+caECInternalAuthServerCert
+caInternalAuthTransportCert
+caInternalAuthDRMstorageCert
+caInternalAuthSubsystemCert
+caECInternalAuthSubsystemCert
+caInternalAuthOCSPCert
+caInternalAuthAuditSigningCert
+DomainController
+caDualRAuserCert
+caRAagentCert
+caRAserverCert
+caUUIDdeviceCert
+caSSLClientSelfRenewal
+caDirUserRenewal
+caManualRenewal
+caTokenMSLoginEnrollment
+caTokenUserSigningKeyRenewal
+caTokenUserEncryptionKeyRenewal
+caTokenUserAuthKeyRenewal
+caJarSigningCert
+caAuditSigningCert
+caEncUserCert
+caSigningUserCert
+caTokenUserDelegateAuthKeyEnrollment
+caTokenUserDelegateSigningKeyEnrollment
+
+[submit-as-json(bad.profileSubmit.csr.empty.json) = REJECTED]
+error_code="3007",error_reason="'csr' is required"
+Server at "SUBMIT" replied: 3007: 'csr' is required
+[submit-as-json(bad.profileSubmit.csr.invalid.json) = REJECTED]
+error_code="4301",error_reason="Certificate operation cannot be completed: not a valid CSR: Incorrect padding"
+Server at "SUBMIT" replied: 4301: Certificate operation cannot be completed: not a valid CSR: Incorrect padding
+[check-as-json(bad.checkRequest.nosuch.json) = REJECTED]
+error_code="4001",error_reason="Request failed with status 404: Non-2xx response from CA REST API: 404. Certificate ID 0x270f not found (404)"
+Server at "CHECK" replied: 4001: Request failed with status 404: Non-2xx response from CA REST API: 404. Certificate ID 0x270f not found (404)
+[fetch-as-json(bad.displayCertFromRequest.no-such-request.json) = REJECTED]
+error_code="4001",error_reason="Request failed with status 404: Non-2xx response from CA REST API: 404. Certificate ID 0x270f not found (404)"
+Server at "FETCH" replied: 4001: Request failed with status 404: Non-2xx response from CA REST API: 404. Certificate ID 0x270f not found (404)
+61 samples.

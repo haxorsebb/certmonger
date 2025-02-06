@@ -27,6 +27,8 @@
 
 #include <dbus/dbus.h>
 
+#include <talloc.h>
+
 #include "../../src/submit.h"
 #include "../../src/submit-d.h"
 #include "../../src/submit-e.h"
@@ -39,13 +41,14 @@ main(int argc, char **argv)
 	char *error = NULL, *error_code = NULL, *error_reason = NULL;
 	char *status = NULL, *requestId = NULL, *cert = NULL;
 	char *xml, *out = NULL, *err = NULL, **profiles = NULL;
-	dbus_bool_t can_agent;
+	dbus_bool_t can_agent, is_xml;
 	int i, vars;
+	void *ctx;
 
 	if (argc < 4) {
 		printf("usage: dparse "
 		       "{submit|check|review|reject|approve|fetch|profiles} "
-		       "{agent|ee} "
+		       "{agent|end-entity|json} "
 		       "reply.xml\n");
 		return 0;
 	}
@@ -53,61 +56,93 @@ main(int argc, char **argv)
 	role = argv[2];
 	filename = argv[3];
 	can_agent = (strcasecmp(role, "agent") == 0);
+	is_xml = ((strcasecmp(role, "agent") == 0) || (strcasecmp(role, "end-entity") == 0));
 
 	xml = cm_submit_u_from_file(filename);
 	if (xml == NULL) {
 		fprintf(stderr, "error reading %s\n", filename);
 		return -1;
 	}
+	ctx = talloc_new(NULL);
 
 	if (strcmp(mode, "submit") == 0) {
-		cm_submit_d_submit_result(NULL, xml,
-					  &error_code, &error_reason, &error,
-					  &status, &requestId, &cert);
-		i = cm_submit_d_submit_eval(NULL, xml, "SUBMIT",
-					    can_agent, &out, &err);
+		if (is_xml) {
+			cm_submit_d_submit_result(ctx, xml,
+						  &error_code, &error_reason, &error,
+						  &status, &requestId, &cert);
+		} else {
+			cm_submit_d_rest_submit_result(ctx, xml,
+						  &error_code, &error_reason,
+						  &status, &requestId, &cert);
+		}
+		i = cm_submit_d_submit_eval(ctx, xml, "SUBMIT",
+					    can_agent, &out, &err, is_xml);
 	} else
 	if (strcmp(mode, "check") == 0) {
-		cm_submit_d_check_result(NULL, xml,
-					 &error_code, &error_reason, &error,
-					 &status, &requestId);
-		i = cm_submit_d_check_eval(NULL, xml, "CHECK",
-					   can_agent, &out, &err);
+		if (is_xml) {
+			cm_submit_d_check_result(ctx, xml,
+						 &error_code, &error_reason, &error,
+						 &status, &requestId);
+		} else {
+			cm_submit_d_rest_check_result(ctx, xml,
+						 &error_code, &error_reason,
+						 &status, &requestId);
+		}
+		i = cm_submit_d_check_eval(ctx, xml, "CHECK",
+					   can_agent, &out, &err, is_xml);
 	} else
 	if (strcmp(mode, "reject") == 0) {
-		cm_submit_d_reject_result(NULL, xml,
+		cm_submit_d_reject_result(ctx, xml,
 					  &error_code, &error_reason, &error,
 					  &status, &requestId);
-		i = cm_submit_d_reject_eval(NULL, xml, "REJECT",
+		i = cm_submit_d_reject_eval(ctx, xml, "REJECT",
 					    can_agent, &out, &err);
 	} else
 	if (strcmp(mode, "review") == 0) {
-		cm_submit_d_review_result(NULL, xml,
+		cm_submit_d_review_result(ctx, xml,
 					  &error_code, &error_reason, &error,
 					  &status, &requestId);
-		i = cm_submit_d_review_eval(NULL, xml, "REVIEW",
+		i = cm_submit_d_review_eval(ctx, xml, "REVIEW",
 					    can_agent, &out, &err);
 	} else
 	if (strcmp(mode, "approve") == 0) {
-		cm_submit_d_approve_result(NULL, xml,
-					   &error_code, &error_reason, &error,
-					   &status, &requestId);
-		i = cm_submit_d_approve_eval(NULL, xml, "APPROVE",
-					     can_agent, &out, &err);
+		if (is_xml) {
+			cm_submit_d_approve_result(ctx, xml,
+						   &error_code, &error_reason, &error,
+						   &status, &requestId);
+		} else {
+			cm_submit_d_rest_approve_result(ctx, xml,
+						   &error_code, &error_reason, &error,
+						   &requestId);
+		}
+		i = cm_submit_d_approve_eval(ctx, xml, "APPROVE",
+					     can_agent, &out, &err, is_xml);
 	} else
 	if (strcmp(mode, "fetch") == 0) {
-		cm_submit_d_fetch_result(NULL, xml,
-					 &error_code, &error_reason, &error,
-					 &status, &requestId, &cert);
-		i = cm_submit_d_fetch_eval(NULL, xml, "FETCH",
-					   can_agent, &out, &err);
+		if (is_xml) {
+			cm_submit_d_fetch_result(ctx, xml,
+						 &error_code, &error_reason, &error,
+						 &status, &requestId, &cert);
+		} else {
+			cm_submit_d_rest_fetch_result(ctx, xml,
+						 &error_code, &error_reason,
+						 &status, &cert);
+		}
+		i = cm_submit_d_fetch_eval(ctx, xml, "FETCH",
+					   can_agent, &out, &err, is_xml);
 	} else
 	if (strcmp(mode, "profiles") == 0) {
-		cm_submit_d_profiles_result(NULL, xml,
-					    &error_code, &error_reason, &error,
-					    &status, &profiles);
-		i = cm_submit_d_profiles_eval(NULL, xml, "PROFILES",
-					      can_agent, &out, &err);
+		if (is_xml) {
+			cm_submit_d_profiles_result(ctx, xml,
+						    &error_code, &error_reason, &error,
+						    &status, &profiles);
+		} else {
+			cm_submit_d_rest_profiles_result(ctx, xml,
+						    &error_code, &error_reason,
+						    &profiles);
+		}
+		i = cm_submit_d_profiles_eval(ctx, xml, "PROFILES",
+					      can_agent, &out, &err, is_xml);
 	} else {
 		fprintf(stderr, "unknown mode \"%s\"\n", mode);
 		return -1;
@@ -115,7 +150,7 @@ main(int argc, char **argv)
 
 	printf("[%s-as-%s(%s) = %s]\n",
 	       mode,
-	       can_agent ? "agent" : "end-entity",
+	       role,
 	       filename,
 	       cm_submit_e_status_text(i));
 	vars = 0;
@@ -174,6 +209,9 @@ main(int argc, char **argv)
 		err++;
 	}
 	printf("\n");
+
+	free(xml);
+	talloc_free(ctx);
 
 	return 0;
 }

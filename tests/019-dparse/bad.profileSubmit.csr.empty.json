@@ -1,0 +1,14 @@
+{
+    "error": {
+        "code": 3007,
+        "data": {
+            "name": "csr"
+        },
+        "message": "'csr' is required",
+        "name": "RequirementError"
+    },
+    "id": 0,
+    "principal": "admin@EXAMPLE.TEST",
+    "result": null,
+    "version": "4.13.0.dev202409181703+git4bfbf0ba9"
+}

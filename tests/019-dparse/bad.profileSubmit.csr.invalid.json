@@ -1,0 +1,14 @@
+{
+    "error": {
+        "code": 4301,
+        "data": {
+            "error": "not a valid CSR: Incorrect padding"
+        },
+        "message": "Certificate operation cannot be completed: not a valid CSR: Incorrect padding",
+        "name": "CertificateOperationError"
+    },
+    "id": null,
+    "principal": "admin@EXAMPLE.TEST",
+    "result": null,
+    "version": "4.13.0.dev202409181703+git4bfbf0ba9"
+}

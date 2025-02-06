@@ -1,0 +1,14 @@
+{
+    "error": {
+        "code": 4001,
+        "data": {
+            "reason": "Request failed with status 404: Non-2xx response from CA REST API: 404. Certificate ID 0x270f not found (404)"
+        },
+        "message": "Request failed with status 404: Non-2xx response from CA REST API: 404. Certificate ID 0x270f not found (404)",
+        "name": "NotFound"
+    },
+    "id": 0,
+    "principal": "admin@EXAMPLE.TEST",
+    "result": null,
+    "version": "4.13.0.dev202411011518+git7fa527164"
+}
