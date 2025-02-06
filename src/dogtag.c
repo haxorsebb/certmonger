@@ -721,9 +721,10 @@ ipa_workflow(
 		break;
 	case op_profiles:
 		json_req = json_pack_ex(&j_error, 0,
-								"{s:s, s:[[],{}]}",
+								"{s:s, s:[[],{s:s}]}",
 								"method", "certprofile_find",
-								"params");
+								"params",
+								"all", "True");
 		break;
 	}
 	free(csr);
