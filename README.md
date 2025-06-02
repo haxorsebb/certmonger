@@ -32,10 +32,10 @@ signing to:
   * certmaster
   * [Dogtag](http://pki.fedoraproject.org/)
   * SCEP servers
+  * ADCS (either by using SCEP or [CEP/CES](https://github.com/openSUSE/cepces) helper application)
 
 I'd like for it to also be able to submit requests to:
 
-  * ADCS
   * [anchor](https://github.com/openstack/anchor)
   * ACME servers
 
