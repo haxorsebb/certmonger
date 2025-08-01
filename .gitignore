@@ -121,3 +121,4 @@ actual.out
 /tests/tools/scepgen
 /tests/tools/srv
 /tests/tools/submit
+/tests/026-local/expected.out

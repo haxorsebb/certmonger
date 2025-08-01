@@ -192,7 +192,8 @@ if WITH_XMLRPC
 noinst_PROGRAMS += submit-x
 endif
 tdbusm_check_SOURCES = tdbusm-check.c tm.c tm.h
-tdbusm_check_LDADD = libcm.a $(CERTMONGER_LIBS) $(POPT_LIBS) $(LDAP_LIBS)
+tdbusm_check_LDADD = libcm.a $(CERTMONGER_LIBS) $(POPT_LIBS) $(LDAP_LIBS) \
+			$(OPENSSL_LIBS) $(NSS_LIBS)
 serial_check_LDADD = libcm.a $(CERTMONGER_LIBS) $(LTLIBICONV) $(LDAP_LIBS)
 nl_check_LDADD = libcm.a $(CERTMONGER_LIBS) $(LDAP_LIBS)
 if WITH_XMLRPC
@@ -225,7 +226,7 @@ ipa_submit_SOURCES = ipa.c srvloc.c srvloc.h store.h store-gen.c \
 ipa_submit_LDADD = $(XMLRPC_LIBS) $(LDAP_LIBS) $(KRB5_LIBS) $(TALLOC_LIBS) \
 		   $(GMP_LIBS) $(IDN_LIBS) $(OPENSSL_LIBS) $(UUID_LIBS) \
 		   $(RESOLV_LIBS) $(LTLIBICONV) $(POPT_LIBS) $(CURL_LIBS) \
-		   $(JANSSON_LIBS)
+		   $(JANSSON_LIBS) $(OPENSSL_LIBS) $(NSS_LIBS)
 if WITH_XMLRPC
 certmaster_submit_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS)
 certmaster_submit_SOURCES = certmaster.c submit-x.c submit-x.h \
@@ -272,16 +273,18 @@ local_submit_SOURCES = local.c env.h store.h store-gen.c submit-o.c submit-o.h \
 		       util.c util.h util-o.c util-o.h pin.c pin.h
 local_submit_LDADD = $(NSS_LIBS) $(OPENSSL_LIBS) $(TALLOC_LIBS) $(UUID_LIBS) \
 		     $(POPT_LIBS)
-submit_d_CFLAGS = $(AM_CFLAGS) $(CURL_CFLAGS) $(XML_CFLAGS) -DCM_SUBMIT_D_MAIN
+submit_d_CFLAGS = $(AM_CFLAGS) $(CURL_CFLAGS) $(XML_CFLAGS) $(OPENSSL_CFLAGS) \
+		 $(NSS_CFLAGS) -DCM_SUBMIT_D_MAIN
 submit_d_SOURCES = submit-d.c submit-d.h submit-h.c submit-h.h \
 		   submit-u.c submit-u.h log.c log.h tm.c tm.h util-m.c util-m.h
 submit_d_LDADD = libcm-o.a $(CURL_LIBS) $(OPENSSL_LIBS) $(XML_LIBS) \
 		 $(TALLOC_LIBS) $(GMP_LIBS) $(UUID_LIBS) $(LTLIBICONV) \
-		 $(POPT_LIBS)
-submit_h_CFLAGS = $(AM_CFLAGS) $(CURL_CFLAGS) $(XML_CFLAGS) -DCM_SUBMIT_H_MAIN
+		 $(POPT_LIBS) $(OPENSSL_LIBS) $(NSS_LIBS)
+submit_h_CFLAGS = $(AM_CFLAGS) $(NSS_CFLAGS) $(CURL_CFLAGS) $(XML_CFLAGS) \
+		 -DCM_SUBMIT_H_MAIN
 submit_h_SOURCES = submit-h.c submit-h.h log.c log.h tm.c tm.h
-submit_h_LDADD = $(CURL_LIBS) $(XML_LIBS) $(TALLOC_LIBS) $(LTLIBICONV) \
-		 $(POPT_LIBS)
+submit_h_LDADD = $(NSS_LIBS) $(OPENSSL_LIBS) $(CURL_LIBS) $(XML_LIBS) $(TALLOC_LIBS) \
+		 $(LTLIBICONV) $(POPT_LIBS)
 
 .PHONY: manlint
 manlint: $(man_MANS)
