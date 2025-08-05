@@ -70,5 +70,6 @@ void cm_store_set_if_not_set_as(void *parent, char ***dest, char **src);
 int cm_store_utf8_to_bmp_string(char *s,
 				unsigned char **bmp, unsigned int *len);
 char *cm_store_utf8_from_bmp_string(unsigned char *bmp, unsigned int len);
+const char *cm_store_algorithm_to_name(int algorithm);
 
 #endif

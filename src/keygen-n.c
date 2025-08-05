@@ -271,6 +271,14 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		pmech = CKM_EC_KEY_PAIR_GEN;
 		break;
 #endif
+#ifdef CM_ENABLE_ML_DSA:
+	case cm_key_ml_dsa_44:
+	case cm_key_ml_dsa_65:
+	case cm_key_ml_dsa_87:
+		mech = CKM_ML_DSA_KEY_PAIR_GEN;
+		pmech = CKM_ML_DSA_KEY_PAIR_GEN;
+		break;
+#endif
 	default:
 		fprintf(status, "Unknown or unsupported key type.\n");
 		cm_log(1, "Unknown or unsupported key type.\n");
@@ -530,6 +538,13 @@ retry_gen:
 		/* no parameters to generate */
 		break;
 #endif
+#ifdef CM_ENABLE_ML_DSA:
+	case cm_key_ml_dsa_44:
+	case cm_key_ml_dsa_65:
+	case cm_key_ml_dsa_87:
+		/* no parameters to generate */
+		break;
+#endif
 	default:
 		params = NULL;
 		break;
@@ -563,6 +578,13 @@ retry_gen:
 		SEC_ASN1EncodeItem(NULL, &ec_params,
 				   &ecurve->oid, SEC_ObjectIDTemplate);
 		params = &ec_params;
+		break;
+#endif
+#ifdef CM_ENABLE_ML_DSA:
+	case cm_key_ml_dsa_44:
+	case cm_key_ml_dsa_65:
+	case cm_key_ml_dsa_87:
+		/* FIXME */
 		break;
 #endif
 	default:

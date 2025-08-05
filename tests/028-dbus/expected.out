@@ -185,7 +185,7 @@ dbus.Array([dbus.ObjectPath('/org/fedorahosted/certmonger/cas/CA1'), dbus.Object
 dbus.Array([dbus.ObjectPath('/org/fedorahosted/certmonger/requests/Request2')], signature=dbus.Signature('o'))
 
 [ /org/fedorahosted/certmonger: org.fedorahosted.certmonger.get_supported_key_types ]
-dbus.Array([dbus.String('RSA'), dbus.String('DSA'), dbus.String('EC')], signature=dbus.Signature('s'))
+dbus.Array([dbus.String('RSA'), dbus.String('DSA'), dbus.String('EC'), dbus.String('ML-DSA-44'), dbus.String('ML-DSA-65'), dbus.String('ML-DSA-87')], signature=dbus.Signature('s'))
 
 [ /org/fedorahosted/certmonger: org.fedorahosted.certmonger.get_supported_key_storage ]
 dbus.Array([dbus.String('NSSDB'), dbus.String('FILE')], signature=dbus.Signature('s'))
@@ -712,7 +712,7 @@ dbus.Array([], signature=dbus.Signature('s'))
 </node>
 
 [ /org/fedorahosted/certmonger/cas/CA2: org.fedorahosted.certmonger.ca.get_config_file_path ]
-$tmpdir/cas/20180327134236
+$tmpdir/cas/20250807195047
 
 [ /org/fedorahosted/certmonger/cas/CA2: org.fedorahosted.certmonger.ca.get_nickname ]
 SelfSign
@@ -827,7 +827,7 @@ dbus.Array([], signature=dbus.Signature('s'))
 </node>
 
 [ /org/fedorahosted/certmonger/cas/CA3: org.fedorahosted.certmonger.ca.get_config_file_path ]
-$tmpdir/cas/20180327134236-1
+$tmpdir/cas/20250807195047-1
 
 [ /org/fedorahosted/certmonger/cas/CA3: org.fedorahosted.certmonger.ca.get_nickname ]
 IPA
@@ -940,7 +940,7 @@ dbus.Array([], signature=dbus.Signature('s'))
 </node>
 
 [ /org/fedorahosted/certmonger/cas/CA4: org.fedorahosted.certmonger.ca.get_config_file_path ]
-$tmpdir/cas/20180327134236-3
+$tmpdir/cas/20250807195047-2
 
 [ /org/fedorahosted/certmonger/cas/CA4: org.fedorahosted.certmonger.ca.get_nickname ]
 dogtag-ipa-renew-agent

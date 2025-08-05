@@ -40,6 +40,11 @@ struct cm_store_entry {
 #ifdef CM_ENABLE_EC
 			cm_key_ecdsa,
 #endif
+#ifdef CM_ENABLE_ML_DSA
+			cm_key_ml_dsa_44,
+			cm_key_ml_dsa_65,
+			cm_key_ml_dsa_87
+#endif
 		} cm_key_algorithm, cm_key_gen_algorithm;
 		int cm_key_size, cm_key_gen_size;
 	} cm_key_type, cm_key_next_type;

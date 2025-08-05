@@ -516,6 +516,20 @@ cm_prefs_preferred_key_algorithm(void)
 			return cm_key_rsa;
 		}
 #endif
+#ifdef CM_ENABLE_ML_DSA
+		else if (strcasecmp(keytype, "ML-DSA-44") == 0) {
+			free(keytype);
+			return cm_key_ml_dsa_44;
+		}
+		else if (strcasecmp(keytype, "ML-DSA-65") == 0) {
+			free(keytype);
+			return cm_key_ml_dsa_65;
+		}
+		else if (strcasecmp(keytype, "ML-DSA-87") == 0) {
+			free(keytype);
+			return cm_key_ml_dsa_87;
+		}
+#endif
 	}
 	return CM_DEFAULT_PUBKEY_TYPE;
 }

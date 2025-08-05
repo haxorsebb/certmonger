@@ -141,8 +141,23 @@ cm_keyiread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 	    (strncasecmp(p, "EC", 2) == 0)) {
 		alg = cm_key_ecdsa;
 #endif
+#ifdef CM_ENABLE_ML_DSA
+	} else
+	if (((q - p) == strlen("ML-DSA-44")) &&
+	    (strncasecmp(p, "ML-DSA-44", 9) == 0)) {
+		alg = cm_key_ml_dsa_44;
+	} else
+	if (((q - p) == strlen("ML-DSA-65")) &&
+	    (strncasecmp(p, "ML-DSA-65", 9) == 0)) {
+		alg = cm_key_ml_dsa_65;
+	} else
+	if (((q - p) == strlen("ML-DSA-87")) &&
+	    (strncasecmp(p, "ML-DSA-87", 9) == 0)) {
+		alg = cm_key_ml_dsa_87;
+#endif
 	} else {
 		alg = cm_key_unspecified;
+		cm_log(1, "debug: determined unspcified from %d\n", alg);
 	}
 	if (alg != cm_key_unspecified) {
 		p = q + strspn(q, "/\r\n");
@@ -150,6 +165,7 @@ cm_keyiread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 		if (p != q) {
 			size = atoi(p);
 			if (size > 0) {
+				cm_log(1, "debug: setting alg %d size %d\n", alg, size);
 				entry->cm_key_type.cm_key_algorithm = alg;
 				entry->cm_key_type.cm_key_size = size;
 				if (entry->cm_key_type.cm_key_gen_algorithm == 0) {
@@ -202,7 +218,22 @@ cm_keyiread_read_data_from_buffer(struct cm_store_entry *entry, const char *p)
 	    (strncasecmp(p, "EC", 2) == 0)) {
 		alg = cm_key_ecdsa;
 #endif
+#ifdef CM_ENABLE_ML_DSA
+	} else
+	if (((q - p) == strlen("ML-DSA-44")) &&
+	    (strncasecmp(p, "ML-DSA-44", 9) == 0)) {
+		alg = cm_key_ml_dsa_44;
+	} else
+	if (((q - p) == strlen("ML-DSA-65")) &&
+	    (strncasecmp(p, "ML-DSA-65", 9) == 0)) {
+		alg = cm_key_ml_dsa_65;
+	} else
+	if (((q - p) == strlen("ML-DSA-87")) &&
+	    (strncasecmp(p, "ML-DSA-87", 9) == 0)) {
+		alg = cm_key_ml_dsa_87;
+#endif
 	} else {
+		cm_log(1, "debug: setting next unspcified from %s\n", p);
 		alg = cm_key_unspecified;
 	}
 	if (alg != cm_key_unspecified) {

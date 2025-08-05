@@ -714,6 +714,54 @@ if ! ${configure_dist_target_only:-false} ; then
 	AC_SUBST(MAN_EC)
 	AC_SUBST(NO_MAN_EC)
 
+	AC_ARG_ENABLE(ml_dsa,
+	AS_HELP_STRING(--disable-ml-dsa,[Disable ML-DSA key support, even if available.]),
+	ml_dsa=$enableval,
+	ml_dsa=maybe)
+	if test x$ml_dsa != xno ; then
+		CFLAGSsave="$CFLAGS"
+		LIBSsave="$LIBS"
+		CFLAGS="$OPENSSL_CFLAGS $CFLAGS"
+		LIBS="$OPENSSL_LIBS $LIBS"
+		AC_CHECK_LIB(crypto,EVP_PKEY_Q_keygen)
+		# CFLAGS="$NSS_CFLAGS $CFLAGS"
+		# LIBS="$NSS_LIBS $LIBS"
+		# AC_CHECK_FUNCS(SECKEY_CreateECPrivateKey)
+		# AC_CHECK_FUNCS(PK11_PrivDecrypt)
+		# AC_CHECK_FUNCS(NSS_OptionGet NSS_OptionSet)
+		CFLAGS="$CFLAGSsave"
+		LIBS="$LIBSsave"
+		can_ml_dsa=true
+		if test x$ac_cv_lib_crypto_EVP_PKEY_Q_keygen = xno ; then
+			can_ml_dsa=false
+		fi
+		AC_MSG_CHECKING([for ML-DSA support])
+		if $can_ml_dsa ; then
+			AC_MSG_RESULT(enabling ML-DSA support)
+			AC_DEFINE_UNQUOTED(CM_ENABLE_ML_DSA,1,[Define to enable ML-DSA support.])
+			MAN_ML_DSA=""
+			NO_MAN_ML_DSA=".\\\" "
+			ml_dsa=yes
+		else
+			if test x$ml_dsa != xyes ; then
+				AC_MSG_WARN([unavailable, disabling])
+				ml_dsa=no
+			else
+				AC_MSG_ERROR([unavailable])
+			fi
+			MAN_ML_DSA=".\\\" "
+			NO_MAN_ML_DSA=""
+		fi
+	else
+		AC_MSG_RESULT(NOT enabling ML-DSA support)
+		MAN_ML_DSA=".\\\" "
+		NO_MAN_ML_DSA=""
+		ml_dsa=no
+	fi
+	AM_CONDITIONAL(HAVE_ML_DSA,[test x$ml_dsa = xyes])
+	AC_SUBST(MAN_ML_DSA)
+	AC_SUBST(NO_MAN_ML_DSA)
+
 	AC_DEFINE_UNQUOTED(CM_DEFAULT_KEY_STORAGE_TYPE,cm_key_storage_nssdb,[Define to the default type of storage used for keys.])
 	AC_DEFINE_UNQUOTED(CM_DEFAULT_KEY_STORAGE_LOCATION,"/etc/pki/nssdb",[Define to the default location of storage used for keys.])
 	AC_DEFINE_UNQUOTED(CM_DEFAULT_KEY_TOKEN,NULL,[Define to the default token used for holding keys.])
@@ -732,9 +780,11 @@ if ! ${configure_dist_target_only:-false} ; then
 	AC_SUBST(CM_MINIMUM_RSA_KEY_SIZE)
 	CM_MINIMUM_DSA_KEY_SIZE=512
 	CM_MINIMUM_EC_KEY_SIZE=256
+	CM_MINIMUM_ML_DSA_KEY_SIZE=44
 	AC_DEFINE_UNQUOTED(CM_MINIMUM_RSA_KEY_SIZE,$CM_MINIMUM_RSA_KEY_SIZE,[Define to the minimum key size when generating RSA keys.  Requests to generate smaller keys will be forced to this key size.])
 	AC_DEFINE_UNQUOTED(CM_MINIMUM_DSA_KEY_SIZE,$CM_MINIMUM_DSA_KEY_SIZE,[Define to the minimum key size when generating DSA parameters and keys.  Requests to generate smaller keys will be forced to this key size.])
 	AC_DEFINE_UNQUOTED(CM_MINIMUM_EC_KEY_SIZE,$CM_MINIMUM_EC_KEY_SIZE,[Define to the minimum key size when selecting elliptic curve parameters.  Requests to generate smaller keys will be forced to this key size.])
+	AC_DEFINE_UNQUOTED(CM_MINIMUM_ML_DSA_KEY_SIZE,$CM_MINIMUM_ML_DSA_KEY_SIZE,[Define to the minimum key size when selecting ML-DSA parameters.  Requests to generate smaller keys will be forced to this key size.])
 	AC_SUBST(CM_MINIMUM_RSA_KEY_SIZE)
 	AC_SUBST(CM_MINIMUM_DSA_KEY_SIZE)
 	AC_SUBST(CM_MINIMUM_EC_KEY_SIZE)

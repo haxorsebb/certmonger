@@ -1,0 +1,14 @@
+[openssl:44]
+OK.
+OK (ML-DSA-44:10496).
+[openssl:65]
+OK.
+OK (ML-DSA-65:15616).
+[openssl:87]
+OK.
+OK (ML-DSA-87:20736).
+[openssl:rosubdir]
+Failed to save FILE:${tmpdir}/rosubdir/sample.87: need fs permissions.
+[openssl:rwsubdir]
+Failed to save FILE:${tmpdir}/rwsubdir/sample.87: need fs permissions.
+Test complete.

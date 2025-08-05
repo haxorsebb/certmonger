@@ -64,6 +64,17 @@ type_name(enum cm_key_algorithm alg)
 		return "EC";
 		break;
 #endif
+#ifdef CM_ENABLE_ML_DSA
+	case cm_key_ml_dsa_44:
+		return "ML-DSA-44";
+		break;
+	case cm_key_ml_dsa_65:
+		return "ML-DSA-65";
+		break;
+	case cm_key_ml_dsa_87:
+		return "ML-DSA-87";
+		break;
+#endif
 	default:
 		assert(0);
 		break;
@@ -84,6 +95,12 @@ munge_key_size(struct cm_key_type *key)
 #endif
 #ifdef CM_ENABLE_EC
 	case cm_key_ecdsa:
+		break;
+#endif
+#ifdef CM_ENABLE_ML_DSA
+	case cm_key_ml_dsa_44:
+	case cm_key_ml_dsa_65:
+	case cm_key_ml_dsa_87:
 		break;
 #endif
 	default:

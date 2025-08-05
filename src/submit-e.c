@@ -884,6 +884,17 @@ cm_submit_e_helper_main(int fd, struct cm_store_ca *ca,
 		key_type = "EC";
 		break;
 #endif
+#ifdef CM_ENABLE_ML_DSA
+	case cm_key_ml_dsa_44:
+		key_type = "ML-DSA-44";
+		break;
+	case cm_key_ml_dsa_65:
+		key_type = "ML-DSA-65";
+		break;
+	case cm_key_ml_dsa_87:
+		key_type = "ML-DSA-87";
+		break;
+#endif
 	case cm_key_unspecified:
 		key_type = NULL;
 		break;

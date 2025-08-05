@@ -111,10 +111,6 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	int ret;
 	char *filename;
 	char *marker;
-#ifdef CM_ENABLE_EC
-	EC_KEY *ec;
-	int ecurve;
-#endif
 
 	status = fdopen(fd, "w");
 	if (status == NULL) {
@@ -288,11 +284,37 @@ retry_gen:
 		}
 		break;
 #endif
+#ifdef CM_ENABLE_ML_DSA
+	case cm_key_ml_dsa_44:
+	case cm_key_ml_dsa_65:
+	case cm_key_ml_dsa_87:
+		const char *alg = cm_store_algorithm_to_name(cm_key_algorithm);
+		EVP_PKEY_CTX *ctx = NULL;
+		if ((ctx = EVP_PKEY_CTX_new_from_name(NULL, alg, NULL)) == NULL) {
+			ERR_print_errors_fp(stderr);
+			cm_log(1, "Initializing key context failed\n");
+				_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		}
+		if (EVP_PKEY_keygen_init(ctx) <= 0) {
+			ERR_print_errors_fp(stderr);
+			cm_log(1, "keygen_init failed\n");
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		}
+		if (EVP_PKEY_keygen(ctx, &pkey) <= 0) {
+			cm_log(1, "Error generating key.\n");
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		}
+		EVP_PKEY_CTX_free(ctx);
+		break;
+#endif
 	default:
 		cm_log(1, "Unknown or unsupported key type.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		break;
 	}
+
+	char *n = EVP_PKEY_get0_type_name(pkey);
+	cm_log(1, "debug: generated type %s for %d\n", n, cm_key_algorithm);
 
 	filename = strdup(entry->cm_key_storage_location);
 	marker = "";
