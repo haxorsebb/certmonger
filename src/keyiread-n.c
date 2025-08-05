@@ -522,6 +522,7 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(3, "Key is an EC key.\n");
 			alg = "EC";
 			break;
+		/* FIXME: case mlKey? */
 		case nullKey:
 		default:
 			cm_log(3, "Key is of an unknown type.\n");
@@ -581,6 +582,7 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					cm_log(3, "Next key is an EC key.\n");
 					alg = "EC";
 					break;
+				/* FIXME: case mlKey? */
 				case nullKey:
 				default:
 					cm_log(3, "Next key is of an unknown type.\n");

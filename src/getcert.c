@@ -895,6 +895,11 @@ request(const char *argv0, int argc, const char **argv)
 			    && (strcasecmp(poptarg, "ECDSA") != 0)
 			    && (strcasecmp(poptarg, "EC") != 0)
 #endif
+#ifdef CM_ENABLE_ML_DSA
+			    && (strcasecmp(poptarg, "ML-DSA-44") != 0)
+			    && (strcasecmp(poptarg, "ML-DSA-65") != 0)
+			    && (strcasecmp(poptarg, "ML-DSA-87") != 0)
+#endif
 			    ) {
 				printf(_("No support for generating \"%s\" keys.\n"),
 				       poptarg);
@@ -905,6 +910,9 @@ request(const char *argv0, int argc, const char **argv)
 #endif
 #ifdef CM_ENABLE_EC
 				printf(" EC");
+#endif
+#ifdef CM_ENABLE_ML_DSA
+				printf(" ML-DSA-44 ML-DA-65 ML-DSA-87");
 #endif
 				printf("\n");
 				return 1;
@@ -2701,6 +2709,9 @@ rekey_or_resubmit(const char *argv0, const char *category, int argc,
 #ifdef CM_ENABLE_EC
 			    && (strcasecmp(poptarg, "ECDSA") != 0)
 			    && (strcasecmp(poptarg, "EC") != 0)
+#endif
+#ifdef CM_ENABLE_ML_DSA
+			    && (strcasecmp(poptarg, "ML-DSA-65") != 0)
 #endif
 			    ) {
 				printf(_("No support for generating \"%s\" keys.\n"),

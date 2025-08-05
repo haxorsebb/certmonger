@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009,2010,2011,2012,2014,2015,2017 Red Hat, Inc.
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -33,6 +33,17 @@
 
 #include <openssl/err.h>
 #include <openssl/pem.h>
+
+/************************
+ * FIXME: these definitions aren't public in openssl? wrong algos?
+************************/
+#define NID_ML_DSA_44          1457
+#define NID_ML_DSA_65          1458
+#define NID_ML_DSA_87          1459
+
+# define EVP_PKEY_ML_DSA_44           NID_ML_DSA_44
+# define EVP_PKEY_ML_DSA_65           NID_ML_DSA_65
+# define EVP_PKEY_ML_DSA_87           NID_ML_DSA_87
 
 #include <talloc.h>
 
@@ -152,6 +163,8 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		pubkey = "";
 		pubikey = "";
 		if (pkey != NULL) {
+			char *n = EVP_PKEY_get0_type_name(pkey);
+
 			switch (util_EVP_PKEY_base_id(pkey)) {
 			case EVP_PKEY_RSA:
 				cm_log(3, "Key is an RSA key.\n");
@@ -168,6 +181,24 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				cm_log(3, "Key is an EC key.\n");
 				alg = "EC";
 				break;
+#endif
+#ifdef CM_ENABLE_ML_DSA
+			case 0:  /* no key type base */
+				char *name = EVP_PKEY_get0_type_name(pkey);
+				cm_log(3, "Key is a %s key.\n", name);
+
+				if (strcasecmp(name, "ML-DSA-44") == 0) {
+					alg = "ML-DSA-44";
+					break;
+				} else
+				if (strcasecmp(name, "ML-DSA-65") == 0) {
+					alg = "ML-DSA-65";
+					break;
+				} else
+				if (strcasecmp(name, "ML-DSA-87") == 0) {
+					alg = "ML-DSA-87";
+					break;
+				}
 #endif
 			default:
 				cm_log(3, "Key is for an unknown algorithm.\n");
@@ -190,6 +221,8 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 					pubkey = cm_store_hex_from_bin(NULL, tmp, length);
 				}
 			}
+		} else {
+			cm_log(1, "pkey IS NULL\n");
 		}
 		fprintf(fp, "%s/%d/%s/%s\n", alg, bits, pubikey, pubkey);
 		if (nextpkey != NULL) {
@@ -209,6 +242,23 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				cm_log(3, "Next key is an EC key.\n");
 				alg = "EC";
 				break;
+#endif
+#ifdef CM_ENABLE_ML_DSA
+			case 0:  /* no key type base */
+				char *name = EVP_PKEY_get0_type_name(pkey);
+
+				if (strcasecmp(name, "ML-DSA-44") == 0) {
+					alg = "ML-DSA-44";
+					break;
+				} else
+				if (strcasecmp(name, "ML-DSA-65") == 0) {
+					alg = "ML-DSA-65";
+					break;
+				} else
+				if (strcasecmp(name, "ML-DSA-87") == 0) {
+					alg = "ML-DSA-87";
+					break;
+				}
 #endif
 			default:
 				cm_log(3, "Next key is for an unknown algorithm.\n");

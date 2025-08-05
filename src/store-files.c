@@ -57,6 +57,7 @@
 
 static unsigned long long cm_entry_name_last, cm_ca_name_last;
 
+
 enum cm_store_file_field {
 	cm_store_file_field_invalid = 0,
 	cm_store_file_field_id,
@@ -841,6 +842,20 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 					ret->cm_key_type.cm_key_algorithm =
 						cm_key_ecdsa;
 #endif
+#ifdef CM_ENABLE_ML_DSA
+				} else
+				if (strcasecmp(s[i], "ML-DSA-44") == 0) {
+					ret->cm_key_type.cm_key_algorithm =
+						cm_key_ml_dsa_44;
+				} else
+				if (strcasecmp(s[i], "ML-DSA-65") == 0) {
+					ret->cm_key_type.cm_key_algorithm =
+						cm_key_ml_dsa_65;
+				} else
+				if (strcasecmp(s[i], "ML-DSA-87") == 0) {
+					ret->cm_key_type.cm_key_algorithm =
+						cm_key_ml_dsa_87;
+#endif
 				} else {
 					ret->cm_key_type.cm_key_algorithm =
 						cm_key_unspecified;
@@ -863,6 +878,20 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 				    (strcasecmp(s[i], "EC") == 0)) {
 					ret->cm_key_type.cm_key_gen_algorithm =
 						cm_key_ecdsa;
+#endif
+#ifdef CM_ENABLE_ML_DSA
+				} else
+				if (strcasecmp(s[i], "ML-DSA-44") == 0) {
+					ret->cm_key_type.cm_key_gen_algorithm =
+						cm_key_ml_dsa_44;
+				} else
+				if (strcasecmp(s[i], "ML-DSA-65") == 0) {
+					ret->cm_key_type.cm_key_gen_algorithm =
+						cm_key_ml_dsa_65;
+				} else
+				if (strcasecmp(s[i], "ML-DSA-87") == 0) {
+					ret->cm_key_type.cm_key_gen_algorithm =
+						cm_key_ml_dsa_87;
 #endif
 				} else {
 					ret->cm_key_type.cm_key_gen_algorithm =
@@ -895,6 +924,20 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 					ret->cm_key_next_type.cm_key_algorithm =
 						cm_key_ecdsa;
 #endif
+#ifdef CM_ENABLE_ML_DSA
+				} else
+				if (strcasecmp(s[i], "ML-DSA-44") == 0) {
+					ret->cm_key_next_type.cm_key_algorithm =
+						cm_key_ml_dsa_44;
+				} else
+				if (strcasecmp(s[i], "ML-DSA-65") == 0) {
+					ret->cm_key_next_type.cm_key_algorithm =
+						cm_key_ml_dsa_65;
+				} else
+				if (strcasecmp(s[i], "ML-DSA-87") == 0) {
+					ret->cm_key_next_type.cm_key_algorithm =
+						cm_key_ml_dsa_87;
+#endif
 				} else {
 					ret->cm_key_next_type.cm_key_algorithm =
 						cm_key_unspecified;
@@ -917,6 +960,20 @@ cm_store_entry_read(void *parent, const char *filename, FILE *fp)
 				    (strcasecmp(s[i], "EC") == 0)) {
 					ret->cm_key_next_type.cm_key_gen_algorithm =
 						cm_key_ecdsa;
+#endif
+#ifdef CM_ENABLE_ML_DSA
+				} else
+				if (strcasecmp(s[i], "ML-DSA-44") == 0) {
+					ret->cm_key_next_type.cm_key_gen_algorithm =
+						cm_key_ml_dsa_44;
+				} else
+				if (strcasecmp(s[i], "ML-DSA-65") == 0) {
+					ret->cm_key_next_type.cm_key_gen_algorithm =
+						cm_key_ml_dsa_65;
+				} else
+				if (strcasecmp(s[i], "ML-DSA-87") == 0) {
+					ret->cm_key_next_type.cm_key_gen_algorithm =
+						cm_key_ml_dsa_87;
 #endif
 				} else {
 					ret->cm_key_next_type.cm_key_gen_algorithm =
@@ -1830,6 +1887,20 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 					"EC");
 		break;
 #endif
+#ifdef CM_ENABLE_ML_DSA
+	case cm_key_ml_dsa_44:
+		cm_store_file_write_str(fp, cm_store_entry_field_key_type,
+					"ML-DSA-44");
+		break;
+	case cm_key_ml_dsa_65:
+		cm_store_file_write_str(fp, cm_store_entry_field_key_type,
+					"ML-DSA-65");
+		break;
+	case cm_key_ml_dsa_87:
+		cm_store_file_write_str(fp, cm_store_entry_field_key_type,
+					"ML-DSA-87");
+		break;
+#endif
 	}
 	switch (entry->cm_key_type.cm_key_gen_algorithm) {
 	case cm_key_unspecified:
@@ -1850,6 +1921,20 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 	case cm_key_ecdsa:
 		cm_store_file_write_str(fp, cm_store_entry_field_key_gen_type,
 					"EC");
+		break;
+#endif
+#ifdef CM_ENABLE_ML_DSA
+	case cm_key_ml_dsa_44:
+		cm_store_file_write_str(fp, cm_store_entry_field_key_gen_type,
+					"ML-DSA-44");
+		break;
+	case cm_key_ml_dsa_65:
+		cm_store_file_write_str(fp, cm_store_entry_field_key_gen_type,
+					"ML-DSA-65");
+		break;
+	case cm_key_ml_dsa_87:
+		cm_store_file_write_str(fp, cm_store_entry_field_key_gen_type,
+					"ML-DSA-87");
 		break;
 #endif
 	}
@@ -1878,6 +1963,20 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 					"EC");
 		break;
 #endif
+#ifdef CM_ENABLE_ML_DSA
+	case cm_key_ml_dsa_44:
+		cm_store_file_write_str(fp, cm_store_entry_field_key_next_type,
+					"ML-DSA-44");
+		break;
+	case cm_key_ml_dsa_65:
+		cm_store_file_write_str(fp, cm_store_entry_field_key_next_type,
+					"ML-DSA-65");
+		break;
+	case cm_key_ml_dsa_87:
+		cm_store_file_write_str(fp, cm_store_entry_field_key_next_type,
+					"ML-DSA-87");
+		break;
+#endif
 	}
 	switch (entry->cm_key_next_type.cm_key_gen_algorithm) {
 	case cm_key_unspecified:
@@ -1898,6 +1997,20 @@ cm_store_entry_write(FILE *fp, struct cm_store_entry *entry)
 	case cm_key_ecdsa:
 		cm_store_file_write_str(fp, cm_store_entry_field_key_next_gen_type,
 					"EC");
+		break;
+#endif
+#ifdef CM_ENABLE_ML_DSA
+	case cm_key_ml_dsa_44:
+		cm_store_file_write_str(fp, cm_store_entry_field_key_next_gen_type,
+					"ML-DSA-44");
+		break;
+	case cm_key_ml_dsa_65:
+		cm_store_file_write_str(fp, cm_store_entry_field_key_next_gen_type,
+					"ML-DSA-65");
+		break;
+	case cm_key_ml_dsa_87:
+		cm_store_file_write_str(fp, cm_store_entry_field_key_next_gen_type,
+					"ML-DSA-87");
 		break;
 #endif
 	}
@@ -2989,3 +3102,37 @@ cm_store_ca_dup(void *parent, struct cm_store_ca *ca)
 
 	return ret;
 }
+
+char *cm_store_algorithm_to_name(int algorithm)
+{
+	/* See cm_key_algorithm in store-int.h */
+	switch(algorithm) {
+	case cm_key_rsa:
+		return "RSA";
+		break;
+#ifdef CM_ENABLE_DSA
+	case cm_key_dsa:
+		return "DSA";
+		break;
+#endif
+#ifdef CM_ENABLE_EC
+	case cm_key_ecdsa:
+		return "EC";
+		break;
+#endif
+#ifdef CM_ENABLE_ML_DSA
+	case cm_key_ml_dsa_44:
+		return "ML-DSA-44";
+		break;
+	case cm_key_ml_dsa_65:
+		return "ML-DSA-65";
+		break;
+	case cm_key_ml_dsa_87:
+		return "ML-DSA-87";
+		break;
+#endif
+	default:
+		return "UNKNOWN";
+		break;
+	}
+};

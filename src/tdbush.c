@@ -1317,6 +1317,20 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 			new_entry->cm_key_type.cm_key_gen_algorithm =
 				cm_key_ecdsa;
 #endif
+#ifdef CM_ENABLE_ML_DSA
+		} else
+		if (strcasecmp(param->value.s, "ML-DSA-44") == 0) {
+			new_entry->cm_key_type.cm_key_gen_algorithm =
+				cm_key_ml_dsa_44;
+		} else
+		if (strcasecmp(param->value.s, "ML-DSA-65") == 0) {
+			new_entry->cm_key_type.cm_key_gen_algorithm =
+				cm_key_ml_dsa_65;
+		} else
+		if (strcasecmp(param->value.s, "ML-DSA-87") == 0) {
+			new_entry->cm_key_type.cm_key_gen_algorithm =
+				cm_key_ml_dsa_87;
+#endif
 		} else {
 			cm_log(1, "No support for generating \"%s\" keys.\n",
 			       param->value.s);
@@ -1359,6 +1373,16 @@ base_add_request(DBusConnection *conn, DBusMessage *msg,
 	case cm_key_ecdsa:
 		if (new_entry->cm_key_type.cm_key_gen_size < CM_MINIMUM_EC_KEY_SIZE) {
 			new_entry->cm_key_type.cm_key_gen_size = CM_MINIMUM_EC_KEY_SIZE;
+		}
+		break;
+#endif
+#ifdef CM_ENABLE_ML_DSA
+	case cm_key_ml_dsa_44:
+	case cm_key_ml_dsa_65:
+	case cm_key_ml_dsa_87:
+		if (new_entry->cm_key_type.cm_key_gen_size < CM_MINIMUM_ML_DSA_KEY_SIZE)
+		{
+			new_entry->cm_key_type.cm_key_gen_size = CM_MINIMUM_ML_DSA_KEY_SIZE;
 		}
 		break;
 #endif
@@ -1837,6 +1861,11 @@ base_get_supported_key_types(DBusConnection *conn, DBusMessage *msg,
 #endif
 #ifdef CM_ENABLE_EC
 		"EC",
+#endif
+#ifdef CM_ENABLE_ML_DSA
+		"ML-DSA-44",
+		"ML-DSA-65",
+		"ML-DSA-87",
 #endif
 		NULL
 	};
@@ -2924,27 +2953,7 @@ request_get_key_type_and_size(DBusConnection *conn, DBusMessage *msg,
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	}
 	rep = dbus_message_new_method_return(msg);
-	switch (entry->cm_key_type.cm_key_algorithm) {
-	case cm_key_unspecified:
-		type = "UNKNOWN";
-		break;
-	case cm_key_rsa:
-		type = "RSA";
-		break;
-#ifdef CM_ENABLE_DSA
-	case cm_key_dsa:
-		type = "DSA";
-		break;
-#endif
-#ifdef CM_ENABLE_EC
-	case cm_key_ecdsa:
-		type = "EC";
-		break;
-#endif
-	default:
-		type = "UNKNOWN";
-		break;
-	}
+	type = cm_store_algorithm_to_name(entry->cm_key_type.cm_key_algorithm);
 	if (rep != NULL) {
 		size = entry->cm_key_type.cm_key_size;
 		cm_tdbusm_set_sn(rep, type, size);
@@ -3250,6 +3259,17 @@ request_modify(DBusConnection *conn, DBusMessage *msg,
 				if ((strcasecmp(param->value.s, "ECDSA") == 0) ||
 				    (strcasecmp(param->value.s, "EC") == 0)) {
 					entry->cm_key_type.cm_key_gen_algorithm = cm_key_ecdsa;
+#endif
+#ifdef CM_ENABLE_ML_DSA
+				} else
+				if (strcasecmp(param->value.s, "ML-DSA-44") == 0) {
+					entry->cm_key_type.cm_key_gen_algorithm = cm_key_ml_dsa_44;
+				} else
+				if (strcasecmp(param->value.s, "ML-DSA-65") == 0) {
+					entry->cm_key_type.cm_key_gen_algorithm = cm_key_ml_dsa_65;
+				} else
+				if (strcasecmp(param->value.s, "ML-DSA-87") == 0) {
+					entry->cm_key_type.cm_key_gen_algorithm = cm_key_ml_dsa_87;
 #endif
 				} else {
 					cm_log(1, "No support for generating \"%s\" keys.\n",
@@ -4049,6 +4069,17 @@ request_prop_get_key_type(struct cm_context *ctx, void *parent,
 		return "EC";
 		break;
 #endif
+#ifdef CM_ENABLE_ML_DSA
+       case cm_key_ml_dsa_44:
+		return "ML-DSA-44";
+		break;
+       case cm_key_ml_dsa_65:
+		return "ML-DSA-65";
+		break;
+       case cm_key_ml_dsa_87:
+		return "ML-DSA-87";
+		break;
+#endif
 	}
 	return "";
 }
@@ -4070,6 +4101,12 @@ request_prop_get_key_size(struct cm_context *ctx, void *parent,
 #endif
 #ifdef CM_ENABLE_EC
 	case cm_key_ecdsa:
+#endif
+#ifdef CM_ENABLE_ML_DSA
+       case cm_key_ml_dsa_44:
+       case cm_key_ml_dsa_65:
+       case cm_key_ml_dsa_87:
+		/* fall through */
 #endif
 		return entry->cm_key_type.cm_key_size;
 		break;
