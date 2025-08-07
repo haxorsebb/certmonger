@@ -28,6 +28,9 @@
 #include <time.h>
 #include <unistd.h>
 
+#include <openssl/err.h>
+#include <secport.h>
+#include <prerror.h>
 #include <talloc.h>
 
 #include "log.h"
@@ -111,4 +114,29 @@ cm_log(int level, const char *fmt, ...)
 			break;
 		}
 	}
+}
+
+/* Log the passed message at level and then display all errors reported
+ * by OpenSSL and NSS. Then clear all errors in both.
+ */
+void
+cm_log_errors(int level, char *msg)
+{
+	char buf[LINE_MAX] = "";
+	long error;
+	int nss_err;
+
+	cm_log(level, "%s\n", msg);
+	while ((error = ERR_get_error()) != 0) {
+		memset(buf, '\0', sizeof(buf));
+		ERR_error_string_n(error, buf, sizeof(buf));
+		cm_log(level, "%s\n", buf);
+	}
+	ERR_clear_error();
+
+	nss_err = PORT_GetError();
+	if (nss_err < 0) {
+		cm_log(level, "%d: %s\n", nss_err, PR_ErrorToString(nss_err, 0));
+	}
+	PORT_SetError(0);
 }

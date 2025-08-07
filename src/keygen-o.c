@@ -99,6 +99,8 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	struct cm_pin_cb_data cb_data;
 	FILE *fp, *status;
 	EVP_PKEY *pkey;
+	EVP_PKEY_CTX *pctx = NULL;
+	EVP_PKEY_CTX *check_ctx = NULL;
 	char buf[LINE_MAX], *pin, *pubhex, *pubihex, *oldfile;
 	unsigned char *p, *q;
 	long error, errno_save;
@@ -106,13 +108,9 @@ cm_keygen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	int cm_key_size;
 	int len;
 	int keyfd;
+	int ret;
 	char *filename;
 	char *marker;
-	BIGNUM *exponent;
-	RSA *rsa;
-#ifdef CM_ENABLE_DSA
-	DSA *dsa;
-#endif
 #ifdef CM_ENABLE_EC
 	EC_KEY *ec;
 	int ecurve;
@@ -146,95 +144,155 @@ retry_gen:
 	}
 	switch (cm_key_algorithm) {
 	case cm_key_rsa:
-		exponent = BN_new();
-		if (exponent == NULL) {
-			cm_log(1, "Error setting up exponent.\n");
+		unsigned int exponent = CM_DEFAULT_RSA_EXPONENT;
+		unsigned int bits = cm_key_size;
+		OSSL_PARAM params[3];
+
+		pctx = EVP_PKEY_CTX_new_from_name(NULL, "RSA", NULL);
+		if (pctx == NULL) {
+			cm_log(1, "Error allocating new RSA context.\n");
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
-		BN_set_word(exponent, CM_DEFAULT_RSA_EXPONENT);
-		rsa = RSA_new();
-		if (rsa == NULL) {
-			cm_log(1, "Error allocating new RSA key.\n");
+
+		if (EVP_PKEY_keygen_init(pctx) == 0) {
+			cm_log(1, "Error initializing RSA key generation.\n");
+			EVP_PKEY_CTX_free(pctx);
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
-		if (RSA_generate_key_ex(rsa, cm_key_size, exponent, NULL) != 1) {
+
+		params[0] = OSSL_PARAM_construct_uint("bits", &bits);
+		params[1] = OSSL_PARAM_construct_uint("e", &exponent);
+		params[2] = OSSL_PARAM_construct_end();
+		if (EVP_PKEY_CTX_set_params(pctx, params) == 0) {
+			cm_log(1, "Error setting RSA key parameters.\n");
+			EVP_PKEY_CTX_free(pctx);
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		}
+
+		if (EVP_PKEY_generate(pctx, &pkey) != 1) {
 			if (cm_key_size != CM_DEFAULT_PUBKEY_SIZE) {
-				cm_log(1, "Error generating %d-bit key, "
+				cm_log(1, "Error generating RSA %d-bit key, "
 				       "attempting %d bits.\n",
 				       cm_key_size, CM_DEFAULT_PUBKEY_SIZE);
 				cm_key_size = CM_DEFAULT_PUBKEY_SIZE;
+				EVP_PKEY_CTX_free(pctx);
 				goto retry_gen;
 			}
-			cm_log(1, "Error generating key.\n");
+			cm_log(1, "Error generating RSA key.\n");
+			EVP_PKEY_CTX_free(pctx);
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
-		if (RSA_check_key(rsa) != 1) { /* should be unnecessary */
-			cm_log(1, "Key fails checks.  Retrying.\n");
-			goto retry_gen;
+		EVP_PKEY_CTX_free(pctx);
+
+		check_ctx = EVP_PKEY_CTX_new(pkey, NULL);
+
+		ret = EVP_PKEY_check(check_ctx);
+		if (ret == 0) {
+			cm_log(1, "keygen-o: EVP_PKEY_check): Key pair is invalid.\n");
+			EVP_PKEY_CTX_free(check_ctx);
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		} else if (ret == -2) {
+			cm_log(1, "keygen-o: EVP_PKEY_check: RSA operation not supported for this algorithm.\n");
+			EVP_PKEY_CTX_free(check_ctx);
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
-		EVP_PKEY_set1_RSA(pkey, rsa);
+		EVP_PKEY_CTX_free(check_ctx);
 		break;
 #ifdef CM_ENABLE_DSA
 	case cm_key_dsa:
-		dsa = DSA_new();
-		if (dsa == NULL) {
-			cm_log(1, "Error allocating new DSA key.\n");
+		EVP_PKEY_CTX *pctx_params = NULL;
+		EVP_PKEY* pkey_params = NULL;
+
+		bits = cm_key_size;
+
+		pctx_params = EVP_PKEY_CTX_new_from_name(NULL, "DSA", NULL);
+		if (pctx_params == NULL) {
+			cm_log(1, "keygen-o: Error allocating new DSA params context.\n");
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
-		if (DSA_generate_parameters_ex(dsa, cm_key_size,
-					       NULL, 0,
-					       NULL, NULL, NULL) != 1) {
+
+		if (EVP_PKEY_paramgen_init(pctx_params) == 0) {
+			cm_log(1, "keygen-o: Error initializing DSA param generation.\n");
+			EVP_PKEY_CTX_free(pctx_params);
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		}
+		if (EVP_PKEY_CTX_set_dsa_paramgen_bits(pctx_params, bits) == 0) {
+			cm_log(1, "keygen-o: Error setting DSA bits to %d.\n", bits);
+			EVP_PKEY_CTX_free(pctx_params);
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		}
+
+		if (EVP_PKEY_paramgen(pctx_params, &pkey_params) != 1) {
+			cm_log(1, "keygen-o: Error in DSA paramgen.\n");
+			EVP_PKEY_CTX_free(pctx_params);
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		}
+
+		pctx = EVP_PKEY_CTX_new(pkey_params, NULL);
+		if (EVP_PKEY_keygen_init(pctx) == 0) {
+			cm_log(1, "keygen-o: Error initializing parameter DSA key generation.\n");
+			EVP_PKEY_CTX_free(pctx);
+			EVP_PKEY_CTX_free(pctx_params);
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		}
+
+		if (EVP_PKEY_generate(pctx, &pkey) != 1) {
 			if (cm_key_size != CM_DEFAULT_PUBKEY_SIZE) {
-				cm_log(1, "Error generating %d-bit key, "
+				cm_log(1, "keygen-o: Error generating DSA %d-bit key, "
 				       "attempting %d bits.\n",
 				       cm_key_size, CM_DEFAULT_PUBKEY_SIZE);
 				cm_key_size = CM_DEFAULT_PUBKEY_SIZE;
+				EVP_PKEY_CTX_free(pctx);
+				EVP_PKEY_CTX_free(pctx_params);
 				goto retry_gen;
 			}
-			cm_log(1, "Error generating parameters.\n");
+			cm_log(1, "Error generating DSA key.\n");
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
-		if (DSA_generate_key(dsa) != 1) {
-			cm_log(1, "Error generating key.\n");
+		EVP_PKEY_free(pkey_params);
+		EVP_PKEY_CTX_free(pctx);
+		EVP_PKEY_CTX_free(pctx_params);
+
+		check_ctx = EVP_PKEY_CTX_new(pkey, NULL);
+		ret = EVP_PKEY_param_check(check_ctx);
+		if (ret == 0) {
+			cm_log(1, "keygen-o: DSA key pair is invalid\n");
+			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
+		} else if (ret == -2) {
+			cm_log(1, "keygen-o: EVP_PKEY_check: DSA operation not supported for this algorithm.\n");
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
-		EVP_PKEY_set1_DSA(pkey, dsa);
+		EVP_PKEY_CTX_free(check_ctx);
 		break;
 #endif
 #ifdef CM_ENABLE_EC
 	case cm_key_ecdsa:
+		char *curve = NULL;
 		if (cm_key_size <= 256)
-			ecurve = NID_X9_62_prime256v1;
+			// ecurve = NID_X9_62_prime256v1;
+			curve = "prime256v1";
 		else if (cm_key_size <= 384)
-			ecurve = NID_secp384r1;
+			// ecurve = NID_secp384r1;
+			curve = "secp384r1";
 		else
-			ecurve = NID_secp521r1;
-		ec = EC_KEY_new_by_curve_name(ecurve);
-		while ((ec == NULL) && (ecurve != NID_X9_62_prime256v1)) {
-			cm_log(1, "Error allocating new EC key.\n");
-			switch (ecurve) {
-			case NID_secp521r1:
-				cm_log(1, "Trying with a smaller key.\n");
-				ecurve = NID_secp384r1;
-				ec = EC_KEY_new_by_curve_name(ecurve);
-				break;
-			case NID_secp384r1:
-				cm_log(1, "Trying with a smaller key.\n");
-				ecurve = NID_X9_62_prime256v1;
-				ec = EC_KEY_new_by_curve_name(ecurve);
-				break;
+			// ecurve = NID_secp521r1;
+			curve = "secp521r1";
+
+		pkey = EVP_EC_gen(curve);
+		if (pkey == NULL) {
+			if (strcmp(curve, "prime256v1") == 0) {
+				cm_log(1, "Error generating EC %s key, "
+				       "attempting prime256v1.\n",
+				       curve);
+				curve = "prime256v1";
+				EVP_PKEY_CTX_free(pctx);
+				goto retry_gen;
 			}
-		}
-		if (ec == NULL) {
-			cm_log(1, "Error allocating new EC key.\n");
+			cm_log(1, "Error generating RSA key.\n");
+			EVP_PKEY_CTX_free(pctx);
 			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 		}
-		if (EC_KEY_generate_key(ec) != 1) {
-			cm_log(1, "Error generating key.\n");
-			_exit(CM_SUB_STATUS_INTERNAL_ERROR);
-		}
-		EC_KEY_set_asn1_flag(ec, OPENSSL_EC_NAMED_CURVE);
-		EVP_PKEY_set1_EC_KEY(pkey, ec);
+		EVP_PKEY_CTX_free(pctx);
 		break;
 #endif
 	default:
@@ -372,6 +430,7 @@ retry_gen:
 	fprintf(status, "%s\n%s\n%s\n", pubihex, pubhex, marker);
 	fclose(fp);
 	fclose(status);
+	EVP_PKEY_free(pkey);
 
 	/* Try to remove any keys with old candidate names. */
 	if ((entry->cm_key_next_marker != NULL) &&

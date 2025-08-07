@@ -199,11 +199,14 @@ get_signer_info(void *parent, char *localdir, X509 ***roots,
 	char *creds, *hexserial = NULL, *serial, buf[LINE_MAX], *csr;
 	STACK_OF(X509) *cas = NULL;
 	PKCS12 *p12 = NULL;
-	BIGNUM *exponent = NULL;
-	RSA *rsa;
+	unsigned int bits = CM_DEFAULT_PUBKEY_SIZE;
+	unsigned int exponent = CM_DEFAULT_RSA_EXPONENT;
+	OSSL_PARAM rsa_params[3];
+	EVP_PKEY_CTX *pctx = NULL;
+	EVP_PKEY_CTX *check_ctx = NULL;
 	dbus_bool_t save = FALSE;
 	time_t now, then, life, lifedelta;
-	int i;
+	int i, ret;
 
 	*roots = NULL;
 	*signer_cert = NULL;
@@ -301,29 +304,39 @@ get_signer_info(void *parent, char *localdir, X509 ***roots,
 		}
 		/* Generate a new key.  For now at least, generate RSA of the
 		 * default size with the default exponent. */
-		exponent = BN_new();
-		if (exponent == NULL) {
-			cm_log(1, "Error setting up exponent.\n");
+		pctx = EVP_PKEY_CTX_new_from_name(NULL, "RSA", NULL);
+		if (pctx == NULL) {
+			cm_log(1, "Error allocating new RSA context.\n");
 			return CM_SUBMIT_STATUS_UNREACHABLE;
 		}
-		BN_set_word(exponent, CM_DEFAULT_RSA_EXPONENT);
-		rsa = RSA_new();
-		if (rsa == NULL) {
-			cm_log(1, "Error allocating new RSA key.\n");
+
+		if (EVP_PKEY_keygen_init(pctx) == 0) {
+			cm_log(1, "Error initializing RSA key generation.\n");
 			return CM_SUBMIT_STATUS_UNREACHABLE;
 		}
+
+		rsa_params[0] = OSSL_PARAM_construct_uint("bits", &bits);
+		rsa_params[1] = OSSL_PARAM_construct_uint("e", &exponent);
+		rsa_params[2] = OSSL_PARAM_construct_end();
+		if (EVP_PKEY_CTX_set_params(pctx, rsa_params) == 0) {
+			cm_log(1, "Error setting RSA key parameters.\n");
+			return CM_SUBMIT_STATUS_UNREACHABLE;
+		}
+
+
 	retry_gen:
-		if (RSA_generate_key_ex(rsa, CM_DEFAULT_PUBKEY_SIZE, exponent,
-					NULL) != 1) {
-			cm_log(1, "Error generating key.\n");
+		if (EVP_PKEY_generate(pctx, signer_key) != 1) {
+			cm_log(1, "Error generating RSA %d-bit key.\n", bits);
+			EVP_PKEY_CTX_free(pctx);
 			return CM_SUBMIT_STATUS_UNREACHABLE;
 		}
-		if (RSA_check_key(rsa) != 1) { /* should be unnecessary */
+		check_ctx = EVP_PKEY_CTX_new(*signer_key, NULL);
+
+		ret = EVP_PKEY_check(check_ctx);
+		if (ret == 0) {
 			cm_log(1, "Key fails checks.  Retrying.\n");
 			goto retry_gen;
 		}
-		*signer_key = EVP_PKEY_new();
-		EVP_PKEY_set1_RSA(*signer_key, rsa);
 		/* Build a suitable CA signing request. */
 		csr = make_ca_csr(parent, *signer_key, *signer_cert);
 		if (csr == NULL) {

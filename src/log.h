@@ -43,5 +43,6 @@ void cm_log(int level, const char *fmt, ...)
 __attribute__((format(printf,2,3)))
 #endif
 ;
+void cm_log_errors(int level, char *msg);
 
 #endif
