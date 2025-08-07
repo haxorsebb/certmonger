@@ -134,10 +134,14 @@ cm_scepgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	struct cm_keyiread_n_ctx_and_keys *keys;
 	const char *p, *es, *reason;
 	int ec;
+	int ret;
 	PKCS7 *csr_new, *csr_old, *ias_new, *ias_old;
+	unsigned int bits = CM_DEFAULT_PUBKEY_SIZE;
+	unsigned int exponent = CM_DEFAULT_RSA_EXPONENT;
 	EVP_PKEY *key;
-	RSA *rsa;
-	BIGNUM *exponent;
+	OSSL_PARAM params[3];
+	EVP_PKEY_CTX *pctx = NULL;
+	EVP_PKEY_CTX *check_ctx = NULL;
 
 	status = fdopen(fd, "w");
 	if (status == NULL) {
@@ -205,32 +209,44 @@ cm_scepgen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 
 	/* Use a dummy key to sign using OpenSSL. */
 	cm_log(1, "Generating dummy key.\n");
-	key = EVP_PKEY_new();
-	if (key == NULL) {
-		cm_log(0, "Error allocating new key.\n");
+	pctx = EVP_PKEY_CTX_new_from_name(NULL, "RSA", NULL);
+	if (pctx == NULL) {
+		cm_log(1, "Error allocating new RSA context.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
-	exponent = BN_new();
-	if (exponent == NULL) {
-		cm_log(0, "Error setting up exponent.\n");
+
+	if (EVP_PKEY_keygen_init(pctx) == 0) {
+		cm_log(1, "Error initializing RSA key generation.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
-	BN_set_word(exponent, CM_DEFAULT_RSA_EXPONENT);
-	rsa = RSA_new();
-	if (rsa == NULL) {
-		cm_log(0, "Error allocating new RSA key.\n");
+
+	params[0] = OSSL_PARAM_construct_uint("bits", &bits);
+	params[1] = OSSL_PARAM_construct_uint("e", &exponent);
+	params[2] = OSSL_PARAM_construct_end();
+	if (EVP_PKEY_CTX_set_params(pctx, params) == 0) {
+		cm_log(1, "Error setting RSA key parameters.\n");
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
+
 retry_gen:
-	if (RSA_generate_key_ex(rsa, CM_DEFAULT_PUBKEY_SIZE, exponent, NULL) != 1) {
-		cm_log(0, "Error generating key.\n");
+	if (EVP_PKEY_generate(pctx, &key) != 1) {
+		cm_log(1, "Error generating RSA %d-bit key.\n", bits);
+		EVP_PKEY_CTX_free(pctx);
 		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
-	if (RSA_check_key(rsa) != 1) { /* should be unnecessary */
-		cm_log(1, "Key fails checks.  Retrying.\n");
+
+	check_ctx = EVP_PKEY_CTX_new(key, NULL);
+
+	ret = EVP_PKEY_check(check_ctx);
+	if (ret == 0) {
+		cm_log(1, "EVP_PKEY_check (pairwise check): Key pair is invalid.\n");
+		EVP_PKEY_CTX_free(check_ctx);
 		goto retry_gen;
+	} else if (ret == -2) {
+		cm_log(1, "EVP_PKEY_check: Operation not supported for this algorithm.\n");
+		_exit(CM_SUB_STATUS_INTERNAL_ERROR);
 	}
-	BN_free(exponent);
+	EVP_PKEY_CTX_free(check_ctx);
 
 	/* Read the proper keys. */
 	keys = cm_keyiread_n_get_keys(entry, 0);
@@ -242,7 +258,6 @@ retry_gen:
 	}
 
 	/* Sign using a dummy key. */
-	EVP_PKEY_set1_RSA(key, rsa);
 	csr_new = NULL;
 	csr_old = NULL;
 	ias_new = NULL;

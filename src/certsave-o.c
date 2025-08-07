@@ -285,7 +285,7 @@ cm_certsave_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			/* Double-check that we're not trying to rotate in a
 			 * key that we won't actually be using. */
 			if ((old_pkey != NULL) &&
-			    (EVP_PKEY_cmp(old_pkey, X509_get_pubkey(cert)) == 1)) {
+			    (EVP_PKEY_eq(old_pkey, X509_get_pubkey(cert)) == 1)) {
 				entry->cm_key_next_marker = NULL;
 				if (next_key != NULL) {
 					cm_log(1, "Public key was not changed.\n");

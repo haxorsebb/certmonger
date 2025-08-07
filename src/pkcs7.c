@@ -275,25 +275,6 @@ cm_pkcs7_parse_buffer(const unsigned char *buffer, size_t length,
 	}
 }
 
-void
-log_pkcs7_errors(int level, char *msg)
-{
-    char buf[LINE_MAX] = "";
-    long error;
-	int nss_err;   
-
-    cm_log(level, "%s\n", msg);
-    while ((error = ERR_get_error()) != 0) {
-            memset(buf, '\0', sizeof(buf));
-            ERR_error_string_n(error, buf, sizeof(buf));
-            cm_log(level, "%s\n", buf);
-    }
-	nss_err = PORT_GetError();
-    if (nss_err < 0) {
-		cm_log(level, "%d: %s\n", nss_err, PR_ErrorToString(nss_err, 0));
-	}
-}
-
 int
 cm_pkcs7_parsev(unsigned int flags, void *parent,
 		char **certleaf, char **certtop, char ***certothers,
@@ -545,7 +526,7 @@ cm_pkcs7_envelope_data(char *encryption_cert, enum cm_prefs_cipher cipher,
 	}
 	recipient = PEM_read_bio_X509(in, NULL, NULL, NULL);
 	if (recipient == NULL) {
-		log_pkcs7_errors(0, "Error parsing recipient certificate.\n");
+		cm_log_errors(0, "Error parsing recipient certificate.\n");
 		goto done;
 	}
 	BIO_free(in);
@@ -567,12 +548,12 @@ cm_pkcs7_envelope_data(char *encryption_cert, enum cm_prefs_cipher cipher,
 	BIO_free(in);
 
 	if (p7 == NULL) {
-		log_pkcs7_errors(0, "Error encrypting signing request.\n");
+		cm_log_errors(0, "Error encrypting signing request.\n");
 		goto done;
 	}
 	len = i2d_PKCS7(p7, NULL);
 	if (len < 0) {
-		log_pkcs7_errors(0, "Error encoding encrypted signing request.\n");
+		cm_log_errors(0, "Error encoding encrypted signing request.\n");
 		goto done;
 	}
 	dp7 = malloc(len);
@@ -582,7 +563,7 @@ cm_pkcs7_envelope_data(char *encryption_cert, enum cm_prefs_cipher cipher,
 	}
 	u = dp7;
 	if (i2d_PKCS7(p7, &u) != len) {
-		log_pkcs7_errors(0, "Error encoding encrypted signing request.\n");
+		cm_log_errors(0, "Error encoding encrypted signing request.\n");
 		goto done;
 	}
 	*enveloped = dp7;
@@ -619,13 +600,13 @@ cm_pkcs7_envelope_csr(char *encryption_cert, enum cm_prefs_cipher cipher,
 	req = PEM_read_bio_X509_REQ(in, NULL, NULL, NULL);
 	BIO_free(in);
 	if (req == NULL) {
-		log_pkcs7_errors(0, "Error parsing certificate signing request.\n");
+		cm_log_errors(0, "Error parsing certificate signing request.\n");
 		goto done;
 	}
 
 	dlen = i2d_X509_REQ(req, NULL);
 	if (dlen < 0) {
-		log_pkcs7_errors(0, "Error encoding certificate signing request.\n");
+		cm_log_errors(0, "Error encoding certificate signing request.\n");
 		goto done;
 	}
 	dreq = malloc(dlen);
@@ -635,7 +616,7 @@ cm_pkcs7_envelope_csr(char *encryption_cert, enum cm_prefs_cipher cipher,
 	}
 	u = dreq;
 	if (i2d_X509_REQ(req, &u) != dlen) {
-		log_pkcs7_errors(0, "Error encoding certificate signing request.\n");
+		cm_log_errors(0, "Error encoding certificate signing request.\n");
 		goto done;
 	}
 	ret = cm_pkcs7_envelope_data(encryption_cert, cipher, dreq, dlen,
@@ -697,7 +678,7 @@ cm_pkcs7_generate_ias(char *cacert, char *minicert,
 	ca = PEM_read_bio_X509(in, NULL, NULL, NULL);
 	BIO_free(in);
 	if (ca == NULL) {
-		log_pkcs7_errors(0, "Error parsing CA certificate.\n");
+		cm_log_errors(0, "Error parsing CA certificate.\n");
 		goto done;
 	}
 
@@ -709,7 +690,7 @@ cm_pkcs7_generate_ias(char *cacert, char *minicert,
 	mini = PEM_read_bio_X509(in, NULL, NULL, NULL);
 	BIO_free(in);
 	if (mini == NULL) {
-		log_pkcs7_errors(0, "Error parsing client certificate.\n");
+		cm_log_errors(0, "Error parsing client certificate.\n");
 		goto done;
 	}
 
@@ -725,7 +706,7 @@ cm_pkcs7_generate_ias(char *cacert, char *minicert,
 	}
 	u = issuer;
 	if (i2d_X509_NAME(X509_get_issuer_name(ca), &u) != issuerlen) {
-		log_pkcs7_errors(0, "Error encoding CA certificate issuer name.\n");
+		cm_log_errors(0, "Error encoding CA certificate issuer name.\n");
 		goto done;
 	}
 
@@ -741,7 +722,7 @@ cm_pkcs7_generate_ias(char *cacert, char *minicert,
 	}
 	u = subject;
 	if (i2d_X509_NAME(X509_get_subject_name(mini), &u) != subjectlen) {
-		log_pkcs7_errors(0, "Error encoding client certificate subject name.\n");
+		cm_log_errors(0, "Error encoding client certificate subject name.\n");
 		goto done;
 	}
 	PORT_SetError(0);
@@ -753,7 +734,7 @@ cm_pkcs7_generate_ias(char *cacert, char *minicert,
 	issuerandsubject.subject.len = subjectlen;
 	if (SEC_ASN1EncodeItem(NULL, &encoded, &issuerandsubject,
 			       cm_pkcs7_ias_template) != &encoded) {
-		log_pkcs7_errors(0, "Error encoding issuer and subject names.\n");
+		cm_log_errors(0, "Error encoding issuer and subject names.\n");
 		goto done;
 	}
 	*ias = malloc(encoded.len);

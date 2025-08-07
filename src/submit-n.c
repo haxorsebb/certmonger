@@ -93,15 +93,19 @@ try_to_decode(void *parent, PLArenaPool *arena, SECItem *item,
 	ASN1_STRING *params = NULL;
 	PKCS7 *p7 = NULL;
 	PKCS7_RECIP_INFO *p7i = NULL;
-	BIGNUM *exponent = NULL;
 	EVP_PKEY *pkey = NULL;
+	unsigned int bits = CM_DEFAULT_PUBKEY_SIZE;
+	unsigned int exponent = CM_DEFAULT_RSA_EXPONENT;
+	OSSL_PARAM rsa_params[3];
+	EVP_PKEY_CTX *pctx = NULL;
+	EVP_PKEY_CTX *check_ctx = NULL;
+	int rc = 0;
 	BIO *out;
-	RSA *rsa = NULL;
 	char buf[BUFSIZ];
 	const unsigned char *u;
 	unsigned char *enc_key, *dec, *reenc, *param_data;
 	unsigned int enc_key_len, dec_len;
-	ssize_t reenc_len;
+	size_t reenc_len;
 	long error, l;
 
 	/* Do the standard parse and sanity checking. */
@@ -193,35 +197,67 @@ try_to_decode(void *parent, PLArenaPool *arena, SECItem *item,
 		cm_log(1, "Error allocating new key.\n");
 		goto done;
 	}
-	exponent = BN_new();
-	if (exponent == NULL) {
-		cm_log(1, "Error setting up exponent.\n");
-		goto done;
-	}
-	BN_set_word(exponent, CM_DEFAULT_RSA_EXPONENT);
-	rsa = RSA_new();
-	if (rsa == NULL) {
-		cm_log(1, "Error allocating new RSA key.\n");
-		goto done;
-	}
 retry_gen:
-	if (RSA_generate_key_ex(rsa, CM_DEFAULT_PUBKEY_SIZE, exponent, NULL) != 1) {
-		cm_log(1, "Error generating key.\n");
+	pctx = EVP_PKEY_CTX_new_from_name(NULL, "RSA", NULL);
+	if (pctx == NULL) {
+		cm_log(1, "Error allocating new RSA context.\n");
 		goto done;
 	}
-	if (RSA_check_key(rsa) != 1) { /* should be unnecessary */
-		cm_log(1, "Key fails checks.  Retrying.\n");
-		goto retry_gen;
+
+	if (EVP_PKEY_keygen_init(pctx) == 0) {
+		cm_log(1, "Error initializing RSA key generation.\n");
+		goto done;
 	}
-	EVP_PKEY_set1_RSA(pkey, rsa);
+
+
+	rsa_params[0] = OSSL_PARAM_construct_uint("bits", &bits);
+	rsa_params[1] = OSSL_PARAM_construct_uint("e", &exponent);
+	rsa_params[2] = OSSL_PARAM_construct_end();
+	if (EVP_PKEY_CTX_set_params(pctx, rsa_params) == 0) {
+		cm_log(1, "Error setting RSA key parameters.\n");
+		goto done;
+	}
+
+	if (EVP_PKEY_generate(pctx, &pkey) != 1) {
+		cm_log(1, "Error generating RSA %d-bit key.\n", bits);
+		EVP_PKEY_CTX_free(pctx);
+		goto done;
+	}
+
+	check_ctx = EVP_PKEY_CTX_new(pkey, NULL);
+
+	rc = EVP_PKEY_check(check_ctx);
+	if (rc == 0) {
+		cm_log(1, "submit-n: EVP_PKEY_check (pairwise check): Key pair %d bits is invalid.\n", bits);
+
+		EVP_PKEY_CTX_free(pctx);
+		goto retry_gen;
+	} else if (rc == -2) {
+		cm_log(1, "EVP_PKEY_check: Operation not supported for this algorithm.\n");
+		goto done;
+	}
+	EVP_PKEY_CTX_free(pctx);
+	EVP_PKEY_CTX_free(check_ctx);
 
 	/* Encrypt the bulk key.  We're about to decrypt it again, so do it the
 	 * simplest way that we can. */
-	reenc_len = dec_len + RSA_size(rsa);
+	pctx = EVP_PKEY_CTX_new_from_pkey(NULL, pkey, NULL);
+	if (pctx == NULL) {
+		cm_log(1, "submit-n: Error allocating new RSA context.\n");
+		goto done;
+	}
+	if (EVP_PKEY_encrypt_init(pctx) <= 0) {
+		cm_log(1, "submit-n: Error initializing RSA encrypt context.\n");
+		goto done;
+	}
+	if (EVP_PKEY_CTX_set_rsa_padding(pctx, RSA_PKCS1_PADDING) <= 0) {
+		cm_log(1, "submit-n: Error setting RSA encrypt padding to RSA_PKCS1_PADDING\n");
+		goto done;
+	}
+
+	reenc_len = dec_len + EVP_PKEY_size(pkey);
 	reenc = talloc_size(parent, reenc_len);
-	padding = RSA_PKCS1_PADDING;
-	reenc_len = RSA_public_encrypt(dec_len, dec, reenc, rsa, padding);
-	if (reenc_len < 0) {
+	if (EVP_PKEY_encrypt(pctx, reenc, &reenc_len, dec, dec_len) != 1) {
 		cm_log(1, "Error reencrypting.\n");
 		goto retry_gen;
 	}
@@ -253,16 +289,17 @@ retry_gen:
 
 done:
 	if (ret == NULL) {
+		cm_log(1, "something failed, ret is NULL\n");
 		while ((error = ERR_get_error()) != 0) {
 			ERR_error_string_n(error, buf, sizeof(buf));
 			cm_log(1, "%s\n", buf);
 		}
 	}
+	if (pctx) {
+		EVP_PKEY_CTX_free(pctx);
+	}
 	if (pkey != NULL) {
 		EVP_PKEY_free(pkey);
-	}
-	if (exponent != NULL) {
-		BN_free(exponent);
 	}
 	if (p7 != NULL) {
 		PKCS7_free(p7);
