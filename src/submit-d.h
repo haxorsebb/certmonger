@@ -35,6 +35,11 @@
 #define DOGTAG_DISPLAY_CERT_METHOD HTTP_METHOD_GET
 #define DOGTAG_DISPLAY_CERT_RESOURCE "displayCertFromRequest"
 
+enum cm_rpc_protocol {
+	CM_RPC_PROTOCOL_JSON,
+	CM_RPC_PROTOCOL_XML,
+};
+
 int cm_submit_d_submit_result(void *parent, const char *xml,
 			      char **error_code, char **error_reason,
 			      char **error, char **status,
@@ -63,11 +68,11 @@ int cm_submit_d_profiles_result(void *parent, const char *xml,
 enum cm_external_status cm_submit_d_submit_eval(void *parent, const char *xml,
 						const char *url,
 						dbus_bool_t can_agent,
-						char **out, char **err, int is_xml);
+						char **out, char **err, enum cm_rpc_protocol format);
 enum cm_external_status cm_submit_d_check_eval(void *parent, const char *xml,
 					       const char *url,
 					       dbus_bool_t can_agent,
-					       char **out, char **err, int is_xml);
+					       char **out, char **err, enum cm_rpc_protocol format);
 enum cm_external_status cm_submit_d_reject_eval(void *parent, const char *xml,
 						const char *url,
 						char **out, char **err);
@@ -75,12 +80,12 @@ enum cm_external_status cm_submit_d_review_eval(void *parent, const char *xml,
 						const char *url, char **out, char **err);
 enum cm_external_status cm_submit_d_approve_eval(void *parent, const char *xml,
 						 const char *url,
-						 char **out, char **err, int is_xml);
+						 char **out, char **err, enum cm_rpc_protocol format);
 enum cm_external_status cm_submit_d_fetch_eval(void *parent, const char *xml,
 					       const char *url,
-					       char **out, char **err, int is_xml);
+					       char **out, char **err, enum cm_rpc_protocol format);
 enum cm_external_status cm_submit_d_profiles_eval(void *parent, const char *xml,
-						  char **out, char **err, int is_xml);
+						  char **out, char **err, enum cm_rpc_protocol format);
 
 int cm_submit_d_rest_profiles_result(void *parent, const char *result,
 					 char **error_code, char **error_reason,

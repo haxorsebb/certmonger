@@ -41,7 +41,8 @@ main(int argc, char **argv)
 	char *error = NULL, *error_code = NULL, *error_reason = NULL;
 	char *status = NULL, *requestId = NULL, *cert = NULL;
 	char *xml, *out = NULL, *err = NULL, **profiles = NULL;
-	dbus_bool_t can_agent, is_xml;
+	dbus_bool_t can_agent;
+	enum cm_rpc_protocol format;
 	int i, vars;
 	void *ctx;
 
@@ -56,7 +57,11 @@ main(int argc, char **argv)
 	role = argv[2];
 	filename = argv[3];
 	can_agent = (strcasecmp(role, "agent") == 0);
-	is_xml = ((strcasecmp(role, "agent") == 0) || (strcasecmp(role, "end-entity") == 0));
+	if ((strcasecmp(role, "agent") == 0) || (strcasecmp(role, "end-entity") == 0)) {
+		format = CM_RPC_PROTOCOL_XML;
+	} else {
+		format = CM_RPC_PROTOCOL_JSON;
+	}
 
 	xml = cm_submit_u_from_file(filename);
 	if (xml == NULL) {
@@ -66,29 +71,36 @@ main(int argc, char **argv)
 	ctx = talloc_new(NULL);
 
 	if (strcmp(mode, "submit") == 0) {
-		if (is_xml) {
+
+		switch (format) {
+		case CM_RPC_PROTOCOL_XML:
 			cm_submit_d_submit_result(ctx, xml,
 						  &error_code, &error_reason, &error,
 						  &status, &requestId, &cert);
-		} else {
+			break;
+		case CM_RPC_PROTOCOL_JSON:
 			cm_submit_d_rest_submit_result(ctx, xml,
 						  &error_code, &error_reason,
 						  &status, &requestId, &cert);
+			break;
 		}
 		i = cm_submit_d_submit_eval(ctx, xml, "SUBMIT",
-					    can_agent, &out, &err, is_xml);
+					    can_agent, &out, &err, format);
 	} else
 	if (strcmp(mode, "check") == 0) {
-		if (is_xml) {
+		switch (format) {
+		case CM_RPC_PROTOCOL_XML:
 			cm_submit_d_check_result(ctx, xml,
 						 &error, &status, &requestId);
-		} else {
+			break;
+		case CM_RPC_PROTOCOL_JSON:
 			cm_submit_d_rest_check_result(ctx, xml,
 						 &error_code, &error_reason,
 						 &status, &requestId);
+			break;
 		}
 		i = cm_submit_d_check_eval(ctx, xml, "CHECK",
-					   can_agent, &out, &err, is_xml);
+					   can_agent, &out, &err, format);
 	} else
 	if (strcmp(mode, "reject") == 0) {
 		cm_submit_d_reject_result(ctx, xml,
@@ -104,41 +116,50 @@ main(int argc, char **argv)
 					    &out, &err);
 	} else
 	if (strcmp(mode, "approve") == 0) {
-		if (is_xml) {
+		switch (format) {
+		case CM_RPC_PROTOCOL_XML:
 			cm_submit_d_approve_result(ctx, xml,
 						   &error_code, &error_reason,
 						   &status, &requestId);
-		} else {
+			break;
+		case CM_RPC_PROTOCOL_JSON:
 			cm_submit_d_rest_approve_result(ctx, xml,
 						   &error_code, &error_reason, &error,
 						   &requestId);
+			break;
 		}
 		i = cm_submit_d_approve_eval(ctx, xml, "APPROVE",
-					     &out, &err, is_xml);
+					     &out, &err, format);
 	} else
 	if (strcmp(mode, "fetch") == 0) {
-		if (is_xml) {
+		switch (format) {
+		case CM_RPC_PROTOCOL_XML:
 			cm_submit_d_fetch_result(ctx, xml,
 						 &error, &status, &requestId, &cert);
-		} else {
+			break;
+		case CM_RPC_PROTOCOL_JSON:
 			cm_submit_d_rest_fetch_result(ctx, xml,
 						 &error_code, &error_reason,
 						 &status, &cert);
+			break;
 		}
 		i = cm_submit_d_fetch_eval(ctx, xml, "FETCH",
-					   &out, &err, is_xml);
+					   &out, &err, format);
 	} else
 	if (strcmp(mode, "profiles") == 0) {
-		if (is_xml) {
+		switch (format) {
+		case CM_RPC_PROTOCOL_XML:
 			cm_submit_d_profiles_result(ctx, xml,
 						    &error_code, &error_reason,
 						    &profiles);
-		} else {
+			break;
+		case CM_RPC_PROTOCOL_JSON:
 			cm_submit_d_rest_profiles_result(ctx, xml,
 						    &error_code, &error_reason,
 						    &profiles);
+			break;
 		}
-		i = cm_submit_d_profiles_eval(ctx, xml, &out, &err, is_xml);
+		i = cm_submit_d_profiles_eval(ctx, xml, &out, &err, format);
 	} else {
 		fprintf(stderr, "unknown mode \"%s\"\n", mode);
 		return -1;

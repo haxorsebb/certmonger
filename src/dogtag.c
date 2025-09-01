@@ -489,7 +489,8 @@ xml_workflow(
 		break;
 	case op_submit:
 		ret = cm_submit_d_submit_eval(ctx, results, lasturl,
-					      can_agent, &p, &q, 1);
+					      can_agent, &p, &q,
+					      CM_RPC_PROTOCOL_XML);
 		if (p != NULL) {
 			fprintf(stdout, "%s", p);
 		}
@@ -500,7 +501,8 @@ xml_workflow(
 		break;
 	case op_check:
 		ret = cm_submit_d_check_eval(ctx, results, lasturl,
-					     can_agent, &p, &q, 0);
+					     can_agent, &p, &q,
+					     CM_RPC_PROTOCOL_JSON);
 		if (p != NULL) {
 			fprintf(stdout, "%s", p);
 		}
@@ -512,7 +514,8 @@ xml_workflow(
 	case op_approve:
 		if (url2 == NULL) {
 			ret = cm_submit_d_approve_eval(ctx, results, lasturl,
-						       &p, &q, 1);
+						       &p, &q,
+						       CM_RPC_PROTOCOL_XML);
 			if (p != NULL) {
 				fprintf(stdout, "%s", p);
 			}
@@ -534,7 +537,8 @@ xml_workflow(
 		break;
 	case op_retrieve:
 		ret = cm_submit_d_fetch_eval(ctx, results, lasturl,
-					     &p, &q, 1);
+					     &p, &q,
+					     CM_RPC_PROTOCOL_XML);
 		if (p != NULL) {
 			fprintf(stdout, "%s", p);
 		}
@@ -545,7 +549,8 @@ xml_workflow(
 		break;
 	case op_profiles:
 		ret = cm_submit_d_profiles_eval(ctx, results,
-						&p, &q, 1);
+						&p, &q,
+						CM_RPC_PROTOCOL_XML);
 		if (p != NULL) {
 			fprintf(stdout, "%s", p);
 		}
@@ -839,7 +844,8 @@ ipa_workflow(
 	switch (op) {
 	case op_submit:
 		rval = cm_submit_d_submit_eval(ctx, results, NULL,
-					      can_agent, &p, &q, 0);
+					      can_agent, &p, &q,
+					      CM_RPC_PROTOCOL_JSON);
 		if (p != NULL) {
 			fprintf(stdout, "%s", p);
 		}
@@ -849,7 +855,8 @@ ipa_workflow(
 		break;
 	case op_check:
 		rval = cm_submit_d_check_eval(ctx, results, NULL,
-					 			      can_agent, &p, &q, 0);
+					      can_agent, &p, &q,
+					      CM_RPC_PROTOCOL_JSON);
 		if (p != NULL) {
 			fprintf(stdout, "%s", p);
 		}
@@ -859,7 +866,8 @@ ipa_workflow(
 		break;
 	case op_retrieve:
 		rval = cm_submit_d_fetch_eval(ctx, results, NULL,
-					     &p, &q, 0);
+					     &p, &q,
+					     CM_RPC_PROTOCOL_JSON);
 		if (p != NULL) {
 			fprintf(stdout, "%s", p);
 		}
@@ -869,7 +877,8 @@ ipa_workflow(
 		break;
 	case op_approve:
 		rval = cm_submit_d_approve_eval(ctx, results, NULL,
-				 		         		&p, &q, 0);
+						&p, &q,
+						CM_RPC_PROTOCOL_JSON);
 		if (p != NULL) {
 			fprintf(stdout, "%s", p);
 		}
@@ -879,7 +888,8 @@ ipa_workflow(
 		break;
 	case op_profiles:
 		rval = cm_submit_d_profiles_eval(ctx, results,
-										 &p, &q, 0);
+						 &p, &q,
+						 CM_RPC_PROTOCOL_JSON);
 
 		if (p != NULL) {
 			fprintf(stdout, "%s", p);
