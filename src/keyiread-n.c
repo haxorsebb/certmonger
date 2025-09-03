@@ -31,6 +31,7 @@
 #include <nss.h>
 #include <nssb64.h>
 #include <cert.h>
+#include <cryptohi.h>
 #include <keyhi.h>
 #include <keythi.h>
 #include <pk11pub.h>
@@ -51,6 +52,33 @@
 #ifndef PRIVKEY_LIST_EMPTY
 #define PRIVKEY_LIST_EMPTY(l) PRIVKEY_LIST_END(PRIVKEY_LIST_HEAD(l), l)
 #endif
+
+const char *
+cm_GetSignatureAlgorithmFromPrivateKey(SECKEYPrivateKey *privKey)
+{
+	SECOidTag hashAlgTag = SEC_OID_UNKNOWN;
+	SECOidTag enctag;
+
+	if (privKey->keyType != mldsaKey) {
+		return "Invalid ML-DSA key";
+	}
+
+	enctag = SEC_GetSignatureAlgorithmOidTagByKey(privKey, NULL, hashAlgTag);
+
+	if (enctag == SEC_OID_UNKNOWN) {
+		return "UNKNOWN";
+	}
+	switch (enctag) {
+	case SEC_OID_ML_DSA_44_PUBLIC_KEY:
+		return "ML-DSA-44";
+	case SEC_OID_ML_DSA_65_PUBLIC_KEY:
+		return "ML-DSA-65";
+	case SEC_OID_ML_DSA_87_PUBLIC_KEY:
+		return "ML-DSA-87";
+	default:
+		return "UNKNOWN";
+	}
+}
 
 struct cm_keyiread_state {
 	struct cm_keyiread_state_pvt pvt;
@@ -522,7 +550,10 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			cm_log(3, "Key is an EC key.\n");
 			alg = "EC";
 			break;
-		/* FIXME: case mlKey? */
+		case mldsaKey:
+			cm_log(3, "Key is an ML-DSA key.\n");
+			alg = cm_GetSignatureAlgorithmFromPrivateKey(keys->privkey);
+			break;
 		case nullKey:
 		default:
 			cm_log(3, "Key is of an unknown type.\n");

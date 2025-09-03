@@ -1,3 +1,16 @@
+[nss:44]
+OK.
+OK (ML-DSA-44:10496).
+[nss:65]
+OK.
+OK (ML-DSA-65:15616).
+[nss:87]
+OK.
+OK (ML-DSA-87:20736).
+[nss:rosubdir]
+Failed to save NSS:${tmpdir}/rosubdir: need fs permissions.
+[nss:rwsubdir]
+Failed to save NSS:${tmpdir}/rwsubdir: need fs permissions.
 [openssl:44]
 OK.
 OK (ML-DSA-44:10496).

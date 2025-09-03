@@ -140,6 +140,9 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	SECOidData *ecurve;
 	SECItem ec_params;
 #endif
+#ifdef CM_ENABLE_ML_DSA
+	CK_ULONG ml_params;
+#endif
 	SECKEYPrivateKey *privkey, *delkey, *ckey;
 	SECKEYPrivateKeyList *privkeys;
 	SECKEYPrivateKeyListNode *node;
@@ -273,8 +276,15 @@ cm_keygen_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 #endif
 #ifdef CM_ENABLE_ML_DSA:
 	case cm_key_ml_dsa_44:
+		cm_requested_key_size = ML_DSA_44_PRIVATEKEY_LEN;
+		mech = CKM_ML_DSA_KEY_PAIR_GEN;
+		pmech = CKM_ML_DSA_KEY_PAIR_GEN;
 	case cm_key_ml_dsa_65:
+		cm_requested_key_size = ML_DSA_65_PRIVATEKEY_LEN;
+		mech = CKM_ML_DSA_KEY_PAIR_GEN;
+		pmech = CKM_ML_DSA_KEY_PAIR_GEN;
 	case cm_key_ml_dsa_87:
+		cm_requested_key_size = ML_DSA_87_PRIVATEKEY_LEN;
 		mech = CKM_ML_DSA_KEY_PAIR_GEN;
 		pmech = CKM_ML_DSA_KEY_PAIR_GEN;
 		break;
@@ -582,9 +592,19 @@ retry_gen:
 #endif
 #ifdef CM_ENABLE_ML_DSA:
 	case cm_key_ml_dsa_44:
+		memset(&ml_params, 0, sizeof(ml_params));
+		ml_params = CKP_ML_DSA_44;
+		params = &ml_params;
+		break;
 	case cm_key_ml_dsa_65:
+		memset(&ml_params, 0, sizeof(ml_params));
+		ml_params = CKP_ML_DSA_65;
+		params = &ml_params;
+		break;
 	case cm_key_ml_dsa_87:
-		/* FIXME */
+		memset(&ml_params, 0, sizeof(ml_params));
+		ml_params = CKP_ML_DSA_87;
+		params = &ml_params;
 		break;
 #endif
 	default:
@@ -592,10 +612,11 @@ retry_gen:
 		break;
 	}
 	/* Generate the key pair. */
-	cm_log(1, "Generating key pair.\n");
+	cm_log(1, "Generating key pair of size %d.\n", cm_key_size);
 	pubkey = NULL;
 	privkey = PK11_GenerateKeyPair(slot, mech, params, &pubkey,
 				       PR_TRUE, PR_TRUE, NULL);
+
 	/* Retry with the optimum key size. */
 	if (privkey == NULL) {
 		cm_key_size = PK11_GetBestKeyLength(slot, pmech);
