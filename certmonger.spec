@@ -27,7 +27,7 @@
 %bcond_with xmlrpc
 
 Name:		certmonger
-Version:	0.79.20
+Version:	0.79.21
 Release:	1%{?dist}
 Summary:	Certificate status monitor and PKI enrollment client
 
@@ -264,6 +264,12 @@ exit 0
 %endif
 
 %changelog
+* Fri Sep  5 2025 Rob Crittenden <rcritten@redhat.com> - 0.79.21-1
+- Update to 0.79.21
+  - Allow the use of the IPA API by default for dogtag requests
+  - Update README.md to include CEP/CES support.
+  - Work around a bug in NSS causing 007-certsave-sql to fail
+
 * Mon Jun 10 2024 Rob Crittenden <rcritten@redhat.com> - 0.79.20-1
 - Update to 0.79.20
   - Fix type error in cm_tdbusm_get_vn
