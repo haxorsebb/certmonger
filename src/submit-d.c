@@ -612,20 +612,23 @@ cm_submit_d_profiles_result(void *parent, const char *xml,
 
 enum cm_external_status
 cm_submit_d_submit_eval(void *parent, const char *xml, const char *url,
-			dbus_bool_t can_agent, char **out, char **err, int is_xml)
+			dbus_bool_t can_agent, char **out, char **err, enum cm_rpc_protocol format)
 {
 	char *error = NULL, *error_code = NULL, *error_reason = NULL;
 	char *status = NULL, *requestId = NULL, *cert = NULL;
 	*out = NULL;
 	*err = NULL;
-	if (is_xml) {
+	switch (format) {
+	case CM_RPC_PROTOCOL_XML:
 		cm_submit_d_submit_result(parent, xml,
 					  &error_code, &error_reason, &error,
 					  &status, &requestId, &cert);
-	} else {
+		break;
+	case CM_RPC_PROTOCOL_JSON:
 		cm_submit_d_rest_submit_result(parent, xml,
 					  &error_code, &error_reason,
 					  &status, &requestId, &cert);
+		break;
 	}
 	if ((status != NULL) && (strcmp(status, "0") == 0) &&
 	    (cert != NULL)) {
@@ -665,19 +668,22 @@ cm_submit_d_submit_eval(void *parent, const char *xml, const char *url,
 
 enum cm_external_status
 cm_submit_d_check_eval(void *parent, const char *xml, const char *url,
-		       dbus_bool_t can_agent, char **out, char **err, int is_xml)
+		       dbus_bool_t can_agent, char **out, char **err, enum cm_rpc_protocol format)
 {
 	char *error = NULL, *error_code = NULL, *error_reason = NULL;
 	char *status = NULL, *requestId = NULL;
 	*out = NULL;
 	*err = NULL;
-	if (is_xml) {
+	switch (format) {
+	case CM_RPC_PROTOCOL_XML:
 		cm_submit_d_check_result(parent, xml,
 					 &error, &status, &requestId);
-	} else {
+		break;
+	case CM_RPC_PROTOCOL_JSON:
 		cm_submit_d_rest_check_result(parent, xml,
 					 &error_code, &error_reason,
 					 &status, &requestId);
+		break;
 	}
 	if ((status != NULL) &&
 	    (strcmp(status, "complete") == 0) &&
@@ -794,20 +800,23 @@ cm_submit_d_review_eval(void *parent, const char *xml, const char *url,
 
 enum cm_external_status
 cm_submit_d_approve_eval(void *parent, const char *xml, const char *url,
-			 char **out, char **err, int is_xml)
+			 char **out, char **err, enum cm_rpc_protocol format)
 {
 	char *error = NULL, *error_code = NULL, *error_reason = NULL;
 	char *status = NULL, *requestId = NULL;
 	*out = NULL;
 	*err = NULL;
-	if (is_xml) {
+	switch (format) {
+	case CM_RPC_PROTOCOL_XML:
 		cm_submit_d_approve_result(parent, xml,
 					   &error_code, &error_reason,
 					   &status, &requestId);
-	} else {
+		break;
+	case CM_RPC_PROTOCOL_JSON:
 		cm_submit_d_rest_approve_result(parent, xml,
 					   &error_code, &error_reason, &status,
 					   &requestId);
+		break;
 	}
 	if ((status != NULL) && (strcmp(status, "complete") == 0) &&
 	    (requestId != NULL)) {
@@ -835,20 +844,23 @@ cm_submit_d_approve_eval(void *parent, const char *xml, const char *url,
 
 enum cm_external_status
 cm_submit_d_fetch_eval(void *parent, const char *xml, const char *url,
-		      char **out, char **err, int is_xml)
+		      char **out, char **err, enum cm_rpc_protocol format)
 {
 	char *error = NULL, *error_code = NULL, *error_reason = NULL;
 	char *status = NULL, *requestId = NULL, *cert = NULL;
 	*out = NULL;
 	*err = NULL;
-	if (is_xml) {
+	switch (format) {
+	case CM_RPC_PROTOCOL_XML:
 		cm_submit_d_fetch_result(parent, xml,
 					 &error,
 					 &status, &requestId, &cert);
-	} else {
+		break;
+	case CM_RPC_PROTOCOL_JSON:
 		cm_submit_d_rest_fetch_result(parent, xml,
 					 &error_code, &error_reason,
 					 &status, &cert);
+		break;
 	}
 	if (cert != NULL) {
 		*out = talloc_asprintf(parent, "%s\n", trim(parent, cert));
@@ -874,7 +886,7 @@ cm_submit_d_fetch_eval(void *parent, const char *xml, const char *url,
 enum cm_external_status
 cm_submit_d_profiles_eval(void *parent, const char *xml,
 			  char **out, char **err,
-			  int is_xml)
+			  enum cm_rpc_protocol format)
 {
 	char *error_code = NULL, *error_reason = NULL;
 	char **profiles = NULL;
@@ -882,12 +894,15 @@ cm_submit_d_profiles_eval(void *parent, const char *xml,
 
 	*out = NULL;
 	*err = NULL;
-	if (is_xml) {
+	switch (format) {
+	case CM_RPC_PROTOCOL_XML:
 		cm_submit_d_profiles_result(parent, xml, &error_code, &error_reason,
 					    &profiles);
-	} else {
+		break;
+	case CM_RPC_PROTOCOL_JSON:
 		cm_submit_d_rest_profiles_result(parent, xml, &error_code,
 				&error_reason, &profiles);
+		break;
 	}
 	if (profiles != NULL) {
 		for (i = 0; profiles[i] != NULL; i++) {
