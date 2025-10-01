@@ -31,9 +31,9 @@ Testing setting trust to CT,C,:
  right nickname, right subject: cert CT,C,
  wrong nickname, right subject: cert ,, 
  wrong subject, right nickname: cert ,, 
-Testing setting trust to C,c,p:
- baseline: cert C,c,p
- right nickname, right subject: cert C,c,p
+Testing setting trust to C,,p:
+ baseline: cert C,,p 
+ right nickname, right subject: cert C,,p 
  wrong nickname, right subject: cert ,, 
  wrong subject, right nickname: cert ,, 
 Skipping rosubdir test.

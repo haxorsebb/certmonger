@@ -135,7 +135,10 @@ $toolsdir/certsave entry.openssl || true
 # Now tweak the trust settings on the NSS certificate.  The "u" flag seems to
 # be tied to whether or not we have a matching private key, so we can't mess
 # with it.
-for trust in ,, P,, ,P, CT,C, C,c,p ; do
+#
+# Oct 1, 2025: Replace C,c,p with C,,p because the valid CA flag is not
+# working as expected in NSS 3.115.
+for trust in ,, P,, ,P, CT,C, C,,p ; do
 	echo Testing setting trust to "$trust":
 	# Save the right certificate to NSS's database and read it back.
 	initnssdb $scheme:$tmpdir
