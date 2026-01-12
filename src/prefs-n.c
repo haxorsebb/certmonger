@@ -19,7 +19,9 @@
 
 #include <nss.h>
 #include <nss.h>
+#include <keyhi.h>
 #include <keythi.h>
+#include <pk11pub.h>
 #include <secoidt.h>
 
 #include "prefs.h"
@@ -114,6 +116,45 @@ cm_prefs_nss_sig_alg(SECKEYPrivateKey *pkey)
 			return SEC_OID_ANSIX962_ECDSA_SHA256_SIGNATURE;
 			break;
 		}
+#ifdef CM_ENABLE_ML_DSA
+	case mldsaKey:
+		/* This is a simplified version of
+		 * cm_GetSignatureAlgorithmFromPrivateKey from keyiread-n.c.
+		 * Once the NSS function is exported that can be moved to
+		 * something like util-n.c and be generalized. For now I
+		 * duplicate.
+		 */
+		SECItem item;
+		CK_ULONG paramSet;
+		SECStatus rv;
+
+		rv = PK11_ReadRawAttribute(PK11_TypePrivKey, pkey, CKA_PARAMETER_SET, &item);
+		if (rv != SECSuccess) {
+			return SEC_OID_UNKNOWN;
+		}
+
+		if (item.len != sizeof(paramSet)) {
+			PORT_Free(item.data);	
+			PORT_SetError(SEC_ERROR_INVALID_KEY);
+			return SEC_OID_UNKNOWN;
+		}
+		paramSet = *(CK_ULONG *)item.data;
+		PORT_Free(item.data);
+		switch (paramSet) {
+		case CKP_ML_DSA_44:
+			return SEC_OID_ML_DSA_44_SIGNATURE;
+			break;
+		case CKP_ML_DSA_65:
+			return SEC_OID_ML_DSA_65_SIGNATURE;
+			break;
+		case CKP_ML_DSA_87:
+			return SEC_OID_ML_DSA_87_SIGNATURE;
+			break;
+		default:
+			return SEC_OID_UNKNOWN;
+			break;
+		}
+#endif
 	default:
 		return SEC_OID_UNKNOWN;
 		break;

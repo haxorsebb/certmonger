@@ -6,6 +6,8 @@ CLEANFILES = \
 	001-keyiread-ec/actual.err \
 	001-keyiread-rsa/actual.out \
 	001-keyiread-rsa/actual.err \
+	001-keyiread-mldsa/actual.out \
+	001-keyiread-mldsa/actual.err \
 	002-keygen/actual.out \
 	002-keygen/actual.err \
 	002-keygen-dbm/actual.out \
@@ -18,12 +20,16 @@ CLEANFILES = \
 	002-keygen-ec/actual.err \
 	002-keygen-rsa/actual.out \
 	002-keygen-rsa/actual.err \
+	002-keygen-mldsa/actual.err \
+	002-keygen-mldsa/actual.out \
 	003-csrgen/actual.out \
 	003-csrgen/actual.err \
 	003-csrgen-ec/actual.out \
 	003-csrgen-ec/actual.err \
 	003-csrgen-rsa/actual.out \
 	003-csrgen-rsa/actual.err \
+	003-csrgen-mldsa/actual.out \
+	003-csrgen-mldsa/actual.err \
 	004-selfsign/actual.out \
 	004-selfsign/actual.err \
 	004-selfsign-ec/actual.out \
@@ -147,6 +153,8 @@ EXTRA_DIST = \
 	001-keyiread-ec/expected.out.2 \
 	001-keyiread-ec/expected.out.3 \
 	001-keyiread-ec/expected.out.4 \
+	001-keyiread-mldsa/run.sh \
+	001-keyiread-mldsa/expected.out \
 	002-keygen/prequal.sh \
 	002-keygen/run.sh \
 	002-keygen/expected.out \
@@ -166,12 +174,17 @@ EXTRA_DIST = \
 	002-keygen-ec/expected.out.2 \
 	002-keygen-ec/expected.out.3 \
 	002-keygen-ec/expected.out.4 \
+	002-keygen-mldsa/prequal.sh \
+	002-keygen-mldsa/run.som \
+	002-keygen-mldsa/expected.out \
 	003-csrgen/run.sh \
 	003-csrgen/expected.out \
 	003-csrgen-rsa/run.sh \
 	003-csrgen-rsa/expected.out \
 	003-csrgen-ec/run.sh \
 	003-csrgen-ec/expected.out \
+	003-csrgen-mldsa/run.sh \
+	003-csrgen-mldsa/expected.out \
 	004-selfsign/run.sh \
 	004-selfsign/expected.out \
 	004-selfsign-rsa/run.sh \
@@ -297,6 +310,8 @@ EXTRA_DIST = \
 	027-hooks/expected.out \
 	027-hooks/run.sh \
 	028-dbus/expected.out 028-dbus/expected.out.nodsa \
+	028-dbus/expected.out.nodsa.withmldsa \
+	028-dbus/expected.out.nomldsa \
 	028-dbus/entry 028-dbus/bogus-entry \
 	028-dbus/prequal.sh \
 	028-dbus/run.sh \
@@ -453,6 +468,13 @@ subdirs += \
 	002-keygen-ec \
 	003-csrgen-ec \
 	004-selfsign-ec
+endif
+
+if HAVE_ML_DSA
+subdirs += \
+	001-keyiread-mldsa \
+	002-keygen-mldsa \
+	003-csrgen-mldsa
 endif
 
 check: all

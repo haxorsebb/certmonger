@@ -249,6 +249,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	unsigned int bmpcount, mdlen;
 	long error;
 	int i;
+	const EVP_MD *sign_md = cm_prefs_ossl_sig_alg(entry->cm_key_type.cm_key_algorithm);
 
 	status = fdopen(fd, "w");
 	if (status == NULL) {
@@ -402,8 +403,15 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 							  upassword,
 							  strlen(password));
 			}
-			X509_REQ_sign(req, pkey, cm_prefs_ossl_hash());
-			PEM_write_X509_REQ(status, req);
+
+			if (X509_REQ_sign(req, pkey, sign_md) == 0) {
+				cm_log_errors(1, "Error signing the CSR.\n");
+				_exit(CM_SUB_STATUS_ERROR_AUTH); /* XXX */
+			}
+			if (PEM_write_X509_REQ(status, req) != 1) {
+				cm_log_errors(1, "Error while writing the CSR PEM.\n");
+				_exit(CM_SUB_STATUS_ERROR_AUTH); /* XXX */
+			}
 			/* Generate the SPKAC. */
 			memset(&spkac, 0, sizeof(spkac));
 			spkac.challenge = util_ASN1_IA5STRING_new();
@@ -420,7 +428,9 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			util_NETSCAPE_SPKI_set_sig_alg(&spki, sig_alg);
 			spki.signature = util_ASN1_BIT_STRING_new();
 			NETSCAPE_SPKI_set_pubkey(&spki, pkey);
-			NETSCAPE_SPKI_sign(&spki, pkey, cm_prefs_ossl_hash());
+			if (NETSCAPE_SPKI_sign(&spki, pkey, sign_md) == 0) {
+				cm_log_errors(1, "NETSCAPE_SPKI_sign failed.\n");
+			}
 			s = NETSCAPE_SPKI_b64_encode(&spki);
 			if (s != NULL) {
 				fprintf(status, "%s", s);
@@ -487,7 +497,9 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			}
 			X509_set_serialNumber(minicert, serial);
 			X509_set_pubkey(minicert, pkey);
-			X509_sign(minicert, pkey, cm_prefs_ossl_hash());
+			if (X509_sign(minicert, pkey, sign_md) == 0) {
+				cm_log_errors(1, "Signing minicert failed.\n");
+			}
 			len = i2d_X509(minicert, NULL);
 			mcb64 = NULL;
 			if (len > 0) {

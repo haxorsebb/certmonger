@@ -32,6 +32,24 @@
 #include "prefs.h"
 #include "prefs-o.h"
 #include "util-o.h"
+#include "log.h"
+#include "store-int.h"
+
+const EVP_MD *
+cm_prefs_ossl_sig_alg(enum cm_key_algorithm cm_key_algorithm)
+{
+	switch(cm_key_algorithm) {
+#ifdef CM_ENABLE_ML_DSA
+	case cm_key_ml_dsa_44:
+	case cm_key_ml_dsa_65:
+	case cm_key_ml_dsa_87:
+		return NULL;  /* Pure mode does not use hash then sign */
+#endif
+	default:
+		return cm_prefs_ossl_hash_by_pref(cm_prefs_preferred_digest());
+		break;
+	}
+}
 
 const EVP_MD *
 cm_prefs_ossl_hash_by_pref(enum cm_prefs_digest digest)
