@@ -724,14 +724,17 @@ if ! ${configure_dist_target_only:-false} ; then
 		CFLAGS="$OPENSSL_CFLAGS $CFLAGS"
 		LIBS="$OPENSSL_LIBS $LIBS"
 		AC_CHECK_LIB(crypto,EVP_PKEY_Q_keygen)
-		# CFLAGS="$NSS_CFLAGS $CFLAGS"
-		# LIBS="$NSS_LIBS $LIBS"
-		# AC_CHECK_FUNCS(SECKEY_CreateECPrivateKey)
-		# AC_CHECK_FUNCS(PK11_PrivDecrypt)
-		# AC_CHECK_FUNCS(NSS_OptionGet NSS_OptionSet)
+		CFLAGS="$NSS_CFLAGS $CFLAGS"
+		LIBS="$NSS_LIBS $LIBS"
+		AC_CHECK_DECLS([CKM_ML_DSA_KEY_PAIR_GEN],,,[[#include <pkcs11t.h>]])
+		AC_CHECK_FUNCS(PK11_GenerateKeyPair)
+		AC_CHECK_FUNCS(NSS_OptionGet NSS_OptionSet)
 		CFLAGS="$CFLAGSsave"
 		LIBS="$LIBSsave"
 		can_ml_dsa=true
+		if test x$ac_cv_have_decl_CKM_ML_DSA_KEY_PAIR_GEN = xno ; then
+			can_ml_dsa=false
+		fi
 		if test x$ac_cv_lib_crypto_EVP_PKEY_Q_keygen = xno ; then
 			can_ml_dsa=false
 		fi
@@ -944,4 +947,47 @@ else
 fi
 
 AC_CONFIG_COMMANDS(src_introspect_sh,[chmod +x src/introspect.sh])
-AC_OUTPUT(Makefile src/Makefile dbus/Makefile systemd/Makefile sysvinit/Makefile sysvinit/certmonger tests/Makefile tests/tools/Makefile dbus/org.fedorahosted.certmonger.conf dbus/org.fedorahosted.certmonger.service src/introspect.sh src/certmonger.8 src/getcert.1 src/getcert-request.1 src/getcert-list.1 src/getcert-list-cas.1 src/getcert-start-tracking.1 src/getcert-stop-tracking.1 src/selfsign-getcert.1 src/ipa-getcert.1 src/getcert-resubmit.1 src/certmonger-certmaster-submit.8 src/certmonger-ipa-submit.8 src/certmonger-dogtag-ipa-renew-agent-submit.8 src/certmaster-getcert.1 src/certmonger.conf.5 po/Makefile.in src/certmonger.conf systemd/certmonger.service systemd/certmonger.conf systemd/org.fedorahosted.certmonger.service src/getcert-refresh.1 src/getcert-refresh-ca.1 src/local-getcert.1 src/certmonger-local-submit.8 src/getcert-status.1 src/certmonger-dogtag-submit.8 src/certmonger-scep-submit.8 src/getcert-add-ca.1 src/getcert-add-scep-ca.1 src/getcert-modify-ca.1 src/getcert-remove-ca.1 src/getcert-rekey.1)
+AC_CONFIG_FILES([Makefile src/Makefile dbus/Makefile systemd/Makefile sysvinit/Makefile sysvinit/certmonger tests/Makefile tests/tools/Makefile dbus/org.fedorahosted.certmonger.conf dbus/org.fedorahosted.certmonger.service src/introspect.sh src/certmonger.8 src/getcert.1 src/getcert-request.1 src/getcert-list.1 src/getcert-list-cas.1 src/getcert-start-tracking.1 src/getcert-stop-tracking.1 src/selfsign-getcert.1 src/ipa-getcert.1 src/getcert-resubmit.1 src/certmonger-certmaster-submit.8 src/certmonger-ipa-submit.8 src/certmonger-dogtag-ipa-renew-agent-submit.8 src/certmaster-getcert.1 src/certmonger.conf.5 po/Makefile.in src/certmonger.conf systemd/certmonger.service systemd/certmonger.conf systemd/org.fedorahosted.certmonger.service src/getcert-refresh.1 src/getcert-refresh-ca.1 src/local-getcert.1 src/certmonger-local-submit.8 src/getcert-status.1 src/certmonger-dogtag-submit.8 src/certmonger-scep-submit.8 src/getcert-add-ca.1 src/getcert-add-scep-ca.1 src/getcert-modify-ca.1 src/getcert-remove-ca.1 src/getcert-rekey.1])
+
+AC_OUTPUT
+
+echo "
+        prefix:                   ${prefix}
+        exec_prefix:              ${exec_prefix}
+        libdir:                   ${libdir}
+        bindir:                   ${bindir}
+        sbindir:                  ${sbindir}
+        sysconfdir:               ${sysconfdir}
+        localstatedir:            ${localstatedir}
+        datadir:                  ${datadir}
+        source code location:     ${srcdir}
+        compiler:                 ${CC}
+        cflags:                   ${CFLAGS}
+        LDAP libs:                ${LDAP_LIBS}
+        OpenSSL crypto libs:      ${OPENSSL_LIBS}
+        NSS libs:                 ${NSS_LIBS}
+        JANSSON libs:             ${JANSSON_LIBS}"
+
+AM_COND_IF([HAVE_DSA], [
+    echo "\
+        DSA support enabled:      yes"
+], [
+    echo "\
+        DSA support enabled:      no"
+])
+
+AM_COND_IF([HAVE_EC], [
+    echo "\
+        EC support enabled:       yes"
+], [
+    echo "\
+        EC support enabled:       no"
+])
+
+AM_COND_IF([HAVE_ML_DSA], [
+    echo "\
+        ML-DSA support enabled:   yes"
+], [
+    echo "\
+        ML-DSA support enabled:   no"
+])
