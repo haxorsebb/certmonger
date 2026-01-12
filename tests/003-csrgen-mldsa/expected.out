@@ -1,0 +1,7 @@
+verify OK
+verify OK
+Signature OK
+Signature OK
+minicert.openssl.ML-DSA-65.pem: OK
+minicert.nss.ML-DSA-65.pem: OK
+Test complete.

@@ -18,6 +18,7 @@
 #ifndef cmprefso_h
 #define cmprefso_h
 
+const EVP_MD * cm_prefs_ossl_sig_alg(enum cm_key_algorithm cm_key_algorithm);
 const EVP_CIPHER *cm_prefs_ossl_cipher(void);
 const EVP_CIPHER *cm_prefs_ossl_cipher_by_pref(enum cm_prefs_cipher cipher);
 const EVP_MD *cm_prefs_ossl_hash(void);
