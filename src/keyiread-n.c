@@ -555,8 +555,8 @@ cm_keyiread_n_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 			alg = "EC";
 			break;
 		case mldsaKey:
-			cm_log(3, "Key is an ML-DSA key.\n");
 			alg = cm_GetSignatureAlgorithmFromPrivateKey(keys->privkey);
+			cm_log(3, "Key is an ML-DSA key %s.\n", alg);
 			break;
 		case nullKey:
 		default:

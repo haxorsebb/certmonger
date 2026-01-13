@@ -896,6 +896,8 @@ request(const char *argv0, int argc, const char **argv)
 			    && (strcasecmp(poptarg, "EC") != 0)
 #endif
 #ifdef CM_ENABLE_ML_DSA
+			    && (strcasecmp(poptarg, "MLDSA") != 0)
+			    && (strcasecmp(poptarg, "ML-DSA") != 0)
 			    && (strcasecmp(poptarg, "ML-DSA-44") != 0)
 			    && (strcasecmp(poptarg, "ML-DSA-65") != 0)
 			    && (strcasecmp(poptarg, "ML-DSA-87") != 0)
@@ -912,7 +914,7 @@ request(const char *argv0, int argc, const char **argv)
 				printf(" EC");
 #endif
 #ifdef CM_ENABLE_ML_DSA
-				printf(" ML-DSA-44 ML-DA-65 ML-DSA-87");
+				printf(" MLDSA ML-DSA ML-DSA-44 ML-DSA-65 ML-DSA-87");
 #endif
 				printf("\n");
 				return 1;
@@ -1138,6 +1140,26 @@ request(const char *argv0, int argc, const char **argv)
 			printf(_("The IPA backend requires the use of the -K option (principal name) when any of the -N (subject name), -E (email address), -A (IP address), -D (DNS name), or -U (extendedKeyUsage) options is used.\n"));
 			help(argv0, "request");
 			return 1;
+		}
+	}
+#endif
+#ifdef CM_ENABLE_ML_DSA
+	if ((keytype != NULL) && ((strcasecmp(keytype, "ML-DSA") == 0) ||
+							  (strcasecmp(keytype, "MLDSA") == 0))) {
+		talloc_free(keytype);
+		switch(keysize) {
+		case 44:
+			keytype = talloc_strdup(globals.tctx, "ML-DSA-44");
+			break;
+		case 65:
+			keytype = talloc_strdup(globals.tctx, "ML-DSA-65");
+			break;
+		case 87:
+			keytype = talloc_strdup(globals.tctx, "ML-DSA-87");
+			break;
+		default:
+			keytype = talloc_strdup(globals.tctx, "ML-DSA-65");
+			break;
 		}
 	}
 #endif
@@ -2711,7 +2733,11 @@ rekey_or_resubmit(const char *argv0, const char *category, int argc,
 			    && (strcasecmp(poptarg, "EC") != 0)
 #endif
 #ifdef CM_ENABLE_ML_DSA
+			    && (strcasecmp(poptarg, "MLDSA") != 0)
+			    && (strcasecmp(poptarg, "ML-DSA") != 0)
+			    && (strcasecmp(poptarg, "ML-DSA-44") != 0)
 			    && (strcasecmp(poptarg, "ML-DSA-65") != 0)
+			    && (strcasecmp(poptarg, "ML-DSA-87") != 0)
 #endif
 			    ) {
 				printf(_("No support for generating \"%s\" keys.\n"),
