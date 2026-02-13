@@ -954,5 +954,60 @@ $toolsdir/iterate ca10 entry10 NEED_TO_NOTIFY_VALIDITY,NOTIFYING_VALIDITY,NEED_C
 cat $tmpdir/notification.txt | sed 's@'"$tmpdir"'@$tmpdir@g'
 CERTMONGER_CONFIG_DIR="$SAVED_CONFIG_DIR"
 
+# The following tests verify that certread subprocess failures are propagated
+# correctly. Any non-zero exit from certread-n or certread-o should cause
+# finished_reading() to return -1 and iterate to transition to NEED_GUIDANCE.
+# The specific failure modes below are representative cases, not an exhaustive list.
+
+echo
+echo '[Certread failure: NSS init failure.]'
+mkdir -p $tmpdir/bad_nssdb
+cat > ca << EOF
+id=SelfSign
+ca_type=INTERNAL:SELF
+EOF
+cat > entry_nss << EOF
+id=Test
+ca_name=SelfSign
+state=NEED_TO_READ_CERT
+key_storage_type=FILE
+key_storage_location=$tmpdir/keyfile
+cert_storage_type=NSSDB
+cert_storage_location=$tmpdir/bad_nssdb
+cert_nickname=testcert
+notification_method=STDOUT
+EOF
+# NSS: NSS_InitContext() fails when the database directory contains no db files.
+$toolsdir/iterate ca entry_nss NEED_TO_READ_CERT,READING_CERT
+if test "`grep ^state entry_nss`" != state=NEED_GUIDANCE ; then
+	echo Certread failure test: unexpected state.
+	grep ^state entry_nss
+	exit 1
+fi
+
+echo
+echo '[Certread failure: OpenSSL/file missing cert.]'
+cat > ca << EOF
+id=SelfSign
+ca_type=INTERNAL:SELF
+EOF
+cat > entry_file << EOF
+id=Test
+ca_name=SelfSign
+state=NEED_TO_READ_CERT
+key_storage_type=FILE
+key_storage_location=$tmpdir/keyfile
+cert_storage_type=FILE
+cert_storage_location=$tmpdir/nonexistent_cert.pem
+notification_method=STDOUT
+EOF
+# OpenSSL/file: cert file does not exist, certread-o exits with CM_SUB_STATUS_INTERNAL_ERROR.
+$toolsdir/iterate ca entry_file NEED_TO_READ_CERT,READING_CERT
+if test "`grep ^state entry_file`" != state=NEED_GUIDANCE ; then
+	echo Certread OpenSSL failure test: unexpected state.
+	grep ^state entry_file
+	exit 1
+fi
+
 echo
 echo Test complete.

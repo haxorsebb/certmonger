@@ -22,6 +22,8 @@ struct cm_certread_state_pvt {
 	/* Check if something changed, for example we finished reading the
 	 * cert. */
 	int (*ready)(struct cm_certread_state *state);
+	/* Check if we successfully read the cert. */
+	int (*finished_reading)(struct cm_certread_state *state);
 	/* Get a selectable-for-read descriptor we can poll for status changes.
 	 * */
 	int (*get_fd)(struct cm_certread_state *state);

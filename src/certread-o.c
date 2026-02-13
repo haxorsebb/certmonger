@@ -108,7 +108,7 @@ cm_certread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 	}
 	fclose(fp);
-	_exit(0);
+	_exit(status);
 }
 
 /* Check if something changed, for example we finished reading the data we need
@@ -117,6 +117,18 @@ static int
 cm_certread_o_ready(struct cm_certread_state *state)
 {
 	return cm_subproc_ready(state->subproc);
+}
+
+/* Check if we were able to successfully read the certificate. */
+static int
+cm_certread_o_finished_reading(struct cm_certread_state *state)
+{
+	int status;
+	status = cm_subproc_get_exitstatus(state->subproc);
+	if (WIFEXITED(status) && (WEXITSTATUS(status) == 0)) {
+		return 0;
+	}
+	return -1;
 }
 
 /* Get a selectable-for-read descriptor we can poll for status changes. */
@@ -153,6 +165,7 @@ cm_certread_o_start(struct cm_store_entry *entry)
 	if (state != NULL) {
 		memset(state, 0, sizeof(*state));
 		state->pvt.ready = cm_certread_o_ready;
+		state->pvt.finished_reading = cm_certread_o_finished_reading;
 		state->pvt.get_fd= cm_certread_o_get_fd;
 		state->pvt.done= cm_certread_o_done;
 		state->entry = entry;

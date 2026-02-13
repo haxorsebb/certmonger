@@ -69,6 +69,16 @@ cm_certread_ready(struct cm_certread_state *state)
 	return pvt->ready(state);
 }
 
+/* Check if we finished reading the certificate. */
+int
+cm_certread_finished_reading(struct cm_certread_state *state)
+{
+	struct cm_certread_state_pvt *pvt;
+
+	pvt = (struct cm_certread_state_pvt *) state;
+	return pvt->finished_reading(state);
+}
+
 /* Get a selectable-for-read descriptor we can poll for status changes. */
 int
 cm_certread_get_fd(struct cm_certread_state *state)

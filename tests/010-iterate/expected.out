@@ -1214,4 +1214,18 @@ The sky is falling: Certificate in file "$tmpdir/certfile10" issued by CA and sa
 Request ID: Test
 Notification type: issued_and_saved
 
+[Certread failure: NSS init failure.]
+NEED_TO_READ_CERT
+-START-
+READING_CERT
+NEED_GUIDANCE
+-STOP-
+
+[Certread failure: OpenSSL/file missing cert.]
+NEED_TO_READ_CERT
+-START-
+READING_CERT
+NEED_GUIDANCE
+-STOP-
+
 Test complete.

@@ -1308,34 +1308,42 @@ cm_iterate_entry(struct cm_store_entry *entry, struct cm_store_ca *ca,
 
 	case CM_READING_CERT:
 		if (cm_certread_ready(state->cm_certread_state) == 0) {
-			/* Finished reloading certificate. */
-			cm_certread_done(state->cm_certread_state);
-			state->cm_certread_state = NULL;
-			if (emit_entry_saved_cert != NULL) {
-				(*emit_entry_saved_cert)(context, entry);
-			}
-			/* Start the post-save hoook, if there is one. */
-			state->cm_hook_state = cm_hook_start_postsave(entry,
-								      context,
-								      get_ca_by_index,
-								      get_n_cas,
-								      get_entry_by_index,
-								      get_n_entries);
-			if (state->cm_hook_state != NULL) {
-				/* Note that we're doing the post-save. */
-				entry->cm_state = CM_POST_SAVED_CERT;
-				/* Wait for status update, or poll. */
-				*readfd = cm_hook_get_fd(state->cm_hook_state);
-				if (*readfd == -1) {
-					*when = cm_time_soon;
-				} else {
-					*when = cm_time_no_time;
-				}
-			} else {
-				/* Failed to start the post-save, or nothing to do;
-				 * skip it. */
-				entry->cm_state = CM_NEED_TO_NOTIFY_ISSUED_SAVED;
+			if (cm_certread_finished_reading(state->cm_certread_state) != 0) {
+				/* Certread subprocess failed. */
+				cm_certread_done(state->cm_certread_state);
+				state->cm_certread_state = NULL;
+				entry->cm_state = CM_NEED_GUIDANCE;
 				*when = cm_time_now;
+			} else {
+				/* Finished reloading certificate. */
+				cm_certread_done(state->cm_certread_state);
+				state->cm_certread_state = NULL;
+				if (emit_entry_saved_cert != NULL) {
+					(*emit_entry_saved_cert)(context, entry);
+				}
+				/* Start the post-save hoook, if there is one. */
+				state->cm_hook_state = cm_hook_start_postsave(entry,
+									      context,
+									      get_ca_by_index,
+									      get_n_cas,
+									      get_entry_by_index,
+									      get_n_entries);
+				if (state->cm_hook_state != NULL) {
+					/* Note that we're doing the post-save. */
+					entry->cm_state = CM_POST_SAVED_CERT;
+					/* Wait for status update, or poll. */
+					*readfd = cm_hook_get_fd(state->cm_hook_state);
+					if (*readfd == -1) {
+						*when = cm_time_soon;
+					} else {
+						*when = cm_time_no_time;
+					}
+				} else {
+					/* Failed to start the post-save, or nothing to do;
+					 * skip it. */
+					entry->cm_state = CM_NEED_TO_NOTIFY_ISSUED_SAVED;
+					*when = cm_time_now;
+				}
 			}
 		} else {
 			/* Wait for status update, or poll. */
