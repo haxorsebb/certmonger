@@ -1,3 +1,4 @@
 # certmonger uses libraries which may want to put temporary files in $TMPDIR,
 # but SELinux policy won't let anything running as certmonger_t do that
 d @CM_TMPDIR@ 0755 root root
+d @CM_STORE_LOCAL_STATE_DIR@ 0755 root root

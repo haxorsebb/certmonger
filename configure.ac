@@ -56,6 +56,8 @@ mylocalstatedir="$localstatedir/lib/${PACKAGE_NAME}")
 mylocalstatedir=`eval echo $mylocalstatedir | sed "s,NONE,$prefix,g"`
 mylocalstatedir=`eval echo $mylocalstatedir | sed "s,NONE,$ac_default_prefix,g"`
 mylocalstatedir=`eval echo $mylocalstatedir | sed "s,NONE,,g"`
+CM_STORE_LOCAL_STATE_DIR="$mylocalstatedir"
+AC_SUBST(CM_STORE_LOCAL_STATE_DIR)
 
 CM_STORE_SYSTEM_LOCK_FILE="$mylocalstatedir/lock"
 CM_STORE_SYSTEM_LOCK_FILE_ENV="${UPCASE_PACKAGE_NAME}_SYSTEM_LOCK_FILE"
