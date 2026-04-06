@@ -1,7 +1,13 @@
 OK (ML-DSA-44:10496).
 OK (ML-DSA-44:10496).
+crosscheck ML-DSA-44 key_pubkey: NSS == OpenSSL (FILE)
+crosscheck ML-DSA-44 key_pubkey_info: NSS == OpenSSL (FILE)
 OK (ML-DSA-65:15616).
 OK (ML-DSA-65:15616).
+crosscheck ML-DSA-65 key_pubkey: NSS == OpenSSL (FILE)
+crosscheck ML-DSA-65 key_pubkey_info: NSS == OpenSSL (FILE)
 OK (ML-DSA-87:20736).
 OK (ML-DSA-87:20736).
+crosscheck ML-DSA-87 key_pubkey: NSS == OpenSSL (FILE)
+crosscheck ML-DSA-87 key_pubkey_info: NSS == OpenSSL (FILE)
 Test complete.

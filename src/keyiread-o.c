@@ -32,18 +32,8 @@
 #include <pk11pub.h>
 
 #include <openssl/err.h>
+#include <openssl/evp.h>
 #include <openssl/pem.h>
-
-/************************
- * FIXME: these definitions aren't public in openssl? wrong algos?
-************************/
-#define NID_ML_DSA_44          1457
-#define NID_ML_DSA_65          1458
-#define NID_ML_DSA_87          1459
-
-# define EVP_PKEY_ML_DSA_44           NID_ML_DSA_44
-# define EVP_PKEY_ML_DSA_65           NID_ML_DSA_65
-# define EVP_PKEY_ML_DSA_87           NID_ML_DSA_87
 
 #include <talloc.h>
 
@@ -163,8 +153,6 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		pubkey = "";
 		pubikey = "";
 		if (pkey != NULL) {
-			char *n = EVP_PKEY_get0_type_name(pkey);
-
 			switch (util_EVP_PKEY_base_id(pkey)) {
 			case EVP_PKEY_RSA:
 				cm_log(3, "Key is an RSA key.\n");
@@ -182,25 +170,25 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				alg = "EC";
 				break;
 #endif
+			default:
 #ifdef CM_ENABLE_ML_DSA
-			case 0:  /* no key type base */
 				char *name = EVP_PKEY_get0_type_name(pkey);
-				cm_log(3, "Key is a %s key.\n", name);
+				cm_log(3, "Key is a %s key.\n",
+				       (name != NULL) ? name : "(unknown)");
 
-				if (strcasecmp(name, "ML-DSA-44") == 0) {
+				if (EVP_PKEY_is_a(pkey, "ML-DSA-44")) {
 					alg = "ML-DSA-44";
 					break;
 				} else
-				if (strcasecmp(name, "ML-DSA-65") == 0) {
+				if (EVP_PKEY_is_a(pkey, "ML-DSA-65")) {
 					alg = "ML-DSA-65";
 					break;
 				} else
-				if (strcasecmp(name, "ML-DSA-87") == 0) {
+				if (EVP_PKEY_is_a(pkey, "ML-DSA-87")) {
 					alg = "ML-DSA-87";
 					break;
 				}
 #endif
-			default:
 				cm_log(3, "Key is for an unknown algorithm.\n");
 				alg = "";
 				break;
@@ -213,12 +201,19 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				pubikey = cm_store_hex_from_bin(NULL, tmp, length);
 			}
 			tmp = NULL;
-			length = i2d_PublicKey(pkey, NULL);
+			length = util_i2d_PublicKey(pkey, NULL);
 			if (length > 0) {
 				tmp = malloc(length);
 				if (tmp != NULL) {
-					length = i2d_PublicKey(pkey, (unsigned char **) &tmp);
-					pubkey = cm_store_hex_from_bin(NULL, tmp, length);
+					/* keep a pointer to the start of the buffer otherwise
+					 * after util_i2d_Public_key() is called then pointer is
+					 * at the end of the buffer and store_next_from_bin will
+					 * read beyond its buffer and at best output garbage.
+					 */
+					unsigned char *q = tmp;
+
+					length = util_i2d_PublicKey(pkey, &q);
+					pubkey = cm_store_hex_from_bin(NULL, tmp, q - tmp);
 				}
 			}
 		} else {
@@ -243,24 +238,21 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				alg = "EC";
 				break;
 #endif
+			default:
 #ifdef CM_ENABLE_ML_DSA
-			case 0:  /* no key type base */
-				char *name = EVP_PKEY_get0_type_name(pkey);
-
-				if (strcasecmp(name, "ML-DSA-44") == 0) {
+				if (EVP_PKEY_is_a(pkey, "ML-DSA-44")) {
 					alg = "ML-DSA-44";
 					break;
 				} else
-				if (strcasecmp(name, "ML-DSA-65") == 0) {
+				if (EVP_PKEY_is_a(pkey, "ML-DSA-65")) {
 					alg = "ML-DSA-65";
 					break;
 				} else
-				if (strcasecmp(name, "ML-DSA-87") == 0) {
+				if (EVP_PKEY_is_a(pkey, "ML-DSA-87")) {
 					alg = "ML-DSA-87";
 					break;
 				}
 #endif
-			default:
 				cm_log(3, "Next key is for an unknown algorithm.\n");
 				alg = "";
 				break;
@@ -273,12 +265,19 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 				pubikey = cm_store_hex_from_bin(NULL, tmp, length);
 			}
 			tmp = NULL;
-			length = i2d_PublicKey(nextpkey, NULL);
+			length = util_i2d_PublicKey(nextpkey, NULL);
 			if (length > 0) {
 				tmp = malloc(length);
 				if (tmp != NULL) {
-					length = i2d_PublicKey(nextpkey, (unsigned char **) &tmp);
-					pubkey = cm_store_hex_from_bin(NULL, tmp, length);
+					/* keep a pointer to the start of the buffer otherwise
+					 * after util_i2d_Public_key() is called then pointer is
+					 * at the end of the buffer and store_next_from_bin will
+					 * read beyond its buffer and at best output garbage.
+					 */
+					unsigned char *q = tmp;
+
+					length = util_i2d_PublicKey(nextpkey, &q);
+					pubkey = cm_store_hex_from_bin(NULL, tmp, q - tmp);
 				}
 			}
 			fprintf(fp, "%s/%d/%s/%s\n", alg, bits, pubikey, pubkey);

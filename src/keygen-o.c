@@ -431,12 +431,12 @@ retry_gen:
 		}
 	}
 	pubhex = "";
-	len = i2d_PublicKey(pkey, NULL);
+	len = util_i2d_PublicKey(pkey, NULL);
 	if (len > 0) {
 		p = malloc(len);
 		if (p != NULL) {
 			q = p;
-			if (i2d_PublicKey(pkey, &q) == len) {
+			if (util_i2d_PublicKey(pkey, &q) == len) {
 				pubhex = cm_store_hex_from_bin(NULL, p, q - p);
 			}
 			free(p);
