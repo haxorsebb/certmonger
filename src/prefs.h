@@ -46,6 +46,7 @@ enum cm_cert_storage_type;
 
 enum cm_key_algorithm cm_prefs_preferred_key_algorithm(void);
 int cm_prefs_preferred_rsa_key_size(void);
+int cm_prefs_default_key_gen_size(enum cm_key_algorithm gen_algorithm);
 enum cm_prefs_cipher cm_prefs_preferred_cipher(void);
 enum cm_prefs_digest cm_prefs_preferred_digest(void);
 int cm_prefs_notify_ttls(const time_t **ttls, unsigned int *n_ttls);

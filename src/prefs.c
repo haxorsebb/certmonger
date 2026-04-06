@@ -551,6 +551,34 @@ cm_prefs_preferred_rsa_key_size(void)
 	return size;
 }
 
+int
+cm_prefs_default_key_gen_size(enum cm_key_algorithm gen_algorithm)
+{
+	switch (gen_algorithm) {
+	case cm_key_rsa:
+		return cm_prefs_preferred_rsa_key_size();
+#ifdef CM_ENABLE_DSA
+	case cm_key_dsa:
+		return CM_MINIMUM_DSA_KEY_SIZE;
+#endif
+#ifdef CM_ENABLE_EC
+	case cm_key_ecdsa:
+		return CM_MINIMUM_EC_KEY_SIZE;
+#endif
+#ifdef CM_ENABLE_ML_DSA
+	case cm_key_ml_dsa_44:
+		return 10496;
+	case cm_key_ml_dsa_65:
+		return 15616;
+	case cm_key_ml_dsa_87:
+		return 20736;
+#endif
+	case cm_key_unspecified:
+	default:
+		return cm_prefs_preferred_rsa_key_size();
+	}
+}
+
 const char *
 cm_prefs_nss_ca_trust(void)
 {
