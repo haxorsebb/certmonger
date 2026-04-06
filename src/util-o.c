@@ -33,6 +33,7 @@
 #include <dbus/dbus.h>
 
 #include <openssl/bn.h>
+#include <openssl/core_names.h>
 #include <openssl/evp.h>
 #include <openssl/ssl.h>
 #include <openssl/x509.h>
@@ -590,6 +591,32 @@ util_EVP_PKEY_dup(EVP_PKEY *pkey,
 EVP_PKEY *
 util_public_EVP_PKEY_dup(EVP_PKEY *pkey)
 {
+#ifdef CM_ENABLE_ML_DSA
+	if (EVP_PKEY_is_a(pkey, "ML-DSA-44") ||
+	    EVP_PKEY_is_a(pkey, "ML-DSA-65") ||
+	    EVP_PKEY_is_a(pkey, "ML-DSA-87")) {
+		long len;
+		unsigned char *buf, *q;
+		const unsigned char *cp;
+		EVP_PKEY *out;
+
+		len = i2d_PUBKEY(pkey, NULL);
+		if (len <= 0)
+			return NULL;
+		buf = malloc(len);
+		if (buf == NULL)
+			return NULL;
+		q = buf;
+		if (i2d_PUBKEY(pkey, &q) != len) {
+			free(buf);
+			return NULL;
+		}
+		cp = buf;
+		out = d2i_PUBKEY(NULL, &cp, len);
+		free(buf);
+		return out;
+	}
+#endif
 	return util_EVP_PKEY_dup(pkey, i2d_PublicKey, d2i_PublicKey);
 }
 
@@ -741,4 +768,101 @@ done:
 	free(tmp2);
 
 	return ret;
+}
+
+/*
+ * Return a raw ML-DSA public key to match the type of value returned by
+ * i2d_PublicKey() for classic algorithms.  The OpenSSL i2d_PublicKey()
+ * does not support ML-DSA. It needs to be extracted in a different way.
+ *
+ * Returns encoded length, or -1 on error.
+ */
+#ifdef CM_ENABLE_ML_DSA
+int
+i2d_MLDSA_PublicKey(const EVP_PKEY *pkey, unsigned char **pp)
+{
+	const char *const types[3] = { "ML-DSA-44", "ML-DSA-65", "ML-DSA-87" };
+	const int pk_lens[3] = { 1312, 1952, 2592 };
+	int i, pk_len;
+	size_t pub_len;
+
+	if (pkey == NULL)
+		return -1;
+
+	for (i = 0; i < 3; i++) {
+		if (EVP_PKEY_is_a(pkey, types[i]))
+			break;
+	}
+	if (i >= 3) {
+		cm_log(1, "i2d_MLDSA_PublicKey: This is not an ML-DSA key\n");
+		return -1;
+	}
+	pk_len = pk_lens[i];
+
+	if (pp == NULL) {
+		pub_len = 0;
+		if (!EVP_PKEY_get_octet_string_param(pkey, OSSL_PKEY_PARAM_PUB_KEY,
+						     NULL, 0, &pub_len))
+			return -1;
+		if (pub_len != (size_t)pk_len) {
+			cm_log(1, "i2d_MLDSA_PublicKey: The public key length is %ld, expected %d.\n",
+				   pub_len, pk_len);
+			return -1;
+		}
+		return pk_len;
+	}
+
+	if (*pp == NULL) {
+		*pp = malloc((size_t)pk_len);
+		if (*pp == NULL) {
+			cm_log(1, "i2d_MLDSA_PublicKey: malloc() failed.\n");
+			return -1;
+		}
+		pub_len = (size_t)pk_len;
+		if (!EVP_PKEY_get_octet_string_param(pkey, OSSL_PKEY_PARAM_PUB_KEY,
+						     *pp, (size_t)pk_len,
+						     &pub_len)) {
+			free(*pp);
+			*pp = NULL;
+			cm_log(1, "i2d_MLDSA_PublicKey: EVP_PKEY_get_octet_string_param() failed.\n");
+			return -1;
+		}
+		if (pub_len != (size_t)pk_len) {
+			cm_log(1, "i2d_MLDSA_PublicKey: EVP_PKEY_get_octet_string_param() failed after malloc.\n");
+			free(*pp);
+			*pp = NULL;
+			return -1;
+		}
+		return pk_len;
+	}
+
+	/* The buffer is pre-allocated */
+	pub_len = (size_t)pk_len;
+	if (!EVP_PKEY_get_octet_string_param(pkey, OSSL_PKEY_PARAM_PUB_KEY,
+					     *pp, (size_t)pk_len, &pub_len)) {
+			cm_log(1, "i2d_MLDSA_PublicKey: EVP_PKEY_get_octet_string_param() failed.\n");
+		return -1;
+	}
+	if (pub_len != (size_t)pk_len) {
+		cm_log(1, "i2d_MLDSA_PublicKey: The public key length is %ld, expected %d.\n",
+			   pub_len, pk_len);
+		return -1;
+	}
+	*pp += pk_len;
+	return pk_len;
+}
+#endif
+
+int
+util_i2d_PublicKey(const EVP_PKEY *pkey, unsigned char **pp)
+{
+	if (pkey == NULL)
+		return -1;
+#ifdef CM_ENABLE_ML_DSA
+	if (EVP_PKEY_is_a(pkey, "ML-DSA-44") ||
+	    EVP_PKEY_is_a(pkey, "ML-DSA-65") ||
+	    EVP_PKEY_is_a(pkey, "ML-DSA-87"))
+		return i2d_MLDSA_PublicKey(pkey, pp);
+#endif
+	return i2d_PublicKey(pkey, pp);
 }

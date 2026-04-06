@@ -78,5 +78,6 @@ void util_NETSCAPE_SPKI_set_sig_alg(NETSCAPE_SPKI *spki, const X509_ALGOR *sig_a
 EVP_PKEY *util_public_EVP_PKEY_dup(EVP_PKEY *pkey);
 EVP_PKEY *util_private_EVP_PKEY_dup(EVP_PKEY *pkey);
 int validate_pem(void *parent, const char *path);
+int util_i2d_PublicKey(const EVP_PKEY *pkey, unsigned char **pp);
 
 #endif
