@@ -599,19 +599,16 @@ retry_gen:
 	case cm_key_ml_dsa_44:
 		memset(&ml_params, 0, sizeof(ml_params));
 		ml_params = CKP_ML_DSA_44;
-		cm_log(0, "params set to 44\n");
 		params = &ml_params;
 		break;
 	case cm_key_ml_dsa_65:
 		memset(&ml_params, 0, sizeof(ml_params));
 		ml_params = CKP_ML_DSA_65;
-		cm_log(0, "params set to 65\n");
 		params = &ml_params;
 		break;
 	case cm_key_ml_dsa_87:
 		memset(&ml_params, 0, sizeof(ml_params));
 		ml_params = CKP_ML_DSA_87;
-		cm_log(0, "params set to 87\n");
 		params = &ml_params;
 		break;
 #endif

@@ -320,9 +320,6 @@ retry_gen:
 		break;
 	}
 
-	char *n = EVP_PKEY_get0_type_name(pkey);
-	cm_log(1, "debug: generated type %s for %d\n", n, cm_key_algorithm);
-
 	filename = strdup(entry->cm_key_storage_location);
 	marker = "";
 	keyfd = open(filename, O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
