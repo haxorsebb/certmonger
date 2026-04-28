@@ -58,6 +58,33 @@
 #include "subproc.h"
 #include "util-o.h"
 
+/*
+ * Return the digest (or ML-DSA signature pseudo-digest to be used
+ * in X509_sign/X509_REQ_sign calls using this private key (pkey).
+ *
+ * Returns NULL if ML-DSA digest names are not registered. It is
+ * valid in OpenSSL to pass in NULL for pure ML-DSA.
+ */
+const EVP_MD *
+get_digest_for_pkey(const EVP_PKEY *pkey)
+{
+	if (pkey == NULL) {
+		return cm_prefs_ossl_hash();
+	}
+#ifdef CM_ENABLE_ML_DSA
+	if (EVP_PKEY_is_a(pkey, "ML-DSA-44")) {
+		return NULL;
+	}
+	if (EVP_PKEY_is_a(pkey, "ML-DSA-65")) {
+		return NULL;
+	}
+	if (EVP_PKEY_is_a(pkey, "ML-DSA-87")) {
+		return NULL;
+	}
+#endif
+	return cm_prefs_ossl_hash();
+}
+
 static void
 cm_submit_o_set_things(X509 **cert, X509 *signer, unsigned char uuid[16], unsigned int uuid_len,
 		       STACK_OF(X509_EXTENSION) *extensions)
@@ -258,7 +285,7 @@ cm_submit_o_sign(void *parent, char *csr,
 				}
 #endif
 				/* Add a signature so that it looks right...ish. */
-				X509_sign(*cert, signer_key, cm_prefs_ossl_hash());
+				X509_sign(*cert, signer_key, get_digest_for_pkey(signer_key));
 				/* Add extensions and possibly add deprecated UUIDs. */
 				cm_submit_o_set_things(cert, signer, uuid, uuid_len,
 						       X509_REQ_get_extensions(req));
@@ -291,7 +318,7 @@ cm_submit_o_sign(void *parent, char *csr,
 				}
 				/* finish up */
 				if (signer_key != NULL) {
-					X509_sign(*cert, signer_key, cm_prefs_ossl_hash());
+					X509_sign(*cert, signer_key, get_digest_for_pkey(signer_key));
 					status = CM_SUBMIT_STATUS_ISSUED;
 				} else {
 					status = CM_SUBMIT_STATUS_UNREACHABLE;
