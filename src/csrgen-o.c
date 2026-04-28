@@ -138,6 +138,52 @@ astring_type_app_choose(const char *attr, const char *p, ssize_t n)
 	return type;
 }
 
+/* cm_key_algorithm may be unspecified for a newly requested key, even if
+ * the key has been generated.
+ *
+ * Use the entry key type to determine the signing algorithm if present,
+ * otherwise use the private key to determine the algorithm.
+ *
+ */
+static enum cm_key_algorithm
+get_signing_algorithm(const struct cm_store_entry *entry, const EVP_PKEY *pkey)
+{
+	enum cm_key_algorithm alg;
+
+	if (pkey == NULL) {
+		alg = entry->cm_key_type.cm_key_algorithm;
+		if (alg == cm_key_unspecified) {
+			alg = entry->cm_key_type.cm_key_gen_algorithm;
+		}
+		return alg;
+	}
+#ifdef CM_ENABLE_ML_DSA
+	if (EVP_PKEY_is_a(pkey, "ML-DSA-44")) {
+		return cm_key_ml_dsa_44;
+	}
+	if (EVP_PKEY_is_a(pkey, "ML-DSA-65")) {
+		return cm_key_ml_dsa_65;
+	}
+	if (EVP_PKEY_is_a(pkey, "ML-DSA-87")) {
+		return cm_key_ml_dsa_87;
+	}
+#endif
+	if (EVP_PKEY_is_a(pkey, "RSA")) {
+		return cm_key_rsa;
+	}
+#ifdef CM_ENABLE_DSA
+	if (EVP_PKEY_is_a(pkey, "DSA")) {
+		return cm_key_dsa;
+	}
+#endif
+#ifdef CM_ENABLE_EC
+	if (EVP_PKEY_is_a(pkey, "EC")) {
+		return cm_key_ecdsa;
+	}
+#endif
+	return cm_key_unspecified;
+}
+
 static X509_NAME *
 ldap_dn_to_X509_NAME(char *s) {
 	LDAPDN dn = NULL;
@@ -249,7 +295,7 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 	unsigned int bmpcount, mdlen;
 	long error;
 	int i;
-	const EVP_MD *sign_md = cm_prefs_ossl_sig_alg(entry->cm_key_type.cm_key_algorithm);
+	const EVP_MD *sign_md;
 
 	status = fdopen(fd, "w");
 	if (status == NULL) {
@@ -321,6 +367,9 @@ cm_csrgen_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 		}
 	}
 	if (pkey != NULL) {
+		enum cm_key_algorithm sign_alg = get_signing_algorithm(entry, pkey);
+		sign_md = cm_prefs_ossl_sig_alg(sign_alg);
+
 		req = X509_REQ_new();
 		if (req != NULL) {
 			subject = NULL;
