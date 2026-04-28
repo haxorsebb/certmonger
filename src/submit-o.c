@@ -59,11 +59,12 @@
 #include "util-o.h"
 
 /*
- * Return the digest (or ML-DSA signature pseudo-digest to be used
- * in X509_sign/X509_REQ_sign calls using this private key (pkey).
  *
- * Returns NULL if ML-DSA digest names are not registered. It is
- * valid in OpenSSL to pass in NULL for pure ML-DSA.
+ * This returns the signature digest, or ML-DSA pseudo digest,
+ * to be used in X509_sign/X509_REQ_sign calls.
+ *
+ * It is valid in OpenSSL to pass in NULL for pure ML-DSA when
+ * signing.
  */
 const EVP_MD *
 get_digest_for_pkey(const EVP_PKEY *pkey)

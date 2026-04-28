@@ -36,6 +36,8 @@ CLEANFILES = \
 	004-selfsign-ec/actual.err \
 	004-selfsign-rsa/actual.out \
 	004-selfsign-rsa/actual.err \
+	004-selfsign-mldsa/actual.out \
+	004-selfsign-mldsa/actual.err \
 	005-dbusm/actual.out \
 	005-dbusm/actual.err \
 	006-serial/actual.out \
@@ -175,7 +177,7 @@ EXTRA_DIST = \
 	002-keygen-ec/expected.out.3 \
 	002-keygen-ec/expected.out.4 \
 	002-keygen-mldsa/prequal.sh \
-	002-keygen-mldsa/run.som \
+	002-keygen-mldsa/run.sh \
 	002-keygen-mldsa/expected.out \
 	003-csrgen/run.sh \
 	003-csrgen/expected.out \
@@ -191,6 +193,8 @@ EXTRA_DIST = \
 	004-selfsign-rsa/expected.out \
 	004-selfsign-ec/run.sh \
 	004-selfsign-ec/expected.out \
+	004-selfsign-mldsa/run.sh \
+	004-selfsign-mldsa/expected.out \
 	005-dbusm/run.sh \
 	005-dbusm/expected.out \
 	006-serial/run.sh \
@@ -475,6 +479,7 @@ subdirs += \
 	001-keyiread-mldsa \
 	002-keygen-mldsa \
 	003-csrgen-mldsa
+	004-selfsign-mldsa
 endif
 
 check: all
