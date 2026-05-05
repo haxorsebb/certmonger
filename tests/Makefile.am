@@ -155,6 +155,7 @@ EXTRA_DIST = \
 	001-keyiread-ec/expected.out.2 \
 	001-keyiread-ec/expected.out.3 \
 	001-keyiread-ec/expected.out.4 \
+	001-keyiread-mldsa/prequal.sh \
 	001-keyiread-mldsa/run.sh \
 	001-keyiread-mldsa/expected.out \
 	002-keygen/prequal.sh \
@@ -185,6 +186,7 @@ EXTRA_DIST = \
 	003-csrgen-rsa/expected.out \
 	003-csrgen-ec/run.sh \
 	003-csrgen-ec/expected.out \
+	003-csrgen-mldsa/prequal.sh \
 	003-csrgen-mldsa/run.sh \
 	003-csrgen-mldsa/expected.out \
 	004-selfsign/run.sh \
@@ -193,6 +195,7 @@ EXTRA_DIST = \
 	004-selfsign-rsa/expected.out \
 	004-selfsign-ec/run.sh \
 	004-selfsign-ec/expected.out \
+	004-selfsign/prequal.sh \
 	004-selfsign-mldsa/run.sh \
 	004-selfsign-mldsa/expected.out \
 	005-dbusm/run.sh \
