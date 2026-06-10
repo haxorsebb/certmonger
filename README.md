@@ -43,4 +43,4 @@ And perhaps also:
 
   * KMIP-compatible systems
 
-This package is hosted at https://pagure.io/certmonger/.
+This package is hosted at https://codeberg.org/freeipa/certmonger.

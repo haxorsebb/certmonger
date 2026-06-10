@@ -1707,7 +1707,7 @@ cm_certext_build_csr_extensions(struct cm_store_entry *entry,
 	SECOidData *oid;
 	SECItem *item, encoded;
 	/* X509v3 extension's critical element has an implicit default,
-	 * see https://pagure.io/certmonger/issue/223
+	 * see https://codeberg.org/freeipa/certmonger/issues/223
 	 */
 	SECItem der_false = {
 		.len = 0,
