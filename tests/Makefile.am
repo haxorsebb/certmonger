@@ -118,6 +118,8 @@ CLEANFILES = \
 	029-canonize/actual.err \
 	030-rekey/actual.out \
 	030-rekey/actual.err \
+	030-rekey-mldsa/actual.out \
+	030-rekey-mldsa/actual.err \
 	031-pkcs7/actual.out \
 	031-pkcs7/actual.err \
 	032-chain/actual.out \
@@ -329,6 +331,10 @@ EXTRA_DIST = \
 	029-canonize/run.sh \
 	030-rekey/expected.out \
 	030-rekey/run.sh \
+	030-rekey/rekey-body.sh \
+	030-rekey-mldsa/expected.out \
+	030-rekey-mldsa/prequal.sh \
+	030-rekey-mldsa/run.sh \
 	031-pkcs7/prequal.sh \
 	031-pkcs7/expected.out \
 	031-pkcs7/run.sh \
@@ -481,8 +487,9 @@ if HAVE_ML_DSA
 subdirs += \
 	001-keyiread-mldsa \
 	002-keygen-mldsa \
-	003-csrgen-mldsa
-	004-selfsign-mldsa
+	003-csrgen-mldsa \
+	004-selfsign-mldsa \
+	030-rekey-mldsa
 endif
 
 check: all

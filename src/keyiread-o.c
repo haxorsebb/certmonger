@@ -240,15 +240,15 @@ cm_keyiread_o_main(int fd, struct cm_store_ca *ca, struct cm_store_entry *entry,
 #endif
 			default:
 #ifdef CM_ENABLE_ML_DSA
-				if (EVP_PKEY_is_a(pkey, "ML-DSA-44")) {
+				if (EVP_PKEY_is_a(nextpkey, "ML-DSA-44")) {
 					alg = "ML-DSA-44";
 					break;
 				} else
-				if (EVP_PKEY_is_a(pkey, "ML-DSA-65")) {
+				if (EVP_PKEY_is_a(nextpkey, "ML-DSA-65")) {
 					alg = "ML-DSA-65";
 					break;
 				} else
-				if (EVP_PKEY_is_a(pkey, "ML-DSA-87")) {
+				if (EVP_PKEY_is_a(nextpkey, "ML-DSA-87")) {
 					alg = "ML-DSA-87";
 					break;
 				}

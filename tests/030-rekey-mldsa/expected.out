@@ -1,0 +1,333 @@
+[ Begin pass (preserve=1,pin=""). ]
+(prep NSS)
+key_issued_count=0
+key_requested_count=0
+(submit NSS)
+key_issued_count=0
+key_requested_count=1
+(prep OpenSSL)
+key_issued_count=0
+key_requested_count=0
+(submit OpenSSL)
+key_issued_count=0
+key_requested_count=1
+NSS keys before re-keygen (preserve=1,pin=""):
+<-> mldsa    originalhex   NSS Certificate DB:imldsa44
+key_issued_count=0
+key_requested_count=1
+OK.
+NSS keys after re-keygen (preserve=1,pin=""):
+<-> mldsa    hexhexhexhexhex   imldsa44 (candidate (next))
+<-> mldsa    originalhex   NSS Certificate DB:imldsa44
+OK (ML-DSA-65:15616 after ML-DSA-44:10496).
+key_next_type=ML-DSA-65
+key_next_size=15616
+key_issued_count=0
+key_next_requested_count=0
+key_requested_count=1
+(submit NSS)
+key_issued_count=0
+key_next_requested_count=1
+key_requested_count=1
+NSS certs before saving (preserve=1,pin=""):
+imldsa44                                                     u,u,u
+serial=1234
+NSS keys before saving (preserve=1,pin=""):
+<-> mldsa    hexhexhexhexhex   imldsa44 (candidate (next))
+<-> mldsa    originalhex   NSS Certificate DB:imldsa44
+(NSS signing skipped for ML-DSA in this test)
+(saving)
+key_issued_count=1
+key_requested_count=1
+NSS certs after saving (preserve=1,pin=""):
+imldsa44                                                     u,u,u
+serial=1235
+NSS keys after saving (preserve=1,pin=""):
+<-> mldsa    hexhexhexhexhex   NSS Certificate DB:imldsa44
+<-> mldsa    originalhex   (orphan)
+(NSS signing skipped for ML-DSA in this test)
+PEM keys before re-keygen (preserve=1,pin=""):
+${tmpdir}/keyimldsa44
+key_issued_count=0
+key_requested_count=1
+OK.
+PEM keys after re-keygen (preserve=1,pin=""):
+${tmpdir}/keyimldsa44
+${tmpdir}/keyimldsa44.(next).key
+OK (ML-DSA-65:15616 after ML-DSA-44:10496).
+key_next_type=ML-DSA-65
+key_next_size=15616
+key_issued_count=0
+key_next_requested_count=0
+key_requested_count=1
+(submit OpenSSL)
+key_issued_count=0
+key_next_requested_count=1
+key_requested_count=1
+PEM certs before saving (preserve=1,pin=""):
+${tmpdir}/certimldsa44
+serial=1234
+PEM keys before saving (preserve=1,pin=""):
+${tmpdir}/keyimldsa44
+${tmpdir}/keyimldsa44.(next).key
+(OpenSSL signing skipped for ML-DSA in this test)
+(saving)
+key_issued_count=1
+key_requested_count=1
+PEM certs after saving (preserve=1,pin=""):
+${tmpdir}/certimldsa44
+serial=1235
+PEM keys after saving (preserve=1,pin=""):
+${tmpdir}/keyimldsa44
+${tmpdir}/keyimldsa44.1234.key
+(OpenSSL signing skipped for ML-DSA in this test)
+[ End pass (preserve=1,pin=""). ]
+[ Begin pass (preserve=1,pin="password"). ]
+(prep NSS)
+key_issued_count=0
+key_requested_count=0
+(submit NSS)
+key_issued_count=0
+key_requested_count=1
+(prep OpenSSL)
+key_issued_count=0
+key_requested_count=0
+(submit OpenSSL)
+key_issued_count=0
+key_requested_count=1
+NSS keys before re-keygen (preserve=1,pin="password"):
+<-> mldsa    originalhex   NSS Certificate DB:imldsa44
+key_issued_count=0
+key_requested_count=1
+OK.
+NSS keys after re-keygen (preserve=1,pin="password"):
+<-> mldsa    hexhexhexhexhex   imldsa44 (candidate (next))
+<-> mldsa    originalhex   NSS Certificate DB:imldsa44
+OK (ML-DSA-65:15616 after ML-DSA-44:10496).
+key_next_type=ML-DSA-65
+key_next_size=15616
+key_issued_count=0
+key_next_requested_count=0
+key_requested_count=1
+(submit NSS)
+key_issued_count=0
+key_next_requested_count=1
+key_requested_count=1
+NSS certs before saving (preserve=1,pin="password"):
+imldsa44                                                     u,u,u
+serial=1234
+NSS keys before saving (preserve=1,pin="password"):
+<-> mldsa    hexhexhexhexhex   imldsa44 (candidate (next))
+<-> mldsa    originalhex   NSS Certificate DB:imldsa44
+(NSS signing skipped for ML-DSA in this test)
+(saving)
+key_issued_count=1
+key_requested_count=1
+NSS certs after saving (preserve=1,pin="password"):
+imldsa44                                                     u,u,u
+serial=1235
+NSS keys after saving (preserve=1,pin="password"):
+<-> mldsa    hexhexhexhexhex   NSS Certificate DB:imldsa44
+<-> mldsa    originalhex   (orphan)
+(NSS signing skipped for ML-DSA in this test)
+PEM keys before re-keygen (preserve=1,pin="password"):
+${tmpdir}/keyimldsa44
+key_issued_count=0
+key_requested_count=1
+OK.
+PEM keys after re-keygen (preserve=1,pin="password"):
+${tmpdir}/keyimldsa44
+${tmpdir}/keyimldsa44.(next).key
+OK (ML-DSA-65:15616 after ML-DSA-44:10496).
+key_next_type=ML-DSA-65
+key_next_size=15616
+key_issued_count=0
+key_next_requested_count=0
+key_requested_count=1
+(submit OpenSSL)
+key_issued_count=0
+key_next_requested_count=1
+key_requested_count=1
+PEM certs before saving (preserve=1,pin="password"):
+${tmpdir}/certimldsa44
+serial=1234
+PEM keys before saving (preserve=1,pin="password"):
+${tmpdir}/keyimldsa44
+${tmpdir}/keyimldsa44.(next).key
+(OpenSSL signing skipped for ML-DSA in this test)
+(saving)
+key_issued_count=1
+key_requested_count=1
+PEM certs after saving (preserve=1,pin="password"):
+${tmpdir}/certimldsa44
+serial=1235
+PEM keys after saving (preserve=1,pin="password"):
+${tmpdir}/keyimldsa44
+${tmpdir}/keyimldsa44.1234.key
+(OpenSSL signing skipped for ML-DSA in this test)
+[ End pass (preserve=1,pin="password"). ]
+[ Begin pass (preserve=0,pin=""). ]
+(prep NSS)
+key_issued_count=0
+key_requested_count=0
+(submit NSS)
+key_issued_count=0
+key_requested_count=1
+(prep OpenSSL)
+key_issued_count=0
+key_requested_count=0
+(submit OpenSSL)
+key_issued_count=0
+key_requested_count=1
+NSS keys before re-keygen (preserve=0,pin=""):
+<-> mldsa    originalhex   NSS Certificate DB:imldsa44
+key_issued_count=0
+key_requested_count=1
+OK.
+NSS keys after re-keygen (preserve=0,pin=""):
+<-> mldsa    hexhexhexhexhex   imldsa44 (candidate (next))
+<-> mldsa    originalhex   NSS Certificate DB:imldsa44
+OK (ML-DSA-65:15616 after ML-DSA-44:10496).
+key_next_type=ML-DSA-65
+key_next_size=15616
+key_issued_count=0
+key_next_requested_count=0
+key_requested_count=1
+(submit NSS)
+key_issued_count=0
+key_next_requested_count=1
+key_requested_count=1
+NSS certs before saving (preserve=0,pin=""):
+imldsa44                                                     u,u,u
+serial=1234
+NSS keys before saving (preserve=0,pin=""):
+<-> mldsa    hexhexhexhexhex   imldsa44 (candidate (next))
+<-> mldsa    originalhex   NSS Certificate DB:imldsa44
+(NSS signing skipped for ML-DSA in this test)
+(saving)
+key_issued_count=1
+key_requested_count=1
+NSS certs after saving (preserve=0,pin=""):
+imldsa44                                                     u,u,u
+serial=1235
+NSS keys after saving (preserve=0,pin=""):
+<-> mldsa    hexhexhexhexhex   NSS Certificate DB:imldsa44
+(NSS signing skipped for ML-DSA in this test)
+PEM keys before re-keygen (preserve=0,pin=""):
+${tmpdir}/keyimldsa44
+key_issued_count=0
+key_requested_count=1
+OK.
+PEM keys after re-keygen (preserve=0,pin=""):
+${tmpdir}/keyimldsa44
+${tmpdir}/keyimldsa44.(next).key
+OK (ML-DSA-65:15616 after ML-DSA-44:10496).
+key_next_type=ML-DSA-65
+key_next_size=15616
+key_issued_count=0
+key_next_requested_count=0
+key_requested_count=1
+(submit OpenSSL)
+key_issued_count=0
+key_next_requested_count=1
+key_requested_count=1
+PEM certs before saving (preserve=0,pin=""):
+${tmpdir}/certimldsa44
+serial=1234
+PEM keys before saving (preserve=0,pin=""):
+${tmpdir}/keyimldsa44
+${tmpdir}/keyimldsa44.(next).key
+(OpenSSL signing skipped for ML-DSA in this test)
+(saving)
+key_issued_count=1
+key_requested_count=1
+PEM certs after saving (preserve=0,pin=""):
+${tmpdir}/certimldsa44
+serial=1235
+PEM keys after saving (preserve=0,pin=""):
+${tmpdir}/keyimldsa44
+(OpenSSL signing skipped for ML-DSA in this test)
+[ End pass (preserve=0,pin=""). ]
+[ Begin pass (preserve=0,pin="password"). ]
+(prep NSS)
+key_issued_count=0
+key_requested_count=0
+(submit NSS)
+key_issued_count=0
+key_requested_count=1
+(prep OpenSSL)
+key_issued_count=0
+key_requested_count=0
+(submit OpenSSL)
+key_issued_count=0
+key_requested_count=1
+NSS keys before re-keygen (preserve=0,pin="password"):
+<-> mldsa    originalhex   NSS Certificate DB:imldsa44
+key_issued_count=0
+key_requested_count=1
+OK.
+NSS keys after re-keygen (preserve=0,pin="password"):
+<-> mldsa    hexhexhexhexhex   imldsa44 (candidate (next))
+<-> mldsa    originalhex   NSS Certificate DB:imldsa44
+OK (ML-DSA-65:15616 after ML-DSA-44:10496).
+key_next_type=ML-DSA-65
+key_next_size=15616
+key_issued_count=0
+key_next_requested_count=0
+key_requested_count=1
+(submit NSS)
+key_issued_count=0
+key_next_requested_count=1
+key_requested_count=1
+NSS certs before saving (preserve=0,pin="password"):
+imldsa44                                                     u,u,u
+serial=1234
+NSS keys before saving (preserve=0,pin="password"):
+<-> mldsa    hexhexhexhexhex   imldsa44 (candidate (next))
+<-> mldsa    originalhex   NSS Certificate DB:imldsa44
+(NSS signing skipped for ML-DSA in this test)
+(saving)
+key_issued_count=1
+key_requested_count=1
+NSS certs after saving (preserve=0,pin="password"):
+imldsa44                                                     u,u,u
+serial=1235
+NSS keys after saving (preserve=0,pin="password"):
+<-> mldsa    hexhexhexhexhex   NSS Certificate DB:imldsa44
+(NSS signing skipped for ML-DSA in this test)
+PEM keys before re-keygen (preserve=0,pin="password"):
+${tmpdir}/keyimldsa44
+key_issued_count=0
+key_requested_count=1
+OK.
+PEM keys after re-keygen (preserve=0,pin="password"):
+${tmpdir}/keyimldsa44
+${tmpdir}/keyimldsa44.(next).key
+OK (ML-DSA-65:15616 after ML-DSA-44:10496).
+key_next_type=ML-DSA-65
+key_next_size=15616
+key_issued_count=0
+key_next_requested_count=0
+key_requested_count=1
+(submit OpenSSL)
+key_issued_count=0
+key_next_requested_count=1
+key_requested_count=1
+PEM certs before saving (preserve=0,pin="password"):
+${tmpdir}/certimldsa44
+serial=1234
+PEM keys before saving (preserve=0,pin="password"):
+${tmpdir}/keyimldsa44
+${tmpdir}/keyimldsa44.(next).key
+(OpenSSL signing skipped for ML-DSA in this test)
+(saving)
+key_issued_count=1
+key_requested_count=1
+PEM certs after saving (preserve=0,pin="password"):
+${tmpdir}/certimldsa44
+serial=1235
+PEM keys after saving (preserve=0,pin="password"):
+${tmpdir}/keyimldsa44
+(OpenSSL signing skipped for ML-DSA in this test)
+[ End pass (preserve=0,pin="password"). ]
+Test complete.
