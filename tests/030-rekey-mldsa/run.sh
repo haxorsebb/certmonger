@@ -1,16 +1,13 @@
 #!/bin/bash -e
 #
-# Rekey integration test for all ML-DSA size transitions:
-#   ML-DSA-44 → ML-DSA-65, then ML-DSA-65 → ML-DSA-87.
+# Rekey integration test for ML-DSA size transitions (cross-size and same-size):
+#   44→65, 65→87, 44→44, 65→65, 87→87.
 
 export REKEY_KEY_TYPE=mldsa
 
-export REKEY_ML_DSA_INITIAL=44
-export REKEY_ML_DSA_REKEY=65
-. "$srcdir"/030-rekey/rekey-body.sh
-
-rm -f "$tmpdir"/*.db
-
-export REKEY_ML_DSA_INITIAL=65
-export REKEY_ML_DSA_REKEY=87
-. "$srcdir"/030-rekey/rekey-body.sh
+for pair in 44:65 65:87 44:44 65:65 87:87 ; do
+	export REKEY_ML_DSA_INITIAL=${pair%:*}
+	export REKEY_ML_DSA_REKEY=${pair#*:}
+	. "$srcdir"/030-rekey/rekey-body.sh
+	rm -f "$tmpdir"/*.db
+done
