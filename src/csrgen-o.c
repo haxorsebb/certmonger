@@ -60,10 +60,33 @@ struct cm_csrgen_state {
 	struct cm_subproc_state *subproc;
 };
 
+/* copied from NSS alg1485.c */
+#define IS_PRINTABLE(c)                                                        \
+    ((((c) >= 'a') && ((c) <= 'z')) ||                                         \
+     (((c) >= 'A') && ((c) <= 'Z')) ||                                         \
+     (((c) >= '0') && ((c) <= '9')) ||                                         \
+     ((c) == ' ') ||                                                           \
+     ((c) == '\'') ||                                                          \
+     ((c) == '\050') ||                     /* ( */                            \
+     ((c) == '\051') ||                     /* ) */                            \
+     (((c) >= '+') && ((c) <= '/')) ||      /* + , - . / */                    \
+     ((c) == ':') ||                                                           \
+     ((c) == '=') ||                                                           \
+     ((c) == '?'))
+
+/*
+	Look through the given string.  If there are any chars with 8th bit set,
+	then immediately return MBSTRING_UTF8.  Otherwise, scan through the entire
+	string and look for any non-printable chars.  If found, return V_ASN1_UTF8STRING.
+	Otherwise, return V_ASN1_PRINTABLESTRING.
+
+	NOTE: This is for compatibility with csngen-n.c and NSS.
+*/
 static int
 astring_type(const char *attr, const char *p, ssize_t n)
 {
 	unsigned int i;
+	int type = V_ASN1_PRINTABLESTRING;
 
 	if ((strcasecmp(attr, "CN") != 0) &&
 	    (strcasecmp(attr, "commonName") != 0)) {
@@ -76,8 +99,43 @@ astring_type(const char *attr, const char *p, ssize_t n)
 		if ((p[i] & 0x80) != 0) {
 			return MBSTRING_UTF8;
 		}
+		if (!IS_PRINTABLE(p[i])) {
+			type = V_ASN1_UTF8STRING;
+		}
 	}
-	return V_ASN1_PRINTABLESTRING;
+	return type;
+}
+
+/*
+	This is an alternate implementation of astring_type that uses V_ASN1_APP_CHOOSE
+	which lets the code in X509_NAME_add_entry_by_OBJ choose based on the chars in p.
+	Unfortunately, it will choose IA5String or T61String, which means it is not compatible
+	with csngen-n.c and NSS.
+*/
+static int
+astring_type_app_choose(const char *attr, const char *p, ssize_t n)
+{
+	unsigned int i;
+	int type;
+
+	if ((strcasecmp(attr, "CN") != 0) &&
+	    (strcasecmp(attr, "commonName") != 0)) {
+		return MBSTRING_UTF8;
+	}
+	if (n < 0) {
+		/* this is for the case where called from cn_to_X509_NAME */
+		n = strlen(p);
+		type = V_ASN1_PRINTABLESTRING;
+	} else {
+		/* let the code in X509_NAME_add_entry_by_OBJ choose based on the chars in p */
+		type = V_ASN1_APP_CHOOSE;
+	}
+	for (i = 0; i < n; i++) {
+		if ((p[i] & 0x80) != 0) {
+			return MBSTRING_UTF8;
+		}
+	}
+	return type;
 }
 
 static X509_NAME *
