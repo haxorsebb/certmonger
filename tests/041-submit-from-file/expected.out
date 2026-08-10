@@ -1,0 +1,3 @@
+[TEST] Valid size: OK
+[TEST] Too long size: OK
+[TEST] Null file: OK

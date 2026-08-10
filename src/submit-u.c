@@ -45,6 +45,9 @@
 			"0123456789" \
 			"+/="
 
+/* Maximum input size for PIN/CSR/PWD/CERT submission file: 16 MiB */
+#define MAX_SUBMISSION_SIZE (16u * 1024u *1024u)
+
 static char *
 my_stpcpy(char *dest, const char *src)
 {
@@ -61,6 +64,9 @@ cm_submit_u_from_file(const char *filename)
 {
 	FILE *fp;
 	char *csr, *p, buf[BUFSIZ];
+	size_t length = 0;
+	size_t chunk_len = 0;
+
 	if ((filename == NULL) || (strcmp(filename, "-") == 0)) {
 		fp = stdin;
 	} else {
@@ -73,6 +79,25 @@ cm_submit_u_from_file(const char *filename)
 	}
 	csr = NULL;
 	while (fgets(buf, sizeof(buf), fp) != NULL) {
+		
+		chunk_len = strlen(buf);
+
+		if(length + chunk_len > (size_t)MAX_SUBMISSION_SIZE){
+
+			fprintf(stderr, "Error: \"%s\" too long size. Size limit: %d\n", 
+				filename, MAX_SUBMISSION_SIZE);
+
+			if (fp != stdin){
+				fclose(fp);
+			}
+
+			if (csr){
+				free(csr);
+			}
+
+			return NULL;
+		}
+
 		if (csr == NULL) {
 			csr = strdup(buf);
 			if (csr == NULL) {
@@ -81,8 +106,12 @@ cm_submit_u_from_file(const char *filename)
 				}
 				return NULL;
 			}
+
+			length += chunk_len;
+
 		} else {
-			p = malloc(strlen(csr) + sizeof(buf));
+			p = malloc(length + chunk_len + 1);
+
 			if (p == NULL) {
 				if (fp != stdin) {
 					fclose(fp);
@@ -90,9 +119,12 @@ cm_submit_u_from_file(const char *filename)
 				free(csr);
 				return NULL;
 			}
-			memcpy(my_stpcpy(p, csr), buf, sizeof(buf));
+
+			memcpy(my_stpcpy(p, csr), buf, chunk_len + 1);
 			free(csr);
 			csr = p;
+
+			length += chunk_len;
 		}
 	}
 	if (fp != stdin) {
@@ -101,8 +133,17 @@ cm_submit_u_from_file(const char *filename)
 	if (csr == NULL) {
 		csr = strdup("");
 	} else {
-		int length = strlen(csr);
-		if (csr[length-1] != '\n') {
+	
+		if (length == 0){
+
+			fprintf(stderr, "Error: \"%s\" invalid data\n", filename);
+			if (csr){
+				free(csr);
+				return NULL;
+			}
+		}
+
+		if (csr[length - 1] != '\n') {
 			length += 1;
 			csr = realloc(csr, length + 1);
 			if (csr == NULL) {
