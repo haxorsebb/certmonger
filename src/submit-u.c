@@ -19,6 +19,7 @@
 
 #include <sys/types.h>
 #include <sys/param.h>
+#include <sys/stat.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -55,63 +56,79 @@ my_stpcpy(char *dest, const char *src)
 	return dest + len;
 }
 
-/* Read a CSR from a file. */
+/* Read submission data from a file or stdin. */
 char *
 cm_submit_u_from_file(const char *filename)
 {
-	FILE *fp;
-	char *csr, *p, buf[BUFSIZ];
-	if ((filename == NULL) || (strcmp(filename, "-") == 0)) {
-		fp = stdin;
-	} else {
+	char *csr;
+	size_t len;
+
+	if (filename != NULL && strcmp(filename, "-") != 0) {
+		FILE *fp;
+		struct stat st;
+
 		fp = fopen(filename, "r");
 		if (fp == NULL) {
 			fprintf(stderr, "Error opening \"%s\": %s.\n",
 				filename, strerror(errno));
 			return NULL;
 		}
-	}
-	csr = NULL;
-	while (fgets(buf, sizeof(buf), fp) != NULL) {
+		if (fstat(fileno(fp), &st) != 0) {
+			fprintf(stderr, "Error reading \"%s\": %s.\n",
+				filename, strerror(errno));
+			fclose(fp);
+			return NULL;
+		}
+		if (!S_ISREG(st.st_mode)) {
+			fprintf(stderr, "Error reading \"%s\": not a regular file.\n",
+				filename);
+			fclose(fp);
+			return NULL;
+		}
+		/* +2: room to append trailing newline (if absent) and NUL */
+		csr = malloc((size_t)st.st_size + 2);
 		if (csr == NULL) {
-			csr = strdup(buf);
-			if (csr == NULL) {
-				if (fp != stdin) {
-					fclose(fp);
-				}
-				return NULL;
-			}
-		} else {
-			p = malloc(strlen(csr) + sizeof(buf));
-			if (p == NULL) {
-				if (fp != stdin) {
-					fclose(fp);
-				}
-				free(csr);
-				return NULL;
-			}
-			memcpy(my_stpcpy(p, csr), buf, sizeof(buf));
-			free(csr);
-			csr = p;
+			fclose(fp);
+			return NULL;
 		}
-	}
-	if (fp != stdin) {
+		len = fread(csr, 1, (size_t)st.st_size, fp);
 		fclose(fp);
-	}
-	if (csr == NULL) {
-		csr = strdup("");
 	} else {
-		int length = strlen(csr);
-		if (csr[length-1] != '\n') {
-			length += 1;
-			csr = realloc(csr, length + 1);
-			if (csr == NULL) {
-				return NULL;
+		char *p;
+		size_t alloc, n;
+
+		alloc = BUFSIZ;
+		csr = malloc(alloc);
+		if (csr == NULL) {
+			return NULL;
+		}
+		len = 0;
+		while ((n = fread(csr + len, 1, alloc - len - 1, stdin)) > 0) {
+			len += n;
+			if (len + 2 >= alloc) {
+				if (alloc > SIZE_MAX / 2) {
+					free(csr);
+					return NULL;
+				}
+				alloc *= 2;
+				p = realloc(csr, alloc);
+				if (p == NULL) {
+					free(csr);
+					return NULL;
+				}
+				csr = p;
 			}
-			csr[length - 1] = '\n';
-			csr[length] = '\0';
 		}
 	}
+
+	if (len == 0 || memchr(csr, '\0', len) != NULL) {
+		free(csr);
+		return NULL;
+	}
+	if (csr[len - 1] != '\n') {
+		csr[len++] = '\n';
+	}
+	csr[len] = '\0';
 	return csr;
 }
 
