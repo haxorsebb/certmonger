@@ -453,13 +453,16 @@ cm_json_escape(void *parent, const char *s, ssize_t l)
 						talloc_free(ret);
 						return NULL;
 					}
-					if (uni > 0x10ffff) {
+					
+					if (uni > 0x10ffff || (uni >= 0xd800 && uni <= 0xdfff)) {
 						/* invalid */
 						talloc_free(ret);
 						return NULL;
 					}
+
 					p += n;
-					if ((uni < 0xd800) || ((uni >= 0xe000) && (uni <= 0xffff))) {
+
+					if (uni <= 0xffff) {
 						sprintf(q, "\\u%04X", uni);
 						q += 6;
 					} else {
