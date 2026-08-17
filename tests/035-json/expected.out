@@ -51,6 +51,7 @@ true
 -1
 got expected error with bad.1
 got expected error with bad.15
+got expected error with bad.16
 got expected error with bad.1a
 got expected error with bad.1b
 got expected error with bad.1c
@@ -63,4 +64,6 @@ got expected error with bad.5
 got expected error with bad.6
 got expected error with bad.8
 got expected error with bad.9
+[bad.16 detail]
+encode(1) failed
 OK
