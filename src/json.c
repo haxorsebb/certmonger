@@ -636,7 +636,7 @@ cm_json_decode_string(void *parent, const char *s, ssize_t length,
 					point = (point << 4) | ((hex - hexchars) / 2);
 					p++;
 				}
-				if ((point >= 0xd800) && (point < 0xdc000) &&
+				if ((point >= 0xd800) && (point < 0xdc00) &&
 				    (p + 2 < s + length) &&
 				    (p[0] == '\\') && (p[1] == 'u')) {
 					psave = p;
@@ -650,8 +650,7 @@ cm_json_decode_string(void *parent, const char *s, ssize_t length,
 						point2 = (point2 << 4) | ((hex - hexchars) / 2);
 						p++;
 					}
-					if ((point >= 0xd800) && (point < 0xdc00) &&
-					    (point2 >= 0xdc00) && (point2 <= 0xdcff)) {
+					if ((point2 >= 0xdc00) && (point2 <= 0xdfff)) {
 						point = ((point & 0x3ff) << 10) | (point2 & 0x3ff);
 						point += 0x10000;
 					} else {
@@ -713,8 +712,7 @@ cm_json_decode_string(void *parent, const char *s, ssize_t length,
 						point2 = (point2 << 4) | ((hex - hexchars) / 2);
 						p++;
 					}
-					if ((point >= 0xd800) && (point < 0xdc00) &&
-					    (point2 >= 0xdc00) && (point2 <= 0xdcff)) {
+					if ((point2 >= 0xdc00) && (point2 <= 0xdfff)) {
 						point = ((point & 0x3ff) << 10) | (point2 & 0x3ff);
 						point += 0x10000;
 					} else {
