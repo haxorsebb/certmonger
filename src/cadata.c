@@ -647,13 +647,16 @@ parse_encryption_certs(struct cm_store_ca *ca, struct cm_cadata_state *state,
 	ca->cm_ca_encryption_cert = talloc_strdup(ca, msg);
 	ca->cm_ca_encryption_issuer_cert = NULL;
 	ca->cm_ca_encryption_cert_pool = NULL;
-	p = strstr(ca->cm_ca_encryption_cert, "-----END CERTIFICATE-----");
-	if (p != NULL) {
-		p += strcspn(p, "\r\n");
-		p += strspn(p, "\r\n");
-		if (strstr(p, "-----END CERTIFICATE-----") != NULL) {
-			ca->cm_ca_encryption_issuer_cert = talloc_strdup(ca, p);
-			*p = '\0';
+
+	if (ca->cm_ca_encryption_cert != NULL) {
+		p = strstr(ca->cm_ca_encryption_cert, "-----END CERTIFICATE-----");
+		if (p != NULL) {
+			p += strcspn(p, "\r\n");
+			p += strspn(p, "\r\n");
+			if (strstr(p, "-----END CERTIFICATE-----") != NULL) {
+				ca->cm_ca_encryption_issuer_cert = talloc_strdup(ca, p);
+				*p = '\0';
+			}
 		}
 	}
 	if (ca->cm_ca_encryption_issuer_cert != NULL) {
