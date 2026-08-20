@@ -111,6 +111,7 @@ actual.out
 /tests/tools/name2oid
 /tests/tools/oid2name
 /tests/tools/payload
+/tests/tools/pem
 /tests/tools/pem2base
 /tests/tools/pk7decrypt
 /tests/tools/pk7env
@@ -121,3 +122,4 @@ actual.out
 /tests/tools/scepgen
 /tests/tools/srv
 /tests/tools/submit
+/tests/tools/validate_sm_fromfile
