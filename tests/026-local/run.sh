@@ -1,12 +1,4 @@
 #!/bin/bash
-
-openssl cmp -h > /dev/null 2>&1
-if [ $? == 1 ]; then
-	cp expected.openssl1 expected.out
-else
-	cp expected.openssl3 expected.out
-fi
-
 set -e
 
 cd $tmpdir

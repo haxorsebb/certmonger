@@ -290,9 +290,9 @@ EXTRA_DIST = \
 	025-casave-dbm/run.sh \
 	025-casave-sql/expected.out \
 	025-casave-sql/run.sh \
-	026-local/expected.openssl1 \
-	026-local/expected.openssl3 \
 	026-local/expected.out \
+	026-local/expected.out.openssl1 \
+	026-local/expected.out.openssl3 \
 	026-local/run.sh \
 	027-hooks/expected.out \
 	027-hooks/run.sh \
