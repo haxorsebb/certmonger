@@ -17,4 +17,5 @@
 #
 # [local]
 # validity_period = @CM_DEFAULT_CERT_LIFETIME@
+# ca_subject = CN=Example Local Signing Authority,O=Example Organization,C=US
 #
