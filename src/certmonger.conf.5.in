@@ -130,8 +130,9 @@ is \fI@CM_DEFAULT_CERT_LIFETIME@\fR.
 
 .IP ca_subject
 This is the distinguished name used when the local signing CA is first created.
-The value is a comma-separated list of attribute/value pairs, for example
-\fICN=Example Appliance Local CA,OU=Automation Appliance,O=Example GmbH,C=DE\fR.
+The value is a comma-separated OpenSSL X509V3 list whose attribute names and
+values are separated by colons, for example
+\fICN:Example Appliance Local CA,OU:Automation Appliance,O:Example GmbH,C:DE\fR.
 If this setting is not present, certmonger's existing local CA subject is used.
 When the local signer is renewed, its existing subject is preserved, so changing
 this setting does not rename an already-created local CA.
