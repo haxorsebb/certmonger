@@ -71,6 +71,62 @@
 #define CONSTANTCN "Local Signing Authority"
 static unsigned char uuid[16];
 
+static char *
+local_ca_subject(void)
+{
+	const char *dir;
+	char *path, *config, *subject = NULL;
+
+	dir = cm_env_config_dir();
+	if (dir == NULL) {
+		return NULL;
+	}
+	path = malloc(strlen(dir) + strlen("/" PACKAGE_NAME ".conf") + 1);
+	if (path == NULL) {
+		return NULL;
+	}
+	sprintf(path, "%s/%s.conf", dir, PACKAGE_NAME);
+	config = read_config_file(path);
+	free(path);
+	if (config != NULL) {
+		subject = get_config_entry(config, "local", "ca_subject");
+		free(config);
+	}
+	return subject;
+}
+
+static X509_NAME *
+local_ca_subject_to_name(const char *value)
+{
+	STACK_OF(CONF_VALUE) *values;
+	CONF_VALUE *entry;
+	X509_NAME *name;
+	int i;
+
+	values = X509V3_parse_list(value);
+	if (values == NULL) {
+		return NULL;
+	}
+	name = X509_NAME_new();
+	if (name == NULL) {
+		sk_CONF_VALUE_pop_free(values, X509V3_conf_free);
+		return NULL;
+	}
+	for (i = 0; i < sk_CONF_VALUE_num(values); i++) {
+		entry = sk_CONF_VALUE_value(values, i);
+		if ((entry->name == NULL) || (entry->value == NULL) ||
+		    (X509_NAME_add_entry_by_txt(name, entry->name, MBSTRING_UTF8,
+						(unsigned char *) entry->value, -1,
+						-1, 0) != 1)) {
+			X509_NAME_free(name);
+			sk_CONF_VALUE_pop_free(values, X509V3_conf_free);
+			return NULL;
+		}
+	}
+	sk_CONF_VALUE_pop_free(values, X509V3_conf_free);
+	return name;
+}
+
 static void
 set_ca_extensions(void *parent, X509_REQ *req, EVP_PKEY *key)
 {
@@ -117,17 +173,30 @@ make_ca_csr(void *parent, EVP_PKEY *key, X509 *oldcert)
 	X509_REQ *req;
 	X509_NAME *subject;
 	BIO *bio;
-	char *cn, *ret = NULL;
+	char *cn, *configured_subject, *ret = NULL;
 	unsigned char *bmp;
 	unsigned int bmplen;
 	long len;
 
+	configured_subject = local_ca_subject();
 	req = X509_REQ_new();
 	if (req != NULL) {
 		if ((oldcert != NULL) &&
 		    (X509_get_subject_name(oldcert) != NULL)) {
 			X509_REQ_set_subject_name(req,
 						  X509_get_subject_name(oldcert));
+		} else if ((configured_subject != NULL) &&
+			   (strlen(configured_subject) != 0)) {
+			subject = local_ca_subject_to_name(configured_subject);
+			if (subject == NULL) {
+				cm_log(0, "Unable to parse configured local CA subject '%s'.\n",
+				       configured_subject);
+				free(configured_subject);
+				X509_REQ_free(req);
+				return NULL;
+			}
+			X509_REQ_set_subject_name(req, subject);
+			X509_NAME_free(subject);
 		} else {
 			subject = X509_NAME_new();
 			if (subject != NULL) {
@@ -162,8 +231,10 @@ make_ca_csr(void *parent, EVP_PKEY *key, X509 *oldcert)
 							   (unsigned char *) cn,
 							   strlen(cn), -1, 0);
 				X509_REQ_set_subject_name(req, subject);
+				X509_NAME_free(subject);
 			}
 		}
+		free(configured_subject);
 		X509_REQ_set_pubkey(req, key);
 		set_ca_extensions(parent, req, key);
 		if (cm_store_utf8_to_bmp_string(CONSTANTCN, &bmp,
