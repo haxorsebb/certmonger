@@ -128,6 +128,14 @@ If not set, the value of the \fIvalidity_period\fR setting from the
 \fIselfsign\fR section, if one is set there, will be used.  The default value
 is \fI@CM_DEFAULT_CERT_LIFETIME@\fR.
 
+.IP certificate_validity_period
+This is the validity period given to certificates issued by the local signing
+CA.  The value uses the same time syntax as \fIvalidity_period\fR.  If this
+setting is not present, the existing local signer behavior is retained and the
+issued certificate is limited only by the signing CA's remaining validity.
+An invalid configured value causes the local signing request to fail rather
+than silently issuing a longer-lived certificate.
+
 .IP ca_subject
 This is the distinguished name used when the local signing CA is first created.
 The value is a comma-separated OpenSSL X509V3 list whose attribute names and
