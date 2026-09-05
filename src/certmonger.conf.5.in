@@ -128,6 +128,14 @@ If not set, the value of the \fIvalidity_period\fR setting from the
 \fIselfsign\fR section, if one is set there, will be used.  The default value
 is \fI@CM_DEFAULT_CERT_LIFETIME@\fR.
 
+.IP ca_subject
+This is the distinguished name used when the local signing CA is first created.
+The value is a comma-separated list of attribute/value pairs, for example
+\fICN=Example Appliance Local CA,OU=Automation Appliance,O=Example GmbH,C=DE\fR.
+If this setting is not present, certmonger's existing local CA subject is used.
+When the local signer is renewed, its existing subject is preserved, so changing
+this setting does not rename an already-created local CA.
+
 .SH SCEP
 Within the \fIscep\fR section, these variables and values are recognized:
 
