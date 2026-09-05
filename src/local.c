@@ -95,6 +95,31 @@ local_ca_subject(void)
 	return subject;
 }
 
+static char *
+local_certificate_validity_period(void)
+{
+	const char *dir;
+	char *path, *config, *period = NULL;
+
+	dir = cm_env_config_dir();
+	if (dir == NULL) {
+		return NULL;
+	}
+	path = malloc(strlen(dir) + strlen("/" PACKAGE_NAME ".conf") + 1);
+	if (path == NULL) {
+		return NULL;
+	}
+	sprintf(path, "%s/%s.conf", dir, PACKAGE_NAME);
+	config = read_config_file(path);
+	free(path);
+	if (config != NULL) {
+		period = get_config_entry(config, "local",
+					  "certificate_validity_period");
+		free(config);
+	}
+	return period;
+}
+
 static X509_NAME *
 local_ca_subject_to_name(const char *value)
 {
@@ -501,10 +526,11 @@ main(int argc, const char **argv)
 	void *parent;
 	const char *mode = CM_OP_SUBMIT, *csrfile;
 	char *csr, *localdir = NULL, *hexserial = NULL, *serial, buf[LINE_MAX];
+	char *certificate_validity_period;
 	FILE *fp;
 	X509 **roots = NULL, *signer = NULL, *cert = NULL;
 	EVP_PKEY *key = NULL;
-	time_t now;
+	time_t now, life, lifedelta;
 	poptContext pctx;
 	const struct poptOption popts[] = {
 		{"ca-data-directory", 'd', POPT_ARG_STRING | POPT_ARGFLAG_SHOW_DEFAULT, &localdir, 0, "storage location for the CA's data", "DIRECTORY"},
@@ -675,9 +701,25 @@ main(int argc, const char **argv)
 			cm_log(3, "Using serial number '%s'.\n", hexserial);
 		}
 		now = time(NULL);
+		life = 0;
+		certificate_validity_period = local_certificate_validity_period();
+		if (certificate_validity_period != NULL) {
+			if (cm_submit_u_delta_from_string(certificate_validity_period,
+							  now, &lifedelta) == 0) {
+				life = lifedelta;
+			} else {
+				cm_log(0, "Unable to parse configured local certificate validity period '%s'.\n",
+				       certificate_validity_period);
+				free(certificate_validity_period);
+				free(csr);
+				close(lfd);
+				return CM_SUBMIT_STATUS_UNCONFIGURED;
+			}
+			free(certificate_validity_period);
+		}
 		/* Actually sign the request. */
 		i = cm_submit_o_sign(parent, csr, signer, key, hexserial,
-				     now, 0, &cert);
+				     now, life, &cert);
 		free(csr);
 		if ((i == 0) && (cert != NULL)) {
 			/* Roll the serial number up. */
